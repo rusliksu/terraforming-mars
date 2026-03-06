@@ -460,7 +460,16 @@ function handleInput(wf, state, depth = 0) {
       const reserve = gen <= 2 ? 0 : (gen <= 5 ? 5 : 8);
       const spendable = Math.max(0, mc - reserve);
       const canAfford = Math.min(Math.floor(spendable / cardCost), max, cards.length);
-      const sorted = [...cards].sort((a, b) => scoreCard(b, state) - scoreCard(a, state));
+      const sorted = [...cards].sort((a, b) => {
+        let sa = scoreCard(a, state), sb = scoreCard(b, state);
+        if (VP_CARDS.has(a.name) || DYNAMIC_VP_CARDS.has(a.name)) sa += 8;
+        if (VP_CARDS.has(b.name) || DYNAMIC_VP_CARDS.has(b.name)) sb += 8;
+        if (CITY_CARDS.has(a.name)) sa += 5;
+        if (CITY_CARDS.has(b.name)) sb += 5;
+        if (gen <= 4 && ENGINE_CARDS.has(a.name)) sa += 6;
+        if (gen <= 4 && ENGINE_CARDS.has(b.name)) sb += 6;
+        return sb - sa;
+      });
       const threshold = gen <= 4 ? 2 : (gen <= 8 ? 3 : 5);
       const worthBuying = sorted.filter(c => scoreCard(c, state) >= threshold);
       const maxBuy = gen <= 4 ? 4 : (gen <= 8 ? 4 : 3);

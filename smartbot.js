@@ -474,8 +474,8 @@ function handleInput(wf, state, depth = 0) {
         let sa = scoreCard(a, state), sb = scoreCard(b, state);
         if (VP_CARDS.has(a.name) || DYNAMIC_VP_CARDS.has(a.name)) sa += 8;
         if (VP_CARDS.has(b.name) || DYNAMIC_VP_CARDS.has(b.name)) sb += 8;
-        if (CITY_CARDS.has(a.name)) sa += 5;
-        if (CITY_CARDS.has(b.name)) sb += 5;
+        if (CITY_CARDS.has(a.name)) sa += 7;
+        if (CITY_CARDS.has(b.name)) sb += 7;
         if (gen <= 4 && ENGINE_CARDS.has(a.name)) sa += 6;
         if (gen <= 4 && ENGINE_CARDS.has(b.name)) sb += 6;
         return sb - sa;

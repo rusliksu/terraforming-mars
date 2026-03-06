@@ -590,7 +590,7 @@
       ev += trRaises * (trMC(gensLeft, redsTax) + tempoBonus);
     }
     if (beh.tr) ev += beh.tr * trMC(gensLeft, redsTax); // pure TR (no tempo, doesn't shorten game)
-    if (beh.ocean) ev += trMC(gensLeft, redsTax) + tempoBonus + 2; // TR + tempo + ~2 MC board bonus
+    if (beh.ocean) ev += (typeof beh.ocean === 'number' ? beh.ocean : 1) * (trMC(gensLeft, redsTax) + tempoBonus + 2); // TR + tempo + ~2 MC board bonus
     if (beh.greenery) ev += trMC(gensLeft, redsTax) + tempoBonus + vpMC(gensLeft); // TR + tempo + 1 VP
 
     // ── CITY TILE ──

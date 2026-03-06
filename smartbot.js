@@ -239,6 +239,7 @@ function handleInput(wf, state, depth = 0) {
 
     // Awards: fund early if we're competitive (before spending MC on cards)
     if (awardIdx >= 0 && mc >= 14 && gen >= 4) {
+      const awardLead = vpLead(state);
       const tp = state?.thisPlayer || {};
       const players = state?.players || [];
       const myColor = tp.color;
@@ -254,14 +255,16 @@ function handleInput(wf, state, depth = 0) {
       const my = metrics.find(m => m.color === myColor) || {};
       const others = metrics.filter(m => m.color !== myColor);
       const awardNames = ['banker', 'thermalist', 'miner', 'scientist', 'venuphile', 'landlord'];
+      // When winning: fund even if slightly behind (+1 margin). When losing: only if clearly leading.
+      const margin = awardLead > 5 ? 1 : (awardLead < -5 ? -2 : 0);
       const competitive = awardNames.some(aw => {
         const myVal = my[aw] ?? 0;
         if (myVal === 0) return false;
         const maxOther = Math.max(0, ...others.map(o => o[aw] ?? 0));
-        return myVal >= maxOther;
+        return myVal >= maxOther - margin;
       });
       if (competitive) {
-        console.log(`    → FUNDING award! MC=${mc} gen=${gen} banker=${my.banker} therm=${my.thermalist} miner=${my.miner} sci=${my.scientist}`);
+        console.log(`    → FUNDING award! MC=${mc} gen=${gen} lead=${awardLead} banker=${my.banker} therm=${my.thermalist} miner=${my.miner} sci=${my.scientist}`);
         return pick(awardIdx);
       }
     }

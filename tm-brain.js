@@ -582,7 +582,7 @@
     // Each raise = 1 TR + tempo bonus (pushing game to end locks in your lead)
     // Tempo bonus: ending the game 1 gen sooner saves opponents ~10 MC of production
     // and locks in VP lead. Scale with gensLeft (more valuable mid-game).
-    var tempoBonus = gensLeft >= 5 ? 7 : (gensLeft >= 3 ? 5 : 3);
+    var tempoBonus = gensLeft >= 5 ? 8 : (gensLeft >= 3 ? 6 : 4);
     var glob = beh.global;
     if (glob) {
       var trRaises = 0;

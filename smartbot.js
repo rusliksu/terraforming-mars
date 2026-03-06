@@ -329,15 +329,22 @@ function handleInput(wf, state, depth = 0) {
       }
     }
 
+    // Position-aware: adjust SP/card balance based on VP lead
+    const lead = vpLead(state); // positive = winning, negative = losing
+    // Winning: prefer SP (end game faster) — boost bestSpEV by lead bonus
+    // Losing: prefer cards (need VP, not TR) — penalize SP when far behind
+    const leadBonus = lead > 5 ? Math.min(lead - 5, 8) : (lead < -5 ? Math.max(lead + 5, -8) : 0);
+    const adjustedSpEV = bestSpEV + leadBonus;
+
     // Pure EV competition: pick whichever is better
-    if (bestCard && bestCardEV >= bestSpEV) {
+    if (bestCard && bestCardEV >= adjustedSpEV) {
       const subWf2 = opts[playCardIdx] || {};
       return {
         type: 'or', index: playCardIdx,
         response: { type: 'projectCard', card: bestCard.name, payment: smartPay(bestCard.calculatedCost ?? bestCard.cost ?? 0, state, subWf2, CARD_TAGS[bestCard.name]) }
       };
     }
-    if (spAvailable && bestSpEV > -5) {
+    if (spAvailable && adjustedSpEV > -5) {
       return pick(stdProjIdx);
     }
     // Card is only option (SP not available/affordable)

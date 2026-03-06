@@ -555,9 +555,9 @@ function handleInput(wf, state, depth = 0) {
       return { type: 'card', cards: scored.slice(0, count).map(c => c.name) };
     }
 
-    // Discard: discard most expensive
+    // Discard: discard least valuable (keep best cards in hand)
     if (title.includes('discard')) {
-      const sorted = [...cards].sort((a, b) => (b.calculatedCost || b.cost || 0) - (a.calculatedCost || a.cost || 0));
+      const sorted = [...cards].sort((a, b) => scoreCard(a, state) - scoreCard(b, state)); // worst first
       return { type: 'card', cards: sorted.slice(0, Math.max(min, 1)).map(c => c.name) };
     }
 

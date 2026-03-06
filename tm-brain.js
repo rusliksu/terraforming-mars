@@ -384,14 +384,14 @@
 
   // MC value of 1 unit of production per remaining generation
   var PROD_MC = {
-    megacredits: 1, steel: 2, titanium: 3, plants: 1.5,
-    energy: 0.8, heat: 0.5
+    megacredits: 1, steel: 2, titanium: 3, plants: 2.2,
+    energy: 1.3, heat: 0.8
   };
 
   // MC value of 1 instant resource
   var STOCK_MC = {
-    megacredits: 1, steel: 2, titanium: 3, plants: 0.75,
-    energy: 0.5, heat: 0.5
+    megacredits: 1, steel: 2, titanium: 3, plants: 1.1,
+    energy: 0.7, heat: 0.8
   };
 
   // MC value of 1 VP (scales with game phase)

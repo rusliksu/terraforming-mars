@@ -14,7 +14,7 @@ const {
   scoreColonyTrade, scoreCard, smartPay,
 } = TM_BRAIN;
 
-const BASE = 'http://localhost:8080';
+const BASE = 'http://localhost:8081';
 let GAME_ID = 'ged2417324426';
 let PLAYERS = [
   { name: 'Alpha', id: 'pc5cc707ee10d' },
@@ -314,7 +314,13 @@ function handleInput(wf, state, depth = 0) {
             if (cTags.includes('space')) budget += (titanium * (state?.thisPlayer?.titaniumValue || 3));
             return cost <= budget;
           })
-          .map(c => ({ ...c, _score: scoreCard(c, state) }))
+          .map(c => {
+            let score = scoreCard(c, state);
+            // VP and city cards get priority bonus — production values alone don't capture end-game VP
+            if (VP_CARDS.has(c.name) || DYNAMIC_VP_CARDS.has(c.name)) score += 8;
+            if (CITY_CARDS.has(c.name)) score += 5;
+            return { ...c, _score: score };
+          })
           .sort((a, b) => b._score - a._score);
         if (playable.length > 0 && playable[0]._score >= 0) {
           bestCard = playable[0];
@@ -1031,7 +1037,7 @@ async function createGame(firstPlayerIdx = 0) {
   const data = JSON.stringify(payload);
   const result = await new Promise((res, rej) => {
     const req = require('http').request({
-      hostname: 'localhost', port: 8080, path: '/api/creategame',
+      hostname: 'localhost', port: 8081, path: '/api/creategame',
       method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) }
     }, (r) => { let b=''; r.on('data', c=>b+=c); r.on('end', ()=>res({status:r.statusCode,body:b})); });
     req.on('error', rej); req.write(data); req.end();

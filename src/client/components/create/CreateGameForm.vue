@@ -674,6 +674,7 @@ export default defineComponent({
   mounted() {
     document.title = `Create New Game | ${constants.APP_NAME}`;
     this.restoreLastSettings();
+    this.loadDefaultTemplates();
   },
   computed: {
     typedRefs(): Refs {
@@ -715,6 +716,18 @@ export default defineComponent({
       if (lastSettings) {
         this.applySettings(lastSettings);
       }
+    },
+    loadDefaultTemplates() {
+      if (this.templates.length > 0) return;
+      fetch('/assets/default_templates.json')
+        .then((r) => r.json())
+        .then((arr: Array<{name: string; settings: Record<string, unknown>}>) => {
+          for (const t of arr) {
+            TemplateManager.saveTemplate(t.name, t.settings);
+          }
+          this.templates = TemplateManager.getTemplates();
+        })
+        .catch(() => {});
     },
     applySettings(json: Record<string, unknown>) {
       const component: CreateGameModel = this;

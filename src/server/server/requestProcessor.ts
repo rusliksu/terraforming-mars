@@ -31,6 +31,7 @@ import {PlayerInput} from '../routes/PlayerInput';
 import {Reset} from '../routes/Reset';
 import {ServeApp} from '../routes/ServeApp';
 import {ServeAsset} from '../routes/ServeAsset';
+import {ApiGameReplay} from '../routes/ApiGameReplay';
 import {serverId, statsId} from '../utils/server-ids';
 import {newIpBlocklist} from './IPBlocklist';
 import {newIpTracker} from './IPTracker';
@@ -90,6 +91,7 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.API_LOGOUT, ApiLogout.INSTANCE],
     ['main.js', ServeAsset.INSTANCE],
     ['main.js.map', ServeAsset.INSTANCE],
+    ['api/game-replay', ApiGameReplay.INSTANCE],
     [paths.AUTH_DISCORD_CALLBACK, DiscordAuth.INSTANCE],
     [paths.NEW_GAME, ServeApp.INSTANCE],
     [paths.PLAYER, ServeApp.INSTANCE],

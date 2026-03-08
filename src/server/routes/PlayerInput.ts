@@ -15,6 +15,7 @@ import {statusCode} from '../../common/http/statusCode';
 import {InputError} from '../inputs/InputError';
 import {isIProjectCard} from '../cards/IProjectCard';
 import {AppErrorResponse, INVALID_RUN_ID} from '../../common/app/AppErrorId';
+import {ActionLogger} from '../ActionLogger';
 
 export class PlayerInput extends Handler {
   public static readonly INSTANCE = new PlayerInput();
@@ -102,7 +103,9 @@ export class PlayerInput extends Handler {
           if (this.isWaitingForUndo(player, entity)) {
             await this.performUndo(req, res, ctx, player);
           } else {
+            ActionLogger.captureBeforeState(player.game);
             player.process(entity);
+            ActionLogger.captureAfterStateAndLog(player.game, player, entity.type || 'unknown');
             responses.writeJson(res, ctx, Server.getPlayerModel(player));
           }
           resolve();

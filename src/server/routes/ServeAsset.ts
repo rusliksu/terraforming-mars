@@ -60,8 +60,8 @@ export class ServeAsset extends Handler {
       return;
     }
 
-    // Remove leading slash.
-    const path = req.url.substring(1);
+    // Remove leading slash and query parameters.
+    const path = req.url.substring(1).split('?')[0];
 
     const supportedEncodings = this.supportedEncodings(req);
     const toFile: {file?: string, encoding?: Encoding } = this.toFile(path, supportedEncodings);
@@ -81,7 +81,9 @@ export class ServeAsset extends Handler {
       }
       res.setHeader('Cache-Control', 'must-revalidate');
       res.setHeader('ETag', buffer.hash);
-    } else if (this.cacheAssets === false && req.url !== '/main.js' && req.url !== '/main.js.map') {
+    } else if (req.url === '/main.js' || req.url === '/main.js.map') {
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    } else if (this.cacheAssets === false) {
       res.setHeader('Cache-Control', 'max-age=' + this.cacheAgeSeconds);
     }
 

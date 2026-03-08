@@ -6,6 +6,25 @@
               (<span v-i18n>Looking for people to play with</span>? <a :href="constants.DISCORD_INVITE" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank"><u v-i18n>Join us on Discord</u></a>.)
             </div>
 
+
+            <div class="create-game--block create-game-templates-section">
+                <h4 v-i18n>Game Templates</h4>
+                <div class="templates-controls">
+                    <select class="form-select templates-select" v-model="selectedTemplate">
+                        <option value="">-- Select template --</option>
+                        <option v-for="t in templates" :key="t.name" :value="t.name">{{ t.name }}</option>
+                    </select>
+                    <AppButton title="Load" size="normal" @click="loadSelectedTemplate" :disabled="!selectedTemplate"/>
+                    <AppButton title="Delete" size="normal" @click="deleteSelectedTemplate" :disabled="!selectedTemplate"/>
+                </div>
+                <div class="templates-actions">
+                    <AppButton title="Save current settings" size="normal" @click="saveAsTemplate"/>
+                    <AppButton title="Export template" size="normal" @click="exportSelectedTemplate" :disabled="!selectedTemplate"/>
+                    <AppButton title="Import template" size="normal" @click="triggerTemplateImport"/>
+                    <input style="display: none" type="file" accept=".json" ref="templateFile" v-on:change="importTemplateFile()"/>
+                </div>
+            </div>
+
             <div class="create-game-form create-game-panel create-game--block">
 
                 <div class="create-game-options">
@@ -569,6 +588,7 @@ import {CreateGameModel} from './CreateGameModel';
 import {paths} from '@/common/app/paths';
 import {JSONProcessor} from './JSONProcessor';
 import {defaultCreateGameModel} from './defaultCreateGameModel';
+import {TemplateManager, GameTemplate} from './TemplateManager';
 import {getColony} from '@/client/colonies/ClientColonyManifest';
 
 const REVISED_COUNT_ALGORITHM = false;
@@ -576,6 +596,7 @@ const REVISED_COUNT_ALGORITHM = false;
 
 type Refs = {
   file: HTMLInputElement;
+  templateFile: HTMLInputElement;
   cardsFilter: InstanceType<typeof CardsFilter>;
   cardsFilter2: InstanceType<typeof CardsFilter>;
 };
@@ -583,6 +604,8 @@ type Refs = {
 type FormModel = {
   preludeToggled: boolean;
   uploading: boolean;
+  selectedTemplate: string;
+  templates: Array<GameTemplate>;
 };
 
 export default defineComponent({
@@ -592,6 +615,8 @@ export default defineComponent({
       ...defaultCreateGameModel(),
       preludeToggled: false,
       uploading: false,
+      selectedTemplate: '',
+      templates: TemplateManager.getTemplates(),
     };
   },
   components: {
@@ -648,6 +673,7 @@ export default defineComponent({
   },
   mounted() {
     document.title = `Create New Game | ${constants.APP_NAME}`;
+    this.restoreLastSettings();
   },
   computed: {
     typedRefs(): Refs {
@@ -684,6 +710,118 @@ export default defineComponent({
     },
   },
   methods: {
+    restoreLastSettings() {
+      const lastSettings = TemplateManager.getLastSettings();
+      if (lastSettings) {
+        this.applySettings(lastSettings);
+      }
+    },
+    applySettings(json: Record<string, unknown>) {
+      const component: CreateGameModel = this;
+      const refs = this.typedRefs;
+      const root = vueRoot(this);
+      try {
+        this.uploading = true;
+        const processor = new JSONProcessor(component);
+        processor.applyJSON(json);
+        nextTick(() => {
+          try {
+            if (component.showBannedCards && refs.cardsFilter) {
+              refs.cardsFilter.selected = processor.bannedCards;
+            }
+            if (component.showIncludedCards && refs.cardsFilter2) {
+              refs.cardsFilter2.selected = processor.includedCards;
+            }
+            if (!component.seededGame) component.seed = Math.random();
+            component.solarPhaseOption = Boolean(processor.solarPhaseOption);
+            this.uploading = false;
+          } catch (e) {
+            console.error('Error applying settings:', e);
+            this.uploading = false;
+          }
+        });
+      } catch (e) {
+        root.showAlert('Load settings', 'Error: ' + e);
+        this.uploading = false;
+      }
+    },
+    loadSelectedTemplate() {
+      if (!this.selectedTemplate) return;
+      const tmpl = TemplateManager.getTemplate(this.selectedTemplate);
+      if (!tmpl) return;
+      this.applySettings(tmpl.settings as Record<string, unknown>);
+      vueRoot(this).showAlert('Template', 'Template "' + this.selectedTemplate + '" loaded.');
+    },
+    saveAsTemplate() {
+      const name = prompt('Template name:', this.selectedTemplate || '');
+      if (!name || name.trim() === '') return;
+      const trimmed = name.trim();
+      const existing = TemplateManager.getTemplate(trimmed);
+      if (existing) {
+        if (!confirm('Template "' + trimmed + '" already exists. Overwrite?')) return;
+      }
+      const settings = TemplateManager.serializeFormState(this);
+      TemplateManager.saveTemplate(trimmed, settings);
+      this.templates = TemplateManager.getTemplates();
+      this.selectedTemplate = trimmed;
+      vueRoot(this).showAlert('Template', 'Template "' + trimmed + '" saved.');
+    },
+    deleteSelectedTemplate() {
+      if (!this.selectedTemplate) return;
+      if (!confirm('Delete template "' + this.selectedTemplate + '"?')) return;
+      TemplateManager.deleteTemplate(this.selectedTemplate);
+      this.templates = TemplateManager.getTemplates();
+      this.selectedTemplate = '';
+    },
+    exportSelectedTemplate() {
+      if (!this.selectedTemplate) return;
+      const tmpl = TemplateManager.getTemplate(this.selectedTemplate);
+      if (!tmpl) return;
+      const a = document.createElement('a');
+      const blob = new Blob([JSON.stringify(tmpl.settings, undefined, 4)], {'type': 'application/json'});
+      a.href = window.URL.createObjectURL(blob);
+      a.download = 'tm_template_' + tmpl.name.replace(/[^a-zA-Z0-9_-]/g, '_') + '.json';
+      a.click();
+    },
+    triggerTemplateImport() {
+      this.typedRefs.templateFile.click();
+    },
+    importTemplateFile() {
+      const refs = this.typedRefs;
+      const file = refs.templateFile.files !== null ? refs.templateFile.files[0] : undefined;
+      if (!file) return;
+      const reader = new FileReader();
+      const root = vueRoot(this);
+      reader.addEventListener('load', () => {
+        try {
+          const text = reader.result;
+          if (typeof text !== 'string') return;
+          const json = JSON.parse(text);
+          if (Array.isArray(json)) {
+            let imported = 0;
+            for (const item of json) {
+              if (item.name && item.settings) {
+                TemplateManager.saveTemplate(item.name, item.settings);
+                imported++;
+              }
+            }
+            this.templates = TemplateManager.getTemplates();
+            root.showAlert('Import', 'Imported ' + imported + ' template(s).');
+          } else {
+            const name = prompt('Name for imported template:', file.name.replace(/\.json$/i, ''));
+            if (!name || name.trim() === '') return;
+            TemplateManager.saveTemplate(name.trim(), json);
+            this.templates = TemplateManager.getTemplates();
+            this.selectedTemplate = name.trim();
+            root.showAlert('Import', 'Template "' + name.trim() + '" imported.');
+          }
+        } catch (e) {
+          root.showAlert('Import', 'Error parsing file: ' + e);
+        }
+        refs.templateFile.value = '';
+      });
+      reader.readAsText(file);
+    },
     async downloadSettings() {
       const serializedData = await this.serializeSettings();
 
@@ -1176,6 +1314,9 @@ export default defineComponent({
           vueRoot(this).screen = 'game-home';
         }
       };
+
+      // Auto-save current settings as last used
+      TemplateManager.saveLastSettings(TemplateManager.serializeFormState(this));
 
       fetch(paths.API_CREATEGAME, {'method': 'POST', 'body': dataToSend, 'headers': {'Content-Type': 'application/json'}})
         .then((response) => response.text())

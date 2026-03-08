@@ -32,6 +32,7 @@ import {Reset} from '../routes/Reset';
 import {ServeApp} from '../routes/ServeApp';
 import {ServeAsset} from '../routes/ServeAsset';
 import {ApiGameReplay} from '../routes/ApiGameReplay';
+import {ApiQuickGame} from '../routes/ApiQuickGame';
 import {serverId, statsId} from '../utils/server-ids';
 import {newIpBlocklist} from './IPBlocklist';
 import {newIpTracker} from './IPTracker';
@@ -92,6 +93,7 @@ const handlers: Map<string, IHandler> = new Map(
     ['main.js', ServeAsset.INSTANCE],
     ['main.js.map', ServeAsset.INSTANCE],
     ['api/game-replay', ApiGameReplay.INSTANCE],
+    ['api/quick-game', ApiQuickGame.INSTANCE],
     [paths.AUTH_DISCORD_CALLBACK, DiscordAuth.INSTANCE],
     [paths.NEW_GAME, ServeApp.INSTANCE],
     [paths.PLAYER, ServeApp.INSTANCE],

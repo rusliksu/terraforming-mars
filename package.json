@@ -70,7 +70,7 @@
   "scripts": {
     "start": "node build/src/server/server.js",
     "start:prof": "node --prof build/src/server/server.js",
-    "build": "npm run make:static && npm run build:server && npm run build:client",
+    "build": "npm run make:static && npm run build:server && npm run build:client && bash scripts/update-hash.sh",
     "build:client": "npm run make:cards && cross-env NODE_ENV=production webpack",
     "build:server": "tsc --build src/tsconfig.json",
     "build:test": "tsc --build tests/tsconfig.json",

@@ -42,10 +42,29 @@
                   <span v-i18n>Create New Game</span>
               </a>
 
+              <a :href="'new-game?cloneGameId=' + game.gameId">
+                  <AppButton size="big" type="back" />
+                  <span>♻ Rematch</span>
+              </a>
+
               <a href=".">
                   <AppButton size="big" type="back" />
                   <span v-i18n>Go to main page</span>
               </a>
+              <a href="history.html">
+                  <AppButton size="big" type="back" />
+                  <span>Elo &amp; History</span>
+              </a>
+            </div>
+          </div>
+          <div v-if="spectatorUrl" class="game-end-spectator" style="text-align:center;margin:8px 0;font-size:12px;color:#888">
+            <span>Spectator: </span><a :href="spectatorUrl" style="color:#ff7f50">{{ spectatorUrl }}</a>
+          </div>
+          <div v-if="eloDelta" class="game-end-elo" style="text-align:center;margin:10px 0">
+            <div v-for="ed in eloDelta" :key="ed.name" style="display:inline-block;margin:0 10px;text-align:center">
+              <div :class="'log-player ' + getEndGamePlayerRowColorClass(ed.color)">{{ ed.name }}</div>
+              <div style="font-size:20px;font-weight:bold" :style="{color: ed.delta >= 0 ? '#2ecc71' : '#e74c3c'}">{{ ed.delta >= 0 ? '+' : ''}}{{ ed.delta }}</div>
+              <div style="font-size:11px;color:#888">{{ ed.elo }} Elo</div>
             </div>
           </div>
           <div v-if="!isSoloGame || game.isSoloModeWin" class="game-end-winer-announcement">
@@ -269,6 +288,16 @@ export default defineComponent({
       if (this.spectator !== undefined) return this.spectator.color;
       throw new Error('Neither playerView nor spectator are defined');
     },
+    spectatorUrl(): string | null {
+      const sid = this.game.spectatorId;
+      if (!sid) return null;
+      return window.location.origin + '/spectator?id=' + sid;
+    },
+    eloDelta(): Array<{name: string; color: Color; delta: number; elo: number}> | null {
+      // Calculate Elo delta from completed games API
+      // This is populated asynchronously in mounted()
+      return (this as any)._eloDelta || null;
+    },
     downloadLogUrl() {
       const id = this.playerView?.id || this.spectator?.id;
       if (id === undefined) {
@@ -364,6 +393,7 @@ export default defineComponent({
   data() {
     return {
       constants,
+      _eloDelta: null as Array<{name: string; color: string; delta: number; elo: number}> | null,
     };
   },
   components: {
@@ -376,8 +406,47 @@ export default defineComponent({
   },
   mounted() {
     document.title = `End of Game | ${constants.APP_NAME}`;
+    this.fetchEloDelta();
   },
   methods: {
+    async fetchEloDelta() {
+      try {
+        const normalizeName = (name: string): string => {
+          const raw = (name || '').trim().toLowerCase();
+          if (raw === 'лёха' || raw === 'леха') return 'алексей';
+          if (raw === 'genuinegold') return 'илья';
+          return raw;
+        };
+
+        const colorByName: Record<string, string> = {};
+        for (const p of this.players) {
+          colorByName[normalizeName(p.name)] = p.color;
+        }
+
+        const resp = await fetch('/elo/data.json?' + Date.now(), {cache: 'no-store'});
+        const data = await resp.json();
+        const games = data?.games || [];
+        const players = data?.players || {};
+        const currentGameId = this.game.gameId;
+        const currentGame = games.find((g: any) => g._key === currentGameId);
+        if (!currentGame || !Array.isArray(currentGame.results) || currentGame.results.length === 0) return;
+
+        const result = currentGame.results.map((r: any) => {
+          const displayName = r.displayName || r.name || '?';
+          const key = normalizeName(displayName);
+          const player = players[key] || null;
+          return {
+            name: displayName,
+            color: colorByName[key] || '',
+            delta: Math.round(r.delta || 0),
+            elo: Math.round(player?.elo ?? r.newElo ?? 1500),
+          };
+        });
+
+        result.sort((a, b) => b.elo - a.elo);
+        this._eloDelta = result;
+      } catch (e) { /* silently fail */ }
+    },
     getEndGamePlayerRowColorClass(color: Color): string {
       return playerColorClass(color, 'bg_transparent');
     },

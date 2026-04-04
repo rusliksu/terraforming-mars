@@ -80,6 +80,7 @@ export const ASIMOV_AWARD_BONUS = 2;
 
 export const ALL_LANGUAGES = ['en', 'de', 'fr', 'ru', 'cn', 'pl', 'es', 'br', 'it', 'ko', 'nl', 'hu', 'jp', 'bg', 'nb', 'ua', 'fi'] as const;
 export type LANGUAGE = typeof ALL_LANGUAGES[number];
+
 export const LANGUAGES: Record<LANGUAGE, [string, string]> = {
   en: ['English', 'English'],
   de: ['Deutsch', 'German'],

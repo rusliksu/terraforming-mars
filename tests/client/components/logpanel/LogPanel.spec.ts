@@ -6,10 +6,18 @@ import {fakeViewModel} from '../testHelpers';
 
 describe('LogPanel', () => {
   let originalFetch: any;
+  let fetchCalls: Array<string>;
 
   beforeEach(() => {
     originalFetch = (global as any).fetch;
-    (global as any).fetch = () => Promise.resolve({ok: false, statusText: 'stubbed'});
+    fetchCalls = [];
+    (global as any).fetch = (url: string) => {
+      fetchCalls.push(url);
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve([]),
+      });
+    };
   });
 
   afterEach(() => {
@@ -25,5 +33,35 @@ describe('LogPanel', () => {
       },
     });
     expect(wrapper.exists()).to.be.true;
+  });
+
+  it('refreshes logs when the current generation gameAge changes', async () => {
+    const viewModel = fakeViewModel();
+    const wrapper = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {
+        viewModel,
+        color: 'blue',
+        step: 0,
+      },
+    });
+
+    await Promise.resolve();
+    expect(fetchCalls).has.length(1);
+    expect(fetchCalls[0]).includes('gameAge=0');
+
+    const updatedViewModel = {
+      ...viewModel,
+      game: {
+        ...viewModel.game,
+        gameAge: 1,
+      },
+    };
+
+    await wrapper.setProps({viewModel: updatedViewModel, step: 1});
+    await Promise.resolve();
+
+    expect(fetchCalls).has.length(2);
+    expect(fetchCalls[1]).includes('gameAge=1');
   });
 });

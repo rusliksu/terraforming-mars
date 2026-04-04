@@ -102,7 +102,11 @@ export class PlayerInput extends Handler {
           if (this.isWaitingForUndo(player, entity)) {
             await this.performUndo(req, res, ctx, player);
           } else {
+            const previousSaveGamePromise = player.game.saveGamePromise;
             player.process(entity);
+            if (player.game.saveGamePromise !== previousSaveGamePromise) {
+              await player.game.saveGamePromise;
+            }
             responses.writeJson(res, ctx, Server.getPlayerModel(player));
           }
           resolve();
@@ -138,4 +142,3 @@ function validateRunId(entity: any) {
   // Clearing this out to be compatible with the input response processors.
   delete entity.runId;
 }
-

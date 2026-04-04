@@ -9,12 +9,11 @@ import {oneWayDifference} from '../../common/utils/utils';
 import {message} from '../logs/MessageBuilder';
 import {Message} from '../../common/logs/Message';
 
-export const LogType = {
-  DREW: 'drew',
-  BOUGHT: 'bought',
-  DREW_VERBOSE: 'drew_verbose',
-} as const;
-export type LogType = typeof LogType[keyof typeof LogType];
+export enum LogType {
+  DREW = 'drew',
+  BOUGHT = 'bought',
+  DREW_VERBOSE = 'drew_verbose',
+}
 
 export type ChooseOptions = {
   keepMax?: number,
@@ -34,11 +33,11 @@ export class ChooseCards extends DeferredAction {
   public execute() {
     const {options, cards, player} = this;
 
-    let max = options.keepMax || cards.length;
+    let max = options.keepMax ?? cards.length;
     let msg: string | Message = message('Select ${0} card(s) to keep', (b) => b.number(max));
     if (options.paying) {
       const spendableMegacredits = this.player.spendableMegacredits();
-      const affordableCards = Math.floor(spendableMegacredits / this.player.cardCost);
+      const affordableCards = Math.max(0, Math.floor(spendableMegacredits / this.player.cardCost));
       max = Math.min(max, affordableCards);
       if (max === 0) {
         msg = 'You cannot afford any cards';
@@ -89,6 +88,6 @@ export function keep(player: IPlayer, cards: ReadonlyArray<IProjectCard>, discar
     LogHelper.logDrawnCards(player, cards);
   } else {
     player.game.log('${0} ${1} ${2} card(s)', (b) => b.player(player).string(logType).number(cards.length));
-    LogHelper.logDrawnCards(player, cards, /* privateMessage */ true);
+    LogHelper.logCardAction(player, logType, cards, /* privateMessage */ true);
   }
 }

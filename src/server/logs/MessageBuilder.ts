@@ -17,7 +17,6 @@ import {LogMessageData, LogMessageDataAttrs} from '../../common/logs/LogMessageD
 import {UndergroundResourceToken} from '../../common/underworld/UndergroundResourceToken';
 import {Space} from '../boards/Space';
 import {SpaceId} from '../../common/Types';
-import {toName} from '../../common/utils/utils';
 
 export class MessageBuilder {
   protected message: Message;
@@ -57,19 +56,6 @@ export class MessageBuilder {
     return this.cardName(value.name, attrs);
   }
 
-  public cards(value: ReadonlyArray<ICard>, attrs?: LogMessageDataAttrs): this {
-    return this.cardNames(value.map(toName), attrs);
-  }
-
-  public cardNames(value: ReadonlyArray<CardName>, attrs?: LogMessageDataAttrs): this {
-    const data: LogMessageData = {type: LogMessageDataType.CARDS, value};
-    if (attrs !== undefined) {
-      data.attrs = attrs;
-    }
-    this.message.data.push(data);
-    return this;
-  }
-
   public cardName(value: CardName, attrs?: LogMessageDataAttrs): this {
     const data: LogMessageData = {type: LogMessageDataType.CARD, value};
     if (attrs !== undefined) {
@@ -77,6 +63,22 @@ export class MessageBuilder {
     }
     this.message.data.push(data);
     return this;
+  }
+
+  public cards(values: ReadonlyArray<ICard | CardName>, attrs?: LogMessageDataAttrs): this {
+    const data: LogMessageData = {
+      type: LogMessageDataType.CARDS,
+      value: values.map((value) => typeof value === 'string' ? value : value.name),
+    };
+    if (attrs !== undefined) {
+      data.attrs = attrs;
+    }
+    this.message.data.push(data);
+    return this;
+  }
+
+  public cardNames(values: ReadonlyArray<CardName>, attrs?: LogMessageDataAttrs): this {
+    return this.cards(values, attrs);
   }
 
   public award(value: IAward): this {

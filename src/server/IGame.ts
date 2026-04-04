@@ -43,6 +43,7 @@ export interface IGame extends Logger {
   readonly gameOptions: Readonly<GameOptions>;
   // Game-level data
   lastSaveId: number;
+  saveGamePromise: Promise<void>;
   rng: SeededRandom;
   spectatorId: SpectatorId | undefined;
   deferredActions: DeferredActionsQueue;

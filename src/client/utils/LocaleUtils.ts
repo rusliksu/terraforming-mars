@@ -1,4 +1,4 @@
-import {LANGUAGE} from '@/common/constants';
+import type {LANGUAGE} from '@/common/constants';
 
 export const GAME_LOCALE_TO_BCP47: Record<LANGUAGE, string> = {
   br: 'pt-BR',

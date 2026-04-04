@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TM ELO Ratings</title>
+<style>
+body { font-family: -apple-system, sans-serif; margin: 0; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+h1, h2 { color: #ff6b35; text-align: center; }
+h2 { font-size: 1.3em; margin-top: 40px; }
+.stats { text-align: center; color: #888; margin-bottom: 10px; }
+.tabs { text-align: center; margin-bottom: 20px; }
+.tab { display: inline-block; padding: 8px 20px; margin: 0 4px; background: #16213e; border: 1px solid #333; border-radius: 6px; cursor: pointer; color: #888; transition: all 0.2s; }
+.tab.active { background: #ff6b35; color: #fff; border-color: #ff6b35; }
+.tab:hover:not(.active) { border-color: #ff6b35; color: #ccc; }
+table { border-collapse: collapse; width: 100%; max-width: 700px; margin: 0 auto; }
+th { background: #16213e; color: #c4a35a; padding: 10px; text-align: left; border-bottom: 2px solid #333; }
+td { padding: 8px 10px; border-bottom: 1px solid #333; }
+tr:hover { background: #16213e; }
+.rank { color: #888; width: 40px; }
+.elo { font-weight: bold; color: #ff6b35; }
+.wins { color: #2ecc71; }
+.games { color: #888; }
+a { color: #ff6b35; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.nav { text-align: center; margin-bottom: 20px; }
+.player-link { cursor: pointer; color: #e0e0e0; transition: color 0.2s; }
+.player-link:hover { color: #ff6b35; text-decoration: underline; }
+.player-link.active-filter { color: #ff6b35; font-weight: bold; }
+
+/* Recent Games */
+.games-section { max-width: 900px; margin: 0 auto; }
+.filter-bar { text-align: center; margin-bottom: 15px; min-height: 24px; }
+.filter-tag { display: inline-block; background: #ff6b35; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+.filter-tag .clear { cursor: pointer; margin-left: 6px; opacity: 0.7; }
+.filter-tag .clear:hover { opacity: 1; }
+.game-card { background: #16213e; border: 1px solid #333; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; transition: border-color 0.2s; }
+.game-card:hover { border-color: #ff6b35; }
+.game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 0.85em; color: #888; }
+.game-header a { font-size: 0.8em; }
+.game-server { text-transform: capitalize; }
+.game-gen { color: #c4a35a; }
+.game-results { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.game-player { display: inline-flex; align-items: center; gap: 4px; }
+.game-player .pname { font-weight: 500; }
+.game-player .pvp { color: #888; font-size: 0.9em; }
+.game-player .pcorp { color: #666; font-size: 0.8em; }
+.game-player .pdelta.pos { color: #2ecc71; font-weight: bold; }
+.game-player .pdelta.neg { color: #e74c3c; }
+.game-player .pdelta.zero { color: #888; }
+.game-sep { color: #555; font-weight: bold; }
+.winner .pname { color: #2ecc71; }
+.show-more { text-align: center; margin-top: 15px; }
+.show-more button { background: #16213e; color: #ff6b35; border: 1px solid #ff6b35; padding: 8px 24px; border-radius: 6px; cursor: pointer; font-size: 0.95em; }
+.show-more button:hover { background: #ff6b35; color: #fff; }
+.no-games { text-align: center; color: #666; padding: 20px; }
+</style>
+</head>
+<body>
+<div class="nav"><a href="/">&#8592; Back to game</a></div>
+<h1>TM ELO Ratings</h1>
+<div class="stats" id="stats"></div>
+<div class="tabs">
+  <span class="tab active" data-mode="place">By Placement</span>
+  <span class="tab" data-mode="vp">By VP Margin</span>
+</div>
+<table>
+<thead><tr><th class="rank">#</th><th>Player</th><th>ELO</th><th>1st</th><th>Games</th><th>Avg</th></tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+
+<h2 id="games-title">Recent Games</h2>
+<div class="games-section">
+  <div class="filter-bar" id="filterBar"></div>
+  <div id="gamesList"></div>
+  <div class="show-more" id="showMore" style="display:none">
+    <button id="showMoreBtn">Show more</button>
+  </div>
+</div>
+
+<script>
+var _data = null;
+var _mode = "place";
+var _filterPlayer = null;
+var _gamesShown = 20;
+var GAMES_PER_PAGE = 20;
+
+function getGameUrl(game) {
+  var id = game._key || "";
+  if (game.server === "knightbyte") {
+    return "https://tm.knightbyte.me/game?id=" + id;
+  }
+  return "https://terraforming-mars.herokuapp.com/game?id=" + id;
+}
+
+function esc(s) {
+  var d = document.createElement("span");
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function renderPlayers() {
+  if (!_data) return;
+  var players = _data.players || {};
+  var list = [];
+  for (var name in players) {
+    var p = players[name];
+    var elo = _mode === "vp" ? (p.elo_vp || p.elo || 1500) : (p.elo || 1500);
+    list.push({
+      key: name,
+      name: p.displayName || name,
+      elo: Math.round(elo),
+      games: p.games || 0,
+      wins: p.wins || 0
+    });
+  }
+  list.sort(function(a,b) { return b.elo - a.elo; });
+  var games = _data.games || [];
+  document.getElementById("stats").textContent = list.length + " players | " + games.length + " games";
+  var html = "";
+  list.forEach(function(p, i) {
+    var winPct = p.games > 0 ? (p.wins / p.games).toFixed(2) : '0';
+    var activeClass = (_filterPlayer && _filterPlayer === p.key) ? " active-filter" : "";
+    html += "<tr><td class=\"rank\">" + (i+1) + "</td>"
+      + "<td><span class=\"player-link" + activeClass + "\" data-player=\"" + esc(p.key) + "\">" + esc(p.name) + "</span></td>"
+      + "<td class=\"elo\">" + p.elo + "</td>"
+      + "<td class=\"wins\">" + p.wins + "</td>"
+      + "<td class=\"games\">" + p.games + "</td>"
+      + "<td>" + winPct + "</td></tr>";
+  });
+  document.getElementById("tbody").innerHTML = html;
+}
+
+function getFilteredGames() {
+  var games = (_data && _data.games) ? _data.games.slice() : [];
+  games.reverse();
+  if (_filterPlayer) {
+    games = games.filter(function(g) {
+      return g.results && g.results.some(function(r) { return r.name === _filterPlayer; });
+    });
+  }
+  return games;
+}
+
+function renderGames() {
+  var games = getFilteredGames();
+  var filterBar = document.getElementById("filterBar");
+  var title = document.getElementById("games-title");
+
+  if (_filterPlayer && _data && _data.players && _data.players[_filterPlayer]) {
+    var dn = _data.players[_filterPlayer].displayName || _filterPlayer;
+    filterBar.innerHTML = "<span class=\"filter-tag\">" + esc(dn) + " (" + games.length + " games)<span class=\"clear\" id=\"clearFilterBtn\"> x</span></span>";
+    title.textContent = dn + " \u2014 Game History";
+    var clearBtn = document.getElementById("clearFilterBtn");
+    if (clearBtn) clearBtn.addEventListener("click", clearFilter);
+  } else {
+    filterBar.innerHTML = "";
+    title.textContent = "Recent Games";
+  }
+
+  var toShow = games.slice(0, _gamesShown);
+  if (toShow.length === 0) {
+    document.getElementById("gamesList").innerHTML = "<div class=\"no-games\">No games found</div>";
+    document.getElementById("showMore").style.display = "none";
+    return;
+  }
+
+  var html = "";
+  toShow.forEach(function(g) {
+    var results = (g.results || []).slice().sort(function(a,b) { return a.place - b.place; });
+    var genText = g.generation ? ("Gen " + g.generation) : "";
+    var serverText = g.server || "";
+
+    html += "<div class=\"game-card\">";
+    html += "<div class=\"game-header\">";
+    html += "<span><span class=\"game-server\">" + esc(serverText) + "</span>";
+    if (genText) html += " \u00b7 <span class=\"game-gen\">" + genText + "</span>";
+    html += " \u00b7 " + results.length + "P</span>";
+    html += "<a href=\"" + getGameUrl(g) + "\" target=\"_blank\">" + esc(g._key || "") + "</a>";
+    html += "</div>";
+    html += "<div class=\"game-results\">";
+
+    results.forEach(function(r, idx) {
+      var isWinner = r.place === 1;
+      var deltaClass = r.delta > 0 ? "pos" : (r.delta < 0 ? "neg" : "zero");
+      var deltaText = r.delta > 0 ? "+" + r.delta : "" + r.delta;
+      var vpText = r.vp ? (r.vp + "VP") : "";
+      var corpText = r.corp || "";
+
+      if (idx > 0) html += "<span class=\"game-sep\">\u203a</span>";
+      html += "<span class=\"game-player" + (isWinner ? " winner" : "") + "\">";
+      html += "<span class=\"pname player-link\" data-player=\"" + esc(r.name) + "\">" + esc(r.displayName || r.name) + "</span>";
+      if (vpText) html += " <span class=\"pvp\">" + vpText + "</span>";
+      html += " <span class=\"pdelta " + deltaClass + "\">(" + deltaText + ")</span>";
+      if (corpText) html += " <span class=\"pcorp\">" + esc(corpText) + "</span>";
+      html += "</span>";
+    });
+
+    html += "</div></div>";
+  });
+
+  document.getElementById("gamesList").innerHTML = html;
+  document.getElementById("showMore").style.display = games.length > _gamesShown ? "" : "none";
+}
+
+function toggleFilter(playerKey) {
+  if (_filterPlayer === playerKey) {
+    _filterPlayer = null;
+  } else {
+    _filterPlayer = playerKey;
+  }
+  _gamesShown = GAMES_PER_PAGE;
+  renderPlayers();
+  renderGames();
+  document.getElementById("games-title").scrollIntoView({ behavior: "smooth" });
+}
+
+function clearFilter() {
+  _filterPlayer = null;
+  _gamesShown = GAMES_PER_PAGE;
+  renderPlayers();
+  renderGames();
+}
+
+function showMoreGames() {
+  _gamesShown += GAMES_PER_PAGE;
+  renderGames();
+}
+
+// Event delegation for player clicks
+document.addEventListener("click", function(e) {
+  var el = e.target.closest(".player-link");
+  if (el && el.dataset.player) {
+    toggleFilter(el.dataset.player);
+  }
+});
+
+document.getElementById("showMoreBtn").addEventListener("click", showMoreGames);
+
+document.querySelectorAll(".tab").forEach(function(tab) {
+  tab.addEventListener("click", function() {
+    document.querySelectorAll(".tab").forEach(function(t) { t.classList.remove("active"); });
+    tab.classList.add("active");
+    _mode = tab.dataset.mode;
+    renderPlayers();
+  });
+});
+
+fetch("elo-data.json").then(function(r){return r.json()}).then(function(data) {
+  _data = data;
+  renderPlayers();
+  renderGames();
+}).catch(function(e) {
+  document.getElementById("tbody").innerHTML = "<tr><td colspan=\"6\">Error: " + e.message + "</td></tr>";
+});
+</script>
+</body>
+</html>

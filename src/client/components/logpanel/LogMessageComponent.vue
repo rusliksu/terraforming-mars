@@ -6,6 +6,7 @@
       <span v-else>
         <span v-if="data.type === undefined || data.value === undefined"></span>
         <span v-else-if="data.type === LogMessageDataType.PLAYER" class="log-player" :class="'player_bg_color_' + data.value"> {{ getPlayerName(data.value) }} </span>
+        <span v-else-if="data.type === LogMessageDataType.CARDS" v-html="cardsToHtml(data)"></span>
         <span v-else-if="data.type === LogMessageDataType.CARD" v-html="cardToHtml(data)"></span>
         <span v-else-if="data.type === LogMessageDataType.GLOBAL_EVENT" class="log-card background-color-global-event" v-i18n>
           {{data.value}}
@@ -25,8 +26,6 @@
             </svg>
             {{ getSpaceName(data.value) }}
         </span>
-        <span v-else-if="data.type === LogMessageDataType.CARDS" v-html="cardsToHtml(data)"></span>
-
         <span v-else-if="data.type === LogMessageDataType.RAW_STRING">{{ data.value }}</span>
         <span v-else v-i18n>{{ data.value }}</span>
       </span>
@@ -42,7 +41,7 @@ import {CardName} from '@/common/cards/CardName';
 import {CardType} from '@/common/cards/CardType';
 import {LogMessage} from '@/common/logs/LogMessage';
 import {LogMessageType} from '@/common/logs/LogMessageType';
-import {LogMessageData, LogMessageDataAttrs} from '@/common/logs/LogMessageData';
+import {LogMessageData} from '@/common/logs/LogMessageData';
 import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
 import {ViewModel} from '@/common/models/PlayerModel';
 import {tileTypeToString} from '@/common/TileType';
@@ -52,11 +51,11 @@ import {undergroundResourceTokenDescription} from '@/common/underworld/Undergrou
 import {isMoonSpace, getSpaceName} from '@/common/boards/spaces';
 import {getPreferences} from '@/client/utils/PreferencesManager';
 import {gameLocaleToIntlLocale} from '@/client/utils/LocaleUtils';
-import {range} from '@/common/utils/utils';
+import {LogMessageDataAttrs} from '@/common/logs/LogMessageData';
 
 const cardTypeToCss: Record<CardType, string | undefined> = {
   event: 'background-color-events',
-  corporation: 'background-color-corporation',
+  corporation: 'background-color-global-event',
   active: 'background-color-active',
   automated: 'background-color-automated',
   prelude: 'background-color-prelude',
@@ -79,27 +78,16 @@ export default defineComponent({
     },
   },
   methods: {
-    cardToHtml(data: LogMessageData & {type: LogMessageDataType.CARD, value: CardName}) {
-      return this.innerCardToHtml(data.value, data.attrs);
-    },
     cardsToHtml(data: LogMessageData & {type: LogMessageDataType.CARDS, value: ReadonlyArray<CardName>}) {
-      if (data.attrs?.ellipsis) {
-        return '<span class="log-card background-color-standard-project">...</span>';
-      }
       const cardHtmls = data.value.map((cardName) => this.innerCardToHtml(cardName, data.attrs));
-      const htmlsAsIndexes = range(cardHtmls.length).map(String);
-      // These parts will be either type 'element', or type 'literal'.
-      // The 'element' parts represent the indexes of the cards (which will be filled in later)
-      // The 'literal' parts represent the text that combines everything together.
-      //
-      // So for English, if the cards are Algae , Birds, and Celestic, it returns
-      // ["Algae, ", "Birds, ", "and ", "Celestic"] with types ["element", "element", "literal", "element"]
-      //
-      // The tests show what this produces.
-      const parts = this.formatter.formatToParts(htmlsAsIndexes);
+      const htmlIndexes = cardHtmls.map((_cardHtml, idx) => String(idx));
+      const parts = this.formatter.formatToParts(htmlIndexes);
       return parts
         .map((part) => part.type === 'element' ? cardHtmls[Number(part.value)] : part.value)
         .join('');
+    },
+    cardToHtml(data: LogMessageData & {type: LogMessageDataType.CARD, value: CardName}) {
+      return this.innerCardToHtml(data.value, data.attrs);
     },
     innerCardToHtml(cardName: CardName, attrs?: LogMessageDataAttrs) {
       const card = getCard(cardName);
@@ -146,6 +134,7 @@ export default defineComponent({
     icon() {
       return this.message.playerId === undefined ? '&#x1f551;' : '&#x1f4ac;';
     },
+
     LogMessageType(): typeof LogMessageType {
       return LogMessageType;
     },

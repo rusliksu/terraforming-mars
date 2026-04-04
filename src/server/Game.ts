@@ -41,7 +41,7 @@ import {Turmoil} from './turmoil/Turmoil';
 import {RandomMAOptionType} from '../common/ma/RandomMAOptionType';
 import {AresHandler} from './ares/AresHandler';
 import {AresData} from '../common/ares/AresData';
-import {GameSetup, normalizeBoardName} from './GameSetup';
+import {GameSetup} from './GameSetup';
 import {GameCards} from './GameCards';
 import {GlobalParameter} from '../common/GlobalParameter';
 import {AresSetup} from './ares/AresSetup';
@@ -99,6 +99,7 @@ export class Game implements IGame, Logger {
 
   // Game-level data
   public lastSaveId: number = 0;
+  public saveGamePromise: Promise<void> = Promise.resolve();
   private clonedGamedId: string | undefined;
   public rng: SeededRandom;
   public spectatorId: SpectatorId | undefined;
@@ -437,7 +438,7 @@ export class Game implements IGame, Logger {
   }
 
   public save(): void {
-    GameLoader.getInstance().saveGame(this);
+    this.saveGamePromise = GameLoader.getInstance().saveGame(this);
   }
 
   public serialize(): SerializedGame {
@@ -1657,7 +1658,7 @@ export class Game implements IGame, Logger {
 
   public static deserialize(d: SerializedGame): Game {
     const gameOptions = d.gameOptions;
-    gameOptions.boardName = normalizeBoardName(gameOptions.boardName);
+
     const players = d.players.map((element) => Player.deserialize(element));
     const first = players.find((player) => player.id === d.first);
     if (first === undefined) {
@@ -1682,10 +1683,6 @@ export class Game implements IGame, Logger {
     const milestones: Array<IMilestone> = [];
     d.milestones.forEach((milestoneName) => {
       milestoneName = maybeRenamedMilestone(milestoneName);
-      // TODO(kberg): Tycoon10 had the wrong name. Remove this by 2026-04-15
-      if (milestoneName === 'Tycoon' && gameOptions.modularMA) {
-        milestoneName = 'Tycoon10';
-      }
       const milestone = milestoneManifest.create(milestoneName);
       if (milestone !== undefined) {
         milestones.push(milestone);

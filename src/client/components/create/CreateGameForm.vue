@@ -1,10 +1,29 @@
 <template>
         <div id="create-game" class="create-game">
             <h1><span v-i18n>{{ constants.APP_NAME }}</span> — <span v-i18n>Create New Game</span></h1>
+            <div class="create-game-telegram-banner">
+              <span class="create-game-telegram-banner-label">Telegram notifications:</span>
+              <a href="https://t.me/tm_knightbyte_bot" target="_blank" rel="noopener noreferrer">@tm_knightbyte_bot</a>
+              <span>start the bot to get your Chat ID</span>
+            </div>
             <div class="changelog"><a :href="wikiUrls.changelog" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank"><u v-i18n>Read our changelog to get the latest updates.</u></a></div>
             <div class="discord-invite" v-if="playersCount===1">
               (<span v-i18n>Looking for people to play with</span>? <a :href="constants.DISCORD_INVITE" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank"><u v-i18n>Join us on Discord</u></a>.)
             </div>
+            <div class="create-game--block create-game-presets-section">
+                <div class="presets-row">
+                    <button v-for="t in presetTypes" :key="t.key" class="preset-btn" :class="{active: selectedPresetType === t.key}" @click="selectPresetType(t.key)" :title="t.desc">{{ t.label }}</button>
+                </div>
+                <div class="presets-row">
+                    <button v-for="n in [3,4,5]" :key="n" class="preset-btn preset-btn-sm" :class="{active: playersCount === n}" @click="applySelectedPreset(n)">{{ n }}P</button>
+                    <span class="presets-sep"></span>
+                    <button class="preset-btn preset-btn-toggle" :class="{active: twoCorpsVariant}" @click="twoCorpsVariant = !twoCorpsVariant">Merger</button>
+                    <button class="preset-btn preset-btn-toggle" :class="{active: escapeVelocityMode}" @click="toggleEV()">EV {{ escapeVelocityThreshold }}</button>
+                    <button class="preset-btn preset-btn-toggle" :class="{active: expansions.community}" @click="expansions.community = !expansions.community">Community</button>
+                </div>
+            </div>
+
+
 
             <div class="create-game-form create-game-panel create-game--block">
 
@@ -463,12 +482,26 @@
                                                       <input type="checkbox" v-model="newPlayer.beginner">
                                                       <i class="form-icon"></i> <span v-i18n>Beginner?</span>&nbsp;<a :href="wikiUrls.beginnerCorporation" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                                                   </label>
+                                                  <label class="form-switch form-inline" style="margin-top: 8px;">
+                                                      <input type="checkbox" v-model="newPlayer.isBot">
+                                                      <i class="form-icon"></i> <span>Bot</span>
+                                                  </label>
 
                                                   <label class="form-label">
                                                       <input type="number" class="form-input form-inline player-handicap" value="0" min="0" :max="10" v-model.number="newPlayer.handicap" />
                                                       <i class="form-icon"></i><span v-i18n>TR Boost</span>&nbsp;<a :href="wikiUrls.trBoost" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                                                   </label>
                                               <!-- </template> -->
+                                              <div class="create-game-telegram-row">
+                                                  <label class="form-label create-game-telegram-label" :for="'telegramId' + (index + 1)">Telegram ID</label>
+                                                  <input
+                                                    :id="'telegramId' + (index + 1)"
+                                                    type="text"
+                                                    class="form-input form-inline create-game-telegram-input"
+                                                    placeholder="Telegram ID"
+                                                    v-model="newPlayer.telegramID"
+                                                  />
+                                              </div>
 
                                               <label class="form-radio form-inline" v-if="!randomFirstPlayer">
                                                   <input type="radio" name="firstIndex" :value="index + 1" v-model="firstIndex">
@@ -588,6 +621,8 @@ import {CreateGameModel} from './CreateGameModel';
 import {paths} from '@/common/app/paths';
 import {JSONProcessor} from './JSONProcessor';
 import {defaultCreateGameModel} from './defaultCreateGameModel';
+import {TemplateManager, GameTemplate} from './TemplateManager';
+import {loadPresets, GamePreset} from "./GamePresets";
 import {getColony} from '@/client/colonies/ClientColonyManifest';
 import {RULEBOOK_URLS, WIKI, WIKI_URLS} from '@/client/utils/WikiLinks';
 
@@ -596,6 +631,7 @@ const REVISED_COUNT_ALGORITHM = false;
 
 type Refs = {
   file: HTMLInputElement;
+  templateFile: HTMLInputElement;
   cardsFilter: InstanceType<typeof CardsFilter>;
   cardsFilter2: InstanceType<typeof CardsFilter>;
 };
@@ -603,6 +639,8 @@ type Refs = {
 type FormModel = {
   preludeToggled: boolean;
   uploading: boolean;
+  selectedTemplate: string;
+  templates: Array<GameTemplate>;
 };
 
 export default defineComponent({
@@ -612,6 +650,10 @@ export default defineComponent({
       ...defaultCreateGameModel(),
       preludeToggled: false,
       uploading: false,
+      selectedTemplate: '',
+      templates: TemplateManager.getTemplates(),
+      presets: [] as Array<GamePreset>,
+      selectedPresetType: "std" as string,
     };
   },
   components: {
@@ -669,6 +711,15 @@ export default defineComponent({
   },
   mounted() {
     document.title = `Create New Game | ${constants.APP_NAME}`;
+    this.restoreLastSettings();
+    loadPresets().then((p) => { this.presets = p; });
+    // Auto-fill cloneGameId from URL query param (rematch button)
+    const urlParams = new URLSearchParams(window.location.search);
+    const cloneId = urlParams.get('cloneGameId');
+    if (cloneId) {
+      this.clonedGameId = cloneId as any;
+      this.seededGame = true;
+    }
   },
   computed: {
     wikiUrls(): typeof RULEBOOK_URLS & typeof WIKI_URLS {
@@ -676,6 +727,14 @@ export default defineComponent({
     },
     typedRefs(): Refs {
       return this.$refs as Refs;
+    },
+    presetTypes(): Array<{key: string; label: string; desc: string}> {
+      return [
+        {key: 'turmoil', label: 'Turmoil', desc: 'PV2OT + CEO + Path'},
+        {key: 'std', label: 'Standard', desc: 'PV2O + CEO + Path'},
+        {key: 'classic', label: 'Classic', desc: 'PVO, no CEO/Path/P2'},
+        {key: 'chill', label: 'Chill', desc: 'PV2O + CEO + Path, no bans'},
+      ];
     },
     RandomBoardOption(): typeof RandomBoardOption {
       return RandomBoardOption;
@@ -708,6 +767,163 @@ export default defineComponent({
     },
   },
   methods: {
+    restoreLastSettings() {
+      const lastSettings = TemplateManager.getLastSettings();
+      if (lastSettings) {
+        this.applySettings(lastSettings);
+      }
+    },
+    applySettings(json: Record<string, unknown>) {
+      const component: CreateGameModel = this;
+      const refs = this.typedRefs;
+      const root = vueRoot(this);
+      try {
+        this.uploading = true;
+        const processor = new JSONProcessor(component);
+        processor.applyJSON(json);
+        nextTick(() => {
+          try {
+            if (component.showBannedCards && refs.cardsFilter) {
+              refs.cardsFilter.selected = processor.bannedCards;
+            }
+            if (component.showIncludedCards && refs.cardsFilter2) {
+              refs.cardsFilter2.selected = processor.includedCards;
+            }
+            if (!component.seededGame) component.seed = Math.random();
+            component.solarPhaseOption = Boolean(processor.solarPhaseOption);
+            this.uploading = false;
+          } catch (e) {
+            console.error('Error applying settings:', e);
+            this.uploading = false;
+          }
+        });
+      } catch (e) {
+        root.showAlert('Load settings', 'Error: ' + e);
+        this.uploading = false;
+      }
+    },
+    selectPresetType(key: string) {
+      this.selectedPresetType = key;
+      this.applySelectedPreset(this.playersCount);
+    },
+    applySelectedPreset(playerCount: number) {
+      const key = this.selectedPresetType;
+      const shortSuffix = key === 'turmoil' ? ' T' : key === 'std' ? '' : ' ' + key.charAt(0).toUpperCase() + key.slice(1);
+      const targetShort = playerCount + 'P' + shortSuffix;
+      const preset = this.presets.find((p) => p.shortName === targetShort);
+      if (preset) {
+        this.playersCount = playerCount;
+        this.applyPreset(preset);
+      }
+    },
+    toggleEV() {
+      if (!this.escapeVelocityMode) {
+        this.escapeVelocityMode = true;
+        this.escapeVelocityThreshold = 35;
+      } else if (this.escapeVelocityThreshold === 35) {
+        this.escapeVelocityThreshold = 30;
+      } else if (this.escapeVelocityThreshold === 30) {
+        this.escapeVelocityThreshold = 40;
+      } else {
+        this.escapeVelocityMode = false;
+      }
+    },
+    applyPreset(preset: GamePreset) {
+      const scrollY = window.scrollY;
+      const settings = {...preset.settings} as Record<string, unknown>;
+      if (!settings.players) {
+        settings.players = this.players.slice(0, this.playersCount).map((p) => ({...p}));
+      }
+      this.applySettings(settings);
+      const hasBans = Array.isArray(settings.bannedCards) && settings.bannedCards.length > 0;
+      nextTick(() => {
+        this.showColoniesList = false; this.showBannedCards = hasBans; this.showCorporationList = false; this.showPreludesList = false;
+        if (hasBans) {
+          nextTick(() => {
+            const refs = this.typedRefs;
+            if (refs.cardsFilter) refs.cardsFilter.selected = (settings.bannedCards as Array<string>).slice();
+          });
+        }
+      });
+      nextTick(() => window.scrollTo(0, scrollY));
+    },
+    loadSelectedTemplate() {
+      if (!this.selectedTemplate) return;
+      const tmpl = TemplateManager.getTemplate(this.selectedTemplate);
+      if (!tmpl) return;
+      this.applySettings(tmpl.settings as Record<string, unknown>);
+      vueRoot(this).showAlert('Template', 'Template "' + this.selectedTemplate + '" loaded.');
+    },
+    saveAsTemplate() {
+      const name = prompt('Template name:', this.selectedTemplate || '');
+      if (!name || name.trim() === '') return;
+      const trimmed = name.trim();
+      const existing = TemplateManager.getTemplate(trimmed);
+      if (existing) {
+        if (!confirm('Template "' + trimmed + '" already exists. Overwrite?')) return;
+      }
+      const settings = TemplateManager.serializeFormState(this);
+      TemplateManager.saveTemplate(trimmed, settings);
+      this.templates = TemplateManager.getTemplates();
+      this.selectedTemplate = trimmed;
+      vueRoot(this).showAlert('Template', 'Template "' + trimmed + '" saved.');
+    },
+    deleteSelectedTemplate() {
+      if (!this.selectedTemplate) return;
+      if (!confirm('Delete template "' + this.selectedTemplate + '"?')) return;
+      TemplateManager.deleteTemplate(this.selectedTemplate);
+      this.templates = TemplateManager.getTemplates();
+      this.selectedTemplate = '';
+    },
+    exportSelectedTemplate() {
+      if (!this.selectedTemplate) return;
+      const tmpl = TemplateManager.getTemplate(this.selectedTemplate);
+      if (!tmpl) return;
+      const a = document.createElement('a');
+      const blob = new Blob([JSON.stringify(tmpl.settings, undefined, 4)], {'type': 'application/json'});
+      a.href = window.URL.createObjectURL(blob);
+      a.download = 'tm_template_' + tmpl.name.replace(/[^a-zA-Z0-9_-]/g, '_') + '.json';
+      a.click();
+    },
+    triggerTemplateImport() {
+      this.typedRefs.templateFile.click();
+    },
+    importTemplateFile() {
+      const refs = this.typedRefs;
+      const file = refs.templateFile.files !== null ? refs.templateFile.files[0] : undefined;
+      if (!file) return;
+      const reader = new FileReader();
+      const root = vueRoot(this);
+      reader.addEventListener('load', () => {
+        try {
+          const text = reader.result;
+          if (typeof text !== 'string') return;
+          const json = JSON.parse(text);
+          if (Array.isArray(json)) {
+            let imported = 0;
+            for (const item of json) {
+              if (item.name && item.settings) {
+                TemplateManager.saveTemplate(item.name, item.settings);
+                imported++;
+              }
+            }
+            this.templates = TemplateManager.getTemplates();
+            root.showAlert('Import', 'Imported ' + imported + ' template(s).');
+          } else {
+            const name = prompt('Name for imported template:', file.name.replace(/\.json$/i, ''));
+            if (!name || name.trim() === '') return;
+            TemplateManager.saveTemplate(name.trim(), json);
+            this.templates = TemplateManager.getTemplates();
+            this.selectedTemplate = name.trim();
+            root.showAlert('Import', 'Template "' + name.trim() + '" imported.');
+          }
+        } catch (e) {
+          root.showAlert('Import', 'Error parsing file: ' + e);
+        }
+        refs.templateFile.value = '';
+      });
+      reader.readAsText(file);
+    },
     async downloadSettings() {
       const serializedData = await this.serializeSettings();
 
@@ -1191,6 +1407,20 @@ export default defineComponent({
 
       if (dataToSend === undefined) return;
       const onSuccess = (json: any) => {
+        // Check for bot players
+        const activePlayers = this.players.slice(0, this.playersCount);
+        const botEntries: Array<string> = [];
+        for (const p of json.players) {
+          const local = activePlayers.find((lp: NewPlayerModel) => lp.color === p.color);
+          if (local && local.isBot) {
+            botEntries.push(p.name + ':' + p.id);
+          }
+        }
+        if (botEntries.length > 0) {
+          const cmd = 'node smartbot.js --game ' + json.id + ' --players "' + botEntries.join(',') + '"';
+          prompt('Bot command (copy with Ctrl+C):', cmd);
+        }
+
         if (json.players.length === 1) {
           window.location.href = 'player?id=' + json.players[0].id;
           return;
@@ -1200,6 +1430,9 @@ export default defineComponent({
           vueRoot(this).screen = 'game-home';
         }
       };
+
+      // Auto-save current settings as last used
+      TemplateManager.saveLastSettings(TemplateManager.serializeFormState(this));
 
       fetch(paths.API_CREATEGAME, {'method': 'POST', 'body': dataToSend, 'headers': {'Content-Type': 'application/json'}})
         .then((response) => response.text())
@@ -1219,3 +1452,40 @@ export default defineComponent({
 });
 
 </script>
+
+<style scoped>
+.create-game-telegram-banner {
+  margin: 8px 0 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #d7dce2;
+}
+
+.create-game-telegram-banner-label {
+  margin-right: 6px;
+  font-weight: 600;
+  color: #f2f4f8;
+}
+
+.create-game-telegram-banner a {
+  margin-right: 6px;
+  font-weight: 600;
+}
+
+.create-game-telegram-row {
+  margin-top: 10px;
+}
+
+.create-game-telegram-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: inherit;
+}
+
+.create-game-telegram-input {
+  max-width: 180px;
+  font-size: 13px;
+}
+</style>

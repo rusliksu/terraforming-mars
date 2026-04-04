@@ -1,0 +1,303 @@
+{
+  "players": {
+    "илья": {
+      "displayName": "Илья",
+      "elo": 1546,
+      "elo_vp": 1538,
+      "games": 2,
+      "wins": 2,
+      "top3": 2,
+      "totalVP": 189,
+      "corps": {
+        "PolderTECH Dutch": 1,
+        "Nirgal Enterprises": 1
+      }
+    },
+    "gydro": {
+      "displayName": "GydRo",
+      "elo": 1500,
+      "elo_vp": 1501,
+      "games": 3,
+      "wins": 1.5,
+      "top3": 3,
+      "totalVP": 287,
+      "corps": {
+        "Ecoline": 1,
+        "Morning Star Inc.|Tycho Magnetics": 1,
+        "Viron|PolderTECH Dutch": 1
+      }
+    },
+    "алексей": {
+      "displayName": "Алексей",
+      "elo": 1476,
+      "elo_vp": 1487,
+      "games": 1,
+      "wins": 0,
+      "top3": 1,
+      "totalVP": 74,
+      "corps": {
+        "Saturn Systems": 1
+      }
+    },
+    "вангер": {
+      "displayName": "Вангер",
+      "elo": 1501,
+      "elo_vp": 1497,
+      "games": 1,
+      "wins": 0.5,
+      "top3": 1,
+      "totalVP": 73,
+      "corps": {
+        "Morning Star Inc.": 1
+      }
+    },
+    "рав": {
+      "displayName": "Рав",
+      "elo": 1477,
+      "elo_vp": 1482,
+      "games": 1,
+      "wins": 0,
+      "top3": 1,
+      "totalVP": 61,
+      "corps": {
+        "TerraLabs Research": 1
+      }
+    },
+    "серый": {
+      "displayName": "Серый",
+      "elo": 1524,
+      "elo_vp": 1514,
+      "games": 1,
+      "wins": 1,
+      "top3": 1,
+      "totalVP": 123,
+      "corps": {
+        "Point Luna|Valley Trust": 1
+      }
+    },
+    "аня": {
+      "displayName": "Аня",
+      "elo": 1476,
+      "elo_vp": 1477,
+      "games": 1,
+      "wins": 0,
+      "top3": 1,
+      "totalVP": 101,
+      "corps": {
+        "Project Workshop|Vitor|Pharmacy Union": 1
+      }
+    },
+    "тома": {
+      "displayName": "Тома",
+      "elo": 1524,
+      "elo_vp": 1524,
+      "games": 1,
+      "wins": 1,
+      "top3": 1,
+      "totalVP": 106,
+      "corps": {
+        "Inventrix|Morning Star Inc.": 1
+      }
+    },
+    "олеся": {
+      "displayName": "Олеся",
+      "elo": 1500,
+      "elo_vp": 1493,
+      "games": 1,
+      "wins": 0.5,
+      "top3": 1,
+      "totalVP": 86,
+      "corps": {
+        "Poseidon|Saturn Systems": 1
+      }
+    },
+    "паша": {
+      "displayName": "Паша",
+      "elo": 1476,
+      "elo_vp": 1492,
+      "games": 1,
+      "wins": 0,
+      "top3": 0,
+      "totalVP": 85,
+      "corps": {
+        "Mons Insurance|CrediCor": 1
+      }
+    }
+  },
+  "games": [
+    {
+      "_key": "g34ffb8edd148",
+      "date": "2026-03-30T19:49:23+00:00",
+      "server": "knightbyte",
+      "map": "utopia planitia",
+      "generation": 8,
+      "playerCount": 3,
+      "completedTime": 1774900163,
+      "results": [
+        {
+          "name": "илья",
+          "displayName": "Илья",
+          "place": 1,
+          "vp": 90,
+          "corp": "PolderTECH Dutch",
+          "oldElo": 1500,
+          "newElo": 1524,
+          "delta": 24
+        },
+        {
+          "name": "gydro",
+          "displayName": "GydRo",
+          "place": 2,
+          "vp": 81,
+          "corp": "Ecoline",
+          "oldElo": 1500,
+          "newElo": 1500,
+          "delta": 0
+        },
+        {
+          "name": "алексей",
+          "displayName": "Алексей",
+          "place": 3,
+          "vp": 74,
+          "corp": "Saturn Systems",
+          "oldElo": 1500,
+          "newElo": 1476,
+          "delta": -24
+        }
+      ]
+    },
+    {
+      "_key": "ge07b277ad14b",
+      "date": "2026-03-31T21:37:48+00:00",
+      "server": "knightbyte",
+      "map": "t. cimmeria",
+      "generation": 9,
+      "playerCount": 3,
+      "completedTime": 1774993068,
+      "results": [
+        {
+          "name": "илья",
+          "displayName": "Илья",
+          "place": 1,
+          "vp": 99,
+          "corp": "Nirgal Enterprises",
+          "oldElo": 1524,
+          "newElo": 1546,
+          "delta": 22
+        },
+        {
+          "name": "вангер",
+          "displayName": "Вангер",
+          "place": 2,
+          "vp": 73,
+          "corp": "Morning Star Inc.",
+          "oldElo": 1500,
+          "newElo": 1501,
+          "delta": 1
+        },
+        {
+          "name": "рав",
+          "displayName": "Рав",
+          "place": 3,
+          "vp": 61,
+          "corp": "TerraLabs Research",
+          "oldElo": 1500,
+          "newElo": 1477,
+          "delta": -23
+        }
+      ]
+    },
+    {
+      "_key": "g1c5640956df9",
+      "date": "2026-04-03T21:48:40+00:00",
+      "server": "knightbyte",
+      "map": "terra cimmeria nova",
+      "generation": 10,
+      "playerCount": 3,
+      "completedTime": 1775252920,
+      "results": [
+        {
+          "name": "серый",
+          "displayName": "Серый",
+          "place": 1,
+          "vp": 123,
+          "corp": "Point Luna|Valley Trust",
+          "oldElo": 1500,
+          "newElo": 1524,
+          "delta": 24
+        },
+        {
+          "name": "gydro",
+          "displayName": "GydRo",
+          "place": 2,
+          "vp": 120,
+          "corp": "Morning Star Inc.|Tycho Magnetics",
+          "oldElo": 1500,
+          "newElo": 1500,
+          "delta": 0
+        },
+        {
+          "name": "аня",
+          "displayName": "Аня",
+          "place": 3,
+          "vp": 101,
+          "corp": "Project Workshop|Vitor|Pharmacy Union",
+          "oldElo": 1500,
+          "newElo": 1476,
+          "delta": -24
+        }
+      ]
+    },
+    {
+      "_key": "gbd99698f3190",
+      "date": "2026-04-04T15:33:44+00:00",
+      "server": "knightbyte",
+      "map": "hellas",
+      "generation": 9,
+      "playerCount": 4,
+      "completedTime": 1775316824,
+      "results": [
+        {
+          "name": "тома",
+          "displayName": "Тома",
+          "place": 1,
+          "vp": 106,
+          "corp": "Inventrix|Morning Star Inc.",
+          "oldElo": 1500,
+          "newElo": 1524,
+          "delta": 24
+        },
+        {
+          "name": "gydro",
+          "displayName": "GydRo",
+          "place": 2,
+          "vp": 86,
+          "corp": "Viron|PolderTECH Dutch",
+          "oldElo": 1500,
+          "newElo": 1500,
+          "delta": 0
+        },
+        {
+          "name": "олеся",
+          "displayName": "Олеся",
+          "place": 2,
+          "vp": 86,
+          "corp": "Poseidon|Saturn Systems",
+          "oldElo": 1500,
+          "newElo": 1500,
+          "delta": 0
+        },
+        {
+          "name": "паша",
+          "displayName": "Паша",
+          "place": 4,
+          "vp": 85,
+          "corp": "Mons Insurance|CrediCor",
+          "oldElo": 1500,
+          "newElo": 1476,
+          "delta": -24
+        }
+      ]
+    }
+  ]
+}

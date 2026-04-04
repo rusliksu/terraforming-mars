@@ -20,20 +20,18 @@
       </div>
       <div class='debugid'>(debugid {{step}})</div>
     </div>
-    <card-panel v-if="selectedMessage !== undefined" :message="selectedMessage" :players="players" v-on:hide="selectedMessage = undefined"></card-panel>
+    <card-panel :message="selectedMessage" :players="players" v-on:hide="selectedMessage = undefined"></card-panel>
   </div>
 </template>
 
 <script lang="ts">
 
-import {defineComponent} from 'vue';
+import {defineComponent} from '@/client/vue3-compat';
 import {paths} from '@/common/app/paths';
 import {LogMessage} from '@/common/logs/LogMessage';
 import {PublicPlayerModel, ViewModel} from '@/common/models/PlayerModel';
 import {playerColorClass} from '@/common/utils/utils';
 import {Color} from '@/common/Color';
-import {SoundManager} from '@/client/utils/SoundManager';
-import {getPreferences} from '@/client/utils/PreferencesManager';
 import {ParticipantId, SpaceId} from '@/common/Types';
 import LogMessageComponent from '@/client/components/logpanel/LogMessageComponent.vue';
 import CardPanel from '@/client/components/logpanel/CardPanel.vue';
@@ -116,11 +114,11 @@ export default defineComponent({
         logAbortController = undefined;
       }
 
-      const url = `${paths.API_GAME_LOGS}?id=${this.id}&generation=${generation}`;
+      const url = `${paths.API_GAME_LOGS}?id=${this.id}&generation=${generation}&gameAge=${this.gameAge}`;
       const controller = new AbortController();
       logAbortController = controller;
 
-      fetch(url, {signal: controller.signal})
+      fetch(url, {signal: controller.signal, cache: 'no-store'})
         .then((resp) => {
           if (!resp.ok) {
             console.error(`error updating messages, response code ${resp.status}`);
@@ -132,9 +130,6 @@ export default defineComponent({
           if (!data) return;
           messages.splice(0, messages.length);
           messages.push(...data);
-          if (getPreferences().enable_sounds && window.location.search.includes('experimental=1') ) {
-            SoundManager.newLog();
-          }
           if (generation === this.generation) {
             this.$nextTick(this.scrollToEnd);
           }
@@ -177,6 +172,9 @@ export default defineComponent({
     generation(): number {
       return this.viewModel.game.generation;
     },
+    gameAge(): number {
+      return this.viewModel.game.gameAge;
+    },
     lastSoloGeneration(): number {
       return this.viewModel.game.lastSoloGeneration;
     },
@@ -185,6 +183,13 @@ export default defineComponent({
     },
     id(): ParticipantId | undefined {
       return this.viewModel.id;
+    },
+  },
+  watch: {
+    gameAge() {
+      if (this.selectedGeneration === this.generation) {
+        this.getLogsForGeneration(this.generation);
+      }
     },
   },
   mounted() {

@@ -181,6 +181,7 @@ export interface IPlayer {
 
   // When set, this player can only be accessed by the user.
   user?: DiscordId;
+  telegramID?: string;
 
   setup(game: IGame): void;
 

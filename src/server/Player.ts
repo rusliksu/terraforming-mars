@@ -1,3 +1,4 @@
+import {sendTurnNotice, deleteTurnNotice} from './TelegramBot';
 import * as constants from '../common/constants';
 import {PlayerId} from '../common/Types';
 import {MILESTONE_COST, REDS_RULING_POLICY_COST} from '../common/constants';
@@ -178,6 +179,9 @@ export class Player implements IPlayer {
   public globalParameterSteps: Record<GlobalParameter, number> = {...DEFAULT_GLOBAL_PARAMETER_STEPS};
 
   public user?: DiscordId;
+  public telegramID: string = "";
+  public lastNoticeMessageId: number = -1;
+  private _pendingTurnNoticeTimer?: ReturnType<typeof setTimeout>;
 
   public get megaCredits(): number {
     return this.stock.megacredits;
@@ -651,7 +655,7 @@ export class Player implements IPlayer {
 
     let selectable = this.draftedCards.length;
     if (this.playedCards.has(CardName.MARS_MATHS) && !this.playedCards.has(CardName.LUNA_PROJECT_OFFICE)) {
-      selectable--;
+      selectable = Math.min(selectable, 4);
     }
 
     const cards = copyAndClear(this.draftedCards);
@@ -1662,6 +1666,11 @@ export class Player implements IPlayer {
     this.waitingForCb = undefined;
     try {
       this.timer.stop();
+      if (this._pendingTurnNoticeTimer) {
+        clearTimeout(this._pendingTurnNoticeTimer);
+        this._pendingTurnNoticeTimer = undefined;
+      }
+      deleteTurnNotice(this);
       this.defer(waitingFor.process(input, this));
       waitingForCb();
     } catch (err) {
@@ -1687,6 +1696,12 @@ export class Player implements IPlayer {
     this.waitingFor = input;
     this.waitingForCb = cb;
     this.game.inputsThisRound++;
+    if (this._pendingTurnNoticeTimer) clearTimeout(this._pendingTurnNoticeTimer);
+    if (this.telegramID) {
+      this._pendingTurnNoticeTimer = setTimeout(() => {
+        sendTurnNotice(this);
+      }, 5000);
+    }
   }
 
   /**
@@ -1717,6 +1732,7 @@ export class Player implements IPlayer {
     const result: SerializedPlayer = {
       id: this.id,
       user: this.user,
+      telegramID: this.telegramID || undefined,
       // Used only during set-up
       pickedCorporationCard: this.pickedCorporationCard?.name,
       // Terraforming Rating
@@ -1857,6 +1873,7 @@ export class Player implements IPlayer {
     player.turmoilPolicyActionUsed = d.turmoilPolicyActionUsed;
     player.politicalAgendasActionUsedCount = d.politicalAgendasActionUsedCount;
     player.user = d.user;
+    player.telegramID = d.telegramID ?? "";
 
     // Rebuild removed from play cards (Playwrights, Odyssey)
     player.removedFromPlayCards = cardsFromJSON(d.removedFromPlayCards);

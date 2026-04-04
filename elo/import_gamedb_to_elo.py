@@ -205,6 +205,154 @@ def is_bot_game(scores):
     return False
 
 
+def parse_completed_ts(date_str):
+    if not date_str:
+        return 0
+    try:
+        return int(datetime.fromisoformat(date_str.replace('Z', '+00:00')).timestamp())
+    except Exception:
+        return 0
+
+
+def discover_legacy_sources():
+    candidates = []
+
+    env_paths = os.environ.get('TM_ELO_LEGACY_PATHS', '')
+    if env_paths:
+        for item in env_paths.split(os.pathsep):
+            item = item.strip()
+            if item:
+                candidates.append(Path(item))
+
+    candidates.extend([
+        ELO_PATH,
+        ELO_COMPAT_PATH,
+        REPO_ROOT.parent / 'terraforming-mars' / 'elo' / 'elo-data.json',
+        REPO_ROOT.parent / 'terraforming-mars' / 'elo' / 'data.json',
+    ])
+
+    seen = set()
+    sources = []
+    for path in candidates:
+        try:
+            resolved = path.resolve()
+        except FileNotFoundError:
+            resolved = path
+        key = str(resolved)
+        if key in seen or not path.exists() or not path.is_file():
+            continue
+        seen.add(key)
+        sources.append(path)
+    return sources
+
+
+def extract_legacy_games(known_ids, spectator_ids):
+    legacy_games = []
+    for source in discover_legacy_sources():
+        try:
+            with source.open(encoding='utf-8') as f:
+                payload = json.load(f)
+        except Exception:
+            continue
+
+        for game in payload.get('games', []):
+            game_id = game.get('gameId') or game.get('_key')
+            if not game_id or game_id in known_ids:
+                continue
+
+            results = game.get('results') or []
+            players = []
+            for r in results:
+                name = r.get('displayName') or r.get('name') or '?'
+                if not name or name == '?':
+                    continue
+                players.append({
+                    'name': name,
+                    'place': r.get('place', 99),
+                    'vp': r.get('vp', 0),
+                    'corp': r.get('corp', ''),
+                })
+
+            if len(players) < 2:
+                continue
+
+            legacy_games.append({
+                'gameId': game_id,
+                'endId': game.get('endId') or game.get('spectatorId') or spectator_ids.get(game_id, ''),
+                'date': game.get('date', ''),
+                'completedTime': game.get('completedTime') or parse_completed_ts(game.get('date', '')),
+                'server': game.get('server', 'knightbyte'),
+                'map': game.get('map', ''),
+                'generation': game.get('generation', 0),
+                'players': players,
+            })
+            known_ids.add(game_id)
+    return legacy_games
+
+
+def apply_game_to_elo(game, elo_data):
+    players = list(game['players'])
+    results = calc_elo_place(players, elo_data['players'])
+    has_vp = any(p.get('vp', 0) > 0 for p in players)
+    results_vp = calc_elo_vp(players, elo_data['players']) if has_vp else []
+
+    for r in results:
+        key = r['name']
+        if key not in elo_data['players']:
+            elo_data['players'][key] = {
+                'elo': DEFAULT_ELO, 'elo_vp': DEFAULT_ELO,
+                'displayName': r['displayName'],
+                'games': 0, 'firsts': 0, 'wins': 0, 'placeScoreTotal': 0,
+                'avgPlace': 0, 'top3': 0,
+                'totalVP': 0, 'corps': {},
+                'avgVP': 0,
+            }
+        p = elo_data['players'][key]
+        p['elo'] = r['newElo']
+        p['displayName'] = r['displayName']
+        p.setdefault('firsts', p.get('wins', 0))
+        p.setdefault('placeScoreTotal', 0)
+        p.setdefault('avgPlace', 0)
+        p.setdefault('top3', 0)
+        p.setdefault('totalVP', 0)
+        p.setdefault('corps', {})
+        p.setdefault('avgVP', 0)
+        p['games'] += 1
+        if r['place'] == 1:
+            p['firsts'] += 1
+        p['wins'] = p['firsts']
+        p['placeScoreTotal'] += placement_score(r['place'], len(players))
+        p['avgPlace'] = round(p['placeScoreTotal'] / p['games'], 4)
+        if r['place'] <= 3:
+            p['top3'] += 1
+        p['totalVP'] += r.get('vp', 0)
+        p['avgVP'] = round(p['totalVP'] / p['games'], 2)
+        if r['corp']:
+            p['corps'][r['corp']] = p['corps'].get(r['corp'], 0) + 1
+
+    for rv in results_vp:
+        if rv['name'] in elo_data['players']:
+            elo_data['players'][rv['name']]['elo_vp'] = rv['newElo']
+
+    elo_data['games'].append({
+        '_key': game['gameId'],
+        'gameId': game['gameId'],
+        'endId': game.get('endId', ''),
+        'date': game.get('date', ''),
+        'server': game.get('server', 'knightbyte'),
+        'map': game.get('map', ''),
+        'generation': game.get('generation', 0),
+        'playerCount': len(players),
+        'completedTime': game.get('completedTime', 0),
+        'results': [{
+            'name': r['name'], 'displayName': r['displayName'],
+            'place': r['place'], 'delta': r['delta'],
+            'oldElo': r['oldElo'], 'newElo': r['newElo'],
+            'corp': r['corp'], 'vp': r.get('vp', 0),
+        } for r in results],
+    })
+
+
 def save_outputs(elo_data):
     text = json.dumps(elo_data, ensure_ascii=False, indent=2)
     ELO_DIR.mkdir(parents=True, exist_ok=True)
@@ -215,6 +363,22 @@ def save_outputs(elo_data):
 def main():
     conn = sqlite3.connect(str(DB_PATH))
     c = conn.cursor()
+
+    c.execute("""
+        WITH latest_games AS (
+            SELECT g.game_id, g.game
+            FROM games g
+            JOIN (
+                SELECT game_id, MAX(save_id) AS max_save_id
+                FROM games
+                GROUP BY game_id
+            ) latest
+            ON latest.game_id = g.game_id AND latest.max_save_id = g.save_id
+        )
+        SELECT game_id, json_extract(game, '$.spectatorId') as spectator_id
+        FROM latest_games
+    """)
+    spectator_ids = {gid: spectator_id or '' for gid, spectator_id in c.fetchall()}
 
     # Load all game_results with completion timestamps
     c.execute("""
@@ -244,9 +408,12 @@ def main():
 
     elo_data = {'players': {}, 'games': []}
     imported = 0
+    preserved_legacy = 0
     skipped_bot = 0
     skipped_no_vp_no_place = 0
     skipped_few_players = 0
+    game_entries = []
+    known_ids = set()
 
     for gid, gen, scores_json, completed_ts, options_json, spectator_id in rows:
         scores = json.loads(scores_json)
@@ -320,72 +487,30 @@ def main():
         date_str = ''
         if completed_ts and completed_ts > 0:
             date_str = datetime.fromtimestamp(completed_ts, tz=timezone.utc).isoformat()
-
-        # Calculate Elo
-        results = calc_elo_place(players, elo_data['players'])
-        results_vp = calc_elo_vp(players, elo_data['players']) if has_vp else []
-
-        # Update player records
-        for ri, r in enumerate(results):
-            key = r['name']
-            if key not in elo_data['players']:
-                elo_data['players'][key] = {
-                    'elo': DEFAULT_ELO, 'elo_vp': DEFAULT_ELO,
-                    'displayName': r['displayName'],
-                    'games': 0, 'firsts': 0, 'wins': 0, 'placeScoreTotal': 0,
-                    'avgPlace': 0, 'top3': 0,
-                    'totalVP': 0, 'corps': {},
-                    'avgVP': 0,
-                }
-            p = elo_data['players'][key]
-            p['elo'] = r['newElo']
-            p['displayName'] = r['displayName']
-            p.setdefault('firsts', p.get('wins', 0))
-            p.setdefault('placeScoreTotal', 0)
-            p.setdefault('avgPlace', 0)
-            p.setdefault('top3', 0)
-            p.setdefault('totalVP', 0)
-            p.setdefault('corps', {})
-            p.setdefault('avgVP', 0)
-            p['games'] += 1
-            if r['place'] == 1:
-                p['firsts'] += 1
-            p['wins'] = p['firsts']
-            p['placeScoreTotal'] += placement_score(r['place'], len(players))
-            p['avgPlace'] = round(p['placeScoreTotal'] / p['games'], 4)
-            if r['place'] <= 3:
-                p['top3'] += 1
-            p['totalVP'] += r.get('vp', 0)
-            p['avgVP'] = round(p['totalVP'] / p['games'], 2)
-            if r['corp']:
-                p['corps'][r['corp']] = p['corps'].get(r['corp'], 0) + 1
-
-        # Update VP-margin Elo
-        for rv in results_vp:
-            if rv['name'] in elo_data['players']:
-                elo_data['players'][rv['name']]['elo_vp'] = rv['newElo']
-
-        # Game key for dedup
-        elo_data['games'].append({
-            '_key': gid,
+        game_entries.append({
             'gameId': gid,
-            'endId': spectator_id or '',
+            'endId': spectator_id or spectator_ids.get(gid, ''),
             'date': date_str,
+            'completedTime': completed_ts or 0,
             'server': 'knightbyte',
             'map': map_name,
             'generation': gen or 0,
-            'playerCount': len(players),
-            'completedTime': completed_ts or 0,
-            'results': [{
-                'name': r['name'], 'displayName': r['displayName'],
-                'place': r['place'], 'delta': r['delta'],
-                'oldElo': r['oldElo'], 'newElo': r['newElo'],
-                'corp': r['corp'], 'vp': r.get('vp', 0),
-            } for r in results],
+            'players': players,
         })
-        imported += 1
+        known_ids.add(gid)
+
+    legacy_games = extract_legacy_games(known_ids, spectator_ids)
+    preserved_legacy = len(legacy_games)
+    game_entries.extend(legacy_games)
+    game_entries.sort(key=lambda g: (g.get('completedTime', 0), g.get('date', ''), g.get('gameId', '')))
+
+    for game in game_entries:
+        apply_game_to_elo(game, elo_data)
+        if game.get('server') == 'knightbyte':
+            imported += 1
 
     print(f'\nImported: {imported}')
+    print(f'Preserved legacy-only games: {preserved_legacy}')
     print(f'Skipped bot/test: {skipped_bot}')
     print(f'Skipped no VP/no place: {skipped_no_vp_no_place}')
     print(f'Skipped <2 players: {skipped_few_players}')

@@ -271,7 +271,7 @@ document.querySelectorAll(".tab").forEach(function(tab) {
   });
 });
 
-fetch("elo-data.json").then(function(r){return r.json()}).then(function(data) {
+fetch("elo-data.json?ts=" + Date.now(), { cache: "no-store" }).then(function(r){return r.json()}).then(function(data) {
   _data = data;
   renderPlayers();
   renderGames();

@@ -12,9 +12,14 @@ import json
 import sqlite3
 import os
 from datetime import datetime, timezone
+from pathlib import Path
 
-DB_PATH = '/home/openclaw/terraforming-mars/db/game.db'
-ELO_PATH = '/home/openclaw/terraforming-mars/elo/elo-data.json'
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+DB_PATH = Path(os.environ.get('TM_DB_PATH', REPO_ROOT / 'db' / 'game.db'))
+ELO_DIR = Path(os.environ.get('TM_ELO_DIR', SCRIPT_DIR))
+ELO_PATH = ELO_DIR / 'elo-data.json'
+ELO_COMPAT_PATH = ELO_DIR / 'data.json'
 DEFAULT_ELO = 1500
 BASE_K = 32
 
@@ -200,17 +205,36 @@ def is_bot_game(scores):
     return False
 
 
+def save_outputs(elo_data):
+    text = json.dumps(elo_data, ensure_ascii=False, indent=2)
+    ELO_DIR.mkdir(parents=True, exist_ok=True)
+    ELO_PATH.write_text(text, encoding='utf-8')
+    ELO_COMPAT_PATH.write_text(text, encoding='utf-8')
+
+
 def main():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(str(DB_PATH))
     c = conn.cursor()
 
     # Load all game_results with completion timestamps
     c.execute("""
+        WITH latest_games AS (
+            SELECT g.game_id, g.game
+            FROM games g
+            JOIN (
+                SELECT game_id, MAX(save_id) AS max_save_id
+                FROM games
+                GROUP BY game_id
+            ) latest
+            ON latest.game_id = g.game_id AND latest.max_save_id = g.save_id
+        )
         SELECT gr.game_id, gr.generations, gr.scores,
                COALESCE(cg.completed_time, 0) as completed_time,
-               gr.game_options
+               gr.game_options,
+               json_extract(lg.game, '$.spectatorId') as spectator_id
         FROM game_results gr
         LEFT JOIN completed_game cg ON gr.game_id = cg.game_id
+        LEFT JOIN latest_games lg ON lg.game_id = gr.game_id
         ORDER BY COALESCE(cg.completed_time, 0)
     """)
     rows = c.fetchall()
@@ -224,7 +248,7 @@ def main():
     skipped_no_vp_no_place = 0
     skipped_few_players = 0
 
-    for gid, gen, scores_json, completed_ts, options_json in rows:
+    for gid, gen, scores_json, completed_ts, options_json, spectator_id in rows:
         scores = json.loads(scores_json)
 
         # Skip bot/test games
@@ -342,15 +366,16 @@ def main():
                 elo_data['players'][rv['name']]['elo_vp'] = rv['newElo']
 
         # Game key for dedup
-        game_key = date_str + '_' + ','.join(sorted(r['name'] for r in results)) if date_str else gid
-
         elo_data['games'].append({
-            '_key': game_key,
+            '_key': gid,
+            'gameId': gid,
+            'endId': spectator_id or '',
             'date': date_str,
             'server': 'knightbyte',
             'map': map_name,
             'generation': gen or 0,
             'playerCount': len(players),
+            'completedTime': completed_ts or 0,
             'results': [{
                 'name': r['name'], 'displayName': r['displayName'],
                 'place': r['place'], 'delta': r['delta'],
@@ -376,9 +401,9 @@ def main():
         print(f'{i+1:>3} {p["displayName"]:<20} {p["elo"]:>5} {p.get("elo_vp", 1500):>6} {p["games"]:>5} {p.get("firsts", p.get("wins", 0)):>4} {place_avg:>6.2f} {avg_vp:>6.1f}')
 
     # Save
-    with open(ELO_PATH, 'w', encoding='utf-8') as f:
-        json.dump(elo_data, f, ensure_ascii=False, indent=2)
+    save_outputs(elo_data)
     print(f'\nSaved to {ELO_PATH}')
+    print(f'Saved to {ELO_COMPAT_PATH}')
 
 
 if __name__ == '__main__':

@@ -2,8 +2,12 @@
 """Fix duplicate player names in elo-data.json and rebuild ratings."""
 import json
 from collections import defaultdict
+from pathlib import Path
 
-ELO_PATH = '/home/openclaw/terraforming-mars/elo/elo-data.json'
+SCRIPT_DIR = Path(__file__).resolve().parent
+ELO_DIR = Path(__file__).resolve().parent
+ELO_PATH = ELO_DIR / 'elo-data.json'
+ELO_COMPAT_PATH = ELO_DIR / 'data.json'
 
 # Merge map: lowercase variant → canonical displayName
 MERGES = {
@@ -179,13 +183,15 @@ def rebuild_elo(elo_data):
 
 
 if __name__ == '__main__':
-    with open(ELO_PATH) as f:
+    source_path = ELO_PATH if ELO_PATH.exists() else ELO_COMPAT_PATH
+    with source_path.open(encoding='utf-8') as f:
         elo = json.load(f)
 
     changed, nplayers = rebuild_elo(elo)
 
-    with open(ELO_PATH, 'w') as f:
-        json.dump(elo, f, indent=2, ensure_ascii=False)
+    text = json.dumps(elo, indent=2, ensure_ascii=False)
+    ELO_PATH.write_text(text, encoding='utf-8')
+    ELO_COMPAT_PATH.write_text(text, encoding='utf-8')
 
     print(f'Renamed {changed} entries. Players: {nplayers}, Games: {len(elo["games"])}')
     top = sorted(elo['players'].items(), key=lambda x: -x[1]['elo'])[:15]

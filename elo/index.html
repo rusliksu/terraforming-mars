@@ -86,11 +86,19 @@ var _gamesShown = 20;
 var GAMES_PER_PAGE = 20;
 
 function getGameUrl(game) {
-  var id = game._key || "";
-  if (game.server === "knightbyte") {
-    return "https://tm.knightbyte.win/game?id=" + id;
+  var host = game.server === "knightbyte"
+    ? "https://tm.knightbyte.win"
+    : "https://terraforming-mars.herokuapp.com";
+  var endId = game.endId || game.spectatorId || "";
+  if (endId) {
+    return host + "/the-end?id=" + endId;
   }
-  return "https://terraforming-mars.herokuapp.com/game?id=" + id;
+  var id = game.gameId || game._key || "";
+  return host + "/game?id=" + id;
+}
+
+function getGameLabel(game) {
+  return game.gameId || game._key || game.endId || "";
 }
 
 function esc(s) {
@@ -190,7 +198,7 @@ function renderGames() {
     html += "<span><span class=\"game-server\">" + esc(serverText) + "</span>";
     if (genText) html += " \u00b7 <span class=\"game-gen\">" + genText + "</span>";
     html += " \u00b7 " + results.length + "P</span>";
-    html += "<a href=\"" + getGameUrl(g) + "\" target=\"_blank\">" + esc(g._key || "") + "</a>";
+    html += "<a href=\"" + getGameUrl(g) + "\" target=\"_blank\">" + esc(getGameLabel(g)) + "</a>";
     html += "</div>";
     html += "<div class=\"game-results\">";
 

@@ -5,6 +5,7 @@ const path = require("path");
 const PORT = 8082;
 const API_KEY = "tm-elo-2024";
 const ELO_FILE = path.join(__dirname, "elo-data.json");
+const ELO_COMPAT_FILE = path.join(__dirname, "data.json");
 const DEFAULT_ELO = 1500;
 const K = 32;
 
@@ -174,7 +175,9 @@ function loadElo() {
 }
 
 function saveElo(data) {
-  fs.writeFileSync(ELO_FILE, JSON.stringify(data, null, 2), "utf8");
+  var text = JSON.stringify(data, null, 2);
+  fs.writeFileSync(ELO_FILE, text, "utf8");
+  fs.writeFileSync(ELO_COMPAT_FILE, text, "utf8");
 }
 
 // HTTP server
@@ -246,16 +249,20 @@ var server = http.createServer(function(req, res) {
         });
       }
 
-      var gameKey = (payload.date || new Date().toISOString()) + "_" +
-        results.map(function(r) { return r.name; }).sort().join(",");
+      var gameKey = payload.gameId || payload.gameKey || ((payload.date || new Date().toISOString()) + "_" +
+        results.map(function(r) { return r.name; }).sort().join(","));
+      var endId = payload.endId || payload.spectatorId || "";
 
       var gameRecord = {
         _key: gameKey,
+        gameId: payload.gameId || gameKey,
+        endId: endId,
         date: payload.date || new Date().toISOString(),
         server: payload.server || "extension",
         map: payload.map || "",
         generation: payload.generation || 0,
         playerCount: results.length,
+        completedTime: payload.completedTime || 0,
         results: results,
       };
 

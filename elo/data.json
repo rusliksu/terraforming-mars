@@ -1,24 +1,59 @@
 {
   "players": {
     "илья": {
-      "elo": 1524,
-      "elo_vp": 1524,
+      "elo": 1546,
+      "elo_vp": 1538,
       "displayName": "Илья",
-      "games": 1,
-      "firsts": 1,
-      "wins": 1,
-      "placeScoreTotal": 1.0,
+      "games": 2,
+      "firsts": 2,
+      "wins": 2,
+      "placeScoreTotal": 2.0,
       "avgPlace": 1.0,
-      "top3": 1,
-      "totalVP": 99,
+      "top3": 2,
+      "totalVP": 189,
       "corps": {
+        "PolderTECH Dutch": 1,
         "Nirgal Enterprises": 1
       },
-      "avgVP": 99.0
+      "avgVP": 94.5
+    },
+    "gydro": {
+      "elo": 1500,
+      "elo_vp": 1501,
+      "displayName": "GydRo",
+      "games": 3,
+      "firsts": 0,
+      "wins": 0,
+      "placeScoreTotal": 1.6666666666666667,
+      "avgPlace": 0.5556,
+      "top3": 3,
+      "totalVP": 287,
+      "corps": {
+        "Ecoline": 1,
+        "Morning Star Inc.|Tycho Magnetics": 1,
+        "Viron|PolderTECH Dutch": 1
+      },
+      "avgVP": 95.67
+    },
+    "алексей": {
+      "elo": 1476,
+      "elo_vp": 1486,
+      "displayName": "Алексей",
+      "games": 1,
+      "firsts": 0,
+      "wins": 0,
+      "placeScoreTotal": 0.0,
+      "avgPlace": 0.0,
+      "top3": 1,
+      "totalVP": 74,
+      "corps": {
+        "Saturn Systems": 1
+      },
+      "avgVP": 74.0
     },
     "вангер": {
-      "elo": 1500,
-      "elo_vp": 1495,
+      "elo": 1501,
+      "elo_vp": 1496,
       "displayName": "Вангер",
       "games": 1,
       "firsts": 0,
@@ -33,7 +68,7 @@
       "avgVP": 73.0
     },
     "рав": {
-      "elo": 1476,
+      "elo": 1477,
       "elo_vp": 1481,
       "displayName": "Рав",
       "games": 1,
@@ -63,23 +98,6 @@
         "Point Luna|Valley Trust": 1
       },
       "avgVP": 123.0
-    },
-    "gydro": {
-      "elo": 1500,
-      "elo_vp": 1502,
-      "displayName": "GydRo",
-      "games": 2,
-      "firsts": 0,
-      "wins": 0,
-      "placeScoreTotal": 1.1666666666666667,
-      "avgPlace": 0.5833,
-      "top3": 2,
-      "totalVP": 206,
-      "corps": {
-        "Morning Star Inc.|Tycho Magnetics": 1,
-        "Viron|PolderTECH Dutch": 1
-      },
-      "avgVP": 103.0
     },
     "аня": {
       "elo": 1476,
@@ -148,6 +166,49 @@
   },
   "games": [
     {
+      "_key": "g34ffb8edd148",
+      "gameId": "g34ffb8edd148",
+      "endId": "",
+      "date": "2026-03-30T19:49:23+00:00",
+      "server": "knightbyte",
+      "map": "utopia planitia",
+      "generation": 8,
+      "playerCount": 3,
+      "completedTime": 1774900163,
+      "results": [
+        {
+          "name": "илья",
+          "displayName": "Илья",
+          "place": 1,
+          "delta": 24,
+          "oldElo": 1500,
+          "newElo": 1524,
+          "corp": "PolderTECH Dutch",
+          "vp": 90
+        },
+        {
+          "name": "gydro",
+          "displayName": "GydRo",
+          "place": 2,
+          "delta": 0,
+          "oldElo": 1500,
+          "newElo": 1500,
+          "corp": "Ecoline",
+          "vp": 81
+        },
+        {
+          "name": "алексей",
+          "displayName": "Алексей",
+          "place": 3,
+          "delta": -24,
+          "oldElo": 1500,
+          "newElo": 1476,
+          "corp": "Saturn Systems",
+          "vp": 74
+        }
+      ]
+    },
+    {
       "_key": "ge07b277ad14b",
       "gameId": "ge07b277ad14b",
       "endId": "s67cb6b96637c",
@@ -162,9 +223,9 @@
           "name": "илья",
           "displayName": "Илья",
           "place": 1,
-          "delta": 24,
-          "oldElo": 1500,
-          "newElo": 1524,
+          "delta": 22,
+          "oldElo": 1524,
+          "newElo": 1546,
           "corp": "Nirgal Enterprises",
           "vp": 99
         },
@@ -172,9 +233,9 @@
           "name": "вангер",
           "displayName": "Вангер",
           "place": 2,
-          "delta": 0,
+          "delta": 1,
           "oldElo": 1500,
-          "newElo": 1500,
+          "newElo": 1501,
           "corp": "Morning Star Inc.",
           "vp": 73
         },
@@ -182,9 +243,9 @@
           "name": "рав",
           "displayName": "Рав",
           "place": 3,
-          "delta": -24,
+          "delta": -23,
           "oldElo": 1500,
-          "newElo": 1476,
+          "newElo": 1477,
           "corp": "TerraLabs Research",
           "vp": 61
         }

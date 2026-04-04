@@ -108,7 +108,10 @@ function esc(s) {
 }
 
 function round2(value) {
-  return (Math.round(value * 100) / 100).toFixed(2);
+  var fixed = (Math.round(value * 100) / 100).toFixed(2);
+  fixed = fixed.replace(/\.00$/, "");
+  fixed = fixed.replace(/(\.\d)0$/, "$1");
+  return fixed;
 }
 
 function round1(value) {

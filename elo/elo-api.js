@@ -79,8 +79,14 @@ function expectedScore(a, b) {
   return 1 / (1 + Math.pow(10, (b - a) / 400));
 }
 
+function placementScore(place, playerCount) {
+  if (playerCount <= 1) return 1;
+  return Math.max(0, Math.min(1, 1 - ((Math.max(1, place) - 1) / (playerCount - 1))));
+}
+
 function rebuildElo(data) {
-  var eloPlace = {}, eloVP = {}, wins = {}, gamesCount = {}, displayNames = {};
+  var eloPlace = {}, eloVP = {}, firsts = {}, placeScoreTotals = {}, gamesCount = {}, displayNames = {};
+  var top3Counts = {}, totalVPs = {}, corpsByPlayer = {};
 
   for (var gi = 0; gi < data.games.length; gi++) {
     var g = data.games[gi];
@@ -98,9 +104,17 @@ function rebuildElo(data) {
 
     for (var ri = 0; ri < n; ri++) {
       var nk = results[ri].name;
+      var place = results[ri].place || (ri + 1);
+      var vp = results[ri].vp || 0;
+      var corp = results[ri].corp || "";
       displayNames[nk] = results[ri].displayName;
       gamesCount[nk] = (gamesCount[nk] || 0) + 1;
-      if (results[ri].place === 1) wins[nk] = (wins[nk] || 0) + 1;
+      if (place === 1) firsts[nk] = (firsts[nk] || 0) + 1;
+      if (place <= 3) top3Counts[nk] = (top3Counts[nk] || 0) + 1;
+      placeScoreTotals[nk] = (placeScoreTotals[nk] || 0) + placementScore(place, n);
+      totalVPs[nk] = (totalVPs[nk] || 0) + vp;
+      if (!corpsByPlayer[nk]) corpsByPlayer[nk] = {};
+      if (corp) corpsByPlayer[nk][corp] = (corpsByPlayer[nk][corp] || 0) + 1;
     }
 
     for (var i = 0; i < n; i++) {
@@ -138,7 +152,14 @@ function rebuildElo(data) {
       elo: Math.round(eloPlace[nk] || DEFAULT_ELO),
       elo_vp: Math.round(eloVP[nk] || DEFAULT_ELO),
       games: gamesCount[nk] || 0,
-      wins: wins[nk] || 0,
+      firsts: firsts[nk] || 0,
+      wins: firsts[nk] || 0,
+      placeScoreTotal: +(placeScoreTotals[nk] || 0).toFixed(4),
+      avgPlace: +(((placeScoreTotals[nk] || 0) / Math.max(1, gamesCount[nk] || 0))).toFixed(4),
+      top3: top3Counts[nk] || 0,
+      totalVP: totalVPs[nk] || 0,
+      avgVP: +(((totalVPs[nk] || 0) / Math.max(1, gamesCount[nk] || 0))).toFixed(2),
+      corps: corpsByPlayer[nk] || {},
     };
   }
   data.players = players;

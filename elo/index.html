@@ -19,7 +19,7 @@ td { padding: 8px 10px; border-bottom: 1px solid #333; }
 tr:hover { background: #16213e; }
 .rank { color: #888; width: 40px; }
 .elo { font-weight: bold; color: #ff6b35; }
-.wins { color: #2ecc71; }
+.place { color: #2ecc71; }
 .games { color: #888; }
 a { color: #ff6b35; text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -65,7 +65,7 @@ a:hover { text-decoration: underline; }
   <span class="tab" data-mode="vp">By VP Margin</span>
 </div>
 <table>
-<thead><tr><th class="rank">#</th><th>Player</th><th>ELO</th><th>1st</th><th>Games</th><th>Avg</th></tr></thead>
+<thead><tr><th class="rank">#</th><th>Player</th><th>ELO</th><th>Avg place</th><th>Games</th><th>Avg VP</th></tr></thead>
 <tbody id="tbody"></tbody>
 </table>
 
@@ -99,6 +99,15 @@ function esc(s) {
   return d.innerHTML;
 }
 
+function round2(value) {
+  return (Math.round(value * 100) / 100).toFixed(2);
+}
+
+function round1(value) {
+  var fixed = (Math.round(value * 10) / 10).toFixed(1);
+  return fixed.endsWith(".0") ? fixed.slice(0, -2) : fixed;
+}
+
 function renderPlayers() {
   if (!_data) return;
   var players = _data.players || {};
@@ -106,12 +115,18 @@ function renderPlayers() {
   for (var name in players) {
     var p = players[name];
     var elo = _mode === "vp" ? (p.elo_vp || p.elo || 1500) : (p.elo || 1500);
+    var games = p.games || 0;
+    var avgPlace = typeof p.avgPlace === "number" ? p.avgPlace :
+      (games > 0 ? ((typeof p.placeScoreTotal === "number" ? p.placeScoreTotal : (p.wins || 0)) / games) : 0);
+    var avgVP = typeof p.avgVP === "number" ? p.avgVP :
+      (games > 0 ? ((p.totalVP || 0) / games) : 0);
     list.push({
       key: name,
       name: p.displayName || name,
       elo: Math.round(elo),
-      games: p.games || 0,
-      wins: p.wins || 0
+      games: games,
+      avgPlace: avgPlace,
+      avgVP: avgVP
     });
   }
   list.sort(function(a,b) { return b.elo - a.elo; });
@@ -119,14 +134,13 @@ function renderPlayers() {
   document.getElementById("stats").textContent = list.length + " players | " + games.length + " games";
   var html = "";
   list.forEach(function(p, i) {
-    var winPct = p.games > 0 ? (p.wins / p.games).toFixed(2) : '0';
     var activeClass = (_filterPlayer && _filterPlayer === p.key) ? " active-filter" : "";
     html += "<tr><td class=\"rank\">" + (i+1) + "</td>"
       + "<td><span class=\"player-link" + activeClass + "\" data-player=\"" + esc(p.key) + "\">" + esc(p.name) + "</span></td>"
       + "<td class=\"elo\">" + p.elo + "</td>"
-      + "<td class=\"wins\">" + p.wins + "</td>"
+      + "<td class=\"place\">" + round2(p.avgPlace) + "</td>"
       + "<td class=\"games\">" + p.games + "</td>"
-      + "<td>" + winPct + "</td></tr>";
+      + "<td>" + round1(p.avgVP) + "</td></tr>";
   });
   document.getElementById("tbody").innerHTML = html;
 }

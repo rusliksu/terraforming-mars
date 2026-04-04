@@ -81,13 +81,23 @@ def normalize_name(display_name):
     return MERGES.get(nk, display_name.strip())
 
 
+def placement_score(place, player_count):
+    if player_count <= 1:
+        return 1.0
+    return max(0.0, min(1.0, 1 - ((max(1, place) - 1) / (player_count - 1))))
+
+
 def rebuild_elo(elo_data):
     """Normalize names in results and rebuild all Elo ratings from scratch."""
     K = 32
     elo_place = defaultdict(lambda: 1500)
     elo_vp = defaultdict(lambda: 1500)
-    wins = defaultdict(int)
+    firsts = defaultdict(int)
+    place_score_totals = defaultdict(float)
     games_count = defaultdict(int)
+    top3_counts = defaultdict(int)
+    total_vps = defaultdict(int)
+    corps_by_player = defaultdict(dict)
     display_names = {}
     changed = 0
 
@@ -110,10 +120,18 @@ def rebuild_elo(elo_data):
         for r in results:
             dn = r['displayName']
             nk = dn.lower()
+            place = r.get('place', 99)
             display_names[nk] = dn
             games_count[nk] += 1
-            if r.get('place', 99) == 1:
-                wins[nk] += 1
+            if place == 1:
+                firsts[nk] += 1
+            if place <= 3:
+                top3_counts[nk] += 1
+            place_score_totals[nk] += placement_score(place, n)
+            total_vps[nk] += r.get('vp', 0)
+            corp = r.get('corp', '')
+            if corp:
+                corps_by_player[nk][corp] = corps_by_player[nk].get(corp, 0) + 1
 
         # Pairwise Elo
         for i in range(n):
@@ -146,7 +164,14 @@ def rebuild_elo(elo_data):
             'elo': round(elo_place[nk]),
             'elo_vp': round(elo_vp[nk]),
             'games': games_count[nk],
-            'wins': wins[nk],
+            'firsts': firsts[nk],
+            'wins': firsts[nk],
+            'placeScoreTotal': round(place_score_totals[nk], 4),
+            'avgPlace': round(place_score_totals[nk] / max(1, games_count[nk]), 4),
+            'top3': top3_counts[nk],
+            'totalVP': total_vps[nk],
+            'avgVP': round(total_vps[nk] / max(1, games_count[nk]), 2),
+            'corps': corps_by_player[nk],
         }
 
     elo_data['players'] = players_dict
@@ -166,5 +191,4 @@ if __name__ == '__main__':
     top = sorted(elo['players'].items(), key=lambda x: -x[1]['elo'])[:15]
     print('\nTop 15:')
     for nk, p in top:
-        pct = round(p['wins'] / max(1, p['games']) * 100)
-        print(f'  {p["displayName"]}: {p["elo"]} ({p["wins"]}/{p["games"]}={pct}%)')
+        print(f'  {p["displayName"]}: {p["elo"]} (1st={p["firsts"]}, place={p["avgPlace"]:.2f}, games={p["games"]})')

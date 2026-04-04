@@ -5,9 +5,13 @@
       "elo": 1546,
       "elo_vp": 1538,
       "games": 2,
+      "firsts": 2,
       "wins": 2,
+      "placeScoreTotal": 2,
+      "avgPlace": 1,
       "top3": 2,
       "totalVP": 189,
+      "avgVP": 94.5,
       "corps": {
         "PolderTECH Dutch": 1,
         "Nirgal Enterprises": 1
@@ -18,9 +22,13 @@
       "elo": 1500,
       "elo_vp": 1501,
       "games": 3,
-      "wins": 1.5,
+      "firsts": 0,
+      "wins": 0,
+      "placeScoreTotal": 1.6667,
+      "avgPlace": 0.5556,
       "top3": 3,
       "totalVP": 287,
+      "avgVP": 95.67,
       "corps": {
         "Ecoline": 1,
         "Morning Star Inc.|Tycho Magnetics": 1,
@@ -32,9 +40,13 @@
       "elo": 1476,
       "elo_vp": 1487,
       "games": 1,
+      "firsts": 0,
       "wins": 0,
+      "placeScoreTotal": 0,
+      "avgPlace": 0,
       "top3": 1,
       "totalVP": 74,
+      "avgVP": 74,
       "corps": {
         "Saturn Systems": 1
       }
@@ -44,9 +56,13 @@
       "elo": 1501,
       "elo_vp": 1497,
       "games": 1,
-      "wins": 0.5,
+      "firsts": 0,
+      "wins": 0,
+      "placeScoreTotal": 0.5,
+      "avgPlace": 0.5,
       "top3": 1,
       "totalVP": 73,
+      "avgVP": 73,
       "corps": {
         "Morning Star Inc.": 1
       }
@@ -56,9 +72,13 @@
       "elo": 1477,
       "elo_vp": 1482,
       "games": 1,
+      "firsts": 0,
       "wins": 0,
+      "placeScoreTotal": 0,
+      "avgPlace": 0,
       "top3": 1,
       "totalVP": 61,
+      "avgVP": 61,
       "corps": {
         "TerraLabs Research": 1
       }
@@ -68,9 +88,13 @@
       "elo": 1524,
       "elo_vp": 1514,
       "games": 1,
+      "firsts": 1,
       "wins": 1,
+      "placeScoreTotal": 1,
+      "avgPlace": 1,
       "top3": 1,
       "totalVP": 123,
+      "avgVP": 123,
       "corps": {
         "Point Luna|Valley Trust": 1
       }
@@ -80,9 +104,13 @@
       "elo": 1476,
       "elo_vp": 1477,
       "games": 1,
+      "firsts": 0,
       "wins": 0,
+      "placeScoreTotal": 0,
+      "avgPlace": 0,
       "top3": 1,
       "totalVP": 101,
+      "avgVP": 101,
       "corps": {
         "Project Workshop|Vitor|Pharmacy Union": 1
       }
@@ -92,9 +120,13 @@
       "elo": 1524,
       "elo_vp": 1524,
       "games": 1,
+      "firsts": 1,
       "wins": 1,
+      "placeScoreTotal": 1,
+      "avgPlace": 1,
       "top3": 1,
       "totalVP": 106,
+      "avgVP": 106,
       "corps": {
         "Inventrix|Morning Star Inc.": 1
       }
@@ -104,9 +136,13 @@
       "elo": 1500,
       "elo_vp": 1493,
       "games": 1,
-      "wins": 0.5,
+      "firsts": 0,
+      "wins": 0,
+      "placeScoreTotal": 0.6667,
+      "avgPlace": 0.6667,
       "top3": 1,
       "totalVP": 86,
+      "avgVP": 86,
       "corps": {
         "Poseidon|Saturn Systems": 1
       }
@@ -116,9 +152,13 @@
       "elo": 1476,
       "elo_vp": 1492,
       "games": 1,
+      "firsts": 0,
       "wins": 0,
+      "placeScoreTotal": 0,
+      "avgPlace": 0,
       "top3": 0,
       "totalVP": 85,
+      "avgVP": 85,
       "corps": {
         "Mons Insurance|CrediCor": 1
       }

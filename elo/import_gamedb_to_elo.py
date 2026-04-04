@@ -117,6 +117,12 @@ def expected_score(my_elo, opp_elo):
     return 1 / (1 + 10 ** ((opp_elo - my_elo) / 400))
 
 
+def placement_score(place, player_count):
+    if player_count <= 1:
+        return 1.0
+    return max(0.0, min(1.0, 1 - ((max(1, place) - 1) / (player_count - 1))))
+
+
 def calc_elo_place(players, elo_db):
     """Place-based FFA Elo (matches elo.js calculateFFA)."""
     n = len(players)
@@ -302,18 +308,31 @@ def main():
                 elo_data['players'][key] = {
                     'elo': DEFAULT_ELO, 'elo_vp': DEFAULT_ELO,
                     'displayName': r['displayName'],
-                    'games': 0, 'wins': 0, 'top3': 0,
+                    'games': 0, 'firsts': 0, 'wins': 0, 'placeScoreTotal': 0,
+                    'avgPlace': 0, 'top3': 0,
                     'totalVP': 0, 'corps': {},
+                    'avgVP': 0,
                 }
             p = elo_data['players'][key]
             p['elo'] = r['newElo']
             p['displayName'] = r['displayName']
+            p.setdefault('firsts', p.get('wins', 0))
+            p.setdefault('placeScoreTotal', 0)
+            p.setdefault('avgPlace', 0)
+            p.setdefault('top3', 0)
+            p.setdefault('totalVP', 0)
+            p.setdefault('corps', {})
+            p.setdefault('avgVP', 0)
             p['games'] += 1
             if r['place'] == 1:
-                p['wins'] += 1
+                p['firsts'] += 1
+            p['wins'] = p['firsts']
+            p['placeScoreTotal'] += placement_score(r['place'], len(players))
+            p['avgPlace'] = round(p['placeScoreTotal'] / p['games'], 4)
             if r['place'] <= 3:
                 p['top3'] += 1
             p['totalVP'] += r.get('vp', 0)
+            p['avgVP'] = round(p['totalVP'] / p['games'], 2)
             if r['corp']:
                 p['corps'][r['corp']] = p['corps'].get(r['corp'], 0) + 1
 
@@ -349,12 +368,12 @@ def main():
 
     # Leaderboard
     lb = sorted(elo_data['players'].items(), key=lambda x: x[1]['elo'], reverse=True)
-    print(f'\n{"#":>3} {"Name":<20} {"Elo":>5} {"EloVP":>6} {"Games":>5} {"Wins":>4} {"Win%":>5} {"AvgVP":>5}')
-    print('-' * 60)
+    print(f'\n{"#":>3} {"Name":<20} {"Elo":>5} {"EloVP":>6} {"Games":>5} {"1st":>4} {"Place":>6} {"AvgVP":>6}')
+    print('-' * 68)
     for i, (key, p) in enumerate(lb[:25]):
-        wr = round(p['wins'] / p['games'] * 100) if p['games'] > 0 else 0
-        avg = round(p['totalVP'] / p['games']) if p['games'] > 0 else 0
-        print(f'{i+1:>3} {p["displayName"]:<20} {p["elo"]:>5} {p.get("elo_vp", 1500):>6} {p["games"]:>5} {p["wins"]:>4} {wr:>4}% {avg:>5}')
+        place_avg = p.get('avgPlace', 0)
+        avg_vp = p.get('avgVP', 0)
+        print(f'{i+1:>3} {p["displayName"]:<20} {p["elo"]:>5} {p.get("elo_vp", 1500):>6} {p["games"]:>5} {p.get("firsts", p.get("wins", 0)):>4} {place_avg:>6.2f} {avg_vp:>6.1f}')
 
     # Save
     with open(ELO_PATH, 'w', encoding='utf-8') as f:

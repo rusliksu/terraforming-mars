@@ -102,6 +102,30 @@ export class PlayerInput extends Handler {
           if (this.isWaitingForUndo(player, entity)) {
             await this.performUndo(req, res, ctx, player);
           } else {
+            // Shadow log: record what player was asked and what they chose
+            try {
+              const wf = player.getWaitingFor();
+              if (wf && process.env.SHADOW_LOG !== '0') {
+                const fs = require('fs');
+                const path = require('path');
+                const logDir = process.env.SHADOW_LOG_DIR || path.resolve(process.cwd(), 'shadow-logs');
+                fs.mkdirSync(logDir, {recursive: true});
+                const logFile = path.join(logDir, `shadow-${player.game.id}.jsonl`);
+                const entry = {
+                  ts: new Date().toISOString(),
+                  gameId: player.game.id,
+                  gen: player.game.generation,
+                  player: player.name,
+                  color: player.color,
+                  promptType: (wf as any).type || '',
+                  title: typeof (wf as any).title === 'string' ? (wf as any).title : ((wf as any).title?.message || ''),
+                  playerAction: entity,
+                  mc: (player as any).megaCredits ?? 0,
+                  tr: player.getTerraformRating(),
+                };
+                fs.appendFileSync(logFile, JSON.stringify(entry) + '\n');
+              }
+            } catch(_e) { /* shadow log error — don't block game */ }
             const previousSaveGamePromise = player.game.saveGamePromise;
             player.process(entity);
             if (player.game.saveGamePromise !== previousSaveGamePromise) {

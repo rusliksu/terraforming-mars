@@ -42,9 +42,9 @@
                   <span v-i18n>Create New Game</span>
               </a>
 
-              <a :href="'new-game?cloneGameId=' + game.gameId">
+              <a :href="'new-game?cloneGameId=' + game.gameId" :title="$t('Start a new game with the same initial setup')">
                   <AppButton size="big" type="back" />
-                  <span>♻ Rematch</span>
+                  <span>♻ </span><span v-i18n>Rematch (same setup)</span>
               </a>
 
               <a href=".">

@@ -14,5 +14,7 @@ describe('GameEnd', () => {
       },
     });
     expect(wrapper.exists()).to.be.true;
+    expect(wrapper.text()).to.contain('Rematch (same setup)');
+    expect(wrapper.text()).not.to.contain('Spectator:');
   });
 });

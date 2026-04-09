@@ -57,9 +57,6 @@
               </a>
             </div>
           </div>
-          <div v-if="spectatorUrl" class="game-end-spectator" style="text-align:center;margin:8px 0;font-size:12px;color:#888">
-            <span>Spectator: </span><a :href="spectatorUrl" style="color:#ff7f50">{{ spectatorUrl }}</a>
-          </div>
           <div v-if="eloDelta" class="game-end-elo" style="text-align:center;margin:10px 0">
             <div v-for="ed in eloDelta" :key="ed.name" style="display:inline-block;margin:0 10px;text-align:center">
               <div :class="'log-player ' + getEndGamePlayerRowColorClass(ed.color)">{{ ed.name }}</div>
@@ -287,11 +284,6 @@ export default defineComponent({
       if (this.playerView !== undefined) return this.playerView.thisPlayer.color;
       if (this.spectator !== undefined) return this.spectator.color;
       throw new Error('Neither playerView nor spectator are defined');
-    },
-    spectatorUrl(): string | null {
-      const sid = this.game.spectatorId;
-      if (!sid) return null;
-      return window.location.origin + '/spectator?id=' + sid;
     },
     eloDelta(): Array<{name: string; color: Color; delta: number; elo: number}> | null {
       // Calculate Elo delta from completed games API

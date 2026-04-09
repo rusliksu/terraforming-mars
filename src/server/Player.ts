@@ -182,6 +182,7 @@ export class Player implements IPlayer {
   public telegramID: string = "";
   public lastNoticeMessageId: number = -1;
   private _pendingTurnNoticeTimer?: ReturnType<typeof setTimeout>;
+  private _turnNoticeSentThisRound: boolean = false;
 
   public get megaCredits(): number {
     return this.stock.megacredits;
@@ -1684,6 +1685,9 @@ export class Player implements IPlayer {
   }
 
   public setWaitingFor(input: PlayerInput, cb: () => void = () => {}): void {
+    if (this.game.inputsThisRound === 0) {
+      this._turnNoticeSentThisRound = false;
+    }
     if (this.waitingFor !== undefined) {
       const message = `Overwriting waitingFor ${this.waitingFor.type} with ${input?.type}`;
       if (THROW_STATE_ERRORS) {
@@ -1697,8 +1701,10 @@ export class Player implements IPlayer {
     this.waitingForCb = cb;
     this.game.inputsThisRound++;
     if (this._pendingTurnNoticeTimer) clearTimeout(this._pendingTurnNoticeTimer);
-    if (this.telegramID) {
+    if (this.telegramID && this._turnNoticeSentThisRound === false) {
       this._pendingTurnNoticeTimer = setTimeout(() => {
+        this._pendingTurnNoticeTimer = undefined;
+        this._turnNoticeSentThisRound = true;
         sendTurnNotice(this);
       }, 5000);
     }

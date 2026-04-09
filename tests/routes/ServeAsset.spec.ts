@@ -1,5 +1,6 @@
 import {expect} from 'chai';
 import {FileAPI, ServeAsset} from '../../src/server/routes/ServeAsset';
+import {resolveEloAssetPath} from '../../src/server/elo/EloPaths';
 import {MockResponse} from './HttpMocks';
 import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {statusCode} from '../../src/common/http/statusCode';
@@ -150,5 +151,26 @@ describe('ServeAsset', () => {
       readFile: 1,
       existsSync: 0,
     });
+  });
+
+  it('serves /elo/data.json from the elo asset path', async () => {
+    instance = new ServeAsset(undefined, false, fileApi);
+    scaffolding.url = '/elo/data.json';
+    scaffolding.req.headers['accept-encoding'] = '';
+    await scaffolding.get(instance, res);
+
+    expect(res.content).eq('data: ' + resolveEloAssetPath('elo/data.json'));
+    expect(res.headers.get('Cache-Control')).eq('no-store');
+  });
+
+  it('does not buffer-cache dynamic elo assets in production', async () => {
+    instance = new ServeAsset(undefined, true, fileApi);
+    scaffolding.url = '/elo/data.json';
+    scaffolding.req.headers['accept-encoding'] = '';
+
+    await scaffolding.get(instance, res);
+    await scaffolding.get(instance, new MockResponse());
+
+    expect(fileApi.counts.readFile).eq(2);
   });
 });

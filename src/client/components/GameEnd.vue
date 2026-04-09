@@ -57,15 +57,37 @@
               </a>
             </div>
           </div>
-          <div v-if="eloDelta" class="game-end-elo" style="text-align:center;margin:10px 0">
-            <div v-for="ed in eloDelta" :key="ed.name" style="display:inline-block;margin:0 10px;text-align:center">
-              <div :class="'log-player ' + getEndGamePlayerRowColorClass(ed.color)">{{ ed.name }}</div>
-              <div style="font-size:20px;font-weight:bold" :style="{color: ed.delta >= 0 ? '#2ecc71' : '#e74c3c'}">{{ ed.delta >= 0 ? '+' : ''}}{{ ed.delta }}</div>
-              <div style="font-size:11px;color:#888">{{ ed.elo }} Elo</div>
-            </div>
+          <div v-if="spectatorUrl" class="game-end-spectator" style="text-align:center;margin:8px 0;font-size:12px;color:#888">
+            <span>Spectator: </span><a :href="spectatorUrl" style="color:#ff7f50">{{ spectatorUrl }}</a>
           </div>
           <div v-if="!isSoloGame || game.isSoloModeWin" class="game-end-winer-announcement">
-              <span v-for="p in winners" :key="p.color"><span :class="'log-player ' + getEndGamePlayerRowColorClass(p.color)">{{ p.name }}</span></span> <span v-i18n>won!</span>
+              <span v-for="p in winners" :key="p.color" class="game-end-name-and-elo">
+                <span :class="'log-player ' + getEndGamePlayerRowColorClass(p.color)">{{ p.name }}</span>
+                <PlayerEloBadge :playerName="p.name" tooltipCss="tooltip tooltip-top" />
+              </span> <span v-i18n>won!</span>
+          </div>
+          <div v-if="eloResults.length > 0" class="game_end_victory_points">
+              <h2 v-i18n>Elo results</h2>
+              <table class="table game_end_table game-end-elo-table">
+                  <thead>
+                      <tr v-i18n>
+                          <th>Player</th>
+                          <th>Before</th>
+                          <th>Delta</th>
+                          <th>After</th>
+                          <th>Avg place</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <tr v-for="entry in eloResults" :key="entry.color || entry.name" :class="getEndGamePlayerRowColorClass(entry.color)">
+                          <td>{{ entry.name }}</td>
+                          <td>{{ entry.oldElo }}</td>
+                          <td :class="getEloDeltaClass(entry.delta)">{{ formatEloDelta(entry.delta) }}</td>
+                          <td>{{ entry.newElo }}</td>
+                          <td>{{ formatAvgPlaceScore(entry.avgPlaceScore) }}</td>
+                      </tr>
+                  </tbody>
+              </table>
           </div>
           <div class="game_end_victory_points">
               <h2><span v-i18n>Victory point breakdown after</span> {{game.generation}} <span v-i18n>generations</span></h2>
@@ -93,7 +115,10 @@
                   <tbody>
                       <tr v-for="p in playersInPlace" :key="p.color" :class="getEndGamePlayerRowColorClass(p.color)">
                           <td>
-                            <a :href="'player?id='+p.id+'&noredirect'">{{ p.name }}</a>
+                            <span class="game-end-name-and-elo">
+                              <a :href="'player?id='+p.id+'&noredirect'">{{ p.name }}</a>
+                              <PlayerEloBadge :playerName="p.name" tooltipCss="tooltip tooltip-top" />
+                            </span>
                             <div class="column-corporation">
                               <div v-for="(corporationName, index) in getCorporationName(p)" :key="index" v-i18n>{{ corporationName }}</div>
                             </div>
@@ -129,7 +154,12 @@
               <div class="game-end-flexrow">
                   <div v-for="p in playersInPlace" :key="p.color" class="game-end-column">
                       <div class="game-end-winer-scorebreak-player-title">
-                          <div :class="'game-end-player ' + getEndGamePlayerRowColorClass(p.color)"><a :href="'player?id='+p.id+'&noredirect'">{{p.name}}</a></div>
+                          <div :class="'game-end-player ' + getEndGamePlayerRowColorClass(p.color)">
+                            <span class="game-end-name-and-elo">
+                              <a :href="'player?id='+p.id+'&noredirect'">{{p.name}}</a>
+                              <PlayerEloBadge :playerName="p.name" tooltipCss="tooltip tooltip-top" />
+                            </span>
+                          </div>
                       </div>
                       <div v-for="v in p.victoryPointsBreakdown.detailsCards" :key="v.cardName">
                         <div class="game-end-column-row">
@@ -228,7 +258,7 @@
 
 <script lang="ts">
 
-import {defineComponent} from 'vue';
+import {defineComponent} from '@/client/vue3-compat';
 import * as constants from '@/common/constants';
 import {paths} from '@/common/app/paths';
 import {GameModel} from '@/common/models/GameModel';
@@ -239,6 +269,7 @@ import PlanetaryTracks from '@/client/components/pathfinders/PlanetaryTracks.vue
 import LogPanel from '@/client/components/logpanel/LogPanel.vue';
 import AppButton from '@/client/components/common/AppButton.vue';
 import VictoryPointChart, {DataSet} from '@/client/components/gameend/VictoryPointChart.vue';
+import PlayerEloBadge from '@/client/components/overview/PlayerEloBadge.vue';
 import {playerColorClass} from '@/common/utils/utils';
 import {Timer} from '@/common/Timer';
 import {SpectatorModel} from '@/common/models/SpectatorModel';
@@ -251,35 +282,7 @@ import {Message} from '@/common/logs/Message';
 import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
 import {MADetail} from '@/common/game/VictoryPointsBreakdown';
 import {AwardName} from '@/common/ma/AwardName';
-import {normalizeEloPlayerName} from '@/client/utils/normalizeEloPlayerName';
-
-type EloGameResult = {
-  displayName?: string;
-  name?: string;
-  delta?: number;
-  newElo?: number;
-};
-
-type EloGameEntry = {
-  _key: string;
-  results?: Array<EloGameResult>;
-};
-
-type EloPlayerEntry = {
-  elo?: number;
-};
-
-type EloData = {
-  games?: Array<EloGameEntry>;
-  players?: Record<string, EloPlayerEntry>;
-};
-
-type EloDeltaEntry = {
-  name: string;
-  color: Color;
-  delta: number;
-  elo: number;
-};
+import {buildEloResultsForPlayers, EloResultRow, ensureEloLoaded, findMatchingEloGame, sharedEloState} from '@/client/utils/elo';
 
 function getViewModel(playerView: ViewModel | undefined, spectator: ViewModel | undefined): ViewModel {
   if (playerView !== undefined) return playerView;
@@ -314,10 +317,10 @@ export default defineComponent({
       if (this.spectator !== undefined) return this.spectator.color;
       throw new Error('Neither playerView nor spectator are defined');
     },
-    eloDelta(): Array<{name: string; color: Color; delta: number; elo: number}> | null {
-      // Calculate Elo delta from completed games API
-      // This is populated asynchronously in mounted()
-      return (this as any)._eloDelta || null;
+    spectatorUrl(): string | null {
+      const sid = this.game.spectatorId;
+      if (!sid) return null;
+      return window.location.origin + '/spectator?id=' + sid;
     },
     downloadLogUrl() {
       const id = this.playerView?.id || this.spectator?.id;
@@ -414,7 +417,7 @@ export default defineComponent({
   data() {
     return {
       constants,
-      _eloDelta: null as Array<EloDeltaEntry> | null,
+      eloResults: [] as Array<EloResultRow>,
     };
   },
   components: {
@@ -423,43 +426,33 @@ export default defineComponent({
     AppButton,
     MoonBoard,
     PlanetaryTracks,
+    PlayerEloBadge,
     VictoryPointChart,
   },
   mounted() {
     document.title = `End of Game | ${constants.APP_NAME}`;
-    this.fetchEloDelta();
+    void this.fetchEloResults();
   },
   methods: {
-    async fetchEloDelta() {
-      try {
-        const colorByName: Record<string, Color> = {};
-        for (const p of this.players) {
-          colorByName[normalizeEloPlayerName(p.name)] = p.color;
-        }
+    async fetchEloResults() {
+      await ensureEloLoaded();
+      if (!sharedEloState.loaded) return;
 
-        const resp = await fetch('/elo/data.json?' + Date.now(), {cache: 'no-store'});
-        const data = await resp.json() as EloData;
-        const games = data?.games || [];
-        const players = data?.players || {};
-        const currentGameId = this.game.gameId;
-        const currentGame = games.find((g) => g._key === currentGameId);
-        if (!currentGame || !Array.isArray(currentGame.results) || currentGame.results.length === 0) return;
-
-        const result: Array<EloDeltaEntry> = currentGame.results.map((r) => {
-          const displayName = r.displayName || r.name || '?';
-          const key = normalizeEloPlayerName(displayName);
-          const player = players[key] || null;
-          return {
-            name: displayName,
-            color: colorByName[key] || 'neutral',
-            delta: Math.round(r.delta || 0),
-            elo: Math.round(player?.elo ?? r.newElo ?? 1500),
-          };
-        });
-
-        result.sort((a, b) => b.elo - a.elo);
-        this._eloDelta = result;
-      } catch (e) { /* silently fail */ }
+      const matchedGame = findMatchingEloGame(sharedEloState.games, this.playersInPlace);
+      if (!matchedGame) return;
+      this.eloResults = buildEloResultsForPlayers(this.playersInPlace, sharedEloState.players, matchedGame);
+    },
+    formatEloDelta(delta: number): string {
+      if (delta > 0) return `+${delta}`;
+      return String(delta);
+    },
+    formatAvgPlaceScore(score: number | undefined): string {
+      return typeof score === 'number' ? score.toFixed(2) : '—';
+    },
+    getEloDeltaClass(delta: number): string {
+      if (delta > 0) return 'game-end-elo-delta game-end-elo-up';
+      if (delta < 0) return 'game-end-elo-delta game-end-elo-down';
+      return 'game-end-elo-delta';
     },
     getEndGamePlayerRowColorClass(color: Color): string {
       return playerColorClass(color, 'bg_transparent');
@@ -513,3 +506,28 @@ export default defineComponent({
 });
 
 </script>
+
+<style scoped>
+.game-end-name-and-elo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.game-end-elo-table {
+  max-width: 560px;
+}
+
+.game-end-elo-delta {
+  font-weight: 700;
+}
+
+.game-end-elo-up {
+  color: #4caf50;
+}
+
+.game-end-elo-down {
+  color: #f44336;
+}
+</style>

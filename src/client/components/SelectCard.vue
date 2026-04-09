@@ -144,7 +144,6 @@ export default defineComponent({
       }
       return false;
     },
-
     canSave() {
       const len = this.getData().length;
       if (len > this.playerinput.min) {

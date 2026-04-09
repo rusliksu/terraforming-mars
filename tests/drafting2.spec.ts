@@ -11,7 +11,7 @@ import {testGame} from './TestGame';
 import {InMemoryDatabase} from './testing/InMemoryDatabase';
 import {cast, finishGeneration} from './TestingUtils';
 import {toName} from '../src/common/utils/utils';
-import {restoreTestDatabase, setTestDatabase} from './testing/setup';
+import {restoreTestDatabase, setTestDatabase} from './testing/testEnvironment';
 
 // Tests for deserializing a game at the start of the drafting phase.
 describe('drafting and serialization', () => {

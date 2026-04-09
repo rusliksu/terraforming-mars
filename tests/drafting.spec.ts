@@ -650,6 +650,49 @@ describe('drafting', () => {
     });
   });
 
+  it('2 player - initial draft logs drafted and passed cards privately', () => {
+    const [game, player, otherPlayer] = testGame(2, {
+      skipInitialShuffling: true,
+      draftVariant: true,
+      initialDraftVariant: true,
+    });
+
+    selectCard(player, CardName.ADAPTATION_TECHNOLOGY);
+    cast(player.getWaitingFor(), undefined);
+    selectCard(otherPlayer, CardName.ALGAE);
+
+    selectCard(player, CardName.ARCTIC_ALGAE);
+    cast(player.getWaitingFor(), undefined);
+    selectCard(otherPlayer, CardName.ANTS);
+
+    selectCard(player, CardName.AEROBRAKED_AMMONIA_ASTEROID);
+    cast(player.getWaitingFor(), undefined);
+    selectCard(otherPlayer, CardName.AQUIFER_PUMPING);
+
+    selectCard(player, CardName.ARCHAEBACTERIA);
+    selectCard(otherPlayer, CardName.ADAPTED_LICHEN);
+
+    const playerDraftLogs = game.gameLog.filter((entry) => entry.playerId === player.id && entry.message.startsWith('You drafted'));
+    expect(playerDraftLogs.map((entry) => entry.message)).deep.eq([
+      'You drafted ${0} passing ${1} to ${2}',
+      'You drafted ${0} passing ${1} to ${2}',
+      'You drafted ${0} passing ${1} to ${2}',
+      'You drafted ${0} passing ${1} to ${2}',
+      'You drafted ${0}',
+    ]);
+    expect(playerDraftLogs[0].data.map((datum) => datum.value)).deep.eq([
+      [CardName.ADAPTATION_TECHNOLOGY],
+      [CardName.ADAPTED_LICHEN, CardName.ADVANCED_ECOSYSTEMS, CardName.AEROBRAKED_AMMONIA_ASTEROID, CardName.ANTS],
+      otherPlayer.color,
+    ]);
+    expect(playerDraftLogs[4].data.map((datum) => datum.value)).deep.eq([
+      [CardName.ADVANCED_ECOSYSTEMS],
+    ]);
+
+    const publicDraftLogs = game.gameLog.filter((entry) => entry.playerId === undefined && entry.message.startsWith('You drafted'));
+    expect(publicDraftLogs).is.empty;
+  });
+
   it('2 player - initial draft, with prelude, without prelude draft', () => {
     const [, /* game */ player, otherPlayer] = testGame(2, {
       skipInitialShuffling: true,
@@ -1088,4 +1131,3 @@ function selectCard(player: TestPlayer, cardName: CardName) {
 //     }
 //   }
 // }
-

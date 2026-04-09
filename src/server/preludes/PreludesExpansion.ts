@@ -27,17 +27,20 @@ export class PreludesExpansion {
     cards: Array<IPreludeCard>,
     remainders: undefined | 'discard' = undefined,
     cardAction: CardAction = 'add'): SelectCard<IPreludeCard> {
-    // This preps the warning attribute in preludes.
-    // All preludes can be presented. Unplayable ones just fizzle.
-    for (const card of cards) {
+    const playableFlags = cards.map((card) => {
       card.warnings.clear();
-      if (!card.canPlay(player)) {
-        card.warnings.add('preludeFizzle');
-      }
+      const playable = card.canPlay(player);
       if (card.behavior?.addResources && player.game.inDoubleDown) {
         card.warnings.add('ineffectiveDoubleDown');
       }
-    }
+      return playable;
+    });
+    playableFlags.forEach((playable, index) => {
+      if (playable) {
+        return;
+      }
+      cards[index].warnings.add('preludeFizzle');
+    });
 
     return new SelectCard(
       'Select prelude card to play', 'Play', cards)

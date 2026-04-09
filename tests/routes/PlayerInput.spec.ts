@@ -1,4 +1,7 @@
 import {expect} from 'chai';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import {PlayerInput} from '../../src/server/routes/PlayerInput';
 import {MockRequest, MockResponse} from './HttpMocks';
 import {Game} from '../../src/server/Game';
@@ -9,16 +12,33 @@ import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {cast} from '../TestingUtils';
 import {OrOptionsResponse} from '../../src/common/inputs/InputResponse';
 import {CardName} from '../../src/common/cards/CardName';
+import {restoreTestGameLoader, setTestGameLoader} from '../testing/testEnvironment';
 
 describe('PlayerInput', () => {
   let scaffolding: RouteTestScaffolding;
   let req: MockRequest;
   let res: MockResponse;
+  let shadowLogDir: string | undefined;
+  const originalShadowLog = process.env.SHADOW_LOG;
+  const originalShadowLogDir = process.env.SHADOW_LOG_DIR;
+  const originalShadowLogFilePrefix = process.env.SHADOW_LOG_FILE_PREFIX;
 
   beforeEach(() => {
     req = new MockRequest();
     res = new MockResponse();
     scaffolding = new RouteTestScaffolding(req);
+    setTestGameLoader(scaffolding.ctx.gameLoader);
+  });
+
+  afterEach(() => {
+    restoreTestGameLoader();
+    restoreEnv('SHADOW_LOG', originalShadowLog);
+    restoreEnv('SHADOW_LOG_DIR', originalShadowLogDir);
+    restoreEnv('SHADOW_LOG_FILE_PREFIX', originalShadowLogFilePrefix);
+    if (shadowLogDir !== undefined) {
+      fs.rmSync(shadowLogDir, {recursive: true, force: true});
+      shadowLogDir = undefined;
+    }
   });
 
   it('fails when id not provided', async () => {
@@ -98,4 +118,77 @@ describe('PlayerInput', () => {
 
     expect(res.content).matches(/Unexpected token/);
   });
+
+  it('waits for game save before responding', async () => {
+    const player = TestPlayer.BLUE.newPlayer({beginner: true});
+    scaffolding.url = `/player/input?id=${player.id}`;
+    const game = Game.newInstance('gameid-save', [player], player);
+    await scaffolding.ctx.gameLoader.add(game);
+
+    player.process = () => {
+      game.save();
+    };
+
+    scaffolding.ctx.gameLoader.saveGame = async (savedGame: Game) => {
+      await Promise.resolve();
+      savedGame.lastSaveId++;
+    };
+
+    const post = scaffolding.post(PlayerInput.INSTANCE, res);
+    const emit = Promise.resolve().then(() => {
+      scaffolding.req.emitter.emit('data', JSON.stringify({type: 'option'}));
+      scaffolding.req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+
+    const model = JSON.parse(res.content);
+    expect(model.game.step).eq(1);
+  });
+
+  it('writes exact player input payload to the shadow log when enabled', async () => {
+    shadowLogDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tm-shadow-input-'));
+    process.env.SHADOW_LOG = '1';
+    process.env.SHADOW_LOG_DIR = shadowLogDir;
+    process.env.SHADOW_LOG_FILE_PREFIX = 'input';
+
+    const player = TestPlayer.BLUE.newPlayer({beginner: true});
+    scaffolding.url = `/player/input?id=${player.id}`;
+    const game = Game.newInstance('gameid-log', [player], player);
+    await scaffolding.ctx.gameLoader.add(game);
+    player.process = () => {};
+
+    const payload = {type: 'option'};
+    const rawBody = JSON.stringify(payload);
+    const post = scaffolding.post(PlayerInput.INSTANCE, res);
+    const emit = Promise.resolve().then(() => {
+      scaffolding.req.emitter.emit('data', rawBody);
+      scaffolding.req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+
+    const logFile = path.join(shadowLogDir, `input-${game.id}.jsonl`);
+    expect(fs.existsSync(logFile)).eq(true);
+
+    const lines = fs.readFileSync(logFile, 'utf8').trim().split('\n');
+    expect(lines).has.length(1);
+
+    const entry = JSON.parse(lines[0]);
+    expect(entry.source).eq('player-input');
+    expect(entry.result).eq('accepted');
+    expect(entry.playerId).eq(player.id);
+    expect(entry.gameId).eq(game.id);
+    expect(entry.inputType).eq('option');
+    expect(entry.isUndo).eq(false);
+    expect(entry.rawBody).eq(rawBody);
+    expect(entry.playerAction).deep.eq(payload);
+    expect(entry.promptType).to.not.eq(null);
+  });
 });
+
+function restoreEnv(name: string, value: string | undefined) {
+  if (value === undefined) {
+    delete process.env[name];
+    return;
+  }
+  process.env[name] = value;
+}

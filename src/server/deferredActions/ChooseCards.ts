@@ -88,6 +88,10 @@ export function keep(player: IPlayer, cards: ReadonlyArray<IProjectCard>, discar
     LogHelper.logDrawnCards(player, cards);
   } else {
     player.game.log('${0} ${1} ${2} card(s)', (b) => b.player(player).string(logType).number(cards.length));
-    LogHelper.logCardAction(player, logType, cards, /* privateMessage */ true);
+    if (logType === LogType.BOUGHT) {
+      LogHelper.logPrivateCardSelection(player, logType, cards, discards);
+    } else {
+      LogHelper.logCardAction(player, logType, cards, /* privateMessage */ true);
+    }
   }
 }

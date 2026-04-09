@@ -32,7 +32,7 @@ import {GlobalParameter} from '../src/common/GlobalParameter';
 import {assertPlaceOcean} from './assertions';
 import {TiredEarth} from '../src/server/cards/pathfinders/TiredEarth';
 import {Tag} from '../src/common/cards/Tag';
-import {restoreTestDatabase, setTestDatabase} from './testing/setup';
+import {restoreTestDatabase, setTestDatabase} from './testing/testEnvironment';
 import {InMemoryDatabase} from './testing/InMemoryDatabase';
 
 describe('Game', () => {

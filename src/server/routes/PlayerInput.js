@@ -7,6 +7,8 @@ const Handler_1 = require("./Handler");
 const OrOptions_1 = require("../inputs/OrOptions");
 const UndoActionOption_1 = require("../inputs/UndoActionOption");
 const Types_1 = require("../../common/Types");
+const fs = require("fs");
+const path = require("path");
 const server_ids_1 = require("../utils/server-ids");
 const AppError_1 = require("../server/AppError");
 const statusCode_1 = require("../../common/http/statusCode");
@@ -80,37 +82,19 @@ class PlayerInput extends Handler_1.Handler {
                 body += data.toString();
             });
             req.once('end', async () => {
+                let entityForLog = undefined;
+                let isUndo = false;
+                let promptSnapshot = emptyPromptSnapshot();
                 try {
                     const entity = JSON.parse(body);
+                    entityForLog = cloneEntityForLog(entity);
+                    promptSnapshot = capturePromptSnapshot(player.getWaitingFor());
                     validateRunId(entity);
-                    if (this.isWaitingForUndo(player, entity)) {
+                    isUndo = this.isWaitingForUndo(player, entity);
+                    if (isUndo) {
                         await this.performUndo(req, res, ctx, player);
                     }
                     else {
-                        // Shadow log: record what player was asked and what they chose
-                        try {
-                            const wf = player.getWaitingFor();
-                            if (wf && process.env.SHADOW_LOG !== '0') {
-                                const fs = require('fs');
-                                const path = require('path');
-                                const logDir = process.env.SHADOW_LOG_DIR || path.resolve(process.cwd(), 'shadow-logs');
-                                fs.mkdirSync(logDir, {recursive: true});
-                                const logFile = path.join(logDir, `shadow-${player.game.id}.jsonl`);
-                                const entry = {
-                                    ts: new Date().toISOString(),
-                                    gameId: player.game.id,
-                                    gen: player.game.generation,
-                                    player: player.name,
-                                    color: player.color,
-                                    promptType: wf.type || '',
-                                    title: typeof wf.title === 'string' ? wf.title : (wf.title?.message || ''),
-                                    playerAction: entity,
-                                    mc: player.megaCredits ?? 0,
-                                    tr: player.getTerraformRating(),
-                                };
-                                fs.appendFileSync(logFile, JSON.stringify(entry) + '\n');
-                            }
-                        } catch(_e) { /* shadow log error — don't block game */ }
                         const previousSaveGamePromise = player.game.saveGamePromise;
                         player.process(entity);
                         if (player.game.saveGamePromise !== previousSaveGamePromise) {
@@ -118,9 +102,11 @@ class PlayerInput extends Handler_1.Handler {
                         }
                         responses.writeJson(res, ctx, ServerModel_1.Server.getPlayerModel(player));
                     }
+                    appendShadowInputLog(player, entityForLog, body, promptSnapshot, isUndo, 'accepted');
                     resolve();
                 }
                 catch (e) {
+                    appendShadowInputLog(player, entityForLog, body, promptSnapshot, isUndo, 'rejected', e);
                     if (!(e instanceof AppError_1.AppError || e instanceof InputError_1.InputError)) {
                         console.warn('Error processing input from player', e);
                     }
@@ -143,6 +129,71 @@ class PlayerInput extends Handler_1.Handler {
 }
 exports.PlayerInput = PlayerInput;
 PlayerInput.INSTANCE = new PlayerInput();
+function appendShadowInputLog(player, entity, rawBody, promptSnapshot, isUndo, result, error) {
+    if (entity === undefined || process.env.SHADOW_LOG !== '1') {
+        return;
+    }
+    try {
+        const logDir = process.env.SHADOW_LOG_DIR || path.resolve(process.cwd(), 'shadow-logs');
+        const filePrefix = process.env.SHADOW_LOG_FILE_PREFIX || 'input';
+        fs.mkdirSync(logDir, { recursive: true });
+        const logFile = path.join(logDir, `${filePrefix}-${player.game.id}.jsonl`);
+        const entry = {
+            ts: new Date().toISOString(),
+            source: 'player-input',
+            result,
+            serverRunId: server_ids_1.runId ?? null,
+            gameId: player.game.id,
+            generation: player.game.generation,
+            gameAge: player.game.gameAge,
+            playerId: player.id,
+            player: player.name,
+            color: player.color,
+            promptType: promptSnapshot.type,
+            promptTitle: promptSnapshot.title,
+            promptButtonLabel: promptSnapshot.buttonLabel,
+            inputType: typeof entity.type === 'string' ? entity.type : null,
+            isUndo,
+            playerAction: entity,
+            rawBody,
+            mc: player.megaCredits ?? 0,
+            tr: player.getTerraformRating(),
+            errorId: error instanceof AppError_1.AppError ? error.id : undefined,
+            errorMessage: error instanceof Error ? error.message : undefined,
+        };
+        fs.appendFileSync(logFile, JSON.stringify(entry) + '\n');
+    }
+    catch (_e) {
+    }
+}
+function capturePromptSnapshot(waitingFor) {
+    if (waitingFor === undefined || waitingFor === null) {
+        return emptyPromptSnapshot();
+    }
+    return {
+        buttonLabel: typeof waitingFor.buttonLabel === 'string' ? waitingFor.buttonLabel : null,
+        title: extractPromptTitle(waitingFor.title),
+        type: typeof waitingFor.type === 'string' ? waitingFor.type : null,
+    };
+}
+function cloneEntityForLog(entity) {
+    return JSON.parse(JSON.stringify(entity));
+}
+function emptyPromptSnapshot() {
+    return { buttonLabel: null, title: null, type: null };
+}
+function extractPromptTitle(title) {
+    if (typeof title === 'string') {
+        return title;
+    }
+    if (title !== undefined && title !== null && typeof title === 'object') {
+        const maybeMessage = title.message;
+        if (typeof maybeMessage === 'string') {
+            return maybeMessage;
+        }
+    }
+    return null;
+}
 function validateRunId(entity) {
     if (entity.runId !== undefined && server_ids_1.runId !== undefined) {
         if (entity.runId !== server_ids_1.runId) {

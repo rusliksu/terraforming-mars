@@ -9,12 +9,20 @@ import {InputResponse} from '../../common/inputs/InputResponse';
 import {isPlayerId} from '../../common/Types';
 import {Request} from '../Request';
 import {Response} from '../Response';
+import * as fs from 'fs';
+import * as path from 'path';
 import {runId} from '../utils/server-ids';
 import {AppError} from '../server/AppError';
 import {statusCode} from '../../common/http/statusCode';
 import {InputError} from '../inputs/InputError';
 import {isIProjectCard} from '../cards/IProjectCard';
 import {AppErrorResponse, INVALID_RUN_ID} from '../../common/app/AppErrorId';
+
+type ShadowPromptSnapshot = {
+  buttonLabel: string | null;
+  title: string | null;
+  type: string | null;
+};
 
 export class PlayerInput extends Handler {
   public static readonly INSTANCE = new PlayerInput();
@@ -96,36 +104,18 @@ export class PlayerInput extends Handler {
         body += data.toString();
       });
       req.once('end', async () => {
+        let entityForLog: InputResponse | undefined;
+        let isUndo = false;
+        let promptSnapshot: ShadowPromptSnapshot = emptyPromptSnapshot();
         try {
           const entity = JSON.parse(body);
+          entityForLog = cloneEntityForLog(entity);
+          promptSnapshot = capturePromptSnapshot(player.getWaitingFor());
           validateRunId(entity);
-          if (this.isWaitingForUndo(player, entity)) {
+          isUndo = this.isWaitingForUndo(player, entity);
+          if (isUndo) {
             await this.performUndo(req, res, ctx, player);
           } else {
-            // Shadow log: record what player was asked and what they chose
-            try {
-              const wf = player.getWaitingFor();
-              if (wf && process.env.SHADOW_LOG !== '0') {
-                const fs = require('fs');
-                const path = require('path');
-                const logDir = process.env.SHADOW_LOG_DIR || path.resolve(process.cwd(), 'shadow-logs');
-                fs.mkdirSync(logDir, {recursive: true});
-                const logFile = path.join(logDir, `shadow-${player.game.id}.jsonl`);
-                const entry = {
-                  ts: new Date().toISOString(),
-                  gameId: player.game.id,
-                  gen: player.game.generation,
-                  player: player.name,
-                  color: player.color,
-                  promptType: (wf as any).type || '',
-                  title: typeof (wf as any).title === 'string' ? (wf as any).title : ((wf as any).title?.message || ''),
-                  playerAction: entity,
-                  mc: (player as any).megaCredits ?? 0,
-                  tr: player.getTerraformRating(),
-                };
-                fs.appendFileSync(logFile, JSON.stringify(entry) + '\n');
-              }
-            } catch(_e) { /* shadow log error — don't block game */ }
             const previousSaveGamePromise = player.game.saveGamePromise;
             player.process(entity);
             if (player.game.saveGamePromise !== previousSaveGamePromise) {
@@ -133,8 +123,10 @@ export class PlayerInput extends Handler {
             }
             responses.writeJson(res, ctx, Server.getPlayerModel(player));
           }
+          appendShadowInputLog(player, entityForLog, body, promptSnapshot, isUndo, 'accepted');
           resolve();
         } catch (e) {
+          appendShadowInputLog(player, entityForLog, body, promptSnapshot, isUndo, 'rejected', e);
           if (!(e instanceof AppError || e instanceof InputError)) {
             console.warn('Error processing input from player', e);
           }
@@ -157,6 +149,86 @@ export class PlayerInput extends Handler {
     });
   }
 }
+
+function appendShadowInputLog(
+  player: IPlayer,
+  entity: InputResponse | undefined,
+  rawBody: string,
+  promptSnapshot: ShadowPromptSnapshot,
+  isUndo: boolean,
+  result: 'accepted' | 'rejected',
+  error?: unknown,
+) {
+  if (entity === undefined || process.env.SHADOW_LOG !== '1') {
+    return;
+  }
+  try {
+    const logDir = process.env.SHADOW_LOG_DIR || path.resolve(process.cwd(), 'shadow-logs');
+    const filePrefix = process.env.SHADOW_LOG_FILE_PREFIX || 'input';
+    fs.mkdirSync(logDir, {recursive: true});
+    const logFile = path.join(logDir, `${filePrefix}-${player.game.id}.jsonl`);
+    const entry = {
+      ts: new Date().toISOString(),
+      source: 'player-input',
+      result,
+      serverRunId: runId ?? null,
+      gameId: player.game.id,
+      generation: player.game.generation,
+      gameAge: player.game.gameAge,
+      playerId: player.id,
+      player: player.name,
+      color: player.color,
+      promptType: promptSnapshot.type,
+      promptTitle: promptSnapshot.title,
+      promptButtonLabel: promptSnapshot.buttonLabel,
+      inputType: typeof entity.type === 'string' ? entity.type : null,
+      isUndo,
+      playerAction: entity,
+      rawBody,
+      mc: (player as any).megaCredits ?? 0,
+      tr: player.getTerraformRating(),
+      errorId: error instanceof AppError ? error.id : undefined,
+      errorMessage: error instanceof Error ? error.message : undefined,
+    };
+    fs.appendFileSync(logFile, JSON.stringify(entry) + '\n');
+  } catch (_e) {
+    // Logging is best-effort and must never block gameplay.
+  }
+}
+
+function capturePromptSnapshot(waitingFor: unknown): ShadowPromptSnapshot {
+  if (waitingFor === undefined || waitingFor === null) {
+    return emptyPromptSnapshot();
+  }
+  const candidate = waitingFor as {buttonLabel?: unknown; title?: unknown; type?: unknown};
+  return {
+    buttonLabel: typeof candidate.buttonLabel === 'string' ? candidate.buttonLabel : null,
+    title: extractPromptTitle(candidate.title),
+    type: typeof candidate.type === 'string' ? candidate.type : null,
+  };
+}
+
+function cloneEntityForLog(entity: InputResponse): InputResponse {
+  return JSON.parse(JSON.stringify(entity));
+}
+
+function emptyPromptSnapshot(): ShadowPromptSnapshot {
+  return {buttonLabel: null, title: null, type: null};
+}
+
+function extractPromptTitle(title: unknown): string | null {
+  if (typeof title === 'string') {
+    return title;
+  }
+  if (title !== undefined && title !== null && typeof title === 'object') {
+    const maybeMessage = (title as {message?: unknown}).message;
+    if (typeof maybeMessage === 'string') {
+      return maybeMessage;
+    }
+  }
+  return null;
+}
+
 function validateRunId(entity: any) {
   if (entity.runId !== undefined && runId !== undefined) {
     if (entity.runId !== runId) {

@@ -11,6 +11,7 @@ import {timeAsync} from '../utils/timer';
 import {durationToMilliseconds} from '../utils/durations';
 import {CacheConfig} from './CacheConfig';
 import {Clock} from '../../common/Timer';
+import {EloSyncService} from '../elo/EloSyncService';
 
 const metrics = {
   initialize: new prometheus.Gauge({
@@ -185,6 +186,7 @@ export class GameLoader implements IGameLoader {
     try {
       this.mark(game.id);
       await database.markFinished(game.id);
+      await EloSyncService.getInstance().recordCompletedGame(game);
       metrics.gamesFinished.inc({players: String(game.players.length)});
       await this.maintenance();
     } catch (err) {

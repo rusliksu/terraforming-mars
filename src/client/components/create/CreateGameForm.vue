@@ -4,7 +4,7 @@
             <div class="create-game-telegram-banner">
               <span class="create-game-telegram-banner-label">Telegram notifications:</span>
               <a href="https://t.me/tm_knightbyte_bot" target="_blank" rel="noopener noreferrer">@tm_knightbyte_bot</a>
-              <span>start the bot to get your Chat ID</span>
+              <span>send <code>/start</code> there, then paste your numeric Chat ID below</span>
             </div>
             <div class="changelog"><a :href="wikiUrls.changelog" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank"><u v-i18n>Read our changelog to get the latest updates.</u></a></div>
             <div class="discord-invite" v-if="playersCount===1">
@@ -497,10 +497,16 @@
                                                   <input
                                                     :id="'telegramId' + (index + 1)"
                                                     type="text"
-                                                    class="form-input form-inline create-game-telegram-input"
+                                                    :class="['form-input', 'form-inline', 'create-game-telegram-input', {'is-error': getTelegramIdError(newPlayer.telegramID) !== ''}]"
+                                                    inputmode="numeric"
+                                                    autocomplete="off"
                                                     placeholder="Telegram ID"
                                                     v-model="newPlayer.telegramID"
+                                                    @blur="newPlayer.telegramID = normalizeTelegramId(newPlayer.telegramID)"
                                                   />
+                                                  <div v-if="getTelegramIdError(newPlayer.telegramID) !== ''" class="form-input-hint create-game-telegram-error">
+                                                    {{ getTelegramIdError(newPlayer.telegramID) }}
+                                                  </div>
                                               </div>
 
                                               <label class="form-radio form-inline" v-if="!randomFirstPlayer">
@@ -1004,6 +1010,19 @@ export default defineComponent({
     getPlayers(): Array<NewPlayerModel> {
       return this.players.slice(0, this.playersCount);
     },
+    normalizeTelegramId(telegramID: string | undefined): string {
+      return (telegramID ?? '').trim();
+    },
+    isTelegramIdValid(telegramID: string | undefined): boolean {
+      const normalized = this.normalizeTelegramId(telegramID);
+      return normalized === '' || /^\d{5,20}$/.test(normalized);
+    },
+    getTelegramIdError(telegramID: string | undefined): string {
+      if (this.isTelegramIdValid(telegramID)) {
+        return '';
+      }
+      return 'Use digits only. Open @tm_knightbyte_bot and send /start first.';
+    },
     isRandomMAEnabled(): Boolean {
       return this.randomMA !== RandomMAOptionType.NONE;
     },
@@ -1155,6 +1174,16 @@ export default defineComponent({
             player.name = defaultPlayerName;
           }
         }
+      });
+
+      const invalidTelegramPlayerIndex = players.findIndex((player) => !this.isTelegramIdValid(player.telegramID));
+      if (invalidTelegramPlayerIndex !== -1) {
+        window.alert(translateTextWithParams('Player ${0}: invalid Telegram ID. Use digits only and send /start to @tm_knightbyte_bot first.', [(invalidTelegramPlayerIndex + 1).toString()]));
+        return;
+      }
+
+      players.forEach((player) => {
+        player.telegramID = this.normalizeTelegramId(player.telegramID);
       });
 
       players.map((player: any) => {
@@ -1472,6 +1501,13 @@ export default defineComponent({
   font-weight: 600;
 }
 
+.create-game-telegram-banner code {
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f2f4f8;
+}
+
 .create-game-telegram-row {
   margin-top: 10px;
 }
@@ -1487,5 +1523,9 @@ export default defineComponent({
 .create-game-telegram-input {
   max-width: 180px;
   font-size: 13px;
+}
+
+.create-game-telegram-error {
+  color: #ffb0b0;
 }
 </style>

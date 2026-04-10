@@ -407,6 +407,7 @@ export default defineComponent({
           const raw = (name || '').trim().toLowerCase();
           if (raw === 'лёха' || raw === 'леха') return 'алексей';
           if (raw === 'genuinegold') return 'илья';
+          if (raw === 'rav' || raw === 'равиль') return 'рав';
           return raw;
         };
 

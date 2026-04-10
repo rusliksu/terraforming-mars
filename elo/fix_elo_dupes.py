@@ -76,6 +76,7 @@ MERGES = {
     'martian': 'Martian',
     'junior': 'Junior',
     'zara': 'Zara',
+    'rav': 'Рав',
 }
 
 

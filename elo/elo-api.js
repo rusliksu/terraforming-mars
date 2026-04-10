@@ -69,6 +69,7 @@ const MERGES = {
   "andrewk": "Andrewk", "andrew": "Andrewk",
   "kogoro": "Kogoro", "tersius": "Tersius",
   "martian": "Martian", "junior": "Junior", "zara": "Zara",
+  "rav": "Рав", "равиль": "Рав",
 };
 
 function normalizeName(name) {

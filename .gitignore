@@ -18,6 +18,8 @@ pid
 .eslintcache
 tsconfig*.tsbuildinfo
 assets/locales
+__pycache__/
+*.pyc
 
 # Local Packages
 node_modules/

@@ -19,6 +19,15 @@ import {Response} from '../Response';
 import {QuotaConfig, QuotaHandler} from '../server/QuotaHandler';
 import {durationToMilliseconds} from '../utils/durations';
 
+export function normalizeTelegramId(telegramID: string | undefined): string {
+  return (telegramID ?? '').trim();
+}
+
+export function isTelegramIdValid(telegramID: string | undefined): boolean {
+  const normalized = normalizeTelegramId(telegramID);
+  return normalized === '' || /^\d{5,20}$/.test(normalized);
+}
+
 function getQuotaConfig(): QuotaConfig {
   const defaultQuota = {limit: 1, perMs: 1}; // Effectively, no limit.
   const val = process.env.GAME_QUOTA;
@@ -90,6 +99,13 @@ export class ApiCreateGame extends Handler {
       req.once('end', async () => {
         try {
           const gameReq = JSON.parse(body) as NewGameConfig;
+          const invalidTelegramPlayerIndex = gameReq.players.findIndex((player) => !isTelegramIdValid(player.telegramID));
+          if (invalidTelegramPlayerIndex !== -1) {
+            responses.badRequest(req, res, `invalid telegram id for player ${invalidTelegramPlayerIndex + 1}`);
+            resolve();
+            return;
+          }
+          const normalizedTelegramIds = gameReq.players.map((player) => normalizeTelegramId(player.telegramID));
           const gameId = safeCast(generateRandomId('g'), isGameId);
           const spectatorId = safeCast(generateRandomId('s'), isSpectatorId);
           const players = gameReq.players.map((obj: any) => {
@@ -103,9 +119,9 @@ export class ApiCreateGame extends Handler {
           });
           // Assign telegramID from game request
           players.forEach((p, i) => {
-            const reqPlayer = gameReq.players[i];
-            if (reqPlayer && (reqPlayer as any).telegramID) {
-              p.telegramID = (reqPlayer as any).telegramID;
+            const telegramID = normalizedTelegramIds[i];
+            if (telegramID) {
+              p.telegramID = telegramID;
             }
           });
           let firstPlayerIdx = 0;
@@ -197,4 +213,3 @@ export class ApiCreateGame extends Handler {
     });
   }
 }
-

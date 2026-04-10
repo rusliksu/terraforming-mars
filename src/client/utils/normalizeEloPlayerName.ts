@@ -1,12 +1,8 @@
-const ELO_PLAYER_NAME_ALIASES: Record<string, string> = {
-  'лёха': 'алексей',
-  'леха': 'алексей',
-  'genuinegold': 'илья',
-  'rav': 'рав',
-  'равиль': 'рав',
-};
+import eloPlayerNameAliases from '../../../elo/player_name_aliases.json';
+
+const ELO_PLAYER_NAME_ALIASES = eloPlayerNameAliases as Record<string, string>;
 
 export function normalizeEloPlayerName(name: string): string {
   const raw = (name || '').trim().toLowerCase();
-  return ELO_PLAYER_NAME_ALIASES[raw] ?? raw;
+  return (ELO_PLAYER_NAME_ALIASES[raw] ?? raw).toLowerCase();
 }

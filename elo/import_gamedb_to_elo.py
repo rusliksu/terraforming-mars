@@ -14,6 +14,8 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
+from elo_aliases import assert_no_suspicious_duplicate_players, normalize_name
+
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 DB_PATH = Path(os.environ.get('TM_DB_PATH', REPO_ROOT / 'db' / 'game.db'))
@@ -22,94 +24,6 @@ ELO_PATH = ELO_DIR / 'elo-data.json'
 ELO_COMPAT_PATH = ELO_DIR / 'data.json'
 DEFAULT_ELO = 1500
 BASE_K = 32
-
-# ── Name normalization (from fix_elo_dupes.py MERGES + elo.js aliases) ──
-
-MERGES = {
-    'death': 'Death', 'death ': 'Death',
-    'death8': 'Death8Killer', 'death8killer': 'Death8Killer', 'deathkiller': 'Death8Killer',
-    'lfc': 'LFC', 'lfc ': 'LFC',
-    'gydro': 'GydRo', 'руслан': 'GydRo', 'ruslan': 'GydRo',
-    'linda': 'Linda', 'linda ': 'Linda',
-    'giasa': 'Giasa', 'giasa_': 'Giasa',
-    'simon': 'Simon',
-    'geek': 'GeekDumb', 'geekdumb': 'GeekDumb',
-    'bmac': 'BmacG', 'bmacg': 'BmacG', 'bmacg.': 'BmacG',
-    'drr': 'Drrrg', 'drrg': 'Drrrg', 'drrrg': 'Drrrg',
-    'duc': 'Duc Nguyen', 'duc nguyen': 'Duc Nguyen',
-    'dukz': 'Dukz01', 'dukz01': 'Dukz01',
-    'mrf': 'MrFahrenheit', 'mrf ': 'MrFahrenheit', 'mrfahrenheit': 'MrFahrenheit',
-    ' mrfahrenheit': 'MrFahrenheit', 'mrfahrenheit7': 'MrFahrenheit', 'fahren': 'MrFahrenheit',
-    'eket': 'Eket', 'eket678': 'Eket',
-    'masterkeys': 'MasterKeys', 'mstrkeys': 'MasterKeys',
-    'hoyla': 'Hoyla', 'höylä': 'Hoyla',
-    'iro': 'Iropikc', 'iropic': 'Iropikc', 'iropick': 'Iropikc', 'iropikc': 'Iropikc',
-    'jackir': 'Jackir',
-    'kamui': 'Kamui',
-    'lang': 'Langfjes', 'langfjes': 'Langfjes',
-    'low': 'LOW615', 'low615': 'LOW615',
-    'madhatta': 'MadHatter', 'madhatter': 'MadHatter',
-    'mon': 'Monty', 'mon00': 'Monty', 'monty': 'Monty',
-    'mort': 'Mortaum', 'moratum': 'Mortaum', 'mortarum': 'Mortaum', 'mortaum': 'Mortaum',
-    'mu6ra7a': 'Mu6Ra7a', 'mu6rata': 'Mu6Ra7a',
-    'nagimi': 'Nagumi', 'nagumi': 'Nagumi',
-    'nikoha': 'Nikoha', 'nihoka13': 'Nikoha',
-    'pa': 'Pa2016', 'pa2016': 'Pa2016',
-    'panda': 'Panda', 'pandaboi': 'Panda',
-    'plaz': 'Plazmica', 'plazma': 'Plazmica', 'plazmica': 'Plazmica',
-    'pop': 'Popsickle', 'popi': 'Popsickle', 'poppy': 'Popsickle',
-    'popsickle': 'Popsickle', 'popsickle ': 'Popsickle', 'popsicle': 'Popsickle',
-    'preparationfit': 'PreparationFit', 'prepartionfit': 'PreparationFit',
-    'reinforcement': 'Reinforcement', 'reinforcement-': 'Reinforcement',
-    'rianby': 'Rianby',
-    's29jin': 'S29jin',
-    'shm': 'Shmondar', 'shmo': 'Shmondar', 'shmondar': 'Shmondar',
-    'tarun': 'Tarun', 'taru': 'Tarun', 'taruntheo13': 'Tarun',
-    'teddy': 'Teddy',
-    'underthegun': 'UTG', 'utg': 'UTG',
-    'vit': 'VitalyVit', 'vitaly': 'VitalyVit', 'vitalyvit': 'VitalyVit',
-    'vvb': 'VvbMinsk', 'vvbminsk': 'VvbMinsk',
-    'wd': 'Wdkymyms', 'wdk': 'Wdkymyms', 'wdkmysms': 'Wdkymyms',
-    'wdkumums': 'Wdkymyms', 'wdkym': 'Wdkymyms', 'wdkymymd': 'Wdkymyms', 'wdkymyms': 'Wdkymyms',
-    'kaera': 'Kaera', 'kaera02': 'Kaera',
-    'coolio': 'Coolio',
-    'xenon': 'Xenon',
-    'zalo': 'Zalo', 'zalobolivia': 'Zalo',
-    'krootish': 'Krootish86', 'krootish86': 'Krootish86',
-    'j1233': 'J1234', 'j1234': 'J1234',
-    'italian': 'Italianood', 'italianood': 'Italianood', 'ita': 'Italianood',
-    'cuc': 'Cucumber', 'cucumber': 'Cucumber',
-    'tal': 'Talov', 'talov': 'Talov',
-    'raj': 'Rajatppn', 'raja': 'Rajatppn', 'rajatppn': 'Rajatppn',
-    'mikiekv': 'MikiEkv',
-    'kuntiny': 'Kuntiny',
-    'amzo': 'Amzo', 'amzo4': 'Amzo',
-    'tacos': 'Los Tacos', 'los tacos': 'Los Tacos',
-    'andrewk': 'Andrewk', 'andrew': 'Andrewk',
-    'kogoro': 'Kogoro',
-    'tersius': 'Tersius',
-    'martian': 'Martian',
-    'junior': 'Junior',
-    'zara': 'Zara',
-    # Russian names from knightbyte
-    'лёха': 'Алексей', 'леха': 'Алексей', 'алексей': 'Алексей',
-    'лёха -15 эло': 'Алексей',
-    'genuinegold': 'Илья', 'илья': 'Илья',
-    'тимур': 'Тимур',
-    'олеся': 'Олеся',
-    'антистресс': 'Антистресс',
-    'rav': 'Рав',
-    'рав': 'Рав', 'равиль': 'Рав',
-}
-
-
-def normalize_name(raw):
-    """Return (key, displayName) from raw player name."""
-    stripped = raw.strip()
-    low = stripped.lower()
-    canonical = MERGES.get(low, stripped)
-    return canonical.lower(), canonical
-
 
 def get_k(elo):
     if elo < 1400: return BASE_K * 1.2
@@ -516,6 +430,7 @@ def main():
     print(f'Skipped no VP/no place: {skipped_no_vp_no_place}')
     print(f'Skipped <2 players: {skipped_few_players}')
     print(f'Players: {len(elo_data["players"])}')
+    assert_no_suspicious_duplicate_players(elo_data['players'])
 
     # Leaderboard
     lb = sorted(elo_data['players'].items(), key=lambda x: x[1]['elo'], reverse=True)

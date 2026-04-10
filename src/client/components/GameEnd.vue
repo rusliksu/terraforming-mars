@@ -251,6 +251,7 @@ import {Message} from '@/common/logs/Message';
 import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
 import {MADetail} from '@/common/game/VictoryPointsBreakdown';
 import {AwardName} from '@/common/ma/AwardName';
+import {normalizeEloPlayerName} from '@/client/utils/normalizeEloPlayerName';
 
 function getViewModel(playerView: ViewModel | undefined, spectator: ViewModel | undefined): ViewModel {
   if (playerView !== undefined) return playerView;
@@ -403,17 +404,9 @@ export default defineComponent({
   methods: {
     async fetchEloDelta() {
       try {
-        const normalizeName = (name: string): string => {
-          const raw = (name || '').trim().toLowerCase();
-          if (raw === 'лёха' || raw === 'леха') return 'алексей';
-          if (raw === 'genuinegold') return 'илья';
-          if (raw === 'rav' || raw === 'равиль') return 'рав';
-          return raw;
-        };
-
         const colorByName: Record<string, string> = {};
         for (const p of this.players) {
-          colorByName[normalizeName(p.name)] = p.color;
+          colorByName[normalizeEloPlayerName(p.name)] = p.color;
         }
 
         const resp = await fetch('/elo/data.json?' + Date.now(), {cache: 'no-store'});
@@ -426,7 +419,7 @@ export default defineComponent({
 
         const result = currentGame.results.map((r: any) => {
           const displayName = r.displayName || r.name || '?';
-          const key = normalizeName(displayName);
+          const key = normalizeEloPlayerName(displayName);
           const player = players[key] || null;
           return {
             name: displayName,

@@ -39,7 +39,7 @@ Keep release mechanics simple: release a commit, not a snowflake environment.
 
 ## Upstream Sync Order
 
-1. Go to the clean checkout `C:\Users\Ruslan\tm\terraforming-mars-rebase-main`.
+1. Go to the clean checkout `C:\Users\Ruslan\tm\terraforming-mars-release-main`.
 2. Fetch both remotes: `git fetch origin upstream`.
 3. Refresh local `main` from your fork's `origin/main`.
 4. Create a temporary sync branch such as `sync/upstream-20260413`.
@@ -51,6 +51,12 @@ Keep release mechanics simple: release a commit, not a snowflake environment.
 10. After prod is good, fast-forward or merge back into `origin/main`, then update other worktrees as needed.
 
 ## Commands
+
+Refresh the clean release checkout before a real rollout:
+
+```powershell
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\refresh_tm_release_checkout.ps1
+```
 
 Deploy to staging from the safe default source:
 

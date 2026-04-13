@@ -28,9 +28,14 @@ Goal: keep the current process stable and stop adding more drift.
 Capture a quick snapshot before any future work on prod:
 
 ```powershell
-ssh vps 'cd /home/openclaw/terraforming-mars && git rev-parse HEAD && git status --short'
-ssh vps 'systemctl --user show -p MainPID --value tm-server'
-ssh vps 'cd /home/openclaw/terraforming-mars && ls -l --time-style=long-iso build/chunks/player-input.js build/chunks/738.js build/src/common/inputs/Payment.js build/src/server/routes/PlayerInput.js'
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\capture_tm_live_state.ps1
+```
+
+If you want a saved snapshot artifact:
+
+```powershell
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\capture_tm_live_state.ps1 `
+  -OutputPath C:\Users\Ruslan\tm\artifacts\tm-live-snapshot.md
 ```
 
 ## Phase 2: First Safe Release Window

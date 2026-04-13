@@ -13,7 +13,7 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $tmWorkspaceRoot = Split-Path -Parent $repoRoot
 
 if ([string]::IsNullOrWhiteSpace($SourceRoot)) {
-    $SourceRoot = Join-Path $tmWorkspaceRoot "terraforming-mars-rebase-main"
+    $SourceRoot = Join-Path $tmWorkspaceRoot "terraforming-mars-release-main"
 }
 
 $deployScript = Join-Path $PSScriptRoot "deploy_tm_server.ps1"

@@ -7,6 +7,22 @@
             <span class="turn-order" v-i18n>{{getTurnOrder(index)}}</span>
             <span :class="'color-square ' + getPlayerCubeColorClass(player.color)">{{playerSymbol(player.color)}}</span>
             <span class="player-name"><a :href="getHref(player.id)">{{player.name}}</a></span>
+            <button
+              v-if="isRunning && serverId !== ''"
+              class="bot-toggle"
+              :class="{'bot-toggle--active': isBotRunning(player.id)}"
+              :aria-checked="isBotRunning(player.id) ? 'true' : 'false'"
+              :aria-label="isBotRunning(player.id) ? 'Return control to player' : 'Let bot play for this player'"
+              :title="isBotRunning(player.id) ? 'Return control to player' : 'Let bot play for this player'"
+              role="switch"
+              :disabled="busyPlayerIds.includes(player.id)"
+              @click.stop.prevent="toggleBot(player.id)">
+              <span class="bot-toggle__track">
+                <span class="bot-toggle__thumb"></span>
+              </span>
+              <span class="bot-toggle__label">Bot takeover</span>
+              <span v-if="isBotRunning(player.id)" class="bot-toggle__state">bot is playing</span>
+            </button>
             <AppButton title="copy" size="tiny" @click="copyUrl(player.id)"/>
             <span v-if="isPlayerUrlCopied(player.id)" class="copied-notice"><span v-i18n>Copied!</span></span>
           </li>
@@ -75,9 +91,22 @@ export default defineComponent({
   },
   data() {
     return {
+      botPlayersOverride: undefined as Array<string> | undefined,
+      busyPlayerIds: [] as Array<string>,
       // Variable to keep the state for the current copied player id. Used to display message of which button and which player playable link is currently in the clipboard
       urlCopiedPlayerId: DEFAULT_COPIED_PLAYER_ID,
     };
+  },
+  computed: {
+    activeBotPlayers(): Array<string> {
+      return this.botPlayersOverride ?? this.game?.botPlayers ?? [];
+    },
+    isRunning(): boolean {
+      return this.game.phase !== 'end';
+    },
+    serverId(): string {
+      return new URLSearchParams(window.location.search).get('serverId') || '';
+    },
   },
   methods: {
     getGameId(): string {
@@ -99,6 +128,9 @@ export default defineComponent({
     setCopiedIdToDefault() {
       this.urlCopiedPlayerId = DEFAULT_COPIED_PLAYER_ID;
     },
+    isBotRunning(playerId: string): boolean {
+      return this.activeBotPlayers.includes(playerId);
+    },
     getPlayerCubeColorClass(color: Color): string {
       return playerColorClass(color, 'bg');
     },
@@ -118,6 +150,31 @@ export default defineComponent({
     isPlayerUrlCopied(playerId: string): boolean {
       return playerId === this.urlCopiedPlayerId;
     },
+    async toggleBot(playerId: string) {
+      if (this.serverId === '' || this.busyPlayerIds.includes(playerId)) {
+        return;
+      }
+      const action = this.isBotRunning(playerId) ? 'stop' : 'start';
+      this.busyPlayerIds = [...this.busyPlayerIds, playerId];
+      try {
+        const query = new URLSearchParams({
+          action,
+          gameId: this.getGameId(),
+          playerId,
+          serverId: this.serverId,
+        });
+        const response = await fetch('api/bot-takeover?' + query.toString(), {method: 'POST'});
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+        const payload = await response.json() as {botPlayers?: Array<string>};
+        this.botPlayersOverride = Array.isArray(payload.botPlayers) ? payload.botPlayers : [];
+      } catch (error) {
+        alert(error instanceof Error ? error.message : String(error));
+      } finally {
+        this.busyPlayerIds = this.busyPlayerIds.filter((id) => id !== playerId);
+      }
+    },
     playerSymbol(color: Color) {
       return playerSymbol(color);
     },
@@ -126,3 +183,62 @@ export default defineComponent({
 
 </script>
 
+<style scoped>
+.bot-toggle {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: #333;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 6px;
+  margin: 0 6px;
+  padding: 0;
+  vertical-align: middle;
+}
+
+.bot-toggle[disabled] {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.bot-toggle__track {
+  align-items: center;
+  background: #bbb;
+  border-radius: 999px;
+  display: inline-flex;
+  height: 18px;
+  padding: 2px;
+  transition: background-color 0.15s ease;
+  width: 34px;
+}
+
+.bot-toggle__thumb {
+  background: #fff;
+  border-radius: 50%;
+  display: block;
+  height: 14px;
+  transform: translateX(0);
+  transition: transform 0.15s ease;
+  width: 14px;
+}
+
+.bot-toggle--active .bot-toggle__track {
+  background: #2a9d5b;
+}
+
+.bot-toggle--active .bot-toggle__thumb {
+  transform: translateX(16px);
+}
+
+.bot-toggle__label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.bot-toggle__state {
+  color: #2a9d5b;
+  font-size: 11px;
+  font-weight: 600;
+}
+</style>

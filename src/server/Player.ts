@@ -181,6 +181,7 @@ export class Player implements IPlayer {
   public user?: DiscordId;
   public telegramID: string = "";
   public lastNoticeMessageId: number = -1;
+  public lastTurnNoticeKey: string = "";
   private _pendingTurnNoticeTimer?: ReturnType<typeof setTimeout>;
   private _turnNoticeSentThisRound: boolean = false;
 
@@ -1684,9 +1685,15 @@ export class Player implements IPlayer {
     return this.waitingFor;
   }
 
+  private getTurnNoticeKey(): string {
+    const actionsBeforeThisTurn = Math.max(0, this.game.getActionCount() - this.actionsTakenThisRound);
+    return `${this.game.id}:${this.game.generation}:${this.game.phase}:${this.id}:${actionsBeforeThisTurn}`;
+  }
+
   public setWaitingFor(input: PlayerInput, cb: () => void = () => {}): void {
+    const turnNoticeKey = this.getTurnNoticeKey();
     if (this.game.inputsThisRound === 0) {
-      this._turnNoticeSentThisRound = false;
+      this._turnNoticeSentThisRound = this.lastTurnNoticeKey === turnNoticeKey;
     }
     if (this.waitingFor !== undefined) {
       const message = `Overwriting waitingFor ${this.waitingFor.type} with ${input?.type}`;
@@ -1702,10 +1709,12 @@ export class Player implements IPlayer {
     this.game.inputsThisRound++;
     if (this._pendingTurnNoticeTimer) clearTimeout(this._pendingTurnNoticeTimer);
     if (this.telegramID && this._turnNoticeSentThisRound === false) {
-      this._pendingTurnNoticeTimer = setTimeout(() => {
+      this._pendingTurnNoticeTimer = setTimeout(async () => {
         this._pendingTurnNoticeTimer = undefined;
-        this._turnNoticeSentThisRound = true;
-        sendTurnNotice(this);
+        const sent = await sendTurnNotice(this, turnNoticeKey);
+        if (sent) {
+          this._turnNoticeSentThisRound = true;
+        }
       }, 5000);
     }
   }
@@ -1739,6 +1748,8 @@ export class Player implements IPlayer {
       id: this.id,
       user: this.user,
       telegramID: this.telegramID || undefined,
+      lastNoticeMessageId: this.lastNoticeMessageId,
+      lastTurnNoticeKey: this.lastTurnNoticeKey || undefined,
       // Used only during set-up
       pickedCorporationCard: this.pickedCorporationCard?.name,
       // Terraforming Rating
@@ -1880,6 +1891,8 @@ export class Player implements IPlayer {
     player.politicalAgendasActionUsedCount = d.politicalAgendasActionUsedCount;
     player.user = d.user;
     player.telegramID = d.telegramID ?? "";
+    player.lastNoticeMessageId = d.lastNoticeMessageId ?? -1;
+    player.lastTurnNoticeKey = d.lastTurnNoticeKey ?? "";
 
     // Rebuild removed from play cards (Playwrights, Odyssey)
     player.removedFromPlayCards = cardsFromJSON(d.removedFromPlayCards);

@@ -6,6 +6,7 @@ import {GameOptionsModel} from './GameOptionsModel';
 
 export type SimpleGameModel = {
     activePlayer: Color;
+    botPlayers?: Array<PlayerId>;
     id: GameId;
     phase: Phase;
     players: Array<SimplePlayerModel>;

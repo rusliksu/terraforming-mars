@@ -1,7 +1,7 @@
 const jsdom = require('jsdom');
 const {JSDOM} = jsdom;
 
-const dom = new JSDOM(`<!DOCTYPE html>`);
+const dom = new JSDOM(`<!DOCTYPE html>`, {url: 'http://localhost/'});
 
 global.document = dom.window.document;
 global.navigator = dom.window.navigator;

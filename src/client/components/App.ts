@@ -64,6 +64,20 @@ function getLastPathSegment() {
   return window.location.pathname.replace(/.*\//g, '');
 }
 
+function retainAdminSearch(targetPath: string, id: string | undefined) {
+  const params = new URLSearchParams();
+  if (id !== undefined) {
+    params.set('id', id);
+  }
+  const current = new URLSearchParams(window.location.search);
+  const serverId = current.get('serverId');
+  if (serverId !== null && serverId !== '') {
+    params.set('serverId', serverId);
+  }
+  const query = params.toString();
+  return query === '' ? targetPath : `${targetPath}?${query}`;
+}
+
 export default defineComponent({
   name: 'App',
   data(): MainAppData {
@@ -161,7 +175,7 @@ export default defineComponent({
               window.history.replaceState(
                 model,
                 `${constants.APP_NAME} - Player`,
-                `${paths.THE_END}?id=${model.id}`,
+                retainAdminSearch(paths.THE_END, model.id),
               );
             }
           } else {
@@ -174,7 +188,7 @@ export default defineComponent({
               window.history.replaceState(
                 model,
                 `${constants.APP_NAME} - Game`,
-                `${path}?id=${model.id}`,
+                retainAdminSearch(path, model.id),
               );
             }
           }
@@ -225,7 +239,7 @@ export default defineComponent({
           window.history.replaceState(
             appGame,
             `${constants.APP_NAME} - Game`,
-            `${paths.GAME}?id=${appGame.id}`,
+            retainAdminSearch(paths.GAME, appGame.id),
           );
         })
         .catch((err) => {

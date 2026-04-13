@@ -30,7 +30,7 @@ export class ApiPlayer extends Handler {
     }
     try {
       const player = game.getPlayerById(playerId);
-      if (!this.isUser(player.user, ctx)) {
+      if (!this.isUser(player.user, ctx) && !this.hasServerIdAccess(ctx)) {
         responses.notAuthorized(req, res);
         return;
       }

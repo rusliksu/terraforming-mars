@@ -5,6 +5,7 @@ import {Request} from '../Request';
 import {Response} from '../Response';
 import {SessionId} from '../auth/Session';
 import {GameLoader} from '../database/GameLoader';
+import {ApiBotTakeover} from '../routes/ApiBotTakeover';
 import {ApiCloneableGame} from '../routes/ApiCloneableGame';
 import {ApiCreateGame} from '../routes/ApiCreateGame';
 import {ApiGame} from '../routes/ApiGame';
@@ -66,6 +67,7 @@ const handlers: Map<string, IHandler> = new Map(
   [
     ['', ServeApp.INSTANCE],
     [paths.ADMIN, ServeApp.INSTANCE],
+    [paths.API_BOT_TAKEOVER, ApiBotTakeover.INSTANCE],
     [paths.API_CLONEABLEGAME, ApiCloneableGame.INSTANCE],
     [paths.API_CREATEGAME, ApiCreateGame.INSTANCE],
     [paths.API_GAME, ApiGame.INSTANCE],

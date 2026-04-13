@@ -1,11 +1,27 @@
 import https from "https";
+import {BotTakeoverManager} from './bot/BotTakeoverManager';
+import {PlayerId} from '../common/Types';
 
 const BOT_TOKEN = process.env.TM_BOT_TOKEN ?? "8625024007:AAH-dOu2syBcQB4f28O1wzzgoCROFjNnRNk";
 const SERVER_URL = process.env.TM_SERVER_URL ?? "https://tm.knightbyte.win";
+const COLOR_LABELS: Record<string, string> = {
+  red: "красный",
+  green: "зеленый",
+  yellow: "желтый",
+  blue: "синий",
+  black: "черный",
+  purple: "фиолетовый",
+  orange: "оранжевый",
+  pink: "розовый",
+  neutral: "нейтральный",
+  bronze: "бронзовый",
+};
 
 interface TelegramResponse {
   ok: boolean;
   result?: { message_id: number };
+  description?: string;
+  error_code?: number;
 }
 
 function callTelegramApi(method: string, body: object): Promise<TelegramResponse> {
@@ -45,25 +61,63 @@ function callTelegramApi(method: string, body: object): Promise<TelegramResponse
 
 export interface TelegramNotifiable {
   name: string;
-  id: string;
+  id: PlayerId;
   telegramID: string;
   lastNoticeMessageId: number;
+  lastTurnNoticeKey?: string;
+  game?: {
+    id: string;
+    generation: number;
+    players: ReadonlyArray<{name: string; color: string}>;
+    gameOptions?: {boardName?: string};
+  };
 }
 
-export async function sendTurnNotice(player: TelegramNotifiable): Promise<void> {
-  if (!player.telegramID) return;
+function describeColor(color: string): string {
+  return COLOR_LABELS[color] ?? color;
+}
+
+function buildParticipantsSummary(player: TelegramNotifiable): string | undefined {
+  const participants = player.game?.players ?? [];
+  if (participants.length === 0) {
+    return undefined;
+  }
+  return participants.map((participant) => `${participant.name} (${describeColor(participant.color)})`).join(", ");
+}
+
+export function buildTurnNoticeText(player: TelegramNotifiable): string {
+  const lines = [`${player.name}, твой ход! 🪐`, `${SERVER_URL}/player?id=${player.id}`];
+  const game = player.game;
+  if (game !== undefined) {
+    const boardName = game.gameOptions?.boardName ?? "Mars";
+    lines.push(`Игра: ${game.id} · Gen ${game.generation} · ${boardName} · ${game.players.length}P`);
+  }
+  const participantsSummary = buildParticipantsSummary(player);
+  if (participantsSummary !== undefined) {
+    lines.push(`Игроки: ${participantsSummary}`);
+  }
+  return lines.join("\n");
+}
+
+export async function sendTurnNotice(player: TelegramNotifiable, turnNoticeKey?: string): Promise<boolean> {
+  if (!player.telegramID) return false;
+  if (BotTakeoverManager.INSTANCE.isActive(player.id)) return false;
   try {
     const resp = await callTelegramApi("sendMessage", {
       chat_id: player.telegramID,
-      text: `${player.name}, твой ход! 🪐`,
-      parse_mode: "HTML",
+      text: buildTurnNoticeText(player),
     });
     if (resp.ok && resp.result) {
       player.lastNoticeMessageId = resp.result.message_id;
+      if (turnNoticeKey !== undefined) {
+        player.lastTurnNoticeKey = turnNoticeKey;
+      }
+      return true;
     }
   } catch (err) {
     console.warn("sendTurnNotice error:", err);
   }
+  return false;
 }
 
 export async function deleteTurnNotice(player: TelegramNotifiable): Promise<void> {

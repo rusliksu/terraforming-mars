@@ -24,16 +24,17 @@ import {createPathfindersModel} from './PathfindersModel';
 import {MoonModel} from '../../common/models/MoonModel';
 import {CardName} from '../../common/cards/CardName';
 import {AwardScorer} from '../awards/AwardScorer';
-import {SpaceId} from '../../common/Types';
+import {PlayerId, SpaceId} from '../../common/Types';
 import {cardsToModel, coloniesToModel} from './ModelUtils';
 import {runId} from '../utils/server-ids';
 import {toName} from '../../common/utils/utils';
 import {MAX_AWARDS, MAX_MILESTONES} from '../../common/constants';
 
 export class Server {
-  public static getSimpleGameModel(game: IGame): SimpleGameModel {
+  public static getSimpleGameModel(game: IGame, options?: {botPlayers?: Array<PlayerId>}): SimpleGameModel {
     return {
       activePlayer: game.activePlayer.color,
+      botPlayers: options?.botPlayers,
       id: game.id,
       phase: game.phase,
       players: game.playersInGenerationOrder.map((player) => ({

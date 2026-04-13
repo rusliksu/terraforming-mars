@@ -906,6 +906,12 @@ export class Player implements IPlayer {
     return undefined;
   }
 
+  public triggerOnNonCardTagAdded(tag: Tag): void {
+    for (const card of this.tableau) {
+      card.onNonCardTagAdded?.(this, tag);
+    }
+  }
+
   public onCardPlayed(card: ICard) {
     if (card.type === CardType.PROXY) {
       return;

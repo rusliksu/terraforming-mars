@@ -330,7 +330,8 @@ try {
     }
 
     Write-Host "Applying release on $HostAlias"
-    $remoteScript | & ssh.exe $HostAlias "bash -s"
+    $remoteScriptLf = $remoteScript -replace "`r`n", "`n"
+    $remoteScriptLf | & ssh.exe $HostAlias "bash -s"
     if ($LASTEXITCODE -ne 0) {
         throw "Remote deploy failed."
     }

@@ -139,7 +139,8 @@ if ($DryRun) {
     exit 0
 }
 
-$remoteScript | & ssh.exe $HostAlias "bash -s"
+$remoteScriptLf = $remoteScript -replace "`r`n", "`n"
+$remoteScriptLf | & ssh.exe $HostAlias "bash -s"
 if ($LASTEXITCODE -ne 0) {
     throw "Promote from staging to prod failed."
 }

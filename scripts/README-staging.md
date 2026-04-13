@@ -125,3 +125,4 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\verify_tm_server.ps1 -En
 - `release_tm_prod.ps1` replaces the old manual "check staging, then promote, then open prod" step with scripted gates.
 - `release.json` is generated during deploy and is used to prove that staging and prod serve the same artifact hash after promote.
 - `deploy_tm_server.ps1 -Environment prod` is intentionally blocked by default. Use `release_tm_prod.ps1` or `promote_tm_staging_to_prod.ps1`.
+- If prod is already dirty and you need to stabilize it without an immediate restart, follow [README-live-cleanup.md](README-live-cleanup.md).

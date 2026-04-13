@@ -1302,26 +1302,12 @@ export class Game implements IGame, Logger {
     tile: Tile): void {
     // Part 1, basic validation checks.
 
-    if (space.tile !== undefined) {
-      let allow = false;
-      if (tile.tileType === TileType.NEW_HOLLAND) {
-        allow = true;
-      } else if (this.gameOptions.aresExtension) {
-        allow = true;
-      } else if (this.gameOptions.pathfindersExpansion) {
-        allow = true;
-      }
-      if (!allow) {
-        throw new Error('Selected space is occupied');
-      }
-    }
-
     // Land claim a player can claim land for themselves
     if (space.player !== undefined && space.player !== player) {
       throw new Error('This space is land claimed by ' + space.player.name);
     }
 
-    if (!AresHandler.canCover(space, tile)) {
+    if (!MarsBoard.canCover(space, tile)) {
       throw new Error('Selected space is occupied: ' + space.id);
     }
 
@@ -1358,8 +1344,8 @@ export class Game implements IGame, Logger {
 
       if (this.gameOptions.boardName === BoardName.HOLLANDIA) {
         const spaces = this.board.spaces.filter(Board.ownedBy(player));
-        const part = partition(spaces, ((space) => space.spaceType === SpaceType.DEFLECTION_ZONE));
-        player.withinDeflectionZone = part[0].length > 0 && part[1].length === 0;
+        const [inside, outside] = partition(spaces, ((space) => space.spaceType === SpaceType.DEFLECTION_ZONE));
+        player.withinDeflectionZone = inside.length > 0 && outside.length === 0;
       }
     } else {
       space.player = undefined;

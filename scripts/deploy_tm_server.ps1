@@ -187,6 +187,7 @@ health_url="__HEALTH__"
 expected_artifact_sha="__ARTIFACT_SHA__"
 expected_git_sha="__GIT_SHA__"
 release_url="${health_url%/}/release.json"
+release_url_fallback="${health_url%/}/assets/release.json"
 release_root="/tmp/__ARCHIVE_BASE__"
 release_dir="$release_root/release"
 
@@ -246,9 +247,11 @@ fi
 
 served_release_json=""
 if ! served_release_json="$(curl -fsS "$release_url")"; then
+  if ! served_release_json="$(curl -fsS "$release_url_fallback")"; then
   echo "Release manifest fetch failed, rolling back." >&2
   rollback
   exit 1
+  fi
 fi
 
 served_artifact_sha=""

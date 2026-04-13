@@ -13,6 +13,7 @@ prod="/home/openclaw/terraforming-mars"
 service="tm-server"
 health_url="http://127.0.0.1:8081"
 release_url="${health_url%/}/release.json"
+release_url_fallback="${health_url%/}/assets/release.json"
 work_root="/tmp/tm-promote-$(date +%Y%m%d%H%M%S)"
 release_dir="$work_root/release"
 
@@ -77,9 +78,11 @@ fi
 
 served_release_json=""
 if ! served_release_json="$(curl -fsS "$release_url")"; then
+  if ! served_release_json="$(curl -fsS "$release_url_fallback")"; then
   echo "Release manifest fetch failed, rolling back." >&2
   rollback
   exit 1
+  fi
 fi
 
 served_artifact_sha=""

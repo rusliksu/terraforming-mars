@@ -60,8 +60,8 @@ export class ServeAsset extends Handler {
       return;
     }
 
-    // Remove leading slash.
-    const path = req.url.substring(1);
+    // Remove leading slash and query parameters.
+    const path = req.url.substring(1).split('?')[0];
 
     const supportedEncodings = this.supportedEncodings(req);
     const toFile: {file?: string, encoding?: Encoding } = this.toFile(path, supportedEncodings);
@@ -79,9 +79,16 @@ export class ServeAsset extends Handler {
         responses.notModified(res);
         return;
       }
-      res.setHeader('Cache-Control', 'must-revalidate');
       res.setHeader('ETag', buffer.hash);
-    } else if (this.cacheAssets === false && req.url !== '/main.js' && req.url !== '/main.js.map') {
+    }
+
+    if (this.shouldRevalidateScriptAsset(path)) {
+      // Chunk names are stable across releases, so stale client-side script caching can
+      // otherwise mix an old UI with a newer server contract.
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    } else if (buffer !== undefined) {
+      res.setHeader('Cache-Control', 'must-revalidate');
+    } else if (this.cacheAssets === false) {
       res.setHeader('Cache-Control', 'max-age=' + this.cacheAgeSeconds);
     }
 
@@ -195,6 +202,19 @@ export class ServeAsset extends Handler {
     }
 
     return {};
+  }
+
+  private shouldRevalidateScriptAsset(urlPath: string): boolean {
+    switch (urlPath) {
+    case 'main.js':
+    case 'main.js.map':
+    case 'vendors.js':
+    case 'vendors.js.map':
+      return true;
+    default:
+      return urlPath.startsWith('chunks/') &&
+        (urlPath.endsWith('.js') || urlPath.endsWith('.js.map'));
+    }
   }
 
   private supportedEncodings(req: Request): Set<Encoding> {

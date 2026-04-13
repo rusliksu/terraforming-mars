@@ -119,6 +119,7 @@ describe('ServeAsset', () => {
     scaffolding.req.headers['accept-encoding'] = '';
     await scaffolding.get(instance, res);
     expect(res.content).eq('data: build/main.js');
+    expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
     expect(fileApi.counts).deep.eq({
       ...primedCache,
       readFile: 1,
@@ -133,6 +134,7 @@ describe('ServeAsset', () => {
     scaffolding.req.headers['accept-encoding'] = '';
     await scaffolding.get(instance, res);
     expect(res.content).eq('data: build/main.js');
+    expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
     expect(fileApi.counts).deep.eq({
       ...primedCache,
       readFile: 1,
@@ -159,6 +161,7 @@ describe('ServeAsset', () => {
     scaffolding.req.headers['accept-encoding'] = '';
     await scaffolding.get(instance, res);
     expect(res.content).eq('data: build/vendors.js');
+    expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
   });
 
   it('chunk js file', async () => {
@@ -167,6 +170,7 @@ describe('ServeAsset', () => {
     scaffolding.req.headers['accept-encoding'] = '';
     await scaffolding.get(instance, res);
     expect(res.content).eq('data: build/chunks/player-home.js');
+    expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
   });
 
   it('chunk js.map file', async () => {
@@ -175,6 +179,16 @@ describe('ServeAsset', () => {
     scaffolding.req.headers['accept-encoding'] = '';
     await scaffolding.get(instance, res);
     expect(res.content).eq('data: build/chunks/player-home.js.map');
+    expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
+  });
+
+  it('chunk js file with query string', async () => {
+    instance = new ServeAsset(undefined, false, fileApi);
+    scaffolding.url = '/chunks/player-home.js?v=release-123';
+    scaffolding.req.headers['accept-encoding'] = '';
+    await scaffolding.get(instance, res);
+    expect(res.content).eq('data: build/chunks/player-home.js');
+    expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
   });
 
   it('rejects path traversal in chunks', async () => {

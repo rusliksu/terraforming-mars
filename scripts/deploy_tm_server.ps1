@@ -60,12 +60,13 @@ $resolvedSourceRoot = if ([string]::IsNullOrWhiteSpace($SourceRoot)) {
 
 $normalizedRepoRoot = Get-NormalizedPath -PathValue (Resolve-Path $repoRoot).Path
 $normalizedSourceRoot = Get-NormalizedPath -PathValue $resolvedSourceRoot
+$normalizedSafeDefaultSourceRoot = Get-NormalizedPath -PathValue $safeDefaultSourceRoot
 
 if ($Environment -eq "prod" -and -not $AllowDirectProdDeploy) {
     throw "Direct prod deploy is blocked. Deploy to staging first and then run scripts/release_tm_prod.ps1 or scripts/promote_tm_staging_to_prod.ps1. Pass -AllowDirectProdDeploy only for an explicit emergency override."
 }
 
-if ($normalizedSourceRoot -eq $normalizedRepoRoot -and -not $AllowPrimaryWorkingTree) {
+if ($normalizedSourceRoot -eq $normalizedRepoRoot -and $normalizedRepoRoot -ne $normalizedSafeDefaultSourceRoot -and -not $AllowPrimaryWorkingTree) {
     throw "SourceRoot points at the primary working tree: $resolvedSourceRoot. Use the clean release checkout or pass -AllowPrimaryWorkingTree if you intentionally want to release this exact tree."
 }
 

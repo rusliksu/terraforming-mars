@@ -121,7 +121,7 @@ export class PlayerInput extends Handler {
                   title: typeof (wf as any).title === 'string' ? (wf as any).title : ((wf as any).title?.message || ''),
                   playerAction: entity,
                   mc: (player as any).megaCredits ?? 0,
-                  tr: player.getTerraformRating(),
+                  tr: player.terraformRating,
                 };
                 fs.appendFileSync(logFile, JSON.stringify(entry) + '\n');
               }

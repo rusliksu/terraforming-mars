@@ -129,17 +129,29 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\promote_tm_staging_to_pr
 Rollback an environment to the previous immutable release:
 
 ```powershell
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\rollback_tm_runtime.ps1 -Environment staging -DryRun
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\rollback_tm_runtime.ps1 -Environment staging
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\rollback_tm_runtime.ps1 -Environment prod -DryRun
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\rollback_tm_runtime.ps1 -Environment staging -DryRun
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\rollback_tm_runtime.ps1 -Environment staging
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\rollback_tm_runtime.ps1 -Environment prod -DryRun
 ```
 
 Rollback to a specific release name:
 
 ```powershell
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\rollback_tm_runtime.ps1 `
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\rollback_tm_runtime.ps1 `
   -Environment staging `
   -TargetRelease 20260414120447-2634ec27d148e11e0b76590c9f714f000828e7d8
+```
+
+Preview runtime retention cleanup:
+
+```powershell
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\prune_tm_runtime.ps1 -DryRun
+```
+
+Apply runtime retention cleanup:
+
+```powershell
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\prune_tm_runtime.ps1
 ```
 
 Run the full automated release gate:
@@ -172,6 +184,7 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\verify_tm_server.ps1 -En
 - Rollout also carries `package.json` and `package-lock.json`; runtime dependencies are resolved into a managed cache under `/home/openclaw/tm-runtime/<env>/shared/deps/<package-lock-sha256>` instead of linking back to legacy checkout `node_modules`.
 - Once both environments are on `tm-runtime/*/current` with managed dependency cache, old `/home/openclaw/terraforming-mars*` checkouts can be archived with `scripts/archive_tm_legacy_checkouts.ps1` as cold backups.
 - `rollback_tm_runtime.ps1` switches `current` to a previous or explicit release, restarts only the environment-specific services, and verifies the served `release.json` after the swap.
+- `prune_tm_runtime.ps1` keeps `current`, `previous`, and the newest release window, then removes unreferenced dependency caches plus older checkout-artifact snapshots.
 - Rollout now bootstraps and uses immutable runtime roots:
   - `prod`: `/home/openclaw/tm-runtime/prod`
   - `staging`: `/home/openclaw/tm-runtime/staging`

@@ -267,6 +267,10 @@
     background-color: fade(@player_pink, 60%);
 }
 
+.create-game-playerblock-gold {
+    background-color: fade(@player_gold, 60%);
+}
+
 .create-game-player-name {
     height: 40px;
     border: none;
@@ -279,6 +283,11 @@
     border-radius: 5px;
     background: linear-gradient(#303030,transparent);
     background: rgba(0,0,0,.3);
+}
+
+.create-game-player-name[readonly] {
+    box-shadow: inset 0 0 0 1px fade(@player_gold, 35%);
+    cursor: default;
 }
 
 .create-game-player-name:focus {

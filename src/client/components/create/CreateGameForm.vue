@@ -437,12 +437,12 @@
                                     <div>
                                       <div :class="'form-group col6 create-game-player '+getPlayerContainerColorClass(newPlayer.color)">
                                           <div>
-                                              <input class="form-input form-inline create-game-player-name" :placeholder="getPlayerNamePlaceholder(index)" v-model="newPlayer.name" />
+                                              <input class="form-input form-inline create-game-player-name" :placeholder="getPlayerNamePlaceholder(index)" v-model="newPlayer.name" :readonly="isPlayerNameLocked(newPlayer.color)" />
                                           </div>
                                           <div class="create-game-page-color-row">
                                               <template v-for="color in PLAYER_COLORS" v-bind:key="color">
                                                 <div>
-                                                  <input type="radio" :value="color" :name="'playerColor' + (index + 1)" v-model="newPlayer.color" :id="'radioBox' + color + (index + 1)">
+                                                  <input type="radio" :value="color" :name="'playerColor' + (index + 1)" v-model="newPlayer.color" :id="'radioBox' + color + (index + 1)" @change="syncLockedPlayerIdentity(newPlayer)">
                                                   <label :for="'radioBox' + color + (index + 1)">
                                                       <div :class="'create-game-colorbox '+getPlayerCubeColorClass(color)"></div>
                                                   </label>
@@ -546,7 +546,7 @@
 import * as constants from '@/common/constants';
 
 import {defineComponent, nextTick} from 'vue';
-import {Color, PLAYER_COLORS} from '@/common/Color';
+import {Color, DEFAULT_PLAYER_COLORS, getLockedPlayerName, PLAYER_COLORS} from '@/common/Color';
 import {BoardName} from '@/common/boards/BoardName';
 import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
 import {CardName} from '@/common/cards/CardName';
@@ -743,6 +743,18 @@ export default defineComponent({
     getPlayerNamePlaceholder(index: number): string {
       return translateTextWithParams('Player ${0} name', [String(index + 1)]);
     },
+    isPlayerNameLocked(color: Color): boolean {
+      return getLockedPlayerName(color) !== undefined;
+    },
+    syncLockedPlayerIdentity(player: NewPlayerModel) {
+      const lockedName = getLockedPlayerName(player.color);
+      if (lockedName !== undefined) {
+        player.name = lockedName;
+      }
+    },
+    syncLockedPlayerIdentities(players: Array<NewPlayerModel>) {
+      players.forEach((player) => this.syncLockedPlayerIdentity(player));
+    },
     updateCustomCorporations(customCorporations: Array<CardName>) {
       this.customCorporations = customCorporations;
     },
@@ -887,7 +899,7 @@ export default defineComponent({
       if (uniqueColors.size !== players.length) {
         const usedColors: Set<Color> = new Set();
         // This filter retains the default player color order.
-        const unusedColors = PLAYER_COLORS.filter((c) => !uniqueColors.has(c));
+        const unusedColors = DEFAULT_PLAYER_COLORS.filter((c) => !uniqueColors.has(c));
         for (const player of players) {
           const color = player.color;
           if (usedColors.has(color)) {
@@ -900,10 +912,12 @@ export default defineComponent({
         }
       }
 
+      this.syncLockedPlayerIdentities(players);
+
       // Set player name automatically if not entered
       const isSoloMode = this.playersCount === 1;
 
-      this.players.forEach((player) => {
+      players.forEach((player) => {
         if (player.name === '') {
           if (isSoloMode) {
             player.name = this.$t('You');

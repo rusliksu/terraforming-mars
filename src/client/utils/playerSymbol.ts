@@ -10,6 +10,7 @@ export const SYMBOL_FOR_COLOR = {
   purple: '◉',
   orange: '▢',
   pink: '◈',
+  gold: '✦',
   bronze: '▦',
   neutral: '★',
 } satisfies Record<Color, string>;

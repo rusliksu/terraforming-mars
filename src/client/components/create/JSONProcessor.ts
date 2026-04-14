@@ -2,7 +2,7 @@ import * as json_constants from '@/client/components/create/json';
 import {Expansion} from '@/common/cards/GameModule';
 import {JSONObject, JSONValue} from '../../../common/Types';
 import {CreateGameModel} from './CreateGameModel';
-import {PLAYER_COLORS} from '@/common/Color';
+import {normalizePlayerNameForColor, PLAYER_COLORS} from '@/common/Color';
 import {NewPlayerModel} from '@/common/game/NewGameConfig';
 import {CardName} from '@/common/cards/CardName';
 import {cast} from '@/common/utils/utils';
@@ -34,6 +34,10 @@ export class JSONProcessor {
     if (validationErrors.length > 0) {
       throw new Error(validationErrors.join('\n'));
     }
+    const normalizedPlayers = players.map((player) => ({
+      ...player,
+      name: normalizePlayerNameForColor(player.color, player.name),
+    }));
 
     if (json.corporationsDraft !== undefined) {
       this.warnings.push('Corporations draft is no longer available. Future versions might just raise an error, so edit your JSON file.');
@@ -67,7 +71,7 @@ export class JSONProcessor {
     this.bannedCards = set(json_constants.BANNED_CARDS);
     this.includedCards = set(json_constants.INCLUDED_CARDS);
 
-    this.model.playersCount = players.length;
+    this.model.playersCount = normalizedPlayers.length;
     this.model.showBannedCards = this.bannedCards.length > 0;
     this.model.showIncludedCards = this.includedCards.length > 0;
 
@@ -126,8 +130,8 @@ export class JSONProcessor {
       }
     }
 
-    for (let i = 0; i < players.length; i++) {
-      this.model.players[i] = players[i];
+    for (let i = 0; i < normalizedPlayers.length; i++) {
+      this.model.players[i] = normalizedPlayers[i];
     }
   }
 

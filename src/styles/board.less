@@ -314,6 +314,11 @@
 	background: url(./assets/board_icons.png) -24px -117px no-repeat;
 }
 
+.board-cube--gold {
+	background: url(./assets/board_icons.png) -72px -91px no-repeat;
+	filter: sepia(0.45) saturate(2.2) brightness(1.08) drop-shadow(0 0 1px rgba(255, 215, 0, 0.7));
+}
+
 .board-cube--bronze {
 	background: url(./assets/board_icons.png) -142px -91px no-repeat;
 }
@@ -387,6 +392,14 @@
   content: "◈";
   margin-left: 5px;
   margin-top: -2px;
+}
+
+.board-cube--gold.overlay::after {
+  .overlay_base;
+  content: "✦";
+  margin-left: 5px;
+  margin-top: 0;
+  color: #2b2100;
 }
 
 .board-cube--bronze.overlay::after {
@@ -650,4 +663,8 @@ each(@token_types, {
 
 .underground-excavator--pink {
 	background-color: @player_pink;
+}
+
+.underground-excavator--gold {
+	background-color: @player_gold;
 }

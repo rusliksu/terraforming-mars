@@ -8,6 +8,7 @@ import {NewGameConfig} from '../../src/common/game/NewGameConfig';
 import {RandomBoardOption} from '../../src/common/boards/RandomBoardOption';
 import {RandomMAOptionType} from '../../src/common/ma/RandomMAOptionType';
 import {SimpleGameModel} from '../../src/common/models/SimpleGameModel';
+import {GENUINE_GOLD_NAME} from '../../src/common/Color';
 
 function newGameConfig(players: NewGameConfig['players']): NewGameConfig {
   return {
@@ -174,6 +175,27 @@ describe('ApiCreateGame', () => {
     const game = await scaffolding.ctx.gameLoader.getGame(model.id);
     expect(game).is.not.undefined;
     expect(game!.players[0].telegramID).eq('');
+  });
+
+  it('forces GenuineGold name for gold players', async () => {
+    const post = scaffolding.post(apiCreateGame, res);
+    const emit = Promise.resolve().then(() => {
+      req.emitter.emit('data', JSON.stringify(newGameConfig([{
+          name: 'Ilya',
+          color: 'gold',
+          beginner: false,
+          handicap: 0,
+          first: true,
+        }])));
+      req.emitter.emit('end');
+    });
+    await Promise.all(([emit, post]));
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game).is.not.undefined;
+    expect(game!.players[0].name).eq(GENUINE_GOLD_NAME);
+    expect(game!.players[0].color).eq('gold');
   });
 
   it('red rover solo game', async () => {

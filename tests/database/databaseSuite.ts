@@ -309,6 +309,24 @@ export function describeDatabaseSuite<T extends ITestDatabase>(dtor: DatabaseTes
       ]);
     });
 
+    it('does not duplicate participant ids after reloading a save-0 game', async () => {
+      const player = TestPlayer.BLACK.newPlayer();
+      const game = Game.newInstance('game-id-1212', [player], player);
+      await db.lastSaveGamePromise;
+
+      const loaded = Game.deserialize(await db.getGame(game.id));
+      await db.saveGame(loaded);
+
+      expect(await db.getParticipants()).deep.eq([
+        {
+          gameId: 'game-id-1212',
+          participantIds: [
+            player.id,
+          ],
+        },
+      ]);
+    });
+
     it('getGameId by PlayerID and Spectator ID', async () => {
       testGame(2, {}, '1');
       await db.lastSaveGamePromise;

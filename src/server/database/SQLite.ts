@@ -193,16 +193,21 @@ export class SQLite implements IDatabase {
   }
 
   async saveGame(game: IGame): Promise<void> {
+    const thisSaveId = game.lastSaveId;
+    const isInitialSave = thisSaveId === 0;
+    const initialSaveAlreadyExists = isInitialSave
+      ? await this.asyncGet('SELECT 1 AS existing_save FROM games WHERE game_id = ? AND save_id = ? LIMIT 1', [game.id, thisSaveId])
+      : undefined;
     const gameJSON = JSON.stringify(game.serialize());
     // Insert
     await this.runQuietly(
       'INSERT INTO games (game_id, save_id, game, players) VALUES (?, ?, ?, ?) ON CONFLICT (game_id, save_id) DO UPDATE SET game = ?',
-      [game.id, game.lastSaveId, gameJSON, game.players.length, gameJSON]);
+      [game.id, thisSaveId, gameJSON, game.players.length, gameJSON]);
 
-    // Save IDs on the very first save for this game. That's when the incoming saveId is 0, and also
-    // when the database operation was an insert. (We should figure out why multiple saves occur and
-    // try to stop them. But that's for another day.)
-    if (game.lastSaveId === 0) {
+    // Save IDs only when this is the first persisted save for the game.
+    // A game reloaded from the database can still carry lastSaveId=0 because the serialized
+    // snapshot is captured before lastSaveId increments after the initial save.
+    if (isInitialSave && initialSaveAlreadyExists === undefined) {
       const participantIds: Array<ParticipantId> = game.players.map(toID);
       if (game.spectatorId) participantIds.push(game.spectatorId);
       try {
@@ -241,7 +246,7 @@ export class SQLite implements IDatabase {
     // Sequence of [game_id, id] pairs.
     const values: Array<GameId | ParticipantId> = entry.participantIds.map((participant) => [entry.gameId, participant]).flat();
 
-    await this.asyncRun('INSERT INTO participants (game_id, participant) VALUES ' + placeholders, values);
+    await this.asyncRun('INSERT OR IGNORE INTO participants (game_id, participant) VALUES ' + placeholders, values);
   }
 
   public async getParticipants(): Promise<Array<GameIdLedger>> {

@@ -42,4 +42,15 @@ describe('ApiPlayer', () => {
     const response: PlayerViewModel = JSON.parse(res.content);
     expect(response.id).eq(player.id);
   });
+
+  it('allows serverId override for claimed player', async () => {
+    const player = TestPlayer.BLACK.newPlayer();
+    player.user = 'discord-user' as any;
+    scaffolding.url = '/api/player?id=' + player.id + '&serverId=1';
+    const game = Game.newInstance('game-id', [player], player);
+    await scaffolding.ctx.gameLoader.add(game);
+    await scaffolding.get(ApiPlayer.INSTANCE, res);
+    const response: PlayerViewModel = JSON.parse(res.content);
+    expect(response.id).eq(player.id);
+  });
 });

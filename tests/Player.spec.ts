@@ -141,25 +141,33 @@ describe('Player', () => {
 
   it('sends at most one telegram turn notice per turn', () => {
     const [game, player] = testGame(1);
-    player.telegramID = '162438481';
+    try {
+      player.telegramID = '162438481';
 
-    game.inputsThisRound = 0;
-    player.setWaitingFor(new SelectOption('First action'));
-    expect((player as any)._turnNoticeSentThisRound).is.false;
-    expect((player as any)._pendingTurnNoticeTimer).not.to.be.undefined;
+      game.inputsThisRound = 0;
+      player.setWaitingFor(new SelectOption('First action'));
+      expect((player as any)._turnNoticeSentThisRound).is.false;
+      expect((player as any)._pendingTurnNoticeTimer).not.to.be.undefined;
 
-    player.popWaitingFor();
-    (player as any)._pendingTurnNoticeTimer = undefined;
-    (player as any)._turnNoticeSentThisRound = true;
+      player.popWaitingFor();
+      clearTimeout((player as any)._pendingTurnNoticeTimer);
+      (player as any)._pendingTurnNoticeTimer = undefined;
+      (player as any)._turnNoticeSentThisRound = true;
 
-    player.setWaitingFor(new SelectOption('Second action'));
-    expect((player as any)._pendingTurnNoticeTimer).to.be.undefined;
+      player.setWaitingFor(new SelectOption('Second action'));
+      expect((player as any)._pendingTurnNoticeTimer).to.be.undefined;
 
-    player.popWaitingFor();
-    game.inputsThisRound = 0;
-    player.setWaitingFor(new SelectOption('Next turn'));
-    expect((player as any)._turnNoticeSentThisRound).is.false;
-    expect((player as any)._pendingTurnNoticeTimer).not.to.be.undefined;
+      player.popWaitingFor();
+      game.inputsThisRound = 0;
+      player.setWaitingFor(new SelectOption('Next turn'));
+      expect((player as any)._turnNoticeSentThisRound).is.false;
+      expect((player as any)._pendingTurnNoticeTimer).not.to.be.undefined;
+    } finally {
+      if ((player as any)._pendingTurnNoticeTimer) {
+        clearTimeout((player as any)._pendingTurnNoticeTimer);
+        (player as any)._pendingTurnNoticeTimer = undefined;
+      }
+    }
   });
 
   it('Omits buffer gas for non solo games', () => {

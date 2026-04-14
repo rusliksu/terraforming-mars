@@ -54,6 +54,12 @@ Keep release mechanics simple: release a commit, not a snowflake environment.
 
 ## Commands
 
+One-command rollout from the clean release checkout:
+
+```powershell
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\rollout_tm_server.ps1
+```
+
 Refresh the clean release checkout before a real rollout:
 
 ```powershell

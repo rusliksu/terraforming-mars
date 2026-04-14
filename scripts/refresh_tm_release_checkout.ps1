@@ -3,7 +3,8 @@ param(
     [switch]$BootstrapIfMissing,
     [switch]$AllowDirtyReleaseCheckout,
     [switch]$SkipInstall,
-    [switch]$SkipBuild
+    [switch]$SkipBuild,
+    [switch]$DryRun
 )
 
 $ErrorActionPreference = "Stop"
@@ -15,6 +16,9 @@ function Invoke-Step {
     )
 
     Write-Host "==> $Description"
+    if ($DryRun) {
+        return
+    }
     & $Action
 }
 
@@ -26,6 +30,9 @@ function Invoke-InRepo {
     )
 
     Write-Host "==> $Description"
+    if ($DryRun) {
+        return
+    }
     Push-Location $RepoRoot
     try {
         & $Action
@@ -166,7 +173,11 @@ if (-not $SkipBuild) {
 $headSummary = Get-GitValue -RepoRoot $ReleaseRoot -GitArgs @("show", "-s", "--format=%h %ci %s", "HEAD")
 
 Write-Host ""
-Write-Host "Release checkout ready"
+if ($DryRun) {
+    Write-Host "Release checkout dry run complete"
+} else {
+    Write-Host "Release checkout ready"
+}
 Write-Host "Path        : $ReleaseRoot"
 Write-Host "Head        : $headSummary"
 Write-Host "Origin      : $originUrl"

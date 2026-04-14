@@ -38,6 +38,22 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\capture_tm_
   -OutputPath C:\Users\Ruslan\tm\artifacts\tm-live-snapshot.md
 ```
 
+If the VPS checkout has accumulated `src/**` drift and `build.bak-*` /
+`assets.bak-*` leftovers, you can do a safe archive-first cleanup without
+restarting the service:
+
+```powershell
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\cleanup_tm_checkout_artifacts.ps1 -Environment prod
+```
+
+This only:
+
+- archives tracked `src` diff into `/home/openclaw/tm-prod-checkout-artifacts-<ts>`
+- moves source-only leftovers and old backup dirs out of the live checkout
+- restores tracked `src/**` to `HEAD`
+
+It does not touch `build/`, `assets/`, `elo/`, or restart `tm-server`.
+
 ## Phase 2: First Safe Release Window
 
 Goal: replace the dirty prod tree with a clean, staging-tested artifact in one controlled cutover.

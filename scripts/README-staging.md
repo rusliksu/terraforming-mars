@@ -2,6 +2,8 @@
 
 Use staging first, then promote the exact tested artifact to prod.
 
+GitHub Actions in `.github/workflows/main.yml` are CI-only. They do not deploy `tm.knightbyte.win`; the scripts in this directory are the release path.
+
 ## URLs
 
 - Staging: `https://staging.tm.knightbyte.win/`

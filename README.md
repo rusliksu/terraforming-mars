@@ -45,6 +45,14 @@ npm run start
 
 Server starts at `http://localhost:8080`. Uses SQLite by default (zero config). Set `POSTGRES_HOST` for PostgreSQL.
 
+## Server Release Flow
+
+GitHub Actions in this repo are CI-only. Live deploys for `tm.knightbyte.win` use the scripted staging-first flow documented in [scripts/README-staging.md](scripts/README-staging.md).
+
+- Deploy to staging: `pwsh -File scripts/deploy_tm_staging.ps1`
+- Verify and promote the tested artifact to prod: `pwsh -File scripts/release_tm_prod.ps1`
+- Emergency direct prod deploy remains blocked by default in `deploy_tm_server.ps1`
+
 ## Upstream
 
 Based on the [open-source TM project](https://github.com/terraforming-mars/terraforming-mars) by Brian Folts and contributors. Regularly synced with upstream.

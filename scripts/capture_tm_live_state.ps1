@@ -1,6 +1,6 @@
 param(
     [string]$HostAlias = "vps",
-    [string]$RemoteRoot = "/home/openclaw/terraforming-mars",
+    [string]$RemoteRoot = "",
     [string]$ServiceName = "tm-server",
     [string]$OutputPath,
     [switch]$OutputJson
@@ -18,6 +18,18 @@ function Invoke-SshText {
         throw "SSH command failed: $Command"
     }
     return (($output | Out-String).TrimEnd("`r", "`n"))
+}
+
+function Try-Invoke-SshText {
+    param(
+        [string]$Command
+    )
+
+    try {
+        return Invoke-SshText $Command
+    } catch {
+        return ""
+    }
 }
 
 function Get-HeaderLines {
@@ -49,12 +61,29 @@ if ($mainPid -match '^\d+$' -and $mainPid -ne "0") {
     $processInfo = Invoke-SshText "ps -p $mainPid -o lstart=,cmd="
 }
 
+if ([string]::IsNullOrWhiteSpace($RemoteRoot)) {
+    $RemoteRoot = $cwd
+}
+
 $serviceStatus = Invoke-SshText "systemctl --user status $ServiceName --no-pager | sed -n '1,40p'"
-$gitHead = Invoke-SshText "cd $RemoteRoot && git rev-parse HEAD"
-$gitStatusText = Invoke-SshText "cd $RemoteRoot && git status --short"
+$serviceEnvironmentLine = Try-Invoke-SshText "systemctl --user show -p Environment $ServiceName"
+$servicePort = ""
+if ($serviceEnvironmentLine -match 'PORT=(\d+)') {
+    $servicePort = $Matches[1]
+}
+$gitHead = Try-Invoke-SshText "cd $RemoteRoot && git rev-parse HEAD 2>/dev/null"
+$gitStatusText = Try-Invoke-SshText "cd $RemoteRoot && git status --short 2>/dev/null"
+if ([string]::IsNullOrWhiteSpace($gitHead) -and -not [string]::IsNullOrWhiteSpace($servicePort)) {
+    try {
+        $releaseJson = Invoke-SshText "curl -fsS http://127.0.0.1:$servicePort/assets/release.json"
+        $releaseManifest = $releaseJson | ConvertFrom-Json
+        $gitHead = [string]$releaseManifest.gitSha
+    } catch {
+    }
+}
 $gitStatusLines = Join-Lines -Text $gitStatusText
-$backupDirs = Join-Lines -Text (Invoke-SshText "cd $RemoteRoot && ls -d build.bak-* assets.bak-* 2>/dev/null || true")
-$fileMtimes = Invoke-SshText "cd $RemoteRoot && ls -l --time-style=long-iso build/main.js build/vendors.js build/chunks/player-input.js build/chunks/738.js build/src/common/inputs/Payment.js build/src/server/routes/PlayerInput.js build/src/server/server/requestProcessor.js 2>/dev/null"
+$backupDirs = Join-Lines -Text (Try-Invoke-SshText "cd $RemoteRoot && ls -d build.bak-* assets.bak-* 2>/dev/null || true")
+$fileMtimes = Try-Invoke-SshText "cd $RemoteRoot && ls -l --time-style=long-iso build/main.js build/vendors.js build/chunks/player-input.js build/chunks/738.js build/src/common/inputs/Payment.js build/src/server/routes/PlayerInput.js build/src/server/server/requestProcessor.js 2>/dev/null"
 
 $headers = [pscustomobject]@{
     mainJs = Get-HeaderLines -Path "/main.js"

@@ -52,8 +52,8 @@ function Get-ReleaseManifest {
     )
 
     $candidates = @(
-        "$BaseServer/release.json",
-        "$BaseServer/assets/release.json"
+        "$BaseServer/assets/release.json",
+        "$BaseServer/release.json"
     )
     $errors = New-Object System.Collections.Generic.List[string]
 

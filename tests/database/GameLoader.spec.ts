@@ -14,6 +14,7 @@ import {FakeClock} from '../common/FakeClock';
 class TestDatabase extends InMemoryDatabase {
   public failure: 'getGameIds' | 'getParticipants' | undefined = undefined;
   public getGameSleep = 0;
+  public extraParticipants: Array<GameIdLedger> = [];
 
   override async getGame(gameId: GameId): Promise<SerializedGame> {
     const game = await super.getGame(gameId);
@@ -27,7 +28,7 @@ class TestDatabase extends InMemoryDatabase {
   }
   override getParticipants(): Promise<Array<GameIdLedger>> {
     if (this.failure === 'getParticipants') return Promise.reject(new Error('error'));
-    return super.getParticipants();
+    return super.getParticipants().then((participants) => participants.concat(this.extraParticipants));
   }
 }
 
@@ -146,6 +147,21 @@ describe('GameLoader', () => {
     expect(game1!.id).to.eq('gameid');
     const game2 = await GameLoader.getInstance().getGame(game.playersInGenerationOrder[0].id);
     expect(game2!.id).to.eq('gameid');
+  });
+
+  it('ignores orphan participant entries during preload', async () => {
+    database.extraParticipants = [
+      {gameId: 'ghost-gameid', participantIds: ['p-ghost-id1', 'p-ghost-id2']},
+    ];
+    instance.resetForTesting();
+
+    const list = await instance.getIds();
+    expect(list).to.deep.eq([
+      {gameId: 'gameid', participantIds: ['p-blue-id', 'p-red-id']},
+    ]);
+
+    const orphan = await instance.getGame('ghost-gameid');
+    expect(orphan).is.undefined;
   });
 
   it('waits for games to finish loading', async () => {

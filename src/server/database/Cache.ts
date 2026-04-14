@@ -26,13 +26,22 @@ export class Cache extends EventEmitter {
   public async load(): Promise<void> {
     try {
       console.log('Preloading IDs.');
+      const validGameIds = new Set(await this.db.getGameIds());
       const entries = await this.db.getParticipants();
+      let orphanCount = 0;
       for (const entry of entries) {
         const gameId = entry.gameId;
+        if (!validGameIds.has(gameId)) {
+          orphanCount++;
+          continue;
+        }
         if (this.games.get(gameId) === undefined) {
           this.games.set(gameId, undefined);
           entry.participantIds.forEach((participant) => this.participantIds.set(participant, gameId));
         }
+      }
+      if (orphanCount > 0) {
+        console.warn(`Ignored ${orphanCount} orphan participant game IDs during preload.`);
       }
       console.log(`Preloaded ${entries.length} IDs.`);
     } catch (err) {

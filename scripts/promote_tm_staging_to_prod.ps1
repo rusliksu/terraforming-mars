@@ -11,11 +11,14 @@ set -euo pipefail
 staging="/home/openclaw/terraforming-mars-staging"
 prod="/home/openclaw/terraforming-mars"
 service="tm-server"
+elo_service="tm-elo"
 health_url="http://127.0.0.1:8081"
+elo_health_url="http://127.0.0.1:8082/api/elo-submit"
 release_url="${health_url%/}/release.json"
 release_url_fallback="${health_url%/}/assets/release.json"
 work_root="/tmp/tm-promote-$(date +%Y%m%d%H%M%S)"
 release_dir="$work_root/release"
+elo_files="index.html elo-api.js elo_aliases.py fix_elo_dupes.py import_gamedb_to_elo.py player_name_aliases.json"
 
 rollback() {
   if [ -d "$prod/build" ]; then
@@ -30,13 +33,26 @@ rollback() {
   if [ -d "$backup_assets" ]; then
     mv "$backup_assets" "$prod/assets"
   fi
+  if [ -n "$backup_elo" ]; then
+    mkdir -p "$prod/elo"
+    for file in $elo_files; do
+      if [ -f "$backup_elo/$file" ]; then
+        cp "$backup_elo/$file" "$prod/elo/$file"
+      else
+        rm -f "$prod/elo/$file"
+      fi
+    done
+  fi
   systemctl --user restart "$service" || true
+  systemctl --user restart "$elo_service" || true
 }
 
 test -f "$staging/build/main.js"
 test -f "$staging/build/src/server/server.js"
 test -f "$staging/assets/index.html"
 test -f "$staging/assets/release.json"
+test -f "$staging/elo/index.html"
+test -f "$staging/elo/elo-api.js"
 
 expected_artifact_sha="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1])).get("artifactSha256", ""))' "$staging/assets/release.json")"
 expected_git_sha="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1])).get("gitSha", ""))' "$staging/assets/release.json")"
@@ -45,18 +61,36 @@ test -n "$expected_artifact_sha"
 mkdir -p "$release_dir"
 rsync -a --delete "$staging/build/" "$release_dir/build/"
 rsync -a --delete "$staging/assets/" "$release_dir/assets/"
+mkdir -p "$release_dir/elo"
+for file in $elo_files; do
+  cp "$staging/elo/$file" "$release_dir/elo/$file"
+done
 
 ts="$(date +%Y%m%d%H%M%S)"
 backup_build="$prod/build.bak-$ts"
 backup_assets="$prod/assets.bak-$ts"
+backup_elo="$prod/elo.src.bak-$ts"
 
 mv "$prod/build" "$backup_build"
 mv "$prod/assets" "$backup_assets"
 mv "$release_dir/build" "$prod/build"
 mv "$release_dir/assets" "$prod/assets"
+mkdir -p "$backup_elo" "$prod/elo"
+for file in $elo_files; do
+  if [ -f "$prod/elo/$file" ]; then
+    cp "$prod/elo/$file" "$backup_elo/$file"
+  fi
+  cp "$release_dir/elo/$file" "$prod/elo/$file"
+done
 
 if ! systemctl --user restart "$service"; then
   echo "Restart failed, rolling back." >&2
+  rollback
+  exit 1
+fi
+
+if ! systemctl --user restart "$elo_service"; then
+  echo "ELO restart failed, rolling back." >&2
   rollback
   exit 1
 fi
@@ -72,6 +106,21 @@ done
 
 if [ "$healthy" -ne 1 ]; then
   echo "Health check failed, rolling back." >&2
+  rollback
+  exit 1
+fi
+
+elo_healthy=0
+for attempt in $(seq 1 10); do
+  if curl -fsS "$elo_health_url" >/dev/null 2>&1; then
+    elo_healthy=1
+    break
+  fi
+  sleep 2
+done
+
+if [ "$elo_healthy" -ne 1 ]; then
+  echo "ELO health check failed, rolling back." >&2
   rollback
   exit 1
 fi
@@ -117,12 +166,15 @@ echo "Promote ok"
 echo "source=$staging"
 echo "target=$prod"
 echo "service=$service"
+echo "elo_service=$elo_service"
 echo "health_url=$health_url"
+echo "elo_health_url=$elo_health_url"
 echo "release_url=$release_url"
 echo "artifact_sha=$served_artifact_sha"
 echo "git_sha=$served_git_sha"
 echo "backup_build=$backup_build"
 echo "backup_assets=$backup_assets"
+echo "backup_elo=$backup_elo"
 
 rm -rf "$work_root"
 '@

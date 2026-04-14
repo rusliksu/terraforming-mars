@@ -45,6 +45,7 @@ without restarting watcher services unless you explicitly pass
 - Release source must be a clean git checkout. If `git status --short` is not empty, fix that before deploy.
 - The main working tree `C:\Users\Ruslan\tm\terraforming-mars` is for day-to-day development, not the default release source.
 - Do not hot-patch `build/*.js` or `assets/*` on the VPS. Emergency fixes must be carried back into source and re-released through staging.
+- Do not hot-patch source-managed `elo/*` files on the VPS. Only `elo-data.json`, `data.json`, logs, and similar generated outputs should remain mutable there.
 - Trust `release.json`, not folder mtimes or guesses. Staging and prod should always be able to prove they serve the same artifact hash.
 
 ## Branch Naming
@@ -149,5 +150,6 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\verify_tm_server.ps1 -En
 - The `STAGING` badge is host-gated and appears only on `staging.tm.knightbyte.win`.
 - `release_tm_prod.ps1` replaces the old manual "check staging, then promote, then open prod" step with scripted gates.
 - `release.json` is generated during deploy and is used to prove that staging and prod serve the same artifact hash after promote.
+- Rollout syncs `build/`, `assets/`, and the source-managed subset of `elo/` (`index.html`, `elo-api.js`, aliases, and maintenance scripts). It deliberately preserves live Elo data files on the VPS.
 - `deploy_tm_server.ps1 -Environment prod` is intentionally blocked by default. Use `release_tm_prod.ps1` or `promote_tm_staging_to_prod.ps1`.
 - If prod is already dirty and you need to stabilize it without an immediate restart, follow [README-live-cleanup.md](README-live-cleanup.md).

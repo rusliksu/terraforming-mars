@@ -98,6 +98,15 @@ $expectedBuildHead = if ([string]::IsNullOrWhiteSpace($gitSha)) { "" } else { $g
 
 $buildDir = Join-Path $resolvedSourceRoot "build"
 $assetsDir = Join-Path $resolvedSourceRoot "assets"
+$eloDir = Join-Path $resolvedSourceRoot "elo"
+$eloSourceFiles = @(
+    "index.html",
+    "elo-api.js",
+    "elo_aliases.py",
+    "fix_elo_dupes.py",
+    "import_gamedb_to_elo.py",
+    "player_name_aliases.json"
+)
 $generatedSettingsPath = Join-Path $resolvedSourceRoot "src\\genfiles\\settings.json"
 
 if (-not (Test-Path (Join-Path $buildDir "main.js"))) {
@@ -108,6 +117,11 @@ if (-not (Test-Path (Join-Path $buildDir "src/server/server.js"))) {
 }
 if (-not (Test-Path (Join-Path $assetsDir "index.html"))) {
     throw "Source assets are missing assets/index.html in $resolvedSourceRoot."
+}
+foreach ($eloFile in $eloSourceFiles) {
+    if (-not (Test-Path (Join-Path $eloDir $eloFile))) {
+        throw "Source elo file is missing elo/$eloFile in $resolvedSourceRoot."
+    }
 }
 if (-not (Test-Path $generatedSettingsPath)) {
     throw "Source build metadata is missing src/genfiles/settings.json in $resolvedSourceRoot. Run the build there before deploy."
@@ -133,11 +147,21 @@ $serviceName = if ($Environment -eq "staging") {
 } else {
     "tm-server"
 }
+$eloServiceName = if ($Environment -eq "prod") {
+    "tm-elo"
+} else {
+    ""
+}
 
 $healthUrl = if ($Environment -eq "staging") {
     "http://127.0.0.1:8084"
 } else {
     "http://127.0.0.1:8081"
+}
+$eloHealthUrl = if ($Environment -eq "prod") {
+    "http://127.0.0.1:8082/api/elo-submit"
+} else {
+    ""
 }
 
 $timestamp = Get-Date -Format "yyyyMMddHHmmss"
@@ -162,6 +186,11 @@ New-Item -ItemType Directory -Path $releasePayloadRoot -Force | Out-Null
 
 Copy-Item -Path $buildDir -Destination (Join-Path $releasePayloadRoot "build") -Recurse -Force
 Copy-Item -Path $assetsDir -Destination (Join-Path $releasePayloadRoot "assets") -Recurse -Force
+$eloPayloadDir = Join-Path $releasePayloadRoot "elo"
+New-Item -ItemType Directory -Path $eloPayloadDir -Force | Out-Null
+foreach ($eloFile in $eloSourceFiles) {
+    Copy-Item -LiteralPath (Join-Path $eloDir $eloFile) -Destination (Join-Path $eloPayloadDir $eloFile) -Force
+}
 $buildMainJs = Join-Path $buildDir "main.js"
 $buildMainJsItem = Get-Item -LiteralPath $buildMainJs
 $buildMainJsTimestampUtc = $buildMainJsItem.LastWriteTimeUtc
@@ -170,7 +199,7 @@ $packagedAtUtc = (Get-Date).ToUniversalTime().ToString("o")
 
 Push-Location $releaseWorkRoot
 try {
-    & tar.exe -czf $payloadArchiveName -C $releasePayloadRoot build assets
+    & tar.exe -czf $payloadArchiveName -C $releasePayloadRoot build assets elo
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to create payload archive."
     }
@@ -191,7 +220,7 @@ try {
     (Get-Item -LiteralPath $releaseJsonPath).LastWriteTimeUtc = $buildMainJsTimestampUtc
     (Get-Item -LiteralPath (Join-Path $releasePayloadRoot "assets")).LastWriteTimeUtc = $buildMainJsTimestampUtc
 
-    & tar.exe -czf $archiveName -C $releasePayloadRoot build assets
+    & tar.exe -czf $archiveName -C $releasePayloadRoot build assets elo
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to create deploy archive."
     }
@@ -205,13 +234,16 @@ set -euo pipefail
 archive="__ARCHIVE__"
 target="__TARGET__"
 service="__SERVICE__"
+elo_service="__ELO_SERVICE__"
 health_url="__HEALTH__"
+elo_health_url="__ELO_HEALTH__"
 expected_artifact_sha="__ARTIFACT_SHA__"
 expected_git_sha="__GIT_SHA__"
 release_url="${health_url%/}/release.json"
 release_url_fallback="${health_url%/}/assets/release.json"
 release_root="/tmp/__ARCHIVE_BASE__"
 release_dir="$release_root/release"
+elo_files="index.html elo-api.js elo_aliases.py fix_elo_dupes.py import_gamedb_to_elo.py player_name_aliases.json"
 
 rollback() {
   if [ -d "$target/build" ]; then
@@ -226,7 +258,20 @@ rollback() {
   if [ -d "$backup_assets" ]; then
     mv "$backup_assets" "$target/assets"
   fi
+  if [ -n "$backup_elo" ]; then
+    mkdir -p "$target/elo"
+    for file in $elo_files; do
+      if [ -f "$backup_elo/$file" ]; then
+        cp "$backup_elo/$file" "$target/elo/$file"
+      else
+        rm -f "$target/elo/$file"
+      fi
+    done
+  fi
   systemctl --user restart "$service" || true
+  if [ -n "$elo_service" ]; then
+    systemctl --user restart "$elo_service" || true
+  fi
 }
 
 rm -rf "$release_root"
@@ -236,20 +281,38 @@ tar -xzf "$archive" -C "$release_dir"
 test -f "$release_dir/build/main.js"
 test -f "$release_dir/build/src/server/server.js"
 test -f "$release_dir/assets/index.html"
+test -f "$release_dir/elo/index.html"
+test -f "$release_dir/elo/elo-api.js"
 
 ts="$(date +%Y%m%d%H%M%S)"
 backup_build="$target/build.bak-$ts"
 backup_assets="$target/assets.bak-$ts"
+backup_elo="$target/elo.src.bak-$ts"
 
 mv "$target/build" "$backup_build"
 mv "$target/assets" "$backup_assets"
 mv "$release_dir/build" "$target/build"
 mv "$release_dir/assets" "$target/assets"
+mkdir -p "$backup_elo" "$target/elo"
+for file in $elo_files; do
+  if [ -f "$target/elo/$file" ]; then
+    cp "$target/elo/$file" "$backup_elo/$file"
+  fi
+  cp "$release_dir/elo/$file" "$target/elo/$file"
+done
 
 if ! systemctl --user restart "$service"; then
   echo "Restart failed, rolling back." >&2
   rollback
   exit 1
+fi
+
+if [ -n "$elo_service" ]; then
+  if ! systemctl --user restart "$elo_service"; then
+    echo "ELO restart failed, rolling back." >&2
+    rollback
+    exit 1
+  fi
 fi
 
 healthy=0
@@ -265,6 +328,23 @@ if [ "$healthy" -ne 1 ]; then
   echo "Health check failed, rolling back." >&2
   rollback
   exit 1
+fi
+
+if [ -n "$elo_health_url" ]; then
+  elo_healthy=0
+  for attempt in $(seq 1 10); do
+    if curl -fsS "$elo_health_url" >/dev/null 2>&1; then
+      elo_healthy=1
+      break
+    fi
+    sleep 2
+  done
+
+  if [ "$elo_healthy" -ne 1 ]; then
+    echo "ELO health check failed, rolling back." >&2
+    rollback
+    exit 1
+  fi
 fi
 
 served_release_json=""
@@ -309,11 +389,16 @@ echo "environment=__ENV__"
 echo "service=$service"
 echo "target=$target"
 echo "health_url=$health_url"
+if [ -n "$elo_service" ]; then
+echo "elo_service=$elo_service"
+echo "elo_health_url=$elo_health_url"
+fi
 echo "release_url=$release_url"
 echo "artifact_sha=$served_artifact_sha"
 echo "git_sha=$served_git_sha"
 echo "backup_build=$backup_build"
 echo "backup_assets=$backup_assets"
+echo "backup_elo=$backup_elo"
 
 rm -rf "$release_root"
 rm -f "$archive"
@@ -322,7 +407,9 @@ rm -f "$archive"
 $remoteScript = $remoteScript.Replace("__ARCHIVE__", $remoteArchive)
 $remoteScript = $remoteScript.Replace("__TARGET__", $targetDir)
 $remoteScript = $remoteScript.Replace("__SERVICE__", $serviceName)
+$remoteScript = $remoteScript.Replace("__ELO_SERVICE__", $eloServiceName)
 $remoteScript = $remoteScript.Replace("__HEALTH__", $healthUrl)
+$remoteScript = $remoteScript.Replace("__ELO_HEALTH__", $eloHealthUrl)
 $remoteScript = $remoteScript.Replace("__ARTIFACT_SHA__", $artifactSha256)
 $remoteScript = $remoteScript.Replace("__GIT_SHA__", $gitSha)
 $remoteScript = $remoteScript.Replace("__ARCHIVE_BASE__", $archiveBase)

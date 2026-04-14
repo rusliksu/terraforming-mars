@@ -25,7 +25,7 @@ release_dir="$work_root/release"
 shared_root="$prod_root/shared"
 releases_root="$prod_root/releases"
 new_release_dir=""
-previous_current=""
+previous_current="$legacy_prod"
 elo_files="index.html elo-api.js elo_aliases.py fix_elo_dupes.py import_gamedb_to_elo.py player_name_aliases.json"
 
 rollback() {
@@ -51,6 +51,10 @@ if ! systemctl --user cat "$elo_service" | grep -F "$prod_current/elo/elo-api.js
 fi
 
 mkdir -p "$prod_root" "$releases_root" "$shared_root/db" "$shared_root/logs" "$shared_root/elo"
+if [ ! -d "$legacy_prod/node_modules" ]; then
+  echo "Missing runtime dependencies in $legacy_prod/node_modules" >&2
+  exit 1
+fi
 if [ -d "$legacy_prod/db" ] && [ ! -e "$shared_root/db/game.db" ]; then
   rsync -a "$legacy_prod/db/" "$shared_root/db/"
 fi
@@ -101,6 +105,7 @@ ln -sfn "$shared_root/db" "$new_release_dir/db"
 ln -sfn "$shared_root/logs" "$new_release_dir/logs"
 ln -sfn "$shared_root/elo/elo-data.json" "$new_release_dir/elo/elo-data.json"
 ln -sfn "$shared_root/elo/data.json" "$new_release_dir/elo/data.json"
+ln -sfn "$legacy_prod/node_modules" "$new_release_dir/node_modules"
 ln -sfn "$new_release_dir" "$prod_current"
 
 if ! systemctl --user restart "$service"; then

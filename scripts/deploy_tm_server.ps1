@@ -44,6 +44,14 @@ function Get-GitStatusPorcelain {
     return Get-GitCommandValue -RepoRoot $RepoRoot -GitArgs @("status", "--short", "--untracked-files=all")
 }
 
+function Get-JsonFile {
+    param(
+        [string]$Path
+    )
+
+    return (Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json)
+}
+
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $tmWorkspaceRoot = Split-Path -Parent $repoRoot
 $safeDefaultSourceRoot = Join-Path $tmWorkspaceRoot "terraforming-mars-release-main"
@@ -84,8 +92,13 @@ if (-not $AllowDirtySource -and -not [string]::IsNullOrWhiteSpace($gitStatus)) {
     throw "SourceRoot has uncommitted changes and is blocked for release.`nSourceRoot: $resolvedSourceRoot`nUse a clean release checkout or pass -AllowDirtySource if you really intend to release a dirty tree.`n`n$statusPreview"
 }
 
+$gitSha = Get-GitCommandValue -RepoRoot $resolvedSourceRoot -GitArgs @("rev-parse", "HEAD")
+$gitBranch = Get-GitCommandValue -RepoRoot $resolvedSourceRoot -GitArgs @("rev-parse", "--abbrev-ref", "HEAD")
+$expectedBuildHead = if ([string]::IsNullOrWhiteSpace($gitSha)) { "" } else { $gitSha.Substring(0, [Math]::Min(7, $gitSha.Length)) }
+
 $buildDir = Join-Path $resolvedSourceRoot "build"
 $assetsDir = Join-Path $resolvedSourceRoot "assets"
+$generatedSettingsPath = Join-Path $resolvedSourceRoot "src\\genfiles\\settings.json"
 
 if (-not (Test-Path (Join-Path $buildDir "main.js"))) {
     throw "Source build is missing build/main.js in $resolvedSourceRoot. Run the build there before deploy."
@@ -95,6 +108,18 @@ if (-not (Test-Path (Join-Path $buildDir "src/server/server.js"))) {
 }
 if (-not (Test-Path (Join-Path $assetsDir "index.html"))) {
     throw "Source assets are missing assets/index.html in $resolvedSourceRoot."
+}
+if (-not (Test-Path $generatedSettingsPath)) {
+    throw "Source build metadata is missing src/genfiles/settings.json in $resolvedSourceRoot. Run the build there before deploy."
+}
+
+$generatedSettings = Get-JsonFile -Path $generatedSettingsPath
+$generatedBuildHead = [string]$generatedSettings.head
+if ([string]::IsNullOrWhiteSpace($generatedBuildHead)) {
+    throw "Build metadata in $generatedSettingsPath is missing head. Run the build there before deploy."
+}
+if ($generatedBuildHead -ne $expectedBuildHead) {
+    throw "Build metadata is stale for release.`nSourceRoot: $resolvedSourceRoot`nCurrent git HEAD: $expectedBuildHead`nGenerated settings head: $generatedBuildHead`nRun the build in this checkout after the latest commit before deploy."
 }
 
 $targetDir = if ($Environment -eq "staging") {
@@ -137,9 +162,6 @@ New-Item -ItemType Directory -Path $releasePayloadRoot -Force | Out-Null
 
 Copy-Item -Path $buildDir -Destination (Join-Path $releasePayloadRoot "build") -Recurse -Force
 Copy-Item -Path $assetsDir -Destination (Join-Path $releasePayloadRoot "assets") -Recurse -Force
-
-$gitSha = Get-GitCommandValue -RepoRoot $resolvedSourceRoot -GitArgs @("rev-parse", "HEAD")
-$gitBranch = Get-GitCommandValue -RepoRoot $resolvedSourceRoot -GitArgs @("rev-parse", "--abbrev-ref", "HEAD")
 $buildMainJs = Join-Path $buildDir "main.js"
 $buildMainJsItem = Get-Item -LiteralPath $buildMainJs
 $buildMainJsTimestampUtc = $buildMainJsItem.LastWriteTimeUtc

@@ -46,6 +46,31 @@ function Get-HeaderValue {
     return [string]$property.Value
 }
 
+function Get-ReleaseManifest {
+    param(
+        [string]$BaseServer
+    )
+
+    $candidates = @(
+        "$BaseServer/release.json",
+        "$BaseServer/assets/release.json"
+    )
+    $errors = New-Object System.Collections.Generic.List[string]
+
+    foreach ($uri in $candidates) {
+        try {
+            return [pscustomobject]@{
+                url = $uri
+                manifest = Invoke-RestMethod -Uri $uri -Headers @{"Cache-Control"="no-cache"} -TimeoutSec 30
+            }
+        } catch {
+            $errors.Add(("{0}: {1}" -f $uri, $_.Exception.Message))
+        }
+    }
+
+    throw "Release manifest check failed. Tried: $($errors -join ' | ')"
+}
+
 function New-SmokeGamePayload {
     param(
         [string]$Name
@@ -137,12 +162,14 @@ $elo = Invoke-WebRequest -Uri "$Server/elo/" -Headers @{"Cache-Control"="no-cach
 Assert-True ($elo.StatusCode -eq 200) "ELO page returned $($elo.StatusCode), expected 200."
 Assert-True ($elo.Content -match "TM ELO Ratings") "ELO page content check failed."
 
+$releaseManifestInfo = $null
 $releaseManifest = $null
 try {
-    $releaseManifest = Invoke-RestMethod -Uri "$Server/release.json" -Headers @{"Cache-Control"="no-cache"} -TimeoutSec 30
+    $releaseManifestInfo = Get-ReleaseManifest -BaseServer $Server
+    $releaseManifest = $releaseManifestInfo.manifest
 } catch {
     if ($RequireReleaseManifest) {
-        throw "Release manifest check failed for $Server/release.json: $($_.Exception.Message)"
+        throw $_
     }
 }
 
@@ -195,6 +222,7 @@ $result = [pscustomobject]@{
         $null
     } else {
         [pscustomobject]@{
+            url = [string]$releaseManifestInfo.url
             artifactSha256 = [string]$releaseManifest.artifactSha256
             gitSha = [string]$releaseManifest.gitSha
             gitBranch = [string]$releaseManifest.gitBranch

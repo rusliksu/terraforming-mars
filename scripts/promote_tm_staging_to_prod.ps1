@@ -23,6 +23,7 @@ release_url_fallback="${health_url%/}/assets/release.json"
 work_root="/tmp/tm-promote-$(date +%Y%m%d%H%M%S)"
 release_dir="$work_root/release"
 shared_root="$prod_root/shared"
+deps_root="$shared_root/deps"
 releases_root="$prod_root/releases"
 new_release_dir=""
 previous_current="$legacy_prod"
@@ -50,9 +51,9 @@ if ! systemctl --user cat "$elo_service" | grep -F "$prod_current/elo/elo-api.js
   exit 1
 fi
 
-mkdir -p "$prod_root" "$releases_root" "$shared_root/db" "$shared_root/logs" "$shared_root/elo"
-if [ ! -d "$legacy_prod/node_modules" ]; then
-  echo "Missing runtime dependencies in $legacy_prod/node_modules" >&2
+mkdir -p "$prod_root" "$releases_root" "$shared_root/db" "$shared_root/logs" "$shared_root/elo" "$deps_root"
+if [ ! -d "$legacy_prod/node_modules" ] && [ -z "$(find "$deps_root" -mindepth 2 -maxdepth 2 -type d -name node_modules 2>/dev/null | head -n 1)" ]; then
+  echo "Missing runtime dependencies in $legacy_prod/node_modules and no managed dependency cache in $deps_root" >&2
   exit 1
 fi
 if [ -d "$legacy_prod/db" ] && [ ! -e "$shared_root/db/game.db" ]; then
@@ -77,14 +78,38 @@ test -f "$staging_current/assets/index.html"
 test -f "$staging_current/assets/release.json"
 test -f "$staging_current/elo/index.html"
 test -f "$staging_current/elo/elo-api.js"
+test -f "$staging_current/package.json"
+test -f "$staging_current/package-lock.json"
 
 expected_artifact_sha="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1])).get("artifactSha256", ""))' "$staging_current/assets/release.json")"
 expected_git_sha="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1])).get("gitSha", ""))' "$staging_current/assets/release.json")"
+expected_dependency_sha="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1])).get("dependencySha256", ""))' "$staging_current/assets/release.json")"
 test -n "$expected_artifact_sha"
+test -n "$expected_dependency_sha"
+
+deps_dir="$deps_root/$expected_dependency_sha"
+if [ ! -d "$deps_dir/node_modules" ]; then
+  deps_tmp="$deps_root/.tmp-$expected_dependency_sha-$$"
+  rm -rf "$deps_tmp"
+  mkdir -p "$deps_tmp"
+  cp "$staging_current/package.json" "$deps_tmp/package.json"
+  cp "$staging_current/package-lock.json" "$deps_tmp/package-lock.json"
+  (
+    cd "$deps_tmp"
+    npm ci --include=optional
+  )
+  mkdir -p "$deps_dir"
+  mv "$deps_tmp/node_modules" "$deps_dir/node_modules"
+  cp "$deps_tmp/package.json" "$deps_dir/package.json"
+  cp "$deps_tmp/package-lock.json" "$deps_dir/package-lock.json"
+  rm -rf "$deps_tmp"
+fi
 
 mkdir -p "$release_dir"
 rsync -a --delete "$staging_current/build/" "$release_dir/build/"
 rsync -a --delete "$staging_current/assets/" "$release_dir/assets/"
+cp "$staging_current/package.json" "$release_dir/package.json"
+cp "$staging_current/package-lock.json" "$release_dir/package-lock.json"
 mkdir -p "$release_dir/elo"
 for file in $elo_files; do
   cp "$staging_current/elo/$file" "$release_dir/elo/$file"
@@ -97,6 +122,8 @@ rm -rf "$new_release_dir"
 mkdir -p "$new_release_dir"
 mv "$release_dir/build" "$new_release_dir/build"
 mv "$release_dir/assets" "$new_release_dir/assets"
+mv "$release_dir/package.json" "$new_release_dir/package.json"
+mv "$release_dir/package-lock.json" "$new_release_dir/package-lock.json"
 mkdir -p "$new_release_dir/elo"
 for file in $elo_files; do
   cp "$release_dir/elo/$file" "$new_release_dir/elo/$file"
@@ -105,7 +132,7 @@ ln -sfn "$shared_root/db" "$new_release_dir/db"
 ln -sfn "$shared_root/logs" "$new_release_dir/logs"
 ln -sfn "$shared_root/elo/elo-data.json" "$new_release_dir/elo/elo-data.json"
 ln -sfn "$shared_root/elo/data.json" "$new_release_dir/elo/data.json"
-ln -sfn "$legacy_prod/node_modules" "$new_release_dir/node_modules"
+ln -sfn "$deps_dir/node_modules" "$new_release_dir/node_modules"
 ln -sfn "$new_release_dir" "$prod_current"
 
 if ! systemctl --user restart "$service"; then
@@ -201,6 +228,8 @@ echo "elo_health_url=$elo_health_url"
 echo "release_url=$release_url"
 echo "artifact_sha=$served_artifact_sha"
 echo "git_sha=$served_git_sha"
+echo "dependency_sha=$expected_dependency_sha"
+echo "dependencies_dir=$deps_dir"
 
 rm -rf "$work_root"
 '@

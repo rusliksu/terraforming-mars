@@ -52,6 +52,22 @@ function Get-JsonFile {
     return (Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json)
 }
 
+function Get-NormalizedFileSha256 {
+    param(
+        [string]$Path
+    )
+
+    $content = Get-Content -LiteralPath $Path -Raw
+    $normalized = $content -replace "`r`n", "`n"
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($normalized)
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        return ([System.BitConverter]::ToString($sha256.ComputeHash($bytes))).Replace("-", "").ToLowerInvariant()
+    } finally {
+        $sha256.Dispose()
+    }
+}
+
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $tmWorkspaceRoot = Split-Path -Parent $repoRoot
 $safeDefaultSourceRoot = Join-Path $tmWorkspaceRoot "terraforming-mars-release-main"
@@ -99,6 +115,8 @@ $expectedBuildHead = if ([string]::IsNullOrWhiteSpace($gitSha)) { "" } else { $g
 $buildDir = Join-Path $resolvedSourceRoot "build"
 $assetsDir = Join-Path $resolvedSourceRoot "assets"
 $eloDir = Join-Path $resolvedSourceRoot "elo"
+$packageJsonPath = Join-Path $resolvedSourceRoot "package.json"
+$packageLockPath = Join-Path $resolvedSourceRoot "package-lock.json"
 $eloSourceFiles = @(
     "index.html",
     "elo-api.js",
@@ -117,6 +135,12 @@ if (-not (Test-Path (Join-Path $buildDir "src/server/server.js"))) {
 }
 if (-not (Test-Path (Join-Path $assetsDir "index.html"))) {
     throw "Source assets are missing assets/index.html in $resolvedSourceRoot."
+}
+if (-not (Test-Path $packageJsonPath)) {
+    throw "Source package manifest is missing package.json in $resolvedSourceRoot."
+}
+if (-not (Test-Path $packageLockPath)) {
+    throw "Source dependency lockfile is missing package-lock.json in $resolvedSourceRoot."
 }
 foreach ($eloFile in $eloSourceFiles) {
     if (-not (Test-Path (Join-Path $eloDir $eloFile))) {
@@ -192,6 +216,8 @@ New-Item -ItemType Directory -Path $releasePayloadRoot -Force | Out-Null
 
 Copy-Item -Path $buildDir -Destination (Join-Path $releasePayloadRoot "build") -Recurse -Force
 Copy-Item -Path $assetsDir -Destination (Join-Path $releasePayloadRoot "assets") -Recurse -Force
+Copy-Item -LiteralPath $packageJsonPath -Destination (Join-Path $releasePayloadRoot "package.json") -Force
+Copy-Item -LiteralPath $packageLockPath -Destination (Join-Path $releasePayloadRoot "package-lock.json") -Force
 $eloPayloadDir = Join-Path $releasePayloadRoot "elo"
 New-Item -ItemType Directory -Path $eloPayloadDir -Force | Out-Null
 foreach ($eloFile in $eloSourceFiles) {
@@ -205,15 +231,17 @@ $packagedAtUtc = (Get-Date).ToUniversalTime().ToString("o")
 
 Push-Location $releaseWorkRoot
 try {
-    & tar.exe -czf $payloadArchiveName -C $releasePayloadRoot build assets elo
+    & tar.exe -czf $payloadArchiveName -C $releasePayloadRoot build assets elo package.json package-lock.json
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to create payload archive."
     }
     $artifactSha256 = (Get-FileHash -LiteralPath $payloadArchivePath -Algorithm SHA256).Hash.ToLowerInvariant()
+    $dependencySha256 = Get-NormalizedFileSha256 -Path $packageLockPath
 
     $releaseManifest = [ordered]@{
         schemaVersion = 1
         artifactSha256 = $artifactSha256
+        dependencySha256 = $dependencySha256
         gitSha = $gitSha
         gitBranch = $gitBranch
         sourceTreeClean = [string]::IsNullOrWhiteSpace($gitStatus)
@@ -226,7 +254,7 @@ try {
     (Get-Item -LiteralPath $releaseJsonPath).LastWriteTimeUtc = $buildMainJsTimestampUtc
     (Get-Item -LiteralPath (Join-Path $releasePayloadRoot "assets")).LastWriteTimeUtc = $buildMainJsTimestampUtc
 
-    & tar.exe -czf $archiveName -C $releasePayloadRoot build assets elo
+    & tar.exe -czf $archiveName -C $releasePayloadRoot build assets elo package.json package-lock.json
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to create deploy archive."
     }
@@ -253,6 +281,8 @@ release_root="/tmp/__ARCHIVE_BASE__"
 release_unpack_dir="$release_root/release"
 releases_root="$runtime_root/releases"
 shared_root="$runtime_root/shared"
+deps_root="$shared_root/deps"
+dependency_sha="__DEPENDENCY_SHA__"
 new_release_dir=""
 previous_current="$legacy_root"
 elo_files="index.html elo-api.js elo_aliases.py fix_elo_dupes.py import_gamedb_to_elo.py player_name_aliases.json"
@@ -284,10 +314,10 @@ if [ -n "$elo_service" ]; then
   fi
 fi
 
-mkdir -p "$runtime_root" "$releases_root" "$shared_root/db" "$shared_root/logs" "$shared_root/elo"
+mkdir -p "$runtime_root" "$releases_root" "$shared_root/db" "$shared_root/logs" "$shared_root/elo" "$deps_root"
 
-if [ ! -d "$legacy_root/node_modules" ]; then
-  echo "Missing runtime dependencies in $legacy_root/node_modules" >&2
+if [ ! -d "$legacy_root/node_modules" ] && [ ! -d "$deps_root/$dependency_sha/node_modules" ]; then
+  echo "Missing runtime dependencies in $legacy_root/node_modules and no managed dependency cache for $dependency_sha" >&2
   exit 1
 fi
 
@@ -316,6 +346,26 @@ test -f "$release_unpack_dir/build/src/server/server.js"
 test -f "$release_unpack_dir/assets/index.html"
 test -f "$release_unpack_dir/elo/index.html"
 test -f "$release_unpack_dir/elo/elo-api.js"
+test -f "$release_unpack_dir/package.json"
+test -f "$release_unpack_dir/package-lock.json"
+
+deps_dir="$deps_root/$dependency_sha"
+if [ ! -d "$deps_dir/node_modules" ]; then
+  deps_tmp="$deps_root/.tmp-$dependency_sha-$$"
+  rm -rf "$deps_tmp"
+  mkdir -p "$deps_tmp"
+  cp "$release_unpack_dir/package.json" "$deps_tmp/package.json"
+  cp "$release_unpack_dir/package-lock.json" "$deps_tmp/package-lock.json"
+  (
+    cd "$deps_tmp"
+    npm ci --include=optional
+  )
+  mkdir -p "$deps_dir"
+  mv "$deps_tmp/node_modules" "$deps_dir/node_modules"
+  cp "$deps_tmp/package.json" "$deps_dir/package.json"
+  cp "$deps_tmp/package-lock.json" "$deps_dir/package-lock.json"
+  rm -rf "$deps_tmp"
+fi
 
 ts="$(date +%Y%m%d%H%M%S)"
 release_name="${ts}-${expected_git_sha}"
@@ -325,6 +375,8 @@ rm -rf "$new_release_dir"
 mkdir -p "$new_release_dir"
 mv "$release_unpack_dir/build" "$new_release_dir/build"
 mv "$release_unpack_dir/assets" "$new_release_dir/assets"
+mv "$release_unpack_dir/package.json" "$new_release_dir/package.json"
+mv "$release_unpack_dir/package-lock.json" "$new_release_dir/package-lock.json"
 mkdir -p "$new_release_dir/elo"
 for file in $elo_files; do
   cp "$release_unpack_dir/elo/$file" "$new_release_dir/elo/$file"
@@ -334,7 +386,7 @@ ln -sfn "$shared_root/db" "$new_release_dir/db"
 ln -sfn "$shared_root/logs" "$new_release_dir/logs"
 ln -sfn "$shared_root/elo/elo-data.json" "$new_release_dir/elo/elo-data.json"
 ln -sfn "$shared_root/elo/data.json" "$new_release_dir/elo/data.json"
-ln -sfn "$legacy_root/node_modules" "$new_release_dir/node_modules"
+ln -sfn "$deps_dir/node_modules" "$new_release_dir/node_modules"
 ln -sfn "$new_release_dir" "$current_link"
 
 if ! systemctl --user restart "$service"; then
@@ -429,6 +481,8 @@ echo "legacy_root=$legacy_root"
 echo "release_dir=$new_release_dir"
 echo "previous_current=$previous_current"
 echo "health_url=$health_url"
+echo "dependency_sha=$dependency_sha"
+echo "dependencies_dir=$deps_dir"
 if [ -n "$elo_service" ]; then
 echo "elo_service=$elo_service"
 echo "elo_health_url=$elo_health_url"
@@ -450,6 +504,7 @@ $remoteScript = $remoteScript.Replace("__ELO_SERVICE__", $eloServiceName)
 $remoteScript = $remoteScript.Replace("__HEALTH__", $healthUrl)
 $remoteScript = $remoteScript.Replace("__ELO_HEALTH__", $eloHealthUrl)
 $remoteScript = $remoteScript.Replace("__ARTIFACT_SHA__", $artifactSha256)
+$remoteScript = $remoteScript.Replace("__DEPENDENCY_SHA__", $dependencySha256)
 $remoteScript = $remoteScript.Replace("__GIT_SHA__", $gitSha)
 $remoteScript = $remoteScript.Replace("__ARCHIVE_BASE__", $archiveBase)
 $remoteScript = $remoteScript.Replace("__ENV__", $Environment)
@@ -463,7 +518,7 @@ Write-Host "Service     : $serviceName"
 Write-Host "Health      : $healthUrl"
 Write-Host "Remote host : $HostAlias"
 Write-Host "Archive     : $archivePath"
-Write-Host "Artifact    : sha256=$artifactSha256 git=$gitSha"
+Write-Host "Artifact    : sha256=$artifactSha256 git=$gitSha deps=$dependencySha256"
 
 if ($DryRun) {
     Write-Host ""

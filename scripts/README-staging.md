@@ -22,6 +22,23 @@ The recommended release source is the sibling clean checkout:
 
 Do not deploy from the main working tree unless you explicitly intend to release that exact build.
 
+## Service Sync
+
+Sync versioned VPS service units before rollout:
+
+```powershell
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\sync_tm_services.ps1
+```
+
+This covers:
+
+- TM runtime units from this repo (`tm-server`, `tm-server-staging`, `tm-elo`)
+- TM watcher units from sibling `tm-tierlist`
+
+`rollout_tm_server.ps1` runs this sync as step 1 by default. It uses safe mode
+without restarting watcher services unless you explicitly pass
+`-RestartWatchersDuringServiceSync`.
+
 ## Hard Rules
 
 - `prod` is promote-only. Do not deploy directly to `prod`; use staging first and then promote the tested artifact.

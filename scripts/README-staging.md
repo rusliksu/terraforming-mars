@@ -126,6 +126,22 @@ Promote the already tested staging artifact to prod:
 pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\promote_tm_staging_to_prod.ps1
 ```
 
+Rollback an environment to the previous immutable release:
+
+```powershell
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\rollback_tm_runtime.ps1 -Environment staging -DryRun
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\rollback_tm_runtime.ps1 -Environment staging
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\rollback_tm_runtime.ps1 -Environment prod -DryRun
+```
+
+Rollback to a specific release name:
+
+```powershell
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\rollback_tm_runtime.ps1 `
+  -Environment staging `
+  -TargetRelease 20260414120447-2634ec27d148e11e0b76590c9f714f000828e7d8
+```
+
 Run the full automated release gate:
 
 ```powershell
@@ -155,6 +171,7 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\verify_tm_server.ps1 -En
 - Rollout syncs `build/`, `assets/`, and the source-managed subset of `elo/` (`index.html`, `elo-api.js`, aliases, and maintenance scripts). It deliberately preserves live Elo data files on the VPS.
 - Rollout also carries `package.json` and `package-lock.json`; runtime dependencies are resolved into a managed cache under `/home/openclaw/tm-runtime/<env>/shared/deps/<package-lock-sha256>` instead of linking back to legacy checkout `node_modules`.
 - Once both environments are on `tm-runtime/*/current` with managed dependency cache, old `/home/openclaw/terraforming-mars*` checkouts can be archived with `scripts/archive_tm_legacy_checkouts.ps1` as cold backups.
+- `rollback_tm_runtime.ps1` switches `current` to a previous or explicit release, restarts only the environment-specific services, and verifies the served `release.json` after the swap.
 - Rollout now bootstraps and uses immutable runtime roots:
   - `prod`: `/home/openclaw/tm-runtime/prod`
   - `staging`: `/home/openclaw/tm-runtime/staging`

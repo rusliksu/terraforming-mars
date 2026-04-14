@@ -72,4 +72,45 @@ describe('LogHelper', () => {
       playerId: 'p-blue-id',
     });
   });
+
+  it('logs private card actions with the requested verb', () => {
+    const player1 = TestPlayer.BLUE.newPlayer();
+    const player2 = TestPlayer.RED.newPlayer();
+    const card1 = new Algae();
+    const game = Game.newInstance('gameid', [player1, player2], player1);
+    LogHelper.logCardAction(player1, 'bought', [card1.name], true);
+    const msg = game.gameLog.pop()!;
+    msg.timestamp = 0;
+
+    expect(msg).deep.eq({
+      message: '${0} bought ${1}',
+      data: [
+        {type: LogMessageDataType.STRING, value: 'You'},
+        {type: LogMessageDataType.CARDS, value: ['Algae']},
+      ],
+      timestamp: 0,
+      playerId: 'p-blue-id',
+    });
+  });
+
+  it('logs private picked and skipped cards distinctly', () => {
+    const player1 = TestPlayer.BLUE.newPlayer();
+    const player2 = TestPlayer.RED.newPlayer();
+    const card1 = new Algae();
+    const card2 = new Ants();
+    const game = Game.newInstance('gameid', [player1, player2], player1);
+    LogHelper.logPrivateCardSelection(player1, 'bought', [card1.name], [card2.name]);
+    const msg = game.gameLog.pop()!;
+    msg.timestamp = 0;
+
+    expect(msg).deep.eq({
+      message: 'You bought ${0} skipping ${1}',
+      data: [
+        {type: LogMessageDataType.CARDS, value: ['Algae']},
+        {type: LogMessageDataType.CARDS, value: ['Ants']},
+      ],
+      timestamp: 0,
+      playerId: 'p-blue-id',
+    });
+  });
 });

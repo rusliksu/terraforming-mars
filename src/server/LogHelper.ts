@@ -93,6 +93,31 @@ export class LogHelper {
     }, options);
   }
 
+  static logPrivateCardSelection(
+    player: IPlayer,
+    action: string,
+    picked: ReadonlyArray<ICard> | ReadonlyArray<CardName>,
+    skipped: ReadonlyArray<ICard> | ReadonlyArray<CardName>,
+  ) {
+    const pickedCount = picked.length;
+    const skippedCount = skipped.length;
+
+    if (pickedCount > 0 && skippedCount > 0) {
+      player.game.log('You ' + action + ' ${0} skipping ${1}', (b) => {
+        b.cards(picked);
+        b.cards(skipped);
+      }, {reservedFor: player});
+      return;
+    }
+    if (pickedCount > 0) {
+      this.logCardAction(player, action, picked, true);
+      return;
+    }
+    if (skippedCount > 0) {
+      player.game.log('You skipped ${0}', (b) => b.cards(skipped), {reservedFor: player});
+    }
+  }
+
   static logDrawnCards(player: IPlayer, cards: ReadonlyArray<ICard> | ReadonlyArray<CardName>, privateMessage: boolean = false) {
     this.logCardAction(player, 'drew', cards, privateMessage);
   }

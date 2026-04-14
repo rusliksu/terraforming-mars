@@ -42,4 +42,24 @@ describe('TelegramBot', () => {
       BotTakeoverManager.INSTANCE.isActive = original;
     }
   });
+
+  it('suppresses turn notice when telegram is disabled', async () => {
+    const original = process.env.TM_DISABLE_TELEGRAM;
+    process.env.TM_DISABLE_TELEGRAM = '1';
+    try {
+      const sent = await sendTurnNotice({
+        name: 'Руслан',
+        id: 'p-ruslan',
+        telegramID: '123456',
+        lastNoticeMessageId: -1,
+      });
+      expect(sent).eq(false);
+    } finally {
+      if (original === undefined) {
+        delete process.env.TM_DISABLE_TELEGRAM;
+      } else {
+        process.env.TM_DISABLE_TELEGRAM = original;
+      }
+    }
+  });
 });

@@ -24,6 +24,10 @@ interface TelegramResponse {
   error_code?: number;
 }
 
+function telegramDisabled(): boolean {
+  return process.env.TM_DISABLE_TELEGRAM === '1';
+}
+
 function callTelegramApi(method: string, body: object): Promise<TelegramResponse> {
   return new Promise((resolve) => {
     const data = JSON.stringify(body);
@@ -101,6 +105,7 @@ export function buildTurnNoticeText(player: TelegramNotifiable): string {
 
 export async function sendTurnNotice(player: TelegramNotifiable, turnNoticeKey?: string): Promise<boolean> {
   if (!player.telegramID) return false;
+  if (telegramDisabled()) return false;
   if (BotTakeoverManager.INSTANCE.isActive(player.id)) return false;
   try {
     const resp = await callTelegramApi("sendMessage", {
@@ -122,6 +127,7 @@ export async function sendTurnNotice(player: TelegramNotifiable, turnNoticeKey?:
 
 export async function deleteTurnNotice(player: TelegramNotifiable): Promise<void> {
   if (!player.telegramID || player.lastNoticeMessageId < 0) return;
+  if (telegramDisabled()) return;
   try {
     await callTelegramApi("deleteMessage", {
       chat_id: player.telegramID,
@@ -135,6 +141,7 @@ export async function deleteTurnNotice(player: TelegramNotifiable): Promise<void
 
 export async function sendGameStartNotice(player: TelegramNotifiable): Promise<void> {
   if (!player.telegramID) return;
+  if (telegramDisabled()) return;
   const link = `${SERVER_URL}/player?id=${player.id}`;
   try {
     await callTelegramApi("sendMessage", {

@@ -5,6 +5,8 @@ import {IGameLoader} from '../../src/server/database/IGameLoader';
 import {GameLoader} from '../../src/server/database/GameLoader';
 import {globalInitialize} from '../../src/server/globalInitialize';
 
+process.env.TM_DISABLE_TELEGRAM = process.env.TM_DISABLE_TELEGRAM ?? '1';
+
 const FAKE_DATABASE: IDatabase = {
   markFinished: () => Promise.resolve(),
   deleteGameNbrSaves: () => Promise.resolve(),

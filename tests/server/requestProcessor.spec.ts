@@ -1,6 +1,7 @@
 import {expect} from 'chai';
 import {statusCode} from '../../src/common/http/statusCode';
 import {GameLoader} from '../../src/server/database/GameLoader';
+import {ServeAsset} from '../../src/server/routes/ServeAsset';
 import {processRequest} from '../../src/server/server/requestProcessor';
 import {MockRequest, MockResponse} from '../routes/HttpMocks';
 
@@ -22,6 +23,39 @@ describe('requestProcessor', () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
       expect(res.statusCode).eq(statusCode.ok);
     } finally {
+      (GameLoader as typeof GameLoader & {getInstance: typeof GameLoader.getInstance}).getInstance = originalGetInstance;
+    }
+  });
+
+  it('routes release.json to the asset handler', async () => {
+    const originalGetInstance = GameLoader.getInstance;
+    const originalProcessRequest = ServeAsset.INSTANCE.processRequest.bind(ServeAsset.INSTANCE);
+    let assetHandlerCalled = false;
+
+    (GameLoader as typeof GameLoader & {getInstance: typeof GameLoader.getInstance}).getInstance = (() => {
+      return {} as ReturnType<typeof GameLoader.getInstance>;
+    }) as typeof GameLoader.getInstance;
+
+    ServeAsset.INSTANCE.processRequest = ((req, res, ctx) => {
+      assetHandlerCalled = true;
+      res.writeHead(statusCode.ok);
+      res.end('release manifest');
+    }) as typeof ServeAsset.INSTANCE.processRequest;
+
+    const req = new MockRequest();
+    const res = new MockResponse();
+    req.headers.host = 'tm.knightbyte.win';
+    req.headers['accept-encoding'] = '';
+    req.url = '/release.json';
+
+    try {
+      processRequest(req, res);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(assetHandlerCalled).eq(true);
+      expect(res.statusCode).eq(statusCode.ok);
+      expect(res.content).eq('release manifest');
+    } finally {
+      ServeAsset.INSTANCE.processRequest = originalProcessRequest;
       (GameLoader as typeof GameLoader & {getInstance: typeof GameLoader.getInstance}).getInstance = originalGetInstance;
     }
   });

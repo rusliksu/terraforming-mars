@@ -167,6 +167,9 @@ export class ServeAsset extends Handler {
       }
       return {file: 'build/styles.css'};
 
+    case 'release.json':
+      return {file: 'assets/release.json'};
+
     case 'main.js':
     case 'main.js.map':
     case 'vendors.js':

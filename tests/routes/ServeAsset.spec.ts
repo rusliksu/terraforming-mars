@@ -91,6 +91,14 @@ describe('ServeAsset', () => {
     expect(res.content).eq('data: build/styles.css');
   });
 
+  it('release.json alias', async () => {
+    instance = new ServeAsset(undefined, false, fileApi);
+    scaffolding.url = '/release.json';
+    scaffolding.req.headers['accept-encoding'] = '';
+    await scaffolding.get(instance, res);
+    expect(res.content).eq('data: assets/release.json');
+  });
+
   it('styles.css.gz', async () => {
     instance = new ServeAsset(undefined, false, fileApi);
     scaffolding.url = '/styles.css';

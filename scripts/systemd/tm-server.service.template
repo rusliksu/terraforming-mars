@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=__PROD_DIR__
+WorkingDirectory=__PROD_CURRENT_DIR__
 Environment=PORT=__PROD_PORT__
 Environment=HOST=__PROD_HOST__
 Environment=SERVER_ID=__PROD_SERVER_ID__

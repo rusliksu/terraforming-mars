@@ -9,7 +9,11 @@ $remoteScript = @'
 set -euo pipefail
 
 staging="/home/openclaw/terraforming-mars-staging"
-prod="/home/openclaw/terraforming-mars"
+staging_root="/home/openclaw/tm-runtime/staging"
+staging_current="$staging_root/current"
+prod_root="/home/openclaw/tm-runtime/prod"
+prod_current="$prod_root/current"
+legacy_prod="/home/openclaw/terraforming-mars"
 service="tm-server"
 elo_service="tm-elo"
 health_url="http://127.0.0.1:8081"
@@ -18,70 +22,86 @@ release_url="${health_url%/}/release.json"
 release_url_fallback="${health_url%/}/assets/release.json"
 work_root="/tmp/tm-promote-$(date +%Y%m%d%H%M%S)"
 release_dir="$work_root/release"
+shared_root="$prod_root/shared"
+releases_root="$prod_root/releases"
+new_release_dir=""
+previous_current=""
 elo_files="index.html elo-api.js elo_aliases.py fix_elo_dupes.py import_gamedb_to_elo.py player_name_aliases.json"
 
 rollback() {
-  if [ -d "$prod/build" ]; then
-    rm -rf "$prod/build"
+  if [ -n "$previous_current" ]; then
+    ln -sfn "$previous_current" "$prod_current"
+  else
+    rm -f "$prod_current"
   fi
-  if [ -d "$prod/assets" ]; then
-    rm -rf "$prod/assets"
-  fi
-  if [ -d "$backup_build" ]; then
-    mv "$backup_build" "$prod/build"
-  fi
-  if [ -d "$backup_assets" ]; then
-    mv "$backup_assets" "$prod/assets"
-  fi
-  if [ -n "$backup_elo" ]; then
-    mkdir -p "$prod/elo"
-    for file in $elo_files; do
-      if [ -f "$backup_elo/$file" ]; then
-        cp "$backup_elo/$file" "$prod/elo/$file"
-      else
-        rm -f "$prod/elo/$file"
-      fi
-    done
+  if [ -n "$new_release_dir" ] && [ -d "$new_release_dir" ] && [ "$new_release_dir" != "$previous_current" ]; then
+    rm -rf "$new_release_dir"
   fi
   systemctl --user restart "$service" || true
   systemctl --user restart "$elo_service" || true
 }
 
-test -f "$staging/build/main.js"
-test -f "$staging/build/src/server/server.js"
-test -f "$staging/assets/index.html"
-test -f "$staging/assets/release.json"
-test -f "$staging/elo/index.html"
-test -f "$staging/elo/elo-api.js"
+if ! systemctl --user cat "$service" | grep -F "WorkingDirectory=$prod_current" >/dev/null; then
+  echo "Service $service is not pointed at $prod_current. Run sync_tm_runtime_services.ps1 first." >&2
+  exit 1
+fi
+if ! systemctl --user cat "$elo_service" | grep -F "$prod_current/elo/elo-api.js" >/dev/null; then
+  echo "Service $elo_service is not pointed at $prod_current. Run sync_tm_runtime_services.ps1 first." >&2
+  exit 1
+fi
 
-expected_artifact_sha="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1])).get("artifactSha256", ""))' "$staging/assets/release.json")"
-expected_git_sha="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1])).get("gitSha", ""))' "$staging/assets/release.json")"
+mkdir -p "$prod_root" "$releases_root" "$shared_root/db" "$shared_root/logs" "$shared_root/elo"
+if [ -d "$legacy_prod/db" ] && [ ! -e "$shared_root/db/game.db" ]; then
+  rsync -a "$legacy_prod/db/" "$shared_root/db/"
+fi
+if [ -d "$legacy_prod/logs" ] && [ -z "$(ls -A "$shared_root/logs" 2>/dev/null || true)" ]; then
+  rsync -a "$legacy_prod/logs/" "$shared_root/logs/"
+fi
+for data_file in elo-data.json data.json; do
+  if [ -f "$legacy_prod/elo/$data_file" ] && [ ! -e "$shared_root/elo/$data_file" ]; then
+    cp "$legacy_prod/elo/$data_file" "$shared_root/elo/$data_file"
+  fi
+done
+
+if [ -L "$prod_current" ]; then
+  previous_current="$(readlink -f "$prod_current" || true)"
+fi
+
+test -f "$staging_current/build/main.js"
+test -f "$staging_current/build/src/server/server.js"
+test -f "$staging_current/assets/index.html"
+test -f "$staging_current/assets/release.json"
+test -f "$staging_current/elo/index.html"
+test -f "$staging_current/elo/elo-api.js"
+
+expected_artifact_sha="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1])).get("artifactSha256", ""))' "$staging_current/assets/release.json")"
+expected_git_sha="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1])).get("gitSha", ""))' "$staging_current/assets/release.json")"
 test -n "$expected_artifact_sha"
 
 mkdir -p "$release_dir"
-rsync -a --delete "$staging/build/" "$release_dir/build/"
-rsync -a --delete "$staging/assets/" "$release_dir/assets/"
+rsync -a --delete "$staging_current/build/" "$release_dir/build/"
+rsync -a --delete "$staging_current/assets/" "$release_dir/assets/"
 mkdir -p "$release_dir/elo"
 for file in $elo_files; do
-  cp "$staging/elo/$file" "$release_dir/elo/$file"
+  cp "$staging_current/elo/$file" "$release_dir/elo/$file"
 done
 
 ts="$(date +%Y%m%d%H%M%S)"
-backup_build="$prod/build.bak-$ts"
-backup_assets="$prod/assets.bak-$ts"
-backup_elo="$prod/elo.src.bak-$ts"
-
-mv "$prod/build" "$backup_build"
-mv "$prod/assets" "$backup_assets"
-mv "$release_dir/build" "$prod/build"
-mv "$release_dir/assets" "$prod/assets"
-mkdir -p "$backup_elo" "$prod/elo"
+release_name="${ts}-${expected_git_sha}"
+new_release_dir="$releases_root/$release_name"
+rm -rf "$new_release_dir"
+mkdir -p "$new_release_dir"
+mv "$release_dir/build" "$new_release_dir/build"
+mv "$release_dir/assets" "$new_release_dir/assets"
+mkdir -p "$new_release_dir/elo"
 for file in $elo_files; do
-  if [ -f "$prod/elo/$file" ]; then
-    cp "$prod/elo/$file" "$backup_elo/$file"
-  fi
-  cp "$release_dir/elo/$file" "$prod/elo/$file"
+  cp "$release_dir/elo/$file" "$new_release_dir/elo/$file"
 done
+ln -sfn "$shared_root/db" "$new_release_dir/db"
+ln -sfn "$shared_root/logs" "$new_release_dir/logs"
+ln -sfn "$shared_root/elo/elo-data.json" "$new_release_dir/elo/elo-data.json"
+ln -sfn "$shared_root/elo/data.json" "$new_release_dir/elo/data.json"
+ln -sfn "$new_release_dir" "$prod_current"
 
 if ! systemctl --user restart "$service"; then
   echo "Restart failed, rolling back." >&2
@@ -163,8 +183,12 @@ if [ -n "$expected_git_sha" ] && [ "$served_git_sha" != "$expected_git_sha" ]; t
 fi
 
 echo "Promote ok"
-echo "source=$staging"
-echo "target=$prod"
+echo "source=$staging_current"
+echo "runtime_root=$prod_root"
+echo "current_link=$prod_current"
+echo "legacy_root=$legacy_prod"
+echo "release_dir=$new_release_dir"
+echo "previous_current=$previous_current"
 echo "service=$service"
 echo "elo_service=$elo_service"
 echo "health_url=$health_url"
@@ -172,16 +196,13 @@ echo "elo_health_url=$elo_health_url"
 echo "release_url=$release_url"
 echo "artifact_sha=$served_artifact_sha"
 echo "git_sha=$served_git_sha"
-echo "backup_build=$backup_build"
-echo "backup_assets=$backup_assets"
-echo "backup_elo=$backup_elo"
 
 rm -rf "$work_root"
 '@
 
 Write-Host "Promoting tested staging build to prod on $HostAlias"
-Write-Host "Source : /home/openclaw/terraforming-mars-staging"
-Write-Host "Target : /home/openclaw/terraforming-mars"
+Write-Host "Source : /home/openclaw/tm-runtime/staging/current"
+Write-Host "Target : /home/openclaw/tm-runtime/prod/current"
 Write-Host "Health : http://127.0.0.1:8081"
 
 if ($DryRun) {

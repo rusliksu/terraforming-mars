@@ -136,7 +136,13 @@ if ($generatedBuildHead -ne $expectedBuildHead) {
     throw "Build metadata is stale for release.`nSourceRoot: $resolvedSourceRoot`nCurrent git HEAD: $expectedBuildHead`nGenerated settings head: $generatedBuildHead`nRun the build in this checkout after the latest commit before deploy."
 }
 
-$targetDir = if ($Environment -eq "staging") {
+$runtimeRoot = if ($Environment -eq "staging") {
+    "/home/openclaw/tm-runtime/staging"
+} else {
+    "/home/openclaw/tm-runtime/prod"
+}
+$currentLink = "$runtimeRoot/current"
+$legacyRoot = if ($Environment -eq "staging") {
     "/home/openclaw/terraforming-mars-staging"
 } else {
     "/home/openclaw/terraforming-mars"
@@ -232,7 +238,9 @@ $remoteScript = @'
 set -euo pipefail
 
 archive="__ARCHIVE__"
-target="__TARGET__"
+runtime_root="__RUNTIME_ROOT__"
+current_link="__CURRENT_LINK__"
+legacy_root="__LEGACY_ROOT__"
 service="__SERVICE__"
 elo_service="__ELO_SERVICE__"
 health_url="__HEALTH__"
@@ -242,31 +250,21 @@ expected_git_sha="__GIT_SHA__"
 release_url="${health_url%/}/release.json"
 release_url_fallback="${health_url%/}/assets/release.json"
 release_root="/tmp/__ARCHIVE_BASE__"
-release_dir="$release_root/release"
+release_unpack_dir="$release_root/release"
+releases_root="$runtime_root/releases"
+shared_root="$runtime_root/shared"
+new_release_dir=""
+previous_current=""
 elo_files="index.html elo-api.js elo_aliases.py fix_elo_dupes.py import_gamedb_to_elo.py player_name_aliases.json"
 
 rollback() {
-  if [ -d "$target/build" ]; then
-    rm -rf "$target/build"
+  if [ -n "$previous_current" ]; then
+    ln -sfn "$previous_current" "$current_link"
+  else
+    rm -f "$current_link"
   fi
-  if [ -d "$target/assets" ]; then
-    rm -rf "$target/assets"
-  fi
-  if [ -d "$backup_build" ]; then
-    mv "$backup_build" "$target/build"
-  fi
-  if [ -d "$backup_assets" ]; then
-    mv "$backup_assets" "$target/assets"
-  fi
-  if [ -n "$backup_elo" ]; then
-    mkdir -p "$target/elo"
-    for file in $elo_files; do
-      if [ -f "$backup_elo/$file" ]; then
-        cp "$backup_elo/$file" "$target/elo/$file"
-      else
-        rm -f "$target/elo/$file"
-      fi
-    done
+  if [ -n "$new_release_dir" ] && [ -d "$new_release_dir" ] && [ "$new_release_dir" != "$previous_current" ]; then
+    rm -rf "$new_release_dir"
   fi
   systemctl --user restart "$service" || true
   if [ -n "$elo_service" ]; then
@@ -274,32 +272,64 @@ rollback() {
   fi
 }
 
-rm -rf "$release_root"
-mkdir -p "$release_dir"
-tar -xzf "$archive" -C "$release_dir"
+if ! systemctl --user cat "$service" | grep -F "WorkingDirectory=$current_link" >/dev/null; then
+  echo "Service $service is not pointed at $current_link. Run sync_tm_runtime_services.ps1 first." >&2
+  exit 1
+fi
 
-test -f "$release_dir/build/main.js"
-test -f "$release_dir/build/src/server/server.js"
-test -f "$release_dir/assets/index.html"
-test -f "$release_dir/elo/index.html"
-test -f "$release_dir/elo/elo-api.js"
+if [ -n "$elo_service" ]; then
+  if ! systemctl --user cat "$elo_service" | grep -F "$current_link/elo/elo-api.js" >/dev/null; then
+    echo "Service $elo_service is not pointed at $current_link. Run sync_tm_runtime_services.ps1 first." >&2
+    exit 1
+  fi
+fi
+
+mkdir -p "$runtime_root" "$releases_root" "$shared_root/db" "$shared_root/logs" "$shared_root/elo"
+
+if [ -d "$legacy_root/db" ] && [ ! -e "$shared_root/db/game.db" ]; then
+  rsync -a "$legacy_root/db/" "$shared_root/db/"
+fi
+if [ -d "$legacy_root/logs" ] && [ -z "$(ls -A "$shared_root/logs" 2>/dev/null || true)" ]; then
+  rsync -a "$legacy_root/logs/" "$shared_root/logs/"
+fi
+for data_file in elo-data.json data.json; do
+  if [ -f "$legacy_root/elo/$data_file" ] && [ ! -e "$shared_root/elo/$data_file" ]; then
+    cp "$legacy_root/elo/$data_file" "$shared_root/elo/$data_file"
+  fi
+done
+
+if [ -L "$current_link" ]; then
+  previous_current="$(readlink -f "$current_link" || true)"
+fi
+
+rm -rf "$release_root"
+mkdir -p "$release_unpack_dir"
+tar -xzf "$archive" -C "$release_unpack_dir"
+
+test -f "$release_unpack_dir/build/main.js"
+test -f "$release_unpack_dir/build/src/server/server.js"
+test -f "$release_unpack_dir/assets/index.html"
+test -f "$release_unpack_dir/elo/index.html"
+test -f "$release_unpack_dir/elo/elo-api.js"
 
 ts="$(date +%Y%m%d%H%M%S)"
-backup_build="$target/build.bak-$ts"
-backup_assets="$target/assets.bak-$ts"
-backup_elo="$target/elo.src.bak-$ts"
+release_name="${ts}-${expected_git_sha}"
+new_release_dir="$releases_root/$release_name"
 
-mv "$target/build" "$backup_build"
-mv "$target/assets" "$backup_assets"
-mv "$release_dir/build" "$target/build"
-mv "$release_dir/assets" "$target/assets"
-mkdir -p "$backup_elo" "$target/elo"
+rm -rf "$new_release_dir"
+mkdir -p "$new_release_dir"
+mv "$release_unpack_dir/build" "$new_release_dir/build"
+mv "$release_unpack_dir/assets" "$new_release_dir/assets"
+mkdir -p "$new_release_dir/elo"
 for file in $elo_files; do
-  if [ -f "$target/elo/$file" ]; then
-    cp "$target/elo/$file" "$backup_elo/$file"
-  fi
-  cp "$release_dir/elo/$file" "$target/elo/$file"
+  cp "$release_unpack_dir/elo/$file" "$new_release_dir/elo/$file"
 done
+
+ln -sfn "$shared_root/db" "$new_release_dir/db"
+ln -sfn "$shared_root/logs" "$new_release_dir/logs"
+ln -sfn "$shared_root/elo/elo-data.json" "$new_release_dir/elo/elo-data.json"
+ln -sfn "$shared_root/elo/data.json" "$new_release_dir/elo/data.json"
+ln -sfn "$new_release_dir" "$current_link"
 
 if ! systemctl --user restart "$service"; then
   echo "Restart failed, rolling back." >&2
@@ -387,7 +417,11 @@ fi
 echo "Deploy ok"
 echo "environment=__ENV__"
 echo "service=$service"
-echo "target=$target"
+echo "runtime_root=$runtime_root"
+echo "current_link=$current_link"
+echo "legacy_root=$legacy_root"
+echo "release_dir=$new_release_dir"
+echo "previous_current=$previous_current"
 echo "health_url=$health_url"
 if [ -n "$elo_service" ]; then
 echo "elo_service=$elo_service"
@@ -396,16 +430,15 @@ fi
 echo "release_url=$release_url"
 echo "artifact_sha=$served_artifact_sha"
 echo "git_sha=$served_git_sha"
-echo "backup_build=$backup_build"
-echo "backup_assets=$backup_assets"
-echo "backup_elo=$backup_elo"
 
 rm -rf "$release_root"
 rm -f "$archive"
 '@
 
 $remoteScript = $remoteScript.Replace("__ARCHIVE__", $remoteArchive)
-$remoteScript = $remoteScript.Replace("__TARGET__", $targetDir)
+$remoteScript = $remoteScript.Replace("__RUNTIME_ROOT__", $runtimeRoot)
+$remoteScript = $remoteScript.Replace("__CURRENT_LINK__", $currentLink)
+$remoteScript = $remoteScript.Replace("__LEGACY_ROOT__", $legacyRoot)
 $remoteScript = $remoteScript.Replace("__SERVICE__", $serviceName)
 $remoteScript = $remoteScript.Replace("__ELO_SERVICE__", $eloServiceName)
 $remoteScript = $remoteScript.Replace("__HEALTH__", $healthUrl)
@@ -417,7 +450,9 @@ $remoteScript = $remoteScript.Replace("__ENV__", $Environment)
 
 Write-Host "Environment : $Environment"
 Write-Host "Source      : $resolvedSourceRoot"
-Write-Host "Target      : $targetDir"
+Write-Host "RuntimeRoot : $runtimeRoot"
+Write-Host "CurrentLink : $currentLink"
+Write-Host "LegacyRoot  : $legacyRoot"
 Write-Host "Service     : $serviceName"
 Write-Host "Health      : $healthUrl"
 Write-Host "Remote host : $HostAlias"

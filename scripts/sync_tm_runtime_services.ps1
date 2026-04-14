@@ -3,8 +3,8 @@ param(
     [string]$ProdService = "tm-server.service",
     [string]$StagingService = "tm-server-staging.service",
     [string]$EloService = "tm-elo.service",
-    [string]$ProdDir = "/home/openclaw/terraforming-mars",
-    [string]$StagingDir = "/home/openclaw/terraforming-mars-staging",
+    [string]$ProdRuntimeRoot = "/home/openclaw/tm-runtime/prod",
+    [string]$StagingRuntimeRoot = "/home/openclaw/tm-runtime/staging",
     [string]$ProdPort = "8081",
     [string]$ProdHost = "127.0.0.1",
     [string]$StagingPort = "8084",
@@ -76,9 +76,11 @@ $prodServerId = Require-Env -Map $prodEnv -Key 'SERVER_ID' -ServiceName $ProdSer
 $stagingServerId = Require-Env -Map $stagingEnv -Key 'SERVER_ID' -ServiceName $StagingService
 $shadowLogDir = if ($prodEnv.ContainsKey('SHADOW_LOG_DIR')) { $prodEnv['SHADOW_LOG_DIR'] } else { $DefaultShadowLogDir }
 $stagingUrl = if ($stagingEnv.ContainsKey('TM_SERVER_URL')) { $stagingEnv['TM_SERVER_URL'] } else { $DefaultStagingUrl }
+$prodCurrentDir = "$ProdRuntimeRoot/current"
+$stagingCurrentDir = "$StagingRuntimeRoot/current"
 
 $prodContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-server.service.template') -Replacements @{
-    '__PROD_DIR__' = $ProdDir
+    '__PROD_CURRENT_DIR__' = $prodCurrentDir
     '__PROD_PORT__' = $ProdPort
     '__PROD_HOST__' = $ProdHost
     '__PROD_SERVER_ID__' = $prodServerId
@@ -86,7 +88,7 @@ $prodContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-server.
 }
 
 $stagingContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-server-staging.service.template') -Replacements @{
-    '__STAGING_DIR__' = $StagingDir
+    '__STAGING_CURRENT_DIR__' = $stagingCurrentDir
     '__STAGING_PORT__' = $StagingPort
     '__STAGING_HOST__' = $StagingHost
     '__STAGING_SERVER_ID__' = $stagingServerId
@@ -94,12 +96,14 @@ $stagingContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-serv
 }
 
 $eloContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-elo.service.template') -Replacements @{
-    '__PROD_DIR__' = $ProdDir
+    '__PROD_CURRENT_DIR__' = $prodCurrentDir
 }
 
 Write-Host "Target VPS: $VpsHost"
 Write-Host "Prod SERVER_ID: $prodServerId"
 Write-Host "Staging SERVER_ID: $stagingServerId"
+Write-Host "Prod current dir: $prodCurrentDir"
+Write-Host "Staging current dir: $stagingCurrentDir"
 Write-Host "Shadow log dir: $shadowLogDir"
 Write-Host "Staging URL: $stagingUrl"
 Write-Host "Mode: $(if ($DryRun) { 'dry-run' } else { 'apply without service restart' })"

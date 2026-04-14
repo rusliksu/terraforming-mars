@@ -50,6 +50,7 @@ export interface IGame extends Logger {
   deferredActions: DeferredActionsQueue;
   createdTime: Date;
   gameAge: number; // Each log event increases it
+  shadowInputSeq: number; // Monotonic accepted input counter for shadow correlation
   gameLog: Array<LogMessage>;
   undoCount: number; // Each undo increases it
   inputsThisRound: number;

@@ -804,6 +804,18 @@ describe('Game', () => {
     expect(deserialized.moonData).is.undefined;
   });
 
+  it('serializes and deserializes shadowInputSeq', () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const game = Game.newInstance('gameid', [player], player);
+    game.shadowInputSeq = 7;
+
+    const serialized = game.serialize();
+    const deserialized = Game.deserialize(serialized);
+
+    expect(serialized.shadowInputSeq).eq(7);
+    expect(deserialized.shadowInputSeq).eq(7);
+  });
+
   it('deserializing a game without pathfinders still loads', () => {
     const player = TestPlayer.BLUE.newPlayer();
     const game = Game.newInstance('gameid', [player], player, {pathfindersExpansion: false});

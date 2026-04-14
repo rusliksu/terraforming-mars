@@ -2,7 +2,6 @@ import https from "https";
 import {BotTakeoverManager} from './bot/BotTakeoverManager';
 import {PlayerId} from '../common/Types';
 
-const BOT_TOKEN = process.env.TM_BOT_TOKEN ?? "8625024007:AAH-dOu2syBcQB4f28O1wzzgoCROFjNnRNk";
 const SERVER_URL = process.env.TM_SERVER_URL ?? "https://tm.knightbyte.win";
 const COLOR_LABELS: Record<string, string> = {
   red: "красный",
@@ -28,12 +27,22 @@ function telegramDisabled(): boolean {
   return process.env.TM_DISABLE_TELEGRAM === '1';
 }
 
+function getBotToken(): string | undefined {
+  const token = process.env.TM_BOT_TOKEN?.trim();
+  return token ? token : undefined;
+}
+
 function callTelegramApi(method: string, body: object): Promise<TelegramResponse> {
   return new Promise((resolve) => {
+    const botToken = getBotToken();
+    if (!botToken) {
+      resolve({ok: false});
+      return;
+    }
     const data = JSON.stringify(body);
     const options = {
       hostname: "api.telegram.org",
-      path: `/bot${BOT_TOKEN}/${method}`,
+      path: `/bot${botToken}/${method}`,
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -106,6 +115,7 @@ export function buildTurnNoticeText(player: TelegramNotifiable): string {
 export async function sendTurnNotice(player: TelegramNotifiable, turnNoticeKey?: string): Promise<boolean> {
   if (!player.telegramID) return false;
   if (telegramDisabled()) return false;
+  if (!getBotToken()) return false;
   if (BotTakeoverManager.INSTANCE.isActive(player.id)) return false;
   try {
     const resp = await callTelegramApi("sendMessage", {
@@ -128,6 +138,7 @@ export async function sendTurnNotice(player: TelegramNotifiable, turnNoticeKey?:
 export async function deleteTurnNotice(player: TelegramNotifiable): Promise<void> {
   if (!player.telegramID || player.lastNoticeMessageId < 0) return;
   if (telegramDisabled()) return;
+  if (!getBotToken()) return;
   try {
     await callTelegramApi("deleteMessage", {
       chat_id: player.telegramID,
@@ -142,6 +153,7 @@ export async function deleteTurnNotice(player: TelegramNotifiable): Promise<void
 export async function sendGameStartNotice(player: TelegramNotifiable): Promise<void> {
   if (!player.telegramID) return;
   if (telegramDisabled()) return;
+  if (!getBotToken()) return;
   const link = `${SERVER_URL}/player?id=${player.id}`;
   try {
     await callTelegramApi("sendMessage", {

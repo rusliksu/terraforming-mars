@@ -62,4 +62,24 @@ describe('TelegramBot', () => {
       }
     }
   });
+
+  it('suppresses turn notice when telegram token is missing', async () => {
+    const original = process.env.TM_BOT_TOKEN;
+    delete process.env.TM_BOT_TOKEN;
+    try {
+      const sent = await sendTurnNotice({
+        name: 'Руслан',
+        id: 'p-ruslan',
+        telegramID: '123456',
+        lastNoticeMessageId: -1,
+      });
+      expect(sent).eq(false);
+    } finally {
+      if (original === undefined) {
+        delete process.env.TM_BOT_TOKEN;
+      } else {
+        process.env.TM_BOT_TOKEN = original;
+      }
+    }
+  });
 });

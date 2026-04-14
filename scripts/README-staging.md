@@ -14,6 +14,10 @@ GitHub Actions in `.github/workflows/main.yml` are CI-only. They do not deploy `
 - Staging app: `tm-server-staging`
 - Prod app: `tm-server`
 
+TM Telegram secrets are not source-managed. Keep `TM_BOT_TOKEN` in
+`~/.config/tm-server.env` on the VPS; both `tm-server` and `tm-server-staging`
+load that file via `EnvironmentFile`.
+
 ## Safe default source
 
 The recommended release source is the sibling clean checkout:

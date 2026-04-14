@@ -5,6 +5,7 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=__STAGING_CURRENT_DIR__
+EnvironmentFile=-%h/.config/tm-server.env
 Environment=PORT=__STAGING_PORT__
 Environment=HOST=__STAGING_HOST__
 Environment=SERVER_ID=__STAGING_SERVER_ID__

@@ -1,0 +1,20 @@
+[Unit]
+Description=Terraforming Mars Server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=__PROD_DIR__
+Environment=PORT=__PROD_PORT__
+Environment=HOST=__PROD_HOST__
+Environment=SERVER_ID=__PROD_SERVER_ID__
+Environment=SHADOW_LOG=1
+Environment=SHADOW_LOG_DIR=__SHADOW_LOG_DIR__
+Environment=SHADOW_LOG_FILE_PREFIX=input
+ExecStartPre=-/usr/bin/fuser -k __PROD_PORT__/tcp
+ExecStart=/usr/bin/node build/src/server/server.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,15 @@
+[Unit]
+Description=Terraforming Mars Elo API
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/node __PROD_DIR__/elo/elo-api.js
+WorkingDirectory=__PROD_DIR__/elo
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

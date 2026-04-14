@@ -57,6 +57,7 @@ export type PublicPlayerModel = {
   megaCredits: number;
   megaCreditProduction: number;
   name: string;
+  user?: string;
   needsToDraft: boolean | undefined;
   needsToResearch: boolean | undefined;
   noTagsCount: number;

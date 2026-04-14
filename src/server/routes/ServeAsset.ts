@@ -9,6 +9,7 @@ import {Handler} from './Handler';
 import {isProduction} from '../utils/server';
 import {Request} from '../Request';
 import {Response} from '../Response';
+import {isDynamicEloAssetPath, resolveEloAssetPath} from '../elo/EloPaths';
 
 type Encoding = 'gzip' | 'br';
 
@@ -62,6 +63,7 @@ export class ServeAsset extends Handler {
 
     // Remove leading slash.
     const path = req.url.substring(1);
+    const dynamicEloAsset = isDynamicEloAssetPath(path);
 
     const supportedEncodings = this.supportedEncodings(req);
     const toFile: {file?: string, encoding?: Encoding } = this.toFile(path, supportedEncodings);
@@ -73,7 +75,7 @@ export class ServeAsset extends Handler {
     const file = toFile.file;
 
     // asset caching
-    const buffer = this.cacheAssets ? this.cache.get(file) : undefined;
+    const buffer = (this.cacheAssets && !dynamicEloAsset) ? this.cache.get(file) : undefined;
     if (buffer !== undefined) {
       if (req.headers['if-none-match'] === buffer.hash) {
         responses.notModified(res);
@@ -81,6 +83,8 @@ export class ServeAsset extends Handler {
       }
       res.setHeader('Cache-Control', 'must-revalidate');
       res.setHeader('ETag', buffer.hash);
+    } else if (dynamicEloAsset) {
+      res.setHeader('Cache-Control', 'no-store');
     } else if (this.cacheAssets === false && req.url !== '/main.js' && req.url !== '/main.js.map') {
       res.setHeader('Cache-Control', 'max-age=' + this.cacheAgeSeconds);
     }
@@ -104,7 +108,7 @@ export class ServeAsset extends Handler {
       const data = await this.fileApi.readFile(file);
       res.setHeader('Content-Length', data.length);
       res.end(data);
-      if (this.cacheAssets === true) {
+      if (this.cacheAssets === true && !dynamicEloAsset) {
         this.cache.set(file, data);
       }
     } catch (err) {
@@ -140,6 +144,11 @@ export class ServeAsset extends Handler {
   }
 
   private toFile(urlPath: string, encodings: Set<Encoding>): { file?: string, encoding?: Encoding } {
+    const eloAsset = resolveEloAssetPath(urlPath);
+    if (eloAsset !== undefined) {
+      return {file: eloAsset};
+    }
+
     switch (urlPath) {
     case 'assets/index.html':
     case 'assets/Prototype.ttf':

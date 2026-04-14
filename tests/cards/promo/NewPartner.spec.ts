@@ -3,6 +3,7 @@ import {Donation} from '../../../src/server/cards/prelude/Donation';
 import {GalileanMining} from '../../../src/server/cards/prelude/GalileanMining';
 import {HugeAsteroid} from '../../../src/server/cards/prelude/HugeAsteroid';
 import {NewPartner} from '../../../src/server/cards/promo/NewPartner';
+import {StrategicBasePlanning} from '../../../src/server/cards/promo/StrategicBasePlanning';
 import {SmeltingPlant} from '../../../src/server/cards/prelude/SmeltingPlant';
 import {IGame} from '../../../src/server/IGame';
 import {SelectCard} from '../../../src/server/inputs/SelectCard';
@@ -19,6 +20,7 @@ describe('NewPartner', () => {
   let donation: IPreludeCard;
   let hugeAsteroid: IPreludeCard;
   let galileanMining: IPreludeCard;
+  let strategicBasePlanning: IPreludeCard;
 
   beforeEach(() => {
     card = new NewPartner();
@@ -27,6 +29,7 @@ describe('NewPartner', () => {
     donation = new Donation();
     hugeAsteroid = new HugeAsteroid();
     galileanMining = new GalileanMining();
+    strategicBasePlanning = new StrategicBasePlanning();
   });
 
   it('Should play with at least 1 playable prelude', () => {
@@ -41,6 +44,16 @@ describe('NewPartner', () => {
     expect(player.playedCards.asArray().every((card) => isPreludeCard(card))).is.true;
   });
 
+  it('Should discard the prelude that was not chosen', () => {
+    game.preludeDeck.drawPile.push(smeltingPlant, donation);
+
+    const selectCard = cast(card.play(player), SelectCard<IPreludeCard>);
+    expect(selectCard.cards).deep.eq([donation, smeltingPlant]);
+    selectCard.cb([donation]);
+
+    expect(game.preludeDeck.discardPile).to.have.members([smeltingPlant]);
+  });
+
   it('Can play with no playable preludes drawn', () => {
     player.megaCredits = 0;
     // Both of these cards cost MC which the player does not have, and so
@@ -52,5 +65,22 @@ describe('NewPartner', () => {
     selectCard.cb([selectCard.cards[0]]);
     runAllActions(game);
     expect(player.megaCredits).eq(15);
+  });
+
+  it('Should warn but still allow selecting an unplayable prelude when a playable alternative exists', () => {
+    player.megaCredits = 1;
+    game.preludeDeck.drawPile.push(donation, strategicBasePlanning);
+
+    const selectCard = cast(card.play(player), SelectCard<IPreludeCard>);
+    const strategicIndex = selectCard.cards.findIndex((card) => card.name === strategicBasePlanning.name);
+    const donationIndex = selectCard.cards.findIndex((card) => card.name === donation.name);
+
+    expect(strategicIndex).not.eq(-1);
+    expect(donationIndex).not.eq(-1);
+    expect(selectCard.config.enabled).eq(undefined);
+    expect(Array.from(selectCard.cards[strategicIndex].warnings)).contains('preludeFizzle');
+    selectCard.cb([selectCard.cards[strategicIndex]]);
+    runAllActions(game);
+    expect(player.megaCredits).eq(16);
   });
 });

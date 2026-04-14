@@ -10,7 +10,7 @@
 
 <script lang="ts">
 
-import {defineComponent} from '@/client/vue3-compat';
+import {defineComponent} from 'vue';
 import * as constants from '@/common/constants';
 import GameOverview from '@/client/components/admin/GameOverview.vue';
 import {SimpleGameModel} from '@/common/models/SimpleGameModel';
@@ -71,7 +71,7 @@ export default defineComponent({
       const entry = this.entries[idx];
       const gameId = entry.id;
       try {
-        const response = await fetch('api/game?id=' + gameId);
+        const response = await fetch('api/game?id=' + gameId + '&serverId=' + this.serverId);
         if (response.ok) {
           const game = await response.json() as SimpleGameModel;
           entry.status = 'done';

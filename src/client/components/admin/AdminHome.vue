@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts">
-import {defineComponent} from '@/client/vue3-compat';
+import {defineComponent} from 'vue';
 import {paths} from '@/common/app/paths';
 
 export default defineComponent({
@@ -18,6 +18,7 @@ export default defineComponent({
     return {
       paths: [
         paths.API_STATS,
+        paths.API_BOT_TAKEOVER,
         paths.GAMES_OVERVIEW,
         paths.API_GAMES,
         paths.API_METRICS,

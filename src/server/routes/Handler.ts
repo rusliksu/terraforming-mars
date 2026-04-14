@@ -60,7 +60,7 @@ export abstract class Handler implements IHandler {
     return false;
   }
 
-  private isServerIdValid(ctx: Context): boolean {
+  protected hasServerIdAccess(ctx: Context): boolean {
     if (ctx.user?.id && DISCORD_ADMIN_USER_IDS.includes(ctx.user?.id)) {
       return true;
     }
@@ -77,13 +77,13 @@ export abstract class Handler implements IHandler {
   }
 
   processRequest(req: Request, res: Response, ctx: Context): Promise<void> {
-    if (this.options.validateServerId && !this.isServerIdValid(ctx)) {
+    if (this.options.validateServerId && !this.hasServerIdAccess(ctx)) {
       responses.notAuthorized(req, res);
       return Promise.resolve();
     }
 
     if (this.options.validateStatsId) {
-      if (this.isServerIdValid(ctx)) {
+      if (this.hasServerIdAccess(ctx)) {
         responses.downgradeRedirect(req, res, ctx);
         return Promise.resolve();
       }

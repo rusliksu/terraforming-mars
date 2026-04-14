@@ -1,5 +1,6 @@
 export const paths = {
   ADMIN: 'admin',
+  API_BOT_TAKEOVER: 'api/bot-takeover',
   API_CLONEABLEGAME: 'api/cloneablegame',
   API_CREATEGAME: 'api/creategame',
   API_GAME: 'api/game',

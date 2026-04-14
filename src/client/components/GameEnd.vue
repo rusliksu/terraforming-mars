@@ -49,7 +49,33 @@
             </div>
           </div>
           <div v-if="!isSoloGame || game.isSoloModeWin" class="game-end-winer-announcement">
-              <span v-for="p in winners" :key="p.color"><span :class="'log-player ' + getEndGamePlayerRowColorClass(p.color)">{{ p.name }}</span></span> <span v-i18n>won!</span>
+              <span v-for="p in winners" :key="p.color" class="game-end-name-and-elo">
+                <span :class="'log-player ' + getEndGamePlayerRowColorClass(p.color)">{{ p.name }}</span>
+                <PlayerEloBadge :playerName="p.name" :playerUser="p.user || ''" tooltipCss="tooltip tooltip-top" />
+              </span> <span v-i18n>won!</span>
+          </div>
+          <div v-if="eloResults.length > 0" class="game_end_victory_points">
+              <h2 v-i18n>Elo results</h2>
+              <table class="table game_end_table game-end-elo-table">
+                  <thead>
+                      <tr v-i18n>
+                          <th>Player</th>
+                          <th>Before</th>
+                          <th>Delta</th>
+                          <th>After</th>
+                          <th>Avg place</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <tr v-for="entry in eloResults" :key="entry.color || entry.name" :class="getEndGamePlayerRowColorClass(entry.color)">
+                          <td>{{ entry.name }}</td>
+                          <td>{{ entry.oldElo }}</td>
+                          <td :class="getEloDeltaClass(entry.delta)">{{ formatEloDelta(entry.delta) }}</td>
+                          <td>{{ entry.newElo }}</td>
+                          <td>{{ formatAvgPlaceScore(entry.avgPlaceScore) }}</td>
+                      </tr>
+                  </tbody>
+              </table>
           </div>
           <div class="game_end_victory_points">
               <h2><span v-i18n>Victory point breakdown after</span> {{game.generation}} <span v-i18n>generations</span></h2>
@@ -77,7 +103,10 @@
                   <tbody>
                       <tr v-for="p in playersInPlace" :key="p.color" :class="getEndGamePlayerRowColorClass(p.color)">
                           <td>
-                            <a :href="'player?id='+p.id+'&noredirect'">{{ p.name }}</a>
+                            <span class="game-end-name-and-elo">
+                              <a :href="'player?id='+p.id+'&noredirect'">{{ p.name }}</a>
+                              <PlayerEloBadge :playerName="p.name" :playerUser="p.user || ''" tooltipCss="tooltip tooltip-top" />
+                            </span>
                             <div class="column-corporation">
                               <div v-for="(corporationName, index) in getCorporationName(p)" :key="index" v-i18n>{{ corporationName }}</div>
                             </div>
@@ -113,7 +142,12 @@
               <div class="game-end-flexrow">
                   <div v-for="p in playersInPlace" :key="p.color" class="game-end-column">
                       <div class="game-end-winer-scorebreak-player-title">
-                          <div :class="'game-end-player ' + getEndGamePlayerRowColorClass(p.color)"><a :href="'player?id='+p.id+'&noredirect'">{{p.name}}</a></div>
+                          <div :class="'game-end-player ' + getEndGamePlayerRowColorClass(p.color)">
+                            <span class="game-end-name-and-elo">
+                              <a :href="'player?id='+p.id+'&noredirect'">{{p.name}}</a>
+                              <PlayerEloBadge :playerName="p.name" :playerUser="p.user || ''" tooltipCss="tooltip tooltip-top" />
+                            </span>
+                          </div>
                       </div>
                       <div v-for="v in p.victoryPointsBreakdown.detailsCards" :key="v.cardName">
                         <div class="game-end-column-row">
@@ -223,6 +257,7 @@ import PlanetaryTracks from '@/client/components/pathfinders/PlanetaryTracks.vue
 import LogPanel from '@/client/components/logpanel/LogPanel.vue';
 import AppButton from '@/client/components/common/AppButton.vue';
 import VictoryPointChart, {DataSet} from '@/client/components/gameend/VictoryPointChart.vue';
+import PlayerEloBadge from '@/client/components/overview/PlayerEloBadge.vue';
 import {playerColorClass} from '@/common/utils/utils';
 import {Timer} from '@/common/Timer';
 import {SpectatorModel} from '@/common/models/SpectatorModel';
@@ -235,6 +270,7 @@ import {Message} from '@/common/logs/Message';
 import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
 import {MADetail} from '@/common/game/VictoryPointsBreakdown';
 import {AwardName} from '@/common/ma/AwardName';
+import {buildEloResultsForPlayers, EloResultRow, ensureEloLoaded, findMatchingEloGame, sharedEloState} from '@/client/utils/elo';
 
 function getViewModel(playerView: ViewModel | undefined, spectator: ViewModel | undefined): ViewModel {
   if (playerView !== undefined) return playerView;
@@ -364,6 +400,7 @@ export default defineComponent({
   data() {
     return {
       constants,
+      eloResults: [] as Array<EloResultRow>,
     };
   },
   components: {
@@ -372,12 +409,35 @@ export default defineComponent({
     AppButton,
     MoonBoard,
     PlanetaryTracks,
+    PlayerEloBadge,
     VictoryPointChart,
   },
   mounted() {
     document.title = `End of Game | ${constants.APP_NAME}`;
+    void this.fetchEloResults();
   },
   methods: {
+    async fetchEloResults() {
+      await ensureEloLoaded();
+      if (!sharedEloState.loaded) return;
+
+      const matchedGame = findMatchingEloGame(sharedEloState.games, this.playersInPlace);
+      if (!matchedGame) return;
+
+      this.eloResults = buildEloResultsForPlayers(this.playersInPlace, sharedEloState.players, matchedGame);
+    },
+    formatEloDelta(delta: number): string {
+      if (delta > 0) return `+${delta}`;
+      return String(delta);
+    },
+    formatAvgPlaceScore(score: number | undefined): string {
+      return typeof score === 'number' ? score.toFixed(2) : '—';
+    },
+    getEloDeltaClass(delta: number): string {
+      if (delta > 0) return 'game-end-elo-delta game-end-elo-up';
+      if (delta < 0) return 'game-end-elo-delta game-end-elo-down';
+      return 'game-end-elo-delta';
+    },
     getEndGamePlayerRowColorClass(color: Color): string {
       return playerColorClass(color, 'bg_transparent');
     },
@@ -430,3 +490,28 @@ export default defineComponent({
 });
 
 </script>
+
+<style scoped>
+.game-end-name-and-elo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.game-end-elo-table {
+  max-width: 560px;
+}
+
+.game-end-elo-delta {
+  font-weight: 700;
+}
+
+.game-end-elo-up {
+  color: #4caf50;
+}
+
+.game-end-elo-down {
+  color: #f44336;
+}
+</style>

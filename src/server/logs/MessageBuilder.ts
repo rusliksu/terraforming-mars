@@ -65,6 +65,22 @@ export class MessageBuilder {
     return this;
   }
 
+  public cards(values: ReadonlyArray<ICard | CardName>, attrs?: LogMessageDataAttrs): this {
+    const data: LogMessageData = {
+      type: LogMessageDataType.CARDS,
+      value: values.map((value) => typeof value === 'string' ? value : value.name),
+    };
+    if (attrs !== undefined) {
+      data.attrs = attrs;
+    }
+    this.message.data.push(data);
+    return this;
+  }
+
+  public cardNames(values: ReadonlyArray<CardName>, attrs?: LogMessageDataAttrs): this {
+    return this.cards(values, attrs);
+  }
+
   public award(value: IAward): this {
     this.message.data.push({type: LogMessageDataType.AWARD, value: value.name});
     return this;

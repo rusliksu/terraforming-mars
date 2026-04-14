@@ -107,6 +107,44 @@ describe('Playwrights', () => {
     expect(player.getCardCost(deimosDown)).to.eq(deimosDown.cost); // no more discount
   });
 
+  it('Preserves one-time discount for the original owner when replaying another player\'s event', () => {
+    const indenturedWorkers = new IndenturedWorkers();
+    player2.playCard(indenturedWorkers);
+
+    const selectCard = cast(card.action(player), SelectCard<IProjectCard>);
+    selectCard.cb([indenturedWorkers]);
+    game.deferredActions.pop()!.execute();
+
+    const playerCard = new DeimosDown();
+    const originalOwnerCard = new DeimosDown();
+    expect(player.getCardCost(playerCard)).to.eq(playerCard.cost - 8);
+    expect(player2.getCardCost(originalOwnerCard)).to.eq(originalOwnerCard.cost - 8);
+
+    player.playCard(new ReleaseOfInertGases());
+    expect(player.getCardCost(new DeimosDown())).to.eq(new DeimosDown().cost);
+    expect(player2.getCardCost(new DeimosDown())).to.eq(new DeimosDown().cost - 8);
+
+    player2.playCard(new ReleaseOfInertGases());
+    expect(player2.getCardCost(new DeimosDown())).to.eq(new DeimosDown().cost);
+  });
+
+  it('Preserves the original owner discount after deserialization', () => {
+    const indenturedWorkers = new IndenturedWorkers();
+    player2.playCard(indenturedWorkers);
+
+    const selectCard = cast(card.action(player), SelectCard<IProjectCard>);
+    selectCard.cb([indenturedWorkers]);
+    game.deferredActions.pop()!.execute();
+
+    const serialized = game.serialize();
+    const newGame = Game.deserialize(serialized);
+    const newPlayer = newGame.getPlayerById(player.id);
+    const newPlayer2 = newGame.getPlayerById(player2.id);
+
+    expect(newPlayer.getCardCost(new DeimosDown())).to.eq(new DeimosDown().cost - 8);
+    expect(newPlayer2.getCardCost(new DeimosDown())).to.eq(new DeimosDown().cost - 8);
+  });
+
   it('Works with Law Suit', () => {
     const event = new LawSuit();
     player2.playedCards.push(event);

@@ -122,10 +122,19 @@ export abstract class Draft {
             player.draftedCards.push(card);
             inplaceRemove(player.draftHand, card);
           }
+          this.logDraftSelection(player, selected, player.draftHand, giveTo);
           this.onCardDrafted(player);
           return undefined;
         }),
     );
+  }
+
+  private logDraftSelection(player: IPlayer, draftedCards: ReadonlyArray<IProjectCard>, passedCards: ReadonlyArray<IProjectCard>, giveTo: IPlayer): void {
+    if (passedCards.length > 0) {
+      this.game.log('You drafted ${0} passing ${1} to ${2}', (b) => b.cards(draftedCards).cards(passedCards).player(giveTo), {reservedFor: player});
+      return;
+    }
+    this.game.log('You drafted ${0}', (b) => b.cards(draftedCards), {reservedFor: player});
   }
 
   /** Called when a player has chosen a card to draft. */
@@ -147,7 +156,11 @@ export abstract class Draft {
 
     // Push last cards for each player
     for (const player of this.game.players) {
-      player.draftedCards.push(...copyAndEmpty(this.takingFrom(player).draftHand));
+      const finalCards = copyAndEmpty(this.takingFrom(player).draftHand);
+      player.draftedCards.push(...finalCards);
+      if (finalCards.length > 0) {
+        this.game.log('You drafted ${0}', (b) => b.cards(finalCards), {reservedFor: player});
+      }
       player.needsToDraft = undefined;
     }
 

@@ -7,6 +7,8 @@ const Handler_1 = require("./Handler");
 const OrOptions_1 = require("../inputs/OrOptions");
 const UndoActionOption_1 = require("../inputs/UndoActionOption");
 const Types_1 = require("../../common/Types");
+const fs = require("fs");
+const path = require("path");
 const server_ids_1 = require("../utils/server-ids");
 const AppError_1 = require("../server/AppError");
 const statusCode_1 = require("../../common/http/statusCode");
@@ -51,7 +53,7 @@ class PlayerInput extends Handler_1.Handler {
         }
         return false;
     }
-    async performUndo(_req, res, ctx, player) {
+    async performUndo(_req, _res, ctx, player) {
         const lastSaveId = player.game.lastSaveId - 2;
         try {
             const game = await ctx.gameLoader.restoreGameAt(player.game.id, lastSaveId);
@@ -65,7 +67,7 @@ class PlayerInput extends Handler_1.Handler {
         catch (err) {
             console.error(err);
         }
-        responses.writeJson(res, ctx, ServerModel_1.Server.getPlayerModel(player));
+        return player;
     }
     processInput(req, res, ctx, player) {
         for (const card of player.tableau) {
@@ -80,47 +82,44 @@ class PlayerInput extends Handler_1.Handler {
                 body += data.toString();
             });
             req.once('end', async () => {
+                let entityForLog = undefined;
+                let isUndo = false;
+                let promptSnapshot = emptyPromptSnapshot();
+                let promptInputSeq = null;
+                let inputSeq = null;
                 try {
                     const entity = JSON.parse(body);
+                    entityForLog = cloneEntityForLog(entity);
+                    promptSnapshot = capturePromptSnapshot(player.getWaitingFor());
+                    promptInputSeq = player.game.shadowInputSeq ?? 0;
                     validateRunId(entity);
-                    if (this.isWaitingForUndo(player, entity)) {
-                        await this.performUndo(req, res, ctx, player);
+                    isUndo = this.isWaitingForUndo(player, entity);
+                    if (isUndo) {
+                        player = await this.performUndo(req, res, ctx, player);
+                        inputSeq = advanceShadowInputSeq(player, promptInputSeq);
+                        responses.writeJson(res, ctx, ServerModel_1.Server.getPlayerModel(player));
                     }
                     else {
-                        // Shadow log: record what player was asked and what they chose
-                        try {
-                            const wf = player.getWaitingFor();
-                            if (wf && process.env.SHADOW_LOG !== '0') {
-                                const fs = require('fs');
-                                const path = require('path');
-                                const logDir = process.env.SHADOW_LOG_DIR || path.resolve(process.cwd(), 'shadow-logs');
-                                fs.mkdirSync(logDir, {recursive: true});
-                                const logFile = path.join(logDir, `shadow-${player.game.id}.jsonl`);
-                                const entry = {
-                                    ts: new Date().toISOString(),
-                                    gameId: player.game.id,
-                                    gen: player.game.generation,
-                                    player: player.name,
-                                    color: player.color,
-                                    promptType: wf.type || '',
-                                    title: typeof wf.title === 'string' ? wf.title : (wf.title?.message || ''),
-                                    playerAction: entity,
-                                    mc: player.megaCredits ?? 0,
-                                    tr: player.getTerraformRating(),
-                                };
-                                fs.appendFileSync(logFile, JSON.stringify(entry) + '\n');
-                            }
-                        } catch(_e) { /* shadow log error — don't block game */ }
+                        inputSeq = advanceShadowInputSeq(player, promptInputSeq);
                         const previousSaveGamePromise = player.game.saveGamePromise;
-                        player.process(entity);
+                        try {
+                            player.process(entity);
+                        }
+                        catch (err) {
+                            player.game.shadowInputSeq = promptInputSeq;
+                            inputSeq = null;
+                            throw err;
+                        }
                         if (player.game.saveGamePromise !== previousSaveGamePromise) {
                             await player.game.saveGamePromise;
                         }
                         responses.writeJson(res, ctx, ServerModel_1.Server.getPlayerModel(player));
                     }
+                    appendShadowInputLog(player, entityForLog, body, promptSnapshot, promptInputSeq, inputSeq, isUndo, 'accepted');
                     resolve();
                 }
                 catch (e) {
+                    appendShadowInputLog(player, entityForLog, body, promptSnapshot, promptInputSeq, inputSeq, isUndo, 'rejected', e);
                     if (!(e instanceof AppError_1.AppError || e instanceof InputError_1.InputError)) {
                         console.warn('Error processing input from player', e);
                     }
@@ -143,6 +142,79 @@ class PlayerInput extends Handler_1.Handler {
 }
 exports.PlayerInput = PlayerInput;
 PlayerInput.INSTANCE = new PlayerInput();
+function appendShadowInputLog(player, entity, rawBody, promptSnapshot, promptInputSeq, inputSeq, isUndo, result, error) {
+    if (entity === undefined || process.env.SHADOW_LOG !== '1') {
+        return;
+    }
+    try {
+        const logDir = process.env.SHADOW_LOG_DIR || path.resolve(process.cwd(), 'shadow-logs');
+        const filePrefix = process.env.SHADOW_LOG_FILE_PREFIX || 'input';
+        fs.mkdirSync(logDir, { recursive: true });
+        const logFile = path.join(logDir, `${filePrefix}-${player.game.id}.jsonl`);
+        const entry = {
+            ts: new Date().toISOString(),
+            source: 'player-input',
+            result,
+            serverRunId: server_ids_1.runId ?? null,
+            gameId: player.game.id,
+            promptInputSeq,
+            inputSeq,
+            generation: player.game.generation,
+            gameAge: player.game.gameAge,
+            playerId: player.id,
+            player: player.name,
+            color: player.color,
+            promptType: promptSnapshot.type,
+            promptTitle: promptSnapshot.title,
+            promptButtonLabel: promptSnapshot.buttonLabel,
+            inputType: typeof entity.type === 'string' ? entity.type : null,
+            isUndo,
+            playerAction: entity,
+            rawBody,
+            mc: player.megaCredits ?? 0,
+            tr: player.getTerraformRating(),
+            errorId: error instanceof AppError_1.AppError ? error.id : undefined,
+            errorMessage: error instanceof Error ? error.message : undefined,
+        };
+        fs.appendFileSync(logFile, JSON.stringify(entry) + '\n');
+    }
+    catch (_e) {
+    }
+}
+function advanceShadowInputSeq(player, promptInputSeq) {
+    const base = Math.max(player.game.shadowInputSeq ?? 0, promptInputSeq ?? 0);
+    const nextSeq = base + 1;
+    player.game.shadowInputSeq = nextSeq;
+    return nextSeq;
+}
+function capturePromptSnapshot(waitingFor) {
+    if (waitingFor === undefined || waitingFor === null) {
+        return emptyPromptSnapshot();
+    }
+    return {
+        buttonLabel: typeof waitingFor.buttonLabel === 'string' ? waitingFor.buttonLabel : null,
+        title: extractPromptTitle(waitingFor.title),
+        type: typeof waitingFor.type === 'string' ? waitingFor.type : null,
+    };
+}
+function cloneEntityForLog(entity) {
+    return JSON.parse(JSON.stringify(entity));
+}
+function emptyPromptSnapshot() {
+    return { buttonLabel: null, title: null, type: null };
+}
+function extractPromptTitle(title) {
+    if (typeof title === 'string') {
+        return title;
+    }
+    if (title !== undefined && title !== null && typeof title === 'object') {
+        const maybeMessage = title.message;
+        if (typeof maybeMessage === 'string') {
+            return maybeMessage;
+        }
+    }
+    return null;
+}
 function validateRunId(entity) {
     if (entity.runId !== undefined && server_ids_1.runId !== undefined) {
         if (entity.runId !== server_ids_1.runId) {

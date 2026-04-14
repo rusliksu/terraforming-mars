@@ -16,6 +16,8 @@ export type LogMessageDataAttrs = {
   tags?: boolean,
   /** When true for a card, also show the card's cost */
   cost?: boolean,
+  /** When true, allow callers to signal truncated card lists */
+  ellipsis?: boolean,
 }
 
 type Types = {
@@ -27,6 +29,9 @@ type Types = {
 } | {
   type: LogMessageDataType.CARD,
   value: CardName,
+} | {
+  type: LogMessageDataType.CARDS,
+  value: ReadonlyArray<CardName>,
 } | {
   type: LogMessageDataType.AWARD,
   value: AwardName,

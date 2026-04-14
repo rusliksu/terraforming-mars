@@ -6,6 +6,7 @@
       <span v-else>
         <span v-if="data.type === undefined || data.value === undefined"></span>
         <span v-else-if="data.type === LogMessageDataType.PLAYER" class="log-player" :class="'player_bg_color_' + data.value"> {{ getPlayerName(data.value) }} </span>
+        <span v-else-if="data.type === LogMessageDataType.CARDS" v-html="cardsToHtml(data)"></span>
         <span v-else-if="data.type === LogMessageDataType.CARD" v-html="cardToHtml(data)"></span>
         <span v-else-if="data.type === LogMessageDataType.GLOBAL_EVENT" class="log-card background-color-global-event" v-i18n>
           {{data.value}}
@@ -34,7 +35,7 @@
 
 <script lang="ts">
 
-import {defineComponent} from '@/client/vue3-compat';
+import {defineComponent} from 'vue';
 import {Color} from '@/common/Color';
 import {CardName} from '@/common/cards/CardName';
 import {CardType} from '@/common/cards/CardType';
@@ -48,6 +49,9 @@ import {Log} from '@/common/logs/Log';
 import {getCard} from '@/client/cards/ClientCardManifest';
 import {undergroundResourceTokenDescription} from '@/common/underworld/UndergroundResourceToken';
 import {isMoonSpace, getSpaceName} from '@/common/boards/spaces';
+import {getPreferences} from '@/client/utils/PreferencesManager';
+import {gameLocaleToIntlLocale} from '@/client/utils/LocaleUtils';
+import {LogMessageDataAttrs} from '@/common/logs/LogMessageData';
 
 const cardTypeToCss: Record<CardType, string | undefined> = {
   event: 'background-color-events',
@@ -74,13 +78,23 @@ export default defineComponent({
     },
   },
   methods: {
+    cardsToHtml(data: LogMessageData & {type: LogMessageDataType.CARDS, value: ReadonlyArray<CardName>}) {
+      const cardHtmls = data.value.map((cardName) => this.innerCardToHtml(cardName, data.attrs));
+      const htmlIndexes = cardHtmls.map((_cardHtml, idx) => String(idx));
+      const parts = this.formatter.formatToParts(htmlIndexes);
+      return parts
+        .map((part) => part.type === 'element' ? cardHtmls[Number(part.value)] : part.value)
+        .join('');
+    },
     cardToHtml(data: LogMessageData & {type: LogMessageDataType.CARD, value: CardName}) {
-      const card = getCard(data.value);
+      return this.innerCardToHtml(data.value, data.attrs);
+    },
+    innerCardToHtml(cardName: CardName, attrs?: LogMessageDataAttrs) {
+      const card = getCard(cardName);
       if (card === undefined) {
         return '';
       }
 
-      const attrs = data.attrs;
       const suffixFreeCardName = card.name.split(':')[0];
       const className = cardTypeToCss[card.type];
 
@@ -138,6 +152,9 @@ export default defineComponent({
     },
     tileTypeToString(): typeof tileTypeToString {
       return tileTypeToString;
+    },
+    formatter(): Intl.ListFormat {
+      return new Intl.ListFormat(gameLocaleToIntlLocale(getPreferences().lang), {type: 'conjunction', style: 'long'});
     },
   },
 });

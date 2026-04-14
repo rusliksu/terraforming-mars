@@ -33,7 +33,7 @@ import {GlobalParameter} from '../src/common/GlobalParameter';
 import {assertPlaceOcean} from './assertions';
 import {TiredEarth} from '../src/server/cards/pathfinders/TiredEarth';
 import {Tag} from '../src/common/cards/Tag';
-import {restoreTestDatabase, setTestDatabase} from './testing/setup';
+import {restoreTestDatabase, setTestDatabase} from './testing/testEnvironment';
 import {InMemoryDatabase} from './testing/InMemoryDatabase';
 
 describe('Game', () => {
@@ -760,6 +760,7 @@ describe('Game', () => {
       'monsInsuranceOwner',
       'resettable',
       'rng',
+      'saveGamePromise',
       'underworldDraftEnabled',
     ];
     const serializedValuesNotInGame: Array<keyof SerializedGame> = [
@@ -789,6 +790,18 @@ describe('Game', () => {
     delete serialized['moonData'];
     const deserialized = Game.deserialize(serialized);
     expect(deserialized.moonData).is.undefined;
+  });
+
+  it('serializes and deserializes shadowInputSeq', () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const game = Game.newInstance('gameid', [player], player);
+    game.shadowInputSeq = 7;
+
+    const serialized = game.serialize();
+    const deserialized = Game.deserialize(serialized);
+
+    expect(serialized.shadowInputSeq).eq(7);
+    expect(deserialized.shadowInputSeq).eq(7);
   });
 
   it('deserializing a game without pathfinders still loads', () => {

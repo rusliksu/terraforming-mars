@@ -72,22 +72,12 @@ export class LogHelper {
     });
   }
 
-  static logDrawnCards(player: IPlayer, cards: ReadonlyArray<ICard> | ReadonlyArray<CardName>, privateMessage: boolean = false) {
-    // If |this.count| equals 3, for instance, this generates "${0} drew ${1}, ${2} and ${3}"
-    let message = '${0} drew ';
+  static logCardAction(player: IPlayer, action: string, cards: ReadonlyArray<ICard> | ReadonlyArray<CardName>, privateMessage: boolean = false) {
+    let message = '${0} ' + action + ' ';
     if (cards.length === 0) {
       message += 'no cards';
     } else {
-      for (let i = 0, length = cards.length; i < length; i++) {
-        if (i > 0) {
-          if (i < length - 1) {
-            message += ', ';
-          } else {
-            message += ' and ';
-          }
-        }
-        message += '${' + (i + 1) + '}';
-      }
+      message += '${1}';
     }
     const options = privateMessage ? {reservedFor: player} : {};
 
@@ -97,14 +87,39 @@ export class LogHelper {
       } else {
         b.string('You');
       }
-      for (const card of cards) {
-        if (typeof card === 'string') {
-          b.cardName(card);
-        } else {
-          b.card(card);
-        }
+      if (cards.length > 0) {
+        b.cards(cards);
       }
     }, options);
+  }
+
+  static logPrivateCardSelection(
+    player: IPlayer,
+    action: string,
+    picked: ReadonlyArray<ICard> | ReadonlyArray<CardName>,
+    skipped: ReadonlyArray<ICard> | ReadonlyArray<CardName>,
+  ) {
+    const pickedCount = picked.length;
+    const skippedCount = skipped.length;
+
+    if (pickedCount > 0 && skippedCount > 0) {
+      player.game.log('You ' + action + ' ${0} skipping ${1}', (b) => {
+        b.cards(picked);
+        b.cards(skipped);
+      }, {reservedFor: player});
+      return;
+    }
+    if (pickedCount > 0) {
+      this.logCardAction(player, action, picked, true);
+      return;
+    }
+    if (skippedCount > 0) {
+      player.game.log('You skipped ${0}', (b) => b.cards(skipped), {reservedFor: player});
+    }
+  }
+
+  static logDrawnCards(player: IPlayer, cards: ReadonlyArray<ICard> | ReadonlyArray<CardName>, privateMessage: boolean = false) {
+    this.logCardAction(player, 'drew', cards, privateMessage);
   }
 
   static logStealFromNeutralPlayer(player: IPlayer, resource: Resource, amount: number) {

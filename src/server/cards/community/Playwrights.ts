@@ -59,6 +59,10 @@ export class Playwrights extends CorporationCard implements ICorporationCard {
       .andThen(
         ([card]) => {
           const selectedCard: IProjectCard = card;
+          const originalPlayer = players.find((p) => p.playedCards.get(selectedCard.name));
+          const originalPlayerKeepsDiscount = originalPlayer !== undefined &&
+            originalPlayer !== player &&
+            (selectedCard.getCardDiscount?.(originalPlayer, selectedCard) ?? 0) > 0;
 
           players.forEach((p) => {
             if (p.playedCards.get(selectedCard.name)) {
@@ -71,6 +75,10 @@ export class Playwrights extends CorporationCard implements ICorporationCard {
             .andThen(() => {
               player.playCard(selectedCard, undefined, 'nothing'); // Play the card but don't add it to played cards
               player.removedFromPlayCards.push(selectedCard); // Remove card from the game
+              if (originalPlayerKeepsDiscount) {
+                // Preserve the source player's pending "next card" discount after replaying their event.
+                originalPlayer.removedFromPlayCards.push(selectedCard);
+              }
               if (selectedCard.name === CardName.SPECIAL_DESIGN) {
                 player.playedCards.push(new SpecialDesignProxy());
               } else if (selectedCard.name === CardName.LAW_SUIT) {

@@ -71,7 +71,7 @@
     <players-overview class="player_home_block player_home_block--players nofloat" :playerView="playerView" v-trim-whitespace id="shortkey-playersoverview"/>
 
       <a class="hotkey-target"></a>
-      <div class="player_home_block nofloat">
+      <div class="player_home_block nofloat" v-if="!isInitialDraftingPhase()">
         <log-panel :viewModel="playerView" :color="thisPlayer.color" :step="game.step"></log-panel>
       </div>
 
@@ -206,6 +206,9 @@
 
       <dynamic-title v-if="playerView.pickedCorporationCard.length === 0" title="Select initial cards:" :color="thisPlayer.color"/>
       <waiting-for v-if="game.phase !== 'end'" :players="playerView.players" :playerView="playerView" :settings="settings" :waitingfor="playerView.waitingFor"></waiting-for>
+      <div class="player_home_block nofloat" v-if="isInitialDraftingPhase()">
+        <log-panel :viewModel="playerView" :color="thisPlayer.color" :step="game.step"></log-panel>
+      </div>
 
       <dynamic-title title="Game details" :color="thisPlayer.color"/>
 

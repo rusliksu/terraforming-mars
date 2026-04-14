@@ -97,4 +97,16 @@ describe('ApiGame', () => {
       },
     );
   });
+
+  it('includes active bot players for admin requests', async () => {
+    const player = TestPlayer.BLACK.newPlayer();
+    scaffolding.ctx.gameLoader.add(Game.newInstance('game-valid-id', [player], player));
+    scaffolding.url = '/api/game?id=game-valid-id&serverId=1';
+    const route = new ApiGame({
+      listPlayerIds: () => [player.id],
+    } as any);
+    await scaffolding.get(route, res);
+    const json = JSON.parse(res.content);
+    expect(json.botPlayers).deep.eq([player.id]);
+  });
 });

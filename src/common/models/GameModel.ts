@@ -25,6 +25,7 @@ export type GameModel = {
   expectedPurgeTimeMs: number;
   experimentalReset?: boolean;
   gameAge: number;
+  inputSeq: number;
   gameOptions: GameOptionsModel;
   generation: number;
   globalsPerGeneration: ReadonlyArray<Partial<Record<GlobalParameter, number>>>,

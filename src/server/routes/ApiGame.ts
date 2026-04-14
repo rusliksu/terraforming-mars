@@ -6,13 +6,14 @@ import {isGameId} from '../../common/Types';
 import {IGame} from '../IGame';
 import {Request} from '../Request';
 import {Response} from '../Response';
+import {BotTakeoverManager} from '../bot/BotTakeoverManager';
 
 /**
  * Returns a light view of a game.
  */
 export class ApiGame extends Handler {
   public static readonly INSTANCE = new ApiGame();
-  private constructor() {
+  constructor(private readonly botManager: Pick<BotTakeoverManager, 'listPlayerIds'> = BotTakeoverManager.INSTANCE) {
     super();
   }
 
@@ -31,7 +32,9 @@ export class ApiGame extends Handler {
       responses.notFound(req, res, 'game not found');
       return;
     }
-    const model = Server.getSimpleGameModel(game);
+    const model = Server.getSimpleGameModel(game, this.hasServerIdAccess(ctx) ? {
+      botPlayers: this.botManager.listPlayerIds(game.id),
+    } : undefined);
     responses.writeJson(res, ctx, model);
   }
 }

@@ -122,4 +122,13 @@ describe('ServerModel', () => {
     expect(otherPlayer).is.not.undefined;
     expect(otherPlayer!.globalParameterSteps[GlobalParameter.OXYGEN]).eq(7);
   });
+
+  it('Should expose game inputSeq for shadow correlation', () => {
+    createTestGame(false);
+    game.shadowInputSeq = 12;
+
+    const response = Server.getPlayerModel(player);
+
+    expect(response.game.inputSeq).eq(12);
+  });
 });

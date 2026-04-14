@@ -9,8 +9,30 @@
         <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
         <meta name="viewport" content='width=1260, user-scalable=1' />
         <meta name="description" content="Terraforming Mars Open Source Web Application" />
+        <style>
+            #tm-env-badge {
+                position: fixed;
+                top: 14px;
+                right: 14px;
+                z-index: 9999;
+                display: none;
+                padding: 8px 14px;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-radius: 999px;
+                background: rgba(163, 36, 19, 0.92);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+                color: #fff4d6;
+                font-family: 'Ubuntu', sans-serif;
+                font-size: 12px;
+                font-weight: 700;
+                letter-spacing: 0.18em;
+                text-transform: uppercase;
+                pointer-events: none;
+            }
+        </style>
     </head>
     <body id="ts-preferences-target">
+        <div id="tm-env-badge" aria-hidden="true">Staging</div>
         <div id="app">
           <div :class="'topmost-'+screen">
             <section>
@@ -64,6 +86,16 @@
             </div>
           </div>
         </div>
+        <script>
+            (function() {
+                if (window.location.hostname === 'staging.tm.knightbyte.win') {
+                    var badge = document.getElementById('tm-env-badge');
+                    if (badge !== null) {
+                        badge.style.display = 'block';
+                    }
+                }
+            })();
+        </script>
         <script src="main.js"></script>
     </body>
 </html>

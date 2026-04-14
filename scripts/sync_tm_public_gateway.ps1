@@ -10,6 +10,12 @@ param(
     [string]$StagingHost = "127.0.0.1",
     [string]$EloPort = "8082",
     [string]$EloHost = "127.0.0.1",
+    [string]$StreamHost = "127.0.0.1",
+    [string]$ProdTlsPort = "4444",
+    [string]$StagingTlsPort = "4446",
+    [string]$BimTlsPort = "4445",
+    [string]$MicrosoftTlsPort = "9444",
+    [string]$DefaultTlsPort = "8444",
     [switch]$DryRun
 )
 
@@ -57,6 +63,14 @@ $stagingContent = Render-Template -TemplatePath (Join-Path $templateDir "tm.knig
     "__ELO_HOST__" = $EloHost
     "__ELO_PORT__" = $EloPort
 }
+$streamContent = Render-Template -TemplatePath (Join-Path $templateDir "stream.conf.template") -Replacements @{
+    "__STREAM_HOST__" = $StreamHost
+    "__PROD_TLS_PORT__" = $ProdTlsPort
+    "__STAGING_TLS_PORT__" = $StagingTlsPort
+    "__BIM_TLS_PORT__" = $BimTlsPort
+    "__MICROSOFT_TLS_PORT__" = $MicrosoftTlsPort
+    "__DEFAULT_TLS_PORT__" = $DefaultTlsPort
+}
 
 Write-Host "Target VPS: $VpsHost"
 Write-Host "Prod current dir: $prodCurrentDir"
@@ -64,6 +78,7 @@ Write-Host "Staging current dir: $stagingCurrentDir"
 Write-Host "Prod app: $ProdHost`:$ProdPort"
 Write-Host "Staging app: $StagingHost`:$StagingPort"
 Write-Host "Elo app: $EloHost`:$EloPort"
+Write-Host "SNI stream: $StreamHost [$ProdTlsPort,$StagingTlsPort,$BimTlsPort,$MicrosoftTlsPort,$DefaultTlsPort]"
 Write-Host "Mode: $(if ($DryRun) { 'dry-run' } else { 'apply and reload nginx' })"
 
 if ($DryRun) {
@@ -73,11 +88,15 @@ if ($DryRun) {
     Write-Host ""
     Write-Host "=== $StagingSiteName ==="
     Write-Host $stagingContent
+    Write-Host ""
+    Write-Host "=== stream.conf ==="
+    Write-Host $streamContent
     exit 0
 }
 
 $prodBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($prodContent))
 $stagingBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($stagingContent))
+$streamBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($streamContent))
 
 $remoteScript = @'
 #!/usr/bin/env bash
@@ -86,6 +105,10 @@ set -euo pipefail
 timestamp="$(date +%Y%m%d-%H%M%S)"
 backup_dir="/etc/nginx/backup-managed"
 mkdir -p "$backup_dir" /etc/nginx/sites-available /etc/nginx/sites-enabled
+
+if [ -e "/etc/nginx/stream.conf" ]; then
+  cp -a "/etc/nginx/stream.conf" "$backup_dir/stream.conf.$timestamp"
+fi
 
 for name in "__PROD_SITE__" "__STAGING_SITE__"; do
   for src in "/etc/nginx/sites-enabled/$name" "/etc/nginx/sites-available/$name"; do
@@ -103,6 +126,7 @@ from pathlib import Path
 files = {
     Path("/etc/nginx/sites-available/__PROD_SITE__"): "__PROD_B64__",
     Path("/etc/nginx/sites-available/__STAGING_SITE__"): "__STAGING_B64__",
+    Path("/etc/nginx/stream.conf"): "__STREAM_B64__",
 }
 
 for path, payload in files.items():
@@ -119,11 +143,14 @@ echo '--- /etc/nginx/sites-enabled/__PROD_SITE__'
 sed -n '1,220p' "/etc/nginx/sites-enabled/__PROD_SITE__"
 echo '--- /etc/nginx/sites-enabled/__STAGING_SITE__'
 sed -n '1,220p' "/etc/nginx/sites-enabled/__STAGING_SITE__"
+echo '--- /etc/nginx/stream.conf'
+sed -n '1,220p' "/etc/nginx/stream.conf"
 '@
 $remoteScript = $remoteScript.Replace("__PROD_SITE__", $ProdSiteName)
 $remoteScript = $remoteScript.Replace("__STAGING_SITE__", $StagingSiteName)
 $remoteScript = $remoteScript.Replace("__PROD_B64__", $prodBase64)
 $remoteScript = $remoteScript.Replace("__STAGING_B64__", $stagingBase64)
+$remoteScript = $remoteScript.Replace("__STREAM_B64__", $streamBase64)
 
 $tempScript = New-TemporaryFile
 $remoteScriptPath = "/tmp/tm-sync-nginx-$PID.sh"

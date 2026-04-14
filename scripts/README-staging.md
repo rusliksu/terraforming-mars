@@ -154,6 +154,19 @@ Apply runtime retention cleanup:
 pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\prune_tm_runtime.ps1
 ```
 
+Capture mutable TM runtime state to local `D:\tm-vps-archive`:
+
+```powershell
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\backup_tm_runtime_shared.ps1
+```
+
+Preview the backup plan or include dependency cache too:
+
+```powershell
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\backup_tm_runtime_shared.ps1 -DryRun
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\backup_tm_runtime_shared.ps1 -IncludeDeps
+```
+
 Run the full automated release gate:
 
 ```powershell
@@ -185,6 +198,7 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\verify_tm_server.ps1 -En
 - Once both environments are on `tm-runtime/*/current` with managed dependency cache, old `/home/openclaw/terraforming-mars*` checkouts can be archived with `scripts/archive_tm_legacy_checkouts.ps1` as cold backups.
 - `rollback_tm_runtime.ps1` switches `current` to a previous or explicit release, restarts only the environment-specific services, and verifies the served `release.json` after the swap.
 - `prune_tm_runtime.ps1` keeps `current`, `previous`, and the newest release window, then removes unreferenced dependency caches plus older checkout-artifact snapshots.
+- `backup_tm_runtime_shared.ps1` captures mutable runtime state (`db`, `elo`, `logs`, plus release metadata) from VPS to `D:\tm-vps-archive` by default; dependency cache stays excluded unless you explicitly pass `-IncludeDeps`.
 - Rollout now bootstraps and uses immutable runtime roots:
   - `prod`: `/home/openclaw/tm-runtime/prod`
   - `staging`: `/home/openclaw/tm-runtime/staging`

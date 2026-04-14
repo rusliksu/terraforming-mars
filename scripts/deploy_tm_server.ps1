@@ -284,7 +284,7 @@ shared_root="$runtime_root/shared"
 deps_root="$shared_root/deps"
 dependency_sha="__DEPENDENCY_SHA__"
 new_release_dir=""
-previous_current="$legacy_root"
+previous_current=""
 elo_files="index.html elo-api.js elo_aliases.py fix_elo_dupes.py import_gamedb_to_elo.py player_name_aliases.json"
 
 rollback() {
@@ -316,11 +316,6 @@ fi
 
 mkdir -p "$runtime_root" "$releases_root" "$shared_root/db" "$shared_root/logs" "$shared_root/elo" "$deps_root"
 
-if [ ! -d "$legacy_root/node_modules" ] && [ ! -d "$deps_root/$dependency_sha/node_modules" ]; then
-  echo "Missing runtime dependencies in $legacy_root/node_modules and no managed dependency cache for $dependency_sha" >&2
-  exit 1
-fi
-
 if [ -d "$legacy_root/db" ] && [ ! -e "$shared_root/db/game.db" ]; then
   rsync -a "$legacy_root/db/" "$shared_root/db/"
 fi
@@ -335,6 +330,8 @@ done
 
 if [ -L "$current_link" ]; then
   previous_current="$(readlink -f "$current_link" || true)"
+elif [ -d "$legacy_root" ]; then
+  previous_current="$legacy_root"
 fi
 
 rm -rf "$release_root"

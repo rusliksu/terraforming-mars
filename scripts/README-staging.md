@@ -154,6 +154,7 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\verify_tm_server.ps1 -En
 - `release.json` is generated during deploy and is used to prove that staging and prod serve the same artifact hash after promote.
 - Rollout syncs `build/`, `assets/`, and the source-managed subset of `elo/` (`index.html`, `elo-api.js`, aliases, and maintenance scripts). It deliberately preserves live Elo data files on the VPS.
 - Rollout also carries `package.json` and `package-lock.json`; runtime dependencies are resolved into a managed cache under `/home/openclaw/tm-runtime/<env>/shared/deps/<package-lock-sha256>` instead of linking back to legacy checkout `node_modules`.
+- Once both environments are on `tm-runtime/*/current` with managed dependency cache, old `/home/openclaw/terraforming-mars*` checkouts can be archived with `scripts/archive_tm_legacy_checkouts.ps1` as cold backups.
 - Rollout now bootstraps and uses immutable runtime roots:
   - `prod`: `/home/openclaw/tm-runtime/prod`
   - `staging`: `/home/openclaw/tm-runtime/staging`

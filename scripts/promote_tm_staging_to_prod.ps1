@@ -26,7 +26,7 @@ shared_root="$prod_root/shared"
 deps_root="$shared_root/deps"
 releases_root="$prod_root/releases"
 new_release_dir=""
-previous_current="$legacy_prod"
+previous_current=""
 elo_files="index.html elo-api.js elo_aliases.py fix_elo_dupes.py import_gamedb_to_elo.py player_name_aliases.json"
 
 rollback() {
@@ -52,10 +52,6 @@ if ! systemctl --user cat "$elo_service" | grep -F "$prod_current/elo/elo-api.js
 fi
 
 mkdir -p "$prod_root" "$releases_root" "$shared_root/db" "$shared_root/logs" "$shared_root/elo" "$deps_root"
-if [ ! -d "$legacy_prod/node_modules" ] && [ -z "$(find "$deps_root" -mindepth 2 -maxdepth 2 -type d -name node_modules 2>/dev/null | head -n 1)" ]; then
-  echo "Missing runtime dependencies in $legacy_prod/node_modules and no managed dependency cache in $deps_root" >&2
-  exit 1
-fi
 if [ -d "$legacy_prod/db" ] && [ ! -e "$shared_root/db/game.db" ]; then
   rsync -a "$legacy_prod/db/" "$shared_root/db/"
 fi
@@ -70,6 +66,8 @@ done
 
 if [ -L "$prod_current" ]; then
   previous_current="$(readlink -f "$prod_current" || true)"
+elif [ -d "$legacy_prod" ]; then
+  previous_current="$legacy_prod"
 fi
 
 test -f "$staging_current/build/main.js"

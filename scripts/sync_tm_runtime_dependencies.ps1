@@ -40,11 +40,6 @@ sync_env() {
     exit 1
   fi
 
-  if [ ! -d "$legacy_root/node_modules" ]; then
-    echo "Missing legacy node_modules for $env_name in $legacy_root" >&2
-    exit 1
-  fi
-
   deps_root="$shared_root/deps"
   deps_sha="$(python3 - "$manifest_root/package-lock.json" <<'PY'
 import hashlib
@@ -64,10 +59,13 @@ PY
   if [ ! -d "$deps_dir/node_modules" ]; then
     deps_tmp="$deps_root/.tmp-$deps_sha-$$"
     rm -rf "$deps_tmp"
-    mkdir -p "$deps_tmp/node_modules"
-    rsync -a "$legacy_root/node_modules/" "$deps_tmp/node_modules/"
+    mkdir -p "$deps_tmp"
     cp "$manifest_root/package.json" "$deps_tmp/package.json"
     cp "$manifest_root/package-lock.json" "$deps_tmp/package-lock.json"
+    (
+      cd "$deps_tmp"
+      npm ci --include=optional
+    )
     mkdir -p "$deps_dir"
     mv "$deps_tmp/node_modules" "$deps_dir/node_modules"
     mv "$deps_tmp/package.json" "$deps_dir/package.json"

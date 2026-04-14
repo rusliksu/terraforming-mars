@@ -772,6 +772,7 @@ describe('Game', () => {
       'monsInsuranceOwner',
       'resettable',
       'rng',
+      'saveGamePromise',
       'underworldDraftEnabled',
     ];
     const serializedValuesNotInGame: Array<keyof SerializedGame> = [

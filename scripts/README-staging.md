@@ -33,6 +33,7 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\sync_tm_ser
 This covers:
 
 - TM runtime units from this repo (`tm-server`, `tm-server-staging`, `tm-elo`)
+- TM public nginx sites for `tm.knightbyte.win` and `staging.tm.knightbyte.win`
 - TM watcher units from sibling `tm-tierlist`
 
 `rollout_tm_server.ps1` runs this sync as step 1 by default. It uses safe mode

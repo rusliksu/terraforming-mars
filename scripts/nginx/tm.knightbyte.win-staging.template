@@ -1,0 +1,79 @@
+server {
+    listen 4446 ssl;
+    server_name staging.tm.knightbyte.win;
+
+    ssl_certificate /etc/letsencrypt/live/staging.tm.knightbyte.win/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/staging.tm.knightbyte.win/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    add_header Cache-Control "no-store" always;
+    add_header Pragma "no-cache" always;
+    add_header X-TM-Env "staging" always;
+    add_header X-Robots-Tag "noindex, nofollow, noarchive" always;
+
+    location = /release.json {
+        alias __STAGING_CURRENT_DIR__/assets/release.json;
+        default_type application/json;
+        add_header Cache-Control 'no-store, no-cache, must-revalidate, proxy-revalidate' always;
+        add_header Pragma 'no-cache' always;
+        expires off;
+    }
+
+    location = /history.html {
+        return 301 https://staging.tm.knightbyte.win/elo/;
+    }
+
+    location = /elo/data.json {
+        alias __STAGING_CURRENT_DIR__/elo/data.json;
+        add_header Cache-Control 'no-store, no-cache, must-revalidate, proxy-revalidate' always;
+        add_header Pragma 'no-cache' always;
+        expires off;
+    }
+
+    location = /elo/elo-data.json {
+        alias __STAGING_CURRENT_DIR__/elo/elo-data.json;
+        add_header Cache-Control 'no-store, no-cache, must-revalidate, proxy-revalidate' always;
+        add_header Pragma 'no-cache' always;
+        expires off;
+    }
+
+    location = /elo/index.html {
+        alias __STAGING_CURRENT_DIR__/elo/index.html;
+        default_type text/html;
+        add_header Cache-Control 'no-store, no-cache, must-revalidate, proxy-revalidate' always;
+        add_header Pragma 'no-cache' always;
+        expires off;
+    }
+
+    location /elo/ {
+        alias __STAGING_CURRENT_DIR__/elo/;
+        try_files $uri $uri/ /elo/index.html;
+        add_header Cache-Control 'no-store, no-cache, must-revalidate, proxy-revalidate' always;
+        add_header Pragma 'no-cache' always;
+        expires off;
+    }
+
+    location /api/elo {
+        proxy_pass http://__ELO_HOST__:__ELO_PORT__;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /bot- {
+        proxy_pass http://__ELO_HOST__:__ELO_PORT__;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location / {
+        proxy_pass http://__STAGING_HOST__:__STAGING_PORT__;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

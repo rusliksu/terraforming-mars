@@ -9,6 +9,8 @@ body { font-family: -apple-system, sans-serif; margin: 0; padding: 20px; backgro
 h1, h2 { color: #ff6b35; text-align: center; }
 h2 { font-size: 1.3em; margin-top: 40px; }
 .stats { text-align: center; color: #888; margin-bottom: 10px; }
+.stats .highlight { color: #c4a35a; font-weight: 600; }
+.stats-note { text-align: center; color: #777; margin-bottom: 14px; font-size: 0.9em; }
 .tabs { text-align: center; margin-bottom: 20px; }
 .tab { display: inline-block; padding: 8px 20px; margin: 0 4px; background: #16213e; border: 1px solid #333; border-radius: 6px; cursor: pointer; color: #888; transition: all 0.2s; }
 .tab.active { background: #ff6b35; color: #fff; border-color: #ff6b35; }
@@ -30,6 +32,7 @@ a:hover { text-decoration: underline; }
 
 /* Recent Games */
 .games-section { max-width: 900px; margin: 0 auto; }
+.games-summary { text-align: center; color: #c4a35a; margin: -8px 0 16px; font-size: 0.98em; font-weight: 600; }
 .filter-bar { text-align: center; margin-bottom: 15px; min-height: 24px; }
 .filter-tag { display: inline-block; background: #ff6b35; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
 .filter-tag .clear { cursor: pointer; margin-left: 6px; opacity: 0.7; }
@@ -60,17 +63,19 @@ a:hover { text-decoration: underline; }
 <div class="nav"><a href="/">&#8592; Back to game</a></div>
 <h1>TM ELO Ratings</h1>
 <div class="stats" id="stats"></div>
+<div class="stats-note">Avg place = normalized finish score. Avg gen = average game generation. VP Margin = average gap to 2nd place if you win, otherwise gap to 1st.</div>
 <div class="tabs">
   <span class="tab active" data-mode="place">By Placement</span>
   <span class="tab" data-mode="vp">By VP Margin</span>
 </div>
 <table>
-<thead><tr><th class="rank">#</th><th>Player</th><th>ELO</th><th>Avg place</th><th>Games</th><th>Avg VP</th></tr></thead>
+<thead><tr><th class="rank">#</th><th>Player</th><th>ELO</th><th>Avg place</th><th>Games</th><th>Avg VP</th><th>Avg gen</th><th>VP Margin</th></tr></thead>
 <tbody id="tbody"></tbody>
 </table>
 
 <h2 id="games-title">Recent Games</h2>
 <div class="games-section">
+  <div class="games-summary" id="gamesSummary"></div>
   <div class="filter-bar" id="filterBar"></div>
   <div id="gamesList"></div>
   <div class="show-more" id="showMore" style="display:none">
@@ -119,6 +124,21 @@ function round1(value) {
   return fixed.endsWith(".0") ? fixed.slice(0, -2) : fixed;
 }
 
+function formatMargin(value) {
+  if (typeof value !== "number" || isNaN(value)) return "-";
+  if (Math.abs(value) < 0.05) return "0";
+  return (value > 0 ? "+" : "") + round1(value);
+}
+
+function averageGeneration(games) {
+  var values = games
+    .map(function(g) { return Number(g.generation || 0); })
+    .filter(function(v) { return v > 0; });
+  if (values.length === 0) return "-";
+  var total = values.reduce(function(sum, value) { return sum + value; }, 0);
+  return round1(total / values.length);
+}
+
 function renderPlayers() {
   if (!_data) return;
   var players = _data.players || {};
@@ -131,18 +151,23 @@ function renderPlayers() {
       (games > 0 ? ((typeof p.placeScoreTotal === "number" ? p.placeScoreTotal : (p.wins || 0)) / games) : 0);
     var avgVP = typeof p.avgVP === "number" ? p.avgVP :
       (games > 0 ? ((p.totalVP || 0) / games) : 0);
+    var avgGens = typeof p.avgGens === "number" ? p.avgGens :
+      (games > 0 ? ((p.totalGens || 0) / games) : 0);
+    var avgMargin = typeof p.avgMargin === "number" ? p.avgMargin : 0;
     list.push({
       key: name,
       name: p.displayName || name,
       elo: Math.round(elo),
       games: games,
       avgPlace: avgPlace,
-      avgVP: avgVP
+      avgVP: avgVP,
+      avgGens: avgGens,
+      avgMargin: avgMargin
     });
   }
   list.sort(function(a,b) { return b.elo - a.elo; });
   var games = _data.games || [];
-  document.getElementById("stats").textContent = list.length + " players | " + games.length + " games";
+  document.getElementById("stats").innerHTML = list.length + " players | " + games.length + " games | <span class=\"highlight\">Avg gen " + averageGeneration(games) + "</span>";
   var html = "";
   list.forEach(function(p, i) {
     var activeClass = (_filterPlayer && _filterPlayer === p.key) ? " active-filter" : "";
@@ -151,7 +176,9 @@ function renderPlayers() {
       + "<td class=\"elo\">" + p.elo + "</td>"
       + "<td class=\"place\">" + round2(p.avgPlace) + "</td>"
       + "<td class=\"games\">" + p.games + "</td>"
-      + "<td>" + round1(p.avgVP) + "</td></tr>";
+      + "<td>" + round1(p.avgVP) + "</td>"
+      + "<td>" + round1(p.avgGens) + "</td>"
+      + "<td>" + formatMargin(p.avgMargin) + "</td></tr>";
   });
   document.getElementById("tbody").innerHTML = html;
 }
@@ -170,6 +197,7 @@ function getFilteredGames() {
 function renderGames() {
   var games = getFilteredGames();
   var filterBar = document.getElementById("filterBar");
+  var summary = document.getElementById("gamesSummary");
   var title = document.getElementById("games-title");
 
   if (_filterPlayer && _data && _data.players && _data.players[_filterPlayer]) {
@@ -182,6 +210,8 @@ function renderGames() {
     filterBar.innerHTML = "";
     title.textContent = "Recent Games";
   }
+
+  summary.textContent = games.length + " games | Avg gen " + averageGeneration(games);
 
   var toShow = games.slice(0, _gamesShown);
   if (toShow.length === 0) {
@@ -276,7 +306,7 @@ fetch("elo-data.json?ts=" + Date.now(), { cache: "no-store" }).then(function(r){
   renderPlayers();
   renderGames();
 }).catch(function(e) {
-  document.getElementById("tbody").innerHTML = "<tr><td colspan=\"6\">Error: " + e.message + "</td></tr>";
+  document.getElementById("tbody").innerHTML = "<tr><td colspan=\"8\">Error: " + e.message + "</td></tr>";
 });
 </script>
 </body>

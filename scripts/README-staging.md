@@ -167,6 +167,26 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\backup_tm_r
 pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\backup_tm_runtime_shared.ps1 -IncludeDeps
 ```
 
+Run backup maintenance end-to-end and prune old local backup sets:
+
+```powershell
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\run_tm_backup_maintenance.ps1
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\run_tm_backup_maintenance.ps1 -DryRun
+```
+
+Prune local TM backup roots under `D:\tm-vps-archive`:
+
+```powershell
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\prune_tm_backup_archives.ps1 -DryRun
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\prune_tm_backup_archives.ps1
+```
+
+Register or update the daily Windows backup task:
+
+```powershell
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\register_tm_backup_task.ps1
+```
+
 Preview or run a shared-state restore from a local backup set:
 
 ```powershell
@@ -218,6 +238,9 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\verify_tm_server.ps1 -En
 - `prune_tm_runtime.ps1` keeps `current`, `previous`, and the newest release window, then removes unreferenced dependency caches plus older checkout-artifact snapshots.
 - `backup_tm_runtime_shared.ps1` captures mutable runtime state (`db`, `elo`, `logs`, plus release metadata) from VPS to `D:\tm-vps-archive` by default; dependency cache stays excluded unless you explicitly pass `-IncludeDeps`.
 - `restore_tm_runtime_shared.ps1` restores mutable runtime state from a local backup set, keeps a pre-restore snapshot on VPS under `tm-runtime/<env>/restore-backups`, blocks `prod` by default, and refuses release-mismatched restores unless you explicitly override it.
+- `run_tm_backup_maintenance.ps1` is the daily wrapper: capture a new local backup, then prune older local backup roots.
+- `prune_tm_backup_archives.ps1` only targets TM runtime backup roots under `D:\tm-vps-archive` that match the timestamped backup layout and leaves unrelated archives alone.
+- `register_tm_backup_task.ps1` creates or updates a daily Windows Scheduled Task for the backup wrapper using the current user session.
 - Rollout now bootstraps and uses immutable runtime roots:
   - `prod`: `/home/openclaw/tm-runtime/prod`
   - `staging`: `/home/openclaw/tm-runtime/staging`

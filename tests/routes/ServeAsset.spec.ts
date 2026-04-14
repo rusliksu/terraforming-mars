@@ -4,6 +4,7 @@ import {FileAPI, ServeAsset} from '../../src/server/routes/ServeAsset';
 import {MockResponse} from './HttpMocks';
 import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {statusCode} from '../../src/common/http/statusCode';
+
 class FileApiMock extends FileAPI {
   public counts = {
     readFile: 0,
@@ -24,6 +25,14 @@ class FileApiMock extends FileAPI {
   public override existsSync(_path: string): boolean {
     this.counts.existsSync++;
     return true;
+  }
+}
+
+class MissingFileApiMock extends FileApiMock {
+  public override readFile(path: string): Promise<Buffer> {
+    const err = new Error('missing');
+    (err as NodeJS.ErrnoException).code = 'ENOENT';
+    return Promise.reject(err);
   }
 }
 
@@ -52,6 +61,15 @@ describe('ServeAsset', () => {
   });
   it('bad filename', async () => {
     scaffolding.url = 'goo.goo.gaa.gaa';
+    scaffolding.req.headers['accept-encoding'] = '';
+    await scaffolding.get(instance, res);
+    expect(res.statusCode).eq(statusCode.notFound);
+    expect(res.content).eq('Not found');
+  });
+
+  it('missing asset returns 404 instead of 500', async () => {
+    instance = new ServeAsset(undefined, false, new MissingFileApiMock());
+    scaffolding.url = '/assets/default_templates.json';
     scaffolding.req.headers['accept-encoding'] = '';
     await scaffolding.get(instance, res);
     expect(res.statusCode).eq(statusCode.notFound);

@@ -115,6 +115,11 @@ export class ServeAsset extends Handler {
         this.cache.set(file, data);
       }
     } catch (err) {
+      const error = err as NodeJS.ErrnoException;
+      if (error.code === 'ENOENT') {
+        responses.notFound(req, res);
+        return;
+      }
       console.log(err);
       responses.internalServerError(req, res, 'Cannot serve ' + path);
     }

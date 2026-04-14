@@ -51,8 +51,17 @@ export class ApiQuickGame extends Handler {
   private loadTemplates(): Array<TemplateEntry> {
     if (this.templates === undefined) {
       const filePath = path.join(__dirname, '..', '..', '..', '..', 'assets', 'default_templates.json');
-      const raw = fs.readFileSync(filePath, 'utf-8');
-      this.templates = JSON.parse(raw) as Array<TemplateEntry>;
+      try {
+        const raw = fs.readFileSync(filePath, 'utf-8');
+        const parsed = JSON.parse(raw) as unknown;
+        this.templates = Array.isArray(parsed) ? parsed as Array<TemplateEntry> : [];
+      } catch (err) {
+        const error = err as NodeJS.ErrnoException;
+        if (error.code !== 'ENOENT') {
+          console.warn('Failed to load default quick-game templates', err);
+        }
+        this.templates = [];
+      }
     }
     return this.templates;
   }

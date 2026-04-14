@@ -315,8 +315,9 @@
 }
 
 .board-cube--gold {
-	background: url(./assets/board_icons.png) -72px -91px no-repeat;
-	filter: sepia(0.45) saturate(2.2) brightness(1.08) drop-shadow(0 0 1px rgba(255, 215, 0, 0.7));
+	background: url(./assets/board/gold_owner_cube.svg) center no-repeat;
+	background-size: 21px 21px;
+	filter: drop-shadow(0 0 2px rgba(255, 214, 86, 0.45)) drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.75));
 }
 
 .board-cube--bronze {
@@ -395,11 +396,14 @@
 }
 
 .board-cube--gold.overlay::after {
-  .overlay_base;
+  .overlay_base();
   content: "✦";
   margin-left: 5px;
-  margin-top: 0;
-  color: #2b2100;
+  margin-top: -1px;
+  font-size: 13px;
+  font-weight: bold;
+  color: #fff3b2;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.95), 0 0 4px rgba(255, 221, 117, 0.65);
 }
 
 .board-cube--bronze.overlay::after {

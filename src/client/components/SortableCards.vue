@@ -6,13 +6,22 @@
     </label>
   </div>
   <div class="sortable-cards">
-    <div ref="draggers" :class="{ 'dragging': Boolean(dragCard) }" v-for="(card, index) in getSortedCards()" :key="card.name" draggable="true" @dragend="onDragEnd()" @dragstart="onDragStart(card.name)" @dragenter.prevent="onDragHover(card.name)" @dragover.prevent>
-      <div ref="cardbox" class="cardbox" @click="clickMethod">
-        <Card :card="card"/>
-        <div v-if="showReorder" class="reorder-banners-container">
-          <div class="reorder-banners-left" v-if="index > 0"></div>
-          <div class="reorder-banners-right" v-if="index < cards.length - 1"></div>
-        </div>
+    <div
+      ref="cardbox"
+      v-for="(card, index) in getSortedCards()"
+      :key="card.name"
+      class="cardbox"
+      :class="{ 'dragging': Boolean(dragCard) }"
+      draggable="true"
+      @click="clickMethod"
+      @dragend="onDragEnd()"
+      @dragstart="onDragStart(card.name)"
+      @dragover.prevent="onDragHover(card.name)"
+    >
+      <Card :card="card"/>
+      <div v-if="showReorder" class="reorder-banners-container">
+        <div class="reorder-banners-left" v-if="index > 0"></div>
+        <div class="reorder-banners-right" v-if="index < cards.length - 1"></div>
       </div>
     </div>
   </div>
@@ -20,7 +29,7 @@
 </template>
 
 <script lang="ts">
-import {defineComponent} from 'vue';
+import {defineComponent} from '@/client/vue3-compat';
 import Card from '@/client/components/card/Card.vue';
 import {CardName} from '@/common/cards/CardName';
 import {CardModel} from '@/common/models/CardModel';
@@ -34,8 +43,6 @@ type DataModel = {
   cardOrder: {[x: string]: number};
   /** When defined, it is the name of the card being dragged. */
   dragCard: CardName | undefined;
-  /** The last card swapped with during the current drag operation. */
-  dragTarget: CardName | undefined;
 };
 
 export default defineComponent({
@@ -74,7 +81,6 @@ export default defineComponent({
       showReorder: false,
       cardOrder: cardOrder,
       dragCard: undefined,
-      dragTarget: undefined,
     };
   },
   methods: {
@@ -86,24 +92,18 @@ export default defineComponent({
     },
     onDragStart(source: CardName): void {
       this.dragCard = source;
-      this.dragTarget = source;
     },
     onDragEnd(): void {
       this.dragCard = undefined;
-      this.dragTarget = undefined;
     },
     onDragHover(source: CardName): void {
-      if (this.dragCard === undefined || source === this.dragCard || source === this.dragTarget) {
+      if (this.dragCard === undefined || source === this.dragCard) {
         return;
       }
       const temp = this.cardOrder[source];
       this.cardOrder[source] = this.cardOrder[this.dragCard];
       this.cardOrder[this.dragCard] = temp;
-      this.dragTarget = source;
       CardOrderStorage.updateCardOrder(this.playerId, this.cardOrder);
-    },
-    doNotDragAndDropOnReorder() {
-      return this.showReorder ? 'do-not-drag-and-drop' : '';
     },
     clickMethod(e: MouseEvent) {
       if (!this.showReorder) return;

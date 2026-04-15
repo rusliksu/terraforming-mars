@@ -36,7 +36,7 @@ describe('SortableCards', () => {
     expect(cards[1].props().card.name).to.eq(CardName.CARTEL);
     const draggers = sortable.findAll('[draggable=true]');
     await draggers[1].trigger('dragstart');
-    await draggers[0].trigger('dragenter');
+    await draggers[0].trigger('dragover');
     await draggers[1].trigger('dragend');
     cards = sortable.findAllComponents({
       name: 'Card',
@@ -78,7 +78,7 @@ describe('SortableCards', () => {
     expect(cards[2].props().card.name).to.eq(CardName.BIRDS);
     const draggers = sortable.findAll('[draggable=true]');
     await draggers[0].trigger('dragstart');
-    await draggers[2].trigger('dragenter');
+    await draggers[2].trigger('dragover');
     await draggers[0].trigger('dragend');
     cards = sortable.findAllComponents({
       name: 'Card',

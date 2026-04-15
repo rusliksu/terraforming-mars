@@ -236,6 +236,16 @@ describe('ServeAsset', () => {
     expect(res.headers.get('Cache-Control')).eq('no-store');
   });
 
+  it('serves svg assets from /assets', async () => {
+    instance = new ServeAsset(undefined, false, fileApi);
+    scaffolding.url = '/assets/board/gold_owner_cube.svg';
+    scaffolding.req.headers['accept-encoding'] = '';
+    await scaffolding.get(instance, res);
+
+    expect(res.content).eq('data: ' + fs.realpathSync('assets/board/gold_owner_cube.svg'));
+    expect(res.headers.get('Content-Type')).eq('image/svg+xml');
+  });
+
   it('does not buffer-cache dynamic elo assets in production', async () => {
     instance = new ServeAsset(undefined, true, fileApi);
     scaffolding.url = '/elo/data.json';

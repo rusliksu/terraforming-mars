@@ -8,6 +8,7 @@ describe('ContentType', () => {
     ['/path/to/foo.map', 'text/javascript'],
     ['/path/to/foo.js.gz', 'text/javascript'],
     ['/path/to/foo.png.br', 'image/png'],
+    ['/path/to/foo.svg', 'image/svg+xml'],
     ['/path/to/foo.js.zip', undefined],
     ['/path/to/foo.png.ico', 'image/x-icon'],
     ['/path/to/foo.png.ico', 'image/x-icon'],

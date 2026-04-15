@@ -10,21 +10,6 @@
             <div class="discord-invite" v-if="playersCount===1">
               (<span v-i18n>Looking for people to play with</span>? <a :href="constants.DISCORD_INVITE" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank"><u v-i18n>Join us on Discord</u></a>.)
             </div>
-            <div class="create-game--block create-game-presets-section">
-                <div class="presets-row">
-                    <button v-for="t in presetTypes" :key="t.key" class="preset-btn" :class="{active: selectedPresetType === t.key}" @click="selectPresetType(t.key)" :title="t.desc">{{ t.label }}</button>
-                </div>
-                <div class="presets-row">
-                    <button v-for="n in [3,4,5]" :key="n" class="preset-btn preset-btn-sm" :class="{active: playersCount === n}" @click="applySelectedPreset(n)">{{ n }}P</button>
-                    <span class="presets-sep"></span>
-                    <button class="preset-btn preset-btn-toggle" :class="{active: twoCorpsVariant}" @click="twoCorpsVariant = !twoCorpsVariant">Merger</button>
-                    <button class="preset-btn preset-btn-toggle" :class="{active: escapeVelocityMode}" @click="toggleEV()">EV {{ escapeVelocityThreshold }}</button>
-                    <button class="preset-btn preset-btn-toggle" :class="{active: expansions.community}" @click="expansions.community = !expansions.community">Community</button>
-                </div>
-            </div>
-
-
-
             <div class="create-game-form create-game-panel create-game--block">
 
                 <div class="create-game-options">
@@ -628,7 +613,6 @@ import {paths} from '@/common/app/paths';
 import {JSONProcessor} from './JSONProcessor';
 import {defaultCreateGameModel} from './defaultCreateGameModel';
 import {TemplateManager, GameTemplate} from './TemplateManager';
-import {loadPresets, GamePreset} from "./GamePresets";
 import {getColony} from '@/client/colonies/ClientColonyManifest';
 import {RULEBOOK_URLS, WIKI, WIKI_URLS} from '@/client/utils/WikiLinks';
 
@@ -658,8 +642,6 @@ export default defineComponent({
       uploading: false,
       selectedTemplate: '',
       templates: TemplateManager.getTemplates(),
-      presets: [] as Array<GamePreset>,
-      selectedPresetType: "std" as string,
     };
   },
   components: {
@@ -718,7 +700,6 @@ export default defineComponent({
   mounted() {
     document.title = `Create New Game | ${constants.APP_NAME}`;
     this.restoreLastSettings();
-    loadPresets().then((p) => { this.presets = p; });
     // Auto-fill cloneGameId from URL query param (rematch button)
     const urlParams = new URLSearchParams(window.location.search);
     const cloneId = urlParams.get('cloneGameId');
@@ -733,14 +714,6 @@ export default defineComponent({
     },
     typedRefs(): Refs {
       return this.$refs as Refs;
-    },
-    presetTypes(): Array<{key: string; label: string; desc: string}> {
-      return [
-        {key: 'turmoil', label: 'Turmoil', desc: 'PV2OT + CEO + Path'},
-        {key: 'std', label: 'Standard', desc: 'PV2O + CEO + Path'},
-        {key: 'classic', label: 'Classic', desc: 'PVO, no CEO/Path/P2'},
-        {key: 'chill', label: 'Chill', desc: 'PV2O + CEO + Path, no bans'},
-      ];
     },
     RandomBoardOption(): typeof RandomBoardOption {
       return RandomBoardOption;
@@ -807,51 +780,6 @@ export default defineComponent({
         root.showAlert('Load settings', 'Error: ' + e);
         this.uploading = false;
       }
-    },
-    selectPresetType(key: string) {
-      this.selectedPresetType = key;
-      this.applySelectedPreset(this.playersCount);
-    },
-    applySelectedPreset(playerCount: number) {
-      const key = this.selectedPresetType;
-      const shortSuffix = key === 'turmoil' ? ' T' : key === 'std' ? '' : ' ' + key.charAt(0).toUpperCase() + key.slice(1);
-      const targetShort = playerCount + 'P' + shortSuffix;
-      const preset = this.presets.find((p) => p.shortName === targetShort);
-      if (preset) {
-        this.playersCount = playerCount;
-        this.applyPreset(preset);
-      }
-    },
-    toggleEV() {
-      if (!this.escapeVelocityMode) {
-        this.escapeVelocityMode = true;
-        this.escapeVelocityThreshold = 35;
-      } else if (this.escapeVelocityThreshold === 35) {
-        this.escapeVelocityThreshold = 30;
-      } else if (this.escapeVelocityThreshold === 30) {
-        this.escapeVelocityThreshold = 40;
-      } else {
-        this.escapeVelocityMode = false;
-      }
-    },
-    applyPreset(preset: GamePreset) {
-      const scrollY = window.scrollY;
-      const settings = {...preset.settings} as Record<string, unknown>;
-      if (!settings.players) {
-        settings.players = this.players.slice(0, this.playersCount).map((p) => ({...p}));
-      }
-      this.applySettings(settings);
-      const hasBans = Array.isArray(settings.bannedCards) && settings.bannedCards.length > 0;
-      nextTick(() => {
-        this.showColoniesList = false; this.showBannedCards = hasBans; this.showCorporationList = false; this.showPreludesList = false;
-        if (hasBans) {
-          nextTick(() => {
-            const refs = this.typedRefs;
-            if (refs.cardsFilter) refs.cardsFilter.selected = (settings.bannedCards as Array<string>).slice();
-          });
-        }
-      });
-      nextTick(() => window.scrollTo(0, scrollY));
     },
     loadSelectedTemplate() {
       if (!this.selectedTemplate) return;

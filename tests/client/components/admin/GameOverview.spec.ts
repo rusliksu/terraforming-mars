@@ -50,5 +50,6 @@ describe('GameOverview', () => {
       },
     });
     expect(wrapper.text()).includes('Stop bot');
+    expect(wrapper.text()).includes('Resend TG');
   });
 });

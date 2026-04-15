@@ -144,7 +144,6 @@ describe('Player', () => {
     try {
       player.telegramID = '162438481';
 
-      game.inputsThisRound = 0;
       player.setWaitingFor(new SelectOption('First action'));
       expect((player as any)._turnNoticeSentThisRound).is.false;
       expect((player as any)._pendingTurnNoticeTimer).not.to.be.undefined;
@@ -152,13 +151,13 @@ describe('Player', () => {
       player.popWaitingFor();
       clearTimeout((player as any)._pendingTurnNoticeTimer);
       (player as any)._pendingTurnNoticeTimer = undefined;
-      (player as any)._turnNoticeSentThisRound = true;
+      player.lastTurnNoticeKey = (player as any).getTurnNoticeKey();
 
       player.setWaitingFor(new SelectOption('Second action'));
       expect((player as any)._pendingTurnNoticeTimer).to.be.undefined;
 
       player.popWaitingFor();
-      game.inputsThisRound = 0;
+      player.lastTurnNoticeKey = 'older-turn';
       player.setWaitingFor(new SelectOption('Next turn'));
       expect((player as any)._turnNoticeSentThisRound).is.false;
       expect((player as any)._pendingTurnNoticeTimer).not.to.be.undefined;
@@ -166,6 +165,37 @@ describe('Player', () => {
       if ((player as any)._pendingTurnNoticeTimer) {
         clearTimeout((player as any)._pendingTurnNoticeTimer);
         (player as any)._pendingTurnNoticeTimer = undefined;
+      }
+    }
+  });
+
+  it('resets telegram turn notice per player during batched waiting states', () => {
+    const [game, player1, player2, player3] = testGame(3);
+    try {
+      player1.telegramID = '111';
+      player2.telegramID = '222';
+      player3.telegramID = '333';
+
+      player2.lastTurnNoticeKey = 'previous-turn';
+      player3.lastTurnNoticeKey = 'previous-turn';
+      (player2 as any)._turnNoticeSentThisRound = true;
+      (player3 as any)._turnNoticeSentThisRound = true;
+
+      game.inputsThisRound = 0;
+      player1.setWaitingFor(new SelectOption('Draft 1'));
+      player2.setWaitingFor(new SelectOption('Draft 2'));
+      player3.setWaitingFor(new SelectOption('Draft 3'));
+
+      expect((player2 as any)._turnNoticeSentThisRound).is.false;
+      expect((player3 as any)._turnNoticeSentThisRound).is.false;
+      expect((player2 as any)._pendingTurnNoticeTimer).not.to.be.undefined;
+      expect((player3 as any)._pendingTurnNoticeTimer).not.to.be.undefined;
+    } finally {
+      for (const player of [player1, player2, player3]) {
+        if ((player as any)._pendingTurnNoticeTimer) {
+          clearTimeout((player as any)._pendingTurnNoticeTimer);
+          (player as any)._pendingTurnNoticeTimer = undefined;
+        }
       }
     }
   });

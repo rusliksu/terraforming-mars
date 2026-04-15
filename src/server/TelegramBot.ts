@@ -129,10 +129,16 @@ export async function sendTurnNotice(player: TelegramNotifiable, turnNoticeKey?:
       }
       return true;
     }
+    console.warn("sendTurnNotice failed:", resp.description ?? resp.error_code ?? "unknown error");
   } catch (err) {
     console.warn("sendTurnNotice error:", err);
   }
   return false;
+}
+
+export async function resendTurnNotice(player: TelegramNotifiable, turnNoticeKey: string): Promise<boolean> {
+  await deleteTurnNotice(player);
+  return sendTurnNotice(player, turnNoticeKey);
 }
 
 export async function deleteTurnNotice(player: TelegramNotifiable): Promise<void> {

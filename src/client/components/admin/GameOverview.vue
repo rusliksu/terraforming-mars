@@ -16,6 +16,13 @@
         @click.stop.prevent="toggleBot(player.id)">
         {{isBotRunning(player.id) ? 'Stop bot' : 'Run bot'}}
       </button>
+      <button
+        v-if="isRunning && serverId !== ''"
+        class="turn-notice-button"
+        :disabled="busyPlayerIds.includes(player.id)"
+        @click.stop.prevent="resendTurnNotice(player.id)">
+        Resend TG
+      </button>
     </td>
     <td><a target="blank" :href="'spectator?id=' + game.spectatorId" v-i18n class="player-name spectator">Spectator</a></td>
   </template>
@@ -119,12 +126,39 @@ export default defineComponent({
         this.busyPlayerIds = this.busyPlayerIds.filter((id) => id !== playerId);
       }
     },
+    async resendTurnNotice(playerId: string) {
+      if (this.serverId === '' || this.busyPlayerIds.includes(playerId)) {
+        return;
+      }
+      this.busyPlayerIds = [...this.busyPlayerIds, playerId];
+      try {
+        const query = new URLSearchParams({
+          gameId: this.id,
+          playerId,
+          serverId: this.serverId,
+        });
+        const response = await fetch('api/turn-notice?' + query.toString(), {method: 'POST'});
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+      } catch (error) {
+        alert(error instanceof Error ? error.message : String(error));
+      } finally {
+        this.busyPlayerIds = this.busyPlayerIds.filter((id) => id !== playerId);
+      }
+    },
   },
 });
 </script>
 
 <style scoped>
 .bot-takeover-button {
+  margin-left: 6px;
+  padding: 2px 6px;
+  font-size: 11px;
+}
+
+.turn-notice-button {
   margin-left: 6px;
   padding: 2px 6px;
   font-size: 11px;

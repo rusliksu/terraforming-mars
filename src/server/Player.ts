@@ -1688,16 +1688,14 @@ export class Player implements IPlayer {
     return this.waitingFor;
   }
 
-  private getTurnNoticeKey(): string {
+  public getTurnNoticeKey(): string {
     const actionsBeforeThisTurn = Math.max(0, this.game.getActionCount() - this.actionsTakenThisRound);
     return `${this.game.id}:${this.game.generation}:${this.game.phase}:${this.id}:${actionsBeforeThisTurn}`;
   }
 
   public setWaitingFor(input: PlayerInput, cb: () => void = () => {}): void {
     const turnNoticeKey = this.getTurnNoticeKey();
-    if (this.game.inputsThisRound === 0) {
-      this._turnNoticeSentThisRound = this.lastTurnNoticeKey === turnNoticeKey;
-    }
+    this._turnNoticeSentThisRound = this.lastTurnNoticeKey === turnNoticeKey;
     if (this.waitingFor !== undefined) {
       const message = `Overwriting waitingFor ${this.waitingFor.type} with ${input?.type}`;
       if (THROW_STATE_ERRORS) {

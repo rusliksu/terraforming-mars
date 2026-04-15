@@ -23,6 +23,14 @@
               <span class="bot-toggle__label">Bot takeover</span>
               <span v-if="isBotRunning(player.id)" class="bot-toggle__state">bot is playing</span>
             </button>
+            <button
+              v-if="isRunning && serverId !== ''"
+              class="turn-notice-button"
+              :disabled="busyPlayerIds.includes(player.id)"
+              title="Resend Telegram turn notice"
+              @click.stop.prevent="resendTurnNotice(player.id)">
+              Resend TG
+            </button>
             <AppButton title="copy" size="tiny" @click="copyUrl(player.id)"/>
             <span v-if="isPlayerUrlCopied(player.id)" class="copied-notice"><span v-i18n>Copied!</span></span>
           </li>
@@ -175,6 +183,27 @@ export default defineComponent({
         this.busyPlayerIds = this.busyPlayerIds.filter((id) => id !== playerId);
       }
     },
+    async resendTurnNotice(playerId: string) {
+      if (this.serverId === '' || this.busyPlayerIds.includes(playerId)) {
+        return;
+      }
+      this.busyPlayerIds = [...this.busyPlayerIds, playerId];
+      try {
+        const query = new URLSearchParams({
+          gameId: this.getGameId(),
+          playerId,
+          serverId: this.serverId,
+        });
+        const response = await fetch('api/turn-notice?' + query.toString(), {method: 'POST'});
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+      } catch (error) {
+        alert(error instanceof Error ? error.message : String(error));
+      } finally {
+        this.busyPlayerIds = this.busyPlayerIds.filter((id) => id !== playerId);
+      }
+    },
     playerSymbol(color: Color) {
       return playerSymbol(color);
     },
@@ -240,5 +269,11 @@ export default defineComponent({
   color: #2a9d5b;
   font-size: 11px;
   font-weight: 600;
+}
+
+.turn-notice-button {
+  margin: 0 6px 0 0;
+  padding: 2px 6px;
+  font-size: 11px;
 }
 </style>

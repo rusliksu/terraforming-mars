@@ -49,6 +49,7 @@ describe('GameHome', () => {
     expect(toggle.text()).to.include('Bot takeover');
     expect(toggle.text()).to.include('bot is playing');
     expect(toggle.attributes('title')).to.eq('Return control to player');
+    expect(wrapper.text()).to.include('Resend TG');
   });
 
   it('does not leak serverId into copied player links', () => {

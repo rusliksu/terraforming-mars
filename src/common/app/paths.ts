@@ -14,6 +14,7 @@ export const paths = {
   API_PROFILE: 'api/profile',
   API_SPECTATOR: 'api/spectator',
   API_STATS: 'api/stats',
+  API_TURN_NOTICE: 'api/turn-notice',
   API_WAITING_FOR: 'api/waitingfor',
   AUTH_DISCORD_CALLBACK: 'auth/discord/callback',
   AUTOPASS: 'autopass',

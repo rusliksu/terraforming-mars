@@ -2,7 +2,7 @@
   <div class="card-container filterDiv hover-hide-res" :class="cardClasses">
       <div class="card-content-wrapper" v-i18n @mouseover="hovering = true" @mouseleave="hovering = false">
           <div v-if="!isStandardProject" class="card-cost-and-tags">
-              <CardCost :amount="cost" :newCost="reducedCost" />
+              <CardCost :amount="displayCost" :newCost="oldCost" />
               <div v-if="showPlayerCube" :class="playerCubeClass"></div>
               <card-help v-show="hasHelp" :name="card.name" />
               <CardTags :tags="tags" />
@@ -130,6 +130,21 @@ export default defineComponent({
     },
     reducedCost(): number | undefined {
       return this.isProjectCard ? this.card.calculatedCost : undefined;
+    },
+    displayCost(): number | undefined {
+      if (!this.isProjectCard) {
+        return undefined;
+      }
+      return this.reducedCost ?? this.cost;
+    },
+    oldCost(): number | undefined {
+      if (!this.isProjectCard) {
+        return undefined;
+      }
+      if (this.reducedCost === undefined || this.cost === undefined || this.reducedCost === this.cost) {
+        return undefined;
+      }
+      return this.cost;
     },
     cardType(): CardType {
       return this.cardInstance.type;

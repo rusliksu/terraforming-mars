@@ -49,6 +49,9 @@ import {ColonyName} from '@/common/colonies/ColonyName';
 import {ColonyModel} from '@/common/models/ColonyModel';
 import * as titles from '@/common/inputs/SelectInitialCards';
 import {sum} from '@/common/utils/utils';
+import {CardModel} from '@/common/models/CardModel';
+import {ClientCard} from '@/common/cards/ClientCard';
+import {CardDiscount} from '@/common/cards/Types';
 
 
 type DataModel = {
@@ -58,6 +61,8 @@ type DataModel = {
   // End result will be a single corporation, but the player may select multiple while deciding what to keep.
   selectedCorporations: Array<CardName>,
   selectedPreludes: Array<CardName>,
+  projectCards: Array<CardModel>,
+  projectBaseCosts: Partial<Record<CardName, number | undefined>>,
   valid: boolean,
   warning: string | undefined,
 }
@@ -106,6 +111,8 @@ export default defineComponent({
       selectedCeos: [],
       selectedCorporations: [],
       selectedPreludes: [],
+      projectCards: [],
+      projectBaseCosts: {},
       valid: false,
       warning: undefined,
     };
@@ -120,6 +127,70 @@ export default defineComponent({
         const base = card.startingMegaCredits ?? 0;
         return base + this.extra(prelude);
       }));
+    },
+    initializeProjectCards() {
+      const option = getOption(this.playerinput.options, titles.SELECT_PROJECTS_TITLE);
+      const projectBaseCosts: Partial<Record<CardName, number | undefined>> = {};
+      this.projectCards = option.cards.map((card) => {
+        projectBaseCosts[card.name] = card.calculatedCost;
+        return {...card};
+      });
+      this.projectBaseCosts = projectBaseCosts;
+      this.refreshProjectCardCosts();
+    },
+    countCardTags(card: Pick<ClientCard, 'tags'>, tag: Tag): number {
+      return card.tags.filter((cardTag) => cardTag === tag).length;
+    },
+    selectedSetupCards(): Array<ClientCard> {
+      const cards: Array<ClientCard> = [];
+      if (this.selectedCorporations.length === 1) {
+        cards.push(getCardOrThrow(this.selectedCorporations[0]));
+      }
+      for (const prelude of this.selectedPreludes) {
+        cards.push(getCardOrThrow(prelude));
+      }
+      return cards;
+    },
+    countSelectedSetupTags(tag: Tag): number {
+      const existingTagCount = this.playerView.thisPlayer?.tags?.[tag] ?? 0;
+      return existingTagCount + sum(this.selectedSetupCards().map((card) => this.countCardTags(card, tag)));
+    },
+    discountFromMetadata(discount: CardDiscount, projectCard: ClientCard): number {
+      if (discount.tag === undefined) {
+        return discount.amount;
+      }
+      const tagCount = this.countCardTags(projectCard, discount.tag);
+      if (discount.per === 'card') {
+        return tagCount > 0 ? discount.amount : 0;
+      }
+      return discount.amount * tagCount;
+    },
+    discountFromSpecialSetupCard(setupCard: ClientCard, projectCard: ClientCard): number {
+      switch (setupCard.name) {
+      case CardName.MARS_DIRECT:
+        return this.countCardTags(projectCard, Tag.MARS) > 0 ? this.countSelectedSetupTags(Tag.MARS) : 0;
+      default:
+        return 0;
+      }
+    },
+    getSetupDrivenDiscount(projectCard: ClientCard): number {
+      return sum(this.selectedSetupCards().map((setupCard) => {
+        const metadataDiscount = toArray(setupCard.cardDiscount).reduce((discountSum, discount) => {
+          return discountSum + this.discountFromMetadata(discount, projectCard);
+        }, 0);
+        return metadataDiscount + this.discountFromSpecialSetupCard(setupCard, projectCard);
+      }));
+    },
+    refreshProjectCardCosts() {
+      for (const projectCardModel of this.projectCards) {
+        const projectCard = getCardOrThrow(projectCardModel.name);
+        const baseCost = this.projectBaseCosts[projectCardModel.name] ?? projectCard.cost;
+        if (baseCost === undefined) {
+          projectCardModel.calculatedCost = undefined;
+          continue;
+        }
+        projectCardModel.calculatedCost = Math.max(baseCost - this.getSetupDrivenDiscount(projectCard), 0);
+      }
     },
     extra(prelude: CardName): number {
       const card = getCardOrThrow(prelude);
@@ -265,10 +336,12 @@ export default defineComponent({
     },
     corporationChanged(cards: Array<CardName>) {
       this.selectedCorporations = cards;
+      this.refreshProjectCardCosts();
       this.validate();
     },
     preludesChanged(cards: Array<CardName>) {
       this.selectedPreludes = cards;
+      this.refreshProjectCardCosts();
       this.validate();
     },
 
@@ -362,13 +435,27 @@ export default defineComponent({
       return option;
     },
     projectCardOption() {
-      return getOption(this.playerinput.options, titles.SELECT_PROJECTS_TITLE);
+      const option = getOption(this.playerinput.options, titles.SELECT_PROJECTS_TITLE);
+      return {
+        ...option,
+        cards: this.projectCards.length > 0 ? this.projectCards : option.cards,
+      };
     },
+  },
+  created() {
+    this.initializeProjectCards();
   },
   mounted() {
     this.validate();
   },
 });
+
+function toArray<T>(value: ReadonlyArray<T> | T | undefined): Array<T> {
+  if (value === undefined) {
+    return [];
+  }
+  return Array.isArray(value) ? [...value] : [value];
+}
 
 function getOption(options: Array<PlayerInputModel>, title: string): SelectCardModel {
   const option = options.find((option) => option.title === title);

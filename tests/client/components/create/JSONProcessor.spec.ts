@@ -6,6 +6,7 @@ import {BoardName} from '@/common/boards/BoardName';
 import {JSONObject} from '@/common/Types';
 import {CreateGameModel} from '@/client/components/create/CreateGameModel';
 import {CardName} from '@/common/cards/CardName';
+import {GENUINE_GOLD_NAME} from '@/common/Color';
 
 type Case = {
   description: string,
@@ -84,13 +85,13 @@ const TEMPLATE_EXPECTED: CreateGameModel = {
   playersCount: 1,
   players: [
     {name: 'You', color: 'red', beginner: false, handicap: 0, first: false},
-    {name: '', color: 'green', beginner: false, handicap: 0, first: false},
-    {name: '', color: 'yellow', beginner: false, handicap: 0, first: false},
-    {name: '', color: 'blue', beginner: false, handicap: 0, first: false},
-    {name: '', color: 'black', beginner: false, handicap: 0, first: false},
-    {name: '', color: 'purple', beginner: false, handicap: 0, first: false},
-    {name: '', color: 'orange', beginner: false, handicap: 0, first: false},
-    {name: '', color: 'pink', beginner: false, handicap: 0, first: false},
+    {name: '', color: 'green', beginner: false, handicap: 0, first: false, isBot: false, telegramID: ''},
+    {name: '', color: 'yellow', beginner: false, handicap: 0, first: false, isBot: false, telegramID: ''},
+    {name: '', color: 'blue', beginner: false, handicap: 0, first: false, isBot: false, telegramID: ''},
+    {name: '', color: 'black', beginner: false, handicap: 0, first: false, isBot: false, telegramID: ''},
+    {name: '', color: 'purple', beginner: false, handicap: 0, first: false, isBot: false, telegramID: ''},
+    {name: '', color: 'orange', beginner: false, handicap: 0, first: false, isBot: false, telegramID: ''},
+    {name: '', color: 'pink', beginner: false, handicap: 0, first: false, isBot: false, telegramID: ''},
   ],
   expansions: {
     corpera: true,
@@ -209,4 +210,23 @@ describe('JSONProcessor', () => {
       expect(model).deep.eq(testCase.expected);
     });
   }
+
+  it('forces GenuineGold for gold players from JSON', () => {
+    const model = defaultCreateGameModel();
+    const processor = new JSONProcessor(model);
+    processor.applyJSON({
+      ...TEMPLATE_INPUT,
+      players: [{
+        name: 'Ilya',
+        color: 'gold',
+        beginner: false,
+        handicap: 0,
+        first: false,
+      }],
+    });
+
+    expect(model.playersCount).to.eq(1);
+    expect(model.players[0].color).to.eq('gold');
+    expect(model.players[0].name).to.eq(GENUINE_GOLD_NAME);
+  });
 });

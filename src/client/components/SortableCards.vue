@@ -6,8 +6,7 @@
     </label>
   </div>
   <div class="sortable-cards">
-    <div ref="draggers" :class="{ 'dragging': Boolean(dragCard) }" v-for="(card, index) in getSortedCards()" :key="card.name" draggable="true" v-on:dragend="onDragEnd()" v-on:dragstart="onDragStart(card.name)">
-      <div v-if="dragCard" ref="droppers" class="drop-target" v-on:dragover="onDragOver(card.name)"></div>
+    <div ref="draggers" :class="{ 'dragging': Boolean(dragCard) }" v-for="(card, index) in getSortedCards()" :key="card.name" draggable="true" @dragend="onDragEnd()" @dragstart="onDragStart(card.name)" @dragenter.prevent="onDragHover(card.name)" @dragover.prevent>
       <div ref="cardbox" class="cardbox" @click="clickMethod">
         <Card :card="card"/>
         <div v-if="showReorder" class="reorder-banners-container">
@@ -16,7 +15,6 @@
         </div>
       </div>
     </div>
-    <div v-if="dragCard" ref="dropend" class="drop-target" v-on:dragover="onDragOver('end')"></div>
   </div>
 </div>
 </template>
@@ -36,6 +34,8 @@ type DataModel = {
   cardOrder: {[x: string]: number};
   /** When defined, it is the name of the card being dragged. */
   dragCard: CardName | undefined;
+  /** The last card swapped with during the current drag operation. */
+  dragTarget: CardName | undefined;
 };
 
 export default defineComponent({
@@ -74,6 +74,7 @@ export default defineComponent({
       showReorder: false,
       cardOrder: cardOrder,
       dragCard: undefined,
+      dragTarget: undefined,
     };
   },
   methods: {
@@ -85,33 +86,20 @@ export default defineComponent({
     },
     onDragStart(source: CardName): void {
       this.dragCard = source;
+      this.dragTarget = source;
     },
     onDragEnd(): void {
       this.dragCard = undefined;
+      this.dragTarget = undefined;
     },
-    onDragOver(source: CardName | 'end'): void {
-      if (this.dragCard === undefined || source === this.dragCard) {
+    onDragHover(source: CardName): void {
+      if (this.dragCard === undefined || source === this.dragCard || source === this.dragTarget) {
         return;
       }
-      // put the card at the end of the list
-      if (source === 'end') {
-        let max = 0;
-        const keys = Object.keys(this.cardOrder);
-        for (const key of keys) {
-          max = Math.max(max, this.cardOrder[key]);
-        }
-        this.cardOrder[this.dragCard] = max + 1;
-      } else {
-        // place it ahead of the card
-        const temp = this.cardOrder[source];
-        const keys = Object.keys(this.cardOrder);
-        for (const key of keys) {
-          if (this.cardOrder[key] >= temp) {
-            this.cardOrder[key]++;
-          }
-        }
-        this.cardOrder[this.dragCard] = temp;
-      }
+      const temp = this.cardOrder[source];
+      this.cardOrder[source] = this.cardOrder[this.dragCard];
+      this.cardOrder[this.dragCard] = temp;
+      this.dragTarget = source;
       CardOrderStorage.updateCardOrder(this.playerId, this.cardOrder);
     },
     doNotDragAndDropOnReorder() {

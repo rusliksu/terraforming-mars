@@ -5,7 +5,7 @@ import {MILESTONE_COST, REDS_RULING_POLICY_COST} from '../common/constants';
 import {cardsFromJSON, ceosFromJSON, corporationCardsFromJSON, newCorporationCard, preludesFromJSON} from './createCard';
 import {CardName} from '../common/cards/CardName';
 import {CardType} from '../common/cards/CardType';
-import {Color} from '../common/Color';
+import {Color, normalizePlayerNameForColor} from '../common/Color';
 import {ICorporationCard} from './cards/corporation/ICorporationCard';
 import {IGame} from './IGame';
 import {Game} from './Game';
@@ -256,6 +256,7 @@ export class Player implements IPlayer {
     public handicap: number = 0,
     id: PlayerId) {
     this.id = id;
+    this.name = normalizePlayerNameForColor(this.color, this.name);
     // This seems pretty bad. The game will be set before the Player is actually
     // used, and if that doesn't happen, well, it's a worthy error.
     // The alterantive, to make game type Game | undefined, will cause compilation

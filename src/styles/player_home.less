@@ -44,7 +44,8 @@
     text-shadow: -1px -1px 6px @player_pink, 1px 1px 1px #333a;
 }
 .player_shadow_color_gold {
-    text-shadow: -1px -1px 6px @player_gold, 1px 1px 1px #333a;
+    color: @player_gold_text;
+    text-shadow: 0 1px 0 rgba(255, 244, 194, 0.45), 0 0 6px rgba(0, 0, 0, 0.35);
 }
 
 .game-title {
@@ -126,7 +127,10 @@
         background-color: rgba(245, 116, 187, 0.2);
     }
     .grid-item.player_tag_bg_color_gold {
-        background-color: rgba(212, 175, 55, 0.2);
+        background-color: rgba(212, 175, 55, 0.28);
+        color: @player_gold_text;
+        box-shadow: inset 0 0 0 1px rgba(43, 33, 0, 0.14);
+        text-shadow: 0 1px 0 rgba(255, 246, 204, 0.3);
     }
     .city-count {
         background: url(./assets/icon_city.png) center no-repeat;

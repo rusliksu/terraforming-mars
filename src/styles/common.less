@@ -184,7 +184,8 @@ h2 {
 
 .player_bg_color_gold {
     background-color: @player_gold;
-    color: #2b2100;
+    color: @player_gold_text;
+    text-shadow: 0 1px 0 rgba(255, 247, 204, 0.35);
 }
 
 // backgroungs with opacity
@@ -222,6 +223,8 @@ h2 {
 
 .player_translucent_bg_color_gold {
     .player_gold_bg_translucent();
+    color: @player_gold_text;
+    text-shadow: 0 1px 0 rgba(255, 247, 204, 0.3);
 }
 
 .alert-dialog {

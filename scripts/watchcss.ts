@@ -29,8 +29,11 @@ function onChange(filePath: string): void {
 }
 
 const watcher = chokidar.watch(pattern, {ignoreInitial: true});
-watcher.on('change', onChange);
-watcher.on('add', onChange);
+const eventWatcher = watcher as typeof watcher & {
+  on(event: 'change' | 'add', listener: (filePath: string) => void): typeof watcher;
+};
+eventWatcher.on('change', onChange);
+eventWatcher.on('add', onChange);
 
 console.log(`Watching for LESS changes in: ${path.resolve(directoryToWatch)}`);
 

@@ -6,6 +6,7 @@ import {CardName} from '../../src/common/cards/CardName';
 import {ICorporationCard} from '../../src/server/cards/corporation/ICorporationCard';
 import {cardsFromJSON, ceosFromJSON, corporationCardsFromJSON, preludesFromJSON} from '../../src/server/createCard';
 import {toName} from '../../src/common/utils/utils';
+import {EarthCatapult} from '../../src/server/cards/base/EarthCatapult';
 
 describe('SelectInitialCards', () => {
   let player: TestPlayer;
@@ -95,5 +96,21 @@ describe('SelectInitialCards', () => {
     expect(player.game.corporationDeck.discardPile.map(toName)).to.have.members([CardName.HELION]);
     expect(player.game.ceoDeck.discardPile.map(toName)).to.have.members([CardName.MUSK]);
     expect(player.game.preludeDeck.discardPile.map(toName)).to.have.members([CardName.DONATION, CardName.SUPPLIER]);
+  });
+
+  it('shows calculated project costs in the initial selection', () => {
+    player.playedCards.push(new EarthCatapult());
+
+    const model = selectInitialCards.toModel(player);
+    const projectOption = model.options[1];
+    if (projectOption.type !== 'card') {
+      throw new Error('Expected project option to be a SelectCardModel');
+    }
+
+    const dealtProjectCard = player.dealtProjectCards[0];
+    const projectCardModel = projectOption.cards.find((card) => card.name === dealtProjectCard.name);
+
+    expect(projectCardModel?.calculatedCost).eq(player.getCardCost(dealtProjectCard));
+    expect(projectCardModel?.calculatedCost).eq(dealtProjectCard.cost - 2);
   });
 });

@@ -78,7 +78,7 @@ export class SelectInitialCards extends OptionsInput<undefined> {
     }
 
     this.push('project',
-      new SelectCard(titles.SELECT_PROJECTS_TITLE, undefined, player.dealtProjectCards, {min: 0, max: 10})
+      new SelectCard(titles.SELECT_PROJECTS_TITLE, undefined, player.dealtProjectCards, {min: 0, max: 10, played: false})
         .andThen((cards) => {
           player.cardsInHand.push(...cards);
           return undefined;

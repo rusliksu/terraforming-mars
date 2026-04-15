@@ -50,8 +50,6 @@ $stagingCurrentDir = "$StagingRuntimeRoot/current"
 
 $prodContent = Render-Template -TemplatePath (Join-Path $templateDir "tm.knightbyte.win.template") -Replacements @{
     "__PROD_CURRENT_DIR__" = $prodCurrentDir
-    "__PROD_HOST__" = $ProdHost
-    "__PROD_PORT__" = $ProdPort
     "__ELO_HOST__" = $EloHost
     "__ELO_PORT__" = $EloPort
 }
@@ -71,6 +69,10 @@ $streamContent = Render-Template -TemplatePath (Join-Path $templateDir "stream.c
     "__MICROSOFT_TLS_PORT__" = $MicrosoftTlsPort
     "__DEFAULT_TLS_PORT__" = $DefaultTlsPort
 }
+$prodUpstreamSnippetContent = Render-Template -TemplatePath (Join-Path $templateDir "tm-prod-active-upstream.conf.template") -Replacements @{
+    "__PROD_ACTIVE_HOST__" = $ProdHost
+    "__PROD_ACTIVE_PORT__" = $ProdPort
+}
 
 Write-Host "Target VPS: $VpsHost"
 Write-Host "Prod current dir: $prodCurrentDir"
@@ -86,8 +88,11 @@ if ($DryRun) {
     Write-Host "=== $ProdSiteName ==="
     Write-Host $prodContent
     Write-Host ""
-    Write-Host "=== $StagingSiteName ==="
-    Write-Host $stagingContent
+Write-Host "=== $StagingSiteName ==="
+Write-Host $stagingContent
+Write-Host ""
+    Write-Host "=== tm-prod-active-upstream.conf ==="
+    Write-Host $prodUpstreamSnippetContent
     Write-Host ""
     Write-Host "=== stream.conf ==="
     Write-Host $streamContent
@@ -97,6 +102,7 @@ if ($DryRun) {
 $prodBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($prodContent))
 $stagingBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($stagingContent))
 $streamBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($streamContent))
+$prodUpstreamSnippetBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($prodUpstreamSnippetContent))
 
 $remoteScript = @'
 #!/usr/bin/env bash
@@ -104,10 +110,13 @@ set -euo pipefail
 
 timestamp="$(date +%Y%m%d-%H%M%S)"
 backup_dir="/etc/nginx/backup-managed"
-mkdir -p "$backup_dir" /etc/nginx/sites-available /etc/nginx/sites-enabled
+mkdir -p "$backup_dir" /etc/nginx/sites-available /etc/nginx/sites-enabled /etc/nginx/snippets
 
 if [ -e "/etc/nginx/stream.conf" ]; then
   cp -a "/etc/nginx/stream.conf" "$backup_dir/stream.conf.$timestamp"
+fi
+if [ -e "/etc/nginx/snippets/tm-prod-active-upstream.conf" ]; then
+  cp -a "/etc/nginx/snippets/tm-prod-active-upstream.conf" "$backup_dir/snippets.tm-prod-active-upstream.conf.$timestamp"
 fi
 
 for name in "__PROD_SITE__" "__STAGING_SITE__"; do
@@ -126,6 +135,7 @@ from pathlib import Path
 files = {
     Path("/etc/nginx/sites-available/__PROD_SITE__"): "__PROD_B64__",
     Path("/etc/nginx/sites-available/__STAGING_SITE__"): "__STAGING_B64__",
+    Path("/etc/nginx/snippets/tm-prod-active-upstream.conf"): "__PROD_UPSTREAM_B64__",
     Path("/etc/nginx/stream.conf"): "__STREAM_B64__",
 }
 
@@ -150,6 +160,7 @@ $remoteScript = $remoteScript.Replace("__PROD_SITE__", $ProdSiteName)
 $remoteScript = $remoteScript.Replace("__STAGING_SITE__", $StagingSiteName)
 $remoteScript = $remoteScript.Replace("__PROD_B64__", $prodBase64)
 $remoteScript = $remoteScript.Replace("__STAGING_B64__", $stagingBase64)
+$remoteScript = $remoteScript.Replace("__PROD_UPSTREAM_B64__", $prodUpstreamSnippetBase64)
 $remoteScript = $remoteScript.Replace("__STREAM_B64__", $streamBase64)
 
 $tempScript = New-TemporaryFile

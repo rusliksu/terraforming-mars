@@ -144,6 +144,39 @@ describe('SelectInitialCards', () => {
     const button = getButton(component);
     expect(button.attributes().disabled).not.to.be.undefined;
   });
+
+  it('recalculates project costs from selected corporation and preludes', async () => {
+    const component = createComponent(
+      [CardName.TERACTOR],
+      [CardName.EARTH_CATAPULT, CardName.RESEARCH_OUTPOST],
+      [CardName.VALLEY_TRUST, CardName.ALLIED_BANK],
+    );
+
+    const selectCards = component.findAllComponents({name: 'select-card'});
+    selectCards[0].vm.$emit('cardschanged', [CardName.TERACTOR]);
+    selectCards[1].vm.$emit('cardschanged', [CardName.VALLEY_TRUST, CardName.ALLIED_BANK]);
+    await component.vm.$nextTick();
+
+    const projectCards = component.vm.projectCardOption.cards;
+    expect(projectCards.find((card) => card.name === CardName.EARTH_CATAPULT)?.calculatedCost).eq(20);
+    expect(projectCards.find((card) => card.name === CardName.RESEARCH_OUTPOST)?.calculatedCost).eq(16);
+  });
+
+  it('recalculates Mars Direct discounts from currently selected Mars tags', async () => {
+    const component = createComponent(
+      [CardName.MARS_DIRECT],
+      [CardName.DUST_STORM],
+      [CardName.DESIGN_COMPANY, CardName.ALLIED_BANK],
+    );
+
+    const selectCards = component.findAllComponents({name: 'select-card'});
+    selectCards[0].vm.$emit('cardschanged', [CardName.MARS_DIRECT]);
+    selectCards[1].vm.$emit('cardschanged', [CardName.DESIGN_COMPANY, CardName.ALLIED_BANK]);
+    await component.vm.$nextTick();
+
+    const dustStorm = component.vm.projectCardOption.cards.find((card) => card.name === CardName.DUST_STORM);
+    expect(dustStorm?.calculatedCost).eq(15);
+  });
 });
 
 function getButton(component: VueWrapper<InstanceType<typeof SelectInitialCards>>) {

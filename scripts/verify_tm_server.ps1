@@ -153,10 +153,11 @@ if ($Environment -eq "staging") {
     Assert-True ([string]::IsNullOrWhiteSpace($envHeader)) "Prod unexpectedly returned X-TM-Env=$envHeader."
 }
 
-$hasBadge = ($homeResponse.Content -match "tm-env-badge")
+$hasBadgeMarkup = ($homeResponse.Content -match "tm-env-badge")
 if ($expectedBadge) {
-    Assert-True $hasBadge "Home page does not contain the staging badge markup."
+    Assert-True $hasBadgeMarkup "Home page does not contain the staging badge markup."
 }
+$hasBadge = ($expectedBadge -and $hasBadgeMarkup)
 
 $elo = Invoke-WebRequest -Uri "$Server/elo/" -Headers @{"Cache-Control"="no-cache"} -TimeoutSec 30
 Assert-True ($elo.StatusCode -eq 200) "ELO page returned $($elo.StatusCode), expected 200."

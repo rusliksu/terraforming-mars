@@ -1,29 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 21 21">
   <defs>
     <linearGradient id="gold-rim" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffe17a"/>
-      <stop offset="24%" stop-color="#ffc92f"/>
-      <stop offset="62%" stop-color="#ca830d"/>
-      <stop offset="100%" stop-color="#6c2f00"/>
+      <stop offset="0%" stop-color="#ffeb87"/>
+      <stop offset="24%" stop-color="#ffd53d"/>
+      <stop offset="62%" stop-color="#d69708"/>
+      <stop offset="100%" stop-color="#7a3a00"/>
     </linearGradient>
     <linearGradient id="gold-face" x1="14%" y1="10%" x2="84%" y2="92%">
-      <stop offset="0%" stop-color="#f5c53a"/>
-      <stop offset="42%" stop-color="#dc9810"/>
-      <stop offset="100%" stop-color="#9f5505"/>
+      <stop offset="0%" stop-color="#ffd24d"/>
+      <stop offset="42%" stop-color="#ebb013"/>
+      <stop offset="100%" stop-color="#b96800"/>
     </linearGradient>
     <linearGradient id="gold-core" x1="20%" y1="18%" x2="80%" y2="88%">
-      <stop offset="0%" stop-color="#ffc933"/>
-      <stop offset="48%" stop-color="#d88708"/>
-      <stop offset="100%" stop-color="#b56305"/>
+      <stop offset="0%" stop-color="#ffd12b"/>
+      <stop offset="48%" stop-color="#e19a05"/>
+      <stop offset="100%" stop-color="#c27300"/>
     </linearGradient>
     <linearGradient id="gold-sheen" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffe699" stop-opacity="0.68"/>
-      <stop offset="52%" stop-color="#ffd45f" stop-opacity="0.18"/>
-      <stop offset="100%" stop-color="#ffd45f" stop-opacity="0"/>
+      <stop offset="0%" stop-color="#fff0a7" stop-opacity="0.58"/>
+      <stop offset="52%" stop-color="#ffd64d" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#ffd64d" stop-opacity="0"/>
     </linearGradient>
     <linearGradient id="gold-reflect" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#fff8d7" stop-opacity="0"/>
-      <stop offset="48%" stop-color="#fff0b4" stop-opacity="0.34"/>
+      <stop offset="48%" stop-color="#ffeaa0" stop-opacity="0.28"/>
       <stop offset="100%" stop-color="#fff8d7" stop-opacity="0"/>
     </linearGradient>
   </defs>
@@ -31,7 +31,7 @@
   <polygon
     points="10.5,1.8 19.2,10.5 10.5,19.2 1.8,10.5"
     fill="url(#gold-rim)"
-    stroke="#f2c246"
+    stroke="#efbf2f"
     stroke-width="0.7"
     stroke-linejoin="round"
   />
@@ -39,7 +39,7 @@
   <polygon
     points="10.5,3.7 17.3,10.5 10.5,17.3 3.7,10.5"
     fill="url(#gold-face)"
-    stroke="#884806"
+    stroke="#955100"
     stroke-width="0.55"
     stroke-linejoin="round"
   />
@@ -47,7 +47,7 @@
   <polygon
     points="10.5,5.4 15.7,10.5 10.5,15.6 5.3,10.5"
     fill="url(#gold-core)"
-    stroke="#f4c94f"
+    stroke="#f3c43a"
     stroke-width="0.42"
     stroke-linejoin="round"
   />
@@ -60,14 +60,14 @@
 
   <polygon
     points="10.5,10.5 17.3,10.5 10.5,17.3 14.7,13.8"
-    fill="#7e4104"
+    fill="#854100"
     opacity="0.18"
   />
 
   <polyline
     points="4.5,10.0 10.5,4.6 16.5,10.0"
     fill="none"
-    stroke="#f7d369"
+    stroke="#f6cd45"
     stroke-width="0.55"
     stroke-linecap="round"
     stroke-linejoin="round"
@@ -87,7 +87,7 @@
   <polyline
     points="6.0,10.8 10.5,14.9 15.0,10.8"
     fill="none"
-    stroke="#8a4b05"
+    stroke="#8d4900"
     stroke-width="0.42"
     stroke-linecap="round"
     stroke-linejoin="round"

@@ -240,8 +240,13 @@ ts="$(date +%Y%m%d%H%M%S)"
 backup_build="$target/build.bak-$ts"
 backup_assets="$target/assets.bak-$ts"
 
-mv "$target/build" "$backup_build"
-mv "$target/assets" "$backup_assets"
+mkdir -p "$target"
+if [ -d "$target/build" ]; then
+  mv "$target/build" "$backup_build"
+fi
+if [ -d "$target/assets" ]; then
+  mv "$target/assets" "$backup_assets"
+fi
 mv "$release_dir/build" "$target/build"
 mv "$release_dir/assets" "$target/assets"
 

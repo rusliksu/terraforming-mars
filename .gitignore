@@ -26,3 +26,23 @@ node_modules/
 # misc
 .gitconfig
 ./logs/
+
+# TypeScript build artifacts (compiled .js alongside .ts/.vue sources)
+src/client/**/*.js
+src/common/**/*.js
+src/server/**/*.js
+!src/server/routes/PlayerInput.js
+!src/server/tools/gzip.js
+tests/**/*.js
+
+# Shadow logs (private per-player decisions)
+shadow-logs/
+
+# Smoke test temp
+.tmp-smoke/
+
+# Live patch archives
+tm-live-patch-*.tar.gz
+
+# Python caches
+**/__pycache__/

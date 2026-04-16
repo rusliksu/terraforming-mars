@@ -144,7 +144,90 @@ describe('SelectInitialCards', () => {
     const button = getButton(component);
     expect(button.attributes().disabled).not.to.be.undefined;
   });
+
+  it('recalculates project costs from selected corporation and preludes', async () => {
+    const component = createComponent(
+      [CardName.TERACTOR],
+      [CardName.EARTH_CATAPULT, CardName.RESEARCH_OUTPOST],
+      [CardName.VALLEY_TRUST, CardName.ALLIED_BANK],
+    );
+
+    const selectCards = component.findAllComponents({name: 'select-card'});
+    selectCards[0].vm.$emit('cardschanged', [CardName.TERACTOR]);
+    selectCards[1].vm.$emit('cardschanged', [CardName.VALLEY_TRUST, CardName.ALLIED_BANK]);
+    await component.vm.$nextTick();
+
+    const projectCards = getRenderedProjectCards(component);
+    expect(projectCards.find((card) => card.name === CardName.EARTH_CATAPULT)?.calculatedCost).eq(20);
+    expect(projectCards.find((card) => card.name === CardName.RESEARCH_OUTPOST)?.calculatedCost).eq(16);
+  });
+
+  it('recalculates Mars Direct discounts from currently selected Mars tags', async () => {
+    const component = createComponent(
+      [CardName.MARS_DIRECT],
+      [CardName.DUST_STORM],
+      [CardName.DESIGN_COMPANY, CardName.ALLIED_BANK],
+    );
+
+    const selectCards = component.findAllComponents({name: 'select-card'});
+    selectCards[0].vm.$emit('cardschanged', [CardName.MARS_DIRECT]);
+    selectCards[1].vm.$emit('cardschanged', [CardName.DESIGN_COMPANY, CardName.ALLIED_BANK]);
+    await component.vm.$nextTick();
+
+    const dustStorm = getRenderedProjectCards(component).find((card) => card.name === CardName.DUST_STORM);
+    expect(dustStorm?.calculatedCost).eq(15);
+  });
+
+  it('recalculates Crescent Research Association discounts from Moon tags', async () => {
+    const component = createComponent(
+      [CardName.CRESCENT_RESEARCH_ASSOCIATION],
+      [CardName.LUNAR_SECURITY_STATIONS],
+    );
+
+    const selectCards = component.findAllComponents({name: 'select-card'});
+    selectCards[0].vm.$emit('cardschanged', [CardName.CRESCENT_RESEARCH_ASSOCIATION]);
+    await component.vm.$nextTick();
+
+    const lunarStations = getRenderedProjectCards(component).find((card) => card.name === CardName.LUNAR_SECURITY_STATIONS);
+    // Lunar Security Stations: cost 9, Moon:1. Crescent Moon:1. Discount = 1*1.
+    expect(lunarStations?.calculatedCost).eq(8);
+  });
+
+  it('does not discount projects without matching tags', async () => {
+    const component = createComponent(
+      [CardName.TERACTOR],
+      [CardName.ANTS],
+    );
+
+    const selectCards = component.findAllComponents({name: 'select-card'});
+    selectCards[0].vm.$emit('cardschanged', [CardName.TERACTOR]);
+    await component.vm.$nextTick();
+
+    const ants = getRenderedProjectCards(component).find((card) => card.name === CardName.ANTS);
+    // Ants: cost 9, no Earth tag. Teractor Earth discount irrelevant. Expect baseCost.
+    expect(ants?.calculatedCost).eq(9);
+  });
+
+  it('keeps base cost when no corporation is selected', async () => {
+    const component = createComponent(
+      [CardName.TERACTOR],
+      [CardName.EARTH_CATAPULT],
+    );
+
+    // Never emit cardschanged for corp: selectedCorporations stays empty.
+    const projectCards = getRenderedProjectCards(component);
+    const earthCatapult = projectCards.find((card) => card.name === CardName.EARTH_CATAPULT);
+    // Earth Catapult: cost 23. No corp selected → no discounts.
+    expect(earthCatapult?.calculatedCost).eq(23);
+  });
 });
+
+function getRenderedProjectCards(component: VueWrapper<InstanceType<typeof SelectInitialCards>>): Array<CardModel> {
+  const selectCards = component.findAllComponents({name: 'select-card'});
+  const projectSelectCard = selectCards[selectCards.length - 1];
+  const input = projectSelectCard.props('playerinput') as SelectCardModel;
+  return input.cards;
+}
 
 function getButton(component: VueWrapper<InstanceType<typeof SelectInitialCards>>) {
   return component.findAllComponents({name: 'AppButton'})[0];

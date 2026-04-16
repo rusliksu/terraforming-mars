@@ -121,6 +121,28 @@ export class PlayerInput extends Handler {
             inputSeq = advanceShadowInputSeq(player, promptInputSeq);
             responses.writeJson(res, ctx, Server.getPlayerModel(player));
           } else {
+            // Shadow log: record what player was asked and what they chose
+            try {
+              const wf = player.getWaitingFor();
+              if (wf && process.env.SHADOW_LOG !== '0') {
+                const logDir = process.env.SHADOW_LOG_DIR || path.resolve(process.cwd(), 'shadow-logs');
+                fs.mkdirSync(logDir, {recursive: true});
+                const logFile = path.join(logDir, `shadow-${player.game.id}.jsonl`);
+                const entry = {
+                  ts: new Date().toISOString(),
+                  gameId: player.game.id,
+                  gen: player.game.generation,
+                  player: player.name,
+                  color: player.color,
+                  promptType: (wf as any).type || '',
+                  title: typeof (wf as any).title === 'string' ? (wf as any).title : ((wf as any).title?.message || ''),
+                  playerAction: entity,
+                  mc: (player as any).megaCredits ?? 0,
+                  tr: player.getTerraformRating(),
+                };
+                fs.appendFileSync(logFile, JSON.stringify(entry) + '\n');
+              }
+            } catch(_e) { /* shadow log error — don't block game */ }
             inputSeq = advanceShadowInputSeq(player, promptInputSeq);
             const previousSaveGamePromise = player.game.saveGamePromise;
             try {

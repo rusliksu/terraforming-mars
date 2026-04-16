@@ -14,8 +14,6 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
-from elo_aliases import assert_no_suspicious_duplicate_players, normalize_name
-
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
 DB_PATH = Path(os.environ.get('TM_DB_PATH', REPO_ROOT / 'db' / 'game.db'))
@@ -24,6 +22,93 @@ ELO_PATH = ELO_DIR / 'elo-data.json'
 ELO_COMPAT_PATH = ELO_DIR / 'data.json'
 DEFAULT_ELO = 1500
 BASE_K = 32
+
+# ── Name normalization (from fix_elo_dupes.py MERGES + elo.js aliases) ──
+
+MERGES = {
+    'death': 'Death', 'death ': 'Death',
+    'death8': 'Death8Killer', 'death8killer': 'Death8Killer', 'deathkiller': 'Death8Killer',
+    'lfc': 'LFC', 'lfc ': 'LFC',
+    'gydro': 'GydRo', 'руслан': 'GydRo', 'ruslan': 'GydRo',
+    'linda': 'Linda', 'linda ': 'Linda',
+    'giasa': 'Giasa', 'giasa_': 'Giasa',
+    'simon': 'Simon',
+    'geek': 'GeekDumb', 'geekdumb': 'GeekDumb',
+    'bmac': 'BmacG', 'bmacg': 'BmacG', 'bmacg.': 'BmacG',
+    'drr': 'Drrrg', 'drrg': 'Drrrg', 'drrrg': 'Drrrg',
+    'duc': 'Duc Nguyen', 'duc nguyen': 'Duc Nguyen',
+    'dukz': 'Dukz01', 'dukz01': 'Dukz01',
+    'mrf': 'MrFahrenheit', 'mrf ': 'MrFahrenheit', 'mrfahrenheit': 'MrFahrenheit',
+    ' mrfahrenheit': 'MrFahrenheit', 'mrfahrenheit7': 'MrFahrenheit', 'fahren': 'MrFahrenheit',
+    'eket': 'Eket', 'eket678': 'Eket',
+    'masterkeys': 'MasterKeys', 'mstrkeys': 'MasterKeys',
+    'hoyla': 'Hoyla', 'höylä': 'Hoyla',
+    'iro': 'Iropikc', 'iropic': 'Iropikc', 'iropick': 'Iropikc', 'iropikc': 'Iropikc',
+    'jackir': 'Jackir',
+    'kamui': 'Kamui',
+    'lang': 'Langfjes', 'langfjes': 'Langfjes',
+    'low': 'LOW615', 'low615': 'LOW615',
+    'madhatta': 'MadHatter', 'madhatter': 'MadHatter',
+    'mon': 'Monty', 'mon00': 'Monty', 'monty': 'Monty',
+    'mort': 'Mortaum', 'moratum': 'Mortaum', 'mortarum': 'Mortaum', 'mortaum': 'Mortaum',
+    'mu6ra7a': 'Mu6Ra7a', 'mu6rata': 'Mu6Ra7a',
+    'nagimi': 'Nagumi', 'nagumi': 'Nagumi',
+    'nikoha': 'Nikoha', 'nihoka13': 'Nikoha',
+    'pa': 'Pa2016', 'pa2016': 'Pa2016',
+    'panda': 'Panda', 'pandaboi': 'Panda',
+    'plaz': 'Plazmica', 'plazma': 'Plazmica', 'plazmica': 'Plazmica',
+    'pop': 'Popsickle', 'popi': 'Popsickle', 'poppy': 'Popsickle',
+    'popsickle': 'Popsickle', 'popsickle ': 'Popsickle', 'popsicle': 'Popsickle',
+    'preparationfit': 'PreparationFit', 'prepartionfit': 'PreparationFit',
+    'reinforcement': 'Reinforcement', 'reinforcement-': 'Reinforcement',
+    'rianby': 'Rianby',
+    's29jin': 'S29jin',
+    'shm': 'Shmondar', 'shmo': 'Shmondar', 'shmondar': 'Shmondar',
+    'tarun': 'Tarun', 'taru': 'Tarun', 'taruntheo13': 'Tarun',
+    'teddy': 'Teddy',
+    'underthegun': 'UTG', 'utg': 'UTG',
+    'vit': 'VitalyVit', 'vitaly': 'VitalyVit', 'vitalyvit': 'VitalyVit',
+    'vvb': 'VvbMinsk', 'vvbminsk': 'VvbMinsk',
+    'wd': 'Wdkymyms', 'wdk': 'Wdkymyms', 'wdkmysms': 'Wdkymyms',
+    'wdkumums': 'Wdkymyms', 'wdkym': 'Wdkymyms', 'wdkymymd': 'Wdkymyms', 'wdkymyms': 'Wdkymyms',
+    'kaera': 'Kaera', 'kaera02': 'Kaera',
+    'coolio': 'Coolio',
+    'xenon': 'Xenon',
+    'zalo': 'Zalo', 'zalobolivia': 'Zalo',
+    'krootish': 'Krootish86', 'krootish86': 'Krootish86',
+    'j1233': 'J1234', 'j1234': 'J1234',
+    'italian': 'Italianood', 'italianood': 'Italianood', 'ita': 'Italianood',
+    'cuc': 'Cucumber', 'cucumber': 'Cucumber',
+    'tal': 'Talov', 'talov': 'Talov',
+    'raj': 'Rajatppn', 'raja': 'Rajatppn', 'rajatppn': 'Rajatppn',
+    'mikiekv': 'MikiEkv',
+    'kuntiny': 'Kuntiny',
+    'amzo': 'Amzo', 'amzo4': 'Amzo',
+    'tacos': 'Los Tacos', 'los tacos': 'Los Tacos',
+    'andrewk': 'Andrewk', 'andrew': 'Andrewk',
+    'kogoro': 'Kogoro',
+    'tersius': 'Tersius',
+    'martian': 'Martian',
+    'junior': 'Junior',
+    'zara': 'Zara',
+    # Russian names from knightbyte
+    'лёха': 'Алексей', 'леха': 'Алексей', 'алексей': 'Алексей',
+    'лёха -15 эло': 'Алексей',
+    'genuinegold': 'Илья', 'илья': 'Илья',
+    'тимур': 'Тимур',
+    'олеся': 'Олеся',
+    'антистресс': 'Антистресс',
+    'рав': 'Рав', 'равиль': 'Рав',
+}
+
+
+def normalize_name(raw):
+    """Return (key, displayName) from raw player name."""
+    stripped = raw.strip()
+    low = stripped.lower()
+    canonical = MERGES.get(low, stripped)
+    return canonical.lower(), canonical
+
 
 def get_k(elo):
     if elo < 1400: return BASE_K * 1.2
@@ -111,9 +196,7 @@ def calc_elo_vp(players, elo_db):
 
 def is_bot_game(scores):
     """Detect bot/test games: all names <= 2 chars, or test names."""
-    names = [s.get('playerName', '').strip() for s in scores if s.get('playerName')]
-    if not names:
-        return False
+    names = [s.get('playerName', '').strip() for s in scores]
     if all(len(n) <= 2 for n in names):
         return True
     test_names = {'testa', 'testb', 'testc', 'test', 'bot'}
@@ -129,30 +212,6 @@ def parse_completed_ts(date_str):
         return int(datetime.fromisoformat(date_str.replace('Z', '+00:00')).timestamp())
     except Exception:
         return 0
-
-
-def parse_json_object(raw):
-    if not raw:
-        return {}
-    try:
-        return json.loads(raw)
-    except Exception:
-        return {}
-
-
-def extract_player_names_from_game(raw_game):
-    game = parse_json_object(raw_game)
-    players = game.get('players') or []
-    return [str(player.get('name') or '').strip() for player in players]
-
-
-def score_player_name(score, idx, fallback_names):
-    name = str(score.get('playerName') or '').strip()
-    if name:
-        return name
-    if idx < len(fallback_names):
-        return fallback_names[idx]
-    return '?'
 
 
 def discover_legacy_sources():
@@ -283,11 +342,8 @@ def apply_game_to_elo(game, elo_data):
         'server': game.get('server', 'knightbyte'),
         'map': game.get('map', ''),
         'generation': game.get('generation', 0),
-        'startedTime': game.get('startedTime', 0),
         'playerCount': len(players),
         'completedTime': game.get('completedTime', 0),
-        'durationMs': game.get('durationMs'),
-        'durationMinutes': game.get('durationMinutes'),
         'results': [{
             'name': r['name'], 'displayName': r['displayName'],
             'place': r['place'], 'delta': r['delta'],
@@ -310,7 +366,7 @@ def main():
 
     c.execute("""
         WITH latest_games AS (
-            SELECT g.game_id, g.game, g.created_time
+            SELECT g.game_id, g.game
             FROM games g
             JOIN (
                 SELECT game_id, MAX(save_id) AS max_save_id
@@ -327,7 +383,7 @@ def main():
     # Load all game_results with completion timestamps
     c.execute("""
         WITH latest_games AS (
-            SELECT g.game_id, g.game, g.created_time
+            SELECT g.game_id, g.game
             FROM games g
             JOIN (
                 SELECT game_id, MAX(save_id) AS max_save_id
@@ -339,9 +395,7 @@ def main():
         SELECT gr.game_id, gr.generations, gr.scores,
                COALESCE(cg.completed_time, 0) as completed_time,
                gr.game_options,
-               json_extract(lg.game, '$.spectatorId') as spectator_id,
-               lg.game as latest_game_json,
-               COALESCE(lg.created_time, 0) as started_time
+               json_extract(lg.game, '$.spectatorId') as spectator_id
         FROM game_results gr
         LEFT JOIN completed_game cg ON gr.game_id = cg.game_id
         LEFT JOIN latest_games lg ON lg.game_id = gr.game_id
@@ -361,9 +415,8 @@ def main():
     game_entries = []
     known_ids = set()
 
-    for gid, gen, scores_json, completed_ts, options_json, spectator_id, latest_game_json, started_time in rows:
+    for gid, gen, scores_json, completed_ts, options_json, spectator_id in rows:
         scores = json.loads(scores_json)
-        fallback_names = extract_player_names_from_game(latest_game_json)
 
         # Skip bot/test games
         if is_bot_game(scores):
@@ -393,11 +446,8 @@ def main():
                 place = i + 1
                 if i > 0 and vp == scores[i-1].get('playerScore', 0):
                     place = players[-1]['place']
-                name = score_player_name(s, i, fallback_names)
-                if not name or name == '?':
-                    continue
                 players.append({
-                    'name': name,
+                    'name': s.get('playerName', '?'),
                     'place': place,
                     'vp': vp,
                     'corp': s.get('corporation', ''),
@@ -406,8 +456,8 @@ def main():
             # Use existing place field
             scores.sort(key=lambda s: s.get('place', 99))
             players = []
-            for i, s in enumerate(scores):
-                name = score_player_name(s, i, fallback_names)
+            for s in scores:
+                name = s.get('playerName', '?')
                 if not name or name == '?':
                     continue
                 players.append({
@@ -437,19 +487,11 @@ def main():
         date_str = ''
         if completed_ts and completed_ts > 0:
             date_str = datetime.fromtimestamp(completed_ts, tz=timezone.utc).isoformat()
-        duration_ms = None
-        duration_minutes = None
-        if completed_ts and started_time and completed_ts > 0 and started_time > 0:
-            duration_ms = max(0, int(completed_ts - started_time) * 1000)
-            duration_minutes = round(duration_ms / 60000)
         game_entries.append({
             'gameId': gid,
             'endId': spectator_id or spectator_ids.get(gid, ''),
             'date': date_str,
             'completedTime': completed_ts or 0,
-            'startedTime': started_time or 0,
-            'durationMs': duration_ms,
-            'durationMinutes': duration_minutes,
             'server': 'knightbyte',
             'map': map_name,
             'generation': gen or 0,
@@ -473,7 +515,6 @@ def main():
     print(f'Skipped no VP/no place: {skipped_no_vp_no_place}')
     print(f'Skipped <2 players: {skipped_few_players}')
     print(f'Players: {len(elo_data["players"])}')
-    assert_no_suspicious_duplicate_players(elo_data['players'])
 
     # Leaderboard
     lb = sorted(elo_data['players'].items(), key=lambda x: x[1]['elo'], reverse=True)

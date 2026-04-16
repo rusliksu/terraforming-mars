@@ -275,7 +275,7 @@
 </template>
 
 <script lang="ts">
-import {defineComponent} from '@/client/vue3-compat';
+import {defineComponent} from 'vue';
 import * as raw_settings from '@/genfiles/settings.json';
 
 import Board from '@/client/components/Board.vue';
@@ -370,6 +370,9 @@ export default defineComponent({
     game(): GameModel {
       return this.playerView.game;
     },
+    spectatorFullUrl(): string {
+      return window.location.origin + '/spectator?id=' + (this.game.spectatorId || '');
+    },
     CardType(): typeof CardType {
       return CardType;
     },
@@ -410,6 +413,11 @@ export default defineComponent({
     KeyboardShortcuts,
   },
   methods: {
+    copySpectatorUrl() {
+      navigator.clipboard.writeText(this.spectatorFullUrl).then(() => {
+        alert('Spectator URL copied!');
+      });
+    },
     navigatePage(event: KeyboardEvent) {
       // Most '?' are shifted, so process this before the action that exits early with modifiers
       if (event.key === '?') {

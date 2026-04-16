@@ -16,6 +16,8 @@ export interface NewPlayerModel {
   beginner: boolean;
   handicap: number;
   first: boolean;
+  isBot: boolean;
+  telegramID?: string;
 }
 
 export type EscapeVelocityOptions = {

@@ -9,8 +9,6 @@ body { font-family: -apple-system, sans-serif; margin: 0; padding: 20px; backgro
 h1, h2 { color: #ff6b35; text-align: center; }
 h2 { font-size: 1.3em; margin-top: 40px; }
 .stats { text-align: center; color: #888; margin-bottom: 10px; }
-.stats .highlight { color: #c4a35a; font-weight: 600; }
-.stats-note { text-align: center; color: #777; margin-bottom: 14px; font-size: 0.9em; }
 .tabs { text-align: center; margin-bottom: 20px; }
 .tab { display: inline-block; padding: 8px 20px; margin: 0 4px; background: #16213e; border: 1px solid #333; border-radius: 6px; cursor: pointer; color: #888; transition: all 0.2s; }
 .tab.active { background: #ff6b35; color: #fff; border-color: #ff6b35; }
@@ -32,7 +30,6 @@ a:hover { text-decoration: underline; }
 
 /* Recent Games */
 .games-section { max-width: 900px; margin: 0 auto; }
-.games-summary { text-align: center; color: #c4a35a; margin: -8px 0 16px; font-size: 0.98em; font-weight: 600; }
 .filter-bar { text-align: center; margin-bottom: 15px; min-height: 24px; }
 .filter-tag { display: inline-block; background: #ff6b35; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
 .filter-tag .clear { cursor: pointer; margin-left: 6px; opacity: 0.7; }
@@ -40,12 +37,9 @@ a:hover { text-decoration: underline; }
 .game-card { background: #16213e; border: 1px solid #333; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; transition: border-color 0.2s; }
 .game-card:hover { border-color: #ff6b35; }
 .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 0.85em; color: #888; }
-.game-header-right { display: inline-flex; align-items: center; gap: 10px; }
 .game-header a { font-size: 0.8em; }
 .game-server { text-transform: capitalize; }
 .game-gen { color: #c4a35a; }
-.game-duration { color: #7cc8ff; }
-.game-date { color: #777; }
 .game-results { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .game-player { display: inline-flex; align-items: center; gap: 4px; }
 .game-player .pname { font-weight: 500; }
@@ -60,41 +54,35 @@ a:hover { text-decoration: underline; }
 .show-more button { background: #16213e; color: #ff6b35; border: 1px solid #ff6b35; padding: 8px 24px; border-radius: 6px; cursor: pointer; font-size: 0.95em; }
 .show-more button:hover { background: #ff6b35; color: #fff; }
 .no-games { text-align: center; color: #666; padding: 20px; }
-.pagination { display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
-.pagination button { background: #16213e; color: #c4a35a; border: 1px solid #444; padding: 7px 12px; border-radius: 6px; cursor: pointer; min-width: 40px; }
-.pagination button:hover:not(:disabled) { border-color: #ff6b35; color: #ff6b35; }
-.pagination button.active { background: #ff6b35; border-color: #ff6b35; color: #fff; }
-.pagination button:disabled { opacity: 0.45; cursor: default; }
-.pagination-status { color: #888; font-size: 0.9em; }
 </style>
 </head>
 <body>
 <div class="nav"><a href="/">&#8592; Back to game</a></div>
 <h1>TM ELO Ratings</h1>
 <div class="stats" id="stats"></div>
-<div class="stats-note">Avg place = normalized finish score. Avg gen = average game generation. VP Margin = average gap to 2nd place if you win, otherwise gap to 1st.</div>
 <div class="tabs">
   <span class="tab active" data-mode="place">By Placement</span>
   <span class="tab" data-mode="vp">By VP Margin</span>
 </div>
 <table>
-<thead><tr><th class="rank">#</th><th>Player</th><th>ELO</th><th>Avg place</th><th>Games</th><th>Avg VP</th><th>Avg gen</th><th>VP Margin</th></tr></thead>
+<thead><tr><th class="rank">#</th><th>Player</th><th>ELO</th><th>Avg place</th><th>Games</th><th>Avg VP</th></tr></thead>
 <tbody id="tbody"></tbody>
 </table>
 
 <h2 id="games-title">Recent Games</h2>
 <div class="games-section">
-  <div class="games-summary" id="gamesSummary"></div>
   <div class="filter-bar" id="filterBar"></div>
   <div id="gamesList"></div>
-  <div class="pagination" id="pagination"></div>
+  <div class="show-more" id="showMore" style="display:none">
+    <button id="showMoreBtn">Show more</button>
+  </div>
 </div>
 
 <script>
 var _data = null;
 var _mode = "place";
 var _filterPlayer = null;
-var _gamesPage = 1;
+var _gamesShown = 20;
 var GAMES_PER_PAGE = 20;
 
 function getGameUrl(game) {
@@ -131,54 +119,6 @@ function round1(value) {
   return fixed.endsWith(".0") ? fixed.slice(0, -2) : fixed;
 }
 
-function formatMargin(value) {
-  if (typeof value !== "number" || isNaN(value)) return "-";
-  if (Math.abs(value) < 0.05) return "0";
-  return (value > 0 ? "+" : "") + round1(value);
-}
-
-function averageGeneration(games) {
-  var values = games
-    .map(function(g) { return Number(g.generation || 0); })
-    .filter(function(v) { return v > 0; });
-  if (values.length === 0) return "-";
-  var total = values.reduce(function(sum, value) { return sum + value; }, 0);
-  return round1(total / values.length);
-}
-
-function formatDate(dateString) {
-  if (!dateString) return "";
-  var date = new Date(dateString);
-  if (isNaN(date.getTime())) return "";
-  return date.toLocaleString([], {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
-}
-
-function formatDuration(game) {
-  var durationMinutes = Number(game.durationMinutes);
-  if (!(durationMinutes > 0)) {
-    var durationMs = Number(game.durationMs);
-    if (durationMs > 0) {
-      durationMinutes = Math.round(durationMs / 60000);
-    }
-  }
-  if (!(durationMinutes > 0)) return "";
-  if (durationMinutes < 60) return durationMinutes + "m";
-  var hours = Math.floor(durationMinutes / 60);
-  var minutes = durationMinutes % 60;
-  if (minutes === 0) return hours + "h";
-  return hours + "h " + minutes + "m";
-}
-
-function getPageCount(totalGames) {
-  return Math.max(1, Math.ceil(totalGames / GAMES_PER_PAGE));
-}
-
 function renderPlayers() {
   if (!_data) return;
   var players = _data.players || {};
@@ -191,23 +131,18 @@ function renderPlayers() {
       (games > 0 ? ((typeof p.placeScoreTotal === "number" ? p.placeScoreTotal : (p.wins || 0)) / games) : 0);
     var avgVP = typeof p.avgVP === "number" ? p.avgVP :
       (games > 0 ? ((p.totalVP || 0) / games) : 0);
-    var avgGens = typeof p.avgGens === "number" ? p.avgGens :
-      (games > 0 ? ((p.totalGens || 0) / games) : 0);
-    var avgMargin = typeof p.avgMargin === "number" ? p.avgMargin : 0;
     list.push({
       key: name,
       name: p.displayName || name,
       elo: Math.round(elo),
       games: games,
       avgPlace: avgPlace,
-      avgVP: avgVP,
-      avgGens: avgGens,
-      avgMargin: avgMargin
+      avgVP: avgVP
     });
   }
   list.sort(function(a,b) { return b.elo - a.elo; });
   var games = _data.games || [];
-  document.getElementById("stats").innerHTML = list.length + " players | " + games.length + " games | <span class=\"highlight\">Avg gen " + averageGeneration(games) + "</span>";
+  document.getElementById("stats").textContent = list.length + " players | " + games.length + " games";
   var html = "";
   list.forEach(function(p, i) {
     var activeClass = (_filterPlayer && _filterPlayer === p.key) ? " active-filter" : "";
@@ -216,9 +151,7 @@ function renderPlayers() {
       + "<td class=\"elo\">" + p.elo + "</td>"
       + "<td class=\"place\">" + round2(p.avgPlace) + "</td>"
       + "<td class=\"games\">" + p.games + "</td>"
-      + "<td>" + round1(p.avgVP) + "</td>"
-      + "<td>" + round1(p.avgGens) + "</td>"
-      + "<td>" + formatMargin(p.avgMargin) + "</td></tr>";
+      + "<td>" + round1(p.avgVP) + "</td></tr>";
   });
   document.getElementById("tbody").innerHTML = html;
 }
@@ -237,11 +170,7 @@ function getFilteredGames() {
 function renderGames() {
   var games = getFilteredGames();
   var filterBar = document.getElementById("filterBar");
-  var summary = document.getElementById("gamesSummary");
   var title = document.getElementById("games-title");
-  var totalPages = getPageCount(games.length);
-  if (_gamesPage > totalPages) _gamesPage = totalPages;
-  if (_gamesPage < 1) _gamesPage = 1;
 
   if (_filterPlayer && _data && _data.players && _data.players[_filterPlayer]) {
     var dn = _data.players[_filterPlayer].displayName || _filterPlayer;
@@ -254,13 +183,10 @@ function renderGames() {
     title.textContent = "Recent Games";
   }
 
-  summary.textContent = games.length + " games | Avg gen " + averageGeneration(games) + " | Page " + _gamesPage + " / " + totalPages;
-
-  var pageStart = (_gamesPage - 1) * GAMES_PER_PAGE;
-  var toShow = games.slice(pageStart, pageStart + GAMES_PER_PAGE);
+  var toShow = games.slice(0, _gamesShown);
   if (toShow.length === 0) {
     document.getElementById("gamesList").innerHTML = "<div class=\"no-games\">No games found</div>";
-    renderPagination(0);
+    document.getElementById("showMore").style.display = "none";
     return;
   }
 
@@ -269,19 +195,13 @@ function renderGames() {
     var results = (g.results || []).slice().sort(function(a,b) { return a.place - b.place; });
     var genText = g.generation ? ("Gen " + g.generation) : "";
     var serverText = g.server || "";
-    var durationText = formatDuration(g);
-    var dateText = formatDate(g.date);
 
     html += "<div class=\"game-card\">";
     html += "<div class=\"game-header\">";
     html += "<span><span class=\"game-server\">" + esc(serverText) + "</span>";
     if (genText) html += " \u00b7 <span class=\"game-gen\">" + genText + "</span>";
     html += " \u00b7 " + results.length + "P</span>";
-    html += "<span class=\"game-header-right\">";
-    if (durationText) html += "<span class=\"game-duration\">" + esc(durationText) + "</span>";
-    if (dateText) html += "<span class=\"game-date\">" + esc(dateText) + "</span>";
     html += "<a href=\"" + getGameUrl(g) + "\" target=\"_blank\">" + esc(getGameLabel(g)) + "</a>";
-    html += "</span>";
     html += "</div>";
     html += "<div class=\"game-results\">";
 
@@ -305,46 +225,7 @@ function renderGames() {
   });
 
   document.getElementById("gamesList").innerHTML = html;
-  renderPagination(games.length);
-}
-
-function renderPagination(totalGames) {
-  var container = document.getElementById("pagination");
-  if (!container) return;
-  if (totalGames <= GAMES_PER_PAGE) {
-    container.innerHTML = "";
-    return;
-  }
-
-  var totalPages = getPageCount(totalGames);
-  var startPage = Math.max(1, _gamesPage - 2);
-  var endPage = Math.min(totalPages, startPage + 4);
-  startPage = Math.max(1, endPage - 4);
-  var html = "";
-  html += "<button id=\"pagePrevBtn\"" + (_gamesPage <= 1 ? " disabled" : "") + ">\u2039</button>";
-  for (var page = startPage; page <= endPage; page++) {
-    html += "<button class=\"page-btn" + (page === _gamesPage ? " active" : "") + "\" data-page=\"" + page + "\">" + page + "</button>";
-  }
-  html += "<button id=\"pageNextBtn\"" + (_gamesPage >= totalPages ? " disabled" : "") + ">\u203a</button>";
-  html += "<span class=\"pagination-status\">" + ((_gamesPage - 1) * GAMES_PER_PAGE + 1) + "-" + Math.min(_gamesPage * GAMES_PER_PAGE, totalGames) + " / " + totalGames + "</span>";
-  container.innerHTML = html;
-
-  var prevBtn = document.getElementById("pagePrevBtn");
-  if (prevBtn) prevBtn.addEventListener("click", function() { goToPage(_gamesPage - 1); });
-  var nextBtn = document.getElementById("pageNextBtn");
-  if (nextBtn) nextBtn.addEventListener("click", function() { goToPage(_gamesPage + 1); });
-  container.querySelectorAll(".page-btn").forEach(function(btn) {
-    btn.addEventListener("click", function() {
-      goToPage(Number(btn.dataset.page || 1));
-    });
-  });
-}
-
-function goToPage(page) {
-  var totalPages = getPageCount(getFilteredGames().length);
-  _gamesPage = Math.max(1, Math.min(totalPages, page));
-  renderGames();
-  document.getElementById("games-title").scrollIntoView({ behavior: "smooth" });
+  document.getElementById("showMore").style.display = games.length > _gamesShown ? "" : "none";
 }
 
 function toggleFilter(playerKey) {
@@ -353,7 +234,7 @@ function toggleFilter(playerKey) {
   } else {
     _filterPlayer = playerKey;
   }
-  _gamesPage = 1;
+  _gamesShown = GAMES_PER_PAGE;
   renderPlayers();
   renderGames();
   document.getElementById("games-title").scrollIntoView({ behavior: "smooth" });
@@ -361,8 +242,13 @@ function toggleFilter(playerKey) {
 
 function clearFilter() {
   _filterPlayer = null;
-  _gamesPage = 1;
+  _gamesShown = GAMES_PER_PAGE;
   renderPlayers();
+  renderGames();
+}
+
+function showMoreGames() {
+  _gamesShown += GAMES_PER_PAGE;
   renderGames();
 }
 
@@ -373,6 +259,8 @@ document.addEventListener("click", function(e) {
     toggleFilter(el.dataset.player);
   }
 });
+
+document.getElementById("showMoreBtn").addEventListener("click", showMoreGames);
 
 document.querySelectorAll(".tab").forEach(function(tab) {
   tab.addEventListener("click", function() {
@@ -388,7 +276,7 @@ fetch("elo-data.json?ts=" + Date.now(), { cache: "no-store" }).then(function(r){
   renderPlayers();
   renderGames();
 }).catch(function(e) {
-  document.getElementById("tbody").innerHTML = "<tr><td colspan=\"8\">Error: " + e.message + "</td></tr>";
+  document.getElementById("tbody").innerHTML = "<tr><td colspan=\"6\">Error: " + e.message + "</td></tr>";
 });
 </script>
 </body>

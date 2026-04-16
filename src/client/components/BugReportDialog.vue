@@ -1,7 +1,7 @@
 <template>
   <dialog ref="dialog" class="bug-dialog">
     <p class="center"><span v-i18n>Copy the text below and then paste it in</span><br>
-        <a href="https://github.com/terraforming-mars/terraforming-mars/issues/new?template=from-heroku.md" target="_blank"  v-i18n>a GitHub issue</a>
+        <a href="https://github.com/rusliksu/terraforming-mars/issues/new" target="_blank"  v-i18n>a GitHub issue</a>
         <span v-i18n>or the</span> <a href="https://discord.com/channels/737945098695999559/742721510376210583" target="_blank"  v-i18n>#bug-reports Discord channel</a>
     </p>
     <textarea ref="textarea" readonly rows="6" cols = "50" v-model="message"></textarea>
@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts">
-import {defineComponent} from '@/client/vue3-compat';
+import {defineComponent} from 'vue';
 import {showModal, windowHasHTMLDialogElement} from '@/client/components/HTMLDialogElementCompatibility';
 import * as raw_settings from '@/genfiles/settings.json';
 import {vueRoot} from '@/client/components/vueRoot';
@@ -26,7 +26,7 @@ import {PlayerViewModel} from '@/common/models/PlayerModel';
 import {SpectatorId} from '@/common/Types';
 import {getPreferences} from '../utils/PreferencesManager';
 
-const dialogPolyfill = require('dialog-polyfill');
+import dialogPolyfill from 'dialog-polyfill';
 
 
 function browser(): string {
@@ -112,7 +112,7 @@ export default defineComponent({
     },
   },
   mounted() {
-    if (!windowHasHTMLDialogElement()) dialogPolyfill.default.registerDialog(this.typedRefs.dialog);
+    if (!windowHasHTMLDialogElement()) dialogPolyfill.registerDialog(this.typedRefs.dialog);
     this.setMessage();
   },
 });

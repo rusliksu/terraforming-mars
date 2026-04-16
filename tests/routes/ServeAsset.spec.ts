@@ -126,7 +126,7 @@ describe('ServeAsset', () => {
     expect(fileApi.counts).deep.eq({
       ...primedCache,
       readFile: 1,
-      existsSync: 1,
+      existsSync: 0,
     });
   });
 

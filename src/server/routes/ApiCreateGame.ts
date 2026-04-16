@@ -1,3 +1,4 @@
+import {sendGameStartNotice} from "../TelegramBot";
 import * as responses from '../server/responses';
 import {Handler} from './Handler';
 import {Context} from './IHandler';
@@ -100,6 +101,13 @@ export class ApiCreateGame extends Handler {
               safeCast(generateRandomId('p'), isPlayerId),
             );
           });
+          // Assign telegramID from game request
+          players.forEach((p, i) => {
+            const reqPlayer = gameReq.players[i];
+            if (reqPlayer && (reqPlayer as any).telegramID) {
+              p.telegramID = (reqPlayer as any).telegramID;
+            }
+          });
           let firstPlayerIdx = 0;
           for (let i = 0; i < gameReq.players.length; i++) {
             if (gameReq.players[i].first === true) {
@@ -174,6 +182,12 @@ export class ApiCreateGame extends Handler {
             game = Game.newInstance(gameId, players, players[firstPlayerIdx], gameOptions, seed, spectatorId);
           }
           ctx.gameLoader.add(game);
+          // Send Telegram game start notifications
+          for (const p of players) {
+            if (p.telegramID) {
+              sendGameStartNotice(p);
+            }
+          }
           responses.writeJson(res, ctx, Server.getSimpleGameModel(game));
         } catch (error) {
           responses.internalServerError(req, res, error);

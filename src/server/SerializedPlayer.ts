@@ -79,5 +79,6 @@ export interface SerializedPlayer extends DeprecatedFields{
   underworldData: UnderworldPlayerData;
   victoryPointsByGeneration: Array<number>;
   user?: DiscordId;
+  telegramID?: string;
   withinDeflectionZone: boolean;
 }

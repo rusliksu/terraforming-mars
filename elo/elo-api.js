@@ -8,7 +8,68 @@ const ELO_FILE = path.join(__dirname, "elo-data.json");
 const ELO_COMPAT_FILE = path.join(__dirname, "data.json");
 const DEFAULT_ELO = 1500;
 const K = 32;
-const MERGES = require("./player_name_aliases.json");
+
+// Name normalization (from fix_elo_dupes.py MERGES)
+const MERGES = {
+  "death": "Death", "death ": "Death",
+  "death8": "Death8Killer", "death8killer": "Death8Killer", "deathkiller": "Death8Killer",
+  "lfc": "LFC", "lfc ": "LFC",
+  "gydro": "GydRo",
+  "linda": "Linda", "linda ": "Linda",
+  "giasa": "Giasa", "giasa_": "Giasa",
+  "simon": "Simon",
+  "geek": "GeekDumb", "geekdumb": "GeekDumb",
+  "bmac": "BmacG", "bmacg": "BmacG", "bmacg.": "BmacG",
+  "drr": "Drrrg", "drrg": "Drrrg", "drrrg": "Drrrg",
+  "duc": "Duc Nguyen", "duc nguyen": "Duc Nguyen",
+  "dukz": "Dukz01", "dukz01": "Dukz01",
+  "mrf": "MrFahrenheit", "mrf ": "MrFahrenheit", "mrfahrenheit": "MrFahrenheit",
+  " mrfahrenheit": "MrFahrenheit", "mrfahrenheit7": "MrFahrenheit", "fahren": "MrFahrenheit",
+  "eket": "Eket", "eket678": "Eket",
+  "masterkeys": "MasterKeys", "mstrkeys": "MasterKeys",
+  "hoyla": "Hoyla",
+  "iro": "Iropikc", "iropic": "Iropikc", "iropick": "Iropikc", "iropikc": "Iropikc",
+  "jackir": "Jackir", "kamui": "Kamui",
+  "lang": "Langfjes", "langfjes": "Langfjes",
+  "low": "LOW615", "low615": "LOW615",
+  "madhatta": "MadHatter", "madhatter": "MadHatter",
+  "mon": "Monty", "mon00": "Monty", "monty": "Monty",
+  "mort": "Mortaum", "moratum": "Mortaum", "mortarum": "Mortaum", "mortaum": "Mortaum",
+  "mu6ra7a": "Mu6Ra7a", "mu6rata": "Mu6Ra7a",
+  "nagimi": "Nagumi", "nagumi": "Nagumi",
+  "nikoha": "Nikoha", "nihoka13": "Nikoha",
+  "pa": "Pa2016", "pa2016": "Pa2016",
+  "panda": "Panda", "pandaboi": "Panda",
+  "plaz": "Plazmica", "plazma": "Plazmica", "plazmica": "Plazmica",
+  "pop": "Popsickle", "popi": "Popsickle", "poppy": "Popsickle",
+  "popsickle": "Popsickle", "popsickle ": "Popsickle", "popsicle": "Popsickle",
+  "preparationfit": "PreparationFit", "prepartionfit": "PreparationFit",
+  "reinforcement": "Reinforcement", "reinforcement-": "Reinforcement",
+  "rianby": "Rianby", "s29jin": "S29jin",
+  "shm": "Shmondar", "shmo": "Shmondar", "shmondar": "Shmondar",
+  "tarun": "Tarun", "taru": "Tarun", "taruntheo13": "Tarun",
+  "teddy": "Teddy",
+  "underthegun": "UTG", "utg": "UTG",
+  "vit": "VitalyVit", "vitaly": "VitalyVit", "vitalyvit": "VitalyVit",
+  "vvb": "VvbMinsk", "vvbminsk": "VvbMinsk",
+  "wd": "Wdkymyms", "wdk": "Wdkymyms", "wdkmysms": "Wdkymyms",
+  "wdkumums": "Wdkymyms", "wdkym": "Wdkymyms", "wdkymymd": "Wdkymyms", "wdkymyms": "Wdkymyms",
+  "kaera": "Kaera", "kaera02": "Kaera",
+  "coolio": "Coolio", "xenon": "Xenon",
+  "zalo": "Zalo", "zalobolivia": "Zalo",
+  "krootish": "Krootish86", "krootish86": "Krootish86",
+  "j1233": "J1234", "j1234": "J1234",
+  "italian": "Italianood", "italianood": "Italianood", "ita": "Italianood",
+  "cuc": "Cucumber", "cucumber": "Cucumber",
+  "tal": "Talov", "talov": "Talov",
+  "raj": "Rajatppn", "raja": "Rajatppn", "rajatppn": "Rajatppn",
+  "mikiekv": "MikiEkv", "kuntiny": "Kuntiny",
+  "amzo": "Amzo", "amzo4": "Amzo",
+  "tacos": "Los Tacos", "los tacos": "Los Tacos",
+  "andrewk": "Andrewk", "andrew": "Andrewk",
+  "kogoro": "Kogoro", "tersius": "Tersius",
+  "martian": "Martian", "junior": "Junior", "zara": "Zara",
+};
 
 function normalizeName(name) {
   var nk = (name || "").toLowerCase().trim();
@@ -191,16 +252,6 @@ var server = http.createServer(function(req, res) {
       var gameKey = payload.gameId || payload.gameKey || ((payload.date || new Date().toISOString()) + "_" +
         results.map(function(r) { return r.name; }).sort().join(","));
       var endId = payload.endId || payload.spectatorId || "";
-      var completedTime = payload.completedTime || 0;
-      var startedTime = payload.startedTime || 0;
-      var durationMs = payload.durationMs;
-      if ((durationMs == null || durationMs < 0) && completedTime && startedTime) {
-        durationMs = Math.max(0, (completedTime - startedTime) * 1000);
-      }
-      var durationMinutes = payload.durationMinutes;
-      if ((durationMinutes == null || durationMinutes < 0) && durationMs != null) {
-        durationMinutes = Math.round(durationMs / 60000);
-      }
 
       var gameRecord = {
         _key: gameKey,
@@ -211,10 +262,7 @@ var server = http.createServer(function(req, res) {
         map: payload.map || "",
         generation: payload.generation || 0,
         playerCount: results.length,
-        startedTime: startedTime || undefined,
-        completedTime: completedTime,
-        durationMs: durationMs,
-        durationMinutes: durationMinutes,
+        completedTime: payload.completedTime || 0,
         results: results,
       };
 

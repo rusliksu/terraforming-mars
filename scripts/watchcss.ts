@@ -1,6 +1,6 @@
 import chokidar from 'chokidar';
 import {exec} from 'child_process';
-import * as path from 'path';
+import path from 'path';
 
 const directoryToWatch = process.argv[2] ?? 'src/styles';
 const pattern = path.join(directoryToWatch, '**/*.less');
@@ -29,11 +29,8 @@ function onChange(filePath: string): void {
 }
 
 const watcher = chokidar.watch(pattern, {ignoreInitial: true});
-const eventWatcher = watcher as typeof watcher & {
-  on(event: 'change' | 'add', listener: (filePath: string) => void): typeof watcher;
-};
-eventWatcher.on('change', onChange);
-eventWatcher.on('add', onChange);
+watcher.on('change', onChange);
+watcher.on('add', onChange);
 
 console.log(`Watching for LESS changes in: ${path.resolve(directoryToWatch)}`);
 

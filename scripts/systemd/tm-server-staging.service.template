@@ -1,0 +1,19 @@
+[Unit]
+Description=Terraforming Mars Staging Server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=__STAGING_CURRENT_DIR__
+EnvironmentFile=-%h/.config/tm-server.env
+Environment=PORT=__STAGING_PORT__
+Environment=HOST=__STAGING_HOST__
+Environment=SERVER_ID=__STAGING_SERVER_ID__
+Environment=TM_SERVER_URL=__STAGING_URL__
+ExecStartPre=-/usr/bin/fuser -k __STAGING_PORT__/tcp
+ExecStart=/usr/bin/node build/src/server/server.js
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=default.target

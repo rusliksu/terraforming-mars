@@ -46,3 +46,6 @@ tm-live-patch-*.tar.gz
 
 # Python caches
 **/__pycache__/
+
+# Private player data
+elo/player_name_aliases.json

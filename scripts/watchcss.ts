@@ -1,6 +1,6 @@
 import chokidar from 'chokidar';
 import {exec} from 'child_process';
-import path from 'path';
+import * as path from 'path';
 
 const directoryToWatch = process.argv[2] ?? 'src/styles';
 const pattern = path.join(directoryToWatch, '**/*.less');

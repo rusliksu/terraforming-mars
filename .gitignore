@@ -31,6 +31,7 @@ node_modules/
 src/client/**/*.js
 src/common/**/*.js
 src/server/**/*.js
+src/tools/**/*.js
 !src/server/routes/PlayerInput.js
 !src/server/tools/gzip.js
 tests/**/*.js

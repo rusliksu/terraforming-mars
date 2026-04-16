@@ -82,6 +82,7 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.API_WAITING_FOR, ApiWaitingFor.INSTANCE],
     [paths.AUTOPASS, Autopass.INSTANCE],
     [paths.CARDS, ServeApp.INSTANCE],
+    ['elo', ServeAsset.INSTANCE],
     ['favicon.ico', ServeAsset.INSTANCE],
     [paths.GAME, GameHandler.INSTANCE],
     [paths.GAMES_OVERVIEW, GamesOverview.INSTANCE],
@@ -121,7 +122,7 @@ function getHandler(pathname: string): IHandler | undefined {
   if (handler !== undefined) {
     return handler;
   }
-  if (pathname.startsWith('assets/') || pathname === 'sw.js') {
+  if (pathname.startsWith('assets/') || pathname === 'sw.js' || pathname.startsWith('elo/')) {
     return ServeAsset.INSTANCE;
   }
   return undefined;

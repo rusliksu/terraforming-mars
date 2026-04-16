@@ -163,6 +163,15 @@ describe('ServeAsset', () => {
     expect(res.headers.get('Cache-Control')).eq('no-store');
   });
 
+  it('serves /elo/ from the elo index path', async () => {
+    instance = new ServeAsset(undefined, false, fileApi);
+    scaffolding.url = '/elo/';
+    scaffolding.req.headers['accept-encoding'] = '';
+    await scaffolding.get(instance, res);
+
+    expect(res.content).eq('data: ' + resolveEloAssetPath('elo/'));
+  });
+
   it('does not buffer-cache dynamic elo assets in production', async () => {
     instance = new ServeAsset(undefined, true, fileApi);
     scaffolding.url = '/elo/data.json';

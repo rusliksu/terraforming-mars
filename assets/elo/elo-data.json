@@ -1,0 +1,3975 @@
+{
+  "players": {
+    "b": {
+      "elo": 1412,
+      "elo_vp": 1466,
+      "displayName": "B",
+      "games": 87,
+      "wins": 36,
+      "top3": 87,
+      "totalVP": 6245,
+      "avgVP": 72,
+      "avgPlace": 0.414,
+      "avgPlaceScore": 0.414,
+      "corps": {
+        "Habitat Marte": 2,
+        "Point Luna": 4,
+        "Cheung Shing MARS": 1,
+        "Odyssey": 4,
+        "Inventrix": 1,
+        "Ringcom": 4,
+        "Helion": 4,
+        "Henkei Genetics": 2,
+        "Polaris": 1,
+        "Hadesphere": 1,
+        "EcoTec": 2,
+        "Mars Maths": 1,
+        "PolderTECH Dutch": 4,
+        "Hecate Speditions": 2,
+        "Manutech": 1,
+        "Nirgal Enterprises": 2,
+        "Tycho Magnetics": 2,
+        "Interplanetary Cinematics": 4,
+        "Pristar": 3,
+        "Factorum": 1,
+        "Mars Direct": 2,
+        "Tharsis Republic": 2,
+        "Celestic": 2,
+        "Chimera": 2,
+        "Aridor": 2,
+        "Robinson Industries": 4,
+        "Jenson-Boyle & Co": 5,
+        "Viron": 3,
+        "Steelaris": 1,
+        "Anubis Securities": 1,
+        "Arklight": 1,
+        "Gagarin Mobile Base": 2,
+        "Sagitta Frontier Services": 2,
+        "Mons Insurance": 1,
+        "Vitor": 2,
+        "Pharmacy Union": 1,
+        "SolBank": 1,
+        "Astrodrill": 1,
+        "Philares": 1,
+        "Spire": 2,
+        "PhoboLog": 2,
+        "Collegium Copernicus": 1
+      }
+    },
+    "a": {
+      "elo": 1454,
+      "elo_vp": 1511,
+      "displayName": "A",
+      "games": 87,
+      "wins": 43,
+      "top3": 87,
+      "totalVP": 6302,
+      "avgVP": 72,
+      "avgPlace": 0.494,
+      "avgPlaceScore": 0.494,
+      "corps": {
+        "Ambient": 3,
+        "Odyssey": 2,
+        "Steelaris": 1,
+        "Arklight": 3,
+        "Tharsis Republic": 4,
+        "Cheung Shing MARS": 4,
+        "Polaris": 3,
+        "Teractor": 2,
+        "Nirgal Enterprises": 1,
+        "Demetron Labs": 1,
+        "Point Luna": 2,
+        "Lakefront Resorts": 2,
+        "Jenson-Boyle & Co": 1,
+        "Soylent Seedling Systems": 2,
+        "Saturn Systems": 8,
+        "Martian Insurance Group": 1,
+        "Habitat Marte": 2,
+        "CrediCor": 2,
+        "Tycho Magnetics": 2,
+        "Spire": 2,
+        "Voltagon": 1,
+        "Henkei Genetics": 2,
+        "PolderTECH Dutch": 2,
+        "Poseidon": 1,
+        "Valley Trust": 1,
+        "Splice": 1,
+        "Ringcom": 2,
+        "Anubis Securities": 1,
+        "United Nations Mars Initiative": 1,
+        "Arborist Collective": 4,
+        "Keplertec": 1,
+        "Viron": 1,
+        "Interplanetary Cinematics": 3,
+        "Collegium Copernicus": 1,
+        "Chimera": 1,
+        "Kingdom of Tauraro": 1,
+        "SolBank": 1,
+        "Factorum": 1,
+        "PhoboLog": 3,
+        "Philares": 2,
+        "Robinson Industries": 1,
+        "Hadesphere": 1,
+        "Aridor": 1,
+        "Vitor": 1,
+        "Arcadian Communities": 1,
+        "Thorgate": 1,
+        "Pristar": 1,
+        "Mind Set Mars": 1
+      }
+    },
+    "c": {
+      "elo": 1642,
+      "elo_vp": 1614,
+      "displayName": "C",
+      "games": 87,
+      "wins": 54.5,
+      "top3": 87,
+      "totalVP": 6516,
+      "avgVP": 75,
+      "avgPlace": 0.626,
+      "avgPlaceScore": 0.626,
+      "corps": {
+        "Vitor": 4,
+        "Martian Insurance Group": 2,
+        "Stormcraft Incorporated": 1,
+        "Demetron Labs": 1,
+        "Aeron Genomics": 1,
+        "Mons Insurance": 1,
+        "CrediCor": 3,
+        "Arklight": 2,
+        "Viron": 3,
+        "EcoLine": 6,
+        "Odyssey": 4,
+        "SolBank": 4,
+        "Gagarin Mobile Base": 2,
+        "Pharmacy Union": 2,
+        "Thorgate": 2,
+        "Hecate Speditions": 2,
+        "Anubis Securities": 4,
+        "Point Luna": 3,
+        "Polaris": 2,
+        "Saturn Systems": 1,
+        "Aurorai": 1,
+        "Hadesphere": 1,
+        "Astrodrill": 1,
+        "Morning Star Inc.": 1,
+        "Mars Direct": 2,
+        "Jenson-Boyle & Co": 3,
+        "Helion": 2,
+        "Lakefront Resorts": 2,
+        "Pristar": 1,
+        "Interplanetary Cinematics": 2,
+        "Poseidon": 4,
+        "Valley Trust": 1,
+        "Habitat Marte": 1,
+        "Voltagon": 3,
+        "Splice": 1,
+        "PhoboLog": 1,
+        "Septem Tribus": 1,
+        "Ringcom": 1,
+        "Inventrix": 1,
+        "Cheung Shing MARS": 1,
+        "Teractor": 1,
+        "Valley Trust|Recyclon": 1,
+        "Mars Maths": 1,
+        "Chimera": 1,
+        "PolderTECH Dutch": 1,
+        "Mining Guild": 1
+      }
+    },
+    "player-blue": {
+      "elo": 1541,
+      "elo_vp": 1511,
+      "displayName": "player-blue",
+      "games": 3,
+      "wins": 3,
+      "top3": 3,
+      "totalVP": 71,
+      "avgVP": 24,
+      "avgPlace": 1,
+      "avgPlaceScore": 1,
+      "corps": {}
+    },
+    "player-red": {
+      "elo": 1459,
+      "elo_vp": 1490,
+      "displayName": "player-red",
+      "games": 3,
+      "wins": 1,
+      "top3": 3,
+      "totalVP": 60,
+      "avgVP": 20,
+      "avgPlace": 0.333,
+      "avgPlaceScore": 0.333,
+      "corps": {}
+    },
+    "player-green": {
+      "elo": 1500,
+      "elo_vp": 1500,
+      "displayName": "player-green",
+      "games": 1,
+      "wins": 1,
+      "top3": 1,
+      "totalVP": 20,
+      "avgVP": 20,
+      "avgPlace": 1,
+      "avgPlaceScore": 1,
+      "corps": {}
+    },
+    "player-yellow": {
+      "elo": 1500,
+      "elo_vp": 1500,
+      "displayName": "player-yellow",
+      "games": 1,
+      "wins": 1,
+      "top3": 1,
+      "totalVP": 20,
+      "avgVP": 20,
+      "avgPlace": 1,
+      "avgPlaceScore": 1,
+      "corps": {}
+    },
+    "player2": {
+      "elo": 1524,
+      "elo_vp": 1501,
+      "displayName": "player2",
+      "games": 1,
+      "wins": 1,
+      "top3": 1,
+      "totalVP": 22,
+      "avgVP": 22,
+      "avgPlace": 1,
+      "avgPlaceScore": 1,
+      "corps": {
+        "Philares": 1
+      }
+    },
+    "player1": {
+      "elo": 1476,
+      "elo_vp": 1499,
+      "displayName": "player1",
+      "games": 1,
+      "wins": 0,
+      "top3": 1,
+      "totalVP": 21,
+      "avgVP": 21,
+      "avgPlace": 0,
+      "avgPlaceScore": 0,
+      "corps": {}
+    }
+  },
+  "games": [
+    {
+      "_key": "g1f754be1e629",
+      "date": "2026-04-11T21:55:05.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 14,
+      "playerCount": 3,
+      "completedTime": 1775944505,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 85,
+          "corp": "Habitat Marte",
+          "oldElo": 1500,
+          "newElo": 1524,
+          "delta": 24
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 72,
+          "corp": "Ambient",
+          "oldElo": 1500,
+          "newElo": 1500,
+          "delta": 0
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 3,
+          "vp": 60,
+          "corp": "Vitor",
+          "oldElo": 1500,
+          "newElo": 1476,
+          "delta": -24
+        }
+      ]
+    },
+    {
+      "_key": "ge1c3e3cef9e",
+      "date": "2026-04-11T21:55:10.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1775944510,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 90,
+          "corp": "Martian Insurance Group",
+          "oldElo": 1476,
+          "newElo": 1502,
+          "delta": 26
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 70,
+          "corp": "Point Luna",
+          "oldElo": 1524,
+          "newElo": 1522,
+          "delta": -2
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 46,
+          "corp": "Odyssey",
+          "oldElo": 1500,
+          "newElo": 1476,
+          "delta": -24
+        }
+      ]
+    },
+    {
+      "_key": "gaf70d43ea3a1",
+      "date": "2026-04-11T21:55:13.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1775944513,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 70,
+          "corp": "Cheung Shing MARS",
+          "oldElo": 1522,
+          "newElo": 1544,
+          "delta": 22
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 55,
+          "corp": "Stormcraft Incorporated",
+          "oldElo": 1502,
+          "newElo": 1502,
+          "delta": 0
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 54,
+          "corp": "Steelaris",
+          "oldElo": 1476,
+          "newElo": 1454,
+          "delta": -22
+        }
+      ]
+    },
+    {
+      "_key": "gd149322a390a",
+      "date": "2026-04-11T21:56:03.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 16,
+      "playerCount": 3,
+      "completedTime": 1775944563,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 96,
+          "corp": "Arklight",
+          "oldElo": 1454,
+          "newElo": 1483,
+          "delta": 29
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 89,
+          "corp": "Demetron Labs",
+          "oldElo": 1502,
+          "newElo": 1502,
+          "delta": 0
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 64,
+          "corp": "Odyssey",
+          "oldElo": 1544,
+          "newElo": 1516,
+          "delta": -28
+        }
+      ]
+    },
+    {
+      "_key": "gc6019c52f17f",
+      "date": "2026-04-11T22:07:34.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 15,
+      "playerCount": 3,
+      "completedTime": 1775945254,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 74,
+          "corp": "Aeron Genomics",
+          "oldElo": 1502,
+          "newElo": 1526,
+          "delta": 24
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 68,
+          "corp": "Tharsis Republic",
+          "oldElo": 1483,
+          "newElo": 1485,
+          "delta": 2
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 57,
+          "corp": "Inventrix",
+          "oldElo": 1516,
+          "newElo": 1490,
+          "delta": -26
+        }
+      ]
+    },
+    {
+      "_key": "g1cade9537765",
+      "date": "2026-04-11T22:07:39.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1775945259,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 74,
+          "corp": "Cheung Shing MARS",
+          "oldElo": 1485,
+          "newElo": 1511,
+          "delta": 26
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 73,
+          "corp": "Mons Insurance",
+          "oldElo": 1526,
+          "newElo": 1523,
+          "delta": -3
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 56,
+          "corp": "Ringcom",
+          "oldElo": 1490,
+          "newElo": 1467,
+          "delta": -23
+        }
+      ]
+    },
+    {
+      "_key": "g78189e901ceb",
+      "date": "2026-04-11T22:07:43.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 13,
+      "playerCount": 3,
+      "completedTime": 1775945263,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 73,
+          "corp": "CrediCor",
+          "oldElo": 1523,
+          "newElo": 1545,
+          "delta": 22
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 70,
+          "corp": "Polaris",
+          "oldElo": 1511,
+          "newElo": 1498,
+          "delta": -13
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 70,
+          "corp": "Helion",
+          "oldElo": 1467,
+          "newElo": 1458,
+          "delta": -9
+        }
+      ]
+    },
+    {
+      "_key": "gc396932a097f",
+      "date": "2026-04-11T22:31:52.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 13,
+      "playerCount": 3,
+      "completedTime": 1775946712,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 79,
+          "corp": "Teractor",
+          "oldElo": 1498,
+          "newElo": 1522,
+          "delta": 24
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 68,
+          "corp": "Arklight",
+          "oldElo": 1545,
+          "newElo": 1540,
+          "delta": -5
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 60,
+          "corp": "Henkei Genetics",
+          "oldElo": 1458,
+          "newElo": 1438,
+          "delta": -20
+        }
+      ]
+    },
+    {
+      "_key": "g64643bd2ca9a",
+      "date": "2026-04-11T22:31:56.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1775946716,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 79,
+          "corp": "Polaris",
+          "oldElo": 1438,
+          "newElo": 1468,
+          "delta": 30
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 70,
+          "corp": "Viron",
+          "oldElo": 1540,
+          "newElo": 1536,
+          "delta": -4
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 65,
+          "corp": "Nirgal Enterprises",
+          "oldElo": 1522,
+          "newElo": 1496,
+          "delta": -26
+        }
+      ]
+    },
+    {
+      "_key": "g5922a602a9f3",
+      "date": "2026-04-12T06:47:29.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 13,
+      "playerCount": 3,
+      "completedTime": 1775976449,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 99,
+          "corp": "EcoLine",
+          "oldElo": 1536,
+          "newElo": 1556,
+          "delta": 20
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 74,
+          "corp": "Tharsis Republic",
+          "oldElo": 1496,
+          "newElo": 1496,
+          "delta": 0
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 54,
+          "corp": "Point Luna",
+          "oldElo": 1468,
+          "newElo": 1447,
+          "delta": -21
+        }
+      ]
+    },
+    {
+      "_key": "g27c29e4a0c4c",
+      "date": "2026-04-12T06:56:27.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 9,
+      "playerCount": 3,
+      "completedTime": 1775976987,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 58,
+          "corp": "Demetron Labs",
+          "oldElo": 1496,
+          "newElo": 1520,
+          "delta": 24
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 55,
+          "corp": "Odyssey",
+          "oldElo": 1556,
+          "newElo": 1550,
+          "delta": -6
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 45,
+          "corp": "Hadesphere",
+          "oldElo": 1447,
+          "newElo": 1428,
+          "delta": -19
+        }
+      ]
+    },
+    {
+      "_key": "gf4f9974d2840",
+      "date": "2026-04-12T06:56:32.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 13,
+      "playerCount": 3,
+      "completedTime": 1775976992,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 71,
+          "corp": "EcoTec",
+          "oldElo": 1428,
+          "newElo": 1459,
+          "delta": 31
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 69,
+          "corp": "Odyssey",
+          "oldElo": 1550,
+          "newElo": 1545,
+          "delta": -5
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 49,
+          "corp": "Point Luna",
+          "oldElo": 1520,
+          "newElo": 1494,
+          "delta": -26
+        }
+      ]
+    },
+    {
+      "_key": "g2ae01060dcae",
+      "date": "2026-04-12T07:00:15.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1775977215,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 86,
+          "corp": "EcoLine",
+          "oldElo": 1545,
+          "newElo": 1564,
+          "delta": 19
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 67,
+          "corp": "Lakefront Resorts",
+          "oldElo": 1494,
+          "newElo": 1495,
+          "delta": 1
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 43,
+          "corp": "Mars Maths",
+          "oldElo": 1459,
+          "newElo": 1439,
+          "delta": -20
+        }
+      ]
+    },
+    {
+      "_key": "g1d0081798f3a",
+      "date": "2026-04-12T07:00:20.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1775977220,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 90,
+          "corp": "PolderTECH Dutch",
+          "oldElo": 1439,
+          "newElo": 1469,
+          "delta": 30
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 69,
+          "corp": "SolBank",
+          "oldElo": 1564,
+          "newElo": 1558,
+          "delta": -6
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 60,
+          "corp": "Jenson-Boyle & Co",
+          "oldElo": 1495,
+          "newElo": 1471,
+          "delta": -24
+        }
+      ]
+    },
+    {
+      "_key": "gbc6a72220670",
+      "date": "2026-04-12T07:07:58.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 13,
+      "playerCount": 3,
+      "completedTime": 1775977678,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 83,
+          "corp": "Gagarin Mobile Base",
+          "oldElo": 1558,
+          "newElo": 1576,
+          "delta": 18
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 81,
+          "corp": "Hecate Speditions",
+          "oldElo": 1469,
+          "newElo": 1472,
+          "delta": 3
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 54,
+          "corp": "Soylent Seedling Systems",
+          "oldElo": 1471,
+          "newElo": 1450,
+          "delta": -21
+        }
+      ]
+    },
+    {
+      "_key": "g9552d2010b0",
+      "date": "2026-04-12T07:16:31.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 13,
+      "playerCount": 3,
+      "completedTime": 1775978191,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 87,
+          "corp": "Pharmacy Union",
+          "oldElo": 1576,
+          "newElo": 1592,
+          "delta": 16
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 73,
+          "corp": "Cheung Shing MARS",
+          "oldElo": 1450,
+          "newElo": 1455,
+          "delta": 5
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 71,
+          "corp": "Manutech",
+          "oldElo": 1472,
+          "newElo": 1451,
+          "delta": -21
+        }
+      ]
+    },
+    {
+      "_key": "g339bb98f9cc8",
+      "date": "2026-04-12T08:43:03.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1775983383,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 83,
+          "corp": "Nirgal Enterprises",
+          "oldElo": 1451,
+          "newElo": 1480,
+          "delta": 29
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 56,
+          "corp": "Thorgate",
+          "oldElo": 1592,
+          "newElo": 1583,
+          "delta": -9
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 54,
+          "corp": "Saturn Systems",
+          "oldElo": 1455,
+          "newElo": 1435,
+          "delta": -20
+        }
+      ]
+    },
+    {
+      "_key": "g357f345973f6",
+      "date": "2026-04-12T09:22:23.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 11,
+      "playerCount": 3,
+      "completedTime": 1775985743,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 75,
+          "corp": "Hecate Speditions",
+          "oldElo": 1583,
+          "newElo": 1599,
+          "delta": 16
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 70,
+          "corp": "Ringcom",
+          "oldElo": 1480,
+          "newElo": 1482,
+          "delta": 2
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 52,
+          "corp": "Martian Insurance Group",
+          "oldElo": 1435,
+          "newElo": 1417,
+          "delta": -18
+        }
+      ]
+    },
+    {
+      "_key": "g359ee6d6caf5",
+      "date": "2026-04-12T09:22:32.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 14,
+      "playerCount": 3,
+      "completedTime": 1775985752,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 119,
+          "corp": "Tycho Magnetics",
+          "oldElo": 1482,
+          "newElo": 1508,
+          "delta": 26
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 86,
+          "corp": "Habitat Marte",
+          "oldElo": 1417,
+          "newElo": 1425,
+          "delta": 8
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 3,
+          "vp": 85,
+          "corp": "Odyssey",
+          "oldElo": 1599,
+          "newElo": 1565,
+          "delta": -34
+        }
+      ]
+    },
+    {
+      "_key": "gfaa3cfad4356",
+      "date": "2026-04-12T09:22:37.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 11,
+      "playerCount": 3,
+      "completedTime": 1775985757,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 86,
+          "corp": "CrediCor",
+          "oldElo": 1565,
+          "newElo": 1582,
+          "delta": 17
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 72,
+          "corp": "Point Luna",
+          "oldElo": 1425,
+          "newElo": 1432,
+          "delta": 7
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 60,
+          "corp": "Interplanetary Cinematics",
+          "oldElo": 1508,
+          "newElo": 1483,
+          "delta": -25
+        }
+      ]
+    },
+    {
+      "_key": "ge2e92c143e0c",
+      "date": "2026-04-12T09:22:41.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 11,
+      "playerCount": 3,
+      "completedTime": 1775985761,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 84,
+          "corp": "Pristar",
+          "oldElo": 1483,
+          "newElo": 1509,
+          "delta": 26
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 64,
+          "corp": "CrediCor",
+          "oldElo": 1432,
+          "newElo": 1427,
+          "delta": -5
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 64,
+          "corp": "Anubis Securities",
+          "oldElo": 1582,
+          "newElo": 1562,
+          "delta": -20
+        }
+      ]
+    },
+    {
+      "_key": "gc915eb6e8324",
+      "date": "2026-04-12T09:22:48.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 13,
+      "playerCount": 3,
+      "completedTime": 1775985768,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 101,
+          "corp": "Factorum",
+          "oldElo": 1509,
+          "newElo": 1532,
+          "delta": 23
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 86,
+          "corp": "Tycho Magnetics",
+          "oldElo": 1427,
+          "newElo": 1434,
+          "delta": 7
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 3,
+          "vp": 67,
+          "corp": "Point Luna",
+          "oldElo": 1562,
+          "newElo": 1532,
+          "delta": -30
+        }
+      ]
+    },
+    {
+      "_key": "g4a3f9adf7d9a",
+      "date": "2026-04-12T10:17:39.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1775989059,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 81,
+          "corp": "Mars Direct",
+          "oldElo": 1532,
+          "newElo": 1553,
+          "delta": 21
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 80,
+          "corp": "Spire",
+          "oldElo": 1434,
+          "newElo": 1441,
+          "delta": 7
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 3,
+          "vp": 41,
+          "corp": "Odyssey",
+          "oldElo": 1532,
+          "newElo": 1505,
+          "delta": -27
+        }
+      ]
+    },
+    {
+      "_key": "ge48199e2a4e1",
+      "date": "2026-04-12T10:18:11.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1775989091,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 74,
+          "corp": "Saturn Systems",
+          "oldElo": 1441,
+          "newElo": 1471,
+          "delta": 30
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 71,
+          "corp": "Point Luna",
+          "oldElo": 1505,
+          "newElo": 1504,
+          "delta": -1
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 62,
+          "corp": "Tharsis Republic",
+          "oldElo": 1553,
+          "newElo": 1524,
+          "delta": -29
+        }
+      ]
+    },
+    {
+      "_key": "g75f53eaf9486",
+      "date": "2026-04-12T10:18:15.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 13,
+      "playerCount": 3,
+      "completedTime": 1775989095,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 80,
+          "corp": "Polaris",
+          "oldElo": 1504,
+          "newElo": 1528,
+          "delta": 24
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 69,
+          "corp": "CrediCor",
+          "oldElo": 1471,
+          "newElo": 1474,
+          "delta": 3
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 55,
+          "corp": "Tharsis Republic",
+          "oldElo": 1524,
+          "newElo": 1497,
+          "delta": -27
+        }
+      ]
+    },
+    {
+      "_key": "gc6ee69b17a4f",
+      "date": "2026-04-12T10:18:21.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 14,
+      "playerCount": 3,
+      "completedTime": 1775989101,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 71,
+          "corp": "Voltagon",
+          "oldElo": 1474,
+          "newElo": 1501,
+          "delta": 27
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 70,
+          "corp": "Saturn Systems",
+          "oldElo": 1528,
+          "newElo": 1525,
+          "delta": -3
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 62,
+          "corp": "Celestic",
+          "oldElo": 1497,
+          "newElo": 1473,
+          "delta": -24
+        }
+      ]
+    },
+    {
+      "_key": "g345245d78bdf",
+      "date": "2026-04-12T11:40:49.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 11,
+      "playerCount": 3,
+      "completedTime": 1775994049,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 76,
+          "corp": "Aurorai",
+          "oldElo": 1525,
+          "newElo": 1546,
+          "delta": 21
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 60,
+          "corp": "PolderTECH Dutch",
+          "oldElo": 1473,
+          "newElo": 1476,
+          "delta": 3
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 40,
+          "corp": "Henkei Genetics",
+          "oldElo": 1501,
+          "newElo": 1477,
+          "delta": -24
+        }
+      ]
+    },
+    {
+      "_key": "g346adae16965",
+      "date": "2026-04-12T11:40:53.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 10,
+      "playerCount": 3,
+      "completedTime": 1775994053,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 74,
+          "corp": "PolderTECH Dutch",
+          "oldElo": 1477,
+          "newElo": 1503,
+          "delta": 26
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 55,
+          "corp": "Vitor",
+          "oldElo": 1546,
+          "newElo": 1541,
+          "delta": -5
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 48,
+          "corp": "Henkei Genetics",
+          "oldElo": 1476,
+          "newElo": 1454,
+          "delta": -22
+        }
+      ]
+    },
+    {
+      "_key": "gb02f0467e91d",
+      "date": "2026-04-12T11:40:57.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 11,
+      "playerCount": 3,
+      "completedTime": 1775994057,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 76,
+          "corp": "Hadesphere",
+          "oldElo": 1541,
+          "newElo": 1561,
+          "delta": 20
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 63,
+          "corp": "Saturn Systems",
+          "oldElo": 1503,
+          "newElo": 1503,
+          "delta": 0
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 62,
+          "corp": "Pristar",
+          "oldElo": 1454,
+          "newElo": 1435,
+          "delta": -19
+        }
+      ]
+    },
+    {
+      "_key": "g3bbfaaf06e46",
+      "date": "2026-04-12T11:48:39.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1775994519,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 76,
+          "corp": "Poseidon",
+          "oldElo": 1503,
+          "newElo": 1527,
+          "delta": 24
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 69,
+          "corp": "Mars Direct",
+          "oldElo": 1435,
+          "newElo": 1441,
+          "delta": 6
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 3,
+          "vp": 53,
+          "corp": "Astrodrill",
+          "oldElo": 1561,
+          "newElo": 1531,
+          "delta": -30
+        }
+      ]
+    },
+    {
+      "_key": "g43d634773ed5",
+      "date": "2026-04-12T11:48:43.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 11,
+      "playerCount": 3,
+      "completedTime": 1775994523,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 77,
+          "corp": "Chimera",
+          "oldElo": 1441,
+          "newElo": 1471,
+          "delta": 30
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 63,
+          "corp": "Tycho Magnetics",
+          "oldElo": 1527,
+          "newElo": 1524,
+          "delta": -3
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 3,
+          "vp": 55,
+          "corp": "Viron",
+          "oldElo": 1531,
+          "newElo": 1504,
+          "delta": -27
+        }
+      ]
+    },
+    {
+      "_key": "gec78f556f983",
+      "date": "2026-04-12T11:48:48.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 13,
+      "playerCount": 3,
+      "completedTime": 1775994528,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 86,
+          "corp": "Valley Trust",
+          "oldElo": 1524,
+          "newElo": 1545,
+          "delta": 21
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 76,
+          "corp": "Interplanetary Cinematics",
+          "oldElo": 1471,
+          "newElo": 1474,
+          "delta": 3
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 3,
+          "vp": 68,
+          "corp": "Morning Star Inc.",
+          "oldElo": 1504,
+          "newElo": 1480,
+          "delta": -24
+        }
+      ]
+    },
+    {
+      "_key": "gcc3ed4933ae5",
+      "date": "2026-04-12T11:51:22.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 13,
+      "playerCount": 3,
+      "completedTime": 1775994682,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 79,
+          "corp": "Aridor",
+          "oldElo": 1474,
+          "newElo": 1501,
+          "delta": 27
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 60,
+          "corp": "Mars Direct",
+          "oldElo": 1480,
+          "newElo": 1482,
+          "delta": 2
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 51,
+          "corp": "Splice",
+          "oldElo": 1545,
+          "newElo": 1516,
+          "delta": -29
+        }
+      ]
+    },
+    {
+      "_key": "ga5eb8be438e2",
+      "date": "2026-04-12T11:51:28.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 14,
+      "playerCount": 3,
+      "completedTime": 1775994688,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 108,
+          "corp": "Arklight",
+          "oldElo": 1516,
+          "newElo": 1538,
+          "delta": 22
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 100,
+          "corp": "Robinson Industries",
+          "oldElo": 1501,
+          "newElo": 1501,
+          "delta": 0
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 3,
+          "vp": 73,
+          "corp": "Jenson-Boyle & Co",
+          "oldElo": 1482,
+          "newElo": 1460,
+          "delta": -22
+        }
+      ]
+    },
+    {
+      "_key": "g71faf25e473f",
+      "date": "2026-04-12T11:51:33.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 14,
+      "playerCount": 3,
+      "completedTime": 1775994693,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 81,
+          "corp": "Ringcom",
+          "oldElo": 1538,
+          "newElo": 1558,
+          "delta": 20
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 75,
+          "corp": "Jenson-Boyle & Co",
+          "oldElo": 1501,
+          "newElo": 1501,
+          "delta": 0
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 3,
+          "vp": 53,
+          "corp": "Helion",
+          "oldElo": 1460,
+          "newElo": 1440,
+          "delta": -20
+        }
+      ]
+    },
+    {
+      "_key": "gb6518966bb0e",
+      "date": "2026-04-12T12:01:22.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1775995282,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 80,
+          "corp": "Jenson-Boyle & Co",
+          "oldElo": 1440,
+          "newElo": 1470,
+          "delta": 30
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 75,
+          "corp": "Anubis Securities",
+          "oldElo": 1558,
+          "newElo": 1552,
+          "delta": -6
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 66,
+          "corp": "Habitat Marte",
+          "oldElo": 1501,
+          "newElo": 1477,
+          "delta": -24
+        }
+      ]
+    },
+    {
+      "_key": "g49369b2c0027",
+      "date": "2026-04-12T12:01:26.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 11,
+      "playerCount": 3,
+      "completedTime": 1775995286,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 73,
+          "corp": "Cheung Shing MARS",
+          "oldElo": 1552,
+          "newElo": 1571,
+          "delta": 19
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 59,
+          "corp": "Martian Insurance Group",
+          "oldElo": 1470,
+          "newElo": 1473,
+          "delta": 3
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 56,
+          "corp": "Viron",
+          "oldElo": 1477,
+          "newElo": 1455,
+          "delta": -22
+        }
+      ]
+    },
+    {
+      "_key": "g588ed5c559e2",
+      "date": "2026-04-12T12:01:29.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1775995289,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 82,
+          "corp": "EcoLine",
+          "oldElo": 1473,
+          "newElo": 1500,
+          "delta": 27
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 81,
+          "corp": "Steelaris",
+          "oldElo": 1455,
+          "newElo": 1459,
+          "delta": 4
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 64,
+          "corp": "United Nations Mars Initiative",
+          "oldElo": 1571,
+          "newElo": 1540,
+          "delta": -31
+        }
+      ]
+    },
+    {
+      "_key": "gd0b3d6c89895",
+      "date": "2026-04-12T13:01:39.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 10,
+      "playerCount": 3,
+      "completedTime": 1775998899,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 62,
+          "corp": "Robinson Industries",
+          "oldElo": 1459,
+          "newElo": 1475,
+          "delta": 16
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 62,
+          "corp": "Helion",
+          "oldElo": 1500,
+          "newElo": 1512,
+          "delta": 12
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 55,
+          "corp": "Arborist Collective",
+          "oldElo": 1540,
+          "newElo": 1512,
+          "delta": -28
+        }
+      ]
+    },
+    {
+      "_key": "g5b02196f4e07",
+      "date": "2026-04-12T13:06:54.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1775999214,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 74,
+          "corp": "Lakefront Resorts",
+          "oldElo": 1512,
+          "newElo": 1535,
+          "delta": 23
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 72,
+          "corp": "Keplertec",
+          "oldElo": 1512,
+          "newElo": 1511,
+          "delta": -1
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 61,
+          "corp": "Odyssey",
+          "oldElo": 1475,
+          "newElo": 1454,
+          "delta": -21
+        }
+      ]
+    },
+    {
+      "_key": "g3433621f2c83",
+      "date": "2026-04-12T13:06:59.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 11,
+      "playerCount": 3,
+      "completedTime": 1775999219,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 91,
+          "corp": "Viron",
+          "oldElo": 1511,
+          "newElo": 1534,
+          "delta": 23
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 65,
+          "corp": "Anubis Securities",
+          "oldElo": 1535,
+          "newElo": 1531,
+          "delta": -4
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 60,
+          "corp": "Pristar",
+          "oldElo": 1454,
+          "newElo": 1435,
+          "delta": -19
+        }
+      ]
+    },
+    {
+      "_key": "g13e09c359b56",
+      "date": "2026-04-12T13:07:03.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 11,
+      "playerCount": 3,
+      "completedTime": 1775999223,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 74,
+          "corp": "Pharmacy Union",
+          "oldElo": 1531,
+          "newElo": 1552,
+          "delta": 21
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 73,
+          "corp": "Helion",
+          "oldElo": 1435,
+          "newElo": 1442,
+          "delta": 7
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 71,
+          "corp": "Habitat Marte",
+          "oldElo": 1534,
+          "newElo": 1507,
+          "delta": -27
+        }
+      ]
+    },
+    {
+      "_key": "g518b5c784b4b",
+      "date": "2026-04-12T13:07:07.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 11,
+      "playerCount": 3,
+      "completedTime": 1775999227,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 95,
+          "corp": "Ringcom",
+          "oldElo": 1442,
+          "newElo": 1472,
+          "delta": 30
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 72,
+          "corp": "Saturn Systems",
+          "oldElo": 1507,
+          "newElo": 1506,
+          "delta": -1
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 3,
+          "vp": 65,
+          "corp": "Pristar",
+          "oldElo": 1552,
+          "newElo": 1523,
+          "delta": -29
+        }
+      ]
+    },
+    {
+      "_key": "gd75cd5c090a7",
+      "date": "2026-04-12T13:07:12.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 13,
+      "playerCount": 3,
+      "completedTime": 1775999232,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 87,
+          "corp": "Saturn Systems",
+          "oldElo": 1506,
+          "newElo": 1529,
+          "delta": 23
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 85,
+          "corp": "Interplanetary Cinematics",
+          "oldElo": 1523,
+          "newElo": 1521,
+          "delta": -2
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 54,
+          "corp": "Viron",
+          "oldElo": 1472,
+          "newElo": 1451,
+          "delta": -21
+        }
+      ]
+    },
+    {
+      "_key": "g1066ccebe70f",
+      "date": "2026-04-12T13:10:22.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 14,
+      "playerCount": 3,
+      "completedTime": 1775999422,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 81,
+          "corp": "Viron",
+          "oldElo": 1451,
+          "newElo": 1480,
+          "delta": 29
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 73,
+          "corp": "Interplanetary Cinematics",
+          "oldElo": 1529,
+          "newElo": 1526,
+          "delta": -3
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 3,
+          "vp": 64,
+          "corp": "Jenson-Boyle & Co",
+          "oldElo": 1521,
+          "newElo": 1495,
+          "delta": -26
+        }
+      ]
+    },
+    {
+      "_key": "gd869953e58c1",
+      "date": "2026-04-12T13:11:18.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 15,
+      "playerCount": 3,
+      "completedTime": 1775999478,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 87,
+          "corp": "CrediCor",
+          "oldElo": 1495,
+          "newElo": 1520,
+          "delta": 25
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 73,
+          "corp": "Celestic",
+          "oldElo": 1480,
+          "newElo": 1482,
+          "delta": 2
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 70,
+          "corp": "Collegium Copernicus",
+          "oldElo": 1526,
+          "newElo": 1499,
+          "delta": -27
+        }
+      ]
+    },
+    {
+      "_key": "g644141bd6f9c",
+      "date": "2026-04-12T13:11:22.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 11,
+      "playerCount": 3,
+      "completedTime": 1775999482,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 74,
+          "corp": "Tharsis Republic",
+          "oldElo": 1499,
+          "newElo": 1523,
+          "delta": 24
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 65,
+          "corp": "Poseidon",
+          "oldElo": 1520,
+          "newElo": 1518,
+          "delta": -2
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 61,
+          "corp": "Robinson Industries",
+          "oldElo": 1482,
+          "newElo": 1460,
+          "delta": -22
+        }
+      ]
+    },
+    {
+      "_key": "gbf81b287668",
+      "date": "2026-04-12T13:11:26.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1775999486,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 81,
+          "corp": "Arklight",
+          "oldElo": 1518,
+          "newElo": 1540,
+          "delta": 22
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 62,
+          "corp": "Jenson-Boyle & Co",
+          "oldElo": 1460,
+          "newElo": 1464,
+          "delta": 4
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 54,
+          "corp": "Chimera",
+          "oldElo": 1523,
+          "newElo": 1497,
+          "delta": -26
+        }
+      ]
+    },
+    {
+      "_key": "g1d0cce83f706",
+      "date": "2026-04-12T13:12:29.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1775999549,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 86,
+          "corp": "Lakefront Resorts",
+          "oldElo": 1497,
+          "newElo": 1521,
+          "delta": 24
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 55,
+          "corp": "Valley Trust",
+          "oldElo": 1540,
+          "newElo": 1536,
+          "delta": -4
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 46,
+          "corp": "Anubis Securities",
+          "oldElo": 1464,
+          "newElo": 1444,
+          "delta": -20
+        }
+      ]
+    },
+    {
+      "_key": "g1a8b12383f58",
+      "date": "2026-04-12T13:23:54.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 16,
+      "playerCount": 3,
+      "completedTime": 1776000234,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 101,
+          "corp": "Arklight",
+          "oldElo": 1444,
+          "newElo": 1474,
+          "delta": 30
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 85,
+          "corp": "Habitat Marte",
+          "oldElo": 1536,
+          "newElo": 1532,
+          "delta": -4
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 62,
+          "corp": "Spire",
+          "oldElo": 1521,
+          "newElo": 1495,
+          "delta": -26
+        }
+      ]
+    },
+    {
+      "_key": "gc134d63cf533",
+      "date": "2026-04-12T13:23:58.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 11,
+      "playerCount": 3,
+      "completedTime": 1776000238,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 75,
+          "corp": "Kingdom of Tauraro",
+          "oldElo": 1495,
+          "newElo": 1520,
+          "delta": 25
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 74,
+          "corp": "Hecate Speditions",
+          "oldElo": 1474,
+          "newElo": 1477,
+          "delta": 3
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 3,
+          "vp": 72,
+          "corp": "Poseidon",
+          "oldElo": 1532,
+          "newElo": 1505,
+          "delta": -27
+        }
+      ]
+    },
+    {
+      "_key": "g2774bc720ba",
+      "date": "2026-04-12T13:24:03.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1776000243,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 93,
+          "corp": "Ringcom",
+          "oldElo": 1520,
+          "newElo": 1542,
+          "delta": 22
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 82,
+          "corp": "Poseidon",
+          "oldElo": 1505,
+          "newElo": 1505,
+          "delta": 0
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 59,
+          "corp": "Gagarin Mobile Base",
+          "oldElo": 1477,
+          "newElo": 1455,
+          "delta": -22
+        }
+      ]
+    },
+    {
+      "_key": "g8d66f69063f0",
+      "date": "2026-04-12T13:36:42.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 13,
+      "playerCount": 3,
+      "completedTime": 1776001002,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 79,
+          "corp": "Tharsis Republic",
+          "oldElo": 1542,
+          "newElo": 1550,
+          "delta": 8
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 79,
+          "corp": "Sagitta Frontier Services",
+          "oldElo": 1455,
+          "newElo": 1472,
+          "delta": 17
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 3,
+          "vp": 75,
+          "corp": "Thorgate",
+          "oldElo": 1505,
+          "newElo": 1481,
+          "delta": -24
+        }
+      ]
+    },
+    {
+      "_key": "g546c04dcb041",
+      "date": "2026-04-12T13:36:48.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 15,
+      "playerCount": 3,
+      "completedTime": 1776001008,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 79,
+          "corp": "SolBank",
+          "oldElo": 1550,
+          "newElo": 1569,
+          "delta": 19
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 61,
+          "corp": "Voltagon",
+          "oldElo": 1481,
+          "newElo": 1483,
+          "delta": 2
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 57,
+          "corp": "Mons Insurance",
+          "oldElo": 1472,
+          "newElo": 1451,
+          "delta": -21
+        }
+      ]
+    },
+    {
+      "_key": "g1207dc05f06",
+      "date": "2026-04-12T13:36:51.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 9,
+      "playerCount": 3,
+      "completedTime": 1776001011,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 59,
+          "corp": "Splice",
+          "oldElo": 1483,
+          "newElo": 1509,
+          "delta": 26
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 56,
+          "corp": "PolderTECH Dutch",
+          "oldElo": 1451,
+          "newElo": 1456,
+          "delta": 5
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 38,
+          "corp": "Factorum",
+          "oldElo": 1569,
+          "newElo": 1538,
+          "delta": -31
+        }
+      ]
+    },
+    {
+      "_key": "g35558021e487",
+      "date": "2026-04-12T20:33:18.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 11,
+      "playerCount": 3,
+      "completedTime": 1776025998,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 80,
+          "corp": "Polaris",
+          "oldElo": 1538,
+          "newElo": 1558,
+          "delta": 20
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 75,
+          "corp": "Odyssey",
+          "oldElo": 1456,
+          "newElo": 1461,
+          "delta": 5
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 3,
+          "vp": 73,
+          "corp": "Voltagon",
+          "oldElo": 1509,
+          "newElo": 1484,
+          "delta": -25
+        }
+      ]
+    },
+    {
+      "_key": "ga746a5cb5bd1",
+      "date": "2026-04-12T20:33:26.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 14,
+      "playerCount": 3,
+      "completedTime": 1776026006,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 97,
+          "corp": "Interplanetary Cinematics",
+          "oldElo": 1484,
+          "newElo": 1510,
+          "delta": 26
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 89,
+          "corp": "PhoboLog",
+          "oldElo": 1558,
+          "newElo": 1552,
+          "delta": -6
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 77,
+          "corp": "Vitor",
+          "oldElo": 1461,
+          "newElo": 1441,
+          "delta": -20
+        }
+      ]
+    },
+    {
+      "_key": "ga733679ec9d",
+      "date": "2026-04-12T20:37:50.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1776026270,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 79,
+          "corp": "PhoboLog",
+          "oldElo": 1552,
+          "newElo": 1571,
+          "delta": 19
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 70,
+          "corp": "Jenson-Boyle & Co",
+          "oldElo": 1441,
+          "newElo": 1447,
+          "delta": 6
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 3,
+          "vp": 52,
+          "corp": "Anubis Securities",
+          "oldElo": 1510,
+          "newElo": 1485,
+          "delta": -25
+        }
+      ]
+    },
+    {
+      "_key": "gfed3cb95159a",
+      "date": "2026-04-12T20:41:26.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 13,
+      "playerCount": 3,
+      "completedTime": 1776026486,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 81,
+          "corp": "Philares",
+          "oldElo": 1571,
+          "newElo": 1588,
+          "delta": 17
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 73,
+          "corp": "Mars Direct",
+          "oldElo": 1485,
+          "newElo": 1487,
+          "delta": 2
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 68,
+          "corp": "Odyssey",
+          "oldElo": 1447,
+          "newElo": 1428,
+          "delta": -19
+        }
+      ]
+    },
+    {
+      "_key": "g7c0f16155443",
+      "date": "2026-04-12T20:41:32.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1776026492,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 86,
+          "corp": "PhoboLog",
+          "oldElo": 1487,
+          "newElo": 1512,
+          "delta": 25
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 77,
+          "corp": "Sagitta Frontier Services",
+          "oldElo": 1428,
+          "newElo": 1435,
+          "delta": 7
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 56,
+          "corp": "Robinson Industries",
+          "oldElo": 1588,
+          "newElo": 1555,
+          "delta": -33
+        }
+      ]
+    },
+    {
+      "_key": "g863f6c916b4",
+      "date": "2026-04-12T20:41:39.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 13,
+      "playerCount": 3,
+      "completedTime": 1776026499,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 108,
+          "corp": "Arborist Collective",
+          "oldElo": 1555,
+          "newElo": 1574,
+          "delta": 19
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 70,
+          "corp": "Septem Tribus",
+          "oldElo": 1512,
+          "newElo": 1511,
+          "delta": -1
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 64,
+          "corp": "Ringcom",
+          "oldElo": 1435,
+          "newElo": 1418,
+          "delta": -17
+        }
+      ]
+    },
+    {
+      "_key": "g10dc82198d3d",
+      "date": "2026-04-12T20:48:37.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 14,
+      "playerCount": 3,
+      "completedTime": 1776026917,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 93,
+          "corp": "Ringcom",
+          "oldElo": 1511,
+          "newElo": 1534,
+          "delta": 23
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 92,
+          "corp": "Tycho Magnetics",
+          "oldElo": 1418,
+          "newElo": 1426,
+          "delta": 8
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 71,
+          "corp": "PhoboLog",
+          "oldElo": 1574,
+          "newElo": 1543,
+          "delta": -31
+        }
+      ]
+    },
+    {
+      "_key": "g804790662b64",
+      "date": "2026-04-12T20:57:15.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1776027435,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 82,
+          "corp": "Viron",
+          "oldElo": 1534,
+          "newElo": 1555,
+          "delta": 21
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 76,
+          "corp": "PolderTECH Dutch",
+          "oldElo": 1543,
+          "newElo": 1539,
+          "delta": -4
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 61,
+          "corp": "Jenson-Boyle & Co",
+          "oldElo": 1426,
+          "newElo": 1410,
+          "delta": -16
+        }
+      ]
+    },
+    {
+      "_key": "gde8393aa50fd",
+      "date": "2026-04-12T21:08:24.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1776028104,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 78,
+          "corp": "Inventrix",
+          "oldElo": 1555,
+          "newElo": 1574,
+          "delta": 19
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 76,
+          "corp": "Cheung Shing MARS",
+          "oldElo": 1539,
+          "newElo": 1535,
+          "delta": -4
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 68,
+          "corp": "Gagarin Mobile Base",
+          "oldElo": 1410,
+          "newElo": 1395,
+          "delta": -15
+        }
+      ]
+    },
+    {
+      "_key": "g6fd60f7a2ed4",
+      "date": "2026-04-12T21:08:31.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1776028111,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 85,
+          "corp": "Cheung Shing MARS",
+          "oldElo": 1574,
+          "newElo": 1591,
+          "delta": 17
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 66,
+          "corp": "Interplanetary Cinematics",
+          "oldElo": 1395,
+          "newElo": 1407,
+          "delta": 12
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 65,
+          "corp": "Hadesphere",
+          "oldElo": 1535,
+          "newElo": 1508,
+          "delta": -27
+        }
+      ]
+    },
+    {
+      "_key": "g57f098cefcf8",
+      "date": "2026-04-12T21:08:37.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1776028117,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 83,
+          "corp": "Hecate Speditions",
+          "oldElo": 1591,
+          "newElo": 1606,
+          "delta": 15
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 82,
+          "corp": "PolderTECH Dutch",
+          "oldElo": 1407,
+          "newElo": 1416,
+          "delta": 9
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 67,
+          "corp": "Teractor",
+          "oldElo": 1508,
+          "newElo": 1483,
+          "delta": -25
+        }
+      ]
+    },
+    {
+      "_key": "gd5f65e38da33",
+      "date": "2026-04-12T21:10:38.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 11,
+      "playerCount": 3,
+      "completedTime": 1776028238,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 88,
+          "corp": "Ambient",
+          "oldElo": 1483,
+          "newElo": 1509,
+          "delta": 26
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 75,
+          "corp": "Teractor",
+          "oldElo": 1606,
+          "newElo": 1598,
+          "delta": -8
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 67,
+          "corp": "Chimera",
+          "oldElo": 1416,
+          "newElo": 1400,
+          "delta": -16
+        }
+      ]
+    },
+    {
+      "_key": "g32dc3a3d2cc6",
+      "date": "2026-04-12T21:10:42.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1776028242,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 81,
+          "corp": "SolBank",
+          "oldElo": 1598,
+          "newElo": 1613,
+          "delta": 15
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 68,
+          "corp": "Pharmacy Union",
+          "oldElo": 1400,
+          "newElo": 1410,
+          "delta": 10
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 62,
+          "corp": "Aridor",
+          "oldElo": 1509,
+          "newElo": 1484,
+          "delta": -25
+        }
+      ]
+    },
+    {
+      "_key": "g9a739ec8bb42",
+      "date": "2026-04-12T21:10:55.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 22,
+      "playerCount": 3,
+      "completedTime": 1776028255,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 114,
+          "corp": "Point Luna",
+          "oldElo": 1410,
+          "newElo": 1443,
+          "delta": 33
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 105,
+          "corp": "Henkei Genetics",
+          "oldElo": 1484,
+          "newElo": 1486,
+          "delta": 2
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 3,
+          "vp": 69,
+          "corp": "Valley Trust|Recyclon",
+          "oldElo": 1613,
+          "newElo": 1585,
+          "delta": -28
+        }
+      ]
+    },
+    {
+      "_key": "g5788805bd6c9",
+      "date": "2026-04-12T21:11:02.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1776028262,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 86,
+          "corp": "Odyssey",
+          "oldElo": 1486,
+          "newElo": 1512,
+          "delta": 26
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 85,
+          "corp": "Poseidon",
+          "oldElo": 1585,
+          "newElo": 1577,
+          "delta": -8
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 60,
+          "corp": "Vitor",
+          "oldElo": 1443,
+          "newElo": 1425,
+          "delta": -18
+        }
+      ]
+    },
+    {
+      "_key": "g83dc6958269f",
+      "date": "2026-04-12T21:11:05.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 11,
+      "playerCount": 3,
+      "completedTime": 1776028265,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 72,
+          "corp": "Arborist Collective",
+          "oldElo": 1512,
+          "newElo": 1535,
+          "delta": 23
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 59,
+          "corp": "Point Luna",
+          "oldElo": 1577,
+          "newElo": 1570,
+          "delta": -7
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 58,
+          "corp": "SolBank",
+          "oldElo": 1425,
+          "newElo": 1409,
+          "delta": -16
+        }
+      ]
+    },
+    {
+      "_key": "ge611db699b74",
+      "date": "2026-04-12T21:17:15.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 11,
+      "playerCount": 3,
+      "completedTime": 1776028635,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 99,
+          "corp": "Interplanetary Cinematics",
+          "oldElo": 1409,
+          "newElo": 1442,
+          "delta": 33
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 84,
+          "corp": "Vitor",
+          "oldElo": 1570,
+          "newElo": 1564,
+          "delta": -6
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 67,
+          "corp": "Ambient",
+          "oldElo": 1535,
+          "newElo": 1508,
+          "delta": -27
+        }
+      ]
+    },
+    {
+      "_key": "g8167e33867ca",
+      "date": "2026-04-12T21:17:22.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 14,
+      "playerCount": 3,
+      "completedTime": 1776028642,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 112,
+          "corp": "EcoLine",
+          "oldElo": 1564,
+          "newElo": 1582,
+          "delta": 18
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 96,
+          "corp": "Vitor",
+          "oldElo": 1508,
+          "newElo": 1508,
+          "delta": 0
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 61,
+          "corp": "EcoTec",
+          "oldElo": 1442,
+          "newElo": 1424,
+          "delta": -18
+        }
+      ]
+    },
+    {
+      "_key": "g63aac16431b",
+      "date": "2026-04-12T21:17:27.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 11,
+      "playerCount": 3,
+      "completedTime": 1776028647,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 101,
+          "corp": "Nirgal Enterprises",
+          "oldElo": 1424,
+          "newElo": 1456,
+          "delta": 32
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 59,
+          "corp": "Gagarin Mobile Base",
+          "oldElo": 1582,
+          "newElo": 1574,
+          "delta": -8
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 52,
+          "corp": "Soylent Seedling Systems",
+          "oldElo": 1508,
+          "newElo": 1484,
+          "delta": -24
+        }
+      ]
+    },
+    {
+      "_key": "ge7938718aa3f",
+      "date": "2026-04-12T21:17:31.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 10,
+      "playerCount": 3,
+      "completedTime": 1776028651,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 68,
+          "corp": "Helion",
+          "oldElo": 1456,
+          "newElo": 1473,
+          "delta": 17
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 68,
+          "corp": "Lakefront Resorts",
+          "oldElo": 1574,
+          "newElo": 1579,
+          "delta": 5
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 66,
+          "corp": "Arcadian Communities",
+          "oldElo": 1484,
+          "newElo": 1462,
+          "delta": -22
+        }
+      ]
+    },
+    {
+      "_key": "g5c7db62e6ecc",
+      "date": "2026-04-12T21:17:38.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 14,
+      "playerCount": 3,
+      "completedTime": 1776028658,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 94,
+          "corp": "Astrodrill",
+          "oldElo": 1473,
+          "newElo": 1500,
+          "delta": 27
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 87,
+          "corp": "Arklight",
+          "oldElo": 1462,
+          "newElo": 1466,
+          "delta": 4
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 3,
+          "vp": 68,
+          "corp": "Mars Maths",
+          "oldElo": 1579,
+          "newElo": 1548,
+          "delta": -31
+        }
+      ]
+    },
+    {
+      "_key": "g4dfb8269ca77",
+      "date": "2026-04-12T21:29:59.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 14,
+      "playerCount": 3,
+      "completedTime": 1776029399,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 102,
+          "corp": "Vitor",
+          "oldElo": 1548,
+          "newElo": 1568,
+          "delta": 20
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 91,
+          "corp": "Saturn Systems",
+          "oldElo": 1466,
+          "newElo": 1470,
+          "delta": 4
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 89,
+          "corp": "Philares",
+          "oldElo": 1500,
+          "newElo": 1476,
+          "delta": -24
+        }
+      ]
+    },
+    {
+      "_key": "gcde16b229bc5",
+      "date": "2026-04-12T21:30:09.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 15,
+      "playerCount": 3,
+      "completedTime": 1776029409,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 142,
+          "corp": "EcoLine",
+          "oldElo": 1568,
+          "newElo": 1586,
+          "delta": 18
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 74,
+          "corp": "Spire",
+          "oldElo": 1476,
+          "newElo": 1479,
+          "delta": 3
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 59,
+          "corp": "Polaris",
+          "oldElo": 1470,
+          "newElo": 1450,
+          "delta": -20
+        }
+      ]
+    },
+    {
+      "_key": "g1730eebd58e5",
+      "date": "2026-04-12T21:30:19.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 18,
+      "playerCount": 3,
+      "completedTime": 1776029419,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 90,
+          "corp": "Chimera",
+          "oldElo": 1586,
+          "newElo": 1602,
+          "delta": 16
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 74,
+          "corp": "Saturn Systems",
+          "oldElo": 1450,
+          "newElo": 1455,
+          "delta": 5
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 71,
+          "corp": "Helion",
+          "oldElo": 1479,
+          "newElo": 1458,
+          "delta": -21
+        }
+      ]
+    },
+    {
+      "_key": "g6a6711e35663",
+      "date": "2026-04-12T21:34:00.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 15,
+      "playerCount": 3,
+      "completedTime": 1776029640,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 90,
+          "corp": "Spire",
+          "oldElo": 1458,
+          "newElo": 1487,
+          "delta": 29
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 74,
+          "corp": "SolBank",
+          "oldElo": 1602,
+          "newElo": 1594,
+          "delta": -8
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 70,
+          "corp": "Saturn Systems",
+          "oldElo": 1455,
+          "newElo": 1436,
+          "delta": -19
+        }
+      ]
+    },
+    {
+      "_key": "g2c92be3265eb",
+      "date": "2026-04-12T21:39:19.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1776029959,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 89,
+          "corp": "Voltagon",
+          "oldElo": 1594,
+          "newElo": 1609,
+          "delta": 15
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 2,
+          "vp": 86,
+          "corp": "Aridor",
+          "oldElo": 1487,
+          "newElo": 1489,
+          "delta": 2
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 65,
+          "corp": "Thorgate",
+          "oldElo": 1436,
+          "newElo": 1419,
+          "delta": -17
+        }
+      ]
+    },
+    {
+      "_key": "gf5e26288556e",
+      "date": "2026-04-12T21:41:33.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 11,
+      "playerCount": 3,
+      "completedTime": 1776030093,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 81,
+          "corp": "SolBank",
+          "oldElo": 1609,
+          "newElo": 1620,
+          "delta": 11
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 74,
+          "corp": "Pristar",
+          "oldElo": 1419,
+          "newElo": 1427,
+          "delta": 8
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 62,
+          "corp": "PhoboLog",
+          "oldElo": 1489,
+          "newElo": 1467,
+          "delta": -22
+        }
+      ]
+    },
+    {
+      "_key": "g91dbda4a2cb0",
+      "date": "2026-04-12T21:43:12.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1776030192,
+      "results": [
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 1,
+          "vp": 85,
+          "corp": "Arborist Collective",
+          "oldElo": 1427,
+          "newElo": 1458,
+          "delta": 31
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 2,
+          "vp": 79,
+          "corp": "PolderTECH Dutch",
+          "oldElo": 1620,
+          "newElo": 1611,
+          "delta": -9
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 62,
+          "corp": "Point Luna",
+          "oldElo": 1467,
+          "newElo": 1447,
+          "delta": -20
+        }
+      ]
+    },
+    {
+      "_key": "g1196027e5b9e",
+      "date": "2026-04-12T21:43:17.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 10,
+      "playerCount": 3,
+      "completedTime": 1776030197,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 72,
+          "corp": "EcoLine",
+          "oldElo": 1611,
+          "newElo": 1622,
+          "delta": 11
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 56,
+          "corp": "Mind Set Mars",
+          "oldElo": 1458,
+          "newElo": 1463,
+          "delta": 5
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 53,
+          "corp": "Robinson Industries",
+          "oldElo": 1447,
+          "newElo": 1429,
+          "delta": -18
+        }
+      ]
+    },
+    {
+      "_key": "gea5bebcb8fc6",
+      "date": "2026-04-12T21:43:23.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 11,
+      "playerCount": 3,
+      "completedTime": 1776030203,
+      "results": [
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 1,
+          "vp": 71,
+          "corp": "Jenson-Boyle & Co",
+          "oldElo": 1429,
+          "newElo": 1448,
+          "delta": 19
+        },
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 71,
+          "corp": "Mining Guild",
+          "oldElo": 1622,
+          "newElo": 1623,
+          "delta": 1
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 3,
+          "vp": 63,
+          "corp": "Philares",
+          "oldElo": 1463,
+          "newElo": 1443,
+          "delta": -20
+        }
+      ]
+    },
+    {
+      "_key": "ge3ff035d1954",
+      "date": "2026-04-12T21:43:28.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1776030208,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 90,
+          "corp": "Polaris",
+          "oldElo": 1623,
+          "newElo": 1633,
+          "delta": 10
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 87,
+          "corp": "Interplanetary Cinematics",
+          "oldElo": 1443,
+          "newElo": 1449,
+          "delta": 6
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 73,
+          "corp": "PhoboLog",
+          "oldElo": 1448,
+          "newElo": 1429,
+          "delta": -19
+        }
+      ]
+    },
+    {
+      "_key": "gb975e5708b6c",
+      "date": "2026-04-12T21:43:34.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 12,
+      "playerCount": 3,
+      "completedTime": 1776030214,
+      "results": [
+        {
+          "name": "c",
+          "displayName": "C",
+          "place": 1,
+          "vp": 98,
+          "corp": "Anubis Securities",
+          "oldElo": 1633,
+          "newElo": 1642,
+          "delta": 9
+        },
+        {
+          "name": "a",
+          "displayName": "A",
+          "place": 2,
+          "vp": 97,
+          "corp": "Interplanetary Cinematics",
+          "oldElo": 1449,
+          "newElo": 1454,
+          "delta": 5
+        },
+        {
+          "name": "b",
+          "displayName": "B",
+          "place": 3,
+          "vp": 78,
+          "corp": "Collegium Copernicus",
+          "oldElo": 1429,
+          "newElo": 1412,
+          "delta": -17
+        }
+      ]
+    },
+    {
+      "_key": "game-venusterraform",
+      "date": "2026-04-13T07:19:13.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 1,
+      "playerCount": 2,
+      "completedTime": 1776064753,
+      "results": [
+        {
+          "name": "player-blue",
+          "displayName": "player-blue",
+          "place": 1,
+          "vp": 29,
+          "corp": "",
+          "oldElo": 1500,
+          "newElo": 1524,
+          "delta": 24
+        },
+        {
+          "name": "player-red",
+          "displayName": "player-red",
+          "place": 2,
+          "vp": 20,
+          "corp": "",
+          "oldElo": 1500,
+          "newElo": 1476,
+          "delta": -24
+        }
+      ]
+    },
+    {
+      "_key": "gameid",
+      "date": "2026-04-13T07:19:13.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 14,
+      "playerCount": 2,
+      "completedTime": 1776064753,
+      "results": [
+        {
+          "name": "player-blue",
+          "displayName": "player-blue",
+          "place": 1,
+          "vp": 22,
+          "corp": "",
+          "oldElo": 1524,
+          "newElo": 1545,
+          "delta": 21
+        },
+        {
+          "name": "player-red",
+          "displayName": "player-red",
+          "place": 2,
+          "vp": 20,
+          "corp": "",
+          "oldElo": 1476,
+          "newElo": 1455,
+          "delta": -21
+        }
+      ]
+    },
+    {
+      "_key": "gto",
+      "date": "2026-04-13T07:19:13.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 1,
+      "playerCount": 4,
+      "completedTime": 1776064753,
+      "results": [
+        {
+          "name": "player-blue",
+          "displayName": "player-blue",
+          "place": 1,
+          "vp": 20,
+          "corp": "",
+          "oldElo": 1545,
+          "newElo": 1541,
+          "delta": -4
+        },
+        {
+          "name": "player-green",
+          "displayName": "player-green",
+          "place": 1,
+          "vp": 20,
+          "corp": "",
+          "oldElo": 1500,
+          "newElo": 1500,
+          "delta": 0
+        },
+        {
+          "name": "player-yellow",
+          "displayName": "player-yellow",
+          "place": 1,
+          "vp": 20,
+          "corp": "",
+          "oldElo": 1500,
+          "newElo": 1500,
+          "delta": 0
+        },
+        {
+          "name": "player-red",
+          "displayName": "player-red",
+          "place": 1,
+          "vp": 20,
+          "corp": "",
+          "oldElo": 1455,
+          "newElo": 1459,
+          "delta": 4
+        }
+      ]
+    },
+    {
+      "_key": "game-id",
+      "date": "2026-04-13T07:19:25.000Z",
+      "server": "server",
+      "map": "tharsis",
+      "generation": 1,
+      "playerCount": 2,
+      "completedTime": 1776064765,
+      "results": [
+        {
+          "name": "player2",
+          "displayName": "player2",
+          "place": 1,
+          "vp": 22,
+          "corp": "Philares",
+          "oldElo": 1500,
+          "newElo": 1524,
+          "delta": 24
+        },
+        {
+          "name": "player1",
+          "displayName": "player1",
+          "place": 2,
+          "vp": 21,
+          "corp": "",
+          "oldElo": 1500,
+          "newElo": 1476,
+          "delta": -24
+        }
+      ]
+    }
+  ]
+}

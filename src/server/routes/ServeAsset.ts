@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as responses from '../server/responses';
+import * as rawSettings from '../../genfiles/settings.json';
 
 import {Context} from './IHandler';
 import {BufferCache} from './BufferCache';
@@ -12,6 +13,7 @@ import {Response} from '../Response';
 import {isDynamicEloAssetPath, resolveEloAssetPath} from '../elo/EloPaths';
 
 type Encoding = 'gzip' | 'br';
+const APP_ASSET_VERSION = rawSettings.head;
 
 export class FileAPI {
   public static readonly INSTANCE: FileAPI = new FileAPI();
@@ -61,12 +63,13 @@ export class ServeAsset extends Handler {
       return;
     }
 
-    // Remove leading slash.
-    const path = req.url.substring(1);
-    const dynamicEloAsset = isDynamicEloAssetPath(path);
+    const requestUrl = new URL(req.url, 'http://tm.local');
+    // Remove leading slash and ignore cache-busting query params.
+    const requestPath = requestUrl.pathname.substring(1);
+    const dynamicEloAsset = isDynamicEloAssetPath(requestPath);
 
     const supportedEncodings = this.supportedEncodings(req);
-    const toFile: {file?: string, encoding?: Encoding } = this.toFile(path, supportedEncodings);
+    const toFile: {file?: string, encoding?: Encoding } = this.toFile(requestPath, supportedEncodings);
 
     if (toFile.file === undefined) {
       return responses.notFound(req, res);
@@ -75,7 +78,7 @@ export class ServeAsset extends Handler {
     const file = toFile.file;
 
     // asset caching
-    const buffer = (this.cacheAssets && !dynamicEloAsset) ? this.cache.get(file) : undefined;
+    const buffer = (this.cacheAssets && !dynamicEloAsset && file !== 'assets/index.html') ? this.cache.get(file) : undefined;
     if (buffer !== undefined) {
       if (req.headers['if-none-match'] === buffer.hash) {
         responses.notModified(res);
@@ -83,9 +86,11 @@ export class ServeAsset extends Handler {
       }
       res.setHeader('Cache-Control', 'must-revalidate');
       res.setHeader('ETag', buffer.hash);
+    } else if (file === 'assets/index.html') {
+      res.setHeader('Cache-Control', 'no-store');
     } else if (dynamicEloAsset) {
       res.setHeader('Cache-Control', 'no-store');
-    } else if (this.cacheAssets === false && req.url !== '/main.js' && req.url !== '/main.js.map') {
+    } else if (this.cacheAssets === false && requestPath !== 'main.js' && requestPath !== 'main.js.map') {
       res.setHeader('Cache-Control', 'max-age=' + this.cacheAgeSeconds);
     }
 
@@ -105,16 +110,27 @@ export class ServeAsset extends Handler {
     }
 
     try {
-      const data = await this.fileApi.readFile(file);
+      let data = await this.fileApi.readFile(file);
+      if (file === 'assets/index.html') {
+        data = Buffer.from(this.renderAppHtml(data.toString('utf-8')));
+      }
       res.setHeader('Content-Length', data.length);
       res.end(data);
-      if (this.cacheAssets === true && !dynamicEloAsset) {
+      if (this.cacheAssets === true && !dynamicEloAsset && file !== 'assets/index.html') {
         this.cache.set(file, data);
       }
     } catch (err) {
       console.log(err);
-      responses.internalServerError(req, res, 'Cannot serve ' + path);
+      responses.internalServerError(req, res, 'Cannot serve ' + requestPath);
     }
+  }
+
+  private renderAppHtml(html: string): string {
+    const versionedStyles = `href="styles.css?v=${APP_ASSET_VERSION}"`;
+    const versionedScript = (_match: string, assetName: string) => `src="${assetName}?v=${APP_ASSET_VERSION}"`;
+    return html
+      .replace(/href="styles\.css(?:\?[^"]*)?"/g, versionedStyles)
+      .replace(/src="(vendors\.js|main\.js)(?:\?[^"]*)?"/g, versionedScript);
   }
 
   private toMainFile(urlPath: string, encodings: Set<Encoding>): { file?: string, encoding?: Encoding } {

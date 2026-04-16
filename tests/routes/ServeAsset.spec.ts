@@ -4,6 +4,7 @@ import {resolveEloAssetPath} from '../../src/server/elo/EloPaths';
 import {MockResponse} from './HttpMocks';
 import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {statusCode} from '../../src/common/http/statusCode';
+import * as rawSettings from '../../src/genfiles/settings.json';
 class FileApiMock extends FileAPI {
   public counts = {
     readFile: 0,
@@ -63,6 +64,9 @@ describe('ServeAsset', () => {
     scaffolding.req.headers['accept-encoding'] = '';
     await scaffolding.get(instance, res);
     expect(res.content.startsWith('<!DOCTYPE html>'));
+    expect(res.content).includes(`styles.css?v=${rawSettings.head}`);
+    expect(res.content).includes(`main.js?v=${rawSettings.head}`);
+    expect(res.headers.get('Cache-Control')).eq('no-store');
   });
 
   it('styles.css', async () => {
@@ -137,6 +141,19 @@ describe('ServeAsset', () => {
       ...primedCache,
       readFile: 1,
       existsSync: 0,
+    });
+  });
+
+  it('main.js with cache-busting query string', async () => {
+    instance = new ServeAsset(undefined, false, fileApi);
+    scaffolding.url = '/main.js?v=fa100e9';
+    scaffolding.req.headers['accept-encoding'] = '';
+    await scaffolding.get(instance, res);
+    expect(res.content).eq('data: build/main.js');
+    expect(fileApi.counts).deep.eq({
+      ...primedCache,
+      readFile: 1,
+      existsSync: 1,
     });
   });
 

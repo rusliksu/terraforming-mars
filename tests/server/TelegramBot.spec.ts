@@ -12,6 +12,7 @@ describe('TelegramBot', () => {
       game: {
         id: 'g5d00c8e62c26',
         generation: 8,
+        phase: 'action',
         players: [
           {name: 'Руслан', color: 'red'},
           {name: 'Паша', color: 'blue'},
@@ -21,10 +22,10 @@ describe('TelegramBot', () => {
       },
     });
 
-    expect(text).includes('Руслан, твой ход! 🪐');
-    expect(text).includes('https://tm.knightbyte.win/player?id=p-ruslan');
-    expect(text).includes('Игра: g5d00c8e62c26 · Gen 8 · ELYSIUM · 3P');
+    expect(text).includes('Твой ход!');
+    expect(text).includes('Игра g5d00c8e · Gen 8 · action · elysium · 3P');
     expect(text).includes('Игроки: Руслан (красный), Паша (синий), Олеся (зеленый)');
+    expect(text).includes('https://tm.knightbyte.win/player?id=p-ruslan');
   });
 
   it('suppresses turn notice while bot takeover is active', async () => {

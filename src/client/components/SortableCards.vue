@@ -1,10 +1,5 @@
 <template>
 <div>
-  <div v-if="experimentalUI()" v-i18n>
-    <label>
-      <input type="checkbox" v-model="showReorder" /> Reorder Cards
-    </label>
-  </div>
   <div class="sortable-cards">
     <div ref="draggers" :class="{ 'dragging': Boolean(dragCard) }" v-for="(card, index) in getSortedCards()" :key="card.name" draggable="true" v-on:dragend="onDragEnd()" v-on:dragstart="onDragStart(card.name)">
       <div v-if="dragCard" ref="droppers" class="drop-target" v-on:dragover="onDragOver(card.name)"></div>
@@ -71,7 +66,7 @@ export default defineComponent({
       }
     }
     return {
-      showReorder: false,
+      showReorder: getPreferences().experimental_ui,
       cardOrder: cardOrder,
       dragCard: undefined,
     };
@@ -142,9 +137,6 @@ export default defineComponent({
           }
         }
       }
-    },
-    experimentalUI(): boolean {
-      return getPreferences().experimental_ui;
     },
   },
 });

@@ -1,10 +1,5 @@
 <template>
 <div>
-  <div v-if="experimentalUI()" v-i18n>
-    <label>
-      <input type="checkbox" v-model="showReorder" /> Reorder Cards
-    </label>
-  </div>
   <div class="sortable-cards">
     <div
       ref="cardbox"
@@ -78,7 +73,7 @@ export default defineComponent({
       }
     }
     return {
-      showReorder: false,
+      showReorder: getPreferences().experimental_ui,
       cardOrder: cardOrder,
       dragCard: undefined,
     };
@@ -130,9 +125,6 @@ export default defineComponent({
           }
         }
       }
-    },
-    experimentalUI(): boolean {
-      return getPreferences().experimental_ui;
     },
   },
 });

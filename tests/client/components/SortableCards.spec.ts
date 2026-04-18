@@ -4,15 +4,18 @@ import {expect} from 'chai';
 import {CardName} from '@/common/cards/CardName';
 import SortableCards from '@/client/components/SortableCards.vue';
 import {FakeLocalStorage} from './FakeLocalStorage';
+import {PreferencesManager} from '@/client/utils/PreferencesManager';
 
 describe('SortableCards', () => {
   let localStorage: FakeLocalStorage;
 
   beforeEach(() => {
+    PreferencesManager.resetForTest();
     localStorage = new FakeLocalStorage();
     FakeLocalStorage.register(localStorage);
   });
   afterEach(() => {
+    PreferencesManager.resetForTest();
     FakeLocalStorage.deregister(localStorage);
   });
 
@@ -93,5 +96,21 @@ describe('SortableCards', () => {
       [CardName.CARTEL]: 3,
       [CardName.BIRDS]: 1,
     });
+  });
+  it('always enables point-and-click reorder in experimental UI without a checkbox', () => {
+    PreferencesManager.INSTANCE.set('experimental_ui', true);
+    const sortable = mount(SortableCards, {
+      ...globalConfig,
+      props: {
+        cards: [{
+          name: CardName.ANTS,
+        }, {
+          name: CardName.CARTEL,
+        }],
+        playerId: 'foo',
+      },
+    });
+    expect(sortable.find('input[type="checkbox"]').exists()).to.eq(false);
+    expect(sortable.findAll('.reorder-banners-container')).to.have.length(2);
   });
 });

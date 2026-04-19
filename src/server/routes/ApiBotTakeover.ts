@@ -13,7 +13,7 @@ export class ApiBotTakeover extends Handler {
   public static readonly INSTANCE = new ApiBotTakeover();
 
   constructor(private readonly manager: BotTakeoverRouteDeps = BotTakeoverManager.INSTANCE) {
-    super({validateServerId: true});
+    super();
   }
 
   public override async get(req: Request, res: Response, ctx: Context): Promise<void> {

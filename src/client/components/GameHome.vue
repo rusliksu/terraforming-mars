@@ -8,7 +8,7 @@
             <span :class="'color-square ' + getPlayerCubeColorClass(player.color)">{{playerSymbol(player.color)}}</span>
             <span class="player-name"><a :href="getHref(player.id)">{{player.name}}</a></span>
             <button
-              v-if="isRunning && serverId !== ''"
+              v-if="isRunning"
               class="bot-toggle"
               :class="{'bot-toggle--active': isBotRunning(player.id)}"
               :aria-checked="isBotRunning(player.id) ? 'true' : 'false'"
@@ -108,7 +108,33 @@ export default defineComponent({
       return new URLSearchParams(window.location.search).get('serverId') || '';
     },
   },
+  mounted() {
+    void this.refreshBotPlayers();
+  },
   methods: {
+    async refreshBotPlayers() {
+      if (!this.isRunning) {
+        return;
+      }
+      try {
+        const query = new URLSearchParams({
+          gameId: this.getGameId(),
+        });
+        if (this.serverId !== '') {
+          query.set('serverId', this.serverId);
+        }
+        const response = await fetch('api/bot-takeover?' + query.toString());
+        if (!response.ok) {
+          return;
+        }
+        const payload = await response.json() as {botPlayers?: Array<string>};
+        if (Array.isArray(payload.botPlayers)) {
+          this.botPlayersOverride = payload.botPlayers;
+        }
+      } catch (_error) {
+        // Degrade gracefully when the optional bot status probe is unavailable.
+      }
+    },
     getGameId(): string {
       return this.game !== undefined ? this.game.id.toString() : 'n/a';
     },
@@ -151,7 +177,7 @@ export default defineComponent({
       return playerId === this.urlCopiedPlayerId;
     },
     async toggleBot(playerId: string) {
-      if (this.serverId === '' || this.busyPlayerIds.includes(playerId)) {
+      if (this.busyPlayerIds.includes(playerId)) {
         return;
       }
       const action = this.isBotRunning(playerId) ? 'stop' : 'start';
@@ -161,8 +187,10 @@ export default defineComponent({
           action,
           gameId: this.getGameId(),
           playerId,
-          serverId: this.serverId,
         });
+        if (this.serverId !== '') {
+          query.set('serverId', this.serverId);
+        }
         const response = await fetch('api/bot-takeover?' + query.toString(), {method: 'POST'});
         if (!response.ok) {
           throw new Error(await response.text());

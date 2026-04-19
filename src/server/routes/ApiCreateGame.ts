@@ -18,6 +18,7 @@ import {Request} from '../Request';
 import {Response} from '../Response';
 import {QuotaConfig, QuotaHandler} from '../server/QuotaHandler';
 import {durationToMilliseconds} from '../utils/durations';
+import {BotTakeoverManager} from '../bot/BotTakeoverManager';
 
 export function normalizeTelegramId(telegramID: string | undefined): string {
   return (telegramID ?? '').trim();
@@ -27,6 +28,8 @@ export function isTelegramIdValid(telegramID: string | undefined): boolean {
   const normalized = normalizeTelegramId(telegramID);
   return normalized === '' || /^\d{5,20}$/.test(normalized);
 }
+
+type CreateGameRouteDeps = Pick<BotTakeoverManager, 'start' | 'stop'>;
 
 function getQuotaConfig(): QuotaConfig {
   const defaultQuota = {limit: 1, perMs: 1}; // Effectively, no limit.
@@ -63,7 +66,10 @@ export class ApiCreateGame extends Handler {
   public static readonly INSTANCE = new ApiCreateGame();
   private quotaHandler;
 
-  public constructor(quotaConfig: QuotaConfig = getQuotaConfig()) {
+  public constructor(
+    quotaConfig: QuotaConfig = getQuotaConfig(),
+    private readonly botManager: CreateGameRouteDeps = BotTakeoverManager.INSTANCE,
+  ) {
     super();
     this.quotaHandler = new QuotaHandler(quotaConfig);
   }
@@ -197,6 +203,27 @@ export class ApiCreateGame extends Handler {
             const seed = Math.random();
             game = Game.newInstance(gameId, players, players[firstPlayerIdx], gameOptions, seed, spectatorId);
           }
+
+          const botPlayers = players.filter((_player, index) => gameReq.players[index]?.isBot === true);
+          const startedBotPlayerIds = new Array<string>();
+          try {
+            for (const botPlayer of botPlayers) {
+              this.botManager.start({
+                gameId: game.id,
+                playerId: botPlayer.id,
+                serverId: ctx.ids.serverId,
+              });
+              startedBotPlayerIds.push(botPlayer.id);
+            }
+          } catch (error) {
+            for (const playerId of startedBotPlayerIds) {
+              this.botManager.stop(safeCast(playerId, isPlayerId));
+            }
+            responses.badRequest(req, res, error instanceof Error ? error.message : String(error));
+            resolve();
+            return;
+          }
+
           ctx.gameLoader.add(game);
           // Send Telegram game start notifications
           for (const p of players) {
@@ -204,7 +231,9 @@ export class ApiCreateGame extends Handler {
               sendGameStartNotice(p);
             }
           }
-          responses.writeJson(res, ctx, Server.getSimpleGameModel(game));
+          responses.writeJson(res, ctx, Server.getSimpleGameModel(game, {
+            botPlayers: botPlayers.map((player) => player.id),
+          }));
         } catch (error) {
           responses.internalServerError(req, res, error);
         }

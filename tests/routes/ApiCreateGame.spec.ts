@@ -119,12 +119,12 @@ describe('ApiCreateGame', () => {
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
       req.emitter.emit('data', JSON.stringify(newGameConfig([{
-          name: 'Robot',
-          color: 'blue',
-          beginner: false,
-          handicap: 0,
-          first: true,
-        }])));
+        name: 'Robot',
+        color: 'blue',
+        beginner: false,
+        handicap: 0,
+        first: true,
+      }])));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -196,6 +196,41 @@ describe('ApiCreateGame', () => {
     const game = await scaffolding.ctx.gameLoader.getGame(model.id);
     expect(game).is.not.undefined;
     expect(game!.players[0].telegramID).eq('');
+  });
+
+  it('starts bot takeover for bot players during game creation', async () => {
+    const starts = new Array<{gameId: string; playerId: string; serverId: string}>();
+    apiCreateGame = new ApiCreateGame({limit: 99999, perMs: 1}, {
+      start: ({gameId, playerId, serverId}) => {
+        starts.push({gameId, playerId, serverId});
+        return {gameId, playerId, pid: 321, startedAtMs: 1, logFile: 'bot.log'};
+      },
+      stop: () => undefined,
+    });
+
+    const post = scaffolding.post(apiCreateGame, res);
+    const emit = Promise.resolve().then(() => {
+      req.emitter.emit('data', JSON.stringify(newGameConfig([{
+        name: 'Robot',
+        color: 'blue',
+        beginner: false,
+        handicap: 0,
+        first: true,
+        isBot: true,
+      }])));
+      req.emitter.emit('end');
+    });
+
+    await Promise.all(([emit, post]));
+    expect(res.statusCode).eq(statusCode.ok);
+
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    expect(starts).deep.eq([{
+      gameId: model.id,
+      playerId: model.players[0].id,
+      serverId: scaffolding.ctx.ids.serverId,
+    }]);
+    expect(model.botPlayers).deep.eq([model.players[0].id]);
   });
 
   it('red rover solo game', async () => {

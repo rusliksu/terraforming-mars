@@ -119,12 +119,12 @@ describe('ApiCreateGame', () => {
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
       req.emitter.emit('data', JSON.stringify(newGameConfig([{
-          name: 'Robot',
-          color: 'blue',
-          beginner: false,
-          handicap: 0,
-          first: true,
-        }])));
+        name: 'Robot',
+        color: 'blue',
+        beginner: false,
+        handicap: 0,
+        first: true,
+      }])));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));

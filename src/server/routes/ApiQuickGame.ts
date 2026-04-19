@@ -8,7 +8,7 @@ import {Game} from '../Game';
 import {Player} from '../Player';
 import {GameOptions} from '../game/GameOptions';
 import {NewGameConfig, NewPlayerModel} from '../../common/game/NewGameConfig';
-import {PLAYER_COLORS, Color} from '../../common/Color';
+import {DEFAULT_PLAYER_COLORS, Color} from '../../common/Color';
 import {safeCast, isGameId, isSpectatorId, isPlayerId} from '../../common/Types';
 import {generateRandomId} from '../utils/server-ids';
 import {Request} from '../Request';
@@ -84,7 +84,7 @@ export class ApiQuickGame extends Handler {
     for (let i = 0; i < count; i++) {
       players.push({
         name: 'Player ' + (i + 1),
-        color: PLAYER_COLORS[i % PLAYER_COLORS.length] as Color,
+        color: DEFAULT_PLAYER_COLORS[i % DEFAULT_PLAYER_COLORS.length] as Color,
         beginner: false,
         handicap: 0,
         first: i === 0,

@@ -100,9 +100,9 @@ function getBuildMetadata(): {head: string, date: string} {
     };
   }
   try {
-    const output = child_process.execSync(`git log -1 --pretty=format:"%h %cD"`).toString();
-    const [head, ...rest] = output.split(' ');
-    return {head, date: rest.join(' ')};
+    const head = child_process.execSync('git rev-parse --short=7 HEAD').toString().trim();
+    const date = child_process.execSync('git log -1 --pretty=format:"%cD"').toString().trim();
+    return {head, date};
   } catch (error) {
     console.error('unable to generate app version', error);
     return {head: 'n/a', date: 'n/a'};

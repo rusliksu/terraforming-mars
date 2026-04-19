@@ -10,6 +10,7 @@ Environment=PORT=__PROD_NEXT_PORT__
 Environment=HOST=__PROD_NEXT_HOST__
 Environment=SERVER_ID=__PROD_NEXT_SERVER_ID__
 Environment=ELO_DATA_DIR=__PROD_NEXT_ELO_DATA_DIR__
+Environment=TM_AUTO_JOIN_SCRIPT=__AUTO_JOIN_SCRIPT__
 ExecStartPre=-/usr/bin/fuser -k __PROD_NEXT_PORT__/tcp
 ExecStart=/usr/bin/node build/src/server/server.js
 Restart=always

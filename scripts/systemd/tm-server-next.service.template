@@ -1,0 +1,18 @@
+[Unit]
+Description=Terraforming Mars Next Server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=__PROD_NEXT_CURRENT_DIR__
+EnvironmentFile=-%h/.config/tm-server.env
+Environment=PORT=__PROD_NEXT_PORT__
+Environment=HOST=__PROD_NEXT_HOST__
+Environment=SERVER_ID=__PROD_NEXT_SERVER_ID__
+ExecStartPre=-/usr/bin/fuser -k __PROD_NEXT_PORT__/tcp
+ExecStart=/usr/bin/node build/src/server/server.js
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=default.target

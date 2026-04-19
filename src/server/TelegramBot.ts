@@ -81,6 +81,7 @@ export interface TelegramNotifiable {
   game?: {
     id: string;
     generation: number;
+    phase?: string;
     players: ReadonlyArray<{name: string; color: string}>;
     gameOptions?: {boardName?: string};
   };
@@ -98,17 +99,36 @@ function buildParticipantsSummary(player: TelegramNotifiable): string | undefine
   return participants.map((participant) => `${participant.name} (${describeColor(participant.color)})`).join(", ");
 }
 
-export function buildTurnNoticeText(player: TelegramNotifiable): string {
-  const lines = [`${player.name}, твой ход! 🪐`, `${SERVER_URL}/player?id=${player.id}`];
+function shortGameId(gameId: string): string {
+  return gameId.length > 8 ? gameId.slice(0, 8) : gameId;
+}
+
+function buildGameSummary(player: TelegramNotifiable): string | undefined {
   const game = player.game;
-  if (game !== undefined) {
-    const boardName = game.gameOptions?.boardName ?? "Mars";
-    lines.push(`Игра: ${game.id} · Gen ${game.generation} · ${boardName} · ${game.players.length}P`);
+  if (game === undefined) {
+    return undefined;
+  }
+
+  const parts = [`Игра ${shortGameId(game.id)}`, `Gen ${game.generation}`];
+  if (game.phase) {
+    parts.push(game.phase);
+  }
+  parts.push((game.gameOptions?.boardName ?? "mars").toLowerCase());
+  parts.push(`${game.players.length}P`);
+  return parts.join(" · ");
+}
+
+export function buildTurnNoticeText(player: TelegramNotifiable): string {
+  const lines = ['Твой ход!'];
+  const gameSummary = buildGameSummary(player);
+  if (gameSummary !== undefined) {
+    lines.push(gameSummary);
   }
   const participantsSummary = buildParticipantsSummary(player);
   if (participantsSummary !== undefined) {
     lines.push(`Игроки: ${participantsSummary}`);
   }
+  lines.push(`${SERVER_URL}/player?id=${player.id}`);
   return lines.join("\n");
 }
 

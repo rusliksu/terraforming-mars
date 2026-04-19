@@ -10,6 +10,7 @@ Environment=PORT=__STAGING_PORT__
 Environment=HOST=__STAGING_HOST__
 Environment=SERVER_ID=__STAGING_SERVER_ID__
 Environment=TM_SERVER_URL=__STAGING_URL__
+Environment=TM_AUTO_JOIN_SCRIPT=__AUTO_JOIN_SCRIPT__
 ExecStartPre=-/usr/bin/fuser -k __STAGING_PORT__/tcp
 ExecStart=/usr/bin/node build/src/server/server.js
 Restart=always

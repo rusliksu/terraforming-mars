@@ -9,6 +9,7 @@ EnvironmentFile=-%h/.config/tm-server.env
 Environment=PORT=__PROD_PORT__
 Environment=HOST=__PROD_HOST__
 Environment=SERVER_ID=__PROD_SERVER_ID__
+Environment=TM_AUTO_JOIN_SCRIPT=__AUTO_JOIN_SCRIPT__
 Environment=SHADOW_LOG=1
 Environment=SHADOW_LOG_DIR=__SHADOW_LOG_DIR__
 Environment=SHADOW_LOG_FILE_PREFIX=input

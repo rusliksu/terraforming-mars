@@ -8,6 +8,7 @@ import {NewGameConfig} from '../../src/common/game/NewGameConfig';
 import {RandomBoardOption} from '../../src/common/boards/RandomBoardOption';
 import {RandomMAOptionType} from '../../src/common/ma/RandomMAOptionType';
 import {SimpleGameModel} from '../../src/common/models/SimpleGameModel';
+import {GENUINE_GOLD_NAME} from '../../src/common/Color';
 
 function newGameConfig(players: NewGameConfig['players']): NewGameConfig {
   return {
@@ -118,12 +119,13 @@ describe('ApiCreateGame', () => {
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
       req.emitter.emit('data', JSON.stringify(newGameConfig([{
-          name: 'Robot',
-          color: 'blue',
-          beginner: false,
-          handicap: 0,
-          first: true,
-        }])));
+        name: 'Robot',
+        color: 'blue',
+        beginner: false,
+        handicap: 0,
+        first: true,
+        isBot: false,
+      }])));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -137,6 +139,28 @@ describe('ApiCreateGame', () => {
     expect(game!.players[0].name).eq('Robot');
   });
 
+  it('forces GenuineGold name for gold players', async () => {
+    const post = scaffolding.post(apiCreateGame, res);
+    const emit = Promise.resolve().then(() => {
+      req.emitter.emit('data', JSON.stringify(newGameConfig([{
+        name: 'Ilya',
+        color: 'gold',
+        beginner: false,
+        handicap: 0,
+        first: true,
+        isBot: false,
+      }])));
+      req.emitter.emit('end');
+    });
+    await Promise.all(([emit, post]));
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game).is.not.undefined;
+    expect(game!.players[0].name).eq(GENUINE_GOLD_NAME);
+    expect(game!.players[0].color).eq('gold');
+  });
+
   it('rejects invalid telegram ids with bad request', async () => {
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
@@ -146,6 +170,7 @@ describe('ApiCreateGame', () => {
         beginner: false,
         handicap: 0,
         first: true,
+        isBot: false,
         telegramID: '@bad-id',
       }])));
       req.emitter.emit('end');
@@ -164,6 +189,7 @@ describe('ApiCreateGame', () => {
         beginner: false,
         handicap: 0,
         first: true,
+        isBot: false,
         telegramID: '   ',
       }])));
       req.emitter.emit('end');
@@ -174,6 +200,41 @@ describe('ApiCreateGame', () => {
     const game = await scaffolding.ctx.gameLoader.getGame(model.id);
     expect(game).is.not.undefined;
     expect(game!.players[0].telegramID).eq('');
+  });
+
+  it('starts bot takeover for bot players during game creation', async () => {
+    const starts = new Array<{gameId: string; playerId: string; serverId: string}>();
+    apiCreateGame = new ApiCreateGame({limit: 99999, perMs: 1}, {
+      start: ({gameId, playerId, serverId}) => {
+        starts.push({gameId, playerId, serverId});
+        return {gameId, playerId, pid: 321, startedAtMs: 1, logFile: 'bot.log'};
+      },
+      stop: () => undefined,
+    });
+
+    const post = scaffolding.post(apiCreateGame, res);
+    const emit = Promise.resolve().then(() => {
+      req.emitter.emit('data', JSON.stringify(newGameConfig([{
+        name: 'Robot',
+        color: 'blue',
+        beginner: false,
+        handicap: 0,
+        first: true,
+        isBot: true,
+      }])));
+      req.emitter.emit('end');
+    });
+
+    await Promise.all(([emit, post]));
+    expect(res.statusCode).eq(statusCode.ok);
+
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    expect(starts).deep.eq([{
+      gameId: model.id,
+      playerId: model.players[0].id,
+      serverId: scaffolding.ctx.ids.serverId,
+    }]);
+    expect(model.botPlayers).deep.eq([model.players[0].id]);
   });
 
   it('red rover solo game', async () => {

@@ -62,7 +62,8 @@ server {
     }
 
     location / {
-        proxy_pass http://__PROD_HOST__:__PROD_PORT__;
+        include /etc/nginx/snippets/tm-prod-active-upstream.conf;
+        proxy_pass $tm_prod_backend;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";

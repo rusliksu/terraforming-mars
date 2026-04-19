@@ -28,7 +28,7 @@ What the sync script does:
 - points runtime services at immutable release symlinks:
   - `/home/openclaw/tm-runtime/prod/current`
   - `/home/openclaw/tm-runtime/staging/current`
-- inlines `SHADOW_LOG_DIR` and staging `TM_SERVER_URL` into the main unit files
+- inlines `TM_AUTO_JOIN_SCRIPT`, `SHADOW_LOG_DIR`, and staging `TM_SERVER_URL` into the main unit files
 - writes the rendered unit files into `~/.config/systemd/user/`
 - removes the old drop-ins that only carried those env vars
 - runs `systemctl --user daemon-reload`

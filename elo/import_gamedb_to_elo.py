@@ -43,6 +43,16 @@ def placement_score(place, player_count):
     return max(0.0, min(1.0, 1 - ((max(1, place) - 1) / (player_count - 1))))
 
 
+def vp_margin(players, player):
+    if not players:
+        return 0
+    leader_vp = max((entry.get('vp', 0) for entry in players), default=0)
+    if player.get('place', 99) == 1:
+        others = [entry.get('vp', 0) for entry in players if entry is not player]
+        return player.get('vp', 0) - (max(others) if others else player.get('vp', 0))
+    return player.get('vp', 0) - leader_vp
+
+
 def calc_elo_place(players, elo_db):
     """Place-based FFA Elo (matches elo.js calculateFFA)."""
     n = len(players)
@@ -109,9 +119,9 @@ def calc_elo_vp(players, elo_db):
     return results
 
 
-def is_bot_game(scores):
-    """Detect bot/test games: all names <= 2 chars, or test names."""
-    names = [s.get('playerName', '').strip() for s in scores if s.get('playerName')]
+def is_bot_name_set(names):
+    """Detect bot/test player sets from normalized names."""
+    names = [str(name).strip() for name in names if str(name).strip()]
     if not names:
         return False
     if all(len(n) <= 2 for n in names):
@@ -120,6 +130,19 @@ def is_bot_game(scores):
     if any(n.lower() in test_names for n in names):
         return True
     return False
+
+
+def is_bot_game(scores, fallback_names=None):
+    """Detect bot/test games from score rows plus optional fallback player names."""
+    names = []
+    fallback_names = fallback_names or []
+    for idx, score in enumerate(scores or []):
+        name = str(score.get('playerName') or '').strip()
+        if not name and idx < len(fallback_names):
+            name = str(fallback_names[idx] or '').strip()
+        if name:
+            names.append(name)
+    return is_bot_name_set(names)
 
 
 def parse_completed_ts(date_str):
@@ -138,6 +161,72 @@ def parse_json_object(raw):
         return json.loads(raw)
     except Exception:
         return {}
+
+
+def normalize_optional_string(value):
+    if not isinstance(value, str):
+        return None
+    value = value.strip()
+    return value or None
+
+
+def normalize_string_list(value):
+    if isinstance(value, str):
+        items = value.split(',')
+    elif isinstance(value, list):
+        items = value
+    else:
+        items = []
+    normalized = []
+    for item in items:
+        if not isinstance(item, str):
+            continue
+        stripped = item.strip()
+        if stripped and stripped not in normalized:
+            normalized.append(stripped)
+    return normalized or None
+
+
+def extract_game_metadata(game):
+    metadata = {}
+    source = normalize_optional_string(game.get('source'))
+    analyzed_by = normalize_string_list(game.get('analyzedBy'))
+    analysis_targets = normalize_string_list(game.get('analysisTargets'))
+    if source:
+        metadata['source'] = source
+    if analyzed_by:
+        metadata['analyzedBy'] = analyzed_by
+    if analysis_targets:
+        metadata['analysisTargets'] = analysis_targets
+    return metadata
+
+
+def apply_game_metadata(target, metadata):
+    if metadata.get('source'):
+        target['source'] = metadata['source']
+    if metadata.get('analyzedBy'):
+        target['analyzedBy'] = list(metadata['analyzedBy'])
+    if metadata.get('analysisTargets'):
+        target['analysisTargets'] = list(metadata['analysisTargets'])
+
+
+def build_legacy_metadata_index():
+    metadata_by_game = {}
+    for source in discover_legacy_sources():
+        try:
+            with source.open(encoding='utf-8') as f:
+                payload = json.load(f)
+        except Exception:
+            continue
+
+        for game in payload.get('games', []):
+            game_id = game.get('gameId') or game.get('_key')
+            if not game_id:
+                continue
+            metadata = extract_game_metadata(game)
+            if metadata:
+                metadata_by_game[game_id] = metadata
+    return metadata_by_game
 
 
 def extract_player_names_from_game(raw_game):
@@ -216,16 +305,36 @@ def extract_legacy_games(known_ids, spectator_ids):
 
             if len(players) < 2:
                 continue
+            if is_bot_name_set([player.get('name', '') for player in players]):
+                continue
 
             legacy_games.append({
                 'gameId': game_id,
                 'endId': game.get('endId') or game.get('spectatorId') or spectator_ids.get(game_id, ''),
                 'date': game.get('date', ''),
                 'completedTime': game.get('completedTime') or parse_completed_ts(game.get('date', '')),
+                'startedTime': game.get('startedTime', 0),
+                'durationMs': game.get('durationMs') or (
+                    max(0, (game.get('completedTime') or parse_completed_ts(game.get('date', ''))) - (game.get('startedTime') or 0)) * 1000
+                    if (game.get('completedTime') or parse_completed_ts(game.get('date', ''))) and game.get('startedTime')
+                    else None
+                ),
+                'durationMinutes': game.get('durationMinutes') or (
+                    round((game.get('durationMs') or (
+                        max(0, (game.get('completedTime') or parse_completed_ts(game.get('date', ''))) - (game.get('startedTime') or 0)) * 1000
+                        if (game.get('completedTime') or parse_completed_ts(game.get('date', ''))) and game.get('startedTime')
+                        else 0
+                    )) / 60000)
+                    if (game.get('durationMs') or (
+                        (game.get('completedTime') or parse_completed_ts(game.get('date', ''))) and game.get('startedTime')
+                    ))
+                    else None
+                ),
                 'server': game.get('server', 'knightbyte'),
                 'map': game.get('map', ''),
                 'generation': game.get('generation', 0),
                 'players': players,
+                **extract_game_metadata(game),
             })
             known_ids.add(game_id)
     return legacy_games
@@ -237,7 +346,7 @@ def apply_game_to_elo(game, elo_data):
     has_vp = any(p.get('vp', 0) > 0 for p in players)
     results_vp = calc_elo_vp(players, elo_data['players']) if has_vp else []
 
-    for r in results:
+    for idx, r in enumerate(results):
         key = r['name']
         if key not in elo_data['players']:
             elo_data['players'][key] = {
@@ -245,8 +354,10 @@ def apply_game_to_elo(game, elo_data):
                 'displayName': r['displayName'],
                 'games': 0, 'firsts': 0, 'wins': 0, 'placeScoreTotal': 0,
                 'avgPlace': 0, 'top3': 0,
-                'totalVP': 0, 'corps': {},
+                'totalVP': 0, 'totalGens': 0, 'totalMargin': 0, 'corps': {},
                 'avgVP': 0,
+                'avgGens': 0,
+                'avgMargin': 0,
             }
         p = elo_data['players'][key]
         p['elo'] = r['newElo']
@@ -256,8 +367,12 @@ def apply_game_to_elo(game, elo_data):
         p.setdefault('avgPlace', 0)
         p.setdefault('top3', 0)
         p.setdefault('totalVP', 0)
+        p.setdefault('totalGens', 0)
+        p.setdefault('totalMargin', 0)
         p.setdefault('corps', {})
         p.setdefault('avgVP', 0)
+        p.setdefault('avgGens', 0)
+        p.setdefault('avgMargin', 0)
         p['games'] += 1
         if r['place'] == 1:
             p['firsts'] += 1
@@ -268,6 +383,11 @@ def apply_game_to_elo(game, elo_data):
             p['top3'] += 1
         p['totalVP'] += r.get('vp', 0)
         p['avgVP'] = round(p['totalVP'] / p['games'], 2)
+        if game.get('generation', 0) > 0:
+            p['totalGens'] += game.get('generation', 0)
+            p['avgGens'] = round(p['totalGens'] / p['games'], 3)
+        p['totalMargin'] += vp_margin(players, players[idx] if idx < len(players) else {'place': r['place'], 'vp': r.get('vp', 0)})
+        p['avgMargin'] = round(p['totalMargin'] / p['games'], 3)
         if r['corp']:
             p['corps'][r['corp']] = p['corps'].get(r['corp'], 0) + 1
 
@@ -288,6 +408,7 @@ def apply_game_to_elo(game, elo_data):
         'completedTime': game.get('completedTime', 0),
         'durationMs': game.get('durationMs'),
         'durationMinutes': game.get('durationMinutes'),
+        **extract_game_metadata(game),
         'results': [{
             'name': r['name'], 'displayName': r['displayName'],
             'place': r['place'], 'delta': r['delta'],
@@ -360,13 +481,14 @@ def main():
     skipped_few_players = 0
     game_entries = []
     known_ids = set()
+    legacy_metadata = build_legacy_metadata_index()
 
     for gid, gen, scores_json, completed_ts, options_json, spectator_id, latest_game_json, started_time in rows:
         scores = json.loads(scores_json)
         fallback_names = extract_player_names_from_game(latest_game_json)
 
         # Skip bot/test games
-        if is_bot_game(scores):
+        if is_bot_game(scores, fallback_names):
             skipped_bot += 1
             continue
 
@@ -376,7 +498,7 @@ def main():
             continue
 
         has_vp = all(s.get('playerScore', 0) > 0 for s in scores)
-        has_place = all('place' in s for s in scores)
+        has_place = all(s.get('place') is not None for s in scores)
 
         if not has_vp and not has_place:
             # No VP and no place — can't determine results
@@ -384,26 +506,8 @@ def main():
             continue
 
         # Build player list
-        if has_vp:
-            # Sort by VP descending, assign places
-            scores.sort(key=lambda s: s.get('playerScore', 0), reverse=True)
-            players = []
-            for i, s in enumerate(scores):
-                vp = s.get('playerScore', 0)
-                place = i + 1
-                if i > 0 and vp == scores[i-1].get('playerScore', 0):
-                    place = players[-1]['place']
-                name = score_player_name(s, i, fallback_names)
-                if not name or name == '?':
-                    continue
-                players.append({
-                    'name': name,
-                    'place': place,
-                    'vp': vp,
-                    'corp': s.get('corporation', ''),
-                })
-        else:
-            # Use existing place field
+        if has_place:
+            # Prefer authoritative place field from source when present.
             scores.sort(key=lambda s: s.get('place', 99))
             players = []
             for i, s in enumerate(scores):
@@ -414,6 +518,25 @@ def main():
                     'name': name,
                     'place': s.get('place', 99),
                     'vp': s.get('playerScore', 0),
+                    'corp': s.get('corporation', ''),
+                })
+        else:
+            # Sort by VP descending, assign places
+            indexed_scores = list(enumerate(scores))
+            indexed_scores.sort(key=lambda item: item[1].get('playerScore', 0), reverse=True)
+            players = []
+            for i, (idx, s) in enumerate(indexed_scores):
+                vp = s.get('playerScore', 0)
+                place = i + 1
+                if i > 0 and vp == indexed_scores[i-1][1].get('playerScore', 0):
+                    place = players[-1]['place']
+                name = score_player_name(s, idx, fallback_names)
+                if not name or name == '?':
+                    continue
+                players.append({
+                    'name': name,
+                    'place': place,
+                    'vp': vp,
                     'corp': s.get('corporation', ''),
                 })
 
@@ -442,7 +565,7 @@ def main():
         if completed_ts and started_time and completed_ts > 0 and started_time > 0:
             duration_ms = max(0, int(completed_ts - started_time) * 1000)
             duration_minutes = round(duration_ms / 60000)
-        game_entries.append({
+        game_entry = {
             'gameId': gid,
             'endId': spectator_id or spectator_ids.get(gid, ''),
             'date': date_str,
@@ -454,7 +577,11 @@ def main():
             'map': map_name,
             'generation': gen or 0,
             'players': players,
-        })
+        }
+        apply_game_metadata(game_entry, legacy_metadata.get(gid, {}))
+        if 'source' not in game_entry:
+            game_entry['source'] = 'import'
+        game_entries.append(game_entry)
         known_ids.add(gid)
 
     legacy_games = extract_legacy_games(known_ids, spectator_ids)

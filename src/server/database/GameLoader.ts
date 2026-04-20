@@ -12,6 +12,7 @@ import {durationToMilliseconds} from '../utils/durations';
 import {CacheConfig} from './CacheConfig';
 import {Clock} from '../../common/Timer';
 import {EloSyncService} from '../elo/EloSyncService';
+import {BotTakeoverManager} from '../bot/BotTakeoverManager';
 
 const metrics = {
   initialize: new prometheus.Gauge({
@@ -182,11 +183,14 @@ export class GameLoader implements IGameLoader {
 
   public async completeGame(game: IGame) {
     const database = Database.getInstance();
+    const botPlayerIds = BotTakeoverManager.INSTANCE.listPlayerIds(game.id);
     await database.saveGame(game);
     try {
       this.mark(game.id);
       await database.markFinished(game.id);
-      await EloSyncService.getInstance().recordCompletedGame(game);
+      await EloSyncService.getInstance().recordCompletedGame(game, {
+        botPlayerIds,
+      });
       metrics.gamesFinished.inc({players: String(game.players.length)});
       await this.maintenance();
     } catch (err) {

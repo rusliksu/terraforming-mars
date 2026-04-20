@@ -10,6 +10,8 @@ import {restoreTestDatabase, restoreTestGameLoader, setTestDatabase, setTestGame
 import {sleep} from '../TestingUtils';
 import {InMemoryDatabase} from '../testing/InMemoryDatabase';
 import {FakeClock} from '../common/FakeClock';
+import {EloSyncService} from '../../src/server/elo/EloSyncService';
+import {BotTakeoverManager} from '../../src/server/bot/BotTakeoverManager';
 
 class TestDatabase extends InMemoryDatabase {
   public failure: 'getGameIds' | 'getParticipants' | undefined = undefined;
@@ -28,6 +30,10 @@ class TestDatabase extends InMemoryDatabase {
   override getParticipants(): Promise<Array<GameIdLedger>> {
     if (this.failure === 'getParticipants') return Promise.reject(new Error('error'));
     return super.getParticipants();
+  }
+
+  public isFinished(gameId: GameId): boolean {
+    return this.completedGames.has(gameId);
   }
 }
 
@@ -249,7 +255,29 @@ describe('GameLoader', () => {
     database.compressCompletedGames();
   });
 
-  it('completeGame', () => {
+  it('completeGame', async () => {
+    const botPlayerIds = ['p-bot-id' as PlayerId];
+    const originalGetInstance = EloSyncService.getInstance;
+    const originalListPlayerIds = BotTakeoverManager.INSTANCE.listPlayerIds;
+    const calls: Array<{game: Game; options?: {botPlayerIds?: Array<PlayerId>}}> = [];
 
+    try {
+      (EloSyncService as unknown as {getInstance: typeof EloSyncService.getInstance}).getInstance = () => ({
+        recordCompletedGame: async (completedGame: Game, options?: {botPlayerIds?: Array<PlayerId>}) => {
+          calls.push({game: completedGame, options});
+        },
+      }) as EloSyncService;
+      BotTakeoverManager.INSTANCE.listPlayerIds = (_gameId?: GameId) => botPlayerIds;
+
+      await instance.completeGame(game);
+
+      expect(calls).to.have.length(1);
+      expect(calls[0].game).to.eq(game);
+      expect(calls[0].options?.botPlayerIds).to.deep.eq(botPlayerIds);
+      expect(database.isFinished(game.id)).eq(true);
+    } finally {
+      (EloSyncService as unknown as {getInstance: typeof EloSyncService.getInstance}).getInstance = originalGetInstance;
+      BotTakeoverManager.INSTANCE.listPlayerIds = originalListPlayerIds;
+    }
   });
 });

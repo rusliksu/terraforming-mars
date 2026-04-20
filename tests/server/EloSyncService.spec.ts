@@ -5,6 +5,15 @@ import * as path from 'path';
 
 import {EloSyncService, rebuildEloData} from '../../src/server/elo/EloSyncService';
 
+async function pathExists(targetPath: string): Promise<boolean> {
+  try {
+    await fs.access(targetPath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 describe('EloSyncService', () => {
   let tempDir: string;
   let primaryPath: string;
@@ -89,6 +98,103 @@ describe('EloSyncService', () => {
     expect(primary.players.alice.avgPlaceScore).eq(0);
   });
 
+  it('prefers explicit places from summary over vp ordering when provided', async () => {
+    await service.recordCompletedGameSummary({
+      key: 'g-explicit-place',
+      completedTime: 1712188801,
+      server: 'test',
+      map: 'THARSIS',
+      generation: 11,
+      players: [
+        {name: 'Alice', place: 2, vp: 112, corp: 'Saturn Systems|PhoboLog'},
+        {name: 'Bob', place: 1, vp: 105, corp: 'Valley Trust|Poseidon'},
+        {name: 'Carol', place: 3, vp: 75, corp: 'AstroDrill'},
+        {name: 'Dave', place: 4, vp: 74, corp: 'Tycho Magnetics|Aridor'},
+      ],
+    });
+
+    const primary = JSON.parse(await fs.readFile(primaryPath, 'utf8'));
+    expect(primary.games).to.have.length(1);
+    expect(primary.games[0].results.map((r: {displayName: string}) => r.displayName)).to.deep.equal(['Bob', 'Alice', 'Carol', 'Dave']);
+    expect(primary.games[0].results.map((r: {place: number}) => r.place)).to.deep.equal([1, 2, 3, 4]);
+    expect(primary.players.bob.avgPlaceScore).eq(1);
+    expect(primary.players.alice.avgPlaceScore).to.be.lessThan(1);
+  });
+
+  it('skips solo games', async () => {
+    await service.recordCompletedGameSummary({
+      key: 'g-solo',
+      completedTime: 1712188800,
+      server: 'test',
+      map: 'THARSIS',
+      generation: 12,
+      players: [
+        {name: 'Alice', vp: 97, corp: 'CrediCor'},
+      ],
+    });
+
+    expect(await pathExists(primaryPath)).eq(false);
+    expect(await pathExists(mirrorPath)).eq(false);
+  });
+
+  it('skips games with active bot takeover players', async () => {
+    await service.recordCompletedGameSummary({
+      key: 'g-bot',
+      completedTime: 1712188800,
+      botPlayerIds: ['p-bot'],
+      server: 'test',
+      map: 'THARSIS',
+      generation: 8,
+      players: [
+        {name: 'Alice', vp: 97, corp: 'CrediCor'},
+        {name: 'Bob', vp: 89, corp: 'Inventrix'},
+      ],
+    });
+
+    expect(await pathExists(primaryPath)).eq(false);
+    expect(await pathExists(mirrorPath)).eq(false);
+  });
+
+  it('preserves manual game annotations when the same game is re-recorded', async () => {
+    await service.recordCompletedGameSummary({
+      key: 'g-annotated',
+      completedTime: 1712188800,
+      server: 'test',
+      map: 'THARSIS',
+      generation: 10,
+      players: [
+        {name: 'Alice', vp: 100, corp: 'CrediCor'},
+        {name: 'Bob', vp: 92, corp: 'Inventrix'},
+      ],
+    });
+
+    const annotated = JSON.parse(await fs.readFile(primaryPath, 'utf8'));
+    annotated.games[0].source = 'shadowlogger';
+    annotated.games[0].analyzedBy = ['codex'];
+    annotated.games[0].analysisTargets = ['advisor'];
+    await fs.writeFile(primaryPath, JSON.stringify(annotated, null, 2), 'utf8');
+    await fs.writeFile(mirrorPath, JSON.stringify(annotated, null, 2), 'utf8');
+
+    await service.recordCompletedGameSummary({
+      key: 'g-annotated',
+      completedTime: 1712188801,
+      server: 'test',
+      map: 'THARSIS',
+      generation: 11,
+      players: [
+        {name: 'Alice', vp: 90, corp: 'CrediCor'},
+        {name: 'Bob', vp: 110, corp: 'Inventrix'},
+      ],
+    });
+
+    const primary = JSON.parse(await fs.readFile(primaryPath, 'utf8'));
+    expect(primary.games).to.have.length(1);
+    expect(primary.games[0].generation).eq(11);
+    expect(primary.games[0].source).eq('shadowlogger');
+    expect(primary.games[0].analyzedBy).to.deep.equal(['codex']);
+    expect(primary.games[0].analysisTargets).to.deep.equal(['advisor']);
+  });
+
   it('rebuilds ratings in completed-time order', () => {
     const rebuilt = rebuildEloData([
       {
@@ -100,7 +206,7 @@ describe('EloSyncService', () => {
         playerCount: 2,
         completedTime: 2,
         results: [
-          {name: 'alice', displayName: 'Alice', place: 1, vp: 90, corp: 'CrediCor'},
+          {name: 'alice', displayName: 'Alice', place: 1, vp: 95, corp: 'CrediCor'},
           {name: 'bob', displayName: 'Bob', place: 2, vp: 80, corp: 'Inventrix'},
         ],
       },
@@ -123,6 +229,38 @@ describe('EloSyncService', () => {
     expect(rebuilt.games[1]._key).eq('g2');
     expect(rebuilt.players.alice.games).eq(2);
     expect(rebuilt.players.bob.games).eq(2);
+    expect(rebuilt.players.alice.avgGens).eq(10.5);
+    expect(rebuilt.players.alice.avgMargin).eq(2.5);
+    expect(rebuilt.players.bob.avgMargin).eq(-2.5);
+  });
+
+  it('backfills date and duration from timestamps during rebuild', () => {
+    const rebuilt = rebuildEloData([
+      {
+        _key: 'g-duration',
+        date: '',
+        server: 'test',
+        map: 'THARSIS',
+        generation: 9,
+        playerCount: 2,
+        startedTime: 1712181600,
+        completedTime: 1712188800,
+        source: 'import',
+        analyzedBy: ['codex'],
+        analysisTargets: ['advisor', 'smartbot'],
+        results: [
+          {name: 'alice', displayName: 'Alice', place: 1, vp: 95, corp: 'CrediCor'},
+          {name: 'bob', displayName: 'Bob', place: 2, vp: 88, corp: 'Inventrix'},
+        ],
+      },
+    ]);
+
+    expect(rebuilt.games[0].date).eq('2024-04-04T00:00:00.000Z');
+    expect(rebuilt.games[0].durationMs).eq(7_200_000);
+    expect(rebuilt.games[0].durationMinutes).eq(120);
+    expect(rebuilt.games[0].source).eq('import');
+    expect(rebuilt.games[0].analyzedBy).to.deep.equal(['codex']);
+    expect(rebuilt.games[0].analysisTargets).to.deep.equal(['advisor', 'smartbot']);
   });
 
   it('splits same display name players by user identity when provided', async () => {

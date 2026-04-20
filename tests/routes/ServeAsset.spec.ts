@@ -4,7 +4,6 @@ import {resolveEloAssetPath} from '../../src/server/elo/EloPaths';
 import {MockResponse} from './HttpMocks';
 import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {statusCode} from '../../src/common/http/statusCode';
-import * as rawSettings from '../../src/genfiles/settings.json';
 class FileApiMock extends FileAPI {
   public counts = {
     readFile: 0,
@@ -37,7 +36,7 @@ describe('ServeAsset', () => {
   // used and overridden below. That makes how individual condition changes these calls.
   const primedCache = {
     readFile: 0,
-    readFileSync: 3,
+    readFileSync: 4,
     existsSync: 0,
   };
 
@@ -64,8 +63,8 @@ describe('ServeAsset', () => {
     scaffolding.req.headers['accept-encoding'] = '';
     await scaffolding.get(instance, res);
     expect(res.content.startsWith('<!DOCTYPE html>'));
-    expect(res.content).includes(`styles.css?v=${rawSettings.head}`);
-    expect(res.content).includes(`main.js?v=${rawSettings.head}`);
+    expect(res.content).matches(/styles\.css\?v=[a-f0-9]{12}/);
+    expect(res.content).matches(/main\.js\?v=[a-f0-9]{12}/);
     expect(res.headers.get('Cache-Control')).eq('no-store');
   });
 

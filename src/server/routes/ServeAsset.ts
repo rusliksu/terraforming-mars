@@ -1,7 +1,7 @@
+import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as responses from '../server/responses';
-import * as rawSettings from '../../genfiles/settings.json';
 
 import {Context} from './IHandler';
 import {BufferCache} from './BufferCache';
@@ -13,7 +13,6 @@ import {Response} from '../Response';
 import {isDynamicEloAssetPath, resolveEloAssetPath} from '../elo/EloPaths';
 
 type Encoding = 'gzip' | 'br';
-const APP_ASSET_VERSION = rawSettings.head;
 
 export class FileAPI {
   public static readonly INSTANCE: FileAPI = new FileAPI();
@@ -41,6 +40,7 @@ export class FileAPI {
 export class ServeAsset extends Handler {
   public static readonly INSTANCE: ServeAsset = new ServeAsset();
   private readonly cache = new BufferCache();
+  private readonly appAssetVersions: Record<'main.js' | 'styles.css', string>;
 
   // Public for tests
   public constructor(private cacheAgeSeconds: string | number = process.env.ASSET_CACHE_MAX_AGE || 0,
@@ -55,6 +55,10 @@ export class ServeAsset extends Handler {
     this.cache.set('build/styles.css.gz', compressed);
     const brotli = fileApi.readFileSync('build/styles.css.br');
     this.cache.set('build/styles.css.br', brotli);
+    this.appAssetVersions = {
+      'main.js': this.hash(fileApi.readFileSync('build/main.js')).substring(0, 12),
+      'styles.css': this.hash(styles).substring(0, 12),
+    };
   }
 
   public override async get(req: Request, res: Response, _ctx: Context): Promise<void> {
@@ -126,11 +130,16 @@ export class ServeAsset extends Handler {
   }
 
   private renderAppHtml(html: string): string {
-    const versionedStyles = `href="styles.css?v=${APP_ASSET_VERSION}"`;
-    const versionedScript = (_match: string, assetName: string) => `src="${assetName}?v=${APP_ASSET_VERSION}"`;
+    const versionedStyles = `href="styles.css?v=${this.appAssetVersions['styles.css']}"`;
+    const versionedScript = (_match: string, assetName: 'vendors.js' | 'main.js') =>
+      `src="${assetName}?v=${this.appAssetVersions[assetName === 'main.js' ? 'main.js' : 'main.js']}"`;
     return html
       .replace(/href="styles\.css(?:\?[^"]*)?"/g, versionedStyles)
       .replace(/src="(vendors\.js|main\.js)(?:\?[^"]*)?"/g, versionedScript);
+  }
+
+  private hash(data: Buffer): string {
+    return crypto.createHash('md5').update(data).digest('hex');
   }
 
   private toMainFile(urlPath: string, encodings: Set<Encoding>): { file?: string, encoding?: Encoding } {

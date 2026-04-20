@@ -1,8 +1,10 @@
+import {JSONObject} from '@/common/Types';
+
 export interface GamePreset {
   name: string;
   shortName?: string;
   description: string;
-  settings: Record<string, unknown>;
+  settings: JSONObject;
 }
 
 let cachedPresets: Array<GamePreset> | undefined;

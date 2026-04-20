@@ -253,6 +253,34 @@ import {MADetail} from '@/common/game/VictoryPointsBreakdown';
 import {AwardName} from '@/common/ma/AwardName';
 import {normalizeEloPlayerName} from '@/client/utils/normalizeEloPlayerName';
 
+type EloGameResult = {
+  displayName?: string;
+  name?: string;
+  delta?: number;
+  newElo?: number;
+};
+
+type EloGameEntry = {
+  _key: string;
+  results?: Array<EloGameResult>;
+};
+
+type EloPlayerEntry = {
+  elo?: number;
+};
+
+type EloData = {
+  games?: Array<EloGameEntry>;
+  players?: Record<string, EloPlayerEntry>;
+};
+
+type EloDeltaEntry = {
+  name: string;
+  color: Color;
+  delta: number;
+  elo: number;
+};
+
 function getViewModel(playerView: ViewModel | undefined, spectator: ViewModel | undefined): ViewModel {
   if (playerView !== undefined) return playerView;
   if (spectator !== undefined) return spectator;
@@ -386,7 +414,7 @@ export default defineComponent({
   data() {
     return {
       constants,
-      _eloDelta: null as Array<{name: string; color: string; delta: number; elo: number}> | null,
+      _eloDelta: null as Array<EloDeltaEntry> | null,
     };
   },
   components: {
@@ -404,26 +432,26 @@ export default defineComponent({
   methods: {
     async fetchEloDelta() {
       try {
-        const colorByName: Record<string, string> = {};
+        const colorByName: Record<string, Color> = {};
         for (const p of this.players) {
           colorByName[normalizeEloPlayerName(p.name)] = p.color;
         }
 
         const resp = await fetch('/elo/data.json?' + Date.now(), {cache: 'no-store'});
-        const data = await resp.json();
+        const data = await resp.json() as EloData;
         const games = data?.games || [];
         const players = data?.players || {};
         const currentGameId = this.game.gameId;
-        const currentGame = games.find((g: any) => g._key === currentGameId);
+        const currentGame = games.find((g) => g._key === currentGameId);
         if (!currentGame || !Array.isArray(currentGame.results) || currentGame.results.length === 0) return;
 
-        const result = currentGame.results.map((r: any) => {
+        const result: Array<EloDeltaEntry> = currentGame.results.map((r) => {
           const displayName = r.displayName || r.name || '?';
           const key = normalizeEloPlayerName(displayName);
           const player = players[key] || null;
           return {
             name: displayName,
-            color: colorByName[key] || '',
+            color: colorByName[key] || 'neutral',
             delta: Math.round(r.delta || 0),
             elo: Math.round(player?.elo ?? r.newElo ?? 1500),
           };

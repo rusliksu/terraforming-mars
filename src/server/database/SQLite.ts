@@ -195,9 +195,9 @@ export class SQLite implements IDatabase {
   async saveGame(game: IGame): Promise<void> {
     const thisSaveId = game.lastSaveId;
     const isInitialSave = thisSaveId === 0;
-    const initialSaveAlreadyExists = isInitialSave
-      ? await this.asyncGet('SELECT 1 AS existing_save FROM games WHERE game_id = ? AND save_id = ? LIMIT 1', [game.id, thisSaveId])
-      : undefined;
+    const initialSaveAlreadyExists = isInitialSave ?
+      await this.asyncGet('SELECT 1 AS existing_save FROM games WHERE game_id = ? AND save_id = ? LIMIT 1', [game.id, thisSaveId]) :
+      undefined;
     const gameJSON = JSON.stringify(game.serialize());
     // Insert
     await this.runQuietly(

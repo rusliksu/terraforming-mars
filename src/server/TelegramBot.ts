@@ -1,19 +1,19 @@
-import https from "https";
+import https from 'https';
 import {BotTakeoverManager} from './bot/BotTakeoverManager';
 import {PlayerId} from '../common/Types';
 
-const SERVER_URL = process.env.TM_SERVER_URL ?? "https://tm.knightbyte.win";
+const SERVER_URL = process.env.TM_SERVER_URL ?? 'https://tm.knightbyte.win';
 const COLOR_LABELS: Record<string, string> = {
-  red: "красный",
-  green: "зеленый",
-  yellow: "желтый",
-  blue: "синий",
-  black: "черный",
-  purple: "фиолетовый",
-  orange: "оранжевый",
-  pink: "розовый",
-  neutral: "нейтральный",
-  bronze: "бронзовый",
+  red: 'красный',
+  green: 'зеленый',
+  yellow: 'желтый',
+  blue: 'синий',
+  black: 'черный',
+  purple: 'фиолетовый',
+  orange: 'оранжевый',
+  pink: 'розовый',
+  neutral: 'нейтральный',
+  bronze: 'бронзовый',
 };
 
 interface TelegramResponse {
@@ -41,19 +41,19 @@ function callTelegramApi(method: string, body: object): Promise<TelegramResponse
     }
     const data = JSON.stringify(body);
     const options = {
-      hostname: "api.telegram.org",
+      hostname: 'api.telegram.org',
       path: `/bot${botToken}/${method}`,
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        "Content-Length": Buffer.byteLength(data),
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(data),
       },
     };
 
     const req = https.request(options, (res) => {
-      let responseData = "";
-      res.on("data", (chunk: string) => (responseData += chunk));
-      res.on("end", () => {
+      let responseData = '';
+      res.on('data', (chunk: string) => (responseData += chunk));
+      res.on('end', () => {
         try {
           resolve(JSON.parse(responseData));
         } catch {
@@ -62,8 +62,8 @@ function callTelegramApi(method: string, body: object): Promise<TelegramResponse
       });
     });
 
-    req.on("error", (err) => {
-      console.warn("Telegram API error:", err.message);
+    req.on('error', (err) => {
+      console.warn('Telegram API error:', err.message);
       resolve({ok: false});
     });
 
@@ -96,7 +96,7 @@ function buildParticipantsSummary(player: TelegramNotifiable): string | undefine
   if (participants.length === 0) {
     return undefined;
   }
-  return participants.map((participant) => `${participant.name} (${describeColor(participant.color)})`).join(", ");
+  return participants.map((participant) => `${participant.name} (${describeColor(participant.color)})`).join(', ');
 }
 
 function shortGameId(gameId: string): string {
@@ -113,9 +113,9 @@ function buildGameSummary(player: TelegramNotifiable): string | undefined {
   if (game.phase) {
     parts.push(game.phase);
   }
-  parts.push((game.gameOptions?.boardName ?? "mars").toLowerCase());
+  parts.push((game.gameOptions?.boardName ?? 'mars').toLowerCase());
   parts.push(`${game.players.length}P`);
-  return parts.join(" · ");
+  return parts.join(' · ');
 }
 
 export function buildTurnNoticeText(player: TelegramNotifiable): string {
@@ -129,7 +129,7 @@ export function buildTurnNoticeText(player: TelegramNotifiable): string {
     lines.push(`Игроки: ${participantsSummary}`);
   }
   lines.push(`${SERVER_URL}/player?id=${player.id}`);
-  return lines.join("\n");
+  return lines.join('\n');
 }
 
 export async function sendTurnNotice(player: TelegramNotifiable, turnNoticeKey?: string): Promise<boolean> {
@@ -138,7 +138,7 @@ export async function sendTurnNotice(player: TelegramNotifiable, turnNoticeKey?:
   if (!getBotToken()) return false;
   if (BotTakeoverManager.INSTANCE.isActive(player.id)) return false;
   try {
-    const resp = await callTelegramApi("sendMessage", {
+    const resp = await callTelegramApi('sendMessage', {
       chat_id: player.telegramID,
       text: buildTurnNoticeText(player),
     });
@@ -150,7 +150,7 @@ export async function sendTurnNotice(player: TelegramNotifiable, turnNoticeKey?:
       return true;
     }
   } catch (err) {
-    console.warn("sendTurnNotice error:", err);
+    console.warn('sendTurnNotice error:', err);
   }
   return false;
 }
@@ -160,13 +160,13 @@ export async function deleteTurnNotice(player: TelegramNotifiable): Promise<void
   if (telegramDisabled()) return;
   if (!getBotToken()) return;
   try {
-    await callTelegramApi("deleteMessage", {
+    await callTelegramApi('deleteMessage', {
       chat_id: player.telegramID,
       message_id: player.lastNoticeMessageId,
     });
     player.lastNoticeMessageId = -1;
   } catch (err) {
-    console.warn("deleteTurnNotice error:", err);
+    console.warn('deleteTurnNotice error:', err);
   }
 }
 
@@ -176,12 +176,12 @@ export async function sendGameStartNotice(player: TelegramNotifiable): Promise<v
   if (!getBotToken()) return;
   const link = `${SERVER_URL}/player?id=${player.id}`;
   try {
-    await callTelegramApi("sendMessage", {
+    await callTelegramApi('sendMessage', {
       chat_id: player.telegramID,
       text: `${player.name}, new game start! 🚀\nYour link: ${link}`,
-      parse_mode: "HTML",
+      parse_mode: 'HTML',
     });
   } catch (err) {
-    console.warn("sendGameStartNotice error:", err);
+    console.warn('sendGameStartNotice error:', err);
   }
 }

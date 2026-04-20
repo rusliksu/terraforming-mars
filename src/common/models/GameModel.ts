@@ -9,7 +9,7 @@ import {AresData} from '../ares/AresData';
 import {SpaceModel} from './SpaceModel';
 import {MoonModel} from './MoonModel';
 import {PathfindersModel} from './PathfindersModel';
-import {SpectatorId} from '../Types';
+import {GameId, SpectatorId} from '../Types';
 import {ColonyName} from '../colonies/ColonyName';
 import {GlobalParameter} from '../GlobalParameter';
 import {Tag} from '../cards/Tag';
@@ -25,6 +25,7 @@ export type GameModel = {
   expectedPurgeTimeMs: number;
   experimentalReset?: boolean;
   gameAge: number;
+  gameId: GameId;
   inputSeq: number;
   gameOptions: GameOptionsModel;
   generation: number;

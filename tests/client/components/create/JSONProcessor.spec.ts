@@ -84,7 +84,7 @@ const TEMPLATE_EXPECTED: CreateGameModel = {
   firstIndex: 1,
   playersCount: 1,
   players: [
-    {name: 'You', color: 'red', beginner: false, handicap: 0, first: false},
+    {name: 'You', color: 'red', beginner: false, handicap: 0, first: false, isBot: false},
     {name: '', color: 'green', beginner: false, handicap: 0, first: false, isBot: false, telegramID: ''},
     {name: '', color: 'yellow', beginner: false, handicap: 0, first: false, isBot: false, telegramID: ''},
     {name: '', color: 'blue', beginner: false, handicap: 0, first: false, isBot: false, telegramID: ''},

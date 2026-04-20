@@ -12,6 +12,7 @@ import {Response} from '../Response';
 import {isDynamicEloAssetPath, resolveEloAssetPath} from '../elo/EloPaths';
 
 type Encoding = 'gzip' | 'br';
+type ErrnoLikeError = Error & { code?: string };
 
 export class FileAPI {
   public static readonly INSTANCE: FileAPI = new FileAPI();
@@ -119,7 +120,7 @@ export class ServeAsset extends Handler {
         this.cache.set(file, data);
       }
     } catch (err) {
-      const error = err as NodeJS.ErrnoException;
+      const error = err as ErrnoLikeError;
       if (error.code === 'ENOENT') {
         responses.notFound(req, res);
         return;

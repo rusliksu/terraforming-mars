@@ -36,6 +36,7 @@ export class JSONProcessor {
     }
     const normalizedPlayers = players.map((player) => ({
       ...player,
+      isBot: player.isBot ?? false,
       name: normalizePlayerNameForColor(player.color, player.name),
     }));
 

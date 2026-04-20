@@ -131,7 +131,7 @@ export default defineComponent({
     initializeProjectCards() {
       const option = getOption(this.playerinput.options, titles.SELECT_PROJECTS_TITLE);
       const projectBaseCosts: Partial<Record<CardName, number | undefined>> = {};
-      this.projectCards = option.cards.map((card) => {
+      this.projectCards = (option.cards ?? []).map((card) => {
         projectBaseCosts[card.name] = card.calculatedCost;
         return {...card};
       });
@@ -454,7 +454,7 @@ function toArray<T>(value: ReadonlyArray<T> | T | undefined): Array<T> {
   if (value === undefined) {
     return [];
   }
-  return Array.isArray(value) ? [...value] : [value];
+  return Array.isArray(value) ? Array.from(value) : [value as T];
 }
 
 function getOption(options: Array<PlayerInputModel>, title: string): SelectCardModel {

@@ -23,6 +23,8 @@ interface TemplateEntry {
   settings: Record<string, any>;
 }
 
+type ErrnoLikeError = Error & { code?: string };
+
 /** Maps old-style template expansion fields to Expansion keys */
 const OLD_EXPANSION_FIELDS: Record<string, Expansion> = {
   corporateEra: 'corpera',
@@ -56,7 +58,7 @@ export class ApiQuickGame extends Handler {
         const parsed = JSON.parse(raw) as unknown;
         this.templates = Array.isArray(parsed) ? parsed as Array<TemplateEntry> : [];
       } catch (err) {
-        const error = err as NodeJS.ErrnoException;
+        const error = err as ErrnoLikeError;
         if (error.code !== 'ENOENT') {
           console.warn('Failed to load default quick-game templates', err);
         }
@@ -178,20 +180,20 @@ export class ApiQuickGame extends Handler {
     };
   }
 
-  public override async get(req: Request, res: Response, ctx: Context): Promise<void> {
+  public override get(req: Request, res: Response, ctx: Context): Promise<void> {
     const templateName = ctx.url.searchParams.get('template');
     if (!templateName) {
       const templates = this.loadTemplates();
       const names = templates.map((t) => t.name);
       responses.writeJson(res, ctx, {templates: names});
-      return;
+      return Promise.resolve();
     }
 
     const playerCountParam = ctx.url.searchParams.get('players');
     const playerCount = playerCountParam ? parseInt(playerCountParam, 10) : 3;
     if (isNaN(playerCount) || playerCount < 1 || playerCount > 6) {
       responses.badRequest(req, res, 'players must be between 1 and 6');
-      return;
+      return Promise.resolve();
     }
 
     const templates = this.loadTemplates();
@@ -199,7 +201,7 @@ export class ApiQuickGame extends Handler {
     if (!template) {
       const available = templates.map((t) => t.name).join(', ');
       responses.notFound(req, res, 'Template not found: ' + templateName + '. Available: ' + available);
-      return;
+      return Promise.resolve();
     }
 
     try {
@@ -216,9 +218,9 @@ export class ApiQuickGame extends Handler {
         );
       });
 
-      const firstPlayerIdx = gameReq.randomFirstPlayer
-        ? Math.floor(Math.random() * players.length)
-        : 0;
+      const firstPlayerIdx = gameReq.randomFirstPlayer ?
+        Math.floor(Math.random() * players.length) :
+        0;
 
       const boards = ApiCreateGame.boardOptions(gameReq.board);
       gameReq.board = boards[Math.floor(Math.random() * boards.length)];
@@ -301,5 +303,6 @@ export class ApiQuickGame extends Handler {
     } catch (error) {
       responses.internalServerError(req, res, error);
     }
+    return Promise.resolve();
   }
 }

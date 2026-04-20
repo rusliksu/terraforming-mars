@@ -24,7 +24,6 @@
             </div>
 
 
-
             <div class="create-game-form create-game-panel create-game--block">
 
                 <div class="create-game-options">
@@ -617,7 +616,7 @@ import CardsFilter from '@/client/components/create/CardsFilter.vue';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {playerColorClass} from '@/common/utils/utils';
 import {RandomMAOptionType} from '@/common/ma/RandomMAOptionType';
-import {GameId} from '@/common/Types';
+import {GameId, JSONObject} from '@/common/Types';
 import {AgendaStyle} from '@/common/turmoil/Types';
 import PreferencesIcon from '@/client/components/PreferencesIcon.vue';
 import {getCard} from '@/client/cards/ClientCardManifest';
@@ -628,7 +627,7 @@ import {paths} from '@/common/app/paths';
 import {JSONProcessor} from './JSONProcessor';
 import {defaultCreateGameModel} from './defaultCreateGameModel';
 import {TemplateManager, GameTemplate} from './TemplateManager';
-import {loadPresets, GamePreset} from "./GamePresets";
+import {loadPresets, GamePreset} from './GamePresets';
 import {getColony} from '@/client/colonies/ClientColonyManifest';
 import {RULEBOOK_URLS, WIKI, WIKI_URLS} from '@/client/utils/WikiLinks';
 
@@ -647,6 +646,8 @@ type FormModel = {
   uploading: boolean;
   selectedTemplate: string;
   templates: Array<GameTemplate>;
+  presets: Array<GamePreset>;
+  selectedPresetType: string;
 };
 
 export default defineComponent({
@@ -659,7 +660,7 @@ export default defineComponent({
       selectedTemplate: '',
       templates: TemplateManager.getTemplates(),
       presets: [] as Array<GamePreset>,
-      selectedPresetType: "std" as string,
+      selectedPresetType: 'std' as string,
     };
   },
   components: {
@@ -779,7 +780,7 @@ export default defineComponent({
         this.applySettings(lastSettings);
       }
     },
-    applySettings(json: Record<string, unknown>) {
+    applySettings(json: JSONObject) {
       const component: CreateGameModel = this;
       const refs = this.typedRefs;
       const root = vueRoot(this);
@@ -836,7 +837,7 @@ export default defineComponent({
     },
     applyPreset(preset: GamePreset) {
       const scrollY = window.scrollY;
-      const settings = {...preset.settings} as Record<string, unknown>;
+      const settings = {...preset.settings} as JSONObject;
       if (!settings.players) {
         settings.players = this.players.slice(0, this.playersCount).map((p) => ({...p}));
       }
@@ -847,7 +848,7 @@ export default defineComponent({
         if (hasBans) {
           nextTick(() => {
             const refs = this.typedRefs;
-            if (refs.cardsFilter) refs.cardsFilter.selected = (settings.bannedCards as Array<string>).slice();
+            if (refs.cardsFilter) refs.cardsFilter.selected = (settings.bannedCards as Array<CardName>).slice();
           });
         }
       });
@@ -857,7 +858,7 @@ export default defineComponent({
       if (!this.selectedTemplate) return;
       const tmpl = TemplateManager.getTemplate(this.selectedTemplate);
       if (!tmpl) return;
-      this.applySettings(tmpl.settings as Record<string, unknown>);
+      this.applySettings(tmpl.settings);
       vueRoot(this).showAlert('Template', 'Template "' + this.selectedTemplate + '" loaded.');
     },
     saveAsTemplate() {

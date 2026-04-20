@@ -1,4 +1,4 @@
-import {sendGameStartNotice} from "../TelegramBot";
+import {sendGameStartNotice} from '../TelegramBot';
 import * as responses from '../server/responses';
 import {Handler} from './Handler';
 import {Context} from './IHandler';

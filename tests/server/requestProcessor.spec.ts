@@ -36,7 +36,7 @@ describe('requestProcessor', () => {
       return {} as ReturnType<typeof GameLoader.getInstance>;
     }) as typeof GameLoader.getInstance;
 
-    ServeAsset.INSTANCE.processRequest = ((req, res, ctx) => {
+    ServeAsset.INSTANCE.processRequest = ((_req, res, _ctx) => {
       assetHandlerCalled = true;
       res.writeHead(statusCode.ok);
       res.end('release manifest');

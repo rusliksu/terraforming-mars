@@ -1,3 +1,4 @@
+import {JSONObject} from '@/common/Types';
 import {CreateGameModel} from './CreateGameModel';
 
 const TEMPLATES_KEY = 'tm_game_templates';
@@ -5,7 +6,7 @@ const LAST_SETTINGS_KEY = 'tm_last_settings';
 
 export interface GameTemplate {
   name: string;
-  settings: Record<string, unknown>;
+  settings: JSONObject;
 }
 
 function localStorageAvailable(): boolean {
@@ -27,7 +28,7 @@ export class TemplateManager {
     }
   }
 
-  static saveTemplate(name: string, settings: Record<string, unknown>): void {
+  static saveTemplate(name: string, settings: JSONObject): void {
     if (!localStorageAvailable()) return;
     const templates = this.getTemplates();
     const idx = templates.findIndex((t) => t.name === name);
@@ -63,14 +64,14 @@ export class TemplateManager {
     return true;
   }
 
-  static saveLastSettings(settings: Record<string, unknown>): void {
+  static saveLastSettings(settings: JSONObject): void {
     if (!localStorageAvailable()) return;
     try {
       localStorage.setItem(LAST_SETTINGS_KEY, JSON.stringify(settings));
     } catch { /* quota exceeded, ignore */ }
   }
 
-  static getLastSettings(): Record<string, unknown> | undefined {
+  static getLastSettings(): JSONObject | undefined {
     if (!localStorageAvailable()) return undefined;
     try {
       const data = localStorage.getItem(LAST_SETTINGS_KEY);
@@ -81,13 +82,13 @@ export class TemplateManager {
   }
 
   /** Serialize current form state for storage (compatible with JSONProcessor.applyJSON) */
-  static serializeFormState(model: CreateGameModel): Record<string, unknown> {
-    const state: Record<string, unknown> = {};
+  static serializeFormState(model: CreateGameModel): JSONObject {
+    const state: JSONObject = {};
 
     state.players = model.players.slice(0, model.playersCount).map((p) => ({...p}));
     state.expansions = {...model.expansions};
 
-    const simpleFields: Array<keyof CreateGameModel> = [
+    const simpleFields = [
       'draftVariant', 'showOtherPlayersVP', 'board', 'solarPhaseOption',
       'aresExtremeVariant', 'politicalAgendasExtension', 'undoOption', 'showTimers',
       'fastModeOption', 'removeNegativeGlobalEventsOption', 'includeFanMA', 'modularMA',
@@ -98,10 +99,10 @@ export class TemplateManager {
       'escapeVelocityMode', 'escapeVelocityBonusSeconds', 'escapeVelocityPenalty',
       'escapeVelocityPeriod', 'escapeVelocityThreshold',
       'twoCorpsVariant', 'startingCeos', 'startingPreludes',
-    ];
+    ] as const satisfies ReadonlyArray<keyof CreateGameModel>;
 
     for (const f of simpleFields) {
-      state[f] = model[f];
+      state[f] = model[f] as JSONObject[typeof f];
     }
 
     // Deep copy arrays

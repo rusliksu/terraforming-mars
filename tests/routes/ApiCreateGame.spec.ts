@@ -124,6 +124,7 @@ describe('ApiCreateGame', () => {
         beginner: false,
         handicap: 0,
         first: true,
+        isBot: false,
       }])));
       req.emitter.emit('end');
     });
@@ -147,6 +148,7 @@ describe('ApiCreateGame', () => {
         beginner: false,
         handicap: 0,
         first: true,
+        isBot: false,
       }])));
       req.emitter.emit('end');
     });
@@ -168,6 +170,7 @@ describe('ApiCreateGame', () => {
         beginner: false,
         handicap: 0,
         first: true,
+        isBot: false,
         telegramID: '@bad-id',
       }])));
       req.emitter.emit('end');
@@ -186,6 +189,7 @@ describe('ApiCreateGame', () => {
         beginner: false,
         handicap: 0,
         first: true,
+        isBot: false,
         telegramID: '   ',
       }])));
       req.emitter.emit('end');

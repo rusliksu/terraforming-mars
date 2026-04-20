@@ -179,9 +179,9 @@ export class Player implements IPlayer {
   public globalParameterSteps: Record<GlobalParameter, number> = {...DEFAULT_GLOBAL_PARAMETER_STEPS};
 
   public user?: DiscordId;
-  public telegramID: string = "";
+  public telegramID: string = '';
   public lastNoticeMessageId: number = -1;
-  public lastTurnNoticeKey: string = "";
+  public lastTurnNoticeKey: string = '';
   private _pendingTurnNoticeTimer?: ReturnType<typeof setTimeout>;
   private _turnNoticeSentThisRound: boolean = false;
 
@@ -1893,9 +1893,9 @@ export class Player implements IPlayer {
     player.turmoilPolicyActionUsed = d.turmoilPolicyActionUsed;
     player.politicalAgendasActionUsedCount = d.politicalAgendasActionUsedCount;
     player.user = d.user;
-    player.telegramID = d.telegramID ?? "";
+    player.telegramID = d.telegramID ?? '';
     player.lastNoticeMessageId = d.lastNoticeMessageId ?? -1;
-    player.lastTurnNoticeKey = d.lastTurnNoticeKey ?? "";
+    player.lastTurnNoticeKey = d.lastTurnNoticeKey ?? '';
 
     // Rebuild removed from play cards (Playwrights, Odyssey)
     player.removedFromPlayCards = cardsFromJSON(d.removedFromPlayCards);

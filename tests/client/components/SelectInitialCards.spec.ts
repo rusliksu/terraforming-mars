@@ -158,8 +158,8 @@ describe('SelectInitialCards', () => {
     await component.vm.$nextTick();
 
     const projectCards = component.vm.projectCardOption.cards;
-    expect(projectCards.find((card) => card.name === CardName.EARTH_CATAPULT)?.calculatedCost).eq(20);
-    expect(projectCards.find((card) => card.name === CardName.RESEARCH_OUTPOST)?.calculatedCost).eq(16);
+    expect(projectCards.find((card: CardModel) => card.name === CardName.EARTH_CATAPULT)?.calculatedCost).eq(20);
+    expect(projectCards.find((card: CardModel) => card.name === CardName.RESEARCH_OUTPOST)?.calculatedCost).eq(16);
   });
 
   it('recalculates Mars Direct discounts from currently selected Mars tags', async () => {
@@ -174,7 +174,7 @@ describe('SelectInitialCards', () => {
     selectCards[1].vm.$emit('cardschanged', [CardName.DESIGN_COMPANY, CardName.ALLIED_BANK]);
     await component.vm.$nextTick();
 
-    const dustStorm = component.vm.projectCardOption.cards.find((card) => card.name === CardName.DUST_STORM);
+    const dustStorm = component.vm.projectCardOption.cards.find((card: CardModel) => card.name === CardName.DUST_STORM);
     expect(dustStorm?.calculatedCost).eq(15);
   });
 });

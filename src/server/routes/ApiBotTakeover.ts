@@ -16,15 +16,16 @@ export class ApiBotTakeover extends Handler {
     super();
   }
 
-  public override async get(req: Request, res: Response, ctx: Context): Promise<void> {
+  public override get(req: Request, res: Response, ctx: Context): Promise<void> {
     const gameId = this.parseGameId(req, res, ctx, false);
     if (gameId === null) {
-      return;
+      return Promise.resolve();
     }
     responses.writeJson(res, ctx, {
       botPlayers: this.manager.listPlayerIds(gameId ?? undefined),
       entries: this.manager.list(gameId ?? undefined),
     });
+    return Promise.resolve();
   }
 
   public override async post(req: Request, res: Response, ctx: Context): Promise<void> {

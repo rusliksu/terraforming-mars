@@ -30,9 +30,9 @@ class FileApiMock extends FileAPI {
 }
 
 class MissingFileApiMock extends FileApiMock {
-  public override readFile(path: string): Promise<Buffer> {
-    const err = new Error('missing');
-    (err as NodeJS.ErrnoException).code = 'ENOENT';
+  public override readFile(_path: string): Promise<Buffer> {
+    const err = new Error('missing') as Error & { code?: string };
+    err.code = 'ENOENT';
     return Promise.reject(err);
   }
 }

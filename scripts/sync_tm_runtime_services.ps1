@@ -6,25 +6,19 @@ param(
     [string]$ProdService = "tm-server.service",
     [string]$ProdNextService = "tm-server-next.service",
     [string]$StagingService = "tm-server-staging.service",
-    [string]$PreviewService = "tm-server-preview.service",
     [string]$EloService = "tm-elo.service",
     [string]$ProdRuntimeRoot = "/home/openclaw/tm-runtime/prod",
     [string]$ProdNextRuntimeRoot = "/home/openclaw/tm-runtime/prod-next",
     [string]$StagingRuntimeRoot = "/home/openclaw/tm-runtime/staging",
-    [string]$PreviewRuntimeRoot = "/home/openclaw/tm-runtime/preview",
     [string]$ProdPort = "8081",
     [string]$ProdHost = "127.0.0.1",
     [string]$ProdNextPort = "8085",
     [string]$ProdNextHost = "127.0.0.1",
     [string]$StagingPort = "8084",
     [string]$StagingHost = "127.0.0.1",
-    [string]$PreviewPort = "8086",
-    [string]$PreviewHost = "127.0.0.1",
     [string]$DefaultAutoJoinScript = "/home/openclaw/repos/tm-tierlist/bot/auto-join.js",
     [string]$DefaultShadowLogDir = "/home/openclaw/repos/tm-tierlist/data/shadow/server-inputs",
     [string]$DefaultStagingUrl = "https://staging.tm.knightbyte.win",
-    [string]$DefaultPreviewUrl = "https://preview.tm.knightbyte.win",
-    [switch]$EnablePreview,
     [switch]$DryRun
 )
 
@@ -131,11 +125,6 @@ $templateDir = Join-Path $scriptDir 'systemd'
 
 $prodEnv = Get-ServiceEnvironmentMap -ServiceName $ProdService
 $stagingEnv = Get-ServiceEnvironmentMap -ServiceName $StagingService
-$previewEnv = if ($EnablePreview) {
-    Get-ServiceEnvironmentMap -ServiceName $PreviewService
-} else {
-    @{}
-}
 
 if ($DryRun) {
     if (-not ($prodEnv.ContainsKey('SERVER_ID')) -or [string]::IsNullOrWhiteSpace($prodEnv['SERVER_ID'])) {
@@ -146,14 +135,6 @@ if ($DryRun) {
     }
     if (-not ($stagingEnv.ContainsKey('TM_SERVER_URL')) -or [string]::IsNullOrWhiteSpace($stagingEnv['TM_SERVER_URL'])) {
         $stagingEnv['TM_SERVER_URL'] = $DefaultStagingUrl
-    }
-    if ($EnablePreview) {
-        if (-not ($previewEnv.ContainsKey('SERVER_ID')) -or [string]::IsNullOrWhiteSpace($previewEnv['SERVER_ID'])) {
-            $previewEnv['SERVER_ID'] = 'preview-placeholder'
-        }
-        if (-not ($previewEnv.ContainsKey('TM_SERVER_URL')) -or [string]::IsNullOrWhiteSpace($previewEnv['TM_SERVER_URL'])) {
-            $previewEnv['TM_SERVER_URL'] = $DefaultPreviewUrl
-        }
     }
 }
 
@@ -169,20 +150,12 @@ $autoJoinScript = if ($prodEnv.ContainsKey('TM_AUTO_JOIN_SCRIPT')) {
 }
 $shadowLogDir = if ($prodEnv.ContainsKey('SHADOW_LOG_DIR')) { $prodEnv['SHADOW_LOG_DIR'] } else { $DefaultShadowLogDir }
 $stagingUrl = if ($stagingEnv.ContainsKey('TM_SERVER_URL')) { $stagingEnv['TM_SERVER_URL'] } else { $DefaultStagingUrl }
-$previewUrl = if ($previewEnv.ContainsKey('TM_SERVER_URL')) { $previewEnv['TM_SERVER_URL'] } else { $DefaultPreviewUrl }
 $prodCurrentDir = "$ProdRuntimeRoot/current"
 $prodNextCurrentDir = "$ProdNextRuntimeRoot/current"
 $stagingCurrentDir = "$StagingRuntimeRoot/current"
-$previewCurrentDir = "$PreviewRuntimeRoot/current"
 $prodEloDataDir = "$ProdRuntimeRoot/shared/elo"
 $prodNextEloDataDir = "$ProdNextRuntimeRoot/shared/elo"
 $stagingEloDataDir = "$StagingRuntimeRoot/shared/elo"
-$previewEloDataDir = "$PreviewRuntimeRoot/shared/elo"
-$previewServerId = if ($previewEnv.ContainsKey('SERVER_ID') -and -not [string]::IsNullOrWhiteSpace($previewEnv['SERVER_ID'])) {
-    $previewEnv['SERVER_ID']
-} else {
-    "preview-$stagingServerId"
-}
 
 $prodContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-server.service.template') -Replacements @{
     '__PROD_CURRENT_DIR__' = $prodCurrentDir
@@ -204,19 +177,6 @@ $stagingContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-serv
     '__AUTO_JOIN_SCRIPT__' = $autoJoinScript
 }
 
-$previewContent = ""
-if ($EnablePreview) {
-    $previewContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-server-preview.service.template') -Replacements @{
-        '__PREVIEW_CURRENT_DIR__' = $previewCurrentDir
-        '__PREVIEW_PORT__' = $PreviewPort
-        '__PREVIEW_HOST__' = $PreviewHost
-        '__PREVIEW_SERVER_ID__' = $previewServerId
-        '__PREVIEW_ELO_DATA_DIR__' = $previewEloDataDir
-        '__PREVIEW_URL__' = $previewUrl
-        '__AUTO_JOIN_SCRIPT__' = $autoJoinScript
-    }
-}
-
 $prodNextContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-server-next.service.template') -Replacements @{
     '__PROD_NEXT_CURRENT_DIR__' = $prodNextCurrentDir
     '__PROD_NEXT_PORT__' = $ProdNextPort
@@ -234,21 +194,12 @@ Write-Host "Target VPS: $VpsHost"
 Write-Host "Prod SERVER_ID: $prodServerId"
 Write-Host "Prod-next SERVER_ID: $prodNextServerId"
 Write-Host "Staging SERVER_ID: $stagingServerId"
-if ($EnablePreview) {
-    Write-Host "Preview SERVER_ID: $previewServerId"
-}
 Write-Host "Auto-join script: $autoJoinScript"
 Write-Host "Prod current dir: $prodCurrentDir"
 Write-Host "Prod-next current dir: $prodNextCurrentDir"
 Write-Host "Staging current dir: $stagingCurrentDir"
-if ($EnablePreview) {
-    Write-Host "Preview current dir: $previewCurrentDir"
-}
 Write-Host "Shadow log dir: $shadowLogDir"
 Write-Host "Staging URL: $stagingUrl"
-if ($EnablePreview) {
-    Write-Host "Preview URL: $previewUrl"
-}
 Write-Host "Mode: $(if ($DryRun) { 'dry-run' } else { 'apply without service restart' })"
 
 if ($DryRun) {
@@ -262,11 +213,6 @@ if ($DryRun) {
     Write-Host "=== $StagingService ==="
     Write-Host $stagingContent
     Write-Host ""
-    if ($EnablePreview) {
-        Write-Host "=== $PreviewService ==="
-        Write-Host $previewContent
-        Write-Host ""
-    }
     Write-Host "=== $EloService ==="
     Write-Host $eloContent
     exit 0
@@ -275,16 +221,7 @@ if ($DryRun) {
 $prodBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($prodContent))
 $prodNextBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($prodNextContent))
 $stagingBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($stagingContent))
-$previewBase64 = if ($EnablePreview) { [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($previewContent)) } else { "" }
 $eloBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($eloContent))
-
-$previewFileEntry = if ($EnablePreview) {
-@"
-    Path.home() / ".config/systemd/user/$PreviewService": "$previewBase64",
-"@
-} else {
-    ""
-}
 
 $remoteScript = @"
 set -euo pipefail
@@ -297,7 +234,6 @@ files = {
     Path.home() / ".config/systemd/user/$ProdService": "$prodBase64",
     Path.home() / ".config/systemd/user/$ProdNextService": "$prodNextBase64",
     Path.home() / ".config/systemd/user/$StagingService": "$stagingBase64",
-$previewFileEntry
     Path.home() / ".config/systemd/user/$EloService": "$eloBase64",
 }
 
@@ -322,8 +258,6 @@ echo '--- tm-server-next.service'
 systemctl --user cat $ProdNextService
 echo '--- tm-server-staging.service'
 systemctl --user cat $StagingService
-$(if ($EnablePreview) { "echo '--- tm-server-preview.service'
-systemctl --user cat $PreviewService" } else { "" })
 echo '--- tm-elo.service'
 systemctl --user cat $EloService
 "@

@@ -39,13 +39,22 @@ a:hover { text-decoration: underline; }
 .filter-tag .clear:hover { opacity: 1; }
 .game-card { background: #16213e; border: 1px solid #333; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; transition: border-color 0.2s; }
 .game-card:hover { border-color: #ff6b35; }
-.game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 0.85em; color: #888; }
-.game-header-right { display: inline-flex; align-items: center; gap: 10px; }
+.game-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 6px 12px; margin-bottom: 6px; font-size: 0.85em; color: #888; }
+.game-header-right { display: inline-flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 10px; }
 .game-header a { font-size: 0.8em; }
 .game-server { text-transform: capitalize; }
 .game-gen { color: #c4a35a; }
 .game-duration { color: #7cc8ff; }
-.game-date { color: #777; }
+.game-date { color: #cfcfcf; }
+.game-badges { display: inline-flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 6px; }
+.game-badge { display: inline-flex; align-items: center; border-radius: 999px; padding: 2px 8px; font-size: 0.75em; line-height: 1.2; border: 1px solid transparent; }
+.game-badge-source { background: rgba(104, 109, 224, 0.15); border-color: rgba(104, 109, 224, 0.4); color: #a8b2ff; }
+.game-badge-source-shadowlogger, .game-badge-source-shadow { background: rgba(255, 107, 53, 0.16); border-color: rgba(255, 107, 53, 0.45); color: #ffb089; }
+.game-badge-source-import { background: rgba(64, 201, 255, 0.14); border-color: rgba(64, 201, 255, 0.38); color: #8fdefd; }
+.game-badge-source-manual { background: rgba(196, 163, 90, 0.16); border-color: rgba(196, 163, 90, 0.45); color: #e6cf8d; }
+.game-badge-review { background: rgba(46, 204, 113, 0.12); border-color: rgba(46, 204, 113, 0.38); color: #89e2b1; }
+.game-badge-review-claude { background: rgba(255, 159, 67, 0.12); border-color: rgba(255, 159, 67, 0.38); color: #ffd29b; }
+.game-badge-target { background: transparent; border-color: #555; color: #b9b9b9; }
 .game-results { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .game-player { display: inline-flex; align-items: center; gap: 4px; }
 .game-player .pname { font-weight: 500; }
@@ -95,7 +104,18 @@ var _data = null;
 var _mode = "place";
 var _filterPlayer = null;
 var _gamesPage = 1;
+var _derivedPlayerStats = {};
+var _preparedGamesNewestFirst = [];
+var _gamesByPlayer = {};
 var GAMES_PER_PAGE = 20;
+var _statsEl = document.getElementById("stats");
+var _tbodyEl = document.getElementById("tbody");
+var _gamesTitleEl = document.getElementById("games-title");
+var _gamesSummaryEl = document.getElementById("gamesSummary");
+var _filterBarEl = document.getElementById("filterBar");
+var _gamesListEl = document.getElementById("gamesList");
+var _paginationEl = document.getElementById("pagination");
+var _tabs = Array.prototype.slice.call(document.querySelectorAll(".tab"));
 
 function getGameUrl(game) {
   var host = game.server === "knightbyte"
@@ -146,9 +166,26 @@ function averageGeneration(games) {
   return round1(total / values.length);
 }
 
-function formatDate(dateString) {
-  if (!dateString) return "";
-  var date = new Date(dateString);
+function parseGameDate(value) {
+  if (value instanceof Date) {
+    return isNaN(value.getTime()) ? null : value;
+  }
+  if (typeof value === "number" && value > 0) {
+    return new Date(value * 1000);
+  }
+  if (typeof value === "string" && value) {
+    return new Date(value);
+  }
+  return null;
+}
+
+function resolveGameDate(game) {
+  return parseGameDate(game.date) || parseGameDate(game.completedTime) || null;
+}
+
+function formatDate(value) {
+  var date = parseGameDate(value);
+  if (!date) return "";
   if (isNaN(date.getTime())) return "";
   return date.toLocaleString([], {
     year: "numeric",
@@ -167,12 +204,132 @@ function formatDuration(game) {
       durationMinutes = Math.round(durationMs / 60000);
     }
   }
+  if (!(durationMinutes > 0)) {
+    var startedTime = Number(game.startedTime);
+    var completedTime = Number(game.completedTime);
+    if (startedTime > 0 && completedTime > startedTime) {
+      durationMinutes = Math.round((completedTime - startedTime) / 60);
+    }
+  }
   if (!(durationMinutes > 0)) return "";
   if (durationMinutes < 60) return durationMinutes + "m";
   var hours = Math.floor(durationMinutes / 60);
   var minutes = durationMinutes % 60;
   if (minutes === 0) return hours + "h";
   return hours + "h " + minutes + "m";
+}
+
+function normalizeStringList(value) {
+  var values = [];
+  if (Array.isArray(value)) values = value;
+  else if (typeof value === "string" && value) values = value.split(",");
+  return values
+    .map(function(entry) { return typeof entry === "string" ? entry.trim() : ""; })
+    .filter(function(entry) { return entry !== ""; });
+}
+
+function badgeSlug(value) {
+  return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+function renderGameMetaBadges(game) {
+  var html = "";
+  var source = typeof game.source === "string" ? game.source.trim() : "";
+  if (source) {
+    var sourceSlug = badgeSlug(source);
+    html += "<span class=\"game-badge game-badge-source game-badge-source-" + esc(sourceSlug) + "\">" + esc(source) + "</span>";
+  }
+  normalizeStringList(game.analyzedBy).forEach(function(entry) {
+    var slug = badgeSlug(entry);
+    html += "<span class=\"game-badge game-badge-review game-badge-review-" + esc(slug) + "\">" + esc(entry) + "</span>";
+  });
+  normalizeStringList(game.analysisTargets).forEach(function(entry) {
+    html += "<span class=\"game-badge game-badge-target\">" + esc(entry) + "</span>";
+  });
+  return html;
+}
+
+function getPlayerMargin(game, playerKey) {
+  var results = (game.results || []);
+  if (!results.length) return 0;
+  var mine = results.find(function(r) { return r.name === playerKey; });
+  if (!mine) return 0;
+  var leaderVp = results.reduce(function(max, current) {
+    return Math.max(max, Number(current.vp || 0));
+  }, Number.NEGATIVE_INFINITY);
+  if (!isFinite(leaderVp)) return 0;
+  if ((mine.place || 99) === 1) {
+    var others = results
+      .filter(function(r) { return r !== mine; })
+      .map(function(r) { return Number(r.vp || 0); });
+    if (!others.length) return 0;
+    return Number(mine.vp || 0) - Math.max.apply(null, others);
+  }
+  return Number(mine.vp || 0) - leaderVp;
+}
+
+function buildDerivedPlayerStats(games) {
+  var stats = {};
+  games.forEach(function(game) {
+    (game.results || []).forEach(function(result) {
+      var key = result.name;
+      if (!key) return;
+      if (!stats[key]) {
+        stats[key] = {
+          games: 0,
+          totalGens: 0,
+          genGames: 0,
+          totalMargin: 0
+        };
+      }
+      var item = stats[key];
+      item.games += 1;
+      if (Number(game.generation) > 0) {
+        item.totalGens += Number(game.generation);
+        item.genGames += 1;
+      }
+      item.totalMargin += getPlayerMargin(game, key);
+    });
+  });
+  Object.keys(stats).forEach(function(key) {
+    var item = stats[key];
+    item.avgGens = item.genGames > 0 ? item.totalGens / item.genGames : 0;
+    item.avgMargin = item.games > 0 ? item.totalMargin / item.games : 0;
+  });
+  return stats;
+}
+
+function prepareGameForRender(game) {
+  var prepared = Object.assign({}, game);
+  prepared.resultsSorted = (game.results || []).slice().sort(function(a, b) {
+    return a.place - b.place;
+  });
+  prepared.genText = game.generation ? ("Gen " + game.generation) : "";
+  prepared.durationText = formatDuration(game);
+  prepared.dateValue = resolveGameDate(game);
+  prepared.dateText = prepared.dateValue ? formatDate(prepared.dateValue) : "";
+  prepared.metaBadgesHtml = renderGameMetaBadges(game);
+  prepared.url = getGameUrl(game);
+  prepared.label = getGameLabel(game);
+  prepared.playerKeys = prepared.resultsSorted
+    .map(function(result) { return result.name; })
+    .filter(function(name) { return !!name; });
+  return prepared;
+}
+
+function buildPreparedGameCaches(games) {
+  var newestFirst = (games || []).slice().reverse().map(prepareGameForRender);
+  var byPlayer = {};
+  newestFirst.forEach(function(game) {
+    (game.playerKeys || []).forEach(function(playerKey) {
+      if (!byPlayer[playerKey]) byPlayer[playerKey] = [];
+      byPlayer[playerKey].push(game);
+    });
+  });
+  return {
+    newestFirst: newestFirst,
+    byPlayer: byPlayer
+  };
 }
 
 function getPageCount(totalGames) {
@@ -185,15 +342,18 @@ function renderPlayers() {
   var list = [];
   for (var name in players) {
     var p = players[name];
+    var derived = _derivedPlayerStats[name] || {};
     var elo = _mode === "vp" ? (p.elo_vp || p.elo || 1500) : (p.elo || 1500);
     var games = p.games || 0;
     var avgPlace = typeof p.avgPlace === "number" ? p.avgPlace :
       (games > 0 ? ((typeof p.placeScoreTotal === "number" ? p.placeScoreTotal : (p.wins || 0)) / games) : 0);
     var avgVP = typeof p.avgVP === "number" ? p.avgVP :
       (games > 0 ? ((p.totalVP || 0) / games) : 0);
-    var avgGens = typeof p.avgGens === "number" ? p.avgGens :
-      (games > 0 ? ((p.totalGens || 0) / games) : 0);
-    var avgMargin = typeof p.avgMargin === "number" ? p.avgMargin : 0;
+    var avgGens = (typeof p.avgGens === "number" && p.avgGens > 0) ? p.avgGens :
+      (derived.avgGens || (games > 0 ? ((p.totalGens || 0) / games) : 0));
+    var avgMargin = typeof p.avgMargin === "number" && (Math.abs(p.avgMargin) > 0.001 || !derived.games) ?
+      p.avgMargin :
+      (typeof derived.avgMargin === "number" ? derived.avgMargin : 0);
     list.push({
       key: name,
       name: p.displayName || name,
@@ -207,7 +367,7 @@ function renderPlayers() {
   }
   list.sort(function(a,b) { return b.elo - a.elo; });
   var games = _data.games || [];
-  document.getElementById("stats").innerHTML = list.length + " players | " + games.length + " games | <span class=\"highlight\">Avg gen " + averageGeneration(games) + "</span>";
+  _statsEl.innerHTML = list.length + " players | " + games.length + " games | <span class=\"highlight\">Avg gen " + averageGeneration(games) + "</span>";
   var html = "";
   list.forEach(function(p, i) {
     var activeClass = (_filterPlayer && _filterPlayer === p.key) ? " active-filter" : "";
@@ -220,72 +380,58 @@ function renderPlayers() {
       + "<td>" + round1(p.avgGens) + "</td>"
       + "<td>" + formatMargin(p.avgMargin) + "</td></tr>";
   });
-  document.getElementById("tbody").innerHTML = html;
+  _tbodyEl.innerHTML = html;
 }
 
 function getFilteredGames() {
-  var games = (_data && _data.games) ? _data.games.slice() : [];
-  games.reverse();
   if (_filterPlayer) {
-    games = games.filter(function(g) {
-      return g.results && g.results.some(function(r) { return r.name === _filterPlayer; });
-    });
+    return _gamesByPlayer[_filterPlayer] || [];
   }
-  return games;
+  return _preparedGamesNewestFirst;
 }
 
 function renderGames() {
   var games = getFilteredGames();
-  var filterBar = document.getElementById("filterBar");
-  var summary = document.getElementById("gamesSummary");
-  var title = document.getElementById("games-title");
   var totalPages = getPageCount(games.length);
   if (_gamesPage > totalPages) _gamesPage = totalPages;
   if (_gamesPage < 1) _gamesPage = 1;
 
   if (_filterPlayer && _data && _data.players && _data.players[_filterPlayer]) {
     var dn = _data.players[_filterPlayer].displayName || _filterPlayer;
-    filterBar.innerHTML = "<span class=\"filter-tag\">" + esc(dn) + " (" + games.length + " games)<span class=\"clear\" id=\"clearFilterBtn\"> x</span></span>";
-    title.textContent = dn + " \u2014 Game History";
-    var clearBtn = document.getElementById("clearFilterBtn");
-    if (clearBtn) clearBtn.addEventListener("click", clearFilter);
+    _filterBarEl.innerHTML = "<span class=\"filter-tag\">" + esc(dn) + " (" + games.length + " games)<span class=\"clear\" id=\"clearFilterBtn\"> x</span></span>";
+    _gamesTitleEl.textContent = dn + " \u2014 Game History";
   } else {
-    filterBar.innerHTML = "";
-    title.textContent = "Recent Games";
+    _filterBarEl.innerHTML = "";
+    _gamesTitleEl.textContent = "Recent Games";
   }
 
-  summary.textContent = games.length + " games | Avg gen " + averageGeneration(games) + " | Page " + _gamesPage + " / " + totalPages;
+  _gamesSummaryEl.textContent = games.length + " games | Avg gen " + averageGeneration(games) + " | Page " + _gamesPage + " / " + totalPages;
 
   var pageStart = (_gamesPage - 1) * GAMES_PER_PAGE;
   var toShow = games.slice(pageStart, pageStart + GAMES_PER_PAGE);
   if (toShow.length === 0) {
-    document.getElementById("gamesList").innerHTML = "<div class=\"no-games\">No games found</div>";
+    _gamesListEl.innerHTML = "<div class=\"no-games\">No games found</div>";
     renderPagination(0);
     return;
   }
 
   var html = "";
   toShow.forEach(function(g) {
-    var results = (g.results || []).slice().sort(function(a,b) { return a.place - b.place; });
-    var genText = g.generation ? ("Gen " + g.generation) : "";
-    var serverText = g.server || "";
-    var durationText = formatDuration(g);
-    var dateText = formatDate(g.date);
-
     html += "<div class=\"game-card\">";
     html += "<div class=\"game-header\">";
-    html += "<span><span class=\"game-server\">" + esc(serverText) + "</span>";
-    if (genText) html += " \u00b7 <span class=\"game-gen\">" + genText + "</span>";
-    html += " \u00b7 " + results.length + "P</span>";
+    html += "<span><span class=\"game-server\">" + esc(g.server || "") + "</span>";
+    if (g.genText) html += " \u00b7 <span class=\"game-gen\">" + g.genText + "</span>";
+    html += " \u00b7 " + g.resultsSorted.length + "P</span>";
     html += "<span class=\"game-header-right\">";
-    if (durationText) html += "<span class=\"game-duration\">" + esc(durationText) + "</span>";
-    if (dateText) html += "<span class=\"game-date\">" + esc(dateText) + "</span>";
-    html += "<a href=\"" + getGameUrl(g) + "\" target=\"_blank\">" + esc(getGameLabel(g)) + "</a>";
+    if (g.durationText) html += "<span class=\"game-duration\">" + esc(g.durationText) + "</span>";
+    if (g.dateText) html += "<span class=\"game-date\">" + esc(g.dateText) + "</span>";
+    if (g.metaBadgesHtml) html += "<span class=\"game-badges\">" + g.metaBadgesHtml + "</span>";
+    html += "<a href=\"" + g.url + "\" target=\"_blank\">" + esc(g.label) + "</a>";
     html += "</span>";
     html += "</div>";
     html += "<div class=\"game-results\">";
 
-    results.forEach(function(r, idx) {
+    g.resultsSorted.forEach(function(r, idx) {
       var isWinner = r.place === 1;
       var deltaClass = r.delta > 0 ? "pos" : (r.delta < 0 ? "neg" : "zero");
       var deltaText = r.delta > 0 ? "+" + r.delta : "" + r.delta;
@@ -304,15 +450,14 @@ function renderGames() {
     html += "</div></div>";
   });
 
-  document.getElementById("gamesList").innerHTML = html;
+  _gamesListEl.innerHTML = html;
   renderPagination(games.length);
 }
 
 function renderPagination(totalGames) {
-  var container = document.getElementById("pagination");
-  if (!container) return;
+  if (!_paginationEl) return;
   if (totalGames <= GAMES_PER_PAGE) {
-    container.innerHTML = "";
+    _paginationEl.innerHTML = "";
     return;
   }
 
@@ -327,24 +472,14 @@ function renderPagination(totalGames) {
   }
   html += "<button id=\"pageNextBtn\"" + (_gamesPage >= totalPages ? " disabled" : "") + ">\u203a</button>";
   html += "<span class=\"pagination-status\">" + ((_gamesPage - 1) * GAMES_PER_PAGE + 1) + "-" + Math.min(_gamesPage * GAMES_PER_PAGE, totalGames) + " / " + totalGames + "</span>";
-  container.innerHTML = html;
-
-  var prevBtn = document.getElementById("pagePrevBtn");
-  if (prevBtn) prevBtn.addEventListener("click", function() { goToPage(_gamesPage - 1); });
-  var nextBtn = document.getElementById("pageNextBtn");
-  if (nextBtn) nextBtn.addEventListener("click", function() { goToPage(_gamesPage + 1); });
-  container.querySelectorAll(".page-btn").forEach(function(btn) {
-    btn.addEventListener("click", function() {
-      goToPage(Number(btn.dataset.page || 1));
-    });
-  });
+  _paginationEl.innerHTML = html;
 }
 
 function goToPage(page) {
   var totalPages = getPageCount(getFilteredGames().length);
   _gamesPage = Math.max(1, Math.min(totalPages, page));
   renderGames();
-  document.getElementById("games-title").scrollIntoView({ behavior: "smooth" });
+  _gamesTitleEl.scrollIntoView({ behavior: "smooth" });
 }
 
 function toggleFilter(playerKey) {
@@ -356,7 +491,7 @@ function toggleFilter(playerKey) {
   _gamesPage = 1;
   renderPlayers();
   renderGames();
-  document.getElementById("games-title").scrollIntoView({ behavior: "smooth" });
+  _gamesTitleEl.scrollIntoView({ behavior: "smooth" });
 }
 
 function clearFilter() {
@@ -374,9 +509,30 @@ document.addEventListener("click", function(e) {
   }
 });
 
-document.querySelectorAll(".tab").forEach(function(tab) {
+_filterBarEl.addEventListener("click", function(e) {
+  var clearBtn = e.target.closest("#clearFilterBtn");
+  if (clearBtn) clearFilter();
+});
+
+_paginationEl.addEventListener("click", function(e) {
+  var btn = e.target.closest("button");
+  if (!btn || btn.disabled) return;
+  if (btn.id === "pagePrevBtn") {
+    goToPage(_gamesPage - 1);
+    return;
+  }
+  if (btn.id === "pageNextBtn") {
+    goToPage(_gamesPage + 1);
+    return;
+  }
+  if (btn.classList.contains("page-btn")) {
+    goToPage(Number(btn.dataset.page || 1));
+  }
+});
+
+_tabs.forEach(function(tab) {
   tab.addEventListener("click", function() {
-    document.querySelectorAll(".tab").forEach(function(t) { t.classList.remove("active"); });
+    _tabs.forEach(function(t) { t.classList.remove("active"); });
     tab.classList.add("active");
     _mode = tab.dataset.mode;
     renderPlayers();
@@ -385,10 +541,15 @@ document.querySelectorAll(".tab").forEach(function(tab) {
 
 fetch("elo-data.json?ts=" + Date.now(), { cache: "no-store" }).then(function(r){return r.json()}).then(function(data) {
   _data = data;
+  var baseGames = (_data && _data.games) ? _data.games : [];
+  _derivedPlayerStats = buildDerivedPlayerStats(baseGames);
+  var prepared = buildPreparedGameCaches(baseGames);
+  _preparedGamesNewestFirst = prepared.newestFirst;
+  _gamesByPlayer = prepared.byPlayer;
   renderPlayers();
   renderGames();
 }).catch(function(e) {
-  document.getElementById("tbody").innerHTML = "<tr><td colspan=\"8\">Error: " + e.message + "</td></tr>";
+  _tbodyEl.innerHTML = "<tr><td colspan=\"8\">Error: " + e.message + "</td></tr>";
 });
 </script>
 </body>

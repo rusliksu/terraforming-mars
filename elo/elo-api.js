@@ -15,6 +15,38 @@ function normalizeName(name) {
   return MERGES[nk] || name.trim();
 }
 
+function normalizeOptionalString(value) {
+  if (typeof value !== "string") return undefined;
+  var trimmed = value.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+function normalizeStringList(value) {
+  var raw = Array.isArray(value) ? value : (typeof value === "string" ? value.split(",") : []);
+  var list = raw
+    .map(function(entry) { return typeof entry === "string" ? entry.trim() : ""; })
+    .filter(function(entry) { return entry !== ""; });
+  return list.length ? Array.from(new Set(list)) : undefined;
+}
+
+function mergeStringLists(left, right) {
+  var list = []
+    .concat(Array.isArray(left) ? left : [])
+    .concat(Array.isArray(right) ? right : [])
+    .map(function(entry) { return typeof entry === "string" ? entry.trim() : ""; })
+    .filter(function(entry) { return entry !== ""; });
+  return list.length ? Array.from(new Set(list)) : undefined;
+}
+
+function mergeGameMetadata(existing, incoming) {
+  if (!existing) return incoming;
+  return Object.assign({}, incoming, {
+    source: incoming.source || existing.source,
+    analyzedBy: mergeStringLists(existing.analyzedBy, incoming.analyzedBy),
+    analysisTargets: mergeStringLists(existing.analysisTargets, incoming.analysisTargets),
+  });
+}
+
 function expectedScore(a, b) {
   return 1 / (1 + Math.pow(10, (b - a) / 400));
 }
@@ -171,11 +203,19 @@ var server = http.createServer(function(req, res) {
         }
       }
 
-      var sorted = players.slice().sort(function(a, b) { return (b.vp || 0) - (a.vp || 0); });
+      var allHaveExplicitPlace = players.length > 0 && players.every(function(p) {
+        return p.place != null && Number.isFinite(Number(p.place)) && Number(p.place) > 0;
+      });
+      var sorted = players.slice().sort(function(a, b) {
+        if (allHaveExplicitPlace) {
+          return (Number(a.place) || 999) - (Number(b.place) || 999) || ((b.vp || 0) - (a.vp || 0));
+        }
+        return (b.vp || 0) - (a.vp || 0);
+      });
       var results = [];
       for (var i = 0; i < sorted.length; i++) {
-        var place = i + 1;
-        if (i > 0 && (sorted[i].vp || 0) === (sorted[i - 1].vp || 0)) {
+        var place = allHaveExplicitPlace ? (Number(sorted[i].place) || (i + 1)) : (i + 1);
+        if (!allHaveExplicitPlace && i > 0 && (sorted[i].vp || 0) === (sorted[i - 1].vp || 0)) {
           place = results[i - 1].place;
         }
         results.push({
@@ -215,6 +255,9 @@ var server = http.createServer(function(req, res) {
         completedTime: completedTime,
         durationMs: durationMs,
         durationMinutes: durationMinutes,
+        source: normalizeOptionalString(payload.source),
+        analyzedBy: normalizeStringList(payload.analyzedBy),
+        analysisTargets: normalizeStringList(payload.analysisTargets),
         results: results,
       };
 
@@ -222,6 +265,21 @@ var server = http.createServer(function(req, res) {
 
       for (var gi = 0; gi < data.games.length; gi++) {
         if (data.games[gi]._key === gameKey) {
+          var merged = mergeGameMetadata(data.games[gi], gameRecord);
+          var changed = JSON.stringify({
+            source: data.games[gi].source,
+            analyzedBy: data.games[gi].analyzedBy,
+            analysisTargets: data.games[gi].analysisTargets,
+          }) !== JSON.stringify({
+            source: merged.source,
+            analyzedBy: merged.analyzedBy,
+            analysisTargets: merged.analysisTargets,
+          });
+          if (changed) {
+            data.games[gi] = Object.assign({}, data.games[gi], merged);
+            rebuildElo(data);
+            saveElo(data);
+          }
           res.writeHead(200, { "Content-Type": "application/json" });
           res.end(JSON.stringify({ ok: true, duplicate: true, players: results.length }));
           return;

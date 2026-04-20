@@ -22,6 +22,9 @@ export type EloGameResult = {
 };
 
 export type EloGame = {
+  source?: string;
+  analyzedBy?: Array<string>;
+  analysisTargets?: Array<string>;
   results?: Array<EloGameResult>;
 };
 

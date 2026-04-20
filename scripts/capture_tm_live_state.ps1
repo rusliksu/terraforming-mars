@@ -8,15 +8,14 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+. (Join-Path $PSScriptRoot "lib\TmRemoteTools.ps1")
+
 function Invoke-SshText {
     param(
         [string]$Command
     )
 
-    $output = & ssh $HostAlias $Command
-    if ($LASTEXITCODE -ne 0) {
-        throw "SSH command failed: $Command"
-    }
+    $output = Invoke-TmSshCommand -HostAlias $HostAlias -RemoteCommand $Command
     return (($output | Out-String).TrimEnd("`r", "`n"))
 }
 

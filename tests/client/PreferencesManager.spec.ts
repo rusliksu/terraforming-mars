@@ -65,4 +65,13 @@ describe('PreferencesManager', () => {
 
     expect(values.lang).eq('fr');
   });
+
+  it('ignores legacy hide_top_bar preference', () => {
+    localStorage.setItem('hide_top_bar', '1');
+    PreferencesManager.resetForTest();
+
+    const values = PreferencesManager.INSTANCE.values() as Record<string, unknown>;
+
+    expect('hide_top_bar' in values).eq(false);
+  });
 });

@@ -6,6 +6,7 @@ import {RecursivePartial} from '@/common/utils/utils';
 import {PlayerViewModel, PublicPlayerModel} from '@/common/models/PlayerModel';
 import {Phase} from '@/common/Phase';
 import raw_settings from '@/genfiles/settings.json';
+import {PreferencesManager} from '@/client/utils/PreferencesManager';
 
 describe('WaitingFor', () => {
   const thisPlayer: Partial<PublicPlayerModel> = {
@@ -22,6 +23,10 @@ describe('WaitingFor', () => {
       undoCount: 0,
     },
   };
+
+  afterEach(() => {
+    PreferencesManager.resetForTest();
+  });
 
   it('renders player-input-factory when waitingfor is provided', () => {
     const wrapper = shallowMount(WaitingFor, {
@@ -64,5 +69,32 @@ describe('WaitingFor', () => {
       },
     });
     expect(wrapper.text()).to.include('Not your turn');
+  });
+
+  it('shows a clearer pause-updates label in experimental UI', () => {
+    PreferencesManager.INSTANCE.set('experimental_ui', true);
+
+    const wrapper = shallowMount(WaitingFor, {
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {
+          'player-input-factory': {template: '<div class="stub-pif"></div>'},
+        },
+      },
+      props: {
+        playerView: playerView as PlayerViewModel,
+        players: [thisPlayer as PublicPlayerModel],
+        settings: raw_settings,
+        waitingfor: {
+          type: 'option',
+          title: 'test',
+          buttonLabel: 'save',
+        },
+      },
+    });
+
+    expect(wrapper.text()).to.include('Pause updates');
+    expect(wrapper.text()).to.not.include('Suspend');
   });
 });

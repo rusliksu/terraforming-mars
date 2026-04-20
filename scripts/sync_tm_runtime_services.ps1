@@ -1,5 +1,8 @@
 param(
     [string]$VpsHost = "vps",
+    [string]$FallbackSshHost = "72.56.84.119",
+    [string]$FallbackSshUser = "openclaw",
+    [string]$FallbackSshKeyPath = "$HOME\\.ssh\\id_ed25519",
     [string]$ProdService = "tm-server.service",
     [string]$ProdNextService = "tm-server-next.service",
     [string]$StagingService = "tm-server-staging.service",
@@ -13,6 +16,7 @@ param(
     [string]$ProdNextHost = "127.0.0.1",
     [string]$StagingPort = "8084",
     [string]$StagingHost = "127.0.0.1",
+    [string]$DefaultAutoJoinScript = "/home/openclaw/repos/tm-tierlist/bot/auto-join.js",
     [string]$DefaultShadowLogDir = "/home/openclaw/repos/tm-tierlist/data/shadow/server-inputs",
     [string]$DefaultStagingUrl = "https://staging.tm.knightbyte.win",
     [switch]$DryRun
@@ -20,15 +24,61 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+function Invoke-ParamikoSsh {
+    param([string]$Command)
+
+    $resolvedHost = if ($VpsHost -eq 'vps') { $FallbackSshHost } else { $VpsHost }
+    $commandBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($Command))
+    $pythonScript = @"
+import base64
+import pathlib
+import sys
+
+import paramiko
+
+host = r"$resolvedHost"
+user = r"$FallbackSshUser"
+key_path = pathlib.Path(r"$FallbackSshKeyPath").expanduser()
+command = base64.b64decode(r"$commandBase64").decode("utf-8")
+
+key = paramiko.Ed25519Key.from_private_key_file(str(key_path))
+client = paramiko.SSHClient()
+client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+client.connect(host, username=user, pkey=key, timeout=20)
+try:
+    stdin, stdout, stderr = client.exec_command(command, timeout=300)
+    sys.stdout.write(stdout.read().decode("utf-8", errors="replace"))
+    err = stderr.read().decode("utf-8", errors="replace")
+    if err:
+        sys.stderr.write(err)
+    sys.exit(stdout.channel.recv_exit_status())
+finally:
+    client.close()
+"@
+    $output = $pythonScript | python -
+    if ($LASTEXITCODE -ne 0) {
+        throw "Paramiko SSH fallback failed for host $resolvedHost"
+    }
+    return $output
+}
+
 function Invoke-Ssh {
     param([string]$Command)
-    & ssh $VpsHost $Command
+    $output = & ssh $VpsHost $Command 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        return $output
+    }
+    Write-Warning "Native ssh failed for $VpsHost. Falling back to paramiko."
+    return Invoke-ParamikoSsh -Command $Command
 }
 
 function Get-ServiceEnvironmentMap {
     param([string]$ServiceName)
-    $envLine = Invoke-Ssh "systemctl --user show -p Environment $ServiceName"
+    $envLine = Invoke-Ssh "systemctl --user show -p Environment $ServiceName 2>/dev/null || true"
     $result = @{}
+    if ($null -eq $envLine) {
+        return $result
+    }
     if ($envLine -notmatch '^Environment=') {
         return $result
     }
@@ -76,20 +126,44 @@ $templateDir = Join-Path $scriptDir 'systemd'
 $prodEnv = Get-ServiceEnvironmentMap -ServiceName $ProdService
 $stagingEnv = Get-ServiceEnvironmentMap -ServiceName $StagingService
 
+if ($DryRun) {
+    if (-not ($prodEnv.ContainsKey('SERVER_ID')) -or [string]::IsNullOrWhiteSpace($prodEnv['SERVER_ID'])) {
+        $prodEnv['SERVER_ID'] = 'prod-placeholder'
+    }
+    if (-not ($stagingEnv.ContainsKey('SERVER_ID')) -or [string]::IsNullOrWhiteSpace($stagingEnv['SERVER_ID'])) {
+        $stagingEnv['SERVER_ID'] = 'staging-placeholder'
+    }
+    if (-not ($stagingEnv.ContainsKey('TM_SERVER_URL')) -or [string]::IsNullOrWhiteSpace($stagingEnv['TM_SERVER_URL'])) {
+        $stagingEnv['TM_SERVER_URL'] = $DefaultStagingUrl
+    }
+}
+
 $prodServerId = Require-Env -Map $prodEnv -Key 'SERVER_ID' -ServiceName $ProdService
 $stagingServerId = Require-Env -Map $stagingEnv -Key 'SERVER_ID' -ServiceName $StagingService
 $prodNextServerId = "next-$prodServerId"
+$autoJoinScript = if ($prodEnv.ContainsKey('TM_AUTO_JOIN_SCRIPT')) {
+    $prodEnv['TM_AUTO_JOIN_SCRIPT']
+} elseif ($stagingEnv.ContainsKey('TM_AUTO_JOIN_SCRIPT')) {
+    $stagingEnv['TM_AUTO_JOIN_SCRIPT']
+} else {
+    $DefaultAutoJoinScript
+}
 $shadowLogDir = if ($prodEnv.ContainsKey('SHADOW_LOG_DIR')) { $prodEnv['SHADOW_LOG_DIR'] } else { $DefaultShadowLogDir }
 $stagingUrl = if ($stagingEnv.ContainsKey('TM_SERVER_URL')) { $stagingEnv['TM_SERVER_URL'] } else { $DefaultStagingUrl }
 $prodCurrentDir = "$ProdRuntimeRoot/current"
 $prodNextCurrentDir = "$ProdNextRuntimeRoot/current"
 $stagingCurrentDir = "$StagingRuntimeRoot/current"
+$prodEloDataDir = "$ProdRuntimeRoot/shared/elo"
+$prodNextEloDataDir = "$ProdNextRuntimeRoot/shared/elo"
+$stagingEloDataDir = "$StagingRuntimeRoot/shared/elo"
 
 $prodContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-server.service.template') -Replacements @{
     '__PROD_CURRENT_DIR__' = $prodCurrentDir
     '__PROD_PORT__' = $ProdPort
     '__PROD_HOST__' = $ProdHost
     '__PROD_SERVER_ID__' = $prodServerId
+    '__PROD_ELO_DATA_DIR__' = $prodEloDataDir
+    '__AUTO_JOIN_SCRIPT__' = $autoJoinScript
     '__SHADOW_LOG_DIR__' = $shadowLogDir
 }
 
@@ -98,7 +172,9 @@ $stagingContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-serv
     '__STAGING_PORT__' = $StagingPort
     '__STAGING_HOST__' = $StagingHost
     '__STAGING_SERVER_ID__' = $stagingServerId
+    '__STAGING_ELO_DATA_DIR__' = $stagingEloDataDir
     '__STAGING_URL__' = $stagingUrl
+    '__AUTO_JOIN_SCRIPT__' = $autoJoinScript
 }
 
 $prodNextContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-server-next.service.template') -Replacements @{
@@ -106,6 +182,8 @@ $prodNextContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-ser
     '__PROD_NEXT_PORT__' = $ProdNextPort
     '__PROD_NEXT_HOST__' = $ProdNextHost
     '__PROD_NEXT_SERVER_ID__' = $prodNextServerId
+    '__PROD_NEXT_ELO_DATA_DIR__' = $prodNextEloDataDir
+    '__AUTO_JOIN_SCRIPT__' = $autoJoinScript
 }
 
 $eloContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-elo.service.template') -Replacements @{
@@ -116,6 +194,7 @@ Write-Host "Target VPS: $VpsHost"
 Write-Host "Prod SERVER_ID: $prodServerId"
 Write-Host "Prod-next SERVER_ID: $prodNextServerId"
 Write-Host "Staging SERVER_ID: $stagingServerId"
+Write-Host "Auto-join script: $autoJoinScript"
 Write-Host "Prod current dir: $prodCurrentDir"
 Write-Host "Prod-next current dir: $prodNextCurrentDir"
 Write-Host "Staging current dir: $stagingCurrentDir"

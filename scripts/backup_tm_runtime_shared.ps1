@@ -1,5 +1,8 @@
 param(
     [string]$HostAlias = "vps",
+    [string]$FallbackSshHost = "72.56.84.119",
+    [string]$FallbackSshUser = "openclaw",
+    [string]$FallbackSshKeyPath = "$HOME\\.ssh\\id_ed25519",
     [ValidateSet("all", "prod", "staging")]
     [string]$Environment = "all",
     [string]$LocalArchiveRoot = "D:\tm-vps-archive",
@@ -17,6 +20,217 @@ function Write-Utf8NoBomFile {
 
     $normalized = $Content -replace "`r`n", "`n"
     [System.IO.File]::WriteAllText($Path, $normalized, [System.Text.UTF8Encoding]::new($false))
+}
+
+function Get-ResolvedSshHost {
+    if ($HostAlias -eq 'vps') {
+        return $FallbackSshHost
+    }
+    return $HostAlias
+}
+
+function Invoke-RemoteViaParamiko {
+    param(
+        [string]$Command,
+        [string]$InputText = "",
+        [int]$TimeoutSeconds = 1800
+    )
+
+    $resolvedHost = Get-ResolvedSshHost
+    $commandBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($Command))
+    $inputBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($InputText))
+    $pythonScript = @"
+import base64
+import pathlib
+import sys
+
+import paramiko
+
+host = r"$resolvedHost"
+user = r"$FallbackSshUser"
+key_path = pathlib.Path(r"$FallbackSshKeyPath").expanduser()
+command = base64.b64decode(r"$commandBase64").decode("utf-8")
+input_text = base64.b64decode(r"$inputBase64").decode("utf-8")
+
+key = paramiko.Ed25519Key.from_private_key_file(str(key_path))
+client = paramiko.SSHClient()
+client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+client.connect(host, username=user, pkey=key, timeout=20)
+try:
+    stdin, stdout, stderr = client.exec_command(command, timeout=$TimeoutSeconds)
+    if input_text:
+        stdin.write(input_text)
+    stdin.channel.shutdown_write()
+    sys.stdout.write(stdout.read().decode("utf-8", errors="replace"))
+    err = stderr.read().decode("utf-8", errors="replace")
+    if err:
+        sys.stderr.write(err)
+    sys.exit(stdout.channel.recv_exit_status())
+finally:
+    client.close()
+"@
+    $output = $pythonScript | python -
+    if ($LASTEXITCODE -ne 0) {
+        throw "Paramiko remote command failed for host $resolvedHost"
+    }
+    return $output
+}
+
+function Copy-RemoteFileViaParamiko {
+    param(
+        [string]$LocalPath,
+        [string]$RemotePath
+    )
+
+    $resolvedHost = Get-ResolvedSshHost
+    $resolvedLocalPath = (Resolve-Path $LocalPath).Path
+    $localBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($resolvedLocalPath))
+    $remoteBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($RemotePath))
+    $pythonScript = @"
+import base64
+import pathlib
+
+import paramiko
+
+host = r"$resolvedHost"
+user = r"$FallbackSshUser"
+key_path = pathlib.Path(r"$FallbackSshKeyPath").expanduser()
+local_path = base64.b64decode(r"$localBase64").decode("utf-8")
+remote_path = base64.b64decode(r"$remoteBase64").decode("utf-8")
+
+key = paramiko.Ed25519Key.from_private_key_file(str(key_path))
+client = paramiko.SSHClient()
+client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+client.connect(host, username=user, pkey=key, timeout=20)
+try:
+    sftp = client.open_sftp()
+    try:
+        sftp.put(local_path, remote_path)
+    finally:
+        sftp.close()
+finally:
+    client.close()
+"@
+    $pythonScript | python - | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        throw "Paramiko SFTP upload failed for host $resolvedHost"
+    }
+}
+
+function Copy-RemoteDirectoryFromParamiko {
+    param(
+        [string]$RemotePath,
+        [string]$LocalPath
+    )
+
+    $resolvedHost = Get-ResolvedSshHost
+    $resolvedLocalPath = [System.IO.Path]::GetFullPath($LocalPath)
+    $remoteBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($RemotePath))
+    $localBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($resolvedLocalPath))
+    $pythonScript = @"
+import base64
+import os
+import pathlib
+import posixpath
+import stat
+
+import paramiko
+
+host = r"$resolvedHost"
+user = r"$FallbackSshUser"
+key_path = pathlib.Path(r"$FallbackSshKeyPath").expanduser()
+remote_path = base64.b64decode(r"$remoteBase64").decode("utf-8")
+local_path = base64.b64decode(r"$localBase64").decode("utf-8")
+
+key = paramiko.Ed25519Key.from_private_key_file(str(key_path))
+client = paramiko.SSHClient()
+client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+client.connect(host, username=user, pkey=key, timeout=20)
+
+def download_tree(sftp, source, target):
+    attrs = sftp.stat(source)
+    if stat.S_ISDIR(attrs.st_mode):
+        os.makedirs(target, exist_ok=True)
+        for entry in sftp.listdir_attr(source):
+            child_source = posixpath.join(source, entry.filename)
+            child_target = os.path.join(target, entry.filename)
+            if stat.S_ISDIR(entry.st_mode):
+                download_tree(sftp, child_source, child_target)
+            else:
+                os.makedirs(os.path.dirname(child_target), exist_ok=True)
+                sftp.get(child_source, child_target)
+    else:
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        sftp.get(source, target)
+
+try:
+    sftp = client.open_sftp()
+    try:
+        os.makedirs(local_path, exist_ok=True)
+        for entry in sftp.listdir_attr(remote_path):
+            child_source = posixpath.join(remote_path, entry.filename)
+            child_target = os.path.join(local_path, entry.filename)
+            if stat.S_ISDIR(entry.st_mode):
+                download_tree(sftp, child_source, child_target)
+            else:
+                sftp.get(child_source, child_target)
+    finally:
+        sftp.close()
+finally:
+    client.close()
+"@
+    $pythonScript | python - | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        throw "Paramiko SFTP download failed for host $resolvedHost"
+    }
+}
+
+function Copy-RemoteFile {
+    param(
+        [string]$LocalPath,
+        [string]$RemotePath
+    )
+
+    & scp.exe $LocalPath "${HostAlias}:$RemotePath"
+    if ($LASTEXITCODE -eq 0) {
+        return
+    }
+    Write-Warning "Native scp failed for $HostAlias. Falling back to paramiko SFTP."
+    Copy-RemoteFileViaParamiko -LocalPath $LocalPath -RemotePath $RemotePath
+}
+
+function Copy-RemoteDirectoryFromRemote {
+    param(
+        [string]$RemotePath,
+        [string]$LocalPath
+    )
+
+    & scp.exe -r "${HostAlias}:$RemotePath/." $LocalPath
+    if ($LASTEXITCODE -eq 0) {
+        return
+    }
+    Write-Warning "Native scp download failed for $HostAlias. Falling back to paramiko SFTP."
+    Copy-RemoteDirectoryFromParamiko -RemotePath $RemotePath -LocalPath $LocalPath
+}
+
+function Invoke-RemoteCommand {
+    param(
+        [string]$Command,
+        [string]$InputText = "",
+        [int]$TimeoutSeconds = 1800
+    )
+
+    if ([string]::IsNullOrEmpty($InputText)) {
+        $output = & ssh.exe $HostAlias $Command 2>&1
+    } else {
+        $output = $InputText | & ssh.exe $HostAlias $Command 2>&1
+    }
+    if ($LASTEXITCODE -eq 0) {
+        return $output
+    }
+
+    Write-Warning "Native ssh failed for $HostAlias. Falling back to paramiko."
+    return Invoke-RemoteViaParamiko -Command $Command -InputText $InputText -TimeoutSeconds $TimeoutSeconds
 }
 
 function Require-LocalArchiveRoot {
@@ -222,16 +436,10 @@ $remoteScriptPath = "/tmp/tm-backup-runtime-shared-$PID.sh"
 
 try {
     Write-Utf8NoBomFile -Path $tempScript.FullName -Content $remoteScript
-    & scp.exe $tempScript.FullName "${HostAlias}:$remoteScriptPath"
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to upload backup script."
-    }
+    Copy-RemoteFile -LocalPath $tempScript.FullName -RemotePath $remoteScriptPath
 
     if ($DryRun) {
-        $remoteOutput = & ssh.exe $HostAlias "chmod 700 '$remoteScriptPath' && bash '$remoteScriptPath'"
-        if ($LASTEXITCODE -ne 0) {
-            throw "Remote backup dry-run failed."
-        }
+        $remoteOutput = Invoke-RemoteCommand -Command "chmod 700 '$remoteScriptPath' && bash '$remoteScriptPath'"
 
         $backupRootLine = $remoteOutput | Where-Object { $_ -like 'backup_root=*' } | Select-Object -First 1
         $remoteBackupRoot = if ([string]::IsNullOrWhiteSpace($backupRootLine)) {
@@ -247,17 +455,11 @@ try {
         } else {
             "rm -rf '$remoteBackupRoot' '$remoteScriptPath'"
         }
-        & ssh.exe $HostAlias $cleanupCommand
-        if ($LASTEXITCODE -ne 0) {
-            throw "Dry-run cleanup failed."
-        }
+        Invoke-RemoteCommand -Command $cleanupCommand | Out-Null
         return
     }
 
-    $remoteOutput = & ssh.exe $HostAlias "chmod 700 '$remoteScriptPath' && bash '$remoteScriptPath'"
-    if ($LASTEXITCODE -ne 0) {
-        throw "Remote backup capture failed."
-    }
+    $remoteOutput = Invoke-RemoteCommand -Command "chmod 700 '$remoteScriptPath' && bash '$remoteScriptPath'"
 
     $backupRootLine = $remoteOutput | Where-Object { $_ -like 'backup_root=*' } | Select-Object -First 1
     if ([string]::IsNullOrWhiteSpace($backupRootLine)) {
@@ -266,10 +468,7 @@ try {
     $remoteBackupRoot = $backupRootLine.Substring("backup_root=".Length)
 
     New-Item -ItemType Directory -Path $localRunRoot -Force | Out-Null
-    & scp.exe -r "${HostAlias}:$remoteBackupRoot/." $localRunRoot
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to download backup payload."
-    }
+    Copy-RemoteDirectoryFromRemote -RemotePath $remoteBackupRoot -LocalPath $localRunRoot
 
     $contentsPath = Join-Path $localRunRoot "tm-runtime-shared-backup-contents.txt"
     $contents = Get-ChildItem -LiteralPath $localRunRoot -Recurse -File | Sort-Object FullName | ForEach-Object {
@@ -294,10 +493,7 @@ try {
     Write-Host ""
     Write-Host ($remoteOutput -join [Environment]::NewLine)
 
-    & ssh.exe $HostAlias "rm -rf '$remoteBackupRoot' '$remoteScriptPath'"
-    if ($LASTEXITCODE -ne 0) {
-        throw "Backup downloaded, but remote cleanup failed."
-    }
+    Invoke-RemoteCommand -Command "rm -rf '$remoteBackupRoot' '$remoteScriptPath'" | Out-Null
 } finally {
     if (Test-Path $tempScript.FullName) {
         Remove-Item -LiteralPath $tempScript.FullName -Force

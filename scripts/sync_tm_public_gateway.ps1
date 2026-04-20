@@ -1,5 +1,8 @@
 param(
     [string]$VpsHost = "vps",
+    [string]$FallbackSshHost = "72.56.84.119",
+    [string]$FallbackSshUser = "openclaw",
+    [string]$FallbackSshKeyPath = "$HOME\\.ssh\\id_ed25519",
     [string]$ProdSiteName = "tm.knightbyte.win",
     [string]$StagingSiteName = "tm.knightbyte.win-staging",
     [string]$ProdRuntimeRoot = "/home/openclaw/tm-runtime/prod",
@@ -21,12 +24,103 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+function Get-ResolvedSshHost {
+    if ($VpsHost -eq 'vps') {
+        return $FallbackSshHost
+    }
+    return $VpsHost
+}
+
+function Invoke-RemoteViaParamiko {
+    param(
+        [string]$Command,
+        [int]$TimeoutSeconds = 1800
+    )
+
+    $resolvedHost = Get-ResolvedSshHost
+    $commandBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($Command))
+    $pythonScript = @"
+import base64
+import pathlib
+import sys
+
+import paramiko
+
+host = r"$resolvedHost"
+user = r"$FallbackSshUser"
+key_path = pathlib.Path(r"$FallbackSshKeyPath").expanduser()
+command = base64.b64decode(r"$commandBase64").decode("utf-8")
+
+key = paramiko.Ed25519Key.from_private_key_file(str(key_path))
+client = paramiko.SSHClient()
+client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+client.connect(host, username=user, pkey=key, timeout=20)
+try:
+    stdin, stdout, stderr = client.exec_command(command, timeout=$TimeoutSeconds)
+    sys.stdout.write(stdout.read().decode("utf-8", errors="replace"))
+    err = stderr.read().decode("utf-8", errors="replace")
+    if err:
+        sys.stderr.write(err)
+    sys.exit(stdout.channel.recv_exit_status())
+finally:
+    client.close()
+"@
+    $output = $pythonScript | python -
+    if ($LASTEXITCODE -ne 0) {
+        throw "Paramiko remote command failed for host $resolvedHost"
+    }
+    return $output
+}
+
+function Copy-RemoteFileViaParamiko {
+    param(
+        [string]$LocalPath,
+        [string]$RemotePath
+    )
+
+    $resolvedHost = Get-ResolvedSshHost
+    $resolvedLocalPath = (Resolve-Path $LocalPath).Path
+    $localBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($resolvedLocalPath))
+    $remoteBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($RemotePath))
+    $pythonScript = @"
+import base64
+import pathlib
+
+import paramiko
+
+host = r"$resolvedHost"
+user = r"$FallbackSshUser"
+key_path = pathlib.Path(r"$FallbackSshKeyPath").expanduser()
+local_path = base64.b64decode(r"$localBase64").decode("utf-8")
+remote_path = base64.b64decode(r"$remoteBase64").decode("utf-8")
+
+key = paramiko.Ed25519Key.from_private_key_file(str(key_path))
+client = paramiko.SSHClient()
+client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+client.connect(host, username=user, pkey=key, timeout=20)
+try:
+    sftp = client.open_sftp()
+    try:
+        sftp.put(local_path, remote_path)
+    finally:
+        sftp.close()
+finally:
+    client.close()
+"@
+    $pythonScript | python - | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        throw "Paramiko SFTP upload failed for host $resolvedHost"
+    }
+}
+
 function Invoke-Ssh {
     param([string]$Command)
-    & ssh $VpsHost $Command
-    if ($LASTEXITCODE -ne 0) {
-        throw "SSH command failed with exit code $LASTEXITCODE"
+    $output = & ssh $VpsHost $Command 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        return $output
     }
+    Write-Warning "Native ssh failed for $VpsHost. Falling back to paramiko."
+    return Invoke-RemoteViaParamiko -Command $Command
 }
 
 function Render-Template {
@@ -73,6 +167,7 @@ $prodUpstreamSnippetContent = Render-Template -TemplatePath (Join-Path $template
     "__PROD_ACTIVE_HOST__" = $ProdHost
     "__PROD_ACTIVE_PORT__" = $ProdPort
 }
+$sniPorts = "$ProdTlsPort,$StagingTlsPort,$BimTlsPort,$MicrosoftTlsPort,$DefaultTlsPort"
 
 Write-Host "Target VPS: $VpsHost"
 Write-Host "Prod current dir: $prodCurrentDir"
@@ -80,7 +175,7 @@ Write-Host "Staging current dir: $stagingCurrentDir"
 Write-Host "Prod app: $ProdHost`:$ProdPort"
 Write-Host "Staging app: $StagingHost`:$StagingPort"
 Write-Host "Elo app: $EloHost`:$EloPort"
-Write-Host "SNI stream: $StreamHost [$ProdTlsPort,$StagingTlsPort,$BimTlsPort,$MicrosoftTlsPort,$DefaultTlsPort]"
+Write-Host "SNI stream: $StreamHost [$sniPorts]"
 Write-Host "Mode: $(if ($DryRun) { 'dry-run' } else { 'apply and reload nginx' })"
 
 if ($DryRun) {
@@ -171,7 +266,8 @@ try {
     [System.IO.File]::WriteAllText($tempScript.FullName, $remoteScriptLf, [System.Text.UTF8Encoding]::new($false))
     & scp $tempScript.FullName "${VpsHost}:$remoteScriptPath"
     if ($LASTEXITCODE -ne 0) {
-        throw "SCP upload failed with exit code $LASTEXITCODE"
+        Write-Warning "Native scp failed for $VpsHost. Falling back to paramiko SFTP."
+        Copy-RemoteFileViaParamiko -LocalPath $tempScript.FullName -RemotePath $remoteScriptPath
     }
 
     Invoke-Ssh "chmod 700 '$remoteScriptPath' && sudo '$remoteScriptPath' && rm -f '$remoteScriptPath'"

@@ -248,7 +248,7 @@ if (-not $AllowDirtySource -and -not [string]::IsNullOrWhiteSpace($gitStatus)) {
 
 $gitSha = Get-GitCommandValue -RepoRoot $resolvedSourceRoot -GitArgs @("rev-parse", "HEAD")
 $gitBranch = Get-GitCommandValue -RepoRoot $resolvedSourceRoot -GitArgs @("rev-parse", "--abbrev-ref", "HEAD")
-$expectedBuildHead = if ([string]::IsNullOrWhiteSpace($gitSha)) { "" } else { $gitSha.Substring(0, [Math]::Min(7, $gitSha.Length)) }
+$expectedBuildHead = if ([string]::IsNullOrWhiteSpace($gitSha)) { "" } else { $gitSha }
 
 $buildDir = Join-Path $resolvedSourceRoot "build"
 $assetsDir = Join-Path $resolvedSourceRoot "assets"
@@ -294,7 +294,7 @@ $generatedBuildHead = [string]$generatedSettings.head
 if ([string]::IsNullOrWhiteSpace($generatedBuildHead)) {
     throw "Build metadata in $generatedSettingsPath is missing head. Run the build there before deploy."
 }
-if ($generatedBuildHead -ne $expectedBuildHead) {
+if (-not $expectedBuildHead.StartsWith($generatedBuildHead, [System.StringComparison]::OrdinalIgnoreCase)) {
     throw "Build metadata is stale for release.`nSourceRoot: $resolvedSourceRoot`nCurrent git HEAD: $expectedBuildHead`nGenerated settings head: $generatedBuildHead`nRun the build in this checkout after the latest commit before deploy."
 }
 

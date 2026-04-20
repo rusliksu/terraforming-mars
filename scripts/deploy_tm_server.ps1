@@ -14,100 +14,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-function Get-ResolvedSshHost {
-    if ($HostAlias -eq 'vps') {
-        return $FallbackSshHost
-    }
-    return $HostAlias
-}
-
-function Invoke-RemoteViaParamiko {
-    param(
-        [string]$Command,
-        [string]$InputText = "",
-        [int]$TimeoutSeconds = 1800
-    )
-
-    $resolvedHost = Get-ResolvedSshHost
-    $commandBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($Command))
-    $inputBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($InputText))
-    $pythonScript = @"
-import base64
-import pathlib
-import sys
-
-import paramiko
-
-host = r"$resolvedHost"
-user = r"$FallbackSshUser"
-key_path = pathlib.Path(r"$FallbackSshKeyPath").expanduser()
-command = base64.b64decode(r"$commandBase64").decode("utf-8")
-input_text = base64.b64decode(r"$inputBase64").decode("utf-8")
-
-key = paramiko.Ed25519Key.from_private_key_file(str(key_path))
-client = paramiko.SSHClient()
-client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-client.connect(host, username=user, pkey=key, timeout=20)
-try:
-    stdin, stdout, stderr = client.exec_command(command, timeout=$TimeoutSeconds)
-    if input_text:
-        stdin.write(input_text)
-    stdin.channel.shutdown_write()
-    sys.stdout.write(stdout.read().decode("utf-8", errors="replace"))
-    err = stderr.read().decode("utf-8", errors="replace")
-    if err:
-        sys.stderr.write(err)
-    sys.exit(stdout.channel.recv_exit_status())
-finally:
-    client.close()
-"@
-    $output = $pythonScript | python -
-    if ($LASTEXITCODE -ne 0) {
-        throw "Paramiko remote command failed for host $resolvedHost"
-    }
-    return $output
-}
-
-function Copy-RemoteFileViaParamiko {
-    param(
-        [string]$LocalPath,
-        [string]$RemotePath
-    )
-
-    $resolvedHost = Get-ResolvedSshHost
-    $resolvedLocalPath = (Resolve-Path $LocalPath).Path
-    $localBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($resolvedLocalPath))
-    $remoteBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($RemotePath))
-    $pythonScript = @"
-import base64
-import pathlib
-
-import paramiko
-
-host = r"$resolvedHost"
-user = r"$FallbackSshUser"
-key_path = pathlib.Path(r"$FallbackSshKeyPath").expanduser()
-local_path = base64.b64decode(r"$localBase64").decode("utf-8")
-remote_path = base64.b64decode(r"$remoteBase64").decode("utf-8")
-
-key = paramiko.Ed25519Key.from_private_key_file(str(key_path))
-client = paramiko.SSHClient()
-client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-client.connect(host, username=user, pkey=key, timeout=20)
-try:
-    sftp = client.open_sftp()
-    try:
-        sftp.put(local_path, remote_path)
-    finally:
-        sftp.close()
-finally:
-    client.close()
-"@
-    $pythonScript | python - | Out-Null
-    if ($LASTEXITCODE -ne 0) {
-        throw "Paramiko SFTP upload failed for host $resolvedHost"
-    }
-}
+. (Join-Path $PSScriptRoot "lib\TmRemoteTools.ps1")
 
 function Copy-RemoteFile {
     param(
@@ -115,12 +22,7 @@ function Copy-RemoteFile {
         [string]$RemotePath
     )
 
-    & scp.exe $LocalPath "${HostAlias}:$RemotePath"
-    if ($LASTEXITCODE -eq 0) {
-        return
-    }
-    Write-Warning "Native scp failed for $HostAlias. Falling back to paramiko SFTP."
-    Copy-RemoteFileViaParamiko -LocalPath $LocalPath -RemotePath $RemotePath
+    Invoke-TmScpUpload -HostAlias $HostAlias -LocalPath $LocalPath -RemotePath $RemotePath
 }
 
 function Invoke-RemoteCommand {
@@ -131,22 +33,10 @@ function Invoke-RemoteCommand {
     )
 
     if ([string]::IsNullOrEmpty($InputText)) {
-        & ssh.exe $HostAlias $Command
-        if ($LASTEXITCODE -eq 0) {
-            return
-        }
-    } else {
-        $InputText | & ssh.exe $HostAlias $Command
-        if ($LASTEXITCODE -eq 0) {
-            return
-        }
+        return Invoke-TmSshCommand -HostAlias $HostAlias -RemoteCommand $Command
     }
 
-    Write-Warning "Native ssh failed for $HostAlias. Falling back to paramiko."
-    $output = Invoke-RemoteViaParamiko -Command $Command -InputText $InputText -TimeoutSeconds $TimeoutSeconds
-    if ($output) {
-        Write-Output $output
-    }
+    return Invoke-TmSshScript -HostAlias $HostAlias -ScriptText $InputText
 }
 
 function Get-GitCommandValue {

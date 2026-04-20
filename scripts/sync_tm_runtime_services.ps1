@@ -24,52 +24,11 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-function Invoke-ParamikoSsh {
-    param([string]$Command)
-
-    $resolvedHost = if ($VpsHost -eq 'vps') { $FallbackSshHost } else { $VpsHost }
-    $commandBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($Command))
-    $pythonScript = @"
-import base64
-import pathlib
-import sys
-
-import paramiko
-
-host = r"$resolvedHost"
-user = r"$FallbackSshUser"
-key_path = pathlib.Path(r"$FallbackSshKeyPath").expanduser()
-command = base64.b64decode(r"$commandBase64").decode("utf-8")
-
-key = paramiko.Ed25519Key.from_private_key_file(str(key_path))
-client = paramiko.SSHClient()
-client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-client.connect(host, username=user, pkey=key, timeout=20)
-try:
-    stdin, stdout, stderr = client.exec_command(command, timeout=300)
-    sys.stdout.write(stdout.read().decode("utf-8", errors="replace"))
-    err = stderr.read().decode("utf-8", errors="replace")
-    if err:
-        sys.stderr.write(err)
-    sys.exit(stdout.channel.recv_exit_status())
-finally:
-    client.close()
-"@
-    $output = $pythonScript | python -
-    if ($LASTEXITCODE -ne 0) {
-        throw "Paramiko SSH fallback failed for host $resolvedHost"
-    }
-    return $output
-}
+. (Join-Path $PSScriptRoot "lib\TmRemoteTools.ps1")
 
 function Invoke-Ssh {
     param([string]$Command)
-    $output = & ssh $VpsHost $Command 2>&1
-    if ($LASTEXITCODE -eq 0) {
-        return $output
-    }
-    Write-Warning "Native ssh failed for $VpsHost. Falling back to paramiko."
-    return Invoke-ParamikoSsh -Command $Command
+    return Invoke-TmSshCommand -HostAlias $VpsHost -RemoteCommand $Command
 }
 
 function Get-ServiceEnvironmentMap {

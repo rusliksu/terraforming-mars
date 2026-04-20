@@ -10,7 +10,7 @@
     <template v-if="preferences().experimental_ui && playerView.game.phase === Phase.ACTION">
       <input type="checkbox" name="suspend" id="suspend-checkbox" v-model="suspend" v-on:change="updateSuspend">
       <label for="suspend-checkbox">
-        <span v-i18n>Suspend</span>
+        <span v-i18n>Pause updates</span>
       </label>
       <div v-if="showRefresh()">Refresh<span class="reset"></span></div>
     </template>
@@ -272,4 +272,3 @@ export default defineComponent({
 });
 
 </script>
-

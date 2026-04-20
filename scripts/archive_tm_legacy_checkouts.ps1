@@ -6,13 +6,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-function Invoke-Ssh {
-    param([string]$Command)
-    & ssh $VpsHost $Command
-    if ($LASTEXITCODE -ne 0) {
-        throw "SSH command failed with exit code $LASTEXITCODE"
-    }
-}
+. (Join-Path $PSScriptRoot "lib\TmRemoteTools.ps1")
 
 $remoteScript = @'
 set -euo pipefail
@@ -65,7 +59,4 @@ if ($DryRun) {
 }
 
 $remoteScriptLf = $remoteScript -replace "`r`n", "`n"
-$remoteScriptLf | & ssh.exe $VpsHost "bash -s"
-if ($LASTEXITCODE -ne 0) {
-    throw "Legacy checkout archive failed."
-}
+Invoke-TmSshScript -HostAlias $VpsHost -ScriptText $remoteScriptLf

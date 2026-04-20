@@ -7,6 +7,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+. (Join-Path $PSScriptRoot "lib\TmRemoteTools.ps1")
+
 if ($Environment -eq "prod") {
     $targetRoot = "/home/openclaw/terraforming-mars"
     $label = "prod"
@@ -85,7 +87,5 @@ if ($DryRun) {
     Write-Host ""
 }
 
-& ssh $HostAlias $remoteScript
-if ($LASTEXITCODE -ne 0) {
-    throw "Remote checkout cleanup failed for $Environment."
-}
+$remoteScriptLf = $remoteScript -replace "`r`n", "`n"
+Invoke-TmSshScript -HostAlias $HostAlias -ScriptText $remoteScriptLf

@@ -1,9 +1,86 @@
 param(
     [string]$HostAlias = "vps",
+    [string]$FallbackSshHost = "72.56.84.119",
+    [string]$FallbackSshUser = "openclaw",
+    [string]$FallbackSshKeyPath = "$HOME\\.ssh\\id_ed25519",
     [switch]$DryRun
 )
 
 $ErrorActionPreference = "Stop"
+
+function Get-ResolvedSshHost {
+    if ($HostAlias -eq 'vps') {
+        return $FallbackSshHost
+    }
+    return $HostAlias
+}
+
+function Invoke-RemoteViaParamiko {
+    param(
+        [string]$Command,
+        [string]$InputText = "",
+        [int]$TimeoutSeconds = 1800
+    )
+
+    $resolvedHost = Get-ResolvedSshHost
+    $commandBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($Command))
+    $inputBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($InputText))
+    $pythonScript = @"
+import base64
+import pathlib
+import sys
+
+import paramiko
+
+host = r"$resolvedHost"
+user = r"$FallbackSshUser"
+key_path = pathlib.Path(r"$FallbackSshKeyPath").expanduser()
+command = base64.b64decode(r"$commandBase64").decode("utf-8")
+input_text = base64.b64decode(r"$inputBase64").decode("utf-8")
+
+key = paramiko.Ed25519Key.from_private_key_file(str(key_path))
+client = paramiko.SSHClient()
+client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+client.connect(host, username=user, pkey=key, timeout=20)
+try:
+    stdin, stdout, stderr = client.exec_command(command, timeout=$TimeoutSeconds)
+    if input_text:
+        stdin.write(input_text)
+    stdin.channel.shutdown_write()
+    sys.stdout.write(stdout.read().decode("utf-8", errors="replace"))
+    err = stderr.read().decode("utf-8", errors="replace")
+    if err:
+        sys.stderr.write(err)
+    sys.exit(stdout.channel.recv_exit_status())
+finally:
+    client.close()
+"@
+    $output = $pythonScript | python -
+    if ($LASTEXITCODE -ne 0) {
+        throw "Paramiko remote command failed for host $resolvedHost"
+    }
+    return $output
+}
+
+function Invoke-RemoteCommand {
+    param(
+        [string]$Command,
+        [string]$InputText = "",
+        [int]$TimeoutSeconds = 1800
+    )
+
+    if ([string]::IsNullOrEmpty($InputText)) {
+        $output = & ssh.exe $HostAlias $Command 2>&1
+    } else {
+        $output = $InputText | & ssh.exe $HostAlias $Command 2>&1
+    }
+    if ($LASTEXITCODE -eq 0) {
+        return $output
+    }
+
+    Write-Warning "Native ssh failed for $HostAlias. Falling back to paramiko."
+    return Invoke-RemoteViaParamiko -Command $Command -InputText $InputText -TimeoutSeconds $TimeoutSeconds
+}
 
 $remoteScript = @'
 set -euo pipefail
@@ -313,7 +390,4 @@ if ($DryRun) {
 }
 
 $remoteScriptLf = $remoteScript -replace "`r`n", "`n"
-$remoteScriptLf | & ssh.exe $HostAlias "bash -s"
-if ($LASTEXITCODE -ne 0) {
-    throw "Promote from staging to prod failed."
-}
+Invoke-RemoteCommand -Command "bash -s" -InputText $remoteScriptLf

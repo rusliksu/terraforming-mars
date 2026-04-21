@@ -1,5 +1,5 @@
 server {
-    listen 4446 ssl;
+    listen 127.0.0.1:4446 ssl;
     server_name staging.tm.knightbyte.win;
 
     ssl_certificate /etc/letsencrypt/live/staging.tm.knightbyte.win/fullchain.pem;

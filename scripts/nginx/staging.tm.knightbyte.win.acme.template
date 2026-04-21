@@ -1,0 +1,12 @@
+server {
+    listen 80;
+    server_name staging.tm.knightbyte.win;
+
+    location /.well-known/acme-challenge/ {
+        root __ACME_CHALLENGE_ROOT__;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}

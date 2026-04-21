@@ -56,6 +56,20 @@ function Invoke-RemoteCommand {
     return Invoke-TmSshScript -HostAlias $HostAlias -ScriptText $InputText
 }
 
+function ConvertTo-OutputLines {
+    param(
+        [AllowNull()]
+        [object[]]$Output
+    )
+
+    return @($Output | ForEach-Object {
+        if ($null -eq $_) {
+            return
+        }
+        $_.ToString() -split "`r?`n"
+    })
+}
+
 function Require-LocalArchiveRoot {
     param(
         [string]$PathValue
@@ -263,15 +277,16 @@ try {
 
     if ($DryRun) {
         $remoteOutput = Invoke-RemoteCommand -Command "chmod 700 '$remoteScriptPath' && bash '$remoteScriptPath'"
+        $remoteOutputLines = ConvertTo-OutputLines -Output $remoteOutput
 
-        $backupRootLine = $remoteOutput | Where-Object { $_ -like 'backup_root=*' } | Select-Object -First 1
+        $backupRootLine = $remoteOutputLines | Where-Object { $_ -like 'backup_root=*' } | Select-Object -First 1
         $remoteBackupRoot = if ([string]::IsNullOrWhiteSpace($backupRootLine)) {
             ""
         } else {
             $backupRootLine.Substring("backup_root=".Length)
         }
 
-        Write-Host ($remoteOutput -join [Environment]::NewLine)
+        Write-Host ($remoteOutputLines -join [Environment]::NewLine)
 
         $cleanupCommand = if ([string]::IsNullOrWhiteSpace($remoteBackupRoot)) {
             "rm -f '$remoteScriptPath'"
@@ -283,8 +298,9 @@ try {
     }
 
     $remoteOutput = Invoke-RemoteCommand -Command "chmod 700 '$remoteScriptPath' && bash '$remoteScriptPath'"
+    $remoteOutputLines = ConvertTo-OutputLines -Output $remoteOutput
 
-    $backupRootLine = $remoteOutput | Where-Object { $_ -like 'backup_root=*' } | Select-Object -First 1
+    $backupRootLine = $remoteOutputLines | Where-Object { $_ -like 'backup_root=*' } | Select-Object -First 1
     if ([string]::IsNullOrWhiteSpace($backupRootLine)) {
         throw "Remote backup did not report backup_root."
     }
@@ -309,12 +325,12 @@ try {
         "remote_backup_root=$remoteBackupRoot"
         "local_backup_root=$localRunRoot"
     )
-    $summary += ($remoteOutput | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    $summary += ($remoteOutputLines | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
     Set-Content -LiteralPath $summaryPath -Value $summary -Encoding UTF8
 
     Write-Host "Downloaded backup to $localRunRoot"
     Write-Host ""
-    Write-Host ($remoteOutput -join [Environment]::NewLine)
+    Write-Host ($remoteOutputLines -join [Environment]::NewLine)
 
     Invoke-RemoteCommand -Command "rm -rf '$remoteBackupRoot' '$remoteScriptPath'" | Out-Null
 } finally {

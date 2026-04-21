@@ -260,8 +260,15 @@ export default defineComponent({
 
 <style scoped>
 .tag-and-elo {
+  position: relative;
   display: inline-flex;
-  align-items: center;
-  gap: 4px;
+}
+
+.tag-and-elo :deep(.player-elo-badge) {
+  position: absolute;
+  left: 20px;
+  top: 32px;
+  z-index: 3;
+  transform: translateX(-50%);
 }
 </style>

@@ -93,6 +93,24 @@ function Test-CleanGitCheckout {
     return [string]::IsNullOrWhiteSpace((Get-GitStatusPorcelain -RepoRoot $RepoRoot))
 }
 
+function Test-DefaultSourceCheckout {
+    param(
+        [string]$RepoRoot
+    )
+
+    if (-not (Test-CleanGitCheckout -RepoRoot $RepoRoot)) {
+        return $false
+    }
+
+    $headSha = Get-GitCommandValue -RepoRoot $RepoRoot -GitArgs @("rev-parse", "HEAD")
+    $originMainSha = Get-GitCommandValue -RepoRoot $RepoRoot -GitArgs @("rev-parse", "origin/main")
+    if ([string]::IsNullOrWhiteSpace($headSha) -or [string]::IsNullOrWhiteSpace($originMainSha)) {
+        return $false
+    }
+
+    return $headSha -eq $originMainSha
+}
+
 function Resolve-DefaultSourceRoot {
     param(
         [string]$WorkspaceRoot,
@@ -106,7 +124,7 @@ function Resolve-DefaultSourceRoot {
     )
 
     foreach ($candidate in $candidates) {
-        if (Test-CleanGitCheckout -RepoRoot $candidate) {
+        if (Test-DefaultSourceCheckout -RepoRoot $candidate) {
             return (Resolve-Path -LiteralPath $candidate).Path
         }
     }
@@ -290,8 +308,12 @@ if (Test-Path $releaseWorkRoot) {
 Write-Host "Packaging build and assets into $archivePath"
 New-Item -ItemType Directory -Path $releasePayloadRoot -Force | Out-Null
 
-Copy-Item -Path $buildDir -Destination (Join-Path $releasePayloadRoot "build") -Recurse -Force
-Copy-Item -Path $assetsDir -Destination (Join-Path $releasePayloadRoot "assets") -Recurse -Force
+$payloadBuildDir = Join-Path $releasePayloadRoot "build"
+$payloadAssetsDir = Join-Path $releasePayloadRoot "assets"
+New-Item -ItemType Directory -Path $payloadBuildDir -Force | Out-Null
+New-Item -ItemType Directory -Path $payloadAssetsDir -Force | Out-Null
+Copy-Item -Path (Join-Path $buildDir "*") -Destination $payloadBuildDir -Recurse -Force
+Copy-Item -Path (Join-Path $assetsDir "*") -Destination $payloadAssetsDir -Recurse -Force
 Copy-Item -LiteralPath $packageJsonPath -Destination (Join-Path $releasePayloadRoot "package.json") -Force
 Copy-Item -LiteralPath $packageLockPath -Destination (Join-Path $releasePayloadRoot "package-lock.json") -Force
 $eloPayloadDir = Join-Path $releasePayloadRoot "elo"

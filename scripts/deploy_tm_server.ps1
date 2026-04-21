@@ -72,6 +72,54 @@ function Get-GitStatusPorcelain {
     return Get-GitCommandValue -RepoRoot $RepoRoot -GitArgs @("status", "--short", "--untracked-files=all")
 }
 
+function Test-CleanGitCheckout {
+    param(
+        [string]$RepoRoot
+    )
+
+    if (-not (Test-Path -LiteralPath $RepoRoot)) {
+        return $false
+    }
+
+    $gitTopLevel = Get-GitCommandValue -RepoRoot $RepoRoot -GitArgs @("rev-parse", "--show-toplevel")
+    if ([string]::IsNullOrWhiteSpace($gitTopLevel)) {
+        return $false
+    }
+
+    if ((Get-NormalizedPath -PathValue $gitTopLevel) -ne (Get-NormalizedPath -PathValue $RepoRoot)) {
+        return $false
+    }
+
+    return [string]::IsNullOrWhiteSpace((Get-GitStatusPorcelain -RepoRoot $RepoRoot))
+}
+
+function Resolve-DefaultSourceRoot {
+    param(
+        [string]$WorkspaceRoot,
+        [string]$RepoRoot
+    )
+
+    $candidates = @(
+        (Join-Path $WorkspaceRoot "terraforming-mars-release-main"),
+        (Join-Path $WorkspaceRoot "terraforming-mars-main-clean"),
+        $RepoRoot
+    )
+
+    foreach ($candidate in $candidates) {
+        if (Test-CleanGitCheckout -RepoRoot $candidate) {
+            return (Resolve-Path -LiteralPath $candidate).Path
+        }
+    }
+
+    foreach ($candidate in $candidates) {
+        if (Test-Path -LiteralPath $candidate) {
+            return (Resolve-Path -LiteralPath $candidate).Path
+        }
+    }
+
+    return $RepoRoot
+}
+
 function Get-JsonFile {
     param(
         [string]$Path
@@ -99,26 +147,26 @@ function Get-NormalizedFileSha256 {
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $tmWorkspaceRoot = Split-Path -Parent $repoRoot
 $safeDefaultSourceRoot = Join-Path $tmWorkspaceRoot "terraforming-mars-release-main"
+$safeAlternateSourceRoot = Join-Path $tmWorkspaceRoot "terraforming-mars-main-clean"
 
 $resolvedSourceRoot = if ([string]::IsNullOrWhiteSpace($SourceRoot)) {
-    if (Test-Path $safeDefaultSourceRoot) {
-        (Resolve-Path $safeDefaultSourceRoot).Path
-    } else {
-        $repoRoot
-    }
+    Resolve-DefaultSourceRoot -WorkspaceRoot $tmWorkspaceRoot -RepoRoot $repoRoot
 } else {
     (Resolve-Path $SourceRoot).Path
 }
 
 $normalizedRepoRoot = Get-NormalizedPath -PathValue (Resolve-Path $repoRoot).Path
 $normalizedSourceRoot = Get-NormalizedPath -PathValue $resolvedSourceRoot
-$normalizedSafeDefaultSourceRoot = Get-NormalizedPath -PathValue $safeDefaultSourceRoot
+$normalizedSafeSourceRoots = @(
+    (Get-NormalizedPath -PathValue $safeDefaultSourceRoot),
+    (Get-NormalizedPath -PathValue $safeAlternateSourceRoot)
+)
 
 if ($Environment -eq "prod" -and -not $AllowDirectProdDeploy) {
     throw "Direct prod deploy is blocked. Deploy to staging first and then run scripts/release_tm_prod.ps1 or scripts/promote_tm_staging_to_prod.ps1. Pass -AllowDirectProdDeploy only for an explicit emergency override."
 }
 
-if ($normalizedSourceRoot -eq $normalizedRepoRoot -and $normalizedRepoRoot -ne $normalizedSafeDefaultSourceRoot -and -not $AllowPrimaryWorkingTree) {
+if ($normalizedSourceRoot -eq $normalizedRepoRoot -and $normalizedRepoRoot -notin $normalizedSafeSourceRoots -and -not $AllowPrimaryWorkingTree) {
     throw "SourceRoot points at the primary working tree: $resolvedSourceRoot. Use the clean release checkout or pass -AllowPrimaryWorkingTree if you intentionally want to release this exact tree."
 }
 

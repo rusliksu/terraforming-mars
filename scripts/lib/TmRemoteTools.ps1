@@ -3,11 +3,18 @@ $ErrorActionPreference = "Stop"
 $script:TmRemoteTransportCache = @{}
 
 function Test-TmRemoteToolsIsWindows {
+    try {
+        if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)) {
+            return $true
+        }
+    } catch {
+    }
+
     if (Get-Variable -Name IsWindows -Scope Global -ErrorAction SilentlyContinue) {
         return [bool]$global:IsWindows
     }
 
-    return $env:OS -eq "Windows_NT"
+    return $env:OS -eq "Windows_NT" -or [System.IO.Path]::DirectorySeparatorChar -eq "\"
 }
 
 function Get-TmRemoteToolPath {
@@ -129,6 +136,46 @@ function Invoke-TmProcessProbe {
     }
 }
 
+function Assert-TmRemoteCommandSucceeded {
+    param(
+        [int]$ExitCode,
+        [string]$Context,
+        [AllowNull()]
+        [object[]]$Output
+    )
+
+    if ($ExitCode -eq 0) {
+        return
+    }
+
+    $outputText = (@($Output) | Where-Object { $null -ne $_ } | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    if ([string]::IsNullOrWhiteSpace($outputText)) {
+        throw "$Context failed with exit code $ExitCode."
+    }
+
+    throw "$Context failed with exit code $ExitCode.`n$outputText"
+}
+
+function Invoke-TmExternalCommand {
+    param(
+        [string]$FilePath,
+        [string[]]$ArgumentList,
+        [string]$Context
+    )
+
+    $probe = Invoke-TmProcessProbe -FilePath $FilePath -ArgumentList $ArgumentList
+    $output = @()
+    if (-not [string]::IsNullOrEmpty($probe.StdOut)) {
+        $output += $probe.StdOut.TrimEnd()
+    }
+    if (-not [string]::IsNullOrEmpty($probe.StdErr)) {
+        $output += $probe.StdErr.TrimEnd()
+    }
+
+    Assert-TmRemoteCommandSucceeded -ExitCode $probe.ExitCode -Context $Context -Output $output
+    return $output
+}
+
 function Test-TmNativeSshConnection {
     param(
         [string]$ExecutablePath,
@@ -202,7 +249,7 @@ function Invoke-TmGitBashWrapper {
     $wrapperPath = Join-Path $env:TEMP ("tm-remote-wrapper-{0}.sh" -f ([guid]::NewGuid().ToString("N")))
     try {
         Set-Content -LiteralPath $wrapperPath -Value $ScriptBody -Encoding ASCII
-        return (& $bashPath $wrapperPath)
+        return Invoke-TmExternalCommand -FilePath $bashPath -ArgumentList @($wrapperPath) -Context "Git Bash remote wrapper"
     } finally {
         Remove-Item -LiteralPath $wrapperPath -Force -ErrorAction SilentlyContinue
     }
@@ -220,7 +267,7 @@ function Invoke-TmSshCommand {
         if ([string]::IsNullOrWhiteSpace($sshPath)) {
             throw "ssh.exe was not found."
         }
-        return (& $sshPath $HostAlias $RemoteCommand)
+        return Invoke-TmExternalCommand -FilePath $sshPath -ArgumentList @($HostAlias, $RemoteCommand) -Context "ssh $HostAlias"
     }
 
     $scriptBody = @(
@@ -243,7 +290,16 @@ function Invoke-TmSshScript {
         if ([string]::IsNullOrWhiteSpace($sshPath)) {
             throw "ssh.exe was not found."
         }
-        return ($normalizedScriptText | & $sshPath $HostAlias "bash -s")
+        $previousErrorActionPreference = $ErrorActionPreference
+        try {
+            $ErrorActionPreference = "Continue"
+            $output = $normalizedScriptText | & $sshPath $HostAlias "bash -s" 2>&1
+            $exitCode = $LASTEXITCODE
+        } finally {
+            $ErrorActionPreference = $previousErrorActionPreference
+        }
+        Assert-TmRemoteCommandSucceeded -ExitCode $exitCode -Context "ssh $HostAlias bash -s" -Output $output
+        return $output
     }
 
     $inputPath = Join-Path $env:TEMP ("tm-remote-stdin-{0}.sh" -f ([guid]::NewGuid().ToString("N")))
@@ -282,7 +338,7 @@ function Invoke-TmScpUpload {
             $arguments += "-r"
         }
         $arguments += @($LocalPath, $remoteSpec)
-        return (& $scpPath @arguments)
+        return Invoke-TmExternalCommand -FilePath $scpPath -ArgumentList $arguments -Context "scp upload to $remoteSpec"
     }
 
     $gitLocalPath = ConvertTo-TmGitBashPath -PathValue $LocalPath
@@ -323,7 +379,7 @@ function Invoke-TmScpDownload {
             $arguments += "-r"
         }
         $arguments += @($remoteSpec, $LocalPath)
-        return (& $scpPath @arguments)
+        return Invoke-TmExternalCommand -FilePath $scpPath -ArgumentList $arguments -Context "scp download from $remoteSpec"
     }
 
     $gitLocalPath = ConvertTo-TmGitBashPath -PathValue $LocalPath

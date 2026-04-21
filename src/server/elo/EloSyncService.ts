@@ -45,6 +45,10 @@ export type EloPlayerRecord = {
   wins: number;
   top3: number;
   totalVP: number;
+  totalGens?: number;
+  avgGens?: number;
+  totalMargin?: number;
+  avgMargin?: number;
   avgVP?: number;
   avgPlace: number;
   avgPlaceScore: number;
@@ -113,6 +117,10 @@ function createDefaultPlayer(displayName: string): EloMutablePlayerRecord {
     wins: 0,
     top3: 0,
     totalVP: 0,
+    totalGens: 0,
+    avgGens: 0,
+    totalMargin: 0,
+    avgMargin: 0,
     avgVP: 0,
     avgPlace: 0,
     avgPlaceScore: 0,
@@ -171,6 +179,19 @@ export function buildEloGameFromSummary(summary: CompletedGameSummary): EloStore
     completedTime: summary.completedTime,
     results,
   };
+}
+
+function getVpMargin(entries: Array<EloStoredResult>, entry: EloStoredResult): number {
+  const leaderVp = entries.reduce((max, current) => Math.max(max, current.vp), Number.NEGATIVE_INFINITY);
+  if (!Number.isFinite(leaderVp)) return 0;
+  if (entry.place === 1) {
+    const otherVps = entries
+      .filter((current) => current !== entry)
+      .map((current) => current.vp);
+    if (otherVps.length === 0) return 0;
+    return entry.vp - Math.max(...otherVps);
+  }
+  return entry.vp - leaderVp;
 }
 
 export function rebuildEloData(games: Array<EloStoredGame>): EloData {
@@ -246,6 +267,10 @@ export function rebuildEloData(games: Array<EloStoredGame>): EloData {
       if (entry.place <= 3) current.top3 += 1;
       current.placeScoreSum += normalizedPlaceScore(entry.place, entries.length);
       current.totalVP += entry.vp;
+      if (game.generation > 0) {
+        current.totalGens = (current.totalGens ?? 0) + game.generation;
+      }
+      current.totalMargin = (current.totalMargin ?? 0) + getVpMargin(entries, entry);
       if (entry.corp) current.corps[entry.corp] = (current.corps[entry.corp] || 0) + 1;
     }
   }
@@ -253,6 +278,8 @@ export function rebuildEloData(games: Array<EloStoredGame>): EloData {
   const finalizedPlayers: Record<string, EloPlayerRecord> = {};
   for (const [key, player] of Object.entries(players)) {
     const avgPlace = player.games > 0 ? round3(player.placeScoreSum / player.games) : 0;
+    const totalGens = player.totalGens ?? 0;
+    const totalMargin = player.totalMargin ?? 0;
     finalizedPlayers[key] = {
       elo: player.elo,
       elo_vp: player.elo_vp,
@@ -261,6 +288,10 @@ export function rebuildEloData(games: Array<EloStoredGame>): EloData {
       wins: player.wins,
       top3: player.top3,
       totalVP: player.totalVP,
+      totalGens,
+      avgGens: player.games > 0 ? round3(totalGens / player.games) : 0,
+      totalMargin,
+      avgMargin: player.games > 0 ? round3(totalMargin / player.games) : 0,
       avgVP: player.games > 0 ? Math.round(player.totalVP / player.games) : 0,
       avgPlace,
       avgPlaceScore: avgPlace,

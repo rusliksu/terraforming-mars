@@ -91,7 +91,7 @@ describe('EloSyncService', () => {
         playerCount: 2,
         completedTime: 2,
         results: [
-          {name: 'alice', displayName: 'Alice', place: 1, vp: 90, corp: 'CrediCor'},
+          {name: 'alice', displayName: 'Alice', place: 1, vp: 95, corp: 'CrediCor'},
           {name: 'bob', displayName: 'Bob', place: 2, vp: 80, corp: 'Inventrix'},
         ],
       },
@@ -114,5 +114,11 @@ describe('EloSyncService', () => {
     expect(rebuilt.games[1]._key).eq('g2');
     expect(rebuilt.players.alice.games).eq(2);
     expect(rebuilt.players.bob.games).eq(2);
+    expect(rebuilt.players.alice.totalGens).eq(21);
+    expect(rebuilt.players.alice.avgGens).eq(10.5);
+    expect(rebuilt.players.alice.totalMargin).eq(5);
+    expect(rebuilt.players.alice.avgMargin).eq(2.5);
+    expect(rebuilt.players.bob.totalMargin).eq(-5);
+    expect(rebuilt.players.bob.avgMargin).eq(-2.5);
   });
 });

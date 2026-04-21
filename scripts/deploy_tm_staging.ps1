@@ -10,11 +10,6 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$tmWorkspaceRoot = Split-Path -Parent $repoRoot
-
-if ([string]::IsNullOrWhiteSpace($SourceRoot)) {
-    $SourceRoot = Join-Path $tmWorkspaceRoot "terraforming-mars-release-main"
-}
 
 $deployScript = Join-Path $PSScriptRoot "deploy_tm_server.ps1"
 $smokeScript = Join-Path $PSScriptRoot "smoke_tm_staging.ps1"
@@ -27,16 +22,19 @@ if (-not (Test-Path $smokeScript)) {
     throw "Missing smoke script: $smokeScript"
 }
 
-if (-not (Test-Path $SourceRoot)) {
+if (-not [string]::IsNullOrWhiteSpace($SourceRoot) -and -not (Test-Path $SourceRoot)) {
     throw "SourceRoot does not exist: $SourceRoot"
 }
 
 $args = @(
     "-File", $deployScript,
     "-Environment", "staging",
-    "-HostAlias", $HostAlias,
-    "-SourceRoot", $SourceRoot
+    "-HostAlias", $HostAlias
 )
+
+if (-not [string]::IsNullOrWhiteSpace($SourceRoot)) {
+    $args += @("-SourceRoot", $SourceRoot)
+}
 
 if ($DryRun) {
     $args += "-DryRun"

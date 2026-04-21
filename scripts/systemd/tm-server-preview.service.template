@@ -1,0 +1,21 @@
+[Unit]
+Description=Terraforming Mars Preview Server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=__PREVIEW_CURRENT_DIR__
+EnvironmentFile=-%h/.config/tm-server.env
+Environment=PORT=__PREVIEW_PORT__
+Environment=HOST=__PREVIEW_HOST__
+Environment=SERVER_ID=__PREVIEW_SERVER_ID__
+Environment=ELO_DATA_DIR=__PREVIEW_ELO_DATA_DIR__
+Environment=TM_SERVER_URL=__PREVIEW_URL__
+Environment=TM_AUTO_JOIN_SCRIPT=__AUTO_JOIN_SCRIPT__
+ExecStartPre=-/usr/bin/fuser -k __PREVIEW_PORT__/tcp
+ExecStart=/usr/bin/node build/src/server/server.js
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=default.target

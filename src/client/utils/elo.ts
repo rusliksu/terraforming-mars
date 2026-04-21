@@ -1,6 +1,6 @@
 import {reactive} from 'vue';
 import {Color} from '@/common/Color';
-import {normalizeEloPlayerName} from '@/client/utils/normalizeEloPlayerName';
+import {hasEloPlayerNameAlias, normalizeEloPlayerName} from '@/client/utils/normalizeEloPlayerName';
 
 export type EloEntry = {
   elo?: number;
@@ -9,11 +9,13 @@ export type EloEntry = {
   totalVP?: number;
   avgPlaceScore?: number;
   displayName?: string;
+  user?: string;
 };
 
 export type EloGameResult = {
   name?: string;
   displayName?: string;
+  user?: string;
   oldElo?: number;
   newElo?: number;
   delta?: number;
@@ -21,6 +23,9 @@ export type EloGameResult = {
 };
 
 export type EloGame = {
+  source?: string;
+  analyzedBy?: Array<string>;
+  analysisTargets?: Array<string>;
   results?: Array<EloGameResult>;
 };
 
@@ -42,6 +47,7 @@ export type EloState = {
 
 type EloPlayerSummary = {
   name: string;
+  user?: string;
   color: Color;
   victoryPointsBreakdown: {
     total: number;
@@ -49,7 +55,6 @@ type EloPlayerSummary = {
 };
 
 const ELO_URLS = ['/elo/data.json', '/elo/elo-data.json'];
-
 export const sharedEloState = reactive<EloState>({
   loaded: false,
   failed: false,
@@ -63,7 +68,77 @@ export function normalizeEloName(name: string): string {
   return normalizeEloPlayerName(name);
 }
 
-export function lookupEloEntry(players: Record<string, EloEntry>, playerName: string): EloEntry | null {
+function normalizeEloUserKey(user: string): string {
+  return 'user:' + String(user).trim();
+}
+
+function getPlayerIdentityKeys(playerName: string, playerUser?: string): Array<string> {
+  const keys: Array<string> = [];
+  if (playerUser && playerUser.trim() !== '') {
+    keys.push(normalizeEloUserKey(playerUser));
+  }
+  if (playerName) {
+    keys.push(normalizeEloName(playerName));
+  }
+  return keys;
+}
+
+function getResultIdentityKeys(result: EloGameResult): Array<string> {
+  const keys: Array<string> = [];
+  if (result.user && result.user.trim() !== '') {
+    keys.push(normalizeEloUserKey(result.user));
+  }
+  const resultName = result.displayName || result.name || '';
+  if (resultName) {
+    keys.push(normalizeEloName(resultName));
+  }
+  return keys;
+}
+
+function identityKeysOverlap(left: Array<string>, right: Array<string>): boolean {
+  for (const key of left) {
+    if (right.includes(key)) return true;
+  }
+  return false;
+}
+
+function findMatchingResultIndex(results: Array<EloGameResult>, player: EloPlayerSummary, used: Set<number>): number {
+  const playerKeys = getPlayerIdentityKeys(player.name, player.user);
+  for (let i = 0; i < results.length; i++) {
+    if (used.has(i)) continue;
+    const result = results[i];
+    if (Number(result.vp) !== player.victoryPointsBreakdown.total) continue;
+    if (!identityKeysOverlap(playerKeys, getResultIdentityKeys(result))) continue;
+    return i;
+  }
+  return -1;
+}
+
+function canMatchGameResults(players: Array<EloPlayerSummary>, results: Array<EloGameResult>): boolean {
+  if (results.length !== players.length) return false;
+  const used = new Set<number>();
+
+  const playerOrder = [...players].sort((a, b) => {
+    const aWeight = a.user ? 0 : 1;
+    const bWeight = b.user ? 0 : 1;
+    if (aWeight !== bWeight) return aWeight - bWeight;
+    return a.name.localeCompare(b.name);
+  });
+
+  for (const player of playerOrder) {
+    const idx = findMatchingResultIndex(results, player, used);
+    if (idx === -1) return false;
+    used.add(idx);
+  }
+  return used.size === results.length;
+}
+
+export function lookupEloEntry(players: Record<string, EloEntry>, playerName: string, playerUser?: string): EloEntry | null {
+  if (playerUser && playerUser.trim() !== '') {
+    const byUser = players[normalizeEloUserKey(playerUser)];
+    if (byUser) return byUser;
+    if (!hasEloPlayerNameAlias(playerName)) return null;
+  }
   if (!playerName) return null;
   const normalized = normalizeEloName(playerName);
   if (players[normalized]) return players[normalized];
@@ -123,25 +198,9 @@ export function fallbackEloEntry(playerName: string): EloEntry | null {
 }
 
 export function findMatchingEloGame(games: Array<EloGame>, players: Array<EloPlayerSummary>): EloGame | undefined {
-  const expected = new Map<string, number>();
-  for (const player of players) {
-    expected.set(normalizeEloName(player.name), player.victoryPointsBreakdown.total);
-  }
-
   return [...games].reverse().find((game) => {
     const results = Array.isArray(game.results) ? game.results : [];
-    if (results.length !== players.length) return false;
-
-    const matched = new Set<string>();
-    for (const result of results) {
-      const key = normalizeEloName(result.displayName || result.name || '');
-      const vp = Number(result.vp);
-      if (!expected.has(key) || expected.get(key) !== vp || matched.has(key)) {
-        return false;
-      }
-      matched.add(key);
-    }
-    return matched.size === expected.size;
+    return canMatchGameResults(players, results);
   });
 }
 
@@ -152,18 +211,15 @@ export function buildEloResultsForPlayers(
 ): Array<EloResultRow> {
   const rows: Array<EloResultRow> = [];
   const results = Array.isArray(matchedGame.results) ? matchedGame.results : [];
-  const resultsByName = new Map<string, EloGameResult>();
-
-  for (const result of results) {
-    resultsByName.set(normalizeEloName(result.displayName || result.name || ''), result);
-  }
+  const used = new Set<number>();
 
   for (const player of playersInPlace) {
-    const key = normalizeEloName(player.name);
-    const result = resultsByName.get(key);
-    if (!result) continue;
+    const idx = findMatchingResultIndex(results, player, used);
+    if (idx === -1) continue;
+    used.add(idx);
+    const result = results[idx];
 
-    const eloEntry = lookupEloEntry(eloPlayers, player.name);
+    const eloEntry = lookupEloEntry(eloPlayers, player.name, player.user);
     const oldElo = typeof result.oldElo === 'number' ? result.oldElo : 1500;
     const newElo = typeof result.newElo === 'number' ? result.newElo : (typeof eloEntry?.elo === 'number' ? eloEntry.elo : oldElo);
     const delta = typeof result.delta === 'number' ? result.delta : (newElo - oldElo);

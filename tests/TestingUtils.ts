@@ -10,6 +10,8 @@ import {Log} from '../src/common/logs/Log';
 import {Greens} from '../src/server/turmoil/parties/Greens';
 import {PoliticalAgendas} from '../src/server/turmoil/PoliticalAgendas';
 import {Reds} from '../src/server/turmoil/parties/Reds';
+import {LogMessageData} from '../src/common/logs/LogMessageData';
+import {LogMessageDataType} from '../src/common/logs/LogMessageDataType';
 import {IProjectCard} from '../src/server/cards/IProjectCard';
 import {CardName} from '../src/common/cards/CardName';
 import {CardType} from '../src/common/cards/CardType';
@@ -118,10 +120,17 @@ export function formatMessage(message: Message | string): string {
   if (typeof message === 'string') {
     return message;
   }
-  const text = Log.applyData(message, (datum) => datum.value.toString());
+  const text = Log.applyData(message, formatMessageData);
   const prefix = (message instanceof LogMessage && message.playerId) ?
     `(${message.playerId}): ` : '';
   return prefix + text;
+}
+
+function formatMessageData(datum: LogMessageData): string {
+  if (datum.type === LogMessageDataType.CARDS) {
+    return new Intl.ListFormat('en', {type: 'conjunction', style: 'long'}).format(datum.value);
+  }
+  return datum.value.toString();
 }
 
 /**

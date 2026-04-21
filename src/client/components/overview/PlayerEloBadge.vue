@@ -75,15 +75,17 @@ export default defineComponent({
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 30px;
-  padding: 0 4px;
+  min-width: 38px;
+  min-height: 18px;
+  padding: 1px 6px;
   border-radius: 3px;
   border: 1px solid currentColor;
   background: rgba(26, 26, 46, 0.78);
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
-  line-height: 1.25;
-  opacity: 0.88;
+  font-variant-numeric: tabular-nums;
+  line-height: 16px;
+  opacity: 0.95;
   cursor: help;
 }
 </style>

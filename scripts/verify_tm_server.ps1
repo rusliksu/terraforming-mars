@@ -1,6 +1,6 @@
 param(
     [string]$Server,
-    [ValidateSet("staging", "prod")]
+    [ValidateSet("staging", "prod", "preview")]
     [string]$Environment = "staging",
     [string]$GameNamePrefix = "TMVerify",
     [switch]$CreateGame,
@@ -11,10 +11,10 @@ param(
 $ErrorActionPreference = "Stop"
 
 if ([string]::IsNullOrWhiteSpace($Server)) {
-    $Server = if ($Environment -eq "staging") {
-        "https://staging.tm.knightbyte.win"
-    } else {
-        "https://tm.knightbyte.win"
+    $Server = switch ($Environment) {
+        "staging" { "https://staging.tm.knightbyte.win" }
+        "preview" { "https://preview.tm.knightbyte.win" }
+        default { "https://tm.knightbyte.win" }
     }
 }
 
@@ -140,24 +140,27 @@ function New-SmokeGamePayload {
     }
 }
 
-$expectedEnvHeader = if ($Environment -eq "staging") { "staging" } else { "" }
+$expectedEnvHeader = switch ($Environment) {
+    "staging" { "staging" }
+    "preview" { "preview" }
+    default { "" }
+}
 $expectedBadge = ($Environment -eq "staging")
 
 $homeResponse = Invoke-WebRequest -Uri "$Server/" -Headers @{"Cache-Control"="no-cache"} -TimeoutSec 30
 Assert-True ($homeResponse.StatusCode -eq 200) "Home page returned $($homeResponse.StatusCode), expected 200."
 
 $envHeader = Get-HeaderValue -Headers $homeResponse.Headers -Name "X-TM-Env"
-if ($Environment -eq "staging") {
-    Assert-True ($envHeader -eq $expectedEnvHeader) "Home page is missing X-TM-Env=staging."
+if ($Environment -in @("staging", "preview")) {
+    Assert-True ($envHeader -eq $expectedEnvHeader) "Home page is missing X-TM-Env=$expectedEnvHeader."
 } else {
     Assert-True ([string]::IsNullOrWhiteSpace($envHeader)) "Prod unexpectedly returned X-TM-Env=$envHeader."
 }
 
-$hasBadgeMarkup = ($homeResponse.Content -match "tm-env-badge")
+$hasBadge = ($homeResponse.Content -match "tm-env-badge")
 if ($expectedBadge) {
-    Assert-True $hasBadgeMarkup "Home page does not contain the staging badge markup."
+    Assert-True $hasBadge "Home page does not contain the staging badge markup."
 }
-$hasBadge = ($expectedBadge -and $hasBadgeMarkup)
 
 $elo = Invoke-WebRequest -Uri "$Server/elo/" -Headers @{"Cache-Control"="no-cache"} -TimeoutSec 30
 Assert-True ($elo.StatusCode -eq 200) "ELO page returned $($elo.StatusCode), expected 200."

@@ -4,6 +4,7 @@ param(
     [switch]$SkipRuntimeSync,
     [switch]$SkipGatewaySync,
     [switch]$SkipWatcherSync,
+    [switch]$EnablePreview,
     [switch]$RestartWatchers,
     [switch]$DryRun
 )
@@ -57,6 +58,9 @@ if (-not $SkipWatcherSync) { $totalSteps++ }
 $step = 1
 if (-not $SkipRuntimeSync) {
     $runtimeArgs = @("-File", $runtimeScript, "-VpsHost", $HostAlias)
+    if ($EnablePreview) {
+        $runtimeArgs += "-EnablePreview"
+    }
     if ($DryRun) {
         $runtimeArgs += "-DryRun"
     }
@@ -69,6 +73,9 @@ if (-not $SkipRuntimeSync) {
 
 if (-not $SkipGatewaySync) {
     $gatewayArgs = @("-File", $gatewayScript, "-VpsHost", $HostAlias)
+    if ($EnablePreview) {
+        $gatewayArgs += "-EnablePreview"
+    }
     if ($DryRun) {
         $gatewayArgs += "-DryRun"
     }

@@ -22,7 +22,7 @@ if (-not (Test-Path $smokeScript)) {
     throw "Missing smoke script: $smokeScript"
 }
 
-if (-not (Test-Path $SourceRoot)) {
+if (-not [string]::IsNullOrWhiteSpace($SourceRoot) -and -not (Test-Path $SourceRoot)) {
     throw "SourceRoot does not exist: $SourceRoot"
 }
 

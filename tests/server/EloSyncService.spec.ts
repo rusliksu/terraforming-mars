@@ -121,4 +121,99 @@ describe('EloSyncService', () => {
     expect(rebuilt.players.bob.totalMargin).eq(-5);
     expect(rebuilt.players.bob.avgMargin).eq(-2.5);
   });
+  it('backfills date and duration from timestamps during rebuild', () => {
+    const rebuilt = rebuildEloData([
+      {
+        _key: 'g-duration',
+        date: '',
+        server: 'test',
+        map: 'THARSIS',
+        generation: 9,
+        playerCount: 2,
+        startedTime: 1712181600,
+        completedTime: 1712188800,
+        source: 'import',
+        analyzedBy: ['codex'],
+        analysisTargets: ['advisor', 'smartbot'],
+        results: [
+          {name: 'alice', displayName: 'Alice', place: 1, vp: 95, corp: 'CrediCor'},
+          {name: 'bob', displayName: 'Bob', place: 2, vp: 88, corp: 'Inventrix'},
+        ],
+      },
+    ]);
+
+    expect(rebuilt.games[0].date).eq('2024-04-04T00:00:00.000Z');
+    expect(rebuilt.games[0].durationMs).eq(7_200_000);
+    expect(rebuilt.games[0].durationMinutes).eq(120);
+    expect(rebuilt.games[0].source).eq('import');
+    expect(rebuilt.games[0].analyzedBy).to.deep.equal(['codex']);
+    expect(rebuilt.games[0].analysisTargets).to.deep.equal(['advisor', 'smartbot']);
+  });
+
+  it('canonicalizes explicit aliases in existing stored games during rebuild', () => {
+    const rebuilt = rebuildEloData([
+      {
+        _key: 'g-stored-alias',
+        date: '2026-04-04T00:00:03.000Z',
+        server: 'test',
+        map: 'THARSIS',
+        generation: 8,
+        playerCount: 2,
+        completedTime: 3,
+        results: [
+          {name: 'руслан', displayName: 'Руслан', user: 'ruslan-user', place: 1, vp: 87, corp: 'CrediCor'},
+          {name: 'user:pasha-user', displayName: 'Паша', user: 'pasha-user', place: 2, vp: 80, corp: 'Helion'},
+        ],
+      },
+    ]);
+
+    expect(rebuilt.players.gydro.displayName).eq('GydRo');
+    expect(rebuilt.players.gydro.games).eq(1);
+    expect(rebuilt.players['user:ruslan-user']).eq(undefined);
+    expect(rebuilt.games[0].results[0].name).eq('gydro');
+    expect(rebuilt.games[0].results[0].displayName).eq('GydRo');
+  });
+
+  it('splits same display name players by user identity when provided', async () => {
+    await service.recordCompletedGameSummary({
+      key: 'g-shared-name',
+      completedTime: 1712188802,
+      server: 'test',
+      map: 'HELLAS',
+      generation: 9,
+      players: [
+        {name: 'Паша', user: 'orange-pasha', vp: 96, corp: 'CrediCor'},
+        {name: 'Паша', user: 'red-pasha', vp: 82, corp: 'Helion'},
+      ],
+    });
+
+    const primary = JSON.parse(await fs.readFile(primaryPath, 'utf8'));
+    expect(primary.players['user:orange-pasha'].displayName).eq('Паша');
+    expect(primary.players['user:red-pasha'].displayName).eq('Паша');
+    expect(primary.players['user:orange-pasha'].games).eq(1);
+    expect(primary.players['user:red-pasha'].games).eq(1);
+    expect(primary.games[0].results[0].user).eq('orange-pasha');
+    expect(primary.games[0].results[1].user).eq('red-pasha');
+  });
+
+  it('maps explicit player aliases to canonical elo identity before user identity', async () => {
+    await service.recordCompletedGameSummary({
+      key: 'g-alias',
+      completedTime: 1712188803,
+      server: 'test',
+      map: 'THARSIS',
+      generation: 8,
+      players: [
+        {name: 'Руслан', user: 'ruslan-user', vp: 87, corp: 'CrediCor'},
+        {name: 'Паша', user: 'pasha-user', vp: 80, corp: 'Helion'},
+      ],
+    });
+
+    const primary = JSON.parse(await fs.readFile(primaryPath, 'utf8'));
+    expect(primary.players.gydro.displayName).eq('GydRo');
+    expect(primary.players.gydro.games).eq(1);
+    expect(primary.players['user:ruslan-user']).eq(undefined);
+    expect(primary.games[0].results[0].name).eq('gydro');
+    expect(primary.games[0].results[0].displayName).eq('GydRo');
+  });
 });

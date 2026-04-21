@@ -7,11 +7,13 @@ GitHub Actions in `.github/workflows/main.yml` are CI-only. They do not deploy `
 ## URLs
 
 - Staging: `https://staging.tm.knightbyte.win/`
+- Preview: `https://preview.tm.knightbyte.win/`
 - Prod: `https://tm.knightbyte.win/`
 
 ## Services on VPS
 
 - Staging app: `tm-server-staging`
+- Preview app: `tm-server-preview`
 - Prod app: `tm-server`
 
 TM Telegram secrets are not source-managed. Keep `TM_BOT_TOKEN` in
@@ -38,6 +40,7 @@ This covers:
 
 - TM runtime units from this repo (`tm-server`, `tm-server-staging`, `tm-elo`)
 - TM public nginx sites plus the shared `stream.conf` SNI gateway for `tm.knightbyte.win` and `staging.tm.knightbyte.win`
+- Preview can be synced too when you explicitly pass `-EnablePreview`
 - TM watcher units from sibling `tm-tierlist`
 
 `rollout_tm_server.ps1` runs this sync as step 1 by default. It uses safe mode
@@ -94,6 +97,13 @@ Deploy to staging from the safe default source:
 
 ```powershell
 pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\deploy_tm_staging.ps1
+```
+
+Deploy an isolated preview instance from any clean upstream/fork checkout:
+
+```powershell
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\deploy_tm_preview.ps1 `
+  -SourceRoot C:\Users\Ruslan\tm\terraforming-mars-upstream-fix
 ```
 
 Emergency override if you intentionally need to release a dirty source checkout or the primary working tree:

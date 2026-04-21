@@ -43,6 +43,8 @@ type LogPanelModel = {
   messages: Array<LogMessage>,
   selectedGeneration: number,
   selectedMessage: LogMessage | undefined,
+  stickToBottom: boolean,
+  resizeObserver: ResizeObserver | undefined,
 };
 
 export default defineComponent({
@@ -67,6 +69,8 @@ export default defineComponent({
       messages: [],
       selectedGeneration: -1,
       selectedMessage: undefined,
+      stickToBottom: true,
+      resizeObserver: undefined,
     };
   },
   components: {
@@ -108,6 +112,7 @@ export default defineComponent({
     },
     getLogsForGeneration(generation: number): void {
       const messages = this.messages;
+      this.stickToBottom = generation === this.generation && this.isNearBottom();
       // abort any pending requests
       if (logAbortController) {
         logAbortController.abort();
@@ -131,7 +136,11 @@ export default defineComponent({
           messages.splice(0, messages.length);
           messages.push(...data);
           if (generation === this.generation) {
-            this.$nextTick(this.scrollToEnd);
+            this.stickToBottom = true;
+            this.$nextTick(() => {
+              this.installAutoScrollObserver();
+              this.scrollToEnd();
+            });
           }
         })
         .catch((err) => {
@@ -139,8 +148,38 @@ export default defineComponent({
           console.error('error updating messages, unable to reach server');
         });
     },
+    handleScroll() {
+      this.stickToBottom = this.isNearBottom();
+    },
+    getScrollablePanel(): HTMLElement | null {
+      return document.getElementById('logpanel-scrollable');
+    },
+    isNearBottom(): boolean {
+      const scrollablePanel = this.getScrollablePanel();
+      if (scrollablePanel === null) return true;
+      const remaining = scrollablePanel.scrollHeight - scrollablePanel.clientHeight - scrollablePanel.scrollTop;
+      return remaining <= 24;
+    },
+    installAutoScrollObserver() {
+      this.teardownAutoScrollObserver();
+      const scrollablePanel = this.getScrollablePanel();
+      const list = scrollablePanel?.querySelector('ul');
+      if (!scrollablePanel || !list) return;
+      if (typeof ResizeObserver === 'undefined') return;
+
+      this.resizeObserver = new ResizeObserver(() => {
+        if (this.selectedGeneration === this.generation && this.stickToBottom) {
+          this.scrollToEnd();
+        }
+      });
+      this.resizeObserver.observe(list);
+    },
+    teardownAutoScrollObserver() {
+      this.resizeObserver?.disconnect();
+      this.resizeObserver = undefined;
+    },
     scrollToEnd() {
-      const scrollablePanel = document.getElementById('logpanel-scrollable');
+      const scrollablePanel = this.getScrollablePanel();
       if (scrollablePanel !== null) {
         scrollablePanel.scrollTop = scrollablePanel.scrollHeight;
       }
@@ -194,7 +233,14 @@ export default defineComponent({
   },
   mounted() {
     this.selectedGeneration = this.generation;
+    const scrollablePanel = this.getScrollablePanel();
+    scrollablePanel?.addEventListener('scroll', this.handleScroll);
     this.getLogsForGeneration(this.generation);
+  },
+  beforeUnmount() {
+    const scrollablePanel = this.getScrollablePanel();
+    scrollablePanel?.removeEventListener('scroll', this.handleScroll);
+    this.teardownAutoScrollObserver();
   },
 });
 

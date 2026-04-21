@@ -24,9 +24,26 @@ function placementScore(place, playerCount) {
   return Math.max(0, Math.min(1, 1 - ((Math.max(1, place) - 1) / (playerCount - 1))));
 }
 
+function vpMargin(results, mine) {
+  if (!Array.isArray(results) || results.length === 0 || !mine) return 0;
+  var leaderVp = results.reduce(function(max, current) {
+    return Math.max(max, Number(current.vp || 0));
+  }, Number.NEGATIVE_INFINITY);
+  if (!isFinite(leaderVp)) return 0;
+  if ((mine.place || 99) === 1) {
+    var others = results
+      .filter(function(current) { return current !== mine; })
+      .map(function(current) { return Number(current.vp || 0); });
+    if (!others.length) return 0;
+    return Number(mine.vp || 0) - Math.max.apply(null, others);
+  }
+  return Number(mine.vp || 0) - leaderVp;
+}
+
 function rebuildElo(data) {
   var eloPlace = {}, eloVP = {}, firsts = {}, placeScoreTotals = {}, gamesCount = {}, displayNames = {};
   var top3Counts = {}, totalVPs = {}, corpsByPlayer = {};
+  var totalGens = {}, genGameCounts = {}, totalMargins = {};
 
   for (var gi = 0; gi < data.games.length; gi++) {
     var g = data.games[gi];
@@ -42,17 +59,28 @@ function rebuildElo(data) {
       r.name = canonical.toLowerCase();
     }
 
+    var preGameElo = {};
     for (var ri = 0; ri < n; ri++) {
-      var nk = results[ri].name;
-      var place = results[ri].place || (ri + 1);
-      var vp = results[ri].vp || 0;
-      var corp = results[ri].corp || "";
-      displayNames[nk] = results[ri].displayName;
+      preGameElo[results[ri].name] = Math.round(eloPlace[results[ri].name] || DEFAULT_ELO);
+    }
+
+    for (var ri = 0; ri < n; ri++) {
+      var result = results[ri];
+      var nk = result.name;
+      var place = result.place || (ri + 1);
+      var vp = result.vp || 0;
+      var corp = result.corp || "";
+      displayNames[nk] = result.displayName;
       gamesCount[nk] = (gamesCount[nk] || 0) + 1;
       if (place === 1) firsts[nk] = (firsts[nk] || 0) + 1;
       if (place <= 3) top3Counts[nk] = (top3Counts[nk] || 0) + 1;
       placeScoreTotals[nk] = (placeScoreTotals[nk] || 0) + placementScore(place, n);
       totalVPs[nk] = (totalVPs[nk] || 0) + vp;
+      if (Number(g.generation) > 0) {
+        totalGens[nk] = (totalGens[nk] || 0) + Number(g.generation);
+        genGameCounts[nk] = (genGameCounts[nk] || 0) + 1;
+      }
+      totalMargins[nk] = (totalMargins[nk] || 0) + vpMargin(results, result);
       if (!corpsByPlayer[nk]) corpsByPlayer[nk] = {};
       if (corp) corpsByPlayer[nk][corp] = (corpsByPlayer[nk][corp] || 0) + 1;
     }
@@ -81,12 +109,24 @@ function rebuildElo(data) {
         eloVP[pj] = (eloVP[pj] || DEFAULT_ELO) + k * ((1 - si2) - (1 - ei2));
       }
     }
+
+    for (var ri = 0; ri < n; ri++) {
+      var entry = results[ri];
+      var oldElo = preGameElo[entry.name] || DEFAULT_ELO;
+      var newElo = Math.round(eloPlace[entry.name] || DEFAULT_ELO);
+      entry.oldElo = oldElo;
+      entry.newElo = newElo;
+      entry.delta = newElo - oldElo;
+    }
   }
 
   var players = {};
   var keys = Object.keys(gamesCount);
   for (var ki = 0; ki < keys.length; ki++) {
     var nk = keys[ki];
+    var validGenGames = genGameCounts[nk] || 0;
+    var totalGenCount = totalGens[nk] || 0;
+    var totalMargin = totalMargins[nk] || 0;
     players[nk] = {
       displayName: displayNames[nk] || nk,
       elo: Math.round(eloPlace[nk] || DEFAULT_ELO),
@@ -98,6 +138,10 @@ function rebuildElo(data) {
       avgPlace: +(((placeScoreTotals[nk] || 0) / Math.max(1, gamesCount[nk] || 0))).toFixed(4),
       top3: top3Counts[nk] || 0,
       totalVP: totalVPs[nk] || 0,
+      totalGens: totalGenCount,
+      avgGens: +(validGenGames > 0 ? (totalGenCount / validGenGames).toFixed(3) : "0"),
+      totalMargin: +totalMargin.toFixed(3),
+      avgMargin: +((totalMargin / Math.max(1, gamesCount[nk] || 0)).toFixed(3)),
       avgVP: +(((totalVPs[nk] || 0) / Math.max(1, gamesCount[nk] || 0))).toFixed(2),
       corps: corpsByPlayer[nk] || {},
     };
@@ -236,6 +280,10 @@ var server = http.createServer(function(req, res) {
   res.end(JSON.stringify({ ok: false, error: "not found" }));
 });
 
-server.listen(PORT, "127.0.0.1", function() {
-  console.log("[Elo API] Listening on 127.0.0.1:" + PORT);
-});
+module.exports = { rebuildElo, vpMargin };
+
+if (require.main === module) {
+  server.listen(PORT, "127.0.0.1", function() {
+    console.log("[Elo API] Listening on 127.0.0.1:" + PORT);
+  });
+}

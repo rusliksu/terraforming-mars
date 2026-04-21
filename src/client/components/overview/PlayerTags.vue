@@ -1,10 +1,7 @@
 <template>
     <div class="player-tags">
         <div class="player-tags-main">
-            <div class="tag-and-elo">
-              <tag-count tag="vp" :count="hideVpCount ? '?' : player.victoryPointsBreakdown.total" :size="'big'" :type="'main'" />
-              <PlayerEloBadge :playerName="player.name || ''" :tooltipCss="tooltipCss" />
-            </div>
+            <tag-count tag="vp" :count="hideVpCount ? '?' : player.victoryPointsBreakdown.total" :size="'big'" :type="'main'" />
             <div v-if="isEscapeVelocityOn" :class="tooltipCss" :data-tooltip="$t('Escape Velocity penalty')">
               <tag-count tag="escape" :count="escapeVelocityPenalty" :size="'big'" :type="'main'" :showWhenZero="true"/>
             </div>
@@ -43,7 +40,6 @@ import {Tag} from '@/common/cards/Tag';
 import {SpecialTags} from '@/client/cards/SpecialTags';
 import PlayerTagDiscount from '@/client/components/overview/PlayerTagDiscount.vue';
 import PointsPerTag from '@/client/components/overview/PointsPerTag.vue';
-import PlayerEloBadge from '@/client/components/overview/PlayerEloBadge.vue';
 import {PartyName} from '@/common/turmoil/PartyName';
 import {getCard} from '@/client/cards/ClientCardManifest';
 import {vueRoot} from '@/client/components/vueRoot';
@@ -213,7 +209,6 @@ export default defineComponent({
     'tag-count': TagCount,
     PlayerTagDiscount,
     PointsPerTag,
-    PlayerEloBadge,
   },
   computed: {
     isThisPlayer(): boolean {
@@ -257,18 +252,3 @@ export default defineComponent({
 });
 
 </script>
-
-<style scoped>
-.tag-and-elo {
-  position: relative;
-  display: inline-flex;
-}
-
-.tag-and-elo :deep(.player-elo-badge) {
-  position: absolute;
-  left: 20px;
-  top: 32px;
-  z-index: 3;
-  transform: translateX(-50%);
-}
-</style>

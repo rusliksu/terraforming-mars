@@ -182,18 +182,18 @@ describe('EloSyncService', () => {
       map: 'HELLAS',
       generation: 9,
       players: [
-        {name: 'Паша', user: 'orange-pasha', vp: 96, corp: 'CrediCor'},
-        {name: 'Паша', user: 'red-pasha', vp: 82, corp: 'Helion'},
+        {name: 'Sam', user: 'orange-sam', vp: 96, corp: 'CrediCor'},
+        {name: 'Sam', user: 'red-sam', vp: 82, corp: 'Helion'},
       ],
     });
 
     const primary = JSON.parse(await fs.readFile(primaryPath, 'utf8'));
-    expect(primary.players['user:orange-pasha'].displayName).eq('Паша');
-    expect(primary.players['user:red-pasha'].displayName).eq('Паша');
-    expect(primary.players['user:orange-pasha'].games).eq(1);
-    expect(primary.players['user:red-pasha'].games).eq(1);
-    expect(primary.games[0].results[0].user).eq('orange-pasha');
-    expect(primary.games[0].results[1].user).eq('red-pasha');
+    expect(primary.players['user:orange-sam'].displayName).eq('Sam');
+    expect(primary.players['user:red-sam'].displayName).eq('Sam');
+    expect(primary.players['user:orange-sam'].games).eq(1);
+    expect(primary.players['user:red-sam'].games).eq(1);
+    expect(primary.games[0].results[0].user).eq('orange-sam');
+    expect(primary.games[0].results[1].user).eq('red-sam');
   });
 
   it('maps explicit player aliases to canonical elo identity before user identity', async () => {
@@ -215,5 +215,63 @@ describe('EloSyncService', () => {
     expect(primary.players['user:ruslan-user']).eq(undefined);
     expect(primary.games[0].results[0].name).eq('gydro');
     expect(primary.games[0].results[0].displayName).eq('GydRo');
+  });
+
+  it('merges configured local duplicate player names', () => {
+    const rebuilt = rebuildEloData([
+      {
+        _key: 'g-pasha-pavel',
+        date: '2026-04-25T00:00:01.000Z',
+        server: 'test',
+        map: 'THARSIS',
+        generation: 8,
+        playerCount: 2,
+        completedTime: 1,
+        results: [
+          {name: 'паша', displayName: 'Паша', place: 1, vp: 90, corp: 'CrediCor'},
+          {name: 'alice', displayName: 'Alice', place: 2, vp: 80, corp: 'Helion'},
+        ],
+      },
+      {
+        _key: 'g-pavel',
+        date: '2026-04-25T00:00:02.000Z',
+        server: 'test',
+        map: 'THARSIS',
+        generation: 9,
+        playerCount: 2,
+        completedTime: 2,
+        results: [
+          {name: 'павел', displayName: 'Павел', place: 1, vp: 95, corp: 'Inventrix'},
+          {name: 'alice', displayName: 'Alice', place: 2, vp: 85, corp: 'Helion'},
+        ],
+      },
+      {
+        _key: 'g-sonya-antistress',
+        date: '2026-04-25T00:00:03.000Z',
+        server: 'test',
+        map: 'THARSIS',
+        generation: 7,
+        playerCount: 3,
+        completedTime: 3,
+        results: [
+          {name: 'соня', displayName: 'Соня', place: 1, vp: 88, corp: 'Tharsis Republic'},
+          {name: 'антистресс', displayName: 'Антистресс', place: 2, vp: 84, corp: 'Ecoline'},
+          {name: 'bob', displayName: 'Bob', place: 3, vp: 70, corp: 'Mining Guild'},
+        ],
+      },
+    ]);
+
+    expect(rebuilt.players['паша'].displayName).eq('Паша');
+    expect(rebuilt.players['паша'].games).eq(2);
+    expect(rebuilt.players['павел']).eq(undefined);
+    expect(rebuilt.players['тома'].displayName).eq('Тома');
+    expect(rebuilt.players['тома'].games).eq(1);
+    expect(rebuilt.players['соня']).eq(undefined);
+    expect(rebuilt.players['анатолий'].displayName).eq('Анатолий');
+    expect(rebuilt.players['анатолий'].games).eq(1);
+    expect(rebuilt.players['антистресс']).eq(undefined);
+    expect(rebuilt.games[1].results[0].name).eq('паша');
+    expect(rebuilt.games[2].results[0].name).eq('тома');
+    expect(rebuilt.games[2].results[1].name).eq('анатолий');
   });
 });

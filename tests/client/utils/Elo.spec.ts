@@ -10,6 +10,9 @@ describe('elo utils', () => {
     expect(normalizeEloName('ruslan')).eq('gydro');
     expect(normalizeEloName('Лёха')).eq('алексей');
     expect(normalizeEloName('genuinegold')).eq('илья');
+    expect(normalizeEloName('Павел')).eq('паша');
+    expect(normalizeEloName('Соня')).eq('тома');
+    expect(normalizeEloName('Антистресс')).eq('анатолий');
     expect(normalizeEloName('GydRo')).eq('gydro');
   });
 
@@ -64,13 +67,13 @@ describe('elo utils', () => {
   });
   it('prefers user-based elo identity over shared display names', () => {
     const eloPlayers = {
-      'паша': {displayName: 'Паша', elo: 1660, avgPlaceScore: 0.8},
-      'user:red-pasha': {displayName: 'Паша', elo: 1510, avgPlaceScore: 0.45, user: 'red-pasha'},
+      'sam': {displayName: 'Sam', elo: 1660, avgPlaceScore: 0.8},
+      'user:red-sam': {displayName: 'Sam', elo: 1510, avgPlaceScore: 0.45, user: 'red-sam'},
     };
 
-    expect(lookupEloEntry(eloPlayers, 'Паша', 'red-pasha')?.elo).eq(1510);
-    expect(lookupEloEntry(eloPlayers, 'Паша', 'new-user')).eq(null);
-    expect(lookupEloEntry(eloPlayers, 'Паша')?.elo).eq(1660);
+    expect(lookupEloEntry(eloPlayers, 'Sam', 'red-sam')?.elo).eq(1510);
+    expect(lookupEloEntry(eloPlayers, 'Sam', 'new-user')).eq(null);
+    expect(lookupEloEntry(eloPlayers, 'Sam')?.elo).eq(1660);
   });
 
   it('falls back from unknown user identity to explicit player aliases', () => {

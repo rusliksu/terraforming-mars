@@ -5,6 +5,8 @@ import {Database} from '../database/Database';
 import {isGameId} from '../../common/Types';
 import {Request} from '../Request';
 import {Response} from '../Response';
+import {SerializedGame} from '../SerializedGame';
+import {NewGameConfig} from '../../common/game/NewGameConfig';
 
 export class ApiCloneableGame extends Handler {
   public static readonly INSTANCE = new ApiCloneableGame();
@@ -30,12 +32,82 @@ export class ApiCloneableGame extends Handler {
       return;
     }
     await Database.getInstance().getPlayerCount(gameId)
-      .then((playerCount) => {
-        responses.writeJson(res, ctx, {gameId, playerCount});
+      .then(async (playerCount) => {
+        if (ctx.url.searchParams.get('setup') !== 'true') {
+          responses.writeJson(res, ctx, {gameId, playerCount});
+          return;
+        }
+        const serialized = await Database.getInstance().getGameVersion(gameId, 0);
+        responses.writeJson(res, ctx, {
+          gameId,
+          playerCount,
+          setup: ApiCloneableGame.toRematchSetup(serialized),
+        });
       })
       .catch((err) => {
         console.warn('Could not load cloneable game: ', err);
         responses.notFound(req, res);
       });
+  }
+
+  private static toRematchSetup(serialized: SerializedGame): NewGameConfig & {seededGame: false} {
+    const options = serialized.gameOptions;
+    return {
+      players: serialized.players.map((player) => ({
+        name: player.name,
+        color: player.color,
+        beginner: player.beginner,
+        handicap: player.handicap,
+        first: player.id === serialized.first,
+        isBot: false,
+        telegramID: player.telegramID,
+      })),
+      expansions: {...options.expansions},
+      board: options.boardName,
+      seed: Math.random(),
+      randomFirstPlayer: false,
+      clonedGamedId: undefined,
+      seededGame: false,
+      undoOption: options.undoOption,
+      showTimers: options.showTimers,
+      fastModeOption: options.fastModeOption,
+      showOtherPlayersVP: options.showOtherPlayersVP,
+      aresExtremeVariant: options.aresExtremeVariant,
+      politicalAgendasExtension: options.politicalAgendasExtension,
+      solarPhaseOption: options.solarPhaseOption,
+      removeNegativeGlobalEventsOption: options.removeNegativeGlobalEventsOption,
+      modularMA: options.modularMA,
+      draftVariant: options.draftVariant,
+      initialDraft: options.initialDraftVariant,
+      preludeDraftVariant: options.preludeDraftVariant,
+      ceosDraftVariant: options.ceosDraftVariant,
+      startingCorporations: options.startingCorporations,
+      shuffleMapOption: options.shuffleMapOption,
+      randomMA: options.randomMA,
+      includeFanMA: options.includeFanMA,
+      soloTR: options.soloTR,
+      customCorporationsList: [...options.customCorporationsList],
+      customCorporations: [...options.customCorporationsList],
+      bannedCards: [...options.bannedCards],
+      includedCards: [...options.includedCards],
+      customColoniesList: [...options.customColoniesList],
+      customColonies: [...options.customColoniesList],
+      customPreludes: [...options.customPreludes],
+      requiresMoonTrackCompletion: options.requiresMoonTrackCompletion,
+      requiresVenusTrackCompletion: options.requiresVenusTrackCompletion,
+      moonStandardProjectVariant: options.moonStandardProjectVariant,
+      moonStandardProjectVariant1: options.moonStandardProjectVariant1,
+      altVenusBoard: options.altVenusBoard,
+      escapeVelocity: options.escapeVelocity,
+      escapeVelocityMode: options.escapeVelocity !== undefined,
+      escapeVelocityThreshold: options.escapeVelocity?.thresholdMinutes,
+      escapeVelocityBonusSeconds: options.escapeVelocity?.bonusSectionsPerAction,
+      escapeVelocityPeriod: options.escapeVelocity?.penaltyPeriodMinutes,
+      escapeVelocityPenalty: options.escapeVelocity?.penaltyVPPerPeriod,
+      twoCorpsVariant: options.twoCorpsVariant,
+      customCeos: [...options.customCeos],
+      startingCeos: options.startingCeos,
+      startingPreludes: options.startingPreludes,
+    } as NewGameConfig & {seededGame: false};
   }
 }

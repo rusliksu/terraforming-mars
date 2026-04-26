@@ -42,6 +42,7 @@ import {getPreferences} from '../utils/PreferencesManager';
 import {ClaimedToken} from '@/common/underworld/UnderworldPlayerData';
 import {getSpaceName} from '@/common/boards/spaces';
 import {SpaceType} from '@/common/boards/SpaceType';
+import {isReservedPlayerColor} from '@/common/Color';
 export default defineComponent({
   name: 'board-space',
   props: {
@@ -83,7 +84,8 @@ export default defineComponent({
         return '';
       }
       const css = 'board-cube board-cube--' + this.space.color;
-      return getPreferences().symbol_overlay ? css + ' overlay' : css;
+      const personaCss = isReservedPlayerColor(this.space.color) ? css + ' board-cube--persona' : css;
+      return getPreferences().symbol_overlay ? personaCss + ' overlay' : personaCss;
     },
     claimedToken(): ClaimedToken | undefined {
       if (this.space.undergroundResource === undefined) {
@@ -102,4 +104,3 @@ export default defineComponent({
 });
 
 </script>
-

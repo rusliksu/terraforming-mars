@@ -20,8 +20,10 @@
               <span class="bot-toggle__track">
                 <span class="bot-toggle__thumb"></span>
               </span>
-              <span class="bot-toggle__label">Bot takeover</span>
-              <span v-if="isBotRunning(player.id)" class="bot-toggle__state">bot is playing</span>
+              <span class="bot-toggle__meta">
+                <span class="bot-toggle__label" :class="getPlayerCubeColorClass(player.color)">Bot takeover</span>
+                <span v-if="isBotRunning(player.id)" class="bot-toggle__state">bot is playing</span>
+              </span>
             </button>
             <AppButton title="copy" size="tiny" @click="copyUrl(player.id)"/>
             <span v-if="isPlayerUrlCopied(player.id)" class="copied-notice"><span v-i18n>Copied!</span></span>
@@ -216,7 +218,7 @@ export default defineComponent({
   align-items: center;
   background: transparent;
   border: 0;
-  color: #333;
+  color: #e6e1e1;
   cursor: pointer;
   display: inline-flex;
   gap: 6px;
@@ -259,14 +261,29 @@ export default defineComponent({
   transform: translateX(16px);
 }
 
+.bot-toggle__meta {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
 .bot-toggle__label {
-  font-size: 12px;
-  font-weight: 600;
+  border-radius: 999px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+  color: #fffef8 !important;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  padding: 4px 9px;
+  text-transform: uppercase;
 }
 
 .bot-toggle__state {
-  color: #2a9d5b;
-  font-size: 11px;
+  color: #9ce6bc;
+  font-size: 10px;
   font-weight: 600;
+  line-height: 1;
 }
 </style>

@@ -21,6 +21,7 @@ import {SimpleGameModel} from '@/common/models/SimpleGameModel';
 import {SpectatorModel} from '@/common/models/SpectatorModel';
 import {isPlayerId, isSpectatorId} from '@/common/Types';
 import {hasShowModal, showModal, windowHasHTMLDialogElement} from './HTMLDialogElementCompatibility';
+import {getLoadErrorMessage} from '@/client/utils/loadErrorMessage';
 
 import dialogPolyfill from 'dialog-polyfill';
 
@@ -77,6 +78,15 @@ function retainAdminSearch(targetPath: string, id: string | undefined) {
   }
   const query = params.toString();
   return query === '' ? targetPath : `${targetPath}?${query}`;
+}
+
+class AppFetchError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message);
+  }
 }
 
 export default defineComponent({
@@ -155,7 +165,7 @@ export default defineComponent({
       fetch(url)
         .then((resp) => {
           if (!resp.ok) {
-            throw new Error(`Error getting game data: ${resp.statusText}`);
+            throw new AppFetchError(`Error getting game data: ${resp.statusText}`, resp.status);
           }
           return resp.json();
         })
@@ -195,7 +205,7 @@ export default defineComponent({
           }
         })
         .catch((err) => {
-          alert('Error getting game data');
+          alert(getLoadErrorMessage(path, err instanceof AppFetchError ? err.status : 0));
           console.error(err);
         });
     },
@@ -230,7 +240,7 @@ export default defineComponent({
       fetch(url)
         .then((resp) => {
           if (!resp.ok) {
-            throw new Error(`Error getting game data: ${resp.statusText}`);
+            throw new AppFetchError(`Error getting game data: ${resp.statusText}`, resp.status);
           }
           return resp.json();
         })
@@ -244,7 +254,7 @@ export default defineComponent({
           );
         })
         .catch((err) => {
-          alert('Error getting game data');
+          alert(getLoadErrorMessage(paths.GAME, err instanceof AppFetchError ? err.status : 0));
           console.error(err);
         });
     } else if (currentPathname === paths.GAMES_OVERVIEW) {

@@ -27,4 +27,16 @@ describe('BoardSpace', () => {
 
     expect(wrapper.find('[data-test="tile"]').classes()).to.contain('board-hidden-tile');
   });
+
+  it('adds a persona cube class for reserved player colors on the board', async () => {
+    const wrapper = mount(BoardSpace, {
+      ...globalConfig,
+      props: {
+        space: {id: 'm1', bonus: [], color: 'gold'},
+        tileView: 'show',
+      },
+    });
+
+    expect(wrapper.find('.board-cube').classes()).to.include('board-cube--persona');
+  });
 });

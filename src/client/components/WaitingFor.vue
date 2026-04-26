@@ -207,34 +207,46 @@ export default defineComponent({
       };
       ui_update_timeout_id = window.setTimeout(askForUpdate, this.waitingForTimeout);
     },
-    notify() {
+    async notify() {
       if (getPreferences().enable_sounds) {
         SoundManager.playActivePlayerSound();
       }
 
-      if (Notification.permission !== 'granted') {
-        Notification.requestPermission();
-      } else if (Notification.permission === 'granted') {
-        const notificationOptions = {
-          icon: 'favicon.ico',
-          body: 'It\'s your turn!',
-        };
-        const notificationTitle = constants.APP_NAME;
+      const notificationOptions = {
+        icon: 'favicon.ico',
+        body: 'It\'s your turn!',
+      };
+      const notificationTitle = constants.APP_NAME;
+
+      if (typeof Notification !== 'undefined' && Notification.permission !== 'granted') {
         try {
-          new Notification(notificationTitle, notificationOptions);
-        } catch (e) {
-          // ok so the native Notification doesn't work which will happen
-          // try to use the service worker
-          if (!window.isSecureContext || !navigator.serviceWorker) {
+          const permission = await Notification.requestPermission();
+          if (permission !== 'granted') {
             return;
           }
-          navigator.serviceWorker.ready.then((registration) => {
-            registration.showNotification(notificationTitle, notificationOptions);
-          }).catch((err) => {
-            // avoid promise going uncaught
-            console.warn('Failed to display notification with serviceWorker', err);
-          });
+        } catch (err) {
+          console.warn('Failed to request notification permission', err);
+          return;
         }
+      }
+
+      try {
+        if (typeof Notification === 'undefined') {
+          throw new Error('Notification API unavailable');
+        }
+        new Notification(notificationTitle, notificationOptions);
+      } catch (e) {
+        // ok so the native Notification doesn't work which will happen
+        // try to use the service worker
+        if (!window.isSecureContext || !navigator.serviceWorker) {
+          return;
+        }
+        navigator.serviceWorker.ready.then((registration) => {
+          registration.showNotification(notificationTitle, notificationOptions);
+        }).catch((err) => {
+          // avoid promise going uncaught
+          console.warn('Failed to display notification with serviceWorker', err);
+        });
       }
     },
     updateSuspend() {

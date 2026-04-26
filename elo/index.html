@@ -29,6 +29,16 @@ a:hover { text-decoration: underline; }
 .player-link { cursor: pointer; color: #e0e0e0; transition: color 0.2s; }
 .player-link:hover { color: #ff6b35; text-decoration: underline; }
 .player-link.active-filter { color: #ff6b35; font-weight: bold; }
+.player-persona { font-weight: 700; }
+.player-persona-gold,
+.winner .player-persona-gold { color: #ffe47a; font-family: Georgia, "Times New Roman", serif; text-shadow: 0 0 6px rgba(255, 215, 0, 0.45); }
+.player-persona-emerald,
+.winner .player-persona-emerald { color: #6effc8; font-family: "Trebuchet MS", -apple-system, sans-serif; text-shadow: 0 0 6px rgba(0, 255, 170, 0.35); }
+.player-persona-ginger,
+.winner .player-persona-ginger { color: #ffb071; font-family: Verdana, -apple-system, sans-serif; text-shadow: 0 0 6px rgba(255, 103, 26, 0.38); }
+.player-persona-hydro,
+.winner .player-persona-hydro { color: #7beeff; font-family: "Segoe UI", -apple-system, sans-serif; text-shadow: 0 0 6px rgba(0, 210, 255, 0.36); }
+.player-persona:hover { filter: brightness(1.12); }
 
 /* Recent Games */
 .games-section { max-width: 900px; margin: 0 auto; }
@@ -89,6 +99,19 @@ var _mode = "place";
 var _filterPlayer = null;
 var _gamesShown = 20;
 var GAMES_PER_PAGE = 20;
+var PLAYER_PERSONA_CLASSES = {
+  "genuinegold": "player-persona-gold",
+  "илья": "player-persona-gold",
+  "изумрудный рав": "player-persona-emerald",
+  "рав": "player-persona-emerald",
+  "равиль": "player-persona-emerald",
+  "rav": "player-persona-emerald",
+  "catharsis": "player-persona-ginger",
+  "catharsis🔥": "player-persona-ginger",
+  "gydro": "player-persona-hydro",
+  "руслан": "player-persona-hydro",
+  "ruslan": "player-persona-hydro"
+};
 
 function getGameUrl(game) {
   var host = game.server === "knightbyte"
@@ -110,6 +133,12 @@ function esc(s) {
   var d = document.createElement("span");
   d.textContent = s;
   return d.innerHTML;
+}
+
+function playerPersonaClass(name, key) {
+  var nameKey = String(name || "").trim().toLowerCase();
+  var rawKey = String(key || "").trim().toLowerCase();
+  return PLAYER_PERSONA_CLASSES[nameKey] || PLAYER_PERSONA_CLASSES[rawKey] || "";
 }
 
 function round2(value) {
@@ -171,8 +200,9 @@ function renderPlayers() {
   var html = "";
   list.forEach(function(p, i) {
     var activeClass = (_filterPlayer && _filterPlayer === p.key) ? " active-filter" : "";
+    var personaClass = playerPersonaClass(p.name, p.key);
     html += "<tr><td class=\"rank\">" + (i+1) + "</td>"
-      + "<td><span class=\"player-link" + activeClass + "\" data-player=\"" + esc(p.key) + "\">" + esc(p.name) + "</span></td>"
+      + "<td><span class=\"player-link player-persona " + personaClass + activeClass + "\" data-player=\"" + esc(p.key) + "\">" + esc(p.name) + "</span></td>"
       + "<td class=\"elo\">" + p.elo + "</td>"
       + "<td class=\"place\">" + round2(p.avgPlace) + "</td>"
       + "<td class=\"games\">" + p.games + "</td>"
@@ -244,7 +274,7 @@ function renderGames() {
 
       if (idx > 0) html += "<span class=\"game-sep\">\u203a</span>";
       html += "<span class=\"game-player" + (isWinner ? " winner" : "") + "\">";
-      html += "<span class=\"pname player-link\" data-player=\"" + esc(r.name) + "\">" + esc(r.displayName || r.name) + "</span>";
+      html += "<span class=\"pname player-link player-persona " + playerPersonaClass(r.displayName, r.name) + "\" data-player=\"" + esc(r.name) + "\">" + esc(r.displayName || r.name) + "</span>";
       if (vpText) html += " <span class=\"pvp\">" + vpText + "</span>";
       html += " <span class=\"pdelta " + deltaClass + "\">(" + deltaText + ")</span>";
       if (corpText) html += " <span class=\"pcorp\">" + esc(corpText) + "</span>";

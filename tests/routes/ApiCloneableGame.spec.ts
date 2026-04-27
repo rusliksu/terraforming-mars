@@ -7,12 +7,13 @@ import {GameId} from '../../src/common/Types';
 import {statusCode} from '../../src/common/http/statusCode';
 import {BoardName} from '../../src/common/boards/BoardName';
 import {RandomMAOptionType} from '../../src/common/ma/RandomMAOptionType';
+import {SerializedGame} from '../../src/server/SerializedGame';
 
 describe('ApiCloneableGame', () => {
   let scaffolding: RouteTestScaffolding;
   let res: MockResponse;
   let originalGetPlayerCount: (gameId: GameId) => Promise<number>;
-  let originalGetGameVersion: (gameId: GameId, saveId: number) => Promise<unknown>;
+  let originalGetGameVersion: (gameId: GameId, saveId: number) => Promise<SerializedGame>;
 
   beforeEach(() => {
     scaffolding = new RouteTestScaffolding();
@@ -123,7 +124,7 @@ describe('ApiCloneableGame', () => {
         startingCeos: 3,
         startingPreludes: 4,
       },
-    } as any);
+    } as unknown as SerializedGame);
 
     scaffolding.url = '/api/cloneablegames?id=g456&setup=true';
     await scaffolding.get(ApiCloneableGame.INSTANCE, res);

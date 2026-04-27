@@ -465,11 +465,25 @@
                                           <div>
                                               <input class="form-input form-inline create-game-player-name" :placeholder="getPlayerNamePlaceholder(index)" v-model="newPlayer.name" :readonly="isPlayerNameLocked(newPlayer.color)" />
                                           </div>
+                                          <div class="create-game-persona-picker">
+                                              <span class="create-game-persona-preview" :title="getColorTitle(newPlayer.color)">
+                                                  <span :class="'create-game-colorbox '+getPlayerCubeColorClass(newPlayer.color)"></span>
+                                              </span>
+                                              <select
+                                                class="form-select form-inline create-game-persona-select"
+                                                :value="getSelectedIdentityColor(newPlayer.color)"
+                                                @change="applyPlayerIdentityFromSelect(newPlayer, $event)">
+                                                  <option value="">Custom nick</option>
+                                                  <option v-for="identity in getAvailableLockedPlayerIdentities(newPlayer)" :key="identity.color" :value="identity.color">
+                                                    {{ identity.name }}
+                                                  </option>
+                                              </select>
+                                          </div>
                                           <div class="create-game-page-color-row">
-                                              <template v-for="color in PLAYER_COLORS" v-bind:key="color">
+                                              <template v-for="color in DEFAULT_PLAYER_COLORS" v-bind:key="color">
                                                 <div>
-                                                  <input type="radio" :value="color" :name="'playerColor' + (index + 1)" v-model="newPlayer.color" :id="'radioBox' + color + (index + 1)" @change="syncLockedPlayerIdentity(newPlayer)">
-                                                  <label :for="'radioBox' + color + (index + 1)">
+                                                  <input type="radio" :value="color" :name="'playerColor' + (index + 1)" :checked="newPlayer.color === color" :id="'radioBox' + color + (index + 1)" @change="applyDefaultPlayerColor(newPlayer, color)">
+                                                  <label :for="'radioBox' + color + (index + 1)" :title="getColorTitle(color)">
                                                       <div :class="'create-game-colorbox '+getPlayerCubeColorClass(color)"></div>
                                                   </label>
                                                 </div>
@@ -602,7 +616,8 @@
 import * as constants from '@/common/constants';
 
 import {defineComponent, nextTick} from 'vue';
-import {Color, DEFAULT_PLAYER_COLORS, getLockedPlayerName, PLAYER_COLORS} from '@/common/Color';
+import {Color, DEFAULT_PLAYER_COLORS, getLockedPlayerName, LOCKED_PLAYER_IDENTITIES} from '@/common/Color';
+import type {LockedPlayerIdentity, PlayerColor} from '@/common/Color';
 import {BoardName} from '@/common/boards/BoardName';
 import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
 import {CardName} from '@/common/cards/CardName';
@@ -720,12 +735,10 @@ export default defineComponent({
     document.title = `Create New Game | ${constants.APP_NAME}`;
     this.restoreLastSettings();
     loadPresets().then((p) => { this.presets = p; });
-    // Auto-fill cloneGameId from URL query param (rematch button)
     const urlParams = new URLSearchParams(window.location.search);
     const cloneId = urlParams.get('cloneGameId');
     if (cloneId) {
-      this.clonedGameId = cloneId as any;
-      this.seededGame = true;
+      void this.loadRematchSetup(cloneId as GameId);
     }
   },
   computed: {
@@ -752,8 +765,11 @@ export default defineComponent({
     constants(): typeof constants {
       return constants;
     },
-    PLAYER_COLORS(): typeof PLAYER_COLORS {
-      return PLAYER_COLORS;
+    DEFAULT_PLAYER_COLORS(): typeof DEFAULT_PLAYER_COLORS {
+      return DEFAULT_PLAYER_COLORS;
+    },
+    LOCKED_PLAYER_IDENTITIES(): typeof LOCKED_PLAYER_IDENTITIES {
+      return LOCKED_PLAYER_IDENTITIES;
     },
     boards() {
       return [
@@ -807,6 +823,25 @@ export default defineComponent({
       } catch (e) {
         root.showAlert('Load settings', 'Error: ' + e);
         this.uploading = false;
+      }
+    },
+    async loadRematchSetup(gameId: GameId) {
+      try {
+        const response = await fetch(paths.API_CLONEABLEGAME + '?id=' + gameId + '&setup=true');
+        if (!response.ok) {
+          vueRoot(this).showAlert('Rematch', 'Could not load game setup for rematch.');
+          return;
+        }
+        const gameData = await response.json();
+        if (gameData.setup === undefined) {
+          vueRoot(this).showAlert('Rematch', 'Could not load game setup for rematch.');
+          return;
+        }
+        this.applySettings(gameData.setup);
+        this.seededGame = false;
+        this.clonedGameId = undefined;
+      } catch (e) {
+        vueRoot(this).showAlert('Rematch', 'Could not load game setup for rematch: ' + e);
       }
     },
     selectPresetType(key: string) {
@@ -999,6 +1034,53 @@ export default defineComponent({
         player.name = lockedName;
       }
     },
+    applyPlayerIdentity(player: NewPlayerModel, color: PlayerColor) {
+      player.color = color;
+      this.syncLockedPlayerIdentity(player);
+    },
+    applyDefaultPlayerColor(player: NewPlayerModel, color: Color) {
+      const lockedName = getLockedPlayerName(player.color);
+      if (lockedName !== undefined && player.name === lockedName) {
+        player.name = '';
+      }
+      player.color = color;
+    },
+    getSelectedIdentityColor(color: Color): string {
+      return getLockedPlayerName(color) !== undefined ? color : '';
+    },
+    getAvailableLockedPlayerIdentities(player: NewPlayerModel): ReadonlyArray<LockedPlayerIdentity> {
+      const takenColors = new Set<PlayerColor>(this.getPlayers()
+        .filter((candidate) => candidate !== player && getLockedPlayerName(candidate.color) !== undefined)
+        .map((candidate) => candidate.color as PlayerColor));
+      return LOCKED_PLAYER_IDENTITIES.filter((identity) =>
+        identity.color === player.color || !takenColors.has(identity.color));
+    },
+    getAvailableDefaultColor(player: NewPlayerModel): Color {
+      const usedColors = new Set(this.getPlayers()
+        .filter((candidate) => candidate !== player)
+        .map((candidate) => candidate.color));
+      return DEFAULT_PLAYER_COLORS.find((color) => !usedColors.has(color)) ?? DEFAULT_PLAYER_COLORS[0];
+    },
+    applyPlayerIdentityFromSelect(player: NewPlayerModel, event: Event) {
+      const color = (event.target as HTMLSelectElement).value;
+      if (color === '') {
+        const lockedName = getLockedPlayerName(player.color);
+        if (lockedName !== undefined) {
+          if (player.name === lockedName) {
+            player.name = '';
+          }
+          player.color = this.getAvailableDefaultColor(player);
+        }
+        return;
+      }
+      const selectedColor = color as PlayerColor;
+      const isAvailable = this.getAvailableLockedPlayerIdentities(player)
+        .some((identity) => identity.color === selectedColor);
+      if (!isAvailable) {
+        return;
+      }
+      this.applyPlayerIdentity(player, selectedColor);
+    },
     syncLockedPlayerIdentities(players: Array<NewPlayerModel>) {
       players.forEach((player) => this.syncLockedPlayerIdentity(player));
     },
@@ -1128,6 +1210,10 @@ export default defineComponent({
     getPlayerContainerColorClass(color: Color): string {
       return playerColorClass(color, 'bg_transparent');
     },
+    getColorTitle(color: Color): string {
+      const lockedName = getLockedPlayerName(color);
+      return lockedName ?? color;
+    },
     boardHref(boardName: BoardName | RandomBoardOption) {
       const options: Record<BoardName | RandomBoardOption, string> = {
         [BoardName.THARSIS]: 'tharsis',
@@ -1167,8 +1253,13 @@ export default defineComponent({
           const color = player.color;
           if (usedColors.has(color)) {
             // Pulling off the front of the list also helps retain the default player color order.
-            player.color = unusedColors.shift() as Color;
-            usedColors.add(color);
+            const lockedName = getLockedPlayerName(color);
+            const replacementColor = unusedColors.shift() as Color;
+            if (lockedName !== undefined && player.name === lockedName) {
+              player.name = '';
+            }
+            player.color = replacementColor;
+            usedColors.add(replacementColor);
           } else {
             usedColors.add(color);
           }

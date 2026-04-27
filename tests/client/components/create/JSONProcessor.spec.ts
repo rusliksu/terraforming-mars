@@ -6,7 +6,7 @@ import {BoardName} from '@/common/boards/BoardName';
 import {JSONObject} from '@/common/Types';
 import {CreateGameModel} from '@/client/components/create/CreateGameModel';
 import {CardName} from '@/common/cards/CardName';
-import {GENUINE_GOLD_NAME} from '@/common/Color';
+import {CATHARSIS_NAME, EMERALD_RAV_NAME, GENUINE_GOLD_NAME, GYDRO_NAME} from '@/common/Color';
 
 type Case = {
   description: string,
@@ -228,5 +228,30 @@ describe('JSONProcessor', () => {
     expect(model.playersCount).to.eq(1);
     expect(model.players[0].color).to.eq('gold');
     expect(model.players[0].name).to.eq(GENUINE_GOLD_NAME);
+  });
+
+  it('forces reserved persona names from JSON', () => {
+    for (const testCase of [
+      {color: 'emerald', inputName: 'Rav', expectedName: EMERALD_RAV_NAME},
+      {color: 'ginger', inputName: 'Catharsis', expectedName: CATHARSIS_NAME},
+      {color: 'hydro', inputName: 'Ruslan', expectedName: GYDRO_NAME},
+    ]) {
+      const model = defaultCreateGameModel();
+      const processor = new JSONProcessor(model);
+      processor.applyJSON({
+        ...TEMPLATE_INPUT,
+        players: [{
+          name: testCase.inputName,
+          color: testCase.color,
+          beginner: false,
+          handicap: 0,
+          first: false,
+        }],
+      });
+
+      expect(model.playersCount).to.eq(1);
+      expect(model.players[0].color).to.eq(testCase.color);
+      expect(model.players[0].name).to.eq(testCase.expectedName);
+    }
   });
 });

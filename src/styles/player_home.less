@@ -46,6 +46,15 @@
 .player_shadow_color_gold {
     text-shadow: -1px -1px 6px @player_gold, 1px 1px 1px #333a;
 }
+.player_shadow_color_emerald {
+    text-shadow: -1px -1px 6px @player_emerald, 1px 1px 1px #333a;
+}
+.player_shadow_color_ginger {
+    text-shadow: -1px -1px 6px @player_ginger, 1px 1px 1px #333a;
+}
+.player_shadow_color_hydro {
+    text-shadow: -1px -1px 6px @player_hydro, 1px 1px 1px #333a;
+}
 
 .game-title {
     text-transform: uppercase;
@@ -128,6 +137,18 @@
 
     .grid-item.player_tag_bg_color_gold {
         background-color: rgba(212, 175, 55, 0.2);
+    }
+
+    .grid-item.player_tag_bg_color_emerald {
+        background-color: rgba(0, 148, 104, 0.2);
+    }
+
+    .grid-item.player_tag_bg_color_ginger {
+        background-color: rgba(218, 88, 28, 0.2);
+    }
+
+    .grid-item.player_tag_bg_color_hydro {
+        background-color: rgba(0, 172, 208, 0.2);
     }
     .city-count {
         background: url(./assets/icon_city.png) center no-repeat;
@@ -847,6 +868,26 @@
 
     &.colonies-fleet-pink {
         background-position: -490px 0;
+    }
+
+    &.colonies-fleet-gold {
+        background-position: -70px 0;
+        filter: sepia(0.55) saturate(2.4) brightness(1.1) drop-shadow(0 0 2px rgba(255, 215, 0, 0.8));
+    }
+
+    &.colonies-fleet-emerald {
+        background-position: -140px 0;
+        filter: saturate(1.7) hue-rotate(14deg) brightness(1.05) drop-shadow(0 0 2px rgba(0, 255, 170, 0.6));
+    }
+
+    &.colonies-fleet-ginger {
+        background-position: -416px 0;
+        filter: saturate(1.55) brightness(1.08) drop-shadow(0 0 2px rgba(255, 103, 26, 0.65));
+    }
+
+    &.colonies-fleet-hydro {
+        background-position: -272px 0;
+        filter: saturate(1.65) hue-rotate(16deg) brightness(1.1) drop-shadow(0 0 2px rgba(0, 210, 255, 0.65));
     }
 }
 

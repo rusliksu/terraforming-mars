@@ -183,8 +183,26 @@ h2 {
 }
 
 .player_bg_color_gold {
-    background-color: @player_gold;
-    color: #2b2100;
+    background: linear-gradient(90deg, #f9d94a, #a77a0b);
+    color: #fff2a6;
+    text-shadow: 0 0 3px #4b3200;
+}
+
+.player_bg_color_emerald {
+    background: linear-gradient(90deg, #17c891, @player_emerald 48%, #00513c);
+    color: #eafff7;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.85);
+}
+
+.player_bg_color_ginger {
+    background: linear-gradient(90deg, #ff9d3d, @player_ginger 50%, #742200);
+    color: #fff2e8;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.85);
+}
+
+.player_bg_color_hydro {
+    background: linear-gradient(90deg, @player_hydro, #254ec6);
+    color: #e8fbff;
 }
 
 // backgroungs with opacity
@@ -222,6 +240,62 @@ h2 {
 
 .player_translucent_bg_color_gold {
     .player_gold_bg_translucent();
+}
+
+.player_translucent_bg_color_emerald {
+    .player_emerald_bg_translucent();
+}
+
+.player_translucent_bg_color_ginger {
+    .player_ginger_bg_translucent();
+}
+
+.player_translucent_bg_color_hydro {
+    .player_hydro_bg_translucent();
+}
+
+.player_bg_color_gold.log-player,
+.player_translucent_bg_color_gold .player-info-name,
+.player_translucent_bg_color_gold .player_name,
+.player_translucent_bg_color_gold .game-end-name-and-elo,
+.player_translucent_bg_color_gold .game-end-name-and-elo a,
+.player_translucent_bg_color_gold .player-name {
+    color: #fff2a6;
+    font-family: Georgia, "Times New Roman", serif;
+    text-shadow: 0 0 4px #4b3200, 0 0 9px rgba(255, 215, 0, 0.45);
+}
+
+.player_bg_color_emerald.log-player,
+.player_translucent_bg_color_emerald .player-info-name,
+.player_translucent_bg_color_emerald .player_name,
+.player_translucent_bg_color_emerald .game-end-name-and-elo,
+.player_translucent_bg_color_emerald .game-end-name-and-elo a,
+.player_translucent_bg_color_emerald .player-name {
+    color: #d7fff0;
+    font-family: "Trebuchet MS", Ubuntu, Sans;
+    text-shadow: 0 0 4px #002f20, 0 0 8px rgba(0, 255, 170, 0.35);
+}
+
+.player_bg_color_ginger.log-player,
+.player_translucent_bg_color_ginger .player-info-name,
+.player_translucent_bg_color_ginger .player_name,
+.player_translucent_bg_color_ginger .game-end-name-and-elo,
+.player_translucent_bg_color_ginger .game-end-name-and-elo a,
+.player_translucent_bg_color_ginger .player-name {
+    color: #ffe1c8;
+    font-family: Verdana, Ubuntu, Sans;
+    text-shadow: 0 0 4px #4a1400, 0 0 8px rgba(255, 103, 26, 0.4);
+}
+
+.player_bg_color_hydro.log-player,
+.player_translucent_bg_color_hydro .player-info-name,
+.player_translucent_bg_color_hydro .player_name,
+.player_translucent_bg_color_hydro .game-end-name-and-elo,
+.player_translucent_bg_color_hydro .game-end-name-and-elo a,
+.player_translucent_bg_color_hydro .player-name {
+    color: #d8fbff;
+    font-family: "Segoe UI", Ubuntu, Sans;
+    text-shadow: 0 0 4px #002b48, 0 0 8px rgba(0, 210, 255, 0.42);
 }
 
 .alert-dialog {

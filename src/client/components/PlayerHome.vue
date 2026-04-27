@@ -213,7 +213,7 @@
       <dynamic-title title="Game details" :color="thisPlayer.color"/>
 
       <div class="player_home_block" v-if="playerView.players.length > 1">
-        <Milestones :showScores="false" :milestones="game.milestones" />
+        <Milestones :showScores="true" :milestones="game.milestones" />
         <Awards :awards="game.awards" />
       </div>
 

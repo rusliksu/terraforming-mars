@@ -2,7 +2,7 @@
   <span
     v-if="eloText"
     class="player-elo-badge"
-    :class="tooltipCss"
+    :class="[tooltipCss, personaClass]"
     :data-tooltip="eloTooltip"
     :style="badgeStyle"
   >{{ eloText }}</span>
@@ -11,6 +11,7 @@
 <script lang="ts">
 import {defineComponent} from '@/client/vue3-compat';
 import {EloEntry, ensureEloLoaded, fallbackEloEntry, lookupEloEntry, sharedEloState} from '@/client/utils/elo';
+import {getPlayerIdentityByName} from '@/common/Color';
 
 export default defineComponent({
   name: 'PlayerEloBadge',
@@ -56,6 +57,7 @@ export default defineComponent({
       return text;
     },
     badgeStyle(): Record<string, string> {
+      if (this.personaClass !== '') return {};
       const elo = this.effectiveEloEntry?.elo ?? 0;
       let color = '#f44336';
       if (elo >= 1550) color = '#4caf50';
@@ -65,6 +67,10 @@ export default defineComponent({
         color,
         borderColor: color,
       };
+    },
+    personaClass(): string {
+      const identity = getPlayerIdentityByName(this.playerName);
+      return identity ? 'player-elo-badge--' + identity.color : '';
     },
   },
 });
@@ -87,5 +93,33 @@ export default defineComponent({
   line-height: 16px;
   opacity: 0.95;
   cursor: help;
+}
+
+.player-elo-badge--gold {
+  color: #ffe47a;
+  border-color: #ffe47a;
+  background: rgba(26, 26, 46, 0.78);
+  box-shadow: 0 0 7px rgba(255, 215, 0, 0.42);
+}
+
+.player-elo-badge--emerald {
+  color: #d7fff0;
+  border-color: #61ffc8;
+  background: rgba(26, 26, 46, 0.78);
+  box-shadow: 0 0 7px rgba(0, 255, 170, 0.32);
+}
+
+.player-elo-badge--ginger {
+  color: #ffe1c8;
+  border-color: #ff9a54;
+  background: rgba(26, 26, 46, 0.78);
+  box-shadow: 0 0 7px rgba(255, 103, 26, 0.35);
+}
+
+.player-elo-badge--hydro {
+  color: #d8fbff;
+  border-color: #7beeff;
+  background: rgba(26, 26, 46, 0.78);
+  box-shadow: 0 0 7px rgba(0, 210, 255, 0.35);
 }
 </style>

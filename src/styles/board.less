@@ -315,8 +315,80 @@
 }
 
 .board-cube--gold {
-	background: url(./assets/board_icons.png) -72px -91px no-repeat;
-	filter: sepia(0.45) saturate(2.2) brightness(1.08) drop-shadow(0 0 1px rgba(255, 215, 0, 0.7));
+	background: linear-gradient(135deg, #fff2a1 0%, #f5c542 38%, #9a6a00 100%);
+	border: 1px solid #ffe990;
+	border-radius: 3px;
+	box-shadow: inset 2px 2px 3px rgba(255,255,255,.55), inset -3px -3px 4px rgba(75,50,0,.55);
+	filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.95)) drop-shadow(2px 2px 3px black);
+}
+
+.board-cube--emerald {
+	background: linear-gradient(135deg, #7fffd4 0%, #009468 48%, #003d2d 100%);
+	border: 1px solid #91ffdf;
+	border-radius: 3px;
+	box-shadow: inset 2px 2px 3px rgba(255,255,255,.45), inset -3px -3px 4px rgba(0,35,25,.65);
+	filter: drop-shadow(0 0 2px rgba(0, 255, 170, 0.8)) drop-shadow(2px 2px 3px black);
+}
+
+.board-cube--ginger {
+	background: linear-gradient(135deg, #ffd08a 0%, #da581c 46%, #6b1d00 100%);
+	border: 1px solid #ffb46b;
+	border-radius: 3px;
+	box-shadow: inset 2px 2px 3px rgba(255,255,255,.38), inset -3px -3px 4px rgba(73,16,0,.65);
+	filter: drop-shadow(0 0 2px rgba(255, 105, 24, 0.85)) drop-shadow(2px 2px 3px black);
+}
+
+.board-cube--hydro {
+	background: linear-gradient(135deg, #b8fbff 0%, #00acd0 42%, #254ec6 100%);
+	border: 1px solid #9ef6ff;
+	border-radius: 3px;
+	box-shadow: inset 2px 2px 3px rgba(255,255,255,.45), inset -3px -3px 4px rgba(0,27,80,.62);
+	filter: drop-shadow(0 0 2px rgba(0, 210, 255, 0.86)) drop-shadow(2px 2px 3px black);
+}
+
+.board-space .board-cube--persona,
+.board-cube-coOwner.board-cube--persona {
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+	filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, 0.88));
+}
+
+.board-space .board-cube--persona::before,
+.board-cube-coOwner.board-cube--persona::before {
+	content: "";
+	position: absolute;
+	left: 3px;
+	top: 3px;
+	width: 15px;
+	height: 15px;
+	border-radius: 4px;
+	transform: rotate(45deg);
+	box-shadow:
+		inset 1px 1px 0 rgba(255,255,255,.34),
+		inset -2px -2px 0 rgba(0,0,0,.28),
+		0 2px 2px rgba(0,0,0,.4);
+}
+
+.board-space .board-cube--gold::before,
+.board-cube-coOwner.board-cube--gold::before {
+	background: linear-gradient(135deg, #fff0a5 0%, #d8ab2f 52%, #7d4f00 100%);
+}
+
+.board-space .board-cube--emerald::before,
+.board-cube-coOwner.board-cube--emerald::before {
+	background: linear-gradient(135deg, #9dffe3 0%, #0c9b70 52%, #004937 100%);
+}
+
+.board-space .board-cube--ginger::before,
+.board-cube-coOwner.board-cube--ginger::before {
+	background: linear-gradient(135deg, #ffd39a 0%, #de6d27 52%, #6a1d00 100%);
+}
+
+.board-space .board-cube--hydro::before,
+.board-cube-coOwner.board-cube--hydro::before {
+	background: linear-gradient(135deg, #c8fbff 0%, #1ab6d5 50%, #1e47bc 100%);
 }
 
 .board-cube--bronze {
@@ -400,6 +472,33 @@
   margin-left: 5px;
   margin-top: 0;
   color: #2b2100;
+}
+
+.board-cube--emerald.overlay::after {
+  .overlay_base();
+  content: "⬢";
+  margin-left: 3px;
+  margin-top: 0;
+  color: #d7fff0;
+  font-size: 14px;
+}
+
+.board-cube--ginger.overlay::after {
+  .overlay_base();
+  content: "♨";
+  margin-left: 4px;
+  margin-top: -2px;
+  color: #ffe1c8;
+}
+
+.board-cube--hydro.overlay::after {
+  .overlay_base();
+  content: "≈";
+  margin-left: 4px;
+  margin-top: -4px;
+  color: #e4fdff;
+  font-size: 19px;
+  font-weight: bold;
 }
 
 .board-cube--bronze.overlay::after {
@@ -623,11 +722,12 @@ each(@token_types, {
 })
 
 .underground-excavator {
-	position: absolute;
+  position: absolute;
   width: 16px;
   height: 16px;
 	z-index: 3;
   border-radius: 50%;
+  box-sizing: border-box;
 	margin: 7px 0 0 21px;
 	filter: drop-shadow(2px 2px 3px black);
   // box-shadow: -5px 8.66px 5px 0 #00000080
@@ -666,5 +766,21 @@ each(@token_types, {
 }
 
 .underground-excavator--gold {
-	background-color: @player_gold;
+	background: linear-gradient(135deg, #fff2a1 0%, @player_gold 48%, #9a6a00 100%);
+	border: 1px solid #ffe990;
+}
+
+.underground-excavator--emerald {
+	background: linear-gradient(135deg, #7fffd4 0%, @player_emerald 48%, #003d2d 100%);
+	border: 1px solid #91ffdf;
+}
+
+.underground-excavator--ginger {
+	background: linear-gradient(135deg, #ffd08a 0%, @player_ginger 48%, #6b1d00 100%);
+	border: 1px solid #ffb46b;
+}
+
+.underground-excavator--hydro {
+	background: linear-gradient(135deg, #b8fbff 0%, @player_hydro 46%, #254ec6 100%);
+	border: 1px solid #9ef6ff;
 }

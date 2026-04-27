@@ -48,6 +48,7 @@ describe('GameHome', () => {
     const toggle = wrapper.get('[role="switch"]');
     expect(toggle.attributes('aria-checked')).to.eq('true');
     expect(toggle.classes()).to.include('bot-toggle--active');
+    expect(wrapper.get('.bot-toggle__label').classes()).to.include('player_bg_color_blue');
     expect(toggle.text()).to.include('Bot takeover');
     expect(toggle.text()).to.include('bot is playing');
     expect(toggle.attributes('title')).to.eq('Return control to player');

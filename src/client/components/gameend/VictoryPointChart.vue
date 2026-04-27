@@ -24,6 +24,9 @@ const COLOR_CODES: Record<Color, string> = {
   ['orange']: 'rgb(236, 113, 12)',
   ['pink']: 'rgb(245, 116, 187)',
   ['gold']: 'rgb(212, 175, 55)',
+  ['emerald']: 'rgb(0, 148, 104)',
+  ['ginger']: 'rgb(218, 88, 28)',
+  ['hydro']: 'rgb(0, 172, 208)',
 
   // Not actual player colors
   ['neutral']: '',

@@ -13,7 +13,9 @@ export const SYMBOL_FOR_COLOR = {
   gold: '✦',
   emerald: '⬢',
   ginger: '♨',
-  hydro: '≈',
+  hydro: '♂',
+  antistress: '✚',
+  gambit: '♞',
   bronze: '▦',
   neutral: '★',
 } satisfies Record<Color, string>;

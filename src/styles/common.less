@@ -183,9 +183,9 @@ h2 {
 }
 
 .player_bg_color_gold {
-    background: linear-gradient(90deg, #f9d94a, #a77a0b);
-    color: #fff2a6;
-    text-shadow: 0 0 3px #4b3200;
+    background-color: @player_gold;
+    color: #1b1400;
+    text-shadow: 0 1px 0 rgba(255, 245, 170, 0.45);
 }
 
 .player_bg_color_emerald {
@@ -201,8 +201,21 @@ h2 {
 }
 
 .player_bg_color_hydro {
-    background: linear-gradient(90deg, @player_hydro, #254ec6);
-    color: #e8fbff;
+    background: linear-gradient(90deg, #d94c5b, @player_hydro 52%, #610916);
+    color: #ffe5e8;
+    text-shadow: 0 0 3px rgba(39, 0, 8, 0.9);
+}
+
+.player_bg_color_antistress {
+    background: linear-gradient(90deg, #365f9f, @player_antistress 52%, #071b3d);
+    color: #d9e7ff;
+    text-shadow: 0 0 3px rgba(0, 12, 34, 0.95);
+}
+
+.player_bg_color_gambit {
+    background: linear-gradient(90deg, #bad8ef, @player_gambit 52%, #3f6892);
+    color: #f2f9ff;
+    text-shadow: 0 0 3px rgba(16, 42, 74, 0.9);
 }
 
 // backgroungs with opacity
@@ -254,15 +267,26 @@ h2 {
     .player_hydro_bg_translucent();
 }
 
+.player_translucent_bg_color_antistress {
+    .player_antistress_bg_translucent();
+}
+
+.player_translucent_bg_color_gambit {
+    .player_gambit_bg_translucent();
+}
+
 .player_bg_color_gold.log-player,
 .player_translucent_bg_color_gold .player-info-name,
 .player_translucent_bg_color_gold .player_name,
 .player_translucent_bg_color_gold .game-end-name-and-elo,
 .player_translucent_bg_color_gold .game-end-name-and-elo a,
 .player_translucent_bg_color_gold .player-name {
-    color: #fff2a6;
+    color: #1b1400;
     font-family: Georgia, "Times New Roman", serif;
-    text-shadow: 0 0 4px #4b3200, 0 0 9px rgba(255, 215, 0, 0.45);
+    font-variant: small-caps;
+    font-weight: 700;
+    letter-spacing: 0.35px;
+    text-shadow: 0 1px 0 rgba(255, 245, 170, 0.55);
 }
 
 .player_bg_color_emerald.log-player,
@@ -273,6 +297,8 @@ h2 {
 .player_translucent_bg_color_emerald .player-name {
     color: #d7fff0;
     font-family: "Trebuchet MS", Ubuntu, Sans;
+    font-weight: 700;
+    letter-spacing: 0.2px;
     text-shadow: 0 0 4px #002f20, 0 0 8px rgba(0, 255, 170, 0.35);
 }
 
@@ -283,7 +309,9 @@ h2 {
 .player_translucent_bg_color_ginger .game-end-name-and-elo a,
 .player_translucent_bg_color_ginger .player-name {
     color: #ffe1c8;
-    font-family: Verdana, Ubuntu, Sans;
+    font-family: "Segoe Print", "Comic Sans MS", Verdana, Ubuntu, Sans;
+    font-weight: 700;
+    letter-spacing: -0.15px;
     text-shadow: 0 0 4px #4a1400, 0 0 8px rgba(255, 103, 26, 0.4);
 }
 
@@ -293,9 +321,38 @@ h2 {
 .player_translucent_bg_color_hydro .game-end-name-and-elo,
 .player_translucent_bg_color_hydro .game-end-name-and-elo a,
 .player_translucent_bg_color_hydro .player-name {
-    color: #d8fbff;
-    font-family: "Segoe UI", Ubuntu, Sans;
-    text-shadow: 0 0 4px #002b48, 0 0 8px rgba(0, 210, 255, 0.42);
+    color: #ffe5e8;
+    font-family: Bahnschrift, "Segoe UI Semibold", "Segoe UI", Ubuntu, Sans;
+    font-weight: 700;
+    letter-spacing: 0.45px;
+    text-shadow: 0 0 4px #3f0009, 0 0 9px rgba(217, 53, 72, 0.42);
+}
+
+.player_bg_color_antistress.log-player,
+.player_translucent_bg_color_antistress .player-info-name,
+.player_translucent_bg_color_antistress .player_name,
+.player_translucent_bg_color_antistress .game-end-name-and-elo,
+.player_translucent_bg_color_antistress .game-end-name-and-elo a,
+.player_translucent_bg_color_antistress .player-name {
+    color: #d9e7ff;
+    font-family: Candara, "Trebuchet MS", Ubuntu, Sans;
+    font-weight: 600;
+    letter-spacing: 0.15px;
+    text-shadow: 0 0 4px #06142c, 0 0 9px rgba(74, 126, 214, 0.34);
+}
+
+.player_bg_color_gambit.log-player,
+.player_translucent_bg_color_gambit .player-info-name,
+.player_translucent_bg_color_gambit .player_name,
+.player_translucent_bg_color_gambit .game-end-name-and-elo,
+.player_translucent_bg_color_gambit .game-end-name-and-elo a,
+.player_translucent_bg_color_gambit .player-name {
+    color: #f2f9ff;
+    font-family: "Segoe Script", "Lucida Handwriting", Candara, Ubuntu, Sans;
+    font-style: italic;
+    font-weight: 700;
+    letter-spacing: 0.25px;
+    text-shadow: 0 0 4px #17385d, 0 0 9px rgba(157, 209, 247, 0.44);
 }
 
 .alert-dialog {

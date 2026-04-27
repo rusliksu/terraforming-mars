@@ -83,9 +83,11 @@ export default defineComponent({
       if (this.space.color === undefined) {
         return '';
       }
-      const css = 'board-cube board-cube--' + this.space.color;
-      const personaCss = isReservedPlayerColor(this.space.color) ? css + ' board-cube--persona' : css;
-      return getPreferences().symbol_overlay ? personaCss + ' overlay' : personaCss;
+      let css = 'board-cube board-cube--' + this.space.color;
+      if (isReservedPlayerColor(this.space.color)) {
+        css += ' board-cube--persona';
+      }
+      return getPreferences().symbol_overlay ? css + ' overlay' : css;
     },
     claimedToken(): ClaimedToken | undefined {
       if (this.space.undergroundResource === undefined) {

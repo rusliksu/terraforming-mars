@@ -315,35 +315,33 @@
 }
 
 .board-cube--gold {
-	background: linear-gradient(135deg, #fff2a1 0%, #f5c542 38%, #9a6a00 100%);
-	border: 1px solid #ffe990;
-	border-radius: 3px;
-	box-shadow: inset 2px 2px 3px rgba(255,255,255,.55), inset -3px -3px 4px rgba(75,50,0,.55);
-	filter: drop-shadow(0 0 2px rgba(255, 215, 0, 0.95)) drop-shadow(2px 2px 3px black);
+	background: url(./assets/board_icons.png) -72px -91px no-repeat;
+	filter: sepia(0.25) saturate(1.45) brightness(1.08) drop-shadow(2px 2px 3px black);
 }
 
 .board-cube--emerald {
-	background: linear-gradient(135deg, #7fffd4 0%, #009468 48%, #003d2d 100%);
-	border: 1px solid #91ffdf;
-	border-radius: 3px;
-	box-shadow: inset 2px 2px 3px rgba(255,255,255,.45), inset -3px -3px 4px rgba(0,35,25,.65);
-	filter: drop-shadow(0 0 2px rgba(0, 255, 170, 0.8)) drop-shadow(2px 2px 3px black);
+	background: url(./assets/board_icons.png) -1px -91px no-repeat;
+	filter: hue-rotate(14deg) saturate(1.35) brightness(0.98) drop-shadow(2px 2px 3px black);
 }
 
 .board-cube--ginger {
-	background: linear-gradient(135deg, #ffd08a 0%, #da581c 46%, #6b1d00 100%);
-	border: 1px solid #ffb46b;
-	border-radius: 3px;
-	box-shadow: inset 2px 2px 3px rgba(255,255,255,.38), inset -3px -3px 4px rgba(73,16,0,.65);
-	filter: drop-shadow(0 0 2px rgba(255, 105, 24, 0.85)) drop-shadow(2px 2px 3px black);
+	background: url(./assets/board_icons.png) -1px -117px no-repeat;
+	filter: saturate(1.22) brightness(1.02) drop-shadow(2px 2px 3px black);
 }
 
 .board-cube--hydro {
-	background: linear-gradient(135deg, #b8fbff 0%, #00acd0 42%, #254ec6 100%);
-	border: 1px solid #9ef6ff;
-	border-radius: 3px;
-	box-shadow: inset 2px 2px 3px rgba(255,255,255,.45), inset -3px -3px 4px rgba(0,27,80,.62);
-	filter: drop-shadow(0 0 2px rgba(0, 210, 255, 0.86)) drop-shadow(2px 2px 3px black);
+	background: url(./assets/board_icons.png) -24px -91px no-repeat;
+	filter: hue-rotate(352deg) saturate(1.25) brightness(0.88) drop-shadow(2px 2px 3px black);
+}
+
+.board-cube--antistress {
+	background: url(./assets/board_icons.png) -94px -91px no-repeat;
+	filter: hue-rotate(6deg) saturate(1.15) brightness(0.72) contrast(1.08) drop-shadow(2px 2px 3px black);
+}
+
+.board-cube--gambit {
+	background: url(./assets/board_icons.png) -94px -91px no-repeat;
+	filter: hue-rotate(348deg) saturate(0.72) brightness(1.28) contrast(0.94) drop-shadow(2px 2px 3px black);
 }
 
 .board-space .board-cube--persona,
@@ -388,7 +386,17 @@
 
 .board-space .board-cube--hydro::before,
 .board-cube-coOwner.board-cube--hydro::before {
-	background: linear-gradient(135deg, #c8fbff 0%, #1ab6d5 50%, #1e47bc 100%);
+	background: linear-gradient(135deg, #ff9da5 0%, @player_hydro 52%, #5e0714 100%);
+}
+
+.board-space .board-cube--antistress::before,
+.board-cube-coOwner.board-cube--antistress::before {
+	background: linear-gradient(135deg, #6f94d4 0%, @player_antistress 52%, #071b3d 100%);
+}
+
+.board-space .board-cube--gambit::before,
+.board-cube-coOwner.board-cube--gambit::before {
+	background: linear-gradient(135deg, #e3f2ff 0%, @player_gambit 52%, #345f8c 100%);
 }
 
 .board-cube--bronze {
@@ -493,11 +501,31 @@
 
 .board-cube--hydro.overlay::after {
   .overlay_base();
-  content: "≈";
+  content: "♂";
+  margin-left: 5px;
+  margin-top: -3px;
+  color: #ffe5e8;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.board-cube--antistress.overlay::after {
+  .overlay_base();
+  content: "✚";
   margin-left: 4px;
-  margin-top: -4px;
-  color: #e4fdff;
-  font-size: 19px;
+  margin-top: -1px;
+  color: #d9e7ff;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.board-cube--gambit.overlay::after {
+  .overlay_base();
+  content: "♞";
+  margin-left: 4px;
+  margin-top: -1px;
+  color: #f2f9ff;
+  font-size: 15px;
   font-weight: bold;
 }
 
@@ -722,7 +750,7 @@ each(@token_types, {
 })
 
 .underground-excavator {
-  position: absolute;
+	position: absolute;
   width: 16px;
   height: 16px;
 	z-index: 3;
@@ -781,6 +809,16 @@ each(@token_types, {
 }
 
 .underground-excavator--hydro {
-	background: linear-gradient(135deg, #b8fbff 0%, @player_hydro 46%, #254ec6 100%);
-	border: 1px solid #9ef6ff;
+	background: linear-gradient(135deg, #ff8f98 0%, @player_hydro 46%, #5e0714 100%);
+	border: 1px solid #ff9da5;
+}
+
+.underground-excavator--antistress {
+	background: linear-gradient(135deg, #6289cb 0%, @player_antistress 48%, #071b3d 100%);
+	border: 1px solid #6f94d4;
+}
+
+.underground-excavator--gambit {
+	background: linear-gradient(135deg, #e3f2ff 0%, @player_gambit 48%, #345f8c 100%);
+	border: 1px solid #c2e3ff;
 }

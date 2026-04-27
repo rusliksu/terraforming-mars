@@ -55,6 +55,12 @@
 .player_shadow_color_hydro {
     text-shadow: -1px -1px 6px @player_hydro, 1px 1px 1px #333a;
 }
+.player_shadow_color_antistress {
+    text-shadow: -1px -1px 6px @player_antistress, 1px 1px 1px #333a;
+}
+.player_shadow_color_gambit {
+    text-shadow: -1px -1px 6px @player_gambit, 1px 1px 1px #333a;
+}
 
 .game-title {
     text-transform: uppercase;
@@ -148,7 +154,15 @@
     }
 
     .grid-item.player_tag_bg_color_hydro {
-        background-color: rgba(0, 172, 208, 0.2);
+        background-color: rgba(179, 38, 58, 0.2);
+    }
+
+    .grid-item.player_tag_bg_color_antistress {
+        background-color: rgba(29, 58, 116, 0.24);
+    }
+
+    .grid-item.player_tag_bg_color_gambit {
+        background-color: rgba(111, 164, 205, 0.22);
     }
     .city-count {
         background: url(./assets/icon_city.png) center no-repeat;
@@ -626,6 +640,19 @@
         .ma-player {
             margin: 25px 0 0 70px;
             position: absolute;
+
+            .board-cube {
+                margin: 0;
+            }
+
+            .board-cube--gold,
+            .board-cube--emerald,
+            .board-cube--ginger,
+            .board-cube--hydro,
+            .board-cube--antistress,
+            .board-cube--gambit {
+                transform: scale(0.95);
+            }
         }
 
         .ma-name {
@@ -724,6 +751,18 @@
 
 .ma-player-cube .board-cube {
     margin: 0 0 0 5px;
+}
+
+.ma-player-cube {
+    .board-cube--gold,
+    .board-cube--emerald,
+    .board-cube--ginger,
+    .board-cube--hydro,
+    .board-cube--antistress,
+    .board-cube--gambit {
+        transform: scale(0.9);
+        transform-origin: 50% 50%;
+    }
 }
 
 .milestone-award-inline {
@@ -838,6 +877,45 @@
     display: inline-block;
     vertical-align: top;
 
+    .colonies-fleet-gradient(@x, @y, @gradient, @glow) {
+        background: url(./assets/colony_ships.png) @x @y no-repeat;
+        position: relative;
+        overflow: visible;
+        filter:
+            saturate(1.18)
+            drop-shadow(0 0 4px fade(@glow, 76%))
+            drop-shadow(0 0 10px fade(@glow, 28%))
+            drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.75));
+
+        &::before,
+        &::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        &::before {
+            background: @gradient;
+            opacity: 0.78;
+            mix-blend-mode: color;
+            -webkit-mask-image: url(./assets/colony_ships.png);
+            -webkit-mask-position: @x @y;
+            -webkit-mask-repeat: no-repeat;
+            mask-image: url(./assets/colony_ships.png);
+            mask-position: @x @y;
+            mask-repeat: no-repeat;
+        }
+
+        &::after {
+            background:
+                radial-gradient(ellipse at 26% 76%, fade(@glow, 78%) 0%, fade(@glow, 42%) 18%, transparent 46%),
+                linear-gradient(135deg, rgba(255,255,255,.42) 0%, rgba(255,255,255,0) 35%, rgba(0,0,0,.24) 78%);
+            opacity: 0.58;
+            mix-blend-mode: screen;
+        }
+    }
+
     &.colonies-fleet-black {
         background-position: 0 0;
     }
@@ -871,24 +949,67 @@
     }
 
     &.colonies-fleet-gold {
-        background-position: -70px 0;
-        filter: sepia(0.55) saturate(2.4) brightness(1.1) drop-shadow(0 0 2px rgba(255, 215, 0, 0.8));
+        .colonies-fleet-gradient(
+            -70px,
+            0,
+            linear-gradient(135deg, #fff6a8 0%, #f6d35a 30%, #d4af37 55%, #815400 78%, #fff0a0 100%),
+            #ffd54d
+        );
     }
 
     &.colonies-fleet-emerald {
-        background-position: -140px 0;
-        filter: saturate(1.7) hue-rotate(14deg) brightness(1.05) drop-shadow(0 0 2px rgba(0, 255, 170, 0.6));
+        .colonies-fleet-gradient(
+            -140px,
+            0,
+            linear-gradient(135deg, #93ffe0 0%, #00c88f 38%, #009468 64%, #004735 100%),
+            #00ffaa
+        );
     }
 
     &.colonies-fleet-ginger {
-        background-position: -416px 0;
-        filter: saturate(1.55) brightness(1.08) drop-shadow(0 0 2px rgba(255, 103, 26, 0.65));
+        .colonies-fleet-gradient(
+            -416px,
+            0,
+            linear-gradient(135deg, #ffd296 0%, #ff8c2b 36%, #da581c 63%, #7a2200 100%),
+            #ff8c2b
+        );
     }
 
     &.colonies-fleet-hydro {
-        background-position: -272px 0;
-        filter: saturate(1.65) hue-rotate(16deg) brightness(1.1) drop-shadow(0 0 2px rgba(0, 210, 255, 0.65));
+        .colonies-fleet-gradient(
+            -207px,
+            0,
+            linear-gradient(135deg, #ff9da5 0%, #d94c5b 33%, @player_hydro 62%, #5e0714 100%),
+            #d93548
+        );
     }
+
+    &.colonies-fleet-antistress {
+        .colonies-fleet-gradient(
+            -272px,
+            0,
+            linear-gradient(135deg, #6f94d4 0%, #315a9d 36%, @player_antistress 66%, #071b3d 100%),
+            #456fc0
+        );
+    }
+
+    &.colonies-fleet-gambit {
+        .colonies-fleet-gradient(
+            -272px,
+            0,
+            linear-gradient(135deg, #e3f2ff 0%, #b7d5ec 34%, @player_gambit 64%, #345f8c 100%),
+            #9dd1f7
+        );
+    }
+}
+
+.colony-cube.board-cube--gold,
+.colony-cube.board-cube--emerald,
+.colony-cube.board-cube--ginger,
+.colony-cube.board-cube--hydro,
+.colony-cube.board-cube--antistress,
+.colony-cube.board-cube--gambit {
+    transform: scale(1.45);
 }
 
 .player_home_block--underground-tokens {

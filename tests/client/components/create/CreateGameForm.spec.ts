@@ -2,7 +2,15 @@ import {shallowMount} from '@vue/test-utils';
 import {globalConfig} from '../getLocalVue';
 import {expect} from 'chai';
 import CreateGameForm from '@/client/components/create/CreateGameForm.vue';
-import {CATHARSIS_NAME, DEFAULT_PLAYER_COLORS, EMERALD_RAV_NAME, GENUINE_GOLD_NAME, GYDRO_NAME} from '@/common/Color';
+import {
+  ANTISTRESS_NAME,
+  CATHARSIS_NAME,
+  DEFAULT_PLAYER_COLORS,
+  EMERALD_RAV_NAME,
+  GAMBIT_GIRL_NAME,
+  GENUINE_GOLD_NAME,
+  GYDRO_NAME,
+} from '@/common/Color';
 
 describe('CreateGameForm', () => {
   let originalFetch: typeof fetch;
@@ -175,6 +183,8 @@ describe('CreateGameForm', () => {
     expect(secondOptions).to.include(EMERALD_RAV_NAME);
     expect(secondOptions).to.include(CATHARSIS_NAME);
     expect(secondOptions).to.include(GYDRO_NAME);
+    expect(secondOptions).to.include(ANTISTRESS_NAME);
+    expect(secondOptions).to.include(GAMBIT_GIRL_NAME);
   });
 
   it('renders persona preview using the shared colorbox swatch', () => {
@@ -197,6 +207,8 @@ describe('CreateGameForm', () => {
       {color: 'emerald', inputName: 'Rav', expectedName: EMERALD_RAV_NAME},
       {color: 'ginger', inputName: 'Katerina', expectedName: CATHARSIS_NAME},
       {color: 'hydro', inputName: 'Ruslan', expectedName: GYDRO_NAME},
+      {color: 'antistress', inputName: 'Anatoly', expectedName: ANTISTRESS_NAME},
+      {color: 'gambit', inputName: 'Olesya', expectedName: GAMBIT_GIRL_NAME},
     ]) {
       vm.players[0].color = testCase.color;
       vm.players[0].name = testCase.inputName;

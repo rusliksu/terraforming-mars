@@ -283,6 +283,14 @@
     background: rgba(38, 42, 50, 0.78);
 }
 
+.create-game-playerblock-antistress {
+    background: rgba(38, 42, 50, 0.78);
+}
+
+.create-game-playerblock-gambit {
+    background: rgba(38, 42, 50, 0.78);
+}
+
 .create-game-player-name {
     height: 40px;
     border: none;
@@ -363,19 +371,59 @@
 }
 
 .player_translucent_bg_color_gold {
-    .create-game-player-field-theme(#fff2a6, #4b3200);
+    .create-game-player-field-theme(#1b1400, #fff2a6);
+
+    .create-game-player-name {
+        background: linear-gradient(90deg, #f7d95b, @player_gold);
+        font-family: Georgia, "Times New Roman", serif;
+        font-variant: small-caps;
+        text-shadow: 0 1px 0 rgba(255, 245, 170, 0.55);
+    }
 }
 
 .player_translucent_bg_color_emerald {
     .create-game-player-field-theme(#d7fff0, #00513c);
+
+    .create-game-player-name {
+        font-family: "Trebuchet MS", Ubuntu, Sans;
+    }
 }
 
 .player_translucent_bg_color_ginger {
     .create-game-player-field-theme(#ffe1c8, #742200);
+
+    .create-game-player-name {
+        font-family: "Segoe Print", "Comic Sans MS", Verdana, Ubuntu, Sans;
+        letter-spacing: -0.2px;
+    }
 }
 
 .player_translucent_bg_color_hydro {
-    .create-game-player-field-theme(#d8fbff, #254ec6);
+    .create-game-player-field-theme(#ffe5e8, #610916);
+
+    .create-game-player-name {
+        font-family: Bahnschrift, "Segoe UI Semibold", "Segoe UI", Ubuntu, Sans;
+        letter-spacing: 0.45px;
+    }
+}
+
+.player_translucent_bg_color_antistress {
+    .create-game-player-field-theme(#d9e7ff, #071b3d);
+
+    .create-game-player-name {
+        font-family: Candara, "Trebuchet MS", Ubuntu, Sans;
+        letter-spacing: 0.15px;
+    }
+}
+
+.player_translucent_bg_color_gambit {
+    .create-game-player-field-theme(#f2f9ff, #17385d);
+
+    .create-game-player-name {
+        font-family: "Segoe Script", "Lucida Handwriting", Candara, Ubuntu, Sans;
+        font-style: italic;
+        letter-spacing: 0.25px;
+    }
 }
 
 .create-game-page-color-row {

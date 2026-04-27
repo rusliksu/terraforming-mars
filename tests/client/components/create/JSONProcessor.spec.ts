@@ -6,7 +6,7 @@ import {BoardName} from '@/common/boards/BoardName';
 import {JSONObject} from '@/common/Types';
 import {CreateGameModel} from '@/client/components/create/CreateGameModel';
 import {CardName} from '@/common/cards/CardName';
-import {CATHARSIS_NAME, EMERALD_RAV_NAME, GENUINE_GOLD_NAME, GYDRO_NAME} from '@/common/Color';
+import {ANTISTRESS_NAME, CATHARSIS_NAME, EMERALD_RAV_NAME, GAMBIT_GIRL_NAME, GENUINE_GOLD_NAME, GYDRO_NAME} from '@/common/Color';
 
 type Case = {
   description: string,
@@ -235,6 +235,8 @@ describe('JSONProcessor', () => {
       {color: 'emerald', inputName: 'Rav', expectedName: EMERALD_RAV_NAME},
       {color: 'ginger', inputName: 'Catharsis', expectedName: CATHARSIS_NAME},
       {color: 'hydro', inputName: 'Ruslan', expectedName: GYDRO_NAME},
+      {color: 'antistress', inputName: 'Anatoly', expectedName: ANTISTRESS_NAME},
+      {color: 'gambit', inputName: 'Olesya', expectedName: GAMBIT_GIRL_NAME},
     ]) {
       const model = defaultCreateGameModel();
       const processor = new JSONProcessor(model);

@@ -9,6 +9,12 @@ import raw_settings from '@/genfiles/settings.json';
 import {PreferencesManager} from '@/client/utils/PreferencesManager';
 
 describe('WaitingFor', () => {
+  type TestNotificationOptions = {
+    body?: string;
+    icon?: string;
+  };
+  type TestNotificationPermission = 'default' | 'denied' | 'granted';
+
   const thisPlayer: Partial<PublicPlayerModel> = {
     color: 'red',
   } as any;
@@ -103,17 +109,17 @@ describe('WaitingFor', () => {
   it('shows a notification after permission is granted', async () => {
     PreferencesManager.INSTANCE.set('enable_sounds', false);
 
-    const notifications: Array<{title: string, options: NotificationOptions}> = [];
+    const notifications: Array<{title: string, options: TestNotificationOptions}> = [];
     let permissionRequests = 0;
 
     class FakeNotification {
-      static permission: NotificationPermission = 'default';
+      static permission: TestNotificationPermission = 'default';
 
-      constructor(title: string, options: NotificationOptions) {
+      constructor(title: string, options: TestNotificationOptions) {
         notifications.push({title, options});
       }
 
-      static async requestPermission(): Promise<NotificationPermission> {
+      static async requestPermission(): Promise<TestNotificationPermission> {
         permissionRequests++;
         FakeNotification.permission = 'granted';
         return 'granted';

@@ -450,6 +450,8 @@
 
 .count-in-send-delegate {
     font-size: 22px;
+    color: #fff;
+    text-shadow: 0 1px 1px #000, 0 0 2px #000;
 }
 
 .player-token {
@@ -462,29 +464,21 @@
     padding: 27px 0 0 0;
     color: white;
     font-family: Prototype;
+    text-shadow: 0 1px 1px #000, 0 0 2px #000;
 
-    .player-token-persona(@x, @y, @gradient, @fg) {
-        background: url(./assets/turmoil_ui.png) @x @y no-repeat;
+    .player-token-sprite(@x, @y, @filter) {
+        background: none;
         position: relative;
-        isolation: isolate;
-        color: @fg;
+        filter: none;
+        color: #fff;
 
         &::before {
             content: "";
             position: absolute;
-            left: 13px;
-            top: 0;
-            width: 24px;
-            height: 30px;
+            inset: 0;
+            background: url(./assets/turmoil_ui.png) @x @y no-repeat;
+            filter: @filter;
             pointer-events: none;
-            background: @gradient;
-            opacity: 0.94;
-            -webkit-mask-image: url(./assets/misc/delegate.png);
-            -webkit-mask-size: 24px 30px;
-            -webkit-mask-repeat: no-repeat;
-            mask-image: url(./assets/misc/delegate.png);
-            mask-size: 24px 30px;
-            mask-repeat: no-repeat;
         }
     }
 
@@ -521,57 +515,31 @@
     }
 
     &.gold {
-        .player-token-persona(
-            -644px,
-            850px,
-            linear-gradient(135deg, #fff4a6 0%, #f1cd45 36%, #b98708 68%, #fff0a0 100%),
-            #1b1400
-        );
+        .player-token-sprite(-644px, 850px, @player_gold_sprite_filter);
     }
 
     &.emerald {
-        .player-token-persona(
-            -865px,
-            850px,
-            linear-gradient(135deg, #8dffdc 0%, #00bf8b 42%, #006a4f 100%),
-            #fff
-        );
+        .player-token-sprite(-865px, 850px, @player_emerald_sprite_filter);
     }
 
     &.ginger {
-        .player-token-persona(
-            -644px,
-            780px,
-            linear-gradient(135deg, #ffd29b 0%, #f07b2a 40%, #8b2800 100%),
-            #fff
-        );
+        .player-token-sprite(-644px, 780px, @player_ginger_sprite_filter);
     }
 
     &.hydro {
-        .player-token-persona(
-            -699px,
-            850px,
-            linear-gradient(135deg, #ff9da5 0%, #d94c5b 38%, @player_hydro 68%, #5e0714 100%),
-            #fff
-        );
+        .player-token-sprite(-699px, 850px, @player_hydro_sprite_filter);
     }
 
     &.antistress {
-        .player-token-persona(
-            -699px,
-            780px,
-            linear-gradient(135deg, #6f94d4 0%, #315a9d 38%, @player_antistress 68%, #071b3d 100%),
-            #fff
-        );
+        .player-token-sprite(-809px, 850px, @player_antistress_sprite_filter);
     }
 
     &.gambit {
-        .player-token-persona(
-            -809px,
-            850px,
-            linear-gradient(135deg, #e3f2ff 0%, #b7d5ec 38%, @player_gambit 68%, #345f8c 100%),
-            #fff
-        );
+        .player-token-sprite(-809px, 850px, @player_gambit_sprite_filter);
+    }
+
+    &.turquoise {
+        .player-token-sprite(-809px, 850px, @player_turquoise_sprite_filter);
     }
 
     &.neutral {

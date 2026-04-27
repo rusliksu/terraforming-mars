@@ -316,32 +316,37 @@
 
 .board-cube--gold {
 	background: url(./assets/board_icons.png) -72px -91px no-repeat;
-	filter: sepia(0.25) saturate(1.45) brightness(1.08) drop-shadow(2px 2px 3px black);
+	filter: @player_gold_sprite_filter drop-shadow(2px 2px 3px black);
 }
 
 .board-cube--emerald {
 	background: url(./assets/board_icons.png) -1px -91px no-repeat;
-	filter: hue-rotate(14deg) saturate(1.35) brightness(0.98) drop-shadow(2px 2px 3px black);
+	filter: @player_emerald_sprite_filter drop-shadow(2px 2px 3px black);
 }
 
 .board-cube--ginger {
 	background: url(./assets/board_icons.png) -1px -117px no-repeat;
-	filter: saturate(1.22) brightness(1.02) drop-shadow(2px 2px 3px black);
+	filter: @player_ginger_sprite_filter drop-shadow(2px 2px 3px black);
 }
 
 .board-cube--hydro {
 	background: url(./assets/board_icons.png) -24px -91px no-repeat;
-	filter: hue-rotate(352deg) saturate(1.25) brightness(0.88) drop-shadow(2px 2px 3px black);
+	filter: @player_hydro_sprite_filter drop-shadow(2px 2px 3px black);
 }
 
 .board-cube--antistress {
 	background: url(./assets/board_icons.png) -94px -91px no-repeat;
-	filter: hue-rotate(6deg) saturate(1.15) brightness(0.72) contrast(1.08) drop-shadow(2px 2px 3px black);
+	filter: @player_antistress_sprite_filter drop-shadow(2px 2px 3px black);
 }
 
 .board-cube--gambit {
 	background: url(./assets/board_icons.png) -94px -91px no-repeat;
-	filter: hue-rotate(348deg) saturate(0.72) brightness(1.28) contrast(0.94) drop-shadow(2px 2px 3px black);
+	filter: @player_gambit_sprite_filter drop-shadow(2px 2px 3px black);
+}
+
+.board-cube--turquoise {
+	background: url(./assets/board_icons.png) -94px -91px no-repeat;
+	filter: @player_turquoise_sprite_filter drop-shadow(2px 2px 3px black);
 }
 
 .board-space .board-cube--persona,
@@ -371,7 +376,7 @@
 
 .board-space .board-cube--gold::before,
 .board-cube-coOwner.board-cube--gold::before {
-	background: linear-gradient(135deg, #fff0a5 0%, #d8ab2f 52%, #7d4f00 100%);
+	background: linear-gradient(135deg, #e7c86b 0%, #b78322 52%, #604000 100%);
 }
 
 .board-space .board-cube--emerald::before,
@@ -397,6 +402,11 @@
 .board-space .board-cube--gambit::before,
 .board-cube-coOwner.board-cube--gambit::before {
 	background: linear-gradient(135deg, #e3f2ff 0%, @player_gambit 52%, #345f8c 100%);
+}
+
+.board-space .board-cube--turquoise::before,
+.board-cube-coOwner.board-cube--turquoise::before {
+	background: linear-gradient(135deg, #b8ffff 0%, @player_turquoise 52%, #00545b 100%);
 }
 
 .board-cube--bronze {
@@ -525,6 +535,16 @@
   margin-left: 4px;
   margin-top: -1px;
   color: #f2f9ff;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.board-cube--turquoise.overlay::after {
+  .overlay_base();
+  content: "◇";
+  margin-left: 4px;
+  margin-top: -1px;
+  color: #dcffff;
   font-size: 15px;
   font-weight: bold;
 }

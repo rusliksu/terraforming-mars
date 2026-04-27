@@ -259,19 +259,38 @@ describe('EloSyncService', () => {
           {name: 'bob', displayName: 'Bob', place: 3, vp: 70, corp: 'Mining Guild'},
         ],
       },
+      {
+        _key: 'g-olesya-gambit',
+        date: '2026-04-25T00:00:04.000Z',
+        server: 'test',
+        map: 'THARSIS',
+        generation: 8,
+        playerCount: 2,
+        completedTime: 4,
+        results: [
+          {name: 'олеся', displayName: 'Олеся', place: 1, vp: 91, corp: 'Saturn Systems'},
+          {name: 'pavel', displayName: 'Pavel', place: 2, vp: 87, corp: 'Inventrix'},
+        ],
+      },
     ]);
 
     expect(rebuilt.players['паша'].displayName).eq('Паша');
-    expect(rebuilt.players['паша'].games).eq(2);
+    expect(rebuilt.players['паша'].games).eq(3);
     expect(rebuilt.players['павел']).eq(undefined);
+    expect(rebuilt.players.pavel).eq(undefined);
     expect(rebuilt.players['тома'].displayName).eq('Тома');
     expect(rebuilt.players['тома'].games).eq(1);
     expect(rebuilt.players['соня']).eq(undefined);
-    expect(rebuilt.players['анатолий'].displayName).eq('Анатолий');
-    expect(rebuilt.players['анатолий'].games).eq(1);
-    expect(rebuilt.players['антистресс']).eq(undefined);
+    expect(rebuilt.players['антистресс'].displayName).eq('Антистресс');
+    expect(rebuilt.players['антистресс'].games).eq(1);
+    expect(rebuilt.players['анатолий']).eq(undefined);
+    expect(rebuilt.players.gambitgirl.displayName).eq('GambitGirl');
+    expect(rebuilt.players.gambitgirl.games).eq(1);
+    expect(rebuilt.players['олеся']).eq(undefined);
     expect(rebuilt.games[1].results[0].name).eq('паша');
     expect(rebuilt.games[2].results[0].name).eq('тома');
-    expect(rebuilt.games[2].results[1].name).eq('анатолий');
+    expect(rebuilt.games[2].results[1].name).eq('антистресс');
+    expect(rebuilt.games[3].results[0].name).eq('gambitgirl');
+    expect(rebuilt.games[3].results[1].name).eq('паша');
   });
 });

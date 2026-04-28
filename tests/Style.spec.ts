@@ -167,12 +167,13 @@ describe('Styles', () => {
     expect(turmoil).to.contain('width: 50px;');
     expect(turmoil).to.contain('height: 59px;');
     expect(turmoil).to.contain('&.gold');
-    expect(cssBlock(turmoil, '&.gold')).to.contain('.player-token-sprite(-644px, 850px, @player_gold_sprite_filter);');
-    expect(cssBlock(turmoil, '&.emerald')).to.contain('.player-token-sprite(-865px, 850px, @player_emerald_sprite_filter);');
-    expect(cssBlock(turmoil, '&.hydro')).to.contain('.player-token-sprite(-699px, 850px, @player_hydro_sprite_filter);');
-    expect(cssBlock(turmoil, '&.antistress')).to.contain('.player-token-sprite(-809px, 850px, @player_antistress_sprite_filter);');
-    expect(cssBlock(turmoil, '&.gambit')).to.contain('.player-token-sprite(-973px, 850px, @player_gambit_sprite_filter);');
-    expect(cssBlock(turmoil, '&.turquoise')).to.contain('.player-token-sprite(-865px, 850px, @player_turquoise_sprite_filter);');
+    expect(cssBlock(turmoil, '&.gold')).to.contain('.player-token-sprite(-644px, -35px, @player_gold_sprite_filter);');
+    expect(cssBlock(turmoil, '&.emerald')).to.contain('.player-token-sprite(-865px, -35px, @player_emerald_sprite_filter);');
+    expect(cssBlock(turmoil, '&.ginger')).to.contain('.player-token-sprite(-644px, -105px, @player_ginger_sprite_filter);');
+    expect(cssBlock(turmoil, '&.hydro')).to.contain('.player-token-sprite(-699px, -35px, @player_hydro_sprite_filter);');
+    expect(cssBlock(turmoil, '&.antistress')).to.contain('.player-token-sprite(-809px, -35px, @player_antistress_sprite_filter);');
+    expect(cssBlock(turmoil, '&.gambit')).to.contain('.player-token-sprite(-973px, -35px, @player_gambit_sprite_filter);');
+    expect(cssBlock(turmoil, '&.turquoise')).to.contain('.player-token-sprite(-865px, -35px, @player_turquoise_sprite_filter);');
   });
 
   it('keeps GenuineGold text dark on gold UI surfaces', () => {

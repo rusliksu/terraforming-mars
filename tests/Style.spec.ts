@@ -241,6 +241,9 @@ describe('Styles', () => {
     expect(gameHome).to.contain('grid-template-areas:\n          "order color name copy"\n          ". . bot copied";');
     expect(gameHome).to.contain('.bot-toggle {\n      grid-area: bot;');
     expect(gameHome).to.contain('.game-home-copy {\n      grid-area: copy;');
+    expect(gameHome).to.contain('.topmost-game-home');
+    expect(gameHome).to.contain('position: static;');
+    expect(gameHome).to.contain('overflow-x: hidden;');
   });
 
   it('keeps player log labels on one line', () => {

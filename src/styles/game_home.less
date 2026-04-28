@@ -61,6 +61,14 @@
   }
 }
 
+.topmost-game-home {
+  .notice {
+    position: static;
+    box-sizing: border-box;
+    text-align: right;
+  }
+}
+
 @media (max-width: 700px) {
   .game-home-container {
     >ul {
@@ -95,6 +103,15 @@
     }
     .copied-notice {
       grid-area: copied;
+    }
+  }
+
+  .topmost-game-home {
+    overflow-x: hidden;
+
+    .notice {
+      padding: 16px 16px 24px 76px;
+      text-align: left;
     }
   }
 }

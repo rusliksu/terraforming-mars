@@ -217,6 +217,7 @@ $eloSourceFiles = @(
     "elo_aliases.py",
     "fix_elo_dupes.py",
     "import_gamedb_to_elo.py",
+    "migrate_elo_nicknames.py",
     "player_name_aliases.json"
 )
 $generatedSettingsPath = Join-Path $resolvedSourceRoot "src\\genfiles\\settings.json"
@@ -383,7 +384,7 @@ deps_root="$shared_root/deps"
 dependency_sha="__DEPENDENCY_SHA__"
 new_release_dir=""
 previous_current=""
-elo_files="index.html elo-api.js elo_aliases.py fix_elo_dupes.py import_gamedb_to_elo.py player_name_aliases.json"
+elo_files="index.html elo-api.js elo_aliases.py fix_elo_dupes.py import_gamedb_to_elo.py migrate_elo_nicknames.py player_name_aliases.json"
 
 rollback() {
   if [ -n "$previous_current" ]; then

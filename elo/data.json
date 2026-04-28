@@ -1,9 +1,9 @@
 {
   "players": {
-    "илья": {
+    "genuinegold": {
       "elo": 1546,
       "elo_vp": 1538,
-      "displayName": "Илья",
+      "displayName": "GenuineGold",
       "games": 2,
       "firsts": 2,
       "wins": 2,
@@ -177,8 +177,8 @@
       "completedTime": 1774900163,
       "results": [
         {
-          "name": "илья",
-          "displayName": "Илья",
+          "name": "genuinegold",
+          "displayName": "GenuineGold",
           "place": 1,
           "delta": 24,
           "oldElo": 1500,
@@ -220,8 +220,8 @@
       "completedTime": 1774993068,
       "results": [
         {
-          "name": "илья",
-          "displayName": "Илья",
+          "name": "genuinegold",
+          "displayName": "GenuineGold",
           "place": 1,
           "delta": 22,
           "oldElo": 1524,

@@ -55,7 +55,7 @@ releases_root="$prod_root/releases"
 new_release_dir=""
 previous_current=""
 active_proxy_port="$prod_port"
-elo_files="index.html elo-api.js elo_aliases.py fix_elo_dupes.py import_gamedb_to_elo.py player_name_aliases.json"
+elo_files="index.html elo-api.js elo_aliases.py fix_elo_dupes.py import_gamedb_to_elo.py migrate_elo_nicknames.py player_name_aliases.json"
 
 wait_for_http() {
   local url="$1"

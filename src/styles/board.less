@@ -340,12 +340,12 @@
 }
 
 .board-cube--gambit {
-	background: url(./assets/board_icons.png) -94px -91px no-repeat;
+	background: url(./assets/board_icons.png) -118px -91px no-repeat;
 	filter: @player_gambit_sprite_filter drop-shadow(2px 2px 3px black);
 }
 
 .board-cube--turquoise {
-	background: url(./assets/board_icons.png) -94px -91px no-repeat;
+	background: url(./assets/board_icons.png) -1px -91px no-repeat;
 	filter: @player_turquoise_sprite_filter drop-shadow(2px 2px 3px black);
 }
 
@@ -396,12 +396,12 @@
 
 .board-space .board-cube--antistress::before,
 .board-cube-coOwner.board-cube--antistress::before {
-	background: linear-gradient(135deg, #6f94d4 0%, @player_antistress 52%, #071b3d 100%);
+	background: linear-gradient(135deg, #8fb0ff 0%, @player_antistress 52%, #020b22 100%);
 }
 
 .board-space .board-cube--gambit::before,
 .board-cube-coOwner.board-cube--gambit::before {
-	background: linear-gradient(135deg, #e3f2ff 0%, @player_gambit 52%, #345f8c 100%);
+	background: linear-gradient(135deg, #f4fbff 0%, @player_gambit 52%, #4a6d9a 100%);
 }
 
 .board-space .board-cube--turquoise::before,
@@ -839,6 +839,11 @@ each(@token_types, {
 }
 
 .underground-excavator--gambit {
-	background: linear-gradient(135deg, #e3f2ff 0%, @player_gambit 48%, #345f8c 100%);
+	background: linear-gradient(135deg, #f4fbff 0%, @player_gambit 48%, #4a6d9a 100%);
 	border: 1px solid #c2e3ff;
+}
+
+.underground-excavator--turquoise {
+	background: linear-gradient(135deg, #b8ffff 0%, @player_turquoise 48%, #00545b 100%);
+	border: 1px solid #9dffff;
 }

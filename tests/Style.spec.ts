@@ -87,7 +87,9 @@ describe('Styles', () => {
 
     expect(variables).to.contain('@player_gold_sprite_filter: sepia(0.45) saturate(1.65) hue-rotate(346deg) brightness(0.90) contrast(1.12);');
     expect(variables).to.contain('@player_emerald_sprite_filter: hue-rotate(18deg) saturate(1.70) brightness(0.72) contrast(1.12);');
-    expect(variables).to.contain('@player_turquoise_sprite_filter: hue-rotate(315deg) saturate(1.08) brightness(1.05) contrast(1.04);');
+    expect(variables).to.contain('@player_antistress_sprite_filter: saturate(1.35) brightness(0.58) contrast(1.22);');
+    expect(variables).to.contain('@player_gambit_sprite_filter: hue-rotate(315deg) saturate(0.55) brightness(1.22) contrast(1.03);');
+    expect(variables).to.contain('@player_turquoise_sprite_filter: hue-rotate(55deg) saturate(1.35) brightness(1.04) contrast(1.05);');
     expect(board).to.contain('.board-cube--gold {\n\tbackground: url(./assets/board_icons.png) -72px -91px no-repeat;');
     expect(cssBlock(board, '.board-cube--gold')).to.contain('@player_gold_sprite_filter');
     expect(board).to.contain('.board-cube--emerald {\n\tbackground: url(./assets/board_icons.png) -1px -91px no-repeat;');
@@ -95,8 +97,8 @@ describe('Styles', () => {
     expect(board).to.contain('.board-cube--ginger {\n\tbackground: url(./assets/board_icons.png) -1px -117px no-repeat;');
     expect(board).to.contain('.board-cube--hydro {\n\tbackground: url(./assets/board_icons.png) -24px -91px no-repeat;');
     expect(board).to.contain('.board-cube--antistress {\n\tbackground: url(./assets/board_icons.png) -94px -91px no-repeat;');
-    expect(board).to.contain('.board-cube--gambit {\n\tbackground: url(./assets/board_icons.png) -94px -91px no-repeat;');
-    expect(board).to.contain('.board-cube--turquoise {\n\tbackground: url(./assets/board_icons.png) -94px -91px no-repeat;');
+    expect(board).to.contain('.board-cube--gambit {\n\tbackground: url(./assets/board_icons.png) -118px -91px no-repeat;');
+    expect(board).to.contain('.board-cube--turquoise {\n\tbackground: url(./assets/board_icons.png) -1px -91px no-repeat;');
     for (const selector of ['.board-cube--gold', '.board-cube--emerald', '.board-cube--ginger', '.board-cube--hydro', '.board-cube--antistress', '.board-cube--gambit', '.board-cube--turquoise']) {
       expect(cssBlock(board, selector)).not.to.contain('linear-gradient');
     }
@@ -144,8 +146,8 @@ describe('Styles', () => {
     expect(cssBlock(playerHome, '&.colonies-fleet-emerald')).to.contain('@player_emerald_sprite_filter');
     expect(cssBlock(playerHome, '&.colonies-fleet-hydro')).to.contain('background-position: -207px 0;');
     expect(cssBlock(playerHome, '&.colonies-fleet-antistress')).to.contain('background-position: -272px 0;');
-    expect(cssBlock(playerHome, '&.colonies-fleet-gambit')).to.contain('background-position: -272px 0;');
-    expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('background-position: -272px 0;');
+    expect(cssBlock(playerHome, '&.colonies-fleet-gambit')).to.contain('background-position: -342px 0;');
+    expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('background-position: -140px 0;');
     expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('@player_turquoise_sprite_filter');
   });
 
@@ -162,13 +164,15 @@ describe('Styles', () => {
     expect(turmoil).to.contain('.player-token-sprite(@x, @y, @filter)');
     expect(turmoil).to.contain('filter: @filter;');
     expect(turmoil).to.contain('color: #fff;');
+    expect(turmoil).to.contain('isolation: isolate;');
+    expect(turmoil).to.contain('z-index: -1;');
     expect(turmoil).to.contain('&.gold');
     expect(cssBlock(turmoil, '&.gold')).to.contain('.player-token-sprite(-644px, 850px, @player_gold_sprite_filter);');
     expect(cssBlock(turmoil, '&.emerald')).to.contain('.player-token-sprite(-865px, 850px, @player_emerald_sprite_filter);');
     expect(cssBlock(turmoil, '&.hydro')).to.contain('.player-token-sprite(-699px, 850px, @player_hydro_sprite_filter);');
     expect(cssBlock(turmoil, '&.antistress')).to.contain('.player-token-sprite(-809px, 850px, @player_antistress_sprite_filter);');
-    expect(cssBlock(turmoil, '&.gambit')).to.contain('.player-token-sprite(-809px, 850px, @player_gambit_sprite_filter);');
-    expect(cssBlock(turmoil, '&.turquoise')).to.contain('.player-token-sprite(-809px, 850px, @player_turquoise_sprite_filter);');
+    expect(cssBlock(turmoil, '&.gambit')).to.contain('.player-token-sprite(-973px, 850px, @player_gambit_sprite_filter);');
+    expect(cssBlock(turmoil, '&.turquoise')).to.contain('.player-token-sprite(-865px, 850px, @player_turquoise_sprite_filter);');
   });
 
   it('keeps GenuineGold text dark on gold UI surfaces', () => {

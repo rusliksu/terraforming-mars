@@ -212,7 +212,7 @@ describe('TelegramBot', () => {
     delete process.env.TM_BOT_TOKEN;
     const player = {
       name: 'Руслан',
-      id: 'p-ruslan',
+      id: 'p-ruslan' as const,
       telegramID: '123456',
       lastNoticeMessageId: 77,
     };

@@ -19,8 +19,9 @@ describe('Player telegram state', () => {
     }
   }
 
-  function stubTelegramApi(nextMessageId: number): {calls: Array<{path: string, body: any}>, restore: () => void} {
+  function stubTelegramApi(nextMessageIds: number | Array<number>): {calls: Array<{path: string, body: any}>, restore: () => void} {
     const calls: Array<{path: string, body: any}> = [];
+    const messageIds = Array.isArray(nextMessageIds) ? [...nextMessageIds] : [nextMessageIds];
     const originalRequest = https.request;
     (https as any).request = (options: {path: string}, cb: (res: EventEmitter) => void) => {
       let requestBody = '';
@@ -34,7 +35,7 @@ describe('Player telegram state', () => {
         const res = new EventEmitter();
         cb(res);
         const response = options.path.includes('/sendMessage') ?
-          {ok: true, result: {message_id: nextMessageId}} :
+          {ok: true, result: {message_id: messageIds.shift()}} :
           {ok: true, result: true};
         res.emit('data', JSON.stringify(response));
         res.emit('end');
@@ -68,13 +69,49 @@ describe('Player telegram state', () => {
     expect(restoredPlayer.lastTurnReminderNoticeKey).eq('g-telegram:1:action:p-ruslan:0');
   });
 
-  it('sends only one reminder for a stale active turn notice', async () => {
+  it('uses a twelve hour reminder interval by default', () => {
+    const originalReminderMs = process.env.TM_TURN_NOTICE_REMINDER_MS;
+    const originalSetTimeout = global.setTimeout;
+    const delays: Array<number | undefined> = [];
+    delete process.env.TM_TURN_NOTICE_REMINDER_MS;
+
+    const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
+    const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
+    Game.newInstance('g-telegram', [player1, player2], player1);
+
+    try {
+      global.setTimeout = ((handler: TimerHandler, timeout?: number) => {
+        delays.push(timeout);
+        return {unref: () => {}, handler} as unknown as ReturnType<typeof setTimeout>;
+      }) as unknown as typeof setTimeout;
+      player1.telegramID = '123456';
+      (player1 as any).waitingFor = new SelectOption('Act');
+      const turnNoticeKey = (player1 as any).getTurnNoticeKey();
+      player1.lastTurnNoticeKey = turnNoticeKey;
+      player1.lastNoticeMessageId = 77;
+
+      (player1 as any).scheduleTurnNoticeReminder(turnNoticeKey);
+
+      expect(delays).deep.eq([12 * 60 * 60 * 1000]);
+    } finally {
+      (player1 as any)._pendingTurnNoticeReminderTimer = undefined;
+      (player1 as any)._pendingTurnNoticeReminderKey = undefined;
+      global.setTimeout = originalSetTimeout;
+      if (originalReminderMs === undefined) {
+        delete process.env.TM_TURN_NOTICE_REMINDER_MS;
+      } else {
+        process.env.TM_TURN_NOTICE_REMINDER_MS = originalReminderMs;
+      }
+    }
+  });
+
+  it('sends repeated reminders for a stale active turn notice', async () => {
     const originalToken = process.env.TM_BOT_TOKEN;
     const originalDisabled = process.env.TM_DISABLE_TELEGRAM;
     const originalLog = console.log;
     process.env.TM_BOT_TOKEN = 'token';
     delete process.env.TM_DISABLE_TELEGRAM;
-    const telegram = stubTelegramApi(101);
+    const telegram = stubTelegramApi([101, 102]);
     console.log = (() => {}) as typeof console.log;
 
     const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
@@ -96,10 +133,11 @@ describe('Player telegram state', () => {
 
       const sendCalls = telegram.calls.filter((call) => call.path.includes('/sendMessage'));
       const deleteCalls = telegram.calls.filter((call) => call.path.includes('/deleteMessage'));
-      expect(sendCalls).has.length(1);
-      expect(deleteCalls).has.length(1);
+      expect(sendCalls).has.length(2);
+      expect(deleteCalls).has.length(2);
       expect(deleteCalls[0].body.message_id).eq(77);
-      expect(player1.lastNoticeMessageId).eq(101);
+      expect(deleteCalls[1].body.message_id).eq(101);
+      expect(player1.lastNoticeMessageId).eq(102);
       expect(player1.lastTurnReminderNoticeKey).eq(turnNoticeKey);
     } finally {
       clearTelegramTimers(player1);

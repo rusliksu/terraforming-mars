@@ -80,7 +80,7 @@ import {From} from './logs/From';
 
 const THROW_STATE_ERRORS = Boolean(process.env.THROW_STATE_ERRORS);
 const TURN_NOTICE_DELAY_MS = 5000;
-const DEFAULT_TURN_NOTICE_REMINDER_MS = 15 * 60 * 1000;
+const DEFAULT_TURN_NOTICE_REMINDER_MS = 12 * 60 * 60 * 1000;
 const DEFAULT_GLOBAL_PARAMETER_STEPS = {
   [GlobalParameter.OCEANS]: 0,
   [GlobalParameter.OXYGEN]: 0,
@@ -1735,7 +1735,6 @@ export class Player implements IPlayer {
     if (reminderMs === 0) return;
     if (!this.telegramID) return;
     if (!this.hasActiveTurnNotice(turnNoticeKey)) return;
-    if (this.lastTurnReminderNoticeKey === turnNoticeKey) return;
     if (this._pendingTurnNoticeReminderTimer !== undefined) {
       if (this._pendingTurnNoticeReminderKey === turnNoticeKey) return;
       this.clearPendingTurnNoticeReminderTimer();
@@ -1754,7 +1753,6 @@ export class Player implements IPlayer {
   }
 
   private async sendTurnNoticeReminder(turnNoticeKey: string): Promise<void> {
-    if (this.lastTurnReminderNoticeKey === turnNoticeKey) return;
     if (this.waitingFor === undefined) return;
     if (!this.hasActiveTurnNotice(turnNoticeKey)) return;
 
@@ -1766,6 +1764,7 @@ export class Player implements IPlayer {
       if (previousMessageId >= 0 && previousMessageId !== this.lastNoticeMessageId) {
         await deleteTurnNoticeMessage(this, previousMessageId);
       }
+      this.scheduleTurnNoticeReminder(turnNoticeKey);
     }
   }
 

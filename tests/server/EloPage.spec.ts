@@ -145,4 +145,51 @@ describe('ELO page', () => {
 
     dom.window.close();
   });
+
+  it('keeps reserved persona colors on recent game winners', async () => {
+    const dom = createEloPage({
+      players: {
+        'catharsis': {
+          displayName: 'Catharsis🔥',
+          elo: 1530,
+          elo_vp: 1530,
+          games: 1,
+          avgPlace: 1,
+          avgVP: 104,
+          avgGens: 8,
+          avgMargin: 12,
+        },
+        'рав': {
+          displayName: 'Рав',
+          elo: 1490,
+          elo_vp: 1490,
+          games: 1,
+          avgPlace: 0,
+          avgVP: 92,
+          avgGens: 8,
+          avgMargin: -12,
+        },
+      },
+      games: [
+        {
+          gameId: 'staging-elo-demo-catharsis',
+          endId: 's-catharsis',
+          server: 'knightbyte',
+          generation: 8,
+          results: [
+            {name: 'catharsis', displayName: 'Catharsis🔥', place: 1, vp: 104, corp: 'Valley Trust', delta: 24},
+            {name: 'рав', displayName: 'Рав', place: 2, vp: 92, corp: 'Factorum', delta: -24},
+          ],
+        },
+      ],
+    });
+
+    await waitForRows(dom);
+    const winnerName = dom.window.document.querySelector('.game-card .winner .pname') as HTMLElement | null;
+
+    expect(winnerName?.classList.contains('player-persona-ginger')).eq(true);
+    expect(dom.window.getComputedStyle(winnerName!).color).eq('rgb(255, 138, 66)');
+
+    dom.window.close();
+  });
 });

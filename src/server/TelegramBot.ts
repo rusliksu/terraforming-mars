@@ -162,15 +162,16 @@ export async function sendTurnNotice(player: TelegramNotifiable, turnNoticeKey?:
 }
 
 export async function deleteTurnNotice(player: TelegramNotifiable): Promise<void> {
-  if (!player.telegramID || player.lastNoticeMessageId < 0) return;
+  const messageId = player.lastNoticeMessageId;
+  if (!player.telegramID || messageId < 0) return;
+  player.lastNoticeMessageId = -1;
   if (telegramDisabled()) return;
   if (!getBotToken()) return;
   try {
     await callTelegramApi('deleteMessage', {
       chat_id: player.telegramID,
-      message_id: player.lastNoticeMessageId,
+      message_id: messageId,
     });
-    player.lastNoticeMessageId = -1;
   } catch (err) {
     console.warn('deleteTurnNotice error:', err);
   }

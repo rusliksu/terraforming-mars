@@ -1678,6 +1678,7 @@ export class Player implements IPlayer {
         this._pendingTurnNoticeTimer = undefined;
       }
       deleteTurnNotice(this);
+      this._turnNoticeSentThisRound = false;
       this.defer(waitingFor.process(input, this));
       waitingForCb();
     } catch (err) {
@@ -1695,10 +1696,16 @@ export class Player implements IPlayer {
     return `${this.game.id}:${this.game.generation}:${this.game.phase}:${this.id}:${actionsBeforeThisTurn}`;
   }
 
+  private hasActiveTurnNotice(turnNoticeKey: string): boolean {
+    return this.lastTurnNoticeKey === turnNoticeKey && this.lastNoticeMessageId >= 0;
+  }
+
   public setWaitingFor(input: PlayerInput, cb: () => void = () => {}): void {
     const turnNoticeKey = this.getTurnNoticeKey();
     if (this.game.inputsThisRound === 0) {
-      this._turnNoticeSentThisRound = this.lastTurnNoticeKey === turnNoticeKey;
+      this._turnNoticeSentThisRound = this.hasActiveTurnNotice(turnNoticeKey);
+    } else if (!this.hasActiveTurnNotice(turnNoticeKey)) {
+      this._turnNoticeSentThisRound = false;
     }
     if (this.waitingFor !== undefined) {
       const message = `Overwriting waitingFor ${this.waitingFor.type} with ${input?.type}`;

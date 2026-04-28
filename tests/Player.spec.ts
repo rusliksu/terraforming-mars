@@ -153,13 +153,37 @@ describe('Player', () => {
       clearTimeout((player as any)._pendingTurnNoticeTimer);
       (player as any)._pendingTurnNoticeTimer = undefined;
       (player as any)._turnNoticeSentThisRound = true;
+      player.lastTurnNoticeKey = (player as any).getTurnNoticeKey();
+      player.lastNoticeMessageId = 77;
 
       player.setWaitingFor(new SelectOption('Second action'));
       expect((player as any)._pendingTurnNoticeTimer).to.be.undefined;
 
       player.popWaitingFor();
+      player.lastNoticeMessageId = -1;
       game.inputsThisRound = 0;
       player.setWaitingFor(new SelectOption('Next turn'));
+      expect((player as any)._turnNoticeSentThisRound).is.false;
+      expect((player as any)._pendingTurnNoticeTimer).not.to.be.undefined;
+    } finally {
+      if ((player as any)._pendingTurnNoticeTimer) {
+        clearTimeout((player as any)._pendingTurnNoticeTimer);
+        (player as any)._pendingTurnNoticeTimer = undefined;
+      }
+    }
+  });
+
+  it('sends another telegram turn notice when the previous notice was cleared', () => {
+    const [game, player] = testGame(1);
+    try {
+      player.telegramID = '162438481';
+      player.lastTurnNoticeKey = (player as any).getTurnNoticeKey();
+      player.lastNoticeMessageId = -1;
+      game.inputsThisRound = 1;
+      (player as any)._turnNoticeSentThisRound = true;
+
+      player.setWaitingFor(new SelectOption('Still waiting'));
+
       expect((player as any)._turnNoticeSentThisRound).is.false;
       expect((player as any)._pendingTurnNoticeTimer).not.to.be.undefined;
     } finally {

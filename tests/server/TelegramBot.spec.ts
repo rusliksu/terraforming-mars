@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 import {BotTakeoverManager} from '../../src/server/bot/BotTakeoverManager';
-import {buildTurnNoticeText, sendTurnNotice} from '../../src/server/TelegramBot';
+import {buildTurnNoticeText, deleteTurnNotice, sendTurnNotice} from '../../src/server/TelegramBot';
 
 describe('TelegramBot', () => {
   it('builds a useful turn notice with link and participants', () => {
@@ -75,6 +75,27 @@ describe('TelegramBot', () => {
         lastNoticeMessageId: -1,
       });
       expect(sent).eq(false);
+    } finally {
+      if (original === undefined) {
+        delete process.env.TM_BOT_TOKEN;
+      } else {
+        process.env.TM_BOT_TOKEN = original;
+      }
+    }
+  });
+
+  it('clears stored turn notice id before best-effort delete', async () => {
+    const original = process.env.TM_BOT_TOKEN;
+    delete process.env.TM_BOT_TOKEN;
+    const player = {
+      name: 'Руслан',
+      id: 'p-ruslan',
+      telegramID: '123456',
+      lastNoticeMessageId: 77,
+    };
+    try {
+      await deleteTurnNotice(player);
+      expect(player.lastNoticeMessageId).eq(-1);
     } finally {
       if (original === undefined) {
         delete process.env.TM_BOT_TOKEN;

@@ -164,8 +164,8 @@ describe('Styles', () => {
     expect(turmoil).to.contain('.player-token-sprite(@x, @y, @filter)');
     expect(turmoil).to.contain('filter: @filter;');
     expect(turmoil).to.contain('color: #fff;');
-    expect(turmoil).to.contain('isolation: isolate;');
-    expect(turmoil).to.contain('z-index: -1;');
+    expect(turmoil).to.contain('width: 50px;');
+    expect(turmoil).to.contain('height: 59px;');
     expect(turmoil).to.contain('&.gold');
     expect(cssBlock(turmoil, '&.gold')).to.contain('.player-token-sprite(-644px, 850px, @player_gold_sprite_filter);');
     expect(cssBlock(turmoil, '&.emerald')).to.contain('.player-token-sprite(-865px, 850px, @player_emerald_sprite_filter);');

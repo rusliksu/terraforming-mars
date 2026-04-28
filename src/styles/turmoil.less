@@ -469,10 +469,8 @@
     .player-token-sprite(@x, @y, @filter) {
         background: none;
         position: relative;
-        z-index: 0;
         filter: none;
         color: #fff;
-        isolation: isolate;
 
         &::before {
             content: "";
@@ -484,7 +482,6 @@
             background: url(./assets/turmoil_ui.png) @x @y no-repeat;
             filter: @filter;
             pointer-events: none;
-            z-index: -1;
         }
     }
 

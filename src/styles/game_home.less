@@ -61,6 +61,44 @@
   }
 }
 
+@media (max-width: 700px) {
+  .game-home-container {
+    >ul {
+      >li {
+        grid-template-columns: 44px 32px minmax(0, 1fr) 58px;
+        grid-template-areas:
+          "order color name copy"
+          ". . bot copied";
+        row-gap: 3px;
+      }
+    }
+    .turn-order {
+      grid-area: order;
+    }
+    .color-square {
+      grid-area: color;
+    }
+    .player-name {
+      grid-area: name;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .bot-toggle {
+      grid-area: bot;
+    }
+    .bot-toggle-placeholder {
+      display: none;
+    }
+    .game-home-copy {
+      grid-area: copy;
+      justify-self: start;
+    }
+    .copied-notice {
+      grid-area: copied;
+    }
+  }
+}
+
 .game-setup-detail-container{
   >ul {
     list-style: none;

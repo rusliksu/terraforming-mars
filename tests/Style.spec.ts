@@ -234,6 +234,15 @@ describe('Styles', () => {
     expect(mixins).to.contain('.player_turquoise_bg_translucent()');
   });
 
+  it('keeps the game-home player link controls responsive', () => {
+    const gameHome = read('src/styles/game_home.less');
+
+    expect(gameHome).to.contain('@media (max-width: 700px)');
+    expect(gameHome).to.contain('grid-template-areas:\n          "order color name copy"\n          ". . bot copied";');
+    expect(gameHome).to.contain('.bot-toggle {\n      grid-area: bot;');
+    expect(gameHome).to.contain('.game-home-copy {\n      grid-area: copy;');
+  });
+
   it('keeps player log labels on one line', () => {
     const log = read('src/styles/log.less');
 

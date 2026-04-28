@@ -19,7 +19,7 @@ describe('Styles', () => {
     const turmoil = read('src/styles/turmoil.less');
     const playerSymbol = read('src/client/utils/playerSymbol.ts');
 
-    expect(variables).to.contain('@player_hydro: rgb(179, 38, 58);');
+    expect(variables).to.contain('@player_hydro: rgb(190, 31, 72);');
     expect(common).to.contain('.player_bg_color_hydro');
     expect(common).to.contain('#ffe5e8');
     expect(common).not.to.contain('linear-gradient(90deg, @player_hydro, #254ec6)');
@@ -95,7 +95,7 @@ describe('Styles', () => {
     expect(board).to.contain('.board-cube--emerald {\n\tbackground: url(./assets/board_icons.png) -1px -91px no-repeat;');
     expect(cssBlock(board, '.board-cube--emerald')).to.contain('@player_emerald_sprite_filter');
     expect(board).to.contain('.board-cube--ginger {\n\tbackground: url(./assets/board_icons.png) -1px -117px no-repeat;');
-    expect(board).to.contain('.board-cube--hydro {\n\tbackground: url(./assets/board_icons.png) -24px -91px no-repeat;');
+    expect(board).to.contain('.board-cube--hydro {\n\tbackground: url(./assets/board_icons.png) -24px -117px no-repeat;');
     expect(board).to.contain('.board-cube--antistress {\n\tbackground: url(./assets/board_icons.png) -94px -91px no-repeat;');
     expect(board).to.contain('.board-cube--gambit {\n\tbackground: url(./assets/board_icons.png) -118px -91px no-repeat;');
     expect(board).to.contain('.board-cube--turquoise {\n\tbackground: url(./assets/board_icons.png) -1px -91px no-repeat;');
@@ -144,7 +144,7 @@ describe('Styles', () => {
     expect(cssBlock(playerHome, '&.colonies-fleet-gold')).to.contain('background-position: -70px 0;');
     expect(cssBlock(playerHome, '&.colonies-fleet-gold')).to.contain('@player_gold_sprite_filter');
     expect(cssBlock(playerHome, '&.colonies-fleet-emerald')).to.contain('@player_emerald_sprite_filter');
-    expect(cssBlock(playerHome, '&.colonies-fleet-hydro')).to.contain('background-position: -207px 0;');
+    expect(cssBlock(playerHome, '&.colonies-fleet-hydro')).to.contain('background-position: -490px 0;');
     expect(cssBlock(playerHome, '&.colonies-fleet-antistress')).to.contain('background-position: -272px 0;');
     expect(cssBlock(playerHome, '&.colonies-fleet-gambit')).to.contain('background-position: -342px 0;');
     expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('background-position: -140px 0;');
@@ -173,7 +173,7 @@ describe('Styles', () => {
     expect(cssBlock(turmoil, '&.gold')).to.contain('.player-token-sprite(-644px, -35px, @player_gold_sprite_filter);');
     expect(cssBlock(turmoil, '&.emerald')).to.contain('.player-token-sprite(-865px, -35px, @player_emerald_sprite_filter);');
     expect(cssBlock(turmoil, '&.ginger')).to.contain('.player-token-sprite(-644px, -105px, @player_ginger_sprite_filter);');
-    expect(cssBlock(turmoil, '&.hydro')).to.contain('.player-token-sprite(-699px, -35px, @player_hydro_sprite_filter);');
+    expect(cssBlock(turmoil, '&.hydro')).to.contain('.player-token-sprite(-699px, -105px, @player_hydro_sprite_filter);');
     expect(cssBlock(turmoil, '&.antistress')).to.contain('.player-token-sprite(-809px, -35px, @player_antistress_sprite_filter);');
     expect(cssBlock(turmoil, '&.gambit')).to.contain('.player-token-sprite(-973px, -35px, @player_gambit_sprite_filter);');
     expect(cssBlock(turmoil, '&.turquoise')).to.contain('.player-token-sprite(-865px, -35px, @player_turquoise_sprite_filter);');

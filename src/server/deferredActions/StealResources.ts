@@ -15,6 +15,7 @@ export class StealResources extends DeferredAction {
     public count: number = 1,
     public title: string | Message = message('Select player to steal up to ${0} ${1} from', (b) => b.number(count).string(resource)),
     public mandatory: boolean = false,
+    public minimum: number = mandatory ? count : 1,
   ) {
     super(player, Priority.ATTACK_OPPONENT);
   }
@@ -23,9 +24,9 @@ export class StealResources extends DeferredAction {
     player: IPlayer,
     resource: Resource,
     count: number,
-    mandatory: boolean = false): Array<IPlayer> {
+    mandatory: boolean = false,
+    minimum: number = mandatory ? count : 1): Array<IPlayer> {
     return player.opponents.filter((p) => {
-      const minimum = mandatory ? count : 1;
       const amt = p.stock.get(resource);
       if (amt < minimum) {
         return false;
@@ -56,7 +57,7 @@ export class StealResources extends DeferredAction {
       return undefined;
     }
 
-    const candidates = StealResources.getCandidates(this.player, this.resource, this.count, this.mandatory);
+    const candidates = StealResources.getCandidates(this.player, this.resource, this.count, this.mandatory, this.minimum);
 
     if (candidates.length === 0) {
       return undefined;

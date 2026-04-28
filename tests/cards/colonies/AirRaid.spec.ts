@@ -28,10 +28,17 @@ describe('AirRaid', () => {
     expect(card.canPlay(player)).is.not.true;
   });
 
-  it('Can not play: no opponent has 5+ M€', () => {
+  it('Can not play: no opponent has any M€', () => {
+    player.addResourceTo(stormcraftIncorporated);
+    player2.megaCredits = 0;
+    expect(card.canPlay(player)).is.not.true;
+  });
+
+  it('Can play when an opponent has fewer than 5 M€', () => {
     player.addResourceTo(stormcraftIncorporated);
     player2.megaCredits = 4;
-    expect(card.canPlay(player)).is.not.true;
+
+    expect(card.canPlay(player)).is.true;
   });
 
   it('Should play - multiple targets', () => {
@@ -66,6 +73,21 @@ describe('AirRaid', () => {
     expect(stormcraftIncorporated.resourceCount).to.eq(0);
     expect(player2.megaCredits).to.eq(0);
     expect(player.megaCredits).to.eq(5);
+  });
+
+  it('Should play - single target with fewer than 5 M€', () => {
+    player.addResourceTo(stormcraftIncorporated);
+    player2.megaCredits = 4;
+
+    card.play(player);
+    const option = cast(player.game.deferredActions.pop()!.execute(), OrOptions);
+    expect(option.options).has.lengthOf(1);
+    option.options[0].cb();
+    player.game.deferredActions.pop()!.execute(); // Remove floater
+
+    expect(stormcraftIncorporated.resourceCount).to.eq(0);
+    expect(player2.megaCredits).to.eq(0);
+    expect(player.megaCredits).to.eq(4);
   });
 
   it('Solo mode: grants 5 M€ directly', () => {

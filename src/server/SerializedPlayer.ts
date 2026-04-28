@@ -47,6 +47,7 @@ export interface SerializedPlayer extends DeprecatedFields{
   lastCardPlayed?: CardName;
   lastNoticeMessageId?: number;
   lastTurnNoticeKey?: string;
+  lastTurnReminderNoticeKey?: string;
   ceoCardsInHand: Array<CardName>;
   megaCreditProduction: number;
   megaCredits: number;

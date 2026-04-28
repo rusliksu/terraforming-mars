@@ -29,6 +29,10 @@ interface TelegramResponse {
   error_code?: number;
 }
 
+interface TurnNoticeOptions {
+  reminder?: boolean;
+}
+
 function telegramDisabled(): boolean {
   return process.env.TM_DISABLE_TELEGRAM === '1';
 }
@@ -124,8 +128,8 @@ function buildGameSummary(player: TelegramNotifiable): string | undefined {
   return parts.join(' · ');
 }
 
-export function buildTurnNoticeText(player: TelegramNotifiable): string {
-  const lines = ['Твой ход!'];
+export function buildTurnNoticeText(player: TelegramNotifiable, options: TurnNoticeOptions = {}): string {
+  const lines = [options.reminder === true ? 'Напоминание: твой ход!' : 'Твой ход!'];
   const gameSummary = buildGameSummary(player);
   if (gameSummary !== undefined) {
     lines.push(gameSummary);
@@ -138,7 +142,11 @@ export function buildTurnNoticeText(player: TelegramNotifiable): string {
   return lines.join('\n');
 }
 
-export async function sendTurnNotice(player: TelegramNotifiable, turnNoticeKey?: string): Promise<boolean> {
+export async function sendTurnNotice(
+  player: TelegramNotifiable,
+  turnNoticeKey?: string,
+  options: TurnNoticeOptions = {},
+): Promise<boolean> {
   if (!player.telegramID) return false;
   if (telegramDisabled()) return false;
   if (!getBotToken()) return false;
@@ -146,7 +154,7 @@ export async function sendTurnNotice(player: TelegramNotifiable, turnNoticeKey?:
   try {
     const resp = await callTelegramApi('sendMessage', {
       chat_id: player.telegramID,
-      text: buildTurnNoticeText(player),
+      text: buildTurnNoticeText(player, options),
     });
     if (resp.ok && resp.result) {
       player.lastNoticeMessageId = resp.result.message_id;
@@ -161,10 +169,8 @@ export async function sendTurnNotice(player: TelegramNotifiable, turnNoticeKey?:
   return false;
 }
 
-export async function deleteTurnNotice(player: TelegramNotifiable): Promise<void> {
-  const messageId = player.lastNoticeMessageId;
+export async function deleteTurnNoticeMessage(player: TelegramNotifiable, messageId: number): Promise<void> {
   if (!player.telegramID || messageId < 0) return;
-  player.lastNoticeMessageId = -1;
   if (telegramDisabled()) return;
   if (!getBotToken()) return;
   try {
@@ -175,6 +181,13 @@ export async function deleteTurnNotice(player: TelegramNotifiable): Promise<void
   } catch (err) {
     console.warn('deleteTurnNotice error:', err);
   }
+}
+
+export async function deleteTurnNotice(player: TelegramNotifiable): Promise<void> {
+  const messageId = player.lastNoticeMessageId;
+  if (messageId < 0) return;
+  player.lastNoticeMessageId = -1;
+  await deleteTurnNoticeMessage(player, messageId);
 }
 
 export async function sendGameStartNotice(player: TelegramNotifiable): Promise<void> {

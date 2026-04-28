@@ -1,4 +1,4 @@
-import {sendTurnNotice, deleteTurnNotice} from './TelegramBot';
+import {sendTurnNotice, deleteTurnNotice, deleteTurnNoticeMessage} from './TelegramBot';
 import * as constants from '../common/constants';
 import {PlayerId} from '../common/Types';
 import {MILESTONE_COST, REDS_RULING_POLICY_COST} from '../common/constants';
@@ -79,6 +79,8 @@ import {PlayedCards} from './cards/PlayedCards';
 import {From} from './logs/From';
 
 const THROW_STATE_ERRORS = Boolean(process.env.THROW_STATE_ERRORS);
+const TURN_NOTICE_DELAY_MS = 5000;
+const DEFAULT_TURN_NOTICE_REMINDER_MS = 15 * 60 * 1000;
 const DEFAULT_GLOBAL_PARAMETER_STEPS = {
   [GlobalParameter.OCEANS]: 0,
   [GlobalParameter.OXYGEN]: 0,
@@ -88,6 +90,18 @@ const DEFAULT_GLOBAL_PARAMETER_STEPS = {
   [GlobalParameter.MOON_MINING_RATE]: 0,
   [GlobalParameter.MOON_LOGISTICS_RATE]: 0,
 } as const;
+
+function getTurnNoticeReminderMs(): number {
+  const raw = process.env.TM_TURN_NOTICE_REMINDER_MS;
+  if (raw === undefined) return DEFAULT_TURN_NOTICE_REMINDER_MS;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed < 0) return DEFAULT_TURN_NOTICE_REMINDER_MS;
+  return parsed;
+}
+
+function unrefTimer(timer: ReturnType<typeof setTimeout>): void {
+  timer.unref?.();
+}
 
 export class Player implements IPlayer {
   public readonly id: PlayerId;
@@ -182,7 +196,10 @@ export class Player implements IPlayer {
   public telegramID: string = '';
   public lastNoticeMessageId: number = -1;
   public lastTurnNoticeKey: string = '';
+  public lastTurnReminderNoticeKey: string = '';
   private _pendingTurnNoticeTimer?: ReturnType<typeof setTimeout>;
+  private _pendingTurnNoticeReminderTimer?: ReturnType<typeof setTimeout>;
+  private _pendingTurnNoticeReminderKey?: string;
   private _turnNoticeSentThisRound: boolean = false;
 
   public get megaCredits(): number {
@@ -1673,10 +1690,7 @@ export class Player implements IPlayer {
     this.waitingForCb = undefined;
     try {
       this.timer.stop();
-      if (this._pendingTurnNoticeTimer) {
-        clearTimeout(this._pendingTurnNoticeTimer);
-        this._pendingTurnNoticeTimer = undefined;
-      }
+      this.clearPendingTurnNoticeTimers();
       deleteTurnNotice(this);
       this._turnNoticeSentThisRound = false;
       this.defer(waitingFor.process(input, this));
@@ -1700,6 +1714,61 @@ export class Player implements IPlayer {
     return this.lastTurnNoticeKey === turnNoticeKey && this.lastNoticeMessageId >= 0;
   }
 
+  private clearPendingTurnNoticeTimers(): void {
+    if (this._pendingTurnNoticeTimer) {
+      clearTimeout(this._pendingTurnNoticeTimer);
+      this._pendingTurnNoticeTimer = undefined;
+    }
+    this.clearPendingTurnNoticeReminderTimer();
+  }
+
+  private clearPendingTurnNoticeReminderTimer(): void {
+    if (this._pendingTurnNoticeReminderTimer) {
+      clearTimeout(this._pendingTurnNoticeReminderTimer);
+      this._pendingTurnNoticeReminderTimer = undefined;
+    }
+    this._pendingTurnNoticeReminderKey = undefined;
+  }
+
+  private scheduleTurnNoticeReminder(turnNoticeKey: string): void {
+    const reminderMs = getTurnNoticeReminderMs();
+    if (reminderMs === 0) return;
+    if (!this.telegramID) return;
+    if (!this.hasActiveTurnNotice(turnNoticeKey)) return;
+    if (this.lastTurnReminderNoticeKey === turnNoticeKey) return;
+    if (this._pendingTurnNoticeReminderTimer !== undefined) {
+      if (this._pendingTurnNoticeReminderKey === turnNoticeKey) return;
+      this.clearPendingTurnNoticeReminderTimer();
+    }
+
+    this._pendingTurnNoticeReminderKey = turnNoticeKey;
+    this._pendingTurnNoticeReminderTimer = setTimeout(() => {
+      const scheduledKey = this._pendingTurnNoticeReminderKey;
+      this._pendingTurnNoticeReminderTimer = undefined;
+      this._pendingTurnNoticeReminderKey = undefined;
+      if (scheduledKey !== undefined) {
+        void this.sendTurnNoticeReminder(scheduledKey);
+      }
+    }, reminderMs);
+    unrefTimer(this._pendingTurnNoticeReminderTimer);
+  }
+
+  private async sendTurnNoticeReminder(turnNoticeKey: string): Promise<void> {
+    if (this.lastTurnReminderNoticeKey === turnNoticeKey) return;
+    if (this.waitingFor === undefined) return;
+    if (!this.hasActiveTurnNotice(turnNoticeKey)) return;
+
+    const previousMessageId = this.lastNoticeMessageId;
+    const sent = await sendTurnNotice(this, turnNoticeKey, {reminder: true});
+    if (sent) {
+      this._turnNoticeSentThisRound = true;
+      this.lastTurnReminderNoticeKey = turnNoticeKey;
+      if (previousMessageId >= 0 && previousMessageId !== this.lastNoticeMessageId) {
+        await deleteTurnNoticeMessage(this, previousMessageId);
+      }
+    }
+  }
+
   public setWaitingFor(input: PlayerInput, cb: () => void = () => {}): void {
     const turnNoticeKey = this.getTurnNoticeKey();
     if (this.game.inputsThisRound === 0) {
@@ -1719,15 +1788,22 @@ export class Player implements IPlayer {
     this.waitingFor = input;
     this.waitingForCb = cb;
     this.game.inputsThisRound++;
-    if (this._pendingTurnNoticeTimer) clearTimeout(this._pendingTurnNoticeTimer);
+    if (this._pendingTurnNoticeTimer) {
+      clearTimeout(this._pendingTurnNoticeTimer);
+      this._pendingTurnNoticeTimer = undefined;
+    }
     if (this.telegramID && this._turnNoticeSentThisRound === false) {
       this._pendingTurnNoticeTimer = setTimeout(async () => {
         this._pendingTurnNoticeTimer = undefined;
         const sent = await sendTurnNotice(this, turnNoticeKey);
         if (sent) {
           this._turnNoticeSentThisRound = true;
+          this.scheduleTurnNoticeReminder(turnNoticeKey);
         }
-      }, 5000);
+      }, TURN_NOTICE_DELAY_MS);
+      unrefTimer(this._pendingTurnNoticeTimer);
+    } else {
+      this.scheduleTurnNoticeReminder(turnNoticeKey);
     }
   }
 
@@ -1762,6 +1838,7 @@ export class Player implements IPlayer {
       telegramID: this.telegramID || undefined,
       lastNoticeMessageId: this.lastNoticeMessageId,
       lastTurnNoticeKey: this.lastTurnNoticeKey || undefined,
+      lastTurnReminderNoticeKey: this.lastTurnReminderNoticeKey || undefined,
       // Used only during set-up
       pickedCorporationCard: this.pickedCorporationCard?.name,
       // Terraforming Rating
@@ -1905,6 +1982,7 @@ export class Player implements IPlayer {
     player.telegramID = d.telegramID ?? '';
     player.lastNoticeMessageId = d.lastNoticeMessageId ?? -1;
     player.lastTurnNoticeKey = d.lastTurnNoticeKey ?? '';
+    player.lastTurnReminderNoticeKey = d.lastTurnReminderNoticeKey ?? '';
 
     // Rebuild removed from play cards (Playwrights, Odyssey)
     player.removedFromPlayCards = cardsFromJSON(d.removedFromPlayCards);

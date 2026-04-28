@@ -61,6 +61,9 @@
 .player_shadow_color_gambit {
     text-shadow: -1px -1px 6px @player_gambit, 1px 1px 1px #333a;
 }
+.player_shadow_color_turquoise {
+    text-shadow: -1px -1px 6px @player_turquoise, 1px 1px 1px #333a;
+}
 
 .game-title {
     text-transform: uppercase;
@@ -154,7 +157,7 @@
     }
 
     .grid-item.player_tag_bg_color_hydro {
-        background-color: rgba(179, 38, 58, 0.2);
+        background-color: rgba(190, 31, 72, 0.2);
     }
 
     .grid-item.player_tag_bg_color_antistress {
@@ -163,6 +166,10 @@
 
     .grid-item.player_tag_bg_color_gambit {
         background-color: rgba(111, 164, 205, 0.22);
+    }
+
+    .grid-item.player_tag_bg_color_turquoise {
+        background-color: rgba(0, 174, 181, 0.22);
     }
     .city-count {
         background: url(./assets/icon_city.png) center no-repeat;
@@ -631,6 +638,27 @@
             box-shadow: 0 0 1px 1px black;
         }
 
+        .ma-score.player_bg_color_red,
+        .ma-score.player_bg_color_blue,
+        .ma-score.player_bg_color_purple,
+        .ma-score.player_bg_color_hydro,
+        .ma-score.player_bg_color_antistress {
+            color: #fff;
+        }
+
+        .ma-score.player_bg_color_yellow,
+        .ma-score.player_bg_color_green,
+        .ma-score.player_bg_color_black,
+        .ma-score.player_bg_color_orange,
+        .ma-score.player_bg_color_pink,
+        .ma-score.player_bg_color_gold,
+        .ma-score.player_bg_color_emerald,
+        .ma-score.player_bg_color_ginger,
+        .ma-score.player_bg_color_gambit,
+        .ma-score.player_bg_color_turquoise {
+            color: #000;
+        }
+
         .ma-scores {
             display: inline-block;
             width: 144px;
@@ -650,7 +678,8 @@
             .board-cube--ginger,
             .board-cube--hydro,
             .board-cube--antistress,
-            .board-cube--gambit {
+            .board-cube--gambit,
+            .board-cube--turquoise {
                 transform: scale(0.95);
             }
         }
@@ -759,7 +788,8 @@
     .board-cube--ginger,
     .board-cube--hydro,
     .board-cube--antistress,
-    .board-cube--gambit {
+    .board-cube--gambit,
+    .board-cube--turquoise {
         transform: scale(0.9);
         transform-origin: 50% 50%;
     }
@@ -877,45 +907,6 @@
     display: inline-block;
     vertical-align: top;
 
-    .colonies-fleet-gradient(@x, @y, @gradient, @glow) {
-        background: url(./assets/colony_ships.png) @x @y no-repeat;
-        position: relative;
-        overflow: visible;
-        filter:
-            saturate(1.18)
-            drop-shadow(0 0 4px fade(@glow, 76%))
-            drop-shadow(0 0 10px fade(@glow, 28%))
-            drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.75));
-
-        &::before,
-        &::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-        }
-
-        &::before {
-            background: @gradient;
-            opacity: 0.78;
-            mix-blend-mode: color;
-            -webkit-mask-image: url(./assets/colony_ships.png);
-            -webkit-mask-position: @x @y;
-            -webkit-mask-repeat: no-repeat;
-            mask-image: url(./assets/colony_ships.png);
-            mask-position: @x @y;
-            mask-repeat: no-repeat;
-        }
-
-        &::after {
-            background:
-                radial-gradient(ellipse at 26% 76%, fade(@glow, 78%) 0%, fade(@glow, 42%) 18%, transparent 46%),
-                linear-gradient(135deg, rgba(255,255,255,.42) 0%, rgba(255,255,255,0) 35%, rgba(0,0,0,.24) 78%);
-            opacity: 0.58;
-            mix-blend-mode: screen;
-        }
-    }
-
     &.colonies-fleet-black {
         background-position: 0 0;
     }
@@ -949,57 +940,38 @@
     }
 
     &.colonies-fleet-gold {
-        .colonies-fleet-gradient(
-            -70px,
-            0,
-            linear-gradient(135deg, #fff6a8 0%, #f6d35a 30%, #d4af37 55%, #815400 78%, #fff0a0 100%),
-            #ffd54d
-        );
+        background-position: -70px 0;
+        filter: @player_gold_sprite_filter;
     }
 
     &.colonies-fleet-emerald {
-        .colonies-fleet-gradient(
-            -140px,
-            0,
-            linear-gradient(135deg, #93ffe0 0%, #00c88f 38%, #009468 64%, #004735 100%),
-            #00ffaa
-        );
+        background-position: -140px 0;
+        filter: @player_emerald_sprite_filter;
     }
 
     &.colonies-fleet-ginger {
-        .colonies-fleet-gradient(
-            -416px,
-            0,
-            linear-gradient(135deg, #ffd296 0%, #ff8c2b 36%, #da581c 63%, #7a2200 100%),
-            #ff8c2b
-        );
+        background-position: -416px 0;
+        filter: @player_ginger_sprite_filter;
     }
 
     &.colonies-fleet-hydro {
-        .colonies-fleet-gradient(
-            -207px,
-            0,
-            linear-gradient(135deg, #ff9da5 0%, #d94c5b 33%, @player_hydro 62%, #5e0714 100%),
-            #d93548
-        );
+        background-position: -490px 0;
+        filter: @player_hydro_sprite_filter;
     }
 
     &.colonies-fleet-antistress {
-        .colonies-fleet-gradient(
-            -272px,
-            0,
-            linear-gradient(135deg, #6f94d4 0%, #315a9d 36%, @player_antistress 66%, #071b3d 100%),
-            #456fc0
-        );
+        background-position: -272px 0;
+        filter: @player_antistress_sprite_filter;
     }
 
     &.colonies-fleet-gambit {
-        .colonies-fleet-gradient(
-            -272px,
-            0,
-            linear-gradient(135deg, #e3f2ff 0%, #b7d5ec 34%, @player_gambit 64%, #345f8c 100%),
-            #9dd1f7
-        );
+        background-position: -342px 0;
+        filter: @player_gambit_sprite_filter;
+    }
+
+    &.colonies-fleet-turquoise {
+        background-position: -140px 0;
+        filter: @player_turquoise_sprite_filter;
     }
 }
 
@@ -1008,7 +980,8 @@
 .colony-cube.board-cube--ginger,
 .colony-cube.board-cube--hydro,
 .colony-cube.board-cube--antistress,
-.colony-cube.board-cube--gambit {
+.colony-cube.board-cube--gambit,
+.colony-cube.board-cube--turquoise {
     transform: scale(1.45);
 }
 

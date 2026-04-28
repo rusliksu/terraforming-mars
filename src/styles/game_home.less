@@ -13,11 +13,14 @@
   }
   >ul {
     list-style: none;
+    padding-left: 0;
     >li {
       font-size: @font_size_big;
-      display: flex;
-      flex-flow: row;
+      display: grid;
+      grid-template-columns: 44px 40px 200px 190px 82px minmax(80px, auto);
+      column-gap: 8px;
       align-items: center;
+      min-height: 34px;
     }
   }
   .color-square {
@@ -25,15 +28,22 @@
     width: 23px;
     height: 23px;
     border-radius: 3px;
-    margin: 0px 12px;
+    justify-self: center;
   }
   .player-name {
     text-decoration: underline;
-    margin-right: 18px;
     cursor: pointer;
+    min-width: 0;
+    white-space: nowrap;
+  }
+  .bot-toggle-placeholder {
+    display: block;
+  }
+  .game-home-copy {
+    display: inline-flex;
+    align-items: center;
   }
   .copied-notice {
-    margin-left: 12px;
     font-size: @font_size_normal;
     .dismissed {
       font-size: @font_size_small;
@@ -45,6 +55,64 @@
   }
   .spacing-setup{
     padding-bottom: 64px;
+  }
+  .game-home-player-row--spectator {
+    margin-top: 8px;
+  }
+}
+
+.topmost-game-home {
+  .notice {
+    position: static;
+    box-sizing: border-box;
+    text-align: right;
+  }
+}
+
+@media (max-width: 700px) {
+  .game-home-container {
+    >ul {
+      >li {
+        grid-template-columns: 44px 32px minmax(0, 1fr) 58px;
+        grid-template-areas:
+          "order color name copy"
+          ". . bot copied";
+        row-gap: 3px;
+      }
+    }
+    .turn-order {
+      grid-area: order;
+    }
+    .color-square {
+      grid-area: color;
+    }
+    .player-name {
+      grid-area: name;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .bot-toggle {
+      grid-area: bot;
+    }
+    .bot-toggle-placeholder {
+      display: none;
+    }
+    .game-home-copy {
+      grid-area: copy;
+      justify-self: start;
+    }
+    .copied-notice {
+      grid-area: copied;
+    }
+  }
+
+  .topmost-game-home {
+    overflow-x: hidden;
+
+    .notice {
+      padding: 16px 16px 24px 76px;
+      text-align: left;
+    }
   }
 }
 

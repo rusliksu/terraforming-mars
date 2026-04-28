@@ -31,13 +31,19 @@ a:hover { text-decoration: underline; }
 .player-link.active-filter { color: #ff6b35; font-weight: bold; }
 .player-persona { font-weight: 700; }
 .player-persona-gold,
-.winner .player-persona-gold { color: #ffe47a; font-family: Georgia, "Times New Roman", serif; text-shadow: 0 0 6px rgba(255, 215, 0, 0.45); }
+.winner .player-persona-gold { color: #d4af37; }
 .player-persona-emerald,
-.winner .player-persona-emerald { color: #6effc8; font-family: "Trebuchet MS", -apple-system, sans-serif; text-shadow: 0 0 6px rgba(0, 255, 170, 0.35); }
+.winner .player-persona-emerald { color: #009468; }
 .player-persona-ginger,
-.winner .player-persona-ginger { color: #ffb071; font-family: Verdana, -apple-system, sans-serif; text-shadow: 0 0 6px rgba(255, 103, 26, 0.38); }
+.winner .player-persona-ginger { color: #ff8a42; }
 .player-persona-hydro,
-.winner .player-persona-hydro { color: #7beeff; font-family: "Segoe UI", -apple-system, sans-serif; text-shadow: 0 0 6px rgba(0, 210, 255, 0.36); }
+.winner .player-persona-hydro { color: #ef4a73; }
+.player-persona-antistress,
+.winner .player-persona-antistress { color: #87aefc; }
+.player-persona-gambit,
+.winner .player-persona-gambit { color: #9bd2ff; }
+.player-persona-turquoise,
+.winner .player-persona-turquoise { color: #38e7ef; }
 .player-persona:hover { filter: brightness(1.12); }
 
 /* Recent Games */
@@ -63,6 +69,13 @@ a:hover { text-decoration: underline; }
 .game-player .pdelta.zero { color: #888; }
 .game-sep { color: #555; font-weight: bold; }
 .winner .pname { color: #2ecc71; }
+.winner .player-persona-gold { color: #d4af37; }
+.winner .player-persona-emerald { color: #009468; }
+.winner .player-persona-ginger { color: #ff8a42; }
+.winner .player-persona-hydro { color: #ef4a73; }
+.winner .player-persona-antistress { color: #87aefc; }
+.winner .player-persona-gambit { color: #9bd2ff; }
+.winner .player-persona-turquoise { color: #38e7ef; }
 .show-more { text-align: center; margin-top: 15px; }
 .show-more button { background: #16213e; color: #ff6b35; border: 1px solid #ff6b35; padding: 8px 24px; border-radius: 6px; cursor: pointer; font-size: 0.95em; }
 .show-more button:hover { background: #ff6b35; color: #fff; }
@@ -108,9 +121,24 @@ var PLAYER_PERSONA_CLASSES = {
   "rav": "player-persona-emerald",
   "catharsis": "player-persona-ginger",
   "catharsis🔥": "player-persona-ginger",
+  "катерина": "player-persona-ginger",
   "gydro": "player-persona-hydro",
   "руслан": "player-persona-hydro",
-  "ruslan": "player-persona-hydro"
+  "ruslan": "player-persona-hydro",
+  "антистресс": "player-persona-antistress",
+  "анатолий": "player-persona-antistress",
+  "abdullaev": "player-persona-antistress",
+  "gambitgirl": "player-persona-gambit",
+  "gambit girl": "player-persona-gambit",
+  "олеся": "player-persona-gambit",
+  "игнатова": "player-persona-gambit",
+  "мяу": "player-persona-gambit",
+  "паша": "player-persona-turquoise",
+  "павел": "player-persona-turquoise",
+  "pasha": "player-persona-turquoise",
+  "pavel": "player-persona-turquoise",
+  "pavel mironov": "player-persona-turquoise",
+  "миронов": "player-persona-turquoise"
 };
 
 function getGameUrl(game) {

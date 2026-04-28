@@ -10,6 +10,7 @@ import {
   GAMBIT_GIRL_NAME,
   GENUINE_GOLD_NAME,
   GYDRO_NAME,
+  PAVEL_TURQUOISE_NAME,
 } from '@/common/Color';
 
 describe('CreateGameForm', () => {
@@ -185,6 +186,7 @@ describe('CreateGameForm', () => {
     expect(secondOptions).to.include(GYDRO_NAME);
     expect(secondOptions).to.include(ANTISTRESS_NAME);
     expect(secondOptions).to.include(GAMBIT_GIRL_NAME);
+    expect(secondOptions).to.include(PAVEL_TURQUOISE_NAME);
   });
 
   it('renders persona preview using the shared colorbox swatch', () => {
@@ -209,6 +211,7 @@ describe('CreateGameForm', () => {
       {color: 'hydro', inputName: 'Ruslan', expectedName: GYDRO_NAME},
       {color: 'antistress', inputName: 'Anatoly', expectedName: ANTISTRESS_NAME},
       {color: 'gambit', inputName: 'Olesya', expectedName: GAMBIT_GIRL_NAME},
+      {color: 'turquoise', inputName: 'Pavel', expectedName: PAVEL_TURQUOISE_NAME},
     ]) {
       vm.players[0].color = testCase.color;
       vm.players[0].name = testCase.inputName;

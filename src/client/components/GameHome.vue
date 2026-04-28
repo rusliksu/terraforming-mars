@@ -3,7 +3,7 @@
         <h1><span v-i18n>Terraforming Mars</span> [<span v-i18n>game id:</span> <span>{{getGameId()}}</span>]</h1>
         <h4><span v-i18n>Instructions: To start the game, separately copy and share the links with all players, and then click on your name.</span><br/><span v-i18n>Save this page in case you or one of your opponents loses a link.</span></h4>
         <ul>
-          <li v-for="(player, index) in (game === undefined ? [] : game.players)" :key="player.color">
+          <li v-for="(player, index) in (game === undefined ? [] : game.players)" :key="player.color" class="game-home-player-row">
             <span class="turn-order" v-i18n>{{getTurnOrder(index)}}</span>
             <span :class="'color-square ' + getPlayerCubeColorClass(player.color)">{{playerSymbol(player.color)}}</span>
             <span class="player-name"><a :href="getHref(player.id)">{{player.name}}</a></span>
@@ -21,19 +21,19 @@
                 <span class="bot-toggle__thumb"></span>
               </span>
               <span class="bot-toggle__meta">
-                <span class="bot-toggle__label" :class="getPlayerCubeColorClass(player.color)">Bot takeover</span>
+                <span class="bot-toggle__label">Bot takeover</span>
                 <span v-if="isBotRunning(player.id)" class="bot-toggle__state">bot is playing</span>
               </span>
             </button>
-            <AppButton title="copy" size="tiny" @click="copyUrl(player.id)"/>
+            <span class="game-home-copy"><AppButton title="copy" size="tiny" @click="copyUrl(player.id)"/></span>
             <span v-if="isPlayerUrlCopied(player.id)" class="copied-notice"><span v-i18n>Copied!</span></span>
           </li>
-          <li v-if="game !== undefined && game.spectatorId">
-            <p/>
+          <li v-if="game !== undefined && game.spectatorId" class="game-home-player-row game-home-player-row--spectator">
             <span class="turn-order"></span>
             <span class="color-square"></span>
             <span class="player-name"><a :href="getHref(game.spectatorId)" v-i18n>Spectator</a></span>
-            <AppButton title="copy" size="tiny" @click="copyUrl(game.spectatorId)"/>
+            <span class="bot-toggle-placeholder"></span>
+            <span class="game-home-copy"><AppButton title="copy" size="tiny" @click="copyUrl(game.spectatorId)"/></span>
           </li>
         </ul>
 
@@ -222,7 +222,8 @@ export default defineComponent({
   cursor: pointer;
   display: inline-flex;
   gap: 6px;
-  margin: 0 6px;
+  justify-self: start;
+  margin: 0;
   padding: 0;
   vertical-align: middle;
 }
@@ -266,18 +267,24 @@ export default defineComponent({
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
+  min-width: 112px;
 }
 
 .bot-toggle__label {
+  background: linear-gradient(180deg, #60708a 0%, #36455c 100%);
   border-radius: 999px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.18);
   color: #fffef8 !important;
+  display: inline-flex;
   font-size: 10px;
   font-weight: 700;
+  justify-content: center;
   letter-spacing: 0.06em;
   line-height: 1;
+  min-width: 100px;
   padding: 4px 9px;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .bot-toggle__state {
@@ -285,5 +292,6 @@ export default defineComponent({
   font-size: 10px;
   font-weight: 600;
   line-height: 1;
+  white-space: nowrap;
 }
 </style>

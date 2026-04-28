@@ -13,11 +13,14 @@
   }
   >ul {
     list-style: none;
+    padding-left: 0;
     >li {
       font-size: @font_size_big;
-      display: flex;
-      flex-flow: row;
+      display: grid;
+      grid-template-columns: 44px 40px 200px 190px 82px minmax(80px, auto);
+      column-gap: 8px;
       align-items: center;
+      min-height: 34px;
     }
   }
   .color-square {
@@ -25,15 +28,22 @@
     width: 23px;
     height: 23px;
     border-radius: 3px;
-    margin: 0px 12px;
+    justify-self: center;
   }
   .player-name {
     text-decoration: underline;
-    margin-right: 18px;
     cursor: pointer;
+    min-width: 0;
+    white-space: nowrap;
+  }
+  .bot-toggle-placeholder {
+    display: block;
+  }
+  .game-home-copy {
+    display: inline-flex;
+    align-items: center;
   }
   .copied-notice {
-    margin-left: 12px;
     font-size: @font_size_normal;
     .dismissed {
       font-size: @font_size_small;
@@ -45,6 +55,9 @@
   }
   .spacing-setup{
     padding-bottom: 64px;
+  }
+  .game-home-player-row--spectator {
+    margin-top: 8px;
   }
 }
 

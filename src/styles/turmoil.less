@@ -452,6 +452,8 @@
     font-size: 22px;
     color: #fff;
     text-shadow: 0 1px 1px #000, 0 0 2px #000;
+    position: relative;
+    z-index: 1;
 }
 
 .player-token {
@@ -482,6 +484,7 @@
             background: url(./assets/turmoil_ui.png) @x @y no-repeat;
             filter: @filter;
             pointer-events: none;
+            z-index: 0;
         }
     }
 
@@ -549,6 +552,11 @@
         background-position: -919px 850px;
         color: #7b7b7b;
     }
+}
+
+.player-token__number {
+    position: relative;
+    z-index: 1;
 }
 
 .player-token-new-leader {

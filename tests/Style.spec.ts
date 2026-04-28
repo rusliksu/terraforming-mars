@@ -273,6 +273,7 @@ describe('Styles', () => {
     expect(elo).to.contain('"gambitgirl": "player-persona-gambit"');
     expect(elo).to.contain('"паша": "player-persona-turquoise"');
     expect(elo).to.contain('"pavel": "player-persona-turquoise"');
+    expect(elo).to.contain('.winner .player-persona-emerald { color: #009468; }');
     expect(elo).not.to.contain('font-family: Georgia');
     expect(elo).not.to.contain('font-family: "Trebuchet MS"');
     expect(elo).not.to.contain('font-family: Verdana');

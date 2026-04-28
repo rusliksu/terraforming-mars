@@ -71,9 +71,11 @@ describe('Player telegram state', () => {
   it('sends only one reminder for a stale active turn notice', async () => {
     const originalToken = process.env.TM_BOT_TOKEN;
     const originalDisabled = process.env.TM_DISABLE_TELEGRAM;
+    const originalLog = console.log;
     process.env.TM_BOT_TOKEN = 'token';
     delete process.env.TM_DISABLE_TELEGRAM;
     const telegram = stubTelegramApi(101);
+    console.log = (() => {}) as typeof console.log;
 
     const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
     const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
@@ -102,6 +104,7 @@ describe('Player telegram state', () => {
     } finally {
       clearTelegramTimers(player1);
       telegram.restore();
+      console.log = originalLog;
       if (originalToken === undefined) {
         delete process.env.TM_BOT_TOKEN;
       } else {

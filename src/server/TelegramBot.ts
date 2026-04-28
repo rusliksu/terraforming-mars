@@ -128,6 +128,35 @@ function buildGameSummary(player: TelegramNotifiable): string | undefined {
   return parts.join(' · ');
 }
 
+function gameIdForLog(player: TelegramNotifiable): string {
+  return player.game?.id ?? 'unknown';
+}
+
+function logTurnNoticeSent(
+  player: TelegramNotifiable,
+  messageId: number,
+  turnNoticeKey: string | undefined,
+  options: TurnNoticeOptions,
+): void {
+  console.log(
+    `Telegram turn notice sent game=${gameIdForLog(player)} player=${player.id} message=${messageId} ` +
+    `reminder=${options.reminder === true} key=${turnNoticeKey ?? ''}`,
+  );
+}
+
+function warnTurnNoticeFailed(
+  player: TelegramNotifiable,
+  response: TelegramResponse,
+  turnNoticeKey: string | undefined,
+  options: TurnNoticeOptions,
+): void {
+  console.warn(
+    `Telegram turn notice failed game=${gameIdForLog(player)} player=${player.id} ` +
+    `code=${response.error_code ?? 'unknown'} description=${response.description ?? 'unknown'} ` +
+    `reminder=${options.reminder === true} key=${turnNoticeKey ?? ''}`,
+  );
+}
+
 export function buildTurnNoticeText(player: TelegramNotifiable, options: TurnNoticeOptions = {}): string {
   const lines = [options.reminder === true ? 'Напоминание: твой ход!' : 'Твой ход!'];
   const gameSummary = buildGameSummary(player);
@@ -161,8 +190,10 @@ export async function sendTurnNotice(
       if (turnNoticeKey !== undefined) {
         player.lastTurnNoticeKey = turnNoticeKey;
       }
+      logTurnNoticeSent(player, resp.result.message_id, turnNoticeKey, options);
       return true;
     }
+    warnTurnNoticeFailed(player, resp, turnNoticeKey, options);
   } catch (err) {
     console.warn('sendTurnNotice error:', err);
   }

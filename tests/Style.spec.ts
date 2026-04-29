@@ -47,7 +47,7 @@ describe('Styles', () => {
     expect(playerSymbol).to.contain("antistress: '✚'");
   });
 
-  it('uses a reserved hydrangea blue treatment for the GambitGirl persona', () => {
+  it('uses a reserved hydrangea blue treatment for the Olesia persona', () => {
     const variables = read('src/styles/variables.less');
     const common = read('src/styles/common.less');
     const board = read('src/styles/board.less');

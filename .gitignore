@@ -54,6 +54,7 @@ elo/player_name_aliases.json
 elo/data.json
 elo/elo-data.json
 elo/*.local-backup-*.json
+elo/backups/
 
 # Local analytics exports
 artifacts/

@@ -131,10 +131,10 @@
       },
       "avgVP": 106.0
     },
-    "gambitgirl": {
+    "олеся": {
       "elo": 1500,
       "elo_vp": 1493,
-      "displayName": "GambitGirl",
+      "displayName": "Олеся",
       "games": 1,
       "firsts": 0,
       "wins": 0,
@@ -326,8 +326,8 @@
           "vp": 86
         },
         {
-          "name": "gambitgirl",
-          "displayName": "GambitGirl",
+          "name": "олеся",
+          "displayName": "Олеся",
           "place": 2,
           "delta": 0,
           "oldElo": 1500,

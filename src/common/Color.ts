@@ -10,7 +10,7 @@ export const GYDRO_NAME = 'GydRo';
 export const ANTISTRESS_COLOR = 'antistress' as const;
 export const ANTISTRESS_NAME = 'Антистресс';
 export const GAMBIT_GIRL_COLOR = 'gambit' as const;
-export const GAMBIT_GIRL_NAME = 'GambitGirl';
+export const GAMBIT_GIRL_NAME = 'Олеся';
 export const PAVEL_TURQUOISE_COLOR = 'turquoise' as const;
 export const PAVEL_TURQUOISE_NAME = 'Паша';
 export const RESERVED_PLAYER_COLORS = [
@@ -75,9 +75,9 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
   {
     color: GAMBIT_GIRL_COLOR,
     name: GAMBIT_GIRL_NAME,
-    shortLabel: 'Gambit',
-    title: 'GambitGirl - reserved hydrangea blue',
-    aliases: ['gambitgirl', 'gambit girl', 'олеся', 'игнатова', 'мяу'],
+    shortLabel: 'Олеся',
+    title: 'Олеся - reserved hydrangea blue',
+    aliases: ['gambitgirl', 'gambit girl', 'олеся', 'olesya', 'olesia', 'игнатова', 'мяу'],
   },
   {
     color: PAVEL_TURQUOISE_COLOR,

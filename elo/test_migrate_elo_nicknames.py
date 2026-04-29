@@ -19,8 +19,8 @@ def write_seed(path: Path) -> None:
                 'games': 4,
                 'avgVP': 81,
             },
-            'олеся': {
-                'displayName': 'Олеся',
+            'gambitgirl': {
+                'displayName': 'GambitGirl',
                 'elo': 1386,
                 'games': 18,
                 'avgVP': 83,
@@ -36,7 +36,7 @@ def write_seed(path: Path) -> None:
                 '_key': 'old-nicks',
                 'results': [
                     {'name': 'анатолий', 'displayName': 'Анатолий', 'vp': 81, 'place': 2},
-                    {'name': 'олеся', 'displayName': 'Олеся', 'vp': 83, 'place': 1},
+                    {'name': 'gambitgirl', 'displayName': 'GambitGirl', 'vp': 83, 'place': 1},
                     {'name': 'gydro', 'displayName': 'GydRo', 'vp': 80, 'place': 3},
                 ],
             },
@@ -61,19 +61,19 @@ def main() -> None:
         compat = json.loads((elo_dir / 'data.json').read_text(encoding='utf-8'))
         assert primary == compat
         assert 'анатолий' not in primary['players']
-        assert 'олеся' not in primary['players']
+        assert 'gambitgirl' not in primary['players']
         assert primary['players']['антистресс']['displayName'] == 'Антистресс'
         assert primary['players']['антистресс']['elo'] == 1512
         assert primary['players']['антистресс']['games'] == 4
-        assert primary['players']['gambitgirl']['displayName'] == 'GambitGirl'
-        assert primary['players']['gambitgirl']['elo'] == 1386
-        assert primary['players']['gambitgirl']['games'] == 18
+        assert primary['players']['олеся']['displayName'] == 'Олеся'
+        assert primary['players']['олеся']['elo'] == 1386
+        assert primary['players']['олеся']['games'] == 18
 
         results = primary['games'][0]['results']
         assert results[0]['name'] == 'антистресс'
         assert results[0]['displayName'] == 'Антистресс'
-        assert results[1]['name'] == 'gambitgirl'
-        assert results[1]['displayName'] == 'GambitGirl'
+        assert results[1]['name'] == 'олеся'
+        assert results[1]['displayName'] == 'Олеся'
         assert results[2]['name'] == 'gydro'
         assert results[2]['displayName'] == 'GydRo'
 

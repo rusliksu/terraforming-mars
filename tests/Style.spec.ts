@@ -151,7 +151,7 @@ describe('Styles', () => {
     expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('@player_turquoise_sprite_filter');
   });
 
-  it('uses sprite-based Turmoil delegate tokens with unfiltered white numbers', () => {
+  it('uses sprite-based Turmoil delegate tokens with unshadowed numbers', () => {
     const turmoil = read('src/styles/turmoil.less');
 
     expect(turmoil).not.to.contain('.player-token-persona(');
@@ -169,6 +169,9 @@ describe('Styles', () => {
     expect(turmoil).to.contain('.player-token__number');
     expect(turmoil).to.contain('z-index: 1;');
     expect(turmoil).to.contain('z-index: 0;');
+    expect(cssBlock(turmoil, '.count-in-send-delegate')).not.to.contain('color: #fff;');
+    expect(cssBlock(turmoil, '.count-in-send-delegate')).not.to.contain('text-shadow');
+    expect(turmoil).not.to.contain('text-shadow: 0 1px 1px #000, 0 0 2px #000;');
     expect(turmoil).to.contain('&.gold');
     expect(cssBlock(turmoil, '&.gold')).to.contain('.player-token-sprite(-644px, -35px, @player_gold_sprite_filter);');
     expect(cssBlock(turmoil, '&.emerald')).to.contain('.player-token-sprite(-865px, -35px, @player_emerald_sprite_filter);');
@@ -206,7 +209,7 @@ describe('Styles', () => {
     expect(createGame).to.contain('.player_translucent_bg_color_gambit');
   });
 
-  it('uses solid persona backgrounds and contrast-safe milestone/award score text', () => {
+  it('uses solid persona backgrounds and dark milestone/award score text', () => {
     const common = read('src/styles/common.less');
     const playerHome = read('src/styles/player_home.less');
 
@@ -215,12 +218,20 @@ describe('Styles', () => {
       expect(block).to.contain('background-color:');
       expect(block).not.to.contain('linear-gradient');
     }
-    expect(playerHome).to.contain('.ma-score.player_bg_color_hydro');
-    expect(playerHome).to.contain('.ma-score.player_bg_color_antistress');
-    expect(playerHome).to.contain('color: #fff;');
-    expect(playerHome).to.contain('.ma-score.player_bg_color_gold');
-    expect(playerHome).to.contain('.ma-score.player_bg_color_emerald');
-    expect(playerHome).to.contain('color: #000;');
+    expect(cssBlock(playerHome, '.ma-score')).to.contain('color: black;');
+    for (const selector of [
+      '.ma-score.player_bg_color_red',
+      '.ma-score.player_bg_color_blue',
+      '.ma-score.player_bg_color_purple',
+      '.ma-score.player_bg_color_hydro',
+      '.ma-score.player_bg_color_antistress',
+      '.ma-score.player_bg_color_gold',
+      '.ma-score.player_bg_color_emerald',
+      '.ma-score.player_bg_color_gambit',
+      '.ma-score.player_bg_color_turquoise',
+    ]) {
+      expect(playerHome).not.to.contain(selector);
+    }
   });
 
   it('uses a monotone translucent persona overview background', () => {

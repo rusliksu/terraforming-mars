@@ -377,13 +377,18 @@ function getExistingMatchupStat(stats, mine, opponent) {
 }
 
 function formatDetailedRecord(stat) {
-  if (stat.ties > 0) return "W" + stat.wins + " L" + stat.losses + " T" + stat.ties;
-  return "W" + stat.wins + " L" + stat.losses;
+  var record = "W" + stat.wins + " L" + stat.losses;
+  if (stat.ties > 0) return record + " " + stat.ties + " same VP";
+  return record;
 }
 
 function formatMatrixRecord(stat) {
-  if (stat.ties > 0) return stat.wins + "-" + stat.losses + "-" + stat.ties;
-  return stat.wins + "-" + stat.losses;
+  var record = stat.wins + "-" + stat.losses;
+  if (stat.ties > 0) {
+    if (stat.wins === 0 && stat.losses === 0) return stat.ties + " same VP";
+    return record + " +" + stat.ties + " same VP";
+  }
+  return record;
 }
 
 function formatWinRate(stat) {
@@ -480,6 +485,10 @@ function renderMatchupFinder(players, stats) {
   var record = stat.games > 0 ? formatDetailedRecord(stat) : "-";
   var winRate = stat.games > 0 ? formatWinRate(stat) : "-";
   var avgVp = stat.games > 0 ? formatAvgVpDiff(stat) + " VP" : "-";
+  var note = "Record and VP margin are shown from " + esc(playerA.name) + "'s perspective.";
+  if (stat.ties > 0) {
+    note += " same VP means equal final VP; older games may not have saved tie-break MC.";
+  }
 
   card.innerHTML = "<div class=\"matchups-pair-title\">" + esc(playerA.name) + " vs " + esc(playerB.name) + "</div>"
     + "<div class=\"matchups-pair-metrics\">"
@@ -488,7 +497,7 @@ function renderMatchupFinder(players, stats) {
     + "<div class=\"matchups-pair-metric\"><div class=\"matchups-pair-label\">Win rate</div><div class=\"matchups-pair-value\">" + winRate + "</div></div>"
     + "<div class=\"matchups-pair-metric\"><div class=\"matchups-pair-label\">Avg VP</div><div class=\"matchups-pair-value matchups-vp " + vpClass + "\">" + avgVp + "</div></div>"
     + "</div>"
-    + "<div class=\"matchups-pair-note\">Record and VP margin are shown from " + esc(playerA.name) + "'s perspective.</div>";
+    + "<div class=\"matchups-pair-note\">" + note + "</div>";
 }
 
 function renderMatchups() {
@@ -547,7 +556,7 @@ function renderMatchups() {
       var cellClass = stat.games > 0 ? "matchups-detail" : "matchups-empty";
       var title = esc(rowPlayer.name) + " vs " + esc(colPlayer.name) + ": " +
         stat.games + " games, " + stat.wins + " wins, " + stat.losses + " losses, " +
-        stat.ties + " ties, avg VP " + formatAvgVpDiff(stat);
+        stat.ties + " same VP, avg VP " + formatAvgVpDiff(stat);
       html += "<td class=\"" + cellClass + (pairSelected ? " matchups-pair-selected" : "") + "\" title=\"" + title + "\" data-matchup-a=\"" + esc(rowPlayer.key) + "\" data-matchup-b=\"" + esc(colPlayer.key) + "\">";
       if (stat.games > 0) {
         html += "<div class=\"matchups-cell\">"

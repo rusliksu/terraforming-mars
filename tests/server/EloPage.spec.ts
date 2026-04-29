@@ -316,6 +316,60 @@ describe('ELO page', () => {
     dom.window.close();
   });
 
+  it('labels equal-VP matchup results as same VP instead of an opaque tie', async () => {
+    const dom = createEloPage({
+      players: {
+        alice: {
+          displayName: 'Alice',
+          elo: 1510,
+          elo_vp: 1510,
+          games: 5,
+          avgPlace: 0.5,
+          avgVP: 100,
+          avgGens: 9,
+          avgMargin: 0,
+        },
+        bob: {
+          displayName: 'Bob',
+          elo: 1500,
+          elo_vp: 1500,
+          games: 5,
+          avgPlace: 0.5,
+          avgVP: 100,
+          avgGens: 9,
+          avgMargin: 0,
+        },
+      },
+      games: [
+        {
+          gameId: 'same-vp-game',
+          endId: 'same-vp-end',
+          server: 'knightbyte',
+          generation: 9,
+          results: [
+            {name: 'alice', displayName: 'Alice', place: 1, vp: 100, corp: 'CrediCor', delta: 0},
+            {name: 'bob', displayName: 'Bob', place: 1, vp: 100, corp: 'Inventrix', delta: 0},
+          ],
+        },
+      ],
+    });
+
+    await waitForRows(dom);
+    const document = dom.window.document;
+
+    expect(getCells(document, '#matchupsTable tbody tr:first-child td')).deep.eq(['Alice', '', '1 same VP 0']);
+    const sameVpCell = document.querySelector('#matchupsTable tbody tr:first-child td:nth-child(3)') as HTMLElement;
+    expect(sameVpCell.getAttribute('title')).contains('1 same VP');
+    expect(sameVpCell.getAttribute('title')).not.contains('ties');
+
+    sameVpCell.click();
+    expect(cleanText(document.querySelector('#matchupsPairCard .matchups-pair-title')?.textContent)).eq('Alice vs Bob');
+    expect(getCells(document, '#matchupsPairCard .matchups-pair-value')).deep.eq(['W0 L0 1 same VP', '1', '50%', '0 VP']);
+    expect(cleanText(document.querySelector('#matchupsPairCard')?.textContent)).contains('same VP means equal final VP');
+
+    dom.window.close();
+  });
+
   it('keeps reserved persona colors on recent game winners', async () => {
     const dom = createEloPage({
       players: {

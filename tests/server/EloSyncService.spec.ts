@@ -4,6 +4,8 @@ import * as os from 'os';
 import * as path from 'path';
 
 import {EloSyncService, rebuildEloData} from '../../src/server/elo/EloSyncService';
+import {Game} from '../../src/server/Game';
+import {TestPlayer} from '../TestPlayer';
 
 describe('EloSyncService', () => {
   let tempDir: string;
@@ -47,6 +49,29 @@ describe('EloSyncService', () => {
     expect(primary.players.bob.avgPlaceScore).eq(0.5);
     expect(primary.players.carol.avgPlaceScore).eq(0);
     expect(primary.games[0].results[0].delta).to.be.a('number');
+  });
+
+  it('uses megacredits as the live-game tie-breaker when final VP are equal', async () => {
+    const alice = TestPlayer.BLUE.newPlayer({name: 'Alice'});
+    const bob = TestPlayer.RED.newPlayer({name: 'Bob'});
+    const game = Game.newInstance('g-equal-vp-mc', [alice, bob], alice);
+    game.generation = 10;
+    alice.setTerraformRating(80);
+    bob.setTerraformRating(80);
+    alice.megaCredits = 12;
+    bob.megaCredits = 30;
+
+    await service.recordCompletedGame(game);
+
+    const primary = JSON.parse(await fs.readFile(primaryPath, 'utf8'));
+    expect(primary.games[0].results.map((result: {displayName: string; place: number; vp: number}) => ({
+      displayName: result.displayName,
+      place: result.place,
+      vp: result.vp,
+    }))).deep.eq([
+      {displayName: 'Bob', place: 1, vp: 80},
+      {displayName: 'Alice', place: 2, vp: 80},
+    ]);
   });
 
   it('replaces duplicate game keys instead of appending duplicates', async () => {

@@ -481,6 +481,31 @@ function buildCompletedGameSummary(game: IGame, botPlayerIds: Array<string> = []
   const startedTimeMs = game.createdTime instanceof Date ? game.createdTime.getTime() : NaN;
   const hasStartedTime = Number.isFinite(startedTimeMs) && startedTimeMs > 0;
   const durationMs = hasStartedTime ? Math.max(0, completedTimeMs - startedTimeMs) : undefined;
+  const rankedPlayers = game.players.map((player) => ({
+    player,
+    vp: player.getVictoryPoints().total,
+    corp: player.playedCards.filter(isICorporationCard).map(toName).join('|'),
+  })).sort((left, right) => {
+    if (left.vp !== right.vp) return right.vp - left.vp;
+    if (left.player.megaCredits !== right.player.megaCredits) return right.player.megaCredits - left.player.megaCredits;
+    return 0;
+  });
+  const players: Array<CompletedGamePlayerSummary> = [];
+  rankedPlayers.forEach((entry, idx) => {
+    const previous = rankedPlayers[idx - 1];
+    const place = previous !== undefined &&
+      previous.vp === entry.vp &&
+      previous.player.megaCredits === entry.player.megaCredits ?
+      players[idx - 1].place :
+      idx + 1;
+    players.push({
+      name: entry.player.name,
+      user: entry.player.user,
+      place,
+      vp: entry.vp,
+      corp: entry.corp,
+    });
+  });
   return {
     key: game.id,
     endId: game.spectatorId,
@@ -492,12 +517,7 @@ function buildCompletedGameSummary(game: IGame, botPlayerIds: Array<string> = []
     server: process.env.ELO_SERVER_NAME ?? 'server',
     map: String(game.gameOptions.boardName ?? ''),
     generation: game.generation,
-    players: game.players.map((player) => ({
-      name: player.name,
-      user: player.user,
-      vp: player.getVictoryPoints().total,
-      corp: player.playedCards.filter(isICorporationCard).map(toName).join('|'),
-    })),
+    players,
   };
 }
 

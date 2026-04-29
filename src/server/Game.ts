@@ -1069,11 +1069,33 @@ export class Game implements IGame, Logger {
       this.log('This game id was ${0}', (b) => b.rawString(id));
     }
 
-    const scores: Array<Score> = [];
-    this.players.forEach((player) => {
+    const rankedScores = this.players.map((player) => {
       const corporation = player.playedCards.filter(isICorporationCard).map(toName).join('|');
       const vpb = player.getVictoryPoints();
-      scores.push({corporation: corporation, playerScore: vpb.total});
+      return {player, corporation, vpb};
+    }).sort((left, right) => {
+      if (left.vpb.total !== right.vpb.total) return right.vpb.total - left.vpb.total;
+      if (left.player.megaCredits !== right.player.megaCredits) return right.player.megaCredits - left.player.megaCredits;
+      return 0;
+    });
+
+    const scores: Array<Score> = [];
+    rankedScores.forEach((entry, idx) => {
+      const previous = rankedScores[idx - 1];
+      const place = previous !== undefined &&
+        previous.vpb.total === entry.vpb.total &&
+        previous.player.megaCredits === entry.player.megaCredits ?
+        scores[idx - 1].place :
+        idx + 1;
+      scores.push({
+        corporation: entry.corporation,
+        playerName: entry.player.name,
+        user: entry.player.user,
+        place,
+        playerScore: entry.vpb.total,
+        megacredits: entry.player.megaCredits,
+        victoryPointsBreakdown: entry.vpb,
+      });
     });
 
     Database.getInstance().saveGameResults(this.id, this.players.length, this.generation, this.gameOptions, scores);

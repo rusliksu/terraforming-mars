@@ -33,10 +33,16 @@ import {GlobalParameter} from '../common/GlobalParameter';
 import {UnderworldData} from './underworld/UnderworldData';
 import {OrOptions} from './inputs/OrOptions';
 import {IStandardProjectCard} from './cards/IStandardProjectCard';
+import {VictoryPointsBreakdown} from '../common/game/VictoryPointsBreakdown';
 
 export interface Score {
   corporation: String;
   playerScore: number;
+  playerName?: string;
+  user?: string;
+  place?: number;
+  megacredits?: number;
+  victoryPointsBreakdown?: VictoryPointsBreakdown;
 }
 
 export interface IGame extends Logger {

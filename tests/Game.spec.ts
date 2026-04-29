@@ -32,8 +32,23 @@ import {GlobalParameter} from '../src/common/GlobalParameter';
 import {assertPlaceOcean} from './assertions';
 import {TiredEarth} from '../src/server/cards/pathfinders/TiredEarth';
 import {Tag} from '../src/common/cards/Tag';
-import {restoreTestDatabase, setTestDatabase} from './testing/setup';
+import {restoreTestDatabase, restoreTestGameLoader, setTestDatabase, setTestGameLoader} from './testing/setup';
 import {InMemoryDatabase} from './testing/InMemoryDatabase';
+import {Score} from '../src/server/IGame';
+import {IGameLoader} from '../src/server/database/IGameLoader';
+
+function noopGameLoader(): IGameLoader {
+  return {
+    add: () => Promise.resolve(),
+    getIds: () => Promise.resolve([]),
+    getGame: () => Promise.resolve(undefined),
+    restoreGameAt: () => Promise.reject(new Error('not implemented')),
+    mark: () => {},
+    saveGame: () => Promise.resolve(),
+    completeGame: () => Promise.resolve(),
+    maintenance: () => Promise.resolve(),
+  };
+}
 
 describe('Game', () => {
   it('should initialize with right defaults', () => {
@@ -400,6 +415,51 @@ describe('Game', () => {
     // Don't give TR or raise oxygen for final greenery placements
     expect(player.terraformRating).to.eq(20);
     expect(game.getOxygenLevel()).to.eq(12);
+  });
+
+  it('saves final score snapshot fields needed to resolve equal VP by megacredits', async () => {
+    const alice = TestPlayer.BLUE.newPlayer({name: 'Alice'});
+    const bob = TestPlayer.RED.newPlayer({name: 'Bob'});
+    alice.user = 'alice-user';
+    bob.user = 'bob-user';
+    const game = Game.newInstance('g-score-snapshot-game', [alice, bob], alice);
+    game.generation = 10;
+    alice.setTerraformRating(80);
+    bob.setTerraformRating(80);
+    alice.megaCredits = 12;
+    bob.megaCredits = 30;
+
+    let savedScores: Array<Score> = [];
+    const database = new InMemoryDatabase();
+    database.saveGameResults = (_gameId, _players, _generations, _gameOptions, scores) => {
+      savedScores = scores;
+    };
+    setTestDatabase(database);
+    setTestGameLoader(noopGameLoader());
+
+    try {
+      await (game as unknown as {gotoEndGame: () => Promise<void>}).gotoEndGame();
+    } finally {
+      restoreTestGameLoader();
+      restoreTestDatabase();
+    }
+
+    const snapshot = savedScores as Array<Score & {
+      megacredits?: number;
+      place?: number;
+      playerName?: string;
+      user?: string;
+    }>;
+    expect(snapshot.map((score) => ({
+      playerName: score.playerName,
+      user: score.user,
+      playerScore: score.playerScore,
+      place: score.place,
+      megacredits: score.megacredits,
+    }))).deep.eq([
+      {playerName: 'Bob', user: 'bob-user', playerScore: 80, place: 1, megacredits: 30},
+      {playerName: 'Alice', user: 'alice-user', playerScore: 80, place: 2, megacredits: 12},
+    ]);
   });
 
   it('Final greenery placement in order of the current generation', () => {

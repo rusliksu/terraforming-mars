@@ -10,20 +10,6 @@
             <div class="discord-invite" v-if="playersCount===1">
               (<span v-i18n>Looking for people to play with</span>? <a :href="constants.DISCORD_INVITE" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank"><u v-i18n>Join us on Discord</u></a>.)
             </div>
-            <div class="create-game--block create-game-presets-section">
-                <div class="presets-row">
-                    <button v-for="t in presetTypes" :key="t.key" class="preset-btn" :class="{active: selectedPresetType === t.key}" @click="selectPresetType(t.key)" :title="t.desc">{{ t.label }}</button>
-                </div>
-                <div class="presets-row">
-                    <button v-for="n in [3,4,5]" :key="n" class="preset-btn preset-btn-sm" :class="{active: playersCount === n}" @click="applySelectedPreset(n)">{{ n }}P</button>
-                    <span class="presets-sep"></span>
-                    <button class="preset-btn preset-btn-toggle" :class="{active: twoCorpsVariant}" @click="twoCorpsVariant = !twoCorpsVariant">Merger</button>
-                    <button class="preset-btn preset-btn-toggle" :class="{active: escapeVelocityMode}" @click="toggleEV()">EV {{ escapeVelocityThreshold }}</button>
-                    <button class="preset-btn preset-btn-toggle" :class="{active: expansions.community}" @click="expansions.community = !expansions.community">Community</button>
-                </div>
-            </div>
-
-
             <div class="create-game-form create-game-panel create-game--block">
 
                 <div class="create-game-options">

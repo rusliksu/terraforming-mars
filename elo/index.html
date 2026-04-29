@@ -80,6 +80,62 @@ a:hover { text-decoration: underline; }
 .show-more button { background: #16213e; color: #ff6b35; border: 1px solid #ff6b35; padding: 8px 24px; border-radius: 6px; cursor: pointer; font-size: 0.95em; }
 .show-more button:hover { background: #ff6b35; color: #fff; }
 .no-games { text-align: center; color: #666; padding: 20px; }
+
+/* Matchups */
+.matchups-section { width: min(1400px, calc(100vw - 40px)); margin: 0 auto 30px; }
+.matchups-summary { text-align: center; color: #c4a35a; margin: -8px 0 14px; font-size: 0.98em; font-weight: 600; }
+.matchups-finder { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; margin: 0 auto 12px; }
+.matchups-finder select { background: #16213e; color: #e0e0e0; border: 1px solid #333; border-radius: 6px; padding: 7px 10px; min-width: 170px; }
+.matchups-finder button { background: #16213e; color: #ff6b35; border: 1px solid #ff6b35; border-radius: 6px; padding: 7px 12px; cursor: pointer; }
+.matchups-finder button:hover { background: #ff6b35; color: #fff; }
+.matchups-vs { color: #888; font-weight: 700; }
+.matchups-pair-card { background: #16213e; border: 1px solid #333; border-radius: 8px; padding: 12px 14px; margin: 0 auto 14px; max-width: 720px; }
+.matchups-pair-card:empty { display: none; }
+.matchups-pair-title { color: #e0e0e0; font-size: 1.05em; font-weight: 700; text-align: center; margin-bottom: 8px; }
+.matchups-pair-metrics { display: grid; grid-template-columns: repeat(4, minmax(110px, 1fr)); gap: 8px; }
+.matchups-pair-metric { background: #1a1a2e; border: 1px solid #333; border-radius: 6px; padding: 8px; text-align: center; }
+.matchups-pair-label { color: #888; font-size: 0.76em; text-transform: uppercase; }
+.matchups-pair-value { margin-top: 3px; font-size: 1.1em; font-weight: 700; }
+.matchups-pair-note { color: #888; text-align: center; font-size: 0.82em; margin-top: 8px; }
+.matchups-scroll { overflow-x: visible; border: 1px solid #333; border-radius: 8px; background: rgba(22, 33, 62, 0.35); width: fit-content; max-width: 100%; margin: 0 auto; }
+.matchups-table { max-width: none; min-width: 0; table-layout: fixed; width: auto; margin: 0; }
+.matchups-table th,
+.matchups-table td { text-align: center; white-space: normal; }
+.matchups-table .matchups-player { text-align: left; width: 140px; position: sticky; left: 0; z-index: 1; background: #1a1a2e; }
+.matchups-table th.matchups-player { z-index: 2; background: #16213e; }
+.matchups-table .matchups-opponent { color: #c4a35a; font-size: 0.82em; overflow: visible; width: 44px; height: 112px; padding: 5px 2px; vertical-align: bottom; }
+.matchups-table .matchups-opponent span { display: inline-block; max-height: 104px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; writing-mode: vertical-rl; transform: rotate(180deg); }
+.matchups-table .matchups-opponent.matchups-name-selected span { color: #ff6b35; font-weight: 700; }
+.matchups-table .matchups-opponent,
+.matchups-table .matchups-detail,
+.matchups-table .matchups-empty,
+.matchups-table .matchups-self { width: 52px; min-width: 52px; max-width: 52px; box-sizing: border-box; }
+.matchups-table .matchups-self { color: #333; }
+.matchups-table .matchups-empty { color: transparent; cursor: pointer; }
+.matchups-table .matchups-pair-selected { background: rgba(255, 107, 53, 0.12); outline: 2px solid rgba(255, 107, 53, 0.7); outline-offset: -2px; }
+.matchups-table tr:hover .matchups-player { background: #16213e; }
+.matchups-table .matchups-detail { padding: 6px 3px; cursor: pointer; }
+.matchups-table .matchups-detail:hover,
+.matchups-table .matchups-empty:hover { background: rgba(255, 107, 53, 0.08); }
+.matchups-cell { display: flex; flex-direction: column; gap: 2px; line-height: 1.15; }
+.matchups-record { color: #e0e0e0; font-weight: 700; white-space: nowrap; }
+.matchups-meta { color: #888; font-size: 0.78em; }
+.matchups-vp { font-size: 0.78em; font-weight: 700; white-space: nowrap; }
+.matchups-vp.pos { color: #2ecc71; }
+.matchups-vp.neg { color: #e74c3c; }
+.matchups-vp.zero { color: #888; }
+@media (max-width: 900px) {
+  .matchups-section { width: calc(100vw - 20px); }
+  .matchups-table { font-size: 0.72em; }
+  .matchups-table .matchups-player { width: 76px; }
+  .matchups-table .matchups-opponent,
+  .matchups-table .matchups-detail,
+  .matchups-table .matchups-empty,
+  .matchups-table .matchups-self { width: 28px; min-width: 28px; max-width: 28px; }
+  .matchups-table .matchups-opponent { height: 96px; }
+  .matchups-table .matchups-opponent span { max-height: 88px; }
+  .matchups-pair-metrics { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+}
 </style>
 </head>
 <body>
@@ -96,6 +152,21 @@ a:hover { text-decoration: underline; }
 <tbody id="tbody"></tbody>
 </table>
 
+<h2>Matchups</h2>
+<div class="matchups-section">
+  <div class="matchups-summary" id="matchupsSummary"></div>
+  <div class="matchups-finder">
+    <select id="matchupPlayerA"></select>
+    <span class="matchups-vs">vs</span>
+    <select id="matchupPlayerB"></select>
+    <button id="swapMatchupBtn" type="button">Swap</button>
+  </div>
+  <div class="matchups-pair-card" id="matchupsPairCard"></div>
+  <div class="matchups-scroll">
+    <table class="matchups-table" id="matchupsTable"></table>
+  </div>
+</div>
+
 <h2 id="games-title">Recent Games</h2>
 <div class="games-section">
   <div class="games-summary" id="gamesSummary"></div>
@@ -111,7 +182,10 @@ var _data = null;
 var _mode = "place";
 var _filterPlayer = null;
 var _gamesShown = 20;
+var _matchupA = null;
+var _matchupB = null;
 var GAMES_PER_PAGE = 20;
+var MATCHUPS_MIN_PLAYER_GAMES = 5;
 var PLAYER_PERSONA_CLASSES = {
   "genuinegold": "player-persona-gold",
   "илья": "player-persona-gold",
@@ -194,6 +268,302 @@ function averageGeneration(games) {
   if (values.length === 0) return "-";
   var total = values.reduce(function(sum, value) { return sum + value; }, 0);
   return round1(total / values.length);
+}
+
+function collectMatchupPlayers(minGames) {
+  if (!_data) return [];
+  var players = _data.players || {};
+  var games = _data.games || [];
+  var seenInGames = {};
+  games.forEach(function(game) {
+    (game.results || []).forEach(function(result) {
+      if (result && result.name) seenInGames[result.name] = true;
+    });
+  });
+
+  var list = [];
+  for (var name in players) {
+    var p = players[name];
+    var gamesCount = p.games || 0;
+    if (gamesCount < minGames || !seenInGames[name]) continue;
+    var elo = _mode === "vp" ? (p.elo_vp || p.elo || 1500) : (p.elo || 1500);
+    list.push({
+      key: name,
+      name: p.displayName || name,
+      elo: Math.round(elo),
+      games: gamesCount
+    });
+  }
+  list.sort(function(a,b) { return b.elo - a.elo || b.games - a.games || a.name.localeCompare(b.name); });
+  return list;
+}
+
+function getMatchupPlayerSet() {
+  var eligible = collectMatchupPlayers(MATCHUPS_MIN_PLAYER_GAMES);
+  if (eligible.length >= 2) {
+    return {
+      players: eligible,
+      eligibleCount: eligible.length,
+      usingFallback: false
+    };
+  }
+  return {
+    players: collectMatchupPlayers(1),
+    eligibleCount: eligible.length,
+    usingFallback: true
+  };
+}
+
+function matchupKey(a, b) {
+  return a + "\u0000" + b;
+}
+
+function emptyMatchupStat() {
+  return {games: 0, wins: 0, losses: 0, ties: 0, vpDiffTotal: 0};
+}
+
+function getMatchupStat(stats, mine, opponent) {
+  var key = matchupKey(mine, opponent);
+  if (!stats[key]) stats[key] = emptyMatchupStat();
+  return stats[key];
+}
+
+function resultOutcome(mine, opponent) {
+  var myPlace = Number(mine.place || 0);
+  var oppPlace = Number(opponent.place || 0);
+  if (myPlace > 0 && oppPlace > 0) {
+    if (myPlace < oppPlace) return 1;
+    if (myPlace > oppPlace) return -1;
+    return 0;
+  }
+  var myVp = Number(mine.vp || 0);
+  var oppVp = Number(opponent.vp || 0);
+  if (myVp > oppVp) return 1;
+  if (myVp < oppVp) return -1;
+  return 0;
+}
+
+function addMatchupResult(stats, mine, opponent) {
+  var stat = getMatchupStat(stats, mine.name, opponent.name);
+  stat.games += 1;
+  stat.vpDiffTotal += Number(mine.vp || 0) - Number(opponent.vp || 0);
+  var outcome = resultOutcome(mine, opponent);
+  if (outcome > 0) stat.wins += 1;
+  else if (outcome < 0) stat.losses += 1;
+  else stat.ties += 1;
+}
+
+function buildMatchupStats() {
+  var stats = {};
+  var games = (_data && _data.games) ? _data.games : [];
+  games.forEach(function(game) {
+    var unique = {};
+    (game.results || []).forEach(function(result) {
+      if (result && result.name && !unique[result.name]) unique[result.name] = result;
+    });
+    var entries = Object.keys(unique).map(function(key) { return unique[key]; });
+    for (var i = 0; i < entries.length; i++) {
+      for (var j = i + 1; j < entries.length; j++) {
+        addMatchupResult(stats, entries[i], entries[j]);
+        addMatchupResult(stats, entries[j], entries[i]);
+      }
+    }
+  });
+  return stats;
+}
+
+function getExistingMatchupStat(stats, mine, opponent) {
+  return stats[matchupKey(mine, opponent)] || emptyMatchupStat();
+}
+
+function formatDetailedRecord(stat) {
+  if (stat.ties > 0) return "W" + stat.wins + " L" + stat.losses + " T" + stat.ties;
+  return "W" + stat.wins + " L" + stat.losses;
+}
+
+function formatMatrixRecord(stat) {
+  if (stat.ties > 0) return stat.wins + "-" + stat.losses + "-" + stat.ties;
+  return stat.wins + "-" + stat.losses;
+}
+
+function formatWinRate(stat) {
+  if (stat.games <= 0) return "-";
+  return Math.round(((stat.wins + stat.ties * 0.5) / stat.games) * 100) + "%";
+}
+
+function formatAvgVpDiff(stat) {
+  if (stat.games <= 0) return "-";
+  var value = stat.vpDiffTotal / stat.games;
+  if (Math.abs(value) < 0.05) return "0";
+  return (value > 0 ? "+" : "") + round1(value);
+}
+
+function vpDiffClass(stat) {
+  if (stat.games <= 0) return "zero";
+  var value = stat.vpDiffTotal / stat.games;
+  if (value > 0.05) return "pos";
+  if (value < -0.05) return "neg";
+  return "zero";
+}
+
+function findPlayer(players, key) {
+  for (var i = 0; i < players.length; i++) {
+    if (players[i].key === key) return players[i];
+  }
+  return null;
+}
+
+function ensureSelectedMatchup(players) {
+  if (players.length < 2) {
+    _matchupA = null;
+    _matchupB = null;
+    return;
+  }
+  var hasA = findPlayer(players, _matchupA) !== null;
+  var hasB = findPlayer(players, _matchupB) !== null;
+  if (!hasA) _matchupA = null;
+  if (!hasB) _matchupB = null;
+  if (_matchupA === _matchupB) _matchupB = null;
+}
+
+function renderPlayerOptions(players, selectedKey) {
+  var placeholder = "<option value=\"\">Select player</option>";
+  return placeholder + players.map(function(player) {
+    var selected = player.key === selectedKey ? " selected" : "";
+    return "<option value=\"" + esc(player.key) + "\"" + selected + ">" + esc(player.name) + "</option>";
+  }).join("");
+}
+
+function renderMatchupFinder(players, stats) {
+  var selectA = document.getElementById("matchupPlayerA");
+  var selectB = document.getElementById("matchupPlayerB");
+  var swap = document.getElementById("swapMatchupBtn");
+  var card = document.getElementById("matchupsPairCard");
+  if (!selectA || !selectB || !swap || !card) return;
+
+  if (players.length < 2) {
+    selectA.innerHTML = "";
+    selectB.innerHTML = "";
+    card.innerHTML = "";
+    return;
+  }
+
+  selectA.innerHTML = renderPlayerOptions(players, _matchupA);
+  selectB.innerHTML = renderPlayerOptions(players, _matchupB);
+
+  selectA.onchange = function() {
+    _matchupA = selectA.value || null;
+    if (_matchupA === _matchupB) _matchupB = null;
+    renderMatchups();
+  };
+  selectB.onchange = function() {
+    _matchupB = selectB.value || null;
+    if (_matchupA === _matchupB) _matchupA = null;
+    renderMatchups();
+  };
+  swap.onclick = function() {
+    if (_matchupA === null || _matchupB === null) return;
+    var tmp = _matchupA;
+    _matchupA = _matchupB;
+    _matchupB = tmp;
+    renderMatchups();
+  };
+
+  var playerA = findPlayer(players, _matchupA);
+  var playerB = findPlayer(players, _matchupB);
+  if (!playerA || !playerB || playerA.key === playerB.key) {
+    card.innerHTML = "";
+    return;
+  }
+  var stat = getExistingMatchupStat(stats, playerA.key, playerB.key);
+  var vpClass = vpDiffClass(stat);
+  var record = stat.games > 0 ? formatDetailedRecord(stat) : "-";
+  var winRate = stat.games > 0 ? formatWinRate(stat) : "-";
+  var avgVp = stat.games > 0 ? formatAvgVpDiff(stat) + " VP" : "-";
+
+  card.innerHTML = "<div class=\"matchups-pair-title\">" + esc(playerA.name) + " vs " + esc(playerB.name) + "</div>"
+    + "<div class=\"matchups-pair-metrics\">"
+    + "<div class=\"matchups-pair-metric\"><div class=\"matchups-pair-label\">Record</div><div class=\"matchups-pair-value\">" + record + "</div></div>"
+    + "<div class=\"matchups-pair-metric\"><div class=\"matchups-pair-label\">Games</div><div class=\"matchups-pair-value\">" + stat.games + "</div></div>"
+    + "<div class=\"matchups-pair-metric\"><div class=\"matchups-pair-label\">Win rate</div><div class=\"matchups-pair-value\">" + winRate + "</div></div>"
+    + "<div class=\"matchups-pair-metric\"><div class=\"matchups-pair-label\">Avg VP</div><div class=\"matchups-pair-value matchups-vp " + vpClass + "\">" + avgVp + "</div></div>"
+    + "</div>"
+    + "<div class=\"matchups-pair-note\">Record and VP margin are shown from " + esc(playerA.name) + "'s perspective.</div>";
+}
+
+function renderMatchups() {
+  var playerSet = getMatchupPlayerSet();
+  var players = playerSet.players;
+  var stats = buildMatchupStats();
+  var summary = document.getElementById("matchupsSummary");
+  var table = document.getElementById("matchupsTable");
+  if (!summary || !table) return;
+  ensureSelectedMatchup(players);
+
+  if (players.length === 0) {
+    summary.textContent = "0 played players";
+    renderMatchupFinder(players, stats);
+    table.innerHTML = "<tbody><tr><td class=\"no-games\">No matchup data</td></tr></tbody>";
+    return;
+  }
+
+  var playedPairs = 0;
+  var maxPair = {count: 0, a: "", b: ""};
+  for (var i = 0; i < players.length; i++) {
+    for (var j = i + 1; j < players.length; j++) {
+      var count = getExistingMatchupStat(stats, players[i].key, players[j].key).games;
+      if (count > 0) playedPairs += 1;
+      if (count > maxPair.count) maxPair = {count: count, a: players[i].name, b: players[j].name};
+    }
+  }
+  var playerSummary = playerSet.usingFallback
+    ? players.length + " played players | " + playerSet.eligibleCount + " with " + MATCHUPS_MIN_PLAYER_GAMES + "+ games"
+    : players.length + " players with " + MATCHUPS_MIN_PLAYER_GAMES + "+ games";
+  summary.textContent = playerSummary + " | " + playedPairs + " played pairs" +
+    (maxPair.count > 0 ? " | most frequent: " + maxPair.a + " / " + maxPair.b + " (" + maxPair.count + ")" : "");
+  renderMatchupFinder(players, stats);
+
+  var html = "<thead><tr><th class=\"matchups-player\">Player</th>";
+  players.forEach(function(player) {
+    var nameSelected = (player.key === _matchupA || player.key === _matchupB) ? " matchups-name-selected" : "";
+    html += "<th class=\"matchups-opponent" + nameSelected + "\" title=\"" + esc(player.name) + "\"><span>" + esc(player.name) + "</span></th>";
+  });
+  html += "</tr></thead><tbody>";
+
+  players.forEach(function(rowPlayer, rowIdx) {
+    var rowSelected = _filterPlayer === rowPlayer.key;
+    var rowMatchupSelected = rowPlayer.key === _matchupA || rowPlayer.key === _matchupB;
+    var personaClass = playerPersonaClass(rowPlayer.name, rowPlayer.key);
+    html += "<tr>";
+    html += "<td class=\"matchups-player\"><span class=\"player-link player-persona " + personaClass + ((rowSelected || rowMatchupSelected) ? " active-filter" : "") + "\" data-player=\"" + esc(rowPlayer.key) + "\">" + esc(rowPlayer.name) + "</span></td>";
+
+    players.forEach(function(colPlayer, colIdx) {
+      var pairSelected = rowPlayer.key === _matchupA && colPlayer.key === _matchupB;
+      if (rowIdx === colIdx) {
+        html += "<td class=\"matchups-self\"></td>";
+        return;
+      }
+      var stat = getExistingMatchupStat(stats, rowPlayer.key, colPlayer.key);
+      var cellClass = stat.games > 0 ? "matchups-detail" : "matchups-empty";
+      var title = esc(rowPlayer.name) + " vs " + esc(colPlayer.name) + ": " +
+        stat.games + " games, " + stat.wins + " wins, " + stat.losses + " losses, " +
+        stat.ties + " ties, avg VP " + formatAvgVpDiff(stat);
+      html += "<td class=\"" + cellClass + (pairSelected ? " matchups-pair-selected" : "") + "\" title=\"" + title + "\" data-matchup-a=\"" + esc(rowPlayer.key) + "\" data-matchup-b=\"" + esc(colPlayer.key) + "\">";
+      if (stat.games > 0) {
+        html += "<div class=\"matchups-cell\">"
+          + "<span class=\"matchups-record\">" + formatMatrixRecord(stat) + "</span> "
+          + "<span class=\"matchups-vp " + vpDiffClass(stat) + "\">" + formatAvgVpDiff(stat) + "</span>"
+          + "</div>";
+      } else {
+        html += "";
+      }
+      html += "</td>";
+    });
+    html += "</tr>";
+  });
+
+  html += "</tbody>";
+  table.innerHTML = html;
 }
 
 function renderPlayers() {
@@ -324,6 +694,7 @@ function toggleFilter(playerKey) {
   }
   _gamesShown = GAMES_PER_PAGE;
   renderPlayers();
+  renderMatchups();
   renderGames();
   document.getElementById("games-title").scrollIntoView({ behavior: "smooth" });
 }
@@ -332,6 +703,7 @@ function clearFilter() {
   _filterPlayer = null;
   _gamesShown = GAMES_PER_PAGE;
   renderPlayers();
+  renderMatchups();
   renderGames();
 }
 
@@ -342,6 +714,13 @@ function showMoreGames() {
 
 // Event delegation for player clicks
 document.addEventListener("click", function(e) {
+  var matchupCell = e.target.closest("[data-matchup-a][data-matchup-b]");
+  if (matchupCell) {
+    _matchupA = matchupCell.dataset.matchupA;
+    _matchupB = matchupCell.dataset.matchupB;
+    renderMatchups();
+    return;
+  }
   var el = e.target.closest(".player-link");
   if (el && el.dataset.player) {
     toggleFilter(el.dataset.player);
@@ -356,12 +735,14 @@ document.querySelectorAll(".tab").forEach(function(tab) {
     tab.classList.add("active");
     _mode = tab.dataset.mode;
     renderPlayers();
+    renderMatchups();
   });
 });
 
 fetch("elo-data.json?ts=" + Date.now(), { cache: "no-store" }).then(function(r){return r.json()}).then(function(data) {
   _data = data;
   renderPlayers();
+  renderMatchups();
   renderGames();
 }).catch(function(e) {
   document.getElementById("tbody").innerHTML = "<tr><td colspan=\"8\">Error: " + e.message + "</td></tr>";

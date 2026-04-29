@@ -11,13 +11,11 @@ import {IPreludeCard} from './cards/prelude/IPreludeCard';
 import {PlayerInput} from './PlayerInput';
 import {Resource} from '../common/Resource';
 import {CardResource} from '../common/CardResource';
-import {SelectCard} from './inputs/SelectCard';
 import {Priority} from './deferredActions/Priority';
 import {SerializedPlayer} from './SerializedPlayer';
 import {Timer} from '../common/Timer';
 import {AllOptions, DrawOptions} from './deferredActions/DrawCards';
 import {Units} from '../common/Units';
-import {IStandardProjectCard} from './cards/IStandardProjectCard';
 import {GlobalParameter} from '../common/GlobalParameter';
 import {InputResponse} from '../common/inputs/InputResponse';
 import {Tags} from './player/Tags';
@@ -36,6 +34,7 @@ import {DiscordId} from './server/auth/discord';
 import {PlayedCards} from './cards/PlayedCards';
 import {From} from './logs/From';
 import {Tag} from '../common/cards/Tag';
+import {SelectStandardProjectToPlay} from './inputs/SelectStandardProjectToPlay';
 
 /**
  * Represents additional costs a player must pay to execute an action.
@@ -109,7 +108,7 @@ export interface IPlayer {
   dealtProjectCards: Array<IProjectCard>;
   cardsInHand: Array<IProjectCard>;
   preludeCardsInHand: Array<IPreludeCard>;
-  ceoCardsInHand: Set<IProjectCard>;
+  ceoCardsInHand: Set<ICeoCard>;
   playedCards: PlayedCards;
   cardCost: number;
   // This will eventually replace playedCards.
@@ -138,6 +137,9 @@ export interface IPlayer {
   plantsNeededForGreenery: number;
   // Lawsuit
   removingPlayers: Array<PlayerId>;
+  // Cards this player has played that count toward the Warmonger award but don't live
+  // in this player's tableau (e.g. Lawsuit, which lives in the sued player's event pile).
+  warmongerCards: number;
   // For Playwrights corp.
   // removedFromPlayCards is a bit of a misname: it's a temporary storage for
   // cards that provide 'next card' discounts. This will clear between turns.
@@ -341,7 +343,7 @@ export interface IPlayer {
    */
   affordOptionsForCard(card: IProjectCard): CanAffordOptions;
   canAfford(options: number | CanAffordOptions): boolean;
-  getStandardProjectOption(): SelectCard<IStandardProjectCard>;
+  getStandardProjectOption(): SelectStandardProjectToPlay;
   takeAction(saveBeforeTakingAction?: boolean): void;
   /** Return possible mid-game actions like play a card and fund an award, but not play prelude card. */
   getActions(): OrOptions;

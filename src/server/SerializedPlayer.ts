@@ -24,6 +24,7 @@ export interface SerializedPlayer extends DeprecatedFields{
   cardCost: number;
   cardDiscount: number;
   cardsInHand: Array<CardName>;
+  ceoCardsInHand: Array<CardName>;
   colonyTradeDiscount: number;
   colonyTradeOffset: number;
   colonyVictoryPoints: number;
@@ -48,7 +49,6 @@ export interface SerializedPlayer extends DeprecatedFields{
   lastNoticeMessageId?: number;
   lastTurnNoticeKey?: string;
   lastTurnReminderNoticeKey?: string;
-  ceoCardsInHand: Array<CardName>;
   megaCreditProduction: number;
   megaCredits: number;
   name: string;
@@ -83,5 +83,6 @@ export interface SerializedPlayer extends DeprecatedFields{
   victoryPointsByGeneration: Array<number>;
   user?: DiscordId;
   telegramID?: string;
+  warmongerCards: number;
   withinDeflectionZone: boolean;
 }

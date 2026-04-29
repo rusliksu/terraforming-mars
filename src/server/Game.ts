@@ -175,6 +175,8 @@ export class Game implements IGame, Logger {
   public beholdTheEmperor: boolean = false;
   // Double Down
   public inDoubleDown: boolean = false;
+  public doubleDownPrelude: CardName | undefined = undefined;
+
   // Vermin
   public verminInEffect: boolean = false;
   public exploitationOfVenusInEffect: boolean = false;

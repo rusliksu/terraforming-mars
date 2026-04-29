@@ -119,6 +119,7 @@ a:hover { text-decoration: underline; }
 .matchups-table .matchups-empty:hover { background: rgba(255, 107, 53, 0.08); }
 .matchups-cell { display: flex; flex-direction: column; gap: 2px; line-height: 1.15; }
 .matchups-record { color: #e0e0e0; font-weight: 700; white-space: nowrap; }
+.matchups-same-vp { color: #aaa; font-size: 0.64em; font-weight: 700; white-space: nowrap; }
 .matchups-meta { color: #888; font-size: 0.78em; }
 .matchups-vp { font-size: 0.78em; font-weight: 700; white-space: nowrap; }
 .matchups-vp.pos { color: #2ecc71; }
@@ -385,12 +386,13 @@ function formatDetailedRecord(stat) {
 }
 
 function formatMatrixRecord(stat) {
-  var record = stat.wins + "-" + stat.losses;
-  if (stat.ties > 0) {
-    if (stat.wins === 0 && stat.losses === 0) return stat.ties + " same VP";
-    return record + " +" + stat.ties + " same VP";
-  }
-  return record;
+  return stat.wins + "-" + stat.losses;
+}
+
+function formatMatrixSameVp(stat) {
+  if (stat.ties <= 0) return "";
+  var prefix = (stat.wins === 0 && stat.losses === 0) ? "" : "+";
+  return prefix + stat.ties + " VP=";
 }
 
 function formatWinRate(stat) {
@@ -561,8 +563,10 @@ function renderMatchups() {
         stat.ties + " same VP, avg VP " + formatAvgVpDiff(stat);
       html += "<td class=\"" + cellClass + (pairSelected ? " matchups-pair-selected" : "") + "\" title=\"" + title + "\" data-matchup-a=\"" + esc(rowPlayer.key) + "\" data-matchup-b=\"" + esc(colPlayer.key) + "\">";
       if (stat.games > 0) {
+        var sameVp = formatMatrixSameVp(stat);
         html += "<div class=\"matchups-cell\">"
           + "<span class=\"matchups-record\">" + formatMatrixRecord(stat) + "</span> "
+          + (sameVp ? "<span class=\"matchups-same-vp\">" + sameVp + "</span> " : "")
           + "<span class=\"matchups-vp " + vpDiffClass(stat) + "\">" + formatAvgVpDiff(stat) + "</span>"
           + "</div>";
       } else {

@@ -357,7 +357,7 @@ describe('ELO page', () => {
     await waitForRows(dom);
     const document = dom.window.document;
 
-    expect(getCells(document, '#matchupsTable tbody tr:first-child td')).deep.eq(['Alice', '', '1 same VP 0']);
+    expect(getCells(document, '#matchupsTable tbody tr:first-child td')).deep.eq(['Alice', '', '0-0 1 VP= 0']);
     const sameVpCell = document.querySelector('#matchupsTable tbody tr:first-child td:nth-child(3)') as HTMLElement;
     expect(sameVpCell.getAttribute('title')).contains('1 same VP');
     expect(sameVpCell.getAttribute('title')).not.contains('ties');

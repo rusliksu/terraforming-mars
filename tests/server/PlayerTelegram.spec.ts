@@ -80,7 +80,7 @@ describe('Player telegram state', () => {
     Game.newInstance('g-telegram', [player1, player2], player1);
 
     try {
-      global.setTimeout = ((handler: TimerHandler, timeout?: number) => {
+      global.setTimeout = ((handler: Parameters<typeof setTimeout>[0], timeout?: number) => {
         delays.push(timeout);
         return {unref: () => {}, handler} as unknown as ReturnType<typeof setTimeout>;
       }) as unknown as typeof setTimeout;

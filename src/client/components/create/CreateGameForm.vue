@@ -628,7 +628,6 @@ import {paths} from '@/common/app/paths';
 import {JSONProcessor} from './JSONProcessor';
 import {defaultCreateGameModel} from './defaultCreateGameModel';
 import {TemplateManager, GameTemplate} from './TemplateManager';
-import {loadPresets, GamePreset} from './GamePresets';
 import {getColony} from '@/client/colonies/ClientColonyManifest';
 import {RULEBOOK_URLS, WIKI, WIKI_URLS} from '@/client/utils/WikiLinks';
 
@@ -647,8 +646,6 @@ type FormModel = {
   uploading: boolean;
   selectedTemplate: string;
   templates: Array<GameTemplate>;
-  presets: Array<GamePreset>;
-  selectedPresetType: string;
 };
 
 export default defineComponent({
@@ -660,8 +657,6 @@ export default defineComponent({
       uploading: false,
       selectedTemplate: '',
       templates: TemplateManager.getTemplates(),
-      presets: [] as Array<GamePreset>,
-      selectedPresetType: 'std' as string,
     };
   },
   components: {
@@ -720,7 +715,6 @@ export default defineComponent({
   mounted() {
     document.title = `Create New Game | ${constants.APP_NAME}`;
     this.restoreLastSettings();
-    loadPresets().then((p) => { this.presets = p; });
     const urlParams = new URLSearchParams(window.location.search);
     const cloneId = urlParams.get('cloneGameId');
     if (cloneId) {
@@ -733,14 +727,6 @@ export default defineComponent({
     },
     typedRefs(): Refs {
       return this.$refs as Refs;
-    },
-    presetTypes(): Array<{key: string; label: string; desc: string}> {
-      return [
-        {key: 'turmoil', label: 'Turmoil', desc: 'PV2OT + CEO + Path'},
-        {key: 'std', label: 'Standard', desc: 'PV2O + CEO + Path'},
-        {key: 'classic', label: 'Classic', desc: 'PVO, no CEO/Path/P2'},
-        {key: 'chill', label: 'Chill', desc: 'PV2O + CEO + Path, no bans'},
-      ];
     },
     RandomBoardOption(): typeof RandomBoardOption {
       return RandomBoardOption;
@@ -829,51 +815,6 @@ export default defineComponent({
       } catch (e) {
         vueRoot(this).showAlert('Rematch', 'Could not load game setup for rematch: ' + e);
       }
-    },
-    selectPresetType(key: string) {
-      this.selectedPresetType = key;
-      this.applySelectedPreset(this.playersCount);
-    },
-    applySelectedPreset(playerCount: number) {
-      const key = this.selectedPresetType;
-      const shortSuffix = key === 'turmoil' ? ' T' : key === 'std' ? '' : ' ' + key.charAt(0).toUpperCase() + key.slice(1);
-      const targetShort = playerCount + 'P' + shortSuffix;
-      const preset = this.presets.find((p) => p.shortName === targetShort);
-      if (preset) {
-        this.playersCount = playerCount;
-        this.applyPreset(preset);
-      }
-    },
-    toggleEV() {
-      if (!this.escapeVelocityMode) {
-        this.escapeVelocityMode = true;
-        this.escapeVelocityThreshold = 35;
-      } else if (this.escapeVelocityThreshold === 35) {
-        this.escapeVelocityThreshold = 30;
-      } else if (this.escapeVelocityThreshold === 30) {
-        this.escapeVelocityThreshold = 40;
-      } else {
-        this.escapeVelocityMode = false;
-      }
-    },
-    applyPreset(preset: GamePreset) {
-      const scrollY = window.scrollY;
-      const settings = {...preset.settings} as JSONObject;
-      if (!settings.players) {
-        settings.players = this.players.slice(0, this.playersCount).map((p) => ({...p}));
-      }
-      this.applySettings(settings);
-      const hasBans = Array.isArray(settings.bannedCards) && settings.bannedCards.length > 0;
-      nextTick(() => {
-        this.showColoniesList = false; this.showBannedCards = hasBans; this.showCorporationList = false; this.showPreludesList = false;
-        if (hasBans) {
-          nextTick(() => {
-            const refs = this.typedRefs;
-            if (refs.cardsFilter) refs.cardsFilter.selected = (settings.bannedCards as Array<CardName>).slice();
-          });
-        }
-      });
-      nextTick(() => window.scrollTo(0, scrollY));
     },
     loadSelectedTemplate() {
       if (!this.selectedTemplate) return;

@@ -45,6 +45,12 @@ function getCells(document: Document, selector: string): Array<string> {
   return Array.from(document.querySelectorAll(selector)).map((cell) => cleanText(cell.textContent));
 }
 
+function dispatchChange(document: Document, element: HTMLElement): void {
+  const event = document.createEvent('Event');
+  event.initEvent('change', true, false);
+  element.dispatchEvent(event);
+}
+
 async function waitForRows(dom: JsdomInstance): Promise<void> {
   const deadline = Date.now() + 1000;
   while (Date.now() < deadline) {
@@ -248,9 +254,9 @@ describe('ELO page', () => {
     const selectA = document.querySelector('#matchupPlayerA') as HTMLSelectElement;
     const selectB = document.querySelector('#matchupPlayerB') as HTMLSelectElement;
     selectA.value = 'тома';
-    selectA.dispatchEvent(new dom.window.Event('change', {bubbles: true}));
+    dispatchChange(document, selectA);
     selectB.value = 'gydro';
-    selectB.dispatchEvent(new dom.window.Event('change', {bubbles: true}));
+    dispatchChange(document, selectB);
     expect(cleanText(document.querySelector('#matchupsPairCard .matchups-pair-title')?.textContent)).eq('Тома vs GydRo');
     expect(getCells(document, '#matchupsPairCard .matchups-pair-value')).deep.eq(['W0 L1', '1', '0%', '-28 VP']);
 

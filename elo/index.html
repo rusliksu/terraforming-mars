@@ -69,6 +69,8 @@ a:hover { text-decoration: underline; }
 .game-header a { font-size: 0.8em; }
 .game-server { text-transform: capitalize; }
 .game-gen { color: #c4a35a; }
+.game-time { color: #b8b8b8; }
+.game-duration { color: #c4a35a; }
 .game-results { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .game-player { display: inline-flex; align-items: center; gap: 4px; }
 .game-player .pname { font-weight: 500; }
@@ -312,6 +314,52 @@ function formatMargin(value) {
   if (typeof value !== "number" || isNaN(value)) return "-";
   if (Math.abs(value) < 0.05) return "0";
   return (value > 0 ? "+" : "") + round1(value);
+}
+
+function pad2(value) {
+  return String(value).padStart(2, "0");
+}
+
+function timestampMs(value) {
+  var numeric = Number(value || 0);
+  if (!isFinite(numeric) || numeric <= 0) return null;
+  return numeric > 100000000000 ? numeric : numeric * 1000;
+}
+
+function formatGameDate(game) {
+  var ms = timestampMs(game.completedTime);
+  if (ms === null && game.date) {
+    var parsed = Date.parse(game.date);
+    if (isFinite(parsed)) ms = parsed;
+  }
+  if (ms === null) return "";
+  var date = new Date(ms);
+  return pad2(date.getDate()) + "." + pad2(date.getMonth() + 1) + " " +
+    pad2(date.getHours()) + ":" + pad2(date.getMinutes());
+}
+
+function formatGameDuration(game) {
+  var minutes = Number(game.durationMinutes);
+  if (!isFinite(minutes) || minutes < 0) {
+    var durationMs = Number(game.durationMs);
+    if (isFinite(durationMs) && durationMs >= 0) {
+      minutes = Math.round(durationMs / 60000);
+    }
+  }
+  if (!isFinite(minutes) || minutes < 0) {
+    var started = timestampMs(game.startedTime);
+    var completed = timestampMs(game.completedTime);
+    if (started !== null && completed !== null && completed >= started) {
+      minutes = Math.round((completed - started) / 60000);
+    }
+  }
+  if (!isFinite(minutes) || minutes < 0) return "";
+  minutes = Math.round(minutes);
+  if (minutes < 1) return "<1m";
+  if (minutes < 60) return minutes + "m";
+  var hours = Math.floor(minutes / 60);
+  var mins = minutes % 60;
+  return mins > 0 ? (hours + "h " + mins + "m") : (hours + "h");
 }
 
 function averageGeneration(games) {
@@ -720,10 +768,14 @@ function renderGames() {
     var results = visibleGameResults(g).slice().sort(function(a,b) { return a.place - b.place; });
     var genText = g.generation ? ("Gen " + g.generation) : "";
     var serverText = g.server || "";
+    var dateText = formatGameDate(g);
+    var durationText = formatGameDuration(g);
 
     html += "<div class=\"game-card\">";
     html += "<div class=\"game-header\">";
     html += "<span><span class=\"game-server\">" + esc(serverText) + "</span>";
+    if (dateText) html += " \u00b7 <span class=\"game-time\" title=\"Finished time\">" + esc(dateText) + "</span>";
+    if (durationText) html += " \u00b7 <span class=\"game-duration\" title=\"Game duration\">" + esc(durationText) + "</span>";
     if (genText) html += " \u00b7 <span class=\"game-gen\">" + genText + "</span>";
     html += " \u00b7 " + results.length + "P</span>";
     html += "<a href=\"" + getGameUrl(g) + "\" target=\"_blank\">" + esc(getGameLabel(g)) + "</a>";

@@ -44,6 +44,7 @@ export type LockedPlayerIdentity = {
   color: PlayerColor;
   name: string;
   label?: string;
+  colorLabel: string;
   selectable?: boolean;
   shortLabel: string;
   title: string;
@@ -54,6 +55,7 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
   {
     color: GENUINE_GOLD_COLOR,
     name: GENUINE_GOLD_NAME,
+    colorLabel: 'золото',
     shortLabel: 'GG',
     title: 'GenuineGold - reserved gold',
     aliases: ['genuinegold', 'илья', 'ilya', 'золотинский'],
@@ -61,6 +63,7 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
   {
     color: EMERALD_RAV_COLOR,
     name: EMERALD_RAV_NAME,
+    colorLabel: 'изумруд',
     shortLabel: 'Рав',
     title: 'Рав - reserved emerald',
     aliases: ['изумрудный рав', 'rav', 'рав', 'равиль'],
@@ -68,6 +71,7 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
   {
     color: CATHARSIS_COLOR,
     name: CATHARSIS_NAME,
+    colorLabel: 'рыжий',
     shortLabel: 'Cath',
     title: 'Catharsis with flame - reserved ginger',
     aliases: ['catharsis', 'catharsis🔥', 'катерина', 'воложанина'],
@@ -75,13 +79,15 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
   {
     color: GYDRO_COLOR,
     name: GYDRO_NAME,
+    colorLabel: 'фиолетовый',
     shortLabel: 'GydRo',
-    title: 'GydRo - reserved Mars red',
+    title: 'GydRo - reserved purple',
     aliases: ['gydro', 'руслан', 'ruslan'],
   },
   {
     color: ANTISTRESS_COLOR,
     name: ANTISTRESS_NAME,
+    colorLabel: 'тёмно-синий',
     shortLabel: 'Anti',
     title: 'Антистресс - reserved deep calm blue',
     aliases: ['antistress', 'anti stress', 'антистресс', 'анатолий', 'абдуллаев'],
@@ -89,6 +95,7 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
   {
     color: GAMBIT_GIRL_COLOR,
     name: GAMBIT_GIRL_NAME,
+    colorLabel: 'гортензия',
     shortLabel: 'Олеся',
     title: 'Олеся - reserved hydrangea blue',
     aliases: ['gambitgirl', 'gambit girl', 'олеся', 'olesya', 'olesia', 'игнатова', 'мяу'],
@@ -96,6 +103,7 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
   {
     color: PAVEL_TURQUOISE_COLOR,
     name: PAVEL_TURQUOISE_NAME,
+    colorLabel: 'бирюза',
     shortLabel: 'Паша',
     title: 'Паша - reserved turquoise',
     aliases: ['паша', 'павел', 'миронов', 'pasha', 'pavel', 'pavel mironov'],
@@ -104,6 +112,7 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
     color: SONYA_SATURN_COLOR,
     name: TOMA_NAME,
     label: 'Тома · Сатурн',
+    colorLabel: 'сатурн',
     selectable: false,
     shortLabel: 'Sat',
     title: 'Тома - reserved Saturn dusty gold',
@@ -113,6 +122,7 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
     color: SONYA_SATURN_RINGS_COLOR,
     name: TOMA_NAME,
     label: 'Тома · Кольца Сатурна',
+    colorLabel: 'кольца',
     selectable: false,
     shortLabel: 'Ring',
     title: 'Тома - reserved Saturn rings',
@@ -122,6 +132,7 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
     color: SONYA_TITAN_COLOR,
     name: TOMA_NAME,
     label: 'Тома · Титан',
+    colorLabel: 'титан',
     selectable: false,
     shortLabel: 'Titan',
     title: 'Тома - reserved Titan ochre',
@@ -131,14 +142,16 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
     color: SONYA_SATURN_STORM_COLOR,
     name: TOMA_NAME,
     label: 'Тома',
+    colorLabel: 'бордовый',
     shortLabel: 'Тома',
-    title: 'Тома - reserved Saturn Systems purple',
+    title: 'Тома - reserved burgundy',
     aliases: ['тома', 'toma', 'соня', 'sonya', 'соня эмко', 'эмко', 'sonya emko', 'sonia emko', 'emko', 'соня шторм', 'соня сатурновый шторм', 'соня сатурн систем', 'сатурн систем', 'saturn systems', 'emko storm', 'sonya storm', 'sonia storm'],
   },
   {
     color: SONYA_CATSEYE_COLOR,
     name: TOMA_NAME,
     label: 'Тома · Кошачий глаз',
+    colorLabel: 'кошачий глаз',
     selectable: false,
     shortLabel: 'Cat',
     title: 'Тома - reserved microbe cat eye',

@@ -26,14 +26,14 @@ const COLOR_CODES: Record<Color, string> = {
   ['gold']: 'rgb(212, 175, 55)',
   ['emerald']: 'rgb(0, 148, 104)',
   ['ginger']: 'rgb(218, 88, 28)',
-  ['hydro']: 'rgb(179, 38, 58)',
+  ['hydro']: 'rgb(86, 26, 120)',
   ['antistress']: 'rgb(29, 58, 116)',
   ['gambit']: 'rgb(111, 164, 205)',
   ['turquoise']: 'rgb(0, 174, 181)',
   ['saturn']: 'rgb(214, 179, 106)',
   ['saturnrings']: 'rgb(200, 181, 138)',
   ['titan']: 'rgb(185, 143, 74)',
-  ['saturnstorm']: 'rgb(86, 26, 120)',
+  ['saturnstorm']: 'rgb(190, 31, 72)',
   ['catseye']: 'rgb(143, 175, 47)',
 
   // Not actual player colors

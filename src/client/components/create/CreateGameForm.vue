@@ -461,7 +461,7 @@
                                                 @change="applyPlayerIdentityFromSelect(newPlayer, $event)">
                                                   <option value="">Custom nick</option>
                                                   <option v-for="identity in getAvailableLockedPlayerIdentities(newPlayer)" :key="identity.color" :value="identity.color">
-                                                    {{ identity.label || identity.name }}
+                                                    {{ formatLockedIdentityOption(identity) }}
                                                   </option>
                                               </select>
                                           </div>
@@ -602,7 +602,7 @@
 import * as constants from '@/common/constants';
 
 import {defineComponent, nextTick} from 'vue';
-import {Color, DEFAULT_PLAYER_COLORS, getLockedPlayerLabel, getLockedPlayerName, LOCKED_PLAYER_IDENTITIES} from '@/common/Color';
+import {Color, DEFAULT_PLAYER_COLORS, getLockedPlayerName, LOCKED_PLAYER_IDENTITIES} from '@/common/Color';
 import type {LockedPlayerIdentity, PlayerColor} from '@/common/Color';
 import {BoardName} from '@/common/boards/BoardName';
 import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
@@ -983,6 +983,10 @@ export default defineComponent({
         (identity.selectable !== false || identity.color === player.color) &&
         (identity.color === player.color || !takenColors.has(identity.color)));
     },
+    formatLockedIdentityOption(identity: LockedPlayerIdentity): string {
+      const label = identity.label || identity.name;
+      return `${label} · ${identity.colorLabel}`;
+    },
     getAvailableDefaultColor(player: NewPlayerModel): Color {
       const usedColors = new Set(this.getPlayers()
         .filter((candidate) => candidate !== player)
@@ -1139,8 +1143,11 @@ export default defineComponent({
       return playerColorClass(color, 'bg_transparent');
     },
     getColorTitle(color: Color): string {
-      const lockedLabel = getLockedPlayerLabel(color);
-      return lockedLabel ?? color;
+      const identity = LOCKED_PLAYER_IDENTITIES.find((candidate) => candidate.color === color);
+      if (identity !== undefined) {
+        return `${identity.label || identity.name} · ${identity.colorLabel}`;
+      }
+      return color;
     },
     boardHref(boardName: BoardName | RandomBoardOption) {
       const options: Record<BoardName | RandomBoardOption, string> = {

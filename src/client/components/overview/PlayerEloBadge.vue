@@ -117,9 +117,16 @@ export default defineComponent({
 }
 
 .player-elo-badge--hydro {
-  color: #d8fbff;
-  border-color: #7beeff;
+  color: #f6e7ff;
+  border-color: #c38aff;
   background: rgba(26, 26, 46, 0.78);
-  box-shadow: 0 0 7px rgba(0, 210, 255, 0.35);
+  box-shadow: 0 0 7px rgba(134, 65, 190, 0.42);
+}
+
+.player-elo-badge--saturnstorm {
+  color: #ffe5e8;
+  border-color: #ff9fb6;
+  background: rgba(26, 26, 46, 0.78);
+  box-shadow: 0 0 7px rgba(190, 31, 72, 0.38);
 }
 </style>

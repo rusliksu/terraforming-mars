@@ -17,6 +17,11 @@ export const SYMBOL_FOR_COLOR = {
   antistress: '✚',
   gambit: '♞',
   turquoise: '◇',
+  saturn: '♄',
+  saturnrings: '◎',
+  titan: 'T',
+  saturnstorm: '∿',
+  catseye: '◉',
   bronze: '▦',
   neutral: '★',
 } satisfies Record<Color, string>;

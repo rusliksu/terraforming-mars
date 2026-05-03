@@ -44,6 +44,16 @@ a:hover { text-decoration: underline; }
 .winner .player-persona-gambit { color: #9bd2ff; }
 .player-persona-turquoise,
 .winner .player-persona-turquoise { color: #38e7ef; }
+.player-persona-saturn,
+.winner .player-persona-saturn { color: #d6b36a; }
+.player-persona-saturnrings,
+.winner .player-persona-saturnrings { color: #c8b58a; }
+.player-persona-titan,
+.winner .player-persona-titan { color: #b98f4a; }
+.player-persona-saturnstorm,
+.winner .player-persona-saturnstorm { color: #561a78; }
+.player-persona-catseye,
+.winner .player-persona-catseye { color: #8faf2f; }
 .player-persona:hover { filter: brightness(1.12); }
 
 /* Recent Games */
@@ -76,6 +86,11 @@ a:hover { text-decoration: underline; }
 .winner .player-persona-antistress { color: #87aefc; }
 .winner .player-persona-gambit { color: #9bd2ff; }
 .winner .player-persona-turquoise { color: #38e7ef; }
+.winner .player-persona-saturn { color: #d6b36a; }
+.winner .player-persona-saturnrings { color: #c8b58a; }
+.winner .player-persona-titan { color: #b98f4a; }
+.winner .player-persona-saturnstorm { color: #561a78; }
+.winner .player-persona-catseye { color: #8faf2f; }
 .show-more { text-align: center; margin-top: 15px; }
 .show-more button { background: #16213e; color: #ff6b35; border: 1px solid #ff6b35; padding: 8px 24px; border-radius: 6px; cursor: pointer; font-size: 0.95em; }
 .show-more button:hover { background: #ff6b35; color: #fff; }
@@ -215,8 +230,43 @@ var PLAYER_PERSONA_CLASSES = {
   "pasha": "player-persona-turquoise",
   "pavel": "player-persona-turquoise",
   "pavel mironov": "player-persona-turquoise",
-  "миронов": "player-persona-turquoise"
+  "миронов": "player-persona-turquoise",
+  "тома": "player-persona-saturnstorm",
+  "toma": "player-persona-saturnstorm",
+  "соня": "player-persona-saturnstorm",
+  "sonya": "player-persona-saturnstorm",
+  "соня эмко": "player-persona-saturnstorm",
+  "эмко": "player-persona-saturnstorm",
+  "sonya emko": "player-persona-saturnstorm",
+  "sonia emko": "player-persona-saturnstorm",
+  "emko": "player-persona-saturnstorm"
 };
+
+var HIDDEN_ELO_PLAYERS = {
+  "a": true,
+  "b": true,
+  "c": true
+};
+
+function normalizedPlayerKey(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function isHiddenEloPlayer(name, displayName) {
+  return HIDDEN_ELO_PLAYERS[normalizedPlayerKey(name)] ||
+    HIDDEN_ELO_PLAYERS[normalizedPlayerKey(displayName)];
+}
+
+function visibleGameResults(game) {
+  return (game.results || []).filter(function(result) {
+    return result && result.name && !isHiddenEloPlayer(result.name, result.displayName);
+  });
+}
+
+function getVisibleGames() {
+  var games = (_data && _data.games) ? _data.games.slice() : [];
+  return games.filter(function(game) { return visibleGameResults(game).length > 0; });
+}
 
 function getGameUrl(game) {
   var host = game.server === "knightbyte"
@@ -280,13 +330,14 @@ function collectMatchupPlayers(minGames) {
   var seenInGames = {};
   games.forEach(function(game) {
     (game.results || []).forEach(function(result) {
-      if (result && result.name) seenInGames[result.name] = true;
+      if (result && result.name && !isHiddenEloPlayer(result.name, result.displayName)) seenInGames[result.name] = true;
     });
   });
 
   var list = [];
   for (var name in players) {
     var p = players[name];
+    if (isHiddenEloPlayer(name, p.displayName)) continue;
     var gamesCount = p.games || 0;
     if (gamesCount < minGames || !seenInGames[name]) continue;
     var elo = _mode === "vp" ? (p.elo_vp || p.elo || 1500) : (p.elo || 1500);
@@ -362,7 +413,7 @@ function buildMatchupStats() {
   games.forEach(function(game) {
     var unique = {};
     (game.results || []).forEach(function(result) {
-      if (result && result.name && !unique[result.name]) unique[result.name] = result;
+      if (result && result.name && !isHiddenEloPlayer(result.name, result.displayName) && !unique[result.name]) unique[result.name] = result;
     });
     var entries = Object.keys(unique).map(function(key) { return unique[key]; });
     for (var i = 0; i < entries.length; i++) {
@@ -587,6 +638,7 @@ function renderPlayers() {
   var list = [];
   for (var name in players) {
     var p = players[name];
+    if (isHiddenEloPlayer(name, p.displayName)) continue;
     var elo = _mode === "vp" ? (p.elo_vp || p.elo || 1500) : (p.elo || 1500);
     var games = p.games || 0;
     var avgPlace = typeof p.avgPlace === "number" ? p.avgPlace :
@@ -608,7 +660,7 @@ function renderPlayers() {
     });
   }
   list.sort(function(a,b) { return b.elo - a.elo; });
-  var games = _data.games || [];
+  var games = getVisibleGames();
   document.getElementById("stats").innerHTML = list.length + " players | " + games.length + " games | <span class=\"highlight\">Avg gen " + averageGeneration(games) + "</span>";
   var html = "";
   list.forEach(function(p, i) {
@@ -627,11 +679,11 @@ function renderPlayers() {
 }
 
 function getFilteredGames() {
-  var games = (_data && _data.games) ? _data.games.slice() : [];
+  var games = getVisibleGames();
   games.reverse();
   if (_filterPlayer) {
     games = games.filter(function(g) {
-      return g.results && g.results.some(function(r) { return r.name === _filterPlayer; });
+      return visibleGameResults(g).some(function(r) { return r.name === _filterPlayer; });
     });
   }
   return games;
@@ -665,7 +717,7 @@ function renderGames() {
 
   var html = "";
   toShow.forEach(function(g) {
-    var results = (g.results || []).slice().sort(function(a,b) { return a.place - b.place; });
+    var results = visibleGameResults(g).slice().sort(function(a,b) { return a.place - b.place; });
     var genText = g.generation ? ("Gen " + g.generation) : "";
     var serverText = g.server || "";
 

@@ -324,4 +324,17 @@ describe('Styles', () => {
     expect(elo).to.contain('if (isHiddenEloPlayer(name, p.displayName)) continue;');
     expect(elo).to.contain('return visibleGameResults(g).some(function(r) { return r.name === _filterPlayer; });');
   });
+
+  it('shows finish time and duration in recent ELO games', () => {
+    const elo = read('elo/index.html');
+
+    expect(elo).to.contain('function formatGameDate(game)');
+    expect(elo).to.contain('function formatGameDuration(game)');
+    expect(elo).to.contain('var dateText = formatGameDate(g);');
+    expect(elo).to.contain('var durationText = formatGameDuration(g);');
+    expect(elo).to.contain('class=\\"game-time\\" title=\\"Finished time\\"');
+    expect(elo).to.contain('class=\\"game-duration\\" title=\\"Game duration\\"');
+    expect(elo).to.contain('.game-time { color: #b8b8b8; }');
+    expect(elo).to.contain('.game-duration { color: #c4a35a; }');
+  });
 });

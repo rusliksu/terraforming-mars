@@ -1,6 +1,9 @@
 import {expect} from 'chai';
 import {EventEmitter} from 'events';
+import * as fs from 'fs';
 import https from 'https';
+import * as os from 'os';
+import * as path from 'path';
 import {BotTakeoverManager} from '../../src/server/bot/BotTakeoverManager';
 import {buildTurnNoticeText, deleteTurnNotice, sendTurnNotice} from '../../src/server/TelegramBot';
 
@@ -8,9 +11,13 @@ describe('TelegramBot', () => {
   function withTelegramEnabled<T>(fn: () => Promise<T>): Promise<T> {
     const originalToken = process.env.TM_BOT_TOKEN;
     const originalDisabled = process.env.TM_DISABLE_TELEGRAM;
+    const originalStore = process.env.TM_TURN_NOTICE_STORE;
+    const storePath = path.join(os.tmpdir(), `tm-turn-notices-${Date.now()}-${Math.random()}.json`);
     process.env.TM_BOT_TOKEN = 'token';
+    process.env.TM_TURN_NOTICE_STORE = storePath;
     delete process.env.TM_DISABLE_TELEGRAM;
     return fn().finally(() => {
+      fs.rmSync(storePath, {force: true});
       if (originalToken === undefined) {
         delete process.env.TM_BOT_TOKEN;
       } else {
@@ -21,15 +28,25 @@ describe('TelegramBot', () => {
       } else {
         process.env.TM_DISABLE_TELEGRAM = originalDisabled;
       }
+      if (originalStore === undefined) {
+        delete process.env.TM_TURN_NOTICE_STORE;
+      } else {
+        process.env.TM_TURN_NOTICE_STORE = originalStore;
+      }
     });
   }
 
-  function stubTelegramApi(response: object): {restore: () => void} {
+  function stubTelegramApi(response: object): {calls: Array<{path: string, body: any}>, restore: () => void} {
     const originalRequest = https.request;
-    (https as any).request = (_options: object, cb: (res: EventEmitter) => void) => {
+    const calls: Array<{path: string, body: any}> = [];
+    (https as any).request = (options: {path: string}, cb: (res: EventEmitter) => void) => {
+      let requestBody = '';
       const req = new EventEmitter() as any;
-      req.write = () => {};
+      req.write = (chunk: string) => {
+        requestBody += chunk;
+      };
       req.end = () => {
+        calls.push({path: options.path, body: JSON.parse(requestBody)});
         const res = new EventEmitter();
         cb(res);
         res.emit('data', JSON.stringify(response));
@@ -38,6 +55,7 @@ describe('TelegramBot', () => {
       return req;
     };
     return {
+      calls,
       restore: () => {
         (https as any).request = originalRequest;
       },
@@ -225,6 +243,71 @@ describe('TelegramBot', () => {
       } else {
         process.env.TM_BOT_TOKEN = original;
       }
+    }
+  });
+
+  it('deletes a notice from the persistent store when in-memory message id was lost', async () => {
+    const telegram = stubTelegramApi({ok: true, result: {message_id: 123}});
+    try {
+      await withTelegramEnabled(async () => {
+        const player = {
+          name: 'Руслан',
+          id: 'p-ruslan' as const,
+          telegramID: '123456',
+          lastNoticeMessageId: -1,
+          game: {
+            id: 'g-telegram',
+            generation: 1,
+            phase: 'action',
+            players: [],
+          },
+        };
+
+        const sent = await sendTurnNotice(player, 'turn-key');
+        expect(sent).eq(true);
+        player.lastNoticeMessageId = -1;
+
+        await deleteTurnNotice(player);
+      });
+
+      const deleteCalls = telegram.calls.filter((call) => call.path.includes('/deleteMessage'));
+      expect(deleteCalls).has.length(1);
+      expect(deleteCalls[0].body.message_id).eq(123);
+    } finally {
+      telegram.restore();
+    }
+  });
+
+  it('does not resend the same turn notice after in-memory state was lost', async () => {
+    const telegram = stubTelegramApi({ok: true, result: {message_id: 123}});
+    try {
+      await withTelegramEnabled(async () => {
+        const player = {
+          name: 'Руслан',
+          id: 'p-ruslan' as const,
+          telegramID: '123456',
+          lastNoticeMessageId: -1,
+          game: {
+            id: 'g-telegram',
+            generation: 1,
+            phase: 'action',
+            players: [],
+          },
+        };
+
+        const firstSend = await sendTurnNotice(player, 'turn-key');
+        player.lastNoticeMessageId = -1;
+        const duplicateSend = await sendTurnNotice(player, 'turn-key');
+
+        expect(firstSend).eq(true);
+        expect(duplicateSend).eq(false);
+        expect(player.lastNoticeMessageId).eq(123);
+      });
+
+      const sendCalls = telegram.calls.filter((call) => call.path.includes('/sendMessage'));
+      expect(sendCalls).has.length(1);
+    } finally {
+      telegram.restore();
     }
   });
 });

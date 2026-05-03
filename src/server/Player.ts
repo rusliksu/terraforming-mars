@@ -1692,10 +1692,12 @@ export class Player implements IPlayer {
     try {
       this.timer.stop();
       this.clearPendingTurnNoticeTimers();
-      deleteTurnNotice(this);
-      this._turnNoticeSentThisRound = false;
       this.defer(waitingFor.process(input, this));
       waitingForCb();
+      if (this.waitingFor === undefined) {
+        void deleteTurnNotice(this);
+        this._turnNoticeSentThisRound = false;
+      }
     } catch (err) {
       this.setWaitingFor(waitingFor, waitingForCb);
       throw err;

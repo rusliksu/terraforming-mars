@@ -1,4 +1,6 @@
 import https from 'https';
+import * as fs from 'fs';
+import * as path from 'path';
 import {BotTakeoverManager} from './bot/BotTakeoverManager';
 import {PlayerId} from '../common/Types';
 
@@ -24,7 +26,7 @@ const COLOR_LABELS: Record<string, string> = {
 
 interface TelegramResponse {
   ok: boolean;
-  result?: { message_id: number };
+  result?: { message_id: number } | boolean;
   description?: string;
   error_code?: number;
 }
@@ -32,6 +34,17 @@ interface TelegramResponse {
 interface TurnNoticeOptions {
   reminder?: boolean;
 }
+
+type TurnNoticeStoreRecord = {
+  gameId: string;
+  playerId: PlayerId;
+  chatId: string;
+  messageId: number;
+  turnNoticeKey?: string;
+  updatedAt: string;
+};
+
+type TurnNoticeStore = Record<string, TurnNoticeStoreRecord>;
 
 function telegramDisabled(): boolean {
   return process.env.TM_DISABLE_TELEGRAM === '1';
@@ -132,6 +145,67 @@ function gameIdForLog(player: TelegramNotifiable): string {
   return player.game?.id ?? 'unknown';
 }
 
+function turnNoticeStoreKey(player: TelegramNotifiable): string {
+  return `${gameIdForLog(player)}:${player.id}`;
+}
+
+function turnNoticeStorePath(): string {
+  return process.env.TM_TURN_NOTICE_STORE?.trim() || path.resolve(process.cwd(), 'db', 'telegram-turn-notices.json');
+}
+
+function readTurnNoticeStore(): TurnNoticeStore {
+  const storePath = turnNoticeStorePath();
+  try {
+    if (!fs.existsSync(storePath)) return {};
+    const parsed = JSON.parse(fs.readFileSync(storePath, 'utf8'));
+    if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return parsed as TurnNoticeStore;
+    }
+  } catch (err) {
+    console.warn('Telegram turn notice store read failed:', err instanceof Error ? err.message : String(err));
+  }
+  return {};
+}
+
+function writeTurnNoticeStore(store: TurnNoticeStore): void {
+  const storePath = turnNoticeStorePath();
+  try {
+    fs.mkdirSync(path.dirname(storePath), {recursive: true});
+    const tmpPath = `${storePath}.${process.pid}.tmp`;
+    fs.writeFileSync(tmpPath, JSON.stringify(store, null, 2));
+    fs.renameSync(tmpPath, storePath);
+  } catch (err) {
+    console.warn('Telegram turn notice store write failed:', err instanceof Error ? err.message : String(err));
+  }
+}
+
+function getStoredTurnNotice(player: TelegramNotifiable): TurnNoticeStoreRecord | undefined {
+  return readTurnNoticeStore()[turnNoticeStoreKey(player)];
+}
+
+function rememberTurnNotice(player: TelegramNotifiable, messageId: number, turnNoticeKey: string | undefined): void {
+  const store = readTurnNoticeStore();
+  store[turnNoticeStoreKey(player)] = {
+    gameId: gameIdForLog(player),
+    playerId: player.id,
+    chatId: player.telegramID,
+    messageId,
+    turnNoticeKey,
+    updatedAt: new Date().toISOString(),
+  };
+  writeTurnNoticeStore(store);
+}
+
+function forgetTurnNotice(player: TelegramNotifiable, messageId?: number): void {
+  const store = readTurnNoticeStore();
+  const key = turnNoticeStoreKey(player);
+  const stored = store[key];
+  if (stored === undefined) return;
+  if (messageId !== undefined && stored.messageId !== messageId) return;
+  delete store[key];
+  writeTurnNoticeStore(store);
+}
+
 function logTurnNoticeSent(
   player: TelegramNotifiable,
   messageId: number,
@@ -171,6 +245,13 @@ export function buildTurnNoticeText(player: TelegramNotifiable, options: TurnNot
   return lines.join('\n');
 }
 
+async function deleteTelegramMessage(chatId: string, messageId: number): Promise<void> {
+  await callTelegramApi('deleteMessage', {
+    chat_id: chatId,
+    message_id: messageId,
+  });
+}
+
 export async function sendTurnNotice(
   player: TelegramNotifiable,
   turnNoticeKey?: string,
@@ -180,17 +261,28 @@ export async function sendTurnNotice(
   if (telegramDisabled()) return false;
   if (!getBotToken()) return false;
   if (BotTakeoverManager.INSTANCE.isActive(player.id)) return false;
+  const storedNotice = getStoredTurnNotice(player);
+  if (options.reminder !== true && turnNoticeKey !== undefined && storedNotice?.turnNoticeKey === turnNoticeKey) {
+    player.lastNoticeMessageId = storedNotice.messageId;
+    player.lastTurnNoticeKey = turnNoticeKey;
+    return false;
+  }
   try {
     const resp = await callTelegramApi('sendMessage', {
       chat_id: player.telegramID,
       text: buildTurnNoticeText(player, options),
     });
-    if (resp.ok && resp.result) {
-      player.lastNoticeMessageId = resp.result.message_id;
+    const messageId = typeof resp.result === 'object' ? resp.result.message_id : undefined;
+    if (resp.ok && messageId !== undefined) {
+      player.lastNoticeMessageId = messageId;
       if (turnNoticeKey !== undefined) {
         player.lastTurnNoticeKey = turnNoticeKey;
       }
-      logTurnNoticeSent(player, resp.result.message_id, turnNoticeKey, options);
+      rememberTurnNotice(player, messageId, turnNoticeKey);
+      if (storedNotice !== undefined && storedNotice.turnNoticeKey !== turnNoticeKey && storedNotice.messageId !== messageId) {
+        await deleteTelegramMessage(storedNotice.chatId, storedNotice.messageId);
+      }
+      logTurnNoticeSent(player, messageId, turnNoticeKey, options);
       return true;
     }
     warnTurnNoticeFailed(player, resp, turnNoticeKey, options);
@@ -204,20 +296,19 @@ export async function deleteTurnNoticeMessage(player: TelegramNotifiable, messag
   if (!player.telegramID || messageId < 0) return;
   if (telegramDisabled()) return;
   if (!getBotToken()) return;
+  forgetTurnNotice(player, messageId);
   try {
-    await callTelegramApi('deleteMessage', {
-      chat_id: player.telegramID,
-      message_id: messageId,
-    });
+    await deleteTelegramMessage(player.telegramID, messageId);
   } catch (err) {
     console.warn('deleteTurnNotice error:', err);
   }
 }
 
 export async function deleteTurnNotice(player: TelegramNotifiable): Promise<void> {
-  const messageId = player.lastNoticeMessageId;
-  if (messageId < 0) return;
+  const storedNotice = getStoredTurnNotice(player);
+  const messageId = player.lastNoticeMessageId >= 0 ? player.lastNoticeMessageId : storedNotice?.messageId ?? -1;
   player.lastNoticeMessageId = -1;
+  if (messageId < 0) return;
   await deleteTurnNoticeMessage(player, messageId);
 }
 

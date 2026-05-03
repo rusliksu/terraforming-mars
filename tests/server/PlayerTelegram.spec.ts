@@ -1,6 +1,9 @@
 import {expect} from 'chai';
 import {EventEmitter} from 'events';
+import * as fs from 'fs';
 import https from 'https';
+import * as os from 'os';
+import * as path from 'path';
 import {Game} from '../../src/server/Game';
 import {Player} from '../../src/server/Player';
 import {SelectOption} from '../../src/server/inputs/SelectOption';
@@ -108,8 +111,11 @@ describe('Player telegram state', () => {
   it('sends repeated reminders for a stale active turn notice', async () => {
     const originalToken = process.env.TM_BOT_TOKEN;
     const originalDisabled = process.env.TM_DISABLE_TELEGRAM;
+    const originalStore = process.env.TM_TURN_NOTICE_STORE;
+    const storePath = path.join(os.tmpdir(), `tm-turn-notices-${Date.now()}-${Math.random()}.json`);
     const originalLog = console.log;
     process.env.TM_BOT_TOKEN = 'token';
+    process.env.TM_TURN_NOTICE_STORE = storePath;
     delete process.env.TM_DISABLE_TELEGRAM;
     const telegram = stubTelegramApi([101, 102]);
     console.log = (() => {}) as typeof console.log;
@@ -143,6 +149,96 @@ describe('Player telegram state', () => {
       clearTelegramTimers(player1);
       telegram.restore();
       console.log = originalLog;
+      fs.rmSync(storePath, {force: true});
+      if (originalToken === undefined) {
+        delete process.env.TM_BOT_TOKEN;
+      } else {
+        process.env.TM_BOT_TOKEN = originalToken;
+      }
+      if (originalDisabled === undefined) {
+        delete process.env.TM_DISABLE_TELEGRAM;
+      } else {
+        process.env.TM_DISABLE_TELEGRAM = originalDisabled;
+      }
+      if (originalStore === undefined) {
+        delete process.env.TM_TURN_NOTICE_STORE;
+      } else {
+        process.env.TM_TURN_NOTICE_STORE = originalStore;
+      }
+    }
+  });
+
+  it('keeps the turn notice while the same player is still waiting for input', async () => {
+    const originalToken = process.env.TM_BOT_TOKEN;
+    const originalDisabled = process.env.TM_DISABLE_TELEGRAM;
+    process.env.TM_BOT_TOKEN = 'token';
+    delete process.env.TM_DISABLE_TELEGRAM;
+    const telegram = stubTelegramApi(101);
+
+    const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
+    const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
+    Game.newInstance('g-telegram', [player1, player2], player1);
+
+    try {
+      player1.telegramID = '123456';
+      player1.lastTurnNoticeKey = (player1 as any).getTurnNoticeKey();
+      player1.lastNoticeMessageId = 77;
+      (player1 as any).waitingFor = new SelectOption('First prompt');
+      (player1 as any).waitingForCb = () => {
+        player1.setWaitingFor(new SelectOption('Second prompt'));
+      };
+
+      player1.process({type: 'option'});
+
+      const deleteCalls = telegram.calls.filter((call) => call.path.includes('/deleteMessage'));
+      expect(deleteCalls).has.length(0);
+      expect(player1.lastNoticeMessageId).eq(77);
+      expect(player1.getWaitingFor()).not.to.be.undefined;
+    } finally {
+      clearTelegramTimers(player1);
+      telegram.restore();
+      if (originalToken === undefined) {
+        delete process.env.TM_BOT_TOKEN;
+      } else {
+        process.env.TM_BOT_TOKEN = originalToken;
+      }
+      if (originalDisabled === undefined) {
+        delete process.env.TM_DISABLE_TELEGRAM;
+      } else {
+        process.env.TM_DISABLE_TELEGRAM = originalDisabled;
+      }
+    }
+  });
+
+  it('deletes the turn notice after the player finishes waiting for input', async () => {
+    const originalToken = process.env.TM_BOT_TOKEN;
+    const originalDisabled = process.env.TM_DISABLE_TELEGRAM;
+    process.env.TM_BOT_TOKEN = 'token';
+    delete process.env.TM_DISABLE_TELEGRAM;
+    const telegram = stubTelegramApi(101);
+
+    const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
+    const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
+    Game.newInstance('g-telegram', [player1, player2], player1);
+
+    try {
+      player1.telegramID = '123456';
+      player1.lastTurnNoticeKey = (player1 as any).getTurnNoticeKey();
+      player1.lastNoticeMessageId = 77;
+      (player1 as any).waitingFor = new SelectOption('Last prompt');
+      (player1 as any).waitingForCb = () => {};
+
+      player1.process({type: 'option'});
+      await new Promise((resolve) => setImmediate(resolve));
+
+      const deleteCalls = telegram.calls.filter((call) => call.path.includes('/deleteMessage'));
+      expect(deleteCalls).has.length(1);
+      expect(deleteCalls[0].body.message_id).eq(77);
+      expect(player1.lastNoticeMessageId).eq(-1);
+      expect(player1.getWaitingFor()).is.undefined;
+    } finally {
+      clearTelegramTimers(player1);
+      telegram.restore();
       if (originalToken === undefined) {
         delete process.env.TM_BOT_TOKEN;
       } else {

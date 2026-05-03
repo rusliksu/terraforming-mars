@@ -312,4 +312,16 @@ describe('Styles', () => {
     expect(elo).not.to.contain('font-family: Verdana');
     expect(elo).not.to.contain('font-family: "Segoe UI"');
   });
+
+  it('keeps synthetic smoke-test players out of the ELO UI', () => {
+    const elo = read('elo/index.html');
+
+    expect(elo).to.contain('var HIDDEN_ELO_PLAYERS = {');
+    expect(elo).to.contain('"a": true');
+    expect(elo).to.contain('"b": true');
+    expect(elo).to.contain('"c": true');
+    expect(elo).to.contain('function isHiddenEloPlayer(name, displayName)');
+    expect(elo).to.contain('if (isHiddenEloPlayer(name, p.displayName)) continue;');
+    expect(elo).to.contain('return visibleGameResults(g).some(function(r) { return r.name === _filterPlayer; });');
+  });
 });

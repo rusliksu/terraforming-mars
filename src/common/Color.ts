@@ -13,6 +13,13 @@ export const GAMBIT_GIRL_COLOR = 'gambit' as const;
 export const GAMBIT_GIRL_NAME = 'Олеся';
 export const PAVEL_TURQUOISE_COLOR = 'turquoise' as const;
 export const PAVEL_TURQUOISE_NAME = 'Паша';
+export const TOMA_NAME = 'Тома';
+export const SONYA_EMKO_NAME = TOMA_NAME;
+export const SONYA_SATURN_COLOR = 'saturn' as const;
+export const SONYA_SATURN_RINGS_COLOR = 'saturnrings' as const;
+export const SONYA_TITAN_COLOR = 'titan' as const;
+export const SONYA_SATURN_STORM_COLOR = 'saturnstorm' as const;
+export const SONYA_CATSEYE_COLOR = 'catseye' as const;
 export const RESERVED_PLAYER_COLORS = [
   GENUINE_GOLD_COLOR,
   EMERALD_RAV_COLOR,
@@ -21,6 +28,11 @@ export const RESERVED_PLAYER_COLORS = [
   ANTISTRESS_COLOR,
   GAMBIT_GIRL_COLOR,
   PAVEL_TURQUOISE_COLOR,
+  SONYA_SATURN_COLOR,
+  SONYA_SATURN_RINGS_COLOR,
+  SONYA_TITAN_COLOR,
+  SONYA_SATURN_STORM_COLOR,
+  SONYA_CATSEYE_COLOR,
 ] as const;
 export const PLAYER_COLORS = [...DEFAULT_PLAYER_COLORS, ...RESERVED_PLAYER_COLORS] as const;
 export type PlayerColor = typeof PLAYER_COLORS[number];
@@ -31,6 +43,8 @@ export type ColorWithNeutral = Color | 'NEUTRAL';
 export type LockedPlayerIdentity = {
   color: PlayerColor;
   name: string;
+  label?: string;
+  selectable?: boolean;
   shortLabel: string;
   title: string;
   aliases: ReadonlyArray<string>;
@@ -86,6 +100,50 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
     title: 'Паша - reserved turquoise',
     aliases: ['паша', 'павел', 'миронов', 'pasha', 'pavel', 'pavel mironov'],
   },
+  {
+    color: SONYA_SATURN_COLOR,
+    name: TOMA_NAME,
+    label: 'Тома · Сатурн',
+    selectable: false,
+    shortLabel: 'Sat',
+    title: 'Тома - reserved Saturn dusty gold',
+    aliases: ['соня сатурн', 'emko saturn', 'sonya saturn', 'sonia saturn'],
+  },
+  {
+    color: SONYA_SATURN_RINGS_COLOR,
+    name: TOMA_NAME,
+    label: 'Тома · Кольца Сатурна',
+    selectable: false,
+    shortLabel: 'Ring',
+    title: 'Тома - reserved Saturn rings',
+    aliases: ['соня кольца', 'соня кольца сатурна', 'emko rings', 'sonya rings', 'sonia rings', 'sonya saturn rings', 'sonia saturn rings'],
+  },
+  {
+    color: SONYA_TITAN_COLOR,
+    name: TOMA_NAME,
+    label: 'Тома · Титан',
+    selectable: false,
+    shortLabel: 'Titan',
+    title: 'Тома - reserved Titan ochre',
+    aliases: ['соня титан', 'emko titan', 'sonya titan', 'sonia titan'],
+  },
+  {
+    color: SONYA_SATURN_STORM_COLOR,
+    name: TOMA_NAME,
+    label: 'Тома',
+    shortLabel: 'Тома',
+    title: 'Тома - reserved Saturn Systems purple',
+    aliases: ['тома', 'toma', 'соня', 'sonya', 'соня эмко', 'эмко', 'sonya emko', 'sonia emko', 'emko', 'соня шторм', 'соня сатурновый шторм', 'соня сатурн систем', 'сатурн систем', 'saturn systems', 'emko storm', 'sonya storm', 'sonia storm'],
+  },
+  {
+    color: SONYA_CATSEYE_COLOR,
+    name: TOMA_NAME,
+    label: 'Тома · Кошачий глаз',
+    selectable: false,
+    shortLabel: 'Cat',
+    title: 'Тома - reserved microbe cat eye',
+    aliases: ['соня кошачий глаз', 'эмко кошачий глаз', 'cat eye microbe', 'microbe cat eye', 'sonya cat eye', 'sonia cat eye'],
+  },
 ];
 
 export function getLockedPlayerIdentity(color: Color): LockedPlayerIdentity | undefined {
@@ -94,6 +152,11 @@ export function getLockedPlayerIdentity(color: Color): LockedPlayerIdentity | un
 
 export function getLockedPlayerName(color: Color): string | undefined {
   return getLockedPlayerIdentity(color)?.name;
+}
+
+export function getLockedPlayerLabel(color: Color): string | undefined {
+  const identity = getLockedPlayerIdentity(color);
+  return identity?.label ?? identity?.name;
 }
 
 export function isReservedPlayerColor(color: Color): color is typeof RESERVED_PLAYER_COLORS[number] {
@@ -107,6 +170,9 @@ export function normalizePlayerNameForColor(color: Color, name: string): string 
 export function getPlayerIdentityByName(name: string): LockedPlayerIdentity | undefined {
   const normalized = (name || '').trim().toLowerCase();
   if (normalized === '') return undefined;
+  const aliasMatch = LOCKED_PLAYER_IDENTITIES.find((identity) => identity.aliases.includes(normalized));
+  if (aliasMatch !== undefined) return aliasMatch;
   return LOCKED_PLAYER_IDENTITIES.find((identity) =>
-    identity.name.trim().toLowerCase() === normalized || identity.aliases.includes(normalized));
+    identity.selectable !== false && identity.name.trim().toLowerCase() === normalized) ??
+    LOCKED_PLAYER_IDENTITIES.find((identity) => identity.name.trim().toLowerCase() === normalized);
 }

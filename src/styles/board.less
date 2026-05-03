@@ -349,6 +349,31 @@
 	filter: @player_turquoise_sprite_filter drop-shadow(2px 2px 3px black);
 }
 
+.board-cube--saturn {
+	background: url(./assets/board_icons.png) -72px -91px no-repeat;
+	filter: @player_saturn_sprite_filter drop-shadow(2px 2px 3px black);
+}
+
+.board-cube--saturnrings {
+	background: url(./assets/board_icons.png) -72px -91px no-repeat;
+	filter: @player_saturnrings_sprite_filter drop-shadow(2px 2px 3px black);
+}
+
+.board-cube--titan {
+	background: url(./assets/board_icons.png) -1px -117px no-repeat;
+	filter: @player_titan_sprite_filter drop-shadow(2px 2px 3px black);
+}
+
+.board-cube--saturnstorm {
+	background: url(./assets/board_icons.png) -118px -91px no-repeat;
+	filter: @player_saturnstorm_sprite_filter drop-shadow(2px 2px 3px black);
+}
+
+.board-cube--catseye {
+	background: url(./assets/board_icons.png) -1px -91px no-repeat;
+	filter: @player_catseye_sprite_filter drop-shadow(2px 2px 3px black);
+}
+
 .board-space .board-cube--persona,
 .board-cube-coOwner.board-cube--persona {
 	background: transparent;
@@ -407,6 +432,31 @@
 .board-space .board-cube--turquoise::before,
 .board-cube-coOwner.board-cube--turquoise::before {
 	background: linear-gradient(135deg, #b8ffff 0%, @player_turquoise 52%, #00545b 100%);
+}
+
+.board-space .board-cube--saturn::before,
+.board-cube-coOwner.board-cube--saturn::before {
+	background: linear-gradient(135deg, #fff2bd 0%, @player_saturn 52%, #8f6120 100%);
+}
+
+.board-space .board-cube--saturnrings::before,
+.board-cube-coOwner.board-cube--saturnrings::before {
+	background: linear-gradient(135deg, #f6ead2 0%, @player_saturnrings 52%, #7c694a 100%);
+}
+
+.board-space .board-cube--titan::before,
+.board-cube-coOwner.board-cube--titan::before {
+	background: linear-gradient(135deg, #ffd696 0%, @player_titan 52%, #6d3f0e 100%);
+}
+
+.board-space .board-cube--saturnstorm::before,
+.board-cube-coOwner.board-cube--saturnstorm::before {
+	background: linear-gradient(135deg, #deb3ff 0%, @player_saturnstorm 52%, #21002f 100%);
+}
+
+.board-space .board-cube--catseye::before,
+.board-cube-coOwner.board-cube--catseye::before {
+	background: linear-gradient(135deg, #eaff78 0%, @player_catseye 52%, #3a4c00 100%);
 }
 
 .board-cube--bronze {
@@ -545,6 +595,56 @@
   margin-left: 4px;
   margin-top: -1px;
   color: #dcffff;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.board-cube--saturn.overlay::after {
+  .overlay_base();
+  content: "♄";
+  margin-left: 4px;
+  margin-top: -2px;
+  color: #2b1d08;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.board-cube--saturnrings.overlay::after {
+  .overlay_base();
+  content: "◎";
+  margin-left: 4px;
+  margin-top: -2px;
+  color: #241a0b;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.board-cube--titan.overlay::after {
+  .overlay_base();
+  content: "T";
+  margin-left: 5px;
+  margin-top: -2px;
+  color: #ffe4b2;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.board-cube--saturnstorm.overlay::after {
+  .overlay_base();
+  content: "∿";
+  margin-left: 4px;
+  margin-top: -3px;
+  color: #f6e7ff;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.board-cube--catseye.overlay::after {
+  .overlay_base();
+  content: "◉";
+  margin-left: 4px;
+  margin-top: -2px;
+  color: #f6ffd0;
   font-size: 15px;
   font-weight: bold;
 }
@@ -846,4 +946,29 @@ each(@token_types, {
 .underground-excavator--turquoise {
 	background: linear-gradient(135deg, #b8ffff 0%, @player_turquoise 48%, #00545b 100%);
 	border: 1px solid #9dffff;
+}
+
+.underground-excavator--saturn {
+	background: linear-gradient(135deg, #fff2bd 0%, @player_saturn 48%, #8f6120 100%);
+	border: 1px solid #ffe9a3;
+}
+
+.underground-excavator--saturnrings {
+	background: linear-gradient(135deg, #f6ead2 0%, @player_saturnrings 48%, #7c694a 100%);
+	border: 1px solid #ead8ad;
+}
+
+.underground-excavator--titan {
+	background: linear-gradient(135deg, #ffd696 0%, @player_titan 48%, #6d3f0e 100%);
+	border: 1px solid #ffc170;
+}
+
+.underground-excavator--saturnstorm {
+	background: linear-gradient(135deg, #deb3ff 0%, @player_saturnstorm 48%, #21002f 100%);
+	border: 1px solid #b983df;
+}
+
+.underground-excavator--catseye {
+	background: linear-gradient(135deg, #eaff78 0%, @player_catseye 48%, #3a4c00 100%);
+	border: 1px solid #d4f45c;
 }

@@ -11,6 +11,7 @@ import {
   GENUINE_GOLD_NAME,
   GYDRO_NAME,
   PAVEL_TURQUOISE_NAME,
+  TOMA_NAME,
 } from '@/common/Color';
 
 describe('CreateGameForm', () => {
@@ -164,6 +165,22 @@ describe('CreateGameForm', () => {
     expect(vm.players[0].name).to.eq(EMERALD_RAV_NAME);
   });
 
+  it('shows final Toma option and hides rejected Toma variants from the compact nick selector', () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+
+    const options = wrapper.find('.create-game-persona-select')
+      .findAll('option')
+      .map((option) => option.text());
+
+    expect(options).to.include('Тома');
+    expect(options).not.to.include('Тома · Сатурн');
+    expect(options).not.to.include('Тома · Кольца Сатурна');
+    expect(options).not.to.include('Тома · Титан');
+    expect(options).not.to.include('Тома · Кошачий глаз');
+  });
+
   it('filters out reserved personas already selected by another player', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
@@ -212,6 +229,11 @@ describe('CreateGameForm', () => {
       {color: 'antistress', inputName: 'Anatoly', expectedName: ANTISTRESS_NAME},
       {color: 'gambit', inputName: 'Olesya', expectedName: GAMBIT_GIRL_NAME},
       {color: 'turquoise', inputName: 'Pavel', expectedName: PAVEL_TURQUOISE_NAME},
+      {color: 'saturn', inputName: 'Sonya', expectedName: TOMA_NAME},
+      {color: 'saturnrings', inputName: 'Sonya', expectedName: TOMA_NAME},
+      {color: 'titan', inputName: 'Sonya', expectedName: TOMA_NAME},
+      {color: 'saturnstorm', inputName: 'Sonya', expectedName: TOMA_NAME},
+      {color: 'catseye', inputName: 'Sonya', expectedName: TOMA_NAME},
     ]) {
       vm.players[0].color = testCase.color;
       vm.players[0].name = testCase.inputName;

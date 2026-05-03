@@ -64,6 +64,21 @@
 .player_shadow_color_turquoise {
     text-shadow: -1px -1px 6px @player_turquoise, 1px 1px 1px #333a;
 }
+.player_shadow_color_saturn {
+    text-shadow: -1px -1px 6px @player_saturn, 1px 1px 1px #333a;
+}
+.player_shadow_color_saturnrings {
+    text-shadow: -1px -1px 6px @player_saturnrings, 1px 1px 1px #333a;
+}
+.player_shadow_color_titan {
+    text-shadow: -1px -1px 6px @player_titan, 1px 1px 1px #333a;
+}
+.player_shadow_color_saturnstorm {
+    text-shadow: -1px -1px 6px @player_saturnstorm, 1px 1px 1px #333a;
+}
+.player_shadow_color_catseye {
+    text-shadow: -1px -1px 6px @player_catseye, 1px 1px 1px #333a;
+}
 
 .game-title {
     text-transform: uppercase;
@@ -170,6 +185,26 @@
 
     .grid-item.player_tag_bg_color_turquoise {
         background-color: rgba(0, 174, 181, 0.22);
+    }
+
+    .grid-item.player_tag_bg_color_saturn {
+        background-color: rgba(214, 179, 106, 0.24);
+    }
+
+    .grid-item.player_tag_bg_color_saturnrings {
+        background-color: rgba(200, 181, 138, 0.24);
+    }
+
+    .grid-item.player_tag_bg_color_titan {
+        background-color: rgba(185, 143, 74, 0.24);
+    }
+
+    .grid-item.player_tag_bg_color_saturnstorm {
+        background-color: rgba(86, 26, 120, 0.24);
+    }
+
+    .grid-item.player_tag_bg_color_catseye {
+        background-color: rgba(143, 175, 47, 0.24);
     }
     .city-count {
         background: url(./assets/icon_city.png) center no-repeat;
@@ -638,6 +673,10 @@
             box-shadow: 0 0 1px 1px black;
         }
 
+        .ma-score.player_bg_color_saturnstorm {
+            color: #f6e7ff;
+        }
+
         .ma-scores {
             display: inline-block;
             width: 144px;
@@ -658,7 +697,12 @@
             .board-cube--hydro,
             .board-cube--antistress,
             .board-cube--gambit,
-            .board-cube--turquoise {
+            .board-cube--turquoise,
+            .board-cube--saturn,
+            .board-cube--saturnrings,
+            .board-cube--titan,
+            .board-cube--saturnstorm,
+            .board-cube--catseye {
                 transform: scale(0.95);
             }
         }
@@ -768,7 +812,12 @@
     .board-cube--hydro,
     .board-cube--antistress,
     .board-cube--gambit,
-    .board-cube--turquoise {
+    .board-cube--turquoise,
+    .board-cube--saturn,
+    .board-cube--saturnrings,
+    .board-cube--titan,
+    .board-cube--saturnstorm,
+    .board-cube--catseye {
         transform: scale(0.9);
         transform-origin: 50% 50%;
     }
@@ -952,6 +1001,31 @@
         background-position: -140px 0;
         filter: @player_turquoise_sprite_filter;
     }
+
+    &.colonies-fleet-saturn {
+        background-position: -70px 0;
+        filter: @player_saturn_fleet_filter @player_persona_fleet_edge_filter;
+    }
+
+    &.colonies-fleet-saturnrings {
+        background-position: -70px 0;
+        filter: @player_saturnrings_fleet_filter @player_persona_fleet_edge_filter;
+    }
+
+    &.colonies-fleet-titan {
+        background-position: -416px 0;
+        filter: @player_titan_fleet_filter @player_persona_fleet_edge_filter;
+    }
+
+    &.colonies-fleet-saturnstorm {
+        background-position: -342px 0;
+        filter: @player_saturnstorm_fleet_filter @player_persona_fleet_edge_filter;
+    }
+
+    &.colonies-fleet-catseye {
+        background-position: -140px 0;
+        filter: @player_catseye_fleet_filter @player_persona_fleet_edge_filter;
+    }
 }
 
 .colony-cube.board-cube--gold,
@@ -960,7 +1034,12 @@
 .colony-cube.board-cube--hydro,
 .colony-cube.board-cube--antistress,
 .colony-cube.board-cube--gambit,
-.colony-cube.board-cube--turquoise {
+.colony-cube.board-cube--turquoise,
+.colony-cube.board-cube--saturn,
+.colony-cube.board-cube--saturnrings,
+.colony-cube.board-cube--titan,
+.colony-cube.board-cube--saturnstorm,
+.colony-cube.board-cube--catseye {
     transform: scale(1.45);
 }
 

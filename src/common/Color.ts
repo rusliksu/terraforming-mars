@@ -79,9 +79,9 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
   {
     color: GYDRO_COLOR,
     name: GYDRO_NAME,
-    colorLabel: 'фиолетовый',
+    colorLabel: 'бордовый',
     shortLabel: 'GydRo',
-    title: 'GydRo - reserved purple',
+    title: 'GydRo - reserved burgundy',
     aliases: ['gydro', 'руслан', 'ruslan'],
   },
   {
@@ -142,9 +142,9 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
     color: SONYA_SATURN_STORM_COLOR,
     name: TOMA_NAME,
     label: 'Тома',
-    colorLabel: 'бордовый',
+    colorLabel: 'тёмно-фиолетовый',
     shortLabel: 'Тома',
-    title: 'Тома - reserved burgundy',
+    title: 'Тома - reserved dark purple',
     aliases: ['тома', 'toma', 'соня', 'sonya', 'соня эмко', 'эмко', 'sonya emko', 'sonia emko', 'emko', 'соня шторм', 'соня сатурновый шторм', 'соня сатурн систем', 'сатурн систем', 'saturn systems', 'emko storm', 'sonya storm', 'sonia storm'],
   },
   {

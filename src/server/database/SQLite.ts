@@ -209,7 +209,9 @@ export class SQLite implements IDatabase {
     // snapshot is captured before lastSaveId increments after the initial save.
     if (isInitialSave && initialSaveAlreadyExists === undefined) {
       const participantIds: Array<ParticipantId> = game.players.map(toID);
-      if (game.spectatorId) participantIds.push(game.spectatorId);
+      if (game.spectatorId) {
+        participantIds.push(game.spectatorId);
+      }
       try {
         await this.storeParticipants({gameId: game.id, participantIds: participantIds});
       } catch (e) {

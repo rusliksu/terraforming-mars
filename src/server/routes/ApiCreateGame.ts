@@ -77,7 +77,9 @@ export class ApiCreateGame extends Handler {
   public static boardOptions(board: RandomBoardOption | BoardName): Array<BoardName> {
     const allBoards = Object.values(BoardName);
 
-    if (board === RandomBoardOption.ALL) return allBoards;
+    if (board === RandomBoardOption.ALL) {
+      return allBoards;
+    }
     if (board === RandomBoardOption.OFFICIAL) {
       return allBoards.filter((name) => {
         return name === BoardName.THARSIS ||

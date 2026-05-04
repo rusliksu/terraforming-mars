@@ -150,7 +150,9 @@ export default defineComponent({
       }
     },
     setVisibilityState(targetVar: string, isVisible: boolean) {
-      if (isVisible === this.getVisibilityState(targetVar)) return;
+      if (isVisible === this.getVisibilityState(targetVar)) {
+        return;
+      }
       (this as unknown as MainAppData).componentsVisibility[targetVar] = isVisible;
     },
     getVisibilityState(targetVar: string): boolean {

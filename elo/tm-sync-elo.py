@@ -447,11 +447,11 @@ def fetch_solo_records() -> List[dict]:
             solo_win = parse_optional_bool(score.get("soloWin"))
             solo_win_source = "game_results" if solo_win is not None else ""
         if solo_win is None:
-            solo_win = parse_optional_bool(existing_record.get("soloWin"))
-            solo_win_source = "existing" if solo_win is not None else ""
-        if solo_win is None:
             solo_win = infer_solo_win_from_game_state(latest_game_by_game.get(gid) or {})
             solo_win_source = "game_state" if solo_win is not None else ""
+        if solo_win is None:
+            solo_win = parse_optional_bool(existing_record.get("soloWin"))
+            solo_win_source = "existing" if solo_win is not None else ""
 
         key, display_name = normalize_name(raw_name)
         try:

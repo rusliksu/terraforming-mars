@@ -1,9 +1,10 @@
 import {expect} from 'chai';
 import {SubterraneanSea} from '../../../src/server/cards/underworld/SubterraneanSea';
 import {testGame} from '../../TestGame';
-import {cast, maxOutOceans, runAllActions, testRedsCosts} from '../../TestingUtils';
+import {maxOutOceans, runAllActions, testRedsCosts} from '../../TestingUtils';
 import {SelectSpace} from '../../../src/server/inputs/SelectSpace';
 import {TileType} from '../../../src/common/TileType';
+import {cast} from '@/common/utils/utils';
 import {BoardName} from '../../../src/common/boards/BoardName';
 import {SpaceName} from '../../../src/common/boards/SpaceName';
 import {HELLAS_BONUS_OCEAN_COST} from '../../../src/common/constants';

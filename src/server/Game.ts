@@ -1097,6 +1097,7 @@ export class Game implements IGame, Logger {
         corporation: entry.corporation,
         playerName: entry.player.name,
         user: entry.player.user,
+        soloWin: this.isSoloMode() ? this.isSoloModeWin() : undefined,
         place,
         playerScore: entry.vpb.total,
         megacredits: entry.player.megaCredits,

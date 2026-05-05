@@ -142,6 +142,25 @@ a:hover { text-decoration: underline; }
 .matchups-vp.pos { color: #2ecc71; }
 .matchups-vp.neg { color: #e74c3c; }
 .matchups-vp.zero { color: #888; }
+
+/* Solo Records */
+.solo-section { max-width: 960px; margin: 0 auto 30px; }
+.solo-summary { text-align: center; color: #c4a35a; margin: -8px 0 14px; font-size: 0.98em; font-weight: 600; }
+.solo-controls { display: flex; justify-content: center; gap: 8px; margin: 0 auto 14px; }
+.solo-filter-btn { background: #16213e; color: #888; border: 1px solid #333; border-radius: 6px; padding: 7px 14px; cursor: pointer; font: inherit; transition: all 0.2s; }
+.solo-filter-btn:hover:not(.active) { border-color: #ff6b35; color: #ccc; }
+.solo-filter-btn.active { background: #ff6b35; border-color: #ff6b35; color: #fff; }
+.solo-table { max-width: 960px; }
+.solo-score { color: #2ecc71; font-weight: 700; }
+.solo-result { font-weight: 700; white-space: nowrap; }
+.solo-win { color: #2ecc71; }
+.solo-loss { color: #e74c3c; }
+.solo-unknown { color: #888; }
+.solo-gen { color: #c4a35a; }
+.solo-mode { color: #888; font-size: 0.9em; }
+.solo-date { color: #b8b8b8; white-space: nowrap; }
+.solo-empty { text-align: center; color: #666; padding: 18px; }
+.solo-only { display: none; }
 @media (max-width: 900px) {
   .matchups-section { width: calc(100vw - 20px); }
   .matchups-table { font-size: 0.72em; }
@@ -159,19 +178,33 @@ a:hover { text-decoration: underline; }
 <body>
 <div class="nav"><a href="/">&#8592; Back to game</a></div>
 <h1>TM ELO Ratings</h1>
-<div class="stats" id="stats"></div>
-<div class="stats-note">Avg place = normalized finish score. Avg gen = average game generation. VP Margin = average gap to 2nd place if you win, otherwise gap to 1st.</div>
+<div class="stats rating-only" id="stats"></div>
+<div class="stats-note rating-only">Avg place = normalized finish score. Avg gen = average game generation. VP Margin = average gap to 2nd place if you win, otherwise gap to 1st.</div>
 <div class="tabs">
   <span class="tab active" data-mode="place">By Placement</span>
   <span class="tab" data-mode="vp">By VP Margin</span>
+  <span class="tab" data-mode="solo">Solo Records</span>
 </div>
-<table>
+<table class="rating-only">
 <thead><tr><th class="rank">#</th><th>Player</th><th>ELO</th><th>Avg place</th><th>Games</th><th>Avg VP</th><th>Avg gen</th><th>VP Margin</th></tr></thead>
 <tbody id="tbody"></tbody>
 </table>
 
-<h2>Matchups</h2>
-<div class="matchups-section">
+<h2 class="solo-only">Solo Records</h2>
+<div class="solo-section solo-only">
+  <div class="solo-summary" id="soloSummary"></div>
+  <div class="solo-controls">
+    <button class="solo-filter-btn active" type="button" data-solo-filter="wins">Wins only</button>
+    <button class="solo-filter-btn" type="button" data-solo-filter="all">All games</button>
+  </div>
+  <table class="solo-table">
+    <thead><tr><th class="rank">#</th><th>Player</th><th>Result</th><th>VP</th><th>Gen</th><th>Corporation</th><th>Map / Mode</th><th>Date</th><th>Game</th></tr></thead>
+    <tbody id="soloRecordsBody"></tbody>
+  </table>
+</div>
+
+<h2 class="rating-only">Matchups</h2>
+<div class="matchups-section rating-only">
   <div class="matchups-summary" id="matchupsSummary"></div>
   <div class="matchups-finder">
     <select id="matchupPlayerA"></select>
@@ -185,8 +218,8 @@ a:hover { text-decoration: underline; }
   </div>
 </div>
 
-<h2 id="games-title">Recent Games</h2>
-<div class="games-section">
+<h2 id="games-title" class="rating-only">Recent Games</h2>
+<div class="games-section rating-only">
   <div class="games-summary" id="gamesSummary"></div>
   <div class="filter-bar" id="filterBar"></div>
   <div id="gamesList"></div>
@@ -202,6 +235,8 @@ var _filterPlayer = null;
 var _gamesShown = 20;
 var _matchupA = null;
 var _matchupB = null;
+var _soloRecords = [];
+var _soloFilter = "wins";
 var GAMES_PER_PAGE = 20;
 var MATCHUPS_MIN_PLAYER_GAMES = 5;
 var PLAYER_PERSONA_CLASSES = {
@@ -726,6 +761,113 @@ function renderPlayers() {
   document.getElementById("tbody").innerHTML = html;
 }
 
+function getSoloGameUrl(record) {
+  var host = record.server === "knightbyte" || record.server === "server"
+    ? "https://tm.knightbyte.win"
+    : "https://terraforming-mars.herokuapp.com";
+  if (record.endId) {
+    return host + "/the-end?id=" + record.endId;
+  }
+  if (record.gameId) {
+    return host + "/game?id=" + record.gameId;
+  }
+  return "#";
+}
+
+function formatSoloMode(record) {
+  var parts = [];
+  if (record.map) parts.push(record.map);
+  if (record.mode) parts.push(record.mode);
+  return parts.join(" / ") || "-";
+}
+
+function soloResultText(record) {
+  if (record.soloWin === true) return "Win";
+  if (record.soloWin === false) return "Loss";
+  return "Unknown";
+}
+
+function soloResultClass(record) {
+  if (record.soloWin === true) return "solo-win";
+  if (record.soloWin === false) return "solo-loss";
+  return "solo-unknown";
+}
+
+function updateSoloFilterButtons() {
+  document.querySelectorAll(".solo-filter-btn").forEach(function(btn) {
+    btn.classList.toggle("active", btn.dataset.soloFilter === _soloFilter);
+  });
+}
+
+function renderSoloRecords() {
+  var body = document.getElementById("soloRecordsBody");
+  var summary = document.getElementById("soloSummary");
+  updateSoloFilterButtons();
+  var allRecords = (_soloRecords || []).slice();
+  var records = allRecords.filter(function(record) {
+    return _soloFilter === "all" || record.soloWin === true;
+  });
+  records.sort(function(a, b) {
+    return (b.vp || 0) - (a.vp || 0) ||
+      (a.generation || 99) - (b.generation || 99) ||
+      (b.completedTime || 0) - (a.completedTime || 0);
+  });
+
+  var wins = allRecords.filter(function(record) { return record.soloWin === true; }).length;
+  var losses = allRecords.filter(function(record) { return record.soloWin === false; }).length;
+  var unknown = allRecords.length - wins - losses;
+  summary.textContent = records.length + " shown | " + allRecords.length + " solo games | " + wins + " wins | " + losses + " losses";
+  if (unknown > 0) summary.textContent += " | " + unknown + " unknown";
+  if (records.length > 0) {
+    summary.textContent += " | Best " + records[0].vp + " VP by " + (records[0].displayName || records[0].name || "Solo") + " (" + soloResultText(records[0]).toLowerCase() + ")";
+  }
+
+  if (records.length === 0) {
+    body.innerHTML = "<tr><td class=\"solo-empty\" colspan=\"9\">" + (_soloFilter === "wins" ? "No solo wins yet" : "No solo records yet") + "</td></tr>";
+    return;
+  }
+
+  var html = "";
+  records.slice(0, 50).forEach(function(record, idx) {
+    var playerName = record.displayName || record.name || "Solo";
+    var personaClass = playerPersonaClass(playerName, record.name);
+    var dateText = formatGameDate(record);
+    html += "<tr>"
+      + "<td class=\"rank\">" + (idx + 1) + "</td>"
+      + "<td><span class=\"player-persona " + personaClass + "\">" + esc(playerName) + "</span></td>"
+      + "<td class=\"solo-result " + soloResultClass(record) + "\">" + esc(soloResultText(record)) + "</td>"
+      + "<td class=\"solo-score\">" + esc(record.vp || 0) + "</td>"
+      + "<td class=\"solo-gen\">" + esc(record.generation || "-") + "</td>"
+      + "<td>" + esc(record.corp || "-") + "</td>"
+      + "<td class=\"solo-mode\">" + esc(formatSoloMode(record)) + "</td>"
+      + "<td class=\"solo-date\">" + esc(dateText || "-") + "</td>"
+      + "<td><a href=\"" + getSoloGameUrl(record) + "\" target=\"_blank\">" + esc(record.gameId || "open") + "</a></td>"
+      + "</tr>";
+  });
+  body.innerHTML = html;
+}
+
+function setViewVisibility() {
+  var isSolo = _mode === "solo";
+  document.querySelectorAll(".solo-only").forEach(function(el) {
+    el.style.display = isSolo ? "block" : "none";
+  });
+  document.querySelectorAll(".rating-only").forEach(function(el) {
+    el.style.display = isSolo ? "none" : "";
+  });
+}
+
+function renderCurrentView() {
+  setViewVisibility();
+  if (_mode === "solo") {
+    renderSoloRecords();
+    return;
+  }
+  renderPlayers();
+  renderMatchups();
+  renderGames();
+}
+
 function getFilteredGames() {
   var games = getVisibleGames();
   games.reverse();
@@ -848,23 +990,38 @@ document.addEventListener("click", function(e) {
 
 document.getElementById("showMoreBtn").addEventListener("click", showMoreGames);
 
+document.querySelectorAll(".solo-filter-btn").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    _soloFilter = btn.dataset.soloFilter || "wins";
+    renderSoloRecords();
+  });
+});
+
 document.querySelectorAll(".tab").forEach(function(tab) {
   tab.addEventListener("click", function() {
     document.querySelectorAll(".tab").forEach(function(t) { t.classList.remove("active"); });
     tab.classList.add("active");
     _mode = tab.dataset.mode;
-    renderPlayers();
-    renderMatchups();
+    renderCurrentView();
   });
 });
 
 fetch("elo-data.json?ts=" + Date.now(), { cache: "no-store" }).then(function(r){return r.json()}).then(function(data) {
   _data = data;
-  renderPlayers();
-  renderMatchups();
-  renderGames();
+  renderCurrentView();
 }).catch(function(e) {
   document.getElementById("tbody").innerHTML = "<tr><td colspan=\"8\">Error: " + e.message + "</td></tr>";
+});
+
+fetch("solo-records.json?ts=" + Date.now(), { cache: "no-store" }).then(function(r) {
+  if (!r.ok) return { records: [] };
+  return r.json();
+}).then(function(data) {
+  _soloRecords = data.records || [];
+  if (_mode === "solo") renderSoloRecords();
+}).catch(function() {
+  _soloRecords = [];
+  if (_mode === "solo") renderSoloRecords();
 });
 </script>
 </body>

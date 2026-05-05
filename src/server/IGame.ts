@@ -40,6 +40,7 @@ export interface Score {
   playerScore: number;
   playerName?: string;
   user?: string;
+  soloWin?: boolean;
   place?: number;
   megacredits?: number;
   victoryPointsBreakdown?: VictoryPointsBreakdown;

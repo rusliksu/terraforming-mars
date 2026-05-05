@@ -55,7 +55,7 @@ releases_root="$prod_root/releases"
 new_release_dir=""
 previous_current=""
 active_proxy_port="$prod_port"
-elo_files="index.html elo-api.js elo_aliases.py fix_elo_dupes.py import_gamedb_to_elo.py migrate_elo_nicknames.py player_name_aliases.json"
+elo_files="index.html elo-api.js elo_aliases.py fix_elo_dupes.py import_gamedb_to_elo.py migrate_elo_nicknames.py player_name_aliases.json tm-sync-elo.py"
 
 wait_for_http() {
   local url="$1"
@@ -165,7 +165,7 @@ fi
 if [ -d "$legacy_prod/logs" ] && [ -z "$(ls -A "$shared_root/logs" 2>/dev/null || true)" ]; then
   rsync -a "$legacy_prod/logs/" "$shared_root/logs/"
 fi
-for data_file in elo-data.json data.json; do
+for data_file in elo-data.json data.json solo-records.json; do
   if [ -f "$legacy_prod/elo/$data_file" ] && [ ! -e "$shared_root/elo/$data_file" ]; then
     cp "$legacy_prod/elo/$data_file" "$shared_root/elo/$data_file"
   fi
@@ -241,7 +241,15 @@ ln -sfn "$shared_root/db" "$new_release_dir/db"
 ln -sfn "$shared_root/logs" "$new_release_dir/logs"
 ln -sfn "$shared_root/elo/elo-data.json" "$new_release_dir/elo/elo-data.json"
 ln -sfn "$shared_root/elo/data.json" "$new_release_dir/elo/data.json"
+ln -sfn "$shared_root/elo/solo-records.json" "$new_release_dir/elo/solo-records.json"
 ln -sfn "$deps_dir/node_modules" "$new_release_dir/node_modules"
+
+scripts_dir="/home/openclaw/scripts"
+mkdir -p "$scripts_dir"
+cp "$new_release_dir/elo/tm-sync-elo.py" "$scripts_dir/tm-sync-elo.py"
+cp "$new_release_dir/elo/elo_aliases.py" "$scripts_dir/elo_aliases.py"
+cp "$new_release_dir/elo/player_name_aliases.json" "$scripts_dir/player_name_aliases.json"
+chmod 755 "$scripts_dir/tm-sync-elo.py" "$scripts_dir/elo_aliases.py"
 
 ln -sfn "$new_release_dir" "$prod_next_current"
 if ! systemctl --user restart "$next_service"; then

@@ -818,8 +818,16 @@ function renderSoloRecords() {
   var unknown = allRecords.length - wins - losses;
   summary.textContent = records.length + " shown | " + allRecords.length + " solo games | " + wins + " wins | " + losses + " losses";
   if (unknown > 0) summary.textContent += " | " + unknown + " unknown";
-  if (records.length > 0) {
-    summary.textContent += " | Best " + records[0].vp + " VP by " + (records[0].displayName || records[0].name || "Solo") + " (" + soloResultText(records[0]).toLowerCase() + ")";
+  var winningRecords = allRecords.filter(function(record) { return record.soloWin === true; });
+  winningRecords.sort(function(a, b) {
+    return (b.vp || 0) - (a.vp || 0) ||
+      (a.generation || 99) - (b.generation || 99) ||
+      (b.completedTime || 0) - (a.completedTime || 0);
+  });
+  if (winningRecords.length > 0) {
+    summary.textContent += " | Best win " + winningRecords[0].vp + " VP by " + (winningRecords[0].displayName || winningRecords[0].name || "Solo");
+  } else if (allRecords.length > 0) {
+    summary.textContent += " | No solo wins yet";
   }
 
   if (records.length === 0) {

@@ -17,8 +17,9 @@ GitHub Actions in `.github/workflows/main.yml` are CI-only. They do not deploy `
 - Prod app: `tm-server`
 
 TM Telegram secrets are not source-managed. Keep `TM_BOT_TOKEN` in
-`~/.config/tm-server.env` on the VPS; both `tm-server` and `tm-server-staging`
-load that file via `EnvironmentFile`.
+`~/.config/tm-server.env` on the VPS; prod `tm-server` loads it via
+`EnvironmentFile`. Staging also loads the shared env file, but its unit must
+set `TM_DISABLE_TELEGRAM=1` so test/E2E games never send real turn notices.
 
 ## Safe default source
 

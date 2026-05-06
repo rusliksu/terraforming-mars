@@ -145,7 +145,8 @@ $expectedEnvHeader = switch ($Environment) {
     "preview" { "preview" }
     default { "" }
 }
-$expectedBadge = ($Environment -eq "staging")
+$serverHost = ([System.Uri]$Server).Host
+$expectedBadgeShown = ($serverHost -eq "staging.tm.knightbyte.win")
 
 $homeResponse = Invoke-WebRequest -Uri "$Server/" -Headers @{"Cache-Control"="no-cache"} -TimeoutSec 30
 Assert-True ($homeResponse.StatusCode -eq 200) "Home page returned $($homeResponse.StatusCode), expected 200."
@@ -157,9 +158,13 @@ if ($Environment -in @("staging", "preview")) {
     Assert-True ([string]::IsNullOrWhiteSpace($envHeader)) "Prod unexpectedly returned X-TM-Env=$envHeader."
 }
 
-$hasBadge = ($homeResponse.Content -match "tm-env-badge")
-if ($expectedBadge) {
-    Assert-True $hasBadge "Home page does not contain the staging badge markup."
+$hasBadgeMarkup = ($homeResponse.Content -match "tm-env-badge")
+$badgeShown = ($homeResponse.Content -match "window\.location\.hostname === '$([regex]::Escape($serverHost))'")
+if ($expectedBadgeShown) {
+    Assert-True $hasBadgeMarkup "Home page does not contain the staging badge markup."
+    Assert-True $badgeShown "Home page does not auto-show the staging badge on $serverHost."
+} else {
+    Assert-True (-not $badgeShown) "Home page unexpectedly auto-shows the staging badge on $serverHost."
 }
 
 $elo = Invoke-WebRequest -Uri "$Server/elo/" -Headers @{"Cache-Control"="no-cache"} -TimeoutSec 30
@@ -237,7 +242,8 @@ $result = [pscustomobject]@{
     home = [pscustomobject]@{
         status = $homeResponse.StatusCode
         env = $envHeader
-        hasBadge = $hasBadge
+        hasBadgeMarkup = $hasBadgeMarkup
+        badgeShown = $badgeShown
     }
     elo = [pscustomobject]@{
         status = $elo.StatusCode
@@ -266,7 +272,7 @@ if ($OutputJson) {
 
 Write-Host "$($Environment.Substring(0,1).ToUpper() + $Environment.Substring(1)) verify OK"
 Write-Host "Server      : $($result.server)"
-Write-Host "Home        : $($result.home.status) X-TM-Env=$($result.home.env) badge=$($result.home.hasBadge)"
+Write-Host "Home        : $($result.home.status) X-TM-Env=$($result.home.env) badgeShown=$($result.home.badgeShown)"
 Write-Host "ELO         : $($result.elo.status) title matched"
 if ($null -ne $result.stats) {
     Write-Host "Stats       : $($result.stats.status) games=$($result.stats.gameCount) playerGames=$($result.stats.playerGameCount) cards=$($result.stats.cardCount)"

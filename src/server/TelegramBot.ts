@@ -156,7 +156,9 @@ function turnNoticeStorePath(): string {
 function readTurnNoticeStore(): TurnNoticeStore {
   const storePath = turnNoticeStorePath();
   try {
-    if (!fs.existsSync(storePath)) return {};
+    if (!fs.existsSync(storePath)) {
+      return {};
+    }
     const parsed = JSON.parse(fs.readFileSync(storePath, 'utf8'));
     if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
       return parsed as TurnNoticeStore;
@@ -200,8 +202,12 @@ function forgetTurnNotice(player: TelegramNotifiable, messageId?: number): void 
   const store = readTurnNoticeStore();
   const key = turnNoticeStoreKey(player);
   const stored = store[key];
-  if (stored === undefined) return;
-  if (messageId !== undefined && stored.messageId !== messageId) return;
+  if (stored === undefined) {
+    return;
+  }
+  if (messageId !== undefined && stored.messageId !== messageId) {
+    return;
+  }
   delete store[key];
   writeTurnNoticeStore(store);
 }
@@ -257,10 +263,18 @@ export async function sendTurnNotice(
   turnNoticeKey?: string,
   options: TurnNoticeOptions = {},
 ): Promise<boolean> {
-  if (!player.telegramID) return false;
-  if (telegramDisabled()) return false;
-  if (!getBotToken()) return false;
-  if (BotTakeoverManager.INSTANCE.isActive(player.id)) return false;
+  if (!player.telegramID) {
+    return false;
+  }
+  if (telegramDisabled()) {
+    return false;
+  }
+  if (!getBotToken()) {
+    return false;
+  }
+  if (BotTakeoverManager.INSTANCE.isActive(player.id)) {
+    return false;
+  }
   const storedNotice = getStoredTurnNotice(player);
   if (options.reminder !== true && turnNoticeKey !== undefined && storedNotice?.turnNoticeKey === turnNoticeKey) {
     player.lastNoticeMessageId = storedNotice.messageId;
@@ -293,9 +307,15 @@ export async function sendTurnNotice(
 }
 
 export async function deleteTurnNoticeMessage(player: TelegramNotifiable, messageId: number): Promise<void> {
-  if (!player.telegramID || messageId < 0) return;
-  if (telegramDisabled()) return;
-  if (!getBotToken()) return;
+  if (!player.telegramID || messageId < 0) {
+    return;
+  }
+  if (telegramDisabled()) {
+    return;
+  }
+  if (!getBotToken()) {
+    return;
+  }
   forgetTurnNotice(player, messageId);
   try {
     await deleteTelegramMessage(player.telegramID, messageId);
@@ -308,14 +328,22 @@ export async function deleteTurnNotice(player: TelegramNotifiable): Promise<void
   const storedNotice = getStoredTurnNotice(player);
   const messageId = player.lastNoticeMessageId >= 0 ? player.lastNoticeMessageId : storedNotice?.messageId ?? -1;
   player.lastNoticeMessageId = -1;
-  if (messageId < 0) return;
+  if (messageId < 0) {
+    return;
+  }
   await deleteTurnNoticeMessage(player, messageId);
 }
 
 export async function sendGameStartNotice(player: TelegramNotifiable): Promise<void> {
-  if (!player.telegramID) return;
-  if (telegramDisabled()) return;
-  if (!getBotToken()) return;
+  if (!player.telegramID) {
+    return;
+  }
+  if (telegramDisabled()) {
+    return;
+  }
+  if (!getBotToken()) {
+    return;
+  }
   const link = `${SERVER_URL}/player?id=${player.id}`;
   try {
     await callTelegramApi('sendMessage', {

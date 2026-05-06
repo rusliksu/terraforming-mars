@@ -47,8 +47,9 @@ const PLAYER_ALIASES: Record<string, string> = {
   'рав': 'Рав',
   'равиль': 'Рав',
   'изумрудный рав': 'Рав',
-  'лёха': 'Алексей',
-  'леха': 'Алексей',
+  'лёха': 'Леха',
+  'леха': 'Леха',
+  'лёха -15 эло': 'Леха',
 };
 
 export type EloStoredResult = {
@@ -155,10 +156,18 @@ export function normalizeEloIdentity(name: string, user?: string): {key: string;
 }
 
 function getK(elo: number): number {
-  if (elo < 1400) return BASE_K * 1.2;
-  if (elo < 1600) return BASE_K;
-  if (elo < 1800) return BASE_K * 0.8;
-  if (elo < 2000) return BASE_K * 0.6;
+  if (elo < 1400) {
+    return BASE_K * 1.2;
+  }
+  if (elo < 1600) {
+    return BASE_K;
+  }
+  if (elo < 1800) {
+    return BASE_K * 0.8;
+  }
+  if (elo < 2000) {
+    return BASE_K * 0.6;
+  }
   return BASE_K * 0.4;
 }
 
@@ -167,7 +176,9 @@ function expectedScore(myElo: number, oppElo: number): number {
 }
 
 export function normalizedPlaceScore(place: number, playerCount: number): number {
-  if (playerCount <= 1) return 1;
+  if (playerCount <= 1) {
+    return 1;
+  }
   return Math.max(0, Math.min(1, 1 - ((place - 1) / (playerCount - 1))));
 }
 
@@ -201,7 +212,9 @@ function getOrCreatePlayer(players: Record<string, EloMutablePlayerRecord>, key:
   const existing = players[key];
   if (existing !== undefined) {
     existing.displayName = displayName;
-    if (user !== undefined) existing.user = user;
+    if (user !== undefined) {
+      existing.user = user;
+    }
     return existing;
   }
   const created = createDefaultPlayer(displayName, user);
@@ -268,7 +281,9 @@ export function buildEloGameFromSummary(summary: CompletedGameSummary): EloStore
 }
 
 function parseTimestamp(value: string | number | undefined): number | undefined {
-  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return Math.floor(value);
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+    return Math.floor(value);
+  }
   if (typeof value === 'string' && value.trim() !== '') {
     const millis = Date.parse(value);
     if (Number.isFinite(millis) && millis > 0) {
@@ -279,12 +294,16 @@ function parseTimestamp(value: string | number | undefined): number | undefined 
 }
 
 function roundMinutes(durationMs: number | undefined): number | undefined {
-  if (durationMs === undefined || !Number.isFinite(durationMs) || durationMs < 0) return undefined;
+  if (durationMs === undefined || !Number.isFinite(durationMs) || durationMs < 0) {
+    return undefined;
+  }
   return Math.round(durationMs / 60_000);
 }
 
 function normalizeOptionalString(value: unknown): string | undefined {
-  if (typeof value !== 'string') return undefined;
+  if (typeof value !== 'string') {
+    return undefined;
+  }
   const trimmed = value.trim();
   return trimmed === '' ? undefined : trimmed;
 }
@@ -294,7 +313,9 @@ function normalizeStringList(value: unknown): Array<string> | undefined {
   const normalized = rawValues
     .map((entry) => typeof entry === 'string' ? entry.trim() : '')
     .filter((entry) => entry !== '');
-  if (normalized.length === 0) return undefined;
+  if (normalized.length === 0) {
+    return undefined;
+  }
   return [...new Set(normalized)];
 }
 
@@ -302,7 +323,9 @@ function mergeStringLists(left: Array<string> | undefined, right: Array<string> 
   const merged = [...(left ?? []), ...(right ?? [])]
     .map((entry) => entry.trim())
     .filter((entry) => entry !== '');
-  if (merged.length === 0) return undefined;
+  if (merged.length === 0) {
+    return undefined;
+  }
   return [...new Set(merged)];
 }
 
@@ -348,7 +371,9 @@ function normalizeStoredGame(game: EloStoredGame): EloStoredGame {
 }
 
 function mergeStoredGameMetadata(record: EloStoredGame, existing: EloStoredGame | undefined): EloStoredGame {
-  if (existing === undefined) return record;
+  if (existing === undefined) {
+    return record;
+  }
   return {
     ...record,
     source: record.source ?? existing.source,
@@ -359,12 +384,16 @@ function mergeStoredGameMetadata(record: EloStoredGame, existing: EloStoredGame 
 
 function getVpMargin(entries: Array<EloStoredResult>, entry: EloStoredResult): number {
   const leaderVp = entries.reduce((max, current) => Math.max(max, current.vp), Number.NEGATIVE_INFINITY);
-  if (!Number.isFinite(leaderVp)) return 0;
+  if (!Number.isFinite(leaderVp)) {
+    return 0;
+  }
   if (entry.place === 1) {
     const otherVps = entries
       .filter((current) => current !== entry)
       .map((current) => current.vp);
-    if (otherVps.length === 0) return 0;
+    if (otherVps.length === 0) {
+      return 0;
+    }
     return entry.vp - Math.max(...otherVps);
   }
   return entry.vp - leaderVp;
@@ -376,7 +405,9 @@ export function rebuildEloData(games: Array<EloStoredGame>): EloData {
     .map((game) => normalizeStoredGame(game))
     .sort((a, b) => {
       const completedDelta = (a.completedTime || 0) - (b.completedTime || 0);
-      if (completedDelta !== 0) return completedDelta;
+      if (completedDelta !== 0) {
+        return completedDelta;
+      }
       return a._key.localeCompare(b._key);
     });
 
@@ -393,12 +424,17 @@ export function rebuildEloData(games: Array<EloStoredGame>): EloData {
       let totalActual = 0;
 
       for (let j = 0; j < entries.length; j++) {
-        if (i === j) continue;
+        if (i === j) {
+          continue;
+        }
         const opp = entries[j];
         const opponent = getOrCreatePlayer(players, opp.name, opp.displayName, opp.user);
         totalExpected += expectedScore(myElo, opponent.elo);
-        if (entry.place < opp.place) totalActual += 1;
-        else if (entry.place === opp.place) totalActual += 0.5;
+        if (entry.place < opp.place) {
+          totalActual += 1;
+        } else if (entry.place === opp.place) {
+          totalActual += 0.5;
+        }
       }
 
       const scaledK = getK(myElo) / (entries.length - 1) * 1.5;
@@ -415,7 +451,9 @@ export function rebuildEloData(games: Array<EloStoredGame>): EloData {
       let totalActual = 0;
 
       for (let j = 0; j < entries.length; j++) {
-        if (i === j) continue;
+        if (i === j) {
+          continue;
+        }
         const opp = entries[j];
         const opponent = getOrCreatePlayer(players, opp.name, opp.displayName, opp.user);
         totalExpected += expectedScore(myEloVp, opponent.elo_vp);
@@ -437,19 +475,28 @@ export function rebuildEloData(games: Array<EloStoredGame>): EloData {
     for (const entry of entries) {
       const current = getOrCreatePlayer(players, entry.name, entry.displayName, entry.user);
       current.displayName = entry.displayName;
-      if (entry.user !== undefined) current.user = entry.user;
+      if (entry.user !== undefined) {
+        current.user = entry.user;
+      }
       current.elo = entry.newElo ?? current.elo;
       current.games += 1;
-      if (entry.place === 1) current.wins += 1;
-      else if (entry.place < entries.length) current.wins += 0.5;
-      if (entry.place <= 3) current.top3 += 1;
+      if (entry.place === 1) {
+        current.wins += 1;
+      } else if (entry.place < entries.length) {
+        current.wins += 0.5;
+      }
+      if (entry.place <= 3) {
+        current.top3 += 1;
+      }
       current.placeScoreSum += normalizedPlaceScore(entry.place, entries.length);
       current.totalVP += entry.vp;
       if (game.generation > 0) {
         current.totalGens = (current.totalGens ?? 0) + game.generation;
       }
       current.totalMargin = (current.totalMargin ?? 0) + getVpMargin(entries, entry);
-      if (entry.corp) current.corps[entry.corp] = (current.corps[entry.corp] || 0) + 1;
+      if (entry.corp) {
+        current.corps[entry.corp] = (current.corps[entry.corp] || 0) + 1;
+      }
     }
   }
 
@@ -495,8 +542,12 @@ function buildCompletedGameSummary(game: IGame, botPlayerIds: Array<string> = []
     vp: player.getVictoryPoints().total,
     corp: player.playedCards.filter(isICorporationCard).map(toName).join('|'),
   })).sort((left, right) => {
-    if (left.vp !== right.vp) return right.vp - left.vp;
-    if (left.player.megaCredits !== right.player.megaCredits) return right.player.megaCredits - left.player.megaCredits;
+    if (left.vp !== right.vp) {
+      return right.vp - left.vp;
+    }
+    if (left.player.megaCredits !== right.player.megaCredits) {
+      return right.player.megaCredits - left.player.megaCredits;
+    }
     return 0;
   });
   const players: Array<CompletedGamePlayerSummary> = [];
@@ -542,14 +593,18 @@ async function loadJsonFile(file: string): Promise<EloData | null> {
   try {
     const raw = await fs.readFile(file, 'utf8');
     const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed !== 'object') return null;
+    if (!parsed || typeof parsed !== 'object') {
+      return null;
+    }
     return {
       players: typeof parsed.players === 'object' && parsed.players !== null ? parsed.players : {},
       games: Array.isArray(parsed.games) ? parsed.games : [],
     };
   } catch (error: unknown) {
     const err = error as {code?: string};
-    if (err && err.code === 'ENOENT') return null;
+    if (err && err.code === 'ENOENT') {
+      return null;
+    }
     return null;
   }
 }
@@ -581,7 +636,9 @@ export class EloSyncService {
   }
 
   public async recordCompletedGameSummary(summary: CompletedGameSummary): Promise<void> {
-    if (shouldSkipSummary(summary)) return;
+    if (shouldSkipSummary(summary)) {
+      return;
+    }
     const task = this.queue.then(() => this.persistSummary(summary));
     this.queue = task.catch(() => undefined);
     await task;

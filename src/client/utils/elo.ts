@@ -97,7 +97,9 @@ function getResultIdentityKeys(result: EloGameResult): Array<string> {
 
 function identityKeysOverlap(left: Array<string>, right: Array<string>): boolean {
   for (const key of left) {
-    if (right.includes(key)) return true;
+    if (right.includes(key)) {
+      return true;
+    }
   }
   return false;
 }
@@ -105,29 +107,41 @@ function identityKeysOverlap(left: Array<string>, right: Array<string>): boolean
 function findMatchingResultIndex(results: Array<EloGameResult>, player: EloPlayerSummary, used: Set<number>): number {
   const playerKeys = getPlayerIdentityKeys(player.name, player.user);
   for (let i = 0; i < results.length; i++) {
-    if (used.has(i)) continue;
+    if (used.has(i)) {
+      continue;
+    }
     const result = results[i];
-    if (Number(result.vp) !== player.victoryPointsBreakdown.total) continue;
-    if (!identityKeysOverlap(playerKeys, getResultIdentityKeys(result))) continue;
+    if (Number(result.vp) !== player.victoryPointsBreakdown.total) {
+      continue;
+    }
+    if (!identityKeysOverlap(playerKeys, getResultIdentityKeys(result))) {
+      continue;
+    }
     return i;
   }
   return -1;
 }
 
 function canMatchGameResults(players: Array<EloPlayerSummary>, results: Array<EloGameResult>): boolean {
-  if (results.length !== players.length) return false;
+  if (results.length !== players.length) {
+    return false;
+  }
   const used = new Set<number>();
 
   const playerOrder = [...players].sort((a, b) => {
     const aWeight = a.user ? 0 : 1;
     const bWeight = b.user ? 0 : 1;
-    if (aWeight !== bWeight) return aWeight - bWeight;
+    if (aWeight !== bWeight) {
+      return aWeight - bWeight;
+    }
     return a.name.localeCompare(b.name);
   });
 
   for (const player of playerOrder) {
     const idx = findMatchingResultIndex(results, player, used);
-    if (idx === -1) return false;
+    if (idx === -1) {
+      return false;
+    }
     used.add(idx);
   }
   return used.size === results.length;
@@ -136,12 +150,20 @@ function canMatchGameResults(players: Array<EloPlayerSummary>, results: Array<El
 export function lookupEloEntry(players: Record<string, EloEntry>, playerName: string, playerUser?: string): EloEntry | null {
   if (playerUser && playerUser.trim() !== '') {
     const byUser = players[normalizeEloUserKey(playerUser)];
-    if (byUser) return byUser;
-    if (!hasEloPlayerNameAlias(playerName)) return null;
+    if (byUser) {
+      return byUser;
+    }
+    if (!hasEloPlayerNameAlias(playerName)) {
+      return null;
+    }
   }
-  if (!playerName) return null;
+  if (!playerName) {
+    return null;
+  }
   const normalized = normalizeEloName(playerName);
-  if (players[normalized]) return players[normalized];
+  if (players[normalized]) {
+    return players[normalized];
+  }
 
   const playerNameLower = playerName.trim().toLowerCase();
   for (const key of Object.keys(players)) {
@@ -154,20 +176,28 @@ export function lookupEloEntry(players: Record<string, EloEntry>, playerName: st
 }
 
 export async function ensureEloLoaded(): Promise<void> {
-  if (sharedEloState.loaded || sharedEloState.failed) return;
+  if (sharedEloState.loaded || sharedEloState.failed) {
+    return;
+  }
   if (sharedEloFetch !== null) {
     await sharedEloFetch;
     return;
   }
-  if (typeof fetch !== 'function') return;
+  if (typeof fetch !== 'function') {
+    return;
+  }
 
   sharedEloFetch = (async () => {
     for (const url of ELO_URLS) {
       try {
         const response = await fetch(url, {cache: 'no-store', credentials: 'same-origin'});
-        if (!response.ok) continue;
+        if (!response.ok) {
+          continue;
+        }
         const data = await response.json();
-        if (!data || typeof data !== 'object' || !data.players) continue;
+        if (!data || typeof data !== 'object' || !data.players) {
+          continue;
+        }
         sharedEloState.players = data.players;
         sharedEloState.games = Array.isArray(data.games) ? data.games : [];
         sharedEloState.loaded = true;
@@ -186,7 +216,9 @@ export async function ensureEloLoaded(): Promise<void> {
 }
 
 export function fallbackEloEntry(playerName: string): EloEntry | null {
-  if (!playerName) return null;
+  if (!playerName) {
+    return null;
+  }
   return {
     elo: 1500,
     games: 0,
@@ -215,7 +247,9 @@ export function buildEloResultsForPlayers(
 
   for (const player of playersInPlace) {
     const idx = findMatchingResultIndex(results, player, used);
-    if (idx === -1) continue;
+    if (idx === -1) {
+      continue;
+    }
     used.add(idx);
     const result = results[idx];
 

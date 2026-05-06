@@ -1080,8 +1080,12 @@ export class Game implements IGame, Logger {
       const vpb = player.getVictoryPoints();
       return {player, corporation, vpb};
     }).sort((left, right) => {
-      if (left.vpb.total !== right.vpb.total) return right.vpb.total - left.vpb.total;
-      if (left.player.megaCredits !== right.player.megaCredits) return right.player.megaCredits - left.player.megaCredits;
+      if (left.vpb.total !== right.vpb.total) {
+        return right.vpb.total - left.vpb.total;
+      }
+      if (left.player.megaCredits !== right.player.megaCredits) {
+        return right.player.megaCredits - left.player.megaCredits;
+      }
       return 0;
     });
 

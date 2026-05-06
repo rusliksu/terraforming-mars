@@ -19,7 +19,9 @@ function localStorageAvailable(): boolean {
 
 export class TemplateManager {
   static getTemplates(): Array<GameTemplate> {
-    if (!localStorageAvailable()) return [];
+    if (!localStorageAvailable()) {
+      return [];
+    }
     try {
       const data = localStorage.getItem(TEMPLATES_KEY);
       return data ? JSON.parse(data) : [];
@@ -29,7 +31,9 @@ export class TemplateManager {
   }
 
   static saveTemplate(name: string, settings: JSONObject): void {
-    if (!localStorageAvailable()) return;
+    if (!localStorageAvailable()) {
+      return;
+    }
     const templates = this.getTemplates();
     const idx = templates.findIndex((t) => t.name === name);
     if (idx >= 0) {
@@ -41,10 +45,14 @@ export class TemplateManager {
   }
 
   static deleteTemplate(name: string): boolean {
-    if (!localStorageAvailable()) return false;
+    if (!localStorageAvailable()) {
+      return false;
+    }
     const templates = this.getTemplates();
     const filtered = templates.filter((t) => t.name !== name);
-    if (filtered.length === templates.length) return false;
+    if (filtered.length === templates.length) {
+      return false;
+    }
     localStorage.setItem(TEMPLATES_KEY, JSON.stringify(filtered));
     return true;
   }
@@ -54,25 +62,35 @@ export class TemplateManager {
   }
 
   static renameTemplate(oldName: string, newName: string): boolean {
-    if (!localStorageAvailable()) return false;
+    if (!localStorageAvailable()) {
+      return false;
+    }
     const templates = this.getTemplates();
     const tmpl = templates.find((t) => t.name === oldName);
-    if (!tmpl) return false;
-    if (templates.some((t) => t.name === newName)) return false;
+    if (!tmpl) {
+      return false;
+    }
+    if (templates.some((t) => t.name === newName)) {
+      return false;
+    }
     tmpl.name = newName;
     localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
     return true;
   }
 
   static saveLastSettings(settings: JSONObject): void {
-    if (!localStorageAvailable()) return;
+    if (!localStorageAvailable()) {
+      return;
+    }
     try {
       localStorage.setItem(LAST_SETTINGS_KEY, JSON.stringify(settings));
     } catch { /* quota exceeded, ignore */ }
   }
 
   static getLastSettings(): JSONObject | undefined {
-    if (!localStorageAvailable()) return undefined;
+    if (!localStorageAvailable()) {
+      return undefined;
+    }
     try {
       const data = localStorage.getItem(LAST_SETTINGS_KEY);
       return data ? JSON.parse(data) : undefined;

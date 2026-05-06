@@ -98,7 +98,9 @@ describe('LogPanel', () => {
       removeEventListener() {},
     } as unknown as HTMLElement;
     document.getElementById = ((id: string) => {
-      if (id === 'logpanel-scrollable') return fakePanel;
+      if (id === 'logpanel-scrollable') {
+        return fakePanel;
+      }
       return null;
     }) as typeof document.getElementById;
 

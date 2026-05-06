@@ -218,7 +218,8 @@ $eloSourceFiles = @(
     "fix_elo_dupes.py",
     "import_gamedb_to_elo.py",
     "migrate_elo_nicknames.py",
-    "player_name_aliases.json"
+    "player_name_aliases.json",
+    "tm-sync-elo.py"
 )
 $generatedSettingsPath = Join-Path $resolvedSourceRoot "src\\genfiles\\settings.json"
 
@@ -384,7 +385,7 @@ deps_root="$shared_root/deps"
 dependency_sha="__DEPENDENCY_SHA__"
 new_release_dir=""
 previous_current=""
-elo_files="index.html elo-api.js elo_aliases.py fix_elo_dupes.py import_gamedb_to_elo.py migrate_elo_nicknames.py player_name_aliases.json"
+elo_files="index.html elo-api.js elo_aliases.py fix_elo_dupes.py import_gamedb_to_elo.py migrate_elo_nicknames.py player_name_aliases.json tm-sync-elo.py"
 
 rollback() {
   if [ -n "$previous_current" ]; then
@@ -421,7 +422,7 @@ fi
 if [ -d "$legacy_root/logs" ] && [ -z "$(ls -A "$shared_root/logs" 2>/dev/null || true)" ]; then
   rsync -a "$legacy_root/logs/" "$shared_root/logs/"
 fi
-for data_file in elo-data.json data.json; do
+for data_file in elo-data.json data.json solo-records.json; do
   if [ -f "$legacy_root/elo/$data_file" ] && [ ! -e "$shared_root/elo/$data_file" ]; then
     cp "$legacy_root/elo/$data_file" "$shared_root/elo/$data_file"
   fi
@@ -482,7 +483,18 @@ ln -sfn "$shared_root/db" "$new_release_dir/db"
 ln -sfn "$shared_root/logs" "$new_release_dir/logs"
 ln -sfn "$shared_root/elo/elo-data.json" "$new_release_dir/elo/elo-data.json"
 ln -sfn "$shared_root/elo/data.json" "$new_release_dir/elo/data.json"
+ln -sfn "$shared_root/elo/solo-records.json" "$new_release_dir/elo/solo-records.json"
 ln -sfn "$deps_dir/node_modules" "$new_release_dir/node_modules"
+
+if [ "__ENV__" = "prod" ]; then
+  scripts_dir="/home/openclaw/scripts"
+  mkdir -p "$scripts_dir"
+  cp "$new_release_dir/elo/tm-sync-elo.py" "$scripts_dir/tm-sync-elo.py"
+  cp "$new_release_dir/elo/elo_aliases.py" "$scripts_dir/elo_aliases.py"
+  cp "$new_release_dir/elo/player_name_aliases.json" "$scripts_dir/player_name_aliases.json"
+  chmod 755 "$scripts_dir/tm-sync-elo.py" "$scripts_dir/elo_aliases.py"
+fi
+
 ln -sfn "$new_release_dir" "$current_link"
 
 if ! systemctl --user restart "$service"; then

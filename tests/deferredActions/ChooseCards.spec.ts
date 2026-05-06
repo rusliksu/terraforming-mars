@@ -5,7 +5,7 @@ import {testGame} from '../TestGame';
 import {TestPlayer} from '../TestPlayer';
 import {AquiferPumping} from '../../src/server/cards/base/AquiferPumping';
 import {IoMiningIndustries} from '../../src/server/cards/base/IoMiningIndustries';
-import {cast} from '../TestingUtils';
+import {cast} from '@/common/utils/utils';
 import {EarthCatapult} from '../../src/server/cards/base/EarthCatapult';
 
 describe('ChooseCards', () => {

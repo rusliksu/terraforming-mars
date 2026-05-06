@@ -94,9 +94,13 @@ const DEFAULT_GLOBAL_PARAMETER_STEPS = {
 
 function getTurnNoticeReminderMs(): number {
   const raw = process.env.TM_TURN_NOTICE_REMINDER_MS;
-  if (raw === undefined) return DEFAULT_TURN_NOTICE_REMINDER_MS;
+  if (raw === undefined) {
+    return DEFAULT_TURN_NOTICE_REMINDER_MS;
+  }
   const parsed = Number(raw);
-  if (!Number.isFinite(parsed) || parsed < 0) return DEFAULT_TURN_NOTICE_REMINDER_MS;
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return DEFAULT_TURN_NOTICE_REMINDER_MS;
+  }
   return parsed;
 }
 
@@ -1753,11 +1757,19 @@ export class Player implements IPlayer {
 
   private scheduleTurnNoticeReminder(turnNoticeKey: string): void {
     const reminderMs = getTurnNoticeReminderMs();
-    if (reminderMs === 0) return;
-    if (!this.telegramID) return;
-    if (!this.hasActiveTurnNotice(turnNoticeKey)) return;
+    if (reminderMs === 0) {
+      return;
+    }
+    if (!this.telegramID) {
+      return;
+    }
+    if (!this.hasActiveTurnNotice(turnNoticeKey)) {
+      return;
+    }
     if (this._pendingTurnNoticeReminderTimer !== undefined) {
-      if (this._pendingTurnNoticeReminderKey === turnNoticeKey) return;
+      if (this._pendingTurnNoticeReminderKey === turnNoticeKey) {
+        return;
+      }
       this.clearPendingTurnNoticeReminderTimer();
     }
 
@@ -1774,8 +1786,12 @@ export class Player implements IPlayer {
   }
 
   private async sendTurnNoticeReminder(turnNoticeKey: string): Promise<void> {
-    if (this.waitingFor === undefined) return;
-    if (!this.hasActiveTurnNotice(turnNoticeKey)) return;
+    if (this.waitingFor === undefined) {
+      return;
+    }
+    if (!this.hasActiveTurnNotice(turnNoticeKey)) {
+      return;
+    }
 
     const previousMessageId = this.lastNoticeMessageId;
     const sent = await sendTurnNotice(this, turnNoticeKey, {reminder: true});

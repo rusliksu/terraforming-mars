@@ -161,7 +161,9 @@ export default defineComponent({
     },
     isNearBottom(): boolean {
       const scrollablePanel = this.getScrollablePanel();
-      if (scrollablePanel === null) return true;
+      if (scrollablePanel === null) {
+        return true;
+      }
       const remaining = scrollablePanel.scrollHeight - scrollablePanel.clientHeight - scrollablePanel.scrollTop;
       return remaining <= 24;
     },
@@ -169,8 +171,12 @@ export default defineComponent({
       this.teardownAutoScrollObserver();
       const scrollablePanel = this.getScrollablePanel();
       const list = scrollablePanel?.querySelector('ul');
-      if (!scrollablePanel || !list) return;
-      if (typeof ResizeObserver === 'undefined') return;
+      if (!scrollablePanel || !list) {
+        return;
+      }
+      if (typeof ResizeObserver === 'undefined') {
+        return;
+      }
 
       this.resizeObserver = new ResizeObserver(() => {
         if (this.selectedGeneration === this.generation && this.stickToBottom) {

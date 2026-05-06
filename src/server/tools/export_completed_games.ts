@@ -113,27 +113,37 @@ function parseArgs(argv: Array<string>): CliOptions {
     const next = argv[i + 1];
     switch (arg) {
     case '--output':
-      if (next === undefined) usage();
+      if (next === undefined) {
+        usage();
+      }
       output = path.resolve(process.cwd(), next);
       i++;
       break;
     case '--format':
-      if (next !== 'json' && next !== 'jsonl') usage();
+      if (next !== 'json' && next !== 'jsonl') {
+        usage();
+      }
       format = next;
       i++;
       break;
     case '--limit':
-      if (next === undefined) usage();
+      if (next === undefined) {
+        usage();
+      }
       limit = parsePositiveInt(next, '--limit');
       i++;
       break;
     case '--since':
-      if (next === undefined) usage();
+      if (next === undefined) {
+        usage();
+      }
       since = parseSince(next);
       i++;
       break;
     case '--server-name':
-      if (next === undefined) usage();
+      if (next === undefined) {
+        usage();
+      }
       serverName = next.trim() || serverName;
       i++;
       break;
@@ -150,7 +160,9 @@ function parseArgs(argv: Array<string>): CliOptions {
 }
 
 function parseJson<T>(raw: string | null | undefined, fallback: T): T {
-  if (!raw) return fallback;
+  if (!raw) {
+    return fallback;
+  }
   try {
     return JSON.parse(raw) as T;
   } catch (err) {
@@ -159,16 +171,22 @@ function parseJson<T>(raw: string | null | undefined, fallback: T): T {
 }
 
 function asNumber(value: number | string | null | undefined): number | undefined {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
   if (typeof value === 'string' && value.trim() !== '') {
     const parsed = Number(value);
-    if (Number.isFinite(parsed)) return parsed;
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
   }
   return undefined;
 }
 
 function asString(value: unknown): string | undefined {
-  if (typeof value !== 'string') return undefined;
+  if (typeof value !== 'string') {
+    return undefined;
+  }
   const trimmed = value.trim();
   return trimmed === '' ? undefined : trimmed;
 }
@@ -184,15 +202,21 @@ function extractFallbackPlayers(rawGame: string | null): Array<FallbackPlayer> {
 
 function isBotGame(players: Array<{name: string}>): boolean {
   const names = players.map((player) => player.name.trim()).filter((name) => name !== '');
-  if (names.length === 0) return false;
-  if (names.every((name) => name.length <= 2)) return true;
+  if (names.length === 0) {
+    return false;
+  }
+  if (names.every((name) => name.length <= 2)) {
+    return true;
+  }
   const testNames = new Set(['test', 'testa', 'testb', 'testc', 'bot']);
   return names.some((name) => testNames.has(name.toLowerCase()));
 }
 
 function buildPlayers(rawScoresText: string | null, rawGame: string | null): {players?: Array<ExportedPlayer>; reason?: keyof ExportStats} {
   const rawScores = parseJson<Array<RawScore>>(rawScoresText, []);
-  if (rawScores.length < 2) return {reason: 'skippedFewPlayers'};
+  if (rawScores.length < 2) {
+    return {reason: 'skippedFewPlayers'};
+  }
 
   const fallbacks = extractFallbackPlayers(rawGame);
   const aligned = rawScores.map((score, idx) => {
@@ -227,7 +251,9 @@ function buildPlayers(rawScoresText: string | null, rawGame: string | null): {pl
         user: player.user,
         vp: player.vp,
       }));
-    if (ordered.length < 2) return {reason: 'skippedFewPlayers'};
+    if (ordered.length < 2) {
+      return {reason: 'skippedFewPlayers'};
+    }
     return {players: ordered};
   }
 
@@ -251,7 +277,9 @@ function buildPlayers(rawScoresText: string | null, rawGame: string | null): {pl
       vp: current.vp,
     });
   }
-  if (players.length < 2) return {reason: 'skippedFewPlayers'};
+  if (players.length < 2) {
+    return {reason: 'skippedFewPlayers'};
+  }
   return {players};
 }
 

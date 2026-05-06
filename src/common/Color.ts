@@ -182,9 +182,13 @@ export function normalizePlayerNameForColor(color: Color, name: string): string 
 
 export function getPlayerIdentityByName(name: string): LockedPlayerIdentity | undefined {
   const normalized = (name || '').trim().toLowerCase();
-  if (normalized === '') return undefined;
+  if (normalized === '') {
+    return undefined;
+  }
   const aliasMatch = LOCKED_PLAYER_IDENTITIES.find((identity) => identity.aliases.includes(normalized));
-  if (aliasMatch !== undefined) return aliasMatch;
+  if (aliasMatch !== undefined) {
+    return aliasMatch;
+  }
   return LOCKED_PLAYER_IDENTITIES.find((identity) =>
     identity.selectable !== false && identity.name.trim().toLowerCase() === normalized) ??
     LOCKED_PLAYER_IDENTITIES.find((identity) => identity.name.trim().toLowerCase() === normalized);

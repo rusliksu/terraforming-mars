@@ -34,8 +34,12 @@ export default defineComponent({
       return lookupEloEntry(sharedEloState.players, this.playerName);
     },
     effectiveEloEntry(): EloEntry | null {
-      if (this.eloEntry) return this.eloEntry;
-      if (!sharedEloState.loaded && !sharedEloState.failed) return null;
+      if (this.eloEntry) {
+        return this.eloEntry;
+      }
+      if (!sharedEloState.loaded && !sharedEloState.failed) {
+        return null;
+      }
       return fallbackEloEntry(this.playerName);
     },
     eloText(): string {
@@ -44,10 +48,14 @@ export default defineComponent({
     },
     eloTooltip(): string {
       const entry = this.effectiveEloEntry;
-      if (!entry || typeof entry.elo !== 'number') return '';
+      if (!entry || typeof entry.elo !== 'number') {
+        return '';
+      }
 
       let text = 'Elo: ' + entry.elo;
-      if (typeof entry.games === 'number') text += ' | Games: ' + entry.games;
+      if (typeof entry.games === 'number') {
+        text += ' | Games: ' + entry.games;
+      }
       if (typeof entry.games === 'number' && entry.games > 0 && typeof entry.avgPlaceScore === 'number') {
         text += ' | Avg place: ' + entry.avgPlaceScore.toFixed(2);
       }
@@ -57,11 +65,16 @@ export default defineComponent({
       return text;
     },
     badgeStyle(): Record<string, string> {
-      if (this.personaClass !== '') return {};
+      if (this.personaClass !== '') {
+        return {};
+      }
       const elo = this.effectiveEloEntry?.elo ?? 0;
       let color = '#f44336';
-      if (elo >= 1550) color = '#4caf50';
-      else if (elo >= 1450) color = '#ffc107';
+      if (elo >= 1550) {
+        color = '#4caf50';
+      } else if (elo >= 1450) {
+        color = '#ffc107';
+      }
 
       return {
         color,

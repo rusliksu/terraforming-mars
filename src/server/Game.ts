@@ -1080,8 +1080,12 @@ export class Game implements IGame, Logger {
       const vpb = player.getVictoryPoints();
       return {player, corporation, vpb};
     }).sort((left, right) => {
-      if (left.vpb.total !== right.vpb.total) return right.vpb.total - left.vpb.total;
-      if (left.player.megaCredits !== right.player.megaCredits) return right.player.megaCredits - left.player.megaCredits;
+      if (left.vpb.total !== right.vpb.total) {
+        return right.vpb.total - left.vpb.total;
+      }
+      if (left.player.megaCredits !== right.player.megaCredits) {
+        return right.player.megaCredits - left.player.megaCredits;
+      }
       return 0;
     });
 
@@ -1097,6 +1101,7 @@ export class Game implements IGame, Logger {
         corporation: entry.corporation,
         playerName: entry.player.name,
         user: entry.player.user,
+        soloWin: this.isSoloMode() ? this.isSoloModeWin() : undefined,
         place,
         playerScore: entry.vpb.total,
         megacredits: entry.player.megaCredits,

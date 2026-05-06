@@ -784,7 +784,9 @@ export default defineComponent({
             if (component.showIncludedCards && refs.cardsFilter2) {
               refs.cardsFilter2.selected = processor.includedCards;
             }
-            if (!component.seededGame) component.seed = Math.random();
+            if (!component.seededGame) {
+              component.seed = Math.random();
+            }
             component.solarPhaseOption = Boolean(processor.solarPhaseOption);
             this.uploading = false;
           } catch (e) {
@@ -817,19 +819,27 @@ export default defineComponent({
       }
     },
     loadSelectedTemplate() {
-      if (!this.selectedTemplate) return;
+      if (!this.selectedTemplate) {
+        return;
+      }
       const tmpl = TemplateManager.getTemplate(this.selectedTemplate);
-      if (!tmpl) return;
+      if (!tmpl) {
+        return;
+      }
       this.applySettings(tmpl.settings);
       vueRoot(this).showAlert('Template', 'Template "' + this.selectedTemplate + '" loaded.');
     },
     saveAsTemplate() {
       const name = prompt('Template name:', this.selectedTemplate || '');
-      if (!name || name.trim() === '') return;
+      if (!name || name.trim() === '') {
+        return;
+      }
       const trimmed = name.trim();
       const existing = TemplateManager.getTemplate(trimmed);
       if (existing) {
-        if (!confirm('Template "' + trimmed + '" already exists. Overwrite?')) return;
+        if (!confirm('Template "' + trimmed + '" already exists. Overwrite?')) {
+          return;
+        }
       }
       const settings = TemplateManager.serializeFormState(this);
       TemplateManager.saveTemplate(trimmed, settings);
@@ -838,16 +848,24 @@ export default defineComponent({
       vueRoot(this).showAlert('Template', 'Template "' + trimmed + '" saved.');
     },
     deleteSelectedTemplate() {
-      if (!this.selectedTemplate) return;
-      if (!confirm('Delete template "' + this.selectedTemplate + '"?')) return;
+      if (!this.selectedTemplate) {
+        return;
+      }
+      if (!confirm('Delete template "' + this.selectedTemplate + '"?')) {
+        return;
+      }
       TemplateManager.deleteTemplate(this.selectedTemplate);
       this.templates = TemplateManager.getTemplates();
       this.selectedTemplate = '';
     },
     exportSelectedTemplate() {
-      if (!this.selectedTemplate) return;
+      if (!this.selectedTemplate) {
+        return;
+      }
       const tmpl = TemplateManager.getTemplate(this.selectedTemplate);
-      if (!tmpl) return;
+      if (!tmpl) {
+        return;
+      }
       const a = document.createElement('a');
       const blob = new Blob([JSON.stringify(tmpl.settings, undefined, 4)], {'type': 'application/json'});
       a.href = window.URL.createObjectURL(blob);
@@ -860,13 +878,17 @@ export default defineComponent({
     importTemplateFile() {
       const refs = this.typedRefs;
       const file = refs.templateFile.files !== null ? refs.templateFile.files[0] : undefined;
-      if (!file) return;
+      if (!file) {
+        return;
+      }
       const reader = new FileReader();
       const root = vueRoot(this);
       reader.addEventListener('load', () => {
         try {
           const text = reader.result;
-          if (typeof text !== 'string') return;
+          if (typeof text !== 'string') {
+            return;
+          }
           const json = JSON.parse(text);
           if (Array.isArray(json)) {
             let imported = 0;
@@ -880,7 +902,9 @@ export default defineComponent({
             root.showAlert('Import', 'Imported ' + imported + ' template(s).');
           } else {
             const name = prompt('Name for imported template:', file.name.replace(/\.json$/i, ''));
-            if (!name || name.trim() === '') return;
+            if (!name || name.trim() === '') {
+              return;
+            }
             TemplateManager.saveTemplate(name.trim(), json);
             this.templates = TemplateManager.getTemplates();
             this.selectedTemplate = name.trim();

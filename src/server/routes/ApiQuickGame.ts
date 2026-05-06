@@ -103,9 +103,13 @@ export class ApiQuickGame extends Handler {
     let board: BoardName | RandomBoardOption = RandomBoardOption.ALL;
     if (settings.board) {
       const b = settings.board as string;
-      if (b === 'random all') board = RandomBoardOption.ALL;
-      else if (b === 'random official') board = RandomBoardOption.OFFICIAL;
-      else board = b as BoardName;
+      if (b === 'random all') {
+        board = RandomBoardOption.ALL;
+      } else if (b === 'random official') {
+        board = RandomBoardOption.OFFICIAL;
+      } else {
+        board = b as BoardName;
+      }
     }
 
     let randomMA: RandomMAOptionType = RandomMAOptionType.NONE;

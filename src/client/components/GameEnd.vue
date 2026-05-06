@@ -327,7 +327,9 @@ export default defineComponent({
     },
     spectatorUrl(): string | null {
       const sid = this.game.spectatorId;
-      if (!sid) return null;
+      if (!sid) {
+        return null;
+      }
       return window.location.origin + '/spectator?id=' + sid;
     },
     downloadLogUrl() {
@@ -452,22 +454,32 @@ export default defineComponent({
   methods: {
     async fetchEloResults() {
       await ensureEloLoaded();
-      if (!sharedEloState.loaded) return;
+      if (!sharedEloState.loaded) {
+        return;
+      }
 
       const matchedGame = findMatchingEloGame(sharedEloState.games, this.playersInPlace);
-      if (!matchedGame) return;
+      if (!matchedGame) {
+        return;
+      }
       this.eloResults = buildEloResultsForPlayers(this.playersInPlace, sharedEloState.players, matchedGame);
     },
     formatEloDelta(delta: number): string {
-      if (delta > 0) return `+${delta}`;
+      if (delta > 0) {
+        return `+${delta}`;
+      }
       return String(delta);
     },
     formatAvgPlaceScore(score: number | undefined): string {
       return typeof score === 'number' ? score.toFixed(2) : '—';
     },
     getEloDeltaClass(delta: number): string {
-      if (delta > 0) return 'game-end-elo-delta game-end-elo-up';
-      if (delta < 0) return 'game-end-elo-delta game-end-elo-down';
+      if (delta > 0) {
+        return 'game-end-elo-delta game-end-elo-up';
+      }
+      if (delta < 0) {
+        return 'game-end-elo-delta game-end-elo-down';
+      }
       return 'game-end-elo-delta';
     },
     getEndGamePlayerRowColorClass(color: Color): string {

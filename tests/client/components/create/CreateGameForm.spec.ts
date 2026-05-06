@@ -174,7 +174,7 @@ describe('CreateGameForm', () => {
       .findAll('option')
       .map((option) => option.text());
 
-    expect(options).to.include('Тома');
+    expect(options).to.include(`${TOMA_NAME} · тёмно-фиолетовый`);
     expect(options).not.to.include('Тома · Сатурн');
     expect(options).not.to.include('Тома · Кольца Сатурна');
     expect(options).not.to.include('Тома · Титан');
@@ -197,13 +197,13 @@ describe('CreateGameForm', () => {
       .findAll('option')
       .map((option) => option.text());
 
-    expect(secondOptions).not.to.include(GENUINE_GOLD_NAME);
-    expect(secondOptions).to.include(EMERALD_RAV_NAME);
-    expect(secondOptions).to.include(CATHARSIS_NAME);
-    expect(secondOptions).to.include(GYDRO_NAME);
-    expect(secondOptions).to.include(ANTISTRESS_NAME);
-    expect(secondOptions).to.include(GAMBIT_GIRL_NAME);
-    expect(secondOptions).to.include(PAVEL_TURQUOISE_NAME);
+    expect(secondOptions).not.to.include(`${GENUINE_GOLD_NAME} · золото`);
+    expect(secondOptions).to.include(`${EMERALD_RAV_NAME} · изумруд`);
+    expect(secondOptions).to.include(`${CATHARSIS_NAME} · рыжий`);
+    expect(secondOptions).to.include(`${GYDRO_NAME} · бордовый`);
+    expect(secondOptions).to.include(`${ANTISTRESS_NAME} · тёмно-синий`);
+    expect(secondOptions).to.include(`${GAMBIT_GIRL_NAME} · гортензия`);
+    expect(secondOptions).to.include(`${PAVEL_TURQUOISE_NAME} · бирюза`);
   });
 
   it('renders persona preview using the shared colorbox swatch', () => {

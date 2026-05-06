@@ -54,7 +54,9 @@ function dispatchChange(document: Document, element: HTMLElement): void {
 async function waitForRows(dom: JsdomInstance): Promise<void> {
   const deadline = Date.now() + 1000;
   while (Date.now() < deadline) {
-    if (dom.window.document.querySelectorAll('#tbody tr').length > 0) return;
+    if (dom.window.document.querySelectorAll('#tbody tr').length > 0) {
+      return;
+    }
     await new Promise((resolve) => setTimeout(resolve, 10));
   }
   throw new Error('Timed out waiting for ELO table rows');

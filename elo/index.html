@@ -11,6 +11,9 @@ h2 { font-size: 1.3em; margin-top: 40px; }
 .stats { text-align: center; color: #888; margin-bottom: 10px; }
 .stats .highlight { color: #c4a35a; font-weight: 600; }
 .stats-note { text-align: center; color: #777; margin-bottom: 14px; font-size: 0.9em; }
+.elo-formula { max-width: 860px; margin: 0 auto 18px; background: rgba(22, 33, 62, 0.58); border: 1px solid #333; border-radius: 8px; padding: 10px 14px; color: #b8b8b8; font-size: 0.88em; line-height: 1.45; }
+.elo-formula strong { color: #c4a35a; }
+.elo-formula code { color: #e0e0e0; background: #1a1a2e; border: 1px solid #333; border-radius: 4px; padding: 1px 4px; }
 .tabs { text-align: center; margin-bottom: 20px; }
 .tab { display: inline-block; padding: 8px 20px; margin: 0 4px; background: #16213e; border: 1px solid #333; border-radius: 6px; cursor: pointer; color: #888; transition: all 0.2s; }
 .tab.active { background: #ff6b35; color: #fff; border-color: #ff6b35; }
@@ -180,6 +183,13 @@ a:hover { text-decoration: underline; }
 <h1>TM ELO Ratings</h1>
 <div class="stats rating-only" id="stats"></div>
 <div class="stats-note rating-only">Avg place = normalized finish score. Avg gen = average game generation. VP Margin = average gap to 2nd place if you win, otherwise gap to 1st.</div>
+<div class="elo-formula rating-only">
+  <strong>How deltas work:</strong>
+  each game is scored pairwise. Expected score is
+  <code>1 / (1 + 10^((oppElo - myElo) / 400))</code>, then
+  <code>delta = 32 / (players - 1) * (result - expected)</code>.
+  In 3P each pair is half-size, and beating a much lower-rated player adds only a little.
+</div>
 <div class="tabs">
   <span class="tab active" data-mode="place">By Placement</span>
   <span class="tab" data-mode="vp">By VP Margin</span>
@@ -943,7 +953,7 @@ function renderGames() {
       html += "<span class=\"game-player" + (isWinner ? " winner" : "") + "\">";
       html += "<span class=\"pname player-link player-persona " + playerPersonaClass(r.displayName, r.name) + "\" data-player=\"" + esc(r.name) + "\">" + esc(r.displayName || r.name) + "</span>";
       if (vpText) html += " <span class=\"pvp\">" + vpText + "</span>";
-      html += " <span class=\"pdelta " + deltaClass + "\">(" + deltaText + ")</span>";
+      html += " <span class=\"pdelta " + deltaClass + "\" title=\"ELO " + esc(r.oldElo || "?") + " -> " + esc(r.newElo || "?") + ". Deltas use pairwise K/(players-1), so 3P pairs are smaller than duels.\">(" + deltaText + ")</span>";
       if (corpText) html += " <span class=\"pcorp\">" + esc(corpText) + "</span>";
       html += "</span>";
     });

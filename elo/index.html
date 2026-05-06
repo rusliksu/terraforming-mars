@@ -164,6 +164,22 @@ a:hover { text-decoration: underline; }
 .solo-date { color: #b8b8b8; white-space: nowrap; }
 .solo-empty { text-align: center; color: #666; padding: 18px; }
 .solo-only { display: none; }
+
+/* Statistics */
+.stats-only { display: none; }
+.tm-stats-section { width: min(1180px, calc(100vw - 40px)); margin: 0 auto 32px; }
+.tm-stats-overview { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 10px; margin: 0 auto 18px; }
+.tm-stats-card { background: #16213e; border: 1px solid #333; border-radius: 8px; padding: 12px; text-align: center; }
+.tm-stats-card .label { color: #888; font-size: 0.78em; text-transform: uppercase; }
+.tm-stats-card .value { color: #e0e0e0; font-weight: 700; font-size: 1.45em; margin-top: 4px; }
+.tm-stats-subtitle { color: #c4a35a; text-align: center; margin: 26px 0 10px; font-weight: 700; }
+.tm-stats-table { max-width: none; width: 100%; }
+.tm-stats-table .num { text-align: right; white-space: nowrap; }
+.tm-stats-table .muted { color: #888; font-size: 0.9em; }
+.tm-stats-controls { display: flex; justify-content: center; gap: 8px; margin: 0 auto 12px; flex-wrap: wrap; }
+.tm-stats-controls input,
+.tm-stats-controls select { background: #16213e; color: #e0e0e0; border: 1px solid #333; border-radius: 6px; padding: 7px 10px; }
+.tm-stats-empty { text-align: center; color: #666; padding: 18px; }
 @media (max-width: 900px) {
   .matchups-section { width: calc(100vw - 20px); }
   .matchups-table { font-size: 0.72em; }
@@ -175,6 +191,9 @@ a:hover { text-decoration: underline; }
   .matchups-table .matchups-opponent { height: 96px; }
   .matchups-table .matchups-opponent span { max-height: 88px; }
   .matchups-pair-metrics { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+  .tm-stats-section { width: calc(100vw - 20px); }
+  .tm-stats-overview { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+  .tm-stats-table { font-size: 0.78em; }
 }
 </style>
 </head>
@@ -194,6 +213,7 @@ a:hover { text-decoration: underline; }
   <span class="tab active" data-mode="place">By Placement</span>
   <span class="tab" data-mode="vp">By VP Margin</span>
   <span class="tab" data-mode="solo">Solo Records</span>
+  <span class="tab" data-mode="stats">Stats</span>
 </div>
 <table class="rating-only">
 <thead><tr><th class="rank">#</th><th>Player</th><th>ELO</th><th>Avg place</th><th>Games</th><th>Avg VP</th><th>Avg gen</th><th>VP Margin</th></tr></thead>
@@ -210,6 +230,44 @@ a:hover { text-decoration: underline; }
   <table class="solo-table">
     <thead><tr><th class="rank">#</th><th>Player</th><th>Result</th><th>VP</th><th>Gen</th><th>Corporation</th><th>Map / Mode</th><th>Date</th><th>Game</th></tr></thead>
     <tbody id="soloRecordsBody"></tbody>
+  </table>
+</div>
+
+<h2 class="stats-only">TM Statistics</h2>
+<div class="tm-stats-section stats-only">
+  <div class="tm-stats-overview" id="tmStatsOverview"></div>
+
+  <div class="tm-stats-subtitle">Best VP by generation</div>
+  <table class="tm-stats-table">
+    <thead><tr><th>Gen</th><th>Player</th><th>VP</th><th>Corporation</th><th>Game</th></tr></thead>
+    <tbody id="tmStatsGenerationBody"></tbody>
+  </table>
+
+  <div class="tm-stats-subtitle">Player style</div>
+  <table class="tm-stats-table">
+    <thead><tr><th>Player</th><th class="num">Games</th><th class="num">Win %</th><th class="num">Avg VP</th><th class="num">Best VP</th><th class="num">Cards</th><th class="num">Events</th><th class="num">Blue</th><th class="num">Green</th><th class="num">Cities</th><th class="num">Greeneries</th></tr></thead>
+    <tbody id="tmStatsPlayersBody"></tbody>
+  </table>
+
+  <div class="tm-stats-subtitle">Records</div>
+  <table class="tm-stats-table">
+    <thead><tr><th>Metric</th><th class="num">Value</th><th>Player</th><th>Context</th><th>Game</th></tr></thead>
+    <tbody id="tmStatsRecordsBody"></tbody>
+  </table>
+
+  <div class="tm-stats-subtitle">Project cards</div>
+  <div class="tm-stats-controls">
+    <input id="tmStatsCardSearch" type="search" placeholder="Search cards">
+    <select id="tmStatsCardMin">
+      <option value="1">Min 1 play</option>
+      <option value="2" selected>Min 2 plays</option>
+      <option value="3">Min 3 plays</option>
+      <option value="5">Min 5 plays</option>
+    </select>
+  </div>
+  <table class="tm-stats-table">
+    <thead><tr><th>Card</th><th>Type</th><th class="num">Played</th><th class="num">Win %</th><th class="num">Avg VP</th><th class="num">Avg ELO</th><th>Tags</th></tr></thead>
+    <tbody id="tmStatsCardsBody"></tbody>
   </table>
 </div>
 
@@ -247,6 +305,9 @@ var _matchupA = null;
 var _matchupB = null;
 var _soloRecords = [];
 var _soloFilter = "wins";
+var _tmStats = null;
+var _statsCardSearch = "";
+var _statsCardMin = 2;
 var GAMES_PER_PAGE = 20;
 var MATCHUPS_MIN_PLAYER_GAMES = 5;
 var PLAYER_PERSONA_CLASSES = {
@@ -865,13 +926,157 @@ function renderSoloRecords() {
   body.innerHTML = html;
 }
 
+function statGameLink(record) {
+  var label = getGameLabel(record) || record.gameId || "open";
+  return "<a href=\"" + getGameUrl(record) + "\" target=\"_blank\">" + esc(label) + "</a>";
+}
+
+function renderStatsOverview() {
+  var el = document.getElementById("tmStatsOverview");
+  var stats = _tmStats || {};
+  var cards = stats.cardStats || [];
+  var players = stats.players || [];
+  var records = stats.records || [];
+  var generated = stats.generatedAt ? formatGameDate({date: stats.generatedAt}) : "";
+  var items = [
+    ["Games", stats.gameCount || 0],
+    ["Player-games", stats.playerGameCount || 0],
+    ["Players", players.length],
+    ["Project cards", cards.length],
+  ];
+  if (generated) items.push(["Generated", generated]);
+  if (records.length) items.push(["Records", records.length]);
+  el.innerHTML = items.map(function(item) {
+    return "<div class=\"tm-stats-card\"><div class=\"label\">" + esc(item[0]) + "</div><div class=\"value\">" + esc(item[1]) + "</div></div>";
+  }).join("");
+}
+
+function renderGenerationRecords() {
+  var body = document.getElementById("tmStatsGenerationBody");
+  var records = ((_tmStats && _tmStats.generationRecords) || []).slice();
+  if (records.length === 0) {
+    body.innerHTML = "<tr><td class=\"tm-stats-empty\" colspan=\"5\">No generation records yet</td></tr>";
+    return;
+  }
+  body.innerHTML = records.map(function(record) {
+    var playerName = record.displayName || record.player || "-";
+    return "<tr>"
+      + "<td class=\"num\">" + esc(record.generation || "-") + "</td>"
+      + "<td><span class=\"player-persona " + playerPersonaClass(playerName, record.player) + "\">" + esc(playerName) + "</span></td>"
+      + "<td class=\"num elo\">" + esc(record.vp || 0) + "</td>"
+      + "<td>" + esc(record.corp || "-") + "</td>"
+      + "<td>" + statGameLink(record) + "</td>"
+      + "</tr>";
+  }).join("");
+}
+
+function renderStatsPlayers() {
+  var body = document.getElementById("tmStatsPlayersBody");
+  var players = ((_tmStats && _tmStats.players) || []).slice();
+  if (players.length === 0) {
+    body.innerHTML = "<tr><td class=\"tm-stats-empty\" colspan=\"11\">No player stats yet</td></tr>";
+    return;
+  }
+  players.sort(function(a, b) {
+    return (b.games || 0) - (a.games || 0) || (b.avgVP || 0) - (a.avgVP || 0);
+  });
+  body.innerHTML = players.slice(0, 40).map(function(player) {
+    var avg = player.averages || {};
+    var playerName = player.displayName || player.name || "-";
+    return "<tr>"
+      + "<td><span class=\"player-persona " + playerPersonaClass(playerName, player.name) + "\">" + esc(playerName) + "</span></td>"
+      + "<td class=\"num games\">" + esc(player.games || 0) + "</td>"
+      + "<td class=\"num\">" + round1(player.winRate || 0) + "%</td>"
+      + "<td class=\"num\">" + round1(player.avgVP || 0) + "</td>"
+      + "<td class=\"num elo\">" + esc(player.bestVP || 0) + "</td>"
+      + "<td class=\"num\">" + round1(avg.playedCards || 0) + "</td>"
+      + "<td class=\"num\">" + round1(avg.eventCards || 0) + "</td>"
+      + "<td class=\"num\">" + round1(avg.activeCards || 0) + "</td>"
+      + "<td class=\"num\">" + round1(avg.automatedCards || 0) + "</td>"
+      + "<td class=\"num\">" + round1(avg.cities || 0) + "</td>"
+      + "<td class=\"num\">" + round1(avg.greeneries || 0) + "</td>"
+      + "</tr>";
+  }).join("");
+}
+
+function renderStatsRecords() {
+  var body = document.getElementById("tmStatsRecordsBody");
+  var records = ((_tmStats && _tmStats.records) || []).slice();
+  if (records.length === 0) {
+    body.innerHTML = "<tr><td class=\"tm-stats-empty\" colspan=\"5\">No records yet</td></tr>";
+    return;
+  }
+  body.innerHTML = records.map(function(record) {
+    var playerName = record.displayName || record.player || "-";
+    var context = "Gen " + (record.generation || "-") + " · " + (record.vp || 0) + " VP";
+    if (record.corp) context += " · " + record.corp;
+    return "<tr>"
+      + "<td><span class=\"muted\">" + esc(record.category || "") + "</span> · " + esc(record.label || record.key || "-") + "</td>"
+      + "<td class=\"num elo\">" + esc(record.value || 0) + "</td>"
+      + "<td><span class=\"player-persona " + playerPersonaClass(playerName, record.player) + "\">" + esc(playerName) + "</span></td>"
+      + "<td class=\"muted\">" + esc(context) + "</td>"
+      + "<td>" + statGameLink(record) + "</td>"
+      + "</tr>";
+  }).join("");
+}
+
+function renderStatsCards() {
+  var body = document.getElementById("tmStatsCardsBody");
+  var cards = ((_tmStats && _tmStats.cardStats) || []).slice();
+  var query = _statsCardSearch.trim().toLowerCase();
+  cards = cards.filter(function(card) {
+    if ((card.played || 0) < _statsCardMin) return false;
+    if (!query) return true;
+    return String(card.name || "").toLowerCase().indexOf(query) !== -1 ||
+      (card.tags || []).join(" ").toLowerCase().indexOf(query) !== -1 ||
+      String(card.type || "").toLowerCase().indexOf(query) !== -1;
+  });
+  cards.sort(function(a, b) {
+    var ad = typeof a.avgEloDelta === "number" ? a.avgEloDelta : -999;
+    var bd = typeof b.avgEloDelta === "number" ? b.avgEloDelta : -999;
+    return bd - ad || (b.played || 0) - (a.played || 0) || String(a.name).localeCompare(String(b.name));
+  });
+  if (cards.length === 0) {
+    body.innerHTML = "<tr><td class=\"tm-stats-empty\" colspan=\"7\">No cards match filters</td></tr>";
+    return;
+  }
+  body.innerHTML = cards.slice(0, 80).map(function(card) {
+    var delta = typeof card.avgEloDelta === "number" ? formatMargin(card.avgEloDelta) : "-";
+    return "<tr>"
+      + "<td>" + esc(card.name || "-") + "</td>"
+      + "<td class=\"muted\">" + esc(card.type || "-") + "</td>"
+      + "<td class=\"num games\">" + esc(card.played || 0) + "</td>"
+      + "<td class=\"num\">" + round1(card.winRate || 0) + "%</td>"
+      + "<td class=\"num\">" + round1(card.avgVP || 0) + "</td>"
+      + "<td class=\"num " + ((card.avgEloDelta || 0) >= 0 ? "place" : "solo-loss") + "\">" + esc(delta) + "</td>"
+      + "<td class=\"muted\">" + esc((card.tags || []).join(", ") || "-") + "</td>"
+      + "</tr>";
+  }).join("");
+}
+
+function renderStats() {
+  if (!_tmStats) {
+    document.getElementById("tmStatsOverview").innerHTML = "<div class=\"tm-stats-card\"><div class=\"label\">Stats</div><div class=\"value\">Loading</div></div>";
+    return;
+  }
+  renderStatsOverview();
+  renderGenerationRecords();
+  renderStatsPlayers();
+  renderStatsRecords();
+  renderStatsCards();
+}
+
 function setViewVisibility() {
   var isSolo = _mode === "solo";
+  var isStats = _mode === "stats";
   document.querySelectorAll(".solo-only").forEach(function(el) {
     el.style.display = isSolo ? "block" : "none";
   });
+  document.querySelectorAll(".stats-only").forEach(function(el) {
+    el.style.display = isStats ? "block" : "none";
+  });
   document.querySelectorAll(".rating-only").forEach(function(el) {
-    el.style.display = isSolo ? "none" : "";
+    el.style.display = (isSolo || isStats) ? "none" : "";
   });
 }
 
@@ -879,6 +1084,10 @@ function renderCurrentView() {
   setViewVisibility();
   if (_mode === "solo") {
     renderSoloRecords();
+    return;
+  }
+  if (_mode === "stats") {
+    renderStats();
     return;
   }
   renderPlayers();
@@ -1015,6 +1224,16 @@ document.querySelectorAll(".solo-filter-btn").forEach(function(btn) {
   });
 });
 
+document.getElementById("tmStatsCardSearch").addEventListener("input", function(e) {
+  _statsCardSearch = e.target.value || "";
+  renderStatsCards();
+});
+
+document.getElementById("tmStatsCardMin").addEventListener("change", function(e) {
+  _statsCardMin = Number(e.target.value || 2);
+  renderStatsCards();
+});
+
 document.querySelectorAll(".tab").forEach(function(tab) {
   tab.addEventListener("click", function() {
     document.querySelectorAll(".tab").forEach(function(t) { t.classList.remove("active"); });
@@ -1040,6 +1259,17 @@ fetch("solo-records.json?ts=" + Date.now(), { cache: "no-store" }).then(function
 }).catch(function() {
   _soloRecords = [];
   if (_mode === "solo") renderSoloRecords();
+});
+
+fetch("stats.json?ts=" + Date.now(), { cache: "no-store" }).then(function(r) {
+  if (!r.ok) return null;
+  return r.json();
+}).then(function(data) {
+  _tmStats = data;
+  if (_mode === "stats") renderStats();
+}).catch(function() {
+  _tmStats = null;
+  if (_mode === "stats") renderStats();
 });
 </script>
 </body>

@@ -29,6 +29,53 @@ type EloPageData = {
   }>;
 };
 
+type EloStatsData = {
+  gameCount: number;
+  playerGameCount: number;
+  players: Array<{
+    name: string;
+    displayName: string;
+    games: number;
+    wins: number;
+    winRate: number;
+    avgVP: number;
+    bestVP: number;
+    averages: Record<string, number>;
+  }>;
+  generationRecords: Array<{
+    generation: number;
+    player: string;
+    displayName: string;
+    vp: number;
+    corp: string;
+    gameId: string;
+    server: string;
+  }>;
+  records: Array<{
+    key: string;
+    category: string;
+    label: string;
+    value: number;
+    player: string;
+    displayName: string;
+    generation: number;
+    vp: number;
+    corp: string;
+    gameId: string;
+    server: string;
+  }>;
+  cardStats: Array<{
+    name: string;
+    type: string;
+    tags: Array<string>;
+    played: number;
+    wins: number;
+    winRate: number;
+    avgVP: number;
+    avgEloDelta: number | null;
+  }>;
+};
+
 type JsdomInstance = {
   window: Window & {close: () => void};
 };
@@ -62,7 +109,7 @@ async function waitForRows(dom: JsdomInstance): Promise<void> {
   throw new Error('Timed out waiting for ELO table rows');
 }
 
-function createEloPage(data: EloPageData): JsdomInstance {
+function createEloPage(data: EloPageData, statsData?: EloStatsData): JsdomInstance {
   const html = fs.readFileSync(path.join(process.cwd(), 'elo', 'index.html'), 'utf8');
   return new JSDOM(html, {
     url: 'https://tm.knightbyte.win/elo/',
@@ -72,7 +119,16 @@ function createEloPage(data: EloPageData): JsdomInstance {
     beforeParse(window: Window) {
       Object.defineProperty(window, 'fetch', {
         configurable: true,
-        value: () => Promise.resolve({json: () => Promise.resolve(data)}),
+        value: (input: string) => {
+          const url = String(input);
+          if (url.includes('solo-records.json')) {
+            return Promise.resolve({ok: true, json: () => Promise.resolve({records: []})});
+          }
+          if (url.includes('stats.json')) {
+            return Promise.resolve({ok: Boolean(statsData), json: () => Promise.resolve(statsData)});
+          }
+          return Promise.resolve({ok: true, json: () => Promise.resolve(data)});
+        },
       });
       const windowWithHTMLElement = window as unknown as {HTMLElement: typeof HTMLElement};
       Object.defineProperty(windowWithHTMLElement.HTMLElement.prototype, 'scrollIntoView', {
@@ -415,6 +471,119 @@ describe('ELO page', () => {
 
     expect(winnerName?.classList.contains('player-persona-ginger')).eq(true);
     expect(dom.window.getComputedStyle(winnerName!).color).eq('rgb(255, 138, 66)');
+
+    dom.window.close();
+  });
+
+  it('renders generated statistics records and tfmstats-style card rows', async () => {
+    const dom = createEloPage({
+      players: {
+        'gydro': {
+          displayName: 'GydRo',
+          elo: 1613,
+          elo_vp: 1596,
+          games: 1,
+          avgPlace: 1,
+          avgVP: 100,
+          avgGens: 8,
+          avgMargin: 8,
+        },
+        'рав': {
+          displayName: 'Рав',
+          elo: 1487,
+          elo_vp: 1490,
+          games: 1,
+          avgPlace: 0,
+          avgVP: 92,
+          avgGens: 8,
+          avgMargin: -8,
+        },
+      },
+      games: [
+        {
+          gameId: 'stats-game',
+          endId: 'stats-end',
+          server: 'knightbyte',
+          generation: 8,
+          results: [
+            {name: 'gydro', displayName: 'GydRo', place: 1, vp: 100, corp: 'Teractor', delta: 13},
+            {name: 'рав', displayName: 'Рав', place: 2, vp: 92, corp: 'Inventrix', delta: -13},
+          ],
+        },
+      ],
+    }, {
+      gameCount: 1,
+      playerGameCount: 2,
+      players: [
+        {
+          name: 'gydro',
+          displayName: 'GydRo',
+          games: 1,
+          wins: 1,
+          winRate: 100,
+          avgVP: 100,
+          bestVP: 100,
+          averages: {
+            playedCards: 12,
+            eventCards: 2,
+            activeCards: 3,
+            automatedCards: 5,
+            cities: 2,
+            greeneries: 4,
+          },
+        },
+      ],
+      generationRecords: [
+        {
+          generation: 8,
+          player: 'gydro',
+          displayName: 'GydRo',
+          vp: 100,
+          corp: 'Teractor',
+          gameId: 'stats-game',
+          server: 'knightbyte',
+        },
+      ],
+      records: [
+        {
+          key: 'mostEvents',
+          category: 'Cards',
+          label: 'Most events',
+          value: 7,
+          player: 'gydro',
+          displayName: 'GydRo',
+          generation: 8,
+          vp: 100,
+          corp: 'Teractor',
+          gameId: 'stats-game',
+          server: 'knightbyte',
+        },
+      ],
+      cardStats: [
+        {
+          name: 'Asteroid',
+          type: 'event',
+          tags: ['space', 'event'],
+          played: 3,
+          wins: 2,
+          winRate: 66.7,
+          avgVP: 96.3,
+          avgEloDelta: 4.5,
+        },
+      ],
+    });
+
+    await waitForRows(dom);
+    const document = dom.window.document;
+    const statsTab = Array.from(document.querySelectorAll('.tab')).find((tab) => cleanText(tab.textContent) === 'Stats') as HTMLElement | undefined;
+    expect(statsTab).not.eq(undefined);
+    statsTab?.click();
+
+    expect(getCells(document, '#tmStatsOverview .value').slice(0, 4)).deep.eq(['1', '2', '1', '1']);
+    expect(getCells(document, '#tmStatsGenerationBody tr:first-child td')).deep.eq(['8', 'GydRo', '100', 'Teractor', 'stats-game']);
+    expect(getCells(document, '#tmStatsPlayersBody tr:first-child td')).deep.eq(['GydRo', '1', '100%', '100', '100', '12', '2', '3', '5', '2', '4']);
+    expect(getCells(document, '#tmStatsRecordsBody tr:first-child td')).deep.eq(['Cards · Most events', '7', 'GydRo', 'Gen 8 · 100 VP · Teractor', 'stats-game']);
+    expect(getCells(document, '#tmStatsCardsBody tr:first-child td')).deep.eq(['Asteroid', 'event', '3', '66.7%', '96.3', '+4.5', 'space, event']);
 
     dom.window.close();
   });

@@ -16,12 +16,14 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List
 from elo_aliases import assert_no_suspicious_duplicate_players, normalize_name
 
+SCRIPT_DIR = Path(__file__).resolve().parent
 DB_PATH = Path(os.environ.get("TM_DB_PATH", "/home/openclaw/tm-runtime/prod/shared/db/game.db"))
 ELO_DIR = Path(os.environ.get("TM_ELO_DIR", "/home/openclaw/tm-runtime/prod/shared/elo"))
 ELO_LOAD_PATHS = [
@@ -34,6 +36,23 @@ ELO_SAVE_PATHS = [
 ]
 SOLO_RECORDS_PATH = ELO_DIR / "solo-records.json"
 SOLO_OVERRIDES_PATH = ELO_DIR / "solo-record-overrides.json"
+STATS_PATH = ELO_DIR / "stats.json"
+
+CARD_METADATA_PATHS = [
+    Path(os.environ["TM_CARD_METADATA_PATH"]) if os.environ.get("TM_CARD_METADATA_PATH") else None,
+    Path(os.environ["TM_REPO_ROOT"]) / "src" / "genfiles" / "cards.json" if os.environ.get("TM_REPO_ROOT") else None,
+    SCRIPT_DIR.parent / "src" / "genfiles" / "cards.json",
+    Path.cwd() / "src" / "genfiles" / "cards.json",
+    Path("/home/openclaw/repos/terraforming-mars-upstream/src/genfiles/cards.json"),
+    Path("/home/openclaw/repos/terraforming-mars/src/genfiles/cards.json"),
+]
+CARD_SOURCE_ROOTS = [
+    Path(os.environ["TM_REPO_ROOT"]) if os.environ.get("TM_REPO_ROOT") else None,
+    SCRIPT_DIR.parent,
+    Path.cwd(),
+    Path("/home/openclaw/repos/terraforming-mars-upstream"),
+    Path("/home/openclaw/repos/terraforming-mars"),
+]
 
 DEFAULT_ELO = 1500
 BASE_K = 32
@@ -67,6 +86,64 @@ SOLO_EXPANSION_KEYS = {
     "moon": "Moon",
     "underworld": "Underworld",
 }
+
+RESOURCE_PRODUCTION_KEYS = {
+    "mc": "megaCreditProduction",
+    "steel": "steelProduction",
+    "titanium": "titaniumProduction",
+    "plants": "plantProduction",
+    "energy": "energyProduction",
+    "heat": "heatProduction",
+}
+RESOURCE_LABELS = {
+    "mc": "M€ production",
+    "steel": "Steel production",
+    "titanium": "Titanium production",
+    "plants": "Plant production",
+    "energy": "Energy production",
+    "heat": "Heat production",
+}
+PROJECT_CARD_TYPES = {"active", "automated", "event"}
+TAG_KEYS = [
+    "building",
+    "space",
+    "science",
+    "earth",
+    "jovian",
+    "venus",
+    "plant",
+    "microbe",
+    "animal",
+    "city",
+    "power",
+    "mars",
+]
+TAG_LABELS = {
+    "building": "Building tags",
+    "space": "Space tags",
+    "science": "Science tags",
+    "earth": "Earth tags",
+    "jovian": "Jovian tags",
+    "venus": "Venus tags",
+    "plant": "Plant tags",
+    "microbe": "Microbe tags",
+    "animal": "Animal tags",
+    "city": "City tags",
+    "power": "Power tags",
+    "mars": "Mars tags",
+}
+CITY_TILE_TYPES = {2, 3, 20, 37, 43, "city", "capital", "ocean city", "red city", "new holland"}
+GREENERY_TILE_TYPES = {0, 36, "greenery", "wetlands"}
+PLAYER_AVG_METRICS = [
+    "playedCards",
+    "projectCards",
+    "eventCards",
+    "activeCards",
+    "automatedCards",
+    "cities",
+    "greeneries",
+    "ownedTiles",
+]
 
 
 def get_k(elo: float) -> float:
@@ -162,6 +239,12 @@ def save_solo_records(records: List[dict]) -> None:
     )
     SOLO_RECORDS_PATH.parent.mkdir(parents=True, exist_ok=True)
     SOLO_RECORDS_PATH.write_text(payload, encoding="utf-8")
+
+
+def save_stats(stats: dict) -> None:
+    payload = json.dumps(stats, ensure_ascii=False, indent=2)
+    STATS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    STATS_PATH.write_text(payload, encoding="utf-8")
 
 
 def load_solo_records_by_game() -> Dict[str, dict]:
@@ -500,6 +583,616 @@ def fetch_solo_records() -> List[dict]:
     return records
 
 
+def safe_int(value: object, default: int = 0) -> int:
+    try:
+        if value is None:
+            return default
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def round1(value: float) -> float:
+    return round(value, 1)
+
+
+def find_card_metadata_path() -> Path | None:
+    for path in CARD_METADATA_PATHS:
+        if path is not None and path.exists() and path.is_file():
+            return path
+    return None
+
+
+def candidate_card_source_roots() -> List[Path]:
+    roots: List[Path] = []
+    seen = set()
+    for root in CARD_SOURCE_ROOTS:
+        if root is None:
+            continue
+        try:
+            resolved = root.resolve()
+        except Exception:
+            resolved = root
+        key = str(resolved)
+        if key in seen:
+            continue
+        seen.add(key)
+        if (resolved / "src" / "common" / "cards" / "CardName.ts").exists():
+            roots.append(resolved)
+    return roots
+
+
+def parse_card_names(repo_root: Path) -> Dict[str, str]:
+    path = repo_root / "src" / "common" / "cards" / "CardName.ts"
+    try:
+        content = path.read_text(encoding="utf-8")
+    except Exception:
+        return {}
+    return {
+        match.group(1): match.group(2)
+        for match in re.finditer(r"\b([A-Z0-9_]+)\s*=\s*'([^']+)'", content)
+    }
+
+
+def infer_card_type(path: Path, content: str) -> str:
+    match = re.search(r"type:\s*CardType\.([A-Z_]+)", content)
+    if match:
+        return match.group(1).lower()
+
+    normalized_path = str(path).replace("\\", "/")
+    if "extends CorporationCard" in content or "/corporation/" in normalized_path:
+        return "corporation"
+    if "extends PreludeCard" in content or "/prelude" in normalized_path:
+        return "prelude"
+    if "extends CeoCard" in content or "/ceo/" in normalized_path:
+        return "ceo"
+    return "unknown"
+
+
+def parse_card_tags(content: str) -> List[str]:
+    match = re.search(r"tags:\s*\[([^\]]*)\]", content, flags=re.S)
+    if not match:
+        return []
+    return [tag.lower() for tag in re.findall(r"Tag\.([A-Z_]+)", match.group(1))]
+
+
+def parse_numeric_property(content: str, property_name: str) -> int | None:
+    match = re.search(rf"\b{re.escape(property_name)}:\s*(-?\d+)", content)
+    if not match:
+        return None
+    return safe_int(match.group(1))
+
+
+def load_card_metadata_from_sources() -> Dict[str, dict]:
+    for root in candidate_card_source_roots():
+        card_names = parse_card_names(root)
+        if not card_names:
+            continue
+
+        metadata: Dict[str, dict] = {}
+        cards_root = root / "src" / "server" / "cards"
+        for path in cards_root.rglob("*.ts"):
+            try:
+                content = path.read_text(encoding="utf-8")
+            except Exception:
+                continue
+            name_match = re.search(r"name:\s*CardName\.([A-Z0-9_]+)", content)
+            if not name_match:
+                continue
+            name = card_names.get(name_match.group(1))
+            if not name:
+                continue
+            entry = {
+                "name": name,
+                "type": infer_card_type(path, content),
+                "tags": parse_card_tags(content),
+                "module": path.parent.name,
+                "cost": parse_numeric_property(content, "cost"),
+                "victoryPoints": parse_numeric_property(content, "victoryPoints"),
+            }
+            metadata[name] = entry
+            metadata[name.lower()] = entry
+        if metadata:
+            return metadata
+    return {}
+
+
+def load_card_metadata() -> Dict[str, dict]:
+    path = find_card_metadata_path()
+    if path is None:
+        return load_card_metadata_from_sources()
+
+    try:
+        cards = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return load_card_metadata_from_sources()
+
+    metadata: Dict[str, dict] = {}
+    for card in cards if isinstance(cards, list) else []:
+        name = str(card.get("name") or "").strip()
+        if not name:
+            continue
+        entry = {
+            "name": name,
+            "type": str(card.get("type") or "unknown").lower(),
+            "tags": [str(tag).lower() for tag in (card.get("tags") or [])],
+            "module": card.get("module") or "",
+            "cost": card.get("cost"),
+            "victoryPoints": card.get("victoryPoints"),
+        }
+        metadata[name] = entry
+        metadata[name.lower()] = entry
+    return metadata or load_card_metadata_from_sources()
+
+
+def get_card_metadata(card_metadata: Dict[str, dict], name: str) -> dict:
+    return card_metadata.get(name) or card_metadata.get(str(name).lower()) or {
+        "name": name,
+        "type": "unknown",
+        "tags": [],
+        "module": "",
+    }
+
+
+def normalize_tile_type(tile_type: object) -> object:
+    if isinstance(tile_type, str):
+        return tile_type.strip().lower()
+    return tile_type
+
+
+def count_player_tiles(board: dict, player_id: str) -> dict:
+    counts = {"cities": 0, "greeneries": 0, "ownedTiles": 0}
+    if not player_id:
+        return counts
+
+    spaces = (board or {}).get("spaces") or []
+    for space in spaces:
+        if space.get("player") != player_id:
+            continue
+        tile = space.get("tile") or {}
+        tile_type = normalize_tile_type(tile.get("tileType"))
+        counts["ownedTiles"] += 1
+        if tile_type in CITY_TILE_TYPES:
+            counts["cities"] += 1
+        if tile_type in GREENERY_TILE_TYPES:
+            counts["greeneries"] += 1
+    return counts
+
+
+def extract_vp_breakdown(score: dict) -> dict:
+    breakdown = score.get("victoryPointsBreakdown") or {}
+    return {
+        "terraformRating": safe_int(breakdown.get("terraformRating")),
+        "cards": safe_int(breakdown.get("victoryPoints")),
+        "greenery": safe_int(breakdown.get("greenery")),
+        "city": safe_int(breakdown.get("city")),
+        "milestones": safe_int(breakdown.get("milestones")),
+        "awards": safe_int(breakdown.get("awards")),
+        "escapeVelocity": safe_int(breakdown.get("escapeVelocity")),
+        "moon": safe_int(breakdown.get("moonHabitats")) + safe_int(breakdown.get("moonMines")) + safe_int(breakdown.get("moonRoads")),
+        "planetaryTracks": safe_int(breakdown.get("planetaryTracks")),
+        "negative": safe_int(breakdown.get("negativeVP")),
+    }
+
+
+def extract_card_counts(snapshot: dict, card_metadata: Dict[str, dict]) -> dict:
+    played_cards = snapshot.get("playedCards") or []
+    counts = {
+        "playedCards": len(played_cards),
+        "projectCards": 0,
+        "eventCards": 0,
+        "activeCards": 0,
+        "automatedCards": 0,
+        "preludeCards": 0,
+        "corporationCards": 0,
+        "ceoCards": 0,
+        "unknownCards": 0,
+        "tags": {tag: 0 for tag in TAG_KEYS},
+        "projectCardNames": [],
+        "allCardNames": [],
+    }
+
+    for card in played_cards:
+        name = str(card.get("name") or "").strip()
+        if not name:
+            continue
+        counts["allCardNames"].append(name)
+        meta = get_card_metadata(card_metadata, name)
+        card_type = meta.get("type", "unknown")
+
+        if card_type in PROJECT_CARD_TYPES:
+            counts["projectCards"] += 1
+            counts["projectCardNames"].append(name)
+        if card_type == "event":
+            counts["eventCards"] += 1
+        elif card_type == "active":
+            counts["activeCards"] += 1
+        elif card_type == "automated":
+            counts["automatedCards"] += 1
+        elif card_type == "prelude":
+            counts["preludeCards"] += 1
+        elif card_type == "corporation":
+            counts["corporationCards"] += 1
+        elif card_type == "ceo":
+            counts["ceoCards"] += 1
+        else:
+            counts["unknownCards"] += 1
+
+        if card_type != "event":
+            for tag in meta.get("tags", []):
+                if tag in counts["tags"]:
+                    counts["tags"][tag] += 1
+    return counts
+
+
+def extract_player_metrics(score: dict, snapshot: dict, board: dict, card_metadata: Dict[str, dict]) -> dict:
+    card_counts = extract_card_counts(snapshot, card_metadata)
+    tile_counts = count_player_tiles(board, str(snapshot.get("id") or ""))
+    production = {
+        resource: safe_int(snapshot.get(source_key))
+        for resource, source_key in RESOURCE_PRODUCTION_KEYS.items()
+    }
+    metrics = {
+        "vp": safe_int(score.get("playerScore")),
+        "vpBreakdown": extract_vp_breakdown(score),
+        "production": production,
+        **{key: card_counts[key] for key in [
+            "playedCards",
+            "projectCards",
+            "eventCards",
+            "activeCards",
+            "automatedCards",
+            "preludeCards",
+            "corporationCards",
+            "ceoCards",
+            "unknownCards",
+        ]},
+        **tile_counts,
+        "tags": card_counts["tags"],
+        "projectCardNames": card_counts["projectCardNames"],
+        "allCardNames": card_counts["allCardNames"],
+    }
+    return metrics
+
+
+def fetch_stats_games() -> List[dict]:
+    conn = sqlite3.connect(str(DB_PATH))
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT gr.game_id,
+               gr.players,
+               gr.generations,
+               gr.scores,
+               gr.game_options,
+               COALESCE(cg.completed_time, 0) AS completed_time,
+               json_extract(gr.game_options, '$.boardName') AS board_name,
+               (
+                   SELECT json_extract(g.game, '$.spectatorId')
+                   FROM games g
+                   WHERE g.game_id = gr.game_id
+                   ORDER BY g.save_id DESC
+                   LIMIT 1
+               ) AS spectator_id,
+               (
+                   SELECT g.game
+                   FROM games g
+                   WHERE g.game_id = gr.game_id
+                   ORDER BY g.save_id DESC
+                   LIMIT 1
+               ) AS game_json
+        FROM game_results gr
+        JOIN completed_game cg ON gr.game_id = cg.game_id
+        ORDER BY COALESCE(cg.completed_time, 0), gr.game_id
+        """
+    )
+    rows = cur.fetchall()
+    conn.close()
+
+    games: List[dict] = []
+    for gid, player_count, generations, scores_json, options_json, completed_time, board_name, spectator_id, game_json in rows:
+        try:
+            scores = json.loads(scores_json or "[]")
+            options = json.loads(options_json or "{}")
+            game_state = json.loads(game_json or "{}")
+        except Exception:
+            continue
+
+        if not scores or is_bot_game(scores):
+            continue
+
+        snapshots = game_state.get("players") if isinstance(game_state.get("players"), list) else []
+        for idx, score in enumerate(scores):
+            if not (score.get("playerName") or "").strip() and idx < len(snapshots):
+                score["playerName"] = snapshots[idx].get("name", "")
+
+        named_scores = [
+            (idx, score)
+            for idx, score in enumerate(scores)
+            if (score.get("playerName") or "").strip()
+        ]
+        if not named_scores:
+            continue
+
+        has_places = all(safe_int(score.get("place"), 0) > 0 for _, score in named_scores)
+        named_scores.sort(
+            key=lambda item: (
+                safe_int(item[1].get("place"), 999) if has_places else -safe_int(item[1].get("playerScore")),
+                -safe_int(item[1].get("playerScore")),
+            )
+        )
+
+        snapshot_by_key: Dict[str, dict] = {}
+        for snapshot in snapshots:
+            raw_name = str(snapshot.get("name") or "").strip()
+            if raw_name:
+                key, _ = normalize_name(raw_name)
+                snapshot_by_key[key] = snapshot
+
+        results: List[dict] = []
+        for sorted_idx, (original_idx, score) in enumerate(named_scores):
+            raw_name = str(score.get("playerName") or "").strip()
+            key, display = normalize_name(raw_name)
+            if has_places:
+                place = safe_int(score.get("place"), sorted_idx + 1)
+            else:
+                place = sorted_idx + 1
+                if sorted_idx > 0 and safe_int(score.get("playerScore")) == safe_int(named_scores[sorted_idx - 1][1].get("playerScore")):
+                    place = results[-1]["place"]
+            snapshot = snapshot_by_key.get(key) or (snapshots[original_idx] if original_idx < len(snapshots) else {})
+            results.append(
+                {
+                    "name": key,
+                    "displayName": display,
+                    "place": place,
+                    "vp": safe_int(score.get("playerScore")),
+                    "corp": score.get("corporation", "") or "",
+                    "score": score,
+                    "snapshot": snapshot,
+                }
+            )
+
+        if not results:
+            continue
+
+        games.append(
+            {
+                "_key": gid,
+                "gameId": gid,
+                "endId": spectator_id or "",
+                "date": datetime.fromtimestamp(completed_time or 0, tz=timezone.utc).isoformat() if completed_time else "",
+                "server": "knightbyte",
+                "map": board_name or options.get("boardName") or "",
+                "generation": generations or 0,
+                "playerCount": player_count or len(results),
+                "completedTime": completed_time or 0,
+                "results": results,
+                "board": game_state.get("board") or {},
+            }
+        )
+    return games
+
+
+def build_elo_delta_lookup(elo_games: List[dict]) -> Dict[tuple, int]:
+    lookup: Dict[tuple, int] = {}
+    for game in elo_games:
+        game_id = game.get("_key") or game.get("gameId")
+        if not game_id:
+            continue
+        for result in game.get("results") or []:
+            key, _ = normalize_name(result.get("displayName") or result.get("name") or "")
+            lookup[(game_id, key)] = safe_int(result.get("delta"))
+    return lookup
+
+
+def new_player_accumulator(name: str, display_name: str) -> dict:
+    return {
+        "name": name,
+        "displayName": display_name,
+        "games": 0,
+        "wins": 0,
+        "totalVP": 0,
+        "totalGeneration": 0,
+        "bestVP": 0,
+        "totals": {metric: 0 for metric in PLAYER_AVG_METRICS},
+        "max": {metric: 0 for metric in PLAYER_AVG_METRICS},
+        "tagTotals": {tag: 0 for tag in TAG_KEYS},
+        "tagMax": {tag: 0 for tag in TAG_KEYS},
+        "productionTotals": {resource: 0 for resource in RESOURCE_PRODUCTION_KEYS},
+        "maxProduction": {resource: 0 for resource in RESOURCE_PRODUCTION_KEYS},
+        "vpBreakdownTotals": {},
+    }
+
+
+def record_context(game: dict, result: dict) -> dict:
+    return {
+        "player": result.get("name", ""),
+        "displayName": result.get("displayName", result.get("name", "")),
+        "gameId": game.get("gameId") or game.get("_key"),
+        "endId": game.get("endId", ""),
+        "server": game.get("server", "knightbyte"),
+        "generation": game.get("generation", 0),
+        "vp": result.get("vp", 0),
+        "corp": result.get("corp", ""),
+        "date": game.get("date", ""),
+        "completedTime": game.get("completedTime", 0),
+    }
+
+
+def maybe_update_record(records: Dict[str, dict], key: str, label: str, category: str, value: int, game: dict, result: dict) -> None:
+    if value <= 0:
+        return
+    current = records.get(key)
+    if current is not None and value <= current.get("value", 0):
+        return
+    records[key] = {
+        "key": key,
+        "label": label,
+        "category": category,
+        "value": value,
+        **record_context(game, result),
+    }
+
+
+def finalize_player_stats(players: Dict[str, dict]) -> List[dict]:
+    finalized: List[dict] = []
+    for acc in players.values():
+        games = acc["games"] or 1
+        finalized.append(
+            {
+                "name": acc["name"],
+                "displayName": acc["displayName"],
+                "games": acc["games"],
+                "wins": acc["wins"],
+                "winRate": round1(acc["wins"] / games * 100),
+                "avgVP": round1(acc["totalVP"] / games),
+                "bestVP": acc["bestVP"],
+                "avgGeneration": round1(acc["totalGeneration"] / games),
+                "averages": {metric: round1(value / games) for metric, value in acc["totals"].items()},
+                "max": acc["max"],
+                "avgTags": {tag: round1(value / games) for tag, value in acc["tagTotals"].items()},
+                "maxTags": acc["tagMax"],
+                "avgProduction": {resource: round1(value / games) for resource, value in acc["productionTotals"].items()},
+                "maxProduction": acc["maxProduction"],
+                "avgVPBreakdown": {key: round1(value / games) for key, value in acc["vpBreakdownTotals"].items()},
+            }
+        )
+    finalized.sort(key=lambda player: (-player["games"], -player["avgVP"], player["displayName"]))
+    return finalized
+
+
+def finalize_card_stats(cards: Dict[str, dict]) -> List[dict]:
+    finalized: List[dict] = []
+    for stat in cards.values():
+        played = stat["played"] or 1
+        elo_delta_count = stat.get("eloDeltaCount", 0)
+        finalized.append(
+            {
+                "name": stat["name"],
+                "type": stat["type"],
+                "tags": stat["tags"],
+                "played": stat["played"],
+                "wins": stat["wins"],
+                "winRate": round1(stat["wins"] / played * 100),
+                "avgVP": round1(stat["totalVP"] / played),
+                "avgPlace": round1(stat["placeScoreTotal"] / played * 100),
+                "avgEloDelta": round1(stat["eloDeltaTotal"] / elo_delta_count) if elo_delta_count else None,
+                "eloDeltaCount": elo_delta_count,
+            }
+        )
+    finalized.sort(
+        key=lambda card: (
+            -(card["avgEloDelta"] if card["avgEloDelta"] is not None else -999),
+            -card["played"],
+            card["name"],
+        )
+    )
+    return finalized
+
+
+def build_stats(games: List[dict], card_metadata: Dict[str, dict], elo_games: List[dict] | None = None) -> dict:
+    players: Dict[str, dict] = {}
+    cards: Dict[str, dict] = {}
+    records: Dict[str, dict] = {}
+    generation_records: Dict[int, dict] = {}
+    elo_delta_lookup = build_elo_delta_lookup(elo_games or [])
+
+    competitive_games = [game for game in games if safe_int(game.get("playerCount")) >= 2 and len(game.get("results") or []) >= 2]
+    for game in competitive_games:
+        generation = safe_int(game.get("generation"))
+        for result in game.get("results") or []:
+            metrics = extract_player_metrics(result["score"], result.get("snapshot") or {}, game.get("board") or {}, card_metadata)
+            key = result["name"]
+            acc = players.setdefault(key, new_player_accumulator(key, result.get("displayName", key)))
+            acc["displayName"] = result.get("displayName", acc["displayName"])
+            acc["games"] += 1
+            acc["wins"] += 1 if safe_int(result.get("place")) == 1 else 0
+            acc["totalVP"] += metrics["vp"]
+            acc["totalGeneration"] += generation
+            acc["bestVP"] = max(acc["bestVP"], metrics["vp"])
+
+            for metric in PLAYER_AVG_METRICS:
+                value = safe_int(metrics.get(metric))
+                acc["totals"][metric] += value
+                acc["max"][metric] = max(acc["max"][metric], value)
+            for tag, value in metrics["tags"].items():
+                acc["tagTotals"][tag] += value
+                acc["tagMax"][tag] = max(acc["tagMax"][tag], value)
+            for resource, value in metrics["production"].items():
+                acc["productionTotals"][resource] += value
+                acc["maxProduction"][resource] = max(acc["maxProduction"][resource], value)
+            for vp_key, value in metrics["vpBreakdown"].items():
+                acc["vpBreakdownTotals"][vp_key] = acc["vpBreakdownTotals"].get(vp_key, 0) + value
+
+            if 6 <= generation <= 13:
+                current_gen_record = generation_records.get(generation)
+                if current_gen_record is None or metrics["vp"] > current_gen_record.get("vp", 0):
+                    generation_records[generation] = record_context(game, result)
+
+            maybe_update_record(records, "bestVP", "Best VP", "Score", metrics["vp"], game, result)
+            maybe_update_record(records, "mostCards", "Most played cards", "Cards", metrics["playedCards"], game, result)
+            maybe_update_record(records, "mostProjectCards", "Most project cards", "Cards", metrics["projectCards"], game, result)
+            maybe_update_record(records, "mostEvents", "Most events", "Cards", metrics["eventCards"], game, result)
+            maybe_update_record(records, "mostActiveCards", "Most blue cards", "Cards", metrics["activeCards"], game, result)
+            maybe_update_record(records, "mostAutomatedCards", "Most green cards", "Cards", metrics["automatedCards"], game, result)
+            maybe_update_record(records, "mostCities", "Most cities", "Board", metrics["cities"], game, result)
+            maybe_update_record(records, "mostGreeneries", "Most greeneries", "Board", metrics["greeneries"], game, result)
+            maybe_update_record(records, "mostCardVP", "Most VP on cards", "VP breakdown", metrics["vpBreakdown"]["cards"], game, result)
+            maybe_update_record(records, "mostCityVP", "Most city VP", "VP breakdown", metrics["vpBreakdown"]["city"], game, result)
+            maybe_update_record(records, "mostGreeneryVP", "Most greenery VP", "VP breakdown", metrics["vpBreakdown"]["greenery"], game, result)
+
+            for resource, value in metrics["production"].items():
+                maybe_update_record(records, f"production:{resource}", f"Highest {RESOURCE_LABELS[resource]}", "Production", value, game, result)
+            for tag, value in metrics["tags"].items():
+                maybe_update_record(records, f"tag:{tag}", f"Most {TAG_LABELS[tag]}", "Tags", value, game, result)
+
+            elo_delta = elo_delta_lookup.get((game.get("_key"), key))
+            place_score = normalized_place_score(safe_int(result.get("place"), 99), len(game.get("results") or []))
+            is_win = safe_int(result.get("place")) == 1
+            for card_name in metrics["projectCardNames"]:
+                meta = get_card_metadata(card_metadata, card_name)
+                card_stat = cards.setdefault(
+                    meta["name"],
+                    {
+                        "name": meta["name"],
+                        "type": meta.get("type", "unknown"),
+                        "tags": meta.get("tags", []),
+                        "played": 0,
+                        "wins": 0,
+                        "totalVP": 0,
+                        "placeScoreTotal": 0.0,
+                        "eloDeltaTotal": 0,
+                        "eloDeltaCount": 0,
+                    },
+                )
+                card_stat["played"] += 1
+                card_stat["wins"] += 1 if is_win else 0
+                card_stat["totalVP"] += metrics["vp"]
+                card_stat["placeScoreTotal"] += place_score
+                if elo_delta is not None:
+                    card_stat["eloDeltaTotal"] += elo_delta
+                    card_stat["eloDeltaCount"] += 1
+
+    generation_records_list = [
+        {
+            "generation": generation,
+            **generation_records[generation],
+        }
+        for generation in sorted(generation_records)
+    ]
+
+    return {
+        "generatedAt": datetime.now(timezone.utc).isoformat(),
+        "source": "tm-sync-elo",
+        "gameCount": len(competitive_games),
+        "playerGameCount": sum(len(game.get("results") or []) for game in competitive_games),
+        "players": finalize_player_stats(players),
+        "generationRecords": generation_records_list,
+        "records": sorted(records.values(), key=lambda record: (record["category"], record["label"])),
+        "cardStats": finalize_card_stats(cards),
+    }
+
+
 def rebuild_ratings(games: List[dict]) -> Dict[str, dict]:
     players: Dict[str, dict] = {}
 
@@ -689,12 +1382,18 @@ def main() -> None:
     save_elo(elo)
     solo_records = fetch_solo_records()
     save_solo_records(solo_records)
+    stats_games = fetch_stats_games()
+    stats = build_stats(stats_games, load_card_metadata(), elo.get("games", []))
+    save_stats(stats)
 
     print(f"existing_games={len(existing_keys) - added}")
     print(f"added_games={added}")
     print(f"total_games={len(elo.get('games', []))}")
     print(f"total_players={len(elo.get('players', {}))}")
     print(f"solo_records={len(solo_records)}")
+    print(f"stats_games={stats.get('gameCount', 0)}")
+    print(f"stats_players={len(stats.get('players', []))}")
+    print(f"stats_cards={len(stats.get('cardStats', []))}")
 
 
 if __name__ == "__main__":

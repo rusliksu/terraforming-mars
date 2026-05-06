@@ -245,7 +245,7 @@ a:hover { text-decoration: underline; }
 
   <div class="tm-stats-subtitle">Player style</div>
   <table class="tm-stats-table">
-    <thead><tr><th>Player</th><th class="num">Games</th><th class="num">Win %</th><th class="num">Avg VP</th><th class="num">Best VP</th><th class="num">Cards</th><th class="num">Events</th><th class="num">Blue</th><th class="num">Green</th><th class="num">Cities</th><th class="num">Greeneries</th></tr></thead>
+    <thead><tr><th>Player</th><th class="num" title="Detailed stat games / ELO games when ELO has older games without card snapshots">Detailed / ELO</th><th class="num">Win %</th><th class="num">Avg VP</th><th class="num">Best VP</th><th class="num">Cards</th><th class="num">Events</th><th class="num">Blue</th><th class="num">Green</th><th class="num">Cities</th><th class="num">Greeneries</th></tr></thead>
     <tbody id="tmStatsPlayersBody"></tbody>
   </table>
 
@@ -939,16 +939,34 @@ function renderStatsOverview() {
   var records = stats.records || [];
   var generated = stats.generatedAt ? formatGameDate({date: stats.generatedAt}) : "";
   var items = [
-    ["Games", stats.gameCount || 0],
+    ["Detailed games", stats.gameCount || 0, "Completed multiplayer games available for detailed stats"],
     ["Player-games", stats.playerGameCount || 0],
+    ["ELO games", _data && _data.games ? getVisibleGames().length : "-", "Rated games in the ELO history"],
     ["Players", players.length],
     ["Project cards", cards.length],
   ];
   if (generated) items.push(["Generated", generated]);
   if (records.length) items.push(["Records", records.length]);
   el.innerHTML = items.map(function(item) {
-    return "<div class=\"tm-stats-card\"><div class=\"label\">" + esc(item[0]) + "</div><div class=\"value\">" + esc(item[1]) + "</div></div>";
+    var title = item[2] ? " title=\"" + esc(item[2]) + "\"" : "";
+    return "<div class=\"tm-stats-card\"" + title + "><div class=\"label\">" + esc(item[0]) + "</div><div class=\"value\">" + esc(item[1]) + "</div></div>";
   }).join("");
+}
+
+function getStatsPlayerEloGames(player) {
+  if (!_data || !_data.players || !player) return null;
+  var key = normalizedPlayerKey(player.name || player.displayName);
+  var eloPlayer = _data.players[key];
+  return eloPlayer && typeof eloPlayer.games === "number" ? eloPlayer.games : null;
+}
+
+function formatStatsGames(player) {
+  var detailedGames = player.games || 0;
+  var eloGames = getStatsPlayerEloGames(player);
+  if (!eloGames || eloGames === detailedGames) {
+    return esc(detailedGames);
+  }
+  return esc(detailedGames) + " <span class=\"muted\">/ " + esc(eloGames) + " ELO</span>";
 }
 
 function renderGenerationRecords() {
@@ -985,7 +1003,7 @@ function renderStatsPlayers() {
     var playerName = player.displayName || player.name || "-";
     return "<tr>"
       + "<td><span class=\"player-persona " + playerPersonaClass(playerName, player.name) + "\">" + esc(playerName) + "</span></td>"
-      + "<td class=\"num games\">" + esc(player.games || 0) + "</td>"
+      + "<td class=\"num games\">" + formatStatsGames(player) + "</td>"
       + "<td class=\"num\">" + round1(player.winRate || 0) + "%</td>"
       + "<td class=\"num\">" + round1(player.avgVP || 0) + "</td>"
       + "<td class=\"num elo\">" + esc(player.bestVP || 0) + "</td>"

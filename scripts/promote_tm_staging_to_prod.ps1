@@ -165,11 +165,14 @@ fi
 if [ -d "$legacy_prod/logs" ] && [ -z "$(ls -A "$shared_root/logs" 2>/dev/null || true)" ]; then
   rsync -a "$legacy_prod/logs/" "$shared_root/logs/"
 fi
-for data_file in elo-data.json data.json solo-records.json; do
+for data_file in elo-data.json data.json solo-records.json stats.json; do
   if [ -f "$legacy_prod/elo/$data_file" ] && [ ! -e "$shared_root/elo/$data_file" ]; then
     cp "$legacy_prod/elo/$data_file" "$shared_root/elo/$data_file"
   fi
 done
+if [ ! -e "$shared_root/elo/stats.json" ]; then
+  printf '{"generatedAt":null,"gameCount":0,"playerGameCount":0,"players":[],"generationRecords":[],"records":[],"cardStats":[]}\n' > "$shared_root/elo/stats.json"
+fi
 
 if [ -L "$prod_current" ]; then
   previous_current="$(readlink -f "$prod_current" || true)"
@@ -242,6 +245,7 @@ ln -sfn "$shared_root/logs" "$new_release_dir/logs"
 ln -sfn "$shared_root/elo/elo-data.json" "$new_release_dir/elo/elo-data.json"
 ln -sfn "$shared_root/elo/data.json" "$new_release_dir/elo/data.json"
 ln -sfn "$shared_root/elo/solo-records.json" "$new_release_dir/elo/solo-records.json"
+ln -sfn "$shared_root/elo/stats.json" "$new_release_dir/elo/stats.json"
 ln -sfn "$deps_dir/node_modules" "$new_release_dir/node_modules"
 
 scripts_dir="/home/openclaw/scripts"

@@ -166,6 +166,27 @@ $elo = Invoke-WebRequest -Uri "$Server/elo/" -Headers @{"Cache-Control"="no-cach
 Assert-True ($elo.StatusCode -eq 200) "ELO page returned $($elo.StatusCode), expected 200."
 Assert-True ($elo.Content -match "TM ELO Ratings") "ELO page content check failed."
 
+$statsResult = $null
+if ($elo.Content -match 'data-mode="stats"') {
+    $stats = Invoke-WebRequest -Uri "$Server/elo/stats.json" -Headers @{"Cache-Control"="no-cache"} -TimeoutSec 30
+    Assert-True ($stats.StatusCode -eq 200) "ELO stats returned $($stats.StatusCode), expected 200."
+    try {
+        $statsJson = $stats.Content | ConvertFrom-Json
+    } catch {
+        throw "ELO stats JSON parse failed: $($_.Exception.Message)"
+    }
+    Assert-True ($null -ne $statsJson.players) "ELO stats JSON is missing players."
+    Assert-True ($null -ne $statsJson.generationRecords) "ELO stats JSON is missing generationRecords."
+    Assert-True ($null -ne $statsJson.records) "ELO stats JSON is missing records."
+    Assert-True ($null -ne $statsJson.cardStats) "ELO stats JSON is missing cardStats."
+    $statsResult = [pscustomobject]@{
+        status = $stats.StatusCode
+        gameCount = [int]$statsJson.gameCount
+        playerGameCount = [int]$statsJson.playerGameCount
+        cardCount = @($statsJson.cardStats).Count
+    }
+}
+
 $releaseManifestInfo = $null
 $releaseManifest = $null
 try {
@@ -222,6 +243,7 @@ $result = [pscustomobject]@{
         status = $elo.StatusCode
         titleMatched = ($elo.Content -match "TM ELO Ratings")
     }
+    stats = $statsResult
     release = if ($null -eq $releaseManifest) {
         $null
     } else {
@@ -246,6 +268,9 @@ Write-Host "$($Environment.Substring(0,1).ToUpper() + $Environment.Substring(1))
 Write-Host "Server      : $($result.server)"
 Write-Host "Home        : $($result.home.status) X-TM-Env=$($result.home.env) badge=$($result.home.hasBadge)"
 Write-Host "ELO         : $($result.elo.status) title matched"
+if ($null -ne $result.stats) {
+    Write-Host "Stats       : $($result.stats.status) games=$($result.stats.gameCount) playerGames=$($result.stats.playerGameCount) cards=$($result.stats.cardCount)"
+}
 if ($null -ne $result.release) {
     Write-Host "Release     : sha256=$($result.release.artifactSha256) git=$($result.release.gitSha)"
 }

@@ -344,6 +344,36 @@ def infer_solo_win_from_game_state(game_state: dict) -> bool | None:
     return generation <= last_solo_generation(options)
 
 
+def load_latest_game_states(cur: sqlite3.Cursor, game_ids: List[str]) -> tuple[Dict[str, dict], Dict[str, List[dict]]]:
+    latest_game_by_game: Dict[str, dict] = {}
+    latest_players_by_game: Dict[str, List[dict]] = {}
+
+    for game_id in sorted(set(game_ids)):
+        cur.execute(
+            """
+            SELECT game
+            FROM games
+            WHERE game_id = ?
+            ORDER BY save_id DESC
+            LIMIT 1
+            """,
+            (game_id,),
+        )
+        row = cur.fetchone()
+        if row is None or not row[0]:
+            continue
+        try:
+            game_state = json.loads(row[0])
+        except Exception:
+            continue
+        latest_game_by_game[game_id] = game_state
+        players = game_state.get("players")
+        if isinstance(players, list):
+            latest_players_by_game[game_id] = players
+
+    return latest_game_by_game, latest_players_by_game
+
+
 def fetch_finished_games() -> List[dict]:
     conn = sqlite3.connect(str(DB_PATH))
     cur = conn.cursor()
@@ -367,23 +397,7 @@ def fetch_finished_games() -> List[dict]:
         """
     )
     rows = cur.fetchall()
-
-    latest_game_by_game: Dict[str, dict] = {}
-    latest_players_by_game: Dict[str, List[dict]] = {}
-    cur.execute(
-        "SELECT game_id, game FROM games ORDER BY save_id DESC"
-    )
-    for game_id, game_json in cur.fetchall():
-        if game_id in latest_game_by_game or not game_json:
-            continue
-        try:
-            game_state = json.loads(game_json)
-        except Exception:
-            continue
-        latest_game_by_game[game_id] = game_state
-        players = game_state.get("players")
-        if isinstance(players, list):
-            latest_players_by_game[game_id] = players
+    _, latest_players_by_game = load_latest_game_states(cur, [row[0] for row in rows])
 
     conn.close()
 
@@ -473,23 +487,7 @@ def fetch_solo_records() -> List[dict]:
         """
     )
     rows = cur.fetchall()
-
-    latest_game_by_game: Dict[str, dict] = {}
-    latest_players_by_game: Dict[str, List[dict]] = {}
-    cur.execute(
-        "SELECT game_id, game FROM games ORDER BY save_id DESC"
-    )
-    for game_id, game_json in cur.fetchall():
-        if game_id in latest_game_by_game or not game_json:
-            continue
-        try:
-            game_state = json.loads(game_json)
-        except Exception:
-            continue
-        latest_game_by_game[game_id] = game_state
-        players = game_state.get("players")
-        if isinstance(players, list):
-            latest_players_by_game[game_id] = players
+    latest_game_by_game, latest_players_by_game = load_latest_game_states(cur, [row[0] for row in rows])
 
     conn.close()
 

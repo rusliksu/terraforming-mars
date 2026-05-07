@@ -111,6 +111,50 @@ def main() -> None:
                 ],
             },
         },
+        {
+            "_key": "g-score-only",
+            "gameId": "g-score-only",
+            "server": "knightbyte",
+            "generation": 9,
+            "playerCount": 2,
+            "results": [
+                {
+                    "name": "gydro",
+                    "displayName": "GydRo",
+                    "place": 1,
+                    "vp": 150,
+                    "corp": "Teractor",
+                    "score": {
+                        "playerScore": 150,
+                        "victoryPointsBreakdown": {
+                            "terraformRating": 45,
+                            "victoryPoints": 45,
+                            "greenery": 12,
+                            "city": 8,
+                        },
+                    },
+                    "snapshot": {},
+                },
+                {
+                    "name": "рав",
+                    "displayName": "Рав",
+                    "place": 2,
+                    "vp": 100,
+                    "corp": "Inventrix",
+                    "score": {
+                        "playerScore": 100,
+                        "victoryPointsBreakdown": {
+                            "terraformRating": 38,
+                            "victoryPoints": 18,
+                            "greenery": 8,
+                            "city": 6,
+                        },
+                    },
+                    "snapshot": {},
+                },
+            ],
+            "board": {},
+        },
     ]
     elo_games = [
         {
@@ -123,13 +167,18 @@ def main() -> None:
     ]
 
     stats = sync.build_stats(games, card_metadata, elo_games)
-    assert stats["gameCount"] == 1
-    assert stats["playerGameCount"] == 2
+    assert stats["gameCount"] == 2
+    assert stats["playerGameCount"] == 4
+    assert stats["detailedGameCount"] == 1
+    assert stats["detailedPlayerGameCount"] == 2
     assert stats["generationRecords"][0]["generation"] == 8
     assert stats["generationRecords"][0]["vp"] == 100
+    assert stats["generationRecords"][1]["generation"] == 9
+    assert stats["generationRecords"][1]["vp"] == 150
 
     gydro = stats["players"][0]
     assert gydro["displayName"] == "GydRo"
+    assert gydro["games"] == 1
     assert gydro["averages"]["playedCards"] == 4
     assert gydro["averages"]["eventCards"] == 1
     assert gydro["averages"]["activeCards"] == 1
@@ -138,6 +187,8 @@ def main() -> None:
     assert gydro["maxProduction"]["mc"] == 30
 
     record_by_key = {record["key"]: record for record in stats["records"]}
+    assert record_by_key["bestVP"]["value"] == 150
+    assert record_by_key["mostCardVP"]["value"] == 45
     assert record_by_key["mostEvents"]["value"] == 1
     assert record_by_key["production:mc"]["value"] == 30
     assert record_by_key["tag:building"]["value"] == 2

@@ -855,6 +855,17 @@ def extract_player_metrics(score: dict, snapshot: dict, board: dict, card_metada
     return metrics
 
 
+def has_player_snapshot(snapshot: dict) -> bool:
+    if not isinstance(snapshot, dict) or not snapshot:
+        return False
+    return bool(snapshot.get("id") or snapshot.get("name") or snapshot.get("playedCards"))
+
+
+def has_detailed_game(game: dict) -> bool:
+    results = game.get("results") or []
+    return bool(results) and all(has_player_snapshot(result.get("snapshot") or {}) for result in results)
+
+
 def fetch_stats_games() -> List[dict]:
     conn = sqlite3.connect(str(DB_PATH))
     cur = conn.cursor()
@@ -1098,10 +1109,26 @@ def build_stats(games: List[dict], card_metadata: Dict[str, dict], elo_games: Li
     elo_delta_lookup = build_elo_delta_lookup(elo_games or [])
 
     competitive_games = [game for game in games if safe_int(game.get("playerCount")) >= 2 and len(game.get("results") or []) >= 2]
+    detailed_games = [game for game in competitive_games if has_detailed_game(game)]
+    detailed_player_game_count = 0
     for game in competitive_games:
         generation = safe_int(game.get("generation"))
         for result in game.get("results") or []:
             metrics = extract_player_metrics(result["score"], result.get("snapshot") or {}, game.get("board") or {}, card_metadata)
+            if 6 <= generation <= 13:
+                current_gen_record = generation_records.get(generation)
+                if current_gen_record is None or metrics["vp"] > current_gen_record.get("vp", 0):
+                    generation_records[generation] = record_context(game, result)
+
+            maybe_update_record(records, "bestVP", "Best VP", "Score", metrics["vp"], game, result)
+            maybe_update_record(records, "mostCardVP", "Most VP on cards", "VP breakdown", metrics["vpBreakdown"]["cards"], game, result)
+            maybe_update_record(records, "mostCityVP", "Most city VP", "VP breakdown", metrics["vpBreakdown"]["city"], game, result)
+            maybe_update_record(records, "mostGreeneryVP", "Most greenery VP", "VP breakdown", metrics["vpBreakdown"]["greenery"], game, result)
+
+            if not has_player_snapshot(result.get("snapshot") or {}):
+                continue
+
+            detailed_player_game_count += 1
             key = result["name"]
             acc = players.setdefault(key, new_player_accumulator(key, result.get("displayName", key)))
             acc["displayName"] = result.get("displayName", acc["displayName"])
@@ -1124,12 +1151,6 @@ def build_stats(games: List[dict], card_metadata: Dict[str, dict], elo_games: Li
             for vp_key, value in metrics["vpBreakdown"].items():
                 acc["vpBreakdownTotals"][vp_key] = acc["vpBreakdownTotals"].get(vp_key, 0) + value
 
-            if 6 <= generation <= 13:
-                current_gen_record = generation_records.get(generation)
-                if current_gen_record is None or metrics["vp"] > current_gen_record.get("vp", 0):
-                    generation_records[generation] = record_context(game, result)
-
-            maybe_update_record(records, "bestVP", "Best VP", "Score", metrics["vp"], game, result)
             maybe_update_record(records, "mostCards", "Most played cards", "Cards", metrics["playedCards"], game, result)
             maybe_update_record(records, "mostProjectCards", "Most project cards", "Cards", metrics["projectCards"], game, result)
             maybe_update_record(records, "mostEvents", "Most events", "Cards", metrics["eventCards"], game, result)
@@ -1137,9 +1158,6 @@ def build_stats(games: List[dict], card_metadata: Dict[str, dict], elo_games: Li
             maybe_update_record(records, "mostAutomatedCards", "Most green cards", "Cards", metrics["automatedCards"], game, result)
             maybe_update_record(records, "mostCities", "Most cities", "Board", metrics["cities"], game, result)
             maybe_update_record(records, "mostGreeneries", "Most greeneries", "Board", metrics["greeneries"], game, result)
-            maybe_update_record(records, "mostCardVP", "Most VP on cards", "VP breakdown", metrics["vpBreakdown"]["cards"], game, result)
-            maybe_update_record(records, "mostCityVP", "Most city VP", "VP breakdown", metrics["vpBreakdown"]["city"], game, result)
-            maybe_update_record(records, "mostGreeneryVP", "Most greenery VP", "VP breakdown", metrics["vpBreakdown"]["greenery"], game, result)
 
             for resource, value in metrics["production"].items():
                 maybe_update_record(records, f"production:{resource}", f"Highest {RESOURCE_LABELS[resource]}", "Production", value, game, result)
@@ -1186,6 +1204,8 @@ def build_stats(games: List[dict], card_metadata: Dict[str, dict], elo_games: Li
         "source": "tm-sync-elo",
         "gameCount": len(competitive_games),
         "playerGameCount": sum(len(game.get("results") or []) for game in competitive_games),
+        "detailedGameCount": len(detailed_games),
+        "detailedPlayerGameCount": detailed_player_game_count,
         "players": finalize_player_stats(players),
         "generationRecords": generation_records_list,
         "records": sorted(records.values(), key=lambda record: (record["category"], record["label"])),

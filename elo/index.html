@@ -938,9 +938,12 @@ function renderStatsOverview() {
   var players = stats.players || [];
   var records = stats.records || [];
   var generated = stats.generatedAt ? formatGameDate({date: stats.generatedAt}) : "";
+  var detailedGames = typeof stats.detailedGameCount === "number" ? stats.detailedGameCount : (stats.gameCount || 0);
+  var detailedPlayerGames = typeof stats.detailedPlayerGameCount === "number" ? stats.detailedPlayerGameCount : (stats.playerGameCount || 0);
   var items = [
-    ["Detailed games", stats.gameCount || 0, "Completed multiplayer games available for detailed stats"],
-    ["Player-games", stats.playerGameCount || 0],
+    ["Competitive games", stats.gameCount || 0, "Completed multiplayer games with scores"],
+    ["Detailed games", detailedGames, "Competitive games with final player snapshots for card and style stats"],
+    ["Detailed player-games", detailedPlayerGames, "Player results with final snapshots"],
     ["ELO games", _data && _data.games ? getVisibleGames().length : "-", "Rated games in the ELO history"],
     ["Players", players.length],
     ["Project cards", cards.length],

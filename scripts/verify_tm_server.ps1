@@ -188,6 +188,8 @@ if ($elo.Content -match 'data-mode="stats"') {
         status = $stats.StatusCode
         gameCount = [int]$statsJson.gameCount
         playerGameCount = [int]$statsJson.playerGameCount
+        detailedGameCount = [int]($statsJson.detailedGameCount ?? $statsJson.gameCount)
+        detailedPlayerGameCount = [int]($statsJson.detailedPlayerGameCount ?? $statsJson.playerGameCount)
         cardCount = @($statsJson.cardStats).Count
     }
 }
@@ -275,7 +277,7 @@ Write-Host "Server      : $($result.server)"
 Write-Host "Home        : $($result.home.status) X-TM-Env=$($result.home.env) badgeShown=$($result.home.badgeShown)"
 Write-Host "ELO         : $($result.elo.status) title matched"
 if ($null -ne $result.stats) {
-    Write-Host "Stats       : $($result.stats.status) games=$($result.stats.gameCount) playerGames=$($result.stats.playerGameCount) cards=$($result.stats.cardCount)"
+    Write-Host "Stats       : $($result.stats.status) games=$($result.stats.gameCount) detailed=$($result.stats.detailedGameCount) playerGames=$($result.stats.playerGameCount) detailedPlayerGames=$($result.stats.detailedPlayerGameCount) cards=$($result.stats.cardCount)"
 }
 if ($null -ne $result.release) {
     Write-Host "Release     : sha256=$($result.release.artifactSha256) git=$($result.release.gitSha)"

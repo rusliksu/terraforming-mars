@@ -32,6 +32,8 @@ type EloPageData = {
 type EloStatsData = {
   gameCount: number;
   playerGameCount: number;
+  detailedGameCount?: number;
+  detailedPlayerGameCount?: number;
   players: Array<{
     name: string;
     displayName: string;
@@ -514,6 +516,8 @@ describe('ELO page', () => {
     }, {
       gameCount: 1,
       playerGameCount: 2,
+      detailedGameCount: 1,
+      detailedPlayerGameCount: 2,
       players: [
         {
           name: 'gydro',
@@ -579,7 +583,7 @@ describe('ELO page', () => {
     expect(statsTab).not.eq(undefined);
     statsTab?.click();
 
-    expect(getCells(document, '#tmStatsOverview .value').slice(0, 4)).deep.eq(['1', '2', '1', '1']);
+    expect(getCells(document, '#tmStatsOverview .value').slice(0, 4)).deep.eq(['1', '1', '2', '1']);
     expect(getCells(document, '#tmStatsGenerationBody tr:first-child td')).deep.eq(['8', 'GydRo', '100', 'Teractor', 'stats-game']);
     expect(getCells(document, '#tmStatsPlayersBody tr:first-child td')).deep.eq(['GydRo', '1 / 5 ELO', '100%', '100', '100', '12', '2', '3', '5', '2', '4']);
     expect(getCells(document, '#tmStatsRecordsBody tr:first-child td')).deep.eq(['Cards · Most events', '7', 'GydRo', 'Gen 8 · 100 VP · Teractor', 'stats-game']);

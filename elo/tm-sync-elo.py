@@ -56,7 +56,7 @@ CARD_SOURCE_ROOTS = [
 
 DEFAULT_ELO = 1500
 BASE_K = 32
-MAX_TIMING_RECORD_DURATION_SECONDS = 12 * 60 * 60
+MAX_TIMING_RECORD_DURATION_SECONDS = 2 * 60 * 60
 
 TEST_NAMES = {"testa", "testb", "testc", "test", "bot"}
 SOLO_BOT_NAMES = TEST_NAMES | {"botsmoke"}
@@ -801,6 +801,13 @@ def normalize_card_resource_type(value: object) -> str:
     return str(value or "").strip()
 
 
+def extract_timer_seconds(snapshot: dict) -> int:
+    timer = snapshot.get("timer") or {}
+    if not isinstance(timer, dict):
+        return 0
+    return max(0, round(safe_int(timer.get("sumElapsed")) / 1000))
+
+
 def extract_vp_breakdown(score: dict) -> dict:
     breakdown = score.get("victoryPointsBreakdown") or {}
     return {
@@ -904,10 +911,14 @@ def extract_player_metrics(score: dict, snapshot: dict, board: dict, card_metada
         resource: safe_int(snapshot.get(source_key))
         for resource, source_key in RESOURCE_AMOUNT_KEYS.items()
     }
+    timer_seconds = extract_timer_seconds(snapshot)
+    actions_taken = safe_int(snapshot.get("actionsTakenThisGame"))
     metrics = {
         "vp": safe_int(score.get("playerScore")),
         "terraformRating": safe_int(snapshot.get("terraformRating")),
-        "actionsTaken": safe_int(snapshot.get("actionsTakenThisGame")),
+        "actionsTaken": actions_taken,
+        "timerSeconds": timer_seconds,
+        "secondsPerAction": timer_seconds / actions_taken if timer_seconds > 0 and actions_taken > 0 else 0,
         "vpBreakdown": extract_vp_breakdown(score),
         "production": production,
         "totalNonMcProduction": sum(value for resource, value in production.items() if resource != "mc"),
@@ -1103,6 +1114,9 @@ def new_player_accumulator(name: str, display_name: str) -> dict:
         "productionTotals": {resource: 0 for resource in RESOURCE_PRODUCTION_KEYS},
         "maxProduction": {resource: 0 for resource in RESOURCE_PRODUCTION_KEYS},
         "vpBreakdownTotals": {},
+        "timingGames": 0,
+        "timerSecondsValues": [],
+        "secondsPerActionValues": [],
     }
 
 
@@ -1155,6 +1169,8 @@ def maybe_update_record(
 def format_duration(seconds: int) -> str:
     if seconds <= 0:
         return ""
+    if seconds < 60:
+        return "<1m"
     hours = seconds // 3600
     minutes = (seconds % 3600) // 60
     if hours:
@@ -1166,10 +1182,27 @@ def format_seconds_per_action(value: float) -> str:
     return f"{round1(value)} sec/action"
 
 
+def trimmed_mean(values: List[float]) -> float | None:
+    if not values:
+        return None
+    sorted_values = sorted(values)
+    trim = int(len(sorted_values) * 0.1)
+    if trim > 0 and len(sorted_values) > trim * 2:
+        sorted_values = sorted_values[trim:-trim]
+    return sum(sorted_values) / len(sorted_values)
+
+
 def finalize_player_stats(players: Dict[str, dict]) -> List[dict]:
     finalized: List[dict] = []
     for acc in players.values():
         games = acc["games"] or 1
+        avg_timer_seconds = trimmed_mean(acc["timerSecondsValues"])
+        avg_seconds_per_action = trimmed_mean(acc["secondsPerActionValues"])
+        timing = {
+            "games": acc["timingGames"],
+            "avgTimeSeconds": round1(avg_timer_seconds) if avg_timer_seconds is not None else 0,
+            "avgSecondsPerAction": round1(avg_seconds_per_action) if avg_seconds_per_action is not None else 0,
+        }
         finalized.append(
             {
                 "name": acc["name"],
@@ -1187,6 +1220,7 @@ def finalize_player_stats(players: Dict[str, dict]) -> List[dict]:
                 "avgProduction": {resource: round1(value / games) for resource, value in acc["productionTotals"].items()},
                 "maxProduction": acc["maxProduction"],
                 "avgVPBreakdown": {key: round1(value / games) for key, value in acc["vpBreakdownTotals"].items()},
+                "timing": timing,
             }
         )
     finalized.sort(key=lambda player: (-player["games"], -player["avgVP"], player["displayName"]))
@@ -1266,9 +1300,10 @@ def build_stats(games: List[dict], card_metadata: Dict[str, dict], elo_games: Li
         created_time = safe_int(game.get("createdTime"))
         duration_seconds = completed_time - created_time if completed_time > 0 and created_time > 0 and completed_time > created_time else 0
         total_actions = sum(safe_int((result.get("snapshot") or {}).get("actionsTakenThisGame")) for result in game.get("results") or [])
-        if 0 < duration_seconds <= MAX_TIMING_RECORD_DURATION_SECONDS:
+        timing_game = 0 < duration_seconds <= MAX_TIMING_RECORD_DURATION_SECONDS
+        if timing_game:
             maybe_update_record(records, "longestGameDuration", "Longest game duration", "Timing", duration_seconds, game, winner, format_duration(duration_seconds))
-        if 0 < duration_seconds <= MAX_TIMING_RECORD_DURATION_SECONDS and total_actions > 0:
+        if timing_game and total_actions > 0:
             seconds_per_action = duration_seconds / total_actions
             maybe_update_record(records, "fastestSecondsPerAction", "Fastest sec/action", "Timing", seconds_per_action, game, winner, format_seconds_per_action(seconds_per_action), prefer_low=True)
 
@@ -1309,6 +1344,11 @@ def build_stats(games: List[dict], card_metadata: Dict[str, dict], elo_games: Li
                 acc["maxProduction"][resource] = max(acc["maxProduction"][resource], value)
             for vp_key, value in metrics["vpBreakdown"].items():
                 acc["vpBreakdownTotals"][vp_key] = acc["vpBreakdownTotals"].get(vp_key, 0) + value
+            if timing_game and metrics["timerSeconds"] > 0 and metrics["actionsTaken"] > 0:
+                acc["timingGames"] += 1
+                acc["timerSecondsValues"].append(metrics["timerSeconds"])
+                acc["secondsPerActionValues"].append(metrics["secondsPerAction"])
+                maybe_update_record(records, "fastestPlayerSecondsPerAction", "Fastest player sec/action", "Timing", metrics["secondsPerAction"], game, result, format_seconds_per_action(metrics["secondsPerAction"]), prefer_low=True)
 
             maybe_update_record(records, "mostCards", "Most played cards", "Cards", metrics["playedCards"], game, result)
             maybe_update_record(records, "mostProjectCards", "Most project cards", "Cards", metrics["projectCards"], game, result)

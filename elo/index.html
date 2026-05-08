@@ -269,6 +269,18 @@ a:hover { text-decoration: underline; }
     <thead><tr><th>Card</th><th>Type</th><th class="num">Played</th><th class="num">Win %</th><th class="num">Avg VP</th><th class="num">Avg ELO</th><th>Tags</th></tr></thead>
     <tbody id="tmStatsCardsBody"></tbody>
   </table>
+
+  <div class="tm-stats-subtitle">Corporations</div>
+  <table class="tm-stats-table">
+    <thead><tr><th>Corporation</th><th>Type</th><th class="num">Played</th><th class="num">Win %</th><th class="num">Avg VP</th><th class="num">Avg ELO</th><th>Tags</th></tr></thead>
+    <tbody id="tmStatsCorporationsBody"></tbody>
+  </table>
+
+  <div class="tm-stats-subtitle">Preludes</div>
+  <table class="tm-stats-table">
+    <thead><tr><th>Prelude</th><th>Type</th><th class="num">Played</th><th class="num">Win %</th><th class="num">Avg VP</th><th class="num">Avg ELO</th><th>Tags</th></tr></thead>
+    <tbody id="tmStatsPreludesBody"></tbody>
+  </table>
 </div>
 
 <h2 class="rating-only">Matchups</h2>
@@ -1031,9 +1043,10 @@ function renderStatsRecords() {
     var playerName = record.displayName || record.player || "-";
     var context = "Gen " + (record.generation || "-") + " · " + (record.vp || 0) + " VP";
     if (record.corp) context += " · " + record.corp;
+    var value = record.valueText || record.value || 0;
     return "<tr>"
       + "<td><span class=\"muted\">" + esc(record.category || "") + "</span> · " + esc(record.label || record.key || "-") + "</td>"
-      + "<td class=\"num elo\">" + esc(record.value || 0) + "</td>"
+      + "<td class=\"num elo\">" + esc(value) + "</td>"
       + "<td><span class=\"player-persona " + playerPersonaClass(playerName, record.player) + "\">" + esc(playerName) + "</span></td>"
       + "<td class=\"muted\">" + esc(context) + "</td>"
       + "<td>" + statGameLink(record) + "</td>"
@@ -1041,16 +1054,10 @@ function renderStatsRecords() {
   }).join("");
 }
 
-function renderStatsCards() {
-  var body = document.getElementById("tmStatsCardsBody");
-  var cards = ((_tmStats && _tmStats.cardStats) || []).slice();
-  var query = _statsCardSearch.trim().toLowerCase();
+function renderCardStatsRows(bodyId, cards, emptyText, maxRows) {
+  var body = document.getElementById(bodyId);
   cards = cards.filter(function(card) {
-    if ((card.played || 0) < _statsCardMin) return false;
-    if (!query) return true;
-    return String(card.name || "").toLowerCase().indexOf(query) !== -1 ||
-      (card.tags || []).join(" ").toLowerCase().indexOf(query) !== -1 ||
-      String(card.type || "").toLowerCase().indexOf(query) !== -1;
+    return (card.played || 0) > 0;
   });
   cards.sort(function(a, b) {
     var ad = typeof a.avgEloDelta === "number" ? a.avgEloDelta : -999;
@@ -1058,10 +1065,10 @@ function renderStatsCards() {
     return bd - ad || (b.played || 0) - (a.played || 0) || String(a.name).localeCompare(String(b.name));
   });
   if (cards.length === 0) {
-    body.innerHTML = "<tr><td class=\"tm-stats-empty\" colspan=\"7\">No cards match filters</td></tr>";
+    body.innerHTML = "<tr><td class=\"tm-stats-empty\" colspan=\"7\">" + esc(emptyText) + "</td></tr>";
     return;
   }
-  body.innerHTML = cards.slice(0, 80).map(function(card) {
+  body.innerHTML = cards.slice(0, maxRows || 80).map(function(card) {
     var delta = typeof card.avgEloDelta === "number" ? formatMargin(card.avgEloDelta) : "-";
     return "<tr>"
       + "<td>" + esc(card.name || "-") + "</td>"
@@ -1073,6 +1080,20 @@ function renderStatsCards() {
       + "<td class=\"muted\">" + esc((card.tags || []).join(", ") || "-") + "</td>"
       + "</tr>";
   }).join("");
+}
+
+function renderStatsCards() {
+  var query = _statsCardSearch.trim().toLowerCase();
+  var projectCards = ((_tmStats && _tmStats.cardStats) || []).slice().filter(function(card) {
+    if ((card.played || 0) < _statsCardMin) return false;
+    if (!query) return true;
+    return String(card.name || "").toLowerCase().indexOf(query) !== -1 ||
+      (card.tags || []).join(" ").toLowerCase().indexOf(query) !== -1 ||
+      String(card.type || "").toLowerCase().indexOf(query) !== -1;
+  });
+  renderCardStatsRows("tmStatsCardsBody", projectCards, "No cards match filters", 80);
+  renderCardStatsRows("tmStatsCorporationsBody", ((_tmStats && _tmStats.corporationStats) || []).slice(), "No corporation stats yet", 80);
+  renderCardStatsRows("tmStatsPreludesBody", ((_tmStats && _tmStats.preludeStats) || []).slice(), "No prelude stats yet", 80);
 }
 
 function renderStats() {

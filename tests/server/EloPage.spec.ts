@@ -29,6 +29,17 @@ type EloPageData = {
   }>;
 };
 
+type EloCardStatsData = Array<{
+  name: string;
+  type: string;
+  tags: Array<string>;
+  played: number;
+  wins: number;
+  winRate: number;
+  avgVP: number;
+  avgEloDelta: number | null;
+}>;
+
 type EloStatsData = {
   gameCount: number;
   playerGameCount: number;
@@ -58,6 +69,7 @@ type EloStatsData = {
     category: string;
     label: string;
     value: number;
+    valueText?: string;
     player: string;
     displayName: string;
     generation: number;
@@ -66,16 +78,9 @@ type EloStatsData = {
     gameId: string;
     server: string;
   }>;
-  cardStats: Array<{
-    name: string;
-    type: string;
-    tags: Array<string>;
-    played: number;
-    wins: number;
-    winRate: number;
-    avgVP: number;
-    avgEloDelta: number | null;
-  }>;
+  cardStats: EloCardStatsData;
+  corporationStats?: EloCardStatsData;
+  preludeStats?: EloCardStatsData;
 };
 
 type JsdomInstance = {
@@ -562,6 +567,20 @@ describe('ELO page', () => {
           gameId: 'stats-game',
           server: 'knightbyte',
         },
+        {
+          key: 'fastestSecondsPerAction',
+          category: 'Timing',
+          label: 'Fastest sec/action',
+          value: 11.4,
+          valueText: '11.4 sec/action',
+          player: 'gydro',
+          displayName: 'GydRo',
+          generation: 8,
+          vp: 100,
+          corp: 'Teractor',
+          gameId: 'stats-game',
+          server: 'knightbyte',
+        },
       ],
       cardStats: [
         {
@@ -573,6 +592,30 @@ describe('ELO page', () => {
           winRate: 66.7,
           avgVP: 96.3,
           avgEloDelta: 4.5,
+        },
+      ],
+      corporationStats: [
+        {
+          name: 'Teractor',
+          type: 'corporation',
+          tags: ['earth'],
+          played: 2,
+          wins: 1,
+          winRate: 50,
+          avgVP: 96,
+          avgEloDelta: 1.5,
+        },
+      ],
+      preludeStats: [
+        {
+          name: 'Applied Science',
+          type: 'prelude',
+          tags: ['wild'],
+          played: 1,
+          wins: 1,
+          winRate: 100,
+          avgVP: 100,
+          avgEloDelta: 13,
         },
       ],
     });
@@ -587,7 +630,10 @@ describe('ELO page', () => {
     expect(getCells(document, '#tmStatsGenerationBody tr:first-child td')).deep.eq(['8', 'GydRo', '100', 'Teractor', 'stats-game']);
     expect(getCells(document, '#tmStatsPlayersBody tr:first-child td')).deep.eq(['GydRo', '1 / 5 ELO', '100%', '100', '100', '12', '2', '3', '5', '2', '4']);
     expect(getCells(document, '#tmStatsRecordsBody tr:first-child td')).deep.eq(['Cards · Most events', '7', 'GydRo', 'Gen 8 · 100 VP · Teractor', 'stats-game']);
+    expect(getCells(document, '#tmStatsRecordsBody tr:nth-child(2) td')).deep.eq(['Timing · Fastest sec/action', '11.4 sec/action', 'GydRo', 'Gen 8 · 100 VP · Teractor', 'stats-game']);
     expect(getCells(document, '#tmStatsCardsBody tr:first-child td')).deep.eq(['Asteroid', 'event', '3', '66.7%', '96.3', '+4.5', 'space, event']);
+    expect(getCells(document, '#tmStatsCorporationsBody tr:first-child td')).deep.eq(['Teractor', 'corporation', '2', '50%', '96', '+1.5', 'earth']);
+    expect(getCells(document, '#tmStatsPreludesBody tr:first-child td')).deep.eq(['Applied Science', 'prelude', '1', '100%', '100', '+13', 'wild']);
 
     dom.window.close();
   });

@@ -25,9 +25,13 @@ def main() -> None:
     sync = load_sync_module()
     card_metadata = {
         "Teractor": {"name": "Teractor", "type": "corporation", "tags": ["earth"]},
-        "Asteroid": {"name": "Asteroid", "type": "event", "tags": ["space", "event"]},
-        "AI Central": {"name": "AI Central", "type": "active", "tags": ["science", "building"]},
-        "Mine": {"name": "Mine", "type": "automated", "tags": ["building"]},
+        "Applied Science": {"name": "Applied Science", "type": "prelude", "tags": ["wild"], "resourceType": "Science"},
+        "Asteroid": {"name": "Asteroid", "type": "event", "tags": ["space", "event"], "cost": 14},
+        "AI Central": {"name": "AI Central", "type": "active", "tags": ["science", "building"], "cost": 21, "resourceType": "Science", "hasRequirements": True},
+        "Mine": {"name": "Mine", "type": "automated", "tags": ["building"], "cost": 4},
+        "Pets": {"name": "Pets", "type": "active", "tags": ["earth", "animal"], "cost": 10, "resourceType": "Animal"},
+        "Floating Habs": {"name": "Floating Habs", "type": "active", "tags": ["venus"], "cost": 5, "resourceType": "Floater"},
+        "Data Archive": {"name": "Data Archive", "type": "active", "tags": [], "cost": 8, "resourceType": "Data"},
         "Inventrix": {"name": "Inventrix", "type": "corporation", "tags": ["science"]},
     }
     games = [
@@ -37,6 +41,8 @@ def main() -> None:
             "server": "knightbyte",
             "generation": 8,
             "playerCount": 2,
+            "createdTime": 100,
+            "completedTime": 1000,
             "results": [
                 {
                     "name": "gydro",
@@ -58,6 +64,14 @@ def main() -> None:
                     "snapshot": {
                         "id": "p1",
                         "name": "GydRo",
+                        "terraformRating": 42,
+                        "actionsTakenThisGame": 10,
+                        "megaCredits": 75,
+                        "steel": 5,
+                        "titanium": 4,
+                        "plants": 9,
+                        "energy": 3,
+                        "heat": 11,
                         "megaCreditProduction": 30,
                         "steelProduction": 3,
                         "titaniumProduction": 2,
@@ -66,9 +80,13 @@ def main() -> None:
                         "heatProduction": 5,
                         "playedCards": [
                             {"name": "Teractor"},
+                            {"name": "Applied Science"},
                             {"name": "Asteroid"},
-                            {"name": "AI Central"},
+                            {"name": "AI Central", "resourceCount": 2},
                             {"name": "Mine"},
+                            {"name": "Pets", "resourceCount": 3},
+                            {"name": "Floating Habs", "resourceCount": 4},
+                            {"name": "Data Archive", "resourceCount": 5},
                         ],
                     },
                 },
@@ -90,6 +108,8 @@ def main() -> None:
                     "snapshot": {
                         "id": "p2",
                         "name": "Рав",
+                        "terraformRating": 35,
+                        "actionsTakenThisGame": 20,
                         "megaCreditProduction": 18,
                         "steelProduction": 1,
                         "titaniumProduction": 1,
@@ -117,6 +137,8 @@ def main() -> None:
             "server": "knightbyte",
             "generation": 9,
             "playerCount": 2,
+            "createdTime": 1,
+            "completedTime": 200000,
             "results": [
                 {
                     "name": "gydro",
@@ -179,9 +201,9 @@ def main() -> None:
     gydro = stats["players"][0]
     assert gydro["displayName"] == "GydRo"
     assert gydro["games"] == 1
-    assert gydro["averages"]["playedCards"] == 4
+    assert gydro["averages"]["playedCards"] == 8
     assert gydro["averages"]["eventCards"] == 1
-    assert gydro["averages"]["activeCards"] == 1
+    assert gydro["averages"]["activeCards"] == 4
     assert gydro["averages"]["automatedCards"] == 1
     assert gydro["avgTags"]["building"] == 2
     assert gydro["maxProduction"]["mc"] == 30
@@ -189,6 +211,20 @@ def main() -> None:
     record_by_key = {record["key"]: record for record in stats["records"]}
     assert record_by_key["bestVP"]["value"] == 150
     assert record_by_key["mostCardVP"]["value"] == 45
+    assert record_by_key["highestTR"]["value"] == 42
+    assert record_by_key["mostNoTagProjectCards"]["value"] == 1
+    assert record_by_key["mostHighCostProjectCards"]["value"] == 1
+    assert record_by_key["mostLowCostProjectCards"]["value"] == 4
+    assert record_by_key["mostRequirementProjectCards"]["value"] == 1
+    assert record_by_key["mostTotalCardResources"]["value"] == 14
+    assert record_by_key["cardResource:Animal"]["value"] == 3
+    assert record_by_key["cardResource:Floater"]["value"] == 4
+    assert record_by_key["cardResource:Data"]["value"] == 5
+    assert record_by_key["mostCardResourceTypes"]["value"] == 4
+    assert record_by_key["stockpile:mc"]["value"] == 75
+    assert record_by_key["totalNonMcProduction"]["value"] == 21
+    assert record_by_key["longestGameDuration"]["valueText"] == "15m"
+    assert record_by_key["fastestSecondsPerAction"]["valueText"] == "30.0 sec/action"
     assert record_by_key["mostEvents"]["value"] == 1
     assert record_by_key["production:mc"]["value"] == 30
     assert record_by_key["tag:building"]["value"] == 2
@@ -198,6 +234,8 @@ def main() -> None:
     assert card_by_name["Asteroid"]["winRate"] == 100
     assert card_by_name["Asteroid"]["avgEloDelta"] == 12
     assert card_by_name["Mine"]["played"] == 2
+    assert {card["name"]: card for card in stats["corporationStats"]}["Teractor"]["played"] == 1
+    assert {card["name"]: card for card in stats["preludeStats"]}["Applied Science"]["played"] == 1
     print("tm stats regressions: OK")
 
 

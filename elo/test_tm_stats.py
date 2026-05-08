@@ -66,6 +66,7 @@ def main() -> None:
                         "name": "GydRo",
                         "terraformRating": 42,
                         "actionsTakenThisGame": 10,
+                        "timer": {"sumElapsed": 600000, "running": False},
                         "megaCredits": 75,
                         "steel": 5,
                         "titanium": 4,
@@ -110,6 +111,7 @@ def main() -> None:
                         "name": "Рав",
                         "terraformRating": 35,
                         "actionsTakenThisGame": 20,
+                        "timer": {"sumElapsed": 300000, "running": False},
                         "megaCreditProduction": 18,
                         "steelProduction": 1,
                         "titaniumProduction": 1,
@@ -137,8 +139,8 @@ def main() -> None:
             "server": "knightbyte",
             "generation": 9,
             "playerCount": 2,
-            "createdTime": 1,
-            "completedTime": 200000,
+            "createdTime": 100,
+            "completedTime": 11000,
             "results": [
                 {
                     "name": "gydro",
@@ -207,6 +209,9 @@ def main() -> None:
     assert gydro["averages"]["automatedCards"] == 1
     assert gydro["avgTags"]["building"] == 2
     assert gydro["maxProduction"]["mc"] == 30
+    assert gydro["timing"]["games"] == 1
+    assert gydro["timing"]["avgTimeSeconds"] == 600
+    assert gydro["timing"]["avgSecondsPerAction"] == 60
 
     record_by_key = {record["key"]: record for record in stats["records"]}
     assert record_by_key["bestVP"]["value"] == 150
@@ -225,6 +230,7 @@ def main() -> None:
     assert record_by_key["totalNonMcProduction"]["value"] == 21
     assert record_by_key["longestGameDuration"]["valueText"] == "15m"
     assert record_by_key["fastestSecondsPerAction"]["valueText"] == "30.0 sec/action"
+    assert record_by_key["fastestPlayerSecondsPerAction"]["valueText"] == "15.0 sec/action"
     assert record_by_key["mostEvents"]["value"] == 1
     assert record_by_key["production:mc"]["value"] == 30
     assert record_by_key["tag:building"]["value"] == 2

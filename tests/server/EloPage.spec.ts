@@ -83,6 +83,23 @@ type EloStatsData = {
   preludeStats?: EloCardStatsData;
 };
 
+type EloSoloRecordsData = {
+  records: Array<{
+    gameId: string;
+    endId?: string;
+    server: string;
+    name: string;
+    displayName: string;
+    soloWin?: boolean;
+    vp: number;
+    generation: number;
+    corp: string;
+    map: string;
+    mode: string;
+    completedTime: number;
+  }>;
+};
+
 type JsdomInstance = {
   window: Window & {close: () => void};
 };
@@ -116,7 +133,18 @@ async function waitForRows(dom: JsdomInstance): Promise<void> {
   throw new Error('Timed out waiting for ELO table rows');
 }
 
-function createEloPage(data: EloPageData, statsData?: EloStatsData): JsdomInstance {
+async function waitForSoloRows(dom: JsdomInstance, count: number): Promise<void> {
+  const deadline = Date.now() + 1000;
+  while (Date.now() < deadline) {
+    if (dom.window.document.querySelectorAll('#soloRecordsBody tr').length >= count) {
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  throw new Error('Timed out waiting for solo records rows');
+}
+
+function createEloPage(data: EloPageData, statsData?: EloStatsData, soloData: EloSoloRecordsData = {records: []}): JsdomInstance {
   const html = fs.readFileSync(path.join(process.cwd(), 'elo', 'index.html'), 'utf8');
   return new JSDOM(html, {
     url: 'https://tm.knightbyte.win/elo/',
@@ -129,7 +157,7 @@ function createEloPage(data: EloPageData, statsData?: EloStatsData): JsdomInstan
         value: (input: string) => {
           const url = String(input);
           if (url.includes('solo-records.json')) {
-            return Promise.resolve({ok: true, json: () => Promise.resolve({records: []})});
+            return Promise.resolve({ok: true, json: () => Promise.resolve(soloData)});
           }
           if (url.includes('stats.json')) {
             return Promise.resolve({ok: Boolean(statsData), json: () => Promise.resolve(statsData)});
@@ -220,6 +248,87 @@ describe('ELO page', () => {
     vpTab?.click();
     expect(getCells(document, '#tbody tr:first-child td')).deep.eq(['1', 'GydRo', '1596', '0.75', '14', '102', '8.9', '+5.2']);
     expect(getCells(document, '#matchupsTable tbody tr:first-child td')).deep.eq(['GydRo', '', '1-0 +1', '1-0 +28']);
+
+    dom.window.close();
+  });
+
+  it('keeps solo record columns fixed when toggling result filters', async () => {
+    const dom = createEloPage({
+      players: {
+        'genuinegold': {
+          displayName: 'GenuineGold',
+          elo: 1709,
+          elo_vp: 1709,
+          games: 29,
+          avgPlace: 0.79,
+          avgVP: 96,
+          avgGens: 9.3,
+          avgMargin: 2.9,
+        },
+      },
+      games: [],
+    }, undefined, {
+      records: [
+        {
+          gameId: 'g9e52260e16f3',
+          endId: 's-win',
+          server: 'knightbyte',
+          name: 'genuinegold',
+          displayName: 'GenuineGold',
+          soloWin: true,
+          vp: 240,
+          generation: 12,
+          corp: 'Tycho Magnetics',
+          map: 'elysium',
+          mode: 'TR 63 · Venus, Colonies, Prelude, Prelude 2, Turmoil',
+          completedTime: 1778137080,
+        },
+        {
+          gameId: 'g42548fa8e9c5',
+          endId: 's-loss',
+          server: 'knightbyte',
+          name: 'genuinegold',
+          displayName: 'GenuineGold',
+          soloWin: false,
+          vp: 66,
+          generation: 12,
+          corp: 'PhoboLog|Tycho Magnetics',
+          map: 'Hollandia',
+          mode: 'TR 63 · Venus, Colonies, Prelude, Prelude 2, Turmoil',
+          completedTime: 1778057520,
+        },
+      ],
+    });
+
+    await waitForRows(dom);
+    const document = dom.window.document;
+    const soloTab = Array.from(document.querySelectorAll('.tab')).find((tab) => cleanText(tab.textContent) === 'Solo Records') as HTMLElement | undefined;
+    expect(soloTab).not.eq(undefined);
+    soloTab?.click();
+    await waitForSoloRows(dom, 1);
+
+    expect(Array.from(document.querySelectorAll('.solo-table col')).map((col) => col.className)).deep.eq([
+      'solo-col-rank',
+      'solo-col-player',
+      'solo-col-result',
+      'solo-col-vp',
+      'solo-col-gen',
+      'solo-col-corp',
+      'solo-col-mode',
+      'solo-col-date',
+      'solo-col-game',
+    ]);
+    expect(document.querySelector('.solo-table')?.outerHTML).contains('<colgroup>');
+    expect(getCells(document, '#soloRecordsBody tr')).lengthOf(1);
+
+    const allGamesButton = document.querySelector('[data-solo-filter="all"]') as HTMLElement;
+    allGamesButton.click();
+    await waitForSoloRows(dom, 2);
+
+    expect(getCells(document, '#soloRecordsBody tr')).lengthOf(2);
+    expect(document.querySelector('#soloRecordsBody tr:nth-child(2) td:nth-child(6)')?.className).eq('solo-corp');
+    expect(document.querySelector('#soloRecordsBody tr:nth-child(2) td:nth-child(7)')?.className).eq('solo-mode');
+    expect(document.querySelector('#soloRecordsBody tr:nth-child(2) td:nth-child(9)')?.className).eq('solo-game');
 
     dom.window.close();
   });

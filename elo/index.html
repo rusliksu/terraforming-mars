@@ -153,7 +153,18 @@ a:hover { text-decoration: underline; }
 .solo-filter-btn { background: #16213e; color: #888; border: 1px solid #333; border-radius: 6px; padding: 7px 14px; cursor: pointer; font: inherit; transition: all 0.2s; }
 .solo-filter-btn:hover:not(.active) { border-color: #ff6b35; color: #ccc; }
 .solo-filter-btn.active { background: #ff6b35; border-color: #ff6b35; color: #fff; }
-.solo-table { max-width: 960px; }
+.solo-table { max-width: 960px; table-layout: fixed; }
+.solo-col-rank { width: 6%; }
+.solo-col-player { width: 13%; }
+.solo-col-result { width: 7%; }
+.solo-col-vp { width: 5%; }
+.solo-col-gen { width: 5%; }
+.solo-col-corp { width: 17%; }
+.solo-col-mode { width: 22%; }
+.solo-col-date { width: 11%; }
+.solo-col-game { width: 14%; }
+.solo-table th,
+.solo-table td { box-sizing: border-box; }
 .solo-score { color: #2ecc71; font-weight: 700; }
 .solo-result { font-weight: 700; white-space: nowrap; }
 .solo-win { color: #2ecc71; }
@@ -161,7 +172,10 @@ a:hover { text-decoration: underline; }
 .solo-unknown { color: #888; }
 .solo-gen { color: #c4a35a; }
 .solo-mode { color: #888; font-size: 0.9em; }
+.solo-corp,
+.solo-mode { overflow-wrap: anywhere; }
 .solo-date { color: #b8b8b8; white-space: nowrap; }
+.solo-game { white-space: nowrap; }
 .solo-empty { text-align: center; color: #666; padding: 18px; }
 .solo-only { display: none; }
 
@@ -228,6 +242,17 @@ a:hover { text-decoration: underline; }
     <button class="solo-filter-btn" type="button" data-solo-filter="all">All games</button>
   </div>
   <table class="solo-table">
+    <colgroup>
+      <col class="solo-col-rank">
+      <col class="solo-col-player">
+      <col class="solo-col-result">
+      <col class="solo-col-vp">
+      <col class="solo-col-gen">
+      <col class="solo-col-corp">
+      <col class="solo-col-mode">
+      <col class="solo-col-date">
+      <col class="solo-col-game">
+    </colgroup>
     <thead><tr><th class="rank">#</th><th>Player</th><th>Result</th><th>VP</th><th>Gen</th><th>Corporation</th><th>Map / Mode</th><th>Date</th><th>Game</th></tr></thead>
     <tbody id="soloRecordsBody"></tbody>
   </table>
@@ -929,10 +954,10 @@ function renderSoloRecords() {
       + "<td class=\"solo-result " + soloResultClass(record) + "\">" + esc(soloResultText(record)) + "</td>"
       + "<td class=\"solo-score\">" + esc(record.vp || 0) + "</td>"
       + "<td class=\"solo-gen\">" + esc(record.generation || "-") + "</td>"
-      + "<td>" + esc(record.corp || "-") + "</td>"
+      + "<td class=\"solo-corp\">" + esc(record.corp || "-") + "</td>"
       + "<td class=\"solo-mode\">" + esc(formatSoloMode(record)) + "</td>"
       + "<td class=\"solo-date\">" + esc(dateText || "-") + "</td>"
-      + "<td><a href=\"" + getSoloGameUrl(record) + "\" target=\"_blank\">" + esc(record.gameId || "open") + "</a></td>"
+      + "<td class=\"solo-game\"><a href=\"" + getSoloGameUrl(record) + "\" target=\"_blank\">" + esc(record.gameId || "open") + "</a></td>"
       + "</tr>";
   });
   body.innerHTML = html;

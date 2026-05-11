@@ -4,7 +4,10 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import sqlite3
 import sys
+import tempfile
 from pathlib import Path
 
 
@@ -21,8 +24,70 @@ def load_sync_module():
     return module
 
 
+def assert_fetch_stats_games_fills_names_before_bot_filter(sync) -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        db_path = Path(tmp) / "game.db"
+        conn = sqlite3.connect(db_path)
+        conn.executescript(
+            """
+            CREATE TABLE game_results (
+                game_id TEXT PRIMARY KEY,
+                players INTEGER,
+                generations INTEGER,
+                scores TEXT,
+                game_options TEXT
+            );
+            CREATE TABLE completed_game (
+                game_id TEXT PRIMARY KEY,
+                completed_time INTEGER
+            );
+            CREATE TABLE games (
+                game_id TEXT,
+                save_id INTEGER,
+                created_time INTEGER,
+                game TEXT
+            );
+            """
+        )
+        scores = [
+            {"playerName": "", "playerScore": 75, "place": 1, "corporation": "Teractor"},
+            {"playerName": "", "playerScore": 68, "place": 2, "corporation": "Inventrix"},
+        ]
+        snapshot = {
+            "spectatorId": "s-fetch",
+            "players": [
+                {"id": "p1", "name": "Alice", "playedCards": []},
+                {"id": "p2", "name": "Bob", "playedCards": []},
+            ],
+        }
+        conn.execute(
+            "INSERT INTO game_results VALUES (?, ?, ?, ?, ?)",
+            ("g-fetch", 2, 8, json.dumps(scores), json.dumps({"boardName": "Tharsis"})),
+        )
+        conn.execute("INSERT INTO completed_game VALUES (?, ?)", ("g-fetch", 1000))
+        conn.execute(
+            "INSERT INTO games VALUES (?, ?, ?, ?)",
+            ("g-fetch", 1, 100, json.dumps(snapshot)),
+        )
+        conn.commit()
+        conn.close()
+
+        original_db_path = sync.DB_PATH
+        sync.DB_PATH = db_path
+        try:
+            games = sync.fetch_stats_games()
+        finally:
+            sync.DB_PATH = original_db_path
+
+    assert len(games) == 1
+    assert games[0]["results"][0]["displayName"] == "Alice"
+    assert games[0]["results"][1]["displayName"] == "Bob"
+    assert sync.has_detailed_game(games[0])
+
+
 def main() -> None:
     sync = load_sync_module()
+    assert_fetch_stats_games_fills_names_before_bot_filter(sync)
     card_metadata = {
         "Teractor": {"name": "Teractor", "type": "corporation", "tags": ["earth"]},
         "Applied Science": {"name": "Applied Science", "type": "prelude", "tags": ["wild"], "resourceType": "Science"},

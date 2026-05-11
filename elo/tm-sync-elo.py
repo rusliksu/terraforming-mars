@@ -1010,13 +1010,16 @@ def fetch_stats_games() -> List[dict]:
         except Exception:
             continue
 
-        if not scores or is_bot_game(scores):
+        if not scores:
             continue
 
         snapshots = game_state.get("players") if isinstance(game_state.get("players"), list) else []
         for idx, score in enumerate(scores):
             if not (score.get("playerName") or "").strip() and idx < len(snapshots):
                 score["playerName"] = snapshots[idx].get("name", "")
+
+        if is_bot_game(scores):
+            continue
 
         named_scores = [
             (idx, score)

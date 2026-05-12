@@ -144,6 +144,12 @@ def main() -> None:
                         "plantProduction": 7,
                         "energyProduction": 4,
                         "heatProduction": 5,
+                        "globalParameterSteps": {
+                            "temperature": 3,
+                            "oxygen": 2,
+                            "oceans": 1,
+                            "venus": 4,
+                        },
                         "playedCards": [
                             {"name": "Teractor"},
                             {"name": "Applied Science"},
@@ -183,6 +189,12 @@ def main() -> None:
                         "plantProduction": 2,
                         "energyProduction": 1,
                         "heatProduction": 2,
+                        "globalParameterSteps": {
+                            "temperature": 1,
+                            "oxygen": 0,
+                            "oceans": 2,
+                            "venus": 0,
+                        },
                         "playedCards": [
                             {"name": "Inventrix"},
                             {"name": "Mine"},
@@ -272,6 +284,10 @@ def main() -> None:
     assert gydro["averages"]["eventCards"] == 1
     assert gydro["averages"]["activeCards"] == 4
     assert gydro["averages"]["automatedCards"] == 1
+    assert gydro["averages"]["temperature"] == 3
+    assert gydro["averages"]["oxygen"] == 2
+    assert gydro["averages"]["oceans"] == 1
+    assert gydro["averages"]["venus"] == 4
     assert gydro["avgTags"]["building"] == 2
     assert gydro["maxProduction"]["mc"] == 30
     assert gydro["timing"]["games"] == 1

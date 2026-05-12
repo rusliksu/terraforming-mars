@@ -157,6 +157,12 @@ TAG_LABELS = {
 }
 CITY_TILE_TYPES = {2, 3, 20, 37, 43, "city", "capital", "ocean city", "red city", "new holland"}
 GREENERY_TILE_TYPES = {0, 36, "greenery", "wetlands"}
+GLOBAL_PARAMETER_METRICS = [
+    "temperature",
+    "oxygen",
+    "oceans",
+    "venus",
+]
 PLAYER_AVG_METRICS = [
     "playedCards",
     "projectCards",
@@ -166,6 +172,7 @@ PLAYER_AVG_METRICS = [
     "cities",
     "greeneries",
     "ownedTiles",
+    *GLOBAL_PARAMETER_METRICS,
 ]
 
 
@@ -824,6 +831,13 @@ def extract_vp_breakdown(score: dict) -> dict:
     }
 
 
+def extract_global_parameter_steps(snapshot: dict) -> dict:
+    steps = snapshot.get("globalParameterSteps") or {}
+    if not isinstance(steps, dict):
+        steps = {}
+    return {metric: safe_int(steps.get(metric)) for metric in GLOBAL_PARAMETER_METRICS}
+
+
 def extract_card_counts(snapshot: dict, card_metadata: Dict[str, dict]) -> dict:
     played_cards = snapshot.get("playedCards") or []
     counts = {
@@ -923,6 +937,7 @@ def extract_player_metrics(score: dict, snapshot: dict, board: dict, card_metada
         "production": production,
         "totalNonMcProduction": sum(value for resource, value in production.items() if resource != "mc"),
         "resourceAmounts": resource_amounts,
+        **extract_global_parameter_steps(snapshot),
         **{key: card_counts[key] for key in [
             "playedCards",
             "projectCards",

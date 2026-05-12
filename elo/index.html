@@ -181,7 +181,7 @@ a:hover { text-decoration: underline; }
 
 /* Statistics */
 .stats-only { display: none; }
-.tm-stats-section { width: min(1180px, calc(100vw - 40px)); margin: 0 auto 32px; overflow-x: auto; overflow-y: visible; -webkit-overflow-scrolling: touch; }
+.tm-stats-section { width: min(1500px, calc(100vw - 24px)); margin: 0 auto 32px; overflow-x: auto; overflow-y: visible; -webkit-overflow-scrolling: touch; }
 .tm-stats-overview { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 10px; margin: 0 auto 18px; }
 .tm-stats-card { background: #16213e; border: 1px solid #333; border-radius: 8px; padding: 12px; text-align: center; }
 .tm-stats-card .label { color: #888; font-size: 0.78em; text-transform: uppercase; }
@@ -190,6 +190,16 @@ a:hover { text-decoration: underline; }
 .tm-stats-table { max-width: none; width: 100%; min-width: max-content; }
 .tm-stats-table .num { text-align: right; white-space: nowrap; }
 .tm-stats-table .muted { color: #888; font-size: 0.9em; }
+.tm-stats-player-table { table-layout: fixed; min-width: 1260px; }
+.tm-stats-player-table th,
+.tm-stats-player-table td { padding-left: 7px; padding-right: 7px; }
+.tm-stats-player-name { width: 140px; }
+.tm-stats-player-games { width: 90px; }
+.tm-stats-player-narrow { width: 58px; }
+.tm-stats-player-time { width: 64px; }
+.tm-stats-player-action { width: 76px; }
+.tm-stats-player-vertical { width: 48px; height: 86px; padding: 5px 2px; text-align: center; vertical-align: bottom; }
+.tm-stats-player-vertical span { display: inline-block; max-height: 78px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; writing-mode: vertical-rl; transform: rotate(180deg); }
 .tm-stats-controls { display: flex; justify-content: center; gap: 8px; margin: 0 auto 12px; flex-wrap: wrap; }
 .tm-stats-controls input,
 .tm-stats-controls select { background: #16213e; color: #e0e0e0; border: 1px solid #333; border-radius: 6px; padding: 7px 10px; }
@@ -205,9 +215,16 @@ a:hover { text-decoration: underline; }
   .matchups-table .matchups-opponent { height: 96px; }
   .matchups-table .matchups-opponent span { max-height: 88px; }
   .matchups-pair-metrics { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
-  .tm-stats-section { width: calc(100vw - 20px); }
+  .tm-stats-section { width: calc(100vw - 16px); }
   .tm-stats-overview { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
   .tm-stats-table { font-size: 0.78em; }
+  .tm-stats-player-table { min-width: 1120px; }
+  .tm-stats-player-name { width: 112px; }
+  .tm-stats-player-games { width: 78px; }
+  .tm-stats-player-narrow { width: 50px; }
+  .tm-stats-player-time { width: 56px; }
+  .tm-stats-player-action { width: 66px; }
+  .tm-stats-player-vertical { width: 42px; }
 }
 </style>
 </head>
@@ -269,8 +286,8 @@ a:hover { text-decoration: underline; }
   </table>
 
   <div class="tm-stats-subtitle">Player style</div>
-  <table class="tm-stats-table">
-    <thead><tr><th>Player</th><th class="num" title="Detailed stat games / ELO games when ELO has older games without card snapshots">Detailed / ELO</th><th class="num" title="Timing games under 2 hours / detailed stat games">Timing</th><th class="num" title="Trimmed mean personal player timer; games over 2 hours are excluded">Time</th><th class="num" title="Trimmed mean personal timer per action; games over 2 hours are excluded">Sec/action</th><th class="num">Win %</th><th class="num">Avg VP</th><th class="num">Best VP</th><th class="num">Cards</th><th class="num">Events</th><th class="num">Blue</th><th class="num">Green</th><th class="num">Cities</th><th class="num">Greeneries</th></tr></thead>
+  <table class="tm-stats-table tm-stats-player-table">
+    <thead><tr><th class="tm-stats-player-name">Player</th><th class="num tm-stats-player-games" title="Detailed stat games / ELO games when ELO has older games without card snapshots">Detailed / ELO</th><th class="num tm-stats-player-narrow" title="Timing games under 2 hours / detailed stat games">Timing</th><th class="num tm-stats-player-time" title="Trimmed mean personal player timer; games over 2 hours are excluded">Time</th><th class="num tm-stats-player-action" title="Trimmed mean personal timer per action; games over 2 hours are excluded">Sec/action</th><th class="num tm-stats-player-narrow">Win %</th><th class="num tm-stats-player-narrow">Avg VP</th><th class="num tm-stats-player-narrow">Best VP</th><th class="num tm-stats-player-vertical" title="Average played cards"><span>Cards</span></th><th class="num tm-stats-player-vertical" title="Average event cards"><span>Events</span></th><th class="num tm-stats-player-vertical" title="Average active blue cards"><span>Blue</span></th><th class="num tm-stats-player-vertical" title="Average automated green cards"><span>Green</span></th><th class="num tm-stats-player-vertical" title="Average cities"><span>Cities</span></th><th class="num tm-stats-player-vertical" title="Average greeneries"><span>Greeneries</span></th><th class="num tm-stats-player-vertical" title="Average temperature steps"><span>Temp</span></th><th class="num tm-stats-player-vertical" title="Average oxygen steps"><span>O2</span></th><th class="num tm-stats-player-vertical" title="Average ocean tiles"><span>Oceans</span></th><th class="num tm-stats-player-vertical" title="Average Venus steps"><span>Venus</span></th></tr></thead>
     <tbody id="tmStatsPlayersBody"></tbody>
   </table>
 
@@ -1054,7 +1071,7 @@ function renderStatsPlayers() {
   var body = document.getElementById("tmStatsPlayersBody");
   var players = ((_tmStats && _tmStats.players) || []).slice();
   if (players.length === 0) {
-    body.innerHTML = "<tr><td class=\"tm-stats-empty\" colspan=\"14\">No player stats yet</td></tr>";
+    body.innerHTML = "<tr><td class=\"tm-stats-empty\" colspan=\"18\">No player stats yet</td></tr>";
     return;
   }
   players.sort(function(a, b) {
@@ -1079,6 +1096,10 @@ function renderStatsPlayers() {
       + "<td class=\"num\">" + round1(avg.automatedCards || 0) + "</td>"
       + "<td class=\"num\">" + round1(avg.cities || 0) + "</td>"
       + "<td class=\"num\">" + round1(avg.greeneries || 0) + "</td>"
+      + "<td class=\"num\">" + round1(avg.temperature || 0) + "</td>"
+      + "<td class=\"num\">" + round1(avg.oxygen || 0) + "</td>"
+      + "<td class=\"num\">" + round1(avg.oceans || 0) + "</td>"
+      + "<td class=\"num\">" + round1(avg.venus || 0) + "</td>"
       + "</tr>";
   }).join("");
 }

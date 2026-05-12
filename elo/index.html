@@ -413,10 +413,22 @@ function getVisibleGames() {
   return games.filter(function(game) { return visibleGameResults(game).length > 0; });
 }
 
-function getGameUrl(game) {
-  var host = game.server === "knightbyte"
+function getGameHost(record) {
+  var source = String((record && record.server) || "").toLowerCase();
+  return source === "knightbyte" || source === "server"
     ? "https://tm.knightbyte.win"
     : "https://terraforming-mars.herokuapp.com";
+}
+
+function getGameServerLabel(game) {
+  var source = String((game && game.server) || "").toLowerCase();
+  if (source === "knightbyte" || source === "server") return "Knightbyte";
+  if (source === "extension") return "Extension";
+  return game.server || "";
+}
+
+function getGameUrl(game) {
+  var host = getGameHost(game);
   var endId = game.endId || game.spectatorId || "";
   if (endId) {
     return host + "/the-end?id=" + endId;
@@ -882,9 +894,7 @@ function renderPlayers() {
 }
 
 function getSoloGameUrl(record) {
-  var host = record.server === "knightbyte" || record.server === "server"
-    ? "https://tm.knightbyte.win"
-    : "https://terraforming-mars.herokuapp.com";
+  var host = getGameHost(record);
   if (record.endId) {
     return host + "/the-end?id=" + record.endId;
   }
@@ -1219,7 +1229,7 @@ function renderGames() {
   toShow.forEach(function(g) {
     var results = visibleGameResults(g).slice().sort(function(a,b) { return a.place - b.place; });
     var genText = g.generation ? ("Gen " + g.generation) : "";
-    var serverText = g.server || "";
+    var serverText = getGameServerLabel(g);
     var dateText = formatGameDate(g);
     var durationText = formatGameDuration(g);
 

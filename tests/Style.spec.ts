@@ -11,7 +11,7 @@ function cssBlock(source: string, selector: string): string {
 }
 
 describe('Styles', () => {
-  it('uses a cool Mars red treatment for the GydRo persona', () => {
+  it('uses a reserved dark purple treatment for the GydRo persona', () => {
     const variables = read('src/styles/variables.less');
     const common = read('src/styles/common.less');
     const board = read('src/styles/board.less');
@@ -19,9 +19,9 @@ describe('Styles', () => {
     const turmoil = read('src/styles/turmoil.less');
     const playerSymbol = read('src/client/utils/playerSymbol.ts');
 
-    expect(variables).to.contain('@player_hydro: rgb(190, 31, 72);');
+    expect(variables).to.contain('@player_hydro: rgb(54, 16, 86);');
     expect(common).to.contain('.player_bg_color_hydro');
-    expect(common).to.contain('#ffe5e8');
+    expect(common).to.contain('#f6e7ff');
     expect(common).not.to.contain('linear-gradient(90deg, @player_hydro, #254ec6)');
     expect(board).to.contain('.board-cube--hydro');
     expect(board).to.contain('content: "♂"');

@@ -79,9 +79,9 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
   {
     color: GYDRO_COLOR,
     name: GYDRO_NAME,
-    colorLabel: 'бордовый',
+    colorLabel: 'тёмно-фиолетовый',
     shortLabel: 'GydRo',
-    title: 'GydRo - reserved burgundy',
+    title: 'GydRo - reserved dark purple',
     aliases: ['gydro', 'руслан', 'ruslan'],
   },
   {

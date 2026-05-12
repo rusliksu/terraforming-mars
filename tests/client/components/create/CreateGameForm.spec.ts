@@ -231,7 +231,7 @@ describe('CreateGameForm', () => {
     expect(secondOptions).not.to.include(`${GENUINE_GOLD_NAME} · золото`);
     expect(secondOptions).to.include(`${EMERALD_RAV_NAME} · изумруд`);
     expect(secondOptions).to.include(`${CATHARSIS_NAME} · рыжий`);
-    expect(secondOptions).to.include(`${GYDRO_NAME} · бордовый`);
+    expect(secondOptions).to.include(`${GYDRO_NAME} · тёмно-фиолетовый`);
     expect(secondOptions).to.include(`${ANTISTRESS_NAME} · тёмно-синий`);
     expect(secondOptions).to.include(`${GAMBIT_GIRL_NAME} · гортензия`);
     expect(secondOptions).to.include(`${PAVEL_TURQUOISE_NAME} · бирюза`);

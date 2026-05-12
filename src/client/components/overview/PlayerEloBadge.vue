@@ -130,10 +130,10 @@ export default defineComponent({
 }
 
 .player-elo-badge--hydro {
-  color: #ffe5e8;
-  border-color: #ff9fb6;
+  color: #f6e7ff;
+  border-color: #9b68df;
   background: rgba(26, 26, 46, 0.78);
-  box-shadow: 0 0 7px rgba(190, 31, 72, 0.38);
+  box-shadow: 0 0 7px rgba(116, 67, 190, 0.42);
 }
 
 .player-elo-badge--saturnstorm {

@@ -26,7 +26,7 @@ const COLOR_CODES: Record<Color, string> = {
   ['gold']: 'rgb(212, 175, 55)',
   ['emerald']: 'rgb(0, 148, 104)',
   ['ginger']: 'rgb(218, 88, 28)',
-  ['hydro']: 'rgb(190, 31, 72)',
+  ['hydro']: 'rgb(54, 16, 86)',
   ['antistress']: 'rgb(29, 58, 116)',
   ['gambit']: 'rgb(111, 164, 205)',
   ['turquoise']: 'rgb(0, 174, 181)',

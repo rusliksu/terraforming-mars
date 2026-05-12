@@ -55,7 +55,7 @@ releases_root="$prod_root/releases"
 new_release_dir=""
 previous_current=""
 active_proxy_port="$prod_port"
-elo_files="index.html audit_player_names.py elo-api.js elo_aliases.py excluded_games.json fix_elo_dupes.py import_gamedb_to_elo.py migrate_elo_nicknames.py player_name_aliases.json tm-sync-elo.py"
+elo_files="index.html audit_player_names.py elo-api.js elo_aliases.py excluded_games.json fix_elo_dupes.py import_gamedb_to_elo.py migrate_elo_nicknames.py player_name_aliases.json player_name_overrides.json tm-sync-elo.py"
 
 wait_for_http() {
   local url="$1"
@@ -253,6 +253,7 @@ mkdir -p "$scripts_dir"
 cp "$new_release_dir/elo/tm-sync-elo.py" "$scripts_dir/tm-sync-elo.py"
 cp "$new_release_dir/elo/elo_aliases.py" "$scripts_dir/elo_aliases.py"
 cp "$new_release_dir/elo/player_name_aliases.json" "$scripts_dir/player_name_aliases.json"
+cp "$new_release_dir/elo/player_name_overrides.json" "$scripts_dir/player_name_overrides.json"
 cp "$new_release_dir/elo/excluded_games.json" "$scripts_dir/excluded_games.json"
 chmod 755 "$scripts_dir/tm-sync-elo.py" "$scripts_dir/elo_aliases.py"
 

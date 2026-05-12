@@ -42,6 +42,11 @@ EXCLUDED_GAMES_PATHS = [
     SCRIPT_DIR / "excluded_games.json",
     ELO_DIR / "excluded_games.json",
 ]
+PLAYER_NAME_OVERRIDES_PATHS = [
+    Path(os.environ["TM_PLAYER_NAME_OVERRIDES_PATH"]) if os.environ.get("TM_PLAYER_NAME_OVERRIDES_PATH") else None,
+    SCRIPT_DIR / "player_name_overrides.json",
+    ELO_DIR / "player_name_overrides.json",
+]
 
 CARD_METADATA_PATHS = [
     Path(os.environ["TM_CARD_METADATA_PATH"]) if os.environ.get("TM_CARD_METADATA_PATH") else None,
@@ -260,6 +265,65 @@ def is_excluded_game(game_id: object, excluded_games: set[str]) -> bool:
     return str(game_id or "") in excluded_games
 
 
+def _player_override_key(value: object) -> str:
+    key = str(value or "").strip()
+    if key.isdigit() or key.startswith("index:"):
+        return key
+    return key.lower()
+
+
+def load_player_name_overrides() -> Dict[str, Dict[str, str]]:
+    overrides: Dict[str, Dict[str, str]] = {}
+    for path in PLAYER_NAME_OVERRIDES_PATHS:
+        if path is None or not path.exists():
+            continue
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if not isinstance(data, dict):
+            continue
+        for game_id, config in data.items():
+            if not game_id or not isinstance(config, dict):
+                continue
+            player_names = config.get("playerNames") or config.get("players") or {}
+            if not isinstance(player_names, dict):
+                continue
+            game_overrides = overrides.setdefault(str(game_id), {})
+            for source, target in player_names.items():
+                target_name = str(target or "").strip()
+                if target_name:
+                    game_overrides[_player_override_key(source)] = target_name
+    return overrides
+
+
+def override_player_name(
+    raw_name: object,
+    game_id: object,
+    player_name_overrides: Dict[str, Dict[str, str]],
+    player_index: int | None = None,
+) -> str:
+    name = str(raw_name or "").strip()
+    game_overrides = player_name_overrides.get(str(game_id or "")) or {}
+    if player_index is not None:
+        for key in (str(player_index), f"index:{player_index}"):
+            if key in game_overrides:
+                return game_overrides[key]
+    return game_overrides.get(_player_override_key(name), name)
+
+
+def apply_player_name_overrides_to_game(game: dict, player_name_overrides: Dict[str, Dict[str, str]]) -> None:
+    game_id = game_id_of(game)
+    if not game_id:
+        return
+    for index, result in enumerate(game.get("results") or []):
+        raw_name = result.get("displayName") or result.get("name") or ""
+        overridden = override_player_name(raw_name, game_id, player_name_overrides, index)
+        key, display = normalize_name(overridden)
+        result["name"] = key
+        result["displayName"] = display
+
+
 def save_elo(data: dict) -> None:
     payload = json.dumps(data, ensure_ascii=False, indent=2)
     for path in ELO_SAVE_PATHS:
@@ -451,6 +515,7 @@ def load_latest_game_states(cur: sqlite3.Cursor, game_ids: List[str]) -> tuple[D
 
 def fetch_finished_games() -> List[dict]:
     excluded_games = load_excluded_games()
+    player_name_overrides = load_player_name_overrides()
     conn = sqlite3.connect(str(DB_PATH))
     cur = conn.cursor()
     cur.execute(
@@ -493,18 +558,23 @@ def fetch_finished_games() -> List[dict]:
         if len(scores) < 2 or is_bot_game(scores):
             continue
 
-        named_scores = [s for s in scores if (s.get("playerName") or "").strip()]
+        named_scores = [
+            (idx, score)
+            for idx, score in enumerate(scores)
+            if (score.get("playerName") or "").strip()
+        ]
         if len(named_scores) < 2:
             continue
 
-        named_scores.sort(key=lambda s: s.get("playerScore", 0), reverse=True)
+        named_scores.sort(key=lambda item: item[1].get("playerScore", 0), reverse=True)
         players = []
-        for i, score in enumerate(named_scores):
+        for i, (original_idx, score) in enumerate(named_scores):
             vp = score.get("playerScore", 0)
             place = i + 1
-            if i > 0 and vp == named_scores[i - 1].get("playerScore", 0):
+            if i > 0 and vp == named_scores[i - 1][1].get("playerScore", 0):
                 place = players[-1]["place"]
-            _, display_name = normalize_name(score.get("playerName", "?"))
+            raw_name = override_player_name(score.get("playerName", "?"), gid, player_name_overrides, original_idx)
+            _, display_name = normalize_name(raw_name)
             players.append(
                 {
                     "name": display_name,
@@ -535,6 +605,7 @@ def fetch_solo_records() -> List[dict]:
     existing_records = load_solo_records_by_game()
     overrides = load_solo_overrides()
     excluded_games = load_excluded_games()
+    player_name_overrides = load_player_name_overrides()
 
     conn = sqlite3.connect(str(DB_PATH))
     cur = conn.cursor()
@@ -599,6 +670,7 @@ def fetch_solo_records() -> List[dict]:
             name_source = "existing" if raw_name else ""
         if not raw_name:
             continue
+        raw_name = override_player_name(raw_name, gid, player_name_overrides, 0)
 
         if raw_name.lower() in SOLO_BOT_NAMES:
             continue
@@ -1042,6 +1114,7 @@ def has_detailed_game(game: dict) -> bool:
 
 def fetch_stats_games() -> List[dict]:
     excluded_games = load_excluded_games()
+    player_name_overrides = load_player_name_overrides()
     conn = sqlite3.connect(str(DB_PATH))
     cur = conn.cursor()
     cur.execute(
@@ -1127,7 +1200,7 @@ def fetch_stats_games() -> List[dict]:
 
         results: List[dict] = []
         for sorted_idx, (original_idx, score) in enumerate(named_scores):
-            raw_name = str(score.get("playerName") or "").strip()
+            raw_name = override_player_name(score.get("playerName"), gid, player_name_overrides, original_idx)
             key, display = normalize_name(raw_name)
             if has_places:
                 place = safe_int(score.get("place"), sorted_idx + 1)
@@ -1666,12 +1739,15 @@ def main() -> None:
 
     elo = load_elo()
     excluded_games = load_excluded_games()
+    player_name_overrides = load_player_name_overrides()
     if excluded_games:
         elo["games"] = [
             game
             for game in elo.get("games", [])
             if not is_excluded_game(game_id_of(game), excluded_games)
         ]
+    for game in elo.get("games", []):
+        apply_player_name_overrides_to_game(game, player_name_overrides)
     existing_keys = {game_id_of(game) for game in elo.get("games", [])}
     db_games = fetch_finished_games()
 

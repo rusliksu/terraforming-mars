@@ -221,6 +221,7 @@ $eloSourceFiles = @(
     "import_gamedb_to_elo.py",
     "migrate_elo_nicknames.py",
     "player_name_aliases.json",
+    "player_name_overrides.json",
     "tm-sync-elo.py"
 )
 $generatedSettingsPath = Join-Path $resolvedSourceRoot "src\\genfiles\\settings.json"
@@ -387,7 +388,7 @@ deps_root="$shared_root/deps"
 dependency_sha="__DEPENDENCY_SHA__"
 new_release_dir=""
 previous_current=""
-elo_files="index.html audit_player_names.py elo-api.js elo_aliases.py excluded_games.json fix_elo_dupes.py import_gamedb_to_elo.py migrate_elo_nicknames.py player_name_aliases.json tm-sync-elo.py"
+elo_files="index.html audit_player_names.py elo-api.js elo_aliases.py excluded_games.json fix_elo_dupes.py import_gamedb_to_elo.py migrate_elo_nicknames.py player_name_aliases.json player_name_overrides.json tm-sync-elo.py"
 
 rollback() {
   if [ -n "$previous_current" ]; then
@@ -498,6 +499,7 @@ if [ "__ENV__" = "prod" ]; then
   cp "$new_release_dir/elo/tm-sync-elo.py" "$scripts_dir/tm-sync-elo.py"
   cp "$new_release_dir/elo/elo_aliases.py" "$scripts_dir/elo_aliases.py"
   cp "$new_release_dir/elo/player_name_aliases.json" "$scripts_dir/player_name_aliases.json"
+  cp "$new_release_dir/elo/player_name_overrides.json" "$scripts_dir/player_name_overrides.json"
   cp "$new_release_dir/elo/excluded_games.json" "$scripts_dir/excluded_games.json"
   chmod 755 "$scripts_dir/tm-sync-elo.py" "$scripts_dir/elo_aliases.py"
 fi

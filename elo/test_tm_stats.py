@@ -154,10 +154,103 @@ def assert_fetch_stats_games_skips_excluded_games(sync) -> None:
     assert [game["_key"] for game in games] == ["g-keep"]
 
 
+def assert_player_name_overrides_apply_per_game(sync) -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        db_path = tmp_path / "game.db"
+        overrides_path = tmp_path / "player_name_overrides.json"
+        conn = sqlite3.connect(db_path)
+        conn.executescript(
+            """
+            CREATE TABLE game_results (
+                game_id TEXT PRIMARY KEY,
+                players INTEGER,
+                generations INTEGER,
+                scores TEXT,
+                game_options TEXT
+            );
+            CREATE TABLE completed_game (
+                game_id TEXT PRIMARY KEY,
+                completed_time INTEGER
+            );
+            CREATE TABLE games (
+                game_id TEXT,
+                save_id INTEGER,
+                created_time INTEGER,
+                game TEXT
+            );
+            """
+        )
+
+        def insert_game(game_id: str, names: list[str]) -> None:
+            scores = [
+                {"playerName": "", "playerScore": 100 - idx, "place": idx + 1, "corporation": "Teractor"}
+                for idx, _ in enumerate(names)
+            ]
+            snapshot = {
+                "spectatorId": f"s-{game_id}",
+                "players": [
+                    {"id": f"p{idx}", "name": name, "playedCards": []}
+                    for idx, name in enumerate(names)
+                ],
+            }
+            conn.execute(
+                "INSERT INTO game_results VALUES (?, ?, ?, ?, ?)",
+                (game_id, len(names), 8, json.dumps(scores), json.dumps({"boardName": "Tharsis"})),
+            )
+            conn.execute("INSERT INTO completed_game VALUES (?, ?)", (game_id, 1000))
+            conn.execute(
+                "INSERT INTO games VALUES (?, ?, ?, ?)",
+                (game_id, 1, 100, json.dumps(snapshot)),
+            )
+
+        insert_game("g-felkner", ["Саша", "Даша"])
+        insert_game("g-alexander", ["Тома", "Саша"])
+        conn.commit()
+        conn.close()
+        overrides_path.write_text(
+            json.dumps(
+                {
+                    "g-felkner": {"playerNames": {"саша": "Фелькнер"}},
+                    "g-alexander": {"playerNames": {"саша": "Александр"}},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+
+        original_db_path = sync.DB_PATH
+        original_override_paths = sync.PLAYER_NAME_OVERRIDES_PATHS
+        sync.DB_PATH = db_path
+        sync.PLAYER_NAME_OVERRIDES_PATHS = [overrides_path]
+        try:
+            games = sync.fetch_stats_games()
+            stored_game = {
+                "_key": "g-felkner",
+                "results": [
+                    {"name": "саша", "displayName": "Саша"},
+                    {"name": "даша", "displayName": "Даша"},
+                ],
+            }
+            sync.apply_player_name_overrides_to_game(stored_game, sync.load_player_name_overrides())
+        finally:
+            sync.DB_PATH = original_db_path
+            sync.PLAYER_NAME_OVERRIDES_PATHS = original_override_paths
+
+    names_by_game = {
+        game["_key"]: [result["displayName"] for result in game["results"]]
+        for game in games
+    }
+    assert names_by_game["g-felkner"] == ["Фелькнер", "Даша"]
+    assert names_by_game["g-alexander"] == ["Тома", "Александр"]
+    assert [result["displayName"] for result in stored_game["results"]] == ["Фелькнер", "Даша"]
+
+
 def main() -> None:
     sync = load_sync_module()
     assert_fetch_stats_games_fills_names_before_bot_filter(sync)
     assert_fetch_stats_games_skips_excluded_games(sync)
+    assert_player_name_overrides_apply_per_game(sync)
     card_metadata = {
         "Teractor": {"name": "Teractor", "type": "corporation", "tags": ["earth"]},
         "Applied Science": {"name": "Applied Science", "type": "prelude", "tags": ["wild"], "resourceType": "Science"},

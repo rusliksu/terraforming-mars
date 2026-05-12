@@ -25,6 +25,10 @@ EXCLUDED_GAMES_PATHS = [
     Path(os.environ["TM_EXCLUDED_GAMES_PATH"]) if os.environ.get("TM_EXCLUDED_GAMES_PATH") else None,
     SCRIPT_DIR / 'excluded_games.json',
 ]
+PLAYER_NAME_OVERRIDES_PATHS = [
+    Path(os.environ["TM_PLAYER_NAME_OVERRIDES_PATH"]) if os.environ.get("TM_PLAYER_NAME_OVERRIDES_PATH") else None,
+    SCRIPT_DIR / 'player_name_overrides.json',
+]
 
 
 def parse_json(raw: Optional[str], fallback: Any) -> Any:
@@ -51,6 +55,50 @@ def load_excluded_games() -> set[str]:
                 if game_id:
                     excluded.add(str(game_id))
     return excluded
+
+
+def player_override_key(value: object) -> str:
+    key = str(value or '').strip()
+    if key.isdigit() or key.startswith('index:'):
+        return key
+    return key.lower()
+
+
+def load_player_name_overrides() -> Dict[str, Dict[str, str]]:
+    overrides: Dict[str, Dict[str, str]] = {}
+    for path in PLAYER_NAME_OVERRIDES_PATHS:
+        if path is None or not path.exists():
+            continue
+        data = parse_json(path.read_text(encoding='utf-8'), {})
+        if not isinstance(data, dict):
+            continue
+        for game_id, config in data.items():
+            if not game_id or not isinstance(config, dict):
+                continue
+            player_names = config.get('playerNames') or config.get('players') or {}
+            if not isinstance(player_names, dict):
+                continue
+            game_overrides = overrides.setdefault(str(game_id), {})
+            for source, target in player_names.items():
+                target_name = str(target or '').strip()
+                if target_name:
+                    game_overrides[player_override_key(source)] = target_name
+    return overrides
+
+
+def override_player_name(
+    raw_name: object,
+    game_id: object,
+    player_name_overrides: Dict[str, Dict[str, str]],
+    player_index: int | None = None,
+) -> str:
+    name = str(raw_name or '').strip()
+    game_overrides = player_name_overrides.get(str(game_id or '')) or {}
+    if player_index is not None:
+        for key in (str(player_index), f'index:{player_index}'):
+            if key in game_overrides:
+                return game_overrides[key]
+    return game_overrides.get(player_override_key(name), name)
 
 
 def safe_int(value: Any) -> Optional[int]:
@@ -129,7 +177,11 @@ def combined_players(scores: Any, game: dict) -> List[Tuple[str, dict, dict]]:
     return players
 
 
-def build_audit(conn: sqlite3.Connection, excluded_games: set[str]) -> Dict[str, dict]:
+def build_audit(
+    conn: sqlite3.Connection,
+    excluded_games: set[str],
+    player_name_overrides: Dict[str, Dict[str, str]],
+) -> Dict[str, dict]:
     snapshots = latest_games(conn)
     rows = conn.execute(
         '''
@@ -153,12 +205,14 @@ def build_audit(conn: sqlite3.Connection, excluded_games: set[str]) -> Dict[str,
         game = snapshots.get(row['game_id'], {})
         players = combined_players(parse_json(row['scores'], []), game)
         normalized_names = []
-        for raw_name, _, _ in players:
-            _, display = normalize_name(raw_name)
+        for index, (raw_name, _, _) in enumerate(players):
+            overridden = override_player_name(raw_name, row['game_id'], player_name_overrides, index)
+            _, display = normalize_name(overridden)
             normalized_names.append(display)
 
         for index, (raw_name, score, player) in enumerate(players):
-            key, display = normalize_name(raw_name)
+            overridden = override_player_name(raw_name, row['game_id'], player_name_overrides, index)
+            key, display = normalize_name(overridden)
             item = audit.setdefault(key, {
                 'name': key,
                 'displayName': display,
@@ -257,7 +311,8 @@ def main() -> int:
     conn = sqlite3.connect(str(db_path))
     conn.row_factory = sqlite3.Row
     excluded_games = set() if args.include_excluded else load_excluded_games()
-    audit = build_audit(conn, excluded_games)
+    player_name_overrides = load_player_name_overrides()
+    audit = build_audit(conn, excluded_games, player_name_overrides)
     requested = split_names(args.names)
 
     players = []

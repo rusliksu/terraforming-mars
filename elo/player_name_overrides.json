@@ -1,0 +1,15 @@
+{
+  "gf172a4ddd557": {
+    "reason": "Sasha in this 2026-04-23 4p game is Felkner, not Alexander.",
+    "playerNames": {
+      "0": "Фелькнер",
+      "саша": "Фелькнер"
+    }
+  },
+  "g5d8e30c9d07b": {
+    "reason": "Sasha in this 2026-05-09 3p game is Alexander.",
+    "playerNames": {
+      "саша": "Александр"
+    }
+  }
+}

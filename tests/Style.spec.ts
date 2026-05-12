@@ -147,6 +147,7 @@ describe('Styles', () => {
     expect(cssBlock(playerHome, '&.colonies-fleet-gold')).to.contain('@player_gold_sprite_filter');
     expect(cssBlock(playerHome, '&.colonies-fleet-emerald')).to.contain('@player_emerald_sprite_filter');
     expect(cssBlock(playerHome, '&.colonies-fleet-hydro')).to.contain('background-position: -490px 0;');
+    expect(cssBlock(playerHome, '&.colonies-fleet-hydro')).to.contain('@player_hydro_fleet_filter @player_persona_fleet_edge_filter');
     expect(cssBlock(playerHome, '&.colonies-fleet-antistress')).to.contain('background-position: -272px 0;');
     expect(cssBlock(playerHome, '&.colonies-fleet-gambit')).to.contain('background-position: -342px 0;');
     expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('background-position: -140px 0;');

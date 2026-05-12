@@ -8,6 +8,8 @@ import {NewGameConfig} from '../../src/common/game/NewGameConfig';
 import {RandomBoardOption} from '../../src/common/boards/RandomBoardOption';
 import {RandomMAOptionType} from '../../src/common/ma/RandomMAOptionType';
 import {SimpleGameModel} from '../../src/common/models/SimpleGameModel';
+import {IGame} from '../../src/server/IGame';
+import {FakeGameLoader} from './FakeGameLoader';
 import {
   GAMBIT_GIRL_COLOR,
   GAMBIT_GIRL_NAME,
@@ -79,6 +81,16 @@ function newGameConfig(players: NewGameConfig['players']): NewGameConfig {
   };
 }
 
+class DelayedAddGameLoader extends FakeGameLoader {
+  public addFinished = false;
+
+  public override async add(game: IGame): Promise<void> {
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    await super.add(game);
+    this.addFinished = true;
+  }
+}
+
 describe('ApiCreateGame', () => {
   let scaffolding: RouteTestScaffolding;
   let req: MockRequest;
@@ -147,6 +159,30 @@ describe('ApiCreateGame', () => {
     const game = await scaffolding.ctx.gameLoader.getGame(model.id);
     expect(game).is.not.undefined;
     expect(game!.players[0].name).eq('Robot');
+  });
+
+  it('waits for player links to be registered before returning', async () => {
+    const gameLoader = new DelayedAddGameLoader();
+    scaffolding.ctx.gameLoader = gameLoader;
+    const post = scaffolding.post(apiCreateGame, res);
+    const emit = Promise.resolve().then(() => {
+      req.emitter.emit('data', JSON.stringify(newGameConfig([{
+        name: 'Robot',
+        color: 'blue',
+        beginner: false,
+        handicap: 0,
+        first: true,
+        isBot: false,
+      }])));
+      req.emitter.emit('end');
+    });
+    await Promise.all(([emit, post]));
+
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(gameLoader.addFinished).is.true;
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.players[0].id);
+    expect(game).is.not.undefined;
   });
 
   it('treats null cloned game id like no cloned game id', async () => {

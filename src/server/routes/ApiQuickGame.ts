@@ -184,20 +184,20 @@ export class ApiQuickGame extends Handler {
     };
   }
 
-  public override get(req: Request, res: Response, ctx: Context): Promise<void> {
+  public override async get(req: Request, res: Response, ctx: Context): Promise<void> {
     const templateName = ctx.url.searchParams.get('template');
     if (!templateName) {
       const templates = this.loadTemplates();
       const names = templates.map((t) => t.name);
       responses.writeJson(res, ctx, {templates: names});
-      return Promise.resolve();
+      return;
     }
 
     const playerCountParam = ctx.url.searchParams.get('players');
     const playerCount = playerCountParam ? parseInt(playerCountParam, 10) : 3;
     if (isNaN(playerCount) || playerCount < 1 || playerCount > 6) {
       responses.badRequest(req, res, 'players must be between 1 and 6');
-      return Promise.resolve();
+      return;
     }
 
     const templates = this.loadTemplates();
@@ -205,7 +205,7 @@ export class ApiQuickGame extends Handler {
     if (!template) {
       const available = templates.map((t) => t.name).join(', ');
       responses.notFound(req, res, 'Template not found: ' + templateName + '. Available: ' + available);
-      return Promise.resolve();
+      return;
     }
 
     try {
@@ -285,7 +285,7 @@ export class ApiQuickGame extends Handler {
 
       const seed = Math.random();
       const game = Game.newInstance(gameId, players, players[firstPlayerIdx], gameOptions, seed, spectatorId);
-      ctx.gameLoader.add(game);
+      await ctx.gameLoader.add(game);
 
       const host = req.headers.host || 'localhost:8081';
       const proto = req.headers['x-forwarded-proto'] || 'http';
@@ -307,6 +307,5 @@ export class ApiQuickGame extends Handler {
     } catch (error) {
       responses.internalServerError(req, res, error);
     }
-    return Promise.resolve();
   }
 }

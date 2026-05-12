@@ -229,7 +229,7 @@ export class ApiCreateGame extends Handler {
             return;
           }
 
-          ctx.gameLoader.add(game);
+          await ctx.gameLoader.add(game);
           // Send Telegram game start notifications
           for (const p of players) {
             if (p.telegramID) {

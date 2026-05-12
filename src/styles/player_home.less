@@ -680,6 +680,19 @@
             box-shadow: 0 0 1px 1px black;
         }
 
+        .ma-score.player_bg_color_red,
+        .ma-score.player_bg_color_green,
+        .ma-score.player_bg_color_blue,
+        .ma-score.player_bg_color_purple,
+        .ma-score.player_bg_color_emerald,
+        .ma-score.player_bg_color_ginger,
+        .ma-score.player_bg_color_hydro,
+        .ma-score.player_bg_color_antistress,
+        .ma-score.player_bg_color_turquoise,
+        .ma-score.player_bg_color_saturnstorm {
+            color: #fff;
+        }
+
         .ma-score.player_bg_color_saturnstorm {
             color: #ffe5e8;
         }
@@ -981,49 +994,35 @@
     }
 
     &.colonies-fleet-gold {
-        background-position: -70px 0;
-        filter: @player_gold_sprite_filter;
+        .colonies-fleet-persona(@player_gold_token_gradient);
     }
 
     &.colonies-fleet-emerald {
-        background-position: -140px 0;
-        filter: @player_emerald_sprite_filter;
+        .colonies-fleet-persona(@player_emerald_token_gradient);
     }
 
     &.colonies-fleet-ginger {
-        background-position: -416px 0;
-        filter: @player_ginger_sprite_filter;
+        .colonies-fleet-persona(@player_ginger_token_gradient);
     }
 
     &.colonies-fleet-hydro {
-        background-position: -490px 0;
-        filter: @player_hydro_fleet_filter @player_persona_fleet_edge_filter;
+        .colonies-fleet-persona(@player_hydro_token_gradient);
     }
 
     &.colonies-fleet-pearl {
-        background-position: -70px 0;
-        filter: @player_pearl_fleet_filter @player_persona_fleet_edge_filter;
+        .colonies-fleet-persona(@player_pearl_token_gradient);
     }
 
     &.colonies-fleet-antistress {
-        background-position: -272px 0;
-        filter: @player_antistress_sprite_filter;
+        .colonies-fleet-persona(@player_antistress_token_gradient);
     }
 
     &.colonies-fleet-gambit {
-        background-position: -342px 0;
-        filter: @player_gambit_sprite_filter;
+        .colonies-fleet-persona(@player_gambit_token_gradient);
     }
 
     &.colonies-fleet-turquoise {
-        background: @player_turquoise_token_gradient;
-        -webkit-mask-image: url(./assets/colony_ships.png);
-        mask-image: url(./assets/colony_ships.png);
-        -webkit-mask-position: -490px 0;
-        mask-position: -490px 0;
-        -webkit-mask-repeat: no-repeat;
-        mask-repeat: no-repeat;
-        filter: @player_persona_fleet_edge_filter;
+        .colonies-fleet-persona(@player_turquoise_token_gradient);
     }
 
     &.colonies-fleet-saturn {
@@ -1050,6 +1049,17 @@
         background-position: -140px 0;
         filter: @player_catseye_fleet_filter @player_persona_fleet_edge_filter;
     }
+}
+
+.colonies-fleet-persona(@gradient) {
+    background: @gradient;
+    -webkit-mask-image: url(./assets/colony_ships.png);
+    mask-image: url(./assets/colony_ships.png);
+    -webkit-mask-position: -490px 0;
+    mask-position: -490px 0;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    filter: @player_persona_fleet_edge_filter;
 }
 
 .colony-cube.board-cube--gold,

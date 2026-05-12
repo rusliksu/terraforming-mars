@@ -395,8 +395,7 @@
 	filter: @player_catseye_sprite_filter drop-shadow(2px 2px 3px black);
 }
 
-.board-space .board-cube--persona,
-.board-cube-coOwner.board-cube--persona {
+.board-cube--persona {
 	background: transparent;
 	border: 0;
 	border-radius: 0;
@@ -404,8 +403,7 @@
 	filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, 0.88));
 }
 
-.board-space .board-cube--persona::before,
-.board-cube-coOwner.board-cube--persona::before {
+.board-cube--persona::before {
 	content: "";
 	position: absolute;
 	left: 3px;
@@ -420,66 +418,64 @@
 		0 2px 2px rgba(0,0,0,.4);
 }
 
-.board-space .board-cube--gold::before,
-.board-cube-coOwner.board-cube--gold::before {
-	background: linear-gradient(135deg, #e7c86b 0%, #b78322 52%, #604000 100%);
+.board-cube--gold.board-cube--persona::before {
+	background: @player_gold_token_gradient;
 }
 
-.board-space .board-cube--emerald::before,
-.board-cube-coOwner.board-cube--emerald::before {
-	background: linear-gradient(135deg, #9dffe3 0%, #0c9b70 52%, #004937 100%);
+.board-cube--emerald.board-cube--persona::before {
+	background: @player_emerald_token_gradient;
 }
 
-.board-space .board-cube--ginger::before,
-.board-cube-coOwner.board-cube--ginger::before {
-	background: linear-gradient(135deg, #ffd39a 0%, #de6d27 52%, #6a1d00 100%);
+.board-cube--ginger.board-cube--persona::before {
+	background: @player_ginger_token_gradient;
 }
 
-.board-space .board-cube--hydro::before,
-.board-cube-coOwner.board-cube--hydro::before {
-	background: linear-gradient(135deg, #caa7ff 0%, @player_hydro 52%, #170021 100%);
+.board-cube--hydro.board-cube--persona::before {
+	background: @player_hydro_token_gradient;
 }
 
-.board-space .board-cube--pearl::before,
-.board-cube-coOwner.board-cube--pearl::before {
-	background: linear-gradient(135deg, #ffffff 0%, @player_pearl 52%, #8097a0 100%);
+.board-cube--pearl.board-cube--persona::before {
+	background: @player_pearl_token_gradient;
 }
 
-.board-space .board-cube--antistress::before,
-.board-cube-coOwner.board-cube--antistress::before {
-	background: linear-gradient(135deg, #8fb0ff 0%, @player_antistress 52%, #020b22 100%);
+.board-cube--antistress.board-cube--persona::before {
+	background: @player_antistress_token_gradient;
 }
 
-.board-space .board-cube--gambit::before,
-.board-cube-coOwner.board-cube--gambit::before {
-	background: linear-gradient(135deg, #f4fbff 0%, @player_gambit 52%, #4a6d9a 100%);
+.board-cube--gambit.board-cube--persona::before {
+	background: @player_gambit_token_gradient;
 }
 
-.board-space .board-cube--turquoise::before,
-.board-cube-coOwner.board-cube--turquoise::before {
+.board-cube--turquoise.board-cube--persona::before,
+.board-cube--turquoise::before {
 	background: @player_turquoise_token_gradient;
 }
 
+.board-cube--saturn.board-cube--persona::before,
 .board-space .board-cube--saturn::before,
 .board-cube-coOwner.board-cube--saturn::before {
 	background: linear-gradient(135deg, #fff2bd 0%, @player_saturn 52%, #8f6120 100%);
 }
 
+.board-cube--saturnrings.board-cube--persona::before,
 .board-space .board-cube--saturnrings::before,
 .board-cube-coOwner.board-cube--saturnrings::before {
 	background: linear-gradient(135deg, #f6ead2 0%, @player_saturnrings 52%, #7c694a 100%);
 }
 
+.board-cube--titan.board-cube--persona::before,
 .board-space .board-cube--titan::before,
 .board-cube-coOwner.board-cube--titan::before {
 	background: linear-gradient(135deg, #ffd696 0%, @player_titan 52%, #6d3f0e 100%);
 }
 
+.board-cube--saturnstorm.board-cube--persona::before,
 .board-space .board-cube--saturnstorm::before,
 .board-cube-coOwner.board-cube--saturnstorm::before {
 	background: linear-gradient(135deg, #ff8fa8 0%, @player_saturnstorm 52%, #5b001b 100%);
 }
 
+.board-cube--catseye.board-cube--persona::before,
 .board-space .board-cube--catseye::before,
 .board-cube-coOwner.board-cube--catseye::before {
 	background: linear-gradient(135deg, #eaff78 0%, @player_catseye 52%, #3a4c00 100%);

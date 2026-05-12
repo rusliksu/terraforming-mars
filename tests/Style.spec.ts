@@ -142,7 +142,7 @@ describe('Styles', () => {
     expect(moonSpace).to.contain('isReservedPlayerColor(this.space.coOwner)');
   });
 
-  it('does not apply board-space offsets to milestone and award owner cubes', () => {
+  it('uses persona cube rendering for milestones, awards, and colony cubes', () => {
     const playerHome = read('src/styles/player_home.less');
     const milestone = read('src/client/components/Milestone.vue');
     const milestones = read('src/client/components/Milestones.vue');
@@ -153,12 +153,13 @@ describe('Styles', () => {
     expect(playerHome).to.contain('.ma-player {\n            margin: 25px 0 0 70px;');
     expect(playerHome).to.contain('.board-cube {\n                margin: 0;');
     for (const component of [milestone, milestones, award, awards, colonySpace]) {
-      expect(component).not.to.contain('isReservedPlayerColor(');
+      expect(component).to.contain('isReservedPlayerColor(');
+      expect(component).to.contain('board-cube--persona');
       expect(component).not.to.contain("' overlay'");
     }
   });
 
-  it('uses sprite-based custom colony fleets with a masked coral Pasha fleet', () => {
+  it('uses unified masked custom colony fleets', () => {
     const playerHome = read('src/styles/player_home.less');
     const board = read('src/styles/board.less');
 
@@ -167,20 +168,19 @@ describe('Styles', () => {
     expect(playerHome).not.to.contain('radial-gradient(ellipse');
     expect(playerHome).not.to.contain('.colonies-fleet-badge');
     expect(playerHome).not.to.contain('content: @glyph');
+    expect(playerHome).to.contain('.colonies-fleet-persona(@gradient)');
     expect(playerHome).to.contain('&.colonies-fleet-gold');
-    expect(cssBlock(playerHome, '&.colonies-fleet-gold')).to.contain('background-position: -70px 0;');
-    expect(cssBlock(playerHome, '&.colonies-fleet-gold')).to.contain('@player_gold_sprite_filter');
-    expect(cssBlock(playerHome, '&.colonies-fleet-emerald')).to.contain('@player_emerald_sprite_filter');
-    expect(cssBlock(playerHome, '&.colonies-fleet-hydro')).to.contain('background-position: -490px 0;');
-    expect(cssBlock(playerHome, '&.colonies-fleet-hydro')).to.contain('@player_hydro_fleet_filter @player_persona_fleet_edge_filter');
-    expect(cssBlock(playerHome, '&.colonies-fleet-pearl')).to.contain('background-position: -70px 0;');
-    expect(cssBlock(playerHome, '&.colonies-fleet-pearl')).to.contain('@player_pearl_fleet_filter @player_persona_fleet_edge_filter');
-    expect(cssBlock(playerHome, '&.colonies-fleet-antistress')).to.contain('background-position: -272px 0;');
-    expect(cssBlock(playerHome, '&.colonies-fleet-gambit')).to.contain('background-position: -342px 0;');
-    expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('background: @player_turquoise_token_gradient;');
-    expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('mask-image: url(./assets/colony_ships.png);');
-    expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('mask-position: -490px 0;');
-    expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('filter: @player_persona_fleet_edge_filter;');
+    expect(cssBlock(playerHome, '&.colonies-fleet-gold')).to.contain('.colonies-fleet-persona(@player_gold_token_gradient);');
+    expect(cssBlock(playerHome, '&.colonies-fleet-emerald')).to.contain('.colonies-fleet-persona(@player_emerald_token_gradient);');
+    expect(cssBlock(playerHome, '&.colonies-fleet-ginger')).to.contain('.colonies-fleet-persona(@player_ginger_token_gradient);');
+    expect(cssBlock(playerHome, '&.colonies-fleet-hydro')).to.contain('.colonies-fleet-persona(@player_hydro_token_gradient);');
+    expect(cssBlock(playerHome, '&.colonies-fleet-pearl')).to.contain('.colonies-fleet-persona(@player_pearl_token_gradient);');
+    expect(cssBlock(playerHome, '&.colonies-fleet-antistress')).to.contain('.colonies-fleet-persona(@player_antistress_token_gradient);');
+    expect(cssBlock(playerHome, '&.colonies-fleet-gambit')).to.contain('.colonies-fleet-persona(@player_gambit_token_gradient);');
+    expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('.colonies-fleet-persona(@player_turquoise_token_gradient);');
+    expect(cssBlock(playerHome, '.colonies-fleet-persona(@gradient)')).to.contain('mask-image: url(./assets/colony_ships.png);');
+    expect(cssBlock(playerHome, '.colonies-fleet-persona(@gradient)')).to.contain('mask-position: -490px 0;');
+    expect(cssBlock(playerHome, '.colonies-fleet-persona(@gradient)')).to.contain('filter: @player_persona_fleet_edge_filter;');
     expect(cssBlock(playerHome, '&.colonies-fleet-saturn')).to.contain('background-position: -70px 0;');
     expect(cssBlock(board, '.board-cube--saturnrings')).to.contain('background: url(./assets/board_icons.png) -72px -91px no-repeat;');
     expect(cssBlock(board, '.board-cube--saturnstorm')).to.contain('background: url(./assets/board_icons.png) -24px -117px no-repeat;');
@@ -298,19 +298,10 @@ describe('Styles', () => {
       expect(block).not.to.contain('linear-gradient');
     }
     expect(cssBlock(playerHome, '.ma-score')).to.contain('color: black;');
-    for (const selector of [
-      '.ma-score.player_bg_color_red',
-      '.ma-score.player_bg_color_blue',
-      '.ma-score.player_bg_color_purple',
-      '.ma-score.player_bg_color_antistress',
-      '.ma-score.player_bg_color_gold',
-      '.ma-score.player_bg_color_emerald',
-      '.ma-score.player_bg_color_pearl',
-      '.ma-score.player_bg_color_gambit',
-      '.ma-score.player_bg_color_turquoise',
-    ]) {
-      expect(playerHome).not.to.contain(selector);
+    for (const selector of ['red', 'green', 'blue', 'purple', 'emerald', 'ginger', 'hydro', 'antistress', 'turquoise', 'saturnstorm']) {
+      expect(playerHome).to.contain(`.ma-score.player_bg_color_${selector}`);
     }
+    expect(playerHome).to.contain('color: #fff;');
     expect(cssBlock(playerHome, '.ma-score.player_bg_color_hydro')).to.contain('color: #f6e7ff;');
     expect(cssBlock(playerHome, '.ma-score.player_bg_color_saturnstorm')).to.contain('color: #ffe5e8;');
   });

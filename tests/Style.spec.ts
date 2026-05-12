@@ -213,12 +213,27 @@ describe('Styles', () => {
     expect(createGame).not.to.contain('background: linear-gradient(90deg, #f7d95b, @player_gold);');
   });
 
-  it('keeps the standard black player at the original medium gray', () => {
+  it('keeps standard player colors at their original palette values', () => {
     const variables = read('src/styles/variables.less');
     const vpChart = read('src/client/components/gameend/VictoryPointChart.vue');
 
+    expect(variables).to.contain('@player_red: rgb(153, 17, 0);');
+    expect(variables).to.contain('@player_yellow: rgb(170, 170, 0);');
+    expect(variables).to.contain('@player_green: rgb(0, 153, 0);');
     expect(variables).to.contain('@player_black: rgb(170, 170, 170);');
+    expect(variables).to.contain('@player_blue: rgb(0, 102, 255);');
+    expect(variables).to.contain('@player_purple: rgb(140, 0, 255);');
+    expect(variables).to.contain('@player_orange: rgb(236, 113, 12);');
+    expect(variables).to.contain('@player_pink: rgb(245, 116, 187);');
+
+    expect(vpChart).to.contain("['red']: 'rgb(153, 17, 0)'");
+    expect(vpChart).to.contain("['yellow']: 'rgb(170, 170, 0)'");
+    expect(vpChart).to.contain("['green']: 'rgb(0, 153, 0)'");
     expect(vpChart).to.contain("['black']: 'rgb(170, 170, 170)'");
+    expect(vpChart).to.contain("['blue']: 'rgb(0, 102, 255)'");
+    expect(vpChart).to.contain("['purple']: 'rgb(140, 0, 255)'");
+    expect(vpChart).to.contain("['orange']: 'rgb(236, 113, 12)'");
+    expect(vpChart).to.contain("['pink']: 'rgb(245, 116, 187)'");
   });
 
   it('does not use distinctive typography for reserved personas', () => {

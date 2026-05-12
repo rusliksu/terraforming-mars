@@ -213,6 +213,7 @@ $packageJsonPath = Join-Path $resolvedSourceRoot "package.json"
 $packageLockPath = Join-Path $resolvedSourceRoot "package-lock.json"
 $eloSourceFiles = @(
     "index.html",
+    "audit_player_names.py",
     "elo-api.js",
     "elo_aliases.py",
     "excluded_games.json",
@@ -386,7 +387,7 @@ deps_root="$shared_root/deps"
 dependency_sha="__DEPENDENCY_SHA__"
 new_release_dir=""
 previous_current=""
-elo_files="index.html elo-api.js elo_aliases.py excluded_games.json fix_elo_dupes.py import_gamedb_to_elo.py migrate_elo_nicknames.py player_name_aliases.json tm-sync-elo.py"
+elo_files="index.html audit_player_names.py elo-api.js elo_aliases.py excluded_games.json fix_elo_dupes.py import_gamedb_to_elo.py migrate_elo_nicknames.py player_name_aliases.json tm-sync-elo.py"
 
 rollback() {
   if [ -n "$previous_current" ]; then

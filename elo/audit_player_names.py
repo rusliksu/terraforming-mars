@@ -21,6 +21,10 @@ from elo_aliases import normalize_name
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 DEFAULT_DB_PATH = SCRIPT_DIR.parent / 'db' / 'game.db'
+EXCLUDED_GAMES_PATHS = [
+    Path(os.environ["TM_EXCLUDED_GAMES_PATH"]) if os.environ.get("TM_EXCLUDED_GAMES_PATH") else None,
+    SCRIPT_DIR / 'excluded_games.json',
+]
 
 
 def parse_json(raw: Optional[str], fallback: Any) -> Any:
@@ -30,6 +34,23 @@ def parse_json(raw: Optional[str], fallback: Any) -> Any:
         return json.loads(raw)
     except json.JSONDecodeError:
         return fallback
+
+
+def load_excluded_games() -> set[str]:
+    excluded: set[str] = set()
+    for path in EXCLUDED_GAMES_PATHS:
+        if path is None or not path.exists():
+            continue
+        data = parse_json(path.read_text(encoding='utf-8'), {})
+        if isinstance(data, list):
+            excluded.update(str(game_id) for game_id in data if game_id)
+        elif isinstance(data, dict):
+            for game_id, config in data.items():
+                if isinstance(config, dict) and config.get('exclude') is False:
+                    continue
+                if game_id:
+                    excluded.add(str(game_id))
+    return excluded
 
 
 def safe_int(value: Any) -> Optional[int]:
@@ -108,7 +129,7 @@ def combined_players(scores: Any, game: dict) -> List[Tuple[str, dict, dict]]:
     return players
 
 
-def build_audit(conn: sqlite3.Connection) -> Dict[str, dict]:
+def build_audit(conn: sqlite3.Connection, excluded_games: set[str]) -> Dict[str, dict]:
     snapshots = latest_games(conn)
     rows = conn.execute(
         '''
@@ -126,6 +147,8 @@ def build_audit(conn: sqlite3.Connection) -> Dict[str, dict]:
 
     audit: Dict[str, dict] = {}
     for row in rows:
+        if str(row['game_id']) in excluded_games:
+            continue
         options = parse_json(row['game_options'], {})
         game = snapshots.get(row['game_id'], {})
         players = combined_players(parse_json(row['scores'], []), game)
@@ -219,6 +242,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--max-games', type=int, default=1, help='Show players with at most this many games')
     parser.add_argument('--context-games', type=int, default=4, help='How many source games to show per player')
     parser.add_argument('--names', action='append', default=[], help='Comma-separated player names to inspect')
+    parser.add_argument('--include-excluded', action='store_true', help='Include games from excluded_games.json')
     parser.add_argument('--limit', type=int, default=50, help='Maximum players to print')
     parser.add_argument('--json', action='store_true', help='Emit JSON')
     return parser.parse_args()
@@ -232,7 +256,8 @@ def main() -> int:
 
     conn = sqlite3.connect(str(db_path))
     conn.row_factory = sqlite3.Row
-    audit = build_audit(conn)
+    excluded_games = set() if args.include_excluded else load_excluded_games()
+    audit = build_audit(conn, excluded_games)
     requested = split_names(args.names)
 
     players = []
@@ -249,10 +274,11 @@ def main() -> int:
         print(json.dumps({
             'players': [serialize_player(item) for item in players[:args.limit]],
             'total': len(players),
+            'excludedGamesSkipped': len(excluded_games),
         }, ensure_ascii=False, indent=2))
         return 0
 
-    print(f'players={len(players)}')
+    print(f'players={len(players)} excluded_games_skipped={len(excluded_games)}')
     for item in players[:args.limit]:
         for line in render_player(item, args.context_games):
             print(line)

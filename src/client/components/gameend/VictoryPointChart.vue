@@ -33,7 +33,7 @@ const COLOR_CODES: Record<Color, string> = {
   ['saturn']: 'rgb(214, 179, 106)',
   ['saturnrings']: 'rgb(200, 181, 138)',
   ['titan']: 'rgb(185, 143, 74)',
-  ['saturnstorm']: 'rgb(86, 26, 120)',
+  ['saturnstorm']: 'rgb(190, 31, 72)',
   ['catseye']: 'rgb(143, 175, 47)',
 
   // Not actual player colors

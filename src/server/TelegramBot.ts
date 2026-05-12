@@ -17,9 +17,11 @@ const COLOR_LABELS: Record<string, string> = {
   gold: 'золотой',
   emerald: 'изумрудный',
   ginger: 'рыжий',
-  hydro: 'марсовый красный',
+  hydro: 'темно-фиолетовый',
   antistress: 'темно-синий',
   gambit: 'голубой',
+  turquoise: 'бирюзовый',
+  saturnstorm: 'красно-розовый',
   neutral: 'нейтральный',
   bronze: 'бронзовый',
 };

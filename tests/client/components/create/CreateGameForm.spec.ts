@@ -205,7 +205,7 @@ describe('CreateGameForm', () => {
       .findAll('option')
       .map((option) => option.text());
 
-    expect(options).to.include(`${TOMA_NAME} · тёмно-фиолетовый`);
+    expect(options).to.include(`${TOMA_NAME} · красно-розовый`);
     expect(options).not.to.include('Тома · Сатурн');
     expect(options).not.to.include('Тома · Кольца Сатурна');
     expect(options).not.to.include('Тома · Титан');

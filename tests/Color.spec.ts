@@ -12,7 +12,7 @@ import {
 } from '@/common/Color';
 
 describe('Locked player identities', () => {
-  it('maps the generic Toma identity to the Saturn Systems purple option', () => {
+  it('maps the generic Toma identity to the red-pink option', () => {
     expect(SONYA_EMKO_NAME).to.eq(TOMA_NAME);
     expect(getPlayerIdentityByName(TOMA_NAME)?.color).to.eq(SONYA_SATURN_STORM_COLOR);
     expect(getPlayerIdentityByName('тома')?.color).to.eq(SONYA_SATURN_STORM_COLOR);

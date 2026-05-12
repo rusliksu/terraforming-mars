@@ -26,6 +26,7 @@ describe('Styles', () => {
     expect(board).to.contain('.board-cube--hydro');
     expect(board).to.contain('content: "♂"');
     expect(playerHome).to.contain('&.colonies-fleet-hydro');
+    expect(playerHome).to.contain('background-color: rgba(54, 16, 86, 0.24);');
     expect(turmoil).to.contain('&.hydro');
     expect(playerSymbol).to.contain("hydro: '♂'");
   });
@@ -276,7 +277,25 @@ describe('Styles', () => {
     ]) {
       expect(playerHome).not.to.contain(selector);
     }
-    expect(cssBlock(playerHome, '.ma-score.player_bg_color_saturnstorm')).to.contain('color: #f6e7ff;');
+    expect(cssBlock(playerHome, '.ma-score.player_bg_color_saturnstorm')).to.contain('color: #ffe5e8;');
+  });
+
+  it('uses the old Hydro red-pink treatment for the Toma persona', () => {
+    const variables = read('src/styles/variables.less');
+    const common = read('src/styles/common.less');
+    const board = read('src/styles/board.less');
+    const createGame = read('src/styles/create_game_form.less');
+    const playerHome = read('src/styles/player_home.less');
+    const vpChart = read('src/client/components/gameend/VictoryPointChart.vue');
+
+    expect(variables).to.contain('@player_saturnstorm: rgb(190, 31, 72);');
+    expect(variables).to.contain('@player_saturnstorm_sprite_filter: hue-rotate(18deg) saturate(1.55) brightness(0.68) contrast(1.18);');
+    expect(cssBlock(common, '.player_bg_color_saturnstorm')).to.contain('color: #ffe5e8;');
+    expect(cssBlock(board, '.board-space .board-cube--saturnstorm::before,\n.board-cube-coOwner.board-cube--saturnstorm::before')).to.contain('#ff8fa8 0%, @player_saturnstorm 52%, #5b001b 100%');
+    expect(cssBlock(board, '.underground-excavator--saturnstorm')).to.contain('#ff8fa8 0%, @player_saturnstorm 46%, #5b001b 100%');
+    expect(createGame).to.contain('.player_translucent_bg_color_saturnstorm {\n    .create-game-player-field-theme(#ffe5eb, #640014);');
+    expect(playerHome).to.contain('background-color: rgba(190, 31, 72, 0.24);');
+    expect(vpChart).to.contain("['saturnstorm']: 'rgb(190, 31, 72)'");
   });
 
   it('uses a monotone translucent persona overview background', () => {
@@ -333,6 +352,7 @@ describe('Styles', () => {
     expect(elo).to.contain('"тома": "player-persona-saturnstorm"');
     expect(elo).to.contain('"соня": "player-persona-saturnstorm"');
     expect(elo).to.contain('.winner .player-persona-emerald { color: #009468; }');
+    expect(elo).to.contain('.winner .player-persona-saturnstorm { color: #be1f48; }');
     expect(elo).not.to.contain('font-family: Georgia');
     expect(elo).not.to.contain('font-family: "Trebuchet MS"');
     expect(elo).not.to.contain('font-family: Verdana');

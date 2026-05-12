@@ -137,9 +137,9 @@ export default defineComponent({
 }
 
 .player-elo-badge--saturnstorm {
-  color: #f6e7ff;
-  border-color: #c38aff;
-  background: rgba(26, 26, 46, 0.78);
-  box-shadow: 0 0 7px rgba(134, 65, 190, 0.42);
+  color: #ffe5e8;
+  border-color: #ff8fa8;
+  background: rgba(46, 18, 28, 0.78);
+  box-shadow: 0 0 7px rgba(190, 31, 72, 0.42);
 }
 </style>

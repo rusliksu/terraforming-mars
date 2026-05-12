@@ -142,9 +142,9 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
     color: SONYA_SATURN_STORM_COLOR,
     name: TOMA_NAME,
     label: 'Тома',
-    colorLabel: 'тёмно-фиолетовый',
+    colorLabel: 'красно-розовый',
     shortLabel: 'Тома',
-    title: 'Тома - reserved dark purple',
+    title: 'Тома - reserved red-pink',
     aliases: ['тома', 'toma', 'соня', 'sonya', 'соня эмко', 'эмко', 'sonya emko', 'sonia emko', 'emko', 'соня шторм', 'соня сатурновый шторм', 'соня сатурн систем', 'сатурн систем', 'saturn systems', 'emko storm', 'sonya storm', 'sonia storm'],
   },
   {

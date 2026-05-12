@@ -153,13 +153,13 @@ describe('Styles', () => {
     expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('@player_turquoise_sprite_filter');
     expect(cssBlock(playerHome, '&.colonies-fleet-saturn')).to.contain('background-position: -70px 0;');
     expect(cssBlock(board, '.board-cube--saturnrings')).to.contain('background: url(./assets/board_icons.png) -72px -91px no-repeat;');
-    expect(cssBlock(board, '.board-cube--saturnstorm')).to.contain('background: url(./assets/board_icons.png) -118px -91px no-repeat;');
+    expect(cssBlock(board, '.board-cube--saturnstorm')).to.contain('background: url(./assets/board_icons.png) -24px -117px no-repeat;');
     expect(cssBlock(playerHome, '&.colonies-fleet-saturn')).to.contain('@player_saturn_fleet_filter @player_persona_fleet_edge_filter');
     expect(cssBlock(playerHome, '&.colonies-fleet-saturnrings')).to.contain('background-position: -70px 0;');
     expect(cssBlock(playerHome, '&.colonies-fleet-saturnrings')).to.contain('@player_saturnrings_fleet_filter @player_persona_fleet_edge_filter');
     expect(cssBlock(playerHome, '&.colonies-fleet-titan')).to.contain('background-position: -416px 0;');
     expect(cssBlock(playerHome, '&.colonies-fleet-titan')).to.contain('@player_titan_fleet_filter @player_persona_fleet_edge_filter');
-    expect(cssBlock(playerHome, '&.colonies-fleet-saturnstorm')).to.contain('background-position: -342px 0;');
+    expect(cssBlock(playerHome, '&.colonies-fleet-saturnstorm')).to.contain('background-position: -490px 0;');
     expect(cssBlock(playerHome, '&.colonies-fleet-saturnstorm')).to.contain('@player_saturnstorm_fleet_filter @player_persona_fleet_edge_filter');
     expect(cssBlock(playerHome, '&.colonies-fleet-catseye')).to.contain('background-position: -140px 0;');
     expect(cssBlock(playerHome, '&.colonies-fleet-catseye')).to.contain('@player_catseye_fleet_filter @player_persona_fleet_edge_filter');
@@ -197,7 +197,7 @@ describe('Styles', () => {
     expect(cssBlock(turmoil, '&.saturn')).to.contain('.player-token-sprite(-644px, -35px, @player_saturn_delegate_filter);');
     expect(cssBlock(turmoil, '&.saturnrings')).to.contain('.player-token-sprite(-644px, -35px, @player_saturnrings_delegate_filter);');
     expect(cssBlock(turmoil, '&.titan')).to.contain('.player-token-sprite(-644px, -105px, @player_titan_delegate_filter);');
-    expect(cssBlock(turmoil, '&.saturnstorm')).to.contain('.player-token-sprite(-973px, -35px, @player_saturnstorm_delegate_filter);');
+    expect(cssBlock(turmoil, '&.saturnstorm')).to.contain('.player-token-sprite(-699px, -105px, @player_saturnstorm_delegate_filter);');
     expect(cssBlock(turmoil, '&.catseye')).to.contain('.player-token-sprite(-865px, -35px, @player_catseye_delegate_filter);');
   });
 

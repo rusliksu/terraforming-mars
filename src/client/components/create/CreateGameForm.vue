@@ -602,7 +602,7 @@
 import * as constants from '@/common/constants';
 
 import {defineComponent, nextTick} from 'vue';
-import {Color, DEFAULT_PLAYER_COLORS, getLockedPlayerName, LOCKED_PLAYER_IDENTITIES} from '@/common/Color';
+import {applyPlayerIdentitiesFromNames, Color, DEFAULT_PLAYER_COLORS, getLockedPlayerName, LOCKED_PLAYER_IDENTITIES} from '@/common/Color';
 import type {LockedPlayerIdentity, PlayerColor} from '@/common/Color';
 import {BoardName} from '@/common/boards/BoardName';
 import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
@@ -1207,6 +1207,8 @@ export default defineComponent({
           .map((a) => a.value);
         this.firstIndex = Math.floor(this.seed * this.playersCount) + 1;
       }
+
+      applyPlayerIdentitiesFromNames(players);
 
       // Auto assign an available color if there are duplicates
       const uniqueColors = new Set(players.map((player) => player.color));

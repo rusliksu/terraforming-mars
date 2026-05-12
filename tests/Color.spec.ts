@@ -28,4 +28,9 @@ describe('Locked player identities', () => {
     expect(getPlayerIdentityByName('sonya storm')?.color).to.eq(SONYA_SATURN_STORM_COLOR);
     expect(getPlayerIdentityByName('sonya cat eye')?.color).to.eq(SONYA_CATSEYE_COLOR);
   });
+
+  it('does not map Pesha aliases to Pasha', () => {
+    expect(getPlayerIdentityByName('Пеша')).to.eq(undefined);
+    expect(getPlayerIdentityByName('pesha')).to.eq(undefined);
+  });
 });

@@ -302,7 +302,7 @@ a:hover { text-decoration: underline; }
 
   <div class="tm-stats-subtitle">Player VP breakdown</div>
   <table class="tm-stats-table tm-stats-vp-table">
-    <thead><tr><th class="player-col">Player</th><th class="num games-col">Games</th><th class="num vp-games-col" title="Games with saved victory point breakdown">VP games</th><th class="num">Card VP</th><th class="num">Greenery VP</th><th class="num">City VP</th><th class="num">Milestone VP</th><th class="num">Award VP</th></tr></thead>
+    <thead><tr><th class="player-col">Player</th><th class="num games-col" title="Detailed stat games / ELO games when ELO has older games without VP snapshots">Games</th><th class="num vp-games-col" title="Games with saved victory point breakdown">VP games</th><th class="num">Card VP</th><th class="num">Greenery VP</th><th class="num">City VP</th><th class="num">Milestone VP</th><th class="num">Award VP</th></tr></thead>
     <tbody id="tmStatsPlayerVpBody"></tbody>
   </table>
 
@@ -1143,7 +1143,7 @@ function renderStatsPlayerVpBreakdown() {
     var playerName = player.displayName || player.name || "-";
     return "<tr>"
       + "<td><span class=\"player-persona " + playerPersonaClass(playerName, player.name) + "\">" + esc(playerName) + "</span></td>"
-      + "<td class=\"num games\">" + esc(player.games || 0) + "</td>"
+      + "<td class=\"num games\">" + formatStatsGames(player) + "</td>"
       + "<td class=\"num games\">" + esc(vpBreakdownGameCount(player)) + "</td>"
       + "<td class=\"num\">" + formatBreakdownAverage(breakdown, "cards") + "</td>"
       + "<td class=\"num\">" + formatBreakdownAverage(breakdown, "greenery") + "</td>"

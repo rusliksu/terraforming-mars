@@ -58,7 +58,7 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
     colorLabel: 'золото',
     shortLabel: 'GG',
     title: 'GenuineGold - reserved gold',
-    aliases: ['genuinegold', 'илья', 'ilya', 'золотинский'],
+    aliases: ['genuinegold', 'genuine gold', 'илья', 'ilya', 'золотинский'],
   },
   {
     color: EMERALD_RAV_COLOR,

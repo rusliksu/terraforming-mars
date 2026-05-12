@@ -12,6 +12,7 @@ const PLAYER_ALIASES: Record<string, string> = {
   'руслан': 'GydRo',
   'ruslan': 'GydRo',
   'genuinegold': 'GenuineGold',
+  'genuine gold': 'GenuineGold',
   'илья': 'GenuineGold',
   'ilya': 'GenuineGold',
   'золотинский': 'GenuineGold',

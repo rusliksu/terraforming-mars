@@ -1,5 +1,6 @@
 import {expect} from 'chai';
 import {
+  GENUINE_GOLD_COLOR,
   getPlayerIdentityByName,
   SONYA_CATSEYE_COLOR,
   SONYA_EMKO_NAME,
@@ -32,5 +33,9 @@ describe('Locked player identities', () => {
   it('does not map Pesha aliases to Pasha', () => {
     expect(getPlayerIdentityByName('Пеша')).to.eq(undefined);
     expect(getPlayerIdentityByName('pesha')).to.eq(undefined);
+  });
+
+  it('maps spaced Genuine Gold aliases to the gold persona', () => {
+    expect(getPlayerIdentityByName('Genuine Gold')?.color).to.eq(GENUINE_GOLD_COLOR);
   });
 });

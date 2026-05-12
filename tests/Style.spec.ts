@@ -204,10 +204,18 @@ describe('Styles', () => {
     const common = read('src/styles/common.less');
     const createGame = read('src/styles/create_game_form.less');
 
-    expect(common).to.contain('.player_bg_color_gold {\n    background-color: @player_gold;\n    color: #1b1400;');
-    expect(common).to.contain('.player_translucent_bg_color_gold .player-name {\n    color: #1b1400;');
-    expect(createGame).to.contain('.create-game-player-field-theme(#1b1400, #fff2a6);');
+    expect(common).to.contain('.player_bg_color_gold {\n    background-color: @player_gold;\n    color: #000000;');
+    expect(common).to.contain('.player_translucent_bg_color_gold .player-name {\n    color: #000000;');
+    expect(createGame).to.contain('.create-game-player-field-theme(#000000, #fff2a6);');
     expect(createGame).not.to.contain('background: linear-gradient(90deg, #f7d95b, @player_gold);');
+  });
+
+  it('keeps the standard black player at the original medium gray', () => {
+    const variables = read('src/styles/variables.less');
+    const vpChart = read('src/client/components/gameend/VictoryPointChart.vue');
+
+    expect(variables).to.contain('@player_black: rgb(170, 170, 170);');
+    expect(vpChart).to.contain("['black']: 'rgb(170, 170, 170)'");
   });
 
   it('does not use distinctive typography for reserved personas', () => {

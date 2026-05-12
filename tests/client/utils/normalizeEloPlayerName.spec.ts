@@ -6,6 +6,7 @@ describe('normalizeEloPlayerName', () => {
     expect(normalizeEloPlayerName('Rav')).to.eq('рав');
     expect(normalizeEloPlayerName('Равиль')).to.eq('рав');
     expect(normalizeEloPlayerName('genuinegold')).to.eq('genuinegold');
+    expect(normalizeEloPlayerName('Genuine Gold')).to.eq('genuinegold');
     expect(normalizeEloPlayerName('Руслан')).to.eq('gydro');
     expect(normalizeEloPlayerName('Аня')).to.eq('аня');
   });

@@ -253,7 +253,9 @@ describe('JSONProcessor', () => {
     for (const testCase of [
       {color: 'emerald', inputName: 'Rav', expectedName: EMERALD_RAV_NAME},
       {color: 'ginger', inputName: 'Catharsis', expectedName: CATHARSIS_NAME},
+      {color: 'pearl', inputName: 'Ruslan', expectedName: GYDRO_NAME},
       {color: 'hydro', inputName: 'Ruslan', expectedName: GYDRO_NAME},
+      {color: 'hydro', inputName: 'Sonya', expectedName: TOMA_NAME},
       {color: 'antistress', inputName: 'Anatoly', expectedName: ANTISTRESS_NAME},
       {color: 'gambit', inputName: 'Olesya', expectedName: GAMBIT_GIRL_NAME},
       {color: 'turquoise', inputName: 'Pavel', expectedName: PAVEL_TURQUOISE_NAME},

@@ -55,6 +55,9 @@
 .player_shadow_color_hydro {
     text-shadow: -1px -1px 6px @player_hydro, 1px 1px 1px #333a;
 }
+.player_shadow_color_pearl {
+    text-shadow: -1px -1px 6px @player_pearl, 1px 1px 1px #333a;
+}
 .player_shadow_color_antistress {
     text-shadow: -1px -1px 6px @player_antistress, 1px 1px 1px #333a;
 }
@@ -173,6 +176,10 @@
 
     .grid-item.player_tag_bg_color_hydro {
         background-color: rgba(54, 16, 86, 0.24);
+    }
+
+    .grid-item.player_tag_bg_color_pearl {
+        background-color: rgba(242, 248, 248, 0.24);
     }
 
     .grid-item.player_tag_bg_color_antistress {
@@ -699,6 +706,7 @@
             .board-cube--emerald,
             .board-cube--ginger,
             .board-cube--hydro,
+            .board-cube--pearl,
             .board-cube--antistress,
             .board-cube--gambit,
             .board-cube--turquoise,
@@ -814,6 +822,7 @@
     .board-cube--emerald,
     .board-cube--ginger,
     .board-cube--hydro,
+    .board-cube--pearl,
     .board-cube--antistress,
     .board-cube--gambit,
     .board-cube--turquoise,
@@ -991,6 +1000,11 @@
         filter: @player_hydro_fleet_filter @player_persona_fleet_edge_filter;
     }
 
+    &.colonies-fleet-pearl {
+        background-position: -70px 0;
+        filter: @player_pearl_fleet_filter @player_persona_fleet_edge_filter;
+    }
+
     &.colonies-fleet-antistress {
         background-position: -272px 0;
         filter: @player_antistress_sprite_filter;
@@ -1036,6 +1050,7 @@
 .colony-cube.board-cube--emerald,
 .colony-cube.board-cube--ginger,
 .colony-cube.board-cube--hydro,
+.colony-cube.board-cube--pearl,
 .colony-cube.board-cube--antistress,
 .colony-cube.board-cube--gambit,
 .colony-cube.board-cube--turquoise,

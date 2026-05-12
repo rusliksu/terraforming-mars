@@ -11,7 +11,7 @@ function cssBlock(source: string, selector: string): string {
 }
 
 describe('Styles', () => {
-  it('uses a reserved dark purple treatment for the GydRo persona', () => {
+  it('uses a reserved dark purple treatment for the Toma persona', () => {
     const variables = read('src/styles/variables.less');
     const common = read('src/styles/common.less');
     const board = read('src/styles/board.less');
@@ -29,6 +29,28 @@ describe('Styles', () => {
     expect(playerHome).to.contain('background-color: rgba(54, 16, 86, 0.24);');
     expect(turmoil).to.contain('&.hydro');
     expect(playerSymbol).to.contain("hydro: '♂'");
+  });
+
+  it('uses a reserved pearl treatment for the GydRo persona', () => {
+    const variables = read('src/styles/variables.less');
+    const common = read('src/styles/common.less');
+    const board = read('src/styles/board.less');
+    const playerHome = read('src/styles/player_home.less');
+    const turmoil = read('src/styles/turmoil.less');
+    const playerSymbol = read('src/client/utils/playerSymbol.ts');
+    const vpChart = read('src/client/components/gameend/VictoryPointChart.vue');
+
+    expect(variables).to.contain('@player_pearl: rgb(242, 248, 248);');
+    expect(variables).to.contain('@player_pearl_sprite_filter: grayscale(1) brightness(1.58) contrast(0.82) saturate(0.25);');
+    expect(common).to.contain('.player_bg_color_pearl');
+    expect(common).to.contain('#102027');
+    expect(board).to.contain('.board-cube--pearl');
+    expect(board).to.contain('content: "✧"');
+    expect(playerHome).to.contain('&.colonies-fleet-pearl');
+    expect(playerHome).to.contain('background-color: rgba(242, 248, 248, 0.24);');
+    expect(turmoil).to.contain('&.pearl');
+    expect(playerSymbol).to.contain("pearl: '✧'");
+    expect(vpChart).to.contain("['pearl']: 'rgb(242, 248, 248)'");
   });
 
   it('uses a reserved calm blue treatment for the Antistress persona', () => {
@@ -88,6 +110,7 @@ describe('Styles', () => {
 
     expect(variables).to.contain('@player_gold_sprite_filter: sepia(0.45) saturate(1.65) hue-rotate(346deg) brightness(0.90) contrast(1.12);');
     expect(variables).to.contain('@player_emerald_sprite_filter: hue-rotate(18deg) saturate(1.70) brightness(0.72) contrast(1.12);');
+    expect(variables).to.contain('@player_pearl_sprite_filter: grayscale(1) brightness(1.58) contrast(0.82) saturate(0.25);');
     expect(variables).to.contain('@player_antistress_sprite_filter: saturate(1.35) brightness(0.58) contrast(1.22);');
     expect(variables).to.contain('@player_gambit_sprite_filter: hue-rotate(315deg) saturate(0.55) brightness(1.22) contrast(1.03);');
     expect(variables).to.contain('@player_turquoise_sprite_filter: hue-rotate(55deg) saturate(1.35) brightness(1.04) contrast(1.05);');
@@ -97,10 +120,11 @@ describe('Styles', () => {
     expect(cssBlock(board, '.board-cube--emerald')).to.contain('@player_emerald_sprite_filter');
     expect(board).to.contain('.board-cube--ginger {\n\tbackground: url(./assets/board_icons.png) -1px -117px no-repeat;');
     expect(board).to.contain('.board-cube--hydro {\n\tbackground: url(./assets/board_icons.png) -24px -117px no-repeat;');
+    expect(board).to.contain('.board-cube--pearl {\n\tbackground: url(./assets/board_icons.png) -118px -91px no-repeat;');
     expect(board).to.contain('.board-cube--antistress {\n\tbackground: url(./assets/board_icons.png) -94px -91px no-repeat;');
     expect(board).to.contain('.board-cube--gambit {\n\tbackground: url(./assets/board_icons.png) -118px -91px no-repeat;');
     expect(board).to.contain('.board-cube--turquoise {\n\tbackground: url(./assets/board_icons.png) -1px -91px no-repeat;');
-    for (const selector of ['.board-cube--gold', '.board-cube--emerald', '.board-cube--ginger', '.board-cube--hydro', '.board-cube--antistress', '.board-cube--gambit', '.board-cube--turquoise', '.board-cube--saturn', '.board-cube--saturnrings', '.board-cube--titan', '.board-cube--saturnstorm', '.board-cube--catseye']) {
+    for (const selector of ['.board-cube--gold', '.board-cube--emerald', '.board-cube--ginger', '.board-cube--hydro', '.board-cube--pearl', '.board-cube--antistress', '.board-cube--gambit', '.board-cube--turquoise', '.board-cube--saturn', '.board-cube--saturnrings', '.board-cube--titan', '.board-cube--saturnstorm', '.board-cube--catseye']) {
       expect(cssBlock(board, selector)).not.to.contain('linear-gradient');
     }
   });
@@ -148,6 +172,8 @@ describe('Styles', () => {
     expect(cssBlock(playerHome, '&.colonies-fleet-emerald')).to.contain('@player_emerald_sprite_filter');
     expect(cssBlock(playerHome, '&.colonies-fleet-hydro')).to.contain('background-position: -490px 0;');
     expect(cssBlock(playerHome, '&.colonies-fleet-hydro')).to.contain('@player_hydro_fleet_filter @player_persona_fleet_edge_filter');
+    expect(cssBlock(playerHome, '&.colonies-fleet-pearl')).to.contain('background-position: -70px 0;');
+    expect(cssBlock(playerHome, '&.colonies-fleet-pearl')).to.contain('@player_pearl_fleet_filter @player_persona_fleet_edge_filter');
     expect(cssBlock(playerHome, '&.colonies-fleet-antistress')).to.contain('background-position: -272px 0;');
     expect(cssBlock(playerHome, '&.colonies-fleet-gambit')).to.contain('background-position: -342px 0;');
     expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('background-position: -140px 0;');
@@ -192,6 +218,8 @@ describe('Styles', () => {
     expect(cssBlock(turmoil, '&.emerald')).to.contain('.player-token-sprite(-865px, -35px, @player_emerald_sprite_filter);');
     expect(cssBlock(turmoil, '&.ginger')).to.contain('.player-token-sprite(-644px, -105px, @player_ginger_sprite_filter);');
     expect(cssBlock(turmoil, '&.hydro')).to.contain('.player-token-sprite(-699px, -105px, @player_hydro_sprite_filter);');
+    expect(cssBlock(turmoil, '&.pearl')).to.contain('.player-token-sprite(-973px, -35px, @player_pearl_delegate_filter);');
+    expect(cssBlock(turmoil, '&.pearl')).to.contain('color: #102027;');
     expect(cssBlock(turmoil, '&.antistress')).to.contain('.player-token-sprite(-809px, -35px, @player_antistress_sprite_filter);');
     expect(cssBlock(turmoil, '&.gambit')).to.contain('.player-token-sprite(-973px, -35px, @player_gambit_sprite_filter);');
     expect(cssBlock(turmoil, '&.turquoise')).to.contain('.player-token-sprite(-865px, -35px, @player_turquoise_sprite_filter);');
@@ -259,7 +287,7 @@ describe('Styles', () => {
     const common = read('src/styles/common.less');
     const playerHome = read('src/styles/player_home.less');
 
-    for (const selector of ['.player_bg_color_emerald', '.player_bg_color_ginger', '.player_bg_color_hydro', '.player_bg_color_antistress', '.player_bg_color_gambit', '.player_bg_color_turquoise', '.player_bg_color_saturn', '.player_bg_color_saturnrings', '.player_bg_color_titan', '.player_bg_color_saturnstorm', '.player_bg_color_catseye']) {
+    for (const selector of ['.player_bg_color_emerald', '.player_bg_color_ginger', '.player_bg_color_hydro', '.player_bg_color_pearl', '.player_bg_color_antistress', '.player_bg_color_gambit', '.player_bg_color_turquoise', '.player_bg_color_saturn', '.player_bg_color_saturnrings', '.player_bg_color_titan', '.player_bg_color_saturnstorm', '.player_bg_color_catseye']) {
       const block = cssBlock(common, selector);
       expect(block).to.contain('background-color:');
       expect(block).not.to.contain('linear-gradient');
@@ -272,6 +300,7 @@ describe('Styles', () => {
       '.ma-score.player_bg_color_antistress',
       '.ma-score.player_bg_color_gold',
       '.ma-score.player_bg_color_emerald',
+      '.ma-score.player_bg_color_pearl',
       '.ma-score.player_bg_color_gambit',
       '.ma-score.player_bg_color_turquoise',
     ]) {
@@ -281,7 +310,7 @@ describe('Styles', () => {
     expect(cssBlock(playerHome, '.ma-score.player_bg_color_saturnstorm')).to.contain('color: #ffe5e8;');
   });
 
-  it('uses the old Hydro red-pink treatment for the Toma persona', () => {
+  it('keeps the old Hydro red-pink treatment available for legacy Toma games', () => {
     const variables = read('src/styles/variables.less');
     const common = read('src/styles/common.less');
     const board = read('src/styles/board.less');
@@ -305,6 +334,7 @@ describe('Styles', () => {
     expect(mixins).to.contain('.player_persona_bg_translucent(@accent)');
     expect(mixins).to.contain('background-color: fade(@base, 82%)');
     expect(mixins).to.contain('.player_hydro_bg_translucent()');
+    expect(mixins).to.contain('.player_pearl_bg_translucent()');
     expect(mixins).to.contain('.player_antistress_bg_translucent()');
     expect(mixins).to.contain('.player_gambit_bg_translucent()');
     expect(mixins).to.contain('.player_turquoise_bg_translucent()');
@@ -338,6 +368,7 @@ describe('Styles', () => {
       'player-persona-emerald',
       'player-persona-ginger',
       'player-persona-hydro',
+      'player-persona-pearl',
       'player-persona-antistress',
       'player-persona-gambit',
       'player-persona-turquoise',
@@ -350,9 +381,12 @@ describe('Styles', () => {
     expect(elo).to.contain('"gambitgirl": "player-persona-gambit"');
     expect(elo).to.contain('"паша": "player-persona-turquoise"');
     expect(elo).to.contain('"pavel": "player-persona-turquoise"');
-    expect(elo).to.contain('"тома": "player-persona-saturnstorm"');
-    expect(elo).to.contain('"соня": "player-persona-saturnstorm"');
+    expect(elo).to.contain('"gydro": "player-persona-pearl"');
+    expect(elo).to.contain('"руслан": "player-persona-pearl"');
+    expect(elo).to.contain('"тома": "player-persona-hydro"');
+    expect(elo).to.contain('"соня": "player-persona-hydro"');
     expect(elo).to.contain('.winner .player-persona-emerald { color: #009468; }');
+    expect(elo).to.contain('.winner .player-persona-pearl { color: #eafcff; }');
     expect(elo).to.contain('.winner .player-persona-saturnstorm { color: #be1f48; }');
     expect(elo).not.to.contain('font-family: Georgia');
     expect(elo).not.to.contain('font-family: "Trebuchet MS"');

@@ -5,7 +5,7 @@ export const EMERALD_RAV_COLOR = 'emerald' as const;
 export const EMERALD_RAV_NAME = 'Рав';
 export const CATHARSIS_COLOR = 'ginger' as const;
 export const CATHARSIS_NAME = 'Catharsis🔥';
-export const GYDRO_COLOR = 'hydro' as const;
+export const GYDRO_COLOR = 'pearl' as const;
 export const GYDRO_NAME = 'GydRo';
 export const ANTISTRESS_COLOR = 'antistress' as const;
 export const ANTISTRESS_NAME = 'Антистресс';
@@ -15,6 +15,7 @@ export const PAVEL_TURQUOISE_COLOR = 'turquoise' as const;
 export const PAVEL_TURQUOISE_NAME = 'Паша';
 export const TOMA_NAME = 'Тома';
 export const SONYA_EMKO_NAME = TOMA_NAME;
+export const SONYA_HYDRO_COLOR = 'hydro' as const;
 export const SONYA_SATURN_COLOR = 'saturn' as const;
 export const SONYA_SATURN_RINGS_COLOR = 'saturnrings' as const;
 export const SONYA_TITAN_COLOR = 'titan' as const;
@@ -28,6 +29,7 @@ export const RESERVED_PLAYER_COLORS = [
   ANTISTRESS_COLOR,
   GAMBIT_GIRL_COLOR,
   PAVEL_TURQUOISE_COLOR,
+  SONYA_HYDRO_COLOR,
   SONYA_SATURN_COLOR,
   SONYA_SATURN_RINGS_COLOR,
   SONYA_TITAN_COLOR,
@@ -79,9 +81,9 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
   {
     color: GYDRO_COLOR,
     name: GYDRO_NAME,
-    colorLabel: 'тёмно-фиолетовый',
+    colorLabel: 'перламутр',
     shortLabel: 'GydRo',
-    title: 'GydRo - reserved dark purple',
+    title: 'GydRo - reserved pearl',
     aliases: ['gydro', 'руслан', 'ruslan'],
   },
   {
@@ -107,6 +109,15 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
     shortLabel: 'Паша',
     title: 'Паша - reserved turquoise',
     aliases: ['паша', 'павел', 'миронов', 'pasha', 'pavel', 'pavel mironov'],
+  },
+  {
+    color: SONYA_HYDRO_COLOR,
+    name: TOMA_NAME,
+    label: 'Тома',
+    colorLabel: 'мрачный тёмно-фиолетовый',
+    shortLabel: 'Тома',
+    title: 'Тома - reserved dark purple',
+    aliases: ['тома', 'toma', 'соня', 'sonya', 'соня эмко', 'эмко', 'sonya emko', 'sonia emko', 'emko'],
   },
   {
     color: SONYA_SATURN_COLOR,
@@ -141,11 +152,12 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
   {
     color: SONYA_SATURN_STORM_COLOR,
     name: TOMA_NAME,
-    label: 'Тома',
+    label: 'Тома · Старый красно-розовый',
     colorLabel: 'красно-розовый',
-    shortLabel: 'Тома',
+    selectable: false,
+    shortLabel: 'Storm',
     title: 'Тома - reserved red-pink',
-    aliases: ['тома', 'toma', 'соня', 'sonya', 'соня эмко', 'эмко', 'sonya emko', 'sonia emko', 'emko', 'соня шторм', 'соня сатурновый шторм', 'соня сатурн систем', 'сатурн систем', 'saturn systems', 'emko storm', 'sonya storm', 'sonia storm'],
+    aliases: ['соня шторм', 'соня сатурновый шторм', 'соня сатурн систем', 'сатурн систем', 'saturn systems', 'emko storm', 'sonya storm', 'sonia storm'],
   },
   {
     color: SONYA_CATSEYE_COLOR,
@@ -177,6 +189,10 @@ export function isReservedPlayerColor(color: Color): color is typeof RESERVED_PL
 }
 
 export function normalizePlayerNameForColor(color: Color, name: string): string {
+  const identityFromName = getPlayerIdentityByName(name);
+  if (color === SONYA_HYDRO_COLOR && identityFromName?.name === GYDRO_NAME) {
+    return GYDRO_NAME;
+  }
   return getLockedPlayerName(color) ?? name;
 }
 

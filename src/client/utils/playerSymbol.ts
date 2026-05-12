@@ -14,6 +14,7 @@ export const SYMBOL_FOR_COLOR = {
   emerald: '⬢',
   ginger: '♨',
   hydro: '♂',
+  pearl: '✧',
   antistress: '✚',
   gambit: '♞',
   turquoise: '◇',

@@ -14,7 +14,7 @@ import {
   GYDRO_NAME,
   PAVEL_TURQUOISE_COLOR,
   PAVEL_TURQUOISE_NAME,
-  SONYA_SATURN_STORM_COLOR,
+  SONYA_HYDRO_COLOR,
   TOMA_NAME,
 } from '@/common/Color';
 
@@ -151,7 +151,7 @@ describe('CreateGameForm', () => {
       [GYDRO_NAME, GYDRO_COLOR],
       [GAMBIT_GIRL_NAME, GAMBIT_GIRL_COLOR],
       [PAVEL_TURQUOISE_NAME, PAVEL_TURQUOISE_COLOR],
-      [TOMA_NAME, SONYA_SATURN_STORM_COLOR],
+      [TOMA_NAME, SONYA_HYDRO_COLOR],
     ]);
   });
 
@@ -205,7 +205,8 @@ describe('CreateGameForm', () => {
       .findAll('option')
       .map((option) => option.text());
 
-    expect(options).to.include(`${TOMA_NAME} · красно-розовый`);
+    expect(options).to.include(`${TOMA_NAME} · мрачный тёмно-фиолетовый`);
+    expect(options).not.to.include('Тома · Старый красно-розовый');
     expect(options).not.to.include('Тома · Сатурн');
     expect(options).not.to.include('Тома · Кольца Сатурна');
     expect(options).not.to.include('Тома · Титан');
@@ -231,7 +232,7 @@ describe('CreateGameForm', () => {
     expect(secondOptions).not.to.include(`${GENUINE_GOLD_NAME} · золото`);
     expect(secondOptions).to.include(`${EMERALD_RAV_NAME} · изумруд`);
     expect(secondOptions).to.include(`${CATHARSIS_NAME} · рыжий`);
-    expect(secondOptions).to.include(`${GYDRO_NAME} · тёмно-фиолетовый`);
+    expect(secondOptions).to.include(`${GYDRO_NAME} · перламутр`);
     expect(secondOptions).to.include(`${ANTISTRESS_NAME} · тёмно-синий`);
     expect(secondOptions).to.include(`${GAMBIT_GIRL_NAME} · гортензия`);
     expect(secondOptions).to.include(`${PAVEL_TURQUOISE_NAME} · бирюза`);
@@ -256,7 +257,8 @@ describe('CreateGameForm', () => {
     for (const testCase of [
       {color: 'emerald', inputName: 'Rav', expectedName: EMERALD_RAV_NAME},
       {color: 'ginger', inputName: 'Katerina', expectedName: CATHARSIS_NAME},
-      {color: 'hydro', inputName: 'Ruslan', expectedName: GYDRO_NAME},
+      {color: 'pearl', inputName: 'Ruslan', expectedName: GYDRO_NAME},
+      {color: 'hydro', inputName: 'Sonya', expectedName: TOMA_NAME},
       {color: 'antistress', inputName: 'Anatoly', expectedName: ANTISTRESS_NAME},
       {color: 'gambit', inputName: 'Olesya', expectedName: GAMBIT_GIRL_NAME},
       {color: 'turquoise', inputName: 'Pavel', expectedName: PAVEL_TURQUOISE_NAME},

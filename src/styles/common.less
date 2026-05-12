@@ -202,6 +202,11 @@ h2 {
     color: #f6e7ff;
 }
 
+.player_bg_color_pearl {
+    background-color: @player_pearl;
+    color: #102027;
+}
+
 .player_bg_color_antistress {
     background-color: @player_antistress;
     color: #d9e7ff;
@@ -292,6 +297,11 @@ h2 {
     .player_hydro_bg_translucent();
 }
 
+.player_translucent_bg_color_pearl {
+    .player_pearl_bg_translucent();
+    color: #102027;
+}
+
 .player_translucent_bg_color_antistress {
     .player_antistress_bg_translucent();
 }
@@ -365,6 +375,22 @@ h2 {
 .player_translucent_bg_color_hydro .game-end-name-and-elo a,
 .player_translucent_bg_color_hydro .player-name {
     color: #f6e7ff;
+}
+
+.player_bg_color_pearl.log-player,
+.player_translucent_bg_color_pearl .player-info-name,
+.player_translucent_bg_color_pearl .player_name,
+.player_translucent_bg_color_pearl .game-end-name-and-elo,
+.player_translucent_bg_color_pearl .game-end-name-and-elo a,
+.player_translucent_bg_color_pearl .player-name {
+    color: #102027;
+}
+
+.player_bg_color_pearl.log-player,
+.player_translucent_bg_color_pearl td,
+.player_translucent_bg_color_pearl .game-end-name-and-elo,
+.player_translucent_bg_color_pearl .game-end-name-and-elo a {
+    text-shadow: none;
 }
 
 .player_bg_color_antistress.log-player,

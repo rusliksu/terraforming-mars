@@ -334,6 +334,11 @@
 	filter: @player_hydro_sprite_filter drop-shadow(2px 2px 3px black);
 }
 
+.board-cube--pearl {
+	background: url(./assets/board_icons.png) -118px -91px no-repeat;
+	filter: @player_pearl_sprite_filter drop-shadow(2px 2px 3px black);
+}
+
 .board-cube--antistress {
 	background: url(./assets/board_icons.png) -94px -91px no-repeat;
 	filter: @player_antistress_sprite_filter drop-shadow(2px 2px 3px black);
@@ -417,6 +422,11 @@
 .board-space .board-cube--hydro::before,
 .board-cube-coOwner.board-cube--hydro::before {
 	background: linear-gradient(135deg, #caa7ff 0%, @player_hydro 52%, #170021 100%);
+}
+
+.board-space .board-cube--pearl::before,
+.board-cube-coOwner.board-cube--pearl::before {
+	background: linear-gradient(135deg, #ffffff 0%, @player_pearl 52%, #8097a0 100%);
 }
 
 .board-space .board-cube--antistress::before,
@@ -565,6 +575,16 @@
   margin-left: 5px;
   margin-top: -3px;
   color: #f6e7ff;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.board-cube--pearl.overlay::after {
+  .overlay_base();
+  content: "✧";
+  margin-left: 4px;
+  margin-top: -2px;
+  color: #102027;
   font-size: 16px;
   font-weight: bold;
 }
@@ -931,6 +951,11 @@ each(@token_types, {
 .underground-excavator--hydro {
 	background: linear-gradient(135deg, #caa7ff 0%, @player_hydro 46%, #170021 100%);
 	border: 1px solid #9b68df;
+}
+
+.underground-excavator--pearl {
+	background: linear-gradient(135deg, #ffffff 0%, @player_pearl 48%, #8097a0 100%);
+	border: 1px solid #ffffff;
 }
 
 .underground-excavator--antistress {

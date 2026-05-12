@@ -18,6 +18,7 @@ const COLOR_LABELS: Record<string, string> = {
   emerald: 'изумрудный',
   ginger: 'рыжий',
   hydro: 'темно-фиолетовый',
+  pearl: 'перламутровый',
   antistress: 'темно-синий',
   gambit: 'голубой',
   turquoise: 'бирюзовый',

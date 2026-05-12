@@ -268,7 +268,6 @@ describe('Styles', () => {
       '.ma-score.player_bg_color_red',
       '.ma-score.player_bg_color_blue',
       '.ma-score.player_bg_color_purple',
-      '.ma-score.player_bg_color_hydro',
       '.ma-score.player_bg_color_antistress',
       '.ma-score.player_bg_color_gold',
       '.ma-score.player_bg_color_emerald',
@@ -277,6 +276,7 @@ describe('Styles', () => {
     ]) {
       expect(playerHome).not.to.contain(selector);
     }
+    expect(cssBlock(playerHome, '.ma-score.player_bg_color_hydro')).to.contain('color: #f6e7ff;');
     expect(cssBlock(playerHome, '.ma-score.player_bg_color_saturnstorm')).to.contain('color: #ffe5e8;');
   });
 

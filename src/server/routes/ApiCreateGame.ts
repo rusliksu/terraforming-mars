@@ -154,7 +154,7 @@ export class ApiCreateGame extends Handler {
             bannedCards: gameReq.bannedCards,
             boardName: gameReq.board,
             ceoExtension: gameReq.expansions.ceo,
-            clonedGamedId: gameReq.clonedGamedId,
+            clonedGamedId: gameReq.clonedGamedId ?? undefined,
             coloniesExtension: gameReq.expansions.colonies,
             communityCardsOption: gameReq.expansions.community,
             expansions: gameReq.expansions,

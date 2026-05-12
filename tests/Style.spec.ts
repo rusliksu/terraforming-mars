@@ -205,7 +205,10 @@ describe('Styles', () => {
     const createGame = read('src/styles/create_game_form.less');
 
     expect(common).to.contain('.player_bg_color_gold {\n    background-color: @player_gold;\n    color: #000000;');
+    expect(common).to.contain('.player_translucent_bg_color_gold {\n    .player_gold_bg_translucent();\n    color: #000000;');
     expect(common).to.contain('.player_translucent_bg_color_gold .player-name {\n    color: #000000;');
+    expect(common).to.contain('.player_translucent_bg_color_gold td,\n.player_translucent_bg_color_gold .game-end-name-and-elo,');
+    expect(common).to.contain('text-shadow: none;');
     expect(createGame).to.contain('.create-game-player-field-theme(#000000, #fff2a6);');
     expect(createGame).not.to.contain('background: linear-gradient(90deg, #f7d95b, @player_gold);');
   });

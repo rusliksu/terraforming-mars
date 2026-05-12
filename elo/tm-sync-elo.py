@@ -163,6 +163,18 @@ GLOBAL_PARAMETER_METRICS = [
     "oceans",
     "venus",
 ]
+VP_BREAKDOWN_SOURCE_KEYS = {
+    "terraformRating": ("terraformRating",),
+    "cards": ("victoryPoints",),
+    "greenery": ("greenery",),
+    "city": ("city",),
+    "milestones": ("milestones",),
+    "awards": ("awards",),
+    "escapeVelocity": ("escapeVelocity",),
+    "moon": ("moonHabitats", "moonMines", "moonRoads"),
+    "planetaryTracks": ("planetaryTracks",),
+    "negative": ("negativeVP",),
+}
 PLAYER_AVG_METRICS = [
     "playedCards",
     "projectCards",
@@ -831,6 +843,17 @@ def extract_vp_breakdown(score: dict) -> dict:
     }
 
 
+def extract_vp_breakdown_counts(score: dict) -> dict:
+    breakdown = score.get("victoryPointsBreakdown") or {}
+    if not isinstance(breakdown, dict):
+        return {}
+    return {
+        key: 1
+        for key, source_keys in VP_BREAKDOWN_SOURCE_KEYS.items()
+        if any(source_key in breakdown for source_key in source_keys)
+    }
+
+
 def extract_global_parameter_steps(snapshot: dict) -> dict:
     steps = snapshot.get("globalParameterSteps") or {}
     if not isinstance(steps, dict):
@@ -934,6 +957,7 @@ def extract_player_metrics(score: dict, snapshot: dict, board: dict, card_metada
         "timerSeconds": timer_seconds,
         "secondsPerAction": timer_seconds / actions_taken if timer_seconds > 0 and actions_taken > 0 else 0,
         "vpBreakdown": extract_vp_breakdown(score),
+        "vpBreakdownCounts": extract_vp_breakdown_counts(score),
         "production": production,
         "totalNonMcProduction": sum(value for resource, value in production.items() if resource != "mc"),
         "resourceAmounts": resource_amounts,
@@ -1132,6 +1156,7 @@ def new_player_accumulator(name: str, display_name: str) -> dict:
         "productionTotals": {resource: 0 for resource in RESOURCE_PRODUCTION_KEYS},
         "maxProduction": {resource: 0 for resource in RESOURCE_PRODUCTION_KEYS},
         "vpBreakdownTotals": {},
+        "vpBreakdownCounts": {},
         "timingGames": 0,
         "timerSecondsValues": [],
         "secondsPerActionValues": [],
@@ -1237,7 +1262,12 @@ def finalize_player_stats(players: Dict[str, dict]) -> List[dict]:
                 "maxTags": acc["tagMax"],
                 "avgProduction": {resource: round1(value / games) for resource, value in acc["productionTotals"].items()},
                 "maxProduction": acc["maxProduction"],
-                "avgVPBreakdown": {key: round1(value / games) for key, value in acc["vpBreakdownTotals"].items()},
+                "avgVPBreakdown": {
+                    key: round1(value / acc["vpBreakdownCounts"][key])
+                    for key, value in acc["vpBreakdownTotals"].items()
+                    if acc["vpBreakdownCounts"].get(key, 0) > 0
+                },
+                "vpBreakdownGames": {key: value for key, value in acc["vpBreakdownCounts"].items() if value > 0},
                 "timing": timing,
             }
         )
@@ -1361,7 +1391,10 @@ def build_stats(games: List[dict], card_metadata: Dict[str, dict], elo_games: Li
                 acc["productionTotals"][resource] += value
                 acc["maxProduction"][resource] = max(acc["maxProduction"][resource], value)
             for vp_key, value in metrics["vpBreakdown"].items():
+                if metrics["vpBreakdownCounts"].get(vp_key, 0) <= 0:
+                    continue
                 acc["vpBreakdownTotals"][vp_key] = acc["vpBreakdownTotals"].get(vp_key, 0) + value
+                acc["vpBreakdownCounts"][vp_key] = acc["vpBreakdownCounts"].get(vp_key, 0) + 1
             if timing_game and metrics["timerSeconds"] > 0 and metrics["actionsTaken"] > 0:
                 acc["timingGames"] += 1
                 acc["timerSecondsValues"].append(metrics["timerSeconds"])

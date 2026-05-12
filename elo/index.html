@@ -1117,6 +1117,10 @@ function renderStatsPlayers() {
   }).join("");
 }
 
+function formatBreakdownAverage(breakdown, key) {
+  return typeof breakdown[key] === "number" ? round1(breakdown[key]) : "-";
+}
+
 function renderStatsPlayerVpBreakdown() {
   var body = document.getElementById("tmStatsPlayerVpBody");
   var players = ((_tmStats && _tmStats.players) || []).slice();
@@ -1133,11 +1137,11 @@ function renderStatsPlayerVpBreakdown() {
     return "<tr>"
       + "<td><span class=\"player-persona " + playerPersonaClass(playerName, player.name) + "\">" + esc(playerName) + "</span></td>"
       + "<td class=\"num games\">" + esc(player.games || 0) + "</td>"
-      + "<td class=\"num\">" + round1(breakdown.cards || 0) + "</td>"
-      + "<td class=\"num\">" + round1(breakdown.greenery || 0) + "</td>"
-      + "<td class=\"num\">" + round1(breakdown.city || 0) + "</td>"
-      + "<td class=\"num\">" + round1(breakdown.milestones || 0) + "</td>"
-      + "<td class=\"num\">" + round1(breakdown.awards || 0) + "</td>"
+      + "<td class=\"num\">" + formatBreakdownAverage(breakdown, "cards") + "</td>"
+      + "<td class=\"num\">" + formatBreakdownAverage(breakdown, "greenery") + "</td>"
+      + "<td class=\"num\">" + formatBreakdownAverage(breakdown, "city") + "</td>"
+      + "<td class=\"num\">" + formatBreakdownAverage(breakdown, "milestones") + "</td>"
+      + "<td class=\"num\">" + formatBreakdownAverage(breakdown, "awards") + "</td>"
       + "</tr>";
   }).join("");
 }

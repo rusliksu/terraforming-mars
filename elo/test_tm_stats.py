@@ -288,6 +288,12 @@ def main() -> None:
     assert gydro["averages"]["oxygen"] == 2
     assert gydro["averages"]["oceans"] == 1
     assert gydro["averages"]["venus"] == 4
+    assert gydro["avgVPBreakdown"]["cards"] == 25
+    assert gydro["avgVPBreakdown"]["greenery"] == 8
+    assert gydro["avgVPBreakdown"]["city"] == 7
+    assert gydro["avgVPBreakdown"]["milestones"] == 10
+    assert gydro["avgVPBreakdown"]["awards"] == 10
+    assert gydro["vpBreakdownGames"]["cards"] == 1
     assert gydro["avgTags"]["building"] == 2
     assert gydro["maxProduction"]["mc"] == 30
     assert gydro["timing"]["games"] == 1

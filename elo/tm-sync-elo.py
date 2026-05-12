@@ -37,6 +37,11 @@ ELO_SAVE_PATHS = [
 SOLO_RECORDS_PATH = ELO_DIR / "solo-records.json"
 SOLO_OVERRIDES_PATH = ELO_DIR / "solo-record-overrides.json"
 STATS_PATH = ELO_DIR / "stats.json"
+EXCLUDED_GAMES_PATHS = [
+    Path(os.environ["TM_EXCLUDED_GAMES_PATH"]) if os.environ.get("TM_EXCLUDED_GAMES_PATH") else None,
+    SCRIPT_DIR / "excluded_games.json",
+    ELO_DIR / "excluded_games.json",
+]
 
 CARD_METADATA_PATHS = [
     Path(os.environ["TM_CARD_METADATA_PATH"]) if os.environ.get("TM_CARD_METADATA_PATH") else None,
@@ -225,6 +230,34 @@ def load_elo() -> dict:
             except Exception:
                 continue
     return {"players": {}, "games": []}
+
+
+def load_excluded_games() -> set[str]:
+    excluded: set[str] = set()
+    for path in EXCLUDED_GAMES_PATHS:
+        if path is None or not path.exists():
+            continue
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if isinstance(data, list):
+            excluded.update(str(game_id) for game_id in data if game_id)
+        elif isinstance(data, dict):
+            for game_id, config in data.items():
+                if isinstance(config, dict) and config.get("exclude") is False:
+                    continue
+                if game_id:
+                    excluded.add(str(game_id))
+    return excluded
+
+
+def game_id_of(game: dict) -> str:
+    return str(game.get("_key") or game.get("gameId") or "")
+
+
+def is_excluded_game(game_id: object, excluded_games: set[str]) -> bool:
+    return str(game_id or "") in excluded_games
 
 
 def save_elo(data: dict) -> None:
@@ -417,6 +450,7 @@ def load_latest_game_states(cur: sqlite3.Cursor, game_ids: List[str]) -> tuple[D
 
 
 def fetch_finished_games() -> List[dict]:
+    excluded_games = load_excluded_games()
     conn = sqlite3.connect(str(DB_PATH))
     cur = conn.cursor()
     cur.execute(
@@ -445,6 +479,8 @@ def fetch_finished_games() -> List[dict]:
 
     games: List[dict] = []
     for gid, generations, scores_json, completed_time, board_name, spectator_id in rows:
+        if is_excluded_game(gid, excluded_games):
+            continue
         scores = json.loads(scores_json)
 
         # Fill missing player names from the latest saved game state.
@@ -498,6 +534,7 @@ def fetch_finished_games() -> List[dict]:
 def fetch_solo_records() -> List[dict]:
     existing_records = load_solo_records_by_game()
     overrides = load_solo_overrides()
+    excluded_games = load_excluded_games()
 
     conn = sqlite3.connect(str(DB_PATH))
     cur = conn.cursor()
@@ -535,6 +572,8 @@ def fetch_solo_records() -> List[dict]:
 
     records: List[dict] = []
     for gid, generations, scores_json, options_json, completed_time, board_name, spectator_id, participant_spectator_id in rows:
+        if is_excluded_game(gid, excluded_games):
+            continue
         scores = json.loads(scores_json or "[]")
         if len(scores) != 1:
             continue
@@ -1002,6 +1041,7 @@ def has_detailed_game(game: dict) -> bool:
 
 
 def fetch_stats_games() -> List[dict]:
+    excluded_games = load_excluded_games()
     conn = sqlite3.connect(str(DB_PATH))
     cur = conn.cursor()
     cur.execute(
@@ -1042,6 +1082,8 @@ def fetch_stats_games() -> List[dict]:
 
     games: List[dict] = []
     for gid, player_count, generations, scores_json, options_json, completed_time, created_time, board_name, spectator_id, game_json in rows:
+        if is_excluded_game(gid, excluded_games):
+            continue
         try:
             scores = json.loads(scores_json or "[]")
             options = json.loads(options_json or "{}")
@@ -1623,7 +1665,14 @@ def main() -> None:
     args = parser.parse_args()
 
     elo = load_elo()
-    existing_keys = {g.get("_key") for g in elo.get("games", [])}
+    excluded_games = load_excluded_games()
+    if excluded_games:
+        elo["games"] = [
+            game
+            for game in elo.get("games", [])
+            if not is_excluded_game(game_id_of(game), excluded_games)
+        ]
+    existing_keys = {game_id_of(game) for game in elo.get("games", [])}
     db_games = fetch_finished_games()
 
     if not elo.get("games"):

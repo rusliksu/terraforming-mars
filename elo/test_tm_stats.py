@@ -85,9 +85,79 @@ def assert_fetch_stats_games_fills_names_before_bot_filter(sync) -> None:
     assert sync.has_detailed_game(games[0])
 
 
+def assert_fetch_stats_games_skips_excluded_games(sync) -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        db_path = tmp_path / "game.db"
+        excluded_path = tmp_path / "excluded_games.json"
+        conn = sqlite3.connect(db_path)
+        conn.executescript(
+            """
+            CREATE TABLE game_results (
+                game_id TEXT PRIMARY KEY,
+                players INTEGER,
+                generations INTEGER,
+                scores TEXT,
+                game_options TEXT
+            );
+            CREATE TABLE completed_game (
+                game_id TEXT PRIMARY KEY,
+                completed_time INTEGER
+            );
+            CREATE TABLE games (
+                game_id TEXT,
+                save_id INTEGER,
+                created_time INTEGER,
+                game TEXT
+            );
+            """
+        )
+
+        def insert_game(game_id: str) -> None:
+            scores = [
+                {"playerName": "Alice", "playerScore": 75, "place": 1, "corporation": "Teractor"},
+                {"playerName": "Bob", "playerScore": 68, "place": 2, "corporation": "Inventrix"},
+            ]
+            snapshot = {
+                "spectatorId": f"s-{game_id}",
+                "players": [
+                    {"id": "p1", "name": "Alice", "playedCards": []},
+                    {"id": "p2", "name": "Bob", "playedCards": []},
+                ],
+            }
+            conn.execute(
+                "INSERT INTO game_results VALUES (?, ?, ?, ?, ?)",
+                (game_id, 2, 8, json.dumps(scores), json.dumps({"boardName": "Tharsis"})),
+            )
+            conn.execute("INSERT INTO completed_game VALUES (?, ?)", (game_id, 1000))
+            conn.execute(
+                "INSERT INTO games VALUES (?, ?, ?, ?)",
+                (game_id, 1, 100, json.dumps(snapshot)),
+            )
+
+        insert_game("g-keep")
+        insert_game("g-excluded")
+        conn.commit()
+        conn.close()
+        excluded_path.write_text(json.dumps({"g-excluded": {"reason": "test"}}), encoding="utf-8")
+
+        original_db_path = sync.DB_PATH
+        original_excluded_paths = sync.EXCLUDED_GAMES_PATHS
+        sync.DB_PATH = db_path
+        sync.EXCLUDED_GAMES_PATHS = [excluded_path]
+        try:
+            games = sync.fetch_stats_games()
+        finally:
+            sync.DB_PATH = original_db_path
+            sync.EXCLUDED_GAMES_PATHS = original_excluded_paths
+
+    assert [game["_key"] for game in games] == ["g-keep"]
+
+
 def main() -> None:
     sync = load_sync_module()
     assert_fetch_stats_games_fills_names_before_bot_filter(sync)
+    assert_fetch_stats_games_skips_excluded_games(sync)
     card_metadata = {
         "Teractor": {"name": "Teractor", "type": "corporation", "tags": ["earth"]},
         "Applied Science": {"name": "Applied Science", "type": "prelude", "tags": ["wild"], "resourceType": "Science"},

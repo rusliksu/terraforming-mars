@@ -105,9 +105,9 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
   {
     color: PAVEL_TURQUOISE_COLOR,
     name: PAVEL_TURQUOISE_NAME,
-    colorLabel: 'бирюза',
+    colorLabel: 'коралл',
     shortLabel: 'Паша',
-    title: 'Паша - reserved turquoise',
+    title: 'Паша - reserved coral',
     aliases: ['паша', 'павел', 'миронов', 'pasha', 'pavel', 'pavel mironov'],
   },
   {

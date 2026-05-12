@@ -143,6 +143,13 @@ export default defineComponent({
   box-shadow: 0 0 7px rgba(242, 248, 248, 0.34);
 }
 
+.player-elo-badge--turquoise {
+  color: #fff2f5;
+  border-color: #ff9aae;
+  background: rgba(46, 18, 28, 0.78);
+  box-shadow: 0 0 7px rgba(224, 54, 105, 0.42);
+}
+
 .player-elo-badge--saturnstorm {
   color: #ffe5e8;
   border-color: #ff8fa8;

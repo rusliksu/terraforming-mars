@@ -21,7 +21,7 @@ const COLOR_LABELS: Record<string, string> = {
   pearl: 'перламутровый',
   antistress: 'темно-синий',
   gambit: 'голубой',
-  turquoise: 'бирюзовый',
+  turquoise: 'коралловый',
   saturnstorm: 'красно-розовый',
   neutral: 'нейтральный',
   bronze: 'бронзовый',

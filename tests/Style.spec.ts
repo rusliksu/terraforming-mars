@@ -87,7 +87,7 @@ describe('Styles', () => {
     expect(playerSymbol).to.contain("gambit: '♞'");
   });
 
-  it('uses a reserved turquoise treatment for the Pasha persona', () => {
+  it('uses a reserved coral treatment for the Pasha persona', () => {
     const variables = read('src/styles/variables.less');
     const common = read('src/styles/common.less');
     const board = read('src/styles/board.less');
@@ -95,8 +95,9 @@ describe('Styles', () => {
     const turmoil = read('src/styles/turmoil.less');
     const playerSymbol = read('src/client/utils/playerSymbol.ts');
 
-    expect(variables).to.contain('@player_turquoise: rgb(0, 174, 181);');
+    expect(variables).to.contain('@player_turquoise: rgb(224, 54, 105);');
     expect(common).to.contain('.player_bg_color_turquoise');
+    expect(common).to.contain('#fff2f5');
     expect(board).to.contain('.board-cube--turquoise');
     expect(board).to.contain('content: "◇"');
     expect(playerHome).to.contain('&.colonies-fleet-turquoise');
@@ -113,7 +114,7 @@ describe('Styles', () => {
     expect(variables).to.contain('@player_pearl_sprite_filter: grayscale(1) brightness(1.58) contrast(0.82) saturate(0.25);');
     expect(variables).to.contain('@player_antistress_sprite_filter: saturate(1.35) brightness(0.58) contrast(1.22);');
     expect(variables).to.contain('@player_gambit_sprite_filter: hue-rotate(315deg) saturate(0.55) brightness(1.22) contrast(1.03);');
-    expect(variables).to.contain('@player_turquoise_sprite_filter: hue-rotate(55deg) saturate(1.35) brightness(1.04) contrast(1.05);');
+    expect(variables).to.contain('@player_turquoise_sprite_filter: hue-rotate(18deg) saturate(1.70) brightness(0.78) contrast(1.20);');
     expect(board).to.contain('.board-cube--gold {\n\tbackground: url(./assets/board_icons.png) -72px -91px no-repeat;');
     expect(cssBlock(board, '.board-cube--gold')).to.contain('@player_gold_sprite_filter');
     expect(board).to.contain('.board-cube--emerald {\n\tbackground: url(./assets/board_icons.png) -1px -91px no-repeat;');
@@ -176,8 +177,8 @@ describe('Styles', () => {
     expect(cssBlock(playerHome, '&.colonies-fleet-pearl')).to.contain('@player_pearl_fleet_filter @player_persona_fleet_edge_filter');
     expect(cssBlock(playerHome, '&.colonies-fleet-antistress')).to.contain('background-position: -272px 0;');
     expect(cssBlock(playerHome, '&.colonies-fleet-gambit')).to.contain('background-position: -342px 0;');
-    expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('background-position: -140px 0;');
-    expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('@player_turquoise_sprite_filter');
+    expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('background-position: -490px 0;');
+    expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('@player_turquoise_sprite_filter @player_persona_fleet_edge_filter');
     expect(cssBlock(playerHome, '&.colonies-fleet-saturn')).to.contain('background-position: -70px 0;');
     expect(cssBlock(board, '.board-cube--saturnrings')).to.contain('background: url(./assets/board_icons.png) -72px -91px no-repeat;');
     expect(cssBlock(board, '.board-cube--saturnstorm')).to.contain('background: url(./assets/board_icons.png) -24px -117px no-repeat;');

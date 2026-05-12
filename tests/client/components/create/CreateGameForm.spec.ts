@@ -235,7 +235,7 @@ describe('CreateGameForm', () => {
     expect(secondOptions).to.include(`${GYDRO_NAME} · перламутр`);
     expect(secondOptions).to.include(`${ANTISTRESS_NAME} · тёмно-синий`);
     expect(secondOptions).to.include(`${GAMBIT_GIRL_NAME} · гортензия`);
-    expect(secondOptions).to.include(`${PAVEL_TURQUOISE_NAME} · бирюза`);
+    expect(secondOptions).to.include(`${PAVEL_TURQUOISE_NAME} · коралл`);
   });
 
   it('renders persona preview using the shared colorbox swatch', () => {

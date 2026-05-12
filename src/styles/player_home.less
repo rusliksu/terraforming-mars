@@ -1016,8 +1016,14 @@
     }
 
     &.colonies-fleet-turquoise {
-        background-position: -490px 0;
-        filter: @player_turquoise_sprite_filter @player_persona_fleet_edge_filter;
+        background: @player_turquoise_token_gradient;
+        -webkit-mask-image: url(./assets/colony_ships.png);
+        mask-image: url(./assets/colony_ships.png);
+        -webkit-mask-position: -490px 0;
+        mask-position: -490px 0;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        filter: @player_persona_fleet_edge_filter;
     }
 
     &.colonies-fleet-saturn {

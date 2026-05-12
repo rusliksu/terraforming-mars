@@ -350,8 +350,24 @@
 }
 
 .board-cube--turquoise {
-	background: url(./assets/board_icons.png) -1px -91px no-repeat;
-	filter: @player_turquoise_sprite_filter drop-shadow(2px 2px 3px black);
+	background: transparent;
+	filter: drop-shadow(2px 2px 3px black);
+}
+
+.board-cube--turquoise::before {
+	content: "";
+	position: absolute;
+	left: 3px;
+	top: 3px;
+	width: 15px;
+	height: 15px;
+	border-radius: 4px;
+	transform: rotate(45deg);
+	background: @player_turquoise_token_gradient;
+	box-shadow:
+		inset 1px 1px 0 rgba(255,255,255,.34),
+		inset -2px -2px 0 rgba(0,0,0,.28),
+		0 2px 2px rgba(0,0,0,.4);
 }
 
 .board-cube--saturn {
@@ -441,7 +457,7 @@
 
 .board-space .board-cube--turquoise::before,
 .board-cube-coOwner.board-cube--turquoise::before {
-	background: linear-gradient(135deg, #ffd1dc 0%, @player_turquoise 52%, #6a001d 100%);
+	background: @player_turquoise_token_gradient;
 }
 
 .board-space .board-cube--saturn::before,
@@ -969,7 +985,7 @@ each(@token_types, {
 }
 
 .underground-excavator--turquoise {
-	background: linear-gradient(135deg, #ffd1dc 0%, @player_turquoise 48%, #6a001d 100%);
+	background: @player_turquoise_token_gradient;
 	border: 1px solid #ff9aae;
 }
 

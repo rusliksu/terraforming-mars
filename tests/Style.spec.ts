@@ -96,6 +96,7 @@ describe('Styles', () => {
     const playerSymbol = read('src/client/utils/playerSymbol.ts');
 
     expect(variables).to.contain('@player_turquoise: rgb(224, 54, 105);');
+    expect(variables).to.contain('@player_turquoise_token_gradient: linear-gradient(135deg, @player_turquoise_light 0%, @player_turquoise 52%, @player_turquoise_dark 100%);');
     expect(common).to.contain('.player_bg_color_turquoise');
     expect(common).to.contain('#fff2f5');
     expect(board).to.contain('.board-cube--turquoise');
@@ -124,7 +125,8 @@ describe('Styles', () => {
     expect(board).to.contain('.board-cube--pearl {\n\tbackground: url(./assets/board_icons.png) -118px -91px no-repeat;');
     expect(board).to.contain('.board-cube--antistress {\n\tbackground: url(./assets/board_icons.png) -94px -91px no-repeat;');
     expect(board).to.contain('.board-cube--gambit {\n\tbackground: url(./assets/board_icons.png) -118px -91px no-repeat;');
-    expect(board).to.contain('.board-cube--turquoise {\n\tbackground: url(./assets/board_icons.png) -1px -91px no-repeat;');
+    expect(cssBlock(board, '.board-cube--turquoise')).to.contain('background: transparent;');
+    expect(cssBlock(board, '.board-cube--turquoise::before')).to.contain('background: @player_turquoise_token_gradient;');
     for (const selector of ['.board-cube--gold', '.board-cube--emerald', '.board-cube--ginger', '.board-cube--hydro', '.board-cube--pearl', '.board-cube--antistress', '.board-cube--gambit', '.board-cube--turquoise', '.board-cube--saturn', '.board-cube--saturnrings', '.board-cube--titan', '.board-cube--saturnstorm', '.board-cube--catseye']) {
       expect(cssBlock(board, selector)).not.to.contain('linear-gradient');
     }
@@ -156,13 +158,11 @@ describe('Styles', () => {
     }
   });
 
-  it('uses sprite-based custom colony fleets without overlay glow layers', () => {
+  it('uses sprite-based custom colony fleets with a masked coral Pasha fleet', () => {
     const playerHome = read('src/styles/player_home.less');
     const board = read('src/styles/board.less');
 
     expect(playerHome).not.to.contain('.colonies-fleet-gradient');
-    expect(playerHome).not.to.contain('-webkit-mask-image: url(./assets/colony_ships.png);');
-    expect(playerHome).not.to.contain('mask-image: url(./assets/colony_ships.png);');
     expect(playerHome).not.to.contain('mix-blend-mode');
     expect(playerHome).not.to.contain('radial-gradient(ellipse');
     expect(playerHome).not.to.contain('.colonies-fleet-badge');
@@ -177,8 +177,10 @@ describe('Styles', () => {
     expect(cssBlock(playerHome, '&.colonies-fleet-pearl')).to.contain('@player_pearl_fleet_filter @player_persona_fleet_edge_filter');
     expect(cssBlock(playerHome, '&.colonies-fleet-antistress')).to.contain('background-position: -272px 0;');
     expect(cssBlock(playerHome, '&.colonies-fleet-gambit')).to.contain('background-position: -342px 0;');
-    expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('background-position: -490px 0;');
-    expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('@player_turquoise_sprite_filter @player_persona_fleet_edge_filter');
+    expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('background: @player_turquoise_token_gradient;');
+    expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('mask-image: url(./assets/colony_ships.png);');
+    expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('mask-position: -490px 0;');
+    expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('filter: @player_persona_fleet_edge_filter;');
     expect(cssBlock(playerHome, '&.colonies-fleet-saturn')).to.contain('background-position: -70px 0;');
     expect(cssBlock(board, '.board-cube--saturnrings')).to.contain('background: url(./assets/board_icons.png) -72px -91px no-repeat;');
     expect(cssBlock(board, '.board-cube--saturnstorm')).to.contain('background: url(./assets/board_icons.png) -24px -117px no-repeat;');
@@ -223,7 +225,9 @@ describe('Styles', () => {
     expect(cssBlock(turmoil, '&.pearl')).to.contain('color: #102027;');
     expect(cssBlock(turmoil, '&.antistress')).to.contain('.player-token-sprite(-809px, -35px, @player_antistress_sprite_filter);');
     expect(cssBlock(turmoil, '&.gambit')).to.contain('.player-token-sprite(-973px, -35px, @player_gambit_sprite_filter);');
-    expect(cssBlock(turmoil, '&.turquoise')).to.contain('.player-token-sprite(-865px, -35px, @player_turquoise_sprite_filter);');
+    expect(cssBlock(turmoil, '&.turquoise')).to.contain('.player-token-sprite(-699px, -105px, none);');
+    expect(cssBlock(turmoil, '&.turquoise')).to.contain('background: @player_turquoise_token_gradient;');
+    expect(cssBlock(turmoil, '&.turquoise')).to.contain('mask-image: url(./assets/turmoil_ui.png);');
     expect(cssBlock(turmoil, '&.saturn')).to.contain('.player-token-sprite(-644px, -35px, @player_saturn_delegate_filter);');
     expect(cssBlock(turmoil, '&.saturnrings')).to.contain('.player-token-sprite(-644px, -35px, @player_saturnrings_delegate_filter);');
     expect(cssBlock(turmoil, '&.titan')).to.contain('.player-token-sprite(-644px, -105px, @player_titan_delegate_filter);');

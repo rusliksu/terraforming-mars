@@ -36,6 +36,8 @@ describe('Locked player identities', () => {
   });
 
   it('maps spaced Genuine Gold aliases to the gold persona', () => {
-    expect(getPlayerIdentityByName('Genuine Gold')?.color).to.eq(GENUINE_GOLD_COLOR);
+    const identity = getPlayerIdentityByName('Genuine Gold');
+    expect(identity?.color).to.eq(GENUINE_GOLD_COLOR);
+    expect(identity?.name).to.eq('GenuineGold');
   });
 });

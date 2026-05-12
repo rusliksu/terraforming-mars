@@ -30,6 +30,11 @@ def write_seed(path: Path) -> None:
                 'elo': 1506,
                 'games': 3,
             },
+            'genuine gold': {
+                'displayName': 'Genuine Gold',
+                'elo': 1516,
+                'games': 1,
+            },
         },
         'games': [
             {
@@ -38,6 +43,7 @@ def write_seed(path: Path) -> None:
                     {'name': 'анатолий', 'displayName': 'Анатолий', 'vp': 81, 'place': 2},
                     {'name': 'gambitgirl', 'displayName': 'GambitGirl', 'vp': 83, 'place': 1},
                     {'name': 'gydro', 'displayName': 'GydRo', 'vp': 80, 'place': 3},
+                    {'name': 'genuine gold', 'displayName': 'Genuine Gold', 'vp': 135, 'place': 1},
                 ],
             },
         ],
@@ -53,8 +59,8 @@ def main() -> None:
         write_seed(elo_dir)
 
         summary = migrate_elo_directory(elo_dir, backup=True)
-        assert summary['changedPlayers'] == 2
-        assert summary['changedResults'] == 2
+        assert summary['changedPlayers'] == 3
+        assert summary['changedResults'] == 3
         assert len(summary['backups']) == 2
 
         primary = json.loads((elo_dir / 'elo-data.json').read_text(encoding='utf-8'))
@@ -68,6 +74,9 @@ def main() -> None:
         assert primary['players']['олеся']['displayName'] == 'Олеся'
         assert primary['players']['олеся']['elo'] == 1386
         assert primary['players']['олеся']['games'] == 18
+        assert primary['players']['genuinegold']['displayName'] == 'GenuineGold'
+        assert primary['players']['genuinegold']['elo'] == 1516
+        assert primary['players']['genuinegold']['games'] == 1
 
         results = primary['games'][0]['results']
         assert results[0]['name'] == 'антистресс'
@@ -76,6 +85,8 @@ def main() -> None:
         assert results[1]['displayName'] == 'Олеся'
         assert results[2]['name'] == 'gydro'
         assert results[2]['displayName'] == 'GydRo'
+        assert results[3]['name'] == 'genuinegold'
+        assert results[3]['displayName'] == 'GenuineGold'
 
     print('migrate elo nicknames: OK')
 

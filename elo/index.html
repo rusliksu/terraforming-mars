@@ -190,15 +190,15 @@ a:hover { text-decoration: underline; }
 .tm-stats-table { max-width: none; width: 100%; min-width: max-content; }
 .tm-stats-table .num { text-align: right; white-space: nowrap; }
 .tm-stats-table .muted { color: #888; font-size: 0.9em; }
-.tm-stats-player-table { table-layout: fixed; min-width: 1260px; }
+.tm-stats-player-table { table-layout: fixed; min-width: 960px; }
 .tm-stats-player-table th,
-.tm-stats-player-table td { padding-left: 7px; padding-right: 7px; }
-.tm-stats-player-name { width: 140px; }
-.tm-stats-player-games { width: 90px; }
-.tm-stats-player-narrow { width: 58px; }
-.tm-stats-player-time { width: 64px; }
-.tm-stats-player-action { width: 76px; }
-.tm-stats-player-vertical { width: 48px; height: 86px; padding: 5px 2px; text-align: center; vertical-align: bottom; }
+.tm-stats-player-table td { box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; padding-left: 5px; padding-right: 5px; }
+.tm-stats-player-name { width: 124px; }
+.tm-stats-player-games { width: 78px; }
+.tm-stats-player-narrow { width: 50px; }
+.tm-stats-player-time { width: 54px; }
+.tm-stats-player-action { width: 62px; }
+.tm-stats-player-vertical { width: 38px; height: 86px; padding: 5px 2px; text-align: center; vertical-align: bottom; }
 .tm-stats-player-vertical span { display: inline-block; max-height: 78px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; writing-mode: vertical-rl; transform: rotate(180deg); }
 .tm-stats-controls { display: flex; justify-content: center; gap: 8px; margin: 0 auto 12px; flex-wrap: wrap; }
 .tm-stats-controls input,
@@ -218,13 +218,13 @@ a:hover { text-decoration: underline; }
   .tm-stats-section { width: calc(100vw - 16px); }
   .tm-stats-overview { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
   .tm-stats-table { font-size: 0.78em; }
-  .tm-stats-player-table { min-width: 1120px; }
-  .tm-stats-player-name { width: 112px; }
-  .tm-stats-player-games { width: 78px; }
-  .tm-stats-player-narrow { width: 50px; }
-  .tm-stats-player-time { width: 56px; }
-  .tm-stats-player-action { width: 66px; }
-  .tm-stats-player-vertical { width: 42px; }
+  .tm-stats-player-table { min-width: 900px; }
+  .tm-stats-player-name { width: 104px; }
+  .tm-stats-player-games { width: 72px; }
+  .tm-stats-player-narrow { width: 46px; }
+  .tm-stats-player-time { width: 50px; }
+  .tm-stats-player-action { width: 58px; }
+  .tm-stats-player-vertical { width: 36px; }
 }
 </style>
 </head>
@@ -287,7 +287,7 @@ a:hover { text-decoration: underline; }
 
   <div class="tm-stats-subtitle">Player style</div>
   <table class="tm-stats-table tm-stats-player-table">
-    <thead><tr><th class="tm-stats-player-name">Player</th><th class="num tm-stats-player-games" title="Detailed stat games / ELO games when ELO has older games without card snapshots">Detailed / ELO</th><th class="num tm-stats-player-narrow" title="Timing games under 2 hours / detailed stat games">Timing</th><th class="num tm-stats-player-time" title="Trimmed mean personal player timer; games over 2 hours are excluded">Time</th><th class="num tm-stats-player-action" title="Trimmed mean personal timer per action; games over 2 hours are excluded">Sec/action</th><th class="num tm-stats-player-narrow">Win %</th><th class="num tm-stats-player-narrow">Avg VP</th><th class="num tm-stats-player-narrow">Best VP</th><th class="num tm-stats-player-vertical" title="Average played cards"><span>Cards</span></th><th class="num tm-stats-player-vertical" title="Average event cards"><span>Events</span></th><th class="num tm-stats-player-vertical" title="Average active blue cards"><span>Blue</span></th><th class="num tm-stats-player-vertical" title="Average automated green cards"><span>Green</span></th><th class="num tm-stats-player-vertical" title="Average cities"><span>Cities</span></th><th class="num tm-stats-player-vertical" title="Average greeneries"><span>Greeneries</span></th><th class="num tm-stats-player-vertical" title="Average temperature steps"><span>Temp</span></th><th class="num tm-stats-player-vertical" title="Average oxygen steps"><span>O2</span></th><th class="num tm-stats-player-vertical" title="Average ocean tiles"><span>Oceans</span></th><th class="num tm-stats-player-vertical" title="Average Venus steps"><span>Venus</span></th></tr></thead>
+    <thead><tr><th class="tm-stats-player-name">Player</th><th class="num tm-stats-player-games" title="Detailed stat games / ELO games when ELO has older games without card snapshots">Games</th><th class="num tm-stats-player-narrow" title="Timing games under 2 hours / detailed stat games">Timing</th><th class="num tm-stats-player-time" title="Trimmed mean personal player timer; games over 2 hours are excluded">Time</th><th class="num tm-stats-player-action" title="Trimmed mean personal timer per action; games over 2 hours are excluded">Sec/act</th><th class="num tm-stats-player-narrow">Win %</th><th class="num tm-stats-player-narrow">Avg VP</th><th class="num tm-stats-player-narrow">Best</th><th class="num tm-stats-player-vertical" title="Average played cards"><span>Cards</span></th><th class="num tm-stats-player-vertical" title="Average event cards"><span>Events</span></th><th class="num tm-stats-player-vertical" title="Average active blue cards"><span>Blue</span></th><th class="num tm-stats-player-vertical" title="Average automated green cards"><span>Green</span></th><th class="num tm-stats-player-vertical" title="Average cities"><span>Cities</span></th><th class="num tm-stats-player-vertical" title="Average greeneries"><span>Greeneries</span></th><th class="num tm-stats-player-vertical" title="Average temperature steps"><span>Temp</span></th><th class="num tm-stats-player-vertical" title="Average oxygen steps"><span>O2</span></th><th class="num tm-stats-player-vertical" title="Average ocean tiles"><span>Oceans</span></th><th class="num tm-stats-player-vertical" title="Average Venus steps"><span>Venus</span></th></tr></thead>
     <tbody id="tmStatsPlayersBody"></tbody>
   </table>
 

@@ -200,9 +200,10 @@ a:hover { text-decoration: underline; }
 .tm-stats-player-action { width: 62px; }
 .tm-stats-player-vertical { width: 38px; height: 108px; padding: 5px 2px; text-align: center; vertical-align: bottom; }
 .tm-stats-player-vertical span { display: inline-block; max-height: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; writing-mode: vertical-rl; transform: rotate(180deg); }
-.tm-stats-vp-table { max-width: 860px; min-width: 760px; table-layout: fixed; }
+.tm-stats-vp-table { max-width: 940px; min-width: 830px; table-layout: fixed; }
 .tm-stats-vp-table .player-col { width: 150px; }
 .tm-stats-vp-table .games-col { width: 82px; }
+.tm-stats-vp-table .vp-games-col { width: 82px; }
 .tm-stats-vp-table .num { width: 92px; }
 .tm-stats-controls { display: flex; justify-content: center; gap: 8px; margin: 0 auto 12px; flex-wrap: wrap; }
 .tm-stats-controls input,
@@ -229,8 +230,9 @@ a:hover { text-decoration: underline; }
   .tm-stats-player-time { width: 50px; }
   .tm-stats-player-action { width: 58px; }
   .tm-stats-player-vertical { width: 36px; }
-  .tm-stats-vp-table { min-width: 720px; }
+  .tm-stats-vp-table { min-width: 790px; }
   .tm-stats-vp-table .player-col { width: 120px; }
+  .tm-stats-vp-table .vp-games-col { width: 76px; }
   .tm-stats-vp-table .num { width: 86px; }
 }
 </style>
@@ -300,7 +302,7 @@ a:hover { text-decoration: underline; }
 
   <div class="tm-stats-subtitle">Player VP breakdown</div>
   <table class="tm-stats-table tm-stats-vp-table">
-    <thead><tr><th class="player-col">Player</th><th class="num games-col">Games</th><th class="num">Card VP</th><th class="num">Greenery VP</th><th class="num">City VP</th><th class="num">Milestone VP</th><th class="num">Award VP</th></tr></thead>
+    <thead><tr><th class="player-col">Player</th><th class="num games-col">Games</th><th class="num vp-games-col" title="Games with saved victory point breakdown">VP games</th><th class="num">Card VP</th><th class="num">Greenery VP</th><th class="num">City VP</th><th class="num">Milestone VP</th><th class="num">Award VP</th></tr></thead>
     <tbody id="tmStatsPlayerVpBody"></tbody>
   </table>
 
@@ -1121,11 +1123,16 @@ function formatBreakdownAverage(breakdown, key) {
   return typeof breakdown[key] === "number" ? round1(breakdown[key]) : "-";
 }
 
+function vpBreakdownGameCount(player) {
+  var counts = player.vpBreakdownGames || {};
+  return counts.cards || counts.greenery || counts.city || counts.milestones || counts.awards || 0;
+}
+
 function renderStatsPlayerVpBreakdown() {
   var body = document.getElementById("tmStatsPlayerVpBody");
   var players = ((_tmStats && _tmStats.players) || []).slice();
   if (players.length === 0) {
-    body.innerHTML = "<tr><td class=\"tm-stats-empty\" colspan=\"7\">No player VP stats yet</td></tr>";
+    body.innerHTML = "<tr><td class=\"tm-stats-empty\" colspan=\"8\">No player VP stats yet</td></tr>";
     return;
   }
   players.sort(function(a, b) {
@@ -1137,6 +1144,7 @@ function renderStatsPlayerVpBreakdown() {
     return "<tr>"
       + "<td><span class=\"player-persona " + playerPersonaClass(playerName, player.name) + "\">" + esc(playerName) + "</span></td>"
       + "<td class=\"num games\">" + esc(player.games || 0) + "</td>"
+      + "<td class=\"num games\">" + esc(vpBreakdownGameCount(player)) + "</td>"
       + "<td class=\"num\">" + formatBreakdownAverage(breakdown, "cards") + "</td>"
       + "<td class=\"num\">" + formatBreakdownAverage(breakdown, "greenery") + "</td>"
       + "<td class=\"num\">" + formatBreakdownAverage(breakdown, "city") + "</td>"

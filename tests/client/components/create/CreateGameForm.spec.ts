@@ -8,9 +8,13 @@ import {
   DEFAULT_PLAYER_COLORS,
   EMERALD_RAV_NAME,
   GAMBIT_GIRL_NAME,
+  GAMBIT_GIRL_COLOR,
   GENUINE_GOLD_NAME,
+  GYDRO_COLOR,
   GYDRO_NAME,
+  PAVEL_TURQUOISE_COLOR,
   PAVEL_TURQUOISE_NAME,
+  SONYA_SATURN_STORM_COLOR,
   TOMA_NAME,
 } from '@/common/Color';
 
@@ -122,6 +126,33 @@ describe('CreateGameForm', () => {
     expect(serialized).to.be.a('string');
     const payload = JSON.parse(serialized);
     expect(payload.players[0].telegramID).to.eq('123456789');
+  });
+
+  it('assigns reserved persona colors from typed player names', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+
+    await wrapper.setData({
+      playersCount: 4,
+      randomFirstPlayer: false,
+      players: [
+        {name: 'GydRo', color: 'blue', beginner: false, handicap: 0, first: false, isBot: false},
+        {name: 'Олеся', color: 'green', beginner: false, handicap: 0, first: false, isBot: false},
+        {name: 'Паша', color: 'red', beginner: false, handicap: 0, first: false, isBot: false},
+        {name: 'Тома', color: 'black', beginner: false, handicap: 0, first: false, isBot: false},
+      ],
+    });
+
+    const serialized = await (wrapper.vm as unknown as {serializeSettings: () => Promise<string>}).serializeSettings();
+    const payload = JSON.parse(serialized);
+
+    expect(payload.players.map((player: {name: string, color: string}) => [player.name, player.color])).deep.eq([
+      [GYDRO_NAME, GYDRO_COLOR],
+      [GAMBIT_GIRL_NAME, GAMBIT_GIRL_COLOR],
+      [PAVEL_TURQUOISE_NAME, PAVEL_TURQUOISE_COLOR],
+      [TOMA_NAME, SONYA_SATURN_STORM_COLOR],
+    ]);
   });
 
   it('locks the gold player name to GenuineGold', async () => {

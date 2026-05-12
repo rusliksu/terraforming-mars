@@ -19,6 +19,7 @@ import {Response} from '../Response';
 import {QuotaConfig, QuotaHandler} from '../server/QuotaHandler';
 import {durationToMilliseconds} from '../utils/durations';
 import {BotTakeoverManager} from '../bot/BotTakeoverManager';
+import {applyPlayerIdentitiesFromNames} from '../../common/Color';
 
 export function normalizeTelegramId(telegramID: string | undefined): string {
   return (telegramID ?? '').trim();
@@ -116,7 +117,9 @@ export class ApiCreateGame extends Handler {
           const normalizedTelegramIds = gameReq.players.map((player) => normalizeTelegramId(player.telegramID));
           const gameId = safeCast(generateRandomId('g'), isGameId);
           const spectatorId = safeCast(generateRandomId('s'), isSpectatorId);
-          const players = gameReq.players.map((obj: any) => {
+          const requestedPlayers = gameReq.players.map((player) => ({...player}));
+          applyPlayerIdentitiesFromNames(requestedPlayers);
+          const players = requestedPlayers.map((obj: any) => {
             return new Player(
               obj.name,
               obj.color,
@@ -133,8 +136,8 @@ export class ApiCreateGame extends Handler {
             }
           });
           let firstPlayerIdx = 0;
-          for (let i = 0; i < gameReq.players.length; i++) {
-            if (gameReq.players[i].first === true) {
+          for (let i = 0; i < requestedPlayers.length; i++) {
+            if (requestedPlayers[i].first === true) {
               firstPlayerIdx = i;
               break;
             }
@@ -206,7 +209,7 @@ export class ApiCreateGame extends Handler {
             game = Game.newInstance(gameId, players, players[firstPlayerIdx], gameOptions, seed, spectatorId);
           }
 
-          const botPlayers = players.filter((_player, index) => gameReq.players[index]?.isBot === true);
+          const botPlayers = players.filter((_player, index) => requestedPlayers[index]?.isBot === true);
           const startedBotPlayerIds = new Array<string>();
           try {
             for (const botPlayer of botPlayers) {

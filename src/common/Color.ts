@@ -209,16 +209,3 @@ export function getPlayerIdentityByName(name: string): LockedPlayerIdentity | un
     identity.selectable !== false && identity.name.trim().toLowerCase() === normalized) ??
     LOCKED_PLAYER_IDENTITIES.find((identity) => identity.name.trim().toLowerCase() === normalized);
 }
-
-export function applyPlayerIdentityFromName<T extends {name: string, color: Color}>(player: T): void {
-  const identity = getPlayerIdentityByName(player.name);
-  if (identity === undefined) {
-    return;
-  }
-  player.color = identity.color;
-  player.name = identity.name;
-}
-
-export function applyPlayerIdentitiesFromNames<T extends {name: string, color: Color}>(players: Array<T>): void {
-  players.forEach((player) => applyPlayerIdentityFromName(player));
-}

@@ -19,7 +19,6 @@ import {Response} from '../Response';
 import {QuotaConfig, QuotaHandler} from '../server/QuotaHandler';
 import {durationToMilliseconds} from '../utils/durations';
 import {BotTakeoverManager} from '../bot/BotTakeoverManager';
-import {applyPlayerIdentitiesFromNames} from '../../common/Color';
 
 export function normalizeTelegramId(telegramID: string | undefined): string {
   return (telegramID ?? '').trim();
@@ -118,7 +117,6 @@ export class ApiCreateGame extends Handler {
           const gameId = safeCast(generateRandomId('g'), isGameId);
           const spectatorId = safeCast(generateRandomId('s'), isSpectatorId);
           const requestedPlayers = gameReq.players.map((player) => ({...player}));
-          applyPlayerIdentitiesFromNames(requestedPlayers);
           const players = requestedPlayers.map((obj: any) => {
             return new Player(
               obj.name,

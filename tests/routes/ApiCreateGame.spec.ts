@@ -11,15 +11,7 @@ import {SimpleGameModel} from '../../src/common/models/SimpleGameModel';
 import {IGame} from '../../src/server/IGame';
 import {FakeGameLoader} from './FakeGameLoader';
 import {
-  GAMBIT_GIRL_COLOR,
-  GAMBIT_GIRL_NAME,
   GENUINE_GOLD_NAME,
-  GYDRO_COLOR,
-  GYDRO_NAME,
-  PAVEL_TURQUOISE_COLOR,
-  PAVEL_TURQUOISE_NAME,
-  SONYA_HYDRO_COLOR,
-  TOMA_NAME,
 } from '../../src/common/Color';
 
 function newGameConfig(players: NewGameConfig['players']): NewGameConfig {
@@ -232,7 +224,7 @@ describe('ApiCreateGame', () => {
     expect(game!.players[0].color).eq('gold');
   });
 
-  it('assigns reserved persona colors from typed player names', async () => {
+  it('keeps typed player names from changing the selected colors', async () => {
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
       req.emitter.emit('data', JSON.stringify(newGameConfig([
@@ -250,10 +242,10 @@ describe('ApiCreateGame', () => {
     const game = await scaffolding.ctx.gameLoader.getGame(model.id);
 
     expect(game!.players.map((player) => [player.name, player.color])).deep.eq([
-      [GYDRO_NAME, GYDRO_COLOR],
-      [GAMBIT_GIRL_NAME, GAMBIT_GIRL_COLOR],
-      [PAVEL_TURQUOISE_NAME, PAVEL_TURQUOISE_COLOR],
-      [TOMA_NAME, SONYA_HYDRO_COLOR],
+      ['GydRo', 'blue'],
+      ['Олеся', 'green'],
+      ['Паша', 'red'],
+      ['Тома', 'black'],
     ]);
   });
 

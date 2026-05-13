@@ -8,13 +8,9 @@ import {
   DEFAULT_PLAYER_COLORS,
   EMERALD_RAV_NAME,
   GAMBIT_GIRL_NAME,
-  GAMBIT_GIRL_COLOR,
   GENUINE_GOLD_NAME,
-  GYDRO_COLOR,
   GYDRO_NAME,
-  PAVEL_TURQUOISE_COLOR,
   PAVEL_TURQUOISE_NAME,
-  SONYA_HYDRO_COLOR,
   TOMA_NAME,
 } from '@/common/Color';
 
@@ -128,7 +124,7 @@ describe('CreateGameForm', () => {
     expect(payload.players[0].telegramID).to.eq('123456789');
   });
 
-  it('assigns reserved persona colors from typed player names', async () => {
+  it('keeps typed player names from changing the selected colors', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
     });
@@ -148,10 +144,10 @@ describe('CreateGameForm', () => {
     const payload = JSON.parse(serialized);
 
     expect(payload.players.map((player: {name: string, color: string}) => [player.name, player.color])).deep.eq([
-      [GYDRO_NAME, GYDRO_COLOR],
-      [GAMBIT_GIRL_NAME, GAMBIT_GIRL_COLOR],
-      [PAVEL_TURQUOISE_NAME, PAVEL_TURQUOISE_COLOR],
-      [TOMA_NAME, SONYA_HYDRO_COLOR],
+      ['GydRo', 'blue'],
+      ['Олеся', 'green'],
+      ['Паша', 'red'],
+      ['Тома', 'black'],
     ]);
   });
 

@@ -24,6 +24,7 @@ import {TileView} from '../board/TileView';
 import BoardSpaceTile from '@/client/components/board/BoardSpaceTile.vue';
 import {getPreferences} from '@/client/utils/PreferencesManager';
 import {getSpaceName} from '@/common/boards/spaces';
+import {isReservedPlayerColor} from '@/common/Color';
 
 export default defineComponent({
   name: 'MoonSpace',
@@ -62,14 +63,20 @@ export default defineComponent({
       if (this.space?.color === undefined) {
         return '';
       }
-      const css = 'board-cube board-cube--' + this.space.color;
+      let css = 'board-cube board-cube--' + this.space.color;
+      if (isReservedPlayerColor(this.space.color)) {
+        css += ' board-cube--persona';
+      }
       return getPreferences().symbol_overlay ? css + ' overlay' : css;
     },
     coOwnerColorCss(): string {
       if (this.space?.coOwner === undefined) {
         return '';
       }
-      const css = 'board-cube-coOwner board-cube--' + this.space.coOwner;
+      let css = 'board-cube-coOwner board-cube--' + this.space.coOwner;
+      if (isReservedPlayerColor(this.space.coOwner)) {
+        css += ' board-cube--persona';
+      }
       return getPreferences().symbol_overlay ? css + ' overlay' : css;
     },
     getSpaceName(): typeof getSpaceName {

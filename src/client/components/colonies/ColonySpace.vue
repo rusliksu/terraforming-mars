@@ -2,7 +2,7 @@
   <div>
     <build-benefit v-if="idx <= 2" :metadata="metadata" :idx="idx"></build-benefit>
     <div v-if="player !== undefined" class="occupied-colony-space">
-      <div :class="`board-cube colony-cube board-cube--${player}`"></div>
+      <div :class="playerCubeCss"></div>
     </div>
     <div v-if="marker" class="colony-track-marker"></div>
   </div>
@@ -14,7 +14,7 @@ import {defineComponent} from 'vue';
 import {ColonyName} from '@/common/colonies/ColonyName';
 import {ColonyMetadata} from '@/common/colonies/ColonyMetadata';
 import BuildBenefit from './BuildBenefit.vue';
-import {Color} from '@/common/Color';
+import {Color, isReservedPlayerColor} from '@/common/Color';
 
 export default defineComponent({
   components: {BuildBenefit},
@@ -37,6 +37,16 @@ export default defineComponent({
     },
   },
   computed: {
+    playerCubeCss(): string {
+      if (this.player === undefined) {
+        return '';
+      }
+      let css = 'board-cube colony-cube board-cube--' + this.player;
+      if (isReservedPlayerColor(this.player)) {
+        css += ' board-cube--persona';
+      }
+      return css;
+    },
     ColonyName(): typeof ColonyName {
       return ColonyName;
     },

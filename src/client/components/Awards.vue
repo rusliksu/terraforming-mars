@@ -13,8 +13,7 @@
           <span v-i18n>{{ award.name }}</span>
           <span class="ma-player-cube">
             <i
-              class="board-cube"
-              :class="`board-cube--${award.color}`"
+              :class="playerCubeCss(award.color)"
               :data-test-player-cube="award.color"
             />
           </span>
@@ -52,6 +51,7 @@ import Award from '@/client/components/Award.vue';
 import {AWARD_COSTS} from '@/common/constants';
 import {FundedAwardModel} from '@/common/models/FundedAwardModel';
 import {Preferences, PreferencesManager} from '@/client/utils/PreferencesManager';
+import {Color, isReservedPlayerColor} from '@/common/Color';
 
 export default defineComponent({
   name: 'Awards',
@@ -83,6 +83,13 @@ export default defineComponent({
     },
     toggleDescription() {
       this.showDescription = !this.showDescription;
+    },
+    playerCubeCss(color: Color): string {
+      let css = 'board-cube board-cube--' + color;
+      if (isReservedPlayerColor(color)) {
+        css += ' board-cube--persona';
+      }
+      return css;
     },
 
   },

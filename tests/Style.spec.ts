@@ -107,10 +107,13 @@ describe('Styles', () => {
     expect(playerSymbol).to.contain("turquoise: '◇'");
   });
 
-  it('keeps custom cubes sprite-based outside Mars board spaces', () => {
+  it('uses persona cube tokens for reserved player cubes', () => {
     const variables = read('src/styles/variables.less');
     const board = read('src/styles/board.less');
 
+    expect(variables).to.contain('@player_gold_token_gradient: linear-gradient(135deg, #e7c86b 0%, #b78322 52%, #604000 100%);');
+    expect(variables).to.contain('@player_hydro_token_gradient: linear-gradient(135deg, #caa7ff 0%, @player_hydro 52%, #170021 100%);');
+    expect(variables).to.contain('@player_turquoise_token_gradient: linear-gradient(135deg, @player_turquoise_light 0%, @player_turquoise 52%, @player_turquoise_dark 100%);');
     expect(variables).to.contain('@player_gold_sprite_filter: sepia(0.45) saturate(1.65) hue-rotate(346deg) brightness(0.90) contrast(1.12);');
     expect(variables).to.contain('@player_emerald_sprite_filter: hue-rotate(18deg) saturate(1.70) brightness(0.72) contrast(1.12);');
     expect(variables).to.contain('@player_pearl_sprite_filter: grayscale(1) brightness(1.58) contrast(0.82) saturate(0.25);');
@@ -128,27 +131,27 @@ describe('Styles', () => {
     expect(board).to.contain('.board-cube--gambit {\n\tbackground: url(./assets/board_icons.png) -118px -91px no-repeat;');
     expect(board).to.contain('.board-cube--turquoise {\n\tbackground: url(./assets/board_icons.png) -24px -117px no-repeat;');
     expect(cssBlock(board, '.board-cube--turquoise')).to.contain('@player_turquoise_sprite_filter');
-    expect(board).not.to.contain('.board-cube--persona');
-    expect(board).not.to.contain('.board-cube--turquoise::before');
-    for (const selector of ['.board-cube--gold', '.board-cube--emerald', '.board-cube--ginger', '.board-cube--hydro', '.board-cube--pearl', '.board-cube--antistress', '.board-cube--gambit', '.board-cube--turquoise', '.board-cube--saturn', '.board-cube--saturnrings', '.board-cube--titan', '.board-cube--saturnstorm', '.board-cube--catseye']) {
-      expect(cssBlock(board, selector)).not.to.contain('linear-gradient');
-    }
+    expect(board).to.contain('.board-cube--persona');
+    expect(cssBlock(board, '.board-cube--persona')).to.contain('background: transparent;');
+    expect(cssBlock(board, '.board-cube--persona::before')).to.contain('transform: rotate(45deg);');
+    expect(board).to.contain('.board-cube--gold.board-cube--persona::before {\n\tbackground: @player_gold_token_gradient;');
+    expect(board).to.contain('.board-cube--hydro.board-cube--persona::before {\n\tbackground: @player_hydro_token_gradient;');
+    expect(board).to.contain('.board-cube--turquoise.board-cube--persona::before {\n\tbackground: @player_turquoise_token_gradient;');
   });
 
-  it('keeps Mars and Moon board spaces on sprite color classes', () => {
+  it('adds persona cube classes for reserved Mars and Moon board spaces', () => {
     const boardSpace = read('src/client/components/BoardSpace.vue');
     const moonSpace = read('src/client/components/moon/MoonSpace.vue');
 
-    expect(boardSpace).not.to.contain('isReservedPlayerColor');
-    expect(boardSpace).not.to.contain('board-cube--persona');
-    expect(boardSpace).to.contain("const css = 'board-cube board-cube--' + this.space.color;");
-    expect(moonSpace).not.to.contain('isReservedPlayerColor');
-    expect(moonSpace).not.to.contain('board-cube--persona');
-    expect(moonSpace).to.contain("const css = 'board-cube board-cube--' + this.space.color;");
-    expect(moonSpace).to.contain("const css = 'board-cube-coOwner board-cube--' + this.space.coOwner;");
+    expect(boardSpace).to.contain('isReservedPlayerColor');
+    expect(boardSpace).to.contain("css += ' board-cube--persona';");
+    expect(boardSpace).to.contain("let css = 'board-cube board-cube--' + this.space.color;");
+    expect(moonSpace).to.contain('isReservedPlayerColor');
+    expect(moonSpace).to.contain("let css = 'board-cube board-cube--' + this.space.color;");
+    expect(moonSpace).to.contain("let css = 'board-cube-coOwner board-cube--' + this.space.coOwner;");
   });
 
-  it('uses sprite cube classes for milestones, awards, and colony cubes', () => {
+  it('uses persona cube classes for milestones, awards, and colony cubes', () => {
     const playerHome = read('src/styles/player_home.less');
     const milestone = read('src/client/components/Milestone.vue');
     const milestones = read('src/client/components/Milestones.vue');
@@ -158,9 +161,12 @@ describe('Styles', () => {
 
     expect(playerHome).to.contain('.ma-player {\n            margin: 25px 0 0 70px;');
     expect(playerHome).to.contain('.board-cube {\n                margin: 0;');
+    expect(playerHome).not.to.contain('transform: scale(1.45);');
+    expect(playerHome).not.to.contain('transform: scale(0.95);');
+    expect(playerHome).not.to.contain('transform: scale(0.9);');
     for (const component of [milestone, milestones, award, awards, colonySpace]) {
-      expect(component).not.to.contain('isReservedPlayerColor(');
-      expect(component).not.to.contain('board-cube--persona');
+      expect(component).to.contain('isReservedPlayerColor(');
+      expect(component).to.contain('board-cube--persona');
       expect(component).to.contain('board-cube--');
       expect(component).not.to.contain("' overlay'");
     }

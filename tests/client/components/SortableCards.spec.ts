@@ -97,7 +97,7 @@ describe('SortableCards', () => {
       [CardName.BIRDS]: 1,
     });
   });
-  it('always enables point-and-click reorder in experimental UI without a checkbox', () => {
+  it('does not show point-and-click reorder affordances in experimental UI', () => {
     PreferencesManager.INSTANCE.set('experimental_ui', true);
     const sortable = mount(SortableCards, {
       ...globalConfig,
@@ -111,6 +111,6 @@ describe('SortableCards', () => {
       },
     });
     expect(sortable.find('input[type="checkbox"]').exists()).to.eq(false);
-    expect(sortable.findAll('.reorder-banners-container')).to.have.length(2);
+    expect(sortable.findAll('.reorder-banners-container')).to.have.length(0);
   });
 });

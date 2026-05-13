@@ -8,16 +8,11 @@
       class="cardbox"
       :class="{ 'dragging': Boolean(dragCard) }"
       draggable="true"
-      @click="clickMethod"
       @dragend="onDragEnd()"
       @dragstart="onDragStart(card.name)"
       @dragover.prevent="onDragHover(card.name)"
     >
       <Card :card="card"/>
-      <div v-if="showReorder" class="reorder-banners-container">
-        <div class="reorder-banners-left" v-if="index > 0"></div>
-        <div class="reorder-banners-right" v-if="index < cards.length - 1"></div>
-      </div>
     </div>
   </div>
 </div>
@@ -29,11 +24,8 @@ import Card from '@/client/components/card/Card.vue';
 import {CardName} from '@/common/cards/CardName';
 import {CardModel} from '@/common/models/CardModel';
 import {CardOrderStorage} from '@/client/utils/CardOrderStorage';
-import {getPreferences} from '@/client/utils/PreferencesManager';
 
 type DataModel = {
-  /** When true use the point-and-click reorder UI */
-  showReorder: boolean;
   /** Mapping from card name to its order */
   cardOrder: {[x: string]: number};
   /** When defined, it is the name of the card being dragged. */
@@ -73,7 +65,6 @@ export default defineComponent({
       }
     }
     return {
-      showReorder: getPreferences().experimental_ui,
       cardOrder: cardOrder,
       dragCard: undefined,
     };
@@ -99,36 +90,6 @@ export default defineComponent({
       this.cardOrder[source] = this.cardOrder[this.dragCard];
       this.cardOrder[this.dragCard] = temp;
       CardOrderStorage.updateCardOrder(this.playerId, this.cardOrder);
-    },
-    clickMethod(e: MouseEvent) {
-      if (!this.showReorder) {
-        return;
-      }
-      const target = e.currentTarget as HTMLElement;
-      if (!target) {
-        return;
-      }
-      if (target.matches('.sortable-cards *')) {
-        const rect = target.getBoundingClientRect();
-        const x = (e.clientX - rect.left) / rect.width;
-        const direction = x <= 0.25 ? -1.5 : x >= 0.75 ? 1.5 : null;
-        if (direction) {
-          const cardTitle = target.querySelector('.card-title');
-          if (cardTitle) {
-            const textContent = cardTitle.textContent;
-            if (textContent) {
-              const thisCard = textContent.trim();
-              this.cardOrder[thisCard] += direction;
-              Object.entries(this.cardOrder)
-                .sort((a, b) => a[1]-b[1])
-                .forEach((entry, i) => {
-                  this.cardOrder[entry[0]] = i+1;
-                });
-              CardOrderStorage.updateCardOrder(this.playerId, this.cardOrder);
-            }
-          }
-        }
-      }
     },
   },
 });

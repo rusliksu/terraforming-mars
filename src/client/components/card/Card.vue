@@ -3,7 +3,6 @@
       <div class="card-content-wrapper" v-i18n @mouseover="hovering = true" @mouseleave="hovering = false">
           <div v-if="!isStandardProject" class="card-cost-and-tags">
               <CardCost :amount="cost" :newCost="reducedCost" />
-              <div v-if="showPlayerCube" :class="playerCubeClass"></div>
               <card-help v-if="hasHelpText" :name="card.name" :hovering="hovering" />
               <CardTags :tags="tags" />
           </div>
@@ -43,7 +42,6 @@ import {Tag} from '@/common/cards/Tag';
 import {getPreferences} from '@/client/utils/PreferencesManager';
 import {CardResource} from '@/common/CardResource';
 import {getCardOrThrow} from '@/client/cards/ClientCardManifest';
-import {Color} from '@/common/Color';
 import {CardRequirementDescriptor} from '@/common/cards/CardRequirementDescriptor';
 import {GameModule} from '@/common/cards/GameModule';
 
@@ -74,12 +72,6 @@ export default defineComponent({
     robotCard: {
       type: Object as () => CardModel | undefined,
       required: false,
-    },
-    // Cube is only shown when actionUsed is true.
-    cubeColor: {
-      type: String as () => Color,
-      required: false,
-      default: 'neutral',
     },
     // When true, the card is automatically sized regardless of hover.
     autoTall: {
@@ -141,7 +133,7 @@ export default defineComponent({
 
       if (this.card.isDisabled) {
         classes.push('card-unavailable');
-      } else if (!getPreferences().experimental_ui && this.actionUsed) {
+      } else if (this.actionUsed) {
         classes.push('card-unavailable');
       }
 
@@ -199,12 +191,6 @@ export default defineComponent({
     },
     hasHelpText(): boolean {
       return CARD_HELP_TEXT[this.card.name] !== undefined;
-    },
-    showPlayerCube(): boolean {
-      return getPreferences().experimental_ui && this.actionUsed;
-    },
-    playerCubeClass(): string {
-      return `board-cube board-cube--${this.cubeColor}`;
     },
   },
 });

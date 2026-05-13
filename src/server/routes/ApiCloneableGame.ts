@@ -60,7 +60,6 @@ export class ApiCloneableGame extends Handler {
         handicap: player.handicap,
         first: false,
         isBot: false,
-        telegramID: player.telegramID,
       })),
       expansions: {...options.expansions},
       board: options.boardName,

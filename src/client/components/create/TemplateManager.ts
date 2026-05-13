@@ -9,6 +9,29 @@ export interface GameTemplate {
   settings: JSONObject;
 }
 
+function sanitizeSettingsForStorage(settings: JSONObject): JSONObject {
+  const sanitized = JSON.parse(JSON.stringify(settings)) as JSONObject;
+  const players = sanitized.players;
+  if (Array.isArray(players)) {
+    sanitized.players = players.map((player) => {
+      if (player !== null && typeof player === 'object' && !Array.isArray(player)) {
+        const sanitizedPlayer = {...player};
+        delete sanitizedPlayer.telegramID;
+        return sanitizedPlayer;
+      }
+      return player;
+    });
+  }
+  return sanitized;
+}
+
+function sanitizeTemplateForStorage(template: GameTemplate): GameTemplate {
+  return {
+    name: template.name,
+    settings: sanitizeSettingsForStorage(template.settings),
+  };
+}
+
 function localStorageAvailable(): boolean {
   try {
     return typeof localStorage !== 'undefined';
@@ -24,7 +47,12 @@ export class TemplateManager {
     }
     try {
       const data = localStorage.getItem(TEMPLATES_KEY);
-      return data ? JSON.parse(data) : [];
+      const templates = data ? JSON.parse(data) as Array<GameTemplate> : [];
+      const sanitized = templates.map(sanitizeTemplateForStorage);
+      if (JSON.stringify(templates) !== JSON.stringify(sanitized)) {
+        localStorage.setItem(TEMPLATES_KEY, JSON.stringify(sanitized));
+      }
+      return sanitized;
     } catch {
       return [];
     }
@@ -34,12 +62,13 @@ export class TemplateManager {
     if (!localStorageAvailable()) {
       return;
     }
+    const sanitizedSettings = sanitizeSettingsForStorage(settings);
     const templates = this.getTemplates();
     const idx = templates.findIndex((t) => t.name === name);
     if (idx >= 0) {
-      templates[idx].settings = settings;
+      templates[idx].settings = sanitizedSettings;
     } else {
-      templates.push({name, settings});
+      templates.push({name, settings: sanitizedSettings});
     }
     localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
   }
@@ -83,7 +112,7 @@ export class TemplateManager {
       return;
     }
     try {
-      localStorage.setItem(LAST_SETTINGS_KEY, JSON.stringify(settings));
+      localStorage.setItem(LAST_SETTINGS_KEY, JSON.stringify(sanitizeSettingsForStorage(settings)));
     } catch { /* quota exceeded, ignore */ }
   }
 
@@ -93,7 +122,15 @@ export class TemplateManager {
     }
     try {
       const data = localStorage.getItem(LAST_SETTINGS_KEY);
-      return data ? JSON.parse(data) : undefined;
+      if (!data) {
+        return undefined;
+      }
+      const settings = JSON.parse(data) as JSONObject;
+      const sanitized = sanitizeSettingsForStorage(settings);
+      if (JSON.stringify(settings) !== JSON.stringify(sanitized)) {
+        localStorage.setItem(LAST_SETTINGS_KEY, JSON.stringify(sanitized));
+      }
+      return sanitized;
     } catch {
       return undefined;
     }
@@ -103,7 +140,11 @@ export class TemplateManager {
   static serializeFormState(model: CreateGameModel): JSONObject {
     const state: JSONObject = {};
 
-    state.players = model.players.slice(0, model.playersCount).map((p) => ({...p}));
+    state.players = model.players.slice(0, model.playersCount).map((p) => {
+      const player = {...p};
+      delete player.telegramID;
+      return player;
+    });
     state.expansions = {...model.expansions};
 
     const simpleFields = [

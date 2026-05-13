@@ -322,6 +322,16 @@ describe('Styles', () => {
     expect(cssBlock(playerHome, '.ma-score.player_bg_color_saturnstorm')).to.contain('color: #ffe5e8;');
   });
 
+  it('keeps GydRo pearl text black in the player header', () => {
+    const common = read('src/styles/common.less');
+
+    expect(common).to.contain('.player_translucent_bg_color_pearl .player-info-details,');
+    expect(common).to.contain('.player_translucent_bg_color_pearl .player-info-corp,');
+    expect(common).to.contain('.player_translucent_bg_color_pearl .player-info-corp,\n.player_translucent_bg_color_pearl td,');
+    expect(common).to.contain('.player_translucent_bg_color_pearl .player-name {\n    color: #000000;');
+    expect(common).to.contain('.player_translucent_bg_color_pearl .game-end-name-and-elo a {\n    text-shadow: none;');
+  });
+
   it('keeps the old Hydro red-pink treatment available for legacy Toma games', () => {
     const variables = read('src/styles/variables.less');
     const common = read('src/styles/common.less');

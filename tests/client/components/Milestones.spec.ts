@@ -30,6 +30,19 @@ describe('Milestones', () => {
     expect(test.classes()).to.contain('ma-name--forester');
   });
 
+  it('adds persona cube styling for reserved claimed milestones', () => {
+    const milestone = mount(Milestones, {
+      ...globalConfig,
+      props: {
+        milestones: [
+          {...mockMilestone, color: 'emerald'},
+        ],
+      },
+    });
+
+    expect(milestone.find('.ma-player-cube .board-cube--emerald').classes()).to.include('board-cube--persona');
+  });
+
   it('milestones show details if previously set to show details', async () => {
     const milestone = mount(Milestones, {
       ...globalConfig,

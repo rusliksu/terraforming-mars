@@ -18,4 +18,18 @@ describe('ColonySpace', () => {
     });
     expect(wrapper.exists()).to.be.true;
   });
+
+  it('adds persona cube styling for reserved player colors', () => {
+    const wrapper = shallowMount(ColonySpace, {
+      ...globalConfig,
+      props: {
+        idx: 1,
+        metadata: getColony(ColonyName.GANYMEDE),
+        player: 'gambit',
+        marker: false,
+      },
+    });
+
+    expect(wrapper.find('.colony-cube').classes()).to.include('board-cube--persona');
+  });
 });

@@ -11,11 +11,11 @@ import {getAward} from '@/client/MilestoneAwardManifest';
 import {Preferences, PreferencesManager} from '@/client/utils/PreferencesManager';
 
 const names: Array<AwardName> = ['Banker', 'Celebrity'];
-function createAward({id = 1, funded = false}): FundedAwardModel {
+function createAward({id = 1, funded = false, color = 'red'}): FundedAwardModel {
   return {
     name: names[id - 1],
     playerName: funded ? 'Foo' : undefined,
-    color: funded ? 'red': undefined,
+    color: funded ? color: undefined,
     scores: [],
   };
 }
@@ -113,6 +113,19 @@ describe('Awards', () => {
 
     const playerCube = fundedAwards.find(`[data-test-player-cube=${fundedAward.color}]`);
     expect(playerCube.exists()).to.be.true;
+  });
+
+  it('adds persona cube styling for reserved funded awards', () => {
+    const fundedAward = createAward({id: 1, funded: true, color: 'pearl'});
+    const wrapper = shallowMount(Awards, {
+      ...globalConfig,
+      props: {
+        awards: [fundedAward],
+      },
+    });
+
+    const playerCube = wrapper.find(`[data-test-player-cube=${fundedAward.color}]`);
+    expect(playerCube.classes()).to.include('board-cube--persona');
   });
 
   it('shows award spot prices if learner mode is on', () => {

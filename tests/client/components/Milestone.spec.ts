@@ -6,13 +6,13 @@ import {ClaimedMilestoneModel} from '@/common/models/ClaimedMilestoneModel';
 import {getMilestone} from '@/client/MilestoneAwardManifest';
 
 function createMilestone(
-  {claimed, scores = []}:
-  {claimed: boolean, scores?: ClaimedMilestoneModel['scores']},
+  {claimed, scores = [], color = 'red'}:
+  {claimed: boolean, scores?: ClaimedMilestoneModel['scores'], color?: ClaimedMilestoneModel['color']},
 ): ClaimedMilestoneModel {
   return {
     name: 'Builder',
     playerName: claimed ? 'Bob' : undefined,
-    color: claimed ? 'red': undefined,
+    color: claimed ? color: undefined,
     scores,
   };
 }
@@ -91,6 +91,13 @@ describe('Milestone', () => {
     const wrapper = mount(Milestone, {...globalConfig, props: {milestone}});
 
     expect(wrapper.find(`.board-cube--${milestone.color}`).exists()).to.be.true;
+  });
+
+  it('adds persona cube styling for reserved player colors', () => {
+    const milestone = createMilestone({claimed: true, color: 'turquoise'});
+    const wrapper = mount(Milestone, {...globalConfig, props: {milestone}});
+
+    expect(wrapper.find('.board-cube--turquoise').classes()).to.include('board-cube--persona');
   });
 
   it('creates correct css class from milestone name', () => {

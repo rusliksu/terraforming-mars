@@ -6,13 +6,13 @@ import {FundedAwardModel} from '@/common/models/FundedAwardModel';
 import {getAward} from '@/client/MilestoneAwardManifest';
 
 function createAward(
-  {funded, scores = []}:
-  {funded: boolean, scores?: FundedAwardModel['scores']},
+  {funded, scores = [], color = 'red'}:
+  {funded: boolean, scores?: FundedAwardModel['scores'], color?: FundedAwardModel['color']},
 ): FundedAwardModel {
   return {
     name: `Cosmic Settler`,
     playerName: funded ? 'Bob' : undefined,
-    color: funded ? 'red': undefined,
+    color: funded ? color: undefined,
     scores,
   };
 }
@@ -100,6 +100,16 @@ describe('Award', () => {
     });
 
     expect(wrapper.find(`.board-cube--${award.color}`).exists()).to.be.true;
+  });
+
+  it('adds persona cube styling for reserved player colors', () => {
+    const award = createAward({funded: true, color: 'hydro'});
+    const wrapper = mount(Award, {
+      ...globalConfig,
+      props: {award},
+    });
+
+    expect(wrapper.find('.board-cube--hydro').classes()).to.include('board-cube--persona');
   });
 
   it('creates correct css class from award name', () => {

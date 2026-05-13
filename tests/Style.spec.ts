@@ -97,6 +97,7 @@ describe('Styles', () => {
 
     expect(variables).to.contain('@player_turquoise: rgb(224, 54, 105);');
     expect(variables).to.contain('@player_turquoise_token_gradient: linear-gradient(135deg, @player_turquoise_light 0%, @player_turquoise 52%, @player_turquoise_dark 100%);');
+    expect(variables).to.contain('@player_turquoise_sprite_filter: hue-rotate(18deg) saturate(1.70) brightness(0.78) contrast(1.20);');
     expect(common).to.contain('.player_bg_color_turquoise');
     expect(common).to.contain('#fff2f5');
     expect(board).to.contain('.board-cube--turquoise');
@@ -125,24 +126,29 @@ describe('Styles', () => {
     expect(board).to.contain('.board-cube--pearl {\n\tbackground: url(./assets/board_icons.png) -118px -91px no-repeat;');
     expect(board).to.contain('.board-cube--antistress {\n\tbackground: url(./assets/board_icons.png) -94px -91px no-repeat;');
     expect(board).to.contain('.board-cube--gambit {\n\tbackground: url(./assets/board_icons.png) -118px -91px no-repeat;');
-    expect(cssBlock(board, '.board-cube--turquoise')).to.contain('background: transparent;');
-    expect(cssBlock(board, '.board-cube--turquoise::before')).to.contain('background: @player_turquoise_token_gradient;');
+    expect(board).to.contain('.board-cube--turquoise {\n\tbackground: url(./assets/board_icons.png) -24px -117px no-repeat;');
+    expect(cssBlock(board, '.board-cube--turquoise')).to.contain('@player_turquoise_sprite_filter');
+    expect(board).not.to.contain('.board-cube--persona');
+    expect(board).not.to.contain('.board-cube--turquoise::before');
     for (const selector of ['.board-cube--gold', '.board-cube--emerald', '.board-cube--ginger', '.board-cube--hydro', '.board-cube--pearl', '.board-cube--antistress', '.board-cube--gambit', '.board-cube--turquoise', '.board-cube--saturn', '.board-cube--saturnrings', '.board-cube--titan', '.board-cube--saturnstorm', '.board-cube--catseye']) {
       expect(cssBlock(board, selector)).not.to.contain('linear-gradient');
     }
   });
 
-  it('applies persona cube rendering to Mars and Moon board spaces', () => {
+  it('keeps Mars and Moon board spaces on sprite color classes', () => {
     const boardSpace = read('src/client/components/BoardSpace.vue');
     const moonSpace = read('src/client/components/moon/MoonSpace.vue');
 
-    expect(boardSpace).to.contain('isReservedPlayerColor(this.space.color)');
-    expect(boardSpace).to.contain("css += ' board-cube--persona';");
-    expect(moonSpace).to.contain('isReservedPlayerColor(this.space.color)');
-    expect(moonSpace).to.contain('isReservedPlayerColor(this.space.coOwner)');
+    expect(boardSpace).not.to.contain('isReservedPlayerColor');
+    expect(boardSpace).not.to.contain('board-cube--persona');
+    expect(boardSpace).to.contain("const css = 'board-cube board-cube--' + this.space.color;");
+    expect(moonSpace).not.to.contain('isReservedPlayerColor');
+    expect(moonSpace).not.to.contain('board-cube--persona');
+    expect(moonSpace).to.contain("const css = 'board-cube board-cube--' + this.space.color;");
+    expect(moonSpace).to.contain("const css = 'board-cube-coOwner board-cube--' + this.space.coOwner;");
   });
 
-  it('uses persona cube rendering for milestones, awards, and colony cubes', () => {
+  it('uses sprite cube classes for milestones, awards, and colony cubes', () => {
     const playerHome = read('src/styles/player_home.less');
     const milestone = read('src/client/components/Milestone.vue');
     const milestones = read('src/client/components/Milestones.vue');
@@ -153,13 +159,14 @@ describe('Styles', () => {
     expect(playerHome).to.contain('.ma-player {\n            margin: 25px 0 0 70px;');
     expect(playerHome).to.contain('.board-cube {\n                margin: 0;');
     for (const component of [milestone, milestones, award, awards, colonySpace]) {
-      expect(component).to.contain('isReservedPlayerColor(');
-      expect(component).to.contain('board-cube--persona');
+      expect(component).not.to.contain('isReservedPlayerColor(');
+      expect(component).not.to.contain('board-cube--persona');
+      expect(component).to.contain('board-cube--');
       expect(component).not.to.contain("' overlay'");
     }
   });
 
-  it('uses unified masked custom colony fleets', () => {
+  it('uses sprite-based custom colony fleets matching standard fleet sprites', () => {
     const playerHome = read('src/styles/player_home.less');
     const board = read('src/styles/board.less');
 
@@ -168,19 +175,22 @@ describe('Styles', () => {
     expect(playerHome).not.to.contain('radial-gradient(ellipse');
     expect(playerHome).not.to.contain('.colonies-fleet-badge');
     expect(playerHome).not.to.contain('content: @glyph');
-    expect(playerHome).to.contain('.colonies-fleet-persona(@gradient)');
+    expect(playerHome).not.to.contain('.colonies-fleet-persona');
+    expect(playerHome).not.to.contain('mask-image: url(./assets/colony_ships.png);');
     expect(playerHome).to.contain('&.colonies-fleet-gold');
-    expect(cssBlock(playerHome, '&.colonies-fleet-gold')).to.contain('.colonies-fleet-persona(@player_gold_token_gradient);');
-    expect(cssBlock(playerHome, '&.colonies-fleet-emerald')).to.contain('.colonies-fleet-persona(@player_emerald_token_gradient);');
-    expect(cssBlock(playerHome, '&.colonies-fleet-ginger')).to.contain('.colonies-fleet-persona(@player_ginger_token_gradient);');
-    expect(cssBlock(playerHome, '&.colonies-fleet-hydro')).to.contain('.colonies-fleet-persona(@player_hydro_token_gradient);');
-    expect(cssBlock(playerHome, '&.colonies-fleet-pearl')).to.contain('.colonies-fleet-persona(@player_pearl_token_gradient);');
-    expect(cssBlock(playerHome, '&.colonies-fleet-antistress')).to.contain('.colonies-fleet-persona(@player_antistress_token_gradient);');
-    expect(cssBlock(playerHome, '&.colonies-fleet-gambit')).to.contain('.colonies-fleet-persona(@player_gambit_token_gradient);');
-    expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('.colonies-fleet-persona(@player_turquoise_token_gradient);');
-    expect(cssBlock(playerHome, '.colonies-fleet-persona(@gradient)')).to.contain('mask-image: url(./assets/colony_ships.png);');
-    expect(cssBlock(playerHome, '.colonies-fleet-persona(@gradient)')).to.contain('mask-position: -490px 0;');
-    expect(cssBlock(playerHome, '.colonies-fleet-persona(@gradient)')).to.contain('filter: @player_persona_fleet_edge_filter;');
+    expect(cssBlock(playerHome, '&.colonies-fleet-gold')).to.contain('background-position: -70px 0;');
+    expect(cssBlock(playerHome, '&.colonies-fleet-gold')).to.contain('@player_gold_sprite_filter');
+    expect(cssBlock(playerHome, '&.colonies-fleet-emerald')).to.contain('background-position: -140px 0;');
+    expect(cssBlock(playerHome, '&.colonies-fleet-emerald')).to.contain('@player_emerald_sprite_filter');
+    expect(cssBlock(playerHome, '&.colonies-fleet-ginger')).to.contain('background-position: -416px 0;');
+    expect(cssBlock(playerHome, '&.colonies-fleet-hydro')).to.contain('background-position: -490px 0;');
+    expect(cssBlock(playerHome, '&.colonies-fleet-hydro')).to.contain('@player_hydro_fleet_filter');
+    expect(cssBlock(playerHome, '&.colonies-fleet-pearl')).to.contain('background-position: -70px 0;');
+    expect(cssBlock(playerHome, '&.colonies-fleet-pearl')).to.contain('@player_pearl_fleet_filter');
+    expect(cssBlock(playerHome, '&.colonies-fleet-antistress')).to.contain('background-position: -272px 0;');
+    expect(cssBlock(playerHome, '&.colonies-fleet-gambit')).to.contain('background-position: -342px 0;');
+    expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('background-position: -490px 0;');
+    expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('@player_turquoise_sprite_filter');
     expect(cssBlock(playerHome, '&.colonies-fleet-saturn')).to.contain('background-position: -70px 0;');
     expect(cssBlock(board, '.board-cube--saturnrings')).to.contain('background: url(./assets/board_icons.png) -72px -91px no-repeat;');
     expect(cssBlock(board, '.board-cube--saturnstorm')).to.contain('background: url(./assets/board_icons.png) -24px -117px no-repeat;');
@@ -317,7 +327,8 @@ describe('Styles', () => {
     expect(variables).to.contain('@player_saturnstorm: rgb(190, 31, 72);');
     expect(variables).to.contain('@player_saturnstorm_sprite_filter: hue-rotate(18deg) saturate(1.55) brightness(0.68) contrast(1.18);');
     expect(cssBlock(common, '.player_bg_color_saturnstorm')).to.contain('color: #ffe5e8;');
-    expect(cssBlock(board, '.board-space .board-cube--saturnstorm::before,\n.board-cube-coOwner.board-cube--saturnstorm::before')).to.contain('#ff8fa8 0%, @player_saturnstorm 52%, #5b001b 100%');
+    expect(cssBlock(board, '.board-cube--saturnstorm')).to.contain('background: url(./assets/board_icons.png) -24px -117px no-repeat;');
+    expect(cssBlock(board, '.board-cube--saturnstorm')).to.contain('@player_saturnstorm_sprite_filter');
     expect(cssBlock(board, '.underground-excavator--saturnstorm')).to.contain('#ff8fa8 0%, @player_saturnstorm 46%, #5b001b 100%');
     expect(createGame).to.contain('.player_translucent_bg_color_saturnstorm {\n    .create-game-player-field-theme(#ffe5eb, #640014);');
     expect(playerHome).to.contain('background-color: rgba(190, 31, 72, 0.24);');

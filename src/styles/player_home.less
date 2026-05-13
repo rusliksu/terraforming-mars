@@ -994,35 +994,43 @@
     }
 
     &.colonies-fleet-gold {
-        .colonies-fleet-persona(@player_gold_token_gradient);
+        background-position: -70px 0;
+        filter: @player_gold_sprite_filter;
     }
 
     &.colonies-fleet-emerald {
-        .colonies-fleet-persona(@player_emerald_token_gradient);
+        background-position: -140px 0;
+        filter: @player_emerald_sprite_filter;
     }
 
     &.colonies-fleet-ginger {
-        .colonies-fleet-persona(@player_ginger_token_gradient);
+        background-position: -416px 0;
+        filter: @player_ginger_sprite_filter;
     }
 
     &.colonies-fleet-hydro {
-        .colonies-fleet-persona(@player_hydro_token_gradient);
+        background-position: -490px 0;
+        filter: @player_hydro_fleet_filter;
     }
 
     &.colonies-fleet-pearl {
-        .colonies-fleet-persona(@player_pearl_token_gradient);
+        background-position: -70px 0;
+        filter: @player_pearl_fleet_filter;
     }
 
     &.colonies-fleet-antistress {
-        .colonies-fleet-persona(@player_antistress_token_gradient);
+        background-position: -272px 0;
+        filter: @player_antistress_sprite_filter;
     }
 
     &.colonies-fleet-gambit {
-        .colonies-fleet-persona(@player_gambit_token_gradient);
+        background-position: -342px 0;
+        filter: @player_gambit_sprite_filter;
     }
 
     &.colonies-fleet-turquoise {
-        .colonies-fleet-persona(@player_turquoise_token_gradient);
+        background-position: -490px 0;
+        filter: @player_turquoise_sprite_filter;
     }
 
     &.colonies-fleet-saturn {
@@ -1049,17 +1057,6 @@
         background-position: -140px 0;
         filter: @player_catseye_fleet_filter @player_persona_fleet_edge_filter;
     }
-}
-
-.colonies-fleet-persona(@gradient) {
-    background: @gradient;
-    -webkit-mask-image: url(./assets/colony_ships.png);
-    mask-image: url(./assets/colony_ships.png);
-    -webkit-mask-position: -490px 0;
-    mask-position: -490px 0;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    filter: @player_persona_fleet_edge_filter;
 }
 
 .colony-cube.board-cube--gold,

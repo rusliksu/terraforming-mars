@@ -350,24 +350,8 @@
 }
 
 .board-cube--turquoise {
-	background: transparent;
-	filter: drop-shadow(2px 2px 3px black);
-}
-
-.board-cube--turquoise::before {
-	content: "";
-	position: absolute;
-	left: 3px;
-	top: 3px;
-	width: 15px;
-	height: 15px;
-	border-radius: 4px;
-	transform: rotate(45deg);
-	background: @player_turquoise_token_gradient;
-	box-shadow:
-		inset 1px 1px 0 rgba(255,255,255,.34),
-		inset -2px -2px 0 rgba(0,0,0,.28),
-		0 2px 2px rgba(0,0,0,.4);
+	background: url(./assets/board_icons.png) -24px -117px no-repeat;
+	filter: @player_turquoise_sprite_filter drop-shadow(2px 2px 3px black);
 }
 
 .board-cube--saturn {
@@ -393,92 +377,6 @@
 .board-cube--catseye {
 	background: url(./assets/board_icons.png) -1px -91px no-repeat;
 	filter: @player_catseye_sprite_filter drop-shadow(2px 2px 3px black);
-}
-
-.board-cube--persona {
-	background: transparent;
-	border: 0;
-	border-radius: 0;
-	box-shadow: none;
-	filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, 0.88));
-}
-
-.board-cube--persona::before {
-	content: "";
-	position: absolute;
-	left: 3px;
-	top: 3px;
-	width: 15px;
-	height: 15px;
-	border-radius: 4px;
-	transform: rotate(45deg);
-	box-shadow:
-		inset 1px 1px 0 rgba(255,255,255,.34),
-		inset -2px -2px 0 rgba(0,0,0,.28),
-		0 2px 2px rgba(0,0,0,.4);
-}
-
-.board-cube--gold.board-cube--persona::before {
-	background: @player_gold_token_gradient;
-}
-
-.board-cube--emerald.board-cube--persona::before {
-	background: @player_emerald_token_gradient;
-}
-
-.board-cube--ginger.board-cube--persona::before {
-	background: @player_ginger_token_gradient;
-}
-
-.board-cube--hydro.board-cube--persona::before {
-	background: @player_hydro_token_gradient;
-}
-
-.board-cube--pearl.board-cube--persona::before {
-	background: @player_pearl_token_gradient;
-}
-
-.board-cube--antistress.board-cube--persona::before {
-	background: @player_antistress_token_gradient;
-}
-
-.board-cube--gambit.board-cube--persona::before {
-	background: @player_gambit_token_gradient;
-}
-
-.board-cube--turquoise.board-cube--persona::before,
-.board-cube--turquoise::before {
-	background: @player_turquoise_token_gradient;
-}
-
-.board-cube--saturn.board-cube--persona::before,
-.board-space .board-cube--saturn::before,
-.board-cube-coOwner.board-cube--saturn::before {
-	background: linear-gradient(135deg, #fff2bd 0%, @player_saturn 52%, #8f6120 100%);
-}
-
-.board-cube--saturnrings.board-cube--persona::before,
-.board-space .board-cube--saturnrings::before,
-.board-cube-coOwner.board-cube--saturnrings::before {
-	background: linear-gradient(135deg, #f6ead2 0%, @player_saturnrings 52%, #7c694a 100%);
-}
-
-.board-cube--titan.board-cube--persona::before,
-.board-space .board-cube--titan::before,
-.board-cube-coOwner.board-cube--titan::before {
-	background: linear-gradient(135deg, #ffd696 0%, @player_titan 52%, #6d3f0e 100%);
-}
-
-.board-cube--saturnstorm.board-cube--persona::before,
-.board-space .board-cube--saturnstorm::before,
-.board-cube-coOwner.board-cube--saturnstorm::before {
-	background: linear-gradient(135deg, #ff8fa8 0%, @player_saturnstorm 52%, #5b001b 100%);
-}
-
-.board-cube--catseye.board-cube--persona::before,
-.board-space .board-cube--catseye::before,
-.board-cube-coOwner.board-cube--catseye::before {
-	background: linear-gradient(135deg, #eaff78 0%, @player_catseye 52%, #3a4c00 100%);
 }
 
 .board-cube--bronze {

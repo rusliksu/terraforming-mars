@@ -327,7 +327,9 @@ describe('Styles', () => {
 
     expect(common).to.contain('.player_translucent_bg_color_pearl .player-info-details,');
     expect(common).to.contain('.player_translucent_bg_color_pearl .player-info-corp,');
-    expect(common).to.contain('.player_translucent_bg_color_pearl .player-info-corp,\n.player_translucent_bg_color_pearl td,');
+    expect(common).to.contain('.player_translucent_bg_color_pearl .resource_item_stock_count,');
+    expect(common).to.contain('.player_translucent_bg_color_pearl .tag-count-display,');
+    expect(common).to.contain('.player_translucent_bg_color_pearl .tag-count-display,\n.player_translucent_bg_color_pearl td,');
     expect(common).to.contain('.player_translucent_bg_color_pearl .player-name {\n    color: #000000;');
     expect(common).to.contain('.player_translucent_bg_color_pearl .game-end-name-and-elo a {\n    text-shadow: none;');
   });

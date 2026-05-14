@@ -239,6 +239,9 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\verify_tm_server.ps1 -En
 pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\verify_tm_server.ps1 -Environment prod -RequireReleaseManifest
 ```
 
+`verify_tm_server.ps1 -CreateGame` is blocked against prod by default. Use
+`-AllowProdCreateGame` only when intentionally creating a disposable prod game.
+
 ## Notes
 
 - Staging has its own workdir and DB on VPS.

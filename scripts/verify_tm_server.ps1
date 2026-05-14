@@ -4,6 +4,7 @@ param(
     [string]$Environment = "staging",
     [string]$GameNamePrefix = "TMVerify",
     [switch]$CreateGame,
+    [switch]$AllowProdCreateGame,
     [switch]$RequireReleaseManifest,
     [switch]$OutputJson
 )
@@ -146,6 +147,9 @@ $expectedEnvHeader = switch ($Environment) {
     default { "" }
 }
 $serverHost = ([System.Uri]$Server).Host
+if ($CreateGame -and -not $AllowProdCreateGame -and ($Environment -eq "prod" -or $serverHost -eq "tm.knightbyte.win")) {
+    throw "CreateGame smoke is disabled against prod by default. Pass -AllowProdCreateGame only for an intentional disposable prod game."
+}
 $expectedBadgeShown = ($serverHost -eq "staging.tm.knightbyte.win")
 
 $homeResponse = Invoke-WebRequest -Uri "$Server/" -Headers @{"Cache-Control"="no-cache"} -TimeoutSec 30

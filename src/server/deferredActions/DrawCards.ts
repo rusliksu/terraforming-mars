@@ -6,6 +6,7 @@ import {Priority} from './Priority';
 import {CardResource} from '../../common/CardResource';
 import {CardType} from '../../common/cards/CardType';
 import {ChooseCards, ChooseOptions, LogType, keep} from './ChooseCards';
+import {LogHelper} from '../LogHelper';
 
 export type DrawOptions = {
   tag?: Tag,
@@ -65,6 +66,9 @@ export class DrawCards extends DeferredAction<ReadonlyArray<IProjectCard>> {
   }
 
   public static keepSome(player: IPlayer, count: number = 1, options: AllOptions): DrawCards {
-    return new DrawCards(player, count, options).andThen((cards) => player.game.defer(new ChooseCards(player, cards, options)));
+    return new DrawCards(player, count, options).andThen((cards) => {
+      LogHelper.logOfferedCards(player, cards);
+      player.game.defer(new ChooseCards(player, cards, options));
+    });
   }
 }

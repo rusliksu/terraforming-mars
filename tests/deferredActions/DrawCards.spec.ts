@@ -44,6 +44,24 @@ describe('DrawCards', () => {
     expect(projectDeck.discardPile).has.length(2);
   });
 
+  it('privately logs offered cards when keeping some', () => {
+    game.gameLog = [];
+    cast(DrawCards.keepSome(player, 4, {keepMax: 2}).execute(), undefined);
+    runAllActions(game);
+
+    const action = cast(player.popWaitingFor(), SelectCard);
+    const privateMessages = game.gameLog.filter((entry) => entry.playerId === player.id).map(formatMessage);
+    expect(privateMessages).has.length(1);
+    expect(privateMessages[0]).contains('You were offered');
+    for (const card of action.cards) {
+      expect(privateMessages[0]).contains(card.name);
+    }
+
+    action.cb([action.cards[0], action.cards[2]]);
+    const publicMessage = game.gameLog.filter((entry) => entry.playerId === undefined)[0];
+    expect(formatMessage(publicMessage)).eq('blue drew 2 card(s)');
+  });
+
   it('buys 1', () => {
     player.megaCredits = 3;
     cast(DrawCards.keepSome(player, 1, {paying: true}).execute(), undefined);

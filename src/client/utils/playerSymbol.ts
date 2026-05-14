@@ -18,6 +18,7 @@ export const SYMBOL_FOR_COLOR = {
   antistress: '✚',
   gambit: '♞',
   turquoise: '◇',
+  vanger: '✳',
   saturn: '♄',
   saturnrings: '◎',
   titan: 'T',

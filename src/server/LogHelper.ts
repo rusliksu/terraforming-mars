@@ -122,6 +122,10 @@ export class LogHelper {
     }
   }
 
+  static logOfferedCards(player: IPlayer, cards: ReadonlyArray<ICard> | ReadonlyArray<CardName>) {
+    this.logCardAction(player, 'were offered', cards, true);
+  }
+
   static logDrawnCards(player: IPlayer, cards: ReadonlyArray<ICard> | ReadonlyArray<CardName>, privateMessage: boolean = false) {
     this.logCardAction(player, 'drew', cards, privateMessage);
   }

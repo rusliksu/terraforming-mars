@@ -747,7 +747,7 @@ describe('ELO page', () => {
 
     expect(getCells(document, '#tmStatsOverview .value').slice(0, 4)).deep.eq(['1', '1', '2', '1']);
     expect(getCells(document, '#tmStatsGenerationBody tr:first-child td')).deep.eq(['8', 'GydRo', '100', 'Teractor', 'stats-game']);
-    expect(getCells(document, '#tmStatsPlayersBody tr:first-child td')).deep.eq(['GydRo', '1 / 5 ELO', '1', '10m', '12.3s', '100%', '100', '100', '12', '2', '3', '5', '2', '4']);
+    expect(getCells(document, '#tmStatsPlayersBody tr:first-child td')).deep.eq(['GydRo', '1 / 5 ELO', '1', '10m', '12.3s', '100%', '100', '100', '12', '2', '3', '5', '2', '4', '0', '0', '0', '0']);
     expect(getCells(document, '#tmStatsRecordsBody tr:first-child td')).deep.eq(['Cards · Most events', '7', 'GydRo', 'Gen 8 · 100 VP · Teractor', 'stats-game']);
     expect(getCells(document, '#tmStatsRecordsBody tr:nth-child(2) td')).deep.eq(['Timing · Fastest sec/action', '11.4 sec/action', 'GydRo', 'Gen 8 · 100 VP · Teractor', 'stats-game']);
     expect(getCells(document, '#tmStatsCardsBody tr:first-child td')).deep.eq(['Asteroid', 'event', '3', '66.7%', '96.3', '+4.5', 'space, event']);

@@ -13,6 +13,8 @@ export const GAMBIT_GIRL_COLOR = 'gambit' as const;
 export const GAMBIT_GIRL_NAME = 'Олеся';
 export const PAVEL_TURQUOISE_COLOR = 'turquoise' as const;
 export const PAVEL_TURQUOISE_NAME = 'Паша';
+export const VANGER_COLOR = 'vanger' as const;
+export const VANGER_NAME = 'Вангер';
 export const TOMA_NAME = 'Тома';
 export const SONYA_EMKO_NAME = TOMA_NAME;
 export const SONYA_HYDRO_COLOR = 'hydro' as const;
@@ -29,6 +31,7 @@ export const RESERVED_PLAYER_COLORS = [
   ANTISTRESS_COLOR,
   GAMBIT_GIRL_COLOR,
   PAVEL_TURQUOISE_COLOR,
+  VANGER_COLOR,
   SONYA_HYDRO_COLOR,
   SONYA_SATURN_COLOR,
   SONYA_SATURN_RINGS_COLOR,
@@ -84,7 +87,7 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
     colorLabel: 'перламутр',
     shortLabel: 'GydRo',
     title: 'GydRo - reserved pearl',
-    aliases: ['gydro', 'руслан', 'ruslan'],
+    aliases: ['gydro', 'руслан', 'ruslan', 'руслан гаянов', 'ruslan gayanov', 'гаянов', 'gayanov'],
   },
   {
     color: ANTISTRESS_COLOR,
@@ -109,6 +112,14 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
     shortLabel: 'Паша',
     title: 'Паша - reserved coral',
     aliases: ['паша', 'павел', 'миронов', 'pasha', 'pavel', 'pavel mironov'],
+  },
+  {
+    color: VANGER_COLOR,
+    name: VANGER_NAME,
+    colorLabel: 'чистый зеленый',
+    shortLabel: 'Вангер',
+    title: 'Вангер - reserved pure green',
+    aliases: ['вангер', 'vanger', 'вангер думов', 'vanger dumov', 'думов', 'dumov'],
   },
   {
     color: SONYA_HYDRO_COLOR,

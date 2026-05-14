@@ -150,6 +150,13 @@ export default defineComponent({
   box-shadow: 0 0 7px rgba(224, 54, 105, 0.42);
 }
 
+.player-elo-badge--vanger {
+  color: #b8ffb8;
+  border-color: #00ff00;
+  background: rgba(0, 32, 0, 0.78);
+  box-shadow: 0 0 7px rgba(0, 255, 0, 0.42);
+}
+
 .player-elo-badge--saturnstorm {
   color: #ffe5e8;
   border-color: #ff8fa8;

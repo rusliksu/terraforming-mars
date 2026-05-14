@@ -222,6 +222,11 @@ h2 {
     color: #fff2f5;
 }
 
+.player_bg_color_vanger {
+    background-color: @player_vanger;
+    color: #001f00;
+}
+
 .player_bg_color_saturn {
     background-color: @player_saturn;
     color: #201607;
@@ -314,6 +319,11 @@ h2 {
     .player_turquoise_bg_translucent();
 }
 
+.player_translucent_bg_color_vanger {
+    .player_vanger_bg_translucent();
+    color: #001f00;
+}
+
 .player_translucent_bg_color_saturn {
     .player_saturn_bg_translucent();
 }
@@ -381,8 +391,6 @@ h2 {
 .player_translucent_bg_color_pearl .player-info-details,
 .player_translucent_bg_color_pearl .player-info-name,
 .player_translucent_bg_color_pearl .player-info-corp,
-.player_translucent_bg_color_pearl .resource_item_stock_count,
-.player_translucent_bg_color_pearl .tag-count-display,
 .player_translucent_bg_color_pearl .player_name,
 .player_translucent_bg_color_pearl .game-end-name-and-elo,
 .player_translucent_bg_color_pearl .game-end-name-and-elo a,
@@ -393,12 +401,22 @@ h2 {
 .player_bg_color_pearl.log-player,
 .player_translucent_bg_color_pearl .player-info-name,
 .player_translucent_bg_color_pearl .player-info-corp,
-.player_translucent_bg_color_pearl .resource_item_stock_count,
-.player_translucent_bg_color_pearl .tag-count-display,
 .player_translucent_bg_color_pearl td,
 .player_translucent_bg_color_pearl .game-end-name-and-elo,
 .player_translucent_bg_color_pearl .game-end-name-and-elo a {
     text-shadow: none;
+}
+
+.player_translucent_bg_color_pearl .tag-count-display,
+.player_translucent_bg_color_pearl .resource_item .resource_item_stock_count,
+.player_translucent_bg_color_pearl .resource_item .resource_item_prod_count {
+    color: #ffffff;
+    text-shadow: 0 2px 2px black;
+}
+
+.player_translucent_bg_color_pearl .resource_item,
+.player_translucent_bg_color_pearl .resource_item.resource_item--energy:after {
+    background: linear-gradient(rgba(0, 0, 0, 0.88) 20%, rgba(0, 0, 0, 0.45) 50%);
 }
 
 .player_bg_color_antistress.log-player,
@@ -426,6 +444,22 @@ h2 {
 .player_translucent_bg_color_turquoise .game-end-name-and-elo a,
 .player_translucent_bg_color_turquoise .player-name {
     color: #fff2f5;
+}
+
+.player_bg_color_vanger.log-player,
+.player_translucent_bg_color_vanger .player-info-name,
+.player_translucent_bg_color_vanger .player_name,
+.player_translucent_bg_color_vanger .game-end-name-and-elo,
+.player_translucent_bg_color_vanger .game-end-name-and-elo a,
+.player_translucent_bg_color_vanger .player-name {
+    color: #001f00;
+}
+
+.player_bg_color_vanger.log-player,
+.player_translucent_bg_color_vanger td,
+.player_translucent_bg_color_vanger .game-end-name-and-elo,
+.player_translucent_bg_color_vanger .game-end-name-and-elo a {
+    text-shadow: none;
 }
 
 .player_bg_color_saturn.log-player,

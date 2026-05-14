@@ -67,6 +67,9 @@
 .player_shadow_color_turquoise {
     text-shadow: -1px -1px 6px @player_turquoise, 1px 1px 1px #333a;
 }
+.player_shadow_color_vanger {
+    text-shadow: -1px -1px 6px @player_vanger, 1px 1px 1px #333a;
+}
 .player_shadow_color_saturn {
     text-shadow: -1px -1px 6px @player_saturn, 1px 1px 1px #333a;
 }
@@ -192,6 +195,10 @@
 
     .grid-item.player_tag_bg_color_turquoise {
         background-color: rgba(224, 54, 105, 0.24);
+    }
+
+    .grid-item.player_tag_bg_color_vanger {
+        background-color: rgba(0, 255, 0, 0.24);
     }
 
     .grid-item.player_tag_bg_color_saturn {
@@ -996,6 +1003,11 @@
     &.colonies-fleet-turquoise {
         background-position: -490px 0;
         filter: @player_turquoise_sprite_filter;
+    }
+
+    &.colonies-fleet-vanger {
+        background-position: -140px 0;
+        filter: @player_vanger_fleet_filter;
     }
 
     &.colonies-fleet-saturn {

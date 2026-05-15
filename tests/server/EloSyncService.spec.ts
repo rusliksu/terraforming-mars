@@ -156,6 +156,39 @@ describe('EloSyncService', () => {
     expect(effectiveEloForExpectedScore({elo: 1500, elo_vp: 1510, games: 1}, 'elo_vp')).eq(1375);
   });
 
+  it('does not overpay established players for beating a first-game player', () => {
+    const game = (
+      key: string,
+      completedTime: number,
+      loser: string,
+    ) => ({
+      _key: key,
+      date: `2026-04-04T00:00:0${completedTime}.000Z`,
+      server: 'test',
+      map: 'THARSIS',
+      generation: 10,
+      playerCount: 2,
+      completedTime,
+      results: [
+        {name: 'vet', displayName: 'Vet', place: 1, vp: 100, corp: 'CrediCor'},
+        {name: loser.toLowerCase(), displayName: loser, place: 2, vp: 80, corp: 'Helion'},
+      ],
+    });
+    const rebuilt = rebuildEloData([
+      game('g1', 1, 'A'),
+      game('g2', 2, 'B'),
+      game('g3', 3, 'C'),
+      game('g4', 4, 'Rookie'),
+    ]);
+    const finalGame = rebuilt.games[3];
+
+    expect(finalGame.results[0].displayName).eq('Vet');
+    expect(finalGame.results[0].delta).eq(9);
+    expect(finalGame.results[1].displayName).eq('Rookie');
+    expect(finalGame.results[1].delta).eq(-9);
+    expect(rebuilt.players.rookie.elo).eq(1491);
+  });
+
   it('backfills date and duration from timestamps during rebuild', () => {
     const rebuilt = rebuildEloData([
       {

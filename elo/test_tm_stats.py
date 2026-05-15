@@ -255,12 +255,44 @@ def assert_provisional_elo_caps_expected_score(sync) -> None:
     assert sync.effective_elo_for_expected_score({"elo_vp": 1510, "games": 1}, "elo_vp") == 1375
 
 
+def assert_provisional_elo_reduces_first_game_farm_delta(sync) -> None:
+    def game(game_id: str, completed_time: int, loser: str) -> dict:
+        return {
+            "_key": game_id,
+            "gameId": game_id,
+            "server": "test",
+            "generation": 10,
+            "playerCount": 2,
+            "completedTime": completed_time,
+            "results": [
+                {"name": "vet", "displayName": "Vet", "place": 1, "vp": 100, "corp": "CrediCor"},
+                {"name": loser.lower(), "displayName": loser, "place": 2, "vp": 80, "corp": "Helion"},
+            ],
+        }
+
+    games = [
+        game("g1", 1, "A"),
+        game("g2", 2, "B"),
+        game("g3", 3, "C"),
+        game("g4", 4, "Rookie"),
+    ]
+    players = sync.rebuild_ratings(games)
+    final_results = games[3]["results"]
+
+    assert final_results[0]["displayName"] == "Vet"
+    assert final_results[0]["delta"] == 9
+    assert final_results[1]["displayName"] == "Rookie"
+    assert final_results[1]["delta"] == -9
+    assert players["rookie"]["elo"] == 1491
+
+
 def main() -> None:
     sync = load_sync_module()
     assert_fetch_stats_games_fills_names_before_bot_filter(sync)
     assert_fetch_stats_games_skips_excluded_games(sync)
     assert_player_name_overrides_apply_per_game(sync)
     assert_provisional_elo_caps_expected_score(sync)
+    assert_provisional_elo_reduces_first_game_farm_delta(sync)
     card_metadata = {
         "Teractor": {"name": "Teractor", "type": "corporation", "tags": ["earth"]},
         "Applied Science": {"name": "Applied Science", "type": "prelude", "tags": ["wild"], "resourceType": "Science"},

@@ -29,6 +29,15 @@ describe('TemplateManager', () => {
     expect(players[1]).not.to.have.property('telegramID');
   });
 
+  it('serializes the no-ELO training game flag for storage', () => {
+    const model = defaultCreateGameModel();
+    model.noEloGame = true;
+
+    const settings = TemplateManager.serializeFormState(model);
+
+    expect(settings.noEloGame).eq(true);
+  });
+
   it('sanitizes telegram ids before saving last settings', () => {
     TemplateManager.saveLastSettings({
       players: [

@@ -7,6 +7,15 @@ import {EloSyncService, effectiveEloForExpectedScore, rebuildEloData} from '../.
 import {Game} from '../../src/server/Game';
 import {TestPlayer} from '../TestPlayer';
 
+async function pathExists(filePath: string): Promise<boolean> {
+  try {
+    await fs.stat(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 describe('EloSyncService', () => {
   let tempDir: string;
   let primaryPath: string;
@@ -72,6 +81,20 @@ describe('EloSyncService', () => {
       {displayName: 'Bob', place: 1, vp: 80},
       {displayName: 'Alice', place: 2, vp: 80},
     ]);
+  });
+
+  it('does not record games marked as no-ELO', async () => {
+    const alice = TestPlayer.BLUE.newPlayer({name: 'Alice'});
+    const bob = TestPlayer.RED.newPlayer({name: 'Bob'});
+    const game = Game.newInstance('g-training', [alice, bob], alice, {noEloGame: true});
+    game.generation = 10;
+    alice.setTerraformRating(80);
+    bob.setTerraformRating(70);
+
+    await service.recordCompletedGame(game);
+
+    expect(await pathExists(primaryPath)).eq(false);
+    expect(await pathExists(mirrorPath)).eq(false);
   });
 
   it('replaces duplicate game keys instead of appending duplicates', async () => {

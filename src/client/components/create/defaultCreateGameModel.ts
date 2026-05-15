@@ -23,6 +23,7 @@ export function defaultCreateGameModel(): CreateGameModel {
     initialDraft: false,
     randomMA: RandomMAOptionType.NONE,
     modularMA: false,
+    noEloGame: false,
     randomFirstPlayer: true,
     showOtherPlayersVP: false,
     // beginnerOption: false,

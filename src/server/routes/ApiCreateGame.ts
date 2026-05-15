@@ -169,6 +169,7 @@ export class ApiCreateGame extends Handler {
             includeFanMA: gameReq.includeFanMA,
             initialDraftVariant: gameReq.initialDraft,
             modularMA: gameReq.modularMA,
+            noEloGame: gameReq.noEloGame === true,
             moonExpansion: gameReq.expansions.moon,
             moonStandardProjectVariant: gameReq.moonStandardProjectVariant,
             moonStandardProjectVariant1: gameReq.moonStandardProjectVariant1,

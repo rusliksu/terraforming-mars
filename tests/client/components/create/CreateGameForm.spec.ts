@@ -124,6 +124,18 @@ describe('CreateGameForm', () => {
     expect(payload.players[0].telegramID).to.eq('123456789');
   });
 
+  it('serializes training games as no-ELO', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    await wrapper.setData({noEloGame: true});
+
+    const serialized = await (wrapper.vm as unknown as {serializeSettings: () => Promise<string>}).serializeSettings();
+    const payload = JSON.parse(serialized);
+
+    expect(payload.noEloGame).eq(true);
+  });
+
   it('keeps typed player names from changing the selected colors', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,

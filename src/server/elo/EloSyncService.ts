@@ -648,6 +648,9 @@ export class EloSyncService {
   ) {}
 
   public async recordCompletedGame(game: IGame, options?: {botPlayerIds?: Array<string>}): Promise<void> {
+    if (game.gameOptions.noEloGame === true) {
+      return;
+    }
     await this.recordCompletedGameSummary(buildCompletedGameSummary(game, options?.botPlayerIds));
   }
 

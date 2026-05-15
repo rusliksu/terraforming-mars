@@ -283,6 +283,10 @@ def is_excluded_game(game_id: object, excluded_games: set[str]) -> bool:
     return str(game_id or "") in excluded_games
 
 
+def is_no_elo_game(options: object) -> bool:
+    return isinstance(options, dict) and options.get("noEloGame") is True
+
+
 def _player_override_key(value: object) -> str:
     key = str(value or "").strip()
     if key.isdigit() or key.startswith("index:"):
@@ -1180,6 +1184,9 @@ def fetch_stats_games() -> List[dict]:
             options = json.loads(options_json or "{}")
             game_state = json.loads(game_json or "{}")
         except Exception:
+            continue
+
+        if is_no_elo_game(options):
             continue
 
         if not scores:

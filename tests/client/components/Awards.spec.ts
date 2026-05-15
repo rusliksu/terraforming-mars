@@ -9,9 +9,10 @@ import {AWARD_COSTS} from '@/common/constants';
 import {AwardName} from '@/common/ma/AwardName';
 import {getAward} from '@/client/MilestoneAwardManifest';
 import {Preferences, PreferencesManager} from '@/client/utils/PreferencesManager';
+import {Color} from '@/common/Color';
 
 const names: Array<AwardName> = ['Banker', 'Celebrity'];
-function createAward({id = 1, funded = false, color = 'red'}): FundedAwardModel {
+function createAward({id = 1, funded = false, color = 'red'}: {id?: number, funded?: boolean, color?: Color}): FundedAwardModel {
   return {
     name: names[id - 1],
     playerName: funded ? 'Foo' : undefined,

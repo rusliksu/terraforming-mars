@@ -17,6 +17,7 @@ export type GameOptions = {
   showTimers: boolean;
   fastModeOption: boolean;
   showOtherPlayersVP: boolean;
+  noEloGame: boolean;
 
   // Extensions -- Deprecated, except when importing JSON
   corporateEra: boolean;
@@ -114,6 +115,7 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
   includeFanMA: false,
   initialDraftVariant: false,
   modularMA: false,
+  noEloGame: false,
   moonExpansion: false,
   moonStandardProjectVariant: false,
   moonStandardProjectVariant1: false,

@@ -55,6 +55,7 @@ export function fakeGameOptionsModel(overrides?: RecursivePartial<GameOptionsMod
     includedCards: [],
     includeFanMA: false,
     initialDraftVariant: false,
+    noEloGame: false,
     preludeDraftVariant: false,
     ceosDraftVariant: false,
     politicalAgendasExtension: 'Standard',

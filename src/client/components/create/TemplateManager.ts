@@ -151,7 +151,7 @@ export class TemplateManager {
       'draftVariant', 'showOtherPlayersVP', 'board', 'solarPhaseOption',
       'aresExtremeVariant', 'politicalAgendasExtension', 'undoOption', 'showTimers',
       'fastModeOption', 'removeNegativeGlobalEventsOption', 'includeFanMA', 'modularMA',
-      'startingCorporations', 'soloTR', 'initialDraft', 'preludeDraftVariant',
+      'noEloGame', 'startingCorporations', 'soloTR', 'initialDraft', 'preludeDraftVariant',
       'ceosDraftVariant', 'randomMA', 'shuffleMapOption', 'randomFirstPlayer',
       'requiresVenusTrackCompletion', 'requiresMoonTrackCompletion',
       'moonStandardProjectVariant', 'moonStandardProjectVariant1', 'altVenusBoard',

@@ -711,6 +711,7 @@ const stored = {
     'requiresMoonTrackCompletion': false,
     'removeNegativeGlobalEventsOption': false,
     'requiresVenusTrackCompletion': false,
+    'noEloGame': false,
     'showOtherPlayersVP': false,
     'showTimers': true,
     'shuffleMapOption': false,

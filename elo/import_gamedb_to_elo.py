@@ -52,6 +52,10 @@ def effective_elo_for_expected_score(record, key):
     return elo
 
 
+def is_no_elo_game(options):
+    return isinstance(options, dict) and options.get('noEloGame') is True
+
+
 def placement_score(place, player_count):
     if player_count <= 1:
         return 1.0
@@ -349,12 +353,21 @@ def main():
     preserved_legacy = 0
     skipped_bot = 0
     skipped_no_vp_no_place = 0
+    skipped_no_elo = 0
     skipped_few_players = 0
     game_entries = []
     known_ids = set()
 
     for gid, gen, scores_json, completed_ts, options_json, spectator_id in rows:
         scores = json.loads(scores_json)
+        try:
+            options = json.loads(options_json or '{}')
+        except Exception:
+            options = {}
+
+        if is_no_elo_game(options):
+            skipped_no_elo += 1
+            continue
 
         # Skip bot/test games
         if is_bot_game(scores):
@@ -450,6 +463,7 @@ def main():
     print(f'\nImported: {imported}')
     print(f'Preserved legacy-only games: {preserved_legacy}')
     print(f'Skipped bot/test: {skipped_bot}')
+    print(f'Skipped no-ELO games: {skipped_no_elo}')
     print(f'Skipped no VP/no place: {skipped_no_vp_no_place}')
     print(f'Skipped <2 players: {skipped_few_players}')
     print(f'Players: {len(elo_data["players"])}')

@@ -247,6 +247,11 @@
                                 <span v-i18n>Show timers</span>
                             </label>
 
+                            <input type="checkbox" v-model="noEloGame" id="noEloGame-checkbox">
+                            <label for="noEloGame-checkbox">
+                                <span v-i18n>Training game (no ELO)</span>
+                            </label>
+
                             <input type="checkbox" v-model="escapeVelocityMode" id="escapevelocity-checkbox">
                             <label for="escapevelocity-checkbox">
                                 <div class="create-game-expansion-icon expansion-icon-escape-velocity"></div>
@@ -1279,6 +1284,7 @@ export default defineComponent({
       const undoOption = this.undoOption;
       const showTimers = this.showTimers;
       const fastModeOption = this.fastModeOption;
+      const noEloGame = this.noEloGame;
       const removeNegativeGlobalEventsOption = this.removeNegativeGlobalEventsOption;
       const includeFanMA = this.includeFanMA;
       const startingCorporations = this.startingCorporations;
@@ -1483,6 +1489,7 @@ export default defineComponent({
         undoOption,
         showTimers,
         fastModeOption,
+        noEloGame,
         removeNegativeGlobalEventsOption,
         includeFanMA,
         modularMA: this.modularMA,

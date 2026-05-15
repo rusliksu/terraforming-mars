@@ -108,6 +108,7 @@ describe('ApiCloneableGame', () => {
         politicalAgendasExtension: 'Standard',
         undoOption: true,
         showTimers: true,
+        noEloGame: true,
         fastModeOption: false,
         removeNegativeGlobalEventsOption: false,
         includeFanMA: false,
@@ -138,6 +139,7 @@ describe('ApiCloneableGame', () => {
     expect(response.setup.board).eq(BoardName.ELYSIUM);
     expect(response.setup.clonedGamedId).eq(undefined);
     expect(response.setup.seededGame).eq(false);
+    expect(response.setup.noEloGame).eq(true);
     expect(response.setup.randomFirstPlayer).eq(true);
   });
 });

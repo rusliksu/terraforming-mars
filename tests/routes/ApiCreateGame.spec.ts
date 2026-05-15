@@ -41,6 +41,7 @@ function newGameConfig(players: NewGameConfig['players']): NewGameConfig {
     showTimers: false,
     fastModeOption: false,
     showOtherPlayersVP: false,
+    noEloGame: false,
     aresExtremeVariant: false,
     politicalAgendasExtension: 'Standard',
     solarPhaseOption: false,
@@ -151,6 +152,31 @@ describe('ApiCreateGame', () => {
     const game = await scaffolding.ctx.gameLoader.getGame(model.id);
     expect(game).is.not.undefined;
     expect(game!.players[0].name).eq('Robot');
+  });
+
+  it('creates training games with no ELO enabled', async () => {
+    const post = scaffolding.post(apiCreateGame, res);
+    const config = newGameConfig([{
+      name: 'Robot',
+      color: 'blue',
+      beginner: false,
+      handicap: 0,
+      first: true,
+      isBot: false,
+    }]);
+    config.noEloGame = true;
+    const emit = Promise.resolve().then(() => {
+      req.emitter.emit('data', JSON.stringify(config));
+      req.emitter.emit('end');
+    });
+
+    await Promise.all(([emit, post]));
+
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game).is.not.undefined;
+    expect(game!.gameOptions.noEloGame).eq(true);
   });
 
   it('waits for player links to be registered before returning', async () => {

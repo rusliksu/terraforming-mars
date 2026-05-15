@@ -202,6 +202,31 @@ describe('ApiCreateGame', () => {
     expect(game!.players[0].name).eq('Robot');
   });
 
+  it('treats null escape velocity like disabled escape velocity', async () => {
+    const post = scaffolding.post(apiCreateGame, res);
+    const config = newGameConfig([{
+      name: 'Robot',
+      color: 'blue',
+      beginner: false,
+      handicap: 0,
+      first: true,
+      isBot: false,
+    }]);
+    (config as unknown as {escapeVelocity: null}).escapeVelocity = null;
+
+    const emit = Promise.resolve().then(() => {
+      req.emitter.emit('data', JSON.stringify(config));
+      req.emitter.emit('end');
+    });
+    await Promise.all(([emit, post]));
+
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game).is.not.undefined;
+    expect(game!.gameOptions.escapeVelocity).eq(undefined);
+  });
+
   it('forces GenuineGold name for gold players', async () => {
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {

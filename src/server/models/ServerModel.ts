@@ -415,7 +415,7 @@ export class Server {
       boardName: options.boardName,
       bannedCards: options.bannedCards,
       draftVariant: options.draftVariant,
-      escapeVelocity: options.escapeVelocity,
+      escapeVelocity: options.escapeVelocity ?? undefined,
       expansions: {
         corpera: options.corporateEra,
         promo: options.promoCardsOption,

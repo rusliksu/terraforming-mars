@@ -109,4 +109,18 @@ describe('ApiGame', () => {
     const json = JSON.parse(res.content);
     expect(json.botPlayers).deep.eq([player.id]);
   });
+
+  it('does not expose null escape velocity options', async () => {
+    const player = TestPlayer.BLACK.newPlayer();
+    const game = Game.newInstance('game-valid-id', [player], player);
+    (game.gameOptions as any).escapeVelocity = null;
+    scaffolding.ctx.gameLoader.add(game);
+    scaffolding.url = '/api/game?id=game-valid-id';
+
+    await scaffolding.get(ApiGame.INSTANCE, res);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    const json = JSON.parse(res.content);
+    expect(json.gameOptions).not.have.property('escapeVelocity');
+  });
 });

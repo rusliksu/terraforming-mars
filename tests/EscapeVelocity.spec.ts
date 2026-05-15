@@ -127,4 +127,14 @@ describe('EscapeVelocity', () => {
     clock.millis += 20;
     expect(player.getVictoryPoints().total).eq(12);
   });
+
+  it('treats null escape velocity options as disabled', () => {
+    (player.game.gameOptions as any).escapeVelocity = null;
+    timer.start();
+
+    clock.millis = 60 * 60 * 1000;
+
+    expect(player.getVictoryPoints().total).eq(14);
+    expect(player.getVictoryPoints().escapeVelocity).eq(0);
+  });
 });

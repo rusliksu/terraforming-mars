@@ -3,7 +3,7 @@ import * as fs from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
 
-import {EloSyncService, rebuildEloData} from '../../src/server/elo/EloSyncService';
+import {EloSyncService, effectiveEloForExpectedScore, rebuildEloData} from '../../src/server/elo/EloSyncService';
 import {Game} from '../../src/server/Game';
 import {TestPlayer} from '../TestPlayer';
 
@@ -146,6 +146,16 @@ describe('EloSyncService', () => {
     expect(rebuilt.players.bob.totalMargin).eq(-5);
     expect(rebuilt.players.bob.avgMargin).eq(-2.5);
   });
+
+  it('uses lower effective Elo while players are provisional', () => {
+    expect(effectiveEloForExpectedScore({elo: 1500, elo_vp: 1510, games: 0}, 'elo')).eq(1300);
+    expect(effectiveEloForExpectedScore({elo: 1500, elo_vp: 1510, games: 1}, 'elo')).eq(1375);
+    expect(effectiveEloForExpectedScore({elo: 1500, elo_vp: 1510, games: 2}, 'elo')).eq(1450);
+    expect(effectiveEloForExpectedScore({elo: 1500, elo_vp: 1510, games: 3}, 'elo')).eq(1500);
+    expect(effectiveEloForExpectedScore({elo: 1290, elo_vp: 1510, games: 0}, 'elo')).eq(1290);
+    expect(effectiveEloForExpectedScore({elo: 1500, elo_vp: 1510, games: 1}, 'elo_vp')).eq(1375);
+  });
+
   it('backfills date and duration from timestamps during rebuild', () => {
     const rebuilt = rebuildEloData([
       {

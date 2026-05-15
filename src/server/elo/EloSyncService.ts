@@ -7,6 +7,7 @@ import {getEloMirrorPath, getEloPrimaryPath} from './EloPaths';
 
 const DEFAULT_ELO = 1500;
 const BASE_K = 32;
+const PROVISIONAL_ELO_BY_COMPLETED_GAMES = [1300, 1375, 1450] as const;
 const PLAYER_ALIASES: Record<string, string> = {
   'gydro': 'GydRo',
   'руслан': 'GydRo',
@@ -174,6 +175,14 @@ function getK(elo: number): number {
 
 function expectedScore(myElo: number, oppElo: number): number {
   return 1 / (1 + Math.pow(10, (oppElo - myElo) / 400));
+}
+
+export function effectiveEloForExpectedScore(player: Pick<EloPlayerRecord, 'elo' | 'elo_vp' | 'games'>, key: 'elo' | 'elo_vp'): number {
+  const rawElo = Number(player[key]);
+  const elo = Number.isFinite(rawElo) ? rawElo : DEFAULT_ELO;
+  const completedGames = Math.max(0, Math.floor(Number(player.games) || 0));
+  const provisionalElo = PROVISIONAL_ELO_BY_COMPLETED_GAMES[completedGames];
+  return provisionalElo === undefined ? elo : Math.min(elo, provisionalElo);
 }
 
 export function normalizedPlaceScore(place: number, playerCount: number): number {
@@ -430,7 +439,10 @@ export function rebuildEloData(games: Array<EloStoredGame>): EloData {
         }
         const opp = entries[j];
         const opponent = getOrCreatePlayer(players, opp.name, opp.displayName, opp.user);
-        totalExpected += expectedScore(myElo, opponent.elo);
+        totalExpected += expectedScore(
+          effectiveEloForExpectedScore(current, 'elo'),
+          effectiveEloForExpectedScore(opponent, 'elo'),
+        );
         if (entry.place < opp.place) {
           totalActual += 1;
         } else if (entry.place === opp.place) {
@@ -457,7 +469,10 @@ export function rebuildEloData(games: Array<EloStoredGame>): EloData {
         }
         const opp = entries[j];
         const opponent = getOrCreatePlayer(players, opp.name, opp.displayName, opp.user);
-        totalExpected += expectedScore(myEloVp, opponent.elo_vp);
+        totalExpected += expectedScore(
+          effectiveEloForExpectedScore(current, 'elo_vp'),
+          effectiveEloForExpectedScore(opponent, 'elo_vp'),
+        );
         if (entry.vp > opp.vp) {
           const margin = Math.min((entry.vp - opp.vp) / 20, 1);
           totalActual += 0.5 + margin * 0.5;

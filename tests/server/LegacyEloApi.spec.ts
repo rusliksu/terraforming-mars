@@ -2,6 +2,7 @@ import {expect} from 'chai';
 
 const {rebuildElo} = require('../../elo/elo-api.js') as {
   rebuildElo: (data: {players: Record<string, unknown>, games: Array<unknown>}) => void,
+  effectiveEloForExpectedScore: (elo: number, completedGames: number) => number,
 };
 
 type LegacyEloResult = {
@@ -25,6 +26,18 @@ type LegacyEloData = {
 };
 
 describe('legacy elo-api', () => {
+  it('uses lower effective Elo while players are provisional', () => {
+    const {effectiveEloForExpectedScore} = require('../../elo/elo-api.js') as {
+      effectiveEloForExpectedScore: (elo: number, completedGames: number) => number,
+    };
+
+    expect(effectiveEloForExpectedScore(1500, 0)).eq(1300);
+    expect(effectiveEloForExpectedScore(1500, 1)).eq(1375);
+    expect(effectiveEloForExpectedScore(1500, 2)).eq(1450);
+    expect(effectiveEloForExpectedScore(1500, 3)).eq(1500);
+    expect(effectiveEloForExpectedScore(1290, 0)).eq(1290);
+  });
+
   it('rebuilds player generation/margin stats and per-game Elo deltas', () => {
     const data: LegacyEloData = {
       players: {},

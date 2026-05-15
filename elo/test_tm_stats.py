@@ -246,11 +246,21 @@ def assert_player_name_overrides_apply_per_game(sync) -> None:
     assert [result["displayName"] for result in stored_game["results"]] == ["Фелькнер", "Даша"]
 
 
+def assert_provisional_elo_caps_expected_score(sync) -> None:
+    assert sync.effective_elo_for_expected_score({"elo": 1500, "games": 0}, "elo") == 1300
+    assert sync.effective_elo_for_expected_score({"elo": 1500, "games": 1}, "elo") == 1375
+    assert sync.effective_elo_for_expected_score({"elo": 1500, "games": 2}, "elo") == 1450
+    assert sync.effective_elo_for_expected_score({"elo": 1500, "games": 3}, "elo") == 1500
+    assert sync.effective_elo_for_expected_score({"elo": 1290, "games": 0}, "elo") == 1290
+    assert sync.effective_elo_for_expected_score({"elo_vp": 1510, "games": 1}, "elo_vp") == 1375
+
+
 def main() -> None:
     sync = load_sync_module()
     assert_fetch_stats_games_fills_names_before_bot_filter(sync)
     assert_fetch_stats_games_skips_excluded_games(sync)
     assert_player_name_overrides_apply_per_game(sync)
+    assert_provisional_elo_caps_expected_score(sync)
     card_metadata = {
         "Teractor": {"name": "Teractor", "type": "corporation", "tags": ["earth"]},
         "Applied Science": {"name": "Applied Science", "type": "prelude", "tags": ["wild"], "resourceType": "Science"},

@@ -24,6 +24,7 @@ ELO_PATH = ELO_DIR / 'elo-data.json'
 ELO_COMPAT_PATH = ELO_DIR / 'data.json'
 DEFAULT_ELO = 1500
 BASE_K = 32
+PROVISIONAL_ELO_BY_COMPLETED_GAMES = (1300, 1375, 1450)
 
 def get_k(elo):
     if elo < 1400: return BASE_K * 1.2
@@ -35,6 +36,20 @@ def get_k(elo):
 
 def expected_score(my_elo, opp_elo):
     return 1 / (1 + 10 ** ((opp_elo - my_elo) / 400))
+
+
+def effective_elo_for_expected_score(record, key):
+    try:
+        elo = float(record.get(key, DEFAULT_ELO))
+    except (TypeError, ValueError):
+        elo = DEFAULT_ELO
+    try:
+        completed_games = max(0, int(record.get('games', 0) or 0))
+    except (TypeError, ValueError):
+        completed_games = 0
+    if completed_games < len(PROVISIONAL_ELO_BY_COMPLETED_GAMES):
+        return min(elo, PROVISIONAL_ELO_BY_COMPLETED_GAMES[completed_games])
+    return elo
 
 
 def placement_score(place, player_count):
@@ -51,7 +66,8 @@ def calc_elo_place(players, elo_db):
     results = []
     for i, p in enumerate(players):
         key, display = normalize_name(p['name'])
-        my_elo = elo_db.get(key, {}).get('elo', DEFAULT_ELO)
+        my_record = elo_db.get(key, {})
+        my_elo = my_record.get('elo', DEFAULT_ELO)
         k = get_k(my_elo)
         total_exp = 0
         total_act = 0
@@ -59,8 +75,11 @@ def calc_elo_place(players, elo_db):
             if i == j:
                 continue
             opp_key, _ = normalize_name(opp['name'])
-            opp_elo = elo_db.get(opp_key, {}).get('elo', DEFAULT_ELO)
-            total_exp += expected_score(my_elo, opp_elo)
+            opp_record = elo_db.get(opp_key, {})
+            total_exp += expected_score(
+                effective_elo_for_expected_score(my_record, 'elo'),
+                effective_elo_for_expected_score(opp_record, 'elo'),
+            )
             if p['place'] < opp['place']:
                 total_act += 1.0
             elif p['place'] == opp['place']:
@@ -83,7 +102,8 @@ def calc_elo_vp(players, elo_db):
     results = []
     for i, p in enumerate(players):
         key, display = normalize_name(p['name'])
-        my_elo = elo_db.get(key, {}).get('elo_vp', DEFAULT_ELO)
+        my_record = elo_db.get(key, {})
+        my_elo = my_record.get('elo_vp', DEFAULT_ELO)
         my_vp = p.get('vp', 0)
         k = get_k(my_elo)
         total_exp = 0
@@ -92,9 +112,12 @@ def calc_elo_vp(players, elo_db):
             if i == j:
                 continue
             opp_key, _ = normalize_name(opp['name'])
-            opp_elo = elo_db.get(opp_key, {}).get('elo_vp', DEFAULT_ELO)
+            opp_record = elo_db.get(opp_key, {})
             opp_vp = opp.get('vp', 0)
-            total_exp += expected_score(my_elo, opp_elo)
+            total_exp += expected_score(
+                effective_elo_for_expected_score(my_record, 'elo_vp'),
+                effective_elo_for_expected_score(opp_record, 'elo_vp'),
+            )
             if my_vp > opp_vp:
                 margin = min((my_vp - opp_vp) / 20.0, 1.0)
                 total_act += 0.5 + margin * 0.5

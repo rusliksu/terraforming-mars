@@ -66,6 +66,7 @@ CARD_SOURCE_ROOTS = [
 
 DEFAULT_ELO = 1500
 BASE_K = 32
+PROVISIONAL_ELO_BY_COMPLETED_GAMES = (1300, 1375, 1450)
 MAX_TIMING_RECORD_DURATION_SECONDS = 2 * 60 * 60
 
 TEST_NAMES = {"testa", "testb", "testc", "test", "bot"}
@@ -212,6 +213,23 @@ def get_k(elo: float) -> float:
 
 def expected_score(my_elo: float, opp_elo: float) -> float:
     return 1 / (1 + 10 ** ((opp_elo - my_elo) / 400))
+
+
+def effective_elo_for_expected_score(player: dict, key: str) -> float:
+    raw_elo = player.get(key, DEFAULT_ELO)
+    try:
+        elo = float(raw_elo)
+    except (TypeError, ValueError):
+        elo = DEFAULT_ELO
+
+    try:
+        completed_games = max(0, int(player.get("games", 0) or 0))
+    except (TypeError, ValueError):
+        completed_games = 0
+
+    if completed_games < len(PROVISIONAL_ELO_BY_COMPLETED_GAMES):
+        return min(elo, PROVISIONAL_ELO_BY_COMPLETED_GAMES[completed_games])
+    return elo
 
 
 def normalized_place_score(place: int, player_count: int) -> float:
@@ -1629,7 +1647,10 @@ def rebuild_ratings(games: List[dict]) -> Dict[str, dict]:
                         "corps": {},
                     },
                 )["elo"]
-                total_expected += expected_score(my_elo, opp_elo)
+                total_expected += expected_score(
+                    effective_elo_for_expected_score(current, "elo"),
+                    effective_elo_for_expected_score(players[opp["name"]], "elo"),
+                )
                 if entry["place"] < opp["place"]:
                     total_actual += 1.0
                 elif entry["place"] == opp["place"]:
@@ -1650,7 +1671,10 @@ def rebuild_ratings(games: List[dict]) -> Dict[str, dict]:
                 if i == j:
                     continue
                 opp_elo = players[opp["name"]]["elo_vp"]
-                total_expected += expected_score(my_elo, opp_elo)
+                total_expected += expected_score(
+                    effective_elo_for_expected_score(current, "elo_vp"),
+                    effective_elo_for_expected_score(players[opp["name"]], "elo_vp"),
+                )
                 opp_vp = opp.get("vp", 0)
                 if my_vp > opp_vp:
                     margin = min((my_vp - opp_vp) / 20.0, 1.0)

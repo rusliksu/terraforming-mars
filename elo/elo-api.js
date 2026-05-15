@@ -8,6 +8,7 @@ const ELO_FILE = path.join(__dirname, "elo-data.json");
 const ELO_COMPAT_FILE = path.join(__dirname, "data.json");
 const DEFAULT_ELO = 1500;
 const K = 32;
+const PROVISIONAL_ELO_BY_COMPLETED_GAMES = [1300, 1375, 1450];
 const MERGES = require("./player_name_aliases.json");
 
 function normalizeName(name) {
@@ -17,6 +18,14 @@ function normalizeName(name) {
 
 function expectedScore(a, b) {
   return 1 / (1 + Math.pow(10, (b - a) / 400));
+}
+
+function effectiveEloForExpectedScore(elo, completedGames) {
+  var numericElo = Number(elo);
+  if (!isFinite(numericElo)) numericElo = DEFAULT_ELO;
+  var games = Math.max(0, Math.floor(Number(completedGames) || 0));
+  var provisionalElo = PROVISIONAL_ELO_BY_COMPLETED_GAMES[games];
+  return provisionalElo === undefined ? numericElo : Math.min(numericElo, provisionalElo);
 }
 
 function placementScore(place, playerCount) {
@@ -60,8 +69,10 @@ function rebuildElo(data) {
     }
 
     var preGameElo = {};
+    var preGameCount = {};
     for (var ri = 0; ri < n; ri++) {
       preGameElo[results[ri].name] = Math.round(eloPlace[results[ri].name] || DEFAULT_ELO);
+      preGameCount[results[ri].name] = gamesCount[results[ri].name] || 0;
     }
 
     for (var ri = 0; ri < n; ri++) {
@@ -91,7 +102,9 @@ function rebuildElo(data) {
         var pj = results[j].name;
         var rpi = eloPlace[pi] || DEFAULT_ELO;
         var rpj = eloPlace[pj] || DEFAULT_ELO;
-        var ei = expectedScore(rpi, rpj);
+        var ei = expectedScore(
+          effectiveEloForExpectedScore(rpi, preGameCount[pi]),
+          effectiveEloForExpectedScore(rpj, preGameCount[pj]));
         var piPl = results[i].place || i + 1;
         var pjPl = results[j].place || j + 1;
         var si = piPl < pjPl ? 1.0 : piPl === pjPl ? 0.5 : 0.0;
@@ -103,7 +116,9 @@ function rebuildElo(data) {
         var vj = results[j].vp || 0;
         var rpi2 = eloVP[pi] || DEFAULT_ELO;
         var rpj2 = eloVP[pj] || DEFAULT_ELO;
-        var ei2 = expectedScore(rpi2, rpj2);
+        var ei2 = expectedScore(
+          effectiveEloForExpectedScore(rpi2, preGameCount[pi]),
+          effectiveEloForExpectedScore(rpj2, preGameCount[pj]));
         var si2 = vi > vj ? 1.0 : vi === vj ? 0.5 : 0.0;
         eloVP[pi] = (eloVP[pi] || DEFAULT_ELO) + k * (si2 - ei2);
         eloVP[pj] = (eloVP[pj] || DEFAULT_ELO) + k * ((1 - si2) - (1 - ei2));
@@ -280,7 +295,7 @@ var server = http.createServer(function(req, res) {
   res.end(JSON.stringify({ ok: false, error: "not found" }));
 });
 
-module.exports = { rebuildElo, vpMargin };
+module.exports = { rebuildElo, vpMargin, effectiveEloForExpectedScore };
 
 if (require.main === module) {
   server.listen(PORT, "127.0.0.1", function() {

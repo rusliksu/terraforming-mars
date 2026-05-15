@@ -322,14 +322,15 @@ describe('Styles', () => {
     expect(cssBlock(playerHome, '.ma-score.player_bg_color_saturnstorm')).to.contain('color: #ffe5e8;');
   });
 
-  it('keeps GydRo pearl names black and resource counters readable in the player header', () => {
+  it('keeps GydRo pearl names and tag counters black while resource stock counters stay readable', () => {
     const common = read('src/styles/common.less');
 
     expect(common).to.contain('.player_translucent_bg_color_pearl .player-info-details,');
     expect(common).to.contain('.player_translucent_bg_color_pearl .player-info-corp,');
-    expect(common).to.contain('.player_translucent_bg_color_pearl .tag-count-display,');
-    expect(common).to.contain('.player_translucent_bg_color_pearl .tag-count-display,\n.player_translucent_bg_color_pearl .resource_item .resource_item_stock_count,');
-    expect(common).to.contain('.player_translucent_bg_color_pearl .resource_item .resource_item_prod_count {');
+    expect(common).to.contain('.player_translucent_bg_color_pearl .tag-count-display {\n    color: #000000;');
+    expect(common).to.contain('.player_translucent_bg_color_pearl .tag-count-display {\n    color: #000000;\n    text-shadow: none;');
+    expect(common).to.contain('.player_translucent_bg_color_pearl .resource_item .resource_item_stock_count {\n    color: #ffffff;');
+    expect(common).to.contain('.player_translucent_bg_color_pearl .resource_item .resource_item_prod_count {\n    color: #bb8760;');
     expect(common).to.contain('color: #ffffff;');
     expect(common).to.contain('.player_translucent_bg_color_pearl .player-name {\n    color: #000000;');
     expect(common).to.contain('.player_translucent_bg_color_pearl .game-end-name-and-elo a {\n    text-shadow: none;');

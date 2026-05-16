@@ -248,11 +248,6 @@
                                 <span v-i18n>Show timers</span>
                             </label>
 
-                            <input type="checkbox" v-model="noEloGame" id="noEloGame-checkbox">
-                            <label for="noEloGame-checkbox">
-                                <span v-i18n>Training game (no ELO)</span>
-                            </label>
-
                             <input type="checkbox" v-model="escapeVelocityMode" id="escapevelocity-checkbox">
                             <label for="escapevelocity-checkbox">
                                 <div class="create-game-expansion-icon expansion-icon-escape-velocity"></div>
@@ -301,7 +296,12 @@
                                 <input type="text" name="clonedGamedId" v-model="clonedGameId" />
                             </div>
 
-                            <div class="create-game-subsection-label" v-i18n>Custom settings</div>
+                            <div class="create-game-subsection-label" v-i18n>Knightbyte server settings</div>
+
+                            <input type="checkbox" v-model="noEloGame" id="noEloGame-checkbox">
+                            <label for="noEloGame-checkbox">
+                                <span v-i18n>Training game (no ELO)</span>
+                            </label>
 
                             <input type="checkbox" v-model="turnBasedGame" id="turnBasedGame-checkbox">
                             <label for="turnBasedGame-checkbox">

@@ -33,7 +33,12 @@ describe('CreateGameForm', () => {
       ...globalConfig,
     });
     expect(wrapper.exists()).to.be.true;
-    expect(wrapper.text()).to.contain('Custom settings');
+    const text = wrapper.text();
+    expect(text).to.contain('Knightbyte server settings');
+    expect(text.indexOf('Knightbyte server settings')).to.be.lessThan(text.indexOf('Training game (no ELO)'));
+    expect(text.indexOf('Training game (no ELO)')).to.be.lessThan(text.indexOf('Async game (Telegram)'));
+    expect(text.indexOf('Async game (Telegram)')).to.be.lessThan(text.indexOf('Bot players'));
+    expect(text.indexOf('Bot players')).to.be.lessThan(text.indexOf('Filter'));
     expect(wrapper.text()).not.to.contain('/start');
   });
 

@@ -530,7 +530,19 @@
     }
 
     &.hydro {
-        .player-token-sprite(-699px, -105px, @player_hydro_sprite_filter);
+        .player-token-sprite(-699px, -105px, none);
+        color: #f6e7ff;
+
+        &::before {
+            background: @player_hydro_token_gradient;
+            -webkit-mask-image: url(./assets/turmoil_ui.png);
+            mask-image: url(./assets/turmoil_ui.png);
+            -webkit-mask-position: -699px -105px;
+            mask-position: -699px -105px;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.85));
+        }
     }
 
     &.pearl {

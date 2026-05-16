@@ -3,7 +3,7 @@
   <div class="sortable-cards">
     <div
       ref="cardbox"
-      v-for="(card, index) in getSortedCards()"
+      v-for="card in getSortedCards()"
       :key="card.name"
       class="cardbox"
       :class="{ 'dragging': Boolean(dragCard) }"

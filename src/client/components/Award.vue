@@ -57,7 +57,10 @@ export default defineComponent({
     playerSymbol(color: Color) {
       return playerSymbol(color);
     },
-    playerCubeCss(color: Color): string {
+    playerCubeCss(color: Color | undefined): string {
+      if (color === undefined) {
+        return '';
+      }
       let css = 'board-cube board-cube--' + color;
       if (isReservedPlayerColor(color)) {
         css += ' board-cube--persona';

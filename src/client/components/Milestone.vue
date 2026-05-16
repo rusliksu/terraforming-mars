@@ -66,7 +66,10 @@ export default defineComponent({
       }
       return classes;
     },
-    playerCubeCss(color: Color): string {
+    playerCubeCss(color: Color | undefined): string {
+      if (color === undefined) {
+        return '';
+      }
       let css = 'board-cube board-cube--' + color;
       if (isReservedPlayerColor(color)) {
         css += ' board-cube--persona';

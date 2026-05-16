@@ -77,7 +77,10 @@ export default defineComponent({
     isLearnerModeOn(): boolean {
       return this.preferences.learner_mode;
     },
-    playerCubeCss(color: Color): string {
+    playerCubeCss(color: Color | undefined): string {
+      if (color === undefined) {
+        return '';
+      }
       let css = 'board-cube board-cube--' + color;
       if (isReservedPlayerColor(color)) {
         css += ' board-cube--persona';

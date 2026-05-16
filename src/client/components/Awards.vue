@@ -84,7 +84,10 @@ export default defineComponent({
     toggleDescription() {
       this.showDescription = !this.showDescription;
     },
-    playerCubeCss(color: Color): string {
+    playerCubeCss(color: Color | undefined): string {
+      if (color === undefined) {
+        return '';
+      }
       let css = 'board-cube board-cube--' + color;
       if (isReservedPlayerColor(color)) {
         css += ' board-cube--persona';

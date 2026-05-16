@@ -41,7 +41,7 @@
     <players-overview class="player_home_block player_home_block--players nofloat" :playerView="playerView" v-trim-whitespace id="shortkey-playersoverview"/>
 
       <a class="hotkey-target"></a>
-      <div class="player_home_block nofloat" v-if="!isInitialDraftingPhase()">
+      <div class="player_home_block nofloat" v-if="!isInitialDraftingPhase">
         <log-panel :viewModel="playerView" :color="thisPlayer.color" :step="game.step"></log-panel>
       </div>
 
@@ -182,6 +182,7 @@ import {sortActiveCards} from '@/client/utils/ActiveCardsSortingOrder';
 import {CardModel} from '@/common/models/CardModel';
 import {getCardOrThrow} from '../cards/ClientCardManifest';
 import {setDocumentTitle} from '@/client/utils/documentTitle';
+import {Phase} from '@/common/Phase';
 
 export type PlayerHomeModel = {
   showHand: boolean;
@@ -253,6 +254,9 @@ export default defineComponent({
     },
     sortActiveCards(): typeof sortActiveCards {
       return sortActiveCards;
+    },
+    isInitialDraftingPhase(): boolean {
+      return (this.game.phase === Phase.INITIALDRAFTING) && this.game.gameOptions.initialDraftVariant;
     },
   },
 

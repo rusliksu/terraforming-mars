@@ -89,7 +89,7 @@ export function calculateVictoryPoints(player: IPlayer) {
   }
 
   // Escape velocity VP penalty
-  if (player.game.gameOptions.escapeVelocity != null) {
+  if (player.game.gameOptions.escapeVelocity !== null && player.game.gameOptions.escapeVelocity !== undefined) {
     const options = player.game.gameOptions.escapeVelocity;
 
     const elapsedTimeMinutes = player.timer.getElapsedTimeInMinutes();

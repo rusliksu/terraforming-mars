@@ -9,6 +9,11 @@ import {Response} from '../Response';
 const DEFAULT_LIMIT = 8;
 const MAX_LIMIT = 20;
 
+type LiveGameCandidate = {
+  activity: number;
+  model: LiveGameModel;
+};
+
 function getLimit(rawLimit: string | null): number {
   if (rawLimit === null) {
     return DEFAULT_LIMIT;
@@ -18,6 +23,31 @@ function getLimit(rawLimit: string | null): number {
     return DEFAULT_LIMIT;
   }
   return Math.max(1, Math.min(MAX_LIMIT, Math.floor(parsed)));
+}
+
+function phasePriority(phase: Phase): number {
+  switch (phase) {
+  case Phase.ACTION:
+    return 5;
+  case Phase.PRODUCTION:
+  case Phase.SOLAR:
+  case Phase.INTERGENERATION:
+    return 4;
+  case Phase.RESEARCH:
+  case Phase.PRELUDES:
+  case Phase.CEOS:
+    return 3;
+  case Phase.DRAFTING:
+    return 2;
+  case Phase.INITIALDRAFTING:
+    return 1;
+  case Phase.END:
+    return 0;
+  }
+}
+
+function hasCustomPlayerName(game: {players: ReadonlyArray<{color: string, name: string}>}): boolean {
+  return game.players.some((player) => player.name.trim().toLowerCase() !== player.color.toLowerCase());
 }
 
 export class ApiLiveGames extends Handler {
@@ -31,30 +61,35 @@ export class ApiLiveGames extends Handler {
     const limit = getLimit(ctx.url.searchParams.get('limit'));
     const now = Date.now();
     const list = await ctx.gameLoader.getIds();
-    const liveGames: Array<LiveGameModel> = [];
+    const liveGames: Array<LiveGameCandidate> = [];
 
     for (const entry of list) {
-      if (liveGames.length >= limit) {
-        break;
-      }
       const game = await ctx.gameLoader.getGame(entry.gameId);
       if (game === undefined ||
           game.phase === Phase.END ||
           game.players.length < 2 ||
+          !hasCustomPlayerName(game) ||
           game.expectedPurgeTimeMs() <= now) {
         continue;
       }
       liveGames.push({
-        id: game.id,
-        phase: game.phase,
-        players: game.players.map((player) => ({
-          color: player.color,
-          name: player.name,
-        })),
-        spectatorId: game.spectatorId,
+        activity: (phasePriority(game.phase) * 1000000) + game.gameAge + game.lastSaveId,
+        model: {
+          id: game.id,
+          phase: game.phase,
+          players: game.players.map((player) => ({
+            color: player.color,
+            name: player.name,
+          })),
+          spectatorId: game.spectatorId,
+        },
       });
     }
 
-    responses.writeJson(res, ctx, liveGames);
+    const response = liveGames
+      .sort((a, b) => b.activity - a.activity)
+      .slice(0, limit)
+      .map((candidate) => candidate.model);
+    responses.writeJson(res, ctx, response);
   }
 }

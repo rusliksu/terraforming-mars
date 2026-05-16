@@ -10,7 +10,14 @@ import {TestPlayer} from '../TestPlayer';
 import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {statusCode} from '../../src/common/http/statusCode';
 
-function testGame(id: GameId, players: Array<IPlayer>, phase: Phase, expectedPurgeTimeMs = Date.now() + 86400000): IGame {
+function testGame(
+  id: GameId,
+  players: Array<IPlayer>,
+  phase: Phase,
+  expectedPurgeTimeMs = Date.now() + 86400000,
+  gameAge = 1,
+  lastSaveId = 1,
+): IGame {
   return {
     id,
     activePlayer: players[0],
@@ -21,6 +28,8 @@ function testGame(id: GameId, players: Array<IPlayer>, phase: Phase, expectedPur
     players,
     playersInGenerationOrder: players,
     spectatorId: ('s-' + id) as SpectatorId,
+    gameAge,
+    lastSaveId,
   } as unknown as IGame;
 }
 
@@ -74,5 +83,52 @@ describe('ApiLiveGames', () => {
 
     expect(res.statusCode).eq(statusCode.ok);
     expect(JSON.parse(res.content)).deep.eq([]);
+  });
+
+  it('does not list games where every player kept the default color name', async () => {
+    const defaultNameGame = testGame(
+      'game-default-names',
+      [TestPlayer.BLUE.newPlayer({name: 'Blue'}), TestPlayer.RED.newPlayer({name: 'Red'})],
+      Phase.ACTION,
+    );
+    await scaffolding.ctx.gameLoader.add(defaultNameGame);
+
+    scaffolding.url = '/api/live-games';
+    await scaffolding.get(ApiLiveGames.INSTANCE, res);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(JSON.parse(res.content)).deep.eq([]);
+  });
+
+  it('ranks active games before draft clutter before applying the default limit', async () => {
+    for (let idx = 0; idx < 8; idx++) {
+      const draftGame = testGame(
+        ('game-draft-' + idx) as GameId,
+        [TestPlayer.BLUE.newPlayer(), TestPlayer.RED.newPlayer()],
+        Phase.INITIALDRAFTING,
+        Date.now() + 86400000,
+        100,
+        100,
+      );
+      await scaffolding.ctx.gameLoader.add(draftGame);
+    }
+    const actionGame = testGame(
+      'game-action',
+      [TestPlayer.GREEN.newPlayer(), TestPlayer.RED.newPlayer()],
+      Phase.ACTION,
+      Date.now() + 86400000,
+      10,
+      10,
+    );
+    await scaffolding.ctx.gameLoader.add(actionGame);
+
+    scaffolding.url = '/api/live-games';
+    await scaffolding.get(ApiLiveGames.INSTANCE, res);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    const games = JSON.parse(res.content);
+    expect(games).has.length(8);
+    expect(games[0].id).eq('game-action');
+    expect(games.map((game: {id: string}) => game.id)).contains('game-action');
   });
 });

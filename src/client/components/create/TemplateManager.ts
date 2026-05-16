@@ -11,12 +11,15 @@ export interface GameTemplate {
 
 function sanitizeSettingsForStorage(settings: JSONObject): JSONObject {
   const sanitized = JSON.parse(JSON.stringify(settings)) as JSONObject;
+  sanitized.turnBasedGame = false;
+  sanitized.botGame = false;
   const players = sanitized.players;
   if (Array.isArray(players)) {
     sanitized.players = players.map((player) => {
       if (player !== null && typeof player === 'object' && !Array.isArray(player)) {
         const sanitizedPlayer = {...player};
         delete sanitizedPlayer.telegramID;
+        sanitizedPlayer.isBot = false;
         return sanitizedPlayer;
       }
       return player;
@@ -143,6 +146,7 @@ export class TemplateManager {
     state.players = model.players.slice(0, model.playersCount).map((p) => {
       const player = {...p};
       delete player.telegramID;
+      player.isBot = false;
       return player;
     });
     state.expansions = {...model.expansions};
@@ -151,7 +155,7 @@ export class TemplateManager {
       'draftVariant', 'showOtherPlayersVP', 'board', 'solarPhaseOption',
       'aresExtremeVariant', 'politicalAgendasExtension', 'undoOption', 'showTimers',
       'fastModeOption', 'removeNegativeGlobalEventsOption', 'includeFanMA', 'modularMA',
-      'noEloGame', 'startingCorporations', 'soloTR', 'initialDraft', 'preludeDraftVariant',
+      'noEloGame', 'turnBasedGame', 'botGame', 'startingCorporations', 'soloTR', 'initialDraft', 'preludeDraftVariant',
       'ceosDraftVariant', 'randomMA', 'shuffleMapOption', 'randomFirstPlayer',
       'requiresVenusTrackCompletion', 'requiresMoonTrackCompletion',
       'moonStandardProjectVariant', 'moonStandardProjectVariant1', 'altVenusBoard',
@@ -163,6 +167,8 @@ export class TemplateManager {
     for (const f of simpleFields) {
       state[f] = model[f] as JSONObject[typeof f];
     }
+    state.turnBasedGame = false;
+    state.botGame = false;
 
     // Deep copy arrays
     state.customCorporations = [...model.customCorporations];

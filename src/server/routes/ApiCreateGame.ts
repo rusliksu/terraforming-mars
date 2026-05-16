@@ -107,13 +107,19 @@ export class ApiCreateGame extends Handler {
       req.once('end', async () => {
         try {
           const gameReq = JSON.parse(body) as NewGameConfig;
-          const invalidTelegramPlayerIndex = gameReq.players.findIndex((player) => !isTelegramIdValid(player.telegramID));
-          if (invalidTelegramPlayerIndex !== -1) {
-            responses.badRequest(req, res, `invalid telegram id for player ${invalidTelegramPlayerIndex + 1}`);
-            resolve();
-            return;
+          const turnBasedGame = gameReq.turnBasedGame === true;
+          const botGame = gameReq.botGame === true;
+          if (turnBasedGame) {
+            const invalidTelegramPlayerIndex = gameReq.players.findIndex((player) => !isTelegramIdValid(player.telegramID));
+            if (invalidTelegramPlayerIndex !== -1) {
+              responses.badRequest(req, res, `invalid telegram id for player ${invalidTelegramPlayerIndex + 1}`);
+              resolve();
+              return;
+            }
           }
-          const normalizedTelegramIds = gameReq.players.map((player) => normalizeTelegramId(player.telegramID));
+          const normalizedTelegramIds = turnBasedGame ?
+            gameReq.players.map((player) => normalizeTelegramId(player.telegramID)) :
+            gameReq.players.map(() => '');
           const gameId = safeCast(generateRandomId('g'), isGameId);
           const spectatorId = safeCast(generateRandomId('s'), isSpectatorId);
           const requestedPlayers = gameReq.players.map((player) => ({...player}));
@@ -170,6 +176,7 @@ export class ApiCreateGame extends Handler {
             initialDraftVariant: gameReq.initialDraft,
             modularMA: gameReq.modularMA,
             noEloGame: gameReq.noEloGame === true,
+            turnBasedGame,
             moonExpansion: gameReq.expansions.moon,
             moonStandardProjectVariant: gameReq.moonStandardProjectVariant,
             moonStandardProjectVariant1: gameReq.moonStandardProjectVariant1,
@@ -195,6 +202,7 @@ export class ApiCreateGame extends Handler {
             turmoilExtension: gameReq.expansions.turmoil,
             twoCorpsVariant: gameReq.twoCorpsVariant,
             underworldExpansion: gameReq.expansions.underworld,
+            deltaProjectExpansion: gameReq.expansions.deltaProject,
             undoOption: gameReq.undoOption,
             venusNextExtension: gameReq.expansions.venus,
           };
@@ -208,7 +216,7 @@ export class ApiCreateGame extends Handler {
             game = Game.newInstance(gameId, players, players[firstPlayerIdx], gameOptions, seed, spectatorId);
           }
 
-          const botPlayers = players.filter((_player, index) => requestedPlayers[index]?.isBot === true);
+          const botPlayers = botGame ? players.filter((_player, index) => requestedPlayers[index]?.isBot === true) : [];
           const startedBotPlayerIds = new Array<string>();
           try {
             for (const botPlayer of botPlayers) {

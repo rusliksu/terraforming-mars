@@ -39,12 +39,14 @@ describe('ApiGame', () => {
     // This test is probably brittle.
     const json = JSON.parse(res.content);
     json.expectedPurgeTimeMs = -1;
+    json.name = 'game-name';
     expect(json).deep.eq(
       {
         'activePlayer': 'black',
         'expectedPurgeTimeMs': -1,
         'id': 'game-valid-id',
         'lastSoloGeneration': 14,
+        'name': 'game-name',
         'phase': 'research',
         'players': [
           {
@@ -65,6 +67,7 @@ describe('ApiGame', () => {
             'colonies': false,
             'community': false,
             'corpera': true,
+            'deltaProject': false,
             'moon': false,
             'pathfinders': false,
             'prelude': false,
@@ -81,6 +84,7 @@ describe('ApiGame', () => {
           'initialDraftVariant': false,
           'ceosDraftVariant': false,
           'noEloGame': false,
+          'turnBasedGame': false,
           'politicalAgendasExtension': 'Standard',
           'preludeDraftVariant': false,
           'randomMA': 'No randomization',

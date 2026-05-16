@@ -48,7 +48,6 @@ describe('WaitingFor', () => {
       props: {
         playerView: playerView as PlayerViewModel,
         players: [thisPlayer as PublicPlayerModel],
-        settings: raw_settings,
         waitingfor: {
           type: 'option',
           title: 'test',
@@ -72,7 +71,6 @@ describe('WaitingFor', () => {
       props: {
         playerView: playerView as PlayerViewModel,
         players: [thisPlayer as PublicPlayerModel],
-        settings: raw_settings,
         waitingfor: undefined,
       },
     });

@@ -88,6 +88,7 @@ describe('ApiCloneableGame', () => {
           ceo: true,
           starwars: false,
           underworld: false,
+          deltaProject: false,
         },
         boardName: BoardName.ELYSIUM,
         clonedGamedId: '#old',
@@ -109,6 +110,7 @@ describe('ApiCloneableGame', () => {
         undoOption: true,
         showTimers: true,
         noEloGame: true,
+        turnBasedGame: true,
         fastModeOption: false,
         removeNegativeGlobalEventsOption: false,
         includeFanMA: false,
@@ -140,6 +142,8 @@ describe('ApiCloneableGame', () => {
     expect(response.setup.clonedGamedId).eq(undefined);
     expect(response.setup.seededGame).eq(false);
     expect(response.setup.noEloGame).eq(true);
+    expect(response.setup.turnBasedGame).eq(false);
+    expect(response.setup.botGame).eq(false);
     expect(response.setup.randomFirstPlayer).eq(true);
   });
 });

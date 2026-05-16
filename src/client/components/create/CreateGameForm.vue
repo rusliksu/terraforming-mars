@@ -1,11 +1,6 @@
 <template>
         <div id="create-game" class="create-game">
             <h1><span v-i18n>{{ constants.APP_NAME }}</span> — <span v-i18n>Create New Game</span></h1>
-            <div class="create-game-telegram-banner">
-              <span class="create-game-telegram-banner-label">Telegram notifications:</span>
-              <a href="https://t.me/tm_knightbyte_bot" target="_blank" rel="noopener noreferrer">@tm_knightbyte_bot</a>
-              <span>send <code>/start</code> there, then paste your numeric Chat ID below</span>
-            </div>
             <div class="changelog"><a :href="wikiUrls.changelog" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank"><u v-i18n>Read our changelog to get the latest updates.</u></a></div>
             <div class="discord-invite" v-if="playersCount===1">
               (<span v-i18n>Looking for people to play with</span>? <a :href="constants.DISCORD_INVITE" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank"><u v-i18n>Join us on Discord</u></a>.)
@@ -173,6 +168,12 @@
                                 <div class="create-game-expansion-icon expansion-icon-underworld"></div>
                                 <span v-i18n>Underworld 2</span><span></span>&nbsp;<a :href="wikiUrls.underworld" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                             </label>
+
+                            <input type="checkbox" name="deltaProject" id="deltaProject-checkbox" v-model="expansions.deltaProject">
+                            <label for="deltaProject-checkbox" class="expansion-button">
+                                <div class="create-game-expansion-icon expansion-icon-deltaProject"></div>
+                                <span v-i18n>Delta Project</span>&nbsp;<span title="Alpha — work in progress">(&#945;)</span><span></span>&nbsp;<a :href="wikiUrls.deltaProject" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+                            </label>
                         </div>
 
                         <div class="create-game-page-column">
@@ -299,6 +300,23 @@
                             <div v-if="seededGame">
                                 <input type="text" name="clonedGamedId" v-model="clonedGameId" />
                             </div>
+
+                            <div class="create-game-subsection-label" v-i18n>Custom settings</div>
+
+                            <input type="checkbox" v-model="turnBasedGame" id="turnBasedGame-checkbox">
+                            <label for="turnBasedGame-checkbox">
+                                <span v-i18n>Async game (Telegram)</span>
+                            </label>
+                            <div v-if="turnBasedGame" class="create-game-telegram-banner">
+                              <span class="create-game-telegram-banner-label">Telegram notifications:</span>
+                              <a href="https://t.me/tm_knightbyte_bot" target="_blank" rel="noopener noreferrer">@tm_knightbyte_bot</a>
+                              <span>send <code>/start</code> there, then paste your numeric Chat ID below</span>
+                            </div>
+
+                            <input type="checkbox" v-model="botGame" id="botGame-checkbox">
+                            <label for="botGame-checkbox">
+                                <span v-i18n>Bot players</span>
+                            </label>
 
                             <div class="create-game-subsection-label" v-i18n>Filter</div>
 
@@ -486,7 +504,7 @@
                                                       <input type="checkbox" v-model="newPlayer.beginner">
                                                       <i class="form-icon"></i> <span v-i18n>Beginner?</span>&nbsp;<a :href="wikiUrls.beginnerCorporation" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                                                   </label>
-                                                  <label class="form-switch form-inline" style="margin-top: 8px;">
+                                                  <label v-if="botGame" class="form-switch form-inline" style="margin-top: 8px;">
                                                       <input type="checkbox" v-model="newPlayer.isBot">
                                                       <i class="form-icon"></i> <span>Bot</span>
                                                   </label>
@@ -496,7 +514,7 @@
                                                       <i class="form-icon"></i><span v-i18n>TR Boost</span>&nbsp;<a :href="wikiUrls.trBoost" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                                                   </label>
                                               <!-- </template> -->
-                                              <div class="create-game-telegram-row">
+                                              <div v-if="turnBasedGame" class="create-game-telegram-row">
                                                   <label class="form-label create-game-telegram-label" :for="'telegramId' + (index + 1)">Telegram ID</label>
                                                   <input
                                                     :id="'telegramId' + (index + 1)"
@@ -635,6 +653,7 @@ import {defaultCreateGameModel} from './defaultCreateGameModel';
 import {TemplateManager, GameTemplate} from './TemplateManager';
 import {getColony} from '@/client/colonies/ClientColonyManifest';
 import {RULEBOOK_URLS, WIKI, WIKI_URLS} from '@/client/utils/WikiLinks';
+import {setDocumentTitle} from '@/client/utils/documentTitle';
 
 const REVISED_COUNT_ALGORITHM = false;
 
@@ -718,7 +737,7 @@ export default defineComponent({
     },
   },
   mounted() {
-    document.title = `Create New Game | ${constants.APP_NAME}`;
+    setDocumentTitle('Create New Game');
     this.restoreLastSettings();
     const urlParams = new URLSearchParams(window.location.search);
     const cloneId = urlParams.get('cloneGameId');
@@ -1252,14 +1271,21 @@ export default defineComponent({
         }
       });
 
-      const invalidTelegramPlayerIndex = players.findIndex((player) => !this.isTelegramIdValid(player.telegramID));
-      if (invalidTelegramPlayerIndex !== -1) {
-        window.alert(translateTextWithParams('Player ${0}: invalid Telegram ID. Use digits only and send /start to @tm_knightbyte_bot first.', [(invalidTelegramPlayerIndex + 1).toString()]));
-        return;
+      const turnBasedGame = this.turnBasedGame === true;
+      const botGame = this.botGame === true;
+      if (turnBasedGame) {
+        const invalidTelegramPlayerIndex = players.findIndex((player) => !this.isTelegramIdValid(player.telegramID));
+        if (invalidTelegramPlayerIndex !== -1) {
+          window.alert(translateTextWithParams('Player ${0}: invalid Telegram ID. Use digits only and send /start to @tm_knightbyte_bot first.', [(invalidTelegramPlayerIndex + 1).toString()]));
+          return;
+        }
       }
 
       players.forEach((player) => {
-        player.telegramID = this.normalizeTelegramId(player.telegramID);
+        player.telegramID = turnBasedGame ? this.normalizeTelegramId(player.telegramID) : '';
+        if (!botGame) {
+          player.isBot = false;
+        }
       });
 
       players.map((player: any) => {
@@ -1490,6 +1516,8 @@ export default defineComponent({
         showTimers,
         fastModeOption,
         noEloGame,
+        turnBasedGame,
+        botGame,
         removeNegativeGlobalEventsOption,
         includeFanMA,
         modularMA: this.modularMA,
@@ -1531,10 +1559,12 @@ export default defineComponent({
         // Check for bot players
         const activePlayers = this.players.slice(0, this.playersCount);
         const botEntries: Array<string> = [];
-        for (const p of json.players) {
-          const local = activePlayers.find((lp: NewPlayerModel) => lp.color === p.color);
-          if (local && local.isBot) {
-            botEntries.push(p.name + ':' + p.id);
+        if (this.botGame) {
+          for (const p of json.players) {
+            const local = activePlayers.find((lp: NewPlayerModel) => lp.color === p.color);
+            if (local && local.isBot) {
+              botEntries.push(p.name + ':' + p.id);
+            }
           }
         }
         if (botEntries.length > 0) {

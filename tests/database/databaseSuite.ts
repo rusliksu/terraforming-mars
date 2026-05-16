@@ -219,6 +219,21 @@ export function describeDatabaseSuite<T extends ITestDatabase>(dtor: DatabaseTes
         const postPurgeEntry = (await db.getParticipants()).find((entry) => entry.gameId === game.id);
         expect(postPurgeEntry).is.undefined;
       });
+
+      it('does not purge async turn-based games', async () => {
+        const player = TestPlayer.BLACK.newPlayer();
+        const game = Game.newInstance('game-id-async', [player], player, {turnBasedGame: true});
+        await db.lastSaveGamePromise;
+
+        await db.saveGame(game);
+        await db.saveGame(game);
+
+        expect(await db.getSaveIds(game.id)).has.members([0, 1, 2]);
+        await db.purgeUnfinishedGames('-1');
+        expect(await db.getSaveIds(game.id)).has.members([0, 1, 2]);
+        const entry = (await db.getParticipants()).find((entry) => entry.gameId === game.id);
+        expect(entry?.participantIds).deep.eq([player.id]);
+      });
     }
 
     it('getGame', async () => {

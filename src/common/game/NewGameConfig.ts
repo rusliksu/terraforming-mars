@@ -50,6 +50,8 @@ export interface NewGameConfig {
   fastModeOption: boolean;
   showOtherPlayersVP: boolean;
   noEloGame: boolean;
+  turnBasedGame: boolean;
+  botGame: boolean;
 
   // Extensions
   // aresHazards: boolean;

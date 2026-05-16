@@ -32,6 +32,7 @@ function newGameConfig(players: NewGameConfig['players']): NewGameConfig {
       ceo: false,
       starwars: false,
       underworld: false,
+      deltaProject: false,
     },
     board: RandomBoardOption.OFFICIAL,
     seed: 0,
@@ -42,6 +43,8 @@ function newGameConfig(players: NewGameConfig['players']): NewGameConfig {
     fastModeOption: false,
     showOtherPlayersVP: false,
     noEloGame: false,
+    turnBasedGame: false,
+    botGame: false,
     aresExtremeVariant: false,
     politicalAgendasExtension: 'Standard',
     solarPhaseOption: false,
@@ -300,7 +303,28 @@ describe('ApiCreateGame', () => {
     ]);
   });
 
-  it('rejects invalid telegram ids with bad request', async () => {
+  it('rejects invalid telegram ids in async mode with bad request', async () => {
+    const post = scaffolding.post(apiCreateGame, res);
+    const emit = Promise.resolve().then(() => {
+      const config = newGameConfig([{
+        name: 'Robot',
+        color: 'blue',
+        beginner: false,
+        handicap: 0,
+        first: true,
+        isBot: false,
+        telegramID: '@bad-id',
+      }]);
+      config.turnBasedGame = true;
+      req.emitter.emit('data', JSON.stringify(config));
+      req.emitter.emit('end');
+    });
+    await Promise.all(([emit, post]));
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).to.contain('invalid telegram id for player 1');
+  });
+
+  it('ignores telegram ids when async mode is disabled', async () => {
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
       req.emitter.emit('data', JSON.stringify(newGameConfig([{
@@ -315,8 +339,12 @@ describe('ApiCreateGame', () => {
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
-    expect(res.statusCode).eq(statusCode.badRequest);
-    expect(res.content).to.contain('invalid telegram id for player 1');
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game).is.not.undefined;
+    expect(game!.players[0].telegramID).eq('');
+    expect(game!.gameOptions.turnBasedGame).is.false;
   });
 
   it('trims blank telegram ids before game creation', async () => {
@@ -353,6 +381,43 @@ describe('ApiCreateGame', () => {
 
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
+      const config = newGameConfig([{
+        name: 'Robot',
+        color: 'blue',
+        beginner: false,
+        handicap: 0,
+        first: true,
+        isBot: true,
+      }]);
+      config.botGame = true;
+      req.emitter.emit('data', JSON.stringify(config));
+      req.emitter.emit('end');
+    });
+
+    await Promise.all(([emit, post]));
+    expect(res.statusCode).eq(statusCode.ok);
+
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    expect(starts).deep.eq([{
+      gameId: model.id,
+      playerId: model.players[0].id,
+      serverId: scaffolding.ctx.ids.serverId,
+    }]);
+    expect(model.botPlayers).deep.eq([model.players[0].id]);
+  });
+
+  it('ignores bot player flags when bot mode is disabled', async () => {
+    const starts = new Array<{gameId: string; playerId: string; serverId: string}>();
+    apiCreateGame = new ApiCreateGame({limit: 99999, perMs: 1}, {
+      start: ({gameId, playerId, serverId}) => {
+        starts.push({gameId, playerId, serverId});
+        return {gameId, playerId, pid: 321, startedAtMs: 1, logFile: 'bot.log'};
+      },
+      stop: () => undefined,
+    });
+
+    const post = scaffolding.post(apiCreateGame, res);
+    const emit = Promise.resolve().then(() => {
       req.emitter.emit('data', JSON.stringify(newGameConfig([{
         name: 'Robot',
         color: 'blue',
@@ -368,12 +433,8 @@ describe('ApiCreateGame', () => {
     expect(res.statusCode).eq(statusCode.ok);
 
     const model = JSON.parse(res.content) as SimpleGameModel;
-    expect(starts).deep.eq([{
-      gameId: model.id,
-      playerId: model.players[0].id,
-      serverId: scaffolding.ctx.ids.serverId,
-    }]);
-    expect(model.botPlayers).deep.eq([model.players[0].id]);
+    expect(starts).deep.eq([]);
+    expect(model.botPlayers).deep.eq([]);
   });
 
   it('red rover solo game', async () => {

@@ -13,6 +13,7 @@ export type CreateGameModel = {
   aresExtremeVariant: boolean;
   bannedCards: Array<CardName>;
   board: BoardNameType;
+  botGame: boolean;
   ceosDraftVariant: boolean | undefined;
   clonedGameId: GameId | undefined;
   customCeos: Array<CardName>;
@@ -60,6 +61,7 @@ export type CreateGameModel = {
   startingCeos: number;
   startingCorporations: number;
   startingPreludes: number;
+  turnBasedGame: boolean;
   twoCorpsVariant: boolean;
   undoOption: boolean;
 }

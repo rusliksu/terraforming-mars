@@ -85,6 +85,17 @@ describe('ApiLiveGames', () => {
     expect(JSON.parse(res.content)).deep.eq([]);
   });
 
+  it('lists games with no purge deadline', async () => {
+    const asyncGame = testGame('game-async', [TestPlayer.BLUE.newPlayer(), TestPlayer.RED.newPlayer()], Phase.ACTION, 0);
+    await scaffolding.ctx.gameLoader.add(asyncGame);
+
+    scaffolding.url = '/api/live-games';
+    await scaffolding.get(ApiLiveGames.INSTANCE, res);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(JSON.parse(res.content).map((game: {id: string}) => game.id)).deep.eq(['game-async']);
+  });
+
   it('does not list games where every player kept the default color name', async () => {
     const defaultNameGame = testGame(
       'game-default-names',

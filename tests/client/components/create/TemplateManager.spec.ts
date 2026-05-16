@@ -38,15 +38,34 @@ describe('TemplateManager', () => {
     expect(settings.noEloGame).eq(true);
   });
 
-  it('sanitizes telegram ids before saving last settings', () => {
+  it('does not persist custom async and bot flags for storage', () => {
+    const model = defaultCreateGameModel();
+    model.turnBasedGame = true;
+    model.botGame = true;
+    model.players[0].isBot = true;
+
+    const settings = TemplateManager.serializeFormState(model);
+    const players = settings.players as Array<JSONObject>;
+
+    expect(settings.turnBasedGame).eq(false);
+    expect(settings.botGame).eq(false);
+    expect(players[0].isBot).eq(false);
+  });
+
+  it('sanitizes custom transient fields before saving last settings', () => {
     TemplateManager.saveLastSettings({
+      turnBasedGame: true,
+      botGame: true,
       players: [
-        {name: 'Alice', color: 'red', beginner: false, handicap: 0, first: false, isBot: false, telegramID: '111'},
+        {name: 'Alice', color: 'red', beginner: false, handicap: 0, first: false, isBot: true, telegramID: '111'},
       ],
     });
 
     const stored = JSON.parse(localStorage.getItem(lastSettingsKey) ?? '{}');
+    expect(stored.turnBasedGame).eq(false);
+    expect(stored.botGame).eq(false);
     expect(stored.players[0]).not.to.have.property('telegramID');
+    expect(stored.players[0].isBot).eq(false);
   });
 
   it('migrates old last settings that already contain telegram ids', () => {

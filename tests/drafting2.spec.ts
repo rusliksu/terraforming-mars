@@ -712,6 +712,7 @@ const stored = {
     'removeNegativeGlobalEventsOption': false,
     'requiresVenusTrackCompletion': false,
     'noEloGame': false,
+    'turnBasedGame': false,
     'showOtherPlayersVP': false,
     'showTimers': true,
     'shuffleMapOption': false,

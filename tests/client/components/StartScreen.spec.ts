@@ -13,7 +13,7 @@ describe('StartScreen', () => {
     global.fetch = (async () => ({
       ok: true,
       json: async () => [],
-    })) as typeof fetch;
+    })) as unknown as typeof fetch;
   });
 
   afterEach(() => {
@@ -46,7 +46,7 @@ describe('StartScreen', () => {
           spectatorId: 's-live',
           gameOptions: fakeGameOptionsModel(),
         }],
-      } as Response;
+      } as unknown as Response;
     }) as typeof fetch;
 
     const wrapper = shallowMount(StartScreen, {

@@ -35,11 +35,15 @@ export class JSONProcessor {
     if (validationErrors.length > 0) {
       throw new Error(validationErrors.join('\n'));
     }
-    const normalizedPlayers = players.map((player) => ({
-      ...player,
-      isBot: player.isBot ?? false,
-      name: normalizePlayerNameForColor(player.color, player.name),
-    }));
+    const normalizedPlayers = players.map((player) => {
+      const {telegramID, ...safePlayer} = player;
+      void telegramID;
+      return {
+        ...safePlayer,
+        isBot: false,
+        name: normalizePlayerNameForColor(player.color, player.name),
+      };
+    });
 
     if (json.corporationsDraft !== undefined) {
       this.warnings.push('Corporations draft is no longer available. Future versions might just raise an error, so edit your JSON file.');
@@ -76,6 +80,8 @@ export class JSONProcessor {
     this.model.playersCount = normalizedPlayers.length;
     this.model.showBannedCards = this.bannedCards.length > 0;
     this.model.showIncludedCards = this.includedCards.length > 0;
+    this.model.turnBasedGame = false;
+    this.model.botGame = false;
 
     const oldExpansionFields: Record<Expansion, string> = {
       corpera: json_constants.CORPORATEERA,
@@ -92,6 +98,7 @@ export class JSONProcessor {
       ceo: json_constants.CEOEXTENSION,
       starwars: json_constants.STARWARSEXPANSION,
       underworld: json_constants.UNDERWORLDEXPANSION,
+      deltaProject: json_constants.DELTA_PROJECT_EXPANSION,
     } as const;
     for (const expansion of Object.keys(oldExpansionFields)) {
       const x = oldExpansionFields[expansion as Expansion];
@@ -117,6 +124,8 @@ export class JSONProcessor {
       json_constants.OLD_CUSTOM_CORPORATIONS,
       ...Object.values(oldExpansionFields),
       'escapeVelocity',
+      'turnBasedGame',
+      'botGame',
       'players',
       'solarPhaseOption',
       'constants'];

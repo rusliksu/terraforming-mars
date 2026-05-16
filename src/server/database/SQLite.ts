@@ -143,7 +143,13 @@ export class SQLite implements IDatabase {
     // Purge unfinished games older than MAX_GAME_DAYS days. If this .env variable is not present, unfinished games will not be purged.
     if (maxGameDays !== undefined) {
       const dateToSeconds = daysAgoToSeconds(maxGameDays, 0);
-      const selectResult = await this.asyncAll('SELECT DISTINCT game_id game_id FROM games WHERE created_time < ? and status = \'running\'', [dateToSeconds]);
+      const selectResult = await this.asyncAll(
+        `SELECT DISTINCT game_id game_id
+        FROM games
+        WHERE created_time < ?
+          and status = 'running'
+          and COALESCE(json_extract(game, '$.gameOptions.turnBasedGame'), 0) != 1`,
+        [dateToSeconds]);
       let gameIds = selectResult.map((row) => row.game_id);
       if (gameIds.length > 1000) {
         console.log('Truncated purge to 1000 games.');

@@ -8,6 +8,7 @@ export type SimpleGameModel = {
     activePlayer: Color;
     botPlayers?: Array<PlayerId>;
     id: GameId;
+    name: string;
     phase: Phase;
     players: Array<SimplePlayerModel>;
     spectatorId: SpectatorId | undefined;

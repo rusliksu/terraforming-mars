@@ -18,6 +18,7 @@ export type GameOptionsModel = {
   includeFanMA: boolean,
   initialDraftVariant: boolean,
   noEloGame: boolean,
+  turnBasedGame: boolean,
   preludeDraftVariant: boolean,
   ceosDraftVariant: boolean,
   politicalAgendasExtension: AgendaStyle,

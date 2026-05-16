@@ -33,7 +33,8 @@ describe('CreateGameForm', () => {
       ...globalConfig,
     });
     expect(wrapper.exists()).to.be.true;
-    expect(wrapper.text()).to.contain('/start');
+    expect(wrapper.text()).to.contain('Custom settings');
+    expect(wrapper.text()).not.to.contain('/start');
   });
 
   it('loads rematch setup from cloneGameId without enabling predefined game', async () => {
@@ -63,6 +64,7 @@ describe('CreateGameForm', () => {
               ceo: false,
               starwars: false,
               underworld: false,
+              deltaProject: false,
             },
             board: 'hellas',
             seededGame: false,
@@ -94,6 +96,7 @@ describe('CreateGameForm', () => {
       ...globalConfig,
     });
     const vm = wrapper.vm as any;
+    vm.turnBasedGame = true;
     vm.players[0].telegramID = '@bad-id';
 
     let alertMessage = '';
@@ -116,12 +119,27 @@ describe('CreateGameForm', () => {
       ...globalConfig,
     });
     const vm = wrapper.vm as any;
+    vm.turnBasedGame = true;
     vm.players[0].telegramID = ' 123456789 ';
 
     const serialized = await vm.serializeSettings();
     expect(serialized).to.be.a('string');
     const payload = JSON.parse(serialized);
     expect(payload.players[0].telegramID).to.eq('123456789');
+  });
+
+  it('strips telegram ids when async mode is off', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+    vm.players[0].telegramID = '123456789';
+
+    const serialized = await vm.serializeSettings();
+    expect(serialized).to.be.a('string');
+    const payload = JSON.parse(serialized);
+    expect(payload.turnBasedGame).eq(false);
+    expect(payload.players[0].telegramID).to.eq('');
   });
 
   it('serializes training games as no-ELO', async () => {
@@ -134,6 +152,38 @@ describe('CreateGameForm', () => {
     const payload = JSON.parse(serialized);
 
     expect(payload.noEloGame).eq(true);
+  });
+
+  it('serializes async turn-based games', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    await wrapper.setData({turnBasedGame: true});
+
+    const serialized = await (wrapper.vm as unknown as {serializeSettings: () => Promise<string>}).serializeSettings();
+    const payload = JSON.parse(serialized);
+
+    expect(payload.turnBasedGame).eq(true);
+  });
+
+  it('serializes bot games only when the custom bot mode is enabled', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+    vm.players[0].isBot = true;
+
+    const normalSerialized = await vm.serializeSettings();
+    const normalPayload = JSON.parse(normalSerialized);
+    expect(normalPayload.botGame).eq(false);
+    expect(normalPayload.players[0].isBot).eq(false);
+
+    await wrapper.setData({botGame: true});
+    vm.players[0].isBot = true;
+    const botSerialized = await vm.serializeSettings();
+    const botPayload = JSON.parse(botSerialized);
+    expect(botPayload.botGame).eq(true);
+    expect(botPayload.players[0].isBot).eq(true);
   });
 
   it('keeps typed player names from changing the selected colors', async () => {

@@ -1,52 +1,52 @@
 <template>
-      <div id="game-home" class="game-home-container">
-        <h1><span v-i18n>Terraforming Mars</span> [<span v-i18n>game id:</span> <span>{{getGameId()}}</span>]</h1>
-        <h4><span v-i18n>Instructions: To start the game, separately copy and share the links with all players, and then click on your name.</span><br/><span v-i18n>Save this page in case you or one of your opponents loses a link.</span></h4>
-        <ul>
-          <li v-for="(player, index) in (game === undefined ? [] : game.players)" :key="player.color" class="game-home-player-row">
-            <span class="turn-order" v-i18n>{{getTurnOrder(index)}}</span>
-            <span :class="'color-square ' + getPlayerCubeColorClass(player.color)">{{playerSymbol(player.color)}}</span>
-            <span class="player-name"><a :href="getHref(player.id)">{{player.name}}</a></span>
-            <button
-              v-if="isRunning"
-              class="bot-toggle"
-              :class="{'bot-toggle--active': isBotRunning(player.id)}"
-              :aria-checked="isBotRunning(player.id) ? 'true' : 'false'"
-              :aria-label="isBotRunning(player.id) ? 'Return control to player' : 'Let bot play for this player'"
-              :title="isBotRunning(player.id) ? 'Return control to player' : 'Let bot play for this player'"
-              role="switch"
-              :disabled="busyPlayerIds.includes(player.id)"
-              @click.stop.prevent="toggleBot(player.id)">
-              <span class="bot-toggle__track">
-                <span class="bot-toggle__thumb"></span>
-              </span>
-              <span class="bot-toggle__meta">
-                <span class="bot-toggle__label">Bot takeover</span>
-                <span v-if="isBotRunning(player.id)" class="bot-toggle__state">bot is playing</span>
-              </span>
-            </button>
-            <span class="game-home-copy"><AppButton title="copy" size="tiny" @click="copyUrl(player.id)"/></span>
-            <span v-if="isPlayerUrlCopied(player.id)" class="copied-notice"><span v-i18n>Copied!</span></span>
-          </li>
-          <li v-if="game !== undefined && game.spectatorId" class="game-home-player-row game-home-player-row--spectator">
-            <span class="turn-order"></span>
-            <span class="color-square"></span>
-            <span class="player-name"><a :href="getHref(game.spectatorId)" v-i18n>Spectator</a></span>
-            <span class="bot-toggle-placeholder"></span>
-            <span class="game-home-copy"><AppButton title="copy" size="tiny" @click="copyUrl(game.spectatorId)"/></span>
-          </li>
-        </ul>
+  <div id="game-home" class="game-home-container">
+    <h1><span v-i18n>Terraforming Mars</span> [<span v-i18n>game id:</span> <span>{{getGameId()}}</span>]</h1>
+    <h4><span v-i18n>Instructions: To start the game, separately copy and share the links with all players, and then click on your name.</span><br/><span v-i18n>Save this page in case you or one of your opponents loses a link.</span></h4>
+    <ul>
+      <li v-for="(player, index) in (game === undefined ? [] : game.players)" :key="player.color" class="game-home-player-row">
+        <span class="turn-order" v-i18n>{{getTurnOrder(index)}}</span>
+        <span :class="'color-square ' + getPlayerCubeColorClass(player.color)">{{playerSymbol(player.color)}}</span>
+        <span class="player-name"><a :href="getHref(player.id)">{{player.name}}</a></span>
+        <button
+          v-if="isRunning"
+          class="bot-toggle"
+          :class="{'bot-toggle--active': isBotRunning(player.id)}"
+          :aria-checked="isBotRunning(player.id) ? 'true' : 'false'"
+          :aria-label="isBotRunning(player.id) ? 'Return control to player' : 'Let bot play for this player'"
+          :title="isBotRunning(player.id) ? 'Return control to player' : 'Let bot play for this player'"
+          role="switch"
+          :disabled="busyPlayerIds.includes(player.id)"
+          @click.stop.prevent="toggleBot(player.id)">
+          <span class="bot-toggle__track">
+            <span class="bot-toggle__thumb"></span>
+          </span>
+          <span class="bot-toggle__meta">
+            <span class="bot-toggle__label">Bot takeover</span>
+            <span v-if="isBotRunning(player.id)" class="bot-toggle__state">bot is playing</span>
+          </span>
+        </button>
+        <span class="game-home-copy"><AppButton title="copy" size="tiny" @click="copyUrl(player.id)"/></span>
+        <span v-if="isPlayerUrlCopied(player.id)" class="copied-notice"><span v-i18n>Copied!</span></span>
+      </li>
+      <li v-if="game !== undefined && game.spectatorId" class="game-home-player-row game-home-player-row--spectator">
+        <span class="turn-order"></span>
+        <span class="color-square"></span>
+        <span class="player-name"><a :href="getHref(game.spectatorId)" v-i18n>Spectator</a></span>
+        <span class="bot-toggle-placeholder"></span>
+        <span class="game-home-copy"><AppButton title="copy" size="tiny" @click="copyUrl(game.spectatorId)"/></span>
+      </li>
+    </ul>
 
-        <div class="spacing-setup"></div>
+    <div class="spacing-setup"></div>
 
-        <purge-warning :expectedPurgeTimeMs="game.expectedPurgeTimeMs"></purge-warning>
+    <purge-warning :expectedPurgeTimeMs="game.expectedPurgeTimeMs"></purge-warning>
 
-        <div class="spacing-setup"></div>
-        <div v-if="game !== undefined">
-          <h1 v-i18n>Game settings</h1>
-          <game-setup-detail :gameOptions="game.gameOptions" :playerNumber="game.players.length" :lastSoloGeneration="game.lastSoloGeneration"></game-setup-detail>
-        </div>
-      </div>
+    <div class="spacing-setup"></div>
+    <div v-if="game !== undefined">
+      <h1 v-i18n>Game settings</h1>
+      <game-setup-detail :gameOptions="game.gameOptions" :playerNumber="game.players.length" :lastSoloGeneration="game.lastSoloGeneration"></game-setup-detail>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -60,6 +60,7 @@ import GameSetupDetail from '@/client/components/GameSetupDetail.vue';
 import {ParticipantId} from '@/common/Types';
 import {Color} from '@/common/Color';
 import {playerSymbol} from '@/client/utils/playerSymbol';
+import {setDocumentTitle} from '../utils/documentTitle';
 
 // taken from https://stackoverflow.com/a/46215202/83336
 // The solution to copying to the clipboard in this case is
@@ -109,9 +110,6 @@ export default defineComponent({
     serverId(): string {
       return new URLSearchParams(window.location.search).get('serverId') || '';
     },
-  },
-  mounted() {
-    void this.refreshBotPlayers();
   },
   methods: {
     async refreshBotPlayers() {
@@ -210,6 +208,12 @@ export default defineComponent({
     playerSymbol(color: Color) {
       return playerSymbol(color);
     },
+  },
+  mounted() {
+    void this.refreshBotPlayers();
+    // Reset the copied player id after 3 seconds to hide the "copied" message
+    setInterval(this.setCopiedIdToDefault, 3000);
+    setDocumentTitle(this.game.name);
   },
 });
 

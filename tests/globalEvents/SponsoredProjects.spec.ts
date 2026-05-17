@@ -34,5 +34,15 @@ describe('SponsoredProjects', () => {
     expect(securityFleet.resourceCount).to.eq(2);
     expect(fish.resourceCount).to.eq(0);
     expect(player2.cardsInHand).has.lengthOf(3);
+    expectLog(game, ants.name);
+    expectLog(game, securityFleet.name);
   });
 });
+
+function expectLog(game: ReturnType<typeof testGame>[0], cardName: string) {
+  const log = game.gameLog.find((message) =>
+    message.message === '${0} added ${1} ${2} to ${3}' &&
+    message.data[1]?.value === '1' &&
+    message.data[3]?.value === cardName);
+  expect(log).is.not.undefined;
+}

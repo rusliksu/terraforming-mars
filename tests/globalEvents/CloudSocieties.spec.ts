@@ -16,8 +16,17 @@ describe('CloudSocieties', () => {
     turmoil.dominantParty.partyLeader = player;
     turmoil.dominantParty.delegates.add(player);
     card.resolve(game, turmoil);
+    expectLog(game, floatingHabs.name, '1');
     game.deferredActions.runNext();
 
     expect(floatingHabs.resourceCount).to.eq(3);
   });
 });
+
+function expectLog(game: ReturnType<typeof testGame>[0], cardName: string, amount: string) {
+  const log = game.gameLog.find((message) =>
+    message.message === '${0} added ${1} ${2} to ${3}' &&
+    message.data[1]?.value === amount &&
+    message.data[3]?.value === cardName);
+  expect(log).is.not.undefined;
+}

@@ -10,6 +10,9 @@
           {{ n }}
         </div>
       </div>
+      <div :class="getClassesRecentLogs()" v-on:click.prevent="selectRecentLogs()" v-i18n>
+        Last 100
+      </div>
       <span class="label-additional" v-if="players.length === 1"><span :class="lastGenerationClass" v-i18n>of {{lastSoloGeneration}}</span></span>
     </div>
     <div class="panel log-panel">
@@ -42,6 +45,7 @@ let logAbortController: AbortController | undefined;
 type LogPanelModel = {
   messages: Array<LogMessage>,
   selectedGeneration: number,
+  selectedRecentLimit: number | undefined,
   selectedMessage: LogMessage | undefined,
   stickToBottom: boolean,
   resizeObserver: ResizeObserver | undefined,
@@ -68,6 +72,7 @@ export default defineComponent({
     return {
       messages: [],
       selectedGeneration: -1,
+      selectedRecentLimit: undefined,
       selectedMessage: undefined,
       stickToBottom: true,
       resizeObserver: undefined,
@@ -105,21 +110,36 @@ export default defineComponent({
       }
     },
     selectGeneration(gen: number): void {
-      if (gen !== this.selectedGeneration) {
+      if (gen !== this.selectedGeneration || this.selectedRecentLimit !== undefined) {
+        this.selectedGeneration = gen;
+        this.selectedRecentLimit = undefined;
         this.getLogsForGeneration(gen);
       }
-      this.selectedGeneration = gen;
     },
     getLogsForGeneration(generation: number): void {
+      const url = `${paths.API_GAME_LOGS}?id=${this.id}&generation=${generation}&gameAge=${this.gameAge}`;
+      this.loadLogs(url, generation === this.generation);
+    },
+    selectRecentLogs(): void {
+      if (this.selectedRecentLimit !== 100) {
+        this.selectedGeneration = -1;
+        this.selectedRecentLimit = 100;
+        this.getRecentLogs();
+      }
+    },
+    getRecentLogs(): void {
+      const url = `${paths.API_GAME_LOGS}?id=${this.id}&limit=100&gameAge=${this.gameAge}`;
+      this.loadLogs(url, true);
+    },
+    loadLogs(url: string, liveLogs: boolean): void {
       const messages = this.messages;
-      this.stickToBottom = generation === this.generation && this.isNearBottom();
+      this.stickToBottom = liveLogs && this.isNearBottom();
       // abort any pending requests
       if (logAbortController) {
         logAbortController.abort();
         logAbortController = undefined;
       }
 
-      const url = `${paths.API_GAME_LOGS}?id=${this.id}&generation=${generation}&gameAge=${this.gameAge}`;
       const controller = new AbortController();
       logAbortController = controller;
 
@@ -137,7 +157,7 @@ export default defineComponent({
           }
           messages.splice(0, messages.length);
           messages.push(...data);
-          if (generation === this.generation) {
+          if (liveLogs) {
             this.stickToBottom = true;
             this.$nextTick(() => {
               this.installAutoScrollObserver();
@@ -179,7 +199,7 @@ export default defineComponent({
       }
 
       this.resizeObserver = new ResizeObserver(() => {
-        if (this.selectedGeneration === this.generation && this.stickToBottom) {
+        if ((this.selectedGeneration === this.generation || this.selectedRecentLimit !== undefined) && this.stickToBottom) {
           this.scrollToEnd();
         }
       });
@@ -199,6 +219,13 @@ export default defineComponent({
       const classes = ['log-gen-indicator'];
       if (gen === this.selectedGeneration) {
         classes.push('log-gen-indicator--selected');
+      }
+      return classes.join(' ');
+    },
+    getClassesRecentLogs(): string {
+      const classes = ['log-recent-indicator'];
+      if (this.selectedRecentLimit !== undefined) {
+        classes.push('log-recent-indicator--selected');
       }
       return classes.join(' ');
     },
@@ -237,7 +264,9 @@ export default defineComponent({
   },
   watch: {
     gameAge() {
-      if (this.selectedGeneration === this.generation) {
+      if (this.selectedRecentLimit !== undefined) {
+        this.getRecentLogs();
+      } else if (this.selectedGeneration === this.generation) {
         this.getLogsForGeneration(this.generation);
       }
     },

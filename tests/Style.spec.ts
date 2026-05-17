@@ -236,7 +236,10 @@ describe('Styles', () => {
     expect(cssBlock(turmoil, '&.gold')).to.contain('.player-token-sprite(-644px, -35px, @player_gold_sprite_filter);');
     expect(cssBlock(turmoil, '&.emerald')).to.contain('.player-token-sprite(-865px, -35px, @player_emerald_sprite_filter);');
     expect(cssBlock(turmoil, '&.ginger')).to.contain('.player-token-sprite(-644px, -105px, @player_ginger_sprite_filter);');
-    expect(cssBlock(turmoil, '&.hydro')).to.contain('.player-token-sprite(-699px, -105px, @player_hydro_sprite_filter);');
+    expect(cssBlock(turmoil, '&.hydro')).to.contain('.player-token-sprite(-699px, -105px, none);');
+    expect(cssBlock(turmoil, '&.hydro')).to.contain('color: #f6e7ff;');
+    expect(cssBlock(turmoil, '&.hydro')).to.contain('background: @player_hydro_token_gradient;');
+    expect(cssBlock(turmoil, '&.hydro')).to.contain('mask-image: url(./assets/turmoil_ui.png);');
     expect(cssBlock(turmoil, '&.pearl')).to.contain('.player-token-sprite(-973px, -35px, @player_pearl_delegate_filter);');
     expect(cssBlock(turmoil, '&.pearl')).to.contain('color: #102027;');
     expect(cssBlock(turmoil, '&.antistress')).to.contain('.player-token-sprite(-809px, -35px, @player_antistress_sprite_filter);');
@@ -322,13 +325,13 @@ describe('Styles', () => {
     expect(cssBlock(playerHome, '.ma-score.player_bg_color_saturnstorm')).to.contain('color: #ffe5e8;');
   });
 
-  it('keeps GydRo pearl names and tag counters black while resource stock counters stay readable', () => {
+  it('keeps GydRo pearl names black while counters stay readable', () => {
     const common = read('src/styles/common.less');
 
     expect(common).to.contain('.player_translucent_bg_color_pearl .player-info-details,');
     expect(common).to.contain('.player_translucent_bg_color_pearl .player-info-corp,');
-    expect(common).to.contain('.player_translucent_bg_color_pearl .tag-count-display {\n    color: #000000;');
-    expect(common).to.contain('.player_translucent_bg_color_pearl .tag-count-display {\n    color: #000000;\n    text-shadow: none;');
+    expect(common).to.contain('.player_translucent_bg_color_pearl .tag-count-display {\n    color: #ffffff;');
+    expect(common).to.contain('.player_translucent_bg_color_pearl .tag-count-display {\n    color: #ffffff;\n    text-shadow: 0 2px 2px black;');
     expect(common).to.contain('.player_translucent_bg_color_pearl .resource_item .resource_item_stock_count {\n    color: #ffffff;');
     expect(common).to.contain('.player_translucent_bg_color_pearl .resource_item .resource_item_prod_count {\n    color: #bb8760;');
     expect(common).to.contain('color: #ffffff;');

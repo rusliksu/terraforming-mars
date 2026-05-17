@@ -15,6 +15,8 @@ export class PartyHooks {
     if (this.shouldApplyPolicy(player, PartyName.MARS, 'mp01') &&
         spaceType !== SpaceType.COLONY) {
       player.stock.add(Resource.STEEL, 1);
+      player.game.log('${0} gained ${1} steel from Turmoil ${2} policy', (b) =>
+        b.player(player).number(1).partyName(PartyName.MARS));
     }
   }
 

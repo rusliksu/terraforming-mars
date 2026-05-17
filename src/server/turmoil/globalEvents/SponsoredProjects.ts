@@ -24,7 +24,7 @@ export class SponsoredProjects extends GlobalEvent implements IGlobalEvent {
   }
   public resolve(game: IGame, turmoil: Turmoil) {
     game.playersInGenerationOrder.forEach((player) => {
-      player.getCardsWithResources().forEach((card) => card.resourceCount && player.addResourceTo(card));
+      player.getCardsWithResources().forEach((card) => card.resourceCount && player.addResourceTo(card, {log: true}));
       player.drawCard(turmoil.getInfluence(player));
     });
   }

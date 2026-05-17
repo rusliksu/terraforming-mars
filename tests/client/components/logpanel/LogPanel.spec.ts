@@ -84,6 +84,29 @@ describe('LogPanel', () => {
     expect(fetchCalls[1]).includes('gameAge=1');
   });
 
+  it('shows one recent-log tab and loads the last 100 logs', async () => {
+    const viewModel = fakeViewModel();
+    const wrapper = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {
+        viewModel,
+        color: 'blue',
+      },
+    });
+
+    await Promise.resolve();
+    const recentTabs = wrapper.findAll('.log-recent-indicator');
+    expect(recentTabs).has.length(1);
+    expect(recentTabs[0].text()).eq('Last 100');
+
+    (wrapper.vm as any).selectRecentLogs();
+    await Promise.resolve();
+
+    expect(fetchCalls).has.length(2);
+    expect(fetchCalls[1]).includes('limit=100');
+    expect(fetchCalls[1]).does.not.include('generation=');
+  });
+
   it('sticks to bottom when the log list grows after render', async () => {
     const fakeList = {} as HTMLUListElement;
     let fakeScrollHeight = 480;

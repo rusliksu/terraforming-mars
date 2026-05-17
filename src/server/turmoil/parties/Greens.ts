@@ -36,7 +36,7 @@ class GreensBonus01 extends Bonus {
   }
 
   grantForPlayer(player: IPlayer): void {
-    player.stock.add(Resource.MEGACREDITS, this.getScore(player));
+    this.grantResourceForRulingBonus(player, Resource.MEGACREDITS, this.getScore(player), 'M€', PartyName.GREENS);
   }
 }
 
@@ -51,7 +51,7 @@ class GreensBonus02 extends Bonus {
   }
 
   grantForPlayer(player: IPlayer): void {
-    player.stock.add(Resource.MEGACREDITS, this.getScore(player));
+    this.grantResourceForRulingBonus(player, Resource.MEGACREDITS, this.getScore(player), 'M€', PartyName.GREENS);
   }
 }
 
@@ -74,6 +74,8 @@ class GreensPolicy02 implements IPolicy {
 
   onTilePlaced(player: IPlayer) {
     player.stock.add(Resource.PLANTS, 1);
+    player.game.log('${0} gained ${1} plant from Turmoil ${2} policy', (b) =>
+      b.player(player).number(1).partyName(PartyName.GREENS));
   }
 }
 
@@ -84,8 +86,15 @@ class GreensPolicy03 implements IPolicy {
   onCardPlayed(player: IPlayer, card: ICard) {
     const tags = [Tag.ANIMAL, Tag.PLANT, Tag.MICROBE];
     const tagCount = card.tags.filter((tag) => tags.includes(tag)).length;
+    const amount = tagCount * 2;
 
-    player.defer(() => player.stock.add(Resource.MEGACREDITS, tagCount * 2));
+    player.defer(() => {
+      player.stock.add(Resource.MEGACREDITS, amount);
+      if (amount > 0) {
+        player.game.log('${0} gained ${1} M€ from Turmoil ${2} policy', (b) =>
+          b.player(player).number(amount).partyName(PartyName.GREENS));
+      }
+    });
   }
 }
 

@@ -229,7 +229,8 @@ export class ApiQuickGame extends Handler {
         Math.floor(Math.random() * players.length) :
         0;
 
-      const boards = ApiCreateGame.boardOptions(gameReq.board);
+      const boardSelection = gameReq.board;
+      const boards = ApiCreateGame.boardOptions(boardSelection);
       gameReq.board = boards[Math.floor(Math.random() * boards.length)];
 
       const gameOptions: GameOptions = {
@@ -239,6 +240,7 @@ export class ApiQuickGame extends Handler {
         aresExtremeVariant: gameReq.aresExtremeVariant,
         bannedCards: gameReq.bannedCards,
         boardName: gameReq.board,
+        boardSelection,
         ceoExtension: gameReq.expansions.ceo,
         clonedGamedId: gameReq.clonedGamedId,
         coloniesExtension: gameReq.expansions.colonies,

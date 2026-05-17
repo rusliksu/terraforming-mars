@@ -6,6 +6,7 @@ import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {GameId} from '../../src/common/Types';
 import {statusCode} from '../../src/common/http/statusCode';
 import {BoardName} from '../../src/common/boards/BoardName';
+import {RandomBoardOption} from '../../src/common/boards/RandomBoardOption';
 import {RandomMAOptionType} from '../../src/common/ma/RandomMAOptionType';
 import {SerializedGame} from '../../src/server/SerializedGame';
 
@@ -145,5 +146,79 @@ describe('ApiCloneableGame', () => {
     expect(response.setup.turnBasedGame).eq(false);
     expect(response.setup.botGame).eq(false);
     expect(response.setup.randomFirstPlayer).eq(true);
+  });
+
+  it('preserves random board selection for rematch setup', async () => {
+    Database.getInstance().getPlayerCount = (_gameId) => Promise.resolve(2);
+    Database.getInstance().getGameVersion = (_gameId, _saveId) => Promise.resolve({
+      first: 'p1',
+      players: [
+        {id: 'p1', name: 'Alice', color: 'red', beginner: false, handicap: 0},
+        {id: 'p2', name: 'Bob', color: 'blue', beginner: false, handicap: 0},
+      ],
+      gameOptions: {
+        expansions: {
+          corpera: true,
+          promo: false,
+          venus: false,
+          colonies: false,
+          prelude: false,
+          prelude2: false,
+          turmoil: false,
+          community: false,
+          ares: false,
+          moon: false,
+          pathfinders: false,
+          ceo: false,
+          starwars: false,
+          underworld: false,
+          deltaProject: false,
+        },
+        boardName: BoardName.HOLLANDIA,
+        boardSelection: RandomBoardOption.ALL,
+        clonedGamedId: undefined,
+        draftVariant: false,
+        initialDraftVariant: false,
+        preludeDraftVariant: false,
+        ceosDraftVariant: false,
+        randomMA: RandomMAOptionType.NONE,
+        showOtherPlayersVP: false,
+        solarPhaseOption: false,
+        shuffleMapOption: false,
+        customCorporationsList: [],
+        customColoniesList: [],
+        customPreludes: [],
+        bannedCards: [],
+        includedCards: [],
+        customCeos: [],
+        politicalAgendasExtension: 'Standard',
+        undoOption: false,
+        showTimers: true,
+        noEloGame: false,
+        turnBasedGame: false,
+        fastModeOption: false,
+        removeNegativeGlobalEventsOption: false,
+        includeFanMA: false,
+        modularMA: false,
+        startingCorporations: 2,
+        soloTR: false,
+        aresExtremeVariant: false,
+        requiresVenusTrackCompletion: false,
+        requiresMoonTrackCompletion: false,
+        moonStandardProjectVariant: false,
+        moonStandardProjectVariant1: false,
+        altVenusBoard: false,
+        twoCorpsVariant: false,
+        startingCeos: 3,
+        startingPreludes: 4,
+      },
+    } as unknown as SerializedGame);
+
+    scaffolding.url = '/api/cloneablegames?id=g456&setup=true';
+    await scaffolding.get(ApiCloneableGame.INSTANCE, res);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    const response = JSON.parse(res.content);
+    expect(response.setup.board).eq(RandomBoardOption.ALL);
   });
 });

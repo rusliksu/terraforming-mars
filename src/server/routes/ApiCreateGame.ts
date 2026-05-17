@@ -147,7 +147,8 @@ export class ApiCreateGame extends Handler {
             }
           }
 
-          const boards = ApiCreateGame.boardOptions(gameReq.board);
+          const boardSelection = gameReq.board;
+          const boards = ApiCreateGame.boardOptions(boardSelection);
           gameReq.board = boards[Math.floor(Math.random() * boards.length)];
 
           const gameOptions: GameOptions = {
@@ -157,6 +158,7 @@ export class ApiCreateGame extends Handler {
             aresExtremeVariant: gameReq.aresExtremeVariant,
             bannedCards: gameReq.bannedCards,
             boardName: gameReq.board,
+            boardSelection,
             ceoExtension: gameReq.expansions.ceo,
             clonedGamedId: gameReq.clonedGamedId ?? undefined,
             coloniesExtension: gameReq.expansions.colonies,

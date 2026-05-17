@@ -62,7 +62,7 @@ export class ApiCloneableGame extends Handler {
         isBot: false,
       })),
       expansions: {...options.expansions},
-      board: options.boardName,
+      board: options.boardSelection ?? options.boardName,
       seed: Math.random(),
       randomFirstPlayer: true,
       clonedGamedId: undefined,

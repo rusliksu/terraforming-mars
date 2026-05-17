@@ -272,10 +272,10 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.selectedGeneration = this.generation;
+    this.selectedRecentLimit = 100;
     const scrollablePanel = this.getScrollablePanel();
     scrollablePanel?.addEventListener('scroll', this.handleScroll);
-    this.getLogsForGeneration(this.generation);
+    this.getRecentLogs();
   },
   beforeUnmount() {
     const scrollablePanel = this.getScrollablePanel();

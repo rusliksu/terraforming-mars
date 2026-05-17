@@ -68,6 +68,7 @@ describe('LogPanel', () => {
     await Promise.resolve();
     expect(fetchCalls).has.length(1);
     expect(fetchCalls[0]).includes('gameAge=0');
+    expect(fetchCalls[0]).includes('limit=100');
 
     const updatedViewModel = {
       ...viewModel,
@@ -98,13 +99,14 @@ describe('LogPanel', () => {
     const recentTabs = wrapper.findAll('.log-recent-indicator');
     expect(recentTabs).has.length(1);
     expect(recentTabs[0].text()).eq('Last 100');
+    expect(recentTabs[0].classes()).contains('log-recent-indicator--selected');
 
     (wrapper.vm as any).selectRecentLogs();
     await Promise.resolve();
 
-    expect(fetchCalls).has.length(2);
-    expect(fetchCalls[1]).includes('limit=100');
-    expect(fetchCalls[1]).does.not.include('generation=');
+    expect(fetchCalls).has.length(1);
+    expect(fetchCalls[0]).includes('limit=100');
+    expect(fetchCalls[0]).does.not.include('generation=');
   });
 
   it('sticks to bottom when the log list grows after render', async () => {

@@ -138,6 +138,15 @@ export class PostgreSQL implements IDatabase {
     return res.rows.map((row) => row.game_id);
   }
 
+  public async getLastSaveTimeMs(gameId: GameId): Promise<number | undefined> {
+    const res = await this.client.query('SELECT EXTRACT(EPOCH FROM MAX(created_time)) * 1000 AS created_time_ms FROM games WHERE game_id = $1', [gameId]);
+    const createdTimeMs = Number(res.rows[0]?.created_time_ms);
+    if (!Number.isFinite(createdTimeMs)) {
+      return undefined;
+    }
+    return createdTimeMs;
+  }
+
   private compose(game: string, log: string, options: string): SerializedGame {
     const stored: StoredSerializedGame = JSON.parse(game);
     const {logLength, ...remainder} = stored;

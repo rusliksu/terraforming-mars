@@ -137,6 +137,10 @@ export class LocalStorage implements IDatabase {
     return Promise.resolve(gameIds);
   }
 
+  getLastSaveTimeMs(_gameId: GameId): Promise<number | undefined> {
+    return Promise.resolve(undefined);
+  }
+
   saveGameResults(gameId: GameId, players: number, generations: number, gameOptions: GameOptions, scores: Array<Score>): void {
     const obj = {gameId, players, generations, gameOptions, scores};
     const text = JSON.stringify(obj, null, 2);

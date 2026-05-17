@@ -8,9 +8,12 @@ import {Response} from '../Response';
 
 const DEFAULT_LIMIT = 8;
 const MAX_LIMIT = 20;
+const STALE_LIVE_GAME_AFTER_MS = 3 * 24 * 60 * 60 * 1000;
 
 type LiveGameCandidate = {
+  phasePriority: number;
   activity: number;
+  updatedAtMs: number;
   model: LiveGameModel;
 };
 
@@ -55,6 +58,10 @@ function isExpired(game: {expectedPurgeTimeMs: () => number}, now: number): bool
   return expectedPurgeTimeMs !== 0 && expectedPurgeTimeMs <= now;
 }
 
+function isStale(lastSaveTimeMs: number | undefined, now: number): boolean {
+  return lastSaveTimeMs !== undefined && now - lastSaveTimeMs > STALE_LIVE_GAME_AFTER_MS;
+}
+
 export class ApiLiveGames extends Handler {
   public static readonly INSTANCE = new ApiLiveGames();
 
@@ -77,8 +84,15 @@ export class ApiLiveGames extends Handler {
           isExpired(game, now)) {
         continue;
       }
+      const lastSaveTimeMs = await ctx.gameLoader.getLastSaveTimeMs(entry.gameId);
+      if (isStale(lastSaveTimeMs, now)) {
+        continue;
+      }
+      const priority = phasePriority(game.phase);
       liveGames.push({
-        activity: (phasePriority(game.phase) * 1000000) + game.gameAge + game.lastSaveId,
+        phasePriority: priority,
+        activity: (priority * 1000000) + game.gameAge + game.lastSaveId,
+        updatedAtMs: lastSaveTimeMs ?? 0,
         model: {
           id: game.id,
           phase: game.phase,
@@ -92,7 +106,7 @@ export class ApiLiveGames extends Handler {
     }
 
     const response = liveGames
-      .sort((a, b) => b.activity - a.activity)
+      .sort((a, b) => (b.updatedAtMs - a.updatedAtMs) || (b.phasePriority - a.phasePriority) || (b.activity - a.activity))
       .slice(0, limit)
       .map((candidate) => candidate.model);
     responses.writeJson(res, ctx, response);

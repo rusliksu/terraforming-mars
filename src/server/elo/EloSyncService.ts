@@ -1,5 +1,6 @@
 import {promises as fs} from 'fs';
 
+import eloPlayerNameAliases from '../../../elo/player_name_aliases.json';
 import {toName} from '../../common/utils/utils';
 import {IGame} from '../IGame';
 import {isICorporationCard} from '../cards/corporation/ICorporationCard';
@@ -8,51 +9,7 @@ import {getEloMirrorPath, getEloPrimaryPath} from './EloPaths';
 const DEFAULT_ELO = 1500;
 const BASE_K = 32;
 const PROVISIONAL_ELO_BY_COMPLETED_GAMES = [1300, 1375, 1450] as const;
-const PLAYER_ALIASES: Record<string, string> = {
-  'gydro': 'GydRo',
-  'руслан': 'GydRo',
-  'ruslan': 'GydRo',
-  'genuinegold': 'GenuineGold',
-  'genuine gold': 'GenuineGold',
-  'илья': 'GenuineGold',
-  'ilya': 'GenuineGold',
-  'золотинский': 'GenuineGold',
-  'catharsis': 'Catharsis🔥',
-  'catharsis🔥': 'Catharsis🔥',
-  'катерина': 'Catharsis🔥',
-  'паша': 'Паша',
-  'павел': 'Паша',
-  'pasha': 'Паша',
-  'pavel': 'Паша',
-  'pavel mironov': 'Паша',
-  'миронов': 'Паша',
-  'соня эмко': 'Тома',
-  'эмко': 'Тома',
-  'sonya emko': 'Тома',
-  'sonia emko': 'Тома',
-  'emko': 'Тома',
-  'тома': 'Тома',
-  'toma': 'Тома',
-  'соня': 'Тома',
-  'sonya': 'Тома',
-  'анатолий': 'Антистресс',
-  'антистресс': 'Антистресс',
-  'абдуллаев': 'Антистресс',
-  'gambitgirl': 'Олеся',
-  'gambit girl': 'Олеся',
-  'олеся': 'Олеся',
-  'olesya': 'Олеся',
-  'olesia': 'Олеся',
-  'игнатова': 'Олеся',
-  'мяу': 'Олеся',
-  'rav': 'Рав',
-  'рав': 'Рав',
-  'равиль': 'Рав',
-  'изумрудный рав': 'Рав',
-  'лёха': 'Леха',
-  'леха': 'Леха',
-  'лёха -15 эло': 'Леха',
-};
+const PLAYER_ALIASES = eloPlayerNameAliases as Record<string, string>;
 
 export type EloStoredResult = {
   name: string;

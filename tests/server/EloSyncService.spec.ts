@@ -3,7 +3,7 @@ import * as fs from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
 
-import {EloSyncService, effectiveEloForExpectedScore, rebuildEloData} from '../../src/server/elo/EloSyncService';
+import {EloSyncService, effectiveEloForExpectedScore, normalizeEloIdentity, rebuildEloData} from '../../src/server/elo/EloSyncService';
 import {Game} from '../../src/server/Game';
 import {TestPlayer} from '../TestPlayer';
 
@@ -263,6 +263,13 @@ describe('EloSyncService', () => {
     expect(rebuilt.players['user:ruslan-user']).eq(undefined);
     expect(rebuilt.games[0].results[0].name).eq('gydro');
     expect(rebuilt.games[0].results[0].displayName).eq('GydRo');
+  });
+
+  it('normalizes shared ELO player aliases on the server', () => {
+    expect(normalizeEloIdentity('Влад')).deep.eq({key: 'владлен', displayName: 'Владлен'});
+    expect(normalizeEloIdentity('Vladlen Grishaev')).deep.eq({key: 'владлен', displayName: 'Владлен'});
+    expect(normalizeEloIdentity('Вангер Думов')).deep.eq({key: 'вангер', displayName: 'Вангер'});
+    expect(normalizeEloIdentity('Владимир')).deep.eq({key: 'владимир', displayName: 'Владимир'});
   });
 
   it('splits same display name players by user identity when provided', async () => {

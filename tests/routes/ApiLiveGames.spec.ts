@@ -107,11 +107,11 @@ describe('ApiLiveGames', () => {
     const now = Date.now();
     const freshGame = testGame('game-fresh', [TestPlayer.BLUE.newPlayer(), TestPlayer.RED.newPlayer()], Phase.ACTION);
     await scaffolding.ctx.gameLoader.add(freshGame);
-    setLastSaveTime(freshGame, now - DAY_MS);
+    setLastSaveTime(freshGame, now - (12 * 60 * 60 * 1000));
 
     const staleGame = testGame('game-stale', [TestPlayer.GREEN.newPlayer(), TestPlayer.YELLOW.newPlayer()], Phase.ACTION);
     await scaffolding.ctx.gameLoader.add(staleGame);
-    setLastSaveTime(staleGame, now - (4 * DAY_MS));
+    setLastSaveTime(staleGame, now - (19 * 60 * 60 * 1000));
 
     scaffolding.url = '/api/live-games';
     await scaffolding.get(ApiLiveGames.INSTANCE, res);
@@ -120,11 +120,27 @@ describe('ApiLiveGames', () => {
     expect(JSON.parse(res.content).map((game: {id: string}) => game.id)).deep.eq(['game-fresh']);
   });
 
+  it('does not list pre-start initial drafting games', async () => {
+    const initialDraftGame = testGame(
+      'game-initial-draft',
+      [TestPlayer.BLUE.newPlayer(), TestPlayer.RED.newPlayer()],
+      Phase.INITIALDRAFTING,
+    );
+    await scaffolding.ctx.gameLoader.add(initialDraftGame);
+    setLastSaveTime(initialDraftGame, Date.now());
+
+    scaffolding.url = '/api/live-games';
+    await scaffolding.get(ApiLiveGames.INSTANCE, res);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(JSON.parse(res.content)).deep.eq([]);
+  });
+
   it('sorts by latest save before phase priority', async () => {
     const now = Date.now();
     const actionGame = testGame('game-action', [TestPlayer.BLUE.newPlayer(), TestPlayer.RED.newPlayer()], Phase.ACTION);
     await scaffolding.ctx.gameLoader.add(actionGame);
-    setLastSaveTime(actionGame, now - DAY_MS);
+    setLastSaveTime(actionGame, now - (12 * 60 * 60 * 1000));
 
     const researchGame = testGame('game-research', [TestPlayer.GREEN.newPlayer(), TestPlayer.YELLOW.newPlayer()], Phase.RESEARCH);
     await scaffolding.ctx.gameLoader.add(researchGame);
@@ -157,7 +173,7 @@ describe('ApiLiveGames', () => {
       const draftGame = testGame(
         ('game-draft-' + idx) as GameId,
         [TestPlayer.BLUE.newPlayer(), TestPlayer.RED.newPlayer()],
-        Phase.INITIALDRAFTING,
+        Phase.DRAFTING,
         Date.now() + 86400000,
         100,
         100,
@@ -179,7 +195,7 @@ describe('ApiLiveGames', () => {
 
     expect(res.statusCode).eq(statusCode.ok);
     const games = JSON.parse(res.content);
-    expect(games).has.length(8);
+    expect(games).has.length(2);
     expect(games[0].id).eq('game-action');
     expect(games.map((game: {id: string}) => game.id)).contains('game-action');
   });

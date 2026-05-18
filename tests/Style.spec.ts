@@ -339,6 +339,14 @@ describe('Styles', () => {
     expect(common).to.contain('.player_translucent_bg_color_pearl .game-end-name-and-elo a {\n    text-shadow: none;');
   });
 
+  it('keeps Vanger corporation names black on the green persona panel', () => {
+    const common = read('src/styles/common.less');
+
+    expect(common).to.contain('.player_translucent_bg_color_vanger .player-info-corp,');
+    expect(common).to.contain('.player_translucent_bg_color_vanger .player-info-corp,\n.player_translucent_bg_color_vanger td,');
+    expect(cssBlock(common, '.player_bg_color_vanger.log-player,\n.player_translucent_bg_color_vanger .player-info-name,\n.player_translucent_bg_color_vanger .player-info-corp,\n.player_translucent_bg_color_vanger .player_name,\n.player_translucent_bg_color_vanger .game-end-name-and-elo,\n.player_translucent_bg_color_vanger .game-end-name-and-elo a,\n.player_translucent_bg_color_vanger .player-name')).to.contain('color: #001f00;');
+  });
+
   it('keeps the old Hydro red-pink treatment available for legacy Toma games', () => {
     const variables = read('src/styles/variables.less');
     const common = read('src/styles/common.less');

@@ -12,6 +12,7 @@ import {
   SONYA_TITAN_COLOR,
   SONYA_SATURN_STORM_COLOR,
   TOMA_NAME,
+  VANGER_COLOR,
 } from '@/common/Color';
 
 describe('Locked player identities', () => {
@@ -48,5 +49,11 @@ describe('Locked player identities', () => {
     const identity = getPlayerIdentityByName('Genuine Gold');
     expect(identity?.color).to.eq(GENUINE_GOLD_COLOR);
     expect(identity?.name).to.eq('GenuineGold');
+  });
+
+  it('uses a plain green label for Vanger', () => {
+    const identity = getPlayerIdentityByName('Вангер');
+    expect(identity?.color).to.eq(VANGER_COLOR);
+    expect(identity?.colorLabel).to.eq('зелёный');
   });
 });

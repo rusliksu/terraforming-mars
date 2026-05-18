@@ -1,6 +1,6 @@
-import {promises as fs} from 'fs';
+import {promises as fs, readFileSync} from 'fs';
+import * as path from 'path';
 
-import eloPlayerNameAliases from '../../../elo/player_name_aliases.json';
 import {toName} from '../../common/utils/utils';
 import {IGame} from '../IGame';
 import {isICorporationCard} from '../cards/corporation/ICorporationCard';
@@ -9,7 +9,28 @@ import {getEloMirrorPath, getEloPrimaryPath} from './EloPaths';
 const DEFAULT_ELO = 1500;
 const BASE_K = 32;
 const PROVISIONAL_ELO_BY_COMPLETED_GAMES = [1300, 1375, 1450] as const;
-const PLAYER_ALIASES = eloPlayerNameAliases as Record<string, string>;
+const PLAYER_ALIASES = loadPlayerAliases();
+
+function loadPlayerAliases(): Record<string, string> {
+  const candidates = [
+    path.resolve(process.cwd(), 'elo', 'player_name_aliases.json'),
+    path.resolve(__dirname, '../../../../elo/player_name_aliases.json'),
+    path.resolve(__dirname, '../../../elo/player_name_aliases.json'),
+  ];
+
+  for (const file of candidates) {
+    try {
+      return JSON.parse(readFileSync(file, 'utf8')) as Record<string, string>;
+    } catch (error: unknown) {
+      const err = error as {code?: string};
+      if (err.code !== 'ENOENT') {
+        throw error;
+      }
+    }
+  }
+
+  throw new Error(`Missing Elo player aliases file. Tried: ${candidates.join(', ')}`);
+}
 
 export type EloStoredResult = {
   name: string;

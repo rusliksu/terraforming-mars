@@ -82,6 +82,25 @@ describe('ApiGameLogs', () => {
     expect(messages[messages.length - 1].message).eq('Log 59');
   });
 
+  it('pulls the most recent 100 logs when requested', async () => {
+    const player = TestPlayer.BLACK.newPlayer();
+    const game = Game.newInstance('game-id', [player], player);
+    await scaffolding.ctx.gameLoader.add(game);
+
+    game.gameLog.length = 0;
+    for (let i = 0; i < 120; i++) {
+      game.log(`Log ${i}`);
+    }
+
+    scaffolding.url = '/api/game/logs?id=' + player.id + '&limit=100';
+    await scaffolding.get(ApiGameLogs.INSTANCE, res);
+    const messages = JSON.parse(res.content);
+
+    expect(messages).has.length(100);
+    expect(messages[0].message).eq('Log 20');
+    expect(messages[messages.length - 1].message).eq('Log 119');
+  });
+
   it('pulls logs for first generation', async () => {
     const player = TestPlayer.BLACK.newPlayer();
     scaffolding.url = '/api/game/logs?id=' + player.id;

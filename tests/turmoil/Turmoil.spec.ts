@@ -6,8 +6,9 @@ import {Phase} from '../../src/common/Phase';
 import {OrOptions} from '../../src/server/inputs/OrOptions';
 import {SelectSpace} from '../../src/server/inputs/SelectSpace';
 import {SpaceBonus} from '../../src/common/boards/SpaceBonus';
+import {SpaceType} from '../../src/common/boards/SpaceType';
 import {Delegate, Turmoil} from '../../src/server/turmoil/Turmoil';
-import {maxOutOceans, runAllActions, setOxygenLevel, setTemperature, setVenusScaleLevel} from '../TestingUtils';
+import {maxOutOceans, runAllActions, setOxygenLevel, setRulingParty as setRulingPartyByName, setTemperature, setVenusScaleLevel} from '../TestingUtils';
 import {TestPlayer} from '../TestPlayer';
 import {Reds} from '../../src/server/turmoil/parties/Reds';
 import {Greens} from '../../src/server/turmoil/parties/Greens';
@@ -39,6 +40,7 @@ import {testGame} from '../TestGame';
 import {MultiSet} from 'mnemonist';
 import {TowingAComet} from '../../src/server/cards/base/TowingAComet';
 import {cast} from '@/common/utils/utils';
+import {TurmoilHandler} from '../../src/server/turmoil/TurmoilHandler';
 
 describe('Turmoil', () => {
   let player: TestPlayer;
@@ -195,6 +197,86 @@ describe('Turmoil', () => {
 
     placeOcean.cb(steelSpace!);
     expect(player.steel).to.eq(0); // should not give ruling policy bonus
+  });
+
+  it('Does not give Mars First steel for colony-space tile placements', () => {
+    setRulingParty(turmoil, game, new MarsFirst());
+    const colonySpace = game.board.spaces.find((space) => space.spaceType === SpaceType.COLONY)!;
+
+    game.addTile(player, colonySpace, {tileType: TileType.CITY});
+
+    expect(player.steel).to.eq(0);
+    expect(game.gameLog.some((message) => message.message === '${0} gained ${1} steel from Turmoil ${2} policy')).is.false;
+  });
+
+  it('Logs Mars First steel from tile placements', () => {
+    setRulingParty(turmoil, game, new MarsFirst());
+    const space = game.board.getAvailableSpacesOnLand(player)[0];
+
+    game.addTile(player, space, {tileType: TileType.CITY});
+
+    const log = game.gameLog.find((message) => message.message === '${0} gained ${1} steel from Turmoil ${2} policy');
+    expect(log).is.not.undefined;
+    expect(log!.data[1].value).to.eq('1');
+    expect(log!.data[2].value).to.eq(PartyName.MARS);
+  });
+
+  it('Does not give Mars First steel for Moon tile placements', () => {
+    const [moonGame, moonPlayer] = testGame(1, {turmoilExtension: true, moonExpansion: true});
+    moonGame.phase = Phase.ACTION;
+    const moonTurmoil = Turmoil.getTurmoil(moonGame);
+    setRulingParty(moonTurmoil, moonGame, new MarsFirst());
+    const moonSpace = MoonExpansion.moonData(moonGame).moon.spaces.find((space) => space.spaceType === SpaceType.LUNAR_MINE)!;
+
+    MoonExpansion.addMineTile(moonPlayer, moonSpace.id);
+
+    expect(moonPlayer.steel).to.eq(0);
+    expect(moonGame.gameLog.some((message) => message.message === '${0} gained ${1} steel from Turmoil ${2} policy')).is.false;
+  });
+
+  it('Logs passive Turmoil policy resource gains', () => {
+    setRulingPartyByName(game, PartyName.GREENS, 'gp02');
+    game.addTile(player, game.board.getAvailableSpacesOnLand(player)[0], {tileType: TileType.CITY});
+    expectLog('${0} gained ${1} plant from Turmoil ${2} policy');
+
+    setRulingPartyByName(game, PartyName.GREENS, 'gp03');
+    TurmoilHandler.applyOnCardPlayedEffect(player, new ProtectedValley());
+    runAllActions(game);
+    expectLog('${0} gained ${1} M€ from Turmoil ${2} policy');
+
+    setRulingPartyByName(game, PartyName.MARS, 'mp02');
+    TurmoilHandler.applyOnCardPlayedEffect(player, new StripMine());
+    expectLog('${0} gained ${1} M€ from Turmoil ${2} policy', PartyName.MARS);
+
+    setRulingPartyByName(game, PartyName.KELVINISTS, 'kp02');
+    game.increaseTemperature(player, 1);
+    expectLog('${0} gained ${1} M€ from Turmoil ${2} policy', PartyName.KELVINISTS);
+
+    setRulingPartyByName(game, PartyName.KELVINISTS, 'kp04');
+    game.addTile(player, game.board.getAvailableSpacesOnLand(player)[0], {tileType: TileType.CITY});
+    expectLog('${0} gained ${1} heat from Turmoil ${2} policy');
+  });
+
+  it('Logs Turmoil ruling bonus resource gains', () => {
+    player.playedCards.push(new StripMine(), new ProtectedValley(), new SpaceStation());
+    player.production.override({heat: 2});
+    player.cardsInHand.push(new LavaFlows(), new ArtificialLake(), new IceAsteroid());
+    game.gameLog.length = 0;
+
+    turmoil.getPartyByName(PartyName.MARS).bonuses[0].grantForPlayer(player);
+    expectLog('${0} gained ${1} M€ from Turmoil ${2} ruling bonus', PartyName.MARS);
+
+    turmoil.getPartyByName(PartyName.GREENS).bonuses[0].grantForPlayer(player);
+    expectLog('${0} gained ${1} M€ from Turmoil ${2} ruling bonus', PartyName.GREENS);
+
+    turmoil.getPartyByName(PartyName.KELVINISTS).bonuses[1].grantForPlayer(player);
+    expectLog('${0} gained ${1} heat from Turmoil ${2} ruling bonus', PartyName.KELVINISTS);
+
+    turmoil.getPartyByName(PartyName.SCIENTISTS).bonuses[1].grantForPlayer(player);
+    expectLog('${0} gained ${1} M€ from Turmoil ${2} ruling bonus', PartyName.SCIENTISTS);
+
+    turmoil.getPartyByName(PartyName.UNITY).bonuses[1].grantForPlayer(player);
+    expectLog('${0} gained ${1} M€ from Turmoil ${2} ruling bonus', PartyName.UNITY);
   });
 
   it('Cannot raise TR via Standard Projects if Reds are ruling and player cannot pay', () => {
@@ -751,5 +833,12 @@ describe('Turmoil', () => {
 
   function expectDelegateMatch(actual: MultiSet<Delegate>, ...delegates: Array<Delegate>) {
     expect(actual).to.deep.eq(MultiSet.from(delegates));
+  }
+
+  function expectLog(message: string, partyName?: PartyName) {
+    const log = game.gameLog.find((messageLog) =>
+      messageLog.message === message &&
+      (partyName === undefined || messageLog.data[2]?.value === partyName));
+    expect(log).is.not.undefined;
   }
 });

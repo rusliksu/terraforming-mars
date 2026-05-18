@@ -24,7 +24,7 @@ class ScientistsBonus01 extends Bonus {
   }
 
   grantForPlayer(player: IPlayer) {
-    player.stock.add(Resource.MEGACREDITS, this.getScore(player));
+    this.grantResourceForRulingBonus(player, Resource.MEGACREDITS, this.getScore(player), 'M€', PartyName.SCIENTISTS);
   }
 }
 
@@ -37,7 +37,7 @@ class ScientistsBonus02 extends Bonus {
   }
 
   grantForPlayer(player: IPlayer) {
-    player.stock.add(Resource.MEGACREDITS, this.getScore(player));
+    this.grantResourceForRulingBonus(player, Resource.MEGACREDITS, this.getScore(player), 'M€', PartyName.SCIENTISTS);
   }
 }
 

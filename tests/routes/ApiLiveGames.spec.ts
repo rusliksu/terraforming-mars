@@ -9,6 +9,9 @@ import {MockResponse} from './HttpMocks';
 import {TestPlayer} from '../TestPlayer';
 import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {statusCode} from '../../src/common/http/statusCode';
+import {FakeGameLoader} from './FakeGameLoader';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 function testGame(
   id: GameId,
@@ -41,6 +44,10 @@ describe('ApiLiveGames', () => {
     scaffolding = new RouteTestScaffolding();
     res = new MockResponse();
   });
+
+  function setLastSaveTime(game: IGame, lastSaveTimeMs: number): void {
+    (scaffolding.ctx.gameLoader as FakeGameLoader).setLastSaveTimeMs(game.id, lastSaveTimeMs);
+  }
 
   it('returns running games without requiring server id', async () => {
     const activePlayer = TestPlayer.BLUE.newPlayer();
@@ -94,6 +101,40 @@ describe('ApiLiveGames', () => {
 
     expect(res.statusCode).eq(statusCode.ok);
     expect(JSON.parse(res.content).map((game: {id: string}) => game.id)).deep.eq(['game-async']);
+  });
+
+  it('does not list games with stale saves', async () => {
+    const now = Date.now();
+    const freshGame = testGame('game-fresh', [TestPlayer.BLUE.newPlayer(), TestPlayer.RED.newPlayer()], Phase.ACTION);
+    await scaffolding.ctx.gameLoader.add(freshGame);
+    setLastSaveTime(freshGame, now - DAY_MS);
+
+    const staleGame = testGame('game-stale', [TestPlayer.GREEN.newPlayer(), TestPlayer.YELLOW.newPlayer()], Phase.ACTION);
+    await scaffolding.ctx.gameLoader.add(staleGame);
+    setLastSaveTime(staleGame, now - (4 * DAY_MS));
+
+    scaffolding.url = '/api/live-games';
+    await scaffolding.get(ApiLiveGames.INSTANCE, res);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(JSON.parse(res.content).map((game: {id: string}) => game.id)).deep.eq(['game-fresh']);
+  });
+
+  it('sorts by latest save before phase priority', async () => {
+    const now = Date.now();
+    const actionGame = testGame('game-action', [TestPlayer.BLUE.newPlayer(), TestPlayer.RED.newPlayer()], Phase.ACTION);
+    await scaffolding.ctx.gameLoader.add(actionGame);
+    setLastSaveTime(actionGame, now - DAY_MS);
+
+    const researchGame = testGame('game-research', [TestPlayer.GREEN.newPlayer(), TestPlayer.YELLOW.newPlayer()], Phase.RESEARCH);
+    await scaffolding.ctx.gameLoader.add(researchGame);
+    setLastSaveTime(researchGame, now);
+
+    scaffolding.url = '/api/live-games';
+    await scaffolding.get(ApiLiveGames.INSTANCE, res);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(JSON.parse(res.content).map((game: {id: string}) => game.id)).deep.eq(['game-research', 'game-action']);
   });
 
   it('does not list games where every player kept the default color name', async () => {

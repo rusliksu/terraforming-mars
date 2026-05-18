@@ -60,6 +60,11 @@ export interface IDatabase {
     getGameIds(): Promise<Array<GameId>>;
 
     /**
+     * Return the wall-clock time of the most recent save for a game.
+     */
+    getLastSaveTimeMs(gameId: GameId): Promise<number | undefined>;
+
+    /**
      * Get the player count for a game.
      *
      * @param gameId the game id to search for

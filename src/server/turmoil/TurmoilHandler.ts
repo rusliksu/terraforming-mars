@@ -74,6 +74,8 @@ export class TurmoilHandler {
       // PoliticalAgendas Kelvinists P2 hook
       if (PartyHooks.shouldApplyPolicy(player, PartyName.KELVINISTS, 'kp02')) {
         player.stock.add(Resource.MEGACREDITS, steps * 3);
+        player.game.log('${0} gained ${1} M€ from Turmoil ${2} policy', (b) =>
+          b.player(player).number(steps * 3).partyName(PartyName.KELVINISTS));
       }
     }
 

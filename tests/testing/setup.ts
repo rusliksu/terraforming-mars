@@ -15,6 +15,7 @@ const FAKE_DATABASE: IDatabase = {
   getGameId: () => Promise.resolve('g'),
   getGameVersion: () => Promise.resolve({} as SerializedGame),
   getGameIds: () => Promise.resolve([]),
+  getLastSaveTimeMs: () => Promise.resolve(undefined),
   getSaveIds: () => Promise.resolve([]),
   initialize: () => Promise.resolve(),
   saveGameResults: () => {},

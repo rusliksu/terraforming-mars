@@ -9,6 +9,7 @@ import {GameIdLedger} from './IDatabase';
 export interface IGameLoader {
   add(game: IGame): Promise<void>;
   getIds(): Promise<Array<GameIdLedger>>;
+  getLastSaveTimeMs(gameId: GameId): Promise<number | undefined>;
   /**
    * Fetches a game from the GameLoader cache.
    *

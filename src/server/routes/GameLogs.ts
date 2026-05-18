@@ -8,6 +8,17 @@ import {LogMessageData} from '../../common/logs/LogMessageData';
 import {LogMessageDataType} from '../../common/logs/LogMessageDataType';
 
 export class GameLogs {
+  private getRecentLogLimit(limit: string | null): number {
+    if (limit === null) {
+      return 50;
+    }
+    const parsed = Number(limit);
+    if (!Number.isInteger(parsed) || parsed < 1) {
+      return 50;
+    }
+    return Math.min(parsed, 100);
+  }
+
   private getLogsForGeneration(messages: Array<LogMessage>, generation: number): Array<LogMessage> {
     let foundStart = generation === 1;
     const newMessages = [];
@@ -27,7 +38,7 @@ export class GameLogs {
     return newMessages;
   }
 
-  public getLogsForGameView(playerId: ParticipantId, game: IGame, generation: string | null): Array<LogMessage> {
+  public getLogsForGameView(playerId: ParticipantId, game: IGame, generation: string | null, limit: string | null = null): Array<LogMessage> {
     const messagesForPlayer = (message: LogMessage) => {
       try {
         if (message === undefined || message === null) {
@@ -43,7 +54,7 @@ export class GameLogs {
     // Default view keeps the payload small. An explicit generation request should
     // always return the full generation, including the current one.
     if (generation === null) {
-      return game.gameLog.filter(messagesForPlayer).slice(-50);
+      return game.gameLog.filter(messagesForPlayer).slice(-this.getRecentLogLimit(limit));
     }
     return this.getLogsForGeneration(game.gameLog, Number(generation)).filter(messagesForPlayer);
   }

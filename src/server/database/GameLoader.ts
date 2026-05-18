@@ -118,6 +118,10 @@ export class GameLoader implements IGameLoader {
     return arry.map(([gameId, participantIds]) => ({gameId, participantIds}));
   }
 
+  public getLastSaveTimeMs(gameId: GameId): Promise<number | undefined> {
+    return Database.getInstance().getLastSaveTimeMs(gameId);
+  }
+
   public async isCached(gameId: GameId): Promise<boolean> {
     const d = await this.cache.getGames();
     return d.games.get(gameId) !== undefined;

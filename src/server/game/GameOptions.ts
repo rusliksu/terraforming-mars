@@ -1,5 +1,6 @@
 import * as constants from '../../common/constants';
 import {BoardName} from '../../common/boards/BoardName';
+import {RandomBoardOption} from '../../common/boards/RandomBoardOption';
 import {CardName} from '../../common/cards/CardName';
 import {ColonyName} from '../../common/colonies/ColonyName';
 import {GameId} from '../../common/Types';
@@ -9,7 +10,10 @@ import {Expansion} from '../../common/cards/GameModule';
 import {EscapeVelocityOptions} from '../../common/game/NewGameConfig';
 
 export type GameOptions = {
+  /** The resolved runtime board for this game. */
   boardName: BoardName;
+  /** The original create-game board selection, used by rematch setup. */
+  boardSelection?: BoardName | RandomBoardOption;
   clonedGamedId: GameId | undefined;
 
   // Configuration

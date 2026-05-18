@@ -8,6 +8,8 @@
     display: flex;
     margin-bottom: 16px;
     align-items: center;
+    flex-wrap: wrap;
+    row-gap: 6px;
     .log-gen-title {
         margin-left: 16px;
         text-transform: uppercase;
@@ -30,6 +32,21 @@
             background: #ccc;
             color: black;
         }
+    }
+    .log-recent-indicator {
+        padding: 2px 12px;
+        margin-left: 16px;
+        cursor: pointer;
+        border: 2px solid rgba(170, 170, 170, 0.6);
+        border-radius: 8px;
+        &:hover{
+            background: #ccc;
+            color: black;
+        }
+    }
+    .log-recent-indicator--selected {
+        background: #ccc;
+        color: black;
     }
 }
 

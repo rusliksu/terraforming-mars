@@ -74,6 +74,15 @@ export class SQLite implements IDatabase {
     return rows.map((row) => row.game_id);
   }
 
+  public async getLastSaveTimeMs(gameId: GameId): Promise<number | undefined> {
+    const row = await this.asyncGet('SELECT MAX(created_time) AS created_time FROM games WHERE game_id = ?', [gameId]);
+    const seconds = Number(row?.created_time);
+    if (!Number.isFinite(seconds)) {
+      return undefined;
+    }
+    return seconds * 1000;
+  }
+
   saveGameResults(gameId: GameId, players: number, generations: number, gameOptions: GameOptions, scores: Array<Score>): void {
     try {
       this.db.prepare(

@@ -29,7 +29,7 @@ export class CloudSocieties extends GlobalEvent implements IGlobalEvent {
     game.playersInGenerationOrder.forEach((player) => {
       const resourceCards = player.getResourceCards(CardResource.FLOATER);
       resourceCards.forEach((card) => {
-        player.addResourceTo(card, 1);
+        player.addResourceTo(card, {log: true});
       });
       const amount = turmoil.getInfluence(player);
       if (amount > 0) {

@@ -266,7 +266,8 @@ describe('EloSyncService', () => {
   });
 
   it('normalizes shared ELO player aliases on the server', () => {
-    expect(normalizeEloIdentity('Влад')).deep.eq({key: 'владлен', displayName: 'Владлен'});
+    expect(normalizeEloIdentity('Влад')).deep.eq({key: 'влад', displayName: 'Влад'});
+    expect(normalizeEloIdentity('vlad')).deep.eq({key: 'vlad', displayName: 'vlad'});
     expect(normalizeEloIdentity('Vladlen Grishaev')).deep.eq({key: 'владлен', displayName: 'Владлен'});
     expect(normalizeEloIdentity('Вангер Думов')).deep.eq({key: 'вангер', displayName: 'Вангер'});
     expect(normalizeEloIdentity('Владимир')).deep.eq({key: 'владимир', displayName: 'Владимир'});

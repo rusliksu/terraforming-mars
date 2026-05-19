@@ -1,4 +1,5 @@
-import {promises as fs} from 'fs';
+import {promises as fs, readFileSync} from 'fs';
+import * as path from 'path';
 
 import {toName} from '../../common/utils/utils';
 import {IGame} from '../IGame';
@@ -8,51 +9,28 @@ import {getEloMirrorPath, getEloPrimaryPath} from './EloPaths';
 const DEFAULT_ELO = 1500;
 const BASE_K = 32;
 const PROVISIONAL_ELO_BY_COMPLETED_GAMES = [1300, 1375, 1450] as const;
-const PLAYER_ALIASES: Record<string, string> = {
-  'gydro': 'GydRo',
-  'руслан': 'GydRo',
-  'ruslan': 'GydRo',
-  'genuinegold': 'GenuineGold',
-  'genuine gold': 'GenuineGold',
-  'илья': 'GenuineGold',
-  'ilya': 'GenuineGold',
-  'золотинский': 'GenuineGold',
-  'catharsis': 'Catharsis🔥',
-  'catharsis🔥': 'Catharsis🔥',
-  'катерина': 'Catharsis🔥',
-  'паша': 'Паша',
-  'павел': 'Паша',
-  'pasha': 'Паша',
-  'pavel': 'Паша',
-  'pavel mironov': 'Паша',
-  'миронов': 'Паша',
-  'соня эмко': 'Тома',
-  'эмко': 'Тома',
-  'sonya emko': 'Тома',
-  'sonia emko': 'Тома',
-  'emko': 'Тома',
-  'тома': 'Тома',
-  'toma': 'Тома',
-  'соня': 'Тома',
-  'sonya': 'Тома',
-  'анатолий': 'Антистресс',
-  'антистресс': 'Антистресс',
-  'абдуллаев': 'Антистресс',
-  'gambitgirl': 'Олеся',
-  'gambit girl': 'Олеся',
-  'олеся': 'Олеся',
-  'olesya': 'Олеся',
-  'olesia': 'Олеся',
-  'игнатова': 'Олеся',
-  'мяу': 'Олеся',
-  'rav': 'Рав',
-  'рав': 'Рав',
-  'равиль': 'Рав',
-  'изумрудный рав': 'Рав',
-  'лёха': 'Леха',
-  'леха': 'Леха',
-  'лёха -15 эло': 'Леха',
-};
+const PLAYER_ALIASES = loadPlayerAliases();
+
+function loadPlayerAliases(): Record<string, string> {
+  const candidates = [
+    path.resolve(process.cwd(), 'elo', 'player_name_aliases.json'),
+    path.resolve(__dirname, '../../../../elo/player_name_aliases.json'),
+    path.resolve(__dirname, '../../../elo/player_name_aliases.json'),
+  ];
+
+  for (const file of candidates) {
+    try {
+      return JSON.parse(readFileSync(file, 'utf8')) as Record<string, string>;
+    } catch (error: unknown) {
+      const err = error as {code?: string};
+      if (err.code !== 'ENOENT') {
+        throw error;
+      }
+    }
+  }
+
+  throw new Error(`Missing Elo player aliases file. Tried: ${candidates.join(', ')}`);
+}
 
 export type EloStoredResult = {
   name: string;

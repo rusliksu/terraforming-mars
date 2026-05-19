@@ -116,9 +116,9 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
   {
     color: VANGER_COLOR,
     name: VANGER_NAME,
-    colorLabel: 'чистый зеленый',
+    colorLabel: 'зелёный',
     shortLabel: 'Вангер',
-    title: 'Вангер - reserved pure green',
+    title: 'Вангер - reserved green',
     aliases: ['вангер', 'vanger', 'вангер думов', 'vanger dumov', 'думов', 'dumov'],
   },
   {

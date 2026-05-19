@@ -6,9 +6,9 @@ import {Context} from './IHandler';
 import {Request} from '../Request';
 import {Response} from '../Response';
 
-const DEFAULT_LIMIT = 8;
+const DEFAULT_LIMIT = 2;
 const MAX_LIMIT = 20;
-const STALE_LIVE_GAME_AFTER_MS = 3 * 24 * 60 * 60 * 1000;
+const STALE_LIVE_GAME_AFTER_MS = 18 * 60 * 60 * 1000;
 
 type LiveGameCandidate = {
   phasePriority: number;
@@ -58,6 +58,10 @@ function isExpired(game: {expectedPurgeTimeMs: () => number}, now: number): bool
   return expectedPurgeTimeMs !== 0 && expectedPurgeTimeMs <= now;
 }
 
+function isPreStartDraft(phase: Phase): boolean {
+  return phase === Phase.INITIALDRAFTING;
+}
+
 function isStale(lastSaveTimeMs: number | undefined, now: number): boolean {
   return lastSaveTimeMs !== undefined && now - lastSaveTimeMs > STALE_LIVE_GAME_AFTER_MS;
 }
@@ -81,6 +85,7 @@ export class ApiLiveGames extends Handler {
           game.phase === Phase.END ||
           game.players.length < 2 ||
           !hasCustomPlayerName(game) ||
+          isPreStartDraft(game.phase) ||
           isExpired(game, now)) {
         continue;
       }

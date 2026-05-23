@@ -50,7 +50,7 @@ describe('GameLoader', () => {
     setTestDatabase(database);
     const player = TestPlayer.BLUE.newPlayer();
     const player2 = TestPlayer.RED.newPlayer();
-    game = Game.newInstance('gameid', [player, player2], player);
+    game = Game.newInstance('gameid', [player, player2], player, 'spectatorid');
     instance.resetForTesting();
   });
   afterEach(() => {
@@ -124,7 +124,7 @@ describe('GameLoader', () => {
     expect(game1).is.not.undefined;
     const list = await instance.getIds();
     expect(list).to.deep.eq(
-      [{'gameId': 'gameid', 'participantIds': ['p-blue-id', 'p-red-id']}],
+      [{'gameId': 'gameid', 'participantIds': ['p-blue-id', 'p-red-id', 'spectatorid']}],
     );
   });
 
@@ -174,7 +174,7 @@ describe('GameLoader', () => {
     const numberOfGames = 10;
     for (let i = 0; i < numberOfGames; i++) {
       const player = new Player('name', 'blue', false, 0, 'p-' + i as PlayerId);
-      Game.newInstance('game-' + i as GameId, [player], player);
+      Game.newInstance('game-' + i as GameId, [player], player, 'spectatorid');
     }
     database.getGameSleep = 500;
     instance.resetForTesting();
@@ -193,6 +193,7 @@ describe('GameLoader', () => {
         'participantIds': [
           'p-blue-id',
           'p-red-id',
+          'spectatorid',
         ],
       }],
     );

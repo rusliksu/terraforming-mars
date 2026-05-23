@@ -22,6 +22,7 @@
       :moonData="game.moon"
       :gameOptions = "game.gameOptions"
       :playerNumber = "playerView.players.length"
+      :isTerraformed="playerView.game.isTerraformed"
       :lastSoloGeneration = "game.lastSoloGeneration"
       :deckSize = "game.deckSize"
       :discardPileSize = "game.discardPileSize">
@@ -49,7 +50,7 @@
       <div class="player_home_block player_home_block--actions nofloat">
         <a name="actions" class="player_home_anchor"></a>
         <dynamic-title title="Actions" :color="thisPlayer.color"/>
-        <waiting-for v-if="game.phase !== 'end'" :players="playerView.players" :playerView="playerView" :waitingfor="playerView.waitingFor"></waiting-for>
+        <waiting-for v-if="game.phase !== 'end'" :playerView="playerView" :waitingfor="playerView.waitingFor"></waiting-for>
       </div>
 
       <div class="player_home_block player_home_block--hand" v-if="playerView.draftedCards.length > 0">
@@ -125,11 +126,9 @@
       <underground-tokens :underworldData="thisPlayer.underworldData"></underground-tokens>
     </div>
 
-    <PlayerSetupView
-      v-if="thisPlayer.tableau.length === 0"
-      :playerView="playerView"
-      :tileView="tileView"
-    />
+    <template v-if="thisPlayer.tableau.length === 0">
+      <PlayerSetupView :playerView="playerView" :tileView="tileView"/>
+    </template>
 
     <div v-if="game.colonies.length > 0" class="player_home_block" ref="colonies" id="shortkey-colonies">
       <a name="colonies" class="player_home_anchor hotkey-target"></a>
@@ -145,10 +144,11 @@
         </div>
       </div>
     </div>
+
     <div v-if="game.spectatorId">
       <a :href="'/spectator?id=' +game.spectatorId" target="_blank" rel="noopener noreferrer" v-i18n>Spectator link</a>
     </div>
-    <purge-warning :expectedPurgeTimeMs="playerView.game.expectedPurgeTimeMs"></purge-warning>
+    <purge-warning :expectedPurgeTimeMs="game.expectedPurgeTimeMs"></purge-warning>
     <KeyboardShortcuts v-show="keyboardShortcutOpened" @close="keyboardShortcutOpened = false"></KeyboardShortcuts>
   </div>
 </template>
@@ -171,35 +171,36 @@ import StackedCards from '@/client/components/StackedCards.vue';
 import PurgeWarning from '@/client/components/common/PurgeWarning.vue';
 import UndergroundTokens from '@/client/components/underworld/UndergroundTokens.vue';
 import KeyboardShortcuts from '@/client/components/KeyboardShortcuts.vue';
-import {getPreferences, PreferencesManager} from '@/client/utils/PreferencesManager';
-import {KeyboardNavigation} from '@/client/components/KeyboardNavigation';
+import {getPreferences, Preferences, PreferencesManager} from '@/client/utils/PreferencesManager';
 import {GameModel} from '@/common/models/GameModel';
 import {PlayerViewModel, PublicPlayerModel} from '@/common/models/PlayerModel';
 import {CardType} from '@/common/cards/CardType';
-import {nextTileView, TileView} from './board/TileView';
 import {getCardsByType, isCardActivated} from '@/client/utils/CardUtils';
 import {sortActiveCards} from '@/client/utils/ActiveCardsSortingOrder';
 import {CardModel} from '@/common/models/CardModel';
 import {getCardOrThrow} from '../cards/ClientCardManifest';
-import {setDocumentTitle} from '@/client/utils/documentTitle';
 import {Phase} from '@/common/Phase';
+import {HomeMixin} from '@/client/mixins/HomeMixin';
 
-export type PlayerHomeModel = {
+type PlayerHomeModel = {
   showHand: boolean;
   showActiveCards: boolean;
   showAutomatedCards: boolean;
   showEventCards: boolean;
-  tileView: TileView;
-  keyboardShortcutOpened: boolean;
-  hotkeyTargets: Array<Element>
 }
 
-class TerraformedAlertDialog {
-  static shouldAlert = true;
-}
+type ToggleableCardType = 'HAND' | 'ACTIVE' | 'AUTOMATED' | 'EVENT';
+
+const typeToDataModel: Record<ToggleableCardType, {key: keyof PlayerHomeModel, preference: keyof Preferences}> = {
+  HAND: {key: 'showHand', preference: 'hide_hand'},
+  ACTIVE: {key: 'showActiveCards', preference: 'hide_active_cards'},
+  AUTOMATED: {key: 'showAutomatedCards', preference: 'hide_automated_cards'},
+  EVENT: {key: 'showEventCards', preference: 'hide_event_cards'},
+} as const;
 
 export default defineComponent({
   name: 'player-home',
+  mixins: [HomeMixin],
   data(): PlayerHomeModel {
     const preferences = getPreferences();
     return {
@@ -207,9 +208,6 @@ export default defineComponent({
       showActiveCards: !preferences.hide_active_cards,
       showAutomatedCards: !preferences.hide_automated_cards,
       showEventCards: !preferences.hide_event_cards,
-      tileView: 'show',
-      keyboardShortcutOpened: false,
-      hotkeyTargets: [],
     };
   },
   watch: {
@@ -278,45 +276,6 @@ export default defineComponent({
     KeyboardShortcuts,
   },
   methods: {
-    navigatePage(event: KeyboardEvent) {
-      // Most '?' are shifted, so process this before the action that exits early with modifiers
-      if (event.key === '?') {
-        this.keyboardShortcutOpened = !this.keyboardShortcutOpened;
-        return;
-      }
-      if (event.shiftKey || event.ctrlKey || event.metaKey || event.altKey) {
-        return;
-      }
-      const ids: Partial<Record<string, string>> = {
-        [KeyboardNavigation.GAMEBOARD]: 'shortkey-board',
-        [KeyboardNavigation.PLAYERSOVERVIEW]: 'shortkey-playersoverview',
-        [KeyboardNavigation.HAND]: 'shortkey-hand',
-        [KeyboardNavigation.COLONIES]: 'shortkey-colonies',
-      };
-      const inputSource = event.target as Node;
-      console.log(inputSource.nodeName);
-      if (inputSource.nodeName.toLowerCase() !== 'input') {
-        const id = ids[event.code];
-        if (id) {
-          const el = document.getElementById(id);
-          if (el) {
-            event.preventDefault();
-            el.scrollIntoView({block: 'center', inline: 'center', behavior: 'smooth'});
-          }
-        } else if (event.code.startsWith('Digit')) {
-          const ASCII_ONE = '1'.charCodeAt(0);
-          const index = event.code.charCodeAt(5) - ASCII_ONE;
-          if (index >= 0 && index < this.hotkeyTargets.length) {
-            const el = this.hotkeyTargets[index];
-            console.log(el);
-            if (el) {
-              // event.preventDefault();
-              el.scrollIntoView({block: 'start', inline: 'center', behavior: 'smooth'});
-            }
-          }
-        }
-      }
-    },
     isPlayerActing(playerView: PlayerViewModel) : boolean {
       return playerView.players.length > 1 && playerView.waitingFor !== undefined;
     },
@@ -327,63 +286,27 @@ export default defineComponent({
       }
       return fleetsRange;
     },
-    toggle(type: string): void {
-      switch (type) {
-      case 'HAND':
-        this.showHand = !this.showHand;
-        break;
-      case 'ACTIVE':
-        this.showActiveCards = !this.showActiveCards;
-        break;
-      case 'AUTOMATED':
-        this.showAutomatedCards = !this.showAutomatedCards;
-        break;
-      case 'EVENT':
-        this.showEventCards = !this.showEventCards;
-        break;
-      }
+    toggle(type: ToggleableCardType): void {
+      this[typeToDataModel[type].key] = !this[typeToDataModel[type].key];
     },
-    cycleTileView(): void {
-      this.tileView = nextTileView(this.tileView);
+    isVisible(type: ToggleableCardType): boolean {
+      return this[typeToDataModel[type].key];
     },
-    isVisible(type: string): boolean {
-      switch (type) {
-      case 'HAND':
-        return this.showHand;
-      case 'ACTIVE':
-        return this.showActiveCards;
-      case 'AUTOMATED':
-        return this.showAutomatedCards;
-      case 'EVENT':
-        return this.showEventCards;
-      }
-      return false;
+    getToggleLabel(hideType: ToggleableCardType): string {
+      const val = this[typeToDataModel[hideType].key];
+      return val ? '✔' : '';
     },
-    getToggleLabel(hideType: string): string {
-      if (hideType === 'HAND') {
-        return (this.showHand ? '✔' : '');
-      } else if (hideType === 'ACTIVE') {
-        return (this.showActiveCards? '✔' : '');
-      } else if (hideType === 'AUTOMATED') {
-        return (this.showAutomatedCards ? '✔' : '');
-      } else if (hideType === 'EVENT') {
-        return (this.showEventCards ? '✔' : '');
-      } else {
-        return '';
-      }
-    },
-    getHideButtonClass(hideType: string): string {
+    getHideButtonClass(hideType: ToggleableCardType): string {
       const prefix = 'hiding-card-button ';
-      if (hideType === 'HAND') {
+      switch (hideType) {
+      case 'HAND':
         return prefix + (this.showHand ? 'hand-toggle' : 'hand-toggle-transparent');
-      } else if (hideType === 'ACTIVE') {
+      case 'ACTIVE':
         return prefix + (this.showActiveCards ? 'active' : 'active-transparent');
-      } else if (hideType === 'AUTOMATED') {
+      case 'AUTOMATED':
         return prefix + (this.showAutomatedCards ? 'automated' : 'automated-transparent');
-      } else if (hideType === 'EVENT') {
+      case 'EVENT':
         return prefix + (this.showEventCards ? 'event' : 'event-transparent');
-      } else {
-        return '';
       }
     },
     isActive(cardModel: CardModel): boolean {
@@ -393,25 +316,6 @@ export default defineComponent({
     isNotActive(cardModel: CardModel): boolean {
       return !getCardOrThrow(cardModel.name).hasAction;
     },
-  },
-  unmounted() {
-    window.removeEventListener('keydown', this.navigatePage);
-  },
-  mounted() {
-    setDocumentTitle(this.game.name);
-    window.addEventListener('keydown', this.navigatePage);
-    if (this.game.isTerraformed && TerraformedAlertDialog.shouldAlert && getPreferences().show_alerts) {
-      alert('Mars is Terraformed!');
-      // Avoids repeated calls.
-      TerraformedAlertDialog.shouldAlert = false;
-    }
-    const targets = this.$el.getElementsByClassName('hotkey-target');
-    for (let i = 0; i < targets.length; i++) {
-      const element = targets.item(i);
-      if (element) {
-        this.hotkeyTargets.push(element);
-      }
-    }
   },
 });
 

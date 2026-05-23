@@ -29,7 +29,7 @@ class MarsFirstBonus01 extends Bonus {
   }
 
   grantForPlayer(player: IPlayer): void {
-    this.grantResourceForRulingBonus(player, Resource.MEGACREDITS, this.getScore(player), 'M€', PartyName.MARS);
+    player.stock.add(Resource.MEGACREDITS, this.getScore(player), {log: true, from: {partyName: PartyName.MARS}});
   }
 }
 
@@ -43,7 +43,7 @@ class MarsFirstBonus02 extends Bonus {
   }
 
   grantForPlayer(player: IPlayer): void {
-    this.grantResourceForRulingBonus(player, Resource.MEGACREDITS, this.getScore(player), 'M€', PartyName.MARS);
+    player.stock.add(Resource.MEGACREDITS, this.getScore(player), {log: true, from: {partyName: PartyName.MARS}});
   }
 }
 
@@ -53,9 +53,7 @@ class MarsFirstPolicy01 implements IPolicy {
 
   onTilePlaced(player: IPlayer, space: Space) {
     if (space.tile && space.spaceType !== SpaceType.COLONY && player.game.phase === Phase.ACTION) {
-      player.stock.add(Resource.STEEL, 1);
-      player.game.log('${0} gained ${1} steel from Turmoil ${2} policy', (b) =>
-        b.player(player).number(1).partyName(PartyName.MARS));
+      player.stock.add(Resource.STEEL, 1, {log: true, from: {partyName: PartyName.MARS}});
     }
   }
 }
@@ -66,9 +64,7 @@ class MarsFirstPolicy02 implements IPolicy {
 
   onCardPlayed(player: IPlayer, card: ICard) {
     if (card.tags.includes(Tag.BUILDING)) {
-      player.stock.add(Resource.MEGACREDITS, 2);
-      player.game.log('${0} gained ${1} M€ from Turmoil ${2} policy', (b) =>
-        b.player(player).number(2).partyName(PartyName.MARS));
+      player.stock.add(Resource.MEGACREDITS, 2, {log: true, from: {partyName: PartyName.MARS}});
     }
   }
 }

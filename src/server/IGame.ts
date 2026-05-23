@@ -53,8 +53,8 @@ export interface IGame extends Logger {
   // Game-level data
   lastSaveId: number;
   saveGamePromise: Promise<void>;
-  rng: SeededRandom;
-  spectatorId: SpectatorId | undefined;
+  readonly rng: SeededRandom;
+  readonly spectatorId: SpectatorId;
   deferredActions: DeferredActionsQueue;
   createdTime: Date;
   gameAge: number; // Each log event increases it

@@ -1,10 +1,12 @@
 import {expect} from 'chai';
-import {cast} from '@/common/utils/utils';
+import {cast, toName} from '@/common/utils/utils';
 import {CardName} from '../../src/common/cards/CardName';
 import {IProjectCard} from '../../src/server/cards/IProjectCard';
 import {newProjectCard} from '../../src/server/createCard';
 import {ChooseCards} from '../../src/server/deferredActions/ChooseCards';
 import {SelectCard} from '../../src/server/inputs/SelectCard';
+import {LogMessageDataType} from '../../src/common/logs/LogMessageDataType';
+import {runAllActions} from '../TestingUtils';
 import {testGame} from '../TestGame';
 import {TestPlayer} from '../TestPlayer';
 
@@ -44,5 +46,22 @@ describe('ChooseCards', () => {
       {name: CardName.IO_MINING_INDUSTRIES, calculatedCost: player.getCardCost(ioMiningIndustries)},
     ]);
     expect(model.cards[0].calculatedCost).not.to.eq(player.cardCost);
+  });
+
+  it('logBoughtCards logs bought cards publicly by name', () => {
+    const game = player.game;
+    game.gameLog = [];
+    const selectCard = cast(
+      new ChooseCards(player, [aquiferPumping, ioMiningIndustries], {paying: true, logBoughtCards: true}).execute(),
+      SelectCard<IProjectCard>,
+    );
+
+    selectCard.cb([aquiferPumping]);
+    runAllActions(game);
+
+    const publicMessages = game.gameLog.filter((entry) => entry.playerId === undefined);
+    const bought = publicMessages.find((msg) => msg.message === '${0} bought ${1}')!;
+    expect(bought.data[1].type).eq(LogMessageDataType.CARDS);
+    expect(bought.data[1].value).to.have.members([aquiferPumping].map(toName));
   });
 });

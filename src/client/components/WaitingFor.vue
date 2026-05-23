@@ -3,7 +3,7 @@
   <template v-if="waitingfor === undefined">
     {{ $t('Not your turn to take any actions') }}
     <template v-if="playersWaitingFor.length > 0">
-      (⌛ <span v-for="color in playersWaitingFor" :class="playerColorClass(color, 'bg')" :key="color">&nbsp;&nbsp;&nbsp;</span>)
+      (⌛ <span v-for="color in playersWaitingFor" class="log-player" :class="playerColorClass(color, 'bg')" :key="color">{{ getPlayerName(color) }}</span>)
     </template>
   </template>
   <div v-else class="wf-root">
@@ -14,7 +14,7 @@
       </label>
       <div v-if="showRefresh()">Refresh<span class="reset"></span></div>
     </template>
-    <player-input-factory :players="players"
+    <player-input-factory :players="playerView.players"
                           :playerView="playerView"
                           :playerinput="waitingfor"
                           :onsave="onsave"
@@ -33,7 +33,7 @@ import raw_settings from '@/genfiles/settings.json';
 import {vueRoot} from '@/client/components/vueRoot';
 import {PlayerInputModel} from '@/common/models/PlayerInputModel';
 import {playerColorClass} from '@/common/utils/utils';
-import {PublicPlayerModel, PlayerViewModel, ViewModel} from '@/common/models/PlayerModel';
+import {PlayerViewModel, ViewModel} from '@/common/models/PlayerModel';
 import {getPreferences} from '@/client/utils/PreferencesManager';
 import {SoundManager} from '@/client/utils/SoundManager';
 import {WaitingForModel} from '@/common/models/WaitingForModel';
@@ -64,10 +64,6 @@ export default defineComponent({
       type: Object as () => ViewModel,
       required: true,
     },
-    players: {
-      type: Array as () => Array<PublicPlayerModel>,
-      required: true,
-    },
     waitingfor: {
       type: Object as () => PlayerInputModel | undefined,
       default: undefined,
@@ -81,6 +77,10 @@ export default defineComponent({
     };
   },
   methods: {
+    getPlayerName(color: Color): string {
+      const player = this.playerView.players.find((p) => p.color === color);
+      return player ? player.name : color;
+    },
     animateTitle() {
       if (!getPreferences().animated_title) {
         return;
@@ -249,6 +249,10 @@ export default defineComponent({
     },
     showRefresh(): boolean {
       return this.suspend === true && this.savedPlayerView !== undefined;
+    },
+    playerName(color: Color) {
+      const player = this.playerView.players.find((p) => p.color === color);
+      return player?.name ?? '';
     },
   },
   mounted() {

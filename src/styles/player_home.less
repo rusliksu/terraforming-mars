@@ -16,6 +16,18 @@
             text-decoration: none;
         }
     }
+    .accordion-body {
+        max-height: none;
+    }
+}
+
+.terraformed {
+    background: linear-gradient(transparent, #e28c22, transparent);
+}
+
+@keyframes slide-down {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
 // text shadows
@@ -261,14 +273,14 @@
 }
 
 .tag-count {
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 0 2px rgba(0, 0, 0, 0.3);
+    box-shadow: @outline-shadow;
     position: relative;
     width: 40px;
     height: 40px;
     background-size: 42px 42px;
     background-position: -1px -1px;
     text-align: center;
-    border-radius: 50%;
+    border-radius: @radius_circle;
     background-color: white;
     margin-top: -6px;
     margin-left: 3px;
@@ -405,67 +417,27 @@
 
 .tag-influence-count {
     background-image: url(./assets/misc/influence.png);
-    border: none !important;
-    background-color: transparent !important;
-    box-shadow: none !important;
-    background-size: 34px !important;
-    width: 34px !important;
-    height: 34px !important;
-    filter: brightness(0.8);
-    border-radius: 0px !important;
-    background-position: 0px !important;
+    .tag-count-icon();
 }
 
 .tag-excavation-count {
-  background-image: url(./assets/underworld/excavate.png);
-  border: none !important;
-  background-color: transparent !important;
-  box-shadow: none !important;
-  background-size: 34px !important;
-  width: 34px !important;
-  height: 34px !important;
-  filter: brightness(0.8);
-  border-radius: 0px !important;
-  background-position: 0px !important;
+    background-image: url(./assets/underworld/excavate.png);
+    .tag-count-icon();
 }
 
 .tag-underground-token-count {
-  background-image: url(./assets/underworld/underground-token-background.png);
-  border: none !important;
-  background-color: transparent !important;
-  box-shadow: none !important;
-  background-size: 34px !important;
-  width: 34px !important;
-  height: 34px !important;
-  filter: brightness(0.8);
-  border-radius: 0px !important;
-  background-position: 0px !important;
+    background-image: url(./assets/underworld/underground-token-background.png);
+    .tag-count-icon();
 }
 
 .tag-corruption-count {
-  background-image: url(./assets/underworld/corruption.png);
-  border: none !important;
-  background-color: transparent !important;
-  box-shadow: none !important;
-  background-size: 34px !important;
-  width: 34px !important;
-  height: 34px !important;
-  filter: brightness(0.8);
-  border-radius: 0px !important;
-  background-position: 0px !important;
+    background-image: url(./assets/underworld/corruption.png);
+    .tag-count-icon();
 }
 
 .tag-negative-vp {
-  background-image: url(./assets/underworld/negative-vp.png);
-  border: none !important;
-  background-color: transparent !important;
-  box-shadow: none !important;
-  background-size: 34px !important;
-  width: 34px !important;
-  height: 34px !important;
-  filter: brightness(0.8);
-  border-radius: 0px !important;
-  background-position: 0px !important;
+    background-image: url(./assets/underworld/negative-vp.png);
+    .tag-count-icon();
 }
 
 .player-board-blue-action-counter{
@@ -536,7 +508,7 @@
 }
 
 .highlighter_box {
-    text-shadow: 1px 1px 1px #222, -1px -1px 1px #666;
+    text-shadow: 1px 1px 1px @grey_900, -1px -1px 1px #666;
     padding: 1px 10px;
     border-radius: 4px;
 }
@@ -563,7 +535,7 @@
     }
 
     .player_name {
-        text-shadow: 1px 1px 1px #222, -1px -1px 2px #666;
+        text-shadow: 1px 1px 1px @grey_900, -1px -1px 2px #666;
         padding: 2px 5px;
         border-radius: 4px;
     }
@@ -588,7 +560,7 @@
 
         .player_number {
             margin-right: 5px;
-            text-shadow: 1px 1px 1px #222, -1px -1px 1px #666;
+            text-shadow: 1px 1px 1px @grey_900, -1px -1px 1px #666;
         }
 
         .corporation-name-cont {
@@ -646,7 +618,7 @@
         font-weight: bold;
         color: #ffcc64;
         text-transform: uppercase;
-        background: #303030;
+        background: @grey_850;
         padding: 1px 5px 1px 10px;
         border-radius: 2px;
         text-decoration: none;
@@ -840,7 +812,7 @@
         background: linear-gradient(to right, #e28c22, #ffcc64, #e28c22);
     }
     &.unpaid {
-        background: #303030;
+        background: @grey_850;
     }
 }
 .milestone-award-price {
@@ -1052,7 +1024,7 @@
 
 .label-additional {
     font-family: "Ubuntu";
-    background: #222;
+    background: @grey_900;
     padding: 2px 8px;
     border-radius: 8px;
     text-transform: uppercase;
@@ -1074,27 +1046,63 @@
   animation:smoth-fade-animation 2000ms infinite;
 }
 
-.top-bar {
+.top-bar-container {
     position: sticky;
-    margin: -40px 0 0 auto;
-    margin-bottom: 15px;
-    z-index: 105;
     top: -12px;
+    z-index: 105;
+    margin-top: -30px;
+    margin-left: -20px;
+}
+
+.top-bar {
+    margin: 0 0 0 auto;
+    margin-bottom: 0;
     display: inline-flex;
+
+    .top-bar-collapser {
+        background: @grey_850;
+        display: inline-block;
+        vertical-align: middle;
+        padding: 8px 14px 8px 11px;
+        height: 46px;
+        cursor: pointer;
+        margin-top: 12px;
+        border-radius: 0 0 20px 0;
+
+        img {
+            width: 20px;
+        }
+    }
 
     .player-status, .player-info-top {
         display: none !important;
     }
     .player-info-bottom {
-        background: #303030 !important;
+        background: @grey_850 !important;
     }
 
     .player-info {
-        background: #303030 !important;
+        background: @grey_850 !important;
         border-radius: 0 0 10px 10px;
         padding: 8px 0;
         .player-status-and-res {
             min-width: 564px !important;
+        }
+    }
+}
+
+.top-bar-collapsed {
+    margin: 0; // Handled by container
+
+    .player-info {
+        display: none;
+    }
+
+    .top-bar-collapser {
+        margin: 11px 0 0 0;
+
+        img {
+            transform: scaleX(-1);
         }
     }
 }
@@ -1110,7 +1118,7 @@
     .text-overview {
         text-transform: uppercase;
         margin-left: 5px;
-        color: #303030;
+        color: @grey_850;
         font-weight: bold;
         margin-top: 12px;
         font-size: 16px;

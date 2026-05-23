@@ -1,5 +1,13 @@
 <template>
-  <div id="spectator-home">
+  <div id="spectator-home" :class="(game.turmoil ? 'with-turmoil': '')">
+
+    <div v-if="game.phase === 'end'">
+      <div class="player_home_block">
+        <DynamicTitle title="This game is over!" :color="spectator.color"/>
+        <a :href="'the-end?id='+ spectator.id" v-i18n>Go to game results</a>
+      </div>
+    </div>
+
     <sidebar v-trim-whitespace
       :acting_player="false"
       :player_color="spectator.color"
@@ -13,6 +21,7 @@
       :moonData="game.moon"
       :gameOptions = "game.gameOptions"
       :playerNumber = "spectator.players.length"
+      :isTerraformed="game.isTerraformed"
       :lastSoloGeneration = "game.lastSoloGeneration"
       :deckSize = "game.deckSize"
       :discardPileSize = "game.discardPileSize">
@@ -31,7 +40,7 @@
       @toggleTileView="cycleTileView()"
     />
 
-    <div v-if="spectator.game.colonies.length > 0 /* && getCurrentSpectatorTab() === 'colonies' */" class="player_home_block" ref="colonies" id="shortkey-colonies">
+    <div v-if="game.colonies.length > 0" class="player_home_block" ref="colonies" id="shortkey-colonies">
       <a name="colonies" class="player_home_anchor"></a>
       <dynamic-title title="Colonies" :color="spectator.color"/>
       <div class="colonies-fleets-cont">
@@ -44,11 +53,13 @@
             <colony :colony="colony" :active="colony.isActive"></colony>
         </div>
       </div>
-        <div v-if="game.gameOptions.expansions.pathfinders">
-          <PlanetaryTracks :tracks="game.pathfinders" :gameOptions="game.gameOptions"/>
-        </div>
     </div>
-    <waiting-for v-show="false" v-if="game.phase !== 'end'" :players="spectator.players" :playerView="spectator" :waitingfor="undefined"></waiting-for>
+    <waiting-for v-show="false" v-if="game.phase !== 'end'" :playerView="spectator" :waitingfor="undefined"></waiting-for>
+    <div v-if="game.spectatorId">
+      <a :href="'/spectator?id=' +game.spectatorId" target="_blank" rel="noopener noreferrer" v-i18n>Spectator link</a>
+    </div>
+    <purge-warning :expectedPurgeTimeMs="game.expectedPurgeTimeMs"></purge-warning>
+    <KeyboardShortcuts v-show="keyboardShortcutOpened" @close="keyboardShortcutOpened = false"></KeyboardShortcuts>
   </div>
 </template>
 
@@ -57,7 +68,6 @@ import {defineComponent} from 'vue';
 
 import {GameModel} from '@/common/models/GameModel';
 import {vueRoot} from '@/client/components/vueRoot';
-
 import {SpectatorModel} from '@/common/models/SpectatorModel';
 import Colony from '@/client/components/colonies/Colony.vue';
 import DynamicTitle from '@/client/components/common/DynamicTitle.vue';
@@ -67,21 +77,14 @@ import Sidebar from '@/client/components/Sidebar.vue';
 import WaitingFor from '@/client/components/WaitingFor.vue';
 import PlayersOverview from '@/client/components/overview/PlayersOverview.vue';
 import PlanetaryTracks from '@/client/components/pathfinders/PlanetaryTracks.vue';
+import PurgeWarning from '@/client/components/common/PurgeWarning.vue';
+import KeyboardShortcuts from '@/client/components/KeyboardShortcuts.vue';
 import {range} from '@/common/utils/utils';
-import {nextTileView, TileView} from './board/TileView';
-import {setDocumentTitle} from '@/client/utils/documentTitle';
-
-export type SpectatorHomeModel = {
-  tileView: TileView;
-}
+import {HomeMixin} from '@/client/mixins/HomeMixin';
 
 export default defineComponent({
   name: 'SpectatorHome',
-  data(): SpectatorHomeModel {
-    return {
-      tileView: 'show',
-    };
-  },
+  mixins: [HomeMixin],
   props: {
     spectator: {
       type: Object as () => SpectatorModel,
@@ -97,9 +100,11 @@ export default defineComponent({
     Colony,
     DynamicTitle,
     GameBoardView,
+    KeyboardShortcuts,
     LogPanel,
     PlanetaryTracks,
     PlayersOverview,
+    PurgeWarning,
     Sidebar,
     WaitingFor,
   },
@@ -111,12 +116,6 @@ export default defineComponent({
     range(n: number): Array<number> {
       return range(n);
     },
-    cycleTileView(): void {
-      this.tileView = nextTileView(this.tileView);
-    },
-  },
-  mounted() {
-    setDocumentTitle(this.game.name);
   },
 });
 </script>

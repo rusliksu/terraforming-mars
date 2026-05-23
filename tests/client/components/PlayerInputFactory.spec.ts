@@ -47,6 +47,7 @@ describe('PlayerInputFactory', () => {
   it('SelectPayment', async () => {
     runTest({
       type: 'payment',
+      amount: 0,
       paymentOptions: {},
     });
   });
@@ -130,7 +131,6 @@ describe('PlayerInputFactory', () => {
     const wrapper = mount(PlayerInputFactory, {
       ...globalConfig,
       props: {
-        players: [],
         playerView: playerView,
         playerinput: {
           type: 'option',
@@ -167,7 +167,6 @@ describe('PlayerInputFactory', () => {
     const wrapper = mount(PlayerInputFactory, {
       ...globalConfig,
       props: {
-        players: [],
         playerView: playerView,
         playerinput: {
           type: 'option',

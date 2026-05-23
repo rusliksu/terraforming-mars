@@ -47,7 +47,7 @@ describe('ApiPlayer', () => {
     const player = TestPlayer.BLACK.newPlayer();
     player.user = 'discord-user' as any;
     scaffolding.url = '/api/player?id=' + player.id + '&serverId=1';
-    const game = Game.newInstance('game-id', [player], player);
+    const game = Game.newInstance('game-id', [player], player, 'spectatorid');
     await scaffolding.ctx.gameLoader.add(game);
     await scaffolding.get(ApiPlayer.INSTANCE, res);
     const response: PlayerViewModel = JSON.parse(res.content);

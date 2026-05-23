@@ -222,7 +222,7 @@ export function describeDatabaseSuite<T extends ITestDatabase>(dtor: DatabaseTes
 
       it('does not purge async turn-based games', async () => {
         const player = TestPlayer.BLACK.newPlayer();
-        const game = Game.newInstance('game-id-async', [player], player, {turnBasedGame: true});
+        const game = Game.newInstance('game-id-async', [player], player, 'spectatorid', {turnBasedGame: true});
         await db.lastSaveGamePromise;
 
         await db.saveGame(game);
@@ -232,7 +232,7 @@ export function describeDatabaseSuite<T extends ITestDatabase>(dtor: DatabaseTes
         await db.purgeUnfinishedGames('-1');
         expect(await db.getSaveIds(game.id)).has.members([0, 1, 2]);
         const entry = (await db.getParticipants()).find((entry) => entry.gameId === game.id);
-        expect(entry?.participantIds).deep.eq([player.id]);
+        expect(entry?.participantIds).deep.eq([player.id, 'spectatorid']);
       });
     }
 
@@ -326,7 +326,7 @@ export function describeDatabaseSuite<T extends ITestDatabase>(dtor: DatabaseTes
 
     it('does not duplicate participant ids after reloading a save-0 game', async () => {
       const player = TestPlayer.BLACK.newPlayer();
-      const game = Game.newInstance('game-id-1212', [player], player);
+      const game = Game.newInstance('game-id-1212', [player], player, 'spectatorid');
       await db.lastSaveGamePromise;
 
       const loaded = Game.deserialize(await db.getGame(game.id));
@@ -337,6 +337,7 @@ export function describeDatabaseSuite<T extends ITestDatabase>(dtor: DatabaseTes
           gameId: 'game-id-1212',
           participantIds: [
             player.id,
+            'spectatorid',
           ],
         },
       ]);

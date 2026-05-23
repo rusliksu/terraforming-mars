@@ -56,7 +56,7 @@ describe('Player telegram state', () => {
   it('preserves notice state across game serialization', () => {
     const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
     const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
-    const game = Game.newInstance('g-telegram', [player1, player2], player1);
+    const game = Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid');
 
     player1.telegramID = '123456';
     player1.lastNoticeMessageId = 77;
@@ -80,7 +80,7 @@ describe('Player telegram state', () => {
 
     const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
     const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
-    Game.newInstance('g-telegram', [player1, player2], player1);
+    Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid');
 
     try {
       global.setTimeout = ((handler: Parameters<typeof setTimeout>[0], timeout?: number) => {
@@ -122,7 +122,7 @@ describe('Player telegram state', () => {
 
     const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
     const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
-    Game.newInstance('g-telegram', [player1, player2], player1);
+    Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid');
 
     try {
       player1.telegramID = '123456';
@@ -177,7 +177,7 @@ describe('Player telegram state', () => {
 
     const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
     const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
-    Game.newInstance('g-telegram', [player1, player2], player1);
+    Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid');
 
     try {
       player1.telegramID = '123456';
@@ -219,7 +219,7 @@ describe('Player telegram state', () => {
 
     const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
     const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
-    Game.newInstance('g-telegram', [player1, player2], player1);
+    Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid');
 
     try {
       player1.telegramID = '123456';

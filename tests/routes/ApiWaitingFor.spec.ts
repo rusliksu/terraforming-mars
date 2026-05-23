@@ -51,7 +51,7 @@ describe('ApiWaitingFor', () => {
   it('allows serverId override for claimed player', async () => {
     const player = TestPlayer.BLACK.newPlayer();
     player.user = 'discord-user' as any;
-    const game = Game.newInstance('game-id', [player], player);
+    const game = Game.newInstance('game-id', [player], player, 'spectatorid');
     await scaffolding.ctx.gameLoader.add(game);
 
     scaffolding.url = '/api/waitingfor?id=' + player.id + '&gameAge=50&undoCount=0&serverId=1';

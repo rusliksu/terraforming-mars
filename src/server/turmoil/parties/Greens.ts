@@ -36,7 +36,7 @@ class GreensBonus01 extends Bonus {
   }
 
   grantForPlayer(player: IPlayer): void {
-    player.stock.add(Resource.MEGACREDITS, this.getScore(player), {log: true, from: {partyName: PartyName.GREENS}});
+    this.grantResourceForRulingBonus(player, Resource.MEGACREDITS, this.getScore(player), 'M€', PartyName.GREENS);
   }
 }
 
@@ -51,7 +51,7 @@ class GreensBonus02 extends Bonus {
   }
 
   grantForPlayer(player: IPlayer): void {
-    player.stock.add(Resource.MEGACREDITS, this.getScore(player), {log: true, from: {partyName: PartyName.GREENS}});
+    this.grantResourceForRulingBonus(player, Resource.MEGACREDITS, this.getScore(player), 'M€', PartyName.GREENS);
   }
 }
 
@@ -61,7 +61,9 @@ class GreensPolicy01 implements IPolicy {
 
   onTilePlaced(player: IPlayer, space: Space) {
     if (Board.isGreenerySpace(space) && player.game.phase === Phase.ACTION) {
-      player.stock.add(Resource.MEGACREDITS, 4, {log: true, from: {partyName: PartyName.GREENS}});
+      player.stock.add(Resource.MEGACREDITS, 4);
+      player.game.log('${0} gained ${1} M€ from Turmoil ${2} policy', (b) =>
+        b.player(player).number(4).partyName(PartyName.GREENS));
     }
   }
 }
@@ -71,7 +73,9 @@ class GreensPolicy02 implements IPolicy {
   readonly description = 'When you place a tile, gain 1 plant';
 
   onTilePlaced(player: IPlayer) {
-    player.stock.add(Resource.PLANTS, 1, {log: true, from: {partyName: PartyName.GREENS}});
+    player.stock.add(Resource.PLANTS, 1);
+    player.game.log('${0} gained ${1} plant from Turmoil ${2} policy', (b) =>
+      b.player(player).number(1).partyName(PartyName.GREENS));
   }
 }
 
@@ -86,7 +90,9 @@ class GreensPolicy03 implements IPolicy {
 
     player.defer(() => {
       if (amount > 0) {
-        player.stock.add(Resource.MEGACREDITS, amount, {log: true, from: {partyName: PartyName.GREENS}});
+        player.stock.add(Resource.MEGACREDITS, amount);
+        player.game.log('${0} gained ${1} M€ from Turmoil ${2} policy', (b) =>
+          b.player(player).number(amount).partyName(PartyName.GREENS));
       }
     });
   }

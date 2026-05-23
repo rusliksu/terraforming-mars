@@ -263,19 +263,19 @@ describe('Turmoil', () => {
     player.cardsInHand.push(new LavaFlows(), new ArtificialLake(), new IceAsteroid());
     game.gameLog.length = 0;
 
-    turmoil.getPartyByName(PartyName.MARS).bonuses[0].grantForPlayer(player);
+    turmoil.getPartyByName(PartyName.MARS).bonuses[0]!.grantForPlayer!(player);
     expectLog('${0} gained ${1} M€ from Turmoil ${2} ruling bonus', PartyName.MARS);
 
-    turmoil.getPartyByName(PartyName.GREENS).bonuses[0].grantForPlayer(player);
+    turmoil.getPartyByName(PartyName.GREENS).bonuses[0]!.grantForPlayer!(player);
     expectLog('${0} gained ${1} M€ from Turmoil ${2} ruling bonus', PartyName.GREENS);
 
-    turmoil.getPartyByName(PartyName.KELVINISTS).bonuses[1].grantForPlayer(player);
+    turmoil.getPartyByName(PartyName.KELVINISTS).bonuses[1]!.grantForPlayer!(player);
     expectLog('${0} gained ${1} heat from Turmoil ${2} ruling bonus', PartyName.KELVINISTS);
 
-    turmoil.getPartyByName(PartyName.SCIENTISTS).bonuses[1].grantForPlayer(player);
+    turmoil.getPartyByName(PartyName.SCIENTISTS).bonuses[1]!.grantForPlayer!(player);
     expectLog('${0} gained ${1} M€ from Turmoil ${2} ruling bonus', PartyName.SCIENTISTS);
 
-    turmoil.getPartyByName(PartyName.UNITY).bonuses[1].grantForPlayer(player);
+    turmoil.getPartyByName(PartyName.UNITY).bonuses[1]!.grantForPlayer!(player);
     expectLog('${0} gained ${1} M€ from Turmoil ${2} ruling bonus', PartyName.UNITY);
   });
 

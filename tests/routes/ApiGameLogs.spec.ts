@@ -84,7 +84,7 @@ describe('ApiGameLogs', () => {
 
   it('pulls the most recent 100 logs when requested', async () => {
     const player = TestPlayer.BLACK.newPlayer();
-    const game = Game.newInstance('game-id', [player], player);
+    const game = Game.newInstance('game-id', [player], player, 'spectatorid');
     await scaffolding.ctx.gameLoader.add(game);
 
     game.gameLog.length = 0;

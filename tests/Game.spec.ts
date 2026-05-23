@@ -63,7 +63,7 @@ describe('Game', () => {
   it('does not show a purge time for async turn-based games', () => {
     const player = TestPlayer.BLUE.newPlayer();
     const player2 = TestPlayer.RED.newPlayer();
-    const game = Game.newInstance('gameid', [player, player2], player, {turnBasedGame: true});
+    const game = Game.newInstance('gameid', [player, player2], player, 'spectatorid', {turnBasedGame: true});
 
     expect(game.expectedPurgeTimeMs()).eq(0);
   });
@@ -431,7 +431,7 @@ describe('Game', () => {
     const bob = TestPlayer.RED.newPlayer({name: 'Bob'});
     alice.user = 'alice-user';
     bob.user = 'bob-user';
-    const game = Game.newInstance('g-score-snapshot-game', [alice, bob], alice);
+    const game = Game.newInstance('g-score-snapshot-game', [alice, bob], alice, 'spectatorid');
     game.generation = 10;
     alice.setTerraformRating(80);
     bob.setTerraformRating(80);
@@ -893,7 +893,7 @@ describe('Game', () => {
 
   it('serializes and deserializes shadowInputSeq', () => {
     const player = TestPlayer.BLUE.newPlayer();
-    const game = Game.newInstance('gameid', [player], player);
+    const game = Game.newInstance('gameid', [player], player, 'spectatorid');
     game.shadowInputSeq = 7;
 
     const serialized = game.serialize();

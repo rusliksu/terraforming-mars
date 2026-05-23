@@ -106,7 +106,7 @@ describe('ApiGame', () => {
 
   it('includes active bot players for admin requests', async () => {
     const player = TestPlayer.BLACK.newPlayer();
-    scaffolding.ctx.gameLoader.add(Game.newInstance('game-valid-id', [player], player));
+    scaffolding.ctx.gameLoader.add(Game.newInstance('game-valid-id', [player], player, 'spectatorid'));
     scaffolding.url = '/api/game?id=game-valid-id&serverId=1';
     const route = new ApiGame({
       listPlayerIds: () => [player.id],
@@ -118,7 +118,7 @@ describe('ApiGame', () => {
 
   it('does not expose null escape velocity options', async () => {
     const player = TestPlayer.BLACK.newPlayer();
-    const game = Game.newInstance('game-valid-id', [player], player);
+    const game = Game.newInstance('game-valid-id', [player], player, 'spectatorid');
     (game.gameOptions as any).escapeVelocity = null;
     scaffolding.ctx.gameLoader.add(game);
     scaffolding.url = '/api/game?id=game-valid-id';

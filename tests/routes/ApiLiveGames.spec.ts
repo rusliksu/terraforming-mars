@@ -11,8 +11,6 @@ import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {statusCode} from '../../src/common/http/statusCode';
 import {FakeGameLoader} from './FakeGameLoader';
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-
 function testGame(
   id: GameId,
   players: Array<IPlayer>,

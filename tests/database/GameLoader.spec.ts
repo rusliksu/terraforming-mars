@@ -161,7 +161,7 @@ describe('GameLoader', () => {
 
     const list = await instance.getIds();
     expect(list).to.deep.eq([
-      {gameId: 'gameid', participantIds: ['p-blue-id', 'p-red-id']},
+      {gameId: 'gameid', participantIds: ['p-blue-id', 'p-red-id', 'spectatorid']},
     ]);
 
     const orphan = await instance.getGame('ghost-gameid');

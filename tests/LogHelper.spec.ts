@@ -77,7 +77,7 @@ describe('LogHelper', () => {
     const player1 = TestPlayer.BLUE.newPlayer();
     const player2 = TestPlayer.RED.newPlayer();
     const card1 = new Algae();
-    const game = Game.newInstance('gameid', [player1, player2], player1);
+    const game = Game.newInstance('gameid', [player1, player2], player1, 'spectatorid');
     LogHelper.logCardAction(player1, 'bought', [card1.name], true);
     const msg = game.gameLog.pop()!;
     msg.timestamp = 0;
@@ -98,7 +98,7 @@ describe('LogHelper', () => {
     const player2 = TestPlayer.RED.newPlayer();
     const card1 = new Algae();
     const card2 = new Ants();
-    const game = Game.newInstance('gameid', [player1, player2], player1);
+    const game = Game.newInstance('gameid', [player1, player2], player1, 'spectatorid');
     LogHelper.logPrivateCardSelection(player1, 'bought', [card1.name], [card2.name]);
     const msg = game.gameLog.pop()!;
     msg.timestamp = 0;

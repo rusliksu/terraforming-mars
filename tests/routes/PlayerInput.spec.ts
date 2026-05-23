@@ -123,7 +123,7 @@ describe('PlayerInput', () => {
   it('waits for game save before responding', async () => {
     const player = TestPlayer.BLUE.newPlayer({beginner: true});
     scaffolding.url = `/player/input?id=${player.id}`;
-    const game = Game.newInstance('gameid-save', [player], player);
+    const game = Game.newInstance('gameid-save', [player], player, 'spectatorid');
     await scaffolding.ctx.gameLoader.add(game);
 
     player.process = () => {
@@ -154,7 +154,7 @@ describe('PlayerInput', () => {
 
     const player = TestPlayer.BLUE.newPlayer({beginner: true});
     scaffolding.url = `/player/input?id=${player.id}`;
-    const game = Game.newInstance('gameid-log', [player], player);
+    const game = Game.newInstance('gameid-log', [player], player, 'spectatorid');
     await scaffolding.ctx.gameLoader.add(game);
     player.process = () => {};
 

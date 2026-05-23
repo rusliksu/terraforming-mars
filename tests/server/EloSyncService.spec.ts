@@ -63,7 +63,7 @@ describe('EloSyncService', () => {
   it('uses megacredits as the live-game tie-breaker when final VP are equal', async () => {
     const alice = TestPlayer.BLUE.newPlayer({name: 'Alice'});
     const bob = TestPlayer.RED.newPlayer({name: 'Bob'});
-    const game = Game.newInstance('g-equal-vp-mc', [alice, bob], alice);
+    const game = Game.newInstance('g-equal-vp-mc', [alice, bob], alice, 'spectatorid');
     game.generation = 10;
     alice.setTerraformRating(80);
     bob.setTerraformRating(80);
@@ -86,7 +86,7 @@ describe('EloSyncService', () => {
   it('does not record games marked as no-ELO', async () => {
     const alice = TestPlayer.BLUE.newPlayer({name: 'Alice'});
     const bob = TestPlayer.RED.newPlayer({name: 'Bob'});
-    const game = Game.newInstance('g-training', [alice, bob], alice, {noEloGame: true});
+    const game = Game.newInstance('g-training', [alice, bob], alice, 'spectatorid', {noEloGame: true});
     game.generation = 10;
     alice.setTerraformRating(80);
     bob.setTerraformRating(70);

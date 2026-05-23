@@ -18,7 +18,7 @@ describe('ApiBotTakeover', () => {
 
   it('allows player bot takeover without serverId', async () => {
     const player = TestPlayer.BLACK.newPlayer();
-    const game = Game.newInstance('g123456789abc', [player], player);
+    const game = Game.newInstance('g123456789abc', [player], player, 'spectatorid');
     await scaffolding.ctx.gameLoader.add(game);
 
     const route = new ApiBotTakeover({
@@ -38,7 +38,7 @@ describe('ApiBotTakeover', () => {
 
   it('starts bot takeover', async () => {
     const player = TestPlayer.BLACK.newPlayer();
-    const game = Game.newInstance('g123456789abc', [player], player);
+    const game = Game.newInstance('g123456789abc', [player], player, 'spectatorid');
     await scaffolding.ctx.gameLoader.add(game);
 
     const route = new ApiBotTakeover({
@@ -59,7 +59,7 @@ describe('ApiBotTakeover', () => {
 
   it('stops bot takeover', async () => {
     const player = TestPlayer.BLACK.newPlayer();
-    const game = Game.newInstance('g123456789abc', [player], player);
+    const game = Game.newInstance('g123456789abc', [player], player, 'spectatorid');
     await scaffolding.ctx.gameLoader.add(game);
 
     const route = new ApiBotTakeover({

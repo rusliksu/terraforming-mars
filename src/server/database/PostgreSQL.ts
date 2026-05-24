@@ -256,11 +256,16 @@ export class PostgreSQL implements IDatabase {
   async purgeUnfinishedGames(maxGameDays: string | undefined = process.env.MAX_GAME_DAYS): Promise<Array<GameId>> {
     const dateToSeconds = daysAgoToSeconds(maxGameDays, 10);
     const selectResult = await this.client.query(
-      `SELECT DISTINCT games.game_id
-      FROM games
-      LEFT JOIN game ON game.game_id = games.game_id
-      WHERE games.created_time < to_timestamp($1)
-        AND games.status = 'running'
+      `SELECT latest.game_id
+      FROM games latest
+      JOIN (
+        SELECT game_id, MAX(save_id) AS max_save_id, MAX(created_time) AS latest_created_time
+        FROM games
+        GROUP BY game_id
+      ) latest_save ON latest.game_id = latest_save.game_id AND latest.save_id = latest_save.max_save_id
+      LEFT JOIN game ON game.game_id = latest.game_id
+      WHERE latest_save.latest_created_time < to_timestamp($1)
+        AND latest.status = 'running'
         AND COALESCE(game.options::jsonb ->> 'turnBasedGame', 'false') <> 'true'`,
       [dateToSeconds]);
     let gameIds = selectResult.rows.map((row) => row.game_id);

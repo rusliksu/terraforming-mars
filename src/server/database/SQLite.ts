@@ -153,11 +153,16 @@ export class SQLite implements IDatabase {
     if (maxGameDays !== undefined) {
       const dateToSeconds = daysAgoToSeconds(maxGameDays, 0);
       const selectResult = await this.asyncAll(
-        `SELECT DISTINCT game_id game_id
-        FROM games
-        WHERE created_time < ?
-          and status = 'running'
-          and COALESCE(json_extract(game, '$.gameOptions.turnBasedGame'), 0) != 1`,
+        `SELECT latest.game_id game_id
+        FROM games latest
+        JOIN (
+          SELECT game_id, MAX(save_id) AS max_save_id, MAX(created_time) AS latest_created_time
+          FROM games
+          GROUP BY game_id
+        ) latest_save ON latest.game_id = latest_save.game_id AND latest.save_id = latest_save.max_save_id
+        WHERE latest_save.latest_created_time < ?
+          and latest.status = 'running'
+          and COALESCE(json_extract(latest.game, '$.gameOptions.turnBasedGame'), 0) != 1`,
         [dateToSeconds]);
       let gameIds = selectResult.map((row) => row.game_id);
       if (gameIds.length > 1000) {

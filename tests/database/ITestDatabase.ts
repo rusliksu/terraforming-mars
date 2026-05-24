@@ -28,4 +28,8 @@ export interface ITestDatabase extends IDatabase {
    * Updates completed_game with the specified time.
    */
   setCompletedTime(gameId: GameId, timestampSeconds: number): Promise<unknown>;
+  /**
+   * Updates one save row's wall-clock timestamp for purge tests.
+   */
+  setSaveCreatedTime?(gameId: GameId, saveId: number, timestampSeconds: number): Promise<unknown>;
 }

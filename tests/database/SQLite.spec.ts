@@ -39,6 +39,10 @@ class TestSQLite extends SQLite implements ITestDatabase {
   setCompletedTime(gameId: GameId, timestampSeconds: number): Promise<RunResult> {
     return this.asyncRun('UPDATE completed_game SET completed_time = to_timestamp(?) WHERE game_id = ?', [timestampSeconds, gameId]);
   }
+
+  setSaveCreatedTime(gameId: GameId, saveId: number, timestampSeconds: number): Promise<RunResult> {
+    return this.asyncRun('UPDATE games SET created_time = ? WHERE game_id = ? AND save_id = ?', [timestampSeconds, gameId, saveId]);
+  }
 }
 
 describeDatabaseSuite({

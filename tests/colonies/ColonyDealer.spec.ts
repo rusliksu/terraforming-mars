@@ -47,6 +47,7 @@ describe('ColonyDealer', () => {
     const rng = new SeededRandom(1);
     const dealer = new ColonyDealer(rng, {
       ...options,
+      pathfindersExpansion: true,
       customColoniesList: [ColonyName.IAPETUS_II, ColonyName.CALLISTO, ColonyName.CERES, ColonyName.ENCELADUS],
     });
     dealer.drawColonies(1);
@@ -55,6 +56,34 @@ describe('ColonyDealer', () => {
       'Callisto',
       'Ceres',
       'Enceladus',
+    ]);
+  });
+
+  it('filters custom colonies that need disabled expansions', () => {
+    const rng = new SeededRandom(1);
+    const dealer = new ColonyDealer(rng, {
+      ...options,
+      aresExtension: false,
+      turmoilExtension: false,
+      venusNextExtension: false,
+      customColoniesList: [
+        ColonyName.PALLAS,
+        ColonyName.VENUS,
+        ColonyName.DEIMOS,
+        ColonyName.CALLISTO,
+        ColonyName.CERES,
+        ColonyName.ENCELADUS,
+        ColonyName.LUNA,
+        ColonyName.TITAN,
+      ],
+    });
+    dealer.drawColonies(2);
+    expect(dealer.colonies.map(toName)).to.have.members([
+      'Callisto',
+      'Ceres',
+      'Enceladus',
+      'Luna',
+      'Titan',
     ]);
   });
 });

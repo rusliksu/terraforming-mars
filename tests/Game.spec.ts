@@ -723,7 +723,7 @@ describe('Game', () => {
     expect(actions2.options.some((option) => option.title === 'Claim a milestone')).is.false;
   });
 
-  it('specifically-requested corps override expansion corps', () => {
+  it('filters specifically-requested corps from disabled expansions', () => {
     const player = TestPlayer.BLUE.newPlayer();
     const player2 = TestPlayer.RED.newPlayer();
     const corpsFromTurmoil = [
@@ -731,6 +731,7 @@ describe('Game', () => {
       CardName.PRISTAR,
       CardName.TERRALABS_RESEARCH,
       CardName.UTOPIA_INVEST,
+      CardName.SEPTUM_TRIBUS,
     ];
     const gameOptions = {customCorporationsList: corpsFromTurmoil, turmoilExtension: false};
     Game.newInstance('gameid', [player, player2], player, 'spectatorid', gameOptions);
@@ -738,29 +739,48 @@ describe('Game', () => {
     const corpsAssignedToPlayers =
             [...player.dealtCorporationCards, ...player2.dealtCorporationCards].map(toName);
 
-    expect(corpsAssignedToPlayers).has.members(corpsFromTurmoil);
+    expect(corpsAssignedToPlayers).to.include(CardName.LAKEFRONT_RESORTS);
+    expect(corpsAssignedToPlayers).to.include(CardName.UTOPIA_INVEST);
+    expect(corpsAssignedToPlayers).to.not.include(CardName.PRISTAR);
+    expect(corpsAssignedToPlayers).to.not.include(CardName.TERRALABS_RESEARCH);
+    expect(corpsAssignedToPlayers).to.not.include(CardName.SEPTUM_TRIBUS);
   });
 
-  it('specifically-requested preludes override expansion preludes', () => {
+  it('filters specifically-requested preludes from disabled expansions', () => {
     const player = TestPlayer.BLUE.newPlayer();
     const player2 = TestPlayer.RED.newPlayer();
     const customPreludes = [
-      CardName.MERGER,
+      CardName.ALLIED_BANK,
+      CardName.BIOFUELS,
       CardName.CORPORATE_ARCHIVES,
       CardName.SURVEY_MISSION,
-      CardName.DESIGN_COMPANY,
-      CardName.PERSONAL_AGENDA,
+      CardName.HIGH_CIRCLES,
       CardName.VITAL_COLONY,
       CardName.STRATEGIC_BASE_PLANNING,
       CardName.EXPERIENCED_MARTIANS,
     ];
-    const gameOptions = {preludeExtension: true, customPreludes, pathfindersExpansion: false, promoCardsOption: false};
+    const gameOptions = {
+      preludeExtension: true,
+      prelude2Expansion: false,
+      customPreludes,
+      pathfindersExpansion: false,
+      promoCardsOption: false,
+      coloniesExtension: false,
+      turmoilExtension: false,
+    };
     Game.newInstance('gameid', [player, player2], player, 'spectatorid', gameOptions);
 
     const assignedPreludes =
             [...player.dealtPreludeCards, ...player2.dealtPreludeCards].map(toName);
 
-    expect(assignedPreludes).has.members(customPreludes);
+    expect(assignedPreludes).to.include(CardName.ALLIED_BANK);
+    expect(assignedPreludes).to.include(CardName.BIOFUELS);
+    expect(assignedPreludes).to.not.include(CardName.CORPORATE_ARCHIVES);
+    expect(assignedPreludes).to.not.include(CardName.SURVEY_MISSION);
+    expect(assignedPreludes).to.not.include(CardName.HIGH_CIRCLES);
+    expect(assignedPreludes).to.not.include(CardName.VITAL_COLONY);
+    expect(assignedPreludes).to.not.include(CardName.STRATEGIC_BASE_PLANNING);
+    expect(assignedPreludes).to.not.include(CardName.EXPERIENCED_MARTIANS);
   });
 
   it('throws if Delta Project is in customPreludes', () => {

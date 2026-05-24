@@ -36,6 +36,7 @@ export type CreateGameModel = {
   moonStandardProjectVariant: boolean;
   moonStandardProjectVariant1: boolean;
   noEloGame: boolean;
+  privateHands: boolean;
   players: Array<NewPlayerModel>;
   playersCount: number;
   politicalAgendasExtension: AgendaStyle;

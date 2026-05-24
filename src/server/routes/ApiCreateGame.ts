@@ -184,6 +184,7 @@ export class ApiCreateGame extends Handler {
             moonStandardProjectVariant1: gameReq.moonStandardProjectVariant1,
             pathfindersExpansion: gameReq.expansions.pathfinders,
             politicalAgendasExtension: gameReq.politicalAgendasExtension,
+            privateHands: gameReq.privateHands !== false,
             prelude2Expansion: gameReq.expansions.prelude2,
             preludeDraftVariant: gameReq.preludeDraftVariant,
             preludeExtension: gameReq.expansions.prelude,

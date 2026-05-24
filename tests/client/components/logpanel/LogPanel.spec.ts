@@ -3,6 +3,7 @@ import {expect} from 'chai';
 import {globalConfig} from '../getLocalVue';
 import LogPanel from '@/client/components/logpanel/LogPanel.vue';
 import {fakeViewModel} from '../testHelpers';
+import {Phase} from '@/common/Phase';
 
 type TestResizeObserverCallback = (entries: Array<unknown>, observer: unknown) => void;
 
@@ -107,6 +108,29 @@ describe('LogPanel', () => {
     expect(fetchCalls).has.length(1);
     expect(fetchCalls[0]).includes('limit=100');
     expect(fetchCalls[0]).does.not.include('generation=');
+  });
+
+  it('loads finished game logs through the spectator id', async () => {
+    const viewModel = fakeViewModel({
+      id: 'p-blue-id' as any,
+      game: {
+        phase: Phase.END,
+        spectatorId: 's-spectatorid' as any,
+      },
+    });
+    shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {
+        viewModel,
+        color: 'blue',
+      },
+    });
+
+    await Promise.resolve();
+
+    expect(fetchCalls).has.length(1);
+    expect(fetchCalls[0]).includes('id=s-spectatorid');
+    expect(fetchCalls[0]).does.not.include('id=p-blue-id');
   });
 
   it('sticks to bottom when the log list grows after render', async () => {

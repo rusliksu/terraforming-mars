@@ -85,6 +85,7 @@ describe('ApiGame', () => {
           'initialDraftVariant': false,
           'ceosDraftVariant': false,
           'noEloGame': false,
+          'privateHands': true,
           'turnBasedGame': false,
           'politicalAgendasExtension': 'Standard',
           'preludeDraftVariant': false,

@@ -32,6 +32,18 @@ type AlliedPartyModel = {
 // 'half': Half resources are protected when targeted. Applies to Botanical Experience.
 export type Protection = 'off' | 'on' | 'half';
 
+export type SpectatorCardsModel = {
+  cardsInHand: ReadonlyArray<CardModel>;
+  ceoCardsInHand: ReadonlyArray<CardModel>;
+  dealtCorporationCards: ReadonlyArray<CardModel>;
+  dealtPreludeCards: ReadonlyArray<CardModel>;
+  dealtCeoCards: ReadonlyArray<CardModel>;
+  dealtProjectCards: ReadonlyArray<CardModel>;
+  draftedCards: ReadonlyArray<CardModel>;
+  pickedCorporationCard: ReadonlyArray<CardModel>;
+  preludeCardsInHand: ReadonlyArray<CardModel>;
+}
+
 /** The public information about a player */
 export type PublicPlayerModel = {
   actionsTakenThisRound: number;
@@ -66,6 +78,7 @@ export type PublicPlayerModel = {
   plantProduction: number;
   protectedResources: Record<Resource, Protection>;
   protectedProduction: Record<Resource, Protection>;
+  spectatorCards?: SpectatorCardsModel;
   tableau: ReadonlyArray<CardModel>;
   selfReplicatingRobotsCards: Array<CardModel>;
   steel: number;

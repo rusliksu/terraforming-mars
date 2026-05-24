@@ -9,6 +9,8 @@ import {testGame} from '../TestGame';
 import {Server} from '../../src/server/models/ServerModel';
 import {GlobalParameter} from '../../src/common/GlobalParameter';
 import {Phase} from '../../src/common/Phase';
+import {MicroMills} from '../../src/server/cards/base/MicroMills';
+import {EarthCatapult} from '../../src/server/cards/base/EarthCatapult';
 
 describe('ServerModel', () => {
   let player: TestPlayer;
@@ -60,6 +62,26 @@ describe('ServerModel', () => {
     const response = Server.getSpectatorModel(game);
     expect(response.players[0].victoryPointsBreakdown.total).eq(0);
     expect(response.players[1].victoryPointsBreakdown.total).eq(0);
+  });
+
+  it('Should hide player hands from spectator when private hands are enabled', () => {
+    createTestGame(false);
+    player.cardsInHand.push(new MicroMills());
+
+    const response = Server.getSpectatorModel(game);
+
+    expect(response.players[0].spectatorCards).eq(undefined);
+  });
+
+  it('Should include player hands for spectator when private hands are disabled', () => {
+    [game, player, player2] = testGame(2, {privateHands: false});
+    player.cardsInHand.push(new MicroMills());
+    player2.cardsInHand.push(new EarthCatapult());
+
+    const response = Server.getSpectatorModel(game);
+
+    expect(response.players[0].spectatorCards?.cardsInHand.map((card) => card.name)).deep.eq(['Micro-Mills']);
+    expect(response.players[1].spectatorCards?.cardsInHand.map((card) => card.name)).deep.eq(['Earth Catapult']);
   });
 
   it('Should include globalParameterSteps at game end', () => {

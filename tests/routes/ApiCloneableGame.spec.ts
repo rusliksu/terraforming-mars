@@ -99,6 +99,7 @@ describe('ApiCloneableGame', () => {
         ceosDraftVariant: false,
         randomMA: RandomMAOptionType.LIMITED,
         showOtherPlayersVP: true,
+        privateHands: false,
         solarPhaseOption: true,
         shuffleMapOption: true,
         customCorporationsList: [],
@@ -143,6 +144,7 @@ describe('ApiCloneableGame', () => {
     expect(response.setup.clonedGamedId).eq(undefined);
     expect(response.setup.seededGame).eq(false);
     expect(response.setup.noEloGame).eq(true);
+    expect(response.setup.privateHands).eq(false);
     expect(response.setup.turnBasedGame).eq(false);
     expect(response.setup.botGame).eq(false);
     expect(response.setup.randomFirstPlayer).eq(true);
@@ -183,6 +185,7 @@ describe('ApiCloneableGame', () => {
         ceosDraftVariant: false,
         randomMA: RandomMAOptionType.NONE,
         showOtherPlayersVP: false,
+        privateHands: true,
         solarPhaseOption: false,
         shuffleMapOption: false,
         customCorporationsList: [],

@@ -71,6 +71,7 @@ export class ApiCloneableGame extends Handler {
       showTimers: options.showTimers,
       fastModeOption: options.fastModeOption,
       showOtherPlayersVP: options.showOtherPlayersVP,
+      privateHands: options.privateHands !== false,
       aresExtremeVariant: options.aresExtremeVariant,
       politicalAgendasExtension: options.politicalAgendasExtension,
       solarPhaseOption: options.solarPhaseOption,

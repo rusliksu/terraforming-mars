@@ -21,6 +21,7 @@ export type GameOptions = {
   showTimers: boolean;
   fastModeOption: boolean;
   showOtherPlayersVP: boolean;
+  privateHands: boolean;
   noEloGame: boolean;
   turnBasedGame: boolean;
 
@@ -128,6 +129,7 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
   moonStandardProjectVariant: false,
   moonStandardProjectVariant1: false,
   pathfindersExpansion: false,
+  privateHands: true,
   politicalAgendasExtension: 'Standard',
   preludeDraftVariant: false,
   ceosDraftVariant: false,

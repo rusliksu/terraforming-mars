@@ -298,6 +298,11 @@
 
                             <div class="create-game-subsection-label" v-i18n>Knightbyte server settings</div>
 
+                            <input type="checkbox" v-model="privateHands" id="privateHands-checkbox">
+                            <label for="privateHands-checkbox">
+                                <span v-i18n>Private hands</span>
+                            </label>
+
                             <input type="checkbox" v-model="noEloGame" id="noEloGame-checkbox">
                             <label for="noEloGame-checkbox">
                                 <span v-i18n>Training game (no ELO)</span>
@@ -1311,6 +1316,7 @@ export default defineComponent({
       const showTimers = this.showTimers;
       const fastModeOption = this.fastModeOption;
       const noEloGame = this.noEloGame;
+      const privateHands = this.privateHands;
       const removeNegativeGlobalEventsOption = this.removeNegativeGlobalEventsOption;
       const includeFanMA = this.includeFanMA;
       const startingCorporations = this.startingCorporations;
@@ -1515,6 +1521,7 @@ export default defineComponent({
         undoOption,
         showTimers,
         fastModeOption,
+        privateHands,
         noEloGame,
         turnBasedGame,
         botGame,

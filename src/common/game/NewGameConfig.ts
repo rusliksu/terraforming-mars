@@ -49,6 +49,7 @@ export interface NewGameConfig {
   showTimers: boolean;
   fastModeOption: boolean;
   showOtherPlayersVP: boolean;
+  privateHands: boolean;
   noEloGame: boolean;
   turnBasedGame: boolean;
   botGame: boolean;

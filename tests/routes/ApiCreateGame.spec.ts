@@ -42,6 +42,7 @@ function newGameConfig(players: NewGameConfig['players']): NewGameConfig {
     showTimers: false,
     fastModeOption: false,
     showOtherPlayersVP: false,
+    privateHands: true,
     noEloGame: false,
     turnBasedGame: false,
     botGame: false,
@@ -183,6 +184,32 @@ describe('ApiCreateGame', () => {
     expect(game).is.not.undefined;
     expect(game!.gameOptions.noEloGame).eq(true);
   });
+
+  it('creates games with private hands disabled', async () => {
+    const post = scaffolding.post(apiCreateGame, res);
+    const config = newGameConfig([{
+      name: 'Robot',
+      color: 'blue',
+      beginner: false,
+      handicap: 0,
+      first: true,
+      isBot: false,
+    }]);
+    config.privateHands = false;
+    const emit = Promise.resolve().then(() => {
+      req.emitter.emit('data', JSON.stringify(config));
+      req.emitter.emit('end');
+    });
+
+    await Promise.all(([emit, post]));
+
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game).is.not.undefined;
+    expect(game!.gameOptions.privateHands).eq(false);
+  });
+
 
   it('waits for player links to be registered before returning', async () => {
     const gameLoader = new DelayedAddGameLoader();

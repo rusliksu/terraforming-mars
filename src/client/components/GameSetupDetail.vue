@@ -70,6 +70,8 @@
               <div v-if="gameOptions.fastModeOption" class="game-config fastmode" v-i18n>fast mode</div>
               <div v-if="gameOptions.showTimers" class="game-config timer" v-i18n>timer</div>
               <div v-if="gameOptions.showOtherPlayersVP" class="game-config realtime-vp" v-i18n>real-time vp</div>
+              <div v-if="gameOptions.privateHands" class="game-config generic" v-i18n>private hands</div>
+              <div v-else class="game-config generic" v-i18n>open hands</div>
               <div v-if="gameOptions.noEloGame" class="game-config generic" v-i18n>no ELO</div>
               <div v-if="gameOptions.undoOption" class="game-config undo" v-i18n>undo</div>
             </li>

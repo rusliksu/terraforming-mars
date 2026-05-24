@@ -24,6 +24,7 @@ export type GameOptionsModel = {
   politicalAgendasExtension: AgendaStyle,
   removeNegativeGlobalEvents: boolean,
   showOtherPlayersVP: boolean,
+  privateHands: boolean,
   showTimers: boolean,
   shuffleMapOption: boolean,
   solarPhaseOption: boolean,

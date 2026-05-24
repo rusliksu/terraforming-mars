@@ -24,6 +24,7 @@ export function defaultCreateGameModel(): CreateGameModel {
     randomMA: RandomMAOptionType.NONE,
     modularMA: false,
     noEloGame: false,
+    privateHands: true,
     turnBasedGame: false,
     botGame: false,
     randomFirstPlayer: true,

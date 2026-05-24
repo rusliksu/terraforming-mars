@@ -152,6 +152,53 @@ describe('ApiGameLogs', () => {
     });
   });
 
+  it('includes private logs for all players when a finished game is viewed as spectator', async () => {
+    const yellowPlayer = TestPlayer.YELLOW.newPlayer();
+    const orangePlayer = TestPlayer.ORANGE.newPlayer();
+    const spectatorId = 's-spectatorid' as any;
+    const game = Game.newInstance('game-id', [yellowPlayer, orangePlayer], yellowPlayer, spectatorId);
+    game.phase = Phase.END;
+    await scaffolding.ctx.gameLoader.add(game);
+
+    game.gameLog.length = 0;
+    game.log('All players see this.');
+    game.log('Yellow player sees this.', (_b) => {}, {reservedFor: yellowPlayer});
+    game.log('Orange player sees this.', (_b) => {}, {reservedFor: orangePlayer});
+
+    scaffolding.url = '/api/game/logs?id=' + spectatorId + '&generation=1';
+    await scaffolding.get(ApiGameLogs.INSTANCE, res);
+    const messages = JSON.parse(res.content);
+
+    expect(messages.map((message: {message: string}) => message.message)).deep.eq([
+      'All players see this.',
+      'Yellow player sees this.',
+      'Orange player sees this.',
+    ]);
+  });
+
+  it('includes private logs for all players when spectator hands are not private', async () => {
+    const yellowPlayer = TestPlayer.YELLOW.newPlayer();
+    const orangePlayer = TestPlayer.ORANGE.newPlayer();
+    const spectatorId = 's-spectatorid' as any;
+    const game = Game.newInstance('game-id', [yellowPlayer, orangePlayer], yellowPlayer, spectatorId, {privateHands: false});
+    await scaffolding.ctx.gameLoader.add(game);
+
+    game.gameLog.length = 0;
+    game.log('All players see this.');
+    game.log('Yellow player sees this.', (_b) => {}, {reservedFor: yellowPlayer});
+    game.log('Orange player sees this.', (_b) => {}, {reservedFor: orangePlayer});
+
+    scaffolding.url = '/api/game/logs?id=' + spectatorId + '&generation=1';
+    await scaffolding.get(ApiGameLogs.INSTANCE, res);
+    const messages = JSON.parse(res.content);
+
+    expect(messages.map((message: {message: string}) => message.message)).deep.eq([
+      'All players see this.',
+      'Yellow player sees this.',
+      'Orange player sees this.',
+    ]);
+  });
+
   it('Cannot pull full logs before game end', async () => {
     const player = TestPlayer.BLACK.newPlayer();
     scaffolding.url = '/api/game/logs?id=' + player.id + '&full';

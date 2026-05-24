@@ -39,10 +39,14 @@ export class GameLogs {
   }
 
   public getLogsForGameView(playerId: ParticipantId, game: IGame, generation: string | null, limit: string | null = null): Array<LogMessage> {
+    const showAllMessages = playerId === game.spectatorId && (game.phase === Phase.END || game.gameOptions.privateHands === false);
     const messagesForPlayer = (message: LogMessage) => {
       try {
         if (message === undefined || message === null) {
           return false;
+        }
+        if (showAllMessages) {
+          return true;
         }
         return message.playerId === undefined || message.playerId === playerId;
       } catch (e) {

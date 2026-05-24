@@ -42,6 +42,24 @@ describe('CreateGameForm', () => {
     expect(wrapper.text()).not.to.contain('/start');
   });
 
+  it('serializes private hands setting', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    expect(wrapper.text()).to.contain('Private hands');
+
+    let serialized = await (wrapper.vm as any).serializeSettings();
+    let payload = JSON.parse(serialized);
+    expect(payload.privateHands).eq(true);
+
+    await wrapper.setData({privateHands: false});
+
+    serialized = await (wrapper.vm as any).serializeSettings();
+    payload = JSON.parse(serialized);
+    expect(payload.privateHands).eq(false);
+  });
+
+
   it('loads rematch setup from cloneGameId without enabling predefined game', async () => {
     window.history.replaceState({}, '', '/new-game?cloneGameId=g456');
     global.fetch = (async (url: unknown) => {
@@ -268,7 +286,7 @@ describe('CreateGameForm', () => {
       .findAll('option')
       .map((option) => option.text());
 
-    expect(options).to.include(`${TOMA_NAME} · мрачный тёмно-фиолетовый`);
+    expect(options).to.include(`${TOMA_NAME} · кораллово-розовый`);
     expect(options).not.to.include('Тома · Старый красно-розовый');
     expect(options).not.to.include('Тома · Сатурн');
     expect(options).not.to.include('Тома · Кольца Сатурна');

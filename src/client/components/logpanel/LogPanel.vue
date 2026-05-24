@@ -36,6 +36,7 @@ import {PublicPlayerModel, ViewModel} from '@/common/models/PlayerModel';
 import {playerColorClass} from '@/common/utils/utils';
 import {Color} from '@/common/Color';
 import {ParticipantId, SpaceId} from '@/common/Types';
+import {Phase} from '@/common/Phase';
 import LogMessageComponent from '@/client/components/logpanel/LogMessageComponent.vue';
 import CardPanel from '@/client/components/logpanel/CardPanel.vue';
 import {isMarsSpace} from '@/common/boards/spaces';
@@ -259,6 +260,9 @@ export default defineComponent({
       return this.viewModel.players;
     },
     id(): ParticipantId | undefined {
+      if (this.viewModel.game.phase === Phase.END && this.viewModel.game.spectatorId !== undefined) {
+        return this.viewModel.game.spectatorId;
+      }
       return this.viewModel.id;
     },
   },

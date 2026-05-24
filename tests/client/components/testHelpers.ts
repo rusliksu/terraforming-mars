@@ -56,6 +56,7 @@ export function fakeGameOptionsModel(overrides?: RecursivePartial<GameOptionsMod
     includeFanMA: false,
     initialDraftVariant: false,
     noEloGame: false,
+    privateHands: true,
     turnBasedGame: false,
     preludeDraftVariant: false,
     ceosDraftVariant: false,

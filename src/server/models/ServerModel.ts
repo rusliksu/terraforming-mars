@@ -115,6 +115,9 @@ export class Server {
       players: players,
       autopass: player.autopass,
     };
+    if (player.password !== undefined && game.phase !== Phase.END) {
+      rv.password = player.password;
+    }
     return rv;
   }
 

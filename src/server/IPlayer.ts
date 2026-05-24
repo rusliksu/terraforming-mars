@@ -186,6 +186,8 @@ export interface IPlayer {
 
   // When set, this player can only be accessed by the user.
   user?: DiscordId;
+  // When private hands are enabled, public player links require this password after first access.
+  password?: string;
   telegramID?: string;
 
   setup(game: IGame): void;

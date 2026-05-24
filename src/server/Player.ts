@@ -203,6 +203,7 @@ export class Player implements IPlayer {
   public globalParameterSteps: Record<GlobalParameter, number> = {...DEFAULT_GLOBAL_PARAMETER_STEPS};
 
   public user?: DiscordId;
+  public password?: string;
   public telegramID: string = '';
   public lastNoticeMessageId: number = -1;
   public lastTurnNoticeKey: string = '';
@@ -1879,6 +1880,7 @@ export class Player implements IPlayer {
     const result: SerializedPlayer = {
       id: this.id,
       user: this.user,
+      password: this.password,
       telegramID: this.telegramID || undefined,
       lastNoticeMessageId: this.lastNoticeMessageId,
       lastTurnNoticeKey: this.lastTurnNoticeKey || undefined,
@@ -2028,6 +2030,7 @@ export class Player implements IPlayer {
     player.turmoilPolicyActionUsed = d.turmoilPolicyActionUsed;
     player.politicalAgendasActionUsedCount = d.politicalAgendasActionUsedCount;
     player.user = d.user;
+    player.password = d.password;
     player.telegramID = d.telegramID ?? '';
     player.lastNoticeMessageId = d.lastNoticeMessageId ?? -1;
     player.lastTurnNoticeKey = d.lastTurnNoticeKey ?? '';

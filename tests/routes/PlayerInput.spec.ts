@@ -14,6 +14,7 @@ import {OrOptionsResponse} from '../../src/common/inputs/InputResponse';
 import {CardName} from '../../src/common/cards/CardName';
 import {restoreTestGameLoader, setTestGameLoader} from '../testing/setup';
 import {Payment} from '../../src/common/inputs/Payment';
+import {statusCode} from '../../src/common/http/statusCode';
 
 describe('PlayerInput', () => {
   let scaffolding: RouteTestScaffolding;
@@ -118,6 +119,47 @@ describe('PlayerInput', () => {
     await Promise.all(([emit, post]));
 
     expect(res.content).matches(/Unexpected token/);
+  });
+
+  it('rejects private-hands player input without the player password', async () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const player2 = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('gameid-password', [player, player2], player, 'spectatorid', {privateHands: true});
+    player.password = 'secret-password';
+    player.process = () => {};
+    await scaffolding.ctx.gameLoader.add(game);
+
+    scaffolding.url = `/player/input?id=${player.id}`;
+    const post = scaffolding.post(PlayerInput.INSTANCE, res);
+    const emit = Promise.resolve().then(() => {
+      scaffolding.req.emitter.emit('data', JSON.stringify({type: 'option'}));
+      scaffolding.req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+
+    expect(res.statusCode).eq(statusCode.forbidden);
+    expect(res.content).eq('Not authorized');
+  });
+
+  it('allows private-hands player input with the player password', async () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const player2 = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('gameid-password', [player, player2], player, 'spectatorid', {privateHands: true});
+    player.password = 'secret-password';
+    player.process = () => {};
+    await scaffolding.ctx.gameLoader.add(game);
+
+    scaffolding.url = `/player/input?id=${player.id}&password=secret-password`;
+    const post = scaffolding.post(PlayerInput.INSTANCE, res);
+    const emit = Promise.resolve().then(() => {
+      scaffolding.req.emitter.emit('data', JSON.stringify({type: 'option'}));
+      scaffolding.req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content);
+    expect(model.id).eq(player.id);
   });
 
   it('waits for game save before responding', async () => {

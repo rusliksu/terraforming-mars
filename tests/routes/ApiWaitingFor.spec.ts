@@ -48,6 +48,34 @@ describe('ApiWaitingFor', () => {
     expect(res.content).eq('{"result":"GO","waitingFor":["black"]}');
   });
 
+  it('rejects private-hands player polling without the player password', async () => {
+    const player = TestPlayer.BLACK.newPlayer();
+    const player2 = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('game-id', [player, player2], player, 'spectatorid', {privateHands: true});
+    player.password = 'secret-password';
+    await scaffolding.ctx.gameLoader.add(game);
+
+    scaffolding.url = '/api/waitingfor?id=' + player.id + '&gameAge=50&undoCount=0';
+    await scaffolding.get(ApiWaitingFor.INSTANCE, res);
+
+    expect(res.statusCode).eq(statusCode.forbidden);
+    expect(res.content).eq('Not authorized');
+  });
+
+  it('allows private-hands player polling with the player password', async () => {
+    const player = TestPlayer.BLACK.newPlayer();
+    const player2 = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('game-id', [player, player2], player, 'spectatorid', {privateHands: true});
+    player.password = 'secret-password';
+    await scaffolding.ctx.gameLoader.add(game);
+
+    scaffolding.url = '/api/waitingfor?id=' + player.id + '&password=secret-password&gameAge=50&undoCount=0';
+    await scaffolding.get(ApiWaitingFor.INSTANCE, res);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(res.content).eq('{"result":"GO","waitingFor":["black","red"]}');
+  });
+
   it('allows serverId override for claimed player', async () => {
     const player = TestPlayer.BLACK.newPlayer();
     player.user = 'discord-user' as any;

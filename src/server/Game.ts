@@ -1731,6 +1731,9 @@ export class Game implements IGame, Logger {
     if (this.gameOptions.turnBasedGame === true) {
       return 0;
     }
+    if (process.env.MAX_GAME_DAYS === undefined || process.env.MAX_GAME_DAYS.trim() === '') {
+      return 0;
+    }
     const days = stringToNumber(process.env.MAX_GAME_DAYS, 10);
     return addDays(this.createdTime, days).getTime();
   }

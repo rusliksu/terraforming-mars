@@ -1,6 +1,7 @@
 import * as responses from '../server/responses';
 import {Phase} from '../../common/Phase';
 import {LiveGameModel} from '../../common/models/LiveGameModel';
+import {hasMalformedEscapeVelocityOptions} from '../../common/game/EscapeVelocityOptions';
 import {Handler} from './Handler';
 import {Context} from './IHandler';
 import {Request} from '../Request';
@@ -53,6 +54,17 @@ function hasCustomPlayerName(game: {players: ReadonlyArray<{color: string, name:
   return game.players.some((player) => player.name.trim().toLowerCase() !== player.color.toLowerCase());
 }
 
+function isSyntheticTestPlayerName(name: string): boolean {
+  const normalized = name.trim().toLowerCase();
+  return /^[a-z]$/.test(normalized) ||
+    /^inputlog\d+$/.test(normalized) ||
+    /^seq[a-z]$/.test(normalized);
+}
+
+function isSyntheticTestGame(game: {players: ReadonlyArray<{name: string}>}): boolean {
+  return game.players.length > 0 && game.players.every((player) => isSyntheticTestPlayerName(player.name));
+}
+
 function isPreStartDraft(phase: Phase): boolean {
   return phase === Phase.INITIALDRAFTING;
 }
@@ -80,7 +92,9 @@ export class ApiLiveGames extends Handler {
           game.phase === Phase.END ||
           game.players.length < 2 ||
           !hasCustomPlayerName(game) ||
-          isPreStartDraft(game.phase)) {
+          isSyntheticTestGame(game) ||
+          isPreStartDraft(game.phase) ||
+          hasMalformedEscapeVelocityOptions(game.gameOptions.escapeVelocity)) {
         continue;
       }
       const lastSaveTimeMs = await ctx.gameLoader.getLastSaveTimeMs(entry.gameId);

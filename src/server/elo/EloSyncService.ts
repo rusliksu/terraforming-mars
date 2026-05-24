@@ -4,6 +4,7 @@ import * as path from 'path';
 import {toName} from '../../common/utils/utils';
 import {IGame} from '../IGame';
 import {isICorporationCard} from '../cards/corporation/ICorporationCard';
+import {hasMalformedEscapeVelocityOptions} from '../../common/game/EscapeVelocityOptions';
 import {getEloMirrorPath, getEloPrimaryPath} from './EloPaths';
 
 const DEFAULT_ELO = 1500;
@@ -626,7 +627,7 @@ export class EloSyncService {
   ) {}
 
   public async recordCompletedGame(game: IGame, options?: {botPlayerIds?: Array<string>}): Promise<void> {
-    if (game.gameOptions.noEloGame === true) {
+    if (game.gameOptions.noEloGame === true || hasMalformedEscapeVelocityOptions(game.gameOptions.escapeVelocity)) {
       return;
     }
     await this.recordCompletedGameSummary(buildCompletedGameSummary(game, options?.botPlayerIds));

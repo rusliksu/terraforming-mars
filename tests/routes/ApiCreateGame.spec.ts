@@ -13,6 +13,7 @@ import {FakeGameLoader} from './FakeGameLoader';
 import {
   GENUINE_GOLD_NAME,
 } from '../../src/common/Color';
+import * as constants from '../../src/common/constants';
 
 function newGameConfig(players: NewGameConfig['players']): NewGameConfig {
   return {
@@ -349,6 +350,41 @@ describe('ApiCreateGame', () => {
     const game = await scaffolding.ctx.gameLoader.getGame(model.id);
     expect(game).is.not.undefined;
     expect(game!.gameOptions.escapeVelocity).eq(undefined);
+  });
+
+  it('normalizes malformed escape velocity options to defaults', async () => {
+    const post = scaffolding.post(apiCreateGame, res);
+    const config = newGameConfig([{
+      name: 'Robot',
+      color: 'blue',
+      beginner: false,
+      handicap: 0,
+      first: true,
+      isBot: false,
+    }]);
+    config.escapeVelocity = {
+      thresholdMinutes: -9999,
+      bonusSectionsPerAction: -9999,
+      penaltyPeriodMinutes: -12,
+      penaltyVPPerPeriod: 999999,
+    };
+
+    const emit = Promise.resolve().then(() => {
+      req.emitter.emit('data', JSON.stringify(config));
+      req.emitter.emit('end');
+    });
+    await Promise.all(([emit, post]));
+
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game).is.not.undefined;
+    expect(game!.gameOptions.escapeVelocity).deep.eq({
+      thresholdMinutes: constants.DEFAULT_ESCAPE_VELOCITY_THRESHOLD,
+      bonusSectionsPerAction: constants.DEFAULT_ESCAPE_VELOCITY_BONUS_SECONDS,
+      penaltyPeriodMinutes: constants.DEFAULT_ESCAPE_VELOCITY_PERIOD,
+      penaltyVPPerPeriod: constants.DEFAULT_ESCAPE_VELOCITY_PENALTY,
+    });
   });
 
   it('forces GenuineGold name for gold players', async () => {

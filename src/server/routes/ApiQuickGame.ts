@@ -8,6 +8,7 @@ import {Game} from '../Game';
 import {Player} from '../Player';
 import {GameOptions} from '../game/GameOptions';
 import {NewGameConfig, NewPlayerModel} from '../../common/game/NewGameConfig';
+import {normalizeEscapeVelocityOptions} from '../../common/game/EscapeVelocityOptions';
 import {DEFAULT_PLAYER_COLORS, Color} from '../../common/Color';
 import {safeCast, isGameId, isSpectatorId, isPlayerId} from '../../common/Types';
 import {generateRandomId} from '../utils/server-ids';
@@ -126,12 +127,12 @@ export class ApiQuickGame extends Handler {
 
     let escapeVelocity = undefined;
     if (settings.escapeVelocityMode === true) {
-      escapeVelocity = {
+      escapeVelocity = normalizeEscapeVelocityOptions({
         thresholdMinutes: settings.escapeVelocityThreshold ?? 30,
         bonusSectionsPerAction: settings.escapeVelocityBonusSeconds ?? 2,
         penaltyPeriodMinutes: settings.escapeVelocityPeriod ?? 2,
         penaltyVPPerPeriod: settings.escapeVelocityPenalty ?? 1,
-      };
+      });
     }
 
     const bannedCards = settings.bannedCards ?? settings.cardsBlackList ?? [];

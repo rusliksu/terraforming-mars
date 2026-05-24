@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import re
 import sqlite3
@@ -68,6 +69,13 @@ DEFAULT_ELO = 1500
 BASE_K = 32
 PROVISIONAL_ELO_BY_COMPLETED_GAMES = (1300, 1375, 1450)
 MAX_TIMING_RECORD_DURATION_SECONDS = 2 * 60 * 60
+
+ESCAPE_VELOCITY_RULES = {
+    "thresholdMinutes": (0, 180),
+    "bonusSectionsPerAction": (1, 10),
+    "penaltyPeriodMinutes": (1, 10),
+    "penaltyVPPerPeriod": (1, 10),
+}
 
 TEST_NAMES = {"testa", "testb", "testc", "test", "bot"}
 SOLO_BOT_NAMES = TEST_NAMES | {"botsmoke"}
@@ -285,6 +293,28 @@ def is_excluded_game(game_id: object, excluded_games: set[str]) -> bool:
 
 def is_no_elo_game(options: object) -> bool:
     return isinstance(options, dict) and options.get("noEloGame") is True
+
+
+def has_malformed_escape_velocity_options(options: object) -> bool:
+    if not isinstance(options, dict):
+        return False
+    escape_velocity = options.get("escapeVelocity")
+    if escape_velocity is None:
+        return False
+    if not isinstance(escape_velocity, dict):
+        return True
+    for key, (minimum, maximum) in ESCAPE_VELOCITY_RULES.items():
+        try:
+            value = float(escape_velocity.get(key))
+        except (TypeError, ValueError):
+            return True
+        if not math.isfinite(value) or value < minimum or value > maximum:
+            return True
+    return False
+
+
+def should_skip_ranked_game(options: object) -> bool:
+    return is_no_elo_game(options) or has_malformed_escape_velocity_options(options)
 
 
 def _player_override_key(value: object) -> str:
@@ -545,6 +575,7 @@ def fetch_finished_games() -> List[dict]:
         SELECT gr.game_id,
                gr.generations,
                gr.scores,
+               gr.game_options,
                COALESCE(cg.completed_time, 0) AS completed_time,
                json_extract(gr.game_options, '$.boardName') AS board_name,
                (
@@ -565,10 +596,13 @@ def fetch_finished_games() -> List[dict]:
     conn.close()
 
     games: List[dict] = []
-    for gid, generations, scores_json, completed_time, board_name, spectator_id in rows:
+    for gid, generations, scores_json, options_json, completed_time, board_name, spectator_id in rows:
         if is_excluded_game(gid, excluded_games):
             continue
         scores = json.loads(scores_json)
+        options = json.loads(options_json or "{}")
+        if should_skip_ranked_game(options):
+            continue
 
         # Fill missing player names from the latest saved game state.
         if not any((s.get("playerName") or "").strip() for s in scores):
@@ -1186,7 +1220,7 @@ def fetch_stats_games() -> List[dict]:
         except Exception:
             continue
 
-        if is_no_elo_game(options):
+        if should_skip_ranked_game(options):
             continue
 
         if not scores:

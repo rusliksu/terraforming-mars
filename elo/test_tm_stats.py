@@ -24,6 +24,55 @@ def load_sync_module():
     return module
 
 
+def create_results_db(db_path: Path) -> sqlite3.Connection:
+    conn = sqlite3.connect(db_path)
+    conn.executescript(
+        """
+        CREATE TABLE game_results (
+            game_id TEXT PRIMARY KEY,
+            players INTEGER,
+            generations INTEGER,
+            scores TEXT,
+            game_options TEXT
+        );
+        CREATE TABLE completed_game (
+            game_id TEXT PRIMARY KEY,
+            completed_time INTEGER
+        );
+        CREATE TABLE games (
+            game_id TEXT,
+            save_id INTEGER,
+            created_time INTEGER,
+            game TEXT
+        );
+        """
+    )
+    return conn
+
+
+def insert_finished_game(conn: sqlite3.Connection, game_id: str, options: dict) -> None:
+    scores = [
+        {"playerName": "Alice", "playerScore": 75, "place": 1, "corporation": "Teractor"},
+        {"playerName": "Bob", "playerScore": 68, "place": 2, "corporation": "Inventrix"},
+    ]
+    snapshot = {
+        "spectatorId": f"s-{game_id}",
+        "players": [
+            {"id": "p1", "name": "Alice", "playedCards": []},
+            {"id": "p2", "name": "Bob", "playedCards": []},
+        ],
+    }
+    conn.execute(
+        "INSERT INTO game_results VALUES (?, ?, ?, ?, ?)",
+        (game_id, 2, 8, json.dumps(scores), json.dumps({"boardName": "Tharsis", **options})),
+    )
+    conn.execute("INSERT INTO completed_game VALUES (?, ?)", (game_id, 1000))
+    conn.execute(
+        "INSERT INTO games VALUES (?, ?, ?, ?)",
+        (game_id, 1, 100, json.dumps(snapshot)),
+    )
+
+
 def assert_fetch_stats_games_fills_names_before_bot_filter(sync) -> None:
     with tempfile.TemporaryDirectory() as tmp:
         db_path = Path(tmp) / "game.db"
@@ -217,6 +266,69 @@ def assert_fetch_stats_games_skips_no_elo_games(sync) -> None:
     assert [game["_key"] for game in games] == ["g-ranked"]
 
 
+def assert_fetch_finished_games_skips_no_elo_and_malformed_escape_velocity(sync) -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        db_path = Path(tmp) / "game.db"
+        conn = create_results_db(db_path)
+
+        insert_finished_game(conn, "g-ranked", {})
+        insert_finished_game(conn, "g-training", {"noEloGame": True})
+        insert_finished_game(
+            conn,
+            "g-bad-ev",
+            {
+                "escapeVelocity": {
+                    "thresholdMinutes": -9999,
+                    "bonusSectionsPerAction": -9999,
+                    "penaltyPeriodMinutes": -12,
+                    "penaltyVPPerPeriod": 999999,
+                },
+            },
+        )
+        conn.commit()
+        conn.close()
+
+        original_db_path = sync.DB_PATH
+        sync.DB_PATH = db_path
+        try:
+            games = sync.fetch_finished_games()
+        finally:
+            sync.DB_PATH = original_db_path
+
+    assert [game["_key"] for game in games] == ["g-ranked"]
+
+
+def assert_fetch_stats_games_skips_malformed_escape_velocity(sync) -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        db_path = Path(tmp) / "game.db"
+        conn = create_results_db(db_path)
+
+        insert_finished_game(conn, "g-ranked", {})
+        insert_finished_game(
+            conn,
+            "g-bad-ev",
+            {
+                "escapeVelocity": {
+                    "thresholdMinutes": -9999,
+                    "bonusSectionsPerAction": -9999,
+                    "penaltyPeriodMinutes": -12,
+                    "penaltyVPPerPeriod": 999999,
+                },
+            },
+        )
+        conn.commit()
+        conn.close()
+
+        original_db_path = sync.DB_PATH
+        sync.DB_PATH = db_path
+        try:
+            games = sync.fetch_stats_games()
+        finally:
+            sync.DB_PATH = original_db_path
+
+    assert [game["_key"] for game in games] == ["g-ranked"]
+
+
 def assert_player_name_overrides_apply_per_game(sync) -> None:
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
@@ -354,6 +466,8 @@ def main() -> None:
     assert_fetch_stats_games_fills_names_before_bot_filter(sync)
     assert_fetch_stats_games_skips_excluded_games(sync)
     assert_fetch_stats_games_skips_no_elo_games(sync)
+    assert_fetch_finished_games_skips_no_elo_and_malformed_escape_velocity(sync)
+    assert_fetch_stats_games_skips_malformed_escape_velocity(sync)
     assert_player_name_overrides_apply_per_game(sync)
     assert_provisional_elo_caps_expected_score(sync)
     assert_provisional_elo_reduces_first_game_farm_delta(sync)

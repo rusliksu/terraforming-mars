@@ -11,6 +11,7 @@ import {GameOptions} from '../game/GameOptions';
 import {Player} from '../Player';
 import {Server} from '../models/ServerModel';
 import {NewGameConfig} from '../../common/game/NewGameConfig';
+import {normalizeEscapeVelocityOptions} from '../../common/game/EscapeVelocityOptions';
 import {safeCast, isGameId, isSpectatorId, isPlayerId} from '../../common/Types';
 import {generateRandomId} from '../utils/server-ids';
 import {IGame} from '../IGame';
@@ -171,7 +172,7 @@ export class ApiCreateGame extends Handler {
             customCorporationsList: gameReq.customCorporationsList,
             customPreludes: gameReq.customPreludes,
             draftVariant: gameReq.draftVariant,
-            escapeVelocity: gameReq.escapeVelocity ?? undefined,
+            escapeVelocity: normalizeEscapeVelocityOptions(gameReq.escapeVelocity),
             fastModeOption: gameReq.fastModeOption,
             includedCards: gameReq.includedCards,
             includeFanMA: gameReq.includeFanMA,

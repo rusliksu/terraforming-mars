@@ -97,6 +97,27 @@ describe('EloSyncService', () => {
     expect(await pathExists(mirrorPath)).eq(false);
   });
 
+  it('does not record games with malformed escape velocity options', async () => {
+    const alice = TestPlayer.BLUE.newPlayer({name: 'Alice'});
+    const bob = TestPlayer.RED.newPlayer({name: 'Bob'});
+    const game = Game.newInstance('g-bad-ev', [alice, bob], alice, 'spectatorid', {
+      escapeVelocity: {
+        thresholdMinutes: -9999,
+        bonusSectionsPerAction: -9999,
+        penaltyPeriodMinutes: -12,
+        penaltyVPPerPeriod: 999999,
+      },
+    });
+    game.generation = 10;
+    alice.setTerraformRating(80);
+    bob.setTerraformRating(70);
+
+    await service.recordCompletedGame(game);
+
+    expect(await pathExists(primaryPath)).eq(false);
+    expect(await pathExists(mirrorPath)).eq(false);
+  });
+
   it('replaces duplicate game keys instead of appending duplicates', async () => {
     await service.recordCompletedGameSummary({
       key: 'g1',

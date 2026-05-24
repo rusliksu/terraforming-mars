@@ -119,6 +119,70 @@ describe('ApiLiveGames', () => {
     expect(JSON.parse(res.content).map((game: {id: string}) => game.id)).deep.eq(['game-fresh']);
   });
 
+  it('does not list games with malformed escape velocity options', async () => {
+    const malformedEscapeVelocityGame = testGame(
+      'game-bad-ev',
+      [TestPlayer.BLUE.newPlayer(), TestPlayer.RED.newPlayer()],
+      Phase.ACTION,
+    );
+    malformedEscapeVelocityGame.gameOptions = {
+      ...malformedEscapeVelocityGame.gameOptions,
+      escapeVelocity: {
+        thresholdMinutes: -9999,
+        bonusSectionsPerAction: -9999,
+        penaltyPeriodMinutes: -12,
+        penaltyVPPerPeriod: 999999,
+      },
+    };
+    await scaffolding.ctx.gameLoader.add(malformedEscapeVelocityGame);
+
+    scaffolding.url = '/api/live-games';
+    await scaffolding.get(ApiLiveGames.INSTANCE, res);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(JSON.parse(res.content)).deep.eq([]);
+  });
+
+  it('does not list obvious synthetic test games', async () => {
+    const letterNamesGame = testGame(
+      'game-letter-test',
+      [
+        TestPlayer.BLUE.newPlayer({name: 'A'}),
+        TestPlayer.RED.newPlayer({name: 'B'}),
+        TestPlayer.GREEN.newPlayer({name: 'C'}),
+      ],
+      Phase.ACTION,
+    );
+    await scaffolding.ctx.gameLoader.add(letterNamesGame);
+
+    const inputLogGame = testGame(
+      'game-input-log-test',
+      [
+        TestPlayer.BLUE.newPlayer({name: 'InputLog1'}),
+        TestPlayer.RED.newPlayer({name: 'InputLog2'}),
+        TestPlayer.GREEN.newPlayer({name: 'InputLog3'}),
+      ],
+      Phase.ACTION,
+    );
+    await scaffolding.ctx.gameLoader.add(inputLogGame);
+
+    const mixedRealGame = testGame(
+      'game-mixed-real',
+      [
+        TestPlayer.BLUE.newPlayer({name: 'A'}),
+        TestPlayer.RED.newPlayer({name: 'GydRo'}),
+      ],
+      Phase.ACTION,
+    );
+    await scaffolding.ctx.gameLoader.add(mixedRealGame);
+
+    scaffolding.url = '/api/live-games?limit=10';
+    await scaffolding.get(ApiLiveGames.INSTANCE, res);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(JSON.parse(res.content).map((game: {id: string}) => game.id)).deep.eq(['game-mixed-real']);
+  });
+
   it('does not list pre-start initial drafting games', async () => {
     const initialDraftGame = testGame(
       'game-initial-draft',

@@ -7,6 +7,8 @@ import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {Phase} from '../../src/common/Phase';
 import {use} from 'chai';
 import chaiAsPromised from 'chai-as-promised';
+import {LogMessageDataType} from '../../src/common/logs/LogMessageDataType';
+import {CardName} from '../../src/common/cards/CardName';
 use(chaiAsPromised);
 
 describe('ApiGameLogs', () => {
@@ -197,6 +199,32 @@ describe('ApiGameLogs', () => {
       'Yellow player sees this.',
       'Orange player sees this.',
     ]);
+  });
+
+  it('labels spectator-visible private logs with the owning player', async () => {
+    const yellowPlayer = TestPlayer.YELLOW.newPlayer();
+    const orangePlayer = TestPlayer.ORANGE.newPlayer();
+    const spectatorId = 's-spectatorid' as any;
+    const game = Game.newInstance('game-id', [yellowPlayer, orangePlayer], yellowPlayer, spectatorId, {privateHands: false});
+    await scaffolding.ctx.gameLoader.add(game);
+
+    game.gameLog.length = 0;
+    game.log('You drafted ${0} passing ${1} to ${2}', (b) => b
+      .cards([CardName.ALGAE])
+      .cards([CardName.ANTS])
+      .player(orangePlayer), {reservedFor: yellowPlayer});
+    game.log('${0} drew ${1}', (b) => b
+      .string('You')
+      .cards([CardName.BIRDS]), {reservedFor: orangePlayer});
+
+    scaffolding.url = '/api/game/logs?id=' + spectatorId + '&generation=1';
+    await scaffolding.get(ApiGameLogs.INSTANCE, res);
+    const messages = JSON.parse(res.content);
+
+    expect(messages[0].message).eq('${0} drafted ${1} passing ${2} to ${3}');
+    expect(messages[0].data[0]).deep.eq({type: LogMessageDataType.PLAYER, value: yellowPlayer.color});
+    expect(messages[1].message).eq('${0} drew ${1}');
+    expect(messages[1].data[0]).deep.eq({type: LogMessageDataType.PLAYER, value: orangePlayer.color});
   });
 
   it('Cannot pull full logs before game end', async () => {

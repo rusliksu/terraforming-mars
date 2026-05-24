@@ -8,6 +8,42 @@ import {LogMessageData} from '../../common/logs/LogMessageData';
 import {LogMessageDataType} from '../../common/logs/LogMessageDataType';
 
 export class GameLogs {
+  private shiftDataPlaceholders(message: string): string {
+    return message.replace(/\$\{(\d{1,2})\}/gi, (_match, idx) => {
+      return '${' + (Number(idx) + 1) + '}';
+    });
+  }
+
+  private cloneMessage(message: LogMessage, text: string, data: Array<LogMessageData>): LogMessage {
+    const clone = new LogMessage(message.type ?? LogMessageType.DEFAULT, text, data, message.playerId);
+    clone.timestamp = message.timestamp;
+    return clone;
+  }
+
+  private labelPrivateMessageOwner(message: LogMessage, game: IGame): LogMessage {
+    if (message.playerId === undefined) {
+      return message;
+    }
+    const player = game.players.find((player) => player.id === message.playerId);
+    if (player === undefined) {
+      return message;
+    }
+
+    const owner: LogMessageData = {type: LogMessageDataType.PLAYER, value: player.color};
+    if (message.message.startsWith('You ')) {
+      return this.cloneMessage(
+        message,
+        '${0} ' + this.shiftDataPlaceholders(message.message.substring(4)),
+        [owner, ...message.data],
+      );
+    }
+    const firstDatum = message.data[0];
+    if (firstDatum?.type === LogMessageDataType.STRING && firstDatum.value === 'You') {
+      return this.cloneMessage(message, message.message, [owner, ...message.data.slice(1)]);
+    }
+    return message;
+  }
+
   private getRecentLogLimit(limit: string | null): number {
     if (limit === null) {
       return 50;
@@ -57,10 +93,11 @@ export class GameLogs {
 
     // Default view keeps the payload small. An explicit generation request should
     // always return the full generation, including the current one.
+    const labelOwner = (message: LogMessage) => showAllMessages ? this.labelPrivateMessageOwner(message, game) : message;
     if (generation === null) {
-      return game.gameLog.filter(messagesForPlayer).slice(-this.getRecentLogLimit(limit));
+      return game.gameLog.filter(messagesForPlayer).slice(-this.getRecentLogLimit(limit)).map(labelOwner);
     }
-    return this.getLogsForGeneration(game.gameLog, Number(generation)).filter(messagesForPlayer);
+    return this.getLogsForGeneration(game.gameLog, Number(generation)).filter(messagesForPlayer).map(labelOwner);
   }
 
   public getLogsForGameEnd(game: IGame): Array<string> {
@@ -68,7 +105,7 @@ export class GameLogs {
       throw new Error('Game is not over');
     }
 
-    return game.gameLog.map((message) => Log.applyData(message, (datum: LogMessageData) => {
+    return game.gameLog.map((message) => Log.applyData(this.labelPrivateMessageOwner(message, game), (datum: LogMessageData) => {
       if (datum.type === undefined || datum.value === undefined) {
         return '';
       }

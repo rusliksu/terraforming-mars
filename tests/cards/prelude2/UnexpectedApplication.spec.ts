@@ -44,6 +44,26 @@ describe('UnexpectedApplication', () => {
     expect(game.projectDeck.discardPile).contains(housePrinting);
   });
 
+  it('asks which card to discard even with one discard candidate', () => {
+    player.cardsInHand.push(tardigrades);
+    expect(card.canPlay(player)).is.true;
+
+    player.playCard(card);
+    const selectCard = cast(game.deferredActions.pop()!.execute(), SelectCard<IProjectCard>);
+
+    expect(selectCard.cards).deep.eq([tardigrades]);
+    expect(selectCard.config.min).eq(1);
+    expect(selectCard.config.max).eq(1);
+    expect(player.cardsInHand).contains(tardigrades);
+    expect(game.projectDeck.discardPile).does.not.contain(tardigrades);
+
+    selectCard.cb([tardigrades]);
+    runAllActions(game);
+
+    expect(player.cardsInHand).does.not.contain(tardigrades);
+    expect(game.projectDeck.discardPile).contains(tardigrades);
+  });
+
   it('Does not expect itself to be the discarded card', () => {
     player.cardsInHand.push(card);
 

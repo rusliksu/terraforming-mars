@@ -107,6 +107,7 @@ export interface PlayerViewModel extends ViewModel {
   dealtCeoCards: ReadonlyArray<CardModel>;
   draftedCards: ReadonlyArray<CardModel>;
   id: PlayerId;
+  password?: string;
   ceoCardsInHand: ReadonlyArray<CardModel>;
   pickedCorporationCard: ReadonlyArray<CardModel>; // Why Array?
   preludeCardsInHand: ReadonlyArray<CardModel>;

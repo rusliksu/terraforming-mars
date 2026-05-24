@@ -58,7 +58,7 @@ export class ApiWaitingFor extends Handler {
     try {
       if (isPlayerId(id)) {
         const player = game.getPlayerById(id);
-        if (!this.isUser(player.user, ctx) && !this.hasServerIdAccess(ctx)) {
+        if (!this.canAccessPlayer(player, ctx)) {
           responses.notAuthorized(req, res);
           return;
         }

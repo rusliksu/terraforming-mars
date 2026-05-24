@@ -57,6 +57,10 @@ export class PlayerInput extends Handler {
       responses.notFound(req, res);
       return;
     }
+    if (!this.canAccessPlayer(player, ctx)) {
+      responses.notAuthorized(req, res);
+      return;
+    }
     return this.processInput(req, res, ctx, player);
   }
 

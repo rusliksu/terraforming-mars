@@ -44,6 +44,7 @@
             <li v-if="playerNumber > 1">
               <div class="setup-item" v-i18n>Draft:</div>
               <div v-if="gameOptions.initialDraftVariant" class="game-config generic" v-i18n>Initial</div>
+              <div v-if="gameOptions.initialDraftOneWay" class="game-config generic" v-i18n>10-card one-way (experimental)</div>
               <div v-if="gameOptions.draftVariant" class="game-config generic" v-i18n>Research phase</div>
               <div v-if="!gameOptions.initialDraftVariant && !gameOptions.draftVariant" class="game-config generic" v-i18n>Off</div>
               <div v-if="gameOptions.preludeDraftVariant">Prelude</div>

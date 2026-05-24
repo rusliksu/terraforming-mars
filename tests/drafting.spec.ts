@@ -650,6 +650,77 @@ describe('drafting', () => {
     });
   });
 
+  it('2 player - initial draft, 10 cards one-way', () => {
+    const [game, player, otherPlayer] = testGame(2, {
+      skipInitialShuffling: true,
+      draftVariant: true,
+      initialDraftVariant: true,
+      initialDraftOneWay: true,
+    });
+
+    expect(draftSelection(player)).deep.eq([
+      CardName.ADAPTATION_TECHNOLOGY,
+      CardName.ADAPTED_LICHEN,
+      CardName.ADVANCED_ECOSYSTEMS,
+      CardName.AEROBRAKED_AMMONIA_ASTEROID,
+      CardName.ANTS,
+      CardName.AQUIFER_PUMPING,
+      CardName.ALGAE,
+      CardName.ARCHAEBACTERIA,
+      CardName.ARCTIC_ALGAE,
+      CardName.ARTIFICIAL_LAKE,
+    ]);
+    expect(draftSelection(otherPlayer)).deep.eq([
+      CardName.ARTIFICIAL_PHOTOSYNTHESIS,
+      CardName.ASTEROID,
+      CardName.ASTEROID_MINING,
+      CardName.BEAM_FROM_A_THORIUM_ASTEROID,
+      CardName.BIG_ASTEROID,
+      CardName.BIOMASS_COMBUSTORS,
+      CardName.BIRDS,
+      CardName.BLACK_POLAR_DUST,
+      CardName.BREATHING_FILTERS,
+      CardName.BUSHES,
+    ]);
+
+    selectCard(player, CardName.ADAPTATION_TECHNOLOGY);
+    selectCard(otherPlayer, CardName.ARTIFICIAL_PHOTOSYNTHESIS);
+
+    expect(draftSelection(player)).deep.eq([
+      CardName.ASTEROID,
+      CardName.ASTEROID_MINING,
+      CardName.BEAM_FROM_A_THORIUM_ASTEROID,
+      CardName.BIG_ASTEROID,
+      CardName.BIOMASS_COMBUSTORS,
+      CardName.BIRDS,
+      CardName.BLACK_POLAR_DUST,
+      CardName.BREATHING_FILTERS,
+      CardName.BUSHES,
+    ]);
+    expect(draftSelection(otherPlayer)).deep.eq([
+      CardName.ADAPTED_LICHEN,
+      CardName.ADVANCED_ECOSYSTEMS,
+      CardName.AEROBRAKED_AMMONIA_ASTEROID,
+      CardName.ANTS,
+      CardName.AQUIFER_PUMPING,
+      CardName.ALGAE,
+      CardName.ARCHAEBACTERIA,
+      CardName.ARCTIC_ALGAE,
+      CardName.ARTIFICIAL_LAKE,
+    ]);
+
+    for (let i = 0; i < 8; i++) {
+      selectFirstDraftCard(player);
+      selectFirstDraftCard(otherPlayer);
+    }
+
+    expect(player.draftedCards).is.empty;
+    expect(otherPlayer.draftedCards).is.empty;
+    expect(game.initialDraftIteration).eq(3);
+    expect(initialCardSelection(player).projectCards).has.length(10);
+    expect(initialCardSelection(otherPlayer).projectCards).has.length(10);
+  });
+
   it('2 player - initial draft logs drafted and passed cards privately', () => {
     const [game, player, otherPlayer] = testGame(2, {
       skipInitialShuffling: true,
@@ -1136,6 +1207,11 @@ function selectCard(player: TestPlayer, cardName: CardName) {
   selectCard.process({type: 'card', cards: [card.name]});
 
   // await validateState(player);
+}
+
+function selectFirstDraftCard(player: TestPlayer) {
+  const selectCard = cast(player.popWaitingFor(), SelectCard);
+  selectCard.process({type: 'card', cards: [selectCard.cards[0].name]});
 }
 
 // // This is a helper function to validate the state of the game after each action.

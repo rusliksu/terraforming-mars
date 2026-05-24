@@ -17,6 +17,7 @@ export type GameOptionsModel = {
   includedCards: ReadonlyArray<CardName>;
   includeFanMA: boolean,
   initialDraftVariant: boolean,
+  initialDraftOneWay: boolean,
   noEloGame: boolean,
   turnBasedGame: boolean,
   preludeDraftVariant: boolean,

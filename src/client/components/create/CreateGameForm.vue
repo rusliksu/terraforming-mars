@@ -393,6 +393,13 @@
                                 </div>
                             </div>
                             <div class="create-game-page-column-row" v-if="initialDraft">
+                              <div>
+                                <input type="checkbox" name="initialDraftOneWay" v-model="initialDraftOneWay" id="initialDraftOneWay-checkbox">
+                                <label for="initialDraftOneWay-checkbox" title="Experimental: deal 10 project cards at once and pass in one direction.">
+                                  <span v-i18n>10-card one-way initial draft (experimental)</span>
+                                </label>
+                              </div>
+
                               <div v-if="expansions.prelude">
                                 <input type="checkbox" name="preludeDraft" v-model="preludeDraftVariant" id="preludeDraft-checkbox">
                                 <label for="preludeDraft-checkbox">
@@ -722,6 +729,9 @@ export default defineComponent({
       }
       if (value === true && this.ceosDraftVariant === undefined) {
         this.ceosDraftVariant = true;
+      }
+      if (value === false) {
+        this.initialDraftOneWay = false;
       }
     },
     'expansions.prelude': function(value: boolean) {
@@ -1300,6 +1310,7 @@ export default defineComponent({
 
       const draftVariant = this.draftVariant;
       const initialDraft = this.initialDraft;
+      const initialDraftOneWay = this.initialDraftOneWay;
       const randomMA = this.randomMA;
       const showOtherPlayersVP = this.showOtherPlayersVP;
       const solarPhaseOption = this.solarPhaseOption;
@@ -1532,6 +1543,7 @@ export default defineComponent({
         soloTR,
         clonedGamedId,
         initialDraft,
+        initialDraftOneWay: initialDraft ? initialDraftOneWay : false,
         preludeDraftVariant: this.preludeDraftVariant ?? false,
         ceosDraftVariant: this.ceosDraftVariant ?? false,
         randomMA,

@@ -83,6 +83,7 @@ describe('ApiGame', () => {
           'includedCards': [],
           'includeFanMA': false,
           'initialDraftVariant': false,
+          'initialDraftOneWay': false,
           'ceosDraftVariant': false,
           'noEloGame': false,
           'privateHands': true,

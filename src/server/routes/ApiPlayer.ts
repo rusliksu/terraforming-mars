@@ -30,8 +30,7 @@ export class ApiPlayer extends Handler {
     }
     try {
       const player = game.getPlayerById(playerId);
-      const passwordCreated = this.createPlayerPasswordIfNeeded(player, ctx);
-      if (!passwordCreated && !this.canAccessPlayer(player, ctx)) {
+      if (!this.isUser(player.user, ctx) && !this.hasServerIdAccess(ctx)) {
         responses.notAuthorized(req, res);
         return;
       }

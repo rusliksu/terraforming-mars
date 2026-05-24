@@ -7,7 +7,6 @@ import {PlayerViewModel, PublicPlayerModel} from '@/common/models/PlayerModel';
 import {Phase} from '@/common/Phase';
 import raw_settings from '@/genfiles/settings.json';
 import {PreferencesManager} from '@/client/utils/PreferencesManager';
-import {fakePlayerViewModel} from './testHelpers';
 
 describe('WaitingFor', () => {
   type TestNotificationOptions = {
@@ -31,17 +30,7 @@ describe('WaitingFor', () => {
     },
   };
 
-  let originalFetch: typeof fetch;
-  let originalUrl: string;
-
-  beforeEach(() => {
-    originalFetch = global.fetch;
-    originalUrl = window.location.href;
-  });
-
   afterEach(() => {
-    global.fetch = originalFetch;
-    window.history.replaceState({}, '', originalUrl);
     PreferencesManager.resetForTest();
     delete (global as any).Notification;
     delete (window as any).Notification;
@@ -113,43 +102,6 @@ describe('WaitingFor', () => {
 
     expect(wrapper.text()).to.include('Pause updates');
     expect(wrapper.text()).to.not.include('Suspend');
-  });
-
-  it('passes the player password when submitting input', async () => {
-    window.history.replaceState({}, '', '/player?id=p-player-id&password=secret-password');
-    const urls: Array<string> = [];
-    global.fetch = async (url: unknown) => {
-      urls.push(String(url));
-      return {
-        ok: true,
-        json: async () => fakePlayerViewModel(),
-      } as Response;
-    };
-
-    const wrapper = shallowMount(WaitingFor, {
-      ...globalConfig,
-      global: {
-        ...globalConfig.global,
-        stubs: {
-          'player-input-factory': true,
-        },
-      },
-      props: {
-        playerView: playerView as PlayerViewModel,
-        players: [thisPlayer as PublicPlayerModel],
-        waitingfor: {
-          type: 'option',
-          title: 'test',
-          buttonLabel: 'save',
-        },
-      },
-    });
-
-    wrapper.vm.onsave({type: 'option'} as any);
-    await Promise.resolve();
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    expect(urls).deep.eq(['player/input?id=p-player-id&password=secret-password']);
   });
 
   it('shows a notification after permission is granted', async () => {

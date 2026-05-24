@@ -3,9 +3,6 @@ import {IHandler, Context} from './IHandler';
 import {Request} from '../Request';
 import {Response} from '../Response';
 import {DiscordId} from '../server/auth/discord';
-import {IPlayer} from '../IPlayer';
-import {Phase} from '../../common/Phase';
-import {randomBytes} from 'crypto';
 
 export type Options = {
   validateServerId: boolean;
@@ -72,39 +69,6 @@ export abstract class Handler implements IHandler {
       return true;
     }
     return false;
-  }
-
-  private playerNeedsPassword(player: IPlayer): boolean {
-    const game = player.game;
-    return player.user === undefined &&
-      game.gameOptions.privateHands !== false &&
-      !game.isSoloMode() &&
-      game.phase !== Phase.END;
-  }
-
-  protected createPlayerPasswordIfNeeded(player: IPlayer, ctx: Context): boolean {
-    if (!this.playerNeedsPassword(player) || this.hasServerIdAccess(ctx) || player.password !== undefined) {
-      return false;
-    }
-
-    player.password = 'w' + randomBytes(9).toString('hex');
-    void ctx.gameLoader.saveGame(player.game).catch((error) => {
-      console.warn(`unable to save generated password for player ${player.id}`, error);
-    });
-    return true;
-  }
-
-  protected canAccessPlayer(player: IPlayer, ctx: Context): boolean {
-    if (this.hasServerIdAccess(ctx)) {
-      return true;
-    }
-    if (player.user !== undefined) {
-      return this.isUser(player.user, ctx);
-    }
-    if (!this.playerNeedsPassword(player)) {
-      return true;
-    }
-    return player.password !== undefined && ctx.url.searchParams.get('password') === player.password;
   }
 
   private isStatsIdValid(ctx: Context): boolean {

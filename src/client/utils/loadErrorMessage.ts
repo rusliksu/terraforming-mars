@@ -2,9 +2,6 @@ import {paths} from '@/common/app/paths';
 import {statusCode} from '@/common/http/statusCode';
 
 export function getLoadErrorMessage(path: typeof paths.GAME | typeof paths.PLAYER | typeof paths.SPECTATOR, status: number): string {
-  if (path === paths.PLAYER && status === statusCode.forbidden) {
-    return 'This player link is password-protected. Ask the player for their current link.';
-  }
   if (status !== statusCode.notFound) {
     return 'Error getting game data';
   }

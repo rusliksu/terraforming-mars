@@ -95,17 +95,9 @@ export default defineComponent({
       }
       document.title = next + ' ' + gameDocumentTitle(this.playerView.game);
     },
-    playerUrl(path: string): string {
-      if (!isPlayerId(this.playerView.id)) {
-        throw new Error('Player action requires a player id.');
-      }
-      const params = new URLSearchParams(window.location.search);
-      params.set('id', this.playerView.id);
-      return path + '?' + params.toString();
-    },
     onsave(out: InputResponse) {
       this.fetchPlayerInput(
-        this.playerUrl(paths.PLAYER_INPUT),
+        paths.PLAYER_INPUT + '?id=' + this.playerView.id,
         {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
@@ -114,7 +106,7 @@ export default defineComponent({
     },
     reset() {
       this.fetchPlayerInput(
-        this.playerUrl(paths.RESET),
+        paths.RESET + '?id=' + this.playerView.id,
         {method: 'GET'});
     },
     fetchPlayerInput(url: string, options: RequestInit) {

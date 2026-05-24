@@ -44,10 +44,6 @@ export class Autopass extends Handler {
       responses.notFound(req, res, 'player not found');
       return;
     }
-    if (!this.canAccessPlayer(player, ctx)) {
-      responses.notAuthorized(req, res);
-      return;
-    }
 
     // This doesn't get saved.
     player.autopass = autopass;

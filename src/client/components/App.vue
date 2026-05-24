@@ -118,13 +118,10 @@ function getLastPathSegment() {
   return window.location.pathname.replace(/.*\//g, '');
 }
 
-function retainAdminSearch(targetPath: string, id: string | undefined, password?: string) {
+function retainAdminSearch(targetPath: string, id: string | undefined) {
   const params = new URLSearchParams();
   if (id !== undefined) {
     params.set('id', id);
-  }
-  if (targetPath === paths.PLAYER && password !== undefined && password !== '') {
-    params.set('password', password);
   }
   const current = new URLSearchParams(window.location.search);
   const serverId = current.get('serverId');
@@ -250,16 +247,11 @@ export default defineComponent({
             } else if (path === paths.SPECTATOR) {
               app.screen = 'spectator-home';
             }
-            const retainedSearch = retainAdminSearch(path, model.id, path === paths.PLAYER ? app.playerView?.password : undefined);
-            const currentPassword = new URLSearchParams(window.location.search).get('password');
-            const shouldUpdatePassword = path === paths.PLAYER &&
-              app.playerView?.password !== undefined &&
-              currentPassword !== app.playerView.password;
-            if (currentPathname !== path || shouldUpdatePassword) {
+            if (currentPathname !== path) {
               window.history.replaceState(
                 model,
                 `${constants.APP_NAME} - Game`,
-                retainedSearch,
+                retainAdminSearch(path, model.id),
               );
             }
           }

@@ -68,6 +68,45 @@ describe('Game', () => {
     expect(game.expectedPurgeTimeMs()).eq(0);
   });
 
+  it('does not show a purge time when unfinished game purge is disabled', () => {
+    const maxGameDays = process.env.MAX_GAME_DAYS;
+    delete process.env.MAX_GAME_DAYS;
+    try {
+      const player = TestPlayer.BLUE.newPlayer();
+      const player2 = TestPlayer.RED.newPlayer();
+      const game = Game.newInstance('gameid', [player, player2], player, 'spectatorid');
+
+      expect(game.expectedPurgeTimeMs()).eq(0);
+    } finally {
+      if (maxGameDays === undefined) {
+        delete process.env.MAX_GAME_DAYS;
+      } else {
+        process.env.MAX_GAME_DAYS = maxGameDays;
+      }
+    }
+  });
+
+  it('shows a purge time when unfinished game purge is configured', () => {
+    const maxGameDays = process.env.MAX_GAME_DAYS;
+    process.env.MAX_GAME_DAYS = '2';
+    try {
+      const before = Date.now() + (2 * 86400 * 1000);
+      const player = TestPlayer.BLUE.newPlayer();
+      const player2 = TestPlayer.RED.newPlayer();
+      const game = Game.newInstance('gameid', [player, player2], player, 'spectatorid');
+      const after = Date.now() + (2 * 86400 * 1000);
+
+      expect(game.expectedPurgeTimeMs()).gte(before);
+      expect(game.expectedPurgeTimeMs()).lte(after);
+    } finally {
+      if (maxGameDays === undefined) {
+        delete process.env.MAX_GAME_DAYS;
+      } else {
+        process.env.MAX_GAME_DAYS = maxGameDays;
+      }
+    }
+  });
+
   it('sets starting production if corporate era not selected', () => {
     const player = TestPlayer.BLUE.newPlayer();
 

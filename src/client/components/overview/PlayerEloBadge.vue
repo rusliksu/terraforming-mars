@@ -130,10 +130,10 @@ export default defineComponent({
 }
 
 .player-elo-badge--hydro {
-  color: #f6e7ff;
-  border-color: #9b68df;
-  background: rgba(26, 26, 46, 0.78);
-  box-shadow: 0 0 7px rgba(116, 67, 190, 0.42);
+  color: #fff5f5;
+  border-color: #ff9b9b;
+  background: rgba(46, 18, 28, 0.78);
+  box-shadow: 0 0 7px rgba(255, 102, 102, 0.42);
 }
 
 .player-elo-badge--pearl {

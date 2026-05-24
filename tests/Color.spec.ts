@@ -16,9 +16,10 @@ import {
 } from '@/common/Color';
 
 describe('Locked player identities', () => {
-  it('maps the generic Toma identity to the moody dark purple option', () => {
+  it('maps the generic Toma identity to the coral pink option', () => {
     expect(SONYA_EMKO_NAME).to.eq(TOMA_NAME);
     expect(getPlayerIdentityByName(TOMA_NAME)?.color).to.eq(SONYA_HYDRO_COLOR);
+    expect(getPlayerIdentityByName(TOMA_NAME)?.colorLabel).to.eq('кораллово-розовый');
     expect(getPlayerIdentityByName('тома')?.color).to.eq(SONYA_HYDRO_COLOR);
     expect(getPlayerIdentityByName('соня')?.color).to.eq(SONYA_HYDRO_COLOR);
     expect(getPlayerIdentityByName('соня эмко')?.color).to.eq(SONYA_HYDRO_COLOR);

@@ -11,24 +11,28 @@ function cssBlock(source: string, selector: string): string {
 }
 
 describe('Styles', () => {
-  it('uses a reserved dark purple treatment for the Toma persona', () => {
+  it('uses a reserved coral pink treatment for the Toma persona', () => {
     const variables = read('src/styles/variables.less');
     const common = read('src/styles/common.less');
     const board = read('src/styles/board.less');
     const playerHome = read('src/styles/player_home.less');
     const turmoil = read('src/styles/turmoil.less');
     const playerSymbol = read('src/client/utils/playerSymbol.ts');
+    const vpChart = read('src/client/components/gameend/VictoryPointChart.vue');
 
-    expect(variables).to.contain('@player_hydro: rgb(54, 16, 86);');
+    expect(variables).to.contain('@player_hydro: rgb(255, 102, 102);');
+    expect(variables).to.contain('@player_hydro_token_gradient: linear-gradient(135deg, #ffd6d6 0%, @player_hydro 52%, #8f1f1f 100%);');
+    expect(variables).to.contain('@player_hydro_tag_bg: rgba(255, 102, 102, 0.24);');
     expect(common).to.contain('.player_bg_color_hydro');
-    expect(common).to.contain('#f6e7ff');
+    expect(common).to.contain('#fff5f5');
     expect(common).not.to.contain('linear-gradient(90deg, @player_hydro, #254ec6)');
     expect(board).to.contain('.board-cube--hydro');
     expect(board).to.contain('content: "♂"');
     expect(playerHome).to.contain('&.colonies-fleet-hydro');
-    expect(playerHome).to.contain('background-color: rgba(54, 16, 86, 0.24);');
+    expect(playerHome).to.contain('background-color: rgba(255, 102, 102, 0.24);');
     expect(turmoil).to.contain('&.hydro');
     expect(playerSymbol).to.contain("hydro: '♂'");
+    expect(vpChart).to.contain("['hydro']: 'rgb(255, 102, 102)'");
   });
 
   it('uses a reserved pearl treatment for the GydRo persona', () => {
@@ -112,7 +116,7 @@ describe('Styles', () => {
     const board = read('src/styles/board.less');
 
     expect(variables).to.contain('@player_gold_token_gradient: linear-gradient(135deg, #e7c86b 0%, #b78322 52%, #604000 100%);');
-    expect(variables).to.contain('@player_hydro_token_gradient: linear-gradient(135deg, #caa7ff 0%, @player_hydro 52%, #170021 100%);');
+    expect(variables).to.contain('@player_hydro_token_gradient: linear-gradient(135deg, #ffd6d6 0%, @player_hydro 52%, #8f1f1f 100%);');
     expect(variables).to.contain('@player_turquoise_token_gradient: linear-gradient(135deg, @player_turquoise_light 0%, @player_turquoise 52%, @player_turquoise_dark 100%);');
     expect(variables).to.contain('@player_gold_sprite_filter: sepia(0.45) saturate(1.65) hue-rotate(346deg) brightness(0.90) contrast(1.12);');
     expect(variables).to.contain('@player_emerald_sprite_filter: hue-rotate(18deg) saturate(1.70) brightness(0.72) contrast(1.12);');
@@ -237,7 +241,7 @@ describe('Styles', () => {
     expect(cssBlock(turmoil, '&.emerald')).to.contain('.player-token-sprite(-865px, -35px, @player_emerald_sprite_filter);');
     expect(cssBlock(turmoil, '&.ginger')).to.contain('.player-token-sprite(-644px, -105px, @player_ginger_sprite_filter);');
     expect(cssBlock(turmoil, '&.hydro')).to.contain('.player-token-sprite(-699px, -105px, none);');
-    expect(cssBlock(turmoil, '&.hydro')).to.contain('color: #f6e7ff;');
+    expect(cssBlock(turmoil, '&.hydro')).to.contain('color: #fff5f5;');
     expect(cssBlock(turmoil, '&.hydro')).to.contain('background: @player_hydro_token_gradient;');
     expect(cssBlock(turmoil, '&.hydro')).to.contain('mask-image: url(./assets/turmoil_ui.png);');
     expect(cssBlock(turmoil, '&.pearl')).to.contain('.player-token-sprite(-973px, -35px, @player_pearl_delegate_filter);');
@@ -321,7 +325,7 @@ describe('Styles', () => {
       expect(playerHome).to.contain(`.ma-score.player_bg_color_${selector}`);
     }
     expect(playerHome).to.contain('color: #fff;');
-    expect(cssBlock(playerHome, '.ma-score.player_bg_color_hydro')).to.contain('color: #f6e7ff;');
+    expect(cssBlock(playerHome, '.ma-score.player_bg_color_hydro')).to.contain('color: #fff5f5;');
     expect(cssBlock(playerHome, '.ma-score.player_bg_color_saturnstorm')).to.contain('color: #ffe5e8;');
   });
 
@@ -424,6 +428,7 @@ describe('Styles', () => {
     expect(elo).to.contain('"тома": "player-persona-hydro"');
     expect(elo).to.contain('"соня": "player-persona-hydro"');
     expect(elo).to.contain('.winner .player-persona-emerald { color: #009468; }');
+    expect(elo).to.contain('.winner .player-persona-hydro { color: #ff6666; }');
     expect(elo).to.contain('.winner .player-persona-pearl { color: #eafcff; }');
     expect(elo).to.contain('.winner .player-persona-saturnstorm { color: #be1f48; }');
     expect(elo).not.to.contain('font-family: Georgia');

@@ -125,9 +125,9 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
     color: SONYA_HYDRO_COLOR,
     name: TOMA_NAME,
     label: 'Тома',
-    colorLabel: 'мрачный тёмно-фиолетовый',
+    colorLabel: 'кораллово-розовый',
     shortLabel: 'Тома',
-    title: 'Тома - reserved dark purple',
+    title: 'Тома - reserved coral pink',
     aliases: ['тома', 'toma', 'соня', 'sonya', 'соня эмко', 'эмко', 'sonya emko', 'sonia emko', 'emko'],
   },
   {

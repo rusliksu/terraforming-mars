@@ -12,6 +12,7 @@
               </li>
               <li v-i18n>Draw 5 project cards. Draft. Pick one card and pass to the player above in turn order. Repeat until you have 5 cards.</li>
               <li v-i18n>Draw 5 more project cards. Draft and pass to the player below in turn order instead.</li>
+              <li v-i18n>Experimental 10-card one-way initial draft: draw 10 project cards once, pick one card, and pass in one direction until all 10 cards are drafted.</li>
               <li>
                 <span v-i18n>Draft the prelude cards. Pick one card and pass to the player above in turn order. Repeat until you have 4 preludes.</span>
                 <div class="expansion-icon expansion-icon-prelude"></div>

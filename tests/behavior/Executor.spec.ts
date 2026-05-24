@@ -689,6 +689,10 @@ describe('Executor', () => {
     expect(player.cardsInHand).to.have.members([fake, microMills]);
     expect(game.projectDeck.discardPile).to.contain(birds);
     expect(game.projectDeck.discardPile).to.contain(heatTrappers);
+
+    const privateMessages = game.gameLog.filter((entry) => entry.playerId === player.id).map(formatMessage);
+    expect(privateMessages.some((message) => message.includes('discarded Birds'))).is.true;
+    expect(privateMessages.some((message) => message.includes('discarded Heat Trappers'))).is.true;
   });
 
   it('or, canExecute', () => {

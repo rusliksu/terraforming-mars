@@ -234,6 +234,31 @@ export function describeDatabaseSuite<T extends ITestDatabase>(dtor: DatabaseTes
         const entry = (await db.getParticipants()).find((entry) => entry.gameId === game.id);
         expect(entry?.participantIds).deep.eq([player.id, 'spectatorid']);
       });
+
+      if (dtor.omit?.moreCleaning !== true) {
+        it('does not purge games with a fresh latest save', async () => {
+          expect(db.setSaveCreatedTime).is.not.undefined;
+          const setSaveCreatedTime = db.setSaveCreatedTime!;
+          const player = TestPlayer.BLACK.newPlayer();
+          const game = Game.newInstance('game-id-active-old', [player], player, 'spectatorid');
+          await db.lastSaveGamePromise;
+
+          await db.saveGame(game);
+          expect(await db.getSaveIds(game.id)).has.members([0, 1]);
+
+          const nowSeconds = Math.floor(Date.now() / 1000);
+          const staleSeconds = nowSeconds - (2 * 86400);
+          await setSaveCreatedTime.call(db, game.id, 0, staleSeconds);
+          await setSaveCreatedTime.call(db, game.id, 1, nowSeconds);
+
+          await db.purgeUnfinishedGames('1');
+          expect(await db.getSaveIds(game.id)).has.members([0, 1]);
+
+          await setSaveCreatedTime.call(db, game.id, 1, staleSeconds);
+          await db.purgeUnfinishedGames('1');
+          expect(await db.getSaveIds(game.id)).is.empty;
+        });
+      }
     }
 
     it('getGame', async () => {

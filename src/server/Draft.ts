@@ -224,7 +224,8 @@ class InitialDraft extends Draft {
   }
 
   override draw(_player: IPlayer) {
-    return this.game.projectDeck.drawN(this.game, 5, 'bottom');
+    const count = this.game.gameOptions.initialDraftOneWay ? 10 : 5;
+    return this.game.projectDeck.drawN(this.game, count, 'bottom');
   }
 
   override cardsToKeep(_player: IPlayer): number {
@@ -232,11 +233,17 @@ class InitialDraft extends Draft {
   }
 
   override passDirection() {
+    if (this.game.gameOptions.initialDraftOneWay) {
+      return 'after';
+    }
     return this.game.initialDraftIteration === 2 ? 'before' : 'after';
   }
 
   override endRound() {
     this.game.initialDraftIteration++;
+    if (this.game.gameOptions.initialDraftOneWay && this.game.initialDraftIteration === 2) {
+      this.game.initialDraftIteration = 3;
+    }
     // TODO(kberg): Move this to runDraftRound.
     this.game.draftRound = 1;
 

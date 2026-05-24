@@ -52,6 +52,7 @@ export type GameOptions = {
   // Variants
   draftVariant: boolean;
   initialDraftVariant: boolean;
+  initialDraftOneWay: boolean;
   preludeDraftVariant: boolean;
   ceosDraftVariant: boolean;
   // corporationsDraft: boolean;
@@ -122,6 +123,7 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
   fastModeOption: false,
   includeFanMA: false,
   initialDraftVariant: false,
+  initialDraftOneWay: false,
   modularMA: false,
   noEloGame: false,
   turnBasedGame: false,

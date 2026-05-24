@@ -79,6 +79,7 @@ export class ApiCloneableGame extends Handler {
       modularMA: options.modularMA,
       draftVariant: options.draftVariant,
       initialDraft: options.initialDraftVariant,
+      initialDraftOneWay: options.initialDraftOneWay === true,
       preludeDraftVariant: options.preludeDraftVariant,
       ceosDraftVariant: options.ceosDraftVariant,
       startingCorporations: options.startingCorporations,

@@ -176,6 +176,7 @@ export class ApiCreateGame extends Handler {
             includedCards: gameReq.includedCards,
             includeFanMA: gameReq.includeFanMA,
             initialDraftVariant: gameReq.initialDraft,
+            initialDraftOneWay: gameReq.initialDraftOneWay === true,
             modularMA: gameReq.modularMA,
             noEloGame: gameReq.noEloGame === true,
             turnBasedGame,

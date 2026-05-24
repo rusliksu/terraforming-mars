@@ -53,11 +53,6 @@ function hasCustomPlayerName(game: {players: ReadonlyArray<{color: string, name:
   return game.players.some((player) => player.name.trim().toLowerCase() !== player.color.toLowerCase());
 }
 
-function isExpired(game: {expectedPurgeTimeMs: () => number}, now: number): boolean {
-  const expectedPurgeTimeMs = game.expectedPurgeTimeMs();
-  return expectedPurgeTimeMs !== 0 && expectedPurgeTimeMs <= now;
-}
-
 function isPreStartDraft(phase: Phase): boolean {
   return phase === Phase.INITIALDRAFTING;
 }
@@ -85,8 +80,7 @@ export class ApiLiveGames extends Handler {
           game.phase === Phase.END ||
           game.players.length < 2 ||
           !hasCustomPlayerName(game) ||
-          isPreStartDraft(game.phase) ||
-          isExpired(game, now)) {
+          isPreStartDraft(game.phase)) {
         continue;
       }
       const lastSaveTimeMs = await ctx.gameLoader.getLastSaveTimeMs(entry.gameId);

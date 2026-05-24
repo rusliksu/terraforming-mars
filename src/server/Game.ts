@@ -26,7 +26,7 @@ import {PlayerId, GameId, SpectatorId, SpaceId} from '../common/Types';
 import {PlayerInput} from './PlayerInput';
 import {CardResource} from '../common/CardResource';
 import {Resource} from '../common/Resource';
-import {AndThen, DeferredAction} from './deferredActions/DeferredAction';
+import {AndThen, DeferredAction, SimpleDeferredAction} from './deferredActions/DeferredAction';
 import {Priority} from './deferredActions/Priority';
 import {DeferredActionsQueue} from './deferredActions/DeferredActionsQueue';
 import {SelectPaymentDeferred} from './deferredActions/SelectPaymentDeferred';
@@ -279,6 +279,9 @@ export class Game implements IGame, Logger {
       };
     }
     const gameOptions = {...DEFAULT_GAME_OPTIONS, ...partialOptions};
+    if (gameOptions.initialDraftVariant === false) {
+      gameOptions.initialDraftOneWay = false;
+    }
 
     if (gameOptions.clonedGamedId !== undefined) {
       throw new Error('Cloning should not come through this execution path.');
@@ -320,6 +323,7 @@ export class Game implements IGame, Logger {
     if (players.length === 1) {
       gameOptions.draftVariant = false;
       gameOptions.initialDraftVariant = false;
+      gameOptions.initialDraftOneWay = false;
       gameOptions.preludeDraftVariant = false;
       gameOptions.randomMA = RandomMAOptionType.NONE;
 
@@ -920,25 +924,30 @@ export class Game implements IGame, Logger {
       .setButtonLabel('Confirm');
     if (this.getTemperature() < constants.MAX_TEMPERATURE) {
       orOptions.options.push(
-        new SelectOption('Increase temperature', 'Increase').andThen(() => {
-          this.increaseTemperature(player, 1);
-          this.log('${0} acted as World Government and increased temperature', (b) => b.player(player));
-          return undefined;
-        }),
+        new SelectOption('Increase temperature', 'Increase')
+          .annotate(GlobalParameter.TEMPERATURE)
+          .andThen(() => {
+            this.increaseTemperature(player, 1);
+            this.log('${0} acted as World Government and increased temperature', (b) => b.player(player));
+            return undefined;
+          }),
       );
     }
     if (this.getOxygenLevel() < constants.MAX_OXYGEN_LEVEL) {
       orOptions.options.push(
-        new SelectOption('Increase oxygen', 'Increase').andThen(() => {
-          this.increaseOxygenLevel(player, 1);
-          this.log('${0} acted as World Government and increased oxygen level', (b) => b.player(player));
-          return undefined;
-        }),
+        new SelectOption('Increase oxygen', 'Increase')
+          .annotate(GlobalParameter.OXYGEN)
+          .andThen(() => {
+            this.increaseOxygenLevel(player, 1);
+            this.log('${0} acted as World Government and increased oxygen level', (b) => b.player(player));
+            return undefined;
+          }),
       );
     }
     if (this.canAddOcean()) {
       orOptions.options.push(
         new SelectSpace('Add an ocean', this.board.getAvailableSpacesForOcean(player))
+          .annotate(GlobalParameter.OCEANS)
           .andThen((space) => {
             this.addOcean(player, space);
             this.log('${0} acted as World Government and placed an ocean', (b) => b.player(player));
@@ -1010,6 +1019,19 @@ export class Game implements IGame, Logger {
     player.setWaitingFor(input, () => {
       this.gotoEndGeneration();
     });
+  }
+
+  public temporarySolarPhase(player: IPlayer, cb: () => void): void {
+    // This temporarily changes the game phase to Solar so the current player does not
+    // benefit from the global parameter change.
+    const savedPhase = this.phase;
+    this.phase = Phase.SOLAR;
+    cb();
+
+    this.defer(new SimpleDeferredAction(player, () => {
+      this.phase = savedPhase;
+      return undefined;
+    }), Priority.BACK_OF_THE_LINE);
   }
 
   private allPlayersHavePassed(): boolean {
@@ -1707,6 +1729,9 @@ export class Game implements IGame, Logger {
       return 0;
     }
     if (this.gameOptions.turnBasedGame === true) {
+      return 0;
+    }
+    if (process.env.MAX_GAME_DAYS === undefined || process.env.MAX_GAME_DAYS.trim() === '') {
       return 0;
     }
     const days = stringToNumber(process.env.MAX_GAME_DAYS, 10);

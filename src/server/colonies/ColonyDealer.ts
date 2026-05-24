@@ -1,7 +1,7 @@
 import {IColony} from './IColony';
 import {ColonyName} from '../../common/colonies/ColonyName';
 import {Random} from '../../common/utils/Random';
-import {ALL_COLONIES_TILES, BASE_COLONIES_TILES, COMMUNITY_COLONIES_TILES, PATHFINDERS_COLONIES_TILES} from './ColonyManifest';
+import {BASE_COLONIES_TILES, COMMUNITY_COLONIES_TILES, PATHFINDERS_COLONIES_TILES} from './ColonyManifest';
 import {GameOptions} from '../game/GameOptions';
 
 // TODO(kberg): Add ability to hard-code chosen colonies, separate from customColoniesList, so as to not be
@@ -60,7 +60,7 @@ export class ColonyDealer {
     const customColonies = this.gameOptions.customColoniesList;
     let colonies = this.gameColonies;
     if (customColonies.length > 0) {
-      colonies = ALL_COLONIES_TILES.filter((c) => customColonies.includes(c.colonyName)).map((cf) => new cf.Factory());
+      colonies = this.gameColonies.filter((colony) => customColonies.includes(colony.name));
     }
 
     const count = (players + 2) +

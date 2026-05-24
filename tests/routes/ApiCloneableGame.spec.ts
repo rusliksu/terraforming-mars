@@ -95,6 +95,7 @@ describe('ApiCloneableGame', () => {
         clonedGamedId: '#old',
         draftVariant: true,
         initialDraftVariant: true,
+        initialDraftOneWay: true,
         preludeDraftVariant: true,
         ceosDraftVariant: false,
         randomMA: RandomMAOptionType.LIMITED,
@@ -145,6 +146,7 @@ describe('ApiCloneableGame', () => {
     expect(response.setup.seededGame).eq(false);
     expect(response.setup.noEloGame).eq(true);
     expect(response.setup.privateHands).eq(false);
+    expect(response.setup.initialDraftOneWay).eq(true);
     expect(response.setup.turnBasedGame).eq(false);
     expect(response.setup.botGame).eq(false);
     expect(response.setup.randomFirstPlayer).eq(true);

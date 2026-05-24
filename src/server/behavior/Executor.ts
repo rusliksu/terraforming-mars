@@ -37,7 +37,7 @@ import {RemoveResourcesFromCard} from '../deferredActions/RemoveResourcesFromCar
 import {isIProjectCard} from '../cards/IProjectCard';
 import {MAXIMUM_HABITAT_RATE, MAXIMUM_LOGISTICS_RATE, MAXIMUM_MINING_RATE, MAX_OCEAN_TILES, MAX_OXYGEN_LEVEL, MAX_TEMPERATURE, MAX_VENUS_SCALE} from '../../common/constants';
 import {CardName} from '../../common/cards/CardName';
-import {asArray, inplaceRemove} from '../../common/utils/utils';
+import {asArray} from '../../common/utils/utils';
 import {SelectCard} from '../inputs/SelectCard';
 
 export class Executor implements BehaviorExecutor {
@@ -375,8 +375,7 @@ export class Executor implements BehaviorExecutor {
             {min: count, max: count},
           ).andThen((cards) => {
             for (const c of cards) {
-              inplaceRemove(player.cardsInHand, c);
-              player.game.projectDeck.discard(c);
+              player.discardCardFromHand(c, {log: true});
             }
             this.execute(remainder, player, card);
             return undefined;

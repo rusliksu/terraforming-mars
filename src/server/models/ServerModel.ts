@@ -456,6 +456,7 @@ export class Server {
       includedCards: options.includedCards,
       includeFanMA: options.includeFanMA,
       initialDraftVariant: options.initialDraftVariant,
+      initialDraftOneWay: options.initialDraftOneWay === true,
       noEloGame: options.noEloGame === true,
       turnBasedGame: options.turnBasedGame === true,
       preludeDraftVariant: options.preludeDraftVariant,

@@ -97,6 +97,55 @@ describe('GameCards', () => {
     expect(names).to.contain(CardName.VENUSIAN_INSECTS);
   });
 
+  it('does not add custom corporations from disabled modules except allowed Turmoil corps', () => {
+    const gameOptions: GameOptions = {
+      ...DEFAULT_GAME_OPTIONS,
+      turmoilExtension: false,
+      customCorporationsList: [
+        CardName.LAKEFRONT_RESORTS,
+        CardName.PRISTAR,
+        CardName.TERRALABS_RESEARCH,
+        CardName.UTOPIA_INVEST,
+        CardName.SEPTUM_TRIBUS,
+      ],
+    };
+
+    const names = new GameCards(gameOptions).getCorporationCards().map(toName);
+    expect(names).to.contain(CardName.LAKEFRONT_RESORTS);
+    expect(names).to.contain(CardName.UTOPIA_INVEST);
+    expect(names).to.not.contain(CardName.PRISTAR);
+    expect(names).to.not.contain(CardName.TERRALABS_RESEARCH);
+    expect(names).to.not.contain(CardName.SEPTUM_TRIBUS);
+  });
+
+  it('does not add custom preludes from disabled modules or disabled dependencies', () => {
+    const gameOptions: GameOptions = {
+      ...DEFAULT_GAME_OPTIONS,
+      preludeExtension: true,
+      prelude2Expansion: false,
+      promoCardsOption: false,
+      pathfindersExpansion: false,
+      coloniesExtension: false,
+      turmoilExtension: false,
+      customPreludes: [
+        CardName.ALLIED_BANK,
+        CardName.HIGH_CIRCLES,
+        CardName.STRATEGIC_BASE_PLANNING,
+        CardName.VITAL_COLONY,
+        CardName.CORPORATE_ARCHIVES,
+        CardName.SURVEY_MISSION,
+      ],
+    };
+
+    const names = new GameCards(gameOptions).getPreludeCards().map(toName);
+    expect(names).to.contain(CardName.ALLIED_BANK);
+    expect(names).to.not.contain(CardName.HIGH_CIRCLES);
+    expect(names).to.not.contain(CardName.STRATEGIC_BASE_PLANNING);
+    expect(names).to.not.contain(CardName.VITAL_COLONY);
+    expect(names).to.not.contain(CardName.CORPORATE_ARCHIVES);
+    expect(names).to.not.contain(CardName.SURVEY_MISSION);
+  });
+
   it('should not include the included cards in the standard projects', () => {
     const gameOptions: GameOptions = {
       ...DEFAULT_GAME_OPTIONS,
@@ -170,4 +219,3 @@ describe('GameCards', () => {
     expect(ecolines).to.have.length(1);
   });
 });
-

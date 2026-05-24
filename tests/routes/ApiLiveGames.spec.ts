@@ -79,15 +79,16 @@ describe('ApiLiveGames', () => {
     expect(JSON.parse(res.content)).deep.eq([]);
   });
 
-  it('does not list expired games', async () => {
-    const expiredGame = testGame('game-expired', [TestPlayer.BLUE.newPlayer(), TestPlayer.RED.newPlayer()], Phase.ACTION, Date.now() - 1);
-    await scaffolding.ctx.gameLoader.add(expiredGame);
+  it('lists fresh games even when their original purge deadline has passed', async () => {
+    const activeGame = testGame('game-expired-but-fresh', [TestPlayer.BLUE.newPlayer(), TestPlayer.RED.newPlayer()], Phase.ACTION, Date.now() - 1);
+    await scaffolding.ctx.gameLoader.add(activeGame);
+    setLastSaveTime(activeGame, Date.now());
 
     scaffolding.url = '/api/live-games';
     await scaffolding.get(ApiLiveGames.INSTANCE, res);
 
     expect(res.statusCode).eq(statusCode.ok);
-    expect(JSON.parse(res.content)).deep.eq([]);
+    expect(JSON.parse(res.content).map((game: {id: string}) => game.id)).deep.eq(['game-expired-but-fresh']);
   });
 
   it('lists games with no purge deadline', async () => {

@@ -53,6 +53,7 @@ function newGameConfig(players: NewGameConfig['players']): NewGameConfig {
     modularMA: false,
     draftVariant: false,
     initialDraft: false,
+    initialDraftOneWay: false,
     preludeDraftVariant: false,
     ceosDraftVariant: false,
     startingCorporations: 0,
@@ -210,6 +211,71 @@ describe('ApiCreateGame', () => {
     expect(game!.gameOptions.privateHands).eq(false);
   });
 
+  it('creates games with one-way 10-card initial draft enabled', async () => {
+    const post = scaffolding.post(apiCreateGame, res);
+    const config = newGameConfig([{
+      name: 'Robot 1',
+      color: 'blue',
+      beginner: false,
+      handicap: 0,
+      first: true,
+      isBot: false,
+    }, {
+      name: 'Robot 2',
+      color: 'red',
+      beginner: false,
+      handicap: 0,
+      first: false,
+      isBot: false,
+    }]);
+    config.initialDraft = true;
+    config.initialDraftOneWay = true;
+    const emit = Promise.resolve().then(() => {
+      req.emitter.emit('data', JSON.stringify(config));
+      req.emitter.emit('end');
+    });
+
+    await Promise.all(([emit, post]));
+
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game).is.not.undefined;
+    expect(game!.gameOptions.initialDraftOneWay).eq(true);
+  });
+
+  it('ignores one-way 10-card initial draft when initial draft is disabled', async () => {
+    const post = scaffolding.post(apiCreateGame, res);
+    const config = newGameConfig([{
+      name: 'Robot 1',
+      color: 'blue',
+      beginner: false,
+      handicap: 0,
+      first: true,
+      isBot: false,
+    }, {
+      name: 'Robot 2',
+      color: 'red',
+      beginner: false,
+      handicap: 0,
+      first: false,
+      isBot: false,
+    }]);
+    config.initialDraft = false;
+    config.initialDraftOneWay = true;
+    const emit = Promise.resolve().then(() => {
+      req.emitter.emit('data', JSON.stringify(config));
+      req.emitter.emit('end');
+    });
+
+    await Promise.all(([emit, post]));
+
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game).is.not.undefined;
+    expect(game!.gameOptions.initialDraftOneWay).eq(false);
+  });
 
   it('waits for player links to be registered before returning', async () => {
     const gameLoader = new DelayedAddGameLoader();

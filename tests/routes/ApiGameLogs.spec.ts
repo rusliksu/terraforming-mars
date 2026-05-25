@@ -123,6 +123,33 @@ describe('ApiGameLogs', () => {
     expect(messages).is.empty;
   });
 
+  it('does not use canceled generation messages as generation boundaries', async () => {
+    const player = TestPlayer.BLACK.newPlayer();
+    const game = Game.newInstance('game-id', [player], player, 'spectatorid');
+    await scaffolding.ctx.gameLoader.add(game);
+
+    game.gameLog.length = 0;
+    game.log('Generation ${0}', (b) => b.forNewGeneration().number(1));
+    game.log('Gen 1 before undo');
+    game.log('Generation ${0}', (b) => b.forNewGeneration().number(2));
+    game.gameLog[2].canceled = true;
+    game.log('Gen 1 after undo');
+    game.log('Generation ${0}', (b) => b.forNewGeneration().number(2));
+    game.log('Gen 2 real');
+
+    scaffolding.url = '/api/game/logs?id=' + player.id + '&generation=1';
+    await scaffolding.get(ApiGameLogs.INSTANCE, res);
+    const messages = JSON.parse(res.content);
+
+    expect(messages.map((message: {message: string}) => message.message)).deep.eq([
+      'Generation ${0}',
+      'Gen 1 before undo',
+      'Generation ${0}',
+      'Gen 1 after undo',
+    ]);
+    expect(messages[2].canceled).eq(true);
+  });
+
   [{idx: 0, color: 'Yellow'}, {idx: 1, color: 'Orange'}, {idx: 2, color: 'Blue'}].forEach((entry) => {
     it('omits private logs for other players: ' + entry.color, async () => {
       const yellowPlayer = TestPlayer.YELLOW.newPlayer();

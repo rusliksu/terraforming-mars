@@ -60,7 +60,8 @@ export interface IDatabase {
     getGameIds(): Promise<Array<GameId>>;
 
     /**
-     * Return the wall-clock time of the most recent save for a game.
+     * Return the wall-clock time of the latest meaningful save for a game.
+     * Isolated maintenance-style saves after a long inactivity gap do not count as player activity.
      */
     getLastSaveTimeMs(gameId: GameId): Promise<number | undefined>;
 

@@ -8,6 +8,7 @@ import {daysAgoToSeconds, stringToNumber} from './utils';
 import {GameIdLedger} from './IDatabase';
 import {Session, SessionId} from '../auth/Session';
 import {toID} from '../../common/utils/utils';
+import {chooseLastMeaningfulSaveTimeMs} from './SaveActivity';
 
 type StoredSerializedGame = Omit<SerializedGame, 'gameOptions' | 'gameLog'> & {logLength: number};
 
@@ -139,12 +140,15 @@ export class PostgreSQL implements IDatabase {
   }
 
   public async getLastSaveTimeMs(gameId: GameId): Promise<number | undefined> {
-    const res = await this.client.query('SELECT EXTRACT(EPOCH FROM MAX(created_time)) * 1000 AS created_time_ms FROM games WHERE game_id = $1', [gameId]);
-    const createdTimeMs = Number(res.rows[0]?.created_time_ms);
-    if (!Number.isFinite(createdTimeMs)) {
-      return undefined;
-    }
-    return createdTimeMs;
+    const res = await this.client.query(
+      `SELECT EXTRACT(EPOCH FROM created_time) * 1000 AS created_time_ms
+        FROM games
+        WHERE game_id = $1
+        GROUP BY created_time
+        ORDER BY created_time DESC
+        LIMIT 2`,
+      [gameId]);
+    return chooseLastMeaningfulSaveTimeMs(res.rows.map((row) => Number(row.created_time_ms)));
   }
 
   private compose(game: string, log: string, options: string): SerializedGame {

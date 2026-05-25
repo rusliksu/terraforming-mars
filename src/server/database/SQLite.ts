@@ -11,6 +11,7 @@ import {daysAgoToSeconds} from './utils';
 import {MultiMap} from 'mnemonist';
 import {Session, SessionId} from '../auth/Session';
 import {toID} from '../../common/utils/utils';
+import {chooseLastMeaningfulSaveTimeMs} from './SaveActivity';
 
 export const IN_MEMORY_SQLITE_PATH = ':memory:';
 
@@ -75,12 +76,15 @@ export class SQLite implements IDatabase {
   }
 
   public async getLastSaveTimeMs(gameId: GameId): Promise<number | undefined> {
-    const row = await this.asyncGet('SELECT MAX(created_time) AS created_time FROM games WHERE game_id = ?', [gameId]);
-    const seconds = Number(row?.created_time);
-    if (!Number.isFinite(seconds)) {
-      return undefined;
-    }
-    return seconds * 1000;
+    const rows = await this.asyncAll(
+      `SELECT created_time
+        FROM games
+        WHERE game_id = ?
+        GROUP BY created_time
+        ORDER BY created_time DESC
+        LIMIT 2`,
+      [gameId]);
+    return chooseLastMeaningfulSaveTimeMs(rows.map((row) => Number(row.created_time) * 1000));
   }
 
   saveGameResults(gameId: GameId, players: number, generations: number, gameOptions: GameOptions, scores: Array<Score>): void {

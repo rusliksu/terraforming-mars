@@ -258,6 +258,31 @@ export function describeDatabaseSuite<T extends ITestDatabase>(dtor: DatabaseTes
           await db.purgeUnfinishedGames('1');
           expect(await db.getSaveIds(game.id)).is.empty;
         });
+
+        it('ignores an isolated save after a long inactivity gap', async () => {
+          expect(db.setSaveCreatedTime).is.not.undefined;
+          const setSaveCreatedTime = db.setSaveCreatedTime!;
+          const player = TestPlayer.BLACK.newPlayer();
+          const game = Game.newInstance('game-id-maintenance-refresh', [player], player, 'spectatorid');
+          await db.lastSaveGamePromise;
+          await db.saveGame(game);
+          await db.saveGame(game);
+
+          const oldSeconds = 1000;
+          const latestRealSeconds = oldSeconds + 60;
+          const isolatedRefreshSeconds = latestRealSeconds + (2 * 86400);
+          await setSaveCreatedTime.call(db, game.id, 0, oldSeconds);
+          await setSaveCreatedTime.call(db, game.id, 1, latestRealSeconds);
+          await setSaveCreatedTime.call(db, game.id, 2, isolatedRefreshSeconds);
+
+          expect(await db.getLastSaveTimeMs(game.id)).eq(latestRealSeconds * 1000);
+
+          await db.saveGame(game);
+          const resumedPlaySeconds = isolatedRefreshSeconds + 60;
+          await setSaveCreatedTime.call(db, game.id, 3, resumedPlaySeconds);
+
+          expect(await db.getLastSaveTimeMs(game.id)).eq(resumedPlaySeconds * 1000);
+        });
       }
     }
 

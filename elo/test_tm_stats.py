@@ -461,6 +461,37 @@ def assert_provisional_elo_reduces_first_game_farm_delta(sync) -> None:
     assert players["rookie"]["elo"] == 1491
 
 
+def assert_synthetic_elo_records_are_identified(sync) -> None:
+    assert sync.is_synthetic_elo_record(
+        {
+            "_key": "g-test",
+            "results": [
+                {"name": "a", "displayName": "a"},
+                {"name": "b", "displayName": "b"},
+                {"name": "c", "displayName": "c"},
+            ],
+        }
+    )
+    assert sync.is_synthetic_elo_record(
+        {
+            "_key": "g-smoke",
+            "results": [
+                {"name": "inputlog1", "displayName": "InputLog1"},
+                {"name": "seqa", "displayName": "SeqA"},
+            ],
+        }
+    )
+    assert not sync.is_synthetic_elo_record(
+        {
+            "_key": "g-real",
+            "results": [
+                {"name": "даша", "displayName": "Даша"},
+                {"name": "gyd-ro", "displayName": "GydRo"},
+            ],
+        }
+    )
+
+
 def main() -> None:
     sync = load_sync_module()
     assert_fetch_stats_games_fills_names_before_bot_filter(sync)
@@ -471,6 +502,7 @@ def main() -> None:
     assert_player_name_overrides_apply_per_game(sync)
     assert_provisional_elo_caps_expected_score(sync)
     assert_provisional_elo_reduces_first_game_farm_delta(sync)
+    assert_synthetic_elo_records_are_identified(sync)
     card_metadata = {
         "Teractor": {"name": "Teractor", "type": "corporation", "tags": ["earth"]},
         "Applied Science": {"name": "Applied Science", "type": "prelude", "tags": ["wild"], "resourceType": "Science"},

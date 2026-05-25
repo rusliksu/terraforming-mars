@@ -80,6 +80,7 @@ ESCAPE_VELOCITY_RULES = {
 TEST_NAMES = {"testa", "testb", "testc", "test", "bot"}
 SOLO_BOT_NAMES = TEST_NAMES | {"botsmoke"}
 UNKNOWN_SOLO_NAMES = {"", "?", "solo", "unknown"}
+SYNTHETIC_PLAYER_NAME_RE = re.compile(r"(?:[A-Za-z]|InputLog\d+|Seq[A-Za-z])", re.IGNORECASE)
 SOLO_EXTENSION_FLAGS = [
     ("venusNextExtension", "Venus"),
     ("coloniesExtension", "Colonies"),
@@ -251,6 +252,18 @@ def is_bot_game(scores: List[dict]) -> bool:
     if names and all(len(name) <= 2 for name in names):
         return True
     return any(name.lower() in TEST_NAMES for name in names if name)
+
+
+def is_synthetic_player_name(value: object) -> bool:
+    return SYNTHETIC_PLAYER_NAME_RE.fullmatch(str(value or "").strip()) is not None
+
+
+def is_synthetic_elo_record(game: dict) -> bool:
+    names = [
+        str(result.get("displayName") or result.get("name") or "").strip()
+        for result in game.get("results", [])
+    ]
+    return len(names) >= 2 and all(is_synthetic_player_name(name) for name in names)
 
 
 def load_elo() -> dict:
@@ -1805,12 +1818,11 @@ def main() -> None:
     elo = load_elo()
     excluded_games = load_excluded_games()
     player_name_overrides = load_player_name_overrides()
-    if excluded_games:
-        elo["games"] = [
-            game
-            for game in elo.get("games", [])
-            if not is_excluded_game(game_id_of(game), excluded_games)
-        ]
+    elo["games"] = [
+        game
+        for game in elo.get("games", [])
+        if not is_excluded_game(game_id_of(game), excluded_games) and not is_synthetic_elo_record(game)
+    ]
     for game in elo.get("games", []):
         apply_player_name_overrides_to_game(game, player_name_overrides)
     existing_keys = {game_id_of(game) for game in elo.get("games", [])}

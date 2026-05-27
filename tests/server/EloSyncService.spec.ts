@@ -291,6 +291,8 @@ describe('EloSyncService', () => {
     expect(normalizeEloIdentity('vlad')).deep.eq({key: 'vlad', displayName: 'vlad'});
     expect(normalizeEloIdentity('Vladlen Grishaev')).deep.eq({key: 'владлен', displayName: 'Владлен'});
     expect(normalizeEloIdentity('Вангер Думов')).deep.eq({key: 'вангер', displayName: 'Вангер'});
+    expect(normalizeEloIdentity('Олеся Игнатова')).deep.eq({key: 'gambitgirl', displayName: 'GambitGirl'});
+    expect(normalizeEloIdentity('Sergey')).deep.eq({key: 'serge', displayName: 'Serge'});
     expect(normalizeEloIdentity('Владимир')).deep.eq({key: 'владимир', displayName: 'Владимир'});
   });
 
@@ -404,13 +406,13 @@ describe('EloSyncService', () => {
     expect(rebuilt.players['антистресс'].displayName).eq('Антистресс');
     expect(rebuilt.players['антистресс'].games).eq(1);
     expect(rebuilt.players['анатолий']).eq(undefined);
-    expect(rebuilt.players['олеся'].displayName).eq('Олеся');
-    expect(rebuilt.players['олеся'].games).eq(1);
-    expect(rebuilt.players.gambitgirl).eq(undefined);
+    expect(rebuilt.players.gambitgirl.displayName).eq('GambitGirl');
+    expect(rebuilt.players.gambitgirl.games).eq(1);
+    expect(rebuilt.players['олеся']).eq(undefined);
     expect(rebuilt.games[1].results[0].name).eq('паша');
     expect(rebuilt.games[2].results[0].name).eq('тома');
     expect(rebuilt.games[2].results[1].name).eq('антистресс');
-    expect(rebuilt.games[3].results[0].name).eq('олеся');
+    expect(rebuilt.games[3].results[0].name).eq('gambitgirl');
     expect(rebuilt.games[3].results[1].name).eq('паша');
   });
 });

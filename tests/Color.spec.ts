@@ -1,9 +1,13 @@
 import {expect} from 'chai';
 import {
+  GAMBIT_GIRL_COLOR,
+  GAMBIT_GIRL_NAME,
   GENUINE_GOLD_COLOR,
   GYDRO_COLOR,
   GYDRO_NAME,
   getPlayerIdentityByName,
+  SERGE_COLOR,
+  SERGE_NAME,
   SONYA_CATSEYE_COLOR,
   SONYA_EMKO_NAME,
   SONYA_HYDRO_COLOR,
@@ -56,5 +60,20 @@ describe('Locked player identities', () => {
     const identity = getPlayerIdentityByName('Вангер');
     expect(identity?.color).to.eq(VANGER_COLOR);
     expect(identity?.colorLabel).to.eq('зелёный');
+  });
+
+  it('keeps GambitGirl as the canonical Olesya identity', () => {
+    const identity = getPlayerIdentityByName('Олеся Игнатова');
+    expect(GAMBIT_GIRL_NAME).to.eq('GambitGirl');
+    expect(identity?.color).to.eq(GAMBIT_GIRL_COLOR);
+    expect(identity?.name).to.eq(GAMBIT_GIRL_NAME);
+    expect(getPlayerIdentityByName('Настроение: Мяу!')?.name).to.eq(GAMBIT_GIRL_NAME);
+  });
+
+  it('maps Serge aliases to the burgundy persona', () => {
+    const identity = getPlayerIdentityByName('Сергей');
+    expect(identity?.color).to.eq(SERGE_COLOR);
+    expect(identity?.name).to.eq(SERGE_NAME);
+    expect(identity?.colorLabel).to.eq('бордовый');
   });
 });

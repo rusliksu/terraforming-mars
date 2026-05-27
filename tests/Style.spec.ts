@@ -91,6 +91,26 @@ describe('Styles', () => {
     expect(playerSymbol).to.contain("gambit: '♞'");
   });
 
+  it('uses a reserved dark burgundy treatment for the Serge persona', () => {
+    const variables = read('src/styles/variables.less');
+    const common = read('src/styles/common.less');
+    const board = read('src/styles/board.less');
+    const playerHome = read('src/styles/player_home.less');
+    const turmoil = read('src/styles/turmoil.less');
+    const playerSymbol = read('src/client/utils/playerSymbol.ts');
+    const vpChart = read('src/client/components/gameend/VictoryPointChart.vue');
+
+    expect(variables).to.contain('@player_serge: rgb(76, 12, 31);');
+    expect(variables).to.contain('@player_serge_token_gradient: linear-gradient(135deg, @player_serge_light 0%, @player_serge 52%, @player_serge_dark 100%);');
+    expect(common).to.contain('.player_bg_color_serge');
+    expect(board).to.contain('.board-cube--serge');
+    expect(board).to.contain('content: "S"');
+    expect(playerHome).to.contain('&.colonies-fleet-serge');
+    expect(turmoil).to.contain('&.serge');
+    expect(playerSymbol).to.contain("serge: 'S'");
+    expect(vpChart).to.contain("['serge']: 'rgb(76, 12, 31)'");
+  });
+
   it('uses a reserved coral treatment for the Pasha persona', () => {
     const variables = read('src/styles/variables.less');
     const common = read('src/styles/common.less');
@@ -124,6 +144,7 @@ describe('Styles', () => {
     expect(variables).to.contain('@player_antistress_sprite_filter: saturate(1.35) brightness(0.58) contrast(1.22);');
     expect(variables).to.contain('@player_gambit_sprite_filter: hue-rotate(315deg) saturate(0.55) brightness(1.22) contrast(1.03);');
     expect(variables).to.contain('@player_turquoise_sprite_filter: hue-rotate(18deg) saturate(1.70) brightness(0.78) contrast(1.20);');
+    expect(variables).to.contain('@player_serge_sprite_filter: hue-rotate(18deg) saturate(1.75) brightness(0.48) contrast(1.32);');
     expect(board).to.contain('.board-cube--gold {\n\tbackground: url(./assets/board_icons.png) -72px -91px no-repeat;');
     expect(cssBlock(board, '.board-cube--gold')).to.contain('@player_gold_sprite_filter');
     expect(board).to.contain('.board-cube--emerald {\n\tbackground: url(./assets/board_icons.png) -1px -91px no-repeat;');
@@ -135,12 +156,15 @@ describe('Styles', () => {
     expect(board).to.contain('.board-cube--gambit {\n\tbackground: url(./assets/board_icons.png) -118px -91px no-repeat;');
     expect(board).to.contain('.board-cube--turquoise {\n\tbackground: url(./assets/board_icons.png) -24px -117px no-repeat;');
     expect(cssBlock(board, '.board-cube--turquoise')).to.contain('@player_turquoise_sprite_filter');
+    expect(board).to.contain('.board-cube--serge {\n\tbackground: url(./assets/board_icons.png) -24px -117px no-repeat;');
+    expect(cssBlock(board, '.board-cube--serge')).to.contain('@player_serge_sprite_filter');
     expect(board).to.contain('.board-cube--persona');
     expect(cssBlock(board, '.board-cube--persona')).to.contain('background: transparent;');
     expect(cssBlock(board, '.board-cube--persona::before')).to.contain('transform: rotate(45deg);');
     expect(board).to.contain('.board-cube--gold.board-cube--persona::before {\n\tbackground: @player_gold_token_gradient;');
     expect(board).to.contain('.board-cube--hydro.board-cube--persona::before {\n\tbackground: @player_hydro_token_gradient;');
     expect(board).to.contain('.board-cube--turquoise.board-cube--persona::before {\n\tbackground: @player_turquoise_token_gradient;');
+    expect(board).to.contain('.board-cube--serge.board-cube--persona::before {\n\tbackground: @player_serge_token_gradient;');
   });
 
   it('adds persona cube classes for reserved Mars and Moon board spaces', () => {
@@ -201,6 +225,8 @@ describe('Styles', () => {
     expect(cssBlock(playerHome, '&.colonies-fleet-gambit')).to.contain('background-position: -342px 0;');
     expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('background-position: -490px 0;');
     expect(cssBlock(playerHome, '&.colonies-fleet-turquoise')).to.contain('@player_turquoise_sprite_filter');
+    expect(cssBlock(playerHome, '&.colonies-fleet-serge')).to.contain('background-position: -207px 0;');
+    expect(cssBlock(playerHome, '&.colonies-fleet-serge')).to.contain('@player_serge_fleet_filter');
     expect(cssBlock(playerHome, '&.colonies-fleet-saturn')).to.contain('background-position: -70px 0;');
     expect(cssBlock(board, '.board-cube--saturnrings')).to.contain('background: url(./assets/board_icons.png) -72px -91px no-repeat;');
     expect(cssBlock(board, '.board-cube--saturnstorm')).to.contain('background: url(./assets/board_icons.png) -24px -117px no-repeat;');
@@ -252,6 +278,7 @@ describe('Styles', () => {
     expect(cssBlock(turmoil, '&.turquoise')).to.contain('background: @player_turquoise_token_gradient;');
     expect(cssBlock(turmoil, '&.turquoise')).to.contain('mask-image: url(./assets/turmoil_ui.png);');
     expect(cssBlock(turmoil, '&.saturn')).to.contain('.player-token-sprite(-644px, -35px, @player_saturn_delegate_filter);');
+    expect(cssBlock(turmoil, '&.serge')).to.contain('.player-token-sprite(-699px, -105px, @player_serge_delegate_filter);');
     expect(cssBlock(turmoil, '&.saturnrings')).to.contain('.player-token-sprite(-644px, -35px, @player_saturnrings_delegate_filter);');
     expect(cssBlock(turmoil, '&.titan')).to.contain('.player-token-sprite(-644px, -105px, @player_titan_delegate_filter);');
     expect(cssBlock(turmoil, '&.saturnstorm')).to.contain('.player-token-sprite(-699px, -105px, @player_saturnstorm_delegate_filter);');
@@ -315,13 +342,13 @@ describe('Styles', () => {
     const common = read('src/styles/common.less');
     const playerHome = read('src/styles/player_home.less');
 
-    for (const selector of ['.player_bg_color_emerald', '.player_bg_color_ginger', '.player_bg_color_hydro', '.player_bg_color_pearl', '.player_bg_color_antistress', '.player_bg_color_gambit', '.player_bg_color_turquoise', '.player_bg_color_saturn', '.player_bg_color_saturnrings', '.player_bg_color_titan', '.player_bg_color_saturnstorm', '.player_bg_color_catseye']) {
+    for (const selector of ['.player_bg_color_emerald', '.player_bg_color_ginger', '.player_bg_color_hydro', '.player_bg_color_pearl', '.player_bg_color_antistress', '.player_bg_color_gambit', '.player_bg_color_turquoise', '.player_bg_color_serge', '.player_bg_color_saturn', '.player_bg_color_saturnrings', '.player_bg_color_titan', '.player_bg_color_saturnstorm', '.player_bg_color_catseye']) {
       const block = cssBlock(common, selector);
       expect(block).to.contain('background-color:');
       expect(block).not.to.contain('linear-gradient');
     }
     expect(cssBlock(playerHome, '.ma-score')).to.contain('color: black;');
-    for (const selector of ['red', 'green', 'blue', 'purple', 'emerald', 'ginger', 'hydro', 'antistress', 'turquoise', 'saturnstorm']) {
+    for (const selector of ['red', 'green', 'blue', 'purple', 'emerald', 'ginger', 'hydro', 'antistress', 'turquoise', 'serge', 'saturnstorm']) {
       expect(playerHome).to.contain(`.ma-score.player_bg_color_${selector}`);
     }
     expect(playerHome).to.contain('color: #fff;');
@@ -380,6 +407,7 @@ describe('Styles', () => {
     expect(mixins).to.contain('.player_antistress_bg_translucent()');
     expect(mixins).to.contain('.player_gambit_bg_translucent()');
     expect(mixins).to.contain('.player_turquoise_bg_translucent()');
+    expect(mixins).to.contain('.player_serge_bg_translucent()');
   });
 
   it('keeps the game-home player link controls responsive', () => {
@@ -414,6 +442,7 @@ describe('Styles', () => {
       'player-persona-antistress',
       'player-persona-gambit',
       'player-persona-turquoise',
+      'player-persona-serge',
       'player-persona-saturn',
     ]) {
       expect(elo).to.contain(className);
@@ -421,15 +450,18 @@ describe('Styles', () => {
 
     expect(elo).to.contain('"антистресс": "player-persona-antistress"');
     expect(elo).to.contain('"gambitgirl": "player-persona-gambit"');
+    expect(elo).to.contain('"олеся игнатова": "player-persona-gambit"');
     expect(elo).to.contain('"паша": "player-persona-turquoise"');
     expect(elo).to.contain('"pavel": "player-persona-turquoise"');
     expect(elo).to.contain('"gydro": "player-persona-pearl"');
     expect(elo).to.contain('"руслан": "player-persona-pearl"');
+    expect(elo).to.contain('"serge": "player-persona-serge"');
     expect(elo).to.contain('"тома": "player-persona-hydro"');
     expect(elo).to.contain('"соня": "player-persona-hydro"');
     expect(elo).to.contain('.winner .player-persona-emerald { color: #009468; }');
     expect(elo).to.contain('.winner .player-persona-hydro { color: #ff6666; }');
     expect(elo).to.contain('.winner .player-persona-pearl { color: #eafcff; }');
+    expect(elo).to.contain('.winner .player-persona-serge { color: #b53a58; }');
     expect(elo).to.contain('.winner .player-persona-saturnstorm { color: #be1f48; }');
     expect(elo).not.to.contain('font-family: Georgia');
     expect(elo).not.to.contain('font-family: "Trebuchet MS"');

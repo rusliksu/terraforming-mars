@@ -10,11 +10,13 @@ export const GYDRO_NAME = 'GydRo';
 export const ANTISTRESS_COLOR = 'antistress' as const;
 export const ANTISTRESS_NAME = 'Антистресс';
 export const GAMBIT_GIRL_COLOR = 'gambit' as const;
-export const GAMBIT_GIRL_NAME = 'Олеся';
+export const GAMBIT_GIRL_NAME = 'GambitGirl';
 export const PAVEL_TURQUOISE_COLOR = 'turquoise' as const;
 export const PAVEL_TURQUOISE_NAME = 'Паша';
 export const VANGER_COLOR = 'vanger' as const;
 export const VANGER_NAME = 'Вангер';
+export const SERGE_COLOR = 'serge' as const;
+export const SERGE_NAME = 'Serge';
 export const TOMA_NAME = 'Тома';
 export const SONYA_EMKO_NAME = TOMA_NAME;
 export const SONYA_HYDRO_COLOR = 'hydro' as const;
@@ -32,6 +34,7 @@ export const RESERVED_PLAYER_COLORS = [
   GAMBIT_GIRL_COLOR,
   PAVEL_TURQUOISE_COLOR,
   VANGER_COLOR,
+  SERGE_COLOR,
   SONYA_HYDRO_COLOR,
   SONYA_SATURN_COLOR,
   SONYA_SATURN_RINGS_COLOR,
@@ -101,9 +104,9 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
     color: GAMBIT_GIRL_COLOR,
     name: GAMBIT_GIRL_NAME,
     colorLabel: 'гортензия',
-    shortLabel: 'Олеся',
-    title: 'Олеся - reserved hydrangea blue',
-    aliases: ['gambitgirl', 'gambit girl', 'олеся', 'olesya', 'olesia', 'игнатова', 'мяу'],
+    shortLabel: 'GG',
+    title: 'GambitGirl - reserved hydrangea blue',
+    aliases: ['gambitgirl', 'gambit girl', 'олеся', 'олеся игнатова', 'olesya', 'olesia', 'olesya ignatova', 'olesia ignatova', 'игнатова', 'мяу', 'мяу!', 'настроение: мяу!'],
   },
   {
     color: PAVEL_TURQUOISE_COLOR,
@@ -120,6 +123,14 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
     shortLabel: 'Вангер',
     title: 'Вангер - reserved green',
     aliases: ['вангер', 'vanger', 'вангер думов', 'vanger dumov', 'думов', 'dumov'],
+  },
+  {
+    color: SERGE_COLOR,
+    name: SERGE_NAME,
+    colorLabel: 'бордовый',
+    shortLabel: 'Serge',
+    title: 'Serge - reserved deep burgundy',
+    aliases: ['serge', 'sergey', 'sergei', 'серж', 'сергей'],
   },
   {
     color: SONYA_HYDRO_COLOR,

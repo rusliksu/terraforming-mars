@@ -19,6 +19,7 @@ param(
     [string]$DefaultAutoJoinScript = "/home/openclaw/repos/tm-tierlist/bot/auto-join.js",
     [string]$DefaultShadowLogDir = "/home/openclaw/repos/tm-tierlist/data/shadow/server-inputs",
     [string]$DefaultStagingUrl = "https://staging.tm.knightbyte.win",
+    [string]$TurnNoticeReminderMs = "7200000",
     [switch]$DryRun
 )
 
@@ -29,6 +30,11 @@ $ErrorActionPreference = 'Stop'
 function Invoke-Ssh {
     param([string]$Command)
     return Invoke-TmSshCommand -HostAlias $VpsHost -RemoteCommand $Command
+}
+
+function Invoke-SshScript {
+    param([string]$ScriptText)
+    return Invoke-TmSshScript -HostAlias $VpsHost -ScriptText $ScriptText
 }
 
 function Get-ServiceEnvironmentMap {
@@ -124,6 +130,7 @@ $prodContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-server.
     '__PROD_ELO_DATA_DIR__' = $prodEloDataDir
     '__AUTO_JOIN_SCRIPT__' = $autoJoinScript
     '__SHADOW_LOG_DIR__' = $shadowLogDir
+    '__TURN_NOTICE_REMINDER_MS__' = $TurnNoticeReminderMs
 }
 
 $stagingContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-server-staging.service.template') -Replacements @{
@@ -134,6 +141,7 @@ $stagingContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-serv
     '__STAGING_ELO_DATA_DIR__' = $stagingEloDataDir
     '__STAGING_URL__' = $stagingUrl
     '__AUTO_JOIN_SCRIPT__' = $autoJoinScript
+    '__TURN_NOTICE_REMINDER_MS__' = $TurnNoticeReminderMs
 }
 
 $prodNextContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-server-next.service.template') -Replacements @{
@@ -143,6 +151,7 @@ $prodNextContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-ser
     '__PROD_NEXT_SERVER_ID__' = $prodNextServerId
     '__PROD_NEXT_ELO_DATA_DIR__' = $prodNextEloDataDir
     '__AUTO_JOIN_SCRIPT__' = $autoJoinScript
+    '__TURN_NOTICE_REMINDER_MS__' = $TurnNoticeReminderMs
 }
 
 $eloContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-elo.service.template') -Replacements @{
@@ -159,6 +168,7 @@ Write-Host "Prod-next current dir: $prodNextCurrentDir"
 Write-Host "Staging current dir: $stagingCurrentDir"
 Write-Host "Shadow log dir: $shadowLogDir"
 Write-Host "Staging URL: $stagingUrl"
+Write-Host "Turn notice reminder: $TurnNoticeReminderMs ms"
 Write-Host "Mode: $(if ($DryRun) { 'dry-run' } else { 'apply without service restart' })"
 
 if ($DryRun) {
@@ -221,4 +231,4 @@ echo '--- tm-elo.service'
 systemctl --user cat $EloService
 "@
 
-Invoke-Ssh $remoteScript
+Invoke-SshScript $remoteScript

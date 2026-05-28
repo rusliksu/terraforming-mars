@@ -283,20 +283,44 @@ function Invoke-TmSshScript {
         [string]$ScriptText
     )
 
-    $normalizedScriptText = ($ScriptText -replace "`r`n", "`n")
+    $normalizedScriptText = ($ScriptText -replace "`r`n", "`n") -replace "`r", "`n"
     $transport = Get-TmRemoteTransport -HostAlias $HostAlias
     if ($transport -eq "native") {
         $sshPath = Get-TmNativeSshPath
         if ([string]::IsNullOrWhiteSpace($sshPath)) {
             throw "ssh.exe was not found."
         }
-        $previousErrorActionPreference = $ErrorActionPreference
+        $process = [Diagnostics.Process]::new()
+        $process.StartInfo = [Diagnostics.ProcessStartInfo]::new()
+        $process.StartInfo.FileName = $sshPath
+        [void]$process.StartInfo.ArgumentList.Add($HostAlias)
+        [void]$process.StartInfo.ArgumentList.Add("bash -s")
+        $process.StartInfo.RedirectStandardInput = $true
+        $process.StartInfo.RedirectStandardOutput = $true
+        $process.StartInfo.RedirectStandardError = $true
+        $process.StartInfo.UseShellExecute = $false
+
+        $started = $false
         try {
-            $ErrorActionPreference = "Continue"
-            $output = $normalizedScriptText | & $sshPath $HostAlias "bash -s" 2>&1
-            $exitCode = $LASTEXITCODE
-        } finally {
-            $ErrorActionPreference = $previousErrorActionPreference
+            $started = $process.Start()
+            $process.StandardInput.Write($normalizedScriptText)
+            $process.StandardInput.Close()
+            $stdout = $process.StandardOutput.ReadToEnd()
+            $stderr = $process.StandardError.ReadToEnd()
+            $process.WaitForExit()
+            $exitCode = $process.ExitCode
+        } catch {
+            if ($started -and -not $process.HasExited) {
+                $process.Kill()
+            }
+            throw
+        }
+        $output = @()
+        if (-not [string]::IsNullOrEmpty($stdout)) {
+            $output += $stdout.TrimEnd()
+        }
+        if (-not [string]::IsNullOrEmpty($stderr)) {
+            $output += $stderr.TrimEnd()
         }
         Assert-TmRemoteCommandSucceeded -ExitCode $exitCode -Context "ssh $HostAlias bash -s" -Output $output
         return $output
@@ -304,7 +328,7 @@ function Invoke-TmSshScript {
 
     $inputPath = Join-Path $env:TEMP ("tm-remote-stdin-{0}.sh" -f ([guid]::NewGuid().ToString("N")))
     try {
-        Set-Content -LiteralPath $inputPath -Value $normalizedScriptText -Encoding ASCII
+        [IO.File]::WriteAllText($inputPath, $normalizedScriptText, [Text.Encoding]::ASCII)
         $gitInputPath = ConvertTo-TmGitBashPath -PathValue $inputPath
         $scriptBody = @(
             "set -euo pipefail"

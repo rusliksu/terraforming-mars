@@ -13,6 +13,7 @@ Environment=ELO_DATA_DIR=__STAGING_ELO_DATA_DIR__
 Environment=TM_SERVER_URL=__STAGING_URL__
 Environment=TM_DISABLE_TELEGRAM=1
 Environment=TM_AUTO_JOIN_SCRIPT=__AUTO_JOIN_SCRIPT__
+Environment=TM_TURN_NOTICE_REMINDER_MS=__TURN_NOTICE_REMINDER_MS__
 ExecStartPre=-/usr/bin/fuser -k __STAGING_PORT__/tcp
 ExecStart=/usr/bin/node build/src/server/server.js
 Restart=always

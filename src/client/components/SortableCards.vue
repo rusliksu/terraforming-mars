@@ -30,6 +30,8 @@ type DataModel = {
   cardOrder: {[x: string]: number};
   /** When defined, it is the name of the card being dragged. */
   dragCard: CardName | undefined;
+  /** Last card hover already handled during this drag operation. */
+  lastDragHoverCard: CardName | undefined;
 };
 
 export default defineComponent({
@@ -67,6 +69,7 @@ export default defineComponent({
     return {
       cardOrder: cardOrder,
       dragCard: undefined,
+      lastDragHoverCard: undefined,
     };
   },
   methods: {
@@ -78,17 +81,28 @@ export default defineComponent({
     },
     onDragStart(source: CardName): void {
       this.dragCard = source;
+      this.lastDragHoverCard = undefined;
     },
     onDragEnd(): void {
       this.dragCard = undefined;
+      this.lastDragHoverCard = undefined;
     },
     onDragHover(source: CardName): void {
-      if (this.dragCard === undefined || source === this.dragCard) {
+      if (this.dragCard === undefined || source === this.dragCard || source === this.lastDragHoverCard) {
         return;
       }
-      const temp = this.cardOrder[source];
-      this.cardOrder[source] = this.cardOrder[this.dragCard];
-      this.cardOrder[this.dragCard] = temp;
+      const orderedCardNames = this.getSortedCards().map((card) => card.name);
+      const dragIndex = orderedCardNames.indexOf(this.dragCard);
+      const hoverIndex = orderedCardNames.indexOf(source);
+      if (dragIndex === -1 || hoverIndex === -1) {
+        return;
+      }
+      orderedCardNames.splice(dragIndex, 1);
+      orderedCardNames.splice(hoverIndex, 0, this.dragCard);
+      orderedCardNames.forEach((cardName, idx) => {
+        this.cardOrder[cardName] = idx + 1;
+      });
+      this.lastDragHoverCard = source;
       CardOrderStorage.updateCardOrder(this.playerId, this.cardOrder);
     },
   },

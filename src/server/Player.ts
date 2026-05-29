@@ -1840,7 +1840,7 @@ export class Player implements IPlayer {
       this._pendingTurnNoticeTimer = setTimeout(async () => {
         this._pendingTurnNoticeTimer = undefined;
         const sent = await sendTurnNotice(this, turnNoticeKey);
-        if (sent) {
+        if (sent || this.hasActiveTurnNotice(turnNoticeKey)) {
           this._turnNoticeSentThisRound = true;
           this.scheduleTurnNoticeReminder(turnNoticeKey);
         }

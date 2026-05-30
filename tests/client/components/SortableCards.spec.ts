@@ -178,6 +178,60 @@ describe('SortableCards', () => {
       [CardName.DECOMPOSERS]: 4,
     });
   });
+  it('keeps a dragged card in the adjacent slot while hovering back and forth', async () => {
+    const sortable = mount(SortableCards, {
+      ...globalConfig,
+      props: {
+        cards: [{
+          name: CardName.ANTS,
+        }, {
+          name: CardName.CARTEL,
+        }, {
+          name: CardName.BIRDS,
+        }, {
+          name: CardName.DECOMPOSERS,
+        }],
+        playerId: 'foo',
+      },
+    });
+    const draggers = sortable.findAll('[draggable=true]');
+    draggers[1].element.getBoundingClientRect = () => ({
+      left: 100,
+      right: 300,
+      top: 0,
+      bottom: 300,
+      width: 200,
+      height: 300,
+      x: 100,
+      y: 0,
+      toJSON: () => {},
+    });
+    draggers[2].element.getBoundingClientRect = () => ({
+      left: 300,
+      right: 500,
+      top: 0,
+      bottom: 300,
+      width: 200,
+      height: 300,
+      x: 300,
+      y: 0,
+      toJSON: () => {},
+    });
+    await draggers[0].trigger('dragstart');
+    await draggers[2].trigger('dragover', {clientX: 350});
+    await draggers[1].trigger('dragover', {clientX: 250});
+    await draggers[2].trigger('dragover', {clientX: 350});
+    await draggers[0].trigger('dragend');
+    const cards = sortable.findAllComponents({
+      name: 'Card',
+    });
+    expect(cards.map((card) => card.props().card.name)).to.deep.eq([
+      CardName.CARTEL,
+      CardName.ANTS,
+      CardName.BIRDS,
+      CardName.DECOMPOSERS,
+    ]);
+  });
   it('puts new cards at end of order and removes old', async () => {
     localStorage.setItem('cardOrderfoo', JSON.stringify({
       [CardName.ANTS]: 2,

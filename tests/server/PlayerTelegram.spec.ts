@@ -56,7 +56,7 @@ describe('Player telegram state', () => {
   it('preserves notice state across game serialization', () => {
     const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
     const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
-    const game = Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid');
+    const game = Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid', {turnBasedGame: true});
 
     player1.telegramID = '123456';
     player1.lastNoticeMessageId = 77;
@@ -80,7 +80,7 @@ describe('Player telegram state', () => {
 
     const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
     const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
-    Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid');
+    Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid', {turnBasedGame: true});
 
     try {
       global.setTimeout = ((handler: Parameters<typeof setTimeout>[0], timeout?: number) => {
@@ -108,6 +108,32 @@ describe('Player telegram state', () => {
     }
   });
 
+  it('does not schedule turn notices for non-async games with stale telegram ids', () => {
+    const originalSetTimeout = global.setTimeout;
+    const delays: Array<number | undefined> = [];
+
+    const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
+    const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
+    Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid', {turnBasedGame: false});
+
+    try {
+      global.setTimeout = ((_handler: Parameters<typeof setTimeout>[0], timeout?: number) => {
+        delays.push(timeout);
+        return {unref: () => {}} as unknown as ReturnType<typeof setTimeout>;
+      }) as unknown as typeof setTimeout;
+      player1.telegramID = '123456';
+
+      player1.setWaitingFor(new SelectOption('Act'));
+
+      expect(delays).deep.eq([]);
+      expect((player1 as any)._pendingTurnNoticeTimer).is.undefined;
+      expect((player1 as any)._pendingTurnNoticeReminderTimer).is.undefined;
+    } finally {
+      clearTelegramTimers(player1);
+      global.setTimeout = originalSetTimeout;
+    }
+  });
+
   it('sends repeated reminders for a stale active turn notice', async () => {
     const originalToken = process.env.TM_BOT_TOKEN;
     const originalDisabled = process.env.TM_DISABLE_TELEGRAM;
@@ -122,7 +148,7 @@ describe('Player telegram state', () => {
 
     const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
     const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
-    Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid');
+    Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid', {turnBasedGame: true});
 
     try {
       player1.telegramID = '123456';
@@ -193,7 +219,7 @@ describe('Player telegram state', () => {
 
     const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
     const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
-    Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid');
+    Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid', {turnBasedGame: true});
 
     try {
       player1.telegramID = '123456';
@@ -210,7 +236,7 @@ describe('Player telegram state', () => {
 
       const restoredPlayer1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
       const restoredPlayer2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
-      Game.newInstance('g-telegram', [restoredPlayer1, restoredPlayer2], restoredPlayer1, 'spectatorid');
+      Game.newInstance('g-telegram', [restoredPlayer1, restoredPlayer2], restoredPlayer1, 'spectatorid', {turnBasedGame: true});
       restoredPlayer1.telegramID = '123456';
       (restoredPlayer1 as any).waitingFor = undefined;
       (restoredPlayer1 as any).waitingForCb = undefined;
@@ -264,7 +290,7 @@ describe('Player telegram state', () => {
 
     const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
     const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
-    Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid');
+    Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid', {turnBasedGame: true});
 
     try {
       player1.telegramID = '123456';
@@ -306,7 +332,7 @@ describe('Player telegram state', () => {
 
     const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
     const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
-    Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid');
+    Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid', {turnBasedGame: true});
 
     try {
       player1.telegramID = '123456';

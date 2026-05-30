@@ -128,6 +128,9 @@ function useReloadingGameLoader(
     getGame(_id: GameId | PlayerId | SpectatorId, forceLoad?: boolean): Promise<IGame | undefined> {
       return Promise.resolve(forceLoad === true ? reloadedGame : currentGame);
     },
+    getGameAt(): Promise<IGame> {
+      return Promise.reject(new Error('not implemented'));
+    },
     restoreGameAt(): Promise<IGame> {
       return Promise.reject(new Error('not implemented'));
     },

@@ -244,6 +244,24 @@ describe('GameLoader', () => {
     expect(await database.getSaveIds(game.id)).deep.eq([0, 1, 2]);
   });
 
+  it('getGameAt loads a saved version without restoring it', async () => {
+    game.generation = 12;
+    game.save();
+    await game.saveGamePromise;
+
+    game.generation = 13;
+    game.save();
+    await game.saveGamePromise;
+    await instance.add(game);
+
+    const savedGame = await instance.getGameAt(game.id, 1);
+    const currentGame = await instance.getGame(game.id);
+
+    expect(savedGame.generation).eq(12);
+    expect(currentGame!.generation).eq(13);
+    expect(await database.getSaveIds(game.id)).deep.eq([0, 1, 2]);
+  });
+
   it('restoreGameAt appends canceled log messages from the restored action', async () => {
     game.gameLog.length = 0;
     game.gameAge = 0;

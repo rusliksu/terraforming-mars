@@ -163,6 +163,11 @@ export class GameLoader implements IGameLoader {
     return undefined;
   }
 
+  public async getGameAt(gameId: GameId, saveId: number): Promise<IGame> {
+    const serializedGame = await Database.getInstance().getGameVersion(gameId, saveId);
+    return Game.deserialize(serializedGame);
+  }
+
   public async restoreGameAt(gameId: GameId, saveId: number): Promise<IGame> {
     const current = await this.getGame(gameId);
     if (current === undefined) {

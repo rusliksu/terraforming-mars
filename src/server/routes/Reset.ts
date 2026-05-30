@@ -6,6 +6,8 @@ import {IPlayer} from '../IPlayer';
 import {isPlayerId} from '../../common/Types';
 import {Request} from '../Request';
 import {Response} from '../Response';
+import {IGame} from '../IGame';
+import {ICard} from '../cards/ICard';
 
 /**
  * Reloads the game from the last action.
@@ -42,9 +44,9 @@ export class Reset extends Handler {
       return;
     }
 
-    // While prototyping, this is only available for solo games
-    if (game.players.length > 1) {
-      throw new Error('Reset is only available for solo games at the moment.');
+    if (game.players.length > 1 && game.gameOptions.undoOption !== true) {
+      responses.badRequest(req, res, 'Cancel action requires undo to be enabled');
+      return;
     }
 
     let player: IPlayer | undefined;
@@ -63,10 +65,18 @@ export class Reset extends Handler {
     }
 
     try {
-      const game = await ctx.gameLoader.getGame(player.game.id, /** force reload */ true);
-      if (game !== undefined) {
-        const reloadedPlayer = game.getPlayerById(player.id);
-        game.inputsThisRound = 0;
+      const currentGame = player.game;
+      const reloadedGame = await ctx.gameLoader.getGame(currentGame.id, /** force reload */ true);
+      if (reloadedGame !== undefined) {
+        if (hasRevealedHiddenInformation(currentGame, reloadedGame, player)) {
+          await ctx.gameLoader.add(currentGame);
+          responses.badRequest(req, res, 'Cannot cancel action after hidden information was revealed');
+          return;
+        }
+
+        const reloadedPlayer = reloadedGame.getPlayerById(player.id);
+        reloadedGame.inputsThisRound = 0;
+        reloadedGame.undoCount = Math.max(reloadedGame.undoCount, currentGame.undoCount) + 1;
         responses.writeJson(res, ctx, Server.getPlayerModel(reloadedPlayer));
         return;
       }
@@ -75,4 +85,96 @@ export class Reset extends Handler {
     }
     responses.badRequest(req, res, 'Could not reset');
   }
+}
+
+function hasRevealedHiddenInformation(currentGame: IGame, reloadedGame: IGame, player: IPlayer): boolean {
+  if (hasDeckDrawPileChanged(currentGame, reloadedGame)) {
+    return true;
+  }
+
+  for (const currentPlayer of currentGame.players) {
+    const reloadedPlayer = reloadedGame.players.find((candidate) => candidate.id === currentPlayer.id);
+    if (reloadedPlayer === undefined) {
+      return true;
+    }
+    if (hasNewPrivateCards(currentPlayer, reloadedPlayer)) {
+      return true;
+    }
+  }
+
+  return waitingForShowsUnknownCards(player, reloadedGame);
+}
+
+function hasDeckDrawPileChanged(currentGame: IGame, reloadedGame: IGame): boolean {
+  return cardNames(currentGame.projectDeck.drawPile).join('|') !== cardNames(reloadedGame.projectDeck.drawPile).join('|') ||
+    cardNames(currentGame.preludeDeck.drawPile).join('|') !== cardNames(reloadedGame.preludeDeck.drawPile).join('|') ||
+    cardNames(currentGame.corporationDeck.drawPile).join('|') !== cardNames(reloadedGame.corporationDeck.drawPile).join('|') ||
+    cardNames(currentGame.ceoDeck.drawPile).join('|') !== cardNames(reloadedGame.ceoDeck.drawPile).join('|');
+}
+
+function hasNewPrivateCards(currentPlayer: IPlayer, reloadedPlayer: IPlayer): boolean {
+  return hasAddedCards(currentPlayer.cardsInHand, reloadedPlayer.cardsInHand) ||
+    hasAddedCards(currentPlayer.dealtProjectCards, reloadedPlayer.dealtProjectCards) ||
+    hasAddedCards(currentPlayer.draftHand, reloadedPlayer.draftHand) ||
+    hasAddedCards(currentPlayer.draftedCards, reloadedPlayer.draftedCards) ||
+    hasAddedCards(currentPlayer.preludeCardsInHand, reloadedPlayer.preludeCardsInHand) ||
+    hasAddedCards(Array.from(currentPlayer.ceoCardsInHand), Array.from(reloadedPlayer.ceoCardsInHand)) ||
+    hasAddedCards(currentPlayer.dealtCorporationCards, reloadedPlayer.dealtCorporationCards) ||
+    hasAddedCards(currentPlayer.dealtPreludeCards, reloadedPlayer.dealtPreludeCards) ||
+    hasAddedCards(currentPlayer.dealtCeoCards, reloadedPlayer.dealtCeoCards);
+}
+
+function hasAddedCards(currentCards: ReadonlyArray<ICard>, reloadedCards: ReadonlyArray<ICard>): boolean {
+  const reloadedCounts = countCards(reloadedCards);
+  for (const card of currentCards) {
+    const count = reloadedCounts.get(card.name) ?? 0;
+    if (count === 0) {
+      return true;
+    }
+    reloadedCounts.set(card.name, count - 1);
+  }
+  return false;
+}
+
+function waitingForShowsUnknownCards(player: IPlayer, reloadedGame: IGame): boolean {
+  const waitingForModel = player.getWaitingFor()?.toModel(player);
+  if (waitingForModel === undefined || !('cards' in waitingForModel)) {
+    return false;
+  }
+
+  const knownCards = new Set<string>();
+  for (const candidate of reloadedGame.players) {
+    for (const cardName of cardNames(candidate.tableau.asArray())) {
+      knownCards.add(cardName);
+    }
+  }
+
+  const reloadedPlayer = reloadedGame.getPlayerById(player.id);
+  for (const cardName of [
+    ...cardNames(reloadedPlayer.cardsInHand),
+    ...cardNames(reloadedPlayer.dealtProjectCards),
+    ...cardNames(reloadedPlayer.draftHand),
+    ...cardNames(reloadedPlayer.draftedCards),
+    ...cardNames(reloadedPlayer.preludeCardsInHand),
+    ...cardNames(Array.from(reloadedPlayer.ceoCardsInHand)),
+    ...cardNames(reloadedPlayer.dealtCorporationCards),
+    ...cardNames(reloadedPlayer.dealtPreludeCards),
+    ...cardNames(reloadedPlayer.dealtCeoCards),
+  ]) {
+    knownCards.add(cardName);
+  }
+
+  return waitingForModel.cards.some((card) => !knownCards.has(card.name));
+}
+
+function countCards(cards: ReadonlyArray<ICard>): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const card of cards) {
+    counts.set(card.name, (counts.get(card.name) ?? 0) + 1);
+  }
+  return counts;
+}
+
+function cardNames(cards: ReadonlyArray<ICard>): Array<string> {
+  return cards.map((card) => card.name);
 }

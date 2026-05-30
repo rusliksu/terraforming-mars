@@ -12,6 +12,7 @@ import {AndOptions} from '../../../src/server/inputs/AndOptions';
 import {SelectAmount} from '../../../src/server/inputs/SelectAmount';
 import {SelectResource} from '../../../src/server/inputs/SelectResource';
 import {Units} from '../../../src/common/Units';
+import {formatMessage} from '../../TestingUtils';
 
 describe('FloatingTradeHub', () => {
   let card: FloatingTradeHub;
@@ -45,6 +46,7 @@ describe('FloatingTradeHub', () => {
 
   it('Act - select resource', () => {
     card.resourceCount = 5;
+    player.game.gameLog.length = 0;
 
     const orOptions = cast(card.action(player), OrOptions);
 
@@ -63,5 +65,9 @@ describe('FloatingTradeHub', () => {
 
     expect(player.stock.asUnits()).deep.eq(Units.of({plants: 4}));
     expect(card.resourceCount).to.eq(1);
+    expect(player.game.gameLog.map(formatMessage)).includes.members([
+      'blue converted 4 floater(s) from Floating Trade Hub',
+      'blue gained 4 plants',
+    ]);
   });
 });

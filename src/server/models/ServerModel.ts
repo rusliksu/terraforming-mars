@@ -294,12 +294,6 @@ export class Server {
       model.spectatorCards = {
         cardsInHand: cardsToModel(player, player.cardsInHand, {showCalculatedCost: true}),
         ceoCardsInHand: cardsToModel(player, Array.from(player.ceoCardsInHand)),
-        dealtCorporationCards: cardsToModel(player, player.dealtCorporationCards),
-        dealtPreludeCards: cardsToModel(player, player.dealtPreludeCards),
-        dealtCeoCards: cardsToModel(player, player.dealtCeoCards),
-        dealtProjectCards: cardsToModel(player, player.dealtProjectCards),
-        draftedCards: cardsToModel(player, player.draftedCards, {showCalculatedCost: true}),
-        pickedCorporationCard: player.pickedCorporationCard ? cardsToModel(player, [player.pickedCorporationCard]) : [],
         preludeCardsInHand: cardsToModel(player, player.preludeCardsInHand),
       };
     }

@@ -24,9 +24,12 @@ export class Greta extends CeoCard implements ICeoCard {
     });
   }
 
-  public data = {
-    effectTriggerCount: 0,
-  };
+  public data: {
+    effectTriggerCount: number,
+    lastActionTriggerKey?: string,
+  } = {
+      effectTriggerCount: 0,
+    };
 
   public action(): PlayerInput | undefined {
     this.opgActionIsActive = true;
@@ -37,9 +40,19 @@ export class Greta extends CeoCard implements ICeoCard {
   public onIncreaseTerraformRatingByAnyPlayer(cardOwner: IPlayer, player: IPlayer) {
     const game = player.game;
     if (this.opgActionIsActive === true && this.data.effectTriggerCount < 10) {
-      if (player === cardOwner && game.phase === Phase.ACTION) {
+      if (player === cardOwner && game.activePlayer === player && game.phase === Phase.ACTION) {
+        const triggerKey = [
+          game.generation,
+          player.id,
+          player.actionsTakenThisGame,
+          player.actionsTakenThisRound,
+        ].join(':');
+        if (this.data.lastActionTriggerKey === triggerKey) {
+          return undefined;
+        }
         player.stock.add(Resource.MEGACREDITS, 4, {log: true, from: {card: this}});
         this.data.effectTriggerCount++;
+        this.data.lastActionTriggerKey = triggerKey;
       }
     }
     return undefined;

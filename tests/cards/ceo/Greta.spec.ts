@@ -6,8 +6,10 @@ import {PartyName} from '../../../src/common/turmoil/PartyName';
 import {Greta} from '../../../src/server/cards/ceos/Greta';
 import {Omnicourt} from '../../../src/server/cards/venusNext/Omnicourt';
 import {BigAsteroid} from '../../../src/server/cards/base/BigAsteroid';
+import {GiantIceAsteroid} from '../../../src/server/cards/base/GiantIceAsteroid';
 import {Game} from '../../../src/server/Game';
 import {cast} from '../../../src/common/utils/utils';
+import {SelectSpace} from '../../../src/server/inputs/SelectSpace';
 
 describe('Greta', () => {
   let card: Greta;
@@ -37,20 +39,52 @@ describe('Greta', () => {
 
     card.action();
 
+    player.actionsTakenThisGame++;
     player.game.increaseOxygenLevel(player, 1);
     expect(player.megaCredits).to.eq(4);
 
+    player.actionsTakenThisGame++;
     player.game.increaseTemperature(player, 1);
     expect(player.megaCredits).to.eq(8);
 
+    player.actionsTakenThisGame++;
     player.game.increaseVenusScaleLevel(player, 1);
     expect(player.megaCredits).to.eq(12);
 
+    player.actionsTakenThisGame++;
     player.playCard(new BigAsteroid()); // 2 Temp Steps in ONE ACTION
     expect(player.megaCredits).to.eq(16);
 
+    player.actionsTakenThisGame++;
     player.playCard(new Omnicourt()); // 2 Steps in ONE ACTION
     expect(player.megaCredits).to.eq(20);
+  });
+
+  it('Gains 4 M€ once for Giant Ice Asteroid', () => {
+    const [game, player] = testGame(1, {ceoExtension: true});
+    player.playCard(card);
+
+    runAllActions(game);
+    game.phase = Phase.ACTION;
+
+    card.action();
+    player.actionsTakenThisGame++; // Greta activation action has completed.
+
+    const priorTerraformRating = player.terraformRating;
+    player.playCard(new GiantIceAsteroid());
+    runAllActions(game);
+
+    const firstOcean = cast(player.popWaitingFor(), SelectSpace);
+    firstOcean.cb(firstOcean.spaces[0]);
+    runAllActions(game);
+
+    const secondOcean = cast(player.popWaitingFor(), SelectSpace);
+    secondOcean.cb(secondOcean.spaces[1]);
+    runAllActions(game);
+
+    expect(player.terraformRating).to.eq(priorTerraformRating + 4);
+    expect(player.megaCredits).to.eq(4);
+    expect(card.data.effectTriggerCount).to.eq(1);
   });
 
   it('Does not gain MC after 10 increases', () => {
@@ -62,18 +96,29 @@ describe('Greta', () => {
     game.phase = Phase.ACTION;
     card.action();
     expect(player.megaCredits).to.eq(0);
+    player.actionsTakenThisGame++;
     player.game.increaseOxygenLevel(player, 2); // One action, two steps, only 4MC
+    player.actionsTakenThisGame++;
     player.game.increaseOxygenLevel(player, 1);
+    player.actionsTakenThisGame++;
     player.game.increaseOxygenLevel(player, 1);
+    player.actionsTakenThisGame++;
     player.game.increaseOxygenLevel(player, 1);
+    player.actionsTakenThisGame++;
     player.game.increaseOxygenLevel(player, 1);
     expect(player.megaCredits).to.eq(20);
+    player.actionsTakenThisGame++;
     player.game.increaseTemperature(player, 2); // One action, two steps, only 4MC
+    player.actionsTakenThisGame++;
     player.game.increaseTemperature(player, 1);
+    player.actionsTakenThisGame++;
     player.game.increaseTemperature(player, 1);
+    player.actionsTakenThisGame++;
     player.game.increaseTemperature(player, 1);
+    player.actionsTakenThisGame++;
     player.game.increaseTemperature(player, 1);
     expect(player.megaCredits).to.eq(40);
+    player.actionsTakenThisGame++;
     player.game.increaseTemperature(player, 2); // 10 increases already, no more bonuses
     expect(player.megaCredits).to.eq(40);
   });
@@ -120,8 +165,10 @@ describe('Greta', () => {
     game.phase = Phase.ACTION;
     card.action();
     expect(card.data.effectTriggerCount).eq(0);
+    player.actionsTakenThisGame++;
     player.game.increaseOxygenLevel(player, 2); // One action, two steps, only 4MC
     expect(card.data.effectTriggerCount).eq(1);
+    player.actionsTakenThisGame++;
     player.game.increaseOxygenLevel(player, 1);
     expect(card.data.effectTriggerCount).eq(2);
 

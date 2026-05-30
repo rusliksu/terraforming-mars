@@ -30,7 +30,7 @@ describe('SpectatorHome', () => {
     expect(wrapper.exists()).to.be.true;
   });
 
-  it('keeps spectator hands hidden until a group is revealed', async () => {
+  it('delegates spectator hands to the players overview instead of rendering a separate hand block', () => {
     const spectatorCards = {
       cardsInHand: [{name: 'Micro-Mills'}],
       ceoCardsInHand: [],
@@ -62,15 +62,11 @@ describe('SpectatorHome', () => {
       },
     });
 
-    expect(wrapper.find('.spectator-hands').exists()).eq(true);
-    expect(wrapper.find('.spectator-hand-toggle').text()).eq('Cards in hand (1)');
+    expect(wrapper.find('.spectator-hands').exists()).eq(false);
     expect(wrapper.text()).not.contain('Drafted cards');
     expect(wrapper.text()).not.contain('Dealt project cards');
-    expect(wrapper.findComponent({name: 'Card'}).exists()).eq(false);
-
-    await wrapper.find('.spectator-hand-toggle').trigger('click');
-
-    expect(wrapper.find('.spectator-hand-label').text()).eq('Cards in hand (1)');
-    expect(wrapper.findComponent({name: 'Card'}).exists()).eq(true);
+    const overview = wrapper.findComponent({name: 'PlayersOverview'});
+    expect(overview.exists()).eq(true);
+    expect((overview.props('playerView') as any).players[0].spectatorCards.cardsInHand).has.length(1);
   });
 });

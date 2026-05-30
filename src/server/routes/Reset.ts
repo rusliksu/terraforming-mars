@@ -17,7 +17,7 @@ import {ICard} from '../cards/ICard';
  * I think it's saved after every action when undo is on. So, there's that.
  * But I forget when the game is saved in solo. Probably all will be well.
  *
- * Eventually, this will not be callable once cards are drawn.
+ * It refuses to reload once the current action has revealed hidden information.
  */
 export class Reset extends Handler {
   public static readonly INSTANCE = new Reset();

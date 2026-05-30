@@ -46,7 +46,7 @@ export class Shara extends CeoCard {
       .andThen((tag) => {
         // const value = data[tag] - player.game.generation;
         const value = data[tag];
-        player.stock.add(Resource.MEGACREDITS, value, {log: true});
+        player.stock.add(Resource.MEGACREDITS, value, {log: true, from: {card: this}});
       });
     return undefined;
   }

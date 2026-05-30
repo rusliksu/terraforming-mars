@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import {IGame} from '../../../src/server/IGame';
 import {TestPlayer} from '../../TestPlayer';
-import {runAllActions, forceGenerationEnd, churn} from '../../TestingUtils';
+import {runAllActions, forceGenerationEnd, churn, formatMessage} from '../../TestingUtils';
 import {testGame} from '../../TestGame';
 import {Clarke} from '../../../src/server/cards/ceos/Clarke';
 
@@ -27,10 +27,17 @@ describe('Clarke', () => {
   });
 
   it('Takes action', () => {
+    game.gameLog.length = 0;
     expect(churn(card.action(player), player)).is.undefined;
     expect(player.production.plants).eq(1);
     expect(player.production.heat).eq(1);
     expect(player.plants).eq(5);
     expect(player.heat).eq(5);
+    expect(game.gameLog.map(formatMessage)).includes.members([
+      'blue gained 1 plant production because of Clarke',
+      'blue gained 1 heat production because of Clarke',
+      'blue gained 5 plants because of Clarke',
+      'blue gained 5 heat because of Clarke',
+    ]);
   });
 });

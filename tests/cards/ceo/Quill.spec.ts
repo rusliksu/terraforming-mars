@@ -42,9 +42,14 @@ describe('Quill', () => {
     expect(dirigibles.resourceCount).eq(0);
     expect(localShading.resourceCount).eq(0);
 
+    game.gameLog.length = 0;
     card.action(player);
     expect(dirigibles.resourceCount).eq(2);
     expect(localShading.resourceCount).eq(2);
+    expect(game.gameLog.map(formatMessage)).includes.members([
+      'blue added 2 Floater(s) to Dirigibles from Quill',
+      'blue added 2 Floater(s) to Local Shading from Quill',
+    ]);
     expect(game.deferredActions).has.length(2);
 
     runAllActions(game);
@@ -54,6 +59,9 @@ describe('Quill', () => {
     runAllActions(game);
 
     expect(player.megaCredits).eq(3);
-    expect(game.gameLog.map(formatMessage)).contains('blue gained 3 M€ because of Quill');
+    expect(game.gameLog.map(formatMessage)).includes.members([
+      'blue added 2 Floater(s) to Dirigibles from Quill',
+      'blue gained 3 M€ because of Quill',
+    ]);
   });
 });

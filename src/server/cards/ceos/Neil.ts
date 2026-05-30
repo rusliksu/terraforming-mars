@@ -28,7 +28,7 @@ export class Neil extends CeoCard {
   public onCardPlayedByAnyPlayer(thisCardOwner: IPlayer, card: ICard) {
     for (const tag of card.tags) {
       if (tag === Tag.MOON) {
-        thisCardOwner.game.getCardPlayerOrThrow(this.name).stock.add(Resource.MEGACREDITS, 1, {log: true});
+        thisCardOwner.game.getCardPlayerOrThrow(this.name).stock.add(Resource.MEGACREDITS, 1, {log: true, from: {card: this}});
       }
     }
     return undefined;
@@ -41,7 +41,7 @@ export class Neil extends CeoCard {
       const lowestRate = Math.min(moonData.habitatRate, moonData.logisticRate, moonData.miningRate);
 
       if (lowestRate > 0) {
-        player.production.add(Resource.MEGACREDITS, lowestRate, {log: true});
+        player.production.add(Resource.MEGACREDITS, lowestRate, {log: true, from: {card: this}});
       }
     });
 

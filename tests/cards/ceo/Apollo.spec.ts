@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import {IGame} from '../../../src/server/IGame';
 import {testGame} from '../../TestGame';
-import {forceGenerationEnd} from '../../TestingUtils';
+import {forceGenerationEnd, formatMessage} from '../../TestingUtils';
 import {TestPlayer} from '../../TestPlayer';
 import {Apollo} from '../../../src/server/cards/ceos/Apollo';
 import {MoonData} from '../../../src/server/moon/MoonData';
@@ -33,7 +33,9 @@ describe('Apollo', () => {
     MoonExpansion.addMineTile(player2, spaces[1].id);
     MoonExpansion.addRoadTile(player2, spaces[2].id);
 
+    game.gameLog.length = 0;
     card.action(player);
     expect(player.megaCredits).eq(9);
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 9 M€ because of Apollo');
   });
 });

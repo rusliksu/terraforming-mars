@@ -35,7 +35,7 @@ export class Musk extends CeoCard {
 
     if (eligibleCards.length === 0) {
       game.log('${0} has no Earth cards', (b) => b.player(player), {reservedFor: player});
-      player.stock.add(Resource.TITANIUM, 6, {log: true});
+      player.stock.add(Resource.TITANIUM, 6, {log: true, from: {card: this}});
       return undefined;
     }
 
@@ -46,7 +46,7 @@ export class Musk extends CeoCard {
       {min: 0, max: eligibleCards.length})
       .andThen(
         (cards) => {
-          player.stock.add(Resource.TITANIUM, cards.length + 6, {log: true});
+          player.stock.add(Resource.TITANIUM, cards.length + 6, {log: true, from: {card: this}});
           for (const card of cards) {
             player.discardCardFromHand(card);
           }

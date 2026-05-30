@@ -62,9 +62,9 @@ export class Ryu extends CeoCard {
           const productionToIncrease =
             ALL_RESOURCES.filter((res) => res !== resourceToDecrease)
               .map((res) => new SelectOption(message('Increase ${0} production', (b) => b.string(res))).andThen(() => {
-                player.production.add(resourceToDecrease, -amount, {log: true});
+                player.production.add(resourceToDecrease, -amount, {log: true, from: {card: this}});
                 // player.production.adjust()
-                player.production.add(res, amount, {log: true});
+                player.production.add(res, amount, {log: true, from: {card: this}});
                 return undefined;
               }));
 

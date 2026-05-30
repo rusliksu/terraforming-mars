@@ -35,12 +35,6 @@ export type Protection = 'off' | 'on' | 'half';
 export type SpectatorCardsModel = {
   cardsInHand: ReadonlyArray<CardModel>;
   ceoCardsInHand: ReadonlyArray<CardModel>;
-  dealtCorporationCards: ReadonlyArray<CardModel>;
-  dealtPreludeCards: ReadonlyArray<CardModel>;
-  dealtCeoCards: ReadonlyArray<CardModel>;
-  dealtProjectCards: ReadonlyArray<CardModel>;
-  draftedCards: ReadonlyArray<CardModel>;
-  pickedCorporationCard: ReadonlyArray<CardModel>;
   preludeCardsInHand: ReadonlyArray<CardModel>;
 }
 

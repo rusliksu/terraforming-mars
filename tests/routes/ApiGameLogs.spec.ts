@@ -203,7 +203,7 @@ describe('ApiGameLogs', () => {
     ]);
   });
 
-  it('includes private logs for all players when spectator hands are not private', async () => {
+  it('hides private logs from spectator during active games even when spectator hands are not private', async () => {
     const yellowPlayer = TestPlayer.YELLOW.newPlayer();
     const orangePlayer = TestPlayer.ORANGE.newPlayer();
     const spectatorId = 's-spectatorid' as any;
@@ -221,8 +221,6 @@ describe('ApiGameLogs', () => {
 
     expect(messages.map((message: {message: string}) => message.message)).deep.eq([
       'All players see this.',
-      'Yellow player sees this.',
-      'Orange player sees this.',
     ]);
   });
 

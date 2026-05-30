@@ -39,8 +39,19 @@
         <h3>
           <span :class="'log-player player_bg_color_' + player.color">{{ player.name }}</span>
         </h3>
+        <div class="spectator-hand-toggles">
+          <template v-for="group in spectatorCardGroups(player)" :key="player.color + group.label + '-button'">
+            <button
+              v-if="group.cards.length > 0"
+              type="button"
+              :class="['spectator-hand-toggle', {'spectator-hand-toggle--open': isSpectatorCardGroupVisible(player, group)}]"
+              @click.prevent="toggleSpectatorCardGroup(player, group)">
+              {{ group.label }} ({{ group.cards.length }})
+            </button>
+          </template>
+        </div>
         <div v-for="group in spectatorCardGroups(player)" :key="player.color + group.label" class="spectator-hand-group">
-          <div v-if="group.cards.length > 0">
+          <div v-if="group.cards.length > 0 && isSpectatorCardGroupVisible(player, group)">
             <div class="spectator-hand-label">{{ group.label }} ({{ group.cards.length }})</div>
             <div class="sortable-cards">
               <div v-for="card in group.cards" :key="card.name" class="cardbox">
@@ -109,9 +120,18 @@ type SpectatorHandGroup = {
   cards: ReadonlyArray<CardModel>;
 };
 
+type SpectatorHomeData = {
+  revealedSpectatorCardGroups: Record<string, boolean>;
+};
+
 export default defineComponent({
   name: 'SpectatorHome',
   mixins: [HomeMixin],
+  data(): SpectatorHomeData {
+    return {
+      revealedSpectatorCardGroups: {},
+    };
+  },
   props: {
     spectator: {
       type: Object as () => SpectatorModel,
@@ -156,13 +176,20 @@ export default defineComponent({
         {label: 'Cards in hand', cards: cards.cardsInHand},
         {label: 'Prelude cards', cards: cards.preludeCardsInHand},
         {label: 'CEO cards', cards: cards.ceoCardsInHand},
-        {label: 'Drafted cards', cards: cards.draftedCards},
-        {label: 'Dealt project cards', cards: cards.dealtProjectCards},
-        {label: 'Dealt corporations', cards: cards.dealtCorporationCards},
-        {label: 'Dealt preludes', cards: cards.dealtPreludeCards},
-        {label: 'Dealt CEOs', cards: cards.dealtCeoCards},
-        {label: 'Picked corporation', cards: cards.pickedCorporationCard},
       ];
+    },
+    spectatorCardGroupKey(player: PublicPlayerModel, group: SpectatorHandGroup): string {
+      return `${player.color}:${group.label}`;
+    },
+    isSpectatorCardGroupVisible(player: PublicPlayerModel, group: SpectatorHandGroup): boolean {
+      return this.revealedSpectatorCardGroups[this.spectatorCardGroupKey(player, group)] === true;
+    },
+    toggleSpectatorCardGroup(player: PublicPlayerModel, group: SpectatorHandGroup): void {
+      const key = this.spectatorCardGroupKey(player, group);
+      this.revealedSpectatorCardGroups = {
+        ...this.revealedSpectatorCardGroups,
+        [key]: !this.revealedSpectatorCardGroups[key],
+      };
     },
   },
 });
@@ -175,6 +202,26 @@ export default defineComponent({
 
 .spectator-hand h3 {
   margin: 0 0 8px;
+}
+
+.spectator-hand-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.spectator-hand-toggle {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 4px 8px;
+}
+
+.spectator-hand-toggle--open {
+  background: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 255, 255, 0.7);
 }
 
 .spectator-hand-label {

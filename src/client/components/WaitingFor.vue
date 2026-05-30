@@ -271,8 +271,11 @@ export default defineComponent({
       return this.playerView.game.phase === Phase.ACTION &&
         this.playerView.game.gameOptions?.undoOption === true &&
         this.waitingfor !== undefined &&
-        this.waitingfor.type !== 'or' &&
+        !this.isMainActionPrompt() &&
         this.playerView.thisPlayer?.isActive === true;
+    },
+    isMainActionPrompt(): boolean {
+      return this.waitingfor?.type === 'or' && this.waitingfor.buttonLabel === 'Take action';
     },
     playerName(color: Color) {
       const player = this.playerView.players.find((p) => p.color === color);

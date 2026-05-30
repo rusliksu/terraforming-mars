@@ -168,6 +168,37 @@ describe('WaitingFor', () => {
     expect(wrapper.text()).to.not.include('Cancel action');
   });
 
+  it('shows cancel action for nested active action option prompts when undo is enabled', () => {
+    const wrapper = shallowMount(WaitingFor, {
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {
+          'player-input-factory': {template: '<div class="stub-pif"></div>'},
+          AppButton: {props: ['title'], template: '<button>{{ title }}</button>'},
+        },
+      },
+      props: {
+        playerView: {
+          ...playerView,
+          thisPlayer: {...thisPlayer, isActive: true},
+          game: {
+            ...playerView.game,
+            gameOptions: {undoOption: true},
+          },
+        } as PlayerViewModel,
+        waitingfor: {
+          type: 'or',
+          title: 'Select one option',
+          buttonLabel: 'Confirm',
+          options: [],
+        },
+      },
+    });
+
+    expect(wrapper.text()).to.include('Cancel action');
+  });
+
   it('shows a notification after permission is granted', async () => {
     PreferencesManager.INSTANCE.set('enable_sounds', false);
 

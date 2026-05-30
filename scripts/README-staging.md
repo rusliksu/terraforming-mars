@@ -232,6 +232,12 @@ Run smoke manually:
 pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\smoke_tm_staging.ps1
 ```
 
+Run the cancel-action state-diff smoke manually:
+
+```powershell
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\smoke_tm_cancel_action.ps1
+```
+
 Run generic verification manually:
 
 ```powershell

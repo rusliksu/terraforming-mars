@@ -8,6 +8,7 @@ import {Request} from '../Request';
 import {Response} from '../Response';
 import {IGame} from '../IGame';
 import {ICard} from '../cards/ICard';
+import {appendCanceledLogMessages} from '../logs/appendCanceledLogMessages';
 
 /**
  * Reloads the game from the last action.
@@ -74,6 +75,7 @@ export class Reset extends Handler {
           return;
         }
 
+        appendCanceledLogMessages(currentGame, reloadedGame);
         const reloadedPlayer = reloadedGame.getPlayerById(player.id);
         reloadedGame.inputsThisRound = 0;
         reloadedGame.undoCount = Math.max(reloadedGame.undoCount, currentGame.undoCount) + 1;

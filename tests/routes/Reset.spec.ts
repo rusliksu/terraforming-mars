@@ -77,6 +77,35 @@ describe('Reset', () => {
     expect(res.content).eq('Bad request: Cannot cancel action after hidden information was revealed');
     expect(addedGame).eq(currentGame);
   });
+
+  it('appends canceled log messages from the current action', async () => {
+    const currentPlayer = TestPlayer.BLACK.newPlayer();
+    const currentOpponent = TestPlayer.RED.newPlayer();
+    const currentGame = Game.newInstance('game-id', [currentPlayer, currentOpponent], currentPlayer, 'spectatorid', {undoOption: true});
+    currentGame.gameLog.length = 0;
+    currentGame.gameAge = 0;
+    currentGame.log('Kept action');
+    currentGame.log('Canceled action');
+
+    const reloadedPlayer = TestPlayer.BLACK.newPlayer();
+    const reloadedOpponent = TestPlayer.RED.newPlayer();
+    const reloadedGame = Game.newInstance('game-id', [reloadedPlayer, reloadedOpponent], reloadedPlayer, 'spectatorid', {undoOption: true});
+    reloadedGame.gameLog.length = 0;
+    reloadedGame.gameAge = 0;
+    reloadedGame.log('Kept action');
+
+    useReloadingGameLoader(scaffolding, currentGame, reloadedGame);
+    scaffolding.url = '/reset?id=' + currentPlayer.id;
+
+    await scaffolding.get(Reset.INSTANCE, res);
+
+    expect(reloadedGame.gameLog.map((message) => message.message)).deep.eq([
+      'Kept action',
+      'Canceled action',
+    ]);
+    expect(reloadedGame.gameLog[1].canceled).eq(true);
+    expect(reloadedGame.gameAge).eq(2);
+  });
 });
 
 function useReloadingGameLoader(

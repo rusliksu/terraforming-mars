@@ -2,7 +2,6 @@ import prometheus from 'prom-client';
 import {Database} from './Database';
 import {Game} from '../Game';
 import {IGame} from '../IGame';
-import {LogMessage} from '../../common/logs/LogMessage';
 import {PlayerId, GameId, SpectatorId, isGameId, ParticipantId} from '../../common/Types';
 import {IGameLoader} from './IGameLoader';
 import {GameIdLedger} from './IDatabase';
@@ -13,6 +12,7 @@ import {durationToMilliseconds} from '../utils/durations';
 import {CacheConfig} from './CacheConfig';
 import {Clock} from '../../common/Timer';
 import {EloSyncService} from '../elo/EloSyncService';
+import {appendCanceledLogMessages} from '../logs/appendCanceledLogMessages';
 
 const metrics = {
   initialize: new prometheus.Gauge({
@@ -218,23 +218,6 @@ export class GameLoader implements IGameLoader {
     metrics.gamesPurged.inc(purgedGames.length);
     await database.compressCompletedGames();
   }
-}
-
-function appendCanceledLogMessages(current: IGame, restored: IGame): void {
-  const canceledMessages = current.gameLog.slice(restored.gameLog.length)
-    .filter((message) => message?.canceled !== true)
-    .map((message) => {
-      const copy = JSON.parse(JSON.stringify(message)) as LogMessage;
-      copy.canceled = true;
-      return copy;
-    });
-
-  if (canceledMessages.length === 0) {
-    return;
-  }
-
-  restored.gameLog.push(...canceledMessages);
-  restored.gameAge += canceledMessages.length;
 }
 
 function parseConfigString(stringValue: string): CacheConfig {

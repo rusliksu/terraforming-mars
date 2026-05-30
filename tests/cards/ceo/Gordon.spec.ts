@@ -4,7 +4,7 @@ import {IGame} from '../../../src/server/IGame';
 import {SpaceType} from '../../../src/common/boards/SpaceType';
 import {TileType} from '../../../src/common/TileType';
 import {testGame} from '../../TestGame';
-import {addGreenery, addCity, runAllActions} from '../../TestingUtils';
+import {addGreenery, addCity, formatMessage, runAllActions} from '../../TestingUtils';
 import {Gordon} from '../../../src/server/cards/ceos/Gordon';
 
 describe('Gordon', () => {
@@ -38,6 +38,7 @@ describe('Gordon', () => {
     addGreenery(player, '35');
     game.deferredActions.runNext();
     expect(player.megaCredits).eq(2);
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 2 M€ because of Gordon');
     addCity(player, '37');
     game.deferredActions.runNext();
     expect(player.megaCredits).eq(4);

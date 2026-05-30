@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 import {RoverConstruction} from '../../../src/server/cards/base/RoverConstruction';
-import {addCity, runAllActions} from '../../TestingUtils';
+import {addCity, formatMessage, runAllActions} from '../../TestingUtils';
 import {cast} from '@/common/utils/utils';
 import {testGame} from '../../TestGame';
 
@@ -15,5 +15,6 @@ describe('RoverConstruction', () => {
     runAllActions(game);
     expect(game.board.getCities()).has.length(1);
     expect(player.megaCredits).to.eq(2);
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 2 M€ because of Rover Construction');
   });
 });

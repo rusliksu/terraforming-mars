@@ -37,7 +37,7 @@ export class Quill extends CeoCard {
     const resourceCards = player.getResourceCards(CardResource.FLOATER);
     resourceCards.forEach((card) => player.addResourceTo(card, {qty: 2, log: true}));
     player.game.defer(new AddResourcesToCard(player, CardResource.FLOATER, {count: 2}));
-    player.game.defer(new GainResourcesDeferred(player, Resource.MEGACREDITS, {count: resourceCards.length + 1, log: true}));
+    player.game.defer(new GainResourcesDeferred(player, Resource.MEGACREDITS, {count: resourceCards.length + 1, log: true, from: {card: this}}));
     return undefined;
   }
 }

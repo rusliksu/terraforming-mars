@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import {MediaGroup} from '../../../src/server/cards/base/MediaGroup';
 import {Virus} from '../../../src/server/cards/base/Virus';
 import {testGame} from '../../TestGame';
-import {runAllActions} from '../../TestingUtils';
+import {formatMessage, runAllActions} from '../../TestingUtils';
 import {cast} from '@/common/utils/utils';
 
 describe('MediaGroup', () => {
@@ -15,6 +15,7 @@ describe('MediaGroup', () => {
     runAllActions(game);
 
     expect(player.megaCredits).to.eq(3);
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 3 M€ because of Media Group');
 
     card.onCardPlayed(player, card);
     runAllActions(game);

@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import {ICard} from '../../../src/server/cards/ICard';
 import {IGame} from '../../../src/server/IGame';
 import {SelectCard} from '../../../src/server/inputs/SelectCard';
-import {forceGenerationEnd} from '../../TestingUtils';
+import {forceGenerationEnd, formatMessage} from '../../TestingUtils';
 import {TestPlayer} from '../../TestPlayer';
 import {testGame} from '../../TestGame';
 import {runAllActions} from '../../TestingUtils';
@@ -54,5 +54,6 @@ describe('Quill', () => {
     runAllActions(game);
 
     expect(player.megaCredits).eq(3);
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 3 M€ because of Quill');
   });
 });

@@ -388,11 +388,11 @@ export class Executor implements BehaviorExecutor {
 
     if (behavior.production !== undefined) {
       const units = ctx.countUnits(behavior.production);
-      player.production.adjust(units, {log: true});
+      player.production.adjust(units, {log: true, from: {card}});
     }
     if (behavior.stock) {
       const units = ctx.countUnits(behavior.stock);
-      player.stock.adjust(units, {log: true});
+      player.stock.adjust(units, {log: true, from: {card}});
     }
     if (behavior.standardResource) {
       const entry = behavior.standardResource;
@@ -402,14 +402,14 @@ export class Executor implements BehaviorExecutor {
         player.defer(
           new SelectResources(message('Gain ${0} standard resources', (b) => b.number(count)), count)
             .andThen((units) => {
-              player.stock.adjust(units, {log: true});
+              player.stock.adjust(units, {log: true, from: {card}});
               return undefined;
             }));
       } else {
         player.defer(
           new SelectResource(message('Gain ${0} units of a standard resource', (b) => b.number(count)))
             .andThen((unit) => {
-              player.stock.add(unit, count, {log: true});
+              player.stock.add(unit, count, {log: true, from: {card}});
               return undefined;
             }));
       }
@@ -473,7 +473,7 @@ export class Executor implements BehaviorExecutor {
       } else {
         const count = ctx.count(addResources);
         player.defer(() => {
-          player.addResourceTo(card, {qty: count, log: true});
+          player.addResourceTo(card, {qty: count, log: true, from: {card}});
           return undefined;
         });
       }
@@ -493,6 +493,7 @@ export class Executor implements BehaviorExecutor {
                 restrictedTag: arctac.tag,
                 min: arctac.min,
                 robotCards: arctac.robotCards !== undefined,
+                from: {card},
               }));
         }
       }

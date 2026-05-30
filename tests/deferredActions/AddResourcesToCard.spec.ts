@@ -5,7 +5,7 @@ import {Tardigrades} from '../../src/server/cards/base/Tardigrades';
 import {AddResourcesToCard} from '../../src/server/deferredActions/AddResourcesToCard';
 import {TestPlayer} from '../TestPlayer';
 import {CardResource} from '../../src/common/CardResource';
-import {testGame} from '../TestingUtils';
+import {formatMessage, testGame} from '../TestingUtils';
 import {SelectCard} from '../../src/server/inputs/SelectCard';
 import {SelfReplicatingRobots} from '../../src/server/cards/promo/SelfReplicatingRobots';
 import {cast} from '@/common/utils/utils';
@@ -41,6 +41,17 @@ describe('AddResourcesToCard', () => {
     const selectCard = new AddResourcesToCard(player, CardResource.MICROBE, {count: 5}).execute();
     expect(selectCard).is.undefined;
     expect(ghgProducingBacteria.resourceCount).eq(5);
+  });
+
+  it('logs source when adding to one card', () => {
+    player.playedCards.push(ghgProducingBacteria);
+    const source = new Tardigrades();
+    player.game.gameLog = [];
+
+    const selectCard = new AddResourcesToCard(player, CardResource.MICROBE, {count: 2, from: {card: source}}).execute();
+
+    expect(selectCard).is.undefined;
+    expect(formatMessage(player.game.gameLog[0])).eq('blue added 2 Microbe(s) to GHG Producing Bacteria from Tardigrades');
   });
 
   it('many microbe cards', () => {

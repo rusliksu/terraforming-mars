@@ -45,6 +45,7 @@ import AppButton from '@/client/components/common/AppButton.vue';
 import {CardType} from '@/common/cards/CardType';
 import {getCardsByType, isCardActivated} from '@/client/utils/CardUtils';
 import {sortActiveCards} from '@/client/utils/ActiveCardsSortingOrder';
+import {playerTableauVisibilityKey} from './overview/playerVisibilityKeys';
 
 export default defineComponent({
   name: 'OtherPlayer',
@@ -65,11 +66,11 @@ export default defineComponent({
   },
   methods: {
     hideMe() {
-      vueRoot(this).setVisibilityState('pinned_player_' + this.playerIndex, false);
+      vueRoot(this).setVisibilityState(playerTableauVisibilityKey(this.playerIndex), false);
     },
     isVisible() {
       return vueRoot(this).getVisibilityState(
-        'pinned_player_' + this.playerIndex,
+        playerTableauVisibilityKey(this.playerIndex),
       );
     },
   },

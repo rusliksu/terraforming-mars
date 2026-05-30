@@ -25,7 +25,8 @@
                 <div class="played-cards-count">{{numberOfPlayedCards()}}</div>
               </div>
             </div>
-            <AppButton class="played-cards-button" size="tiny" @click="togglePlayerDetails" :title="buttonLabel()" />
+            <AppButton class="played-cards-button player-table-button" size="tiny" @click="togglePlayerDetails" :title="tableButtonLabel()" />
+            <AppButton v-if="spectatorHandCardCount() > 0" class="played-cards-button spectator-hand-button" size="tiny" @click="toggleSpectatorHand" :title="spectatorHandButtonLabel()" />
           </div>
           <div class="tag-display player-board-blue-action-counter" :class="tooltipCss" :data-tooltip="$t('The number of available actions on active cards')">
             <div class="tag-count tag-action-card">
@@ -56,6 +57,7 @@ import {getCard} from '@/client/cards/ClientCardManifest';
 import {Phase} from '@/common/Phase';
 import {ActionLabel} from './ActionLabel';
 import {playerSymbol} from '@/client/utils/playerSymbol';
+import {playerTableauVisibilityKey, spectatorHandVisibilityKey} from './playerVisibilityKeys';
 
 export default defineComponent({
   name: 'PlayerInfo',
@@ -109,13 +111,13 @@ export default defineComponent({
   },
   methods: {
     isPinned(playerIndex: number): boolean {
-      return vueRoot(this).getVisibilityState('pinned_player_' + playerIndex);
+      return vueRoot(this).getVisibilityState(playerTableauVisibilityKey(playerIndex));
     },
     pin(playerIndex: number) {
-      return vueRoot(this).setVisibilityState('pinned_player_' + playerIndex, true);
+      return vueRoot(this).setVisibilityState(playerTableauVisibilityKey(playerIndex), true);
     },
     unpin(playerIndex: number) {
-      return vueRoot(this).setVisibilityState('pinned_player_' + playerIndex, false);
+      return vueRoot(this).setVisibilityState(playerTableauVisibilityKey(playerIndex), false);
     },
     pinPlayer() {
       let hiddenPlayersIndexes = [];
@@ -135,8 +137,33 @@ export default defineComponent({
         }
       }
     },
-    buttonLabel(): string {
-      return this.isPinned(this.playerIndex) ? 'hide' : 'show';
+    tableButtonLabel(): string {
+      return this.isPinned(this.playerIndex) ? 'hide table' : 'table';
+    },
+    isSpectatorHandPinned(playerIndex: number): boolean {
+      return vueRoot(this).getVisibilityState(spectatorHandVisibilityKey(playerIndex));
+    },
+    pinSpectatorHand(playerIndex: number) {
+      return vueRoot(this).setVisibilityState(spectatorHandVisibilityKey(playerIndex), true);
+    },
+    unpinSpectatorHand(playerIndex: number) {
+      return vueRoot(this).setVisibilityState(spectatorHandVisibilityKey(playerIndex), false);
+    },
+    spectatorHandButtonLabel(): string {
+      if (this.isSpectatorHandPinned(this.playerIndex)) {
+        return 'hide hand';
+      }
+      return `hand ${this.spectatorHandCardCount()}`;
+    },
+    toggleSpectatorHand() {
+      const handPinned = this.isSpectatorHandPinned(this.playerIndex);
+      const playerCount = this.playerView.players.length;
+      for (let i = 0; i < playerCount; i++) {
+        this.unpinSpectatorHand(i);
+      }
+      if (!handPinned) {
+        this.pinSpectatorHand(this.playerIndex);
+      }
     },
     togglePlayerDetails() {
       // for the player viewing this page => scroll to cards UI
@@ -159,6 +186,13 @@ export default defineComponent({
     },
     availableBlueActionCount(): number {
       return this.player.availableBlueCardActionCount;
+    },
+    spectatorHandCardCount(): number {
+      const cards = this.player.spectatorCards;
+      if (cards === undefined) {
+        return 0;
+      }
+      return cards.cardsInHand.length + cards.preludeCardsInHand.length + cards.ceoCardsInHand.length;
     },
     getCorporationName(): string[] {
       const cards = this.player.tableau;

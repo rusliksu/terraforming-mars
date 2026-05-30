@@ -33,36 +33,6 @@
 
     <players-overview class="player_home_block player_home_block--players nofloat" :playerView="spectator" v-trim-whitespace id="shortkey-playersoverview"/>
 
-    <div v-if="playersWithSpectatorCards.length > 0" class="player_home_block nofloat spectator-hands">
-      <dynamic-title title="Player hands" :color="spectator.color"/>
-      <div v-for="player in playersWithSpectatorCards" :key="player.color" class="spectator-hand">
-        <h3>
-          <span :class="'log-player player_bg_color_' + player.color">{{ player.name }}</span>
-        </h3>
-        <div class="spectator-hand-toggles">
-          <template v-for="group in spectatorCardGroups(player)" :key="player.color + group.label + '-button'">
-            <button
-              v-if="group.cards.length > 0"
-              type="button"
-              :class="['spectator-hand-toggle', {'spectator-hand-toggle--open': isSpectatorCardGroupVisible(player, group)}]"
-              @click.prevent="toggleSpectatorCardGroup(player, group)">
-              {{ group.label }} ({{ group.cards.length }})
-            </button>
-          </template>
-        </div>
-        <div v-for="group in spectatorCardGroups(player)" :key="player.color + group.label" class="spectator-hand-group">
-          <div v-if="group.cards.length > 0 && isSpectatorCardGroupVisible(player, group)">
-            <div class="spectator-hand-label">{{ group.label }} ({{ group.cards.length }})</div>
-            <div class="sortable-cards">
-              <div v-for="card in group.cards" :key="card.name" class="cardbox">
-                <Card :card="card"/>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <GameBoardView
       :game="game"
       :tileView="tileView"
@@ -97,11 +67,8 @@
 import {defineComponent} from 'vue';
 
 import {GameModel} from '@/common/models/GameModel';
-import {CardModel} from '@/common/models/CardModel';
-import {PublicPlayerModel} from '@/common/models/PlayerModel';
 import {vueRoot} from '@/client/components/vueRoot';
 import {SpectatorModel} from '@/common/models/SpectatorModel';
-import Card from '@/client/components/card/Card.vue';
 import Colony from '@/client/components/colonies/Colony.vue';
 import DynamicTitle from '@/client/components/common/DynamicTitle.vue';
 import GameBoardView from '@/client/components/GameBoardView.vue';
@@ -115,23 +82,9 @@ import KeyboardShortcuts from '@/client/components/KeyboardShortcuts.vue';
 import {range} from '@/common/utils/utils';
 import {HomeMixin} from '@/client/mixins/HomeMixin';
 
-type SpectatorHandGroup = {
-  label: string;
-  cards: ReadonlyArray<CardModel>;
-};
-
-type SpectatorHomeData = {
-  revealedSpectatorCardGroups: Record<string, boolean>;
-};
-
 export default defineComponent({
   name: 'SpectatorHome',
   mixins: [HomeMixin],
-  data(): SpectatorHomeData {
-    return {
-      revealedSpectatorCardGroups: {},
-    };
-  },
   props: {
     spectator: {
       type: Object as () => SpectatorModel,
@@ -142,12 +95,8 @@ export default defineComponent({
     game(): GameModel {
       return this.spectator.game;
     },
-    playersWithSpectatorCards(): Array<PublicPlayerModel> {
-      return this.spectator.players.filter((player) => this.spectatorCardGroups(player).some((group) => group.cards.length > 0));
-    },
   },
   components: {
-    Card,
     Colony,
     DynamicTitle,
     GameBoardView,
@@ -167,65 +116,6 @@ export default defineComponent({
     range(n: number): Array<number> {
       return range(n);
     },
-    spectatorCardGroups(player: PublicPlayerModel): Array<SpectatorHandGroup> {
-      const cards = player.spectatorCards;
-      if (cards === undefined) {
-        return [];
-      }
-      return [
-        {label: 'Cards in hand', cards: cards.cardsInHand},
-        {label: 'Prelude cards', cards: cards.preludeCardsInHand},
-        {label: 'CEO cards', cards: cards.ceoCardsInHand},
-      ];
-    },
-    spectatorCardGroupKey(player: PublicPlayerModel, group: SpectatorHandGroup): string {
-      return `${player.color}:${group.label}`;
-    },
-    isSpectatorCardGroupVisible(player: PublicPlayerModel, group: SpectatorHandGroup): boolean {
-      return this.revealedSpectatorCardGroups[this.spectatorCardGroupKey(player, group)] === true;
-    },
-    toggleSpectatorCardGroup(player: PublicPlayerModel, group: SpectatorHandGroup): void {
-      const key = this.spectatorCardGroupKey(player, group);
-      this.revealedSpectatorCardGroups = {
-        ...this.revealedSpectatorCardGroups,
-        [key]: !this.revealedSpectatorCardGroups[key],
-      };
-    },
   },
 });
 </script>
-
-<style scoped>
-.spectator-hand {
-  margin-top: 16px;
-}
-
-.spectator-hand h3 {
-  margin: 0 0 8px;
-}
-
-.spectator-hand-toggles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.spectator-hand-toggle {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
-  padding: 4px 8px;
-}
-
-.spectator-hand-toggle--open {
-  background: rgba(255, 255, 255, 0.28);
-  border-color: rgba(255, 255, 255, 0.7);
-}
-
-.spectator-hand-label {
-  margin: 12px 0 6px;
-  font-weight: 600;
-}
-</style>

@@ -30,19 +30,16 @@ describe('SpectatorHome', () => {
     expect(wrapper.exists()).to.be.true;
   });
 
-  it('renders revealed spectator hands when present', () => {
+  it('delegates spectator hands to the players overview instead of rendering a separate hand block', () => {
+    const spectatorCards = {
+      cardsInHand: [{name: 'Micro-Mills'}],
+      ceoCardsInHand: [],
+      draftedCards: [{name: 'Earth Catapult'}],
+      dealtProjectCards: [{name: 'Earth Catapult'}],
+      preludeCardsInHand: [],
+    } as any;
     const player = fakePublicPlayerModel({
-      spectatorCards: {
-        cardsInHand: [{name: 'Micro-Mills'} as any],
-        ceoCardsInHand: [],
-        dealtCorporationCards: [],
-        dealtPreludeCards: [],
-        dealtCeoCards: [],
-        dealtProjectCards: [],
-        draftedCards: [],
-        pickedCorporationCard: [],
-        preludeCardsInHand: [],
-      },
+      spectatorCards,
     });
     const wrapper = shallowMount(SpectatorHome, {
       ...globalConfig,
@@ -65,7 +62,11 @@ describe('SpectatorHome', () => {
       },
     });
 
-    expect(wrapper.find('.spectator-hands').exists()).eq(true);
-    expect(wrapper.find('.spectator-hand-label').text()).eq('Cards in hand (1)');
+    expect(wrapper.find('.spectator-hands').exists()).eq(false);
+    expect(wrapper.text()).not.contain('Drafted cards');
+    expect(wrapper.text()).not.contain('Dealt project cards');
+    const overview = wrapper.findComponent({name: 'PlayersOverview'});
+    expect(overview.exists()).eq(true);
+    expect((overview.props('playerView') as any).players[0].spectatorCards.cardsInHand).has.length(1);
   });
 });

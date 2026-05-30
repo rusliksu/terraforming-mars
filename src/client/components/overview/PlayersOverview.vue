@@ -4,6 +4,7 @@
             <div class="other_player" v-if="thisPlayer === undefined || players.length > 1">
                 <div v-for="(otherPlayer, index) in getPlayersInOrder()" :key="otherPlayer.color">
                     <other-player v-if="thisPlayer === undefined || otherPlayer.color !== thisPlayer.color" :player="otherPlayer" :playerIndex="index"/>
+                    <spectator-hand v-if="thisPlayer === undefined && spectatorHandCardCount(otherPlayer) > 0" :player="otherPlayer" :playerIndex="index"/>
                 </div>
             </div>
             <player-info v-for="(p, index) in getPlayersInOrder()"
@@ -29,6 +30,7 @@
 import {defineComponent} from 'vue';
 import PlayerInfo from '@/client/components/overview/PlayerInfo.vue';
 import OverviewSettings from '@/client/components/overview/OverviewSettings.vue';
+import SpectatorHand from '@/client/components/overview/SpectatorHand.vue';
 import OtherPlayer from '@/client/components/OtherPlayer.vue';
 import {ViewModel, PublicPlayerModel} from '@/common/models/PlayerModel';
 import {ActionLabel} from '@/client/components/overview/ActionLabel';
@@ -69,6 +71,7 @@ export default defineComponent({
     'player-info': PlayerInfo,
     'overview-settings': OverviewSettings,
     'other-player': OtherPlayer,
+    'spectator-hand': SpectatorHand,
   },
   data() {
     return {};
@@ -79,6 +82,22 @@ export default defineComponent({
     },
     getIsFirstForGen(player: PublicPlayerModel): boolean {
       return playerIndex(player.color, this.players) === 0;
+    },
+    spectatorHandCardCount(player: PublicPlayerModel): number {
+      const cards = player.spectatorCards;
+      if (cards === undefined) {
+        return 0;
+      }
+      const count = (items: ReadonlyArray<unknown> | undefined) => items?.length ?? 0;
+      return count(cards.cardsInHand) +
+        count(cards.preludeCardsInHand) +
+        count(cards.ceoCardsInHand) +
+        count(cards.draftedCards) +
+        count(cards.dealtProjectCards) +
+        count(cards.dealtCorporationCards) +
+        count(cards.dealtPreludeCards) +
+        count(cards.dealtCeoCards) +
+        count(cards.pickedCorporationCard);
     },
     getPlayersInOrder(): Array<PublicPlayerModel> {
       const players = this.players;

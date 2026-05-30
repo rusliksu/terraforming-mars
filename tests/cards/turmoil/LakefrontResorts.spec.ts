@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 import {LakefrontResorts} from '../../../src/server/cards/turmoil/LakefrontResorts';
-import {addOcean, runAllActions} from '../../TestingUtils';
+import {addOcean, formatMessage, runAllActions} from '../../TestingUtils';
 import {testGame} from '../../TestGame';
 
 describe('LakefrontResorts', () => {
@@ -17,6 +17,7 @@ describe('LakefrontResorts', () => {
     runAllActions(game);
 
     expect(player.production.megacredits).to.eq(2);
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 1 M€ production because of Lakefront Resorts');
     // The 2 oceans are adjacent
     expect(player.megaCredits).to.eq(3);
   });

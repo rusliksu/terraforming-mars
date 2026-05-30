@@ -47,11 +47,11 @@ export class TharsisRepublic extends CorporationCard implements ICorporationCard
   public onTilePlaced(cardOwner: IPlayer, activePlayer: IPlayer, space: Space) {
     if (Board.isCitySpace(space)) {
       if (cardOwner.id === activePlayer.id) {
-        cardOwner.game.defer(new GainResourcesDeferred(cardOwner, Resource.MEGACREDITS, {count: 3, log: true}));
+        cardOwner.game.defer(new GainResourcesDeferred(cardOwner, Resource.MEGACREDITS, {count: 3, log: true, from: {card: this}}));
       }
       if (space.spaceType !== SpaceType.COLONY) {
         cardOwner.game.defer(
-          new GainProduction(cardOwner, Resource.MEGACREDITS, {log: true}),
+          new GainProduction(cardOwner, Resource.MEGACREDITS, {log: true, from: {card: this}}),
           cardOwner.id !== activePlayer.id ? Priority.OPPONENT_TRIGGER : undefined,
         );
       }
@@ -62,7 +62,7 @@ export class TharsisRepublic extends CorporationCard implements ICorporationCard
   public override bespokePlay(player: IPlayer) {
     if (player.game.isSoloMode()) {
       // Get bonus for 2 neutral cities
-      player.production.add(Resource.MEGACREDITS, 2, {log: true});
+      player.production.add(Resource.MEGACREDITS, 2, {log: true, from: {card: this}});
     }
     return undefined;
   }

@@ -63,7 +63,7 @@ export class MiningGuild extends CorporationCard implements ICorporationCard {
       AresHandler.anyAdjacentSpaceGivesBonus(board, space, SpaceBonus.STEEL) ||
       AresHandler.anyAdjacentSpaceGivesBonus(board, space, SpaceBonus.TITANIUM);
     if (grant) {
-      cardOwner.game.defer(new GainProduction(cardOwner, Resource.STEEL));
+      cardOwner.game.defer(new GainProduction(cardOwner, Resource.STEEL, {from: {card: this}}));
     }
   }
 }

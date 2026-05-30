@@ -3,6 +3,7 @@ import {SpaceMirrors} from '../../../src/server/cards/base/SpaceMirrors';
 import {IGame} from '../../../src/server/IGame';
 import {TestPlayer} from '../../TestPlayer';
 import {testGame} from '../../TestGame';
+import {formatMessage} from '../../TestingUtils';
 
 describe('SpaceMirrors', () => {
   let card: SpaceMirrors;
@@ -23,9 +24,11 @@ describe('SpaceMirrors', () => {
     player.megaCredits = 7;
     expect(card.canAct(player)).is.true;
 
+    game.gameLog.length = 0;
     card.action(player);
     game.deferredActions.runNext();
     expect(player.megaCredits).to.eq(0);
     expect(player.production.energy).to.eq(1);
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 1 energy production');
   });
 });

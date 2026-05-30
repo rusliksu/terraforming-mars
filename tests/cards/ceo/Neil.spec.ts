@@ -46,7 +46,7 @@ describe('Neil', () => {
     game.gameLog.length = 0;
     card.action(player);
     expect(player.production.megacredits).eq(2);
-    expect(game.gameLog.map(formatMessage)).contains('blue gained 2 M€ production because of Neil');
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 2 M€ production');
   });
 
   it('Takes action: Gains M€ production equal to lowest Moon rate, two rates the same', () => {

@@ -24,10 +24,10 @@ export class Clarke extends CeoCard {
 
   public action(player: IPlayer): PlayerInput | undefined {
     this.isDisabled = true;
-    player.production.add(Resource.PLANTS, 1, {log: true, from: {card: this}});
-    player.production.add(Resource.HEAT, 1, {log: true, from: {card: this}});
-    player.stock.add(Resource.PLANTS, player.production.plants + 4, {log: true, from: {card: this}});
-    player.stock.add(Resource.HEAT, player.production.heat + 4, {log: true, from: {card: this}});
+    player.production.add(Resource.PLANTS, 1, {log: true});
+    player.production.add(Resource.HEAT, 1, {log: true});
+    player.stock.add(Resource.PLANTS, player.production.plants + 4, {log: true});
+    player.stock.add(Resource.HEAT, player.production.heat + 4, {log: true});
     return undefined;
   }
 }

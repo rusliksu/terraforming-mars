@@ -6,10 +6,14 @@ import {ICounter} from './Counter';
 
 export interface BehaviorExecutor {
   canExecute(behavior: Behavior, player: IPlayer, card: ICard, canAffordOptions?: CanAffordOptions): boolean;
-  execute(behavior: Behavior, player: IPlayer, card: ICard): void;
+  execute(behavior: Behavior, player: IPlayer, card: ICard, options?: BehaviorExecutionOptions): void;
   onDiscard(behavior: Behavior, player: IPlayer, _card: ICard): void;
   toTRSource(behavior: Behavior, ctx: ICounter): TRSource;
 }
+
+export type BehaviorExecutionOptions = {
+  logSource?: boolean;
+};
 
 let _behaviorExecutor: BehaviorExecutor | undefined = undefined;
 

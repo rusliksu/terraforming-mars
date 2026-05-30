@@ -36,6 +36,6 @@ describe('Apollo', () => {
     game.gameLog.length = 0;
     card.action(player);
     expect(player.megaCredits).eq(9);
-    expect(game.gameLog.map(formatMessage)).contains('blue gained 9 M€ because of Apollo');
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 9 M€');
   });
 });

@@ -34,10 +34,10 @@ describe('Clarke', () => {
     expect(player.plants).eq(5);
     expect(player.heat).eq(5);
     expect(game.gameLog.map(formatMessage)).includes.members([
-      'blue gained 1 plant production because of Clarke',
-      'blue gained 1 heat production because of Clarke',
-      'blue gained 5 plants because of Clarke',
-      'blue gained 5 heat because of Clarke',
+      'blue gained 1 plant production',
+      'blue gained 1 heat production',
+      'blue gained 5 plants',
+      'blue gained 5 heat',
     ]);
   });
 });

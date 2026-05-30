@@ -27,10 +27,10 @@ describe('HAL 9000', () => {
     expect(player.energy).eq(4);
     expect(player.heat).eq(4);
     expect(player.game.gameLog.map(formatMessage)).includes.members([
-      'blue lost 1 M€ production because of HAL 9000',
-      'blue gained 4 M€ because of HAL 9000',
-      'blue lost 1 steel production because of HAL 9000',
-      'blue gained 4 steel because of HAL 9000',
+      'blue lost 1 M€ production',
+      'blue gained 4 M€',
+      'blue lost 1 steel production',
+      'blue gained 4 steel',
     ]);
   });
 

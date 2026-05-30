@@ -37,7 +37,7 @@ describe('GreatEscarpmentConsortium', () => {
     cast(player.popWaitingFor(), undefined);
     expect(player.production.steel).to.eq(1);
     expect(player2.production.steel).to.eq(0);
-    expect(game.gameLog.map(formatMessage)).contains('blue gained 1 steel production because of Great Escarpment Consortium');
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 1 steel production');
   });
 
   it('Should play - multiple targets', () => {

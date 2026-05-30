@@ -34,7 +34,7 @@ export class Zan extends CeoCard {
     }
     // If we dont do this player will not get the bonus for POLITICIAN Awards
     player.totalDelegatesPlaced += totalAvailableDelegates;
-    player.stock.add(Resource.MEGACREDITS, totalAvailableDelegates, {log: true, from: {card: this}});
+    player.stock.add(Resource.MEGACREDITS, totalAvailableDelegates, {log: true});
     return undefined;
   }
 }

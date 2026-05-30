@@ -41,7 +41,7 @@ export class Neil extends CeoCard {
       const lowestRate = Math.min(moonData.habitatRate, moonData.logisticRate, moonData.miningRate);
 
       if (lowestRate > 0) {
-        player.production.add(Resource.MEGACREDITS, lowestRate, {log: true, from: {card: this}});
+        player.production.add(Resource.MEGACREDITS, lowestRate, {log: true});
       }
     });
 

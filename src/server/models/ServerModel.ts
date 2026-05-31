@@ -481,7 +481,7 @@ export class Server {
     const moonData = game.moonData;
     if (moonData) {
       return {
-        logisticsRate: moonData.logisticRate,
+        logisticRate: moonData.logisticRate,
         miningRate: moonData.miningRate,
         habitatRate: moonData.habitatRate,
         spaces: this.getSpaces(moonData.moon),

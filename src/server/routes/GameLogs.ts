@@ -23,7 +23,7 @@ export class GameLogs {
     let foundStart = generation === 1;
     const newMessages = [];
     for (const message of messages) {
-      if (message.type === LogMessageType.NEW_GENERATION) {
+      if (message.type === LogMessageType.NEW_GENERATION && message.canceled !== true) {
         const value = Number(message.data[0]?.value);
         if (value === generation) {
           foundStart = true;

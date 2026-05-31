@@ -10,7 +10,7 @@
       draggable="true"
       @dragend="onDragEnd()"
       @dragstart="onDragStart(card.name)"
-      @dragover.prevent="onDragHover(card.name)"
+      @dragover.prevent="onDragHover(card.name, $event)"
     >
       <Card :card="card"/>
     </div>
@@ -82,14 +82,41 @@ export default defineComponent({
     onDragEnd(): void {
       this.dragCard = undefined;
     },
-    onDragHover(source: CardName): void {
+    onDragHover(source: CardName, event: DragEvent): void {
       if (this.dragCard === undefined || source === this.dragCard) {
         return;
       }
-      const temp = this.cardOrder[source];
-      this.cardOrder[source] = this.cardOrder[this.dragCard];
-      this.cardOrder[this.dragCard] = temp;
+      const originalCardNames = this.getSortedCards().map((card) => card.name);
+      const orderedCardNames = originalCardNames.slice();
+      const dragIndex = orderedCardNames.indexOf(this.dragCard);
+      const hoverIndex = orderedCardNames.indexOf(source);
+      if (dragIndex === -1 || hoverIndex === -1) {
+        return;
+      }
+      const insertAfter = this.shouldInsertAfterHoveredCard(event, dragIndex, hoverIndex);
+      let insertionIndex = hoverIndex + (insertAfter ? 1 : 0);
+      if (dragIndex < insertionIndex) {
+        insertionIndex--;
+      }
+      insertionIndex = Math.max(0, Math.min(insertionIndex, orderedCardNames.length - 1));
+      const movedCardName = orderedCardNames.splice(dragIndex, 1)[0];
+      orderedCardNames.splice(insertionIndex, 0, movedCardName);
+      if (orderedCardNames.every((cardName, idx) => cardName === originalCardNames[idx])) {
+        return;
+      }
+      orderedCardNames.forEach((cardName, idx) => {
+        this.cardOrder[cardName] = idx + 1;
+      });
       CardOrderStorage.updateCardOrder(this.playerId, this.cardOrder);
+    },
+    shouldInsertAfterHoveredCard(event: DragEvent, dragIndex: number, hoverIndex: number): boolean {
+      if (event.currentTarget instanceof HTMLElement) {
+        const rect = event.currentTarget.getBoundingClientRect();
+        if (rect.width > 0) {
+          return event.clientX >= rect.left + rect.width / 2;
+        }
+      }
+      return dragIndex < hoverIndex;
     },
   },
 });

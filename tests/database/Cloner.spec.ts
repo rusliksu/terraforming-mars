@@ -68,4 +68,32 @@ describe('Cloner', () => {
     // This test will pass now that space players have been separately verified.
     expect(game.board).to.deep.eq(newGame.board);
   });
+
+  it('does not inherit telegram state from the source player', () => {
+    const player = new Player('old-player1', 'yellow', true, 9, 'p-old-player1-id');
+    const game = Game.newInstance('g-old-game-id', [player], player, 'spectatorid', {turnBasedGame: true});
+    player.telegramID = '111';
+    player.lastNoticeMessageId = 77;
+    player.lastTurnNoticeKey = 'g-old-game-id:1:action:p-old-player1-id:0';
+    player.lastTurnReminderNoticeKey = 'g-old-game-id:1:action:p-old-player1-id:0';
+
+    const newPlayer = new Player('new-player1', 'red', false, 3, 'p-new-player1-id');
+    const newGame = Cloner.clone('g-new-id', [newPlayer], 0, game.serialize());
+    const clonedPlayer = newGame.playersInGenerationOrder[0] as Player;
+
+    expect(clonedPlayer.telegramID).eq('');
+    expect(clonedPlayer.lastNoticeMessageId).eq(-1);
+    expect(clonedPlayer.lastTurnNoticeKey).eq('');
+    expect(clonedPlayer.lastTurnReminderNoticeKey).eq('');
+
+    const telegramPlayer = new Player('new-player1', 'red', false, 3, 'p-new-player2-id');
+    telegramPlayer.telegramID = '222';
+    const telegramGame = Cloner.clone('g-new-telegram-id', [telegramPlayer], 0, game.serialize());
+    const clonedTelegramPlayer = telegramGame.playersInGenerationOrder[0] as Player;
+
+    expect(clonedTelegramPlayer.telegramID).eq('222');
+    expect(clonedTelegramPlayer.lastNoticeMessageId).eq(-1);
+    expect(clonedTelegramPlayer.lastTurnNoticeKey).eq('');
+    expect(clonedTelegramPlayer.lastTurnReminderNoticeKey).eq('');
+  });
 });

@@ -1747,6 +1747,10 @@ export class Player implements IPlayer {
     return this.lastTurnNoticeKey === turnNoticeKey && this.lastNoticeMessageId >= 0;
   }
 
+  private canSendTelegramTurnNotice(): boolean {
+    return this.telegramID !== '' && this.game?.gameOptions.turnBasedGame === true;
+  }
+
   private clearPendingTurnNoticeTimers(): void {
     if (this._pendingTurnNoticeTimer) {
       clearTimeout(this._pendingTurnNoticeTimer);
@@ -1768,7 +1772,7 @@ export class Player implements IPlayer {
     if (reminderMs === 0) {
       return;
     }
-    if (!this.telegramID) {
+    if (!this.canSendTelegramTurnNotice()) {
       return;
     }
     if (!this.hasActiveTurnNotice(turnNoticeKey)) {
@@ -1794,6 +1798,9 @@ export class Player implements IPlayer {
   }
 
   private async sendTurnNoticeReminder(turnNoticeKey: string): Promise<void> {
+    if (!this.canSendTelegramTurnNotice()) {
+      return;
+    }
     if (this.waitingFor === undefined) {
       return;
     }
@@ -1836,11 +1843,11 @@ export class Player implements IPlayer {
       clearTimeout(this._pendingTurnNoticeTimer);
       this._pendingTurnNoticeTimer = undefined;
     }
-    if (this.telegramID && this._turnNoticeSentThisRound === false) {
+    if (this.canSendTelegramTurnNotice() && this._turnNoticeSentThisRound === false) {
       this._pendingTurnNoticeTimer = setTimeout(async () => {
         this._pendingTurnNoticeTimer = undefined;
         const sent = await sendTurnNotice(this, turnNoticeKey);
-        if (sent) {
+        if (sent || this.hasActiveTurnNotice(turnNoticeKey)) {
           this._turnNoticeSentThisRound = true;
           this.scheduleTurnNoticeReminder(turnNoticeKey);
         }

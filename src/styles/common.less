@@ -202,6 +202,11 @@ each(@players, {
     color: #001f00;
 }
 
+.player_bg_color_serge {
+    background-color: @player_serge;
+    color: #fff2f5;
+}
+
 .player_bg_color_saturn {
     background-color: @player_saturn;
     color: #201607;
@@ -272,6 +277,10 @@ each(@players, {
 .player_translucent_bg_color_vanger {
     .player_vanger_bg_translucent();
     color: #001f00;
+}
+
+.player_translucent_bg_color_serge {
+    .player_serge_bg_translucent();
 }
 
 .player_translucent_bg_color_saturn {
@@ -420,6 +429,15 @@ each(@players, {
 .player_translucent_bg_color_vanger .game-end-name-and-elo,
 .player_translucent_bg_color_vanger .game-end-name-and-elo a {
     text-shadow: none;
+}
+
+.player_bg_color_serge.log-player,
+.player_translucent_bg_color_serge .player-info-name,
+.player_translucent_bg_color_serge .player_name,
+.player_translucent_bg_color_serge .game-end-name-and-elo,
+.player_translucent_bg_color_serge .game-end-name-and-elo a,
+.player_translucent_bg_color_serge .player-name {
+    color: #fff2f5;
 }
 
 .player_bg_color_saturn.log-player,

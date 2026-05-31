@@ -359,6 +359,11 @@
 	filter: @player_vanger_sprite_filter drop-shadow(2px 2px 3px black);
 }
 
+.board-cube--serge {
+	background: url(./assets/board_icons.png) -24px -117px no-repeat;
+	filter: @player_serge_sprite_filter drop-shadow(2px 2px 3px black);
+}
+
 .board-cube--saturn {
 	background: url(./assets/board_icons.png) -72px -91px no-repeat;
 	filter: @player_saturn_sprite_filter drop-shadow(2px 2px 3px black);
@@ -441,6 +446,10 @@
 
 .board-cube--vanger.board-cube--persona::before {
 	background: @player_vanger_token_gradient;
+}
+
+.board-cube--serge.board-cube--persona::before {
+	background: @player_serge_token_gradient;
 }
 
 .board-cube--saturn.board-cube--persona::before {
@@ -619,6 +628,16 @@
   margin-left: 4px;
   margin-top: -2px;
   color: #001f00;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.board-cube--serge.overlay::after {
+  .overlay_base();
+  content: "S";
+  margin-left: 6px;
+  margin-top: -2px;
+  color: #fff2f5;
   font-size: 15px;
   font-weight: bold;
 }
@@ -980,6 +999,11 @@ each(@token_types, {
 .underground-excavator--vanger {
 	background: @player_vanger_token_gradient;
 	border: 1px solid @player_vanger_light;
+}
+
+.underground-excavator--serge {
+	background: @player_serge_token_gradient;
+	border: 1px solid @player_serge_light;
 }
 
 .underground-excavator--saturn {

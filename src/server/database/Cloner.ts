@@ -63,6 +63,10 @@ export class Cloner {
     // id is already copied over.
     to.color = from.color;
     to.name = from.name;
+    to.telegramID = from.telegramID || undefined;
+    to.lastNoticeMessageId = undefined;
+    to.lastTurnNoticeKey = undefined;
+    to.lastTurnReminderNoticeKey = undefined;
 
     // Handicap updates are only done during game set-up. So when cloning, adjust the
     // terraforming rating to the difference between the two handicaps.
@@ -73,4 +77,3 @@ export class Cloner {
     to.handicap = Number(from.handicap);
   }
 }
-

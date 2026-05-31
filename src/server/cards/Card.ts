@@ -263,7 +263,7 @@ export abstract class Card implements ICard {
     player.stock.deductUnits(MoonExpansion.adjustedReserveCosts(player, this));
     if (this.behavior !== undefined) {
       const executor = getBehaviorExecutor();
-      executor.execute(this.behavior, player, this);
+      executor.execute(this.behavior, player, this, {logSource: false});
     }
     return this.bespokePlay(player);
   }

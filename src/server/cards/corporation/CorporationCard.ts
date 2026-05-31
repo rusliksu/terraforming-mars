@@ -17,7 +17,7 @@ export abstract class CorporationCard extends Card implements ICorporationCard {
 
   public initialAction(player: IPlayer): PlayerInput | undefined {
     if (this.firstAction !== undefined) {
-      getBehaviorExecutor().execute(this.firstAction, player, this);
+      getBehaviorExecutor().execute(this.firstAction, player, this, {logSource: false});
     }
     return undefined;
   }
@@ -41,7 +41,7 @@ export abstract class ActiveCorporationCard extends CorporationCard implements I
     if (this.properties.action === undefined) {
       throw new Error('action not defined');
     }
-    getBehaviorExecutor().execute(this.properties.action, player, this);
+    getBehaviorExecutor().execute(this.properties.action, player, this, {logSource: false});
     return this.bespokeAction(player);
   }
 

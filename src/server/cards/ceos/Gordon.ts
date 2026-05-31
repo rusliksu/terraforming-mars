@@ -42,7 +42,7 @@ export class Gordon extends CeoCard {
     }
 
     if (Board.isCitySpace(space) || Board.isGreenerySpace(space)) {
-      cardOwner.game.defer(new GainResourcesDeferred(cardOwner, Resource.MEGACREDITS, {count: 2, log: true}));
+      cardOwner.game.defer(new GainResourcesDeferred(cardOwner, Resource.MEGACREDITS, {count: 2, log: true, from: {card: this}}));
     }
     return;
   }

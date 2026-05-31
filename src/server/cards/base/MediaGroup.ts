@@ -30,7 +30,7 @@ export class MediaGroup extends Card implements IProjectCard {
 
   public onCardPlayed(player: IPlayer, card: ICard) {
     if (card.type === CardType.EVENT) {
-      player.game.defer(new GainResourcesDeferred(player, Resource.MEGACREDITS, {count: 3, log: true}));
+      player.game.defer(new GainResourcesDeferred(player, Resource.MEGACREDITS, {count: 3, log: true, from: {card: this}}));
     }
   }
 }

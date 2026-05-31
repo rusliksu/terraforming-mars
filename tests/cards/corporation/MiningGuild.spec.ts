@@ -4,7 +4,7 @@ import {IGame} from '../../../src/server/IGame';
 import {SpaceBonus} from '../../../src/common/boards/SpaceBonus';
 import {SpaceType} from '../../../src/common/boards/SpaceType';
 import {Phase} from '../../../src/common/Phase';
-import {maxOutOceans, runAllActions} from '../../TestingUtils';
+import {formatMessage, maxOutOceans, runAllActions} from '../../TestingUtils';
 import {TestPlayer} from '../../TestPlayer';
 import {BoardType} from '../../../src/server/boards/BoardType';
 import {TileType} from '../../../src/common/TileType';
@@ -44,6 +44,7 @@ describe('MiningGuild', () => {
     card.onTilePlaced(player, player, {player, spaceType: SpaceType.LAND, x: 0, y: 0, id: space.id, bonus: [SpaceBonus.STEEL, SpaceBonus.TITANIUM]}, BoardType.MARS);
     runAllActions(game);
     expect(player.production.steel).to.eq(1);
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 1 steel production because of Mining Guild');
 
     card.onTilePlaced(player, player, {player, spaceType: SpaceType.LAND, x: 0, y: 0, id: space.id, bonus: [SpaceBonus.STEEL]}, BoardType.MARS);
     runAllActions(game);

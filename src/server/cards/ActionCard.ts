@@ -30,7 +30,7 @@ export abstract class ActionCard extends Card {
     if (this.properties.action === undefined) {
       throw new Error('action not defined');
     }
-    getBehaviorExecutor().execute(this.properties.action, player, this);
+    getBehaviorExecutor().execute(this.properties.action, player, this, {logSource: false});
     return this.bespokeAction(player);
   }
 

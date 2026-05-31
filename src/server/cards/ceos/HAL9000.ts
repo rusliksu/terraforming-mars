@@ -39,5 +39,3 @@ export class HAL9000 extends CeoCard {
     return undefined;
   }
 }
-
-

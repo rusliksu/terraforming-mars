@@ -19,7 +19,7 @@ describe('Greta', () => {
   });
 
 
-  it('Does not 4 M€ per TR raise action before OPG action is used', () => {
+  it('Does not gain 4 M€ per TR effect before OPG action is used', () => {
     const [game, player] = testGame(1, {ceoExtension: true});
     player.playCard(card);
 
@@ -30,7 +30,7 @@ describe('Greta', () => {
     expect(player.megaCredits).to.eq(0);
   });
 
-  it('Gains 4 M€ per TR raise action when OPG action is used', () => {
+  it('Gains 4 M€ per TR effect when OPG action is used', () => {
     const [game, player] = testGame(1, {ceoExtension: true});
     player.playCard(card);
 
@@ -39,28 +39,23 @@ describe('Greta', () => {
 
     card.action();
 
-    player.actionsTakenThisGame++;
     player.game.increaseOxygenLevel(player, 1);
     expect(player.megaCredits).to.eq(4);
 
-    player.actionsTakenThisGame++;
     player.game.increaseTemperature(player, 1);
     expect(player.megaCredits).to.eq(8);
 
-    player.actionsTakenThisGame++;
     player.game.increaseVenusScaleLevel(player, 1);
     expect(player.megaCredits).to.eq(12);
 
-    player.actionsTakenThisGame++;
     player.playCard(new BigAsteroid()); // 2 Temp Steps in ONE ACTION
     expect(player.megaCredits).to.eq(16);
 
-    player.actionsTakenThisGame++;
     player.playCard(new Omnicourt()); // 2 Steps in ONE ACTION
     expect(player.megaCredits).to.eq(20);
   });
 
-  it('Gains 4 M€ once for Giant Ice Asteroid', () => {
+  it('Gains 4 M€ for each Giant Ice Asteroid TR effect', () => {
     const [game, player] = testGame(1, {ceoExtension: true});
     player.playCard(card);
 
@@ -68,7 +63,6 @@ describe('Greta', () => {
     game.phase = Phase.ACTION;
 
     card.action();
-    player.actionsTakenThisGame++; // Greta activation action has completed.
 
     const priorTerraformRating = player.terraformRating;
     player.playCard(new GiantIceAsteroid());
@@ -83,8 +77,8 @@ describe('Greta', () => {
     runAllActions(game);
 
     expect(player.terraformRating).to.eq(priorTerraformRating + 4);
-    expect(player.megaCredits).to.eq(4);
-    expect(card.data.effectTriggerCount).to.eq(1);
+    expect(player.megaCredits).to.eq(12);
+    expect(card.data.effectTriggerCount).to.eq(3);
   });
 
   it('Does not gain MC after 10 increases', () => {
@@ -96,29 +90,18 @@ describe('Greta', () => {
     game.phase = Phase.ACTION;
     card.action();
     expect(player.megaCredits).to.eq(0);
-    player.actionsTakenThisGame++;
-    player.game.increaseOxygenLevel(player, 2); // One action, two steps, only 4MC
-    player.actionsTakenThisGame++;
+    player.game.increaseOxygenLevel(player, 2); // One TR effect, two steps, only 4MC
     player.game.increaseOxygenLevel(player, 1);
-    player.actionsTakenThisGame++;
     player.game.increaseOxygenLevel(player, 1);
-    player.actionsTakenThisGame++;
     player.game.increaseOxygenLevel(player, 1);
-    player.actionsTakenThisGame++;
     player.game.increaseOxygenLevel(player, 1);
     expect(player.megaCredits).to.eq(20);
-    player.actionsTakenThisGame++;
-    player.game.increaseTemperature(player, 2); // One action, two steps, only 4MC
-    player.actionsTakenThisGame++;
+    player.game.increaseTemperature(player, 2); // One TR effect, two steps, only 4MC
     player.game.increaseTemperature(player, 1);
-    player.actionsTakenThisGame++;
     player.game.increaseTemperature(player, 1);
-    player.actionsTakenThisGame++;
     player.game.increaseTemperature(player, 1);
-    player.actionsTakenThisGame++;
     player.game.increaseTemperature(player, 1);
     expect(player.megaCredits).to.eq(40);
-    player.actionsTakenThisGame++;
     player.game.increaseTemperature(player, 2); // 10 increases already, no more bonuses
     expect(player.megaCredits).to.eq(40);
   });
@@ -165,10 +148,8 @@ describe('Greta', () => {
     game.phase = Phase.ACTION;
     card.action();
     expect(card.data.effectTriggerCount).eq(0);
-    player.actionsTakenThisGame++;
-    player.game.increaseOxygenLevel(player, 2); // One action, two steps, only 4MC
+    player.game.increaseOxygenLevel(player, 2); // One TR effect, two steps, only 4MC
     expect(card.data.effectTriggerCount).eq(1);
-    player.actionsTakenThisGame++;
     player.game.increaseOxygenLevel(player, 1);
     expect(card.data.effectTriggerCount).eq(2);
 

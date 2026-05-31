@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 import {testGame} from '../../TestGame';
-import {runAllActions} from '../../TestingUtils';
+import {formatMessage, runAllActions} from '../../TestingUtils';
 import {Tardigrades} from '../../../src/server/cards/base/Tardigrades';
 import {TestPlayer} from '../../TestPlayer';
 
@@ -22,8 +22,10 @@ describe('Tardigrades', () => {
 
   it('Should act', () => {
     player.playedCards.push(card);
+    player.game.gameLog.length = 0;
     card.action(player);
     runAllActions(player.game);
     expect(card.resourceCount).to.eq(1);
+    expect(player.game.gameLog.map(formatMessage)).contains('blue added 1 Microbe to Tardigrades');
   });
 });

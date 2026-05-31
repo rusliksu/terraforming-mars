@@ -111,7 +111,7 @@ describe('WaitingFor', () => {
         ...globalConfig.global,
         stubs: {
           'player-input-factory': {template: '<div class="stub-pif"></div>'},
-          AppButton: {props: ['title'], template: '<button>{{ title }}</button>'},
+          'AppButton': {props: ['title'], template: '<button>{{ title }}</button>'},
         },
       },
       props: {
@@ -144,7 +144,7 @@ describe('WaitingFor', () => {
         ...globalConfig.global,
         stubs: {
           'player-input-factory': {template: '<div class="stub-pif"></div>'},
-          AppButton: {props: ['title'], template: '<button>{{ title }}</button>'},
+          'AppButton': {props: ['title'], template: '<button>{{ title }}</button>'},
         },
       },
       props: {
@@ -175,7 +175,7 @@ describe('WaitingFor', () => {
         ...globalConfig.global,
         stubs: {
           'player-input-factory': {template: '<div class="stub-pif"></div>'},
-          AppButton: {props: ['title'], template: '<button>{{ title }}</button>'},
+          'AppButton': {props: ['title'], template: '<button>{{ title }}</button>'},
         },
       },
       props: {

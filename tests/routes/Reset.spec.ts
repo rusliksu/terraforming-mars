@@ -60,7 +60,7 @@ describe('Reset', () => {
     const currentPlayer = TestPlayer.BLACK.newPlayer();
     const currentOpponent = TestPlayer.RED.newPlayer();
     const currentGame = Game.newInstance('game-id', [currentPlayer, currentOpponent], currentPlayer, 'spectatorid', {undoOption: true});
-    currentGame.projectDeck.draw();
+    currentGame.projectDeck.draw(currentGame);
 
     const reloadedPlayer = TestPlayer.BLACK.newPlayer();
     const reloadedOpponent = TestPlayer.RED.newPlayer();

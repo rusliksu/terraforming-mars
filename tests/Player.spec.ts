@@ -141,7 +141,7 @@ describe('Player', () => {
   });
 
   it('sends at most one telegram turn notice per turn', () => {
-    const [game, player] = testGame(1);
+    const [game, player] = testGame(1, {turnBasedGame: true});
     try {
       player.telegramID = '162438481';
 
@@ -175,7 +175,7 @@ describe('Player', () => {
   });
 
   it('sends another telegram turn notice when the previous notice was cleared', () => {
-    const [game, player] = testGame(1);
+    const [game, player] = testGame(1, {turnBasedGame: true});
     try {
       player.telegramID = '162438481';
       player.lastTurnNoticeKey = (player as any).getTurnNoticeKey();

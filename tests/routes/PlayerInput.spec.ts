@@ -81,7 +81,7 @@ describe('PlayerInput', () => {
     scaffolding.url = '/player/input?id=' + player.id;
     const game = Game.newInstance('gameid-hidden-undo', [player], player, 'spectatorid');
     game.lastSaveId = 4;
-    game.projectDeck.draw();
+    game.projectDeck.draw(game);
     player.setWaitingFor(new OrOptions(new UndoActionOption()));
 
     const undoVersionOfPlayer = TestPlayer.BLUE.newPlayer({beginner: true});

@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import {ICard} from '../../../src/server/cards/ICard';
 import {IGame} from '../../../src/server/IGame';
 import {SelectCard} from '../../../src/server/inputs/SelectCard';
-import {forceGenerationEnd} from '../../TestingUtils';
+import {forceGenerationEnd, formatMessage} from '../../TestingUtils';
 import {TestPlayer} from '../../TestPlayer';
 import {testGame} from '../../TestGame';
 import {runAllActions} from '../../TestingUtils';
@@ -42,9 +42,14 @@ describe('Quill', () => {
     expect(dirigibles.resourceCount).eq(0);
     expect(localShading.resourceCount).eq(0);
 
+    game.gameLog.length = 0;
     card.action(player);
     expect(dirigibles.resourceCount).eq(2);
     expect(localShading.resourceCount).eq(2);
+    expect(game.gameLog.map(formatMessage)).includes.members([
+      'blue added 2 Floater(s) to Dirigibles',
+      'blue added 2 Floater(s) to Local Shading',
+    ]);
     expect(game.deferredActions).has.length(2);
 
     runAllActions(game);
@@ -54,5 +59,9 @@ describe('Quill', () => {
     runAllActions(game);
 
     expect(player.megaCredits).eq(3);
+    expect(game.gameLog.map(formatMessage)).includes.members([
+      'blue added 2 Floater(s) to Dirigibles',
+      'blue gained 3 M€',
+    ]);
   });
 });

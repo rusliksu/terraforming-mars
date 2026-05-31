@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import {Poseidon} from '../../../src/server/cards/colonies/Poseidon';
 import {Ceres} from '../../../src/server/colonies/Ceres';
 import {testGame} from '../../TestGame';
-import {runAllActions} from '../../TestingUtils';
+import {formatMessage, runAllActions} from '../../TestingUtils';
 import {SelectColony} from '../../../src/server/inputs/SelectColony';
 import {Units} from '../../../src/common/Units';
 import {cast} from '../../../src/common/utils/utils';
@@ -25,6 +25,7 @@ describe('Poseidon', () => {
 
     expect(player.production.asUnits()).deep.eq(Units.of({megacredits: 2, steel: 1}));
     expect(player2.production.asUnits()).deep.eq(Units.of({steel: 1}));
+    expect(player.game.gameLog.map(formatMessage)).contains('blue gained 1 M€ production because of Poseidon');
   });
 
   it('initial action', () => {

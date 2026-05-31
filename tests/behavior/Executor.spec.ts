@@ -84,6 +84,19 @@ describe('Executor', () => {
     expect(player.production.asUnits()).deep.eq(Units.of({megacredits: 2, steel: 0}));
   });
 
+  it('logs behavior stock and production source card', () => {
+    game.gameLog = [];
+    executor.execute({
+      production: {megacredits: 1},
+      stock: {megacredits: 2},
+    }, player, fake);
+
+    expect(game.gameLog.map(formatMessage)).deep.eq([
+      'blue gained 1 M€ production because of Fake Card',
+      'blue gained 2 M€ because of Fake Card',
+    ]);
+  });
+
   it('production - simple', () => {
     expect(player.production.asUnits()).deep.eq(Units.EMPTY);
     executor.execute({production: {megacredits: 2}}, player, fake);
@@ -255,6 +268,26 @@ describe('Executor', () => {
     runAllActions(game);
 
     expect(tardigrades.resourceCount).eq(5);
+  });
+
+  it('logs behavior card resource source card', () => {
+    game.gameLog = [];
+    const tardigrades = new Tardigrades();
+    tardigrades.resourceCount = 2;
+    executor.execute({addResources: 3}, player, tardigrades);
+    runAllActions(game);
+
+    expect(formatMessage(game.gameLog[0])).eq('blue added 3 Microbe(s) to Tardigrades from Tardigrades');
+  });
+
+  it('logs behavior resources-to-any-card source card', () => {
+    game.gameLog = [];
+    const tardigrades = new Tardigrades();
+    player.playedCards.set(tardigrades);
+    executor.execute({addResourcesToAnyCard: {count: 2, type: CardResource.MICROBE}}, player, fake);
+    runAllActions(game);
+
+    expect(formatMessage(game.gameLog[0])).eq('blue added 2 Microbe(s) to Tardigrades from Fake Card');
   });
 
   it('add resources to specific card - countable', () => {
@@ -462,6 +495,7 @@ describe('Executor', () => {
   });
 
   it('standard resource, same', () => {
+    game.gameLog = [];
     executor.execute({standardResource: {count: 3}}, player, fake);
     runAllActions(game);
 
@@ -469,6 +503,7 @@ describe('Executor', () => {
     selectResource.cb('heat');
 
     expect(player.stock.asUnits()).deep.eq(Units.of({heat: 3}));
+    expect(formatMessage(game.gameLog[0])).eq('blue gained 3 heat because of Fake Card');
   });
 
   it('standard resource, different', () => {

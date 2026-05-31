@@ -88,4 +88,19 @@ describe('Greens', () => {
     expect(tardigrades.resourceCount).to.eq(2);
     expect(player.megaCredits).to.eq(0);
   });
+
+  it('Ruling policy 4: logs single-card microbe source', () => {
+    setRulingParty(game, PartyName.GREENS, 'gp04');
+    const tardigrades = new Tardigrades();
+    player.playedCards.push(tardigrades);
+    player.megaCredits = 5;
+    game.gameLog = [];
+
+    GREENS_POLICY_4.action(player);
+    game.deferredActions.runNext();
+    const orOptions = cast(game.deferredActions.peek()!.execute(), OrOptions);
+    orOptions.options[0].cb();
+
+    expect(game.gameLog.map(formatMessage)).contains('blue added 2 Microbe(s) to Tardigrades from Greens');
+  });
 });

@@ -7,6 +7,7 @@ import {DeferredAction} from './DeferredAction';
 import {Priority} from './Priority';
 import {Message} from '../../common/logs/Message';
 import {message} from '../logs/MessageBuilder';
+import {From} from '../logs/From';
 
 export type Options = {
   count?: number;
@@ -17,6 +18,7 @@ export type Options = {
   robotCards?: boolean;
   filter?(card: ICard): boolean;
   log?: boolean;
+  from?: From;
 }
 
 export class AddResourcesToCard extends DeferredAction {
@@ -81,7 +83,7 @@ export class AddResourcesToCard extends DeferredAction {
 
   private addResource(card: ICard, qty: number) {
     const autoLog = this.options.log !== false;
-    this.player.addResourceTo(card, {qty, log: autoLog});
+    this.player.addResourceTo(card, {qty, log: autoLog, from: this.options.from});
     this.cb(undefined);
   }
 }

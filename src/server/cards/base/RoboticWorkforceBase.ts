@@ -85,7 +85,7 @@ export abstract class RoboticWorkforceBase extends Card {
         } else if (card.productionBox) {
           player.production.adjust(card.productionBox(player), {log: true});
         } else if (card.behavior !== undefined) {
-          getBehaviorExecutor().execute(this.productionBehavior(card.behavior), player, card);
+          getBehaviorExecutor().execute(this.productionBehavior(card.behavior), player, card, {logSource: false});
         }
         return cb(card);
       });

@@ -18,7 +18,7 @@ import {Behavior} from './Behavior';
 import {Counter, ICounter} from './Counter';
 import {Turmoil} from '../turmoil/Turmoil';
 import {SendDelegateToArea} from '../deferredActions/SendDelegateToArea';
-import {BehaviorExecutor} from './BehaviorExecutor';
+import {BehaviorExecutionOptions, BehaviorExecutor} from './BehaviorExecutor';
 import {PlaceTile} from '../deferredActions/PlaceTile';
 import {Resource} from '../../common/Resource';
 import {SelectPaymentDeferred} from '../deferredActions/SelectPaymentDeferred';
@@ -304,24 +304,26 @@ export class Executor implements BehaviorExecutor {
     return true;
   }
 
-  public execute(behavior: Behavior, player: IPlayer, card: ICard) {
+  public execute(behavior: Behavior, player: IPlayer, card: ICard, executionOptions: BehaviorExecutionOptions = {}) {
     const ctx = new Counter(player, card);
+    const logOptions = executionOptions.logSource === false ? {log: true} : {log: true, from: {card}};
+    const sourceOptions = executionOptions.logSource === false ? {} : {from: {card}};
 
     if (behavior.or !== undefined) {
-      const options = behavior.or.behaviors
+      const selectOptions = behavior.or.behaviors
         .filter((behavior) => this.canExecute(behavior, player, card))
         .map((behavior) => {
           return new SelectOption(behavior.title)
             .andThen(() => {
-              this.execute(behavior, player, card);
+              this.execute(behavior, player, card, executionOptions);
               return undefined;
             });
         });
 
-      if (options.length === 1 && behavior.or.autoSelect === true) {
-        options[0].cb(undefined);
+      if (selectOptions.length === 1 && behavior.or.autoSelect === true) {
+        selectOptions[0].cb(undefined);
       } else {
-        player.defer(new OrOptions(...options));
+        player.defer(new OrOptions(...selectOptions));
       }
     }
 
@@ -333,7 +335,7 @@ export class Executor implements BehaviorExecutor {
       if (spend.megacredits) {
         player.game.defer(new SelectPaymentDeferred(player, spend.megacredits, {
           title: TITLES.payForCardAction(card.name),
-        })).andThen(() => this.execute(remainder, player, card));
+        })).andThen(() => this.execute(remainder, player, card, executionOptions));
         // Exit early as the rest of handled by the deferred action.
         return;
       }
@@ -350,7 +352,7 @@ export class Executor implements BehaviorExecutor {
       }
       if (spend.heat) {
         player.defer(player.spendHeat(spend.heat, () => {
-          this.execute(remainder, player, card);
+          this.execute(remainder, player, card, executionOptions);
           return undefined;
         }));
         // Exit early as the rest of handled by the deferred action.
@@ -361,7 +363,7 @@ export class Executor implements BehaviorExecutor {
       }
       if (spend.resourceFromAnyCard) {
         player.game.defer(new RemoveResourcesFromCard(player, spend.resourceFromAnyCard.type, 1, {source: 'self', blockable: false}))
-          .andThen(() => this.execute(remainder, player, card));
+          .andThen(() => this.execute(remainder, player, card, executionOptions));
         // Exit early as the rest of handled by the deferred action.
         return;
       }
@@ -381,7 +383,7 @@ export class Executor implements BehaviorExecutor {
             for (const c of cards) {
               player.discardCardFromHand(c, {log: true});
             }
-            this.execute(remainder, player, card);
+            this.execute(remainder, player, card, executionOptions);
             return undefined;
           }),
         );
@@ -392,11 +394,11 @@ export class Executor implements BehaviorExecutor {
 
     if (behavior.production !== undefined) {
       const units = ctx.countUnits(behavior.production);
-      player.production.adjust(units, {log: true});
+      player.production.adjust(units, logOptions);
     }
     if (behavior.stock) {
       const units = ctx.countUnits(behavior.stock);
-      player.stock.adjust(units, {log: true});
+      player.stock.adjust(units, logOptions);
     }
     if (behavior.standardResource) {
       const entry = behavior.standardResource;
@@ -406,14 +408,14 @@ export class Executor implements BehaviorExecutor {
         player.defer(
           new SelectResources(message('Gain ${0} standard resources', (b) => b.number(count)), count)
             .andThen((units) => {
-              player.stock.adjust(units, {log: true});
+              player.stock.adjust(units, logOptions);
               return undefined;
             }));
       } else {
         player.defer(
           new SelectResource(message('Gain ${0} units of a standard resource', (b) => b.number(count)))
             .andThen((unit) => {
-              player.stock.add(unit, count, {log: true});
+              player.stock.add(unit, count, logOptions);
               return undefined;
             }));
       }
@@ -477,7 +479,7 @@ export class Executor implements BehaviorExecutor {
       } else {
         const count = ctx.count(addResources);
         player.defer(() => {
-          player.addResourceTo(card, {qty: count, log: true});
+          player.addResourceTo(card, {qty: count, ...logOptions});
           return undefined;
         });
       }
@@ -497,6 +499,7 @@ export class Executor implements BehaviorExecutor {
                 restrictedTag: arctac.tag,
                 min: arctac.min,
                 robotCards: arctac.robotCards !== undefined,
+                ...sourceOptions,
               }));
         }
       }

@@ -3,12 +3,36 @@ param(
     [string]$FallbackSshHost = "72.56.84.119",
     [string]$FallbackSshUser = "openclaw",
     [string]$FallbackSshKeyPath = "$HOME\\.ssh\\id_ed25519",
+    [string]$ExpectedGitSha,
+    [string]$ExpectedArtifactSha,
     [switch]$DryRun
 )
 
 $ErrorActionPreference = "Stop"
 
 . (Join-Path $PSScriptRoot "lib\TmRemoteTools.ps1")
+
+function Assert-OptionalSha {
+    param(
+        [string]$Name,
+        [string]$Value,
+        [int[]]$AllowedLengths
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return
+    }
+
+    if ($Value -notmatch '^[0-9a-fA-F]+$' -or $Value.Length -notin $AllowedLengths) {
+        throw "$Name must be a hex sha with length $($AllowedLengths -join ' or ')."
+    }
+}
+
+Assert-OptionalSha -Name "ExpectedGitSha" -Value $ExpectedGitSha -AllowedLengths @(40)
+Assert-OptionalSha -Name "ExpectedArtifactSha" -Value $ExpectedArtifactSha -AllowedLengths @(64)
+
+$expectedGitShaLower = if ([string]::IsNullOrWhiteSpace($ExpectedGitSha)) { "" } else { $ExpectedGitSha.ToLowerInvariant() }
+$expectedArtifactShaLower = if ([string]::IsNullOrWhiteSpace($ExpectedArtifactSha)) { "" } else { $ExpectedArtifactSha.ToLowerInvariant() }
 
 function Invoke-RemoteCommand {
     param(
@@ -47,6 +71,8 @@ release_url_fallback="${health_url%/}/assets/release.json"
 next_release_url="${next_health_url%/}/release.json"
 next_release_url_fallback="${next_health_url%/}/assets/release.json"
 upstream_snippet="/etc/nginx/snippets/tm-prod-active-upstream.conf"
+required_git_sha="__EXPECTED_GIT_SHA__"
+required_artifact_sha="__EXPECTED_ARTIFACT_SHA__"
 work_root="/tmp/tm-promote-$(date +%Y%m%d%H%M%S)"
 release_dir="$work_root/release"
 shared_root="$prod_root/shared"
@@ -198,6 +224,14 @@ expected_git_sha="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[
 expected_dependency_sha="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1])).get("dependencySha256", ""))' "$staging_current/assets/release.json")"
 test -n "$expected_artifact_sha"
 test -n "$expected_dependency_sha"
+if [ -n "$required_artifact_sha" ] && [ "$expected_artifact_sha" != "$required_artifact_sha" ]; then
+  echo "Staging artifact changed before promote: expected $required_artifact_sha, got $expected_artifact_sha" >&2
+  exit 1
+fi
+if [ -n "$required_git_sha" ] && [ "$expected_git_sha" != "$required_git_sha" ]; then
+  echo "Staging git sha changed before promote: expected $required_git_sha, got $expected_git_sha" >&2
+  exit 1
+fi
 
 deps_dir="$deps_root/$expected_dependency_sha"
 if [ ! -d "$deps_dir/node_modules" ]; then
@@ -337,6 +371,12 @@ Write-Host "Promoting tested staging build to prod on $HostAlias"
 Write-Host "Source : /home/openclaw/tm-runtime/staging/current"
 Write-Host "Target : /home/openclaw/tm-runtime/prod/current"
 Write-Host "Health : http://127.0.0.1:8081"
+if (-not [string]::IsNullOrWhiteSpace($expectedArtifactShaLower) -or -not [string]::IsNullOrWhiteSpace($expectedGitShaLower)) {
+    Write-Host "Expect : artifact=$expectedArtifactShaLower git=$expectedGitShaLower"
+}
+
+$remoteScript = $remoteScript.Replace("__EXPECTED_GIT_SHA__", $expectedGitShaLower)
+$remoteScript = $remoteScript.Replace("__EXPECTED_ARTIFACT_SHA__", $expectedArtifactShaLower)
 
 if ($DryRun) {
     Write-Host ""

@@ -8,6 +8,8 @@ import {BoardName} from '../../../src/common/boards/BoardName';
 import {EmptyBoard} from '../../testing/EmptyBoard';
 import {assertPlaceGreenery, assertPlaceOcean} from '../../assertions';
 import {cast} from '../../../src/common/utils/utils';
+import {Phase} from '../../../src/common/Phase';
+import {OrOptions} from '../../../src/server/inputs/OrOptions';
 
 describe('PolderTechDutch', () => {
   it('Initial action', () => {
@@ -79,6 +81,21 @@ describe('PolderTechDutch', () => {
 
     expect(player.energy).eq(1);
     expect(player2.energy).eq(0);
+  });
+
+  it('Effect, World Government ocean', () => {
+    const card = new PolderTechDutch();
+    const [game, player] = testGame(2, {boardName: BoardName.HELLAS});
+    game.board.spaces.forEach((space) => space.bonus = []);
+    game.phase = Phase.SOLAR;
+    player.playedCards.push(card);
+
+    game.worldGovernmentTerraforming();
+    const orOptions = cast(player.popWaitingFor(), OrOptions);
+    const oceanAction = cast(orOptions.options.find((o) => o.title.toString() === 'Add an ocean'), SelectSpace);
+    assertPlaceOcean(player, oceanAction);
+
+    expect(player.energy).eq(0);
   });
 
   it('Effect, greenery', () => {

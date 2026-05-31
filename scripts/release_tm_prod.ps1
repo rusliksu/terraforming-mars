@@ -58,7 +58,18 @@ if ($SkipStagingVerify -and -not $SkipProdVerify) {
     $expectedGitSha = [string]$stagingManifest.release.gitSha
 }
 
-& pwsh -File $promoteScript -HostAlias $HostAlias
+$promoteArgs = @(
+    "-File", $promoteScript,
+    "-HostAlias", $HostAlias
+)
+if (-not [string]::IsNullOrWhiteSpace($expectedArtifactSha)) {
+    $promoteArgs += @("-ExpectedArtifactSha", $expectedArtifactSha)
+}
+if (-not [string]::IsNullOrWhiteSpace($expectedGitSha)) {
+    $promoteArgs += @("-ExpectedGitSha", $expectedGitSha)
+}
+
+& pwsh @promoteArgs
 if ($LASTEXITCODE -ne 0) {
     throw "Promote from staging to prod failed."
 }

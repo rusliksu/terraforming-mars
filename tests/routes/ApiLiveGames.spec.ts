@@ -125,7 +125,7 @@ describe('ApiLiveGames', () => {
       [TestPlayer.BLUE.newPlayer(), TestPlayer.RED.newPlayer()],
       Phase.ACTION,
     );
-    malformedEscapeVelocityGame.gameOptions = {
+    (malformedEscapeVelocityGame as any).gameOptions = {
       ...malformedEscapeVelocityGame.gameOptions,
       escapeVelocity: {
         thresholdMinutes: -9999,

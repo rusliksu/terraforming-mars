@@ -3,7 +3,7 @@ import {TharsisRepublic} from '../../../src/server/cards/corporation/TharsisRepu
 import {IGame} from '../../../src/server/IGame';
 import {SpaceType} from '../../../src/common/boards/SpaceType';
 import {TileType} from '../../../src/common/TileType';
-import {addCity, runAllActions} from '../../TestingUtils';
+import {addCity, formatMessage, runAllActions} from '../../TestingUtils';
 import {TestPlayer} from '../../TestPlayer';
 import {SelectSpace} from '../../../src/server/inputs/SelectSpace';
 import {testGame} from '../../TestGame';
@@ -35,11 +35,14 @@ describe('TharsisRepublic', () => {
   });
 
   it('Gives 3 M€ and MC production for own city on Mars', () => {
+    game.gameLog = [];
     addCity(player);
     runAllActions(game);
 
     expect(player.megaCredits).to.eq(3);
     expect(player.production.megacredits).to.eq(1);
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 3 M€ because of Tharsis Republic');
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 1 M€ production because of Tharsis Republic');
   });
 
   it('Gives MC production only for other player\'s city on Mars', () => {

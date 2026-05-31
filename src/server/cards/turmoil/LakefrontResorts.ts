@@ -50,7 +50,7 @@ export class LakefrontResorts extends CorporationCard implements ICorporationCar
   public onTilePlaced(cardOwner: IPlayer, activePlayer: IPlayer, space: Space) {
     if (Board.isUncoveredOceanSpace(space)) {
       cardOwner.game.defer(
-        new GainProduction(cardOwner, Resource.MEGACREDITS, {log: true}),
+        new GainProduction(cardOwner, Resource.MEGACREDITS, {log: true, from: {card: this}}),
         cardOwner.id !== activePlayer.id ? Priority.OPPONENT_TRIGGER : undefined,
       );
     }

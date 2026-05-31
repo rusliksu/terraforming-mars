@@ -8,6 +8,7 @@ import {CrediCor} from '../../../src/server/cards/corporation/CrediCor';
 import {testGame} from '../../TestGame';
 import {TestPlayer} from '../../TestPlayer';
 import {cast} from '@/common/utils/utils';
+import {formatMessage} from '../../TestingUtils';
 
 describe('CrediCor', () => {
   let card: CrediCor;
@@ -25,6 +26,13 @@ describe('CrediCor', () => {
     card.onStandardProject(player, new CityStandardProject());
     card.onStandardProject(player, new GreeneryStandardProject());
     expect(player.megaCredits).to.eq(8);
+  });
+
+  it('logs effect source', () => {
+    player.playedCards.push(card);
+    card.onStandardProject(player, new CityStandardProject());
+
+    expect(player.game.gameLog.map(formatMessage)).contains('blue gained 4 M€ because of CrediCor');
   });
 
   it('Runs onCardPlayed', () => {

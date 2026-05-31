@@ -3,7 +3,7 @@ import {MAX_COLONY_TRACK_POSITION} from '../../../src/common/constants';
 import {IGame} from '../../../src/server/IGame';
 import {TestPlayer} from '../../TestPlayer';
 import {OrOptions} from '../../../src/server/inputs/OrOptions';
-import {forceGenerationEnd} from '../../TestingUtils';
+import {forceGenerationEnd, formatMessage} from '../../TestingUtils';
 import {testGame} from '../../TestGame';
 import {Naomi} from '../../../src/server/cards/ceos/Naomi';
 import {Callisto} from '../../../src/server/colonies/Callisto';
@@ -37,10 +37,17 @@ describe('Naomi', () => {
       expect(player.stock.asUnits()).deep.eq(Units.of({}));
       expect(player2.stock.asUnits()).deep.eq(Units.of({}));
 
+      game.gameLog.length = 0;
       game.colonies[run.colony].addColony(players[run.player]);
 
       expect(players[0].stock.asUnits()).deep.eq(Units.of({energy: run.expected[0][0], megacredits: run.expected[0][1]}));
       expect(players[1].stock.asUnits()).deep.eq(Units.of({energy: run.expected[1][0], megacredits: run.expected[1][1]}));
+      if (run.player === 0) {
+        expect(game.gameLog.map(formatMessage)).includes.members([
+          'blue gained 2 energy because of Naomi',
+          'blue gained 3 M€ because of Naomi',
+        ]);
+      }
     });
   }
 

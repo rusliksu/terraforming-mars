@@ -4,7 +4,7 @@ import {IGame} from '../../../src/server/IGame';
 import {SelectPlayer} from '../../../src/server/inputs/SelectPlayer';
 import {TestPlayer} from '../../TestPlayer';
 import {Resource} from '../../../src/common/Resource';
-import {runAllActions} from '../../TestingUtils';
+import {formatMessage, runAllActions} from '../../TestingUtils';
 import {testGame} from '../../TestGame';
 import {cast} from '../../../src/common/utils/utils';
 
@@ -37,6 +37,7 @@ describe('GreatEscarpmentConsortium', () => {
     cast(player.popWaitingFor(), undefined);
     expect(player.production.steel).to.eq(1);
     expect(player2.production.steel).to.eq(0);
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 1 steel production');
   });
 
   it('Should play - multiple targets', () => {

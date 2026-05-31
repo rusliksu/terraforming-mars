@@ -59,7 +59,7 @@ export class PalladinShipping extends CorporationCard implements ICorporationCar
   };
 
   public action(player: IPlayer) {
-    getBehaviorExecutor().execute(PalladinShipping.actionBehavior, player, this);
+    getBehaviorExecutor().execute(PalladinShipping.actionBehavior, player, this, {logSource: false});
     return undefined;
   }
 }

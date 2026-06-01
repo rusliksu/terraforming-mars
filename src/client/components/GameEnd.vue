@@ -55,9 +55,6 @@
                   <AppButton size="big" type="back" />
                   <span>Elo &amp; History</span>
               </a>
-              <div class="game-end-language-switcher">
-                <language-switcher />
-              </div>
             </div>
           </div>
           <div v-if="spectatorUrl" class="game-end-spectator" style="text-align:center;margin:8px 0;font-size:12px;color:#888">
@@ -274,7 +271,6 @@ import PlanetaryTracks from '@/client/components/pathfinders/PlanetaryTracks.vue
 import DeltaProjectBoard from '@/client/components/delta/DeltaProjectBoard.vue';
 import LogPanel from '@/client/components/logpanel/LogPanel.vue';
 import AppButton from '@/client/components/common/AppButton.vue';
-import LanguageSwitcher from '@/client/components/LanguageSwitcher.vue';
 import VictoryPointChart, {DataSet} from '@/client/components/gameend/VictoryPointChart.vue';
 import PlayerEloBadge from '@/client/components/overview/PlayerEloBadge.vue';
 import {playerColorClass} from '@/common/utils/utils';
@@ -449,7 +445,6 @@ export default defineComponent({
     'board': Board,
     'log-panel': LogPanel,
     AppButton,
-    LanguageSwitcher,
     MoonBoard,
     PlanetaryTracks,
     PlayerEloBadge,
@@ -554,11 +549,6 @@ export default defineComponent({
 
 .game-end-elo-table {
   max-width: 560px;
-}
-
-.game-end-language-switcher {
-  line-height: 1;
-  margin-top: 16px;
 }
 
 .game-end-elo-delta {

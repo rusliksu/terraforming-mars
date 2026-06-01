@@ -259,7 +259,7 @@ export function buildEloResultsForPlayers(
     const delta = typeof result.delta === 'number' ? result.delta : (newElo - oldElo);
 
     rows.push({
-      name: player.name,
+      name: eloEntry?.displayName || result.displayName || player.name,
       color: player.color,
       oldElo,
       newElo,

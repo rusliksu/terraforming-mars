@@ -47,26 +47,26 @@ describe('elo utils', () => {
 
   it('builds ordered elo result rows for player table', () => {
     const playersInPlace = [
-      {name: 'Player Two', color: 'red' as Color, victoryPointsBreakdown: {total: 120}},
+      {name: 'Minsk', color: 'red' as Color, victoryPointsBreakdown: {total: 120}},
       {name: 'Player One', color: 'blue' as Color, victoryPointsBreakdown: {total: 100}},
     ];
 
     const matchedGame = {
       results: [
-        {displayName: 'player two', oldElo: 1500, newElo: 1510, delta: 10, vp: 120},
+        {displayName: 'Евгений', oldElo: 1500, newElo: 1510, delta: 10, vp: 120},
         {displayName: 'player one', oldElo: 1500, newElo: 1490, delta: -10, vp: 100},
       ],
     };
 
     const eloPlayers = {
-      'player two': {displayName: 'Player Two', elo: 1510, avgPlaceScore: 0.75},
+      'евгений': {displayName: 'Евгений', elo: 1510, avgPlaceScore: 0.75},
       'player one': {displayName: 'Player One', elo: 1490, avgPlaceScore: 0.25},
     };
 
     const rows = buildEloResultsForPlayers(playersInPlace, eloPlayers, matchedGame);
 
     expect(rows).deep.eq([
-      {name: 'Player Two', color: 'red', oldElo: 1500, newElo: 1510, delta: 10, avgPlaceScore: 0.75},
+      {name: 'Евгений', color: 'red', oldElo: 1500, newElo: 1510, delta: 10, avgPlaceScore: 0.75},
       {name: 'Player One', color: 'blue', oldElo: 1500, newElo: 1490, delta: -10, avgPlaceScore: 0.25},
     ]);
   });

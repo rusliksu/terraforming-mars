@@ -69,6 +69,32 @@ describe('Game', () => {
     expect(game.expectedPurgeTimeMs()).eq(0);
   });
 
+  it('restores legacy async games that stored telegram players without turnBasedGame', () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const player2 = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('gameid', [player, player2], player, 'spectatorid', {turnBasedGame: true});
+    player.telegramID = '123456';
+    const serialized = game.serialize();
+    delete (serialized.gameOptions as Partial<typeof serialized.gameOptions>).turnBasedGame;
+    delete (serialized.gameOptions as Partial<typeof serialized.gameOptions>).privateHands;
+
+    const restored = Game.deserialize(serialized);
+
+    expect(restored.gameOptions.turnBasedGame).is.true;
+    expect(restored.gameOptions.privateHands).is.true;
+  });
+
+  it('keeps explicitly non-async games non-async when a telegram id is stale', () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const player2 = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('gameid', [player, player2], player, 'spectatorid', {turnBasedGame: false});
+    player.telegramID = '123456';
+
+    const restored = Game.deserialize(game.serialize());
+
+    expect(restored.gameOptions.turnBasedGame).is.false;
+  });
+
   it('does not show a purge time when unfinished game purge is disabled', () => {
     const maxGameDays = process.env.MAX_GAME_DAYS;
     delete process.env.MAX_GAME_DAYS;

@@ -92,6 +92,16 @@ export function setGameLog(f: () => Array<LogMessage>) {
   createGameLog = f;
 }
 
+function deserializeGameOptions(d: SerializedGame): GameOptions {
+  const serializedOptions = (d.gameOptions ?? {}) as Partial<GameOptions>;
+  const gameOptions = {...DEFAULT_GAME_OPTIONS, ...serializedOptions};
+  const hasTurnBasedGameOption = Object.prototype.hasOwnProperty.call(serializedOptions, 'turnBasedGame');
+  if (!hasTurnBasedGameOption && d.players.some((player) => player.telegramID !== undefined && player.telegramID.trim() !== '')) {
+    gameOptions.turnBasedGame = true;
+  }
+  return gameOptions;
+}
+
 export class Game implements IGame, Logger {
   public readonly id: GameId;
   public readonly name: string;
@@ -1739,7 +1749,7 @@ export class Game implements IGame, Logger {
   }
 
   public static deserialize(d: SerializedGame): Game {
-    const gameOptions = d.gameOptions;
+    const gameOptions = deserializeGameOptions(d);
 
     const players = d.players.map((element) => Player.deserialize(element));
     const first = players.find((player) => player.id === d.first);

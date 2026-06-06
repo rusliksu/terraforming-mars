@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {getPlayerProfileByName, PLAYER_PROFILES} from '@/common/PlayerProfiles';
+import {buildPlayerProfilesFromEloPlayers, getPlayerProfileByName, PLAYER_PROFILES} from '@/common/PlayerProfiles';
 
 describe('Player profiles', () => {
   it('maps known nick aliases to canonical profiles', () => {
@@ -12,5 +12,18 @@ describe('Player profiles', () => {
 
   it('keeps profile ids unique', () => {
     expect(new Set(PLAYER_PROFILES.map((profile) => profile.id)).size).eq(PLAYER_PROFILES.length);
+  });
+
+  it('builds active player profiles from Elo players', () => {
+    const profiles = buildPlayerProfilesFromEloPlayers({
+      genuinegold: {displayName: 'GenuineGold', games: 48, elo: 1749},
+      vladlen: {displayName: 'Владлен', games: 24, elo: 1691},
+      leha: {displayName: 'Леха', games: 6, elo: 1452},
+      inactive: {displayName: 'Inactive', games: 0, elo: 1600},
+    });
+
+    expect(profiles.map((profile) => profile.name)).deep.eq(['GenuineGold', 'Владлен', 'Леха']);
+    expect(profiles.map((profile) => profile.id)).deep.eq(['genuinegold', 'владлен', 'leha']);
+    expect(getPlayerProfileByName('Асмо', profiles)?.name).eq('Леха');
   });
 });

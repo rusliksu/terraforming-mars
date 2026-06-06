@@ -2,6 +2,7 @@ import {shallowMount} from '@vue/test-utils';
 import {globalConfig} from '../getLocalVue';
 import {expect} from 'chai';
 import CreateGameForm from '@/client/components/create/CreateGameForm.vue';
+import {sharedEloState} from '@/client/utils/elo';
 import {
   ANTISTRESS_NAME,
   CATHARSIS_NAME,
@@ -26,6 +27,10 @@ describe('CreateGameForm', () => {
   afterEach(() => {
     global.fetch = originalFetch;
     window.history.replaceState({}, '', originalUrl);
+    sharedEloState.loaded = false;
+    sharedEloState.failed = false;
+    sharedEloState.players = {};
+    sharedEloState.games = [];
   });
 
   it('mounts without errors', () => {
@@ -321,6 +326,26 @@ describe('CreateGameForm', () => {
 
     expect(profileNames).not.to.include('Леха');
     expect(profileNames).to.include('Алексей');
+  });
+
+  it('offers active Elo players as profiles', async () => {
+    sharedEloState.loaded = true;
+    sharedEloState.players = {
+      genuinegold: {displayName: 'GenuineGold', games: 48, elo: 1749},
+      vladlen: {displayName: 'Владлен', games: 24, elo: 1691},
+      inactive: {displayName: 'Inactive', games: 0, elo: 1600},
+    };
+
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    const profileNames = vm.getAvailablePlayerProfiles(vm.players[0]).map((profile: {name: string}) => profile.name);
+
+    expect(profileNames).to.include('GenuineGold');
+    expect(profileNames).to.include('Владлен');
+    expect(profileNames).not.to.include('Inactive');
   });
 
   it('shows final Toma option and hides rejected Toma variants from the compact nick selector', () => {

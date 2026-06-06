@@ -650,7 +650,7 @@ import * as constants from '@/common/constants';
 import {defineComponent, nextTick} from 'vue';
 import {Color, DEFAULT_PLAYER_COLORS, getLockedPlayerName, LOCKED_PLAYER_IDENTITIES} from '@/common/Color';
 import type {LockedPlayerIdentity, PlayerColor} from '@/common/Color';
-import {getPlayerProfileById, getPlayerProfileByName, PLAYER_PROFILES} from '@/common/PlayerProfiles';
+import {buildPlayerProfilesFromEloPlayers, getPlayerProfileById, getPlayerProfileByName, PLAYER_PROFILES} from '@/common/PlayerProfiles';
 import type {PlayerProfile} from '@/common/PlayerProfiles';
 import {BoardName} from '@/common/boards/BoardName';
 import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
@@ -679,6 +679,7 @@ import {TemplateManager, GameTemplate} from './TemplateManager';
 import {getColony} from '@/client/colonies/ClientColonyManifest';
 import {RULEBOOK_URLS, WIKI, WIKI_URLS} from '@/client/utils/WikiLinks';
 import {setDocumentTitle} from '@/client/utils/documentTitle';
+import {ensureEloLoaded, sharedEloState} from '@/client/utils/elo';
 
 const REVISED_COUNT_ALGORITHM = false;
 
@@ -767,6 +768,7 @@ export default defineComponent({
   mounted() {
     setDocumentTitle('Create New Game');
     this.restoreLastSettings();
+    void ensureEloLoaded();
     const urlParams = new URLSearchParams(window.location.search);
     const cloneId = urlParams.get('cloneGameId');
     if (cloneId) {
@@ -1069,15 +1071,22 @@ export default defineComponent({
       const label = identity.label || identity.name;
       return `${label} · ${identity.colorLabel}`;
     },
+    getPlayerProfiles(): ReadonlyArray<PlayerProfile> {
+      if (sharedEloState.loaded && Object.keys(sharedEloState.players).length > 0) {
+        return buildPlayerProfilesFromEloPlayers(sharedEloState.players);
+      }
+      return PLAYER_PROFILES;
+    },
     getSelectedPlayerProfileId(player: NewPlayerModel): string {
-      return getPlayerProfileByName(player.name)?.id ?? '';
+      return getPlayerProfileByName(player.name, this.getPlayerProfiles())?.id ?? '';
     },
     getAvailablePlayerProfiles(player: NewPlayerModel): ReadonlyArray<PlayerProfile> {
+      const playerProfiles = this.getPlayerProfiles();
       const takenProfileIds = new Set(this.getPlayers()
         .filter((candidate) => candidate !== player)
-        .map((candidate) => getPlayerProfileByName(candidate.name)?.id)
+        .map((candidate) => getPlayerProfileByName(candidate.name, playerProfiles)?.id)
         .filter((id): id is string => id !== undefined));
-      return PLAYER_PROFILES.filter((profile) => !takenProfileIds.has(profile.id));
+      return playerProfiles.filter((profile) => !takenProfileIds.has(profile.id));
     },
     formatPlayerProfileOption(profile: PlayerProfile): string {
       return profile.name;
@@ -1104,12 +1113,12 @@ export default defineComponent({
     applyPlayerProfileFromSelect(player: NewPlayerModel, event: Event) {
       const profileId = (event.target as HTMLSelectElement).value;
       if (profileId === '') {
-        if (getPlayerProfileByName(player.name) !== undefined) {
+        if (getPlayerProfileByName(player.name, this.getPlayerProfiles()) !== undefined) {
           player.name = '';
         }
         return;
       }
-      const profile = getPlayerProfileById(profileId);
+      const profile = getPlayerProfileById(profileId, this.getPlayerProfiles());
       if (profile === undefined || !this.getAvailablePlayerProfiles(player).some((candidate) => candidate.id === profile.id)) {
         return;
       }

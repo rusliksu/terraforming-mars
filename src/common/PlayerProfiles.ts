@@ -1,4 +1,4 @@
-import {Color, DEFAULT_PLAYER_COLORS} from './Color';
+import {Color, DEFAULT_PLAYER_COLORS, getPlayerIdentityByName} from './Color';
 import eloPlayerNameAliases from '../../elo/player_name_aliases.json';
 
 export type PlayerProfile = {
@@ -72,6 +72,10 @@ function uniqueAliases(aliases: Array<string>): ReadonlyArray<string> {
 function getAliasesForProfileName(name: string, seed?: PlayerProfile): ReadonlyArray<string> {
   const normalizedName = normalizeProfileName(name);
   const aliases = [...(seed?.aliases ?? [])];
+  const identity = getPlayerIdentityByName(name);
+  if (identity !== undefined) {
+    aliases.push(...identity.aliases);
+  }
   for (const [alias, canonicalName] of Object.entries(ELO_PLAYER_NAME_ALIASES)) {
     if (normalizeProfileName(canonicalName) === normalizedName) {
       aliases.push(alias);
@@ -115,10 +119,11 @@ export function buildPlayerProfilesFromEloPlayers(eloPlayers: Record<string, Elo
     })
     .map((entry, index) => {
       const seed = getSeedProfile(entry.displayName);
+      const identity = getPlayerIdentityByName(entry.displayName);
       return {
         id: seed?.id ?? normalizeProfileName(entry.displayName),
         name: entry.displayName,
-        preferredColor: seed?.preferredColor ?? DEFAULT_PLAYER_COLORS[index % DEFAULT_PLAYER_COLORS.length],
+        preferredColor: seed?.preferredColor ?? identity?.color ?? DEFAULT_PLAYER_COLORS[index % DEFAULT_PLAYER_COLORS.length],
         aliases: getAliasesForProfileName(entry.displayName, seed),
         elo: entry.elo,
         games: entry.games,

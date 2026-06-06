@@ -33,6 +33,20 @@ describe('Player profiles', () => {
     expect(getPlayerProfileByName('Асмо', profiles)?.name).eq('Леха');
   });
 
+  it('uses reserved player colors for Elo-built profiles', () => {
+    const profiles = buildPlayerProfilesFromEloPlayers({
+      genuinegold: {displayName: 'GenuineGold', games: 48, elo: 1749},
+      vladlen: {displayName: 'Владлен', games: 24, elo: 1691},
+      gydro: {displayName: 'GydRo', games: 60, elo: 1681},
+      antistress: {displayName: 'Антистресс', games: 23, elo: 1409},
+    });
+
+    expect(getPlayerProfileByName('GydRo', profiles)?.preferredColor).eq('pearl');
+    expect(getPlayerProfileByName('Руслан', profiles)?.name).eq('GydRo');
+    expect(getPlayerProfileByName('GenuineGold', profiles)?.preferredColor).eq('gold');
+    expect(getPlayerProfileByName('Антистресс', profiles)?.preferredColor).eq('antistress');
+  });
+
   it('keeps Elo and deterministic avatar metadata on built profiles', () => {
     const profiles = buildPlayerProfilesFromEloPlayers({
       genuinegold: {displayName: 'GenuineGold', games: 48, elo: 1749},

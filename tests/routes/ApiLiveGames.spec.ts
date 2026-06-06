@@ -125,7 +125,7 @@ describe('ApiLiveGames', () => {
       [TestPlayer.BLUE.newPlayer(), TestPlayer.RED.newPlayer()],
       Phase.ACTION,
     );
-    malformedEscapeVelocityGame.gameOptions = {
+    Object.assign(malformedEscapeVelocityGame, {gameOptions: {
       ...malformedEscapeVelocityGame.gameOptions,
       escapeVelocity: {
         thresholdMinutes: -9999,
@@ -133,7 +133,7 @@ describe('ApiLiveGames', () => {
         penaltyPeriodMinutes: -12,
         penaltyVPPerPeriod: 999999,
       },
-    };
+    }});
     await scaffolding.ctx.gameLoader.add(malformedEscapeVelocityGame);
 
     scaffolding.url = '/api/live-games';

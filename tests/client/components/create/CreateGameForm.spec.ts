@@ -329,7 +329,7 @@ describe('CreateGameForm', () => {
     const profileNames = vm.getAvailablePlayerProfiles(vm.players[1]).map((profile: {name: string}) => profile.name);
 
     expect(profileNames).not.to.include('Леха');
-    expect(profileNames).to.include('Алексей');
+    expect(profileNames).to.include('Qiksa');
   });
 
   it('offers active Elo players as profiles', async () => {
@@ -337,6 +337,7 @@ describe('CreateGameForm', () => {
     sharedEloState.players = {
       genuinegold: {displayName: 'GenuineGold', games: 48, elo: 1749},
       vladlen: {displayName: 'Владлен', games: 24, elo: 1691},
+      alexey: {displayName: 'Алексей', games: 19, elo: 1269},
       inactive: {displayName: 'Inactive', games: 0, elo: 1600},
     };
 
@@ -349,7 +350,41 @@ describe('CreateGameForm', () => {
 
     expect(profileNames).to.include('GenuineGold');
     expect(profileNames).to.include('Владлен');
+    expect(profileNames).to.include('Qiksa');
     expect(profileNames).not.to.include('Inactive');
+  });
+
+  it('applies observed favorite colors from player profiles', async () => {
+    sharedEloState.loaded = true;
+    sharedEloState.players = {
+      alexey: {displayName: 'Алексей', games: 19, elo: 1269},
+      timur: {displayName: 'Тимур', games: 17, elo: 1506},
+    };
+
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    await wrapper.find('.create-game-player-profile-trigger').trigger('click');
+    const qiksaOption = wrapper.findAll('.create-game-profile-option')
+      .find((option) => option.text().includes('Qiksa'));
+    expect(qiksaOption).not.to.be.undefined;
+    await qiksaOption!.trigger('click');
+
+    expect(vm.players[0].name).to.eq('Qiksa');
+    expect(vm.players[0].color).to.eq('black');
+
+    vm.players[0].name = '';
+    vm.players[0].color = 'green';
+    await wrapper.find('.create-game-player-profile-trigger').trigger('click');
+    const timurOption = wrapper.findAll('.create-game-profile-option')
+      .find((option) => option.text().includes('Тимур'));
+    expect(timurOption).not.to.be.undefined;
+    await timurOption!.trigger('click');
+
+    expect(vm.players[0].name).to.eq('Тимур');
+    expect(vm.players[0].color).to.eq('red');
   });
 
   it('renders active Elo profiles with avatars, Elo, preferred colors, and player name typography', async () => {

@@ -11,7 +11,8 @@ describe('Player profiles', () => {
   it('maps known nick aliases to canonical profiles', () => {
     expect(getPlayerProfileByName('Лёха Инженер')?.name).eq('Леха');
     expect(getPlayerProfileByName('Асмо')?.name).eq('Леха');
-    expect(getPlayerProfileByName('Алексей Часовщик')?.name).eq('Алексей');
+    expect(getPlayerProfileByName('Алексей Часовщик')?.name).eq('Qiksa');
+    expect(getPlayerProfileByName('Qiksa')?.name).eq('Qiksa');
     expect(getPlayerProfileByName('Женя')?.name).eq('vvbMinsk');
     expect(getPlayerProfileByName('Midilobusim')?.name).eq('Nuke');
   });
@@ -24,13 +25,38 @@ describe('Player profiles', () => {
     const profiles = buildPlayerProfilesFromEloPlayers({
       genuinegold: {displayName: 'GenuineGold', games: 48, elo: 1749},
       vladlen: {displayName: 'Владлен', games: 24, elo: 1691},
+      alexey: {displayName: 'Алексей', games: 19, elo: 1269},
+      timur: {displayName: 'Тимур', games: 17, elo: 1506},
+      vvbminsk: {displayName: 'vvbMinsk', games: 11, elo: 1535},
+      nuke: {displayName: 'Nuke', games: 7, elo: 1497},
       leha: {displayName: 'Леха', games: 6, elo: 1452},
       inactive: {displayName: 'Inactive', games: 0, elo: 1600},
     });
 
-    expect(profiles.map((profile) => profile.name)).deep.eq(['GenuineGold', 'Владлен', 'Леха']);
-    expect(profiles.map((profile) => profile.id)).deep.eq(['genuinegold', 'владлен', 'leha']);
+    expect(profiles.map((profile) => profile.name)).deep.eq(['GenuineGold', 'Владлен', 'vvbMinsk', 'Тимур', 'Nuke', 'Леха', 'Qiksa']);
+    expect(profiles.map((profile) => profile.id)).deep.eq(['genuinegold', 'vladlen', 'vvbminsk', 'timur', 'nuke', 'leha', 'qiksa']);
     expect(getPlayerProfileByName('Асмо', profiles)?.name).eq('Леха');
+    expect(getPlayerProfileByName('Алексей', profiles)?.name).eq('Qiksa');
+  });
+
+  it('uses observed favorite colors for Elo-built profiles', () => {
+    const profiles = buildPlayerProfilesFromEloPlayers({
+      alexey: {displayName: 'Алексей', games: 19, elo: 1269},
+      vladlen: {displayName: 'Владлен', games: 24, elo: 1691},
+      timur: {displayName: 'Тимур', games: 17, elo: 1506},
+      vvbminsk: {displayName: 'vvbMinsk', games: 11, elo: 1535},
+      nuke: {displayName: 'Nuke', games: 7, elo: 1497},
+      tagir: {displayName: 'Тагир', games: 18, elo: 1618},
+      anya: {displayName: 'Аня', games: 21, elo: 1531},
+    });
+
+    expect(getPlayerProfileByName('Qiksa', profiles)?.preferredColor).eq('black');
+    expect(getPlayerProfileByName('Владлен', profiles)?.preferredColor).eq('red');
+    expect(getPlayerProfileByName('Тимур', profiles)?.preferredColor).eq('red');
+    expect(getPlayerProfileByName('vvbMinsk', profiles)?.preferredColor).eq('purple');
+    expect(getPlayerProfileByName('Nuke', profiles)?.preferredColor).eq('black');
+    expect(getPlayerProfileByName('Тагир', profiles)?.preferredColor).eq('purple');
+    expect(getPlayerProfileByName('Аня', profiles)?.preferredColor).eq('green');
   });
 
   it('uses reserved player colors for Elo-built profiles', () => {

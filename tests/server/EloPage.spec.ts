@@ -902,4 +902,95 @@ describe('ELO page', () => {
 
     dom.window.close();
   });
+
+  it('canonicalizes stats profiles and uses observed favorite colors', async () => {
+    const dom = createEloPage({
+      players: {
+        'тимур': {
+          displayName: 'Тимур',
+          elo: 1505,
+          elo_vp: 1505,
+          games: 17,
+          avgPlace: 2,
+          avgVP: 81,
+          avgGens: 8.7,
+          avgMargin: -17,
+        },
+        'алексей': {
+          displayName: 'Алексей',
+          elo: 1485,
+          elo_vp: 1485,
+          games: 19,
+          avgPlace: 2,
+          avgVP: 75,
+          avgGens: 8,
+          avgMargin: -5,
+        },
+      },
+      games: [
+        {
+          gameId: 'qiksa-game',
+          endId: 'qiksa-end',
+          server: 'knightbyte',
+          generation: 9,
+          results: [
+            {name: 'Алексей Часовщик', displayName: 'Алексей Часовщик', place: 2, vp: 75, corp: 'Tharsis Republic', delta: -5},
+            {name: 'Тимур', displayName: 'Тимур', place: 1, vp: 88, corp: 'Teractor', delta: 5},
+          ],
+        },
+      ],
+    }, {
+      gameCount: 1,
+      playerGameCount: 2,
+      detailedGameCount: 1,
+      detailedPlayerGameCount: 1,
+      players: [
+        {
+          name: 'Алексей Часовщик',
+          displayName: 'Алексей Часовщик',
+          games: 1,
+          wins: 0,
+          winRate: 0,
+          avgVP: 75,
+          bestVP: 75,
+          averages: {},
+        },
+      ],
+      generationRecords: [],
+      records: [
+        {
+          key: 'qiksaRecord',
+          category: 'Cards',
+          label: 'Most buildings',
+          value: 6,
+          player: 'Алексей Часовщик',
+          displayName: 'Алексей Часовщик',
+          generation: 9,
+          vp: 75,
+          corp: 'Tharsis Republic',
+          gameId: 'qiksa-game',
+          server: 'knightbyte',
+        },
+      ],
+      cardStats: [],
+    });
+
+    await waitForRows(dom);
+    const document = dom.window.document;
+    const statsTab = Array.from(document.querySelectorAll('.tab')).find((tab) => cleanText(tab.textContent) === 'Stats') as HTMLElement | undefined;
+    expect(statsTab).not.eq(undefined);
+    statsTab?.click();
+
+    expect(getCells(document, '#tmStatsProfileList .tm-stats-profile-name')).deep.eq(['Тимур', 'Qiksa']);
+    expect((document.querySelector('[data-stats-player="тимур"]') as HTMLElement).style.getPropertyValue('--profile-color')).eq('#991100');
+    expect((document.querySelector('[data-stats-player="qiksa"]') as HTMLElement).style.getPropertyValue('--profile-color')).eq('#aaaaaa');
+
+    const qiksaProfile = document.querySelector('#tmStatsProfileList [data-stats-player="qiksa"]') as HTMLElement;
+    qiksaProfile.click();
+    expect(cleanText(document.querySelector('#tmStatsProfileDetail .tm-stats-profile-title')?.textContent)).eq('Qiksa');
+    expect(cleanText(document.querySelector('#tmStatsProfileDetail')?.textContent)).contains('Cards · Most buildings 6');
+    expect(cleanText(document.querySelector('#tmStatsProfileDetail')?.textContent)).contains('Gen 9 · #2 · 75 VP');
+
+    dom.window.close();
+  });
 });

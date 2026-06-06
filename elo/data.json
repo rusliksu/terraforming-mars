@@ -35,10 +35,10 @@
       },
       "avgVP": 95.67
     },
-    "алексей": {
+    "qiksa": {
       "elo": 1476,
       "elo_vp": 1486,
-      "displayName": "Алексей",
+      "displayName": "Qiksa",
       "games": 1,
       "firsts": 0,
       "wins": 0,
@@ -197,8 +197,8 @@
           "vp": 81
         },
         {
-          "name": "алексей",
-          "displayName": "Алексей",
+          "name": "qiksa",
+          "displayName": "Qiksa",
           "place": 3,
           "delta": -24,
           "oldElo": 1500,

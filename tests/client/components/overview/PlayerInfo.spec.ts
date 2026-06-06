@@ -99,6 +99,7 @@ describe('PlayerInfo', () => {
     });
 
     expect(playerInfo.find('.played-cards-button').attributes('title')).eq('table');
+    expect(playerInfo.find('.player-info-details .spectator-hand-button').exists()).eq(true);
     expect(playerInfo.find('.spectator-hand-button').attributes('title')).eq('hand 4');
 
     await playerInfo.find('.spectator-hand-button').trigger('click');

@@ -522,11 +522,11 @@
                                                       v-for="profile in getFilteredAvailablePlayerProfiles(newPlayer)"
                                                       :key="profile.id"
                                                       type="button"
-                                                      class="create-game-profile-option"
+                                                      :class="getPlayerProfileOptionClasses(profile)"
                                                       @click="applyPlayerProfileFromPicker(newPlayer, profile)">
                                                         <span :class="['create-game-profile-avatar', ...getPlayerProfileAvatarClasses(profile)]">{{ getPlayerProfileInitials(profile) }}</span>
                                                         <span class="create-game-profile-option-main">
-                                                          <span class="create-game-profile-option-name">{{ profile.name }}</span>
+                                                          <span class="create-game-profile-option-name player-name">{{ profile.name }}</span>
                                                           <span class="create-game-profile-option-meta">{{ formatPlayerProfileMeta(profile) }}</span>
                                                         </span>
                                                         <span class="create-game-profile-color-swatch" :title="getColorTitle(profile.preferredColor)">
@@ -1188,6 +1188,13 @@ export default defineComponent({
       return [
         this.getPlayerCubeColorClass(profile.preferredColor),
         `create-game-profile-avatar--pattern-${getPlayerProfileAvatarPattern(profile)}`,
+      ];
+    },
+    getPlayerProfileOptionClasses(profile: PlayerProfile): Array<string> {
+      return [
+        'create-game-profile-option',
+        'create-game-profile-option-colored',
+        this.getPlayerContainerColorClass(profile.preferredColor),
       ];
     },
     isPlayerProfilePickerOpen(index: number): boolean {

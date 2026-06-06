@@ -686,9 +686,8 @@
 .create-game-profile-option {
     width: 100%;
     min-height: 42px;
-    border: 0;
+    border: 1px solid rgba(255,255,255,.12);
     border-radius: 4px;
-    background: transparent;
     color: #e6e6e6;
     display: flex;
     align-items: center;
@@ -698,16 +697,58 @@
     cursor: pointer;
 }
 
-.create-game-profile-option:hover,
-.create-game-profile-option:focus {
+.create-game-profile-option-custom {
+    background: transparent;
+}
+
+.create-game-profile-option-colored {
+    margin-bottom: 3px;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.18), 0 1px 2px rgba(0,0,0,.22);
+    overflow: hidden;
+}
+
+.create-game-profile-option-custom:hover,
+.create-game-profile-option-custom:focus {
     background: rgba(255,255,255,.1);
     outline: none;
+}
+
+.create-game-profile-option-colored:hover,
+.create-game-profile-option-colored:focus {
+    filter: brightness(1.14) saturate(1.08);
+    outline: 1px solid rgba(255,255,255,.32);
+    outline-offset: -1px;
 }
 
 .create-game-profile-option-custom {
     margin-bottom: 4px;
     border-bottom: 1px solid rgba(255,255,255,.12);
     border-radius: 4px 4px 0 0;
+}
+
+.create-game-profile-option-name.player-name {
+    font-family: Prototype, Ubuntu, Sans;
+    font-weight: 800;
+    text-shadow: 0 1px 2px rgba(0,0,0,.72);
+}
+
+.create-game-profile-option-colored .create-game-profile-option-meta {
+    color: inherit;
+    opacity: .74;
+    text-shadow: 0 1px 2px rgba(0,0,0,.72);
+}
+
+.create-game-profile-option-colored.player_translucent_bg_color_gold .create-game-profile-option-name,
+.create-game-profile-option-colored.player_translucent_bg_color_gold .create-game-profile-option-meta,
+.create-game-profile-option-colored.player_translucent_bg_color_pearl .create-game-profile-option-name,
+.create-game-profile-option-colored.player_translucent_bg_color_pearl .create-game-profile-option-meta,
+.create-game-profile-option-colored.player_translucent_bg_color_vanger .create-game-profile-option-name,
+.create-game-profile-option-colored.player_translucent_bg_color_vanger .create-game-profile-option-meta,
+.create-game-profile-option-colored.player_translucent_bg_color_saturn .create-game-profile-option-name,
+.create-game-profile-option-colored.player_translucent_bg_color_saturn .create-game-profile-option-meta,
+.create-game-profile-option-colored.player_translucent_bg_color_saturnrings .create-game-profile-option-name,
+.create-game-profile-option-colored.player_translucent_bg_color_saturnrings .create-game-profile-option-meta {
+    text-shadow: none;
 }
 
 .create-game-profile-avatar {

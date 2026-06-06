@@ -352,7 +352,7 @@ describe('CreateGameForm', () => {
     expect(profileNames).not.to.include('Inactive');
   });
 
-  it('renders active Elo profiles with avatars, Elo, and preferred color swatches', async () => {
+  it('renders active Elo profiles with avatars, Elo, preferred colors, and player name typography', async () => {
     sharedEloState.loaded = true;
     sharedEloState.players = {
       genuinegold: {displayName: 'GenuineGold', games: 48, elo: 1749},
@@ -370,6 +370,8 @@ describe('CreateGameForm', () => {
     expect(menuText).to.include('ELO 1749');
     expect(menuText).to.include('48 games');
     expect(wrapper.find('.create-game-profile-option-list .create-game-profile-avatar').text()).to.eq('GG');
+    expect(wrapper.find('.create-game-profile-option-list .create-game-profile-option').classes()).to.include('player_translucent_bg_color_gold');
+    expect(wrapper.find('.create-game-profile-option-list .create-game-profile-option-name').classes()).to.include('player-name');
     expect(wrapper.find('.create-game-profile-color-swatch').exists()).to.be.true;
   });
 

@@ -9,6 +9,7 @@
                 {{ corporationName }}
               </div>
             </span>
+            <AppButton v-if="spectatorHandCardCount() > 0" class="spectator-hand-button player-info-hand-button" size="tiny" @click="toggleSpectatorHand" :title="spectatorHandButtonLabel()" />
           </div>
           <div>
             <div class="icon-first-player" v-if="firstForGen && playerView.players.length > 1" v-i18n>1st</div>
@@ -26,7 +27,6 @@
               </div>
             </div>
             <AppButton class="played-cards-button player-table-button" size="tiny" @click="togglePlayerDetails" :title="tableButtonLabel()" />
-            <AppButton v-if="spectatorHandCardCount() > 0" class="played-cards-button spectator-hand-button" size="tiny" @click="toggleSpectatorHand" :title="spectatorHandButtonLabel()" />
           </div>
           <div class="tag-display player-board-blue-action-counter" :class="tooltipCss" :data-tooltip="$t('The number of available actions on active cards')">
             <div class="tag-count tag-action-card">

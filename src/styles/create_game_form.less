@@ -366,7 +366,8 @@
         -webkit-text-fill-color: fade(@fg, 72%);
     }
 
-    .create-game-persona-select {
+    .create-game-persona-select,
+    .create-game-player-profile-select {
         color: @fg !important;
         border-color: fade(@fg, 36%) !important;
     }
@@ -558,7 +559,13 @@
     max-width: 245px;
 }
 
-.create-game-persona-select {
+.create-game-profile-picker {
+    margin-top: 8px;
+    max-width: 245px;
+}
+
+.create-game-persona-select,
+.create-game-player-profile-select {
     width: 190px;
     min-width: 0;
     height: 28px;
@@ -573,13 +580,20 @@
     cursor: pointer;
 }
 
-.create-game-persona-select option {
+.create-game-player-profile-select {
+    width: 238px;
+}
+
+.create-game-persona-select option,
+.create-game-player-profile-select option {
     background: #20242c;
     color: #e6e6e6;
 }
 
 .create-game-persona-select:hover,
-.create-game-persona-select:focus {
+.create-game-persona-select:focus,
+.create-game-player-profile-select:hover,
+.create-game-player-profile-select:focus {
     border-color: rgba(255,255,255,.55) !important;
     background: rgba(0,0,0,.48) !important;
     box-shadow: none;

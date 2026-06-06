@@ -486,6 +486,17 @@
                                           <div>
                                               <input class="form-input form-inline create-game-player-name" :placeholder="getPlayerNamePlaceholder(index)" v-model="newPlayer.name" :readonly="isPlayerNameLocked(newPlayer.color)" />
                                           </div>
+                                          <div class="create-game-profile-picker">
+                                              <select
+                                                class="form-select form-inline create-game-player-profile-select"
+                                                :value="getSelectedPlayerProfileId(newPlayer)"
+                                                @change="applyPlayerProfileFromSelect(newPlayer, $event)">
+                                                  <option value="">Player profile</option>
+                                                  <option v-for="profile in getAvailablePlayerProfiles(newPlayer)" :key="profile.id" :value="profile.id">
+                                                    {{ formatPlayerProfileOption(profile) }}
+                                                  </option>
+                                              </select>
+                                          </div>
                                           <div class="create-game-persona-picker">
                                               <span class="create-game-persona-preview" :title="getColorTitle(newPlayer.color)">
                                                   <span :class="'create-game-colorbox '+getPlayerCubeColorClass(newPlayer.color)"></span>
@@ -639,6 +650,8 @@ import * as constants from '@/common/constants';
 import {defineComponent, nextTick} from 'vue';
 import {Color, DEFAULT_PLAYER_COLORS, getLockedPlayerName, LOCKED_PLAYER_IDENTITIES} from '@/common/Color';
 import type {LockedPlayerIdentity, PlayerColor} from '@/common/Color';
+import {getPlayerProfileById, getPlayerProfileByName, PLAYER_PROFILES} from '@/common/PlayerProfiles';
+import type {PlayerProfile} from '@/common/PlayerProfiles';
 import {BoardName} from '@/common/boards/BoardName';
 import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
 import {CardName} from '@/common/cards/CardName';
@@ -1055,6 +1068,52 @@ export default defineComponent({
     formatLockedIdentityOption(identity: LockedPlayerIdentity): string {
       const label = identity.label || identity.name;
       return `${label} · ${identity.colorLabel}`;
+    },
+    getSelectedPlayerProfileId(player: NewPlayerModel): string {
+      return getPlayerProfileByName(player.name)?.id ?? '';
+    },
+    getAvailablePlayerProfiles(player: NewPlayerModel): ReadonlyArray<PlayerProfile> {
+      const takenProfileIds = new Set(this.getPlayers()
+        .filter((candidate) => candidate !== player)
+        .map((candidate) => getPlayerProfileByName(candidate.name)?.id)
+        .filter((id): id is string => id !== undefined));
+      return PLAYER_PROFILES.filter((profile) => !takenProfileIds.has(profile.id));
+    },
+    formatPlayerProfileOption(profile: PlayerProfile): string {
+      return profile.name;
+    },
+    getAvailablePlayerProfileColor(player: NewPlayerModel, profile: PlayerProfile): Color {
+      const usedColors = new Set(this.getPlayers()
+        .filter((candidate) => candidate !== player)
+        .map((candidate) => candidate.color));
+      if (!usedColors.has(profile.preferredColor)) {
+        return profile.preferredColor;
+      }
+      if (
+        DEFAULT_PLAYER_COLORS.includes(player.color as typeof DEFAULT_PLAYER_COLORS[number]) &&
+        !usedColors.has(player.color)
+      ) {
+        return player.color;
+      }
+      return DEFAULT_PLAYER_COLORS.find((color) => !usedColors.has(color)) ?? player.color;
+    },
+    applyPlayerProfile(player: NewPlayerModel, profile: PlayerProfile) {
+      player.name = profile.name;
+      player.color = this.getAvailablePlayerProfileColor(player, profile);
+    },
+    applyPlayerProfileFromSelect(player: NewPlayerModel, event: Event) {
+      const profileId = (event.target as HTMLSelectElement).value;
+      if (profileId === '') {
+        if (getPlayerProfileByName(player.name) !== undefined) {
+          player.name = '';
+        }
+        return;
+      }
+      const profile = getPlayerProfileById(profileId);
+      if (profile === undefined || !this.getAvailablePlayerProfiles(player).some((candidate) => candidate.id === profile.id)) {
+        return;
+      }
+      this.applyPlayerProfile(player, profile);
     },
     getAvailableDefaultColor(player: NewPlayerModel): Color {
       const usedColors = new Set(this.getPlayers()

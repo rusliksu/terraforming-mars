@@ -290,6 +290,39 @@ describe('CreateGameForm', () => {
     expect(vm.players[0].name).to.eq(EMERALD_RAV_NAME);
   });
 
+  it('applies player profiles without locking later name edits', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    await wrapper.find('.create-game-player-profile-select').setValue('leha');
+
+    expect(vm.players[0].color).to.eq('orange');
+    expect(vm.players[0].name).to.eq('Леха');
+    expect(wrapper.find('.create-game-player-name').attributes()).not.to.have.property('readonly');
+  });
+
+  it('hides profiles that are already selected in another player slot', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    await wrapper.setData({
+      playersCount: 2,
+      players: [
+        {name: 'Асмо', color: 'orange', beginner: false, handicap: 0, first: false, isBot: false},
+        {name: '', color: 'green', beginner: false, handicap: 0, first: false, isBot: false},
+      ],
+    });
+
+    const profileNames = vm.getAvailablePlayerProfiles(vm.players[1]).map((profile: {name: string}) => profile.name);
+
+    expect(profileNames).not.to.include('Леха');
+    expect(profileNames).to.include('Алексей');
+  });
+
   it('shows final Toma option and hides rejected Toma variants from the compact nick selector', () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,

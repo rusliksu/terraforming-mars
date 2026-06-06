@@ -27,6 +27,16 @@ describe('StartScreen', () => {
     expect(wrapper.exists()).to.be.true;
   });
 
+  it('links to the local tier list mirror', () => {
+    const wrapper = shallowMount(StartScreen, {
+      ...globalConfig,
+    });
+    const tierListLink = wrapper.findAll('a').find((link) => link.text() === 'Tier List');
+
+    expect(tierListLink).is.not.undefined;
+    expect(tierListLink?.attributes('href')).to.eq('/tierlist/');
+  });
+
   it('shows live games with spectator links', async () => {
     const fetchCalls: Array<string> = [];
     global.fetch = (async (url: unknown) => {

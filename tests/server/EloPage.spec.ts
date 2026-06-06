@@ -12,6 +12,7 @@ type EloPageData = {
     avgVP: number;
     avgGens: number;
     avgMargin: number;
+    corps?: Record<string, number>;
   }>;
   games: Array<{
     gameId: string;
@@ -54,6 +55,8 @@ type EloStatsData = {
     avgVP: number;
     bestVP: number;
     averages: Record<string, number>;
+    avgVPBreakdown?: Record<string, number>;
+    vpBreakdownGames?: Record<string, number>;
     timing?: {
       games: number;
       avgTimeSeconds: number;
@@ -753,6 +756,149 @@ describe('ELO page', () => {
     expect(getCells(document, '#tmStatsCardsBody tr:first-child td')).deep.eq(['Asteroid', 'event', '3', '66.7%', '96.3', '+4.5', 'space, event']);
     expect(getCells(document, '#tmStatsCorporationsBody tr:first-child td')).deep.eq(['Teractor', 'corporation', '2', '50%', '96', '+1.5', 'earth']);
     expect(getCells(document, '#tmStatsPreludesBody tr:first-child td')).deep.eq(['Applied Science', 'prelude', '1', '100%', '100', '+13', 'wild']);
+
+    dom.window.close();
+  });
+
+  it('renders selectable player profiles on the stats tab from active ELO players', async () => {
+    const dom = createEloPage({
+      players: {
+        'gydro': {
+          displayName: 'GydRo',
+          elo: 1613,
+          elo_vp: 1596,
+          games: 5,
+          avgPlace: 1,
+          avgVP: 100,
+          avgGens: 8,
+          avgMargin: 8,
+          corps: {
+            Teractor: 2,
+            Inventrix: 1,
+          },
+        },
+        'рав': {
+          displayName: 'Рав',
+          elo: 1487,
+          elo_vp: 1490,
+          games: 1,
+          avgPlace: 0,
+          avgVP: 92,
+          avgGens: 8,
+          avgMargin: -8,
+          corps: {
+            Inventrix: 1,
+          },
+        },
+        'inactive': {
+          displayName: 'Inactive',
+          elo: 1800,
+          elo_vp: 1800,
+          games: 0,
+          avgPlace: 0,
+          avgVP: 0,
+          avgGens: 0,
+          avgMargin: 0,
+        },
+        'a': {
+          displayName: 'A',
+          elo: 1700,
+          elo_vp: 1700,
+          games: 10,
+          avgPlace: 0,
+          avgVP: 0,
+          avgGens: 0,
+          avgMargin: 0,
+        },
+      },
+      games: [
+        {
+          gameId: 'profile-game',
+          endId: 'profile-end',
+          server: 'knightbyte',
+          generation: 8,
+          results: [
+            {name: 'gydro', displayName: 'GydRo', place: 1, vp: 100, corp: 'Teractor', delta: 13},
+            {name: 'рав', displayName: 'Рав', place: 2, vp: 92, corp: 'Inventrix', delta: -13},
+          ],
+        },
+      ],
+    }, {
+      gameCount: 1,
+      playerGameCount: 2,
+      detailedGameCount: 1,
+      detailedPlayerGameCount: 1,
+      players: [
+        {
+          name: 'gydro',
+          displayName: 'GydRo',
+          games: 1,
+          wins: 1,
+          winRate: 100,
+          avgVP: 100,
+          bestVP: 100,
+          averages: {
+            playedCards: 12,
+            eventCards: 2,
+            activeCards: 3,
+            automatedCards: 5,
+            cities: 2,
+            greeneries: 4,
+          },
+          avgVPBreakdown: {
+            cards: 16,
+            greenery: 12,
+            city: 8,
+            milestones: 5,
+            awards: 5,
+          },
+          vpBreakdownGames: {
+            cards: 1,
+          },
+          timing: {
+            games: 1,
+            avgTimeSeconds: 600,
+            avgSecondsPerAction: 12.3,
+          },
+        },
+      ],
+      generationRecords: [],
+      records: [
+        {
+          key: 'mostEvents',
+          category: 'Cards',
+          label: 'Most events',
+          value: 7,
+          player: 'gydro',
+          displayName: 'GydRo',
+          generation: 8,
+          vp: 100,
+          corp: 'Teractor',
+          gameId: 'profile-game',
+          server: 'knightbyte',
+        },
+      ],
+      cardStats: [],
+    });
+
+    await waitForRows(dom);
+    const document = dom.window.document;
+    const statsTab = Array.from(document.querySelectorAll('.tab')).find((tab) => cleanText(tab.textContent) === 'Stats') as HTMLElement | undefined;
+    expect(statsTab).not.eq(undefined);
+    statsTab?.click();
+
+    expect(getCells(document, '#tmStatsProfileList .tm-stats-profile-name')).deep.eq(['GydRo', 'Рав']);
+    expect(cleanText(document.querySelector('#tmStatsProfileDetail .tm-stats-profile-title')?.textContent)).eq('GydRo');
+    expect(getCells(document, '#tmStatsProfileDetail .tm-stats-profile-metric .value').slice(0, 6)).deep.eq(['1613', '1596', '5', '1', '100%', '100']);
+    expect(cleanText(document.querySelector('#tmStatsProfileDetail')?.textContent)).contains('Teractor 2');
+    expect(cleanText(document.querySelector('#tmStatsProfileDetail')?.textContent)).contains('Cards · Most events 7');
+    expect((document.querySelector('[data-stats-player="gydro"]') as HTMLElement).style.getPropertyValue('--profile-color')).eq('#f2f8f8');
+
+    const ravProfile = document.querySelector('#tmStatsProfileList [data-stats-player="рав"]') as HTMLElement;
+    ravProfile.click();
+    expect(cleanText(document.querySelector('#tmStatsProfileDetail .tm-stats-profile-title')?.textContent)).eq('Рав');
+    expect(cleanText(document.querySelector('#tmStatsProfileDetail')?.textContent)).contains('No detailed stats yet');
+    expect(cleanText(document.querySelector('#tmStatsProfileDetail')?.textContent)).contains('1 ELO game');
 
     dom.window.close();
   });

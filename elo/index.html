@@ -33,6 +33,9 @@ a:hover { text-decoration: underline; }
 .player-link:hover { color: #ff6b35; text-decoration: underline; }
 .player-link.active-filter { color: #ff6b35; font-weight: bold; }
 .player-persona { font-weight: 700; }
+.player-name { font-family: Prototype, Ubuntu, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-weight: 800; letter-spacing: 0; }
+.stats-player-link { cursor: pointer; }
+.stats-player-link:hover { color: #ff6b35; text-decoration: underline; }
 .player-persona-gold,
 .winner .player-persona-gold { color: #d4af37; }
 .player-persona-emerald,
@@ -196,6 +199,36 @@ a:hover { text-decoration: underline; }
 .tm-stats-card .label { color: #888; font-size: 0.78em; text-transform: uppercase; }
 .tm-stats-card .value { color: #e0e0e0; font-weight: 700; font-size: 1.45em; margin-top: 4px; }
 .tm-stats-subtitle { color: #c4a35a; text-align: center; margin: 26px 0 10px; font-weight: 700; }
+.tm-stats-profile-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; margin: 0 auto 10px; }
+.tm-stats-profile-card { min-height: 58px; border: 1px solid var(--profile-border); border-radius: 6px; background: var(--profile-bg); color: var(--profile-ink); display: flex; align-items: center; gap: 8px; padding: 7px 8px; font: inherit; text-align: left; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 1px 2px rgba(0,0,0,.26); }
+.tm-stats-profile-card:hover,
+.tm-stats-profile-card.is-selected { filter: brightness(1.12) saturate(1.06); outline: 2px solid var(--profile-border); outline-offset: -2px; }
+.tm-stats-profile-avatar { width: 34px; height: 34px; border-radius: 6px; flex: 0 0 34px; display: inline-flex; align-items: center; justify-content: center; color: var(--profile-ink); font-size: 11px; font-weight: 800; letter-spacing: 0; text-shadow: 0 1px 2px rgba(0,0,0,.48); background-color: var(--profile-color); background-image: linear-gradient(135deg, rgba(255,255,255,.28), rgba(255,255,255,0) 44%), linear-gradient(45deg, rgba(0,0,0,.16) 25%, transparent 25%, transparent 50%, rgba(0,0,0,.16) 50%, rgba(0,0,0,.16) 75%, transparent 75%); background-size: auto, 10px 10px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.26), 0 1px 3px rgba(0,0,0,.34); }
+.tm-stats-profile-avatar.pattern-1 { background-size: auto, 8px 8px; }
+.tm-stats-profile-avatar.pattern-2 { background-image: linear-gradient(135deg, rgba(255,255,255,.24), rgba(255,255,255,0) 44%), radial-gradient(circle at 30% 30%, rgba(0,0,0,.22) 0 3px, transparent 3px); background-size: auto, 11px 11px; }
+.tm-stats-profile-avatar.pattern-3 { background-image: linear-gradient(135deg, rgba(255,255,255,.24), rgba(255,255,255,0) 44%), linear-gradient(90deg, rgba(0,0,0,.18) 50%, transparent 50%); background-size: auto, 9px 9px; }
+.tm-stats-profile-avatar.pattern-4 { background-image: linear-gradient(135deg, rgba(255,255,255,.24), rgba(255,255,255,0) 44%), linear-gradient(0deg, rgba(0,0,0,.18) 50%, transparent 50%); background-size: auto, 9px 9px; }
+.tm-stats-profile-avatar.pattern-5 { background-image: linear-gradient(135deg, rgba(255,255,255,.24), rgba(255,255,255,0) 44%), repeating-linear-gradient(135deg, rgba(0,0,0,.18) 0 3px, transparent 3px 7px); }
+.tm-stats-profile-main { min-width: 0; flex: 1 1 auto; }
+.tm-stats-profile-name { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.1; }
+.tm-stats-profile-meta { display: block; margin-top: 3px; color: inherit; opacity: .76; font-size: .78em; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tm-stats-profile-detail { border: 1px solid var(--profile-border, #333); border-left: 4px solid var(--profile-color, #ff6b35); border-radius: 8px; background: linear-gradient(135deg, var(--profile-bg, rgba(22,33,62,.6)), rgba(22,33,62,.55)); padding: 12px; margin: 0 auto 18px; color: #e0e0e0; }
+.tm-stats-profile-detail:empty { display: none; }
+.tm-stats-profile-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.tm-stats-profile-title { color: var(--profile-ink, #fff); font-size: 1.18em; line-height: 1.15; }
+.tm-stats-profile-heading-meta { color: #b8b8b8; font-size: .86em; margin-top: 3px; }
+.tm-stats-profile-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(86px, 1fr)); gap: 8px; margin-bottom: 12px; }
+.tm-stats-profile-metric { background: rgba(26,26,46,.68); border: 1px solid rgba(255,255,255,.08); border-radius: 6px; padding: 8px; min-width: 0; }
+.tm-stats-profile-metric .label { color: #888; font-size: .72em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tm-stats-profile-metric .value { color: #f0f0f0; font-weight: 700; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tm-stats-profile-columns { display: grid; grid-template-columns: repeat(3, minmax(180px, 1fr)); gap: 10px; }
+.tm-stats-profile-block { min-width: 0; }
+.tm-stats-profile-block-title { color: #c4a35a; font-size: .86em; font-weight: 700; margin-bottom: 6px; }
+.tm-stats-profile-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.tm-stats-profile-chip { border: 1px solid rgba(255,255,255,.12); border-radius: 6px; background: rgba(26,26,46,.62); color: #e0e0e0; padding: 5px 7px; font-size: .84em; }
+.tm-stats-profile-list-mini { display: grid; gap: 5px; }
+.tm-stats-profile-row { border: 1px solid rgba(255,255,255,.1); border-radius: 6px; background: rgba(26,26,46,.54); padding: 6px 7px; color: #d8d8d8; font-size: .84em; line-height: 1.3; }
+.tm-stats-profile-note { color: #888; font-size: .86em; padding: 6px 0; }
 .tm-stats-table { max-width: none; width: 100%; min-width: max-content; }
 .tm-stats-table .num { text-align: right; white-space: nowrap; }
 .tm-stats-table .muted { color: #888; font-size: 0.9em; }
@@ -231,6 +264,10 @@ a:hover { text-decoration: underline; }
   .matchups-pair-metrics { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
   .tm-stats-section { width: calc(100vw - 16px); }
   .tm-stats-overview { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+  .tm-stats-profile-list { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+  .tm-stats-profile-columns { grid-template-columns: 1fr; }
+  .tm-stats-profile-metrics { grid-template-columns: repeat(2, minmax(86px, 1fr)); }
+  .tm-stats-profile-header { align-items: flex-start; }
   .tm-stats-table { font-size: 0.78em; }
   .tm-stats-player-table { min-width: 900px; }
   .tm-stats-player-name { width: 104px; }
@@ -296,6 +333,10 @@ a:hover { text-decoration: underline; }
 <h2 class="stats-only">TM Statistics</h2>
 <div class="tm-stats-section stats-only">
   <div class="tm-stats-overview" id="tmStatsOverview"></div>
+
+  <div class="tm-stats-subtitle">Player profiles</div>
+  <div class="tm-stats-profile-list" id="tmStatsProfileList"></div>
+  <div class="tm-stats-profile-detail" id="tmStatsProfileDetail"></div>
 
   <div class="tm-stats-subtitle">Best VP by generation</div>
   <table class="tm-stats-table">
@@ -386,6 +427,7 @@ var _soloFilter = "wins";
 var _tmStats = null;
 var _statsCardSearch = "";
 var _statsCardMin = 2;
+var _selectedStatsPlayer = null;
 var GAMES_PER_PAGE = 20;
 var MATCHUPS_MIN_PLAYER_GAMES = 5;
 var PLAYER_PERSONA_CLASSES = {
@@ -448,6 +490,117 @@ var PLAYER_PERSONA_CLASSES = {
   "emko": "player-persona-hydro"
 };
 
+var DEFAULT_PROFILE_COLORS = ["red", "green", "yellow", "blue", "black", "purple", "orange", "pink"];
+var PROFILE_COLORS = {
+  red: {hex: "#991100", rgb: "153,17,0", ink: "#fff5f2"},
+  green: {hex: "#009900", rgb: "0,153,0", ink: "#f0fff0"},
+  yellow: {hex: "#aaaa00", rgb: "170,170,0", ink: "#181800"},
+  blue: {hex: "#0066ff", rgb: "0,102,255", ink: "#f4f8ff"},
+  black: {hex: "#aaaaaa", rgb: "170,170,170", ink: "#151515"},
+  purple: {hex: "#8c00ff", rgb: "140,0,255", ink: "#fbf5ff"},
+  orange: {hex: "#ec710c", rgb: "236,113,12", ink: "#fff8ef"},
+  pink: {hex: "#f574bb", rgb: "245,116,187", ink: "#240015"},
+  gold: {hex: "#d4af37", rgb: "212,175,55", ink: "#161000"},
+  emerald: {hex: "#009468", rgb: "0,148,104", ink: "#effff9"},
+  ginger: {hex: "#da581c", rgb: "218,88,28", ink: "#fff4ed"},
+  hydro: {hex: "#ff6666", rgb: "255,102,102", ink: "#210000"},
+  pearl: {hex: "#f2f8f8", rgb: "242,248,248", ink: "#102027"},
+  antistress: {hex: "#1d3a74", rgb: "29,58,116", ink: "#eef5ff"},
+  gambit: {hex: "#6fa4cd", rgb: "111,164,205", ink: "#071a2c"},
+  turquoise: {hex: "#e03669", rgb: "224,54,105", ink: "#fff4f8"},
+  vanger: {hex: "#00ff00", rgb: "0,255,0", ink: "#001f00"},
+  serge: {hex: "#4c0c1f", rgb: "76,12,31", ink: "#fff1f5"},
+  saturn: {hex: "#d6b36a", rgb: "214,179,106", ink: "#201607"},
+  saturnrings: {hex: "#c8b58a", rgb: "200,181,138", ink: "#1d170d"},
+  titan: {hex: "#b98f4a", rgb: "185,143,74", ink: "#1f1000"},
+  saturnstorm: {hex: "#be1f48", rgb: "190,31,72", ink: "#ffe5e8"},
+  catseye: {hex: "#8faf2f", rgb: "143,175,47", ink: "#182000"}
+};
+var PLAYER_PROFILE_COLOR_ALIASES = {
+  "genuinegold": "gold",
+  "genuine gold": "gold",
+  "илья": "gold",
+  "золотинский": "gold",
+  "изумрудный рав": "emerald",
+  "рав": "emerald",
+  "равиль": "emerald",
+  "rav": "emerald",
+  "catharsis": "ginger",
+  "catharsis🔥": "ginger",
+  "катерина": "ginger",
+  "воложанина": "ginger",
+  "gydro": "pearl",
+  "руслан": "pearl",
+  "ruslan": "pearl",
+  "руслан гаянов": "pearl",
+  "ruslan gayanov": "pearl",
+  "гаянов": "pearl",
+  "gayanov": "pearl",
+  "антистресс": "antistress",
+  "antistress": "antistress",
+  "anti stress": "antistress",
+  "анатолий": "antistress",
+  "абдуллаев": "antistress",
+  "gambitgirl": "gambit",
+  "gambit girl": "gambit",
+  "олеся": "gambit",
+  "олеся игнатова": "gambit",
+  "olesya": "gambit",
+  "olesia": "gambit",
+  "игнатова": "gambit",
+  "мяу": "gambit",
+  "мяу!": "gambit",
+  "настроение: мяу!": "gambit",
+  "паша": "turquoise",
+  "павел": "turquoise",
+  "миронов": "turquoise",
+  "pasha": "turquoise",
+  "pavel": "turquoise",
+  "pavel mironov": "turquoise",
+  "вангер": "vanger",
+  "vanger": "vanger",
+  "вангер думов": "vanger",
+  "vanger dumov": "vanger",
+  "думов": "vanger",
+  "dumov": "vanger",
+  "serge": "serge",
+  "sergey": "serge",
+  "sergei": "serge",
+  "серж": "serge",
+  "сергей": "serge",
+  "тома": "hydro",
+  "toma": "hydro",
+  "соня": "hydro",
+  "sonya": "hydro",
+  "sonia": "hydro",
+  "соня эмко": "hydro",
+  "эмко": "hydro",
+  "sonya emko": "hydro",
+  "sonia emko": "hydro",
+  "emko": "hydro",
+  "лёха": "orange",
+  "леха": "orange",
+  "лёха инженер": "orange",
+  "леха инженер": "orange",
+  "асмо": "orange",
+  "asmo": "orange",
+  "алексей": "yellow",
+  "алексей часовщик": "yellow",
+  "часовщик": "yellow",
+  "алексей константинов": "yellow",
+  "константинов алексей": "yellow",
+  "vvb": "green",
+  "vvbminsk": "green",
+  "minsk": "green",
+  "минск": "green",
+  "евгений": "green",
+  "женя": "green",
+  "nuke": "purple",
+  "midilo": "purple",
+  "midilobusim": "purple",
+  "никита": "purple"
+};
+
 var HIDDEN_ELO_PLAYERS = {
   "a": true,
   "b": true,
@@ -506,6 +659,10 @@ function esc(s) {
   var d = document.createElement("span");
   d.textContent = s;
   return d.innerHTML;
+}
+
+function escAttr(s) {
+  return esc(s).replace(/"/g, "&quot;");
 }
 
 function playerPersonaClass(name, key) {
@@ -1051,6 +1208,342 @@ function statGameLink(record) {
   return "<a href=\"" + getGameUrl(record) + "\" target=\"_blank\">" + esc(label) + "</a>";
 }
 
+function profileColorKeyForPlayer(name, key, index) {
+  var nameKey = normalizedPlayerKey(name);
+  var rawKey = normalizedPlayerKey(key);
+  return PLAYER_PROFILE_COLOR_ALIASES[nameKey] ||
+    PLAYER_PROFILE_COLOR_ALIASES[rawKey] ||
+    DEFAULT_PROFILE_COLORS[index % DEFAULT_PROFILE_COLORS.length];
+}
+
+function profileColorData(colorKey) {
+  return PROFILE_COLORS[colorKey] || PROFILE_COLORS.red;
+}
+
+function profileStyleValue(colorKey) {
+  var color = profileColorData(colorKey);
+  return "--profile-color: " + escAttr(color.hex) +
+    "; --profile-bg: rgba(" + escAttr(color.rgb) + ", .38)" +
+    "; --profile-border: rgba(" + escAttr(color.rgb) + ", .86)" +
+    "; --profile-ink: " + escAttr(color.ink) + ";";
+}
+
+function profileStyleAttr(colorKey) {
+  return " style=\"" + profileStyleValue(colorKey) + "\"";
+}
+
+function formatCountLabel(count, singular, plural) {
+  var value = Math.round(Number(count) || 0);
+  return value + " " + (value === 1 ? singular : plural);
+}
+
+function isLetterOrNumber(char) {
+  return /[\p{L}\p{N}]/u.test(char);
+}
+
+function profileInitials(name) {
+  var displayName = String(name || "").trim();
+  var words = displayName.split(/[\s._-]+/).filter(function(word) { return word !== ""; });
+  if (words.length > 1) {
+    return words.slice(0, 2).map(function(word) {
+      return Array.from(word).find(isLetterOrNumber) || "";
+    }).join("").toUpperCase() || "?";
+  }
+  var chars = Array.from(displayName).filter(isLetterOrNumber);
+  var uppercase = chars.filter(function(char) {
+    return char.toUpperCase() === char && char.toLowerCase() !== char;
+  });
+  if (uppercase.length >= 2) return uppercase.slice(0, 2).join("").toUpperCase();
+  return chars.slice(0, 2).join("").toUpperCase() || "?";
+}
+
+function profileAvatarPattern(seed) {
+  var hash = 0;
+  Array.from(String(seed || "")).forEach(function(char) {
+    hash = ((hash << 5) - hash) + char.charCodeAt(0);
+    hash |= 0;
+  });
+  return Math.abs(hash) % 6;
+}
+
+function ensureStatsProfile(map, key, displayName) {
+  var profileKey = normalizedPlayerKey(key || displayName);
+  if (!profileKey || isHiddenEloPlayer(profileKey, displayName)) return null;
+  if (!map[profileKey]) {
+    map[profileKey] = {
+      key: profileKey,
+      displayName: displayName || key || profileKey,
+      eloPlayer: null,
+      statsPlayer: null
+    };
+  } else if (displayName && (!map[profileKey].displayName || map[profileKey].displayName === profileKey)) {
+    map[profileKey].displayName = displayName;
+  }
+  return map[profileKey];
+}
+
+function findEloPlayerEntry(key) {
+  if (!_data || !_data.players) return null;
+  var normalized = normalizedPlayerKey(key);
+  if (_data.players[normalized]) return {key: normalized, player: _data.players[normalized]};
+  for (var playerKey in _data.players) {
+    var player = _data.players[playerKey];
+    if (normalizedPlayerKey(player.displayName) === normalized) {
+      return {key: normalizedPlayerKey(playerKey), player: player};
+    }
+  }
+  return null;
+}
+
+function buildStatsProfiles() {
+  var map = {};
+  if (_data && _data.players) {
+    for (var eloKey in _data.players) {
+      var eloPlayer = _data.players[eloKey];
+      if (!eloPlayer || (Number(eloPlayer.games) || 0) <= 0) continue;
+      var profile = ensureStatsProfile(map, eloKey, eloPlayer.displayName || eloKey);
+      if (profile) profile.eloPlayer = eloPlayer;
+    }
+  }
+  (((_tmStats && _tmStats.players) || [])).forEach(function(statsPlayer) {
+    if (!statsPlayer || (Number(statsPlayer.games) || 0) <= 0) return;
+    var profile = ensureStatsProfile(map, statsPlayer.name || statsPlayer.displayName, statsPlayer.displayName || statsPlayer.name);
+    if (!profile) return;
+    profile.statsPlayer = statsPlayer;
+    if (!profile.eloPlayer) {
+      var eloEntry = findEloPlayerEntry(statsPlayer.name || statsPlayer.displayName);
+      if (eloEntry) {
+        profile.key = eloEntry.key;
+        profile.eloPlayer = eloEntry.player;
+      }
+    }
+  });
+
+  var profiles = Object.keys(map).map(function(key) { return map[key]; });
+  profiles.sort(function(a, b) {
+    var ae = a.eloPlayer ? Number(a.eloPlayer.elo || 0) : 0;
+    var be = b.eloPlayer ? Number(b.eloPlayer.elo || 0) : 0;
+    if (be !== ae) return be - ae;
+    var ag = a.eloPlayer ? Number(a.eloPlayer.games || 0) : Number((a.statsPlayer && a.statsPlayer.games) || 0);
+    var bg = b.eloPlayer ? Number(b.eloPlayer.games || 0) : Number((b.statsPlayer && b.statsPlayer.games) || 0);
+    if (bg !== ag) return bg - ag;
+    return String(a.displayName).localeCompare(String(b.displayName));
+  });
+  profiles.forEach(function(profile, index) {
+    profile.colorKey = profileColorKeyForPlayer(profile.displayName, profile.key, index);
+    profile.avatarPattern = profileAvatarPattern(profile.key || profile.displayName);
+  });
+  return profiles;
+}
+
+function ensureSelectedStatsProfile(profiles) {
+  if (profiles.length === 0) {
+    _selectedStatsPlayer = null;
+    return;
+  }
+  var selectedExists = profiles.some(function(profile) { return profile.key === _selectedStatsPlayer; });
+  if (!selectedExists) _selectedStatsPlayer = profiles[0].key;
+}
+
+function statsPlayerNameHtml(displayName, key) {
+  var playerName = displayName || key || "-";
+  var profileKey = normalizedPlayerKey(key || playerName);
+  return "<span class=\"stats-player-link player-persona player-name " + playerPersonaClass(playerName, key) +
+    "\" data-stats-player=\"" + escAttr(profileKey) + "\">" + esc(playerName) + "</span>";
+}
+
+function profileMetricHtml(label, value, title) {
+  var titleAttr = title ? " title=\"" + escAttr(title) + "\"" : "";
+  return "<div class=\"tm-stats-profile-metric\"" + titleAttr + ">" +
+    "<div class=\"label\">" + esc(label) + "</div>" +
+    "<div class=\"value\">" + esc(value) + "</div>" +
+    "</div>";
+}
+
+function renderProfileCard(profile) {
+  var eloPlayer = profile.eloPlayer || {};
+  var statsPlayer = profile.statsPlayer || null;
+  var meta = [];
+  if (typeof eloPlayer.elo === "number") meta.push("ELO " + Math.round(eloPlayer.elo));
+  if (typeof eloPlayer.games === "number") meta.push(formatCountLabel(eloPlayer.games, "ELO game", "ELO games"));
+  if (statsPlayer && typeof statsPlayer.games === "number") meta.push(formatCountLabel(statsPlayer.games, "detailed game", "detailed games"));
+  var selectedClass = profile.key === _selectedStatsPlayer ? " is-selected" : "";
+  return "<button type=\"button\" class=\"tm-stats-profile-card" + selectedClass + "\" data-stats-player=\"" + escAttr(profile.key) + "\"" + profileStyleAttr(profile.colorKey) + ">" +
+    "<span class=\"tm-stats-profile-avatar pattern-" + escAttr(profile.avatarPattern) + "\">" + esc(profileInitials(profile.displayName)) + "</span>" +
+    "<span class=\"tm-stats-profile-main\">" +
+      "<span class=\"tm-stats-profile-name player-name\">" + esc(profile.displayName) + "</span>" +
+      "<span class=\"tm-stats-profile-meta\">" + esc(meta.join(" · ") || "Profile") + "</span>" +
+    "</span>" +
+    "</button>";
+}
+
+function profileHeadingMeta(profile) {
+  var eloPlayer = profile.eloPlayer || {};
+  var statsPlayer = profile.statsPlayer || null;
+  var parts = [];
+  if (typeof eloPlayer.games === "number") parts.push(formatCountLabel(eloPlayer.games, "ELO game", "ELO games"));
+  if (statsPlayer && typeof statsPlayer.games === "number") parts.push(formatCountLabel(statsPlayer.games, "detailed game", "detailed games"));
+  if (statsPlayer && statsPlayer.timing && typeof statsPlayer.timing.games === "number") {
+    parts.push(formatCountLabel(statsPlayer.timing.games, "timed game", "timed games"));
+  }
+  return parts.join(" · ");
+}
+
+function renderProfileMetrics(profile) {
+  var eloPlayer = profile.eloPlayer || {};
+  var statsPlayer = profile.statsPlayer || null;
+  var timing = (statsPlayer && statsPlayer.timing) || {};
+  var metrics = [
+    ["ELO", typeof eloPlayer.elo === "number" ? Math.round(eloPlayer.elo) : "-"],
+    ["VP ELO", typeof eloPlayer.elo_vp === "number" ? Math.round(eloPlayer.elo_vp) : "-"],
+    ["ELO games", typeof eloPlayer.games === "number" ? eloPlayer.games : 0],
+    ["Detailed", statsPlayer ? (statsPlayer.games || 0) : 0],
+    ["Win %", statsPlayer ? (round1(statsPlayer.winRate || 0) + "%") : "-"],
+    ["Avg VP", statsPlayer ? round1(statsPlayer.avgVP || 0) : (typeof eloPlayer.avgVP === "number" ? round1(eloPlayer.avgVP) : "-")],
+    ["Best VP", statsPlayer ? (statsPlayer.bestVP || 0) : "-"],
+    ["Avg place", typeof eloPlayer.avgPlace === "number" ? round2(eloPlayer.avgPlace) : "-"],
+    ["Avg gen", typeof eloPlayer.avgGens === "number" ? round1(eloPlayer.avgGens) : "-"],
+    ["VP margin", typeof eloPlayer.avgMargin === "number" ? formatMargin(eloPlayer.avgMargin) : "-"],
+    ["Time", formatDurationSeconds(timing.avgTimeSeconds)],
+    ["Sec/act", timing.avgSecondsPerAction ? (round1(timing.avgSecondsPerAction) + "s") : "-"]
+  ];
+  return "<div class=\"tm-stats-profile-metrics\">" + metrics.map(function(metric) {
+    return profileMetricHtml(metric[0], metric[1]);
+  }).join("") + "</div>";
+}
+
+function renderProfileChips(title, chips, emptyText) {
+  if (!chips.length) {
+    return "<div class=\"tm-stats-profile-block\"><div class=\"tm-stats-profile-block-title\">" + esc(title) + "</div>" +
+      "<div class=\"tm-stats-profile-note\">" + esc(emptyText || "No data yet") + "</div></div>";
+  }
+  return "<div class=\"tm-stats-profile-block\"><div class=\"tm-stats-profile-block-title\">" + esc(title) + "</div>" +
+    "<div class=\"tm-stats-profile-chips\">" + chips.map(function(chip) {
+      return "<span class=\"tm-stats-profile-chip\">" + esc(chip) + "</span>";
+    }).join("") + "</div></div>";
+}
+
+function renderProfileStyle(profile) {
+  var statsPlayer = profile.statsPlayer || null;
+  if (!statsPlayer) {
+    return renderProfileChips("Style", [], "No detailed stats yet");
+  }
+  var avg = statsPlayer.averages || {};
+  var chips = [
+    ["Cards", avg.playedCards],
+    ["Events", avg.eventCards],
+    ["Blue", avg.activeCards],
+    ["Green", avg.automatedCards],
+    ["Cities", avg.cities],
+    ["Greeneries", avg.greeneries],
+    ["Temp", avg.temperature],
+    ["O2", avg.oxygen],
+    ["Oceans", avg.oceans],
+    ["Venus", avg.venus]
+  ].map(function(item) {
+    return item[0] + " " + round1(item[1] || 0);
+  });
+  return renderProfileChips("Style", chips, "No detailed stats yet");
+}
+
+function renderProfileVpBreakdown(profile) {
+  var statsPlayer = profile.statsPlayer || null;
+  var breakdown = (statsPlayer && statsPlayer.avgVPBreakdown) || {};
+  var chips = [
+    ["Card VP", breakdown.cards],
+    ["Greenery VP", breakdown.greenery],
+    ["City VP", breakdown.city],
+    ["Milestone VP", breakdown.milestones],
+    ["Award VP", breakdown.awards]
+  ].filter(function(item) { return typeof item[1] === "number"; }).map(function(item) {
+    return item[0] + " " + round1(item[1]);
+  });
+  return renderProfileChips("VP breakdown", chips, "No VP breakdown yet");
+}
+
+function renderProfileCorps(profile) {
+  var corps = (profile.eloPlayer && profile.eloPlayer.corps) || {};
+  var chips = Object.keys(corps).sort(function(a, b) {
+    return Number(corps[b] || 0) - Number(corps[a] || 0) || a.localeCompare(b);
+  }).slice(0, 6).map(function(corp) {
+    return corp + " " + corps[corp];
+  });
+  return renderProfileChips("Top corporations", chips, "No corporation history yet");
+}
+
+function resultForProfile(game, profile) {
+  var key = normalizedPlayerKey(profile.key);
+  return visibleGameResults(game).find(function(result) {
+    return normalizedPlayerKey(result.name || result.displayName) === key;
+  }) || null;
+}
+
+function renderProfileRecentGames(profile) {
+  var games = getVisibleGames().slice().reverse().filter(function(game) {
+    return resultForProfile(game, profile) !== null;
+  }).slice(0, 5);
+  if (!games.length) {
+    return "<div class=\"tm-stats-profile-block\"><div class=\"tm-stats-profile-block-title\">Recent games</div>" +
+      "<div class=\"tm-stats-profile-note\">No games yet</div></div>";
+  }
+  return "<div class=\"tm-stats-profile-block\"><div class=\"tm-stats-profile-block-title\">Recent games</div><div class=\"tm-stats-profile-list-mini\">" +
+    games.map(function(game) {
+      var result = resultForProfile(game, profile) || {};
+      var bits = [];
+      if (game.generation) bits.push("Gen " + game.generation);
+      if (result.place) bits.push("#" + result.place);
+      if (result.vp) bits.push(result.vp + " VP");
+      if (typeof result.delta === "number") bits.push(formatMargin(result.delta));
+      if (result.corp) bits.push(result.corp);
+      return "<div class=\"tm-stats-profile-row\">" + esc(bits.join(" · ") || "-") +
+        " · " + statGameLink(game) + "</div>";
+    }).join("") + "</div></div>";
+}
+
+function renderProfileRecords(profile) {
+  var records = ((_tmStats && _tmStats.records) || []).filter(function(record) {
+    return normalizedPlayerKey(record.player || record.displayName) === profile.key;
+  }).slice(0, 5);
+  if (!records.length) {
+    return "<div class=\"tm-stats-profile-block\"><div class=\"tm-stats-profile-block-title\">Records</div>" +
+      "<div class=\"tm-stats-profile-note\">No records yet</div></div>";
+  }
+  return "<div class=\"tm-stats-profile-block\"><div class=\"tm-stats-profile-block-title\">Records</div><div class=\"tm-stats-profile-list-mini\">" +
+    records.map(function(record) {
+      var value = record.valueText || record.value || 0;
+      return "<div class=\"tm-stats-profile-row\">" + esc((record.category || "") + " · " + (record.label || record.key || "-")) +
+        " <strong>" + esc(value) + "</strong></div>";
+    }).join("") + "</div></div>";
+}
+
+function renderStatsProfiles() {
+  var list = document.getElementById("tmStatsProfileList");
+  var detail = document.getElementById("tmStatsProfileDetail");
+  var profiles = buildStatsProfiles();
+  ensureSelectedStatsProfile(profiles);
+  if (profiles.length === 0) {
+    list.innerHTML = "<div class=\"tm-stats-empty\">No player profiles yet</div>";
+    detail.innerHTML = "";
+    return;
+  }
+  list.innerHTML = profiles.map(renderProfileCard).join("");
+  var selected = profiles.find(function(profile) { return profile.key === _selectedStatsPlayer; }) || profiles[0];
+  detail.setAttribute("style", profileStyleValue(selected.colorKey));
+  detail.innerHTML = "<div class=\"tm-stats-profile-header\">" +
+    "<span class=\"tm-stats-profile-avatar pattern-" + escAttr(selected.avatarPattern) + "\">" + esc(profileInitials(selected.displayName)) + "</span>" +
+    "<div><div class=\"tm-stats-profile-title player-name\">" + esc(selected.displayName) + "</div>" +
+    "<div class=\"tm-stats-profile-heading-meta\">" + esc(profileHeadingMeta(selected) || "Profile") + "</div></div>" +
+    "</div>" +
+    renderProfileMetrics(selected) +
+    "<div class=\"tm-stats-profile-columns\">" +
+      renderProfileStyle(selected) +
+      renderProfileVpBreakdown(selected) +
+      renderProfileCorps(selected) +
+      renderProfileRecentGames(selected) +
+      renderProfileRecords(selected) +
+    "</div>";
+}
+
 function renderStatsOverview() {
   var el = document.getElementById("tmStatsOverview");
   var stats = _tmStats || {};
@@ -1103,7 +1596,7 @@ function renderGenerationRecords() {
     var playerName = record.displayName || record.player || "-";
     return "<tr>"
       + "<td class=\"num\">" + esc(record.generation || "-") + "</td>"
-      + "<td><span class=\"player-persona " + playerPersonaClass(playerName, record.player) + "\">" + esc(playerName) + "</span></td>"
+      + "<td>" + statsPlayerNameHtml(playerName, record.player) + "</td>"
       + "<td class=\"num elo\">" + esc(record.vp || 0) + "</td>"
       + "<td>" + esc(record.corp || "-") + "</td>"
       + "<td>" + statGameLink(record) + "</td>"
@@ -1126,7 +1619,7 @@ function renderStatsPlayers() {
     var timing = player.timing || {};
     var playerName = player.displayName || player.name || "-";
     return "<tr>"
-      + "<td><span class=\"player-persona " + playerPersonaClass(playerName, player.name) + "\">" + esc(playerName) + "</span></td>"
+      + "<td>" + statsPlayerNameHtml(playerName, player.name) + "</td>"
       + "<td class=\"num games\">" + formatStatsGames(player) + "</td>"
       + "<td class=\"num games\">" + esc(timing.games || 0) + "</td>"
       + "<td class=\"num\">" + esc(formatDurationSeconds(timing.avgTimeSeconds)) + "</td>"
@@ -1171,7 +1664,7 @@ function renderStatsPlayerVpBreakdown() {
     var breakdown = player.avgVPBreakdown || {};
     var playerName = player.displayName || player.name || "-";
     return "<tr>"
-      + "<td><span class=\"player-persona " + playerPersonaClass(playerName, player.name) + "\">" + esc(playerName) + "</span></td>"
+      + "<td>" + statsPlayerNameHtml(playerName, player.name) + "</td>"
       + "<td class=\"num games\">" + formatStatsGames(player) + "</td>"
       + "<td class=\"num games\">" + esc(vpBreakdownGameCount(player)) + "</td>"
       + "<td class=\"num\">" + formatBreakdownAverage(breakdown, "cards") + "</td>"
@@ -1198,7 +1691,7 @@ function renderStatsRecords() {
     return "<tr>"
       + "<td><span class=\"muted\">" + esc(record.category || "") + "</span> · " + esc(record.label || record.key || "-") + "</td>"
       + "<td class=\"num elo\">" + esc(value) + "</td>"
-      + "<td><span class=\"player-persona " + playerPersonaClass(playerName, record.player) + "\">" + esc(playerName) + "</span></td>"
+      + "<td>" + statsPlayerNameHtml(playerName, record.player) + "</td>"
       + "<td class=\"muted\">" + esc(context) + "</td>"
       + "<td>" + statGameLink(record) + "</td>"
       + "</tr>";
@@ -1250,9 +1743,11 @@ function renderStatsCards() {
 function renderStats() {
   if (!_tmStats) {
     document.getElementById("tmStatsOverview").innerHTML = "<div class=\"tm-stats-card\"><div class=\"label\">Stats</div><div class=\"value\">Loading</div></div>";
+    renderStatsProfiles();
     return;
   }
   renderStatsOverview();
+  renderStatsProfiles();
   renderGenerationRecords();
   renderStatsPlayers();
   renderStatsPlayerVpBreakdown();
@@ -1401,6 +1896,16 @@ document.addEventListener("click", function(e) {
     _matchupA = matchupCell.dataset.matchupA;
     _matchupB = matchupCell.dataset.matchupB;
     renderMatchups();
+    return;
+  }
+  var statsPlayer = e.target.closest("[data-stats-player]");
+  if (statsPlayer && statsPlayer.dataset.statsPlayer) {
+    _selectedStatsPlayer = statsPlayer.dataset.statsPlayer;
+    renderStatsProfiles();
+    if (_mode === "stats" && !statsPlayer.classList.contains("tm-stats-profile-card")) {
+      var detail = document.getElementById("tmStatsProfileDetail");
+      if (detail) detail.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
     return;
   }
   var el = e.target.closest(".player-link");

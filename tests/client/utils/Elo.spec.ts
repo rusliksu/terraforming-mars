@@ -9,6 +9,13 @@ describe('elo utils', () => {
     expect(normalizeEloName('Руслан')).eq('gydro');
     expect(normalizeEloName('ruslan')).eq('gydro');
     expect(normalizeEloName('Лёха')).eq('леха');
+    expect(normalizeEloName('Лёха Инженер')).eq('леха');
+    expect(normalizeEloName('Асмо')).eq('леха');
+    expect(normalizeEloName('Алексей Часовщик')).eq('алексей');
+    expect(normalizeEloName('Женя')).eq('vvbminsk');
+    expect(normalizeEloName('Евгений')).eq('vvbminsk');
+    expect(normalizeEloName('Midilobusim')).eq('nuke');
+    expect(normalizeEloName('Никита')).eq('nuke');
     expect(normalizeEloName('genuinegold')).eq('genuinegold');
     expect(normalizeEloName('Genuine Gold')).eq('genuinegold');
     expect(normalizeEloName('Равиль')).eq('рав');
@@ -53,20 +60,20 @@ describe('elo utils', () => {
 
     const matchedGame = {
       results: [
-        {displayName: 'Евгений', oldElo: 1500, newElo: 1510, delta: 10, vp: 120},
+        {displayName: 'vvbMinsk', oldElo: 1500, newElo: 1510, delta: 10, vp: 120},
         {displayName: 'player one', oldElo: 1500, newElo: 1490, delta: -10, vp: 100},
       ],
     };
 
     const eloPlayers = {
-      'евгений': {displayName: 'Евгений', elo: 1510, avgPlaceScore: 0.75},
+      'vvbminsk': {displayName: 'vvbMinsk', elo: 1510, avgPlaceScore: 0.75},
       'player one': {displayName: 'Player One', elo: 1490, avgPlaceScore: 0.25},
     };
 
     const rows = buildEloResultsForPlayers(playersInPlace, eloPlayers, matchedGame);
 
     expect(rows).deep.eq([
-      {name: 'Евгений', color: 'red', oldElo: 1500, newElo: 1510, delta: 10, avgPlaceScore: 0.75},
+      {name: 'vvbMinsk', color: 'red', oldElo: 1500, newElo: 1510, delta: 10, avgPlaceScore: 0.75},
       {name: 'Player One', color: 'blue', oldElo: 1500, newElo: 1490, delta: -10, avgPlaceScore: 0.25},
     ]);
   });

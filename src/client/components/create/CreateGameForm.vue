@@ -486,16 +486,56 @@
                                           <div>
                                               <input class="form-input form-inline create-game-player-name" :placeholder="getPlayerNamePlaceholder(index)" v-model="newPlayer.name" :readonly="isPlayerNameLocked(newPlayer.color)" />
                                           </div>
-                                          <div class="create-game-profile-picker">
-                                              <select
-                                                class="form-select form-inline create-game-player-profile-select"
-                                                :value="getSelectedPlayerProfileId(newPlayer)"
-                                                @change="applyPlayerProfileFromSelect(newPlayer, $event)">
-                                                  <option value="">Player profile</option>
-                                                  <option v-for="profile in getAvailablePlayerProfiles(newPlayer)" :key="profile.id" :value="profile.id">
-                                                    {{ formatPlayerProfileOption(profile) }}
-                                                  </option>
-                                              </select>
+                                          <div class="create-game-profile-picker" @click.stop>
+                                              <button
+                                                type="button"
+                                                class="form-inline create-game-player-profile-trigger"
+                                                :class="{'is-open': isPlayerProfilePickerOpen(index)}"
+                                                @click.stop="togglePlayerProfilePicker(index)">
+                                                  <span :class="['create-game-profile-avatar', ...getSelectedPlayerProfileAvatarClasses(newPlayer)]">{{ getSelectedPlayerProfileInitials(newPlayer) }}</span>
+                                                  <span class="create-game-profile-trigger-main">
+                                                    <span class="create-game-profile-trigger-name">{{ getSelectedPlayerProfileName(newPlayer) }}</span>
+                                                    <span class="create-game-profile-trigger-meta">{{ getSelectedPlayerProfileMeta(newPlayer) }}</span>
+                                                  </span>
+                                                  <span class="create-game-profile-trigger-caret">v</span>
+                                              </button>
+                                              <div v-if="isPlayerProfilePickerOpen(index)" class="create-game-profile-menu">
+                                                  <input
+                                                    class="form-input form-inline create-game-profile-search"
+                                                    type="search"
+                                                    placeholder="Find player"
+                                                    autocomplete="off"
+                                                    v-model="playerProfileSearch"
+                                                    @keydown.stop>
+                                                  <button
+                                                    type="button"
+                                                    class="create-game-profile-option create-game-profile-option-custom"
+                                                    @click="clearPlayerProfile(newPlayer)">
+                                                      <span class="create-game-profile-avatar create-game-profile-avatar--empty">?</span>
+                                                      <span class="create-game-profile-option-main">
+                                                        <span class="create-game-profile-option-name">Custom nick</span>
+                                                        <span class="create-game-profile-option-meta">Manual name and color</span>
+                                                      </span>
+                                                  </button>
+                                                  <div class="create-game-profile-option-list">
+                                                    <button
+                                                      v-for="profile in getFilteredAvailablePlayerProfiles(newPlayer)"
+                                                      :key="profile.id"
+                                                      type="button"
+                                                      class="create-game-profile-option"
+                                                      @click="applyPlayerProfileFromPicker(newPlayer, profile)">
+                                                        <span :class="['create-game-profile-avatar', ...getPlayerProfileAvatarClasses(profile)]">{{ getPlayerProfileInitials(profile) }}</span>
+                                                        <span class="create-game-profile-option-main">
+                                                          <span class="create-game-profile-option-name">{{ profile.name }}</span>
+                                                          <span class="create-game-profile-option-meta">{{ formatPlayerProfileMeta(profile) }}</span>
+                                                        </span>
+                                                        <span class="create-game-profile-color-swatch" :title="getColorTitle(profile.preferredColor)">
+                                                          <span :class="'create-game-colorbox '+getPlayerCubeColorClass(profile.preferredColor)"></span>
+                                                        </span>
+                                                    </button>
+                                                    <div v-if="getFilteredAvailablePlayerProfiles(newPlayer).length === 0" class="create-game-profile-empty">No matching players</div>
+                                                  </div>
+                                              </div>
                                           </div>
                                           <div class="create-game-persona-picker">
                                               <span class="create-game-persona-preview" :title="getColorTitle(newPlayer.color)">
@@ -650,7 +690,13 @@ import * as constants from '@/common/constants';
 import {defineComponent, nextTick} from 'vue';
 import {Color, DEFAULT_PLAYER_COLORS, getLockedPlayerName, LOCKED_PLAYER_IDENTITIES} from '@/common/Color';
 import type {LockedPlayerIdentity, PlayerColor} from '@/common/Color';
-import {buildPlayerProfilesFromEloPlayers, getPlayerProfileById, getPlayerProfileByName, PLAYER_PROFILES} from '@/common/PlayerProfiles';
+import {
+  buildPlayerProfilesFromEloPlayers,
+  getPlayerProfileAvatarInitials,
+  getPlayerProfileAvatarPattern,
+  getPlayerProfileByName,
+  PLAYER_PROFILES,
+} from '@/common/PlayerProfiles';
 import type {PlayerProfile} from '@/common/PlayerProfiles';
 import {BoardName} from '@/common/boards/BoardName';
 import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
@@ -696,6 +742,8 @@ type FormModel = {
   uploading: boolean;
   selectedTemplate: string;
   templates: Array<GameTemplate>;
+  playerProfilePickerIndex: number | null;
+  playerProfileSearch: string;
 };
 
 export default defineComponent({
@@ -707,6 +755,8 @@ export default defineComponent({
       uploading: false,
       selectedTemplate: '',
       templates: TemplateManager.getTemplates(),
+      playerProfilePickerIndex: null,
+      playerProfileSearch: '',
     };
   },
   components: {
@@ -763,17 +813,24 @@ export default defineComponent({
       if (value === 1) {
         this.expansions.corpera = true;
       }
+      if (this.playerProfilePickerIndex !== null && this.playerProfilePickerIndex >= value) {
+        this.closePlayerProfilePicker();
+      }
     },
   },
   mounted() {
     setDocumentTitle('Create New Game');
     this.restoreLastSettings();
     void ensureEloLoaded();
+    document.addEventListener('click', this.closePlayerProfilePickerFromDocument);
     const urlParams = new URLSearchParams(window.location.search);
     const cloneId = urlParams.get('cloneGameId');
     if (cloneId) {
       void this.loadRematchSetup(cloneId as GameId);
     }
+  },
+  unmounted() {
+    document.removeEventListener('click', this.closePlayerProfilePickerFromDocument);
   },
   computed: {
     wikiUrls(): typeof RULEBOOK_URLS & typeof WIKI_URLS {
@@ -1077,8 +1134,23 @@ export default defineComponent({
       }
       return PLAYER_PROFILES;
     },
-    getSelectedPlayerProfileId(player: NewPlayerModel): string {
-      return getPlayerProfileByName(player.name, this.getPlayerProfiles())?.id ?? '';
+    getSelectedPlayerProfile(player: NewPlayerModel): PlayerProfile | undefined {
+      return getPlayerProfileByName(player.name, this.getPlayerProfiles());
+    },
+    getSelectedPlayerProfileName(player: NewPlayerModel): string {
+      return this.getSelectedPlayerProfile(player)?.name ?? 'Player profile';
+    },
+    getSelectedPlayerProfileMeta(player: NewPlayerModel): string {
+      const profile = this.getSelectedPlayerProfile(player);
+      return profile === undefined ? 'Choose active Elo player' : this.formatPlayerProfileMeta(profile);
+    },
+    getSelectedPlayerProfileInitials(player: NewPlayerModel): string {
+      const profile = this.getSelectedPlayerProfile(player);
+      return profile === undefined ? '?' : getPlayerProfileAvatarInitials(profile);
+    },
+    getSelectedPlayerProfileAvatarClasses(player: NewPlayerModel): Array<string> {
+      const profile = this.getSelectedPlayerProfile(player);
+      return profile === undefined ? ['create-game-profile-avatar--empty'] : this.getPlayerProfileAvatarClasses(profile);
     },
     getAvailablePlayerProfiles(player: NewPlayerModel): ReadonlyArray<PlayerProfile> {
       const playerProfiles = this.getPlayerProfiles();
@@ -1088,8 +1160,53 @@ export default defineComponent({
         .filter((id): id is string => id !== undefined));
       return playerProfiles.filter((profile) => !takenProfileIds.has(profile.id));
     },
-    formatPlayerProfileOption(profile: PlayerProfile): string {
-      return profile.name;
+    getFilteredAvailablePlayerProfiles(player: NewPlayerModel): ReadonlyArray<PlayerProfile> {
+      const query = this.playerProfileSearch.trim().toLowerCase();
+      const profiles = this.getAvailablePlayerProfiles(player);
+      if (query === '') {
+        return profiles;
+      }
+      return profiles.filter((profile) =>
+        profile.name.toLowerCase().includes(query) ||
+        profile.aliases.some((alias) => alias.includes(query)) ||
+        String(Math.round(Number(profile.elo ?? 0))).includes(query));
+    },
+    formatPlayerProfileMeta(profile: PlayerProfile): string {
+      const parts: Array<string> = [];
+      if (profile.elo !== undefined) {
+        parts.push(`ELO ${Math.round(profile.elo)}`);
+      }
+      if (profile.games !== undefined) {
+        parts.push(`${Math.round(profile.games)} games`);
+      }
+      return parts.join(' · ') || 'Profile';
+    },
+    getPlayerProfileInitials(profile: PlayerProfile): string {
+      return getPlayerProfileAvatarInitials(profile);
+    },
+    getPlayerProfileAvatarClasses(profile: PlayerProfile): Array<string> {
+      return [
+        this.getPlayerCubeColorClass(profile.preferredColor),
+        `create-game-profile-avatar--pattern-${getPlayerProfileAvatarPattern(profile)}`,
+      ];
+    },
+    isPlayerProfilePickerOpen(index: number): boolean {
+      return this.playerProfilePickerIndex === index;
+    },
+    togglePlayerProfilePicker(index: number) {
+      if (this.playerProfilePickerIndex === index) {
+        this.closePlayerProfilePicker();
+        return;
+      }
+      this.playerProfilePickerIndex = index;
+      this.playerProfileSearch = '';
+    },
+    closePlayerProfilePicker() {
+      this.playerProfilePickerIndex = null;
+      this.playerProfileSearch = '';
+    },
+    closePlayerProfilePickerFromDocument() {
+      this.closePlayerProfilePicker();
     },
     getAvailablePlayerProfileColor(player: NewPlayerModel, profile: PlayerProfile): Color {
       const usedColors = new Set(this.getPlayers()
@@ -1110,19 +1227,18 @@ export default defineComponent({
       player.name = profile.name;
       player.color = this.getAvailablePlayerProfileColor(player, profile);
     },
-    applyPlayerProfileFromSelect(player: NewPlayerModel, event: Event) {
-      const profileId = (event.target as HTMLSelectElement).value;
-      if (profileId === '') {
-        if (getPlayerProfileByName(player.name, this.getPlayerProfiles()) !== undefined) {
-          player.name = '';
-        }
-        return;
+    clearPlayerProfile(player: NewPlayerModel) {
+      if (getPlayerProfileByName(player.name, this.getPlayerProfiles()) !== undefined) {
+        player.name = '';
       }
-      const profile = getPlayerProfileById(profileId, this.getPlayerProfiles());
-      if (profile === undefined || !this.getAvailablePlayerProfiles(player).some((candidate) => candidate.id === profile.id)) {
+      this.closePlayerProfilePicker();
+    },
+    applyPlayerProfileFromPicker(player: NewPlayerModel, profile: PlayerProfile) {
+      if (!this.getAvailablePlayerProfiles(player).some((candidate) => candidate.id === profile.id)) {
         return;
       }
       this.applyPlayerProfile(player, profile);
+      this.closePlayerProfilePicker();
     },
     getAvailableDefaultColor(player: NewPlayerModel): Color {
       const usedColors = new Set(this.getPlayers()

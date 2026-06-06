@@ -301,7 +301,11 @@ describe('CreateGameForm', () => {
     });
     const vm = wrapper.vm as any;
 
-    await wrapper.find('.create-game-player-profile-select').setValue('leha');
+    await wrapper.find('.create-game-player-profile-trigger').trigger('click');
+    const profileOption = wrapper.findAll('.create-game-profile-option')
+      .find((option) => option.text().includes('Леха'));
+    expect(profileOption).not.to.be.undefined;
+    await profileOption!.trigger('click');
 
     expect(vm.players[0].color).to.eq('orange');
     expect(vm.players[0].name).to.eq('Леха');
@@ -346,6 +350,47 @@ describe('CreateGameForm', () => {
     expect(profileNames).to.include('GenuineGold');
     expect(profileNames).to.include('Владлен');
     expect(profileNames).not.to.include('Inactive');
+  });
+
+  it('renders active Elo profiles with avatars, Elo, and preferred color swatches', async () => {
+    sharedEloState.loaded = true;
+    sharedEloState.players = {
+      genuinegold: {displayName: 'GenuineGold', games: 48, elo: 1749},
+      vladlen: {displayName: 'Владлен', games: 24, elo: 1691},
+    };
+
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+
+    await wrapper.find('.create-game-player-profile-trigger').trigger('click');
+    const menuText = wrapper.find('.create-game-profile-menu').text();
+
+    expect(menuText).to.include('GenuineGold');
+    expect(menuText).to.include('ELO 1749');
+    expect(menuText).to.include('48 games');
+    expect(wrapper.find('.create-game-profile-option-list .create-game-profile-avatar').text()).to.eq('GG');
+    expect(wrapper.find('.create-game-profile-color-swatch').exists()).to.be.true;
+  });
+
+  it('filters player profile menu by player search text', async () => {
+    sharedEloState.loaded = true;
+    sharedEloState.players = {
+      genuinegold: {displayName: 'GenuineGold', games: 48, elo: 1749},
+      nuke: {displayName: 'Nuke', games: 7, elo: 1497},
+      vladlen: {displayName: 'Владлен', games: 24, elo: 1691},
+    };
+
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+    vm.playerProfileSearch = 'nuk';
+
+    const profileNames = vm.getFilteredAvailablePlayerProfiles(vm.players[0])
+      .map((profile: {name: string}) => profile.name);
+
+    expect(profileNames).deep.eq(['Nuke']);
   });
 
   it('shows final Toma option and hides rejected Toma variants from the compact nick selector', () => {

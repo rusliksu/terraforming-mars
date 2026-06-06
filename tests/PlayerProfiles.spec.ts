@@ -1,5 +1,11 @@
 import {expect} from 'chai';
-import {buildPlayerProfilesFromEloPlayers, getPlayerProfileByName, PLAYER_PROFILES} from '@/common/PlayerProfiles';
+import {
+  buildPlayerProfilesFromEloPlayers,
+  getPlayerProfileAvatarInitials,
+  getPlayerProfileAvatarPattern,
+  getPlayerProfileByName,
+  PLAYER_PROFILES,
+} from '@/common/PlayerProfiles';
 
 describe('Player profiles', () => {
   it('maps known nick aliases to canonical profiles', () => {
@@ -25,5 +31,16 @@ describe('Player profiles', () => {
     expect(profiles.map((profile) => profile.name)).deep.eq(['GenuineGold', 'Владлен', 'Леха']);
     expect(profiles.map((profile) => profile.id)).deep.eq(['genuinegold', 'владлен', 'leha']);
     expect(getPlayerProfileByName('Асмо', profiles)?.name).eq('Леха');
+  });
+
+  it('keeps Elo and deterministic avatar metadata on built profiles', () => {
+    const profiles = buildPlayerProfilesFromEloPlayers({
+      genuinegold: {displayName: 'GenuineGold', games: 48, elo: 1749},
+    });
+
+    expect(profiles[0].elo).eq(1749);
+    expect(profiles[0].games).eq(48);
+    expect(getPlayerProfileAvatarInitials(profiles[0])).eq('GG');
+    expect(getPlayerProfileAvatarPattern(profiles[0])).eq(getPlayerProfileAvatarPattern(profiles[0]));
   });
 });

@@ -6,6 +6,9 @@ export type PlayerProfile = {
   name: string;
   preferredColor: Color;
   aliases: ReadonlyArray<string>;
+  elo?: number;
+  games?: number;
+  avatarSeed?: string;
 };
 
 export type EloProfileEntry = {
@@ -45,6 +48,14 @@ export const PLAYER_PROFILES: ReadonlyArray<PlayerProfile> = [
 
 function normalizeProfileName(name: string): string {
   return (name || '').trim().toLowerCase();
+}
+
+function getProfileAvatarSeed(profile: PlayerProfile): string {
+  return profile.avatarSeed ?? profile.id ?? profile.name;
+}
+
+function isLetterOrNumber(char: string): boolean {
+  return /[\p{L}\p{N}]/u.test(char);
 }
 
 function canonicalizeProfileName(name: string): string {
@@ -109,8 +120,40 @@ export function buildPlayerProfilesFromEloPlayers(eloPlayers: Record<string, Elo
         name: entry.displayName,
         preferredColor: seed?.preferredColor ?? DEFAULT_PLAYER_COLORS[index % DEFAULT_PLAYER_COLORS.length],
         aliases: getAliasesForProfileName(entry.displayName, seed),
+        elo: entry.elo,
+        games: entry.games,
+        avatarSeed: normalizeProfileName(entry.displayName),
       };
     });
+}
+
+export function getPlayerProfileAvatarInitials(profile: PlayerProfile): string {
+  const name = profile.name.trim();
+  const words = name.split(/[\s._-]+/).filter((word) => word !== '');
+  if (words.length > 1) {
+    return words
+      .slice(0, 2)
+      .map((word) => Array.from(word).find(isLetterOrNumber) ?? '')
+      .join('')
+      .toUpperCase();
+  }
+
+  const chars = Array.from(name).filter(isLetterOrNumber);
+  const uppercaseLetters = chars.filter((char) => char.toUpperCase() === char && char.toLowerCase() !== char);
+  if (uppercaseLetters.length >= 2) {
+    return uppercaseLetters.slice(0, 2).join('').toUpperCase();
+  }
+  return chars.slice(0, 2).join('').toUpperCase() || '?';
+}
+
+export function getPlayerProfileAvatarPattern(profile: PlayerProfile): number {
+  const seed = getProfileAvatarSeed(profile);
+  let hash = 0;
+  for (const char of Array.from(seed)) {
+    hash = ((hash << 5) - hash) + char.charCodeAt(0);
+    hash |= 0;
+  }
+  return Math.abs(hash) % 6;
 }
 
 export function getPlayerProfileById(id: string, profiles: ReadonlyArray<PlayerProfile> = PLAYER_PROFILES): PlayerProfile | undefined {

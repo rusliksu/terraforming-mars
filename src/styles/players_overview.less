@@ -46,14 +46,44 @@
             color: #fff8;
         }
     }
-
-    .played-cards-button {
-        width: 100%;
-        border-radius: 5px;
+    .player-card-controls {
+        display: flex;
+        gap: 5px;
         margin-top: 7px;
+        width: 100%;
+    }
+    .played-cards-button {
+        border-radius: 5px;
+        flex: 1 1 auto;
+        margin-top: 0;
+        min-width: 0;
+        width: auto;
+
         &:hover {
             filter: brightness(120%);
         }
+    }
+    .player-hand-button {
+        align-items: center;
+        border-radius: 5px;
+        display: flex;
+        flex: 0 0 32px;
+        height: 1.5rem;
+        justify-content: center;
+        margin: 0;
+        padding: 0;
+
+        &.player-hand-button--active {
+            background: #8b55d9 !important;
+        }
+    }
+    .player-hand-button-icon {
+        background-image: url(./assets/sidebar/preferences_cards.png);
+        background-repeat: no-repeat;
+        background-size: 22px 22px;
+        display: block;
+        height: 22px;
+        width: 22px;
     }
 
 }
@@ -101,6 +131,40 @@
     }
 }
 
+.spectator-hand-panel {
+    max-width: 1120px;
+    width: calc(100vw - 96px);
+
+    .other_player_header,
+    .other_player_cont {
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .other_player_cont {
+        padding: 10px;
+        overflow-x: auto;
+    }
+
+    .sortable-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 12px;
+
+        > div {
+            display: block;
+        }
+    }
+
+    .cardbox {
+        display: block;
+    }
+
+    .filterDiv {
+        margin: 10px 0;
+    }
+}
+
 
 .player-info-details {
     white-space: nowrap;
@@ -122,12 +186,6 @@
         text-overflow: ellipsis;
         height: 26px;
         cursor: pointer;
-    }
-    .player-info-hand-button {
-        border-radius: 5px;
-        display: block;
-        margin: 5px 0 0 auto;
-        width: 78px;
     }
 }
 
@@ -303,6 +361,115 @@
         .player-status-and-res {
             margin-bottom: 8px;
             padding-bottom: 8px;
+        }
+    }
+}
+
+@media only screen and (min-width: 701px) and (max-width: 900px)  {
+    .players-overview {
+        .player-info {
+            box-sizing: border-box;
+            max-width: calc(100vw - 96px);
+            width: calc(100vw - 96px);
+        }
+
+        .player-status-and-res {
+            display: grid;
+            grid-template-columns: 136px 90px 44px;
+            column-gap: 8px;
+            row-gap: 8px;
+            max-width: 100%;
+        }
+
+        .player-status {
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        .player-played-cards {
+            grid-column: 2;
+            grid-row: 1;
+            margin: 0;
+        }
+
+        .player-board-blue-action-counter {
+            grid-column: 3;
+            grid-row: 1;
+            margin-top: 0;
+        }
+
+        .resource_items_cont {
+            grid-column: 1 / -1;
+            grid-row: 2;
+            max-width: 100%;
+        }
+
+        .resource_item {
+            margin-left: 0;
+            margin-right: 10px;
+        }
+
+        .resource_item:last-child {
+            margin-right: 0;
+        }
+
+        .player-tags {
+            max-width: 100%;
+            overflow-x: auto;
+        }
+    }
+}
+
+@media only screen and (max-width: 700px)  {
+    .players-overview {
+        .player-info {
+            box-sizing: border-box;
+            max-width: calc(100vw - 96px);
+            width: calc(100vw - 96px);
+        }
+
+        .player-status-and-res {
+            display: grid;
+            grid-template-columns: 136px 90px 44px;
+            column-gap: 8px;
+            row-gap: 8px;
+            max-width: 100%;
+        }
+
+        .player-status {
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        .player-played-cards {
+            grid-column: 2;
+            grid-row: 1;
+            margin: 0;
+        }
+
+        .player-board-blue-action-counter {
+            grid-column: 3;
+            grid-row: 1;
+            margin-top: 0;
+        }
+
+        .resource_items_cont {
+            display: grid;
+            grid-column: 1 / -1;
+            grid-row: 2;
+            grid-template-columns: repeat(3, minmax(70px, 1fr));
+            gap: 6px;
+            white-space: normal;
+        }
+
+        .resource_item {
+            margin-left: 0;
+            min-width: 0;
+        }
+
+        .player-tags {
+            max-width: 100%;
+            overflow-x: auto;
         }
     }
 }

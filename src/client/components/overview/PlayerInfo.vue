@@ -9,7 +9,6 @@
                 {{ corporationName }}
               </div>
             </span>
-            <AppButton v-if="spectatorHandCardCount() > 0" class="spectator-hand-button player-info-hand-button" size="tiny" @click="toggleSpectatorHand" :title="spectatorHandButtonLabel()" />
           </div>
           <div>
             <div class="icon-first-player" v-if="firstForGen && playerView.players.length > 1" v-i18n>1st</div>
@@ -26,7 +25,19 @@
                 <div class="played-cards-count">{{numberOfPlayedCards()}}</div>
               </div>
             </div>
-            <AppButton class="played-cards-button player-table-button" size="tiny" @click="togglePlayerDetails" :title="tableButtonLabel()" />
+            <div class="player-card-controls">
+              <AppButton class="played-cards-button player-table-button" size="tiny" @click="togglePlayerDetails" :title="tableButtonLabel()" />
+              <button
+                v-if="spectatorHandCardCount() > 0"
+                type="button"
+                class="btn btn-tiny btn-rounded spectator-hand-button player-hand-button"
+                :class="{'player-hand-button--active': isSpectatorHandPinned(playerIndex)}"
+                @click="toggleSpectatorHand"
+                :title="spectatorHandButtonLabel()"
+                :aria-label="spectatorHandButtonLabel()">
+                <span class="player-hand-button-icon"></span>
+              </button>
+            </div>
           </div>
           <div class="tag-display player-board-blue-action-counter" :class="tooltipCss" :data-tooltip="$t('The number of available actions on active cards')">
             <div class="tag-count tag-action-card">
@@ -153,7 +164,7 @@ export default defineComponent({
       if (this.isSpectatorHandPinned(this.playerIndex)) {
         return 'hide hand';
       }
-      return `hand ${this.spectatorHandCardCount()}`;
+      return 'hand';
     },
     toggleSpectatorHand() {
       const handPinned = this.isSpectatorHandPinned(this.playerIndex);
@@ -194,14 +205,8 @@ export default defineComponent({
       }
       const count = (items: ReadonlyArray<unknown> | undefined) => items?.length ?? 0;
       return count(cards.cardsInHand) +
-        count(cards.preludeCardsInHand) +
-        count(cards.ceoCardsInHand) +
         count(cards.draftedCards) +
-        count(cards.dealtProjectCards) +
-        count(cards.dealtCorporationCards) +
-        count(cards.dealtPreludeCards) +
-        count(cards.dealtCeoCards) +
-        count(cards.pickedCorporationCard);
+        count(cards.dealtProjectCards);
     },
     getCorporationName(): string[] {
       const cards = this.player.tableau;

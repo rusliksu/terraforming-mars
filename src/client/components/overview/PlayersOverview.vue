@@ -90,14 +90,8 @@ export default defineComponent({
       }
       const count = (items: ReadonlyArray<unknown> | undefined) => items?.length ?? 0;
       return count(cards.cardsInHand) +
-        count(cards.preludeCardsInHand) +
-        count(cards.ceoCardsInHand) +
         count(cards.draftedCards) +
-        count(cards.dealtProjectCards) +
-        count(cards.dealtCorporationCards) +
-        count(cards.dealtPreludeCards) +
-        count(cards.dealtCeoCards) +
-        count(cards.pickedCorporationCard);
+        count(cards.dealtProjectCards);
     },
     getPlayersInOrder(): Array<PublicPlayerModel> {
       const players = this.players;

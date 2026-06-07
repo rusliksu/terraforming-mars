@@ -65,14 +65,8 @@ export default defineComponent({
       }
       return [
         {label: 'Cards in hand', cards: cards.cardsInHand ?? []},
-        {label: 'Prelude cards', cards: cards.preludeCardsInHand ?? []},
-        {label: 'CEO cards', cards: cards.ceoCardsInHand ?? []},
         {label: 'Drafted cards', cards: cards.draftedCards ?? []},
-        {label: 'Dealt project cards', cards: cards.dealtProjectCards ?? []},
-        {label: 'Dealt corporations', cards: cards.dealtCorporationCards ?? []},
-        {label: 'Dealt preludes', cards: cards.dealtPreludeCards ?? []},
-        {label: 'Dealt CEOs', cards: cards.dealtCeoCards ?? []},
-        {label: 'Picked corporation', cards: cards.pickedCorporationCard ?? []},
+        {label: 'Project cards to choose', cards: cards.dealtProjectCards ?? []},
       ];
     },
   },

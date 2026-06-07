@@ -5,20 +5,20 @@ import SpectatorHand from '@/client/components/overview/SpectatorHand.vue';
 import {fakePublicPlayerModel} from '../testHelpers';
 
 describe('SpectatorHand', () => {
-  it('renders all available spectator card groups inside the opened panel', () => {
+  it('renders only project hand groups inside the opened panel', () => {
     const player = fakePublicPlayerModel({
       color: 'blue',
       name: 'Blue',
       spectatorCards: {
         cardsInHand: [{name: 'Micro-Mills'} as any],
-        ceoCardsInHand: [],
-        dealtCorporationCards: [],
-        dealtPreludeCards: [],
-        dealtCeoCards: [],
+        ceoCardsInHand: [{name: 'Chief Executive Officer'} as any],
+        dealtCorporationCards: [{name: 'CrediCor'} as any],
+        dealtPreludeCards: [{name: 'Donation'} as any],
+        dealtCeoCards: [{name: 'Alicia'} as any],
         dealtProjectCards: [{name: 'Earth Catapult'} as any],
         draftedCards: [{name: 'Sponsors'} as any],
-        pickedCorporationCard: [],
-        preludeCardsInHand: [],
+        pickedCorporationCard: [{name: 'Helion'} as any],
+        preludeCardsInHand: [{name: 'Self-Sufficient Settlement'} as any],
       },
     });
     const wrapper = shallowMount(SpectatorHand, {
@@ -39,7 +39,11 @@ describe('SpectatorHand', () => {
 
     expect(wrapper.text()).to.contain('Cards in hand (1)');
     expect(wrapper.text()).to.contain('Drafted cards (1)');
-    expect(wrapper.text()).to.contain('Dealt project cards (1)');
+    expect(wrapper.text()).to.contain('Project cards to choose (1)');
+    expect(wrapper.text()).not.to.contain('Dealt');
+    expect(wrapper.text()).not.to.contain('corporation');
+    expect(wrapper.text()).not.to.contain('Prelude');
+    expect(wrapper.text()).not.to.contain('CEO');
     expect(wrapper.findAllComponents({name: 'Card'})).has.length(3);
   });
 });

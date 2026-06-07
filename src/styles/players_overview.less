@@ -46,14 +46,44 @@
             color: #fff8;
         }
     }
-
-    .played-cards-button {
-        width: 100%;
-        border-radius: 5px;
+    .player-card-controls {
+        display: flex;
+        gap: 5px;
         margin-top: 7px;
+        width: 100%;
+    }
+    .played-cards-button {
+        border-radius: 5px;
+        flex: 1 1 auto;
+        margin-top: 0;
+        min-width: 0;
+        width: auto;
+
         &:hover {
             filter: brightness(120%);
         }
+    }
+    .player-hand-button {
+        align-items: center;
+        border-radius: 5px;
+        display: flex;
+        flex: 0 0 32px;
+        height: 1.5rem;
+        justify-content: center;
+        margin: 0;
+        padding: 0;
+
+        &.player-hand-button--active {
+            background: #8b55d9 !important;
+        }
+    }
+    .player-hand-button-icon {
+        background-image: url(./assets/sidebar/preferences_cards.png);
+        background-repeat: no-repeat;
+        background-size: 22px 22px;
+        display: block;
+        height: 22px;
+        width: 22px;
     }
 
 }
@@ -101,6 +131,40 @@
     }
 }
 
+.spectator-hand-panel {
+    max-width: 1120px;
+    width: calc(100vw - 96px);
+
+    .other_player_header,
+    .other_player_cont {
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .other_player_cont {
+        padding: 10px;
+        overflow-x: auto;
+    }
+
+    .sortable-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 12px;
+
+        > div {
+            display: block;
+        }
+    }
+
+    .cardbox {
+        display: block;
+    }
+
+    .filterDiv {
+        margin: 10px 0;
+    }
+}
+
 
 .player-info-details {
     white-space: nowrap;
@@ -122,12 +186,6 @@
         text-overflow: ellipsis;
         height: 26px;
         cursor: pointer;
-    }
-    .player-info-hand-button {
-        border-radius: 5px;
-        display: block;
-        margin: 5px 0 0 auto;
-        width: 78px;
     }
 }
 

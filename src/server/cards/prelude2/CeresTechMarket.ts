@@ -8,6 +8,7 @@ import {CardType} from '../../../common/cards/CardType';
 import {IActionCard} from '../ICard';
 import {PlayerInput} from '../../PlayerInput';
 import {SelectCard} from '../../inputs/SelectCard';
+import {LogHelper} from '../../LogHelper';
 
 export class CeresTechMarket extends Card implements IActionCard {
   constructor() {
@@ -56,6 +57,8 @@ export class CeresTechMarket extends Card implements IActionCard {
         const megacredits = cards.length * 2;
         player.megaCredits += megacredits;
         player.game.log('${0} gained ${1} M€ by discarding ${2} cards', (b) => b.player(player).number(megacredits).number(cards.length));
+        LogHelper.logCardAction(player, 'discarded', cards, true);
+        player.game.log('${0} discarded ${1}', (b) => b.player(player).cards(cards), {reservedForParticipant: player.game.spectatorId});
         return undefined;
       });
   }

@@ -22,7 +22,7 @@ import {PartyHooks} from './turmoil/parties/PartyHooks';
 import {Phase} from '../common/Phase';
 import {IPlayer} from './IPlayer';
 import {Player} from './Player';
-import {PlayerId, GameId, SpectatorId, SpaceId} from '../common/Types';
+import {PlayerId, GameId, SpectatorId, SpaceId, ParticipantId} from '../common/Types';
 import {PlayerInput} from './PlayerInput';
 import {CardResource} from '../common/CardResource';
 import {Resource} from '../common/Resource';
@@ -1707,11 +1707,11 @@ export class Game implements IGame, Logger {
       .sort((a, b) => a.cost - b.cost);
   }
 
-  public log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer}) {
+  public log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer, reservedForParticipant?: ParticipantId}) {
     const builder = new LogMessageBuilder(message);
     f?.(builder);
     const logMessage = builder.build();
-    logMessage.playerId = options?.reservedFor?.id;
+    logMessage.playerId = options?.reservedFor?.id ?? options?.reservedForParticipant;
     this.gameLog.push(logMessage);
     this.gameAge++;
   }

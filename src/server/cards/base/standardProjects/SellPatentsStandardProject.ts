@@ -4,6 +4,7 @@ import {CardRenderer} from '../../render/CardRenderer';
 import {StandardProjectCard} from '../../StandardProjectCard';
 import {SelectCard} from '../../../inputs/SelectCard';
 import {IProjectCard} from '../../IProjectCard';
+import {LogHelper} from '../../../LogHelper';
 
 export class SellPatentsStandardProject extends StandardProjectCard {
   constructor() {
@@ -40,6 +41,8 @@ export class SellPatentsStandardProject extends StandardProjectCard {
         cards.forEach((card) => player.discardCardFromHand(card));
         this.projectPlayed(player);
         player.game.log('${0} sold ${1} patents', (b) => b.player(player).number(cards.length));
+        LogHelper.logCardAction(player, 'sold', cards, true);
+        player.game.log('${0} sold ${1}', (b) => b.player(player).cards(cards), {reservedForParticipant: player.game.spectatorId});
         return undefined;
       });
   }

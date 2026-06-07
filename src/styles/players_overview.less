@@ -365,6 +365,61 @@
     }
 }
 
+@media only screen and (min-width: 701px) and (max-width: 900px)  {
+    .players-overview {
+        .player-info {
+            box-sizing: border-box;
+            max-width: calc(100vw - 96px);
+            width: calc(100vw - 96px);
+        }
+
+        .player-status-and-res {
+            display: grid;
+            grid-template-columns: 136px 90px 44px;
+            column-gap: 8px;
+            row-gap: 8px;
+            max-width: 100%;
+        }
+
+        .player-status {
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        .player-played-cards {
+            grid-column: 2;
+            grid-row: 1;
+            margin: 0;
+        }
+
+        .player-board-blue-action-counter {
+            grid-column: 3;
+            grid-row: 1;
+            margin-top: 0;
+        }
+
+        .resource_items_cont {
+            grid-column: 1 / -1;
+            grid-row: 2;
+            max-width: 100%;
+        }
+
+        .resource_item {
+            margin-left: 0;
+            margin-right: 10px;
+        }
+
+        .resource_item:last-child {
+            margin-right: 0;
+        }
+
+        .player-tags {
+            max-width: 100%;
+            overflow-x: auto;
+        }
+    }
+}
+
 @media only screen and (max-width: 700px)  {
     .players-overview {
         .player-info {

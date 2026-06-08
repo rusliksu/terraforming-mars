@@ -93,10 +93,50 @@ describe('PlayerInfo', () => {
     });
 
     expect(playerInfo.find('.played-cards-button').attributes('title')).eq('table');
-    expect(playerInfo.find('.spectator-hand-button').attributes('title')).eq('hand 2');
+    expect(playerInfo.find('.spectator-hand-button').attributes('title')).eq('hand');
 
     await playerInfo.find('.spectator-hand-button').trigger('click');
 
     expect(visibility.spectator_hand_0).eq(true);
+  });
+
+  it('does not show spectator hand control to a player', () => {
+    const player = fakePublicPlayerModel({
+      color: 'blue',
+      name: 'Blue',
+      tableau: [{name: CardName.HELION} as any],
+      spectatorCards: {
+        cardsInHand: [{name: 'Micro-Mills'} as any],
+        ceoCardsInHand: [],
+        preludeCardsInHand: [],
+      },
+    });
+    const playerView = {
+      id: 'player-id',
+      thisPlayer: player,
+      game: fakeGameModel(),
+      players: [player],
+      runId: 'run-id',
+    } as any as PlayerViewModel;
+
+    const playerInfo = shallowMount(PlayerInfo, {
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        mocks: {
+          getVisibilityState: () => false,
+          setVisibilityState: () => {},
+          isServerSideRequestInProgress: false,
+        },
+      },
+      props: {
+        player,
+        playerView,
+        playerIndex: 0,
+        actionLabel: 'none',
+      },
+    });
+
+    expect(playerInfo.find('.spectator-hand-button').exists()).eq(false);
   });
 });

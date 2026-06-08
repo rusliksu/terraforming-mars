@@ -26,7 +26,7 @@
               </div>
             </div>
             <AppButton class="played-cards-button player-table-button" size="tiny" @click="togglePlayerDetails" :title="tableButtonLabel()" />
-            <AppButton v-if="spectatorHandCardCount() > 0" class="played-cards-button spectator-hand-button" size="tiny" @click="toggleSpectatorHand" :title="spectatorHandButtonLabel()" />
+            <AppButton v-if="canViewSpectatorHand()" class="played-cards-button spectator-hand-button" size="tiny" @click="toggleSpectatorHand" :title="spectatorHandButtonLabel()" />
           </div>
           <div class="tag-display player-board-blue-action-counter" :class="tooltipCss" :data-tooltip="$t('The number of available actions on active cards')">
             <div class="tag-count tag-action-card">
@@ -150,10 +150,10 @@ export default defineComponent({
       return vueRoot(this).setVisibilityState(spectatorHandVisibilityKey(playerIndex), false);
     },
     spectatorHandButtonLabel(): string {
-      if (this.isSpectatorHandPinned(this.playerIndex)) {
-        return 'hide hand';
-      }
-      return `hand ${this.spectatorHandCardCount()}`;
+      return 'hand';
+    },
+    canViewSpectatorHand(): boolean {
+      return this.playerView.thisPlayer === undefined && this.spectatorHandCardCount() > 0;
     },
     toggleSpectatorHand() {
       const handPinned = this.isSpectatorHandPinned(this.playerIndex);

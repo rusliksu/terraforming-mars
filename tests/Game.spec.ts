@@ -338,6 +338,61 @@ describe('Game', () => {
     expect(game.phase).to.eq(Phase.RESEARCH);
   });
 
+  function terraformedAnnouncements(game: Game) {
+    return game.gameLog.filter((msg) => msg.message === 'Mars is terraformed!');
+  }
+
+  it('Announces when Mars becomes terraformed, the moment the last parameter is maxed', () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const player2 = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('gameid', [player, player2], player, 'spectatorid');
+    game.phase = Phase.ACTION;
+
+    setTemperature(game, constants.MAX_TEMPERATURE);
+    setOxygenLevel(game, constants.MAX_OXYGEN_LEVEL);
+    maxOutOceans(player, constants.MAX_OCEAN_TILES - 1);
+    expect(terraformedAnnouncements(game)).is.empty;
+
+    // The final ocean completes terraforming.
+    addOcean(player);
+    expect(terraformedAnnouncements(game)).has.length(1);
+  });
+
+  it('Announces that Mars is terraformed only once', () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const player2 = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('gameid', [player, player2], player, 'spectatorid');
+    game.phase = Phase.ACTION;
+
+    setTemperature(game, constants.MAX_TEMPERATURE - 2);
+    setOxygenLevel(game, constants.MAX_OXYGEN_LEVEL);
+    maxOutOceans(player);
+
+    game.increaseTemperature(player, 1);
+    expect(terraformedAnnouncements(game)).has.length(1);
+
+    // Further (no-op) parameter raises don't announce a second time.
+    game.increaseTemperature(player, 1);
+    game.increaseOxygenLevel(player, 1);
+    expect(terraformedAnnouncements(game)).has.length(1);
+  });
+
+  it('Does not announce Mars terraformed until Venus is maxed, if Venus completion is required', () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const player2 = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('gameid', [player, player2], player, 'spectatorid', {venusNextExtension: true, requiresVenusTrackCompletion: true});
+    game.phase = Phase.ACTION;
+
+    setTemperature(game, constants.MAX_TEMPERATURE);
+    setOxygenLevel(game, constants.MAX_OXYGEN_LEVEL);
+    maxOutOceans(player);
+    setVenusScaleLevel(game, constants.MAX_VENUS_SCALE - 2);
+    expect(terraformedAnnouncements(game)).is.empty;
+
+    game.increaseVenusScaleLevel(player, 1);
+    expect(terraformedAnnouncements(game)).has.length(1);
+  });
+
   it('Should finish solo game in the end of last generation', () => {
     const player = TestPlayer.BLUE.newPlayer();
     const game = Game.newInstance('game-solo1', [player], player, 'spectatorid');
@@ -934,19 +989,22 @@ describe('Game', () => {
     assertIsJSON(serialized);
     const serializedKeys = Object.keys(serialized);
 
-    const unserializedFieldsInGame: Array<keyof Game> = [
+    // 'marsIsTerraformedAnnounced' is private, so it is not in keyof Game, but it
+    // is still an enumerable runtime property that must be accounted for here.
+    const unserializedFieldsInGame: Array<keyof Game | 'marsIsTerraformedAnnounced'> = [
       'createdTime',
       'discardedColonies',
+      'doubleDownPrelude',
       'inDoubleDown',
       'inputsThisRound',
       'inTurmoil',
       'playersInGenerationOrder',
+      'marsIsTerraformedAnnounced',
       'monsInsuranceOwner',
       'resettable',
       'rng',
       'saveGamePromise',
       'underworldDraftEnabled',
-      'doubleDownPrelude',
     ];
     const serializedValuesNotInGame: Array<keyof SerializedGame> = [
       'seed',
@@ -996,6 +1054,21 @@ describe('Game', () => {
     (serialized.gameOptions as any).pathfindersData = undefined;
     const deserialized = Game.deserialize(serialized);
     expect(deserialized.pathfindersData).is.undefined;
+  });
+
+  it('deserializing a game migrates moon-logistics to moon-logistic', () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const game = Game.newInstance('gameid', [player], player, 'spectatorid', {moonExpansion: true});
+    const serialized = game.serialize();
+    serialized.globalsPerGeneration = [
+      {'moon-logistics': 3, 'moon-habitat': 1} as any,
+      {'moon-mining': 2},
+    ];
+    const deserialized = Game.deserialize(serialized);
+    expect(deserialized.globalsPerGeneration).deep.eq([
+      {'moon-logistic': 3, 'moon-habitat': 1},
+      {'moon-mining': 2},
+    ]);
   });
 
   it('deserializing a game with awards', () => {
@@ -1221,7 +1294,7 @@ describe('Game', () => {
       GlobalParameter.OCEANS,
       GlobalParameter.MOON_MINING_RATE,
       GlobalParameter.MOON_HABITAT_RATE,
-      GlobalParameter.MOON_LOGISTICS_RATE]);
+      GlobalParameter.MOON_LOGISTIC_RATE]);
   });
 
   it('Deal preludes when starting preludes is undefined', () => {
@@ -1362,8 +1435,8 @@ function waitingForGlobalParameters(player: Player): Array<GlobalParameter> {
     if (title.includes('mining')) {
       return GlobalParameter.MOON_MINING_RATE;
     }
-    if (title.includes('logistics')) {
-      return GlobalParameter.MOON_LOGISTICS_RATE;
+    if (title.includes('logistic')) {
+      return GlobalParameter.MOON_LOGISTIC_RATE;
     }
     throw new Error('title does not match any description: ' + title);
   }

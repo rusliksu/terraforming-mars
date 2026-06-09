@@ -68,12 +68,28 @@ describe('ApiLiveGames', () => {
     expect(games[0].spectatorId).eq(activeGame.spectatorId);
   });
 
-  it('does not list solo games', async () => {
+  it('lists solo games', async () => {
     const soloGame = testGame('game-solo', [TestPlayer.BLUE.newPlayer()], Phase.ACTION);
     await scaffolding.ctx.gameLoader.add(soloGame);
 
     scaffolding.url = '/api/live-games';
     await scaffolding.get(ApiLiveGames.INSTANCE, res);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(JSON.parse(res.content).map((game: {id: string}) => game.id)).deep.eq(['game-solo']);
+  });
+
+  it('does not list games with active bot players', async () => {
+    const botPlayer = TestPlayer.BLUE.newPlayer();
+    const botGame = testGame('game-bot', [botPlayer], Phase.ACTION);
+    await scaffolding.ctx.gameLoader.add(botGame);
+
+    const route = new ApiLiveGames({
+      listPlayerIds: (gameId) => gameId === botGame.id ? [botPlayer.id] : [],
+    });
+
+    scaffolding.url = '/api/live-games';
+    await scaffolding.get(route, res);
 
     expect(res.statusCode).eq(statusCode.ok);
     expect(JSON.parse(res.content)).deep.eq([]);

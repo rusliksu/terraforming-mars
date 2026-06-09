@@ -292,6 +292,16 @@ mv "$release_dir/build" "$new_release_dir/build"
 mv "$release_dir/assets" "$new_release_dir/assets"
 mv "$release_dir/package.json" "$new_release_dir/package.json"
 mv "$release_dir/package-lock.json" "$new_release_dir/package-lock.json"
+python3 - "$new_release_dir/assets/release.json" <<'PY'
+import json
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+manifest = json.loads(path.read_text(encoding="utf-8-sig"))
+manifest["environment"] = "prod"
+path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+PY
 mkdir -p "$new_release_dir/elo"
 for file in $elo_files; do
   cp "$release_dir/elo/$file" "$new_release_dir/elo/$file"

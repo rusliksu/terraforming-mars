@@ -36,6 +36,7 @@ import {restoreTestDatabase, restoreTestGameLoader, setTestDatabase, setTestGame
 import {InMemoryDatabase} from './testing/InMemoryDatabase';
 import {Score} from '../src/server/IGame';
 import {IGameLoader} from '../src/server/database/IGameLoader';
+import {ColonyName} from '../src/common/colonies/ColonyName';
 
 function noopGameLoader(): IGameLoader {
   return {
@@ -1185,6 +1186,30 @@ describe('Game', () => {
     const deserialized = Game.deserialize(serialized);
     expect(deserialized.colonies.map(toName)).has.members(colonyNames);
     expect(deserialized.discardedColonies.map(toName)).has.members(discardedColonyNames);
+  });
+
+  it('deserializing a custom colonies game only restores custom discarded colonies', () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const player2 = TestPlayer.RED.newPlayer();
+    const customColoniesList = [
+      ColonyName.CALLISTO,
+      ColonyName.CERES,
+      ColonyName.ENCELADUS,
+      ColonyName.EUROPA,
+      ColonyName.GANYMEDE,
+      ColonyName.IO,
+    ];
+    const game = Game.newInstance('custom-colonies-gameid', [player, player2], player, 'spectatorid', {
+      coloniesExtension: true,
+      customColoniesList,
+    });
+    const discardedColonyNames = game.discardedColonies.map(toName);
+
+    const deserialized = Game.deserialize(game.serialize());
+
+    expect(deserialized.discardedColonies.map(toName)).has.members(discardedColonyNames);
+    expect(deserialized.discardedColonies.map(toName)).to.not.include(ColonyName.LUNA);
+    expect(deserialized.discardedColonies.every((colony) => customColoniesList.includes(colony.name))).is.true;
   });
 
   it('wgt includes all parameters at the game start', () => {

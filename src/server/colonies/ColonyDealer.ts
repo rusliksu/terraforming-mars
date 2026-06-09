@@ -56,12 +56,16 @@ export class ColonyDealer {
     return deck;
   }
 
-  public drawColonies(players: number): void {
+  private validColoniesForGameOptions(): ReadonlyArray<IColony> {
     const customColonies = this.gameOptions.customColoniesList;
-    let colonies = this.gameColonies;
-    if (customColonies.length > 0) {
-      colonies = this.gameColonies.filter((colony) => customColonies.includes(colony.name));
+    if (customColonies.length === 0) {
+      return this.gameColonies;
     }
+    return this.gameColonies.filter((colony) => customColonies.includes(colony.name));
+  }
+
+  public drawColonies(players: number): void {
+    const colonies = this.validColoniesForGameOptions();
 
     const count = (players + 2) +
       (players <= 2 ? 1 : 0); // Two-player games and solo games get one more colony.
@@ -86,7 +90,7 @@ export class ColonyDealer {
 
   public restore(activeColonies: Array<IColony>): void {
     this.colonies = [...activeColonies];
-    this.discardedColonies = this.gameColonies.filter((c) => {
+    this.discardedColonies = this.validColoniesForGameOptions().filter((c) => {
       return !activeColonies.some((ac) => ac.name === c.name);
     });
   }

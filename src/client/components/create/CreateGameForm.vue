@@ -507,16 +507,6 @@
                                                     autocomplete="off"
                                                     v-model="playerProfileSearch"
                                                     @keydown.stop>
-                                                  <button
-                                                    type="button"
-                                                    class="create-game-profile-option create-game-profile-option-custom"
-                                                    @click="clearPlayerProfile(newPlayer)">
-                                                      <span class="create-game-profile-avatar create-game-profile-avatar--empty">?</span>
-                                                      <span class="create-game-profile-option-main">
-                                                        <span class="create-game-profile-option-name">Custom nick</span>
-                                                        <span class="create-game-profile-option-meta">Manual name and color</span>
-                                                      </span>
-                                                  </button>
                                                   <div class="create-game-profile-option-list">
                                                     <button
                                                       v-for="profile in getFilteredAvailablePlayerProfiles(newPlayer)"
@@ -536,20 +526,6 @@
                                                     <div v-if="getFilteredAvailablePlayerProfiles(newPlayer).length === 0" class="create-game-profile-empty">No matching players</div>
                                                   </div>
                                               </div>
-                                          </div>
-                                          <div class="create-game-persona-picker">
-                                              <span class="create-game-persona-preview" :title="getColorTitle(newPlayer.color)">
-                                                  <span :class="'create-game-colorbox '+getPlayerCubeColorClass(newPlayer.color)"></span>
-                                              </span>
-                                              <select
-                                                class="form-select form-inline create-game-persona-select"
-                                                :value="getSelectedIdentityColor(newPlayer.color)"
-                                                @change="applyPlayerIdentityFromSelect(newPlayer, $event)">
-                                                  <option value="">Custom nick</option>
-                                                  <option v-for="identity in getAvailableLockedPlayerIdentities(newPlayer)" :key="identity.color" :value="identity.color">
-                                                    {{ formatLockedIdentityOption(identity) }}
-                                                  </option>
-                                              </select>
                                           </div>
                                           <div class="create-game-page-color-row">
                                               <template v-for="color in DEFAULT_PLAYER_COLORS" v-bind:key="color">
@@ -689,7 +665,6 @@ import * as constants from '@/common/constants';
 
 import {defineComponent, nextTick} from 'vue';
 import {Color, DEFAULT_PLAYER_COLORS, getLockedPlayerName, LOCKED_PLAYER_IDENTITIES} from '@/common/Color';
-import type {LockedPlayerIdentity, PlayerColor} from '@/common/Color';
 import {
   buildPlayerProfilesFromEloPlayers,
   getPlayerProfileAvatarInitials,
@@ -850,9 +825,6 @@ export default defineComponent({
     },
     DEFAULT_PLAYER_COLORS(): typeof DEFAULT_PLAYER_COLORS {
       return DEFAULT_PLAYER_COLORS;
-    },
-    LOCKED_PLAYER_IDENTITIES(): typeof LOCKED_PLAYER_IDENTITIES {
-      return LOCKED_PLAYER_IDENTITIES;
     },
     boards() {
       return [
@@ -1102,31 +1074,12 @@ export default defineComponent({
         player.name = lockedName;
       }
     },
-    applyPlayerIdentity(player: NewPlayerModel, color: PlayerColor) {
-      player.color = color;
-      this.syncLockedPlayerIdentity(player);
-    },
     applyDefaultPlayerColor(player: NewPlayerModel, color: Color) {
       const lockedName = getLockedPlayerName(player.color);
       if (lockedName !== undefined && player.name === lockedName) {
         player.name = '';
       }
       player.color = color;
-    },
-    getSelectedIdentityColor(color: Color): string {
-      return getLockedPlayerName(color) !== undefined ? color : '';
-    },
-    getAvailableLockedPlayerIdentities(player: NewPlayerModel): ReadonlyArray<LockedPlayerIdentity> {
-      const takenColors = new Set<PlayerColor>(this.getPlayers()
-        .filter((candidate) => candidate !== player && getLockedPlayerName(candidate.color) !== undefined)
-        .map((candidate) => candidate.color as PlayerColor));
-      return LOCKED_PLAYER_IDENTITIES.filter((identity) =>
-        (identity.selectable !== false || identity.color === player.color) &&
-        (identity.color === player.color || !takenColors.has(identity.color)));
-    },
-    formatLockedIdentityOption(identity: LockedPlayerIdentity): string {
-      const label = identity.label || identity.name;
-      return `${label} · ${identity.colorLabel}`;
     },
     getPlayerProfiles(): ReadonlyArray<PlayerProfile> {
       if (sharedEloState.loaded && Object.keys(sharedEloState.players).length > 0) {
@@ -1234,12 +1187,6 @@ export default defineComponent({
       player.name = profile.name;
       player.color = this.getAvailablePlayerProfileColor(player, profile);
     },
-    clearPlayerProfile(player: NewPlayerModel) {
-      if (getPlayerProfileByName(player.name, this.getPlayerProfiles()) !== undefined) {
-        player.name = '';
-      }
-      this.closePlayerProfilePicker();
-    },
     applyPlayerProfileFromPicker(player: NewPlayerModel, profile: PlayerProfile) {
       if (!this.getAvailablePlayerProfiles(player).some((candidate) => candidate.id === profile.id)) {
         return;
@@ -1252,26 +1199,6 @@ export default defineComponent({
         .filter((candidate) => candidate !== player)
         .map((candidate) => candidate.color));
       return DEFAULT_PLAYER_COLORS.find((color) => !usedColors.has(color)) ?? DEFAULT_PLAYER_COLORS[0];
-    },
-    applyPlayerIdentityFromSelect(player: NewPlayerModel, event: Event) {
-      const color = (event.target as HTMLSelectElement).value;
-      if (color === '') {
-        const lockedName = getLockedPlayerName(player.color);
-        if (lockedName !== undefined) {
-          if (player.name === lockedName) {
-            player.name = '';
-          }
-          player.color = this.getAvailableDefaultColor(player);
-        }
-        return;
-      }
-      const selectedColor = color as PlayerColor;
-      const isAvailable = this.getAvailableLockedPlayerIdentities(player)
-        .some((identity) => identity.color === selectedColor);
-      if (!isAvailable) {
-        return;
-      }
-      this.applyPlayerIdentity(player, selectedColor);
     },
     syncLockedPlayerIdentities(players: Array<NewPlayerModel>) {
       players.forEach((player) => this.syncLockedPlayerIdentity(player));

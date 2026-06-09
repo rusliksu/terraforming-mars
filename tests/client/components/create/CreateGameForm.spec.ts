@@ -283,18 +283,6 @@ describe('CreateGameForm', () => {
     expect(colors).deep.eq([...DEFAULT_PLAYER_COLORS]);
   });
 
-  it('applies reserved personas from the compact nick selector', async () => {
-    const wrapper = shallowMount(CreateGameForm, {
-      ...globalConfig,
-    });
-    const vm = wrapper.vm as any;
-
-    await wrapper.find('.create-game-persona-select').setValue('emerald');
-
-    expect(vm.players[0].color).to.eq('emerald');
-    expect(vm.players[0].name).to.eq(EMERALD_RAV_NAME);
-  });
-
   it('applies player profiles without locking later name edits', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
@@ -430,56 +418,19 @@ describe('CreateGameForm', () => {
     expect(profileNames).deep.eq(['Nuke']);
   });
 
-  it('shows final Toma option and hides rejected Toma variants from the compact nick selector', () => {
+  it('keeps the player profile picker without the custom nick selector', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
     });
 
-    const options = wrapper.find('.create-game-persona-select')
-      .findAll('option')
-      .map((option) => option.text());
+    expect(wrapper.find('.create-game-player-profile-trigger').exists()).to.eq(true);
+    expect(wrapper.find('.create-game-persona-select').exists()).to.eq(false);
+    expect(wrapper.find('.create-game-persona-preview').exists()).to.eq(false);
 
-    expect(options).to.include(`${TOMA_NAME} · кораллово-розовый`);
-    expect(options).not.to.include('Тома · Старый красно-розовый');
-    expect(options).not.to.include('Тома · Сатурн');
-    expect(options).not.to.include('Тома · Кольца Сатурна');
-    expect(options).not.to.include('Тома · Титан');
-    expect(options).not.to.include('Тома · Кошачий глаз');
-  });
-
-  it('filters out reserved personas already selected by another player', async () => {
-    const wrapper = shallowMount(CreateGameForm, {
-      ...globalConfig,
-    });
-    const vm = wrapper.vm as any;
-    vm.playersCount = 2;
+    await wrapper.find('.create-game-player-profile-trigger').trigger('click');
     await wrapper.vm.$nextTick();
 
-    const selects = wrapper.findAll('.create-game-persona-select');
-    await selects[0].setValue('gold');
-    await wrapper.vm.$nextTick();
-
-    const secondOptions = selects[1]
-      .findAll('option')
-      .map((option) => option.text());
-
-    expect(secondOptions).not.to.include(`${GENUINE_GOLD_NAME} · золото`);
-    expect(secondOptions).to.include(`${EMERALD_RAV_NAME} · изумруд`);
-    expect(secondOptions).to.include(`${CATHARSIS_NAME} · рыжий`);
-    expect(secondOptions).to.include(`${GYDRO_NAME} · перламутр`);
-    expect(secondOptions).to.include(`${ANTISTRESS_NAME} · тёмно-синий`);
-    expect(secondOptions).to.include(`${GAMBIT_GIRL_NAME} · гортензия`);
-    expect(secondOptions).to.include(`${PAVEL_TURQUOISE_NAME} · коралл`);
-  });
-
-  it('renders persona preview using the shared colorbox swatch', () => {
-    const wrapper = shallowMount(CreateGameForm, {
-      ...globalConfig,
-    });
-
-    const preview = wrapper.find('.create-game-persona-preview .create-game-colorbox');
-    expect(preview.exists()).to.eq(true);
-    expect(preview.classes()).to.include('player_bg_color_red');
+    expect(wrapper.find('.create-game-profile-menu').text()).not.to.contain('Custom nick');
   });
 
   it('locks reserved persona names', async () => {

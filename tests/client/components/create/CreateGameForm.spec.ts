@@ -163,10 +163,44 @@ describe('CreateGameForm', () => {
     vm.turnBasedGame = true;
     vm.players[0].telegramID = ' 123456789 ';
 
-    const serialized = await vm.serializeSettings();
-    expect(serialized).to.be.a('string');
-    const payload = JSON.parse(serialized);
-    expect(payload.players[0].telegramID).to.eq('123456789');
+    const originalConfirm = window.confirm;
+    window.confirm = (() => true) as typeof window.confirm;
+
+    try {
+      const serialized = await vm.serializeSettings();
+      expect(serialized).to.be.a('string');
+      const payload = JSON.parse(serialized);
+      expect(payload.players[0].telegramID).to.eq('123456789');
+    } finally {
+      window.confirm = originalConfirm;
+    }
+  });
+
+  it('requires confirmation before serializing async games with telegram recipients', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+    vm.turnBasedGame = true;
+    vm.players[0].telegramID = '123456789';
+    vm.players[1].telegramID = '987654321';
+
+    const confirmations: Array<string> = [];
+    const originalConfirm = window.confirm;
+    window.confirm = ((message?: string) => {
+      confirmations.push(String(message ?? ''));
+      return false;
+    }) as typeof window.confirm;
+
+    try {
+      const serialized = await vm.serializeSettings();
+      expect(serialized).to.eq(undefined);
+      expect(confirmations).to.have.length(1);
+      expect(confirmations[0]).to.contain('turn notifications');
+      expect(confirmations[0]).to.contain('matching player');
+    } finally {
+      window.confirm = originalConfirm;
+    }
   });
 
   it('strips telegram ids when async mode is off', async () => {

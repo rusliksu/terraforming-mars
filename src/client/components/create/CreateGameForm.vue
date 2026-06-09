@@ -1412,6 +1412,16 @@ export default defineComponent({
           window.alert(translateTextWithParams('Player ${0}: invalid Telegram ID. Use digits only and send /start to @tm_knightbyte_bot first.', [(invalidTelegramPlayerIndex + 1).toString()]));
           return;
         }
+        const telegramRecipients = players.filter((player) => this.normalizeTelegramId(player.telegramID) !== '').length;
+        if (telegramRecipients > 0) {
+          const confirmed = window.confirm(translateTextWithParams(
+            'Async Telegram game will send turn notifications to ${0} player(s). Confirm that each Telegram ID belongs to the matching player.',
+            [telegramRecipients.toString()],
+          ));
+          if (confirmed === false) {
+            return;
+          }
+        }
       }
 
       players.forEach((player) => {

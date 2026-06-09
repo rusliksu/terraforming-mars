@@ -82,6 +82,8 @@ new_release_dir=""
 previous_current=""
 active_proxy_port="$prod_port"
 elo_files="index.html audit_player_names.py elo-api.js elo_aliases.py excluded_games.json fix_elo_dupes.py import_gamedb_to_elo.py migrate_elo_nicknames.py player_name_aliases.json player_name_overrides.json tm-sync-elo.py"
+deploy_lock_file="/home/openclaw/tm-runtime/.deploy.lock"
+deploy_lock_info="/home/openclaw/tm-runtime/.deploy.lock.info"
 
 wait_for_http() {
   local url="$1"
@@ -166,6 +168,26 @@ rollback_after_public_switch() {
   rm -rf "$work_root"
   exit 1
 }
+
+mkdir -p "$(dirname "$deploy_lock_file")"
+exec 9>"$deploy_lock_file"
+if ! flock -n 9; then
+  echo "Another TM deploy or promote is already running." >&2
+  if [ -f "$deploy_lock_info" ]; then
+    cat "$deploy_lock_info" >&2 || true
+  fi
+  exit 75
+fi
+{
+  echo "operation=promote"
+  echo "source=$staging_current"
+  echo "target=$prod_current"
+  echo "required_git_sha=$required_git_sha"
+  echo "required_artifact_sha=$required_artifact_sha"
+  echo "started_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  echo "pid=$$"
+} > "$deploy_lock_info"
+trap 'rm -f "$deploy_lock_info"' EXIT
 
 if ! systemctl --user cat "$service" | grep -F "WorkingDirectory=$prod_current" >/dev/null; then
   echo "Service $service is not pointed at $prod_current. Run sync_tm_runtime_services.ps1 first." >&2

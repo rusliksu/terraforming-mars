@@ -343,6 +343,7 @@ try {
 
     $releaseManifest = [ordered]@{
         schemaVersion = 1
+        environment = $Environment
         artifactSha256 = $artifactSha256
         dependencySha256 = $dependencySha256
         gitSha = $gitSha

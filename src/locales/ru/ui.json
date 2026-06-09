@@ -15,6 +15,7 @@
     "Goes First?": "Ходит первым?",
     "Corporate Era": "Эпоха корпораций",
     "We do not recommend playing a solo game without the Corporate Era. Press OK if you want to play without it.": "Мы не рекомендуем играть в соло без дополнения Эра корпораций. Нажмите OK, если хотите продолжить.",
+    "Async Telegram game will send turn notifications to ${0} player(s). Confirm that each Telegram ID belongs to the matching player.": "Асинхронная игра с Telegram будет отправлять уведомления о ходе. Получателей: ${0}. Подтвердите, что каждый Telegram ID указан напротив правильного игрока.",
 
     "Color:": "Цвет:",
     "Red": "Красный",

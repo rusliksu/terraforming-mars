@@ -51,6 +51,9 @@ without restarting watcher services unless you explicitly pass
 ## Hard Rules
 
 - `prod` is promote-only. Do not deploy directly to `prod`; use staging first and then promote the tested artifact.
+- Treat releases as a single release train. Collect finished commits into one clean release checkout, deploy that exact checkout to staging once, verify it, then promote the exact staging artifact to prod.
+- Do not run parallel TM staging deploys or prod promotes from multiple Codex sessions. The scripts take a VPS-wide `/home/openclaw/tm-runtime/.deploy.lock` and fail fast if another TM deploy/promote is already running.
+- If another Codex session has new commits, stop and merge/rebase them into the train before the staging deploy; do not keep replacing staging with partial slices.
 - Release source must be a clean git checkout. If `git status --short` is not empty, fix that before deploy.
 - The main working tree `C:\Users\Ruslan\tm\terraforming-mars` is for day-to-day development, not the default release source.
 - Do not hot-patch `build/*.js` or `assets/*` on the VPS. Emergency fixes must be carried back into source and re-released through staging.
@@ -87,6 +90,14 @@ One-command rollout from the clean release checkout:
 ```powershell
 pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\rollout_tm_server.ps1
 ```
+
+Recommended multi-session flow:
+
+1. Finish each Codex session as commits pushed to `origin/work/custom-server-main-20260512` or the agreed release branch.
+2. In one release session, refresh/build the clean checkout and verify the combined commit list.
+3. Deploy once to staging.
+4. Run staging smoke/screenshots for the combined train.
+5. Promote with `release_tm_prod.ps1`, which captures staging's `gitSha` and `artifactSha256` and refuses to promote if staging changes underneath it.
 
 Refresh the clean release checkout before a real rollout:
 

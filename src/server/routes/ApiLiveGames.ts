@@ -6,10 +6,13 @@ import {Handler} from './Handler';
 import {Context} from './IHandler';
 import {Request} from '../Request';
 import {Response} from '../Response';
+import {BotTakeoverManager} from '../bot/BotTakeoverManager';
 
 const DEFAULT_LIMIT = 2;
 const MAX_LIMIT = 20;
 const STALE_LIVE_GAME_AFTER_MS = 18 * 60 * 60 * 1000;
+
+type BotTakeoverLiveGamesDeps = Pick<BotTakeoverManager, 'listPlayerIds'>;
 
 type LiveGameCandidate = {
   phasePriority: number;
@@ -76,7 +79,7 @@ function isStale(lastSaveTimeMs: number | undefined, now: number): boolean {
 export class ApiLiveGames extends Handler {
   public static readonly INSTANCE = new ApiLiveGames();
 
-  private constructor() {
+  public constructor(private readonly botManager: BotTakeoverLiveGamesDeps = BotTakeoverManager.INSTANCE) {
     super();
   }
 
@@ -90,7 +93,7 @@ export class ApiLiveGames extends Handler {
       const game = await ctx.gameLoader.getGame(entry.gameId);
       if (game === undefined ||
           game.phase === Phase.END ||
-          game.players.length < 2 ||
+          this.botManager.listPlayerIds(game.id).length > 0 ||
           !hasCustomPlayerName(game) ||
           isSyntheticTestGame(game) ||
           isPreStartDraft(game.phase) ||

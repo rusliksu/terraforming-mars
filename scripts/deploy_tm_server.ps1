@@ -389,6 +389,28 @@ dependency_sha="__DEPENDENCY_SHA__"
 new_release_dir=""
 previous_current=""
 elo_files="index.html audit_player_names.py elo-api.js elo_aliases.py excluded_games.json fix_elo_dupes.py import_gamedb_to_elo.py migrate_elo_nicknames.py player_name_aliases.json player_name_overrides.json tm-sync-elo.py"
+deploy_lock_file="/home/openclaw/tm-runtime/.deploy.lock"
+deploy_lock_info="/home/openclaw/tm-runtime/.deploy.lock.info"
+
+mkdir -p "$(dirname "$deploy_lock_file")"
+exec 9>"$deploy_lock_file"
+if ! flock -n 9; then
+  echo "Another TM deploy or promote is already running." >&2
+  if [ -f "$deploy_lock_info" ]; then
+    cat "$deploy_lock_info" >&2 || true
+  fi
+  exit 75
+fi
+{
+  echo "operation=deploy"
+  echo "environment=__ENV__"
+  echo "service=$service"
+  echo "git_sha=$expected_git_sha"
+  echo "artifact_sha=$expected_artifact_sha"
+  echo "started_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  echo "pid=$$"
+} > "$deploy_lock_info"
+trap 'rm -f "$deploy_lock_info"' EXIT
 
 rollback() {
   if [ -n "$previous_current" ]; then

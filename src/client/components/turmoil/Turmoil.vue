@@ -21,8 +21,8 @@
           </div>
           <div class="policy-user-cubes">
             <template v-for="n in turmoil.policyActionUsers">
-              <div v-if="n.turmoilPolicyActionUsed" :key="n.color" :class="'policy-use-marker board-cube--'+n.color"></div>
-              <div v-if="n.politicalAgendasActionUsedCount > 0" :key="n.color" :class="'policy-use-marker board-cube--'+n.color">{{n.politicalAgendasActionUsedCount}}</div>
+              <div v-if="n.turmoilPolicyActionUsed" :key="n.color" :class="getPolicyUseMarkerClasses(n.color)"></div>
+              <div v-if="n.politicalAgendasActionUsedCount > 0" :key="n.color" :class="getPolicyUseMarkerClasses(n.color)">{{n.politicalAgendasActionUsedCount}}</div>
             </template>
           </div>
           <div class="chairman-spot"><div v-if="turmoil.chairman" :class="'player-token '+turmoil.chairman"></div></div>
@@ -88,6 +88,7 @@
 
 import {defineComponent} from 'vue';
 import {vueRoot} from '@/client/components/vueRoot';
+import {Color, isReservedPlayerColor} from '@/common/Color';
 import {PartyName} from '@/common/turmoil/PartyName';
 import {TurmoilModel} from '@/common/models/TurmoilModel';
 import TurmoilAgenda from '@/client/components/turmoil/TurmoilAgenda.vue';
@@ -108,6 +109,13 @@ export default defineComponent({
         return '';
       }
       return party.toLowerCase().split(' ').join('_');
+    },
+    getPolicyUseMarkerClasses(color: Color): Array<string> {
+      const classes = ['policy-use-marker', `board-cube--${color}`];
+      if (isReservedPlayerColor(color)) {
+        classes.push('board-cube--persona');
+      }
+      return classes;
     },
     getBonus(party: PartyName | undefined) {
       const politicalAgendas = this.turmoil.politicalAgendas;

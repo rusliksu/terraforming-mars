@@ -36,4 +36,45 @@ describe('Turmoil', () => {
     });
     expect(wrapper.exists()).to.be.true;
   });
+
+  it('renders reserved color policy markers as persona cubes', () => {
+    const wrapper = shallowMount(Turmoil, {
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        mixins: [{
+          methods: {
+            getVisibilityState: () => true,
+            setVisibilityState: () => {},
+          },
+        }],
+      },
+      props: {
+        turmoil: {
+          dominant: PartyName.UNITY,
+          ruling: PartyName.SCIENTISTS,
+          chairman: 'pearl',
+          parties: [],
+          lobby: [],
+          reserve: [],
+          distant: undefined,
+          coming: undefined,
+          current: undefined,
+          politicalAgendas: fakePoliticalAgendasModel(),
+          policyActionUsers: [
+            {color: 'purple', turmoilPolicyActionUsed: true, politicalAgendasActionUsedCount: 0},
+            {color: 'pearl', turmoilPolicyActionUsed: true, politicalAgendasActionUsedCount: 0},
+          ],
+        },
+      },
+    });
+
+    const purpleMarker = wrapper.find('.policy-use-marker.board-cube--purple');
+    const pearlMarker = wrapper.find('.policy-use-marker.board-cube--pearl');
+
+    expect(purpleMarker.exists()).to.be.true;
+    expect(purpleMarker.classes()).not.to.include('board-cube--persona');
+    expect(pearlMarker.exists()).to.be.true;
+    expect(pearlMarker.classes()).to.include('board-cube--persona');
+  });
 });

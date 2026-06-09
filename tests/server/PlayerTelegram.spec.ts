@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import https from 'https';
 import * as os from 'os';
 import * as path from 'path';
+import {Phase} from '../../src/common/Phase';
 import {Game} from '../../src/server/Game';
 import {Player} from '../../src/server/Player';
 import {SelectOption} from '../../src/server/inputs/SelectOption';
@@ -104,6 +105,56 @@ describe('Player telegram state', () => {
         delete process.env.TM_TURN_NOTICE_REMINDER_MS;
       } else {
         process.env.TM_TURN_NOTICE_REMINDER_MS = originalReminderMs;
+      }
+    }
+  });
+
+  it('does not repeat reminders during initial drafting', async () => {
+    const originalToken = process.env.TM_BOT_TOKEN;
+    const originalDisabled = process.env.TM_DISABLE_TELEGRAM;
+    const originalSetTimeout = global.setTimeout;
+    const delays: Array<number | undefined> = [];
+    process.env.TM_BOT_TOKEN = 'token';
+    delete process.env.TM_DISABLE_TELEGRAM;
+    const telegram = stubTelegramApi(101);
+
+    const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
+    const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
+    const game = Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid', {turnBasedGame: true});
+    game.phase = Phase.INITIALDRAFTING;
+
+    try {
+      global.setTimeout = ((_handler: Parameters<typeof setTimeout>[0], timeout?: number) => {
+        delays.push(timeout);
+        return {unref: () => {}} as unknown as ReturnType<typeof setTimeout>;
+      }) as unknown as typeof setTimeout;
+      player1.telegramID = '123456';
+      (player1 as any).waitingFor = new SelectOption('Keep');
+      const turnNoticeKey = (player1 as any).getTurnNoticeKey();
+      player1.lastTurnNoticeKey = turnNoticeKey;
+      player1.lastNoticeMessageId = 77;
+
+      (player1 as any).scheduleTurnNoticeReminder(turnNoticeKey);
+      await (player1 as any).sendTurnNoticeReminder(turnNoticeKey);
+
+      const sendCalls = telegram.calls.filter((call) => call.path.includes('/sendMessage'));
+      expect(delays).deep.eq([]);
+      expect(sendCalls).has.length(0);
+      expect((player1 as any)._pendingTurnNoticeReminderTimer).is.undefined;
+      expect(player1.lastNoticeMessageId).eq(77);
+    } finally {
+      clearTelegramTimers(player1);
+      telegram.restore();
+      global.setTimeout = originalSetTimeout;
+      if (originalToken === undefined) {
+        delete process.env.TM_BOT_TOKEN;
+      } else {
+        process.env.TM_BOT_TOKEN = originalToken;
+      }
+      if (originalDisabled === undefined) {
+        delete process.env.TM_DISABLE_TELEGRAM;
+      } else {
+        process.env.TM_DISABLE_TELEGRAM = originalDisabled;
       }
     }
   });

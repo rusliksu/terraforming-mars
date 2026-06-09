@@ -37,6 +37,13 @@
       </li>
     </ul>
 
+    <div class="game-home-recreate">
+      <a :href="getRecreateHref()" :title="$t('Create a new game with the same initial setup')">
+        <AppButton size="big" type="back" />
+        <span>♻ </span><span v-i18n>Recreate game (same setup)</span>
+      </a>
+    </div>
+
     <div class="spacing-setup"></div>
 
     <purge-warning :expectedPurgeTimeMs="game.expectedPurgeTimeMs"></purge-warning>
@@ -165,6 +172,9 @@ export default defineComponent({
         return `spectator?id=${playerId}`;
       }
       return `player?id=${playerId}`;
+    },
+    getRecreateHref(): string {
+      return `new-game?cloneGameId=${this.getGameId()}`;
     },
     copyUrl(playerId: ParticipantId | undefined): void {
       if (playerId === undefined) {

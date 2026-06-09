@@ -692,6 +692,22 @@
     border-radius: 4px 4px 0 0;
 }
 
+@media (hover: none), (pointer: coarse) {
+    .create-game-profile-menu {
+        position: fixed;
+        left: 16px;
+        right: 16px;
+        top: 72px;
+        width: auto;
+        max-width: none;
+        max-height: calc(100vh - 96px);
+    }
+
+    .create-game-profile-option-list {
+        max-height: calc(100vh - 160px);
+    }
+}
+
 .create-game-profile-option-name.player-name {
     font-family: Prototype, Ubuntu, Sans;
     font-weight: 800;

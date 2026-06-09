@@ -397,6 +397,9 @@ describe('Styles', () => {
     expect(cssBlock(createGame, '.create-game-profile-option-list')).to.contain('max-height: min(56vh, 520px);');
     expect(cssBlock(createGame, '.create-game-profile-option-list')).to.contain('scrollbar-gutter: stable;');
     expect(cssBlock(createGame, '.create-game-profile-option')).to.contain('min-height: 54px;');
+    expect(createGame).to.contain('@media (hover: none), (pointer: coarse) {');
+    expect(createGame).to.contain('position: fixed;\n        left: 16px;\n        right: 16px;\n        top: 72px;');
+    expect(createGame).to.contain('max-height: calc(100vh - 160px);');
   });
 
   it('keeps the old Hydro red-pink treatment available for legacy Toma games', () => {

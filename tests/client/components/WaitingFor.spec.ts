@@ -168,6 +168,58 @@ describe('WaitingFor', () => {
     expect(wrapper.text()).to.not.include('Cancel action');
   });
 
+  it('shows an undo action control on the main action prompt when undo is available', async () => {
+    const wrapper = shallowMount(WaitingFor, {
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {
+          'player-input-factory': {template: '<div class="stub-pif"></div>'},
+          'AppButton': {props: ['title'], emits: ['click'], template: '<button @click="$emit(\'click\')">{{ title }}</button>'},
+        },
+      },
+      props: {
+        playerView: {
+          ...playerView,
+          runId: 'run-id',
+          thisPlayer: {...thisPlayer, isActive: true},
+          game: {
+            ...playerView.game,
+            gameOptions: {undoOption: true},
+          },
+        } as PlayerViewModel,
+        waitingfor: {
+          type: 'or',
+          title: 'Take your next action',
+          buttonLabel: 'Take action',
+          options: [
+            {type: 'option', title: 'Pass for now', buttonLabel: 'Pass'},
+            {type: 'option', title: 'Undo last action', buttonLabel: 'Undo'},
+          ],
+        },
+      },
+    });
+
+    const requests: Array<{url: string, options: RequestInit}> = [];
+    wrapper.vm.fetchPlayerInput = (url: string, options: RequestInit) => {
+      requests.push({url, options});
+    };
+
+    expect(wrapper.text()).to.include('Undo last action');
+    expect(wrapper.text()).to.not.include('Cancel action');
+
+    await wrapper.find('button').trigger('click');
+
+    expect(requests).has.length(1);
+    expect(requests[0].url).eq('player/input?id=p-player-id');
+    expect(JSON.parse(requests[0].options.body as string)).deep.eq({
+      runId: 'run-id',
+      type: 'or',
+      index: 1,
+      response: {type: 'option'},
+    });
+  });
+
   it('shows cancel action for nested active action option prompts when undo is enabled', () => {
     const wrapper = shallowMount(WaitingFor, {
       ...globalConfig,

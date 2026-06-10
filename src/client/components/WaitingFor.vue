@@ -14,8 +14,9 @@
       </label>
       <div v-if="showRefresh()">Refresh<span class="reset"></span></div>
     </template>
-    <div v-if="showCancelAction()" class="wf-action-controls">
-      <AppButton @click="reset" size="small" title="Cancel action" />
+    <div v-if="showCancelAction() || showUndoLastAction()" class="wf-action-controls">
+      <AppButton v-if="showCancelAction()" @click="reset" size="small" title="Cancel action" />
+      <AppButton v-if="showUndoLastAction()" @click="undoLastAction" size="small" title="Undo last action" />
     </div>
     <player-input-factory :players="playerView.players"
                           :playerView="playerView"
@@ -115,6 +116,13 @@ export default defineComponent({
       this.fetchPlayerInput(
         paths.RESET + '?id=' + this.playerView.id,
         {method: 'GET'});
+    },
+    undoLastAction() {
+      const undoIndex = this.undoLastActionIndex();
+      if (undoIndex === undefined) {
+        return;
+      }
+      this.onsave({type: 'or', index: undoIndex, response: {type: 'option'}});
     },
     fetchPlayerInput(url: string, options: RequestInit) {
       const root = vueRoot(this);
@@ -273,6 +281,22 @@ export default defineComponent({
         this.waitingfor !== undefined &&
         !this.isMainActionPrompt() &&
         this.playerView.thisPlayer?.isActive === true;
+    },
+    showUndoLastAction(): boolean {
+      return this.playerView.game.phase === Phase.ACTION &&
+        this.playerView.game.gameOptions?.undoOption === true &&
+        this.playerView.thisPlayer?.isActive === true &&
+        this.undoLastActionIndex() !== undefined;
+    },
+    undoLastActionIndex(): number | undefined {
+      if (!this.isMainActionPrompt() || this.waitingfor?.type !== 'or') {
+        return undefined;
+      }
+      const index = this.waitingfor.options.findIndex((option) =>
+        option.type === 'option' &&
+        option.title === 'Undo last action' &&
+        option.buttonLabel === 'Undo');
+      return index === -1 ? undefined : index;
     },
     isMainActionPrompt(): boolean {
       return this.waitingfor?.type === 'or' && this.waitingfor.buttonLabel === 'Take action';

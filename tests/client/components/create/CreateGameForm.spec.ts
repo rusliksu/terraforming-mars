@@ -3,6 +3,7 @@ import {globalConfig} from '../getLocalVue';
 import {expect} from 'chai';
 import CreateGameForm from '@/client/components/create/CreateGameForm.vue';
 import {sharedEloState} from '@/client/utils/elo';
+import {ColonyName} from '@/common/colonies/ColonyName';
 import {
   ANTISTRESS_NAME,
   CATHARSIS_NAME,
@@ -76,6 +77,33 @@ describe('CreateGameForm', () => {
 
     expect(payload.initialDraft).eq(true);
     expect(payload.initialDraftOneWay).eq(true);
+  });
+
+  it('serializes default custom colonies after opening the custom colonies list', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {
+          ...globalConfig.global?.stubs,
+          ColoniesFilter: false,
+        },
+      },
+    });
+    const vm = wrapper.vm as any;
+
+    await wrapper.setData({
+      playersCount: 3,
+      expansions: {...vm.expansions, colonies: true},
+      showColoniesList: true,
+    });
+    await wrapper.vm.$nextTick();
+
+    const serialized = await vm.serializeSettings();
+    const payload = JSON.parse(serialized);
+
+    expect(payload.customColoniesList.length).to.be.greaterThan(0);
+    expect(payload.customColoniesList).to.include(ColonyName.CALLISTO);
   });
 
   it('loads rematch setup from cloneGameId without enabling predefined game', async () => {

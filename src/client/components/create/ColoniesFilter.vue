@@ -66,6 +66,9 @@ export default defineComponent({
       return COLONY_DESCRIPTIONS;
     },
   },
+  mounted() {
+    this.$emit('colonies-list-changed', [...this.initialSelected]);
+  },
   methods: {
     compatibility(name: ColonyName): Expansion | undefined {
       return getColony(name)?.expansion;

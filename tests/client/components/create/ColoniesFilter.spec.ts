@@ -53,6 +53,18 @@ describe('ColoniesFilter', () => {
     expect(selected).to.include(ColonyName.CALLISTO);
   });
 
+  it('emits the default custom colony list on mount', () => {
+    const wrapper = shallowMount(ColoniesFilter, {
+      ...globalConfig,
+      props: {expansions: {...DEFAULT_EXPANSIONS, colonies: true}, selected: []},
+    });
+    const emitted = wrapper.emitted('colonies-list-changed');
+    expect(emitted).to.have.length(1);
+    const selected = emitted![0][0] as Array<ColonyName>;
+    expect(selected.length).to.be.greaterThan(0);
+    expect(selected).to.include(ColonyName.CALLISTO);
+  });
+
   it('includes community colonies when community expansion is enabled', () => {
     const wrapper = shallowMount(ColoniesFilter, {
       ...globalConfig,
@@ -91,8 +103,8 @@ describe('ColoniesFilter', () => {
     const payload: Array<ColonyName> = [ColonyName.CALLISTO];
     await wrapper.findComponent(ModuleItemFilter).vm.$emit('update:selected', payload);
     const emitted = wrapper.emitted('colonies-list-changed');
-    expect(emitted).to.have.length(1);
-    expect(emitted![0][0]).to.deep.eq(payload);
+    expect(emitted).to.have.length(2);
+    expect(emitted![1][0]).to.deep.eq(payload);
   });
 
   it('emits close when ModuleItemFilter emits close', async () => {

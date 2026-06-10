@@ -85,7 +85,6 @@ describe('CreateGameForm', () => {
       global: {
         ...globalConfig.global,
         stubs: {
-          ...globalConfig.global?.stubs,
           ColoniesFilter: false,
         },
       },

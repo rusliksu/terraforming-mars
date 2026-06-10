@@ -131,6 +131,9 @@ function useReloadingGameLoader(
     getGameAt(): Promise<IGame> {
       return Promise.reject(new Error('not implemented'));
     },
+    getGameAtOrBefore(): Promise<IGame> {
+      return Promise.reject(new Error('not implemented'));
+    },
     restoreGameAt(): Promise<IGame> {
       return Promise.reject(new Error('not implemented'));
     },

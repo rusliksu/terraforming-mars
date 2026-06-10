@@ -78,14 +78,14 @@ export class PlayerInput extends Handler {
      */
     const lastSaveId = player.game.lastSaveId - 2;
     try {
-      const restoredGame = await ctx.gameLoader.getGameAt(player.game.id, lastSaveId);
+      const restoredGame = await ctx.gameLoader.getGameAtOrBefore(player.game.id, lastSaveId);
       if (hasRevealedHiddenInformation(player.game, restoredGame, player)) {
         throw new InputError('Cannot undo after hidden information was revealed');
       }
 
       const game = await ctx.gameLoader.restoreGameAt(player.game.id, lastSaveId);
       if (game === undefined) {
-        player.game.log('Unable to perform undo operation. Error retrieving game from database. Please try again.', () => {}, {reservedFor: player});
+        throw new InputError('Unable to perform undo operation. Error retrieving game from database. Please try again.');
       } else {
         // pull most recent player instance
         player = game.getPlayerById(player.id);
@@ -95,6 +95,7 @@ export class PlayerInput extends Handler {
         throw err;
       }
       console.error(err);
+      throw new InputError('Unable to perform undo operation. Error retrieving game from database. Please try again.');
     }
     return player;
   }

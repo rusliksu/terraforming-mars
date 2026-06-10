@@ -30,6 +30,14 @@ export interface IGameLoader {
    */
   getGameAt(gameId: GameId, saveId: number): Promise<IGame>;
   /**
+   * Loads the requested saved version, or the nearest earlier version when the
+   * requested save id is missing.
+   *
+   * @param {GameId} gameId the id of the game to retrieve
+   * @param {number} saveId the preferred save id to load
+   */
+  getGameAtOrBefore(gameId: GameId, saveId: number): Promise<IGame>;
+  /**
    * Reload a game at a specific version, deleting all versions ahead of it.
    *
    * @param {GameId} gameId the id of the game to retrieve

@@ -168,23 +168,40 @@ export class GameLoader implements IGameLoader {
     return Game.deserialize(serializedGame);
   }
 
+  public async getGameAtOrBefore(gameId: GameId, saveId: number): Promise<IGame> {
+    return this.getGameAt(gameId, await this.getSaveIdAtOrBefore(gameId, saveId));
+  }
+
   public async restoreGameAt(gameId: GameId, saveId: number): Promise<IGame> {
     const current = await this.getGame(gameId);
     if (current === undefined) {
       console.error('GameLoader cannot find game ' + gameId);
       throw new Error('Cannot find game');
     }
-    const currentSaveId = current.lastSaveId;
-    const deletes = (currentSaveId - saveId) - 1;
+    const database = Database.getInstance();
+    const restoreSaveId = await this.getSaveIdAtOrBefore(gameId, saveId);
+    const saveIds = await database.getSaveIds(gameId);
+    const deletes = saveIds.filter((id) => id > restoreSaveId).length;
     if (deletes > 0) {
-      await Database.getInstance().deleteGameNbrSaves(gameId, deletes);
+      await database.deleteGameNbrSaves(gameId, deletes);
     }
-    const serializedGame = await Database.getInstance().getGame(gameId);
+    const serializedGame = await database.getGameVersion(gameId, restoreSaveId);
     const game = Game.deserialize(serializedGame);
     appendCanceledLogMessages(current, game);
     await this.add(game);
     game.undoCount++;
     return game;
+  }
+
+  private async getSaveIdAtOrBefore(gameId: GameId, saveId: number): Promise<number> {
+    const saveIds = await Database.getInstance().getSaveIds(gameId);
+    const resolvedSaveId = saveIds
+      .filter((id) => id <= saveId)
+      .sort((a, b) => b - a)[0];
+    if (resolvedSaveId === undefined) {
+      throw new Error(`Game ${gameId} not found at or before save_id ${saveId}`);
+    }
+    return resolvedSaveId;
   }
 
   public mark(gameId: GameId) {

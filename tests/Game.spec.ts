@@ -45,6 +45,7 @@ function noopGameLoader(): IGameLoader {
     getLastSaveTimeMs: () => Promise.resolve(undefined),
     getGame: () => Promise.resolve(undefined),
     getGameAt: () => Promise.reject(new Error('not implemented')),
+    getGameAtOrBefore: () => Promise.reject(new Error('not implemented')),
     restoreGameAt: () => Promise.reject(new Error('not implemented')),
     mark: () => {},
     saveGame: () => Promise.resolve(),
@@ -1199,7 +1200,7 @@ describe('Game', () => {
       ColonyName.GANYMEDE,
       ColonyName.IO,
     ];
-    const game = Game.newInstance('custom-colonies-gameid', [player, player2], player, 'spectatorid', {
+    const game = Game.newInstance('g-custom-colonies-gameid', [player, player2], player, 'spectatorid', {
       coloniesExtension: true,
       customColoniesList,
     });

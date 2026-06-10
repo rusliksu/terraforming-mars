@@ -76,6 +76,42 @@ describe('PlayerInput', () => {
     expect(model.game.gameAge).eq(undo.gameAge);
   });
 
+  it('performs undo when expected save id was skipped', async () => {
+    const player = TestPlayer.BLUE.newPlayer({beginner: true});
+    scaffolding.url = '/player/input?id=' + player.id;
+    const game = Game.newInstance('gameid-skipped-save-undo', [player], player, 'spectatorid');
+    game.lastSaveId = 4;
+    player.setWaitingFor(new OrOptions(new UndoActionOption()));
+
+    const undoVersionOfPlayer = TestPlayer.BLUE.newPlayer({beginner: true});
+    const undo = Game.newInstance('gameid-skipped-save-undo', [undoVersionOfPlayer], undoVersionOfPlayer, 'spectatorid');
+    let previewSaveId: number | undefined;
+    let restoredSaveId: number | undefined;
+
+    await scaffolding.ctx.gameLoader.add(game);
+    scaffolding.ctx.gameLoader.getGameAtOrBefore = (_gameId: string, saveId: number) => {
+      previewSaveId = saveId;
+      return Promise.resolve(undo);
+    };
+    scaffolding.ctx.gameLoader.restoreGameAt = (_gameId: string, saveId: number) => {
+      restoredSaveId = saveId;
+      return Promise.resolve(undo);
+    };
+
+    const post = scaffolding.post(PlayerInput.INSTANCE, res);
+    const emit = Promise.resolve().then(() => {
+      const orOptionsResponse: OrOptionsResponse = {type: 'or', index: 0, response: {type: 'option'}};
+      req.emitter.emit('data', JSON.stringify(orOptionsResponse));
+      req.emitter.emit('end');
+    });
+    await Promise.all(([emit, post]));
+
+    const model = JSON.parse(res.content);
+    expect(previewSaveId).eq(2);
+    expect(restoredSaveId).eq(2);
+    expect(model.game.gameAge).eq(undo.gameAge);
+  });
+
   it('blocks undo when the action revealed hidden information', async () => {
     const player = TestPlayer.BLUE.newPlayer({beginner: true});
     scaffolding.url = '/player/input?id=' + player.id;
@@ -89,7 +125,7 @@ describe('PlayerInput', () => {
     let restoreCalled = false;
 
     await scaffolding.ctx.gameLoader.add(game);
-    (scaffolding.ctx.gameLoader as any).getGameAt = (_gameId: string, _lastSaveId: number) => Promise.resolve(undo);
+    scaffolding.ctx.gameLoader.getGameAtOrBefore = (_gameId: string, _lastSaveId: number) => Promise.resolve(undo);
     scaffolding.ctx.gameLoader.restoreGameAt = (_gameId: string, _lastSaveId: number) => {
       restoreCalled = true;
       return Promise.resolve(undo);
@@ -109,13 +145,10 @@ describe('PlayerInput', () => {
     expect(restoreCalled).eq(false);
   });
 
-  it('reverts to current game instance if undo fails', async () => {
+  it('rejects undo if restore fails', async () => {
     const player = TestPlayer.BLUE.newPlayer({beginner: true});
     scaffolding.url = '/player/input?id=' + player.id;
     const game = Game.newInstance('gameid-foo', [player], player, 'spectatorid');
-
-    const undoVersionOfPlayer = TestPlayer.BLUE.newPlayer({beginner: true});
-    const undo = Game.newInstance('gameid-old', [undoVersionOfPlayer], undoVersionOfPlayer, 'spectatorid');
 
     await scaffolding.ctx.gameLoader.add(game);
 
@@ -132,9 +165,9 @@ describe('PlayerInput', () => {
     });
     await Promise.all(([emit, post]));
 
-    const model = JSON.parse(res.content);
-    expect(game.gameAge).not.eq(undo.gameAge);
-    expect(model.game.gameAge).eq(model.game.gameAge);
+    const response = JSON.parse(res.content);
+    expect(res.statusCode).eq(400);
+    expect(response.message).eq('Unable to perform undo operation. Error retrieving game from database. Please try again.');
   });
 
   it('sends 400 on server error', async () => {

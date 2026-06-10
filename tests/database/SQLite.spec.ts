@@ -4,6 +4,11 @@ import {IN_MEMORY_SQLITE_PATH, SQLite} from '../../src/server/database/SQLite';
 import {GameId} from '../../src/common/Types';
 import {RunResult} from 'better-sqlite3';
 import {ITestDatabase, Status} from './ITestDatabase';
+import {Game} from '../../src/server/Game';
+import {GameLoader} from '../../src/server/database/GameLoader';
+import {TestPlayer} from '../TestPlayer';
+import {FakeClock} from '../common/FakeClock';
+import {expect} from 'chai';
 
 class TestSQLite extends SQLite implements ITestDatabase {
   public lastSaveGamePromise: Promise<void> = Promise.resolve();
@@ -55,5 +60,30 @@ describeDatabaseSuite({
     type: 'SQLite',
     path: ':memory:',
     size_bytes: -1,
+  },
+  otherTests: (dbFactory) => {
+    it('restoreGameAt loads the latest remaining save when the target save id is missing', async () => {
+      const db = dbFactory();
+      const loader = GameLoader.newTestInstance({sleepMillis: 0, evictMillis: 100, sweep: 'manual'}, new FakeClock());
+      const player = TestPlayer.BLACK.newPlayer();
+      const game = Game.newInstance('game-skipped-save-id', [player], player, 'spectatorid');
+
+      await db.lastSaveGamePromise;
+      game.generation = 2;
+      await db.saveGame(game);
+      game.generation = 3;
+      await db.saveGame(game);
+      game.generation = 4;
+      await db.saveGame(game);
+      db.database.prepare('DELETE FROM games WHERE game_id = ? AND save_id = ?').run(game.id, 2);
+      await loader.add(game);
+
+      const preview = await loader.getGameAtOrBefore(game.id, 2);
+      const restored = await loader.restoreGameAt(game.id, 2);
+
+      expect(preview.generation).eq(2);
+      expect(restored.generation).eq(2);
+      expect(await db.getSaveIds(game.id)).has.members([0, 1]);
+    });
   },
 });

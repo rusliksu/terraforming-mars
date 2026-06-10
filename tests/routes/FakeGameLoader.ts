@@ -44,6 +44,9 @@ export class FakeGameLoader implements IGameLoader {
     }
     return game;
   }
+  getGameAtOrBefore(gameId: GameId, saveId: number): Promise<IGame> {
+    return this.getGameAt(gameId, saveId);
+  }
   restoreGameAt(_gameId: string, _saveId: number): Promise<Game> {
     throw new Error('Method not implemented.');
   }

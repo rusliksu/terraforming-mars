@@ -1707,11 +1707,12 @@ export class Game implements IGame, Logger {
       .sort((a, b) => a.cost - b.cost);
   }
 
-  public log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer, reservedForParticipant?: ParticipantId}) {
+  public log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer, reservedForParticipant?: ParticipantId, hiddenFor?: Array<ParticipantId>}) {
     const builder = new LogMessageBuilder(message);
     f?.(builder);
     const logMessage = builder.build();
     logMessage.playerId = options?.reservedFor?.id ?? options?.reservedForParticipant;
+    logMessage.hiddenFor = options?.hiddenFor;
     this.gameLog.push(logMessage);
     this.gameAge++;
   }

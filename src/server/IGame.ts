@@ -252,7 +252,7 @@ export interface IGame extends Logger {
    */
   getStandardProjects(): Array<IStandardProjectCard>;
 
-  log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer, reservedForParticipant?: ParticipantId}): void;
+  log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer, reservedForParticipant?: ParticipantId, hiddenFor?: Array<ParticipantId>}): void;
   discardForCost(cardCount: 1 | 2, toPlace: TileType): number;
   expectedPurgeTimeMs(): number;
   logIllegalState(description: string, metadata: {}): void;

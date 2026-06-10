@@ -28,7 +28,9 @@ describe('SellPatentsStandardProject', () => {
     expect(player.megaCredits).eq(2);
 
     const publicMessages = game.gameLog.filter((entry) => entry.playerId === undefined);
-    expect(publicMessages.map((entry) => entry.message)).includes('${0} sold ${1} patents');
+    const publicCountMessage = publicMessages.find((entry) => entry.message === '${0} sold ${1} patents');
+    expect(publicCountMessage).is.not.undefined;
+    expect(publicCountMessage!.hiddenFor).deep.eq([player.id, game.spectatorId]);
 
     const privateMessages = game.gameLog.filter((entry) => entry.playerId === player.id);
     expect(privateMessages).has.length(1);
@@ -39,7 +41,12 @@ describe('SellPatentsStandardProject', () => {
     ]);
 
     const gameLogs = new GameLogs();
+    const playerMessages = gameLogs.getLogsForGameView(player.id, game, '1');
+    expect(playerMessages.map((entry) => entry.message)).does.not.include('${0} sold ${1} patents');
+    expect(playerMessages.filter((entry) => entry.message === '${0} sold ${1}')).has.length(1);
+
     const spectatorMessages = gameLogs.getLogsForGameView(game.spectatorId, game, '1');
+    expect(spectatorMessages.map((entry) => entry.message)).does.not.include('${0} sold ${1} patents');
     const spectatorDetails = spectatorMessages.filter((entry) => entry.message === '${0} sold ${1}');
     expect(spectatorDetails).has.length(1);
     expect(spectatorDetails[0].playerId).eq(game.spectatorId);
@@ -49,6 +56,7 @@ describe('SellPatentsStandardProject', () => {
     ]);
 
     const otherPlayerMessages = gameLogs.getLogsForGameView(otherPlayer.id, game, '1');
+    expect(otherPlayerMessages.map((entry) => entry.message)).includes('${0} sold ${1} patents');
     expect(otherPlayerMessages.map((entry) => entry.message)).does.not.include('${0} sold ${1}');
   });
 });

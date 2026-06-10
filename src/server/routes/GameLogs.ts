@@ -45,6 +45,9 @@ export class GameLogs {
         if (message === undefined || message === null) {
           return false;
         }
+        if (message.hiddenFor?.includes(playerId)) {
+          return false;
+        }
         if (showAllMessages) {
           return true;
         }

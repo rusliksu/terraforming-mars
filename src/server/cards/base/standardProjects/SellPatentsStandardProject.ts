@@ -40,7 +40,9 @@ export class SellPatentsStandardProject extends StandardProjectCard {
         player.megaCredits += cards.length;
         cards.forEach((card) => player.discardCardFromHand(card));
         this.projectPlayed(player);
-        player.game.log('${0} sold ${1} patents', (b) => b.player(player).number(cards.length));
+        player.game.log('${0} sold ${1} patents', (b) => b.player(player).number(cards.length), {
+          hiddenFor: [player.id, player.game.spectatorId].filter((id) => id !== undefined),
+        });
         LogHelper.logCardAction(player, 'sold', cards, true);
         player.game.log('${0} sold ${1}', (b) => b.player(player).cards(cards), {reservedForParticipant: player.game.spectatorId});
         return undefined;

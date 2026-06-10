@@ -5,6 +5,7 @@ import {ParticipantId} from '../Types';
 
 export class LogMessage implements Message {
   public playerId?: ParticipantId;
+  public hiddenFor?: Array<ParticipantId>;
   public canceled?: boolean;
   public timestamp = Date.now();
   public type?: LogMessageType;

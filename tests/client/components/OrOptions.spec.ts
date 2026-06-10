@@ -7,6 +7,10 @@ import {InputResponse} from '@/common/inputs/InputResponse';
 import PlayerInputFactory from '@/client/components/PlayerInputFactory.vue';
 
 describe('OrOptions', () => {
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
   it('saves the options ignoring hidden', async () => {
     let savedData: InputResponse | undefined;
     PreferencesManager.INSTANCE.set('learner_mode', false);
@@ -281,5 +285,142 @@ describe('OrOptions', () => {
       },
     });
     expect(component.findComponent({name: 'AppButton'}).text()).to.eq('Sell 0');
+  });
+
+  it('allows quick greenery placement from the main action prompt', async () => {
+    let savedData: InputResponse | undefined;
+    const board = document.createElement('div');
+    board.id = 'main_board';
+    const space = document.createElement('div');
+    space.className = 'board-space-selectable';
+    space.setAttribute('data_space_id', '01');
+    board.appendChild(space);
+    document.body.appendChild(board);
+
+    const component = mount(OrOptions, {
+      ...globalConfig,
+      global: {...globalConfig.global, components: {'player-input-factory': PlayerInputFactory}},
+      props: {
+        playerView: {},
+        playerinput: {
+          type: 'or',
+          title: 'Take your first action',
+          buttonLabel: 'Take action',
+          options: [{
+            type: 'option',
+            title: 'Do something else',
+            buttonLabel: 'Save',
+          }, {
+            type: 'space',
+            title: {message: 'Convert ${0} plants into greenery', data: []},
+            buttonLabel: 'Save',
+            spaces: ['01', '02'],
+          }],
+        },
+        onsave: (data: InputResponse) => {
+          savedData = data;
+        },
+        showsave: true,
+        showtitle: true,
+      },
+    });
+    await component.vm.$nextTick();
+
+    expect(space.classList.contains('board-space--available')).is.true;
+    space.dispatchEvent(new window.MouseEvent('click', {bubbles: true}));
+
+    expect(savedData).deep.eq({
+      type: 'or',
+      index: 1,
+      response: {type: 'space', spaceId: '01'},
+    });
+  });
+
+  it('keeps selectable spaces highlighted when convert plants is selected manually', async () => {
+    const board = document.createElement('div');
+    board.id = 'main_board';
+    const space = document.createElement('div');
+    space.className = 'board-space-selectable';
+    space.setAttribute('data_space_id', '01');
+    board.appendChild(space);
+    document.body.appendChild(board);
+
+    const component = mount(OrOptions, {
+      ...globalConfig,
+      global: {...globalConfig.global, components: {'player-input-factory': PlayerInputFactory}},
+      props: {
+        playerView: {},
+        playerinput: {
+          type: 'or',
+          title: 'Take your first action',
+          buttonLabel: 'Take action',
+          options: [{
+            type: 'option',
+            title: 'Do something else',
+            buttonLabel: 'Save',
+          }, {
+            type: 'space',
+            title: {message: 'Convert ${0} plants into greenery', data: []},
+            buttonLabel: 'Save',
+            spaces: ['01'],
+          }],
+        },
+        onsave: () => {},
+        showsave: true,
+        showtitle: true,
+      },
+    });
+    await component.vm.$nextTick();
+
+    const inputs = component.findAll('input');
+    await inputs[1].setValue(true);
+    await component.vm.$nextTick();
+
+    expect(space.classList.contains('board-space--available')).is.true;
+  });
+
+  it('does not allow quick greenery placement outside the main action prompt', async () => {
+    let savedData: InputResponse | undefined;
+    const board = document.createElement('div');
+    board.id = 'main_board';
+    const space = document.createElement('div');
+    space.className = 'board-space-selectable';
+    space.setAttribute('data_space_id', '01');
+    board.appendChild(space);
+    document.body.appendChild(board);
+
+    const component = mount(OrOptions, {
+      ...globalConfig,
+      global: {...globalConfig.global, components: {'player-input-factory': PlayerInputFactory}},
+      props: {
+        playerView: {},
+        playerinput: {
+          type: 'or',
+          title: 'Select milestone payment',
+          buttonLabel: 'Pay',
+          options: [{
+            type: 'option',
+            title: 'Pay 8 M€',
+            buttonLabel: 'Pay',
+          }, {
+            type: 'space',
+            title: {message: 'Convert ${0} plants into greenery', data: []},
+            buttonLabel: 'Save',
+            spaces: ['01'],
+          }],
+        },
+        onsave: (data: InputResponse) => {
+          savedData = data;
+        },
+        showsave: true,
+        showtitle: true,
+      },
+    });
+    await component.vm.$nextTick();
+
+    expect(space.classList.contains('board-space--available')).is.false;
+    space.dispatchEvent(new window.MouseEvent('click', {bubbles: true}));
+
+    expect(savedData).is.undefined;
   });
 });

@@ -39,7 +39,7 @@ export class SellPatentsStandardProject extends StandardProjectCard {
       .andThen((cards) => {
         player.megaCredits += cards.length;
         cards.forEach((card) => player.discardCardFromHand(card));
-        this.projectPlayed(player);
+        this.onStandardProject(player);
         player.game.log('${0} sold ${1} patents', (b) => b.player(player).number(cards.length), {
           hiddenFor: [player.id, player.game.spectatorId].filter((id) => id !== undefined),
         });

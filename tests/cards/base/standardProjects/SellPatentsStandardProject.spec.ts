@@ -28,6 +28,7 @@ describe('SellPatentsStandardProject', () => {
     expect(player.megaCredits).eq(2);
 
     const publicMessages = game.gameLog.filter((entry) => entry.playerId === undefined);
+    expect(publicMessages.map((entry) => entry.message)).does.not.include('${0} used ${1} standard project');
     const publicCountMessage = publicMessages.find((entry) => entry.message === '${0} sold ${1} patents');
     expect(publicCountMessage).is.not.undefined;
     expect(publicCountMessage!.hiddenFor).deep.eq([player.id, game.spectatorId]);

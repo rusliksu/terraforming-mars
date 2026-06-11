@@ -484,14 +484,14 @@
                                     <div>
                                       <div :class="'form-group col6 create-game-player '+getPlayerContainerColorClass(newPlayer.color)">
                                           <div>
-                                              <input class="form-input form-inline create-game-player-name" :placeholder="getPlayerNamePlaceholder(index)" v-model="newPlayer.name" :readonly="isPlayerNameLocked(newPlayer.color)" />
+                                              <input class="form-input form-inline create-game-player-name" :placeholder="getPlayerNamePlaceholder(index)" v-model="newPlayer.name" />
                                           </div>
                                           <div class="create-game-profile-picker" @click.stop>
                                               <button
                                                 type="button"
                                                 class="form-inline create-game-player-profile-trigger"
                                                 :class="{'is-open': isPlayerProfilePickerOpen(index)}"
-                                                @click.stop="togglePlayerProfilePicker(index, $event)">
+                                                @click.stop="togglePlayerProfilePicker(newPlayer, index, $event)">
                                                   <span :class="['create-game-profile-avatar', ...getSelectedPlayerProfileAvatarClasses(newPlayer)]">{{ getSelectedPlayerProfileInitials(newPlayer) }}</span>
                                                   <span class="create-game-profile-trigger-main">
                                                     <span class="create-game-profile-trigger-name">{{ getSelectedPlayerProfileName(newPlayer) }}</span>
@@ -506,10 +506,12 @@
                                                   <input
                                                     class="form-input form-inline create-game-profile-search"
                                                     type="search"
-                                                    placeholder="Find player"
+                                                    placeholder="Type player name"
                                                     autocomplete="off"
                                                     ref="playerProfileSearchInput"
                                                     v-model="playerProfileSearch"
+                                                    @input="updatePlayerNameFromProfileInput(newPlayer, $event)"
+                                                    @keydown.enter.stop.prevent="applyFirstFilteredPlayerProfile(newPlayer)"
                                                     @keydown.stop>
                                                   <div class="create-game-profile-option-list">
                                                     <button
@@ -1084,15 +1086,6 @@ export default defineComponent({
     getPlayerNamePlaceholder(index: number): string {
       return translateTextWithParams('Player ${0} name', [String(index + 1)]);
     },
-    isPlayerNameLocked(color: Color): boolean {
-      return getLockedPlayerName(color) !== undefined;
-    },
-    syncLockedPlayerIdentity(player: NewPlayerModel) {
-      const lockedName = getLockedPlayerName(player.color);
-      if (lockedName !== undefined) {
-        player.name = lockedName;
-      }
-    },
     applyDefaultPlayerColor(player: NewPlayerModel, color: Color) {
       const lockedName = getLockedPlayerName(player.color);
       if (lockedName !== undefined && player.name === lockedName) {
@@ -1183,15 +1176,29 @@ export default defineComponent({
         maxHeight: `${this.playerProfileMenuPosition.maxHeight}px`,
       };
     },
-    togglePlayerProfilePicker(index: number, event: MouseEvent) {
+    togglePlayerProfilePicker(player: NewPlayerModel, index: number, event: MouseEvent) {
       if (this.playerProfilePickerIndex === index) {
         this.closePlayerProfilePicker();
         return;
       }
       this.playerProfilePickerIndex = index;
-      this.playerProfileSearch = '';
+      this.playerProfileSearch = this.getSelectedPlayerProfile(player)?.name ?? player.name;
       this.playerProfileMenuPosition = this.getPlayerProfileMenuPosition(event.currentTarget);
       void nextTick(() => this.focusPlayerProfileSearchIfUseful());
+    },
+    updatePlayerNameFromProfileInput(player: NewPlayerModel, event: Event) {
+      const value = event.target instanceof window.HTMLInputElement ? event.target.value : this.playerProfileSearch;
+      this.playerProfileSearch = value;
+      player.name = value.trim();
+    },
+    applyFirstFilteredPlayerProfile(player: NewPlayerModel) {
+      const [profile] = this.getFilteredAvailablePlayerProfiles(player);
+      if (profile === undefined) {
+        player.name = this.playerProfileSearch.trim();
+        this.closePlayerProfilePicker();
+        return;
+      }
+      this.applyPlayerProfileFromPicker(player, profile);
     },
     updatePlayerProfileMenuPosition() {
       if (this.playerProfilePickerIndex === null) {
@@ -1285,9 +1292,6 @@ export default defineComponent({
         .filter((candidate) => candidate !== player)
         .map((candidate) => candidate.color));
       return DEFAULT_PLAYER_COLORS.find((color) => !usedColors.has(color)) ?? DEFAULT_PLAYER_COLORS[0];
-    },
-    syncLockedPlayerIdentities(players: Array<NewPlayerModel>) {
-      players.forEach((player) => this.syncLockedPlayerIdentity(player));
     },
     updateCustomCorporations(customCorporations: Array<CardName>) {
       this.customCorporations = customCorporations;
@@ -1473,8 +1477,6 @@ export default defineComponent({
           }
         }
       }
-
-      this.syncLockedPlayerIdentities(players);
 
       // Set player name automatically if not entered
       const isSoloMode = this.playersCount === 1;

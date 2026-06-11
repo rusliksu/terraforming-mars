@@ -5,15 +5,7 @@ import CreateGameForm from '@/client/components/create/CreateGameForm.vue';
 import {sharedEloState} from '@/client/utils/elo';
 import {ColonyName} from '@/common/colonies/ColonyName';
 import {
-  ANTISTRESS_NAME,
-  CATHARSIS_NAME,
   DEFAULT_PLAYER_COLORS,
-  EMERALD_RAV_NAME,
-  GAMBIT_GIRL_NAME,
-  GENUINE_GOLD_NAME,
-  GYDRO_NAME,
-  PAVEL_TURQUOISE_NAME,
-  TOMA_NAME,
 } from '@/common/Color';
 
 describe('CreateGameForm', () => {
@@ -321,7 +313,7 @@ describe('CreateGameForm', () => {
     ]);
   });
 
-  it('locks the gold player name to GenuineGold', async () => {
+  it('keeps reserved persona color names editable', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
     });
@@ -330,13 +322,13 @@ describe('CreateGameForm', () => {
     vm.players[0].name = 'Ilya';
     await wrapper.vm.$nextTick();
 
-    expect(wrapper.find('.create-game-player-name').attributes()).to.have.property('readonly');
+    expect(wrapper.find('.create-game-player-name').attributes()).not.to.have.property('readonly');
 
     const serialized = await vm.serializeSettings();
     expect(serialized).to.be.a('string');
     const payload = JSON.parse(serialized);
-    expect(payload.players[0].name).to.eq(GENUINE_GOLD_NAME);
-    expect(vm.players[0].name).to.eq(GENUINE_GOLD_NAME);
+    expect(payload.players[0].name).to.eq('Ilya');
+    expect(vm.players[0].name).to.eq('Ilya');
   });
 
   it('keeps reserved persona colors out of the standard color palette', () => {
@@ -365,6 +357,14 @@ describe('CreateGameForm', () => {
     expect(vm.players[0].color).to.eq('orange');
     expect(vm.players[0].name).to.eq('Леха');
     expect(wrapper.find('.create-game-player-name').attributes()).not.to.have.property('readonly');
+
+    await wrapper.find('.create-game-player-name').setValue('Алексей');
+
+    const serialized = await vm.serializeSettings();
+    expect(serialized).to.be.a('string');
+    const payload = JSON.parse(serialized);
+    expect(payload.players[0].name).to.eq('Алексей');
+    expect(vm.players[0].name).to.eq('Алексей');
   });
 
   it('hides profiles that are already selected in another player slot', async () => {
@@ -567,6 +567,39 @@ describe('CreateGameForm', () => {
     expect(profileNames).deep.eq(['Nuke']);
   });
 
+  it('uses the player profile menu input as an editable player name autocomplete', async () => {
+    sharedEloState.loaded = true;
+    sharedEloState.players = {
+      genuinegold: {displayName: 'GenuineGold', games: 48, elo: 1749},
+      nuke: {displayName: 'Nuke', games: 7, elo: 1497},
+      vladlen: {displayName: 'Владлен', games: 24, elo: 1691},
+    };
+
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    await wrapper.find('.create-game-player-profile-trigger').trigger('click');
+    const searchInput = wrapper.find('.create-game-profile-search');
+    await searchInput.setValue('Custom Nick');
+
+    expect(vm.players[0].name).to.eq('Custom Nick');
+    expect(vm.playerProfileSearch).to.eq('Custom Nick');
+    expect(wrapper.find('.create-game-profile-menu').exists()).to.eq(true);
+
+    await searchInput.setValue('nuk');
+    const profileNames = vm.getFilteredAvailablePlayerProfiles(vm.players[0])
+      .map((profile: {name: string}) => profile.name);
+    expect(profileNames).deep.eq(['Nuke']);
+
+    await searchInput.trigger('keydown.enter');
+
+    expect(vm.players[0].name).to.eq('Nuke');
+    expect(vm.players[0].color).to.eq('black');
+    expect(wrapper.find('.create-game-profile-menu').exists()).to.eq(false);
+  });
+
   it('keeps the player profile picker without the custom nick selector', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
@@ -582,25 +615,25 @@ describe('CreateGameForm', () => {
     expect(wrapper.find('.create-game-profile-menu').text()).not.to.contain('Custom nick');
   });
 
-  it('locks reserved persona names', async () => {
+  it('preserves typed names for reserved persona colors', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
     });
     const vm = wrapper.vm as any;
 
     for (const testCase of [
-      {color: 'emerald', inputName: 'Rav', expectedName: EMERALD_RAV_NAME},
-      {color: 'ginger', inputName: 'Katerina', expectedName: CATHARSIS_NAME},
-      {color: 'pearl', inputName: 'Ruslan', expectedName: GYDRO_NAME},
-      {color: 'hydro', inputName: 'Sonya', expectedName: TOMA_NAME},
-      {color: 'antistress', inputName: 'Anatoly', expectedName: ANTISTRESS_NAME},
-      {color: 'gambit', inputName: 'Olesya', expectedName: GAMBIT_GIRL_NAME},
-      {color: 'turquoise', inputName: 'Pavel', expectedName: PAVEL_TURQUOISE_NAME},
-      {color: 'saturn', inputName: 'Sonya', expectedName: TOMA_NAME},
-      {color: 'saturnrings', inputName: 'Sonya', expectedName: TOMA_NAME},
-      {color: 'titan', inputName: 'Sonya', expectedName: TOMA_NAME},
-      {color: 'saturnstorm', inputName: 'Sonya', expectedName: TOMA_NAME},
-      {color: 'catseye', inputName: 'Sonya', expectedName: TOMA_NAME},
+      {color: 'emerald', inputName: 'Rav'},
+      {color: 'ginger', inputName: 'Katerina'},
+      {color: 'pearl', inputName: 'Ruslan'},
+      {color: 'hydro', inputName: 'Sonya'},
+      {color: 'antistress', inputName: 'Anatoly'},
+      {color: 'gambit', inputName: 'Olesya'},
+      {color: 'turquoise', inputName: 'Pavel'},
+      {color: 'saturn', inputName: 'Sonya'},
+      {color: 'saturnrings', inputName: 'Sonya'},
+      {color: 'titan', inputName: 'Sonya'},
+      {color: 'saturnstorm', inputName: 'Sonya'},
+      {color: 'catseye', inputName: 'Sonya'},
     ]) {
       vm.players[0].color = testCase.color;
       vm.players[0].name = testCase.inputName;
@@ -608,8 +641,8 @@ describe('CreateGameForm', () => {
       const serialized = await vm.serializeSettings();
       expect(serialized).to.be.a('string');
       const payload = JSON.parse(serialized);
-      expect(payload.players[0].name).to.eq(testCase.expectedName);
-      expect(vm.players[0].name).to.eq(testCase.expectedName);
+      expect(payload.players[0].name).to.eq(testCase.inputName);
+      expect(vm.players[0].name).to.eq(testCase.inputName);
     }
   });
 });

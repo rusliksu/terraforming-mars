@@ -813,7 +813,8 @@ export default defineComponent({
     this.restoreLastSettings();
     void ensureEloLoaded();
     document.addEventListener('click', this.closePlayerProfilePickerFromDocument);
-    window.addEventListener('resize', this.closePlayerProfilePicker);
+    window.addEventListener('resize', this.updatePlayerProfileMenuPosition);
+    window.visualViewport?.addEventListener('resize', this.updatePlayerProfileMenuPosition);
     const urlParams = new URLSearchParams(window.location.search);
     const cloneId = urlParams.get('cloneGameId');
     if (cloneId) {
@@ -822,7 +823,8 @@ export default defineComponent({
   },
   unmounted() {
     document.removeEventListener('click', this.closePlayerProfilePickerFromDocument);
-    window.removeEventListener('resize', this.closePlayerProfilePicker);
+    window.removeEventListener('resize', this.updatePlayerProfileMenuPosition);
+    window.visualViewport?.removeEventListener('resize', this.updatePlayerProfileMenuPosition);
   },
   computed: {
     wikiUrls(): typeof RULEBOOK_URLS & typeof WIKI_URLS {
@@ -1189,7 +1191,25 @@ export default defineComponent({
       this.playerProfilePickerIndex = index;
       this.playerProfileSearch = '';
       this.playerProfileMenuPosition = this.getPlayerProfileMenuPosition(event.currentTarget);
-      void nextTick(() => this.focusPlayerProfileSearch());
+      void nextTick(() => this.focusPlayerProfileSearchIfUseful());
+    },
+    updatePlayerProfileMenuPosition() {
+      if (this.playerProfilePickerIndex === null) {
+        return;
+      }
+      const trigger = this.getOpenPlayerProfileTrigger();
+      if (trigger === null) {
+        this.closePlayerProfilePicker();
+        return;
+      }
+      this.playerProfileMenuPosition = this.getPlayerProfileMenuPosition(trigger);
+    },
+    getOpenPlayerProfileTrigger(): HTMLElement | null {
+      if (this.playerProfilePickerIndex === null) {
+        return null;
+      }
+      const triggers = this.$el.querySelectorAll<HTMLElement>('.create-game-player-profile-trigger');
+      return triggers[this.playerProfilePickerIndex] ?? null;
     },
     getPlayerProfileMenuPosition(target: EventTarget | null): PlayerProfileMenuPosition | null {
       if (!(target instanceof HTMLElement)) {
@@ -1214,7 +1234,13 @@ export default defineComponent({
     clamp(value: number, min: number, max: number): number {
       return Math.min(Math.max(value, min), Math.max(min, max));
     },
-    focusPlayerProfileSearch() {
+    shouldAutofocusPlayerProfileSearch(): boolean {
+      return !window.matchMedia?.('(hover: none), (pointer: coarse)').matches;
+    },
+    focusPlayerProfileSearchIfUseful() {
+      if (!this.shouldAutofocusPlayerProfileSearch()) {
+        return;
+      }
       const searchInputRef = this.typedRefs.playerProfileSearchInput;
       const searchInput = Array.isArray(searchInputRef) ? searchInputRef[0] : searchInputRef;
       searchInput?.focus();

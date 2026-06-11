@@ -19,15 +19,21 @@ import {
 describe('CreateGameForm', () => {
   let originalFetch: typeof fetch;
   let originalUrl: string;
+  let originalMatchMedia: typeof window.matchMedia;
+  let originalFocus: typeof window.HTMLInputElement.prototype.focus;
 
   beforeEach(() => {
     originalFetch = global.fetch;
     originalUrl = window.location.href;
+    originalMatchMedia = window.matchMedia;
+    originalFocus = window.HTMLInputElement.prototype.focus;
   });
 
   afterEach(() => {
     global.fetch = originalFetch;
     window.history.replaceState({}, '', originalUrl);
+    window.matchMedia = originalMatchMedia;
+    window.HTMLInputElement.prototype.focus = originalFocus;
     sharedEloState.loaded = false;
     sharedEloState.failed = false;
     sharedEloState.players = {};
@@ -484,6 +490,61 @@ describe('CreateGameForm', () => {
     expect(menuStyle).to.contain('top: 164px');
     expect(menuStyle).to.contain('width: 420px');
     expect(menuStyle).to.contain('max-height:');
+  });
+
+  it('keeps the player profile menu open when the viewport resizes', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const trigger = wrapper.find('.create-game-player-profile-trigger');
+    trigger.element.getBoundingClientRect = () => ({
+      left: 32,
+      top: 120,
+      right: 270,
+      bottom: 158,
+      width: 238,
+      height: 38,
+      x: 32,
+      y: 120,
+      toJSON: () => {},
+    });
+
+    await trigger.trigger('click');
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('.create-game-profile-menu').exists()).to.eq(true);
+
+    window.dispatchEvent(new window.Event('resize'));
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('.create-game-profile-menu').exists()).to.eq(true);
+  });
+
+  it('does not autofocus the player profile search on touch devices', async () => {
+    let focusCalls = 0;
+    window.matchMedia = ((query: string) => ({
+      matches: query.includes('hover: none') || query.includes('pointer: coarse'),
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    })) as typeof window.matchMedia;
+    window.HTMLInputElement.prototype.focus = function() {
+      focusCalls++;
+    };
+
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+
+    await wrapper.find('.create-game-player-profile-trigger').trigger('click');
+    await wrapper.vm.$nextTick();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('.create-game-profile-menu').exists()).to.eq(true);
+    expect(focusCalls).to.eq(0);
   });
 
   it('filters player profile menu by player search text', async () => {

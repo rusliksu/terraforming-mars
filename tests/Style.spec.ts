@@ -400,6 +400,10 @@ describe('Styles', () => {
     expect(cssBlock(createGame, '.create-game-profile-option-list')).to.contain('overflow-y: auto;');
     expect(cssBlock(createGame, '.create-game-profile-option-list')).to.contain('overscroll-behavior: contain;');
     expect(cssBlock(createGame, '.create-game-profile-option-list')).to.contain('scrollbar-gutter: stable;');
+    expect(cssBlock(createGame, '.create-game-profile-option-list')).to.contain('scrollbar-width: thin;');
+    expect(cssBlock(createGame, '.create-game-profile-option-list')).to.contain('scrollbar-color: rgba(255,255,255,.58) rgba(0,0,0,.22);');
+    expect(cssBlock(createGame, '.create-game-profile-option-list::-webkit-scrollbar')).to.contain('width: 10px;');
+    expect(cssBlock(createGame, '.create-game-profile-option-list::-webkit-scrollbar-thumb')).to.contain('background: rgba(255,255,255,.58);');
     expect(cssBlock(createGame, '.create-game-profile-option')).to.contain('min-height: 44px;');
     expect(createGame).to.contain('@media (hover: none), (pointer: coarse) {');
     expect(createGame).to.contain('max-width: calc(100vw - 24px);');

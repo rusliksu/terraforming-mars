@@ -650,8 +650,29 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,.58) rgba(0,0,0,.22);
     padding-right: 6px;
     -webkit-overflow-scrolling: touch;
+}
+
+.create-game-profile-option-list::-webkit-scrollbar {
+    width: 10px;
+}
+
+.create-game-profile-option-list::-webkit-scrollbar-track {
+    background: rgba(0,0,0,.22);
+    border-radius: 6px;
+}
+
+.create-game-profile-option-list::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,.58);
+    border: 2px solid rgba(0,0,0,.22);
+    border-radius: 6px;
+}
+
+.create-game-profile-option-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,.74);
 }
 
 .create-game-profile-option {

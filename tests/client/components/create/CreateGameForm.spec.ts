@@ -459,6 +459,33 @@ describe('CreateGameForm', () => {
     expect(wrapper.find('.create-game-profile-color-swatch').exists()).to.be.true;
   });
 
+  it('positions the player profile menu in the viewport', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const trigger = wrapper.find('.create-game-player-profile-trigger');
+    trigger.element.getBoundingClientRect = () => ({
+      left: 32,
+      top: 120,
+      right: 270,
+      bottom: 158,
+      width: 238,
+      height: 38,
+      x: 32,
+      y: 120,
+      toJSON: () => {},
+    });
+
+    await trigger.trigger('click');
+    await wrapper.vm.$nextTick();
+
+    const menuStyle = wrapper.find('.create-game-profile-menu').attributes('style') ?? '';
+    expect(menuStyle).to.contain('left: 32px');
+    expect(menuStyle).to.contain('top: 164px');
+    expect(menuStyle).to.contain('width: 420px');
+    expect(menuStyle).to.contain('max-height:');
+  });
+
   it('filters player profile menu by player search text', async () => {
     sharedEloState.loaded = true;
     sharedEloState.players = {

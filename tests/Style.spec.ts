@@ -392,14 +392,17 @@ describe('Styles', () => {
     const createGame = read('src/styles/create_game_form.less');
 
     expect(cssBlock(createGame, '.create-game-profile-picker')).to.contain('overflow: visible;');
-    expect(cssBlock(createGame, '.create-game-profile-menu')).to.contain('width: clamp(340px, 34vw, 430px);');
+    expect(cssBlock(createGame, '.create-game-profile-menu')).to.contain('position: fixed;');
+    expect(cssBlock(createGame, '.create-game-profile-menu')).to.contain('display: flex;');
+    expect(cssBlock(createGame, '.create-game-profile-menu')).to.contain('overflow: hidden;');
     expect(cssBlock(createGame, '.create-game-profile-menu')).to.contain('z-index: 80;');
-    expect(cssBlock(createGame, '.create-game-profile-option-list')).to.contain('max-height: min(56vh, 520px);');
+    expect(cssBlock(createGame, '.create-game-profile-option-list')).to.contain('flex: 1 1 auto;');
+    expect(cssBlock(createGame, '.create-game-profile-option-list')).to.contain('overflow-y: auto;');
+    expect(cssBlock(createGame, '.create-game-profile-option-list')).to.contain('overscroll-behavior: contain;');
     expect(cssBlock(createGame, '.create-game-profile-option-list')).to.contain('scrollbar-gutter: stable;');
-    expect(cssBlock(createGame, '.create-game-profile-option')).to.contain('min-height: 54px;');
+    expect(cssBlock(createGame, '.create-game-profile-option')).to.contain('min-height: 44px;');
     expect(createGame).to.contain('@media (hover: none), (pointer: coarse) {');
-    expect(createGame).to.contain('position: fixed;\n        left: 16px;\n        right: 16px;\n        top: 72px;');
-    expect(createGame).to.contain('max-height: calc(100vh - 160px);');
+    expect(createGame).to.contain('max-width: calc(100vw - 24px);');
   });
 
   it('keeps the old Hydro red-pink treatment available for legacy Toma games', () => {

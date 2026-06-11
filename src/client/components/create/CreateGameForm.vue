@@ -491,7 +491,7 @@
                                                 type="button"
                                                 class="form-inline create-game-player-profile-trigger"
                                                 :class="{'is-open': isPlayerProfilePickerOpen(index)}"
-                                                @click.stop="togglePlayerProfilePicker(index)">
+                                                @click.stop="togglePlayerProfilePicker(index, $event)">
                                                   <span :class="['create-game-profile-avatar', ...getSelectedPlayerProfileAvatarClasses(newPlayer)]">{{ getSelectedPlayerProfileInitials(newPlayer) }}</span>
                                                   <span class="create-game-profile-trigger-main">
                                                     <span class="create-game-profile-trigger-name">{{ getSelectedPlayerProfileName(newPlayer) }}</span>
@@ -499,12 +499,16 @@
                                                   </span>
                                                   <span class="create-game-profile-trigger-caret">v</span>
                                               </button>
-                                              <div v-if="isPlayerProfilePickerOpen(index)" class="create-game-profile-menu">
+                                              <div
+                                                v-if="isPlayerProfilePickerOpen(index)"
+                                                class="create-game-profile-menu"
+                                                :style="getPlayerProfileMenuStyle()">
                                                   <input
                                                     class="form-input form-inline create-game-profile-search"
                                                     type="search"
                                                     placeholder="Find player"
                                                     autocomplete="off"
+                                                    ref="playerProfileSearchInput"
                                                     v-model="playerProfileSearch"
                                                     @keydown.stop>
                                                   <div class="create-game-profile-option-list">
@@ -664,6 +668,7 @@
 import * as constants from '@/common/constants';
 
 import {defineComponent, nextTick} from 'vue';
+import type {CSSProperties} from 'vue';
 import {Color, DEFAULT_PLAYER_COLORS, getLockedPlayerName, LOCKED_PLAYER_IDENTITIES} from '@/common/Color';
 import {
   buildPlayerProfilesFromEloPlayers,
@@ -710,6 +715,14 @@ type Refs = {
   templateFile: HTMLInputElement;
   cardsFilter: InstanceType<typeof CardsFilter>;
   cardsFilter2: InstanceType<typeof CardsFilter>;
+  playerProfileSearchInput?: HTMLInputElement | Array<HTMLInputElement>;
+};
+
+type PlayerProfileMenuPosition = {
+  left: number;
+  top: number;
+  width: number;
+  maxHeight: number;
 };
 
 type FormModel = {
@@ -719,6 +732,7 @@ type FormModel = {
   templates: Array<GameTemplate>;
   playerProfilePickerIndex: number | null;
   playerProfileSearch: string;
+  playerProfileMenuPosition: PlayerProfileMenuPosition | null;
 };
 
 export default defineComponent({
@@ -732,6 +746,7 @@ export default defineComponent({
       templates: TemplateManager.getTemplates(),
       playerProfilePickerIndex: null,
       playerProfileSearch: '',
+      playerProfileMenuPosition: null,
     };
   },
   components: {
@@ -798,6 +813,7 @@ export default defineComponent({
     this.restoreLastSettings();
     void ensureEloLoaded();
     document.addEventListener('click', this.closePlayerProfilePickerFromDocument);
+    window.addEventListener('resize', this.closePlayerProfilePicker);
     const urlParams = new URLSearchParams(window.location.search);
     const cloneId = urlParams.get('cloneGameId');
     if (cloneId) {
@@ -806,6 +822,7 @@ export default defineComponent({
   },
   unmounted() {
     document.removeEventListener('click', this.closePlayerProfilePickerFromDocument);
+    window.removeEventListener('resize', this.closePlayerProfilePicker);
   },
   computed: {
     wikiUrls(): typeof RULEBOOK_URLS & typeof WIKI_URLS {
@@ -1153,17 +1170,60 @@ export default defineComponent({
     isPlayerProfilePickerOpen(index: number): boolean {
       return this.playerProfilePickerIndex === index;
     },
-    togglePlayerProfilePicker(index: number) {
+    getPlayerProfileMenuStyle(): CSSProperties {
+      if (this.playerProfileMenuPosition === null) {
+        return {};
+      }
+      return {
+        left: `${this.playerProfileMenuPosition.left}px`,
+        top: `${this.playerProfileMenuPosition.top}px`,
+        width: `${this.playerProfileMenuPosition.width}px`,
+        maxHeight: `${this.playerProfileMenuPosition.maxHeight}px`,
+      };
+    },
+    togglePlayerProfilePicker(index: number, event: MouseEvent) {
       if (this.playerProfilePickerIndex === index) {
         this.closePlayerProfilePicker();
         return;
       }
       this.playerProfilePickerIndex = index;
       this.playerProfileSearch = '';
+      this.playerProfileMenuPosition = this.getPlayerProfileMenuPosition(event.currentTarget);
+      void nextTick(() => this.focusPlayerProfileSearch());
+    },
+    getPlayerProfileMenuPosition(target: EventTarget | null): PlayerProfileMenuPosition | null {
+      if (!(target instanceof HTMLElement)) {
+        return null;
+      }
+      const rect = target.getBoundingClientRect();
+      const margin = 12;
+      const gap = 6;
+      const availableWidth = Math.max(240, window.innerWidth - margin * 2);
+      const width = Math.min(Math.max(420, rect.width), availableWidth);
+      const left = this.clamp(rect.left, margin, Math.max(margin, window.innerWidth - width - margin));
+      const below = window.innerHeight - rect.bottom - margin - gap;
+      const above = rect.top - margin - gap;
+      const openBelow = below >= 360 || below >= above;
+      const availableHeight = Math.max(openBelow ? below : above, 180);
+      const maxHeight = Math.min(620, window.innerHeight - margin * 2, availableHeight);
+      const top = openBelow ?
+        this.clamp(rect.bottom + gap, margin, window.innerHeight - maxHeight - margin) :
+        this.clamp(rect.top - gap - maxHeight, margin, window.innerHeight - maxHeight - margin);
+      return {left, top, width, maxHeight};
+    },
+    clamp(value: number, min: number, max: number): number {
+      return Math.min(Math.max(value, min), Math.max(min, max));
+    },
+    focusPlayerProfileSearch() {
+      const searchInputRef = this.typedRefs.playerProfileSearchInput;
+      const searchInput = Array.isArray(searchInputRef) ? searchInputRef[0] : searchInputRef;
+      searchInput?.focus();
+      searchInput?.select();
     },
     closePlayerProfilePicker() {
       this.playerProfilePickerIndex = null;
       this.playerProfileSearch = '';
+      this.playerProfileMenuPosition = null;
     },
     closePlayerProfilePickerFromDocument() {
       this.closePlayerProfilePicker();

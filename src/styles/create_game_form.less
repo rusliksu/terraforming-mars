@@ -618,22 +618,24 @@
 }
 
 .create-game-profile-menu {
-    position: absolute;
-    left: 0;
-    top: 42px;
-    width: clamp(340px, 34vw, 430px);
+    position: fixed;
     max-width: calc(100vw - 32px);
+    max-height: min(72vh, 620px);
     z-index: 80;
     border: 1px solid rgba(255,255,255,.28);
     border-radius: 6px;
     background: #181d24;
     box-shadow: 0 14px 28px rgba(0,0,0,.48);
     padding: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .create-game-profile-search {
     width: 100%;
     height: 34px;
+    flex: 0 0 auto;
     margin-bottom: 8px;
     border: 1px solid rgba(255,255,255,.2) !important;
     border-radius: 4px;
@@ -643,22 +645,25 @@
 }
 
 .create-game-profile-option-list {
-    max-height: min(56vh, 520px);
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
+    overscroll-behavior: contain;
     scrollbar-gutter: stable;
     padding-right: 6px;
+    -webkit-overflow-scrolling: touch;
 }
 
 .create-game-profile-option {
     width: 100%;
-    min-height: 54px;
+    min-height: 44px;
     border: 1px solid rgba(255,255,255,.12);
     border-radius: 4px;
     color: #e6e6e6;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 8px;
+    gap: 8px;
+    padding: 6px 8px;
     text-align: left;
     cursor: pointer;
 }
@@ -694,18 +699,14 @@
 
 @media (hover: none), (pointer: coarse) {
     .create-game-profile-menu {
-        position: fixed;
-        left: 16px;
-        right: 16px;
-        top: 72px;
-        width: auto;
-        max-width: none;
-        max-height: calc(100vh - 96px);
+        max-width: calc(100vw - 24px);
     }
+}
 
-    .create-game-profile-option-list {
-        max-height: calc(100vh - 160px);
-    }
+.create-game-profile-option .create-game-profile-avatar {
+    width: 24px;
+    height: 24px;
+    flex-basis: 24px;
 }
 
 .create-game-profile-option-name.player-name {

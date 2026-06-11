@@ -2,7 +2,7 @@
   <span
     v-if="eloText"
     class="player-elo-badge"
-    :class="[tooltipCss, personaClass]"
+    :class="[tooltipCss, personaClass, {'player-elo-badge--compact': compact}]"
     :data-tooltip="eloTooltip"
     :style="badgeStyle"
   >{{ eloText }}</span>
@@ -24,6 +24,10 @@ export default defineComponent({
     tooltipCss: {
       type: String,
       required: true,
+    },
+    compact: {
+      type: Boolean,
+      default: false,
     },
   },
   mounted() {
@@ -106,6 +110,15 @@ export default defineComponent({
   line-height: 16px;
   opacity: 0.95;
   cursor: help;
+}
+
+.player-elo-badge--compact {
+  min-width: 34px;
+  min-height: 16px;
+  padding: 0 4px;
+  font-size: 11px;
+  line-height: 14px;
+  border-radius: 3px;
 }
 
 .player-elo-badge--gold {

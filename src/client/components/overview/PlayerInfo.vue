@@ -3,7 +3,10 @@
         <div class="player-status-and-res">
         <div class="player-status">
           <div class="player-info-details">
-            <div class="player-info-name" @click="togglePlayerDetails">{{ playerSymbol + player.name }}</div>
+            <div class="player-info-name-row">
+              <span class="player-info-name" @click="togglePlayerDetails">{{ playerSymbol + player.name }}</span>
+              <PlayerEloBadge :playerName="player.name" :tooltipCss="tooltipCss" :compact="true" />
+            </div>
             <span @click="togglePlayerDetails" v-for="(corporationName, index) in getCorporationName()" :key="index" v-i18n>
               <div class="player-info-corp" :title="$t(corporationName)">
                 {{ corporationName }}
@@ -48,6 +51,7 @@ import PlayerResources from '@/client/components/overview/PlayerResources.vue';
 import PlayerTags from '@/client/components/overview/PlayerTags.vue';
 import PlayerAlliedParty from '@/client/components/overview/PlayerAlliedParty.vue';
 import PlayerStatus from '@/client/components/overview/PlayerStatus.vue';
+import PlayerEloBadge from '@/client/components/overview/PlayerEloBadge.vue';
 import {playerColorClass} from '@/common/utils/utils';
 import {vueRoot} from '@/client/components/vueRoot';
 import {range} from '@/common/utils/utils';
@@ -96,6 +100,7 @@ export default defineComponent({
     PlayerResources,
     PlayerTags,
     PlayerAlliedParty,
+    PlayerEloBadge,
     'player-status': PlayerStatus,
   },
   computed: {

@@ -31,9 +31,12 @@ describe('AddResourcesToCard', () => {
   });
 
   it('0 resources no action', () => {
-    player.playedCards.push(ghgProducingBacteria);
+    player.playedCards.push(ghgProducingBacteria, tardigrades, ants);
     const action = new AddResourcesToCard(player, CardResource.MICROBE, {count: 0});
     expect(action.execute()).is.undefined;
+    expect(ghgProducingBacteria.resourceCount).eq(0);
+    expect(tardigrades.resourceCount).eq(0);
+    expect(ants.resourceCount).eq(0);
   });
 
   it('one card autofill', () => {

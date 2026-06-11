@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {forceGenerationEnd, runAllActions} from '../../TestingUtils';
+import {forceGenerationEnd, runAllActions, simulateFinishingAction} from '../../TestingUtils';
 import {testGame} from '../../TestGame';
 import {Phase} from '../../../src/common/Phase';
 import {PartyName} from '../../../src/common/turmoil/PartyName';
@@ -21,7 +21,7 @@ describe('Greta', () => {
 
   it('Does not 4 M€ per TR raise action before OPG action is used', () => {
     const [game, player] = testGame(1, {ceoExtension: true});
-    player.playCard(card);
+    player.playedCards.push(card);
 
     runAllActions(game);
     game.phase = Phase.ACTION;
@@ -32,30 +32,30 @@ describe('Greta', () => {
 
   it('Gains 4 M€ per TR raise action when OPG action is used', () => {
     const [game, player] = testGame(1, {ceoExtension: true});
-    player.playCard(card);
+    player.playedCards.push(card);
+
 
     runAllActions(game);
     game.phase = Phase.ACTION;
 
     card.action();
 
-    player.actionsTakenThisGame++;
     player.game.increaseOxygenLevel(player, 1);
     expect(player.megaCredits).to.eq(4);
+    simulateFinishingAction(player);
 
-    player.actionsTakenThisGame++;
     player.game.increaseTemperature(player, 1);
     expect(player.megaCredits).to.eq(8);
+    simulateFinishingAction(player);
 
-    player.actionsTakenThisGame++;
     player.game.increaseVenusScaleLevel(player, 1);
     expect(player.megaCredits).to.eq(12);
+    simulateFinishingAction(player);
 
-    player.actionsTakenThisGame++;
     player.playCard(new BigAsteroid()); // 2 Temp Steps in ONE ACTION
     expect(player.megaCredits).to.eq(16);
+    simulateFinishingAction(player);
 
-    player.actionsTakenThisGame++;
     player.playCard(new Omnicourt()); // 2 Steps in ONE ACTION
     expect(player.megaCredits).to.eq(20);
   });
@@ -68,7 +68,7 @@ describe('Greta', () => {
     game.phase = Phase.ACTION;
 
     card.action();
-    player.actionsTakenThisGame++; // Greta activation action has completed.
+    simulateFinishingAction(player); // Greta activation action has completed.
 
     const priorTerraformRating = player.terraformRating;
     player.playCard(new GiantIceAsteroid());
@@ -87,38 +87,60 @@ describe('Greta', () => {
     expect(card.data.effectTriggerCount).to.eq(1);
   });
 
+  it('Raising multiple global parameters in one action only rewards once', () => {
+    const [game, player] = testGame(1, {ceoExtension: true});
+    player.playedCards.push(card);
+
+    runAllActions(game);
+    game.phase = Phase.ACTION;
+    card.action();
+
+    // First global parameter raise in this action rewards.
+    player.game.increaseOxygenLevel(player, 1);
+    expect(player.megaCredits).to.eq(4);
+
+    // A second, different global parameter in the same action does not change the value.
+    player.game.increaseTemperature(player, 1);
+    expect(player.megaCredits).to.eq(4);
+
+    // After the action completes, a new global parameter raise rewards again.
+    simulateFinishingAction(player);
+    player.game.increaseVenusScaleLevel(player, 1);
+    expect(player.megaCredits).to.eq(8);
+  });
+
   it('Does not gain MC after 10 increases', () => {
     const [game, player] = testGame(1, {ceoExtension: true});
-    player.playCard(card);
+    player.playedCards.push(card);
+
 
     // doesn't gain before card action
     runAllActions(game);
     game.phase = Phase.ACTION;
     card.action();
     expect(player.megaCredits).to.eq(0);
-    player.actionsTakenThisGame++;
     player.game.increaseOxygenLevel(player, 2); // One action, two steps, only 4MC
-    player.actionsTakenThisGame++;
+    simulateFinishingAction(player);
     player.game.increaseOxygenLevel(player, 1);
-    player.actionsTakenThisGame++;
+    simulateFinishingAction(player);
     player.game.increaseOxygenLevel(player, 1);
-    player.actionsTakenThisGame++;
+    simulateFinishingAction(player);
     player.game.increaseOxygenLevel(player, 1);
-    player.actionsTakenThisGame++;
+    simulateFinishingAction(player);
     player.game.increaseOxygenLevel(player, 1);
     expect(player.megaCredits).to.eq(20);
-    player.actionsTakenThisGame++;
+    simulateFinishingAction(player);
     player.game.increaseTemperature(player, 2); // One action, two steps, only 4MC
-    player.actionsTakenThisGame++;
+    simulateFinishingAction(player);
     player.game.increaseTemperature(player, 1);
-    player.actionsTakenThisGame++;
+    simulateFinishingAction(player);
     player.game.increaseTemperature(player, 1);
-    player.actionsTakenThisGame++;
+    simulateFinishingAction(player);
     player.game.increaseTemperature(player, 1);
-    player.actionsTakenThisGame++;
+    simulateFinishingAction(player);
     player.game.increaseTemperature(player, 1);
     expect(player.megaCredits).to.eq(40);
-    player.actionsTakenThisGame++;
+    simulateFinishingAction(player);
     player.game.increaseTemperature(player, 2); // 10 increases already, no more bonuses
     expect(player.megaCredits).to.eq(40);
   });
@@ -126,7 +148,7 @@ describe('Greta', () => {
 
   it('Can only act once per game, no income when not active', () => {
     const [game, player] = testGame(1, {ceoExtension: true});
-    player.playCard(card);
+    player.playedCards.push(card);
 
     card.action();
     forceGenerationEnd(game);
@@ -141,7 +163,7 @@ describe('Greta', () => {
     const [game, player, player2] = testGame(2, {ceoExtension: true, turmoilExtension: true});
     const turmoil = game.turmoil!;
     turmoil.parties.forEach((p) => p.delegates.clear());
-    player.playCard(card);
+    player.playedCards.push(card);
     player.setTerraformRating(20);
     player2.setTerraformRating(20);
     player.megaCredits = 0;
@@ -150,6 +172,7 @@ describe('Greta', () => {
     card.action();
     turmoil.endGeneration(game);
     runAllActions(game);
+
     expect(turmoil.chairman).to.eq(player);
     expect(player.terraformRating).to.eq(20);
     expect(player.megaCredits).to.eq(0);
@@ -159,16 +182,15 @@ describe('Greta', () => {
 
   it('Survives serialization', () => {
     const [game, player] = testGame(1, {ceoExtension: true});
-    player.playCard(card);
+    player.playedCards.push(card);
     runAllActions(game);
 
     game.phase = Phase.ACTION;
     card.action();
     expect(card.data.effectTriggerCount).eq(0);
-    player.actionsTakenThisGame++;
     player.game.increaseOxygenLevel(player, 2); // One action, two steps, only 4MC
     expect(card.data.effectTriggerCount).eq(1);
-    player.actionsTakenThisGame++;
+    simulateFinishingAction(player);
     player.game.increaseOxygenLevel(player, 1);
     expect(card.data.effectTriggerCount).eq(2);
 

@@ -366,7 +366,7 @@
         -webkit-text-fill-color: fade(@fg, 72%);
     }
 
-    .create-game-player-profile-trigger {
+    .create-game-player-name.is-open {
         color: @fg !important;
         border-color: fade(@fg, 36%) !important;
     }
@@ -552,9 +552,14 @@
 
 .create-game-profile-picker {
     position: relative;
-    margin-top: 8px;
-    max-width: 245px;
+    margin-top: 0;
+    max-width: 300px;
     overflow: visible;
+}
+
+.create-game-profile-picker .create-game-player-name {
+    width: 100%;
+    max-width: 300px;
 }
 
 .create-game-player-profile-trigger {

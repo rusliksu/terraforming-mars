@@ -133,8 +133,20 @@ function showGroup(key: string) {
   return (items ?? []).length > 0;
 }
 
+function sameSelection(a: Array<T>, b: Array<T>) {
+  return a.length === b.length && a.every((item, index) => item === b[index]);
+}
+
 watch(localSelected, (value) => {
-  emit('update:selected', [...value]);
+  if (!sameSelection(value, props.selected)) {
+    emit('update:selected', [...value]);
+  }
+}, {deep: true});
+
+watch(() => props.selected, (value) => {
+  if (!sameSelection(localSelected.value, value)) {
+    localSelected.value = [...value];
+  }
 }, {deep: true});
 
 defineExpose({watchSelect});

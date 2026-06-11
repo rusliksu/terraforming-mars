@@ -216,7 +216,7 @@
                               </label>
                             </template>
 
-                            <input type="checkbox" v-model="solarPhaseOption" id="WGT-checkbox">
+                            <input type="checkbox" v-model="solarPhaseOption" id="WGT-checkbox" disabled>
                             <label for="WGT-checkbox">
                                 <span v-i18n>World Government Terraforming</span>&nbsp;<a :href="wikiUrls.worldGovernmentTerraforming" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                             </label>
@@ -483,37 +483,35 @@
                                   <template v-for="(newPlayer, index) in getPlayers()" v-bind:key="index">
                                     <div>
                                       <div :class="'form-group col6 create-game-player '+getPlayerContainerColorClass(newPlayer.color)">
-                                          <div>
-                                              <input class="form-input form-inline create-game-player-name" :placeholder="getPlayerNamePlaceholder(index)" v-model="newPlayer.name" />
-                                          </div>
                                           <div class="create-game-profile-picker" @click.stop>
-                                              <button
-                                                type="button"
-                                                class="form-inline create-game-player-profile-trigger"
+                                              <input
+                                                class="form-input form-inline create-game-player-name"
                                                 :class="{'is-open': isPlayerProfilePickerOpen(index)}"
-                                                @click.stop="togglePlayerProfilePicker(newPlayer, index, $event)">
-                                                  <span :class="['create-game-profile-avatar', ...getSelectedPlayerProfileAvatarClasses(newPlayer)]">{{ getSelectedPlayerProfileInitials(newPlayer) }}</span>
-                                                  <span class="create-game-profile-trigger-main">
-                                                    <span class="create-game-profile-trigger-name">{{ getSelectedPlayerProfileName(newPlayer) }}</span>
-                                                    <span class="create-game-profile-trigger-meta">{{ getSelectedPlayerProfileMeta(newPlayer) }}</span>
-                                                  </span>
-                                                  <span class="create-game-profile-trigger-caret">v</span>
-                                              </button>
+                                                :placeholder="getPlayerNamePlaceholder(index)"
+                                                autocomplete="off"
+                                                ref="playerProfileNameInput"
+                                                v-model="newPlayer.name"
+                                                @focus="openPlayerProfilePicker(newPlayer, index, $event)"
+                                                @click.stop="openPlayerProfilePicker(newPlayer, index, $event)"
+                                                @input="updatePlayerProfileAutocomplete(newPlayer, $event)"
+                                                @keydown.enter.stop.prevent="applyFirstFilteredPlayerProfile(newPlayer)"
+                                                @keydown.esc.stop.prevent="closePlayerProfilePicker"
+                                                @keydown.stop />
                                               <div
                                                 v-if="isPlayerProfilePickerOpen(index)"
                                                 class="create-game-profile-menu"
                                                 :style="getPlayerProfileMenuStyle()">
-                                                  <input
-                                                    class="form-input form-inline create-game-profile-search"
-                                                    type="search"
-                                                    placeholder="Type player name"
-                                                    autocomplete="off"
-                                                    ref="playerProfileSearchInput"
-                                                    v-model="playerProfileSearch"
-                                                    @input="updatePlayerNameFromProfileInput(newPlayer, $event)"
-                                                    @keydown.enter.stop.prevent="applyFirstFilteredPlayerProfile(newPlayer)"
-                                                    @keydown.stop>
                                                   <div class="create-game-profile-option-list">
+                                                    <button
+                                                      type="button"
+                                                      class="create-game-profile-option create-game-profile-option-custom"
+                                                      @click="applyCustomNickFromPicker(newPlayer)">
+                                                        <span class="create-game-profile-avatar create-game-profile-avatar--empty">Aa</span>
+                                                        <span class="create-game-profile-option-main">
+                                                          <span class="create-game-profile-option-name">Custom nick</span>
+                                                          <span class="create-game-profile-option-meta">{{ getCustomNickMeta() }}</span>
+                                                        </span>
+                                                    </button>
                                                     <button
                                                       v-for="profile in getFilteredAvailablePlayerProfiles(newPlayer)"
                                                       :key="profile.id"
@@ -683,12 +681,15 @@ import type {PlayerProfile} from '@/common/PlayerProfiles';
 import {BoardName} from '@/common/boards/BoardName';
 import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
 import {CardName} from '@/common/cards/CardName';
+import {CardType} from '@/common/cards/CardType';
+import {Expansion, GameModule} from '@/common/cards/GameModule';
 import CeosFilter from '@/client/components/create/CeosFilter.vue';
 import CorporationsFilter from '@/client/components/create/CorporationsFilter.vue';
 import PreludesFilter from '@/client/components/create/PreludesFilter.vue';
 import {translateText, translateTextWithParams} from '@/client/directives/i18n';
 import ColoniesFilter from '@/client/components/create/ColoniesFilter.vue';
 import {ColonyName} from '@/common/colonies/ColonyName';
+import {COMMUNITY_COLONY_NAMES, OFFICIAL_COLONY_NAMES, PATHFINDERS_COLONY_NAMES} from '@/common/colonies/AllColonies';
 import CardsFilter from '@/client/components/create/CardsFilter.vue';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {playerColorClass} from '@/common/utils/utils';
@@ -696,7 +697,8 @@ import {RandomMAOptionType} from '@/common/ma/RandomMAOptionType';
 import {GameId, JSONObject} from '@/common/Types';
 import {AgendaStyle} from '@/common/turmoil/Types';
 import PreferencesIcon from '@/client/components/PreferencesIcon.vue';
-import {getCard} from '@/client/cards/ClientCardManifest';
+import {byType, getCard, getCards} from '@/client/cards/ClientCardManifest';
+import type {ClientCard} from '@/common/cards/ClientCard';
 import {BoardNameType, NewGameConfig, NewPlayerModel} from '@/common/game/NewGameConfig';
 import {vueRoot} from '@/client/components/vueRoot';
 import {CreateGameModel} from './CreateGameModel';
@@ -711,13 +713,22 @@ import {ensureEloLoaded, sharedEloState} from '@/client/utils/elo';
 
 const REVISED_COUNT_ALGORITHM = false;
 
+const CUSTOM_CARD_MODULE_EXCEPTIONS = new Set<CardName>([
+  CardName.LAKEFRONT_RESORTS,
+  CardName.UTOPIA_INVEST,
+]);
+
+const CUSTOM_CARD_COMPATIBILITY_EXCEPTIONS: Partial<Record<CardName, ReadonlyArray<Expansion>>> = {
+  [CardName.CREW_TRAINING]: ['moon'],
+};
+
 
 type Refs = {
   file: HTMLInputElement;
   templateFile: HTMLInputElement;
   cardsFilter: InstanceType<typeof CardsFilter>;
   cardsFilter2: InstanceType<typeof CardsFilter>;
-  playerProfileSearchInput?: HTMLInputElement | Array<HTMLInputElement>;
+  playerProfileNameInput?: HTMLInputElement | Array<HTMLInputElement>;
 };
 
 type PlayerProfileMenuPosition = {
@@ -769,15 +780,50 @@ export default defineComponent({
       this.expansions.turmoil = value;
       this.expansions.prelude2 = value;
       this.expansions.promo = value;
-      this.solarPhaseOption = value;
+      this.syncSolarPhaseOptionToPlayerCount();
+      this.syncCustomSelectionsWithExpansions();
+    },
+    'expansions.corpera': function(value: boolean) {
+      this.handleExpansionChanged('corpera', value);
     },
     'expansions.venus': function(value: boolean) {
-      this.solarPhaseOption = value;
+      this.handleExpansionChanged('venus', value);
+    },
+    'expansions.colonies': function(value: boolean) {
+      this.handleExpansionChanged('colonies', value);
     },
     'expansions.turmoil': function(value: boolean) {
       if (value === false) {
         this.politicalAgendasExtension = 'Standard';
       }
+      this.handleExpansionChanged('turmoil', value);
+    },
+    'expansions.promo': function(value: boolean) {
+      this.handleExpansionChanged('promo', value);
+    },
+    'expansions.ares': function(value: boolean) {
+      this.handleExpansionChanged('ares', value);
+    },
+    'expansions.community': function(value: boolean) {
+      this.handleExpansionChanged('community', value);
+    },
+    'expansions.moon': function(value: boolean) {
+      this.handleExpansionChanged('moon', value);
+    },
+    'expansions.pathfinders': function(value: boolean) {
+      this.handleExpansionChanged('pathfinders', value);
+    },
+    'expansions.ceo': function(value: boolean) {
+      this.handleExpansionChanged('ceo', value);
+    },
+    'expansions.starwars': function(value: boolean) {
+      this.handleExpansionChanged('starwars', value);
+    },
+    'expansions.underworld': function(value: boolean) {
+      this.handleExpansionChanged('underworld', value);
+    },
+    'expansions.deltaProject': function(value: boolean) {
+      this.handleExpansionChanged('deltaProject', value);
     },
     initialDraft(value: boolean) {
       if (value === true && this.preludeDraftVariant === undefined) {
@@ -790,21 +836,39 @@ export default defineComponent({
         this.initialDraftOneWay = false;
       }
     },
+    showCorporationList(value: boolean) {
+      if (value === true) {
+        this.customCorporations = this.getSelectableCustomCorporations();
+      }
+    },
+    showPreludesList(value: boolean) {
+      if (value === true) {
+        this.customPreludes = this.getSelectableCustomPreludes();
+      }
+    },
+    showColoniesList(value: boolean) {
+      if (value === true) {
+        this.customColonies = this.getSelectableCustomColonies();
+      }
+    },
     'expansions.prelude': function(value: boolean) {
       if (value === true && this.preludeDraftVariant === undefined) {
         this.preludeDraftVariant = true;
       }
+      this.handleExpansionChanged('prelude', value);
     },
     'expansions.prelude2': function(value: boolean) {
       if (value === true && this.preludeToggled === false && this.uploading === false) {
         this.expansions.prelude = true;
         this.preludeToggled = true;
       }
+      this.handleExpansionChanged('prelude2', value);
     },
     playersCount(value: number) {
       if (value === 1) {
         this.expansions.corpera = true;
       }
+      this.syncSolarPhaseOptionToPlayerCount(value);
       if (this.playerProfilePickerIndex !== null && this.playerProfilePickerIndex >= value) {
         this.closePlayerProfilePicker();
       }
@@ -891,7 +955,8 @@ export default defineComponent({
             if (!component.seededGame) {
               component.seed = Math.random();
             }
-            component.solarPhaseOption = Boolean(processor.solarPhaseOption);
+            this.syncSolarPhaseOptionToPlayerCount();
+            this.syncCustomSelectionsWithExpansions();
             this.uploading = false;
           } catch (e) {
             console.error('Error applying settings:', e);
@@ -1060,8 +1125,8 @@ export default defineComponent({
                 if (!component.seededGame) {
                   component.seed = Math.random();
                 }
-                // set to alter after any watched properties
-                component.solarPhaseOption = Boolean(processor.solarPhaseOption);
+                this.syncSolarPhaseOptionToPlayerCount();
+                this.syncCustomSelectionsWithExpansions();
                 this.uploading = false;
               } catch (e) {
                 root.showAlert('Upload settings', 'Error reading JSON ' + e);
@@ -1093,6 +1158,83 @@ export default defineComponent({
       }
       player.color = color;
     },
+    getDefaultSolarPhaseOption(playersCount = this.playersCount): boolean {
+      return playersCount <= 3;
+    },
+    syncSolarPhaseOptionToPlayerCount(playersCount = this.playersCount) {
+      this.solarPhaseOption = this.getDefaultSolarPhaseOption(playersCount);
+    },
+    handleExpansionChanged(_expansion: Expansion, _enabled: boolean) {
+      if (this.uploading) {
+        return;
+      }
+      this.syncCustomSelectionsWithExpansions();
+    },
+    isModuleEnabled(module: GameModule): boolean {
+      return module === 'base' || this.expansions[module];
+    },
+    isCardModuleAllowedForCustomSelection(card: ClientCard): boolean {
+      return this.isModuleEnabled(card.module) || CUSTOM_CARD_MODULE_EXCEPTIONS.has(card.name);
+    },
+    isCardCompatibilityAllowedForCustomSelection(card: ClientCard): boolean {
+      const ignored = new Set(CUSTOM_CARD_COMPATIBILITY_EXCEPTIONS[card.name] ?? []);
+      return (card.compatibility ?? []).every((module) => {
+        if (module === 'base' || ignored.has(module as Expansion)) {
+          return true;
+        }
+        return this.isModuleEnabled(module);
+      });
+    },
+    isCardAllowedForCustomSelection(card: ClientCard): boolean {
+      return this.isCardModuleAllowedForCustomSelection(card) &&
+        this.isCardCompatibilityAllowedForCustomSelection(card);
+    },
+    getSelectableCustomCorporations(): Array<CardName> {
+      return getCards(byType(CardType.CORPORATION))
+        .filter((card) => card.name !== CardName.BEGINNER_CORPORATION)
+        .filter((card) => this.isCardAllowedForCustomSelection(card))
+        .map((card) => card.name)
+        .sort();
+    },
+    getSelectableCustomPreludes(): Array<CardName> {
+      return getCards(byType(CardType.PRELUDE))
+        .filter((card) => card.name !== CardName.DELTA_PROJECT)
+        .filter((card) => this.isCardAllowedForCustomSelection(card))
+        .map((card) => card.name)
+        .sort();
+    },
+    getSelectableCustomColonies(): Array<ColonyName> {
+      if (!this.expansions.colonies) {
+        return [];
+      }
+      return [
+        ...OFFICIAL_COLONY_NAMES,
+        ...COMMUNITY_COLONY_NAMES,
+        ...PATHFINDERS_COLONY_NAMES,
+      ]
+        .filter((colonyName) => {
+          if ((PATHFINDERS_COLONY_NAMES as ReadonlyArray<ColonyName>).includes(colonyName) && !this.expansions.pathfinders) {
+            return false;
+          }
+          if ((COMMUNITY_COLONY_NAMES as ReadonlyArray<ColonyName>).includes(colonyName) && !this.expansions.community) {
+            return false;
+          }
+          const expansion = getColony(colonyName)?.expansion;
+          return expansion === undefined || this.expansions[expansion];
+        })
+        .sort();
+    },
+    syncCustomSelectionsWithExpansions() {
+      if (this.showCorporationList || this.customCorporations.length > 0) {
+        this.customCorporations = this.getSelectableCustomCorporations();
+      }
+      if (this.showPreludesList || this.customPreludes.length > 0) {
+        this.customPreludes = this.getSelectableCustomPreludes();
+      }
+      if (this.showColoniesList || this.customColonies.length > 0) {
+        this.customColonies = this.getSelectableCustomColonies();
+      }
+    },
     getPlayerProfiles(): ReadonlyArray<PlayerProfile> {
       if (sharedEloState.loaded && Object.keys(sharedEloState.players).length > 0) {
         return buildPlayerProfilesFromEloPlayers(sharedEloState.players);
@@ -1101,21 +1243,6 @@ export default defineComponent({
     },
     getSelectedPlayerProfile(player: NewPlayerModel): PlayerProfile | undefined {
       return getPlayerProfileByName(player.name, this.getPlayerProfiles());
-    },
-    getSelectedPlayerProfileName(player: NewPlayerModel): string {
-      return this.getSelectedPlayerProfile(player)?.name ?? 'Player profile';
-    },
-    getSelectedPlayerProfileMeta(player: NewPlayerModel): string {
-      const profile = this.getSelectedPlayerProfile(player);
-      return profile === undefined ? 'Choose active Elo player' : this.formatPlayerProfileMeta(profile);
-    },
-    getSelectedPlayerProfileInitials(player: NewPlayerModel): string {
-      const profile = this.getSelectedPlayerProfile(player);
-      return profile === undefined ? '?' : getPlayerProfileAvatarInitials(profile);
-    },
-    getSelectedPlayerProfileAvatarClasses(player: NewPlayerModel): Array<string> {
-      const profile = this.getSelectedPlayerProfile(player);
-      return profile === undefined ? ['create-game-profile-avatar--empty'] : this.getPlayerProfileAvatarClasses(profile);
     },
     getAvailablePlayerProfiles(player: NewPlayerModel): ReadonlyArray<PlayerProfile> {
       const playerProfiles = this.getPlayerProfiles();
@@ -1162,6 +1289,9 @@ export default defineComponent({
         this.getPlayerContainerColorClass(profile.preferredColor),
       ];
     },
+    getCustomNickMeta(): string {
+      return this.playerProfileSearch.trim() || 'Type a custom player name';
+    },
     isPlayerProfilePickerOpen(index: number): boolean {
       return this.playerProfilePickerIndex === index;
     },
@@ -1176,17 +1306,12 @@ export default defineComponent({
         maxHeight: `${this.playerProfileMenuPosition.maxHeight}px`,
       };
     },
-    togglePlayerProfilePicker(player: NewPlayerModel, index: number, event: MouseEvent) {
-      if (this.playerProfilePickerIndex === index) {
-        this.closePlayerProfilePicker();
-        return;
-      }
+    openPlayerProfilePicker(player: NewPlayerModel, index: number, event: FocusEvent | MouseEvent) {
       this.playerProfilePickerIndex = index;
-      this.playerProfileSearch = this.getSelectedPlayerProfile(player)?.name ?? player.name;
+      this.playerProfileSearch = player.name;
       this.playerProfileMenuPosition = this.getPlayerProfileMenuPosition(event.currentTarget);
-      void nextTick(() => this.focusPlayerProfileSearchIfUseful());
     },
-    updatePlayerNameFromProfileInput(player: NewPlayerModel, event: Event) {
+    updatePlayerProfileAutocomplete(player: NewPlayerModel, event: Event) {
       const value = event.target instanceof window.HTMLInputElement ? event.target.value : this.playerProfileSearch;
       this.playerProfileSearch = value;
       player.name = value.trim();
@@ -1199,6 +1324,10 @@ export default defineComponent({
         return;
       }
       this.applyPlayerProfileFromPicker(player, profile);
+    },
+    applyCustomNickFromPicker(player: NewPlayerModel) {
+      player.name = this.playerProfileSearch.trim();
+      this.closePlayerProfilePicker();
     },
     updatePlayerProfileMenuPosition() {
       if (this.playerProfilePickerIndex === null) {
@@ -1215,7 +1344,7 @@ export default defineComponent({
       if (this.playerProfilePickerIndex === null) {
         return null;
       }
-      const triggers = this.$el.querySelectorAll<HTMLElement>('.create-game-player-profile-trigger');
+      const triggers = this.$el.querySelectorAll<HTMLElement>('.create-game-player-name');
       return triggers[this.playerProfilePickerIndex] ?? null;
     },
     getPlayerProfileMenuPosition(target: EventTarget | null): PlayerProfileMenuPosition | null {
@@ -1240,18 +1369,6 @@ export default defineComponent({
     },
     clamp(value: number, min: number, max: number): number {
       return Math.min(Math.max(value, min), Math.max(min, max));
-    },
-    shouldAutofocusPlayerProfileSearch(): boolean {
-      return !window.matchMedia?.('(hover: none), (pointer: coarse)').matches;
-    },
-    focusPlayerProfileSearchIfUseful() {
-      if (!this.shouldAutofocusPlayerProfileSearch()) {
-        return;
-      }
-      const searchInputRef = this.typedRefs.playerProfileSearchInput;
-      const searchInput = Array.isArray(searchInputRef) ? searchInputRef[0] : searchInputRef;
-      searchInput?.focus();
-      searchInput?.select();
     },
     closePlayerProfilePicker() {
       this.playerProfilePickerIndex = null;
@@ -1529,6 +1646,7 @@ export default defineComponent({
       const initialDraftOneWay = this.initialDraftOneWay;
       const randomMA = this.randomMA;
       const showOtherPlayersVP = this.showOtherPlayersVP;
+      this.syncSolarPhaseOptionToPlayerCount(players.length);
       const solarPhaseOption = this.solarPhaseOption;
       const shuffleMapOption = this.shuffleMapOption;
       const customColonies = this.customColonies;

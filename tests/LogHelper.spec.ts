@@ -21,6 +21,7 @@ describe('LogHelper', () => {
     LogHelper.logDrawnCards(player1, []);
     const msg = game.gameLog.pop()!;
     msg.timestamp = 0;
+    delete msg.hiddenFor;
 
     const expected = {
       message: '${0} drew no cards',
@@ -39,6 +40,7 @@ describe('LogHelper', () => {
       LogHelper.logDrawnCards(player1, run.cards);
       const msg = game.gameLog.pop()!;
       msg.timestamp = 0;
+      delete msg.hiddenFor;
 
       const expected = {
         message: '${0} drew ${1}',
@@ -61,6 +63,7 @@ describe('LogHelper', () => {
     const msg = game.gameLog.pop()!;
 
     msg.timestamp = 0; // for testing.
+    delete msg.hiddenFor;
 
     expect(msg).deep.eq({
       message: '${0} drew ${1}',
@@ -81,6 +84,7 @@ describe('LogHelper', () => {
     LogHelper.logCardAction(player1, 'bought', [card1.name], true);
     const msg = game.gameLog.pop()!;
     msg.timestamp = 0;
+    delete msg.hiddenFor;
 
     expect(msg).deep.eq({
       message: '${0} bought ${1}',
@@ -102,6 +106,7 @@ describe('LogHelper', () => {
     LogHelper.logPrivateCardSelection(player1, 'bought', [card1.name], [card2.name]);
     const msg = game.gameLog.pop()!;
     msg.timestamp = 0;
+    delete msg.hiddenFor;
 
     expect(msg).deep.eq({
       message: 'You bought ${0} skipping ${1}',

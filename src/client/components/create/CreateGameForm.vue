@@ -722,6 +722,42 @@ const CUSTOM_CARD_COMPATIBILITY_EXCEPTIONS: Partial<Record<CardName, ReadonlyArr
   [CardName.CREW_TRAINING]: ['moon'],
 };
 
+const DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS = new Set<CardName>([
+  CardName.MANUTECH,
+  CardName.POINT_LUNA,
+  CardName.VITOR,
+]);
+
+const DEFAULT_CUSTOM_COLONY_EXCLUSIONS = new Set<ColonyName>([
+  ColonyName.PLUTO,
+]);
+
+function unique<T extends string>(items: ReadonlyArray<T>): Array<T> {
+  return [...new Set(items)];
+}
+
+function mergeCustomSelectionWithExclusions<T extends string>(
+  selected: ReadonlyArray<T>,
+  selectable: ReadonlyArray<T>,
+  exclusions: ReadonlyArray<T>,
+): Array<T> {
+  const selectedSet = new Set(selected);
+  const excludedSet = new Set(exclusions);
+  return selectable.filter((item) => selectedSet.has(item) || !excludedSet.has(item));
+}
+
+function getCustomSelectionExclusions<T extends string>(
+  selectable: ReadonlyArray<T>,
+  selected: ReadonlyArray<T>,
+  existingExclusions: ReadonlyArray<T>,
+): Array<T> {
+  const selectableSet = new Set(selectable);
+  const selectedSet = new Set(selected);
+  return unique([
+    ...existingExclusions.filter((item) => !selectableSet.has(item)),
+    ...selectable.filter((item) => !selectedSet.has(item)),
+  ]);
+}
 
 type Refs = {
   file: HTMLInputElement;
@@ -746,6 +782,9 @@ type FormModel = {
   playerProfilePickerIndex: number | null;
   playerProfileSearch: string;
   playerProfileMenuPosition: PlayerProfileMenuPosition | null;
+  customCorporationExclusions: Array<CardName>;
+  customPreludesExclusions: Array<CardName>;
+  customColonyExclusions: Array<ColonyName>;
 };
 
 export default defineComponent({
@@ -760,6 +799,9 @@ export default defineComponent({
       playerProfilePickerIndex: null,
       playerProfileSearch: '',
       playerProfileMenuPosition: null,
+      customCorporationExclusions: [...DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS],
+      customPreludesExclusions: [],
+      customColonyExclusions: [...DEFAULT_CUSTOM_COLONY_EXCLUSIONS],
     };
   },
   components: {
@@ -838,17 +880,17 @@ export default defineComponent({
     },
     showCorporationList(value: boolean) {
       if (value === true) {
-        this.customCorporations = this.getSelectableCustomCorporations();
+        this.customCorporations = this.getDefaultCustomCorporations();
       }
     },
     showPreludesList(value: boolean) {
       if (value === true) {
-        this.customPreludes = this.getSelectableCustomPreludes();
+        this.customPreludes = this.getDefaultCustomPreludes();
       }
     },
     showColoniesList(value: boolean) {
       if (value === true) {
-        this.customColonies = this.getSelectableCustomColonies();
+        this.customColonies = this.getDefaultCustomColonies();
       }
     },
     'expansions.prelude': function(value: boolean) {
@@ -955,6 +997,7 @@ export default defineComponent({
             if (!component.seededGame) {
               component.seed = Math.random();
             }
+            this.rememberCustomSelectionExclusions();
             this.syncSolarPhaseOptionToPlayerCount();
             this.syncCustomSelectionsWithExpansions();
             this.uploading = false;
@@ -1125,6 +1168,7 @@ export default defineComponent({
                 if (!component.seededGame) {
                   component.seed = Math.random();
                 }
+                this.rememberCustomSelectionExclusions();
                 this.syncSolarPhaseOptionToPlayerCount();
                 this.syncCustomSelectionsWithExpansions();
                 this.uploading = false;
@@ -1224,15 +1268,59 @@ export default defineComponent({
         })
         .sort();
     },
-    syncCustomSelectionsWithExpansions() {
+    getDefaultCustomCorporations(): Array<CardName> {
+      return mergeCustomSelectionWithExclusions(
+        this.customCorporations,
+        this.getSelectableCustomCorporations(),
+        this.customCorporationExclusions,
+      );
+    },
+    getDefaultCustomPreludes(): Array<CardName> {
+      return mergeCustomSelectionWithExclusions(
+        this.customPreludes,
+        this.getSelectableCustomPreludes(),
+        this.customPreludesExclusions,
+      );
+    },
+    getDefaultCustomColonies(): Array<ColonyName> {
+      return mergeCustomSelectionWithExclusions(
+        this.customColonies,
+        this.getSelectableCustomColonies(),
+        this.customColonyExclusions,
+      );
+    },
+    rememberCustomSelectionExclusions() {
       if (this.showCorporationList || this.customCorporations.length > 0) {
-        this.customCorporations = this.getSelectableCustomCorporations();
+        this.customCorporationExclusions = getCustomSelectionExclusions(
+          this.getSelectableCustomCorporations(),
+          this.customCorporations,
+          this.customCorporationExclusions,
+        );
       }
       if (this.showPreludesList || this.customPreludes.length > 0) {
-        this.customPreludes = this.getSelectableCustomPreludes();
+        this.customPreludesExclusions = getCustomSelectionExclusions(
+          this.getSelectableCustomPreludes(),
+          this.customPreludes,
+          this.customPreludesExclusions,
+        );
       }
       if (this.showColoniesList || this.customColonies.length > 0) {
-        this.customColonies = this.getSelectableCustomColonies();
+        this.customColonyExclusions = getCustomSelectionExclusions(
+          this.getSelectableCustomColonies(),
+          this.customColonies,
+          this.customColonyExclusions,
+        );
+      }
+    },
+    syncCustomSelectionsWithExpansions() {
+      if (this.showCorporationList || this.customCorporations.length > 0) {
+        this.customCorporations = this.getDefaultCustomCorporations();
+      }
+      if (this.showPreludesList || this.customPreludes.length > 0) {
+        this.customPreludes = this.getDefaultCustomPreludes();
+      }
+      if (this.showColoniesList || this.customColonies.length > 0) {
+        this.customColonies = this.getDefaultCustomColonies();
       }
     },
     getPlayerProfiles(): ReadonlyArray<PlayerProfile> {
@@ -1411,9 +1499,19 @@ export default defineComponent({
       return DEFAULT_PLAYER_COLORS.find((color) => !usedColors.has(color)) ?? DEFAULT_PLAYER_COLORS[0];
     },
     updateCustomCorporations(customCorporations: Array<CardName>) {
+      this.customCorporationExclusions = getCustomSelectionExclusions(
+        this.getSelectableCustomCorporations(),
+        customCorporations,
+        this.customCorporationExclusions,
+      );
       this.customCorporations = customCorporations;
     },
     updateCustomPreludes(customPreludes: Array<CardName>) {
+      this.customPreludesExclusions = getCustomSelectionExclusions(
+        this.getSelectableCustomPreludes(),
+        customPreludes,
+        this.customPreludesExclusions,
+      );
       this.customPreludes = customPreludes;
     },
     updateBannedCards(bannedCards: Array<CardName>) {
@@ -1423,6 +1521,11 @@ export default defineComponent({
       this.includedCards = includedCards;
     },
     updateCustomColonies(customColonies: Array<ColonyName>) {
+      this.customColonyExclusions = getCustomSelectionExclusions(
+        this.getSelectableCustomColonies(),
+        customColonies,
+        this.customColonyExclusions,
+      );
       this.customColonies = customColonies;
     },
     updateCustomCeos(customCeos: Array<CardName>) {

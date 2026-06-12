@@ -2,10 +2,13 @@
   <span
     v-if="eloText"
     class="player-elo-badge"
-    :class="[tooltipCss, personaClass, {'player-elo-badge--compact': compact}]"
+    :class="[tooltipCss, personaClass, {'player-elo-badge--compact': compact, 'player-elo-badge--with-delta': eloDeltaText}]"
     :data-tooltip="eloTooltip"
     :style="badgeStyle"
-  >{{ eloText }}</span>
+  >
+    <span>{{ eloText }}</span>
+    <span v-if="eloDeltaText" :class="eloDeltaClass">{{ eloDeltaText }}</span>
+  </span>
 </template>
 
 <script lang="ts">
@@ -28,6 +31,11 @@ export default defineComponent({
     compact: {
       type: Boolean,
       default: false,
+    },
+    eloDelta: {
+      type: Number,
+      required: false,
+      default: undefined,
     },
   },
   mounted() {
@@ -57,6 +65,9 @@ export default defineComponent({
       }
 
       let text = 'Elo: ' + entry.elo;
+      if (this.eloDeltaText) {
+        text += ' | Change: ' + this.eloDeltaText;
+      }
       if (typeof entry.games === 'number') {
         text += ' | Games: ' + entry.games;
       }
@@ -67,6 +78,24 @@ export default defineComponent({
         text += ' | Avg VP: ' + Math.round(entry.totalVP / entry.games);
       }
       return text;
+    },
+    eloDeltaText(): string {
+      if (typeof this.eloDelta !== 'number') {
+        return '';
+      }
+      if (this.eloDelta > 0) {
+        return `+${this.eloDelta}`;
+      }
+      return String(this.eloDelta);
+    },
+    eloDeltaClass(): string {
+      const classes = ['player-elo-badge-delta'];
+      if (typeof this.eloDelta === 'number' && this.eloDelta > 0) {
+        classes.push('player-elo-badge-delta--up');
+      } else if (typeof this.eloDelta === 'number' && this.eloDelta < 0) {
+        classes.push('player-elo-badge-delta--down');
+      }
+      return classes.join(' ');
     },
     badgeStyle(): Record<string, string> {
       if (this.personaClass !== '') {
@@ -112,6 +141,11 @@ export default defineComponent({
   cursor: help;
 }
 
+.player-elo-badge--with-delta {
+  gap: 3px;
+  min-width: 0;
+}
+
 .player-elo-badge--compact {
   min-width: 34px;
   min-height: 16px;
@@ -119,6 +153,19 @@ export default defineComponent({
   font-size: 11px;
   line-height: 14px;
   border-radius: 3px;
+}
+
+.player-elo-badge-delta {
+  font-size: 10px;
+  line-height: 12px;
+}
+
+.player-elo-badge-delta--up {
+  color: #7dff9a;
+}
+
+.player-elo-badge-delta--down {
+  color: #ff9a9a;
 }
 
 .player-elo-badge--gold {

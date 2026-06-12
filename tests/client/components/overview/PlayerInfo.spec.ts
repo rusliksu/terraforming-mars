@@ -138,6 +138,43 @@ describe('PlayerInfo', () => {
     expect(badge.props('compact')).eq(true);
   });
 
+  it('passes end-game Elo delta to the rating badge', () => {
+    const player = fakePublicPlayerModel({
+      color: 'blue',
+      name: 'GydRo',
+      tableau: [{name: CardName.HELION} as any],
+    });
+    const playerView = {
+      id: 'player-id',
+      thisPlayer: player,
+      game: fakeGameModel(),
+      players: [player],
+      runId: 'run-id',
+    } as any as PlayerViewModel;
+
+    const playerInfo = shallowMount(PlayerInfo, {
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        mocks: {
+          getVisibilityState: () => false,
+          setVisibilityState: () => {},
+          isServerSideRequestInProgress: false,
+        },
+      },
+      props: {
+        player,
+        playerView,
+        playerIndex: 0,
+        actionLabel: 'none',
+        eloDelta: -8,
+      },
+    });
+
+    const badge = playerInfo.findComponent({name: 'PlayerEloBadge'});
+    expect(badge.props('eloDelta')).eq(-8);
+  });
+
   it('does not show spectator hand control to a player', () => {
     const player = fakePublicPlayerModel({
       color: 'blue',

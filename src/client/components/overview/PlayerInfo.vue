@@ -5,7 +5,7 @@
           <div class="player-info-details">
             <div class="player-info-name-row">
               <span class="player-info-name" @click="togglePlayerDetails">{{ playerSymbol + player.name }}</span>
-              <PlayerEloBadge :playerName="player.name" :tooltipCss="tooltipCss" :compact="true" />
+              <PlayerEloBadge :playerName="player.name" :tooltipCss="tooltipCss" :compact="true" :eloDelta="eloDelta" />
             </div>
             <span @click="togglePlayerDetails" v-for="(corporationName, index) in getCorporationName()" :key="index" v-i18n>
               <div class="player-info-corp" :title="$t(corporationName)">
@@ -93,6 +93,11 @@ export default defineComponent({
     isTopBar: {
       type: Boolean,
       default: false,
+    },
+    eloDelta: {
+      type: Number,
+      required: false,
+      default: undefined,
     },
   },
   components: {

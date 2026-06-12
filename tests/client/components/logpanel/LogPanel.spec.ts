@@ -171,4 +171,60 @@ describe('LogPanel', () => {
 
     expect(fakePanel.scrollTop).to.equal(640);
   });
+
+  it('preserves scroll position on live refresh when user scrolled away from bottom', async () => {
+    const fakeList = {} as HTMLUListElement;
+    let fakeScrollTop = 0;
+    const fakePanel = {
+      get scrollTop() {
+        return fakeScrollTop;
+      },
+      set scrollTop(value: number) {
+        fakeScrollTop = value;
+      },
+      scrollHeight: 520,
+      clientHeight: 200,
+      querySelector: () => fakeList,
+      addEventListener() {},
+      removeEventListener() {},
+    } as unknown as HTMLElement;
+    document.getElementById = ((id: string) => {
+      if (id === 'logpanel-scrollable') {
+        return fakePanel;
+      }
+      return null;
+    }) as typeof document.getElementById;
+
+    const viewModel = fakeViewModel();
+    const wrapper = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {
+        viewModel,
+        color: 'blue',
+      },
+    });
+
+    await Promise.resolve();
+    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+    fakePanel.scrollTop = 120;
+    expect((wrapper.vm as any).isNearBottom()).to.equal(false);
+
+    await wrapper.setProps({
+      viewModel: {
+        ...viewModel,
+        game: {
+          ...viewModel.game,
+          gameAge: 1,
+        },
+      },
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    expect(fakeScrollTop).to.equal(120);
+  });
 });

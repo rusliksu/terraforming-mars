@@ -175,16 +175,23 @@ export function lookupEloEntry(players: Record<string, EloEntry>, playerName: st
   return null;
 }
 
-export async function ensureEloLoaded(): Promise<void> {
-  if (sharedEloState.loaded || sharedEloState.failed) {
+export async function ensureEloLoaded(force = false): Promise<void> {
+  if (!force && (sharedEloState.loaded || sharedEloState.failed)) {
     return;
   }
   if (sharedEloFetch !== null) {
     await sharedEloFetch;
-    return;
+    if (!force) {
+      return;
+    }
   }
   if (typeof fetch !== 'function') {
     return;
+  }
+
+  if (force) {
+    sharedEloState.loaded = false;
+    sharedEloState.failed = false;
   }
 
   sharedEloFetch = (async () => {

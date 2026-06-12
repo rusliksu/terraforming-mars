@@ -114,27 +114,30 @@ export default defineComponent({
       if (gen !== this.selectedGeneration || this.selectedRecentLimit !== undefined) {
         this.selectedGeneration = gen;
         this.selectedRecentLimit = undefined;
-        this.getLogsForGeneration(gen);
+        this.getLogsForGeneration(gen, true);
       }
     },
-    getLogsForGeneration(generation: number): void {
+    getLogsForGeneration(generation: number, forceScrollToEnd = false): void {
       const url = `${paths.API_GAME_LOGS}?id=${this.id}&generation=${generation}&gameAge=${this.gameAge}`;
-      this.loadLogs(url, generation === this.generation);
+      this.loadLogs(url, generation === this.generation, forceScrollToEnd);
     },
     selectRecentLogs(): void {
       if (this.selectedRecentLimit !== 100) {
         this.selectedGeneration = -1;
         this.selectedRecentLimit = 100;
-        this.getRecentLogs();
+        this.getRecentLogs(true);
       }
     },
-    getRecentLogs(): void {
+    getRecentLogs(forceScrollToEnd = false): void {
       const url = `${paths.API_GAME_LOGS}?id=${this.id}&limit=100&gameAge=${this.gameAge}`;
-      this.loadLogs(url, true);
+      this.loadLogs(url, true, forceScrollToEnd);
     },
-    loadLogs(url: string, liveLogs: boolean): void {
+    loadLogs(url: string, liveLogs: boolean, forceScrollToEnd = false): void {
       const messages = this.messages;
-      this.stickToBottom = liveLogs && this.isNearBottom();
+      const scrollablePanel = this.getScrollablePanel();
+      const previousScrollTop = scrollablePanel?.scrollTop ?? 0;
+      const shouldStickToBottom = liveLogs && (forceScrollToEnd || this.isNearBottom());
+      this.stickToBottom = shouldStickToBottom;
       // abort any pending requests
       if (logAbortController) {
         logAbortController.abort();
@@ -153,16 +156,22 @@ export default defineComponent({
           return resp.json();
         })
         .then((data) => {
+          if (controller.signal.aborted || logAbortController !== controller) {
+            return;
+          }
           if (!data) {
             return;
           }
           messages.splice(0, messages.length);
           messages.push(...data);
           if (liveLogs) {
-            this.stickToBottom = true;
             this.$nextTick(() => {
               this.installAutoScrollObserver();
-              this.scrollToEnd();
+              if (shouldStickToBottom) {
+                this.scrollToEnd();
+              } else {
+                this.restoreScrollTop(previousScrollTop);
+              }
             });
           }
         })
@@ -214,6 +223,12 @@ export default defineComponent({
       const scrollablePanel = this.getScrollablePanel();
       if (scrollablePanel !== null) {
         scrollablePanel.scrollTop = scrollablePanel.scrollHeight;
+      }
+    },
+    restoreScrollTop(scrollTop: number) {
+      const scrollablePanel = this.getScrollablePanel();
+      if (scrollablePanel !== null) {
+        scrollablePanel.scrollTop = scrollTop;
       }
     },
     getClassesGenIndicator(gen: number): string {
@@ -279,7 +294,7 @@ export default defineComponent({
     this.selectedRecentLimit = 100;
     const scrollablePanel = this.getScrollablePanel();
     scrollablePanel?.addEventListener('scroll', this.handleScroll);
-    this.getRecentLogs();
+    this.getRecentLogs(true);
   },
   beforeUnmount() {
     const scrollablePanel = this.getScrollablePanel();

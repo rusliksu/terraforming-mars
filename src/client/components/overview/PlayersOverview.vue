@@ -13,6 +13,7 @@
               :playerView="playerView"
               :firstForGen="getIsFirstForGen(p)"
               :actionLabel="getActionLabel(p)"
+              :eloDelta="getEloDelta(p)"
               :playerIndex="index"/>
             <div v-if="playerView.players.length > 1 && thisPlayer !== undefined" class="player-divider" />
             <player-info
@@ -22,6 +23,7 @@
               :playerView="playerView"
               :firstForGen="getIsFirstForGen(thisPlayer)"
               :actionLabel="getActionLabel(thisPlayer)"
+              :eloDelta="getEloDelta(thisPlayer)"
               :playerIndex="-1"/>
         </div>
 </template>
@@ -36,6 +38,7 @@ import {ViewModel, PublicPlayerModel} from '@/common/models/PlayerModel';
 import {ActionLabel} from '@/client/components/overview/ActionLabel';
 import {Phase} from '@/common/Phase';
 import {Color} from '@/common/Color';
+import {buildEloResultsForPlayers, EloResultRow, ensureEloLoaded, findMatchingEloGame, sharedEloState} from '@/client/utils/elo';
 
 const SHOW_NEXT_LABEL_MIN = 2;
 
@@ -74,7 +77,22 @@ export default defineComponent({
     'spectator-hand': SpectatorHand,
   },
   data() {
-    return {};
+    return {
+      eloResults: [] as Array<EloResultRow>,
+    };
+  },
+  mounted() {
+    void this.fetchEloResults();
+  },
+  watch: {
+    'playerView.game.phase'() {
+      void this.fetchEloResults();
+    },
+    'playerView.game.gameAge'() {
+      if (this.playerView.game.phase === Phase.END) {
+        void this.fetchEloResults();
+      }
+    },
   },
   methods: {
     hasPlayers(): boolean {
@@ -89,6 +107,27 @@ export default defineComponent({
         return 0;
       }
       return cards.cardsInHand.length + cards.preludeCardsInHand.length + cards.ceoCardsInHand.length;
+    },
+    async fetchEloResults(): Promise<void> {
+      if (this.playerView.game.phase !== Phase.END) {
+        this.eloResults = [];
+        return;
+      }
+
+      await ensureEloLoaded(true);
+      if (!sharedEloState.loaded) {
+        return;
+      }
+
+      const matchedGame = findMatchingEloGame(sharedEloState.games, this.players);
+      if (!matchedGame) {
+        return;
+      }
+      this.eloResults = buildEloResultsForPlayers(this.players, sharedEloState.players, matchedGame);
+    },
+    getEloDelta(player: PublicPlayerModel): number | undefined {
+      const result = this.eloResults.find((entry) => entry.color === player.color || entry.name === player.name);
+      return result?.delta;
     },
     getPlayersInOrder(): Array<PublicPlayerModel> {
       const players = this.players;

@@ -63,7 +63,7 @@
           <div v-if="!isSoloGame || game.isSoloModeWin" class="game-end-winer-announcement">
               <span v-for="p in winners" :key="p.color" class="game-end-name-and-elo">
                 <span :class="'log-player ' + getEndGamePlayerRowColorClass(p.color)">{{ p.name }}</span>
-                <PlayerEloBadge :playerName="p.name" tooltipCss="tooltip tooltip-top" />
+                <PlayerEloBadge :playerName="p.name" :eloDelta="getEloDeltaForPlayer(p)" tooltipCss="tooltip tooltip-top" />
               </span> <span v-i18n>won!</span>
           </div>
           <div v-if="eloResults.length > 0" class="game_end_victory_points">
@@ -117,7 +117,7 @@
                           <td>
                             <span class="game-end-name-and-elo">
                               <a :href="'player?id='+p.id+'&noredirect'">{{ p.name }}</a>
-                              <PlayerEloBadge :playerName="p.name" tooltipCss="tooltip tooltip-top" />
+                              <PlayerEloBadge :playerName="p.name" :eloDelta="getEloDeltaForPlayer(p)" tooltipCss="tooltip tooltip-top" />
                             </span>
                             <div class="column-corporation">
                               <div v-for="(corporationName, index) in getCorporationName(p)" :key="index" v-i18n>{{ corporationName }}</div>
@@ -157,7 +157,7 @@
                           <div :class="'game-end-player ' + getEndGamePlayerRowColorClass(p.color)">
                             <span class="game-end-name-and-elo">
                               <a :href="'player?id='+p.id+'&noredirect'">{{p.name}}</a>
-                              <PlayerEloBadge :playerName="p.name" tooltipCss="tooltip tooltip-top" />
+                              <PlayerEloBadge :playerName="p.name" :eloDelta="getEloDeltaForPlayer(p)" tooltipCss="tooltip tooltip-top" />
                             </span>
                           </div>
                       </div>
@@ -462,7 +462,7 @@ export default defineComponent({
   },
   methods: {
     async fetchEloResults() {
-      await ensureEloLoaded();
+      await ensureEloLoaded(true);
       if (!sharedEloState.loaded) {
         return;
       }
@@ -490,6 +490,10 @@ export default defineComponent({
         return 'game-end-elo-delta game-end-elo-down';
       }
       return 'game-end-elo-delta';
+    },
+    getEloDeltaForPlayer(player: PublicPlayerModel): number | undefined {
+      const result = this.eloResults.find((entry) => entry.color === player.color || entry.name === player.name);
+      return result?.delta;
     },
     getEndGamePlayerRowColorClass(color: Color): string {
       return playerColorClass(color, 'bg_transparent');

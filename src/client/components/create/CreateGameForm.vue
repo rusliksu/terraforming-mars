@@ -761,6 +761,7 @@ function getCustomSelectionExclusions<T extends string>(
 
 type RememberCustomSelectionExclusionOptions = {
   preserveDefaultCorporationExclusions?: boolean;
+  preserveDefaultPreludeExclusions?: boolean;
   preserveDefaultColonyExclusions?: boolean;
 };
 
@@ -920,6 +921,12 @@ export default defineComponent({
         this.closePlayerProfilePicker();
       }
     },
+    twoCorpsVariant(value: boolean) {
+      if (value === true) {
+        this.removeActiveDefaultCustomPreludeExclusions();
+      }
+      this.syncCustomSelectionsWithExpansions();
+    },
   },
   mounted() {
     setDocumentTitle('Create New Game');
@@ -988,6 +995,7 @@ export default defineComponent({
       const refs = this.typedRefs;
       const root = vueRoot(this);
       const hasCustomCorporationExclusions = Array.isArray(json['customCorporationExclusions']);
+      const hasCustomPreludesExclusions = Array.isArray(json['customPreludesExclusions']);
       const hasCustomColonyExclusions = Array.isArray(json['customColonyExclusions']);
       try {
         this.uploading = true;
@@ -1006,6 +1014,7 @@ export default defineComponent({
             }
             this.rememberCustomSelectionExclusions({
               preserveDefaultCorporationExclusions: !hasCustomCorporationExclusions,
+              preserveDefaultPreludeExclusions: !hasCustomPreludesExclusions,
               preserveDefaultColonyExclusions: !hasCustomColonyExclusions,
             });
             this.syncSolarPhaseOptionToPlayerCount();
@@ -1166,6 +1175,7 @@ export default defineComponent({
             this.uploading = true;
             const results = JSON.parse(readerResults);
             const hasCustomCorporationExclusions = Array.isArray(results['customCorporationExclusions']);
+            const hasCustomPreludesExclusions = Array.isArray(results['customPreludesExclusions']);
             const hasCustomColonyExclusions = Array.isArray(results['customColonyExclusions']);
             processor.applyJSON(results);
 
@@ -1182,6 +1192,7 @@ export default defineComponent({
                 }
                 this.rememberCustomSelectionExclusions({
                   preserveDefaultCorporationExclusions: !hasCustomCorporationExclusions,
+                  preserveDefaultPreludeExclusions: !hasCustomPreludesExclusions,
                   preserveDefaultColonyExclusions: !hasCustomColonyExclusions,
                 });
                 this.syncSolarPhaseOptionToPlayerCount();
@@ -1290,11 +1301,27 @@ export default defineComponent({
         this.customCorporationExclusions,
       );
     },
+    getActiveDefaultCustomPreludeExclusions(): Array<CardName> {
+      return this.twoCorpsVariant ? [CardName.DOUBLE_DOWN] : [];
+    },
+    getActiveCustomPreludeExclusions(): Array<CardName> {
+      return unique([
+        ...this.customPreludesExclusions,
+        ...this.getActiveDefaultCustomPreludeExclusions(),
+      ]);
+    },
+    removeActiveDefaultCustomPreludeExclusions() {
+      const exclusions = new Set(this.getActiveDefaultCustomPreludeExclusions());
+      if (exclusions.size === 0) {
+        return;
+      }
+      this.customPreludes = this.customPreludes.filter((cardName) => !exclusions.has(cardName));
+    },
     getDefaultCustomPreludes(): Array<CardName> {
       return mergeCustomSelectionWithExclusions(
         this.customPreludes,
         this.getSelectableCustomPreludes(),
-        this.customPreludesExclusions,
+        this.getActiveCustomPreludeExclusions(),
       );
     },
     getDefaultCustomColonies(): Array<ColonyName> {
@@ -1320,11 +1347,20 @@ export default defineComponent({
         }
       }
       if (this.showPreludesList || this.customPreludes.length > 0) {
-        this.customPreludesExclusions = getCustomSelectionExclusions(
+        const exclusions = getCustomSelectionExclusions(
           this.getSelectableCustomPreludes(),
           this.customPreludes,
           this.customPreludesExclusions,
         );
+        const defaultPreludeExclusions = this.getActiveDefaultCustomPreludeExclusions();
+        this.customPreludesExclusions = options.preserveDefaultPreludeExclusions === true ?
+          unique([...defaultPreludeExclusions, ...exclusions]) :
+          exclusions;
+        if (options.preserveDefaultPreludeExclusions === true) {
+          const defaultPreludeExclusionsSet = new Set(defaultPreludeExclusions);
+          this.customPreludes = this.customPreludes
+            .filter((cardName) => !defaultPreludeExclusionsSet.has(cardName));
+        }
       }
       if (this.showColoniesList || this.customColonies.length > 0) {
         const exclusions = getCustomSelectionExclusions(

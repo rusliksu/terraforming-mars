@@ -402,6 +402,33 @@ describe('CreateGameForm', () => {
     expect(vm.customColonies).to.include(ColonyName.IAPETUS_II);
   });
 
+  it('excludes Double Down by default when the Merger variant is enabled', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    await wrapper.setData({
+      showPreludesList: true,
+      expansions: {
+        ...vm.expansions,
+        prelude: true,
+        promo: true,
+      },
+    });
+
+    expect(vm.customPreludes).to.include(CardName.DOUBLE_DOWN);
+
+    await wrapper.setData({twoCorpsVariant: true});
+
+    expect(vm.customPreludes).not.to.include(CardName.DOUBLE_DOWN);
+
+    vm.updateCustomPreludes([...vm.customPreludes, CardName.DOUBLE_DOWN]);
+    vm.syncCustomSelectionsWithExpansions();
+
+    expect(vm.customPreludes).to.include(CardName.DOUBLE_DOWN);
+  });
+
   it('applies default custom bans when loading legacy selections without exclusion metadata', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
@@ -411,9 +438,13 @@ describe('CreateGameForm', () => {
     await wrapper.setData({
       showCorporationList: true,
       showColoniesList: true,
+      showPreludesList: true,
+      twoCorpsVariant: true,
       expansions: {
         ...vm.expansions,
         colonies: true,
+        prelude: true,
+        promo: true,
         venus: true,
       },
     });
@@ -421,10 +452,12 @@ describe('CreateGameForm', () => {
     await wrapper.setData({
       customCorporations: vm.getSelectableCustomCorporations(),
       customColonies: vm.getSelectableCustomColonies(),
+      customPreludes: vm.getSelectableCustomPreludes(),
     });
 
     vm.rememberCustomSelectionExclusions({
       preserveDefaultCorporationExclusions: true,
+      preserveDefaultPreludeExclusions: true,
       preserveDefaultColonyExclusions: true,
     });
     vm.syncCustomSelectionsWithExpansions();
@@ -432,6 +465,7 @@ describe('CreateGameForm', () => {
     expect(vm.customCorporations).not.to.include(CardName.MANUTECH);
     expect(vm.customCorporations).not.to.include(CardName.POINT_LUNA);
     expect(vm.customCorporations).not.to.include(CardName.VITOR);
+    expect(vm.customPreludes).not.to.include(CardName.DOUBLE_DOWN);
     expect(vm.customColonies).not.to.include(ColonyName.PLUTO);
   });
 

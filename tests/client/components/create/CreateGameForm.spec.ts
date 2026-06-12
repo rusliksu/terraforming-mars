@@ -402,6 +402,39 @@ describe('CreateGameForm', () => {
     expect(vm.customColonies).to.include(ColonyName.IAPETUS_II);
   });
 
+  it('applies default custom bans when loading legacy selections without exclusion metadata', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    await wrapper.setData({
+      showCorporationList: true,
+      showColoniesList: true,
+      expansions: {
+        ...vm.expansions,
+        colonies: true,
+        venus: true,
+      },
+    });
+
+    await wrapper.setData({
+      customCorporations: vm.getSelectableCustomCorporations(),
+      customColonies: vm.getSelectableCustomColonies(),
+    });
+
+    vm.rememberCustomSelectionExclusions({
+      preserveDefaultCorporationExclusions: true,
+      preserveDefaultColonyExclusions: true,
+    });
+    vm.syncCustomSelectionsWithExpansions();
+
+    expect(vm.customCorporations).not.to.include(CardName.MANUTECH);
+    expect(vm.customCorporations).not.to.include(CardName.POINT_LUNA);
+    expect(vm.customCorporations).not.to.include(CardName.VITOR);
+    expect(vm.customColonies).not.to.include(ColonyName.PLUTO);
+  });
+
   it('keeps typed player names from changing the selected colors', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,

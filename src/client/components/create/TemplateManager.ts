@@ -142,6 +142,11 @@ export class TemplateManager {
   /** Serialize current form state for storage (compatible with JSONProcessor.applyJSON) */
   static serializeFormState(model: CreateGameModel): JSONObject {
     const state: JSONObject = {};
+    const customSelectionModel = model as CreateGameModel & {
+      customCorporationExclusions?: Array<string>;
+      customPreludesExclusions?: Array<string>;
+      customColonyExclusions?: Array<string>;
+    };
 
     state.players = model.players.slice(0, model.playersCount).map((p) => {
       const player = {...p};
@@ -174,6 +179,9 @@ export class TemplateManager {
     state.customCorporations = [...model.customCorporations];
     state.customColonies = [...model.customColonies];
     state.customPreludes = [...model.customPreludes];
+    state.customCorporationExclusions = [...(customSelectionModel.customCorporationExclusions ?? [])];
+    state.customPreludesExclusions = [...(customSelectionModel.customPreludesExclusions ?? [])];
+    state.customColonyExclusions = [...(customSelectionModel.customColonyExclusions ?? [])];
     state.bannedCards = [...model.bannedCards];
     state.includedCards = [...model.includedCards];
     state.customCeos = [...model.customCeos];

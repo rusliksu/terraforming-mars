@@ -759,6 +759,11 @@ function getCustomSelectionExclusions<T extends string>(
   ]);
 }
 
+type RememberCustomSelectionExclusionOptions = {
+  preserveDefaultCorporationExclusions?: boolean;
+  preserveDefaultColonyExclusions?: boolean;
+};
+
 type Refs = {
   file: HTMLInputElement;
   templateFile: HTMLInputElement;
@@ -982,6 +987,8 @@ export default defineComponent({
       const component: CreateGameModel = this;
       const refs = this.typedRefs;
       const root = vueRoot(this);
+      const hasCustomCorporationExclusions = Array.isArray(json['customCorporationExclusions']);
+      const hasCustomColonyExclusions = Array.isArray(json['customColonyExclusions']);
       try {
         this.uploading = true;
         const processor = new JSONProcessor(component);
@@ -997,7 +1004,10 @@ export default defineComponent({
             if (!component.seededGame) {
               component.seed = Math.random();
             }
-            this.rememberCustomSelectionExclusions();
+            this.rememberCustomSelectionExclusions({
+              preserveDefaultCorporationExclusions: !hasCustomCorporationExclusions,
+              preserveDefaultColonyExclusions: !hasCustomColonyExclusions,
+            });
             this.syncSolarPhaseOptionToPlayerCount();
             this.syncCustomSelectionsWithExpansions();
             this.uploading = false;
@@ -1155,6 +1165,8 @@ export default defineComponent({
           if (typeof(readerResults) === 'string') {
             this.uploading = true;
             const results = JSON.parse(readerResults);
+            const hasCustomCorporationExclusions = Array.isArray(results['customCorporationExclusions']);
+            const hasCustomColonyExclusions = Array.isArray(results['customColonyExclusions']);
             processor.applyJSON(results);
 
             nextTick(() => {
@@ -1168,7 +1180,10 @@ export default defineComponent({
                 if (!component.seededGame) {
                   component.seed = Math.random();
                 }
-                this.rememberCustomSelectionExclusions();
+                this.rememberCustomSelectionExclusions({
+                  preserveDefaultCorporationExclusions: !hasCustomCorporationExclusions,
+                  preserveDefaultColonyExclusions: !hasCustomColonyExclusions,
+                });
                 this.syncSolarPhaseOptionToPlayerCount();
                 this.syncCustomSelectionsWithExpansions();
                 this.uploading = false;
@@ -1289,13 +1304,20 @@ export default defineComponent({
         this.customColonyExclusions,
       );
     },
-    rememberCustomSelectionExclusions() {
+    rememberCustomSelectionExclusions(options: RememberCustomSelectionExclusionOptions = {}) {
       if (this.showCorporationList || this.customCorporations.length > 0) {
-        this.customCorporationExclusions = getCustomSelectionExclusions(
+        const exclusions = getCustomSelectionExclusions(
           this.getSelectableCustomCorporations(),
           this.customCorporations,
           this.customCorporationExclusions,
         );
+        this.customCorporationExclusions = options.preserveDefaultCorporationExclusions === true ?
+          unique([...DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS, ...exclusions]) :
+          exclusions;
+        if (options.preserveDefaultCorporationExclusions === true) {
+          this.customCorporations = this.customCorporations
+            .filter((cardName) => !DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS.has(cardName));
+        }
       }
       if (this.showPreludesList || this.customPreludes.length > 0) {
         this.customPreludesExclusions = getCustomSelectionExclusions(
@@ -1305,11 +1327,18 @@ export default defineComponent({
         );
       }
       if (this.showColoniesList || this.customColonies.length > 0) {
-        this.customColonyExclusions = getCustomSelectionExclusions(
+        const exclusions = getCustomSelectionExclusions(
           this.getSelectableCustomColonies(),
           this.customColonies,
           this.customColonyExclusions,
         );
+        this.customColonyExclusions = options.preserveDefaultColonyExclusions === true ?
+          unique([...DEFAULT_CUSTOM_COLONY_EXCLUSIONS, ...exclusions]) :
+          exclusions;
+        if (options.preserveDefaultColonyExclusions === true) {
+          this.customColonies = this.customColonies
+            .filter((colonyName) => !DEFAULT_CUSTOM_COLONY_EXCLUSIONS.has(colonyName));
+        }
       }
     },
     syncCustomSelectionsWithExpansions() {

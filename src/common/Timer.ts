@@ -132,6 +132,9 @@ export class Timer {
    * Used to display the timer.
    */
   public static toString(d: SerializedTimer, clock: Clock = REAL_CLOCK) : string {
+    if (!d.afterFirstAction) {
+      return '00:00';
+    }
     const elapsed = d.sumElapsed + (d.running ? clock.now() - d.startedAt : 0);
     const elapsedDate = new Date(elapsed);
     const hours = elapsedDate.getUTCHours() + (elapsedDate.getUTCDate() - 1) * 24;
@@ -141,4 +144,3 @@ export class Timer {
     return elapsedDate.toISOString().substr(14, 5);
   }
 }
-

@@ -15,7 +15,7 @@
             <i
               :class="playerCubeCss(award.color)"
               :data-test-player-cube="award.color"
-            />
+            ></i>
           </span>
         </span>
 
@@ -25,7 +25,7 @@
             :key="spotPrice"
             class="milestone-award-inline unpaid"
           >
-            <div class="milestone-award-price" data-test="spot-price" v-text="spotPrice" />
+            <div class="milestone-award-price" data-test="spot-price" v-text="spotPrice" ></div>
           </span>
         </span>
       </div>

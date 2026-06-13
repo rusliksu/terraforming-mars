@@ -11,7 +11,7 @@
                     <div class="create-game-page-container">
                         <div class="create-game-page-column">
                             <h4 v-i18n>№ of Players</h4>
-                            <div v-for="pCount in [1,2,3,4,5,6]" v-bind:key="pCount">
+                            <div v-for="pCount in [1,2,3,4,5,6]" :key="pCount">
                               <input type="radio" :value="pCount" name="playersCount" v-model="playersCount" :id="pCount+'-radio'">
                               <label :for="pCount+'-radio'">
                                   {{ getPlayersCountText(pCount) }}
@@ -115,7 +115,7 @@
                             </template>
 
                             <template v-if="expansions.turmoil">
-                                <input type="checkbox" name="politicalAgendas" id="politicalAgendas-checkbox" v-on:change="politicalAgendasExtensionToggle()">
+                                <input type="checkbox" name="politicalAgendas" id="politicalAgendas-checkbox" @change="politicalAgendasExtensionToggle()">
                                 <label for="politicalAgendas-checkbox" class="expansion-button">
                                     <div class="create-game-expansion-icon expansion-icon-agendas"></div>
                                     <span v-i18n>Agendas</span>&nbsp;<a href="https://www.notion.so/Political-Agendas-8c6b0b018a884692be29b3ef44b340a9" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
@@ -179,7 +179,7 @@
                         <div class="create-game-page-column">
                             <h4 v-i18n>Board</h4>
 
-                            <div v-for="boardName in boards" v-bind:key="boardName">
+                            <div v-for="boardName in boards" :key="boardName">
                               <div v-if="boardName==='utopia planitia'" class="create-game-subsection-label" v-i18n>Fan-made</div>
                               <input type="radio" :value="boardName" name="board" v-model="board" :id="boardName+'-checkbox'">
                               <label :for="boardName+'-checkbox'" class="expansion-button">
@@ -240,7 +240,7 @@
                             <div v-if="undoOption">
                               <span v-i18n>Undo is now in best effort support.</span>
                               <a href="https://github.com/terraforming-mars/terraforming-mars/discussions/7647" target="_blank">&#9432;</a>
-                              <br/>
+                              <br>
                               <span v-i18n>No effort will be spent to fix it.</span>
                             </div>
                             <input type="checkbox" v-model="showTimers" id="timer-checkbox">
@@ -293,7 +293,7 @@
                             </label>
 
                             <div v-if="seededGame">
-                                <input type="text" name="clonedGamedId" v-model="clonedGameId" />
+                                <input type="text" name="clonedGamedId" v-model="clonedGameId" >
                             </div>
 
                             <div class="create-game-subsection-label" v-i18n>Knightbyte server settings</div>
@@ -420,7 +420,7 @@
                                 <span v-i18n>Random first player</span>
                             </label>
 
-                            <input type="checkbox" name="randomMAToggle" id="randomMA-checkbox" v-on:change="randomMAToggle()">
+                            <input type="checkbox" name="randomMAToggle" id="randomMA-checkbox" @change="randomMAToggle()">
                             <label for="randomMA-checkbox">
                                 <span v-i18n>Random Milestones/Awards</span>&nbsp;<a :href="wikiUrls.randomMilestonesAndAwards" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                             </label>
@@ -448,8 +448,8 @@
                             </div>
 
                             <div v-if="modularMA">
-                              The new Milestones and Awards are still in active development.<br/>
-                              Please don't report anything unless it breaks the game.<br/>
+                              The new Milestones and Awards are still in active development.<br>
+                              Please don't report anything unless it breaks the game.<br>
                               These are <b>always fully random</b>.
                             </div>
                             <template v-if="expansions.venus">
@@ -480,7 +480,7 @@
                         <div class="create-game-players-cont">
                             <div class="container">
                                 <div class="columns">
-                                  <template v-for="(newPlayer, index) in getPlayers()" v-bind:key="index">
+                                  <template v-for="(newPlayer, index) in getPlayers()" :key="index">
                                     <div>
                                       <div :class="'form-group col6 create-game-player '+getPlayerContainerColorClass(newPlayer.color)">
                                           <div class="create-game-profile-picker" @click.stop>
@@ -496,7 +496,7 @@
                                                 @input="updatePlayerProfileAutocomplete(newPlayer, $event)"
                                                 @keydown.enter.stop.prevent="applyFirstFilteredPlayerProfile(newPlayer)"
                                                 @keydown.esc.stop.prevent="closePlayerProfilePicker"
-                                                @keydown.stop />
+                                                @keydown.stop >
                                               <div
                                                 v-if="isPlayerProfilePickerOpen(index)"
                                                 class="create-game-profile-menu"
@@ -532,7 +532,7 @@
                                               </div>
                                           </div>
                                           <div class="create-game-page-color-row">
-                                              <template v-for="color in DEFAULT_PLAYER_COLORS" v-bind:key="color">
+                                              <template v-for="color in DEFAULT_PLAYER_COLORS" :key="color">
                                                 <div>
                                                   <input type="radio" :value="color" :name="'playerColor' + (index + 1)" :checked="newPlayer.color === color" :id="'radioBox' + color + (index + 1)" @change="applyDefaultPlayerColor(newPlayer, color)">
                                                   <label :for="'radioBox' + color + (index + 1)" :title="getColorTitle(color)">
@@ -553,7 +553,7 @@
                                                   </label>
 
                                                   <label class="form-label">
-                                                      <input type="number" class="form-input form-inline player-handicap" value="0" min="0" :max="10" v-model.number="newPlayer.handicap" />
+                                                      <input type="number" class="form-input form-inline player-handicap" value="0" min="0" :max="10" v-model.number="newPlayer.handicap" >
                                                       <i class="form-icon"></i><span v-i18n>TR Boost</span>&nbsp;<a :href="wikiUrls.trBoost" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                                                   </label>
                                               <!-- </template> -->
@@ -568,7 +568,7 @@
                                                     placeholder="Telegram ID"
                                                     v-model="newPlayer.telegramID"
                                                     @blur="newPlayer.telegramID = normalizeTelegramId(newPlayer.telegramID)"
-                                                  />
+                                                  >
                                                   <div v-if="getTelegramIdError(newPlayer.telegramID) !== ''" class="form-input-hint create-game-telegram-error">
                                                     {{ getTelegramIdError(newPlayer.telegramID) }}
                                                   </div>
@@ -591,11 +591,11 @@
 
                             <label>
                                 <div class="btn btn-primary btn-action btn-lg"><i class="icon icon-upload"></i></div>
-                                <input style="display: none" type="file" accept=".json" id="settings-file" ref="file" v-on:change="uploadSettings()"/>
+                                <input style="display: none" type="file" accept=".json" id="settings-file" ref="file" @change="uploadSettings()">
                             </label>
 
                             <label>
-                                <div v-on:click="downloadSettings()" class="btn btn-primary btn-action btn-lg"><i class="icon icon-download"></i></div>
+                                <div @click="downloadSettings()" class="btn btn-primary btn-action btn-lg"><i class="icon icon-download"></i></div>
                             </label>
                         </div>
                     </div>
@@ -607,60 +607,60 @@
                 ref="corporationsFilter"
                 v-show="showCorporationList"
                 v-if="showCorporationList"
-                v-on:corporation-list-changed="updateCustomCorporations"
-                v-bind:expansions="expansions"
-                v-bind:selected="customCorporations"
+                @corporation-list-changed="updateCustomCorporations"
+                :expansions="expansions"
+                :selected="customCorporations"
                 @close="showCorporationList = false"
-            ></CorporationsFilter>
+            />
 
             <PreludesFilter
                 ref="preludesFilter"
                 v-show="showPreludesList"
                 v-if="showPreludesList"
-                v-on:prelude-list-changed="updateCustomPreludes"
-                v-bind:expansions="expansions"
-                v-bind:selected="customPreludes"
+                @prelude-list-changed="updateCustomPreludes"
+                :expansions="expansions"
+                :selected="customPreludes"
                 @close="showPreludesList = false"
-            ></PreludesFilter>
+            />
 
             <ColoniesFilter
                 ref="coloniesFilter"
                 v-show="showColoniesList"
                 v-if="showColoniesList"
-                v-on:colonies-list-changed="updateCustomColonies"
-                v-bind:expansions="expansions"
-                v-bind:selected="customColonies"
+                @colonies-list-changed="updateCustomColonies"
+                :expansions="expansions"
+                :selected="customColonies"
                 @close="showColoniesList = false"
-            ></ColoniesFilter>
+            />
 
             <CeosFilter
                 ref="ceosFilter"
                 v-show="showCeosList"
                 v-if="showCeosList"
-                v-on:ceo-list-changed="updateCustomCeos"
-                v-bind:expansions="expansions"
-                v-bind:selected="customCeos"
+                @ceo-list-changed="updateCustomCeos"
+                :expansions="expansions"
+                :selected="customCeos"
                 @close="showCeosList = false"
-            ></CeosFilter>
+            />
 
             <div class="create-game--block" v-if="showBannedCards">
               <CardsFilter
                   ref="cardsFilter"
-                  v-on:cards-list-changed="updateBannedCards"
+                  @cards-list-changed="updateBannedCards"
                   :title="'Cards to exclude from the game'"
                   :hint="'Start typing the card name to exclude'"
-              ></CardsFilter>
+              />
             </div>
 
             <div class="create-game--block" v-if="showIncludedCards">
               <CardsFilter
                   ref="cardsFilter2"
-                  v-on:cards-list-changed="updateIncludedCards"
+                  @cards-list-changed="updateIncludedCards"
                   :title="'Cards to include in the game'"
                   :hint="'Start typing the card name to include'"
-              ></CardsFilter>
+              />
             </div>
-          <preferences-icon></preferences-icon>
+          <PreferencesIcon/>
         </div>
 </template>
 
@@ -1228,10 +1228,10 @@ export default defineComponent({
       }
       player.color = color;
     },
-    getDefaultSolarPhaseOption(playersCount = this.playersCount): boolean {
-      return playersCount <= 3;
+    getDefaultSolarPhaseOption(playersCount?: number): boolean {
+      return (playersCount ?? this.playersCount) <= 3;
     },
-    syncSolarPhaseOptionToPlayerCount(playersCount = this.playersCount) {
+    syncSolarPhaseOptionToPlayerCount(playersCount?: number) {
       this.solarPhaseOption = this.getDefaultSolarPhaseOption(playersCount);
     },
     handleExpansionChanged(_expansion: Expansion, _enabled: boolean) {
@@ -1249,7 +1249,7 @@ export default defineComponent({
     isCardCompatibilityAllowedForCustomSelection(card: ClientCard): boolean {
       const ignored = new Set(CUSTOM_CARD_COMPATIBILITY_EXCEPTIONS[card.name] ?? []);
       return (card.compatibility ?? []).every((module) => {
-        if (module === 'base' || ignored.has(module as Expansion)) {
+        if (ignored.has(module)) {
           return true;
         }
         return this.isModuleEnabled(module);
@@ -1497,7 +1497,8 @@ export default defineComponent({
       if (this.playerProfilePickerIndex === null) {
         return null;
       }
-      const triggers = this.$el.querySelectorAll<HTMLElement>('.create-game-player-name');
+      const root = this.$el as HTMLElement;
+      const triggers = root.querySelectorAll<HTMLElement>('.create-game-player-name');
       return triggers[this.playerProfilePickerIndex] ?? null;
     },
     getPlayerProfileMenuPosition(target: EventTarget | null): PlayerProfileMenuPosition | null {

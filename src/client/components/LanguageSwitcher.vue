@@ -5,7 +5,7 @@
       :class="`language-icon language-icon--${lang} language-icon-for-switcher`"
       :title="title(lang)"
       @click="switchLanguageTo(lang)"
-    />
+    ></div>
     &nbsp;
     </template>
   </div>
@@ -17,7 +17,7 @@ import {ALL_LANGUAGES, LANGUAGES} from '@/common/constants';
 import {PreferencesManager} from '@/client/utils/PreferencesManager';
 
 export default defineComponent({
-  name: 'language-switcher',
+  name: 'LanguageSwitcher',
   methods: {
     reloadWindow() {
       window.location.reload();

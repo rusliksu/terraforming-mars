@@ -1,14 +1,19 @@
 <template>
   <div>
-  <template v-if="waitingfor === undefined">
-    {{ $t('Not your turn to take any actions') }}
+  <template v-if="waitingfor === undefined || waitingfor.optional">
+    <template v-if="waitingfor === undefined">
+      {{ $t('Not your turn to take any actions') }}
+    </template>
+    <template v-else>
+      {{ $t('Waiting for other players') }}
+    </template>
     <template v-if="playersWaitingFor.length > 0">
       (⌛ <span v-for="color in playersWaitingFor" class="log-player" :class="playerColorClass(color, 'bg')" :key="color">{{ getPlayerName(color) }}</span>)
     </template>
   </template>
-  <div v-else class="wf-root">
+  <div v-if="waitingfor !== undefined" class="wf-root">
     <template v-if="preferences().experimental_ui && playerView.game.phase === Phase.ACTION">
-      <input type="checkbox" name="suspend" id="suspend-checkbox" v-model="suspend" v-on:change="updateSuspend">
+      <input type="checkbox" name="suspend" id="suspend-checkbox" v-model="suspend" @change="updateSuspend">
       <label for="suspend-checkbox">
         <span v-i18n>Pause updates</span>
       </label>
@@ -18,7 +23,7 @@
       <AppButton v-if="showCancelAction()" @click="reset" size="small" title="Cancel action" />
       <AppButton v-if="showUndoLastAction()" @click="undoLastAction" size="small" title="Undo last action" />
     </div>
-    <player-input-factory :players="playerView.players"
+    <PlayerInputFactory :players="playerView.players"
                           :playerView="playerView"
                           :playerinput="waitingfor"
                           :onsave="onsave"
@@ -75,7 +80,7 @@ type DataModel = {
 const CANNOT_CONTACT_SERVER = 'Unable to reach the server. It may be restarting or down for maintenance.';
 
 export default defineComponent({
-  name: 'waiting-for',
+  name: 'WaitingFor',
   props: {
     playerView: {
       type: Object as () => ViewModel,
@@ -328,10 +333,10 @@ export default defineComponent({
       setFaviconStatus(this.waitingfor !== undefined ? 'turn' : 'idle');
     }
     window.clearInterval(documentTitleTimer);
-    if (this.waitingfor === undefined) {
+    if (this.waitingfor === undefined || this.waitingfor.optional) {
       this.waitForUpdate();
     }
-    if (this.playerView.players.length > 1 && this.waitingfor !== undefined) {
+    if (this.playerView.players.length > 1 && this.waitingfor !== undefined && !this.waitingfor.optional) {
       documentTitleTimer = window.setInterval(() => this.animateTitle(), 1000);
     }
   },

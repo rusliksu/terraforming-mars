@@ -1839,7 +1839,9 @@ export class Player implements IPlayer {
         console.warn(message);
       }
     }
-    this.timer.start();
+    if (!input.optional) {
+      this.timer.start();
+    }
     this.waitingFor = input;
     this.waitingForCb = cb;
     this.game.inputsThisRound++;
@@ -1884,6 +1886,12 @@ export class Player implements IPlayer {
         };
       }
     }
+  }
+
+  public clearWaitingFor(): void {
+    this.waitingFor = undefined;
+    this.waitingForCb = undefined;
+    this.timer.stop();
   }
 
   public serialize(): SerializedPlayer {

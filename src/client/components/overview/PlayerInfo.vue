@@ -15,7 +15,7 @@
           </div>
           <div>
             <div class="icon-first-player" v-if="firstForGen && playerView.players.length > 1" v-i18n>1st</div>
-            <player-status :timer="player.timer" :showTimer="playerView.game.gameOptions.showTimers" :liveTimer="playerView.game.phase !== Phase.END" :firstForGen="firstForGen" v-trim-whitespace :actionLabel="actionLabel"/>
+            <PlayerStatus :timer="player.timer" :showTimer="playerView.game.gameOptions.showTimers" :liveTimer="playerView.game.phase !== Phase.END" :firstForGen="firstForGen" v-trim-whitespace :actionLabel="actionLabel"/>
           </div>
         </div>
           <PlayerResources :player="player" v-trim-whitespace />
@@ -106,7 +106,7 @@ export default defineComponent({
     PlayerTags,
     PlayerAlliedParty,
     PlayerEloBadge,
-    'player-status': PlayerStatus,
+    PlayerStatus,
   },
   computed: {
     tooltipCss(): string {

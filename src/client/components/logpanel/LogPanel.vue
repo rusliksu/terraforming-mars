@@ -6,11 +6,11 @@
       </h2>
       <div class="log-gen-title"  v-i18n>Gen: </div>
       <div class="log-gen-numbers">
-        <div v-for="n in getGenerationsRange()" :key="n" :class="getClassesGenIndicator(n)" v-on:click.prevent="selectGeneration(n)">
+        <div v-for="n in getGenerationsRange()" :key="n" :class="getClassesGenIndicator(n)" @click.prevent="selectGeneration(n)">
           {{ n }}
         </div>
       </div>
-      <div :class="getClassesRecentLogs()" v-on:click.prevent="selectRecentLogs()" v-i18n>
+      <div :class="getClassesRecentLogs()" @click.prevent="selectRecentLogs()" v-i18n>
         Last 100
       </div>
       <span class="label-additional" v-if="players.length === 1"><span :class="lastGenerationClass" v-i18n>of {{lastSoloGeneration}}</span></span>
@@ -18,12 +18,12 @@
     <div class="panel log-panel">
       <div id="logpanel-scrollable" class="panel-body">
         <ul v-if="messages">
-          <log-message-component v-for="(message, index) in messages" :key="index" :message="message" :viewModel="viewModel" v-on:click="messageClicked(message)" @spaceClicked="spaceClicked"></log-message-component>
+          <LogMessageComponent v-for="(message, index) in messages" :key="index" :message="message" :viewModel="viewModel" @click="messageClicked(message)" @spaceClicked="spaceClicked"/>
         </ul>
       </div>
       <div class='debugid'>(debugid {{step}})</div>
     </div>
-    <card-panel v-if="selectedMessage !== undefined" :message="selectedMessage" :players="players" v-on:hide="selectedMessage = undefined"></card-panel>
+    <CardPanel v-if="selectedMessage !== undefined" :message="selectedMessage" :players="players" @hide="selectedMessage = undefined"/>
   </div>
 </template>
 
@@ -53,7 +53,7 @@ type LogPanelModel = {
 };
 
 export default defineComponent({
-  name: 'log-panel',
+  name: 'LogPanel',
   props: {
     viewModel: {
       type: Object as () => ViewModel,

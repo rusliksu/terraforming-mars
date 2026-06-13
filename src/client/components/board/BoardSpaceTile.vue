@@ -1,5 +1,5 @@
 <template>
-  <div :class="klass" :title="$t(description)" data-test="tile"/>
+  <div :class="klass" :title="$t(description)" data-test="tile"></div>
 </template>
 
 <script lang="ts">
@@ -102,7 +102,7 @@ const descriptions: Record<TileType, string> = {
 };
 
 export default defineComponent({
-  name: 'board-space-tile',
+  name: 'BoardSpaceTile',
   props: {
     space: {
       type: Object as () => SpaceModel,

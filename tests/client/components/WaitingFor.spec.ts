@@ -14,6 +14,9 @@ describe('WaitingFor', () => {
     icon?: string;
   };
   type TestNotificationPermission = 'default' | 'denied' | 'granted';
+  type TestRequestOptions = {
+    body?: string;
+  };
 
   const thisPlayer: Partial<PublicPlayerModel> = {
     color: 'red',
@@ -42,7 +45,7 @@ describe('WaitingFor', () => {
       global: {
         ...globalConfig.global,
         stubs: {
-          'player-input-factory': {template: '<div class="stub-pif"></div>'},
+          'PlayerInputFactory': {template: '<div class="stub-pif"></div>'},
         },
       },
       props: {
@@ -65,7 +68,7 @@ describe('WaitingFor', () => {
       global: {
         ...globalConfig.global,
         stubs: {
-          'player-input-factory': true,
+          'PlayerInputFactory': true,
         },
       },
       props: {
@@ -85,7 +88,7 @@ describe('WaitingFor', () => {
       global: {
         ...globalConfig.global,
         stubs: {
-          'player-input-factory': {template: '<div class="stub-pif"></div>'},
+          'PlayerInputFactory': {template: '<div class="stub-pif"></div>'},
         },
       },
       props: {
@@ -110,7 +113,7 @@ describe('WaitingFor', () => {
       global: {
         ...globalConfig.global,
         stubs: {
-          'player-input-factory': {template: '<div class="stub-pif"></div>'},
+          'PlayerInputFactory': {template: '<div class="stub-pif"></div>'},
           'AppButton': {props: ['title'], template: '<button>{{ title }}</button>'},
         },
       },
@@ -143,7 +146,7 @@ describe('WaitingFor', () => {
       global: {
         ...globalConfig.global,
         stubs: {
-          'player-input-factory': {template: '<div class="stub-pif"></div>'},
+          'PlayerInputFactory': {template: '<div class="stub-pif"></div>'},
           'AppButton': {props: ['title'], template: '<button>{{ title }}</button>'},
         },
       },
@@ -174,7 +177,7 @@ describe('WaitingFor', () => {
       global: {
         ...globalConfig.global,
         stubs: {
-          'player-input-factory': {template: '<div class="stub-pif"></div>'},
+          'PlayerInputFactory': {template: '<div class="stub-pif"></div>'},
           'AppButton': {props: ['title'], emits: ['click'], template: '<button @click="$emit(\'click\')">{{ title }}</button>'},
         },
       },
@@ -200,8 +203,8 @@ describe('WaitingFor', () => {
       },
     });
 
-    const requests: Array<{url: string, options: RequestInit}> = [];
-    wrapper.vm.fetchPlayerInput = (url: string, options: RequestInit) => {
+    const requests: Array<{url: string, options: TestRequestOptions}> = [];
+    wrapper.vm.fetchPlayerInput = (url: string, options: TestRequestOptions) => {
       requests.push({url, options});
     };
 
@@ -226,7 +229,7 @@ describe('WaitingFor', () => {
       global: {
         ...globalConfig.global,
         stubs: {
-          'player-input-factory': {template: '<div class="stub-pif"></div>'},
+          'PlayerInputFactory': {template: '<div class="stub-pif"></div>'},
           'AppButton': {props: ['title'], template: '<button>{{ title }}</button>'},
         },
       },
@@ -279,7 +282,7 @@ describe('WaitingFor', () => {
       global: {
         ...globalConfig.global,
         stubs: {
-          'player-input-factory': true,
+          'PlayerInputFactory': true,
         },
       },
       props: {

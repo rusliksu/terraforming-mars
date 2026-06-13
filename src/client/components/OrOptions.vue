@@ -4,12 +4,12 @@
     <label v-if="playerinput.warning !== undefined" class="card-warning"><div>({{ $t(playerinput.warning) }})</div></label>
     <div v-for="(option, idx) in displayedOptions" :key="idx">
       <label class="form-radio" ref="optionLabels">
-        <input v-model="selectedOption" type="radio" :name="radioElementName" :value="option" />
-        <i class="form-icon" />
+        <input v-model="selectedOption" type="radio" :name="radioElementName" :value="option" >
+        <i class="form-icon" ></i>
         <span>{{ $t(option.title) }}</span>
       </label>
       <div v-if="selectedIdx === idx" style="margin-left: 30px">
-        <player-input-factory ref="inputfactory"
+        <PlayerInputFactory ref="inputfactory"
                               :playerView="playerView"
                               :playerinput="option"
                               :onsave="playerFactorySaved(idx)"
@@ -38,10 +38,10 @@ import {Message} from '@/common/logs/Message';
 import {SpaceId} from '@/common/Types';
 
 let unique = 0;
-type QuickGreeneryHandler = {tile: HTMLElement, handler: EventListener};
+type QuickGreeneryHandler = {tile: HTMLElement, handler: (event: Event) => void};
 
 export default defineComponent({
-  name: 'or-options',
+  name: 'OrOptions',
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
@@ -132,9 +132,8 @@ export default defineComponent({
         if (board === null) {
           continue;
         }
-        const elements = board.getElementsByClassName('board-space-selectable');
-        for (let idx = 0; idx < elements.length; idx++) {
-          spaces.push(elements[idx] as HTMLElement);
+        for (const element of Array.from(board.getElementsByClassName('board-space-selectable'))) {
+          spaces.push(element as HTMLElement);
         }
       }
       return spaces;

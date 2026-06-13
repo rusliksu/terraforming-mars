@@ -27,6 +27,12 @@ describe('Timer', () => {
     expect(timer.serialize().running).eq(true);
   });
 
+  it('shows 00:00 while waiting for the first action', () => {
+    timer.start();
+    clock.millis += 5000;
+    expect(Timer.toString(timer.serialize(), clock)).eq('00:00');
+  });
+
   it('shows 00:01 after 1 sec', () => {
     timer.start(); // Skipping first action.
     timer.stop();

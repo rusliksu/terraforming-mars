@@ -1,7 +1,7 @@
 <template>
   <div class="ma-block">
     <div class="ma-player" v-if="award.playerName">
-      <i :title="award.playerName" class="board-cube" :class="`board-cube--${award.color}`" ></i>
+      <i :title="award.playerName" :class="playerCubeCss(award.color)" />
     </div>
 
     <div class="ma-name ma-name--awards award-block" :class="nameCss">
@@ -36,7 +36,7 @@ import {defineComponent} from 'vue';
 import {FundedAwardModel, AwardScore} from '@/common/models/FundedAwardModel';
 import {getAward} from '@/client/MilestoneAwardManifest';
 import {playerSymbol} from '@/client/utils/playerSymbol';
-import {Color} from '@/common/Color';
+import {Color, isReservedPlayerColor} from '@/common/Color';
 
 export default defineComponent({
   name: 'Award',
@@ -56,6 +56,16 @@ export default defineComponent({
   methods: {
     playerSymbol(color: Color) {
       return playerSymbol(color);
+    },
+    playerCubeCss(color: Color | undefined): string {
+      if (color === undefined) {
+        return '';
+      }
+      let css = 'board-cube board-cube--' + color;
+      if (isReservedPlayerColor(color)) {
+        css += ' board-cube--persona';
+      }
+      return css;
     },
   },
   computed: {

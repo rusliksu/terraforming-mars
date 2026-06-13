@@ -2,104 +2,104 @@
 
 // A light-on-dark beveled border (top/left highlight, bottom/right shadow).
 .raised-bevel(@width: 2px) {
-  border-top: @width solid rgb(221, 221, 221);
-  border-left: @width solid rgb(221, 221, 221);
-  border-bottom: @width solid rgb(137, 137, 137);
-  border-right: @width solid rgb(137, 137, 137);
+    border-top: @width solid rgb(221, 221, 221);
+    border-left: @width solid rgb(221, 221, 221);
+    border-bottom: @width solid rgb(137, 137, 137);
+    border-right: @width solid rgb(137, 137, 137);
 }
 
 // 16x16 circular badge used for per-expansion icons on card titles.
 // Callers override border / size / fill / glyph as needed.
 .expansion-icon-base() {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  text-align: center;
-  border: 1px solid black;
-  border-radius: @radius_circle;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    text-align: center;
+    border: 1px solid black;
+    border-radius: @radius_circle;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
 }
 
 // 34x34 chromeless badge used for "X count" tag-overview cells. Only the
 // background-image varies between callers.
 .tag-count-icon() {
-  border: none !important;
-  background-color: transparent !important;
-  box-shadow: none !important;
-  background-size: 34px !important;
-  width: 34px !important;
-  height: 34px !important;
-  filter: brightness(0.8);
-  border-radius: 0px !important;
-  background-position: 0px !important;
+    border: none !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    background-size: 34px !important;
+    width: 34px !important;
+    height: 34px !important;
+    filter: brightness(0.8);
+    border-radius: 0px !important;
+    background-position: 0px !important;
 }
 
 .player_persona_bg_translucent(@accent) {
-  @base: darken(@accent, 8%);
-  background-color: fade(@base, 82%);
-  box-shadow:
-    inset 0 1px 0 fade(lighten(@accent, 22%), 16%),
-    inset 0 0 0 1px fade(lighten(@accent, 8%), 28%),
-    inset 0 -18px 26px fade(darken(@accent, 18%), 14%),
-    0 0 10px fade(@accent, 12%);
+    @base: darken(@accent, 8%);
+    background-color: fade(@base, 82%);
+    box-shadow:
+      inset 0 1px 0 fade(lighten(@accent, 22%), 16%),
+      inset 0 0 0 1px fade(lighten(@accent, 8%), 28%),
+      inset 0 -18px 26px fade(darken(@accent, 18%), 14%),
+      0 0 10px fade(@accent, 12%);
 }
 
 .player_gold_bg_translucent() {
-  .player_persona_bg_translucent(@player_gold);
+    .player_persona_bg_translucent(@player_gold);
 }
 
 .player_emerald_bg_translucent() {
-  .player_persona_bg_translucent(@player_emerald);
+    .player_persona_bg_translucent(@player_emerald);
 }
 
 .player_ginger_bg_translucent() {
-  .player_persona_bg_translucent(@player_ginger);
+    .player_persona_bg_translucent(@player_ginger);
 }
 
 .player_hydro_bg_translucent() {
-  .player_persona_bg_translucent(@player_hydro);
+    .player_persona_bg_translucent(@player_hydro);
 }
 
 .player_pearl_bg_translucent() {
-  .player_persona_bg_translucent(@player_pearl);
+    .player_persona_bg_translucent(@player_pearl);
 }
 
 .player_antistress_bg_translucent() {
-  .player_persona_bg_translucent(@player_antistress);
+    .player_persona_bg_translucent(@player_antistress);
 }
 
 .player_gambit_bg_translucent() {
-  .player_persona_bg_translucent(@player_gambit);
+    .player_persona_bg_translucent(@player_gambit);
 }
 
 .player_turquoise_bg_translucent() {
-  .player_persona_bg_translucent(@player_turquoise);
+    .player_persona_bg_translucent(@player_turquoise);
 }
 
 .player_vanger_bg_translucent() {
-  .player_persona_bg_translucent(@player_vanger);
+    .player_persona_bg_translucent(@player_vanger);
 }
 
 .player_serge_bg_translucent() {
-  .player_persona_bg_translucent(@player_serge);
+    .player_persona_bg_translucent(@player_serge);
 }
 
 .player_saturn_bg_translucent() {
-  .player_persona_bg_translucent(@player_saturn);
+    .player_persona_bg_translucent(@player_saturn);
 }
 
 .player_saturnrings_bg_translucent() {
-  .player_persona_bg_translucent(@player_saturnrings);
+    .player_persona_bg_translucent(@player_saturnrings);
 }
 
 .player_titan_bg_translucent() {
-  .player_persona_bg_translucent(@player_titan);
+    .player_persona_bg_translucent(@player_titan);
 }
 
 .player_saturnstorm_bg_translucent() {
-  .player_persona_bg_translucent(@player_saturnstorm);
+    .player_persona_bg_translucent(@player_saturnstorm);
 }
 
 .player_catseye_bg_translucent() {
-  .player_persona_bg_translucent(@player_catseye);
+    .player_persona_bg_translucent(@player_catseye);
 }

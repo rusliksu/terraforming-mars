@@ -1720,7 +1720,9 @@ export class Player implements IPlayer {
     this.waitingFor = undefined;
     this.waitingForCb = undefined;
     try {
-      this.timer.stop();
+      if (!waitingFor.optional) {
+        this.timer.stop();
+      }
       this.clearPendingTurnNoticeTimers();
       this.defer(waitingFor.process(input, this));
       waitingForCb();
@@ -1889,9 +1891,12 @@ export class Player implements IPlayer {
   }
 
   public clearWaitingFor(): void {
+    const waitingFor = this.waitingFor;
     this.waitingFor = undefined;
     this.waitingForCb = undefined;
-    this.timer.stop();
+    if (waitingFor !== undefined && !waitingFor.optional) {
+      this.timer.stop();
+    }
   }
 
   public serialize(): SerializedPlayer {

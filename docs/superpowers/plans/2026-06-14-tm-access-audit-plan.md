@@ -296,7 +296,7 @@ git commit -m "Add trusted client IP extraction"
 - Create: `src/server/server/AccessAudit.ts`
 - Create: `tests/server/AccessAudit.spec.ts`
 
-- [ ] **Step 1: Write failing tests for audit logger**
+- [x] **Step 1: Write failing tests for audit logger**
 
 Create `tests/server/AccessAudit.spec.ts`:
 
@@ -392,7 +392,7 @@ describe('AccessAudit', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run:
 
@@ -402,7 +402,7 @@ npm run test:server -- tests/server/AccessAudit.spec.ts
 
 Expected: FAIL because `AccessAudit.ts` does not exist.
 
-- [ ] **Step 3: Implement `AccessAudit.ts`**
+- [x] **Step 3: Implement `AccessAudit.ts`**
 
 Create `src/server/server/AccessAudit.ts`:
 
@@ -532,7 +532,7 @@ export function accessAuditFromEnv(env: NodeJS.ProcessEnv): AccessAudit {
 }
 ```
 
-- [ ] **Step 4: Run the audit logger test**
+- [x] **Step 4: Run the audit logger test**
 
 Run:
 
@@ -542,7 +542,7 @@ npm run test:server -- tests/server/AccessAudit.spec.ts
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```powershell
 git add src/server/server/AccessAudit.ts tests/server/AccessAudit.spec.ts

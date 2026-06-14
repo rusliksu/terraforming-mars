@@ -1,5 +1,6 @@
 import {expect} from 'chai';
 import {readFileSync} from 'fs';
+import {DEFAULT_PLAYER_COLORS, PLAYER_COLORS, RESERVED_PLAYER_COLORS} from '../src/common/Color';
 
 function read(path: string): string {
   return readFileSync(path, 'utf8').replace(/\r\n/g, '\n');
@@ -239,6 +240,46 @@ describe('Styles', () => {
     expect(cssBlock(playerHome, '&.colonies-fleet-saturnstorm')).to.contain('@player_saturnstorm_fleet_filter @player_persona_fleet_edge_filter');
     expect(cssBlock(playerHome, '&.colonies-fleet-catseye')).to.contain('background-position: -140px 0;');
     expect(cssBlock(playerHome, '&.colonies-fleet-catseye')).to.contain('@player_catseye_fleet_filter @player_persona_fleet_edge_filter');
+  });
+
+  it('covers every player color across board, colony, award, and profile surfaces', () => {
+    const variables = read('src/styles/variables.less');
+    const common = read('src/styles/common.less');
+    const board = read('src/styles/board.less');
+    const playerHome = read('src/styles/player_home.less');
+    const turmoil = read('src/styles/turmoil.less');
+    const createGame = read('src/styles/create_game_form.less');
+    const playerSymbol = read('src/client/utils/playerSymbol.ts');
+    const vpChart = read('src/client/components/gameend/VictoryPointChart.vue');
+    const defaultColors = new Set(DEFAULT_PLAYER_COLORS);
+    const reservedColors = new Set(RESERVED_PLAYER_COLORS);
+
+    expect(common).to.contain('.player_bg_color_@{value}');
+    expect(common).to.contain('.player_translucent_bg_color_@{value}');
+
+    for (const color of PLAYER_COLORS) {
+      expect(variables, `${color} variable`).to.contain(`@player_${color}:`);
+      expect(board, `${color} board cube`).to.contain(`.board-cube--${color}`);
+      expect(board, `${color} board overlay`).to.contain(`.board-cube--${color}.overlay::after`);
+      expect(playerHome, `${color} colony fleet`).to.contain(`&.colonies-fleet-${color}`);
+      expect(playerSymbol, `${color} symbol`).to.contain(`${color}: '`);
+      expect(vpChart, `${color} VP chart`).to.contain(`['${color}']:`);
+
+      if (defaultColors.has(color)) {
+        expect(variables, `${color} default player list`).to.match(new RegExp(`@players:[^;]*\\b${color}\\b`));
+      }
+
+      if (reservedColors.has(color)) {
+        expect(variables, `${color} token gradient`).to.contain(`@player_${color}_token_gradient:`);
+        expect(variables, `${color} tag background`).to.contain(`@player_${color}_tag_bg:`);
+        expect(common, `${color} reserved background`).to.contain(`.player_bg_color_${color}`);
+        expect(common, `${color} reserved translucent background`).to.contain(`.player_translucent_bg_color_${color}`);
+        expect(board, `${color} persona board token`).to.contain(`.board-cube--${color}.board-cube--persona::before`);
+        expect(playerHome, `${color} tag overview`).to.contain(`player_tag_bg_color_${color}`);
+        expect(createGame, `${color} create-game profile surface`).to.contain(`player_translucent_bg_color_${color}`);
+        expect(turmoil, `${color} turmoil delegate token`).to.contain(`&.${color}`);
+      }
+    }
   });
 
   it('uses sprite-based Turmoil delegate tokens with the shared count style', () => {

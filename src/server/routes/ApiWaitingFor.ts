@@ -8,6 +8,7 @@ import {IGame} from '../IGame';
 import {isPlayerId, isSpectatorId} from '../../common/Types';
 import {Request} from '../Request';
 import {Response} from '../Response';
+import {getUserAgent} from './auditRequest';
 
 export class ApiWaitingFor extends Handler {
   public static readonly INSTANCE = new ApiWaitingFor();
@@ -72,8 +73,30 @@ export class ApiWaitingFor extends Handler {
           return;
         }
         ctx.ipTracker.addParticipant(id, ctx.ip);
+        ctx.accessAudit.record({
+          event: 'waiting_for_player',
+          method: req.method ?? '',
+          path: 'api/waitingfor',
+          gameId: game.id,
+          participantId: id,
+          participantKind: 'player',
+          clientIp: ctx.clientIp,
+          userAgent: getUserAgent(req),
+        });
         responses.writeJson(res, ctx, this.getPlayerWaitingForModel(player, game, gameAge, undoCount));
       } else if (isSpectatorId(id)) {
+        if (process.env.TM_ACCESS_AUDIT_WAITING_FOR === '1') {
+          ctx.accessAudit.record({
+            event: 'waiting_for_spectator',
+            method: req.method ?? '',
+            path: 'api/waitingfor',
+            gameId: game.id,
+            participantId: id,
+            participantKind: 'spectator',
+            clientIp: ctx.clientIp,
+            userAgent: getUserAgent(req),
+          });
+        }
         responses.writeJson(res, ctx, this.getSpectatorWaitingForModel(game, gameAge, undoCount));
       } else {
         responses.internalServerError(req, res, 'id not found');

@@ -698,7 +698,7 @@ git commit -m "Wire access audit context"
 - Modify: `src/server/routes/Autopass.ts`
 - Modify tests in `tests/routes/*.spec.ts`
 
-- [ ] **Step 1: Add audit capture helper to route tests**
+- [x] **Step 1: Add audit capture helper to route tests**
 
 In each touched route test, override `scaffolding.ctx.accessAudit`:
 
@@ -710,7 +710,7 @@ scaffolding.ctx.accessAudit = {
 scaffolding.ctx.clientIp = {address: '203.0.113.10', source: 'cf-connecting-ip'};
 ```
 
-- [ ] **Step 2: Add ApiPlayer audit test**
+- [x] **Step 2: Add ApiPlayer audit test**
 
 Modify `tests/routes/ApiPlayer.spec.ts` with a test equivalent to:
 
@@ -739,7 +739,7 @@ it('audits successful player view', async () => {
 });
 ```
 
-- [ ] **Step 3: Implement ApiPlayer audit**
+- [x] **Step 3: Implement ApiPlayer audit**
 
 In `src/server/routes/ApiPlayer.ts`, after authorization succeeds and before `responses.writeJson`:
 
@@ -771,7 +771,7 @@ ctx.accessAudit.record({
 });
 ```
 
-- [ ] **Step 4: Add ApiSpectator audit test and implementation**
+- [x] **Step 4: Add ApiSpectator audit test and implementation**
 
 Add to `tests/routes/ApiSpectator.spec.ts`:
 
@@ -824,7 +824,7 @@ Add `Phase` import:
 import {Phase} from '../../common/Phase';
 ```
 
-- [ ] **Step 5: Add ApiGame audit**
+- [x] **Step 5: Add ApiGame audit**
 
 In `src/server/routes/ApiGame.ts`, before `responses.writeJson`:
 
@@ -843,7 +843,7 @@ ctx.accessAudit.record({
 
 Add a matching test in `tests/routes/ApiGame.spec.ts`.
 
-- [ ] **Step 6: Add ApiWaitingFor audit with low-noise behavior**
+- [x] **Step 6: Add ApiWaitingFor audit with low-noise behavior**
 
 Only log `waiting_for_player` when `id` is a player and authorization succeeds. Only log `waiting_for_spectator` if `TM_ACCESS_AUDIT_WAITING_FOR=1`; otherwise skip spectator poll logs to reduce noise.
 
@@ -883,7 +883,7 @@ if (isSpectatorId(id) && process.env.TM_ACCESS_AUDIT_WAITING_FOR === '1') {
 
 Add tests in `tests/routes/ApiWaitingFor.spec.ts` for player polling. Do not add env-dependent spectator test unless the test resets `process.env.TM_ACCESS_AUDIT_WAITING_FOR` in `finally`.
 
-- [ ] **Step 7: Add PlayerInput audit**
+- [x] **Step 7: Add PlayerInput audit**
 
 At start of `PlayerInput.post`, after `playerId` validation:
 
@@ -939,7 +939,7 @@ ctx.accessAudit.record({
 
 Add focused tests in `tests/routes/PlayerInput.spec.ts` only if existing scaffolding can submit a minimal input. If it is too brittle, cover accepted action classification through analyzer tests and add a route test only for `player_input_attempt`.
 
-- [ ] **Step 8: Add Autopass audit**
+- [x] **Step 8: Add Autopass audit**
 
 In `src/server/routes/Autopass.ts`, after player lookup succeeds:
 
@@ -959,7 +959,7 @@ ctx.accessAudit.record({
 
 Add matching test in `tests/routes/Autopass.spec.ts`.
 
-- [ ] **Step 9: Run route tests**
+- [x] **Step 9: Run route tests**
 
 Run:
 
@@ -969,7 +969,7 @@ npm run test:server -- tests/routes/ApiGame.spec.ts tests/routes/ApiPlayer.spec.
 
 Expected: PASS.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```powershell
 git add src/server/routes/ApiGame.ts src/server/routes/ApiPlayer.ts src/server/routes/ApiSpectator.ts src/server/routes/ApiWaitingFor.ts src/server/routes/PlayerInput.ts src/server/routes/Autopass.ts tests/routes/ApiGame.spec.ts tests/routes/ApiPlayer.spec.ts tests/routes/ApiSpectator.spec.ts tests/routes/ApiWaitingFor.spec.ts tests/routes/Autopass.spec.ts tests/routes/PlayerInput.spec.ts

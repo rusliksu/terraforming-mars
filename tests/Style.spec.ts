@@ -372,19 +372,18 @@ describe('Styles', () => {
     expect(common).to.contain('.player_translucent_bg_color_pearl .game-end-name-and-elo a {\n    text-shadow: none;');
   });
 
-  it('keeps Vanger readable without using neon green surfaces', () => {
+  it('uses Vanger plain green persona surfaces', () => {
     const variables = read('src/styles/variables.less');
     const common = read('src/styles/common.less');
     const playerHome = read('src/styles/player_home.less');
     const vpChart = read('src/client/components/gameend/VictoryPointChart.vue');
     const eloBadge = read('src/client/components/overview/PlayerEloBadge.vue');
 
-    expect(variables).to.contain('@player_vanger: rgb(86, 166, 44);');
-    expect(variables).to.contain('@player_vanger_tag_bg: rgba(86, 166, 44, 0.24);');
-    expect(variables).not.to.contain('@player_vanger: rgb(0, 255, 0);');
-    expect(playerHome).to.contain('background-color: rgba(86, 166, 44, 0.24);');
-    expect(vpChart).to.contain("['vanger']: 'rgb(86, 166, 44)'");
-    expect(eloBadge).to.contain('box-shadow: 0 0 7px rgba(86, 166, 44, 0.42);');
+    expect(variables).to.contain('@player_vanger: rgb(0, 255, 0);');
+    expect(variables).to.contain('@player_vanger_tag_bg: rgba(0, 255, 0, 0.24);');
+    expect(playerHome).to.contain('background-color: rgba(0, 255, 0, 0.24);');
+    expect(vpChart).to.contain("['vanger']: 'rgb(0, 255, 0)'");
+    expect(eloBadge).to.contain('box-shadow: 0 0 7px rgba(0, 255, 0, 0.42);');
     expect(common).to.contain('.player_translucent_bg_color_vanger .player-info-corp,');
     expect(common).to.contain('.player_translucent_bg_color_vanger .player-info-corp,\n.player_translucent_bg_color_vanger td,');
     expect(cssBlock(common, '.player_bg_color_vanger.log-player,\n.player_translucent_bg_color_vanger .player-info-name,\n.player_translucent_bg_color_vanger .player-info-corp,\n.player_translucent_bg_color_vanger .player_name,\n.player_translucent_bg_color_vanger .game-end-name-and-elo,\n.player_translucent_bg_color_vanger .game-end-name-and-elo a,\n.player_translucent_bg_color_vanger .player-name')).to.contain('color: #001f00;');
@@ -394,7 +393,9 @@ describe('Styles', () => {
     const createGame = read('src/styles/create_game_form.less');
 
     expect(cssBlock(createGame, '.create-game-profile-picker')).to.contain('overflow: visible;');
-    expect(cssBlock(createGame, '.create-game-profile-menu')).to.contain('position: fixed;');
+    expect(cssBlock(createGame, '.create-game-players-cont .container')).to.contain('overflow: visible;');
+    expect(cssBlock(createGame, '.create-game-profile-menu')).to.contain('position: absolute;');
+    expect(cssBlock(createGame, '.create-game-profile-menu')).to.contain('top: calc(100% + 6px);');
     expect(cssBlock(createGame, '.create-game-profile-menu')).to.contain('display: flex;');
     expect(cssBlock(createGame, '.create-game-profile-menu')).to.contain('overflow: hidden;');
     expect(cssBlock(createGame, '.create-game-profile-menu')).to.contain('z-index: 80;');

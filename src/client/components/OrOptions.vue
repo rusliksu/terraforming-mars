@@ -38,7 +38,7 @@ import {Message} from '@/common/logs/Message';
 import {SpaceId} from '@/common/Types';
 
 let unique = 0;
-type QuickGreeneryHandler = {tile: HTMLElement, handler: EventListener};
+type QuickGreeneryHandler = {tile: HTMLElement, handler: (event: Event) => void};
 
 export default defineComponent({
   name: 'or-options',
@@ -133,8 +133,8 @@ export default defineComponent({
           continue;
         }
         const elements = board.getElementsByClassName('board-space-selectable');
-        for (let idx = 0; idx < elements.length; idx++) {
-          spaces.push(elements[idx] as HTMLElement);
+        for (const element of Array.from(elements)) {
+          spaces.push(element as HTMLElement);
         }
       }
       return spaces;

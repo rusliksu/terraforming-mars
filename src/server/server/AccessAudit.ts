@@ -104,7 +104,7 @@ function dailyAuditFile(dir: string, now: Date): string {
   return path.join(dir, `access-audit-${day}.jsonl`);
 }
 
-export function accessAuditFromEnv(env: NodeJS.ProcessEnv): AccessAudit {
+export function accessAuditFromEnv(env: Record<string, string | undefined>): AccessAudit {
   const enabled = env.TM_ACCESS_AUDIT === '1';
   const salt = env.TM_ACCESS_AUDIT_SALT ?? 'development-access-audit-salt';
   const dir = env.TM_ACCESS_AUDIT_DIR ?? path.resolve(process.cwd(), 'access-audit-logs');

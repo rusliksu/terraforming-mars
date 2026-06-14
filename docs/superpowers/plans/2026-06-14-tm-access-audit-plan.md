@@ -557,7 +557,7 @@ git commit -m "Add safe access audit logger"
 - Modify: `src/server/routes/IHandler.ts`
 - Modify: `src/server/server/requestProcessor.ts`
 
-- [ ] **Step 1: Write failing request processor test**
+- [x] **Step 1: Write failing request processor test**
 
 Modify `tests/server/requestProcessor.spec.ts` and add this test:
 
@@ -586,7 +586,7 @@ it('uses CF-Connecting-IP for the request context IP tracker', async () => {
 
 This test only checks routing still works. Context-level audit will be covered in route tests in later tasks.
 
-- [ ] **Step 2: Run targeted request processor tests**
+- [x] **Step 2: Run targeted request processor tests**
 
 Run:
 
@@ -596,7 +596,7 @@ npm run test:server -- tests/server/requestProcessor.spec.ts
 
 Expected: PASS before code changes or FAIL only if the current processor has hidden assumptions. Continue with the wiring either way.
 
-- [ ] **Step 3: Modify `IHandler.ts` context**
+- [x] **Step 3: Modify `IHandler.ts` context**
 
 Add imports:
 
@@ -612,7 +612,7 @@ clientIp: ClientIp,
 accessAudit: AccessAudit,
 ```
 
-- [ ] **Step 4: Modify `requestProcessor.ts`**
+- [x] **Step 4: Modify `requestProcessor.ts`**
 
 Add imports:
 
@@ -648,7 +648,7 @@ accessAudit,
 
 Leave the old `getHerokuIpAddress` helper unused only if no import remains. Remove `getIPAddress` if it is no longer referenced.
 
-- [ ] **Step 5: Update `RouteTestScaffolding.ts`**
+- [x] **Step 5: Update `RouteTestScaffolding.ts`**
 
 Add imports:
 
@@ -668,7 +668,7 @@ accessAudit: newAccessAudit({
 }),
 ```
 
-- [ ] **Step 6: Run route and server tests**
+- [x] **Step 6: Run route and server tests**
 
 Run:
 
@@ -678,7 +678,7 @@ npm run test:server -- tests/server/requestProcessor.spec.ts tests/routes/ApiIPs
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```powershell
 git add src/server/routes/IHandler.ts src/server/server/requestProcessor.ts tests/routes/RouteTestScaffolding.ts tests/server/requestProcessor.spec.ts

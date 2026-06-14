@@ -6,6 +6,7 @@ import {MockResponse} from './HttpMocks';
 import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {GameId} from '../../src/common/Types';
 import {statusCode} from '../../src/common/http/statusCode';
+import {AccessAuditRecordInput} from '../../src/server/server/AccessAudit';
 
 describe('Autopass', () => {
   let scaffolding: RouteTestScaffolding;
@@ -47,6 +48,31 @@ describe('Autopass', () => {
     expect(res.statusCode).eq(statusCode.ok);
     expect(res.content).eq('');
     expect(player.autopass).eq(true);
+  });
+
+  it('audits autopass changes', async () => {
+    const auditEvents: Array<AccessAuditRecordInput> = [];
+    const player = TestPlayer.BLACK.newPlayer();
+    const game = Game.newInstance('game-id', [player], player, 'spectatorid');
+    await scaffolding.ctx.gameLoader.add(game);
+    scaffolding.ctx.clientIp = {address: '203.0.113.10', source: 'cf-connecting-ip'};
+    scaffolding.ctx.accessAudit = {record: (event) => auditEvents.push(event)};
+    scaffolding.req.headers['user-agent'] = 'Browser A';
+
+    scaffolding.url = '/autopass?id=' + player.id + '&autopass=true';
+    await scaffolding.get(Autopass.INSTANCE, res);
+
+    expect(auditEvents).deep.eq([{
+      event: 'autopass',
+      method: 'GET',
+      path: 'autopass',
+      gameId: game.id,
+      participantId: player.id,
+      participantKind: 'player',
+      clientIp: scaffolding.ctx.clientIp,
+      userAgent: 'Browser A',
+      metadata: {autopass: true},
+    }]);
   });
 
   it('disables autopass', async () => {

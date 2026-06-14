@@ -18,6 +18,8 @@ import {InputError} from '../inputs/InputError';
 import {isIProjectCard} from '../cards/IProjectCard';
 import {AppErrorResponse, INVALID_RUN_ID} from '../../common/app/AppErrorId';
 import {hasRevealedHiddenInformation} from '../game/hasRevealedHiddenInformation';
+import {getUserAgent} from './auditRequest';
+import type {AccessAuditEvent, AccessAuditRecordInput} from '../server/AccessAudit';
 
 type ShadowPromptSnapshot = {
   buttonLabel: string | null;
@@ -58,6 +60,7 @@ export class PlayerInput extends Handler {
       responses.notFound(req, res);
       return;
     }
+    recordPlayerInputAudit(req, ctx, player, 'player_input_attempt');
     return this.processInput(req, res, ctx, player);
   }
 
@@ -146,9 +149,18 @@ export class PlayerInput extends Handler {
             responses.writeJson(res, ctx, Server.getPlayerModel(player));
           }
           appendShadowInputLog(player, entityForLog, body, promptSnapshot, promptInputSeq, inputSeq, isUndo, 'accepted');
+          recordPlayerInputAudit(req, ctx, player, 'player_input_accepted', {
+            inputType: typeof entityForLog?.type === 'string' ? entityForLog.type : null,
+            isUndo,
+          });
           resolve();
         } catch (e) {
           appendShadowInputLog(player, entityForLog, body, promptSnapshot, promptInputSeq, inputSeq, isUndo, 'rejected', e);
+          recordPlayerInputAudit(req, ctx, player, 'player_input_rejected', {
+            inputType: typeof entityForLog?.type === 'string' ? entityForLog.type : null,
+            isUndo,
+            errorId: e instanceof AppError ? e.id : null,
+          });
           if (!(e instanceof AppError || e instanceof InputError)) {
             console.warn('Error processing input from player', e);
           }
@@ -170,6 +182,29 @@ export class PlayerInput extends Handler {
       });
     });
   }
+}
+
+function recordPlayerInputAudit(
+  req: Request,
+  ctx: Context,
+  player: IPlayer,
+  event: AccessAuditEvent,
+  metadata?: Record<string, string | number | boolean | null>,
+) {
+  const record: AccessAuditRecordInput = {
+    event,
+    method: req.method ?? '',
+    path: 'player/input',
+    gameId: player.game.id,
+    participantId: player.id,
+    participantKind: 'player',
+    clientIp: ctx.clientIp,
+    userAgent: getUserAgent(req),
+  };
+  if (metadata !== undefined) {
+    record.metadata = metadata;
+  }
+  ctx.accessAudit.record(record);
 }
 
 function appendShadowInputLog(

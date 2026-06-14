@@ -6,6 +6,8 @@ import {IGame} from '../IGame';
 import {isSpectatorId} from '../../common/Types';
 import {Request} from '../Request';
 import {Response} from '../Response';
+import {Phase} from '../../common/Phase';
+import {getUserAgent} from './auditRequest';
 
 export class ApiSpectator extends Handler {
   public static readonly INSTANCE = new ApiSpectator();
@@ -28,6 +30,19 @@ export class ApiSpectator extends Handler {
       responses.notFound(req, res);
       return;
     }
+    ctx.accessAudit.record({
+      event: 'spectator_view',
+      method: req.method ?? '',
+      path: 'api/spectator',
+      gameId: game.id,
+      participantId: game.spectatorId,
+      participantKind: 'spectator',
+      clientIp: ctx.clientIp,
+      userAgent: getUserAgent(req),
+      metadata: {
+        privateHandsVisible: game.phase === Phase.END || game.gameOptions.privateHands === false,
+      },
+    });
     responses.writeJson(res, ctx, Server.getSpectatorModel(game));
   }
 }

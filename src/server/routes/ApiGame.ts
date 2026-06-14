@@ -7,6 +7,7 @@ import {IGame} from '../IGame';
 import {Request} from '../Request';
 import {Response} from '../Response';
 import {BotTakeoverManager} from '../bot/BotTakeoverManager';
+import {getUserAgent} from './auditRequest';
 
 /**
  * Returns a light view of a game.
@@ -35,6 +36,16 @@ export class ApiGame extends Handler {
     const model = Server.getSimpleGameModel(game, this.hasServerIdAccess(ctx) ? {
       botPlayers: this.botManager.listPlayerIds(game.id),
     } : undefined);
+    ctx.accessAudit.record({
+      event: 'game_home',
+      method: req.method ?? '',
+      path: 'api/game',
+      gameId: game.id,
+      participantId: game.id,
+      participantKind: 'game',
+      clientIp: ctx.clientIp,
+      userAgent: getUserAgent(req),
+    });
     responses.writeJson(res, ctx, model);
   }
 }

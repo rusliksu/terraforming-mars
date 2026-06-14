@@ -241,7 +241,7 @@ describe('Styles', () => {
     expect(cssBlock(playerHome, '&.colonies-fleet-catseye')).to.contain('@player_catseye_fleet_filter @player_persona_fleet_edge_filter');
   });
 
-  it('uses sprite-based Turmoil delegate tokens with unshadowed numbers', () => {
+  it('uses sprite-based Turmoil delegate tokens with the shared count style', () => {
     const turmoil = read('src/styles/turmoil.less');
 
     expect(turmoil).not.to.contain('.player-token-persona(');
@@ -256,7 +256,9 @@ describe('Styles', () => {
     expect(turmoil).to.contain('color: #fff;');
     expect(turmoil).to.contain('width: 50px;');
     expect(turmoil).to.contain('height: 59px;');
-    expect(turmoil).to.contain('.player-token__number');
+    expect(turmoil).not.to.contain('.player-token__number');
+    expect(turmoil).to.contain('.count-in-send-delegate');
+    expect(cssBlock(turmoil, '.count-in-send-delegate')).to.contain('font-size: 22px;');
     expect(turmoil).to.contain('z-index: 1;');
     expect(turmoil).to.contain('z-index: 0;');
     expect(cssBlock(turmoil, '.count-in-send-delegate')).not.to.contain('color: #fff;');

@@ -114,8 +114,8 @@ describe('Turmoil', () => {
       },
     });
 
-    const partyDelegateCounts = wrapper.findAll('.grid-delegates .player-token__number');
-    const reserveDelegateCounts = wrapper.findAll('.turmoil-reserve .player-token__number');
+    const partyDelegateCounts = wrapper.findAll('.grid-delegates .count-in-send-delegate');
+    const reserveDelegateCounts = wrapper.findAll('.turmoil-reserve .count-in-send-delegate');
 
     expect(partyDelegateCounts.map((count) => count.text())).deep.eq(['2', '1']);
     expect(reserveDelegateCounts.map((count) => count.text())).deep.eq(['3']);

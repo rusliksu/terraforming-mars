@@ -402,6 +402,66 @@ describe('CreateGameForm', () => {
     expect(vm.customColonies).to.include(ColonyName.IAPETUS_II);
   });
 
+  it('keeps explicitly selected fan colonies when reopening the custom colonies list', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    await wrapper.setData({
+      showColoniesList: true,
+      expansions: {
+        ...vm.expansions,
+        colonies: true,
+        community: false,
+        pathfinders: false,
+      },
+    });
+
+    vm.updateCustomColonies([...vm.customColonies, ColonyName.IAPETUS, ColonyName.IAPETUS_II]);
+
+    await wrapper.setData({showColoniesList: false});
+    await wrapper.setData({showColoniesList: true});
+
+    expect(vm.customColonies).to.include(ColonyName.IAPETUS);
+    expect(vm.customColonies).to.include(ColonyName.IAPETUS_II);
+  });
+
+  it('restores explicitly selected fan colonies from saved settings', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    vm.applySettings({
+      players: [
+        {name: 'Alice', color: 'red', beginner: false, handicap: 0, first: false, isBot: false},
+      ],
+      expansions: {
+        ...vm.expansions,
+        colonies: true,
+        community: false,
+        pathfinders: false,
+      },
+      customColonies: [
+        ColonyName.CALLISTO,
+        ColonyName.CERES,
+        ColonyName.ENCELADUS,
+        ColonyName.IAPETUS,
+        ColonyName.IAPETUS_II,
+      ],
+      customColonyExclusions: [],
+      solarPhaseOption: true,
+    });
+
+    await wrapper.vm.$nextTick();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    expect(vm.customColonies).to.include(ColonyName.IAPETUS);
+    expect(vm.customColonies).to.include(ColonyName.IAPETUS_II);
+  });
+
   it('excludes Double Down by default when the Merger variant is enabled', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,

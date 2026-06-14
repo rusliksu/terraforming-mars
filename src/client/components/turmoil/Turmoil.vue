@@ -21,14 +21,16 @@
           </div>
           <div class="policy-user-cubes">
             <template v-for="n in turmoil.policyActionUsers" :key="n.color">
-              <div v-if="n.turmoilPolicyActionUsed" :class="'policy-use-marker board-cube--'+n.color"></div>
-              <div v-if="n.politicalAgendasActionUsedCount > 0" :class="'policy-use-marker board-cube--'+n.color">{{n.politicalAgendasActionUsedCount}}</div>
+              <div v-if="n.turmoilPolicyActionUsed" :class="policyMarkerClasses(n.color)"></div>
+              <div v-if="n.politicalAgendasActionUsedCount > 0" :class="policyMarkerClasses(n.color)">{{n.politicalAgendasActionUsedCount}}</div>
             </template>
           </div>
           <div class="chairman-spot"><div v-if="turmoil.chairman" :class="'player-token '+turmoil.chairman"></div></div>
           <div class="turmoil-reserve">
               <div class="lobby-spot" v-for="n in turmoil.reserve.length" :key="n">
-                <div v-if="turmoil.reserve.length >= n" :class="'player-token '+turmoil.reserve[n-1].color">{{ turmoil.reserve[n-1].number }}</div>
+                <div v-if="turmoil.reserve.length >= n" :class="'player-token '+turmoil.reserve[n-1].color">
+                  <span class="player-token__number">{{ turmoil.reserve[n-1].number }}</span>
+                </div>
               </div>
           </div>
           <div class="policies">
@@ -59,7 +61,9 @@
           <div v-for="party in turmoil.parties" :key="party.name" :class="'board-party board-party--'+partyNameToCss(party.name)">
             <div class="grid-delegates">
               <div class="delegate-spot" v-for="n in 6" :key="n">
-                <div v-if="party.delegates.length >= n" :class="'player-token '+party.delegates[n-1].color">{{ party.delegates[n-1].number }}</div>
+                <div v-if="party.delegates.length >= n" :class="'player-token '+party.delegates[n-1].color">
+                  <span class="player-token__number">{{ party.delegates[n-1].number }}</span>
+                </div>
               </div>
             </div>
             <div :class="'party-name party-name--'+partyNameToCss(party.name)" v-i18n>{{party.name}}</div>
@@ -84,6 +88,7 @@
 
 import {defineComponent} from 'vue';
 import {vueRoot} from '@/client/components/vueRoot';
+import {Color, isReservedPlayerColor} from '@/common/Color';
 import {PartyName} from '@/common/turmoil/PartyName';
 import {TurmoilModel} from '@/common/models/TurmoilModel';
 import TurmoilAgenda from '@/client/components/turmoil/TurmoilAgenda.vue';
@@ -104,6 +109,13 @@ export default defineComponent({
         return '';
       }
       return party.toLowerCase().split(' ').join('_');
+    },
+    policyMarkerClasses(color: Color): Array<string> {
+      const classes = ['policy-use-marker', `board-cube--${color}`];
+      if (isReservedPlayerColor(color)) {
+        classes.push('board-cube--persona');
+      }
+      return classes;
     },
     getBonus(party: PartyName | undefined) {
       const politicalAgendas = this.turmoil.politicalAgendas;
@@ -160,4 +172,3 @@ export default defineComponent({
 });
 
 </script>
-

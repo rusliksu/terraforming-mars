@@ -765,6 +765,10 @@ type RememberCustomSelectionExclusionOptions = {
   preserveDefaultColonyExclusions?: boolean;
 };
 
+type SyncCustomSelectionOptions = {
+  preserveExplicitFanColonies?: boolean;
+};
+
 type Refs = {
   file: HTMLInputElement;
   templateFile: HTMLInputElement;
@@ -896,7 +900,9 @@ export default defineComponent({
     },
     showColoniesList(value: boolean) {
       if (value === true) {
-        this.customColonies = this.getDefaultCustomColonies();
+        this.customColonies = this.getDefaultCustomColonies({
+          preserveExplicitFanColonies: true,
+        });
       }
     },
     'expansions.prelude': function(value: boolean) {
@@ -1018,7 +1024,9 @@ export default defineComponent({
               preserveDefaultColonyExclusions: !hasCustomColonyExclusions,
             });
             this.syncSolarPhaseOptionToPlayerCount();
-            this.syncCustomSelectionsWithExpansions();
+            this.syncCustomSelectionsWithExpansions({
+              preserveExplicitFanColonies: hasCustomColonyExclusions,
+            });
             this.uploading = false;
           } catch (e) {
             console.error('Error applying settings:', e);
@@ -1196,7 +1204,9 @@ export default defineComponent({
                   preserveDefaultColonyExclusions: !hasCustomColonyExclusions,
                 });
                 this.syncSolarPhaseOptionToPlayerCount();
-                this.syncCustomSelectionsWithExpansions();
+                this.syncCustomSelectionsWithExpansions({
+                  preserveExplicitFanColonies: hasCustomColonyExclusions,
+                });
                 this.uploading = false;
               } catch (e) {
                 root.showAlert('Upload settings', 'Error reading JSON ' + e);
@@ -1273,7 +1283,7 @@ export default defineComponent({
         .map((card) => card.name)
         .sort();
     },
-    getSelectableCustomColonies(): Array<ColonyName> {
+    getRestorableCustomColonies(): Array<ColonyName> {
       if (!this.expansions.colonies) {
         return [];
       }
@@ -1283,16 +1293,22 @@ export default defineComponent({
         ...PATHFINDERS_COLONY_NAMES,
       ]
         .filter((colonyName) => {
+          const expansion = getColony(colonyName)?.expansion;
+          return expansion === undefined || this.expansions[expansion];
+        })
+        .sort();
+    },
+    getSelectableCustomColonies(): Array<ColonyName> {
+      return this.getRestorableCustomColonies()
+        .filter((colonyName) => {
           if ((PATHFINDERS_COLONY_NAMES as ReadonlyArray<ColonyName>).includes(colonyName) && !this.expansions.pathfinders) {
             return false;
           }
           if ((COMMUNITY_COLONY_NAMES as ReadonlyArray<ColonyName>).includes(colonyName) && !this.expansions.community) {
             return false;
           }
-          const expansion = getColony(colonyName)?.expansion;
-          return expansion === undefined || this.expansions[expansion];
-        })
-        .sort();
+          return true;
+        });
     },
     getDefaultCustomCorporations(): Array<CardName> {
       return mergeCustomSelectionWithExclusions(
@@ -1324,12 +1340,23 @@ export default defineComponent({
         this.getActiveCustomPreludeExclusions(),
       );
     },
-    getDefaultCustomColonies(): Array<ColonyName> {
-      return mergeCustomSelectionWithExclusions(
+    getDefaultCustomColonies(options: SyncCustomSelectionOptions = {}): Array<ColonyName> {
+      const defaultColonies = mergeCustomSelectionWithExclusions(
         this.customColonies,
         this.getSelectableCustomColonies(),
         this.customColonyExclusions,
       );
+      if (options.preserveExplicitFanColonies !== true) {
+        return defaultColonies;
+      }
+      const defaultColoniesSet = new Set(defaultColonies);
+      const restorableColonies = new Set(this.getRestorableCustomColonies());
+      return unique([
+        ...defaultColonies,
+        ...this.customColonies.filter((colonyName) => {
+          return !defaultColoniesSet.has(colonyName) && restorableColonies.has(colonyName);
+        }),
+      ]);
     },
     rememberCustomSelectionExclusions(options: RememberCustomSelectionExclusionOptions = {}) {
       if (this.showCorporationList || this.customCorporations.length > 0) {
@@ -1377,7 +1404,7 @@ export default defineComponent({
         }
       }
     },
-    syncCustomSelectionsWithExpansions() {
+    syncCustomSelectionsWithExpansions(options: SyncCustomSelectionOptions = {}) {
       if (this.showCorporationList || this.customCorporations.length > 0) {
         this.customCorporations = this.getDefaultCustomCorporations();
       }
@@ -1385,7 +1412,7 @@ export default defineComponent({
         this.customPreludes = this.getDefaultCustomPreludes();
       }
       if (this.showColoniesList || this.customColonies.length > 0) {
-        this.customColonies = this.getDefaultCustomColonies();
+        this.customColonies = this.getDefaultCustomColonies(options);
       }
     },
     getPlayerProfiles(): ReadonlyArray<PlayerProfile> {

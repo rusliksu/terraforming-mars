@@ -77,4 +77,47 @@ describe('Turmoil', () => {
     expect(pearlMarker.exists()).to.be.true;
     expect(pearlMarker.classes()).to.include('board-cube--persona');
   });
+
+  it('renders delegate counts above player token sprites', () => {
+    const wrapper = shallowMount(Turmoil, {
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        mixins: [{
+          methods: {
+            getVisibilityState: () => true,
+            setVisibilityState: () => {},
+          },
+        }],
+      },
+      props: {
+        turmoil: {
+          dominant: PartyName.UNITY,
+          ruling: PartyName.SCIENTISTS,
+          chairman: undefined,
+          parties: [{
+            name: PartyName.GREENS,
+            partyLeader: undefined,
+            delegates: [
+              {color: 'pearl', number: 2},
+              {color: 'red', number: 1},
+            ],
+          }],
+          lobby: [],
+          reserve: [{color: 'vanger', number: 3}],
+          distant: undefined,
+          coming: undefined,
+          current: undefined,
+          politicalAgendas: fakePoliticalAgendasModel(),
+          policyActionUsers: [],
+        },
+      },
+    });
+
+    const partyDelegateCounts = wrapper.findAll('.grid-delegates .player-token__number');
+    const reserveDelegateCounts = wrapper.findAll('.turmoil-reserve .player-token__number');
+
+    expect(partyDelegateCounts.map((count) => count.text())).deep.eq(['2', '1']);
+    expect(reserveDelegateCounts.map((count) => count.text())).deep.eq(['3']);
+  });
 });

@@ -59,6 +59,24 @@ describe('ColonyDealer', () => {
     ]);
   });
 
+  it('includes explicitly requested pathfinders colonies without the pathfinders expansion', () => {
+    const rng = new SeededRandom(1);
+    const dealer = new ColonyDealer(rng, {
+      ...options,
+      pathfindersExpansion: false,
+      customColoniesList: [ColonyName.IAPETUS_II, ColonyName.CALLISTO, ColonyName.CERES, ColonyName.ENCELADUS],
+    });
+
+    dealer.drawColonies(1);
+
+    expect(dealer.colonies.map(toName)).to.have.members([
+      'Iapetus II',
+      'Callisto',
+      'Ceres',
+      'Enceladus',
+    ]);
+  });
+
   it('filters custom colonies that need disabled expansions', () => {
     const rng = new SeededRandom(1);
     const dealer = new ColonyDealer(rng, {

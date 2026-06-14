@@ -3,6 +3,7 @@ import {Handler} from '../../src/server/routes/Handler';
 import {FakeGameLoader} from './FakeGameLoader';
 import {FakeSessionManager} from './FakeSessionManager';
 import {MockRequest, MockResponse} from './HttpMocks';
+import {newAccessAudit} from '../../src/server/server/AccessAudit';
 import {newIpTracker} from '../../src/server/server/IPTracker';
 import {FakeClock} from '../common/FakeClock';
 
@@ -16,7 +17,14 @@ export class RouteTestScaffolding {
     this.ctx = {
       url: new URL('http://boo.com'),
       ip: '123.45.678.90',
+      clientIp: {address: '123.45.678.90', source: 'unknown'},
       ipTracker: newIpTracker(),
+      accessAudit: newAccessAudit({
+        enabled: false,
+        salt: 'test-salt',
+        now: () => new Date('2026-06-14T10:00:00.000Z'),
+        appendLine: () => {},
+      }),
       gameLoader: new FakeGameLoader(),
       sessionManager: new FakeSessionManager(),
       ids: {

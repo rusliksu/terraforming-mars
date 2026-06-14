@@ -36,10 +36,11 @@ import {ServeAsset} from '../routes/ServeAsset';
 import {serverId, statsId} from '../utils/server-ids';
 import {newIpBlocklist} from './IPBlocklist';
 import {newIpTracker} from './IPTracker';
+import {accessAuditFromEnv} from './AccessAudit';
 import {SessionManager} from './auth/SessionManager';
 import * as authcookies from './auth/authcookies';
 import {DiscordUser} from './auth/discord';
-import {getHerokuIpAddress} from './heroku';
+import {getClientIp} from './clientIp';
 import * as responses from './responses';
 
 const metrics = {
@@ -63,6 +64,7 @@ const clock = new Clock();
 const ips = (process.env.IP_BLOCKLIST ?? '').trim().split(' ');
 const ipBlocklist = newIpBlocklist(ips);
 const ipTracker = newIpTracker();
+const accessAudit = accessAuditFromEnv(process.env);
 
 const handlers: Map<string, IHandler> = new Map(
   [
@@ -110,21 +112,6 @@ const handlers: Map<string, IHandler> = new Map(
   ],
 );
 
-function getIPAddress(req: Request): string {
-  const herokuIpAddress = getHerokuIpAddress(req);
-  if (herokuIpAddress !== undefined) {
-    return herokuIpAddress;
-  }
-  const socketIpAddress = req.socket.address();
-  if (typeof socketIpAddress === 'object' && 'address' in socketIpAddress) {
-    return '!' + socketIpAddress.address + '!';
-  }
-  if (typeof socketIpAddress === 'string') {
-    return socketIpAddress;
-  }
-  return '';
-}
-
 function getHandler(pathname: string): IHandler | undefined {
   const handler: IHandler | undefined = handlers.get(pathname);
   if (handler !== undefined) {
@@ -143,9 +130,9 @@ export function processRequest(req: Request, res: Response): void {
   const start = process.hrtime.bigint();
   let pathnameForLatency: string | undefined = undefined;
   try {
-    const ipAddress = getIPAddress(req);
-    ipTracker.add(ipAddress);
-    if (ipBlocklist.isBlocked(ipAddress)) {
+    const clientIp = getClientIp(req);
+    ipTracker.add(clientIp.address);
+    if (ipBlocklist.isBlocked(clientIp.address)) {
       responses.notFound(req, res);
       return;
     }
@@ -177,8 +164,10 @@ export function processRequest(req: Request, res: Response): void {
       clock,
       gameLoader: GameLoader.getInstance(),
       sessionManager: sessionManager,
-      ip: getIPAddress(req),
+      ip: clientIp.address,
+      clientIp,
       ipTracker: ipTracker,
+      accessAudit,
       ids: {
         serverId,
         statsId,

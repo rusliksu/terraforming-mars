@@ -984,7 +984,7 @@ git commit -m "Audit game access routes"
 - Create: `src/server/tools/access_audit_report.ts`
 - Create: `tests/server/tools/access_audit_report.spec.ts`
 
-- [ ] **Step 1: Write failing analyzer tests**
+- [x] **Step 1: Write failing analyzer tests**
 
 Create `tests/server/tools/access_audit_report.spec.ts`:
 
@@ -1073,7 +1073,7 @@ describe('access_audit_report', () => {
 });
 ```
 
-- [ ] **Step 2: Run analyzer test to verify failure**
+- [x] **Step 2: Run analyzer test to verify failure**
 
 Run:
 
@@ -1083,7 +1083,7 @@ npm run test:server -- tests/server/tools/access_audit_report.spec.ts
 
 Expected: FAIL because `access_audit_report.ts` does not exist.
 
-- [ ] **Step 3: Implement analyzer**
+- [x] **Step 3: Implement analyzer**
 
 Create `src/server/tools/access_audit_report.ts`:
 
@@ -1255,7 +1255,7 @@ if (require.main === module) {
 }
 ```
 
-- [ ] **Step 4: Run analyzer tests**
+- [x] **Step 4: Run analyzer tests**
 
 Run:
 
@@ -1265,7 +1265,7 @@ npm run test:server -- tests/server/tools/access_audit_report.spec.ts
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```powershell
 git add src/server/tools/access_audit_report.ts tests/server/tools/access_audit_report.spec.ts

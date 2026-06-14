@@ -5,6 +5,7 @@ import {MockResponse} from './HttpMocks';
 import {TestPlayer} from '../TestPlayer';
 import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {statusCode} from '../../src/common/http/statusCode';
+import {AccessAuditRecordInput} from '../../src/server/server/AccessAudit';
 
 describe('ApiGame', () => {
   let scaffolding: RouteTestScaffolding;
@@ -104,6 +105,30 @@ describe('ApiGame', () => {
         },
       },
     );
+  });
+
+  it('audits successful game access', async () => {
+    const auditEvents: Array<AccessAuditRecordInput> = [];
+    const player = TestPlayer.BLACK.newPlayer();
+    const game = Game.newInstance('game-valid-id', [player], player, 'spectatorid');
+    scaffolding.ctx.gameLoader.add(game);
+    scaffolding.ctx.clientIp = {address: '203.0.113.10', source: 'cf-connecting-ip'};
+    scaffolding.ctx.accessAudit = {record: (event) => auditEvents.push(event)};
+    scaffolding.req.headers['user-agent'] = 'Browser A';
+    scaffolding.url = '/api/game?id=game-valid-id';
+
+    await scaffolding.get(ApiGame.INSTANCE, res);
+
+    expect(auditEvents).deep.eq([{
+      event: 'game_home',
+      method: 'GET',
+      path: 'api/game',
+      gameId: game.id,
+      participantId: game.id,
+      participantKind: 'game',
+      clientIp: scaffolding.ctx.clientIp,
+      userAgent: 'Browser A',
+    }]);
   });
 
   it('includes active bot players for admin requests', async () => {

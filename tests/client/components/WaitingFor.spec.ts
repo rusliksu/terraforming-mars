@@ -204,9 +204,9 @@ describe('WaitingFor', () => {
     });
 
     const requests: Array<{url: string, options: TestRequestOptions}> = [];
-    wrapper.vm.fetchPlayerInput = (url: string, options: TestRequestOptions) => {
+    wrapper.vm.fetchPlayerInput = ((url: string, options: TestRequestOptions) => {
       requests.push({url, options});
-    };
+    }) as typeof wrapper.vm.fetchPlayerInput;
 
     expect(wrapper.text()).to.include('Undo last action');
     expect(wrapper.text()).to.not.include('Cancel action');

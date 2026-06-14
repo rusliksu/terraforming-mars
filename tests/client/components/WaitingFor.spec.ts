@@ -9,6 +9,7 @@ import raw_settings from '@/genfiles/settings.json';
 import {PreferencesManager} from '@/client/utils/PreferencesManager';
 
 describe('WaitingFor', () => {
+  type TestRequestOptions = {body?: unknown};
   type TestNotificationOptions = {
     body?: string;
     icon?: string;
@@ -204,9 +205,9 @@ describe('WaitingFor', () => {
     });
 
     const requests: Array<{url: string, options: TestRequestOptions}> = [];
-    wrapper.vm.fetchPlayerInput = (url: string, options: TestRequestOptions) => {
+    wrapper.vm.fetchPlayerInput = ((url: string, options: TestRequestOptions) => {
       requests.push({url, options});
-    };
+    }) as typeof wrapper.vm.fetchPlayerInput;
 
     expect(wrapper.text()).to.include('Undo last action');
     expect(wrapper.text()).to.not.include('Cancel action');

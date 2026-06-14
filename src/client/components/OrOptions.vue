@@ -132,7 +132,8 @@ export default defineComponent({
         if (board === null) {
           continue;
         }
-        for (const element of Array.from(board.getElementsByClassName('board-space-selectable'))) {
+        const elements = board.getElementsByClassName('board-space-selectable');
+        for (const element of Array.from(elements)) {
           spaces.push(element as HTMLElement);
         }
       }

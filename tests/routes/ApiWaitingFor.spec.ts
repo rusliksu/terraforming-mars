@@ -6,6 +6,9 @@ import {MockResponse} from './HttpMocks';
 import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {GameId} from '../../src/common/Types';
 import {statusCode} from '../../src/common/http/statusCode';
+import {AccessAuditRecordInput} from '../../src/server/server/AccessAudit';
+
+const originalAccessAuditWaitingFor = process.env.TM_ACCESS_AUDIT_WAITING_FOR;
 
 describe('ApiWaitingFor', () => {
   let scaffolding: RouteTestScaffolding;
@@ -14,6 +17,10 @@ describe('ApiWaitingFor', () => {
   beforeEach(() => {
     scaffolding = new RouteTestScaffolding();
     res = new MockResponse();
+  });
+
+  afterEach(() => {
+    restoreEnv('TM_ACCESS_AUDIT_WAITING_FOR', originalAccessAuditWaitingFor);
   });
 
   it('fails when game not found', async () => {
@@ -46,6 +53,30 @@ describe('ApiWaitingFor', () => {
     await scaffolding.get(ApiWaitingFor.INSTANCE, res);
     expect(res.statusCode).eq(statusCode.ok);
     expect(res.content).eq('{"result":"GO","waitingFor":["black"]}');
+  });
+
+  it('audits successful player polling', async () => {
+    const auditEvents: Array<AccessAuditRecordInput> = [];
+    const player = TestPlayer.BLACK.newPlayer();
+    const game = Game.newInstance('game-id', [player], player, 'spectatorid');
+    await scaffolding.ctx.gameLoader.add(game);
+    scaffolding.ctx.clientIp = {address: '203.0.113.10', source: 'cf-connecting-ip'};
+    scaffolding.ctx.accessAudit = {record: (event) => auditEvents.push(event)};
+    scaffolding.req.headers['user-agent'] = 'Browser A';
+
+    scaffolding.url = '/api/waitingfor?id=' + player.id + '&gameAge=50&undoCount=0';
+    await scaffolding.get(ApiWaitingFor.INSTANCE, res);
+
+    expect(auditEvents).deep.eq([{
+      event: 'waiting_for_player',
+      method: 'GET',
+      path: 'api/waitingfor',
+      gameId: game.id,
+      participantId: player.id,
+      participantKind: 'player',
+      clientIp: scaffolding.ctx.clientIp,
+      userAgent: 'Browser A',
+    }]);
   });
 
   it('allows serverId override for claimed player', async () => {
@@ -86,4 +117,53 @@ describe('ApiWaitingFor', () => {
     expect(res.statusCode).eq(statusCode.ok);
     expect(res.content).eq('{"result":"WAIT","waitingFor":["black","red"]}');
   });
+
+  it('skips spectator polling audit by default', async () => {
+    delete process.env.TM_ACCESS_AUDIT_WAITING_FOR;
+    const auditEvents: Array<AccessAuditRecordInput> = [];
+    const player = TestPlayer.BLACK.newPlayer();
+    const player2 = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('game-id', [player, player2], player, 's-spectatorid');
+    await scaffolding.ctx.gameLoader.add(game);
+    scaffolding.ctx.accessAudit = {record: (event) => auditEvents.push(event)};
+
+    scaffolding.url = '/api/waitingfor?id=' + game.spectatorId + '&gameAge=50&undoCount=0';
+    await scaffolding.get(ApiWaitingFor.INSTANCE, res);
+
+    expect(auditEvents).deep.eq([]);
+  });
+
+  it('audits spectator polling when explicitly enabled', async () => {
+    process.env.TM_ACCESS_AUDIT_WAITING_FOR = '1';
+    const auditEvents: Array<AccessAuditRecordInput> = [];
+    const player = TestPlayer.BLACK.newPlayer();
+    const player2 = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('game-id', [player, player2], player, 's-spectatorid');
+    await scaffolding.ctx.gameLoader.add(game);
+    scaffolding.ctx.clientIp = {address: '203.0.113.10', source: 'cf-connecting-ip'};
+    scaffolding.ctx.accessAudit = {record: (event) => auditEvents.push(event)};
+    scaffolding.req.headers['user-agent'] = 'Browser A';
+
+    scaffolding.url = '/api/waitingfor?id=' + game.spectatorId + '&gameAge=50&undoCount=0';
+    await scaffolding.get(ApiWaitingFor.INSTANCE, res);
+
+    expect(auditEvents).deep.eq([{
+      event: 'waiting_for_spectator',
+      method: 'GET',
+      path: 'api/waitingfor',
+      gameId: game.id,
+      participantId: game.spectatorId,
+      participantKind: 'spectator',
+      clientIp: scaffolding.ctx.clientIp,
+      userAgent: 'Browser A',
+    }]);
+  });
 });
+
+function restoreEnv(name: string, value: string | undefined) {
+  if (value === undefined) {
+    delete process.env[name];
+    return;
+  }
+  process.env[name] = value;
+}

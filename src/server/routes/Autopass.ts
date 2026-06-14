@@ -5,6 +5,7 @@ import {Context} from './IHandler';
 import {isPlayerId} from '../../common/Types';
 import {Request} from '../Request';
 import {Response} from '../Response';
+import {getUserAgent} from './auditRequest';
 
 /**
  * Toggle the player's autopass setting.
@@ -47,5 +48,16 @@ export class Autopass extends Handler {
 
     // This doesn't get saved.
     player.autopass = autopass;
+    ctx.accessAudit.record({
+      event: 'autopass',
+      method: req.method ?? '',
+      path: 'autopass',
+      gameId: game.id,
+      participantId: player.id,
+      participantKind: 'player',
+      clientIp: ctx.clientIp,
+      userAgent: getUserAgent(req),
+      metadata: {autopass},
+    });
   }
 }

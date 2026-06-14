@@ -14,6 +14,7 @@ import {OrOptionsResponse} from '../../src/common/inputs/InputResponse';
 import {CardName} from '../../src/common/cards/CardName';
 import {restoreTestGameLoader, setTestGameLoader} from '../testing/setup';
 import {Payment} from '../../src/common/inputs/Payment';
+import {AccessAuditRecordInput} from '../../src/server/server/AccessAudit';
 
 describe('PlayerInput', () => {
   let scaffolding: RouteTestScaffolding;
@@ -210,6 +211,96 @@ describe('PlayerInput', () => {
 
     const model = JSON.parse(res.content);
     expect(model.game.step).eq(1);
+  });
+
+  it('audits accepted player input without raw payload', async () => {
+    const auditEvents: Array<AccessAuditRecordInput> = [];
+    const player = TestPlayer.BLUE.newPlayer();
+    scaffolding.url = `/player/input?id=${player.id}`;
+    scaffolding.req.method = 'POST';
+    scaffolding.req.headers['user-agent'] = 'Browser A';
+    scaffolding.ctx.clientIp = {address: '203.0.113.10', source: 'cf-connecting-ip'};
+    scaffolding.ctx.accessAudit = {record: (event) => auditEvents.push(event)};
+    const game = Game.newInstance('gameid-audit-accepted', [player], player, 'spectatorid');
+    await scaffolding.ctx.gameLoader.add(game);
+    player.process = () => {};
+
+    const post = scaffolding.post(PlayerInput.INSTANCE, res);
+    const emit = Promise.resolve().then(() => {
+      scaffolding.req.emitter.emit('data', '{"type":"option","debug":"secret-card-name"}');
+      scaffolding.req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+
+    expect(auditEvents).deep.eq([
+      {
+        event: 'player_input_attempt',
+        method: 'POST',
+        path: 'player/input',
+        gameId: game.id,
+        participantId: player.id,
+        participantKind: 'player',
+        clientIp: scaffolding.ctx.clientIp,
+        userAgent: 'Browser A',
+      },
+      {
+        event: 'player_input_accepted',
+        method: 'POST',
+        path: 'player/input',
+        gameId: game.id,
+        participantId: player.id,
+        participantKind: 'player',
+        clientIp: scaffolding.ctx.clientIp,
+        userAgent: 'Browser A',
+        metadata: {inputType: 'option', isUndo: false},
+      },
+    ]);
+    expect(JSON.stringify(auditEvents)).not.contains('secret-card-name');
+  });
+
+  it('audits rejected player input without raw payload', async () => {
+    const auditEvents: Array<AccessAuditRecordInput> = [];
+    const player = TestPlayer.BLUE.newPlayer();
+    scaffolding.url = `/player/input?id=${player.id}`;
+    scaffolding.req.method = 'POST';
+    scaffolding.req.headers['user-agent'] = 'Browser A';
+    scaffolding.ctx.clientIp = {address: '203.0.113.10', source: 'cf-connecting-ip'};
+    scaffolding.ctx.accessAudit = {record: (event) => auditEvents.push(event)};
+    const game = Game.newInstance('gameid-audit-rejected', [player], player, 'spectatorid');
+    await scaffolding.ctx.gameLoader.add(game);
+
+    const post = scaffolding.post(PlayerInput.INSTANCE, res);
+    const emit = Promise.resolve().then(() => {
+      scaffolding.req.emitter.emit('data', '{"type":"option","debug":"secret-card-name"');
+      scaffolding.req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+
+    expect(res.statusCode).eq(400);
+    expect(auditEvents).deep.eq([
+      {
+        event: 'player_input_attempt',
+        method: 'POST',
+        path: 'player/input',
+        gameId: game.id,
+        participantId: player.id,
+        participantKind: 'player',
+        clientIp: scaffolding.ctx.clientIp,
+        userAgent: 'Browser A',
+      },
+      {
+        event: 'player_input_rejected',
+        method: 'POST',
+        path: 'player/input',
+        gameId: game.id,
+        participantId: player.id,
+        participantKind: 'player',
+        clientIp: scaffolding.ctx.clientIp,
+        userAgent: 'Browser A',
+        metadata: {inputType: null, isUndo: false, errorId: null},
+      },
+    ]);
+    expect(JSON.stringify(auditEvents)).not.contains('secret-card-name');
   });
 
   it('writes exact player input payload to the shadow log when enabled', async () => {

@@ -4,6 +4,8 @@ import {Request} from '../Request';
 import {Response} from '../Response';
 import {Clock} from '../../common/Timer';
 import {SessionId} from '../auth/Session';
+import {AccessAudit} from '../server/AccessAudit';
+import {ClientIp} from '../server/clientIp';
 import {DiscordUser} from '../server/auth/discord';
 import {ISessionManager} from '../server/auth/SessionManager';
 
@@ -26,9 +28,12 @@ export type Context = {
   url: URL,
   /** The IP inferred from the inbound request. */
   ip: string,
+  /** The inferred client IP and the source used to derive it. */
+  clientIp: ClientIp,
   gameLoader: IGameLoader,
   sessionManager: ISessionManager,
   ipTracker: IPTracker,
+  accessAudit: AccessAudit,
   ids: {
     serverId: string,
     statsId: string,

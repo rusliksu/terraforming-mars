@@ -11,6 +11,6 @@ export type Request = Pick<http.IncomingMessage, 'headers' | 'method' | 'url'> &
   on: (type: 'data', func: (dat: Buffer) => void) => void;
   socket: {
     address(): string | {} | net.AddressInfo;
+    remoteAddress?: string;
   }
 };
-

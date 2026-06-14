@@ -708,31 +708,17 @@ describe('CreateGameForm', () => {
     expect(wrapper.find('.create-game-profile-color-swatch').exists()).to.be.true;
   });
 
-  it('positions the player profile menu in the viewport', async () => {
+  it('keeps the player profile menu anchored to the player name field', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
     });
     const trigger = wrapper.find('.create-game-player-name');
-    trigger.element.getBoundingClientRect = () => ({
-      left: 32,
-      top: 120,
-      right: 270,
-      bottom: 158,
-      width: 238,
-      height: 38,
-      x: 32,
-      y: 120,
-      toJSON: () => {},
-    });
 
     await trigger.trigger('click');
     await wrapper.vm.$nextTick();
 
-    const menuStyle = wrapper.find('.create-game-profile-menu').attributes('style') ?? '';
-    expect(menuStyle).to.contain('left: 32px');
-    expect(menuStyle).to.contain('top: 164px');
-    expect(menuStyle).to.contain('width: 420px');
-    expect(menuStyle).to.contain('max-height:');
+    expect(wrapper.find('.create-game-profile-picker .create-game-profile-menu').exists()).to.eq(true);
+    expect(wrapper.find('.create-game-profile-menu').attributes()).not.to.have.property('style');
   });
 
   it('keeps the player profile menu open when the viewport resizes', async () => {
@@ -740,17 +726,6 @@ describe('CreateGameForm', () => {
       ...globalConfig,
     });
     const trigger = wrapper.find('.create-game-player-name');
-    trigger.element.getBoundingClientRect = () => ({
-      left: 32,
-      top: 120,
-      right: 270,
-      bottom: 158,
-      width: 238,
-      height: 38,
-      x: 32,
-      y: 120,
-      toJSON: () => {},
-    });
 
     await trigger.trigger('click');
     await wrapper.vm.$nextTick();

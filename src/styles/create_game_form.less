@@ -31,6 +31,10 @@
     margin: 10px 0px 10px 15px
 }
 
+.create-game-players-cont .container {
+    overflow: visible;
+}
+
 .create-game-solo-player {
     background: #595858;
     display: inline-block;
@@ -623,9 +627,12 @@
 }
 
 .create-game-profile-menu {
-    position: fixed;
+    position: absolute;
+    left: 0;
+    top: calc(100% + 6px);
+    width: clamp(340px, 34vw, 430px);
     max-width: calc(100vw - 32px);
-    max-height: min(72vh, 620px);
+    max-height: min(56vh, 520px);
     z-index: 80;
     border: 1px solid rgba(255,255,255,.28);
     border-radius: 6px;

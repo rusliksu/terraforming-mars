@@ -491,16 +491,15 @@
                                                 autocomplete="off"
                                                 ref="playerProfileNameInput"
                                                 v-model="newPlayer.name"
-                                                @focus="openPlayerProfilePicker(newPlayer, index, $event)"
-                                                @click.stop="openPlayerProfilePicker(newPlayer, index, $event)"
+                                                @focus="openPlayerProfilePicker(newPlayer, index)"
+                                                @click.stop="openPlayerProfilePicker(newPlayer, index)"
                                                 @input="updatePlayerProfileAutocomplete(newPlayer, $event)"
                                                 @keydown.enter.stop.prevent="applyFirstFilteredPlayerProfile(newPlayer)"
                                                 @keydown.esc.stop.prevent="closePlayerProfilePicker"
                                                 @keydown.stop >
                                               <div
                                                 v-if="isPlayerProfilePickerOpen(index)"
-                                                class="create-game-profile-menu"
-                                                :style="getPlayerProfileMenuStyle()">
+                                                class="create-game-profile-menu">
                                                   <div class="create-game-profile-option-list">
                                                     <button
                                                       type="button"
@@ -668,7 +667,6 @@
 import * as constants from '@/common/constants';
 
 import {defineComponent, nextTick} from 'vue';
-import type {CSSProperties} from 'vue';
 import {Color, DEFAULT_PLAYER_COLORS, getLockedPlayerName, LOCKED_PLAYER_IDENTITIES} from '@/common/Color';
 import {
   buildPlayerProfilesFromEloPlayers,
@@ -777,13 +775,6 @@ type Refs = {
   playerProfileNameInput?: HTMLInputElement | Array<HTMLInputElement>;
 };
 
-type PlayerProfileMenuPosition = {
-  left: number;
-  top: number;
-  width: number;
-  maxHeight: number;
-};
-
 type FormModel = {
   preludeToggled: boolean;
   uploading: boolean;
@@ -791,7 +782,6 @@ type FormModel = {
   templates: Array<GameTemplate>;
   playerProfilePickerIndex: number | null;
   playerProfileSearch: string;
-  playerProfileMenuPosition: PlayerProfileMenuPosition | null;
   customCorporationExclusions: Array<CardName>;
   customPreludesExclusions: Array<CardName>;
   customColonyExclusions: Array<ColonyName>;
@@ -808,7 +798,6 @@ export default defineComponent({
       templates: TemplateManager.getTemplates(),
       playerProfilePickerIndex: null,
       playerProfileSearch: '',
-      playerProfileMenuPosition: null,
       customCorporationExclusions: [...DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS],
       customPreludesExclusions: [],
       customColonyExclusions: [...DEFAULT_CUSTOM_COLONY_EXCLUSIONS],
@@ -939,8 +928,6 @@ export default defineComponent({
     this.restoreLastSettings();
     void ensureEloLoaded();
     document.addEventListener('click', this.closePlayerProfilePickerFromDocument);
-    window.addEventListener('resize', this.updatePlayerProfileMenuPosition);
-    window.visualViewport?.addEventListener('resize', this.updatePlayerProfileMenuPosition);
     const urlParams = new URLSearchParams(window.location.search);
     const cloneId = urlParams.get('cloneGameId');
     if (cloneId) {
@@ -949,8 +936,6 @@ export default defineComponent({
   },
   unmounted() {
     document.removeEventListener('click', this.closePlayerProfilePickerFromDocument);
-    window.removeEventListener('resize', this.updatePlayerProfileMenuPosition);
-    window.visualViewport?.removeEventListener('resize', this.updatePlayerProfileMenuPosition);
   },
   computed: {
     wikiUrls(): typeof RULEBOOK_URLS & typeof WIKI_URLS {
@@ -1475,21 +1460,9 @@ export default defineComponent({
     isPlayerProfilePickerOpen(index: number): boolean {
       return this.playerProfilePickerIndex === index;
     },
-    getPlayerProfileMenuStyle(): CSSProperties {
-      if (this.playerProfileMenuPosition === null) {
-        return {};
-      }
-      return {
-        left: `${this.playerProfileMenuPosition.left}px`,
-        top: `${this.playerProfileMenuPosition.top}px`,
-        width: `${this.playerProfileMenuPosition.width}px`,
-        maxHeight: `${this.playerProfileMenuPosition.maxHeight}px`,
-      };
-    },
-    openPlayerProfilePicker(player: NewPlayerModel, index: number, event: FocusEvent | MouseEvent) {
+    openPlayerProfilePicker(player: NewPlayerModel, index: number) {
       this.playerProfilePickerIndex = index;
       this.playerProfileSearch = player.name;
-      this.playerProfileMenuPosition = this.getPlayerProfileMenuPosition(event.currentTarget);
     },
     updatePlayerProfileAutocomplete(player: NewPlayerModel, event: Event) {
       const value = event.target instanceof window.HTMLInputElement ? event.target.value : this.playerProfileSearch;
@@ -1509,52 +1482,9 @@ export default defineComponent({
       player.name = this.playerProfileSearch.trim();
       this.closePlayerProfilePicker();
     },
-    updatePlayerProfileMenuPosition() {
-      if (this.playerProfilePickerIndex === null) {
-        return;
-      }
-      const trigger = this.getOpenPlayerProfileTrigger();
-      if (trigger === null) {
-        this.closePlayerProfilePicker();
-        return;
-      }
-      this.playerProfileMenuPosition = this.getPlayerProfileMenuPosition(trigger);
-    },
-    getOpenPlayerProfileTrigger(): HTMLElement | null {
-      if (this.playerProfilePickerIndex === null) {
-        return null;
-      }
-      const root = this.$el as HTMLElement;
-      const triggers = root.querySelectorAll<HTMLElement>('.create-game-player-name');
-      return triggers[this.playerProfilePickerIndex] ?? null;
-    },
-    getPlayerProfileMenuPosition(target: EventTarget | null): PlayerProfileMenuPosition | null {
-      if (!(target instanceof HTMLElement)) {
-        return null;
-      }
-      const rect = target.getBoundingClientRect();
-      const margin = 12;
-      const gap = 6;
-      const availableWidth = Math.max(240, window.innerWidth - margin * 2);
-      const width = Math.min(Math.max(420, rect.width), availableWidth);
-      const left = this.clamp(rect.left, margin, Math.max(margin, window.innerWidth - width - margin));
-      const below = window.innerHeight - rect.bottom - margin - gap;
-      const above = rect.top - margin - gap;
-      const openBelow = below >= 360 || below >= above;
-      const availableHeight = Math.max(openBelow ? below : above, 180);
-      const maxHeight = Math.min(620, window.innerHeight - margin * 2, availableHeight);
-      const top = openBelow ?
-        this.clamp(rect.bottom + gap, margin, window.innerHeight - maxHeight - margin) :
-        this.clamp(rect.top - gap - maxHeight, margin, window.innerHeight - maxHeight - margin);
-      return {left, top, width, maxHeight};
-    },
-    clamp(value: number, min: number, max: number): number {
-      return Math.min(Math.max(value, min), Math.max(min, max));
-    },
     closePlayerProfilePicker() {
       this.playerProfilePickerIndex = null;
       this.playerProfileSearch = '';
-      this.playerProfileMenuPosition = null;
     },
     closePlayerProfilePickerFromDocument() {
       this.closePlayerProfilePicker();

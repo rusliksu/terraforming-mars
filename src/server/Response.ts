@@ -6,5 +6,6 @@ import type * as http from 'http';
  * and to allow for javascript without 'http' to run the server code.
  */
 export type Response = Pick<http.ServerResponse, 'setHeader' | 'write' | 'writeHead'> & {
+  getHeader?: http.ServerResponse['getHeader'];
   end: (data?: string | Buffer) => void;
 };

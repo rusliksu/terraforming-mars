@@ -41,6 +41,17 @@
 5. Keep the initial feature server-only and report-only. No public UI. No admin browser page that leaks audit data.
 6. Use opt-in environment variables. A normal local/dev server should not write audit files unless enabled.
 
+## Execution Status
+
+- 2026-06-14: Implemented and staging-tested the initial audit feature through commit `681c1f56e42600e66246d141033bf2e01b1887e9`.
+- 2026-06-15: Current prod baseline moved to `03b9bf8e0f78bfe7c01b644bc5c5a86c21cb21b8`, so a direct deploy of `681c1f56` would have rolled back player-color work. Built combined candidate `d9e248723d4ad575b8b66755a0d71984bd1cdd13` instead.
+- 2026-06-15 combined validation: `npm run lint:server` passed; `npm run build` passed with existing webpack size warnings; `npm run test:server` passed with `7220 passing`; targeted client specs for `WaitingFor`, `OrOptions`, `Award(s)`, and `Milestone(s)` passed with `56 passing`.
+- 2026-06-15 staging proof: deployed `d9e248723d4ad575b8b66755a0d71984bd1cdd13` to `staging.tm.knightbyte.win`; smoke game `gc820b7713a5e` produced `game_home`, `player_view`, and `spectator_view` audit events; latest staging audit file has no `rawIp`; report tool produced one redacted `info` finding.
+- 2026-06-15 live/prod deploy: promoted staging to prod after explicit approval. Prod now runs `d9e248723d4ad575b8b66755a0d71984bd1cdd13`; access audit env is enabled on `tm-server.service`; raw IP storage is off; `TM_ACCESS_AUDIT_WAITING_FOR=0`. External smoke returned 200 for home, ELO, release manifest, and the original game API `gacf0b954658b`; prod audit JSONL recorded the game API hit and contains no `rawIp`.
+- 2026-06-15 staging follow-up: a concurrent detached staging-only run briefly moved staging back to `6c9e51ea2432ca337a76687b62650b7dc5f306af`; staging was restored to `d9e248723d4ad575b8b66755a0d71984bd1cdd13` and rechecked.
+- 2026-06-15 later prod deploy moved live to `072c29f09a9c2966222dfefca5b3192a4f533907`. Read-only verification confirmed access-audit code and env stayed present, the prod audit JSONL kept advancing, and logs were not stopped. Aggregates after `2026-06-15T10:47:00Z`: `game_home=1824`, `player_view=4616`; last-15-minute check at cutoff `2026-06-15T11:12:33Z`: `game_home=684`, `player_view=1731`.
+- 2026-06-15 report delivery automation: installed `/home/openclaw/scripts/tm-access-audit-report-send.sh`, committed sender source in Gurra workspace as `c8d120443852a6c9dafc5214e857f3f124408b98`, added live Hermes cron job `tm-access-audit-report` (`c435746af90d`) for daily `04:10 UTC` / `07:10 MSK`, and committed wrapper source as `803d6ee0a37d2bf6113ef6885fb49a524050185f`. Later drift-check showed repo and live copies match.
+
 ## File Structure
 
 - Create: `src/server/server/clientIp.ts`
@@ -1279,7 +1290,7 @@ git commit -m "Add access audit report tool"
 **Files:**
 - No new files unless tests reveal a targeted fix.
 
-- [ ] **Step 1: Run targeted tests**
+- [x] **Step 1: Run targeted tests**
 
 Run:
 
@@ -1289,7 +1300,7 @@ npm run test:server -- tests/server/clientIp.spec.ts tests/server/AccessAudit.sp
 
 Expected: PASS.
 
-- [ ] **Step 2: Run server lint**
+- [x] **Step 2: Run server lint**
 
 Run:
 
@@ -1299,7 +1310,7 @@ npm run lint:server
 
 Expected: PASS.
 
-- [ ] **Step 3: Run server build**
+- [x] **Step 3: Run server build**
 
 Run:
 
@@ -1309,7 +1320,7 @@ npm run build:server
 
 Expected: PASS.
 
-- [ ] **Step 4: Run full server tests if targeted checks pass**
+- [x] **Step 4: Run full server tests if targeted checks pass**
 
 Run:
 
@@ -1319,7 +1330,7 @@ npm run test:server
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit validation-only fixes if needed**
+- [x] **Step 5: Commit validation-only fixes if needed**
 
 If any validation fix was required:
 
@@ -1338,7 +1349,7 @@ If no validation fix was required, do not create an empty commit.
 - No local source files.
 - VPS operations must use `C:\Users\Ruslan\gurra\scripts\codex-vps-run.ps1`.
 
-- [ ] **Step 1: Confirm VPS wrapper status**
+- [x] **Step 1: Confirm VPS wrapper status**
 
 Run locally:
 
@@ -1352,7 +1363,7 @@ Expected: read-only status succeeds. If it reports auth failure, ask Ruslan to r
 C:\Users\Ruslan\gurra\scripts\codex-vps-run.ps1 -Login
 ```
 
-- [ ] **Step 2: Prepare staging environment variables**
+- [x] **Step 2: Prepare staging environment variables**
 
 Use VPS Codex in read-only mode first to inspect how staging env is configured. Do not print secret values.
 
@@ -1366,11 +1377,11 @@ TM_ACCESS_AUDIT_RAW_IP=0
 TM_ACCESS_AUDIT_WAITING_FOR=0
 ```
 
-- [ ] **Step 3: Deploy to staging only**
+- [x] **Step 3: Deploy to staging only**
 
 Follow existing staging deploy rules from `C:\Users\Ruslan\shared-memory\claude-code\terraforming-mars.md`. Do not deploy to prod.
 
-- [ ] **Step 4: Smoke staging**
+- [x] **Step 4: Smoke staging**
 
 Open or curl staging:
 
@@ -1390,7 +1401,7 @@ https://staging.tm.knightbyte.win/spectator?id=<spectatorId>
 
 Expected: JSONL file appears on VPS under the staging audit dir.
 
-- [ ] **Step 5: Run report on staging audit file**
+- [x] **Step 5: Run report on staging audit file**
 
 Delegate to VPS Codex:
 
@@ -1408,7 +1419,7 @@ Expected: report contains test events and no raw IPs.
 - No local source files.
 - Requires explicit user approval before any live/prod deploy or service restart.
 
-- [ ] **Step 1: Decide the experiment scope**
+- [x] **Step 1: Decide the experiment scope**
 
 Recommended first scope:
 
@@ -1420,17 +1431,19 @@ Waiting-for spectator polling disabled.
 Report redacted.
 ```
 
-- [ ] **Step 2: Tell players the practical rule**
+- [x] **Step 2: Do not warn players; keep only the implicit fair-play rule**
 
-Message to players:
+Ruslan clarified the live experiment should not warn players about the audit. Players already know the practical rule; the experiment is meant to detect hidden violations, not deter them.
+
+Practical rule, if it is ever needed outside the experiment:
 
 ```text
 For this game, use only your own player link. Do not open other player links. Spectator links are allowed only for non-players unless explicitly agreed.
 ```
 
-Do not mention implementation details, hashes, or detection thresholds.
+Do not mention implementation details, hashes, or detection thresholds during the live experiment.
 
-- [ ] **Step 3: Enable on live only after explicit approval**
+- [x] **Step 3: Enable on live only after explicit approval**
 
 Before live:
 
@@ -1443,9 +1456,58 @@ Then follow prod deployment rules:
 - do not modify SQLite while active games use it;
 - deploy only if Ruslan explicitly approves live/prod.
 
+Live rollout notes:
+- Initial access-audit prod deploy: `d9e248723d4ad575b8b66755a0d71984bd1cdd13`, artifact `7b32167f357f0abc919011ec99fee57b72217f7426553176868c640b7e5b0d99`.
+- Log-volume hotfix promoted to prod after explicit confirmation: `5146294cac5cac362d77bc540c5a5c2043064717`, artifact `3a376ca647857a236441e2655e93a4ddaf1c4e7fde4a4f627f856d7133e00de7`, prod release `/home/openclaw/tm-runtime/prod/releases/20260615091746-5146294cac5cac362d77bc540c5a5c2043064717`.
+- Hotfix throttles repeated view/poll audit events for 5 minutes; input/action events remain unthrottled.
+- Prod post-deploy proof used only public `api/game?id=gacf0b954658b`: 3 repeated requests -> 1 `game_home` audit event in the proof window; `rawIp` key count stayed 0. No prod test game was created and no foreign `player` link was opened for proof.
+- Post-throttle health check (`2026-06-15T09:18:00Z..09:35:37Z`): `3281` events, average `186/min`, with `player_view=2104`, `game_home=835`, `player_input_attempt=165`, `player_input_accepted=164`, `player_input_rejected=1`, `waiting_for_player=12`; `rawIp` key count 0, invalid JSON 0, severe journal matches 0. Residual note: 5-minute view throttling still produces a sizable week-long file. If needed, raise view throttle to 15-30 minutes via explicit prod-config change; do not throttle input/action events.
+- Volume root-cause (`2026-06-15T09:18:00Z..10:25:11Z`): `11676` events over `67.2` minutes, projected `~250k/day`. Most `game_home` and `player_view` clusters have exactly `14` records in the window, matching 5-minute throttling. Remaining volume comes from hundreds of independent view clusters (`player_view`: `586`; `game_home`: `231`), not invalid JSON or raw IP leakage. Recommended next config, only with explicit prod approval: increase view throttle to 30 minutes; leave input/action events unthrottled.
+
 - [ ] **Step 4: Generate redacted report after the game**
 
-Delegate:
+Preferred command once `gameId` and audit window are known:
+
+```bash
+/home/openclaw/scripts/tm-access-audit-report-send.sh \
+  --env prod \
+  --date YYYY-MM-DD \
+  --game '<gameId>' \
+  --since <YYYY-MM-DDTHH:mm:ssZ> \
+  --until <YYYY-MM-DDTHH:mm:ssZ> \
+  --min-severity medium
+```
+
+This sends only compact counts to Telegram via Gurra/Hermes and writes the redacted detailed report locally under `/home/openclaw/.local/state/tm-access-audit-reports/`.
+
+Automatic daily delivery is also configured through Hermes:
+
+```text
+job: tm-access-audit-report (c435746af90d)
+schedule: 10 4 * * *  # 04:10 UTC / 07:10 MSK
+wrapper: /home/openclaw/.hermes/scripts/tm_access_audit_report.py
+tracked wrapper: /home/openclaw/repos/gurra-workspace/vps-config/hermes-scripts/tm_access_audit_report.py
+sender: /home/openclaw/scripts/tm-access-audit-report-send.sh --env prod --min-severity medium --no-telegram
+delivery: Hermes telegram home channel
+```
+
+The wrapper uses `--no-telegram`; Hermes performs the Telegram delivery, so no chat ID is stored in the job and no duplicate sender message should be produced.
+
+Lower-level local CLI command:
+
+```bash
+node build/src/server/tools/access_audit_report.js \
+  /home/openclaw/tm-runtime/prod/shared/logs/access-audit/access-audit-YYYY-MM-DD.jsonl \
+  --game <gameId> \
+  --since <YYYY-MM-DDTHH:mm:ssZ> \
+  --until <YYYY-MM-DDTHH:mm:ssZ> \
+  --redact-clusters \
+  --min-severity medium
+```
+
+Local source note: `src/server/tools/access_audit_report.ts` now supports `--game`, `--since`, `--until`, `--redact-clusters`, and `--min-severity`; validated with targeted mocha, eslint, and `npm run build:server`. This tool change is not a live server behavior change unless the checkout/build used for reporting includes it.
+
+Fallback delegate prompt if running through VPS Codex instead of the built tool:
 
 ```powershell
 C:\Users\Ruslan\gurra\scripts\codex-vps-run.ps1 -Sandbox read-only "For game <gameId>, analyze live TM access-audit logs for the audit window. Return redacted findings only: severity, cluster, actedAs, viewedPlayers, spectatorViews, firstSeen, lastSeen, reason. Do not print raw IPs, headers, cookies, secrets, or full log lines."

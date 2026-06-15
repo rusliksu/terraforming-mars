@@ -137,6 +137,84 @@ describe('access_audit_report', () => {
     expect(JSON.stringify(report)).not.contains('203.0.113.10');
   });
 
+  it('uses audit client id before collapsed IP hash when grouping clusters', () => {
+    const report = analyzeAccessAudit([
+      {
+        ts: '2026-06-14T10:00:00.000Z',
+        event: 'player_view',
+        gameId: 'g1',
+        participantId: 'p-blue',
+        participantKind: 'player',
+        clientIdHash: 'client-viewer',
+        ipHash: 'ip-shared',
+        userAgentHash: 'ua-a',
+      },
+      {
+        ts: '2026-06-14T10:02:00.000Z',
+        event: 'player_input_accepted',
+        gameId: 'g1',
+        participantId: 'p-red',
+        participantKind: 'player',
+        clientIdHash: 'client-actor',
+        ipHash: 'ip-shared',
+        userAgentHash: 'ua-a',
+      },
+    ]);
+
+    expect(report.findings).deep.eq([
+      {
+        severity: 'info',
+        gameId: 'g1',
+        cluster: 'client:client-viewer:ua-a',
+        actedAs: [],
+        viewedPlayers: ['p-blue'],
+        spectatorViews: [],
+        reason: 'audit client id viewed player data but did not submit actions in this audit window',
+        firstSeen: '2026-06-14T10:00:00.000Z',
+        lastSeen: '2026-06-14T10:00:00.000Z',
+      },
+    ]);
+  });
+
+  it('flags same audit client id even when IP hash changes', () => {
+    const report = analyzeAccessAudit([
+      {
+        ts: '2026-06-14T10:00:00.000Z',
+        event: 'player_view',
+        gameId: 'g1',
+        participantId: 'p-blue',
+        participantKind: 'player',
+        clientIdHash: 'client-a',
+        ipHash: 'ip-before',
+        userAgentHash: 'ua-a',
+      },
+      {
+        ts: '2026-06-14T10:02:00.000Z',
+        event: 'player_input_accepted',
+        gameId: 'g1',
+        participantId: 'p-red',
+        participantKind: 'player',
+        clientIdHash: 'client-a',
+        ipHash: 'ip-after',
+        userAgentHash: 'ua-a',
+      },
+    ]);
+
+    expect(report.findings).deep.eq([
+      {
+        severity: 'high',
+        gameId: 'g1',
+        cluster: 'client:client-a:ua-a',
+        actedAs: ['p-red'],
+        viewedPlayers: ['p-blue'],
+        spectatorViews: [],
+        reason: 'same audit client id and user-agent submitted input for one player after viewing another player in the same game',
+        firstSeen: '2026-06-14T10:00:00.000Z',
+        lastSeen: '2026-06-14T10:02:00.000Z',
+      },
+    ]);
+  });
+
   it('filters by game and time window before classifying findings', () => {
     const report = analyzeAccessAudit([
       {

@@ -7,6 +7,7 @@ export type AuditLogEntry = {
   gameId?: string;
   participantId?: string;
   participantKind?: string;
+  clientIdHash?: string;
   ipHash?: string;
   ipPrefixHash?: string;
   userAgentHash?: string;
@@ -40,6 +41,7 @@ export type AnalyzeAccessAuditOptions = {
 type Bucket = {
   gameId: string;
   cluster: string;
+  clusterKind: 'clientId' | 'ip';
   firstSeen: string;
   lastSeen: string;
   actedAs: Set<string>;
@@ -60,17 +62,37 @@ function updateWindow(bucket: Bucket, ts: string) {
   }
 }
 
-function bucketFor(buckets: Map<string, Bucket>, entry: AuditLogEntry): Bucket | undefined {
-  if (entry.gameId === undefined || entry.ipHash === undefined || entry.userAgentHash === undefined || entry.ts === undefined) {
+function clusterFor(entry: AuditLogEntry): {cluster: string; clusterKind: Bucket['clusterKind']} | undefined {
+  if (entry.gameId === undefined || entry.userAgentHash === undefined || entry.ts === undefined) {
     return undefined;
   }
-  const cluster = `${entry.ipHash}:${entry.userAgentHash}`;
-  const key = `${entry.gameId}:${cluster}`;
+  if (entry.clientIdHash !== undefined) {
+    return {
+      cluster: `client:${entry.clientIdHash}:${entry.userAgentHash}`,
+      clusterKind: 'clientId',
+    };
+  }
+  if (entry.ipHash !== undefined) {
+    return {
+      cluster: `${entry.ipHash}:${entry.userAgentHash}`,
+      clusterKind: 'ip',
+    };
+  }
+  return undefined;
+}
+
+function bucketFor(buckets: Map<string, Bucket>, entry: AuditLogEntry): Bucket | undefined {
+  const cluster = clusterFor(entry);
+  if (entry.gameId === undefined || cluster === undefined) {
+    return undefined;
+  }
+  const key = `${entry.gameId}:${cluster.cluster}`;
   let bucket = buckets.get(key);
   if (bucket === undefined) {
     bucket = {
       gameId: entry.gameId,
-      cluster,
+      cluster: cluster.cluster,
+      clusterKind: cluster.clusterKind,
       firstSeen: entry.ts,
       lastSeen: entry.ts,
       actedAs: new Set(),
@@ -81,6 +103,27 @@ function bucketFor(buckets: Map<string, Bucket>, entry: AuditLogEntry): Bucket |
   }
   updateWindow(bucket, entry.ts);
   return bucket;
+}
+
+function highReason(bucket: Bucket): string {
+  if (bucket.clusterKind === 'clientId') {
+    return 'same audit client id and user-agent submitted input for one player after viewing another player in the same game';
+  }
+  return 'same IP and user-agent submitted input for one player after viewing another player in the same game';
+}
+
+function mediumReason(bucket: Bucket): string {
+  if (bucket.clusterKind === 'clientId') {
+    return 'same audit client id and user-agent submitted input and opened spectator view in the same game';
+  }
+  return 'same IP and user-agent submitted input and opened spectator view in the same game';
+}
+
+function infoReason(bucket: Bucket): string {
+  if (bucket.clusterKind === 'clientId') {
+    return 'audit client id viewed player data but did not submit actions in this audit window';
+  }
+  return 'client viewed player data but did not submit actions in this audit window';
 }
 
 function isWithinWindow(entry: AuditLogEntry, options: AnalyzeAccessAuditOptions): boolean {
@@ -153,7 +196,7 @@ export function analyzeAccessAudit(entries: Array<AuditLogEntry>, options: Analy
         actedAs,
         viewedPlayers,
         spectatorViews,
-        reason: 'same IP and user-agent submitted input for one player after viewing another player in the same game',
+        reason: highReason(bucket),
         firstSeen: bucket.firstSeen,
         lastSeen: bucket.lastSeen,
       });
@@ -168,7 +211,7 @@ export function analyzeAccessAudit(entries: Array<AuditLogEntry>, options: Analy
         actedAs,
         viewedPlayers,
         spectatorViews,
-        reason: 'same IP and user-agent submitted input and opened spectator view in the same game',
+        reason: mediumReason(bucket),
         firstSeen: bucket.firstSeen,
         lastSeen: bucket.lastSeen,
       });
@@ -183,7 +226,7 @@ export function analyzeAccessAudit(entries: Array<AuditLogEntry>, options: Analy
         actedAs,
         viewedPlayers,
         spectatorViews,
-        reason: 'client viewed player data but did not submit actions in this audit window',
+        reason: infoReason(bucket),
         firstSeen: bucket.firstSeen,
         lastSeen: bucket.lastSeen,
       });
@@ -215,7 +258,7 @@ function printUsage() {
     '  --game <gameId>           Only report one game.',
     '  --since <iso>             Only include entries at or after this timestamp.',
     '  --until <iso>             Only include entries at or before this timestamp.',
-    '  --redact-clusters         Replace ipHash:userAgentHash with stable report-local labels.',
+    '  --redact-clusters         Replace clientIdHash/userAgentHash or ipHash/userAgentHash with stable report-local labels.',
     '  --min-severity <level>    Minimum severity to print: high, medium, or info.',
   ].join('\n'));
 }

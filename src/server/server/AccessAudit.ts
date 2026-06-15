@@ -26,6 +26,7 @@ export type AccessAuditRecordInput = {
   participantId?: ParticipantId | string;
   participantKind: ParticipantKind;
   clientIp: ClientIp;
+  clientId?: string;
   userAgent?: string;
   metadata?: Record<string, string | number | boolean | null>;
 };
@@ -86,6 +87,7 @@ export function newAccessAudit(options: AccessAuditOptions): AccessAudit {
         ipSource: input.clientIp.source,
         ipHash: hmac(input.clientIp.address, options.salt),
         ipPrefixHash: hmac(ipPrefix(input.clientIp.address), options.salt),
+        clientIdHash: input.clientId === undefined ? undefined : hmac(input.clientId, options.salt),
         userAgentHash: hmac(input.userAgent ?? '', options.salt),
         metadata: cleanMetadata(input.metadata),
       };
@@ -95,6 +97,17 @@ export function newAccessAudit(options: AccessAuditOptions): AccessAudit {
       }
 
       options.appendLine(JSON.stringify(record));
+    },
+  };
+}
+
+export function accessAuditWithClientId(accessAudit: AccessAudit, clientId: string | undefined): AccessAudit {
+  if (clientId === undefined) {
+    return accessAudit;
+  }
+  return {
+    record(input: AccessAuditRecordInput): void {
+      accessAudit.record({...input, clientId});
     },
   };
 }

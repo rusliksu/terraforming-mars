@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {newAccessAudit} from '../../src/server/server/AccessAudit';
+import {accessAuditWithClientId, newAccessAudit} from '../../src/server/server/AccessAudit';
 
 describe('AccessAudit', () => {
   it('does nothing when disabled', () => {
@@ -85,5 +85,48 @@ describe('AccessAudit', () => {
     const entry = JSON.parse(lines[0]);
     expect(entry.rawIp).eq('2001:db8:abcd:0012:0000:0000:0000:0001');
     expect(entry.metadata.privateHandsVisible).eq(false);
+  });
+
+  it('writes hashed client id when provided', () => {
+    const lines: Array<string> = [];
+    const audit = newAccessAudit({
+      enabled: true,
+      salt: 'test-salt',
+      appendLine: (line) => lines.push(line),
+      now: () => new Date('2026-06-14T10:00:00.000Z'),
+    });
+
+    audit.record({
+      event: 'player_view',
+      method: 'GET',
+      path: 'api/player',
+      gameId: 'g123',
+      participantId: 'p123',
+      participantKind: 'player',
+      clientIp: {address: '203.0.113.10', source: 'cf-connecting-ip'},
+      clientId: 'client-id-value',
+      userAgent: 'Browser A',
+    });
+
+    const entry = JSON.parse(lines[0]);
+    expect(entry.clientIdHash).to.be.a('string').and.to.have.length.greaterThan(20);
+    expect(JSON.stringify(entry)).not.contains('client-id-value');
+  });
+
+  it('can attach a request client id to audit records', () => {
+    const events: Array<any> = [];
+    const audit = accessAuditWithClientId({
+      record: (input) => events.push(input),
+    }, 'request-client-id');
+
+    audit.record({
+      event: 'player_view',
+      method: 'GET',
+      path: 'api/player',
+      participantKind: 'player',
+      clientIp: {address: '203.0.113.10', source: 'cf-connecting-ip'},
+    });
+
+    expect(events[0].clientId).eq('request-client-id');
   });
 });

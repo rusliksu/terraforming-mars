@@ -21,11 +21,15 @@ export class MockRequest implements Request {
 }
 
 export class MockResponse implements Response {
-  public headers: Map<string, string> = new Map();
+  public headers: Map<string, string | Array<string>> = new Map();
   public content = '';
   public statusCode = 200;
 
-  public setHeader(key: string, value: string): http.ServerResponse {
+  public getHeader(key: string): number | string | string[] | undefined {
+    return this.headers.get(key);
+  }
+
+  public setHeader(key: string, value: string | Array<string>): http.ServerResponse {
     this.headers.set(key, value);
     return this as unknown as http.ServerResponse;
   }

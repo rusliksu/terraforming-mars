@@ -26,6 +26,7 @@ export type AccessAuditRecordInput = {
   participantId?: ParticipantId | string;
   participantKind: ParticipantKind;
   clientIp: ClientIp;
+  clientId?: string;
   userAgent?: string;
   metadata?: Record<string, string | number | boolean | null>;
 };
@@ -77,12 +78,18 @@ const THROTTLED_EVENTS = new Set<AccessAuditEvent>([
   'waiting_for_spectator',
 ]);
 
-function throttleKey(input: AccessAuditRecordInput, ipHash: string, userAgentHash: string): string {
+function throttleKey(
+  input: AccessAuditRecordInput,
+  ipHash: string,
+  userAgentHash: string,
+  clientIdHash: string | undefined,
+): string {
+  const clientKey = clientIdHash === undefined ? `ip:${ipHash}` : `client:${clientIdHash}`;
   return [
     input.event,
     input.gameId ?? '',
     input.participantId ?? '',
-    ipHash,
+    clientKey,
     userAgentHash,
   ].join(':');
 }
@@ -107,9 +114,10 @@ export function newAccessAudit(options: AccessAuditOptions): AccessAudit {
       const now = options.now();
       const ipHash = hmac(input.clientIp.address, options.salt);
       const userAgentHash = hmac(input.userAgent ?? '', options.salt);
+      const clientIdHash = input.clientId === undefined ? undefined : hmac(input.clientId, options.salt);
       const viewThrottleMs = options.viewThrottleMs ?? 0;
       if (viewThrottleMs > 0 && THROTTLED_EVENTS.has(input.event)) {
-        const key = throttleKey(input, ipHash, userAgentHash);
+        const key = throttleKey(input, ipHash, userAgentHash, clientIdHash);
         const nowMs = now.getTime();
         const previousMs = lastViewEventAt.get(key);
         if (previousMs !== undefined && nowMs - previousMs < viewThrottleMs) {
@@ -129,6 +137,7 @@ export function newAccessAudit(options: AccessAuditOptions): AccessAudit {
         ipSource: input.clientIp.source,
         ipHash,
         ipPrefixHash: hmac(ipPrefix(input.clientIp.address), options.salt),
+        clientIdHash,
         userAgentHash,
         metadata: cleanMetadata(input.metadata),
       };
@@ -138,6 +147,17 @@ export function newAccessAudit(options: AccessAuditOptions): AccessAudit {
       }
 
       options.appendLine(JSON.stringify(record));
+    },
+  };
+}
+
+export function accessAuditWithClientId(accessAudit: AccessAudit, clientId: string | undefined): AccessAudit {
+  if (clientId === undefined) {
+    return accessAudit;
+  }
+  return {
+    record(input: AccessAuditRecordInput): void {
+      accessAudit.record({...input, clientId});
     },
   };
 }

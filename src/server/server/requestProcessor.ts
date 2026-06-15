@@ -36,10 +36,11 @@ import {ServeAsset} from '../routes/ServeAsset';
 import {serverId, statsId} from '../utils/server-ids';
 import {newIpBlocklist} from './IPBlocklist';
 import {newIpTracker} from './IPTracker';
-import {accessAuditFromEnv} from './AccessAudit';
+import {accessAuditFromEnv, accessAuditWithClientId} from './AccessAudit';
 import {SessionManager} from './auth/SessionManager';
 import * as authcookies from './auth/authcookies';
 import {DiscordUser} from './auth/discord';
+import {getOrSetAccessAuditClientId} from './accessAuditClientId';
 import {getClientIp} from './clientIp';
 import * as responses from './responses';
 
@@ -159,6 +160,7 @@ export function processRequest(req: Request, res: Response): void {
     }
 
     const url = new URL(req.url, `http://${req.headers.host}`);
+    const accessAuditClientId = process.env.TM_ACCESS_AUDIT === '1' ? getOrSetAccessAuditClientId(req, res) : undefined;
     const ctx: Context = {
       url: url,
       clock,
@@ -167,7 +169,7 @@ export function processRequest(req: Request, res: Response): void {
       ip: clientIp.address,
       clientIp,
       ipTracker: ipTracker,
-      accessAudit,
+      accessAudit: accessAuditWithClientId(accessAudit, accessAuditClientId),
       ids: {
         serverId,
         statsId,

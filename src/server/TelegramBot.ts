@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {BotTakeoverManager} from './bot/BotTakeoverManager';
 import {PlayerId} from '../common/Types';
+import {Phase} from '../common/Phase';
 
 const SERVER_URL = process.env.TM_SERVER_URL ?? 'https://tm.knightbyte.win';
 const COLOR_LABELS: Record<string, string> = {
@@ -257,7 +258,7 @@ function warnGameStartNoticeFailed(player: TelegramNotifiable, response: Telegra
 }
 
 export function buildTurnNoticeText(player: TelegramNotifiable, options: TurnNoticeOptions = {}): string {
-  const lines = [options.reminder === true ? 'Напоминание: твой ход!' : 'Твой ход!'];
+  const lines = [buildTurnNoticeHeader(player, options)];
   const gameSummary = buildGameSummary(player);
   if (gameSummary !== undefined) {
     lines.push(gameSummary);
@@ -268,6 +269,15 @@ export function buildTurnNoticeText(player: TelegramNotifiable, options: TurnNot
   }
   lines.push(`${SERVER_URL}/player?id=${player.id}`);
   return lines.join('\n');
+}
+
+function buildTurnNoticeHeader(player: TelegramNotifiable, options: TurnNoticeOptions): string {
+  if (player.game?.phase === Phase.INITIALDRAFTING) {
+    return options.reminder === true ?
+      'Напоминание: нужно выбрать карту в начальном драфте!' :
+      'Нужно выбрать карту в начальном драфте!';
+  }
+  return options.reminder === true ? 'Напоминание: твой ход!' : 'Твой ход!';
 }
 
 async function deleteTelegramMessage(chatId: string, messageId: number): Promise<void> {

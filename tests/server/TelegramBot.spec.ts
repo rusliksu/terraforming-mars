@@ -101,6 +101,49 @@ describe('TelegramBot', () => {
     expect(text).includes('https://tm.knightbyte.win/player?id=p-ruslan');
   });
 
+  it('describes initial draft notices as card selection instead of a normal turn', () => {
+    const text = buildTurnNoticeText({
+      name: 'Даша',
+      id: 'p-dasha',
+      telegramID: '123456',
+      lastNoticeMessageId: -1,
+      game: {
+        id: 'g5d00c8e62c26',
+        generation: 1,
+        phase: 'initial_drafting',
+        players: [
+          {name: 'Фелькнер', color: 'green'},
+          {name: 'Даша', color: 'pink'},
+          {name: 'GydRo', color: 'pearl'},
+        ],
+        gameOptions: {boardName: 'mars'},
+      },
+    });
+
+    expect(text).includes('Нужно выбрать карту в начальном драфте!');
+    expect(text).not.includes('Твой ход!');
+    expect(text).includes('Игра g5d00c8e · Gen 1 · initial_drafting · mars · 3P');
+  });
+
+  it('describes initial draft reminders as card selection instead of a normal turn', () => {
+    const text = buildTurnNoticeText({
+      name: 'Даша',
+      id: 'p-dasha',
+      telegramID: '123456',
+      lastNoticeMessageId: -1,
+      game: {
+        id: 'g5d00c8e62c26',
+        generation: 1,
+        phase: 'initial_drafting',
+        players: [{name: 'Даша', color: 'pink'}],
+        gameOptions: {boardName: 'mars'},
+      },
+    }, {reminder: true});
+
+    expect(text).includes('Напоминание: нужно выбрать карту в начальном драфте!');
+    expect(text).not.includes('Напоминание: твой ход!');
+  });
+
   it('suppresses turn notice while bot takeover is active', async () => {
     const original = BotTakeoverManager.INSTANCE.isActive;
     BotTakeoverManager.INSTANCE.isActive = (() => true) as typeof BotTakeoverManager.INSTANCE.isActive;

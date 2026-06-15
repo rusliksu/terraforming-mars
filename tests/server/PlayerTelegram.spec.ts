@@ -146,7 +146,7 @@ describe('Player telegram state', () => {
       const deleteCalls = telegram.calls.filter((call) => call.path.includes('/deleteMessage'));
       expect(delays).deep.eq([12 * 60 * 60 * 1000]);
       expect(sendCalls).has.length(1);
-      expect(sendCalls[0].body.text).contains('Напоминание: твой ход!');
+      expect(sendCalls[0].body.text).contains('Напоминание: нужно выбрать карту в начальном драфте!');
       expect(deleteCalls).has.length(1);
       expect(deleteCalls[0].body.message_id).eq(77);
       expect((player1 as any)._pendingTurnNoticeReminderTimer).not.to.be.undefined;

@@ -33,6 +33,7 @@ export type AccessAuditRecordInput = {
 export type AccessAuditOptions = {
   enabled: boolean;
   includeRawIp?: boolean;
+  viewThrottleMs?: number;
   salt: string;
   appendLine: (line: string) => void;
   now: () => Date;
@@ -68,15 +69,57 @@ function cleanMetadata(metadata: Record<string, string | number | boolean | null
   return output;
 }
 
+const THROTTLED_EVENTS = new Set<AccessAuditEvent>([
+  'game_home',
+  'player_view',
+  'spectator_view',
+  'waiting_for_player',
+  'waiting_for_spectator',
+]);
+
+function throttleKey(input: AccessAuditRecordInput, ipHash: string, userAgentHash: string): string {
+  return [
+    input.event,
+    input.gameId ?? '',
+    input.participantId ?? '',
+    ipHash,
+    userAgentHash,
+  ].join(':');
+}
+
+function positiveInteger(value: string | undefined, fallback: number): number {
+  if (value === undefined) {
+    return fallback;
+  }
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
 export function newAccessAudit(options: AccessAuditOptions): AccessAudit {
+  const lastViewEventAt = new Map<string, number>();
+
   return {
     record(input: AccessAuditRecordInput): void {
       if (!options.enabled) {
         return;
       }
 
+      const now = options.now();
+      const ipHash = hmac(input.clientIp.address, options.salt);
+      const userAgentHash = hmac(input.userAgent ?? '', options.salt);
+      const viewThrottleMs = options.viewThrottleMs ?? 0;
+      if (viewThrottleMs > 0 && THROTTLED_EVENTS.has(input.event)) {
+        const key = throttleKey(input, ipHash, userAgentHash);
+        const nowMs = now.getTime();
+        const previousMs = lastViewEventAt.get(key);
+        if (previousMs !== undefined && nowMs - previousMs < viewThrottleMs) {
+          return;
+        }
+        lastViewEventAt.set(key, nowMs);
+      }
+
       const record: Record<string, unknown> = {
-        ts: options.now().toISOString(),
+        ts: now.toISOString(),
         event: input.event,
         method: input.method,
         path: input.path,
@@ -84,9 +127,9 @@ export function newAccessAudit(options: AccessAuditOptions): AccessAudit {
         participantId: input.participantId,
         participantKind: input.participantKind,
         ipSource: input.clientIp.source,
-        ipHash: hmac(input.clientIp.address, options.salt),
+        ipHash,
         ipPrefixHash: hmac(ipPrefix(input.clientIp.address), options.salt),
-        userAgentHash: hmac(input.userAgent ?? '', options.salt),
+        userAgentHash,
         metadata: cleanMetadata(input.metadata),
       };
 
@@ -109,10 +152,12 @@ export function accessAuditFromEnv(env: Record<string, string | undefined>): Acc
   const salt = env.TM_ACCESS_AUDIT_SALT ?? 'development-access-audit-salt';
   const dir = env.TM_ACCESS_AUDIT_DIR ?? path.resolve(process.cwd(), 'access-audit-logs');
   const includeRawIp = env.TM_ACCESS_AUDIT_RAW_IP === '1';
+  const viewThrottleMs = positiveInteger(env.TM_ACCESS_AUDIT_VIEW_THROTTLE_MS, 300000);
 
   return newAccessAudit({
     enabled,
     includeRawIp,
+    viewThrottleMs,
     salt,
     now: () => new Date(),
     appendLine: (line: string) => {

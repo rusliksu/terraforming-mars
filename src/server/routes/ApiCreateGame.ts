@@ -30,6 +30,17 @@ export function isTelegramIdValid(telegramID: string | undefined): boolean {
   return normalized === '' || /^\d{5,20}$/.test(normalized);
 }
 
+function isTelegramIdRequired(player: NewGameConfig['players'][number]): boolean {
+  return player.isBot !== true;
+}
+
+function maskTelegramIdForLog(telegramID: string): string {
+  if (telegramID === '') {
+    return 'missing';
+  }
+  return `len=${telegramID.length} last4=${telegramID.slice(-4)}`;
+}
+
 type CreateGameRouteDeps = Pick<BotTakeoverManager, 'start' | 'stop'>;
 
 function getQuotaConfig(): QuotaConfig {
@@ -117,6 +128,14 @@ export class ApiCreateGame extends Handler {
               resolve();
               return;
             }
+            const missingTelegramPlayerIndex = gameReq.players.findIndex((player) => {
+              return isTelegramIdRequired(player) && normalizeTelegramId(player.telegramID) === '';
+            });
+            if (missingTelegramPlayerIndex !== -1) {
+              responses.badRequest(req, res, `missing telegram id for player ${missingTelegramPlayerIndex + 1}`);
+              resolve();
+              return;
+            }
           }
           const normalizedTelegramIds = turnBasedGame ?
             gameReq.players.map((player) => normalizeTelegramId(player.telegramID)) :
@@ -140,6 +159,13 @@ export class ApiCreateGame extends Handler {
               p.telegramID = telegramID;
             }
           });
+          if (turnBasedGame) {
+            console.log(
+              `Async Telegram game create game=${gameId} ` +
+              `recipients=${players.filter((player) => player.telegramID !== '').length}/${players.length} ` +
+              `players=${players.map((player) => `${player.id}:${maskTelegramIdForLog(player.telegramID)}`).join(',')}`,
+            );
+          }
           let firstPlayerIdx = 0;
           for (let i = 0; i < requestedPlayers.length; i++) {
             if (requestedPlayers[i].first === true) {
@@ -246,7 +272,7 @@ export class ApiCreateGame extends Handler {
           if (game.gameOptions.turnBasedGame === true) {
             for (const p of players) {
               if (p.telegramID) {
-                sendGameStartNotice(p);
+                void sendGameStartNotice(p);
               }
             }
           }

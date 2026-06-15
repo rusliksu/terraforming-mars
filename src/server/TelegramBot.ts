@@ -242,6 +242,20 @@ function warnTurnNoticeFailed(
   );
 }
 
+function logGameStartNoticeSent(player: TelegramNotifiable, messageId: number | undefined): void {
+  console.log(
+    `Telegram start notice sent game=${gameIdForLog(player)} player=${player.id} ` +
+    `message=${messageId ?? 'unknown'}`,
+  );
+}
+
+function warnGameStartNoticeFailed(player: TelegramNotifiable, response: TelegramResponse): void {
+  console.warn(
+    `Telegram start notice failed game=${gameIdForLog(player)} player=${player.id} ` +
+    `code=${response.error_code ?? 'unknown'} description=${response.description ?? 'unknown'}`,
+  );
+}
+
 export function buildTurnNoticeText(player: TelegramNotifiable, options: TurnNoticeOptions = {}): string {
   const lines = [options.reminder === true ? 'Напоминание: твой ход!' : 'Твой ход!'];
   const gameSummary = buildGameSummary(player);
@@ -339,24 +353,31 @@ export async function deleteTurnNotice(player: TelegramNotifiable): Promise<void
   await deleteTurnNoticeMessage(player, messageId);
 }
 
-export async function sendGameStartNotice(player: TelegramNotifiable): Promise<void> {
+export async function sendGameStartNotice(player: TelegramNotifiable): Promise<boolean> {
   if (!player.telegramID) {
-    return;
+    return false;
   }
   if (telegramDisabled()) {
-    return;
+    return false;
   }
   if (!getBotToken()) {
-    return;
+    return false;
   }
   const link = `${SERVER_URL}/player?id=${player.id}`;
   try {
-    await callTelegramApi('sendMessage', {
+    const resp = await callTelegramApi('sendMessage', {
       chat_id: player.telegramID,
       text: `${player.name}, new game start! 🚀\nYour link: ${link}`,
       parse_mode: 'HTML',
     });
+    const messageId = typeof resp.result === 'object' ? resp.result.message_id : undefined;
+    if (resp.ok) {
+      logGameStartNoticeSent(player, messageId);
+      return true;
+    }
+    warnGameStartNoticeFailed(player, resp);
   } catch (err) {
     console.warn('sendGameStartNotice error:', err);
   }
+  return false;
 }

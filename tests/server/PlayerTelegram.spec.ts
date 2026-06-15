@@ -109,14 +109,19 @@ describe('Player telegram state', () => {
     }
   });
 
-  it('does not repeat reminders during initial drafting', async () => {
+  it('repeats reminders during initial drafting while the player is still waiting', async () => {
     const originalToken = process.env.TM_BOT_TOKEN;
     const originalDisabled = process.env.TM_DISABLE_TELEGRAM;
+    const originalStore = process.env.TM_TURN_NOTICE_STORE;
     const originalSetTimeout = global.setTimeout;
+    const originalLog = console.log;
+    const storePath = path.join(os.tmpdir(), `tm-turn-notices-${Date.now()}-${Math.random()}.json`);
     const delays: Array<number | undefined> = [];
     process.env.TM_BOT_TOKEN = 'token';
+    process.env.TM_TURN_NOTICE_STORE = storePath;
     delete process.env.TM_DISABLE_TELEGRAM;
     const telegram = stubTelegramApi(101);
+    console.log = (() => {}) as typeof console.log;
 
     const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
     const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
@@ -138,14 +143,20 @@ describe('Player telegram state', () => {
       await (player1 as any).sendTurnNoticeReminder(turnNoticeKey);
 
       const sendCalls = telegram.calls.filter((call) => call.path.includes('/sendMessage'));
-      expect(delays).deep.eq([]);
-      expect(sendCalls).has.length(0);
-      expect((player1 as any)._pendingTurnNoticeReminderTimer).is.undefined;
-      expect(player1.lastNoticeMessageId).eq(77);
+      const deleteCalls = telegram.calls.filter((call) => call.path.includes('/deleteMessage'));
+      expect(delays).deep.eq([12 * 60 * 60 * 1000]);
+      expect(sendCalls).has.length(1);
+      expect(sendCalls[0].body.text).contains('Напоминание: твой ход!');
+      expect(deleteCalls).has.length(1);
+      expect(deleteCalls[0].body.message_id).eq(77);
+      expect((player1 as any)._pendingTurnNoticeReminderTimer).not.to.be.undefined;
+      expect(player1.lastNoticeMessageId).eq(101);
     } finally {
       clearTelegramTimers(player1);
       telegram.restore();
       global.setTimeout = originalSetTimeout;
+      console.log = originalLog;
+      fs.rmSync(storePath, {force: true});
       if (originalToken === undefined) {
         delete process.env.TM_BOT_TOKEN;
       } else {
@@ -155,6 +166,11 @@ describe('Player telegram state', () => {
         delete process.env.TM_DISABLE_TELEGRAM;
       } else {
         process.env.TM_DISABLE_TELEGRAM = originalDisabled;
+      }
+      if (originalStore === undefined) {
+        delete process.env.TM_TURN_NOTICE_STORE;
+      } else {
+        process.env.TM_TURN_NOTICE_STORE = originalStore;
       }
     }
   });

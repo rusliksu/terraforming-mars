@@ -1,4 +1,4 @@
-import {sendTurnNotice, deleteTurnNotice, deleteTurnNoticeMessage} from './TelegramBot';
+import {sendTurnNotice, deleteTurnNotice, deleteTurnNoticeMessage, getStoredTurnNoticeUpdatedAt} from './TelegramBot';
 import * as constants from '../common/constants';
 import {PlayerId} from '../common/Types';
 import {MILESTONE_COST, REDS_RULING_POLICY_COST} from '../common/constants';
@@ -1754,7 +1754,7 @@ export class Player implements IPlayer {
   }
 
   private canSendTelegramTurnNoticeReminder(): boolean {
-    return this.canSendTelegramTurnNotice() && this.game.phase !== Phase.INITIALDRAFTING;
+    return this.canSendTelegramTurnNotice();
   }
 
   private clearPendingTurnNoticeTimers(): void {
@@ -1791,6 +1791,10 @@ export class Player implements IPlayer {
       this.clearPendingTurnNoticeReminderTimer();
     }
 
+    const storedNoticeUpdatedAt = getStoredTurnNoticeUpdatedAt(this, turnNoticeKey);
+    const elapsedMs = storedNoticeUpdatedAt === undefined ? 0 : Math.max(0, Date.now() - storedNoticeUpdatedAt);
+    const reminderDelayMs = Math.max(0, reminderMs - elapsedMs);
+
     this._pendingTurnNoticeReminderKey = turnNoticeKey;
     this._pendingTurnNoticeReminderTimer = setTimeout(() => {
       const scheduledKey = this._pendingTurnNoticeReminderKey;
@@ -1799,7 +1803,7 @@ export class Player implements IPlayer {
       if (scheduledKey !== undefined) {
         void this.sendTurnNoticeReminder(scheduledKey);
       }
-    }, reminderMs);
+    }, reminderDelayMs);
     unrefTimer(this._pendingTurnNoticeReminderTimer);
   }
 

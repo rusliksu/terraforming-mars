@@ -497,6 +497,9 @@
                                                 @keydown.enter.stop.prevent="applyFirstFilteredPlayerProfile(newPlayer)"
                                                 @keydown.esc.stop.prevent="closePlayerProfilePicker"
                                                 @keydown.stop >
+                                              <div v-if="getPlayerProfileNameError(newPlayer) !== ''" class="form-input-hint create-game-telegram-error">
+                                                {{ getPlayerProfileNameError(newPlayer) }}
+                                              </div>
                                               <div
                                                 v-if="isPlayerProfilePickerOpen(index)"
                                                 class="create-game-profile-menu">
@@ -566,7 +569,7 @@
                                                     autocomplete="off"
                                                     placeholder="Telegram ID"
                                                     v-model="newPlayer.telegramID"
-                                                    @blur="newPlayer.telegramID = normalizeTelegramId(newPlayer.telegramID)"
+                                                    @blur="normalizeAndRememberTelegramId(newPlayer)"
                                                   >
                                                   <div v-if="getTelegramIdError(newPlayer.telegramID) !== ''" class="form-input-hint create-game-telegram-error">
                                                     {{ getTelegramIdError(newPlayer.telegramID) }}
@@ -672,6 +675,7 @@ import {
   buildPlayerProfilesFromEloPlayers,
   getPlayerProfileAvatarInitials,
   getPlayerProfileAvatarPattern,
+  getPlayerProfileById,
   getPlayerProfileByName,
   PLAYER_PROFILES,
 } from '@/common/PlayerProfiles';
@@ -710,6 +714,7 @@ import {setDocumentTitle} from '@/client/utils/documentTitle';
 import {ensureEloLoaded, sharedEloState} from '@/client/utils/elo';
 
 const REVISED_COUNT_ALGORITHM = false;
+const PROFILE_TELEGRAM_IDS_KEY = 'tm_player_profile_telegram_ids';
 
 const CUSTOM_CARD_MODULE_EXCEPTIONS = new Set<CardName>([
   CardName.LAKEFRONT_RESORTS,
@@ -921,6 +926,11 @@ export default defineComponent({
         this.removeActiveDefaultCustomPreludeExclusions();
       }
       this.syncCustomSelectionsWithExpansions();
+    },
+    turnBasedGame(value: boolean) {
+      if (value === true) {
+        this.fillKnownTelegramIdsForPlayers(this.getPlayers());
+      }
     },
   },
   mounted() {
@@ -1216,10 +1226,27 @@ export default defineComponent({
     getPlayerNamePlaceholder(index: number): string {
       return translateTextWithParams('Player ${0} name', [String(index + 1)]);
     },
+    isPlayerNameLocked(color: Color): boolean {
+      return getLockedPlayerName(color) !== undefined;
+    },
+    syncLockedPlayerIdentity(player: NewPlayerModel) {
+      const lockedName = getLockedPlayerName(player.color);
+      if (lockedName !== undefined) {
+        if (player.name !== lockedName) {
+          player.profileId = undefined;
+        }
+        player.name = lockedName;
+        const lockedProfile = getPlayerProfileByName(lockedName, this.getPlayerProfiles());
+        if (lockedProfile !== undefined) {
+          player.profileId = lockedProfile.id;
+        }
+      }
+    },
     applyDefaultPlayerColor(player: NewPlayerModel, color: Color) {
       const lockedName = getLockedPlayerName(player.color);
       if (lockedName !== undefined && player.name === lockedName) {
         player.name = '';
+        player.profileId = undefined;
       }
       player.color = color;
     },
@@ -1407,15 +1434,29 @@ export default defineComponent({
       return PLAYER_PROFILES;
     },
     getSelectedPlayerProfile(player: NewPlayerModel): PlayerProfile | undefined {
-      return getPlayerProfileByName(player.name, this.getPlayerProfiles());
+      if (player.profileId === undefined) {
+        return undefined;
+      }
+      const profile = getPlayerProfileById(player.profileId, this.getPlayerProfiles());
+      if (profile === undefined) {
+        return undefined;
+      }
+      return getPlayerProfileByName(player.name, [profile]) === undefined ? undefined : profile;
     },
     getAvailablePlayerProfiles(player: NewPlayerModel): ReadonlyArray<PlayerProfile> {
       const playerProfiles = this.getPlayerProfiles();
       const takenProfileIds = new Set(this.getPlayers()
         .filter((candidate) => candidate !== player)
-        .map((candidate) => getPlayerProfileByName(candidate.name, playerProfiles)?.id)
+        .map((candidate) => this.getSelectedPlayerProfile(candidate)?.id)
         .filter((id): id is string => id !== undefined));
       return playerProfiles.filter((profile) => !takenProfileIds.has(profile.id));
+    },
+    getPlayerProfileNameError(player: NewPlayerModel): string {
+      const matchingProfile = getPlayerProfileByName(player.name, this.getPlayerProfiles());
+      if (matchingProfile === undefined || player.profileId === matchingProfile.id) {
+        return '';
+      }
+      return `Saved profile "${matchingProfile.name}" must be selected from the profile menu. Use a unique nick for a new player.`;
     },
     getFilteredAvailablePlayerProfiles(player: NewPlayerModel): ReadonlyArray<PlayerProfile> {
       const query = this.playerProfileSearch.trim().toLowerCase();
@@ -1467,6 +1508,7 @@ export default defineComponent({
     updatePlayerProfileAutocomplete(player: NewPlayerModel, event: Event) {
       const value = event.target instanceof window.HTMLInputElement ? event.target.value : this.playerProfileSearch;
       this.playerProfileSearch = value;
+      player.profileId = undefined;
       player.name = value.trim();
     },
     applyFirstFilteredPlayerProfile(player: NewPlayerModel) {
@@ -1479,6 +1521,7 @@ export default defineComponent({
       this.applyPlayerProfileFromPicker(player, profile);
     },
     applyCustomNickFromPicker(player: NewPlayerModel) {
+      player.profileId = undefined;
       player.name = this.playerProfileSearch.trim();
       this.closePlayerProfilePicker();
     },
@@ -1505,8 +1548,13 @@ export default defineComponent({
       return DEFAULT_PLAYER_COLORS.find((color) => !usedColors.has(color)) ?? player.color;
     },
     applyPlayerProfile(player: NewPlayerModel, profile: PlayerProfile) {
+      player.profileId = profile.id;
       player.name = profile.name;
       player.color = this.getAvailablePlayerProfileColor(player, profile);
+      this.fillKnownTelegramIdForPlayer(player, profile);
+    },
+    clearPlayerProfileSelection(player: NewPlayerModel) {
+      player.profileId = undefined;
     },
     applyPlayerProfileFromPicker(player: NewPlayerModel, profile: PlayerProfile) {
       if (!this.getAvailablePlayerProfiles(player).some((candidate) => candidate.id === profile.id)) {
@@ -1559,6 +1607,74 @@ export default defineComponent({
     },
     normalizeTelegramId(telegramID: string | undefined): string {
       return (telegramID ?? '').trim();
+    },
+    readProfileTelegramIds(): Record<string, string> {
+      try {
+        const raw = localStorage.getItem(PROFILE_TELEGRAM_IDS_KEY);
+        if (raw === null) {
+          return {};
+        }
+        const parsed = JSON.parse(raw) as Record<string, string>;
+        if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+          return {};
+        }
+        const ids: Record<string, string> = {};
+        for (const [profileId, telegramID] of Object.entries(parsed)) {
+          const normalized = this.normalizeTelegramId(telegramID);
+          if (/^\d{5,20}$/.test(normalized)) {
+            ids[profileId] = normalized;
+          }
+        }
+        return ids;
+      } catch {
+        return {};
+      }
+    },
+    writeProfileTelegramIds(ids: Record<string, string>) {
+      try {
+        localStorage.setItem(PROFILE_TELEGRAM_IDS_KEY, JSON.stringify(ids));
+      } catch {
+        // Ignore storage failures; manual Telegram ID entry still works.
+      }
+    },
+    getKnownTelegramIdForProfile(profile: PlayerProfile): string {
+      const profileTelegramID = this.normalizeTelegramId(profile.telegramID);
+      if (profileTelegramID !== '') {
+        return profileTelegramID;
+      }
+      return this.readProfileTelegramIds()[profile.id] ?? '';
+    },
+    fillKnownTelegramIdForPlayer(player: NewPlayerModel, profile?: PlayerProfile) {
+      const selectedProfile = profile ?? this.getSelectedPlayerProfile(player);
+      if (selectedProfile === undefined) {
+        return;
+      }
+      const knownTelegramID = this.getKnownTelegramIdForProfile(selectedProfile);
+      if (knownTelegramID !== '') {
+        player.telegramID = knownTelegramID;
+      }
+    },
+    fillKnownTelegramIdsForPlayers(players: Array<NewPlayerModel>) {
+      for (const player of players) {
+        if (player.isBot === true || this.normalizeTelegramId(player.telegramID) !== '') {
+          continue;
+        }
+        this.fillKnownTelegramIdForPlayer(player);
+      }
+    },
+    rememberTelegramIdForPlayerProfile(player: NewPlayerModel) {
+      const profile = this.getSelectedPlayerProfile(player);
+      const telegramID = this.normalizeTelegramId(player.telegramID);
+      if (profile === undefined || !/^\d{5,20}$/.test(telegramID)) {
+        return;
+      }
+      const ids = this.readProfileTelegramIds();
+      ids[profile.id] = telegramID;
+      this.writeProfileTelegramIds(ids);
+    },
+    normalizeAndRememberTelegramId(player: NewPlayerModel) {
+      player.telegramID = this.normalizeTelegramId(player.telegramID);
+      this.rememberTelegramIdForPlayerProfile(player);
     },
     isTelegramIdValid(telegramID: string | undefined): boolean {
       const normalized = this.normalizeTelegramId(telegramID);
@@ -1737,10 +1853,21 @@ export default defineComponent({
 
       const turnBasedGame = this.turnBasedGame === true;
       const botGame = this.botGame === true;
+      const profileNamePlayerIndex = players.findIndex((player) => this.getPlayerProfileNameError(player) !== '');
+      if (profileNamePlayerIndex !== -1) {
+        window.alert(translateTextWithParams('Player ${0}: this name belongs to a saved profile. Select that profile from the profile menu or use a unique nick.', [(profileNamePlayerIndex + 1).toString()]));
+        return;
+      }
       if (turnBasedGame) {
+        this.fillKnownTelegramIdsForPlayers(players);
         const invalidTelegramPlayerIndex = players.findIndex((player) => !this.isTelegramIdValid(player.telegramID));
         if (invalidTelegramPlayerIndex !== -1) {
           window.alert(translateTextWithParams('Player ${0}: invalid Telegram ID. Use digits only and send /start to @tm_knightbyte_bot first.', [(invalidTelegramPlayerIndex + 1).toString()]));
+          return;
+        }
+        const missingTelegramPlayerIndex = players.findIndex((player) => player.isBot !== true && this.normalizeTelegramId(player.telegramID) === '');
+        if (missingTelegramPlayerIndex !== -1) {
+          window.alert(translateTextWithParams('Player ${0}: Telegram ID is required for async Telegram games. Open @tm_knightbyte_bot and send /start first.', [(missingTelegramPlayerIndex + 1).toString()]));
           return;
         }
         const telegramRecipients = players.filter((player) => this.normalizeTelegramId(player.telegramID) !== '').length;
@@ -1757,6 +1884,9 @@ export default defineComponent({
 
       players.forEach((player) => {
         player.telegramID = turnBasedGame ? this.normalizeTelegramId(player.telegramID) : '';
+        if (turnBasedGame) {
+          this.rememberTelegramIdForPlayerProfile(player);
+        }
         if (!botGame) {
           player.isBot = false;
         }

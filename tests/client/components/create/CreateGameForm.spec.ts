@@ -20,6 +20,8 @@ describe('CreateGameForm', () => {
     originalUrl = window.location.href;
     originalMatchMedia = window.matchMedia;
     originalFocus = window.HTMLInputElement.prototype.focus;
+    global.localStorage = window.localStorage;
+    window.localStorage.clear();
   });
 
   afterEach(() => {
@@ -27,6 +29,7 @@ describe('CreateGameForm', () => {
     window.history.replaceState({}, '', originalUrl);
     window.matchMedia = originalMatchMedia;
     window.HTMLInputElement.prototype.focus = originalFocus;
+    window.localStorage.clear();
     sharedEloState.loaded = false;
     sharedEloState.failed = false;
     sharedEloState.players = {};
@@ -202,11 +205,111 @@ describe('CreateGameForm', () => {
     }
   });
 
+  it('blocks missing telegram ids during async game serialization', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+    vm.turnBasedGame = true;
+
+    let alertMessage = '';
+    const originalAlert = window.alert;
+    window.alert = ((message?: string) => {
+      alertMessage = String(message ?? '');
+    }) as typeof window.alert;
+
+    try {
+      const serialized = await vm.serializeSettings();
+      expect(serialized).to.eq(undefined);
+      expect(alertMessage).to.contain('Telegram ID is required');
+    } finally {
+      window.alert = originalAlert;
+    }
+  });
+
+  it('blocks typed names that match a saved player profile', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+    vm.players[0].name = 'Даша';
+
+    let alertMessage = '';
+    const originalAlert = window.alert;
+    window.alert = ((message?: string) => {
+      alertMessage = String(message ?? '');
+    }) as typeof window.alert;
+
+    try {
+      const serialized = await vm.serializeSettings();
+      expect(serialized).to.eq(undefined);
+      expect(alertMessage).to.contain('saved profile');
+      expect(alertMessage).to.contain('profile menu');
+    } finally {
+      window.alert = originalAlert;
+    }
+  });
+
+  it('auto-fills hardcoded telegram ids for selected async player profiles', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+    vm.turnBasedGame = true;
+
+    await wrapper.find('.create-game-player-name').trigger('focus');
+    const profileOption = wrapper.findAll('.create-game-profile-option')
+      .find((option) => option.text().includes('Даша'));
+    expect(profileOption).not.to.be.undefined;
+    await profileOption!.trigger('click');
+
+    expect(vm.players[0].profileId).to.eq('dasha');
+    expect(vm.players[0].telegramID).to.eq('432301679');
+  });
+
+  it('auto-fills locally remembered telegram ids for profiles without hardcoded ids', async () => {
+    window.localStorage.setItem('tm_player_profile_telegram_ids', JSON.stringify({leha: '123456789'}));
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+    vm.turnBasedGame = true;
+
+    await wrapper.find('.create-game-player-name').trigger('focus');
+    const profileOption = wrapper.findAll('.create-game-profile-option')
+      .find((option) => option.text().includes('Леха'));
+    expect(profileOption).not.to.be.undefined;
+    await profileOption!.trigger('click');
+
+    expect(vm.players[0].profileId).to.eq('leha');
+    expect(vm.players[0].telegramID).to.eq('123456789');
+  });
+
+  it('remembers manually entered telegram ids for selected profiles', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    await wrapper.find('.create-game-player-name').trigger('focus');
+    const profileOption = wrapper.findAll('.create-game-profile-option')
+      .find((option) => option.text().includes('Даша'));
+    expect(profileOption).not.to.be.undefined;
+    await profileOption!.trigger('click');
+
+    vm.players[0].telegramID = ' 123456789 ';
+    vm.normalizeAndRememberTelegramId(vm.players[0]);
+
+    expect(vm.players[0].telegramID).to.eq('123456789');
+    expect(JSON.parse(window.localStorage.getItem('tm_player_profile_telegram_ids') ?? '{}')).deep.eq({dasha: '123456789'});
+  });
+
   it('requires confirmation before serializing async games with telegram recipients', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
     });
     const vm = wrapper.vm as any;
+    vm.playersCount = 2;
     vm.turnBasedGame = true;
     vm.players[0].telegramID = '123456789';
     vm.players[1].telegramID = '987654321';
@@ -223,6 +326,7 @@ describe('CreateGameForm', () => {
       expect(serialized).to.eq(undefined);
       expect(confirmations).to.have.length(1);
       expect(confirmations[0]).to.contain('turn notifications');
+      expect(confirmations[0]).to.contain('2 player(s)');
       expect(confirmations[0]).to.contain('matching player');
     } finally {
       window.confirm = originalConfirm;
@@ -260,11 +364,19 @@ describe('CreateGameForm', () => {
       ...globalConfig,
     });
     await wrapper.setData({turnBasedGame: true});
+    (wrapper.vm as any).players[0].telegramID = '123456789';
 
-    const serialized = await (wrapper.vm as unknown as {serializeSettings: () => Promise<string>}).serializeSettings();
-    const payload = JSON.parse(serialized);
+    const originalConfirm = window.confirm;
+    window.confirm = (() => true) as typeof window.confirm;
 
-    expect(payload.turnBasedGame).eq(true);
+    try {
+      const serialized = await (wrapper.vm as unknown as {serializeSettings: () => Promise<string>}).serializeSettings();
+      const payload = JSON.parse(serialized);
+
+      expect(payload.turnBasedGame).eq(true);
+    } finally {
+      window.confirm = originalConfirm;
+    }
   });
 
   it('serializes bot games only when the custom bot mode is enabled', async () => {
@@ -538,10 +650,10 @@ describe('CreateGameForm', () => {
       playersCount: 4,
       randomFirstPlayer: false,
       players: [
-        {name: 'GydRo', color: 'blue', beginner: false, handicap: 0, first: false, isBot: false},
-        {name: 'Олеся', color: 'green', beginner: false, handicap: 0, first: false, isBot: false},
-        {name: 'Паша', color: 'red', beginner: false, handicap: 0, first: false, isBot: false},
-        {name: 'Тома', color: 'black', beginner: false, handicap: 0, first: false, isBot: false},
+        {name: 'North', color: 'blue', beginner: false, handicap: 0, first: false, isBot: false},
+        {name: 'East', color: 'green', beginner: false, handicap: 0, first: false, isBot: false},
+        {name: 'South', color: 'red', beginner: false, handicap: 0, first: false, isBot: false},
+        {name: 'West', color: 'black', beginner: false, handicap: 0, first: false, isBot: false},
       ],
     });
 
@@ -549,10 +661,10 @@ describe('CreateGameForm', () => {
     const payload = JSON.parse(serialized);
 
     expect(payload.players.map((player: {name: string, color: string}) => [player.name, player.color])).deep.eq([
-      ['GydRo', 'blue'],
-      ['Олеся', 'green'],
-      ['Паша', 'red'],
-      ['Тома', 'black'],
+      ['North', 'blue'],
+      ['East', 'green'],
+      ['South', 'red'],
+      ['West', 'black'],
     ]);
   });
 
@@ -599,18 +711,40 @@ describe('CreateGameForm', () => {
 
     expect(vm.players[0].color).to.eq('orange');
     expect(vm.players[0].name).to.eq('Леха');
+    expect(vm.players[0].profileId).to.eq('leha');
     expect(wrapper.find('.create-game-player-name').attributes()).not.to.have.property('readonly');
 
-    await wrapper.find('.create-game-player-name').setValue('Алексей');
+    await wrapper.find('.create-game-player-name').setValue('Леха 2');
 
     const serialized = await vm.serializeSettings();
     expect(serialized).to.be.a('string');
     const payload = JSON.parse(serialized);
-    expect(payload.players[0].name).to.eq('Алексей');
-    expect(vm.players[0].name).to.eq('Алексей');
+    expect(payload.players[0].name).to.eq('Леха 2');
+    expect(vm.players[0].name).to.eq('Леха 2');
+    expect(vm.players[0].profileId).to.eq(undefined);
   });
 
   it('hides profiles that are already selected in another player slot', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    await wrapper.setData({
+      playersCount: 2,
+      players: [
+        {name: 'Леха', color: 'orange', beginner: false, handicap: 0, first: false, isBot: false, profileId: 'leha'},
+        {name: '', color: 'green', beginner: false, handicap: 0, first: false, isBot: false},
+      ],
+    });
+
+    const profileNames = vm.getAvailablePlayerProfiles(vm.players[1]).map((profile: {name: string}) => profile.name);
+
+    expect(profileNames).not.to.include('Леха');
+    expect(profileNames).to.include('Qiksa');
+  });
+
+  it('does not treat typed profile aliases as selected profiles', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
     });
@@ -626,8 +760,8 @@ describe('CreateGameForm', () => {
 
     const profileNames = vm.getAvailablePlayerProfiles(vm.players[1]).map((profile: {name: string}) => profile.name);
 
-    expect(profileNames).not.to.include('Леха');
-    expect(profileNames).to.include('Qiksa');
+    expect(profileNames).to.include('Леха');
+    expect(vm.getPlayerProfileNameError(vm.players[0])).to.contain('profile menu');
   });
 
   it('offers active Elo players as profiles', async () => {
@@ -844,7 +978,7 @@ describe('CreateGameForm', () => {
     for (const testCase of [
       {color: 'emerald', inputName: 'Rav'},
       {color: 'ginger', inputName: 'Katerina'},
-      {color: 'pearl', inputName: 'Ruslan'},
+      {color: 'pearl', inputName: 'Pearl Custom'},
       {color: 'hydro', inputName: 'Sonya'},
       {color: 'antistress', inputName: 'Anatoly'},
       {color: 'gambit', inputName: 'Olesya'},

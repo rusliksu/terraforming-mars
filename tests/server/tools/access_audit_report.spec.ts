@@ -136,4 +136,122 @@ describe('access_audit_report', () => {
 
     expect(JSON.stringify(report)).not.contains('203.0.113.10');
   });
+
+  it('filters by game and time window before classifying findings', () => {
+    const report = analyzeAccessAudit([
+      {
+        ts: '2026-06-14T09:59:59.000Z',
+        event: 'player_view',
+        gameId: 'g1',
+        participantId: 'p-blue',
+        participantKind: 'player',
+        ipHash: 'ip-a',
+        userAgentHash: 'ua-a',
+      },
+      {
+        ts: '2026-06-14T10:00:00.000Z',
+        event: 'player_view',
+        gameId: 'g2',
+        participantId: 'p-blue',
+        participantKind: 'player',
+        ipHash: 'ip-a',
+        userAgentHash: 'ua-a',
+      },
+      {
+        ts: '2026-06-14T10:01:00.000Z',
+        event: 'player_view',
+        gameId: 'g1',
+        participantId: 'p-blue',
+        participantKind: 'player',
+        ipHash: 'ip-a',
+        userAgentHash: 'ua-a',
+      },
+      {
+        ts: '2026-06-14T10:02:00.000Z',
+        event: 'player_input_accepted',
+        gameId: 'g1',
+        participantId: 'p-red',
+        participantKind: 'player',
+        ipHash: 'ip-a',
+        userAgentHash: 'ua-a',
+      },
+      {
+        ts: '2026-06-14T10:03:00.000Z',
+        event: 'player_view',
+        gameId: 'g1',
+        participantId: 'p-green',
+        participantKind: 'player',
+        ipHash: 'ip-a',
+        userAgentHash: 'ua-a',
+      },
+    ], {
+      gameId: 'g1',
+      since: '2026-06-14T10:00:00Z',
+      until: '2026-06-14T10:02:00Z',
+    });
+
+    expect(report.findings).deep.eq([
+      {
+        severity: 'high',
+        gameId: 'g1',
+        cluster: 'ip-a:ua-a',
+        actedAs: ['p-red'],
+        viewedPlayers: ['p-blue'],
+        spectatorViews: [],
+        reason: 'same IP and user-agent submitted input for one player after viewing another player in the same game',
+        firstSeen: '2026-06-14T10:01:00.000Z',
+        lastSeen: '2026-06-14T10:02:00.000Z',
+      },
+    ]);
+  });
+
+  it('can redact cluster hashes and suppress info-only findings', () => {
+    const report = analyzeAccessAudit([
+      {
+        ts: '2026-06-14T10:00:00.000Z',
+        event: 'player_view',
+        gameId: 'g1',
+        participantId: 'p-red',
+        participantKind: 'player',
+        ipHash: 'ip-a',
+        userAgentHash: 'ua-a',
+      },
+      {
+        ts: '2026-06-14T10:01:00.000Z',
+        event: 'player_view',
+        gameId: 'g1',
+        participantId: 'p-blue',
+        participantKind: 'player',
+        ipHash: 'ip-a',
+        userAgentHash: 'ua-a',
+      },
+      {
+        ts: '2026-06-14T10:02:00.000Z',
+        event: 'player_input_accepted',
+        gameId: 'g1',
+        participantId: 'p-red',
+        participantKind: 'player',
+        ipHash: 'ip-a',
+        userAgentHash: 'ua-a',
+      },
+      {
+        ts: '2026-06-14T10:03:00.000Z',
+        event: 'player_view',
+        gameId: 'g1',
+        participantId: 'p-green',
+        participantKind: 'player',
+        ipHash: 'ip-b',
+        userAgentHash: 'ua-b',
+      },
+    ], {
+      redactClusters: true,
+      minSeverity: 'medium',
+    });
+
+    expect(report.findings).length(1);
+    expect(report.findings[0].severity).eq('high');
+    expect(report.findings[0].cluster).matches(/^cluster-[0-9a-f]{12}$/);
+    expect(report.findings[0].cluster).not.contains('ip-a');
+    expect(report.findings[0].cluster).not.contains('ua-a');
+  });
 });

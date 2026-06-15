@@ -1,7 +1,7 @@
 <template>
   <div class="ma-block">
     <div class="ma-player" v-if="award.playerName">
-      <i :title="award.playerName" :class="playerCubeCss(award.color)" />
+      <i :title="award.playerName" :class="playerCubeCss(award.color)"></i>
     </div>
 
     <div class="ma-name ma-name--awards award-block" :class="nameCss">

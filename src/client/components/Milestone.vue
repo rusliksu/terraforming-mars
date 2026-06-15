@@ -1,7 +1,7 @@
 <template>
   <div class="ma-block">
     <div class="ma-player" v-if="milestone.playerName">
-      <i :title="milestone.playerName" :class="playerCubeCss(milestone.color)" />
+      <i :title="milestone.playerName" :class="playerCubeCss(milestone.color)"></i>
     </div>
     <div class="ma-name--milestones" :class="nameCss">
       <span v-i18n>{{name}}</span>

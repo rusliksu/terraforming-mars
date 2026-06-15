@@ -17,6 +17,7 @@ export interface NewPlayerModel {
   handicap: number;
   first: boolean;
   isBot: boolean;
+  profileId?: string;
   telegramID?: string;
 }
 

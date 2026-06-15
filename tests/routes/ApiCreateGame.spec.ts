@@ -455,6 +455,27 @@ describe('ApiCreateGame', () => {
     expect(res.content).to.contain('invalid telegram id for player 1');
   });
 
+  it('rejects missing telegram ids in async mode with bad request', async () => {
+    const post = scaffolding.post(apiCreateGame, res);
+    const emit = Promise.resolve().then(() => {
+      const config = newGameConfig([{
+        name: 'Robot',
+        color: 'blue',
+        beginner: false,
+        handicap: 0,
+        first: true,
+        isBot: false,
+        telegramID: '   ',
+      }]);
+      config.turnBasedGame = true;
+      req.emitter.emit('data', JSON.stringify(config));
+      req.emitter.emit('end');
+    });
+    await Promise.all(([emit, post]));
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).to.contain('missing telegram id for player 1');
+  });
+
   it('ignores telegram ids when async mode is disabled', async () => {
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {

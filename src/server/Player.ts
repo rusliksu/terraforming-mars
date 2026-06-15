@@ -1752,7 +1752,7 @@ export class Player implements IPlayer {
   }
 
   private canSendTelegramTurnNoticeReminder(): boolean {
-    return this.canSendTelegramTurnNotice() && this.game.phase !== Phase.INITIALDRAFTING;
+    return this.canSendTelegramTurnNotice();
   }
 
   private clearPendingTurnNoticeTimers(): void {

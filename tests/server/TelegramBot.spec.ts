@@ -5,7 +5,7 @@ import https from 'https';
 import * as os from 'os';
 import * as path from 'path';
 import {BotTakeoverManager} from '../../src/server/bot/BotTakeoverManager';
-import {buildTurnNoticeText, deleteTurnNotice, sendTurnNotice} from '../../src/server/TelegramBot';
+import {buildTurnNoticeText, deleteTurnNotice, sendGameStartNotice, sendTurnNotice} from '../../src/server/TelegramBot';
 
 describe('TelegramBot', () => {
   function withTelegramEnabled<T>(fn: () => Promise<T>): Promise<T> {
@@ -214,6 +214,73 @@ describe('TelegramBot', () => {
 
       expect(warnings.messages).has.length(1);
       expect(warnings.messages[0]).contains('Telegram turn notice failed');
+      expect(warnings.messages[0]).contains('game=g-telegram');
+      expect(warnings.messages[0]).contains('player=p-ruslan');
+      expect(warnings.messages[0]).contains('code=403');
+      expect(warnings.messages[0]).contains('Forbidden');
+      expect(warnings.messages[0]).does.not.contain('123456');
+    } finally {
+      warnings.restore();
+      telegram.restore();
+    }
+  });
+
+  it('logs successful game start notice sends without telegram chat id', async () => {
+    const telegram = stubTelegramApi({ok: true, result: {message_id: 456}});
+    const logs = captureConsole('log');
+    try {
+      await withTelegramEnabled(async () => {
+        const sent = await sendGameStartNotice({
+          name: 'Руслан',
+          id: 'p-ruslan',
+          telegramID: '123456',
+          lastNoticeMessageId: -1,
+          game: {
+            id: 'g-telegram',
+            generation: 1,
+            phase: 'initial_drafting',
+            players: [],
+          },
+        });
+
+        expect(sent).eq(true);
+      });
+
+      expect(logs.messages).has.length(1);
+      expect(logs.messages[0]).contains('Telegram start notice sent');
+      expect(logs.messages[0]).contains('game=g-telegram');
+      expect(logs.messages[0]).contains('player=p-ruslan');
+      expect(logs.messages[0]).contains('message=456');
+      expect(logs.messages[0]).does.not.contain('123456');
+    } finally {
+      logs.restore();
+      telegram.restore();
+    }
+  });
+
+  it('warns when telegram rejects a game start notice', async () => {
+    const telegram = stubTelegramApi({ok: false, error_code: 403, description: 'Forbidden'});
+    const warnings = captureConsole('warn');
+    try {
+      await withTelegramEnabled(async () => {
+        const sent = await sendGameStartNotice({
+          name: 'Руслан',
+          id: 'p-ruslan',
+          telegramID: '123456',
+          lastNoticeMessageId: -1,
+          game: {
+            id: 'g-telegram',
+            generation: 1,
+            phase: 'initial_drafting',
+            players: [],
+          },
+        });
+
+        expect(sent).eq(false);
+      });
+
+      expect(warnings.messages).has.length(1);
+      expect(warnings.messages[0]).contains('Telegram start notice failed');
       expect(warnings.messages[0]).contains('game=g-telegram');
       expect(warnings.messages[0]).contains('player=p-ruslan');
       expect(warnings.messages[0]).contains('code=403');

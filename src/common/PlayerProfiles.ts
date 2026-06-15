@@ -9,6 +9,7 @@ export type PlayerProfile = {
   elo?: number;
   games?: number;
   avatarSeed?: string;
+  telegramID?: string;
 };
 
 export type EloProfileEntry = {
@@ -20,6 +21,13 @@ export type EloProfileEntry = {
 const ELO_PLAYER_NAME_ALIASES = eloPlayerNameAliases as Record<string, string>;
 
 export const PLAYER_PROFILES: ReadonlyArray<PlayerProfile> = [
+  {
+    id: 'gydro',
+    name: 'GydRo',
+    preferredColor: 'pearl',
+    aliases: ['gydro', 'руслан', 'ruslan'],
+    telegramID: '162438481',
+  },
   {
     id: 'leha',
     name: 'Леха',
@@ -97,6 +105,7 @@ export const PLAYER_PROFILES: ReadonlyArray<PlayerProfile> = [
     name: 'Даша',
     preferredColor: 'pink',
     aliases: ['даша'],
+    telegramID: '432301679',
   },
   {
     id: 'nadezhda',
@@ -133,6 +142,7 @@ export const PLAYER_PROFILES: ReadonlyArray<PlayerProfile> = [
     name: 'Фелькнер',
     preferredColor: 'green',
     aliases: ['фелькнер'],
+    telegramID: '317238880',
   },
   {
     id: 'alexandr',
@@ -224,6 +234,7 @@ export function buildPlayerProfilesFromEloPlayers(eloPlayers: Record<string, Elo
         elo: entry.elo,
         games: entry.games,
         avatarSeed: normalizeProfileName(entry.displayName),
+        telegramID: seed?.telegramID,
       };
     });
 }

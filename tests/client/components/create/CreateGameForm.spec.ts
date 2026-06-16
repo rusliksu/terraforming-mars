@@ -904,6 +904,7 @@ describe('CreateGameForm', () => {
     sharedEloState.players = {
       genuinegold: {displayName: 'GenuineGold', games: 48, elo: 1749},
       nuke: {displayName: 'Nuke', games: 7, elo: 1497},
+      tagir: {displayName: 'Тагир', games: 18, elo: 1618},
       vladlen: {displayName: 'Владлен', games: 24, elo: 1691},
     };
 
@@ -917,6 +918,14 @@ describe('CreateGameForm', () => {
       .map((profile: {name: string}) => profile.name);
 
     expect(profileNames).deep.eq(['Nuke']);
+
+    vm.playerProfileSearch = 'ригат';
+    expect(vm.getFilteredAvailablePlayerProfiles(vm.players[0])
+      .map((profile: {name: string}) => profile.name)).deep.eq(['Тагир']);
+
+    vm.playerProfileSearch = 'ригат иммортал';
+    expect(vm.getFilteredAvailablePlayerProfiles(vm.players[0])
+      .map((profile: {name: string}) => profile.name)).deep.eq(['Тагир']);
   });
 
   it('uses the player profile menu input as an editable player name autocomplete', async () => {

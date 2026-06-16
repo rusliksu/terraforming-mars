@@ -9,7 +9,6 @@ import raw_settings from '@/genfiles/settings.json';
 import {PreferencesManager} from '@/client/utils/PreferencesManager';
 
 describe('WaitingFor', () => {
-  type TestRequestOptions = {body?: unknown};
   type TestNotificationOptions = {
     body?: string;
     icon?: string;

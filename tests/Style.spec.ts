@@ -251,8 +251,8 @@ describe('Styles', () => {
     const createGame = read('src/styles/create_game_form.less');
     const playerSymbol = read('src/client/utils/playerSymbol.ts');
     const vpChart = read('src/client/components/gameend/VictoryPointChart.vue');
-    const defaultColors = new Set(DEFAULT_PLAYER_COLORS);
-    const reservedColors = new Set(RESERVED_PLAYER_COLORS);
+    const defaultColors = new Set<string>(DEFAULT_PLAYER_COLORS);
+    const reservedColors = new Set<string>(RESERVED_PLAYER_COLORS);
 
     expect(common).to.contain('.player_bg_color_@{value}');
     expect(common).to.contain('.player_translucent_bg_color_@{value}');

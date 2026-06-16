@@ -1752,8 +1752,17 @@ export class Player implements IPlayer {
     return this.lastTurnNoticeKey === turnNoticeKey && this.lastNoticeMessageId >= 0;
   }
 
+  private isTelegramTurnNoticeActionable(): boolean {
+    if (this.game?.phase === Phase.INITIALDRAFTING) {
+      return this.needsToDraft === true;
+    }
+    return true;
+  }
+
   private canSendTelegramTurnNotice(): boolean {
-    return this.telegramID !== '' && this.game?.gameOptions.turnBasedGame === true;
+    return this.telegramID !== '' &&
+      this.game?.gameOptions.turnBasedGame === true &&
+      this.isTelegramTurnNoticeActionable();
   }
 
   private canSendTelegramTurnNoticeReminder(): boolean {
@@ -1857,6 +1866,13 @@ export class Player implements IPlayer {
     if (this._pendingTurnNoticeTimer) {
       clearTimeout(this._pendingTurnNoticeTimer);
       this._pendingTurnNoticeTimer = undefined;
+    }
+    if (!this.isTelegramTurnNoticeActionable()) {
+      if (this.hasActiveTurnNotice(turnNoticeKey)) {
+        void deleteTurnNotice(this);
+      }
+      this._turnNoticeSentThisRound = false;
+      return;
     }
     if (this.canSendTelegramTurnNotice() && this._turnNoticeSentThisRound === false) {
       this._pendingTurnNoticeTimer = setTimeout(async () => {

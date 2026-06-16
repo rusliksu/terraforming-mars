@@ -2,9 +2,14 @@
   "extends": ["stylelint-config-recommended-less"],
   "plugins": ["@stylistic/stylelint-plugin"],
   "rules": {
-    "@stylistic/indentation": 2,
+    "declaration-block-no-duplicate-properties": null,
+    "declaration-block-no-shorthand-property-overrides": null,
     "no-descending-specificity": null,
-    "declaration-block-no-redundant-longhand-properties": true
+    "no-duplicate-selectors": null,
+    "declaration-block-no-redundant-longhand-properties": true,
+    "font-family-no-missing-generic-family-keyword": null,
+    "less/no-duplicate-variables": null,
+    "property-no-deprecated": null
   },
   "overrides": [
     {

@@ -1,22 +1,19 @@
 <template>
 <div>
-  <div v-if="experimentalUI()" v-i18n>
-    <label>
-      <input type="checkbox" v-model="showReorder" > Reorder Cards
-    </label>
-  </div>
   <div class="sortable-cards">
-    <div ref="draggers" :class="{ 'dragging': Boolean(dragCard) }" v-for="(card, index) in getSortedCards()" :key="card.name" draggable="true" @dragend="onDragEnd()" @dragstart="onDragStart(card.name)">
-      <div v-if="dragCard" ref="droppers" class="drop-target" @dragover="onDragOver(card.name)"></div>
-      <div ref="cardbox" class="cardbox" @click="clickMethod">
-        <Card :card="card"/>
-        <div v-if="showReorder" class="reorder-banners-container">
-          <div class="reorder-banners-left" v-if="index > 0"></div>
-          <div class="reorder-banners-right" v-if="index < cards.length - 1"></div>
-        </div>
-      </div>
+    <div
+      ref="cardbox"
+      v-for="card in getSortedCards()"
+      :key="card.name"
+      class="cardbox"
+      :class="{ 'dragging': Boolean(dragCard) }"
+      draggable="true"
+      @dragend="onDragEnd()"
+      @dragstart="onDragStart(card.name)"
+      @dragover.prevent="onDragHover(card.name, $event)"
+    >
+      <Card :card="card"/>
     </div>
-    <div v-if="dragCard" ref="dropend" class="drop-target" @dragover="onDragOver('end')"></div>
   </div>
 </div>
 </template>
@@ -27,11 +24,8 @@ import Card from '@/client/components/card/Card.vue';
 import {CardName} from '@/common/cards/CardName';
 import {CardModel} from '@/common/models/CardModel';
 import {CardOrderStorage} from '@/client/utils/CardOrderStorage';
-import {getPreferences} from '@/client/utils/PreferencesManager';
 
 type DataModel = {
-  /** When true use the point-and-click reorder UI */
-  showReorder: boolean;
   /** Mapping from card name to its order */
   cardOrder: {[x: string]: number};
   /** When defined, it is the name of the card being dragged. */
@@ -71,7 +65,6 @@ export default defineComponent({
       }
     }
     return {
-      showReorder: false,
       cardOrder: cardOrder,
       dragCard: undefined,
     };
@@ -89,66 +82,41 @@ export default defineComponent({
     onDragEnd(): void {
       this.dragCard = undefined;
     },
-    onDragOver(source: CardName | 'end'): void {
+    onDragHover(source: CardName, event: DragEvent): void {
       if (this.dragCard === undefined || source === this.dragCard) {
         return;
       }
-      // put the card at the end of the list
-      if (source === 'end') {
-        let max = 0;
-        const keys = Object.keys(this.cardOrder);
-        for (const key of keys) {
-          max = Math.max(max, this.cardOrder[key]);
-        }
-        this.cardOrder[this.dragCard] = max + 1;
-      } else {
-        // place it ahead of the card
-        const temp = this.cardOrder[source];
-        const keys = Object.keys(this.cardOrder);
-        for (const key of keys) {
-          if (this.cardOrder[key] >= temp) {
-            this.cardOrder[key]++;
-          }
-        }
-        this.cardOrder[this.dragCard] = temp;
+      const originalCardNames = this.getSortedCards().map((card) => card.name);
+      const orderedCardNames = originalCardNames.slice();
+      const dragIndex = orderedCardNames.indexOf(this.dragCard);
+      const hoverIndex = orderedCardNames.indexOf(source);
+      if (dragIndex === -1 || hoverIndex === -1) {
+        return;
       }
+      const insertAfter = this.shouldInsertAfterHoveredCard(event, dragIndex, hoverIndex);
+      let insertionIndex = hoverIndex + (insertAfter ? 1 : 0);
+      if (dragIndex < insertionIndex) {
+        insertionIndex--;
+      }
+      insertionIndex = Math.max(0, Math.min(insertionIndex, orderedCardNames.length - 1));
+      const movedCardName = orderedCardNames.splice(dragIndex, 1)[0];
+      orderedCardNames.splice(insertionIndex, 0, movedCardName);
+      if (orderedCardNames.every((cardName, idx) => cardName === originalCardNames[idx])) {
+        return;
+      }
+      orderedCardNames.forEach((cardName, idx) => {
+        this.cardOrder[cardName] = idx + 1;
+      });
       CardOrderStorage.updateCardOrder(this.playerId, this.cardOrder);
     },
-    doNotDragAndDropOnReorder() {
-      return this.showReorder ? 'do-not-drag-and-drop' : '';
-    },
-    clickMethod(e: MouseEvent) {
-      if (!this.showReorder) {
-        return;
-      }
-      const target = e.currentTarget as HTMLElement;
-      if (!target) {
-        return;
-      }
-      if (target.matches('.sortable-cards *')) {
-        const rect = target.getBoundingClientRect();
-        const x = (e.clientX - rect.left) / rect.width;
-        const direction = x <= 0.25 ? -1.5 : x >= 0.75 ? 1.5 : null;
-        if (direction) {
-          const cardTitle = target.querySelector('.card-title');
-          if (cardTitle) {
-            const textContent = cardTitle.textContent;
-            if (textContent) {
-              const thisCard = textContent.trim();
-              this.cardOrder[thisCard] += direction;
-              Object.entries(this.cardOrder)
-                .sort((a, b) => a[1]-b[1])
-                .forEach((entry, i) => {
-                  this.cardOrder[entry[0]] = i+1;
-                });
-              CardOrderStorage.updateCardOrder(this.playerId, this.cardOrder);
-            }
-          }
+    shouldInsertAfterHoveredCard(event: DragEvent, dragIndex: number, hoverIndex: number): boolean {
+      if (event.currentTarget instanceof HTMLElement) {
+        const rect = event.currentTarget.getBoundingClientRect();
+        if (rect.width > 0) {
+          return event.clientX >= rect.left + rect.width / 2;
         }
       }
-    },
-    experimentalUI(): boolean {
-      return getPreferences().experimental_ui;
+      return dragIndex < hoverIndex;
     },
   },
 });

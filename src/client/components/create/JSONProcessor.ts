@@ -111,6 +111,7 @@ export class JSONProcessor {
     // Capture the solar phase option since several of the other results will change
     // it via the watch mechanism.
     this.solarPhaseOption = safeBoolean(json.solarPhaseOption);
+    this.model.solarPhaseOption = this.solarPhaseOption;
 
     const ignoredFields = [
       // Instead of ignoring these fields, let them pass through to the model.

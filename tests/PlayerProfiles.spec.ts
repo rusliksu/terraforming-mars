@@ -15,6 +15,9 @@ describe('Player profiles', () => {
     expect(getPlayerProfileByName('Qiksa')?.name).eq('Qiksa');
     expect(getPlayerProfileByName('Женя')?.name).eq('vvbMinsk');
     expect(getPlayerProfileByName('Midilobusim')?.name).eq('Nuke');
+    expect(getPlayerProfileByName('Ригат')?.name).eq('Тагир');
+    expect(getPlayerProfileByName('Ригат Иммортал')?.name).eq('Тагир');
+    expect(getPlayerProfileByName('Rigat Immortal')?.name).eq('Тагир');
   });
 
   it('keeps profile ids unique', () => {
@@ -30,13 +33,15 @@ describe('Player profiles', () => {
       vvbminsk: {displayName: 'vvbMinsk', games: 11, elo: 1535},
       nuke: {displayName: 'Nuke', games: 7, elo: 1497},
       leha: {displayName: 'Леха', games: 6, elo: 1452},
+      rigat: {displayName: 'Ригат Иммортал', games: 18, elo: 1618},
       inactive: {displayName: 'Inactive', games: 0, elo: 1600},
     });
 
-    expect(profiles.map((profile) => profile.name)).deep.eq(['GenuineGold', 'Владлен', 'vvbMinsk', 'Тимур', 'Nuke', 'Леха', 'Qiksa']);
-    expect(profiles.map((profile) => profile.id)).deep.eq(['genuinegold', 'vladlen', 'vvbminsk', 'timur', 'nuke', 'leha', 'qiksa']);
+    expect(profiles.map((profile) => profile.name)).deep.eq(['GenuineGold', 'Владлен', 'Тагир', 'vvbMinsk', 'Тимур', 'Nuke', 'Леха', 'Qiksa']);
+    expect(profiles.map((profile) => profile.id)).deep.eq(['genuinegold', 'vladlen', 'tagir', 'vvbminsk', 'timur', 'nuke', 'leha', 'qiksa']);
     expect(getPlayerProfileByName('Асмо', profiles)?.name).eq('Леха');
     expect(getPlayerProfileByName('Алексей', profiles)?.name).eq('Qiksa');
+    expect(getPlayerProfileByName('Ригат Иммортал', profiles)?.name).eq('Тагир');
   });
 
   it('uses observed favorite colors for Elo-built profiles', () => {

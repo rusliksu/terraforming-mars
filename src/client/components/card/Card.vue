@@ -141,7 +141,7 @@ export default defineComponent({
 
       if (this.card.isDisabled) {
         classes.push('card-unavailable');
-      } else if (!getPreferences().experimental_ui && this.actionUsed) {
+      } else if (this.actionUsed) {
         classes.push('card-unavailable');
       }
 
@@ -201,7 +201,7 @@ export default defineComponent({
       return CARD_HELP_TEXT[this.card.name] !== undefined;
     },
     showPlayerCube(): boolean {
-      return getPreferences().experimental_ui && this.actionUsed;
+      return false;
     },
     playerCubeClass(): string {
       return `board-cube board-cube--${this.cubeColor}`;

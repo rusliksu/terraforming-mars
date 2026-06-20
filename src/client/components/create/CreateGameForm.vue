@@ -555,6 +555,10 @@
                                                       <input type="number" class="form-input form-inline player-handicap" value="0" min="0" :max="10" v-model.number="newPlayer.handicap" />
                                                       <i class="form-icon"></i><span v-i18n>TR Boost</span>&nbsp;<a :href="wikiUrls.trBoost" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                                                   </label>
+                                                  <label v-if="expansions.prelude" class="form-label">
+                                                      <input type="number" class="form-input form-inline player-handicap" value="2" min="0" :max="2" v-model.number="newPlayer.preludeHandicap" >
+                                                      <i class="form-icon"></i><span v-i18n>Preludes</span>
+                                                  </label>
                                               <!-- </template> -->
                                               <div v-if="turnBasedGame" class="create-game-telegram-row">
                                                   <label class="form-label create-game-telegram-label" :for="'telegramId' + (index + 1)">Telegram ID</label>
@@ -694,7 +698,7 @@ import {GameId, JSONObject} from '@/common/Types';
 import {AgendaStyle} from '@/common/turmoil/Types';
 import PreferencesIcon from '@/client/components/PreferencesIcon.vue';
 import {getCard} from '@/client/cards/ClientCardManifest';
-import {BoardNameType, NewGameConfig, NewPlayerModel} from '@/common/game/NewGameConfig';
+import {BoardNameType, NewGameConfig, NewPlayerModel, normalizePreludeHandicap} from '@/common/game/NewGameConfig';
 import {vueRoot} from '@/client/components/vueRoot';
 import {CreateGameModel} from './CreateGameModel';
 import {paths} from '@/common/app/paths';
@@ -1545,6 +1549,7 @@ export default defineComponent({
 
       players.forEach((player) => {
         player.telegramID = turnBasedGame ? this.normalizeTelegramId(player.telegramID) : '';
+        player.preludeHandicap = normalizePreludeHandicap(player.preludeHandicap);
         if (turnBasedGame) {
           this.rememberTelegramIdForPlayerProfile(player);
         }

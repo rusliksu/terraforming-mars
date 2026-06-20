@@ -3,7 +3,7 @@ import {Expansion} from '@/common/cards/GameModule';
 import {JSONObject, JSONValue} from '../../../common/Types';
 import {CreateGameModel} from './CreateGameModel';
 import {normalizePlayerNameForColor, PLAYER_COLORS} from '@/common/Color';
-import {NewPlayerModel} from '@/common/game/NewGameConfig';
+import {NewPlayerModel, normalizePreludeHandicap} from '@/common/game/NewGameConfig';
 import {CardName} from '@/common/cards/CardName';
 import {cast} from '@/common/utils/utils';
 import {CARD_RENAMES} from '@/common/cards/CardRenames';
@@ -41,6 +41,7 @@ export class JSONProcessor {
       return {
         ...safePlayer,
         isBot: false,
+        preludeHandicap: normalizePreludeHandicap(player.preludeHandicap),
         name: normalizePlayerNameForColor(player.color, player.name),
       };
     });

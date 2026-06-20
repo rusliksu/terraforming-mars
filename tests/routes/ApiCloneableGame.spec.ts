@@ -71,7 +71,7 @@ describe('ApiCloneableGame', () => {
       first: 'p1',
       players: [
         {id: 'p1', name: 'Alice', color: 'red', beginner: false, handicap: 0, telegramID: '111'},
-        {id: 'p2', name: 'Bob', color: 'blue', beginner: true, handicap: 3},
+        {id: 'p2', name: 'Bob', color: 'blue', beginner: true, handicap: 3, preludeHandicap: 1},
       ],
       gameOptions: {
         expansions: {
@@ -138,8 +138,8 @@ describe('ApiCloneableGame', () => {
     expect(res.statusCode).eq(statusCode.ok);
     const response = JSON.parse(res.content);
     expect(response.setup.players).deep.eq([
-      {name: 'Alice', color: 'red', beginner: false, handicap: 0, first: false, isBot: false},
-      {name: 'Bob', color: 'blue', beginner: true, handicap: 3, first: false, isBot: false},
+      {name: 'Alice', color: 'red', beginner: false, handicap: 0, preludeHandicap: 2, first: false, isBot: false},
+      {name: 'Bob', color: 'blue', beginner: true, handicap: 3, preludeHandicap: 1, first: false, isBot: false},
     ]);
     expect(response.setup.board).eq(BoardName.ELYSIUM);
     expect(response.setup.clonedGamedId).eq(undefined);

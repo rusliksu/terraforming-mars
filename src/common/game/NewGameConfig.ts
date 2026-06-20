@@ -10,11 +10,23 @@ import {Expansion} from '../cards/GameModule';
 
 export type BoardNameType = BoardName | RandomBoardOption;
 
+export const DEFAULT_PRELUDE_HANDICAP = 2;
+
+export function normalizePreludeHandicap(preludeHandicap: unknown): number {
+  const parsed = Number(preludeHandicap);
+  if (!Number.isFinite(parsed)) {
+    return DEFAULT_PRELUDE_HANDICAP;
+  }
+  return Math.max(0, Math.min(DEFAULT_PRELUDE_HANDICAP, Math.trunc(parsed)));
+}
+
 export interface NewPlayerModel {
   name: string;
   color: Color;
   beginner: boolean;
   handicap: number;
+  /** Number of Prelude cards this player keeps during setup. */
+  preludeHandicap?: number;
   first: boolean;
   isBot: boolean;
   profileId?: string;

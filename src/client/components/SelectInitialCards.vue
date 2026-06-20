@@ -359,11 +359,12 @@ export default defineComponent({
         return false;
       }
       if (this.hasPrelude) {
-        if (this.selectedPreludes.length < 2) {
-          this.warning = 'Select 2 preludes';
+        const option = getOption(this.playerinput.options, titles.SELECT_PRELUDE_TITLE);
+        if (this.selectedPreludes.length < option.min) {
+          this.warning = option.min === 1 ? 'Select 1 prelude' : `Select ${option.min} preludes`;
           return false;
         }
-        if (this.selectedPreludes.length > 2) {
+        if (this.selectedPreludes.length > option.max) {
           this.warning = 'You selected too many preludes';
           return false;
         }
@@ -418,7 +419,10 @@ export default defineComponent({
     preludeCardOption() {
       const option = getOption(this.playerinput.options, titles.SELECT_PRELUDE_TITLE);
       if (getPreferences().experimental_ui) {
-        option.max = option.cards.length;
+        return {
+          ...option,
+          max: option.cards.length,
+        };
       }
       return option;
     },

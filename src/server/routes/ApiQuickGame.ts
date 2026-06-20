@@ -7,7 +7,7 @@ import {ApiCreateGame} from './ApiCreateGame';
 import {Game} from '../Game';
 import {Player} from '../Player';
 import {GameOptions} from '../game/GameOptions';
-import {NewGameConfig, NewPlayerModel} from '../../common/game/NewGameConfig';
+import {DEFAULT_PRELUDE_HANDICAP, NewGameConfig, NewPlayerModel, normalizePreludeHandicap} from '../../common/game/NewGameConfig';
 import {normalizeEscapeVelocityOptions} from '../../common/game/EscapeVelocityOptions';
 import {DEFAULT_PLAYER_COLORS, Color} from '../../common/Color';
 import {safeCast, isGameId, isSpectatorId, isPlayerId} from '../../common/Types';
@@ -90,6 +90,7 @@ export class ApiQuickGame extends Handler {
         color: DEFAULT_PLAYER_COLORS[i % DEFAULT_PLAYER_COLORS.length] as Color,
         beginner: false,
         handicap: 0,
+        preludeHandicap: DEFAULT_PRELUDE_HANDICAP,
         first: i === 0,
         isBot: false,
       });
@@ -225,6 +226,7 @@ export class ApiQuickGame extends Handler {
           obj.beginner,
           Number(obj.handicap),
           safeCast(generateRandomId('p'), isPlayerId),
+          normalizePreludeHandicap(obj.preludeHandicap),
         );
       });
 

@@ -282,8 +282,10 @@ describe('Styles', () => {
     }
   });
 
-  it('uses sprite-based Turmoil delegate tokens with readable count badges', () => {
+  it('uses the shared Turmoil delegate count style without badge overlays', () => {
     const turmoil = read('src/styles/turmoil.less');
+    const turmoilComponent = read('src/client/components/turmoil/Turmoil.vue');
+    const partyComponent = read('src/client/components/Party.vue');
 
     expect(turmoil).not.to.contain('.player-token-persona(');
     expect(turmoil).not.to.contain('-webkit-mask-image: url(./assets/misc/delegate.png);');
@@ -297,14 +299,17 @@ describe('Styles', () => {
     expect(turmoil).to.contain('color: #fff;');
     expect(turmoil).to.contain('width: 50px;');
     expect(turmoil).to.contain('height: 59px;');
-    expect(turmoil).to.contain('.player-token__number');
+    expect(turmoil).not.to.contain('.player-token__number');
+    expect(turmoilComponent).not.to.contain('player-token__number');
+    expect(turmoilComponent.match(/count-in-send-delegate/g) ?? []).to.have.length(2);
+    expect(partyComponent.match(/count-in-send-delegate/g) ?? []).to.have.length(1);
     expect(turmoil).to.contain('z-index: 1;');
     expect(turmoil).to.contain('z-index: 0;');
-    expect(cssBlock(turmoil, '.player-token__number')).to.contain('color: #ffffff;');
-    expect(cssBlock(turmoil, '.player-token__number')).to.contain('background: rgba(0, 0, 0, 0.72);');
-    expect(cssBlock(turmoil, '.player-token__number')).to.contain('box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.36), 0 1px 2px rgba(0, 0, 0, 0.75);');
-    expect(cssBlock(turmoil, '.player-token__number')).to.contain('text-shadow: none;');
+    expect(cssBlock(turmoil, '.count-in-send-delegate')).to.contain('font-size: 22px;');
+    expect(cssBlock(turmoil, '.count-in-send-delegate')).to.contain('z-index: 1;');
     expect(cssBlock(turmoil, '.count-in-send-delegate')).not.to.contain('color: #fff;');
+    expect(cssBlock(turmoil, '.count-in-send-delegate')).not.to.contain('background:');
+    expect(cssBlock(turmoil, '.count-in-send-delegate')).not.to.contain('box-shadow');
     expect(cssBlock(turmoil, '.count-in-send-delegate')).not.to.contain('text-shadow');
     expect(turmoil).not.to.contain('text-shadow: 0 1px 1px #000, 0 0 2px #000;');
     expect(turmoil).to.contain('&.gold');

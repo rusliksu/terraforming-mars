@@ -10,7 +10,7 @@ import {Game} from '../Game';
 import {GameOptions} from '../game/GameOptions';
 import {Player} from '../Player';
 import {Server} from '../models/ServerModel';
-import {NewGameConfig} from '../../common/game/NewGameConfig';
+import {NewGameConfig, normalizePreludeHandicap} from '../../common/game/NewGameConfig';
 import {normalizeEscapeVelocityOptions} from '../../common/game/EscapeVelocityOptions';
 import {safeCast, isGameId, isSpectatorId, isPlayerId} from '../../common/Types';
 import {generateRandomId} from '../utils/server-ids';
@@ -150,6 +150,7 @@ export class ApiCreateGame extends Handler {
               p.beginner,
               Number(p.handicap), // For some reason handicap is coming up a string.
               safeCast(generateRandomId('p'), isPlayerId),
+              normalizePreludeHandicap(p.preludeHandicap),
             );
           });
           // Assign telegramID from game request

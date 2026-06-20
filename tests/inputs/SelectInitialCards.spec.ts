@@ -98,6 +98,46 @@ describe('SelectInitialCards', () => {
     expect(player.game.preludeDeck.discardPile.map(toName)).to.have.members([CardName.DONATION, CardName.SUPPLIER]);
   });
 
+  it('selects one prelude when prelude handicap is 1', () => {
+    const [/* game */, player] = testGame(1, {preludeExtension: true});
+    player.game.projectDeck.discardPile.length = 0;
+    player.game.corporationDeck.discardPile.length = 0;
+    player.preludeHandicap = 1;
+    player.dealtCorporationCards = corporationCardsFromJSON([CardName.INVENTRIX, CardName.HELION]);
+    player.dealtProjectCards = cardsFromJSON([CardName.ANTS, CardName.BACTOVIRAL_RESEARCH]);
+    player.dealtPreludeCards = preludesFromJSON([CardName.LOAN, CardName.BIOLAB, CardName.DONATION, CardName.SUPPLIER]);
+    selectInitialCards = new SelectInitialCards(player, cb);
+
+    selectInitialCards.process({type: 'initialCards', responses: [
+      {type: 'card', cards: [CardName.INVENTRIX]},
+      {type: 'card', cards: [CardName.LOAN]},
+      {type: 'card', cards: []},
+    ]}, player);
+
+    expect(player.preludeCardsInHand.map(toName)).deep.eq([CardName.LOAN]);
+    expect(player.game.preludeDeck.discardPile.map(toName)).to.have.members([CardName.BIOLAB, CardName.DONATION, CardName.SUPPLIER]);
+  });
+
+  it('skips prelude selection when prelude handicap is 0', () => {
+    const [/* game */, player] = testGame(1, {preludeExtension: true});
+    player.game.projectDeck.discardPile.length = 0;
+    player.game.corporationDeck.discardPile.length = 0;
+    player.preludeHandicap = 0;
+    player.dealtCorporationCards = corporationCardsFromJSON([CardName.INVENTRIX, CardName.HELION]);
+    player.dealtProjectCards = cardsFromJSON([CardName.ANTS, CardName.BACTOVIRAL_RESEARCH]);
+    player.dealtPreludeCards = preludesFromJSON([CardName.LOAN, CardName.BIOLAB, CardName.DONATION, CardName.SUPPLIER]);
+    selectInitialCards = new SelectInitialCards(player, cb);
+
+    expect(selectInitialCards.inputs.prelude).eq(undefined);
+    selectInitialCards.process({type: 'initialCards', responses: [
+      {type: 'card', cards: [CardName.INVENTRIX]},
+      {type: 'card', cards: []},
+    ]}, player);
+
+    expect(player.preludeCardsInHand).is.empty;
+    expect(player.game.preludeDeck.discardPile.map(toName)).to.have.members([CardName.LOAN, CardName.BIOLAB, CardName.DONATION, CardName.SUPPLIER]);
+  });
+
   it('shows calculated project costs in the initial selection', () => {
     player.playedCards.push(new EarthCatapult());
 

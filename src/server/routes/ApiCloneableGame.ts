@@ -6,7 +6,7 @@ import {isGameId} from '../../common/Types';
 import {Request} from '../Request';
 import {Response} from '../Response';
 import {SerializedGame} from '../SerializedGame';
-import {NewGameConfig} from '../../common/game/NewGameConfig';
+import {DEFAULT_PRELUDE_HANDICAP, NewGameConfig} from '../../common/game/NewGameConfig';
 
 export class ApiCloneableGame extends Handler {
   public static readonly INSTANCE = new ApiCloneableGame();
@@ -58,6 +58,7 @@ export class ApiCloneableGame extends Handler {
         color: player.color,
         beginner: player.beginner,
         handicap: player.handicap,
+        preludeHandicap: player.preludeHandicap ?? DEFAULT_PRELUDE_HANDICAP,
         first: false,
         isBot: false,
       })),

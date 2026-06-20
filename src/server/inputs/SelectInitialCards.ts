@@ -9,6 +9,7 @@ import {InputError} from './InputError';
 import {OptionsInput} from './OptionsPlayerInput';
 import {InputResponse, isSelectInitialCardsResponse} from '../../common/inputs/InputResponse';
 import {PlayerInput} from '../PlayerInput';
+import {normalizePreludeHandicap} from '../../common/game/NewGameConfig';
 
 type Inputs = {
   corp: PlayerInput | undefined,
@@ -54,12 +55,13 @@ export class SelectInitialCards extends OptionsInput<undefined> {
       player.dealtPreludeCards.push(new Merger());
     }
 
-    if (game.gameOptions.preludeExtension) {
+    const preludeHandicap = normalizePreludeHandicap(player.preludeHandicap);
+    if (game.gameOptions.preludeExtension && preludeHandicap > 0) {
       this.push('prelude',
-        new SelectCard(titles.SELECT_PRELUDE_TITLE, undefined, player.dealtPreludeCards, {min: 2, max: 2})
+        new SelectCard(titles.SELECT_PRELUDE_TITLE, undefined, player.dealtPreludeCards, {min: preludeHandicap, max: preludeHandicap})
           .andThen((preludeCards) => {
-            if (preludeCards.length !== 2) {
-              throw new InputError('Only select 2 preludes');
+            if (preludeCards.length !== preludeHandicap) {
+              throw new InputError(`Only select ${preludeHandicap} ${preludeHandicap === 1 ? 'prelude' : 'preludes'}`);
             }
             player.preludeCardsInHand.push(...preludeCards);
             return undefined;

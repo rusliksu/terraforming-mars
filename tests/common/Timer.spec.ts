@@ -46,6 +46,18 @@ describe('Timer', () => {
     expect(Timer.toString(timer.serialize(), clock)).eq('00:01');
   });
 
+  it('does not add elapsed time when stopped twice', () => {
+    (Timer as any).lastStoppedAt = 1000;
+    clock.millis = 5000;
+    timer.start(); // Skipping first action.
+    timer.stop();
+
+    clock.millis = 10_000;
+    timer.stop();
+
+    expect(timer.getElapsed()).eq(0);
+  });
+
   it('shows 1:00:01 after 3601 sec', () => {
     timer.start(); // Skipping first action
     timer.stop();

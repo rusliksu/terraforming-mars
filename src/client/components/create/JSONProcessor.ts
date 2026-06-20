@@ -144,6 +144,7 @@ export class JSONProcessor {
     for (let i = 0; i < normalizedPlayers.length; i++) {
       this.model.players[i] = normalizedPlayers[i];
     }
+    this.model.solarPhaseOption = this.solarPhaseOption;
 
     this.validateCardNames('customCorporations', this.model.customCorporations);
     this.validateCardNames('customPreludes', this.model.customPreludes);

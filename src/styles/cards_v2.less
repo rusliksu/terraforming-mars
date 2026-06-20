@@ -1929,39 +1929,10 @@
       margin-left: 2px;
     }
   }
-  // TODO(kberg) This set of tags looks like a duplicate of cards.less.
-  @tags: wild, building, space, power, jovian, venus, earth, city, mars,
-    microbe, plant, animal, event, science, none, moon, crime, empty;
-  // stylelint-disable-next-line @stylistic/indentation
-  each(@tags, {
-    .card-tag-@{value} {
-      background-image: url("./assets/tags/@{value}.png");
-    }
-  })
-
-  .card-tag-floater {
-    background-image: url("./assets/resources/floater.png");
-    border-radius: 0px;
-  }
-  .card-tag-wild-resource {
-    background-image: url("./assets/resources/wild.png");
-    border-radius: 0px;
-  }
-  .card-tag-diverse {
-    background: linear-gradient(to bottom right, green, yellow, red);
-  }
   .card-no-tags {
     font-size: 42px;
     vertical-align: middle;
     background:white;
-  }
-
-  .card-tag-size--S {
-    height: 22px;
-    width: 22px;
-    background-size: 26px;
-    margin-left: 0px;
-    margin-right: 0px;
   }
 
   .card-no-tags:after {
@@ -1980,14 +1951,41 @@
       font-weight: bold;
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // Tag shape/size overrides live here, not with the base tag-* image classes in
+  // cards.less. They must beat the base shapes (.card-container .card-icon /
+  // .card-resource-tag), which only works nested here, after those rules, in this
+  // file (imported last). Flattening to bare .tag-* in cards.less was #8250's
+  // regression (round req/blue/floater). See cards.less for the matching note.
+  // TODO(kberg): floater is a resource, not a tag — this is misnamed as tag-*.
+  // (Same for tag-wild-resource below.) Rename to a resource-based class.
+  .tag-floater {
+    background-image: url("./assets/resources/floater.png");
+    border-radius: 0px;
+  }
+  .tag-wild-resource {
+    background-image: url("./assets/resources/wild.png");
+    border-radius: 0px;
+  }
+  .tag-diverse {
+    background: linear-gradient(to bottom right, green, yellow, red);
+  }
+  .tag-size--S {
+    height: 22px;
+    width: 22px;
+    background-size: 26px;
+    margin-left: 0px;
+    margin-right: 0px;
+  }
   /* secondary tags */
-  .card-tag-req {
+  .tag-req {
     border-radius: 0px;
     height: 12px;
     box-shadow: @outline-shadow;
     background: linear-gradient(90deg, rgba(243,161,14,1) 0%, rgba(253,234,37,1) 45%, rgba(253,234,37,1) 55%, rgba(243,161,14,1) 100%);
   }
-  .card-tag-blue {
+  .tag-blue {
     opacity: 0.8;
     margin-left: 17px;
     background: #176fe4;
@@ -1996,10 +1994,10 @@
     height: 16px;
     border-radius: @radius_circle;
   }
-  .card-tag-no_planetary_tag {
+  .tag-no_planetary_tag {
     .tag-clone();
   }
-  .card-tag-no_planetary_tag:after {
+  .tag-no_planetary_tag:after {
     content: '';
     height: 20px;
     border-left: 2px dashed #f00;
@@ -2007,7 +2005,7 @@
     transform: rotate(45deg);
     margin-left: -1px;
   }
-  .card-tag-no_planetary_tag:before {
+  .tag-no_planetary_tag:before {
     content: '';
     height: 20px;
     border-left: 2px dashed #f00;
@@ -2015,7 +2013,7 @@
     transform: rotate(-45deg);
     margin-left: -1px;
   }
-  .card-tag-turmoil:after {
+  .tag-turmoil:after {
     position: absolute;
     color: @grey_900;
     border: 1px solid black;
@@ -2032,19 +2030,19 @@
     content: "\25b2";
     transform: rotate(180deg);
   }
-  .card-tag-no_tags {
+  .tag-no_tags {
     background:white;
     font-size: 30px;
     vertical-align: middle;
     font-weight: normal
   }
-  .card-tag-no_tags:after {
+  .tag-no_tags:after {
     content: "X";
     position: relative;
     top: 1px;
     left: 1px;
   }
-  .card-tag-ares {
+  .tag-ares {
     background-image: url("./assets/expansion_icons/expansion_icon_ares.png");
   }
   /* special case Project requirements */
@@ -2657,6 +2655,24 @@
       top: 45px;
       position: absolute;
     }
+    .card-help {
+      float: left;
+      font-family: Prototype, sans-serif;
+      font-size: 20px;
+      width: 24px;
+      height: 24px;
+      margin-left: -20px;
+      line-height: 24px;
+      border-radius: 24px;
+      background-color: #444;
+      text-align: center;
+      a {
+        color: #C33;
+        text-decoration: none;
+      }
+      position: static;
+      z-index: 1;
+    }
     .card-tags {
       display: flex;
       flex-flow: row;
@@ -2675,6 +2691,7 @@
         background-color: white;
         /* margin-top: -6px; */
         filter: brightness(0.9);
+        z-index: 2;
       }
     }
   }
@@ -2707,6 +2724,8 @@
       height: 14px;
       line-height: 15px;
       text-align: center;
+      margin-left: 24px;
+      margin-top: -10px;
       font-size: 13px;
       box-shadow: @outline-shadow;
       background: linear-gradient(
@@ -2761,14 +2780,6 @@
     background-position: center;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
   }
-  .contentCorporation {
-    color: @text_dark;
-    position: relative;
-    display: inline-block;
-    font-weight: bold;
-    padding: 8px;
-    top: -40px;
-  }
 }
 /* fixes */
 .card-nirgal-enterprises .card-title {
@@ -2792,7 +2803,7 @@
 }
 
 @parties: greens, kelvinists, mars-first, reds, scientists, unity;
-// stylelint-disable-next-line @stylistic/indentation
+/* stylelint-disable @stylistic/indentation */
 each(@parties, {
   .card-party--@{value} {
     background-image: url("./assets/parties/@{value}.png");
@@ -2801,7 +2812,6 @@ each(@parties, {
     height: 30px;
   }
 })
-// stylelint-disable-next-line @stylistic/indentation
 each(@parties, {
   .card-party--@{value}-req {
     background-image: url("./assets/parties/@{value}.png");
@@ -2810,6 +2820,7 @@ each(@parties, {
     height: 34px;
   }
 })
+/* stylelint-enable @stylistic/indentation */
 
 .card-over {
   margin: 0px 0 -59px -59px;
@@ -2832,12 +2843,13 @@ each(@parties, {
   asteroid, disease, preservation, data, syndicate-fleet, cube,
   venusian-habitat, specialized-robot, seed, orbital, agenda, graphene, hydroelectric-resource,
   clone-trooper, director, tool, ware, activist, journalism, supply-chain;
-// stylelint-disable-next-line @stylistic/indentation
+/* stylelint-disable @stylistic/indentation */
 each(@card_resource_types, {
   .card-resource-@{value} {
     background-image: url("./assets/resources/@{value}.png");
   }
 })
+/* stylelint-enable @stylistic/indentation */
 
 .card-resource-cube {
   background-image: url("./assets/cube.png");

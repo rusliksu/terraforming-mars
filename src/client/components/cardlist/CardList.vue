@@ -184,6 +184,10 @@
       </section>
 
       <div class="free-floating-preferences-icon">
+        <div v-show="scrolled" class="sidebar_item card-list-scroll-top" title="Scroll to top" @click="scrollToTop()">
+          <div class="card-list-scroll-top-arrow">↑</div>
+        </div>
+        <LanguageIcon class="corner-language-icon"/>
         <PreferencesIcon/>
       </div>
   </div>
@@ -218,12 +222,14 @@ import Card from '@/client/components/card/Card.vue';
 import Colony from '@/client/components/colonies/Colony.vue';
 import GlobalEvent from '@/client/components/turmoil/GlobalEvent.vue';
 import PreferencesIcon from '@/client/components/PreferencesIcon.vue';
+import LanguageIcon from '@/client/components/LanguageIcon.vue';
 import Milestone from '@/client/components/Milestone.vue';
 import Award from '@/client/components/Award.vue';
 import TurmoilAgendaContainer from '@/client/components/cardlist/TurmoilAgendaContainer.vue';
 import {CardResource} from '@/common/CardResource';
 import {cardResourceCSS} from '../common/cardResources';
 import {setDocumentTitle} from '@/client/utils/documentTitle';
+import {textFitMetrics} from '@/client/utils/textFit';
 
 
 type Refs = {
@@ -240,14 +246,24 @@ export default defineComponent({
     Award,
     TurmoilAgendaContainer,
     PreferencesIcon,
+    LanguageIcon,
   },
-  data(): CardListModel {
-    return hashToModel(window.location.hash);
+  data() {
+    return {
+      ...hashToModel(window.location.hash),
+      // Whether the page has been scrolled down at all; gates the "scroll to top" widget.
+      scrolled: false,
+    };
   },
   mounted() {
     setDocumentTitle('Cards List');
     this.typedRefs.filter.focus();
     this.delayedSetLocationHash();
+    this.measureTitleFit();
+    window.addEventListener('scroll', this.handleScroll, {passive: true});
+  },
+  beforeUnmount() {
+    window.removeEventListener('scroll', this.handleScroll);
   },
   computed: {
     typedRefs(): Refs {
@@ -538,6 +554,27 @@ export default defineComponent({
     // experimentalUI might not be used at the moment, but it's fine to just leave it here.
     experimentalUI(): boolean {
       return getPreferences().experimental_ui;
+    },
+    // Reports how long it took to resize every card title once they've all been
+    // fitted. Each CardTitle defers its fit until document.fonts.ready, so we
+    // wait on the same signal: our child components register their fit callbacks
+    // before this parent mounted hook runs, so by the time this resolves they
+    // have all recorded their timings.
+    measureTitleFit(): void {
+      textFitMetrics.reset();
+      const report = () => console.log(`Resized ${textFitMetrics.count} card titles in ${textFitMetrics.total.toFixed(1)}ms`);
+      // document.fonts is unavailable outside a real browser (e.g. JSDOM tests).
+      if (document.fonts === undefined) {
+        report();
+      } else {
+        document.fonts.ready.then(report);
+      }
+    },
+    scrollToTop(): void {
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    },
+    handleScroll(): void {
+      this.scrolled = window.scrollY > 0;
     },
     toggleNamesOnly(): void {
       this.namesOnly = !this.namesOnly;

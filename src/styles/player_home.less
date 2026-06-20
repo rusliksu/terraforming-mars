@@ -689,10 +689,10 @@
         }
 
         .ma-scores {
-            display: inline-block;
-            width: 144px;
-            margin-left: -2px;
-        }
+      display: inline-block;
+      width: 144px;
+      margin-left: -2px;
+    }
 
         .ma-player {
             margin: 25px 0 0 70px;
@@ -703,92 +703,101 @@
             }
         }
 
-        .ma-name {
-            display: inline-block;
-            width: 140px;
-            height: 83px;
-            color: black;
-            padding-top: 60px;
-            font-size: 15px;
-            text-transform: uppercase;
-            text-align: center;
-            font-weight: bold;
-            border-radius: 10px 10px 0 0;
-        }
+    .ma-name {
+      display: inline-block;
+      width: 140px;
+      height: 83px;
+      color: black;
+      padding-top: 60px;
+      font-size: 15px;
+      text-transform: uppercase;
+      text-align: center;
+      font-weight: bold;
+      border-radius: 10px 10px 0 0;
 
-        .claimable {
-          border: 1px solid #b0b040;
-        }
-        .not-claimable {
-          border: 0px solid;
-        }
-
-        @ma-name:
-          terraformer, mayor, gardener, builder, planner,
-          landlord, banker, scientist, thermalist, miner,
-
-          generalist, specialist, ecologist, tycoon, legend,
-          celebrity, industrialist, desert-settler, estate-dealer, benefactor,
-
-          diversifier, tactician, polar-explorer, energizer, rim-settler,
-          cultivator, magnate, space-baron, excentric, contractor,
-
-          hoverlord, venuphile,
-
-          networker, entrepreneur,
-
-          lunar-magnate, lunarchitect, full-moon, one-giant-step,
-
-          economizer, pioneer, land-specialist, martian,
-          cosmic-settler, botanist, promoter, zoologist, a-manufacturer,
-
-          v-electrician, v-spacefarer, smith, tradesman, irrigator, capitalist,
-          forecaster, edgedancer, visionary, naturalist, voyager,
-
-          rugged, purifier,
-
-          agronomist, engineer, farmer,
-
-          colonizer, minimalist, terran, tropicalist,
-          curator, tourist, a-engineer, a-zoologist,
-
-          t-collector, firestarter, terra-pioneer, spacefarer, gambler,
-          biologist, t-politician, urbanist, warmonger,
-          incorporator, manufacturer, politician,
-
-          administrator, constructor, founder, highlander, hydrologist, investor,
-          landscaper, metropolist, mogul, thawer, traveller, blacksmith,
-
-          collector, electrician, fundraiser, geologist, landshaper, lobbyist, philantropist,
-          planetologist, producer, researcher, sponsor, forester, breeder, thermoengineer,
-
-          kingpin, excavator, tunneler, risktaker,
-
-          architect, c-forester, coastguard,
-
-          builder7, legend4, pioneer4, metallurgist, spacefarer4, tactician4,
-          terraformer29, terran5, trader, tycoon10, suburbian, briber, merchant,
-        ;
-        each(@ma-name, {
-          .ma-name--@{value} {
-            background-image: url("assets/ma/@{value}.png");
-            // Images are expected to be 140px x 83px
-            // background-size: 200px;
-            // background-position: -30px -5px;
-          }
-        })
-
-        .ma-description {
-            display: inline-block;
-            width: 140px;
-            height: 70px;
-            color: #ddd;
-            padding: 0px 2px 0px 2px;
-            font-size: 14px;
-            line-height: 15px;
-            text-align: center;
-        }
+      // With the experimental UI on, the name is sized by measuring the rendered
+      // text (see fitText). The measurement needs the name in a block that spans
+      // the medal's width, so overflow from a too-long word is detectable;
+      // otherwise an inline span just grows to fit and never reports overflow.
+      .preferences_experimental_ui & > span {
+        display: block;
+      }
     }
+
+    .claimable {
+      border: 1px solid #b0b040;
+    }
+    .not-claimable {
+      border: 0px solid;
+    }
+
+    @ma-name:
+      terraformer, mayor, gardener, builder, planner,
+      landlord, banker, scientist, thermalist, miner,
+
+      generalist, specialist, ecologist, tycoon, legend,
+      celebrity, industrialist, desert-settler, estate-dealer, benefactor,
+
+      diversifier, tactician, polar-explorer, energizer, rim-settler,
+      cultivator, magnate, space-baron, excentric, contractor,
+
+      hoverlord, venuphile,
+
+      networker, entrepreneur,
+
+      lunar-magnate, lunarchitect, full-moon, one-giant-step,
+
+      economizer, pioneer, land-specialist, martian,
+      cosmic-settler, botanist, promoter, zoologist, a-manufacturer,
+
+      v-electrician, v-spacefarer, smith, tradesman, irrigator, capitalist,
+      forecaster, edgedancer, visionary, naturalist, voyager,
+
+      rugged, purifier,
+
+      agronomist, engineer, farmer,
+
+      colonizer, minimalist, terran, tropicalist,
+      curator, tourist, a-engineer, a-zoologist,
+
+      t-collector, firestarter, terra-pioneer, spacefarer, gambler,
+      biologist, t-politician, urbanist, warmonger,
+      incorporator, manufacturer, politician,
+
+      administrator, constructor, founder, highlander, hydrologist, investor,
+      landscaper, metropolist, mogul, thawer, traveller, blacksmith,
+
+      collector, electrician, fundraiser, geologist, landshaper, lobbyist, philantropist,
+      planetologist, producer, researcher, sponsor, forester, breeder, thermoengineer,
+
+      kingpin, excavator, tunneler, risktaker,
+
+      architect, c-forester, coastguard,
+
+      builder7, legend4, pioneer4, metallurgist, spacefarer4, tactician4,
+      terraformer29, terran5, trader, tycoon10, suburbian, briber, merchant,
+    ;
+    each(@ma-name, {
+    .ma-name--@{value} {
+      background-image: url("assets/ma/@{value}.png");
+      // Images are expected to be 140px x 83px
+      // background-size: 200px;
+      // background-position: -30px -5px;
+      }
+    })
+
+    .ma-description {
+      display: inline-block;
+      width: 140px;
+      height: 70px;
+      color: #ddd;
+      padding: 0px 2px 0px 2px;
+      font-size: 14px;
+      line-height: 15px;
+      text-align: center;
+    }
+  }
+
 }
 
 .with-turmoil {

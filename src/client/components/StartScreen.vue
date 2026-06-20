@@ -47,6 +47,7 @@
     </div>
   </div>
   <div class="free-floating-preferences-icon">
+    <LanguageIcon class="corner-language-icon"/>
     <PreferencesIcon/>
   </div>
 </div>
@@ -56,6 +57,7 @@
 
 import {defineComponent} from 'vue';
 import LanguageSwitcher from '@/client/components/LanguageSwitcher.vue';
+import LanguageIcon from '@/client/components/LanguageIcon.vue';
 import PreferencesIcon from '@/client/components/PreferencesIcon.vue';
 
 import raw_settings from '@/genfiles/settings.json';
@@ -70,6 +72,7 @@ export default defineComponent({
   name: 'StartScreen',
   components: {
     LanguageSwitcher,
+    LanguageIcon,
     PreferencesIcon,
   },
   data(): {liveGames: Array<LiveGameModel>, liveGamesStatus: LiveGamesStatus} {

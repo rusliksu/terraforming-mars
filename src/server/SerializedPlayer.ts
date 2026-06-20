@@ -42,6 +42,7 @@ export interface SerializedPlayer extends DeprecatedFields{
   fleetSize: number;
   globalParameterSteps: Record<GlobalParameter, number>;
   handicap: number;
+  preludeHandicap?: number;
   hasIncreasedTerraformRatingThisGeneration: boolean;
   hasTurmoilScienceTagBonus: boolean;
   heat: number;

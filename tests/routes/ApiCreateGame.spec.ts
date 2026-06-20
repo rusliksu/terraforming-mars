@@ -162,6 +162,35 @@ describe('ApiCreateGame', () => {
     expect(ApiCreateGame.boardOptions(RandomBoardOption.OFFICIAL)).contains(game!.gameOptions.boardName);
   });
 
+  it('creates games with per-player prelude handicap', async () => {
+    const post = scaffolding.post(apiCreateGame, res);
+    const config = newGameConfig([{
+      name: 'Robot',
+      color: 'blue',
+      beginner: false,
+      handicap: 0,
+      preludeHandicap: 1,
+      first: true,
+      isBot: false,
+    }]);
+    config.expansions.prelude = true;
+    config.startingCorporations = 2;
+    config.startingPreludes = constants.PRELUDE_CARDS_DEALT_PER_PLAYER;
+
+    const emit = Promise.resolve().then(() => {
+      req.emitter.emit('data', JSON.stringify(config));
+      req.emitter.emit('end');
+    });
+
+    await Promise.all(([emit, post]));
+
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game).is.not.undefined;
+    expect(game!.players[0].preludeHandicap).eq(1);
+  });
+
   it('creates training games with no ELO enabled', async () => {
     const post = scaffolding.post(apiCreateGame, res);
     const config = newGameConfig([{

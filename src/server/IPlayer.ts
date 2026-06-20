@@ -67,6 +67,7 @@ export interface IPlayer {
   color: Color;
   beginner: boolean;
   handicap: number;
+  preludeHandicap: number;
 
   readonly game: IGame;
   tags: Tags;

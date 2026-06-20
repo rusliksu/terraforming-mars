@@ -80,6 +80,7 @@ import {AlliedParty} from '../common/turmoil/Types';
 import {PlayedCards} from './cards/PlayedCards';
 import {From} from './logs/From';
 import {SelectStandardProjectToPlay} from './inputs/SelectStandardProjectToPlay';
+import {DEFAULT_PRELUDE_HANDICAP, normalizePreludeHandicap} from '../common/game/NewGameConfig';
 
 const THROW_STATE_ERRORS = Boolean(process.env.THROW_STATE_ERRORS);
 const TURN_NOTICE_DELAY_MS = 5000;
@@ -281,9 +282,11 @@ export class Player implements IPlayer {
     public color: Color,
     public beginner: boolean,
     public handicap: number = 0,
-    id: PlayerId) {
+    id: PlayerId,
+    public preludeHandicap: number = DEFAULT_PRELUDE_HANDICAP) {
     this.id = id;
     this.name = normalizePlayerNameForColor(this.color, this.name);
+    this.preludeHandicap = normalizePreludeHandicap(this.preludeHandicap);
     // This seems pretty bad. The game will be set before the Player is actually
     // used, and if that doesn't happen, well, it's a worthy error.
     // The alterantive, to make game type Game | undefined, will cause compilation
@@ -1987,6 +1990,7 @@ export class Player implements IPlayer {
       color: this.color,
       beginner: this.beginner,
       handicap: this.handicap,
+      preludeHandicap: this.preludeHandicap,
       timer: this.timer.serialize(),
       // Stats
       actionsTakenThisGame: this.actionsTakenThisGame,
@@ -2007,7 +2011,7 @@ export class Player implements IPlayer {
   }
 
   public static deserialize(d: SerializedPlayer): Player {
-    const player = new Player(d.name, d.color, d.beginner, Number(d.handicap), d.id);
+    const player = new Player(d.name, d.color, d.beginner, Number(d.handicap), d.id, normalizePreludeHandicap(d.preludeHandicap));
 
     player.actionsTakenThisGame = d.actionsTakenThisGame;
     player.actionsThisGeneration = new Set(d.actionsThisGeneration);

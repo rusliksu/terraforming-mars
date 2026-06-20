@@ -57,6 +57,33 @@ describe('SelectInitialCards', () => {
     expect(button.attributes().disabled).not.to.be.undefined;
   });
 
+  it('saves data with one prelude when the option requires one', async () => {
+    const component = createComponent(
+      [CardName.ECOLINE],
+      [CardName.ANTS],
+      [CardName.ALLIED_BANK, CardName.SUPPLY_DROP],
+      undefined,
+      1);
+    expect(component).not.is.undefined;
+
+    const selectCards = component.findAllComponents({name: 'select-card'});
+    expect(selectCards).has.length(3);
+    selectCards[0].vm.$emit('cardschanged', [CardName.ECOLINE]);
+    selectCards[1].vm.$emit('cardschanged', [CardName.ALLIED_BANK]);
+    selectCards[2].vm.$emit('cardschanged', [CardName.ANTS]);
+    await component.vm.$nextTick();
+
+    const button = getButton(component);
+    expect(button.attributes().disabled).is.undefined;
+    await button.trigger('click');
+
+    expect(savedData).to.deep.eq({type: 'initialCards', responses: [
+      {type: 'card', cards: [CardName.ECOLINE]},
+      {type: 'card', cards: [CardName.ALLIED_BANK]},
+      {type: 'card', cards: [CardName.ANTS]},
+    ]});
+  });
+
   it('saves data with prelude', async () => {
     const component = createComponent(
       [CardName.ECOLINE],
@@ -187,7 +214,12 @@ function getConfirmDialog(component: VueWrapper<InstanceType<typeof SelectInitia
   return component.vm.$refs.confirmation as InstanceType<typeof ConfirmDialog>;
 }
 
-function createComponent(corpCards: Array<CardName>, projectCards: Array<CardName>, preludeCards?: Array<CardName>, ceoCards?: Array<CardName>) {
+function createComponent(
+  corpCards: Array<CardName>,
+  projectCards: Array<CardName>,
+  preludeCards?: Array<CardName>,
+  ceoCards?: Array<CardName>,
+  preludeCount = 2) {
   const toObject = (cards: Array<CardName>) => cards.map((name) => {
     return {name} as CardModel;
   });
@@ -221,8 +253,8 @@ function createComponent(corpCards: Array<CardName>, projectCards: Array<CardNam
       title: titles.SELECT_PRELUDE_TITLE,
       buttonLabel: 'x',
       cards: toObject(preludeCards),
-      max: 2,
-      min: 2,
+      max: preludeCount,
+      min: preludeCount,
       showOnlyInLearnerMode: false,
       selectBlueCardAction: false,
       showOwner: false,

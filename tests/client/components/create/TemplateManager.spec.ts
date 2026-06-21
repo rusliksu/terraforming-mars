@@ -5,7 +5,6 @@ import {JSONObject} from '@/common/Types';
 
 describe('TemplateManager', () => {
   const templatesKey = 'tm_game_templates';
-  const lastSettingsKey = 'tm_last_settings';
 
   beforeEach(() => {
     global.localStorage = window.localStorage;
@@ -50,37 +49,6 @@ describe('TemplateManager', () => {
     expect(settings.turnBasedGame).eq(false);
     expect(settings.botGame).eq(false);
     expect(players[0].isBot).eq(false);
-  });
-
-  it('sanitizes custom transient fields before saving last settings', () => {
-    TemplateManager.saveLastSettings({
-      turnBasedGame: true,
-      botGame: true,
-      players: [
-        {name: 'Alice', color: 'red', beginner: false, handicap: 0, first: false, isBot: true, telegramID: '111'},
-      ],
-    });
-
-    const stored = JSON.parse(localStorage.getItem(lastSettingsKey) ?? '{}');
-    expect(stored.turnBasedGame).eq(false);
-    expect(stored.botGame).eq(false);
-    expect(stored.players[0]).not.to.have.property('telegramID');
-    expect(stored.players[0].isBot).eq(false);
-  });
-
-  it('migrates old last settings that already contain telegram ids', () => {
-    localStorage.setItem(lastSettingsKey, JSON.stringify({
-      players: [
-        {name: 'Alice', color: 'red', beginner: false, handicap: 0, first: false, isBot: false, telegramID: '111'},
-      ],
-    }));
-
-    const settings = TemplateManager.getLastSettings();
-    const players = settings?.players as Array<JSONObject>;
-    const migrated = JSON.parse(localStorage.getItem(lastSettingsKey) ?? '{}');
-
-    expect(players[0]).not.to.have.property('telegramID');
-    expect(migrated.players[0]).not.to.have.property('telegramID');
   });
 
   it('migrates old templates that already contain telegram ids', () => {

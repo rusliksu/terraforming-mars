@@ -594,6 +594,7 @@
 
                         <div class="create-game-action">
                             <AppButton title="Create game" size="big" @click="createGame"/>
+                            <AppButton title="Reset" size="big" @click="resetSettings"/>
 
                             <label>
                                 <div class="btn btn-primary btn-action btn-lg"><i class="icon icon-upload"></i></div>
@@ -711,6 +712,7 @@ import {CreateGameModel} from './CreateGameModel';
 import {paths} from '@/common/app/paths';
 import {JSONProcessor} from './JSONProcessor';
 import {defaultCreateGameModel} from './defaultCreateGameModel';
+import {CreateGameSettingsStorage} from './CreateGameSettingsStorage';
 import {TemplateManager, GameTemplate} from './TemplateManager';
 import {getColony} from '@/client/colonies/ClientColonyManifest';
 import {RULEBOOK_URLS, WIKI, WIKI_URLS} from '@/client/utils/WikiLinks';
@@ -990,52 +992,88 @@ export default defineComponent({
   },
   methods: {
     restoreLastSettings() {
-      const lastSettings = TemplateManager.getLastSettings();
-      if (lastSettings) {
-        this.applySettings(lastSettings);
+      const lastSettings = new CreateGameSettingsStorage().loadSettings();
+      if (lastSettings === undefined) {
+        return;
+      }
+      try {
+        const processor = this.applySettings(lastSettings);
+        if (processor.warnings.length > 0) {
+          this.showSettingsLoadResult('Restore settings', processor);
+        }
+      } catch (e) {
+        console.warn('Could not restore create game settings:', e);
       }
     },
-    applySettings(json: JSONObject) {
+    applySettings(json: JSONObject): JSONProcessor {
       const component: CreateGameModel = this;
       const refs = this.typedRefs;
-      const root = vueRoot(this);
       const hasCustomCorporationExclusions = Array.isArray(json['customCorporationExclusions']);
       const hasCustomPreludesExclusions = Array.isArray(json['customPreludesExclusions']);
       const hasCustomColonyExclusions = Array.isArray(json['customColonyExclusions']);
+      const processor = new JSONProcessor(component);
+      this.uploading = true;
       try {
-        this.uploading = true;
-        const processor = new JSONProcessor(component);
         processor.applyJSON(json);
-        nextTick(() => {
-          try {
-            if (component.showBannedCards && refs.cardsFilter) {
-              refs.cardsFilter.selected = processor.bannedCards;
-            }
-            if (component.showIncludedCards && refs.cardsFilter2) {
-              refs.cardsFilter2.selected = processor.includedCards;
-            }
-            if (!component.seededGame) {
-              component.seed = Math.random();
-            }
-            this.rememberCustomSelectionExclusions({
-              preserveDefaultCorporationExclusions: !hasCustomCorporationExclusions,
-              preserveDefaultPreludeExclusions: !hasCustomPreludesExclusions,
-              preserveDefaultColonyExclusions: !hasCustomColonyExclusions,
-            });
-            this.syncSolarPhaseOptionToPlayerCount();
-            this.syncCustomSelectionsWithExpansions({
-              preserveExplicitFanColonies: hasCustomColonyExclusions,
-            });
-            this.uploading = false;
-          } catch (e) {
-            console.error('Error applying settings:', e);
-            this.uploading = false;
-          }
-        });
       } catch (e) {
-        root.showAlert('Load settings', 'Error: ' + e);
         this.uploading = false;
+        throw e;
       }
+      nextTick(() => {
+        try {
+          if (component.showBannedCards && refs.cardsFilter) {
+            refs.cardsFilter.selected = processor.bannedCards;
+          }
+          if (component.showIncludedCards && refs.cardsFilter2) {
+            refs.cardsFilter2.selected = processor.includedCards;
+          }
+          if (!component.seededGame) {
+            component.seed = Math.random();
+          }
+          this.rememberCustomSelectionExclusions({
+            preserveDefaultCorporationExclusions: !hasCustomCorporationExclusions,
+            preserveDefaultPreludeExclusions: !hasCustomPreludesExclusions,
+            preserveDefaultColonyExclusions: !hasCustomColonyExclusions,
+          });
+          this.syncSolarPhaseOptionToPlayerCount();
+          this.syncCustomSelectionsWithExpansions({
+            preserveExplicitFanColonies: hasCustomColonyExclusions,
+          });
+        } finally {
+          this.uploading = false;
+        }
+      });
+      return processor;
+    },
+    showSettingsLoadResult(title: string, processor: JSONProcessor) {
+      const root = vueRoot(this);
+      if (processor.warnings.length > 0) {
+        root.showAlert(title, 'Settings loaded with these warnings: \n' + processor.warnings.join('\n'));
+      } else {
+        root.showAlert(title, 'Settings loaded.');
+      }
+    },
+    resetSettings() {
+      new CreateGameSettingsStorage().clearSettings();
+      Object.assign(this, defaultCreateGameModel(), {
+        preludeToggled: false,
+        uploading: false,
+        selectedTemplate: '',
+        playerProfilePickerIndex: null,
+        playerProfileSearch: '',
+        customCorporationExclusions: [...DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS],
+        customPreludesExclusions: [],
+        customColonyExclusions: [...DEFAULT_CUSTOM_COLONY_EXCLUSIONS],
+      });
+      nextTick(() => {
+        const refs = this.typedRefs;
+        if (refs.cardsFilter) {
+          refs.cardsFilter.selected = [];
+        }
+        if (refs.cardsFilter2) {
+          refs.cardsFilter2.selected = [];
+        }
+      });
     },
     async loadRematchSetup(gameId: GameId) {
       try {
@@ -1064,8 +1102,16 @@ export default defineComponent({
       if (!tmpl) {
         return;
       }
-      this.applySettings(tmpl.settings);
-      vueRoot(this).showAlert('Template', 'Template "' + this.selectedTemplate + '" loaded.');
+      try {
+        const processor = this.applySettings(tmpl.settings);
+        if (processor.warnings.length > 0) {
+          this.showSettingsLoadResult('Template', processor);
+        } else {
+          vueRoot(this).showAlert('Template', 'Template "' + this.selectedTemplate + '" loaded.');
+        }
+      } catch (e) {
+        vueRoot(this).showAlert('Template', 'Error loading template: ' + e);
+      }
     },
     saveAsTemplate() {
       const name = prompt('Template name:', this.selectedTemplate || '');
@@ -1170,52 +1216,16 @@ export default defineComponent({
       const refs = this.typedRefs;
       const file = refs.file.files !== null ? refs.file.files[0] : undefined;
       const reader = new FileReader();
-      const component: CreateGameModel = this;
       const root = vueRoot(this);
 
 
       reader.addEventListener('load', () => {
         try {
           const readerResults = reader.result;
-          const processor = new JSONProcessor(component);
           if (typeof(readerResults) === 'string') {
-            this.uploading = true;
             const results = JSON.parse(readerResults);
-            const hasCustomCorporationExclusions = Array.isArray(results['customCorporationExclusions']);
-            const hasCustomPreludesExclusions = Array.isArray(results['customPreludesExclusions']);
-            const hasCustomColonyExclusions = Array.isArray(results['customColonyExclusions']);
-            processor.applyJSON(results);
-
-            nextTick(() => {
-              try {
-                if (component.showBannedCards) {
-                  refs.cardsFilter.selected = processor.bannedCards;
-                }
-                if (component.showIncludedCards) {
-                  refs.cardsFilter2.selected = processor.includedCards;
-                }
-                if (!component.seededGame) {
-                  component.seed = Math.random();
-                }
-                this.rememberCustomSelectionExclusions({
-                  preserveDefaultCorporationExclusions: !hasCustomCorporationExclusions,
-                  preserveDefaultPreludeExclusions: !hasCustomPreludesExclusions,
-                  preserveDefaultColonyExclusions: !hasCustomColonyExclusions,
-                });
-                this.syncSolarPhaseOptionToPlayerCount();
-                this.syncCustomSelectionsWithExpansions({
-                  preserveExplicitFanColonies: hasCustomColonyExclusions,
-                });
-                this.uploading = false;
-              } catch (e) {
-                root.showAlert('Upload settings', 'Error reading JSON ' + e);
-              }
-            });
-          }
-          if (processor.warnings.length > 0) {
-            root.showAlert('Upload settings', 'Settings loaded with these warnings: \n' + processor.warnings.join('\n'));
-          } else {
-            root.showAlert('Upload settings', 'Settings loaded.');
+            const processor = this.applySettings(results);
+            this.showSettingsLoadResult('Upload settings', processor);
           }
         } catch (e) {
           root.showAlert('Upload settings', 'Error loading settings ' + e);
@@ -2197,7 +2207,7 @@ export default defineComponent({
       };
 
       // Auto-save current settings as last used
-      TemplateManager.saveLastSettings(TemplateManager.serializeFormState(this));
+      new CreateGameSettingsStorage().saveSettings(TemplateManager.serializeFormState(this));
 
       fetch(paths.API_CREATEGAME, {'method': 'POST', 'body': dataToSend, 'headers': {'Content-Type': 'application/json'}})
         .then((response) => response.text())

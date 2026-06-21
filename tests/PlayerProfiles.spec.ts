@@ -15,6 +15,7 @@ describe('Player profiles', () => {
     expect(getPlayerProfileByName('Qiksa')?.name).eq('Qiksa');
     expect(getPlayerProfileByName('Женя')?.name).eq('vvbMinsk');
     expect(getPlayerProfileByName('Midilobusim')?.name).eq('Nuke');
+    expect(getPlayerProfileByName('Midilobisum')?.name).eq('Nuke');
   });
 
   it('keeps profile ids unique', () => {

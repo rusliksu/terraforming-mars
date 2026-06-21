@@ -42,7 +42,7 @@ export const PLAYER_PROFILES: ReadonlyArray<PlayerProfile> = [
     id: 'nuke',
     name: 'Nuke',
     preferredColor: 'black',
-    aliases: ['nuke', 'midilo', 'midilobusim', 'никита'],
+    aliases: ['nuke', 'midilo', 'midilobusim', 'midilobisum', 'никита'],
   },
   {
     id: 'vladlen',

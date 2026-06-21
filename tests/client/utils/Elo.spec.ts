@@ -16,6 +16,7 @@ describe('elo utils', () => {
     expect(normalizeEloName('Женя')).eq('vvbminsk');
     expect(normalizeEloName('Евгений')).eq('vvbminsk');
     expect(normalizeEloName('Midilobusim')).eq('nuke');
+    expect(normalizeEloName('Midilobisum')).eq('nuke');
     expect(normalizeEloName('Никита')).eq('nuke');
     expect(normalizeEloName('genuinegold')).eq('genuinegold');
     expect(normalizeEloName('Genuine Gold')).eq('genuinegold');

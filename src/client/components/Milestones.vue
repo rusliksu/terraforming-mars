@@ -54,9 +54,11 @@ export default defineComponent({
     },
   },
   data() {
+    const claimedMilestoneCount = this.milestones.filter((milestone) => milestone.playerName).length;
+    const hasAvailableMilestones = claimedMilestoneCount < MAX_MILESTONES;
     return {
-      showMilestoneDetails: (this.milestones.filter((milestone) => milestone.playerName).length === MAX_MILESTONES ? false : this.preferences?.show_milestone_details),
-      showDescription: false,
+      showMilestoneDetails: hasAvailableMilestones,
+      showDescription: hasAvailableMilestones,
     };
   },
   components: {
@@ -68,7 +70,6 @@ export default defineComponent({
     },
     toggleList() {
       this.showMilestoneDetails = !this.showMilestoneDetails;
-      PreferencesManager.INSTANCE.set('show_milestone_details', this.showMilestoneDetails);
     },
     getAvailableMilestoneSpots(): Array<number> {
       const count = this.milestones.filter((milestone) => milestone.playerName).length;

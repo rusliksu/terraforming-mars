@@ -6,6 +6,7 @@ import {PlayerId} from '../common/Types';
 import {Phase} from '../common/Phase';
 
 const SERVER_URL = process.env.TM_SERVER_URL ?? 'https://tm.knightbyte.win';
+const RECENT_TURN_REMINDER_SUPPRESS_MS = 60 * 1000;
 const COLOR_LABELS: Record<string, string> = {
   red: 'красный',
   green: 'зеленый',
@@ -215,6 +216,11 @@ export function getStoredTurnNoticeUpdatedAt(player: TelegramNotifiable, turnNot
   return Number.isFinite(updatedAt) ? updatedAt : undefined;
 }
 
+function isRecentlyUpdatedTurnNotice(record: TurnNoticeStoreRecord): boolean {
+  const updatedAt = Date.parse(record.updatedAt);
+  return Number.isFinite(updatedAt) && Date.now() - updatedAt < RECENT_TURN_REMINDER_SUPPRESS_MS;
+}
+
 function rememberTurnNotice(player: TelegramNotifiable, messageId: number, turnNoticeKey: string | undefined): void {
   const store = readTurnNoticeStore();
   store[turnNoticeStoreKey(player)] = {
@@ -371,6 +377,16 @@ export async function sendTurnNotice(
     return false;
   }
   const storedNotice = getStoredTurnNotice(player);
+  if (options.reminder === true && turnNoticeKey !== undefined && storedNotice !== undefined) {
+    if (storedNotice.turnNoticeKey !== undefined && storedNotice.turnNoticeKey !== turnNoticeKey) {
+      return false;
+    }
+    if (storedNotice.turnNoticeKey === turnNoticeKey && isRecentlyUpdatedTurnNotice(storedNotice)) {
+      player.lastNoticeMessageId = storedNotice.messageId;
+      player.lastTurnNoticeKey = turnNoticeKey;
+      return false;
+    }
+  }
   if (options.reminder !== true && turnNoticeKey !== undefined && storedNotice?.turnNoticeKey === turnNoticeKey) {
     player.lastNoticeMessageId = storedNotice.messageId;
     player.lastTurnNoticeKey = turnNoticeKey;

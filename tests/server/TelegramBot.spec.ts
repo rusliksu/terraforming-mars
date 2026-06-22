@@ -15,7 +15,16 @@ import {
 } from '../../src/server/TelegramBot';
 
 describe('TelegramBot', () => {
-  function withTelegramEnabled<T>(fn: () => Promise<T>): Promise<T> {
+  type TestTurnNoticeRecord = {
+    gameId: string;
+    playerId: string;
+    chatId: string;
+    messageId: number;
+    turnNoticeKey?: string;
+    updatedAt: string;
+  };
+
+  function withTelegramEnabled<T>(fn: (storePath: string) => Promise<T>): Promise<T> {
     const originalToken = process.env.TM_BOT_TOKEN;
     const originalDisabled = process.env.TM_DISABLE_TELEGRAM;
     const originalStore = process.env.TM_TURN_NOTICE_STORE;
@@ -23,7 +32,7 @@ describe('TelegramBot', () => {
     process.env.TM_BOT_TOKEN = 'token';
     process.env.TM_TURN_NOTICE_STORE = storePath;
     delete process.env.TM_DISABLE_TELEGRAM;
-    return fn().finally(() => {
+    return fn(storePath).finally(() => {
       fs.rmSync(storePath, {force: true});
       if (originalToken === undefined) {
         delete process.env.TM_BOT_TOKEN;
@@ -41,6 +50,14 @@ describe('TelegramBot', () => {
         process.env.TM_TURN_NOTICE_STORE = originalStore;
       }
     });
+  }
+
+  function writeTurnNoticeStore(storePath: string, key: string, record: TestTurnNoticeRecord): void {
+    fs.writeFileSync(storePath, JSON.stringify({[key]: record}, null, 2));
+  }
+
+  function readTurnNoticeStore(storePath: string): Record<string, TestTurnNoticeRecord> {
+    return JSON.parse(fs.readFileSync(storePath, 'utf8')) as Record<string, TestTurnNoticeRecord>;
   }
 
   function stubTelegramApi(response: object): {calls: Array<{path: string, body: any}>, restore: () => void} {
@@ -492,6 +509,91 @@ describe('TelegramBot', () => {
 
       const sendCalls = telegram.calls.filter((call) => call.path.includes('/sendMessage'));
       expect(sendCalls).has.length(1);
+    } finally {
+      telegram.restore();
+    }
+  });
+
+  it('does not let a stale reminder replace a newer stored turn notice', async () => {
+    const telegram = stubTelegramApi({ok: true, result: {message_id: 123}});
+    try {
+      await withTelegramEnabled(async (storePath) => {
+        const storeKey = 'g-telegram:p-ruslan';
+        const currentRecord = {
+          gameId: 'g-telegram',
+          playerId: 'p-ruslan',
+          chatId: '123456',
+          messageId: 222,
+          turnNoticeKey: 'current-key',
+          updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        };
+        writeTurnNoticeStore(storePath, storeKey, currentRecord);
+        const player = {
+          name: 'Руслан',
+          id: 'p-ruslan' as const,
+          telegramID: '123456',
+          lastNoticeMessageId: 77,
+          lastTurnNoticeKey: 'stale-key',
+          game: {
+            id: 'g-telegram',
+            generation: 1,
+            phase: 'action',
+            players: [],
+          },
+        };
+
+        const sent = await sendTurnNotice(player, 'stale-key', {reminder: true});
+
+        expect(sent).eq(false);
+        expect(readTurnNoticeStore(storePath)[storeKey]).deep.eq(currentRecord);
+      });
+
+      const sendCalls = telegram.calls.filter((call) => call.path.includes('/sendMessage'));
+      const deleteCalls = telegram.calls.filter((call) => call.path.includes('/deleteMessage'));
+      expect(sendCalls).has.length(0);
+      expect(deleteCalls).has.length(0);
+    } finally {
+      telegram.restore();
+    }
+  });
+
+  it('does not send duplicate reminders for a recently updated turn notice', async () => {
+    const telegram = stubTelegramApi({ok: true, result: {message_id: 123}});
+    try {
+      await withTelegramEnabled(async (storePath) => {
+        writeTurnNoticeStore(storePath, 'g-telegram:p-ruslan', {
+          gameId: 'g-telegram',
+          playerId: 'p-ruslan',
+          chatId: '123456',
+          messageId: 222,
+          turnNoticeKey: 'turn-key',
+          updatedAt: new Date().toISOString(),
+        });
+        const player = {
+          name: 'Руслан',
+          id: 'p-ruslan' as const,
+          telegramID: '123456',
+          lastNoticeMessageId: 77,
+          lastTurnNoticeKey: 'turn-key',
+          game: {
+            id: 'g-telegram',
+            generation: 1,
+            phase: 'action',
+            players: [],
+          },
+        };
+
+        const sent = await sendTurnNotice(player, 'turn-key', {reminder: true});
+
+        expect(sent).eq(false);
+        expect(player.lastNoticeMessageId).eq(222);
+        expect(player.lastTurnNoticeKey).eq('turn-key');
+      });
+
+      const sendCalls = telegram.calls.filter((call) => call.path.includes('/sendMessage'));
+      const deleteCalls = telegram.calls.filter((call) => call.path.includes('/deleteMessage'));
+      expect(sendCalls).has.length(0);
+      expect(deleteCalls).has.length(0);
     } finally {
       telegram.restore();
     }

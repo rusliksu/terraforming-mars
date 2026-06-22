@@ -445,7 +445,7 @@ describe('Styles', () => {
     expect(cssBlock(createGame, '.create-game-profile-menu')).to.contain('overflow: hidden;');
     expect(cssBlock(createGame, '.create-game-profile-menu')).to.contain('z-index: 80;');
     expect(cssBlock(createGame, '.create-game-profile-option-list')).to.contain('flex: 1 1 auto;');
-    expect(cssBlock(createGame, '.create-game-profile-option-list')).to.contain('overflow-y: auto;');
+    expect(cssBlock(createGame, '.create-game-profile-option-list')).to.contain('overflow: auto hidden;');
     expect(cssBlock(createGame, '.create-game-profile-option-list')).to.contain('overscroll-behavior: contain;');
     expect(cssBlock(createGame, '.create-game-profile-option-list')).to.contain('scrollbar-gutter: stable;');
     expect(cssBlock(createGame, '.create-game-profile-option-list')).to.contain('scrollbar-width: thin;');

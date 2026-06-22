@@ -335,6 +335,9 @@ describe('Player telegram state', () => {
       player1.lastNoticeMessageId = 77;
 
       await (player1 as any).sendTurnNoticeReminder(turnNoticeKey);
+      const store = JSON.parse(fs.readFileSync(storePath, 'utf8'));
+      store[`g-telegram:${player1.id}`].updatedAt = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+      fs.writeFileSync(storePath, JSON.stringify(store, null, 2));
       await (player1 as any).sendTurnNoticeReminder(turnNoticeKey);
 
       const sendCalls = telegram.calls.filter((call) => call.path.includes('/sendMessage'));

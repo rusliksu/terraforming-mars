@@ -127,6 +127,7 @@ describe('Player telegram state', () => {
     const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
     const game = Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid', {turnBasedGame: true});
     game.phase = Phase.INITIALDRAFTING;
+    player1.needsToDraft = true;
 
     try {
       global.setTimeout = ((_handler: Parameters<typeof setTimeout>[0], timeout?: number) => {
@@ -171,6 +172,112 @@ describe('Player telegram state', () => {
         delete process.env.TM_TURN_NOTICE_STORE;
       } else {
         process.env.TM_TURN_NOTICE_STORE = originalStore;
+      }
+    }
+  });
+
+  it('clears initial draft notices when the player can only change a submitted pick', async () => {
+    const originalToken = process.env.TM_BOT_TOKEN;
+    const originalDisabled = process.env.TM_DISABLE_TELEGRAM;
+    const originalSetTimeout = global.setTimeout;
+    const delays: Array<number | undefined> = [];
+    process.env.TM_BOT_TOKEN = 'token';
+    delete process.env.TM_DISABLE_TELEGRAM;
+    const telegram = stubTelegramApi(101);
+
+    const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
+    const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
+    const game = Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid', {turnBasedGame: true});
+    game.phase = Phase.INITIALDRAFTING;
+
+    try {
+      global.setTimeout = ((_handler: Parameters<typeof setTimeout>[0], timeout?: number) => {
+        delays.push(timeout);
+        return {unref: () => {}} as unknown as ReturnType<typeof setTimeout>;
+      }) as unknown as typeof setTimeout;
+      player1.telegramID = '123456';
+      player1.needsToDraft = false;
+      player1.lastTurnNoticeKey = (player1 as any).getTurnNoticeKey();
+      player1.lastNoticeMessageId = 77;
+
+      player1.setWaitingFor(new SelectOption('Change initial draft pick'));
+      await new Promise((resolve) => setImmediate(resolve));
+
+      const sendCalls = telegram.calls.filter((call) => call.path.includes('/sendMessage'));
+      const deleteCalls = telegram.calls.filter((call) => call.path.includes('/deleteMessage'));
+      expect(delays).deep.eq([]);
+      expect(sendCalls).has.length(0);
+      expect(deleteCalls).has.length(1);
+      expect(deleteCalls[0].body.message_id).eq(77);
+      expect(player1.lastNoticeMessageId).eq(-1);
+      expect((player1 as any)._pendingTurnNoticeTimer).is.undefined;
+      expect((player1 as any)._pendingTurnNoticeReminderTimer).is.undefined;
+    } finally {
+      clearTelegramTimers(player1);
+      telegram.restore();
+      global.setTimeout = originalSetTimeout;
+      if (originalToken === undefined) {
+        delete process.env.TM_BOT_TOKEN;
+      } else {
+        process.env.TM_BOT_TOKEN = originalToken;
+      }
+      if (originalDisabled === undefined) {
+        delete process.env.TM_DISABLE_TELEGRAM;
+      } else {
+        process.env.TM_DISABLE_TELEGRAM = originalDisabled;
+      }
+    }
+  });
+
+  it('clears standard draft notices when the player can only change a submitted pick', async () => {
+    const originalToken = process.env.TM_BOT_TOKEN;
+    const originalDisabled = process.env.TM_DISABLE_TELEGRAM;
+    const originalSetTimeout = global.setTimeout;
+    const delays: Array<number | undefined> = [];
+    process.env.TM_BOT_TOKEN = 'token';
+    delete process.env.TM_DISABLE_TELEGRAM;
+    const telegram = stubTelegramApi(101);
+
+    const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
+    const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
+    const game = Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid', {turnBasedGame: true});
+    game.phase = Phase.DRAFTING;
+
+    try {
+      global.setTimeout = ((_handler: Parameters<typeof setTimeout>[0], timeout?: number) => {
+        delays.push(timeout);
+        return {unref: () => {}} as unknown as ReturnType<typeof setTimeout>;
+      }) as unknown as typeof setTimeout;
+      player1.telegramID = '123456';
+      player1.needsToDraft = false;
+      player1.lastTurnNoticeKey = (player1 as any).getTurnNoticeKey();
+      player1.lastNoticeMessageId = 77;
+
+      player1.setWaitingFor(new SelectOption('Change draft pick'));
+      await new Promise((resolve) => setImmediate(resolve));
+
+      const sendCalls = telegram.calls.filter((call) => call.path.includes('/sendMessage'));
+      const deleteCalls = telegram.calls.filter((call) => call.path.includes('/deleteMessage'));
+      expect(delays).deep.eq([]);
+      expect(sendCalls).has.length(0);
+      expect(deleteCalls).has.length(1);
+      expect(deleteCalls[0].body.message_id).eq(77);
+      expect(player1.lastNoticeMessageId).eq(-1);
+      expect((player1 as any)._pendingTurnNoticeTimer).is.undefined;
+      expect((player1 as any)._pendingTurnNoticeReminderTimer).is.undefined;
+    } finally {
+      clearTelegramTimers(player1);
+      telegram.restore();
+      global.setTimeout = originalSetTimeout;
+      if (originalToken === undefined) {
+        delete process.env.TM_BOT_TOKEN;
+      } else {
+        process.env.TM_BOT_TOKEN = originalToken;
+      }
+      if (originalDisabled === undefined) {
+        delete process.env.TM_DISABLE_TELEGRAM;
+      } else {
+        process.env.TM_DISABLE_TELEGRAM = originalDisabled;
       }
     }
   });

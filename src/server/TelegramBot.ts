@@ -116,11 +116,22 @@ export interface TelegramNotifiable {
   };
 }
 
+type TelegramGameContext = NonNullable<TelegramNotifiable['game']>;
+
+export interface TelegramBotTakeoverNotifiable {
+  name: string;
+  id: PlayerId;
+  telegramID?: string;
+  game?: TelegramGameContext;
+}
+
+export type BotTakeoverNoticeTarget = Pick<TelegramBotTakeoverNotifiable, 'name' | 'id'>;
+
 function describeColor(color: string): string {
   return COLOR_LABELS[color] ?? color;
 }
 
-function buildParticipantsSummary(player: TelegramNotifiable): string | undefined {
+function buildParticipantsSummary(player: {game?: TelegramGameContext}): string | undefined {
   const participants = player.game?.players ?? [];
   if (participants.length === 0) {
     return undefined;
@@ -132,7 +143,7 @@ function shortGameId(gameId: string): string {
   return gameId.length > 8 ? gameId.slice(0, 8) : gameId;
 }
 
-function buildGameSummary(player: TelegramNotifiable): string | undefined {
+function buildGameSummary(player: {game?: TelegramGameContext}): string | undefined {
   const game = player.game;
   if (game === undefined) {
     return undefined;
@@ -148,6 +159,10 @@ function buildGameSummary(player: TelegramNotifiable): string | undefined {
 }
 
 function gameIdForLog(player: TelegramNotifiable): string {
+  return player.game?.id ?? 'unknown';
+}
+
+function botTakeoverGameIdForLog(player: TelegramBotTakeoverNotifiable): string {
   return player.game?.id ?? 'unknown';
 }
 
@@ -266,6 +281,29 @@ function warnGameStartNoticeFailed(player: TelegramNotifiable, response: Telegra
   );
 }
 
+function logBotTakeoverNoticeSent(
+  recipient: TelegramBotTakeoverNotifiable,
+  botPlayer: BotTakeoverNoticeTarget,
+  messageId: number | undefined,
+): void {
+  console.log(
+    `Telegram bot takeover notice sent game=${botTakeoverGameIdForLog(recipient)} ` +
+    `recipient=${recipient.id} botPlayer=${botPlayer.id} message=${messageId ?? 'unknown'}`,
+  );
+}
+
+function warnBotTakeoverNoticeFailed(
+  recipient: TelegramBotTakeoverNotifiable,
+  botPlayer: BotTakeoverNoticeTarget,
+  response: TelegramResponse,
+): void {
+  console.warn(
+    `Telegram bot takeover notice failed game=${botTakeoverGameIdForLog(recipient)} ` +
+    `recipient=${recipient.id} botPlayer=${botPlayer.id} ` +
+    `code=${response.error_code ?? 'unknown'} description=${response.description ?? 'unknown'}`,
+  );
+}
+
 export function buildTurnNoticeText(player: TelegramNotifiable, options: TurnNoticeOptions = {}): string {
   const lines = [buildTurnNoticeHeader(player, options)];
   const gameSummary = buildGameSummary(player);
@@ -277,6 +315,25 @@ export function buildTurnNoticeText(player: TelegramNotifiable, options: TurnNot
     lines.push(`Игроки: ${participantsSummary}`);
   }
   lines.push(`${SERVER_URL}/player?id=${player.id}`);
+  return lines.join('\n');
+}
+
+export function buildBotTakeoverNoticeText(
+  recipient: TelegramBotTakeoverNotifiable,
+  botPlayer: BotTakeoverNoticeTarget,
+): string {
+  const lines = [`Внимание: бот включен за ${botPlayer.name}.`];
+  const gameSummary = buildGameSummary(recipient);
+  if (gameSummary !== undefined) {
+    lines.push(gameSummary);
+  }
+  const participantsSummary = buildParticipantsSummary(recipient);
+  if (participantsSummary !== undefined) {
+    lines.push(`Игроки: ${participantsSummary}`);
+  }
+  if (recipient.game !== undefined) {
+    lines.push(`${SERVER_URL}/game?id=${recipient.game.id}`);
+  }
   return lines.join('\n');
 }
 
@@ -340,6 +397,36 @@ export async function sendTurnNotice(
     warnTurnNoticeFailed(player, resp, turnNoticeKey, options);
   } catch (err) {
     console.warn('sendTurnNotice error:', err);
+  }
+  return false;
+}
+
+export async function sendBotTakeoverNotice(
+  recipient: TelegramBotTakeoverNotifiable,
+  botPlayer: BotTakeoverNoticeTarget,
+): Promise<boolean> {
+  if (!recipient.telegramID) {
+    return false;
+  }
+  if (telegramDisabled()) {
+    return false;
+  }
+  if (!getBotToken()) {
+    return false;
+  }
+  try {
+    const resp = await callTelegramApi('sendMessage', {
+      chat_id: recipient.telegramID,
+      text: buildBotTakeoverNoticeText(recipient, botPlayer),
+    });
+    const messageId = typeof resp.result === 'object' ? resp.result.message_id : undefined;
+    if (resp.ok) {
+      logBotTakeoverNoticeSent(recipient, botPlayer, messageId);
+      return true;
+    }
+    warnBotTakeoverNoticeFailed(recipient, botPlayer, resp);
+  } catch (err) {
+    console.warn('sendBotTakeoverNotice error:', err);
   }
   return false;
 }

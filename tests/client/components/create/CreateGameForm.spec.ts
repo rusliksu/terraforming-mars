@@ -2,12 +2,30 @@ import {shallowMount} from '@vue/test-utils';
 import {globalConfig} from '../getLocalVue';
 import {expect} from 'chai';
 import CreateGameForm from '@/client/components/create/CreateGameForm.vue';
+import {CreateGameSettingsStorage} from '@/client/components/create/CreateGameSettingsStorage';
 import {sharedEloState} from '@/client/utils/elo';
 import {ColonyName} from '@/common/colonies/ColonyName';
 import {CardName} from '@/common/cards/CardName';
 import {
   DEFAULT_PLAYER_COLORS,
 } from '@/common/Color';
+import {BoardName} from '@/common/boards/BoardName';
+import {DEFAULT_EXPANSIONS} from '@/common/cards/GameModule';
+import {JSONObject} from '@/common/Types';
+
+function createGameSettings(overrides: JSONObject = {}): JSONObject {
+  return {
+    players: [
+      {name: 'Alice', color: 'red', beginner: false, handicap: 0},
+      {name: 'Bob', color: 'blue', beginner: false, handicap: 0},
+    ],
+    expansions: DEFAULT_EXPANSIONS,
+    board: BoardName.HELLAS,
+    draftVariant: false,
+    solarPhaseOption: true,
+    ...overrides,
+  };
+}
 
 describe('CreateGameForm', () => {
   let originalFetch: typeof fetch;
@@ -48,6 +66,107 @@ describe('CreateGameForm', () => {
     expect(text.indexOf('Async game (Telegram)')).to.be.lessThan(text.indexOf('Bot players'));
     expect(text.indexOf('Bot players')).to.be.lessThan(text.indexOf('Filter'));
     expect(wrapper.text()).not.to.contain('/start');
+  });
+
+  it('restores the last saved game settings on load', async () => {
+    new CreateGameSettingsStorage(window.localStorage).saveSettings(createGameSettings({
+      expansions: {...DEFAULT_EXPANSIONS, venus: true},
+    }));
+
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    await wrapper.vm.$nextTick();
+
+    expect((wrapper.vm as any).playersCount).eq(2);
+    expect((wrapper.vm as any).players[0].name).eq('Alice');
+    expect((wrapper.vm as any).players[1].name).eq('Bob');
+    expect((wrapper.vm as any).board).eq(BoardName.HELLAS);
+    expect((wrapper.vm as any).draftVariant).eq(false);
+    expect((wrapper.vm as any).expansions.venus).eq(true);
+    expect((wrapper.vm as any).solarPhaseOption).eq(true);
+  });
+
+  it('shows warnings when restoring saved settings', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const alerts: Array<{title: string, message: string}> = [];
+    (wrapper.vm.$root as any).showAlert = (title: string, message: string) => {
+      alerts.push({title, message});
+    };
+
+    new CreateGameSettingsStorage(window.localStorage).saveSettings(createGameSettings({
+      customPreludes: ['Bad Prelude Name'],
+    }));
+
+    (wrapper.vm as any).restoreLastSettings();
+    await wrapper.vm.$nextTick();
+
+    expect(alerts).deep.eq([{
+      title: 'Restore settings',
+      message: "Settings loaded with these warnings: \nUnknown card name 'Bad Prelude Name' in customPreludes",
+    }]);
+  });
+
+  it('resets the form and clears saved settings', async () => {
+    const settingsStorage = new CreateGameSettingsStorage(window.localStorage);
+    settingsStorage.saveSettings(createGameSettings());
+
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    await wrapper.vm.$nextTick();
+
+    expect((wrapper.vm as any).board).eq(BoardName.HELLAS);
+
+    (wrapper.vm as any).resetSettings();
+    await wrapper.vm.$nextTick();
+
+    expect((wrapper.vm as any).board).eq(BoardName.THARSIS);
+    expect((wrapper.vm as any).draftVariant).eq(true);
+    expect(settingsStorage.loadSettings()).eq(undefined);
+    expect(wrapper.findAllComponents({name: 'AppButton'}).map((button) => button.props('title'))).includes('Reset');
+  });
+
+  it('clears uploading when applying settings throws', () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+
+    expect(() => (wrapper.vm as any).applySettings(createGameSettings({
+      players: [
+        {name: 'Alice', color: 'red', beginner: false, handicap: 0},
+        {name: 'Bob', color: 'red', beginner: false, handicap: 0},
+      ],
+    }))).throws('Colors are duplicated');
+    expect((wrapper.vm as any).uploading).eq(false);
+  });
+
+  it('saves current settings before creating a game', async () => {
+    const originalAlert = global.alert;
+    global.fetch = (() => Promise.reject(new Error('stop after saving'))) as typeof fetch;
+    global.alert = (() => {}) as typeof alert;
+
+    try {
+      const wrapper = shallowMount(CreateGameForm, {
+        ...globalConfig,
+      });
+      const vm = wrapper.vm as any;
+      vm.playersCount = 2;
+      vm.randomFirstPlayer = false;
+      vm.players[0].name = 'Alice';
+      vm.players[1].name = 'Bob';
+      vm.board = BoardName.ELYSIUM;
+
+      await vm.createGame();
+
+      const savedSettings = new CreateGameSettingsStorage(window.localStorage).loadSettings();
+      expect(savedSettings?.board).eq(BoardName.ELYSIUM);
+      expect((savedSettings?.players as Array<{name: string}>).map((player) => player.name)).deep.eq(['Alice', 'Bob']);
+    } finally {
+      global.alert = originalAlert;
+    }
   });
 
   it('serializes private hands setting', async () => {

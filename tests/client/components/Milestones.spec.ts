@@ -5,6 +5,7 @@ import Milestones from '@/client/components/Milestones.vue';
 import {ClaimedMilestoneModel} from '@/common/models/ClaimedMilestoneModel';
 import Milestone from '@/client/components/Milestone.vue';
 import {Preferences} from '@/client/utils/PreferencesManager';
+import {getMilestone} from '@/client/MilestoneAwardManifest';
 
 describe('Milestones', () => {
   const mockMilestone: ClaimedMilestoneModel = {
@@ -62,7 +63,25 @@ describe('Milestones', () => {
     ).to.be.true;
   });
 
-  it('milestones hide details if previously set to hide details', async () => {
+  it('milestones start showing details if no milestone is claimed', async () => {
+    const milestone = mount(Milestones, {
+      ...globalConfig,
+      props: {
+        milestones: [
+          {...mockMilestone, playerName: undefined, color: undefined},
+        ],
+        preferences: {
+          show_milestone_details: false,
+        } as Readonly<Preferences>,
+      },
+    });
+
+    expect(
+      milestone.findAllComponents(Milestone).every((milestoneWrapper) => milestoneWrapper.isVisible()),
+    ).to.be.true;
+  });
+
+  it('milestones ignore hidden preferences while any milestone is available', async () => {
     const milestone = mount(Milestones, {
       ...globalConfig,
       props: {
@@ -72,6 +91,36 @@ describe('Milestones', () => {
         preferences: {
           show_milestone_details: false,
         } as Readonly<Preferences>,
+      },
+    });
+
+    expect(
+      milestone.findAllComponents(Milestone).every((milestoneWrapper) => milestoneWrapper.isVisible()),
+    ).to.be.true;
+  });
+
+  it('milestones start showing descriptions while any milestone is available', async () => {
+    const milestone = mount(Milestones, {
+      ...globalConfig,
+      props: {
+        milestones: [
+          mockMilestone,
+        ],
+      },
+    });
+
+    expect(milestone.text()).to.include(getMilestone(mockMilestone.name).description);
+  });
+
+  it('milestones hide details when all milestones are claimed', async () => {
+    const milestone = mount(Milestones, {
+      ...globalConfig,
+      props: {
+        milestones: [
+          mockMilestone,
+          {...mockMilestone, name: 'Gardener'},
+          {...mockMilestone, name: 'Builder'},
+        ],
       },
     });
 

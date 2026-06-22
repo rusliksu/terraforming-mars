@@ -214,7 +214,7 @@ export default defineComponent({
         const tags = card.tags.filter((tag) => tag === Tag.MICROBE).length;
         return (-4 * tags);
 
-      // when a microbe tag is played, incl. this, THAT PLAYER gains 2 M€,
+      // When a microbe tag is played, incl. this, THAT PLAYER gains 2 M€,
       case CardName.SPLICE:
         const microbeTags = card.tags.filter((tag) => tag === Tag.MICROBE).length;
         return (2 * microbeTags);
@@ -359,11 +359,12 @@ export default defineComponent({
         return false;
       }
       if (this.hasPrelude) {
-        if (this.selectedPreludes.length < 2) {
-          this.warning = 'Select 2 preludes';
+        const option = getOption(this.playerinput.options, titles.SELECT_PRELUDE_TITLE);
+        if (this.selectedPreludes.length < option.min) {
+          this.warning = option.min === 1 ? 'Select 1 prelude' : `Select ${option.min} preludes`;
           return false;
         }
-        if (this.selectedPreludes.length > 2) {
+        if (this.selectedPreludes.length > option.max) {
           this.warning = 'You selected too many preludes';
           return false;
         }
@@ -418,7 +419,10 @@ export default defineComponent({
     preludeCardOption() {
       const option = getOption(this.playerinput.options, titles.SELECT_PRELUDE_TITLE);
       if (getPreferences().experimental_ui) {
-        option.max = option.cards.length;
+        return {
+          ...option,
+          max: option.cards.length,
+        };
       }
       return option;
     },

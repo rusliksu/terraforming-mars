@@ -93,6 +93,9 @@ export class Timer {
    * This is always called immediately after player performs a new input action.
    */
   public stop() : void {
+    if (!this.running) {
+      return;
+    }
     this.running = false;
     Timer.lastStoppedAt = this.clock.now();
     if (!this.afterFirstAction) { // Skipping timer for first move in game

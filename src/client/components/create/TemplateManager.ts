@@ -2,15 +2,16 @@ import {JSONObject} from '@/common/Types';
 import {CreateGameModel} from './CreateGameModel';
 
 const TEMPLATES_KEY = 'tm_game_templates';
-const LAST_SETTINGS_KEY = 'tm_last_settings';
 
 export interface GameTemplate {
   name: string;
   settings: JSONObject;
 }
 
-function sanitizeSettingsForStorage(settings: JSONObject): JSONObject {
+export function sanitizeSettingsForStorage(settings: JSONObject): JSONObject {
   const sanitized = JSON.parse(JSON.stringify(settings)) as JSONObject;
+  delete sanitized.clonedGamedId;
+  delete sanitized.clonedGameId;
   sanitized.turnBasedGame = false;
   sanitized.botGame = false;
   const players = sanitized.players;
@@ -108,35 +109,6 @@ export class TemplateManager {
     tmpl.name = newName;
     localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
     return true;
-  }
-
-  static saveLastSettings(settings: JSONObject): void {
-    if (!localStorageAvailable()) {
-      return;
-    }
-    try {
-      localStorage.setItem(LAST_SETTINGS_KEY, JSON.stringify(sanitizeSettingsForStorage(settings)));
-    } catch { /* quota exceeded, ignore */ }
-  }
-
-  static getLastSettings(): JSONObject | undefined {
-    if (!localStorageAvailable()) {
-      return undefined;
-    }
-    try {
-      const data = localStorage.getItem(LAST_SETTINGS_KEY);
-      if (!data) {
-        return undefined;
-      }
-      const settings = JSON.parse(data) as JSONObject;
-      const sanitized = sanitizeSettingsForStorage(settings);
-      if (JSON.stringify(settings) !== JSON.stringify(sanitized)) {
-        localStorage.setItem(LAST_SETTINGS_KEY, JSON.stringify(sanitized));
-      }
-      return sanitized;
-    } catch {
-      return undefined;
-    }
   }
 
   /** Serialize current form state for storage (compatible with JSONProcessor.applyJSON) */

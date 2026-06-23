@@ -1712,7 +1712,9 @@ export class Game implements IGame, Logger {
     f?.(builder);
     const logMessage = builder.build();
     logMessage.playerId = options?.reservedFor?.id ?? options?.reservedForParticipant;
-    logMessage.hiddenFor = options?.hiddenFor;
+    if (options?.hiddenFor !== undefined) {
+      logMessage.hiddenFor = options.hiddenFor;
+    }
     this.gameLog.push(logMessage);
     this.gameAge++;
   }

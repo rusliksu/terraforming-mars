@@ -200,8 +200,8 @@ describe('WaitingFor', () => {
       },
     });
 
-    const requests: Array<{url: string, options: RequestInit}> = [];
-    wrapper.vm.fetchPlayerInput = (url: string, options: RequestInit) => {
+    const requests: Array<{url: string, options: {body?: unknown}}> = [];
+    wrapper.vm.fetchPlayerInput = (url: string, options: {body?: unknown}) => {
       requests.push({url, options});
     };
 

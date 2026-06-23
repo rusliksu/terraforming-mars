@@ -1751,7 +1751,7 @@ export class Player implements IPlayer {
   }
 
   private isTelegramTurnNoticeActionable(): boolean {
-    if (this.game?.phase === Phase.INITIALDRAFTING) {
+    if (this.game?.phase === Phase.INITIALDRAFTING || this.game?.phase === Phase.DRAFTING) {
       return this.needsToDraft === true;
     }
     return true;

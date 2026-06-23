@@ -78,7 +78,7 @@ describe('WaitingFor', () => {
     expect(wrapper.text()).to.include('Not your turn');
   });
 
-  it('shows a clearer pause-updates label in experimental UI', () => {
+  it('shows a clearer pause-updates label in experimental UI', async () => {
     PreferencesManager.INSTANCE.set('experimental_ui', true);
 
     const wrapper = shallowMount(WaitingFor, {
@@ -103,6 +103,14 @@ describe('WaitingFor', () => {
 
     expect(wrapper.text()).to.include('Pause updates');
     expect(wrapper.text()).to.not.include('Suspend');
+
+    await wrapper.setProps({
+      playerView: {
+        ...playerView,
+        thisPlayer: {...thisPlayer, isActive: true},
+      } as PlayerViewModel,
+    });
+    expect(wrapper.text()).to.not.include('Pause updates');
   });
 
   it('shows cancel action for nested active action prompts when undo is enabled', () => {

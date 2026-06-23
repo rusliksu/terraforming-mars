@@ -7,7 +7,7 @@
     </template>
   </template>
   <div v-else class="wf-root">
-    <template v-if="preferences().experimental_ui && playerView.game.phase === Phase.ACTION">
+    <template v-if="preferences().experimental_ui && playerView.game.phase === Phase.ACTION && playerView.thisPlayer?.isActive !== true">
       <input type="checkbox" name="suspend" id="suspend-checkbox" v-model="suspend" v-on:change="updateSuspend">
       <label for="suspend-checkbox">
         <span v-i18n>Pause updates</span>

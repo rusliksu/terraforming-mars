@@ -65,6 +65,20 @@ describe('CreateGameForm', () => {
     expect(payload.privateHands).eq(false);
   });
 
+  it('turns off WGT by default for 4+ players while keeping manual control', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    await wrapper.setData({solarPhaseOption: true});
+    await wrapper.setData({playersCount: 4});
+    expect(vm.solarPhaseOption).eq(false);
+
+    await wrapper.setData({solarPhaseOption: true});
+    expect(vm.solarPhaseOption).eq(true);
+  });
+
   it('serializes one-way 10-card initial draft setting', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,

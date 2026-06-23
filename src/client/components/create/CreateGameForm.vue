@@ -797,6 +797,9 @@ export default defineComponent({
       if (value === 1) {
         this.expansions.corpera = true;
       }
+      if (value >= 4) {
+        this.solarPhaseOption = false;
+      }
       if (this.playerProfilePickerIndex !== null && this.playerProfilePickerIndex >= value) {
         this.closePlayerProfilePicker();
       }

@@ -31,7 +31,7 @@ const COLOR_CODES: Record<Color, string> = {
   ['antistress']: 'rgb(29, 58, 116)',
   ['gambit']: 'rgb(111, 164, 205)',
   ['turquoise']: 'rgb(224, 54, 105)',
-  ['vanger']: 'rgb(86, 166, 44)',
+  ['vanger']: 'rgb(0, 255, 0)',
   ['serge']: 'rgb(76, 12, 31)',
   ['saturn']: 'rgb(214, 179, 106)',
   ['saturnrings']: 'rgb(200, 181, 138)',

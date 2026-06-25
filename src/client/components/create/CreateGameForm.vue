@@ -1273,6 +1273,10 @@ export default defineComponent({
       }
     },
     getKnownTelegramIdForProfile(profile: PlayerProfile): string {
+      const profileTelegramID = this.normalizeTelegramId(profile.telegramID);
+      if (profileTelegramID !== '') {
+        return profileTelegramID;
+      }
       return this.readProfileTelegramIds()[profile.id] ?? '';
     },
     fillKnownTelegramIdForPlayer(player: NewPlayerModel, profile?: PlayerProfile) {

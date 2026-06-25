@@ -8,6 +8,10 @@ import {CardName} from '@/common/cards/CardName';
 import {cast} from '@/common/utils/utils';
 import {CARD_RENAMES} from '@/common/cards/CardRenames';
 
+type JSONProcessorOptions = {
+  preserveAsyncGame?: boolean;
+};
+
 function safeBoolean(val: JSONValue): boolean {
   if (typeof val === 'boolean') {
     return val;
@@ -27,7 +31,7 @@ export class JSONProcessor {
     this.warnings = [];
   }
 
-  public applyJSON(json: JSONObject) {
+  public applyJSON(json: JSONObject, options: JSONProcessorOptions = {}) {
     json = JSON.parse(JSON.stringify(json)); // Make a copy so as to not change the original data.
 
     const players = cast(json['players'], Array<NewPlayerModel>);
@@ -80,7 +84,7 @@ export class JSONProcessor {
     this.model.playersCount = normalizedPlayers.length;
     this.model.showBannedCards = this.bannedCards.length > 0;
     this.model.showIncludedCards = this.includedCards.length > 0;
-    this.model.turnBasedGame = false;
+    this.model.turnBasedGame = options.preserveAsyncGame === true && json.turnBasedGame === true;
     this.model.botGame = false;
 
     const oldExpansionFields: Record<Expansion, string> = {

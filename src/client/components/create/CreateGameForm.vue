@@ -563,7 +563,7 @@
                                                     autocomplete="off"
                                                     placeholder="Telegram ID"
                                                     v-model="newPlayer.telegramID"
-                                                    @blur="newPlayer.telegramID = normalizeTelegramId(newPlayer.telegramID)"
+                                                    @blur="normalizeAndRememberTelegramId(newPlayer)"
                                                   />
                                                   <div v-if="getTelegramIdError(newPlayer.telegramID) !== ''" class="form-input-hint create-game-telegram-error">
                                                     {{ getTelegramIdError(newPlayer.telegramID) }}
@@ -703,6 +703,7 @@ import {setDocumentTitle} from '@/client/utils/documentTitle';
 import {ensureEloLoaded, sharedEloState} from '@/client/utils/elo';
 
 const REVISED_COUNT_ALGORITHM = false;
+const PROFILE_TELEGRAM_IDS_KEY = 'tm_player_profile_telegram_ids';
 
 
 type Refs = {
@@ -719,6 +720,10 @@ type FormModel = {
   templates: Array<GameTemplate>;
   playerProfilePickerIndex: number | null;
   playerProfileSearch: string;
+};
+
+type ApplySettingsOptions = {
+  preserveAsyncGame?: boolean;
 };
 
 export default defineComponent({
@@ -854,14 +859,17 @@ export default defineComponent({
         this.applySettings(lastSettings);
       }
     },
-    applySettings(json: JSONObject) {
+    applySettings(json: JSONObject, options: ApplySettingsOptions = {}) {
       const component: CreateGameModel = this;
       const refs = this.typedRefs;
       const root = vueRoot(this);
       try {
         this.uploading = true;
         const processor = new JSONProcessor(component);
-        processor.applyJSON(json);
+        processor.applyJSON(json, {preserveAsyncGame: options.preserveAsyncGame});
+        if (component.turnBasedGame === true) {
+          this.fillKnownTelegramIdsForPlayers(this.getPlayers());
+        }
         nextTick(() => {
           try {
             if (component.showBannedCards && refs.cardsFilter) {
@@ -874,6 +882,9 @@ export default defineComponent({
               component.seed = Math.random();
             }
             component.solarPhaseOption = Boolean(processor.solarPhaseOption);
+            if (component.turnBasedGame === true) {
+              this.fillKnownTelegramIdsForPlayers(this.getPlayers());
+            }
             this.uploading = false;
           } catch (e) {
             console.error('Error applying settings:', e);
@@ -897,7 +908,7 @@ export default defineComponent({
           vueRoot(this).showAlert('Rematch', 'Could not load game setup for rematch.');
           return;
         }
-        this.applySettings(gameData.setup);
+        this.applySettings(gameData.setup, {preserveAsyncGame: true});
         this.seededGame = false;
         this.clonedGameId = undefined;
       } catch (e) {
@@ -1091,7 +1102,8 @@ export default defineComponent({
       return PLAYER_PROFILES;
     },
     getSelectedPlayerProfile(player: NewPlayerModel): PlayerProfile | undefined {
-      return getPlayerProfileByName(player.name, this.getPlayerProfiles());
+      return getPlayerProfileByName(player.name, this.getPlayerProfiles()) ??
+        getPlayerProfileByName(player.name, PLAYER_PROFILES);
     },
     getSelectedPlayerProfileName(player: NewPlayerModel): string {
       return this.getSelectedPlayerProfile(player)?.name ?? 'Player profile';
@@ -1189,6 +1201,7 @@ export default defineComponent({
     applyPlayerProfile(player: NewPlayerModel, profile: PlayerProfile) {
       player.name = profile.name;
       player.color = this.getAvailablePlayerProfileColor(player, profile);
+      this.fillKnownTelegramIdForPlayer(player, profile);
     },
     applyPlayerProfileFromPicker(player: NewPlayerModel, profile: PlayerProfile) {
       if (!this.getAvailablePlayerProfiles(player).some((candidate) => candidate.id === profile.id)) {
@@ -1229,6 +1242,70 @@ export default defineComponent({
     },
     normalizeTelegramId(telegramID: string | undefined): string {
       return (telegramID ?? '').trim();
+    },
+    readProfileTelegramIds(): Record<string, string> {
+      try {
+        const raw = window.localStorage.getItem(PROFILE_TELEGRAM_IDS_KEY);
+        if (raw === null) {
+          return {};
+        }
+        const parsed = JSON.parse(raw) as Record<string, string>;
+        if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+          return {};
+        }
+        const ids: Record<string, string> = {};
+        for (const [profileId, telegramID] of Object.entries(parsed)) {
+          const normalized = this.normalizeTelegramId(telegramID);
+          if (/^\d{5,20}$/.test(normalized)) {
+            ids[profileId] = normalized;
+          }
+        }
+        return ids;
+      } catch {
+        return {};
+      }
+    },
+    writeProfileTelegramIds(ids: Record<string, string>) {
+      try {
+        window.localStorage.setItem(PROFILE_TELEGRAM_IDS_KEY, JSON.stringify(ids));
+      } catch {
+        // Ignore storage failures; manual Telegram ID entry still works.
+      }
+    },
+    getKnownTelegramIdForProfile(profile: PlayerProfile): string {
+      return this.readProfileTelegramIds()[profile.id] ?? '';
+    },
+    fillKnownTelegramIdForPlayer(player: NewPlayerModel, profile?: PlayerProfile) {
+      const selectedProfile = profile ?? this.getSelectedPlayerProfile(player);
+      if (selectedProfile === undefined) {
+        return;
+      }
+      const knownTelegramID = this.getKnownTelegramIdForProfile(selectedProfile);
+      if (knownTelegramID !== '') {
+        player.telegramID = knownTelegramID;
+      }
+    },
+    fillKnownTelegramIdsForPlayers(players: Array<NewPlayerModel>) {
+      for (const player of players) {
+        if (player.isBot === true || this.normalizeTelegramId(player.telegramID) !== '') {
+          continue;
+        }
+        this.fillKnownTelegramIdForPlayer(player);
+      }
+    },
+    rememberTelegramIdForPlayerProfile(player: NewPlayerModel) {
+      const profile = this.getSelectedPlayerProfile(player);
+      const telegramID = this.normalizeTelegramId(player.telegramID);
+      if (profile === undefined || !/^\d{5,20}$/.test(telegramID)) {
+        return;
+      }
+      const ids = this.readProfileTelegramIds();
+      ids[profile.id] = telegramID;
+      this.writeProfileTelegramIds(ids);
+    },
+    normalizeAndRememberTelegramId(player: NewPlayerModel) {
+      player.telegramID = this.normalizeTelegramId(player.telegramID);
+      this.rememberTelegramIdForPlayerProfile(player);
     },
     isTelegramIdValid(telegramID: string | undefined): boolean {
       const normalized = this.normalizeTelegramId(telegramID);

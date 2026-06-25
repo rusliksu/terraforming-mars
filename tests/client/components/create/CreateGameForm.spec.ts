@@ -254,6 +254,37 @@ describe('CreateGameForm', () => {
     expect(vm.players[0].telegramID).to.eq('123456789');
   });
 
+  it('fills built-in profile telegram ids for async rematches without local storage', async () => {
+    sharedEloState.loaded = true;
+    sharedEloState.players = {
+      gydro: {displayName: 'GydRo', games: 79, elo: 1452},
+      dasha: {displayName: 'Даша', games: 3, elo: 1416},
+      felkner: {displayName: 'Фелькнер', games: 7, elo: 1537},
+    };
+
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    await wrapper.setData({
+      turnBasedGame: true,
+      playersCount: 3,
+      players: [
+        {name: 'Фелькнер', color: 'green', beginner: false, handicap: 0, first: true, isBot: false, telegramID: ''},
+        {name: 'Даша', color: 'pink', beginner: false, handicap: 0, first: false, isBot: false, telegramID: ''},
+        {name: 'GydRo', color: 'pearl', beginner: false, handicap: 0, first: false, isBot: false, telegramID: ''},
+      ],
+    });
+    vm.fillKnownTelegramIdsForPlayers(vm.getPlayers());
+
+    expect(vm.players.map((player: {telegramID: string}) => player.telegramID)).deep.eq([
+      '317238880',
+      '432301679',
+      '162438481',
+    ]);
+  });
+
   it('blocks invalid telegram ids during serialization', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,

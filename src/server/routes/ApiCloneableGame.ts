@@ -2,7 +2,7 @@ import * as responses from '../server/responses';
 import {Handler} from './Handler';
 import {Context} from './IHandler';
 import {Database} from '../database/Database';
-import {isGameId} from '../../common/Types';
+import {GameId, isGameId} from '../../common/Types';
 import {Request} from '../Request';
 import {Response} from '../Response';
 import {SerializedGame} from '../SerializedGame';
@@ -31,16 +31,16 @@ export class ApiCloneableGame extends Handler {
       responses.badRequest(req, res, 'invalid game id');
       return;
     }
-    await Database.getInstance().getPlayerCount(gameId)
+    await ApiCloneableGame.getPlayerCount(gameId, ctx)
       .then(async (playerCount) => {
         if (ctx.url.searchParams.get('setup') !== 'true') {
           responses.writeJson(res, ctx, {gameId, playerCount});
           return;
         }
-        const serialized = await Database.getInstance().getGameVersion(gameId, 0);
+        const serialized = await ApiCloneableGame.getRematchSource(gameId, ctx);
         responses.writeJson(res, ctx, {
           gameId,
-          playerCount,
+          playerCount: serialized.players.length,
           setup: ApiCloneableGame.toRematchSetup(serialized),
         });
       })
@@ -48,6 +48,34 @@ export class ApiCloneableGame extends Handler {
         console.warn('Could not load cloneable game: ', err);
         responses.notFound(req, res);
       });
+  }
+
+  private static async getPlayerCount(gameId: GameId, ctx: Context): Promise<number> {
+    try {
+      return await Database.getInstance().getPlayerCount(gameId);
+    } catch {
+      const game = await ctx.gameLoader.getGame(gameId);
+      if (game !== undefined) {
+        return game.players.length;
+      }
+      const serialized = await Database.getInstance().getGame(gameId);
+      if (serialized?.players === undefined) {
+        throw new Error(`Game ${gameId} has no player data`);
+      }
+      return serialized.players.length;
+    }
+  }
+
+  private static async getRematchSource(gameId: GameId, ctx: Context): Promise<SerializedGame> {
+    try {
+      return await Database.getInstance().getGameVersion(gameId, 0);
+    } catch {
+      const game = await ctx.gameLoader.getGame(gameId);
+      if (game !== undefined) {
+        return game.serialize();
+      }
+      return Database.getInstance().getGame(gameId);
+    }
   }
 
   private static toRematchSetup(serialized: SerializedGame): NewGameConfig & {seededGame: false} {

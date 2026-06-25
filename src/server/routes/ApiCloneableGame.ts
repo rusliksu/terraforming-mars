@@ -117,7 +117,7 @@ export class ApiCloneableGame extends Handler {
       includeFanMA: options.includeFanMA,
       soloTR: options.soloTR,
       noEloGame: options.noEloGame === true,
-      turnBasedGame: false,
+      turnBasedGame: options.turnBasedGame === true,
       botGame: false,
       customCorporationsList: [...options.customCorporationsList],
       customCorporations: [...options.customCorporationsList],

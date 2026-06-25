@@ -730,6 +730,10 @@ type FormModel = {
   playerProfileSearch: string;
 };
 
+type ApplySettingsOptions = {
+  preserveAsyncGame?: boolean;
+};
+
 export default defineComponent({
   name: 'CreateGameForm',
   data(): CreateGameModel & FormModel {
@@ -868,14 +872,17 @@ export default defineComponent({
         this.applySettings(lastSettings);
       }
     },
-    applySettings(json: JSONObject) {
+    applySettings(json: JSONObject, options: ApplySettingsOptions = {}) {
       const component: CreateGameModel = this;
       const refs = this.typedRefs;
       const root = vueRoot(this);
       try {
         this.uploading = true;
         const processor = new JSONProcessor(component);
-        processor.applyJSON(json);
+        processor.applyJSON(json, {preserveAsyncGame: options.preserveAsyncGame});
+        if (component.turnBasedGame === true) {
+          this.fillKnownTelegramIdsForPlayers(this.getPlayers());
+        }
         nextTick(() => {
           try {
             if (component.showBannedCards && refs.cardsFilter) {
@@ -888,6 +895,9 @@ export default defineComponent({
               component.seed = Math.random();
             }
             component.solarPhaseOption = Boolean(processor.solarPhaseOption);
+            if (component.turnBasedGame === true) {
+              this.fillKnownTelegramIdsForPlayers(this.getPlayers());
+            }
             this.uploading = false;
           } catch (e) {
             console.error('Error applying settings:', e);
@@ -911,7 +921,7 @@ export default defineComponent({
           vueRoot(this).showAlert('Rematch', 'Could not load game setup for rematch.');
           return;
         }
-        this.applySettings(gameData.setup);
+        this.applySettings(gameData.setup, {preserveAsyncGame: true});
         this.seededGame = false;
         this.clonedGameId = undefined;
       } catch (e) {
@@ -1116,7 +1126,8 @@ export default defineComponent({
       if (player.profileId === undefined) {
         return undefined;
       }
-      const profile = getPlayerProfileById(player.profileId, this.getPlayerProfiles());
+      const profile = getPlayerProfileById(player.profileId, this.getPlayerProfiles()) ??
+        getPlayerProfileById(player.profileId, PLAYER_PROFILES);
       if (profile === undefined) {
         return undefined;
       }
@@ -1273,7 +1284,7 @@ export default defineComponent({
     },
     readProfileTelegramIds(): Record<string, string> {
       try {
-        const raw = localStorage.getItem(PROFILE_TELEGRAM_IDS_KEY);
+        const raw = window.localStorage.getItem(PROFILE_TELEGRAM_IDS_KEY);
         if (raw === null) {
           return {};
         }
@@ -1295,7 +1306,7 @@ export default defineComponent({
     },
     writeProfileTelegramIds(ids: Record<string, string>) {
       try {
-        localStorage.setItem(PROFILE_TELEGRAM_IDS_KEY, JSON.stringify(ids));
+        window.localStorage.setItem(PROFILE_TELEGRAM_IDS_KEY, JSON.stringify(ids));
       } catch {
         // Ignore storage failures; manual Telegram ID entry still works.
       }

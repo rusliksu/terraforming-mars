@@ -3,6 +3,7 @@ import {Context} from '../routes/IHandler';
 import {Request} from '../Request';
 import {Response} from '../Response';
 import {statusCode} from '../../common/http/statusCode';
+import {isProduction} from '../utils/server';
 
 export function badRequest(req: Request, res: Response, err?: string): void {
   console.warn('bad request', req.url);
@@ -63,18 +64,21 @@ export function internalServerError(
   err: unknown): void {
   console.warn('internal server error: ', req.url, err);
   res.writeHead(statusCode.internalServerError);
-
-  res.write('Internal server error: ');
-
-  if (err instanceof Error) {
-    res.write(escape(err.message));
-  } else if (typeof(err) === 'string') {
-    res.write(escape(err));
-  } else {
-    res.write('unknown error');
-  }
-
+  res.write(internalServerErrorMessage(err));
   res.end();
+}
+
+function internalServerErrorMessage(err: unknown): string {
+  if (isProduction() && process.env.EXPOSE_INTERNAL_ERRORS !== '1') {
+    return 'Internal server error';
+  }
+  if (err instanceof Error) {
+    return 'Internal server error: ' + escape(err.message);
+  }
+  if (typeof(err) === 'string') {
+    return 'Internal server error: ' + escape(err);
+  }
+  return 'Internal server error: unknown error';
 }
 
 export function notAuthorized(req: Request, res: Response): void {

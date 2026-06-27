@@ -73,6 +73,16 @@ function Require-Env {
     throw "Could not find $Key in $ServiceName environment"
 }
 
+function Format-SecretSummary {
+    param([string]$Value)
+    if ([string]::IsNullOrEmpty($Value)) {
+        return "<empty>"
+    }
+    $suffixLength = [Math]::Min(4, $Value.Length)
+    $suffix = $Value.Substring($Value.Length - $suffixLength, $suffixLength)
+    return "len=$($Value.Length) last4=$suffix"
+}
+
 function Render-Template {
     param(
         [string]$TemplatePath,
@@ -159,9 +169,9 @@ $eloContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-elo.serv
 }
 
 Write-Host "Target VPS: $VpsHost"
-Write-Host "Prod SERVER_ID: $prodServerId"
-Write-Host "Prod-next SERVER_ID: $prodNextServerId"
-Write-Host "Staging SERVER_ID: $stagingServerId"
+Write-Host "Prod SERVER_ID: $(Format-SecretSummary $prodServerId)"
+Write-Host "Prod-next SERVER_ID: $(Format-SecretSummary $prodNextServerId)"
+Write-Host "Staging SERVER_ID: $(Format-SecretSummary $stagingServerId)"
 Write-Host "Auto-join script: $autoJoinScript"
 Write-Host "Prod current dir: $prodCurrentDir"
 Write-Host "Prod-next current dir: $prodNextCurrentDir"

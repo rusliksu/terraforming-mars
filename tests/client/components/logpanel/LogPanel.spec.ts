@@ -171,4 +171,35 @@ describe('LogPanel', () => {
 
     expect(fakePanel.scrollTop).to.equal(640);
   });
+
+  it('does not jump to bottom when live logs refresh while scrolled up', async () => {
+    const fakeList = {} as HTMLUListElement;
+    const fakePanel = {
+      scrollTop: 100,
+      scrollHeight: 900,
+      clientHeight: 200,
+      querySelector: () => fakeList,
+      addEventListener() {},
+      removeEventListener() {},
+    } as unknown as HTMLElement;
+    document.getElementById = ((id: string) => {
+      if (id === 'logpanel-scrollable') {
+        return fakePanel;
+      }
+      return null;
+    }) as typeof document.getElementById;
+
+    shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {
+        viewModel: fakeViewModel(),
+        color: 'blue',
+      },
+    });
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(fakePanel.scrollTop).to.equal(100);
+  });
 });

@@ -159,10 +159,11 @@ export default defineComponent({
           messages.splice(0, messages.length);
           messages.push(...data);
           if (liveLogs) {
-            this.stickToBottom = true;
             this.$nextTick(() => {
               this.installAutoScrollObserver();
-              this.scrollToEnd();
+              if (this.stickToBottom) {
+                this.scrollToEnd();
+              }
             });
           }
         })

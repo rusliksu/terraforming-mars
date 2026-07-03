@@ -732,6 +732,7 @@ type FormModel = {
 
 type ApplySettingsOptions = {
   preserveAsyncGame?: boolean;
+  linkKnownPlayerProfiles?: boolean;
 };
 
 export default defineComponent({
@@ -895,6 +896,9 @@ export default defineComponent({
               component.seed = Math.random();
             }
             component.solarPhaseOption = Boolean(processor.solarPhaseOption);
+            if (options.linkKnownPlayerProfiles === true) {
+              this.linkKnownPlayerProfilesForPlayers(this.getPlayers());
+            }
             if (component.turnBasedGame === true) {
               this.fillKnownTelegramIdsForPlayers(this.getPlayers());
             }
@@ -921,7 +925,7 @@ export default defineComponent({
           vueRoot(this).showAlert('Rematch', 'Could not load game setup for rematch.');
           return;
         }
-        this.applySettings(gameData.setup, {preserveAsyncGame: true});
+        this.applySettings(gameData.setup, {preserveAsyncGame: true, linkKnownPlayerProfiles: true});
         this.seededGame = false;
         this.clonedGameId = undefined;
       } catch (e) {
@@ -1258,6 +1262,23 @@ export default defineComponent({
     syncLockedPlayerIdentities(players: Array<NewPlayerModel>) {
       players.forEach((player) => this.syncLockedPlayerIdentity(player));
     },
+    linkKnownPlayerProfilesForPlayers(players: Array<NewPlayerModel>) {
+      const usedProfileIds = new Set<string>();
+      for (const player of players) {
+        const selectedProfile = this.getSelectedPlayerProfile(player);
+        if (selectedProfile !== undefined) {
+          usedProfileIds.add(selectedProfile.id);
+          continue;
+        }
+        const matchingProfile = getPlayerProfileByName(player.name, this.getPlayerProfiles()) ??
+          getPlayerProfileByName(player.name, PLAYER_PROFILES);
+        if (matchingProfile === undefined || usedProfileIds.has(matchingProfile.id)) {
+          continue;
+        }
+        player.profileId = matchingProfile.id;
+        usedProfileIds.add(matchingProfile.id);
+      }
+    },
     updateCustomCorporations(customCorporations: Array<CardName>) {
       this.customCorporations = customCorporations;
     },
@@ -1329,6 +1350,7 @@ export default defineComponent({
       }
     },
     fillKnownTelegramIdsForPlayers(players: Array<NewPlayerModel>) {
+      this.linkKnownPlayerProfilesForPlayers(players);
       for (const player of players) {
         if (player.isBot === true || this.normalizeTelegramId(player.telegramID) !== '') {
           continue;

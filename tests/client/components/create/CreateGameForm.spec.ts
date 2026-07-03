@@ -176,6 +176,115 @@ describe('CreateGameForm', () => {
     expect(vm.clonedGameId).to.eq(undefined);
   });
 
+  it('loads async rematch setup and fills telegram ids from matched player profiles', async () => {
+    window.history.replaceState({}, '', '/new-game?cloneGameId=g456');
+    window.localStorage.setItem('tm_player_profile_telegram_ids', JSON.stringify({leha: '123456789'}));
+    global.fetch = (async () => ({
+      ok: true,
+      json: async () => ({
+        setup: {
+          players: [
+            {name: 'Леха', color: 'orange', beginner: false, handicap: 0, first: true, isBot: false},
+          ],
+          expansions: {
+            corpera: true,
+            promo: false,
+            venus: false,
+            colonies: false,
+            prelude: false,
+            prelude2: false,
+            turmoil: false,
+            community: false,
+            ares: false,
+            moon: false,
+            pathfinders: false,
+            ceo: false,
+            starwars: false,
+            underworld: false,
+            deltaProject: false,
+          },
+          board: 'tharsis',
+          seededGame: false,
+          clonedGamedId: undefined,
+          randomFirstPlayer: false,
+          draftVariant: false,
+          showOtherPlayersVP: false,
+          solarPhaseOption: false,
+          turnBasedGame: true,
+        },
+      }),
+    } as Response)) as typeof fetch;
+
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    const vm = wrapper.vm as any;
+    expect(vm.turnBasedGame).to.eq(true);
+    expect(vm.readProfileTelegramIds()).deep.eq({leha: '123456789'});
+    expect(vm.getSelectedPlayerProfile(vm.players[0])?.id).to.eq('leha');
+    expect(vm.players[0].telegramID).to.eq('123456789');
+    expect(wrapper.text()).to.contain('Telegram ID');
+  });
+
+  it('fills telegram ids from static player profiles after Elo players load', async () => {
+    sharedEloState.loaded = true;
+    sharedEloState.players = {
+      genuinegold: {displayName: 'GenuineGold', games: 48, elo: 1749},
+    };
+    window.localStorage.setItem('tm_player_profile_telegram_ids', JSON.stringify({leha: '123456789'}));
+
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    await wrapper.setData({
+      turnBasedGame: true,
+      playersCount: 1,
+      players: [
+        {name: 'Леха', color: 'orange', beginner: false, handicap: 0, first: true, isBot: false, telegramID: ''},
+      ],
+    });
+    vm.fillKnownTelegramIdsForPlayers(vm.getPlayers());
+
+    expect(vm.getSelectedPlayerProfile(vm.players[0])?.id).to.eq('leha');
+    expect(vm.players[0].telegramID).to.eq('123456789');
+  });
+
+  it('fills built-in profile telegram ids for async rematches without local storage', async () => {
+    sharedEloState.loaded = true;
+    sharedEloState.players = {
+      gydro: {displayName: 'GydRo', games: 79, elo: 1452},
+      dasha: {displayName: 'Даша', games: 3, elo: 1416},
+      felkner: {displayName: 'Фелькнер', games: 7, elo: 1537},
+    };
+
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    await wrapper.setData({
+      turnBasedGame: true,
+      playersCount: 3,
+      players: [
+        {name: 'Фелькнер', color: 'green', beginner: false, handicap: 0, first: true, isBot: false, telegramID: ''},
+        {name: 'Даша', color: 'pink', beginner: false, handicap: 0, first: false, isBot: false, telegramID: ''},
+        {name: 'GydRo', color: 'pearl', beginner: false, handicap: 0, first: false, isBot: false, telegramID: ''},
+      ],
+    });
+    vm.fillKnownTelegramIdsForPlayers(vm.getPlayers());
+
+    expect(vm.players.map((player: {telegramID: string}) => player.telegramID)).deep.eq([
+      '317238880',
+      '432301679',
+      '162438481',
+    ]);
+  });
+
   it('blocks invalid telegram ids during serialization', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,

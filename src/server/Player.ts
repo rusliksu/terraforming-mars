@@ -379,14 +379,20 @@ export class Player implements IPlayer {
     };
 
     if (PartyHooks.reds01PolicyInEffect(this)) {
-      if (!this.canAfford(REDS_RULING_POLICY_COST * steps)) {
+      const redsCost = REDS_RULING_POLICY_COST * steps;
+      if (!this.canAfford(redsCost)) {
         // Cannot pay Reds, will not increase TR
         return;
       }
       this.game.defer(
-        new SelectPaymentDeferred(this, REDS_RULING_POLICY_COST * steps, {title: 'Select how to pay for TR increase'}),
+        new SelectPaymentDeferred(this, redsCost, {title: 'Select how to pay for TR increase'}),
         Priority.COST)
-        .andThen(raiseRating);
+        .andThen(() => {
+          this.game.log('${0} paid ${1} M€ for Turmoil ${2} policy', (b) =>
+            b.player(this).number(redsCost).partyName(PartyName.REDS));
+          raiseRating();
+          return undefined;
+        });
     } else {
       raiseRating();
     }

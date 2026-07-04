@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import {TestPlayer} from '../../TestPlayer';
 import {IGame} from '../../../src/server/IGame';
-import {runAllActions, setRulingParty, addGreenery} from '../../TestingUtils';
+import {runAllActions, setRulingParty, addGreenery, formatMessage} from '../../TestingUtils';
 import {REDS_BONUS_1, REDS_BONUS_2, REDS_POLICY_3} from '../../../src/server/turmoil/parties/Reds';
 import {MoonExpansion} from '../../../src/server/moon/MoonExpansion';
 import {OrOptions} from '../../../src/server/inputs/OrOptions';
@@ -61,6 +61,7 @@ describe('Reds', () => {
     player.increaseTerraformRating();
     game.deferredActions.runNext();
     expect(player.megaCredits).to.eq(0);
+    expect(game.gameLog.map(formatMessage)).includes('blue paid 3 M€ for Turmoil Reds policy');
   });
 
   it('Ruling policy 2: When you place a tile, pay 3 M€ or as much as possible', () => {

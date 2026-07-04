@@ -53,7 +53,7 @@ describe('PlayerInfo', () => {
     expect(test.text()).to.eq('3');
   });
 
-  it('shows separate table and spectator hand controls', async () => {
+  it('does not show spectator hand control to a spectator', () => {
     const player = fakePublicPlayerModel({
       color: 'blue',
       name: 'Blue',
@@ -93,11 +93,8 @@ describe('PlayerInfo', () => {
     });
 
     expect(playerInfo.find('.played-cards-button').attributes('title')).eq('table');
-    expect(playerInfo.find('.spectator-hand-button').attributes('title')).eq('hand');
-
-    await playerInfo.find('.spectator-hand-button').trigger('click');
-
-    expect(visibility.spectator_hand_0).eq(true);
+    expect(playerInfo.find('.spectator-hand-button').exists()).eq(false);
+    expect(visibility.spectator_hand_0).eq(undefined);
   });
 
   it('does not show spectator hand control to a player', () => {

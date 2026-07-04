@@ -30,7 +30,7 @@ describe('SpectatorHome', () => {
     expect(wrapper.exists()).to.be.true;
   });
 
-  it('delegates spectator hands to the players overview instead of rendering a separate hand block', () => {
+  it('does not render a separate spectator hand block', () => {
     const spectatorCards = {
       cardsInHand: [{name: 'Micro-Mills'}],
       ceoCardsInHand: [],
@@ -67,6 +67,5 @@ describe('SpectatorHome', () => {
     expect(wrapper.text()).not.contain('Dealt project cards');
     const overview = wrapper.findComponent({name: 'PlayersOverview'});
     expect(overview.exists()).eq(true);
-    expect((overview.props('playerView') as any).players[0].spectatorCards.cardsInHand).has.length(1);
   });
 });

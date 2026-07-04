@@ -73,7 +73,7 @@ describe('ServerModel', () => {
     expect(response.players[0].spectatorCards).eq(undefined);
   });
 
-  it('Should include player hands for spectator when private hands are disabled', () => {
+  it('Should hide player hands from spectator when private hands are disabled', () => {
     [game, player, player2] = testGame(2, {privateHands: false});
     player.cardsInHand.push(new MicroMills());
     player.draftedCards.push(new EarthCatapult());
@@ -82,12 +82,11 @@ describe('ServerModel', () => {
 
     const response = Server.getSpectatorModel(game);
 
-    expect(response.players[0].spectatorCards?.cardsInHand.map((card) => card.name)).deep.eq(['Micro-Mills']);
-    expect(response.players[1].spectatorCards?.cardsInHand.map((card) => card.name)).deep.eq(['Earth Catapult']);
-    expect(response.players[0].spectatorCards).has.all.keys(['cardsInHand', 'ceoCardsInHand', 'preludeCardsInHand']);
+    expect(response.players[0].spectatorCards).eq(undefined);
+    expect(response.players[1].spectatorCards).eq(undefined);
   });
 
-  it('Should include player hands for spectator at game end', () => {
+  it('Should hide player hands from spectator at game end', () => {
     [game, player, player2] = testGame(2);
     player.cardsInHand.push(new MicroMills());
     player2.cardsInHand.push(new EarthCatapult());
@@ -95,8 +94,8 @@ describe('ServerModel', () => {
 
     const response = Server.getSpectatorModel(game);
 
-    expect(response.players[0].spectatorCards?.cardsInHand.map((card) => card.name)).deep.eq(['Micro-Mills']);
-    expect(response.players[1].spectatorCards?.cardsInHand.map((card) => card.name)).deep.eq(['Earth Catapult']);
+    expect(response.players[0].spectatorCards).eq(undefined);
+    expect(response.players[1].spectatorCards).eq(undefined);
   });
 
   it('Should include globalParameterSteps at game end', () => {

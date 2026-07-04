@@ -153,7 +153,7 @@ export default defineComponent({
       return 'hand';
     },
     canViewSpectatorHand(): boolean {
-      return this.playerView.thisPlayer === undefined && this.spectatorHandCardCount() > 0;
+      return false;
     },
     toggleSpectatorHand() {
       const handPinned = this.isSpectatorHandPinned(this.playerIndex);

@@ -119,12 +119,11 @@ export class Server {
   }
 
   public static getSpectatorModel(game: IGame): SpectatorModel {
-    const includePrivateCards = game.phase === Phase.END || game.gameOptions.privateHands === false;
     return {
       color: 'neutral',
       id: game.spectatorId,
       game: this.getGameModel(game),
-      players: game.playersInGenerationOrder.map((p) => this.getPlayer(p, false, {includePrivateCards})),
+      players: game.playersInGenerationOrder.map((p) => this.getPlayer(p, false)),
       thisPlayer: undefined,
       runId: runId,
     };

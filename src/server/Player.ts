@@ -1,4 +1,4 @@
-import {sendTurnNotice, deleteTurnNotice, deleteTurnNoticeMessage} from './TelegramBot';
+import {sendTurnNotice, deleteTurnNotice, deleteTurnNoticeMessage, getStoredTurnNoticeUpdatedAt} from './TelegramBot';
 import * as constants from '../common/constants';
 import {PlayerId} from '../common/Types';
 import {MILESTONE_COST, REDS_RULING_POLICY_COST} from '../common/constants';
@@ -92,7 +92,7 @@ const DEFAULT_GLOBAL_PARAMETER_STEPS = {
   [GlobalParameter.VENUS]: 0,
   [GlobalParameter.MOON_HABITAT_RATE]: 0,
   [GlobalParameter.MOON_MINING_RATE]: 0,
-  [GlobalParameter.MOON_LOGISTICS_RATE]: 0,
+  [GlobalParameter.MOON_LOGISTIC_RATE]: 0,
 } as const;
 
 function getTurnNoticeReminderMs(): number {
@@ -1110,7 +1110,7 @@ export class Player implements IPlayer {
       // VanAllen CEO Hook for Milestones
       const vanAllen = this.game.getCardPlayerOrUndefined(CardName.VANALLEN);
       if (vanAllen !== undefined) {
-        vanAllen.stock.add(Resource.MEGACREDITS, 3, {log: true, from: {player: this}});
+        vanAllen.stock.add(Resource.MEGACREDITS, 3, {log: true, from: {card: CardName.VANALLEN}});
       }
     };
 
@@ -1721,7 +1721,9 @@ export class Player implements IPlayer {
     this.waitingFor = undefined;
     this.waitingForCb = undefined;
     try {
-      this.timer.stop();
+      if (!waitingFor.optional) {
+        this.timer.stop();
+      }
       this.clearPendingTurnNoticeTimers();
       this.defer(waitingFor.process(input, this));
       waitingForCb();
@@ -1799,6 +1801,10 @@ export class Player implements IPlayer {
       this.clearPendingTurnNoticeReminderTimer();
     }
 
+    const storedNoticeUpdatedAt = getStoredTurnNoticeUpdatedAt(this, turnNoticeKey);
+    const elapsedMs = storedNoticeUpdatedAt === undefined ? 0 : Math.max(0, Date.now() - storedNoticeUpdatedAt);
+    const reminderDelayMs = Math.max(0, reminderMs - elapsedMs);
+
     this._pendingTurnNoticeReminderKey = turnNoticeKey;
     this._pendingTurnNoticeReminderTimer = setTimeout(() => {
       const scheduledKey = this._pendingTurnNoticeReminderKey;
@@ -1807,7 +1813,7 @@ export class Player implements IPlayer {
       if (scheduledKey !== undefined) {
         void this.sendTurnNoticeReminder(scheduledKey);
       }
-    }, reminderMs);
+    }, reminderDelayMs);
     unrefTimer(this._pendingTurnNoticeReminderTimer);
   }
 
@@ -1849,7 +1855,9 @@ export class Player implements IPlayer {
         console.warn(message);
       }
     }
-    this.timer.start();
+    if (!input.optional) {
+      this.timer.start();
+    }
     this.waitingFor = input;
     this.waitingForCb = cb;
     this.game.inputsThisRound++;
@@ -1900,6 +1908,15 @@ export class Player implements IPlayer {
           this.setWaitingForSafely(input, cb);
         };
       }
+    }
+  }
+
+  public clearWaitingFor(): void {
+    const waitingFor = this.waitingFor;
+    this.waitingFor = undefined;
+    this.waitingForCb = undefined;
+    if (waitingFor !== undefined && !waitingFor.optional) {
+      this.timer.stop();
     }
   }
 

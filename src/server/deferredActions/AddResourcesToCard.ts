@@ -58,12 +58,15 @@ export class AddResourcesToCard extends DeferredAction {
   }
 
   public execute() {
+    const qty = this.options.count ?? 1;
+    if (qty === 0) {
+      return undefined;
+    }
+
     const cards = this.getCards();
     if (cards.length === 0) {
       return undefined;
     }
-
-    const qty = this.options.count ?? 1;
 
     if (cards.length === 1) {
       this.addResource(cards[0], qty);

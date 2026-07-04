@@ -1,7 +1,7 @@
 <template>
   <div class="card-item-container">
     <div class="card-res-amount" v-if="item.showDigit">{{ amountAbs }}</div>
-    <div :class="componentClasses" v-for="index in itemsToShow" v-html="itemHtmlContent" :key="index"/>
+    <div :class="componentClasses" v-for="index in itemsToShow" v-html="itemHtmlContent" :key="index"></div>
     <div class="card-over" v-if="item.over !== undefined">over {{item.over}}</div>
   </div>
 </template>
@@ -43,11 +43,11 @@ export default defineComponent({
       if (this.item.tag === undefined) {
         return '';
       }
-      return 'card-tag-' + this.item.tag.toLowerCase().replaceAll(' ', '-');
+      return 'tag-' + this.item.tag.toLowerCase().replaceAll(' ', '-');
     },
     tagSizeClass(): string {
       if (this.item.size !== undefined) {
-        return 'card-tag-size--' + this.item.size;
+        return 'tag-size--' + this.item.size;
       }
       return '';
     },
@@ -189,7 +189,7 @@ export default defineComponent({
       case CardRenderItemType.NO_TAGS:
         return ['card-resource-tag', 'card-no-tags'];
       case CardRenderItemType.EMPTY_TAG:
-        return ['card-resource-tag', 'card-tag-empty'];
+        return ['card-resource-tag', 'tag-empty'];
       case CardRenderItemType.CITY:
         return ['card-tile', `city-tile--${this.item.size}`];
       case CardRenderItemType.GREENERY:
@@ -261,16 +261,16 @@ export default defineComponent({
           return ['card-mining-rate'];
         }
       case CardRenderItemType.MOON_ROAD:
-        if (this.item.secondaryTag === AltSecondaryTag.MOON_LOGISTICS_RATE) {
+        if (this.item.secondaryTag === AltSecondaryTag.MOON_LOGISTIC_RATE) {
           return [this.sized('card-tile-lunar-road-rate', this.item.size)];
         } else {
           return [this.sized('card-tile-lunar-road', this.item.size)];
         }
-      case CardRenderItemType.MOON_LOGISTICS_RATE:
+      case CardRenderItemType.MOON_LOGISTIC_RATE:
         if (this.item.size !== undefined) {
-          return ['card-logistics-rate', `card-logistics-rate--${this.item.size}`];
+          return ['card-logistic-rate', `card-logistic-rate--${this.item.size}`];
         } else {
-          return ['card-logistics-rate'];
+          return ['card-logistic-rate'];
         }
       case CardRenderItemType.PLANETARY_TRACK:
         return ['card-planetary-track'];
@@ -330,12 +330,12 @@ export default defineComponent({
         AltSecondaryTag.OXYGEN,
         AltSecondaryTag.MOON_HABITAT_RATE,
         AltSecondaryTag.MOON_MINING_RATE,
-        AltSecondaryTag.MOON_LOGISTICS_RATE,
+        AltSecondaryTag.MOON_LOGISTIC_RATE,
       ];
       // Oxygen is handled specially separately.
       const secondaryTag = this.item.secondaryTag;
       if (secondaryTag !== undefined && !previouslyRendered.includes(secondaryTag)) {
-        result += '<div class="card-icon card-tag-' + secondaryTag + '"></div>';
+        result += '<div class="card-icon tag-' + secondaryTag + '"></div>';
       }
       if (this.item.isPlate || this.item.text !== undefined) {
         result += this.item.text || 'n/a';

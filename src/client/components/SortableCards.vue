@@ -1,31 +1,31 @@
 <template>
 <div>
   <div class="sortable-cards">
-    <div
-      ref="cardbox"
-      v-for="card in getSortedCards()"
-      :key="card.name"
-      class="cardbox"
-      :class="{ 'dragging': Boolean(dragCard) }"
-      draggable="true"
-      @dragend="onDragEnd()"
-      @dragstart="onDragStart(card.name)"
-      @dragover.prevent="onDragHover(card.name, $event)"
-    >
-      <Card :card="card"/>
+    <div ref="draggers" :class="{ 'dragging': Boolean(dragCard) }" v-for="(card, index) in getSortedCards()" :key="card.name" draggable="true" @dragend="onDragEnd()" @dragstart="onDragStart(card.name)" @dragover="onDragOver(card.name, $event)">
+      <div v-if="dragCard" ref="droppers" class="drop-target" @dragover="onDragOver(card.name, $event)"></div>
+      <div ref="cardbox" class="cardbox" @click="clickMethod">
+        <Card :card="card"/>
+        <div v-if="showReorder" class="reorder-banners-container">
+          <div class="reorder-banners-left" v-if="index > 0"></div>
+          <div class="reorder-banners-right" v-if="index < cards.length - 1"></div>
+        </div>
+      </div>
     </div>
+    <div v-if="dragCard" ref="dropend" class="drop-target" @dragover="onDragOver('end')"></div>
   </div>
 </div>
 </template>
 
 <script lang="ts">
-import {defineComponent} from '@/client/vue3-compat';
+import {defineComponent} from 'vue';
 import Card from '@/client/components/card/Card.vue';
 import {CardName} from '@/common/cards/CardName';
 import {CardModel} from '@/common/models/CardModel';
 import {CardOrderStorage} from '@/client/utils/CardOrderStorage';
 
 type DataModel = {
+  /** When true use the point-and-click reorder UI */
+  showReorder: boolean;
   /** Mapping from card name to its order */
   cardOrder: {[x: string]: number};
   /** When defined, it is the name of the card being dragged. */
@@ -65,6 +65,7 @@ export default defineComponent({
       }
     }
     return {
+      showReorder: false,
       cardOrder: cardOrder,
       dragCard: undefined,
     };
@@ -82,41 +83,69 @@ export default defineComponent({
     onDragEnd(): void {
       this.dragCard = undefined;
     },
-    onDragHover(source: CardName, event: DragEvent): void {
+    onDragOver(source: CardName | 'end', event?: DragEvent): void {
       if (this.dragCard === undefined || source === this.dragCard) {
         return;
       }
-      const originalCardNames = this.getSortedCards().map((card) => card.name);
-      const orderedCardNames = originalCardNames.slice();
-      const dragIndex = orderedCardNames.indexOf(this.dragCard);
-      const hoverIndex = orderedCardNames.indexOf(source);
-      if (dragIndex === -1 || hoverIndex === -1) {
-        return;
+
+      const ordered = Object.keys(this.cardOrder)
+        .filter((name) => name !== this.dragCard)
+        .sort((a, b) => this.cardOrder[a] - this.cardOrder[b]);
+
+      let insertIndex = ordered.length;
+      if (source !== 'end') {
+        insertIndex = ordered.indexOf(source);
+        if (this.cardOrder[this.dragCard] < this.cardOrder[source]) {
+          let insertAfter = true;
+          const target = event?.currentTarget;
+          if (target instanceof HTMLElement && typeof event?.clientX === 'number' && event.clientX > 0) {
+            const rect = target.getBoundingClientRect();
+            insertAfter = event.clientX >= rect.left + rect.width / 2;
+          }
+          if (insertAfter) {
+            insertIndex++;
+          }
+        }
       }
-      const insertAfter = this.shouldInsertAfterHoveredCard(event, dragIndex, hoverIndex);
-      let insertionIndex = hoverIndex + (insertAfter ? 1 : 0);
-      if (dragIndex < insertionIndex) {
-        insertionIndex--;
-      }
-      insertionIndex = Math.max(0, Math.min(insertionIndex, orderedCardNames.length - 1));
-      const movedCardName = orderedCardNames.splice(dragIndex, 1)[0];
-      orderedCardNames.splice(insertionIndex, 0, movedCardName);
-      if (orderedCardNames.every((cardName, idx) => cardName === originalCardNames[idx])) {
-        return;
-      }
-      orderedCardNames.forEach((cardName, idx) => {
-        this.cardOrder[cardName] = idx + 1;
+
+      ordered.splice(insertIndex, 0, this.dragCard);
+      ordered.forEach((name, index) => {
+        this.cardOrder[name] = index + 1;
       });
       CardOrderStorage.updateCardOrder(this.playerId, this.cardOrder);
     },
-    shouldInsertAfterHoveredCard(event: DragEvent, dragIndex: number, hoverIndex: number): boolean {
-      if (event.currentTarget instanceof HTMLElement) {
-        const rect = event.currentTarget.getBoundingClientRect();
-        if (rect.width > 0) {
-          return event.clientX >= rect.left + rect.width / 2;
+    doNotDragAndDropOnReorder() {
+      return this.showReorder ? 'do-not-drag-and-drop' : '';
+    },
+    clickMethod(e: MouseEvent) {
+      if (!this.showReorder) {
+        return;
+      }
+      const target = e.currentTarget as HTMLElement;
+      if (!target) {
+        return;
+      }
+      if (target.matches('.sortable-cards *')) {
+        const rect = target.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;
+        const direction = x <= 0.25 ? -1.5 : x >= 0.75 ? 1.5 : null;
+        if (direction) {
+          const cardTitle = target.querySelector('.card-title');
+          if (cardTitle) {
+            const textContent = cardTitle.textContent;
+            if (textContent) {
+              const thisCard = textContent.trim();
+              this.cardOrder[thisCard] += direction;
+              Object.entries(this.cardOrder)
+                .sort((a, b) => a[1]-b[1])
+                .forEach((entry, i) => {
+                  this.cardOrder[entry[0]] = i+1;
+                });
+              CardOrderStorage.updateCardOrder(this.playerId, this.cardOrder);
+            }
+          }
         }
       }
-      return dragIndex < hoverIndex;
     },
   },
 });

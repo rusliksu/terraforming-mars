@@ -11,7 +11,7 @@
                     <div class="create-game-page-container">
                         <div class="create-game-page-column">
                             <h4 v-i18n>№ of Players</h4>
-                            <div v-for="pCount in [1,2,3,4,5,6]" v-bind:key="pCount">
+                            <div v-for="pCount in [1,2,3,4,5,6]" :key="pCount">
                               <input type="radio" :value="pCount" name="playersCount" v-model="playersCount" :id="pCount+'-radio'">
                               <label :for="pCount+'-radio'">
                                   {{ getPlayersCountText(pCount) }}
@@ -115,7 +115,7 @@
                             </template>
 
                             <template v-if="expansions.turmoil">
-                                <input type="checkbox" name="politicalAgendas" id="politicalAgendas-checkbox" v-on:change="politicalAgendasExtensionToggle()">
+                                <input type="checkbox" name="politicalAgendas" id="politicalAgendas-checkbox" @change="politicalAgendasExtensionToggle()">
                                 <label for="politicalAgendas-checkbox" class="expansion-button">
                                     <div class="create-game-expansion-icon expansion-icon-agendas"></div>
                                     <span v-i18n>Agendas</span>&nbsp;<a href="https://www.notion.so/Political-Agendas-8c6b0b018a884692be29b3ef44b340a9" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
@@ -179,7 +179,7 @@
                         <div class="create-game-page-column">
                             <h4 v-i18n>Board</h4>
 
-                            <div v-for="boardName in boards" v-bind:key="boardName">
+                            <div v-for="boardName in boards" :key="boardName">
                               <div v-if="boardName==='utopia planitia'" class="create-game-subsection-label" v-i18n>Fan-made</div>
                               <input type="radio" :value="boardName" name="board" v-model="board" :id="boardName+'-checkbox'">
                               <label :for="boardName+'-checkbox'" class="expansion-button">
@@ -216,7 +216,7 @@
                               </label>
                             </template>
 
-                            <input type="checkbox" v-model="solarPhaseOption" id="WGT-checkbox">
+                            <input type="checkbox" v-model="solarPhaseOption" id="WGT-checkbox" disabled>
                             <label for="WGT-checkbox">
                                 <span v-i18n>World Government Terraforming</span>&nbsp;<a :href="wikiUrls.worldGovernmentTerraforming" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                             </label>
@@ -240,7 +240,7 @@
                             <div v-if="undoOption">
                               <span v-i18n>Undo is now in best effort support.</span>
                               <a href="https://github.com/terraforming-mars/terraforming-mars/discussions/7647" target="_blank">&#9432;</a>
-                              <br/>
+                              <br>
                               <span v-i18n>No effort will be spent to fix it.</span>
                             </div>
                             <input type="checkbox" v-model="showTimers" id="timer-checkbox">
@@ -293,7 +293,7 @@
                             </label>
 
                             <div v-if="seededGame">
-                                <input type="text" name="clonedGamedId" v-model="clonedGameId" />
+                                <input type="text" name="clonedGamedId" v-model="clonedGameId" >
                             </div>
 
                             <div class="create-game-subsection-label" v-i18n>Knightbyte server settings</div>
@@ -420,7 +420,7 @@
                                 <span v-i18n>Random first player</span>
                             </label>
 
-                            <input type="checkbox" name="randomMAToggle" id="randomMA-checkbox" v-on:change="randomMAToggle()">
+                            <input type="checkbox" name="randomMAToggle" id="randomMA-checkbox" @change="randomMAToggle()">
                             <label for="randomMA-checkbox">
                                 <span v-i18n>Random Milestones/Awards</span>&nbsp;<a :href="wikiUrls.randomMilestonesAndAwards" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                             </label>
@@ -448,8 +448,8 @@
                             </div>
 
                             <div v-if="modularMA">
-                              The new Milestones and Awards are still in active development.<br/>
-                              Please don't report anything unless it breaks the game.<br/>
+                              The new Milestones and Awards are still in active development.<br>
+                              Please don't report anything unless it breaks the game.<br>
                               These are <b>always fully random</b>.
                             </div>
                             <template v-if="expansions.venus">
@@ -480,37 +480,40 @@
                         <div class="create-game-players-cont">
                             <div class="container">
                                 <div class="columns">
-                                  <template v-for="(newPlayer, index) in getPlayers()" v-bind:key="index">
+                                  <template v-for="(newPlayer, index) in getPlayers()" :key="index">
                                     <div>
                                       <div :class="'form-group col6 create-game-player '+getPlayerContainerColorClass(newPlayer.color)">
-                                          <div>
-                                              <input class="form-input form-inline create-game-player-name" :placeholder="getPlayerNamePlaceholder(index)" v-model="newPlayer.name" :readonly="isPlayerNameLocked(newPlayer.color)" @input="clearPlayerProfileSelection(newPlayer)" />
+                                          <div class="create-game-profile-picker" @click.stop>
+                                              <input
+                                                class="form-input form-inline create-game-player-name"
+                                                :class="{'is-open': isPlayerProfilePickerOpen(index)}"
+                                                :placeholder="getPlayerNamePlaceholder(index)"
+                                                autocomplete="off"
+                                                ref="playerProfileNameInput"
+                                                v-model="newPlayer.name"
+                                                @focus="openPlayerProfilePicker(newPlayer, index)"
+                                                @click.stop="openPlayerProfilePicker(newPlayer, index)"
+                                                @input="updatePlayerProfileAutocomplete(newPlayer, $event)"
+                                                @keydown.enter.stop.prevent="applyFirstFilteredPlayerProfile(newPlayer)"
+                                                @keydown.esc.stop.prevent="closePlayerProfilePicker"
+                                                @keydown.stop >
                                               <div v-if="getPlayerProfileNameError(newPlayer) !== ''" class="form-input-hint create-game-telegram-error">
                                                 {{ getPlayerProfileNameError(newPlayer) }}
                                               </div>
-                                          </div>
-                                          <div class="create-game-profile-picker" @click.stop>
-                                              <button
-                                                type="button"
-                                                class="form-inline create-game-player-profile-trigger"
-                                                :class="{'is-open': isPlayerProfilePickerOpen(index)}"
-                                                @click.stop="togglePlayerProfilePicker(index)">
-                                                  <span :class="['create-game-profile-avatar', ...getSelectedPlayerProfileAvatarClasses(newPlayer)]">{{ getSelectedPlayerProfileInitials(newPlayer) }}</span>
-                                                  <span class="create-game-profile-trigger-main">
-                                                    <span class="create-game-profile-trigger-name">{{ getSelectedPlayerProfileName(newPlayer) }}</span>
-                                                    <span class="create-game-profile-trigger-meta">{{ getSelectedPlayerProfileMeta(newPlayer) }}</span>
-                                                  </span>
-                                                  <span class="create-game-profile-trigger-caret">v</span>
-                                              </button>
-                                              <div v-if="isPlayerProfilePickerOpen(index)" class="create-game-profile-menu">
-                                                  <input
-                                                    class="form-input form-inline create-game-profile-search"
-                                                    type="search"
-                                                    placeholder="Find player"
-                                                    autocomplete="off"
-                                                    v-model="playerProfileSearch"
-                                                    @keydown.stop>
+                                              <div
+                                                v-if="isPlayerProfilePickerOpen(index)"
+                                                class="create-game-profile-menu">
                                                   <div class="create-game-profile-option-list">
+                                                    <button
+                                                      type="button"
+                                                      class="create-game-profile-option create-game-profile-option-custom"
+                                                      @click="applyCustomNickFromPicker(newPlayer)">
+                                                        <span class="create-game-profile-avatar create-game-profile-avatar--empty">Aa</span>
+                                                        <span class="create-game-profile-option-main">
+                                                          <span class="create-game-profile-option-name">Custom nick</span>
+                                                          <span class="create-game-profile-option-meta">{{ getCustomNickMeta() }}</span>
+                                                        </span>
+                                                    </button>
                                                     <button
                                                       v-for="profile in getFilteredAvailablePlayerProfiles(newPlayer)"
                                                       :key="profile.id"
@@ -531,7 +534,7 @@
                                               </div>
                                           </div>
                                           <div class="create-game-page-color-row">
-                                              <template v-for="color in DEFAULT_PLAYER_COLORS" v-bind:key="color">
+                                              <template v-for="color in DEFAULT_PLAYER_COLORS" :key="color">
                                                 <div>
                                                   <input type="radio" :value="color" :name="'playerColor' + (index + 1)" :checked="newPlayer.color === color" :id="'radioBox' + color + (index + 1)" @change="applyDefaultPlayerColor(newPlayer, color)">
                                                   <label :for="'radioBox' + color + (index + 1)" :title="getColorTitle(color)">
@@ -552,7 +555,7 @@
                                                   </label>
 
                                                   <label class="form-label">
-                                                      <input type="number" class="form-input form-inline player-handicap" value="0" min="0" :max="10" v-model.number="newPlayer.handicap" />
+                                                      <input type="number" class="form-input form-inline player-handicap" value="0" min="0" :max="10" v-model.number="newPlayer.handicap" >
                                                       <i class="form-icon"></i><span v-i18n>TR Boost</span>&nbsp;<a :href="wikiUrls.trBoost" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                                                   </label>
                                                   <label v-if="expansions.prelude" class="form-label">
@@ -571,7 +574,7 @@
                                                     placeholder="Telegram ID"
                                                     v-model="newPlayer.telegramID"
                                                     @blur="normalizeAndRememberTelegramId(newPlayer)"
-                                                  />
+                                                  >
                                                   <div v-if="getTelegramIdError(newPlayer.telegramID) !== ''" class="form-input-hint create-game-telegram-error">
                                                     {{ getTelegramIdError(newPlayer.telegramID) }}
                                                   </div>
@@ -591,14 +594,15 @@
 
                         <div class="create-game-action">
                             <AppButton title="Create game" size="big" @click="createGame"/>
+                            <AppButton title="Reset" size="big" @click="resetSettings"/>
 
                             <label>
                                 <div class="btn btn-primary btn-action btn-lg"><i class="icon icon-upload"></i></div>
-                                <input style="display: none" type="file" accept=".json" id="settings-file" ref="file" v-on:change="uploadSettings()"/>
+                                <input style="display: none" type="file" accept=".json" id="settings-file" ref="file" @change="uploadSettings()">
                             </label>
 
                             <label>
-                                <div v-on:click="downloadSettings()" class="btn btn-primary btn-action btn-lg"><i class="icon icon-download"></i></div>
+                                <div @click="downloadSettings()" class="btn btn-primary btn-action btn-lg"><i class="icon icon-download"></i></div>
                             </label>
                         </div>
                     </div>
@@ -610,60 +614,60 @@
                 ref="corporationsFilter"
                 v-show="showCorporationList"
                 v-if="showCorporationList"
-                v-on:corporation-list-changed="updateCustomCorporations"
-                v-bind:expansions="expansions"
-                v-bind:selected="customCorporations"
+                @corporation-list-changed="updateCustomCorporations"
+                :expansions="expansions"
+                :selected="customCorporations"
                 @close="showCorporationList = false"
-            ></CorporationsFilter>
+            />
 
             <PreludesFilter
                 ref="preludesFilter"
                 v-show="showPreludesList"
                 v-if="showPreludesList"
-                v-on:prelude-list-changed="updateCustomPreludes"
-                v-bind:expansions="expansions"
-                v-bind:selected="customPreludes"
+                @prelude-list-changed="updateCustomPreludes"
+                :expansions="expansions"
+                :selected="customPreludes"
                 @close="showPreludesList = false"
-            ></PreludesFilter>
+            />
 
             <ColoniesFilter
                 ref="coloniesFilter"
                 v-show="showColoniesList"
                 v-if="showColoniesList"
-                v-on:colonies-list-changed="updateCustomColonies"
-                v-bind:expansions="expansions"
-                v-bind:selected="customColonies"
+                @colonies-list-changed="updateCustomColonies"
+                :expansions="expansions"
+                :selected="customColonies"
                 @close="showColoniesList = false"
-            ></ColoniesFilter>
+            />
 
             <CeosFilter
                 ref="ceosFilter"
                 v-show="showCeosList"
                 v-if="showCeosList"
-                v-on:ceo-list-changed="updateCustomCeos"
-                v-bind:expansions="expansions"
-                v-bind:selected="customCeos"
+                @ceo-list-changed="updateCustomCeos"
+                :expansions="expansions"
+                :selected="customCeos"
                 @close="showCeosList = false"
-            ></CeosFilter>
+            />
 
             <div class="create-game--block" v-if="showBannedCards">
               <CardsFilter
                   ref="cardsFilter"
-                  v-on:cards-list-changed="updateBannedCards"
+                  @cards-list-changed="updateBannedCards"
                   :title="'Cards to exclude from the game'"
                   :hint="'Start typing the card name to exclude'"
-              ></CardsFilter>
+              />
             </div>
 
             <div class="create-game--block" v-if="showIncludedCards">
               <CardsFilter
                   ref="cardsFilter2"
-                  v-on:cards-list-changed="updateIncludedCards"
+                  @cards-list-changed="updateIncludedCards"
                   :title="'Cards to include in the game'"
                   :hint="'Start typing the card name to include'"
-              ></CardsFilter>
+              />
             </div>
-          <preferences-icon></preferences-icon>
+          <PreferencesIcon/>
         </div>
 </template>
 
@@ -684,12 +688,15 @@ import type {PlayerProfile} from '@/common/PlayerProfiles';
 import {BoardName} from '@/common/boards/BoardName';
 import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
 import {CardName} from '@/common/cards/CardName';
+import {CardType} from '@/common/cards/CardType';
+import {Expansion, GameModule} from '@/common/cards/GameModule';
 import CeosFilter from '@/client/components/create/CeosFilter.vue';
 import CorporationsFilter from '@/client/components/create/CorporationsFilter.vue';
 import PreludesFilter from '@/client/components/create/PreludesFilter.vue';
 import {translateText, translateTextWithParams} from '@/client/directives/i18n';
 import ColoniesFilter from '@/client/components/create/ColoniesFilter.vue';
 import {ColonyName} from '@/common/colonies/ColonyName';
+import {COMMUNITY_COLONY_NAMES, OFFICIAL_COLONY_NAMES, PATHFINDERS_COLONY_NAMES} from '@/common/colonies/AllColonies';
 import CardsFilter from '@/client/components/create/CardsFilter.vue';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {playerColorClass} from '@/common/utils/utils';
@@ -697,13 +704,15 @@ import {RandomMAOptionType} from '@/common/ma/RandomMAOptionType';
 import {GameId, JSONObject} from '@/common/Types';
 import {AgendaStyle} from '@/common/turmoil/Types';
 import PreferencesIcon from '@/client/components/PreferencesIcon.vue';
-import {getCard} from '@/client/cards/ClientCardManifest';
+import {byType, getCard, getCards} from '@/client/cards/ClientCardManifest';
+import type {ClientCard} from '@/common/cards/ClientCard';
 import {BoardNameType, NewGameConfig, NewPlayerModel, normalizePreludeHandicap} from '@/common/game/NewGameConfig';
 import {vueRoot} from '@/client/components/vueRoot';
 import {CreateGameModel} from './CreateGameModel';
 import {paths} from '@/common/app/paths';
 import {JSONProcessor} from './JSONProcessor';
 import {defaultCreateGameModel} from './defaultCreateGameModel';
+import {CreateGameSettingsStorage} from './CreateGameSettingsStorage';
 import {TemplateManager, GameTemplate} from './TemplateManager';
 import {getColony} from '@/client/colonies/ClientColonyManifest';
 import {RULEBOOK_URLS, WIKI, WIKI_URLS} from '@/client/utils/WikiLinks';
@@ -713,12 +722,68 @@ import {ensureEloLoaded, sharedEloState} from '@/client/utils/elo';
 const REVISED_COUNT_ALGORITHM = false;
 const PROFILE_TELEGRAM_IDS_KEY = 'tm_player_profile_telegram_ids';
 
+const CUSTOM_CARD_MODULE_EXCEPTIONS = new Set<CardName>([
+  CardName.LAKEFRONT_RESORTS,
+  CardName.UTOPIA_INVEST,
+]);
+
+const CUSTOM_CARD_COMPATIBILITY_EXCEPTIONS: Partial<Record<CardName, ReadonlyArray<Expansion>>> = {
+  [CardName.CREW_TRAINING]: ['moon'],
+};
+
+const DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS = new Set<CardName>([
+  CardName.MANUTECH,
+  CardName.POINT_LUNA,
+  CardName.VITOR,
+]);
+
+const DEFAULT_CUSTOM_COLONY_EXCLUSIONS = new Set<ColonyName>([
+  ColonyName.PLUTO,
+]);
+
+function unique<T extends string>(items: ReadonlyArray<T>): Array<T> {
+  return [...new Set(items)];
+}
+
+function mergeCustomSelectionWithExclusions<T extends string>(
+  selected: ReadonlyArray<T>,
+  selectable: ReadonlyArray<T>,
+  exclusions: ReadonlyArray<T>,
+): Array<T> {
+  const selectedSet = new Set(selected);
+  const excludedSet = new Set(exclusions);
+  return selectable.filter((item) => selectedSet.has(item) || !excludedSet.has(item));
+}
+
+function getCustomSelectionExclusions<T extends string>(
+  selectable: ReadonlyArray<T>,
+  selected: ReadonlyArray<T>,
+  existingExclusions: ReadonlyArray<T>,
+): Array<T> {
+  const selectableSet = new Set(selectable);
+  const selectedSet = new Set(selected);
+  return unique([
+    ...existingExclusions.filter((item) => !selectableSet.has(item)),
+    ...selectable.filter((item) => !selectedSet.has(item)),
+  ]);
+}
+
+type RememberCustomSelectionExclusionOptions = {
+  preserveDefaultCorporationExclusions?: boolean;
+  preserveDefaultPreludeExclusions?: boolean;
+  preserveDefaultColonyExclusions?: boolean;
+};
+
+type SyncCustomSelectionOptions = {
+  preserveExplicitFanColonies?: boolean;
+};
 
 type Refs = {
   file: HTMLInputElement;
   templateFile: HTMLInputElement;
   cardsFilter: InstanceType<typeof CardsFilter>;
   cardsFilter2: InstanceType<typeof CardsFilter>;
+  playerProfileNameInput?: HTMLInputElement | Array<HTMLInputElement>;
 };
 
 type FormModel = {
@@ -728,6 +793,9 @@ type FormModel = {
   templates: Array<GameTemplate>;
   playerProfilePickerIndex: number | null;
   playerProfileSearch: string;
+  customCorporationExclusions: Array<CardName>;
+  customPreludesExclusions: Array<CardName>;
+  customColonyExclusions: Array<ColonyName>;
 };
 
 type ApplySettingsOptions = {
@@ -746,6 +814,9 @@ export default defineComponent({
       templates: TemplateManager.getTemplates(),
       playerProfilePickerIndex: null,
       playerProfileSearch: '',
+      customCorporationExclusions: [...DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS],
+      customPreludesExclusions: [],
+      customColonyExclusions: [...DEFAULT_CUSTOM_COLONY_EXCLUSIONS],
     };
   },
   components: {
@@ -766,15 +837,50 @@ export default defineComponent({
       this.expansions.turmoil = value;
       this.expansions.prelude2 = value;
       this.expansions.promo = value;
-      this.solarPhaseOption = value;
+      this.syncSolarPhaseOptionToPlayerCount();
+      this.syncCustomSelectionsWithExpansions();
+    },
+    'expansions.corpera': function(value: boolean) {
+      this.handleExpansionChanged('corpera', value);
     },
     'expansions.venus': function(value: boolean) {
-      this.solarPhaseOption = value;
+      this.handleExpansionChanged('venus', value);
+    },
+    'expansions.colonies': function(value: boolean) {
+      this.handleExpansionChanged('colonies', value);
     },
     'expansions.turmoil': function(value: boolean) {
       if (value === false) {
         this.politicalAgendasExtension = 'Standard';
       }
+      this.handleExpansionChanged('turmoil', value);
+    },
+    'expansions.promo': function(value: boolean) {
+      this.handleExpansionChanged('promo', value);
+    },
+    'expansions.ares': function(value: boolean) {
+      this.handleExpansionChanged('ares', value);
+    },
+    'expansions.community': function(value: boolean) {
+      this.handleExpansionChanged('community', value);
+    },
+    'expansions.moon': function(value: boolean) {
+      this.handleExpansionChanged('moon', value);
+    },
+    'expansions.pathfinders': function(value: boolean) {
+      this.handleExpansionChanged('pathfinders', value);
+    },
+    'expansions.ceo': function(value: boolean) {
+      this.handleExpansionChanged('ceo', value);
+    },
+    'expansions.starwars': function(value: boolean) {
+      this.handleExpansionChanged('starwars', value);
+    },
+    'expansions.underworld': function(value: boolean) {
+      this.handleExpansionChanged('underworld', value);
+    },
+    'expansions.deltaProject': function(value: boolean) {
+      this.handleExpansionChanged('deltaProject', value);
     },
     initialDraft(value: boolean) {
       if (value === true && this.preludeDraftVariant === undefined) {
@@ -787,27 +893,50 @@ export default defineComponent({
         this.initialDraftOneWay = false;
       }
     },
+    showCorporationList(value: boolean) {
+      if (value === true) {
+        this.customCorporations = this.getDefaultCustomCorporations();
+      }
+    },
+    showPreludesList(value: boolean) {
+      if (value === true) {
+        this.customPreludes = this.getDefaultCustomPreludes();
+      }
+    },
+    showColoniesList(value: boolean) {
+      if (value === true) {
+        this.customColonies = this.getDefaultCustomColonies({
+          preserveExplicitFanColonies: true,
+        });
+      }
+    },
     'expansions.prelude': function(value: boolean) {
       if (value === true && this.preludeDraftVariant === undefined) {
         this.preludeDraftVariant = true;
       }
+      this.handleExpansionChanged('prelude', value);
     },
     'expansions.prelude2': function(value: boolean) {
       if (value === true && this.preludeToggled === false && this.uploading === false) {
         this.expansions.prelude = true;
         this.preludeToggled = true;
       }
+      this.handleExpansionChanged('prelude2', value);
     },
     playersCount(value: number) {
       if (value === 1) {
         this.expansions.corpera = true;
       }
-      if (value >= 4) {
-        this.solarPhaseOption = false;
-      }
+      this.syncSolarPhaseOptionToPlayerCount(value);
       if (this.playerProfilePickerIndex !== null && this.playerProfilePickerIndex >= value) {
         this.closePlayerProfilePicker();
       }
+    },
+    twoCorpsVariant(value: boolean) {
+      if (value === true) {
+        this.removeActiveDefaultCustomPreludeExclusions();
+      }
+      this.syncCustomSelectionsWithExpansions();
     },
     turnBasedGame(value: boolean) {
       if (value === true) {
@@ -868,50 +997,97 @@ export default defineComponent({
   },
   methods: {
     restoreLastSettings() {
-      const lastSettings = TemplateManager.getLastSettings();
-      if (lastSettings) {
-        this.applySettings(lastSettings);
+      const lastSettings = new CreateGameSettingsStorage().loadSettings();
+      if (lastSettings === undefined) {
+        return;
+      }
+      try {
+        const processor = this.applySettings(lastSettings);
+        if (processor.warnings.length > 0) {
+          this.showSettingsLoadResult('Restore settings', processor);
+        }
+      } catch (e) {
+        console.warn('Could not restore create game settings:', e);
       }
     },
-    applySettings(json: JSONObject, options: ApplySettingsOptions = {}) {
+    applySettings(json: JSONObject, options: ApplySettingsOptions = {}): JSONProcessor {
       const component: CreateGameModel = this;
       const refs = this.typedRefs;
-      const root = vueRoot(this);
+      const hasCustomCorporationExclusions = Array.isArray(json['customCorporationExclusions']);
+      const hasCustomPreludesExclusions = Array.isArray(json['customPreludesExclusions']);
+      const hasCustomColonyExclusions = Array.isArray(json['customColonyExclusions']);
+      const processor = new JSONProcessor(component);
+      this.uploading = true;
       try {
-        this.uploading = true;
-        const processor = new JSONProcessor(component);
         processor.applyJSON(json, {preserveAsyncGame: options.preserveAsyncGame});
         if (component.turnBasedGame === true) {
           this.fillKnownTelegramIdsForPlayers(this.getPlayers());
         }
-        nextTick(() => {
-          try {
-            if (component.showBannedCards && refs.cardsFilter) {
-              refs.cardsFilter.selected = processor.bannedCards;
-            }
-            if (component.showIncludedCards && refs.cardsFilter2) {
-              refs.cardsFilter2.selected = processor.includedCards;
-            }
-            if (!component.seededGame) {
-              component.seed = Math.random();
-            }
-            component.solarPhaseOption = Boolean(processor.solarPhaseOption);
-            if (options.linkKnownPlayerProfiles === true) {
-              this.linkKnownPlayerProfilesForPlayers(this.getPlayers());
-            }
-            if (component.turnBasedGame === true) {
-              this.fillKnownTelegramIdsForPlayers(this.getPlayers());
-            }
-            this.uploading = false;
-          } catch (e) {
-            console.error('Error applying settings:', e);
-            this.uploading = false;
-          }
-        });
       } catch (e) {
-        root.showAlert('Load settings', 'Error: ' + e);
         this.uploading = false;
+        throw e;
       }
+      nextTick(() => {
+        try {
+          if (component.showBannedCards && refs.cardsFilter) {
+            refs.cardsFilter.selected = processor.bannedCards;
+          }
+          if (component.showIncludedCards && refs.cardsFilter2) {
+            refs.cardsFilter2.selected = processor.includedCards;
+          }
+          if (!component.seededGame) {
+            component.seed = Math.random();
+          }
+          this.rememberCustomSelectionExclusions({
+            preserveDefaultCorporationExclusions: !hasCustomCorporationExclusions,
+            preserveDefaultPreludeExclusions: !hasCustomPreludesExclusions,
+            preserveDefaultColonyExclusions: !hasCustomColonyExclusions,
+          });
+          this.syncSolarPhaseOptionToPlayerCount();
+          this.syncCustomSelectionsWithExpansions({
+            preserveExplicitFanColonies: hasCustomColonyExclusions,
+          });
+          if (options.linkKnownPlayerProfiles === true) {
+            this.linkKnownPlayerProfilesForPlayers(this.getPlayers());
+          }
+          if (component.turnBasedGame === true) {
+            this.fillKnownTelegramIdsForPlayers(this.getPlayers());
+          }
+        } finally {
+          this.uploading = false;
+        }
+      });
+      return processor;
+    },
+    showSettingsLoadResult(title: string, processor: JSONProcessor) {
+      const root = vueRoot(this);
+      if (processor.warnings.length > 0) {
+        root.showAlert(title, 'Settings loaded with these warnings: \n' + processor.warnings.join('\n'));
+      } else {
+        root.showAlert(title, 'Settings loaded.');
+      }
+    },
+    resetSettings() {
+      new CreateGameSettingsStorage().clearSettings();
+      Object.assign(this, defaultCreateGameModel(), {
+        preludeToggled: false,
+        uploading: false,
+        selectedTemplate: '',
+        playerProfilePickerIndex: null,
+        playerProfileSearch: '',
+        customCorporationExclusions: [...DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS],
+        customPreludesExclusions: [],
+        customColonyExclusions: [...DEFAULT_CUSTOM_COLONY_EXCLUSIONS],
+      });
+      nextTick(() => {
+        const refs = this.typedRefs;
+        if (refs.cardsFilter) {
+          refs.cardsFilter.selected = [];
+        }
+        if (refs.cardsFilter2) {
+          refs.cardsFilter2.selected = [];
+        }
+      });
     },
     async loadRematchSetup(gameId: GameId) {
       try {
@@ -940,8 +1116,16 @@ export default defineComponent({
       if (!tmpl) {
         return;
       }
-      this.applySettings(tmpl.settings);
-      vueRoot(this).showAlert('Template', 'Template "' + this.selectedTemplate + '" loaded.');
+      try {
+        const processor = this.applySettings(tmpl.settings);
+        if (processor.warnings.length > 0) {
+          this.showSettingsLoadResult('Template', processor);
+        } else {
+          vueRoot(this).showAlert('Template', 'Template "' + this.selectedTemplate + '" loaded.');
+        }
+      } catch (e) {
+        vueRoot(this).showAlert('Template', 'Error loading template: ' + e);
+      }
     },
     saveAsTemplate() {
       const name = prompt('Template name:', this.selectedTemplate || '');
@@ -1046,42 +1230,16 @@ export default defineComponent({
       const refs = this.typedRefs;
       const file = refs.file.files !== null ? refs.file.files[0] : undefined;
       const reader = new FileReader();
-      const component: CreateGameModel = this;
       const root = vueRoot(this);
 
 
       reader.addEventListener('load', () => {
         try {
           const readerResults = reader.result;
-          const processor = new JSONProcessor(component);
           if (typeof(readerResults) === 'string') {
-            this.uploading = true;
             const results = JSON.parse(readerResults);
-            processor.applyJSON(results);
-
-            nextTick(() => {
-              try {
-                if (component.showBannedCards) {
-                  refs.cardsFilter.selected = processor.bannedCards;
-                }
-                if (component.showIncludedCards) {
-                  refs.cardsFilter2.selected = processor.includedCards;
-                }
-                if (!component.seededGame) {
-                  component.seed = Math.random();
-                }
-                // set to alter after any watched properties
-                component.solarPhaseOption = Boolean(processor.solarPhaseOption);
-                this.uploading = false;
-              } catch (e) {
-                root.showAlert('Upload settings', 'Error reading JSON ' + e);
-              }
-            });
-          }
-          if (processor.warnings.length > 0) {
-            root.showAlert('Upload settings', 'Settings loaded with these warnings: \n' + processor.warnings.join('\n'));
-          } else {
-            root.showAlert('Upload settings', 'Settings loaded.');
+            const processor = this.applySettings(results);
+            this.showSettingsLoadResult('Upload settings', processor);
           }
         } catch (e) {
           root.showAlert('Upload settings', 'Error loading settings ' + e);
@@ -1120,6 +1278,183 @@ export default defineComponent({
       }
       player.color = color;
     },
+    getDefaultSolarPhaseOption(playersCount?: number): boolean {
+      return (playersCount ?? this.playersCount) <= 3;
+    },
+    syncSolarPhaseOptionToPlayerCount(playersCount?: number) {
+      this.solarPhaseOption = this.getDefaultSolarPhaseOption(playersCount);
+    },
+    handleExpansionChanged(_expansion: Expansion, _enabled: boolean) {
+      if (this.uploading) {
+        return;
+      }
+      this.syncCustomSelectionsWithExpansions();
+    },
+    isModuleEnabled(module: GameModule): boolean {
+      return module === 'base' || this.expansions[module];
+    },
+    isCardModuleAllowedForCustomSelection(card: ClientCard): boolean {
+      return this.isModuleEnabled(card.module) || CUSTOM_CARD_MODULE_EXCEPTIONS.has(card.name);
+    },
+    isCardCompatibilityAllowedForCustomSelection(card: ClientCard): boolean {
+      const ignored = new Set(CUSTOM_CARD_COMPATIBILITY_EXCEPTIONS[card.name] ?? []);
+      return (card.compatibility ?? []).every((module) => {
+        if (ignored.has(module)) {
+          return true;
+        }
+        return this.isModuleEnabled(module);
+      });
+    },
+    isCardAllowedForCustomSelection(card: ClientCard): boolean {
+      return this.isCardModuleAllowedForCustomSelection(card) &&
+        this.isCardCompatibilityAllowedForCustomSelection(card);
+    },
+    getSelectableCustomCorporations(): Array<CardName> {
+      return getCards(byType(CardType.CORPORATION))
+        .filter((card) => card.name !== CardName.BEGINNER_CORPORATION)
+        .filter((card) => this.isCardAllowedForCustomSelection(card))
+        .map((card) => card.name)
+        .sort();
+    },
+    getSelectableCustomPreludes(): Array<CardName> {
+      return getCards(byType(CardType.PRELUDE))
+        .filter((card) => card.name !== CardName.DELTA_PROJECT)
+        .filter((card) => this.isCardAllowedForCustomSelection(card))
+        .map((card) => card.name)
+        .sort();
+    },
+    getRestorableCustomColonies(): Array<ColonyName> {
+      if (!this.expansions.colonies) {
+        return [];
+      }
+      return [
+        ...OFFICIAL_COLONY_NAMES,
+        ...COMMUNITY_COLONY_NAMES,
+        ...PATHFINDERS_COLONY_NAMES,
+      ]
+        .filter((colonyName) => {
+          const expansion = getColony(colonyName)?.expansion;
+          return expansion === undefined || this.expansions[expansion];
+        })
+        .sort();
+    },
+    getSelectableCustomColonies(): Array<ColonyName> {
+      return this.getRestorableCustomColonies()
+        .filter((colonyName) => {
+          if ((PATHFINDERS_COLONY_NAMES as ReadonlyArray<ColonyName>).includes(colonyName) && !this.expansions.pathfinders) {
+            return false;
+          }
+          if ((COMMUNITY_COLONY_NAMES as ReadonlyArray<ColonyName>).includes(colonyName) && !this.expansions.community) {
+            return false;
+          }
+          return true;
+        });
+    },
+    getDefaultCustomCorporations(): Array<CardName> {
+      return mergeCustomSelectionWithExclusions(
+        this.customCorporations,
+        this.getSelectableCustomCorporations(),
+        this.customCorporationExclusions,
+      );
+    },
+    getActiveDefaultCustomPreludeExclusions(): Array<CardName> {
+      return this.twoCorpsVariant ? [CardName.DOUBLE_DOWN] : [];
+    },
+    getActiveCustomPreludeExclusions(): Array<CardName> {
+      return unique([
+        ...this.customPreludesExclusions,
+        ...this.getActiveDefaultCustomPreludeExclusions(),
+      ]);
+    },
+    removeActiveDefaultCustomPreludeExclusions() {
+      const exclusions = new Set(this.getActiveDefaultCustomPreludeExclusions());
+      if (exclusions.size === 0) {
+        return;
+      }
+      this.customPreludes = this.customPreludes.filter((cardName) => !exclusions.has(cardName));
+    },
+    getDefaultCustomPreludes(): Array<CardName> {
+      return mergeCustomSelectionWithExclusions(
+        this.customPreludes,
+        this.getSelectableCustomPreludes(),
+        this.getActiveCustomPreludeExclusions(),
+      );
+    },
+    getDefaultCustomColonies(options: SyncCustomSelectionOptions = {}): Array<ColonyName> {
+      const defaultColonies = mergeCustomSelectionWithExclusions(
+        this.customColonies,
+        this.getSelectableCustomColonies(),
+        this.customColonyExclusions,
+      );
+      if (options.preserveExplicitFanColonies !== true) {
+        return defaultColonies;
+      }
+      const defaultColoniesSet = new Set(defaultColonies);
+      const restorableColonies = new Set(this.getRestorableCustomColonies());
+      return unique([
+        ...defaultColonies,
+        ...this.customColonies.filter((colonyName) => {
+          return !defaultColoniesSet.has(colonyName) && restorableColonies.has(colonyName);
+        }),
+      ]);
+    },
+    rememberCustomSelectionExclusions(options: RememberCustomSelectionExclusionOptions = {}) {
+      if (this.showCorporationList || this.customCorporations.length > 0) {
+        const exclusions = getCustomSelectionExclusions(
+          this.getSelectableCustomCorporations(),
+          this.customCorporations,
+          this.customCorporationExclusions,
+        );
+        this.customCorporationExclusions = options.preserveDefaultCorporationExclusions === true ?
+          unique([...DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS, ...exclusions]) :
+          exclusions;
+        if (options.preserveDefaultCorporationExclusions === true) {
+          this.customCorporations = this.customCorporations
+            .filter((cardName) => !DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS.has(cardName));
+        }
+      }
+      if (this.showPreludesList || this.customPreludes.length > 0) {
+        const exclusions = getCustomSelectionExclusions(
+          this.getSelectableCustomPreludes(),
+          this.customPreludes,
+          this.customPreludesExclusions,
+        );
+        const defaultPreludeExclusions = this.getActiveDefaultCustomPreludeExclusions();
+        this.customPreludesExclusions = options.preserveDefaultPreludeExclusions === true ?
+          unique([...defaultPreludeExclusions, ...exclusions]) :
+          exclusions;
+        if (options.preserveDefaultPreludeExclusions === true) {
+          const defaultPreludeExclusionsSet = new Set(defaultPreludeExclusions);
+          this.customPreludes = this.customPreludes
+            .filter((cardName) => !defaultPreludeExclusionsSet.has(cardName));
+        }
+      }
+      if (this.showColoniesList || this.customColonies.length > 0) {
+        const exclusions = getCustomSelectionExclusions(
+          this.getSelectableCustomColonies(),
+          this.customColonies,
+          this.customColonyExclusions,
+        );
+        this.customColonyExclusions = options.preserveDefaultColonyExclusions === true ?
+          unique([...DEFAULT_CUSTOM_COLONY_EXCLUSIONS, ...exclusions]) :
+          exclusions;
+        if (options.preserveDefaultColonyExclusions === true) {
+          this.customColonies = this.customColonies
+            .filter((colonyName) => !DEFAULT_CUSTOM_COLONY_EXCLUSIONS.has(colonyName));
+        }
+      }
+    },
+    syncCustomSelectionsWithExpansions(options: SyncCustomSelectionOptions = {}) {
+      if (this.showCorporationList || this.customCorporations.length > 0) {
+        this.customCorporations = this.getDefaultCustomCorporations();
+      }
+      if (this.showPreludesList || this.customPreludes.length > 0) {
+        this.customPreludes = this.getDefaultCustomPreludes();
+      }
+      if (this.showColoniesList || this.customColonies.length > 0) {
+        this.customColonies = this.getDefaultCustomColonies(options);
+      }
+    },
     getPlayerProfiles(): ReadonlyArray<PlayerProfile> {
       if (sharedEloState.loaded && Object.keys(sharedEloState.players).length > 0) {
         return buildPlayerProfilesFromEloPlayers(sharedEloState.players);
@@ -1130,27 +1465,11 @@ export default defineComponent({
       if (player.profileId === undefined) {
         return undefined;
       }
-      const profile = getPlayerProfileById(player.profileId, this.getPlayerProfiles()) ??
-        getPlayerProfileById(player.profileId, PLAYER_PROFILES);
+      const profile = getPlayerProfileById(player.profileId, this.getPlayerProfiles());
       if (profile === undefined) {
         return undefined;
       }
       return getPlayerProfileByName(player.name, [profile]) === undefined ? undefined : profile;
-    },
-    getSelectedPlayerProfileName(player: NewPlayerModel): string {
-      return this.getSelectedPlayerProfile(player)?.name ?? 'Player profile';
-    },
-    getSelectedPlayerProfileMeta(player: NewPlayerModel): string {
-      const profile = this.getSelectedPlayerProfile(player);
-      return profile === undefined ? 'Choose active Elo player' : this.formatPlayerProfileMeta(profile);
-    },
-    getSelectedPlayerProfileInitials(player: NewPlayerModel): string {
-      const profile = this.getSelectedPlayerProfile(player);
-      return profile === undefined ? '?' : getPlayerProfileAvatarInitials(profile);
-    },
-    getSelectedPlayerProfileAvatarClasses(player: NewPlayerModel): Array<string> {
-      const profile = this.getSelectedPlayerProfile(player);
-      return profile === undefined ? ['create-game-profile-avatar--empty'] : this.getPlayerProfileAvatarClasses(profile);
     },
     getAvailablePlayerProfiles(player: NewPlayerModel): ReadonlyArray<PlayerProfile> {
       const playerProfiles = this.getPlayerProfiles();
@@ -1178,6 +1497,23 @@ export default defineComponent({
         profile.aliases.some((alias) => alias.includes(query)) ||
         String(Math.round(Number(profile.elo ?? 0))).includes(query));
     },
+    linkKnownPlayerProfilesForPlayers(players: Array<NewPlayerModel>) {
+      const usedProfileIds = new Set<string>();
+      for (const player of players) {
+        const selectedProfile = this.getSelectedPlayerProfile(player);
+        if (selectedProfile !== undefined) {
+          usedProfileIds.add(selectedProfile.id);
+          continue;
+        }
+        const matchingProfile = getPlayerProfileByName(player.name, this.getPlayerProfiles()) ??
+          getPlayerProfileByName(player.name, PLAYER_PROFILES);
+        if (matchingProfile === undefined || usedProfileIds.has(matchingProfile.id)) {
+          continue;
+        }
+        player.profileId = matchingProfile.id;
+        usedProfileIds.add(matchingProfile.id);
+      }
+    },
     formatPlayerProfileMeta(profile: PlayerProfile): string {
       const parts: Array<string> = [];
       if (profile.elo !== undefined) {
@@ -1204,16 +1540,35 @@ export default defineComponent({
         this.getPlayerContainerColorClass(profile.preferredColor),
       ];
     },
+    getCustomNickMeta(): string {
+      return this.playerProfileSearch.trim() || 'Type a custom player name';
+    },
     isPlayerProfilePickerOpen(index: number): boolean {
       return this.playerProfilePickerIndex === index;
     },
-    togglePlayerProfilePicker(index: number) {
-      if (this.playerProfilePickerIndex === index) {
+    openPlayerProfilePicker(player: NewPlayerModel, index: number) {
+      this.playerProfilePickerIndex = index;
+      this.playerProfileSearch = player.name;
+    },
+    updatePlayerProfileAutocomplete(player: NewPlayerModel, event: Event) {
+      const value = event.target instanceof window.HTMLInputElement ? event.target.value : this.playerProfileSearch;
+      this.playerProfileSearch = value;
+      player.profileId = undefined;
+      player.name = value.trim();
+    },
+    applyFirstFilteredPlayerProfile(player: NewPlayerModel) {
+      const [profile] = this.getFilteredAvailablePlayerProfiles(player);
+      if (profile === undefined) {
+        player.name = this.playerProfileSearch.trim();
         this.closePlayerProfilePicker();
         return;
       }
-      this.playerProfilePickerIndex = index;
-      this.playerProfileSearch = '';
+      this.applyPlayerProfileFromPicker(player, profile);
+    },
+    applyCustomNickFromPicker(player: NewPlayerModel) {
+      player.profileId = undefined;
+      player.name = this.playerProfileSearch.trim();
+      this.closePlayerProfilePicker();
     },
     closePlayerProfilePicker() {
       this.playerProfilePickerIndex = null;
@@ -1259,30 +1614,20 @@ export default defineComponent({
         .map((candidate) => candidate.color));
       return DEFAULT_PLAYER_COLORS.find((color) => !usedColors.has(color)) ?? DEFAULT_PLAYER_COLORS[0];
     },
-    syncLockedPlayerIdentities(players: Array<NewPlayerModel>) {
-      players.forEach((player) => this.syncLockedPlayerIdentity(player));
-    },
-    linkKnownPlayerProfilesForPlayers(players: Array<NewPlayerModel>) {
-      const usedProfileIds = new Set<string>();
-      for (const player of players) {
-        const selectedProfile = this.getSelectedPlayerProfile(player);
-        if (selectedProfile !== undefined) {
-          usedProfileIds.add(selectedProfile.id);
-          continue;
-        }
-        const matchingProfile = getPlayerProfileByName(player.name, this.getPlayerProfiles()) ??
-          getPlayerProfileByName(player.name, PLAYER_PROFILES);
-        if (matchingProfile === undefined || usedProfileIds.has(matchingProfile.id)) {
-          continue;
-        }
-        player.profileId = matchingProfile.id;
-        usedProfileIds.add(matchingProfile.id);
-      }
-    },
     updateCustomCorporations(customCorporations: Array<CardName>) {
+      this.customCorporationExclusions = getCustomSelectionExclusions(
+        this.getSelectableCustomCorporations(),
+        customCorporations,
+        this.customCorporationExclusions,
+      );
       this.customCorporations = customCorporations;
     },
     updateCustomPreludes(customPreludes: Array<CardName>) {
+      this.customPreludesExclusions = getCustomSelectionExclusions(
+        this.getSelectableCustomPreludes(),
+        customPreludes,
+        this.customPreludesExclusions,
+      );
       this.customPreludes = customPreludes;
     },
     updateBannedCards(bannedCards: Array<CardName>) {
@@ -1292,6 +1637,11 @@ export default defineComponent({
       this.includedCards = includedCards;
     },
     updateCustomColonies(customColonies: Array<ColonyName>) {
+      this.customColonyExclusions = getCustomSelectionExclusions(
+        this.getSelectableCustomColonies(),
+        customColonies,
+        this.customColonyExclusions,
+      );
       this.customColonies = customColonies;
     },
     updateCustomCeos(customCeos: Array<CardName>) {
@@ -1305,7 +1655,7 @@ export default defineComponent({
     },
     readProfileTelegramIds(): Record<string, string> {
       try {
-        const raw = window.localStorage.getItem(PROFILE_TELEGRAM_IDS_KEY);
+        const raw = localStorage.getItem(PROFILE_TELEGRAM_IDS_KEY);
         if (raw === null) {
           return {};
         }
@@ -1327,7 +1677,7 @@ export default defineComponent({
     },
     writeProfileTelegramIds(ids: Record<string, string>) {
       try {
-        window.localStorage.setItem(PROFILE_TELEGRAM_IDS_KEY, JSON.stringify(ids));
+        localStorage.setItem(PROFILE_TELEGRAM_IDS_KEY, JSON.stringify(ids));
       } catch {
         // Ignore storage failures; manual Telegram ID entry still works.
       }
@@ -1533,8 +1883,6 @@ export default defineComponent({
         }
       }
 
-      this.syncLockedPlayerIdentities(players);
-
       // Set player name automatically if not entered
       const isSoloMode = this.playersCount === 1;
 
@@ -1601,6 +1949,7 @@ export default defineComponent({
       const initialDraftOneWay = this.initialDraftOneWay;
       const randomMA = this.randomMA;
       const showOtherPlayersVP = this.showOtherPlayersVP;
+      this.syncSolarPhaseOptionToPlayerCount(players.length);
       const solarPhaseOption = this.solarPhaseOption;
       const shuffleMapOption = this.shuffleMapOption;
       const customColonies = this.customColonies;
@@ -1890,7 +2239,7 @@ export default defineComponent({
       };
 
       // Auto-save current settings as last used
-      TemplateManager.saveLastSettings(TemplateManager.serializeFormState(this));
+      new CreateGameSettingsStorage().saveSettings(TemplateManager.serializeFormState(this));
 
       fetch(paths.API_CREATEGAME, {'method': 'POST', 'body': dataToSend, 'headers': {'Content-Type': 'application/json'}})
         .then((response) => response.text())

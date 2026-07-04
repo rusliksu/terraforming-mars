@@ -37,6 +37,25 @@ class MissingFileApiMock extends FileApiMock {
   }
 }
 
+class IndexHtmlFileApiMock extends FileApiMock {
+  public override readFile(path: string): Promise<Buffer> {
+    this.counts.readFile++;
+    if (path === 'assets/index.html') {
+      return Promise.resolve(Buffer.from([
+        '<link rel="stylesheet" href="styles.css?v=old" />',
+        '<script src="vendors.js"></script>',
+        '<script src="main.js"></script>',
+      ].join('\n')));
+    }
+    if (path === 'assets/release.json') {
+      return Promise.resolve(Buffer.from(JSON.stringify({
+        gitSha: '1234567890abcdef1234567890abcdef12345678',
+      })));
+    }
+    return super.readFile(path);
+  }
+}
+
 describe('ServeAsset', () => {
   let instance: ServeAsset;
   let scaffolding: RouteTestScaffolding;
@@ -82,6 +101,19 @@ describe('ServeAsset', () => {
     scaffolding.req.headers['accept-encoding'] = '';
     await scaffolding.get(instance, res);
     expect(res.content.startsWith('<!DOCTYPE html>'));
+  });
+
+  it('index.html cache-busts shell assets with the release version', async () => {
+    instance = new ServeAsset(undefined, false, new IndexHtmlFileApiMock());
+    scaffolding.url = '/assets/index.html';
+    scaffolding.req.headers['accept-encoding'] = '';
+    await scaffolding.get(instance, res);
+
+    const version = '1234567890abcdef1234567890abcdef12345678';
+    expect(res.content).contains(`styles.css?v=${version}`);
+    expect(res.content).contains(`vendors.js?v=${version}`);
+    expect(res.content).contains(`main.js?v=${version}`);
+    expect(res.headers.get('Cache-Control')).eq('no-cache, must-revalidate');
   });
 
   it('styles.css', async () => {

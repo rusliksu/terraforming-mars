@@ -2,27 +2,42 @@ import {shallowMount} from '@vue/test-utils';
 import {globalConfig} from '../getLocalVue';
 import {expect} from 'chai';
 import CreateGameForm from '@/client/components/create/CreateGameForm.vue';
+import {CreateGameSettingsStorage} from '@/client/components/create/CreateGameSettingsStorage';
 import {sharedEloState} from '@/client/utils/elo';
 import {ColonyName} from '@/common/colonies/ColonyName';
+import {CardName} from '@/common/cards/CardName';
 import {
-  ANTISTRESS_NAME,
-  CATHARSIS_NAME,
   DEFAULT_PLAYER_COLORS,
-  EMERALD_RAV_NAME,
-  GAMBIT_GIRL_NAME,
-  GENUINE_GOLD_NAME,
-  GYDRO_NAME,
-  PAVEL_TURQUOISE_NAME,
-  TOMA_NAME,
 } from '@/common/Color';
+import {BoardName} from '@/common/boards/BoardName';
+import {DEFAULT_EXPANSIONS} from '@/common/cards/GameModule';
+import {JSONObject} from '@/common/Types';
+
+function createGameSettings(overrides: JSONObject = {}): JSONObject {
+  return {
+    players: [
+      {name: 'Alice', color: 'red', beginner: false, handicap: 0},
+      {name: 'Bob', color: 'blue', beginner: false, handicap: 0},
+    ],
+    expansions: DEFAULT_EXPANSIONS,
+    board: BoardName.HELLAS,
+    draftVariant: false,
+    solarPhaseOption: true,
+    ...overrides,
+  };
+}
 
 describe('CreateGameForm', () => {
   let originalFetch: typeof fetch;
   let originalUrl: string;
+  let originalMatchMedia: typeof window.matchMedia;
+  let originalFocus: typeof window.HTMLInputElement.prototype.focus;
 
   beforeEach(() => {
     originalFetch = global.fetch;
     originalUrl = window.location.href;
+    originalMatchMedia = window.matchMedia;
+    originalFocus = window.HTMLInputElement.prototype.focus;
     global.localStorage = window.localStorage;
     window.localStorage.clear();
   });
@@ -30,6 +45,8 @@ describe('CreateGameForm', () => {
   afterEach(() => {
     global.fetch = originalFetch;
     window.history.replaceState({}, '', originalUrl);
+    window.matchMedia = originalMatchMedia;
+    window.HTMLInputElement.prototype.focus = originalFocus;
     window.localStorage.clear();
     sharedEloState.loaded = false;
     sharedEloState.failed = false;
@@ -51,6 +68,107 @@ describe('CreateGameForm', () => {
     expect(wrapper.text()).not.to.contain('/start');
   });
 
+  it('restores the last saved game settings on load', async () => {
+    new CreateGameSettingsStorage(window.localStorage).saveSettings(createGameSettings({
+      expansions: {...DEFAULT_EXPANSIONS, venus: true},
+    }));
+
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    await wrapper.vm.$nextTick();
+
+    expect((wrapper.vm as any).playersCount).eq(2);
+    expect((wrapper.vm as any).players[0].name).eq('Alice');
+    expect((wrapper.vm as any).players[1].name).eq('Bob');
+    expect((wrapper.vm as any).board).eq(BoardName.HELLAS);
+    expect((wrapper.vm as any).draftVariant).eq(false);
+    expect((wrapper.vm as any).expansions.venus).eq(true);
+    expect((wrapper.vm as any).solarPhaseOption).eq(true);
+  });
+
+  it('shows warnings when restoring saved settings', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const alerts: Array<{title: string, message: string}> = [];
+    (wrapper.vm.$root as any).showAlert = (title: string, message: string) => {
+      alerts.push({title, message});
+    };
+
+    new CreateGameSettingsStorage(window.localStorage).saveSettings(createGameSettings({
+      customPreludes: ['Bad Prelude Name'],
+    }));
+
+    (wrapper.vm as any).restoreLastSettings();
+    await wrapper.vm.$nextTick();
+
+    expect(alerts).deep.eq([{
+      title: 'Restore settings',
+      message: "Settings loaded with these warnings: \nUnknown card name 'Bad Prelude Name' in customPreludes",
+    }]);
+  });
+
+  it('resets the form and clears saved settings', async () => {
+    const settingsStorage = new CreateGameSettingsStorage(window.localStorage);
+    settingsStorage.saveSettings(createGameSettings());
+
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    await wrapper.vm.$nextTick();
+
+    expect((wrapper.vm as any).board).eq(BoardName.HELLAS);
+
+    (wrapper.vm as any).resetSettings();
+    await wrapper.vm.$nextTick();
+
+    expect((wrapper.vm as any).board).eq(BoardName.THARSIS);
+    expect((wrapper.vm as any).draftVariant).eq(true);
+    expect(settingsStorage.loadSettings()).eq(undefined);
+    expect(wrapper.findAllComponents({name: 'AppButton'}).map((button) => button.props('title'))).includes('Reset');
+  });
+
+  it('clears uploading when applying settings throws', () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+
+    expect(() => (wrapper.vm as any).applySettings(createGameSettings({
+      players: [
+        {name: 'Alice', color: 'red', beginner: false, handicap: 0},
+        {name: 'Bob', color: 'red', beginner: false, handicap: 0},
+      ],
+    }))).throws('Colors are duplicated');
+    expect((wrapper.vm as any).uploading).eq(false);
+  });
+
+  it('saves current settings before creating a game', async () => {
+    const originalAlert = global.alert;
+    global.fetch = (() => Promise.reject(new Error('stop after saving'))) as typeof fetch;
+    global.alert = (() => {}) as typeof alert;
+
+    try {
+      const wrapper = shallowMount(CreateGameForm, {
+        ...globalConfig,
+      });
+      const vm = wrapper.vm as any;
+      vm.playersCount = 2;
+      vm.randomFirstPlayer = false;
+      vm.players[0].name = 'Alice';
+      vm.players[1].name = 'Bob';
+      vm.board = BoardName.ELYSIUM;
+
+      await vm.createGame();
+
+      const savedSettings = new CreateGameSettingsStorage(window.localStorage).loadSettings();
+      expect(savedSettings?.board).eq(BoardName.ELYSIUM);
+      expect((savedSettings?.players as Array<{name: string}>).map((player) => player.name)).deep.eq(['Alice', 'Bob']);
+    } finally {
+      global.alert = originalAlert;
+    }
+  });
+
   it('serializes private hands setting', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
@@ -66,20 +184,6 @@ describe('CreateGameForm', () => {
     serialized = await (wrapper.vm as any).serializeSettings();
     payload = JSON.parse(serialized);
     expect(payload.privateHands).eq(false);
-  });
-
-  it('turns off WGT by default for 4+ players while keeping manual control', async () => {
-    const wrapper = shallowMount(CreateGameForm, {
-      ...globalConfig,
-    });
-    const vm = wrapper.vm as any;
-
-    await wrapper.setData({solarPhaseOption: true});
-    await wrapper.setData({playersCount: 4});
-    expect(vm.solarPhaseOption).eq(false);
-
-    await wrapper.setData({solarPhaseOption: true});
-    expect(vm.solarPhaseOption).eq(true);
   });
 
   it('serializes one-way 10-card initial draft setting', async () => {
@@ -223,66 +327,8 @@ describe('CreateGameForm', () => {
 
     const vm = wrapper.vm as any;
     expect(vm.turnBasedGame).to.eq(true);
-    expect(vm.readProfileTelegramIds()).deep.eq({leha: '123456789'});
     expect(vm.getSelectedPlayerProfile(vm.players[0])?.id).to.eq('leha');
     expect(vm.players[0].telegramID).to.eq('123456789');
-    expect(wrapper.text()).to.contain('Telegram ID');
-  });
-
-  it('fills telegram ids from static player profiles after Elo players load', async () => {
-    sharedEloState.loaded = true;
-    sharedEloState.players = {
-      genuinegold: {displayName: 'GenuineGold', games: 48, elo: 1749},
-    };
-    window.localStorage.setItem('tm_player_profile_telegram_ids', JSON.stringify({leha: '123456789'}));
-
-    const wrapper = shallowMount(CreateGameForm, {
-      ...globalConfig,
-    });
-    const vm = wrapper.vm as any;
-
-    await wrapper.setData({
-      turnBasedGame: true,
-      playersCount: 1,
-      players: [
-        {name: 'Леха', color: 'orange', beginner: false, handicap: 0, first: true, isBot: false, telegramID: ''},
-      ],
-    });
-    vm.fillKnownTelegramIdsForPlayers(vm.getPlayers());
-
-    expect(vm.getSelectedPlayerProfile(vm.players[0])?.id).to.eq('leha');
-    expect(vm.players[0].telegramID).to.eq('123456789');
-  });
-
-  it('fills built-in profile telegram ids for async rematches without local storage', async () => {
-    sharedEloState.loaded = true;
-    sharedEloState.players = {
-      gydro: {displayName: 'GydRo', games: 79, elo: 1452},
-      dasha: {displayName: 'Даша', games: 3, elo: 1416},
-      felkner: {displayName: 'Фелькнер', games: 7, elo: 1537},
-    };
-
-    const wrapper = shallowMount(CreateGameForm, {
-      ...globalConfig,
-    });
-    const vm = wrapper.vm as any;
-
-    await wrapper.setData({
-      turnBasedGame: true,
-      playersCount: 3,
-      players: [
-        {name: 'Фелькнер', color: 'green', beginner: false, handicap: 0, first: true, isBot: false, telegramID: ''},
-        {name: 'Даша', color: 'pink', beginner: false, handicap: 0, first: false, isBot: false, telegramID: ''},
-        {name: 'GydRo', color: 'pearl', beginner: false, handicap: 0, first: false, isBot: false, telegramID: ''},
-      ],
-    });
-    vm.fillKnownTelegramIdsForPlayers(vm.getPlayers());
-
-    expect(vm.players.map((player: {telegramID: string}) => player.telegramID)).deep.eq([
-      '317238880',
-      '432301679',
-      '162438481',
-    ]);
   });
 
   it('blocks invalid telegram ids during serialization', async () => {
@@ -381,7 +427,7 @@ describe('CreateGameForm', () => {
     const vm = wrapper.vm as any;
     vm.turnBasedGame = true;
 
-    await wrapper.find('.create-game-player-profile-trigger').trigger('click');
+    await wrapper.find('.create-game-player-name').trigger('focus');
     const profileOption = wrapper.findAll('.create-game-profile-option')
       .find((option) => option.text().includes('Даша'));
     expect(profileOption).not.to.be.undefined;
@@ -399,7 +445,7 @@ describe('CreateGameForm', () => {
     const vm = wrapper.vm as any;
     vm.turnBasedGame = true;
 
-    await wrapper.find('.create-game-player-profile-trigger').trigger('click');
+    await wrapper.find('.create-game-player-name').trigger('focus');
     const profileOption = wrapper.findAll('.create-game-profile-option')
       .find((option) => option.text().includes('Леха'));
     expect(profileOption).not.to.be.undefined;
@@ -415,7 +461,7 @@ describe('CreateGameForm', () => {
     });
     const vm = wrapper.vm as any;
 
-    await wrapper.find('.create-game-player-profile-trigger').trigger('click');
+    await wrapper.find('.create-game-player-name').trigger('focus');
     const profileOption = wrapper.findAll('.create-game-profile-option')
       .find((option) => option.text().includes('Даша'));
     expect(profileOption).not.to.be.undefined;
@@ -523,6 +569,248 @@ describe('CreateGameForm', () => {
     expect(botPayload.players[0].isBot).eq(true);
   });
 
+  it('auto manages World Government Terraforming by player count', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    expect(vm.solarPhaseOption).eq(true);
+    expect(wrapper.find('#WGT-checkbox').attributes()).to.have.property('disabled');
+
+    await wrapper.setData({playersCount: 4});
+    expect(vm.solarPhaseOption).eq(false);
+
+    vm.solarPhaseOption = true;
+    const fourPlayerSerialized = await vm.serializeSettings();
+    expect(JSON.parse(fourPlayerSerialized).solarPhaseOption).eq(false);
+
+    await wrapper.setData({playersCount: 3});
+    expect(vm.solarPhaseOption).eq(true);
+
+    vm.solarPhaseOption = false;
+    const threePlayerSerialized = await vm.serializeSettings();
+    expect(JSON.parse(threePlayerSerialized).solarPhaseOption).eq(true);
+  });
+
+  it('syncs custom corp, prelude, and colony lists with expansion dependencies', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    await wrapper.setData({
+      showCorporationList: true,
+      showPreludesList: true,
+      showColoniesList: true,
+      expansions: {
+        ...vm.expansions,
+        colonies: true,
+        prelude: true,
+        venus: true,
+        pathfinders: true,
+        moon: false,
+        turmoil: false,
+      },
+    });
+    vm.syncCustomSelectionsWithExpansions();
+
+    expect(vm.customCorporations).to.include(CardName.LAKEFRONT_RESORTS);
+    expect(vm.customCorporations).to.include(CardName.UTOPIA_INVEST);
+    expect(vm.customCorporations).not.to.include(CardName.MANUTECH);
+    expect(vm.customCorporations).not.to.include(CardName.POINT_LUNA);
+    expect(vm.customCorporations).not.to.include(CardName.VITOR);
+    expect(vm.customPreludes).to.include(CardName.CREW_TRAINING);
+    expect(vm.customColonies).to.include(ColonyName.CALLISTO);
+    expect(vm.customColonies).to.include(ColonyName.IAPETUS_II);
+    expect(vm.customColonies).not.to.include(ColonyName.PLUTO);
+
+    await wrapper.setData({
+      expansions: {
+        ...vm.expansions,
+        pathfinders: false,
+      },
+    });
+
+    expect(vm.customPreludes).not.to.include(CardName.CREW_TRAINING);
+    expect(vm.customColonies).not.to.include(ColonyName.IAPETUS_II);
+    expect(vm.customCorporations).to.include(CardName.LAKEFRONT_RESORTS);
+    expect(vm.customCorporations).to.include(CardName.UTOPIA_INVEST);
+  });
+
+  it('keeps custom corp and colony exclusions across expansion syncs', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    await wrapper.setData({
+      showCorporationList: true,
+      showColoniesList: true,
+      expansions: {
+        ...vm.expansions,
+        colonies: true,
+        prelude: true,
+        venus: true,
+        pathfinders: false,
+      },
+    });
+
+    expect(vm.customCorporations).not.to.include(CardName.MANUTECH);
+    expect(vm.customCorporations).not.to.include(CardName.POINT_LUNA);
+    expect(vm.customCorporations).not.to.include(CardName.VITOR);
+    expect(vm.customColonies).not.to.include(ColonyName.PLUTO);
+
+    vm.updateCustomCorporations([...vm.customCorporations, CardName.MANUTECH]);
+    vm.updateCustomColonies([...vm.customColonies, ColonyName.PLUTO]);
+    vm.syncCustomSelectionsWithExpansions();
+
+    expect(vm.customCorporations).to.include(CardName.MANUTECH);
+    expect(vm.customColonies).to.include(ColonyName.PLUTO);
+
+    vm.updateCustomCorporations(vm.customCorporations.filter((card: CardName) => card !== CardName.MANUTECH));
+    vm.updateCustomColonies(vm.customColonies.filter((colony: ColonyName) => colony !== ColonyName.PLUTO));
+
+    await wrapper.setData({
+      expansions: {
+        ...vm.expansions,
+        pathfinders: true,
+      },
+    });
+    vm.syncCustomSelectionsWithExpansions();
+
+    expect(vm.customCorporations).not.to.include(CardName.MANUTECH);
+    expect(vm.customColonies).not.to.include(ColonyName.PLUTO);
+    expect(vm.customColonies).to.include(ColonyName.IAPETUS_II);
+  });
+
+  it('keeps explicitly selected fan colonies when reopening the custom colonies list', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    await wrapper.setData({
+      showColoniesList: true,
+      expansions: {
+        ...vm.expansions,
+        colonies: true,
+        community: false,
+        pathfinders: false,
+      },
+    });
+
+    vm.updateCustomColonies([...vm.customColonies, ColonyName.IAPETUS, ColonyName.IAPETUS_II]);
+
+    await wrapper.setData({showColoniesList: false});
+    await wrapper.setData({showColoniesList: true});
+
+    expect(vm.customColonies).to.include(ColonyName.IAPETUS);
+    expect(vm.customColonies).to.include(ColonyName.IAPETUS_II);
+  });
+
+  it('restores explicitly selected fan colonies from saved settings', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    vm.applySettings({
+      players: [
+        {name: 'Alice', color: 'red', beginner: false, handicap: 0, first: false, isBot: false},
+      ],
+      expansions: {
+        ...vm.expansions,
+        colonies: true,
+        community: false,
+        pathfinders: false,
+      },
+      customColonies: [
+        ColonyName.CALLISTO,
+        ColonyName.CERES,
+        ColonyName.ENCELADUS,
+        ColonyName.IAPETUS,
+        ColonyName.IAPETUS_II,
+      ],
+      customColonyExclusions: [],
+      solarPhaseOption: true,
+    });
+
+    await wrapper.vm.$nextTick();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    expect(vm.customColonies).to.include(ColonyName.IAPETUS);
+    expect(vm.customColonies).to.include(ColonyName.IAPETUS_II);
+  });
+
+  it('excludes Double Down by default when the Merger variant is enabled', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    await wrapper.setData({
+      showPreludesList: true,
+      expansions: {
+        ...vm.expansions,
+        prelude: true,
+        promo: true,
+      },
+    });
+
+    expect(vm.customPreludes).to.include(CardName.DOUBLE_DOWN);
+
+    await wrapper.setData({twoCorpsVariant: true});
+
+    expect(vm.customPreludes).not.to.include(CardName.DOUBLE_DOWN);
+
+    vm.updateCustomPreludes([...vm.customPreludes, CardName.DOUBLE_DOWN]);
+    vm.syncCustomSelectionsWithExpansions();
+
+    expect(vm.customPreludes).to.include(CardName.DOUBLE_DOWN);
+  });
+
+  it('applies default custom bans when loading legacy selections without exclusion metadata', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    await wrapper.setData({
+      showCorporationList: true,
+      showColoniesList: true,
+      showPreludesList: true,
+      twoCorpsVariant: true,
+      expansions: {
+        ...vm.expansions,
+        colonies: true,
+        prelude: true,
+        promo: true,
+        venus: true,
+      },
+    });
+
+    await wrapper.setData({
+      customCorporations: vm.getSelectableCustomCorporations(),
+      customColonies: vm.getSelectableCustomColonies(),
+      customPreludes: vm.getSelectableCustomPreludes(),
+    });
+
+    vm.rememberCustomSelectionExclusions({
+      preserveDefaultCorporationExclusions: true,
+      preserveDefaultPreludeExclusions: true,
+      preserveDefaultColonyExclusions: true,
+    });
+    vm.syncCustomSelectionsWithExpansions();
+
+    expect(vm.customCorporations).not.to.include(CardName.MANUTECH);
+    expect(vm.customCorporations).not.to.include(CardName.POINT_LUNA);
+    expect(vm.customCorporations).not.to.include(CardName.VITOR);
+    expect(vm.customPreludes).not.to.include(CardName.DOUBLE_DOWN);
+    expect(vm.customColonies).not.to.include(ColonyName.PLUTO);
+  });
+
   it('keeps typed player names from changing the selected colors', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
@@ -550,7 +838,7 @@ describe('CreateGameForm', () => {
     ]);
   });
 
-  it('locks the gold player name to GenuineGold', async () => {
+  it('keeps reserved persona color names editable', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
     });
@@ -559,13 +847,13 @@ describe('CreateGameForm', () => {
     vm.players[0].name = 'Ilya';
     await wrapper.vm.$nextTick();
 
-    expect(wrapper.find('.create-game-player-name').attributes()).to.have.property('readonly');
+    expect(wrapper.find('.create-game-player-name').attributes()).not.to.have.property('readonly');
 
     const serialized = await vm.serializeSettings();
     expect(serialized).to.be.a('string');
     const payload = JSON.parse(serialized);
-    expect(payload.players[0].name).to.eq(GENUINE_GOLD_NAME);
-    expect(vm.players[0].name).to.eq(GENUINE_GOLD_NAME);
+    expect(payload.players[0].name).to.eq('Ilya');
+    expect(vm.players[0].name).to.eq('Ilya');
   });
 
   it('keeps reserved persona colors out of the standard color palette', () => {
@@ -585,7 +873,7 @@ describe('CreateGameForm', () => {
     });
     const vm = wrapper.vm as any;
 
-    await wrapper.find('.create-game-player-profile-trigger').trigger('click');
+    await wrapper.find('.create-game-player-name').trigger('focus');
     const profileOption = wrapper.findAll('.create-game-profile-option')
       .find((option) => option.text().includes('Леха'));
     expect(profileOption).not.to.be.undefined;
@@ -597,6 +885,12 @@ describe('CreateGameForm', () => {
     expect(wrapper.find('.create-game-player-name').attributes()).not.to.have.property('readonly');
 
     await wrapper.find('.create-game-player-name').setValue('Леха 2');
+
+    const serialized = await vm.serializeSettings();
+    expect(serialized).to.be.a('string');
+    const payload = JSON.parse(serialized);
+    expect(payload.players[0].name).to.eq('Леха 2');
+    expect(vm.players[0].name).to.eq('Леха 2');
     expect(vm.players[0].profileId).to.eq(undefined);
   });
 
@@ -674,7 +968,7 @@ describe('CreateGameForm', () => {
     });
     const vm = wrapper.vm as any;
 
-    await wrapper.find('.create-game-player-profile-trigger').trigger('click');
+    await wrapper.find('.create-game-player-name').trigger('focus');
     const qiksaOption = wrapper.findAll('.create-game-profile-option')
       .find((option) => option.text().includes('Qiksa'));
     expect(qiksaOption).not.to.be.undefined;
@@ -685,7 +979,7 @@ describe('CreateGameForm', () => {
 
     vm.players[0].name = '';
     vm.players[0].color = 'green';
-    await wrapper.find('.create-game-player-profile-trigger').trigger('click');
+    await wrapper.find('.create-game-player-name').trigger('focus');
     const timurOption = wrapper.findAll('.create-game-profile-option')
       .find((option) => option.text().includes('Тимур'));
     expect(timurOption).not.to.be.undefined;
@@ -706,16 +1000,73 @@ describe('CreateGameForm', () => {
       ...globalConfig,
     });
 
-    await wrapper.find('.create-game-player-profile-trigger').trigger('click');
+    await wrapper.find('.create-game-player-name').trigger('focus');
     const menuText = wrapper.find('.create-game-profile-menu').text();
 
     expect(menuText).to.include('GenuineGold');
     expect(menuText).to.include('ELO 1749');
     expect(menuText).to.include('48 games');
-    expect(wrapper.find('.create-game-profile-option-list .create-game-profile-avatar').text()).to.eq('GG');
-    expect(wrapper.find('.create-game-profile-option-list .create-game-profile-option').classes()).to.include('player_translucent_bg_color_gold');
-    expect(wrapper.find('.create-game-profile-option-list .create-game-profile-option-name').classes()).to.include('player-name');
+    expect(wrapper.find('.create-game-profile-option-colored .create-game-profile-avatar').text()).to.eq('GG');
+    expect(wrapper.find('.create-game-profile-option-colored').classes()).to.include('player_translucent_bg_color_gold');
+    expect(wrapper.find('.create-game-profile-option-colored .create-game-profile-option-name').classes()).to.include('player-name');
     expect(wrapper.find('.create-game-profile-color-swatch').exists()).to.be.true;
+  });
+
+  it('keeps the player profile menu anchored to the player name field', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const trigger = wrapper.find('.create-game-player-name');
+
+    await trigger.trigger('click');
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('.create-game-profile-picker .create-game-profile-menu').exists()).to.eq(true);
+    expect(wrapper.find('.create-game-profile-menu').attributes()).not.to.have.property('style');
+  });
+
+  it('keeps the player profile menu open when the viewport resizes', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const trigger = wrapper.find('.create-game-player-name');
+
+    await trigger.trigger('click');
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('.create-game-profile-menu').exists()).to.eq(true);
+
+    window.dispatchEvent(new window.Event('resize'));
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('.create-game-profile-menu').exists()).to.eq(true);
+  });
+
+  it('opens the player profile menu from the player name field on touch devices', async () => {
+    let focusCalls = 0;
+    window.matchMedia = ((query: string) => ({
+      matches: query.includes('hover: none') || query.includes('pointer: coarse'),
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    })) as typeof window.matchMedia;
+    window.HTMLInputElement.prototype.focus = function() {
+      focusCalls++;
+    };
+
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+
+    await wrapper.find('.create-game-player-name').trigger('focus');
+    await wrapper.vm.$nextTick();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('.create-game-profile-menu').exists()).to.eq(true);
+    expect(focusCalls).to.eq(0);
   });
 
   it('filters player profile menu by player search text', async () => {
@@ -738,40 +1089,75 @@ describe('CreateGameForm', () => {
     expect(profileNames).deep.eq(['Nuke']);
   });
 
-  it('keeps the player profile picker without the custom nick selector', async () => {
+  it('uses the player profile menu input as an editable player name autocomplete', async () => {
+    sharedEloState.loaded = true;
+    sharedEloState.players = {
+      genuinegold: {displayName: 'GenuineGold', games: 48, elo: 1749},
+      nuke: {displayName: 'Nuke', games: 7, elo: 1497},
+      vladlen: {displayName: 'Владлен', games: 24, elo: 1691},
+    };
+
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    const nameInput = wrapper.find('.create-game-player-name');
+    await nameInput.trigger('focus');
+    await nameInput.setValue('Custom Nick');
+
+    expect(vm.players[0].name).to.eq('Custom Nick');
+    expect(vm.playerProfileSearch).to.eq('Custom Nick');
+    expect(wrapper.find('.create-game-profile-menu').exists()).to.eq(true);
+    expect(wrapper.find('.create-game-profile-option-custom').text()).to.contain('Custom nick');
+
+    await nameInput.setValue('nuk');
+    const profileNames = vm.getFilteredAvailablePlayerProfiles(vm.players[0])
+      .map((profile: {name: string}) => profile.name);
+    expect(profileNames).deep.eq(['Nuke']);
+
+    await nameInput.trigger('keydown.enter');
+
+    expect(vm.players[0].name).to.eq('Nuke');
+    expect(vm.players[0].color).to.eq('black');
+    expect(wrapper.find('.create-game-profile-menu').exists()).to.eq(false);
+  });
+
+  it('uses the player name field as the profile picker and offers custom nick', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
     });
 
-    expect(wrapper.find('.create-game-player-profile-trigger').exists()).to.eq(true);
+    expect(wrapper.find('.create-game-player-profile-trigger').exists()).to.eq(false);
+    expect(wrapper.find('.create-game-player-name').exists()).to.eq(true);
     expect(wrapper.find('.create-game-persona-select').exists()).to.eq(false);
     expect(wrapper.find('.create-game-persona-preview').exists()).to.eq(false);
 
-    await wrapper.find('.create-game-player-profile-trigger').trigger('click');
+    await wrapper.find('.create-game-player-name').trigger('focus');
     await wrapper.vm.$nextTick();
 
-    expect(wrapper.find('.create-game-profile-menu').text()).not.to.contain('Custom nick');
+    expect(wrapper.find('.create-game-profile-menu').text()).to.contain('Custom nick');
   });
 
-  it('locks reserved persona names', async () => {
+  it('preserves typed names for reserved persona colors', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
     });
     const vm = wrapper.vm as any;
 
     for (const testCase of [
-      {color: 'emerald', inputName: 'Rav', expectedName: EMERALD_RAV_NAME},
-      {color: 'ginger', inputName: 'Katerina', expectedName: CATHARSIS_NAME},
-      {color: 'pearl', inputName: 'Ruslan', expectedName: GYDRO_NAME},
-      {color: 'hydro', inputName: 'Sonya', expectedName: TOMA_NAME},
-      {color: 'antistress', inputName: 'Anatoly', expectedName: ANTISTRESS_NAME},
-      {color: 'gambit', inputName: 'Olesya', expectedName: GAMBIT_GIRL_NAME},
-      {color: 'turquoise', inputName: 'Pavel', expectedName: PAVEL_TURQUOISE_NAME},
-      {color: 'saturn', inputName: 'Sonya', expectedName: TOMA_NAME},
-      {color: 'saturnrings', inputName: 'Sonya', expectedName: TOMA_NAME},
-      {color: 'titan', inputName: 'Sonya', expectedName: TOMA_NAME},
-      {color: 'saturnstorm', inputName: 'Sonya', expectedName: TOMA_NAME},
-      {color: 'catseye', inputName: 'Sonya', expectedName: TOMA_NAME},
+      {color: 'emerald', inputName: 'Rav'},
+      {color: 'ginger', inputName: 'Katerina'},
+      {color: 'pearl', inputName: 'Pearl Custom'},
+      {color: 'hydro', inputName: 'Sonya'},
+      {color: 'antistress', inputName: 'Anatoly'},
+      {color: 'gambit', inputName: 'Olesya'},
+      {color: 'turquoise', inputName: 'Pavel'},
+      {color: 'saturn', inputName: 'Sonya'},
+      {color: 'saturnrings', inputName: 'Sonya'},
+      {color: 'titan', inputName: 'Sonya'},
+      {color: 'saturnstorm', inputName: 'Sonya'},
+      {color: 'catseye', inputName: 'Sonya'},
     ]) {
       vm.players[0].color = testCase.color;
       vm.players[0].name = testCase.inputName;
@@ -779,8 +1165,8 @@ describe('CreateGameForm', () => {
       const serialized = await vm.serializeSettings();
       expect(serialized).to.be.a('string');
       const payload = JSON.parse(serialized);
-      expect(payload.players[0].name).to.eq(testCase.expectedName);
-      expect(vm.players[0].name).to.eq(testCase.expectedName);
+      expect(payload.players[0].name).to.eq(testCase.inputName);
+      expect(vm.players[0].name).to.eq(testCase.inputName);
     }
   });
 });

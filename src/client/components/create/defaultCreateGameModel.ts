@@ -46,7 +46,7 @@ export function defaultCreateGameModel(): CreateGameModel {
     board: BoardName.THARSIS,
     seed: Math.random(),
     seededGame: false,
-    solarPhaseOption: false,
+    solarPhaseOption: true,
     shuffleMapOption: false,
     aresExtremeVariant: false,
     politicalAgendasExtension: 'Standard',

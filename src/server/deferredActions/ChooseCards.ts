@@ -104,7 +104,7 @@ export function keep(player: IPlayer, cards: ReadonlyArray<IProjectCard>, discar
     if (logType === LogType.BOUGHT) {
       LogHelper.logPrivateCardSelection(player, logType, cards, discards);
     } else {
-      LogHelper.logCardAction(player, logType, cards, /* privateMessage */ true);
+      LogHelper.logDrawnCards(player, cards, /* privateMessage */ true);
     }
     break;
   }

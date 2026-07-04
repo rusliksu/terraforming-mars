@@ -20,7 +20,7 @@ export class ColonyDealer {
     if (ColonyDealer.includesCommunityColonies(gameOptions)) {
       colonyTiles = colonyTiles.concat(COMMUNITY_COLONIES_TILES);
     }
-    if (gameOptions.pathfindersExpansion || gameOptions.moonExpansion) {
+    if (gameOptions.pathfindersExpansion || gameOptions.moonExpansion || ColonyDealer.includesPathfindersColonies(gameOptions)) {
       colonyTiles = colonyTiles.concat(PATHFINDERS_COLONIES_TILES);
     }
     if (gameOptions.moonExpansion && !this.gameOptions.pathfindersExpansion) {
@@ -45,6 +45,11 @@ export class ColonyDealer {
     }
     const communityColonyNames = COMMUNITY_COLONIES_TILES.map((cf) => cf.colonyName);
     return gameOptions.customColoniesList.some((colonyName) => communityColonyNames.includes(colonyName));
+  }
+
+  private static includesPathfindersColonies(gameOptions: GameOptions) : boolean {
+    const pathfindersColonyNames = PATHFINDERS_COLONIES_TILES.map((cf) => cf.colonyName);
+    return gameOptions.customColoniesList.some((colonyName) => pathfindersColonyNames.includes(colonyName));
   }
 
   private shuffle(cards: Array<IColony> | ReadonlyArray<IColony>): Array<IColony> {

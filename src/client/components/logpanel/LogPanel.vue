@@ -6,11 +6,11 @@
       </h2>
       <div class="log-gen-title"  v-i18n>Gen: </div>
       <div class="log-gen-numbers">
-        <div v-for="n in getGenerationsRange()" :key="n" :class="getClassesGenIndicator(n)" v-on:click.prevent="selectGeneration(n)">
+        <div v-for="n in getGenerationsRange()" :key="n" :class="getClassesGenIndicator(n)" @click.prevent="selectGeneration(n)">
           {{ n }}
         </div>
       </div>
-      <div :class="getClassesRecentLogs()" v-on:click.prevent="selectRecentLogs()" v-i18n>
+      <div :class="getClassesRecentLogs()" @click.prevent="selectRecentLogs()" v-i18n>
         Last 100
       </div>
       <span class="label-additional" v-if="players.length === 1"><span :class="lastGenerationClass" v-i18n>of {{lastSoloGeneration}}</span></span>
@@ -18,12 +18,12 @@
     <div class="panel log-panel">
       <div id="logpanel-scrollable" class="panel-body">
         <ul v-if="messages">
-          <log-message-component v-for="(message, index) in messages" :key="index" :message="message" :viewModel="viewModel" v-on:click="messageClicked(message)" @spaceClicked="spaceClicked"></log-message-component>
+          <LogMessageComponent v-for="(message, index) in messages" :key="index" :message="message" :viewModel="viewModel" @click="messageClicked(message)" @spaceClicked="spaceClicked"/>
         </ul>
       </div>
       <div class='debugid'>(debugid {{step}})</div>
     </div>
-    <card-panel v-if="selectedMessage !== undefined" :message="selectedMessage" :players="players" v-on:hide="selectedMessage = undefined"></card-panel>
+    <CardPanel v-if="selectedMessage !== undefined" :message="selectedMessage" :players="players" @hide="selectedMessage = undefined"/>
   </div>
 </template>
 
@@ -53,7 +53,7 @@ type LogPanelModel = {
 };
 
 export default defineComponent({
-  name: 'log-panel',
+  name: 'LogPanel',
   props: {
     viewModel: {
       type: Object as () => ViewModel,
@@ -114,27 +114,30 @@ export default defineComponent({
       if (gen !== this.selectedGeneration || this.selectedRecentLimit !== undefined) {
         this.selectedGeneration = gen;
         this.selectedRecentLimit = undefined;
-        this.getLogsForGeneration(gen);
+        this.getLogsForGeneration(gen, true);
       }
     },
-    getLogsForGeneration(generation: number): void {
+    getLogsForGeneration(generation: number, forceScrollToEnd = false): void {
       const url = `${paths.API_GAME_LOGS}?id=${this.id}&generation=${generation}&gameAge=${this.gameAge}`;
-      this.loadLogs(url, generation === this.generation);
+      this.loadLogs(url, generation === this.generation, forceScrollToEnd);
     },
     selectRecentLogs(): void {
       if (this.selectedRecentLimit !== 100) {
         this.selectedGeneration = -1;
         this.selectedRecentLimit = 100;
-        this.getRecentLogs();
+        this.getRecentLogs(true);
       }
     },
-    getRecentLogs(): void {
+    getRecentLogs(forceScrollToEnd = false): void {
       const url = `${paths.API_GAME_LOGS}?id=${this.id}&limit=100&gameAge=${this.gameAge}`;
-      this.loadLogs(url, true);
+      this.loadLogs(url, true, forceScrollToEnd);
     },
-    loadLogs(url: string, liveLogs: boolean): void {
+    loadLogs(url: string, liveLogs: boolean, forceScrollToEnd = false): void {
       const messages = this.messages;
-      this.stickToBottom = liveLogs && this.isNearBottom();
+      const scrollablePanel = this.getScrollablePanel();
+      const previousScrollTop = scrollablePanel?.scrollTop ?? 0;
+      const shouldStickToBottom = liveLogs && (forceScrollToEnd || this.isNearBottom());
+      this.stickToBottom = shouldStickToBottom;
       // abort any pending requests
       if (logAbortController) {
         logAbortController.abort();
@@ -153,6 +156,9 @@ export default defineComponent({
           return resp.json();
         })
         .then((data) => {
+          if (controller.signal.aborted || logAbortController !== controller) {
+            return;
+          }
           if (!data) {
             return;
           }
@@ -161,8 +167,10 @@ export default defineComponent({
           if (liveLogs) {
             this.$nextTick(() => {
               this.installAutoScrollObserver();
-              if (this.stickToBottom) {
+              if (shouldStickToBottom) {
                 this.scrollToEnd();
+              } else {
+                this.restoreScrollTop(previousScrollTop);
               }
             });
           }
@@ -215,6 +223,12 @@ export default defineComponent({
       const scrollablePanel = this.getScrollablePanel();
       if (scrollablePanel !== null) {
         scrollablePanel.scrollTop = scrollablePanel.scrollHeight;
+      }
+    },
+    restoreScrollTop(scrollTop: number) {
+      const scrollablePanel = this.getScrollablePanel();
+      if (scrollablePanel !== null) {
+        scrollablePanel.scrollTop = scrollTop;
       }
     },
     getClassesGenIndicator(gen: number): string {
@@ -280,7 +294,7 @@ export default defineComponent({
     this.selectedRecentLimit = 100;
     const scrollablePanel = this.getScrollablePanel();
     scrollablePanel?.addEventListener('scroll', this.handleScroll);
-    this.getRecentLogs();
+    this.getRecentLogs(true);
   },
   beforeUnmount() {
     const scrollablePanel = this.getScrollablePanel();

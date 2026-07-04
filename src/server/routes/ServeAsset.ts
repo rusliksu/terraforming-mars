@@ -40,6 +40,7 @@ export class FileAPI {
 export class ServeAsset extends Handler {
   public static readonly INSTANCE: ServeAsset = new ServeAsset();
   private readonly cache = new BufferCache();
+  private assetVersion: string | undefined;
 
   // Public for tests
   public constructor(private cacheAgeSeconds: string | number = process.env.ASSET_CACHE_MAX_AGE || 0,
@@ -74,6 +75,11 @@ export class ServeAsset extends Handler {
     }
 
     const file = toFile.file;
+
+    if (file === 'assets/index.html') {
+      await this.serveIndexHtml(res);
+      return;
+    }
 
     // asset caching
     const buffer = (this.cacheAssets && !dynamicEloAsset) ? this.cache.get(file) : undefined;
@@ -128,6 +134,46 @@ export class ServeAsset extends Handler {
       console.log(err);
       responses.internalServerError(req, res, 'Cannot serve ' + path);
     }
+  }
+
+  private async serveIndexHtml(res: Response): Promise<void> {
+    const version = await this.getAssetVersion();
+    const html = this.withAssetVersion(
+      (await this.fileApi.readFile('assets/index.html')).toString('utf8'),
+      version);
+    const data = Buffer.from(html);
+    res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Content-Length', data.length);
+    res.end(data);
+  }
+
+  private async getAssetVersion(): Promise<string> {
+    if (this.assetVersion !== undefined) {
+      return this.assetVersion;
+    }
+
+    try {
+      const releaseJson = JSON.parse((await this.fileApi.readFile('assets/release.json')).toString('utf8'));
+      this.assetVersion = this.sanitizeAssetVersion(
+        releaseJson.artifactSha256 ?? releaseJson.gitSha ?? releaseJson.packagedAtUtc ?? 'dev');
+    } catch (_err) {
+      this.assetVersion = 'dev';
+    }
+    return this.assetVersion;
+  }
+
+  private sanitizeAssetVersion(value: unknown): string {
+    const version = String(value).replace(/[^A-Za-z0-9._-]/g, '').slice(0, 64);
+    return version === '' ? 'dev' : version;
+  }
+
+  private withAssetVersion(html: string, version: string): string {
+    const suffix = `?v=${version}`;
+    return html
+      .replace(/styles\.css(?:\?v=[^"]*)?/g, `styles.css${suffix}`)
+      .replace(/vendors\.js(?:\?v=[^"]*)?/g, `vendors.js${suffix}`)
+      .replace(/main\.js(?:\?v=[^"]*)?/g, `main.js${suffix}`);
   }
 
   private toMainFile(urlPath: string, encodings: Set<Encoding>): { file?: string, encoding?: Encoding } {

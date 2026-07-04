@@ -7,7 +7,7 @@
                   <div class="game_end_success">
                       <h2 v-i18n>You win!</h2>
                       <div class="game_end_solo_img">
-                          <img src="assets/solo_win.png" />
+                          <img src="assets/solo_win.png" >
                       </div>
                       <div class="game_end_notice">
                         <span v-i18n>But it isn't the reason to stop making Mars better.</span>
@@ -63,7 +63,7 @@
           <div v-if="!isSoloGame || game.isSoloModeWin" class="game-end-winer-announcement">
               <span v-for="p in winners" :key="p.color" class="game-end-name-and-elo">
                 <span :class="'log-player ' + getEndGamePlayerRowColorClass(p.color)">{{ p.name }}</span>
-                <PlayerEloBadge :playerName="p.name" tooltipCss="tooltip tooltip-top" />
+                <PlayerEloBadge :playerName="p.name" :eloDelta="getEloDeltaForPlayer(p)" tooltipCss="tooltip tooltip-top" />
               </span> <span v-i18n>won!</span>
           </div>
           <div v-if="eloResults.length > 0" class="game_end_victory_points">
@@ -117,7 +117,7 @@
                           <td>
                             <span class="game-end-name-and-elo">
                               <a :href="'player?id='+p.id+'&noredirect'">{{ p.name }}</a>
-                              <PlayerEloBadge :playerName="p.name" tooltipCss="tooltip tooltip-top" />
+                              <PlayerEloBadge :playerName="p.name" :eloDelta="getEloDeltaForPlayer(p)" tooltipCss="tooltip tooltip-top" />
                             </span>
                             <div class="column-corporation">
                               <div v-for="(corporationName, index) in getCorporationName(p)" :key="index" v-i18n>{{ corporationName }}</div>
@@ -143,21 +143,21 @@
                       </tr>
                   </tbody>
               </table>
-              <br/>
+              <br>
               <h2 v-i18n>Victory points details</h2>
-              <victory-point-chart
+              <VictoryPointChart
                 :datasets="vpDataset"
                 :generation="game.generation"
                 :animation="true"
                 :id="'victory-point-chart'"
-                ></victory-point-chart>
+                />
               <div class="game-end-flexrow">
                   <div v-for="p in playersInPlace" :key="p.color" class="game-end-column">
                       <div class="game-end-winer-scorebreak-player-title">
                           <div :class="'game-end-player ' + getEndGamePlayerRowColorClass(p.color)">
                             <span class="game-end-name-and-elo">
                               <a :href="'player?id='+p.id+'&noredirect'">{{p.name}}</a>
-                              <PlayerEloBadge :playerName="p.name" tooltipCss="tooltip tooltip-top" />
+                              <PlayerEloBadge :playerName="p.name" :eloDelta="getEloDeltaForPlayer(p)" tooltipCss="tooltip tooltip-top" />
                             </span>
                           </div>
                       </div>
@@ -203,8 +203,8 @@
                           <th><div class="tile ocean-tile"></div></th>
                           <th v-if="game.gameOptions.expansions.venus"><div class="tile venus-tile"></div></th>
                           <th v-if="game.gameOptions.expansions.moon"><div class="table-moon-colony-tile"></div></th>
-                          <th v-if="game.gameOptions.expansions.moon"><div class="table-moon-mine-tile"></div></th>
                           <th v-if="game.gameOptions.expansions.moon"><div class="table-moon-road-tile"></div></th>
+                          <th v-if="game.gameOptions.expansions.moon"><div class="table-moon-mine-tile"></div></th>
                           <th><div class="game-end-total-column">Total</div></th>
                       </tr>
                   </thead>
@@ -216,8 +216,8 @@
                           <td>{{ data.oceans }}</td>
                           <td v-if="game.gameOptions.expansions.venus">{{ data.venus }}</td>
                           <td v-if="game.gameOptions.expansions.moon">{{ data.moonHabitat }}</td>
+                          <td v-if="game.gameOptions.expansions.moon">{{ data.moonLogistic }}</td>
                           <td v-if="game.gameOptions.expansions.moon">{{ data.moonMining }}</td>
-                          <td v-if="game.gameOptions.expansions.moon">{{ data.moonLogistics }}</td>
                           <td class="game-end-total">{{ data.total }}</td>
                       </tr>
                   </tbody>
@@ -225,15 +225,15 @@
           </div>
           <div class="game-end-flexrow">
           <div class="game_end_block--board game-end-column">
-              <victory-point-chart
+              <VictoryPointChart
                 :datasets="globalsDataset"
                 :generation="game.generation"
                 :animation="true"
                 :id="'global-parameter-chart'"
                 :yAxisLabel="'% completed'"
-              ></victory-point-chart>
+              />
               <h2 v-i18n>Final situation on the board</h2>
-              <board
+              <Board
                   :spaces="game.spaces"
                   :expansions="game.gameOptions.expansions"
                   :venusScaleLevel="game.venusScaleLevel"
@@ -241,15 +241,15 @@
                   :boardName ="game.gameOptions.boardName"
                   :oceans_count="game.oceans"
                   :oxygen_level="game.oxygenLevel"
-                  :temperature="game.temperature"></board>
-            <MoonBoard v-if="game.moon !== undefined" :model="game.moon"></MoonBoard>
+                  :temperature="game.temperature"/>
+            <MoonBoard v-if="game.moon !== undefined" :model="game.moon"/>
             <div v-if="game.gameOptions.expansions.pathfinders">
               <PlanetaryTracks :tracks="game.pathfinders" :gameOptions="game.gameOptions"/>
             </div>
-            <DeltaProjectBoard v-if="game.gameOptions.expansions.deltaProject" :players="players"></DeltaProjectBoard>
+            <DeltaProjectBoard v-if="game.gameOptions.expansions.deltaProject" :players="players"/>
           </div>
           <div class="game_end_block--log game-end-column">
-            <log-panel :color="color" :viewModel="viewModel"></log-panel>
+            <LogPanel :color="color" :viewModel="viewModel"/>
             <a :href="downloadLogUrl" target="_blank" v-i18n>Download game log</a>
           </div>
         </div>
@@ -262,6 +262,8 @@
 import {defineComponent} from '@/client/vue3-compat';
 import * as constants from '@/common/constants';
 import {setDocumentTitle} from '@/client/utils/documentTitle';
+import {setFaviconStatus} from '@/client/utils/favicon';
+import {getPreferences} from '@/client/utils/PreferencesManager';
 import {paths} from '@/common/app/paths';
 import {GameModel} from '@/common/models/GameModel';
 import {PlayerViewModel, PublicPlayerModel, ViewModel} from '@/common/models/PlayerModel';
@@ -298,7 +300,7 @@ function getViewModel(playerView: ViewModel | undefined, spectator: ViewModel | 
 }
 
 export default defineComponent({
-  name: 'game-end',
+  name: 'GameEnd',
   props: {
     playerView: {
       type: Object as () => PlayerViewModel | undefined,
@@ -405,11 +407,11 @@ export default defineComponent({
       if (this.game.gameOptions.expansions.moon === true) {
         dataset.push({label: $t('L. Habitat'), color: 'orange', data: getValues(GlobalParameter.MOON_HABITAT_RATE, 0, 8)});
         dataset.push({label: $t('L. Mining'), color: 'pink', data: getValues(GlobalParameter.MOON_MINING_RATE, 0, 8)});
-        dataset.push({label: $t('L. Logistics'), color: 'purple', data: getValues(GlobalParameter.MOON_LOGISTICS_RATE, 0, 8)});
+        dataset.push({label: $t('L. Logistic'), color: 'purple', data: getValues(GlobalParameter.MOON_LOGISTIC_RATE, 0, 8)});
       }
       return dataset;
     },
-    playerContributionsData(): Array<{player: string, color: Color, temp: number, oxygen: number, oceans: number, venus?: number, moonHabitat?: number, moonMining?: number, moonLogistics?: number, total: number}> {
+    playerContributionsData(): Array<{player: string, color: Color, temp: number, oxygen: number, oceans: number, venus?: number, moonHabitat?: number, moonMining?: number, moonLogistic?: number, total: number}> {
       return this.players.map((player) => {
         const steps = player.globalParameterSteps || {};
         const temp = steps[GlobalParameter.TEMPERATURE] || 0;
@@ -418,7 +420,7 @@ export default defineComponent({
         const venus = steps[GlobalParameter.VENUS] || 0;
         const moonHabitat = steps[GlobalParameter.MOON_HABITAT_RATE] || 0;
         const moonMining = steps[GlobalParameter.MOON_MINING_RATE] || 0;
-        const moonLogistics = steps[GlobalParameter.MOON_LOGISTICS_RATE] || 0;
+        const moonLogistic = steps[GlobalParameter.MOON_LOGISTIC_RATE] || 0;
 
         return {
           player: player.name,
@@ -429,8 +431,8 @@ export default defineComponent({
           venus,
           moonHabitat,
           moonMining,
-          moonLogistics,
-          total: temp + oxygen + oceans + venus + moonHabitat + moonMining + moonLogistics,
+          moonLogistic: moonLogistic,
+          total: temp + oxygen + oceans + venus + moonHabitat + moonMining + moonLogistic,
         };
       });
     },
@@ -442,8 +444,8 @@ export default defineComponent({
     };
   },
   components: {
-    'board': Board,
-    'log-panel': LogPanel,
+    Board,
+    LogPanel,
     AppButton,
     MoonBoard,
     PlanetaryTracks,
@@ -454,10 +456,13 @@ export default defineComponent({
   mounted() {
     setDocumentTitle('🏁 | ' + this.game.name);
     void this.fetchEloResults();
+    if (getPreferences().experimental_ui) {
+      setFaviconStatus('ended');
+    }
   },
   methods: {
     async fetchEloResults() {
-      await ensureEloLoaded();
+      await ensureEloLoaded(true);
       if (!sharedEloState.loaded) {
         return;
       }
@@ -485,6 +490,10 @@ export default defineComponent({
         return 'game-end-elo-delta game-end-elo-down';
       }
       return 'game-end-elo-delta';
+    },
+    getEloDeltaForPlayer(player: PublicPlayerModel): number | undefined {
+      const result = this.eloResults.find((entry) => entry.color === player.color || entry.name === player.name);
+      return result?.delta;
     },
     getEndGamePlayerRowColorClass(color: Color): string {
       return playerColorClass(color, 'bg_transparent');

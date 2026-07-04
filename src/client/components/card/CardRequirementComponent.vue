@@ -120,19 +120,19 @@ export default defineComponent({
       case RequirementType.COLONIES:
         return ['card-resource-colony', 'card-resource-colony--req'];
       case RequirementType.FLOATERS:
-        return ['card-resource-tag--S', 'card-tag-floater'];
+        return ['card-resource-tag--S', 'tag-floater'];
       case RequirementType.CHAIRMAN:
         return ['card-chairman--req'];
       case RequirementType.PARTY_LEADERS:
         return ['card-party-leader--req'];
       case RequirementType.TAG:
-        return ['card-resource-tag--S', 'card-tag-' + this.requirement.tag];
+        return ['card-resource-tag--S', 'tag-' + this.requirement.tag];
       case RequirementType.HABITAT_RATE:
         return ['card-habitat-rate', 'card-habitat-rate--req'];
       case RequirementType.MINING_RATE:
         return ['card-mining-rate', 'card-mining-rate--req'];
       case RequirementType.LOGISTIC_RATE:
-        return ['card-logistics-rate', 'card-logistics-rate--req'];
+        return ['card-logistic-rate', 'card-logistic-rate--req'];
       case RequirementType.HABITAT_TILES:
         return ['card-tile-lunar-habitat--S', 'tile--req'];
       case RequirementType.MINING_TILES:

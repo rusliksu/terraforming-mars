@@ -2,15 +2,16 @@ import {JSONObject} from '@/common/Types';
 import {CreateGameModel} from './CreateGameModel';
 
 const TEMPLATES_KEY = 'tm_game_templates';
-const LAST_SETTINGS_KEY = 'tm_last_settings';
 
 export interface GameTemplate {
   name: string;
   settings: JSONObject;
 }
 
-function sanitizeSettingsForStorage(settings: JSONObject): JSONObject {
+export function sanitizeSettingsForStorage(settings: JSONObject): JSONObject {
   const sanitized = JSON.parse(JSON.stringify(settings)) as JSONObject;
+  delete sanitized.clonedGamedId;
+  delete sanitized.clonedGameId;
   sanitized.turnBasedGame = false;
   sanitized.botGame = false;
   const players = sanitized.players;
@@ -110,38 +111,14 @@ export class TemplateManager {
     return true;
   }
 
-  static saveLastSettings(settings: JSONObject): void {
-    if (!localStorageAvailable()) {
-      return;
-    }
-    try {
-      localStorage.setItem(LAST_SETTINGS_KEY, JSON.stringify(sanitizeSettingsForStorage(settings)));
-    } catch { /* quota exceeded, ignore */ }
-  }
-
-  static getLastSettings(): JSONObject | undefined {
-    if (!localStorageAvailable()) {
-      return undefined;
-    }
-    try {
-      const data = localStorage.getItem(LAST_SETTINGS_KEY);
-      if (!data) {
-        return undefined;
-      }
-      const settings = JSON.parse(data) as JSONObject;
-      const sanitized = sanitizeSettingsForStorage(settings);
-      if (JSON.stringify(settings) !== JSON.stringify(sanitized)) {
-        localStorage.setItem(LAST_SETTINGS_KEY, JSON.stringify(sanitized));
-      }
-      return sanitized;
-    } catch {
-      return undefined;
-    }
-  }
-
   /** Serialize current form state for storage (compatible with JSONProcessor.applyJSON) */
   static serializeFormState(model: CreateGameModel): JSONObject {
     const state: JSONObject = {};
+    const customSelectionModel = model as CreateGameModel & {
+      customCorporationExclusions?: Array<string>;
+      customPreludesExclusions?: Array<string>;
+      customColonyExclusions?: Array<string>;
+    };
 
     state.players = model.players.slice(0, model.playersCount).map((p) => {
       const player = {...p};
@@ -174,6 +151,9 @@ export class TemplateManager {
     state.customCorporations = [...model.customCorporations];
     state.customColonies = [...model.customColonies];
     state.customPreludes = [...model.customPreludes];
+    state.customCorporationExclusions = [...(customSelectionModel.customCorporationExclusions ?? [])];
+    state.customPreludesExclusions = [...(customSelectionModel.customPreludesExclusions ?? [])];
+    state.customColonyExclusions = [...(customSelectionModel.customColonyExclusions ?? [])];
     state.bannedCards = [...model.bannedCards];
     state.includedCards = [...model.includedCards];
     state.customCeos = [...model.customCeos];

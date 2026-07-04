@@ -11,7 +11,7 @@ import {SelectCard} from '../../src/server/inputs/SelectCard';
 import {IProjectCard} from '../../src/server/cards/IProjectCard';
 import {isIStandardProjectCard} from '../../src/server/cards/IStandardProjectCard';
 import {MAX_COLONY_TRACK_POSITION} from '../../src/common/constants';
-import {formatMessage, runAllActions, setRulingParty} from '../TestingUtils';
+import {formatMessage, runAllActions, runNextAction, setRulingParty} from '../TestingUtils';
 import {TestPlayer} from '../TestPlayer';
 import {CardName} from '../../src/common/cards/CardName';
 import {Pallas} from '../../src/server/cards/community/Pallas';
@@ -21,6 +21,8 @@ import {ColonyName} from '../../src/common/colonies/ColonyName';
 import {ColonyDeserializer} from '../../src/server/colonies/ColonyDeserializer';
 import {testGame} from '../TestGame';
 import {Venus} from '../../src/server/cards/community/Venus';
+import {VenusianAnimals} from '../../src/server/cards/venusNext/VenusianAnimals';
+import {VenusianInsects} from '../../src/server/cards/venusNext/VenusianInsects';
 import {PartyName} from '../../src/common/turmoil/PartyName';
 import {L1TradeTerminal} from '../../src/server/cards/prelude2/L1TradeTerminal';
 import {Mercury} from '../../src/server/cards/community/Mercury';
@@ -288,6 +290,25 @@ describe('Colony', () => {
     player.megaCredits = 20;
 
     expect(isBuildColonyStandardProjectAvailable(player)).to.be.true;
+  });
+
+  it('Should not ask where to place zero resources from Venus trade', () => {
+    [game, player] = testGame(1, {coloniesExtension: true, venusNextExtension: true});
+    const venus = new Venus();
+    const venusianAnimals = new VenusianAnimals();
+    const venusianInsects = new VenusianInsects();
+    game.colonies = [venus];
+    venus.isActive = true;
+    venus.trackPosition = 1; // trade quantity is 0 at positions 0-2.
+    player.playedCards.push(venusianAnimals, venusianInsects);
+    while (game.deferredActions.pop() !== undefined) { /* empty */ }
+
+    venus.trade(player);
+    const input = runNextAction(game);
+
+    expect(input).is.undefined;
+    expect(venusianAnimals.resourceCount).eq(0);
+    expect(venusianInsects.resourceCount).eq(0);
   });
 
   it('Should let players build on Europa when Reds are in power.', () => {

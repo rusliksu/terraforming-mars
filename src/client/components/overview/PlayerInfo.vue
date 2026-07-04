@@ -3,7 +3,10 @@
         <div class="player-status-and-res">
         <div class="player-status">
           <div class="player-info-details">
-            <div class="player-info-name" @click="togglePlayerDetails">{{ playerSymbol + player.name }}</div>
+            <div class="player-info-name-row">
+              <span class="player-info-name" @click="togglePlayerDetails">{{ playerSymbol + player.name }}</span>
+              <PlayerEloBadge :playerName="player.name" :tooltipCss="tooltipCss" :compact="true" :eloDelta="eloDelta" />
+            </div>
             <span @click="togglePlayerDetails" v-for="(corporationName, index) in getCorporationName()" :key="index" v-i18n>
               <div class="player-info-corp" :title="$t(corporationName)">
                 {{ corporationName }}
@@ -12,7 +15,7 @@
           </div>
           <div>
             <div class="icon-first-player" v-if="firstForGen && playerView.players.length > 1" v-i18n>1st</div>
-            <player-status :timer="player.timer" :showTimer="playerView.game.gameOptions.showTimers" :liveTimer="playerView.game.phase !== Phase.END" :firstForGen="firstForGen" v-trim-whitespace :actionLabel="actionLabel"/>
+            <PlayerStatus :timer="player.timer" :showTimer="playerView.game.gameOptions.showTimers" :liveTimer="playerView.game.phase !== Phase.END" :firstForGen="firstForGen" v-trim-whitespace :actionLabel="actionLabel"/>
           </div>
         </div>
           <PlayerResources :player="player" v-trim-whitespace />
@@ -48,6 +51,7 @@ import PlayerResources from '@/client/components/overview/PlayerResources.vue';
 import PlayerTags from '@/client/components/overview/PlayerTags.vue';
 import PlayerAlliedParty from '@/client/components/overview/PlayerAlliedParty.vue';
 import PlayerStatus from '@/client/components/overview/PlayerStatus.vue';
+import PlayerEloBadge from '@/client/components/overview/PlayerEloBadge.vue';
 import {playerColorClass} from '@/common/utils/utils';
 import {vueRoot} from '@/client/components/vueRoot';
 import {range} from '@/common/utils/utils';
@@ -90,13 +94,19 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    eloDelta: {
+      type: Number,
+      required: false,
+      default: undefined,
+    },
   },
   components: {
     AppButton,
     PlayerResources,
     PlayerTags,
     PlayerAlliedParty,
-    'player-status': PlayerStatus,
+    PlayerEloBadge,
+    PlayerStatus,
   },
   computed: {
     tooltipCss(): string {

@@ -335,6 +335,9 @@ describe('Player telegram state', () => {
       player1.lastNoticeMessageId = 77;
 
       await (player1 as any).sendTurnNoticeReminder(turnNoticeKey);
+      const store = JSON.parse(fs.readFileSync(storePath, 'utf8'));
+      store[`g-telegram:${player1.id}`].updatedAt = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+      fs.writeFileSync(storePath, JSON.stringify(store, null, 2));
       await (player1 as any).sendTurnNoticeReminder(turnNoticeKey);
 
       const sendCalls = telegram.calls.filter((call) => call.path.includes('/sendMessage'));
@@ -425,7 +428,100 @@ describe('Player telegram state', () => {
       expect(restoredPlayer1.lastNoticeMessageId).eq(101);
       expect(restoredPlayer1.lastTurnNoticeKey).eq(turnNoticeKey);
       expect((restoredPlayer1 as any)._pendingTurnNoticeReminderKey).eq(turnNoticeKey);
-      expect(delays).contains(7200000);
+      const reminderDelay = delays.find((delay) => delay !== 5000);
+      expect(reminderDelay).not.to.be.undefined;
+      expect(reminderDelay).lte(7200000);
+      expect(reminderDelay).gt(7190000);
+    } finally {
+      clearTelegramTimers(player1);
+      telegram.restore();
+      global.setTimeout = originalSetTimeout;
+      console.log = originalLog;
+      fs.rmSync(storePath, {force: true});
+      if (originalToken === undefined) {
+        delete process.env.TM_BOT_TOKEN;
+      } else {
+        process.env.TM_BOT_TOKEN = originalToken;
+      }
+      if (originalDisabled === undefined) {
+        delete process.env.TM_DISABLE_TELEGRAM;
+      } else {
+        process.env.TM_DISABLE_TELEGRAM = originalDisabled;
+      }
+      if (originalStore === undefined) {
+        delete process.env.TM_TURN_NOTICE_STORE;
+      } else {
+        process.env.TM_TURN_NOTICE_STORE = originalStore;
+      }
+      if (originalReminderMs === undefined) {
+        delete process.env.TM_TURN_NOTICE_REMINDER_MS;
+      } else {
+        process.env.TM_TURN_NOTICE_REMINDER_MS = originalReminderMs;
+      }
+    }
+  });
+
+  it('sends the reminder immediately when a restored turn notice is already stale', async () => {
+    const originalToken = process.env.TM_BOT_TOKEN;
+    const originalDisabled = process.env.TM_DISABLE_TELEGRAM;
+    const originalStore = process.env.TM_TURN_NOTICE_STORE;
+    const originalReminderMs = process.env.TM_TURN_NOTICE_REMINDER_MS;
+    const originalSetTimeout = global.setTimeout;
+    const originalLog = console.log;
+    const storePath = path.join(os.tmpdir(), `tm-turn-notices-${Date.now()}-${Math.random()}.json`);
+    const delays: Array<number | undefined> = [];
+    const handlers: Array<Parameters<typeof setTimeout>[0]> = [];
+    process.env.TM_BOT_TOKEN = 'token';
+    process.env.TM_TURN_NOTICE_STORE = storePath;
+    process.env.TM_TURN_NOTICE_REMINDER_MS = '7200000';
+    delete process.env.TM_DISABLE_TELEGRAM;
+    const telegram = stubTelegramApi(101);
+    console.log = (() => {}) as typeof console.log;
+
+    global.setTimeout = ((handler: Parameters<typeof setTimeout>[0], timeout?: number) => {
+      delays.push(timeout);
+      handlers.push(handler);
+      return {unref: () => {}} as unknown as ReturnType<typeof setTimeout>;
+    }) as unknown as typeof setTimeout;
+
+    const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
+    const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
+    Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid', {turnBasedGame: true});
+
+    try {
+      player1.telegramID = '123456';
+      (player1 as any).waitingFor = undefined;
+      (player1 as any).waitingForCb = undefined;
+      player1.setWaitingFor(new SelectOption('Act'));
+      const initialNoticeHandler = handlers.shift();
+      expect(initialNoticeHandler).not.to.be.undefined;
+      await (initialNoticeHandler as () => Promise<void>)();
+      const turnNoticeKey = player1.lastTurnNoticeKey;
+      const store = JSON.parse(fs.readFileSync(storePath, 'utf8'));
+      store['g-telegram:p-ruslan'].updatedAt = new Date(Date.now() - 7200001).toISOString();
+      fs.writeFileSync(storePath, JSON.stringify(store, null, 2));
+
+      delays.length = 0;
+      handlers.length = 0;
+
+      const restoredPlayer1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
+      const restoredPlayer2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
+      Game.newInstance('g-telegram', [restoredPlayer1, restoredPlayer2], restoredPlayer1, 'spectatorid', {turnBasedGame: true});
+      restoredPlayer1.telegramID = '123456';
+      (restoredPlayer1 as any).waitingFor = undefined;
+      (restoredPlayer1 as any).waitingForCb = undefined;
+      restoredPlayer1.setWaitingFor(new SelectOption('Act'));
+
+      const restoredNoticeHandler = handlers.shift();
+      expect(restoredNoticeHandler).not.to.be.undefined;
+      await (restoredNoticeHandler as () => Promise<void>)();
+
+      const sendCalls = telegram.calls.filter((call) => call.path.includes('/sendMessage'));
+      expect(sendCalls).has.length(1);
+      expect(restoredPlayer1.lastNoticeMessageId).eq(101);
+      expect(restoredPlayer1.lastTurnNoticeKey).eq(turnNoticeKey);
+      expect((restoredPlayer1 as any)._pendingTurnNoticeReminderKey).eq(turnNoticeKey);
+      expect(delays).contains(0);
     } finally {
       clearTelegramTimers(player1);
       telegram.restore();

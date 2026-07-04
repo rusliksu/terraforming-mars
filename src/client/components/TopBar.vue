@@ -13,7 +13,7 @@ import {PlayerViewModel} from '@/common/models/PlayerModel';
 import PlayerInfo from '@/client/components/overview/PlayerInfo.vue';
 
 export default defineComponent({
-  name: 'top-bar',
+  name: 'TopBar',
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,

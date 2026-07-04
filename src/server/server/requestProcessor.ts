@@ -135,6 +135,7 @@ export function processRequest(req: Request, res: Response): void {
     ipTracker.add(clientIp.address);
     if (ipBlocklist.isBlocked(clientIp.address)) {
       responses.notFound(req, res);
+      return;
     }
 
     if (req.method === 'HEAD') {

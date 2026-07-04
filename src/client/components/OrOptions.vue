@@ -4,12 +4,12 @@
     <label v-if="playerinput.warning !== undefined" class="card-warning"><div>({{ $t(playerinput.warning) }})</div></label>
     <div v-for="(option, idx) in displayedOptions" :key="idx">
       <label class="form-radio" ref="optionLabels">
-        <input v-model="selectedOption" type="radio" :name="radioElementName" :value="option" />
-        <i class="form-icon" />
+        <input v-model="selectedOption" type="radio" :name="radioElementName" :value="option" >
+        <i class="form-icon" ></i>
         <span>{{ $t(option.title) }}</span>
       </label>
       <div v-if="selectedIdx === idx" style="margin-left: 30px">
-        <player-input-factory ref="inputfactory"
+        <PlayerInputFactory ref="inputfactory"
                               :playerView="playerView"
                               :playerinput="option"
                               :onsave="playerFactorySaved(idx)"
@@ -41,7 +41,7 @@ let unique = 0;
 type QuickGreeneryHandler = {tile: HTMLElement, handler: (event: Event) => void};
 
 export default defineComponent({
-  name: 'or-options',
+  name: 'OrOptions',
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,

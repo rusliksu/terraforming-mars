@@ -5,6 +5,7 @@ import {IPTracker} from '../../src/server/server/IPTracker';
 import {GameLoader} from '../../src/server/database/GameLoader';
 import {FakeClock} from '../common/FakeClock';
 import {ISessionManager} from '../../src/server/server/auth/SessionManager';
+import {newAccessAudit} from '../../src/server/server/AccessAudit';
 
 describe('QuotaHandler', () => {
   let ctx: Context;
@@ -20,6 +21,12 @@ describe('QuotaHandler', () => {
       accessAudit: {record: () => {}},
       gameLoader: {} as GameLoader,
       sessionManager: {} as ISessionManager,
+      accessAudit: newAccessAudit({
+        enabled: false,
+        salt: 'test-salt',
+        now: () => new Date('2026-06-14T10:00:00.000Z'),
+        appendLine: () => {},
+      }),
       ids: {
         serverId: '1',
         statsId: '2',

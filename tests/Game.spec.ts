@@ -43,6 +43,7 @@ function noopGameLoader(): IGameLoader {
     add: () => Promise.resolve(),
     getIds: () => Promise.resolve([]),
     getLastSaveTimeMs: () => Promise.resolve(undefined),
+    getLastSaveTimesMs: () => Promise.resolve(new Map()),
     getGame: () => Promise.resolve(undefined),
     getGameAt: () => Promise.reject(new Error('not implemented')),
     getGameAtOrBefore: () => Promise.reject(new Error('not implemented')),

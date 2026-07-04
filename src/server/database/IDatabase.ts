@@ -66,6 +66,11 @@ export interface IDatabase {
     getLastSaveTimeMs(gameId: GameId): Promise<number | undefined>;
 
     /**
+     * Return the latest meaningful save times for many games.
+     */
+    getLastSaveTimesMs(gameIds: Array<GameId>): Promise<Map<GameId, number | undefined>>;
+
+    /**
      * Get the player count for a game.
      *
      * @param gameId the game id to search for

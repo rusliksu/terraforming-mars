@@ -123,6 +123,10 @@ export class GameLoader implements IGameLoader {
     return Database.getInstance().getLastSaveTimeMs(gameId);
   }
 
+  public getLastSaveTimesMs(gameIds: Array<GameId>): Promise<Map<GameId, number | undefined>> {
+    return Database.getInstance().getLastSaveTimesMs(gameIds);
+  }
+
   public async isCached(gameId: GameId): Promise<boolean> {
     const d = await this.cache.getGames();
     return d.games.get(gameId) !== undefined;

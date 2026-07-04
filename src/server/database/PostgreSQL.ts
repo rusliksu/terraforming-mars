@@ -140,15 +140,46 @@ export class PostgreSQL implements IDatabase {
   }
 
   public async getLastSaveTimeMs(gameId: GameId): Promise<number | undefined> {
+    return (await this.getLastSaveTimesMs([gameId])).get(gameId);
+  }
+
+  public async getLastSaveTimesMs(gameIds: Array<GameId>): Promise<Map<GameId, number | undefined>> {
+    const uniqueGameIds = Array.from(new Set(gameIds));
+    const result = new Map<GameId, number | undefined>();
+    for (const gameId of uniqueGameIds) {
+      result.set(gameId, undefined);
+    }
+    if (uniqueGameIds.length === 0) {
+      return result;
+    }
+
     const res = await this.client.query(
-      `SELECT EXTRACT(EPOCH FROM created_time) * 1000 AS created_time_ms
-        FROM games
-        WHERE game_id = $1
-        GROUP BY created_time
-        ORDER BY created_time DESC
-        LIMIT 2`,
-      [gameId]);
-    return chooseLastMeaningfulSaveTimeMs(res.rows.map((row) => Number(row.created_time_ms)));
+      `SELECT game_id, EXTRACT(EPOCH FROM created_time) * 1000 AS created_time_ms
+        FROM (
+          SELECT game_id, created_time,
+            ROW_NUMBER() OVER (PARTITION BY game_id ORDER BY created_time DESC) AS row_number
+          FROM (
+            SELECT game_id, created_time
+            FROM games
+            WHERE game_id = ANY($1::varchar[])
+            GROUP BY game_id, created_time
+          ) AS grouped_saves
+        ) AS ranked_saves
+        WHERE row_number <= 2
+        ORDER BY game_id, created_time DESC`,
+      [uniqueGameIds]);
+
+    const saveTimes = new Map<GameId, Array<number>>();
+    for (const row of res.rows) {
+      const gameId = row.game_id as GameId;
+      const times = saveTimes.get(gameId) ?? [];
+      times.push(Number(row.created_time_ms));
+      saveTimes.set(gameId, times);
+    }
+    for (const [gameId, times] of saveTimes.entries()) {
+      result.set(gameId, chooseLastMeaningfulSaveTimeMs(times));
+    }
+    return result;
   }
 
   private compose(game: string, log: string, options: string): SerializedGame {

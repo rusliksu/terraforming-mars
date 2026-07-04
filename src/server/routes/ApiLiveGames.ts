@@ -1,5 +1,6 @@
 import * as responses from '../server/responses';
 import {Phase} from '../../common/Phase';
+import {GameId} from '../../common/Types';
 import {LiveGameModel} from '../../common/models/LiveGameModel';
 import {hasMalformedEscapeVelocityOptions} from '../../common/game/EscapeVelocityOptions';
 import {Handler} from './Handler';
@@ -15,9 +16,10 @@ const STALE_LIVE_GAME_AFTER_MS = 18 * 60 * 60 * 1000;
 type BotTakeoverLiveGamesDeps = Pick<BotTakeoverManager, 'listPlayerIds'>;
 
 type LiveGameCandidate = {
+  gameId: GameId;
+  updatedAtMs: number;
   phasePriority: number;
   activity: number;
-  updatedAtMs: number;
   model: LiveGameModel;
 };
 
@@ -87,9 +89,14 @@ export class ApiLiveGames extends Handler {
     const limit = getLimit(ctx.url.searchParams.get('limit'));
     const now = Date.now();
     const list = await ctx.gameLoader.getIds();
+    const lastSaveTimes = await ctx.gameLoader.getLastSaveTimesMs(list.map((entry) => entry.gameId));
     const liveGames: Array<LiveGameCandidate> = [];
 
     for (const entry of list) {
+      const lastSaveTimeMs = lastSaveTimes.get(entry.gameId);
+      if (isStale(lastSaveTimeMs, now)) {
+        continue;
+      }
       const game = await ctx.gameLoader.getGame(entry.gameId);
       if (game === undefined ||
           game.phase === Phase.END ||
@@ -100,15 +107,12 @@ export class ApiLiveGames extends Handler {
           hasMalformedEscapeVelocityOptions(game.gameOptions.escapeVelocity)) {
         continue;
       }
-      const lastSaveTimeMs = await ctx.gameLoader.getLastSaveTimeMs(entry.gameId);
-      if (isStale(lastSaveTimeMs, now)) {
-        continue;
-      }
       const priority = phasePriority(game.phase);
       liveGames.push({
+        gameId: entry.gameId,
+        updatedAtMs: lastSaveTimeMs ?? 0,
         phasePriority: priority,
         activity: (priority * 1000000) + game.gameAge + game.lastSaveId,
-        updatedAtMs: lastSaveTimeMs ?? 0,
         model: {
           id: game.id,
           phase: game.phase,

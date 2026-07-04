@@ -140,11 +140,23 @@ export class LocalFilesystem implements IDatabase {
   }
 
   getLastSaveTimeMs(gameId: GameId): Promise<number | undefined> {
+    return Promise.resolve(this.getLastSaveTimeMsSync(gameId));
+  }
+
+  getLastSaveTimesMs(gameIds: Array<GameId>): Promise<Map<GameId, number | undefined>> {
+    const result = new Map<GameId, number | undefined>();
+    for (const gameId of new Set(gameIds)) {
+      result.set(gameId, this.getLastSaveTimeMsSync(gameId));
+    }
+    return Promise.resolve(result);
+  }
+
+  private getLastSaveTimeMsSync(gameId: GameId): number | undefined {
     const filename = this.filename(gameId);
     if (!existsSync(filename)) {
-      return Promise.resolve(undefined);
+      return undefined;
     }
-    return Promise.resolve(statSync(filename).mtimeMs);
+    return statSync(filename).mtimeMs;
   }
 
   saveGameResults(gameId: GameId, players: number, generations: number, gameOptions: GameOptions, scores: Array<Score>): void {

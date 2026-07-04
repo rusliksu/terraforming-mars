@@ -6,7 +6,6 @@ import {IGame} from '../IGame';
 import {isSpectatorId} from '../../common/Types';
 import {Request} from '../Request';
 import {Response} from '../Response';
-import {Phase} from '../../common/Phase';
 import {getUserAgent} from './auditRequest';
 
 export class ApiSpectator extends Handler {
@@ -40,7 +39,7 @@ export class ApiSpectator extends Handler {
       clientIp: ctx.clientIp,
       userAgent: getUserAgent(req),
       metadata: {
-        privateHandsVisible: game.phase === Phase.END || game.gameOptions.privateHands === false,
+        privateHandsVisible: false,
       },
     });
     responses.writeJson(res, ctx, Server.getSpectatorModel(game));

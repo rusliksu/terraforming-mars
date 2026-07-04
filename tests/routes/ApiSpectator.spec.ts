@@ -65,4 +65,17 @@ describe('ApiSpectator', () => {
       metadata: {privateHandsVisible: false},
     }]);
   });
+
+  it('audits spectator private hands as hidden when private hands are disabled', async () => {
+    const auditEvents: Array<AccessAuditRecordInput> = [];
+    const player = TestPlayer.BLACK.newPlayer();
+    const game = Game.newInstance('game-id', [player], player, 'spectator-id', {privateHands: false}, undefined);
+    scaffolding.ctx.accessAudit = {record: (event) => auditEvents.push(event)};
+    scaffolding.url = '/api/spectator?id=' + game.spectatorId;
+    scaffolding.ctx.gameLoader.add(game);
+
+    await scaffolding.get(ApiSpectator.INSTANCE, res);
+
+    expect(auditEvents[0].metadata).deep.eq({privateHandsVisible: false});
+  });
 });

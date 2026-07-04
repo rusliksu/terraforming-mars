@@ -232,6 +232,44 @@ describe('ApiLiveGames', () => {
     expect(JSON.parse(res.content).map((game: {id: string}) => game.id)).deep.eq(['game-research', 'game-action']);
   });
 
+  it('loads last save times in one batch before loading live game candidates', async () => {
+    const loader = scaffolding.ctx.gameLoader as FakeGameLoader;
+
+    const actionGame = testGame('game-action', [TestPlayer.BLUE.newPlayer(), TestPlayer.RED.newPlayer()], Phase.ACTION);
+    const researchGame = testGame('game-research', [TestPlayer.GREEN.newPlayer(), TestPlayer.YELLOW.newPlayer()], Phase.RESEARCH);
+    const finishedGame = testGame('game-finished', [TestPlayer.BLACK.newPlayer(), TestPlayer.PURPLE.newPlayer()], Phase.END);
+    await loader.add(actionGame);
+    await loader.add(researchGame);
+    await loader.add(finishedGame);
+
+    scaffolding.url = '/api/live-games';
+    await scaffolding.get(ApiLiveGames.INSTANCE, res);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(loader.lastSaveTimeCallCount).eq(0);
+    expect(loader.lastSaveTimesCallCount).eq(1);
+  });
+
+  it('does not load stale games before filtering live game candidates', async () => {
+    const loader = scaffolding.ctx.gameLoader as FakeGameLoader;
+    const now = Date.now();
+
+    const staleGame = testGame('game-stale-before-load', [TestPlayer.BLUE.newPlayer(), TestPlayer.RED.newPlayer()], Phase.ACTION);
+    await loader.add(staleGame);
+    setLastSaveTime(staleGame, now - (19 * 60 * 60 * 1000));
+
+    const freshGame = testGame('game-fresh-before-load', [TestPlayer.GREEN.newPlayer(), TestPlayer.YELLOW.newPlayer()], Phase.ACTION);
+    await loader.add(freshGame);
+    setLastSaveTime(freshGame, now);
+
+    scaffolding.url = '/api/live-games';
+    await scaffolding.get(ApiLiveGames.INSTANCE, res);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(JSON.parse(res.content).map((game: {id: string}) => game.id)).deep.eq(['game-fresh-before-load']);
+    expect(loader.getGameCallCount).eq(1);
+  });
+
   it('does not list games where every player kept the default color name', async () => {
     const defaultNameGame = testGame(
       'game-default-names',

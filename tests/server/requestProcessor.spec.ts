@@ -1,10 +1,24 @@
 import {expect} from 'chai';
+import prometheus from 'prom-client';
 import {statusCode} from '../../src/common/http/statusCode';
 import {GameLoader} from '../../src/server/database/GameLoader';
 import {Context} from '../../src/server/routes/IHandler';
 import {ServeAsset} from '../../src/server/routes/ServeAsset';
 import {processRequest} from '../../src/server/server/requestProcessor';
 import {MockRequest, MockResponse} from '../routes/HttpMocks';
+
+async function getLatencyCount(path: string): Promise<number> {
+  const metric = prometheus.register.getSingleMetric('http_request_latency');
+  if (metric === undefined) {
+    return 0;
+  }
+  const data = await metric.get();
+  return data.values.find((value) => {
+    const metricValue = value as {metricName?: string, labels: Record<string, string>, value: number};
+    return metricValue.metricName === 'http_request_latency_count' &&
+      metricValue.labels.path === path;
+  })?.value ?? 0;
+}
 
 describe('requestProcessor', () => {
   it('routes a request from an allowed IP to a handler', () => {
@@ -101,6 +115,49 @@ describe('requestProcessor', () => {
         address: '203.0.113.10',
         source: 'cf-connecting-ip',
       });
+    } finally {
+      ServeAsset.INSTANCE.processRequest = originalProcessRequest;
+      (GameLoader as typeof GameLoader & {getInstance: typeof GameLoader.getInstance}).getInstance = originalGetInstance;
+    }
+  });
+
+  it('records latency after an async handler finishes', async () => {
+    const originalGetInstance = GameLoader.getInstance;
+    const originalProcessRequest = ServeAsset.INSTANCE.processRequest.bind(ServeAsset.INSTANCE);
+    let finishHandler: (() => void) | undefined;
+
+    (GameLoader as typeof GameLoader & {getInstance: typeof GameLoader.getInstance}).getInstance = (() => {
+      return {} as ReturnType<typeof GameLoader.getInstance>;
+    }) as typeof GameLoader.getInstance;
+
+    ServeAsset.INSTANCE.processRequest = ((_req, res, _ctx) => {
+      return new Promise<void>((resolve) => {
+        finishHandler = () => {
+          res.writeHead(statusCode.ok);
+          res.end('delayed asset');
+          resolve();
+        };
+      });
+    }) as typeof ServeAsset.INSTANCE.processRequest;
+
+    const req = new MockRequest();
+    const res = new MockResponse();
+    req.headers.host = 'tm.knightbyte.win';
+    req.headers['accept-encoding'] = '';
+    req.url = '/release.json';
+
+    try {
+      const before = await getLatencyCount('release.json');
+      processRequest(req, res);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(await getLatencyCount('release.json')).eq(before);
+
+      finishHandler?.();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(res.statusCode).eq(statusCode.ok);
+      expect(res.content).eq('delayed asset');
+      expect(await getLatencyCount('release.json')).eq(before + 1);
     } finally {
       ServeAsset.INSTANCE.processRequest = originalProcessRequest;
       (GameLoader as typeof GameLoader & {getInstance: typeof GameLoader.getInstance}).getInstance = originalGetInstance;

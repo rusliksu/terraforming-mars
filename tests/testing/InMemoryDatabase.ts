@@ -65,6 +65,13 @@ export class InMemoryDatabase implements IDatabase {
   getLastSaveTimeMs(gameId: GameId): Promise<number | undefined> {
     return Promise.resolve(this.lastSaveTimes.get(gameId));
   }
+  getLastSaveTimesMs(gameIds: Array<GameId>): Promise<Map<GameId, number | undefined>> {
+    const result = new Map<GameId, number | undefined>();
+    for (const gameId of new Set(gameIds)) {
+      result.set(gameId, this.lastSaveTimes.get(gameId));
+    }
+    return Promise.resolve(result);
+  }
   async getPlayerCount(gameId: GameId): Promise<number> {
     const game = await this.getGame(gameId);
     return game.players.length;

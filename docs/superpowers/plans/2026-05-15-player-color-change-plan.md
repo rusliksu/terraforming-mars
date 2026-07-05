@@ -38,6 +38,14 @@ surfaces to verify: overview, board cubes, colonies, turmoil, ELO, game end char
 prod target: staging only / prod after approval
 ```
 
+Before locking a new RGB value, run the color-distance checker against selectable player colors:
+
+```powershell
+npm run check:player-colors -- --target <slug> --selectable-only --threshold 10
+```
+
+If the nearest standard/custom color is below ~10 OKLab distance, treat it as visually risky and pick another shade unless the request is intentionally near that color.
+
 ---
 
 ## File Map
@@ -104,7 +112,17 @@ prod target: staging only / prod after approval
 - `src/client/components/overview/PlayerEloBadge.vue`
   - Optional persona badge class `.player-elo-badge--<slug>` if the player has a custom ELO badge.
 
+### Color Distance Tool
+
+- `src/tools/check_player_color_distances.ts`
+  - Reports perceptual OKLab distance between player colors.
+  - Use `--selectable-only` for real Create Game choices and `--target <slug>` for a proposed persona.
+  - Use `--fail` only with a threshold/palette policy that is expected to pass; the current selectable palette already contains a few legacy close pairs.
+
 ### Tests
+
+- `npm run test:player-colors`
+  - Consolidated local regression for player color changes: identity mapping, style coverage, and the color-distance CLI smoke test.
 
 - `tests/Style.spec.ts`
   - Main regression test for reserved persona color coverage.
@@ -537,7 +555,35 @@ Skip this if generic ELO color is acceptable.
 **Files:**
 - No new files unless tests need updates.
 
-- [ ] **Step 1: Run targeted style test**
+- [ ] **Step 0: Check color distance**
+
+Run:
+
+```powershell
+npm run check:player-colors -- --target <slug> --selectable-only --threshold 10
+```
+
+Expected:
+
+```text
+nearest selectable colors are not below ~10 OKLab distance unless intentionally close
+```
+
+- [ ] **Step 1: Run consolidated color regression**
+
+Run:
+
+```powershell
+npm run test:player-colors
+```
+
+Expected:
+
+```text
+all player color identity, style, and color-distance tests pass
+```
+
+- [ ] **Step 2: Run targeted style test when iterating on one persona**
 
 Run:
 

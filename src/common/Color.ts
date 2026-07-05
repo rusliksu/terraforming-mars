@@ -15,6 +15,10 @@ export const PAVEL_TURQUOISE_COLOR = 'turquoise' as const;
 export const PAVEL_TURQUOISE_NAME = 'Паша';
 export const VANGER_COLOR = 'vanger' as const;
 export const VANGER_NAME = 'Вангер';
+export const VLADLEN_NAME = 'Владлен';
+export const VLADLEN_WINE_COLOR = 'vladlenwine' as const;
+export const VLADLEN_RASPBERRY_COLOR = 'vladlenraspberry' as const;
+export const VLADLEN_BURGUNDY_COLOR = 'vladlenburgundy' as const;
 export const TOMA_NAME = 'Тома';
 export const SONYA_EMKO_NAME = TOMA_NAME;
 export const SONYA_HYDRO_COLOR = 'hydro' as const;
@@ -32,6 +36,9 @@ export const RESERVED_PLAYER_COLORS = [
   GAMBIT_GIRL_COLOR,
   PAVEL_TURQUOISE_COLOR,
   VANGER_COLOR,
+  VLADLEN_WINE_COLOR,
+  VLADLEN_RASPBERRY_COLOR,
+  VLADLEN_BURGUNDY_COLOR,
   SONYA_HYDRO_COLOR,
   SONYA_SATURN_COLOR,
   SONYA_SATURN_RINGS_COLOR,
@@ -120,6 +127,35 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
     shortLabel: 'Вангер',
     title: 'Вангер - reserved pure green',
     aliases: ['вангер', 'vanger', 'вангер думов', 'vanger dumov', 'думов', 'dumov'],
+  },
+  {
+    color: VLADLEN_WINE_COLOR,
+    name: VLADLEN_NAME,
+    label: 'Владлен · Винный',
+    colorLabel: '#74004D',
+    selectable: false,
+    shortLabel: 'Wine',
+    title: 'Владлен - hidden wine red test option',
+    aliases: ['владлен винный', 'vladlen wine', 'vladlen #74004d'],
+  },
+  {
+    color: VLADLEN_RASPBERRY_COLOR,
+    name: VLADLEN_NAME,
+    label: 'Владлен · Сливовый',
+    colorLabel: '#8A005A',
+    selectable: false,
+    shortLabel: 'Rasp',
+    title: 'Владлен - hidden plum test option',
+    aliases: ['владлен сливовый', 'владлен малиновый', 'владлен темно-малиновый', 'vladlen plum', 'vladlen raspberry', 'vladlen #8a005a'],
+  },
+  {
+    color: VLADLEN_BURGUNDY_COLOR,
+    name: VLADLEN_NAME,
+    label: 'Владлен',
+    colorLabel: '#82008C',
+    shortLabel: 'Vlad',
+    title: 'Владлен - reserved purple-wine',
+    aliases: ['владлен фиолетово-винный', 'владлен бордовый', 'vladlen purple wine', 'vladlen burgundy', 'vladlen #82008c'],
   },
   {
     color: SONYA_HYDRO_COLOR,

@@ -359,6 +359,21 @@
 	filter: @player_vanger_sprite_filter drop-shadow(2px 2px 3px black);
 }
 
+.board-cube--vladlenwine {
+	background: url(./assets/board_icons.png) -24px -117px no-repeat;
+	filter: @player_vladlenwine_sprite_filter drop-shadow(2px 2px 3px black);
+}
+
+.board-cube--vladlenraspberry {
+	background: url(./assets/board_icons.png) -24px -117px no-repeat;
+	filter: @player_vladlenraspberry_sprite_filter drop-shadow(2px 2px 3px black);
+}
+
+.board-cube--vladlenburgundy {
+	background: url(./assets/board_icons.png) -24px -117px no-repeat;
+	filter: @player_vladlenburgundy_sprite_filter drop-shadow(2px 2px 3px black);
+}
+
 .board-cube--saturn {
 	background: url(./assets/board_icons.png) -72px -91px no-repeat;
 	filter: @player_saturn_sprite_filter drop-shadow(2px 2px 3px black);
@@ -441,6 +456,18 @@
 
 .board-cube--vanger.board-cube--persona::before {
 	background: @player_vanger_token_gradient;
+}
+
+.board-cube--vladlenwine.board-cube--persona::before {
+	background: @player_vladlenwine_token_gradient;
+}
+
+.board-cube--vladlenraspberry.board-cube--persona::before {
+	background: @player_vladlenraspberry_token_gradient;
+}
+
+.board-cube--vladlenburgundy.board-cube--persona::before {
+	background: @player_vladlenburgundy_token_gradient;
 }
 
 .board-cube--saturn.board-cube--persona::before {
@@ -980,6 +1007,21 @@ each(@token_types, {
 .underground-excavator--vanger {
 	background: @player_vanger_token_gradient;
 	border: 1px solid @player_vanger_light;
+}
+
+.underground-excavator--vladlenwine {
+	background: @player_vladlenwine_token_gradient;
+	border: 1px solid #d43d89;
+}
+
+.underground-excavator--vladlenraspberry {
+	background: @player_vladlenraspberry_token_gradient;
+	border: 1px solid #e04c98;
+}
+
+.underground-excavator--vladlenburgundy {
+	background: @player_vladlenburgundy_token_gradient;
+	border: 1px solid #f05a9e;
 }
 
 .underground-excavator--saturn {

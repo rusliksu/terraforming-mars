@@ -12,6 +12,10 @@ import {
   SONYA_TITAN_COLOR,
   SONYA_SATURN_STORM_COLOR,
   TOMA_NAME,
+  VLADLEN_BURGUNDY_COLOR,
+  VLADLEN_NAME,
+  VLADLEN_RASPBERRY_COLOR,
+  VLADLEN_WINE_COLOR,
 } from '@/common/Color';
 
 describe('Locked player identities', () => {
@@ -28,6 +32,14 @@ describe('Locked player identities', () => {
     expect(getPlayerIdentityByName(GYDRO_NAME)?.color).to.eq(GYDRO_COLOR);
     expect(getPlayerIdentityByName('gydro')?.color).to.eq(GYDRO_COLOR);
     expect(getPlayerIdentityByName('руслан')?.color).to.eq(GYDRO_COLOR);
+  });
+
+  it('maps the generic Vladlen identity to the selectable purple-wine option', () => {
+    expect(getPlayerIdentityByName(VLADLEN_NAME)?.color).to.eq(VLADLEN_BURGUNDY_COLOR);
+    expect(getPlayerIdentityByName('владлен')?.color).to.eq(VLADLEN_BURGUNDY_COLOR);
+    expect(getPlayerIdentityByName('vladlen burgundy')?.color).to.eq(VLADLEN_BURGUNDY_COLOR);
+    expect(getPlayerIdentityByName('vladlen wine')?.color).to.eq(VLADLEN_WINE_COLOR);
+    expect(getPlayerIdentityByName('vladlen raspberry')?.color).to.eq(VLADLEN_RASPBERRY_COLOR);
   });
 
   it('keeps explicit legacy Toma color aliases available without making them generic', () => {

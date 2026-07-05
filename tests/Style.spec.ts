@@ -107,6 +107,37 @@ describe('Styles', () => {
     expect(playerSymbol).to.contain("turquoise: '◇'");
   });
 
+  it('uses a selectable purple-wine treatment for the Vladlen persona', () => {
+    const color = read('src/common/Color.ts');
+    const variables = read('src/styles/variables.less');
+    const common = read('src/styles/common.less');
+    const board = read('src/styles/board.less');
+    const createGame = read('src/styles/create_game_form.less');
+    const playerHome = read('src/styles/player_home.less');
+    const turmoil = read('src/styles/turmoil.less');
+    const playerSymbol = read('src/client/utils/playerSymbol.ts');
+    const vpChart = read('src/client/components/gameend/VictoryPointChart.vue');
+
+    expect(color).to.contain("export const VLADLEN_BURGUNDY_COLOR = 'vladlenburgundy' as const;");
+    expect(color).to.contain("color: VLADLEN_WINE_COLOR,\n    name: VLADLEN_NAME,\n    label: 'Владлен · Винный',\n    colorLabel: '#74004D',\n    selectable: false,");
+    expect(color).to.contain("color: VLADLEN_RASPBERRY_COLOR,\n    name: VLADLEN_NAME,\n    label: 'Владлен · Сливовый',\n    colorLabel: '#8A005A',\n    selectable: false,");
+    expect(color).to.contain("color: VLADLEN_BURGUNDY_COLOR,\n    name: VLADLEN_NAME,\n    label: 'Владлен',\n    colorLabel: '#82008C',\n    shortLabel: 'Vlad',\n    title: 'Владлен - reserved purple-wine'");
+
+    expect(variables).to.contain('@player_vladlenburgundy: rgb(130, 0, 140);');
+    expect(variables).to.contain('@player_vladlenburgundy_token_gradient: linear-gradient(135deg, #c55cff 0%, @player_vladlenburgundy 52%, #26002d 100%);');
+    expect(variables).to.contain('@player_vladlenburgundy_sprite_filter: hue-rotate(60deg) saturate(1.78) brightness(0.62) contrast(1.20);');
+    expect(common).to.contain('.player_bg_color_vladlenburgundy');
+    expect(common).to.contain('.player_translucent_bg_color_vladlenburgundy');
+    expect(createGame).to.contain('.player_translucent_bg_color_vladlenburgundy');
+    expect(board).to.contain('.board-cube--vladlenburgundy');
+    expect(board).to.contain('.board-cube--vladlenburgundy.board-cube--persona::before');
+    expect(board).to.contain('.underground-excavator--vladlenburgundy');
+    expect(playerHome).to.contain('&.colonies-fleet-vladlenburgundy');
+    expect(turmoil).to.contain('&.vladlenburgundy');
+    expect(playerSymbol).to.contain("vladlenburgundy: 'V'");
+    expect(vpChart).to.contain("['vladlenburgundy']: 'rgb(130, 0, 140)'");
+  });
+
   it('uses persona cube tokens for reserved player cubes', () => {
     const variables = read('src/styles/variables.less');
     const board = read('src/styles/board.less');
@@ -236,7 +267,9 @@ describe('Styles', () => {
     expect(cssBlock(turmoil, '&.gold')).to.contain('.player-token-sprite(-644px, -35px, @player_gold_sprite_filter);');
     expect(cssBlock(turmoil, '&.emerald')).to.contain('.player-token-sprite(-865px, -35px, @player_emerald_sprite_filter);');
     expect(cssBlock(turmoil, '&.ginger')).to.contain('.player-token-sprite(-644px, -105px, @player_ginger_sprite_filter);');
-    expect(cssBlock(turmoil, '&.hydro')).to.contain('.player-token-sprite(-699px, -105px, @player_hydro_sprite_filter);');
+    expect(cssBlock(turmoil, '&.hydro')).to.contain('.player-token-sprite(-699px, -105px, none);');
+    expect(cssBlock(turmoil, '&.hydro')).to.contain('background: @player_hydro_token_gradient;');
+    expect(cssBlock(turmoil, '&.hydro')).to.contain('mask-image: url(./assets/turmoil_ui.png);');
     expect(cssBlock(turmoil, '&.pearl')).to.contain('.player-token-sprite(-973px, -35px, @player_pearl_delegate_filter);');
     expect(cssBlock(turmoil, '&.pearl')).to.contain('color: #102027;');
     expect(cssBlock(turmoil, '&.antistress')).to.contain('.player-token-sprite(-809px, -35px, @player_antistress_sprite_filter);');

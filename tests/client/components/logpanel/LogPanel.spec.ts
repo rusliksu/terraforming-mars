@@ -110,7 +110,7 @@ describe('LogPanel', () => {
     expect(fetchCalls[0]).does.not.include('generation=');
   });
 
-  it('loads finished game logs through the spectator id', async () => {
+  it('keeps player-scoped logs on a finished player page', async () => {
     const viewModel = fakeViewModel({
       id: 'p-blue-id' as any,
       game: {
@@ -129,8 +129,8 @@ describe('LogPanel', () => {
     await Promise.resolve();
 
     expect(fetchCalls).has.length(1);
-    expect(fetchCalls[0]).includes('id=s-spectatorid');
-    expect(fetchCalls[0]).does.not.include('id=p-blue-id');
+    expect(fetchCalls[0]).includes('id=p-blue-id');
+    expect(fetchCalls[0]).does.not.include('id=s-spectatorid');
   });
 
   it('sticks to bottom when the log list grows after render', async () => {

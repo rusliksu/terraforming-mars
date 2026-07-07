@@ -18,7 +18,6 @@ describe('QuotaHandler', () => {
       ip: '123.45.678.90',
       clientIp: {address: '123.45.678.90', source: 'unknown'},
       ipTracker: {} as IPTracker,
-      accessAudit: {record: () => {}},
       gameLoader: {} as GameLoader,
       sessionManager: {} as ISessionManager,
       accessAudit: newAccessAudit({

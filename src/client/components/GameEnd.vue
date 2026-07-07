@@ -67,7 +67,13 @@
               </span> <span v-i18n>won!</span>
           </div>
           <div v-if="eloResults.length > 0" class="game_end_victory_points">
-              <h2 v-i18n>Elo results</h2>
+              <h2 class="game-end-elo-heading">
+                <span v-i18n>Elo results</span>
+                <span
+                  class="game-end-elo-help tooltip tooltip-top"
+                  :aria-label="$t('Elo scoring note')"
+                  :data-tooltip="$t('Places use final VP, then M€. Exact ties count as 0.5 in pairwise Elo.')">?</span>
+              </h2>
               <table class="table game_end_table game-end-elo-table">
                   <thead>
                       <tr v-i18n>
@@ -558,6 +564,24 @@ export default defineComponent({
 
 .game-end-elo-table {
   max-width: 560px;
+}
+
+.game-end-elo-heading {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+}
+
+.game-end-elo-help {
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  color: #aaa;
+  display: inline-flex;
+  font-size: 12px;
+  height: 18px;
+  justify-content: center;
+  line-height: 18px;
+  width: 18px;
 }
 
 .game-end-elo-delta {

@@ -105,6 +105,8 @@ export class SelectInitialCards extends OptionsInput<undefined> {
       throw new InputError('Too many cards selected');
     }
 
+    game.log('You selected ${0} from ${1}', (b) => b.card(corporation).cards(player.dealtCorporationCards), {reservedFor: player});
+
     for (const card of player.dealtProjectCards) {
       if (player.cardsInHand.includes(card) === false) {
         game.projectDeck.discard(card);

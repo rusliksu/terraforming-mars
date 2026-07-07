@@ -15,9 +15,6 @@ describe('WaitingFor', () => {
     icon?: string;
   };
   type TestNotificationPermission = 'default' | 'denied' | 'granted';
-  type TestRequestOptions = {
-    body?: string;
-  };
 
   const thisPlayer: Partial<PublicPlayerModel> = {
     color: 'red',

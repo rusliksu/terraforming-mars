@@ -12,7 +12,7 @@
     </template>
   </template>
   <div v-if="waitingfor !== undefined" class="wf-root">
-    <template v-if="preferences().experimental_ui && playerView.game.phase === Phase.ACTION">
+    <template v-if="preferences().experimental_ui && playerView.game.phase === Phase.ACTION && playerView.thisPlayer?.isActive !== true">
       <input type="checkbox" name="suspend" id="suspend-checkbox" v-model="suspend" @change="updateSuspend">
       <label for="suspend-checkbox">
         <span v-i18n>Pause updates</span>
@@ -339,6 +339,10 @@ export default defineComponent({
     if (this.playerView.players.length > 1 && this.waitingfor !== undefined && !this.waitingfor.optional) {
       documentTitleTimer = window.setInterval(() => this.animateTitle(), 1000);
     }
+  },
+  unmounted() {
+    window.clearTimeout(ui_update_timeout_id);
+    window.clearInterval(documentTitleTimer);
   },
   computed: {
     Phase(): typeof Phase {

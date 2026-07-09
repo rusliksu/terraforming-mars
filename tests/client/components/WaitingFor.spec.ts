@@ -15,6 +15,36 @@ describe('WaitingFor', () => {
     icon?: string;
   };
   type TestNotificationPermission = 'default' | 'denied' | 'granted';
+  type FakeTimeoutHandler = Parameters<typeof window.setTimeout>[0];
+
+  class FakeWaitingForXHR {
+    public static requests: Array<FakeWaitingForXHR> = [];
+
+    public onerror: (() => void) | undefined;
+    public onload: (() => void) | undefined;
+    public response: unknown;
+    public responseType = '';
+    public status = 0;
+    public url = '';
+
+    public open(_method: string, url: string) {
+      this.url = url;
+    }
+
+    public send() {
+      FakeWaitingForXHR.requests.push(this);
+    }
+
+    public triggerError() {
+      this.onerror?.();
+    }
+
+    public triggerLoad(status: number, response: unknown = undefined) {
+      this.status = status;
+      this.response = response;
+      this.onload?.();
+    }
+  }
 
   const thisPlayer: Partial<PublicPlayerModel> = {
     color: 'red',
@@ -35,6 +65,9 @@ describe('WaitingFor', () => {
     PreferencesManager.resetForTest();
     delete (global as any).Notification;
     delete (window as any).Notification;
+    delete (global as any).XMLHttpRequest;
+    delete (window as any).XMLHttpRequest;
+    window.history.replaceState({}, '', '/');
   });
 
   it('renders player-input-factory when waitingfor is provided', () => {
@@ -313,5 +346,103 @@ describe('WaitingFor', () => {
         body: 'It\'s your turn!',
       },
     }]);
+  });
+
+  it('retries waiting-for polling after network errors', () => {
+    const originalSetTimeout = window.setTimeout;
+    const originalClearTimeout = window.clearTimeout;
+    const originalWarn = console.warn;
+    const timeoutHandlers: Array<FakeTimeoutHandler> = [];
+    const warnings: Array<unknown> = [];
+
+    (global as any).XMLHttpRequest = FakeWaitingForXHR;
+    (window as any).XMLHttpRequest = FakeWaitingForXHR;
+    FakeWaitingForXHR.requests = [];
+    window.history.replaceState({}, '', '/player?id=p-player-id');
+    window.setTimeout = ((handler: FakeTimeoutHandler, timeout?: number) => {
+      expect(timeout).eq(raw_settings.waitingForTimeout);
+      timeoutHandlers.push(handler);
+      return timeoutHandlers.length as unknown as ReturnType<typeof window.setTimeout>;
+    }) as typeof window.setTimeout;
+    window.clearTimeout = ((timeoutId) => originalClearTimeout(timeoutId)) as typeof window.clearTimeout;
+    console.warn = ((...args: Array<unknown>) => warnings.push(args.join(' '))) as typeof console.warn;
+
+    try {
+      shallowMount(WaitingFor, {
+        ...globalConfig,
+        global: {
+          ...globalConfig.global,
+          stubs: {
+            'player-input-factory': true,
+          },
+        },
+        props: {
+          playerView: playerView as PlayerViewModel,
+          players: [thisPlayer as PublicPlayerModel],
+          waitingfor: undefined,
+        },
+      });
+
+      expect(timeoutHandlers).has.length(1);
+      (timeoutHandlers[0] as () => void)();
+      expect(FakeWaitingForXHR.requests).has.length(1);
+      expect(FakeWaitingForXHR.requests[0].url).eq('api/waitingfor?id=p-player-id&gameAge=1&undoCount=0');
+
+      FakeWaitingForXHR.requests[0].triggerError();
+
+      expect(timeoutHandlers).has.length(2);
+      expect(warnings[0]).contains('Waiting-for poll failed; retrying.');
+    } finally {
+      window.setTimeout = originalSetTimeout;
+      window.clearTimeout = originalClearTimeout;
+      console.warn = originalWarn;
+    }
+  });
+
+  it('retries waiting-for polling after transient server responses', () => {
+    const originalSetTimeout = window.setTimeout;
+    const originalClearTimeout = window.clearTimeout;
+    const originalWarn = console.warn;
+    const timeoutHandlers: Array<FakeTimeoutHandler> = [];
+    const warnings: Array<unknown> = [];
+
+    (global as any).XMLHttpRequest = FakeWaitingForXHR;
+    (window as any).XMLHttpRequest = FakeWaitingForXHR;
+    FakeWaitingForXHR.requests = [];
+    window.history.replaceState({}, '', '/player?id=p-player-id');
+    window.setTimeout = ((handler: FakeTimeoutHandler, timeout?: number) => {
+      expect(timeout).eq(raw_settings.waitingForTimeout);
+      timeoutHandlers.push(handler);
+      return timeoutHandlers.length as unknown as ReturnType<typeof window.setTimeout>;
+    }) as typeof window.setTimeout;
+    window.clearTimeout = ((timeoutId) => originalClearTimeout(timeoutId)) as typeof window.clearTimeout;
+    console.warn = ((...args: Array<unknown>) => warnings.push(args.join(' '))) as typeof console.warn;
+
+    try {
+      shallowMount(WaitingFor, {
+        ...globalConfig,
+        global: {
+          ...globalConfig.global,
+          stubs: {
+            'player-input-factory': true,
+          },
+        },
+        props: {
+          playerView: playerView as PlayerViewModel,
+          players: [thisPlayer as PublicPlayerModel],
+          waitingfor: undefined,
+        },
+      });
+
+      (timeoutHandlers[0] as () => void)();
+      FakeWaitingForXHR.requests[0].triggerLoad(500);
+
+      expect(timeoutHandlers).has.length(2);
+      expect(warnings[0]).contains('Received unexpected response from server (500).');
+    } finally {
+      window.setTimeout = originalSetTimeout;
+      window.clearTimeout = originalClearTimeout;
+      console.warn = originalWarn;
+    }
   });
 });

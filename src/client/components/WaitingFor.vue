@@ -78,6 +78,7 @@ type DataModel = {
 }
 
 const CANNOT_CONTACT_SERVER = 'Unable to reach the server. It may be restarting or down for maintenance.';
+const WAITING_FOR_POLL_RETRY_MESSAGE = 'Waiting-for poll failed; retrying.';
 
 export default defineComponent({
   name: 'WaitingFor',
@@ -210,11 +211,15 @@ export default defineComponent({
       const vueApp = this;
       const root = vueRoot(this);
       clearTimeout(ui_update_timeout_id);
+      const retryAfterWaitingForPollError = (reason: string) => {
+        console.warn(`${WAITING_FOR_POLL_RETRY_MESSAGE} ${reason}`);
+        vueApp.waitForUpdate();
+      };
       const askForUpdate = () => {
         const xhr = new XMLHttpRequest();
         xhr.open('GET', paths.API_WAITING_FOR + window.location.search + '&gameAge=' + this.playerView.game.gameAge + '&undoCount=' + this.playerView.game.undoCount);
         xhr.onerror = function() {
-          root.showAlert('Error fetching state', CANNOT_CONTACT_SERVER, () => vueApp.waitForUpdate());
+          retryAfterWaitingForPollError(CANNOT_CONTACT_SERVER);
         };
         xhr.onload = () => {
           if (xhr.status === statusCode.ok) {
@@ -238,7 +243,7 @@ export default defineComponent({
             }
             vueApp.waitForUpdate();
           } else {
-            root.showAlert('Error with input', `Received unexpected response from server (${xhr.status}). This is often due to the server restarting.`, () => vueApp.waitForUpdate());
+            retryAfterWaitingForPollError(`Received unexpected response from server (${xhr.status}).`);
           }
         };
         xhr.responseType = 'json';

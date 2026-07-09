@@ -1830,6 +1830,9 @@ export class Player implements IPlayer {
     if (this.waitingFor === undefined) {
       return;
     }
+    if (this.getTurnNoticeKey() !== turnNoticeKey) {
+      return;
+    }
     if (!this.hasActiveTurnNotice(turnNoticeKey)) {
       return;
     }

@@ -220,7 +220,6 @@ function isRecentlyUpdatedTurnNotice(record: TurnNoticeStoreRecord): boolean {
   const updatedAt = Date.parse(record.updatedAt);
   return Number.isFinite(updatedAt) && Date.now() - updatedAt < RECENT_TURN_REMINDER_SUPPRESS_MS;
 }
-
 function rememberTurnNotice(player: TelegramNotifiable, messageId: number, turnNoticeKey: string | undefined): void {
   const store = readTurnNoticeStore();
   store[turnNoticeStoreKey(player)] = {
@@ -273,6 +272,13 @@ function warnTurnNoticeFailed(
   );
 }
 
+function warnTurnNoticeSkippedMissingToken(player: TelegramNotifiable): void {
+  console.warn(
+    `Telegram turn notice skipped game=${gameIdForLog(player)} player=${player.id} ` +
+    'reason=missing TM_BOT_TOKEN',
+  );
+}
+
 function logGameStartNoticeSent(player: TelegramNotifiable, messageId: number | undefined): void {
   console.log(
     `Telegram start notice sent game=${gameIdForLog(player)} player=${player.id} ` +
@@ -284,6 +290,13 @@ function warnGameStartNoticeFailed(player: TelegramNotifiable, response: Telegra
   console.warn(
     `Telegram start notice failed game=${gameIdForLog(player)} player=${player.id} ` +
     `code=${response.error_code ?? 'unknown'} description=${response.description ?? 'unknown'}`,
+  );
+}
+
+function warnGameStartNoticeSkippedMissingToken(player: TelegramNotifiable): void {
+  console.warn(
+    `Telegram start notice skipped game=${gameIdForLog(player)} player=${player.id} ` +
+    'reason=missing TM_BOT_TOKEN',
   );
 }
 
@@ -309,7 +322,6 @@ function warnBotTakeoverNoticeFailed(
     `code=${response.error_code ?? 'unknown'} description=${response.description ?? 'unknown'}`,
   );
 }
-
 export function buildTurnNoticeText(player: TelegramNotifiable, options: TurnNoticeOptions = {}): string {
   const lines = [buildTurnNoticeHeader(player, options)];
   const gameSummary = buildGameSummary(player);
@@ -371,6 +383,7 @@ export async function sendTurnNotice(
     return false;
   }
   if (!getBotToken()) {
+    warnTurnNoticeSkippedMissingToken(player);
     return false;
   }
   if (BotTakeoverManager.INSTANCE.isActive(player.id)) {
@@ -483,6 +496,7 @@ export async function sendGameStartNotice(player: TelegramNotifiable): Promise<b
     return false;
   }
   if (!getBotToken()) {
+    warnGameStartNoticeSkippedMissingToken(player);
     return false;
   }
   const link = `${SERVER_URL}/player?id=${player.id}`;

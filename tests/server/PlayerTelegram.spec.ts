@@ -371,6 +371,58 @@ describe('Player telegram state', () => {
     }
   });
 
+  it('does not send a reminder when the scheduled turn key is no longer current', async () => {
+    const originalToken = process.env.TM_BOT_TOKEN;
+    const originalDisabled = process.env.TM_DISABLE_TELEGRAM;
+    const originalStore = process.env.TM_TURN_NOTICE_STORE;
+    const storePath = path.join(os.tmpdir(), `tm-turn-notices-${Date.now()}-${Math.random()}.json`);
+    process.env.TM_BOT_TOKEN = 'token';
+    process.env.TM_TURN_NOTICE_STORE = storePath;
+    delete process.env.TM_DISABLE_TELEGRAM;
+    const telegram = stubTelegramApi(101);
+
+    const player1 = new Player('Руслан', 'red', false, 0, 'p-ruslan');
+    const player2 = new Player('Паша', 'blue', false, 0, 'p-pasha');
+    const game = Game.newInstance('g-telegram', [player1, player2], player1, 'spectatorid', {turnBasedGame: true});
+
+    try {
+      player1.telegramID = '123456';
+      (player1 as any).waitingFor = new SelectOption('Act');
+      const staleTurnNoticeKey = (player1 as any).getTurnNoticeKey();
+      player1.lastTurnNoticeKey = staleTurnNoticeKey;
+      player1.lastNoticeMessageId = 77;
+      game.generation++;
+
+      await (player1 as any).sendTurnNoticeReminder(staleTurnNoticeKey);
+
+      const sendCalls = telegram.calls.filter((call) => call.path.includes('/sendMessage'));
+      const deleteCalls = telegram.calls.filter((call) => call.path.includes('/deleteMessage'));
+      expect(sendCalls).has.length(0);
+      expect(deleteCalls).has.length(0);
+      expect(player1.lastNoticeMessageId).eq(77);
+      expect(player1.lastTurnNoticeKey).eq(staleTurnNoticeKey);
+    } finally {
+      clearTelegramTimers(player1);
+      telegram.restore();
+      fs.rmSync(storePath, {force: true});
+      if (originalToken === undefined) {
+        delete process.env.TM_BOT_TOKEN;
+      } else {
+        process.env.TM_BOT_TOKEN = originalToken;
+      }
+      if (originalDisabled === undefined) {
+        delete process.env.TM_DISABLE_TELEGRAM;
+      } else {
+        process.env.TM_DISABLE_TELEGRAM = originalDisabled;
+      }
+      if (originalStore === undefined) {
+        delete process.env.TM_TURN_NOTICE_STORE;
+      } else {
+        process.env.TM_TURN_NOTICE_STORE = originalStore;
+      }
+    }
+  });
+
   it('reschedules a reminder when an existing turn notice survives in the store', async () => {
     const originalToken = process.env.TM_BOT_TOKEN;
     const originalDisabled = process.env.TM_DISABLE_TELEGRAM;

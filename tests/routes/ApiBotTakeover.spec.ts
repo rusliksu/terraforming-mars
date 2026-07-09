@@ -57,6 +57,60 @@ describe('ApiBotTakeover', () => {
     expect(json.entry.playerId).eq(player.id);
   });
 
+  it('notifies players when bot takeover starts', async () => {
+    const player = TestPlayer.BLACK.newPlayer();
+    const game = Game.newInstance('g123456789abc', [player], player, 'spectatorid');
+    await scaffolding.ctx.gameLoader.add(game);
+    let active = false;
+    const notifications: Array<{recipients: Array<string>, botPlayer: string}> = [];
+
+    const route = new ApiBotTakeover({
+      list: () => active ? [{gameId: game.id, playerId: player.id, pid: 321, startedAtMs: 1, logFile: 'bot.log'}] : [],
+      listPlayerIds: () => active ? [player.id] : [],
+      start: () => {
+        active = true;
+        return {gameId: game.id, playerId: player.id, pid: 321, startedAtMs: 1, logFile: 'bot.log'};
+      },
+      stop: () => undefined,
+    }, (recipients, botPlayer) => {
+      notifications.push({
+        recipients: recipients.map((recipient) => recipient.id),
+        botPlayer: botPlayer.id,
+      });
+    });
+
+    scaffolding.url = `/api/bot-takeover?action=start&gameId=${game.id}&playerId=${player.id}&serverId=1`;
+    await route.processRequest(scaffolding.req, res, scaffolding.ctx);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(notifications).deep.eq([{recipients: [player.id], botPlayer: player.id}]);
+  });
+
+  it('does not notify players when bot takeover was already active', async () => {
+    const player = TestPlayer.BLACK.newPlayer();
+    const game = Game.newInstance('g123456789abc', [player], player, 'spectatorid');
+    await scaffolding.ctx.gameLoader.add(game);
+    const notifications: Array<{recipients: Array<string>, botPlayer: string}> = [];
+
+    const route = new ApiBotTakeover({
+      list: () => [{gameId: game.id, playerId: player.id, pid: 321, startedAtMs: 1, logFile: 'bot.log'}],
+      listPlayerIds: () => [player.id],
+      start: () => ({gameId: game.id, playerId: player.id, pid: 321, startedAtMs: 1, logFile: 'bot.log'}),
+      stop: () => undefined,
+    }, (recipients, botPlayer) => {
+      notifications.push({
+        recipients: recipients.map((recipient) => recipient.id),
+        botPlayer: botPlayer.id,
+      });
+    });
+
+    scaffolding.url = `/api/bot-takeover?action=start&gameId=${game.id}&playerId=${player.id}&serverId=1`;
+    await route.processRequest(scaffolding.req, res, scaffolding.ctx);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(notifications).deep.eq([]);
+  });
+
   it('stops bot takeover', async () => {
     const player = TestPlayer.BLACK.newPlayer();
     const game = Game.newInstance('g123456789abc', [player], player, 'spectatorid');

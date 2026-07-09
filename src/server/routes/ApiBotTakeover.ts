@@ -6,13 +6,25 @@ import {Request} from '../Request';
 import {Response} from '../Response';
 import {BotTakeoverManager} from '../bot/BotTakeoverManager';
 import {Phase} from '../../common/Phase';
+import {IPlayer} from '../IPlayer';
+import {sendBotTakeoverNotice} from '../TelegramBot';
 
 type BotTakeoverRouteDeps = Pick<BotTakeoverManager, 'list' | 'listPlayerIds' | 'start' | 'stop'>;
+type BotTakeoverNotifier = (recipients: ReadonlyArray<IPlayer>, botPlayer: IPlayer) => void;
+
+function notifyBotTakeoverStarted(recipients: ReadonlyArray<IPlayer>, botPlayer: IPlayer): void {
+  for (const recipient of recipients) {
+    void sendBotTakeoverNotice(recipient, botPlayer);
+  }
+}
 
 export class ApiBotTakeover extends Handler {
   public static readonly INSTANCE = new ApiBotTakeover();
 
-  constructor(private readonly manager: BotTakeoverRouteDeps = BotTakeoverManager.INSTANCE) {
+  constructor(
+    private readonly manager: BotTakeoverRouteDeps = BotTakeoverManager.INSTANCE,
+    private readonly notifyStarted: BotTakeoverNotifier = notifyBotTakeoverStarted,
+  ) {
     super();
   }
 
@@ -64,20 +76,25 @@ export class ApiBotTakeover extends Handler {
       return;
     }
 
+    let player: IPlayer;
     try {
-      game.getPlayerById(playerId);
+      player = game.getPlayerById(playerId);
     } catch (_err) {
       responses.notFound(req, res, 'player not found');
       return;
     }
 
     if (action === 'start') {
+      const wasActive = this.manager.listPlayerIds(game.id).includes(playerId);
       try {
         const entry = this.manager.start({
           gameId: game.id,
           playerId,
           serverId: ctx.ids.serverId,
         });
+        if (!wasActive) {
+          this.notifyStarted(game.players, player);
+        }
         responses.writeJson(res, ctx, {
           action,
           botPlayers: this.manager.listPlayerIds(game.id),

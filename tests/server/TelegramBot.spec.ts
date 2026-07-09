@@ -86,14 +86,6 @@ describe('TelegramBot', () => {
     };
   }
 
-  function writeTurnNoticeStore(storePath: string, key: string, record: TestTurnNoticeRecord): void {
-    fs.writeFileSync(storePath, JSON.stringify({[key]: record}, null, 2));
-  }
-
-  function readTurnNoticeStore(storePath: string): Record<string, TestTurnNoticeRecord> {
-    return JSON.parse(fs.readFileSync(storePath, 'utf8')) as Record<string, TestTurnNoticeRecord>;
-  }
-
   function captureConsole(method: 'log' | 'warn'): {messages: Array<string>, restore: () => void} {
     const original = console[method];
     const messages: Array<string> = [];

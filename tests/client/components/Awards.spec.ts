@@ -76,7 +76,7 @@ describe('Awards', () => {
     ).to.be.true;
   });
 
-  it('award details are hidden if they were previously hidden', async () => {
+  it('award details ignore hidden preferences while any award is available', async () => {
     const awards = [
       createAward({id: 1, funded: true}),
       createAward({id: 2, funded: false}),
@@ -93,7 +93,28 @@ describe('Awards', () => {
     });
 
     expect(
-      wrapper.findAllComponents(Award).every((awardWrapper) => !awardWrapper.isVisible()),
+      wrapper.findAllComponents(Award).every((awardWrapper) => awardWrapper.isVisible()),
+    ).to.be.true;
+  });
+
+  it('award details start showing if no awards are funded', async () => {
+    const awards = [
+      createAward({id: 1, funded: false}),
+      createAward({id: 2, funded: false}),
+    ];
+
+    const wrapper = shallowMount(Awards, {
+      ...globalConfig,
+      props: {
+        awards: awards,
+        preferences: {
+          show_award_details: false,
+        } as Readonly<Preferences>,
+      },
+    });
+
+    expect(
+      wrapper.findAllComponents(Award).every((awardWrapper) => awardWrapper.isVisible()),
     ).to.be.true;
   });
 
@@ -244,7 +265,7 @@ describe('Awards', () => {
     });
   });
 
-  it('shows award descriptions on click', async () => {
+  it('toggles award descriptions on click', async () => {
     const awards = [
       createAward({id: 1, funded: true}),
       createAward({id: 2, funded: false}),
@@ -256,11 +277,6 @@ describe('Awards', () => {
 
     const award0Description = getAward(awards[0].name).description;
     const award1Description = getAward(awards[1].name).description;
-    expect(wrapper.text()).to.not.include(award0Description);
-    expect(wrapper.text()).to.not.include(award1Description);
-
-    await wrapper.find('[data-test=toggle-description]').trigger('click');
-
     expect(wrapper.text()).to.include(award0Description);
     expect(wrapper.text()).to.include(award1Description);
 
@@ -268,5 +284,10 @@ describe('Awards', () => {
 
     expect(wrapper.text()).to.not.include(award0Description);
     expect(wrapper.text()).to.not.include(award1Description);
+
+    await wrapper.find('[data-test=toggle-description]').trigger('click');
+
+    expect(wrapper.text()).to.include(award0Description);
+    expect(wrapper.text()).to.include(award1Description);
   });
 });

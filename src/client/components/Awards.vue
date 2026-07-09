@@ -71,15 +71,16 @@ export default defineComponent({
     },
   },
   data() {
+    const fundedAwardCount = this.awards.filter((award) => award.playerName).length;
+    const hasAvailableAwards = fundedAwardCount < AWARD_COSTS.length;
     return {
-      showAwardDetails: this.preferences?.show_award_details,
-      showDescription: false,
+      showAwardDetails: hasAvailableAwards,
+      showDescription: hasAvailableAwards,
     };
   },
   methods: {
     toggleList() {
       this.showAwardDetails = !this.showAwardDetails;
-      PreferencesManager.INSTANCE.set('show_award_details', this.showAwardDetails);
     },
     toggleDescription() {
       this.showDescription = !this.showDescription;

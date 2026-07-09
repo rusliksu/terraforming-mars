@@ -16,6 +16,13 @@ describe('WaitingFor', () => {
   };
   type TestNotificationPermission = 'default' | 'denied' | 'granted';
   type FakeTimeoutHandler = Parameters<typeof window.setTimeout>[0];
+  const wrappers: Array<{unmount: () => void}> = [];
+
+  function mountWaitingFor(options: any) {
+    const wrapper = shallowMount(WaitingFor, options);
+    wrappers.push(wrapper);
+    return wrapper;
+  }
 
   class FakeWaitingForXHR {
     public static requests: Array<FakeWaitingForXHR> = [];
@@ -62,6 +69,7 @@ describe('WaitingFor', () => {
   };
 
   afterEach(() => {
+    wrappers.splice(0).forEach((wrapper) => wrapper.unmount());
     PreferencesManager.resetForTest();
     delete (global as any).Notification;
     delete (window as any).Notification;
@@ -71,7 +79,7 @@ describe('WaitingFor', () => {
   });
 
   it('renders player-input-factory when waitingfor is provided', () => {
-    const wrapper = shallowMount(WaitingFor, {
+    const wrapper = mountWaitingFor({
       ...globalConfig,
       global: {
         ...globalConfig.global,
@@ -94,7 +102,7 @@ describe('WaitingFor', () => {
   });
 
   it('shows "not your turn" when waitingfor is undefined', () => {
-    const wrapper = shallowMount(WaitingFor, {
+    const wrapper = mountWaitingFor({
       ...globalConfig,
       global: {
         ...globalConfig.global,
@@ -114,7 +122,7 @@ describe('WaitingFor', () => {
   it('shows a clearer pause-updates label in experimental UI', async () => {
     PreferencesManager.INSTANCE.set('experimental_ui', true);
 
-    const wrapper = shallowMount(WaitingFor, {
+    const wrapper = mountWaitingFor({
       ...globalConfig,
       global: {
         ...globalConfig.global,
@@ -147,7 +155,7 @@ describe('WaitingFor', () => {
   });
 
   it('shows cancel action for nested active action prompts when undo is enabled', () => {
-    const wrapper = shallowMount(WaitingFor, {
+    const wrapper = mountWaitingFor({
       ...globalConfig,
       global: {
         ...globalConfig.global,
@@ -180,7 +188,7 @@ describe('WaitingFor', () => {
   });
 
   it('does not show cancel action on the main action prompt', () => {
-    const wrapper = shallowMount(WaitingFor, {
+    const wrapper = mountWaitingFor({
       ...globalConfig,
       global: {
         ...globalConfig.global,
@@ -211,7 +219,7 @@ describe('WaitingFor', () => {
   });
 
   it('shows an undo action control on the main action prompt when undo is available', async () => {
-    const wrapper = shallowMount(WaitingFor, {
+    const wrapper = mountWaitingFor({
       ...globalConfig,
       global: {
         ...globalConfig.global,
@@ -263,7 +271,7 @@ describe('WaitingFor', () => {
   });
 
   it('shows cancel action for nested active action option prompts when undo is enabled', () => {
-    const wrapper = shallowMount(WaitingFor, {
+    const wrapper = mountWaitingFor({
       ...globalConfig,
       global: {
         ...globalConfig.global,
@@ -316,7 +324,7 @@ describe('WaitingFor', () => {
     (global as any).Notification = FakeNotification;
     (window as any).Notification = FakeNotification;
 
-    const wrapper = shallowMount(WaitingFor, {
+    const wrapper = mountWaitingFor({
       ...globalConfig,
       global: {
         ...globalConfig.global,
@@ -368,7 +376,7 @@ describe('WaitingFor', () => {
     console.warn = ((...args: Array<unknown>) => warnings.push(args.join(' '))) as typeof console.warn;
 
     try {
-      shallowMount(WaitingFor, {
+      mountWaitingFor({
         ...globalConfig,
         global: {
           ...globalConfig.global,
@@ -419,7 +427,7 @@ describe('WaitingFor', () => {
     console.warn = ((...args: Array<unknown>) => warnings.push(args.join(' '))) as typeof console.warn;
 
     try {
-      shallowMount(WaitingFor, {
+      mountWaitingFor({
         ...globalConfig,
         global: {
           ...globalConfig.global,

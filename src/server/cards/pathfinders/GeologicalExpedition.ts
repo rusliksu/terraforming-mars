@@ -9,11 +9,13 @@ import {IPlayer} from '../../IPlayer';
 import {BoardType} from '../../boards/BoardType';
 import {Space} from '../../boards/Space';
 import {Resource} from '../../../common/Resource';
+import {CardResource} from '../../../common/CardResource';
 import {OrOptions} from '../../inputs/OrOptions';
 import {SelectOption} from '../../inputs/SelectOption';
 import {Priority} from '../../deferredActions/Priority';
 import {SpaceType} from '../../../common/boards/SpaceType';
 import {Phase} from '../../../common/Phase';
+import {AddResourcesToCard} from '../../deferredActions/AddResourcesToCard';
 
 const VALID_BONUSES: Array<SpaceBonus> = [
   SpaceBonus.TITANIUM,
@@ -65,7 +67,7 @@ export class GeologicalExpedition extends Card implements IProjectCard {
 
     const bonuses = space.bonus;
     if (bonuses.length === 0) {
-      activePlayer.stock.add(Resource.STEEL, 1, {log: true /* , from: this.name */});
+      activePlayer.stock.add(Resource.STEEL, 1, {log: true, from: {card: this}});
       return;
     }
     const filtered = bonuses.filter((bonus) => VALID_BONUSES.includes(bonus));
@@ -76,7 +78,7 @@ export class GeologicalExpedition extends Card implements IProjectCard {
         SpaceBonus.toString(bonus),
         'Select')
         .andThen(() => {
-          activePlayer.game.grantSpaceBonus(activePlayer, bonus, 1);
+          this.grantBonus(activePlayer, bonus);
           return undefined;
         }));
     });
@@ -89,5 +91,41 @@ export class GeologicalExpedition extends Card implements IProjectCard {
       return;
     }
     activePlayer.defer(options, Priority.GAIN_RESOURCE_OR_PRODUCTION);
+  }
+
+  private grantBonus(player: IPlayer, bonus: SpaceBonus) {
+    const from = {card: this};
+    switch (bonus) {
+    case SpaceBonus.TITANIUM:
+      player.stock.add(Resource.TITANIUM, 1, {log: true, from});
+      break;
+    case SpaceBonus.STEEL:
+      player.stock.add(Resource.STEEL, 1, {log: true, from});
+      break;
+    case SpaceBonus.PLANT:
+      player.stock.add(Resource.PLANTS, 1, {log: true, from});
+      break;
+    case SpaceBonus.HEAT:
+      player.stock.add(Resource.HEAT, 1, {log: true, from});
+      break;
+    case SpaceBonus.MEGACREDITS:
+      player.stock.add(Resource.MEGACREDITS, 1, {log: true, from});
+      break;
+    case SpaceBonus.ENERGY:
+      player.stock.add(Resource.ENERGY, 1, {log: true, from});
+      break;
+    case SpaceBonus.MICROBE:
+      player.game.defer(new AddResourcesToCard(player, CardResource.MICROBE, {from}));
+      break;
+    case SpaceBonus.ANIMAL:
+      player.game.defer(new AddResourcesToCard(player, CardResource.ANIMAL, {from}));
+      break;
+    case SpaceBonus.DATA:
+      player.game.defer(new AddResourcesToCard(player, CardResource.DATA, {from}));
+      break;
+    case SpaceBonus.SCIENCE:
+      player.game.defer(new AddResourcesToCard(player, CardResource.SCIENCE, {from}));
+      break;
+    }
   }
 }

@@ -138,15 +138,17 @@ describe('ApiCreateGame', () => {
 
   it('simple create', async () => {
     const post = scaffolding.post(apiCreateGame, res);
+    const config = newGameConfig([{
+      name: 'Robot',
+      color: 'blue',
+      beginner: false,
+      handicap: 0,
+      first: true,
+      isBot: false,
+    }]);
+    config.seed = 0.123456789;
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(newGameConfig([{
-        name: 'Robot',
-        color: 'blue',
-        beginner: false,
-        handicap: 0,
-        first: true,
-        isBot: false,
-      }])));
+      req.emitter.emit('data', JSON.stringify(config));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -158,6 +160,7 @@ describe('ApiCreateGame', () => {
     const game = await scaffolding.ctx.gameLoader.getGame(model.id);
     expect(game).is.not.undefined;
     expect(game!.players[0].name).eq('Robot');
+    expect(game!.rng.seed).eq(config.seed);
     expect(game!.gameOptions.boardSelection).eq(RandomBoardOption.OFFICIAL);
     expect(ApiCreateGame.boardOptions(RandomBoardOption.OFFICIAL)).contains(game!.gameOptions.boardName);
   });

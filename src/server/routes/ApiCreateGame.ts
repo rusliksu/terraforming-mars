@@ -244,7 +244,8 @@ export class ApiCreateGame extends Handler {
             const serialized = await Database.getInstance().getGameVersion(gameOptions.clonedGamedId, 0);
             game = Cloner.clone(gameId, players, firstPlayerIdx, serialized);
           } else {
-            const seed = Math.random();
+            const seed = Number.isFinite(gameReq.seed) && gameReq.seed >= 0 && gameReq.seed < 1 ?
+              gameReq.seed : Math.random();
             game = Game.newInstance(gameId, players, players[firstPlayerIdx], spectatorId, gameOptions, seed);
           }
 

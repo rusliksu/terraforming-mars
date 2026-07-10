@@ -53,6 +53,8 @@ export interface IGame extends Logger {
   // Game-level data
   lastSaveId: number;
   saveGamePromise: Promise<void>;
+  /** True only for isolated planner forks. Simulation games must never persist or emit external effects. */
+  simulationMode: boolean;
   readonly rng: SeededRandom;
   readonly spectatorId: SpectatorId;
   deferredActions: DeferredActionsQueue;

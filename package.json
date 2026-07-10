@@ -94,11 +94,13 @@
     "test": "npm run test:server && npm run test:client",
     "test:server": "mocha --import=tsx --require tests/testing/setup.ts \"tests/*.spec.ts\" \"tests/!(client|integration)/**/*.spec.ts\"",
     "test:integration": "mocha --import=tsx --no-timeouts \"tests/integration/**/*.spec.ts\"",
+    "test:sim-host": "mocha --import=tsx --require tests/testing/setup.ts \"tests/server/tools/TmSimHost.spec.ts\"",
     "test:postgresql": "mocha --import=tsx \"tests/integration/PostgreSQL.spec.ts\"",
     "test:client": "cross-env NODE_ENV=development mochapack --require tests/client/components/setup.ts \"tests/client/**/*.spec.ts\"",
     "test:client:watch": "cross-env NODE_ENV=development mochapack --watch --require tests/client/components/setup.ts \"tests/client/**/*.spec.ts\"",
     "dev:client": "cross-env NODE_ENV=development webpack --watch",
-    "dev:server": "cross-env NODE_ENV=development tsx watch src/server/server.ts"
+    "dev:server": "cross-env NODE_ENV=development tsx watch src/server/server.ts",
+    "sim-host": "tsx src/server/tools/tm-sim-host.ts"
   },
   "repository": {
     "type": "git",

@@ -595,6 +595,43 @@ describe('Game', () => {
     ]);
   });
 
+  it('does not persist results or saves when a simulation game ends', async () => {
+    const player = TestPlayer.BLUE.newPlayer({name: 'Simulation player'});
+    const game = Game.newInstance('g-simulation-end', [player], player, 'spectatorid');
+    game.simulationMode = true;
+
+    let savedResults = false;
+    const database = new InMemoryDatabase();
+    database.saveGameResults = () => {
+      savedResults = true;
+    };
+    let savedGame = false;
+    let completedGame = false;
+    const gameLoader = noopGameLoader();
+    gameLoader.saveGame = () => {
+      savedGame = true;
+      return Promise.resolve();
+    };
+    gameLoader.completeGame = () => {
+      completedGame = true;
+      return Promise.resolve();
+    };
+    setTestDatabase(database);
+    setTestGameLoader(gameLoader);
+
+    try {
+      await (game as unknown as {gotoEndGame: () => Promise<void>}).gotoEndGame();
+    } finally {
+      restoreTestGameLoader();
+      restoreTestDatabase();
+    }
+
+    expect(game.phase).eq(Phase.END);
+    expect(savedResults).eq(false);
+    expect(savedGame).eq(false);
+    expect(completedGame).eq(false);
+  });
+
   it('Final greenery placement in order of the current generation', () => {
     const player1 = new TestPlayer('blue');
     const player2 = new TestPlayer('green');
@@ -1007,6 +1044,7 @@ describe('Game', () => {
       'resettable',
       'rng',
       'saveGamePromise',
+      'simulationMode',
       'underworldDraftEnabled',
     ];
     const serializedValuesNotInGame: Array<keyof SerializedGame> = [

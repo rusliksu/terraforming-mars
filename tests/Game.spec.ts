@@ -1007,6 +1007,7 @@ describe('Game', () => {
       'resettable',
       'rng',
       'saveGamePromise',
+      'simulationMode',
       'underworldDraftEnabled',
     ];
     const serializedValuesNotInGame: Array<keyof SerializedGame> = [

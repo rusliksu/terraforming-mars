@@ -113,6 +113,7 @@ export class Game implements IGame, Logger {
   // Game-level data
   public lastSaveId: number = 0;
   public saveGamePromise: Promise<void> = Promise.resolve();
+  public simulationMode: boolean = false;
   private clonedGamedId: string | undefined;
   public rng: SeededRandom;
   public spectatorId: SpectatorId;
@@ -482,6 +483,9 @@ export class Game implements IGame, Logger {
   }
 
   public save(): void {
+    if (this.simulationMode) {
+      return;
+    }
     this.saveGamePromise = GameLoader.getInstance().saveGame(this);
   }
 
@@ -1178,6 +1182,10 @@ export class Game implements IGame, Logger {
       });
     });
 
+    if (this.simulationMode) {
+      this.phase = Phase.END;
+      return;
+    }
     Database.getInstance().saveGameResults(this.id, this.players.length, this.generation, this.gameOptions, scores);
     this.phase = Phase.END;
     const gameLoader = GameLoader.getInstance();
@@ -1768,7 +1776,7 @@ export class Game implements IGame, Logger {
     return addDays(this.createdTime, days).getTime();
   }
 
-  public static deserialize(d: SerializedGame): Game {
+  public static deserialize(d: SerializedGame, options: {simulation?: boolean} = {}): Game {
     const gameOptions = deserializeGameOptions(d);
 
     const players = d.players.map((element) => Player.deserialize(element));
@@ -1790,6 +1798,7 @@ export class Game implements IGame, Logger {
     // TODO(kberg): remove ?? generateGameName(...) by 2026-07-01
     const name = d.name ?? generateGameName(UnseededRandom.INSTANCE);
     const game = new Game(d.id, name, players, first, d.activePlayer, d.spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, d.tags);
+    game.simulationMode = options.simulation === true;
     game.resettable = true;
     game.spectatorId = d.spectatorId;
     game.createdTime = new Date(d.createdTimeMs);
@@ -1917,7 +1926,7 @@ export class Game implements IGame, Logger {
       game.activePlayer.takeAction(/* saveBeforeTakingAction */ false);
     }
 
-    if (game.phase === Phase.END) {
+    if (game.phase === Phase.END && !game.simulationMode) {
       GameLoader.getInstance().mark(game.id);
     }
     return game;

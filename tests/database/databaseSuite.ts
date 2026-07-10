@@ -312,6 +312,37 @@ export function describeDatabaseSuite<T extends ITestDatabase>(dtor: DatabaseTes
 
           expect(await db.getLastSaveTimeMs(game.id)).eq(resumedPlaySeconds * 1000);
         });
+
+        it('gets latest meaningful save times for multiple games', async () => {
+          expect(db.setSaveCreatedTime).is.not.undefined;
+          const setSaveCreatedTime = db.setSaveCreatedTime!;
+          const player = TestPlayer.BLACK.newPlayer();
+          const maintenancePlayer = TestPlayer.BLUE.newPlayer();
+          const freshGame = Game.newInstance('game-id-batch-fresh', [player], player, 'spectatorid');
+          const maintenanceGame = Game.newInstance('game-id-batch-maintenance', [maintenancePlayer], maintenancePlayer, 'spectatorid2');
+          await db.lastSaveGamePromise;
+          await db.saveGame(freshGame);
+          await db.saveGame(maintenanceGame);
+          await db.saveGame(maintenanceGame);
+
+          await setSaveCreatedTime.call(db, freshGame.id, 0, 2000);
+          await setSaveCreatedTime.call(db, freshGame.id, 1, 2060);
+
+          const latestRealSeconds = 3060;
+          await setSaveCreatedTime.call(db, maintenanceGame.id, 0, 3000);
+          await setSaveCreatedTime.call(db, maintenanceGame.id, 1, latestRealSeconds);
+          await setSaveCreatedTime.call(db, maintenanceGame.id, 2, latestRealSeconds + (2 * 86400));
+
+          const saveTimes = await db.getLastSaveTimesMs([
+            freshGame.id,
+            maintenanceGame.id,
+            'game-id-batch-missing' as GameId,
+          ]);
+
+          expect(saveTimes.get(freshGame.id)).eq(2060 * 1000);
+          expect(saveTimes.get(maintenanceGame.id)).eq(latestRealSeconds * 1000);
+          expect(saveTimes.get('game-id-batch-missing' as GameId)).is.undefined;
+        });
       }
     }
 

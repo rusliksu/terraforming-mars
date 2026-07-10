@@ -3,7 +3,7 @@ import {ImmigrantCity} from '../../../src/server/cards/base/ImmigrantCity';
 import {TharsisRepublic} from '../../../src/server/cards/corporation/TharsisRepublic';
 import {IGame} from '../../../src/server/IGame';
 import {Resource} from '../../../src/common/Resource';
-import {churn, runAllActions, runNextAction} from '../../TestingUtils';
+import {churn, formatMessage, runAllActions, runNextAction} from '../../TestingUtils';
 import {TestPlayer} from '../../TestPlayer';
 import {SelectSpace} from '../../../src/server/inputs/SelectSpace';
 import {testGame} from '../../TestGame';
@@ -38,6 +38,7 @@ describe('ImmigrantCity', () => {
     game.addCity(player, game.board.getAvailableSpacesOnLand(player)[0]);
     runNextAction(game);
     expect(player.production.megacredits).to.eq(-1);
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 1 M€ production because of Immigrant City');
   });
 
   it('Can play at -4 M€ production', () => {

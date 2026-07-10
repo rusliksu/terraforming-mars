@@ -232,7 +232,10 @@ describe('TelegramBot', () => {
 
   it('suppresses turn notice when telegram token is missing', async () => {
     const original = process.env.TM_BOT_TOKEN;
+    const originalDisabled = process.env.TM_DISABLE_TELEGRAM;
+    const warnings = captureConsole('warn');
     delete process.env.TM_BOT_TOKEN;
+    delete process.env.TM_DISABLE_TELEGRAM;
     try {
       const sent = await sendTurnNotice({
         name: 'Руслан',
@@ -241,11 +244,22 @@ describe('TelegramBot', () => {
         lastNoticeMessageId: -1,
       });
       expect(sent).eq(false);
+      expect(warnings.messages).has.length(1);
+      expect(warnings.messages[0]).contains('Telegram turn notice skipped');
+      expect(warnings.messages[0]).contains('missing TM_BOT_TOKEN');
+      expect(warnings.messages[0]).contains('player=p-ruslan');
+      expect(warnings.messages[0]).does.not.contain('123456');
     } finally {
+      warnings.restore();
       if (original === undefined) {
         delete process.env.TM_BOT_TOKEN;
       } else {
         process.env.TM_BOT_TOKEN = original;
+      }
+      if (originalDisabled === undefined) {
+        delete process.env.TM_DISABLE_TELEGRAM;
+      } else {
+        process.env.TM_DISABLE_TELEGRAM = originalDisabled;
       }
     }
   });
@@ -425,6 +439,47 @@ describe('TelegramBot', () => {
     } finally {
       warnings.restore();
       telegram.restore();
+    }
+  });
+
+  it('warns when game start notice cannot send because telegram token is missing', async () => {
+    const original = process.env.TM_BOT_TOKEN;
+    const originalDisabled = process.env.TM_DISABLE_TELEGRAM;
+    const warnings = captureConsole('warn');
+    delete process.env.TM_BOT_TOKEN;
+    delete process.env.TM_DISABLE_TELEGRAM;
+    try {
+      const sent = await sendGameStartNotice({
+        name: 'Руслан',
+        id: 'p-ruslan',
+        telegramID: '123456',
+        lastNoticeMessageId: -1,
+        game: {
+          id: 'g-telegram',
+          generation: 1,
+          phase: 'initial_drafting',
+          players: [],
+        },
+      });
+
+      expect(sent).eq(false);
+      expect(warnings.messages).has.length(1);
+      expect(warnings.messages[0]).contains('Telegram start notice skipped');
+      expect(warnings.messages[0]).contains('missing TM_BOT_TOKEN');
+      expect(warnings.messages[0]).contains('player=p-ruslan');
+      expect(warnings.messages[0]).does.not.contain('123456');
+    } finally {
+      warnings.restore();
+      if (original === undefined) {
+        delete process.env.TM_BOT_TOKEN;
+      } else {
+        process.env.TM_BOT_TOKEN = original;
+      }
+      if (originalDisabled === undefined) {
+        delete process.env.TM_DISABLE_TELEGRAM;
+      } else {
+        process.env.TM_DISABLE_TELEGRAM = originalDisabled;
+      }
     }
   });
 

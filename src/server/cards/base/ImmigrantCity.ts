@@ -48,7 +48,7 @@ export class ImmigrantCity extends Card implements IProjectCard {
   public onTilePlaced(cardOwner: IPlayer, activePlayer: IPlayer, space: Space) {
     if (Board.isCitySpace(space)) {
       cardOwner.game.defer(
-        new GainProduction(cardOwner, Resource.MEGACREDITS),
+        new GainProduction(cardOwner, Resource.MEGACREDITS, {from: {card: this}}),
         cardOwner.id !== activePlayer.id ? Priority.OPPONENT_TRIGGER : undefined,
       );
     }

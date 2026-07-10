@@ -10,6 +10,7 @@ export interface IGameLoader {
   add(game: IGame): Promise<void>;
   getIds(): Promise<Array<GameIdLedger>>;
   getLastSaveTimeMs(gameId: GameId): Promise<number | undefined>;
+  getLastSaveTimesMs(gameIds: Array<GameId>): Promise<Map<GameId, number | undefined>>;
   /**
    * Fetches a game from the GameLoader cache.
    *

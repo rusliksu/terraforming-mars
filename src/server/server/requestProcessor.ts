@@ -127,9 +127,15 @@ function getHandler(pathname: string): IHandler | undefined {
   return undefined;
 }
 
+function observeLatency(start: bigint, pathnameForLatency: string | undefined): void {
+  const duration = Number(process.hrtime.bigint() - start) / 1_000_000;
+  metrics.latency.observe({path: pathnameForLatency}, duration);
+}
+
 export function processRequest(req: Request, res: Response): void {
   const start = process.hrtime.bigint();
   let pathnameForLatency: string | undefined = undefined;
+  let observeInFinally = true;
   try {
     const clientIp = getClientIp(req);
     ipTracker.add(clientIp.address);
@@ -183,13 +189,22 @@ export function processRequest(req: Request, res: Response): void {
     const handler = getHandler(pathname);
     if (handler !== undefined) {
       metrics.count.inc({path: pathname, method: req.method});
-      handler.processRequest(req, res, ctx);
+      const handlerPromise = Promise.resolve(handler.processRequest(req, res, ctx));
+      observeInFinally = false;
+      void handlerPromise.then(
+        () => observeLatency(start, pathnameForLatency),
+        (err) => {
+          observeLatency(start, pathnameForLatency);
+          console.warn('error processing request', req.method, req.url, err);
+        },
+      );
     } else {
       pathnameForLatency = undefined;
       responses.notFound(req, res);
     }
   } finally {
-    const duration = Number(process.hrtime.bigint() - start) / 1_000_000;
-    metrics.latency.observe({path: pathnameForLatency}, Number(duration));
+    if (observeInFinally) {
+      observeLatency(start, pathnameForLatency);
+    }
   }
 }

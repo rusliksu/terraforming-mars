@@ -90,6 +90,27 @@ describe('TmSimHost', () => {
 
     const passIndex = findOptionIndex(sellObserver.waitingFor, /pass/i);
     expect(passIndex).gte(0, JSON.stringify(sellObserver.waitingFor));
+    const staleContinuation = host.handle({
+      kind: 'continue_batch_v1',
+      requestId: 'continue-stale',
+      stateVersion: 'stale-state',
+      knowledgeMode: 'oracle_teacher',
+      observerId: blue.id,
+      actorId: blue.id,
+      branches: [{
+        candidateId: 'stale-pass',
+        branchHandle: sell.branchHandle!,
+        promptFingerprint: sell.promptFingerprint!,
+        input: {
+          type: 'or',
+          index: passIndex,
+          response: {type: 'option'},
+        } as InputResponse,
+      }],
+    });
+    expect(staleContinuation.branches[0].status).eq('stale');
+    expect(staleContinuation.branches[0].warnings).deep.eq(['branch_handle_state_version_mismatch']);
+
     const continuation = host.handle({
       kind: 'continue_batch_v1',
       requestId: 'continue-1',

@@ -71,6 +71,7 @@ type StoredBranch = {
   snapshot: SerializedGame;
   observerId: string;
   knowledgeMode: TmSimKnowledgeModeV1;
+  stateVersion: string;
   expiresAt: number;
 };
 
@@ -289,6 +290,9 @@ export class TmSimHost {
       if (stored.knowledgeMode !== request.knowledgeMode) {
         return this.unsupportedResult(branch.candidateId, 'branch_handle_knowledge_mode_mismatch');
       }
+      if (stored.stateVersion !== request.stateVersion) {
+        return this.staleStateResult(branch.candidateId);
+      }
       let game: Game;
       try {
         game = deserializeSimulationGame(stored.snapshot);
@@ -330,14 +334,21 @@ export class TmSimHost {
         warnings.push('successor_has_deferred_actions');
       }
       let branchHandle: string | null = null;
+      const successorStateVersion = buildSuccessorVersion(request.stateVersion, observer);
       if (stable && game.deferredActions.length === 0) {
-        branchHandle = this.storeBranch(game, request.observerId, request.knowledgeMode, ttlOverride);
+        branchHandle = this.storeBranch(
+          game,
+          request.observerId,
+          request.knowledgeMode,
+          successorStateVersion,
+          ttlOverride,
+        );
       }
       return {
         candidateId: branch.candidateId,
         status: 'ok',
         branchHandle,
-        successorStateVersion: buildSuccessorVersion(request.stateVersion, observer),
+        successorStateVersion,
         promptFingerprint: nextFingerprint,
         activePlayerId,
         stableMainActionBoundary: stable,
@@ -357,6 +368,7 @@ export class TmSimHost {
     game: Game,
     observerId: string,
     knowledgeMode: TmSimKnowledgeModeV1,
+    stateVersion: string,
     ttlOverride?: number,
   ): string {
     this.purgeExpired();
@@ -373,6 +385,7 @@ export class TmSimHost {
       snapshot: game.serialize(),
       observerId,
       knowledgeMode,
+      stateVersion,
       expiresAt: this.now() + ttlMs,
     });
     return handle;
@@ -424,6 +437,20 @@ export class TmSimHost {
       stableMainActionBoundary: false,
       observer: null,
       warnings: ['prompt_fingerprint_mismatch'],
+    };
+  }
+
+  private staleStateResult(candidateId: string): TmSimBranchResultV1 {
+    return {
+      candidateId,
+      status: 'stale',
+      branchHandle: null,
+      successorStateVersion: null,
+      promptFingerprint: null,
+      activePlayerId: null,
+      stableMainActionBoundary: false,
+      observer: null,
+      warnings: ['branch_handle_state_version_mismatch'],
     };
   }
 

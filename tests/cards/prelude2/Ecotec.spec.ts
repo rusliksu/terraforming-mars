@@ -26,7 +26,7 @@ describe('Ecotec', () => {
     card.process(player, 1);
     const options = cast(churn(undefined, player), OrOptions);
     const addMicrobe = cast(options.options[0], SelectOption);
-    addMicrobe.cb();
+    addMicrobe.cb(undefined);
 
     expect(tardigrades.resourceCount).eq(1);
   });

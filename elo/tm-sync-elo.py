@@ -1306,6 +1306,7 @@ def fetch_stats_games() -> List[dict]:
                 "map": board_name or options.get("boardName") or "",
                 "generation": generations or 0,
                 "playerCount": player_count or len(results),
+                "gameOptions": options,
                 "completedTime": completed_time or 0,
                 "createdTime": created_time or 0,
                 "results": results,
@@ -1516,6 +1517,83 @@ def record_card_stat(cards: Dict[str, dict], card_metadata: Dict[str, dict], car
         card_stat["eloDeltaCount"] += 1
 
 
+def build_early_game_winner_stats(games: List[dict]) -> dict:
+    resource_keys = ("megacredits", "steel", "titanium", "plants", "energy", "heat")
+    generations: List[dict] = []
+
+    for generation in (1, 2):
+        card_counts: Dict[str, int] = {}
+        card_games: Dict[str, int] = {}
+        colony_counts: Dict[str, int] = {}
+        colony_games: Dict[str, int] = {}
+        production_totals = {key: 0.0 for key in resource_keys}
+        card_winner_samples = 0
+        colony_winner_samples = 0
+        production_winner_samples = 0
+
+        for game in games:
+            results = game.get("results") or []
+            colonies_enabled = (game.get("gameOptions") or {}).get("coloniesExtension") is True
+            for winner in (result for result in results if safe_int(result.get("place")) == 1):
+                early_game = (winner.get("score") or {}).get("earlyGameStats") or {}
+                if early_game.get("version") != 1:
+                    continue
+                snapshot = early_game.get(str(generation)) or early_game.get(generation)
+                if not isinstance(snapshot, dict):
+                    continue
+
+                production = snapshot.get("production")
+                if isinstance(production, dict) and all(isinstance(production.get(key), (int, float)) for key in resource_keys):
+                    production_winner_samples += 1
+                    for key in resource_keys:
+                        production_totals[key] += float(production[key])
+
+                if snapshot.get("complete") is not True:
+                    continue
+                card_winner_samples += 1
+                cards = [str(name) for name in snapshot.get("projectCards") or [] if str(name).strip()]
+                for name in cards:
+                    card_counts[name] = card_counts.get(name, 0) + 1
+                for name in set(cards):
+                    card_games[name] = card_games.get(name, 0) + 1
+
+                if colonies_enabled:
+                    colony_winner_samples += 1
+                    colonies = [str(name) for name in snapshot.get("colonies") or [] if str(name).strip()]
+                    for name in colonies:
+                        colony_counts[name] = colony_counts.get(name, 0) + 1
+                    for name in set(colonies):
+                        colony_games[name] = colony_games.get(name, 0) + 1
+
+        def finalize_counts(counts: Dict[str, int], per_game: Dict[str, int], denominator: int) -> List[dict]:
+            return [
+                {
+                    "name": name,
+                    "count": count,
+                    "winnerGames": per_game.get(name, 0),
+                    "winnerGamePct": round1(per_game.get(name, 0) / denominator * 100) if denominator else 0,
+                }
+                for name, count in sorted(counts.items(), key=lambda item: (-item[1], item[0]))
+            ]
+
+        generations.append(
+            {
+                "generation": generation,
+                "cardWinnerSamples": card_winner_samples,
+                "colonyWinnerSamples": colony_winner_samples,
+                "productionWinnerSamples": production_winner_samples,
+                "cards": finalize_counts(card_counts, card_games, card_winner_samples),
+                "colonies": finalize_counts(colony_counts, colony_games, colony_winner_samples),
+                "averageProduction": {
+                    key: round1(production_totals[key] / production_winner_samples) if production_winner_samples else None
+                    for key in resource_keys
+                },
+            }
+        )
+
+    return {"generations": generations}
+
+
 def build_stats(games: List[dict], card_metadata: Dict[str, dict], elo_games: List[dict] | None = None) -> dict:
     players: Dict[str, dict] = {}
     project_cards: Dict[str, dict] = {}
@@ -1644,6 +1722,7 @@ def build_stats(games: List[dict], card_metadata: Dict[str, dict], elo_games: Li
         "cardStats": finalize_card_stats(project_cards),
         "corporationStats": finalize_card_stats(corporation_cards),
         "preludeStats": finalize_card_stats(prelude_cards),
+        "earlyGameWinnerStats": build_early_game_winner_stats(competitive_games),
     }
 
 

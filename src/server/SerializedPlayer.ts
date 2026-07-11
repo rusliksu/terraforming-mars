@@ -8,6 +8,7 @@ import {GlobalParameter} from '../common/GlobalParameter';
 import {DiscordId} from './server/auth/discord';
 import {UnderworldPlayerData} from '../common/underworld/UnderworldPlayerData';
 import {DeltaProjectPlayerModel} from '../common/models/DeltaProjectPlayerModel';
+import {EarlyGameStats} from './game/EarlyGameStats';
 
 interface DeprecatedFields {
 }
@@ -40,6 +41,7 @@ export interface SerializedPlayer extends DeprecatedFields{
   draftHand: Array<CardName>,
   energy: number;
   energyProduction: number;
+  earlyGameStats?: EarlyGameStats;
   fleetSize: number;
   globalParameterSteps: Record<GlobalParameter, number>;
   handicap: number;

@@ -80,6 +80,7 @@ import {AlliedParty} from '../common/turmoil/Types';
 import {PlayedCards} from './cards/PlayedCards';
 import {From} from './logs/From';
 import {SelectStandardProjectToPlay} from './inputs/SelectStandardProjectToPlay';
+import {EarlyGameStats} from './game/EarlyGameStats';
 import {DEFAULT_PRELUDE_HANDICAP, normalizePreludeHandicap} from '../common/game/NewGameConfig';
 
 const THROW_STATE_ERRORS = Boolean(process.env.THROW_STATE_ERRORS);
@@ -199,6 +200,7 @@ export class Player implements IPlayer {
   public actionsTakenThisGame: number = 0;
   public victoryPointsByGeneration: Array<number> = [];
   public totalDelegatesPlaced: number = 0;
+  public earlyGameStats: EarlyGameStats = {version: 1};
   public globalParameterSteps: Record<GlobalParameter, number> = {...DEFAULT_GLOBAL_PARAMETER_STEPS};
 
   public user?: DiscordId;
@@ -2018,6 +2020,7 @@ export class Player implements IPlayer {
       actionsTakenThisGame: this.actionsTakenThisGame,
       victoryPointsByGeneration: this.victoryPointsByGeneration,
       totalDelegatesPlaced: this.totalDelegatesPlaced,
+      earlyGameStats: this.earlyGameStats,
       underworldData: this.underworldData,
       alliedParty: this._alliedParty,
       draftHand: this.draftHand.map(toName),
@@ -2079,6 +2082,7 @@ export class Player implements IPlayer {
     player.titanium = d.titanium;
     player.titaniumValue = d.titaniumValue;
     player.totalDelegatesPlaced = d.totalDelegatesPlaced;
+    player.earlyGameStats = d.earlyGameStats?.version === 1 ? d.earlyGameStats : {version: 1};
     player.colonies.usedTradeFleets = d.tradesThisGeneration;
     player.turmoilPolicyActionUsed = d.turmoilPolicyActionUsed;
     player.politicalAgendasActionUsedCount = d.politicalAgendasActionUsedCount;

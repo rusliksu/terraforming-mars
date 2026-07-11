@@ -37,6 +37,9 @@ import {InMemoryDatabase} from './testing/InMemoryDatabase';
 import {Score} from '../src/server/IGame';
 import {IGameLoader} from '../src/server/database/IGameLoader';
 import {ColonyName} from '../src/common/colonies/ColonyName';
+import {Ceres} from '../src/server/colonies/Ceres';
+import {Triton} from '../src/server/colonies/Triton';
+import {captureEarlyGameStats} from '../src/server/game/EarlyGameStats';
 
 function noopGameLoader(): IGameLoader {
   return {
@@ -593,6 +596,79 @@ describe('Game', () => {
       {playerName: 'Bob', user: 'bob-user', playerScore: 80, place: 1, megacredits: 30},
       {playerName: 'Alice', user: 'alice-user', playerScore: 80, place: 2, megacredits: 12},
     ]);
+  });
+
+  it('captures generation 1 and 2 cards, colonies, and production in the final score', async () => {
+    const player = TestPlayer.BLUE.newPlayer({name: 'Alice'});
+    const otherPlayer = TestPlayer.RED.newPlayer({name: 'Bob'});
+    const game = Game.newInstance('g-early-stats-game', [player, otherPlayer], player, 'spectatorid');
+    const ceres = new Ceres();
+    const triton = new Triton();
+    game.colonies = [ceres, triton];
+
+    player.playedCards.push(new Birds());
+    ceres.colonies.push(player.id);
+    player.production.add(Resource.MEGACREDITS, 5);
+    player.production.add(Resource.ENERGY, 2);
+    game.generation = 1;
+    captureEarlyGameStats(game);
+
+    player.playedCards.push(new WaterImportFromEuropa());
+    triton.colonies.push(player.id);
+    player.production.add(Resource.STEEL, 1);
+    game.generation = 2;
+    captureEarlyGameStats(game);
+
+    expect(player.earlyGameStats).deep.eq({
+      version: 1,
+      1: {
+        complete: true,
+        projectCards: [CardName.BIRDS],
+        colonies: [ColonyName.CERES],
+        production: {megacredits: 5, steel: 0, titanium: 0, plants: 0, energy: 2, heat: 0},
+      },
+      2: {
+        complete: true,
+        projectCards: [CardName.WATER_IMPORT_FROM_EUROPA],
+        colonies: [ColonyName.TRITON],
+        production: {megacredits: 5, steel: 1, titanium: 0, plants: 0, energy: 2, heat: 0},
+      },
+    });
+    expect(Game.deserialize(game.serialize()).players[0].earlyGameStats).deep.eq(player.earlyGameStats);
+
+    let savedScores: Array<Score> = [];
+    const database = new InMemoryDatabase();
+    database.saveGameResults = (_gameId, _players, _generations, _gameOptions, scores) => {
+      savedScores = scores;
+    };
+    setTestDatabase(database);
+    setTestGameLoader(noopGameLoader());
+    try {
+      await (game as unknown as {gotoEndGame: () => Promise<void>}).gotoEndGame();
+    } finally {
+      restoreTestGameLoader();
+      restoreTestDatabase();
+    }
+
+    const aliceScore = savedScores.find((score) => score.playerName === 'Alice');
+    expect(aliceScore?.earlyGameStats).deep.eq(player.earlyGameStats);
+  });
+
+  it('marks generation 2 card and colony stats incomplete when generation 1 was not captured', () => {
+    const player = TestPlayer.BLUE.newPlayer({name: 'Legacy player'});
+    const game = Game.newInstance('g-legacy-early-stats', [player], player, 'spectatorid');
+    player.playedCards.push(new Birds());
+    player.production.add(Resource.ENERGY, 2);
+    game.generation = 2;
+
+    captureEarlyGameStats(game);
+
+    expect(player.earlyGameStats[2]).deep.eq({
+      complete: false,
+      projectCards: [],
+      colonies: [],
+      production: {megacredits: 0, steel: 0, titanium: 0, plants: 0, energy: 2, heat: 0},
+    });
   });
 
   it('does not persist results or saves when a simulation game ends', async () => {

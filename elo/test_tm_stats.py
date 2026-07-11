@@ -521,6 +521,7 @@ def main() -> None:
             "server": "knightbyte",
             "generation": 8,
             "playerCount": 2,
+            "gameOptions": {"coloniesExtension": True},
             "createdTime": 100,
             "completedTime": 1000,
             "results": [
@@ -532,6 +533,21 @@ def main() -> None:
                     "corp": "Teractor",
                     "score": {
                         "playerScore": 100,
+                        "earlyGameStats": {
+                            "version": 1,
+                            "1": {
+                                "complete": True,
+                                "projectCards": ["Asteroid", "Mine"],
+                                "colonies": ["Ceres"],
+                                "production": {"megacredits": 5, "steel": 1, "titanium": 0, "plants": 0, "energy": 2, "heat": 0},
+                            },
+                            "2": {
+                                "complete": True,
+                                "projectCards": ["AI Central"],
+                                "colonies": ["Triton"],
+                                "production": {"megacredits": 9, "steel": 1, "titanium": 2, "plants": 1, "energy": 3, "heat": 0},
+                            },
+                        },
                         "victoryPointsBreakdown": {
                             "terraformRating": 40,
                             "victoryPoints": 25,
@@ -744,6 +760,20 @@ def main() -> None:
     assert card_by_name["Mine"]["played"] == 2
     assert {card["name"]: card for card in stats["corporationStats"]}["Teractor"]["played"] == 1
     assert {card["name"]: card for card in stats["preludeStats"]}["Applied Science"]["played"] == 1
+    early_by_generation = {row["generation"]: row for row in stats["earlyGameWinnerStats"]["generations"]}
+    assert early_by_generation[1]["cardWinnerSamples"] == 1
+    assert early_by_generation[1]["colonyWinnerSamples"] == 1
+    assert early_by_generation[1]["productionWinnerSamples"] == 1
+    assert early_by_generation[1]["cards"][0] == {"name": "Asteroid", "count": 1, "winnerGames": 1, "winnerGamePct": 100.0}
+    assert early_by_generation[1]["colonies"][0] == {"name": "Ceres", "count": 1, "winnerGames": 1, "winnerGamePct": 100.0}
+    assert early_by_generation[1]["averageProduction"]["megacredits"] == 5.0
+    assert early_by_generation[2]["cards"][0]["name"] == "AI Central"
+    assert early_by_generation[2]["colonies"][0]["name"] == "Triton"
+    assert early_by_generation[2]["averageProduction"]["titanium"] == 2.0
+    stats_ui = (BASE_DIR / "index.html").read_text(encoding="utf-8")
+    assert 'id="tmStatsEarlyGame"' in stats_ui
+    assert "function renderStatsEarlyGame()" in stats_ui
+    assert "renderStatsEarlyGame();" in stats_ui
     print("tm stats regressions: OK")
 
 

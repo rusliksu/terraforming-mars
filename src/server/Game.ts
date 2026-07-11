@@ -84,6 +84,7 @@ import {BoardName} from '../common/boards/BoardName';
 import {SpaceType} from '../common/boards/SpaceType';
 import {ICard} from './cards/ICard';
 import {generateGameName} from './GameName';
+import {captureEarlyGameStats} from './game/EarlyGameStats';
 
 // Can be overridden by tests
 let createGameLog: () => Array<LogMessage> = () => [];
@@ -807,6 +808,7 @@ export class Game implements IGame, Logger {
   }
 
   private gotoProductionPhase(): void {
+    captureEarlyGameStats(this);
     this.phase = Phase.PRODUCTION;
     this.passedPlayers.clear();
     this.someoneHasRemovedOtherPlayersPlants = false;
@@ -1179,6 +1181,7 @@ export class Game implements IGame, Logger {
         playerScore: entry.vpb.total,
         megacredits: entry.player.megaCredits,
         victoryPointsBreakdown: entry.vpb,
+        earlyGameStats: entry.player.earlyGameStats,
       });
     });
 

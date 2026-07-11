@@ -34,6 +34,7 @@ import {UnderworldData} from './underworld/UnderworldData';
 import {OrOptions} from './inputs/OrOptions';
 import {IStandardProjectCard} from './cards/IStandardProjectCard';
 import {VictoryPointsBreakdown} from '../common/game/VictoryPointsBreakdown';
+import {EarlyGameStats} from './game/EarlyGameStats';
 
 export interface Score {
   corporation: String;
@@ -44,6 +45,7 @@ export interface Score {
   place?: number;
   megacredits?: number;
   victoryPointsBreakdown?: VictoryPointsBreakdown;
+  earlyGameStats?: EarlyGameStats;
 }
 
 export interface IGame extends Logger {

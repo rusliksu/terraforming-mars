@@ -36,6 +36,7 @@ import {PlayedCards} from './cards/PlayedCards';
 import {From} from './logs/From';
 import {Tag} from '../common/cards/Tag';
 import {SelectStandardProjectToPlay} from './inputs/SelectStandardProjectToPlay';
+import {EarlyGameStats} from './game/EarlyGameStats';
 
 /**
  * Represents additional costs a player must pay to execute an action.
@@ -178,6 +179,7 @@ export interface IPlayer {
   actionsTakenThisGame: number;
   victoryPointsByGeneration: Array<number>;
   totalDelegatesPlaced: number;
+  earlyGameStats: EarlyGameStats;
 
   underworldData: UnderworldPlayerData;
   deltaProjectData?: DeltaProjectPlayerModel;

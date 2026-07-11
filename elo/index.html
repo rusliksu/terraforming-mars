@@ -251,6 +251,13 @@ a:hover { text-decoration: underline; }
 .tm-stats-controls input,
 .tm-stats-controls select { background: #16213e; color: #e0e0e0; border: 1px solid #333; border-radius: 6px; padding: 7px 10px; }
 .tm-stats-empty { text-align: center; color: #666; padding: 18px; }
+.tm-stats-opening-grid { display: grid; grid-template-columns: repeat(2, minmax(280px, 1fr)); gap: 10px; }
+.tm-stats-opening-card { border: 1px solid #333; border-radius: 8px; background: #16213e; padding: 12px; min-width: 0; }
+.tm-stats-opening-title { color: #e0e0e0; font-weight: 700; font-size: 1.05em; margin-bottom: 5px; }
+.tm-stats-opening-samples { color: #888; font-size: .82em; margin-bottom: 10px; }
+.tm-stats-opening-block { margin-top: 9px; }
+.tm-stats-opening-label { color: #c4a35a; font-size: .82em; font-weight: 700; margin-bottom: 4px; }
+.tm-stats-opening-values { color: #d8d8d8; font-size: .85em; line-height: 1.45; }
 @media (max-width: 900px) {
   .matchups-section { width: calc(100vw - 20px); }
   .matchups-table { font-size: 0.72em; }
@@ -266,6 +273,7 @@ a:hover { text-decoration: underline; }
   .tm-stats-overview { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
   .tm-stats-profile-list { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
   .tm-stats-profile-columns { grid-template-columns: 1fr; }
+  .tm-stats-opening-grid { grid-template-columns: 1fr; }
   .tm-stats-profile-metrics { grid-template-columns: repeat(2, minmax(86px, 1fr)); }
   .tm-stats-profile-header { align-items: flex-start; }
   .tm-stats-table { font-size: 0.78em; }
@@ -333,6 +341,9 @@ a:hover { text-decoration: underline; }
 <h2 class="stats-only">TM Statistics</h2>
 <div class="tm-stats-section stats-only">
   <div class="tm-stats-overview" id="tmStatsOverview"></div>
+
+  <div class="tm-stats-subtitle">Winner openings: generations 1–2</div>
+  <div class="tm-stats-opening-grid" id="tmStatsEarlyGame"></div>
 
   <div class="tm-stats-subtitle">Player profiles</div>
   <div class="tm-stats-profile-list" id="tmStatsProfileList"></div>
@@ -1718,6 +1729,43 @@ function renderStatsOverview() {
   }).join("");
 }
 
+function renderStatsEarlyGame() {
+  var el = document.getElementById("tmStatsEarlyGame");
+  var generations = (((_tmStats || {}).earlyGameWinnerStats || {}).generations || []);
+  if (!generations.length) {
+    el.innerHTML = "<div class=\"tm-stats-empty\">Early-game collection has not started yet</div>";
+    return;
+  }
+
+  function topRows(rows, limit) {
+    if (!rows || !rows.length) return "No observations yet";
+    return rows.slice(0, limit).map(function(row) {
+      return esc(row.name) + " — " + esc(row.count || 0) + " (" + esc(round1(row.winnerGamePct || 0)) + "%)";
+    }).join("<br>");
+  }
+
+  function productionText(production, samples) {
+    if (!samples) return "No observations yet";
+    var labels = {megacredits: "M€", steel: "Steel", titanium: "Titanium", plants: "Plants", energy: "Energy", heat: "Heat"};
+    return Object.keys(labels).map(function(key) {
+      var value = production && typeof production[key] === "number" ? round1(production[key]) : "-";
+      return labels[key] + " " + value;
+    }).join(" · ");
+  }
+
+  el.innerHTML = generations.map(function(row) {
+    return "<div class=\"tm-stats-opening-card\">" +
+      "<div class=\"tm-stats-opening-title\">Generation " + esc(row.generation) + " winners</div>" +
+      "<div class=\"tm-stats-opening-samples\">Cards n=" + esc(row.cardWinnerSamples || 0) +
+        " · colonies n=" + esc(row.colonyWinnerSamples || 0) +
+        " · production n=" + esc(row.productionWinnerSamples || 0) + "</div>" +
+      "<div class=\"tm-stats-opening-block\"><div class=\"tm-stats-opening-label\">Most played project cards</div><div class=\"tm-stats-opening-values\">" + topRows(row.cards, 8) + "</div></div>" +
+      "<div class=\"tm-stats-opening-block\"><div class=\"tm-stats-opening-label\">Most built colonies</div><div class=\"tm-stats-opening-values\">" + topRows(row.colonies, 6) + "</div></div>" +
+      "<div class=\"tm-stats-opening-block\"><div class=\"tm-stats-opening-label\">Average production</div><div class=\"tm-stats-opening-values\">" + productionText(row.averageProduction, row.productionWinnerSamples) + "</div></div>" +
+    "</div>";
+  }).join("");
+}
+
 function getStatsPlayerEloGames(player) {
   if (!_data || !_data.players || !player) return null;
   var key = normalizedPlayerKey(player.name || player.displayName);
@@ -1896,6 +1944,7 @@ function renderStats() {
     return;
   }
   renderStatsOverview();
+  renderStatsEarlyGame();
   renderStatsProfiles();
   renderGenerationRecords();
   renderStatsPlayers();

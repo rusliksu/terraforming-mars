@@ -523,6 +523,7 @@ describe('Styles', () => {
       'player-persona-turquoise',
       'player-persona-serge',
       'player-persona-saturn',
+      'player-persona-rigatone',
     ]) {
       expect(elo).to.contain(className);
     }
@@ -535,6 +536,7 @@ describe('Styles', () => {
     expect(elo).to.contain('"gydro": "player-persona-pearl"');
     expect(elo).to.contain('"руслан": "player-persona-pearl"');
     expect(elo).to.contain('"serge": "player-persona-serge"');
+    expect(elo).to.contain('"ригат иммортал": "player-persona-rigatone"');
     expect(elo).to.contain('"тома": "player-persona-hydro"');
     expect(elo).to.contain('"соня": "player-persona-hydro"');
     expect(elo).to.contain('.winner .player-persona-emerald { color: #009468; }');

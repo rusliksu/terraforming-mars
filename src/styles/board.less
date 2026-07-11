@@ -384,6 +384,11 @@
   filter: @player_catseye_sprite_filter drop-shadow(2px 2px 3px black);
 }
 
+.board-cube--rigatone {
+  background: url(./assets/board_icons.png) -1px -117px no-repeat;
+  filter: @player_rigatone_sprite_filter drop-shadow(2px 2px 3px black);
+}
+
 .board-cube--persona {
   background: transparent;
   border: 0;
@@ -465,6 +470,14 @@
 
 .board-cube--catseye.board-cube--persona::before {
   background: @player_catseye_token_gradient;
+}
+
+.board-cube--rigatone.board-cube--persona::before {
+  background: @player_rigatone_token_gradient;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, .34),
+    inset -2px -2px 0 rgba(0, 0, 0, .28),
+    0 0 8px rgba(255, 69, 0, .62);
 }
 
 .board-cube--bronze {
@@ -684,6 +697,16 @@
   margin-top: -2px;
   color: #f6ffd0;
   font-size: 15px;
+  font-weight: bold;
+}
+
+.board-cube--rigatone.overlay::after {
+  .overlay_base();
+  content: "R";
+  margin-left: 5px;
+  margin-top: -2px;
+  color: #fff4e8;
+  font-size: 14px;
   font-weight: bold;
 }
 
@@ -1023,4 +1046,10 @@ each(@token_types, {
 .underground-excavator--catseye {
   background: linear-gradient(135deg, #eaff78 0%, @player_catseye 48%, #3a4c00 100%);
   border: 1px solid #d4f45c;
+}
+
+.underground-excavator--rigatone {
+  background: @player_rigatone_token_gradient;
+  border: 1px solid #ff4500;
+  box-shadow: 0 0 8px rgba(255, 69, 0, .5);
 }

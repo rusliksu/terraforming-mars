@@ -1139,6 +1139,20 @@ describe('CreateGameForm', () => {
     expect(wrapper.find('.create-game-profile-menu').text()).to.contain('Custom nick');
   });
 
+  it('applies the Rigatone persona for the Rigat Immortal custom nick', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const vm = wrapper.vm as any;
+
+    await wrapper.find('.create-game-player-name').trigger('focus');
+    await wrapper.find('.create-game-player-name').setValue('Ригат Иммортал');
+    await wrapper.find('.create-game-profile-option-custom').trigger('click');
+
+    expect(vm.players[0].name).to.eq('Тагир');
+    expect(vm.players[0].color).to.eq('rigatone');
+  });
+
   it('preserves typed names for reserved persona colors', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,

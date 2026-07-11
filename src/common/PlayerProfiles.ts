@@ -61,8 +61,8 @@ export const PLAYER_PROFILES: ReadonlyArray<PlayerProfile> = [
   {
     id: 'tagir',
     name: 'Тагир',
-    preferredColor: 'purple',
-    aliases: ['тагир', 'tagir', 'ригат', 'rigat'],
+    preferredColor: 'rigatone',
+    aliases: ['тагир', 'tagir', 'ригат иммортал', 'ригат', 'rigat immortal', 'rigat'],
   },
   {
     id: 'timur',

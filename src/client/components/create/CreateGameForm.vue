@@ -675,7 +675,7 @@
 import * as constants from '@/common/constants';
 
 import {defineComponent, nextTick} from 'vue';
-import {Color, DEFAULT_PLAYER_COLORS, getLockedPlayerName, LOCKED_PLAYER_IDENTITIES} from '@/common/Color';
+import {Color, DEFAULT_PLAYER_COLORS, getLockedPlayerName, getPlayerIdentityByName, LOCKED_PLAYER_IDENTITIES} from '@/common/Color';
 import {
   buildPlayerProfilesFromEloPlayers,
   getPlayerProfileAvatarInitials,
@@ -1567,7 +1567,12 @@ export default defineComponent({
     },
     applyCustomNickFromPicker(player: NewPlayerModel) {
       player.profileId = undefined;
-      player.name = this.playerProfileSearch.trim();
+      const requestedName = this.playerProfileSearch.trim();
+      const identity = getPlayerIdentityByName(requestedName);
+      player.name = identity?.name ?? requestedName;
+      if (identity !== undefined) {
+        player.color = this.getAvailablePlayerColor(player, identity.color);
+      }
       this.closePlayerProfilePicker();
     },
     closePlayerProfilePicker() {
@@ -1577,12 +1582,12 @@ export default defineComponent({
     closePlayerProfilePickerFromDocument() {
       this.closePlayerProfilePicker();
     },
-    getAvailablePlayerProfileColor(player: NewPlayerModel, profile: PlayerProfile): Color {
+    getAvailablePlayerColor(player: NewPlayerModel, preferredColor: Color): Color {
       const usedColors = new Set(this.getPlayers()
         .filter((candidate) => candidate !== player)
         .map((candidate) => candidate.color));
-      if (!usedColors.has(profile.preferredColor)) {
-        return profile.preferredColor;
+      if (!usedColors.has(preferredColor)) {
+        return preferredColor;
       }
       if (
         DEFAULT_PLAYER_COLORS.includes(player.color as typeof DEFAULT_PLAYER_COLORS[number]) &&
@@ -1595,7 +1600,7 @@ export default defineComponent({
     applyPlayerProfile(player: NewPlayerModel, profile: PlayerProfile) {
       player.profileId = profile.id;
       player.name = profile.name;
-      player.color = this.getAvailablePlayerProfileColor(player, profile);
+      player.color = this.getAvailablePlayerColor(player, profile.preferredColor);
       this.fillKnownTelegramIdForPlayer(player, profile);
     },
     clearPlayerProfileSelection(player: NewPlayerModel) {

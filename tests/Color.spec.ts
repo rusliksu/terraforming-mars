@@ -6,6 +6,8 @@ import {
   GYDRO_COLOR,
   GYDRO_NAME,
   getPlayerIdentityByName,
+  RIGATONE_COLOR,
+  RIGATONE_NAME,
   SERGE_COLOR,
   SERGE_NAME,
   SONYA_CATSEYE_COLOR,
@@ -75,5 +77,15 @@ describe('Locked player identities', () => {
     expect(identity?.color).to.eq(SERGE_COLOR);
     expect(identity?.name).to.eq(SERGE_NAME);
     expect(identity?.colorLabel).to.eq('бордовый');
+  });
+
+  it('maps Rigat aliases to the Rigatone persona', () => {
+    const identity = getPlayerIdentityByName('Ригат');
+    expect(identity?.color).to.eq(RIGATONE_COLOR);
+    expect(identity?.name).to.eq(RIGATONE_NAME);
+    expect(identity?.name).to.eq('Тагир');
+    expect(identity?.label).to.eq('Ригат Иммортал');
+    expect(identity?.colorLabel).to.eq('Rigatone');
+    expect(getPlayerIdentityByName('rigat immortal')?.color).to.eq(RIGATONE_COLOR);
   });
 });

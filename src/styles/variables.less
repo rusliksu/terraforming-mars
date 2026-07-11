@@ -39,6 +39,8 @@
 @player_titan: rgb(185, 143, 74);
 @player_saturnstorm: rgb(190, 31, 72);
 @player_catseye: rgb(143, 175, 47);
+@player_rigatone: rgb(139, 0, 0);
+@player_rigatone_surface_gradient: radial-gradient(circle, rgba(255, 69, 0, 1) 0%, rgba(139, 0, 0, 1) 30%, rgba(142, 137, 70, 1) 70%);
 @player_gold_token_gradient: linear-gradient(135deg, #e7c86b 0%, #b78322 52%, #604000 100%);
 @player_emerald_token_gradient: linear-gradient(135deg, #9dffe3 0%, #0c9b70 52%, #004937 100%);
 @player_ginger_token_gradient: linear-gradient(135deg, #ffd39a 0%, #de6d27 52%, #6a1d00 100%);
@@ -54,6 +56,7 @@
 @player_titan_token_gradient: linear-gradient(135deg, #ffd696 0%, @player_titan 52%, #6d3f0e 100%);
 @player_saturnstorm_token_gradient: linear-gradient(135deg, #ff8fa8 0%, @player_saturnstorm 52%, #5b001b 100%);
 @player_catseye_token_gradient: linear-gradient(135deg, #eaff78 0%, @player_catseye 52%, #3a4c00 100%);
+@player_rigatone_token_gradient: @player_rigatone_surface_gradient;
 @player_gold_sprite_filter: sepia(0.45) saturate(1.65) hue-rotate(346deg) brightness(0.90) contrast(1.12);
 @player_emerald_sprite_filter: hue-rotate(18deg) saturate(1.70) brightness(0.72) contrast(1.12);
 @player_ginger_sprite_filter: saturate(1.25) brightness(1.02);
@@ -73,11 +76,13 @@
 @player_titan_sprite_filter: sepia(0.658) saturate(2.311) hue-rotate(-3.1deg) brightness(1.390) contrast(0.451);
 @player_saturnstorm_sprite_filter: hue-rotate(18deg) saturate(1.55) brightness(0.68) contrast(1.18);
 @player_catseye_sprite_filter: sepia(0.511) saturate(2.783) hue-rotate(1.3deg) brightness(1.169) contrast(0.634);
+@player_rigatone_sprite_filter: sepia(0.35) saturate(2.2) hue-rotate(330deg) brightness(0.92) contrast(1.18);
 @player_saturn_fleet_filter: sepia(0.259) saturate(4.523) hue-rotate(-42.7deg) brightness(1.286) contrast(0.678);
 @player_saturnrings_fleet_filter: sepia(0.668) saturate(1.869) hue-rotate(-46.6deg) brightness(1.580) contrast(0.569);
 @player_titan_fleet_filter: sepia(0.510) saturate(2.992) hue-rotate(-2.3deg) brightness(1.676) contrast(0.451);
 @player_saturnstorm_fleet_filter: hue-rotate(18deg) saturate(1.55) brightness(0.68) contrast(1.18);
 @player_catseye_fleet_filter: sepia(0.654) saturate(1.983) hue-rotate(-22.6deg) brightness(1.741) contrast(0.631);
+@player_rigatone_fleet_filter: sepia(0.35) saturate(2.2) hue-rotate(330deg) brightness(0.92) contrast(1.18);
 @player_persona_fleet_edge_filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.85));
 @player_pearl_delegate_filter: grayscale(1) brightness(1.72) contrast(0.80) saturate(0.25);
 @player_vanger_delegate_filter: saturate(1.55) brightness(1.48) contrast(1.12);
@@ -109,6 +114,7 @@
 @player_titan_tag_bg: rgba(185, 143, 74, 0.24);
 @player_saturnstorm_tag_bg: rgba(190, 31, 72, 0.24);
 @player_catseye_tag_bg: rgba(143, 175, 47, 0.24);
+@player_rigatone_tag_bg: rgba(139, 0, 0, 0.28);
 //board
 @board-tharsis: rgb(224,153,109);
 @board-hellas: rgb(55,111,156);

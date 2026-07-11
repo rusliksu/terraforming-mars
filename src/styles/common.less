@@ -232,6 +232,11 @@ each(@players, {
   color: #182000;
 }
 
+.player_bg_color_rigatone {
+  background: @player_rigatone_surface_gradient;
+  color: #fff4e8;
+}
+
 // backgrounds with opacity
 each(@players, {
 @c: ~"player_@{value}";
@@ -301,6 +306,10 @@ each(@players, {
 
 .player_translucent_bg_color_catseye {
   .player_catseye_bg_translucent();
+}
+
+.player_translucent_bg_color_rigatone {
+  .player_rigatone_bg_translucent();
 }
 
 .player_bg_color_gold.log-player,
@@ -483,6 +492,15 @@ each(@players, {
 .player_translucent_bg_color_catseye .game-end-name-and-elo a,
 .player_translucent_bg_color_catseye .player-name {
   color: #f6ffd0;
+}
+
+.player_bg_color_rigatone.log-player,
+.player_translucent_bg_color_rigatone .player-info-name,
+.player_translucent_bg_color_rigatone .player_name,
+.player_translucent_bg_color_rigatone .game-end-name-and-elo,
+.player_translucent_bg_color_rigatone .game-end-name-and-elo a,
+.player_translucent_bg_color_rigatone .player-name {
+  color: #fff4e8;
 }
 
 .alert-dialog {

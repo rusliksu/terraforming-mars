@@ -56,7 +56,8 @@ describe('Player profiles', () => {
     expect(getPlayerProfileByName('Тимур', profiles)?.preferredColor).eq('red');
     expect(getPlayerProfileByName('vvbMinsk', profiles)?.preferredColor).eq('purple');
     expect(getPlayerProfileByName('Nuke', profiles)?.preferredColor).eq('black');
-    expect(getPlayerProfileByName('Тагир', profiles)?.preferredColor).eq('purple');
+    expect(getPlayerProfileByName('Тагир', profiles)?.preferredColor).eq('rigatone');
+    expect(getPlayerProfileByName('Ригат Иммортал', profiles)?.name).eq('Тагир');
     expect(getPlayerProfileByName('Аня', profiles)?.preferredColor).eq('green');
   });
 

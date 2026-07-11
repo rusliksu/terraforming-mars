@@ -25,6 +25,7 @@ export const SYMBOL_FOR_COLOR = {
   titan: 'T',
   saturnstorm: '∿',
   catseye: '◉',
+  rigatone: 'R',
   bronze: '▦',
   neutral: '★',
 } satisfies Record<Color, string>;

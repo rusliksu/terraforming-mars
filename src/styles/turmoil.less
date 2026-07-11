@@ -523,6 +523,22 @@
     .player-token-sprite(-865px, -35px, @player_catseye_delegate_filter);
   }
 
+  &.rigatone {
+    .player-token-sprite(-699px, -105px, none);
+    color: #fff4e8;
+
+    &::before {
+      background: @player_rigatone_token_gradient;
+      -webkit-mask-image: url(./assets/turmoil_ui.png);
+      mask-image: url(./assets/turmoil_ui.png);
+      -webkit-mask-position: -699px -105px;
+      mask-position: -699px -105px;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      filter: drop-shadow(0 0 4px rgba(255, 69, 0, 0.72));
+    }
+  }
+
   &.neutral {
     background-position: -919px 850px;
     color: #7b7b7b;

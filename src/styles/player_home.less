@@ -100,6 +100,9 @@
 .player_shadow_color_catseye {
   text-shadow: -1px -1px 6px @player_catseye, 1px 1px 1px #333a;
 }
+.player_shadow_color_rigatone {
+  text-shadow: -1px -1px 6px #ff4500, 1px 1px 1px #333a;
+}
 
 .game-title {
   text-transform: uppercase;
@@ -238,6 +241,10 @@
 
   .grid-item.player_tag_bg_color_catseye {
     background-color: rgba(143, 175, 47, 0.24);
+  }
+
+  .grid-item.player_tag_bg_color_rigatone {
+    background-color: @player_rigatone_tag_bg;
   }
   .city-count {
     background: url(./assets/icon_city.png) center no-repeat;
@@ -1017,6 +1024,11 @@
   &.colonies-fleet-catseye {
     background-position: -140px 0;
     filter: @player_catseye_fleet_filter @player_persona_fleet_edge_filter;
+  }
+
+  &.colonies-fleet-rigatone {
+    background-position: -416px 0;
+    filter: @player_rigatone_fleet_filter @player_persona_fleet_edge_filter;
   }
 }
 

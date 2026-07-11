@@ -66,6 +66,8 @@ a:hover { text-decoration: underline; }
 .winner .player-persona-saturnstorm { color: #be1f48; }
 .player-persona-catseye,
 .winner .player-persona-catseye { color: #8faf2f; }
+.player-persona-rigatone,
+.winner .player-persona-rigatone { color: #ff4500; }
 .player-persona:hover { filter: brightness(1.12); }
 
 /* Recent Games */
@@ -108,6 +110,7 @@ a:hover { text-decoration: underline; }
 .winner .player-persona-titan { color: #b98f4a; }
 .winner .player-persona-saturnstorm { color: #be1f48; }
 .winner .player-persona-catseye { color: #8faf2f; }
+.winner .player-persona-rigatone { color: #ff4500; }
 .show-more { text-align: center; margin-top: 15px; }
 .show-more button { background: #16213e; color: #ff6b35; border: 1px solid #ff6b35; padding: 8px 24px; border-radius: 6px; cursor: pointer; font-size: 0.95em; }
 .show-more button:hover { background: #ff6b35; color: #fff; }
@@ -490,6 +493,12 @@ var PLAYER_PERSONA_CLASSES = {
   "sergei": "player-persona-serge",
   "серж": "player-persona-serge",
   "сергей": "player-persona-serge",
+  "тагир": "player-persona-rigatone",
+  "tagir": "player-persona-rigatone",
+  "ригат иммортал": "player-persona-rigatone",
+  "ригат": "player-persona-rigatone",
+  "rigat immortal": "player-persona-rigatone",
+  "rigat": "player-persona-rigatone",
   "тома": "player-persona-hydro",
   "toma": "player-persona-hydro",
   "соня": "player-persona-hydro",
@@ -525,7 +534,8 @@ var PROFILE_COLORS = {
   saturnrings: {hex: "#c8b58a", rgb: "200,181,138", ink: "#1d170d"},
   titan: {hex: "#b98f4a", rgb: "185,143,74", ink: "#1f1000"},
   saturnstorm: {hex: "#be1f48", rgb: "190,31,72", ink: "#ffe5e8"},
-  catseye: {hex: "#8faf2f", rgb: "143,175,47", ink: "#182000"}
+  catseye: {hex: "#8faf2f", rgb: "143,175,47", ink: "#182000"},
+  rigatone: {hex: "#ff4500", rgb: "255,69,0", ink: "#fff4e8"}
 };
 var PLAYER_PROFILE_COLOR_ALIASES = {
   "genuinegold": "gold",
@@ -613,10 +623,12 @@ var PLAYER_PROFILE_COLOR_ALIASES = {
   "midilobisum": "black",
   "никита": "black",
   "владлен": "red",
-  "тагир": "purple",
-  "tagir": "purple",
-  "ригат": "purple",
-  "rigat": "purple",
+  "тагир": "rigatone",
+  "tagir": "rigatone",
+  "ригат иммортал": "rigatone",
+  "ригат": "rigatone",
+  "rigat immortal": "rigatone",
+  "rigat": "rigatone",
   "тимур": "red",
   "аня": "green",
   "дамир": "blue",
@@ -719,6 +731,8 @@ var PLAYER_PROFILE_ALIASES = {
   "tagir": {key: "тагир", displayName: "Тагир"},
   "ригат": {key: "тагир", displayName: "Тагир"},
   "rigat": {key: "тагир", displayName: "Тагир"},
+  "ригат иммортал": {key: "тагир", displayName: "Тагир"},
+  "rigat immortal": {key: "тагир", displayName: "Тагир"},
   "вангер": {key: "вангер", displayName: "Вангер"},
   "vanger": {key: "вангер", displayName: "Вангер"},
   "вангер думов": {key: "вангер", displayName: "Вангер"},

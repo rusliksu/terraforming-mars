@@ -17,6 +17,8 @@ export const VANGER_COLOR = 'vanger' as const;
 export const VANGER_NAME = 'Вангер';
 export const SERGE_COLOR = 'serge' as const;
 export const SERGE_NAME = 'Serge';
+export const RIGATONE_COLOR = 'rigatone' as const;
+export const RIGATONE_NAME = 'Тагир';
 export const TOMA_NAME = 'Тома';
 export const SONYA_EMKO_NAME = TOMA_NAME;
 export const SONYA_HYDRO_COLOR = 'hydro' as const;
@@ -35,6 +37,7 @@ export const RESERVED_PLAYER_COLORS = [
   PAVEL_TURQUOISE_COLOR,
   VANGER_COLOR,
   SERGE_COLOR,
+  RIGATONE_COLOR,
   SONYA_HYDRO_COLOR,
   SONYA_SATURN_COLOR,
   SONYA_SATURN_RINGS_COLOR,
@@ -131,6 +134,15 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
     shortLabel: 'Serge',
     title: 'Serge - reserved deep burgundy',
     aliases: ['serge', 'sergey', 'sergei', 'серж', 'сергей'],
+  },
+  {
+    color: RIGATONE_COLOR,
+    name: RIGATONE_NAME,
+    label: 'Ригат Иммортал',
+    colorLabel: 'Rigatone',
+    shortLabel: 'Ригат',
+    title: 'Ригат Иммортал - reserved Rigatone fire',
+    aliases: ['тагир', 'tagir', 'ригат иммортал', 'ригат', 'rigat immortal', 'rigat'],
   },
   {
     color: SONYA_HYDRO_COLOR,

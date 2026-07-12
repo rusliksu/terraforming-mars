@@ -9,6 +9,8 @@ import {oneWayDifference} from '../../common/utils/utils';
 import {message} from '../logs/MessageBuilder';
 import {Message} from '../../common/logs/Message';
 import {Aerotech} from '../cards/community/Aerotech';
+import {OrOptions} from '../inputs/OrOptions';
+import {SelectOption} from '../inputs/SelectOption';
 
 export const LogType = {
   DREW: 'drew',
@@ -57,30 +59,50 @@ export class ChooseCards extends DeferredAction {
 
     const min = options.paying ? 0 : options.keepMax;
 
-    const button = max === 0 ? 'Ok' : (options.paying ? 'Buy' : 'Select');
-    return new SelectCard(msg, button, cards, {max, min, played: !options.paying})
-      .andThen((selected) => {
-        if (selected.length > max) {
-          throw new Error('Selected too many cards');
-        }
-        const unselected = oneWayDifference(cards, selected);
-        if (options.logDrawnCard === true) {
-          LogHelper.logRevealedCards(player, cards);
-        }
-        const boughtLogType = options.logBoughtCards === true ? LogType.BOUGHT_VERBOSE : LogType.BOUGHT;
-        if (options.paying && selected.length > 0) {
-          const cost = selected.length * player.cardCost;
-          player.game.defer(
-            new SelectPaymentDeferred(
-              player,
-              cost,
-              {title: message('Select how to spend ${0} M€ for ${1} cards', (b) => b.number(cost).number(selected.length))})
-              .andThen(() => keep(player, selected, unselected, boughtLogType)));
-        } else {
-          keep(player, selected, unselected, options.paying ? boughtLogType : LogType.DREW);
-        }
-        return undefined;
-      });
+    const selectCards = () => {
+      const button = max === 0 ? 'Ok' : (options.paying ? 'Buy' : 'Select');
+      return new SelectCard(msg, button, cards, {max, min, played: !options.paying})
+        .andThen((selected) => {
+          if (selected.length > max) {
+            throw new Error('Selected too many cards');
+          }
+
+          const keepSelectedCards = () => {
+            const unselected = oneWayDifference(cards, selected);
+            if (options.logDrawnCard === true) {
+              LogHelper.logRevealedCards(player, cards);
+            }
+            const boughtLogType = options.logBoughtCards === true ? LogType.BOUGHT_VERBOSE : LogType.BOUGHT;
+            if (options.paying && selected.length > 0) {
+              const cost = selected.length * player.cardCost;
+              player.game.defer(
+                new SelectPaymentDeferred(
+                  player,
+                  cost,
+                  {title: message('Select how to spend ${0} M€ for ${1} cards', (b) => b.number(cost).number(selected.length))})
+                  .andThen(() => keep(player, selected, unselected, boughtLogType)));
+            } else {
+              keep(player, selected, unselected, options.paying ? boughtLogType : LogType.DREW);
+            }
+            return undefined;
+          };
+
+          if (options.paying !== true && selected.length > 0) {
+            return new OrOptions(
+              new SelectOption(message('Keep ${0}', (b) => b.cards(selected)), 'Keep')
+                .andThen(keepSelectedCards),
+              new SelectOption('Choose another card', 'Back')
+                .andThen(selectCards),
+            )
+              .setTitle('Confirm card to keep')
+              .setButtonLabel('Confirm');
+          }
+
+          return keepSelectedCards();
+        });
+    };
+
+    return selectCards();
   }
 }
 

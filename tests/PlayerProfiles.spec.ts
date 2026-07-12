@@ -38,10 +38,10 @@ describe('Player profiles', () => {
     })).deep.eq(['orange', 'blue', 'yellow']);
   });
 
-  it('exposes both Rigatone profile colors after the standard palette', () => {
+  it('exposes only Rigatone Custom Two after the standard palette', () => {
     const profile = getPlayerProfileByName('Ригат Иммортал')!;
 
-    expect(getPlayerProfilePreferredColors(profile)).deep.eq(['rigatone', 'rigatone2']);
+    expect(getPlayerProfilePreferredColors(profile)).deep.eq(['rigatone2']);
   });
 
   it('builds active player profiles from Elo players', () => {
@@ -78,7 +78,7 @@ describe('Player profiles', () => {
     expect(getPlayerProfileByName('Тимур', profiles)?.preferredColor).eq('red');
     expect(getPlayerProfileByName('vvbMinsk', profiles)?.preferredColor).eq('purple');
     expect(getPlayerProfileByName('Nuke', profiles)?.preferredColor).eq('black');
-    expect(getPlayerProfileByName('Тагир', profiles)?.preferredColor).eq('rigatone');
+    expect(getPlayerProfileByName('Тагир', profiles)?.preferredColor).eq('rigatone2');
     expect(getPlayerProfileByName('Ригат Иммортал', profiles)?.name).eq('Тагир');
     expect(getPlayerProfileByName('Аня', profiles)?.preferredColor).eq('green');
   });

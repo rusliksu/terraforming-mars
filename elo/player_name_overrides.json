@@ -11,5 +11,11 @@
     "playerNames": {
       "саша": "Александр"
     }
+  },
+  "gcf9cc9745cc5": {
+    "reason": "The player stored as Nikitos in this game was confirmed as the separate Nikita; do not merge this game into Nuke or Nikitos.",
+    "playerNames": {
+      "никитос": "Никита"
+    }
   }
 }

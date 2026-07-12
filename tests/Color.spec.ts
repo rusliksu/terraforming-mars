@@ -7,6 +7,7 @@ import {
   GYDRO_NAME,
   getPlayerIdentityByName,
   RIGATONE_COLOR,
+  RIGATONE_CUSTOMTWO_COLOR,
   RIGATONE_NAME,
   SERGE_COLOR,
   SERGE_NAME,
@@ -87,5 +88,11 @@ describe('Locked player identities', () => {
     expect(identity?.label).to.eq('Ригат Иммортал');
     expect(identity?.colorLabel).to.eq('Rigatone');
     expect(getPlayerIdentityByName('rigat immortal')?.color).to.eq(RIGATONE_COLOR);
+  });
+
+  it('keeps Rigatone Custom Two as a second non-default color', () => {
+    const identity = getPlayerIdentityByName('rigatone custom two');
+    expect(identity?.color).to.eq(RIGATONE_CUSTOMTWO_COLOR);
+    expect(identity?.label).to.eq('Ригат Иммортал · Custom Two');
   });
 });

@@ -529,6 +529,22 @@
     }
   }
 
+  &.rigatone2 {
+    .player-token-sprite(-699px, -105px, none);
+    color: #ffffff;
+
+    &::before {
+      background: @player_rigatone2_token_gradient;
+      -webkit-mask-image: url(./assets/turmoil_ui.png);
+      mask-image: url(./assets/turmoil_ui.png);
+      -webkit-mask-position: -699px -105px;
+      mask-position: -699px -105px;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      filter: drop-shadow(0 0 4px rgba(255, 0, 60, 0.72));
+    }
+  }
+
   &.neutral {
     background-position: -919px 850px;
     color: #7b7b7b;

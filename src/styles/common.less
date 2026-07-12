@@ -234,6 +234,10 @@ each(@players, {
   color: #fff4e8;
 }
 
+.player_bg_color_rigatone2 {
+  .player_rigatone2_bg();
+}
+
 // backgrounds with opacity
 each(@players, {
 @c: ~"player_@{value}";
@@ -307,6 +311,10 @@ each(@players, {
 
 .player_translucent_bg_color_rigatone {
   .player_rigatone_bg_translucent();
+}
+
+.player_translucent_bg_color_rigatone2 {
+  .player_rigatone2_bg();
 }
 
 .player_bg_color_gold.log-player,

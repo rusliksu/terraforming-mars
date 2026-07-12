@@ -39,6 +39,7 @@ const COLOR_CODES: Record<Color, string> = {
   ['saturnstorm']: 'rgb(190, 31, 72)',
   ['catseye']: 'rgb(143, 175, 47)',
   ['rigatone']: 'rgb(255, 69, 0)',
+  ['rigatone2']: 'rgb(255, 0, 60)',
 
   // Not actual player colors
   ['neutral']: '',

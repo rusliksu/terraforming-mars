@@ -202,7 +202,8 @@ describe('Executor', () => {
     expect(selectCard.config.max).eq(2);
     expect(selectCard.config.min).eq(2);
     const cards = selectCard.cards;
-    selectCard.cb([cards[0], cards[1]]);
+    const confirmation = cast(selectCard.cb([cards[0], cards[1]]), OrOptions);
+    confirmation.options[0].cb();
     expect(player.cardsInHand).has.length(2);
     expect(player.megaCredits).eq(5);
   });

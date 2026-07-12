@@ -10,6 +10,7 @@ import {Ants} from '../../../src/server/cards/base/Ants';
 import {Birds} from '../../../src/server/cards/base/Birds';
 import {Capital} from '../../../src/server/cards/base/Capital';
 import {cast} from '../../../src/common/utils/utils';
+import {OrOptions} from '../../../src/server/inputs/OrOptions';
 
 describe('JunkVentures', () => {
   let card: JunkVentures;
@@ -48,7 +49,8 @@ describe('JunkVentures', () => {
     const selectCard = cast(player.popWaitingFor(), SelectCard<IProjectCard>);
 
     expect(selectCard.cards).to.have.members([ants, birds, capital]);
-    selectCard.cb([birds]);
+    const confirmation = cast(selectCard.cb([birds]), OrOptions);
+    confirmation.options[0].cb();
     expect(player.cardsInHand).deep.eq([birds]);
 
     expect(game.projectDeck.discardPile).to.have.members([ants, capital]);

@@ -45,19 +45,21 @@ describe('FloatingRefinery', () => {
     expect(card.resourceCount).to.eq(1);
   });
 
-  it('Remove resource - this card', () => {
+  it('act - removes from this card when it is the only eligible target', () => {
     player.playedCards.push(card);
     card.resourceCount = 3;
+
     const orOptions = cast(card.action(player), OrOptions);
-    cast(card.action(player), OrOptions);
     cast(orOptions.options[0].cb(), undefined);
+
     expect(player.stock.titanium).to.eq(1);
     expect(player.stock.megacredits).to.eq(2);
     expect(card.resourceCount).to.eq(1);
   });
 
-  it('act - one other card with 2 floaters - removes automatically', () => {
+  it('act - removes from another card when it is the only eligible target', () => {
     card.resourceCount = 1;
+    // floater1 is the only eligible card.
     floater1.resourceCount = 2;
     floater2.resourceCount = 1;
     other.resourceCount = 1;

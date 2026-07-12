@@ -22,8 +22,8 @@
   .resource-card-icon-expansion-container {
     flex-direction: row;
     display: flex;
-    bottom: 38px;
-    left: 5px;
+    bottom: 5px;
+    left: 87px;
     position: absolute;
   }
   .project-icon:after,
@@ -320,6 +320,13 @@
       font-size:30px;
       color: #e63900;
       text-shadow:  6px 3px 5px  grey;
+    }
+    .card-aerotech-logo {
+      background-image: url(./assets/community/aerotech.png);
+      height: 50px;
+      width: 193px;
+      background-size: 193px 50px;
+      margin-top: 20px;
     }
     .card-agricola-logo {
       position: absolute;
@@ -1673,18 +1680,6 @@
   }
   .card-hazard-tile {
     background-image: url(./assets/tiles/hazard.png);
-    width: 40px;
-    height: 40px;
-    background-size: 40px;
-    transform: scale(0.9);
-    margin: 5px 2px;
-  }
-  .card-hazard-tile--L {
-    background-image: url(./assets/tiles/hazard.png);
-    width: 48px;
-    height: 48px;
-    background-size: 48px;
-    margin: 5px -4px;
   }
   .card-adjacency-bonus {
     background-image: url(./assets/tiles/adjacency_bonus.png);
@@ -2331,7 +2326,9 @@
     background-size: 65px 52px;
     background-repeat: no-repeat;
   }
+
   /* tiles */
+  // Spacing only. Pair with a tile class (e.g. city-tile) for the image and a tile-size--* class for dimensions.
   .card-tile {
     margin-left: 4px;
     margin-right: 4px;
@@ -2359,74 +2356,54 @@
   }
   .card-tile-symbol-commercial-district {
     background-image: url(./assets/tiles/special_tile_icons/commerical_district.png);
-    position: relative;
-    left: -2px;
   }
   .card-tile-symbol-deimos-down {
     background-image: url(./assets/tiles/special_tile_icons/deimos.png);
-    position: relative;
-    left: -2px;
-    top: 1px;
   }
   .card-tile-symbol-great-dam {
     background-image: url(./assets/tiles/special_tile_icons/great_dam.png);
-    position: relative;
-    left: -2px;
-    top: -1px;
   }
   .card-tile-symbol-ecological-zone {
     background-image: url(./assets/tiles/special_tile_icons/ecological_zone.png);
-    position: relative;
-    left: -2px;
-    top: 1px;
   }
   .card-tile-symbol-industrial-center {
     background-image: url(./assets/tiles/special_tile_icons/industrial_center.png);
-    position: relative;
-    left: -2px;
-    top: 1px;
   }
   .card-tile-symbol-magnetic-field-generators {
     background-image: url(./assets/tiles/special_tile_icons/magnetic_field_gen.png);
-    position: relative;
-    left: -2px;
-    top: 1px;
   }
   .card-tile-symbol-mining {
     background-image: url(./assets/tiles/special_tile_icons/mining_area.png);
-    position: relative;
-    left: -2px;
-    top: 1px;
   }
   .card-tile-symbol-mohole-area {
     background-image: url(./assets/tiles/special_tile_icons/mohole_area.png);
-    position: relative;
-    left: -2px;
-    top: 1px;
   }
-  .card-tile-symbol-lava-flows{
+  .card-tile-symbol-lava-flows {
     background-image: url(./assets/tiles/special_tile_icons/lava_flows.png);
-    position: relative;
-    left: -2px;
-    top: 1px;
   }
-  .card-tile-symbol-restricted-area{
+  .card-tile-symbol-restricted-area {
     background-image: url(./assets/tiles/special_tile_icons/restricted_area.png);
-    position: relative;
-    left: -2px;
-    top: 0px;
   }
   .card-tile-symbol-natural-preserve {
     background-image: url(./assets/tiles/special_tile_icons/natural_preserve.png);
-    position: relative;
-    left: -3px;
-    top: 0px;
   }
   .card-tile-symbol-nuclear-zone {
     background-image: url(./assets/tiles/special_tile_icons/nuclear_zone.png);
-    position: relative;
-    left: -2px;
-    top: 0px;
+  }
+  // The special-tile overlays are normalized to a centered 152x152 canvas.
+  .card-tile-symbol-commercial-district,
+  .card-tile-symbol-deimos-down,
+  .card-tile-symbol-great-dam,
+  .card-tile-symbol-ecological-zone,
+  .card-tile-symbol-industrial-center,
+  .card-tile-symbol-magnetic-field-generators,
+  .card-tile-symbol-mining,
+  .card-tile-symbol-mohole-area,
+  .card-tile-symbol-lava-flows,
+  .card-tile-symbol-restricted-area,
+  .card-tile-symbol-natural-preserve,
+  .card-tile-symbol-nuclear-zone {
+    background-position: center;
   }
   .card-tile-new-holland {
     background-image: url(./assets/tiles/new_holland.png);
@@ -2435,48 +2412,53 @@
     height: 59px;
     background-size: 47px 59px;
   }
-  .city-tile--M {
-    background-image: url(./assets/tiles/city.png);
-    filter: brightness(0.8) drop-shadow(0px 1px 1px rgba(0, 0, 0, 0.5));
-    background-size: 40px;
-    width: 40px;
-    height: 47px;
-  }
-  .city-tile--S {
-    background-image: url(./assets/tiles/city.png);
-    filter: brightness(0.8) drop-shadow(0px 1px 1px rgba(0, 0, 0, 0.5));
-    width: 21px;
-    height: 23px;
-    background-size: 21px 23px;
-  }
-  .greenery-tile--M {
+  .greenery-tile {
     background-image: url(./assets/tiles/greenery_no_O2.png);
-    background-size: 40px;
-    width: 40px;
-    height: 47px;
   }
-  .greenery-tile--S {
-    background-image: url(./assets/tiles/greenery_no_O2.png);
-    background-size: 30px 32px;
+  .greenery-tile-oxygen {
+    background-image: url(./assets/tiles/greenery.png);
+  }
+  .tile-size--S {
     width: 30px;
     height: 32px;
+    background-size: 30px 32px;
   }
-  .greenery-tile-oxygen--M {
-    background-image: url(./assets/tiles/greenery.png);
-    background-size: 47px;
-    width: 47px;
-    height: 46px;
-  }
-  .greenery-tile-oxygen--S {
-    background-image: url(./assets/tiles/greenery.png);
-    background-size: 32px;
+  .tile-size--S-square {
     width: 32px;
     height: 32px;
+    background-size: 32px 32px;
   }
-  .tile--req {
+  .tile-size--M {
+    width: 40px;
+    height: 47px;
+    background-size: 40px 47px;
+  }
+  .tile-size--M-square {
+    width: 46px;
+    height: 47px;
+    background-size: 46px 47px;
+  }
+  .tile-size--L {
+    width: 48px;
+    height: 56px;
+    background-size: 48px 56px;
+  }
+  .tile-size--L-square {
+    width: 54px;
+    height: 56px;
+    background-size: 54px 56px;
+  }
+  .tile-size--req {
     width: 30px;
     height: 34px;
     background-size: 30px 34px;
+    margin-left: 4px;
+    margin-right: 4px;
+  }
+  .tile-size--req-square {
+    width: 34px;
+    height: 34px;
+    background-size: 34px 34px;
     margin-left: 4px;
     margin-right: 4px;
   }
@@ -2701,6 +2683,8 @@
     overflow: hidden;
     white-space: nowrap;
     height: 27px;
+    margin-top: -6px;
+    padding-top: 3px;
 
     /* Conditional height adjustment for corporation cards makes a cleaner scrolling experience. */
     &.is-corporation {

@@ -99,7 +99,7 @@
     "test:client": "cross-env NODE_ENV=development mochapack --require tests/client/components/setup.ts \"tests/client/**/*.spec.ts\"",
     "test:client:watch": "cross-env NODE_ENV=development mochapack --watch --require tests/client/components/setup.ts \"tests/client/**/*.spec.ts\"",
     "dev:client": "cross-env NODE_ENV=development webpack --watch",
-    "dev:server": "cross-env NODE_ENV=development tsx watch src/server/server.ts",
+    "dev:server": "cross-env NODE_ENV=development tsx watch --clear-screen=false src/server/server.ts",
     "sim-host": "tsx src/server/tools/tm-sim-host.ts"
   },
   "repository": {

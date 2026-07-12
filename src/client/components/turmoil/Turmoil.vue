@@ -93,6 +93,7 @@ import {PartyName} from '@/common/turmoil/PartyName';
 import {TurmoilModel} from '@/common/models/TurmoilModel';
 import TurmoilAgenda from '@/client/components/turmoil/TurmoilAgenda.vue';
 import GlobalEvent from '@/client/components/turmoil/GlobalEvent.vue';
+import {BonusId, PolicyId} from '@/common/turmoil/Types';
 
 export default defineComponent({
   name: 'Turmoil',
@@ -117,10 +118,12 @@ export default defineComponent({
       }
       return classes;
     },
-    getBonus(party: PartyName | undefined) {
+    getBonus(party: PartyName): BonusId {
       const politicalAgendas = this.turmoil.politicalAgendas;
-      if (politicalAgendas !== undefined) {
-        switch (party) {
+      if (politicalAgendas === undefined) {
+        throw new Error('Political agendas not defined');
+      }
+      switch (party) {
         case PartyName.MARS:
           return politicalAgendas.marsFirst.bonusId;
         case PartyName.SCIENTISTS:
@@ -133,14 +136,14 @@ export default defineComponent({
           return politicalAgendas.reds.bonusId;
         case PartyName.GREENS:
           return politicalAgendas.greens.bonusId;
-        }
       }
-      return undefined;
     },
-    getPolicy(partyName: PartyName | undefined) {
+    getPolicy(partyName: PartyName): PolicyId {
       const politicalAgendas = this.turmoil.politicalAgendas;
-      if (politicalAgendas !== undefined) {
-        switch (partyName) {
+      if (politicalAgendas === undefined) {
+        throw new Error('Political agendas not defined');
+      }
+      switch (partyName) {
         case PartyName.MARS:
           return politicalAgendas.marsFirst.policyId;
         case PartyName.SCIENTISTS:
@@ -153,9 +156,9 @@ export default defineComponent({
           return politicalAgendas.reds.policyId;
         case PartyName.GREENS:
           return politicalAgendas.greens.policyId;
-        }
+        default:
+          throw new Error(`Unknown party name ${partyName}`);
       }
-      return undefined;
     },
     toggleMe() {
       const currentState: boolean = this.isVisible();

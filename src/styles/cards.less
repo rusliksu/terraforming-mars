@@ -180,19 +180,6 @@ input[type="radio"]:checked+.filterDiv::after {
 }
 
 
-/*********** Title text sizing************/
-.title-small {
-  font-size: 15px !important;
-}
-
-.title-smaller {
-  font-size: 14px !important;
-}
-
-.title-smallest {
-  font-size: 13px !important;
-}
-
 /*********** Background colors************/
 
 .background-color-corporation {
@@ -395,14 +382,11 @@ input[type="radio"]:checked+.filterDiv::after {
 
 .starwars-icon:after {
   .expansion-icon-base();
-  border: 1px solid @grey_900;
-  color: #DDD;
-  background: #999;
-  font-family: Prototype, sans-serif;
-  font-weight: bold;
-  font-size: 14px;
-  line-height: 17px;
-  content: "W";
+  background-image: url(./assets/expansion_icons/expansion_icon_starwars.png);
+  background-size: 12px;
+  background-position: 2px 2px;
+  background-repeat: no-repeat;
+  content: "";
 }
 
 .underworld-icon:after {
@@ -651,6 +635,7 @@ input[type="radio"]:checked+.filterDiv::after {
   text-align: center;
   margin: 5px 5px 10px 5px;
   filter: drop-shadow(0px 0px 1px black);
+  // Every background image tile overrides this.
   background-image: url(./assets/tiles/empty.png);
 }
 
@@ -658,12 +643,6 @@ input[type="radio"]:checked+.filterDiv::after {
   background-image: url(./assets/global-parameters/temperature.png);
   width: 14px;
   background-size: 14px 46px;
-}
-
-.greenery-tile {
-  background-image: url(./assets/tiles/greenery.png);
-  background-size: 50px 46px;
-  width: 50px;
 }
 
 .greenery-no-O2-tile {
@@ -679,25 +658,12 @@ input[type="radio"]:checked+.filterDiv::after {
   filter: brightness(0.8) drop-shadow(0px 1px 1px rgba(0, 0, 0, 0.5));
 }
 
-.empty-tile-small {
+.empty-tile {
   background-image: url(./assets/tiles/empty.png);
-  width: 30px;
-  height: 32px;
-  background-size: 30px 32px;
 }
 
 .special-tile {
   background-image: url(./assets/tiles/special.png);
-  width: 40px;
-  height: 47px;
-  background-size: 40px;
-}
-
-.special-tile--S {
-  background-image: url(./assets/tiles/special.png);
-  width: 30px;
-  height: 32px;
-  background-size: 30px 32px;
 }
 
 .oxygen-tile {
@@ -716,9 +682,6 @@ input[type="radio"]:checked+.filterDiv::after {
 
 .city-or-special-tile {
   background-image: url(./assets/promo/city-or-special-tile.png);
-  width: 40px;
-  height: 47px;
-  background-size: 40px;
 }
 
 .rating {

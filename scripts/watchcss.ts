@@ -35,6 +35,11 @@ const eventWatcher = watcher as typeof watcher & {
 eventWatcher.on('change', onChange);
 eventWatcher.on('add', onChange);
 
+// Compile once up front so build/styles.css is fresh before anything is served.
+// Without this the watcher only rebuilds on a subsequent change, leaving stale
+// CSS if you launch the watcher without editing a .less file.
+runMakeCss();
+
 console.log(`Watching for LESS changes in: ${path.resolve(directoryToWatch)}`);
 
 process.on('SIGINT', () => {

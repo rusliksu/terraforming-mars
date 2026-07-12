@@ -64,7 +64,7 @@ describeDatabaseSuite({
   otherTests: (dbFactory) => {
     it('restoreGameAt loads the latest remaining save when the target save id is missing', async () => {
       const db = dbFactory();
-      const loader = GameLoader.newTestInstance({sleepMillis: 0, evictMillis: 100, sweep: 'manual'}, new FakeClock());
+      const loader = GameLoader.newTestInstance({sleepMillis: 0, evictMillis: 100, idleMillis: 0, sweep: 'manual'}, new FakeClock());
       const player = TestPlayer.BLACK.newPlayer();
       const game = Game.newInstance('game-skipped-save-id', [player], player, 'spectatorid');
 

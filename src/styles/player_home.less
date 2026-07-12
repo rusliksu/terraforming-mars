@@ -21,8 +21,27 @@
   }
 }
 
-.terraformed {
-  background: linear-gradient(transparent, #e28c22, transparent);
+.terraformed-banner {
+  background: linear-gradient(to right, #e28c22, #ffcc64, #e28c22);
+  color: #000;
+  text-align: center;
+  padding: 12px;
+  font-size: 24px;
+  font-family: Prototype, Ubuntu, Sans-Serif;
+  font-weight: bold;
+  text-transform: uppercase;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+  z-index: 100;
+  position: relative;
+  border-bottom: 2px solid #805700;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.terraformed-banner--animated {
+  animation: slide-down 0.6s ease-out;
 }
 
 @keyframes slide-down {
@@ -487,28 +506,6 @@
   margin-top: 11px;
 }
 
-.icon-vp {
-  text-shadow: 0 0 5px darkorange;
-  color: #000;
-  width: 60px;
-  height: 60px;
-  line-height: 60px;
-  font-size: 28px;
-  background-image: url(./assets/board/mars.png);
-  background-size: 120px 120px;
-  background-position: 88px 92px;
-  border-top: 5px solid #bb8760;
-  border-left: 5px solid #bb8760;
-  border-bottom: 5px solid #744631;
-  border-right: 5px solid #744631;
-}
-
-.player_home_block--resources {
-  position: sticky;
-  top: -13px;
-  z-index: 20;
-}
-
 .player_home_anchor {
   position: relative;
   top: -100px;
@@ -524,13 +521,6 @@
   text-shadow: 1px 1px 1px @grey_900, -1px -1px 1px #666;
   padding: 1px 10px;
   border-radius: 4px;
-}
-
-.help_tip {
-  color: #aaa;
-  font-size: smaller;
-  text-shadow: none;
-  font-family: Ubuntu, sans-serif;
 }
 
 .player_home_block {
@@ -553,15 +543,6 @@
     border-radius: 4px;
   }
 
-  .tags_cont {
-    display: inline-block;
-    vertical-align: top;
-
-    .player_name_cont {
-      text-align: left;
-    }
-  }
-
   .player_name_cont {
     text-align: center;
     width: 150px;
@@ -575,27 +556,6 @@
       margin-right: 5px;
       text-shadow: 1px 1px 1px @grey_900, -1px -1px 1px #666;
     }
-
-    .corporation-name-cont {
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-
-      .corporation-name {
-        font-size: 16px;
-      }
-    }
-  }
-  .pin_icon {
-    width: 40px;
-    height: 40px;
-  }
-  .player_pin {
-    cursor: pointer;
-    vertical-align: middle;
-    display: inline-block;
-    width: 40px;
-    height: 40px;
   }
   .other_player {
     display: flex;
@@ -721,11 +681,11 @@
       font-weight: bold;
       border-radius: 10px 10px 0 0;
 
-      // With the experimental UI on, the name is sized by measuring the rendered
-      // text (see fitText). The measurement needs the name in a block that spans
-      // the medal's width, so overflow from a too-long word is detectable;
-      // otherwise an inline span just grows to fit and never reports overflow.
-      .preferences_experimental_ui & > span {
+      // The name is sized by measuring the rendered text (see fitText). The
+      // measurement needs the name in a block that spans the medal's width, so
+      // overflow from a too-long word is detectable; otherwise an inline span
+      // just grows to fit and never reports overflow.
+      & > span {
         display: block;
       }
     }
@@ -1098,11 +1058,8 @@
     }
   }
 
-  .player-status, .player-info-top {
+  .player-status {
     display: none !important;
-  }
-  .player-info-bottom {
-    background: @grey_850 !important;
   }
 
   .player-info {

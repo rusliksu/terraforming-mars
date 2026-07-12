@@ -16,6 +16,11 @@ body,
   background: @bg_action !important;
   border-color: @border_action !important;
 }
+// Give visual feedback while a button is pressed.
+.btn:active {
+  transform: scale(0.96);
+  filter: brightness(0.85);
+}
 .btn-tiny {
   background: #5755d9;
   border-color: #4b48d6;
@@ -139,14 +144,6 @@ h2 {
 }
 .newlines {
   white-space: pre;
-}
-
-.mt-5 {
-  margin-top: 5px;
-}
-
-.mt-10 {
-  margin-top: 10px;
 }
 
 // normal backgrounds
@@ -523,7 +520,6 @@ each(@players, {
 @import "./start_screen.less";
 @import "./create_game_form.less";
 @import "./corporations_filter.less";
-@import "./colonies_filter.less";
 @import "./cards_filter.less";
 @import "./player_home.less";
 @import "./players_overview.less";

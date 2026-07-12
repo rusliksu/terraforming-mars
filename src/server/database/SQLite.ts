@@ -250,20 +250,20 @@ export class SQLite implements IDatabase {
 
   async saveGame(game: IGame): Promise<void> {
     const thisSaveId = game.lastSaveId;
-    const isInitialSave = thisSaveId === 0;
-    const initialSaveAlreadyExists = isInitialSave ?
-      await this.asyncGet('SELECT 1 AS existing_save FROM games WHERE game_id = ? AND save_id = ? LIMIT 1', [game.id, thisSaveId]) :
-      undefined;
     const gameJSON = JSON.stringify(game.serialize());
+
+    // This app has a bad habit of re-saving the same state. It hasn't been fully cleaned, but OK.
+    // If this is the first time we're saving the game, then store the participants. No need
+    // to store them again.
+    const isFirstSave = game.lastSaveId === 0 &&
+      await this.asyncGet('SELECT 1 FROM games WHERE game_id = ? AND save_id = 0', [game.id]) === undefined;
+
     // Insert
     await this.runQuietly(
       'INSERT INTO games (game_id, save_id, game, players) VALUES (?, ?, ?, ?) ON CONFLICT (game_id, save_id) DO UPDATE SET game = ?',
       [game.id, thisSaveId, gameJSON, game.players.length, gameJSON]);
 
-    // Save IDs only when this is the first persisted save for the game.
-    // A game reloaded from the database can still carry lastSaveId=0 because the serialized
-    // snapshot is captured before lastSaveId increments after the initial save.
-    if (isInitialSave && initialSaveAlreadyExists === undefined) {
+    if (isFirstSave) {
       const participantIds: Array<ParticipantId> = game.players.map(toID);
       if (game.spectatorId) {
         participantIds.push(game.spectatorId);
@@ -304,7 +304,7 @@ export class SQLite implements IDatabase {
     // Sequence of [game_id, id] pairs.
     const values: Array<GameId | ParticipantId> = entry.participantIds.map((participant) => [entry.gameId, participant]).flat();
 
-    await this.asyncRun('INSERT OR IGNORE INTO participants (game_id, participant) VALUES ' + placeholders, values);
+    await this.asyncRun('INSERT INTO participants (game_id, participant) VALUES ' + placeholders + ' ON CONFLICT (game_id, participant) DO NOTHING', values);
   }
 
   public async getParticipants(): Promise<Array<GameIdLedger>> {

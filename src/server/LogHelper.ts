@@ -66,6 +66,10 @@ export class LogHelper {
     player.game.log('${0} raised the Venus scale ${1} step(s)', (b) => b.player(player).number(steps));
   }
 
+  static logTemperatureIncrease(player: IPlayer, steps: number) {
+    player.game.log('${0} raised the temperature ${1} step(s)', (b) => b.player(player).number(steps));
+  }
+
   static logDiscardedCards(logger: Logger, cards: ReadonlyArray<ICard> | ReadonlyArray<CardName>) {
     logger.log('${0} card(s) were discarded', (b) => {
       b.rawString(cards.length.toString());

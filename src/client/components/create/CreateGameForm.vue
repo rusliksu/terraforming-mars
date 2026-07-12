@@ -534,8 +534,8 @@
                                               </div>
                                           </div>
                                           <div class="create-game-page-color-row">
-                                              <template v-for="color in getPlayerPaletteColors(newPlayer)" :key="color">
-                                                <div>
+                                              <template v-for="(color, colorIndex) in getPlayerPaletteColors(newPlayer)" :key="color">
+                                                <div :class="{'create-game-color-custom-start': colorIndex === DEFAULT_PLAYER_COLORS.length}">
                                                   <input type="radio" :value="color" :name="'playerColor' + (index + 1)" :checked="newPlayer.color === color" :disabled="isPlayerColorTaken(newPlayer, color)" :id="'radioBox' + color + (index + 1)" @change="applyDefaultPlayerColor(newPlayer, color)">
                                                   <label :for="'radioBox' + color + (index + 1)" :title="getColorTitle(color)">
                                                       <div :class="'create-game-colorbox '+getPlayerCubeColorClass(color)"></div>

@@ -891,6 +891,25 @@ describe('CreateGameForm', () => {
     expect(vm.players[0]).to.include({name: 'GydRo', color: 'pearl', profileId: 'gydro'});
   });
 
+  it('adds all selected Rigatone profile colors after the standard palette', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    await wrapper.setData({
+      playersCount: 2,
+      players: [
+        {name: 'Тагир', color: 'rigatone', beginner: false, handicap: 0, first: false, isBot: false, profileId: 'tagir'},
+        {name: 'Other', color: 'green', beginner: false, handicap: 0, first: false, isBot: false},
+      ],
+    });
+
+    const colors = wrapper.findAll('input[name="playerColor1"]')
+      .map((radio) => (radio.element as HTMLInputElement).value);
+    expect(colors).deep.eq([...DEFAULT_PLAYER_COLORS, 'rigatone', 'rigatone2']);
+    expect(wrapper.findAll('.create-game-color-custom-start')).to.have.length(1);
+    expect(wrapper.find('.create-game-color-custom-start input').attributes('value')).eq('rigatone');
+  });
+
   it('disables colors already used by another visible player', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,

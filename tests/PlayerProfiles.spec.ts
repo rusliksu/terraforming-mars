@@ -36,6 +36,12 @@ describe('Player profiles', () => {
     })).deep.eq(['orange', 'blue', 'yellow']);
   });
 
+  it('exposes both Rigatone profile colors after the standard palette', () => {
+    const profile = getPlayerProfileByName('Ригат Иммортал')!;
+
+    expect(getPlayerProfilePreferredColors(profile)).deep.eq(['rigatone', 'rigatone2']);
+  });
+
   it('builds active player profiles from Elo players', () => {
     const profiles = buildPlayerProfilesFromEloPlayers({
       genuinegold: {displayName: 'GenuineGold', games: 48, elo: 1749},

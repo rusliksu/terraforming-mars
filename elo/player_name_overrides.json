@@ -11,5 +11,11 @@
     "playerNames": {
       "саша": "Александр"
     }
+  },
+  "gcf9cc9745cc5": {
+    "reason": "Player pba56373ab041 was confirmed as Nikita Kuskov; the active game was created with the GydRo display name.",
+    "playerNames": {
+      "gydro": "Никита Кусков"
+    }
   }
 }

@@ -4,6 +4,7 @@ import {
   getPlayerProfileAvatarInitials,
   getPlayerProfileAvatarPattern,
   getPlayerProfileByName,
+  getPlayerProfilePreferredColors,
   PLAYER_PROFILES,
 } from '@/common/PlayerProfiles';
 
@@ -16,10 +17,23 @@ describe('Player profiles', () => {
     expect(getPlayerProfileByName('Женя')?.name).eq('vvbMinsk');
     expect(getPlayerProfileByName('Midilobusim')?.name).eq('Nuke');
     expect(getPlayerProfileByName('Midilobisum')?.name).eq('Nuke');
+    expect(getPlayerProfileByName('Никита_Кусков')?.name).eq('Никита Кусков');
+    expect(getPlayerProfileByName('Никитос')).eq(undefined);
   });
 
   it('keeps profile ids unique', () => {
     expect(new Set(PLAYER_PROFILES.map((profile) => profile.id)).size).eq(PLAYER_PROFILES.length);
+  });
+
+  it('keeps ordered color preferences compatible with the primary color', () => {
+    const profile = getPlayerProfileByName('Никита Кусков')!;
+
+    expect(profile.preferredColor).eq('orange');
+    expect(getPlayerProfilePreferredColors(profile)).deep.eq(['orange']);
+    expect(getPlayerProfilePreferredColors({
+      ...profile,
+      preferredColors: ['blue', 'orange', 'yellow'],
+    })).deep.eq(['orange', 'blue', 'yellow']);
   });
 
   it('builds active player profiles from Elo players', () => {

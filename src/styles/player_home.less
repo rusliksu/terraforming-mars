@@ -987,8 +987,18 @@
   }
 
   &.colonies-fleet-rigatone {
-    background-position: -416px 0;
-    filter: @player_rigatone_fleet_filter @player_persona_fleet_edge_filter;
+    background: transparent;
+    position: relative;
+    filter: @player_persona_fleet_edge_filter;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: @player_rigatone_token_gradient;
+      -webkit-mask: url(./assets/colony_ships.png) -416px 0 no-repeat;
+      mask: url(./assets/colony_ships.png) -416px 0 no-repeat;
+    }
   }
 }
 

@@ -45,6 +45,23 @@
   gap: 8px;
 }
 
+@media (max-width: 480px) {
+  // Spectre tooltips use wide, absolutely positioned pseudo-elements even
+  // while hidden. Keep them from widening the entire Create Game page.
+  .topmost-create-game-form {
+    overflow-x: hidden;
+
+    // The global notice is fixed for the start screen. On this long form it
+    // needs to follow the controls instead of covering them.
+    .notice {
+      position: static;
+      box-sizing: border-box;
+      padding: 16px;
+      text-align: left;
+    }
+  }
+}
+
 .create-game-corporation {
   padding: 0 0 25px 25px;
 }

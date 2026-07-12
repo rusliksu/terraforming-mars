@@ -205,7 +205,7 @@ describe('Styles', () => {
     }
   });
 
-  it('uses sprite-based custom colony fleets matching standard fleet sprites', () => {
+  it('uses recognizable custom colony fleets based on the standard ship silhouette', () => {
     const playerHome = read('src/styles/player_home.less');
     const board = read('src/styles/board.less');
 
@@ -244,6 +244,28 @@ describe('Styles', () => {
     expect(cssBlock(playerHome, '&.colonies-fleet-saturnstorm')).to.contain('@player_saturnstorm_fleet_filter @player_persona_fleet_edge_filter');
     expect(cssBlock(playerHome, '&.colonies-fleet-catseye')).to.contain('background-position: -140px 0;');
     expect(cssBlock(playerHome, '&.colonies-fleet-catseye')).to.contain('@player_catseye_fleet_filter @player_persona_fleet_edge_filter');
+    expectCssContains(playerHome, `
+      &.colonies-fleet-rigatone {
+        background: transparent;
+        position: relative;
+        filter: @player_persona_fleet_edge_filter;
+    `);
+    expect(playerHome).to.contain('background: @player_rigatone_token_gradient;');
+    expectCssContains(playerHome, '-webkit-mask: url(./assets/colony_ships.png) -416px 0 no-repeat;');
+    expectCssContains(playerHome, 'mask: url(./assets/colony_ships.png) -416px 0 no-repeat;');
+  });
+
+  it('keeps the Create Game footer and tooltips within the mobile viewport', () => {
+    const createGame = read('src/styles/create_game_form.less');
+
+    expect(createGame).to.contain('@media (max-width: 480px)');
+    expect(createGame).to.contain('.topmost-create-game-form');
+    expect(createGame).to.contain('overflow-x: hidden;');
+    expectCssContains(createGame, `
+      .notice {
+        position: static;
+        box-sizing: border-box;
+    `);
   });
 
   it('covers every player color across board, colony, award, and profile surfaces', () => {

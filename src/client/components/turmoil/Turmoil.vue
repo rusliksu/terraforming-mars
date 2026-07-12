@@ -17,7 +17,7 @@
             <div :class="'party-name party-name--'+partyNameToCss(turmoil.ruling)" v-i18n>{{ turmoil.ruling }}</div>
           </div>
           <div class="dominant-party-bonus">
-            <TurmoilAgenda :id="getPolicy(turmoil.ruling)"/>
+            <TurmoilAgenda v-if="turmoil.ruling" :id="getPolicy(turmoil.ruling)"/>
           </div>
           <div class="policy-user-cubes">
             <template v-for="n in turmoil.policyActionUsers" :key="n.color">
@@ -124,18 +124,18 @@ export default defineComponent({
         throw new Error('Political agendas not defined');
       }
       switch (party) {
-        case PartyName.MARS:
-          return politicalAgendas.marsFirst.bonusId;
-        case PartyName.SCIENTISTS:
-          return politicalAgendas.scientists.bonusId;
-        case PartyName.UNITY:
-          return politicalAgendas.unity.bonusId;
-        case PartyName.KELVINISTS:
-          return politicalAgendas.kelvinists.bonusId;
-        case PartyName.REDS:
-          return politicalAgendas.reds.bonusId;
-        case PartyName.GREENS:
-          return politicalAgendas.greens.bonusId;
+      case PartyName.MARS:
+        return politicalAgendas.marsFirst.bonusId;
+      case PartyName.SCIENTISTS:
+        return politicalAgendas.scientists.bonusId;
+      case PartyName.UNITY:
+        return politicalAgendas.unity.bonusId;
+      case PartyName.KELVINISTS:
+        return politicalAgendas.kelvinists.bonusId;
+      case PartyName.REDS:
+        return politicalAgendas.reds.bonusId;
+      case PartyName.GREENS:
+        return politicalAgendas.greens.bonusId;
       }
     },
     getPolicy(partyName: PartyName): PolicyId {
@@ -144,20 +144,20 @@ export default defineComponent({
         throw new Error('Political agendas not defined');
       }
       switch (partyName) {
-        case PartyName.MARS:
-          return politicalAgendas.marsFirst.policyId;
-        case PartyName.SCIENTISTS:
-          return politicalAgendas.scientists.policyId;
-        case PartyName.UNITY:
-          return politicalAgendas.unity.policyId;
-        case PartyName.KELVINISTS:
-          return politicalAgendas.kelvinists.policyId;
-        case PartyName.REDS:
-          return politicalAgendas.reds.policyId;
-        case PartyName.GREENS:
-          return politicalAgendas.greens.policyId;
-        default:
-          throw new Error(`Unknown party name ${partyName}`);
+      case PartyName.MARS:
+        return politicalAgendas.marsFirst.policyId;
+      case PartyName.SCIENTISTS:
+        return politicalAgendas.scientists.policyId;
+      case PartyName.UNITY:
+        return politicalAgendas.unity.policyId;
+      case PartyName.KELVINISTS:
+        return politicalAgendas.kelvinists.policyId;
+      case PartyName.REDS:
+        return politicalAgendas.reds.policyId;
+      case PartyName.GREENS:
+        return politicalAgendas.greens.policyId;
+      default:
+        throw new Error(`Unknown party name ${partyName}`);
       }
     },
     toggleMe() {

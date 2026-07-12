@@ -6,6 +6,7 @@ import {CardName} from '../../common/cards/CardName';
 import {InputResponse} from '../../common/inputs/InputResponse';
 import {PlayerId} from '../../common/Types';
 import {Game} from '../Game';
+import {globalInitialize} from '../globalInitialize';
 import {SerializedGame} from '../SerializedGame';
 import {Server} from '../models/ServerModel';
 
@@ -15,6 +16,13 @@ export interface TmSimBranchInputV1 {
   candidateId: string;
   input: InputResponse;
   beliefSeed?: number | string;
+  // Evidence/replay only: exact accepted nested choices needed to finish the
+  // same root action. Explicit inputs are fingerprint-checked; card-index
+  // inputs are type- and bounds-checked against the current fair prompt.
+  replayContinuations?: Array<
+    {actorId?: string; promptFingerprint: string; input: InputResponse} |
+    {actorId?: string; promptType: 'card'; cardSelectionIndex: number; cardSelectionCount: number}
+  >;
 }
 
 export interface ForkBatchV1 {
@@ -27,6 +35,10 @@ export interface ForkBatchV1 {
   actorId: string;
   snapshot: SerializedGame;
   branches: Array<TmSimBranchInputV1>;
+  includeSimulationActor?: boolean;
+  // Evidence-only: exposes the observer view immediately before the branch.
+  // Callers must keep this transient and must not persist private player state.
+  includeRootObserver?: boolean;
   limits?: {
     maxBranches?: number;
     ttlMs?: number;
@@ -41,6 +53,7 @@ export interface ContinueBatchV1 {
   observerId: string;
   actorId: string;
   branches: Array<TmSimBranchInputV1 & {branchHandle: string; promptFingerprint: string}>;
+  includeSimulationActor?: boolean;
 }
 
 export type TmSimRequestV1 = ForkBatchV1 | ContinueBatchV1;
@@ -52,9 +65,15 @@ export interface TmSimBranchResultV1 {
   successorStateVersion: string | null;
   promptFingerprint: string | null;
   activePlayerId: string | null;
+  // Simulation-only active-player view. In fair modes it comes from the
+  // redeterminized branch, never the real hidden allocation. Callers must not
+  // persist or expose it as observer evidence.
+  simulationActor: unknown | null;
+  rootObserver: unknown | null;
   stableMainActionBoundary: boolean;
   observer: unknown | null;
   warnings: Array<string>;
+  durationMs: number;
   error?: string;
 }
 
@@ -96,6 +115,24 @@ export function stableHash(value: unknown): string {
 
 export function promptFingerprintFromWaitingFor(waitingFor: unknown): string {
   return `prompt:${stableHash(waitingFor ?? {})}`;
+}
+
+export function cardIndexReplayInputV1(
+  waitingFor: unknown,
+  index: number,
+  count: number,
+): InputResponse | null {
+  const prompt = waitingFor as {type?: string; cards?: Array<string | {name?: string}>};
+  if (prompt?.type !== 'card' || !Array.isArray(prompt.cards) ||
+      !Number.isInteger(index) || !Number.isInteger(count) || index < 0 || count < 1 ||
+      index + count > prompt.cards.length) {
+    return null;
+  }
+  const cards = prompt.cards.slice(index, index + count).map((card) => typeof card === 'string' ? card : card?.name);
+  if (cards.some((card) => typeof card !== 'string' || card.length === 0)) {
+    return null;
+  }
+  return {type: 'card', cards} as InputResponse;
 }
 
 export function sanitizeSnapshotForSimulation(snapshot: SerializedGame): SerializedGame {
@@ -154,12 +191,18 @@ export function redeterminizeSnapshotForObserver(
     'draftHand',
   ];
   const opponents = cloned.players.filter((player) => player.id !== observerId);
+  // These containers are historical once ACTION begins. The selected
+  // corporation/prelude/CEO already lives in canonical played/selected fields;
+  // retaining the original option sets only leaks obsolete hidden choices and
+  // unnecessarily rejects real serialized games.
+  for (const player of opponents) {
+    player.dealtCorporationCards.splice(0);
+    player.dealtPreludeCards.splice(0);
+    player.dealtCeoCards.splice(0);
+  }
   const allocation: Array<{cards: Array<CardName>; count: number}> = [];
   const pool: Array<CardName> = [];
   for (const player of opponents) {
-    if (player.dealtCorporationCards.length > 0 || player.dealtPreludeCards.length > 0 || player.dealtCeoCards.length > 0) {
-      throw new Error('fair redeterminization does not support hidden opening-card containers in ACTION phase');
-    }
     for (const field of hiddenFields) {
       const cards = player[field];
       allocation.push({cards, count: cards.length});
@@ -242,25 +285,29 @@ export class TmSimHost {
     const maxBranches = Math.max(1, Math.min(64, request.limits?.maxBranches ?? 32));
     const selected = request.branches.slice(0, maxBranches);
     const results = selected.map((branch) => {
-      let game: Game;
-      try {
-        const snapshot = request.knowledgeMode === 'oracle_teacher' ?
-          request.snapshot :
-          redeterminizeSnapshotForObserver(
-            request.snapshot,
-            request.observerId,
-            branch.beliefSeed ?? `${request.requestId}:${branch.candidateId}`,
-          );
-        game = deserializeSimulationGame(snapshot);
-      } catch (error) {
-        return this.errorResult(branch.candidateId, error);
-      }
-      const current = this.observerModel(game, request.actorId);
-      const actualFingerprint = promptFingerprintFromWaitingFor((current as {waitingFor?: unknown}).waitingFor);
-      if (actualFingerprint !== request.promptFingerprint) {
-        return this.staleResult(branch.candidateId, actualFingerprint);
-      }
-      return this.processBranch(game, request, branch, request.limits?.ttlMs);
+      const startedAt = this.now();
+      const result = (() => {
+        let game: Game;
+        try {
+          const snapshot = request.knowledgeMode === 'oracle_teacher' ?
+            request.snapshot :
+            redeterminizeSnapshotForObserver(
+              request.snapshot,
+              request.observerId,
+              branch.beliefSeed ?? `${request.requestId}:${branch.candidateId}`,
+            );
+          game = deserializeSimulationGame(snapshot);
+        } catch (error) {
+          return this.errorResult(branch.candidateId, error);
+        }
+        const current = this.observerModel(game, request.actorId);
+        const actualFingerprint = promptFingerprintFromWaitingFor((current as {waitingFor?: unknown}).waitingFor);
+        if (actualFingerprint !== request.promptFingerprint) {
+          return this.staleResult(branch.candidateId, actualFingerprint);
+        }
+        return this.processBranch(game, request, branch, request.limits?.ttlMs);
+      })();
+      return {...result, durationMs: Math.max(0, this.now() - startedAt)};
     });
     if (request.branches.length > selected.length) {
       results.push({
@@ -270,9 +317,12 @@ export class TmSimHost {
         successorStateVersion: null,
         promptFingerprint: null,
         activePlayerId: null,
+        simulationActor: null,
+        rootObserver: null,
         stableMainActionBoundary: false,
         observer: null,
         warnings: ['branch_limit_exceeded'],
+        durationMs: 0,
       });
     }
     return this.batchResult(request, results);
@@ -280,31 +330,35 @@ export class TmSimHost {
 
   private continueBatch(request: ContinueBatchV1): TmSimBatchResultV1 {
     const results = request.branches.map((branch) => {
-      const stored = this.branches.get(branch.branchHandle);
-      if (stored === undefined || stored.expiresAt <= this.now()) {
-        return this.unsupportedResult(branch.candidateId, 'branch_handle_missing_or_expired');
-      }
-      if (stored.observerId !== request.observerId) {
-        return this.unsupportedResult(branch.candidateId, 'branch_handle_observer_mismatch');
-      }
-      if (stored.knowledgeMode !== request.knowledgeMode) {
-        return this.unsupportedResult(branch.candidateId, 'branch_handle_knowledge_mode_mismatch');
-      }
-      if (stored.stateVersion !== request.stateVersion) {
-        return this.staleStateResult(branch.candidateId);
-      }
-      let game: Game;
-      try {
-        game = deserializeSimulationGame(stored.snapshot);
-      } catch (error) {
-        return this.errorResult(branch.candidateId, error);
-      }
-      const current = this.observerModel(game, request.actorId);
-      const actualFingerprint = promptFingerprintFromWaitingFor((current as {waitingFor?: unknown}).waitingFor);
-      if (actualFingerprint !== branch.promptFingerprint) {
-        return this.staleResult(branch.candidateId, actualFingerprint);
-      }
-      return this.processBranch(game, request, branch);
+      const startedAt = this.now();
+      const result = (() => {
+        const stored = this.branches.get(branch.branchHandle);
+        if (stored === undefined || stored.expiresAt <= this.now()) {
+          return this.unsupportedResult(branch.candidateId, 'branch_handle_missing_or_expired');
+        }
+        if (stored.observerId !== request.observerId) {
+          return this.unsupportedResult(branch.candidateId, 'branch_handle_observer_mismatch');
+        }
+        if (stored.knowledgeMode !== request.knowledgeMode) {
+          return this.unsupportedResult(branch.candidateId, 'branch_handle_knowledge_mode_mismatch');
+        }
+        if (stored.stateVersion !== request.stateVersion) {
+          return this.staleStateResult(branch.candidateId);
+        }
+        let game: Game;
+        try {
+          game = deserializeSimulationGame(stored.snapshot);
+        } catch (error) {
+          return this.errorResult(branch.candidateId, error);
+        }
+        const current = this.observerModel(game, request.actorId);
+        const actualFingerprint = promptFingerprintFromWaitingFor((current as {waitingFor?: unknown}).waitingFor);
+        if (actualFingerprint !== branch.promptFingerprint) {
+          return this.staleResult(branch.candidateId, actualFingerprint);
+        }
+        return this.processBranch(game, request, branch);
+      })();
+      return {...result, durationMs: Math.max(0, this.now() - startedAt)};
     });
     return this.batchResult(request, results);
   }
@@ -314,10 +368,43 @@ export class TmSimHost {
     request: TmSimRequestV1,
     branch: TmSimBranchInputV1,
     ttlOverride?: number,
-  ): TmSimBranchResultV1 {
+  ): Omit<TmSimBranchResultV1, 'durationMs'> {
     try {
+      const rootObserver = request.kind === 'fork_batch_v1' && request.includeRootObserver === true ?
+        this.observerModel(game, request.observerId) :
+        null;
       const actor = game.getPlayerById(request.actorId as PlayerId);
       actor.process(branch.input);
+      for (const continuation of branch.replayContinuations ?? []) {
+        const continuationActorId = continuation.actorId || request.actorId;
+        let continuationActor;
+        try {
+          continuationActor = game.getPlayerById(continuationActorId as PlayerId);
+        } catch (_error) {
+          return this.unsupportedResult(branch.candidateId, 'replay_continuation_actor_missing');
+        }
+        const current = this.observerModel(game, continuationActorId) as {waitingFor?: unknown};
+        if ('cardSelectionIndex' in continuation) {
+          if (continuation.promptType !== 'card') {
+            return this.unsupportedResult(branch.candidateId, 'card_index_replay_prompt_type_mismatch');
+          }
+          const mappedInput = cardIndexReplayInputV1(
+            current.waitingFor,
+            continuation.cardSelectionIndex,
+            continuation.cardSelectionCount,
+          );
+          if (mappedInput === null) {
+            return this.unsupportedResult(branch.candidateId, 'card_index_replay_not_legal');
+          }
+          continuationActor.process(mappedInput);
+          continue;
+        }
+        const actualFingerprint = promptFingerprintFromWaitingFor(current.waitingFor);
+        if (actualFingerprint !== continuation.promptFingerprint) {
+          return this.staleResult(branch.candidateId, actualFingerprint);
+        }
+        continuationActor.process(continuation.input);
+      }
       const observer = this.observerModel(game, request.observerId);
       const activePlayerId = game.activePlayer?.id ?? null;
       const nextActorModel = activePlayerId === null ? null : this.observerModel(game, activePlayerId);
@@ -351,6 +438,8 @@ export class TmSimHost {
         successorStateVersion,
         promptFingerprint: nextFingerprint,
         activePlayerId,
+        simulationActor: request.includeSimulationActor === true ? nextActorModel : null,
+        rootObserver,
         stableMainActionBoundary: stable,
         observer,
         warnings,
@@ -411,7 +500,7 @@ export class TmSimHost {
     };
   }
 
-  private errorResult(candidateId: string, error: unknown): TmSimBranchResultV1 {
+  private errorResult(candidateId: string, error: unknown): Omit<TmSimBranchResultV1, 'durationMs'> {
     return {
       candidateId,
       status: 'error',
@@ -419,6 +508,8 @@ export class TmSimHost {
       successorStateVersion: null,
       promptFingerprint: null,
       activePlayerId: null,
+      simulationActor: null,
+      rootObserver: null,
       stableMainActionBoundary: false,
       observer: null,
       warnings: [],
@@ -426,7 +517,7 @@ export class TmSimHost {
     };
   }
 
-  private staleResult(candidateId: string, actualFingerprint: string): TmSimBranchResultV1 {
+  private staleResult(candidateId: string, actualFingerprint: string): Omit<TmSimBranchResultV1, 'durationMs'> {
     return {
       candidateId,
       status: 'stale',
@@ -434,13 +525,15 @@ export class TmSimHost {
       successorStateVersion: null,
       promptFingerprint: actualFingerprint,
       activePlayerId: null,
+      simulationActor: null,
+      rootObserver: null,
       stableMainActionBoundary: false,
       observer: null,
       warnings: ['prompt_fingerprint_mismatch'],
     };
   }
 
-  private staleStateResult(candidateId: string): TmSimBranchResultV1 {
+  private staleStateResult(candidateId: string): Omit<TmSimBranchResultV1, 'durationMs'> {
     return {
       candidateId,
       status: 'stale',
@@ -448,13 +541,15 @@ export class TmSimHost {
       successorStateVersion: null,
       promptFingerprint: null,
       activePlayerId: null,
+      simulationActor: null,
+      rootObserver: null,
       stableMainActionBoundary: false,
       observer: null,
       warnings: ['branch_handle_state_version_mismatch'],
     };
   }
 
-  private unsupportedResult(candidateId: string, warning: string): TmSimBranchResultV1 {
+  private unsupportedResult(candidateId: string, warning: string): Omit<TmSimBranchResultV1, 'durationMs'> {
     return {
       candidateId,
       status: 'unsupported',
@@ -462,6 +557,8 @@ export class TmSimHost {
       successorStateVersion: null,
       promptFingerprint: null,
       activePlayerId: null,
+      simulationActor: null,
+      rootObserver: null,
       stableMainActionBoundary: false,
       observer: null,
       warnings: [warning],
@@ -470,6 +567,7 @@ export class TmSimHost {
 }
 
 async function main(): Promise<number> {
+  globalInitialize();
   assertSimulationEnvironmentSafe();
   const host = new TmSimHost();
   const lines = readline.createInterface({input: process.stdin, crlfDelay: Infinity});

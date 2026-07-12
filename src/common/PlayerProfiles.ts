@@ -51,13 +51,13 @@ export const PLAYER_PROFILES: ReadonlyArray<PlayerProfile> = [
     id: 'nuke',
     name: 'Nuke',
     preferredColor: 'black',
-    aliases: ['nuke', 'midilo', 'midilobusim', 'midilobisum', 'никита'],
+    aliases: ['nuke', 'midilo', 'midilobusim', 'midilobisum'],
   },
   {
-    id: 'nikita-kuskov',
-    name: 'Никита Кусков',
+    id: 'nikita',
+    name: 'Никита',
     preferredColor: 'orange',
-    aliases: ['никита кусков', 'никита_кусков', 'nikita kuskov', 'nikita_kuskov'],
+    aliases: ['никита', 'никита кусков', 'никита_кусков', 'nikita', 'nikita kuskov', 'nikita_kuskov'],
   },
   {
     id: 'vladlen',

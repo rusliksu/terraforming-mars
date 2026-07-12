@@ -17,7 +17,9 @@ describe('Player profiles', () => {
     expect(getPlayerProfileByName('Женя')?.name).eq('vvbMinsk');
     expect(getPlayerProfileByName('Midilobusim')?.name).eq('Nuke');
     expect(getPlayerProfileByName('Midilobisum')?.name).eq('Nuke');
-    expect(getPlayerProfileByName('Никита_Кусков')?.name).eq('Никита Кусков');
+    expect(getPlayerProfileByName('Никита')?.name).eq('Никита');
+    expect(getPlayerProfileByName('Никита_Кусков')?.name).eq('Никита');
+    expect(getPlayerProfileByName('Nuke')?.name).eq('Nuke');
     expect(getPlayerProfileByName('Никитос')).eq(undefined);
   });
 
@@ -26,7 +28,7 @@ describe('Player profiles', () => {
   });
 
   it('keeps ordered color preferences compatible with the primary color', () => {
-    const profile = getPlayerProfileByName('Никита Кусков')!;
+    const profile = getPlayerProfileByName('Никита')!;
 
     expect(profile.preferredColor).eq('orange');
     expect(getPlayerProfilePreferredColors(profile)).deep.eq(['orange']);

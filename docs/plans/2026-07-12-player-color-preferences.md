@@ -11,12 +11,12 @@ The create-game form stores one preferred color per saved player profile. If tha
 - Never allow the create-game UI to select a color already used by another visible player.
 - When an automatically assigned player preference becomes free, promote that player to the best available preference.
 - Let a saved player with a reserved color switch to a standard color and back to their reserved color without losing the selected profile.
-- Add `Никита Кусков` as a distinct profile from `Nuke` and `Никитос`, with orange as the known primary preference.
+- Add `Никита` as a distinct profile from `Nuke` and `Никитос`, with orange as the known primary preference; keep surname/underscore forms as aliases.
 
 ## Non-goals
 
 - Do not change colors in an active game. Player colors are gameplay identity keys and a mid-game color migration has a much larger blast radius.
-- Do not merge `Никитос` or `Nuke` into `Никита Кусков`.
+- Do not merge `Никитос` or `Nuke` into `Никита`.
 - Do not deploy or restart production as part of this slice.
 - Do not invent second or third personal preferences where they are not known yet.
 
@@ -38,7 +38,7 @@ The create-game form stores one preferred color per saved player profile. If tha
 
 ## Phases
 
-- [x] Phase 1: canonicalize `Никита_Кусков` as `Никита Кусков` and add the saved profile.
+- [x] Phase 1: canonicalize `Никита_Кусков` as `Никита` and add the saved profile.
 - [x] Phase 2: add the compatible ordered-preference contract and focused unit tests.
 - [x] Phase 3: enforce immediate palette uniqueness, manual-choice stickiness, automatic promotion, and reserved-color round trips.
 - [x] Phase 4: run targeted tests, TypeScript checks, and ELO migration dry-run.
@@ -48,7 +48,7 @@ The create-game form stores one preferred color per saved player profile. If tha
 
 - The code slice is local until reviewed and explicitly approved for staging/prod deployment.
 - The profile contract is additive; rollback is a normal revert of the slice.
-- Live ELO regeneration must snapshot current ELO artifacts first and verify that only `Никита_Кусков` moves to `Никита Кусков`.
+- Live ELO regeneration must snapshot current ELO artifacts first and verify that surname/underscore forms and the corrected game resolve to `Никита`, without changing `Nuke`.
 - The active game's player name may be corrected only with a narrow verified mutation; its current color remains unchanged.
 
 ## Open decisions

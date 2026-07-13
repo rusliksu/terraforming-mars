@@ -16,8 +16,9 @@ import {AppError} from '../server/AppError';
 import {statusCode} from '../../common/http/statusCode';
 import {InputError} from '../inputs/InputError';
 import {isIProjectCard} from '../cards/IProjectCard';
-import {AppErrorResponse, INVALID_RUN_ID} from '../../common/app/AppErrorId';
+import {AppErrorResponse, CONFIRM_UNDO_AFTER_HIDDEN_INFORMATION, INVALID_RUN_ID} from '../../common/app/AppErrorId';
 import {hasRevealedHiddenInformation} from '../game/hasRevealedHiddenInformation';
+import {HIDDEN_INFORMATION_UNDO_CONFIRMATION_MESSAGE, recordHiddenInformationUndo} from '../game/hiddenInformationUndo';
 import {getUserAgent} from './auditRequest';
 import type {AccessAuditEvent, AccessAuditRecordInput} from '../server/AccessAudit';
 
@@ -25,6 +26,10 @@ type ShadowPromptSnapshot = {
   buttonLabel: string | null;
   title: string | null;
   type: string | null;
+};
+
+type PlayerInputRequest = InputResponse & {
+  confirmUndoAfterHiddenInformation?: boolean;
 };
 
 export class PlayerInput extends Handler {
@@ -73,7 +78,7 @@ export class PlayerInput extends Handler {
     return false;
   }
 
-  private async performUndo(_req: Request, _res: Response, ctx: Context, player: IPlayer): Promise<IPlayer> {
+  private async performUndo(ctx: Context, player: IPlayer, confirmedHiddenInformationUndo: boolean): Promise<IPlayer> {
     /**
      * The `lastSaveId` property is incremented during every `takeAction`.
      * The first save being decremented is the increment during `takeAction` call
@@ -82,8 +87,9 @@ export class PlayerInput extends Handler {
     const lastSaveId = player.game.lastSaveId - 2;
     try {
       const restoredGame = await ctx.gameLoader.getGameAtOrBefore(player.game.id, lastSaveId);
-      if (hasRevealedHiddenInformation(player.game, restoredGame, player)) {
-        throw new InputError('Cannot undo after hidden information was revealed');
+      const revealedHiddenInformation = hasRevealedHiddenInformation(player.game, restoredGame, player);
+      if (revealedHiddenInformation && !confirmedHiddenInformationUndo) {
+        throw new AppError(CONFIRM_UNDO_AFTER_HIDDEN_INFORMATION, HIDDEN_INFORMATION_UNDO_CONFIRMATION_MESSAGE);
       }
 
       const game = await ctx.gameLoader.restoreGameAt(player.game.id, lastSaveId);
@@ -92,9 +98,12 @@ export class PlayerInput extends Handler {
       } else {
         // pull most recent player instance
         player = game.getPlayerById(player.id);
+        if (revealedHiddenInformation) {
+          await recordHiddenInformationUndo(game, player, (game) => ctx.gameLoader.saveGame(game));
+        }
       }
     } catch (err) {
-      if (err instanceof InputError) {
+      if (err instanceof AppError || err instanceof InputError) {
         throw err;
       }
       console.error(err);
@@ -123,14 +132,14 @@ export class PlayerInput extends Handler {
         let promptInputSeq: number | null = null;
         let inputSeq: number | null = null;
         try {
-          const entity = JSON.parse(body);
+          const entity = JSON.parse(body) as PlayerInputRequest;
           entityForLog = cloneEntityForLog(entity);
           promptSnapshot = capturePromptSnapshot(player.getWaitingFor());
           promptInputSeq = player.game.shadowInputSeq ?? 0;
           validateRunId(entity);
           isUndo = this.isWaitingForUndo(player, entity);
           if (isUndo) {
-            player = await this.performUndo(req, res, ctx, player);
+            player = await this.performUndo(ctx, player, entity.confirmUndoAfterHiddenInformation === true);
             inputSeq = advanceShadowInputSeq(player, promptInputSeq);
             responses.writeJson(res, ctx, Server.getPlayerModel(player));
           } else {

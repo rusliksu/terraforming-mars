@@ -162,6 +162,7 @@ export default defineComponent({
     classes(): Record<string, boolean> {
       return {
         'log-message--canceled': this.message.canceled === true,
+        'log-message--warning': this.message.type === LogMessageType.WARNING,
       };
     },
   },

@@ -11,7 +11,7 @@ import {getAward} from '@/client/MilestoneAwardManifest';
 import {Preferences, PreferencesManager} from '@/client/utils/PreferencesManager';
 import {Color} from '@/common/Color';
 
-const names: Array<AwardName> = ['Banker', 'Celebrity'];
+const names: Array<AwardName> = ['Banker', 'Celebrity', 'Thermalist'];
 function createAward({id = 1, funded = false, color = 'red'}: {id?: number, funded?: boolean, color?: Color}): FundedAwardModel {
   return {
     name: names[id - 1],
@@ -111,6 +111,23 @@ describe('Awards', () => {
           show_award_details: false,
         } as Readonly<Preferences>,
       },
+    });
+
+    expect(
+      wrapper.findAllComponents(Award).every((awardWrapper) => awardWrapper.isVisible()),
+    ).to.be.true;
+  });
+
+  it('award details stay visible when all award spots are funded', () => {
+    const awards = [
+      createAward({id: 1, funded: true}),
+      createAward({id: 2, funded: true}),
+      createAward({id: 3, funded: true}),
+    ];
+
+    const wrapper = shallowMount(Awards, {
+      ...globalConfig,
+      props: {awards},
     });
 
     expect(

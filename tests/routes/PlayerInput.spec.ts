@@ -15,6 +15,14 @@ import {CardName} from '../../src/common/cards/CardName';
 import {restoreTestGameLoader, setTestGameLoader} from '../testing/setup';
 import {Payment} from '../../src/common/inputs/Payment';
 import {AccessAuditRecordInput} from '../../src/server/server/AccessAudit';
+import {testGame} from '../TestGame';
+import {Phase} from '../../src/common/Phase';
+import {ProjectEden} from '../../src/server/cards/prelude2/ProjectEden';
+import {ArcticAlgae} from '../../src/server/cards/base/ArcticAlgae';
+import {BiomassCombustors} from '../../src/server/cards/base/BiomassCombustors';
+import {Comet} from '../../src/server/cards/base/Comet';
+import {HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED} from '../../src/common/undo';
+import {HiTechLab} from '../../src/server/cards/promo/HiTechLab';
 
 describe('PlayerInput', () => {
   let scaffolding: RouteTestScaffolding;
@@ -113,7 +121,7 @@ describe('PlayerInput', () => {
     expect(model.game.gameAge).eq(undo.gameAge);
   });
 
-  it('blocks undo when the action revealed hidden information', async () => {
+  it('requires confirmation before undoing revealed hidden information', async () => {
     const player = TestPlayer.BLUE.newPlayer({beginner: true});
     scaffolding.url = '/player/input?id=' + player.id;
     const game = Game.newInstance('gameid-hidden-undo', [player], player, 'spectatorid');
@@ -142,8 +150,99 @@ describe('PlayerInput', () => {
 
     const response = JSON.parse(res.content);
     expect(res.statusCode).eq(400);
-    expect(response.message).eq('Cannot undo after hidden information was revealed');
+    expect(response.id).eq('#undo-revealed-hidden-information');
+    expect(response.message).eq(HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED);
     expect(restoreCalled).eq(false);
+
+    const confirmedReq = new MockRequest();
+    const confirmedRes = new MockResponse();
+    const confirmedScaffolding = new RouteTestScaffolding(confirmedReq);
+    confirmedScaffolding.ctx.gameLoader = scaffolding.ctx.gameLoader;
+    confirmedScaffolding.url = '/player/input?id=' + player.id + '&confirmHiddenInformation=true';
+    const confirmedPost = confirmedScaffolding.post(PlayerInput.INSTANCE, confirmedRes);
+    const confirmedEmit = Promise.resolve().then(() => {
+      const orOptionsResponse: OrOptionsResponse = {type: 'or', index: 0, response: {type: 'option'}};
+      confirmedReq.emitter.emit('data', JSON.stringify(orOptionsResponse));
+      confirmedReq.emitter.emit('end');
+    });
+    await Promise.all([confirmedEmit, confirmedPost]);
+
+    expect(confirmedRes.statusCode).eq(200);
+    expect(restoreCalled).eq(true);
+  });
+
+  it('records an accepted root input in the experimental replay journal', async () => {
+    const [rawGame, player] = testGame(2, {skipInitialCardSelection: true, undoOption: true});
+    const game = rawGame as Game;
+    game.generation = 2;
+    game.phase = Phase.ACTION;
+    game.activePlayer = player;
+    player.preludeCardsInHand.push(new ProjectEden());
+    player.cardsInHand.push(new ArcticAlgae(), new BiomassCombustors(), new Comet());
+    player.takeAction(false);
+    await scaffolding.ctx.gameLoader.add(game);
+    scaffolding.url = '/player/input?id=' + player.id + '&experimentalStepUndo=true';
+
+    const post = scaffolding.post(PlayerInput.INSTANCE, res);
+    const emit = Promise.resolve().then(() => {
+      req.emitter.emit('data', JSON.stringify({type: 'card', cards: [CardName.PROJECT_EDEN]}));
+      req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+
+    expect(res.statusCode).eq(200);
+    expect(game.actionReplayState?.entries).length(1);
+    expect(game.actionReplayState?.entries[0].input).deep.eq({type: 'card', cards: [CardName.PROJECT_EDEN]});
+    expect(player.getWaitingFor()?.toModel(player).type).eq('or');
+  });
+
+  it('keeps the final Hi-Tech Lab selection replayable after the action saves', async () => {
+    const [rawGame, player] = testGame(2, {skipInitialCardSelection: true, undoOption: true});
+    const game = rawGame as Game;
+    game.generation = 2;
+    game.phase = Phase.ACTION;
+    game.activePlayer = player;
+    player.energy = 3;
+    player.playedCards.push(new HiTechLab());
+    player.takeAction(false);
+    await scaffolding.ctx.gameLoader.add(game);
+
+    const postInput = async (input: unknown) => {
+      const localReq = new MockRequest();
+      const localRes = new MockResponse();
+      const localScaffolding = new RouteTestScaffolding(localReq);
+      localScaffolding.ctx.gameLoader = scaffolding.ctx.gameLoader;
+      localScaffolding.url = '/player/input?id=' + player.id + '&experimentalStepUndo=true';
+      const post = localScaffolding.post(PlayerInput.INSTANCE, localRes);
+      const emit = Promise.resolve().then(() => {
+        localReq.emitter.emit('data', JSON.stringify(input));
+        localReq.emitter.emit('end');
+      });
+      await Promise.all([emit, post]);
+      expect(localRes.statusCode).eq(200, localRes.content);
+      return JSON.parse(localRes.content);
+    };
+
+    const rootPrompt = player.getWaitingFor()?.toModel(player);
+    const actionCardIndex = rootPrompt?.type === 'or' ?
+      rootPrompt.options.findIndex((option) => option.title === 'Perform an action from a played card') : -1;
+    expect(actionCardIndex).gte(0);
+    await postInput({
+      type: 'or',
+      index: actionCardIndex,
+      response: {type: 'card', cards: [CardName.HI_TECH_LAB]},
+    });
+    await postInput({type: 'amount', amount: 3});
+    const revealedPrompt = player.getWaitingFor()?.toModel(player);
+    if (revealedPrompt?.type !== 'card') {
+      throw new Error('Expected revealed-card choice');
+    }
+    const selectedCard = revealedPrompt.cards[0].name;
+    const response = await postInput({type: 'card', cards: [selectedCard]});
+
+    expect(response.canStepBack).is.true;
+    expect(game.actionReplayState?.entries).length(3);
+    expect(game.actionReplayState?.resetBeforeNextInput).is.true;
   });
 
   it('rejects undo if restore fails', async () => {

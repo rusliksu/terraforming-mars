@@ -16,10 +16,12 @@ import {AppError} from '../server/AppError';
 import {statusCode} from '../../common/http/statusCode';
 import {InputError} from '../inputs/InputError';
 import {isIProjectCard} from '../cards/IProjectCard';
-import {AppErrorResponse, INVALID_RUN_ID} from '../../common/app/AppErrorId';
+import {AppErrorResponse, INVALID_RUN_ID, UNDO_REVEALED_HIDDEN_INFORMATION} from '../../common/app/AppErrorId';
 import {hasRevealedHiddenInformation} from '../game/hasRevealedHiddenInformation';
 import {getUserAgent} from './auditRequest';
 import type {AccessAuditEvent, AccessAuditRecordInput} from '../server/AccessAudit';
+import {prepareActionReplayEntry, recordAcceptedActionReplayEntry} from '../game/ActionReplay';
+import {HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED} from '../../common/undo';
 
 type ShadowPromptSnapshot = {
   buttonLabel: string | null;
@@ -82,8 +84,9 @@ export class PlayerInput extends Handler {
     const lastSaveId = player.game.lastSaveId - 2;
     try {
       const restoredGame = await ctx.gameLoader.getGameAtOrBefore(player.game.id, lastSaveId);
-      if (hasRevealedHiddenInformation(player.game, restoredGame, player)) {
-        throw new InputError('Cannot undo after hidden information was revealed');
+      if (hasRevealedHiddenInformation(player.game, restoredGame, player) &&
+          ctx.url.searchParams.get('confirmHiddenInformation') !== 'true') {
+        throw new AppError(UNDO_REVEALED_HIDDEN_INFORMATION, HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED);
       }
 
       const game = await ctx.gameLoader.restoreGameAt(player.game.id, lastSaveId);
@@ -94,7 +97,7 @@ export class PlayerInput extends Handler {
         player = game.getPlayerById(player.id);
       }
     } catch (err) {
-      if (err instanceof InputError) {
+      if (err instanceof AppError || err instanceof InputError) {
         throw err;
       }
       console.error(err);
@@ -136,6 +139,14 @@ export class PlayerInput extends Handler {
           } else {
             inputSeq = advanceShadowInputSeq(player, promptInputSeq);
             const previousSaveGamePromise = player.game.saveGamePromise;
+            const experimentalStepUndo = ctx.url.searchParams.get('experimentalStepUndo') === 'true';
+            const replayEntry = experimentalStepUndo &&
+              (player.game.players.length === 1 || player.game.gameOptions.undoOption === true) ?
+              prepareActionReplayEntry(player.game, player.id, entity) :
+              undefined;
+            if (!experimentalStepUndo && player.game.actionReplayState !== undefined) {
+              player.game.actionReplayState = null;
+            }
             try {
               player.process(entity);
             } catch (err) {
@@ -143,8 +154,15 @@ export class PlayerInput extends Handler {
               inputSeq = null;
               throw err;
             }
-            if (player.game.saveGamePromise !== previousSaveGamePromise) {
+            const savedNewRoot = player.game.saveGamePromise !== previousSaveGamePromise;
+            if (savedNewRoot) {
               await player.game.saveGamePromise;
+            }
+            if (replayEntry !== undefined) {
+              recordAcceptedActionReplayEntry(player.game, replayEntry);
+              if (savedNewRoot && player.game.actionReplayState !== undefined && player.game.actionReplayState !== null) {
+                player.game.actionReplayState.resetBeforeNextInput = true;
+              }
             }
             responses.writeJson(res, ctx, Server.getPlayerModel(player));
           }

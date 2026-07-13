@@ -10,7 +10,6 @@ import {runAllActions} from '../../TestingUtils';
 import {testGame} from '../../TestGame';
 import {SelectCard} from '../../../src/server/inputs/SelectCard';
 import {cast} from '../../../src/common/utils/utils';
-import {OrOptions} from '../../../src/server/inputs/OrOptions';
 import {IProjectCard} from '../../../src/server/cards/IProjectCard';
 
 describe('CharityDonation', () => {
@@ -38,11 +37,8 @@ describe('CharityDonation', () => {
     });
   }
 
-  function selectAndConfirm(player: TestPlayer, card: IProjectCard): void {
+  function select(player: TestPlayer, card: IProjectCard): void {
     player.process({type: 'card', cards: [card.name]});
-    runAllActions(game);
-    cast(player.getWaitingFor(), OrOptions);
-    player.process({type: 'or', index: 0, response: {type: 'option'}});
     runAllActions(game);
   }
 
@@ -67,7 +63,7 @@ describe('CharityDonation', () => {
 
     expect(selectCard2.cards).deep.eq([acquiredCompany, beamFromAThoriumAsteroid, ceosFavoriteProject, decomposers]);
 
-    selectAndConfirm(player2, beamFromAThoriumAsteroid);
+    select(player2, beamFromAThoriumAsteroid);
 
     cast(player1.getWaitingFor(), undefined);
     cast(player2.getWaitingFor(), undefined);
@@ -75,7 +71,7 @@ describe('CharityDonation', () => {
 
     expect(selectCard3.cards).deep.eq([acquiredCompany, ceosFavoriteProject, decomposers]);
 
-    selectAndConfirm(player3, decomposers);
+    select(player3, decomposers);
 
     cast(player2.getWaitingFor(), undefined);
     cast(player3.getWaitingFor(), undefined);
@@ -83,7 +79,7 @@ describe('CharityDonation', () => {
 
     expect(selectCard1.cards).deep.eq([acquiredCompany, ceosFavoriteProject]);
 
-    selectAndConfirm(player1, acquiredCompany);
+    select(player1, acquiredCompany);
 
     cast(player1.getWaitingFor(), undefined);
     cast(player2.getWaitingFor(), undefined);
@@ -93,31 +89,5 @@ describe('CharityDonation', () => {
     expect(player2.cardsInHand).deep.eq([beamFromAThoriumAsteroid]);
     expect(player3.cardsInHand).deep.eq([decomposers]);
     expect(game.projectDeck.discardPile).deep.eq([ceosFavoriteProject]);
-  });
-
-  it('lets a player return to the same revealed cards before confirming', () => {
-    const acquiredCompany = new AcquiredCompany();
-    const beamFromAThoriumAsteroid = new BeamFromAThoriumAsteroid();
-    const ceosFavoriteProject = new CEOsFavoriteProject();
-    const decomposers = new Decomposers();
-    game.projectDeck.drawPile.push(decomposers, ceosFavoriteProject, beamFromAThoriumAsteroid, acquiredCompany);
-
-    player1.popWaitingFor();
-    player2.popWaitingFor();
-    player3.popWaitingFor();
-
-    card.play(player1);
-    runAllActions(game);
-    const firstChoice = cast(player1.getWaitingFor(), SelectCard<IProjectCard>);
-    player1.process({type: 'card', cards: [acquiredCompany.name]});
-    runAllActions(game);
-
-    cast(player1.getWaitingFor(), OrOptions);
-    player1.process({type: 'or', index: 1, response: {type: 'option'}});
-    runAllActions(game);
-    const secondChoice = cast(player1.getWaitingFor(), SelectCard<IProjectCard>);
-
-    expect(secondChoice.cards).deep.eq(firstChoice.cards);
-    expect(player1.cardsInHand).is.empty;
   });
 });

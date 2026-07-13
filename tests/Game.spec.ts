@@ -1051,6 +1051,7 @@ describe('Game', () => {
     const serializedKeys = Object.keys(serialized);
 
     const unserializedFieldsInGame: Array<keyof Game> = [
+      'actionReplayState',
       'createdTime',
       'discardedColonies',
       'inDoubleDown',

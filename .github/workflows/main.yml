@@ -27,6 +27,12 @@ jobs:
     - uses: actions/setup-node@v5
       with:
         node-version: 22
+    - name: Test upstream sync guardrails
+      shell: pwsh
+      run: ./scripts/test_tm_upstream_sync.ps1
+    - name: Test release guardrails
+      shell: pwsh
+      run: ./scripts/test_tm_release_guards.ps1
     - run: npm ci
     - run: npm run make:static
     - run: npm run lint

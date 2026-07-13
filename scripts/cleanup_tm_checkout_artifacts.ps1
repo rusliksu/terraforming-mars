@@ -1,5 +1,5 @@
 param(
-    [string]$HostAlias = "vps",
+    [string]$HostAlias = "hostkey-codex",
     [ValidateSet("prod", "staging")]
     [string]$Environment = "prod",
     [switch]$DryRun

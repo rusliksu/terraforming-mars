@@ -74,7 +74,8 @@ export default defineComponent({
     const fundedAwardCount = this.awards.filter((award) => award.playerName).length;
     const hasAvailableAwards = fundedAwardCount < AWARD_COSTS.length;
     return {
-      showAwardDetails: hasAvailableAwards,
+      // Funded awards still need to stay visible because their scores keep changing.
+      showAwardDetails: true,
       showDescription: hasAvailableAwards,
     };
   },

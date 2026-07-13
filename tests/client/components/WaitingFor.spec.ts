@@ -301,6 +301,74 @@ describe('WaitingFor', () => {
     expect(wrapper.text()).to.include('Cancel action');
   });
 
+  it('retries player input with hidden-information confirmation', () => {
+    const wrapper = mountWaitingFor({
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {
+          'PlayerInputFactory': true,
+        },
+      },
+      props: {
+        playerView: playerView as PlayerViewModel,
+        waitingfor: {
+          type: 'option',
+          title: 'test',
+          buttonLabel: 'save',
+        },
+      },
+    });
+    const requests: Array<{url: string, options: TestRequestOptions}> = [];
+    wrapper.vm.fetchPlayerInput = ((url: string, options: TestRequestOptions) => {
+      requests.push({url, options});
+    }) as typeof wrapper.vm.fetchPlayerInput;
+
+    wrapper.vm.retryConfirmedHiddenInformationUndo('player/input?id=p-player-id', {
+      method: 'POST',
+      body: JSON.stringify({type: 'or', index: 1, response: {type: 'option'}}),
+    });
+
+    expect(requests).has.length(1);
+    expect(JSON.parse(requests[0].options.body as string)).deep.eq({
+      type: 'or',
+      index: 1,
+      response: {type: 'option'},
+      confirmUndoAfterHiddenInformation: true,
+    });
+  });
+
+  it('retries cancel action with hidden-information confirmation', () => {
+    const wrapper = mountWaitingFor({
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {
+          'PlayerInputFactory': true,
+        },
+      },
+      props: {
+        playerView: playerView as PlayerViewModel,
+        waitingfor: {
+          type: 'option',
+          title: 'test',
+          buttonLabel: 'save',
+        },
+      },
+    });
+    const requests: Array<{url: string, options: TestRequestOptions}> = [];
+    wrapper.vm.fetchPlayerInput = ((url: string, options: TestRequestOptions) => {
+      requests.push({url, options});
+    }) as typeof wrapper.vm.fetchPlayerInput;
+
+    wrapper.vm.retryConfirmedHiddenInformationUndo('reset?id=p-player-id', {method: 'GET'});
+
+    expect(requests).deep.eq([{
+      url: 'reset?id=p-player-id&confirmUndoAfterHiddenInformation=true',
+      options: {method: 'GET'},
+    }]);
+  });
+
   it('shows a notification after permission is granted', async () => {
     PreferencesManager.INSTANCE.set('enable_sounds', false);
 

@@ -51,7 +51,7 @@ import {paths} from '@/common/app/paths';
 import {statusCode} from '@/common/http/statusCode';
 import {isPlayerId} from '@/common/Types';
 import {InputResponse} from '@/common/inputs/InputResponse';
-import {INVALID_RUN_ID, AppErrorResponse} from '@/common/app/AppErrorId';
+import {CONFIRM_UNDO_AFTER_HIDDEN_INFORMATION, INVALID_RUN_ID, AppErrorResponse} from '@/common/app/AppErrorId';
 import {Color} from '@/common/Color';
 import {gameDocumentTitle} from '../utils/documentTitle';
 import AppButton from '@/client/components/common/AppButton.vue';
@@ -164,6 +164,12 @@ export default defineComponent({
           const showAlert = vueRoot(this).showAlert;
           if (response.status === statusCode.badRequest) {
             const resp = await this.readAppError(response);
+            if (resp.id === CONFIRM_UNDO_AFTER_HIDDEN_INFORMATION) {
+              if (window.confirm(resp.message)) {
+                window.setTimeout(() => this.retryConfirmedHiddenInformationUndo(url, options), 0);
+              }
+              return;
+            }
             let cb = () => {};
             if (resp.id === INVALID_RUN_ID) {
               cb = () => setTimeout(() => window.location.reload(), 100);
@@ -181,6 +187,18 @@ export default defineComponent({
         .finally(() => {
           root.isServerSideRequestInProgress = false;
         });
+    },
+    retryConfirmedHiddenInformationUndo(url: string, options: RequestInit) {
+      const confirmedOptions = {...options};
+      if (typeof confirmedOptions.body === 'string') {
+        const body = JSON.parse(confirmedOptions.body);
+        body.confirmUndoAfterHiddenInformation = true;
+        confirmedOptions.body = JSON.stringify(body);
+      } else {
+        const separator = url.includes('?') ? '&' : '?';
+        url += separator + 'confirmUndoAfterHiddenInformation=true';
+      }
+      this.fetchPlayerInput(url, confirmedOptions);
     },
     async readAppError(response: Response): Promise<AppErrorResponse> {
       try {

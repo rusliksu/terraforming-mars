@@ -8,6 +8,8 @@ import {Request} from '../Request';
 import {Response} from '../Response';
 import {appendCanceledLogMessages} from '../logs/appendCanceledLogMessages';
 import {hasRevealedHiddenInformation} from '../game/hasRevealedHiddenInformation';
+import {CONFIRM_UNDO_AFTER_HIDDEN_INFORMATION} from '../../common/app/AppErrorId';
+import {HIDDEN_INFORMATION_UNDO_CONFIRMATION_MESSAGE, recordHiddenInformationUndo} from '../game/hiddenInformationUndo';
 
 /**
  * Reloads the game from the last action.
@@ -17,7 +19,7 @@ import {hasRevealedHiddenInformation} from '../game/hasRevealedHiddenInformation
  * I think it's saved after every action when undo is on. So, there's that.
  * But I forget when the game is saved in solo. Probably all will be well.
  *
- * It refuses to reload once the current action has revealed hidden information.
+ * It asks for confirmation before reloading an action that revealed hidden information.
  */
 export class Reset extends Handler {
   public static readonly INSTANCE = new Reset();
@@ -68,9 +70,14 @@ export class Reset extends Handler {
       const currentGame = player.game;
       const reloadedGame = await ctx.gameLoader.getGame(currentGame.id, /** force reload */ true);
       if (reloadedGame !== undefined) {
-        if (hasRevealedHiddenInformation(currentGame, reloadedGame, player)) {
+        const revealedHiddenInformation = hasRevealedHiddenInformation(currentGame, reloadedGame, player);
+        const confirmedHiddenInformationUndo = ctx.url.searchParams.get('confirmUndoAfterHiddenInformation') === 'true';
+        if (revealedHiddenInformation && !confirmedHiddenInformationUndo) {
           await ctx.gameLoader.add(currentGame);
-          responses.badRequest(req, res, 'Cannot cancel action after hidden information was revealed');
+          responses.badRequestJson(res, {
+            id: CONFIRM_UNDO_AFTER_HIDDEN_INFORMATION,
+            message: HIDDEN_INFORMATION_UNDO_CONFIRMATION_MESSAGE,
+          });
           return;
         }
 
@@ -78,6 +85,9 @@ export class Reset extends Handler {
         const reloadedPlayer = reloadedGame.getPlayerById(player.id);
         reloadedGame.inputsThisRound = 0;
         reloadedGame.undoCount = Math.max(reloadedGame.undoCount, currentGame.undoCount) + 1;
+        if (revealedHiddenInformation) {
+          await recordHiddenInformationUndo(reloadedGame, reloadedPlayer, (game) => ctx.gameLoader.saveGame(game));
+        }
         responses.writeJson(res, ctx, Server.getPlayerModel(reloadedPlayer));
         return;
       }

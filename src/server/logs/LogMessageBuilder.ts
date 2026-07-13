@@ -19,11 +19,6 @@ export class LogMessageBuilder extends MessageBuilder {
     return this;
   }
 
-  public forWarning(): this {
-    this.type = LogMessageType.WARNING;
-    return this;
-  }
-
   public from(from: From): this {
     if (isFromPlayer(from)) {
       return this.player(from.player);

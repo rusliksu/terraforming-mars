@@ -53,19 +53,6 @@ describe('LogMessageComponent', () => {
     expect(wrapper.find('li').classes()).contains('log-message--canceled');
   });
 
-  it('marks warning log messages', () => {
-    const message = new LogMessage(LogMessageType.WARNING, 'Test warning', []);
-    const wrapper = shallowMount(LogMessageComponent, {
-      ...globalConfig,
-      props: {
-        message,
-        viewModel: fakeViewModel(),
-      },
-    });
-
-    expect(wrapper.find('li').classes()).contains('log-message--warning');
-  });
-
   it('renders CARDS type as multiple card spans with locale-correct separator in English', () => {
     const message = new LogMessage(
       LogMessageType.DEFAULT,

@@ -9,6 +9,7 @@ import {LogMessageDataType} from '../../src/common/logs/LogMessageDataType';
 import {runAllActions} from '../TestingUtils';
 import {testGame} from '../TestGame';
 import {TestPlayer} from '../TestPlayer';
+import {OrOptions} from '../../src/server/inputs/OrOptions';
 
 describe('ChooseCards', () => {
   let player: TestPlayer;
@@ -46,6 +47,22 @@ describe('ChooseCards', () => {
       {name: CardName.IO_MINING_INDUSTRIES, calculatedCost: player.getCardCost(ioMiningIndustries)},
     ]);
     expect(model.cards[0].calculatedCost).not.to.eq(player.cardCost);
+  });
+
+  it('allows changing a free card selection before confirming it', () => {
+    const firstChoice = cast(
+      new ChooseCards(player, [aquiferPumping, ioMiningIndustries], {keepMax: 1}).execute(),
+      SelectCard<IProjectCard>,
+    );
+
+    const firstConfirmation = cast(firstChoice.cb([aquiferPumping]), OrOptions);
+    const chooseAgain = cast(firstConfirmation.options[1].cb(), SelectCard<IProjectCard>);
+    const secondConfirmation = cast(chooseAgain.cb([ioMiningIndustries]), OrOptions);
+    secondConfirmation.options[0].cb();
+
+    expect(chooseAgain.cards).deep.eq(firstChoice.cards);
+    expect(player.cardsInHand).deep.eq([ioMiningIndustries]);
+    expect(player.cardsInHand).not.include(aquiferPumping);
   });
 
   it('logBoughtCards logs bought cards publicly by name', () => {

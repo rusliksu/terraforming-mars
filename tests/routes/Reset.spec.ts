@@ -8,8 +8,6 @@ import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {IGame} from '../../src/server/IGame';
 import {GameId, PlayerId, SpectatorId} from '../../src/common/Types';
 import {GameIdLedger} from '../../src/server/database/IDatabase';
-import {CONFIRM_UNDO_AFTER_HIDDEN_INFORMATION} from '../../src/common/app/AppErrorId';
-import {LogMessageType} from '../../src/common/logs/LogMessageType';
 
 describe('Reset', () => {
   let scaffolding: RouteTestScaffolding;
@@ -58,7 +56,7 @@ describe('Reset', () => {
     expect(res.content).eq('Bad request: Cancel action requires undo to be enabled');
   });
 
-  it('requires confirmation when canceling an action that revealed deck information', async () => {
+  it('does not reload when the current action revealed deck information', async () => {
     const currentPlayer = TestPlayer.BLACK.newPlayer();
     const currentOpponent = TestPlayer.RED.newPlayer();
     const currentGame = Game.newInstance('game-id', [currentPlayer, currentOpponent], currentPlayer, 'spectatorid', {undoOption: true});
@@ -76,47 +74,8 @@ describe('Reset', () => {
 
     await scaffolding.get(Reset.INSTANCE, res);
 
-    const response = JSON.parse(res.content);
-    expect(res.statusCode).eq(400);
-    expect(response.id).eq(CONFIRM_UNDO_AFTER_HIDDEN_INFORMATION);
-    expect(response.message).eq('This action revealed hidden information. Undoing it will be recorded in the game log. Continue?');
+    expect(res.content).eq('Bad request: Cannot cancel action after hidden information was revealed');
     expect(addedGame).eq(currentGame);
-  });
-
-  it('records and saves a confirmed cancel after hidden information was revealed', async () => {
-    const currentPlayer = TestPlayer.BLACK.newPlayer();
-    const currentOpponent = TestPlayer.RED.newPlayer();
-    const currentGame = Game.newInstance('game-id', [currentPlayer, currentOpponent], currentPlayer, 'spectatorid', {undoOption: true});
-    currentGame.projectDeck.draw(currentGame);
-    currentGame.gameLog.length = 0;
-    currentGame.gameAge = 0;
-    currentGame.log('Kept action');
-    currentGame.log('Canceled action');
-
-    const reloadedPlayer = TestPlayer.BLACK.newPlayer();
-    const reloadedOpponent = TestPlayer.RED.newPlayer();
-    const reloadedGame = Game.newInstance('game-id', [reloadedPlayer, reloadedOpponent], reloadedPlayer, 'spectatorid', {undoOption: true});
-    reloadedGame.gameLog.length = 0;
-    reloadedGame.gameAge = 0;
-    reloadedGame.log('Kept action');
-    let savedGame: IGame | undefined;
-
-    useReloadingGameLoader(scaffolding, currentGame, reloadedGame, undefined, (game) => {
-      savedGame = game;
-    });
-    scaffolding.url = '/reset?id=' + currentPlayer.id + '&confirmUndoAfterHiddenInformation=true';
-
-    await scaffolding.get(Reset.INSTANCE, res);
-
-    expect(res.statusCode).eq(200);
-    expect(savedGame).eq(reloadedGame);
-    expect(reloadedGame.gameLog.map((message) => message.message)).deep.eq([
-      'Kept action',
-      'Canceled action',
-      '${0} undid an action after hidden information was revealed',
-    ]);
-    expect(reloadedGame.gameLog[1].canceled).eq(true);
-    expect(reloadedGame.gameLog[2].type).eq(LogMessageType.WARNING);
   });
 
   it('appends canceled log messages from the current action', async () => {
@@ -154,7 +113,6 @@ function useReloadingGameLoader(
   currentGame: IGame,
   reloadedGame: IGame,
   onAdd?: (game: IGame) => void,
-  onSave?: (game: IGame) => void,
 ) {
   scaffolding.ctx.gameLoader = {
     add(game: IGame): Promise<void> {
@@ -183,8 +141,7 @@ function useReloadingGameLoader(
       return Promise.reject(new Error('not implemented'));
     },
     mark() {},
-    saveGame(game: IGame): Promise<void> {
-      onSave?.(game);
+    saveGame(): Promise<void> {
       return Promise.resolve();
     },
     completeGame(): Promise<void> {

@@ -4,7 +4,6 @@ import {Request} from '../Request';
 import {Response} from '../Response';
 import {statusCode} from '../../common/http/statusCode';
 import {isProduction} from '../utils/server';
-import {AppErrorResponse} from '../../common/app/AppErrorId';
 
 export function badRequest(req: Request, res: Response, err?: string): void {
   console.warn('bad request', req.url);
@@ -14,12 +13,6 @@ export function badRequest(req: Request, res: Response, err?: string): void {
     res.write(': ');
     res.write(err);
   }
-  res.end();
-}
-
-export function badRequestJson(res: Response, err: AppErrorResponse): void {
-  res.writeHead(statusCode.badRequest, {'Content-Type': 'application/json'});
-  res.write(JSON.stringify(err));
   res.end();
 }
 

@@ -15,9 +15,6 @@ import {CardName} from '../../src/common/cards/CardName';
 import {restoreTestGameLoader, setTestGameLoader} from '../testing/setup';
 import {Payment} from '../../src/common/inputs/Payment';
 import {AccessAuditRecordInput} from '../../src/server/server/AccessAudit';
-import {CONFIRM_UNDO_AFTER_HIDDEN_INFORMATION} from '../../src/common/app/AppErrorId';
-import {appendCanceledLogMessages} from '../../src/server/logs/appendCanceledLogMessages';
-import {LogMessageType} from '../../src/common/logs/LogMessageType';
 
 describe('PlayerInput', () => {
   let scaffolding: RouteTestScaffolding;
@@ -116,7 +113,7 @@ describe('PlayerInput', () => {
     expect(model.game.gameAge).eq(undo.gameAge);
   });
 
-  it('requires confirmation when undoing an action that revealed hidden information', async () => {
+  it('blocks undo when the action revealed hidden information', async () => {
     const player = TestPlayer.BLUE.newPlayer({beginner: true});
     scaffolding.url = '/player/input?id=' + player.id;
     const game = Game.newInstance('gameid-hidden-undo', [player], player, 'spectatorid');
@@ -145,62 +142,8 @@ describe('PlayerInput', () => {
 
     const response = JSON.parse(res.content);
     expect(res.statusCode).eq(400);
-    expect(response.id).eq(CONFIRM_UNDO_AFTER_HIDDEN_INFORMATION);
-    expect(response.message).eq('This action revealed hidden information. Undoing it will be recorded in the game log. Continue?');
+    expect(response.message).eq('Cannot undo after hidden information was revealed');
     expect(restoreCalled).eq(false);
-  });
-
-  it('records and saves a confirmed undo after hidden information was revealed', async () => {
-    const player = TestPlayer.BLUE.newPlayer({beginner: true});
-    scaffolding.url = '/player/input?id=' + player.id;
-    const game = Game.newInstance('gameid-confirmed-hidden-undo', [player], player, 'spectatorid');
-    game.lastSaveId = 4;
-    game.projectDeck.draw(game);
-    game.gameLog.length = 0;
-    game.gameAge = 0;
-    game.log('Kept action');
-    game.log('Canceled action');
-    player.setWaitingFor(new OrOptions(new UndoActionOption()));
-
-    const undoVersionOfPlayer = TestPlayer.BLUE.newPlayer({beginner: true});
-    const undo = Game.newInstance('gameid-confirmed-hidden-undo', [undoVersionOfPlayer], undoVersionOfPlayer, 'spectatorid');
-    undo.gameLog.length = 0;
-    undo.gameAge = 0;
-    undo.log('Kept action');
-    let savedGame: Game | undefined;
-
-    await scaffolding.ctx.gameLoader.add(game);
-    scaffolding.ctx.gameLoader.getGameAtOrBefore = () => Promise.resolve(undo);
-    scaffolding.ctx.gameLoader.restoreGameAt = () => {
-      appendCanceledLogMessages(game, undo);
-      return Promise.resolve(undo);
-    };
-    scaffolding.ctx.gameLoader.saveGame = (candidate: Game) => {
-      savedGame = candidate;
-      return Promise.resolve();
-    };
-
-    const post = scaffolding.post(PlayerInput.INSTANCE, res);
-    const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify({
-        type: 'or',
-        index: 0,
-        response: {type: 'option'},
-        confirmUndoAfterHiddenInformation: true,
-      }));
-      req.emitter.emit('end');
-    });
-    await Promise.all([emit, post]);
-
-    expect(res.statusCode).eq(200);
-    expect(savedGame).eq(undo);
-    expect(undo.gameLog.map((message) => message.message)).deep.eq([
-      'Kept action',
-      'Canceled action',
-      '${0} undid an action after hidden information was revealed',
-    ]);
-    expect(undo.gameLog[1].canceled).eq(true);
-    expect(undo.gameLog[2].type).eq(LogMessageType.WARNING);
   });
 
   it('rejects undo if restore fails', async () => {

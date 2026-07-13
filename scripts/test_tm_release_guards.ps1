@@ -565,12 +565,15 @@ publish_elo_helpers "$1" "cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     $runtimeFixture = Join-Path $advancedTempRoot "runtime"
     $snapshotEnvironments = [ordered]@{}
     foreach ($environmentName in @("prod", "staging")) {
-        $currentAssets = Join-Path $runtimeFixture "$environmentName\current\assets"
+        $currentRoot = Join-Path $runtimeFixture "$environmentName\current"
+        $currentAssets = Join-Path $currentRoot "assets"
         New-Item -ItemType Directory -Path $currentAssets -Force | Out-Null
         $manifest = [ordered]@{gitSha = $shaA; artifactSha256 = $artifactSha}
         [IO.File]::WriteAllText((Join-Path $currentAssets "release.json"), ($manifest | ConvertTo-Json -Compress))
+        $resolvedTarget = Invoke-PythonSnippet -Code 'import pathlib, sys; print(pathlib.Path(sys.argv[1]).resolve(strict=False), end="")' -Json '' -Arguments @($currentRoot)
+        Assert-True ($resolvedTarget.ExitCode -eq 0) "Python could not resolve the CAS fixture target."
         $snapshotEnvironments[$environmentName] = [pscustomobject]@{
-            currentTarget = (Resolve-Path (Join-Path $runtimeFixture "$environmentName\current")).Path
+            currentTarget = $resolvedTarget.StdOut
             manifest = [pscustomobject]$manifest
         }
     }

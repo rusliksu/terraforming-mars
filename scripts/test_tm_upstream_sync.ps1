@@ -179,7 +179,13 @@ try {
         $primary = Join-Path $fixture.Root "terraforming-mars"
         Invoke-TestGit -Repository $fixture.Root -Arguments @("clone", $fixture.Origin, $primary) | Out-Null
         $beforeBranch = Get-TmSyncCurrentBranch -RepositoryRoot $primary
-        $report = Invoke-TmUpstreamSync -RepositoryRoot $primary -AllowNonReleaseCheckout:$false -ReportRoot $fixture.Reports -AdoptionLedgerPath $ledgerPath -AdoptionLookupProvider $openPrLookup -ValidationCommands @("git status --porcelain=v1")
+        $originalToolRoot = $script:TmUpstreamSyncToolRoot
+        try {
+            $script:TmUpstreamSyncToolRoot = Join-Path $fixture.Root "terraforming-mars-release-main"
+            $report = Invoke-TmUpstreamSync -RepositoryRoot $primary -AllowNonReleaseCheckout:$false -ReportRoot $fixture.Reports -AdoptionLedgerPath $ledgerPath -AdoptionLookupProvider $openPrLookup -ValidationCommands @("git status --porcelain=v1")
+        } finally {
+            $script:TmUpstreamSyncToolRoot = $originalToolRoot
+        }
         Assert-TestEqual -Actual $report.status -Expected "validation-failed" -Message "Primary checkout was not rejected."
         Assert-TestTrue -Condition (($report.messages -join "`n") -match "dedicated sibling checkout") -Message "Release-root diagnostic is missing."
         Assert-TestEqual -Actual (Get-TmSyncCurrentBranch -RepositoryRoot $primary) -Expected $beforeBranch -Message "Identity guard ran after a branch mutation."

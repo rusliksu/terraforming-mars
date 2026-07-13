@@ -62,6 +62,17 @@ describeDatabaseSuite({
     size_bytes: -1,
   },
   otherTests: (dbFactory) => {
+    it('treats null legacy save timestamps as unavailable', async () => {
+      const db = dbFactory();
+      const player = TestPlayer.BLACK.newPlayer();
+      const game = Game.newInstance('game-null-save-time', [player], player, 'spectatorid');
+
+      await db.lastSaveGamePromise;
+      db.database.prepare('UPDATE games SET created_time = NULL WHERE game_id = ?').run(game.id);
+
+      expect(await db.getLastSaveTimeMs(game.id)).is.undefined;
+    });
+
     it('restoreGameAt loads the latest remaining save when the target save id is missing', async () => {
       const db = dbFactory();
       const loader = GameLoader.newTestInstance({sleepMillis: 0, evictMillis: 100, idleMillis: 0, sweep: 'manual'}, new FakeClock());

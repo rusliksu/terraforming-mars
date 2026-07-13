@@ -15,8 +15,12 @@ export class FakeGameLoader implements IGameLoader {
     this.lastSaveTimeMs.set(game.id, Date.now());
     return Promise.resolve();
   }
-  setLastSaveTimeMs(gameId: GameId, lastSaveTimeMs: number): void {
-    this.lastSaveTimeMs.set(gameId, lastSaveTimeMs);
+  setLastSaveTimeMs(gameId: GameId, lastSaveTimeMs: number | undefined): void {
+    if (lastSaveTimeMs === undefined) {
+      this.lastSaveTimeMs.delete(gameId);
+    } else {
+      this.lastSaveTimeMs.set(gameId, lastSaveTimeMs);
+    }
   }
   async getIds(): Promise<Array<GameIdLedger>> {
     return Array.from(this.games.keys())

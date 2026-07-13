@@ -58,6 +58,13 @@ Therefore the bootstrap candidate is the integration tail plus the narrow
 pre-canonical origin, work, prod, and staging heads. It is reviewed and merged
 into `origin/main` before automation is activated.
 
+During final validation, `origin/main` advanced to
+`c1b8c6fd04a0b15b66e08e440a8cb0d819106c96` with the audited hidden-information
+undo work. The candidate fetched and merged that exact head as merge commit
+`28fe7b851bffe273c64b0db6cc8c4821b5e443d7` without conflicts. Its 15 changed
+source/test files do not overlap the new sync or release scripts, and the full
+lint, build, test-build, and test gates passed again after the merge.
+
 ## Target architecture
 
 ```text
@@ -165,7 +172,8 @@ are distinct statuses and never proceed to push or deployment.
 ## Automation contract
 
 - Cadence: Monday 10:00 Europe/Moscow, plus a manual urgent run.
-- The automation starts paused. Activation requires a merged canonical main, a
+- Codex automation id: `tm-weekly-upstream-sync-candidate`.
+- The automation is paused. Activation requires a merged canonical main, a
   clean release checkout, passing fixture tests, and one successful manual
   candidate cycle.
 - It may prepare and validate one custom-repo candidate PR. It cannot merge,
@@ -200,7 +208,8 @@ Windows CI.
 - [x] Harden staging and production guards while preserving immutable releases.
 - [x] Add CI and operator documentation.
 - [x] Run fixture, syntax, targeted, and full candidate validation.
-- [ ] Show the final diff and custom PR draft; wait for explicit push/PR approval.
+- [x] Prepare the final diff and custom PR draft; wait for explicit push/PR
+  approval.
 - [ ] After manual merge, run a separately approved staging release and validate
   its manifest.
 - [ ] Activate the paused weekly automation only after the bootstrap cycle.

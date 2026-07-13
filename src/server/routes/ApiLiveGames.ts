@@ -78,6 +78,17 @@ function isStale(lastSaveTimeMs: number | undefined, now: number): boolean {
   return lastSaveTimeMs !== undefined && now - lastSaveTimeMs > STALE_LIVE_GAME_AFTER_MS;
 }
 
+function getLegacyGameActivityMs(game: {createdTime: Date, gameLog: ReadonlyArray<{timestamp: number}>}): number | undefined {
+  for (let index = game.gameLog.length - 1; index >= 0; index--) {
+    const timestamp = game.gameLog[index].timestamp;
+    if (Number.isFinite(timestamp)) {
+      return timestamp;
+    }
+  }
+  const createdTimeMs = game.createdTime.getTime();
+  return Number.isFinite(createdTimeMs) ? createdTimeMs : undefined;
+}
+
 export class ApiLiveGames extends Handler {
   public static readonly INSTANCE = new ApiLiveGames();
 
@@ -93,8 +104,8 @@ export class ApiLiveGames extends Handler {
     const liveGames: Array<LiveGameCandidate> = [];
 
     for (const entry of list) {
-      const lastSaveTimeMs = lastSaveTimes.get(entry.gameId);
-      if (isStale(lastSaveTimeMs, now)) {
+      const storedLastSaveTimeMs = lastSaveTimes.get(entry.gameId);
+      if (isStale(storedLastSaveTimeMs, now)) {
         continue;
       }
       const game = await ctx.gameLoader.getGame(entry.gameId);
@@ -105,6 +116,10 @@ export class ApiLiveGames extends Handler {
           isSyntheticTestGame(game) ||
           isPreStartDraft(game.phase) ||
           hasMalformedEscapeVelocityOptions(game.gameOptions.escapeVelocity)) {
+        continue;
+      }
+      const lastSaveTimeMs = storedLastSaveTimeMs ?? getLegacyGameActivityMs(game);
+      if (isStale(lastSaveTimeMs, now)) {
         continue;
       }
       const priority = phasePriority(game.phase);

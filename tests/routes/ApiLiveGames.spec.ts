@@ -10,6 +10,8 @@ import {TestPlayer} from '../TestPlayer';
 import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {statusCode} from '../../src/common/http/statusCode';
 import {FakeGameLoader} from './FakeGameLoader';
+import {LogMessage} from '../../src/common/logs/LogMessage';
+import {LogMessageType} from '../../src/common/logs/LogMessageType';
 
 function testGame(
   id: GameId,
@@ -30,6 +32,8 @@ function testGame(
     playersInGenerationOrder: players,
     spectatorId: ('s-' + id) as SpectatorId,
     gameAge,
+    gameLog: [],
+    createdTime: new Date(),
     lastSaveId,
   } as unknown as IGame;
 }
@@ -45,6 +49,13 @@ describe('ApiLiveGames', () => {
 
   function setLastSaveTime(game: IGame, lastSaveTimeMs: number): void {
     (scaffolding.ctx.gameLoader as FakeGameLoader).setLastSaveTimeMs(game.id, lastSaveTimeMs);
+  }
+
+  function setLegacyActivityTime(game: IGame, timestamp: number): void {
+    (scaffolding.ctx.gameLoader as FakeGameLoader).setLastSaveTimeMs(game.id, undefined);
+    const message = new LogMessage(LogMessageType.DEFAULT, 'activity', []);
+    message.timestamp = timestamp;
+    game.gameLog = [message];
   }
 
   it('returns running games without requiring server id', async () => {
@@ -133,6 +144,23 @@ describe('ApiLiveGames', () => {
 
     expect(res.statusCode).eq(statusCode.ok);
     expect(JSON.parse(res.content).map((game: {id: string}) => game.id)).deep.eq(['game-fresh']);
+  });
+
+  it('uses game log activity when legacy save timestamps are missing', async () => {
+    const now = Date.now();
+    const freshGame = testGame('game-legacy-fresh', [TestPlayer.BLUE.newPlayer(), TestPlayer.RED.newPlayer()], Phase.ACTION);
+    await scaffolding.ctx.gameLoader.add(freshGame);
+    setLegacyActivityTime(freshGame, now - (12 * 60 * 60 * 1000));
+
+    const staleGame = testGame('game-legacy-stale', [TestPlayer.GREEN.newPlayer(), TestPlayer.YELLOW.newPlayer()], Phase.ACTION);
+    await scaffolding.ctx.gameLoader.add(staleGame);
+    setLegacyActivityTime(staleGame, now - (19 * 60 * 60 * 1000));
+
+    scaffolding.url = '/api/live-games?limit=10';
+    await scaffolding.get(ApiLiveGames.INSTANCE, res);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(JSON.parse(res.content).map((game: {id: string}) => game.id)).deep.eq(['game-legacy-fresh']);
   });
 
   it('does not list games with malformed escape velocity options', async () => {

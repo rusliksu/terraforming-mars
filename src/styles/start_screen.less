@@ -232,3 +232,41 @@
 .source-code-text:visited {
   color: white;
 }
+
+@media (max-width: 480px) {
+  .topmost-start-screen {
+    overflow-x: hidden;
+  }
+
+  .main-container {
+    margin-left: 50px;
+  }
+
+  .start-screen {
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .start-screen-link {
+    width: calc(100% - 21px);
+  }
+
+  .start-screen-header {
+    width: 100%;
+  }
+
+  .start-screen-live-games {
+    width: calc(100% - 4px);
+  }
+
+  .start-screen-date,
+  .start-screen-version {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  .start-screen-date {
+    font-size: 11px;
+  }
+}

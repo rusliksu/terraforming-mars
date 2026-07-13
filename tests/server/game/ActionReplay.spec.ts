@@ -6,7 +6,6 @@ import {Phase} from '../../../src/common/Phase';
 import {Game} from '../../../src/server/Game';
 import {
   prepareActionReplayEntry,
-  promptFingerprintForPlayer,
   recordAcceptedActionReplayEntry,
   stepBackActionInput,
 } from '../../../src/server/game/ActionReplay';

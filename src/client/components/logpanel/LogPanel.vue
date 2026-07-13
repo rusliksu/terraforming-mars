@@ -13,12 +13,33 @@
       <div :class="getClassesRecentLogs()" @click.prevent="selectRecentLogs()" v-i18n>
         Last 100
       </div>
+      <div v-if="players.length > 1" class="log-player-filters">
+        <button
+          type="button"
+          class="log-player-filter"
+          :class="getClassesPlayerFilter(undefined)"
+          :aria-pressed="selectedPlayerColor === undefined"
+          data-test="log-player-filter-all"
+          @click="selectPlayer(undefined)"
+          v-i18n
+        >All</button>
+        <button
+          v-for="player in players"
+          :key="player.color"
+          type="button"
+          class="log-player-filter"
+          :class="getClassesPlayerFilter(player.color)"
+          :aria-pressed="selectedPlayerColor === player.color"
+          :data-test="'log-player-filter-' + player.color"
+          @click="selectPlayer(player.color)"
+        >{{ player.name }}</button>
+      </div>
       <span class="label-additional" v-if="players.length === 1"><span :class="lastGenerationClass" v-i18n>of {{lastSoloGeneration}}</span></span>
     </div>
     <div class="panel log-panel">
       <div id="logpanel-scrollable" class="panel-body">
         <ul v-if="messages">
-          <LogMessageComponent v-for="(message, index) in messages" :key="index" :message="message" :viewModel="viewModel" @click="messageClicked(message)" @spaceClicked="spaceClicked"/>
+          <LogMessageComponent v-for="(message, index) in filteredMessages" :key="message.timestamp + '-' + index" :message="message" :viewModel="viewModel" @click="messageClicked(message)" @spaceClicked="spaceClicked"/>
         </ul>
       </div>
       <div class='debugid'>(debugid {{step}})</div>
@@ -32,6 +53,8 @@
 import {defineComponent} from '@/client/vue3-compat';
 import {paths} from '@/common/app/paths';
 import {LogMessage} from '@/common/logs/LogMessage';
+import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
+import {LogMessageType} from '@/common/logs/LogMessageType';
 import {PublicPlayerModel, ViewModel} from '@/common/models/PlayerModel';
 import {playerColorClass} from '@/common/utils/utils';
 import {Color} from '@/common/Color';
@@ -47,6 +70,7 @@ type LogPanelModel = {
   selectedGeneration: number,
   selectedRecentLimit: number | undefined,
   selectedMessage: LogMessage | undefined,
+  selectedPlayerColor: Color | undefined,
   stickToBottom: boolean,
   resizeObserver: ResizeObserver | undefined,
 };
@@ -74,6 +98,7 @@ export default defineComponent({
       selectedGeneration: -1,
       selectedRecentLimit: undefined,
       selectedMessage: undefined,
+      selectedPlayerColor: undefined,
       stickToBottom: true,
       resizeObserver: undefined,
     };
@@ -126,6 +151,9 @@ export default defineComponent({
         this.selectedRecentLimit = 100;
         this.getRecentLogs(true);
       }
+    },
+    selectPlayer(color: Color | undefined): void {
+      this.selectedPlayerColor = color;
     },
     getRecentLogs(forceScrollToEnd = false): void {
       const url = `${paths.API_GAME_LOGS}?id=${this.id}&limit=100&gameAge=${this.gameAge}`;
@@ -244,6 +272,9 @@ export default defineComponent({
       }
       return classes.join(' ');
     },
+    getClassesPlayerFilter(color: Color | undefined): string {
+      return color === this.selectedPlayerColor ? 'log-player-filter--selected' : '';
+    },
     getGenerationsRange(): Array<number> {
       const generations: Array<number> = [];
       for (let i = 1; i <= this.generation; i++) {
@@ -275,6 +306,21 @@ export default defineComponent({
     },
     id(): ParticipantId | undefined {
       return this.viewModel.id;
+    },
+    filteredMessages(): Array<LogMessage> {
+      if (this.selectedPlayerColor === undefined) {
+        return this.messages;
+      }
+      const player = this.players.find((player) => player.color === this.selectedPlayerColor);
+      return this.messages.filter((message) => {
+        if (message.type === LogMessageType.NEW_GENERATION) {
+          return true;
+        }
+        if (player?.id !== undefined && message.playerId === player.id) {
+          return true;
+        }
+        return message.data.some((datum) => datum.type === LogMessageDataType.PLAYER && datum.value === this.selectedPlayerColor);
+      });
     },
   },
   watch: {

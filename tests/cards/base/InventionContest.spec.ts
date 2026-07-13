@@ -5,6 +5,7 @@ import {runAllActions} from '../../TestingUtils';
 import {InventionContest} from '../../../src/server/cards/base/InventionContest';
 import {testGame} from '../../TestGame';
 import {cast} from '../../../src/common/utils/utils';
+import {OrOptions} from '../../../src/server/inputs/OrOptions';
 
 describe('InventionContest', () => {
   it('Should play', () => {
@@ -15,7 +16,8 @@ describe('InventionContest', () => {
     runAllActions(game);
 
     const action = cast(player.popWaitingFor(), SelectCard<IProjectCard>);
-    action.cb([action.cards[0]]);
+    const confirmation = cast(action.cb([action.cards[0]]), OrOptions);
+    confirmation.options[0].cb();
 
     expect(game.projectDeck.discardPile).has.lengthOf(2);
     expect(game.projectDeck.discardPile.indexOf(action.cards[0])).to.eq(-1);

@@ -15,6 +15,7 @@ import {Comet} from '../../../src/server/cards/base/Comet';
 import {ProjectEden} from '../../../src/server/cards/prelude2/ProjectEden';
 import {HiTechLab} from '../../../src/server/cards/promo/HiTechLab';
 import {testGame} from '../../TestGame';
+import {hasRevealedHiddenInformation} from '../../../src/server/game/hasRevealedHiddenInformation';
 
 describe('ActionReplay', () => {
   it('returns Project Eden to the city-placement screen without undoing the prelude', () => {
@@ -124,5 +125,15 @@ describe('ActionReplay', () => {
     expect(replayedPrompt.cards.map((card) => card.name)).deep.eq(revealedCards);
     expect(replayedPlayer.cardsInHand.some((card) => card.name === selectedCard)).is.false;
     expect(replayedPlayer.energy).eq(0);
+    expect(hasRevealedHiddenInformation(game, replayed, player, {
+      restoredPromptCardsAreKnown: true,
+    })).is.false;
+
+    const beforeReveal = stepBackActionInput(replayed, player.id);
+    expect(beforeReveal.getPlayerById(player.id).getWaitingFor()?.toModel(beforeReveal.getPlayerById(player.id)).type)
+      .eq('amount');
+    expect(hasRevealedHiddenInformation(replayed, beforeReveal, replayedPlayer, {
+      restoredPromptCardsAreKnown: true,
+    })).is.true;
   });
 });

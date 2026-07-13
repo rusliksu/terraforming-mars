@@ -86,6 +86,13 @@ earlier inputs, so already revealed cards should remain identical. Prompt
 fingerprints and a successor-state check make divergence a hard failure instead
 of allowing a reroll.
 
+Undoing a choice made from an already visible card set is reversible without a
+warning: for example, Hi-Tech Lab returns to the identical revealed set so the
+player can choose a different card. Stepping back once more, past the input that
+revealed cards from a draw or discard pile, crosses an irreversible boundary.
+The server then requires explicit confirmation and appends a red public log
+entry after the canceled action messages.
+
 Full-action undo remains possible after hidden information is revealed, but only
 after a clear warning. The server must record that the confirmed undo crossed a
 hidden-information boundary. This warning is part of stable undo, not an extra

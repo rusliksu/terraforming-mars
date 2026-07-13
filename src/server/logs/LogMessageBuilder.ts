@@ -19,6 +19,11 @@ export class LogMessageBuilder extends MessageBuilder {
     return this;
   }
 
+  public forIrreversibleUndo(): this {
+    this.type = LogMessageType.IRREVERSIBLE_UNDO;
+    return this;
+  }
+
   public from(from: From): this {
     if (isFromPlayer(from)) {
       return this.player(from.player);

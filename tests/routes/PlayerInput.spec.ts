@@ -23,6 +23,7 @@ import {BiomassCombustors} from '../../src/server/cards/base/BiomassCombustors';
 import {Comet} from '../../src/server/cards/base/Comet';
 import {HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED} from '../../src/common/undo';
 import {HiTechLab} from '../../src/server/cards/promo/HiTechLab';
+import {LogMessageType} from '../../src/common/logs/LogMessageType';
 
 describe('PlayerInput', () => {
   let scaffolding: RouteTestScaffolding;
@@ -169,6 +170,8 @@ describe('PlayerInput', () => {
 
     expect(confirmedRes.statusCode).eq(200);
     expect(restoreCalled).eq(true);
+    const warningLog = undo.gameLog[undo.gameLog.length - 1];
+    expect(warningLog.type).eq(LogMessageType.IRREVERSIBLE_UNDO);
   });
 
   it('records an accepted root input in the experimental replay journal', async () => {

@@ -12,6 +12,7 @@ import {ActionReplayMismatch, stepBackActionInput} from '../game/ActionReplay';
 import {HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED} from '../../common/undo';
 import {AppErrorResponse, UNDO_REVEALED_HIDDEN_INFORMATION} from '../../common/app/AppErrorId';
 import {statusCode} from '../../common/http/statusCode';
+import {logIrreversibleUndo} from '../logs/logIrreversibleUndo';
 
 /**
  * Reloads the game from the last action.
@@ -21,7 +22,7 @@ import {statusCode} from '../../common/http/statusCode';
  * I think it's saved after every action when undo is on. So, there's that.
  * But I forget when the game is saved in solo. Probably all will be well.
  *
- * It refuses to reload once the current action has revealed hidden information.
+ * Crossing a hidden-information boundary requires explicit confirmation.
  */
 export class Reset extends Handler {
   public static readonly INSTANCE = new Reset();
@@ -72,7 +73,21 @@ export class Reset extends Handler {
       try {
         const currentGame = player.game;
         const replayedGame = stepBackActionInput(currentGame, player.id);
+        const crossedHiddenInformation = hasRevealedHiddenInformation(
+          currentGame,
+          replayedGame,
+          player,
+          {restoredPromptCardsAreKnown: true},
+        );
+        if (crossedHiddenInformation &&
+            ctx.url.searchParams.get('confirmHiddenInformation') !== 'true') {
+          writeHiddenInformationWarning(res);
+          return;
+        }
         appendCanceledLogMessages(currentGame, replayedGame);
+        if (crossedHiddenInformation) {
+          logIrreversibleUndo(replayedGame, player.id);
+        }
         replayedGame.undoCount = Math.max(replayedGame.undoCount, currentGame.undoCount) + 1;
         await ctx.gameLoader.add(replayedGame);
         responses.writeJson(res, ctx, Server.getPlayerModel(replayedGame.getPlayerById(player.id)));
@@ -90,19 +105,18 @@ export class Reset extends Handler {
       const currentGame = player.game;
       const reloadedGame = await ctx.gameLoader.getGame(currentGame.id, /** force reload */ true);
       if (reloadedGame !== undefined) {
-        if (hasRevealedHiddenInformation(currentGame, reloadedGame, player) &&
+        const crossedHiddenInformation = hasRevealedHiddenInformation(currentGame, reloadedGame, player);
+        if (crossedHiddenInformation &&
             ctx.url.searchParams.get('confirmHiddenInformation') !== 'true') {
           await ctx.gameLoader.add(currentGame);
-          const response: AppErrorResponse = {
-            id: UNDO_REVEALED_HIDDEN_INFORMATION,
-            message: HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED,
-          };
-          res.writeHead(statusCode.badRequest, {'Content-Type': 'application/json'});
-          res.end(JSON.stringify(response));
+          writeHiddenInformationWarning(res);
           return;
         }
 
         appendCanceledLogMessages(currentGame, reloadedGame);
+        if (crossedHiddenInformation) {
+          logIrreversibleUndo(reloadedGame, player.id);
+        }
         const reloadedPlayer = reloadedGame.getPlayerById(player.id);
         reloadedGame.inputsThisRound = 0;
         reloadedGame.undoCount = Math.max(reloadedGame.undoCount, currentGame.undoCount) + 1;
@@ -114,4 +128,13 @@ export class Reset extends Handler {
     }
     responses.badRequest(req, res, 'Could not reset');
   }
+}
+
+function writeHiddenInformationWarning(res: Response): void {
+  const response: AppErrorResponse = {
+    id: UNDO_REVEALED_HIDDEN_INFORMATION,
+    message: HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED,
+  };
+  res.writeHead(statusCode.badRequest, {'Content-Type': 'application/json'});
+  res.end(JSON.stringify(response));
 }

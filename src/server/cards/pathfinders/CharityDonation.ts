@@ -6,9 +6,11 @@ import {CardName} from '../../../common/cards/CardName';
 import {CardRenderer} from '../render/CardRenderer';
 import {Tag} from '../../../common/cards/Tag';
 import {LogHelper} from '../../LogHelper';
-import {SelectCard} from '../../inputs/SelectCard';
 import {DeferredAction} from '../../deferredActions/DeferredAction';
 import {Priority} from '../../deferredActions/Priority';
+import {message} from '../../logs/MessageBuilder';
+import {SelectCard} from '../../inputs/SelectCard';
+import {selectCardWithConfirmation} from '../../inputs/selectCardWithConfirmation';
 
 export class CharityDonation extends Card implements IProjectCard {
   constructor() {
@@ -50,12 +52,13 @@ export class SelectCharityDonationCard extends DeferredAction {
   }
 
   public execute() {
-    return new SelectCard(
-      'Select a card to keep',
-      'Choose',
-      this.cards)
-      .andThen(
-        ([card]) => {
+    return selectCardWithConfirmation(
+      () => new SelectCard('Select a card to keep', 'Choose', this.cards),
+      {
+        title: ([card]) => message('Keep ${0}', (b) => b.card(card)),
+        confirmButtonLabel: 'Keep',
+        dialogTitle: 'Confirm card to keep',
+        confirm: ([card]) => {
           const game = this.player.game;
 
           const cardIdx = this.cards.indexOf(card);
@@ -75,6 +78,7 @@ export class SelectCharityDonationCard extends DeferredAction {
           }
           return undefined;
         },
-      );
+      },
+    );
   }
 }

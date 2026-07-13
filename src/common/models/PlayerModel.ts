@@ -15,6 +15,7 @@ import {GlobalParameter} from '../GlobalParameter';
 import {DeltaProjectPlayerModel} from './DeltaProjectPlayerModel';
 
 export interface ViewModel {
+  canStepBack?: boolean;
   game: GameModel;
   players: Array<PublicPlayerModel>;
   id?: ParticipantId;
@@ -94,7 +95,6 @@ export type PublicPlayerModel = {
 /** A player's view of the game, including their secret information. */
 export interface PlayerViewModel extends ViewModel {
   autopass: boolean;
-  canStepBack: boolean;
   cardsInHand: ReadonlyArray<CardModel>;
   dealtCorporationCards: ReadonlyArray<CardModel>;
   dealtPreludeCards: ReadonlyArray<CardModel>;

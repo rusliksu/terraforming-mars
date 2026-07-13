@@ -464,8 +464,9 @@ try {
         $candidateBranch = "sync/upstream/post-push-mismatch"
         $replaceRemoteAfterPush = {
             param([string]$Repository, [string]$Branch, [string]$ValidatedSha)
-            Invoke-TestGit -Repository $Repository -Arguments @("push", "--force", "origin", "${wrongRemoteSha}:refs/heads/$Branch") | Out-Null
-        }.GetNewClosure()
+            $replacementSha = (Invoke-TestGit -Repository $Repository -Arguments @("rev-parse", "refs/remotes/origin/main")).StdOut.Trim()
+            Invoke-TestGit -Repository $Repository -Arguments @("push", "--force", "origin", "${replacementSha}:refs/heads/$Branch") | Out-Null
+        }
 
         $report = Invoke-TmUpstreamSync -RepositoryRoot $fixture.Work -CandidateBranch $candidateBranch -PushCandidate -ReportRoot $fixture.Reports -AdoptionLedgerPath $ledgerPath -AdoptionLookupProvider $openPrLookup -AfterPushTestHook $replaceRemoteAfterPush -ValidationCommands @("git status --porcelain=v1")
         Assert-TestEqual -Actual $report.status -Expected "validation-failed" -Message "Remote mismatch was reported as a successful push."

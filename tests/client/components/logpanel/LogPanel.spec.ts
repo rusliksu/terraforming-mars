@@ -2,8 +2,11 @@ import {shallowMount} from '@vue/test-utils';
 import {expect} from 'chai';
 import {globalConfig} from '../getLocalVue';
 import LogPanel from '@/client/components/logpanel/LogPanel.vue';
-import {fakeViewModel} from '../testHelpers';
+import {fakePublicPlayerModel, fakeViewModel} from '../testHelpers';
 import {Phase} from '@/common/Phase';
+import {LogMessage} from '@/common/logs/LogMessage';
+import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
+import {LogMessageType} from '@/common/logs/LogMessageType';
 
 type TestResizeObserverCallback = (entries: Array<unknown>, observer: unknown) => void;
 
@@ -131,6 +134,29 @@ describe('LogPanel', () => {
     expect(fetchCalls).has.length(1);
     expect(fetchCalls[0]).includes('id=p-blue-id');
     expect(fetchCalls[0]).does.not.include('id=s-spectatorid');
+  });
+
+  it('filters visible logs by selected player without requesting another view', async () => {
+    const blue = fakePublicPlayerModel({color: 'blue', id: 'p-blue-id' as any, name: 'Blue'});
+    const red = fakePublicPlayerModel({color: 'red', id: 'p-red-id' as any, name: 'Red'});
+    const wrapper = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {
+        viewModel: fakeViewModel({players: [blue, red]}),
+        color: 'blue',
+      },
+    });
+    const generation = new LogMessage(LogMessageType.NEW_GENERATION, 'Generation ${0}', []);
+    const blueMessage = new LogMessage(LogMessageType.DEFAULT, '${0} played a card', [
+      {type: LogMessageDataType.PLAYER, value: 'blue'},
+    ]);
+    const redMessage = new LogMessage(LogMessageType.DEFAULT, 'You selected cards', [], 'p-red-id' as any);
+    (wrapper.vm as any).messages = [generation, blueMessage, redMessage];
+
+    await wrapper.find('[data-test="log-player-filter-red"]').trigger('click');
+
+    expect((wrapper.vm as any).filteredMessages).deep.eq([generation, redMessage]);
+    expect(fetchCalls).has.length(1);
   });
 
   it('sticks to bottom when the log list grows after render', async () => {

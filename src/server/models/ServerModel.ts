@@ -98,6 +98,10 @@ export class Server {
     const thisPlayer: PublicPlayerModel = players[thisPlayerIndex];
 
     const rv: PlayerViewModel = {
+      canStepBack: game.actionReplayState !== undefined &&
+        game.actionReplayState !== null &&
+        game.actionReplayState.entries.length > 0 &&
+        game.actionReplayState.currentActorId === player.id,
       cardsInHand: cardsToModel(player, player.cardsInHand, {showCalculatedCost: true}),
       ceoCardsInHand: cardsToModel(player, Array.from(player.ceoCardsInHand)),
       dealtCorporationCards: cardsToModel(player, player.dealtCorporationCards),

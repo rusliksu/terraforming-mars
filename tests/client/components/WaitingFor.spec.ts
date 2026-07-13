@@ -154,7 +154,7 @@ describe('WaitingFor', () => {
     expect(wrapper.text()).to.not.include('Pause updates');
   });
 
-  it('shows cancel action for nested active action prompts when undo is enabled', () => {
+  it('shows undo action for nested active action prompts when undo is enabled', () => {
     const wrapper = mountWaitingFor({
       ...globalConfig,
       global: {
@@ -184,10 +184,10 @@ describe('WaitingFor', () => {
       },
     });
 
-    expect(wrapper.text()).to.include('Cancel action');
+    expect(wrapper.text()).to.include('Undo action');
   });
 
-  it('does not show cancel action on the main action prompt', () => {
+  it('does not show undo action on the first main action prompt', () => {
     const wrapper = mountWaitingFor({
       ...globalConfig,
       global: {
@@ -215,7 +215,7 @@ describe('WaitingFor', () => {
       },
     });
 
-    expect(wrapper.text()).to.not.include('Cancel action');
+    expect(wrapper.text()).to.not.include('Undo action');
   });
 
   it('shows an undo action control on the main action prompt when undo is available', async () => {
@@ -255,8 +255,7 @@ describe('WaitingFor', () => {
       requests.push({url, options});
     }) as typeof wrapper.vm.fetchPlayerInput;
 
-    expect(wrapper.text()).to.include('Undo last action');
-    expect(wrapper.text()).to.not.include('Cancel action');
+    expect(wrapper.text()).to.include('Undo action');
 
     await wrapper.find('button').trigger('click');
 
@@ -270,7 +269,7 @@ describe('WaitingFor', () => {
     });
   });
 
-  it('shows cancel action for nested active action option prompts when undo is enabled', () => {
+  it('shows undo action for nested active action option prompts when undo is enabled', () => {
     const wrapper = mountWaitingFor({
       ...globalConfig,
       global: {
@@ -298,7 +297,101 @@ describe('WaitingFor', () => {
       },
     });
 
-    expect(wrapper.text()).to.include('Cancel action');
+    expect(wrapper.text()).to.include('Undo action');
+  });
+
+  it('shows experimental step back only when the server can replay a step', async () => {
+    PreferencesManager.INSTANCE.set('experimental_ui', true);
+    const wrapper = mountWaitingFor({
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {
+          'PlayerInputFactory': {template: '<div class="stub-pif"></div>'},
+          'AppButton': {props: ['title'], emits: ['click'], template: '<button @click="$emit(\'click\')">{{ title }}</button>'},
+        },
+      },
+      props: {
+        playerView: {
+          ...playerView,
+          canStepBack: true,
+          thisPlayer: {...thisPlayer, isActive: true},
+          game: {...playerView.game, gameOptions: {undoOption: true}},
+        } as PlayerViewModel,
+        waitingfor: {
+          type: 'space',
+          title: 'Select space for city tile',
+          buttonLabel: 'Save',
+          spaces: ['01'],
+        },
+      },
+    });
+    const requests: Array<string> = [];
+    wrapper.vm.fetchPlayerInput = ((url: string) => requests.push(url)) as typeof wrapper.vm.fetchPlayerInput;
+
+    expect(wrapper.text()).to.include('Back one step (experimental)');
+    const stepButton = wrapper.findAll('button').find((button) => button.text().includes('Back one step'));
+    await stepButton!.trigger('click');
+    wrapper.vm.onsave({type: 'option'});
+    expect(requests).deep.eq([
+      'reset?id=p-player-id&mode=step',
+      'player/input?id=p-player-id&experimentalStepUndo=true',
+    ]);
+  });
+
+  it('retries undo after confirming the hidden-information warning', async () => {
+    const originalFetch = global.fetch;
+    const originalConfirm = window.confirm;
+    const requests: Array<string> = [];
+    (window as any).confirm = () => true;
+    (global as any).fetch = (url: string) => {
+      requests.push(url);
+      if (requests.length === 1) {
+        return Promise.resolve({
+          ok: false,
+          status: 400,
+          clone: () => ({
+            json: () => Promise.resolve({
+              id: '#undo-revealed-hidden-information',
+              message: 'Hidden information warning',
+            }),
+          }),
+        });
+      }
+      return new Promise(() => {});
+    };
+
+    try {
+      const wrapper = mountWaitingFor({
+        ...globalConfig,
+        global: {
+          ...globalConfig.global,
+          stubs: {
+            'PlayerInputFactory': true,
+            'AppButton': true,
+          },
+        },
+        props: {
+          playerView: playerView as PlayerViewModel,
+          waitingfor: {
+            type: 'option',
+            title: 'test',
+            buttonLabel: 'save',
+          },
+        },
+      });
+
+      wrapper.vm.reset();
+      await new Promise((resolve) => window.setTimeout(resolve, 10));
+
+      expect(requests).deep.eq([
+        'reset?id=p-player-id',
+        'reset?id=p-player-id&confirmHiddenInformation=true',
+      ]);
+    } finally {
+      (global as any).fetch = originalFetch;
+      (window as any).confirm = originalConfirm;
+    }
   });
 
   it('shows a notification after permission is granted', async () => {

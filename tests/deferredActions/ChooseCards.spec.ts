@@ -9,7 +9,6 @@ import {LogMessageDataType} from '../../src/common/logs/LogMessageDataType';
 import {runAllActions} from '../TestingUtils';
 import {testGame} from '../TestGame';
 import {TestPlayer} from '../TestPlayer';
-import {OrOptions} from '../../src/server/inputs/OrOptions';
 
 describe('ChooseCards', () => {
   let player: TestPlayer;
@@ -49,18 +48,15 @@ describe('ChooseCards', () => {
     expect(model.cards[0].calculatedCost).not.to.eq(player.cardCost);
   });
 
-  it('allows changing a free card selection before confirming it', () => {
-    const firstChoice = cast(
+  it('keeps a free card selection without a confirmation step', () => {
+    const choice = cast(
       new ChooseCards(player, [aquiferPumping, ioMiningIndustries], {keepMax: 1}).execute(),
       SelectCard<IProjectCard>,
     );
 
-    const firstConfirmation = cast(firstChoice.cb([aquiferPumping]), OrOptions);
-    const chooseAgain = cast(firstConfirmation.options[1].cb(), SelectCard<IProjectCard>);
-    const secondConfirmation = cast(chooseAgain.cb([ioMiningIndustries]), OrOptions);
-    secondConfirmation.options[0].cb();
+    const nextInput = choice.cb([ioMiningIndustries]);
 
-    expect(chooseAgain.cards).deep.eq(firstChoice.cards);
+    expect(nextInput).is.undefined;
     expect(player.cardsInHand).deep.eq([ioMiningIndustries]);
     expect(player.cardsInHand).not.include(aquiferPumping);
   });

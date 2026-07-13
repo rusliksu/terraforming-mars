@@ -85,6 +85,7 @@ import {SpaceType} from '../common/boards/SpaceType';
 import {ICard} from './cards/ICard';
 import {generateGameName} from './GameName';
 import {captureEarlyGameStats} from './game/EarlyGameStats';
+import type {ActionReplayState} from './game/ActionReplay';
 
 // Can be overridden by tests
 let createGameLog: () => Array<LogMessage> = () => [];
@@ -124,6 +125,7 @@ export class Game implements IGame, Logger {
   public shadowInputSeq: number = 0;
   public gameLog: Array<LogMessage> = createGameLog();
   public undoCount: number = 0; // Each undo increases it
+  public actionReplayState: ActionReplayState | null | undefined = undefined;
   public inputsThisRound = 0;
   public resettable: boolean = false;
   public globalsPerGeneration: Array<Partial<Record<GlobalParameter, number>>> = [];

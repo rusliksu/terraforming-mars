@@ -19,9 +19,9 @@
       </label>
       <div v-if="showRefresh()">Refresh<span class="reset"></span></div>
     </template>
-    <div v-if="showCancelAction() || showUndoLastAction()" class="wf-action-controls">
-      <AppButton v-if="showCancelAction()" @click="reset" size="small" title="Cancel action" />
-      <AppButton v-if="showUndoLastAction()" @click="undoLastAction" size="small" title="Undo last action" />
+    <div v-if="showUndoAction() || showStepBack()" class="wf-action-controls">
+      <AppButton v-if="showUndoAction()" @click="undoAction" size="small" title="Undo action" />
+      <AppButton v-if="showStepBack()" @click="stepBack" size="small" title="Back one step (experimental)" />
     </div>
     <PlayerInputFactory :players="playerView.players"
                           :playerView="playerView"
@@ -51,7 +51,7 @@ import {paths} from '@/common/app/paths';
 import {statusCode} from '@/common/http/statusCode';
 import {isPlayerId} from '@/common/Types';
 import {InputResponse} from '@/common/inputs/InputResponse';
-import {INVALID_RUN_ID, AppErrorResponse} from '@/common/app/AppErrorId';
+import {INVALID_RUN_ID, UNDO_REVEALED_HIDDEN_INFORMATION, AppErrorResponse} from '@/common/app/AppErrorId';
 import {Color} from '@/common/Color';
 import {gameDocumentTitle} from '../utils/documentTitle';
 import AppButton from '@/client/components/common/AppButton.vue';
@@ -126,8 +126,9 @@ export default defineComponent({
       }
     },
     onsave(out: InputResponse) {
+      const experimentalStepUndo = getPreferences().experimental_ui ? '&experimentalStepUndo=true' : '';
       this.fetchPlayerInput(
-        paths.PLAYER_INPUT + '?id=' + this.playerView.id,
+        paths.PLAYER_INPUT + '?id=' + this.playerView.id + experimentalStepUndo,
         {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
@@ -139,12 +140,18 @@ export default defineComponent({
         paths.RESET + '?id=' + this.playerView.id,
         {method: 'GET'});
     },
-    undoLastAction() {
+    stepBack() {
+      this.fetchPlayerInput(
+        paths.RESET + '?id=' + this.playerView.id + '&mode=step',
+        {method: 'GET'});
+    },
+    undoAction() {
       const undoIndex = this.undoLastActionIndex();
-      if (undoIndex === undefined) {
+      if (undoIndex !== undefined) {
+        this.onsave({type: 'or', index: undoIndex, response: {type: 'option'}});
         return;
       }
-      this.onsave({type: 'or', index: undoIndex, response: {type: 'option'}});
+      this.reset();
     },
     fetchPlayerInput(url: string, options: RequestInit) {
       const root = vueRoot(this);
@@ -164,6 +171,16 @@ export default defineComponent({
           const showAlert = vueRoot(this).showAlert;
           if (response.status === statusCode.badRequest) {
             const resp = await this.readAppError(response);
+            if (resp.id === UNDO_REVEALED_HIDDEN_INFORMATION &&
+                !url.includes('confirmHiddenInformation=true')) {
+              if (window.confirm(resp.message)) {
+                const separator = url.includes('?') ? '&' : '?';
+                window.setTimeout(() => {
+                  this.fetchPlayerInput(url + separator + 'confirmHiddenInformation=true', options);
+                }, 0);
+              }
+              return;
+            }
             let cb = () => {};
             if (resp.id === INVALID_RUN_ID) {
               cb = () => setTimeout(() => window.location.reload(), 100);
@@ -301,18 +318,21 @@ export default defineComponent({
     showRefresh(): boolean {
       return this.suspend === true && this.savedPlayerView !== undefined;
     },
-    showCancelAction(): boolean {
-      return this.playerView.game.phase === Phase.ACTION &&
-        this.playerView.game.gameOptions?.undoOption === true &&
+    showUndoAction(): boolean {
+      const phase = this.playerView.game.phase;
+      const supportedPhase = phase === Phase.ACTION || phase === Phase.PRELUDES || phase === Phase.CEOS;
+      const undoEnabled = this.playerView.players.length === 1 || this.playerView.game.gameOptions?.undoOption === true;
+      return supportedPhase &&
+        undoEnabled &&
         this.waitingfor !== undefined &&
-        !this.isMainActionPrompt() &&
-        this.playerView.thisPlayer?.isActive === true;
-    },
-    showUndoLastAction(): boolean {
-      return this.playerView.game.phase === Phase.ACTION &&
-        this.playerView.game.gameOptions?.undoOption === true &&
         this.playerView.thisPlayer?.isActive === true &&
-        this.undoLastActionIndex() !== undefined;
+        (!this.isMainActionPrompt() || this.undoLastActionIndex() !== undefined);
+    },
+    showStepBack(): boolean {
+      return getPreferences().experimental_ui &&
+        this.playerView.canStepBack === true &&
+        this.waitingfor !== undefined &&
+        this.playerView.thisPlayer?.isActive === true;
     },
     undoLastActionIndex(): number | undefined {
       if (!this.isMainActionPrompt() || this.waitingfor?.type !== 'or') {

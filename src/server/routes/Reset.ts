@@ -8,6 +8,10 @@ import {Request} from '../Request';
 import {Response} from '../Response';
 import {appendCanceledLogMessages} from '../logs/appendCanceledLogMessages';
 import {hasRevealedHiddenInformation} from '../game/hasRevealedHiddenInformation';
+import {ActionReplayMismatch, stepBackActionInput} from '../game/ActionReplay';
+import {HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED} from '../../common/undo';
+import {AppErrorResponse, UNDO_REVEALED_HIDDEN_INFORMATION} from '../../common/app/AppErrorId';
+import {statusCode} from '../../common/http/statusCode';
 
 /**
  * Reloads the game from the last action.
@@ -64,13 +68,37 @@ export class Reset extends Handler {
       return;
     }
 
+    if (ctx.url.searchParams.get('mode') === 'step') {
+      try {
+        const currentGame = player.game;
+        const replayedGame = stepBackActionInput(currentGame, player.id);
+        appendCanceledLogMessages(currentGame, replayedGame);
+        replayedGame.undoCount = Math.max(replayedGame.undoCount, currentGame.undoCount) + 1;
+        await ctx.gameLoader.add(replayedGame);
+        responses.writeJson(res, ctx, Server.getPlayerModel(replayedGame.getPlayerById(player.id)));
+        return;
+      } catch (error) {
+        if (!(error instanceof ActionReplayMismatch)) {
+          console.error(error);
+        }
+        responses.badRequest(req, res, error instanceof Error ? error.message : 'Could not step back');
+        return;
+      }
+    }
+
     try {
       const currentGame = player.game;
       const reloadedGame = await ctx.gameLoader.getGame(currentGame.id, /** force reload */ true);
       if (reloadedGame !== undefined) {
-        if (hasRevealedHiddenInformation(currentGame, reloadedGame, player)) {
+        if (hasRevealedHiddenInformation(currentGame, reloadedGame, player) &&
+            ctx.url.searchParams.get('confirmHiddenInformation') !== 'true') {
           await ctx.gameLoader.add(currentGame);
-          responses.badRequest(req, res, 'Cannot cancel action after hidden information was revealed');
+          const response: AppErrorResponse = {
+            id: UNDO_REVEALED_HIDDEN_INFORMATION,
+            message: HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED,
+          };
+          res.writeHead(statusCode.badRequest, {'Content-Type': 'application/json'});
+          res.end(JSON.stringify(response));
           return;
         }
 

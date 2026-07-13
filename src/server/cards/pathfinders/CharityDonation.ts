@@ -8,9 +8,7 @@ import {Tag} from '../../../common/cards/Tag';
 import {LogHelper} from '../../LogHelper';
 import {DeferredAction} from '../../deferredActions/DeferredAction';
 import {Priority} from '../../deferredActions/Priority';
-import {message} from '../../logs/MessageBuilder';
 import {SelectCard} from '../../inputs/SelectCard';
-import {selectCardWithConfirmation} from '../../inputs/selectCardWithConfirmation';
 
 export class CharityDonation extends Card implements IProjectCard {
   constructor() {
@@ -52,33 +50,25 @@ export class SelectCharityDonationCard extends DeferredAction {
   }
 
   public execute() {
-    return selectCardWithConfirmation(
-      () => new SelectCard('Select a card to keep', 'Choose', this.cards),
-      {
-        title: ([card]) => message('Keep ${0}', (b) => b.card(card)),
-        confirmButtonLabel: 'Keep',
-        dialogTitle: 'Confirm card to keep',
-        confirm: ([card]) => {
-          const game = this.player.game;
+    const game = this.player.game;
+    return new SelectCard('Select a card to keep', 'Choose', this.cards)
+      .andThen(([card]) => {
+        const cardIdx = this.cards.indexOf(card);
+        if (cardIdx > -1) {
+          this.cards.splice(cardIdx, 1);
+        }
 
-          const cardIdx = this.cards.indexOf(card);
-          if (cardIdx > -1) {
-            this.cards.splice(cardIdx, 1);
-          }
+        this.player.cardsInHand.push(card);
+        game.log('${0} drew ${1}', (b) => b.player(this.player).card(card));
 
-          this.player.cardsInHand.push(card);
-          game.log('${0} drew ${1}', (b) => b.player(this.player).card(card));
-
-          const nextIndex = (this.playerIdx + 1) % this.players.length;
-          if (nextIndex !== this.boundaryIndex) {
-            game.defer(new SelectCharityDonationCard(this.players, nextIndex, this.boundaryIndex, this.cards));
-          } else {
-            game.projectDeck.discard(this.cards[0]);
-            game.log('${0} was discarded.', (b) => b.card(this.cards[0]));
-          }
-          return undefined;
-        },
-      },
-    );
+        const nextIndex = (this.playerIdx + 1) % this.players.length;
+        if (nextIndex !== this.boundaryIndex) {
+          game.defer(new SelectCharityDonationCard(this.players, nextIndex, this.boundaryIndex, this.cards));
+        } else {
+          game.projectDeck.discard(this.cards[0]);
+          game.log('${0} was discarded.', (b) => b.card(this.cards[0]));
+        }
+        return undefined;
+      });
   }
 }

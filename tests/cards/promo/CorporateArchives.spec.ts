@@ -5,7 +5,6 @@ import {IProjectCard} from '../../../src/server/cards/IProjectCard';
 import {SelectCard} from '../../../src/server/inputs/SelectCard';
 import {testGame} from '../../TestGame';
 import {cast} from '../../../src/common/utils/utils';
-import {OrOptions} from '../../../src/server/inputs/OrOptions';
 
 describe('CorporateArchives', () => {
   it('Should play', () => {
@@ -25,8 +24,7 @@ describe('CorporateArchives', () => {
     const cards = action.cards;
     expect(cards).has.length(7);
 
-    const confirmation = cast(action.cb([cards[2], cards[4]]), OrOptions);
-    confirmation.options[0].cb();
+    action.cb([cards[2], cards[4]]);
 
     expect(player.cardsInHand).has.length(2);
     expect(player.cardsInHand).has.members([cards[2], cards[4]]);

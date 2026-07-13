@@ -122,6 +122,9 @@
 .player_shadow_color_rigatone {
   text-shadow: -1px -1px 6px #ff4500, 1px 1px 1px #333a;
 }
+.player_shadow_color_rigatone2 {
+  text-shadow: -1px -1px 6px #ff003c, 1px 1px 1px #333a;
+}
 
 .game-title {
   text-transform: uppercase;
@@ -264,6 +267,9 @@
 
   .grid-item.player_tag_bg_color_rigatone {
     background-color: @player_rigatone_tag_bg;
+  }
+  .grid-item.player_tag_bg_color_rigatone2 {
+    background-color: @player_rigatone2_tag_bg;
   }
   .city-count {
     background: url(./assets/icon_city.png) center no-repeat;
@@ -987,8 +993,33 @@
   }
 
   &.colonies-fleet-rigatone {
-    background-position: -416px 0;
-    filter: @player_rigatone_fleet_filter @player_persona_fleet_edge_filter;
+    background: transparent;
+    position: relative;
+    filter: @player_persona_fleet_edge_filter;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: @player_rigatone_token_gradient;
+      -webkit-mask: url(./assets/colony_ships.png) -416px 0 no-repeat;
+      mask: url(./assets/colony_ships.png) -416px 0 no-repeat;
+    }
+  }
+
+  &.colonies-fleet-rigatone2 {
+    background: transparent;
+    position: relative;
+    filter: @player_persona_fleet_edge_filter;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: @player_rigatone2_token_gradient;
+      -webkit-mask: url(./assets/colony_ships.png) -416px 0 no-repeat;
+      mask: url(./assets/colony_ships.png) -416px 0 no-repeat;
+    }
   }
 }
 

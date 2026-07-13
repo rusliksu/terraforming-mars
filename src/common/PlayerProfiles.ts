@@ -5,6 +5,7 @@ export type PlayerProfile = {
   id: string;
   name: string;
   preferredColor: Color;
+  preferredColors?: ReadonlyArray<Color>;
   aliases: ReadonlyArray<string>;
   elo?: number;
   games?: number;
@@ -50,7 +51,13 @@ export const PLAYER_PROFILES: ReadonlyArray<PlayerProfile> = [
     id: 'nuke',
     name: 'Nuke',
     preferredColor: 'black',
-    aliases: ['nuke', 'midilo', 'midilobusim', 'midilobisum', 'никита'],
+    aliases: ['nuke', 'midilo', 'midilobusim', 'midilobisum'],
+  },
+  {
+    id: 'nikita',
+    name: 'Никита',
+    preferredColor: 'orange',
+    aliases: ['никита', 'никита кусков', 'никита_кусков', 'nikita', 'nikita kuskov', 'nikita_kuskov'],
   },
   {
     id: 'vladlen',
@@ -61,7 +68,7 @@ export const PLAYER_PROFILES: ReadonlyArray<PlayerProfile> = [
   {
     id: 'tagir',
     name: 'Тагир',
-    preferredColor: 'rigatone',
+    preferredColor: 'rigatone2',
     aliases: ['тагир', 'tagir', 'ригат иммортал', 'ригат', 'rigat immortal', 'rigat'],
   },
   {
@@ -175,6 +182,10 @@ function uniqueAliases(aliases: Array<string>): ReadonlyArray<string> {
     .filter((alias) => alias !== ''))];
 }
 
+export function getPlayerProfilePreferredColors(profile: PlayerProfile): ReadonlyArray<Color> {
+  return [...new Set([profile.preferredColor, ...(profile.preferredColors ?? [])])];
+}
+
 function getAliasesForProfileName(name: string, seed?: PlayerProfile): ReadonlyArray<string> {
   const normalizedName = normalizeProfileName(name);
   const aliases = [...(seed?.aliases ?? [])];
@@ -230,6 +241,7 @@ export function buildPlayerProfilesFromEloPlayers(eloPlayers: Record<string, Elo
         id: seed?.id ?? normalizeProfileName(entry.displayName),
         name: entry.displayName,
         preferredColor: seed?.preferredColor ?? identity?.color ?? DEFAULT_PLAYER_COLORS[index % DEFAULT_PLAYER_COLORS.length],
+        preferredColors: seed?.preferredColors,
         aliases: getAliasesForProfileName(entry.displayName, seed),
         elo: entry.elo,
         games: entry.games,

@@ -45,6 +45,23 @@
   gap: 8px;
 }
 
+@media (max-width: 480px) {
+  // Spectre tooltips use wide, absolutely positioned pseudo-elements even
+  // while hidden. Keep them from widening the entire Create Game page.
+  .topmost-create-game-form {
+    overflow-x: hidden;
+
+    // The global notice is fixed for the start screen. On this long form it
+    // needs to follow the controls instead of covering them.
+    .notice {
+      position: static;
+      box-sizing: border-box;
+      padding: 16px;
+      text-align: left;
+    }
+  }
+}
+
 .create-game-corporation {
   padding: 0 0 25px 25px;
 }
@@ -298,6 +315,12 @@
   background: rgba(38, 42, 50, 0.78);
 }
 
+.create-game-playerblock-rigatone2 {
+  background: rgba(13, 2, 4, 0.9);
+  border: 1px solid rgba(255, 0, 60, 0.55);
+  box-shadow: 0 0 12px rgba(255, 0, 60, 0.28);
+}
+
 .create-game-player-name {
   height: 40px;
   border: none;
@@ -439,11 +462,21 @@
   .create-game-player-field-theme(#fff4e8, #8b0000);
 }
 
+.player_translucent_bg_color_rigatone2 {
+  .create-game-player-field-theme(#ffffff, #ff003c);
+}
+
 .create-game-page-color-row {
   display: flex;
   flex-flow: row wrap;
   gap: 2px;
   margin-top: 10px;
+}
+
+.create-game-color-custom-start {
+  border-left: 1px solid rgba(255, 255, 255, .28);
+  margin-left: 3px;
+  padding-left: 3px;
 }
 
 .create-game-page-color-row div > input[type="radio"] {

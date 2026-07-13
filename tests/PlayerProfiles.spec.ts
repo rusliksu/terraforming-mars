@@ -4,6 +4,7 @@ import {
   getPlayerProfileAvatarInitials,
   getPlayerProfileAvatarPattern,
   getPlayerProfileByName,
+  getPlayerProfilePreferredColors,
   PLAYER_PROFILES,
 } from '@/common/PlayerProfiles';
 
@@ -16,10 +17,31 @@ describe('Player profiles', () => {
     expect(getPlayerProfileByName('Женя')?.name).eq('vvbMinsk');
     expect(getPlayerProfileByName('Midilobusim')?.name).eq('Nuke');
     expect(getPlayerProfileByName('Midilobisum')?.name).eq('Nuke');
+    expect(getPlayerProfileByName('Никита')?.name).eq('Никита');
+    expect(getPlayerProfileByName('Никита_Кусков')?.name).eq('Никита');
+    expect(getPlayerProfileByName('Nuke')?.name).eq('Nuke');
+    expect(getPlayerProfileByName('Никитос')).eq(undefined);
   });
 
   it('keeps profile ids unique', () => {
     expect(new Set(PLAYER_PROFILES.map((profile) => profile.id)).size).eq(PLAYER_PROFILES.length);
+  });
+
+  it('keeps ordered color preferences compatible with the primary color', () => {
+    const profile = getPlayerProfileByName('Никита')!;
+
+    expect(profile.preferredColor).eq('orange');
+    expect(getPlayerProfilePreferredColors(profile)).deep.eq(['orange']);
+    expect(getPlayerProfilePreferredColors({
+      ...profile,
+      preferredColors: ['blue', 'orange', 'yellow'],
+    })).deep.eq(['orange', 'blue', 'yellow']);
+  });
+
+  it('exposes only Rigatone Custom Two after the standard palette', () => {
+    const profile = getPlayerProfileByName('Ригат Иммортал')!;
+
+    expect(getPlayerProfilePreferredColors(profile)).deep.eq(['rigatone2']);
   });
 
   it('builds active player profiles from Elo players', () => {
@@ -56,7 +78,7 @@ describe('Player profiles', () => {
     expect(getPlayerProfileByName('Тимур', profiles)?.preferredColor).eq('red');
     expect(getPlayerProfileByName('vvbMinsk', profiles)?.preferredColor).eq('purple');
     expect(getPlayerProfileByName('Nuke', profiles)?.preferredColor).eq('black');
-    expect(getPlayerProfileByName('Тагир', profiles)?.preferredColor).eq('rigatone');
+    expect(getPlayerProfileByName('Тагир', profiles)?.preferredColor).eq('rigatone2');
     expect(getPlayerProfileByName('Ригат Иммортал', profiles)?.name).eq('Тагир');
     expect(getPlayerProfileByName('Аня', profiles)?.preferredColor).eq('green');
   });

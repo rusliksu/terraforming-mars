@@ -99,6 +99,7 @@ export class SQLite implements IDatabase {
             SELECT game_id, created_time
             FROM games
             WHERE game_id IN (${placeholders})
+              AND created_time IS NOT NULL
             GROUP BY game_id, created_time
           ) AS grouped_saves
         ) AS ranked_saves
@@ -260,7 +261,7 @@ export class SQLite implements IDatabase {
 
     // Insert
     await this.runQuietly(
-      'INSERT INTO games (game_id, save_id, game, players) VALUES (?, ?, ?, ?) ON CONFLICT (game_id, save_id) DO UPDATE SET game = ?',
+      'INSERT INTO games (game_id, save_id, game, players, created_time) VALUES (?, ?, ?, ?, strftime(\'%s\', \'now\')) ON CONFLICT (game_id, save_id) DO UPDATE SET game = ?',
       [game.id, thisSaveId, gameJSON, game.players.length, gameJSON]);
 
     if (isFirstSave) {

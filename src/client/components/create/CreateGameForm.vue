@@ -534,9 +534,9 @@
                                               </div>
                                           </div>
                                           <div class="create-game-page-color-row">
-                                              <template v-for="color in DEFAULT_PLAYER_COLORS" :key="color">
-                                                <div>
-                                                  <input type="radio" :value="color" :name="'playerColor' + (index + 1)" :checked="newPlayer.color === color" :id="'radioBox' + color + (index + 1)" @change="applyDefaultPlayerColor(newPlayer, color)">
+                                              <template v-for="(color, colorIndex) in getPlayerPaletteColors(newPlayer)" :key="color">
+                                                <div :class="{'create-game-color-custom-start': colorIndex === DEFAULT_PLAYER_COLORS.length}">
+                                                  <input type="radio" :value="color" :name="'playerColor' + (index + 1)" :checked="newPlayer.color === color" :disabled="isPlayerColorTaken(newPlayer, color)" :id="'radioBox' + color + (index + 1)" @change="applyDefaultPlayerColor(newPlayer, color)">
                                                   <label :for="'radioBox' + color + (index + 1)" :title="getColorTitle(color)">
                                                       <div :class="'create-game-colorbox '+getPlayerCubeColorClass(color)"></div>
                                                   </label>
@@ -682,6 +682,7 @@ import {
   getPlayerProfileAvatarPattern,
   getPlayerProfileById,
   getPlayerProfileByName,
+  getPlayerProfilePreferredColors,
   PLAYER_PROFILES,
 } from '@/common/PlayerProfiles';
 import type {PlayerProfile} from '@/common/PlayerProfiles';
@@ -793,6 +794,7 @@ type FormModel = {
   templates: Array<GameTemplate>;
   playerProfilePickerIndex: number | null;
   playerProfileSearch: string;
+  manualPlayerColors: WeakSet<NewPlayerModel>;
   customCorporationExclusions: Array<CardName>;
   customPreludesExclusions: Array<CardName>;
   customColonyExclusions: Array<ColonyName>;
@@ -814,6 +816,7 @@ export default defineComponent({
       templates: TemplateManager.getTemplates(),
       playerProfilePickerIndex: null,
       playerProfileSearch: '',
+      manualPlayerColors: new WeakSet<NewPlayerModel>(),
       customCorporationExclusions: [...DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS],
       customPreludesExclusions: [],
       customColonyExclusions: [...DEFAULT_CUSTOM_COLONY_EXCLUSIONS],
@@ -931,6 +934,7 @@ export default defineComponent({
       if (this.playerProfilePickerIndex !== null && this.playerProfilePickerIndex >= value) {
         this.closePlayerProfilePicker();
       }
+      this.promoteAutomaticPlayerColors();
     },
     twoCorpsVariant(value: boolean) {
       if (value === true) {
@@ -1271,12 +1275,18 @@ export default defineComponent({
       }
     },
     applyDefaultPlayerColor(player: NewPlayerModel, color: Color) {
+      if (this.isPlayerColorTaken(player, color)) {
+        return;
+      }
+      const selectedProfile = this.getSelectedPlayerProfile(player);
       const lockedName = getLockedPlayerName(player.color);
-      if (lockedName !== undefined && player.name === lockedName) {
+      if (selectedProfile === undefined && lockedName !== undefined && player.name === lockedName) {
         player.name = '';
         player.profileId = undefined;
       }
       player.color = color;
+      this.manualPlayerColors.add(player);
+      this.promoteAutomaticPlayerColors();
     },
     getDefaultSolarPhaseOption(playersCount?: number): boolean {
       return (playersCount ?? this.playersCount) <= 3;
@@ -1571,7 +1581,7 @@ export default defineComponent({
       const identity = getPlayerIdentityByName(requestedName);
       player.name = identity?.name ?? requestedName;
       if (identity !== undefined) {
-        player.color = this.getAvailablePlayerColor(player, identity.color);
+        player.color = this.getAvailablePlayerColor(player, [identity.color]);
       }
       this.closePlayerProfilePicker();
     },
@@ -1582,11 +1592,23 @@ export default defineComponent({
     closePlayerProfilePickerFromDocument() {
       this.closePlayerProfilePicker();
     },
-    getAvailablePlayerColor(player: NewPlayerModel, preferredColor: Color): Color {
+    getPlayerPaletteColors(player: NewPlayerModel): ReadonlyArray<Color> {
+      const profile = this.getSelectedPlayerProfile(player);
+      const profileColors = profile === undefined ? [player.color] : getPlayerProfilePreferredColors(profile);
+      return [...new Set<Color>([
+        ...DEFAULT_PLAYER_COLORS,
+        ...profileColors.filter((color) => !DEFAULT_PLAYER_COLORS.includes(color as typeof DEFAULT_PLAYER_COLORS[number])),
+      ])];
+    },
+    isPlayerColorTaken(player: NewPlayerModel, color: Color): boolean {
+      return this.getPlayers().some((candidate) => candidate !== player && candidate.color === color);
+    },
+    getAvailablePlayerColor(player: NewPlayerModel, preferredColors: ReadonlyArray<Color>): Color {
       const usedColors = new Set(this.getPlayers()
         .filter((candidate) => candidate !== player)
         .map((candidate) => candidate.color));
-      if (!usedColors.has(preferredColor)) {
+      const preferredColor = preferredColors.find((color) => !usedColors.has(color));
+      if (preferredColor !== undefined) {
         return preferredColor;
       }
       if (
@@ -1598,10 +1620,49 @@ export default defineComponent({
       return DEFAULT_PLAYER_COLORS.find((color) => !usedColors.has(color)) ?? player.color;
     },
     applyPlayerProfile(player: NewPlayerModel, profile: PlayerProfile) {
+      const previousColor = player.color;
       player.profileId = profile.id;
       player.name = profile.name;
-      player.color = this.getAvailablePlayerColor(player, profile.preferredColor);
+      this.manualPlayerColors.delete(player);
+      player.color = this.getAvailablePlayerColor(player, getPlayerProfilePreferredColors(profile));
       this.fillKnownTelegramIdForPlayer(player, profile);
+      if (player.color !== previousColor) {
+        this.promoteAutomaticPlayerColors();
+      }
+    },
+    promoteAutomaticPlayerColors() {
+      const players = this.getPlayers();
+      let passesRemaining = players.length;
+      while (passesRemaining > 0) {
+        passesRemaining--;
+        let changed = false;
+        for (const player of players) {
+          if (this.manualPlayerColors.has(player)) {
+            continue;
+          }
+          const profile = this.getSelectedPlayerProfile(player);
+          if (profile === undefined) {
+            continue;
+          }
+          const preferences = getPlayerProfilePreferredColors(profile);
+          const currentIndex = preferences.indexOf(player.color);
+          const usedColors = new Set(players
+            .filter((candidate) => candidate !== player)
+            .map((candidate) => candidate.color));
+          const bestAvailable = preferences.find((color) => !usedColors.has(color));
+          if (bestAvailable === undefined) {
+            continue;
+          }
+          const bestIndex = preferences.indexOf(bestAvailable);
+          if (currentIndex === -1 || bestIndex < currentIndex) {
+            player.color = bestAvailable;
+            changed = true;
+          }
+        }
+        if (!changed) {
+          break;
+        }
+      }
     },
     clearPlayerProfileSelection(player: NewPlayerModel) {
       player.profileId = undefined;

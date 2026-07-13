@@ -5,6 +5,7 @@ import {IProjectCard} from '../../../src/server/cards/IProjectCard';
 import {SelectCard} from '../../../src/server/inputs/SelectCard';
 import {testGame} from '../../TestGame';
 import {cast} from '../../../src/common/utils/utils';
+import {OrOptions} from '../../../src/server/inputs/OrOptions';
 
 describe('BusinessContacts', () => {
   it('Should play', () => {
@@ -17,7 +18,8 @@ describe('BusinessContacts', () => {
     const action = cast(player.popWaitingFor(), SelectCard<IProjectCard>);
     const [card1, card2, card3, card4] = action.cards;
 
-    action.cb([card1, card2]);
+    const confirmation = cast(action.cb([card1, card2]), OrOptions);
+    confirmation.options[0].cb();
 
     expect(player.cardsInHand).deep.eq([card1, card2]);
     expect(game.projectDeck.discardPile).deep.eq([card3, card4]);

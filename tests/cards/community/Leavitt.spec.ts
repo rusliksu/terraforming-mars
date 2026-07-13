@@ -11,6 +11,7 @@ import {SelectCard} from '../../../src/server/inputs/SelectCard';
 import {testGame} from '../../TestGame';
 import {VenusianAnimals} from '../../../src/server/cards/venusNext/VenusianAnimals';
 import {cast} from '../../../src/common/utils/utils';
+import {OrOptions} from '../../../src/server/inputs/OrOptions';
 
 describe('Leavitt', () => {
   let leavitt: Leavitt;
@@ -56,7 +57,8 @@ describe('Leavitt', () => {
 
     expect(selectCard.cards).has.length(5);
 
-    selectCard.cb([selectCard.cards[0]]);
+    const confirmation = cast(selectCard.cb([selectCard.cards[0]]), OrOptions);
+    confirmation.options[0].cb();
 
     expect(player.cardsInHand).deep.eq([selectCard.cards[0]]);
 
@@ -87,7 +89,8 @@ describe('Leavitt', () => {
 
     expect(selectCard.cards).has.length(5);
 
-    selectCard.cb([selectCard.cards[0]]);
+    const confirmation = cast(selectCard.cb([selectCard.cards[0]]), OrOptions);
+    confirmation.options[0].cb();
 
     expect(player.cardsInHand).deep.eq([selectCard.cards[0]]);
 

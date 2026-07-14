@@ -245,10 +245,14 @@ describe('LogPanel', () => {
         },
       },
     });
+    // Browsers can report a temporary bottom scroll position while replacing the list.
+    fakePanel.scrollTop = 320;
+    (wrapper.vm as any).handleScroll();
     await Promise.resolve();
     await Promise.resolve();
     await new Promise((resolve) => setTimeout(resolve, 0));
     await wrapper.vm.$nextTick();
+    lastResizeCallback?.([], {});
 
     expect(fakeScrollTop).to.equal(120);
   });

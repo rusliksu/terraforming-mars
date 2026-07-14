@@ -72,6 +72,7 @@ type LogPanelModel = {
   selectedMessage: LogMessage | undefined,
   selectedPlayerColor: Color | undefined,
   stickToBottom: boolean,
+  isRestoringScrollPosition: boolean,
   resizeObserver: ResizeObserver | undefined,
 };
 
@@ -100,6 +101,7 @@ export default defineComponent({
       selectedMessage: undefined,
       selectedPlayerColor: undefined,
       stickToBottom: true,
+      isRestoringScrollPosition: false,
       resizeObserver: undefined,
     };
   },
@@ -165,6 +167,8 @@ export default defineComponent({
       const previousScrollTop = scrollablePanel?.scrollTop ?? 0;
       const shouldStickToBottom = liveLogs && (forceScrollToEnd || this.isNearBottom());
       this.stickToBottom = shouldStickToBottom;
+      this.isRestoringScrollPosition = liveLogs && !shouldStickToBottom;
+      this.teardownAutoScrollObserver();
       // abort any pending requests
       if (logAbortController) {
         logAbortController.abort();
@@ -187,6 +191,7 @@ export default defineComponent({
             return;
           }
           if (!data) {
+            this.isRestoringScrollPosition = false;
             return;
           }
           messages.splice(0, messages.length);
@@ -199,7 +204,10 @@ export default defineComponent({
               } else {
                 this.restoreScrollTop(previousScrollTop);
               }
+              this.isRestoringScrollPosition = false;
             });
+          } else {
+            this.isRestoringScrollPosition = false;
           }
         })
         .catch((err) => {
@@ -207,11 +215,14 @@ export default defineComponent({
             // ignore aborted requests
             return;
           }
+          this.isRestoringScrollPosition = false;
           console.error('error updating messages, unable to reach server');
         });
     },
     handleScroll() {
-      this.stickToBottom = this.isNearBottom();
+      if (!this.isRestoringScrollPosition) {
+        this.stickToBottom = this.isNearBottom();
+      }
     },
     getScrollablePanel(): HTMLElement | null {
       return document.getElementById('logpanel-scrollable');

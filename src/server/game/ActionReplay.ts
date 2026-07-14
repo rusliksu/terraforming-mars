@@ -24,6 +24,8 @@ export interface ActionReplayState {
   currentPromptFingerprint: string;
   /** Preserve one-step undo at a newly saved root until the player submits the next input. */
   resetBeforeNextInput: boolean;
+  /** The first log entry canceled by the most recent step undo. */
+  lastStepBackLogStartIndex?: number;
 }
 
 export class ActionReplayMismatch extends Error {}
@@ -106,12 +108,7 @@ export function recordAcceptedActionReplayEntry(game: IGame, entry: ActionInputE
   state.currentPromptFingerprint = promptFingerprintForPlayer(game, entry.actorId);
 }
 
-export type StepBackActionResult = {
-  game: Game;
-  canceledLogStartIndex: number | undefined;
-};
-
-export function stepBackActionInput(current: IGame, actorId: PlayerId): StepBackActionResult {
+export function stepBackActionInput(current: IGame, actorId: PlayerId): Game {
   const state = current.actionReplayState;
   if (state === undefined || state === null || state.entries.length === 0) {
     throw new ActionReplayMismatch('No replayable previous step');
@@ -145,11 +142,9 @@ export function stepBackActionInput(current: IGame, actorId: PlayerId): StepBack
     currentActorId: removedEntry.actorId,
     currentPromptFingerprint: predecessorFingerprint,
     resetBeforeNextInput: false,
+    lastStepBackLogStartIndex: removedEntry.logStartIndex,
   };
-  return {
-    game: replayed,
-    canceledLogStartIndex: removedEntry.logStartIndex,
-  };
+  return replayed;
 }
 
 /**

@@ -356,7 +356,9 @@ export default defineComponent({
     showUndoAction(): boolean {
       const phase = this.playerView.game.phase;
       const supportedPhase = phase === Phase.ACTION || phase === Phase.PRELUDES || phase === Phase.CEOS;
-      const enabled = this.playerView.players.length === 1 || this.playerView.game.gameOptions?.undoOption === true;
+      const enabled = this.playerView.players.length === 1 ||
+        this.playerView.game.gameOptions?.undoOption === true ||
+        this.playerView.game.gameOptions?.undoStepOption === true;
       return supportedPhase && enabled && this.waitingfor !== undefined && this.playerView.thisPlayer?.isActive === true;
     },
     showUndoFooter(): boolean {

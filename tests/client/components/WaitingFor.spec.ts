@@ -238,6 +238,37 @@ describe('WaitingFor', () => {
     ]);
   });
 
+  it('shows action undo for a nested prompt when only step undo is enabled', () => {
+    const wrapper = mountWaitingFor({
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {
+          'PlayerInputFactory': {template: '<div class="stub-pif"></div>'},
+          'AppButton': {props: ['title'], template: '<button>{{ title }}</button>'},
+        },
+      },
+      props: {
+        playerView: {
+          ...playerView,
+          canStepBack: false,
+          thisPlayer: {...thisPlayer, isActive: true},
+          game: {...playerView.game, gameOptions: {undoOption: false, undoStepOption: true}},
+        } as PlayerViewModel,
+        waitingfor: {
+          type: 'projectCard',
+          title: 'Select your second standard project',
+          buttonLabel: 'Confirm',
+          cards: [],
+        },
+      },
+    });
+
+    expect(wrapper.find('.wf-undo-controls').exists()).to.be.true;
+    expect(wrapper.text()).to.include('Undo action');
+    expect(wrapper.text()).to.not.include('Undo one step (experimental)');
+  });
+
   it('keeps undo choices inside the main action list', () => {
     const wrapper = mountWaitingFor({
       ...globalConfig,

@@ -471,7 +471,7 @@ export class Server {
       requiresMoonTrackCompletion: options.requiresMoonTrackCompletion,
       requiresVenusTrackCompletion: options.requiresVenusTrackCompletion,
       twoCorpsVariant: options.twoCorpsVariant,
-      undoOption: options.undoOption,
+      undoOption: options.undoOption || options.undoStepOption === true,
       undoStepOption: options.undoStepOption === true,
     };
   }

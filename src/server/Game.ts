@@ -293,6 +293,9 @@ export class Game implements IGame, Logger {
       };
     }
     const gameOptions = {...DEFAULT_GAME_OPTIONS, ...partialOptions};
+    if (gameOptions.undoStepOption) {
+      gameOptions.undoOption = true;
+    }
     if (gameOptions.initialDraftVariant === false) {
       gameOptions.initialDraftOneWay = false;
     }

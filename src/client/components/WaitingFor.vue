@@ -25,6 +25,21 @@
                           :onsave="onsavePlayerInput"
                           :showsave="true"
                           :showtitle="true" />
+    <div v-if="showUndoFooter()" class="wf-options wf-undo-controls">
+      <label v-if="showUndoAction()" class="form-radio">
+        <input v-model="undoChoice" type="radio" :name="undoRadioElementName" value="action">
+        <i class="form-icon"></i>
+        <span v-i18n>Undo action</span>
+      </label>
+      <label v-if="showStepBack()" class="form-radio">
+        <input v-model="undoChoice" type="radio" :name="undoRadioElementName" value="step">
+        <i class="form-icon"></i>
+        <span v-i18n>Undo one step (experimental)</span>
+      </label>
+      <div v-if="undoChoice" style="margin: 5px 30px 10px" class="wf-action">
+        <AppButton title="Undo" type="submit" size="normal" @click="undoSelected" />
+      </div>
+    </div>
     </div>
   </div>
 </template>
@@ -51,10 +66,12 @@ import {INVALID_RUN_ID, UNDO_REVEALED_HIDDEN_INFORMATION, AppErrorResponse} from
 import {Color} from '@/common/Color';
 import {gameDocumentTitle} from '../utils/documentTitle';
 import {setFaviconStatus, setFaviconTurnFrame} from '@/client/utils/favicon';
+import AppButton from '@/client/components/common/AppButton.vue';
 
 let ui_update_timeout_id: number | undefined;
 let documentTitleTimer: number | undefined;
 let animationFrame = 0;
+let undoChoiceSequence = 0;
 
 // The spinning ◑◒◐◓ symbol used to indicate it's your turn.
 const TURN_SEQUENCE = '◑◒◐◓';
@@ -70,6 +87,8 @@ type DataModel = {
   playersWaitingFor: Array<Color>
   suspend: boolean,
   savedPlayerView: PlayerViewModel | undefined;
+  undoChoice: '' | 'action' | 'step';
+  undoRadioElementName: string;
 }
 
 const CANNOT_CONTACT_SERVER = 'Unable to reach the server. It may be restarting or down for maintenance.';
@@ -92,7 +111,17 @@ export default defineComponent({
       playersWaitingFor: [],
       suspend: false,
       savedPlayerView: undefined,
+      undoChoice: '',
+      undoRadioElementName: 'undo-choice-' + undoChoiceSequence++,
     };
+  },
+  components: {
+    AppButton,
+  },
+  watch: {
+    waitingfor() {
+      this.undoChoice = '';
+    },
   },
   methods: {
     getPlayerName(color: Color): string {
@@ -130,6 +159,18 @@ export default defineComponent({
       this.fetchPlayerInput(
         paths.RESET + '?id=' + this.playerView.id + '&mode=step',
         {method: 'GET'});
+    },
+    reset() {
+      this.fetchPlayerInput(
+        paths.RESET + '?id=' + this.playerView.id,
+        {method: 'GET'});
+    },
+    undoSelected() {
+      if (this.undoChoice === 'step') {
+        this.stepBack();
+      } else if (this.undoChoice === 'action') {
+        this.reset();
+      }
     },
     onsavePlayerInput(out: InputResponse) {
       if (this.isStepBackResponse(out)) {
@@ -311,6 +352,15 @@ export default defineComponent({
     },
     showStepBackOption(): boolean {
       return this.isMainActionPrompt() && this.showStepBack();
+    },
+    showUndoAction(): boolean {
+      const phase = this.playerView.game.phase;
+      const supportedPhase = phase === Phase.ACTION || phase === Phase.PRELUDES || phase === Phase.CEOS;
+      const enabled = this.playerView.players.length === 1 || this.playerView.game.gameOptions?.undoOption === true;
+      return supportedPhase && enabled && this.waitingfor !== undefined && this.playerView.thisPlayer?.isActive === true;
+    },
+    showUndoFooter(): boolean {
+      return !this.isMainActionPrompt() && (this.showUndoAction() || this.showStepBack());
     },
     playerinputWithStepBack(): PlayerInputModel {
       const playerinput = this.waitingfor;

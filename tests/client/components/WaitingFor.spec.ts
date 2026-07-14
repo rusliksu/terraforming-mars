@@ -194,6 +194,78 @@ describe('WaitingFor', () => {
     expect(requests).deep.eq(['reset?id=p-player-id&mode=step']);
   });
 
+  it('shows both undo choices below a nested prompt and routes each choice to its reset', () => {
+    const wrapper = mountWaitingFor({
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {
+          'PlayerInputFactory': {template: '<div class="stub-pif"></div>'},
+          'AppButton': {props: ['title'], template: '<button>{{ title }}</button>'},
+        },
+      },
+      props: {
+        playerView: {
+          ...playerView,
+          canStepBack: true,
+          thisPlayer: {...thisPlayer, isActive: true},
+          game: {...playerView.game, gameOptions: {undoOption: true, undoStepOption: true}},
+        } as PlayerViewModel,
+        waitingfor: {
+          type: 'card',
+          title: 'Select 3 cards to discard',
+          buttonLabel: 'Discard',
+          cards: [],
+          min: 3,
+          max: 3,
+        },
+      },
+    });
+    const requests: Array<string> = [];
+    wrapper.vm.fetchPlayerInput = ((url: string) => requests.push(url)) as typeof wrapper.vm.fetchPlayerInput;
+
+    expect(wrapper.find('.wf-undo-controls').exists()).to.be.true;
+    expect(wrapper.text()).to.include('Undo action');
+    expect(wrapper.text()).to.include('Undo one step (experimental)');
+
+    (wrapper.vm as any).undoChoice = 'action';
+    (wrapper.vm as any).undoSelected();
+    (wrapper.vm as any).undoChoice = 'step';
+    (wrapper.vm as any).undoSelected();
+    expect(requests).deep.eq([
+      'reset?id=p-player-id',
+      'reset?id=p-player-id&mode=step',
+    ]);
+  });
+
+  it('keeps undo choices inside the main action list', () => {
+    const wrapper = mountWaitingFor({
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {
+          'PlayerInputFactory': {template: '<div class="stub-pif"></div>'},
+        },
+      },
+      props: {
+        playerView: {
+          ...playerView,
+          canStepBack: true,
+          thisPlayer: {...thisPlayer, isActive: true},
+          game: {...playerView.game, gameOptions: {undoOption: true, undoStepOption: true}},
+        } as PlayerViewModel,
+        waitingfor: {
+          type: 'or',
+          title: 'Take your next action',
+          buttonLabel: 'Take action',
+          options: [{type: 'option', title: 'Play project card', buttonLabel: 'Play'}],
+        },
+      },
+    });
+
+    expect(wrapper.find('.wf-undo-controls').exists()).to.be.false;
+  });
+
   it('retries step undo after confirming the hidden-information warning', async () => {
     const originalFetch = global.fetch;
     const originalConfirm = window.confirm;

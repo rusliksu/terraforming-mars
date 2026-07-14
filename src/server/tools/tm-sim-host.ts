@@ -164,9 +164,8 @@ export function redeterminizeSnapshotForObserver(
     throw new Error(`observer ${observerId} not found`);
   }
 
-  const hiddenFields: Array<'cardsInHand' | 'dealtProjectCards' | 'draftedCards' | 'draftHand'> = [
+  const hiddenFields: Array<'cardsInHand' | 'draftedCards' | 'draftHand'> = [
     'cardsInHand',
-    'dealtProjectCards',
     'draftedCards',
     'draftHand',
   ];
@@ -179,6 +178,7 @@ export function redeterminizeSnapshotForObserver(
     player.dealtCorporationCards.splice(0);
     player.dealtPreludeCards.splice(0);
     player.dealtCeoCards.splice(0);
+    player.dealtProjectCards.splice(0);
   }
   const allocation: Array<{cards: Array<CardName>; count: number}> = [];
   const pool: Array<CardName> = [];
@@ -241,6 +241,15 @@ function isStableMainActionBoundary(game: Game, actorId: string): boolean {
   }
   const text = JSON.stringify(waitingFor).toLowerCase();
   return waitingFor.type === 'or' && text.includes('action');
+}
+
+export function continuationPromptActorIdV1(game: Game): string | null {
+  const activePlayer = game.activePlayer;
+  if (activePlayer !== undefined && activePlayer.getWaitingFor() !== undefined) {
+    return activePlayer.id;
+  }
+  const waitingPlayers = game.players.filter((player) => player.getWaitingFor() !== undefined);
+  return waitingPlayers.length === 1 ? waitingPlayers[0].id : null;
 }
 
 function buildSuccessorVersion(parentStateVersion: string, observer: unknown): string {
@@ -387,12 +396,14 @@ export class TmSimHost {
       }
       const observer = this.observerModel(game, request.observerId);
       const activePlayerId = game.activePlayer?.id ?? null;
-      const nextActorModel = activePlayerId === null ? null : this.observerModel(game, activePlayerId);
+      const promptActorId = continuationPromptActorIdV1(game);
+      const nextActorModel = promptActorId === null ? null : this.observerModel(game, promptActorId);
       const nextPrompt = nextActorModel === null ? null : (nextActorModel as {waitingFor?: unknown}).waitingFor;
       const nextFingerprint = nextPrompt === undefined || nextPrompt === null ?
         null :
         promptFingerprintFromWaitingFor(nextPrompt);
-      const stable = activePlayerId !== null && isStableMainActionBoundary(game, activePlayerId);
+      const stable = promptActorId !== null && promptActorId === activePlayerId &&
+        isStableMainActionBoundary(game, promptActorId);
       const warnings: Array<string> = [];
       if (!stable) {
         warnings.push('successor_not_stable_main_action_boundary');
@@ -417,7 +428,7 @@ export class TmSimHost {
         branchHandle,
         successorStateVersion,
         promptFingerprint: nextFingerprint,
-        activePlayerId,
+        activePlayerId: promptActorId,
         simulationActor: request.includeSimulationActor === true ? nextActorModel : null,
         rootObserver,
         stableMainActionBoundary: stable,

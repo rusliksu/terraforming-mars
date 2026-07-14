@@ -339,7 +339,7 @@ describe('WaitingFor', () => {
     ]);
   });
 
-  it('retries undo after confirming the hidden-information warning', async () => {
+  it('retries step undo after confirming the hidden-information warning', async () => {
     const originalFetch = global.fetch;
     const originalConfirm = window.confirm;
     const requests: Array<string> = [];
@@ -381,12 +381,12 @@ describe('WaitingFor', () => {
         },
       });
 
-      wrapper.vm.reset();
+      wrapper.vm.stepBack();
       await new Promise((resolve) => window.setTimeout(resolve, 10));
 
       expect(requests).deep.eq([
-        'reset?id=p-player-id',
-        'reset?id=p-player-id&confirmHiddenInformation=true',
+        'reset?id=p-player-id&mode=step',
+        'reset?id=p-player-id&mode=step&confirmHiddenInformation=true',
       ]);
     } finally {
       (global as any).fetch = originalFetch;

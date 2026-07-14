@@ -18,6 +18,8 @@ import {CardName} from '../../src/common/cards/CardName';
 import {InputResponse} from '../../src/common/inputs/InputResponse';
 import {prepareActionReplayEntry, recordAcceptedActionReplayEntry} from '../../src/server/game/ActionReplay';
 import {HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED} from '../../src/common/undo';
+import {HiTechLab} from '../../src/server/cards/promo/HiTechLab';
+import {LogMessageType} from '../../src/common/logs/LogMessageType';
 
 describe('Reset', () => {
   let scaffolding: RouteTestScaffolding;
@@ -97,6 +99,8 @@ describe('Reset', () => {
     expect(confirmedRes.statusCode).eq(200);
     const confirmedModel: PlayerViewModel = JSON.parse(confirmedRes.content);
     expect(confirmedModel.id).eq(reloadedPlayer.id);
+    expect(reloadedGame.gameLog[reloadedGame.gameLog.length - 1].type)
+      .eq(LogMessageType.IRREVERSIBLE_UNDO);
   });
 
   it('appends canceled log messages from the current action', async () => {
@@ -168,6 +172,74 @@ describe('Reset', () => {
     expect(model.game.undoCount).eq(1);
     const replayed = await scaffolding.ctx.gameLoader.getGame(player.id);
     expect(replayed?.board.spaces.some((space) => space.player?.id === player.id)).is.false;
+  });
+
+  it('allows reselecting a revealed Hi-Tech Lab card but warns before undoing the reveal', async () => {
+    const [rawGame, player] = testGame(2, {skipInitialCardSelection: true, undoOption: true});
+    const game = rawGame as Game;
+    game.generation = 2;
+    game.phase = Phase.ACTION;
+    game.simulationMode = true;
+    game.activePlayer = player;
+    player.energy = 3;
+    player.playedCards.push(new HiTechLab());
+    player.takeAction(false);
+
+    const accept = (input: InputResponse) => {
+      const entry = prepareActionReplayEntry(game, player.id, input);
+      expect(entry).not.eq(undefined);
+      player.process(input);
+      recordAcceptedActionReplayEntry(game, entry!);
+    };
+    const rootPrompt = player.getWaitingFor()?.toModel(player);
+    const actionCardIndex = rootPrompt?.type === 'or' ?
+      rootPrompt.options.findIndex((option) => option.title === 'Perform an action from a played card') : -1;
+    expect(actionCardIndex).gte(0);
+    accept({
+      type: 'or',
+      index: actionCardIndex,
+      response: {type: 'card', cards: [CardName.HI_TECH_LAB]},
+    });
+    accept({type: 'amount', amount: 3});
+    const revealedPrompt = player.getWaitingFor()?.toModel(player);
+    if (revealedPrompt?.type !== 'card') {
+      throw new Error('Expected revealed-card choice');
+    }
+    accept({type: 'card', cards: [revealedPrompt.cards[0].name]});
+
+    await scaffolding.ctx.gameLoader.add(game);
+    scaffolding.url = `/reset?id=${player.id}&mode=step`;
+    await scaffolding.get(Reset.INSTANCE, res);
+
+    expect(res.statusCode).eq(200);
+    const reselectionModel: PlayerViewModel = JSON.parse(res.content);
+    expect(reselectionModel.waitingFor?.type).eq('card');
+    if (reselectionModel.waitingFor?.type !== 'card') {
+      throw new Error('Expected replayed revealed-card choice');
+    }
+    expect(reselectionModel.waitingFor.cards.map((card) => card.name))
+      .deep.eq(revealedPrompt.cards.map((card) => card.name));
+
+    const warningRes = new MockResponse();
+    await scaffolding.get(Reset.INSTANCE, warningRes);
+    expect(JSON.parse(warningRes.content)).deep.eq({
+      id: '#undo-revealed-hidden-information',
+      message: HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED,
+    });
+
+    const confirmedRes = new MockResponse();
+    scaffolding.url = `/reset?id=${player.id}&mode=step&confirmHiddenInformation=true`;
+    await scaffolding.get(Reset.INSTANCE, confirmedRes);
+
+    expect(confirmedRes.statusCode).eq(200);
+    const beforeRevealModel: PlayerViewModel = JSON.parse(confirmedRes.content);
+    expect(beforeRevealModel.waitingFor?.type).eq('amount');
+    const beforeReveal = await scaffolding.ctx.gameLoader.getGame(player.id);
+    expect(beforeReveal).not.eq(undefined);
+    const warningLog = beforeReveal!.gameLog[beforeReveal!.gameLog.length - 1];
+    expect(warningLog?.type).eq(LogMessageType.IRREVERSIBLE_UNDO);
+    expect(warningLog?.message)
+      .eq('${0} undid an irreversible action after revealing hidden information');
   });
 });
 

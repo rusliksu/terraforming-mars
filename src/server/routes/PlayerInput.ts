@@ -22,6 +22,7 @@ import {getUserAgent} from './auditRequest';
 import type {AccessAuditEvent, AccessAuditRecordInput} from '../server/AccessAudit';
 import {prepareActionReplayEntry, recordAcceptedActionReplayEntry} from '../game/ActionReplay';
 import {HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED} from '../../common/undo';
+import {logIrreversibleUndo} from '../logs/logIrreversibleUndo';
 
 type ShadowPromptSnapshot = {
   buttonLabel: string | null;
@@ -83,8 +84,10 @@ export class PlayerInput extends Handler {
      */
     const lastSaveId = player.game.lastSaveId - 2;
     try {
+      const currentGame = player.game;
       const restoredGame = await ctx.gameLoader.getGameAtOrBefore(player.game.id, lastSaveId);
-      if (hasRevealedHiddenInformation(player.game, restoredGame, player) &&
+      const crossedHiddenInformation = hasRevealedHiddenInformation(currentGame, restoredGame, player);
+      if (crossedHiddenInformation &&
           ctx.url.searchParams.get('confirmHiddenInformation') !== 'true') {
         throw new AppError(UNDO_REVEALED_HIDDEN_INFORMATION, HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED);
       }
@@ -93,6 +96,9 @@ export class PlayerInput extends Handler {
       if (game === undefined) {
         throw new InputError('Unable to perform undo operation. Error retrieving game from database. Please try again.');
       } else {
+        if (crossedHiddenInformation) {
+          logIrreversibleUndo(game, player.id);
+        }
         // pull most recent player instance
         player = game.getPlayerById(player.id);
       }

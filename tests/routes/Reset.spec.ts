@@ -69,6 +69,26 @@ describe('Reset', () => {
     expect(res.content).eq('Bad request: Cancel action requires undo to be enabled');
   });
 
+  it('allows action undo for an existing game with only experimental step undo enabled', async () => {
+    const currentPlayer = TestPlayer.BLACK.newPlayer();
+    const currentOpponent = TestPlayer.RED.newPlayer();
+    const currentGame = Game.newInstance('game-id', [currentPlayer, currentOpponent], currentPlayer, 'spectatorid', {undoStepOption: true});
+    currentGame.gameOptions.undoOption = false;
+
+    const reloadedPlayer = TestPlayer.BLACK.newPlayer();
+    const reloadedOpponent = TestPlayer.RED.newPlayer();
+    const reloadedGame = Game.newInstance('game-id', [reloadedPlayer, reloadedOpponent], reloadedPlayer, 'spectatorid', {undoStepOption: true});
+    reloadedGame.gameOptions.undoOption = false;
+
+    useReloadingGameLoader(scaffolding, currentGame, reloadedGame);
+    scaffolding.url = '/reset?id=' + currentPlayer.id;
+
+    await scaffolding.get(Reset.INSTANCE, res);
+
+    expect(res.statusCode).eq(200);
+    expect(JSON.parse(res.content).id).eq(reloadedPlayer.id);
+  });
+
   it('requires the separate experimental option for one-step undo', async () => {
     const player = TestPlayer.BLACK.newPlayer();
     const opponent = TestPlayer.RED.newPlayer();

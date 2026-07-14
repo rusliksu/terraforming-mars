@@ -52,7 +52,7 @@ export class Reset extends Handler {
     const stepMode = ctx.url.searchParams.get('mode') === 'step';
     const undoEnabled = stepMode ?
       game.gameOptions.undoStepOption === true :
-      game.players.length === 1 || game.gameOptions.undoOption === true;
+      game.players.length === 1 || game.gameOptions.undoOption === true || game.gameOptions.undoStepOption === true;
     if (!undoEnabled) {
       responses.badRequest(
         req,

@@ -297,6 +297,33 @@ describe('WaitingFor', () => {
     expect(wrapper.find('.wf-undo-controls').exists()).to.be.false;
   });
 
+  it('shows research-purchase undo while waiting for other players', () => {
+    const wrapper = mountWaitingFor({
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {
+          'PlayerInputFactory': {template: '<div class="stub-pif"></div>'},
+          'AppButton': {props: ['title'], template: '<button>{{ title }}</button>'},
+        },
+      },
+      props: {
+        playerView: {
+          ...playerView,
+          canUndoResearchPurchase: true,
+          game: {...playerView.game, phase: Phase.RESEARCH},
+        } as PlayerViewModel,
+        waitingfor: undefined,
+      },
+    });
+    const requests: Array<string> = [];
+    wrapper.vm.fetchPlayerInput = ((url: string) => requests.push(url)) as typeof wrapper.vm.fetchPlayerInput;
+
+    expect(wrapper.text()).to.include('Undo card purchase (experimental)');
+    (wrapper.vm as any).undoResearchPurchase();
+    expect(requests).deep.eq(['reset?id=p-player-id&mode=research']);
+  });
+
   it('retries step undo after confirming the hidden-information warning', async () => {
     const originalFetch = global.fetch;
     const originalConfirm = window.confirm;

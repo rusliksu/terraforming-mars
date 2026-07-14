@@ -173,6 +173,7 @@ export interface IGame extends Logger {
   isDoneWithFinalProduction(): boolean;
   playerHasPassed(player: IPlayer): void;
   hasResearched(player: IPlayer): boolean;
+  reopenResearchPhaseFor(player: IPlayer): void;
   playerIsFinishedWithResearchPhase(player: IPlayer): void;
   /**
    * Called when a player has finished taking actions. It sets up

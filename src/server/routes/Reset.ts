@@ -50,14 +50,19 @@ export class Reset extends Handler {
     }
 
     const stepMode = ctx.url.searchParams.get('mode') === 'step';
+    const researchMode = ctx.url.searchParams.get('mode') === 'research';
     const undoEnabled = stepMode ?
       game.gameOptions.undoStepOption === true :
-      game.players.length === 1 || game.gameOptions.undoOption === true || game.gameOptions.undoStepOption === true;
+      researchMode ?
+        game.gameOptions.undoStepOption === true :
+        game.players.length === 1 || game.gameOptions.undoOption === true || game.gameOptions.undoStepOption === true;
     if (!undoEnabled) {
       responses.badRequest(
         req,
         res,
-        stepMode ? 'Undo one step requires the experimental game option to be enabled' : 'Cancel action requires undo to be enabled',
+        stepMode ? 'Undo one step requires the experimental game option to be enabled' :
+          researchMode ? 'Undo card purchase requires the experimental game option to be enabled' :
+            'Cancel action requires undo to be enabled',
       );
       return;
     }
@@ -70,6 +75,16 @@ export class Reset extends Handler {
     }
     if (player === undefined) {
       responses.notFound(req, res);
+      return;
+    }
+    if (researchMode) {
+      try {
+        player.undoResearchPurchase();
+        await ctx.gameLoader.add(game);
+        responses.writeJson(res, ctx, Server.getPlayerModel(player));
+      } catch (error) {
+        responses.badRequest(req, res, error instanceof Error ? error.message : 'Could not undo card purchase');
+      }
       return;
     }
     if (player.game.activePlayer.id !== player.id) {

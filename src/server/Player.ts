@@ -82,6 +82,7 @@ import {From} from './logs/From';
 import {SelectStandardProjectToPlay} from './inputs/SelectStandardProjectToPlay';
 import {EarlyGameStats} from './game/EarlyGameStats';
 import {DEFAULT_PRELUDE_HANDICAP, normalizePreludeHandicap} from '../common/game/NewGameConfig';
+import type {ResearchPurchaseUndoState} from './game/ResearchPurchaseUndo';
 
 const THROW_STATE_ERRORS = Boolean(process.env.THROW_STATE_ERRORS);
 const TURN_NOTICE_DELAY_MS = 5000;
@@ -158,6 +159,7 @@ export class Player implements IPlayer {
   public ceoCardsInHand: Set<ICeoCard> = new Set();
   public playedCards: PlayedCards = new PlayedCards();
   public draftedCards: Array<IProjectCard> = [];
+  public researchPurchaseUndo: ResearchPurchaseUndoState | undefined;
   public draftHand: Array<IProjectCard> = [];
   public cardCost: number = constants.CARD_COST;
   public needsToDraft?: boolean;
@@ -700,11 +702,19 @@ export class Player implements IPlayer {
 
     const cards = copyAndClear(this.draftedCards);
 
+    const supportsResearchPurchaseUndo = this.game.gameOptions.undoStepOption === true && !(this.game.underworldDraftEnabled &&
+      this.underworldData.corruption > 0 && cards.length >= 2 && this.game.projectDeck.size() >= 2);
     const chooseCardsToBuy = () => {
       // TODO(kberg): Using .execute to rely on directly calling setWaitingFor is not great.
       // It's because all players is drafting at the same time. Once again, the server isn't ideal
       // when it comes to handling multiple players at once.
-      const action = new ChooseCards(this, cards, {paying: true, keepMax: selectable}).execute();
+      const action = new ChooseCards(this, cards, {
+        paying: true,
+        keepMax: selectable,
+        onCardsSelected: supportsResearchPurchaseUndo ? () => this.beginResearchPurchaseUndo(cards.length) : undefined,
+        onCardsKept: supportsResearchPurchaseUndo ?
+          (logStartIndex, logEndIndex) => this.finishResearchPurchaseUndo(logStartIndex, logEndIndex) : undefined,
+      }).execute();
 
       // ChooseCards.execute returns an action with an andThen set. That means
       // this has to wrap it around and do clever things.
@@ -741,6 +751,91 @@ export class Player implements IPlayer {
       this.setWaitingFor(options);
     } else {
       this.setWaitingFor(chooseCardsToBuy());
+    }
+  }
+
+  public canUndoResearchPurchase(): boolean {
+    const state = this.researchPurchaseUndo;
+    return state !== undefined &&
+      this.game.gameOptions.undoStepOption === true &&
+      this.game.phase === Phase.RESEARCH &&
+      this.game.generation === state.generation &&
+      this.game.hasResearched(this) &&
+      this.getWaitingFor() === undefined;
+  }
+
+  public undoResearchPurchase(): void {
+    if (!this.canUndoResearchPurchase()) {
+      throw new Error('Card purchase can only be undone while waiting in the research phase');
+    }
+    const state = this.researchPurchaseUndo;
+    if (state === undefined) {
+      throw new Error('Missing card purchase undo state');
+    }
+    const selectedCards = this.cardsInHand.splice(state.cardsInHandStartIndex);
+    const discardedCount = state.cardCount - selectedCards.length;
+    const discardedCards = this.game.projectDeck.discardPile.splice(state.projectDiscardStartIndex, discardedCount);
+    if (discardedCount < 0 || selectedCards.length + discardedCards.length !== state.cardCount) {
+      throw new Error('Card purchase no longer matches the saved research selection');
+    }
+
+    const game = this.game;
+    Object.assign(this, Player.deserialize(state.playerSnapshot));
+    this.setup(game);
+    this.researchPurchaseUndo = undefined;
+    for (let index = state.logStartIndex ?? 0; index < (state.logEndIndex ?? 0); index++) {
+      const message = game.gameLog[index];
+      if (message !== undefined) {
+        message.canceled = true;
+      }
+    }
+    game.reopenResearchPhaseFor(this);
+    game.log('${0} undid card purchase', (b) => b.player(this));
+
+    const cards = [...selectedCards, ...discardedCards];
+    const selectable = this.researchSelectableCards(cards);
+    this.setWaitingFor(this.createResearchPurchaseInput(cards, selectable));
+  }
+
+  private researchSelectableCards(cards: ReadonlyArray<IProjectCard>): number {
+    let selectable = cards.length;
+    if (this.playedCards.has(CardName.MARS_MATHS) && !this.playedCards.has(CardName.LUNA_PROJECT_OFFICE)) {
+      selectable = Math.min(selectable, 4);
+    }
+    return selectable;
+  }
+
+  private createResearchPurchaseInput(cards: ReadonlyArray<IProjectCard>, selectable: number): PlayerInput {
+    const action = new ChooseCards(this, cards, {
+      paying: true,
+      keepMax: selectable,
+      onCardsSelected: () => this.beginResearchPurchaseUndo(cards.length),
+      onCardsKept: (logStartIndex, logEndIndex) => this.finishResearchPurchaseUndo(logStartIndex, logEndIndex),
+    }).execute();
+    const saved = action.cb;
+    action.cb = ((response) => {
+      saved(response);
+      this.game.playerIsFinishedWithResearchPhase(this);
+      return undefined;
+    });
+    return action;
+  }
+
+  private beginResearchPurchaseUndo(cardCount: number): void {
+    this.researchPurchaseUndo = undefined;
+    this.researchPurchaseUndo = {
+      playerSnapshot: this.serialize(),
+      cardCount,
+      cardsInHandStartIndex: this.cardsInHand.length,
+      projectDiscardStartIndex: this.game.projectDeck.discardPile.length,
+      generation: this.game.generation,
+    };
+  }
+
+  private finishResearchPurchaseUndo(logStartIndex: number, logEndIndex: number): void {
+    if (this.researchPurchaseUndo !== undefined) {
+      this.researchPurchaseUndo.logStartIndex = logStartIndex;
+      this.researchPurchaseUndo.logEndIndex = logEndIndex;
     }
   }
 
@@ -1980,6 +2075,7 @@ export class Player implements IPlayer {
       ceoCardsInHand: Array.from(this.ceoCardsInHand).map(toName),
       playedCards: this.playedCards.serialize(),
       draftedCards: this.draftedCards.map(toName),
+      researchPurchaseUndo: this.researchPurchaseUndo,
       cardCost: this.cardCost,
       needsToDraft: this.needsToDraft,
       cardDiscount: this.colonies.cardDiscount,
@@ -2111,6 +2207,7 @@ export class Player implements IPlayer {
     player.ceoCardsInHand = new Set(ceosFromJSON(d.ceoCardsInHand));
     player.playedCards.deserialize(d.playedCards);
     player.draftedCards = cardsFromJSON(d.draftedCards);
+    player.researchPurchaseUndo = d.researchPurchaseUndo;
     player.autopass = d.autoPass ?? false;
     player.preservationProgram = d.preservationProgram ?? false;
 

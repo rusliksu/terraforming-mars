@@ -18,6 +18,25 @@ import {testGame} from '../../TestGame';
 import {hasRevealedHiddenInformation} from '../../../src/server/game/hasRevealedHiddenInformation';
 
 describe('ActionReplay', () => {
+  it('starts a fresh journal after an earlier prompt could not be replayed', () => {
+    const [rawGame, player, otherPlayer] = testGame(2, {skipInitialCardSelection: true});
+    const game = rawGame as Game;
+    game.generation = 2;
+    game.phase = Phase.ACTION;
+    game.activePlayer = player;
+    player.preludeCardsInHand.push(new ProjectEden());
+    player.cardsInHand.push(new ArcticAlgae(), new BiomassCombustors(), new Comet());
+    player.takeAction(false);
+
+    const input: InputResponse = {type: 'card', cards: [CardName.PROJECT_EDEN]};
+    expect(prepareActionReplayEntry(game, player.id, input)).not.eq(undefined);
+    expect(prepareActionReplayEntry(game, otherPlayer.id, {type: 'option'})).eq(undefined);
+    expect(game.actionReplayState).eq(null);
+
+    expect(prepareActionReplayEntry(game, player.id, input)).not.eq(undefined);
+    expect(game.actionReplayState).not.eq(null);
+  });
+
   it('returns Project Eden to its effect-choice screen without undoing the prelude', () => {
     const [rawGame, player] = testGame(2, {skipInitialCardSelection: true});
     const game = rawGame as Game;

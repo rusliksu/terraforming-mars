@@ -28,22 +28,22 @@
                           :onsave="onsavePlayerInput"
                           :showsave="true"
                           :showtitle="true" />
-    <div v-if="showUndoFooter()" class="wf-options wf-undo-controls">
-      <label v-if="showUndoAction()" class="form-radio">
-        <input v-model="undoChoice" type="radio" :name="undoRadioElementName" value="action">
-        <i class="form-icon"></i>
-        <span v-i18n>Undo action</span>
-      </label>
-      <label v-if="showStepBack()" class="form-radio">
-        <input v-model="undoChoice" type="radio" :name="undoRadioElementName" value="step">
-        <i class="form-icon"></i>
-        <span v-i18n>Undo one step (experimental)</span>
-      </label>
-      <div v-if="undoChoice" style="margin: 5px 30px 10px" class="wf-action">
-        <AppButton title="Undo" type="submit" size="normal" @click="undoSelected" />
-      </div>
+  </div>
+  <div v-if="showUndoFooter()" class="wf-options wf-undo-controls">
+    <label v-if="showUndoAction()" class="form-radio">
+      <input v-model="undoChoice" type="radio" :name="undoRadioElementName" value="action">
+      <i class="form-icon"></i>
+      <span v-i18n>Undo action</span>
+    </label>
+    <label v-if="showStepBack()" class="form-radio">
+      <input v-model="undoChoice" type="radio" :name="undoRadioElementName" value="step">
+      <i class="form-icon"></i>
+      <span v-i18n>Undo one step (experimental)</span>
+    </label>
+    <div v-if="undoChoice" style="margin: 5px 30px 10px" class="wf-action">
+      <AppButton title="Undo" type="submit" size="normal" @click="undoSelected" />
     </div>
-    </div>
+  </div>
   </div>
 </template>
 
@@ -370,7 +370,7 @@ export default defineComponent({
       const enabled = this.playerView.players.length === 1 ||
         this.playerView.game.gameOptions?.undoOption === true ||
         this.playerView.game.gameOptions?.undoStepOption === true;
-      return supportedPhase && enabled && this.waitingfor !== undefined && this.playerView.thisPlayer?.isActive === true;
+      return supportedPhase && enabled && this.playerView.thisPlayer?.isActive === true;
     },
     showUndoFooter(): boolean {
       return !this.isMainActionPrompt() && (this.showUndoAction() || this.showStepBack());

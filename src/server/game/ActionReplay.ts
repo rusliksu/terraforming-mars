@@ -47,7 +47,7 @@ export function prepareActionReplayEntry(
     game.actionReplayState = undefined;
   }
   if (game.actionReplayState === null) {
-    return undefined;
+    game.actionReplayState = undefined;
   }
 
   const currentPromptFingerprint = promptFingerprintForPlayer(game, actorId);

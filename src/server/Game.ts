@@ -97,6 +97,9 @@ export function setGameLog(f: () => Array<LogMessage>) {
 function deserializeGameOptions(d: SerializedGame): GameOptions {
   const serializedOptions = (d.gameOptions ?? {}) as Partial<GameOptions>;
   const gameOptions = {...DEFAULT_GAME_OPTIONS, ...serializedOptions};
+  if (gameOptions.undoStepOption) {
+    gameOptions.undoOption = true;
+  }
   const hasTurnBasedGameOption = Object.prototype.hasOwnProperty.call(serializedOptions, 'turnBasedGame');
   if (!hasTurnBasedGameOption && d.players.some((player) => player.telegramID !== undefined && player.telegramID.trim() !== '')) {
     gameOptions.turnBasedGame = true;

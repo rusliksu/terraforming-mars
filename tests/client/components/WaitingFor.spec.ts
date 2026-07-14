@@ -269,6 +269,31 @@ describe('WaitingFor', () => {
     expect(wrapper.text()).to.not.include('Undo one step (experimental)');
   });
 
+  it('shows action undo while the active player waits for another player', () => {
+    const wrapper = mountWaitingFor({
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {
+          'PlayerInputFactory': true,
+          'AppButton': {props: ['title'], template: '<button>{{ title }}</button>'},
+        },
+      },
+      props: {
+        playerView: {
+          ...playerView,
+          thisPlayer: {...thisPlayer, isActive: true},
+          game: {...playerView.game, phase: Phase.ACTION, gameOptions: {undoOption: true, undoStepOption: true}},
+        } as PlayerViewModel,
+        waitingfor: undefined,
+      },
+    });
+
+    expect(wrapper.find('.wf-undo-controls').exists()).to.be.true;
+    expect(wrapper.text()).to.include('Undo action');
+    expect(wrapper.text()).to.not.include('Undo one step (experimental)');
+  });
+
   it('keeps undo choices inside the main action list', () => {
     const wrapper = mountWaitingFor({
       ...globalConfig,

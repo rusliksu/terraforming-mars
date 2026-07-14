@@ -136,13 +136,12 @@ describe('LogPanel', () => {
     expect(fetchCalls[0]).does.not.include('id=s-spectatorid');
   });
 
-  it('filters visible logs by selected player without requesting another view', async () => {
+  it('includes the current player\'s private draft logs in their filter without requesting another view', async () => {
     const blue = fakePublicPlayerModel({color: 'blue', id: 'p-blue-id' as any, name: 'Blue'});
-    const red = fakePublicPlayerModel({color: 'red', id: 'p-red-id' as any, name: 'Red'});
     const wrapper = shallowMount(LogPanel, {
       ...globalConfig,
       props: {
-        viewModel: fakeViewModel({players: [blue, red]}),
+        viewModel: fakeViewModel({players: [blue, fakePublicPlayerModel({color: 'red', name: 'Red'})]}),
         color: 'blue',
       },
     });
@@ -150,12 +149,12 @@ describe('LogPanel', () => {
     const blueMessage = new LogMessage(LogMessageType.DEFAULT, '${0} played a card', [
       {type: LogMessageDataType.PLAYER, value: 'blue'},
     ]);
-    const redMessage = new LogMessage(LogMessageType.DEFAULT, 'You selected cards', [], 'p-red-id' as any);
-    (wrapper.vm as any).messages = [generation, blueMessage, redMessage];
+    const ownDraftMessage = new LogMessage(LogMessageType.DEFAULT, 'You drafted cards', [], 'p-blue-id' as any);
+    (wrapper.vm as any).messages = [generation, blueMessage, ownDraftMessage];
 
-    await wrapper.find('[data-test="log-player-filter-red"]').trigger('click');
+    await wrapper.find('[data-test="log-player-filter-blue"]').trigger('click');
 
-    expect((wrapper.vm as any).filteredMessages).deep.eq([generation, redMessage]);
+    expect((wrapper.vm as any).filteredMessages).deep.eq([generation, blueMessage, ownDraftMessage]);
     expect(fetchCalls).has.length(1);
   });
 

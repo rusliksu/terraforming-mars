@@ -313,7 +313,10 @@ export default defineComponent({
       return this.isMainActionPrompt() && this.showStepBack();
     },
     playerinputWithStepBack(): PlayerInputModel {
-      const playerinput = this.waitingfor!;
+      const playerinput = this.waitingfor;
+      if (playerinput === undefined) {
+        throw new Error('Missing player input');
+      }
       if (!this.showStepBackOption() || playerinput.type !== 'or') {
         return playerinput;
       }

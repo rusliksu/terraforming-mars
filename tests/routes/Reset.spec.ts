@@ -73,12 +73,12 @@ describe('Reset', () => {
     const currentPlayer = TestPlayer.BLACK.newPlayer();
     const currentOpponent = TestPlayer.RED.newPlayer();
     const currentGame = Game.newInstance('game-id', [currentPlayer, currentOpponent], currentPlayer, 'spectatorid', {undoStepOption: true});
-    currentGame.gameOptions.undoOption = false;
+    (currentGame.gameOptions as {undoOption: boolean}).undoOption = false;
 
     const reloadedPlayer = TestPlayer.BLACK.newPlayer();
     const reloadedOpponent = TestPlayer.RED.newPlayer();
     const reloadedGame = Game.newInstance('game-id', [reloadedPlayer, reloadedOpponent], reloadedPlayer, 'spectatorid', {undoStepOption: true});
-    reloadedGame.gameOptions.undoOption = false;
+    (reloadedGame.gameOptions as {undoOption: boolean}).undoOption = false;
 
     useReloadingGameLoader(scaffolding, currentGame, reloadedGame);
     scaffolding.url = '/reset?id=' + currentPlayer.id;
@@ -99,6 +99,34 @@ describe('Reset', () => {
     await scaffolding.get(Reset.INSTANCE, res);
 
     expect(res.content).eq('Bad request: Undo one step requires the experimental game option to be enabled');
+  });
+
+  it('restores a completed research purchase while waiting for other players', async () => {
+    const [rawGame, player] = testGame(2, {skipInitialCardSelection: true, undoStepOption: true, draftVariant: true});
+    const game = rawGame as Game;
+    game.generation = 2;
+    game.phase = Phase.RESEARCH;
+    player.megaCredits = 10;
+    player.draftedCards = [new ArcticAlgae(), new BiomassCombustors()];
+    player.runResearchPhase();
+    player.process({type: 'card', cards: [CardName.ARCTIC_ALGAE]});
+
+    expect(player.cardsInHand.map((card) => card.name)).deep.eq([CardName.ARCTIC_ALGAE]);
+    expect(player.canUndoResearchPurchase()).is.true;
+    await scaffolding.ctx.gameLoader.add(game);
+    scaffolding.url = `/reset?id=${player.id}&mode=research`;
+
+    await scaffolding.get(Reset.INSTANCE, res);
+
+    expect(res.statusCode, res.content).eq(200);
+    const model: PlayerViewModel = JSON.parse(res.content);
+    expect(model.waitingFor?.type).eq('card');
+    expect(player.cardsInHand).is.empty;
+    expect(model.waitingFor?.type === 'card' ? model.waitingFor.cards.map((card) => card.name) : []).deep.eq([
+      CardName.ARCTIC_ALGAE,
+      CardName.BIOMASS_COMBUSTORS,
+    ]);
+    expect(game.gameLog.some((message) => message.canceled === true)).is.true;
   });
 
   it('warns before reloading an action that revealed deck information', async () => {

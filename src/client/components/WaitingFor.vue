@@ -11,6 +11,9 @@
       (⌛ <span v-for="color in playersWaitingFor" class="log-player" :class="playerColorClass(color, 'bg')" :key="color">{{ getPlayerName(color) }}</span>)
     </template>
   </template>
+  <div v-if="showResearchPurchaseUndo()" class="wf-options wf-undo-controls">
+    <AppButton title="Undo card purchase (experimental)" type="submit" size="normal" @click="undoResearchPurchase" />
+  </div>
   <div v-if="waitingfor !== undefined" class="wf-root">
     <template v-if="preferences().experimental_ui && playerView.game.phase === Phase.ACTION && playerView.thisPlayer?.isActive !== true">
       <input type="checkbox" name="suspend" id="suspend-checkbox" v-model="suspend" @change="updateSuspend">
@@ -158,6 +161,11 @@ export default defineComponent({
     stepBack() {
       this.fetchPlayerInput(
         paths.RESET + '?id=' + this.playerView.id + '&mode=step',
+        {method: 'GET'});
+    },
+    undoResearchPurchase() {
+      this.fetchPlayerInput(
+        paths.RESET + '?id=' + this.playerView.id + '&mode=research',
         {method: 'GET'});
     },
     reset() {
@@ -343,6 +351,9 @@ export default defineComponent({
     },
     showRefresh(): boolean {
       return this.suspend === true && this.savedPlayerView !== undefined;
+    },
+    showResearchPurchaseUndo(): boolean {
+      return this.playerView.canUndoResearchPurchase === true && this.playerView.game.phase === Phase.RESEARCH;
     },
     showStepBack(): boolean {
       return this.playerView.game.gameOptions?.undoStepOption === true &&

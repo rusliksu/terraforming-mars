@@ -103,6 +103,7 @@ export class Server {
         game.actionReplayState !== null &&
         game.actionReplayState.entries.length > 0 &&
         game.actionReplayState.currentActorId === player.id,
+      canUndoResearchPurchase: player.canUndoResearchPurchase(),
       cardsInHand: cardsToModel(player, player.cardsInHand, {showCalculatedCost: true}),
       ceoCardsInHand: cardsToModel(player, Array.from(player.ceoCardsInHand)),
       dealtCorporationCards: cardsToModel(player, player.dealtCorporationCards),

@@ -9,6 +9,7 @@ import {DiscordId} from './server/auth/discord';
 import {UnderworldPlayerData} from '../common/underworld/UnderworldPlayerData';
 import {DeltaProjectPlayerModel} from '../common/models/DeltaProjectPlayerModel';
 import {EarlyGameStats} from './game/EarlyGameStats';
+import type {ResearchPurchaseUndoState} from './game/ResearchPurchaseUndo';
 
 interface DeprecatedFields {
 }
@@ -72,6 +73,7 @@ export interface SerializedPlayer extends DeprecatedFields{
   preludeCardsInHand: Array<CardName>;
   preservationProgram: boolean;
   removedFromPlayCards: Array<CardName>;
+  researchPurchaseUndo?: ResearchPurchaseUndoState;
   removingPlayers: Array<PlayerId>;
   scienceTagCount: number;
   standardProjectsThisGeneration: Array<CardName>;

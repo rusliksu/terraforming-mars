@@ -1072,6 +1072,12 @@ export class Game implements IGame, Logger {
     return this.researchedPlayers.has(player.id);
   }
 
+  public reopenResearchPhaseFor(player: IPlayer): void {
+    if (!this.researchedPlayers.delete(player.id)) {
+      throw new Error('Player has not completed research');
+    }
+  }
+
   public playerIsFinishedWithResearchPhase(player: IPlayer): void {
     this.deferredActions.runAllFor(player, () => {
       this.researchedPlayers.add(player.id);

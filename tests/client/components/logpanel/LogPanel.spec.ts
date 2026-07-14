@@ -159,6 +159,21 @@ describe('LogPanel', () => {
     expect(fetchCalls).has.length(1);
   });
 
+  it('colors each player filter with that player\'s color', async () => {
+    const blue = fakePublicPlayerModel({color: 'blue', id: 'p-blue-id' as any, name: 'Blue'});
+    const red = fakePublicPlayerModel({color: 'red', id: 'p-red-id' as any, name: 'Red'});
+    const wrapper = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {
+        viewModel: fakeViewModel({players: [blue, red]}),
+        color: 'blue',
+      },
+    });
+
+    expect(wrapper.find('[data-test="log-player-filter-blue"]').classes()).contains('player_bg_color_blue');
+    expect(wrapper.find('[data-test="log-player-filter-red"]').classes()).contains('player_bg_color_red');
+  });
+
   it('sticks to bottom when the log list grows after render', async () => {
     const fakeList = {} as HTMLUListElement;
     let fakeScrollHeight = 480;

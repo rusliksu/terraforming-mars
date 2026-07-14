@@ -17,8 +17,8 @@ describe('ServerModel', () => {
   let player2: TestPlayer;
   let game: IGame;
 
-  function createTestGame(showOtherPlayersVP: boolean) {
-    [game, player, player2] = testGame(2, {showOtherPlayersVP});
+  function createTestGame(showOtherPlayersVP: boolean, undoStepOption = false) {
+    [game, player, player2] = testGame(2, {showOtherPlayersVP, undoStepOption});
     // Claim milestone
     const milestone = new Mayor();
 
@@ -169,7 +169,7 @@ describe('ServerModel', () => {
   });
 
   it('exposes step-back capability only to the journal actor', () => {
-    createTestGame(false);
+    createTestGame(false, true);
     game.actionReplayState = {
       rootSnapshot: game.serialize(),
       entries: [{

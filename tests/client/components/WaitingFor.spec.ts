@@ -300,8 +300,7 @@ describe('WaitingFor', () => {
     expect(wrapper.text()).to.include('Undo action');
   });
 
-  it('shows experimental step back only when the server can replay a step', async () => {
-    PreferencesManager.INSTANCE.set('experimental_ui', true);
+  it('shows experimental one-step undo only when the game option and replay are available', async () => {
     const wrapper = mountWaitingFor({
       ...globalConfig,
       global: {
@@ -316,7 +315,7 @@ describe('WaitingFor', () => {
           ...playerView,
           canStepBack: true,
           thisPlayer: {...thisPlayer, isActive: true},
-          game: {...playerView.game, gameOptions: {undoOption: true}},
+          game: {...playerView.game, gameOptions: {undoOption: true, undoStepOption: true}},
         } as PlayerViewModel,
         waitingfor: {
           type: 'space',
@@ -329,13 +328,13 @@ describe('WaitingFor', () => {
     const requests: Array<string> = [];
     wrapper.vm.fetchPlayerInput = ((url: string) => requests.push(url)) as typeof wrapper.vm.fetchPlayerInput;
 
-    expect(wrapper.text()).to.include('Back one step (experimental)');
-    const stepButton = wrapper.findAll('button').find((button) => button.text().includes('Back one step'));
+    expect(wrapper.text()).to.include('Undo one step (experimental)');
+    const stepButton = wrapper.findAll('button').find((button) => button.text().includes('Undo one step'));
     await stepButton!.trigger('click');
     wrapper.vm.onsave({type: 'option'});
     expect(requests).deep.eq([
       'reset?id=p-player-id&mode=step',
-      'player/input?id=p-player-id&experimentalStepUndo=true',
+      'player/input?id=p-player-id',
     ]);
   });
 

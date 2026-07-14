@@ -151,6 +151,7 @@ export class ApiQuickGame extends Handler {
       randomFirstPlayer: settings.randomFirstPlayer ?? true,
       clonedGamedId: undefined,
       undoOption: settings.undoOption ?? true,
+      undoStepOption: settings.undoStepOption ?? false,
       showTimers: settings.showTimers ?? true,
       fastModeOption: settings.fastModeOption ?? true,
       showOtherPlayersVP: settings.showOtherPlayersVP ?? true,
@@ -295,6 +296,7 @@ export class ApiQuickGame extends Handler {
         twoCorpsVariant: gameReq.twoCorpsVariant,
         underworldExpansion: gameReq.expansions.underworld,
         undoOption: gameReq.undoOption,
+        undoStepOption: gameReq.undoStepOption === true,
         venusNextExtension: gameReq.expansions.venus,
       };
 

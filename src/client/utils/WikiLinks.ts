@@ -1,6 +1,7 @@
 import {GameModule} from '@/common/cards/GameModule';
 
 export const WIKI = 'https://github.com/terraforming-mars/terraforming-mars/wiki';
+const CUSTOM_DOCS = 'https://github.com/rusliksu/terraforming-mars/blob/main/docs/variants';
 
 export const RULEBOOK_URLS: Record<GameModule, string> = {
   base: `${WIKI}/Rulebooks`,
@@ -30,6 +31,7 @@ export const WIKI_URLS = {
   worldGovernmentTerraforming: `${WIKI}/Variants#world-government-terraforming`,
   trSoloMode: `${WIKI}/Variants#tr-solo-mode`,
   allowUndo: `${WIKI}/Variants#allow-undo`,
+  undoOneStep: `${CUSTOM_DOCS}/undo.md#undo-one-step-experimental`,
   merger: `${WIKI}/Variants#Merger`,
   randomizeBoardTiles: `${WIKI}/Variants#randomize-board-tiles`,
   setPredefinedGame: `${WIKI}/Variants#set-predefined-game`,

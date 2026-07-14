@@ -11,6 +11,8 @@ export interface ActionInputEntry {
   actorId: PlayerId;
   promptFingerprint: string;
   input: InputResponse;
+  /** Treat an option choice and the immediately following tile placement as one logical step. */
+  continuesThroughNextInput?: boolean;
 }
 
 export interface ActionReplayState {
@@ -92,6 +94,10 @@ export function recordAcceptedActionReplayEntry(game: IGame, entry: ActionInputE
     game.actionReplayState = null;
     return;
   }
+  const nextPrompt = actor.getWaitingFor()?.toModel(actor);
+  if (entry.input.type === 'or' && nextPrompt?.type === 'space') {
+    entry.continuesThroughNextInput = true;
+  }
   state.entries.push(entry);
   state.currentActorId = entry.actorId;
   state.currentPromptFingerprint = promptFingerprintForPlayer(game, entry.actorId);
@@ -112,8 +118,12 @@ export function stepBackActionInput(current: IGame, actorId: PlayerId): Game {
     throw new ActionReplayMismatch('The action can no longer be replayed deterministically');
   }
 
-  const removedEntry = state.entries[state.entries.length - 1];
-  const remainingEntries = state.entries.slice(0, -1);
+  let removeFromIndex = state.entries.length - 1;
+  if (removeFromIndex > 0 && state.entries[removeFromIndex - 1].continuesThroughNextInput === true) {
+    removeFromIndex -= 1;
+  }
+  const removedEntry = state.entries[removeFromIndex];
+  const remainingEntries = state.entries.slice(0, removeFromIndex);
   const replayed = replayActionInputs(state.rootSnapshot, remainingEntries);
   const predecessorFingerprint = promptFingerprintForPlayer(replayed, removedEntry.actorId);
   if (predecessorFingerprint !== removedEntry.promptFingerprint) {

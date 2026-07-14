@@ -11,11 +11,11 @@ There are two separate operations:
    active-player prompt, not only the main `Take action` screen. If the action
    revealed hidden information, the UI warns the player and requires explicit
    confirmation, but the server does not silently forbid the undo.
-2. **Back one step (experimental)** removes only the latest accepted prompt
-   response inside the current root action. It is shown only with experimental
-   UI enabled. For Project Eden, placing the first city and then pressing Back
-   returns to the city-placement screen, while keeping the earlier choice to
-   play Project Eden and all earlier completed parts of that prelude.
+2. **Undo one step (experimental)** removes the latest logical choice inside
+   the current root action. It is enabled as a separate game option. For
+   Project Eden, choosing and placing the first city counts as one step, so undo
+   returns to the effect-choice screen while keeping the earlier choice to play
+   Project Eden and all earlier completed parts of that prelude.
 
 The old extra confirmation screen for card selection is out of scope and must
 not return.
@@ -110,7 +110,7 @@ card-selection confirmation screen.
 - [x] Make stable Undo action available on all supported active-player prompts.
 - [x] Replace the hidden-information hard block with a structured
       confirmation-required response and an explicit confirmed request.
-- [x] Show `Back one step (experimental)` only when `experimental_ui` is enabled
+- [x] Show `Undo one step (experimental)` only when its game option is enabled
       and the server reports a replayable previous step.
 - [x] Validate Project Eden tile placement, Hi-Tech Lab after final card choice,
       failed prompt fingerprints, and replay divergence.

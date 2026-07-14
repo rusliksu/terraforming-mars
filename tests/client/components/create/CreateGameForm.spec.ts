@@ -186,6 +186,19 @@ describe('CreateGameForm', () => {
     expect(payload.privateHands).eq(false);
   });
 
+  it('serializes action and one-step undo as separate game options', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    expect(wrapper.text()).to.contain('Undo action');
+    expect(wrapper.text()).to.contain('Undo one step (experimental)');
+
+    await wrapper.setData({undoOption: false, undoStepOption: true});
+    const payload = JSON.parse(await (wrapper.vm as any).serializeSettings());
+    expect(payload.undoOption).eq(false);
+    expect(payload.undoStepOption).eq(true);
+  });
+
   it('serializes one-way 10-card initial draft setting', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,

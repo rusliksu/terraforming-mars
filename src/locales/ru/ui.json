@@ -171,6 +171,10 @@
     "Continue without buying any project cards?": "Продолжить без покупки карт проектов?",
     "Send players their links below. As game administrator pick your link to use.": "Отправьте каждому из игроков соответствующую ссылку ниже.",
     "Allow undo": "Разрешить отмену хода",
+    "Undo action": "Отмена действия",
+    "Undo one step (experimental)": "Отмена одного шага (экспериментально)",
+    "undo action": "отмена действия",
+    "undo one step": "отмена одного шага",
     "Drafted Cards": "Отложенные на драфте карты",
 
     "City: 1 VP per adjacent greenery": "Город: 1 ПО владельцу за каждое смежное озеленение",

@@ -21,7 +21,7 @@
     </template>
     <div v-if="showUndoAction() || showStepBack()" class="wf-action-controls">
       <AppButton v-if="showUndoAction()" @click="undoAction" size="small" title="Undo action" />
-      <AppButton v-if="showStepBack()" @click="stepBack" size="small" title="Back one step (experimental)" />
+      <AppButton v-if="showStepBack()" @click="stepBack" size="small" title="Undo one step (experimental)" />
     </div>
     <PlayerInputFactory :players="playerView.players"
                           :playerView="playerView"
@@ -126,9 +126,8 @@ export default defineComponent({
       }
     },
     onsave(out: InputResponse) {
-      const experimentalStepUndo = getPreferences().experimental_ui ? '&experimentalStepUndo=true' : '';
       this.fetchPlayerInput(
-        paths.PLAYER_INPUT + '?id=' + this.playerView.id + experimentalStepUndo,
+        paths.PLAYER_INPUT + '?id=' + this.playerView.id,
         {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
@@ -329,7 +328,7 @@ export default defineComponent({
         (!this.isMainActionPrompt() || this.undoLastActionIndex() !== undefined);
     },
     showStepBack(): boolean {
-      return getPreferences().experimental_ui &&
+      return this.playerView.game.gameOptions?.undoStepOption === true &&
         this.playerView.canStepBack === true &&
         this.waitingfor !== undefined &&
         this.playerView.thisPlayer?.isActive === true;

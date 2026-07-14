@@ -59,6 +59,7 @@ export interface NewGameConfig {
 
   // Configuration
   undoOption: boolean;
+  undoStepOption?: boolean;
   showTimers: boolean;
   fastModeOption: boolean;
   showOtherPlayersVP: boolean;

@@ -18,7 +18,7 @@ import {testGame} from '../../TestGame';
 import {hasRevealedHiddenInformation} from '../../../src/server/game/hasRevealedHiddenInformation';
 
 describe('ActionReplay', () => {
-  it('returns Project Eden to the city-placement screen without undoing the prelude', () => {
+  it('returns Project Eden to its effect-choice screen without undoing the prelude', () => {
     const [rawGame, player] = testGame(2, {skipInitialCardSelection: true});
     const game = rawGame as Game;
     game.generation = 2;
@@ -68,12 +68,15 @@ describe('ActionReplay', () => {
     const replayedPlayer = replayed.getPlayerById(player.id);
     const replayedPrompt = replayedPlayer.getWaitingFor()?.toModel(replayedPlayer);
 
-    expect(replayedPrompt?.type).eq('space');
-    expect(replayedPrompt?.title).eq('Select space for city tile');
+    expect(replayedPrompt?.type).eq('or');
+    if (replayedPrompt?.type !== 'or') {
+      throw new Error('Expected Project Eden effect-choice prompt');
+    }
+    expect(replayedPrompt.options.map((option) => option.title)).to.include('Place a city');
     expect(replayedPlayer.playedCards.has(CardName.PROJECT_EDEN)).is.true;
     expect(replayed.board.spaces.some((space) => space.player?.id === player.id)).is.false;
     expect(replayed.simulationMode).is.false;
-    expect(replayed.actionReplayState?.entries).length(2);
+    expect(replayed.actionReplayState?.entries).length(1);
   });
 
   it('returns Hi-Tech Lab to the same revealed-card choice after a card was selected', () => {

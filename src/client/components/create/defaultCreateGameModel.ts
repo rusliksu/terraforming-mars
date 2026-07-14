@@ -51,6 +51,7 @@ export function defaultCreateGameModel(): CreateGameModel {
     aresExtremeVariant: false,
     politicalAgendasExtension: 'Standard',
     undoOption: false,
+    undoStepOption: false,
     showTimers: true,
     fastModeOption: false,
     removeNegativeGlobalEventsOption: false,

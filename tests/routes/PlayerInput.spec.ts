@@ -175,7 +175,7 @@ describe('PlayerInput', () => {
   });
 
   it('records an accepted root input in the experimental replay journal', async () => {
-    const [rawGame, player] = testGame(2, {skipInitialCardSelection: true, undoOption: true});
+    const [rawGame, player] = testGame(2, {skipInitialCardSelection: true, undoOption: true, undoStepOption: true});
     const game = rawGame as Game;
     game.generation = 2;
     game.phase = Phase.ACTION;
@@ -184,7 +184,7 @@ describe('PlayerInput', () => {
     player.cardsInHand.push(new ArcticAlgae(), new BiomassCombustors(), new Comet());
     player.takeAction(false);
     await scaffolding.ctx.gameLoader.add(game);
-    scaffolding.url = '/player/input?id=' + player.id + '&experimentalStepUndo=true';
+    scaffolding.url = '/player/input?id=' + player.id;
 
     const post = scaffolding.post(PlayerInput.INSTANCE, res);
     const emit = Promise.resolve().then(() => {
@@ -200,7 +200,7 @@ describe('PlayerInput', () => {
   });
 
   it('keeps the final Hi-Tech Lab selection replayable after the action saves', async () => {
-    const [rawGame, player] = testGame(2, {skipInitialCardSelection: true, undoOption: true});
+    const [rawGame, player] = testGame(2, {skipInitialCardSelection: true, undoOption: true, undoStepOption: true});
     const game = rawGame as Game;
     game.generation = 2;
     game.phase = Phase.ACTION;
@@ -215,7 +215,7 @@ describe('PlayerInput', () => {
       const localRes = new MockResponse();
       const localScaffolding = new RouteTestScaffolding(localReq);
       localScaffolding.ctx.gameLoader = scaffolding.ctx.gameLoader;
-      localScaffolding.url = '/player/input?id=' + player.id + '&experimentalStepUndo=true';
+      localScaffolding.url = '/player/input?id=' + player.id;
       const post = localScaffolding.post(PlayerInput.INSTANCE, localRes);
       const emit = Promise.resolve().then(() => {
         localReq.emitter.emit('data', JSON.stringify(input));

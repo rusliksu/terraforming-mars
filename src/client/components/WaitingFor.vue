@@ -19,14 +19,10 @@
       </label>
       <div v-if="showRefresh()">Refresh<span class="reset"></span></div>
     </template>
-    <div v-if="showUndoAction() || showStepBack()" class="wf-action-controls">
-      <AppButton v-if="showUndoAction()" @click="undoAction" size="small" title="Undo action" />
-      <AppButton v-if="showStepBack()" @click="stepBack" size="small" title="Undo one step (experimental)" />
-    </div>
     <PlayerInputFactory :players="playerView.players"
                           :playerView="playerView"
-                          :playerinput="waitingfor"
-                          :onsave="onsave"
+                          :playerinput="playerinputWithStepBack()"
+                          :onsave="onsavePlayerInput"
                           :showsave="true"
                           :showtitle="true" />
     </div>
@@ -54,7 +50,6 @@ import {InputResponse} from '@/common/inputs/InputResponse';
 import {INVALID_RUN_ID, UNDO_REVEALED_HIDDEN_INFORMATION, AppErrorResponse} from '@/common/app/AppErrorId';
 import {Color} from '@/common/Color';
 import {gameDocumentTitle} from '../utils/documentTitle';
-import AppButton from '@/client/components/common/AppButton.vue';
 import {setFaviconStatus, setFaviconTurnFrame} from '@/client/utils/favicon';
 
 let ui_update_timeout_id: number | undefined;
@@ -99,9 +94,6 @@ export default defineComponent({
       savedPlayerView: undefined,
     };
   },
-  components: {
-    AppButton,
-  },
   methods: {
     getPlayerName(color: Color): string {
       const player = this.playerView.players.find((p) => p.color === color);
@@ -134,23 +126,17 @@ export default defineComponent({
           body: JSON.stringify({runId: this.playerView.runId, ...out}),
         });
     },
-    reset() {
-      this.fetchPlayerInput(
-        paths.RESET + '?id=' + this.playerView.id,
-        {method: 'GET'});
-    },
     stepBack() {
       this.fetchPlayerInput(
         paths.RESET + '?id=' + this.playerView.id + '&mode=step',
         {method: 'GET'});
     },
-    undoAction() {
-      const undoIndex = this.undoLastActionIndex();
-      if (undoIndex !== undefined) {
-        this.onsave({type: 'or', index: undoIndex, response: {type: 'option'}});
+    onsavePlayerInput(out: InputResponse) {
+      if (this.isStepBackResponse(out)) {
+        this.stepBack();
         return;
       }
-      this.reset();
+      this.onsave(out);
     },
     fetchPlayerInput(url: string, options: RequestInit) {
       const root = vueRoot(this);
@@ -317,31 +303,32 @@ export default defineComponent({
     showRefresh(): boolean {
       return this.suspend === true && this.savedPlayerView !== undefined;
     },
-    showUndoAction(): boolean {
-      const phase = this.playerView.game.phase;
-      const supportedPhase = phase === Phase.ACTION || phase === Phase.PRELUDES || phase === Phase.CEOS;
-      const undoEnabled = this.playerView.players.length === 1 || this.playerView.game.gameOptions?.undoOption === true;
-      return supportedPhase &&
-        undoEnabled &&
-        this.waitingfor !== undefined &&
-        this.playerView.thisPlayer?.isActive === true &&
-        (!this.isMainActionPrompt() || this.undoLastActionIndex() !== undefined);
-    },
     showStepBack(): boolean {
       return this.playerView.game.gameOptions?.undoStepOption === true &&
         this.playerView.canStepBack === true &&
         this.waitingfor !== undefined &&
         this.playerView.thisPlayer?.isActive === true;
     },
-    undoLastActionIndex(): number | undefined {
-      if (!this.isMainActionPrompt() || this.waitingfor?.type !== 'or') {
-        return undefined;
+    showStepBackOption(): boolean {
+      return this.isMainActionPrompt() && this.showStepBack();
+    },
+    playerinputWithStepBack(): PlayerInputModel {
+      const playerinput = this.waitingfor!;
+      if (!this.showStepBackOption() || playerinput.type !== 'or') {
+        return playerinput;
       }
-      const index = this.waitingfor.options.findIndex((option) =>
-        option.type === 'option' &&
-        option.title === 'Undo last action' &&
-        option.buttonLabel === 'Undo');
-      return index === -1 ? undefined : index;
+      return {
+        ...playerinput,
+        options: [...playerinput.options, {type: 'option', title: 'Undo one step (experimental)', buttonLabel: 'Undo'}],
+      };
+    },
+    isStepBackResponse(out: InputResponse): boolean {
+      const playerinput = this.waitingfor;
+      return this.showStepBackOption() &&
+        playerinput?.type === 'or' &&
+        out.type === 'or' &&
+        out.index === playerinput.options.length &&
+        out.response.type === 'option';
     },
     isMainActionPrompt(): boolean {
       return this.waitingfor?.type === 'or' && this.waitingfor.buttonLabel === 'Take action';

@@ -272,4 +272,20 @@ describe('ApiGameLogs', () => {
     await scaffolding.get(ApiGameLogs.INSTANCE, res);
     expect(res.content).to.match(/^First player this generation is player-black/);
   });
+
+  it('omits canceled entries from the downloadable game-end log', async () => {
+    const player = TestPlayer.BLACK.newPlayer();
+    const game = Game.newInstance('game-id', [player], player, 'spectatorid');
+    game.phase = Phase.END;
+    game.gameLog.length = 0;
+    game.log('Kept entry');
+    game.log('Canceled entry');
+    game.gameLog[1].canceled = true;
+    await scaffolding.ctx.gameLoader.add(game);
+
+    scaffolding.url = '/api/game/logs?id=' + player.id + '&full';
+    await scaffolding.get(ApiGameLogs.INSTANCE, res);
+
+    expect(res.content).eq('Kept entry');
+  });
 });

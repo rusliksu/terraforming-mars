@@ -80,7 +80,8 @@ export class Reset extends Handler {
     if (stepMode) {
       try {
         const currentGame = player.game;
-        const replayedGame = stepBackActionInput(currentGame, player.id);
+        const stepBackResult = stepBackActionInput(currentGame, player.id);
+        const replayedGame = stepBackResult.game;
         const crossedHiddenInformation = hasRevealedHiddenInformation(
           currentGame,
           replayedGame,
@@ -92,7 +93,7 @@ export class Reset extends Handler {
           writeHiddenInformationWarning(res);
           return;
         }
-        appendCanceledLogMessages(currentGame, replayedGame);
+        appendCanceledLogMessages(currentGame, replayedGame, stepBackResult.canceledLogStartIndex);
         if (crossedHiddenInformation) {
           logIrreversibleUndo(replayedGame, player.id);
         }

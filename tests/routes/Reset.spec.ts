@@ -20,6 +20,7 @@ import {prepareActionReplayEntry, recordAcceptedActionReplayEntry} from '../../s
 import {HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED} from '../../src/common/undo';
 import {HiTechLab} from '../../src/server/cards/promo/HiTechLab';
 import {LogMessageType} from '../../src/common/logs/LogMessageType';
+import {appendCanceledLogMessages} from '../../src/server/logs/appendCanceledLogMessages';
 
 describe('Reset', () => {
   let scaffolding: RouteTestScaffolding;
@@ -144,6 +145,32 @@ describe('Reset', () => {
     expect(reloadedGame.gameAge).eq(2);
   });
 
+  it('uses the replay entry log boundary when replay recreated prior log entries', () => {
+    const currentPlayer = TestPlayer.BLACK.newPlayer();
+    const currentGame = Game.newInstance('game-id', [currentPlayer], currentPlayer, 'spectatorid');
+    currentGame.gameLog.length = 0;
+    currentGame.log('Before action');
+    currentGame.log('Played card');
+    currentGame.log('Placed tile');
+
+    const replayedPlayer = TestPlayer.BLACK.newPlayer();
+    const replayedGame = Game.newInstance('game-id', [replayedPlayer], replayedPlayer, 'spectatorid');
+    replayedGame.gameLog.length = 0;
+    replayedGame.log('Before action');
+    replayedGame.log('Played card');
+    replayedGame.log('Placed tile');
+
+    appendCanceledLogMessages(currentGame, replayedGame, 1);
+
+    expect(replayedGame.gameLog.map((message) => [message.message, message.canceled === true])).deep.eq([
+      ['Before action', false],
+      ['Played card', false],
+      ['Placed tile', false],
+      ['Played card', true],
+      ['Placed tile', true],
+    ]);
+  });
+
   it('steps Project Eden back to its effect-choice prompt', async () => {
     const [rawGame, player] = testGame(2, {skipInitialCardSelection: true, undoOption: true, undoStepOption: true});
     const game = rawGame as Game;
@@ -187,6 +214,7 @@ describe('Reset', () => {
     expect(model.game.undoCount).eq(1);
     const replayed = await scaffolding.ctx.gameLoader.getGame(player.id);
     expect(replayed?.board.spaces.some((space) => space.player?.id === player.id)).is.false;
+    expect(replayed?.gameLog.some((message) => message.canceled === true)).is.true;
   });
 
   it('allows reselecting a revealed Hi-Tech Lab card but warns before undoing the reveal', async () => {

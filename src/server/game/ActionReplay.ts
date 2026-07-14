@@ -11,6 +11,8 @@ export interface ActionInputEntry {
   actorId: PlayerId;
   promptFingerprint: string;
   input: InputResponse;
+  /** The first log entry that belongs to this input. */
+  logStartIndex?: number;
   /** Treat an option choice and the immediately following tile placement as one logical step. */
   continuesThroughNextInput?: boolean;
 }
@@ -77,6 +79,7 @@ export function prepareActionReplayEntry(
     actorId,
     promptFingerprint: currentPromptFingerprint,
     input: JSON.parse(JSON.stringify(input)) as InputResponse,
+    logStartIndex: game.gameLog.length,
   };
 }
 
@@ -103,7 +106,12 @@ export function recordAcceptedActionReplayEntry(game: IGame, entry: ActionInputE
   state.currentPromptFingerprint = promptFingerprintForPlayer(game, entry.actorId);
 }
 
-export function stepBackActionInput(current: IGame, actorId: PlayerId): Game {
+export type StepBackActionResult = {
+  game: Game;
+  canceledLogStartIndex: number | undefined;
+};
+
+export function stepBackActionInput(current: IGame, actorId: PlayerId): StepBackActionResult {
   const state = current.actionReplayState;
   if (state === undefined || state === null || state.entries.length === 0) {
     throw new ActionReplayMismatch('No replayable previous step');
@@ -138,7 +146,10 @@ export function stepBackActionInput(current: IGame, actorId: PlayerId): Game {
     currentPromptFingerprint: predecessorFingerprint,
     resetBeforeNextInput: false,
   };
-  return replayed;
+  return {
+    game: replayed,
+    canceledLogStartIndex: removedEntry.logStartIndex,
+  };
 }
 
 /**

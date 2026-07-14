@@ -62,12 +62,19 @@
     cursor: pointer;
     font: inherit;
     padding: 2px 12px;
-    &:hover {
+    &:hover:not(.log-player-filter--player) {
       background: #ccc;
       color: black;
     }
+    &.log-player-filter--player:hover {
+      filter: brightness(1.15);
+    }
   }
   .log-player-filter--selected {
+    border-color: #fff;
+    box-shadow: 0 0 0 1px #fff;
+  }
+  .log-player-filter--selected-all {
     background: #ccc;
     color: black;
   }

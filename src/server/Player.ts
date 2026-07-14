@@ -595,7 +595,12 @@ export class Player implements IPlayer {
 
     // Vermin hook (2 of 2)
     if (card.name === CardName.VERMIN) {
+      const wasVerminInEffect = this.game.verminInEffect;
       this.game.verminInEffect = card.resourceCount >= 10;
+      if (wasVerminInEffect === false && this.game.verminInEffect) {
+        this.game.log('${0}\'s ${1} now has 10 animals. All players lose 1 VP per city.', (b) =>
+          b.player(this).card(card));
+      }
     }
   }
 

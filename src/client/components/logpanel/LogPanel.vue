@@ -311,12 +311,11 @@ export default defineComponent({
       if (this.selectedPlayerColor === undefined) {
         return this.messages;
       }
-      const player = this.players.find((player) => player.color === this.selectedPlayerColor);
       return this.messages.filter((message) => {
         if (message.type === LogMessageType.NEW_GENERATION) {
           return true;
         }
-        if (player?.id !== undefined && message.playerId === player.id) {
+        if (this.selectedPlayerColor === this.color && this.id !== undefined && message.playerId === this.id) {
           return true;
         }
         return message.data.some((datum) => datum.type === LogMessageDataType.PLAYER && datum.value === this.selectedPlayerColor);

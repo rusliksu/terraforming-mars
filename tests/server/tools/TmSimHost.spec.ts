@@ -9,11 +9,13 @@ import {CrediCor} from '../../../src/server/cards/corporation/CrediCor';
 import {AlliedBanks} from '../../../src/server/cards/prelude/AlliedBanks';
 import {Game} from '../../../src/server/Game';
 import {Server} from '../../../src/server/models/ServerModel';
+import {SelectOption} from '../../../src/server/inputs/SelectOption';
 import {
   ForkBatchV1,
   TmSimHost,
   assertSimulationEnvironmentSafe,
   cardIndexReplayInputV1,
+  continuationPromptActorIdV1,
   promptFingerprintFromWaitingFor,
   redeterminizeSnapshotForObserver,
   sanitizeSnapshotForSimulation,
@@ -26,6 +28,18 @@ function findOptionIndex(waitingFor: unknown, pattern: RegExp): number {
 }
 
 describe('TmSimHost', () => {
+  it('finds a unique deferred prompt owner without changing the active player', () => {
+    const [rawGame, blue, red] = testGame(2, {skipInitialCardSelection: true});
+    const game = rawGame as Game;
+    game.phase = Phase.ACTION;
+    game.activePlayer = blue;
+    red.setWaitingFor(new SelectOption('Resolve deferred choice'));
+
+    expect(continuationPromptActorIdV1(game)).eq(red.id);
+    blue.setWaitingFor(new SelectOption('Take active choice'));
+    expect(continuationPromptActorIdV1(game)).eq(blue.id);
+  });
+
   it('maps an evidence card index to the current fair prompt', () => {
     expect(cardIndexReplayInputV1({
       type: 'card', cards: [{name: 'Alpha'}, {name: 'Beta'}, {name: 'Gamma'}],
@@ -203,6 +217,7 @@ describe('TmSimHost', () => {
     // Fair simulation must discard them instead of rejecting the snapshot.
     red.dealtCorporationCards.push(new CrediCor());
     red.dealtPreludeCards.push(new AlliedBanks());
+    red.dealtProjectCards.push(new DustSeals());
     blue.takeAction(false);
     const rootObserver = Server.getPlayerModel(blue);
     const sellIndex = findOptionIndex(rootObserver.waitingFor, /sell patents/i);
@@ -225,6 +240,7 @@ describe('TmSimHost', () => {
     expect(fairA.players.find((player) => player.id === blue.id)!.dealtCorporationCards)
       .contains('Tharsis Republic');
     expect(fairA.players.find((player) => player.id === red.id)!.dealtCorporationCards).deep.eq([]);
+    expect(fairA.players.find((player) => player.id === red.id)!.dealtProjectCards).deep.eq([]);
 
     const result = new TmSimHost().handle({
       kind: 'fork_batch_v1',

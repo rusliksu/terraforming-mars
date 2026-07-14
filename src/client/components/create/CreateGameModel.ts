@@ -66,4 +66,5 @@ export type CreateGameModel = {
   turnBasedGame: boolean;
   twoCorpsVariant: boolean;
   undoOption: boolean;
+  undoStepOption: boolean;
 }

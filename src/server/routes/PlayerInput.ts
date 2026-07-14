@@ -145,12 +145,11 @@ export class PlayerInput extends Handler {
           } else {
             inputSeq = advanceShadowInputSeq(player, promptInputSeq);
             const previousSaveGamePromise = player.game.saveGamePromise;
-            const experimentalStepUndo = ctx.url.searchParams.get('experimentalStepUndo') === 'true';
-            const replayEntry = experimentalStepUndo &&
-              (player.game.players.length === 1 || player.game.gameOptions.undoOption === true) ?
+            const stepUndoEnabled = player.game.gameOptions.undoStepOption === true;
+            const replayEntry = stepUndoEnabled ?
               prepareActionReplayEntry(player.game, player.id, entity) :
               undefined;
-            if (!experimentalStepUndo && player.game.actionReplayState !== undefined) {
+            if (!stepUndoEnabled && player.game.actionReplayState !== undefined) {
               player.game.actionReplayState = null;
             }
             try {

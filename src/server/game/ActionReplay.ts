@@ -11,6 +11,10 @@ export interface ActionInputEntry {
   actorId: PlayerId;
   promptFingerprint: string;
   input: InputResponse;
+  /** The first log entry that belongs to this input. */
+  logStartIndex?: number;
+  /** Treat an option choice and the immediately following tile placement as one logical step. */
+  continuesThroughNextInput?: boolean;
 }
 
 export interface ActionReplayState {
@@ -20,6 +24,8 @@ export interface ActionReplayState {
   currentPromptFingerprint: string;
   /** Preserve one-step undo at a newly saved root until the player submits the next input. */
   resetBeforeNextInput: boolean;
+  /** The first log entry canceled by the most recent step undo. */
+  lastStepBackLogStartIndex?: number;
 }
 
 export class ActionReplayMismatch extends Error {}
@@ -75,6 +81,7 @@ export function prepareActionReplayEntry(
     actorId,
     promptFingerprint: currentPromptFingerprint,
     input: JSON.parse(JSON.stringify(input)) as InputResponse,
+    logStartIndex: game.gameLog.length,
   };
 }
 
@@ -91,6 +98,10 @@ export function recordAcceptedActionReplayEntry(game: IGame, entry: ActionInputE
   if (state.entries.length >= MAX_ACTION_REPLAY_ENTRIES) {
     game.actionReplayState = null;
     return;
+  }
+  const nextPrompt = actor.getWaitingFor()?.toModel(actor);
+  if (entry.input.type === 'or' && nextPrompt?.type === 'space') {
+    entry.continuesThroughNextInput = true;
   }
   state.entries.push(entry);
   state.currentActorId = entry.actorId;
@@ -112,8 +123,12 @@ export function stepBackActionInput(current: IGame, actorId: PlayerId): Game {
     throw new ActionReplayMismatch('The action can no longer be replayed deterministically');
   }
 
-  const removedEntry = state.entries[state.entries.length - 1];
-  const remainingEntries = state.entries.slice(0, -1);
+  let removeFromIndex = state.entries.length - 1;
+  if (removeFromIndex > 0 && state.entries[removeFromIndex - 1].continuesThroughNextInput === true) {
+    removeFromIndex -= 1;
+  }
+  const removedEntry = state.entries[removeFromIndex];
+  const remainingEntries = state.entries.slice(0, removeFromIndex);
   const replayed = replayActionInputs(state.rootSnapshot, remainingEntries);
   const predecessorFingerprint = promptFingerprintForPlayer(replayed, removedEntry.actorId);
   if (predecessorFingerprint !== removedEntry.promptFingerprint) {
@@ -127,6 +142,7 @@ export function stepBackActionInput(current: IGame, actorId: PlayerId): Game {
     currentActorId: removedEntry.actorId,
     currentPromptFingerprint: predecessorFingerprint,
     resetBeforeNextInput: false,
+    lastStepBackLogStartIndex: removedEntry.logStartIndex,
   };
   return replayed;
 }

@@ -108,7 +108,7 @@ export class GameLogs {
       throw new Error('Game is not over');
     }
 
-    return game.gameLog.map((message) => Log.applyData(this.labelPrivateMessageOwner(message, game), (datum: LogMessageData) => {
+    return game.gameLog.filter((message) => message.canceled !== true).map((message) => Log.applyData(this.labelPrivateMessageOwner(message, game), (datum: LogMessageData) => {
       if (datum.type === undefined || datum.value === undefined) {
         return '';
       }

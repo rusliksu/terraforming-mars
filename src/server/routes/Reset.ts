@@ -49,8 +49,16 @@ export class Reset extends Handler {
       return;
     }
 
-    if (game.players.length > 1 && game.gameOptions.undoOption !== true) {
-      responses.badRequest(req, res, 'Cancel action requires undo to be enabled');
+    const stepMode = ctx.url.searchParams.get('mode') === 'step';
+    const undoEnabled = stepMode ?
+      game.gameOptions.undoStepOption === true :
+      game.players.length === 1 || game.gameOptions.undoOption === true;
+    if (!undoEnabled) {
+      responses.badRequest(
+        req,
+        res,
+        stepMode ? 'Undo one step requires the experimental game option to be enabled' : 'Cancel action requires undo to be enabled',
+      );
       return;
     }
 
@@ -69,7 +77,7 @@ export class Reset extends Handler {
       return;
     }
 
-    if (ctx.url.searchParams.get('mode') === 'step') {
+    if (stepMode) {
       try {
         const currentGame = player.game;
         const replayedGame = stepBackActionInput(currentGame, player.id);
@@ -84,7 +92,7 @@ export class Reset extends Handler {
           writeHiddenInformationWarning(res);
           return;
         }
-        appendCanceledLogMessages(currentGame, replayedGame);
+        appendCanceledLogMessages(currentGame, replayedGame, replayedGame.actionReplayState?.lastStepBackLogStartIndex);
         if (crossedHiddenInformation) {
           logIrreversibleUndo(replayedGame, player.id);
         }

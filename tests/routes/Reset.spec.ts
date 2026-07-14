@@ -72,13 +72,11 @@ describe('Reset', () => {
   it('allows action undo for an existing game with only experimental step undo enabled', async () => {
     const currentPlayer = TestPlayer.BLACK.newPlayer();
     const currentOpponent = TestPlayer.RED.newPlayer();
-    const currentGame = Game.newInstance('game-id', [currentPlayer, currentOpponent], currentPlayer, 'spectatorid', {undoStepOption: true});
-    currentGame.gameOptions.undoOption = false;
+    const currentGame = Game.newInstance('game-id', [currentPlayer, currentOpponent], currentPlayer, 'spectatorid', {undoOption: false, undoStepOption: true});
 
     const reloadedPlayer = TestPlayer.BLACK.newPlayer();
     const reloadedOpponent = TestPlayer.RED.newPlayer();
-    const reloadedGame = Game.newInstance('game-id', [reloadedPlayer, reloadedOpponent], reloadedPlayer, 'spectatorid', {undoStepOption: true});
-    reloadedGame.gameOptions.undoOption = false;
+    const reloadedGame = Game.newInstance('game-id', [reloadedPlayer, reloadedOpponent], reloadedPlayer, 'spectatorid', {undoOption: false, undoStepOption: true});
 
     useReloadingGameLoader(scaffolding, currentGame, reloadedGame);
     scaffolding.url = '/reset?id=' + currentPlayer.id;

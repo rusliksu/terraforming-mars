@@ -60,7 +60,7 @@ describe('Vermin', () => {
 
     player.addResourceTo(card);
     expect(card.resourceCount).eq(10);
-    expect(game.gameLog.at(-1)?.message).eq('${0}\'s ${1} now has 10 animals. All players lose 1 VP per city.');
+    expect(game.gameLog[game.gameLog.length - 1]?.message).eq('${0}\'s ${1} now has 10 animals. All players lose 1 VP per city.');
 
     expect(getVp(player)).eq(-3);
     expect(getVp(player2)).eq(-4);

@@ -130,7 +130,7 @@ export class TemplateManager {
 
     const simpleFields = [
       'draftVariant', 'showOtherPlayersVP', 'board', 'solarPhaseOption',
-      'aresExtremeVariant', 'politicalAgendasExtension', 'undoOption', 'showTimers',
+      'aresExtremeVariant', 'politicalAgendasExtension', 'undoOption', 'undoStepOption', 'showTimers',
       'fastModeOption', 'removeNegativeGlobalEventsOption', 'includeFanMA', 'modularMA',
       'noEloGame', 'privateHands', 'turnBasedGame', 'botGame', 'startingCorporations', 'soloTR', 'initialDraft', 'initialDraftOneWay', 'preludeDraftVariant',
       'ceosDraftVariant', 'randomMA', 'shuffleMapOption', 'randomFirstPlayer',

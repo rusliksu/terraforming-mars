@@ -53,6 +53,19 @@ describe('LogMessageComponent', () => {
     expect(wrapper.find('li').classes()).contains('log-message--canceled');
   });
 
+  it('marks irreversible undo messages', () => {
+    const message = new LogMessage(LogMessageType.IRREVERSIBLE_UNDO, 'Test message', []);
+    const wrapper = shallowMount(LogMessageComponent, {
+      ...globalConfig,
+      props: {
+        message,
+        viewModel: fakeViewModel(),
+      },
+    });
+
+    expect(wrapper.find('li').classes()).contains('log-message--irreversible-undo');
+  });
+
   it('renders CARDS type as multiple card spans with locale-correct separator in English', () => {
     const message = new LogMessage(
       LogMessageType.DEFAULT,

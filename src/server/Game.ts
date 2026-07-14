@@ -85,6 +85,7 @@ import {SpaceType} from '../common/boards/SpaceType';
 import {ICard} from './cards/ICard';
 import {generateGameName} from './GameName';
 import {captureEarlyGameStats} from './game/EarlyGameStats';
+import type {ActionReplayState} from './game/ActionReplay';
 
 // Can be overridden by tests
 let createGameLog: () => Array<LogMessage> = () => [];
@@ -96,6 +97,9 @@ export function setGameLog(f: () => Array<LogMessage>) {
 function deserializeGameOptions(d: SerializedGame): GameOptions {
   const serializedOptions = (d.gameOptions ?? {}) as Partial<GameOptions>;
   const gameOptions = {...DEFAULT_GAME_OPTIONS, ...serializedOptions};
+  if (gameOptions.undoStepOption) {
+    gameOptions.undoOption = true;
+  }
   const hasTurnBasedGameOption = Object.prototype.hasOwnProperty.call(serializedOptions, 'turnBasedGame');
   if (!hasTurnBasedGameOption && d.players.some((player) => player.telegramID !== undefined && player.telegramID.trim() !== '')) {
     gameOptions.turnBasedGame = true;
@@ -124,6 +128,7 @@ export class Game implements IGame, Logger {
   public shadowInputSeq: number = 0;
   public gameLog: Array<LogMessage> = createGameLog();
   public undoCount: number = 0; // Each undo increases it
+  public actionReplayState: ActionReplayState | null | undefined = undefined;
   public inputsThisRound = 0;
   public resettable: boolean = false;
   public globalsPerGeneration: Array<Partial<Record<GlobalParameter, number>>> = [];
@@ -291,6 +296,9 @@ export class Game implements IGame, Logger {
       };
     }
     const gameOptions = {...DEFAULT_GAME_OPTIONS, ...partialOptions};
+    if (gameOptions.undoStepOption) {
+      gameOptions.undoOption = true;
+    }
     if (gameOptions.initialDraftVariant === false) {
       gameOptions.initialDraftOneWay = false;
     }
@@ -1065,6 +1073,12 @@ export class Game implements IGame, Logger {
 
   public hasResearched(player: IPlayer): boolean {
     return this.researchedPlayers.has(player.id);
+  }
+
+  public reopenResearchPhaseFor(player: IPlayer): void {
+    if (!this.researchedPlayers.delete(player.id)) {
+      throw new Error('Player has not completed research');
+    }
   }
 
   public playerIsFinishedWithResearchPhase(player: IPlayer): void {

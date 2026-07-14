@@ -31,7 +31,7 @@ describe('Vermin', () => {
 
   it('VP', () => {
     const card = new Vermin();
-    const [/* game */, player, player2] = testGame(2);
+    const [game, player, player2] = testGame(2);
     player.playedCards.push(card);
 
     addCity(player);
@@ -60,6 +60,7 @@ describe('Vermin', () => {
 
     player.addResourceTo(card);
     expect(card.resourceCount).eq(10);
+    expect(game.gameLog[game.gameLog.length - 1]?.message).eq('${0}\'s ${1} now has 10 animals. All players lose 1 VP per city.');
 
     expect(getVp(player)).eq(-3);
     expect(getVp(player2)).eq(-4);
@@ -69,5 +70,9 @@ describe('Vermin', () => {
 
     expect(getVp(player)).eq(0);
     expect(getVp(player2)).eq(0);
+
+    player.addResourceTo(card);
+    expect(card.resourceCount).eq(10);
+    expect(game.gameLog.filter((log) => log.message === '${0}\'s ${1} now has 10 animals. All players lose 1 VP per city.')).lengthOf(2);
   });
 });

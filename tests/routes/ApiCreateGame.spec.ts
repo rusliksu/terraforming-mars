@@ -147,6 +147,7 @@ describe('ApiCreateGame', () => {
       isBot: false,
     }]);
     config.seed = 0.123456789;
+    config.undoStepOption = true;
     const emit = Promise.resolve().then(() => {
       req.emitter.emit('data', JSON.stringify(config));
       req.emitter.emit('end');
@@ -161,6 +162,7 @@ describe('ApiCreateGame', () => {
     expect(game).is.not.undefined;
     expect(game!.players[0].name).eq('Robot');
     expect(game!.rng.seed).eq(config.seed);
+    expect(game!.gameOptions.undoStepOption).is.true;
     expect(game!.gameOptions.boardSelection).eq(RandomBoardOption.OFFICIAL);
     expect(ApiCreateGame.boardOptions(RandomBoardOption.OFFICIAL)).contains(game!.gameOptions.boardName);
   });

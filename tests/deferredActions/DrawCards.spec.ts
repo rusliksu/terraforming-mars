@@ -9,7 +9,6 @@ import {ProjectDeck} from '../../src/server/cards/Deck';
 import {formatMessage, runAllActions} from '../TestingUtils';
 import {testGame} from '../TestGame';
 import {cast} from '@/common/utils/utils';
-import {OrOptions} from '../../src/server/inputs/OrOptions';
 
 describe('DrawCards', () => {
   let game: IGame;
@@ -40,8 +39,7 @@ describe('DrawCards', () => {
     const action = cast(player.popWaitingFor(), SelectCard);
     expect(action.config.min).to.eq(2);
     expect(action.config.max).to.eq(2);
-    const confirmation = cast(action.cb([action.cards[0], action.cards[2]]), OrOptions);
-    confirmation.options[0].cb();
+    action.cb([action.cards[0], action.cards[2]]);
     expect(player.cardsInHand).has.length(2);
     expect(projectDeck.discardPile).has.length(2);
   });
@@ -59,8 +57,7 @@ describe('DrawCards', () => {
       expect(privateMessages[0]).contains(card.name);
     }
 
-    const confirmation = cast(action.cb([action.cards[0], action.cards[2]]), OrOptions);
-    confirmation.options[0].cb();
+    action.cb([action.cards[0], action.cards[2]]);
     const publicMessage = game.gameLog.filter((entry) => entry.playerId === undefined)[0];
     expect(formatMessage(publicMessage)).eq('blue drew 2 card(s)');
   });

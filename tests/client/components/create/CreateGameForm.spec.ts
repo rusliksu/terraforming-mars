@@ -186,6 +186,19 @@ describe('CreateGameForm', () => {
     expect(payload.privateHands).eq(false);
   });
 
+  it('serializes action and one-step undo as separate game options', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    expect(wrapper.text()).to.contain('Undo action');
+    expect(wrapper.text()).to.contain('Undo one step (experimental)');
+
+    await wrapper.setData({undoOption: false, undoStepOption: true});
+    const payload = JSON.parse(await (wrapper.vm as any).serializeSettings());
+    expect(payload.undoOption).eq(false);
+    expect(payload.undoStepOption).eq(true);
+  });
+
   it('serializes one-way 10-card initial draft setting', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
@@ -891,23 +904,23 @@ describe('CreateGameForm', () => {
     expect(vm.players[0]).to.include({name: 'GydRo', color: 'pearl', profileId: 'gydro'});
   });
 
-  it('adds all selected Rigatone profile colors after the standard palette', async () => {
+  it('adds only Rigatone Custom Two after the standard palette', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
     });
     await wrapper.setData({
       playersCount: 2,
       players: [
-        {name: 'Тагир', color: 'rigatone', beginner: false, handicap: 0, first: false, isBot: false, profileId: 'tagir'},
+        {name: 'Тагир', color: 'rigatone2', beginner: false, handicap: 0, first: false, isBot: false, profileId: 'tagir'},
         {name: 'Other', color: 'green', beginner: false, handicap: 0, first: false, isBot: false},
       ],
     });
 
     const colors = wrapper.findAll('input[name="playerColor1"]')
       .map((radio) => (radio.element as HTMLInputElement).value);
-    expect(colors).deep.eq([...DEFAULT_PLAYER_COLORS, 'rigatone', 'rigatone2']);
+    expect(colors).deep.eq([...DEFAULT_PLAYER_COLORS, 'rigatone2']);
     expect(wrapper.findAll('.create-game-color-custom-start')).to.have.length(1);
-    expect(wrapper.find('.create-game-color-custom-start input').attributes('value')).eq('rigatone');
+    expect(wrapper.find('.create-game-color-custom-start input').attributes('value')).eq('rigatone2');
   });
 
   it('disables colors already used by another visible player', async () => {

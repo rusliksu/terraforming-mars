@@ -162,6 +162,7 @@ export default defineComponent({
     classes(): Record<string, boolean> {
       return {
         'log-message--canceled': this.message.canceled === true,
+        'log-message--irreversible-undo': this.message.type === LogMessageType.IRREVERSIBLE_UNDO,
       };
     },
   },

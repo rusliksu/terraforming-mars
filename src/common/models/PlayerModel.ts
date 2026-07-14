@@ -15,6 +15,8 @@ import {GlobalParameter} from '../GlobalParameter';
 import {DeltaProjectPlayerModel} from './DeltaProjectPlayerModel';
 
 export interface ViewModel {
+  canStepBack?: boolean;
+  canUndoResearchPurchase?: boolean;
   game: GameModel;
   players: Array<PublicPlayerModel>;
   id?: ParticipantId;

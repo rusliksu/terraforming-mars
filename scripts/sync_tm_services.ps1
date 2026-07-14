@@ -1,5 +1,5 @@
 param(
-    [string]$HostAlias = "vps",
+    [string]$HostAlias = "hostkey-codex",
     [string]$TierlistRoot,
     [switch]$SkipRuntimeSync,
     [switch]$SkipGatewaySync,

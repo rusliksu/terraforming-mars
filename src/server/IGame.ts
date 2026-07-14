@@ -35,6 +35,7 @@ import {OrOptions} from './inputs/OrOptions';
 import {IStandardProjectCard} from './cards/IStandardProjectCard';
 import {VictoryPointsBreakdown} from '../common/game/VictoryPointsBreakdown';
 import {EarlyGameStats} from './game/EarlyGameStats';
+import type {ActionReplayState} from './game/ActionReplay';
 
 export interface Score {
   corporation: String;
@@ -65,6 +66,8 @@ export interface IGame extends Logger {
   shadowInputSeq: number; // Monotonic accepted input counter for shadow correlation
   gameLog: Array<LogMessage>;
   undoCount: number; // Each undo increases it
+  /** Runtime-only journal for experimental one-step undo. Not serialized. */
+  actionReplayState: ActionReplayState | null | undefined;
   inputsThisRound: number;
   resettable: boolean;
   generation: number;
@@ -170,6 +173,7 @@ export interface IGame extends Logger {
   isDoneWithFinalProduction(): boolean;
   playerHasPassed(player: IPlayer): void;
   hasResearched(player: IPlayer): boolean;
+  reopenResearchPhaseFor(player: IPlayer): void;
   playerIsFinishedWithResearchPhase(player: IPlayer): void;
   /**
    * Called when a player has finished taking actions. It sets up

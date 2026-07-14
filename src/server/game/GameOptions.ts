@@ -18,6 +18,7 @@ export type GameOptions = {
 
   // Configuration
   undoOption: boolean;
+  undoStepOption: boolean;
   showTimers: boolean;
   fastModeOption: boolean;
   showOtherPlayersVP: boolean;
@@ -155,6 +156,7 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
   underworldExpansion: false,
   deltaProjectExpansion: false,
   undoOption: false,
+  undoStepOption: false,
   venusNextExtension: false,
   twoCorpsVariant: false,
 };

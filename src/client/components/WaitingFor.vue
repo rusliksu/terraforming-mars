@@ -11,6 +11,9 @@
       (⌛ <span v-for="color in playersWaitingFor" class="log-player" :class="playerColorClass(color, 'bg')" :key="color">{{ getPlayerName(color) }}</span>)
     </template>
   </template>
+  <div v-if="showResearchPurchaseUndo()" class="wf-options wf-undo-controls">
+    <AppButton title="Undo card purchase (experimental)" type="submit" size="normal" @click="undoResearchPurchase" />
+  </div>
   <div v-if="waitingfor !== undefined" class="wf-root">
     <template v-if="preferences().experimental_ui && playerView.game.phase === Phase.ACTION && playerView.thisPlayer?.isActive !== true">
       <input type="checkbox" name="suspend" id="suspend-checkbox" v-model="suspend" @change="updateSuspend">
@@ -19,17 +22,28 @@
       </label>
       <div v-if="showRefresh()">Refresh<span class="reset"></span></div>
     </template>
-    <div v-if="showCancelAction() || showUndoLastAction()" class="wf-action-controls">
-      <AppButton v-if="showCancelAction()" @click="reset" size="small" title="Cancel action" />
-      <AppButton v-if="showUndoLastAction()" @click="undoLastAction" size="small" title="Undo last action" />
-    </div>
     <PlayerInputFactory :players="playerView.players"
                           :playerView="playerView"
-                          :playerinput="waitingfor"
-                          :onsave="onsave"
+                          :playerinput="playerinputWithStepBack()"
+                          :onsave="onsavePlayerInput"
                           :showsave="true"
                           :showtitle="true" />
+  </div>
+  <div v-if="showUndoFooter()" class="wf-options wf-undo-controls">
+    <label v-if="showUndoAction()" class="form-radio">
+      <input v-model="undoChoice" type="radio" :name="undoRadioElementName" value="action">
+      <i class="form-icon"></i>
+      <span v-i18n>Undo action</span>
+    </label>
+    <label v-if="showStepBack()" class="form-radio">
+      <input v-model="undoChoice" type="radio" :name="undoRadioElementName" value="step">
+      <i class="form-icon"></i>
+      <span v-i18n>Undo one step (experimental)</span>
+    </label>
+    <div v-if="undoChoice" style="margin: 5px 30px 10px" class="wf-action">
+      <AppButton title="Undo" type="submit" size="normal" @click="undoSelected" />
     </div>
+  </div>
   </div>
 </template>
 
@@ -51,15 +65,16 @@ import {paths} from '@/common/app/paths';
 import {statusCode} from '@/common/http/statusCode';
 import {isPlayerId} from '@/common/Types';
 import {InputResponse} from '@/common/inputs/InputResponse';
-import {INVALID_RUN_ID, AppErrorResponse} from '@/common/app/AppErrorId';
+import {INVALID_RUN_ID, UNDO_REVEALED_HIDDEN_INFORMATION, AppErrorResponse} from '@/common/app/AppErrorId';
 import {Color} from '@/common/Color';
 import {gameDocumentTitle} from '../utils/documentTitle';
-import AppButton from '@/client/components/common/AppButton.vue';
 import {setFaviconStatus, setFaviconTurnFrame} from '@/client/utils/favicon';
+import AppButton from '@/client/components/common/AppButton.vue';
 
 let ui_update_timeout_id: number | undefined;
 let documentTitleTimer: number | undefined;
 let animationFrame = 0;
+let undoChoiceSequence = 0;
 
 // The spinning ◑◒◐◓ symbol used to indicate it's your turn.
 const TURN_SEQUENCE = '◑◒◐◓';
@@ -75,6 +90,8 @@ type DataModel = {
   playersWaitingFor: Array<Color>
   suspend: boolean,
   savedPlayerView: PlayerViewModel | undefined;
+  undoChoice: '' | 'action' | 'step';
+  undoRadioElementName: string;
 }
 
 const CANNOT_CONTACT_SERVER = 'Unable to reach the server. It may be restarting or down for maintenance.';
@@ -97,10 +114,17 @@ export default defineComponent({
       playersWaitingFor: [],
       suspend: false,
       savedPlayerView: undefined,
+      undoChoice: '',
+      undoRadioElementName: 'undo-choice-' + undoChoiceSequence++,
     };
   },
   components: {
     AppButton,
+  },
+  watch: {
+    waitingfor() {
+      this.undoChoice = '';
+    },
   },
   methods: {
     getPlayerName(color: Color): string {
@@ -134,17 +158,34 @@ export default defineComponent({
           body: JSON.stringify({runId: this.playerView.runId, ...out}),
         });
     },
+    stepBack() {
+      this.fetchPlayerInput(
+        paths.RESET + '?id=' + this.playerView.id + '&mode=step',
+        {method: 'GET'});
+    },
+    undoResearchPurchase() {
+      this.fetchPlayerInput(
+        paths.RESET + '?id=' + this.playerView.id + '&mode=research',
+        {method: 'GET'});
+    },
     reset() {
       this.fetchPlayerInput(
         paths.RESET + '?id=' + this.playerView.id,
         {method: 'GET'});
     },
-    undoLastAction() {
-      const undoIndex = this.undoLastActionIndex();
-      if (undoIndex === undefined) {
+    undoSelected() {
+      if (this.undoChoice === 'step') {
+        this.stepBack();
+      } else if (this.undoChoice === 'action') {
+        this.reset();
+      }
+    },
+    onsavePlayerInput(out: InputResponse) {
+      if (this.isStepBackResponse(out)) {
+        this.stepBack();
         return;
       }
-      this.onsave({type: 'or', index: undoIndex, response: {type: 'option'}});
+      this.onsave(out);
     },
     fetchPlayerInput(url: string, options: RequestInit) {
       const root = vueRoot(this);
@@ -164,6 +205,16 @@ export default defineComponent({
           const showAlert = vueRoot(this).showAlert;
           if (response.status === statusCode.badRequest) {
             const resp = await this.readAppError(response);
+            if (resp.id === UNDO_REVEALED_HIDDEN_INFORMATION &&
+                !url.includes('confirmHiddenInformation=true')) {
+              if (window.confirm(resp.message)) {
+                const separator = url.includes('?') ? '&' : '?';
+                window.setTimeout(() => {
+                  this.fetchPlayerInput(url + separator + 'confirmHiddenInformation=true', options);
+                }, 0);
+              }
+              return;
+            }
             let cb = () => {};
             if (resp.id === INVALID_RUN_ID) {
               cb = () => setTimeout(() => window.location.reload(), 100);
@@ -301,28 +352,49 @@ export default defineComponent({
     showRefresh(): boolean {
       return this.suspend === true && this.savedPlayerView !== undefined;
     },
-    showCancelAction(): boolean {
-      return this.playerView.game.phase === Phase.ACTION &&
-        this.playerView.game.gameOptions?.undoOption === true &&
+    showResearchPurchaseUndo(): boolean {
+      return this.playerView.canUndoResearchPurchase === true && this.playerView.game.phase === Phase.RESEARCH;
+    },
+    showStepBack(): boolean {
+      return this.playerView.game.gameOptions?.undoStepOption === true &&
+        this.playerView.canStepBack === true &&
         this.waitingfor !== undefined &&
-        !this.isMainActionPrompt() &&
         this.playerView.thisPlayer?.isActive === true;
     },
-    showUndoLastAction(): boolean {
-      return this.playerView.game.phase === Phase.ACTION &&
-        this.playerView.game.gameOptions?.undoOption === true &&
-        this.playerView.thisPlayer?.isActive === true &&
-        this.undoLastActionIndex() !== undefined;
+    showStepBackOption(): boolean {
+      return this.isMainActionPrompt() && this.showStepBack();
     },
-    undoLastActionIndex(): number | undefined {
-      if (!this.isMainActionPrompt() || this.waitingfor?.type !== 'or') {
-        return undefined;
+    showUndoAction(): boolean {
+      const phase = this.playerView.game.phase;
+      const supportedPhase = phase === Phase.ACTION || phase === Phase.PRELUDES || phase === Phase.CEOS;
+      const enabled = this.playerView.players.length === 1 ||
+        this.playerView.game.gameOptions?.undoOption === true ||
+        this.playerView.game.gameOptions?.undoStepOption === true;
+      return supportedPhase && enabled && this.playerView.thisPlayer?.isActive === true;
+    },
+    showUndoFooter(): boolean {
+      return !this.isMainActionPrompt() && (this.showUndoAction() || this.showStepBack());
+    },
+    playerinputWithStepBack(): PlayerInputModel {
+      const playerinput = this.waitingfor;
+      if (playerinput === undefined) {
+        throw new Error('Missing player input');
       }
-      const index = this.waitingfor.options.findIndex((option) =>
-        option.type === 'option' &&
-        option.title === 'Undo last action' &&
-        option.buttonLabel === 'Undo');
-      return index === -1 ? undefined : index;
+      if (!this.showStepBackOption() || playerinput.type !== 'or') {
+        return playerinput;
+      }
+      return {
+        ...playerinput,
+        options: [...playerinput.options, {type: 'option', title: 'Undo one step (experimental)', buttonLabel: 'Undo'}],
+      };
+    },
+    isStepBackResponse(out: InputResponse): boolean {
+      const playerinput = this.waitingfor;
+      return this.showStepBackOption() &&
+        playerinput?.type === 'or' &&
+        out.type === 'or' &&
+        out.index === playerinput.options.length &&
+        out.response.type === 'option';
     },
     isMainActionPrompt(): boolean {
       return this.waitingfor?.type === 'or' && this.waitingfor.buttonLabel === 'Take action';

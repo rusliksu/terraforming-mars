@@ -1,16 +1,22 @@
 param(
-    [string]$HostAlias = "vps",
+    [string]$HostAlias = "hostkey-codex",
     [string]$FallbackSshHost = "72.56.84.119",
     [string]$FallbackSshUser = "openclaw",
     [string]$FallbackSshKeyPath = "$HOME\\.ssh\\id_ed25519",
     [string]$ExpectedGitSha,
     [string]$ExpectedArtifactSha,
+    [string]$ExpectedReleaseBaselineBase64,
+    [string[]]$IgnoredRealtimeGameId,
     [switch]$DryRun
 )
 
 $ErrorActionPreference = "Stop"
 
 . (Join-Path $PSScriptRoot "lib\TmRemoteTools.ps1")
+. (Join-Path $PSScriptRoot "lib\TmReleaseGuards.ps1")
+
+Assert-TmReleaseCasBaselineBase64 -Token $ExpectedReleaseBaselineBase64
+$ignoredRealtimeGameIds = @(Assert-TmIgnoredRealtimeGameIds -GameIds $IgnoredRealtimeGameId)
 
 function Assert-OptionalSha {
     param(
@@ -31,8 +37,22 @@ function Assert-OptionalSha {
 Assert-OptionalSha -Name "ExpectedGitSha" -Value $ExpectedGitSha -AllowedLengths @(40)
 Assert-OptionalSha -Name "ExpectedArtifactSha" -Value $ExpectedArtifactSha -AllowedLengths @(64)
 
+if (-not $DryRun) {
+    if ([string]::IsNullOrWhiteSpace($ExpectedGitSha)) {
+        throw "ExpectedGitSha is required for prod promotion. Read it from the tested staging release manifest."
+    }
+    if ([string]::IsNullOrWhiteSpace($ExpectedArtifactSha)) {
+        throw "ExpectedArtifactSha is required for prod promotion. Read it from the tested staging release manifest."
+    }
+    if ([string]::IsNullOrWhiteSpace($ExpectedReleaseBaselineBase64)) {
+        throw "ExpectedReleaseBaselineBase64 is required for prod promotion CAS protection."
+    }
+}
+
 $expectedGitShaLower = if ([string]::IsNullOrWhiteSpace($ExpectedGitSha)) { "" } else { $ExpectedGitSha.ToLowerInvariant() }
 $expectedArtifactShaLower = if ([string]::IsNullOrWhiteSpace($ExpectedArtifactSha)) { "" } else { $ExpectedArtifactSha.ToLowerInvariant() }
+$ignoredRealtimeGameIdsCsv = $ignoredRealtimeGameIds -join ","
+$promoteRunToken = New-TmReleaseRunToken
 
 function Invoke-RemoteCommand {
     param(
@@ -73,7 +93,10 @@ next_release_url_fallback="${next_health_url%/}/assets/release.json"
 upstream_snippet="/etc/nginx/snippets/tm-prod-active-upstream.conf"
 required_git_sha="__EXPECTED_GIT_SHA__"
 required_artifact_sha="__EXPECTED_ARTIFACT_SHA__"
-work_root="/tmp/tm-promote-$(date +%Y%m%d%H%M%S)"
+expected_release_baseline_b64="__EXPECTED_RELEASE_BASELINE_B64__"
+ignored_realtime_game_ids_csv="__IGNORED_REALTIME_GAME_IDS_CSV__"
+run_token="__RUN_TOKEN__"
+work_root="/tmp/tm-promote-${run_token}"
 release_dir="$work_root/release"
 shared_root="$prod_root/shared"
 deps_root="$shared_root/deps"
@@ -84,6 +107,11 @@ active_proxy_port="$prod_port"
 elo_files="index.html audit_player_names.py elo-api.js elo_aliases.py excluded_games.json fix_elo_dupes.py import_gamedb_to_elo.py migrate_elo_nicknames.py player_name_aliases.json player_name_overrides.json tm-sync-elo.py"
 deploy_lock_file="/home/openclaw/tm-runtime/.deploy.lock"
 deploy_lock_info="/home/openclaw/tm-runtime/.deploy.lock.info"
+game_db_path="$shared_root/db/game.db"
+nginx_snippet_backup="$work_root/nginx-before.conf"
+previous_current_link_target=""
+previous_current_link_existed=0
+scripts_dir="/home/openclaw/scripts"
 
 wait_for_http() {
   local url="$1"
@@ -111,6 +139,187 @@ wait_for_elo() {
   return 1
 }
 
+assert_release_cas() {
+  local baseline_b64="$1"
+  local runtime_base="$2"
+  [ -n "$baseline_b64" ] || return 0
+  TM_RELEASE_CAS_BASELINE_B64="$baseline_b64" python3 - "$runtime_base" <<'PY'
+import base64
+import json
+import os
+import pathlib
+import sys
+
+
+def fail():
+    print("Release CAS baseline drifted or could not be read.", file=sys.stderr)
+    raise SystemExit(46)
+
+
+try:
+    expected = json.loads(base64.b64decode(os.environ["TM_RELEASE_CAS_BASELINE_B64"], validate=True))
+    if expected.get("schema") != "TmReleaseCasBaselineV1":
+        fail()
+    runtime_base = pathlib.Path(sys.argv[1])
+
+    def read_state(environment):
+        current = runtime_base / environment / "current"
+        target = str(current.resolve(strict=False)) if current.exists() or current.is_symlink() else ""
+        manifest_path = current / "assets" / "release.json"
+        git_sha = ""
+        artifact_sha = ""
+        if manifest_path.is_file():
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+            if not isinstance(manifest, dict):
+                fail()
+            git_sha = manifest.get("gitSha", "")
+            artifact_sha = manifest.get("artifactSha256", "")
+            if not isinstance(git_sha, str) or not isinstance(artifact_sha, str):
+                fail()
+        return {
+            "currentTarget": target,
+            "gitSha": git_sha.lower(),
+            "artifactSha256": artifact_sha.lower(),
+        }
+
+    for environment in ("prod", "staging"):
+        expected_state = expected.get("environments", {}).get(environment)
+        if not isinstance(expected_state, dict) or read_state(environment) != expected_state:
+            fail()
+except SystemExit:
+    raise
+except Exception:
+    fail()
+PY
+}
+
+assert_dependency_sha() {
+  local expected_sha="$1"
+  local package_lock_path="$2"
+  local actual_sha
+
+  if ! [[ "$expected_sha" =~ ^[0-9a-f]{64}$ ]]; then
+    return 47
+  fi
+  if ! actual_sha="$(python3 - "$package_lock_path" <<'PY'
+import hashlib
+import pathlib
+import sys
+
+try:
+    text = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8-sig")
+    normalized = text.replace("\r\n", "\n")
+    print(hashlib.sha256(normalized.encode("utf-8")).hexdigest())
+except Exception:
+    raise SystemExit(47)
+PY
+  )"; then
+    return 47
+  fi
+  if [ "$actual_sha" != "$expected_sha" ]; then
+    return 47
+  fi
+  return 0
+}
+
+publish_elo_helpers() {
+  local source_release="$1"
+  local artifact_sha="$2"
+  local git_sha="$3"
+
+  python3 - "$source_release" "$scripts_dir" "$artifact_sha" "$git_sha" "$run_token" <<'PY'
+import json
+import os
+import pathlib
+import re
+import sys
+
+
+FILES = (
+    ("tm-sync-elo.py", 0o755),
+    ("elo_aliases.py", 0o755),
+    ("player_name_aliases.json", 0o644),
+    ("player_name_overrides.json", 0o644),
+    ("excluded_games.json", 0o644),
+)
+
+
+def atomic_write(path, payload, mode, run_token):
+    temporary = path.with_name(f".{path.name}.{run_token}.tmp")
+    try:
+        descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, mode)
+        with os.fdopen(descriptor, "wb") as output:
+            output.write(payload)
+            output.flush()
+            os.fsync(output.fileno())
+        os.chmod(temporary, mode)
+        os.replace(temporary, path)
+    finally:
+        try:
+            temporary.unlink()
+        except FileNotFoundError:
+            pass
+
+
+def fsync_directory(path):
+    try:
+        directory_descriptor = os.open(path, os.O_RDONLY)
+        try:
+            os.fsync(directory_descriptor)
+        finally:
+            os.close(directory_descriptor)
+    except OSError:
+        if os.name != "nt":
+            raise
+
+
+try:
+    source_release = pathlib.Path(sys.argv[1])
+    destination = pathlib.Path(sys.argv[2])
+    artifact_sha = sys.argv[3]
+    git_sha = sys.argv[4]
+    run_token = sys.argv[5]
+    if re.fullmatch(r"[0-9a-f]{64}", artifact_sha) is None:
+        raise ValueError("invalid artifact sha")
+    if re.fullmatch(r"[0-9a-f]{40}", git_sha) is None:
+        raise ValueError("invalid git sha")
+    if re.fullmatch(r"[0-9]{14}-[0-9]+-[0-9a-f]{32}", run_token) is None:
+        raise ValueError("invalid run token")
+
+    source_directory = source_release / "elo"
+    payloads = []
+    for filename, mode in FILES:
+        source = source_directory / filename
+        if not source.is_file():
+            raise ValueError("missing helper source")
+        payloads.append((filename, mode, source.read_bytes()))
+
+    destination.mkdir(parents=True, exist_ok=True)
+    completion_path = destination / ".tm-elo-helpers-release.json"
+    try:
+        completion_path.unlink()
+    except FileNotFoundError:
+        pass
+    fsync_directory(destination)
+
+    for filename, mode, payload in payloads:
+        atomic_write(destination / filename, payload, mode, run_token)
+
+    completion = {
+        "schema": "TmEloHelperMirrorV1",
+        "artifactSha256": artifact_sha,
+        "gitSha": git_sha,
+        "files": [filename for filename, _ in FILES],
+    }
+    payload = (json.dumps(completion, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+    atomic_write(completion_path, payload, 0o644, run_token)
+    fsync_directory(destination)
+except Exception:
+    print("ELO helper mirror publication failed closed.", file=sys.stderr)
+    raise SystemExit(48)
+PY
+}
+
 read_release_json() {
   local primary="$1"
   local fallback="$2"
@@ -120,21 +329,218 @@ read_release_json() {
   curl -fsS "$fallback"
 }
 
+assert_no_realtime_games_sqlite() {
+  local checkpoint="$1"
+  local gate_output
+  local gate_exit
+  local running_count
+  local realtime_count
+  local realtime_ids
+  local turn_based_count
+  local ended_count
+  local ignored_count
+  local ignored_ids
+
+  set +e
+  gate_output="$({
+    cd "$prod_current"
+    node - "$game_db_path" "$ignored_realtime_game_ids_csv" <<'NODE'
+'use strict';
+
+const GAME_ID = /^[A-Za-z0-9_-]{1,128}$/;
+
+function parseIgnoredIds(csv) {
+  if (csv === '') return new Set();
+  const ids = csv.split(',');
+  if (ids.some((id) => !GAME_ID.test(id)) || new Set(ids).size !== ids.length) {
+    throw new Error('invalid ignored game id list');
+  }
+  return new Set(ids);
+}
+
+function classifyLatestRows(rows, ignoredIds) {
+  if (!Array.isArray(rows)) throw new Error('latest-save query did not return rows');
+  const result = {ended: [], turnBased: [], realtime: [], ignored: []};
+  const seen = new Set();
+
+  for (const row of rows) {
+    if (row === null || typeof row !== 'object' || Array.isArray(row)) throw new Error('malformed latest row');
+    const gameId = row.game_id;
+    if (typeof gameId !== 'string' || !GAME_ID.test(gameId) || seen.has(gameId)) throw new Error('invalid latest game id');
+    seen.add(gameId);
+    if (row.status !== 'running' || typeof row.game !== 'string') throw new Error('malformed running latest row');
+
+    const game = JSON.parse(row.game);
+    if (game === null || typeof game !== 'object' || Array.isArray(game) || game.id !== gameId) throw new Error('serialized game mismatch');
+    if (typeof game.phase !== 'string') throw new Error('serialized game phase is missing');
+    if (game.phase === 'end') {
+      result.ended.push(gameId);
+      continue;
+    }
+    const gameOptions = game.gameOptions === undefined || game.gameOptions === null ? {} : game.gameOptions;
+    if (typeof gameOptions !== 'object' || Array.isArray(gameOptions)) {
+      throw new Error('serialized game options are malformed');
+    }
+
+    let turnBased;
+    if (Object.prototype.hasOwnProperty.call(gameOptions, 'turnBasedGame')) {
+      if (typeof gameOptions.turnBasedGame !== 'boolean') throw new Error('turnBasedGame is not boolean');
+      turnBased = gameOptions.turnBasedGame;
+    } else {
+      if (!Array.isArray(game.players)) throw new Error('legacy game players are malformed');
+      turnBased = game.players.some((player) => {
+        if (player === null || typeof player !== 'object' || Array.isArray(player)) throw new Error('legacy player is malformed');
+        if (!Object.prototype.hasOwnProperty.call(player, 'telegramID')) return false;
+        if (typeof player.telegramID !== 'string') throw new Error('legacy telegram id is malformed');
+        return player.telegramID.trim() !== '';
+      });
+    }
+
+    if (turnBased) {
+      result.turnBased.push(gameId);
+    } else if (ignoredIds.has(gameId)) {
+      result.ignored.push(gameId);
+    } else {
+      result.realtime.push(gameId);
+    }
+  }
+
+  for (const ids of Object.values(result)) ids.sort();
+  return result;
+}
+
+function readLatestRunningRows(dbPath) {
+  if (process.env.TM_RELEASE_LIVE_GATE_FIXTURE_JSON !== undefined) {
+    return JSON.parse(process.env.TM_RELEASE_LIVE_GATE_FIXTURE_JSON);
+  }
+  const Database = require('better-sqlite3');
+  const db = new Database(dbPath, {readonly: true, fileMustExist: true});
+  try {
+    db.pragma('query_only = ON');
+    return db.prepare(`
+      SELECT latest.game_id, latest.game, latest.status, latest.save_id
+      FROM games AS latest
+      INNER JOIN (
+        SELECT game_id, MAX(save_id) AS max_save_id
+        FROM games
+        GROUP BY game_id
+      ) AS latest_save
+        ON latest.game_id = latest_save.game_id
+       AND latest.save_id = latest_save.max_save_id
+      WHERE latest.status = 'running'
+      ORDER BY latest.game_id
+    `).all();
+  } finally {
+    db.close();
+  }
+}
+
+try {
+  const [dbPath, ignoredCsv = ''] = process.argv.slice(2);
+  if (typeof dbPath !== 'string' || dbPath === '') throw new Error('database path is missing');
+  const rows = readLatestRunningRows(dbPath);
+  const result = classifyLatestRows(rows, parseIgnoredIds(ignoredCsv));
+  console.log(`running_count=${rows.length}`);
+  console.log(`turn_based_count=${result.turnBased.length}`);
+  console.log(`ended_count=${result.ended.length}`);
+  console.log(`ignored_count=${result.ignored.length}`);
+  console.log(`ignored_ids=${result.ignored.join(',')}`);
+  console.log(`realtime_count=${result.realtime.length}`);
+  console.log(`realtime_ids=${result.realtime.join(',')}`);
+} catch (_) {
+  console.error('TM live-game SQLite gate failed closed.');
+  process.exit(43);
+}
+NODE
+  } 2>/dev/null)"
+  gate_exit=$?
+  set -e
+  if [ "$gate_exit" -ne 0 ]; then
+    echo "Prod promote blocked at $checkpoint: SQLite latest-save live-game gate failed closed." >&2
+    return 43
+  fi
+
+  running_count="$(printf '%s\n' "$gate_output" | sed -n 's/^running_count=//p')"
+  turn_based_count="$(printf '%s\n' "$gate_output" | sed -n 's/^turn_based_count=//p')"
+  ended_count="$(printf '%s\n' "$gate_output" | sed -n 's/^ended_count=//p')"
+  ignored_count="$(printf '%s\n' "$gate_output" | sed -n 's/^ignored_count=//p')"
+  ignored_ids="$(printf '%s\n' "$gate_output" | sed -n 's/^ignored_ids=//p')"
+  realtime_count="$(printf '%s\n' "$gate_output" | sed -n 's/^realtime_count=//p')"
+  realtime_ids="$(printf '%s\n' "$gate_output" | sed -n 's/^realtime_ids=//p')"
+  for count in "$running_count" "$turn_based_count" "$ended_count" "$ignored_count" "$realtime_count"; do
+    case "$count" in
+      ''|*[!0-9]*)
+        echo "Prod promote blocked at $checkpoint: malformed SQLite gate summary." >&2
+        return 43
+        ;;
+    esac
+  done
+  case "$ignored_ids,$realtime_ids" in
+    *[!A-Za-z0-9_,-]*)
+      echo "Prod promote blocked at $checkpoint: malformed SQLite gate identifiers." >&2
+      return 43
+      ;;
+  esac
+
+  echo "Prod SQLite live-game gate at $checkpoint: running=$running_count turn_based=$turn_based_count ended=$ended_count ignored=$ignored_count ignored_ids=${ignored_ids:-none} realtime=$realtime_count realtime_ids=${realtime_ids:-none}"
+  if [ "$realtime_count" -gt 0 ]; then
+    echo "Prod promote blocked at $checkpoint: active realtime games=$realtime_count ids=${realtime_ids:-unknown}." >&2
+    return 42
+  fi
+}
+
 read_proxy_port() {
-  if [ -f "$upstream_snippet" ]; then
-    sed -n 's/.*127\.0\.0\.1:\([0-9][0-9]*\).*/\1/p' "$upstream_snippet" | head -n 1
+  python3 - "$upstream_snippet" <<'PY'
+import pathlib
+import re
+import sys
+
+try:
+    lines = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8").splitlines()
+    active = [line.strip() for line in lines if line.strip() and not line.lstrip().startswith("#")]
+    if len(active) != 1:
+        raise ValueError("expected exactly one active directive")
+    match = re.fullmatch(r"set[ \t]+\$tm_prod_backend[ \t]+http://127\.0\.0\.1:([0-9]+);", active[0])
+    if match is None:
+        raise ValueError("active directive is not canonical")
+    port = int(match.group(1))
+    if port < 1 or port > 65535:
+        raise ValueError("backend port is out of range")
+    print(port)
+except Exception:
+    raise SystemExit(1)
+PY
+}
+
+require_primary_proxy_backend() {
+  local observed_port="$1"
+  if [ "$observed_port" != "$prod_port" ]; then
+    echo "Prod promote blocked: active proxy backend must be $prod_port before promotion; observed=${observed_port:-missing}." >&2
+    return 44
   fi
 }
 
 set_proxy_port() {
   local port="$1"
   local tmp
-  tmp="$(mktemp)"
-  printf 'set $tm_prod_backend http://127.0.0.1:%s;\n' "$port" > "$tmp"
-  sudo install -m 644 "$tmp" "$upstream_snippet"
+  if ! tmp="$(mktemp)"; then
+    return 1
+  fi
+  if ! printf 'set $tm_prod_backend http://127.0.0.1:%s;\n' "$port" > "$tmp"; then
+    rm -f "$tmp"
+    return 1
+  fi
+  if ! sudo install -m 644 "$tmp" "$upstream_snippet"; then
+    rm -f "$tmp"
+    return 1
+  fi
   rm -f "$tmp"
-  sudo nginx -t >/dev/null
-  sudo systemctl reload nginx
+  if ! sudo nginx -t >/dev/null; then
+    return 1
+  fi
+  if ! sudo systemctl reload nginx; then
+    return 1
+  fi
   active_proxy_port="$port"
 }
 
@@ -144,28 +550,84 @@ cleanup_new_release() {
   fi
 }
 
+cleanup_work_root() {
+  if [ -e "$nginx_snippet_backup" ]; then
+    sudo rm -f "$nginx_snippet_backup" || true
+  fi
+  rm -rf "$work_root"
+}
+
+backup_public_state() {
+  if ! mkdir -p "$work_root"; then
+    return 1
+  fi
+  if ! sudo rm -f "$nginx_snippet_backup"; then
+    return 1
+  fi
+  if ! sudo cp -a -- "$upstream_snippet" "$nginx_snippet_backup"; then
+    return 1
+  fi
+}
+
+restore_public_state() {
+  local restore_failed=0
+
+  if [ "$previous_current_link_existed" = "1" ]; then
+    if ! ln -sfn "$previous_current_link_target" "$prod_current"; then
+      restore_failed=1
+    fi
+  elif ! rm -f "$prod_current"; then
+    restore_failed=1
+  fi
+
+  if ! systemctl --user restart "$service"; then
+    restore_failed=1
+  elif ! wait_for_http "$health_url" 20 2; then
+    restore_failed=1
+  fi
+
+  if [ ! -f "$nginx_snippet_backup" ]; then
+    restore_failed=1
+  elif ! sudo cp -a --remove-destination -- "$nginx_snippet_backup" "$upstream_snippet"; then
+    restore_failed=1
+  elif ! sudo nginx -t >/dev/null; then
+    restore_failed=1
+  elif ! sudo systemctl reload nginx; then
+    restore_failed=1
+  elif ! active_proxy_port="$(read_proxy_port)"; then
+    restore_failed=1
+  elif [ "$active_proxy_port" != "$prod_port" ]; then
+    restore_failed=1
+  else
+    :
+  fi
+
+  if ! systemctl --user restart "$elo_service"; then
+    restore_failed=1
+  elif ! wait_for_elo "$elo_health_url" 10 2; then
+    restore_failed=1
+  fi
+
+  return "$restore_failed"
+}
+
 rollback_before_public_switch() {
   systemctl --user stop "$next_service" || true
   rm -f "$prod_next_current"
   cleanup_new_release
-  rm -rf "$work_root"
+  cleanup_work_root
 }
 
 rollback_after_public_switch() {
   echo "$1" >&2
-  if [ -n "$previous_current" ]; then
-    ln -sfn "$previous_current" "$prod_current"
+  if restore_public_state; then
+    systemctl --user stop "$next_service" || true
+    rm -f "$prod_next_current"
+    cleanup_new_release
+    cleanup_work_root
+  else
+    echo "Automatic rollback was incomplete; next backend and rollback artifacts were retained." >&2
   fi
-  if systemctl --user restart "$service"; then
-    wait_for_http "$health_url" 20 2 || true
-    set_proxy_port "$prod_port" || true
-  fi
-  systemctl --user restart "$elo_service" || true
-  wait_for_elo "$elo_health_url" 10 2 || true
-  systemctl --user stop "$next_service" || true
-  rm -f "$prod_next_current"
-  cleanup_new_release
-  rm -rf "$work_root"
   exit 1
 }
 
@@ -189,6 +651,23 @@ fi
 } > "$deploy_lock_info"
 trap 'rm -f "$deploy_lock_info"' EXIT
 
+set +e
+assert_release_cas "$expected_release_baseline_b64" "/home/openclaw/tm-runtime"
+cas_exit=$?
+set -e
+if [ "$cas_exit" -ne 0 ]; then
+  exit 46
+fi
+
+initial_proxy_port="$(read_proxy_port || true)"
+if require_primary_proxy_backend "$initial_proxy_port"; then
+  active_proxy_port="$initial_proxy_port"
+  current_proxy_port="$initial_proxy_port"
+else
+  proxy_exit=$?
+  exit "$proxy_exit"
+fi
+
 if ! systemctl --user cat "$service" | grep -F "WorkingDirectory=$prod_current" >/dev/null; then
   echo "Service $service is not pointed at $prod_current. Run sync_tm_runtime_services.ps1 first." >&2
   exit 1
@@ -207,8 +686,9 @@ if ! sudo test -f "$upstream_snippet"; then
 fi
 
 mkdir -p "$prod_root" "$prod_next_root" "$releases_root" "$shared_root/db" "$shared_root/logs" "$shared_root/elo" "$deps_root"
-if [ -d "$legacy_prod/db" ] && [ ! -e "$shared_root/db/game.db" ]; then
-  rsync -a "$legacy_prod/db/" "$shared_root/db/"
+if [ ! -f "$game_db_path" ]; then
+  echo "Prod promote blocked: shared game.db is missing; migrate it separately with explicit approval before promotion." >&2
+  exit 49
 fi
 if [ -d "$legacy_prod/logs" ] && [ -z "$(ls -A "$shared_root/logs" 2>/dev/null || true)" ]; then
   rsync -a "$legacy_prod/logs/" "$shared_root/logs/"
@@ -223,15 +703,16 @@ if [ ! -e "$shared_root/elo/stats.json" ]; then
 fi
 
 if [ -L "$prod_current" ]; then
+  previous_current_link_existed=1
+  previous_current_link_target="$(readlink "$prod_current")"
   previous_current="$(readlink -f "$prod_current" || true)"
 elif [ -d "$legacy_prod" ]; then
   previous_current="$legacy_prod"
 fi
-current_proxy_port="$(read_proxy_port || true)"
-if [ -n "$current_proxy_port" ]; then
-  active_proxy_port="$current_proxy_port"
+if [ "$previous_current_link_existed" != "1" ] || [ -z "$previous_current_link_target" ] || [ -z "$previous_current" ]; then
+  echo "Prod promote blocked: prod current must be an existing symlink for exact rollback." >&2
+  exit 1
 fi
-
 test -f "$staging_current/build/main.js"
 test -f "$staging_current/build/src/server/server.js"
 test -f "$staging_current/assets/index.html"
@@ -244,8 +725,21 @@ test -f "$staging_current/package-lock.json"
 expected_artifact_sha="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1])).get("artifactSha256", ""))' "$staging_current/assets/release.json")"
 expected_git_sha="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1])).get("gitSha", ""))' "$staging_current/assets/release.json")"
 expected_dependency_sha="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1])).get("dependencySha256", ""))' "$staging_current/assets/release.json")"
+expected_environment="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1])).get("environment", ""))' "$staging_current/assets/release.json")"
+expected_source_tree_clean="$(python3 -c 'import json, sys; value=json.load(open(sys.argv[1])).get("sourceTreeClean"); print("true" if type(value) is bool and value else "false" if type(value) is bool else "invalid")' "$staging_current/assets/release.json")"
 test -n "$expected_artifact_sha"
-test -n "$expected_dependency_sha"
+if ! assert_dependency_sha "$expected_dependency_sha" "$staging_current/package-lock.json"; then
+  echo "Staging dependencySha256 is malformed or does not match the normalized package lock." >&2
+  exit 47
+fi
+if [ "$expected_environment" != "staging" ]; then
+  echo "Staging release manifest has unexpected environment: ${expected_environment:-missing}" >&2
+  exit 1
+fi
+if [ "$expected_source_tree_clean" != "true" ]; then
+  echo "Staging release manifest is not from a clean source tree." >&2
+  exit 1
+fi
 if [ -n "$required_artifact_sha" ] && [ "$expected_artifact_sha" != "$required_artifact_sha" ]; then
   echo "Staging artifact changed before promote: expected $required_artifact_sha, got $expected_artifact_sha" >&2
   exit 1
@@ -253,6 +747,40 @@ fi
 if [ -n "$required_git_sha" ] && [ "$expected_git_sha" != "$required_git_sha" ]; then
   echo "Staging git sha changed before promote: expected $required_git_sha, got $expected_git_sha" >&2
   exit 1
+fi
+
+current_prod_release_json=""
+current_prod_artifact_sha=""
+current_prod_git_sha=""
+if current_prod_release_json="$(read_release_json "$release_url" "$release_url_fallback" 2>/dev/null)"; then
+  if ! current_prod_artifact_sha="$(printf '%s' "$current_prod_release_json" | python3 -c 'import json, sys; print(json.load(sys.stdin).get("artifactSha256", ""))')"; then
+    current_prod_artifact_sha=""
+  fi
+  if ! current_prod_git_sha="$(printf '%s' "$current_prod_release_json" | python3 -c 'import json, sys; print(json.load(sys.stdin).get("gitSha", ""))')"; then
+    current_prod_git_sha=""
+  fi
+fi
+
+if [ -n "$expected_artifact_sha" ] && [ -n "$expected_git_sha" ] && \
+   [ "$current_prod_artifact_sha" = "$expected_artifact_sha" ] && \
+   [ "$current_prod_git_sha" = "$expected_git_sha" ] && \
+   [ "$current_proxy_port" = "$prod_port" ]; then
+  if ! publish_elo_helpers "$staging_current" "$expected_artifact_sha" "$expected_git_sha"; then
+    echo "Promote no-op could not reconcile the ELO helper mirror." >&2
+    exit 48
+  fi
+  echo "Promote no-op"
+  echo "reason=prod already serves the exact tested staging artifact"
+  echo "artifact_sha=$current_prod_artifact_sha"
+  echo "git_sha=$current_prod_git_sha"
+  exit 0
+fi
+
+if assert_no_realtime_games_sqlite "preflight"; then
+  :
+else
+  gate_exit=$?
+  exit "$gate_exit"
 fi
 
 deps_dir="$deps_root/$expected_dependency_sha"
@@ -284,7 +812,7 @@ for file in $elo_files; do
 done
 
 ts="$(date +%Y%m%d%H%M%S)"
-release_name="${ts}-${expected_git_sha}"
+release_name="${ts}-${expected_git_sha}-${run_token}"
 new_release_dir="$releases_root/$release_name"
 rm -rf "$new_release_dir"
 mkdir -p "$new_release_dir"
@@ -314,15 +842,6 @@ ln -sfn "$shared_root/elo/solo-records.json" "$new_release_dir/elo/solo-records.
 ln -sfn "$shared_root/elo/stats.json" "$new_release_dir/elo/stats.json"
 ln -sfn "$deps_dir/node_modules" "$new_release_dir/node_modules"
 
-scripts_dir="/home/openclaw/scripts"
-mkdir -p "$scripts_dir"
-cp "$new_release_dir/elo/tm-sync-elo.py" "$scripts_dir/tm-sync-elo.py"
-cp "$new_release_dir/elo/elo_aliases.py" "$scripts_dir/elo_aliases.py"
-cp "$new_release_dir/elo/player_name_aliases.json" "$scripts_dir/player_name_aliases.json"
-cp "$new_release_dir/elo/player_name_overrides.json" "$scripts_dir/player_name_overrides.json"
-cp "$new_release_dir/elo/excluded_games.json" "$scripts_dir/excluded_games.json"
-chmod 755 "$scripts_dir/tm-sync-elo.py" "$scripts_dir/elo_aliases.py"
-
 ln -sfn "$new_release_dir" "$prod_next_current"
 if ! systemctl --user restart "$next_service"; then
   echo "Next service restart failed." >&2
@@ -344,8 +863,26 @@ if [ "$next_artifact_sha" != "$expected_artifact_sha" ] || { [ -n "$expected_git
   exit 1
 fi
 
-ln -sfn "$new_release_dir" "$prod_current"
-set_proxy_port "$next_port"
+if ! backup_public_state; then
+  echo "Could not back up the exact nginx public routing state." >&2
+  rollback_before_public_switch
+  exit 1
+fi
+
+if assert_no_realtime_games_sqlite "before-public-switch"; then
+  :
+else
+  gate_exit=$?
+  rollback_before_public_switch
+  exit "$gate_exit"
+fi
+
+if ! ln -sfn "$new_release_dir" "$prod_current"; then
+  rollback_after_public_switch "Could not switch prod current to the candidate release."
+fi
+if ! set_proxy_port "$next_port"; then
+  rollback_after_public_switch "Could not switch public traffic to the next backend."
+fi
 
 if ! systemctl --user restart "$elo_service"; then
   rollback_after_public_switch "ELO restart failed after switching public traffic to next."
@@ -361,9 +898,15 @@ if ! wait_for_http "$health_url" 20 2; then
   rollback_after_public_switch "Primary prod service health check failed after switching public traffic to next."
 fi
 
-served_release_json="$(read_release_json "$release_url" "$release_url_fallback")"
-served_artifact_sha="$(printf '%s' "$served_release_json" | python3 -c 'import json, sys; print(json.load(sys.stdin).get("artifactSha256", ""))')"
-served_git_sha="$(printf '%s' "$served_release_json" | python3 -c 'import json, sys; print(json.load(sys.stdin).get("gitSha", ""))')"
+if ! served_release_json="$(read_release_json "$release_url" "$release_url_fallback")"; then
+  rollback_after_public_switch "Could not read the primary prod release manifest after restart."
+fi
+if ! served_artifact_sha="$(printf '%s' "$served_release_json" | python3 -c 'import json, sys; print(json.load(sys.stdin).get("artifactSha256", ""))')"; then
+  rollback_after_public_switch "Primary prod release manifest is malformed after restart."
+fi
+if ! served_git_sha="$(printf '%s' "$served_release_json" | python3 -c 'import json, sys; print(json.load(sys.stdin).get("gitSha", ""))')"; then
+  rollback_after_public_switch "Primary prod release manifest is malformed after restart."
+fi
 if [ -z "$served_artifact_sha" ] || [ "$served_artifact_sha" != "$expected_artifact_sha" ]; then
   rollback_after_public_switch "Primary prod service manifest hash mismatch after restart."
 fi
@@ -371,9 +914,18 @@ if [ -n "$expected_git_sha" ] && [ "$served_git_sha" != "$expected_git_sha" ]; t
   rollback_after_public_switch "Primary prod service git sha mismatch after restart."
 fi
 
-set_proxy_port "$prod_port"
+if ! set_proxy_port "$prod_port"; then
+  rollback_after_public_switch "Could not switch public traffic back to the primary backend."
+fi
 systemctl --user stop "$next_service" || true
 rm -f "$prod_next_current"
+
+# Publish fixed-path cron/helper mirrors atomically after the public release transaction.
+# If this fails, a retry reaches the exact-prod no-op above and reconciles the full set.
+if ! publish_elo_helpers "$new_release_dir" "$served_artifact_sha" "$served_git_sha"; then
+  echo "Prod is serving the new release, but ELO helper mirror reconciliation failed; retry the same promotion." >&2
+  exit 48
+fi
 
 echo "Promote ok"
 echo "source=$staging_current"
@@ -396,7 +948,7 @@ echo "git_sha=$served_git_sha"
 echo "dependency_sha=$expected_dependency_sha"
 echo "dependencies_dir=$deps_dir"
 
-rm -rf "$work_root"
+cleanup_work_root
 '@
 
 Write-Host "Promoting tested staging build to prod on $HostAlias"
@@ -409,6 +961,9 @@ if (-not [string]::IsNullOrWhiteSpace($expectedArtifactShaLower) -or -not [strin
 
 $remoteScript = $remoteScript.Replace("__EXPECTED_GIT_SHA__", $expectedGitShaLower)
 $remoteScript = $remoteScript.Replace("__EXPECTED_ARTIFACT_SHA__", $expectedArtifactShaLower)
+$remoteScript = $remoteScript.Replace("__EXPECTED_RELEASE_BASELINE_B64__", $ExpectedReleaseBaselineBase64)
+$remoteScript = $remoteScript.Replace("__IGNORED_REALTIME_GAME_IDS_CSV__", $ignoredRealtimeGameIdsCsv)
+$remoteScript = $remoteScript.Replace("__RUN_TOKEN__", $promoteRunToken)
 
 if ($DryRun) {
     Write-Host ""

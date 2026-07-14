@@ -1,5 +1,5 @@
 param(
-    [string]$HostAlias = "vps",
+    [string]$HostAlias = "hostkey-codex",
     [string]$SourceRoot,
     [switch]$AllowDirtySource,
     [switch]$AllowPrimaryWorkingTree,

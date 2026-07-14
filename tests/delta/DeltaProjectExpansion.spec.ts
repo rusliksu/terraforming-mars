@@ -237,8 +237,7 @@ describe('DeltaProjectExpansion', () => {
 
       const selectCard = cast(player.popWaitingFor(), SelectCard);
       expect(selectCard.cards.length).eq(4);
-      const confirmation = cast(selectCard.cb([selectCard.cards[0], selectCard.cards[1]]), OrOptions);
-      confirmation.options[0].cb();
+      selectCard.cb([selectCard.cards[0], selectCard.cards[1]]);
       expect(player.cardsInHand.length).eq(2);
     });
 

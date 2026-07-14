@@ -17,8 +17,8 @@ describe('ServerModel', () => {
   let player2: TestPlayer;
   let game: IGame;
 
-  function createTestGame(showOtherPlayersVP: boolean) {
-    [game, player, player2] = testGame(2, {showOtherPlayersVP});
+  function createTestGame(showOtherPlayersVP: boolean, undoStepOption = false) {
+    [game, player, player2] = testGame(2, {showOtherPlayersVP, undoStepOption});
     // Claim milestone
     const milestone = new Mayor();
 
@@ -166,5 +166,23 @@ describe('ServerModel', () => {
     const response = Server.getPlayerModel(player);
 
     expect(response.game.inputSeq).eq(12);
+  });
+
+  it('exposes step-back capability only to the journal actor', () => {
+    createTestGame(false, true);
+    game.actionReplayState = {
+      rootSnapshot: game.serialize(),
+      entries: [{
+        actorId: player.id,
+        promptFingerprint: 'prompt:root',
+        input: {type: 'option'},
+      }],
+      currentActorId: player.id,
+      currentPromptFingerprint: 'prompt:current',
+      resetBeforeNextInput: false,
+    };
+
+    expect(Server.getPlayerModel(player).canStepBack).is.true;
+    expect(Server.getPlayerModel(player2).canStepBack).is.false;
   });
 });

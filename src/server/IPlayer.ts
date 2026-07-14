@@ -190,6 +190,9 @@ export interface IPlayer {
   // When set, this player can only be accessed by the user.
   user?: DiscordId;
   telegramID?: string;
+  lastNoticeMessageId: number;
+  lastTurnNoticeKey: string;
+  lastTurnReminderNoticeKey: string;
 
   setup(game: IGame): void;
 
@@ -312,6 +315,8 @@ export interface IPlayer {
   finishProductionPhase(): void;
 
   runResearchPhase(): void;
+  canUndoResearchPurchase(): boolean;
+  undoResearchPurchase(): void;
   getCardCost(card: IProjectCard): number;
 
   /** The number of resources on this card for this player, or 0 if the player does not have this card. */

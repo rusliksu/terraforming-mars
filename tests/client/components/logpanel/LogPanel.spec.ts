@@ -174,6 +174,28 @@ describe('LogPanel', () => {
     expect(wrapper.find('[data-test="log-player-filter-red"]').classes()).contains('player_bg_color_red');
   });
 
+  it('includes the current player\'s private draft logs in their filter without requesting another view', async () => {
+    const blue = fakePublicPlayerModel({color: 'blue', id: 'p-blue-id' as any, name: 'Blue'});
+    const wrapper = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {
+        viewModel: fakeViewModel({players: [blue, fakePublicPlayerModel({color: 'red', name: 'Red'})]}),
+        color: 'blue',
+      },
+    });
+    const generation = new LogMessage(LogMessageType.NEW_GENERATION, 'Generation ${0}', []);
+    const blueMessage = new LogMessage(LogMessageType.DEFAULT, '${0} played a card', [
+      {type: LogMessageDataType.PLAYER, value: 'blue'},
+    ]);
+    const ownDraftMessage = new LogMessage(LogMessageType.DEFAULT, 'You drafted cards', [], 'p-blue-id' as any);
+    (wrapper.vm as any).messages = [generation, blueMessage, ownDraftMessage];
+
+    await wrapper.find('[data-test="log-player-filter-blue"]').trigger('click');
+
+    expect((wrapper.vm as any).filteredMessages).deep.eq([generation, blueMessage, ownDraftMessage]);
+    expect(fetchCalls).has.length(1);
+  });
+
   it('sticks to bottom when the log list grows after render', async () => {
     const fakeList = {} as HTMLUListElement;
     let fakeScrollHeight = 480;
@@ -261,10 +283,14 @@ describe('LogPanel', () => {
         },
       },
     });
+    // Browsers can report a temporary bottom scroll position while replacing the list.
+    fakePanel.scrollTop = 320;
+    (wrapper.vm as any).handleScroll();
     await Promise.resolve();
     await Promise.resolve();
     await new Promise((resolve) => setTimeout(resolve, 0));
     await wrapper.vm.$nextTick();
+    lastResizeCallback?.([], {});
 
     expect(fakeScrollTop).to.equal(120);
   });

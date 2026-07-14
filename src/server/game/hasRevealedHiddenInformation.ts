@@ -2,17 +2,31 @@ import {ICard} from '../cards/ICard';
 import {IGame} from '../IGame';
 import {IPlayer} from '../IPlayer';
 
-export function hasRevealedHiddenInformation(currentGame: IGame, restoredGame: IGame, player: IPlayer): boolean {
-  if (hasDeckDrawPileChanged(currentGame, restoredGame)) {
+interface HiddenInformationOptions {
+  /** Cards on the restored prompt were already visible before the reverted input. */
+  restoredPromptCardsAreKnown?: boolean;
+}
+
+export function hasRevealedHiddenInformation(
+  currentGame: IGame,
+  restoredGame: IGame,
+  player: IPlayer,
+  options: HiddenInformationOptions = {},
+): boolean {
+  if (hasRandomCardSourceChanged(currentGame, restoredGame)) {
     return true;
   }
 
+  const knownRestoredPromptCards = options.restoredPromptCardsAreKnown ?
+    visiblePromptCardNames(restoredGame, player.id) :
+    new Set<string>();
   for (const currentPlayer of currentGame.players) {
     const restoredPlayer = restoredGame.players.find((candidate) => candidate.id === currentPlayer.id);
     if (restoredPlayer === undefined) {
       return true;
     }
-    if (hasNewPrivateCards(currentPlayer, restoredPlayer)) {
+    const knownCards = currentPlayer.id === player.id ? knownRestoredPromptCards : new Set<string>();
+    if (hasNewPrivateCards(currentPlayer, restoredPlayer, knownCards)) {
       return true;
     }
   }
@@ -20,35 +34,74 @@ export function hasRevealedHiddenInformation(currentGame: IGame, restoredGame: I
   return waitingForShowsUnknownCards(player, restoredGame);
 }
 
-function hasDeckDrawPileChanged(currentGame: IGame, restoredGame: IGame): boolean {
-  return cardNames(currentGame.projectDeck.drawPile).join('|') !== cardNames(restoredGame.projectDeck.drawPile).join('|') ||
-    cardNames(currentGame.preludeDeck.drawPile).join('|') !== cardNames(restoredGame.preludeDeck.drawPile).join('|') ||
-    cardNames(currentGame.corporationDeck.drawPile).join('|') !== cardNames(restoredGame.corporationDeck.drawPile).join('|') ||
-    cardNames(currentGame.ceoDeck.drawPile).join('|') !== cardNames(restoredGame.ceoDeck.drawPile).join('|');
+function hasRandomCardSourceChanged(currentGame: IGame, restoredGame: IGame): boolean {
+  return deckSourceChanged(currentGame.projectDeck, restoredGame.projectDeck) ||
+    deckSourceChanged(currentGame.preludeDeck, restoredGame.preludeDeck) ||
+    deckSourceChanged(currentGame.corporationDeck, restoredGame.corporationDeck) ||
+    deckSourceChanged(currentGame.ceoDeck, restoredGame.ceoDeck);
 }
 
-function hasNewPrivateCards(currentPlayer: IPlayer, restoredPlayer: IPlayer): boolean {
-  return hasAddedCards(currentPlayer.cardsInHand, restoredPlayer.cardsInHand) ||
-    hasAddedCards(currentPlayer.dealtProjectCards, restoredPlayer.dealtProjectCards) ||
-    hasAddedCards(currentPlayer.draftHand, restoredPlayer.draftHand) ||
-    hasAddedCards(currentPlayer.draftedCards, restoredPlayer.draftedCards) ||
-    hasAddedCards(currentPlayer.preludeCardsInHand, restoredPlayer.preludeCardsInHand) ||
-    hasAddedCards(Array.from(currentPlayer.ceoCardsInHand), Array.from(restoredPlayer.ceoCardsInHand)) ||
-    hasAddedCards(currentPlayer.dealtCorporationCards, restoredPlayer.dealtCorporationCards) ||
-    hasAddedCards(currentPlayer.dealtPreludeCards, restoredPlayer.dealtPreludeCards) ||
-    hasAddedCards(currentPlayer.dealtCeoCards, restoredPlayer.dealtCeoCards);
+function deckSourceChanged(
+  currentDeck: {drawPile: ReadonlyArray<ICard>, discardPile: ReadonlyArray<ICard>},
+  restoredDeck: {drawPile: ReadonlyArray<ICard>, discardPile: ReadonlyArray<ICard>},
+): boolean {
+  if (!sameCards(currentDeck.drawPile, restoredDeck.drawPile)) {
+    return true;
+  }
+
+  // A normal discard only appends public input to the pile. Removing or
+  // reordering existing discards means a hidden discard source was inspected.
+  const currentDiscards = cardNames(currentDeck.discardPile);
+  const restoredDiscards = cardNames(restoredDeck.discardPile);
+  return restoredDiscards.some((cardName, index) => currentDiscards[index] !== cardName);
 }
 
-function hasAddedCards(currentCards: ReadonlyArray<ICard>, restoredCards: ReadonlyArray<ICard>): boolean {
+function sameCards(first: ReadonlyArray<ICard>, second: ReadonlyArray<ICard>): boolean {
+  return cardNames(first).join('|') === cardNames(second).join('|');
+}
+
+function hasNewPrivateCards(
+  currentPlayer: IPlayer,
+  restoredPlayer: IPlayer,
+  alreadyKnownCards: ReadonlySet<string>,
+): boolean {
+  return hasAddedCards(currentPlayer.cardsInHand, restoredPlayer.cardsInHand, alreadyKnownCards) ||
+    hasAddedCards(currentPlayer.dealtProjectCards, restoredPlayer.dealtProjectCards, alreadyKnownCards) ||
+    hasAddedCards(currentPlayer.draftHand, restoredPlayer.draftHand, alreadyKnownCards) ||
+    hasAddedCards(currentPlayer.draftedCards, restoredPlayer.draftedCards, alreadyKnownCards) ||
+    hasAddedCards(currentPlayer.preludeCardsInHand, restoredPlayer.preludeCardsInHand, alreadyKnownCards) ||
+    hasAddedCards(Array.from(currentPlayer.ceoCardsInHand), Array.from(restoredPlayer.ceoCardsInHand), alreadyKnownCards) ||
+    hasAddedCards(currentPlayer.dealtCorporationCards, restoredPlayer.dealtCorporationCards, alreadyKnownCards) ||
+    hasAddedCards(currentPlayer.dealtPreludeCards, restoredPlayer.dealtPreludeCards, alreadyKnownCards) ||
+    hasAddedCards(currentPlayer.dealtCeoCards, restoredPlayer.dealtCeoCards, alreadyKnownCards);
+}
+
+function hasAddedCards(
+  currentCards: ReadonlyArray<ICard>,
+  restoredCards: ReadonlyArray<ICard>,
+  alreadyKnownCards: ReadonlySet<string>,
+): boolean {
   const restoredCounts = countCards(restoredCards);
   for (const card of currentCards) {
     const count = restoredCounts.get(card.name) ?? 0;
     if (count === 0) {
-      return true;
+      if (!alreadyKnownCards.has(card.name)) {
+        return true;
+      }
+      continue;
     }
     restoredCounts.set(card.name, count - 1);
   }
   return false;
+}
+
+function visiblePromptCardNames(game: IGame, playerId: IPlayer['id']): ReadonlySet<string> {
+  const player = game.getPlayerById(playerId);
+  const waitingForModel = player.getWaitingFor()?.toModel(player);
+  if (waitingForModel === undefined || !('cards' in waitingForModel)) {
+    return new Set<string>();
+  }
+  return new Set(waitingForModel.cards.map((card) => card.name));
 }
 
 function waitingForShowsUnknownCards(player: IPlayer, restoredGame: IGame): boolean {

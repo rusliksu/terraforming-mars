@@ -109,5 +109,6 @@
     "venus": "Венера",
     "jovian": "Юпитер",
     "mars": "Марс",
-    "moon": "Луна"
+    "moon": "Луна",
+    "${0} undid an irreversible action after revealing hidden information": "${0} откатил необратимое действие после раскрытия скрытой информации"
 }

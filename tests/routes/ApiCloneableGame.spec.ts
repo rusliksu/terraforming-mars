@@ -233,6 +233,7 @@ describe('ApiCloneableGame', () => {
         customCeos: [],
         politicalAgendasExtension: 'Standard',
         undoOption: true,
+        undoStepOption: true,
         showTimers: true,
         noEloGame: true,
         turnBasedGame: true,
@@ -269,6 +270,7 @@ describe('ApiCloneableGame', () => {
     expect(response.setup.noEloGame).eq(true);
     expect(response.setup.privateHands).eq(false);
     expect(response.setup.initialDraftOneWay).eq(true);
+    expect(response.setup.undoStepOption).eq(true);
     expect(response.setup.turnBasedGame).eq(true);
     expect(response.setup.botGame).eq(false);
     expect(response.setup.randomFirstPlayer).eq(true);

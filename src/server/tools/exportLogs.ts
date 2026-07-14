@@ -13,6 +13,9 @@ export async function exportLogs(db: IDatabase, gameId: GameId): Promise<Array<s
     const {gameLog} = await db.getGameVersion(gameId, saveId);
     for (let idx = lastIdx; idx < gameLog.length; idx++) {
       const logEntry = gameLog[idx];
+      if (logEntry.canceled === true) {
+        continue;
+      }
       try {
         const text = Log.applyData(logEntry, (datum) => {
           switch (datum.type) {

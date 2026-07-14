@@ -98,6 +98,12 @@ export class Server {
     const thisPlayer: PublicPlayerModel = players[thisPlayerIndex];
 
     const rv: PlayerViewModel = {
+      canStepBack: game.gameOptions.undoStepOption === true &&
+        game.actionReplayState !== undefined &&
+        game.actionReplayState !== null &&
+        game.actionReplayState.entries.length > 0 &&
+        game.actionReplayState.currentActorId === player.id,
+      canUndoResearchPurchase: player.canUndoResearchPurchase(),
       cardsInHand: cardsToModel(player, player.cardsInHand, {showCalculatedCost: true}),
       ceoCardsInHand: cardsToModel(player, Array.from(player.ceoCardsInHand)),
       dealtCorporationCards: cardsToModel(player, player.dealtCorporationCards),
@@ -466,7 +472,8 @@ export class Server {
       requiresMoonTrackCompletion: options.requiresMoonTrackCompletion,
       requiresVenusTrackCompletion: options.requiresVenusTrackCompletion,
       twoCorpsVariant: options.twoCorpsVariant,
-      undoOption: options.undoOption,
+      undoOption: options.undoOption || options.undoStepOption === true,
+      undoStepOption: options.undoStepOption === true,
     };
   }
 

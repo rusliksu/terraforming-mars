@@ -1051,6 +1051,7 @@ describe('Game', () => {
     const serializedKeys = Object.keys(serialized);
 
     const unserializedFieldsInGame: Array<keyof Game> = [
+      'actionReplayState',
       'createdTime',
       'discardedColonies',
       'inDoubleDown',
@@ -1083,6 +1084,29 @@ describe('Game', () => {
 
     expect(serializedKeys.concat(...unserializedFieldsInGame).sort())
       .deep.eq(gameKeys.concat(...serializedValuesNotInGame).sort());
+  });
+
+  it('enables action undo when loading a game with experimental step undo', () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const game = Game.newInstance('gameid', [player], player, 'spectatorid');
+    const serialized = game.serialize();
+    serialized.gameOptions.undoOption = false;
+    serialized.gameOptions.undoStepOption = true;
+
+    const restored = Game.deserialize(serialized, {simulation: true});
+    const restoredPlayer = restored.getPlayerById(player.id);
+    restored.phase = Phase.ACTION;
+    restored.activePlayer = restoredPlayer;
+    restoredPlayer.actionsTakenThisRound = 1;
+    restoredPlayer.takeAction(false);
+
+    expect(restored.gameOptions.undoOption).is.true;
+    const waitingFor = restoredPlayer.getWaitingFor()?.toModel(restoredPlayer);
+    expect(waitingFor?.type).eq('or');
+    if (waitingFor?.type !== 'or') {
+      throw new Error('Expected main action prompt');
+    }
+    expect(waitingFor.options.map((option) => option.title)).to.include('Undo last action');
   });
 
   it('deserializing a game without moon data still loads', () => {

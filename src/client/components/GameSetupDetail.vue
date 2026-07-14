@@ -74,7 +74,8 @@
               <div v-if="gameOptions.privateHands" class="game-config generic" v-i18n>private hands</div>
               <div v-else class="game-config generic" v-i18n>open hands</div>
               <div v-if="gameOptions.noEloGame" class="game-config generic" v-i18n>no ELO</div>
-              <div v-if="gameOptions.undoOption" class="game-config undo" v-i18n>undo</div>
+              <div v-if="gameOptions.undoOption" class="game-config undo" v-i18n>undo action</div>
+              <div v-if="gameOptions.undoStepOption" class="game-config undo" v-i18n>undo one step</div>
             </li>
             <li v-if="gameOptions.twoCorpsVariant"><div class="setup-item" v-i18n>Merger</div></li>
             <li v-if="gameOptions.bannedCards.length > 0"><div class="setup-item" v-i18n>Banned cards:</div>{{ gameOptions.bannedCards.join(', ') }}</li>

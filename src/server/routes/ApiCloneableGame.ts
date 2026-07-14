@@ -97,6 +97,7 @@ export class ApiCloneableGame extends Handler {
       clonedGamedId: undefined,
       seededGame: false,
       undoOption: options.undoOption,
+      undoStepOption: options.undoStepOption === true,
       showTimers: options.showTimers,
       fastModeOption: options.fastModeOption,
       showOtherPlayersVP: options.showOtherPlayersVP,

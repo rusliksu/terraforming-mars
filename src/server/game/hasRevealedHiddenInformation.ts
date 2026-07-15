@@ -31,7 +31,7 @@ export function hasRevealedHiddenInformation(
     }
   }
 
-  return waitingForShowsUnknownCards(player, restoredGame);
+  return waitingForShowsUnknownCards(currentGame, player, restoredGame);
 }
 
 function hasRandomCardSourceChanged(currentGame: IGame, restoredGame: IGame): boolean {
@@ -104,13 +104,16 @@ function visiblePromptCardNames(game: IGame, playerId: IPlayer['id']): ReadonlyS
   return new Set(waitingForModel.cards.map((card) => card.name));
 }
 
-function waitingForShowsUnknownCards(player: IPlayer, restoredGame: IGame): boolean {
+function waitingForShowsUnknownCards(currentGame: IGame, player: IPlayer, restoredGame: IGame): boolean {
   const waitingForModel = player.getWaitingFor()?.toModel(player);
   if (waitingForModel === undefined || !('cards' in waitingForModel)) {
     return false;
   }
 
   const knownCards = new Set<string>();
+  for (const cardName of cardNames(currentGame.getStandardProjects())) {
+    knownCards.add(cardName);
+  }
   for (const candidate of restoredGame.players) {
     for (const cardName of cardNames(candidate.tableau.asArray())) {
       knownCards.add(cardName);

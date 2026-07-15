@@ -40,7 +40,7 @@ export class SelectInitialCards extends OptionsInput<undefined> {
 
     this.push('corp',
       new SelectCard<ICorporationCard>(
-        titles.SELECT_CORPORATION_TITLE, undefined, player.dealtCorporationCards, {min: 1, max: 1}).andThen(
+        titles.SELECT_CORPORATION_TITLE, undefined, player.dealtCorporationCards, {min: 1, max: 1, logSelection: false}).andThen(
         (cards) => {
           if (cards.length !== 1) {
             throw new InputError('Only select 1 corporation card');

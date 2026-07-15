@@ -37,6 +37,7 @@ describe('DrawCards', () => {
     cast(DrawCards.keepSome(player, 4, {keepMax: 2}).execute(), undefined);
     runAllActions(game);
     const action = cast(player.popWaitingFor(), SelectCard);
+    expect(action.config.logSelection).is.false;
     expect(action.config.min).to.eq(2);
     expect(action.config.max).to.eq(2);
     action.cb([action.cards[0], action.cards[2]]);

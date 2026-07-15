@@ -22,7 +22,7 @@ describe('CeresTechMarket', () => {
     player.megaCredits = 0;
 
     const selectCard = cast(card.action(player), SelectCard<IProjectCard>);
-    selectCard.cb(discardedCards);
+    selectCard.process({type: 'card', cards: discardedCards.map((card) => card.name)}, player);
 
     expect(player.cardsInHand).is.empty;
     expect(player.megaCredits).eq(4);

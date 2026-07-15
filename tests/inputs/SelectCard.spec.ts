@@ -72,7 +72,8 @@ describe('SelectCard', () => {
     const selectCards = new SelectCard(
       'Select card',
       'Save',
-      [aquiferPumping, ioMiningIndustries])
+      [aquiferPumping, ioMiningIndustries],
+      {logSelection: true})
       .andThen(cb);
 
     selectCards.process({type: 'card', cards: [CardName.AQUIFER_PUMPING]}, player);
@@ -85,13 +86,12 @@ describe('SelectCard', () => {
     ]);
   });
 
-  it('can defer selection logging to a more specific caller', () => {
+  it('does not log selections by default', () => {
     const [game, player] = testGame(1);
     const selectCards = new SelectCard(
       'Select card',
       'Save',
-      [aquiferPumping, ioMiningIndustries],
-      {logSelection: false})
+      [aquiferPumping, ioMiningIndustries])
       .andThen(cb);
 
     selectCards.process({type: 'card', cards: [CardName.AQUIFER_PUMPING]}, player);

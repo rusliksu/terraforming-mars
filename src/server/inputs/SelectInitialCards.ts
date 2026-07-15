@@ -58,7 +58,7 @@ export class SelectInitialCards extends OptionsInput<undefined> {
     const preludeHandicap = normalizePreludeHandicap(player.preludeHandicap);
     if (game.gameOptions.preludeExtension && preludeHandicap > 0) {
       this.push('prelude',
-        new SelectCard(titles.SELECT_PRELUDE_TITLE, undefined, player.dealtPreludeCards, {min: preludeHandicap, max: preludeHandicap})
+        new SelectCard(titles.SELECT_PRELUDE_TITLE, undefined, player.dealtPreludeCards, {min: preludeHandicap, max: preludeHandicap, logSelection: true})
           .andThen((preludeCards) => {
             if (preludeCards.length !== preludeHandicap) {
               throw new InputError(`Only select ${preludeHandicap} ${preludeHandicap === 1 ? 'prelude' : 'preludes'}`);
@@ -70,7 +70,7 @@ export class SelectInitialCards extends OptionsInput<undefined> {
 
     if (game.gameOptions.ceoExtension) {
       this.push('ceo',
-        new SelectCard(titles.SELECT_CEO_TITLE, undefined, player.dealtCeoCards, {min: 1, max: 1}).andThen((ceoCards) => {
+        new SelectCard(titles.SELECT_CEO_TITLE, undefined, player.dealtCeoCards, {min: 1, max: 1, logSelection: true}).andThen((ceoCards) => {
           if (ceoCards.length !== 1) {
             throw new InputError('Only select 1 CEO');
           }
@@ -80,7 +80,7 @@ export class SelectInitialCards extends OptionsInput<undefined> {
     }
 
     this.push('project',
-      new SelectCard(titles.SELECT_PROJECTS_TITLE, undefined, player.dealtProjectCards, {min: 0, max: 10, played: false})
+      new SelectCard(titles.SELECT_PROJECTS_TITLE, undefined, player.dealtProjectCards, {min: 0, max: 10, played: false, logSelection: true})
         .andThen((cards) => {
           player.cardsInHand.push(...cards);
           return undefined;

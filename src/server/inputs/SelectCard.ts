@@ -23,7 +23,7 @@ export type Options = {
   showOwner: boolean,
   /** Default is false. If true, show a "Select All" / "Deselect All" toggle button. */
   showSelectAll: boolean,
-  /** Default is true. Set false when the caller writes a more specific private selection log. */
+  /** Default is false. Enable only when this selection is meaningful in the game log. */
   logSelection: boolean,
 }
 export class SelectCard<T extends ICard> extends BasePlayerInput<ReadonlyArray<T>> {
@@ -44,7 +44,7 @@ export class SelectCard<T extends ICard> extends BasePlayerInput<ReadonlyArray<T
       played: config?.played ?? true,
       showOwner: config?.showOwner ?? false,
       showSelectAll: config?.showSelectAll ?? false,
-      logSelection: config?.logSelection ?? true,
+      logSelection: config?.logSelection ?? false,
     };
     this.buttonLabel = buttonLabel;
   }

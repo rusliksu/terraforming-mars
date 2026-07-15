@@ -137,8 +137,8 @@ describe('LogPanel', () => {
   });
 
   it('filters visible logs by selected player without requesting another view', async () => {
-    const blue = fakePublicPlayerModel({color: 'blue', id: 'p-blue-id' as any, name: 'Blue'});
-    const red = fakePublicPlayerModel({color: 'red', id: 'p-red-id' as any, name: 'Red'});
+    const blue = fakePublicPlayerModel({color: 'blue', name: 'Blue'});
+    const red = fakePublicPlayerModel({color: 'red', name: 'Red'});
     const wrapper = shallowMount(LogPanel, {
       ...globalConfig,
       props: {
@@ -150,7 +150,9 @@ describe('LogPanel', () => {
     const blueMessage = new LogMessage(LogMessageType.DEFAULT, '${0} played a card', [
       {type: LogMessageDataType.PLAYER, value: 'blue'},
     ]);
-    const redMessage = new LogMessage(LogMessageType.DEFAULT, 'You selected cards', [], 'p-red-id' as any);
+    const redMessage = new LogMessage(LogMessageType.DEFAULT, '${0} played a card', [
+      {type: LogMessageDataType.PLAYER, value: 'red'},
+    ]);
     (wrapper.vm as any).messages = [generation, blueMessage, redMessage];
 
     await wrapper.find('[data-test="log-player-filter-red"]').trigger('click');
@@ -172,14 +174,18 @@ describe('LogPanel', () => {
 
     expect(wrapper.find('[data-test="log-player-filter-blue"]').classes()).contains('player_bg_color_blue');
     expect(wrapper.find('[data-test="log-player-filter-red"]').classes()).contains('player_bg_color_red');
+    expect(wrapper.find('.log-player-filters').element.previousElementSibling).eq(wrapper.find('.log-panel').element);
   });
 
   it('includes the current player\'s private draft logs in their filter without requesting another view', async () => {
-    const blue = fakePublicPlayerModel({color: 'blue', id: 'p-blue-id' as any, name: 'Blue'});
+    const blue = fakePublicPlayerModel({color: 'blue', name: 'Blue'});
     const wrapper = shallowMount(LogPanel, {
       ...globalConfig,
       props: {
-        viewModel: fakeViewModel({players: [blue, fakePublicPlayerModel({color: 'red', name: 'Red'})]}),
+        viewModel: fakeViewModel({
+          id: 'p-blue-id' as any,
+          players: [blue, fakePublicPlayerModel({color: 'red', name: 'Red'})],
+        }),
         color: 'blue',
       },
     });

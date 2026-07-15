@@ -37,7 +37,14 @@ export class ApiWaitingFor extends Handler {
     const inputs = this.playersWithRequiredInputs(game);
     if (this.playerHasRequiredInput(player)) {
       return {result: 'GO', waitingFor: inputs};
-    } else if (game.gameAge > gameAge || game.undoCount > undoCount) {
+    } else if (game.undoCount > undoCount) {
+      return {result: 'REFRESH', waitingFor: inputs};
+    } else if (player.getWaitingFor()?.optional === true) {
+      // Optional inputs are draft repicks. Other players' selections advance
+      // gameAge, but do not change this player's prompt, so refreshing would
+      // only remount the same selection UI.
+      return {result: 'WAIT', waitingFor: inputs};
+    } else if (game.gameAge > gameAge) {
       return {result: 'REFRESH', waitingFor: inputs};
     }
     return {result: 'WAIT', waitingFor: inputs};

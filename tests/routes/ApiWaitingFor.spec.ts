@@ -55,6 +55,35 @@ describe('ApiWaitingFor', () => {
     expect(res.content).eq('{"result":"GO","waitingFor":["black"]}');
   });
 
+  it('does not refresh an optional draft repick when game age advances', async () => {
+    const player = TestPlayer.BLACK.newPlayer();
+    const player2 = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('game-id', [player, player2], player, 'spectatorid');
+    await scaffolding.ctx.gameLoader.add(game);
+    player.getWaitingFor()!.optional = true;
+    game.gameAge = 51;
+
+    scaffolding.url = '/api/waitingfor?id=' + player.id + '&gameAge=50&undoCount=0';
+    await scaffolding.get(ApiWaitingFor.INSTANCE, res);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(res.content).eq('{"result":"WAIT","waitingFor":["red"]}');
+  });
+
+  it('refreshes an optional draft repick after an undo', async () => {
+    const player = TestPlayer.BLACK.newPlayer();
+    const game = Game.newInstance('game-id', [player], player, 'spectatorid');
+    await scaffolding.ctx.gameLoader.add(game);
+    player.getWaitingFor()!.optional = true;
+    game.undoCount = 1;
+
+    scaffolding.url = '/api/waitingfor?id=' + player.id + '&gameAge=50&undoCount=0';
+    await scaffolding.get(ApiWaitingFor.INSTANCE, res);
+
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(res.content).eq('{"result":"REFRESH","waitingFor":[]}');
+  });
+
   it('audits successful player polling', async () => {
     const auditEvents: Array<AccessAuditRecordInput> = [];
     const player = TestPlayer.BLACK.newPlayer();

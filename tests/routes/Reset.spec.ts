@@ -191,7 +191,7 @@ describe('Reset', () => {
     expect(reloadedGame.gameAge).eq(2);
   });
 
-  it('uses the replay entry log boundary when replay recreated prior log entries', () => {
+  it('marks replayed copies canceled instead of appending duplicates', () => {
     const currentPlayer = TestPlayer.BLACK.newPlayer();
     const currentGame = Game.newInstance('game-id', [currentPlayer], currentPlayer, 'spectatorid');
     currentGame.gameLog.length = 0;
@@ -206,15 +206,15 @@ describe('Reset', () => {
     replayedGame.log('Played card');
     replayedGame.log('Placed tile');
 
+    const gameAgeBeforeUndo = replayedGame.gameAge;
     appendCanceledLogMessages(currentGame, replayedGame, 1);
 
     expect(replayedGame.gameLog.map((message) => [message.message, message.canceled === true])).deep.eq([
       ['Before action', false],
-      ['Played card', false],
-      ['Placed tile', false],
       ['Played card', true],
       ['Placed tile', true],
     ]);
+    expect(replayedGame.gameAge).eq(gameAgeBeforeUndo + 2);
   });
 
   it('steps Project Eden back to its effect-choice prompt', async () => {

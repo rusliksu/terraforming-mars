@@ -144,6 +144,7 @@ export abstract class Draft {
       {
         min: cardsToKeep, max: cardsToKeep, played: false,
         enabled: enabled,
+        logSelection: false,
       });
     selectCard.optional = repick;
     player.setWaitingFor(selectCard

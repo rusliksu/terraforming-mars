@@ -8,6 +8,7 @@ import {SelectCardModel} from '../../common/models/PlayerInputModel';
 import {IPlayer} from '../IPlayer';
 import {cardsToModel} from '../models/ModelUtils';
 import {InputError} from './InputError';
+import {LogHelper} from '../LogHelper';
 
 export type Options = {
   max: number,
@@ -22,6 +23,8 @@ export type Options = {
   showOwner: boolean,
   /** Default is false. If true, show a "Select All" / "Deselect All" toggle button. */
   showSelectAll: boolean,
+  /** Default is true. Set false when the caller writes a more specific private selection log. */
+  logSelection: boolean,
 }
 export class SelectCard<T extends ICard> extends BasePlayerInput<ReadonlyArray<T>> {
   public config: Options;
@@ -41,6 +44,7 @@ export class SelectCard<T extends ICard> extends BasePlayerInput<ReadonlyArray<T
       played: config?.played ?? true,
       showOwner: config?.showOwner ?? false,
       showSelectAll: config?.showSelectAll ?? false,
+      logSelection: config?.logSelection ?? true,
     };
     this.buttonLabel = buttonLabel;
   }
@@ -65,7 +69,7 @@ export class SelectCard<T extends ICard> extends BasePlayerInput<ReadonlyArray<T
     };
   }
 
-  public process(input: InputResponse) {
+  public process(input: InputResponse, player?: IPlayer) {
     if (!isSelectCardResponse(input)) {
       throw new InputError('Not a valid SelectCardResponse');
     }
@@ -75,7 +79,7 @@ export class SelectCard<T extends ICard> extends BasePlayerInput<ReadonlyArray<T
     if (input.cards.length > this.config.max) {
       throw new InputError('Too many cards selected');
     }
-    const cards = [];
+    const cards: Array<T> = [];
     for (const cardName of input.cards) {
       const {card, idx} = getCardFromPlayerInput(this.cards, cardName);
       cards.push(card);
@@ -83,6 +87,17 @@ export class SelectCard<T extends ICard> extends BasePlayerInput<ReadonlyArray<T
         throw new InputError(`${cardName} is not available`);
       }
     }
-    return this.cb(cards);
+    const skipped = this.cards.filter((card) => cards.includes(card) === false);
+    const result = this.cb(cards);
+
+    if (player !== undefined && this.config.logSelection) {
+      if (cards.length === 0 && skipped.length === 0) {
+        player.game.log('You selected no cards', () => {}, {reservedFor: player});
+      } else {
+        LogHelper.logPrivateCardSelection(player, 'selected', cards, skipped);
+      }
+    }
+
+    return result;
   }
 }

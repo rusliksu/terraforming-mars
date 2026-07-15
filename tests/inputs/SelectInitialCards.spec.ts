@@ -103,6 +103,14 @@ describe('SelectInitialCards', () => {
     expect(player.game.corporationDeck.discardPile.map(toName)).to.have.members([CardName.HELION]);
     expect(player.game.ceoDeck.discardPile.map(toName)).to.have.members([CardName.MUSK]);
     expect(player.game.preludeDeck.discardPile.map(toName)).to.have.members([CardName.DONATION, CardName.SUPPLIER]);
+
+    const selectionLogs = player.game.gameLog.filter((entry) => entry.playerId === player.id && entry.message.startsWith('You selected'));
+    expect(selectionLogs.map((entry) => entry.data.map((datum) => datum.value))).deep.eq([
+      [[CardName.LOAN, CardName.BIOLAB], [CardName.DONATION, CardName.SUPPLIER]],
+      [[CardName.ASIMOV], [CardName.MUSK]],
+      [[CardName.ANTS], [CardName.BACTOVIRAL_RESEARCH, CardName.COMET_AIMING, CardName.DIRIGIBLES]],
+      [CardName.INVENTRIX, [CardName.INVENTRIX, CardName.HELION]],
+    ]);
   });
 
   it('selects one prelude when prelude handicap is 1', () => {

@@ -136,6 +136,44 @@ describe('LogPanel', () => {
     expect(fetchCalls[0]).does.not.include('id=s-spectatorid');
   });
 
+  it('filters visible logs by selected player without requesting another view', async () => {
+    const blue = fakePublicPlayerModel({color: 'blue', id: 'p-blue-id' as any, name: 'Blue'});
+    const red = fakePublicPlayerModel({color: 'red', id: 'p-red-id' as any, name: 'Red'});
+    const wrapper = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {
+        viewModel: fakeViewModel({players: [blue, red]}),
+        color: 'blue',
+      },
+    });
+    const generation = new LogMessage(LogMessageType.NEW_GENERATION, 'Generation ${0}', []);
+    const blueMessage = new LogMessage(LogMessageType.DEFAULT, '${0} played a card', [
+      {type: LogMessageDataType.PLAYER, value: 'blue'},
+    ]);
+    const redMessage = new LogMessage(LogMessageType.DEFAULT, 'You selected cards', [], 'p-red-id' as any);
+    (wrapper.vm as any).messages = [generation, blueMessage, redMessage];
+
+    await wrapper.find('[data-test="log-player-filter-red"]').trigger('click');
+
+    expect((wrapper.vm as any).filteredMessages).deep.eq([generation, redMessage]);
+    expect(fetchCalls).has.length(1);
+  });
+
+  it('colors each player filter with that player\'s color', async () => {
+    const blue = fakePublicPlayerModel({color: 'blue', id: 'p-blue-id' as any, name: 'Blue'});
+    const red = fakePublicPlayerModel({color: 'red', id: 'p-red-id' as any, name: 'Red'});
+    const wrapper = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {
+        viewModel: fakeViewModel({players: [blue, red]}),
+        color: 'blue',
+      },
+    });
+
+    expect(wrapper.find('[data-test="log-player-filter-blue"]').classes()).contains('player_bg_color_blue');
+    expect(wrapper.find('[data-test="log-player-filter-red"]').classes()).contains('player_bg_color_red');
+  });
+
   it('includes the current player\'s private draft logs in their filter without requesting another view', async () => {
     const blue = fakePublicPlayerModel({color: 'blue', id: 'p-blue-id' as any, name: 'Blue'});
     const wrapper = shallowMount(LogPanel, {

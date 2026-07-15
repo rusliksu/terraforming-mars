@@ -284,7 +284,17 @@ export default defineComponent({
       return classes.join(' ');
     },
     getClassesPlayerFilter(color: Color | undefined): string {
-      return color === this.selectedPlayerColor ? 'log-player-filter--selected' : '';
+      const classes = [];
+      if (color !== undefined) {
+        classes.push('log-player-filter--player', playerColorClass(color, 'bg'));
+      }
+      if (color === this.selectedPlayerColor) {
+        classes.push('log-player-filter--selected');
+        if (color === undefined) {
+          classes.push('log-player-filter--selected-all');
+        }
+      }
+      return classes.join(' ');
     },
     getGenerationsRange(): Array<number> {
       const generations: Array<number> = [];
@@ -322,11 +332,12 @@ export default defineComponent({
       if (this.selectedPlayerColor === undefined) {
         return this.messages;
       }
+      const player = this.players.find((player) => player.color === this.selectedPlayerColor);
       return this.messages.filter((message) => {
         if (message.type === LogMessageType.NEW_GENERATION) {
           return true;
         }
-        if (this.selectedPlayerColor === this.color && this.id !== undefined && message.playerId === this.id) {
+        if (player?.id !== undefined && message.playerId === player.id) {
           return true;
         }
         return message.data.some((datum) => datum.type === LogMessageDataType.PLAYER && datum.value === this.selectedPlayerColor);

@@ -425,6 +425,16 @@ describe('Styles', () => {
     expect(cssBlock(playerHome, '.ma-score.player_bg_color_saturnstorm')).to.contain('color: #ffe5e8;');
   });
 
+  it('keeps the Rigatone 2 surface pattern sharp on wide layouts', () => {
+    const variables = read('src/styles/variables.less');
+
+    expect(variables).to.contain('repeating-linear-gradient(\n    115deg,');
+    expect(variables).to.contain('transparent 190px 384px');
+    expect(variables).to.contain('repeating-linear-gradient(\n    35deg,');
+    expect(variables).to.contain('transparent 256px 512px');
+    expect(variables).not.to.contain('transparent 45%, rgba(255, 0, 60, 0.4) 46%');
+  });
+
   it('keeps GydRo pearl names black while counters stay readable', () => {
     const common = read('src/styles/common.less');
 

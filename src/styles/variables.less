@@ -44,10 +44,23 @@
 @player_rigatone2: rgb(255, 0, 60);
 @player_rigatone2_surface_color: #0d0204;
 @player_rigatone2_surface_pattern:
-  linear-gradient(115deg, transparent 45%, rgba(255, 0, 60, 0.4) 46%, rgba(255, 255, 255, 0.7) 47%, transparent 48%),
-  linear-gradient(35deg, transparent 20%, rgba(255, 0, 60, 0.3) 21%, rgba(255, 255, 255, 0.6) 22%, transparent 23%),
-  linear-gradient(155deg, transparent 70%, rgba(255, 0, 60, 0.3) 71%, rgba(255, 255, 255, 0.5) 72%, transparent 73%),
-  linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 0, 60, 0.05) 100%);
+  repeating-linear-gradient(
+    115deg,
+    transparent 0 174px,
+    rgba(255, 0, 60, 0.18) 174px 181px,
+    rgba(255, 255, 255, 0.68) 181px 183px,
+    rgba(255, 0, 60, 0.26) 183px 190px,
+    transparent 190px 384px
+  ),
+  repeating-linear-gradient(
+    35deg,
+    transparent 0 244px,
+    rgba(255, 0, 60, 0.14) 244px 249px,
+    rgba(255, 255, 255, 0.42) 249px 251px,
+    rgba(255, 0, 60, 0.18) 251px 256px,
+    transparent 256px 512px
+  ),
+  linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 45%, rgba(255, 0, 60, 0.07) 100%);
 @player_rigatone2_token_gradient: linear-gradient(135deg, #ff9aaa 0%, @player_rigatone2 52%, #520013 100%);
 @player_gold_token_gradient: linear-gradient(135deg, #e7c86b 0%, #b78322 52%, #604000 100%);
 @player_emerald_token_gradient: linear-gradient(135deg, #9dffe3 0%, #0c9b70 52%, #004937 100%);

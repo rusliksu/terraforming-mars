@@ -137,7 +137,7 @@ export class Timer {
     if (!d.afterFirstAction) {
       return '00:00';
     }
-    const elapsed = d.sumElapsed + (d.running ? clock.now() - d.startedAt : 0);
+    const elapsed = Math.max(0, d.sumElapsed + (d.running ? clock.now() - d.startedAt : 0));
     const elapsedDate = new Date(elapsed);
     const hours = elapsedDate.getUTCHours() + (elapsedDate.getUTCDate() - 1) * 24;
     if (hours > 0) {

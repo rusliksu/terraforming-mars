@@ -90,6 +90,16 @@ describe('Timer', () => {
     expect(Timer.toString(timer.serialize(), clock)).eq('1:00:01');
   });
 
+  it('shows 00:00 when the display clock is behind the server clock', () => {
+    expect(Timer.toString({
+      sumElapsed: 0,
+      startedAt: 5000,
+      running: true,
+      afterFirstAction: true,
+      lastStoppedAt: 0,
+    }, clock)).eq('00:00');
+  });
+
   it('rebate', () => {
     timer.start(); // Skipping first action
     timer.stop();

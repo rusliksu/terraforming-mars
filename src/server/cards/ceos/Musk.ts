@@ -46,6 +46,10 @@ export class Musk extends CeoCard {
       {min: 0, max: eligibleCards.length})
       .andThen(
         (cards) => {
+          if (cards.length > 0) {
+            player.game.log('${0} discarded ${1} Earth card(s): ${2}', (b) =>
+              b.player(player).number(cards.length).cards(cards));
+          }
           player.stock.add(Resource.TITANIUM, cards.length + 6, {log: true});
           for (const card of cards) {
             player.discardCardFromHand(card);

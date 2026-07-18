@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import {Musk} from '../../../src/server/cards/ceos/Musk';
 import {Tag} from '../../../src/common/cards/Tag';
 import {SelectCard} from '../../../src/server/inputs/SelectCard';
-import {fakeCard, runAllActions} from '../../TestingUtils';
+import {fakeCard, formatMessage, runAllActions} from '../../TestingUtils';
 import {TestPlayer} from '../../TestPlayer';
 import {testGame} from '../../TestGame';
 
@@ -44,11 +44,17 @@ describe('Musk', () => {
   it('Takes action with one Earth card, discards it', () => {
     const earthCard = new EarthOffice();
     player.cardsInHand.push(earthCard);
+    player.game.gameLog = [];
     const selectCard = cast(card.action(player), SelectCard);
     selectCard.cb([earthCard]);
     runAllActions(player.game);
     expect(player.titanium).to.eq(7);
     expect(player.cardsInHand).has.length(1);
+
+    const publicDiscardLog = player.game.gameLog.find((entry) =>
+      formatMessage(entry) === 'blue discarded 1 Earth card(s): Earth Office');
+    expect(publicDiscardLog).is.not.undefined;
+    expect(publicDiscardLog?.playerId).is.undefined;
   });
 
   it('Takes action with three Earth cards, discards all', () => {

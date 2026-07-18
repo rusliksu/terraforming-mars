@@ -125,7 +125,7 @@ describe('DrawCards', () => {
     expect(game.gameLog).has.length(2);
 
     const discardMessage = game.gameLog[0];
-    expect(formatMessage(discardMessage)).matches(/Discarded .* cards.*/);
+    expect(formatMessage(discardMessage)).matches(/Discarded .* non-matching cards from the deck: .*/);
 
     const publicMessage = game.gameLog[1];
     expect(formatMessage(publicMessage)).matches(/blue drew .+ and .+/);

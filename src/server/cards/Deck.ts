@@ -132,7 +132,7 @@ export class Deck<T extends ICard> {
       }
     }
     if (discardedCards.length > 0) {
-      logger.log('Discarded ${0} cards ${1}', (b) => b.number(discardedCards.length).cardNames(discardedCards, {ellipsis: true}));
+      logger.log('Discarded ${0} non-matching cards from the deck: ${1}', (b) => b.number(discardedCards.length).cardNames(discardedCards, {ellipsis: true}));
     }
 
     return result;

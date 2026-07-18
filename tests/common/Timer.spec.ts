@@ -90,6 +90,16 @@ describe('Timer', () => {
     expect(Timer.toString(timer.serialize(), clock)).eq('1:00:01');
   });
 
+  it('shows total hours after 31 days', () => {
+    expect(Timer.toString({
+      sumElapsed: 32 * 24 * 60 * 60 * 1000 + 1000,
+      startedAt: 0,
+      running: false,
+      afterFirstAction: true,
+      lastStoppedAt: 0,
+    })).eq('768:00:01');
+  });
+
   it('shows 00:00 when the display clock is behind the server clock', () => {
     expect(Timer.toString({
       sumElapsed: 0,

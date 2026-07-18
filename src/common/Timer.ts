@@ -139,7 +139,7 @@ export class Timer {
     }
     const elapsed = Math.max(0, d.sumElapsed + (d.running ? clock.now() - d.startedAt : 0));
     const elapsedDate = new Date(elapsed);
-    const hours = elapsedDate.getUTCHours() + (elapsedDate.getUTCDate() - 1) * 24;
+    const hours = Math.floor(elapsed / (60 * 60 * 1000));
     if (hours > 0) {
       return String(hours) + elapsedDate.toISOString().substr(13, 6);
     }

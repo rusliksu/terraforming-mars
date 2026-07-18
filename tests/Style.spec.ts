@@ -417,7 +417,7 @@ describe('Styles', () => {
       expect(block).not.to.contain('linear-gradient');
     }
     expect(cssBlock(playerHome, '.ma-score')).to.contain('color: black;');
-    for (const selector of ['red', 'green', 'blue', 'purple', 'emerald', 'ginger', 'hydro', 'antistress', 'turquoise', 'serge', 'saturnstorm']) {
+    for (const selector of ['red', 'green', 'blue', 'purple', 'emerald', 'ginger', 'hydro', 'antistress', 'turquoise', 'serge', 'saturnstorm', 'rigatone', 'rigatone2']) {
       expect(playerHome).to.contain(`.ma-score.player_bg_color_${selector}`);
     }
     expect(playerHome).to.contain('color: #fff;');

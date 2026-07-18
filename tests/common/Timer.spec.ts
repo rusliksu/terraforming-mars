@@ -58,6 +58,27 @@ describe('Timer', () => {
     expect(timer.getElapsed()).eq(0);
   });
 
+  it('does not move the shared stop time backwards when loading another game', () => {
+    const target = Timer.deserialize({
+      sumElapsed: 0,
+      startedAt: 0,
+      running: false,
+      afterFirstAction: true,
+      lastStoppedAt: 5000,
+    });
+
+    Timer.deserialize({
+      sumElapsed: 0,
+      startedAt: 0,
+      running: false,
+      afterFirstAction: true,
+      lastStoppedAt: 1000,
+    });
+
+    target.start();
+    expect(target.serialize().startedAt).eq(5000);
+  });
+
   it('shows 1:00:01 after 3601 sec', () => {
     timer.start(); // Skipping first action
     timer.stop();

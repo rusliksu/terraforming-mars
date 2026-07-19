@@ -184,6 +184,23 @@ describe('Styles', () => {
     expect(moonSpace).to.contain("let css = 'board-cube-coOwner board-cube--' + this.space.coOwner;");
   });
 
+  it('renders Rigatone 2 board ownership with the standard black cube and an offset slash', () => {
+    const board = read('src/styles/board.less');
+    const cube = cssBlock(board, '.board-space .board-cube--rigatone2.board-cube--persona');
+    const legacyMarker = cssBlock(board, '.board-space .board-cube--rigatone2.board-cube--persona::before');
+    const slash = cssBlock(board, '.board-space .board-cube--rigatone2.board-cube--persona::after');
+
+    expect(cube).to.contain('background: url(./assets/board_icons.png) -48px -91px no-repeat;');
+    expect(cube).to.contain('brightness(0.35)');
+    expect(cube).to.contain('contrast(1.25)');
+    expect(cube).to.contain('drop-shadow(0 0 1px #ff2438)');
+    expect(legacyMarker).to.contain('content: none;');
+    expect(slash).to.contain('left: 14px;');
+    expect(slash).to.contain('top: 7px;');
+    expect(slash).to.contain('background: linear-gradient(90deg, #bfc4ca 0%, #fff 45%, #d9dde2 100%);');
+    expect(slash).to.contain('transform: rotate(38deg);');
+  });
+
   it('uses persona cube classes for milestones, awards, and colony cubes', () => {
     const playerHome = read('src/styles/player_home.less');
     const milestone = read('src/client/components/Milestone.vue');

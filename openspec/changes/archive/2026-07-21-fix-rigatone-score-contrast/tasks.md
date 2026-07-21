@@ -13,9 +13,9 @@
 ## 3. Доставка на staging
 
 - [x] 3.1 Повторно выполнить проверку русского текста, `openspec validate fix-rigatone-score-contrast --strict --no-interactive` и scoped diff review.
-- [ ] 3.2 Создать task-owned commit/PR в `rusliksu/terraforming-mars`, дождаться зелёного CI и смержить проверенный head.
-- [ ] 3.3 Развернуть merge SHA на `staging.tm.knightbyte.win` со snapshot до/после и Playwright smoke реального UI.
-- [ ] 3.4 После post-merge staging evidence заархивировать OpenSpec отдельным task-owned archive PR и проверить canonical spec.
+- [x] 3.2 Создать task-owned commit/PR в `rusliksu/terraforming-mars`, дождаться зелёного CI и смержить проверенный head.
+- [x] 3.3 Развернуть merge SHA на `staging.tm.knightbyte.win` со snapshot до/после и Playwright smoke реального UI.
+- [x] 3.4 После post-merge staging evidence заархивировать OpenSpec отдельным task-owned archive PR и проверить canonical spec.
 
 ## 4. Отдельный live gate
 

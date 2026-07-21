@@ -19,5 +19,5 @@
 
 ## 4. Отдельный live gate
 
-- [ ] 4.1 Получить отдельное явное разрешение Руслана на prod deploy и согласовать proof path для custom-only diff.
-- [ ] 4.2 Перед prod promotion проверить active games и release state, затем развернуть только при отсутствии realtime blocker и выполнить post-deploy smoke.
+- [x] 4.1 Получить отдельное явное разрешение Руслана на prod deploy и согласовать proof path для custom-only diff.
+- [x] 4.2 Перед prod promotion проверить active games и release state, затем развернуть только при отсутствии realtime blocker и выполнить post-deploy smoke.

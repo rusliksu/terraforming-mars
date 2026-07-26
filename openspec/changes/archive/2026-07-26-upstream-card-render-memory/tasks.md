@@ -13,6 +13,6 @@
 
 ## 3. Проверка на staging
 
-- [ ] 3.1 Снять обязательный pre-deploy snapshot и задеплоить точный проверенный task SHA на `staging.tm.knightbyte.win` штатным guarded path.
-- [ ] 3.2 Выполнить backend health/release smoke и подтвердить SHA, artifact hash и отсутствие service/console ошибок.
-- [ ] 3.3 Зафиксировать staging evidence, повторить языковую и strict OpenSpec-проверку и подтвердить готовность change к архивированию и task-owned PR.
+- [x] 3.1 Снять обязательный pre-deploy snapshot и задеплоить точный проверенный task SHA на `staging.tm.knightbyte.win` штатным guarded path.
+- [x] 3.2 Выполнить backend health/release smoke и подтвердить SHA, artifact hash и отсутствие service/console ошибок.
+- [x] 3.3 Зафиксировать staging evidence, повторить языковую и strict OpenSpec-проверку и подтвердить готовность change к архивированию и task-owned PR.

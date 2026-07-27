@@ -22,31 +22,68 @@
 }
 
 .terraformed-banner {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  gap: 5px;
   background: linear-gradient(to right, #e28c22, #ffcc64, #e28c22);
   color: #000;
-  text-align: center;
-  padding: 12px;
-  font-size: 24px;
+  min-width: 82px;
+  height: 40px;
+  margin: 10px 0 0 8px;
+  padding: 0 11px;
+  border: 1px solid #805700;
+  border-radius: 0 0 10px 10px;
+  font-size: 16px;
   font-family: Prototype, Ubuntu, Sans-Serif;
   font-weight: bold;
   text-transform: uppercase;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-  z-index: 100;
-  position: relative;
-  border-bottom: 2px solid #805700;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 15px;
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
+}
+
+.terraformed-banner__check {
+  font-family: Ubuntu, Sans-Serif;
+  font-size: 19px;
+  line-height: 1;
+}
+
+@media (max-width: 700px) {
+  .terraformed-banner {
+    min-width: 68px;
+    margin-left: 4px;
+    padding: 0 6px;
+    font-size: 14px;
+  }
+
+  .terraformed-banner__check {
+    font-size: 17px;
+  }
 }
 
 .terraformed-banner--animated {
-  animation: slide-down 0.6s ease-out;
+  animation: terraformed-confirm 0.65s ease-out;
 }
 
-@keyframes slide-down {
-  from { transform: translateY(-100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+@keyframes terraformed-confirm {
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+    box-shadow: 0 0 0 rgba(255, 204, 100, 0);
+  }
+  60% {
+    transform: scale(1.04);
+    opacity: 1;
+    box-shadow: 0 0 18px rgba(255, 204, 100, 0.8);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
+  }
 }
 
 // text shadows
@@ -648,7 +685,9 @@
     .ma-score.player_bg_color_antistress,
     .ma-score.player_bg_color_turquoise,
     .ma-score.player_bg_color_serge,
-    .ma-score.player_bg_color_saturnstorm {
+    .ma-score.player_bg_color_saturnstorm,
+    .ma-score.player_bg_color_rigatone,
+    .ma-score.player_bg_color_rigatone2 {
       color: #fff;
     }
 

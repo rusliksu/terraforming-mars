@@ -1,6 +1,12 @@
 <template>
-    <div class="terraformed-banner" :class="{'terraformed-banner--animated': animate}">
-      <span v-i18n>Mars is Terraformed!</span>
+    <div
+      class="terraformed-banner"
+      :class="{'terraformed-banner--animated': animate}"
+      :title="$t('Mars is Terraformed!')"
+      :aria-label="$t('Mars is Terraformed!')"
+      role="status">
+      <span aria-hidden="true">MARS</span>
+      <span class="terraformed-banner__check" aria-hidden="true">✓</span>
     </div>
 </template>
 

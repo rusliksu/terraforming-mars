@@ -14,6 +14,7 @@ import {
   GENUINE_GOLD_NAME,
 } from '../../src/common/Color';
 import * as constants from '../../src/common/constants';
+import {FakeClock} from '../common/FakeClock';
 
 function newGameConfig(players: NewGameConfig['players']): NewGameConfig {
   return {
@@ -100,7 +101,7 @@ describe('ApiCreateGame', () => {
     req = new MockRequest();
     res = new MockResponse();
     scaffolding = new RouteTestScaffolding(req);
-    apiCreateGame = new ApiCreateGame({limit: 99999, perMs: 1});
+    apiCreateGame = new ApiCreateGame([{limit: 99999, perMs: 1}]);
   });
 
   it('Official random boards do not include fan maps', () => {
@@ -557,7 +558,7 @@ describe('ApiCreateGame', () => {
 
   it('starts bot takeover for bot players during game creation', async () => {
     const starts = new Array<{gameId: string; playerId: string; serverId: string}>();
-    apiCreateGame = new ApiCreateGame({limit: 99999, perMs: 1}, {
+    apiCreateGame = new ApiCreateGame([{limit: 99999, perMs: 1}], {
       start: ({gameId, playerId, serverId}) => {
         starts.push({gameId, playerId, serverId});
         return {gameId, playerId, pid: 321, startedAtMs: 1, logFile: 'bot.log'};
@@ -594,7 +595,7 @@ describe('ApiCreateGame', () => {
 
   it('ignores bot player flags when bot mode is disabled', async () => {
     const starts = new Array<{gameId: string; playerId: string; serverId: string}>();
-    apiCreateGame = new ApiCreateGame({limit: 99999, perMs: 1}, {
+    apiCreateGame = new ApiCreateGame([{limit: 99999, perMs: 1}], {
       start: ({gameId, playerId, serverId}) => {
         starts.push({gameId, playerId, serverId});
         return {gameId, playerId, pid: 321, startedAtMs: 1, logFile: 'bot.log'};
@@ -632,5 +633,101 @@ describe('ApiCreateGame', () => {
     await Promise.all(([emit, post]));
 
     expect(res.statusCode).eq(statusCode.internalServerError);
+  });
+
+  // Issues one create-game POST against `handler`, using fresh request/response objects,
+  // reusing `scaffolding.ctx` (and therefore its ip and clock) across calls.
+  function postGame(handler: ApiCreateGame, request: MockRequest, response: MockResponse) {
+    const post = handler.post(request, response, scaffolding.ctx);
+    const emit = Promise.resolve().then(() => {
+      request.emitter.emit('data', JSON.stringify({players: [{name: 'a player', color: 'red'}]}));
+      request.emitter.emit('end');
+    });
+    return Promise.all([emit, post]);
+  }
+
+  it('a quota handler does not block while under its limit', async () => {
+    const apiCreateGame = new ApiCreateGame([{limit: 1, perMs: 120_000}]);
+
+    const req1 = new MockRequest();
+    const res1 = new MockResponse();
+    await postGame(apiCreateGame, req1, res1);
+    expect(res1.statusCode).not.eq(statusCode.tooManyRequests);
+  });
+
+  it('a quota handler blocks once its limit is exceeded', async () => {
+    const apiCreateGame = new ApiCreateGame([{limit: 1, perMs: 120_000}]);
+
+    const req1 = new MockRequest();
+    const res1 = new MockResponse();
+    await postGame(apiCreateGame, req1, res1);
+    expect(res1.statusCode).not.eq(statusCode.tooManyRequests);
+
+    const req2 = new MockRequest();
+    const res2 = new MockResponse();
+    await postGame(apiCreateGame, req2, res2);
+    expect(res2.statusCode).eq(statusCode.tooManyRequests);
+    expect(res2.content).eq('Quota exceeded');
+  });
+
+  it('two quota handlers do not block while both are under their limits', async () => {
+    const apiCreateGame = new ApiCreateGame([{limit: 99999, perMs: 1}, {limit: 99999, perMs: 1}]);
+
+    const req1 = new MockRequest();
+    const res1 = new MockResponse();
+    await postGame(apiCreateGame, req1, res1);
+    expect(res1.statusCode).not.eq(statusCode.tooManyRequests);
+  });
+
+  it('two quota handlers block when the first exceeds its limit and the second does not', async () => {
+    const apiCreateGame = new ApiCreateGame([{limit: 1, perMs: 120_000}, {limit: 99999, perMs: 1}]);
+
+    const req1 = new MockRequest();
+    const res1 = new MockResponse();
+    await postGame(apiCreateGame, req1, res1);
+    expect(res1.statusCode).not.eq(statusCode.tooManyRequests);
+
+    const req2 = new MockRequest();
+    const res2 = new MockResponse();
+    await postGame(apiCreateGame, req2, res2);
+    expect(res2.statusCode).eq(statusCode.tooManyRequests);
+    expect(res2.content).eq('Quota exceeded');
+  });
+
+  it('two quota handlers block when the first does not exceed its limit but the second does', async () => {
+    const apiCreateGame = new ApiCreateGame([{limit: 99999, perMs: 1}, {limit: 1, perMs: 120_000}]);
+
+    const req1 = new MockRequest();
+    const res1 = new MockResponse();
+    await postGame(apiCreateGame, req1, res1);
+    expect(res1.statusCode).not.eq(statusCode.tooManyRequests);
+
+    const req2 = new MockRequest();
+    const res2 = new MockResponse();
+    await postGame(apiCreateGame, req2, res2);
+    expect(res2.statusCode).eq(statusCode.tooManyRequests);
+    expect(res2.content).eq('Quota exceeded');
+  });
+
+  it('elapsed time restores a blocked quota', async () => {
+    const apiCreateGame = new ApiCreateGame([{limit: 1, perMs: 120_000}]);
+    const clock = scaffolding.ctx.clock as FakeClock;
+
+    const req1 = new MockRequest();
+    const res1 = new MockResponse();
+    await postGame(apiCreateGame, req1, res1);
+    expect(res1.statusCode).not.eq(statusCode.tooManyRequests);
+
+    const req2 = new MockRequest();
+    const res2 = new MockResponse();
+    await postGame(apiCreateGame, req2, res2);
+    expect(res2.statusCode).eq(statusCode.tooManyRequests);
+
+    clock.millis += 120_001;
+
+    const req3 = new MockRequest();
+    const res3 = new MockResponse();
+    await postGame(apiCreateGame, req3, res3);
+    expect(res3.statusCode).not.eq(statusCode.tooManyRequests);
   });
 });

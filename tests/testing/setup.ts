@@ -1,3 +1,5 @@
+import * as os from 'os';
+import * as path from 'path';
 import {Database} from '../../src/server/database/Database';
 import {IDatabase} from '../../src/server/database/IDatabase';
 import {SerializedGame} from '../../src/server/SerializedGame';
@@ -6,6 +8,7 @@ import {GameLoader} from '../../src/server/database/GameLoader';
 import {globalInitialize} from '../../src/server/globalInitialize';
 
 process.env.TM_DISABLE_TELEGRAM = process.env.TM_DISABLE_TELEGRAM ?? '1';
+process.env.ELO_DATA_DIR = process.env.ELO_DATA_DIR ?? path.join(os.tmpdir(), `terraforming-mars-tests-${process.pid}`);
 
 const FAKE_DATABASE: IDatabase = {
   markFinished: () => Promise.resolve(),

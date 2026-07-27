@@ -21,12 +21,12 @@ async function getLatencyCount(path: string): Promise<number> {
 }
 
 describe('requestProcessor', () => {
-  it('routes a request from an allowed IP to a handler', () => {
+  it('routes a request from an allowed IP to a handler', async () => {
     // The default MockRequest socket address (127.0.0.1) is not on the blocklist.
     const req = new MockRequest();
     const res = new MockResponse();
     req.url = '/';
-    processRequest(req, res);
+    await processRequest(req, res);
 
     expect(req.url).eq('/assets/index.html');
   });
@@ -44,8 +44,7 @@ describe('requestProcessor', () => {
     req.url = '/sw.js';
 
     try {
-      processRequest(req, res);
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await processRequest(req, res);
       expect(res.statusCode).eq(statusCode.ok);
     } finally {
       (GameLoader as typeof GameLoader & {getInstance: typeof GameLoader.getInstance}).getInstance = originalGetInstance;
@@ -74,8 +73,7 @@ describe('requestProcessor', () => {
     req.url = '/release.json';
 
     try {
-      processRequest(req, res);
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await processRequest(req, res);
       expect(assetHandlerCalled).eq(true);
       expect(res.statusCode).eq(statusCode.ok);
       expect(res.content).eq('release manifest');
@@ -108,8 +106,7 @@ describe('requestProcessor', () => {
     req.url = '/release.json';
 
     try {
-      processRequest(req, res);
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await processRequest(req, res);
       expect(observedCtx?.ip).eq('203.0.113.10');
       expect(observedCtx?.clientIp).deep.eq({
         address: '203.0.113.10',
@@ -148,12 +145,11 @@ describe('requestProcessor', () => {
 
     try {
       const before = await getLatencyCount('release.json');
-      processRequest(req, res);
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      const processPromise = processRequest(req, res);
       expect(await getLatencyCount('release.json')).eq(before);
 
       finishHandler?.();
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await processPromise;
 
       expect(res.statusCode).eq(statusCode.ok);
       expect(res.content).eq('delayed asset');
@@ -162,5 +158,18 @@ describe('requestProcessor', () => {
       ServeAsset.INSTANCE.processRequest = originalProcessRequest;
       (GameLoader as typeof GameLoader & {getInstance: typeof GameLoader.getInstance}).getInstance = originalGetInstance;
     }
+  });
+
+  it('waits for the routed handler to finish writing the response before returning', async () => {
+    // ServeAsset reads the file asynchronously, so this exercises a handler
+    // that suspends on a real await before writing headers/body.
+    const req = new MockRequest();
+    const res = new MockResponse();
+    req.url = '/';
+
+    await processRequest(req, res);
+
+    expect(res.content.length).greaterThan(0);
+    expect(res.getHeader('Content-Length')).eq(res.content.length);
   });
 });

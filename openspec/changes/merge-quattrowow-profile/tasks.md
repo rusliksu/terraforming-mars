@@ -9,27 +9,27 @@
 ## 2. Локальная проверка и репетиция данных
 
 - [x] 2.1 Выполнить целевые TypeScript и Python tests для профилей, aliases, Elo sync и stats.
-- [ ] 2.2 Выполнить lint/typecheck/build в объёме, требуемом репозиторием.
+- [x] 2.2 Выполнить lint/typecheck/build в объёме, требуемом репозиторием.
 - [x] 2.3 На копии актуальных live JSON выполнить полный хронологический replay и сохранить impact-report: hash источника, изменившиеся игры/профили/рейтинги, 10 игр у `Quattrowow`, отсутствие `александр`/`саша`.
 - [x] 2.4 Доказать неизменность количества, порядка и спортивной проекции игр, а также побитовую идемпотентность второго replay.
 - [x] 2.5 Провести ponytail full review итогового кода и устранить найденные проблемы без расширения scope.
 
 ## 3. Staging
 
-- [ ] 3.1 Проверить diff относительно live SHA и доказать, что release train содержит только task-owned commit без посторонних alias/code изменений.
-- [ ] 3.2 Развернуть точный commit в staging штатным staging-first сценарием без параллельного deploy.
-- [ ] 3.3 Проверить staging API/JSON, единый розовый профиль, 10 игр и отсутствие browser console errors через Playwright.
+- [x] 3.1 Проверить diff относительно live SHA и доказать, что release train содержит только task-owned commit без посторонних alias/code изменений.
+- [x] 3.2 Развернуть точный commit в staging штатным staging-first сценарием без параллельного deploy.
+- [x] 3.3 Проверить staging API/JSON, единый розовый профиль, 10 игр и отсутствие browser console errors через Playwright.
 
 ## 4. Prod и live-миграция
 
-- [ ] 4.1 Проверить hashes staging artifact и продвинуть ровно его в prod.
-- [ ] 4.2 Остановить `tm-sync-elo.timer`, дождаться завершения oneshot-service и занять штатный `/tmp/tm-sync-elo.lock`.
-- [ ] 4.3 Сохранить timestamped backup `elo-data.json`, `data.json`, `stats.json` с SHA-256 и повторить impact-report на том же hash.
-- [ ] 4.4 Выполнить одну ручную штатную prod-пересборку Elo/statistics внутри эксклюзивного окна.
-- [ ] 4.5 Проверить публичные JSON/UI/API игры `gfb80e36623be`, сервисные логи и все инварианты; при нарушении восстановить backup до возврата timer.
-- [ ] 4.6 Вернуть `tm-sync-elo.timer` и доказать успешный последующий идемпотентный sync.
+- [x] 4.1 Проверить hashes staging artifact и продвинуть ровно его в prod.
+- [x] 4.2 Остановить `tm-sync-elo.timer`, дождаться завершения oneshot-service и занять штатный `/tmp/tm-sync-elo.lock`.
+- [x] 4.3 Сохранить timestamped backup `elo-data.json`, `data.json`, `stats.json` с SHA-256 и повторить impact-report на том же hash.
+- [x] 4.4 Выполнить одну ручную штатную prod-пересборку Elo/statistics внутри эксклюзивного окна.
+- [x] 4.5 Проверить публичные JSON/UI/API игры `gfb80e36623be`, сервисные логи и все инварианты; при нарушении восстановить backup до возврата timer.
+- [x] 4.6 Вернуть `tm-sync-elo.timer` и доказать успешный последующий идемпотентный sync.
 
 ## 5. Завершение
 
-- [ ] 5.1 Зафиксировать проверяемые артефакты, итоговый профиль/рейтинг и путь rollback.
-- [ ] 5.2 Выполнить strict OpenSpec validation и отметить только фактически проверенные задачи.
+- [x] 5.1 Зафиксировать проверяемые артефакты, итоговый профиль/рейтинг и путь rollback.
+- [x] 5.2 Выполнить strict OpenSpec validation и отметить только фактически проверенные задачи.

@@ -417,7 +417,7 @@ def assert_player_name_overrides_apply_per_game(sync) -> None:
         for game in games
     }
     assert names_by_game["g-felkner"] == ["Фелькнер", "Даша"]
-    assert names_by_game["g-alexander"] == ["Тома", "Александр"]
+    assert names_by_game["g-alexander"] == ["Тома", "Quattrowow"]
     assert [result["displayName"] for result in stored_game["results"]] == ["Фелькнер", "Даша"]
 
 
@@ -492,6 +492,30 @@ def assert_synthetic_elo_records_are_identified(sync) -> None:
     )
 
 
+def assert_quattrowow_aliases_replay_idempotently(sync) -> None:
+    games = [
+        {
+            "_key": f"g-{index}",
+            "results": [
+                {"name": alias.lower(), "displayName": alias, "place": 1, "vp": 100, "corp": "Teractor"},
+                {"name": "opponent", "displayName": "Opponent", "place": 2, "vp": 80, "corp": "Helion"},
+            ],
+        }
+        for index, alias in enumerate(("Александр", "Саша", "Quattrowow"), start=1)
+    ]
+
+    players = sync.rebuild_ratings(games)
+    first_replay = json.dumps({"games": games, "players": players}, ensure_ascii=False, sort_keys=True)
+    second_players = sync.rebuild_ratings(games)
+    second_replay = json.dumps({"games": games, "players": second_players}, ensure_ascii=False, sort_keys=True)
+
+    assert set(players) == {"quattrowow", "opponent"}
+    assert players["quattrowow"]["displayName"] == "Quattrowow"
+    assert players["quattrowow"]["games"] == 3
+    assert all(result["name"] == "quattrowow" for game in games for result in game["results"][:1])
+    assert first_replay == second_replay
+
+
 def main() -> None:
     sync = load_sync_module()
     assert_fetch_stats_games_fills_names_before_bot_filter(sync)
@@ -503,6 +527,7 @@ def main() -> None:
     assert_provisional_elo_caps_expected_score(sync)
     assert_provisional_elo_reduces_first_game_farm_delta(sync)
     assert_synthetic_elo_records_are_identified(sync)
+    assert_quattrowow_aliases_replay_idempotently(sync)
     card_metadata = {
         "Teractor": {"name": "Teractor", "type": "corporation", "tags": ["earth"]},
         "Applied Science": {"name": "Applied Science", "type": "prelude", "tags": ["wild"], "resourceType": "Science"},

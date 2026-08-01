@@ -926,6 +926,26 @@ describe('ELO page', () => {
           avgGens: 8,
           avgMargin: -5,
         },
+        'саша': {
+          displayName: 'Саша',
+          elo: 1470,
+          elo_vp: 1470,
+          games: 2,
+          avgPlace: 2,
+          avgVP: 90,
+          avgGens: 9,
+          avgMargin: -10,
+        },
+        'quattrowow': {
+          displayName: 'Quattrowow',
+          elo: 1484,
+          elo_vp: 1500,
+          games: 2,
+          avgPlace: 2,
+          avgVP: 95,
+          avgGens: 9,
+          avgMargin: -12,
+        },
       },
       games: [
         {
@@ -955,6 +975,16 @@ describe('ELO page', () => {
           bestVP: 75,
           averages: {},
         },
+        {
+          name: 'Александр',
+          displayName: 'Александр',
+          games: 1,
+          wins: 0,
+          winRate: 0,
+          avgVP: 95,
+          bestVP: 95,
+          averages: {},
+        },
       ],
       generationRecords: [],
       records: [
@@ -981,9 +1011,10 @@ describe('ELO page', () => {
     expect(statsTab).not.eq(undefined);
     statsTab?.click();
 
-    expect(getCells(document, '#tmStatsProfileList .tm-stats-profile-name')).deep.eq(['Тимур', 'Qiksa']);
+    expect(getCells(document, '#tmStatsProfileList .tm-stats-profile-name')).deep.eq(['Тимур', 'Qiksa', 'Quattrowow']);
     expect((document.querySelector('[data-stats-player="тимур"]') as HTMLElement).style.getPropertyValue('--profile-color')).eq('#991100');
     expect((document.querySelector('[data-stats-player="qiksa"]') as HTMLElement).style.getPropertyValue('--profile-color')).eq('#aaaaaa');
+    expect((document.querySelector('[data-stats-player="quattrowow"]') as HTMLElement).style.getPropertyValue('--profile-color')).eq('#f574bb');
 
     const qiksaProfile = document.querySelector('#tmStatsProfileList [data-stats-player="qiksa"]') as HTMLElement;
     qiksaProfile.click();

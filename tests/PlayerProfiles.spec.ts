@@ -21,6 +21,8 @@ describe('Player profiles', () => {
     expect(getPlayerProfileByName('Никита_Кусков')?.name).eq('Никита');
     expect(getPlayerProfileByName('Nuke')?.name).eq('Nuke');
     expect(getPlayerProfileByName('Никитос')).eq(undefined);
+    expect(getPlayerProfileByName('Александр')?.name).eq('Quattrowow');
+    expect(getPlayerProfileByName('Саша')?.name).eq('Quattrowow');
   });
 
   it('keeps profile ids unique', () => {
@@ -71,6 +73,7 @@ describe('Player profiles', () => {
       nuke: {displayName: 'Nuke', games: 7, elo: 1497},
       tagir: {displayName: 'Тагир', games: 18, elo: 1618},
       anya: {displayName: 'Аня', games: 21, elo: 1531},
+      quattrowow: {displayName: 'Quattrowow', games: 10, elo: 1484},
     });
 
     expect(getPlayerProfileByName('Qiksa', profiles)?.preferredColor).eq('black');
@@ -81,6 +84,7 @@ describe('Player profiles', () => {
     expect(getPlayerProfileByName('Тагир', profiles)?.preferredColor).eq('rigatone2');
     expect(getPlayerProfileByName('Ригат Иммортал', profiles)?.name).eq('Тагир');
     expect(getPlayerProfileByName('Аня', profiles)?.preferredColor).eq('green');
+    expect(getPlayerProfileByName('Quattrowow', profiles)?.preferredColor).eq('pink');
   });
 
   it('uses reserved player colors for Elo-built profiles', () => {

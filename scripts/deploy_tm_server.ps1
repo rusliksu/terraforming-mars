@@ -429,6 +429,53 @@ elo_files="index.html audit_player_names.py elo-api.js elo_aliases.py excluded_g
 deploy_lock_file="/home/openclaw/tm-runtime/.deploy.lock"
 deploy_lock_info="/home/openclaw/tm-runtime/.deploy.lock.info"
 
+normalize_release_permissions() {
+  local candidate="$1"
+  local resolved_releases
+  local resolved_candidate
+  local public_file
+
+  resolved_releases="$(readlink -f -- "$releases_root")" || return 49
+  resolved_candidate="$(readlink -f -- "$candidate")" || return 49
+  if [ "$(dirname -- "$resolved_candidate")" != "$resolved_releases" ]; then
+    echo "Release permission normalization rejected a candidate outside the releases root." >&2
+    return 49
+  fi
+  for public_file in build assets elo; do
+    if [ ! -d "$resolved_candidate/$public_file" ]; then
+      echo "Release permission normalization found an incomplete candidate." >&2
+      return 49
+    fi
+  done
+
+  chmod 755 "$runtime_root" "$releases_root" "$shared_root" "$shared_root/elo" "$resolved_candidate" || return 49
+  find "$resolved_candidate/build" "$resolved_candidate/assets" "$resolved_candidate/elo" -xdev -type d -exec chmod 755 {} + || return 49
+  find "$resolved_candidate/build" "$resolved_candidate/assets" "$resolved_candidate/elo" -xdev -type f -exec chmod 644 {} + || return 49
+  for public_file in package.json package-lock.json; do
+    if [ -f "$resolved_candidate/$public_file" ]; then
+      chmod 644 "$resolved_candidate/$public_file" || return 49
+    fi
+  done
+  for public_file in elo-data.json data.json solo-records.json stats.json; do
+    if [ -f "$shared_root/elo/$public_file" ]; then
+      chmod 664 "$shared_root/elo/$public_file" || return 49
+    fi
+  done
+
+  if find "$resolved_candidate/build" "$resolved_candidate/assets" "$resolved_candidate/elo" -xdev -type d ! -perm 0755 -print -quit | grep -q .; then
+    return 49
+  fi
+  if find "$resolved_candidate/build" "$resolved_candidate/assets" "$resolved_candidate/elo" -xdev -type f ! -perm 0644 -print -quit | grep -q .; then
+    return 49
+  fi
+  for public_file in "$resolved_candidate/assets/release.json" "$resolved_candidate/elo/data.json" "$resolved_candidate/elo/elo-data.json"; do
+    if [ ! -f "$public_file" ] || [ $((8#$(stat -Lc '%a' -- "$public_file") & 6)) -ne 4 ]; then
+      echo "Release permission normalization left a public endpoint unreadable or writable by others." >&2
+      return 49
+    fi
+  done
+}
+
 assert_release_cas() {
   local baseline_b64="$1"
   local runtime_base="$2"
@@ -662,6 +709,12 @@ if [ "__ENV__" = "prod" ]; then
   cp "$new_release_dir/elo/player_name_overrides.json" "$scripts_dir/player_name_overrides.json"
   cp "$new_release_dir/elo/excluded_games.json" "$scripts_dir/excluded_games.json"
   chmod 755 "$scripts_dir/tm-sync-elo.py" "$scripts_dir/elo_aliases.py"
+fi
+
+if ! normalize_release_permissions "$new_release_dir"; then
+  echo "Release permission normalization failed." >&2
+  rm -rf "$new_release_dir"
+  exit 49
 fi
 
 ln -sfn "$new_release_dir" "$current_link"

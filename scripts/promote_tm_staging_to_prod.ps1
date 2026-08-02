@@ -74,6 +74,7 @@ set -euo pipefail
 staging_root="/home/openclaw/tm-runtime/staging"
 staging_current="$staging_root/current"
 prod_root="/home/openclaw/tm-runtime/prod"
+runtime_root="$prod_root"
 prod_current="$prod_root/current"
 prod_next_root="/home/openclaw/tm-runtime/prod-next"
 prod_next_current="$prod_next_root/current"
@@ -112,6 +113,53 @@ nginx_snippet_backup="$work_root/nginx-before.conf"
 previous_current_link_target=""
 previous_current_link_existed=0
 scripts_dir="/home/openclaw/scripts"
+
+normalize_release_permissions() {
+  local candidate="$1"
+  local resolved_releases
+  local resolved_candidate
+  local public_file
+
+  resolved_releases="$(readlink -f -- "$releases_root")" || return 49
+  resolved_candidate="$(readlink -f -- "$candidate")" || return 49
+  if [ "$(dirname -- "$resolved_candidate")" != "$resolved_releases" ]; then
+    echo "Release permission normalization rejected a candidate outside the releases root." >&2
+    return 49
+  fi
+  for public_file in build assets elo; do
+    if [ ! -d "$resolved_candidate/$public_file" ]; then
+      echo "Release permission normalization found an incomplete candidate." >&2
+      return 49
+    fi
+  done
+
+  chmod 755 "$runtime_root" "$releases_root" "$shared_root" "$shared_root/elo" "$resolved_candidate" || return 49
+  find "$resolved_candidate/build" "$resolved_candidate/assets" "$resolved_candidate/elo" -xdev -type d -exec chmod 755 {} + || return 49
+  find "$resolved_candidate/build" "$resolved_candidate/assets" "$resolved_candidate/elo" -xdev -type f -exec chmod 644 {} + || return 49
+  for public_file in package.json package-lock.json; do
+    if [ -f "$resolved_candidate/$public_file" ]; then
+      chmod 644 "$resolved_candidate/$public_file" || return 49
+    fi
+  done
+  for public_file in elo-data.json data.json solo-records.json stats.json; do
+    if [ -f "$shared_root/elo/$public_file" ]; then
+      chmod 664 "$shared_root/elo/$public_file" || return 49
+    fi
+  done
+
+  if find "$resolved_candidate/build" "$resolved_candidate/assets" "$resolved_candidate/elo" -xdev -type d ! -perm 0755 -print -quit | grep -q .; then
+    return 49
+  fi
+  if find "$resolved_candidate/build" "$resolved_candidate/assets" "$resolved_candidate/elo" -xdev -type f ! -perm 0644 -print -quit | grep -q .; then
+    return 49
+  fi
+  for public_file in "$resolved_candidate/assets/release.json" "$resolved_candidate/elo/data.json" "$resolved_candidate/elo/elo-data.json"; do
+    if [ ! -f "$public_file" ] || [ $((8#$(stat -Lc '%a' -- "$public_file") & 6)) -ne 4 ]; then
+      echo "Release permission normalization left a public endpoint unreadable or writable by others." >&2
+      return 49
+    fi
+  done
+}
 
 wait_for_http() {
   local url="$1"
@@ -841,6 +889,12 @@ ln -sfn "$shared_root/elo/data.json" "$new_release_dir/elo/data.json"
 ln -sfn "$shared_root/elo/solo-records.json" "$new_release_dir/elo/solo-records.json"
 ln -sfn "$shared_root/elo/stats.json" "$new_release_dir/elo/stats.json"
 ln -sfn "$deps_dir/node_modules" "$new_release_dir/node_modules"
+
+if ! normalize_release_permissions "$new_release_dir"; then
+  echo "Release permission normalization failed." >&2
+  rollback_before_public_switch
+  exit 49
+fi
 
 ln -sfn "$new_release_dir" "$prod_next_current"
 if ! systemctl --user restart "$next_service"; then

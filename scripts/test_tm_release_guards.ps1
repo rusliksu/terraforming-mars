@@ -240,6 +240,7 @@ try {
     )) {
         $caseRoot = Join-Path $permissionFixtureRoot $helperCase.Name
         $caseRootBash = ConvertTo-TmGitBashPath $caseRoot
+        if (-not (Test-TmRemoteToolsIsWindows)) {
         $permissionHarness = @'
 set -euo pipefail
 fixture_root="$1"
@@ -288,6 +289,7 @@ done
         Assert-True ($modes["shared_data"] -eq "664") "$($helperCase.Name) did not preserve shared ELO write access while making it public."
         foreach ($privateKey in @("private_db", "private_logs", "private_deps")) {
             Assert-True ($modes[$privateKey] -eq "700") "$($helperCase.Name) changed private path $privateKey. actual=$($modes[$privateKey])"
+        }
         }
 
         $outsideHarness = @'

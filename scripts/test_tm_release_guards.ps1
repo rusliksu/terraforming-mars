@@ -219,6 +219,109 @@ Assert-True ($stagingSource.Contains('@("-ExpectedGitSha", $ExpectedGitSha)')) "
 Assert-True ($stagingSource.Contains('$postSnapshot.environments.staging.manifest')) "Staging wrapper does not inspect the post-deploy manifest."
 Assert-True ($stagingSource.Contains('Staging post-deploy snapshot does not serve the intended clean SHA')) "Staging wrapper does not fail on post-deploy SHA drift."
 
+# Release publication must establish public modes even under a strict inherited umask.
+$deployPermissionHelper = Get-BashFunction -ScriptText $deployRemote -Name "normalize_release_permissions"
+$promotePermissionHelper = Get-BashFunction -ScriptText $promoteRemote -Name "normalize_release_permissions"
+$deployDataLinkIndex = $deployRemote.IndexOf('ln -sfn "$shared_root/elo/data.json" "$new_release_dir/elo/data.json"')
+$deployPermissionIndex = $deployRemote.IndexOf('normalize_release_permissions "$new_release_dir"', $deployDataLinkIndex)
+$deployCurrentSwitchIndex = $deployRemote.IndexOf('ln -sfn "$new_release_dir" "$current_link"')
+$promoteDataLinkIndex = $promoteRemote.IndexOf('ln -sfn "$shared_root/elo/data.json" "$new_release_dir/elo/data.json"')
+$promotePermissionIndex = $promoteRemote.IndexOf('normalize_release_permissions "$new_release_dir"', $promoteDataLinkIndex)
+$promoteNextSwitchIndex = $promoteRemote.IndexOf('ln -sfn "$new_release_dir" "$prod_next_current"')
+Assert-True ($deployPermissionIndex -gt $deployDataLinkIndex -and $deployPermissionIndex -lt $deployCurrentSwitchIndex) "Deploy does not normalize release permissions after assembly and before switching current."
+Assert-True ($promotePermissionIndex -gt $promoteDataLinkIndex -and $promotePermissionIndex -lt $promoteNextSwitchIndex) "Promotion does not normalize release permissions after assembly and before starting the next backend."
+
+$permissionFixtureRoot = Join-Path $env:TEMP ("tm-release-permissions-{0}-{1}" -f $PID, [guid]::NewGuid().ToString("N"))
+New-Item -ItemType Directory -Path $permissionFixtureRoot -Force | Out-Null
+try {
+    foreach ($helperCase in @(
+        [pscustomobject]@{Name = "deploy"; Function = $deployPermissionHelper},
+        [pscustomobject]@{Name = "promote"; Function = $promotePermissionHelper}
+    )) {
+        $caseRoot = Join-Path $permissionFixtureRoot $helperCase.Name
+        $caseRootBash = ConvertTo-TmGitBashPath $caseRoot
+        if (-not (Test-TmRemoteToolsIsWindows)) {
+        $permissionHarness = @'
+set -euo pipefail
+fixture_root="$1"
+runtime_root="$fixture_root/runtime"
+releases_root="$runtime_root/releases"
+shared_root="$runtime_root/shared"
+new_release_dir="$releases_root/release-1"
+umask 077
+mkdir -p "$new_release_dir/build/nested" "$new_release_dir/assets" "$new_release_dir/elo" \
+  "$new_release_dir/db/private" "$new_release_dir/logs/private" "$new_release_dir/node_modules/private" \
+  "$shared_root/elo"
+printf 'main\n' > "$new_release_dir/build/main.js"
+printf '{}\n' > "$new_release_dir/assets/release.json"
+printf '{}\n' > "$new_release_dir/elo/data.json"
+printf '{}\n' > "$new_release_dir/elo/elo-data.json"
+for public_file in elo-data.json data.json solo-records.json stats.json; do
+  printf '{}\n' > "$shared_root/elo/$public_file"
+done
+__PERMISSION_FUNCTION__
+normalize_release_permissions "$new_release_dir"
+for item in \
+  runtime:"$runtime_root" releases:"$releases_root" shared:"$shared_root" shared_elo:"$shared_root/elo" \
+  candidate:"$new_release_dir" nested:"$new_release_dir/build/nested" release_json:"$new_release_dir/assets/release.json" \
+  data_json:"$new_release_dir/elo/data.json" shared_data:"$shared_root/elo/data.json" \
+  private_db:"$new_release_dir/db/private" private_logs:"$new_release_dir/logs/private" \
+  private_deps:"$new_release_dir/node_modules/private"; do
+  printf '%s=%s\n' "${item%%:*}" "$(stat -c '%a' "${item#*:}")"
+done
+'@
+        $permissionHarness = $permissionHarness.Replace('__PERMISSION_FUNCTION__', $helperCase.Function)
+        $permissionResult = Invoke-Bash -ScriptText $permissionHarness -Arguments @($caseRootBash)
+        Assert-True ($permissionResult.ExitCode -eq 0) "$($helperCase.Name) permission helper rejected a valid strict-umask fixture. stderr=$($permissionResult.StdErr)"
+        $modes = @{}
+        foreach ($line in ($permissionResult.StdOut -split "`r?`n")) {
+            if ($line.Contains("=")) {
+                $key, $value = $line -split "=", 2
+                $modes[$key] = $value
+            }
+        }
+        foreach ($directoryKey in @("runtime", "releases", "shared", "shared_elo", "candidate", "nested")) {
+            Assert-True ($modes[$directoryKey] -eq "755") "$($helperCase.Name) did not make $directoryKey publicly traversable. actual=$($modes[$directoryKey])"
+        }
+        foreach ($fileKey in @("release_json", "data_json")) {
+            Assert-True ($modes[$fileKey] -eq "644") "$($helperCase.Name) did not make $fileKey publicly readable. actual=$($modes[$fileKey])"
+        }
+        Assert-True ($modes["shared_data"] -eq "664") "$($helperCase.Name) did not preserve shared ELO write access while making it public."
+        foreach ($privateKey in @("private_db", "private_logs", "private_deps")) {
+            Assert-True ($modes[$privateKey] -eq "700") "$($helperCase.Name) changed private path $privateKey. actual=$($modes[$privateKey])"
+        }
+        }
+
+        $outsideHarness = @'
+set -euo pipefail
+fixture_root="$1"
+runtime_root="$fixture_root/runtime"
+releases_root="$runtime_root/releases"
+shared_root="$runtime_root/shared"
+outside="$fixture_root/outside"
+umask 077
+mkdir -p "$releases_root" "$shared_root/elo" "$outside/build" "$outside/assets" "$outside/elo"
+printf '{}\n' > "$outside/assets/release.json"
+printf '{}\n' > "$outside/elo/data.json"
+printf '{}\n' > "$outside/elo/elo-data.json"
+before="$(stat -c '%a' "$outside")"
+__PERMISSION_FUNCTION__
+set +e
+normalize_release_permissions "$outside"
+helper_exit=$?
+set -e
+printf 'exit=%s\nbefore=%s\nafter=%s\n' "$helper_exit" "$before" "$(stat -c '%a' "$outside")"
+'@
+        $outsideHarness = $outsideHarness.Replace('__PERMISSION_FUNCTION__', $helperCase.Function)
+        $outsideResult = Invoke-Bash -ScriptText $outsideHarness -Arguments @($caseRootBash)
+        Assert-True ($outsideResult.ExitCode -eq 0) "$($helperCase.Name) outside-root fixture could not inspect the fail-closed result."
+        Assert-True ($outsideResult.StdOut.Contains("exit=49")) "$($helperCase.Name) accepted a candidate outside releases root. stdout=$($outsideResult.StdOut) stderr=$($outsideResult.StdErr)"
+        Assert-True ($outsideResult.StdOut.Contains("before=700") -and $outsideResult.StdOut.Contains("after=700")) "$($helperCase.Name) mutated an out-of-root candidate."
+    }
+} finally {
+    Remove-Item -LiteralPath $permissionFixtureRoot -Recurse -Force -ErrorAction SilentlyContinue
+}
+
 # A matching old manifest must never bypass an occupied shared deploy lock.
 $deployLockIndex = $deployRemote.IndexOf('if ! flock -n 9; then')
 $deployNoOpIndex = $deployRemote.IndexOf('if [ "$environment" = "staging" ]')

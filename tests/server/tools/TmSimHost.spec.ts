@@ -113,9 +113,11 @@ describe('TmSimHost', () => {
     expect(fork.warnings).deep.eq(['successor_not_stable_main_action_boundary']);
     expect(fork.branchHandle).not.eq(null);
     expect(fork.activePlayerId).eq(blue.id);
-    const waitingFor = (fork.simulationActor as ReturnType<typeof Server.getPlayerModel>).waitingFor as
-      {type: string; spaces: Array<string>};
-    expect(waitingFor.type).eq('space');
+    const waitingFor = (fork.simulationActor as ReturnType<typeof Server.getPlayerModel>).waitingFor;
+    expect(waitingFor?.type).eq('space');
+    if (waitingFor?.type !== 'space') {
+      throw new Error(`Expected a space prompt, got ${waitingFor?.type}`);
+    }
     expect(waitingFor.spaces).not.empty;
 
     const actorMismatch = host.handle({

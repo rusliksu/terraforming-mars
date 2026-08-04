@@ -75,6 +75,9 @@ export interface TmSimBranchResultV1 {
   simulationActor: unknown | null;
   rootObserver: unknown | null;
   stableMainActionBoundary: boolean;
+  terminalGenerationBoundary: boolean;
+  generationBefore: number | null;
+  generationAfter: number | null;
   observer: unknown | null;
   warnings: Array<string>;
   durationMs: number;
@@ -314,6 +317,9 @@ export class TmSimHost {
         simulationActor: null,
         rootObserver: null,
         stableMainActionBoundary: false,
+        terminalGenerationBoundary: false,
+        generationBefore: null,
+        generationAfter: null,
         observer: null,
         warnings: ['branch_limit_exceeded'],
         durationMs: 0,
@@ -372,6 +378,7 @@ export class TmSimHost {
         this.observerModel(game, request.observerId) :
         null;
       const entries = replay.entries.slice();
+      const generationBefore = game.generation;
       const actor = game.getPlayerById(request.actorId as PlayerId);
       const actorFingerprint = promptFingerprintFromWaitingFor(
         (this.observerModel(game, request.actorId) as {waitingFor?: unknown}).waitingFor,
@@ -432,6 +439,9 @@ export class TmSimHost {
         promptFingerprintFromWaitingFor(nextPrompt);
       const stable = promptActorId !== null && promptActorId === activePlayerId &&
         isStableMainActionBoundary(game, promptActorId);
+      const generationAfter = game.generation;
+      const terminalGenerationBoundary = generationAfter > generationBefore &&
+        game.phase !== Phase.ACTION && game.deferredActions.length === 0;
       const warnings: Array<string> = [];
       if (!stable) {
         warnings.push('successor_not_stable_main_action_boundary');
@@ -439,9 +449,12 @@ export class TmSimHost {
       if (game.deferredActions.length > 0) {
         warnings.push('successor_has_deferred_actions');
       }
+      if (terminalGenerationBoundary) {
+        warnings.push('terminal_generation_boundary');
+      }
       let branchHandle: string | null = null;
       const successorStateVersion = buildSuccessorVersion(request.stateVersion, observer);
-      if (promptActorId !== null && nextFingerprint !== null && game.deferredActions.length === 0) {
+      if (!terminalGenerationBoundary && promptActorId !== null && nextFingerprint !== null && game.deferredActions.length === 0) {
         const stableRoot = stable ? {rootSnapshot: game.serialize(), entries: []} : {rootSnapshot: replay.rootSnapshot, entries};
         branchHandle = this.storeBranch(
           stableRoot,
@@ -462,6 +475,9 @@ export class TmSimHost {
         simulationActor: request.includeSimulationActor === true ? nextActorModel : null,
         rootObserver,
         stableMainActionBoundary: stable,
+        terminalGenerationBoundary,
+        generationBefore,
+        generationAfter,
         observer,
         warnings,
       };
@@ -535,6 +551,9 @@ export class TmSimHost {
       simulationActor: null,
       rootObserver: null,
       stableMainActionBoundary: false,
+      terminalGenerationBoundary: false,
+      generationBefore: null,
+      generationAfter: null,
       observer: null,
       warnings: [],
       error: error instanceof Error ? error.message : String(error),
@@ -552,6 +571,9 @@ export class TmSimHost {
       simulationActor: null,
       rootObserver: null,
       stableMainActionBoundary: false,
+      terminalGenerationBoundary: false,
+      generationBefore: null,
+      generationAfter: null,
       observer: null,
       warnings: ['prompt_fingerprint_mismatch'],
     };
@@ -568,6 +590,9 @@ export class TmSimHost {
       simulationActor: null,
       rootObserver: null,
       stableMainActionBoundary: false,
+      terminalGenerationBoundary: false,
+      generationBefore: null,
+      generationAfter: null,
       observer: null,
       warnings: ['branch_handle_state_version_mismatch'],
     };
@@ -584,6 +609,9 @@ export class TmSimHost {
       simulationActor: null,
       rootObserver: null,
       stableMainActionBoundary: false,
+      terminalGenerationBoundary: false,
+      generationBefore: null,
+      generationAfter: null,
       observer: null,
       warnings: [warning],
     };

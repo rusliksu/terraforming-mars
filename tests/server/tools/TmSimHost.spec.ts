@@ -204,6 +204,49 @@ describe('TmSimHost', () => {
     expect(result.branchHandle).eq(null);
   });
 
+  it('marks the action-to-generation transition as terminal without a handle', () => {
+    const [rawGame, blue, red] = testGame(2, {
+      draftVariant: true,
+      fastModeOption: true,
+      skipInitialCardSelection: true,
+    });
+    const game = rawGame as Game;
+    game.generation = 2;
+    game.phase = Phase.ACTION;
+    game.activePlayer = blue;
+    game.playerHasPassed(red);
+    blue.takeAction(false);
+
+    const rootObserver = Server.getPlayerModel(blue);
+    const passIndex = findOptionIndex(rootObserver.waitingFor, /pass/i);
+    expect(passIndex).gte(0, JSON.stringify(rootObserver.waitingFor));
+
+    const result = new TmSimHost(() => 1000, 60_000).handle({
+      kind: 'fork_batch_v1',
+      requestId: 'fork-terminal-generation',
+      stateVersion: 'state-terminal-generation',
+      promptFingerprint: promptFingerprintFromWaitingFor(rootObserver.waitingFor),
+      knowledgeMode: 'oracle_teacher',
+      observerId: blue.id,
+      actorId: blue.id,
+      snapshot: game.serialize(),
+      includeSimulationActor: true,
+      branches: [{
+        candidateId: 'pass-to-next-generation',
+        input: {type: 'or', index: passIndex, response: {type: 'option'}} as InputResponse,
+      }],
+    }).branches[0];
+
+    expect(result.status).eq('ok', result.error);
+    expect(result.generationBefore).eq(2);
+    expect(result.generationAfter).eq(3);
+    expect(result.terminalGenerationBoundary).eq(true, JSON.stringify(result.warnings));
+    expect(result.stableMainActionBoundary).eq(false);
+    expect(result.branchHandle).eq(null);
+    expect((result.observer as ReturnType<typeof Server.getPlayerModel>).game.phase).eq(Phase.DRAFTING);
+    expect(result.warnings).contains('terminal_generation_boundary');
+  });
+
   it('forks a root action, regenerates the second prompt, and continues from a branch handle', () => {
     const [rawGame, blue, red] = testGame(2, {
       fastModeOption: true,

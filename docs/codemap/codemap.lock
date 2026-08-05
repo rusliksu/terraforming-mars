@@ -1,0 +1,52 @@
+{
+  "current_commit": "85e93d58c581e676af96474255391f4c5ffda09d",
+  "generated_from_commit": "85e93d58c581e676af96474255391f4c5ffda09d",
+  "working_tree_has_uncommitted_changes": false,
+  "generated_at": "2026-08-05T18:19:48.869392Z",
+  "scanned_scope": [
+    ".",
+    ".github",
+    "assets",
+    "docs",
+    "elo",
+    "openspec",
+    "scripts",
+    "src",
+    "tests",
+    "vscode.sample"
+  ],
+  "excluded_directories": [
+    ".agents",
+    ".codex",
+    ".git",
+    ".kittify",
+    "build",
+    "cache",
+    "coverage",
+    "dist",
+    "generated",
+    "logs",
+    "node_modules",
+    "out",
+    "output",
+    "tmp",
+    "docs/codemap"
+  ],
+  "fingerprint_algorithm": "sha256(sorted tracked path + NUL + per-file SHA-256 content records; module fingerprint is SHA-256 of sorted records)",
+  "fingerprints": {
+    ".": "4ae34c6ce6d6ac50fa66db34afb312cf176b69e14d64536f3e9f5714109493dc",
+    ".github": "602674eb52edae866d1c87fbe0ac9b1aa0743b6a7ac11388ec7c3c5c5b3cbcd5",
+    "assets": "b1d585a62ab8ea0745f47627eb1817801a37dfcefcf4c5c1c9656dd374775cd9",
+    "docs": "61805d05ff96a321be5082bfbe98463f9bd7ee42b4de82c0fb406c64676d6126",
+    "elo": "96d7364521a4e24dd2406bfa74262c375e5295d2e2ae66c0737850999cddd4bb",
+    "openspec": "15086d2be7036290427f76a6ce2924fb74e9f3b88da1a5184c6fbc431ae84442",
+    "scripts": "58e270c001f172a17f528759ccd48537bbebc28c0b1388530b3b5f59bfe4402e",
+    "src": "d5f94d6c3960b63729df958d1c218a5242d48d34e3ac0e6c803184089074a047",
+    "tests": "18c4d427e47f62ff152a05e336bd1bc92b0eddf1f55a8333647d3d95cdaf9afa",
+    "vscode.sample": "6d2b779d73492f0d9f53cc902a950169ee9872b1924bc206ca9203a67afe4a23"
+  },
+  "changed_modules": [],
+  "new_modules": [],
+  "removed_modules": [],
+  "comparison": "compared with existing codemap.lock"
+}

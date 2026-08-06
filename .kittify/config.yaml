@@ -1,0 +1,12 @@
+project:
+  uuid: 158feec5-2a00-481a-8d95-be83790cc916
+  slug: terraforming-mars
+  node_id: 382fd5d906cc
+  build_id: ddd716a5-4a9c-5eb7-b4db-3d34d3df5913
+vcs:
+  type: git
+agents:
+  available:
+  - codex
+  auto_commit: true
+  lint_on_edit: false

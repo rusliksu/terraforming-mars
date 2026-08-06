@@ -8,6 +8,7 @@
   >
     <span>{{ eloText }}</span>
     <span v-if="eloDeltaText" :class="eloDeltaClass">{{ eloDeltaText }}</span>
+    <span v-if="reliabilityText" class="player-reliability-badge" :title="reliabilityTooltip">{{ reliabilityText }}</span>
   </span>
 </template>
 
@@ -77,7 +78,28 @@ export default defineComponent({
       if (typeof entry.games === 'number' && entry.games > 0 && typeof entry.totalVP === 'number') {
         text += ' | Avg VP: ' + Math.round(entry.totalVP / entry.games);
       }
+      if (this.reliabilityText) {
+        text += ' | ' + this.reliabilityTooltip;
+      }
       return text;
+    },
+    reliabilityText(): string {
+      const reliability = this.effectiveEloEntry?.completionReliability;
+      const games = Number(reliability?.games);
+      const leaves = Number(reliability?.leaves);
+      const rate = typeof reliability?.rate === 'number' ? reliability.rate : (games > 0 ? leaves / games : 0);
+      if (!Number.isFinite(games) || !Number.isFinite(leaves) || !Number.isFinite(rate) ||
+        reliability?.eligible === false || games < 10 || leaves < 3 || rate < 0.2) {
+        return '';
+      }
+      return `Ливы ${Math.floor(leaves)}/${Math.floor(games)}`;
+    },
+    reliabilityTooltip(): string {
+      const reliability = this.effectiveEloEntry?.completionReliability;
+      const games = Number(reliability?.games);
+      const leaves = Number(reliability?.leaves);
+      const rate = typeof reliability?.rate === 'number' ? reliability.rate : (games > 0 ? leaves / games : 0);
+      return `${this.reliabilityText} (${Math.round(rate * 100)}% за последние ${Math.floor(games)} рейтинговых партий)`;
     },
     eloDeltaText(): string {
       if (typeof this.eloDelta !== 'number') {
@@ -166,6 +188,17 @@ export default defineComponent({
 
 .player-elo-badge-delta--down {
   color: #ff9a9a;
+}
+
+.player-reliability-badge {
+  color: #c8c8c8;
+  border: 1px solid rgba(200, 200, 200, 0.55);
+  border-radius: 3px;
+  padding: 0 3px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 13px;
+  white-space: nowrap;
 }
 
 .player-elo-badge--gold {

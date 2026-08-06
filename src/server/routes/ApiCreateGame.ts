@@ -262,6 +262,7 @@ export class ApiCreateGame extends Handler {
           }
 
           const botPlayers = botGame ? players.filter((_player, index) => requestedPlayers[index]?.isBot === true) : [];
+          game.setBotPlayerIds(botPlayers.map((player) => player.id));
           const startedBotPlayerIds = new Array<string>();
           try {
             for (const botPlayer of botPlayers) {

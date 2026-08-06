@@ -10,6 +10,12 @@ export type EloEntry = {
   avgPlaceScore?: number;
   displayName?: string;
   user?: string;
+  completionReliability?: {
+    games?: number;
+    leaves?: number;
+    rate?: number;
+    eligible?: boolean;
+  };
 };
 
 export type EloGameResult = {

@@ -8,6 +8,7 @@ import {BotTakeoverManager} from '../bot/BotTakeoverManager';
 import {Phase} from '../../common/Phase';
 import {IPlayer} from '../IPlayer';
 import {sendBotTakeoverNotice} from '../TelegramBot';
+import * as crypto from 'crypto';
 
 type BotTakeoverRouteDeps = Pick<BotTakeoverManager, 'list' | 'listPlayerIds' | 'start' | 'stop'>;
 type BotTakeoverNotifier = (recipients: ReadonlyArray<IPlayer>, botPlayer: IPlayer) => void;
@@ -16,6 +17,16 @@ function notifyBotTakeoverStarted(recipients: ReadonlyArray<IPlayer>, botPlayer:
   for (const recipient of recipients) {
     void sendBotTakeoverNotice(recipient, botPlayer);
   }
+}
+
+function hasMatchingBotTakeoverToken(req: Request, player: IPlayer): boolean {
+  const suppliedToken = req.headers['x-bot-takeover-token'];
+  if (typeof suppliedToken !== 'string' || player.botTakeoverToken === undefined) {
+    return false;
+  }
+  const suppliedDigest = crypto.createHash('sha256').update(suppliedToken).digest();
+  const expectedDigest = crypto.createHash('sha256').update(player.botTakeoverToken).digest();
+  return crypto.timingSafeEqual(suppliedDigest, expectedDigest);
 }
 
 export class ApiBotTakeover extends Handler {
@@ -81,6 +92,11 @@ export class ApiBotTakeover extends Handler {
       player = game.getPlayerById(playerId);
     } catch (_err) {
       responses.notFound(req, res, 'player not found');
+      return;
+    }
+
+    if (!this.hasServerIdAccess(ctx) && !hasMatchingBotTakeoverToken(req, player)) {
+      responses.notAuthorized(req, res);
       return;
     }
 

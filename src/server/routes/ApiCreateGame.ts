@@ -262,12 +262,9 @@ export class ApiCreateGame extends Handler {
             game = Game.newInstance(gameId, players, players[firstPlayerIdx], spectatorId, gameOptions, seed);
           }
 
+          game.botTakeoverToken = crypto.randomBytes(24).toString('base64url');
           const botPlayers = botGame ? players.filter((_player, index) => requestedPlayers[index]?.isBot === true) : [];
           game.setBotPlayerIds(botPlayers.map((player) => player.id));
-          for (const player of game.players) {
-            player.botTakeoverToken = botPlayers.includes(player) ?
-              undefined : crypto.randomBytes(24).toString('base64url');
-          }
           const startedBotPlayerIds = new Array<string>();
           try {
             for (const botPlayer of botPlayers) {
@@ -296,7 +293,7 @@ export class ApiCreateGame extends Handler {
                   name: p.name,
                   id: p.id,
                   telegramID: p.telegramID,
-                  botTakeoverToken: p.botTakeoverToken,
+                  botTakeoverToken: game.botTakeoverToken,
                   lastNoticeMessageId: p.lastNoticeMessageId,
                   lastTurnNoticeKey: p.lastTurnNoticeKey,
                   game: p.game,
@@ -306,7 +303,7 @@ export class ApiCreateGame extends Handler {
           }
           responses.writeJson(res, ctx, Server.getSimpleGameModel(game, {
             botPlayers: botPlayers.map((player) => player.id),
-            includeBotTakeoverTokens: true,
+            includeBotTakeoverToken: true,
           }));
         } catch (error) {
           responses.internalServerError(req, res, error);

@@ -10,16 +10,19 @@ import {Phase} from '@/common/Phase';
 describe('PlayerHome', () => {
   let localStorage: FakeLocalStorage;
   const originalFetch = global.fetch;
+  const originalConfirm = window.confirm;
 
   beforeEach(() => {
     localStorage = new FakeLocalStorage();
     FakeLocalStorage.register(localStorage);
+    window.confirm = () => true;
     window.history.replaceState({}, '', '/player?id=p-blue-id');
   });
 
   afterEach(() => {
     FakeLocalStorage.deregister(localStorage);
     global.fetch = originalFetch;
+    window.confirm = originalConfirm;
     window.history.replaceState({}, '', '/player?id=p-blue-id');
   });
 
@@ -92,5 +95,26 @@ describe('PlayerHome', () => {
     expect(posts[1].url).contains('action=stop');
     expect(posts[1].init?.headers).deep.eq({'X-Bot-Takeover-Token': 'owner token'});
     expect(control.attributes('aria-checked')).eq('false');
+  });
+
+  it('does not send a mutation when bot takeover confirmation is cancelled', async () => {
+    const calls: Array<{url: string, init?: Parameters<typeof fetch>[1]}> = [];
+    global.fetch = async (input, init) => {
+      calls.push({url: String(input), init});
+      return {
+        ok: true,
+        json: async () => ({botPlayers: []}),
+        text: async () => '',
+      } as Response;
+    };
+    window.confirm = () => false;
+    window.history.replaceState({}, '', '/player?id=p-blue-id#botTakeoverToken=shared-token');
+
+    const wrapper = mountPlayerHome();
+    await flushPromises();
+    await wrapper.get('[data-test="bot-takeover-control"]').trigger('click');
+    await flushPromises();
+
+    expect(calls.some((call) => call.init?.method === 'POST')).is.false;
   });
 });

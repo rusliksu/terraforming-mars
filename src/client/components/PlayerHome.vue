@@ -315,10 +315,15 @@ export default defineComponent({
       if (this.botTakeoverBusy || !this.showBotTakeoverControl) {
         return;
       }
+      const action = this.botTakeoverActive ? 'stop' : 'start';
+      const confirmed = window.confirm(`${action === 'start' ? 'Start' : 'Stop'} bot for ${this.thisPlayer.name}?`);
+      if (!confirmed) {
+        return;
+      }
       this.botTakeoverBusy = true;
       try {
         const query = new URLSearchParams({
-          action: this.botTakeoverActive ? 'stop' : 'start',
+          action,
           gameId: this.game.gameId,
           playerId: this.playerView.id,
         });

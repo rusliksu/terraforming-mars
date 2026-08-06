@@ -53,20 +53,29 @@ describe('GameHome', () => {
     expect(wrapper.find('[role="switch"]').exists()).is.false;
   });
 
-  it('builds a capability fragment only when create response data contains it', () => {
-    window.history.replaceState({}, '', '/game?id=game-id-123&serverId=1');
+  it('propagates the shared lobby capability to every player but not the spectator', () => {
+    window.history.replaceState({}, '', '/game?id=game-id-123#botTakeoverToken=shared%20invite');
     const wrapper = shallowMount(GameHome, {
       ...globalConfig,
       props: {
         game: {
           ...baseGame,
-          players: [{...baseGame.players[0], botTakeoverToken: 'owner token'}],
+          spectatorId: 's-spectator',
         },
       },
     });
 
-    expect(wrapper.vm.getHref('p-blue')).to.eq('player?id=p-blue#botTakeoverToken=owner%20token');
-    expect(wrapper.vm.getHref('unknown-player')).to.eq('player?id=unknown-player');
+    expect(wrapper.vm.getHref('p-blue')).to.eq('player?id=p-blue#botTakeoverToken=shared%20invite');
+    expect(wrapper.vm.getHref('s-spectator')).to.eq('spectator?id=s-spectator');
     expect(wrapper.vm.getHref('p-blue')).not.contain('serverId');
+  });
+
+  it('keeps player links bare when the lobby has no capability fragment', () => {
+    const wrapper = shallowMount(GameHome, {
+      ...globalConfig,
+      props: {game: baseGame},
+    });
+
+    expect(wrapper.vm.getHref('p-blue')).to.eq('player?id=p-blue');
   });
 });

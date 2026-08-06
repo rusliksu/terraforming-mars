@@ -1099,6 +1099,18 @@ describe('Game', () => {
     expect(Array.from(restored.botTakeoverPlayerIds)).deep.eq([human.id]);
   });
 
+  it('preserves the optional bot takeover token through serialization', () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const game = Game.newInstance('game-capability', [player], player, 'spectatorid');
+    game.botTakeoverToken = 'shared-game-capability';
+
+    const serialized = game.serialize();
+    const restored = Game.deserialize(serialized);
+
+    expect(serialized.botTakeoverToken).eq('shared-game-capability');
+    expect(restored.botTakeoverToken).eq('shared-game-capability');
+  });
+
   it('enables action undo when loading a game with experimental step undo', () => {
     const player = TestPlayer.BLUE.newPlayer();
     const game = Game.newInstance('gameid', [player], player, 'spectatorid');

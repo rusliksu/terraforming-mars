@@ -34,8 +34,9 @@ describe('ApiGame', () => {
 
   it('valid id', async () => {
     const player = TestPlayer.BLACK.newPlayer();
-    player.botTakeoverToken = 'must-not-be-public';
-    scaffolding.ctx.gameLoader.add(Game.newInstance('game-valid-id', [player], player, 'spectatorid'));
+    const game = Game.newInstance('game-valid-id', [player], player, 'spectatorid');
+    game.botTakeoverToken = 'must-not-be-public';
+    scaffolding.ctx.gameLoader.add(game);
     scaffolding.url = '/api/game?id=game-valid-id';
     await scaffolding.get(ApiGame.INSTANCE, res);
     // This test is probably brittle.

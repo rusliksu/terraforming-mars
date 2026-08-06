@@ -162,16 +162,17 @@ describe('ApiCreateGame', () => {
     const game = await scaffolding.ctx.gameLoader.getGame(model.id);
     expect(game).is.not.undefined;
     expect(game!.players[0].name).eq('Robot');
-    const token = game!.players[0].botTakeoverToken;
+    const token = game!.botTakeoverToken;
     expect(token).matches(/^[A-Za-z0-9_-]{32}$/);
-    expect(model.players[0].botTakeoverToken).eq(token);
+    expect(model.botTakeoverToken).eq(token);
+    expect(model.players[0]).not.have.property('botTakeoverToken');
     expect(game!.rng.seed).eq(config.seed);
     expect(game!.gameOptions.undoStepOption).is.true;
     expect(game!.gameOptions.boardSelection).eq(RandomBoardOption.OFFICIAL);
     expect(ApiCreateGame.boardOptions(RandomBoardOption.OFFICIAL)).contains(game!.gameOptions.boardName);
   });
 
-  it('creates distinct capabilities for human players', async () => {
+  it('creates one game capability instead of per-player capabilities', async () => {
     const config = newGameConfig([
       {name: 'One', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false},
       {name: 'Two', color: 'red', beginner: false, handicap: 0, first: false, isBot: false},
@@ -186,9 +187,8 @@ describe('ApiCreateGame', () => {
 
     expect(res.statusCode).eq(statusCode.ok);
     const model = JSON.parse(res.content) as SimpleGameModel;
-    const tokens = model.players.map((player) => player.botTakeoverToken);
-    expect(tokens.every((token) => token !== undefined && /^[A-Za-z0-9_-]{32}$/.test(token))).is.true;
-    expect(new Set(tokens).size).eq(2);
+    expect(model.botTakeoverToken).matches(/^[A-Za-z0-9_-]{32}$/);
+    expect(model.players.every((player) => Object.prototype.hasOwnProperty.call(player, 'botTakeoverToken') === false)).is.true;
   });
 
   it('creates games with per-player prelude handicap', async () => {
@@ -616,8 +616,9 @@ describe('ApiCreateGame', () => {
     expect(model.botPlayers).deep.eq([model.players[0].id]);
     const game = await scaffolding.ctx.gameLoader.getGame(model.id);
     expect(Array.from(game!.botPlayerIds)).deep.eq([model.players[0].id]);
-    expect(game!.players[0].botTakeoverToken).is.undefined;
-    expect(model.players[0].botTakeoverToken).is.undefined;
+    expect(game!.botTakeoverToken).matches(/^[A-Za-z0-9_-]{32}$/);
+    expect(model.botTakeoverToken).eq(game!.botTakeoverToken);
+    expect(model.players[0]).not.have.property('botTakeoverToken');
   });
 
   it('ignores bot player flags when bot mode is disabled', async () => {

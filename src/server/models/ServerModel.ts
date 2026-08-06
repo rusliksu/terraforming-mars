@@ -33,16 +33,16 @@ import {MAX_AWARDS, MAX_MILESTONES} from '../../common/constants';
 export class Server {
   public static getSimpleGameModel(game: IGame, options?: {
     botPlayers?: Array<PlayerId>;
-    includeBotTakeoverTokens?: boolean;
+    includeBotTakeoverToken?: boolean;
   }): SimpleGameModel {
     return {
       activePlayer: game.activePlayer.color,
       botPlayers: options?.botPlayers,
+      botTakeoverToken: options?.includeBotTakeoverToken === true ? game.botTakeoverToken : undefined,
       id: game.id,
       name: game.name,
       phase: game.phase,
       players: game.playersInGenerationOrder.map((player) => ({
-        botTakeoverToken: options?.includeBotTakeoverTokens === true ? player.botTakeoverToken : undefined,
         color: player.color,
         id: player.id,
         name: player.name,

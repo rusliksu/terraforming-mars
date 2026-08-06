@@ -60,6 +60,7 @@ export interface IGame extends Logger {
   simulationMode: boolean;
   readonly rng: SeededRandom;
   readonly spectatorId: SpectatorId;
+  botTakeoverToken?: string;
   deferredActions: DeferredActionsQueue;
   createdTime: Date;
   gameAge: number; // Each log event increases it

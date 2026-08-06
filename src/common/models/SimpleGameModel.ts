@@ -7,6 +7,7 @@ import {GameOptionsModel} from './GameOptionsModel';
 export type SimpleGameModel = {
     activePlayer: Color;
     botPlayers?: Array<PlayerId>;
+    botTakeoverToken?: string;
     id: GameId;
     name: string;
     phase: Phase;
@@ -18,7 +19,6 @@ export type SimpleGameModel = {
 }
 
 type SimplePlayerModel = {
-    botTakeoverToken?: string;
     color: Color;
     id: PlayerId;
     name: string;

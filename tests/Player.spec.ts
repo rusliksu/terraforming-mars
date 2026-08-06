@@ -379,17 +379,6 @@ describe('Player', () => {
     expect(newPlayer.availableActionsThisRound).eq(4);
   });
 
-  it('preserves the optional bot takeover token through serialization', () => {
-    const player = new Player('blue', 'blue', false, 0, 'p-blue');
-    player.botTakeoverToken = 'owner-capability';
-
-    const serialized = player.serialize();
-    const restored = Player.deserialize(serialized);
-
-    expect(serialized.botTakeoverToken).eq('owner-capability');
-    expect(restored.botTakeoverToken).eq('owner-capability');
-  });
-
   it('pulls self replicating robots target cards', () => {
     const player = new Player('blue', 'blue', false, 0, 'p-blue');
     expect(player.getSelfReplicatingRobotsTargetCards()).is.empty;

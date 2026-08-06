@@ -5,6 +5,7 @@ import {MockResponse} from './HttpMocks';
 import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {TestPlayer} from '../TestPlayer';
 import {statusCode} from '../../src/common/http/statusCode';
+import {AccessAuditRecordInput} from '../../src/server/server/AccessAudit';
 
 describe('ApiBotTakeover', () => {
   let scaffolding: RouteTestScaffolding;
@@ -18,11 +19,13 @@ describe('ApiBotTakeover', () => {
 
   it('rejects bot takeover without a capability before side effects', async () => {
     const player = TestPlayer.BLACK.newPlayer();
-    player.botTakeoverToken = 'owner-token';
     const game = Game.newInstance('g123456789abc', [player], player, 'spectatorid');
+    game.botTakeoverToken = 'game-token';
     await scaffolding.ctx.gameLoader.add(game);
     let managerCalls = 0;
     let notificationCalls = 0;
+    const auditEvents: Array<AccessAuditRecordInput> = [];
+    scaffolding.ctx.accessAudit = {record: (event) => auditEvents.push(event)};
 
     const route = new ApiBotTakeover({
       list: () => {
@@ -46,44 +49,50 @@ describe('ApiBotTakeover', () => {
     expect(res.statusCode).eq(statusCode.forbidden);
     expect(managerCalls).eq(0);
     expect(notificationCalls).eq(0);
+    expect(auditEvents).deep.eq([{
+      event: 'bot_takeover_rejected',
+      method: 'POST',
+      path: 'api/bot-takeover',
+      gameId: game.id,
+      participantId: player.id,
+      participantKind: 'player',
+      clientIp: scaffolding.ctx.clientIp,
+      userAgent: undefined,
+      metadata: {action: 'start', authorization: 'denied'},
+    }]);
+    expect(JSON.stringify(auditEvents)).not.contain('game-token');
   });
 
-  it('rejects another player capability before side effects', async () => {
+  it('uses one game capability for every player in the game', async () => {
     const player = TestPlayer.BLACK.newPlayer();
     const otherPlayer = TestPlayer.RED.newPlayer();
-    player.botTakeoverToken = 'owner-token';
-    otherPlayer.botTakeoverToken = 'other-token';
     const game = Game.newInstance('g123456789abc', [player, otherPlayer], player, 'spectatorid');
+    game.botTakeoverToken = 'shared-game-token';
     await scaffolding.ctx.gameLoader.add(game);
-    let managerCalls = 0;
+    const auditEvents: Array<AccessAuditRecordInput> = [];
+    scaffolding.ctx.accessAudit = {record: (event) => auditEvents.push(event)};
 
     const route = new ApiBotTakeover({
-      list: () => {
-        managerCalls++; return [];
-      },
-      listPlayerIds: () => {
-        managerCalls++; return [];
-      },
-      start: () => {
-        managerCalls++; throw new Error('must not start');
-      },
-      stop: () => {
-        managerCalls++; return undefined;
-      },
+      list: () => [],
+      listPlayerIds: () => [otherPlayer.id],
+      start: () => ({gameId: game.id, playerId: otherPlayer.id, pid: 321, startedAtMs: 1, logFile: 'bot.log'}),
+      stop: () => undefined,
     });
 
-    scaffolding.req.headers['x-bot-takeover-token'] = otherPlayer.botTakeoverToken;
-    scaffolding.url = `/api/bot-takeover?action=start&gameId=${game.id}&playerId=${player.id}`;
+    scaffolding.req.headers['x-bot-takeover-token'] = game.botTakeoverToken;
+    scaffolding.url = `/api/bot-takeover?action=start&gameId=${game.id}&playerId=${otherPlayer.id}`;
     await route.processRequest(scaffolding.req, res, scaffolding.ctx);
 
-    expect(res.statusCode).eq(statusCode.forbidden);
-    expect(managerCalls).eq(0);
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(JSON.parse(res.content).entry.playerId).eq(otherPlayer.id);
+    expect(auditEvents[0].event).eq('bot_takeover_accepted');
+    expect(auditEvents[0].metadata).deep.eq({action: 'start', authorization: 'invite'});
   });
 
   it('rejects wrong and repeated capability headers before side effects', async () => {
     const player = TestPlayer.BLACK.newPlayer();
-    player.botTakeoverToken = 'owner-token';
     const game = Game.newInstance('g123456789abc', [player], player, 'spectatorid');
+    game.botTakeoverToken = 'game-token';
     await scaffolding.ctx.gameLoader.add(game);
     let managerCalls = 0;
 
@@ -104,7 +113,7 @@ describe('ApiBotTakeover', () => {
     scaffolding.url = `/api/bot-takeover?action=start&gameId=${game.id}&playerId=${player.id}`;
     const requestHeaders: Record<string, string | Array<string> | undefined> = scaffolding.req.headers;
 
-    for (const header of ['wrong-token', ['owner-token']]) {
+    for (const header of ['wrong-token', ['game-token']]) {
       requestHeaders['x-bot-takeover-token'] = header;
       const response = new MockResponse();
       await route.processRequest(scaffolding.req, response, scaffolding.ctx);
@@ -113,10 +122,10 @@ describe('ApiBotTakeover', () => {
     expect(managerCalls).eq(0);
   });
 
-  it('starts bot takeover with the target player capability', async () => {
+  it('starts bot takeover with the game capability', async () => {
     const player = TestPlayer.BLACK.newPlayer();
-    player.botTakeoverToken = 'owner-token';
     const game = Game.newInstance('g123456789abc', [player], player, 'spectatorid');
+    game.botTakeoverToken = 'game-token';
     await scaffolding.ctx.gameLoader.add(game);
 
     const route = new ApiBotTakeover({
@@ -126,7 +135,7 @@ describe('ApiBotTakeover', () => {
       stop: () => undefined,
     });
 
-    scaffolding.req.headers['x-bot-takeover-token'] = player.botTakeoverToken;
+    scaffolding.req.headers['x-bot-takeover-token'] = game.botTakeoverToken;
     scaffolding.url = `/api/bot-takeover?action=start&gameId=${game.id}&playerId=${player.id}`;
     await route.processRequest(scaffolding.req, res, scaffolding.ctx);
 
@@ -275,10 +284,10 @@ describe('ApiBotTakeover', () => {
     expect(game.botTakeoverPlayerIds.has(player.id)).eq(false);
   });
 
-  it('stops bot takeover with the target player capability', async () => {
+  it('stops bot takeover with the game capability', async () => {
     const player = TestPlayer.BLACK.newPlayer();
-    player.botTakeoverToken = 'owner-token';
     const game = Game.newInstance('g123456789abc', [player], player, 'spectatorid');
+    game.botTakeoverToken = 'game-token';
     await scaffolding.ctx.gameLoader.add(game);
 
     const route = new ApiBotTakeover({
@@ -290,7 +299,7 @@ describe('ApiBotTakeover', () => {
       stop: () => ({gameId: game.id, playerId: player.id, pid: 321, startedAtMs: 1, logFile: 'bot.log'}),
     });
 
-    scaffolding.req.headers['x-bot-takeover-token'] = player.botTakeoverToken;
+    scaffolding.req.headers['x-bot-takeover-token'] = game.botTakeoverToken;
     scaffolding.url = `/api/bot-takeover?action=stop&gameId=${game.id}&playerId=${player.id}`;
     await route.processRequest(scaffolding.req, res, scaffolding.ctx);
 

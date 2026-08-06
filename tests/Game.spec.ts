@@ -34,7 +34,7 @@ import {TiredEarth} from '../src/server/cards/pathfinders/TiredEarth';
 import {Tag} from '../src/common/cards/Tag';
 import {restoreTestDatabase, restoreTestGameLoader, setTestDatabase, setTestGameLoader} from './testing/setup';
 import {InMemoryDatabase} from './testing/InMemoryDatabase';
-import {Score} from '../src/server/IGame';
+import {IGame, Score} from '../src/server/IGame';
 import {IGameLoader} from '../src/server/database/IGameLoader';
 import {ColonyName} from '../src/common/colonies/ColonyName';
 import {Ceres} from '../src/server/colonies/Ceres';

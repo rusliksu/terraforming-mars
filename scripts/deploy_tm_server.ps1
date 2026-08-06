@@ -214,7 +214,14 @@ if ($Environment -eq "prod" -and -not $AllowDirectProdDeploy) {
     throw "Direct prod deploy is blocked. Deploy to staging first and then run scripts/release_tm_prod.ps1 or scripts/promote_tm_staging_to_prod.ps1. Pass -AllowDirectProdDeploy only for an explicit emergency override."
 }
 
+if ($Environment -eq "staging" -and ($AllowDirtySource -or $AllowPrimaryWorkingTree)) {
+    throw "Staging deploy accepts only a clean checkout whose HEAD equals origin/main; staging bypass flags are not supported."
+}
+
 if ($normalizedSourceRoot -eq $normalizedRepoRoot -and $normalizedRepoRoot -notin $normalizedSafeSourceRoots -and -not $AllowPrimaryWorkingTree) {
+    if ($Environment -eq "staging") {
+        throw "Staging SourceRoot cannot point at the primary working tree: $resolvedSourceRoot. Use a clean checkout at origin/main."
+    }
     throw "SourceRoot points at the primary working tree: $resolvedSourceRoot. Use the clean release checkout or pass -AllowPrimaryWorkingTree if you intentionally want to release this exact tree."
 }
 
@@ -229,11 +236,24 @@ if ((Get-NormalizedPath -PathValue $gitTopLevel) -ne $normalizedSourceRoot) {
 $gitStatus = Get-GitStatusPorcelain -RepoRoot $resolvedSourceRoot
 if (-not $AllowDirtySource -and -not [string]::IsNullOrWhiteSpace($gitStatus)) {
     $statusPreview = (($gitStatus -split "`r?`n") | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -First 20) -join [Environment]::NewLine
+    if ($Environment -eq "staging") {
+        throw "Staging SourceRoot has uncommitted changes and is blocked; bypass flags are unsupported.`nSourceRoot: $resolvedSourceRoot`n`n$statusPreview"
+    }
     throw "SourceRoot has uncommitted changes and is blocked for release.`nSourceRoot: $resolvedSourceRoot`nUse a clean release checkout or pass -AllowDirtySource if you really intend to release a dirty tree.`n`n$statusPreview"
 }
 
 $gitSha = Get-GitCommandValue -RepoRoot $resolvedSourceRoot -GitArgs @("rev-parse", "HEAD")
 $gitBranch = Get-GitCommandValue -RepoRoot $resolvedSourceRoot -GitArgs @("rev-parse", "--abbrev-ref", "HEAD")
+if ($Environment -eq "staging") {
+    $originMainSha = Get-GitCommandValue -RepoRoot $resolvedSourceRoot -GitArgs @("rev-parse", "origin/main")
+    Assert-TmStagingSource `
+        -SourceRoot $resolvedSourceRoot `
+        -HeadSha $gitSha `
+        -OriginMainSha $originMainSha `
+        -GitStatus $gitStatus `
+        -AllowDirtySource:$AllowDirtySource `
+        -AllowPrimaryWorkingTree:$AllowPrimaryWorkingTree
+}
 Assert-TmExpectedGitSha -Expected $ExpectedGitSha -Actual $gitSha -Context "SourceRoot HEAD"
 $expectedBuildHead = if ([string]::IsNullOrWhiteSpace($gitSha)) { "" } else { $gitSha }
 

@@ -23,11 +23,15 @@ set `TM_DISABLE_TELEGRAM=1` so test/E2E games never send real turn notices.
 
 ## Safe default source
 
-The recommended release source is the sibling clean checkout:
+The staging release source is the sibling clean checkout:
 
 - `C:\Users\Ruslan\tm\terraforming-mars-release-main`
 
-Do not deploy from the main working tree unless you explicitly intend to release that exact build.
+Before a staging deploy, that checkout MUST have an empty `git status --short` and
+`git rev-parse HEAD` equal to `git rev-parse origin/main`. Refresh the checkout
+and its `origin/main` reference before deploy; the deploy scripts do not fetch or
+merge automatically. A feature branch, local-only commit, dirty tree, or primary
+working tree is not a staging release source.
 
 ## Service Sync
 
@@ -57,7 +61,8 @@ still require `-RestartWatchersDuringServiceSync`.
 - Treat releases as a single release train. Collect finished commits into one clean release checkout, deploy that exact checkout to staging once, verify it, then promote the exact staging artifact to prod.
 - Do not run parallel TM staging deploys or prod promotes from multiple Codex sessions. The scripts take a VPS-wide `/home/openclaw/tm-runtime/.deploy.lock` and fail fast if another TM deploy/promote is already running.
 - If another Codex session has new commits, stop and merge/rebase them into the train before the staging deploy; do not keep replacing staging with partial slices.
-- Release source must be a clean git checkout. If `git status --short` is not empty, fix that before deploy.
+- Staging source MUST be a clean git checkout whose exact `HEAD` equals the local `origin/main` SHA. The staging guard rejects missing/mismatched `origin/main` and rejects `-AllowDirtySource` and `-AllowPrimaryWorkingTree`.
+- If `git status --short` is not empty, or `HEAD` is not exact `origin/main`, stop and refresh the release checkout; do not bypass the guard.
 - The main working tree `C:\Users\Ruslan\tm\terraforming-mars` is for day-to-day development, not the default release source.
 - Do not hot-patch `build/*.js` or `assets/*` on the VPS. Emergency fixes must be carried back into source and re-released through staging.
 - Do not hot-patch source-managed `elo/*` files on the VPS. Only `elo-data.json`, `data.json`, logs, and similar generated outputs should remain mutable there.
@@ -160,15 +165,6 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\deploy_tm_p
   -SourceRoot C:\Users\Ruslan\tm\terraforming-mars-upstream-fix
 ```
 
-Emergency override if you intentionally need to release a dirty source checkout or the primary working tree:
-
-```powershell
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\deploy_tm_staging.ps1 `
-  -SourceRoot C:\Users\Ruslan\tm\terraforming-mars `
-  -AllowPrimaryWorkingTree `
-  -AllowDirtySource
-```
-
 Dry run:
 
 ```powershell
@@ -181,12 +177,10 @@ Deploy to staging and skip smoke if you only need the rollout:
 pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\deploy_tm_staging.ps1 -SkipSmoke
 ```
 
-Deploy to staging from a different source root:
-
-```powershell
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\deploy_tm_staging.ps1 `
-  -SourceRoot C:\Users\Ruslan\tm\some-other-clean-checkout
-```
+When `-SourceRoot` is supplied for staging, it is accepted only if that source
+is clean and its exact `HEAD` equals its local `origin/main`. Feature, local-only,
+dirty, and primary sources are rejected; use the preview command above for an
+isolated non-main checkout.
 
 Promote the already tested staging artifact to prod, pinned to the intended
 release-checkout commit:

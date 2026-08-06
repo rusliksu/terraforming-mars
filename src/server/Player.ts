@@ -207,6 +207,7 @@ export class Player implements IPlayer {
 
   public user?: DiscordId;
   public telegramID: string = '';
+  public botTakeoverToken?: string;
   public lastNoticeMessageId: number = -1;
   public lastTurnNoticeKey: string = '';
   public lastTurnReminderNoticeKey: string = '';
@@ -2034,6 +2035,7 @@ export class Player implements IPlayer {
       id: this.id,
       user: this.user,
       telegramID: this.telegramID || undefined,
+      botTakeoverToken: this.botTakeoverToken,
       lastNoticeMessageId: this.lastNoticeMessageId,
       lastTurnNoticeKey: this.lastTurnNoticeKey || undefined,
       lastTurnReminderNoticeKey: this.lastTurnReminderNoticeKey || undefined,
@@ -2189,6 +2191,7 @@ export class Player implements IPlayer {
     player.politicalAgendasActionUsedCount = d.politicalAgendasActionUsedCount;
     player.user = d.user;
     player.telegramID = d.telegramID ?? '';
+    player.botTakeoverToken = d.botTakeoverToken;
     player.lastNoticeMessageId = d.lastNoticeMessageId ?? -1;
     player.lastTurnNoticeKey = d.lastTurnNoticeKey ?? '';
     player.lastTurnReminderNoticeKey = d.lastTurnReminderNoticeKey ?? '';

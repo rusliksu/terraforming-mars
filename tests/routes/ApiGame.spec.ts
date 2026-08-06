@@ -34,6 +34,7 @@ describe('ApiGame', () => {
 
   it('valid id', async () => {
     const player = TestPlayer.BLACK.newPlayer();
+    player.botTakeoverToken = 'must-not-be-public';
     scaffolding.ctx.gameLoader.add(Game.newInstance('game-valid-id', [player], player, 'spectatorid'));
     scaffolding.url = '/api/game?id=game-valid-id';
     await scaffolding.get(ApiGame.INSTANCE, res);
@@ -106,6 +107,7 @@ describe('ApiGame', () => {
         },
       },
     );
+    expect(res.content).not.contain('must-not-be-public');
   });
 
   it('audits successful game access', async () => {

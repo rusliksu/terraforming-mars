@@ -31,7 +31,10 @@ import {toName} from '../../common/utils/utils';
 import {MAX_AWARDS, MAX_MILESTONES} from '../../common/constants';
 
 export class Server {
-  public static getSimpleGameModel(game: IGame, options?: {botPlayers?: Array<PlayerId>}): SimpleGameModel {
+  public static getSimpleGameModel(game: IGame, options?: {
+    botPlayers?: Array<PlayerId>;
+    includeBotTakeoverTokens?: boolean;
+  }): SimpleGameModel {
     return {
       activePlayer: game.activePlayer.color,
       botPlayers: options?.botPlayers,
@@ -39,6 +42,7 @@ export class Server {
       name: game.name,
       phase: game.phase,
       players: game.playersInGenerationOrder.map((player) => ({
+        botTakeoverToken: options?.includeBotTakeoverTokens === true ? player.botTakeoverToken : undefined,
         color: player.color,
         id: player.id,
         name: player.name,

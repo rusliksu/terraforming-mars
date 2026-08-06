@@ -20,6 +20,7 @@ import {Response} from '../Response';
 import {QuotaConfig, QuotaHandler} from '../server/QuotaHandler';
 import {durationToMilliseconds} from '../utils/durations';
 import {BotTakeoverManager} from '../bot/BotTakeoverManager';
+import * as crypto from 'crypto';
 
 export function normalizeTelegramId(telegramID: string | undefined): string {
   return (telegramID ?? '').trim();
@@ -263,6 +264,10 @@ export class ApiCreateGame extends Handler {
 
           const botPlayers = botGame ? players.filter((_player, index) => requestedPlayers[index]?.isBot === true) : [];
           game.setBotPlayerIds(botPlayers.map((player) => player.id));
+          for (const player of game.players) {
+            player.botTakeoverToken = botPlayers.includes(player) ?
+              undefined : crypto.randomBytes(24).toString('base64url');
+          }
           const startedBotPlayerIds = new Array<string>();
           try {
             for (const botPlayer of botPlayers) {
@@ -293,6 +298,7 @@ export class ApiCreateGame extends Handler {
           }
           responses.writeJson(res, ctx, Server.getSimpleGameModel(game, {
             botPlayers: botPlayers.map((player) => player.id),
+            includeBotTakeoverTokens: true,
           }));
         } catch (error) {
           responses.internalServerError(req, res, error);

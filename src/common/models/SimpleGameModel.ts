@@ -18,6 +18,7 @@ export type SimpleGameModel = {
 }
 
 type SimplePlayerModel = {
+    botTakeoverToken?: string;
     color: Color;
     id: PlayerId;
     name: string;

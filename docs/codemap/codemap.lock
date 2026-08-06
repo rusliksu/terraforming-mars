@@ -1,8 +1,8 @@
 {
-  "current_commit": "1b25a2dad88956c6eb620b81a6f389c359bb3119",
-  "generated_from_commit": "1b25a2dad88956c6eb620b81a6f389c359bb3119",
+  "current_commit": "08bc5f411e41b4b827399ed8d4271c6c0121dedf",
+  "generated_from_commit": "08bc5f411e41b4b827399ed8d4271c6c0121dedf",
   "working_tree_has_uncommitted_changes": false,
-  "generated_at": "2026-08-06T12:28:51.972166Z",
+  "generated_at": "2026-08-06T19:32:05.055833Z",
   "scanned_scope": [
     ".",
     ".github",
@@ -35,16 +35,16 @@
   ],
   "fingerprint_algorithm": "sha256(sorted tracked path + NUL + per-file SHA-256 content records; module fingerprint is SHA-256 of sorted records)",
   "fingerprints": {
-    ".": "f601ac8e9b663ec3b1fa4302e5d60734fa4bbe472e9914b09829dd24e1857349",
+    ".": "a3f86b009cda9d52e388179fce39a2b70681bcfbd7d72caf7f6c88024c025655",
     ".github": "602674eb52edae866d1c87fbe0ac9b1aa0743b6a7ac11388ec7c3c5c5b3cbcd5",
     "assets": "b1d585a62ab8ea0745f47627eb1817801a37dfcefcf4c5c1c9656dd374775cd9",
     "docs": "61805d05ff96a321be5082bfbe98463f9bd7ee42b4de82c0fb406c64676d6126",
     "elo": "96d7364521a4e24dd2406bfa74262c375e5295d2e2ae66c0737850999cddd4bb",
-    "kitty-specs": "906435cf0e1c38c128269a7c86ebd25f3dedff9e5f6aa00bdd98828695faa9c4",
+    "kitty-specs": "fbe66859595959348c3711f85262cc72d5d53eeab1d1b855e0edb236f1356c23",
     "openspec": "15086d2be7036290427f76a6ce2924fb74e9f3b88da1a5184c6fbc431ae84442",
     "scripts": "58e270c001f172a17f528759ccd48537bbebc28c0b1388530b3b5f59bfe4402e",
-    "src": "6003a7a41d0c38d81992f2636c15f22d624b20315718eef81aaeec4f66092cf5",
-    "tests": "0d346161feecff84b2848fa86e7e7bdeb038ea74018192f251e2a29ef237fb43",
+    "src": "f310e18c0d8de186276f72d30e26c905107e81fab032c5a2514f5b8581061c0d",
+    "tests": "08d88c68b273d963d903a46846d7248cb8284d28e5b64032210e2b95d70d8e7f",
     "vscode.sample": "6d2b779d73492f0d9f53cc902a950169ee9872b1924bc206ca9203a67afe4a23"
   },
   "changed_modules": [

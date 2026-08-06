@@ -1,7 +1,7 @@
 {
   "repo_name": "terraforming-mars-tm-codemap",
-  "generated_at": "2026-08-06T12:28:51.972166Z",
-  "generated_from_commit": "1b25a2dad88956c6eb620b81a6f389c359bb3119",
+  "generated_at": "2026-08-06T19:32:05.055833Z",
+  "generated_from_commit": "08bc5f411e41b4b827399ed8d4271c6c0121dedf",
   "scope": [
     ".",
     ".github",

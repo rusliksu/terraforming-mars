@@ -169,6 +169,7 @@ describe('ApiBotTakeover', () => {
   it('does not classify an originally automated player as a human leave', async () => {
     const player = TestPlayer.BLACK.newPlayer();
     const game = Game.newInstance('g123456789abc', [player], player, 'spectatorid');
+    game.botTakeoverToken = 'game-token';
     game.setBotPlayerIds([player.id]);
     await scaffolding.ctx.gameLoader.add(game);
 
@@ -179,6 +180,7 @@ describe('ApiBotTakeover', () => {
       stop: () => undefined,
     });
 
+    scaffolding.req.headers['x-bot-takeover-token'] = game.botTakeoverToken;
     scaffolding.url = `/api/bot-takeover?action=start&gameId=${game.id}&playerId=${player.id}`;
     await route.processRequest(scaffolding.req, res, scaffolding.ctx);
 
@@ -265,6 +267,7 @@ describe('ApiBotTakeover', () => {
   it('clears a pending takeover after a restart even when no child is active', async () => {
     const player = TestPlayer.BLACK.newPlayer();
     const game = Game.newInstance('g123456789abc', [player], player, 'spectatorid');
+    game.botTakeoverToken = 'game-token';
     game.botTakeoverPlayerIds.add(player.id);
     await scaffolding.ctx.gameLoader.add(game);
 
@@ -277,6 +280,7 @@ describe('ApiBotTakeover', () => {
       stop: () => undefined,
     });
 
+    scaffolding.req.headers['x-bot-takeover-token'] = game.botTakeoverToken;
     scaffolding.url = `/api/bot-takeover?action=stop&gameId=${game.id}&playerId=${player.id}`;
     await route.processRequest(scaffolding.req, res, scaffolding.ctx);
 

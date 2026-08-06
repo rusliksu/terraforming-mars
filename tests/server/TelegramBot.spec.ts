@@ -341,6 +341,7 @@ describe('TelegramBot', () => {
           name: 'Руслан',
           id: 'p-ruslan',
           telegramID: '123456',
+          botTakeoverToken: 'owner token',
           lastNoticeMessageId: -1,
           game: {
             id: 'g-telegram',
@@ -353,12 +354,38 @@ describe('TelegramBot', () => {
         expect(sent).eq(true);
       });
 
+      const sendCalls = telegram.calls.filter((call) => call.path.includes('/sendMessage'));
+      expect(sendCalls).has.length(1);
+      expect(sendCalls[0].body.text).contains('/player?id=p-ruslan#botTakeoverToken=owner%20token');
       expect(logs.messages).has.length(1);
       expect(logs.messages[0]).contains('Telegram start notice sent');
       expect(logs.messages[0]).contains('game=g-telegram');
       expect(logs.messages[0]).contains('player=p-ruslan');
       expect(logs.messages[0]).contains('message=456');
       expect(logs.messages[0]).does.not.contain('123456');
+    } finally {
+      logs.restore();
+      telegram.restore();
+    }
+  });
+
+  it('keeps legacy game start links bare when no capability exists', async () => {
+    const telegram = stubTelegramApi({ok: true, result: {message_id: 457}});
+    const logs = captureConsole('log');
+    try {
+      await withTelegramEnabled(async () => {
+        const sent = await sendGameStartNotice({
+          name: 'Legacy',
+          id: 'p-legacy',
+          telegramID: '123456',
+          lastNoticeMessageId: -1,
+        });
+        expect(sent).eq(true);
+      });
+
+      const text = telegram.calls[0].body.text as string;
+      expect(text).contains('/player?id=p-legacy');
+      expect(text).not.contain('#botTakeoverToken=');
     } finally {
       logs.restore();
       telegram.restore();

@@ -290,9 +290,17 @@ export class ApiCreateGame extends Handler {
           await ctx.gameLoader.add(game);
           // Send Telegram game start notifications
           if (game.gameOptions.turnBasedGame === true) {
-            for (const p of players) {
+            for (const p of game.players) {
               if (p.telegramID) {
-                void sendGameStartNotice(p);
+                void sendGameStartNotice({
+                  name: p.name,
+                  id: p.id,
+                  telegramID: p.telegramID,
+                  botTakeoverToken: p.botTakeoverToken,
+                  lastNoticeMessageId: p.lastNoticeMessageId,
+                  lastTurnNoticeKey: p.lastTurnNoticeKey,
+                  game: p.game,
+                });
               }
             }
           }

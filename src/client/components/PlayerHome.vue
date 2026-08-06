@@ -2,6 +2,17 @@
   <div id="player-home" :class="(game.turmoil ? 'with-turmoil': '')">
     <TopBar :playerView="playerView" />
 
+    <div v-if="showBotTakeoverControl" class="player_home_block bot-takeover-control">
+      <button
+        data-test="bot-takeover-control"
+        role="switch"
+        :aria-checked="botTakeoverActive ? 'true' : 'false'"
+        :disabled="botTakeoverBusy"
+        @click="toggleBotTakeover">
+        {{botTakeoverActive ? 'Return control to player' : 'Let bot play for me'}}
+      </button>
+    </div>
+
     <div v-if="game.phase === 'end'">
       <div class="player_home_block">
         <DynamicTitle title="This game is over!" :color="thisPlayer.color"/>
@@ -181,6 +192,8 @@ import {Phase} from '@/common/Phase';
 import {HomeMixin} from '@/client/mixins/HomeMixin';
 
 type PlayerHomeModel = {
+  botTakeoverActive: boolean;
+  botTakeoverBusy: boolean;
   showHand: boolean;
   showActiveCards: boolean;
   showAutomatedCards: boolean;
@@ -202,6 +215,8 @@ export default defineComponent({
   data(): PlayerHomeModel {
     const preferences = getPreferences();
     return {
+      botTakeoverActive: false,
+      botTakeoverBusy: false,
       showHand: !preferences.hide_hand,
       showActiveCards: !preferences.hide_active_cards,
       showAutomatedCards: !preferences.hide_automated_cards,
@@ -234,6 +249,12 @@ export default defineComponent({
     },
     game(): GameModel {
       return this.playerView.game;
+    },
+    botTakeoverToken(): string {
+      return new URLSearchParams(window.location.hash.slice(1)).get('botTakeoverToken') ?? '';
+    },
+    showBotTakeoverControl(): boolean {
+      return this.botTakeoverToken !== '' && this.game.phase !== Phase.END;
     },
     CardType(): typeof CardType {
       return CardType;
@@ -274,6 +295,53 @@ export default defineComponent({
     KeyboardShortcuts,
   },
   methods: {
+    async refreshBotTakeover(): Promise<void> {
+      if (!this.showBotTakeoverControl) {
+        return;
+      }
+      try {
+        const query = new URLSearchParams({gameId: this.game.gameId});
+        const response = await fetch('api/bot-takeover?' + query.toString());
+        if (!response.ok) {
+          return;
+        }
+        const payload = await response.json() as {botPlayers?: Array<string>};
+        this.botTakeoverActive = payload.botPlayers?.includes(this.playerView.id) === true;
+      } catch (_error) {
+        // Bot status is optional; the mutation remains server-authorized.
+      }
+    },
+    async toggleBotTakeover(): Promise<void> {
+      if (this.botTakeoverBusy || !this.showBotTakeoverControl) {
+        return;
+      }
+      const action = this.botTakeoverActive ? 'stop' : 'start';
+      const confirmed = window.confirm(`${action === 'start' ? 'Start' : 'Stop'} bot for ${this.thisPlayer.name}?`);
+      if (!confirmed) {
+        return;
+      }
+      this.botTakeoverBusy = true;
+      try {
+        const query = new URLSearchParams({
+          action,
+          gameId: this.game.gameId,
+          playerId: this.playerView.id,
+        });
+        const response = await fetch('api/bot-takeover?' + query.toString(), {
+          method: 'POST',
+          headers: {'X-Bot-Takeover-Token': this.botTakeoverToken},
+        });
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+        const payload = await response.json() as {botPlayers?: Array<string>};
+        this.botTakeoverActive = payload.botPlayers?.includes(this.playerView.id) === true;
+      } catch (error) {
+        alert(error instanceof Error ? error.message : String(error));
+      } finally {
+        this.botTakeoverBusy = false;
+      }
+    },
     isPlayerActing(playerView: PlayerViewModel) : boolean {
       return playerView.players.length > 1 && playerView.waitingFor !== undefined;
     },
@@ -315,6 +383,20 @@ export default defineComponent({
       return !getCardOrThrow(cardModel.name).hasAction;
     },
   },
+  mounted() {
+    void this.refreshBotTakeover();
+  },
 });
 
 </script>
+
+<style scoped>
+.bot-takeover-control button {
+  cursor: pointer;
+  padding: 6px 10px;
+}
+
+.bot-takeover-control button[disabled] {
+  cursor: wait;
+}
+</style>

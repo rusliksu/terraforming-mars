@@ -20,6 +20,7 @@ import {Response} from '../Response';
 import {QuotaConfig, QuotaHandler} from '../server/QuotaHandler';
 import {durationToMilliseconds} from '../utils/durations';
 import {BotTakeoverManager} from '../bot/BotTakeoverManager';
+import * as crypto from 'crypto';
 
 export function normalizeTelegramId(telegramID: string | undefined): string {
   return (telegramID ?? '').trim();
@@ -261,6 +262,7 @@ export class ApiCreateGame extends Handler {
             game = Game.newInstance(gameId, players, players[firstPlayerIdx], spectatorId, gameOptions, seed);
           }
 
+          game.botTakeoverToken = crypto.randomBytes(24).toString('base64url');
           const botPlayers = botGame ? players.filter((_player, index) => requestedPlayers[index]?.isBot === true) : [];
           game.setBotPlayerIds(botPlayers.map((player) => player.id));
           const startedBotPlayerIds = new Array<string>();
@@ -285,14 +287,23 @@ export class ApiCreateGame extends Handler {
           await ctx.gameLoader.add(game);
           // Send Telegram game start notifications
           if (game.gameOptions.turnBasedGame === true) {
-            for (const p of players) {
+            for (const p of game.players) {
               if (p.telegramID) {
-                void sendGameStartNotice(p);
+                void sendGameStartNotice({
+                  name: p.name,
+                  id: p.id,
+                  telegramID: p.telegramID,
+                  botTakeoverToken: game.botTakeoverToken,
+                  lastNoticeMessageId: p.lastNoticeMessageId,
+                  lastTurnNoticeKey: p.lastTurnNoticeKey,
+                  game: p.game,
+                });
               }
             }
           }
           responses.writeJson(res, ctx, Server.getSimpleGameModel(game, {
             botPlayers: botPlayers.map((player) => player.id),
+            includeBotTakeoverToken: true,
           }));
         } catch (error) {
           responses.internalServerError(req, res, error);

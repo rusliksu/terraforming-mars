@@ -7,7 +7,11 @@ import {Response} from '../Response';
 import {BotTakeoverManager} from '../bot/BotTakeoverManager';
 import {Phase} from '../../common/Phase';
 import {IPlayer} from '../IPlayer';
+import {IGame} from '../IGame';
 import {sendBotTakeoverNotice} from '../TelegramBot';
+import * as crypto from 'crypto';
+import {AccessAuditEvent} from '../server/AccessAudit';
+import {getUserAgent} from './auditRequest';
 
 type BotTakeoverRouteDeps = Pick<BotTakeoverManager, 'list' | 'listPlayerIds' | 'start' | 'stop'>;
 type BotTakeoverNotifier = (recipients: ReadonlyArray<IPlayer>, botPlayer: IPlayer) => void;
@@ -16,6 +20,38 @@ function notifyBotTakeoverStarted(recipients: ReadonlyArray<IPlayer>, botPlayer:
   for (const recipient of recipients) {
     void sendBotTakeoverNotice(recipient, botPlayer);
   }
+}
+
+function hasMatchingBotTakeoverToken(req: Request, game: IGame): boolean {
+  const suppliedToken = req.headers['x-bot-takeover-token'];
+  if (typeof suppliedToken !== 'string' || game.botTakeoverToken === undefined) {
+    return false;
+  }
+  const suppliedDigest = crypto.createHash('sha256').update(suppliedToken).digest();
+  const expectedDigest = crypto.createHash('sha256').update(game.botTakeoverToken).digest();
+  return crypto.timingSafeEqual(suppliedDigest, expectedDigest);
+}
+
+function recordBotTakeoverAudit(
+  req: Request,
+  ctx: Context,
+  game: IGame,
+  player: IPlayer,
+  event: AccessAuditEvent,
+  action: 'start' | 'stop',
+  authorization: 'admin' | 'invite' | 'denied',
+): void {
+  ctx.accessAudit.record({
+    event,
+    method: req.method ?? '',
+    path: 'api/bot-takeover',
+    gameId: game.id,
+    participantId: player.id,
+    participantKind: 'player',
+    clientIp: ctx.clientIp,
+    userAgent: getUserAgent(req),
+    metadata: {action, authorization},
+  });
 }
 
 export class ApiBotTakeover extends Handler {
@@ -84,6 +120,15 @@ export class ApiBotTakeover extends Handler {
       return;
     }
 
+    const hasAdminAccess = this.hasServerIdAccess(ctx);
+    const hasInviteAccess = hasMatchingBotTakeoverToken(req, game);
+    if (!hasAdminAccess && !hasInviteAccess) {
+      recordBotTakeoverAudit(req, ctx, game, player, 'bot_takeover_rejected', action, 'denied');
+      responses.notAuthorized(req, res);
+      return;
+    }
+    const authorization = hasAdminAccess ? 'admin' : 'invite';
+
     if (action === 'start') {
       const wasActive = this.manager.listPlayerIds(game.id).includes(playerId);
       const tracksHumanTakeover = !game.botPlayerIds.has(playerId);
@@ -102,6 +147,7 @@ export class ApiBotTakeover extends Handler {
         if (!wasActive) {
           this.notifyStarted(game.players, player);
         }
+        recordBotTakeoverAudit(req, ctx, game, player, 'bot_takeover_accepted', action, authorization);
         responses.writeJson(res, ctx, {
           action,
           botPlayers: this.manager.listPlayerIds(game.id),
@@ -131,6 +177,7 @@ export class ApiBotTakeover extends Handler {
       game.botTakeoverPlayerIds.delete(playerId);
       await ctx.gameLoader.saveGame(game);
     }
+    recordBotTakeoverAudit(req, ctx, game, player, 'bot_takeover_accepted', action, authorization);
     responses.writeJson(res, ctx, {
       action,
       botPlayers: this.manager.listPlayerIds(game.id),

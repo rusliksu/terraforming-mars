@@ -124,6 +124,7 @@ export class Game implements IGame, Logger {
   private clonedGamedId: string | undefined;
   public rng: SeededRandom;
   public spectatorId: SpectatorId;
+  public botTakeoverToken: string | undefined = undefined;
   public deferredActions: DeferredActionsQueue = new DeferredActionsQueue();
   public createdTime: Date = new Date(0);
   public gameAge: number = 0; // Each log event increases it
@@ -509,6 +510,7 @@ export class Game implements IGame, Logger {
       activePlayer: this.activePlayer.id,
       awards: this.awards.map(toName),
       beholdTheEmperor: this.beholdTheEmperor,
+      botTakeoverToken: this.botTakeoverToken,
       board: this.board.serialize(),
       botPlayerIds: Array.from(this.botPlayerIds),
       botTakeoverPlayerIds: Array.from(this.botTakeoverPlayerIds),
@@ -1808,6 +1810,7 @@ export class Game implements IGame, Logger {
 
     const game = new Game(d.id, d.name, players, first, d.activePlayer, d.spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, d.tags);
     game.simulationMode = options.simulation === true;
+    game.botTakeoverToken = d.botTakeoverToken;
     game.resettable = true;
     game.spectatorId = d.spectatorId;
     game.createdTime = new Date(d.createdTimeMs);

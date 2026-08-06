@@ -5,6 +5,8 @@ import {ParticipantId} from '../../common/Types';
 import {ClientIp} from './clientIp';
 
 export type AccessAuditEvent =
+  'bot_takeover_accepted' |
+  'bot_takeover_rejected' |
   'game_home' |
   'player_view' |
   'player_view_denied' |

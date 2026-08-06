@@ -12,6 +12,10 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+if ($AllowDirtySource -or $AllowPrimaryWorkingTree) {
+    throw "Staging deploy accepts only a clean checkout whose HEAD equals origin/main; staging bypass flags are not supported."
+}
+
 . (Join-Path $PSScriptRoot "lib\TmReleaseGuards.ps1")
 
 $repoRoot = Split-Path -Parent $PSScriptRoot

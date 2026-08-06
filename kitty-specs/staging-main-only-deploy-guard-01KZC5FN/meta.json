@@ -1,0 +1,14 @@
+{
+  "created_at": "2026-08-06T18:31:03.359550+00:00",
+  "flattened": false,
+  "friendly_name": "staging main only deploy guard",
+  "mission_id": "01KZC5FNXVX0WFJCH3Z49THZPC",
+  "mission_number": null,
+  "mission_slug": "staging-main-only-deploy-guard-01KZC5FN",
+  "mission_type": "software-dev",
+  "purpose_context": "This mission advances staging main only deploy guard on codex/tm-staging-main-only-v2 so stakeholders can track the work from mission creation onward.",
+  "purpose_tldr": "staging main only deploy guard",
+  "slug": "staging-main-only-deploy-guard-01KZC5FN",
+  "target_branch": "codex/tm-staging-main-only-v2",
+  "topology": "single_branch"
+}

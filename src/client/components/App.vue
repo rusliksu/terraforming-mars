@@ -129,7 +129,11 @@ function retainAdminSearch(targetPath: string, id: string | undefined) {
     params.set('serverId', serverId);
   }
   const query = params.toString();
-  return query === '' ? targetPath : `${targetPath}?${query}`;
+  const target = query === '' ? targetPath : `${targetPath}?${query}`;
+  const botTakeoverToken = new URLSearchParams(window.location.hash.slice(1)).get('botTakeoverToken');
+  const fragment = botTakeoverToken === null || botTakeoverToken === '' ? '' :
+    `#botTakeoverToken=${encodeURIComponent(botTakeoverToken)}`;
+  return target + fragment;
 }
 
 class AppFetchError extends Error {

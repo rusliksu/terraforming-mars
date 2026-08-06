@@ -1,13 +1,14 @@
 {
   "repo_name": "terraforming-mars-tm-codemap",
-  "generated_at": "2026-08-05T18:19:48.869392Z",
-  "generated_from_commit": "85e93d58c581e676af96474255391f4c5ffda09d",
+  "generated_at": "2026-08-06T12:28:51.972166Z",
+  "generated_from_commit": "1b25a2dad88956c6eb620b81a6f389c359bb3119",
   "scope": [
     ".",
     ".github",
     "assets",
     "docs",
     "elo",
+    "kitty-specs",
     "openspec",
     "scripts",
     "src",
@@ -223,7 +224,47 @@
         },
         {
           "path": "src/server/Game.ts",
-          "symbol": "GameLoader.getInstance().saveGame(this)",
+          "symbol": "this.saveGame(this)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "save-port",
+      "label": "Save port",
+      "type": "contract",
+      "path": "src/server/Game.ts",
+      "role": "Injected persistence function used by Game.save()",
+      "entrypoints": [
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "type SaveGame = (game: IGame) => Promise<void>",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/Game.spec.ts",
+          "symbol": "delegates a normal save once and stores the returned Promise"
+        },
+        {
+          "path": "tests/Game.spec.ts",
+          "symbol": "does not persist or replace the Promise in simulation mode"
+        }
+      ],
+      "constraints": [
+        "Контракт не меняет route contract и сохраняет Promise identity.",
+        "В simulationMode порт не вызывается."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "type SaveGame = (game: IGame) => Promise<void>",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "this.saveGamePromise = this.saveGame(this)",
           "status": "confirmed"
         }
       ]
@@ -868,13 +909,31 @@
     },
     {
       "from": "game-domain",
-      "to": "loader-cache",
+      "to": "save-port",
       "type": "calls",
       "unknown": false,
       "evidence": [
         {
           "path": "src/server/Game.ts",
-          "symbol": "GameLoader.getInstance().saveGame(this)",
+          "symbol": "this.saveGame(this)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "save-port",
+      "to": "loader-cache",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/database/GameLoader.ts",
+          "symbol": "Game.deserialize(serializedGame, {saveGame: this.saveGame.bind(this)})",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/routes/ApiCreateGame.ts",
+          "symbol": "ctx.gameLoader.saveGame.bind(ctx.gameLoader)",
           "status": "confirmed"
         }
       ]
@@ -1048,6 +1107,7 @@
         "api-handlers",
         "game-domain",
         "setup-cards",
+        "save-port",
         "loader-cache",
         "database-facade"
       ],
@@ -1079,6 +1139,7 @@
         "input-deferred",
         "player-domain",
         "game-domain",
+        "save-port",
         "loader-cache",
         "database-facade"
       ],
@@ -1115,5 +1176,10 @@
       "evidence": []
     }
   ],
-  "changed_modules": []
+  "changed_modules": [
+    ".",
+    "kitty-specs",
+    "src",
+    "tests"
+  ]
 }

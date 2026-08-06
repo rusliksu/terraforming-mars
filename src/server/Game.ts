@@ -90,6 +90,8 @@ import type {ActionReplayState} from './game/ActionReplay';
 // Can be overridden by tests
 let createGameLog: () => Array<LogMessage> = () => [];
 
+type SaveGame = (game: IGame) => Promise<void>;
+
 export function setGameLog(f: () => Array<LogMessage>) {
   createGameLog = f;
 }
@@ -221,7 +223,8 @@ export class Game implements IGame, Logger {
     corporationDeck: CorporationDeck,
     preludeDeck: PreludeDeck,
     ceoDeck: CeoDeck,
-    tags: ReadonlyArray<Tag>) {
+    tags: ReadonlyArray<Tag>,
+    private readonly saveGame: SaveGame = (game) => GameLoader.getInstance().saveGame(game)) {
     this.id = id;
     this.name = name;
     this.gameOptions = {...gameOptions};
@@ -277,7 +280,8 @@ export class Game implements IGame, Logger {
     firstPlayer: IPlayer,
     spectatorId: SpectatorId,
     partialOptions: Partial<GameOptions> = {},
-    seed = 0): Game {
+    seed = 0,
+    saveGame?: SaveGame): Game {
     if (partialOptions.expansions === undefined) {
       partialOptions.expansions = {
         corpera: partialOptions.corporateEra ?? false,
@@ -354,7 +358,7 @@ export class Game implements IGame, Logger {
     }
 
     const name = generateGameName(UnseededRandom.INSTANCE);
-    const game = new Game(id, name, players, firstPlayer, activePlayer, spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, Array.from(tags));
+    const game = new Game(id, name, players, firstPlayer, activePlayer, spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, Array.from(tags), saveGame);
     // This evaluation of created time doesn't match what's stored in the database, but that's fine.
     game.createdTime = new Date();
     // Initialize Ares data
@@ -501,7 +505,7 @@ export class Game implements IGame, Logger {
     if (this.simulationMode) {
       return;
     }
-    this.saveGamePromise = GameLoader.getInstance().saveGame(this);
+    this.saveGamePromise = this.saveGame(this);
   }
 
   public serialize(): SerializedGame {
@@ -1787,7 +1791,7 @@ export class Game implements IGame, Logger {
     return addDays(this.createdTime, days).getTime();
   }
 
-  public static deserialize(d: SerializedGame, options: {simulation?: boolean} = {}): Game {
+  public static deserialize(d: SerializedGame, options: {simulation?: boolean, saveGame?: SaveGame} = {}): Game {
     const gameOptions = deserializeGameOptions(d);
 
     const players = d.players.map((element) => Player.deserialize(element));
@@ -1806,7 +1810,7 @@ export class Game implements IGame, Logger {
 
     const ceoDeck = CeoDeck.deserialize(d.ceoDeck, rng);
 
-    const game = new Game(d.id, d.name, players, first, d.activePlayer, d.spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, d.tags);
+    const game = new Game(d.id, d.name, players, first, d.activePlayer, d.spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, d.tags, options.saveGame);
     game.simulationMode = options.simulation === true;
     game.resettable = true;
     game.spectatorId = d.spectatorId;

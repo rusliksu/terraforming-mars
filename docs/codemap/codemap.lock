@@ -1,14 +1,15 @@
 {
-  "current_commit": "85e93d58c581e676af96474255391f4c5ffda09d",
-  "generated_from_commit": "85e93d58c581e676af96474255391f4c5ffda09d",
+  "current_commit": "1b25a2dad88956c6eb620b81a6f389c359bb3119",
+  "generated_from_commit": "1b25a2dad88956c6eb620b81a6f389c359bb3119",
   "working_tree_has_uncommitted_changes": false,
-  "generated_at": "2026-08-05T18:19:48.869392Z",
+  "generated_at": "2026-08-06T12:28:51.972166Z",
   "scanned_scope": [
     ".",
     ".github",
     "assets",
     "docs",
     "elo",
+    "kitty-specs",
     "openspec",
     "scripts",
     "src",
@@ -34,19 +35,27 @@
   ],
   "fingerprint_algorithm": "sha256(sorted tracked path + NUL + per-file SHA-256 content records; module fingerprint is SHA-256 of sorted records)",
   "fingerprints": {
-    ".": "4ae34c6ce6d6ac50fa66db34afb312cf176b69e14d64536f3e9f5714109493dc",
+    ".": "f601ac8e9b663ec3b1fa4302e5d60734fa4bbe472e9914b09829dd24e1857349",
     ".github": "602674eb52edae866d1c87fbe0ac9b1aa0743b6a7ac11388ec7c3c5c5b3cbcd5",
     "assets": "b1d585a62ab8ea0745f47627eb1817801a37dfcefcf4c5c1c9656dd374775cd9",
     "docs": "61805d05ff96a321be5082bfbe98463f9bd7ee42b4de82c0fb406c64676d6126",
     "elo": "96d7364521a4e24dd2406bfa74262c375e5295d2e2ae66c0737850999cddd4bb",
+    "kitty-specs": "906435cf0e1c38c128269a7c86ebd25f3dedff9e5f6aa00bdd98828695faa9c4",
     "openspec": "15086d2be7036290427f76a6ce2924fb74e9f3b88da1a5184c6fbc431ae84442",
     "scripts": "58e270c001f172a17f528759ccd48537bbebc28c0b1388530b3b5f59bfe4402e",
-    "src": "d5f94d6c3960b63729df958d1c218a5242d48d34e3ac0e6c803184089074a047",
-    "tests": "18c4d427e47f62ff152a05e336bd1bc92b0eddf1f55a8333647d3d95cdaf9afa",
+    "src": "6003a7a41d0c38d81992f2636c15f22d624b20315718eef81aaeec4f66092cf5",
+    "tests": "0d346161feecff84b2848fa86e7e7bdeb038ea74018192f251e2a29ef237fb43",
     "vscode.sample": "6d2b779d73492f0d9f53cc902a950169ee9872b1924bc206ca9203a67afe4a23"
   },
-  "changed_modules": [],
-  "new_modules": [],
+  "changed_modules": [
+    ".",
+    "kitty-specs",
+    "src",
+    "tests"
+  ],
+  "new_modules": [
+    "kitty-specs"
+  ],
   "removed_modules": [],
   "comparison": "compared with existing codemap.lock"
 }

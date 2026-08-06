@@ -591,6 +591,8 @@ describe('ApiCreateGame', () => {
       serverId: scaffolding.ctx.ids.serverId,
     }]);
     expect(model.botPlayers).deep.eq([model.players[0].id]);
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(Array.from(game!.botPlayerIds)).deep.eq([model.players[0].id]);
   });
 
   it('ignores bot player flags when bot mode is disabled', async () => {
@@ -622,6 +624,8 @@ describe('ApiCreateGame', () => {
     const model = JSON.parse(res.content) as SimpleGameModel;
     expect(starts).deep.eq([]);
     expect(model.botPlayers).deep.eq([]);
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(Array.from(game!.botPlayerIds)).deep.eq([]);
   });
 
   it('red rover solo game', async () => {

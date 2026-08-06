@@ -1086,6 +1086,19 @@ describe('Game', () => {
       .deep.eq(gameKeys.concat(...serializedValuesNotInGame).sort());
   });
 
+  it('persists bot tracking state across game restore', () => {
+    const bot = TestPlayer.BLUE.newPlayer();
+    const human = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('gameid', [bot, human], bot, 'spectatorid');
+    game.setBotPlayerIds([bot.id]);
+    game.botTakeoverPlayerIds.add(human.id);
+
+    const restored = Game.deserialize(game.serialize(), {simulation: true});
+
+    expect(Array.from(restored.botPlayerIds)).deep.eq([bot.id]);
+    expect(Array.from(restored.botTakeoverPlayerIds)).deep.eq([human.id]);
+  });
+
   it('enables action undo when loading a game with experimental step undo', () => {
     const player = TestPlayer.BLUE.newPlayer();
     const game = Game.newInstance('gameid', [player], player, 'spectatorid');

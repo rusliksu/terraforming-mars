@@ -112,6 +112,8 @@ export class Game implements IGame, Logger {
   public readonly name: string;
   public readonly gameOptions: Readonly<GameOptions>;
   public readonly players: ReadonlyArray<IPlayer>;
+  public readonly botPlayerIds = new Set<PlayerId>();
+  public readonly botTakeoverPlayerIds = new Set<PlayerId>();
   // The API makes this readonly.
   public playersInGenerationOrder: ReadonlyArray<IPlayer> = [];
 
@@ -476,6 +478,14 @@ export class Game implements IGame, Logger {
     return game;
   }
 
+  public setBotPlayerIds(playerIds: ReadonlyArray<PlayerId>): void {
+    this.botPlayerIds.clear();
+    for (const playerId of playerIds) {
+      this.botPlayerIds.add(playerId);
+    }
+    this.botTakeoverPlayerIds.clear();
+  }
+
   /** Properly starts the game with the project draft, or initial research phase. */
   private gotoInitialPhase(): void {
     // Initial Draft
@@ -500,6 +510,8 @@ export class Game implements IGame, Logger {
       awards: this.awards.map(toName),
       beholdTheEmperor: this.beholdTheEmperor,
       board: this.board.serialize(),
+      botPlayerIds: Array.from(this.botPlayerIds),
+      botTakeoverPlayerIds: Array.from(this.botTakeoverPlayerIds),
       claimedMilestones: serializeClaimedMilestones(this.claimedMilestones),
       ceoDeck: this.ceoDeck.serialize(),
       colonies: this.colonies.map((colony) => colony.serialize()),
@@ -1877,6 +1889,14 @@ export class Game implements IGame, Logger {
     game.nomadSpace = d.nomadSpace;
     game.tradeEmbargo = d.tradeEmbargo ?? false;
     game.beholdTheEmperor = d.beholdTheEmperor ?? false;
+    game.botPlayerIds.clear();
+    for (const playerId of d.botPlayerIds ?? []) {
+      game.botPlayerIds.add(playerId);
+    }
+    game.botTakeoverPlayerIds.clear();
+    for (const playerId of d.botTakeoverPlayerIds ?? []) {
+      game.botTakeoverPlayerIds.add(playerId);
+    }
     game.globalsPerGeneration = d.globalsPerGeneration;
 
     // TODO(kberg): Remove this migration code by 2026-08-01

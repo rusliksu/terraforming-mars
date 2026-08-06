@@ -73,6 +73,11 @@ export interface IGame extends Logger {
   generation: number;
   readonly players: ReadonlyArray<IPlayer>;
   readonly playersInGenerationOrder: ReadonlyArray<IPlayer>;
+  /** Players created as automated participants; their games are excluded from reliability stats. */
+  readonly botPlayerIds: ReadonlySet<PlayerId>;
+  /** Human players who have taken over by bot and have not returned before game end. */
+  readonly botTakeoverPlayerIds: Set<PlayerId>;
+  setBotPlayerIds(playerIds: ReadonlyArray<PlayerId>): void;
 
   /**
    * Stores the state of each global parameter at the end of each generation.

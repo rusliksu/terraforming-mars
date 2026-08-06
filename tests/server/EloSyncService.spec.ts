@@ -58,6 +58,75 @@ describe('EloSyncService', () => {
     expect(primary.players.bob.avgPlaceScore).eq(0.5);
     expect(primary.players.carol.avgPlaceScore).eq(0);
     expect(primary.games[0].results[0].delta).to.be.a('number');
+    expect(primary.games[0].results[0].completionOutcome).eq(undefined);
+  });
+
+  it('tracks only confirmed human leaves in a rolling window without changing Elo', () => {
+    const games = Array.from({length: 10}, (_value, index) => ({
+      _key: `g-reliability-${index}`,
+      date: `2026-04-04T00:00:${String(index).padStart(2, '0')}.000Z`,
+      server: 'test',
+      map: 'THARSIS',
+      generation: 10,
+      playerCount: 2,
+      completedTime: index + 1,
+      results: [
+        {name: 'alice', displayName: 'Alice', place: 1, vp: 100, corp: 'CrediCor', completionOutcome: index < 3 ? 'left' as const : 'completed' as const},
+        {name: 'bob', displayName: 'Bob', place: 2, vp: 90, corp: 'Helion', completionOutcome: 'completed' as const},
+      ],
+    }));
+    const withReliability = rebuildEloData(games);
+    const withoutReliability = rebuildEloData(games.map((game) => ({
+      ...game,
+      results: game.results.map(({completionOutcome: _completionOutcome, ...result}) => result),
+    })));
+
+    expect(withReliability.players.alice.completionReliability).deep.eq({games: 10, leaves: 3, rate: 0.3, eligible: true});
+    expect(withReliability.players.bob.completionReliability).deep.eq({games: 10, leaves: 0, rate: 0, eligible: false});
+    expect(withReliability.players.alice.elo).eq(withoutReliability.players.alice.elo);
+    expect(withReliability.players.alice.elo_vp).eq(withoutReliability.players.alice.elo_vp);
+  });
+
+  it('keeps only the last 20 known outcomes for reliability', () => {
+    const games = Array.from({length: 21}, (_value, index) => ({
+      _key: `g-window-${index}`,
+      date: `2026-04-04T00:00:${String(index).padStart(2, '0')}.000Z`,
+      server: 'test',
+      map: 'THARSIS',
+      generation: 10,
+      playerCount: 2,
+      completedTime: index + 1,
+      results: [
+        {name: 'alice', displayName: 'Alice', place: 1, vp: 100, corp: 'CrediCor', completionOutcome: index === 0 || index === 20 ? 'left' as const : 'completed' as const},
+        {name: 'bob', displayName: 'Bob', place: 2, vp: 90, corp: 'Helion', completionOutcome: 'completed' as const},
+      ],
+    }));
+
+    expect(rebuildEloData(games).players.alice.completionReliability).deep.eq({games: 20, leaves: 1, rate: 0.05, eligible: false});
+  });
+
+  it('records a human takeover as a leave and skips games with automated players', async () => {
+    const alice = TestPlayer.BLUE.newPlayer({name: 'Alice'});
+    const bob = TestPlayer.RED.newPlayer({name: 'Bob'});
+    const game = Game.newInstance('g-human-takeover', [alice, bob], alice, 'spectatorid');
+    game.generation = 10;
+    alice.setTerraformRating(80);
+    bob.setTerraformRating(70);
+    game.botTakeoverPlayerIds.add(alice.id);
+
+    await service.recordCompletedGame(game);
+
+    const primary = JSON.parse(await fs.readFile(primaryPath, 'utf8'));
+    expect(primary.games[0].results.find((result: {displayName: string}) => result.displayName === 'Alice').completionOutcome).eq('left');
+    expect(primary.games[0].results.find((result: {displayName: string}) => result.displayName === 'Bob').completionOutcome).eq('completed');
+
+    const automatedGame = Game.newInstance('g-automated', [alice, bob], alice, 'spectatorid');
+    automatedGame.generation = 10;
+    automatedGame.setBotPlayerIds([alice.id]);
+    await service.recordCompletedGame(automatedGame);
+
+    const afterAutomated = JSON.parse(await fs.readFile(primaryPath, 'utf8'));
+    expect(afterAutomated.games.map((entry: {_key: string}) => entry._key)).deep.eq(['g-human-takeover']);
   });
 
   it('uses megacredits as the live-game tie-breaker when final VP are equal', async () => {

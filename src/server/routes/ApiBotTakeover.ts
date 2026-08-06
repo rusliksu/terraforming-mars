@@ -86,7 +86,14 @@ export class ApiBotTakeover extends Handler {
 
     if (action === 'start') {
       const wasActive = this.manager.listPlayerIds(game.id).includes(playerId);
+      const tracksHumanTakeover = !game.botPlayerIds.has(playerId);
+      let markedTakeover = false;
       try {
+        if (!wasActive && tracksHumanTakeover) {
+          game.botTakeoverPlayerIds.add(playerId);
+          markedTakeover = true;
+          await ctx.gameLoader.saveGame(game);
+        }
         const entry = this.manager.start({
           gameId: game.id,
           playerId,
@@ -101,15 +108,28 @@ export class ApiBotTakeover extends Handler {
           entry,
         });
       } catch (err) {
+        if (markedTakeover) {
+          game.botTakeoverPlayerIds.delete(playerId);
+          try {
+            await ctx.gameLoader.saveGame(game);
+          } catch (_saveError) {
+            // Preserve the original bot-start error for the caller.
+          }
+        }
         responses.badRequest(req, res, err instanceof Error ? err.message : String(err));
       }
       return;
     }
 
+    const hadPendingTakeover = game.botTakeoverPlayerIds.has(playerId);
     const stopped = this.manager.stop(playerId);
-    if (stopped === undefined) {
+    if (stopped === undefined && !hadPendingTakeover) {
       responses.notFound(req, res, 'bot takeover is not active for player');
       return;
+    }
+    if (hadPendingTakeover) {
+      game.botTakeoverPlayerIds.delete(playerId);
+      await ctx.gameLoader.saveGame(game);
     }
     responses.writeJson(res, ctx, {
       action,

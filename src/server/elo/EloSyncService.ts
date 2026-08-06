@@ -10,6 +10,10 @@ import {getEloMirrorPath, getEloPrimaryPath} from './EloPaths';
 const DEFAULT_ELO = 1500;
 const BASE_K = 32;
 const PROVISIONAL_ELO_BY_COMPLETED_GAMES = [1300, 1375, 1450] as const;
+export const COMPLETION_RELIABILITY_WINDOW = 20;
+export const COMPLETION_RELIABILITY_MIN_GAMES = 10;
+export const COMPLETION_RELIABILITY_MIN_LEAVES = 3;
+export const COMPLETION_RELIABILITY_MIN_RATE = 0.2;
 const PLAYER_ALIASES = loadPlayerAliases();
 
 function loadPlayerAliases(): Record<string, string> {
@@ -43,6 +47,7 @@ export type EloStoredResult = {
   place: number;
   vp: number;
   corp: string;
+  completionOutcome?: 'completed' | 'left';
 };
 
 export type EloStoredGame = {
@@ -81,6 +86,14 @@ export type EloPlayerRecord = {
   avgPlace: number;
   avgPlaceScore: number;
   corps: Record<string, number>;
+  completionReliability?: CompletionReliability;
+};
+
+export type CompletionReliability = {
+  games: number;
+  leaves: number;
+  rate: number;
+  eligible: boolean;
 };
 
 export type EloData = {
@@ -89,6 +102,7 @@ export type EloData = {
 };
 
 export type CompletedGamePlayerSummary = {
+  id?: string;
   name: string;
   user?: string;
   place?: number;
@@ -104,6 +118,8 @@ export type CompletedGameSummary = {
   durationMs?: number;
   durationMinutes?: number;
   botPlayerIds?: Array<string>;
+  confirmedLeavePlayerIds?: Array<string>;
+  completionOutcomeKnown?: boolean;
   source?: string;
   analyzedBy?: Array<string>;
   analysisTargets?: Array<string>;
@@ -212,10 +228,12 @@ function getOrCreatePlayer(players: Record<string, EloMutablePlayerRecord>, key:
 }
 
 export function buildEloGameFromSummary(summary: CompletedGameSummary): EloStoredGame {
+  const confirmedLeavePlayerIds = new Set(normalizeStringList(summary.confirmedLeavePlayerIds) ?? []);
   const normalizedPlayers = summary.players
     .map((player) => {
       const normalized = normalizeEloIdentity(player.name, player.user);
       return {
+        id: player.id,
         name: normalized.key,
         displayName: normalized.displayName,
         user: normalized.user,
@@ -246,6 +264,9 @@ export function buildEloGameFromSummary(summary: CompletedGameSummary): EloStore
       place,
       vp: current.vp,
       corp: current.corp,
+      completionOutcome: summary.completionOutcomeKnown === true ?
+        (current.id !== undefined && confirmedLeavePlayerIds.has(current.id) ? 'left' : 'completed') :
+        undefined,
     });
   }
 
@@ -342,6 +363,7 @@ function normalizeStoredGame(game: EloStoredGame): EloStoredGame {
       name: normalized.key,
       displayName: normalized.displayName,
       user: normalized.user,
+      completionOutcome: entry.completionOutcome === 'completed' || entry.completionOutcome === 'left' ? entry.completionOutcome : undefined,
     };
   });
 
@@ -363,11 +385,16 @@ function mergeStoredGameMetadata(record: EloStoredGame, existing: EloStoredGame 
   if (existing === undefined) {
     return record;
   }
+  const existingResults = new Map((Array.isArray(existing.results) ? existing.results : []).map((result) => [result.name, result]));
   return {
     ...record,
     source: record.source ?? existing.source,
     analyzedBy: mergeStringLists(existing.analyzedBy, record.analyzedBy),
     analysisTargets: mergeStringLists(existing.analysisTargets, record.analysisTargets),
+    results: record.results.map((result) => ({
+      ...result,
+      completionOutcome: result.completionOutcome ?? existingResults.get(result.name)?.completionOutcome,
+    })),
   };
 }
 
@@ -401,6 +428,7 @@ export function rebuildEloData(games: Array<EloStoredGame>): EloData {
     });
 
   const players: Record<string, EloMutablePlayerRecord> = {};
+  const completionHistory: Record<string, Array<'completed' | 'left'>> = {};
 
   for (const game of normalizedGames) {
     const entries = game.results;
@@ -492,6 +520,13 @@ export function rebuildEloData(games: Array<EloStoredGame>): EloData {
       if (entry.corp) {
         current.corps[entry.corp] = (current.corps[entry.corp] || 0) + 1;
       }
+      if (entry.completionOutcome !== undefined) {
+        const history = completionHistory[entry.name] ?? (completionHistory[entry.name] = []);
+        history.push(entry.completionOutcome);
+        if (history.length > COMPLETION_RELIABILITY_WINDOW) {
+          history.splice(0, history.length - COMPLETION_RELIABILITY_WINDOW);
+        }
+      }
     }
   }
 
@@ -500,6 +535,18 @@ export function rebuildEloData(games: Array<EloStoredGame>): EloData {
     const avgPlace = player.games > 0 ? round3(player.placeScoreSum / player.games) : 0;
     const totalGens = player.totalGens ?? 0;
     const totalMargin = player.totalMargin ?? 0;
+    const completion = completionHistory[key];
+    const completionLeaves = completion?.filter((outcome) => outcome === 'left').length ?? 0;
+    const completionGames = completion?.length ?? 0;
+    const completionRate = completionGames > 0 ? round3(completionLeaves / completionGames) : 0;
+    const completionReliability = completionGames === 0 ? undefined : {
+      games: completionGames,
+      leaves: completionLeaves,
+      rate: completionRate,
+      eligible: completionGames >= COMPLETION_RELIABILITY_MIN_GAMES &&
+        completionLeaves >= COMPLETION_RELIABILITY_MIN_LEAVES &&
+        completionRate >= COMPLETION_RELIABILITY_MIN_RATE,
+    };
     finalizedPlayers[key] = {
       elo: player.elo,
       elo_vp: player.elo_vp,
@@ -517,6 +564,7 @@ export function rebuildEloData(games: Array<EloStoredGame>): EloData {
       avgPlace,
       avgPlaceScore: avgPlace,
       corps: player.corps,
+      completionReliability,
     };
   }
 
@@ -526,7 +574,10 @@ export function rebuildEloData(games: Array<EloStoredGame>): EloData {
   };
 }
 
-function buildCompletedGameSummary(game: IGame, botPlayerIds: Array<string> = []): CompletedGameSummary {
+function buildCompletedGameSummary(game: IGame, options: {
+  botPlayerIds?: Array<string>;
+  confirmedLeavePlayerIds?: Array<string>;
+} = {}): CompletedGameSummary {
   const completedTimeMs = Date.now();
   const completedTime = Math.floor(completedTimeMs / 1000);
   const startedTimeMs = game.createdTime instanceof Date ? game.createdTime.getTime() : NaN;
@@ -554,6 +605,7 @@ function buildCompletedGameSummary(game: IGame, botPlayerIds: Array<string> = []
       players[idx - 1].place :
       idx + 1;
     players.push({
+      id: entry.player.id,
       name: entry.player.name,
       user: entry.player.user,
       place,
@@ -568,7 +620,9 @@ function buildCompletedGameSummary(game: IGame, botPlayerIds: Array<string> = []
     startedTime: hasStartedTime ? Math.floor(startedTimeMs / 1000) : undefined,
     durationMs,
     durationMinutes: durationMs !== undefined ? Math.round(durationMs / 60_000) : undefined,
-    botPlayerIds: normalizeStringList(botPlayerIds),
+    botPlayerIds: normalizeStringList(options.botPlayerIds ?? Array.from(game.botPlayerIds ?? [])),
+    confirmedLeavePlayerIds: normalizeStringList(options.confirmedLeavePlayerIds ?? Array.from(game.botTakeoverPlayerIds ?? [])),
+    completionOutcomeKnown: true,
     server: process.env.ELO_SERVER_NAME ?? 'server',
     map: String(game.gameOptions.boardName ?? ''),
     generation: game.generation,
@@ -626,11 +680,14 @@ export class EloSyncService {
     private readonly mirrorPath: string = getEloMirrorPath(),
   ) {}
 
-  public async recordCompletedGame(game: IGame, options?: {botPlayerIds?: Array<string>}): Promise<void> {
+  public async recordCompletedGame(game: IGame, options?: {
+    botPlayerIds?: Array<string>;
+    confirmedLeavePlayerIds?: Array<string>;
+  }): Promise<void> {
     if (game.gameOptions.noEloGame === true || hasMalformedEscapeVelocityOptions(game.gameOptions.escapeVelocity)) {
       return;
     }
-    await this.recordCompletedGameSummary(buildCompletedGameSummary(game, options?.botPlayerIds));
+    await this.recordCompletedGameSummary(buildCompletedGameSummary(game, options));
   }
 
   public async recordCompletedGameSummary(summary: CompletedGameSummary): Promise<void> {

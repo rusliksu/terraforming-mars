@@ -17,6 +17,30 @@ describe('LogPanel', () => {
   let lastResizeCallback: TestResizeObserverCallback | undefined;
   let originalGetElementById: typeof document.getElementById;
 
+  function installScrollablePanel() {
+    let scrollTop = 0;
+    const panel = {
+      get scrollTop() {
+        return scrollTop;
+      },
+      set scrollTop(value: number) {
+        scrollTop = value;
+      },
+      scrollHeight: 520,
+      clientHeight: 200,
+      querySelector: () => ({} as HTMLUListElement),
+      addEventListener() {},
+      removeEventListener() {},
+    } as unknown as HTMLElement;
+    document.getElementById = ((id: string) => id === 'logpanel-scrollable' ? panel : null) as typeof document.getElementById;
+    return {
+      getScrollTop: () => scrollTop,
+      setScrollTop: (value: number) => {
+        scrollTop = value;
+      },
+    };
+  }
+
   beforeEach(() => {
     originalFetch = (global as any).fetch;
     originalResizeObserver = (global as any).ResizeObserver;
@@ -172,6 +196,8 @@ describe('LogPanel', () => {
 
     expect(wrapper.find('[data-test="log-player-filter-blue"]').classes()).contains('player_bg_color_blue');
     expect(wrapper.find('[data-test="log-player-filter-red"]').classes()).contains('player_bg_color_red');
+    expect(wrapper.find('[data-test="log-player-filter-all"]').classes()).does.not.contain('player_bg_color_blue');
+    expect(wrapper.find('.log-panel').element.nextElementSibling).eq(wrapper.find('.log-player-filters').element);
   });
 
   it('includes the current player\'s private draft logs in their filter without requesting another view', async () => {
@@ -293,5 +319,75 @@ describe('LogPanel', () => {
     lastResizeCallback?.([], {});
 
     expect(fakeScrollTop).to.equal(120);
+  });
+
+  it('restores the log view after the panel is remounted', async () => {
+    const panel = installScrollablePanel();
+
+    const blue = fakePublicPlayerModel({color: 'blue', id: 'p-remount-id' as any, name: 'Blue'});
+    const red = fakePublicPlayerModel({color: 'red', id: 'p-red-id' as any, name: 'Red'});
+    const baseViewModel = fakeViewModel({id: 'p-remount-id' as any, players: [blue, red]});
+    const viewModel = {...baseViewModel, game: {...baseViewModel.game, generation: 3}};
+    const first = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {viewModel, color: 'blue'},
+    });
+
+    await Promise.resolve();
+    (first.vm as any).selectedGeneration = 1;
+    (first.vm as any).selectedRecentLimit = undefined;
+    (first.vm as any).selectedPlayerColor = 'red';
+    (first.vm as any).stickToBottom = false;
+    panel.setScrollTop(120);
+    first.unmount();
+
+    const second = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {viewModel, color: 'blue'},
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await second.vm.$nextTick();
+
+    expect((second.vm as any).selectedGeneration).eq(1);
+    expect((second.vm as any).selectedRecentLimit).eq(undefined);
+    expect((second.vm as any).selectedPlayerColor).eq('red');
+    expect((second.vm as any).stickToBottom).eq(false);
+    expect(panel.getScrollTop()).eq(120);
+    expect(fetchCalls[fetchCalls.length - 1]).includes('generation=1');
+  });
+
+  it('returns to the latest unfiltered logs on demand', async () => {
+    const panel = installScrollablePanel();
+
+    const blue = fakePublicPlayerModel({color: 'blue', id: 'p-latest-id' as any, name: 'Blue'});
+    const red = fakePublicPlayerModel({color: 'red', id: 'p-red-id' as any, name: 'Red'});
+    const wrapper = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {
+        viewModel: fakeViewModel({id: 'p-latest-id' as any, players: [blue, red]}),
+        color: 'blue',
+      },
+    });
+    await Promise.resolve();
+    (wrapper.vm as any).selectedGeneration = 1;
+    (wrapper.vm as any).selectedRecentLimit = undefined;
+    (wrapper.vm as any).selectedPlayerColor = 'red';
+    (wrapper.vm as any).stickToBottom = false;
+    panel.setScrollTop(80);
+
+    await wrapper.find('[data-test="log-latest"]').trigger('click');
+    await Promise.resolve();
+    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    expect((wrapper.vm as any).selectedGeneration).eq(-1);
+    expect((wrapper.vm as any).selectedRecentLimit).eq(100);
+    expect((wrapper.vm as any).selectedPlayerColor).eq(undefined);
+    expect((wrapper.vm as any).stickToBottom).eq(true);
+    expect(panel.getScrollTop()).eq(520);
+    expect(fetchCalls[fetchCalls.length - 1]).includes('limit=100');
   });
 });

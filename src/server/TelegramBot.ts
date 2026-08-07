@@ -106,7 +106,6 @@ export interface TelegramNotifiable {
   name: string;
   id: PlayerId;
   telegramID: string;
-  botTakeoverToken?: string;
   lastNoticeMessageId: number;
   lastTurnNoticeKey?: string;
   game?: {
@@ -500,9 +499,7 @@ export async function sendGameStartNotice(player: TelegramNotifiable): Promise<b
     warnGameStartNoticeSkippedMissingToken(player);
     return false;
   }
-  const fragment = player.botTakeoverToken === undefined ? '' :
-    `#botTakeoverToken=${encodeURIComponent(player.botTakeoverToken)}`;
-  const link = `${SERVER_URL}/player?id=${player.id}${fragment}`;
+  const link = `${SERVER_URL}/player?id=${player.id}`;
   try {
     const resp = await callTelegramApi('sendMessage', {
       chat_id: player.telegramID,

@@ -114,6 +114,7 @@ export class Game implements IGame, Logger {
   public readonly players: ReadonlyArray<IPlayer>;
   public readonly botPlayerIds = new Set<PlayerId>();
   public readonly botTakeoverPlayerIds = new Set<PlayerId>();
+  public readonly surrenderedPlayerIds = new Set<PlayerId>();
   // The API makes this readonly.
   public playersInGenerationOrder: ReadonlyArray<IPlayer> = [];
 
@@ -485,6 +486,7 @@ export class Game implements IGame, Logger {
       this.botPlayerIds.add(playerId);
     }
     this.botTakeoverPlayerIds.clear();
+    this.surrenderedPlayerIds.clear();
   }
 
   /** Properly starts the game with the project draft, or initial research phase. */
@@ -514,6 +516,7 @@ export class Game implements IGame, Logger {
       board: this.board.serialize(),
       botPlayerIds: Array.from(this.botPlayerIds),
       botTakeoverPlayerIds: Array.from(this.botTakeoverPlayerIds),
+      surrenderedPlayerIds: Array.from(this.surrenderedPlayerIds),
       claimedMilestones: serializeClaimedMilestones(this.claimedMilestones),
       ceoDeck: this.ceoDeck.serialize(),
       colonies: this.colonies.map((colony) => colony.serialize()),
@@ -793,8 +796,13 @@ export class Game implements IGame, Logger {
     this.researchedPlayers.clear();
     this.save();
     this.players.forEach((player) => {
-      player.runResearchPhase();
+      if (this.surrenderedPlayerIds.has(player.id)) {
+        this.researchedPlayers.add(player.id);
+      } else {
+        player.runResearchPhase();
+      }
     });
+    this.advanceAfterResearchIfReady();
   }
 
   private gotoDraftPhase(): void {
@@ -1098,15 +1106,20 @@ export class Game implements IGame, Logger {
   public playerIsFinishedWithResearchPhase(player: IPlayer): void {
     this.deferredActions.runAllFor(player, () => {
       this.researchedPlayers.add(player.id);
-      if (this.researchedPlayers.size === this.players.length) {
-        this.researchedPlayers.clear();
-        this.phase = Phase.ACTION;
-        this.passedPlayers.clear();
-        this.potentiallyChangeFirstPlayer();
-
-        this.startActionsForPlayer(this.first);
-      }
+      this.advanceAfterResearchIfReady();
     });
+  }
+
+  private advanceAfterResearchIfReady(): void {
+    if (this.researchedPlayers.size !== this.players.length) {
+      return;
+    }
+    this.researchedPlayers.clear();
+    this.phase = Phase.ACTION;
+    this.passedPlayers.clear();
+    this.potentiallyChangeFirstPlayer();
+
+    this.startActionsForPlayer(this.first);
   }
 
   public getPlayerBefore(player: IPlayer): IPlayer {
@@ -1234,6 +1247,10 @@ export class Game implements IGame, Logger {
       if (this.donePlayers.has(player.id)) {
         continue;
       }
+      if (this.surrenderedPlayerIds.has(player.id)) {
+        this.donePlayers.add(player.id);
+        continue;
+      }
 
       // You many not place greeneries in solo mode unless you have already won the game
       // (e.g. completed global parameters, reached TR63.)
@@ -1260,6 +1277,13 @@ export class Game implements IGame, Logger {
 
   private startActionsForPlayer(player: IPlayer) {
     this.activePlayer = player;
+    if (this.surrenderedPlayerIds.has(player.id)) {
+      if (!this.hasPassedThisActionPhase(player)) {
+        player.pass();
+      }
+      this.playerIsFinishedTakingActions();
+      return;
+    }
     player.actionsTakenThisGame++;
     player.actionsTakenThisRound = 0;
 
@@ -1899,6 +1923,10 @@ export class Game implements IGame, Logger {
     game.botTakeoverPlayerIds.clear();
     for (const playerId of d.botTakeoverPlayerIds ?? []) {
       game.botTakeoverPlayerIds.add(playerId);
+    }
+    game.surrenderedPlayerIds.clear();
+    for (const playerId of d.surrenderedPlayerIds ?? []) {
+      game.surrenderedPlayerIds.add(playerId);
     }
     game.globalsPerGeneration = d.globalsPerGeneration;
 

@@ -1092,11 +1092,13 @@ describe('Game', () => {
     const game = Game.newInstance('gameid', [bot, human], bot, 'spectatorid');
     game.setBotPlayerIds([bot.id]);
     game.botTakeoverPlayerIds.add(human.id);
+    game.surrenderedPlayerIds.add(human.id);
 
     const restored = Game.deserialize(game.serialize(), {simulation: true});
 
     expect(Array.from(restored.botPlayerIds)).deep.eq([bot.id]);
     expect(Array.from(restored.botTakeoverPlayerIds)).deep.eq([human.id]);
+    expect(Array.from(restored.surrenderedPlayerIds)).deep.eq([human.id]);
   });
 
   it('preserves the optional bot takeover token through serialization', () => {

@@ -63,6 +63,7 @@ export type PublicPlayerModel = {
   id: PlayerId | undefined;
   influence: number;
   isActive: boolean;
+  isSurrendered: boolean;
   lastCardPlayed?: CardName;
   megacredits: number;
   megacreditProduction: number;

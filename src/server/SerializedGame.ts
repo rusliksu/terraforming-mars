@@ -28,6 +28,7 @@ export type SerializedGame = {
     board: SerializedBoard;
     botPlayerIds?: Array<PlayerId>;
     botTakeoverPlayerIds?: Array<PlayerId>;
+    surrenderedPlayerIds?: Array<PlayerId>;
     ceoDeck: SerializedDeck;
     currentSeed: number;
     claimedMilestones: Array<SerializedClaimedMilestone>;

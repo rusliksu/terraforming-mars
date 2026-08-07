@@ -105,14 +105,14 @@ describe('EloSyncService', () => {
     expect(rebuildEloData(games).players.alice.completionReliability).deep.eq({games: 20, leaves: 1, rate: 0.05, eligible: false});
   });
 
-  it('records a human takeover as a leave and skips games with automated players', async () => {
+  it('records a surrendered player as a leave and skips games with automated players', async () => {
     const alice = TestPlayer.BLUE.newPlayer({name: 'Alice'});
     const bob = TestPlayer.RED.newPlayer({name: 'Bob'});
-    const game = Game.newInstance('g-human-takeover', [alice, bob], alice, 'spectatorid');
+    const game = Game.newInstance('g-surrendered-player', [alice, bob], alice, 'spectatorid');
     game.generation = 10;
     alice.setTerraformRating(80);
     bob.setTerraformRating(70);
-    game.botTakeoverPlayerIds.add(alice.id);
+    game.surrenderedPlayerIds.add(alice.id);
 
     await service.recordCompletedGame(game);
 
@@ -126,7 +126,22 @@ describe('EloSyncService', () => {
     await service.recordCompletedGame(automatedGame);
 
     const afterAutomated = JSON.parse(await fs.readFile(primaryPath, 'utf8'));
-    expect(afterAutomated.games.map((entry: {_key: string}) => entry._key)).deep.eq(['g-human-takeover']);
+    expect(afterAutomated.games.map((entry: {_key: string}) => entry._key)).deep.eq(['g-surrendered-player']);
+  });
+
+  it('does not count reversible bot takeover as a leave', async () => {
+    const alice = TestPlayer.BLUE.newPlayer({name: 'Alice'});
+    const bob = TestPlayer.RED.newPlayer({name: 'Bob'});
+    const game = Game.newInstance('g-human-takeover', [alice, bob], alice, 'spectatorid');
+    game.generation = 10;
+    alice.setTerraformRating(80);
+    bob.setTerraformRating(70);
+    game.botTakeoverPlayerIds.add(alice.id);
+
+    await service.recordCompletedGame(game);
+
+    const primary = JSON.parse(await fs.readFile(primaryPath, 'utf8'));
+    expect(primary.games[0].results.find((result: {displayName: string}) => result.displayName === 'Alice').completionOutcome).eq('completed');
   });
 
   it('uses megacredits as the live-game tie-breaker when final VP are equal', async () => {

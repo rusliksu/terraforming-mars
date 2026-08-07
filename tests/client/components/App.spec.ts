@@ -29,7 +29,7 @@ describe('App', () => {
     expect(getLoadErrorMessage(paths.GAME, statusCode.internalServerError)).eq('Error getting game data');
   });
 
-  it('preserves the shared bot invite while canonicalizing a game URL', async () => {
+  it('drops legacy bot invite fragments while canonicalizing a game URL', async () => {
     window.history.replaceState({}, '', '/game?id=game-id#botTakeoverToken=shared%20invite');
     global.fetch = (async () => ({
       ok: true,
@@ -38,7 +38,7 @@ describe('App', () => {
         id: 'game-id',
         name: 'Invite smoke',
         phase: Phase.ACTION,
-        players: [{color: 'blue', id: 'p-blue', name: 'Blue'}],
+        players: [{color: 'blue', id: 'p-blue', isSurrendered: false, name: 'Blue'}],
         spectatorId: 's-spectator',
         gameOptions: fakeGameOptionsModel(),
         lastSoloGeneration: 14,
@@ -50,7 +50,7 @@ describe('App', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(window.location.pathname + window.location.search + window.location.hash)
-      .to.eq('/game?id=game-id#botTakeoverToken=shared%20invite');
+      .to.eq('/game?id=game-id');
     wrapper.unmount();
   });
 });

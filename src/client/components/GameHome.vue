@@ -1,7 +1,7 @@
 <template>
   <div id="game-home" class="game-home-container">
     <h1><span v-i18n>Terraforming Mars</span> [<span v-i18n>game id:</span> <span>{{getGameId()}}</span>]</h1>
-    <h4><span v-i18n>Instructions: Share this page with all players. Each player can open it on any device and then click their name.</span><br><span v-i18n>Anyone with this shared link is trusted to access player links and bot controls.</span></h4>
+    <h4><span v-i18n>Instructions: Share this page with all players. Each player can open it on any device and then click their name.</span></h4>
     <ul>
       <li v-for="(player, index) in (game === undefined ? [] : game.players)" :key="player.color" class="game-home-player-row">
         <span class="turn-order" v-i18n>{{getTurnOrder(index)}}</span>
@@ -113,9 +113,7 @@ export default defineComponent({
       if (playerId === this.game.spectatorId) {
         return `spectator?id=${playerId}`;
       }
-      const token = new URLSearchParams(window.location.hash.slice(1)).get('botTakeoverToken');
-      const fragment = token === null || token === '' ? '' : `#botTakeoverToken=${encodeURIComponent(token)}`;
-      return `player?id=${playerId}${fragment}`;
+      return `player?id=${playerId}`;
     },
     getRecreateHref(): string {
       return `new-game?cloneGameId=${this.getGameId()}`;

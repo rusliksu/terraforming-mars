@@ -341,7 +341,6 @@ describe('TelegramBot', () => {
           name: 'Руслан',
           id: 'p-ruslan',
           telegramID: '123456',
-          botTakeoverToken: 'owner token',
           lastNoticeMessageId: -1,
           game: {
             id: 'g-telegram',
@@ -356,7 +355,8 @@ describe('TelegramBot', () => {
 
       const sendCalls = telegram.calls.filter((call) => call.path.includes('/sendMessage'));
       expect(sendCalls).has.length(1);
-      expect(sendCalls[0].body.text).contains('/player?id=p-ruslan#botTakeoverToken=owner%20token');
+      expect(sendCalls[0].body.text).contains('/player?id=p-ruslan');
+      expect(sendCalls[0].body.text).not.contain('#botTakeoverToken=');
       expect(logs.messages).has.length(1);
       expect(logs.messages[0]).contains('Telegram start notice sent');
       expect(logs.messages[0]).contains('game=g-telegram');

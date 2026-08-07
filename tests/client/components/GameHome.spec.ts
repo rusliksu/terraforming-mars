@@ -10,7 +10,7 @@ describe('GameHome', () => {
     activePlayer: 'blue',
     id: 'game-id-123',
     phase: Phase.ACTION,
-    players: [{color: 'blue', id: 'p-blue', name: 'Blue'}],
+    players: [{color: 'blue', id: 'p-blue', isSurrendered: false, name: 'Blue'}],
     spectatorId: undefined,
     gameOptions: fakeGameOptionsModel(),
     lastSoloGeneration: 14,
@@ -53,7 +53,7 @@ describe('GameHome', () => {
     expect(wrapper.find('[role="switch"]').exists()).is.false;
   });
 
-  it('propagates the shared lobby capability to every player but not the spectator', () => {
+  it('keeps player links bare even when the lobby URL has a legacy fragment', () => {
     window.history.replaceState({}, '', '/game?id=game-id-123#botTakeoverToken=shared%20invite');
     const wrapper = shallowMount(GameHome, {
       ...globalConfig,
@@ -65,7 +65,7 @@ describe('GameHome', () => {
       },
     });
 
-    expect(wrapper.vm.getHref('p-blue')).to.eq('player?id=p-blue#botTakeoverToken=shared%20invite');
+    expect(wrapper.vm.getHref('p-blue')).to.eq('player?id=p-blue');
     expect(wrapper.vm.getHref('s-spectator')).to.eq('spectator?id=s-spectator');
     expect(wrapper.vm.getHref('p-blue')).not.contain('serverId');
   });

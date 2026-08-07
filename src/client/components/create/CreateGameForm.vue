@@ -2284,8 +2284,6 @@ export default defineComponent({
         return;
       }
       const onSuccess = (json: any) => {
-        const botTakeoverFragment = typeof json.botTakeoverToken === 'string' && json.botTakeoverToken !== '' ?
-          '#botTakeoverToken=' + encodeURIComponent(json.botTakeoverToken) : '';
         // Check for bot players
         const activePlayers = this.players.slice(0, this.playersCount);
         const botEntries: Array<string> = [];
@@ -2303,10 +2301,10 @@ export default defineComponent({
         }
 
         if (json.players.length === 1) {
-          window.location.href = 'player?id=' + json.players[0].id + botTakeoverFragment;
+          window.location.href = 'player?id=' + json.players[0].id;
           return;
         } else {
-          window.history.replaceState(json, `${constants.APP_NAME} - Game`, 'game?id=' + json.id + botTakeoverFragment);
+          window.history.replaceState(json, `${constants.APP_NAME} - Game`, 'game?id=' + json.id);
           vueRoot(this).game = json;
           vueRoot(this).screen = 'game-home';
         }

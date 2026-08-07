@@ -9,27 +9,17 @@ import {Phase} from '../../common/Phase';
 import {IPlayer} from '../IPlayer';
 import {IGame} from '../IGame';
 import {sendBotTakeoverNotice} from '../TelegramBot';
-import * as crypto from 'crypto';
 import {AccessAuditEvent} from '../server/AccessAudit';
 import {getUserAgent} from './auditRequest';
 
 type BotTakeoverRouteDeps = Pick<BotTakeoverManager, 'list' | 'listPlayerIds' | 'start' | 'stop'>;
 type BotTakeoverNotifier = (recipients: ReadonlyArray<IPlayer>, botPlayer: IPlayer) => void;
+type BotTakeoverAction = 'start' | 'stop' | 'surrender';
 
 function notifyBotTakeoverStarted(recipients: ReadonlyArray<IPlayer>, botPlayer: IPlayer): void {
   for (const recipient of recipients) {
     void sendBotTakeoverNotice(recipient, botPlayer);
   }
-}
-
-function hasMatchingBotTakeoverToken(req: Request, game: IGame): boolean {
-  const suppliedToken = req.headers['x-bot-takeover-token'];
-  if (typeof suppliedToken !== 'string' || game.botTakeoverToken === undefined) {
-    return false;
-  }
-  const suppliedDigest = crypto.createHash('sha256').update(suppliedToken).digest();
-  const expectedDigest = crypto.createHash('sha256').update(game.botTakeoverToken).digest();
-  return crypto.timingSafeEqual(suppliedDigest, expectedDigest);
 }
 
 function recordBotTakeoverAudit(
@@ -38,8 +28,8 @@ function recordBotTakeoverAudit(
   game: IGame,
   player: IPlayer,
   event: AccessAuditEvent,
-  action: 'start' | 'stop',
-  authorization: 'admin' | 'invite' | 'denied',
+  action: BotTakeoverAction,
+  authorization: 'admin' | 'player' | 'denied',
 ): void {
   ctx.accessAudit.record({
     event,
@@ -52,6 +42,26 @@ function recordBotTakeoverAudit(
     userAgent: getUserAgent(req),
     metadata: {action, authorization},
   });
+}
+
+function advanceSurrenderedPlayer(game: IGame, player: IPlayer): void {
+  if (game.phase === Phase.ACTION && game.activePlayer.id === player.id) {
+    player.clearWaitingFor();
+    if (!game.hasPassedThisActionPhase(player)) {
+      player.pass();
+    }
+    game.playerIsFinishedTakingActions();
+    return;
+  }
+  if (game.phase === Phase.RESEARCH && !game.hasResearched(player)) {
+    player.clearWaitingFor();
+    game.playerIsFinishedWithResearchPhase(player);
+    return;
+  }
+  if (game.phase === Phase.PRODUCTION && game.gameIsOver() && game.activePlayer.id === player.id) {
+    player.clearWaitingFor();
+    game.playerIsDoneWithGame(player);
+  }
 }
 
 export class ApiBotTakeover extends Handler {
@@ -78,7 +88,7 @@ export class ApiBotTakeover extends Handler {
 
   public override async post(req: Request, res: Response, ctx: Context): Promise<void> {
     const action = ctx.url.searchParams.get('action');
-    if (action !== 'start' && action !== 'stop') {
+    if (action !== 'start' && action !== 'stop' && action !== 'surrender') {
       responses.badRequest(req, res, 'invalid action parameter');
       return;
     }
@@ -120,14 +130,33 @@ export class ApiBotTakeover extends Handler {
       return;
     }
 
-    const hasAdminAccess = this.hasServerIdAccess(ctx);
-    const hasInviteAccess = hasMatchingBotTakeoverToken(req, game);
-    if (!hasAdminAccess && !hasInviteAccess) {
-      recordBotTakeoverAudit(req, ctx, game, player, 'bot_takeover_rejected', action, 'denied');
-      responses.notAuthorized(req, res);
+    const authorization = this.hasServerIdAccess(ctx) ? 'admin' : 'player';
+
+    if (action === 'surrender') {
+      if (game.botPlayerIds.has(playerId)) {
+        recordBotTakeoverAudit(req, ctx, game, player, 'surrender_rejected', action, 'denied');
+        responses.badRequest(req, res, 'automated players cannot surrender');
+        return;
+      }
+      game.surrenderedPlayerIds.add(playerId);
+      game.botTakeoverPlayerIds.delete(playerId);
+      this.manager.stop(playerId);
+      advanceSurrenderedPlayer(game, player);
+      await ctx.gameLoader.saveGame(game);
+      recordBotTakeoverAudit(req, ctx, game, player, 'surrender_accepted', action, authorization);
+      responses.writeJson(res, ctx, {
+        action,
+        botPlayers: this.manager.listPlayerIds(game.id),
+        surrenderedPlayers: Array.from(game.surrenderedPlayerIds),
+      });
       return;
     }
-    const authorization = hasAdminAccess ? 'admin' : 'invite';
+
+    if (game.surrenderedPlayerIds.has(playerId)) {
+      recordBotTakeoverAudit(req, ctx, game, player, 'bot_takeover_rejected', action, 'denied');
+      responses.badRequest(req, res, 'surrendered player cannot change bot takeover');
+      return;
+    }
 
     if (action === 'start') {
       const wasActive = this.manager.listPlayerIds(game.id).includes(playerId);

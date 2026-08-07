@@ -621,7 +621,7 @@ function buildCompletedGameSummary(game: IGame, options: {
     durationMs,
     durationMinutes: durationMs !== undefined ? Math.round(durationMs / 60_000) : undefined,
     botPlayerIds: normalizeStringList(options.botPlayerIds ?? Array.from(game.botPlayerIds ?? [])),
-    confirmedLeavePlayerIds: normalizeStringList(options.confirmedLeavePlayerIds ?? Array.from(game.botTakeoverPlayerIds ?? [])),
+    confirmedLeavePlayerIds: normalizeStringList(options.confirmedLeavePlayerIds ?? Array.from(game.surrenderedPlayerIds ?? [])),
     completionOutcomeKnown: true,
     server: process.env.ELO_SERVER_NAME ?? 'server',
     map: String(game.gameOptions.boardName ?? ''),

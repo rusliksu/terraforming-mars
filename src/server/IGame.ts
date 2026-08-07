@@ -78,6 +78,8 @@ export interface IGame extends Logger {
   readonly botPlayerIds: ReadonlySet<PlayerId>;
   /** Human players who have taken over by bot and have not returned before game end. */
   readonly botTakeoverPlayerIds: Set<PlayerId>;
+  /** Human players who explicitly surrendered and should be counted as left at game end. */
+  readonly surrenderedPlayerIds: Set<PlayerId>;
   setBotPlayerIds(playerIds: ReadonlyArray<PlayerId>): void;
 
   /**

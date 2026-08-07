@@ -2,7 +2,7 @@ import {shallowMount} from '@vue/test-utils';
 import {expect} from 'chai';
 import {globalConfig} from './getLocalVue';
 import PlayerHome from '@/client/components/PlayerHome.vue';
-import {fakeGameModel, fakePlayerViewModel} from './testHelpers';
+import {fakeGameModel, fakePlayerViewModel, fakePublicPlayerModel} from './testHelpers';
 import {FakeLocalStorage} from './FakeLocalStorage';
 import raw_settings from '@/genfiles/settings.json';
 import {Phase} from '@/common/Phase';
@@ -26,7 +26,11 @@ describe('PlayerHome', () => {
     window.history.replaceState({}, '', '/player?id=p-blue-id');
   });
 
-  function mountPlayerHome(phase: Phase = Phase.ACTION) {
+  function mountPlayerHome(phase: Phase = Phase.ACTION, playerOverrides = {}) {
+    const thisPlayer = fakePublicPlayerModel({
+      tableau: [{name: 'Copper'}] as any,
+      ...playerOverrides,
+    });
     return shallowMount(PlayerHome, {
       ...globalConfig,
       parentComponent: {
@@ -36,7 +40,11 @@ describe('PlayerHome', () => {
         },
       } as any,
       props: {
-        playerView: fakePlayerViewModel({game: fakeGameModel({gameId: 'game-id-123', phase})}),
+        playerView: fakePlayerViewModel({
+          game: fakeGameModel({gameId: 'game-id-123', phase}),
+          players: [thisPlayer],
+          thisPlayer,
+        }),
         settings: raw_settings,
       },
     });
@@ -51,18 +59,18 @@ describe('PlayerHome', () => {
     expect(mountPlayerHome().exists()).to.be.true;
   });
 
-  it('does not render bot takeover control for a bare player URL', () => {
+  it('renders player action controls for a bare player URL', () => {
     const wrapper = mountPlayerHome();
-    expect(wrapper.find('[data-test="bot-takeover-control"]').exists()).is.false;
+    expect(wrapper.find('[data-test="bot-takeover-control"]').exists()).is.true;
+    expect(wrapper.find('[data-test="surrender-control"]').exists()).is.true;
   });
 
   it('does not render bot takeover control after the game ends', () => {
-    window.history.replaceState({}, '', '/player?id=p-blue-id#botTakeoverToken=owner-token');
     const wrapper = mountPlayerHome(Phase.END);
     expect(wrapper.find('[data-test="bot-takeover-control"]').exists()).is.false;
   });
 
-  it('sends the capability header from a fragment player URL', async () => {
+  it('sends player-page takeover requests without a shared token header', async () => {
     const calls: Array<{url: string, init?: Parameters<typeof fetch>[1]}> = [];
     global.fetch = async (input, init) => {
       const url = String(input);
@@ -74,8 +82,6 @@ describe('PlayerHome', () => {
         text: async () => '',
       } as Response;
     };
-    window.history.replaceState({}, '', '/player?id=p-blue-id#botTakeoverToken=owner%20token');
-
     const wrapper = mountPlayerHome();
     await flushPromises();
     const control = wrapper.get('[data-test="bot-takeover-control"]');
@@ -86,14 +92,14 @@ describe('PlayerHome', () => {
 
     const post = calls.find((call) => call.init?.method === 'POST');
     expect(post?.url).eq('api/bot-takeover?action=start&gameId=game-id-123&playerId=p-blue-id');
-    expect(post?.init?.headers).deep.eq({'X-Bot-Takeover-Token': 'owner token'});
+    expect(post?.init?.headers).eq(undefined);
     expect(control.attributes('aria-checked')).eq('true');
 
     await control.trigger('click');
     await flushPromises();
     const posts = calls.filter((call) => call.init?.method === 'POST');
     expect(posts[1].url).contains('action=stop');
-    expect(posts[1].init?.headers).deep.eq({'X-Bot-Takeover-Token': 'owner token'});
+    expect(posts[1].init?.headers).eq(undefined);
     expect(control.attributes('aria-checked')).eq('false');
   });
 
@@ -108,7 +114,6 @@ describe('PlayerHome', () => {
       } as Response;
     };
     window.confirm = () => false;
-    window.history.replaceState({}, '', '/player?id=p-blue-id#botTakeoverToken=shared-token');
 
     const wrapper = mountPlayerHome();
     await flushPromises();
@@ -116,5 +121,33 @@ describe('PlayerHome', () => {
     await flushPromises();
 
     expect(calls.some((call) => call.init?.method === 'POST')).is.false;
+  });
+
+  it('sends irreversible surrender separately from bot takeover', async () => {
+    const calls: Array<{url: string, init?: Parameters<typeof fetch>[1]}> = [];
+    global.fetch = async (input, init) => {
+      const url = String(input);
+      calls.push({url, init});
+      return {
+        ok: true,
+        json: async () => ({
+          botPlayers: [],
+          surrenderedPlayers: url.includes('action=surrender') ? ['p-blue-id'] : [],
+        }),
+        text: async () => '',
+      } as Response;
+    };
+
+    const wrapper = mountPlayerHome();
+    await flushPromises();
+    const surrender = wrapper.get('[data-test="surrender-control"]');
+
+    await surrender.trigger('click');
+    await flushPromises();
+
+    const post = calls.find((call) => call.init?.method === 'POST');
+    expect(post?.url).eq('api/bot-takeover?action=surrender&gameId=game-id-123&playerId=p-blue-id');
+    expect(post?.init?.headers).eq(undefined);
+    expect(surrender.text()).eq('Surrendered');
   });
 });

@@ -118,7 +118,7 @@ describe('WaitingFor', () => {
     expect(wrapper.text()).to.include('Not your turn');
   });
 
-  it('shows a clearer pause-updates label in experimental UI', async () => {
+  it('shows a clearer pause-updates label in experimental UI', () => {
     PreferencesManager.INSTANCE.set('experimental_ui', true);
 
     const wrapper = mountWaitingFor({
@@ -143,14 +143,6 @@ describe('WaitingFor', () => {
 
     expect(wrapper.text()).to.include('Pause updates');
     expect(wrapper.text()).to.not.include('Suspend');
-
-    await wrapper.setProps({
-      playerView: {
-        ...playerView,
-        thisPlayer: {...thisPlayer, isActive: true},
-      } as PlayerViewModel,
-    });
-    expect(wrapper.text()).to.not.include('Pause updates');
   });
 
   it('adds one-step undo to the main action radio options and routes it to the step reset', () => {

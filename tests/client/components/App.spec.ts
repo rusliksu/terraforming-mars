@@ -44,7 +44,7 @@ describe('App', () => {
         lastSoloGeneration: 14,
         expectedPurgeTimeMs: 0,
       }),
-    })) as typeof fetch;
+    })) as unknown as typeof fetch;
 
     const wrapper = shallowMount(App, globalConfig);
     await new Promise((resolve) => setTimeout(resolve, 0));

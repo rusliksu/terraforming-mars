@@ -13,7 +13,26 @@
       <div :class="getClassesRecentLogs()" @click.prevent="selectRecentLogs()" v-i18n>
         Last 100
       </div>
-      <div v-if="players.length > 1" class="log-player-filters">
+      <span class="label-additional" v-if="players.length === 1"><span :class="lastGenerationClass" v-i18n>of {{lastSoloGeneration}}</span></span>
+    </div>
+    <div class="panel log-panel">
+      <div id="logpanel-scrollable" class="panel-body">
+        <ul v-if="messages">
+          <LogMessageComponent v-for="(message, index) in filteredMessages" :key="message.timestamp + '-' + index" :message="message" :viewModel="viewModel" @click="messageClicked(message)" @spaceClicked="spaceClicked"/>
+        </ul>
+      </div>
+      <div class='debugid'>(debugid {{step}})</div>
+    </div>
+    <div class="log-player-filters">
+      <button
+        type="button"
+        class="log-latest-button"
+        aria-label="Latest logs"
+        title="Latest logs"
+        data-test="log-latest"
+        @click="showLatestLogs"
+      >&#x2193;</button>
+      <template v-if="players.length > 1">
         <button
           type="button"
           class="log-player-filter"
@@ -33,16 +52,7 @@
           :data-test="'log-player-filter-' + player.color"
           @click="selectPlayer(player.color)"
         >{{ player.name }}</button>
-      </div>
-      <span class="label-additional" v-if="players.length === 1"><span :class="lastGenerationClass" v-i18n>of {{lastSoloGeneration}}</span></span>
-    </div>
-    <div class="panel log-panel">
-      <div id="logpanel-scrollable" class="panel-body">
-        <ul v-if="messages">
-          <LogMessageComponent v-for="(message, index) in filteredMessages" :key="message.timestamp + '-' + index" :message="message" :viewModel="viewModel" @click="messageClicked(message)" @spaceClicked="spaceClicked"/>
-        </ul>
-      </div>
-      <div class='debugid'>(debugid {{step}})</div>
+      </template>
     </div>
     <CardPanel v-if="selectedMessage !== undefined" :message="selectedMessage" :players="players" @hide="selectedMessage = undefined"/>
   </div>
@@ -64,6 +74,16 @@ import CardPanel from '@/client/components/logpanel/CardPanel.vue';
 import {isMarsSpace} from '@/common/boards/spaces';
 
 let logAbortController: AbortController | undefined;
+
+type LogPanelViewState = {
+  selectedGeneration: number,
+  selectedRecentLimit: number | undefined,
+  selectedPlayerColor: Color | undefined,
+  scrollTop: number,
+  stickToBottom: boolean,
+};
+
+const logPanelViewStates = new Map<ParticipantId, LogPanelViewState>();
 
 type LogPanelModel = {
   messages: Array<LogMessage>,
@@ -143,9 +163,9 @@ export default defineComponent({
         this.getLogsForGeneration(gen, true);
       }
     },
-    getLogsForGeneration(generation: number, forceScrollToEnd = false): void {
+    getLogsForGeneration(generation: number, forceScrollToEnd = false, restoredState?: LogPanelViewState): void {
       const url = `${paths.API_GAME_LOGS}?id=${this.id}&generation=${generation}&gameAge=${this.gameAge}`;
-      this.loadLogs(url, generation === this.generation, forceScrollToEnd);
+      this.loadLogs(url, generation === this.generation, forceScrollToEnd, restoredState);
     },
     selectRecentLogs(): void {
       if (this.selectedRecentLimit !== 100) {
@@ -154,20 +174,27 @@ export default defineComponent({
         this.getRecentLogs(true);
       }
     },
+    showLatestLogs(): void {
+      this.selectedGeneration = -1;
+      this.selectedRecentLimit = 100;
+      this.selectedPlayerColor = undefined;
+      this.stickToBottom = true;
+      this.getRecentLogs(true);
+    },
     selectPlayer(color: Color | undefined): void {
       this.selectedPlayerColor = color;
     },
-    getRecentLogs(forceScrollToEnd = false): void {
+    getRecentLogs(forceScrollToEnd = false, restoredState?: LogPanelViewState): void {
       const url = `${paths.API_GAME_LOGS}?id=${this.id}&limit=100&gameAge=${this.gameAge}`;
-      this.loadLogs(url, true, forceScrollToEnd);
+      this.loadLogs(url, true, forceScrollToEnd, restoredState);
     },
-    loadLogs(url: string, liveLogs: boolean, forceScrollToEnd = false): void {
+    loadLogs(url: string, liveLogs: boolean, forceScrollToEnd = false, restoredState?: LogPanelViewState): void {
       const messages = this.messages;
       const scrollablePanel = this.getScrollablePanel();
-      const previousScrollTop = scrollablePanel?.scrollTop ?? 0;
-      const shouldStickToBottom = liveLogs && (forceScrollToEnd || this.isNearBottom());
+      const previousScrollTop = restoredState?.scrollTop ?? scrollablePanel?.scrollTop ?? 0;
+      const shouldStickToBottom = restoredState?.stickToBottom ?? (liveLogs && (forceScrollToEnd || this.isNearBottom()));
       this.stickToBottom = shouldStickToBottom;
-      this.isRestoringScrollPosition = liveLogs && !shouldStickToBottom;
+      this.isRestoringScrollPosition = (liveLogs || restoredState !== undefined) && !shouldStickToBottom;
       this.teardownAutoScrollObserver();
       // abort any pending requests
       if (logAbortController) {
@@ -196,9 +223,11 @@ export default defineComponent({
           }
           messages.splice(0, messages.length);
           messages.push(...data);
-          if (liveLogs) {
+          if (liveLogs || restoredState !== undefined) {
             this.$nextTick(() => {
-              this.installAutoScrollObserver();
+              if (liveLogs) {
+                this.installAutoScrollObserver();
+              }
               if (shouldStickToBottom) {
                 this.scrollToEnd();
               } else {
@@ -354,13 +383,34 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.selectedRecentLimit = 100;
+    const restoredState = this.id === undefined ? undefined : logPanelViewStates.get(this.id);
+    if (restoredState === undefined) {
+      this.selectedRecentLimit = 100;
+    } else {
+      this.selectedGeneration = restoredState.selectedGeneration;
+      this.selectedRecentLimit = restoredState.selectedRecentLimit;
+      this.selectedPlayerColor = restoredState.selectedPlayerColor;
+      this.stickToBottom = restoredState.stickToBottom;
+    }
     const scrollablePanel = this.getScrollablePanel();
     scrollablePanel?.addEventListener('scroll', this.handleScroll);
-    this.getRecentLogs(true);
+    if (this.selectedRecentLimit !== undefined) {
+      this.getRecentLogs(restoredState === undefined, restoredState);
+    } else {
+      this.getLogsForGeneration(this.selectedGeneration, false, restoredState);
+    }
   },
   beforeUnmount() {
     const scrollablePanel = this.getScrollablePanel();
+    if (this.id !== undefined) {
+      logPanelViewStates.set(this.id, {
+        selectedGeneration: this.selectedGeneration,
+        selectedRecentLimit: this.selectedRecentLimit,
+        selectedPlayerColor: this.selectedPlayerColor,
+        scrollTop: scrollablePanel?.scrollTop ?? 0,
+        stickToBottom: this.stickToBottom,
+      });
+    }
     scrollablePanel?.removeEventListener('scroll', this.handleScroll);
     this.teardownAutoScrollObserver();
   },

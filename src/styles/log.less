@@ -48,36 +48,48 @@
     background: #ccc;
     color: black;
   }
-  .log-player-filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-left: 16px;
-  }
-  .log-player-filter {
+}
+
+.log-player-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 4px 5px 0;
+  max-width: 860px;
+}
+
+.log-player-filter {
+  border: 1px solid rgba(170, 170, 170, 0.6);
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.2;
+  padding: 1px 8px;
+
+  &:not(.log-player-filter--player) {
     background: transparent;
-    border: 2px solid rgba(170, 170, 170, 0.6);
-    border-radius: 8px;
     color: inherit;
-    cursor: pointer;
-    font: inherit;
-    padding: 2px 12px;
-    &:hover:not(.log-player-filter--player) {
-      background: #ccc;
-      color: black;
-    }
-    &.log-player-filter--player:hover {
-      filter: brightness(1.15);
-    }
   }
-  .log-player-filter--selected {
-    border-color: #fff;
-    box-shadow: 0 0 0 1px #fff;
-  }
-  .log-player-filter--selected-all {
+
+  &:hover:not(.log-player-filter--player) {
     background: #ccc;
     color: black;
   }
+
+  &.log-player-filter--player:hover {
+    filter: brightness(1.15);
+  }
+}
+
+.log-player-filter--selected {
+  border-color: #fff;
+  box-shadow: 0 0 0 1px #fff;
+}
+
+.log-player-filter.log-player-filter--selected-all {
+  background: #ccc;
+  color: black;
 }
 
 .log-panel {

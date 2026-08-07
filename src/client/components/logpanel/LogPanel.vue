@@ -13,27 +13,6 @@
       <div :class="getClassesRecentLogs()" @click.prevent="selectRecentLogs()" v-i18n>
         Last 100
       </div>
-      <div v-if="players.length > 1" class="log-player-filters">
-        <button
-          type="button"
-          class="log-player-filter"
-          :class="getClassesPlayerFilter(undefined)"
-          :aria-pressed="selectedPlayerColor === undefined"
-          data-test="log-player-filter-all"
-          @click="selectPlayer(undefined)"
-          v-i18n
-        >All</button>
-        <button
-          v-for="player in players"
-          :key="player.color"
-          type="button"
-          class="log-player-filter"
-          :class="getClassesPlayerFilter(player.color)"
-          :aria-pressed="selectedPlayerColor === player.color"
-          :data-test="'log-player-filter-' + player.color"
-          @click="selectPlayer(player.color)"
-        >{{ player.name }}</button>
-      </div>
       <span class="label-additional" v-if="players.length === 1"><span :class="lastGenerationClass" v-i18n>of {{lastSoloGeneration}}</span></span>
     </div>
     <div class="panel log-panel">
@@ -43,6 +22,27 @@
         </ul>
       </div>
       <div class='debugid'>(debugid {{step}})</div>
+    </div>
+    <div v-if="players.length > 1" class="log-player-filters">
+      <button
+        type="button"
+        class="log-player-filter"
+        :class="getClassesPlayerFilter(undefined)"
+        :aria-pressed="selectedPlayerColor === undefined"
+        data-test="log-player-filter-all"
+        @click="selectPlayer(undefined)"
+        v-i18n
+      >All</button>
+      <button
+        v-for="player in players"
+        :key="player.color"
+        type="button"
+        class="log-player-filter"
+        :class="getClassesPlayerFilter(player.color)"
+        :aria-pressed="selectedPlayerColor === player.color"
+        :data-test="'log-player-filter-' + player.color"
+        @click="selectPlayer(player.color)"
+      >{{ player.name }}</button>
     </div>
     <CardPanel v-if="selectedMessage !== undefined" :message="selectedMessage" :players="players" @hide="selectedMessage = undefined"/>
   </div>

@@ -1,19 +1,18 @@
-# Спецификация: временный бот и сдача
+# Спецификация: необратимая сдача без временного бота
 
 ## Цель
 
-Разделить два разных пользовательских действия:
-
-- временно отдать управление боту и потом вернуться без штрафа;
-- окончательно сдаться, чтобы партия продолжалась без игрока, а результат
-  считался как подтвержденный leave.
+Оставить одно явное пользовательское действие: окончательно сдаться, чтобы
+партия завершилась или продолжалась без стратегического управления за ушедшего
+игрока, а результат считался как подтвержденный leave и последнее место.
 
 ## Термины
 
-- **Bot takeover**: обратимый runtime control. Игрок временно просит сервер
-  играть за него, но может вернуться.
 - **Surrender**: необратимый game outcome. Игрок явно сдается и больше не
   влияет на партию как полноценный стратегический участник.
+- **Bot player**: участник, созданный как автоматический игрок при старте игры.
+  Внутренняя bot-инфраструктура для него сохраняется и не является takeover
+  человеческого места.
 - **Completion reliability**: текущая статистика `Ливы N/M`, построенная через
   `completionOutcome: left`.
 
@@ -21,35 +20,40 @@
 
 | ID | Требование |
 | --- | --- |
-| FR-001 | Start/stop bot takeover остаются обратимыми и не создают `left`, если игрок вернулся до конца партии. |
-| FR-002 | Explicit surrender сохраняется в game state, переживает рестарт и не очищается stop takeover. |
+| FR-001 | Player/admin UI и API больше не позволяют временно передавать человеческое место боту или возвращать управление. |
+| FR-002 | Explicit surrender сохраняется в game state, переживает рестарт и не имеет undo/stop path. |
 | FR-003 | При завершении партии surrendered player получает `completionOutcome: left`. Остальные игроки получают `completed`. |
-| FR-004 | Surrender влияет на обычный Elo через итоговое место как обычный результат; отдельного x2 Elo или дополнительного рейтингового штрафа нет. |
+| FR-004 | Surrendered players всегда ранжируются после продолживших игру; внутри каждой группы сохраняются VP/MC tie-breakers. Elo считается по этому обычному месту без x2 или отдельного штрафа. |
 | FR-005 | Surrendered player не должен играть полноценным стратегическим smartbot. Минимальная модель: pass/skip when possible, deterministic no-op для безопасных обязательных prompts, без покупки/разыгрывания карт ради оптимизации. |
-| FR-006 | Player-facing controls отображаются в Actions area, а не отдельным верхним блоком PlayerHome. |
-| FR-007 | Bot takeover и surrender имеют разные тексты, подтверждения, audit metadata и tests. |
+| FR-006 | Единственный player-facing `Surrender` control отображается в Actions area и требует явного подтверждения. |
+| FR-007 | `BotTakeoverManager` остается только внутренней инфраструктурой для игроков, созданных с `isBot`; runtime human start/stop route удаляется. |
 | FR-008 | LogPanel и связанные log UI/files не меняются в этой mission. |
 | FR-009 | Game-level `botTakeoverToken` URL fragment flow удаляется из player-facing UX: create-game/game/player links не должны выдавать `#botTakeoverToken=...` как отдельный "login" для управления ботом. |
-| FR-010 | Player-facing takeover/surrender авторизуются знанием конкретной player-ссылки этого игрока; shared game token больше не должен давать управление любым игроком из одной ссылки. |
+| FR-010 | Player-facing surrender авторизуется знанием конкретной player-ссылки этого игрока; shared game token не дает управление другими игроками. |
+| FR-011 | Multiplayer game считается завершенной, когда остается ровно один non-surrendered player. |
+| FR-012 | Surrender доступна в research/action phases multiplayer game без ограничения по поколению; ранний явный leave также должен фиксироваться. |
 
 ## Acceptance Criteria
 
-- Игрок нажал temporary bot, потом stop/return: `botTakeoverPlayerIds` не
-  остается как leave marker, `completionOutcome` не становится `left`.
 - Игрок нажал surrender: state serialized/deserialized и при конце игры этот
   игрок учитывается как `left`.
-- Surrender нельзя отменить через stop bot takeover.
+- Human start/stop takeover отсутствует в PlayerHome, admin overview и API.
+- Surrender нельзя отменить через другой route или UI.
 - Если сдавшийся игрок получает обычный action prompt, сервер не выбирает
   стратегические действия вместо него; он проходит ход через pass/skip.
-- UI показывает controls внутри блока Actions и не показывает старый верхний
-  `bot-takeover-control`.
+- При одном оставшемся non-surrendered игроке multiplayer game завершает
+  обычный game-over flow.
+- GameEnd и Elo ставят surrendered players после продолживших игру и помечают
+  их surrender-флагом.
+- UI показывает только `Surrender` внутри блока Actions.
 - Новые game/player/Telegram links не содержат `#botTakeoverToken=...`.
-- API больше не требует `X-Bot-Takeover-Token` для действия со своей player
-  page capability и не принимает shared game token как player-facing login.
+- Surrender API не требует `X-Bot-Takeover-Token`; знание собственной player
+  page capability достаточно, shared game token отсутствует.
 - Targeted route/model/client/Elo tests проходят.
 
 ## Out Of Scope
 
+- Временный human bot takeover.
 - Продвинутый smartbot для сдавшихся игроков.
 - x2 Elo, отдельная карма или новые penalty formulas.
 - Изменение LogPanel.

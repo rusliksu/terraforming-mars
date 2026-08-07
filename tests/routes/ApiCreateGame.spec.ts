@@ -162,7 +162,6 @@ describe('ApiCreateGame', () => {
     const game = await scaffolding.ctx.gameLoader.getGame(model.id);
     expect(game).is.not.undefined;
     expect(game!.players[0].name).eq('Robot');
-    expect(game!.botTakeoverToken).is.undefined;
     expect(model).not.have.property('botTakeoverToken');
     expect(model.players[0]).not.have.property('botTakeoverToken');
     expect(game!.rng.seed).eq(config.seed);
@@ -615,7 +614,6 @@ describe('ApiCreateGame', () => {
     expect(model.botPlayers).deep.eq([model.players[0].id]);
     const game = await scaffolding.ctx.gameLoader.getGame(model.id);
     expect(Array.from(game!.botPlayerIds)).deep.eq([model.players[0].id]);
-    expect(game!.botTakeoverToken).is.undefined;
     expect(model).not.have.property('botTakeoverToken');
     expect(model.players[0]).not.have.property('botTakeoverToken');
   });

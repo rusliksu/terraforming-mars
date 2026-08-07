@@ -1086,31 +1086,30 @@ describe('Game', () => {
       .deep.eq(gameKeys.concat(...serializedValuesNotInGame).sort());
   });
 
-  it('persists bot tracking state across game restore', () => {
+  it('persists bot and surrender state across game restore', () => {
     const bot = TestPlayer.BLUE.newPlayer();
     const human = TestPlayer.RED.newPlayer();
     const game = Game.newInstance('gameid', [bot, human], bot, 'spectatorid');
     game.setBotPlayerIds([bot.id]);
-    game.botTakeoverPlayerIds.add(human.id);
     game.surrenderedPlayerIds.add(human.id);
 
     const restored = Game.deserialize(game.serialize(), {simulation: true});
 
     expect(Array.from(restored.botPlayerIds)).deep.eq([bot.id]);
-    expect(Array.from(restored.botTakeoverPlayerIds)).deep.eq([human.id]);
     expect(Array.from(restored.surrenderedPlayerIds)).deep.eq([human.id]);
   });
 
-  it('preserves the optional bot takeover token through serialization', () => {
-    const player = TestPlayer.BLUE.newPlayer();
-    const game = Game.newInstance('game-capability', [player], player, 'spectatorid');
-    game.botTakeoverToken = 'shared-game-capability';
+  it('ends multiplayer when only one player has not surrendered', () => {
+    const alice = TestPlayer.BLUE.newPlayer();
+    const bob = TestPlayer.RED.newPlayer();
+    const carol = TestPlayer.YELLOW.newPlayer();
+    const game = Game.newInstance('game-surrender', [alice, bob, carol], alice, 'spectatorid');
 
-    const serialized = game.serialize();
-    const restored = Game.deserialize(serialized);
+    game.surrenderedPlayerIds.add(alice.id);
+    expect(game.gameIsOver()).eq(false);
 
-    expect(serialized.botTakeoverToken).eq('shared-game-capability');
-    expect(restored.botTakeoverToken).eq('shared-game-capability');
+    game.surrenderedPlayerIds.add(bob.id);
+    expect(game.gameIsOver()).eq(true);
   });
 
   it('enables action undo when loading a game with experimental step undo', () => {

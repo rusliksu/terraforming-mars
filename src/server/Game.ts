@@ -113,7 +113,6 @@ export class Game implements IGame, Logger {
   public readonly gameOptions: Readonly<GameOptions>;
   public readonly players: ReadonlyArray<IPlayer>;
   public readonly botPlayerIds = new Set<PlayerId>();
-  public readonly botTakeoverPlayerIds = new Set<PlayerId>();
   public readonly surrenderedPlayerIds = new Set<PlayerId>();
   // The API makes this readonly.
   public playersInGenerationOrder: ReadonlyArray<IPlayer> = [];
@@ -125,7 +124,6 @@ export class Game implements IGame, Logger {
   private clonedGamedId: string | undefined;
   public rng: SeededRandom;
   public spectatorId: SpectatorId;
-  public botTakeoverToken: string | undefined = undefined;
   public deferredActions: DeferredActionsQueue = new DeferredActionsQueue();
   public createdTime: Date = new Date(0);
   public gameAge: number = 0; // Each log event increases it
@@ -485,7 +483,6 @@ export class Game implements IGame, Logger {
     for (const playerId of playerIds) {
       this.botPlayerIds.add(playerId);
     }
-    this.botTakeoverPlayerIds.clear();
     this.surrenderedPlayerIds.clear();
   }
 
@@ -512,10 +509,8 @@ export class Game implements IGame, Logger {
       activePlayer: this.activePlayer.id,
       awards: this.awards.map(toName),
       beholdTheEmperor: this.beholdTheEmperor,
-      botTakeoverToken: this.botTakeoverToken,
       board: this.board.serialize(),
       botPlayerIds: Array.from(this.botPlayerIds),
-      botTakeoverPlayerIds: Array.from(this.botTakeoverPlayerIds),
       surrenderedPlayerIds: Array.from(this.surrenderedPlayerIds),
       claimedMilestones: serializeClaimedMilestones(this.claimedMilestones),
       ceoDeck: this.ceoDeck.serialize(),
@@ -816,7 +811,8 @@ export class Game implements IGame, Logger {
       // Solo games continue until the designated generation end even if Mars is already terraformed
       return this.generation === this.lastSoloGeneration();
     }
-    return this.marsIsTerraformed();
+    const playersStillInGame = this.players.filter((player) => !this.surrenderedPlayerIds.has(player.id));
+    return playersStillInGame.length <= 1 || this.marsIsTerraformed();
   }
 
   public isDoneWithFinalProduction(): boolean {
@@ -1180,8 +1176,12 @@ export class Game implements IGame, Logger {
     const rankedScores = this.players.map((player) => {
       const corporation = player.playedCards.filter(isICorporationCard).map(toName).join('|');
       const vpb = player.getVictoryPoints();
-      return {player, corporation, vpb};
+      const surrendered = this.surrenderedPlayerIds.has(player.id);
+      return {player, corporation, surrendered, vpb};
     }).sort((left, right) => {
+      if (left.surrendered !== right.surrendered) {
+        return left.surrendered ? 1 : -1;
+      }
       if (left.vpb.total !== right.vpb.total) {
         return right.vpb.total - left.vpb.total;
       }
@@ -1195,6 +1195,7 @@ export class Game implements IGame, Logger {
     rankedScores.forEach((entry, idx) => {
       const previous = rankedScores[idx - 1];
       const place = previous !== undefined &&
+        previous.surrendered === entry.surrendered &&
         previous.vpb.total === entry.vpb.total &&
         previous.player.megaCredits === entry.player.megaCredits ?
         scores[idx - 1].place :
@@ -1834,7 +1835,6 @@ export class Game implements IGame, Logger {
 
     const game = new Game(d.id, d.name, players, first, d.activePlayer, d.spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, d.tags);
     game.simulationMode = options.simulation === true;
-    game.botTakeoverToken = d.botTakeoverToken;
     game.resettable = true;
     game.spectatorId = d.spectatorId;
     game.createdTime = new Date(d.createdTimeMs);
@@ -1919,10 +1919,6 @@ export class Game implements IGame, Logger {
     game.botPlayerIds.clear();
     for (const playerId of d.botPlayerIds ?? []) {
       game.botPlayerIds.add(playerId);
-    }
-    game.botTakeoverPlayerIds.clear();
-    for (const playerId of d.botTakeoverPlayerIds ?? []) {
-      game.botTakeoverPlayerIds.add(playerId);
     }
     game.surrenderedPlayerIds.clear();
     for (const playerId of d.surrenderedPlayerIds ?? []) {

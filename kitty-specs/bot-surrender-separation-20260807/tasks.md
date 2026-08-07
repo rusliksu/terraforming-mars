@@ -1,4 +1,4 @@
-# Tasks: временный бот и сдача
+# Tasks: сдача без временного бота
 
 ## Контракт
 
@@ -12,14 +12,14 @@
 | ID | WP | Task | Status |
 | --- | --- | --- | --- |
 | T001 | Governance | Repo/worktree/old-worktree inventory, Spec Kitty baseline, Bead | [x] |
-| T002 | Server state | Add serialized surrendered-player outcome state | [ ] |
-| T003 | Route | Add irreversible surrender mutation with authorization/audit/save semantics | [ ] |
-| T004 | Bot model | Implement minimal no-strategy surrendered-player progression | [ ] |
-| T005 | Elo | Use surrendered state for confirmed leave; keep ordinary Elo arithmetic | [ ] |
-| T006 | Auth/links | Remove shared `botTakeoverToken` player-facing login and URL fragments | [ ] |
-| T007 | UI | Move temporary bot control into Actions and add separate surrender control | [ ] |
-| T008 | Tests | Add focused server/client serialization/Elo route/link tests | [ ] |
-| T009 | Validation | Run targeted tests, lint/build as appropriate, final diff review | [ ] |
+| T002 | Server state | Add serialized surrendered-player outcome state | [x] |
+| T003 | Route | Replace human takeover route with irreversible surrender route | [x] |
+| T004 | Game flow | Keep surrendered player inert and end when one non-surrendered player remains | [x] |
+| T005 | Elo/results | Count surrender as leave and force surrendered players after active players | [x] |
+| T006 | Auth/links | Remove shared `botTakeoverToken` player-facing login and URL fragments | [x] |
+| T007 | UI | Remove player/admin takeover controls and keep Surrender in Actions | [x] |
+| T008 | Tests | Update focused server/client/serialization/Elo/results tests | [x] |
+| T009 | Validation | Run targeted tests, lint/build as appropriate, final diff review | [x] |
 
 ## Notes
 

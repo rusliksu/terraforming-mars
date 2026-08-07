@@ -29,7 +29,7 @@ describe('GameOverview', () => {
     expect(wrapper.exists()).to.be.true;
   });
 
-  it('shows stop button for bot-controlled player', () => {
+  it('does not expose bot takeover controls', () => {
     const wrapper = shallowMount(GameOverview, {
       ...globalConfig,
       props: {
@@ -49,6 +49,6 @@ describe('GameOverview', () => {
         serverIdOverride: '1',
       },
     });
-    expect(wrapper.text()).includes('Stop bot');
+    expect(wrapper.findAll('button')).has.length(0);
   });
 });

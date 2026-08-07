@@ -123,6 +123,11 @@
                           <td>
                             <span class="game-end-name-and-elo">
                               <a :href="'player?id='+p.id+'&noredirect'">{{ p.name }}</a>
+                              <span
+                                v-if="p.isSurrendered"
+                                data-test="surrendered-player-flag"
+                                class="surrendered-player-flag"
+                                :title="$t('Surrendered')">&#9873;</span>
                               <PlayerEloBadge :playerName="p.name" :eloDelta="getEloDeltaForPlayer(p)" tooltipCss="tooltip tooltip-top" />
                             </span>
                             <div class="column-corporation">
@@ -353,28 +358,26 @@ export default defineComponent({
     playersInPlace(): Array<PublicPlayerModel> {
       const copy = [...this.viewModel.players];
       copy.sort(function(a:PublicPlayerModel, b:PublicPlayerModel) {
-        if (a.victoryPointsBreakdown.total < b.victoryPointsBreakdown.total) {
-          return -1;
+        if (a.isSurrendered !== b.isSurrendered) {
+          return a.isSurrendered ? 1 : -1;
         }
-        if (a.victoryPointsBreakdown.total > b.victoryPointsBreakdown.total) {
-          return 1;
+        if (a.victoryPointsBreakdown.total !== b.victoryPointsBreakdown.total) {
+          return b.victoryPointsBreakdown.total - a.victoryPointsBreakdown.total;
         }
-        if (a.megacredits < b.megacredits) {
-          return -1;
-        }
-        if (a.megacredits > b.megacredits) {
-          return 1;
+        if (a.megacredits !== b.megacredits) {
+          return b.megacredits - a.megacredits;
         }
         return 0;
       });
-      return copy.reverse();
+      return copy;
     },
     winners() {
       const sortedPlayers = this.playersInPlace;
       const firstWinner = sortedPlayers[0];
       const winners: PublicPlayerModel[] = [firstWinner];
       for (let i = 1; i < sortedPlayers.length; i++) {
-        if (sortedPlayers[i].victoryPointsBreakdown.total === firstWinner.victoryPointsBreakdown.total &&
+        if (!sortedPlayers[i].isSurrendered &&
+                    sortedPlayers[i].victoryPointsBreakdown.total === firstWinner.victoryPointsBreakdown.total &&
                     sortedPlayers[i].megacredits === firstWinner.megacredits) {
           winners.push(sortedPlayers[i]);
         }

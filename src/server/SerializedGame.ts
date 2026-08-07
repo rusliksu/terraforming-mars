@@ -24,10 +24,8 @@ export type SerializedGame = {
     aresData?: AresData;
     awards: Array<AwardName>;
     beholdTheEmperor?: boolean;
-    botTakeoverToken?: string;
     board: SerializedBoard;
     botPlayerIds?: Array<PlayerId>;
-    botTakeoverPlayerIds?: Array<PlayerId>;
     surrenderedPlayerIds?: Array<PlayerId>;
     ceoDeck: SerializedDeck;
     currentSeed: number;

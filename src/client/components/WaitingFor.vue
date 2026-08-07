@@ -15,7 +15,7 @@
     <AppButton title="Undo card purchase (experimental)" type="submit" size="normal" @click="undoResearchPurchase" />
   </div>
   <div v-if="waitingfor !== undefined" class="wf-root">
-    <template v-if="preferences().experimental_ui && playerView.game.phase === Phase.ACTION && playerView.thisPlayer?.isActive !== true">
+    <template v-if="preferences().experimental_ui && playerView.game.phase === Phase.ACTION">
       <input type="checkbox" name="suspend" id="suspend-checkbox" v-model="suspend" @change="updateSuspend">
       <label for="suspend-checkbox">
         <span v-i18n>Pause updates</span>

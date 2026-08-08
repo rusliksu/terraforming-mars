@@ -9,7 +9,8 @@ requirement_refs:
 - FR-004
 - FR-005
 - FR-006
-tracker_refs: []
+tracker_refs:
+- tm-ai-na8
 planning_base_branch: codex/undo-step-snapshot-integrity
 merge_target_branch: codex/undo-step-snapshot-integrity
 branch_strategy: Planning artifacts for this mission were generated on codex/undo-step-snapshot-integrity. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into codex/undo-step-snapshot-integrity unless the human explicitly redirects the landing branch.
@@ -20,8 +21,8 @@ subtasks:
 - T004
 - T005
 phase: Phase 1 - Structural bug fix
-assignee: "codex"
-agent: "codex"
+assignee: codex
+agent: codex
 history:
 - timestamp: '2026-08-08T13:06:23Z'
   agent: codex

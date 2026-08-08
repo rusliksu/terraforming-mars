@@ -1,7 +1,7 @@
 {
-  "event_count": 4,
-  "last_event_id": "01KZGSFQYFQDX1Y9KTS3Z2A2E3",
-  "materialized_at": "2026-08-08T13:37:34.671988+00:00",
+  "event_count": 5,
+  "last_event_id": "01KZGSGRX1MCVPZKH0F1TTAK23",
+  "materialized_at": "2026-08-08T13:38:08.417711+00:00",
   "mission_number": "",
   "mission_slug": "undo-step-snapshot-integrity-01KZGQF4",
   "mission_type": "software-dev",
@@ -11,18 +11,18 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
+    "for_review": 0,
     "in_progress": 0,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 0
   },
   "work_packages": {
     "WP01": {
       "actor": "codex",
       "force_count": 0,
-      "lane": "for_review",
-      "last_event_id": "01KZGSFQYFQDX1Y9KTS3Z2A2E3",
-      "last_transition_at": "2026-08-08T13:37:34.671988+00:00"
+      "lane": "in_review",
+      "last_event_id": "01KZGSGRX1MCVPZKH0F1TTAK23",
+      "last_transition_at": "2026-08-08T13:38:08.417711+00:00"
     }
   }
 }

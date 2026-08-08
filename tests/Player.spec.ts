@@ -770,13 +770,9 @@ describe('Player', () => {
       return cast(player.getWaitingFor(), OrOptions);
     }
 
-    it('is offered from generation 5 to an active human multiplayer player', () => {
+    it('is offered from generation 1 to an active human multiplayer player', () => {
       const [game, player, otherPlayer] = testGame(2);
-      game.generation = 4;
-
-      expect(findSurrenderAction(player)).is.undefined;
-
-      game.generation = 5;
+      game.generation = 1;
       expect(findSurrenderAction(player)).is.not.undefined;
 
       game.setBotPlayerIds([player.id]);
@@ -789,7 +785,7 @@ describe('Player', () => {
 
     it('returns to the action list without consuming an action when cancelled', () => {
       const [game, player] = testGame(2);
-      game.generation = 5;
+      game.generation = 1;
 
       const confirmation = startSurrender(player);
       expect(confirmation.title).eq('Are you sure you want to surrender?');
@@ -808,7 +804,7 @@ describe('Player', () => {
 
     it('records surrender and passes the player when confirmed', () => {
       const [game, player] = testGame(2);
-      game.generation = 5;
+      game.generation = 1;
 
       startSurrender(player);
       player.process({type: 'or', index: 0, response: {type: 'option'}});

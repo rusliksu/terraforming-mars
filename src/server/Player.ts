@@ -1822,8 +1822,7 @@ export class Player implements IPlayer {
       action.options.push(sellPatents.action(this));
     }
 
-    if (this.game.generation > 4 &&
-      this.game.players.length > 1 &&
+    if (this.game.players.length > 1 &&
       this.game.players.filter((player) => !this.game.surrenderedPlayerIds.has(player.id)).length > 1 &&
       !this.game.botPlayerIds.has(this.id) &&
       !this.game.surrenderedPlayerIds.has(this.id)) {

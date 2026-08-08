@@ -89,11 +89,6 @@ export class ApiSurrender extends Handler {
       responses.badRequest(req, res, 'can only surrender during the action phase');
       return;
     }
-    if (game.generation <= 4) {
-      responses.badRequest(req, res, 'cannot surrender before generation 5');
-      return;
-    }
-
     let player: IPlayer;
     try {
       player = game.getPlayerById(playerId);

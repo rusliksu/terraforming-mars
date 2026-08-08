@@ -7,14 +7,14 @@
 
 ## Требования
 
-- `Surrender this game` появляется только в multiplayer с поколения 5.
+- `Surrender this game` появляется в multiplayer с первой action phase.
 - Пункт доступен только через обычный action prompt активного игрока.
 - Выбор открывает подтверждение с вариантами surrender и продолжения игры.
 - Отмена не расходует действие и не меняет game state.
 - Подтверждение помечает игрока surrendered и завершает его участие через
   существующий pass/game-flow.
 - Legacy surrender API оставляется для совместимости, но не позволяет обойти
-  generation 5 и active-turn ограничения обычного action flow.
+  active-turn и action-phase ограничения обычного flow.
 - Успешная сдача через `PlayerInput` сохраняет отдельный audit event
   `surrender_accepted`.
 - Существующие reliability, last-place, Elo и serialization semantics не
@@ -23,11 +23,12 @@
 
 ## Acceptance Criteria
 
-- До поколения 5, в solo, для bot player и при одном оставшемся игроке опции нет.
-- В поколении 5+ активный human player видит surrender в обычном `OrOptions`.
+- В solo, для bot player и при одном оставшемся игроке опции нет.
+- С первой action phase активный human player видит surrender в обычном
+  `OrOptions`.
 - Cancel возвращает тот же action prompt без потери действия.
 - Confirm добавляет player id в `surrenderedPlayerIds` и пасует игрока.
-- Legacy API отклоняет сдачу до поколения 5 и от неактивного игрока.
+- Legacy API отклоняет сдачу вне action phase и от неактивного игрока.
 - Targeted Player/PlayerHome/route tests, полный server suite, lint и build
   проходят.
 

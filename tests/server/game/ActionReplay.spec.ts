@@ -113,17 +113,50 @@ describe('ActionReplay', () => {
     expect(replayedPlayer.globalParameterSteps[GlobalParameter.TEMPERATURE]).eq(2);
     expect(replayedPlayer.globalParameterSteps[GlobalParameter.OCEANS]).eq(1);
 
-    const replayEntry = prepareActionReplayEntry(replayed, replayedPlayer.id, {
-      type: 'space',
-      spaceId: replayedPrompt.spaces[0],
-    });
-    expect(replayEntry).not.eq(undefined);
-    replayedPlayer.process({type: 'space', spaceId: replayedPrompt.spaces[0]});
-    recordAcceptedActionReplayEntry(replayed, replayEntry!);
+    const rewound = stepBackActionInput(replayed, replayedPlayer.id);
+    const rewoundPlayer = rewound.getPlayerById(player.id);
+    const rewoundActionPrompt = rewoundPlayer.getWaitingFor()?.toModel(rewoundPlayer);
+    if (rewoundActionPrompt?.type !== 'or') {
+      throw new Error('Expected replayed action prompt');
+    }
 
-    expect(replayed.board.getOceanSpaces()).has.length(2);
-    expect(replayedPlayer.globalParameterSteps[GlobalParameter.TEMPERATURE]).eq(2);
-    expect(replayedPlayer.globalParameterSteps[GlobalParameter.OCEANS]).eq(2);
+    expect(rewound.board.getOceanSpaces()).has.length(0);
+    expect(rewoundPlayer.globalParameterSteps[GlobalParameter.TEMPERATURE]).eq(0);
+    expect(rewoundPlayer.globalParameterSteps[GlobalParameter.OCEANS]).eq(0);
+
+    const acceptReplayed = (input: InputResponse) => {
+      const entry = prepareActionReplayEntry(rewound, rewoundPlayer.id, input);
+      expect(entry).not.eq(undefined);
+      rewoundPlayer.process(input);
+      recordAcceptedActionReplayEntry(rewound, entry!);
+    };
+    const replayedCardIndex = rewoundActionPrompt.options.findIndex((option) => option.type === 'projectCard');
+    expect(replayedCardIndex).gte(0);
+    acceptReplayed({
+      type: 'or',
+      index: replayedCardIndex,
+      response: {
+        type: 'projectCard',
+        card: CardName.GIANT_ICE_ASTEROID,
+        payment: Payment.of({megacredits: 36}),
+      },
+    });
+
+    const replayedFirstOcean = rewoundPlayer.getWaitingFor()?.toModel(rewoundPlayer);
+    if (replayedFirstOcean?.type !== 'space') {
+      throw new Error('Expected replayed first ocean prompt');
+    }
+    acceptReplayed({type: 'space', spaceId: replayedFirstOcean.spaces[replayedFirstOcean.spaces.length - 1]});
+
+    const replayedSecondOcean = rewoundPlayer.getWaitingFor()?.toModel(rewoundPlayer);
+    if (replayedSecondOcean?.type !== 'space') {
+      throw new Error('Expected replayed second ocean prompt');
+    }
+    acceptReplayed({type: 'space', spaceId: replayedSecondOcean.spaces[replayedSecondOcean.spaces.length - 1]});
+
+    expect(rewound.board.getOceanSpaces()).has.length(2);
+    expect(rewoundPlayer.globalParameterSteps[GlobalParameter.TEMPERATURE]).eq(2);
+    expect(rewoundPlayer.globalParameterSteps[GlobalParameter.OCEANS]).eq(2);
   });
 
   it('starts a fresh journal after an earlier prompt could not be replayed', () => {

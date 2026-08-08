@@ -12,7 +12,7 @@ requirement_refs:
 tracker_refs: []
 planning_base_branch: codex/undo-step-snapshot-integrity
 merge_target_branch: codex/undo-step-snapshot-integrity
-branch_strategy: Complete the Spec Kitty single-branch lifecycle on codex/undo-step-snapshot-integrity, then deliver that task-owned branch through a PR to main.
+branch_strategy: Planning artifacts for this mission were generated on codex/undo-step-snapshot-integrity. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into codex/undo-step-snapshot-integrity unless the human explicitly redirects the landing branch.
 subtasks:
 - T001
 - T002

@@ -21,9 +21,6 @@
           <LogMessageComponent v-for="(message, index) in filteredMessages" :key="message.timestamp + '-' + index" :message="message" :viewModel="viewModel" @click="messageClicked(message)" @spaceClicked="spaceClicked"/>
         </ul>
       </div>
-      <div class='debugid'>(debugid {{step}})</div>
-    </div>
-    <div class="log-player-filters">
       <button
         type="button"
         class="log-latest-button"
@@ -31,7 +28,14 @@
         title="Latest logs"
         data-test="log-latest"
         @click="showLatestLogs"
-      >&#x2193;</button>
+      >
+        <svg class="log-latest-button-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+          <path d="M12 5v14M19 12l-7 7-7-7"/>
+        </svg>
+      </button>
+      <div class='debugid'>(debugid {{step}})</div>
+    </div>
+    <div class="log-player-filters">
       <template v-if="players.length > 1">
         <button
           type="button"

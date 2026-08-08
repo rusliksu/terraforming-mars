@@ -13,6 +13,7 @@
   "accepted_at": "2026-08-08T13:41:50.497777+00:00",
   "accepted_by": "Руслан",
   "accepted_from_commit": "ac73a41dfba9f2e8c13c42b29b94c95d7762ef7d",
+  "baseline_merge_commit": "77516b17753b22a9ae59319aae4d3f443fefb92e",
   "created_at": "2026-08-08T13:02:17.513076+00:00",
   "flattened": false,
   "friendly_name": "Step Undo Snapshot Integrity",

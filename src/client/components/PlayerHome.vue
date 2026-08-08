@@ -49,15 +49,6 @@
         <a name="actions" class="player_home_anchor"></a>
         <DynamicTitle title="Actions" :color="thisPlayer.color"/>
         <WaitingFor v-if="game.phase !== 'end'" :playerView="playerView" :waitingfor="playerView.waitingFor"/>
-        <div v-if="showSurrenderControl" class="surrender-controls">
-          <button
-            data-test="surrender-control"
-            class="surrender-control"
-            :disabled="surrenderBusy || surrendered"
-            @click="surrenderGame">
-            {{surrendered ? 'Surrendered' : 'Surrender'}}
-          </button>
-        </div>
       </div>
 
       <div class="player_home_block player_home_block--hand" v-if="playerView.draftedCards.length > 0">
@@ -190,8 +181,6 @@ import {Phase} from '@/common/Phase';
 import {HomeMixin} from '@/client/mixins/HomeMixin';
 
 type PlayerHomeModel = {
-  surrenderBusy: boolean;
-  surrendered: boolean;
   showHand: boolean;
   showActiveCards: boolean;
   showAutomatedCards: boolean;
@@ -213,8 +202,6 @@ export default defineComponent({
   data(): PlayerHomeModel {
     const preferences = getPreferences();
     return {
-      surrenderBusy: false,
-      surrendered: false,
       showHand: !preferences.hide_hand,
       showActiveCards: !preferences.hide_active_cards,
       showAutomatedCards: !preferences.hide_automated_cards,
@@ -247,10 +234,6 @@ export default defineComponent({
     },
     game(): GameModel {
       return this.playerView.game;
-    },
-    showSurrenderControl(): boolean {
-      return this.playerView.players.length > 1 &&
-        (this.game.phase === Phase.RESEARCH || this.game.phase === Phase.ACTION);
     },
     CardType(): typeof CardType {
       return CardType;
@@ -291,34 +274,6 @@ export default defineComponent({
     KeyboardShortcuts,
   },
   methods: {
-    refreshSurrenderState(): void {
-      this.surrendered = this.thisPlayer.isSurrendered;
-    },
-    async surrenderGame(): Promise<void> {
-      if (this.surrenderBusy || this.surrendered || !this.showSurrenderControl) {
-        return;
-      }
-      const confirmed = window.confirm(`Surrender as ${this.thisPlayer.name}? This cannot be undone.`);
-      if (!confirmed) {
-        return;
-      }
-      this.surrenderBusy = true;
-      try {
-        const query = new URLSearchParams({
-          playerId: this.playerView.id,
-        });
-        const response = await fetch('api/surrender?' + query.toString(), {method: 'POST'});
-        if (!response.ok) {
-          throw new Error(await response.text());
-        }
-        const payload = await response.json() as {surrenderedPlayers?: Array<string>};
-        this.surrendered = payload.surrenderedPlayers?.includes(this.playerView.id) === true;
-      } catch (error) {
-        alert(error instanceof Error ? error.message : String(error));
-      } finally {
-        this.surrenderBusy = false;
-      }
-    },
     isPlayerActing(playerView: PlayerViewModel) : boolean {
       return playerView.players.length > 1 && playerView.waitingFor !== undefined;
     },
@@ -360,25 +315,6 @@ export default defineComponent({
       return !getCardOrThrow(cardModel.name).hasAction;
     },
   },
-  mounted() {
-    this.refreshSurrenderState();
-  },
 });
 
 </script>
-
-<style scoped>
-.surrender-controls button {
-  cursor: pointer;
-  padding: 6px 10px;
-  margin: 6px 8px 0 0;
-}
-
-.surrender-controls button[disabled] {
-  cursor: wait;
-}
-
-.surrender-control {
-  color: #ffd6d6;
-}
-</style>

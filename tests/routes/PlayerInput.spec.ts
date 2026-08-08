@@ -360,6 +360,31 @@ describe('PlayerInput', () => {
     expect(JSON.stringify(auditEvents)).not.contains('secret-card-name');
   });
 
+  it('audits surrender accepted through player input', async () => {
+    const auditEvents: Array<AccessAuditRecordInput> = [];
+    const player = TestPlayer.BLUE.newPlayer();
+    scaffolding.url = `/player/input?id=${player.id}`;
+    scaffolding.req.method = 'POST';
+    scaffolding.ctx.accessAudit = {record: (event) => auditEvents.push(event)};
+    const game = Game.newInstance('gameid-audit-surrender', [player], player, 'spectatorid');
+    await scaffolding.ctx.gameLoader.add(game);
+    player.process = () => game.surrenderedPlayerIds.add(player.id);
+
+    const post = scaffolding.post(PlayerInput.INSTANCE, res);
+    const emit = Promise.resolve().then(() => {
+      scaffolding.req.emitter.emit('data', '{"type":"option"}');
+      scaffolding.req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+
+    expect(auditEvents.map((event) => event.event)).deep.eq([
+      'player_input_attempt',
+      'surrender_accepted',
+      'player_input_accepted',
+    ]);
+    expect(auditEvents[1].metadata).deep.eq({authorization: 'player'});
+  });
+
   it('audits rejected player input without raw payload', async () => {
     const auditEvents: Array<AccessAuditRecordInput> = [];
     const player = TestPlayer.BLUE.newPlayer();

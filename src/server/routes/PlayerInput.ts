@@ -153,7 +153,11 @@ export class PlayerInput extends Handler {
               player.game.actionReplayState = null;
             }
             try {
+              const wasSurrendered = player.game.surrenderedPlayerIds.has(player.id);
               player.process(entity);
+              if (!wasSurrendered && player.game.surrenderedPlayerIds.has(player.id)) {
+                recordPlayerInputAudit(req, ctx, player, 'surrender_accepted', {authorization: 'player'});
+              }
             } catch (err) {
               player.game.shadowInputSeq = promptInputSeq;
               inputSeq = null;

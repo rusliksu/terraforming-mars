@@ -22,7 +22,8 @@ describe('ApiSurrender', () => {
     const alice = TestPlayer.BLACK.newPlayer();
     const bob = TestPlayer.RED.newPlayer();
     const game = Game.newInstance('g123456789abc', [alice, bob], alice, 'spectatorid');
-    game.phase = Phase.RESEARCH;
+    game.phase = Phase.ACTION;
+    game.generation = 5;
     await scaffolding.ctx.gameLoader.add(game);
     const auditEvents: Array<AccessAuditRecordInput> = [];
     scaffolding.ctx.accessAudit = {record: (event) => auditEvents.push(event)};
@@ -50,7 +51,8 @@ describe('ApiSurrender', () => {
     const alice = TestPlayer.BLACK.newPlayer();
     const bob = TestPlayer.RED.newPlayer();
     const game = Game.newInstance('g123456789abc', [alice, bob], alice, 'spectatorid');
-    game.phase = Phase.RESEARCH;
+    game.phase = Phase.ACTION;
+    game.generation = 5;
     game.surrenderedPlayerIds.add(alice.id);
     await scaffolding.ctx.gameLoader.add(game);
 
@@ -65,7 +67,8 @@ describe('ApiSurrender', () => {
     const bot = TestPlayer.BLACK.newPlayer();
     const human = TestPlayer.RED.newPlayer();
     const game = Game.newInstance('g123456789abc', [bot, human], bot, 'spectatorid');
-    game.phase = Phase.RESEARCH;
+    game.phase = Phase.ACTION;
+    game.generation = 5;
     game.setBotPlayerIds([bot.id]);
     await scaffolding.ctx.gameLoader.add(game);
 
@@ -74,6 +77,28 @@ describe('ApiSurrender', () => {
 
     expect(res.statusCode).eq(statusCode.badRequest);
     expect(game.surrenderedPlayerIds.has(bot.id)).eq(false);
+  });
+
+  it('rejects surrender before generation 5 or outside the active turn', async () => {
+    const alice = TestPlayer.BLACK.newPlayer();
+    const bob = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('g123456789abc', [alice, bob], alice, 'spectatorid');
+    game.phase = Phase.ACTION;
+    game.generation = 4;
+    await scaffolding.ctx.gameLoader.add(game);
+    const route = new ApiSurrender({stop: () => undefined});
+
+    scaffolding.url = `/api/surrender?playerId=${alice.id}`;
+    await route.processRequest(scaffolding.req, res, scaffolding.ctx);
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('before generation 5');
+
+    game.generation = 5;
+    res = new MockResponse();
+    scaffolding.url = `/api/surrender?playerId=${bob.id}`;
+    await route.processRequest(scaffolding.req, res, scaffolding.ctx);
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('only the active player');
   });
 
   it('rejects surrender after the game ended', async () => {

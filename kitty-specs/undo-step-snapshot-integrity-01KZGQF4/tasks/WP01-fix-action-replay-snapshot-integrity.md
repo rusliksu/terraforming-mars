@@ -27,7 +27,7 @@ history:
 - timestamp: '2026-08-08T13:06:23Z'
   agent: codex
   action: Prompt generated from approved scope baseline
-agent_profile: implementer-ivan
+agent_profile: reviewer-renata
 authoritative_surface: src/server/game/ActionReplay.ts
 create_intent: []
 execution_mode: code_change
@@ -36,7 +36,7 @@ owned_files:
 - src/server/game/ActionReplay.ts
 - tests/server/game/ActionReplay.spec.ts
 - docs/architecture/step-undo-experiment-plan.md
-role: implementer
+role: reviewer
 tags: []
 ---
 

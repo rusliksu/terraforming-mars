@@ -3,6 +3,8 @@ import {expect} from 'chai';
 import {InputResponse} from '../../../src/common/inputs/InputResponse';
 import {CardName} from '../../../src/common/cards/CardName';
 import {Phase} from '../../../src/common/Phase';
+import {GlobalParameter} from '../../../src/common/GlobalParameter';
+import {Payment} from '../../../src/common/inputs/Payment';
 import {Game} from '../../../src/server/Game';
 import {
   prepareActionReplayEntry,
@@ -12,12 +14,151 @@ import {
 import {ArcticAlgae} from '../../../src/server/cards/base/ArcticAlgae';
 import {BiomassCombustors} from '../../../src/server/cards/base/BiomassCombustors';
 import {Comet} from '../../../src/server/cards/base/Comet';
+import {GiantIceAsteroid} from '../../../src/server/cards/base/GiantIceAsteroid';
 import {ProjectEden} from '../../../src/server/cards/prelude2/ProjectEden';
 import {HiTechLab} from '../../../src/server/cards/promo/HiTechLab';
 import {testGame} from '../../TestGame';
 import {hasRevealedHiddenInformation} from '../../../src/server/game/hasRevealedHiddenInformation';
 
 describe('ActionReplay', () => {
+  it('keeps the root snapshot unchanged after live state mutates', () => {
+    const [rawGame, player, otherPlayer] = testGame(2, {skipInitialCardSelection: true});
+    const game = rawGame as Game;
+    game.generation = 2;
+    game.phase = Phase.ACTION;
+    game.activePlayer = player;
+    player.takeAction(false);
+
+    expect(prepareActionReplayEntry(game, player.id, {type: 'option'})).not.eq(undefined);
+    const rootSnapshot = game.actionReplayState?.rootSnapshot;
+    const rootPlayer = rootSnapshot?.players.find((candidate) => candidate.id === player.id);
+    expect(rootSnapshot).not.eq(undefined);
+    expect(rootPlayer).not.eq(undefined);
+
+    const expected = {
+      logLength: rootSnapshot!.gameLog.length,
+      oceanSteps: rootPlayer!.globalParameterSteps[GlobalParameter.OCEANS],
+      removingPlayers: [...rootPlayer!.removingPlayers],
+    };
+
+    game.log('Mutation after replay root capture');
+    player.onGlobalParameterIncrease(GlobalParameter.OCEANS, 1);
+    player.removingPlayers.push(otherPlayer.id);
+
+    expect({
+      logLength: rootSnapshot!.gameLog.length,
+      oceanSteps: rootPlayer!.globalParameterSteps[GlobalParameter.OCEANS],
+      removingPlayers: rootPlayer!.removingPlayers,
+    }).deep.eq(expected);
+  });
+
+  it('does not double-count Giant Ice Asteroid globals after stepping back to its second ocean', () => {
+    const [rawGame, player, otherPlayer] = testGame(2, {skipInitialCardSelection: true});
+    const game = rawGame as Game;
+    game.generation = 2;
+    game.phase = Phase.ACTION;
+    game.activePlayer = player;
+    player.megaCredits = 100;
+    otherPlayer.plants = 6;
+    player.cardsInHand.push(new GiantIceAsteroid());
+    player.takeAction(false);
+
+    const accept = (input: InputResponse) => {
+      const entry = prepareActionReplayEntry(game, player.id, input);
+      expect(entry).not.eq(undefined);
+      player.process(input);
+      recordAcceptedActionReplayEntry(game, entry!);
+    };
+
+    const actionPrompt = player.getWaitingFor()?.toModel(player);
+    if (actionPrompt?.type !== 'or') {
+      throw new Error('Expected action prompt');
+    }
+    const playCardIndex = actionPrompt.options.findIndex((option) => option.type === 'projectCard');
+    expect(playCardIndex).gte(0);
+    accept({
+      type: 'or',
+      index: playCardIndex,
+      response: {
+        type: 'projectCard',
+        card: CardName.GIANT_ICE_ASTEROID,
+        payment: Payment.of({megacredits: 36}),
+      },
+    });
+
+    const firstOceanPrompt = player.getWaitingFor()?.toModel(player);
+    if (firstOceanPrompt?.type !== 'space') {
+      throw new Error('Expected first ocean prompt');
+    }
+    accept({type: 'space', spaceId: firstOceanPrompt.spaces[0]});
+
+    const secondOceanPrompt = player.getWaitingFor()?.toModel(player);
+    if (secondOceanPrompt?.type !== 'space') {
+      throw new Error('Expected second ocean prompt');
+    }
+    accept({type: 'space', spaceId: secondOceanPrompt.spaces[0]});
+
+    expect(game.board.getOceanSpaces()).has.length(2);
+    expect(player.globalParameterSteps[GlobalParameter.TEMPERATURE]).eq(2);
+    expect(player.globalParameterSteps[GlobalParameter.OCEANS]).eq(2);
+
+    const replayed = stepBackActionInput(game, player.id);
+    const replayedPlayer = replayed.getPlayerById(player.id);
+    const replayedPrompt = replayedPlayer.getWaitingFor()?.toModel(replayedPlayer);
+    if (replayedPrompt?.type !== 'space') {
+      throw new Error('Expected replayed second ocean prompt');
+    }
+
+    expect(replayed.board.getOceanSpaces()).has.length(1);
+    expect(replayedPlayer.globalParameterSteps[GlobalParameter.TEMPERATURE]).eq(2);
+    expect(replayedPlayer.globalParameterSteps[GlobalParameter.OCEANS]).eq(1);
+
+    const rewound = stepBackActionInput(replayed, replayedPlayer.id);
+    const rewoundPlayer = rewound.getPlayerById(player.id);
+    const rewoundActionPrompt = rewoundPlayer.getWaitingFor()?.toModel(rewoundPlayer);
+    if (rewoundActionPrompt?.type !== 'or') {
+      throw new Error('Expected replayed action prompt');
+    }
+
+    expect(rewound.board.getOceanSpaces()).has.length(0);
+    expect(rewoundPlayer.globalParameterSteps[GlobalParameter.TEMPERATURE]).eq(0);
+    expect(rewoundPlayer.globalParameterSteps[GlobalParameter.OCEANS]).eq(0);
+
+    const acceptReplayed = (input: InputResponse) => {
+      const entry = prepareActionReplayEntry(rewound, rewoundPlayer.id, input);
+      expect(entry).not.eq(undefined);
+      rewoundPlayer.process(input);
+      recordAcceptedActionReplayEntry(rewound, entry!);
+    };
+    const replayedCardIndex = rewoundActionPrompt.options.findIndex((option) => option.type === 'projectCard');
+    expect(replayedCardIndex).gte(0);
+    acceptReplayed({
+      type: 'or',
+      index: replayedCardIndex,
+      response: {
+        type: 'projectCard',
+        card: CardName.GIANT_ICE_ASTEROID,
+        payment: Payment.of({megacredits: 36}),
+      },
+    });
+
+    const replayedFirstOcean = rewoundPlayer.getWaitingFor()?.toModel(rewoundPlayer);
+    if (replayedFirstOcean?.type !== 'space') {
+      throw new Error('Expected replayed first ocean prompt');
+    }
+    acceptReplayed({type: 'space', spaceId: replayedFirstOcean.spaces[replayedFirstOcean.spaces.length - 1]});
+
+    const replayedSecondOcean = rewoundPlayer.getWaitingFor()?.toModel(rewoundPlayer);
+    if (replayedSecondOcean?.type !== 'space') {
+      throw new Error('Expected replayed second ocean prompt');
+    }
+    acceptReplayed({type: 'space', spaceId: replayedSecondOcean.spaces[replayedSecondOcean.spaces.length - 1]});
+
+    expect(rewound.board.getOceanSpaces()).has.length(2);
+    expect(rewoundPlayer.globalParameterSteps[GlobalParameter.TEMPERATURE]).eq(2);
+    expect(rewoundPlayer.globalParameterSteps[GlobalParameter.OCEANS]).eq(2);
+  });
+
   it('starts a fresh journal after an earlier prompt could not be replayed', () => {
     const [rawGame, player, otherPlayer] = testGame(2, {skipInitialCardSelection: true});
     const game = rawGame as Game;

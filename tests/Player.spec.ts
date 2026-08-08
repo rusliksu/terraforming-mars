@@ -779,10 +779,10 @@ describe('Player', () => {
       game.generation = 5;
       expect(findSurrenderAction(player)).is.not.undefined;
 
-      game.botPlayerIds.add(player.id);
+      game.setBotPlayerIds([player.id]);
       expect(findSurrenderAction(player)).is.undefined;
 
-      game.botPlayerIds.delete(player.id);
+      game.setBotPlayerIds([]);
       game.surrenderedPlayerIds.add(otherPlayer.id);
       expect(findSurrenderAction(player)).is.undefined;
     });

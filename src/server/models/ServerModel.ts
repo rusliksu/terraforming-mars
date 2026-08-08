@@ -33,18 +33,17 @@ import {MAX_AWARDS, MAX_MILESTONES} from '../../common/constants';
 export class Server {
   public static getSimpleGameModel(game: IGame, options?: {
     botPlayers?: Array<PlayerId>;
-    includeBotTakeoverToken?: boolean;
   }): SimpleGameModel {
     return {
       activePlayer: game.activePlayer.color,
       botPlayers: options?.botPlayers,
-      botTakeoverToken: options?.includeBotTakeoverToken === true ? game.botTakeoverToken : undefined,
       id: game.id,
       name: game.name,
       phase: game.phase,
       players: game.playersInGenerationOrder.map((player) => ({
         color: player.color,
         id: player.id,
+        isSurrendered: game.surrenderedPlayerIds.has(player.id),
         name: player.name,
       })),
       spectatorId: game.spectatorId,
@@ -245,6 +244,7 @@ export class Server {
       id: game.phase === Phase.END ? player.id : undefined,
       influence: Turmoil.ifTurmoilElse(game, (turmoil) => turmoil.getInfluence(player), () => 0),
       isActive: player.id === game.activePlayer.id,
+      isSurrendered: game.surrenderedPlayerIds.has(player.id),
       lastCardPlayed: player.lastCardPlayed,
       megacredits: player.megaCredits,
       megacreditProduction: player.production.megacredits,

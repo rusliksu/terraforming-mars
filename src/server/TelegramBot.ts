@@ -106,7 +106,6 @@ export interface TelegramNotifiable {
   name: string;
   id: PlayerId;
   telegramID: string;
-  botTakeoverToken?: string;
   lastNoticeMessageId: number;
   lastTurnNoticeKey?: string;
   game?: {
@@ -119,15 +118,6 @@ export interface TelegramNotifiable {
 }
 
 type TelegramGameContext = NonNullable<TelegramNotifiable['game']>;
-
-export interface TelegramBotTakeoverNotifiable {
-  name: string;
-  id: PlayerId;
-  telegramID?: string;
-  game?: TelegramGameContext;
-}
-
-export type BotTakeoverNoticeTarget = Pick<TelegramBotTakeoverNotifiable, 'name' | 'id'>;
 
 function describeColor(color: string): string {
   return COLOR_LABELS[color] ?? color;
@@ -161,10 +151,6 @@ function buildGameSummary(player: {game?: TelegramGameContext}): string | undefi
 }
 
 function gameIdForLog(player: TelegramNotifiable): string {
-  return player.game?.id ?? 'unknown';
-}
-
-function botTakeoverGameIdForLog(player: TelegramBotTakeoverNotifiable): string {
   return player.game?.id ?? 'unknown';
 }
 
@@ -301,28 +287,6 @@ function warnGameStartNoticeSkippedMissingToken(player: TelegramNotifiable): voi
   );
 }
 
-function logBotTakeoverNoticeSent(
-  recipient: TelegramBotTakeoverNotifiable,
-  botPlayer: BotTakeoverNoticeTarget,
-  messageId: number | undefined,
-): void {
-  console.log(
-    `Telegram bot takeover notice sent game=${botTakeoverGameIdForLog(recipient)} ` +
-    `recipient=${recipient.id} botPlayer=${botPlayer.id} message=${messageId ?? 'unknown'}`,
-  );
-}
-
-function warnBotTakeoverNoticeFailed(
-  recipient: TelegramBotTakeoverNotifiable,
-  botPlayer: BotTakeoverNoticeTarget,
-  response: TelegramResponse,
-): void {
-  console.warn(
-    `Telegram bot takeover notice failed game=${botTakeoverGameIdForLog(recipient)} ` +
-    `recipient=${recipient.id} botPlayer=${botPlayer.id} ` +
-    `code=${response.error_code ?? 'unknown'} description=${response.description ?? 'unknown'}`,
-  );
-}
 export function buildTurnNoticeText(player: TelegramNotifiable, options: TurnNoticeOptions = {}): string {
   const lines = [buildTurnNoticeHeader(player, options)];
   const gameSummary = buildGameSummary(player);
@@ -334,25 +298,6 @@ export function buildTurnNoticeText(player: TelegramNotifiable, options: TurnNot
     lines.push(`Игроки: ${participantsSummary}`);
   }
   lines.push(`${SERVER_URL}/player?id=${player.id}`);
-  return lines.join('\n');
-}
-
-export function buildBotTakeoverNoticeText(
-  recipient: TelegramBotTakeoverNotifiable,
-  botPlayer: BotTakeoverNoticeTarget,
-): string {
-  const lines = [`Внимание: бот включен за ${botPlayer.name}.`];
-  const gameSummary = buildGameSummary(recipient);
-  if (gameSummary !== undefined) {
-    lines.push(gameSummary);
-  }
-  const participantsSummary = buildParticipantsSummary(recipient);
-  if (participantsSummary !== undefined) {
-    lines.push(`Игроки: ${participantsSummary}`);
-  }
-  if (recipient.game !== undefined) {
-    lines.push(`${SERVER_URL}/game?id=${recipient.game.id}`);
-  }
   return lines.join('\n');
 }
 
@@ -431,36 +376,6 @@ export async function sendTurnNotice(
   return false;
 }
 
-export async function sendBotTakeoverNotice(
-  recipient: TelegramBotTakeoverNotifiable,
-  botPlayer: BotTakeoverNoticeTarget,
-): Promise<boolean> {
-  if (!recipient.telegramID) {
-    return false;
-  }
-  if (telegramDisabled()) {
-    return false;
-  }
-  if (!getBotToken()) {
-    return false;
-  }
-  try {
-    const resp = await callTelegramApi('sendMessage', {
-      chat_id: recipient.telegramID,
-      text: buildBotTakeoverNoticeText(recipient, botPlayer),
-    });
-    const messageId = typeof resp.result === 'object' ? resp.result.message_id : undefined;
-    if (resp.ok) {
-      logBotTakeoverNoticeSent(recipient, botPlayer, messageId);
-      return true;
-    }
-    warnBotTakeoverNoticeFailed(recipient, botPlayer, resp);
-  } catch (err) {
-    console.warn('sendBotTakeoverNotice error:', err);
-  }
-  return false;
-}
-
 export async function deleteTurnNoticeMessage(player: TelegramNotifiable, messageId: number): Promise<void> {
   if (!player.telegramID || messageId < 0) {
     return;
@@ -500,9 +415,7 @@ export async function sendGameStartNotice(player: TelegramNotifiable): Promise<b
     warnGameStartNoticeSkippedMissingToken(player);
     return false;
   }
-  const fragment = player.botTakeoverToken === undefined ? '' :
-    `#botTakeoverToken=${encodeURIComponent(player.botTakeoverToken)}`;
-  const link = `${SERVER_URL}/player?id=${player.id}${fragment}`;
+  const link = `${SERVER_URL}/player?id=${player.id}`;
   try {
     const resp = await callTelegramApi('sendMessage', {
       chat_id: player.telegramID,

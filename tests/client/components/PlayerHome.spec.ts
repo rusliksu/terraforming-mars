@@ -2,7 +2,7 @@ import {shallowMount} from '@vue/test-utils';
 import {expect} from 'chai';
 import {globalConfig} from './getLocalVue';
 import PlayerHome from '@/client/components/PlayerHome.vue';
-import {fakeGameModel, fakePlayerViewModel} from './testHelpers';
+import {fakeGameModel, fakePlayerViewModel, fakePublicPlayerModel} from './testHelpers';
 import {FakeLocalStorage} from './FakeLocalStorage';
 import raw_settings from '@/genfiles/settings.json';
 import {Phase} from '@/common/Phase';
@@ -26,7 +26,12 @@ describe('PlayerHome', () => {
     window.history.replaceState({}, '', '/player?id=p-blue-id');
   });
 
-  function mountPlayerHome(phase: Phase = Phase.ACTION) {
+  function mountPlayerHome(phase: Phase = Phase.ACTION, playerOverrides = {}, multiplayer = true) {
+    const thisPlayer = fakePublicPlayerModel({
+      tableau: [{name: 'Copper'}] as any,
+      ...playerOverrides,
+    });
+    const players = multiplayer ? [thisPlayer, fakePublicPlayerModel({id: 'p-red-id' as any, color: 'red', name: 'red'})] : [thisPlayer];
     return shallowMount(PlayerHome, {
       ...globalConfig,
       parentComponent: {
@@ -36,7 +41,11 @@ describe('PlayerHome', () => {
         },
       } as any,
       props: {
-        playerView: fakePlayerViewModel({game: fakeGameModel({gameId: 'game-id-123', phase})}),
+        playerView: fakePlayerViewModel({
+          game: fakeGameModel({gameId: 'game-id-123', phase}),
+          players,
+          thisPlayer,
+        }),
         settings: raw_settings,
       },
     });
@@ -51,70 +60,62 @@ describe('PlayerHome', () => {
     expect(mountPlayerHome().exists()).to.be.true;
   });
 
-  it('does not render bot takeover control for a bare player URL', () => {
+  it('renders surrender in player actions without bot takeover', () => {
     const wrapper = mountPlayerHome();
     expect(wrapper.find('[data-test="bot-takeover-control"]').exists()).is.false;
+    expect(wrapper.find('[data-test="surrender-control"]').exists()).is.true;
   });
 
-  it('does not render bot takeover control after the game ends', () => {
-    window.history.replaceState({}, '', '/player?id=p-blue-id#botTakeoverToken=owner-token');
+  it('does not render surrender after the game ends or in solo', () => {
     const wrapper = mountPlayerHome(Phase.END);
-    expect(wrapper.find('[data-test="bot-takeover-control"]').exists()).is.false;
+    expect(wrapper.find('[data-test="surrender-control"]').exists()).is.false;
+    expect(mountPlayerHome(Phase.ACTION, {}, false).find('[data-test="surrender-control"]').exists()).is.false;
   });
 
-  it('sends the capability header from a fragment player URL', async () => {
-    const calls: Array<{url: string, init?: Parameters<typeof fetch>[1]}> = [];
-    global.fetch = async (input, init) => {
-      const url = String(input);
-      calls.push({url, init});
-      const isPost = init?.method === 'POST';
-      return {
-        ok: true,
-        json: async () => ({botPlayers: isPost && url.includes('action=start') ? ['p-blue-id'] : []}),
-        text: async () => '',
-      } as Response;
-    };
-    window.history.replaceState({}, '', '/player?id=p-blue-id#botTakeoverToken=owner%20token');
-
-    const wrapper = mountPlayerHome();
-    await flushPromises();
-    const control = wrapper.get('[data-test="bot-takeover-control"]');
-    expect(control.attributes('aria-checked')).eq('false');
-
-    await control.trigger('click');
-    await flushPromises();
-
-    const post = calls.find((call) => call.init?.method === 'POST');
-    expect(post?.url).eq('api/bot-takeover?action=start&gameId=game-id-123&playerId=p-blue-id');
-    expect(post?.init?.headers).deep.eq({'X-Bot-Takeover-Token': 'owner token'});
-    expect(control.attributes('aria-checked')).eq('true');
-
-    await control.trigger('click');
-    await flushPromises();
-    const posts = calls.filter((call) => call.init?.method === 'POST');
-    expect(posts[1].url).contains('action=stop');
-    expect(posts[1].init?.headers).deep.eq({'X-Bot-Takeover-Token': 'owner token'});
-    expect(control.attributes('aria-checked')).eq('false');
-  });
-
-  it('does not send a mutation when bot takeover confirmation is cancelled', async () => {
+  it('does not send surrender when confirmation is cancelled', async () => {
     const calls: Array<{url: string, init?: Parameters<typeof fetch>[1]}> = [];
     global.fetch = async (input, init) => {
       calls.push({url: String(input), init});
       return {
         ok: true,
-        json: async () => ({botPlayers: []}),
+        json: async () => ({surrenderedPlayers: []}),
         text: async () => '',
       } as Response;
     };
     window.confirm = () => false;
-    window.history.replaceState({}, '', '/player?id=p-blue-id#botTakeoverToken=shared-token');
 
     const wrapper = mountPlayerHome();
     await flushPromises();
-    await wrapper.get('[data-test="bot-takeover-control"]').trigger('click');
+    await wrapper.get('[data-test="surrender-control"]').trigger('click');
     await flushPromises();
 
     expect(calls.some((call) => call.init?.method === 'POST')).is.false;
+  });
+
+  it('sends irreversible surrender from the player page', async () => {
+    const calls: Array<{url: string, init?: Parameters<typeof fetch>[1]}> = [];
+    global.fetch = async (input, init) => {
+      const url = String(input);
+      calls.push({url, init});
+      return {
+        ok: true,
+        json: async () => ({
+          surrenderedPlayers: ['p-blue-id'],
+        }),
+        text: async () => '',
+      } as Response;
+    };
+
+    const wrapper = mountPlayerHome();
+    await flushPromises();
+    const surrender = wrapper.get('[data-test="surrender-control"]');
+
+    await surrender.trigger('click');
+    await flushPromises();
+
+    const post = calls.find((call) => call.init?.method === 'POST');
+    expect(post?.url).eq('api/surrender?playerId=p-blue-id');
+    expect(post?.init?.headers).eq(undefined);
+    expect(surrender.text()).eq('Surrendered');
   });
 });

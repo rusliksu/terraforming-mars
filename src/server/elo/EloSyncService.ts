@@ -583,11 +583,18 @@ function buildCompletedGameSummary(game: IGame, options: {
   const startedTimeMs = game.createdTime instanceof Date ? game.createdTime.getTime() : NaN;
   const hasStartedTime = Number.isFinite(startedTimeMs) && startedTimeMs > 0;
   const durationMs = hasStartedTime ? Math.max(0, completedTimeMs - startedTimeMs) : undefined;
+  const confirmedLeavePlayerIds = new Set(normalizeStringList(
+    options.confirmedLeavePlayerIds ?? Array.from(game.surrenderedPlayerIds ?? []),
+  ));
   const rankedPlayers = game.players.map((player) => ({
     player,
     vp: player.getVictoryPoints().total,
     corp: player.playedCards.filter(isICorporationCard).map(toName).join('|'),
+    surrendered: confirmedLeavePlayerIds.has(player.id),
   })).sort((left, right) => {
+    if (left.surrendered !== right.surrendered) {
+      return left.surrendered ? 1 : -1;
+    }
     if (left.vp !== right.vp) {
       return right.vp - left.vp;
     }
@@ -600,6 +607,7 @@ function buildCompletedGameSummary(game: IGame, options: {
   rankedPlayers.forEach((entry, idx) => {
     const previous = rankedPlayers[idx - 1];
     const place = previous !== undefined &&
+      previous.surrendered === entry.surrendered &&
       previous.vp === entry.vp &&
       previous.player.megaCredits === entry.player.megaCredits ?
       players[idx - 1].place :
@@ -621,7 +629,7 @@ function buildCompletedGameSummary(game: IGame, options: {
     durationMs,
     durationMinutes: durationMs !== undefined ? Math.round(durationMs / 60_000) : undefined,
     botPlayerIds: normalizeStringList(options.botPlayerIds ?? Array.from(game.botPlayerIds ?? [])),
-    confirmedLeavePlayerIds: normalizeStringList(options.confirmedLeavePlayerIds ?? Array.from(game.botTakeoverPlayerIds ?? [])),
+    confirmedLeavePlayerIds: Array.from(confirmedLeavePlayerIds),
     completionOutcomeKnown: true,
     server: process.env.ELO_SERVER_NAME ?? 'server',
     map: String(game.gameOptions.boardName ?? ''),

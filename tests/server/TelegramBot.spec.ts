@@ -6,10 +6,8 @@ import * as os from 'os';
 import * as path from 'path';
 import {BotTakeoverManager} from '../../src/server/bot/BotTakeoverManager';
 import {
-  buildBotTakeoverNoticeText,
   buildTurnNoticeText,
   deleteTurnNotice,
-  sendBotTakeoverNotice,
   sendGameStartNotice,
   sendTurnNotice,
 } from '../../src/server/TelegramBot';
@@ -168,32 +166,6 @@ describe('TelegramBot', () => {
     expect(text).not.includes('Напоминание: твой ход!');
   });
 
-  it('builds a useful bot takeover notice with game context', () => {
-    const text = buildBotTakeoverNoticeText({
-      name: 'Руслан',
-      id: 'p-ruslan',
-      telegramID: '123456',
-      game: {
-        id: 'g5d00c8e62c26',
-        generation: 8,
-        phase: 'action',
-        players: [
-          {name: 'Руслан', color: 'red'},
-          {name: 'Владлен', color: 'blue'},
-        ],
-        gameOptions: {boardName: 'ELYSIUM'},
-      },
-    }, {
-      name: 'Владлен',
-      id: 'p-vladlen',
-    });
-
-    expect(text).includes('Внимание: бот включен за Владлен.');
-    expect(text).includes('Игра g5d00c8e · Gen 8 · action · elysium · 2P');
-    expect(text).includes('Игроки: Руслан (красный), Владлен (синий)');
-    expect(text).includes('https://tm.knightbyte.win/game?id=g5d00c8e62c26');
-  });
-
   it('suppresses turn notice while bot takeover is active', async () => {
     const original = BotTakeoverManager.INSTANCE.isActive;
     BotTakeoverManager.INSTANCE.isActive = (() => true) as typeof BotTakeoverManager.INSTANCE.isActive;
@@ -341,7 +313,6 @@ describe('TelegramBot', () => {
           name: 'Руслан',
           id: 'p-ruslan',
           telegramID: '123456',
-          botTakeoverToken: 'owner token',
           lastNoticeMessageId: -1,
           game: {
             id: 'g-telegram',
@@ -356,7 +327,8 @@ describe('TelegramBot', () => {
 
       const sendCalls = telegram.calls.filter((call) => call.path.includes('/sendMessage'));
       expect(sendCalls).has.length(1);
-      expect(sendCalls[0].body.text).contains('/player?id=p-ruslan#botTakeoverToken=owner%20token');
+      expect(sendCalls[0].body.text).contains('/player?id=p-ruslan');
+      expect(sendCalls[0].body.text).not.contain('#botTakeoverToken=');
       expect(logs.messages).has.length(1);
       expect(logs.messages[0]).contains('Telegram start notice sent');
       expect(logs.messages[0]).contains('game=g-telegram');
@@ -386,49 +358,6 @@ describe('TelegramBot', () => {
       const text = telegram.calls[0].body.text as string;
       expect(text).contains('/player?id=p-legacy');
       expect(text).not.contain('#botTakeoverToken=');
-    } finally {
-      logs.restore();
-      telegram.restore();
-    }
-  });
-
-  it('logs successful bot takeover notice sends without telegram chat id', async () => {
-    const telegram = stubTelegramApi({ok: true, result: {message_id: 789}});
-    const logs = captureConsole('log');
-    try {
-      await withTelegramEnabled(async () => {
-        const sent = await sendBotTakeoverNotice({
-          name: 'Руслан',
-          id: 'p-ruslan',
-          telegramID: '123456',
-          game: {
-            id: 'g-telegram',
-            generation: 1,
-            phase: 'action',
-            players: [
-              {name: 'Руслан', color: 'red'},
-              {name: 'Владлен', color: 'blue'},
-            ],
-          },
-        }, {
-          name: 'Владлен',
-          id: 'p-vladlen',
-        });
-
-        expect(sent).eq(true);
-      });
-
-      const sendCalls = telegram.calls.filter((call) => call.path.includes('/sendMessage'));
-      expect(sendCalls).has.length(1);
-      expect(sendCalls[0].body.chat_id).eq('123456');
-      expect(sendCalls[0].body.text).contains('Внимание: бот включен за Владлен.');
-      expect(logs.messages).has.length(1);
-      expect(logs.messages[0]).contains('Telegram bot takeover notice sent');
-      expect(logs.messages[0]).contains('game=g-telegram');
-      expect(logs.messages[0]).contains('recipient=p-ruslan');
-      expect(logs.messages[0]).contains('botPlayer=p-vladlen');
-      expect(logs.messages[0]).contains('message=789');
-      expect(logs.messages[0]).does.not.contain('123456');
     } finally {
       logs.restore();
       telegram.restore();

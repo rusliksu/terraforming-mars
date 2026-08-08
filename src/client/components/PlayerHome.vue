@@ -2,17 +2,6 @@
   <div id="player-home" :class="(game.turmoil ? 'with-turmoil': '')">
     <TopBar :playerView="playerView" />
 
-    <div v-if="showBotTakeoverControl" class="player_home_block bot-takeover-control">
-      <button
-        data-test="bot-takeover-control"
-        role="switch"
-        :aria-checked="botTakeoverActive ? 'true' : 'false'"
-        :disabled="botTakeoverBusy"
-        @click="toggleBotTakeover">
-        {{botTakeoverActive ? 'Return control to player' : 'Let bot play for me'}}
-      </button>
-    </div>
-
     <div v-if="game.phase === 'end'">
       <div class="player_home_block">
         <DynamicTitle title="This game is over!" :color="thisPlayer.color"/>
@@ -60,6 +49,15 @@
         <a name="actions" class="player_home_anchor"></a>
         <DynamicTitle title="Actions" :color="thisPlayer.color"/>
         <WaitingFor v-if="game.phase !== 'end'" :playerView="playerView" :waitingfor="playerView.waitingFor"/>
+        <div v-if="showSurrenderControl" class="surrender-controls">
+          <button
+            data-test="surrender-control"
+            class="surrender-control"
+            :disabled="surrenderBusy || surrendered"
+            @click="surrenderGame">
+            {{surrendered ? 'Surrendered' : 'Surrender'}}
+          </button>
+        </div>
       </div>
 
       <div class="player_home_block player_home_block--hand" v-if="playerView.draftedCards.length > 0">
@@ -192,8 +190,8 @@ import {Phase} from '@/common/Phase';
 import {HomeMixin} from '@/client/mixins/HomeMixin';
 
 type PlayerHomeModel = {
-  botTakeoverActive: boolean;
-  botTakeoverBusy: boolean;
+  surrenderBusy: boolean;
+  surrendered: boolean;
   showHand: boolean;
   showActiveCards: boolean;
   showAutomatedCards: boolean;
@@ -215,8 +213,8 @@ export default defineComponent({
   data(): PlayerHomeModel {
     const preferences = getPreferences();
     return {
-      botTakeoverActive: false,
-      botTakeoverBusy: false,
+      surrenderBusy: false,
+      surrendered: false,
       showHand: !preferences.hide_hand,
       showActiveCards: !preferences.hide_active_cards,
       showAutomatedCards: !preferences.hide_automated_cards,
@@ -250,11 +248,9 @@ export default defineComponent({
     game(): GameModel {
       return this.playerView.game;
     },
-    botTakeoverToken(): string {
-      return new URLSearchParams(window.location.hash.slice(1)).get('botTakeoverToken') ?? '';
-    },
-    showBotTakeoverControl(): boolean {
-      return this.botTakeoverToken !== '' && this.game.phase !== Phase.END;
+    showSurrenderControl(): boolean {
+      return this.playerView.players.length > 1 &&
+        (this.game.phase === Phase.RESEARCH || this.game.phase === Phase.ACTION);
     },
     CardType(): typeof CardType {
       return CardType;
@@ -295,51 +291,32 @@ export default defineComponent({
     KeyboardShortcuts,
   },
   methods: {
-    async refreshBotTakeover(): Promise<void> {
-      if (!this.showBotTakeoverControl) {
-        return;
-      }
-      try {
-        const query = new URLSearchParams({gameId: this.game.gameId});
-        const response = await fetch('api/bot-takeover?' + query.toString());
-        if (!response.ok) {
-          return;
-        }
-        const payload = await response.json() as {botPlayers?: Array<string>};
-        this.botTakeoverActive = payload.botPlayers?.includes(this.playerView.id) === true;
-      } catch (_error) {
-        // Bot status is optional; the mutation remains server-authorized.
-      }
+    refreshSurrenderState(): void {
+      this.surrendered = this.thisPlayer.isSurrendered;
     },
-    async toggleBotTakeover(): Promise<void> {
-      if (this.botTakeoverBusy || !this.showBotTakeoverControl) {
+    async surrenderGame(): Promise<void> {
+      if (this.surrenderBusy || this.surrendered || !this.showSurrenderControl) {
         return;
       }
-      const action = this.botTakeoverActive ? 'stop' : 'start';
-      const confirmed = window.confirm(`${action === 'start' ? 'Start' : 'Stop'} bot for ${this.thisPlayer.name}?`);
+      const confirmed = window.confirm(`Surrender as ${this.thisPlayer.name}? This cannot be undone.`);
       if (!confirmed) {
         return;
       }
-      this.botTakeoverBusy = true;
+      this.surrenderBusy = true;
       try {
         const query = new URLSearchParams({
-          action,
-          gameId: this.game.gameId,
           playerId: this.playerView.id,
         });
-        const response = await fetch('api/bot-takeover?' + query.toString(), {
-          method: 'POST',
-          headers: {'X-Bot-Takeover-Token': this.botTakeoverToken},
-        });
+        const response = await fetch('api/surrender?' + query.toString(), {method: 'POST'});
         if (!response.ok) {
           throw new Error(await response.text());
         }
-        const payload = await response.json() as {botPlayers?: Array<string>};
-        this.botTakeoverActive = payload.botPlayers?.includes(this.playerView.id) === true;
+        const payload = await response.json() as {surrenderedPlayers?: Array<string>};
+        this.surrendered = payload.surrenderedPlayers?.includes(this.playerView.id) === true;
       } catch (error) {
         alert(error instanceof Error ? error.message : String(error));
       } finally {
-        this.botTakeoverBusy = false;
+        this.surrenderBusy = false;
       }
     },
     isPlayerActing(playerView: PlayerViewModel) : boolean {
@@ -384,19 +361,24 @@ export default defineComponent({
     },
   },
   mounted() {
-    void this.refreshBotTakeover();
+    this.refreshSurrenderState();
   },
 });
 
 </script>
 
 <style scoped>
-.bot-takeover-control button {
+.surrender-controls button {
   cursor: pointer;
   padding: 6px 10px;
+  margin: 6px 8px 0 0;
 }
 
-.bot-takeover-control button[disabled] {
+.surrender-controls button[disabled] {
   cursor: wait;
+}
+
+.surrender-control {
+  color: #ffd6d6;
 }
 </style>

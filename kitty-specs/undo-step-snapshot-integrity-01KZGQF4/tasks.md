@@ -20,10 +20,10 @@
 **Estimated prompt size**: ~260 lines
 
 - [x] T001 Добавить regression, который захватывает journal, мутирует live `gameLog`, `globalParameterSteps` и nested mutable state и проверяет неизменность `rootSnapshot`.
-- [x] T002 Добавить многошаговый Giant Ice Asteroid regression с двумя step-back и проверкой board/global contribution totals.
+- [ ] T002 Добавить многошаговый Giant Ice Asteroid regression с двумя step-back и проверкой board/global contribution totals.
 - [x] T003 После подтверждённого RED добавить минимальный detached JSON clone на границе первого захвата root в `ActionReplay.ts`.
 - [x] T004 Обновить `docs/architecture/step-undo-experiment-plan.md` инвариантом ownership/immutability и перечислением regression classes.
-- [x] T005 Выполнить targeted tests, server lint/build gates, `git diff --check` и ручной allowlist review.
+- [ ] T005 Выполнить targeted tests, server lint/build gates, `git diff --check` и ручной allowlist review.
 
 ### Implementation sketch
 

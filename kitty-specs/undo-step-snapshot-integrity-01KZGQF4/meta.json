@@ -6,6 +6,7 @@
   "mission_number": null,
   "mission_slug": "undo-step-snapshot-integrity-01KZGQF4",
   "mission_type": "software-dev",
+  "pr_bound": true,
   "purpose_context": "The live Giant Ice Asteroid incident showed correct board oceans but inflated global-parameter contribution totals. Scope analysis traced this to mutable references retained by ActionReplay root snapshots, with broader risk across logs and nested expansion state.",
   "purpose_tldr": "Prevent experimental step undo from replaying mutations already leaked into its root snapshot.",
   "slug": "undo-step-snapshot-integrity-01KZGQF4",

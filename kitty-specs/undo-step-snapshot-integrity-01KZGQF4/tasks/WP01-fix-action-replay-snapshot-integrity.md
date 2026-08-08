@@ -22,7 +22,7 @@ subtasks:
 - T005
 phase: Phase 1 - Structural bug fix
 assignee: codex
-agent: codex
+agent: "codex"
 history:
 - timestamp: '2026-08-08T13:06:23Z'
   agent: codex
@@ -206,3 +206,4 @@ Review the boundary, not only the incident field. Reject a patch that clones onl
 ## Activity Log
 
 - 2026-08-08T13:11:51Z – codex – Approved scope; implementing in pre-existing task-owned Windows worktree because primary checkout is dirty and charter/workspace bootstrap is unavailable.
+- 2026-08-08T13:37:35Z – codex – Implementation complete; two-step Giant Ice Asteroid regression and all verification gates pass.

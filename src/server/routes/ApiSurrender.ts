@@ -85,16 +85,20 @@ export class ApiSurrender extends Handler {
       responses.badRequest(req, res, 'cannot surrender a solo game');
       return;
     }
-    if (game.phase !== Phase.RESEARCH && game.phase !== Phase.ACTION) {
-      responses.badRequest(req, res, 'can only surrender during research or action phase');
+    if (game.phase !== Phase.ACTION) {
+      responses.badRequest(req, res, 'can only surrender during the action phase');
       return;
     }
-
     let player: IPlayer;
     try {
       player = game.getPlayerById(playerId);
     } catch (_err) {
       responses.notFound(req, res, 'player not found');
+      return;
+    }
+
+    if (game.activePlayer.id !== player.id) {
+      responses.badRequest(req, res, 'only the active player can surrender');
       return;
     }
 

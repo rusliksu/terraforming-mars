@@ -1291,6 +1291,28 @@ export class Player implements IPlayer {
     return option;
   }
 
+  private surrenderOption(): PlayerInput {
+    return new SelectOption('Surrender this game', 'Surrender').andThen(() => {
+      const confirmation = new OrOptions()
+        .setTitle('Are you sure you want to surrender?')
+        .setButtonLabel('Confirm');
+
+      confirmation.options.push(new SelectOption('Surrender this game', 'Surrender').andThen(() => {
+        this.game.surrenderedPlayerIds.add(this.id);
+        this.pass();
+        return undefined;
+      }));
+      confirmation.options.push(new SelectOption('Continue playing', 'Continue').andThen(() => {
+        // The outer action callback increments these after the confirmation closes.
+        this.actionsTakenThisRound--;
+        this.actionsTakenThisGame--;
+        return undefined;
+      }));
+
+      return confirmation;
+    });
+  }
+
   public takeActionForFinalGreenery(): void {
     const resolveFinalGreeneryDeferredActions = () => {
       this.game.deferredActions.runAll(() => this.takeActionForFinalGreenery());
@@ -1798,6 +1820,13 @@ export class Player implements IPlayer {
     const sellPatents = new SellPatentsStandardProject();
     if (sellPatents.canAct(this)) {
       action.options.push(sellPatents.action(this));
+    }
+
+    if (this.game.players.length > 1 &&
+      this.game.players.filter((player) => !this.game.surrenderedPlayerIds.has(player.id)).length > 1 &&
+      !this.game.botPlayerIds.has(this.id) &&
+      !this.game.surrenderedPlayerIds.has(this.id)) {
+      action.options.push(this.surrenderOption());
     }
 
     // Propose undo action only if you have done one action this turn

@@ -34,7 +34,7 @@ import {TiredEarth} from '../src/server/cards/pathfinders/TiredEarth';
 import {Tag} from '../src/common/cards/Tag';
 import {restoreTestDatabase, restoreTestGameLoader, setTestDatabase, setTestGameLoader} from './testing/setup';
 import {InMemoryDatabase} from './testing/InMemoryDatabase';
-import {Score} from '../src/server/IGame';
+import {IGame, Score} from '../src/server/IGame';
 import {IGameLoader} from '../src/server/database/IGameLoader';
 import {ColonyName} from '../src/common/colonies/ColonyName';
 import {Ceres} from '../src/server/colonies/Ceres';
@@ -59,6 +59,55 @@ function noopGameLoader(): IGameLoader {
 }
 
 describe('Game', () => {
+  it('delegates a normal save once and stores the returned Promise', () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const saveGamePromise = Promise.resolve();
+    const savedGames: Array<IGame> = [];
+    const game = Game.newInstance(
+      'game-save-port',
+      [player],
+      player,
+      'spectatorid',
+      {},
+      0,
+      (savedGame) => {
+        savedGames.push(savedGame);
+        return saveGamePromise;
+      },
+    );
+
+    savedGames.length = 0;
+    game.save();
+
+    expect(savedGames).deep.eq([game]);
+    expect(game.saveGamePromise).eq(saveGamePromise);
+  });
+
+  it('does not persist or replace the Promise in simulation mode', () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const savedGames: Array<IGame> = [];
+    const game = Game.newInstance(
+      'game-save-port-simulation',
+      [player],
+      player,
+      'spectatorid',
+      {},
+      0,
+      (savedGame) => {
+        savedGames.push(savedGame);
+        return Promise.resolve();
+      },
+    );
+
+    savedGames.length = 0;
+    const previousSaveGamePromise = game.saveGamePromise;
+    game.simulationMode = true;
+    game.save();
+
+    expect(savedGames).is.empty;
+    expect(game.saveGamePromise).eq(previousSaveGamePromise);
+  });
+
   it('should initialize with right defaults', () => {
     const player = TestPlayer.BLUE.newPlayer();
     const player2 = TestPlayer.RED.newPlayer();
@@ -1050,7 +1099,7 @@ describe('Game', () => {
     assertIsJSON(serialized);
     const serializedKeys = Object.keys(serialized);
 
-    const unserializedFieldsInGame: Array<keyof Game> = [
+    const unserializedFieldsInGame: Array<keyof Game | 'saveGame'> = [
       'actionReplayState',
       'createdTime',
       'discardedColonies',
@@ -1061,6 +1110,7 @@ describe('Game', () => {
       'monsInsuranceOwner',
       'resettable',
       'rng',
+      'saveGame',
       'saveGamePromise',
       'simulationMode',
       'underworldDraftEnabled',

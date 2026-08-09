@@ -1,0 +1,1185 @@
+{
+  "repo_name": "terraforming-mars-tm-codemap",
+  "generated_at": "2026-08-06T19:32:05.055833Z",
+  "generated_from_commit": "08bc5f411e41b4b827399ed8d4271c6c0121dedf",
+  "scope": [
+    ".",
+    ".github",
+    "assets",
+    "docs",
+    "elo",
+    "kitty-specs",
+    "openspec",
+    "scripts",
+    "src",
+    "tests",
+    "vscode.sample"
+  ],
+  "nodes": [
+    {
+      "id": "server-entry",
+      "label": "HTTP server",
+      "type": "service",
+      "path": "src/server/server.ts",
+      "role": "HTTP/HTTPS entry point and metrics",
+      "entrypoints": [
+        {
+          "path": "src/server/server.ts",
+          "symbol": "processRequest(req, res)",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/server/requestProcessor.spec.ts",
+          "symbol": "describe('requestProcessor'"
+        }
+      ],
+      "constraints": [
+        "TLS зависит от KEY_PATH и CERT_PATH."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/server.ts",
+          "symbol": "import prometheus from 'prom-client'",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "request-routing",
+      "label": "Request routing",
+      "type": "service",
+      "path": "src/server/server/requestProcessor.ts",
+      "role": "Path registry and handler dispatch",
+      "entrypoints": [
+        {
+          "path": "src/server/server/requestProcessor.ts",
+          "symbol": "export async function processRequest",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/server/requestProcessor.spec.ts",
+          "symbol": "describe('requestProcessor'"
+        }
+      ],
+      "constraints": [
+        "Неизвестный путь получает notFound."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/server/requestProcessor.ts",
+          "symbol": "const handlers: Map<string, IHandler>",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/server/requestProcessor.ts",
+          "symbol": "await handler.processRequest(req, res, ctx)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "api-handlers",
+      "label": "API and page handlers",
+      "type": "api",
+      "path": "src/server/routes",
+      "role": "HTTP handlers for creation, reads and player input",
+      "entrypoints": [
+        {
+          "path": "src/server/routes/ApiCreateGame.ts",
+          "symbol": "export class ApiCreateGame",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/routes/ApiCreateGame.spec.ts",
+          "symbol": "describe('ApiCreateGame'"
+        }
+      ],
+      "constraints": [
+        "Route-файлы сгруппированы."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/routes/ApiCreateGame.ts",
+          "symbol": "Game.newInstance",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/routes/PlayerInput.ts",
+          "symbol": "player.process(entity)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "client-ui",
+      "label": "Vue client",
+      "type": "ui",
+      "path": "src/client",
+      "role": "Browser UI and API fetches",
+      "entrypoints": [
+        {
+          "path": "src/client/components/App.vue",
+          "symbol": "export default defineComponent",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/components/App.spec.ts",
+          "symbol": "describe('App'"
+        }
+      ],
+      "constraints": [
+        "Игровые действия идут через PLAYER_INPUT."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/components/App.vue",
+          "symbol": "import {paths} from '@/common/app/paths'",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/client/components/create/CreateGameForm.vue",
+          "symbol": "fetch(paths.API_CREATEGAME",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/client/components/WaitingFor.vue",
+          "symbol": "paths.PLAYER_INPUT",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "common-contracts",
+      "label": "Shared contracts",
+      "type": "contract",
+      "path": "src/common",
+      "role": "Shared paths, models, IDs and inputs",
+      "entrypoints": [
+        {
+          "path": "src/common/app/paths.ts",
+          "symbol": "export const paths",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/common/Timer.spec.ts",
+          "symbol": "describe('Timer'"
+        }
+      ],
+      "constraints": [],
+      "evidence": [
+        {
+          "path": "src/common/app/paths.ts",
+          "symbol": "API_CREATEGAME",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/common/app/paths.ts",
+          "symbol": "API_GAME",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "game-domain",
+      "label": "Game domain",
+      "type": "domain",
+      "path": "src/server/Game.ts",
+      "role": "Game aggregate, rules and save triggers",
+      "entrypoints": [
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "export class Game",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/Game.spec.ts",
+          "symbol": "describe('Game'"
+        }
+      ],
+      "constraints": [
+        "State lives in memory and is serialized through GameLoader/Database."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "GameSetup.newBoard",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "DeferredActionsQueue",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "this.saveGame(this)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "save-port",
+      "label": "Save port",
+      "type": "contract",
+      "path": "src/server/Game.ts",
+      "role": "Injected persistence function used by Game.save()",
+      "entrypoints": [
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "type SaveGame = (game: IGame) => Promise<void>",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/Game.spec.ts",
+          "symbol": "delegates a normal save once and stores the returned Promise"
+        },
+        {
+          "path": "tests/Game.spec.ts",
+          "symbol": "does not persist or replace the Promise in simulation mode"
+        }
+      ],
+      "constraints": [
+        "Контракт не меняет route contract и сохраняет Promise identity.",
+        "В simulationMode порт не вызывается."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "type SaveGame = (game: IGame) => Promise<void>",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "this.saveGamePromise = this.saveGame(this)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "player-domain",
+      "label": "Player domain",
+      "type": "domain",
+      "path": "src/server/Player.ts",
+      "role": "Player state, turns and waiting prompts",
+      "entrypoints": [
+        {
+          "path": "src/server/Player.ts",
+          "symbol": "export class Player",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/Player.spec.ts",
+          "symbol": "describe('Player'"
+        }
+      ],
+      "constraints": [],
+      "evidence": [
+        {
+          "path": "src/server/Player.ts",
+          "symbol": "public takeAction",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/Player.ts",
+          "symbol": "this.game.defer",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "setup-cards",
+      "label": "Setup and cards",
+      "type": "domain",
+      "path": "src/server/GameSetup.ts",
+      "role": "Board setup and game-start composition",
+      "entrypoints": [
+        {
+          "path": "src/server/GameSetup.ts",
+          "symbol": "export class GameSetup",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/GameSetup.spec.ts",
+          "symbol": "describe('GameSetup'"
+        }
+      ],
+      "constraints": [],
+      "evidence": [
+        {
+          "path": "src/server/GameSetup.ts",
+          "symbol": "public static newBoard",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "input-deferred",
+      "label": "Inputs and deferred actions",
+      "type": "queue",
+      "path": "src/server/deferredActions",
+      "role": "In-process action queue and input abstractions",
+      "entrypoints": [
+        {
+          "path": "src/server/deferredActions/DeferredActionsQueue.ts",
+          "symbol": "export class DeferredActionsQueue",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/routes/PlayerInput.spec.ts",
+          "symbol": "describe('PlayerInput'"
+        }
+      ],
+      "constraints": [
+        "External queue not confirmed."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/deferredActions/DeferredActionsQueue.ts",
+          "symbol": "public runAll",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/PlayerInput.ts",
+          "symbol": "export abstract class BasePlayerInput",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "loader-cache",
+      "label": "Game loader and cache",
+      "type": "cache",
+      "path": "src/server/database/GameLoader.ts",
+      "role": "Resident cache, lazy restore and save lifecycle",
+      "entrypoints": [
+        {
+          "path": "src/server/database/GameLoader.ts",
+          "symbol": "export class GameLoader",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/database/GameLoader.spec.ts",
+          "symbol": "describe('GameLoader'"
+        }
+      ],
+      "constraints": [],
+      "evidence": [
+        {
+          "path": "src/server/database/GameLoader.ts",
+          "symbol": "public async getGame",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/database/GameLoader.ts",
+          "symbol": "return Database.getInstance().saveGame(game)",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/database/GameLoader.ts",
+          "symbol": "EloSyncService.getInstance().recordCompletedGame(game)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "database-facade",
+      "label": "Database facade",
+      "type": "database",
+      "path": "src/server/database/Database.ts",
+      "role": "Storage selection and IDatabase facade",
+      "entrypoints": [
+        {
+          "path": "src/server/database/Database.ts",
+          "symbol": "public static getInstance",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/database/SQLite.spec.ts",
+          "symbol": "describeDatabaseSuite"
+        }
+      ],
+      "constraints": [
+        "POSTGRES_HOST/LOCAL_FS_DB select implementations."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/database/Database.ts",
+          "symbol": "return new SQLite()",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/database/Database.ts",
+          "symbol": "return new PostgreSQL()",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/database/Database.ts",
+          "symbol": "return new LocalFilesystem()",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "sqlite-storage",
+      "label": "SQLite",
+      "type": "database",
+      "path": "src/server/database/SQLite.ts",
+      "role": "Local relational persistence",
+      "entrypoints": [
+        {
+          "path": "src/server/database/SQLite.ts",
+          "symbol": "export class SQLite",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/database/SQLite.spec.ts",
+          "symbol": "describeDatabaseSuite"
+        }
+      ],
+      "constraints": [],
+      "evidence": [
+        {
+          "path": "src/server/database/SQLite.ts",
+          "symbol": "CREATE TABLE IF NOT EXISTS games",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "postgres-storage",
+      "label": "PostgreSQL",
+      "type": "database",
+      "path": "src/server/database/PostgreSQL.ts",
+      "role": "PostgreSQL implementation of IDatabase",
+      "entrypoints": [
+        {
+          "path": "src/server/database/PostgreSQL.ts",
+          "symbol": "export class PostgreSQL",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/integration/PostgreSQL.spec.ts",
+          "symbol": "describeDatabaseSuite"
+        }
+      ],
+      "constraints": [],
+      "evidence": [
+        {
+          "path": "src/server/database/PostgreSQL.ts",
+          "symbol": "export class PostgreSQL",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "filesystem-storage",
+      "label": "Filesystem DB",
+      "type": "database",
+      "path": "src/server/database/LocalFilesystem.ts",
+      "role": "Local filesystem implementation",
+      "entrypoints": [
+        {
+          "path": "src/server/database/LocalFilesystem.ts",
+          "symbol": "export class LocalFilesystem",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/database/databaseSuite.ts",
+          "symbol": "export function describeDatabaseSuite"
+        }
+      ],
+      "constraints": [
+        "Only shared database suite found."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/database/LocalFilesystem.ts",
+          "symbol": "export class LocalFilesystem",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "auth-sessions",
+      "label": "Auth and sessions",
+      "type": "auth",
+      "path": "src/server/server/auth",
+      "role": "Discord OAuth and persisted sessions",
+      "entrypoints": [
+        {
+          "path": "src/server/server/auth/SessionManager.ts",
+          "symbol": "export class SessionManager",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/server/auth/SessionManager.spec.ts",
+          "symbol": "describe('SessionManager'"
+        }
+      ],
+      "constraints": [
+        "OAuth secrets are not included."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/server/auth/SessionManager.ts",
+          "symbol": "this.database.createSession(session)",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/server/auth/discord.ts",
+          "symbol": "https://discord.com/api/oauth2/token",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "bot-takeover",
+      "label": "Bot takeover",
+      "type": "worker",
+      "path": "src/server/bot/BotTakeoverManager.ts",
+      "role": "Child-process lifecycle for bots",
+      "entrypoints": [
+        {
+          "path": "src/server/bot/BotTakeoverManager.ts",
+          "symbol": "export class BotTakeoverManager",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/routes/ApiBotTakeover.spec.ts",
+          "symbol": "describe('ApiBotTakeover'"
+        }
+      ],
+      "constraints": [],
+      "evidence": [
+        {
+          "path": "src/server/bot/BotTakeoverManager.ts",
+          "symbol": "this.spawnProcess(",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "elo-sync",
+      "label": "ELO sync",
+      "type": "worker",
+      "path": "src/server/elo/EloSyncService.ts",
+      "role": "Completed-game ELO persistence",
+      "entrypoints": [
+        {
+          "path": "src/server/elo/EloSyncService.ts",
+          "symbol": "export class EloSyncService",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/server/EloSyncService.spec.ts",
+          "symbol": "describe('EloSyncService'"
+        }
+      ],
+      "constraints": [],
+      "evidence": [
+        {
+          "path": "src/server/elo/EloSyncService.ts",
+          "symbol": "recordCompletedGame(game",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/elo/EloSyncService.ts",
+          "symbol": "writeJsonAtomic(this.primaryPath, payload",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "external",
+      "label": "External dependencies",
+      "type": "external",
+      "path": "package.json",
+      "role": "Prometheus, Discord, Telegram and optional DB drivers",
+      "entrypoints": [
+        {
+          "path": "package.json",
+          "symbol": "\"prom-client\"",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/server/TelegramBot.spec.ts",
+          "symbol": "describe('TelegramBot'"
+        }
+      ],
+      "constraints": [
+        "Credentials are read from env."
+      ],
+      "evidence": [
+        {
+          "path": "package.json",
+          "symbol": "\"prom-client\"",
+          "status": "confirmed"
+        },
+        {
+          "path": "package.json",
+          "symbol": "\"better-sqlite3\"",
+          "status": "confirmed"
+        },
+        {
+          "path": "package.json",
+          "symbol": "\"pg\"",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/TelegramBot.ts",
+          "symbol": "api.telegram.org",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/server/auth/discord.ts",
+          "symbol": "https://discord.com/api/oauth2/token",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "simulation-host",
+      "label": "Simulation host",
+      "type": "tool",
+      "path": "src/server/tools/tm-sim-host.ts",
+      "role": "JSON-lines branching simulation host",
+      "entrypoints": [
+        {
+          "path": "src/server/tools/tm-sim-host.ts",
+          "symbol": "export class TmSimHost",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/server/tools/TmSimHost.spec.ts",
+          "symbol": "describe('TmSimHost'"
+        }
+      ],
+      "constraints": [
+        "Persistence and Telegram are prohibited."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/tools/tm-sim-host.ts",
+          "symbol": "async function main()",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/tools/tm-sim-host.ts",
+          "symbol": "deserializeSimulationGame(rootSnapshot)",
+          "status": "confirmed"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "server-entry",
+      "to": "request-routing",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/server.ts",
+          "symbol": "processRequest(req, res)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "request-routing",
+      "to": "api-handlers",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/server/requestProcessor.ts",
+          "symbol": "await handler.processRequest(req, res, ctx)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "request-routing",
+      "to": "common-contracts",
+      "type": "imports",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/server/requestProcessor.ts",
+          "symbol": "paths.API_CREATEGAME",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "request-routing",
+      "to": "auth-sessions",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/server/requestProcessor.ts",
+          "symbol": "SessionManager.getInstance()",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "request-routing",
+      "to": "loader-cache",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/server/requestProcessor.ts",
+          "symbol": "GameLoader.getInstance()",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "client-ui",
+      "to": "common-contracts",
+      "type": "imports",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/App.vue",
+          "symbol": "import {paths} from '@/common/app/paths'",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "client-ui",
+      "to": "api-handlers",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/create/CreateGameForm.vue",
+          "symbol": "fetch(paths.API_CREATEGAME",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "api-handlers",
+      "to": "common-contracts",
+      "type": "imports",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/routes/ApiCreateGame.ts",
+          "symbol": "NewGameConfig",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "api-handlers",
+      "to": "game-domain",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/routes/ApiCreateGame.ts",
+          "symbol": "Game.newInstance",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "api-handlers",
+      "to": "loader-cache",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/routes/ApiGame.ts",
+          "symbol": "ctx.gameLoader.getGame",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "api-handlers",
+      "to": "input-deferred",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/routes/PlayerInput.ts",
+          "symbol": "player.process(entity)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "api-handlers",
+      "to": "bot-takeover",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/routes/ApiCreateGame.ts",
+          "symbol": "this.botManager.start",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "api-handlers",
+      "to": "external",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/routes/ApiCreateGame.ts",
+          "symbol": "sendGameStartNotice(p)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "game-domain",
+      "to": "setup-cards",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "GameSetup.newBoard",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "game-domain",
+      "to": "input-deferred",
+      "type": "imports",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "DeferredActionsQueue",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "game-domain",
+      "to": "save-port",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "this.saveGame(this)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "save-port",
+      "to": "loader-cache",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/database/GameLoader.ts",
+          "symbol": "Game.deserialize(serializedGame, {saveGame: this.saveGame.bind(this)})",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/routes/ApiCreateGame.ts",
+          "symbol": "ctx.gameLoader.saveGame.bind(ctx.gameLoader)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "player-domain",
+      "to": "game-domain",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/Player.ts",
+          "symbol": "this.game.defer",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "input-deferred",
+      "to": "player-domain",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/deferredActions/DeferredActionsQueue.ts",
+          "symbol": "runAllFor(player",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "loader-cache",
+      "to": "database-facade",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/database/GameLoader.ts",
+          "symbol": "return Database.getInstance().saveGame(game)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "loader-cache",
+      "to": "elo-sync",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/database/GameLoader.ts",
+          "symbol": "EloSyncService.getInstance().recordCompletedGame(game)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "database-facade",
+      "to": "sqlite-storage",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/database/Database.ts",
+          "symbol": "return new SQLite()",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "database-facade",
+      "to": "postgres-storage",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/database/Database.ts",
+          "symbol": "return new PostgreSQL()",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "database-facade",
+      "to": "filesystem-storage",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/database/Database.ts",
+          "symbol": "return new LocalFilesystem()",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "auth-sessions",
+      "to": "database-facade",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/server/auth/SessionManager.ts",
+          "symbol": "this.database.createSession(session)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "auth-sessions",
+      "to": "external",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/server/auth/discord.ts",
+          "symbol": "https://discord.com/api/oauth2/token",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "server-entry",
+      "to": "external",
+      "type": "imports",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/server.ts",
+          "symbol": "import prometheus from 'prom-client'",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "bot-takeover",
+      "to": "external",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/bot/BotTakeoverManager.ts",
+          "symbol": "this.spawnProcess(",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "simulation-host",
+      "to": "game-domain",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/tools/tm-sim-host.ts",
+          "symbol": "deserializeSimulationGame(rootSnapshot)",
+          "status": "confirmed"
+        }
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "id": "flow-create",
+      "name": "Создание игры",
+      "trigger": "POST paths.API_CREATEGAME",
+      "steps": [
+        "client-ui",
+        "common-contracts",
+        "request-routing",
+        "api-handlers",
+        "game-domain",
+        "setup-cards",
+        "save-port",
+        "loader-cache",
+        "database-facade"
+      ],
+      "outcome": "Игра создаётся, добавляется в cache и сохраняется."
+    },
+    {
+      "id": "flow-load",
+      "name": "Загрузка игры",
+      "trigger": "GET API_GAME/API_PLAYER/API_SPECTATOR",
+      "steps": [
+        "client-ui",
+        "common-contracts",
+        "request-routing",
+        "api-handlers",
+        "loader-cache",
+        "database-facade"
+      ],
+      "outcome": "Игра берётся из cache либо восстанавливается из хранилища."
+    },
+    {
+      "id": "flow-input",
+      "name": "Игровой ввод",
+      "trigger": "POST paths.PLAYER_INPUT",
+      "steps": [
+        "client-ui",
+        "common-contracts",
+        "request-routing",
+        "api-handlers",
+        "input-deferred",
+        "player-domain",
+        "game-domain",
+        "save-port",
+        "loader-cache",
+        "database-facade"
+      ],
+      "outcome": "Ввод запускает действия и дожидается сохранения."
+    },
+    {
+      "id": "flow-elo",
+      "name": "Завершение и ELO",
+      "trigger": "Завершение Game",
+      "steps": [
+        "game-domain",
+        "loader-cache",
+        "elo-sync"
+      ],
+      "outcome": "Игра записана в ELO primary и mirror."
+    },
+    {
+      "id": "flow-sim",
+      "name": "Ветвление симуляции",
+      "trigger": "JSONL request to tm-sim-host",
+      "steps": [
+        "simulation-host",
+        "game-domain",
+        "input-deferred"
+      ],
+      "outcome": "Снимок обрабатывается в изолированной ветке без persistence."
+    }
+  ],
+  "unknowns": [
+    {
+      "id": "external-message-queue",
+      "status": "unknown",
+      "description": "Внешняя очередь сообщений не подтверждена; показана только in-process DeferredActionsQueue.",
+      "evidence": []
+    }
+  ],
+  "changed_modules": [
+    ".",
+    "kitty-specs",
+    "src",
+    "tests"
+  ]
+}

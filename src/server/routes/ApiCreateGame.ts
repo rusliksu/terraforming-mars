@@ -254,11 +254,11 @@ export class ApiCreateGame extends Handler {
           let game: IGame;
           if (gameOptions.clonedGamedId !== undefined && !gameOptions.clonedGamedId.startsWith('#')) {
             const serialized = await Database.getInstance().getGameVersion(gameOptions.clonedGamedId, 0);
-            game = Cloner.clone(gameId, players, firstPlayerIdx, serialized);
+            game = Cloner.clone(gameId, players, firstPlayerIdx, serialized, ctx.gameLoader.saveGame.bind(ctx.gameLoader));
           } else {
             const seed = Number.isFinite(gameReq.seed) && gameReq.seed >= 0 && gameReq.seed < 1 ?
               gameReq.seed : Math.random();
-            game = Game.newInstance(gameId, players, players[firstPlayerIdx], spectatorId, gameOptions, seed);
+            game = Game.newInstance(gameId, players, players[firstPlayerIdx], spectatorId, gameOptions, seed, ctx.gameLoader.saveGame.bind(ctx.gameLoader));
           }
 
           const botPlayers = botGame ? players.filter((_player, index) => requestedPlayers[index]?.isBot === true) : [];

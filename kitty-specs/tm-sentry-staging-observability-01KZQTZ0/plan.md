@@ -64,21 +64,25 @@ docs/codemap/codemap.lock
 
 **Решение по структуре**: новый модуль располагается рядом с серверной инфраструктурой и не проникает в игровые доменные классы. Текущие catch-границы получают один best-effort вызов перед прежней обработкой ошибки.
 
+## Delta после первого review WP01
+
+Первоначальная нарезка оставляла WP01 без production caller, а WP02 зависел от его принятия. Это делало WP01 непроверяемым по обязательному dead-code gate. Для устранения цикла без изменения продуктового scope process-level caller в `src/server/server.ts`, его regression и ownership перенесены из WP02 в WP01. WP02 теперь владеет только request boundary. Дополнительно WP01 получает deletion-safe black-box oracle публичного `capture`; no-op мутация экспортируемой функции обязана ломать тест. Request и PlayerInput behavior, privacy-контракт, число итоговых callers и delivery gates не меняются.
+
 ## Последовательность реализации
 
 1. До первой source-правки read-only проверить уже зафиксированный scoped-baseline пакет `docs/codemap/codemap.*`: он должен отвечать на callers/impact/tests и иметь совпадающий scoped fingerprint.
-2. Добавить тесты конфигурации, положительного payload-контракта и secret-redaction шлюза на настоящем SDK с fake transport.
-3. Добавить тесты контекста во внешнем catch `processRequest` и трёх неожиданных путях `PlayerInput`; доказать передачу доступных method/path/IDs/input, нулевой capture для ожидаемых ошибок, единичный capture на путь и неизменные ответы.
-4. Установить точную текущую версию `@sentry/node`, реализовать fail-closed шлюз и подключить его к пяти точкам ошибок с однозначным ownership.
+2. Добавить тесты конфигурации, положительного payload-контракта, secret-redaction и deletion-safe публичного `capture` на настоящем SDK с fake transport/без сети.
+3. Добавить RED process-boundary regression, реализовать fail-closed шлюз и подключить его к существующему `uncaughtException` callback; независимо принять этот production slice.
+4. Добавить тесты и callers во внешнем catch `processRequest` и трёх неожиданных путях `PlayerInput`; доказать передачу доступных method/path/IDs/input, нулевой capture для ожидаемых ошибок, единичный capture на путь и неизменные ответы.
 5. Единственным write-owner обновить карту кода по фактическому итоговому дереву и документированной SHA-256 процедуре, затем выполнить профильные и общие проверки.
 
 ## Implementation Concern Map
 
 ### IC-01 — Конфигурация и секретобезопасный payload
 
-- **Purpose**: включать SDK только на staging и формировать расширенное событие, сохраняя жёсткую границу секретов.
-- **Relevant requirements**: FR-001, FR-005—FR-007, FR-009, NFR-001—NFR-005.
-- **Affected surfaces**: `package.json`, `package-lock.json`, новый `src/server/server/SentryReporter.ts`, новый профильный тест.
+- **Purpose**: включать SDK только на staging, формировать расширенное событие с жёсткой границей секретов и завершить slice первым process-level production caller.
+- **Relevant requirements**: FR-001, FR-005—FR-009, NFR-001—NFR-005.
+- **Affected surfaces**: `package.json`, `package-lock.json`, новый `src/server/server/SentryReporter.ts`, `src/server/server.ts` и два профильных теста reporter/process boundary.
 - **Sequencing/depends-on**: none.
 - **Risks**: message, stack и вложенный input могут содержать известные или неизвестные секреты; поэтому default integrations и `dataCollection` выключаются, callers структурно не передают headers/query/IP, перечисленные форматы очищаются дважды, а тесты внедряют их sentinel-значения прямо в thrown message, stack и input. Неизвестная свободная строка без сигнатуры остаётся явно признанным пределом распознавания.
 
@@ -86,7 +90,7 @@ docs/codemap/codemap.lock
 
 - **Purpose**: получить ошибки и максимально доступный разрешённый контекст, не меняя существующее HTTP/gameplay-поведение.
 - **Relevant requirements**: FR-002—FR-004, FR-008, FR-009.
-- **Affected surfaces**: `src/server/server.ts`, `src/server/server/requestProcessor.ts`, `src/server/routes/PlayerInput.ts` и их тесты. В request flow capture принадлежит только `processRequest`; `requestHandler` сохраняет прежний 500 без второго capture. Отдельный `unhandledRejection` listener не добавляется.
+- **Affected surfaces**: `src/server/server/requestProcessor.ts`, `src/server/routes/PlayerInput.ts` и их тесты. Process caller уже принят в IC-01; в request flow capture принадлежит только `processRequest`, а `requestHandler` сохраняет прежний 500 без второго capture.
 - **Sequencing/depends-on**: IC-01.
 - **Risks**: двойная отправка, потеря исходной undo-ошибки и захват ожидаемого input; ownership закреплён за одной catch-границей, parse failure исключается, а каждый caller передаёт только реально доступные поля без выдуманных значений.
 

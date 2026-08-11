@@ -53,7 +53,7 @@ persisted state, restore без process.
 - [x] T009 Не считать surrendered как leave и не исключать игру из ELO (WP02)
 - [x] T010 Добавить ELO/GameEnd regressions и обратную совместимость данных (WP02)
 - [x] T011 Выполнить build/lint/targeted/full checks и independent review (WP02)
-- [ ] T012 Подготовить PR/staging evidence, оставив prod и live correction gated (WP02)
+- [x] T012 Подготовить PR/staging evidence, оставив prod и live correction gated (WP02)
 
 **Риски**: исторические records без нового outcome, рассинхрон GameEnd/ELO,
 случайное изменение live JSON при build.
@@ -71,6 +71,24 @@ persisted state, restore без process.
 | NFR-004 | WP02 | staging WGT smoke без console errors и зависшего prompt |
 | C-001–C-005 | WP01, WP02 | отсутствие auto-abandon, live/DB/prod gates и разделение bot IDs |
 | C-006 | WP01, WP02 | сохранение hidden-info confirmation для action/step undo |
+
+## Delivery closeout — 2026-08-11
+
+- PR [#117](https://github.com/rusliksu/terraforming-mars/pull/117) merged в
+  `main` как `396ec85c1c63ba648c5df18bda7b0ea497955bc1`; шесть CI jobs завершились
+  успешно.
+- Staging проверен Playwright smoke без зависшего surrender prompt и без
+  blocking console errors.
+- После отдельного prod-разрешения и явно согласованного alternative proof path
+  тот же clean-main artifact
+  `cb1a823e54c29005e5e9baf566b27349ba89977a30555847253dfe9a86e793fa`
+  развернут в prod.
+- Post-deploy soak: `tm-server` и `tm-elo` active, `NRestarts=0`;
+  surrender-bot reconciliation `started=2`, `failed=0`; player inputs
+  `accepted=580`, `rejected=0` в одной партии; OOM/fatal/restart-loop сигналов
+  не обнаружено.
+- Ручная коррекция текущей партии и ELO не выполнялась и не входит в этот
+  closeout.
 
 ## Последовательность
 

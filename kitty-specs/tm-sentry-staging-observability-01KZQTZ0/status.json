@@ -35,6 +35,9 @@
       "last_event_id": "01KZRWVX07KDY1RSBP3Y97ACM4",
       "last_transition_at": "2026-08-11T17:10:34.247177+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Review passed: commit 1b5d1b12; T007/T009/T011, focused 10/10, TypeScript, ESLint, diff-check, deletion test and all 8 anti-pattern gates PASS. WP frontmatter retained implementer profile node-norris; independent read-only reviewer supplied role separation."
+      ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
         "reference": "Review passed: commit 1b5d1b12; T007/T009/T011, focused 10/10, TypeScript, ESLint, diff-check, deletion test and all 8 anti-pattern gates PASS. WP frontmatter retained implementer profile node-norris; independent read-only reviewer supplied role separation.",

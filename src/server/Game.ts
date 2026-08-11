@@ -86,6 +86,7 @@ import {ICard} from './cards/ICard';
 import {generateGameName} from './GameName';
 import {captureEarlyGameStats} from './game/EarlyGameStats';
 import type {ActionReplayState} from './game/ActionReplay';
+import {compareCompletionRank, hasSameCompletionRank} from '../common/game/CompletionOutcome';
 
 // Can be overridden by tests
 let createGameLog: () => Array<LogMessage> = () => [];
@@ -1171,28 +1172,21 @@ export class Game implements IGame, Logger {
     const rankedScores = this.players.map((player) => {
       const corporation = player.playedCards.filter(isICorporationCard).map(toName).join('|');
       const vpb = player.getVictoryPoints();
-      const surrendered = this.surrenderedPlayerIds.has(player.id);
-      return {player, corporation, surrendered, vpb};
-    }).sort((left, right) => {
-      if (left.surrendered !== right.surrendered) {
-        return left.surrendered ? 1 : -1;
-      }
-      if (left.vpb.total !== right.vpb.total) {
-        return right.vpb.total - left.vpb.total;
-      }
-      if (left.player.megaCredits !== right.player.megaCredits) {
-        return right.player.megaCredits - left.player.megaCredits;
-      }
-      return 0;
-    });
+      const completionOutcome = this.surrenderedPlayerIds.has(player.id) ? 'surrendered' as const : 'completed' as const;
+      return {
+        player,
+        corporation,
+        completionOutcome,
+        vp: vpb.total,
+        megacredits: player.megaCredits,
+        vpb,
+      };
+    }).sort(compareCompletionRank);
 
     const scores: Array<Score> = [];
     rankedScores.forEach((entry, idx) => {
       const previous = rankedScores[idx - 1];
-      const place = previous !== undefined &&
-        previous.surrendered === entry.surrendered &&
-        previous.vpb.total === entry.vpb.total &&
-        previous.player.megaCredits === entry.player.megaCredits ?
+      const place = previous !== undefined && hasSameCompletionRank(previous, entry) ?
         scores[idx - 1].place :
         idx + 1;
       scores.push({

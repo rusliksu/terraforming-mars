@@ -299,6 +299,15 @@ import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
 import {MADetail} from '@/common/game/VictoryPointsBreakdown';
 import {AwardName} from '@/common/ma/AwardName';
 import {buildEloResultsForPlayers, EloResultRow, ensureEloLoaded, findMatchingEloGame, sharedEloState} from '@/client/utils/elo';
+import {compareCompletionRank, hasSameCompletionRank} from '@/common/game/CompletionOutcome';
+
+function playerCompletionRank(player: PublicPlayerModel) {
+  return {
+    completionOutcome: player.isSurrendered ? 'surrendered' as const : 'completed' as const,
+    vp: player.victoryPointsBreakdown.total,
+    megacredits: player.megacredits,
+  };
+}
 
 function getViewModel(playerView: ViewModel | undefined, spectator: ViewModel | undefined): ViewModel {
   if (playerView !== undefined) {
@@ -358,16 +367,7 @@ export default defineComponent({
     playersInPlace(): Array<PublicPlayerModel> {
       const copy = [...this.viewModel.players];
       copy.sort(function(a:PublicPlayerModel, b:PublicPlayerModel) {
-        if (a.isSurrendered !== b.isSurrendered) {
-          return a.isSurrendered ? 1 : -1;
-        }
-        if (a.victoryPointsBreakdown.total !== b.victoryPointsBreakdown.total) {
-          return b.victoryPointsBreakdown.total - a.victoryPointsBreakdown.total;
-        }
-        if (a.megacredits !== b.megacredits) {
-          return b.megacredits - a.megacredits;
-        }
-        return 0;
+        return compareCompletionRank(playerCompletionRank(a), playerCompletionRank(b));
       });
       return copy;
     },
@@ -376,9 +376,7 @@ export default defineComponent({
       const firstWinner = sortedPlayers[0];
       const winners: PublicPlayerModel[] = [firstWinner];
       for (let i = 1; i < sortedPlayers.length; i++) {
-        if (!sortedPlayers[i].isSurrendered &&
-                    sortedPlayers[i].victoryPointsBreakdown.total === firstWinner.victoryPointsBreakdown.total &&
-                    sortedPlayers[i].megacredits === firstWinner.megacredits) {
+        if (hasSameCompletionRank(playerCompletionRank(sortedPlayers[i]), playerCompletionRank(firstWinner))) {
           winners.push(sortedPlayers[i]);
         }
       }

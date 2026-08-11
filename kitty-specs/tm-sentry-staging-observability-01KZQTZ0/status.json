@@ -1,7 +1,7 @@
 {
-  "event_count": 26,
-  "last_event_id": "01KZS0RMXP88JXPPMFWGGW0ZSX",
-  "materialized_at": "2026-08-11T18:18:41.971580+00:00",
+  "event_count": 27,
+  "last_event_id": "01KZS1ZNC5HANB2MEJ9ZCH4VY5",
+  "materialized_at": "2026-08-11T18:40:00.389309+00:00",
   "mission_number": "",
   "mission_slug": "tm-sentry-staging-observability-01KZQTZ0",
   "mission_type": "software-dev",
@@ -11,8 +11,8 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 0,
-    "in_progress": 1,
+    "for_review": 1,
+    "in_progress": 0,
     "in_review": 0,
     "planned": 1
   },
@@ -59,14 +59,21 @@
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "in_progress",
-      "last_event_id": "01KZS0RMXP88JXPPMFWGGW0ZSX",
-      "last_transition_at": "2026-08-11T18:18:41.971580+00:00",
+      "lane": "for_review",
+      "last_event_id": "01KZS1ZNC5HANB2MEJ9ZCH4VY5",
+      "last_transition_at": "2026-08-11T18:40:00.389309+00:00",
       "model": "__resolved_model_absent__",
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 27212,
-      "shell_pid_created_at": "1786472316.3028903"
+      "shell_pid_created_at": "1786472316.3028903",
+      "subtasks": {
+        "T012": "done",
+        "T013": "done",
+        "T014": "done",
+        "T015": "done",
+        "T016": "done"
+      }
     },
     "WP04": {
       "actor": "finalize-tasks",

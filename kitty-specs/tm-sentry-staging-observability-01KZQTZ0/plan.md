@@ -1,0 +1,123 @@
+# План реализации: безопасная наблюдаемость Sentry на staging
+
+**Ветка**: `codex/tm-sentry-staging-observability`  
+**Дата**: 2026-08-11  
+**Спецификация**: [spec.md](./spec.md)
+
+## Краткое решение
+
+Добавить один серверный шлюз диагностических событий с узким методом `capture(error)`. Шлюз включается только при сочетании `SENTRY_DSN` и точного `SENTRY_ENVIRONMENT=staging`, вручную отправляет исключения через `@sentry/node` и перед отправкой перестраивает событие по строгому списку разрешённых полей. Точки вызова ограничиваются существующими границами неожиданных ошибок: необработанное исключение процесса, ошибка маршрутизации запроса и неожиданный сбой `PlayerInput`. Ожидаемые `AppError` и `InputError` остаются вне Sentry.
+
+## Technical Context
+
+**Language/Version**: TypeScript 6.0, Node.js 22.x, CommonJS output  
+**Primary Dependencies**: встроенный `http`/`https`, существующий маршрутизатор Terraforming Mars, новый `@sentry/node` 10.70.0  
+**Storage**: без изменений; диагностические события не сохраняются в БД приложения  
+**Testing**: Mocha 11, Chai 6, существующие HTTP mocks; тесты сначала, затем реализация  
+**Target Platform**: Linux staging-сервер, сборка и проверки также воспроизводятся на Windows  
+**Project Type**: монолитное web-приложение с Node.js backend и Vue frontend; меняется только backend  
+**Performance Goals**: захват ошибки не блокирует HTTP-ответ и не добавляет сетевой работы в штатный успешный путь  
+**Constraints**: fail-closed activation; без request/response context, PII, breadcrumbs и tracing; без изменения HTTP/gameplay; production и deploy вне объёма  
+**Scale/Scope**: один новый серверный модуль, три существующие точки ошибок, три профильных набора тестов, три артефакта карты кода
+
+## Проверка принципов
+
+- **Разделение ответственности**: Sentry SDK и очистка события инкапсулируются в одном серверном шлюзе; маршруты знают только о `capture(error)`.
+- **Локальность изменения**: клиент, БД, игровые модели, публичные API и deploy-скрипты не меняются.
+- **Проверяемые решения**: активация, allowlist события, исключение ожидаемых ошибок и сохранение ответов закреплены тестами.
+- **Test-first**: сначала добавляются падающие проверки privacy/config/call sites, затем минимальная реализация.
+- **Синхронизация документации**: карта кода регенерируется из актуальной task-ветки и включает новый диагностический шлюз, его callers и тесты.
+- **Charter**: project-local charter отсутствует; применены встроенные требования целостности архитектуры, локальности, тестов и актуальности документации. Нарушений нет.
+
+## Архитектура и поток
+
+```mermaid
+flowchart LR
+  U["Неожиданная Error"] --> B["Существующая граница catch/process"]
+  B --> R["SentryReporter.capture(error)"]
+  R --> G{"DSN задан и environment = staging?"}
+  G -- "нет" --> N["No-op"]
+  G -- "да" --> S["Очистка и allowlist события"]
+  S --> E["Sentry ingest"]
+  B --> O["Прежний лог/HTTP-ответ"]
+```
+
+Шлюз не принимает `Request`, `Response`, `Context`, player или game. Это делает передачу тел, headers, cookies, query, IP и игровых идентификаторов невозможной через его публичный контракт. SDK запускается без автоматической request-инструментации, breadcrumbs и tracing. Финальный `beforeSend` возвращает только разрешённую техническую часть события и очищает сообщения/первую строку стека от форматов TM-идентификаторов.
+
+## Структура изменений
+
+```text
+package.json
+package-lock.json
+src/server/server.ts
+src/server/server/requestProcessor.ts
+src/server/server/SentryReporter.ts           # новый privacy boundary
+src/server/routes/PlayerInput.ts
+tests/server/server/SentryReporter.spec.ts     # новый config/privacy contract
+tests/server/requestProcessor.spec.ts
+tests/routes/PlayerInput.spec.ts
+docs/codemap/codemap.html
+docs/codemap/codemap.json
+docs/codemap/codemap.lock
+```
+
+**Решение по структуре**: новый модуль располагается рядом с серверной инфраструктурой и не проникает в игровые доменные классы. Текущие catch-границы получают один best-effort вызов перед прежней обработкой ошибки.
+
+## Последовательность реализации
+
+1. В task-owned worktree восстановить актуальный пакет `docs/codemap/codemap.*` из текущего дерева, используя прежнюю схему только как формат, а текущий код — как единственный источник evidence.
+2. Добавить тесты конфигурации и privacy-allowlist шлюза, включая явные запрещённые данные и неизвестный throwable.
+3. Добавить тесты вызова на request boundary и в `PlayerInput`; отдельно доказать нулевой вызов для `AppError`/`InputError` и неизменные ответы.
+4. Установить точную текущую версию `@sentry/node`, реализовать fail-closed шлюз и подключить его к трём границам ошибок.
+5. Обновить карту кода уже по итоговому дереву, затем выполнить профильные и общие проверки.
+
+## Implementation Concern Map
+
+### IC-01 — Конфигурация и privacy boundary
+
+- **Purpose**: безопасно включать SDK только на staging и формировать минимальное событие без запрещённых данных.
+- **Relevant requirements**: FR-001, FR-005, FR-007, NFR-001—NFR-004.
+- **Affected surfaces**: `package.json`, `package-lock.json`, новый `src/server/server/SentryReporter.ts`, новый профильный тест.
+- **Sequencing/depends-on**: none.
+- **Risks**: default integrations SDK могут добавлять контекст; поэтому автоматические интеграции отключаются, а `beforeSend` строит итог по allowlist. Сообщение ошибки очищается отдельно от stack frames.
+
+### IC-02 — Границы неожиданных ошибок
+
+- **Purpose**: получить ошибки, которые сейчас только логируются или преобразуются в HTTP-ответ, не меняя их существующее поведение.
+- **Relevant requirements**: FR-002—FR-004, FR-006, FR-007.
+- **Affected surfaces**: `src/server/server.ts`, `src/server/server/requestProcessor.ts`, `src/server/routes/PlayerInput.ts` и их тесты.
+- **Sequencing/depends-on**: IC-01.
+- **Risks**: двойная отправка одного исключения и случайный захват ожидаемых ошибок; каждый путь получает единственную точку capture, а повторный подъём ошибки не сопровождается вторым capture.
+
+### IC-03 — Поведенческие и privacy-тесты
+
+- **Purpose**: доказать независимым oracle активацию, состав события, классификацию ошибок и неизменность HTTP-ответов.
+- **Relevant requirements**: все FR, NFR-004.
+- **Affected surfaces**: `tests/server/server/SentryReporter.spec.ts`, `tests/server/requestProcessor.spec.ts`, `tests/routes/PlayerInput.spec.ts`.
+- **Sequencing/depends-on**: none для тестовых контрактов; выполнение после IC-01 и IC-02.
+- **Risks**: тест, привязанный к внутренностям SDK, может проходить не по причине; transport/client подменяется на границе шлюза, а assertions делаются по окончательному очищенному событию и observable HTTP output.
+
+### IC-04 — Карта кода и итоговые gates
+
+- **Purpose**: восстановить обязательную карту до изменения модуля и оставить её синхронизированной с итоговым графом callers/tests.
+- **Relevant requirements**: NFR-005, C-001—C-003.
+- **Affected surfaces**: `docs/codemap/codemap.html`, `docs/codemap/codemap.json`, `docs/codemap/codemap.lock`.
+- **Sequencing/depends-on**: baseline до IC-02; финальная регенерация после IC-01—IC-03.
+- **Risks**: прежняя remote-ветка карты устарела относительно текущего `origin/main`; её содержимое нельзя переносить как актуальное evidence.
+
+## Проверки
+
+- Профильный Mocha-набор для шлюза, request processor и `PlayerInput`.
+- `npm run build:tests`.
+- `npm run lint:server`.
+- `npm run build:server` и затем полный `npm run build`.
+- JSON parse и внутренние ссылки карты кода; `codemap.lock` соответствует итоговому commit/tree fingerprint и не сообщает скрытых изменённых модулей.
+- `git diff --check` и точная проверка scope diff.
+
+## Delivery gates
+
+Локальные commits в task-owned ветке разрешены после проверок. Push, PR, merge, конфигурация `SENTRY_DSN` на сервере, staging deploy, реальная отправка тестового события и любые production-действия остаются отдельными gates и в этот пакет не входят.
+
+## Complexity Tracking
+
+Нарушений принципов и оправдываемой дополнительной сложности нет. Отдельный шлюз нужен как единственная контролируемая граница внешней отправки; более широкая система telemetry или общий event bus не вводятся.

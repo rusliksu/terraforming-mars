@@ -25,7 +25,7 @@ subtasks:
 phase: Фаза 1 — диагностический шлюз
 assignee: ''
 agent: "codex"
-shell_pid: "30640"
+shell_pid: "30348"
 history:
 - timestamp: '2026-08-11T08:54:36Z'
   agent: codex
@@ -295,3 +295,4 @@ git diff --check
 - 2026-08-11T13:54:26Z – codex – shell_pid=30640 – Review cycle 1: требуется устранить dead production module, покрыть публичный capture и записать T001 evidence.
 - 2026-08-11T14:03:48Z – codex – Проверен baseline commit `8a5604fa69f45898c3c18c4ac8f19104cb0e6ed5` и scoped composite fingerprint `07e62dc1c96cd92c12684e42628c444187a4d479a807da315aaa2cd29734e511`; composite совпал с `docs/codemap/codemap.lock`.
 - 2026-08-11T14:03:48Z – codex – Planning delta: process caller и его regression перенесены из WP02 в WP01, добавлен deletion-safe oracle публичного `capture`; source-код не изменялся.
+- 2026-08-11T14:25:15Z – codex – shell_pid=30348 – Started implementation via action command

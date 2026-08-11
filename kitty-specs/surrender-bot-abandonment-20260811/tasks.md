@@ -48,11 +48,11 @@ persisted state, restore без process.
 **Независимая проверка**: fixture `completed/surrendered/left` дает места 1/2/3,
 а leave увеличивается только для `left`.
 
-- [ ] T007 Добавить отдельный `surrendered` completion outcome (WP02)
-- [ ] T008 Ввести порядок `completed > surrendered > left` с VP/MC tie-breakers (WP02)
-- [ ] T009 Не считать surrendered как leave и не исключать игру из ELO (WP02)
-- [ ] T010 Добавить ELO/GameEnd regressions и обратную совместимость данных (WP02)
-- [ ] T011 Выполнить build/lint/targeted/full checks и independent review (WP02)
+- [x] T007 Добавить отдельный `surrendered` completion outcome (WP02)
+- [x] T008 Ввести порядок `completed > surrendered > left` с VP/MC tie-breakers (WP02)
+- [x] T009 Не считать surrendered как leave и не исключать игру из ELO (WP02)
+- [x] T010 Добавить ELO/GameEnd regressions и обратную совместимость данных (WP02)
+- [x] T011 Выполнить build/lint/targeted/full checks и independent review (WP02)
 - [ ] T012 Подготовить PR/staging evidence, оставив prod и live correction gated (WP02)
 
 **Риски**: исторические records без нового outcome, рассинхрон GameEnd/ELO,

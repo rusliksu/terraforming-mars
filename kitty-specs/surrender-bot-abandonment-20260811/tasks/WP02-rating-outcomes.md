@@ -9,7 +9,11 @@ merge_target_branch: "main"
 branch_strategy: "task-owned PR"
 execution_mode: "code_change"
 owned_files:
+  - "src/common/game/CompletionOutcome.ts"
+  - "src/server/Game.ts"
   - "src/server/elo/EloSyncService.ts"
+  - "src/server/routes/PlayerInput.ts"
+  - "src/server/routes/Reset.ts"
   - "src/client/components/GameEnd.vue"
   - "tests/server/EloSyncService.spec.ts"
   - "tests/client/components/GameEnd.spec.ts"
@@ -20,6 +24,9 @@ role: "implementer"
 agent: "codex"
 history:
   - "2026-08-11: baseline approved; implementation pending"
+  - "2026-08-11: a93f262517 adds the shared outcome rank and ELO/GameEnd regressions"
+  - "2026-08-11: eb9ef146cf closes the review-found human-input race after surrender"
+  - "2026-08-11: targeted tests, three stability runs, build:tests, production build, lint, typecheck and 7381 server tests passed"
 ---
 
 ## ⚡ Do This First: Load Agent Profile

@@ -13,7 +13,7 @@ npm ci
 npx mocha --import=tsx --require tests/testing/setup.ts tests/server/server/SentryReporter.spec.ts tests/server/requestProcessor.spec.ts tests/routes/PlayerInput.spec.ts
 ```
 
-Проверки используют настоящий configured Sentry client с fake transport и анализируют финальный envelope по запрещённым ключам и sentinel-значениям. Сетевой запрос в Sentry не выполняется.
+Проверки используют настоящий configured Sentry client с fake transport. Они подтверждают присутствие message, stack, обязательного boundary, method/path, game/player IDs и gameplay input. Поддерживаемые secret/header/cookie/query/IP sentinel-форматы внедряются непосредственно в thrown message, stack и input; финальный envelope рекурсивно проверяется на их отсутствие. Отдельный случай проверяет `Buffer.byteLength(..., 'utf8')`, валидный детерминированный truncation wrapper и лимит 65 536 байт. Сетевой запрос в Sentry не выполняется.
 
 ## Общие gates
 

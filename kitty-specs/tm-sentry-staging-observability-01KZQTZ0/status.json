@@ -64,7 +64,8 @@
       "last_transition_at": "2026-08-11T19:06:22.313347+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Реализованы три PlayerInput boundary; RED подтверждён, focused 18/18, build:tests, lint:server и diff check прошли после rebase; независимый review PASS; финальный envelope privacy остаётся объединённым oracle WP04."
+        "Реализованы три PlayerInput boundary; RED подтверждён, focused 18/18, build:tests, lint:server и diff check прошли после rebase; независимый review PASS; финальный envelope privacy остаётся объединённым oracle WP04.",
+        "Review passed: T012-T016; deletion test 15 passing/3 expected failures без production diff; focused 18/18, build:tests, lint:server и diff check green. Anti-pattern checklist: dead code PASS, synthetic fixture PASS, silent empty return N/A, FR coverage PASS, frozen surface PASS, locked decisions PASS, shared ownership PASS, production fragility N/A. Product tree bfbc4dfe идентичен проверенному f4d36416; final envelope oracle остаётся WP04."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {

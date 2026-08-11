@@ -22,7 +22,7 @@ subtasks:
 phase: Фаза 2 — верхнеуровневые границы
 assignee: ''
 agent: "codex"
-shell_pid: "19596"
+shell_pid: "8728"
 history:
 - timestamp: '2026-08-11T08:54:36Z'
   agent: codex
@@ -156,3 +156,4 @@ git diff --check
 ## Activity Log
 
 - 2026-08-11T16:36:46Z – codex – shell_pid=19596 – Assigned agent via action command
+- 2026-08-11T17:00:22Z – codex – shell_pid=8728 – Assigned agent via action command

@@ -83,25 +83,26 @@ capture(error: unknown, context: ErrorDiagnosticContext): void
 - Execution worktree и branch берутся только из вычисленного lane в `lanes.json`; primary checkout не менять.
 - После WP01 пакеты WP02 и WP03 могут ответвляться параллельно от принятого результата.
 
-## T001 — Baseline карты кода до source changes
+## T001 — Read-only проверка baseline карты кода
 
 ### Назначение
 
-Выполнить обязательный codemap gate до изменения нового server module и не опираться на устаревший remote evidence.
+Выполнить обязательный read-only codemap gate до изменения нового server module и не менять файлы, которыми владеет WP04.
 
 ### Руководство
 
-1. Проверь наличие `docs/codemap/codemap.html`, `.json` и `.lock` в выделенном execution worktree.
-2. Если пакет отсутствует или не отвечает на три вопроса, регенерируй все три файла штатным project command из текущего tree:
+1. Проверь наличие и JSON-валидность `docs/codemap/codemap.html`, `.json` и `.lock` в выделенном execution worktree.
+2. Подтверди, что scoped-baseline явно отвечает на три вопроса:
    - что вызывает будущий `SentryReporter`;
    - какие server paths он затронет;
-   - какие тесты покроют его и callers.
-3. Устаревшую `origin/codex/tm-codemap` разрешено использовать только как формат, но не как source of truth для связей или fingerprints.
-4. Запиши в activity/history точную команду и текущий commit/tree fingerprint.
+   - какие четыре test files покроют privacy boundary и callers.
+3. Проверь существование каждого confirmed evidence path и каждого lock path, затем per-file SHA-256 и composite по процедуре из `quickstart.md`; planned paths до реализации могут отсутствовать.
+4. Запиши в activity/history проверенные commit и scoped composite fingerprint.
+5. Не изменяй ни один codemap file. Если baseline отсутствует, невалиден или fingerprint расходится, останови WP и верни blocker владельцу WP04/planning remediation.
 
-### Ownership exception
+### Ownership
 
-Эти три generated-файла принадлежат WP04. Их baseline-регенерация здесь является единственной разрешённой out-of-map записью: она выполняется до source changes, а WP04 последовательно повторно регенерирует их после всех зависимостей. Не редактируй codemap вручную.
+Все три codemap files принадлежат только WP04. T001 является read-only prerequisite и не создаёт out-of-map записи.
 
 ## T002 — SDK dependency
 
@@ -219,7 +220,7 @@ git diff --check
 
 ## Definition of Done
 
-- [ ] Baseline codemap восстановлен до первой source-правки штатным generator и зафиксирован как out-of-map exception.
+- [ ] Baseline codemap read-only проверен до первой source-правки; три обязательных ответа, evidence paths и scoped fingerprint совпадают.
 - [ ] Dependency точно закреплена на 10.70.0 без unrelated lockfile churn.
 - [ ] RED evidence получен до implementation для activation/privacy/truncation cases.
 - [ ] `capture(error, context)` требует boundary и не принимает request/game objects.

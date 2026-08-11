@@ -32,10 +32,6 @@ history:
   action: Пакет сформирован как последовательная интеграция WP02 и WP03 с итоговым codemap и gates.
 agent_profile: curator-carla
 authoritative_surface: docs/codemap/
-create_intent:
-- docs/codemap/codemap.html
-- docs/codemap/codemap.json
-- docs/codemap/codemap.lock
 execution_mode: code_change
 model: ''
 owned_files:
@@ -54,18 +50,18 @@ tags: []
 
 ## Цель
 
-Собрать принятые результаты WP02 и WP03 поверх WP01, сделать итоговую карту кода источником правды для нового Sentry flow и получить полный локальный evidence-pack готовности. Этот WP не добавляет новое поведение: он синхронизирует только три generated codemap artifacts, запускает проверки и останавливается перед любым внешним действием.
+Собрать принятые результаты WP02 и WP03 поверх WP01, сделать итоговую карту кода источником правды для нового Sentry flow и получить полный локальный evidence-pack готовности. Этот WP не добавляет новое поведение: он единолично актуализирует три scoped codemap artifacts, запускает проверки и останавливается перед любым внешним действием.
 
 ## Контекст
 
-После завершения зависимостей итоговый flow должен содержать один `SentryReporter`, пять owning boundaries и три профильных test surfaces:
+После завершения зависимостей итоговый flow должен содержать один `SentryReporter`, пять owning boundaries и четыре профильных test files:
 
 - `process` в `src/server/server.ts`;
 - `request` во внешнем catch `src/server/server/requestProcessor.ts`;
 - `player-get`, `player-undo`, `player-input` в `src/server/routes/PlayerInput.ts`;
-- reporter envelope oracle, request/process regressions и `PlayerInput.spec.ts`.
+- `SentryReporter.spec.ts`, `SentryProcessBoundary.spec.ts`, `requestProcessor.spec.ts` и `PlayerInput.spec.ts`.
 
-Baseline codemap мог быть создан WP01 до source changes как явно записанное ownership exception. Здесь он всегда регенерируется заново из уже интегрированного текущего tree; старые relationships и fingerprints не переносятся.
+Scoped-baseline codemap зафиксирован в planning branch до execution и только read-only проверяется WP01. WP04 — единственный write-owner: здесь relationships и fingerprints актуализируются из уже интегрированного текущего tree; старые remote evidence не переносятся.
 
 ## Стратегия веток
 
@@ -86,21 +82,19 @@ Baseline codemap мог быть создан WP01 до source changes как я
 ### Руководство
 
 1. Убедись, что текущий execution lane действительно содержит принятые heads WP01, WP02 и WP03.
-2. Запусти штатный repo generator для полного пакета:
-   - `docs/codemap/codemap.html`;
-   - `docs/codemap/codemap.json`;
-   - `docs/codemap/codemap.lock`.
-3. Не редактируй generated JSON/HTML/lock вручную и не копируй содержимое из `origin/codex/tm-codemap`.
+2. По фактическим source/tests проверь каждый existing relationship, добавь подтверждённые Sentry nodes/edges и переведи planned relationships в confirmed только при наличии path/symbol evidence.
+3. Актуализируй `codemap.json`, затем `codemap.html` из того же набора relationships. Не копируй evidence из `origin/codex/tm-codemap`.
 4. Проверь, что карта отвечает на три обязательных вопроса:
    - кто вызывает `SentryReporter.capture`;
    - какие modules/flows он затрагивает;
    - какие тесты покрывают каждый caller и privacy boundary.
 5. Проверь наличие всех пяти boundary labels и отсутствие выдуманного `unhandledRejection` caller.
-6. Проверь внутренние links/IDs, parse JSON и tree/commit fingerprint lock по правилам generator.
+6. Сформируй явный scope итоговых source/test/package evidence без самих codemap files; вычисли lowercase SHA-256 каждого файла и composite как SHA-256 от UTF-8 записей `path + NUL + fileHash`, отсортированных ordinal и соединённых LF.
+7. Проверь внутренние links/IDs, JSON parse, совпадение всех per-file hashes и composite в `codemap.lock`.
 
 ### Scope
 
-Owned write surface ограничена тремя codemap files. Если generator требует изменить config/script, остановись и верни blocker: это material scope delta.
+Owned write surface ограничена тремя codemap files. Общий generator/config/script в этот scope не входит; если без него нельзя подтвердить итоговый graph, остановись и верни blocker как material scope delta.
 
 ## T018 — Объединённый профильный oracle
 
@@ -143,7 +137,7 @@ git diff --check
 Дополнительно:
 
 1. распарсь `codemap.json` и `codemap.lock` штатным JSON parser;
-2. проверь существующие repo-specific codemap validation commands, если они объявлены в `package.json`/docs;
+2. воспроизведи scoped per-file/composite SHA-256 процедуру из `quickstart.md` и проверь четыре test files;
 3. проверь `npm ls @sentry/node` и точную resolved version без печати конфигурации;
 4. проверь clean test cleanup и отсутствие реального `.env`/DSN change;
 5. сравни итоговый diff с owned/specified surface.
@@ -172,8 +166,8 @@ git diff --check
 ## Definition of Done
 
 - [ ] WP01, WP02 и WP03 присутствуют в integration lane и не имеют unresolved conflicts.
-- [ ] Все три codemap artifacts регенерированы штатным способом из итогового tree.
-- [ ] Карта показывает reporter, пять callers и покрывающие test surfaces.
+- [ ] Все три codemap artifacts единственным владельцем актуализированы из проверяемого итогового tree по документированной scoped-процедуре.
+- [ ] Карта показывает reporter, пять callers и четыре покрывающих test files.
 - [ ] Combined Mocha suite проходит без сети и skipped privacy cases.
 - [ ] Build-tests, server lint, server/full build и diff checks проходят либо unrelated blocker доказательно классифицирован.
 - [ ] Итоговый diff соответствует spec/plan/WP ownership и не меняет public behavior.
@@ -182,4 +176,4 @@ git diff --check
 
 ## Reviewer Guidance
 
-Отклони handoff при устаревшем codemap lock, ручной правке generated artifacts, пропущенном caller, duplicated request capture, optional boundary, fake SDK вместо fake transport или неполной UTF-8 privacy matrix. Не требуй реального Sentry event на этом gate: такой smoke требует отдельного разрешения и staging configuration после delivery.
+Отклони handoff при устаревшем или невоспроизводимом scoped codemap lock, неподтверждённом relationship, пропущенном caller/test file, duplicated request capture, optional boundary, fake SDK вместо fake transport или неполной UTF-8 privacy matrix. Не требуй реального Sentry event на этом gate: такой smoke требует отдельного разрешения и staging configuration после delivery.

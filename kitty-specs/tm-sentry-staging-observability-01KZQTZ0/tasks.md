@@ -4,7 +4,7 @@
 
 | ID | Описание | WP | Parallel |
 | --- | --- | --- | --- |
-| T001 | Восстановить baseline карты кода до первой source-правки | WP01 | No |
+| T001 | Read-only проверить зафиксированный baseline карты кода до первой source-правки | WP01 | No |
 | T002 | Закрепить `@sentry/node` 10.70.0 в manifest и lockfile | WP01 | No |
 | T003 | Добавить RED-тесты fail-closed конфигурации и разрешённого envelope | WP01 | No |
 | T004 | Добавить RED-тесты privacy-redaction и UTF-8 truncation | WP01 | No |
@@ -20,7 +20,7 @@
 | T014 | Добавить RED-регрессии основного input catch и ожидаемых исключений | WP03 | Yes, after WP01 |
 | T015 | Передать разрешённый PlayerInput-context в трёх поглощаемых путях | WP03 | Yes, after WP01 |
 | T016 | Проверить gameplay-поведение, input snapshot и отсутствие дублей | WP03 | Yes, after WP01 |
-| T017 | Регенерировать итоговый пакет `docs/codemap/codemap.*` | WP04 | No |
+| T017 | Единственным владельцем актуализировать итоговый пакет `docs/codemap/codemap.*` | WP04 | No |
 | T018 | Выполнить объединённый privacy/call-site Mocha-набор | WP04 | No |
 | T019 | Выполнить server lint, test build, server/full build и diff gates | WP04 | No |
 | T020 | Провести allowlist-review итогового diff и подготовить handoff без live-действий | WP04 | No |
@@ -34,7 +34,7 @@
 **Prompt**: `tasks/WP01-sentry-reporter-privacy-boundary.md`  
 **Estimated prompt size**: ~300 lines
 
-- [ ] T001 До первой source-правки восстановить `docs/codemap/codemap.html`, `.json` и `.lock` из текущего task-дерева и зафиксировать, что вызывает новый модуль, что он затронет и какие тесты его покрывают.
+- [ ] T001 До первой source-правки read-only проверить уже зафиксированные `docs/codemap/codemap.html`, `.json` и `.lock`: три ответа callers/impact/tests, существование evidence paths и совпадение scoped fingerprint.
 - [ ] T002 Добавить точную dependency `@sentry/node` 10.70.0 через штатный npm workflow, изменив только `package.json` и `package-lock.json`.
 - [ ] T003 Добавить RED-тесты activation matrix, valid/`n/a` release, обязательного boundary и полного разрешённого envelope через настоящий configured client с fake transport.
 - [ ] T004 Добавить RED-тесты recursive denylist, перечисленных credential/header/cookie/query/IP форматов в message/stack/input, циклов, глубины и детерминированного UTF-8 truncation wrapper.
@@ -43,7 +43,7 @@
 
 ### Implementation sketch
 
-1. Восстановить обязательную baseline-карту до изменения нового server module.
+1. Read-only проверить обязательную scoped-baseline карту до изменения нового server module; файлы карты в этом WP не менять.
 2. Закрепить SDK и сначала написать тестовый oracle на финальный envelope.
 3. Реализовать минимальный reporter как единственного владельца SDK и privacy policy.
 4. Проверить fail-closed matrix, разрешённый context и все перечисленные redaction signatures.
@@ -54,7 +54,7 @@
 
 ### Dependencies and risks
 
-- Baseline codemap временно является обоснованной out-of-map записью этого WP; окончательное владение и повторная регенерация принадлежат WP04, который зависит от всех code WPs.
+- Baseline codemap уже зафиксирован до execution; WP01 читает его только как вход. Единственное write-ownership всех трёх codemap files принадлежит WP04.
 - Fake transport должен проверять реальный SDK envelope, а не дублировать реализацию sanitizer.
 - Свободная строка без распознаваемой сигнатуры остаётся документированным residual risk; тесты не должны создавать ложное обещание полного secret detection.
 - Default SDK integrations или data collection могут вернуть запрещённые поля, поэтому отключение и финальный allowlist являются load-bearing.
@@ -133,7 +133,7 @@ WP03 можно выполнять параллельно с WP02 после WP0
 **Prompt**: `tasks/WP04-codemap-and-quality-gates.md`  
 **Estimated prompt size**: ~210 lines
 
-- [ ] T017 После интеграции WP02 и WP03 регенерировать `docs/codemap/codemap.html`, `.json` и `.lock` из итогового task-дерева и проверить новый reporter, пять callers и три test surfaces.
+- [ ] T017 После интеграции WP02 и WP03 единственным владельцем актуализировать `docs/codemap/codemap.html`, `.json` и `.lock` из подтверждённого итогового task-дерева; проверить reporter, пять callers, четыре test files и воспроизводимый scoped fingerprint.
 - [ ] T018 Выполнить объединённый Mocha-набор reporter/requestProcessor/PlayerInput с fake transport и без реального DSN или сетевого Sentry event.
 - [ ] T019 Выполнить `npm run build:tests`, `npm run lint:server`, `npm run build:server`, полный `npm run build`, JSON/codemap checks и `git diff --check`.
 - [ ] T020 Провести allowlist-review diff, сверить requirements и фактический результат, зафиксировать точные evidence и остановиться перед push/PR/merge/config/deploy/live smoke.
@@ -141,7 +141,7 @@ WP03 можно выполнять параллельно с WP02 после WP0
 ### Implementation sketch
 
 1. Убедиться, что оба зависимых lane интегрированы без конфликтов ownership.
-2. Регенерировать единственный итоговый codemap package и проверить внутренние ссылки/fingerprint.
+2. По документированной процедуре выполнить единственное итоговое обновление codemap package и проверить внутренние ссылки/per-file/composite fingerprints.
 3. Выполнить focused затем broad gates и классифицировать любой unrelated failure доказательно.
 4. Проверить scope и подготовить локальный handoff без внешнего side effect.
 

@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "map_kind": "scoped-baseline",
+  "source_commit": "8a5604fa69f45898c3c18c4ac8f19104cb0e6ed5",
+  "generated_at": "2026-08-11T10:46:51Z",
+  "source_tree_was_clean": true,
+  "scope": [
+    "package.json",
+    "src/server/routes/PlayerInput.ts",
+    "src/server/server.ts",
+    "src/server/server/requestProcessor.ts",
+    "tests/routes/PlayerInput.spec.ts",
+    "tests/server/requestProcessor.spec.ts"
+  ],
+  "excluded_directories": [
+    ".git",
+    ".kittify",
+    "build",
+    "coverage",
+    "docs/codemap",
+    "node_modules"
+  ],
+  "fingerprint_algorithm": "sha256(UTF-8 join of sorted path + NUL + lowercase per-file SHA-256 records, separated by LF)",
+  "scope_excludes_codemap_artifacts": true,
+  "file_fingerprints": {
+    "package.json": "84405cd7843a96897f3d10e27888a49b53903fce45e8effaf04b66bc474b6502",
+    "src/server/routes/PlayerInput.ts": "fb81b5784e46bdcfb73ec63bbe0dad7da50034aeb7f7412d3deee91199fd463f",
+    "src/server/server.ts": "7ad4fefb646e471cfe93e012636cb1f0673911d2a057f2bda287519e39abd81a",
+    "src/server/server/requestProcessor.ts": "de5474db3597ba6cef77d33212e67bac2ded89315b889feeb848dd456a21d976",
+    "tests/routes/PlayerInput.spec.ts": "5aba0f60e704f6b16ee2e4f65b045596dc03f75027096074735f8fd9acbc6ef2",
+    "tests/server/requestProcessor.spec.ts": "c56ef0bea383d6267ae8ea0a6b65972d15fdd17626248da2f5aea4c2fe88f541"
+  },
+  "scope_fingerprint": "07e62dc1c96cd92c12684e42628c444187a4d479a807da315aaa2cd29734e511",
+  "changed_modules": [],
+  "new_modules": [],
+  "removed_modules": [],
+  "comparison": "Первый scoped baseline для Sentry touch surface; предыдущая remote codemap использована только как schema reference."
+}

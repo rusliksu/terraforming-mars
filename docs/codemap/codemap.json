@@ -1,0 +1,281 @@
+{
+  "schema_version": 2,
+  "repo_name": "terraforming-mars",
+  "map_kind": "scoped-baseline",
+  "generated_at": "2026-08-11T10:46:51Z",
+  "generated_from_commit": "8a5604fa69f45898c3c18c4ac8f19104cb0e6ed5",
+  "scope": [
+    "package.json",
+    "src/server/server.ts",
+    "src/server/server/requestProcessor.ts",
+    "src/server/routes/PlayerInput.ts",
+    "tests/server/requestProcessor.spec.ts",
+    "tests/routes/PlayerInput.spec.ts"
+  ],
+  "scope_note": "Базовая карта ограничена изменяемым Sentry-контуром. Planned-связи взяты из одобренной mission; confirmed-связи имеют code evidence. После реализации WP04 переводит planned-связи в confirmed и добавляет созданные файлы в scope/lock.",
+  "nodes": [
+    {
+      "id": "server-entry",
+      "label": "HTTP server entry",
+      "type": "service",
+      "status": "confirmed",
+      "path": "src/server/server.ts",
+      "role": "Создаёт HTTP/HTTPS server, регистрирует process-level error listener и передаёт запросы в processRequest.",
+      "entrypoints": [
+        {
+          "symbol": "requestHandler(req, res)",
+          "status": "confirmed"
+        },
+        {
+          "symbol": "process.on('uncaughtException', ...)",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/server/requestProcessor.spec.ts",
+          "status": "indirect"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "src/server/server.ts",
+          "symbol": "processRequest(req, res).catch",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "request-routing",
+      "label": "Request processor",
+      "type": "service",
+      "status": "confirmed",
+      "path": "src/server/server/requestProcessor.ts",
+      "role": "Нормализует URL, создаёт request Context, выбирает handler и ведёт HTTP metrics.",
+      "entrypoints": [
+        {
+          "symbol": "processRequest(req, res)",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/server/requestProcessor.spec.ts",
+          "status": "confirmed"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "src/server/server/requestProcessor.ts",
+          "symbol": "new URL(req.url, ...)",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/server/requestProcessor.ts",
+          "symbol": "await handler.processRequest(req, res, ctx)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "player-input",
+      "label": "Player input route",
+      "type": "api",
+      "status": "confirmed",
+      "path": "src/server/routes/PlayerInput.ts",
+      "role": "Получает игрока, разбирает gameplay input, выполняет undo или основной action и формирует прежний response.",
+      "entrypoints": [
+        {
+          "symbol": "PlayerInput.processRequest",
+          "status": "confirmed"
+        },
+        {
+          "symbol": "PlayerInput.performUndo",
+          "status": "confirmed"
+        },
+        {
+          "symbol": "PlayerInput.processInput",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/routes/PlayerInput.spec.ts",
+          "status": "confirmed"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "src/server/routes/PlayerInput.ts",
+          "symbol": "game.getPlayerById(playerId)",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/routes/PlayerInput.ts",
+          "symbol": "JSON.parse(body)",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/routes/PlayerInput.ts",
+          "symbol": "player.process(entity)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "sentry-reporter",
+      "label": "Sentry reporter",
+      "type": "observability",
+      "status": "planned",
+      "path": "src/server/server/SentryReporter.ts",
+      "role": "Единственная fail-closed privacy boundary для ручного Sentry error event.",
+      "entrypoints": [
+        {
+          "symbol": "capture(error, context)",
+          "status": "planned"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/server/server/SentryReporter.spec.ts",
+          "status": "planned"
+        },
+        {
+          "path": "tests/server/server/SentryProcessBoundary.spec.ts",
+          "status": "planned"
+        },
+        {
+          "path": "tests/server/requestProcessor.spec.ts",
+          "status": "planned-extension"
+        },
+        {
+          "path": "tests/routes/PlayerInput.spec.ts",
+          "status": "planned-extension"
+        }
+      ],
+      "constraints": [
+        "Включается только при DSN + exact staging + valid build head.",
+        "Не принимает Request/Response/общий route Context.",
+        "Финальный event строится по allowlist и повторно очищается beforeSend.",
+        "HTTP/gameplay behavior и внешняя доставка не входят в baseline."
+      ]
+    },
+    {
+      "id": "sentry-ingest",
+      "label": "Sentry ingest",
+      "type": "external",
+      "status": "planned",
+      "path": "external:Sentry",
+      "role": "Внешний приёмник очищенных staging error events.",
+      "constraints": [
+        "Реальный DSN и smoke являются отдельным delivery gate."
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "server-entry",
+      "to": "request-routing",
+      "type": "calls",
+      "status": "confirmed",
+      "evidence": [
+        {
+          "path": "src/server/server.ts",
+          "symbol": "processRequest(req, res)"
+        }
+      ]
+    },
+    {
+      "from": "request-routing",
+      "to": "player-input",
+      "type": "dispatches",
+      "status": "confirmed",
+      "evidence": [
+        {
+          "path": "src/server/server/requestProcessor.ts",
+          "symbol": "await handler.processRequest(req, res, ctx)"
+        }
+      ]
+    },
+    {
+      "from": "server-entry",
+      "to": "sentry-reporter",
+      "type": "captures-process-error",
+      "status": "planned",
+      "boundary": "process"
+    },
+    {
+      "from": "request-routing",
+      "to": "sentry-reporter",
+      "type": "captures-request-error",
+      "status": "planned",
+      "boundary": "request"
+    },
+    {
+      "from": "player-input",
+      "to": "sentry-reporter",
+      "type": "captures-player-errors",
+      "status": "planned",
+      "boundaries": [
+        "player-get",
+        "player-undo",
+        "player-input"
+      ]
+    },
+    {
+      "from": "sentry-reporter",
+      "to": "sentry-ingest",
+      "type": "sends-sanitized-event",
+      "status": "planned"
+    }
+  ],
+  "flows": [
+    {
+      "id": "unexpected-request-error",
+      "status": "planned",
+      "trigger": "Unexpected request handler error",
+      "steps": [
+        "request-routing",
+        "sentry-reporter",
+        "sentry-ingest"
+      ],
+      "outcome": "Один очищенный request-boundary event; прежний 500 response формирует server entry."
+    },
+    {
+      "id": "unexpected-player-input-error",
+      "status": "planned",
+      "trigger": "Unexpected get-player, undo или main input error",
+      "steps": [
+        "request-routing",
+        "player-input",
+        "sentry-reporter",
+        "sentry-ingest"
+      ],
+      "outcome": "Один очищенный boundary-specific event; прежний PlayerInput response/gameplay flow сохраняется."
+    }
+  ],
+  "module_questions": {
+    "what_calls_sentry_reporter": [
+      "src/server/server.ts",
+      "src/server/server/requestProcessor.ts",
+      "src/server/routes/PlayerInput.ts"
+    ],
+    "what_sentry_reporter_affects": [
+      "Только формирование внешнего staging error event через @sentry/node.",
+      "Не меняет HTTP response, gameplay state, database schema или public API."
+    ],
+    "what_tests_cover_sentry_reporter": [
+      "tests/server/server/SentryReporter.spec.ts",
+      "tests/server/server/SentryProcessBoundary.spec.ts",
+      "tests/server/requestProcessor.spec.ts",
+      "tests/routes/PlayerInput.spec.ts"
+    ]
+  },
+  "unknowns": [
+    {
+      "id": "implemented-sentry-evidence",
+      "status": "planned",
+      "description": "Reporter и planned edges должны быть подтверждены по итоговому source/test tree в WP04."
+    }
+  ]
+}

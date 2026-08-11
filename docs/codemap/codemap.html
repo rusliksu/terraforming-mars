@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Code map — Sentry staging observability</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; }
+    body { margin: 0; background: #0b1220; color: #e8eefc; }
+    header, main { max-width: 1050px; margin: auto; padding: 24px; }
+    header { border-bottom: 1px solid #31405f; }
+    h1 { margin: 0 0 8px; font-size: 24px; }
+    h2 { margin-top: 28px; font-size: 18px; }
+    .muted { color: #9fb0cf; }
+    .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .node { min-width: 170px; padding: 14px; border: 1px solid #5270a8; border-radius: 10px; background: #13213b; }
+    .planned { border-style: dashed; border-color: #e8ac58; }
+    .arrow { color: #8fabd8; font-size: 22px; }
+    code { color: #bcd3ff; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 9px; text-align: left; border-bottom: 1px solid #293a59; vertical-align: top; }
+    .badge { display: inline-block; margin-right: 6px; padding: 3px 7px; border-radius: 6px; background: #253b63; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Sentry staging observability — scoped baseline</h1>
+    <div class="muted">Источник: commit <code>8a5604fa69f4</code> · planned-связи обновляются до confirmed в WP04.</div>
+  </header>
+  <main>
+    <h2>Поток неожиданной ошибки</h2>
+    <div class="flow">
+      <div class="node">HTTP server<br><code>server.ts</code><br><span class="badge">process</span></div>
+      <span class="arrow">→</span>
+      <div class="node">Request processor<br><code>requestProcessor.ts</code><br><span class="badge">request</span></div>
+      <span class="arrow">→</span>
+      <div class="node">PlayerInput<br><code>PlayerInput.ts</code><br><span class="badge">player-get</span><span class="badge">player-undo</span><span class="badge">player-input</span></div>
+      <span class="arrow">→</span>
+      <div class="node planned">SentryReporter<br><code>capture(error, context)</code><br>planned</div>
+      <span class="arrow">→</span>
+      <div class="node planned">Sentry ingest<br>sanitized staging event</div>
+    </div>
+
+    <h2>Три обязательных вопроса</h2>
+    <table>
+      <tr><th>Что вызывает модуль</th><td><code>server.ts</code>, <code>requestProcessor.ts</code>, <code>PlayerInput.ts</code>.</td></tr>
+      <tr><th>Что он затрагивает</th><td>Только формирование внешнего staging error event; HTTP response, gameplay, БД и public API не меняются.</td></tr>
+      <tr><th>Какие тесты покрывают</th><td><code>SentryReporter.spec.ts</code>, <code>SentryProcessBoundary.spec.ts</code>, <code>requestProcessor.spec.ts</code>, <code>PlayerInput.spec.ts</code>.</td></tr>
+    </table>
+
+    <h2>Статус evidence</h2>
+    <p>Существующие server/request/PlayerInput узлы подтверждены текущим кодом. Reporter, пять capture boundaries и Sentry ingest помечены как planned и должны быть переведены в confirmed только после профильных тестов и итоговой актуализации lock.</p>
+    <p class="muted">Machine-readable source: <code>docs/codemap/codemap.json</code>. Fingerprints: <code>docs/codemap/codemap.lock</code>.</p>
+  </main>
+</body>
+</html>

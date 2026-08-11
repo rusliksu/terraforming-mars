@@ -42,7 +42,7 @@ flowchart LR
   B --> O["Прежний лог/HTTP-ответ"]
 ```
 
-Шлюз не принимает `Request`, `Response`, `Context`, player или game. Это делает передачу тел, headers, cookies, query, IP и игровых идентификаторов невозможной через его публичный контракт. SDK запускается без автоматической request-инструментации, breadcrumbs и tracing. Финальный `beforeSend` возвращает только разрешённую техническую часть события и очищает сообщения/первую строку стека от форматов TM-идентификаторов.
+Шлюз не принимает `Request`, `Response`, `Context`, player или game. Это делает передачу тел, headers, cookies, query, IP и игровых идентификаторов невозможной через его публичный контракт. SDK запускается без default integrations, OpenTelemetry setup/loader hooks, breadcrumbs, tracing, logs и metrics; все категории `dataCollection` явно выключены. Финальный `beforeSend` заново строит событие только из разрешённых полей, очищает сообщение и оставляет в stack frames лишь координаты кода без variables и source context.
 
 ## Структура изменений
 
@@ -79,7 +79,7 @@ docs/codemap/codemap.lock
 - **Relevant requirements**: FR-001, FR-005, FR-007, NFR-001—NFR-004.
 - **Affected surfaces**: `package.json`, `package-lock.json`, новый `src/server/server/SentryReporter.ts`, новый профильный тест.
 - **Sequencing/depends-on**: none.
-- **Risks**: default integrations SDK могут добавлять контекст; поэтому автоматические интеграции отключаются, а `beforeSend` строит итог по allowlist. Сообщение ошибки очищается отдельно от stack frames.
+- **Risks**: SDK по умолчанию включает HTTP request isolation и широкие категории `dataCollection`; поэтому default integrations, OpenTelemetry hooks и все категории сбора выключаются, а `beforeSend` строит итог по allowlist. Сообщение ошибки очищается отдельно от stack frames.
 
 ### IC-02 — Границы неожиданных ошибок
 

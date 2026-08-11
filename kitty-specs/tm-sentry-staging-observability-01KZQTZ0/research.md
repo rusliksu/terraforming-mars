@@ -8,7 +8,9 @@
 
 ## Решение 2 — ручной capture без request-инструментации
 
-Использовать только явный `captureException` через локальный шлюз. Отключить default integrations, breadcrumbs, tracing и default PII. Перед отправкой перестроить событие по allowlist: exception type, очищенное value/stacktrace, release, environment, platform, level, timestamp и event id. Не передавать SDK объекты запросов или контекст маршрута.
+Использовать только явный `captureException` через локальный шлюз. Отключить default integrations, OpenTelemetry setup и loader hooks, breadcrumbs, tracing, logs и metrics. В `dataCollection` явно выключить user info, cookies, request/response headers и bodies, URL query, GraphQL, GenAI, database query data, stack variables и frame context lines. Перед отправкой перестроить событие по allowlist: exception type, очищенное value и минимальные stack frames, release, environment, platform, level, timestamp и event id. Не передавать SDK объекты запросов или контекст маршрута.
+
+У `@sentry/node` 10.70.0 stack parser входит в client options независимо от default integrations, поэтому ручной `captureException` сохраняет координаты стека. Включать `tracesSampleRate: 0` не нужно: tracing options остаются `undefined`, чтобы tracing не считался настроенным.
 
 **Отвергнуто:** автоматический HTTP/Express handler и default request integration. Они полезны для типового APM, но создают лишнюю поверхность для headers, URL, query, IP и cookies, что противоречит этой задаче.
 

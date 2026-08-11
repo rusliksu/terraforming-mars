@@ -14,14 +14,14 @@
 | `release` | build metadata | короткий Git head текущей сборки |
 | `exception.values[].type` | объект `Error` | имя класса; для неизвестного значения — нейтральный тип |
 | `exception.values[].value` | объект `Error` | очищенное сообщение с заменой TM-идентификаторов и сетевых маркеров |
-| `exception.values[].stacktrace.frames` | stack parser | только имена функций, файлы и координаты кода; без variables/context data |
+| `exception.values[].stacktrace.frames` | stack parser | только `filename`, `function`, `module`, `lineno`, `colno`, `in_app`; без absolute paths, variables и source context |
 
 Все прочие поля входного Sentry event удаляются, а не фильтруются выборочно.
 
 ## Запрещённые данные
 
 - `request`, URL, query, headers, cookies, IP и user-agent;
-- `user`, session, contexts, tags, extra, breadcrumbs, spans и transaction;
+- `user`, session, contexts, tags, extra, breadcrumbs, spans, transaction, logs и metrics;
 - request body, игровой input, player/game state;
 - player/game/spectator/run IDs и имена игроков;
 - произвольные свойства throwable и `Error.cause`.

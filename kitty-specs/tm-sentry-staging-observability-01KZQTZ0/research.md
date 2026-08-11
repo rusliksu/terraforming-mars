@@ -8,7 +8,7 @@
 
 ## Решение 2 — ручной capture без request-инструментации
 
-Использовать только явный `captureException` через локальный шлюз. Отключить default integrations, OpenTelemetry setup и loader hooks, breadcrumbs, tracing, logs и metrics. В `dataCollection` явно выключить user info, cookies, request/response headers и bodies, URL query, GraphQL, GenAI, database query data, stack variables и frame context lines. Перед отправкой перестроить событие по allowlist: exception type, очищенное value и минимальные stack frames, release, environment, platform, level, timestamp и event id. Не передавать SDK объекты запросов или контекст маршрута.
+Использовать только явный `captureException` через локальный шлюз. Отключить default integrations, OpenTelemetry setup и loader hooks, breadcrumbs, tracing, logs и metrics. В `dataCollection` явно выключить user info, cookies, request/response headers и bodies, URL query, GraphQL, GenAI, database query data, stack variables и frame context lines. Перед отправкой не переносить исходные message/raw stack: построить безопасное событие с закрытой категорией ошибки и нормализованными frames, release, environment, platform, level, timestamp и event id. Не передавать SDK объекты запросов или контекст маршрута.
 
 У `@sentry/node` 10.70.0 stack parser входит в client options независимо от default integrations, поэтому ручной `captureException` сохраняет координаты стека. Включать `tracesSampleRate: 0` не нужно: tracing options остаются `undefined`, чтобы tracing не считался настроенным.
 
@@ -16,7 +16,7 @@
 
 ## Решение 3 — fail-closed активация
 
-Инициализировать реальный client только если `SENTRY_DSN` непуст и `SENTRY_ENVIRONMENT` точно равно `staging`. Во всех остальных случаях шлюз остаётся no-op. Неверный DSN не должен мешать запуску: ошибка инициализации локально журналируется без значения DSN, после чего шлюз остаётся выключенным.
+Инициализировать реальный client только если `SENTRY_DSN` непуст, `SENTRY_ENVIRONMENT` точно равно `staging` и build head является hex Git revision, а не `n/a`. Во всех остальных случаях шлюз остаётся no-op. Неверный DSN не должен мешать запуску: ошибка инициализации локально журналируется без значения DSN, после чего шлюз остаётся выключенным.
 
 **Отвергнуто:** включение по одному DSN либо по `NODE_ENV`. Эти признаки не доказывают, что процесс является разрешённым staging.
 
@@ -28,11 +28,19 @@
 
 ## Решение 5 — классификация ошибок
 
-`AppError` и `InputError` остаются ожидаемыми и не отправляются. Все остальные значения на выбранных catch-границах считаются неожиданными. Для non-`Error` значений шлюз создаёт нейтральное исключение без сериализации исходного объекта.
+`AppError`, `InputError` и malformed JSON остаются ожидаемыми и не отправляются. Parse failure помечается локально, но исходный `SyntaxError` продолжает формировать прежний HTTP-ответ. Исходная неожиданная ошибка внутри undo отправляется до того, как существующий код преобразует её в ожидаемый `InputError`; ошибка получения игрока отправляется до прежнего `not found` flow. Все остальные значения на выбранных catch-границах считаются неожиданными. Для non-`Error` значений шлюз создаёт нейтральное исключение без сериализации исходного объекта.
 
 **Отвергнуто:** сериализация произвольного throwable и attached properties. Она может раскрыть request/game state и не нужна для стека.
 
-## Решение 6 — карта кода
+## Решение 6 — единственное владение capture
+
+В request flow capture выполняется только во внешнем catch `processRequest`, после чего исходная ошибка поднимается в существующий `requestHandler`, который формирует прежний 500 без второго capture. `PlayerInput` отправляет только ошибки, которые сам поглощает: ошибка получения игрока, основной неожиданный catch и исходная undo-ошибка до преобразования. Process-level `uncaughtException` остаётся отдельной последней границей; новый `unhandledRejection` listener не добавляется, чтобы не создавать конкурирующий capture на Node.js 22.
+
+## Решение 7 — независимый тестовый oracle
+
+Проверять настоящий configured Sentry client с fake transport и разбирать финальный envelope. Assertions рекурсивно запрещают как ключи, так и уникальные sentinel-значения из message, body, headers, cookies, query, IP и игровых IDs. Call-site тесты отдельно проверяют количество capture и неизменные HTTP status/body.
+
+## Решение 8 — карта кода
 
 Сначала восстановить полный пакет `html/json/lock` из текущей task-ветки. Remote-ветку `origin/codex/tm-codemap` использовать лишь как совместимый формат: её evidence и fingerprints относятся к старому commit и не являются источником истины.
 

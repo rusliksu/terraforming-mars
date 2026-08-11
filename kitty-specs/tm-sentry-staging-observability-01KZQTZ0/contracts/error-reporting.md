@@ -12,6 +12,7 @@ capture(error: unknown): void
 
 - `SENTRY_DSN` задан непустым значением;
 - `SENTRY_ENVIRONMENT` точно равно `staging`;
+- build head является валидной hex Git revision;
 - ошибка классифицирована вызывающей границей как неожиданная.
 
 ## Постусловия
@@ -23,8 +24,9 @@ capture(error: unknown): void
 
 ## Классификация
 
-- `AppError` и `InputError`: ожидаемые, `capture` не вызывается;
-- стандартный `Error`: сохраняются очищенные type/message/stack frames;
+- исходные `AppError`, `InputError` и malformed JSON: ожидаемые, `capture` не вызывается;
+- неожиданная undo-ошибка: `capture` вызывается до её преобразования в ожидаемый `InputError`;
+- стандартный `Error`: исходные message/raw stack отбрасываются; сохраняются безопасная категория и нормализованные frame coordinates;
 - иное значение: нейтральный тип и сообщение без сериализации исходного значения.
 
 ## Совместимость

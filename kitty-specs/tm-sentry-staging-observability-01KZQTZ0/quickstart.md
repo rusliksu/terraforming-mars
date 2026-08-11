@@ -13,7 +13,7 @@ npm ci
 npx mocha --import=tsx --require tests/testing/setup.ts tests/server/server/SentryReporter.spec.ts tests/server/requestProcessor.spec.ts tests/routes/PlayerInput.spec.ts
 ```
 
-Проверки используют fake transport/client и анализируют окончательное событие. Сетевой запрос в Sentry не выполняется.
+Проверки используют настоящий configured Sentry client с fake transport и анализируют финальный envelope по запрещённым ключам и sentinel-значениям. Сетевой запрос в Sentry не выполняется.
 
 ## Общие gates
 

@@ -52,6 +52,7 @@ package-lock.json
 src/server/server.ts
 src/server/server/requestProcessor.ts
 src/server/server/SentryReporter.ts           # новый privacy boundary
+src/server/server/SentryProcessBoundary.ts    # testable process-listener seam
 src/server/routes/PlayerInput.ts
 tests/server/server/SentryReporter.spec.ts     # новый config/privacy contract
 tests/server/server/SentryProcessBoundary.spec.ts # новый process-boundary contract
@@ -82,7 +83,7 @@ docs/codemap/codemap.lock
 
 - **Purpose**: включать SDK только на staging, формировать расширенное событие с жёсткой границей секретов и завершить slice первым process-level production caller.
 - **Relevant requirements**: FR-001, FR-005—FR-009, NFR-001—NFR-005.
-- **Affected surfaces**: `package.json`, `package-lock.json`, новый `src/server/server/SentryReporter.ts`, `src/server/server.ts` и два профильных теста reporter/process boundary.
+- **Affected surfaces**: `package.json`, `package-lock.json`, новые `src/server/server/SentryReporter.ts` и `src/server/server/SentryProcessBoundary.ts`, `src/server/server.ts` и два профильных теста reporter/process boundary.
 - **Sequencing/depends-on**: none.
 - **Risks**: message, stack и вложенный input могут содержать известные или неизвестные секреты; поэтому default integrations и `dataCollection` выключаются, callers структурно не передают headers/query/IP, перечисленные форматы очищаются дважды, а тесты внедряют их sentinel-значения прямо в thrown message, stack и input. Неизвестная свободная строка без сигнатуры остаётся явно признанным пределом распознавания.
 

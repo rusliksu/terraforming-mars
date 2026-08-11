@@ -6,6 +6,7 @@
   "mission_number": null,
   "mission_slug": "tm-sentry-staging-observability-01KZQTZ0",
   "mission_type": "software-dev",
+  "pr_bound": true,
   "purpose_context": "Администратор custom-сервера должен видеть необработанные ошибки и неожиданные сбои игровых запросов со стеком и версией, не передавая в Sentry тела запросов, заголовки, cookies, IP, идентификаторы игроков или игр; prod и deploy исключены.",
   "purpose_tldr": "Получать воспроизводимые серверные ошибки staging без игровых и персональных данных.",
   "slug": "tm-sentry-staging-observability-01KZQTZ0",

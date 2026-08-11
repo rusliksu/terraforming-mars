@@ -1,0 +1,52 @@
+{
+  "current_commit": "3eed4928395d0e59305847efede180d6fea67ab8",
+  "generated_from_commit": "3eed4928395d0e59305847efede180d6fea67ab8",
+  "working_tree_has_uncommitted_changes": false,
+  "generated_at": "2026-08-11T08:43:36.479Z",
+  "scanned_scope": [
+    ".",
+    ".github",
+    "assets",
+    "docs",
+    "elo",
+    "openspec",
+    "scripts",
+    "src",
+    "tests",
+    "vscode.sample"
+  ],
+  "excluded_directories": [
+    ".agents",
+    ".codex",
+    ".git",
+    ".kittify",
+    "build",
+    "cache",
+    "coverage",
+    "dist",
+    "generated",
+    "logs",
+    "node_modules",
+    "out",
+    "output",
+    "tmp",
+    "docs/codemap"
+  ],
+  "fingerprint_algorithm": "sha256(sorted tracked path + NUL + per-file SHA-256 content records; module fingerprint is SHA-256 of sorted records)",
+  "fingerprints": {
+    ".": "1873e02f3b88339dc2e786ed03d53ab16c0715b12b54a31e0a2d7276ec715b0b",
+    ".github": "602674eb52edae866d1c87fbe0ac9b1aa0743b6a7ac11388ec7c3c5c5b3cbcd5",
+    "assets": "b1d585a62ab8ea0745f47627eb1817801a37dfcefcf4c5c1c9656dd374775cd9",
+    "docs": "fe2b8573050b88d2fc96bd0be4fc354035df1f46cb2d583ec4a510d818db8a78",
+    "elo": "96d7364521a4e24dd2406bfa74262c375e5295d2e2ae66c0737850999cddd4bb",
+    "openspec": "7c730ac8ed67dd6b0b972f756cd792518b8a5281e2f8640aa41d39ee6678986a",
+    "scripts": "81dac9c6fdbd3d077fc868d7f72ee5fdbdb83acec62f877f15c496aafb2cf7fb",
+    "src": "2d1a6fa6f1fc4d436bf68a392970d5845e487035629adf4426af0b78465c0653",
+    "tests": "4fe618be4014c06aa0f05048c708c83267075227495c5b561a95735b7ccc8726",
+    "vscode.sample": "6d2b779d73492f0d9f53cc902a950169ee9872b1924bc206ca9203a67afe4a23"
+  },
+  "changed_modules": [],
+  "new_modules": [],
+  "removed_modules": [],
+  "comparison": "fresh baseline from the current task worktree; the older map was used only as the presentation scaffold"
+}

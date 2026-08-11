@@ -87,13 +87,16 @@
     "WP04": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent_profile": "curator-carla",
+      "agent_profile_version": "1.0",
       "force_count": 0,
       "lane": "for_review",
       "last_event_id": "01KZS5T1QVE5RC6MQNAYMNS4J2",
       "last_transition_at": "2026-08-11T19:46:50.747885+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Codemap commit efcd7109; combined suite 40/40; build:tests, lint:server, build:server, build, diff and SHA-256 gates passed; no external delivery."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 8172,

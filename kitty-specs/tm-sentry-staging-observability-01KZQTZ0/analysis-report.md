@@ -4,7 +4,7 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: tm-sentry-staging-observability-01KZQTZ0
 mission_id: 01KZQTZ073ZWMV2M4S86DNCBH0
-generated_at: '2026-08-11T14:54:18.077061+00:00'
+generated_at: '2026-08-11T18:18:14.406315+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
@@ -17,39 +17,39 @@ input_artifacts:
     path: C:\Users\Ruslan\.codex-planning\terraforming-mars-tm-sentry-staging-observability\kitty-specs\tm-sentry-staging-observability-01KZQTZ0\tasks.md
     sha256: 9ceed5ff55a6da6fd85a2da75fd342a086741476f4f2738e3e85f09f1ff1462f
   charter:
-    path: C:\Users\Ruslan\.codex-planning\terraforming-mars-tm-sentry-staging-observability\.kittify\charter\charter.md
-    sha256: b3f2499ae8a60dd7610098d0bad5d8eed64b57081b6c7751d3e577b932190eb4
+    path: C:\Users\Ruslan\.codex-planning\terraforming-mars-tm-sentry-staging-observability\.kittify\charter\charter.yaml
+    sha256: da2bb3f583c76245a621b994d1d4ae0402c732dc35f569dd53c4f977f46a77ee
 verdict: ready
 issue_counts:
+  medium: 0
+  critical: 0
   high: 0
   low: 0
-  critical: 0
-  medium: 0
   info: 0
 findings: []
 ---
 
 ## Отчёт анализа спецификации
 
-После переноса process-level caller и его regression в WP01 specification, plan, tasks, WP ownership и dependency graph согласованы. Минимальный `SentryProcessBoundary.ts` изолирует регистрацию listener для теста без импорта side-effectful `server.ts`. Продуктовый scope, privacy-контракт, пять итоговых callers и delivery gates не изменились.
+Specification, plan, tasks и обновлённый runtime charter согласованы. Материализация `charter.yaml` не изменила продуктовый scope: TDD, task-owned worktrees, профильные и общие quality gates, отдельные push/merge/deploy gates и запрет изменения HTTP/gameplay поведения сохранены. WP01 и WP02 приняты; WP03 остаётся независимым PlayerInput-пакетом поверх WP01, а WP04 — последовательным интеграционным пакетом после WP02/WP03.
 
 ## Покрытие требований
 
-| Группа | Покрытие | Пакеты | Примечание |
+| Группа требований | Есть задачи? | Task IDs | Примечание |
 |---|---:|---|---|
-| FR-001, FR-005—FR-009 | Да | WP01, WP04 | Reporter, публичный API, process caller, privacy и итоговые gates |
-| FR-002, FR-004, FR-006—FR-009 | Да | WP02, WP04 | Единственный request caller и неизменный HTTP flow |
-| FR-003, FR-004, FR-006—FR-009 | Да | WP03, WP04 | Три PlayerInput paths и исходная undo error |
-| NFR-001—NFR-005 | Да | WP01—WP04 | Allowlist, redaction, UTF-8 cap, envelope oracle и optional config |
-| NFR-006 | Да | WP04 | Итоговая карта кода и воспроизводимый fingerprint |
+| FR-001, FR-005—FR-009 | Да | T001—T006, T008, T010, T018—T020, T021 | Reporter, process caller, privacy и итоговые gates |
+| FR-002, FR-004, FR-006—FR-009 | Да | T007, T009, T011, T018—T020 | Request boundary принят в WP02 |
+| FR-003, FR-004, FR-006—FR-009 | Да | T012—T016, T018—T020 | Три PlayerInput paths, исходная undo error и сохранённые responses |
+| NFR-001—NFR-005 | Да | T003—T006, T012—T016, T018—T020, T021 | Allowlist, redaction, UTF-8 cap, envelope oracle и optional config |
+| NFR-006 | Да | T017—T020 | Итоговая codemap и воспроизводимый fingerprint |
 
 ## Соответствие уставу
 
-Конфликтов нет: TDD сохранён для нового process behavior, WP01 стал независимо reviewable, task-owned lane ownership не пересекается, focused/build/lint/full-build/codemap gates сохранены, внешние действия остаются отдельными gates.
+Конфликтов нет. WP03 ограничен `PlayerInput.ts` и профильным тестом, использует TDD, не меняет публичные API, БД, deploy или секреты и сохраняет прежние response/gameplay/logging paths. Общие build/codemap gates остаются единоличной ответственностью WP04.
 
 ## Непривязанные задачи
 
-Нет. T021 закрывает обнаруженный deletion-oracle gap публичного `capture`; T008/T010 дают WP01 первый production caller.
+Нет. Все T001—T021 сопоставлены с FR/NFR либо с обязательными quality/codemap gates.
 
 ## Метрики
 
@@ -62,4 +62,4 @@ findings: []
 
 ## Следующие действия
 
-Согласованная delta реализована в WP01: T021, T008 и T010 закрыты, production caller и deletion-safe oracle подтверждены. Пакет готов к независимому ревью; push, merge и deploy остаются отдельными gates.
+WP03 можно реализовывать по T012—T016 в lane-c после принятого WP01. Push, PR, merge, DSN configuration, deploy и live smoke остаются отдельными gates.

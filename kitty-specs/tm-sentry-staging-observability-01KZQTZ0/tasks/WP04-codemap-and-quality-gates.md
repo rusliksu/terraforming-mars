@@ -31,7 +31,10 @@ history:
 - timestamp: '2026-08-11T08:54:36Z'
   agent: codex
   action: Пакет сформирован как последовательная интеграция WP02 и WP03 с итоговым codemap и gates.
-agent_profile: curator-carla
+- timestamp: '2026-08-11T19:43:00Z'
+  agent: codex
+  action: Итоговый codemap зафиксирован в efcd7109; профильный suite 40/40 и все build/lint/fingerprint gates прошли без внешней доставки.
+agent_profile: reviewer-renata
 authoritative_surface: docs/codemap/
 execution_mode: code_change
 model: ''
@@ -39,7 +42,7 @@ owned_files:
 - docs/codemap/codemap.html
 - docs/codemap/codemap.json
 - docs/codemap/codemap.lock
-role: curator
+role: reviewer
 tags: []
 ---
 
@@ -47,7 +50,7 @@ tags: []
 
 ## ⚡ Do This First: Load Agent Profile
 
-Загрузи `/ad-hoc-profile-load curator-carla` до чтения остальных материалов и выполнения проверок. Применяй профиль только к этому bounded work package; product code зависимых WPs проверяй read-only и не исправляй вне owned files.
+Загрузи `/ad-hoc-profile-load reviewer-renata` до чтения остальных материалов и выполнения проверок. Выполняй только read-only review текущего bounded work package; product code и owned codemap files не исправляй в reviewer-проходе.
 
 ## Цель
 
@@ -166,14 +169,14 @@ git diff --check
 
 ## Definition of Done
 
-- [ ] WP01, WP02 и WP03 присутствуют в integration lane и не имеют unresolved conflicts.
-- [ ] Все три codemap artifacts единственным владельцем актуализированы из проверяемого итогового tree по документированной scoped-процедуре.
-- [ ] Карта показывает reporter, пять callers и четыре покрывающих test files.
-- [ ] Combined Mocha suite проходит без сети и skipped privacy cases.
-- [ ] Build-tests, server lint, server/full build и diff checks проходят либо unrelated blocker доказательно классифицирован.
-- [ ] Итоговый diff соответствует spec/plan/WP ownership и не меняет public behavior.
-- [ ] Evidence содержит head, команды и результаты, но не DSN, токены или raw secret fixtures.
-- [ ] Никакие push/PR/merge/config/deploy/live действия не выполнены.
+- [x] WP01, WP02 и WP03 присутствуют в integration lane и не имеют unresolved conflicts.
+- [x] Все три codemap artifacts единственным владельцем актуализированы из проверяемого итогового tree по документированной scoped-процедуре.
+- [x] Карта показывает reporter, пять callers и четыре покрывающих test files.
+- [x] Combined Mocha suite проходит без сети и skipped privacy cases.
+- [x] Build-tests, server lint, server/full build и diff checks проходят либо unrelated blocker доказательно классифицирован.
+- [x] Итоговый diff соответствует spec/plan/WP ownership и не меняет public behavior.
+- [x] Evidence содержит head, команды и результаты, но не DSN, токены или raw secret fixtures.
+- [x] Никакие push/PR/merge/config/deploy/live действия не выполнены.
 
 ## Reviewer Guidance
 

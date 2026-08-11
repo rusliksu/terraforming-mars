@@ -138,10 +138,10 @@ WP03 можно выполнять параллельно с WP02 после WP0
 **Prompt**: `tasks/WP04-codemap-and-quality-gates.md`  
 **Estimated prompt size**: ~210 lines
 
-- [ ] T017 После интеграции WP02 и WP03 единственным владельцем актуализировать `docs/codemap/codemap.html`, `.json` и `.lock` из подтверждённого итогового task-дерева; проверить reporter, пять callers, четыре test files и воспроизводимый scoped fingerprint.
-- [ ] T018 Выполнить объединённый Mocha-набор reporter/requestProcessor/PlayerInput с fake transport и без реального DSN или сетевого Sentry event.
-- [ ] T019 Выполнить `npm run build:tests`, `npm run lint:server`, `npm run build:server`, полный `npm run build`, JSON/codemap checks и `git diff --check`.
-- [ ] T020 Провести allowlist-review diff, сверить requirements и фактический результат, зафиксировать точные evidence и остановиться перед push/PR/merge/config/deploy/live smoke.
+- [x] T017 После интеграции WP02 и WP03 единственным владельцем актуализировать `docs/codemap/codemap.html`, `.json` и `.lock` из подтверждённого итогового task-дерева; проверить reporter, пять callers, четыре test files и воспроизводимый scoped fingerprint.
+- [x] T018 Выполнить объединённый Mocha-набор reporter/requestProcessor/PlayerInput с fake transport и без реального DSN или сетевого Sentry event.
+- [x] T019 Выполнить `npm run build:tests`, `npm run lint:server`, `npm run build:server`, полный `npm run build`, JSON/codemap checks и `git diff --check`.
+- [x] T020 Провести allowlist-review diff, сверить requirements и фактический результат, зафиксировать точные evidence и остановиться перед push/PR/merge/config/deploy/live smoke.
 
 ### Implementation sketch
 

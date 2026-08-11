@@ -1,7 +1,7 @@
 {
-  "event_count": 27,
-  "last_event_id": "01KZS1ZNC5HANB2MEJ9ZCH4VY5",
-  "materialized_at": "2026-08-11T18:40:00.389309+00:00",
+  "event_count": 28,
+  "last_event_id": "01KZS2Y913WS1PPSCM68EASEZC",
+  "materialized_at": "2026-08-11T18:56:43.555558+00:00",
   "mission_number": "",
   "mission_slug": "tm-sentry-staging-observability-01KZQTZ0",
   "mission_type": "software-dev",
@@ -11,9 +11,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
+    "for_review": 0,
     "in_progress": 0,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 1
   },
   "work_packages": {
@@ -56,20 +56,20 @@
     "WP03": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "node-norris",
-      "agent_profile_version": "1.0",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "for_review",
-      "last_event_id": "01KZS1ZNC5HANB2MEJ9ZCH4VY5",
-      "last_transition_at": "2026-08-11T18:40:00.389309+00:00",
+      "lane": "in_review",
+      "last_event_id": "01KZS2Y913WS1PPSCM68EASEZC",
+      "last_transition_at": "2026-08-11T18:56:43.555558+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Реализованы три PlayerInput boundary; RED подтверждён, focused 18/18, build:tests, lint:server и diff check прошли после rebase; независимый review PASS; финальный envelope privacy остаётся объединённым oracle WP04."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
-      "shell_pid": 27212,
-      "shell_pid_created_at": "1786472316.3028903",
+      "role": "reviewer",
+      "shell_pid": 28224,
+      "shell_pid_created_at": "1786474601.3110278",
       "subtasks": {
         "T012": "done",
         "T013": "done",

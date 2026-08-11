@@ -10,3 +10,9 @@ agents:
   - codex
   auto_commit: true
   lint_on_edit: false
+mission_type_activations:
+- software-dev
+- documentation
+- research
+- plan
+charter: .kittify/charter/charter.yaml

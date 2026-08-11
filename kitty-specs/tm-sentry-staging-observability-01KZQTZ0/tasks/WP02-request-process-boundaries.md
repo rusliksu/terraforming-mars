@@ -157,3 +157,4 @@ git diff --check
 
 - 2026-08-11T16:36:46Z – codex – shell_pid=19596 – Assigned agent via action command
 - 2026-08-11T17:00:22Z – codex – shell_pid=8728 – Assigned agent via action command
+- 2026-08-11T17:01:19Z – codex – shell_pid=8728 – Готово к ревью: request boundary отправляет ровно одно privacy-safe событие для unexpected error, сохраняет propagation и прежние expected/malformed responses; focused 10/10, build, lint, diff-check и независимое ревью PASS.

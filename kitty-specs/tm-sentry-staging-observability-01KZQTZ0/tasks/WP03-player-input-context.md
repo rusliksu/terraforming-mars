@@ -28,7 +28,7 @@ history:
 - timestamp: '2026-08-11T08:54:36Z'
   agent: codex
   action: Пакет сформирован для трёх поглощаемых PlayerInput error paths после WP01.
-agent_profile: node-norris
+agent_profile: reviewer-renata
 authoritative_surface: src/server/routes/
 create_intent: []
 execution_mode: code_change
@@ -36,7 +36,7 @@ model: ''
 owned_files:
 - src/server/routes/PlayerInput.ts
 - tests/routes/PlayerInput.spec.ts
-role: implementer
+role: reviewer
 tags: []
 ---
 

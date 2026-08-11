@@ -11,7 +11,6 @@ import {daysAgoToSeconds} from './utils';
 import {MultiMap} from 'mnemonist';
 import {Session, SessionId} from '../auth/Session';
 import {toID} from '../../common/utils/utils';
-import {chooseLastMeaningfulSaveTimeMs} from './SaveActivity';
 
 export const IN_MEMORY_SQLITE_PATH = ':memory:';
 
@@ -73,51 +72,6 @@ export class SQLite implements IDatabase {
     const sql = 'SELECT distinct game_id game_id FROM games';
     const rows = await this.asyncAll(sql, []);
     return rows.map((row) => row.game_id);
-  }
-
-  public async getLastSaveTimeMs(gameId: GameId): Promise<number | undefined> {
-    return (await this.getLastSaveTimesMs([gameId])).get(gameId);
-  }
-
-  public async getLastSaveTimesMs(gameIds: Array<GameId>): Promise<Map<GameId, number | undefined>> {
-    const uniqueGameIds = Array.from(new Set(gameIds));
-    const result = new Map<GameId, number | undefined>();
-    for (const gameId of uniqueGameIds) {
-      result.set(gameId, undefined);
-    }
-    if (uniqueGameIds.length === 0) {
-      return result;
-    }
-
-    const placeholders = uniqueGameIds.map(() => '?').join(', ');
-    const rows = await this.asyncAll(
-      `SELECT game_id, created_time
-        FROM (
-          SELECT game_id, created_time,
-            ROW_NUMBER() OVER (PARTITION BY game_id ORDER BY created_time DESC) AS row_number
-          FROM (
-            SELECT game_id, created_time
-            FROM games
-            WHERE game_id IN (${placeholders})
-              AND created_time IS NOT NULL
-            GROUP BY game_id, created_time
-          ) AS grouped_saves
-        ) AS ranked_saves
-        WHERE row_number <= 2
-        ORDER BY game_id, created_time DESC`,
-      uniqueGameIds);
-
-    const saveTimes = new Map<GameId, Array<number>>();
-    for (const row of rows) {
-      const gameId = row.game_id as GameId;
-      const times = saveTimes.get(gameId) ?? [];
-      times.push(Number(row.created_time) * 1000);
-      saveTimes.set(gameId, times);
-    }
-    for (const [gameId, times] of saveTimes.entries()) {
-      result.set(gameId, chooseLastMeaningfulSaveTimeMs(times));
-    }
-    return result;
   }
 
   saveGameResults(gameId: GameId, players: number, generations: number, gameOptions: GameOptions, scores: Array<Score>): void {

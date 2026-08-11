@@ -360,12 +360,6 @@ function useReloadingGameLoader(
     getIds(): Promise<Array<GameIdLedger>> {
       return Promise.resolve([]);
     },
-    getLastSaveTimeMs(): Promise<number | undefined> {
-      return Promise.resolve(undefined);
-    },
-    getLastSaveTimesMs(): Promise<Map<GameId, number | undefined>> {
-      return Promise.resolve(new Map());
-    },
     getGame(_id: GameId | PlayerId | SpectatorId, forceLoad?: boolean): Promise<IGame | undefined> {
       return Promise.resolve(forceLoad === true ? reloadedGame : currentGame);
     },

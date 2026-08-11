@@ -3,7 +3,7 @@ import {IGame, Score} from '../IGame';
 import {GameOptions} from '../game/GameOptions';
 import {GameId, isGameId, ParticipantId} from '../../common/Types';
 import {SerializedGame} from '../SerializedGame';
-import {Dirent, existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync} from 'fs';
+import {Dirent, existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync} from 'fs';
 import {Session, SessionId} from '../auth/Session';
 import {toID} from '../../common/utils/utils';
 
@@ -137,26 +137,6 @@ export class LocalFilesystem implements IDatabase {
       }
     });
     return Promise.resolve(gameIds);
-  }
-
-  getLastSaveTimeMs(gameId: GameId): Promise<number | undefined> {
-    return Promise.resolve(this.getLastSaveTimeMsSync(gameId));
-  }
-
-  getLastSaveTimesMs(gameIds: Array<GameId>): Promise<Map<GameId, number | undefined>> {
-    const result = new Map<GameId, number | undefined>();
-    for (const gameId of new Set(gameIds)) {
-      result.set(gameId, this.getLastSaveTimeMsSync(gameId));
-    }
-    return Promise.resolve(result);
-  }
-
-  private getLastSaveTimeMsSync(gameId: GameId): number | undefined {
-    const filename = this.filename(gameId);
-    if (!existsSync(filename)) {
-      return undefined;
-    }
-    return statSync(filename).mtimeMs;
   }
 
   saveGameResults(gameId: GameId, players: number, generations: number, gameOptions: GameOptions, scores: Array<Score>): void {

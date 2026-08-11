@@ -4,7 +4,7 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: tm-sentry-staging-observability-01KZQTZ0
 mission_id: 01KZQTZ073ZWMV2M4S86DNCBH0
-generated_at: '2026-08-11T14:07:24.776455+00:00'
+generated_at: '2026-08-11T14:54:18.077061+00:00'
 analyzer_agent: unknown
 input_artifacts:
   spec.md:
@@ -12,7 +12,7 @@ input_artifacts:
     sha256: a9db5617983d573c42ebf9352ad0ca5ee8c41d108f62de7441a5f1c519ed5bf9
   plan.md:
     path: C:\Users\Ruslan\.codex-planning\terraforming-mars-tm-sentry-staging-observability\kitty-specs\tm-sentry-staging-observability-01KZQTZ0\plan.md
-    sha256: d2f41e40db8101be4d81678caf81255925923b8da814f64143ec5002a186efdf
+    sha256: 17284b379fdcd40c07b7fa2797e309ba86c8e813ca8a2b618852cdb0687fd265
   tasks.md:
     path: C:\Users\Ruslan\.codex-planning\terraforming-mars-tm-sentry-staging-observability\kitty-specs\tm-sentry-staging-observability-01KZQTZ0\tasks.md
     sha256: 9ceed5ff55a6da6fd85a2da75fd342a086741476f4f2738e3e85f09f1ff1462f
@@ -21,8 +21,8 @@ input_artifacts:
     sha256: b3f2499ae8a60dd7610098d0bad5d8eed64b57081b6c7751d3e577b932190eb4
 verdict: ready
 issue_counts:
-  low: 0
   high: 0
+  low: 0
   critical: 0
   medium: 0
   info: 0
@@ -31,7 +31,7 @@ findings: []
 
 ## Отчёт анализа спецификации
 
-После переноса process-level caller и его regression в WP01 specification, plan, tasks, WP ownership и dependency graph согласованы. Продуктовый scope, privacy-контракт, пять итоговых callers и delivery gates не изменились.
+После переноса process-level caller и его regression в WP01 specification, plan, tasks, WP ownership и dependency graph согласованы. Минимальный `SentryProcessBoundary.ts` изолирует регистрацию listener для теста без импорта side-effectful `server.ts`. Продуктовый scope, privacy-контракт, пять итоговых callers и delivery gates не изменились.
 
 ## Покрытие требований
 
@@ -62,4 +62,4 @@ findings: []
 
 ## Следующие действия
 
-Planning delta готова к согласованию. После явного одобрения можно возобновить WP01 и реализовать T021, T008 и T010; до одобрения source-код не менять.
+Согласованная delta реализована в WP01: T021, T008 и T010 закрыты, production caller и deletion-safe oracle подтверждены. Пакет готов к независимому ревью; push, merge и deploy остаются отдельными gates.

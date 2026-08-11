@@ -1,7 +1,7 @@
 {
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-08-11T08:43:36.479Z",
-  "generated_from_commit": "3eed4928395d0e59305847efede180d6fea67ab8",
+  "generated_at": "2026-08-11T10:03:56.424Z",
+  "generated_from_commit": "4cf34ffaaefa6d52371aa48d3393ee51268e0a2e",
   "scope": [
     ".",
     ".github",
@@ -85,7 +85,7 @@
       "label": "API and page handlers",
       "type": "api",
       "path": "src/server/routes",
-      "role": "HTTP handlers for reads, player input, undo and the legacy surrender route",
+      "role": "HTTP handlers for reads, player input, undo and surrender",
       "entrypoints": [
         {
           "path": "src/server/routes/PlayerInput.ts",
@@ -118,7 +118,8 @@
         }
       ],
       "constraints": [
-        "PlayerInput and ApiSurrender currently form separate surrender mutation paths.",
+        "PlayerInput and ApiSurrender share one transactional surrender service.",
+        "After surrender, PlayerInput and Reset require the protected server capability so the old human link cannot race the bot.",
         "ApiSurrender is registered, but no browser caller was confirmed."
       ],
       "evidence": [
@@ -129,7 +130,17 @@
         },
         {
           "path": "src/server/routes/ApiSurrender.ts",
-          "symbol": "game.surrenderedPlayerIds.add(playerId)",
+          "symbol": "surrenderPlayer({game, player",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/routes/PlayerInput.ts",
+          "symbol": "surrendered player is controlled by a bot",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/routes/Reset.ts",
+          "symbol": "surrendered player is controlled by a bot",
           "status": "confirmed"
         },
         {
@@ -160,6 +171,10 @@
         {
           "path": "tests/client/components/PlayerHome.spec.ts",
           "symbol": "surrender controls"
+        },
+        {
+          "path": "tests/client/components/GameEnd.spec.ts",
+          "symbol": "orders surrendered players by VP then megacredits"
         }
       ],
       "constraints": [
@@ -186,6 +201,11 @@
           "path": "src/client/components/OrOptions.vue",
           "symbol": "selectedOption.buttonLabel",
           "status": "confirmed"
+        },
+        {
+          "path": "src/client/components/GameEnd.vue",
+          "symbol": "compareCompletionRank",
+          "status": "confirmed"
         }
       ]
     },
@@ -194,11 +214,16 @@
       "label": "Shared contracts",
       "type": "contract",
       "path": "src/common",
-      "role": "Shared paths, models, IDs and inputs",
+      "role": "Shared paths, models, IDs, inputs and completion-outcome ranking",
       "entrypoints": [
         {
           "path": "src/common/app/paths.ts",
           "symbol": "export const paths",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/common/game/CompletionOutcome.ts",
+          "symbol": "compareCompletionRank",
           "status": "confirmed"
         }
       ],
@@ -219,6 +244,11 @@
           "path": "src/common/app/paths.ts",
           "symbol": "API_GAME",
           "status": "confirmed"
+        },
+        {
+          "path": "src/common/game/CompletionOutcome.ts",
+          "symbol": "completed | surrendered | left",
+          "status": "confirmed"
         }
       ]
     },
@@ -227,7 +257,7 @@
       "label": "Game domain",
       "type": "domain",
       "path": "src/server/Game.ts",
-      "role": "Game aggregate, rules and save triggers",
+      "role": "Game aggregate, rules, final ranking and save triggers",
       "entrypoints": [
         {
           "path": "src/server/Game.ts",
@@ -247,7 +277,8 @@
       ],
       "constraints": [
         "surrenderedPlayerIds is serialized game state.",
-        "Current phase code skips surrendered seats and gameIsOver ignores them."
+        "A surrendered human seat remains in normal phase rotation because its bot continues play.",
+        "Final scores use the shared completed-before-surrendered rank."
       ],
       "evidence": [
         {
@@ -257,7 +288,7 @@
         },
         {
           "path": "src/server/Game.ts",
-          "symbol": "playersStillInGame",
+          "symbol": "compareCompletionRank",
           "status": "confirmed"
         },
         {
@@ -292,7 +323,7 @@
         }
       ],
       "constraints": [
-        "Current Surrender confirmation adds state and passes; it does not start a bot."
+        "Surrender is an in-game OrOptions confirmation; the copy says that a bot will continue the seat."
       ],
       "evidence": [
         {
@@ -302,12 +333,12 @@
         },
         {
           "path": "src/server/Player.ts",
-          "symbol": "this.game.surrenderedPlayerIds.add(this.id)",
+          "symbol": "Surrender this game? A bot will continue playing for you.",
           "status": "confirmed"
         },
         {
           "path": "src/server/Player.ts",
-          "symbol": "this.pass()",
+          "symbol": "Surrender and start bot",
           "status": "confirmed"
         }
       ]
@@ -395,7 +426,8 @@
         }
       ],
       "constraints": [
-        "Loaded games restore serialized surrender IDs but do not reconcile bot processes."
+        "Loaded unfinished games reconcile missing bot processes for surrendered human seats.",
+        "Finished games and original bot seats are skipped."
       ],
       "evidence": [
         {
@@ -405,7 +437,7 @@
         },
         {
           "path": "src/server/database/GameLoader.ts",
-          "symbol": "await this.add(game)",
+          "symbol": "reconcileSurrenderedBots",
           "status": "confirmed"
         },
         {
@@ -581,7 +613,7 @@
       "label": "Bot takeover",
       "type": "worker",
       "path": "src/server/bot/BotTakeoverManager.ts",
-      "role": "Child-process lifecycle for bots",
+      "role": "Child-process lifecycle for original bots and surrendered-seat takeovers",
       "entrypoints": [
         {
           "path": "src/server/bot/BotTakeoverManager.ts",
@@ -601,7 +633,7 @@
       ],
       "constraints": [
         "Runtime child-process state is in-memory and keyed by player ID.",
-        "start is idempotent for an already active player; restart reconciliation is absent."
+        "start is idempotent for an already active player; GameLoader performs restart reconciliation."
       ],
       "evidence": [
         {
@@ -618,6 +650,11 @@
           "path": "src/server/bot/BotTakeoverManager.ts",
           "symbol": "public stop(playerId",
           "status": "confirmed"
+        },
+        {
+          "path": "src/server/surrender/SurrenderService.ts",
+          "symbol": "manager.start({gameId: game.id, playerId: player.id",
+          "status": "confirmed"
         }
       ]
     },
@@ -626,7 +663,7 @@
       "label": "ELO sync",
       "type": "worker",
       "path": "src/server/elo/EloSyncService.ts",
-      "role": "Completed-game ELO persistence",
+      "role": "Completed-game ELO persistence and completion-outcome ranking",
       "entrypoints": [
         {
           "path": "src/server/elo/EloSyncService.ts",
@@ -637,14 +674,20 @@
       "tests": [
         {
           "path": "tests/server/EloSyncService.spec.ts",
-          "symbol": "surrendered player as a leave"
+          "symbol": "ranks completed, surrendered and left outcomes before VP"
         }
       ],
       "constraints": [
-        "Current default maps surrenderedPlayerIds into confirmed leaves.",
+        "Ranking is completed, then surrendered, then confirmed left; VP and MC break ties inside a group.",
+        "A surrender is a known outcome but not a reliability leave.",
         "Games with original botPlayerIds remain excluded from ELO."
       ],
       "evidence": [
+        {
+          "path": "src/server/elo/EloSyncService.ts",
+          "symbol": "surrenderedPlayerIds",
+          "status": "confirmed"
+        },
         {
           "path": "src/server/elo/EloSyncService.ts",
           "symbol": "confirmedLeavePlayerIds",
@@ -652,12 +695,7 @@
         },
         {
           "path": "src/server/elo/EloSyncService.ts",
-          "symbol": "game.surrenderedPlayerIds",
-          "status": "confirmed"
-        },
-        {
-          "path": "src/server/elo/EloSyncService.ts",
-          "symbol": "game.botPlayerIds",
+          "symbol": "compareCompletionRank",
           "status": "confirmed"
         }
       ]
@@ -951,6 +989,11 @@
           "path": "src/server/routes/ApiCreateGame.ts",
           "symbol": "this.botManager.start",
           "status": "confirmed"
+        },
+        {
+          "path": "src/server/surrender/SurrenderService.ts",
+          "symbol": "manager.start({gameId: game.id, playerId: player.id",
+          "status": "confirmed"
         }
       ]
     },
@@ -989,6 +1032,19 @@
         {
           "path": "src/server/Game.ts",
           "symbol": "DeferredActionsQueue",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "game-domain",
+      "to": "common-contracts",
+      "type": "imports",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "compareCompletionRank",
           "status": "confirmed"
         }
       ]
@@ -1054,6 +1110,32 @@
         {
           "path": "src/server/database/GameLoader.ts",
           "symbol": "EloSyncService.getInstance().recordCompletedGame(game)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "loader-cache",
+      "to": "bot-takeover",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/database/GameLoader.ts",
+          "symbol": "reconcileSurrenderedBots",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "elo-sync",
+      "to": "common-contracts",
+      "type": "imports",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/elo/EloSyncService.ts",
+          "symbol": "compareCompletionRank",
           "status": "confirmed"
         }
       ]
@@ -1259,7 +1341,7 @@
         "loader-cache",
         "elo-sync"
       ],
-      "outcome": "Игра записана в ELO primary и mirror."
+      "outcome": "Игра записана в ELO primary и mirror с порядком completed, surrendered, left."
     },
     {
       "id": "flow-sim",
@@ -1274,7 +1356,7 @@
     },
     {
       "id": "flow-surrender-player",
-      "name": "Surrender через player input (текущее состояние)",
+      "name": "Surrender через player input",
       "trigger": "Player selects and confirms Surrender in the action prompt",
       "steps": [
         "client-ui",
@@ -1284,23 +1366,24 @@
         "player-domain",
         "game-domain",
         "loader-cache",
-        "database-facade"
+        "database-facade",
+        "bot-takeover"
       ],
-      "outcome": "Surrender ID is persisted and the player passes; this path does not start BotTakeoverManager."
+      "outcome": "The shared service persists surrender, advances the prompt and starts an idempotent bot takeover for the same seat."
     },
     {
       "id": "flow-surrender-legacy",
-      "name": "Legacy API Surrender (текущее состояние)",
+      "name": "Legacy API Surrender",
       "trigger": "Direct GET/POST to api/surrender with a player ID",
       "steps": [
         "request-routing",
         "api-handlers",
-        "bot-takeover",
         "game-domain",
         "loader-cache",
-        "database-facade"
+        "database-facade",
+        "bot-takeover"
       ],
-      "outcome": "The route stops an existing bot, records surrender and advances; no browser caller is confirmed."
+      "outcome": "The route uses the same transactional surrender and bot-takeover service; no browser caller is confirmed."
     },
     {
       "id": "flow-undo-hidden",
@@ -1331,23 +1414,6 @@
         {
           "path": "src/server/server/requestProcessor.ts",
           "symbol": "paths.API_SURRENDER",
-          "status": "confirmed"
-        }
-      ]
-    },
-    {
-      "id": "surrender-restart-reconciliation",
-      "status": "missing",
-      "description": "Persisted surrenderedPlayerIds are restored, but no startup bot-process reconciliation exists.",
-      "evidence": [
-        {
-          "path": "src/server/Game.ts",
-          "symbol": "for (const playerId of d.surrenderedPlayerIds",
-          "status": "confirmed"
-        },
-        {
-          "path": "src/server/database/GameLoader.ts",
-          "symbol": "await this.add(game)",
           "status": "confirmed"
         }
       ]

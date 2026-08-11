@@ -41,9 +41,9 @@
 - [x] T004 Добавить RED-тесты recursive denylist, перечисленных credential/header/cookie/query/IP форматов в message/stack/input, циклов, глубины и детерминированного UTF-8 truncation wrapper.
 - [x] T005 Реализовать `src/server/server/SentryReporter.ts`: типизированный context, fail-closed init, ручной event allowlist, stack parser, sanitizer, cap и защитный `beforeSend` без default integrations/data collection.
 - [x] T006 Довести focused reporter suite до GREEN; доказать no-op/no-throw при выключенной конфигурации и отказе transport, отсутствие нового обязательного env и отсутствие реальной доставки.
-- [ ] T021 Добавить black-box oracle экспортируемой функции `capture`: временный no-op её тела обязан ломать тест без реального DSN или сети.
-- [ ] T008 Добавить RED-регрессию process-level `uncaughtException` с `{boundary: 'process'}` и без нового `unhandledRejection` listener.
-- [ ] T010 Подключить reporter к существующему process listener, сохранив локальное логирование и не ожидая сетевую доставку.
+- [x] T021 Добавить black-box oracle экспортируемой функции `capture`: временный no-op её тела обязан ломать тест без реального DSN или сети.
+- [x] T008 Добавить RED-регрессию process-level `uncaughtException` с `{boundary: 'process'}` и без нового `unhandledRejection` listener.
+- [x] T010 Подключить reporter к существующему process listener, сохранив локальное логирование и не ожидая сетевую доставку.
 
 ### Implementation sketch
 

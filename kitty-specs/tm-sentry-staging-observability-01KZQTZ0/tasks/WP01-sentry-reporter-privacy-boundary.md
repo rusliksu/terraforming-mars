@@ -30,7 +30,7 @@ history:
 - timestamp: '2026-08-11T08:54:36Z'
   agent: codex
   action: Пакет сформирован из одобренных spec/plan и privacy-аудита PASS.
-agent_profile: node-norris
+agent_profile: reviewer-renata
 authoritative_surface: src/server/server/
 create_intent:
 - src/server/server/SentryReporter.ts
@@ -47,7 +47,7 @@ owned_files:
 - src/server/server.ts
 - tests/server/server/SentryReporter.spec.ts
 - tests/server/server/SentryProcessBoundary.spec.ts
-role: implementer
+role: reviewer
 tags: []
 ---
 
@@ -297,4 +297,6 @@ git diff --check
 - 2026-08-11T13:54:26Z – codex – shell_pid=30640 – Review cycle 1: требуется устранить dead production module, покрыть публичный capture и записать T001 evidence.
 - 2026-08-11T14:03:48Z – codex – Проверен baseline commit `8a5604fa69f45898c3c18c4ac8f19104cb0e6ed5` и scoped composite fingerprint `07e62dc1c96cd92c12684e42628c444187a4d479a807da315aaa2cd29734e511`; composite совпал с `docs/codemap/codemap.lock`.
 - 2026-08-11T14:03:48Z – codex – Planning delta: process caller и его regression перенесены из WP02 в WP01, добавлен deletion-safe oracle публичного `capture`; source-код не изменялся.
+- 2026-08-11T14:52:02Z – codex – Cycle 2 исправлен в commit `670a3a10`: `server.ts` регистрирует testable process callback, публичный `capture` покрыт изолированным oracle; мутация no-op дала 0 passing/1 failing, после восстановления focused suite 12/12 GREEN.
+- 2026-08-11T14:52:02Z – codex – `build:tests`, `lint:server`, `build:server`, полный build и `git diff --check` прошли. Full server suite: 7350 passing и один unrelated environment failure из-за отсутствующего native binding `better-sqlite3`. Production audit: три baseline high через неизменённые Vue/Webpack chains, не через `@sentry/node`; push/deploy/network event не выполнялись.
 - 2026-08-11T14:25:15Z – codex – shell_pid=30348 – Started implementation via action command

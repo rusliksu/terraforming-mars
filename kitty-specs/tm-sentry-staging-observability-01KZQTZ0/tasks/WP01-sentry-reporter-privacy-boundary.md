@@ -21,7 +21,7 @@ subtasks:
 phase: Фаза 1 — диагностический шлюз
 assignee: ''
 agent: "codex"
-shell_pid: "30352"
+shell_pid: "30640"
 history:
 - timestamp: '2026-08-11T08:54:36Z'
   agent: codex
@@ -239,3 +239,4 @@ git diff --check
 
 - 2026-08-11T13:07:04Z – codex – shell_pid=30352 – Assigned agent via action command
 - 2026-08-11T13:40:04Z – codex – shell_pid=30352 – Реализация завершена: RED 2/6 затем GREEN 9/9; mutation oracle поймал снятие beforeSend; npm ci, build:tests, lint:server, build:server, полный build и diff-check прошли; сеть, DSN, push и deploy не использовались.
+- 2026-08-11T13:42:40Z – codex – shell_pid=30640 – Started review via action command

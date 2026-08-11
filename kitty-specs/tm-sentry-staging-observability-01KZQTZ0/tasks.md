@@ -34,12 +34,12 @@
 **Prompt**: `tasks/WP01-sentry-reporter-privacy-boundary.md`  
 **Estimated prompt size**: ~300 lines
 
-- [ ] T001 До первой source-правки read-only проверить уже зафиксированные `docs/codemap/codemap.html`, `.json` и `.lock`: три ответа callers/impact/tests, существование evidence paths и совпадение scoped fingerprint.
-- [ ] T002 Добавить точную dependency `@sentry/node` 10.70.0 через штатный npm workflow, изменив только `package.json` и `package-lock.json`.
-- [ ] T003 Добавить RED-тесты activation matrix, valid/`n/a` release, обязательного boundary и полного разрешённого envelope через настоящий configured client с fake transport.
-- [ ] T004 Добавить RED-тесты recursive denylist, перечисленных credential/header/cookie/query/IP форматов в message/stack/input, циклов, глубины и детерминированного UTF-8 truncation wrapper.
-- [ ] T005 Реализовать `src/server/server/SentryReporter.ts`: типизированный context, fail-closed init, ручной event allowlist, stack parser, sanitizer, cap и защитный `beforeSend` без default integrations/data collection.
-- [ ] T006 Довести focused reporter suite до GREEN; доказать no-op/no-throw при выключенной конфигурации и отказе transport, отсутствие нового обязательного env и отсутствие реальной доставки.
+- [x] T001 До первой source-правки read-only проверить уже зафиксированные `docs/codemap/codemap.html`, `.json` и `.lock`: три ответа callers/impact/tests, существование evidence paths и совпадение scoped fingerprint.
+- [x] T002 Добавить точную dependency `@sentry/node` 10.70.0 через штатный npm workflow, изменив только `package.json` и `package-lock.json`.
+- [x] T003 Добавить RED-тесты activation matrix, valid/`n/a` release, обязательного boundary и полного разрешённого envelope через настоящий configured client с fake transport.
+- [x] T004 Добавить RED-тесты recursive denylist, перечисленных credential/header/cookie/query/IP форматов в message/stack/input, циклов, глубины и детерминированного UTF-8 truncation wrapper.
+- [x] T005 Реализовать `src/server/server/SentryReporter.ts`: типизированный context, fail-closed init, ручной event allowlist, stack parser, sanitizer, cap и защитный `beforeSend` без default integrations/data collection.
+- [x] T006 Довести focused reporter suite до GREEN; доказать no-op/no-throw при выключенной конфигурации и отказе transport, отсутствие нового обязательного env и отсутствие реальной доставки.
 
 ### Implementation sketch
 

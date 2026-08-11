@@ -75,9 +75,9 @@
 **Prompt**: `tasks/WP02-request-process-boundaries.md`  
 **Estimated prompt size**: ~180 lines
 
-- [ ] T007 Добавить RED-регрессию capture только во внешнем catch `processRequest`, включая method и нормализованный path без query.
-- [ ] T009 Подключить request capture в `requestProcessor.ts`, сохранив `requestHandler` только владельцем прежнего 500-ответа и исключив двойную отправку.
-- [ ] T011 Выполнить focused request tests и проверить прежние HTTP status/body, malformed JSON classification и единичное владение capture.
+- [x] T007 Добавить RED-регрессию capture только во внешнем catch `processRequest`, включая method и нормализованный path без query.
+- [x] T009 Подключить request capture в `requestProcessor.ts`, сохранив `requestHandler` только владельцем прежнего 500-ответа и исключив двойную отправку.
+- [x] T011 Выполнить focused request tests и проверить прежние HTTP status/body, malformed JSON classification и единичное владение capture.
 
 ### Implementation sketch
 

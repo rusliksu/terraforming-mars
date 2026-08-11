@@ -11,9 +11,6 @@ tracker_refs: []
 planning_base_branch: codex/tm-sentry-staging-observability
 merge_target_branch: codex/tm-sentry-staging-observability
 branch_strategy: Planning artifacts for this mission were generated on codex/tm-sentry-staging-observability. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into codex/tm-sentry-staging-observability unless the human explicitly redirects the landing branch.
-base_branch: kitty/mission-tm-sentry-staging-observability-01KZQTZ0
-base_commit: a7919acfabccd8d4d8c9fadb89eb58816e8597e0
-created_at: '2026-08-11T13:06:59.523467+00:00'
 subtasks:
 - T001
 - T002
@@ -23,8 +20,8 @@ subtasks:
 - T006
 phase: Фаза 1 — диагностический шлюз
 assignee: ''
-agent: codex
-shell_pid: '30352'
+agent: "codex"
+shell_pid: "30352"
 history:
 - timestamp: '2026-08-11T08:54:36Z'
   agent: codex
@@ -237,3 +234,7 @@ git diff --check
 ## Reviewer Guidance
 
 Отклони решение, если оно тестирует только unit sanitizer, использует fake Sentry client вместо fake transport, делает context опциональным, сохраняет автоматический HTTP context, обещает распознавание произвольного секрета или измеряет JavaScript characters вместо UTF-8 bytes. Проверь, что caller-facing метод остаётся синхронным best-effort и что release `n/a` не включает SDK.
+
+## Activity Log
+
+- 2026-08-11T13:07:04Z – codex – shell_pid=30352 – Assigned agent via action command

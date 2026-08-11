@@ -1,7 +1,7 @@
 {
-  "event_count": 3,
-  "last_event_id": "01KZR13JD91WGYDZ4RWTA934S8",
-  "materialized_at": "2026-08-11T09:05:25.417472+00:00",
+  "event_count": 4,
+  "last_event_id": "01KZR13K80B8QCP3AAZTJNQS59",
+  "materialized_at": "2026-08-11T09:05:26.272039+00:00",
   "mission_number": "",
   "mission_slug": "tm-sentry-staging-observability-01KZQTZ0",
   "mission_type": "software-dev",
@@ -14,7 +14,7 @@
     "for_review": 0,
     "in_progress": 0,
     "in_review": 0,
-    "planned": 3
+    "planned": 4
   },
   "work_packages": {
     "WP01": {
@@ -37,6 +37,13 @@
       "lane": "planned",
       "last_event_id": "01KZR13JD91WGYDZ4RWTA934S8",
       "last_transition_at": "2026-08-11T09:05:25.417472+00:00"
+    },
+    "WP04": {
+      "actor": "finalize-tasks",
+      "force_count": 0,
+      "lane": "planned",
+      "last_event_id": "01KZR13K80B8QCP3AAZTJNQS59",
+      "last_transition_at": "2026-08-11T09:05:26.272039+00:00"
     }
   }
 }

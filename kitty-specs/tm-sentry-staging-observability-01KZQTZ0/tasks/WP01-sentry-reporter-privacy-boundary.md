@@ -10,7 +10,7 @@ requirement_refs:
 tracker_refs: []
 planning_base_branch: codex/tm-sentry-staging-observability
 merge_target_branch: codex/tm-sentry-staging-observability
-branch_strategy: Planning artifacts were generated on codex/tm-sentry-staging-observability. Execution worktrees are allocated per computed lane from lanes.json; completed changes must merge back into codex/tm-sentry-staging-observability. External delivery remains a separate PR to main.
+branch_strategy: Planning artifacts for this mission were generated on codex/tm-sentry-staging-observability. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into codex/tm-sentry-staging-observability unless the human explicitly redirects the landing branch.
 subtasks:
 - T001
 - T002
@@ -27,7 +27,9 @@ history:
   action: Пакет сформирован из одобренных spec/plan и privacy-аудита PASS.
 agent_profile: node-norris
 authoritative_surface: src/server/server/
-create_intent: []
+create_intent:
+- src/server/server/SentryReporter.ts
+- tests/server/server/SentryReporter.spec.ts
 execution_mode: code_change
 model: ''
 owned_files:

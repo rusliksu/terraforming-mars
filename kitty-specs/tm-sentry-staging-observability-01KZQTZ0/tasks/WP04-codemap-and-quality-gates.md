@@ -17,7 +17,7 @@ requirement_refs:
 tracker_refs: []
 planning_base_branch: codex/tm-sentry-staging-observability
 merge_target_branch: codex/tm-sentry-staging-observability
-branch_strategy: Planning artifacts were generated on codex/tm-sentry-staging-observability. This integration WP runs after the accepted WP02 and WP03 lanes from lanes.json; completed artifacts must merge back into codex/tm-sentry-staging-observability. External delivery remains a separate PR to main.
+branch_strategy: Planning artifacts for this mission were generated on codex/tm-sentry-staging-observability. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into codex/tm-sentry-staging-observability unless the human explicitly redirects the landing branch.
 subtasks:
 - T017
 - T018
@@ -32,7 +32,10 @@ history:
   action: Пакет сформирован как последовательная интеграция WP02 и WP03 с итоговым codemap и gates.
 agent_profile: curator-carla
 authoritative_surface: docs/codemap/
-create_intent: []
+create_intent:
+- docs/codemap/codemap.html
+- docs/codemap/codemap.json
+- docs/codemap/codemap.lock
 execution_mode: code_change
 model: ''
 owned_files:

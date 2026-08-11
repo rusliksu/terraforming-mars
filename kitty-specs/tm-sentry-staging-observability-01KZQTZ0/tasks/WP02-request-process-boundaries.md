@@ -13,7 +13,7 @@ requirement_refs:
 tracker_refs: []
 planning_base_branch: codex/tm-sentry-staging-observability
 merge_target_branch: codex/tm-sentry-staging-observability
-branch_strategy: Planning artifacts were generated on codex/tm-sentry-staging-observability. This WP branches from the accepted WP01 lane via lanes.json and may run in parallel with WP03; completed changes must merge back into codex/tm-sentry-staging-observability. External delivery remains a separate PR to main.
+branch_strategy: Planning artifacts for this mission were generated on codex/tm-sentry-staging-observability. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into codex/tm-sentry-staging-observability unless the human explicitly redirects the landing branch.
 subtasks:
 - T007
 - T008
@@ -29,7 +29,8 @@ history:
   action: Пакет сформирован для единственного владения request/process capture после WP01.
 agent_profile: node-norris
 authoritative_surface: src/server/
-create_intent: []
+create_intent:
+- tests/server/server/SentryProcessBoundary.spec.ts
 execution_mode: code_change
 model: ''
 owned_files:

@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "mission_slug": "tm-sentry-staging-observability-01KZQTZ0",
+  "mission_id": "01KZQTZ073ZWMV2M4S86DNCBH0",
+  "mission_branch": "kitty/mission-tm-sentry-staging-observability-01KZQTZ0",
+  "target_branch": "codex/tm-sentry-staging-observability",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "package-lock.json",
+        "package.json",
+        "src/server/server/SentryReporter.ts",
+        "tests/server/server/SentryReporter.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/server/server.ts",
+        "src/server/server/requestProcessor.ts",
+        "tests/server/requestProcessor.spec.ts",
+        "tests/server/server/SentryProcessBoundary.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/server/routes/PlayerInput.ts",
+        "tests/routes/PlayerInput.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "docs/codemap/codemap.html",
+        "docs/codemap/codemap.json",
+        "docs/codemap/codemap.lock"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-b",
+        "lane-c"
+      ],
+      "parallel_group": 2
+    }
+  ],
+  "computed_at": "2026-08-11T09:05:26.965781+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": []
+}

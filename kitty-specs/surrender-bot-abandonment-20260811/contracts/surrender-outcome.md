@@ -8,6 +8,8 @@
 
 ## Успех
 
+- Option/button и confirmation до отправки действия явно сообщают, что место
+  продолжит бот.
 - HTTP/player-input response остается успешным.
 - Persisted game содержит player ID в `surrenderedPlayerIds`.
 - Runtime manager показывает активного бота за тот же player ID.

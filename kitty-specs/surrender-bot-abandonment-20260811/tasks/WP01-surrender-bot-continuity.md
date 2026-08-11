@@ -3,7 +3,7 @@ work_package_id: "WP01"
 title: "Атомарная сдача и непрерывность бота"
 dependencies: []
 subtasks: ["T001", "T002", "T003", "T004", "T005", "T006"]
-requirement_refs: ["FR-001", "FR-002", "FR-003", "FR-004", "FR-005", "FR-006", "FR-009", "FR-010", "FR-011", "FR-012", "NFR-001", "NFR-002", "NFR-003", "C-001", "C-002", "C-004", "C-005"]
+requirement_refs: ["FR-001", "FR-002", "FR-003", "FR-004", "FR-005", "FR-006", "FR-009", "FR-010", "FR-011", "FR-012", "NFR-001", "NFR-002", "NFR-003", "C-001", "C-002", "C-004", "C-005", "C-006"]
 planning_base_branch: "main"
 merge_target_branch: "main"
 branch_strategy: "task-owned PR"
@@ -70,6 +70,7 @@ diff. Do not touch the dirty primary checkout or any other worktree.
 Добавить focused contracts до production code:
 
 - успешное подтверждение запускает bot manager за тот же player ID;
+- видимая Surrender button и confirmation сообщают о запуске бота;
 - отмена подтверждения не меняет state/process/action counters;
 - missing bot script или spawn failure оставляет human-controlled state;
 - save failure компенсирует уже созданный process;
@@ -79,6 +80,10 @@ diff. Do not touch the dirty primary checkout or any other worktree.
 
 Тесты должны проверять observable state и manager calls, а не приватные поля
 конкретной реализации.
+
+Существующие `PlayerInput`, `Reset` и `WaitingFor` regressions для
+hidden-information warning должны оставаться зелеными для Undo action и Undo
+one step; не заменять их новым surrender-specific механизмом.
 
 ## T003 — один transition
 
@@ -156,3 +161,4 @@ tests не менее трех раз; зафиксировать команды
 - Убедиться, что bot process не получает чужую capability.
 - Проследить отсутствие скрытого раннего game end.
 - Проверить, что новый restore hook не создает duplicate child processes.
+- Проверить, что изменения `PlayerInput` не обходят hidden-info confirmation.

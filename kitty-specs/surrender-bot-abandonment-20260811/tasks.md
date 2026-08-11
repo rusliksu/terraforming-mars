@@ -70,6 +70,7 @@ persisted state, restore без process.
 | NFR-003 | WP01, WP02 | три стабильных прогона focused regressions |
 | NFR-004 | WP02 | staging WGT smoke без console errors и зависшего prompt |
 | C-001–C-005 | WP01, WP02 | отсутствие auto-abandon, live/DB/prod gates и разделение bot IDs |
+| C-006 | WP01, WP02 | сохранение hidden-info confirmation для action/step undo |
 
 ## Последовательность
 

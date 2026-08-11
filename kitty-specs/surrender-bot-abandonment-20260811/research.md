@@ -49,3 +49,16 @@ reconciliation из сохраненной игры предотвращает �
 
 **Причина**: вкладка, пауза и пошаговая игра не являются надежным доказательством
 лива; автоматизация создала бы ложные наказания.
+
+## Проверка UX: подтверждения Surrender и Undo
+
+**Surrender сейчас**: `Player.surrenderOption` уже открывает второй игровой
+`OrOptions` prompt с вариантами Surrender/Continue. Это встроенный экран выбора,
+а не browser modal. Текущий текст не сообщает, что после подтверждения стартует
+бот, поэтому option/button и confirmation должны получить явный bot copy.
+
+**Undo сейчас**: оба пути, `Undo action` и `Undo one step`, проверяют
+`hasRevealedHiddenInformation`. Сервер отвечает специальным error ID и не
+выполняет откат, пока клиент не покажет `window.confirm` и не повторит запрос с
+`confirmHiddenInformation=true`. Это уже покрыто route и client regressions;
+mission сохраняет поведение без отдельной переработки.

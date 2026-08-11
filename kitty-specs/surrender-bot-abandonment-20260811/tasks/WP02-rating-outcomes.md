@@ -3,7 +3,7 @@ work_package_id: "WP02"
 title: "Outcome groups, рейтинг и delivery evidence"
 dependencies: ["WP01"]
 subtasks: ["T007", "T008", "T009", "T010", "T011", "T012"]
-requirement_refs: ["FR-007", "FR-008", "FR-011", "NFR-003", "NFR-004", "C-001", "C-002", "C-003", "C-004", "C-005"]
+requirement_refs: ["FR-007", "FR-008", "FR-011", "NFR-003", "NFR-004", "C-001", "C-002", "C-003", "C-004", "C-005", "C-006"]
 planning_base_branch: "main"
 merge_target_branch: "main"
 branch_strategy: "task-owned PR"

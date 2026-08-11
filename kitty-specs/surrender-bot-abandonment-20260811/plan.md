@@ -47,6 +47,10 @@ preflight bot start, persisted state update, save, audit и компенсаци
 Transition не должен требовать game-level shared token и не должен давать
 управление чужим player ID.
 
+Player-facing copy должен быть однозначным: основная кнопка и подтверждающий
+экран сообщают, что Surrender также запускает бота за это место. Существующий
+Continue path сохраняется без side effects.
+
 ### 2. Игровой цикл
 
 Убрать трактовку `surrenderedPlayerIds` как списка неиграющих мест:
@@ -99,10 +103,15 @@ post-state verification.
 - **Два пути сдачи**: divergent behavior — один transition/service и call-site
   inventory из codemap.
 - **Ложный abandoned**: inactivity detector запрещен scope constraint.
+- **Undo regression**: изменения `PlayerInput` не должны обходить существующий
+  hidden-information error/confirmation/retry contract для Undo action и Undo
+  one step.
 
 ## Проверки
 
-- Focused tests сначала красные, затем зеленые для transition, WGT, restore и ELO.
+- Focused tests сначала красные, затем зеленые для bot-aware Surrender copy,
+  transition, WGT, restore и ELO.
+- Существующие server/client hidden-information undo tests остаются зелеными.
 - `npm run build:tests`.
 - ESLint только затронутых source/test files, затем релевантный полный test set.
 - `npm run build` после targeted green.

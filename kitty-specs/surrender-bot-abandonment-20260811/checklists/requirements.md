@@ -15,7 +15,8 @@
 - [x] Нет нерешенных clarification markers.
 - [x] FR, NFR и constraints разделены и имеют уникальные ID и статус.
 - [x] NFR имеют измеримые пороги.
-- [x] Сценарии покрывают happy path, отмену, ошибку запуска, рестарт и рейтинг.
+- [x] Сценарии покрывают happy path, отмену, bot-aware copy, ошибку запуска,
+  рестарт, рейтинг и hidden-information undo guard.
 - [x] Scope, допущения, зависимости и live/DB gates зафиксированы.
 
 ## Готовность

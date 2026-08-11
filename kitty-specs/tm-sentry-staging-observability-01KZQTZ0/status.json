@@ -1,7 +1,7 @@
 {
-  "event_count": 29,
-  "last_event_id": "01KZS3FY7998NAPRG7HSJK30Z4",
-  "materialized_at": "2026-08-11T19:06:22.313347+00:00",
+  "event_count": 31,
+  "last_event_id": "01KZS45MK3C3K2NCPK7PFYZ851",
+  "materialized_at": "2026-08-11T19:18:13.345289+00:00",
   "mission_number": "",
   "mission_slug": "tm-sentry-staging-observability-01KZQTZ0",
   "mission_type": "software-dev",
@@ -12,9 +12,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 1
+    "planned": 0
   },
   "work_packages": {
     "WP01": {
@@ -85,11 +85,14 @@
       }
     },
     "WP04": {
-      "actor": "finalize-tasks",
+      "actor": "codex",
+      "agent": "codex",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01KZR13K80B8QCP3AAZTJNQS59",
-      "last_transition_at": "2026-08-11T09:05:26.272039+00:00"
+      "lane": "in_progress",
+      "last_event_id": "01KZS45MK3C3K2NCPK7PFYZ851",
+      "last_transition_at": "2026-08-11T19:18:13.345289+00:00",
+      "shell_pid": 8172,
+      "shell_pid_created_at": "1786475885.5845044"
     }
   }
 }

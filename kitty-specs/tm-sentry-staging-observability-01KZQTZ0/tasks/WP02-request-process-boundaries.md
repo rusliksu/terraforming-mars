@@ -22,6 +22,7 @@ subtasks:
 phase: Фаза 2 — верхнеуровневые границы
 assignee: ''
 agent: codex
+shell_pid: '19596'
 history:
 - timestamp: '2026-08-11T08:54:36Z'
   agent: codex

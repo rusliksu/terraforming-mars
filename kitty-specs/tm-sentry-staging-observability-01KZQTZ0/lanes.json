@@ -13,7 +13,9 @@
       "write_scope": [
         "package-lock.json",
         "package.json",
+        "src/server/server.ts",
         "src/server/server/SentryReporter.ts",
+        "tests/server/server/SentryProcessBoundary.spec.ts",
         "tests/server/server/SentryReporter.spec.ts"
       ],
       "predicted_surfaces": [
@@ -29,14 +31,11 @@
         "WP02"
       ],
       "write_scope": [
-        "src/server/server.ts",
         "src/server/server/requestProcessor.ts",
-        "tests/server/requestProcessor.spec.ts",
-        "tests/server/server/SentryProcessBoundary.spec.ts"
+        "tests/server/requestProcessor.spec.ts"
       ],
       "predicted_surfaces": [
-        "api",
-        "legacy-cleanup"
+        "api"
       ],
       "depends_on_lanes": [
         "lane-a"
@@ -83,7 +82,7 @@
       "parallel_group": 2
     }
   ],
-  "computed_at": "2026-08-11T10:53:43.112495+00:00",
+  "computed_at": "2026-08-11T14:04:22.902176+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": []
 }

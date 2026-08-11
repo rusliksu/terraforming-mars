@@ -1,6 +1,6 @@
 ---
 work_package_id: WP02
-title: Request и process boundaries
+title: Request boundary
 dependencies:
 - WP01
 requirement_refs:
@@ -16,9 +16,7 @@ merge_target_branch: codex/tm-sentry-staging-observability
 branch_strategy: Planning artifacts for this mission were generated on codex/tm-sentry-staging-observability. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into codex/tm-sentry-staging-observability unless the human explicitly redirects the landing branch.
 subtasks:
 - T007
-- T008
 - T009
-- T010
 - T011
 phase: Фаза 2 — верхнеуровневые границы
 assignee: ''
@@ -26,23 +24,20 @@ agent: codex
 history:
 - timestamp: '2026-08-11T08:54:36Z'
   agent: codex
-  action: Пакет сформирован для единственного владения request/process capture после WP01.
+  action: Пакет сформирован для единственного владения request capture после WP01.
 agent_profile: node-norris
 authoritative_surface: src/server/
-create_intent:
-- tests/server/server/SentryProcessBoundary.spec.ts
+create_intent: []
 execution_mode: code_change
 model: ''
 owned_files:
-- src/server/server.ts
 - src/server/server/requestProcessor.ts
 - tests/server/requestProcessor.spec.ts
-- tests/server/server/SentryProcessBoundary.spec.ts
 role: implementer
 tags: []
 ---
 
-# Запрос рабочего пакета: WP02 — Request и process boundaries
+# Запрос рабочего пакета: WP02 — Request boundary
 
 ## ⚡ Do This First: Load Agent Profile
 
@@ -50,18 +45,13 @@ tags: []
 
 ## Цель
 
-Подключить готовый `SentryReporter` к двум верхнеуровневым границам неожиданных серверных ошибок:
-
-- внешнему catch внутри `processRequest` для request-scoped ошибок;
-- существующему `uncaughtException` listener для process-scoped ошибки.
-
-Каждый flow формирует ровно одно событие, всегда передаёт обязательный boundary и сохраняет прежнее локальное логирование, HTTP status/body и неблокирующий control flow.
+Подключить готовый `SentryReporter` к внешнему catch внутри `processRequest` для request-scoped ошибок. Flow формирует ровно одно событие, всегда передаёт обязательный boundary и сохраняет прежние HTTP status/body и неблокирующий control flow.
 
 ## Контекст
 
 Текущий поток запроса разделён между `processRequest(req, res)` в `src/server/server/requestProcessor.ts` и `.catch(...)` у вызова `processRequest` в `src/server/server.ts`. В одобренном ownership-решении capture request error принадлежит только внешнему catch самого `processRequest`; верхний `requestHandler` отвечает за прежний 500-response и не должен отправлять второй event.
 
-Process-level listener уже существует в `server.ts`. Его нужно дополнить минимальным `{boundary: 'process'}`, не добавляя `unhandledRejection` listener и не меняя process exit/recovery semantics.
+Process-level listener и его regression теперь принадлежат WP01, чтобы reporter имел production caller до независимого review. WP02 не меняет `server.ts`.
 
 Request context разрешает только method и нормализованный pathname. Запрещено передавать raw `req.url`, Host, headers, cookies, query, IP, user-agent, Request/Response или общий route Context.
 
@@ -69,7 +59,7 @@ Request context разрешает только method и нормализова
 
 - Planning branch: `codex/tm-sentry-staging-observability`.
 - Spec Kitty merge target: `codex/tm-sentry-staging-observability`.
-- Dependency: принятый WP01 с неизменяемым `capture(error, context)` contract.
+- Dependency: принятый WP01 с неизменяемым `capture(error, context)` contract и уже работающим process caller.
 - Реализация запускается командой `spec-kitty agent action implement WP02 --agent codex`.
 - Execution worktree и dependency base брать из lane в `lanes.json`.
 - WP02 безопасно параллелен WP03: owned files не пересекаются.
@@ -98,25 +88,6 @@ Request context разрешает только method и нормализова
 
 До source edit тест должен падать из-за отсутствующего reporter call, а не из-за некорректной HTTP fixture.
 
-## T008 — RED process boundary regression
-
-### Назначение
-
-Зафиксировать process-level capture без загрязнения глобальных listeners и без нового rejection behavior.
-
-### Руководство
-
-1. Создай `tests/server/server/SentryProcessBoundary.spec.ts` либо минимально экспортируемый внутренний handler seam, если прямой import `server.ts` запускает server side effects.
-2. Тест должен упражнять тот же callback, который регистрируется через `process.on('uncaughtException', ...)`, а не дублировать его logic в fixture.
-3. Проверь один reporter call с исходной error и ровно `{boundary: 'process'}`.
-4. Подтверди, что прежнее local logging всё ещё вызывается.
-5. Снимай baseline количества `uncaughtException`/`unhandledRejection` listeners и восстанавливай его в cleanup, даже при failed assertion.
-6. Отдельно докажи, что новый `unhandledRejection` listener не появился.
-
-### Тестируемость
-
-Если нужен export callback, сделай его internal/testable и сохрани регистрацию один раз в production module. Не вводи отдельный process-observability class или dependency injection container.
-
 ## T009 — Request integration
 
 ### Назначение
@@ -139,26 +110,12 @@ Request context разрешает только method и нормализова
 
 Одна и та же request error не должна пройти и через request capture, и через process-level capture в рамках нормального promise rejection. Process boundary предназначена только для действительно uncaught exception.
 
-## T010 — Process integration
-
-### Назначение
-
-Дополнить существующий listener минимальным best-effort вызовом без изменения поведения процесса.
-
-### Руководство
-
-1. Сохрани существующий `process.on('uncaughtException', ...)` и локальный log order, если нет доказанной причины менять его.
-2. Вызови `capture(err, {boundary: 'process'})` один раз.
-3. Не добавляй await/flush, retry, shutdown coordination или новый exit code.
-4. Не регистрируй `unhandledRejection`.
-5. Reporter failure не должен покинуть listener; основная гарантия находится в WP01, но caller также не должен преобразовывать error.
-
 ## T011 — GREEN и behavioral verification
 
 ### Focused tests
 
 ```powershell
-npx mocha --import=tsx --require tests/testing/setup.ts tests/server/requestProcessor.spec.ts tests/server/server/SentryProcessBoundary.spec.ts
+npx mocha --import=tsx --require tests/testing/setup.ts tests/server/requestProcessor.spec.ts
 ```
 
 ### Проверяемые случаи
@@ -168,8 +125,6 @@ npx mocha --import=tsx --require tests/testing/setup.ts tests/server/requestProc
 - malformed JSON: ноль event и прежний response message;
 - URL query/Host/IP не переданы в structural context;
 - rejected `processRequest` получает прежний 500 в `requestHandler` без второго capture;
-- process error: один `process` event и прежний log;
-- global listeners полностью восстановлены после теста.
 
 ### Дополнительные gates
 
@@ -183,16 +138,15 @@ git diff --check
 
 ## Definition of Done
 
-- [ ] RED tests закрепили request/process call sites до source changes.
+- [ ] RED tests закрепили request call site до source changes.
 - [ ] Request capture принадлежит только внешнему `processRequest` catch.
 - [ ] `requestHandler` сохраняет прежний 500 и не отправляет второй event.
-- [ ] Process listener передаёт обязательный минимальный boundary и сохраняет прежний log behavior.
 - [ ] Ни один structural request/header/query/IP объект не передан reporter.
 - [ ] Expected и malformed paths создают ноль events при неизменных responses.
 - [ ] Focused tests, test build, server lint и diff check проходят.
-- [ ] WP01 reporter contract и WP03 files не изменены.
+- [ ] WP01 reporter/process contract и WP03 files не изменены.
 - [ ] Push, PR, merge, DSN config и deploy не выполнялись.
 
 ## Reviewer Guidance
 
-Проверь не только число spy calls, но и реальный error propagation. Отклони capture одновременно в `requestProcessor` и `requestHandler`, передачу raw `req.url`, общий request object, новый `unhandledRejection` listener или тест, оставляющий глобальный process listener. Любая попытка изменить HTTP error schema, response text или logging policy расширяет scope.
+Проверь не только число spy calls, но и реальный error propagation. Отклони capture одновременно в `requestProcessor` и `requestHandler`, передачу raw `req.url` или общий request object. Любая попытка изменить `server.ts`, HTTP error schema, response text или logging policy расширяет scope.

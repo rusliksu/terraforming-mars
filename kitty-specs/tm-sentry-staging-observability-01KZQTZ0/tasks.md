@@ -11,9 +11,9 @@
 | T005 | Реализовать `SentryReporter` с обязательным context и двойной очисткой | WP01 | No |
 | T006 | Довести focused reporter suite до GREEN и проверить no-throw контракт | WP01 | No |
 | T007 | Добавить RED-регрессию единственного capture во внешнем `processRequest` catch | WP02 | Yes, after WP01 |
-| T008 | Добавить RED-регрессию process-level `uncaughtException` boundary | WP02 | Yes, after WP01 |
+| T008 | Добавить RED-регрессию process-level `uncaughtException` boundary | WP01 | No |
 | T009 | Подключить request boundary без повторного capture в `requestHandler` | WP02 | Yes, after WP01 |
-| T010 | Подключить process boundary с минимальным обязательным context | WP02 | Yes, after WP01 |
+| T010 | Подключить process boundary с минимальным обязательным context | WP01 | No |
 | T011 | Проверить неизменные HTTP-ответы и единичное владение capture | WP02 | Yes, after WP01 |
 | T012 | Добавить RED-регрессию неожиданной ошибки получения игрока | WP03 | Yes, after WP01 |
 | T013 | Добавить RED-регрессию исходной undo-ошибки до `InputError` | WP03 | Yes, after WP01 |
@@ -24,12 +24,13 @@
 | T018 | Выполнить объединённый privacy/call-site Mocha-набор | WP04 | No |
 | T019 | Выполнить server lint, test build, server/full build и diff gates | WP04 | No |
 | T020 | Провести allowlist-review итогового diff и подготовить handoff без live-действий | WP04 | No |
+| T021 | Добавить deletion-safe black-box oracle публичного `capture` | WP01 | No |
 
 ## WP01 — SentryReporter и privacy-контракт
 
 **Priority**: P0  
-**Goal**: создать единственную fail-closed границу формирования Sentry event и доказать её на настоящем SDK client с fake transport.  
-**Independent test**: `tests/server/server/SentryReporter.spec.ts` проверяет activation matrix, allowlist, обязательный boundary, message/stack redaction, gameplay input и детерминированный лимит 65 536 UTF-8-байт без сетевой доставки.  
+**Goal**: создать единственную fail-closed границу формирования Sentry event, подключить её к существующему process-level caller и доказать независимо проверяемый production slice.
+**Independent test**: reporter suite проверяет activation/privacy/envelope и публичный `capture`, а process regression упражняет тот же callback, который регистрируется для `uncaughtException`, с fake transport и без сетевой доставки.
 **Dependencies**: none  
 **Prompt**: `tasks/WP01-sentry-reporter-privacy-boundary.md`  
 **Estimated prompt size**: ~300 lines
@@ -40,17 +41,22 @@
 - [x] T004 Добавить RED-тесты recursive denylist, перечисленных credential/header/cookie/query/IP форматов в message/stack/input, циклов, глубины и детерминированного UTF-8 truncation wrapper.
 - [x] T005 Реализовать `src/server/server/SentryReporter.ts`: типизированный context, fail-closed init, ручной event allowlist, stack parser, sanitizer, cap и защитный `beforeSend` без default integrations/data collection.
 - [x] T006 Довести focused reporter suite до GREEN; доказать no-op/no-throw при выключенной конфигурации и отказе transport, отсутствие нового обязательного env и отсутствие реальной доставки.
+- [ ] T021 Добавить black-box oracle экспортируемой функции `capture`: временный no-op её тела обязан ломать тест без реального DSN или сети.
+- [ ] T008 Добавить RED-регрессию process-level `uncaughtException` с `{boundary: 'process'}` и без нового `unhandledRejection` listener.
+- [ ] T010 Подключить reporter к существующему process listener, сохранив локальное логирование и не ожидая сетевую доставку.
 
 ### Implementation sketch
 
 1. Read-only проверить обязательную scoped-baseline карту до изменения нового server module; файлы карты в этом WP не менять.
 2. Закрепить SDK и сначала написать тестовый oracle на финальный envelope.
 3. Реализовать минимальный reporter как единственного владельца SDK и privacy policy.
-4. Проверить fail-closed matrix, разрешённый context и все перечисленные redaction signatures.
+4. Добавить deletion-safe oracle публичного `capture` и RED process-boundary regression.
+5. Подключить единственный process caller без изменения log/listener semantics.
+6. Проверить fail-closed matrix, разрешённый context, redaction signatures и production call site.
 
 ### Parallel opportunities
 
-Нет внутри WP: тестовый oracle и реализация описывают один privacy-контракт и должны идти test-first в одном lane. После завершения WP01 пакеты WP02 и WP03 могут выполняться параллельно.
+Нет внутри WP: reporter, публичный API и первый production caller образуют один независимо reviewable slice. После завершения WP01 пакеты WP02 и WP03 могут выполняться параллельно.
 
 ### Dependencies and risks
 
@@ -58,26 +64,25 @@
 - Fake transport должен проверять реальный SDK envelope, а не дублировать реализацию sanitizer.
 - Свободная строка без распознаваемой сигнатуры остаётся документированным residual risk; тесты не должны создавать ложное обещание полного secret detection.
 - Default SDK integrations или data collection могут вернуть запрещённые поля, поэтому отключение и финальный allowlist являются load-bearing.
+- Импорт `server.ts` может иметь process/server side effects; process-тест должен упражнять выделенный callback и всегда восстанавливать глобальные listeners.
 
-## WP02 — Request и process boundaries
+## WP02 — Request boundary
 
 **Priority**: P1  
-**Goal**: зарегистрировать верхнеуровневые неожиданные ошибки ровно на одной owning boundary, сохранив прежний HTTP/process flow.  
-**Independent test**: request/process regressions подтверждают один capture с правильным boundary, ноль capture для ожидаемых/malformed путей и неизменные status/body/log behavior.  
+**Goal**: зарегистрировать неожиданные request-scoped ошибки ровно на одной owning boundary, сохранив прежний HTTP flow.
+**Independent test**: request regressions подтверждают один capture с правильным boundary, ноль capture для ожидаемых/malformed путей и неизменные status/body.
 **Dependencies**: WP01  
 **Prompt**: `tasks/WP02-request-process-boundaries.md`  
-**Estimated prompt size**: ~250 lines
+**Estimated prompt size**: ~180 lines
 
 - [ ] T007 Добавить RED-регрессию capture только во внешнем catch `processRequest`, включая method и нормализованный path без query.
-- [ ] T008 Добавить RED-регрессию process-level `uncaughtException` с `{boundary: 'process'}` и без нового `unhandledRejection` listener.
 - [ ] T009 Подключить request capture в `requestProcessor.ts`, сохранив `requestHandler` только владельцем прежнего 500-ответа и исключив двойную отправку.
-- [ ] T010 Подключить reporter к существующему process listener, сохранив локальное логирование и не ожидая сетевую доставку.
-- [ ] T011 Выполнить focused request/process tests и проверить прежние HTTP status/body, malformed JSON classification и единичное владение capture.
+- [ ] T011 Выполнить focused request tests и проверить прежние HTTP status/body, malformed JSON classification и единичное владение capture.
 
 ### Implementation sketch
 
 1. Сначала закрепить RED call-site tests через spy/stub стабильного API WP01.
-2. Добавить минимальные вызовы reporter в две существующие owning boundaries.
+2. Добавить минимальный вызов reporter во внешний catch `processRequest`.
 3. Не перемещать формирование HTTP 500 и не добавлять capture в `requestHandler`.
 4. Проверить количество вызовов, точный context и прежние ответы.
 
@@ -89,7 +94,7 @@ WP02 можно выполнять параллельно с WP03 после п�
 
 - `processRequest` и `requestHandler` образуют один error flow; второй capture создаст дубли.
 - Разбор route не должен передавать query, Host, headers, IP или общий request object.
-- Импорт `server.ts` может иметь process/server side effects; тест должен изолировать listener и всегда восстанавливать глобальное состояние.
+- Process-level caller и его global-listener regression принадлежат WP01; WP02 не меняет `server.ts`.
 
 ## WP03 — PlayerInput diagnostic context
 

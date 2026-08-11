@@ -1,11 +1,12 @@
 ---
 work_package_id: WP01
-title: SentryReporter и privacy-контракт
+title: SentryReporter, privacy и process caller
 dependencies: []
 requirement_refs:
 - FR-001
 - FR-005
 - FR-007
+- FR-008
 - FR-009
 tracker_refs: []
 planning_base_branch: codex/tm-sentry-staging-observability
@@ -18,6 +19,9 @@ subtasks:
 - T004
 - T005
 - T006
+- T021
+- T008
+- T010
 phase: Фаза 1 — диагностический шлюз
 assignee: ''
 agent: "codex"
@@ -31,18 +35,21 @@ authoritative_surface: src/server/server/
 create_intent:
 - src/server/server/SentryReporter.ts
 - tests/server/server/SentryReporter.spec.ts
+- tests/server/server/SentryProcessBoundary.spec.ts
 execution_mode: code_change
 model: ''
 owned_files:
 - package.json
 - package-lock.json
 - src/server/server/SentryReporter.ts
+- src/server/server.ts
 - tests/server/server/SentryReporter.spec.ts
+- tests/server/server/SentryProcessBoundary.spec.ts
 role: implementer
 tags: []
 ---
 
-# Запрос рабочего пакета: WP01 — SentryReporter и privacy-контракт
+# Запрос рабочего пакета: WP01 — SentryReporter, privacy и process caller
 
 ## ⚡ Do This First: Load Agent Profile
 
@@ -50,7 +57,7 @@ tags: []
 
 ## Цель
 
-Создать единственную серверную границу отправки неожиданных ошибок в Sentry. Она должна включаться только на явно настроенном staging, формировать event из строгого allowlist, сохранять полезные message/full stack и расширенный gameplay context после поддерживаемой очистки и никогда не менять вызывающий HTTP/process flow.
+Создать единственную серверную границу отправки неожиданных ошибок в Sentry и подключить к ней первый production caller — существующий `uncaughtException` callback. Она должна включаться только на явно настроенном staging, формировать event из строгого allowlist, сохранять полезные message/full stack и расширенный gameplay context после поддерживаемой очистки и никогда не менять process flow.
 
 Готовый пакет предоставляет стабильный API:
 
@@ -190,7 +197,7 @@ DSN в тесте должен быть синтетическим и завед
 7. Сделай `beforeSend` вторым независимым барьером: заново собери event по allowlist и повтори очистку.
 8. Ограничь длину type/message стабильным способом, не теряя категорию и корневую причину.
 9. Любая ошибка init/capture/sanitization/transport остаётся best-effort: допустим warning без DSN и payload, но `capture` не бросает.
-10. Не добавляй flush/await в request path и не подключай process/request listeners в этом WP.
+10. Не добавляй flush/await в caller path; listener integration выполняется отдельно в T008/T010, request listener остаётся вне этого WP.
 
 ## T006 — GREEN и контракт границы
 
@@ -219,6 +226,49 @@ git diff --check
 - original throwable properties и `Error.cause` не сериализуются;
 - test cleanup восстанавливает env, SDK state и fake transport между cases.
 
+## T021 — Deletion-safe oracle публичного `capture`
+
+### Назначение
+
+Защитить стабильную экспортируемую функцию, которой пользуется production caller, а не только factory seam.
+
+### Руководство
+
+1. Упражняй именно экспортируемую `capture(error, context)` в изолированном module lifecycle.
+2. Используй синтетический DSN и перехват метода настоящего `NodeClient` либо эквивалентный black-box seam, который исключает сеть и не заменяет SDK fake-клиентом.
+3. Восстанавливай env, module cache и SDK prototype/state даже при failed assertion.
+4. Мутационный oracle обязателен: временная замена тела публичного `capture` на no-op должна давать красный тест.
+5. Existing fake-transport envelope tests остаются владельцем privacy/allowlist доказательства; этот тест проверяет только production export wiring.
+
+## T008 — RED process boundary regression
+
+### Назначение
+
+Зафиксировать первый production caller и прежнее поведение process-level ошибки.
+
+### Руководство
+
+1. Создай `tests/server/server/SentryProcessBoundary.spec.ts` либо минимально экспортируемый internal handler seam, если прямой import `server.ts` запускает server side effects.
+2. Упражняй тот же callback, который регистрируется через `process.on('uncaughtException', ...)`, не копируя его logic в fixture.
+3. До source edit тест должен падать из-за отсутствующего вызова публичного `capture`.
+4. Проверь один вызов с исходной error и ровно `{boundary: 'process'}` плюс сохранённое локальное логирование.
+5. Зафиксируй baseline количества `uncaughtException`/`unhandledRejection` listeners и восстанови его в cleanup.
+6. Докажи, что новый `unhandledRejection` listener не появился.
+
+## T010 — Process integration
+
+### Назначение
+
+Сделать reporter живым production module минимальным caller без изменения process semantics.
+
+### Руководство
+
+1. Сохрани существующий `process.on('uncaughtException', ...)` и прежний порядок локального log.
+2. Вызови публичный `capture(err, {boundary: 'process'})` ровно один раз.
+3. Не добавляй await/flush, retry, shutdown coordination, новый exit code или `unhandledRejection` listener.
+4. Reporter failure не должен покинуть callback или преобразовать исходную error.
+5. Не меняй `requestProcessor.ts`, `PlayerInput.ts` или их тесты: они остаются в WP02/WP03.
+
 ## Definition of Done
 
 - [ ] Baseline codemap read-only проверен до первой source-правки; три обязательных ответа, evidence paths и scoped fingerprint совпадают.
@@ -228,12 +278,14 @@ git diff --check
 - [ ] Настоящий SDK client + fake transport подтверждает разрешённый envelope и отсутствие поддерживаемых forbidden formats.
 - [ ] `request.data` всегда валиден и не превышает 65 536 UTF-8-байт.
 - [ ] Default integrations/data collection не возвращают запрещённый контекст.
+- [ ] No-op мутация тела публичного `capture` ломает black-box test.
+- [ ] `server.ts` является production caller и передаёт ровно `{boundary: 'process'}` без изменения log/listener semantics.
 - [ ] Focused tests, test build, server lint и diff check проходят.
 - [ ] Реальный DSN, network event, push, deploy или production действие не выполнялись.
 
 ## Reviewer Guidance
 
-Отклони решение, если оно тестирует только unit sanitizer, использует fake Sentry client вместо fake transport, делает context опциональным, сохраняет автоматический HTTP context, обещает распознавание произвольного секрета или измеряет JavaScript characters вместо UTF-8 bytes. Проверь, что caller-facing метод остаётся синхронным best-effort и что release `n/a` не включает SDK.
+Отклони решение, если оно тестирует только unit sanitizer, использует fake Sentry client вместо fake transport, делает context опциональным, сохраняет автоматический HTTP context, обещает распознавание произвольного секрета или измеряет JavaScript characters вместо UTF-8 bytes. Проверь, что caller-facing метод остаётся синхронным best-effort, release `n/a` не включает SDK, `server.ts` действительно импортирует публичный API, а no-op мутация тела `capture` ломает тест.
 
 ## Activity Log
 
@@ -241,3 +293,5 @@ git diff --check
 - 2026-08-11T13:40:04Z – codex – shell_pid=30352 – Реализация завершена: RED 2/6 затем GREEN 9/9; mutation oracle поймал снятие beforeSend; npm ci, build:tests, lint:server, build:server, полный build и diff-check прошли; сеть, DSN, push и deploy не использовались.
 - 2026-08-11T13:42:40Z – codex – shell_pid=30640 – Started review via action command
 - 2026-08-11T13:54:26Z – codex – shell_pid=30640 – Review cycle 1: требуется устранить dead production module, покрыть публичный capture и записать T001 evidence.
+- 2026-08-11T14:03:48Z – codex – Проверен baseline commit `8a5604fa69f45898c3c18c4ac8f19104cb0e6ed5` и scoped composite fingerprint `07e62dc1c96cd92c12684e42628c444187a4d479a807da315aaa2cd29734e511`; composite совпал с `docs/codemap/codemap.lock`.
+- 2026-08-11T14:03:48Z – codex – Planning delta: process caller и его regression перенесены из WP02 в WP01, добавлен deletion-safe oracle публичного `capture`; source-код не изменялся.

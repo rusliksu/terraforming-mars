@@ -118,7 +118,9 @@ async function start() {
     // Do not fail. Just continue. Stats aren't vital.
     console.error(err);
   }
-  GameLoader.getInstance().maintenance();
+  const gameLoader = GameLoader.getInstance();
+  void gameLoader.maintenance();
+  await GameLoader.reconcileSurrenderedBots();
 
   console.log(`Starting ${raw_settings.head}, built at ${raw_settings.builtAt}`);
 
@@ -140,9 +142,7 @@ async function start() {
   console.log('Server is ready.');
 }
 
-try {
-  start();
-} catch (err) {
+start().catch((err) => {
   console.error('Cannot start server:');
   console.error(err);
-}
+});

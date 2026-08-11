@@ -29,6 +29,7 @@ role: "implementer"
 agent: "codex"
 history:
   - "2026-08-11: baseline approved; implementation pending"
+  - "2026-08-11: implementation complete; focused server tests x3, client confirmation test, typecheck and lint passed"
 ---
 
 ## ⚡ Do This First: Load Agent Profile

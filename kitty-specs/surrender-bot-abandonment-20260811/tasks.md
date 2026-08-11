@@ -30,12 +30,12 @@
 **Независимая проверка**: после подтверждения Surrender бот обслуживает WGT,
 после рестарта возобновляется, а ошибка старта не меняет управление.
 
-- [ ] T001 Регенерировать актуальную codemap и подтвердить callers/impact/tests (WP01)
-- [ ] T002 Добавить focused failing tests атомарного surrender transition (WP01)
-- [ ] T003 Объединить player-input и route в канонический transition (WP01)
-- [ ] T004 Запускать бота и не исключать surrendered seat из игрового цикла (WP01)
-- [ ] T005 Восстанавливать surrendered bots после restore/restart (WP01)
-- [ ] T006 Проверить cancel, failure compensation, WGT и persistence (WP01)
+- [x] T001 Регенерировать актуальную codemap и подтвердить callers/impact/tests (WP01)
+- [x] T002 Добавить focused failing tests атомарного surrender transition (WP01)
+- [x] T003 Объединить player-input и route в канонический transition (WP01)
+- [x] T004 Запускать бота и не исключать surrendered seat из игрового цикла (WP01)
+- [x] T005 Восстанавливать surrendered bots после restore/restart (WP01)
+- [x] T006 Проверить cancel, failure compensation, WGT и persistence (WP01)
 
 **Риски**: дублирующие surrender paths, side effect до save, bot process без
 persisted state, restore без process.

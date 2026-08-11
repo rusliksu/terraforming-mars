@@ -5,13 +5,12 @@ import {Context} from './IHandler';
 import {Request} from '../Request';
 import {Response} from '../Response';
 import {BotTakeoverManager} from '../bot/BotTakeoverManager';
-import {Phase} from '../../common/Phase';
 import {IPlayer} from '../IPlayer';
 import {IGame} from '../IGame';
 import {AccessAuditEvent} from '../server/AccessAudit';
 import {getUserAgent} from './auditRequest';
-
-type SurrenderRouteDeps = Pick<BotTakeoverManager, 'stop'>;
+import {SurrenderError, surrenderPlayer} from '../surrender/SurrenderService';
+import type {SurrenderBotManager} from '../surrender/SurrenderService';
 
 function recordSurrenderAudit(
   req: Request,
@@ -20,6 +19,7 @@ function recordSurrenderAudit(
   player: IPlayer,
   event: AccessAuditEvent,
   authorization: 'admin' | 'player' | 'denied',
+  botTakeover?: 'started' | 'already-active',
 ): void {
   ctx.accessAudit.record({
     event,
@@ -30,34 +30,14 @@ function recordSurrenderAudit(
     participantKind: 'player',
     clientIp: ctx.clientIp,
     userAgent: getUserAgent(req),
-    metadata: {authorization},
+    metadata: botTakeover === undefined ? {authorization} : {authorization, botTakeover},
   });
-}
-
-function advanceSurrenderedPlayer(game: IGame, player: IPlayer): void {
-  if (game.phase === Phase.ACTION && game.activePlayer.id === player.id) {
-    player.clearWaitingFor();
-    if (!game.hasPassedThisActionPhase(player)) {
-      player.pass();
-    }
-    game.playerIsFinishedTakingActions();
-    return;
-  }
-  if (game.phase === Phase.RESEARCH && !game.hasResearched(player)) {
-    player.clearWaitingFor();
-    game.playerIsFinishedWithResearchPhase(player);
-    return;
-  }
-  if (game.phase === Phase.PRODUCTION && game.gameIsOver() && game.activePlayer.id === player.id) {
-    player.clearWaitingFor();
-    game.playerIsDoneWithGame(player);
-  }
 }
 
 export class ApiSurrender extends Handler {
   public static readonly INSTANCE = new ApiSurrender();
 
-  constructor(private readonly manager: SurrenderRouteDeps = BotTakeoverManager.INSTANCE) {
+  constructor(private readonly manager: SurrenderBotManager = BotTakeoverManager.INSTANCE) {
     super();
   }
 
@@ -77,18 +57,6 @@ export class ApiSurrender extends Handler {
       responses.notFound(req, res, 'game not found for player');
       return;
     }
-    if (game.phase === Phase.END) {
-      responses.badRequest(req, res, 'cannot surrender a finished game');
-      return;
-    }
-    if (game.players.length <= 1) {
-      responses.badRequest(req, res, 'cannot surrender a solo game');
-      return;
-    }
-    if (game.phase !== Phase.ACTION) {
-      responses.badRequest(req, res, 'can only surrender during the action phase');
-      return;
-    }
     let player: IPlayer;
     try {
       player = game.getPlayerById(playerId);
@@ -97,26 +65,24 @@ export class ApiSurrender extends Handler {
       return;
     }
 
-    if (game.activePlayer.id !== player.id) {
-      responses.badRequest(req, res, 'only the active player can surrender');
+    let botTakeover: 'started' | 'already-active';
+    try {
+      const result = await surrenderPlayer({
+        game,
+        player,
+        gameLoader: ctx.gameLoader,
+        manager: this.manager,
+        serverId: ctx.ids.serverId,
+        advance: () => undefined,
+      });
+      botTakeover = result.botTakeover;
+    } catch (error) {
+      recordSurrenderAudit(req, ctx, game, player, 'surrender_rejected', 'denied');
+      const message = error instanceof SurrenderError ? error.message : 'unable to surrender';
+      responses.badRequest(req, res, message);
       return;
     }
 
-    if (game.botPlayerIds.has(playerId)) {
-      recordSurrenderAudit(req, ctx, game, player, 'surrender_rejected', 'denied');
-      responses.badRequest(req, res, 'automated players cannot surrender');
-      return;
-    }
-    if (game.surrenderedPlayerIds.has(playerId)) {
-      recordSurrenderAudit(req, ctx, game, player, 'surrender_rejected', 'denied');
-      responses.badRequest(req, res, 'player already surrendered');
-      return;
-    }
-
-    game.surrenderedPlayerIds.add(playerId);
-    this.manager.stop(playerId);
-    advanceSurrenderedPlayer(game, player);
-    await ctx.gameLoader.saveGame(game);
     recordSurrenderAudit(
       req,
       ctx,
@@ -124,6 +90,7 @@ export class ApiSurrender extends Handler {
       player,
       'surrender_accepted',
       this.hasServerIdAccess(ctx) ? 'admin' : 'player',
+      botTakeover,
     );
     responses.writeJson(res, ctx, {
       surrenderedPlayers: Array.from(game.surrenderedPlayerIds),

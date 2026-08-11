@@ -791,11 +791,7 @@ export class Game implements IGame, Logger {
     this.researchedPlayers.clear();
     this.save();
     this.players.forEach((player) => {
-      if (this.surrenderedPlayerIds.has(player.id)) {
-        this.researchedPlayers.add(player.id);
-      } else {
-        player.runResearchPhase();
-      }
+      player.runResearchPhase();
     });
     this.advanceAfterResearchIfReady();
   }
@@ -811,8 +807,7 @@ export class Game implements IGame, Logger {
       // Solo games continue until the designated generation end even if Mars is already terraformed
       return this.generation === this.lastSoloGeneration();
     }
-    const playersStillInGame = this.players.filter((player) => !this.surrenderedPlayerIds.has(player.id));
-    return playersStillInGame.length <= 1 || this.marsIsTerraformed();
+    return this.marsIsTerraformed();
   }
 
   public isDoneWithFinalProduction(): boolean {
@@ -1248,11 +1243,6 @@ export class Game implements IGame, Logger {
       if (this.donePlayers.has(player.id)) {
         continue;
       }
-      if (this.surrenderedPlayerIds.has(player.id)) {
-        this.donePlayers.add(player.id);
-        continue;
-      }
-
       // You many not place greeneries in solo mode unless you have already won the game
       // (e.g. completed global parameters, reached TR63.)
       if (this.isSoloMode() && !this.isSoloModeWin()) {
@@ -1278,13 +1268,6 @@ export class Game implements IGame, Logger {
 
   private startActionsForPlayer(player: IPlayer) {
     this.activePlayer = player;
-    if (this.surrenderedPlayerIds.has(player.id)) {
-      if (!this.hasPassedThisActionPhase(player)) {
-        player.pass();
-      }
-      this.playerIsFinishedTakingActions();
-      return;
-    }
     player.actionsTakenThisGame++;
     player.actionsTakenThisRound = 0;
 

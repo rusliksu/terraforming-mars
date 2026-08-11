@@ -1099,7 +1099,7 @@ describe('Game', () => {
     expect(Array.from(restored.surrenderedPlayerIds)).deep.eq([human.id]);
   });
 
-  it('ends multiplayer when only one player has not surrendered', () => {
+  it('does not end multiplayer based on surrendered seats', () => {
     const alice = TestPlayer.BLUE.newPlayer();
     const bob = TestPlayer.RED.newPlayer();
     const carol = TestPlayer.YELLOW.newPlayer();
@@ -1109,7 +1109,27 @@ describe('Game', () => {
     expect(game.gameIsOver()).eq(false);
 
     game.surrenderedPlayerIds.add(bob.id);
-    expect(game.gameIsOver()).eq(true);
+    expect(game.gameIsOver()).eq(false);
+  });
+
+  it('keeps surrendered seats in research and final greenery', () => {
+    const alice = TestPlayer.BLUE.newPlayer();
+    const bob = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('game-surrender-flow', [alice, bob], alice, 'spectatorid');
+    alice.clearWaitingFor();
+    bob.clearWaitingFor();
+    game.surrenderedPlayerIds.add(alice.id);
+
+    game.generation = 2;
+    game.gotoResearchPhase();
+    expect(game.hasResearched(alice)).eq(false);
+    expect(alice.getWaitingFor()).is.not.undefined;
+
+    alice.clearWaitingFor();
+    bob.clearWaitingFor();
+    alice.plants = alice.plantsNeededForGreenery;
+    game.takeNextFinalGreeneryAction();
+    expect(alice.getWaitingFor()).is.not.undefined;
   });
 
   it('enables action undo when loading a game with experimental step undo', () => {
@@ -1402,6 +1422,28 @@ describe('Game', () => {
       GlobalParameter.OXYGEN,
       GlobalParameter.TEMPERATURE,
       GlobalParameter.OCEANS]);
+  });
+
+  it('keeps a surrendered first player responsible for WGT', () => {
+    const first = TestPlayer.BLUE.newPlayer();
+    const second = TestPlayer.RED.newPlayer();
+    const third = TestPlayer.BLACK.newPlayer();
+    const game = Game.newInstance(
+      'gameid',
+      [first, second, third],
+      first,
+      'spectatorid',
+      {solarPhaseOption: true},
+    );
+    game.surrenderedPlayerIds.add(first.id);
+
+    game.worldGovernmentTerraforming();
+
+    expect(waitingForGlobalParameters(first)).to.have.members([
+      GlobalParameter.OXYGEN,
+      GlobalParameter.TEMPERATURE,
+      GlobalParameter.OCEANS,
+    ]);
   });
 
   it('wgt includes all parameters at the game start, with Venus', () => {

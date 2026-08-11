@@ -11,5 +11,7 @@
   "purpose_tldr": "Получать воспроизводимый расширенный контекст staging-ошибок без секретов.",
   "slug": "tm-sentry-staging-observability-01KZQTZ0",
   "target_branch": "codex/tm-sentry-staging-observability",
-  "topology": "single_branch"
+  "topology": "single_branch",
+  "vcs": "git",
+  "vcs_locked_at": "2026-08-11T13:06:57.120985+00:00"
 }

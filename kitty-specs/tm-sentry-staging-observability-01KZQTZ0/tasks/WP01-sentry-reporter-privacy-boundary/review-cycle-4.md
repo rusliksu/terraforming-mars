@@ -7,6 +7,10 @@ reviewed_at: '2026-08-11T15:19:55Z'
 reviewer_agent: reviewer-renata
 verdict: rejected
 wp_id: WP01
+review_artifact_override_at: "2026-08-11T16:10:09Z"
+review_artifact_override_actor: "operator"
+review_artifact_override_wp_id: "WP01"
+review_artifact_override_reason: "Review passed on be1515ca: review-cycle-4 rejected superseded 670a3a10; cycle-4 fixes independently re-reviewed PASS, 12/12 focused and all gates green except unchanged better-sqlite3 environment failure"
 ---
 
 # Ревью WP01 — цикл 3

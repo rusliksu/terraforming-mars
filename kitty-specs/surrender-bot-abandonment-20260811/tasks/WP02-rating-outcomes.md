@@ -27,6 +27,10 @@ history:
   - "2026-08-11: a93f262517 adds the shared outcome rank and ELO/GameEnd regressions"
   - "2026-08-11: eb9ef146cf closes the review-found human-input race after surrender"
   - "2026-08-11: targeted tests, three stability runs, build:tests, production build, lint, typecheck and 7381 server tests passed"
+  - "2026-08-11: PR #117 merged as 396ec85c1c63ba648c5df18bda7b0ea497955bc1 with six successful CI jobs"
+  - "2026-08-11: staging Playwright smoke passed without a blocking surrender prompt or console errors"
+  - "2026-08-11: separately authorized prod deploy used the verified clean-main artifact cb1a823e54c29005e5e9baf566b27349ba89977a30555847253dfe9a86e793fa"
+  - "2026-08-11: post-deploy soak passed; tm-server/tm-elo active, NRestarts=0, reconciliation started=2 failed=0, inputs accepted=580 rejected=0"
 ---
 
 ## ⚡ Do This First: Load Agent Profile
@@ -150,7 +154,9 @@ preview. Prod/live и ELO correction требуют отдельных кома�
 - Existing bot-game exclusion не расширился на surrendered humans.
 - Исторические ELO records совместимы.
 - Все проверки зелёные, diff review-clean, PR-ready evidence подготовлена.
-- `g9e9c7f0b6fff`, prod DB, runtime и ELO не изменены.
+- PR/staging delivery завершены; отдельно разрешённый prod deploy проверен по
+  release manifest и post-deploy soak.
+- `g9e9c7f0b6fff`, prod DB и ручной пересчёт ELO не изменены.
 
 ## Reviewer focus
 

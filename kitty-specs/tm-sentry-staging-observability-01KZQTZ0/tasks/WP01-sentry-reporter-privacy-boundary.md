@@ -34,6 +34,7 @@ agent_profile: node-norris
 authoritative_surface: src/server/server/
 create_intent:
 - src/server/server/SentryReporter.ts
+- src/server/server/SentryProcessBoundary.ts
 - tests/server/server/SentryReporter.spec.ts
 - tests/server/server/SentryProcessBoundary.spec.ts
 execution_mode: code_change
@@ -42,6 +43,7 @@ owned_files:
 - package.json
 - package-lock.json
 - src/server/server/SentryReporter.ts
+- src/server/server/SentryProcessBoundary.ts
 - src/server/server.ts
 - tests/server/server/SentryReporter.spec.ts
 - tests/server/server/SentryProcessBoundary.spec.ts
@@ -248,7 +250,7 @@ git diff --check
 
 ### Руководство
 
-1. Создай `tests/server/server/SentryProcessBoundary.spec.ts` либо минимально экспортируемый internal handler seam, если прямой import `server.ts` запускает server side effects.
+1. Создай `tests/server/server/SentryProcessBoundary.spec.ts` и минимальный `src/server/server/SentryProcessBoundary.ts`, чтобы тестировать тот же регистрируемый callback без импорта side-effectful `server.ts`.
 2. Упражняй тот же callback, который регистрируется через `process.on('uncaughtException', ...)`, не копируя его logic в fixture.
 3. До source edit тест должен падать из-за отсутствующего вызова публичного `capture`.
 4. Проверь один вызов с исходной error и ровно `{boundary: 'process'}` плюс сохранённое локальное логирование.

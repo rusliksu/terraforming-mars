@@ -21,8 +21,8 @@ subtasks:
 - T011
 phase: Фаза 2 — верхнеуровневые границы
 assignee: ''
-agent: codex
-shell_pid: '19596'
+agent: "codex"
+shell_pid: "19596"
 history:
 - timestamp: '2026-08-11T08:54:36Z'
   agent: codex
@@ -152,3 +152,7 @@ git diff --check
 ## Reviewer Guidance
 
 Проверь не только число spy calls, но и реальный error propagation. Отклони capture одновременно в `requestProcessor` и `requestHandler`, передачу raw `req.url` или общий request object. Любая попытка изменить `server.ts`, HTTP error schema, response text или logging policy расширяет scope.
+
+## Activity Log
+
+- 2026-08-11T16:36:46Z – codex – shell_pid=19596 – Assigned agent via action command

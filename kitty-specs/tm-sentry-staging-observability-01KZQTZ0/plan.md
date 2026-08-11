@@ -18,7 +18,7 @@
 **Project Type**: монолитное web-приложение с Node.js backend и Vue frontend; меняется только backend  
 **Performance Goals**: захват ошибки не блокирует HTTP-ответ и не добавляет сетевой работы в штатный успешный путь  
 **Constraints**: fail-closed activation; обязательный boundary для каждого события; структурный allowlist без headers/cookies/query/IP/session; распознавание перечисленных secret/network formats в свободных строках; без breadcrumbs и tracing; без изменения HTTP/gameplay; production и deploy вне объёма
-**Scale/Scope**: один новый серверный модуль, пять существующих точек ошибок, три профильных набора тестов, три артефакта карты кода
+**Scale/Scope**: один новый серверный модуль, пять существующих точек ошибок, четыре профильных файла тестов, три артефакта карты кода
 
 ## Проверка принципов
 
@@ -26,7 +26,7 @@
 - **Локальность изменения**: клиент, БД, игровые модели, публичные API и deploy-скрипты не меняются.
 - **Проверяемые решения**: активация, присутствие расширенного контекста, удаление секретов, исключение ожидаемых ошибок и сохранение ответов закреплены тестами.
 - **Test-first**: сначала добавляются падающие проверки privacy/config/call sites, затем минимальная реализация.
-- **Синхронизация документации**: карта кода регенерируется из актуальной task-ветки и включает новый диагностический шлюз, его callers и тесты.
+- **Синхронизация документации**: до source-правок читается уже зафиксированная scoped-baseline карта; после интеграции единственный владелец актуализирует её из фактического task-дерева по документированной процедуре fingerprint.
 - **Charter**: project-local charter отсутствует; применены встроенные требования целостности архитектуры, локальности, тестов и актуальности документации. Нарушений нет.
 
 ## Архитектура и поток
@@ -54,6 +54,7 @@ src/server/server/requestProcessor.ts
 src/server/server/SentryReporter.ts           # новый privacy boundary
 src/server/routes/PlayerInput.ts
 tests/server/server/SentryReporter.spec.ts     # новый config/privacy contract
+tests/server/server/SentryProcessBoundary.spec.ts # новый process-boundary contract
 tests/server/requestProcessor.spec.ts
 tests/routes/PlayerInput.spec.ts
 docs/codemap/codemap.html
@@ -65,11 +66,11 @@ docs/codemap/codemap.lock
 
 ## Последовательность реализации
 
-1. В task-owned worktree восстановить актуальный пакет `docs/codemap/codemap.*` из текущего дерева, используя прежнюю схему только как формат, а текущий код — как единственный источник evidence.
+1. До первой source-правки read-only проверить уже зафиксированный scoped-baseline пакет `docs/codemap/codemap.*`: он должен отвечать на callers/impact/tests и иметь совпадающий scoped fingerprint.
 2. Добавить тесты конфигурации, положительного payload-контракта и secret-redaction шлюза на настоящем SDK с fake transport.
 3. Добавить тесты контекста во внешнем catch `processRequest` и трёх неожиданных путях `PlayerInput`; доказать передачу доступных method/path/IDs/input, нулевой capture для ожидаемых ошибок, единичный capture на путь и неизменные ответы.
 4. Установить точную текущую версию `@sentry/node`, реализовать fail-closed шлюз и подключить его к пяти точкам ошибок с однозначным ownership.
-5. Обновить карту кода уже по итоговому дереву, затем выполнить профильные и общие проверки.
+5. Единственным write-owner обновить карту кода по фактическому итоговому дереву и документированной SHA-256 процедуре, затем выполнить профильные и общие проверки.
 
 ## Implementation Concern Map
 
@@ -93,25 +94,25 @@ docs/codemap/codemap.lock
 
 - **Purpose**: доказать независимым oracle полноту разрешённого payload, отсутствие секретов, классификацию ошибок и неизменность HTTP-ответов.
 - **Relevant requirements**: все FR, NFR-004.
-- **Affected surfaces**: `tests/server/server/SentryReporter.spec.ts`, `tests/server/requestProcessor.spec.ts`, `tests/routes/PlayerInput.spec.ts`.
+- **Affected surfaces**: `tests/server/server/SentryReporter.spec.ts`, `tests/server/server/SentryProcessBoundary.spec.ts`, `tests/server/requestProcessor.spec.ts`, `tests/routes/PlayerInput.spec.ts`.
 - **Sequencing/depends-on**: none для тестовых контрактов; выполнение после IC-01 и IC-02.
 - **Risks**: unit sanitizer может пройти при утечке на поздней стадии SDK; тест использует настоящий configured client с fake transport, подтверждает разрешённые sentinel-значения и рекурсивно запрещает перечисленные secret/network sentinel-ы в финальном envelope, включая значения из message и stack.
 
 ### IC-04 — Карта кода и итоговые gates
 
-- **Purpose**: восстановить обязательную карту до изменения модуля и оставить её синхронизированной с итоговым графом callers/tests.
+- **Purpose**: проверить обязательную scoped-baseline карту до изменения модуля и оставить её синхронизированной с итоговым графом callers/tests.
 - **Relevant requirements**: NFR-005, C-001—C-003.
 - **Affected surfaces**: `docs/codemap/codemap.html`, `docs/codemap/codemap.json`, `docs/codemap/codemap.lock`.
-- **Sequencing/depends-on**: baseline до IC-02; финальная регенерация после IC-01—IC-03.
-- **Risks**: прежняя remote-ветка карты устарела относительно текущего `origin/main`; её содержимое нельзя переносить как актуальное evidence.
+- **Sequencing/depends-on**: read-only baseline check до IC-02; единственное финальное обновление после IC-01—IC-03.
+- **Risks**: в репозитории нет штатного codemap generator; поэтому нельзя заявлять генерацию несуществующей командой. Итоговые JSON/HTML/lock обновляются одним владельцем из проверяемых source/test evidence, а lock пересчитывается по точной scoped SHA-256 процедуре. Прежняя remote-ветка остаётся только справкой по формату.
 
 ## Проверки
 
-- Профильный Mocha-набор для шлюза, request processor и `PlayerInput`: valid/`n/a` release, обязательный boundary, положительный расширенный payload, redaction перечисленных secret/network formats во всех полях, детерминированный UTF-8 truncation до 65 536 байт, получение игрока, undo, malformed JSON и ровно один capture.
+- Профильный Mocha-набор для шлюза, process boundary, request processor и `PlayerInput`: valid/`n/a` release, обязательный boundary, положительный расширенный payload, redaction перечисленных secret/network formats во всех полях, детерминированный UTF-8 truncation до 65 536 байт, получение игрока, undo, malformed JSON и ровно один capture.
 - `npm run build:tests`.
 - `npm run lint:server`.
 - `npm run build:server` и затем полный `npm run build`.
-- JSON parse и внутренние ссылки карты кода; `codemap.lock` соответствует итоговому commit/tree fingerprint и не сообщает скрытых изменённых модулей.
+- JSON parse и внутренние ссылки карты кода; каждый path из lock существует, его SHA-256 совпадает, а composite fingerprint воспроизводится как SHA-256 от отсортированных записей `path + NUL + lowercase file hash`, соединённых LF.
 - `git diff --check` и точная проверка scope diff.
 
 ## Delivery gates

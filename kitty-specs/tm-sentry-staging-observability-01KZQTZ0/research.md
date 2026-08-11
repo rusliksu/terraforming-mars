@@ -56,7 +56,11 @@ Gameplay input после redaction, стабильной обработки ц�
 
 ## Решение 9 — карта кода
 
-Сначала восстановить полный пакет `html/json/lock` из текущей task-ветки. Remote-ветку `origin/codex/tm-codemap` использовать лишь как совместимый формат: её evidence и fingerprints относятся к старому commit и не являются источником истины.
+Поиск в `package.json`, scripts, source, docs и доступных локальных Terraforming Mars checkout не обнаружил штатного codemap generator или validation command. Поэтому до реализации в planning branch зафиксирован небольшой `scoped-baseline` пакет `html/json/lock`: подтверждённые связи текущего server/request/PlayerInput flow отделены от planned Sentry relationships, а три обязательных вопроса callers/impact/tests записаны явно.
+
+WP01 только read-only проверяет этот baseline и не владеет файлами карты. WP04 является единственным write-owner: после интеграции кода он сверяет symbols/paths по фактическим source и tests, переводит подтверждённые planned relationships в confirmed и обновляет HTML из того же набора данных. `codemap.lock` охватывает явно перечисленный scope без заявления о fingerprint всего репозитория. Для каждого scope-файла хранится lowercase SHA-256; composite равен SHA-256 от UTF-8 строки из отсортированных по ordinal path записей `path + NUL + fileHash`, соединённых LF. Сами codemap artifacts в fingerprint не входят, чтобы исключить самоссылку.
+
+Remote-ветку `origin/codex/tm-codemap` допустимо использовать лишь как справку по совместимому формату: её evidence и fingerprints относятся к старому commit и не являются источником истины. Если финальное подтверждение требует нового config/script или общего генератора, WP04 останавливается как material scope delta.
 
 ## Открытые вопросы
 

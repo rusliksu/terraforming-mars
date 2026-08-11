@@ -308,3 +308,4 @@ git diff --check
 - 2026-08-11T15:51:36Z – codex – RED и три mutation oracle подтвердили все выбранные регрессии; focused suite 12/12, `build:tests`, `lint:server`, `build:server`, полный build и `git diff --check` прошли. Full server suite: 7350 passing и один прежний environment failure из-за отсутствующего native binding `better-sqlite3`; push/deploy/network event не выполнялись.
 - 2026-08-11T15:55:34Z – codex – shell_pid=31308 – Цикл 4: privacy, direct wiring и log order исправлены; targeted/gates пройдены
 - 2026-08-11T16:05:05Z – codex – shell_pid=32644 – Started review via action command
+- 2026-08-11T16:10:12Z – user – shell_pid=32644 – Review passed on be1515ca: review-cycle-4 rejected superseded 670a3a10; cycle-4 fixes independently re-reviewed PASS, 12/12 focused and all gates green except unchanged better-sqlite3 environment failure

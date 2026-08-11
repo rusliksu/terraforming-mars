@@ -1,19 +1,19 @@
 {
-  "event_count": 28,
-  "last_event_id": "01KZS2Y913WS1PPSCM68EASEZC",
-  "materialized_at": "2026-08-11T18:56:43.555558+00:00",
+  "event_count": 29,
+  "last_event_id": "01KZS3FY7998NAPRG7HSJK30Z4",
+  "materialized_at": "2026-08-11T19:06:22.313347+00:00",
   "mission_number": "",
   "mission_slug": "tm-sentry-staging-observability-01KZQTZ0",
   "mission_type": "software-dev",
   "summary": {
-    "approved": 2,
+    "approved": 3,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
     "for_review": 0,
     "in_progress": 0,
-    "in_review": 1,
+    "in_review": 0,
     "planned": 1
   },
   "work_packages": {
@@ -54,19 +54,24 @@
       }
     },
     "WP03": {
-      "actor": "codex",
+      "actor": "user",
       "agent": "codex",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "in_review",
-      "last_event_id": "01KZS2Y913WS1PPSCM68EASEZC",
-      "last_transition_at": "2026-08-11T18:56:43.555558+00:00",
+      "lane": "approved",
+      "last_event_id": "01KZS3FY7998NAPRG7HSJK30Z4",
+      "last_transition_at": "2026-08-11T19:06:22.313347+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Реализованы три PlayerInput boundary; RED подтверждён, focused 18/18, build:tests, lint:server и diff check прошли после rebase; независимый review PASS; финальный envelope privacy остаётся объединённым oracle WP04."
       ],
       "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "Review passed: T012-T016; deletion test 15 passing/3 expected failures без production diff; focused 18/18, build:tests, lint:server и diff check green. Anti-pattern checklist: dead code PASS, synthetic fixture PASS, silent empty return N/A, FR coverage PASS, frozen surface PASS, locked decisions PASS, shared ownership PASS, production fragility N/A. Product tree bfbc4dfe идентичен проверенному f4d36416; final envelope oracle остаётся WP04.",
+        "reviewer": "codex",
+        "verdict": "approved"
+      },
       "role": "reviewer",
       "shell_pid": 28224,
       "shell_pid_created_at": "1786474601.3110278",

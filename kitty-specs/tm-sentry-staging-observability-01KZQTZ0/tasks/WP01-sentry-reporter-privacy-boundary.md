@@ -240,3 +240,4 @@ git diff --check
 - 2026-08-11T13:07:04Z – codex – shell_pid=30352 – Assigned agent via action command
 - 2026-08-11T13:40:04Z – codex – shell_pid=30352 – Реализация завершена: RED 2/6 затем GREEN 9/9; mutation oracle поймал снятие beforeSend; npm ci, build:tests, lint:server, build:server, полный build и diff-check прошли; сеть, DSN, push и deploy не использовались.
 - 2026-08-11T13:42:40Z – codex – shell_pid=30640 – Started review via action command
+- 2026-08-11T13:54:26Z – codex – shell_pid=30640 – Review cycle 1: требуется устранить dead production module, покрыть публичный capture и записать T001 evidence.

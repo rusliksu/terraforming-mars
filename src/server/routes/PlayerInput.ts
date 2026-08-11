@@ -72,6 +72,11 @@ export class PlayerInput extends Handler {
       return;
     }
     recordPlayerInputAudit(req, ctx, player, 'player_input_attempt');
+    if (game.surrenderedPlayerIds.has(player.id) && !this.hasServerIdAccess(ctx)) {
+      recordPlayerInputAudit(req, ctx, player, 'player_input_rejected', {reason: 'surrendered_bot_control'});
+      responses.badRequest(req, res, 'surrendered player is controlled by a bot');
+      return;
+    }
     return this.processInput(req, res, ctx, player);
   }
 

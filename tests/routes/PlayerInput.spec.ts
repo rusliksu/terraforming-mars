@@ -429,6 +429,44 @@ describe('PlayerInput', () => {
     expect(auditEvents[1].metadata).deep.eq({authorization: 'player', botTakeover: 'started'});
   });
 
+  it('rejects surrendered-seat input without the bot server capability', async () => {
+    const auditEvents: Array<AccessAuditRecordInput> = [];
+    const [game, player] = testGame(2);
+    game.surrenderedPlayerIds.add(player.id);
+    scaffolding.url = `/player/input?id=${player.id}`;
+    scaffolding.req.method = 'POST';
+    scaffolding.ctx.accessAudit = {record: (event) => auditEvents.push(event)};
+    await scaffolding.ctx.gameLoader.add(game);
+
+    let processed = 0;
+    player.process = () => {
+      processed++;
+    };
+
+    await scaffolding.post(PlayerInput.INSTANCE, res);
+
+    expect(res.statusCode).eq(400);
+    expect(res.content).eq('Bad request: surrendered player is controlled by a bot');
+    expect(processed).eq(0);
+    expect(auditEvents.map((event) => event.event)).deep.eq([
+      'player_input_attempt',
+      'player_input_rejected',
+    ]);
+    expect(auditEvents[1].metadata).deep.eq({reason: 'surrendered_bot_control'});
+
+    const botResponse = new MockResponse();
+    scaffolding.url = `/player/input?id=${player.id}&serverId=${scaffolding.ctx.ids.serverId}`;
+    const post = scaffolding.post(PlayerInput.INSTANCE, botResponse);
+    const emit = Promise.resolve().then(() => {
+      scaffolding.req.emitter.emit('data', '{"type":"option"}');
+      scaffolding.req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+
+    expect(botResponse.statusCode).eq(200);
+    expect(processed).eq(1);
+  });
+
   it('rolls surrender back when the bot cannot start', async () => {
     const [game, player] = testGame(2);
     game.generation = 1;

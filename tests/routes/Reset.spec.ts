@@ -57,6 +57,20 @@ describe('Reset', () => {
     expect(response.thisPlayer.actionsTakenThisRound).eq(1);
   });
 
+  it('rejects undo from a surrendered human player link', async () => {
+    const player = TestPlayer.BLACK.newPlayer();
+    const opponent = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('game-id', [player, opponent], player, 'spectatorid', {undoOption: true, undoStepOption: true});
+    game.surrenderedPlayerIds.add(player.id);
+    await scaffolding.ctx.gameLoader.add(game);
+    scaffolding.url = `/reset?id=${player.id}&mode=step&confirmHiddenInformation=true`;
+
+    await scaffolding.get(Reset.INSTANCE, res);
+
+    expect(res.statusCode).eq(400);
+    expect(res.content).eq('Bad request: surrendered player is controlled by a bot');
+  });
+
   it('blocks multiplayer reset when undo is disabled', async () => {
     const player = TestPlayer.BLACK.newPlayer();
     const opponent = TestPlayer.RED.newPlayer();

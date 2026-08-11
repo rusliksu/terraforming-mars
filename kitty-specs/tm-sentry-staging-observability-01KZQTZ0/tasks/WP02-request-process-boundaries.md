@@ -10,7 +10,8 @@ requirement_refs:
 - FR-007
 - FR-008
 - FR-009
-tracker_refs: []
+tracker_refs:
+- tmsentry-q1x.2
 planning_base_branch: codex/tm-sentry-staging-observability
 merge_target_branch: codex/tm-sentry-staging-observability
 branch_strategy: Planning artifacts for this mission were generated on codex/tm-sentry-staging-observability. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into codex/tm-sentry-staging-observability unless the human explicitly redirects the landing branch.

@@ -26,7 +26,7 @@ history:
 - timestamp: '2026-08-11T08:54:36Z'
   agent: codex
   action: Пакет сформирован из одобренных spec/plan и privacy-аудита PASS.
-agent_profile: reviewer-renata
+agent_profile: node-norris
 authoritative_surface: src/server/server/
 create_intent:
 - src/server/server/SentryReporter.ts
@@ -38,7 +38,7 @@ owned_files:
 - package-lock.json
 - src/server/server/SentryReporter.ts
 - tests/server/server/SentryReporter.spec.ts
-role: reviewer
+role: implementer
 tags: []
 ---
 

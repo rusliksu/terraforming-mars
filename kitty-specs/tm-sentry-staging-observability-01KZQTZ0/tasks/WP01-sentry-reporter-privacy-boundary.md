@@ -25,7 +25,7 @@ subtasks:
 phase: Фаза 1 — диагностический шлюз
 assignee: ''
 agent: "codex"
-shell_pid: "31308"
+shell_pid: "32644"
 history:
 - timestamp: '2026-08-11T08:54:36Z'
   agent: codex
@@ -307,3 +307,4 @@ git diff --check
 - 2026-08-11T15:51:36Z – codex – Цикл 4 исправлен в commit `be1515ca`: `server.ts` явно передаёт публичный `capture`, local log выполняется до best-effort capture, sanitizer очищает leading-whitespace headers и dotted credential assignments.
 - 2026-08-11T15:51:36Z – codex – RED и три mutation oracle подтвердили все выбранные регрессии; focused suite 12/12, `build:tests`, `lint:server`, `build:server`, полный build и `git diff --check` прошли. Full server suite: 7350 passing и один прежний environment failure из-за отсутствующего native binding `better-sqlite3`; push/deploy/network event не выполнялись.
 - 2026-08-11T15:55:34Z – codex – shell_pid=31308 – Цикл 4: privacy, direct wiring и log order исправлены; targeted/gates пройдены
+- 2026-08-11T16:05:05Z – codex – shell_pid=32644 – Started review via action command

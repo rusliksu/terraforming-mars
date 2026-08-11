@@ -83,6 +83,7 @@ import {SelectStandardProjectToPlay} from './inputs/SelectStandardProjectToPlay'
 import {EarlyGameStats} from './game/EarlyGameStats';
 import {DEFAULT_PRELUDE_HANDICAP, normalizePreludeHandicap} from '../common/game/NewGameConfig';
 import type {ResearchPurchaseUndoState} from './game/ResearchPurchaseUndo';
+import {SURRENDER_CONFIRMATION_ANNOTATION} from './surrender/SurrenderInput';
 
 const THROW_STATE_ERRORS = Boolean(process.env.THROW_STATE_ERRORS);
 const TURN_NOTICE_DELAY_MS = 5000;
@@ -1292,14 +1293,13 @@ export class Player implements IPlayer {
   }
 
   private surrenderOption(): PlayerInput {
-    return new SelectOption('Surrender this game', 'Surrender').andThen(() => {
+    return new SelectOption('Surrender this game and start a bot', 'Surrender and start bot').andThen(() => {
       const confirmation = new OrOptions()
-        .setTitle('Are you sure you want to surrender?')
-        .setButtonLabel('Confirm');
+        .setTitle('Surrender this game? A bot will continue playing for you.')
+        .setButtonLabel('Confirm')
+        .annotate(SURRENDER_CONFIRMATION_ANNOTATION);
 
-      confirmation.options.push(new SelectOption('Surrender this game', 'Surrender').andThen(() => {
-        this.game.surrenderedPlayerIds.add(this.id);
-        this.pass();
+      confirmation.options.push(new SelectOption('Surrender this game and start a bot', 'Surrender and start bot').andThen(() => {
         return undefined;
       }));
       confirmation.options.push(new SelectOption('Continue playing', 'Continue').andThen(() => {
@@ -1823,7 +1823,6 @@ export class Player implements IPlayer {
     }
 
     if (this.game.players.length > 1 &&
-      this.game.players.filter((player) => !this.game.surrenderedPlayerIds.has(player.id)).length > 1 &&
       !this.game.botPlayerIds.has(this.id) &&
       !this.game.surrenderedPlayerIds.has(this.id)) {
       action.options.push(this.surrenderOption());

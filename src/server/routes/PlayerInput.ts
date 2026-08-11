@@ -5,7 +5,7 @@ import {Handler} from './Handler';
 import {Context} from './IHandler';
 import {OrOptions} from '../inputs/OrOptions';
 import {UndoActionOption} from '../inputs/UndoActionOption';
-import {InputResponse} from '../../common/inputs/InputResponse';
+import {InputResponse, isOrOptionsResponse} from '../../common/inputs/InputResponse';
 import {isPlayerId} from '../../common/Types';
 import {Request} from '../Request';
 import {Response} from '../Response';
@@ -23,6 +23,10 @@ import type {AccessAuditEvent, AccessAuditRecordInput} from '../server/AccessAud
 import {prepareActionReplayEntry, recordAcceptedActionReplayEntry} from '../game/ActionReplay';
 import {HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED} from '../../common/undo';
 import {logIrreversibleUndo} from '../logs/logIrreversibleUndo';
+import {BotTakeoverManager} from '../bot/BotTakeoverManager';
+import {SURRENDER_CONFIRMATION_ANNOTATION} from '../surrender/SurrenderInput';
+import {surrenderPlayer} from '../surrender/SurrenderService';
+import type {SurrenderBotManager} from '../surrender/SurrenderService';
 
 type ShadowPromptSnapshot = {
   buttonLabel: string | null;
@@ -32,6 +36,10 @@ type ShadowPromptSnapshot = {
 
 export class PlayerInput extends Handler {
   public static readonly INSTANCE = new PlayerInput();
+
+  constructor(private readonly botTakeoverManager: SurrenderBotManager = BotTakeoverManager.INSTANCE) {
+    super();
+  }
 
   public override async post(req: Request, res: Response, ctx: Context): Promise<void> {
     const playerId = ctx.url.searchParams.get('id');
@@ -64,6 +72,11 @@ export class PlayerInput extends Handler {
       return;
     }
     recordPlayerInputAudit(req, ctx, player, 'player_input_attempt');
+    if (game.surrenderedPlayerIds.has(player.id) && !this.hasServerIdAccess(ctx)) {
+      recordPlayerInputAudit(req, ctx, player, 'player_input_rejected', {reason: 'surrendered_bot_control'});
+      responses.badRequest(req, res, 'surrendered player is controlled by a bot');
+      return;
+    }
     return this.processInput(req, res, ctx, player);
   }
 
@@ -74,6 +87,14 @@ export class PlayerInput extends Handler {
       return waitingFor.options[idx] instanceof UndoActionOption;
     }
     return false;
+  }
+
+  private isSurrenderConfirmation(player: IPlayer, entity: InputResponse): boolean {
+    const waitingFor = player.getWaitingFor();
+    return isOrOptionsResponse(entity) &&
+      entity.index === 0 &&
+      waitingFor instanceof OrOptions &&
+      waitingFor.annotation === SURRENDER_CONFIRMATION_ANNOTATION;
   }
 
   private async performUndo(_req: Request, _res: Response, ctx: Context, player: IPlayer): Promise<IPlayer> {
@@ -138,29 +159,55 @@ export class PlayerInput extends Handler {
           promptInputSeq = player.game.shadowInputSeq ?? 0;
           validateRunId(entity);
           isUndo = this.isWaitingForUndo(player, entity);
+          const isSurrender = this.isSurrenderConfirmation(player, entity);
           if (isUndo) {
             player = await this.performUndo(req, res, ctx, player);
             inputSeq = advanceShadowInputSeq(player, promptInputSeq);
             responses.writeJson(res, ctx, Server.getPlayerModel(player));
           } else {
-            inputSeq = advanceShadowInputSeq(player, promptInputSeq);
             const previousSaveGamePromise = player.game.saveGamePromise;
             const stepUndoEnabled = player.game.gameOptions.undoStepOption === true;
-            const replayEntry = stepUndoEnabled ?
+            const replayEntry = stepUndoEnabled && !isSurrender ?
               prepareActionReplayEntry(player.game, player.id, entity) :
               undefined;
             if (!stepUndoEnabled && player.game.actionReplayState !== undefined) {
               player.game.actionReplayState = null;
             }
             try {
-              const wasSurrendered = player.game.surrenderedPlayerIds.has(player.id);
-              player.process(entity);
-              if (!wasSurrendered && player.game.surrenderedPlayerIds.has(player.id)) {
-                recordPlayerInputAudit(req, ctx, player, 'surrender_accepted', {authorization: 'player'});
+              if (isSurrender) {
+                const surrenderResult = await surrenderPlayer({
+                  game: player.game,
+                  player,
+                  gameLoader: ctx.gameLoader,
+                  manager: this.botTakeoverManager,
+                  serverId: ctx.ids.serverId,
+                  advance: () => {
+                    if (player.game.actionReplayState !== undefined) {
+                      player.game.actionReplayState = null;
+                    }
+                    inputSeq = advanceShadowInputSeq(player, promptInputSeq);
+                    player.process(entity);
+                  },
+                });
+                recordPlayerInputAudit(req, ctx, player, 'surrender_accepted', {
+                  authorization: 'player',
+                  botTakeover: surrenderResult.botTakeover,
+                });
+              } else {
+                inputSeq = advanceShadowInputSeq(player, promptInputSeq);
+                player.process(entity);
               }
             } catch (err) {
               player.game.shadowInputSeq = promptInputSeq;
               inputSeq = null;
+              if (isSurrender) {
+                const restoredGame = await ctx.gameLoader.getGame(player.game.id);
+                if (restoredGame !== undefined) {
+                  restoredGame.shadowInputSeq = promptInputSeq;
+                  player = restoredGame.getPlayerById(player.id);
+                }
+                recordPlayerInputAudit(req, ctx, player, 'surrender_rejected', {authorization: 'player'});
+              }
               throw err;
             }
             const savedNewRoot = player.game.saveGamePromise !== previousSaveGamePromise;

@@ -3,7 +3,7 @@ import * as fs from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
 
-import {EloSyncService, effectiveEloForExpectedScore, normalizeEloIdentity, rebuildEloData} from '../../src/server/elo/EloSyncService';
+import {buildEloGameFromSummary, EloSyncService, effectiveEloForExpectedScore, normalizeEloIdentity, rebuildEloData} from '../../src/server/elo/EloSyncService';
 import {Game} from '../../src/server/Game';
 import {TestPlayer} from '../TestPlayer';
 
@@ -87,6 +87,130 @@ describe('EloSyncService', () => {
     expect(withReliability.players.alice.elo_vp).eq(withoutReliability.players.alice.elo_vp);
   });
 
+  it('ranks completed, surrendered and left outcomes before VP', () => {
+    const game = buildEloGameFromSummary({
+      key: 'g-outcome-order',
+      completedTime: 1,
+      server: 'test',
+      map: 'THARSIS',
+      generation: 10,
+      completionOutcomeKnown: true,
+      surrenderedPlayerIds: ['p-bob'],
+      confirmedLeavePlayerIds: ['p-carol'],
+      players: [
+        {id: 'p-alice', name: 'Alice', vp: 50, megacredits: 0, corp: 'CrediCor'},
+        {id: 'p-bob', name: 'Bob', vp: 200, megacredits: 0, corp: 'Helion'},
+        {id: 'p-carol', name: 'Carol', vp: 300, megacredits: 0, corp: 'Inventrix'},
+      ],
+    });
+
+    expect(game.results.map((result) => ({
+      name: result.displayName,
+      place: result.place,
+      outcome: result.completionOutcome,
+    }))).deep.eq([
+      {name: 'Alice', place: 1, outcome: 'completed'},
+      {name: 'Bob', place: 2, outcome: 'surrendered'},
+      {name: 'Carol', place: 3, outcome: 'left'},
+    ]);
+  });
+
+  it('uses outcome places for place Elo without changing VP Elo', () => {
+    const outcomeGame = buildEloGameFromSummary({
+      key: 'g-outcome-elo',
+      completedTime: 1,
+      server: 'test',
+      map: 'THARSIS',
+      generation: 10,
+      completionOutcomeKnown: true,
+      surrenderedPlayerIds: ['p-bob'],
+      confirmedLeavePlayerIds: ['p-carol'],
+      players: [
+        {id: 'p-alice', name: 'Alice', vp: 50, corp: 'CrediCor'},
+        {id: 'p-bob', name: 'Bob', vp: 200, corp: 'Helion'},
+        {id: 'p-carol', name: 'Carol', vp: 300, corp: 'Inventrix'},
+      ],
+    });
+    const vpOrderedGame = {
+      ...outcomeGame,
+      results: [
+        {...outcomeGame.results.find((result) => result.displayName === 'Carol')!, place: 1, completionOutcome: undefined},
+        {...outcomeGame.results.find((result) => result.displayName === 'Bob')!, place: 2, completionOutcome: undefined},
+        {...outcomeGame.results.find((result) => result.displayName === 'Alice')!, place: 3, completionOutcome: undefined},
+      ],
+    };
+
+    const outcomeRatings = rebuildEloData([outcomeGame]);
+    const vpOrderedRatings = rebuildEloData([vpOrderedGame]);
+
+    expect(outcomeRatings.players.alice.elo).not.eq(vpOrderedRatings.players.alice.elo);
+    expect(outcomeRatings.players.alice.elo_vp).eq(vpOrderedRatings.players.alice.elo_vp);
+    expect(outcomeRatings.players.bob.elo_vp).eq(vpOrderedRatings.players.bob.elo_vp);
+    expect(outcomeRatings.players.carol.elo_vp).eq(vpOrderedRatings.players.carol.elo_vp);
+  });
+
+  it('uses VP then megacredits inside each non-completed outcome group', () => {
+    const game = buildEloGameFromSummary({
+      key: 'g-outcome-tiebreakers',
+      completedTime: 1,
+      server: 'test',
+      map: 'THARSIS',
+      generation: 10,
+      completionOutcomeKnown: true,
+      surrenderedPlayerIds: ['p-bob', 'p-dan'],
+      confirmedLeavePlayerIds: ['p-carol', 'p-eve'],
+      players: [
+        {id: 'p-alice', name: 'Alice', vp: 50, megacredits: 0, corp: 'CrediCor'},
+        {id: 'p-bob', name: 'Bob', vp: 90, megacredits: 10, corp: 'Helion'},
+        {id: 'p-dan', name: 'Dan', vp: 90, megacredits: 20, corp: 'Inventrix'},
+        {id: 'p-carol', name: 'Carol', vp: 100, megacredits: 5, corp: 'Ecoline'},
+        {id: 'p-eve', name: 'Eve', vp: 100, megacredits: 15, corp: 'Tharsis Republic'},
+      ],
+    });
+
+    expect(game.results.map((result) => result.displayName)).deep.eq(['Alice', 'Dan', 'Bob', 'Eve', 'Carol']);
+    expect(game.results.map((result) => result.place)).deep.eq([1, 2, 3, 4, 5]);
+  });
+
+  it('shares place only for equal outcome, VP and megacredits', () => {
+    const game = buildEloGameFromSummary({
+      key: 'g-shared-outcome-place',
+      completedTime: 1,
+      server: 'test',
+      map: 'THARSIS',
+      generation: 10,
+      completionOutcomeKnown: true,
+      surrenderedPlayerIds: ['p-bob', 'p-carol'],
+      players: [
+        {id: 'p-alice', name: 'Alice', vp: 50, megacredits: 0, corp: 'CrediCor'},
+        {id: 'p-bob', name: 'Bob', vp: 90, megacredits: 10, corp: 'Helion'},
+        {id: 'p-carol', name: 'Carol', vp: 90, megacredits: 10, corp: 'Inventrix'},
+      ],
+    });
+
+    expect(game.results.map((result) => result.place)).deep.eq([1, 2, 2]);
+  });
+
+  it('counts surrendered as known without counting a leave', () => {
+    const rebuilt = rebuildEloData([{
+      _key: 'g-completion-groups',
+      date: '2026-04-04T00:00:01.000Z',
+      server: 'test',
+      map: 'THARSIS',
+      generation: 10,
+      playerCount: 3,
+      completedTime: 1,
+      results: [
+        {name: 'alice', displayName: 'Alice', place: 1, vp: 100, corp: 'CrediCor', completionOutcome: 'completed' as const},
+        {name: 'bob', displayName: 'Bob', place: 2, vp: 90, corp: 'Helion', completionOutcome: 'surrendered' as const},
+        {name: 'carol', displayName: 'Carol', place: 3, vp: 80, corp: 'Inventrix', completionOutcome: 'left' as const},
+      ],
+    }]);
+
+    expect(rebuilt.players.bob.completionReliability).deep.eq({games: 1, leaves: 0, rate: 0, eligible: false});
+    expect(rebuilt.players.carol.completionReliability).deep.eq({games: 1, leaves: 1, rate: 1, eligible: false});
+  });
+
   it('keeps only the last 20 known outcomes for reliability', () => {
     const games = Array.from({length: 21}, (_value, index) => ({
       _key: `g-window-${index}`,
@@ -105,7 +229,7 @@ describe('EloSyncService', () => {
     expect(rebuildEloData(games).players.alice.completionReliability).deep.eq({games: 20, leaves: 1, rate: 0.05, eligible: false});
   });
 
-  it('records a surrendered player as a leave and skips games with automated players', async () => {
+  it('records a surrendered human without treating the game as automated', async () => {
     const alice = TestPlayer.BLUE.newPlayer({name: 'Alice'});
     const bob = TestPlayer.RED.newPlayer({name: 'Bob'});
     const game = Game.newInstance('g-surrendered-player', [alice, bob], alice, 'spectatorid');
@@ -119,8 +243,9 @@ describe('EloSyncService', () => {
     const primary = JSON.parse(await fs.readFile(primaryPath, 'utf8'));
     expect(primary.games[0].results.map((result: {displayName: string}) => result.displayName)).deep.eq(['Bob', 'Alice']);
     expect(primary.games[0].results.map((result: {place: number}) => result.place)).deep.eq([1, 2]);
-    expect(primary.games[0].results.find((result: {displayName: string}) => result.displayName === 'Alice').completionOutcome).eq('left');
+    expect(primary.games[0].results.find((result: {displayName: string}) => result.displayName === 'Alice').completionOutcome).eq('surrendered');
     expect(primary.games[0].results.find((result: {displayName: string}) => result.displayName === 'Bob').completionOutcome).eq('completed');
+    expect(primary.players.alice.completionReliability).deep.eq({games: 1, leaves: 0, rate: 0, eligible: false});
 
     const automatedGame = Game.newInstance('g-automated', [alice, bob], alice, 'spectatorid');
     automatedGame.generation = 10;
@@ -129,6 +254,81 @@ describe('EloSyncService', () => {
 
     const afterAutomated = JSON.parse(await fs.readFile(primaryPath, 'utf8'));
     expect(afterAutomated.games.map((entry: {_key: string}) => entry._key)).deep.eq(['g-surrendered-player']);
+  });
+
+  it('treats an overlapping surrendered and left ID as left and reports the invariant', () => {
+    const originalWarn = console.warn;
+    const warnings: Array<unknown> = [];
+    console.warn = (...args: Array<unknown>) => warnings.push(args);
+    try {
+      const game = buildEloGameFromSummary({
+        key: 'g-overlap',
+        completedTime: 1,
+        server: 'test',
+        map: 'THARSIS',
+        generation: 10,
+        completionOutcomeKnown: true,
+        surrenderedPlayerIds: ['p-alice'],
+        confirmedLeavePlayerIds: ['p-alice'],
+        players: [
+          {id: 'p-alice', name: 'Alice', vp: 100, corp: 'CrediCor'},
+          {id: 'p-bob', name: 'Bob', vp: 90, corp: 'Helion'},
+        ],
+      });
+
+      expect(game.results.find((result) => result.displayName === 'Alice')?.completionOutcome).eq('left');
+      expect(warnings).has.length(1);
+    } finally {
+      console.warn = originalWarn;
+    }
+  });
+
+  it('keeps surrendered legacy outcomes and drops unknown future values safely', () => {
+    const rebuilt = rebuildEloData([{
+      _key: 'g-legacy-outcomes',
+      date: '2026-04-04T00:00:01.000Z',
+      server: 'test',
+      map: 'THARSIS',
+      generation: 10,
+      playerCount: 2,
+      completedTime: 1,
+      results: [
+        {name: 'alice', displayName: 'Alice', place: 1, vp: 100, corp: 'CrediCor', completionOutcome: 'surrendered' as const},
+        {name: 'bob', displayName: 'Bob', place: 2, vp: 90, corp: 'Helion', completionOutcome: 'future-value' as any},
+      ],
+    }]);
+
+    expect(rebuilt.games[0].results[0].completionOutcome).eq('surrendered');
+    expect(rebuilt.games[0].results[1].completionOutcome).eq(undefined);
+    expect(rebuilt.players.alice.completionReliability).deep.eq({games: 1, leaves: 0, rate: 0, eligible: false});
+    expect(rebuilt.players.bob.completionReliability).eq(undefined);
+  });
+
+  it('does not erase a stricter stored completion outcome during metadata merge', async () => {
+    const base = {
+      key: 'g-merge-outcome',
+      completedTime: 1,
+      server: 'test',
+      map: 'THARSIS',
+      generation: 10,
+      completionOutcomeKnown: true,
+      players: [
+        {id: 'p-alice', name: 'Alice', vp: 100, corp: 'CrediCor'},
+        {id: 'p-bob', name: 'Bob', vp: 90, corp: 'Helion'},
+      ],
+    };
+    await service.recordCompletedGameSummary({...base, confirmedLeavePlayerIds: ['p-alice']});
+    await service.recordCompletedGameSummary({...base, completedTime: 2});
+
+    const primary = JSON.parse(await fs.readFile(primaryPath, 'utf8'));
+    expect(primary.games[0].results.find((result: {displayName: string}) => result.displayName === 'Alice').completionOutcome).eq('left');
+    expect(primary.games[0].results.map((result: {displayName: string; place: number}) => ({
+      name: result.displayName,
+      place: result.place,
+    }))).deep.eq([
+      {name: 'Bob', place: 1},
+      {name: 'Alice', place: 2},
+    ]);
   });
 
   it('uses megacredits as the live-game tie-breaker when final VP are equal', async () => {

@@ -48,6 +48,10 @@ export class Reset extends Handler {
       responses.notFound(req, res);
       return;
     }
+    if (game.surrenderedPlayerIds.has(playerId) && !this.hasServerIdAccess(ctx)) {
+      responses.badRequest(req, res, 'surrendered player is controlled by a bot');
+      return;
+    }
 
     const stepMode = ctx.url.searchParams.get('mode') === 'step';
     const researchMode = ctx.url.searchParams.get('mode') === 'research';

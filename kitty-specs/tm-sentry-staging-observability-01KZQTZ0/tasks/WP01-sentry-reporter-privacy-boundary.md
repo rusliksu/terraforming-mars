@@ -302,3 +302,4 @@ git diff --check
 - 2026-08-11T14:25:15Z – codex – shell_pid=30348 – Started implementation via action command
 - 2026-08-11T14:55:17Z – codex – shell_pid=30348 – Цикл 2: production process caller подключён, публичный capture покрыт deletion-safe oracle; focused 12/12, build:tests, lint:server, build:server и полный build прошли. Full server suite: 7350 passing и один внешний сбой отсутствующего better-sqlite3 binding. Push и deploy не выполнялись.
 - 2026-08-11T14:58:00Z – reviewer-renata – shell_pid=29888 – Started review via action command
+- 2026-08-11T15:19:58Z – reviewer-renata – shell_pid=29888 – Review cycle 3: подтверждены privacy bypass для leading-whitespace header и dotted credential assignment, непрямой wiring capture в server.ts и изменение порядка local log. Исходники восстановлены; пакет возвращён implementer.

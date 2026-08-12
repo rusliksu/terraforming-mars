@@ -24,6 +24,7 @@
   "purpose_context": "Администратор custom-сервера должен видеть неожиданные ошибки staging с message, full stack, route, game/player IDs и gameplay input после обязательного удаления secrets; headers, cookies, query, IP, sessions, prod и deploy исключены.",
   "purpose_tldr": "Получать воспроизводимый расширенный контекст staging-ошибок без секретов.",
   "slug": "tm-sentry-staging-observability-01KZQTZ0",
+  "status_phase": "1",
   "target_branch": "codex/tm-sentry-staging-observability",
   "topology": "single_branch",
   "vcs": "git",

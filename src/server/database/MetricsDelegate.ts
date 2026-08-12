@@ -104,14 +104,6 @@ export class MetricsDelegate implements IDatabase {
     return withDatabaseMetrics('getGameIds', () => this.delegate.getGameIds());
   }
 
-  getLastSaveTimeMs(gameId: GameId): Promise<number | undefined> {
-    return withDatabaseMetrics('getLastSaveTimeMs', () => this.delegate.getLastSaveTimeMs(gameId));
-  }
-
-  getLastSaveTimesMs(gameIds: Array<GameId>): Promise<Map<GameId, number | undefined>> {
-    return withDatabaseMetrics('getLastSaveTimesMs', () => this.delegate.getLastSaveTimesMs(gameIds));
-  }
-
   getPlayerCount(gameId: GameId): Promise<number> {
     return withDatabaseMetrics('getPlayerCount', () => this.delegate.getPlayerCount(gameId));
   }

@@ -756,7 +756,7 @@ describe('Player', () => {
 
   describe('surrender action', () => {
     function findSurrenderAction(player: TestPlayer): SelectOption | undefined {
-      const action = player.getActions().options.find((option) => option.title === 'Surrender this game');
+      const action = player.getActions().options.find((option) => option.title === 'Surrender this game and start a bot');
       return action === undefined ? undefined : cast(action, SelectOption);
     }
 
@@ -764,7 +764,7 @@ describe('Player', () => {
       player.clearWaitingFor();
       player.takeAction(false);
       const actions = cast(player.getWaitingFor(), OrOptions);
-      const surrenderIndex = actions.options.findIndex((option) => option.title === 'Surrender this game');
+      const surrenderIndex = actions.options.findIndex((option) => option.title === 'Surrender this game and start a bot');
       expect(surrenderIndex).greaterThan(-1);
       player.process({type: 'or', index: surrenderIndex, response: {type: 'option'}});
       return cast(player.getWaitingFor(), OrOptions);
@@ -780,7 +780,7 @@ describe('Player', () => {
 
       game.setBotPlayerIds([]);
       game.surrenderedPlayerIds.add(otherPlayer.id);
-      expect(findSurrenderAction(player)).is.undefined;
+      expect(findSurrenderAction(player)).is.not.undefined;
     });
 
     it('returns to the action list without consuming an action when cancelled', () => {
@@ -788,11 +788,12 @@ describe('Player', () => {
       game.generation = 1;
 
       const confirmation = startSurrender(player);
-      expect(confirmation.title).eq('Are you sure you want to surrender?');
+      expect(confirmation.title).eq('Surrender this game? A bot will continue playing for you.');
       expect(confirmation.options.map((option) => option.title)).deep.eq([
-        'Surrender this game',
+        'Surrender this game and start a bot',
         'Continue playing',
       ]);
+      expect(confirmation.options[0].buttonLabel).eq('Surrender and start bot');
 
       player.process({type: 'or', index: 1, response: {type: 'option'}});
 
@@ -802,15 +803,16 @@ describe('Player', () => {
       expect(cast(player.getWaitingFor(), OrOptions).title).eq('Take your first action');
     });
 
-    it('records surrender and passes the player when confirmed', () => {
+    it('leaves the surrender commit to the route transition', () => {
       const [game, player] = testGame(2);
       game.generation = 1;
 
       startSurrender(player);
       player.process({type: 'or', index: 0, response: {type: 'option'}});
 
-      expect(game.surrenderedPlayerIds.has(player.id)).is.true;
-      expect(game.hasPassedThisActionPhase(player)).is.true;
+      expect(game.surrenderedPlayerIds.has(player.id)).is.false;
+      expect(game.hasPassedThisActionPhase(player)).is.false;
+      expect(cast(player.getWaitingFor(), OrOptions).title).eq('Take your next action');
     });
   });
 

@@ -13,6 +13,17 @@ import {CacheConfig} from './CacheConfig';
 import {Clock} from '../../common/Timer';
 import {EloSyncService} from '../elo/EloSyncService';
 import {appendCanceledLogMessages} from '../logs/appendCanceledLogMessages';
+import {Phase} from '../../common/Phase';
+import {BotTakeoverManager} from '../bot/BotTakeoverManager';
+import type {SurrenderBotManager} from '../surrender/SurrenderService';
+import {serverId} from '../utils/server-ids';
+
+export type SurrenderBotReconciliationResult = {
+  scanned: number;
+  started: number;
+  alreadyActive: number;
+  failed: number;
+};
 
 const metrics = {
   initialize: new prometheus.Gauge({
@@ -85,11 +96,20 @@ export class GameLoader implements IGameLoader {
   private cache: Cache;
   private readonly config: CacheConfig;
   private readonly clock: Clock;
+  private readonly botTakeoverManager: SurrenderBotManager;
+  private readonly botServerId: string;
   private purgedGames: Array<GameId>;
 
-  private constructor(config: CacheConfig, clock: Clock) {
+  private constructor(
+    config: CacheConfig,
+    clock: Clock,
+    botTakeoverManager: SurrenderBotManager = BotTakeoverManager.INSTANCE,
+    botServerId: string = serverId,
+  ) {
     this.config = config;
     this.clock = clock;
+    this.botTakeoverManager = botTakeoverManager;
+    this.botServerId = botServerId;
     this.cache = new Cache(config, clock);
     this.cache.on('evicted', (count: number) => metrics.evictions.inc(count));
     this.cache.on('trimmed', (count: number) => metrics.logsTrimmed.inc(count));
@@ -108,8 +128,21 @@ export class GameLoader implements IGameLoader {
     return GameLoader.instance;
   }
 
-  public static newTestInstance(config: CacheConfig, clock: Clock): GameLoader {
-    return new GameLoader(config, clock);
+  public static reconcileSurrenderedBots(): Promise<SurrenderBotReconciliationResult> {
+    const instance = GameLoader.getInstance();
+    if (!(instance instanceof GameLoader)) {
+      return Promise.resolve(emptySurrenderBotReconciliationResult());
+    }
+    return instance.reconcileSurrenderedBots();
+  }
+
+  public static newTestInstance(
+    config: CacheConfig,
+    clock: Clock,
+    botTakeoverManager: SurrenderBotManager = BotTakeoverManager.INSTANCE,
+    botServerId: string = serverId,
+  ): GameLoader {
+    return new GameLoader(config, clock, botTakeoverManager, botServerId);
   }
 
   public static getLoadedGameCount(): {trimmed: number, untrimmed: number} {
@@ -169,14 +202,6 @@ export class GameLoader implements IGameLoader {
     return arry.map(([gameId, participantIds]) => ({gameId, participantIds}));
   }
 
-  public getLastSaveTimeMs(gameId: GameId): Promise<number | undefined> {
-    return Database.getInstance().getLastSaveTimeMs(gameId);
-  }
-
-  public getLastSaveTimesMs(gameIds: Array<GameId>): Promise<Map<GameId, number | undefined>> {
-    return Database.getInstance().getLastSaveTimesMs(gameIds);
-  }
-
   public async isCached(gameId: GameId): Promise<boolean> {
     const d = await this.cache.getGames();
     return d.games.get(gameId) !== undefined;
@@ -199,6 +224,7 @@ export class GameLoader implements IGameLoader {
       if (cached.gameLog.length === 0) {
         await this.restoreGameLog(cached);
       }
+      this.reconcileGame(cached);
       return cached;
     }
 
@@ -213,6 +239,7 @@ export class GameLoader implements IGameLoader {
         }
         const game = Game.deserialize(serializedGame);
         await this.add(game);
+        this.reconcileGame(game);
         console.log(`GameLoader loaded game ${gameId} into memory from database`);
         return game;
       } catch (e) {
@@ -223,6 +250,57 @@ export class GameLoader implements IGameLoader {
 
     // Otherwise the game ID isn't valid.
     return undefined;
+  }
+
+  public async reconcileSurrenderedBots(): Promise<SurrenderBotReconciliationResult> {
+    const result = emptySurrenderBotReconciliationResult();
+    const ids = await this.getIds();
+    const database = Database.getInstance();
+
+    for (const {gameId} of ids) {
+      result.scanned++;
+      try {
+        const serialized = await database.getGame(gameId);
+        if (serialized.phase === Phase.END || (serialized.surrenderedPlayerIds?.length ?? 0) === 0) {
+          continue;
+        }
+        const game = Game.deserialize(serialized);
+        await this.add(game);
+        mergeSurrenderBotReconciliationResult(result, this.reconcileGame(game));
+      } catch (_error) {
+        result.failed++;
+        console.error('Unable to inspect game during surrender bot reconciliation', {gameId});
+      }
+    }
+
+    console.info('Surrender bot reconciliation completed', result);
+    return result;
+  }
+
+  private reconcileGame(game: IGame): SurrenderBotReconciliationResult {
+    const result = emptySurrenderBotReconciliationResult();
+    if (game.phase === Phase.END) {
+      return result;
+    }
+
+    for (const playerId of game.surrenderedPlayerIds) {
+      if (game.botPlayerIds.has(playerId)) {
+        continue;
+      }
+      if (this.botTakeoverManager.isActive(playerId)) {
+        result.alreadyActive++;
+        continue;
+      }
+      try {
+        game.getPlayerById(playerId);
+        this.botTakeoverManager.start({gameId: game.id, playerId, serverId: this.botServerId});
+        result.started++;
+      } catch (_error) {
+        result.failed++;
+        console.error('Unable to reconcile surrendered bot', {gameId: game.id});
+      }
+    }
+    return result;
   }
 
   /**
@@ -313,6 +391,19 @@ export class GameLoader implements IGameLoader {
     metrics.gamesPurged.inc(purgedGames.length);
     await database.compressCompletedGames();
   }
+}
+
+function emptySurrenderBotReconciliationResult(): SurrenderBotReconciliationResult {
+  return {scanned: 0, started: 0, alreadyActive: 0, failed: 0};
+}
+
+function mergeSurrenderBotReconciliationResult(
+  target: SurrenderBotReconciliationResult,
+  source: SurrenderBotReconciliationResult,
+): void {
+  target.started += source.started;
+  target.alreadyActive += source.alreadyActive;
+  target.failed += source.failed;
 }
 
 function parseConfigString(stringValue: string): CacheConfig {

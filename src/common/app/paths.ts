@@ -9,7 +9,6 @@ export const paths = {
   API_GAMES: 'api/games',
   API_HEAP_SNAPSHOT: 'api/heapsnapshot',
   API_IPS: 'api/ips',
-  API_LIVE_GAMES: 'api/live-games',
   API_METRICS: 'api/metrics',
   API_LOGOUT: 'api/logout',
   API_PLAYER: 'api/player',

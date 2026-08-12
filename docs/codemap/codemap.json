@@ -1,95 +1,29 @@
 {
-  "schema_version": 2,
   "repo_name": "terraforming-mars",
-  "map_kind": "scoped-final",
-  "generated_at": "2026-08-11T19:21:58Z",
-  "generated_from_commit": "d542dc99e5e71d2081e0505d4233001247c37bfd",
+  "generated_at": "2026-08-11T10:03:56.424Z",
+  "generated_from_commit": "4cf34ffaaefa6d52371aa48d3393ee51268e0a2e",
   "scope": [
-    "package-lock.json",
-    "package.json",
-    "src/server/routes/PlayerInput.ts",
-    "src/server/server.ts",
-    "src/server/server/requestProcessor.ts",
-    "src/server/server/SentryProcessBoundary.ts",
-    "src/server/server/SentryReporter.ts",
-    "tests/routes/PlayerInput.spec.ts",
-    "tests/server/requestProcessor.spec.ts",
-    "tests/server/server/SentryProcessBoundary.spec.ts",
-    "tests/server/server/SentryReporter.spec.ts"
+    ".",
+    ".github",
+    "assets",
+    "docs",
+    "elo",
+    "openspec",
+    "scripts",
+    "src",
+    "tests",
+    "vscode.sample"
   ],
-  "scope_note": "Итоговая scoped-карта построена из интегрированного дерева WP01—WP03. Scope включает package evidence, все owning source boundaries и четыре профильных test files; сами codemap artifacts исключены из fingerprint.",
   "nodes": [
     {
       "id": "server-entry",
-      "label": "HTTP server entry",
+      "label": "HTTP server",
       "type": "service",
-      "status": "confirmed",
       "path": "src/server/server.ts",
-      "role": "Создаёт HTTP/HTTPS server, регистрирует process-level error listener и передаёт запросы в processRequest.",
+      "role": "HTTP/HTTPS entry point and metrics",
       "entrypoints": [
-        {
-          "symbol": "requestHandler(req, res)",
-          "status": "confirmed"
-        },
-        {
-          "symbol": "process.on('uncaughtException', ...)",
-          "status": "confirmed"
-        }
-      ],
-      "tests": [
-        {
-          "path": "tests/server/server/SentryProcessBoundary.spec.ts",
-          "status": "confirmed"
-        }
-      ],
-      "evidence": [
         {
           "path": "src/server/server.ts",
-          "symbol": "installUncaughtExceptionHandler(capture)",
-          "status": "confirmed"
-        }
-      ]
-    },
-    {
-      "id": "process-boundary",
-      "label": "Process error boundary",
-      "type": "observability-boundary",
-      "status": "confirmed",
-      "path": "src/server/server/SentryProcessBoundary.ts",
-      "role": "Сохраняет локальный uncaughtException log первым и best-effort вызывает переданный public capture с boundary process.",
-      "entrypoints": [
-        {
-          "symbol": "installUncaughtExceptionHandler(captureError)",
-          "status": "confirmed"
-        },
-        {
-          "symbol": "createUncaughtExceptionHandler(captureError, logError)",
-          "status": "confirmed"
-        }
-      ],
-      "tests": [
-        {
-          "path": "tests/server/server/SentryProcessBoundary.spec.ts",
-          "status": "confirmed"
-        }
-      ],
-      "evidence": [
-        {
-          "path": "src/server/server/SentryProcessBoundary.ts",
-          "symbol": "captureError(error, {boundary: 'process'})",
-          "status": "confirmed"
-        }
-      ]
-    },
-    {
-      "id": "request-routing",
-      "label": "Request processor",
-      "type": "service",
-      "status": "confirmed",
-      "path": "src/server/server/requestProcessor.ts",
-      "role": "Нормализует URL, создаёт request Context, выбирает handler, ведёт HTTP metrics и владеет единственным unexpected request capture.",
-      "entrypoints": [
-        {
           "symbol": "processRequest(req, res)",
           "status": "confirmed"
         }
@@ -97,141 +31,807 @@
       "tests": [
         {
           "path": "tests/server/requestProcessor.spec.ts",
+          "symbol": "describe('requestProcessor'"
+        }
+      ],
+      "constraints": [
+        "TLS зависит от KEY_PATH и CERT_PATH."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/server.ts",
+          "symbol": "import prometheus from 'prom-client'",
           "status": "confirmed"
         }
+      ]
+    },
+    {
+      "id": "request-routing",
+      "label": "Request routing",
+      "type": "service",
+      "path": "src/server/server/requestProcessor.ts",
+      "role": "Path registry and handler dispatch",
+      "entrypoints": [
+        {
+          "path": "src/server/server/requestProcessor.ts",
+          "symbol": "export async function processRequest",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/server/requestProcessor.spec.ts",
+          "symbol": "describe('requestProcessor'"
+        }
+      ],
+      "constraints": [
+        "Неизвестный путь получает notFound."
       ],
       "evidence": [
         {
           "path": "src/server/server/requestProcessor.ts",
-          "symbol": "new URL(req.url, ...)",
+          "symbol": "const handlers: Map<string, IHandler>",
           "status": "confirmed"
         },
         {
           "path": "src/server/server/requestProcessor.ts",
           "symbol": "await handler.processRequest(req, res, ctx)",
           "status": "confirmed"
-        },
-        {
-          "path": "src/server/server/requestProcessor.ts",
-          "symbol": "capture(error, {boundary: 'request', ...})",
-          "status": "confirmed"
         }
       ]
     },
     {
-      "id": "player-input",
-      "label": "Player input route",
+      "id": "api-handlers",
+      "label": "API and page handlers",
       "type": "api",
-      "status": "confirmed",
-      "path": "src/server/routes/PlayerInput.ts",
-      "role": "Получает игрока, разбирает gameplay input, выполняет undo или основной action и формирует прежний response.",
+      "path": "src/server/routes",
+      "role": "HTTP handlers for reads, player input, undo and surrender",
       "entrypoints": [
         {
-          "symbol": "PlayerInput.post",
+          "path": "src/server/routes/PlayerInput.ts",
+          "symbol": "export class PlayerInput",
           "status": "confirmed"
         },
         {
-          "symbol": "PlayerInput.performUndo",
+          "path": "src/server/routes/ApiSurrender.ts",
+          "symbol": "export class ApiSurrender",
           "status": "confirmed"
         },
         {
-          "symbol": "PlayerInput.processInput",
+          "path": "src/server/routes/Reset.ts",
+          "symbol": "export class Reset",
           "status": "confirmed"
         }
       ],
       "tests": [
         {
           "path": "tests/routes/PlayerInput.spec.ts",
-          "status": "confirmed"
+          "symbol": "describe('PlayerInput'"
+        },
+        {
+          "path": "tests/routes/ApiSurrender.spec.ts",
+          "symbol": "describe('ApiSurrender'"
+        },
+        {
+          "path": "tests/routes/Reset.spec.ts",
+          "symbol": "describe('Reset'"
         }
       ],
+      "constraints": [
+        "PlayerInput and ApiSurrender share one transactional surrender service.",
+        "After surrender, PlayerInput and Reset require the protected server capability so the old human link cannot race the bot.",
+        "ApiSurrender is registered, but no browser caller was confirmed."
+      ],
       "evidence": [
-        {
-          "path": "src/server/routes/PlayerInput.ts",
-          "symbol": "game.getPlayerById(playerId)",
-          "status": "confirmed"
-        },
-        {
-          "path": "src/server/routes/PlayerInput.ts",
-          "symbol": "JSON.parse(body)",
-          "status": "confirmed"
-        },
         {
           "path": "src/server/routes/PlayerInput.ts",
           "symbol": "player.process(entity)",
           "status": "confirmed"
         },
         {
+          "path": "src/server/routes/ApiSurrender.ts",
+          "symbol": "surrenderPlayer({game, player",
+          "status": "confirmed"
+        },
+        {
           "path": "src/server/routes/PlayerInput.ts",
-          "symbol": "captureUnexpected(error, playerDiagnosticContext(...))",
+          "symbol": "surrendered player is controlled by a bot",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/routes/Reset.ts",
+          "symbol": "surrendered player is controlled by a bot",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/server/requestProcessor.ts",
+          "symbol": "[paths.API_SURRENDER, ApiSurrender.INSTANCE]",
           "status": "confirmed"
         }
       ]
     },
     {
-      "id": "sentry-reporter",
-      "label": "Sentry reporter",
-      "type": "observability",
-      "status": "confirmed",
-      "path": "src/server/server/SentryReporter.ts",
-      "role": "Единственная fail-closed privacy boundary для ручного Sentry error event.",
+      "id": "client-ui",
+      "label": "Vue client",
+      "type": "ui",
+      "path": "src/client",
+      "role": "Browser UI and API fetches",
       "entrypoints": [
         {
-          "symbol": "capture(error, context)",
+          "path": "src/client/components/App.vue",
+          "symbol": "export default defineComponent",
           "status": "confirmed"
         }
       ],
       "tests": [
         {
-          "path": "tests/server/server/SentryReporter.spec.ts",
-          "status": "confirmed"
+          "path": "tests/client/components/WaitingFor.spec.ts",
+          "symbol": "hidden-information warning"
         },
         {
-          "path": "tests/server/server/SentryProcessBoundary.spec.ts",
-          "status": "confirmed"
+          "path": "tests/client/components/PlayerHome.spec.ts",
+          "symbol": "surrender controls"
         },
         {
-          "path": "tests/server/requestProcessor.spec.ts",
-          "status": "confirmed"
-        },
-        {
-          "path": "tests/routes/PlayerInput.spec.ts",
-          "status": "confirmed"
+          "path": "tests/client/components/GameEnd.spec.ts",
+          "symbol": "orders surrendered players by VP then megacredits"
         }
+      ],
+      "constraints": [
+        "Gameplay actions use PLAYER_INPUT; full action/step undo uses RESET.",
+        "Hidden-information undo retries only after window.confirm."
       ],
       "evidence": [
         {
-          "path": "src/server/server/SentryReporter.ts",
-          "symbol": "createSentryReporter(config, transport)",
+          "path": "src/client/components/WaitingFor.vue",
+          "symbol": "paths.PLAYER_INPUT",
           "status": "confirmed"
         },
         {
-          "path": "src/server/server/SentryReporter.ts",
-          "symbol": "capture(error, context)",
+          "path": "src/client/components/WaitingFor.vue",
+          "symbol": "paths.RESET",
           "status": "confirmed"
         },
         {
-          "path": "src/server/server/SentryReporter.ts",
-          "symbol": "beforeSend(event)",
+          "path": "src/client/components/WaitingFor.vue",
+          "symbol": "window.confirm(resp.message)",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/client/components/OrOptions.vue",
+          "symbol": "selectedOption.buttonLabel",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/client/components/GameEnd.vue",
+          "symbol": "compareCompletionRank",
           "status": "confirmed"
         }
-      ],
-      "constraints": [
-        "Включается только при DSN + exact staging + valid build head.",
-        "Не принимает Request/Response/общий route Context.",
-        "Финальный event строится по allowlist и повторно очищается beforeSend.",
-        "HTTP/gameplay behavior не меняется; transport delivery не ожидается caller-ом."
       ]
     },
     {
-      "id": "sentry-ingest",
-      "label": "Sentry ingest",
-      "type": "external",
-      "status": "delivery-gated",
-      "path": "external:Sentry",
-      "role": "Внешний приёмник очищенных staging error events.",
+      "id": "common-contracts",
+      "label": "Shared contracts",
+      "type": "contract",
+      "path": "src/common",
+      "role": "Shared paths, models, IDs, inputs and completion-outcome ranking",
+      "entrypoints": [
+        {
+          "path": "src/common/app/paths.ts",
+          "symbol": "export const paths",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/common/game/CompletionOutcome.ts",
+          "symbol": "compareCompletionRank",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/common/Timer.spec.ts",
+          "symbol": "describe('Timer'"
+        }
+      ],
+      "constraints": [],
+      "evidence": [
+        {
+          "path": "src/common/app/paths.ts",
+          "symbol": "API_CREATEGAME",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/common/app/paths.ts",
+          "symbol": "API_GAME",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/common/game/CompletionOutcome.ts",
+          "symbol": "completed | surrendered | left",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "game-domain",
+      "label": "Game domain",
+      "type": "domain",
+      "path": "src/server/Game.ts",
+      "role": "Game aggregate, rules, final ranking and save triggers",
+      "entrypoints": [
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "export class Game",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/Game.spec.ts",
+          "symbol": "persists bot and surrender state"
+        },
+        {
+          "path": "tests/Game.spec.ts",
+          "symbol": "ends multiplayer when only one player has not surrendered"
+        }
+      ],
       "constraints": [
-        "Реальный DSN и smoke являются отдельным delivery gate."
+        "surrenderedPlayerIds is serialized game state.",
+        "A surrendered human seat remains in normal phase rotation because its bot continues play.",
+        "Final scores use the shared completed-before-surrendered rank."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "public readonly surrenderedPlayerIds",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "compareCompletionRank",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "worldGovernmentTerraforming()",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "surrenderedPlayerIds: Array.from",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "player-domain",
+      "label": "Player domain",
+      "type": "domain",
+      "path": "src/server/Player.ts",
+      "role": "Player state, turns and waiting prompts",
+      "entrypoints": [
+        {
+          "path": "src/server/Player.ts",
+          "symbol": "export class Player",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/Player.spec.ts",
+          "symbol": "describe('surrender action'"
+        }
+      ],
+      "constraints": [
+        "Surrender is an in-game OrOptions confirmation; the copy says that a bot will continue the seat."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/Player.ts",
+          "symbol": "private surrenderOption()",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/Player.ts",
+          "symbol": "Surrender this game? A bot will continue playing for you.",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/Player.ts",
+          "symbol": "Surrender and start bot",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "setup-cards",
+      "label": "Setup and cards",
+      "type": "domain",
+      "path": "src/server/GameSetup.ts",
+      "role": "Board setup and game-start composition",
+      "entrypoints": [
+        {
+          "path": "src/server/GameSetup.ts",
+          "symbol": "export class GameSetup",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/GameSetup.spec.ts",
+          "symbol": "describe('GameSetup'"
+        }
+      ],
+      "constraints": [],
+      "evidence": [
+        {
+          "path": "src/server/GameSetup.ts",
+          "symbol": "public static newBoard",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "input-deferred",
+      "label": "Inputs and deferred actions",
+      "type": "queue",
+      "path": "src/server/deferredActions",
+      "role": "In-process action queue and input abstractions",
+      "entrypoints": [
+        {
+          "path": "src/server/deferredActions/DeferredActionsQueue.ts",
+          "symbol": "export class DeferredActionsQueue",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/routes/PlayerInput.spec.ts",
+          "symbol": "describe('PlayerInput'"
+        }
+      ],
+      "constraints": [
+        "External queue not confirmed."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/deferredActions/DeferredActionsQueue.ts",
+          "symbol": "public runAll",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/PlayerInput.ts",
+          "symbol": "export abstract class BasePlayerInput",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "loader-cache",
+      "label": "Game loader and cache",
+      "type": "cache",
+      "path": "src/server/database/GameLoader.ts",
+      "role": "Resident cache, lazy restore and save lifecycle",
+      "entrypoints": [
+        {
+          "path": "src/server/database/GameLoader.ts",
+          "symbol": "export class GameLoader",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/database/GameLoader.spec.ts",
+          "symbol": "describe('GameLoader'"
+        }
+      ],
+      "constraints": [
+        "Loaded unfinished games reconcile missing bot processes for surrendered human seats.",
+        "Finished games and original bot seats are skipped."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/database/GameLoader.ts",
+          "symbol": "public async getGame",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/database/GameLoader.ts",
+          "symbol": "reconcileSurrenderedBots",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/database/GameLoader.ts",
+          "symbol": "recordCompletedGame(game)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "database-facade",
+      "label": "Database facade",
+      "type": "database",
+      "path": "src/server/database/Database.ts",
+      "role": "Storage selection and IDatabase facade",
+      "entrypoints": [
+        {
+          "path": "src/server/database/Database.ts",
+          "symbol": "public static getInstance",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/database/SQLite.spec.ts",
+          "symbol": "describeDatabaseSuite"
+        }
+      ],
+      "constraints": [
+        "POSTGRES_HOST/LOCAL_FS_DB select implementations."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/database/Database.ts",
+          "symbol": "return new SQLite()",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/database/Database.ts",
+          "symbol": "return new PostgreSQL()",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/database/Database.ts",
+          "symbol": "return new LocalFilesystem()",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "sqlite-storage",
+      "label": "SQLite",
+      "type": "database",
+      "path": "src/server/database/SQLite.ts",
+      "role": "Local relational persistence",
+      "entrypoints": [
+        {
+          "path": "src/server/database/SQLite.ts",
+          "symbol": "export class SQLite",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/database/SQLite.spec.ts",
+          "symbol": "describeDatabaseSuite"
+        }
+      ],
+      "constraints": [],
+      "evidence": [
+        {
+          "path": "src/server/database/SQLite.ts",
+          "symbol": "CREATE TABLE IF NOT EXISTS games",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "postgres-storage",
+      "label": "PostgreSQL",
+      "type": "database",
+      "path": "src/server/database/PostgreSQL.ts",
+      "role": "PostgreSQL implementation of IDatabase",
+      "entrypoints": [
+        {
+          "path": "src/server/database/PostgreSQL.ts",
+          "symbol": "export class PostgreSQL",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/integration/PostgreSQL.spec.ts",
+          "symbol": "describeDatabaseSuite"
+        }
+      ],
+      "constraints": [],
+      "evidence": [
+        {
+          "path": "src/server/database/PostgreSQL.ts",
+          "symbol": "export class PostgreSQL",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "filesystem-storage",
+      "label": "Filesystem DB",
+      "type": "database",
+      "path": "src/server/database/LocalFilesystem.ts",
+      "role": "Local filesystem implementation",
+      "entrypoints": [
+        {
+          "path": "src/server/database/LocalFilesystem.ts",
+          "symbol": "export class LocalFilesystem",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/database/databaseSuite.ts",
+          "symbol": "export function describeDatabaseSuite"
+        }
+      ],
+      "constraints": [
+        "Only shared database suite found."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/database/LocalFilesystem.ts",
+          "symbol": "export class LocalFilesystem",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "auth-sessions",
+      "label": "Auth and sessions",
+      "type": "auth",
+      "path": "src/server/server/auth",
+      "role": "Discord OAuth and persisted sessions",
+      "entrypoints": [
+        {
+          "path": "src/server/server/auth/SessionManager.ts",
+          "symbol": "export class SessionManager",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/server/auth/SessionManager.spec.ts",
+          "symbol": "describe('SessionManager'"
+        }
+      ],
+      "constraints": [
+        "OAuth secrets are not included."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/server/auth/SessionManager.ts",
+          "symbol": "this.database.createSession(session)",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/server/auth/discord.ts",
+          "symbol": "https://discord.com/api/oauth2/token",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "bot-takeover",
+      "label": "Bot takeover",
+      "type": "worker",
+      "path": "src/server/bot/BotTakeoverManager.ts",
+      "role": "Child-process lifecycle for original bots and surrendered-seat takeovers",
+      "entrypoints": [
+        {
+          "path": "src/server/bot/BotTakeoverManager.ts",
+          "symbol": "export class BotTakeoverManager",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/server/TelegramBot.spec.ts",
+          "symbol": "suppresses turn notice while bot takeover is active"
+        },
+        {
+          "path": "tests/routes/ApiCreateGame.spec.ts",
+          "symbol": "starts bot takeover for bot players during game creation"
+        }
+      ],
+      "constraints": [
+        "Runtime child-process state is in-memory and keyed by player ID.",
+        "start is idempotent for an already active player; GameLoader performs restart reconciliation."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/bot/BotTakeoverManager.ts",
+          "symbol": "private readonly active",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/bot/BotTakeoverManager.ts",
+          "symbol": "public start(options",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/bot/BotTakeoverManager.ts",
+          "symbol": "public stop(playerId",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/surrender/SurrenderService.ts",
+          "symbol": "manager.start({gameId: game.id, playerId: player.id",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "elo-sync",
+      "label": "ELO sync",
+      "type": "worker",
+      "path": "src/server/elo/EloSyncService.ts",
+      "role": "Completed-game ELO persistence and completion-outcome ranking",
+      "entrypoints": [
+        {
+          "path": "src/server/elo/EloSyncService.ts",
+          "symbol": "export class EloSyncService",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/server/EloSyncService.spec.ts",
+          "symbol": "ranks completed, surrendered and left outcomes before VP"
+        }
+      ],
+      "constraints": [
+        "Ranking is completed, then surrendered, then confirmed left; VP and MC break ties inside a group.",
+        "A surrender is a known outcome but not a reliability leave.",
+        "Games with original botPlayerIds remain excluded from ELO."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/elo/EloSyncService.ts",
+          "symbol": "surrenderedPlayerIds",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/elo/EloSyncService.ts",
+          "symbol": "confirmedLeavePlayerIds",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/elo/EloSyncService.ts",
+          "symbol": "compareCompletionRank",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "external",
+      "label": "External dependencies",
+      "type": "external",
+      "path": "package.json",
+      "role": "Prometheus, Discord, Telegram and optional DB drivers",
+      "entrypoints": [
+        {
+          "path": "package.json",
+          "symbol": "\"prom-client\"",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/server/TelegramBot.spec.ts",
+          "symbol": "describe('TelegramBot'"
+        }
+      ],
+      "constraints": [
+        "Credentials are read from env."
+      ],
+      "evidence": [
+        {
+          "path": "package.json",
+          "symbol": "\"prom-client\"",
+          "status": "confirmed"
+        },
+        {
+          "path": "package.json",
+          "symbol": "\"better-sqlite3\"",
+          "status": "confirmed"
+        },
+        {
+          "path": "package.json",
+          "symbol": "\"pg\"",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/TelegramBot.ts",
+          "symbol": "api.telegram.org",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/server/auth/discord.ts",
+          "symbol": "https://discord.com/api/oauth2/token",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "simulation-host",
+      "label": "Simulation host",
+      "type": "tool",
+      "path": "src/server/tools/tm-sim-host.ts",
+      "role": "JSON-lines branching simulation host",
+      "entrypoints": [
+        {
+          "path": "src/server/tools/tm-sim-host.ts",
+          "symbol": "export class TmSimHost",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/server/tools/TmSimHost.spec.ts",
+          "symbol": "describe('TmSimHost'"
+        }
+      ],
+      "constraints": [
+        "Persistence and Telegram are prohibited."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/tools/tm-sim-host.ts",
+          "symbol": "async function main()",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/tools/tm-sim-host.ts",
+          "symbol": "deserializeSimulationGame(rootSnapshot)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "undo-safety",
+      "label": "Undo hidden-info guard",
+      "type": "service",
+      "path": "src/server/game/hasRevealedHiddenInformation.ts",
+      "role": "Detects hidden information crossed by action or step undo",
+      "entrypoints": [
+        {
+          "path": "src/server/game/hasRevealedHiddenInformation.ts",
+          "symbol": "hasRevealedHiddenInformation",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/server/game/hasRevealedHiddenInformation.spec.ts",
+          "symbol": "describe('hasRevealedHiddenInformation'"
+        },
+        {
+          "path": "tests/routes/PlayerInput.spec.ts",
+          "symbol": "requires confirmation before undoing revealed hidden information"
+        },
+        {
+          "path": "tests/routes/Reset.spec.ts",
+          "symbol": "warns before reloading an action that revealed deck information"
+        }
+      ],
+      "constraints": [
+        "Server blocks the first undo attempt and requires confirmHiddenInformation=true.",
+        "Client displays the server message with window.confirm before retrying."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/routes/PlayerInput.ts",
+          "symbol": "UNDO_REVEALED_HIDDEN_INFORMATION",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/routes/Reset.ts",
+          "symbol": "writeHiddenInformationWarning",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/common/undo.ts",
+          "symbol": "HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED",
+          "status": "confirmed"
+        }
       ]
     }
   ],
@@ -240,192 +840,584 @@
       "from": "server-entry",
       "to": "request-routing",
       "type": "calls",
-      "status": "confirmed",
+      "unknown": false,
       "evidence": [
         {
           "path": "src/server/server.ts",
-          "symbol": "processRequest(req, res)"
+          "symbol": "processRequest(req, res)",
+          "status": "confirmed"
         }
       ]
     },
     {
       "from": "request-routing",
-      "to": "player-input",
-      "type": "dispatches",
-      "status": "confirmed",
+      "to": "api-handlers",
+      "type": "calls",
+      "unknown": false,
       "evidence": [
         {
           "path": "src/server/server/requestProcessor.ts",
-          "symbol": "await handler.processRequest(req, res, ctx)"
+          "symbol": "await handler.processRequest(req, res, ctx)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "request-routing",
+      "to": "common-contracts",
+      "type": "imports",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/server/requestProcessor.ts",
+          "symbol": "paths.API_CREATEGAME",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "request-routing",
+      "to": "auth-sessions",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/server/requestProcessor.ts",
+          "symbol": "SessionManager.getInstance()",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "request-routing",
+      "to": "loader-cache",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/server/requestProcessor.ts",
+          "symbol": "GameLoader.getInstance()",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "client-ui",
+      "to": "common-contracts",
+      "type": "imports",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/App.vue",
+          "symbol": "import {paths} from '@/common/app/paths'",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "client-ui",
+      "to": "api-handlers",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/create/CreateGameForm.vue",
+          "symbol": "fetch(paths.API_CREATEGAME",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "api-handlers",
+      "to": "common-contracts",
+      "type": "imports",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/routes/ApiCreateGame.ts",
+          "symbol": "NewGameConfig",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "api-handlers",
+      "to": "game-domain",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/routes/ApiCreateGame.ts",
+          "symbol": "Game.newInstance",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "api-handlers",
+      "to": "loader-cache",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/routes/ApiGame.ts",
+          "symbol": "ctx.gameLoader.getGame",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "api-handlers",
+      "to": "input-deferred",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/routes/PlayerInput.ts",
+          "symbol": "player.process(entity)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "api-handlers",
+      "to": "bot-takeover",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/routes/ApiCreateGame.ts",
+          "symbol": "this.botManager.start",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/surrender/SurrenderService.ts",
+          "symbol": "manager.start({gameId: game.id, playerId: player.id",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "api-handlers",
+      "to": "external",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/routes/ApiCreateGame.ts",
+          "symbol": "sendGameStartNotice(p)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "game-domain",
+      "to": "setup-cards",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "GameSetup.newBoard",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "game-domain",
+      "to": "input-deferred",
+      "type": "imports",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "DeferredActionsQueue",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "game-domain",
+      "to": "common-contracts",
+      "type": "imports",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "compareCompletionRank",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "game-domain",
+      "to": "loader-cache",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "GameLoader.getInstance().saveGame(this)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "player-domain",
+      "to": "game-domain",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/Player.ts",
+          "symbol": "this.game.defer",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "input-deferred",
+      "to": "player-domain",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/deferredActions/DeferredActionsQueue.ts",
+          "symbol": "runAllFor(player",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "loader-cache",
+      "to": "database-facade",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/database/GameLoader.ts",
+          "symbol": "return Database.getInstance().saveGame(game)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "loader-cache",
+      "to": "elo-sync",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/database/GameLoader.ts",
+          "symbol": "EloSyncService.getInstance().recordCompletedGame(game)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "loader-cache",
+      "to": "bot-takeover",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/database/GameLoader.ts",
+          "symbol": "reconcileSurrenderedBots",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "elo-sync",
+      "to": "common-contracts",
+      "type": "imports",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/elo/EloSyncService.ts",
+          "symbol": "compareCompletionRank",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "database-facade",
+      "to": "sqlite-storage",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/database/Database.ts",
+          "symbol": "return new SQLite()",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "database-facade",
+      "to": "postgres-storage",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/database/Database.ts",
+          "symbol": "return new PostgreSQL()",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "database-facade",
+      "to": "filesystem-storage",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/database/Database.ts",
+          "symbol": "return new LocalFilesystem()",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "auth-sessions",
+      "to": "database-facade",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/server/auth/SessionManager.ts",
+          "symbol": "this.database.createSession(session)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "auth-sessions",
+      "to": "external",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/server/auth/discord.ts",
+          "symbol": "https://discord.com/api/oauth2/token",
+          "status": "confirmed"
         }
       ]
     },
     {
       "from": "server-entry",
-      "to": "process-boundary",
-      "type": "installs",
-      "status": "confirmed",
+      "to": "external",
+      "type": "imports",
+      "unknown": false,
       "evidence": [
         {
           "path": "src/server/server.ts",
-          "symbol": "installUncaughtExceptionHandler(capture)"
+          "symbol": "import prometheus from 'prom-client'",
+          "status": "confirmed"
         }
       ]
     },
     {
-      "from": "process-boundary",
-      "to": "sentry-reporter",
-      "type": "captures-process-error",
-      "status": "confirmed",
-      "boundary": "process",
+      "from": "bot-takeover",
+      "to": "external",
+      "type": "calls",
+      "unknown": false,
       "evidence": [
         {
-          "path": "src/server/server/SentryProcessBoundary.ts",
-          "symbol": "captureError(error, {boundary: 'process'})"
+          "path": "src/server/bot/BotTakeoverManager.ts",
+          "symbol": "this.spawnProcess(",
+          "status": "confirmed"
         }
       ]
     },
     {
-      "from": "request-routing",
-      "to": "sentry-reporter",
-      "type": "captures-request-error",
-      "status": "confirmed",
-      "boundary": "request",
+      "from": "simulation-host",
+      "to": "game-domain",
+      "type": "calls",
+      "unknown": false,
       "evidence": [
         {
-          "path": "src/server/server/requestProcessor.ts",
-          "symbol": "capture(error, context)"
+          "path": "src/server/tools/tm-sim-host.ts",
+          "symbol": "deserializeSimulationGame(rootSnapshot)",
+          "status": "confirmed"
         }
       ]
     },
     {
-      "from": "player-input",
-      "to": "sentry-reporter",
-      "type": "captures-player-errors",
-      "status": "confirmed",
-      "boundaries": [
-        "player-get",
-        "player-undo",
-        "player-input"
-      ],
+      "from": "client-ui",
+      "to": "undo-safety",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/WaitingFor.vue",
+          "symbol": "confirmHiddenInformation=true",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "api-handlers",
+      "to": "undo-safety",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/routes/Reset.ts",
+          "symbol": "hasRevealedHiddenInformation",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "undo-safety",
+      "to": "loader-cache",
+      "type": "reads",
+      "unknown": false,
       "evidence": [
         {
           "path": "src/server/routes/PlayerInput.ts",
-          "symbol": "captureUnexpected(err, playerDiagnosticContext('player-get', ...))"
-        },
-        {
-          "path": "src/server/routes/PlayerInput.ts",
-          "symbol": "captureUnexpected(err, playerDiagnosticContext('player-undo', ...))"
-        },
-        {
-          "path": "src/server/routes/PlayerInput.ts",
-          "symbol": "captureUnexpected(e, playerDiagnosticContext('player-input', ...))"
-        }
-      ]
-    },
-    {
-      "from": "sentry-reporter",
-      "to": "sentry-ingest",
-      "type": "sends-sanitized-event",
-      "status": "delivery-gated",
-      "evidence": [
-        {
-          "path": "src/server/server/SentryReporter.ts",
-          "symbol": "makeNodeTransport"
+          "symbol": "getGameAtOrBefore",
+          "status": "confirmed"
         }
       ]
     }
   ],
   "flows": [
     {
-      "id": "unexpected-process-error",
-      "status": "confirmed",
-      "delivery": "gated",
-      "trigger": "Uncaught process error",
+      "id": "flow-create",
+      "name": "Создание игры",
+      "trigger": "POST paths.API_CREATEGAME",
       "steps": [
-        "server-entry",
-        "process-boundary",
-        "sentry-reporter",
-        "sentry-ingest"
+        "client-ui",
+        "common-contracts",
+        "request-routing",
+        "api-handlers",
+        "game-domain",
+        "setup-cards",
+        "loader-cache",
+        "database-facade"
       ],
-      "outcome": "Локальный log выполняется первым; затем формируется один очищенный process event без ожидания внешней доставки."
+      "outcome": "Игра создаётся, добавляется в cache и сохраняется."
     },
     {
-      "id": "unexpected-request-error",
-      "status": "confirmed",
-      "delivery": "gated",
-      "trigger": "Unexpected request handler error",
+      "id": "flow-load",
+      "name": "Загрузка игры",
+      "trigger": "GET API_GAME/API_PLAYER/API_SPECTATOR",
+      "steps": [
+        "client-ui",
+        "common-contracts",
+        "request-routing",
+        "api-handlers",
+        "loader-cache",
+        "database-facade"
+      ],
+      "outcome": "Игра берётся из cache либо восстанавливается из хранилища."
+    },
+    {
+      "id": "flow-input",
+      "name": "Игровой ввод",
+      "trigger": "POST paths.PLAYER_INPUT",
+      "steps": [
+        "client-ui",
+        "common-contracts",
+        "request-routing",
+        "api-handlers",
+        "input-deferred",
+        "player-domain",
+        "game-domain",
+        "loader-cache",
+        "database-facade"
+      ],
+      "outcome": "Ввод запускает действия и дожидается сохранения."
+    },
+    {
+      "id": "flow-elo",
+      "name": "Завершение и ELO",
+      "trigger": "Завершение Game",
+      "steps": [
+        "game-domain",
+        "loader-cache",
+        "elo-sync"
+      ],
+      "outcome": "Игра записана в ELO primary и mirror с порядком completed, surrendered, left."
+    },
+    {
+      "id": "flow-sim",
+      "name": "Ветвление симуляции",
+      "trigger": "JSONL request to tm-sim-host",
+      "steps": [
+        "simulation-host",
+        "game-domain",
+        "input-deferred"
+      ],
+      "outcome": "Снимок обрабатывается в изолированной ветке без persistence."
+    },
+    {
+      "id": "flow-surrender-player",
+      "name": "Surrender через player input",
+      "trigger": "Player selects and confirms Surrender in the action prompt",
+      "steps": [
+        "client-ui",
+        "common-contracts",
+        "request-routing",
+        "api-handlers",
+        "player-domain",
+        "game-domain",
+        "loader-cache",
+        "database-facade",
+        "bot-takeover"
+      ],
+      "outcome": "The shared service persists surrender, advances the prompt and starts an idempotent bot takeover for the same seat."
+    },
+    {
+      "id": "flow-surrender-legacy",
+      "name": "Legacy API Surrender",
+      "trigger": "Direct GET/POST to api/surrender with a player ID",
       "steps": [
         "request-routing",
-        "sentry-reporter",
-        "sentry-ingest"
+        "api-handlers",
+        "game-domain",
+        "loader-cache",
+        "database-facade",
+        "bot-takeover"
       ],
-      "outcome": "Один очищенный request-boundary event; прежний 500 response формирует server entry."
+      "outcome": "The route uses the same transactional surrender and bot-takeover service; no browser caller is confirmed."
     },
     {
-      "id": "unexpected-player-input-error",
-      "status": "confirmed",
-      "delivery": "gated",
-      "trigger": "Unexpected get-player, undo или main input error",
+      "id": "flow-undo-hidden",
+      "name": "Undo после раскрытия скрытой информации",
+      "trigger": "Undo action or Undo one step crosses hidden information",
       "steps": [
-        "request-routing",
-        "player-input",
-        "sentry-reporter",
-        "sentry-ingest"
+        "client-ui",
+        "api-handlers",
+        "undo-safety",
+        "loader-cache",
+        "database-facade"
       ],
-      "outcome": "Один очищенный boundary-specific event; прежний PlayerInput response/gameplay flow сохраняется."
-    }
-  ],
-  "module_questions": {
-    "what_calls_sentry_reporter": [
-      "src/server/server.ts передаёт public capture в installUncaughtExceptionHandler; src/server/server/SentryProcessBoundary.ts вызывает его с boundary process.",
-      "src/server/server/requestProcessor.ts вызывает capture для единственного outer request catch.",
-      "src/server/routes/PlayerInput.ts вызывает injected captureError, по умолчанию public capture, для player-get, player-undo и player-input."
-    ],
-    "what_sentry_reporter_affects": [
-      "Только формирование внешнего staging error event через @sentry/node.",
-      "Не меняет HTTP response, gameplay state, database schema или public API."
-    ],
-    "what_tests_cover_sentry_reporter": [
-      "tests/server/server/SentryReporter.spec.ts",
-      "tests/server/server/SentryProcessBoundary.spec.ts",
-      "tests/server/requestProcessor.spec.ts",
-      "tests/routes/PlayerInput.spec.ts"
-    ]
-  },
-  "boundary_coverage": [
-    {
-      "boundary": "process",
-      "owner": "src/server/server/SentryProcessBoundary.ts",
-      "wiring": "src/server/server.ts",
-      "test": "tests/server/server/SentryProcessBoundary.spec.ts"
-    },
-    {
-      "boundary": "request",
-      "owner": "src/server/server/requestProcessor.ts",
-      "test": "tests/server/requestProcessor.spec.ts"
-    },
-    {
-      "boundary": "player-get",
-      "owner": "src/server/routes/PlayerInput.ts",
-      "test": "tests/routes/PlayerInput.spec.ts"
-    },
-    {
-      "boundary": "player-undo",
-      "owner": "src/server/routes/PlayerInput.ts",
-      "test": "tests/routes/PlayerInput.spec.ts"
-    },
-    {
-      "boundary": "player-input",
-      "owner": "src/server/routes/PlayerInput.ts",
-      "test": "tests/routes/PlayerInput.spec.ts"
+      "outcome": "The server blocks undo, the browser asks for confirmation, and only an explicit retry restores/replays state."
     }
   ],
   "unknowns": [
     {
-      "id": "real-sentry-delivery",
-      "status": "delivery-gated",
-      "description": "Реальные DSN, staging smoke и подтверждение ingest требуют отдельного delivery-разрешения после merge."
+      "id": "external-message-queue",
+      "status": "unknown",
+      "description": "Внешняя очередь сообщений не подтверждена; показана только in-process DeferredActionsQueue.",
+      "evidence": []
+    },
+    {
+      "id": "legacy-surrender-client",
+      "status": "unknown",
+      "description": "No current browser caller for api/surrender was found; route registration and tests are confirmed.",
+      "evidence": [
+        {
+          "path": "src/server/server/requestProcessor.ts",
+          "symbol": "paths.API_SURRENDER",
+          "status": "confirmed"
+        }
+      ]
     }
-  ]
+  ],
+  "changed_modules": []
 }

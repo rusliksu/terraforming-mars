@@ -10,6 +10,35 @@ import {restoreTestDatabase, restoreTestGameLoader, setTestDatabase, setTestGame
 import {sleep} from '../TestingUtils';
 import {InMemoryDatabase} from '../testing/InMemoryDatabase';
 import {FakeClock} from '../common/FakeClock';
+import {BotTakeoverManager} from '../../src/server/bot/BotTakeoverManager';
+import {Phase} from '../../src/common/Phase';
+
+function newBotManager(options: {startError?: Error}) {
+  const active = new Set<PlayerId>();
+  const starts: Array<Parameters<BotTakeoverManager['start']>[0]> = [];
+  const manager: Pick<BotTakeoverManager, 'isActive' | 'start' | 'stop'> = {
+    isActive: (playerId) => active.has(playerId),
+    start: (startOptions) => {
+      if (options.startError !== undefined) {
+        throw options.startError;
+      }
+      active.add(startOptions.playerId);
+      starts.push(startOptions);
+      return {
+        gameId: startOptions.gameId,
+        playerId: startOptions.playerId,
+        pid: 123,
+        startedAtMs: 1,
+        logFile: 'bot.log',
+      };
+    },
+    stop: (playerId) => {
+      active.delete(playerId);
+      return undefined;
+    },
+  };
+  return {active, manager, starts};
+}
 
 class TestDatabase extends InMemoryDatabase {
   public failure: 'getGameIds' | 'getParticipants' | undefined = undefined;
@@ -41,10 +70,19 @@ describe('GameLoader', () => {
   let database: TestDatabase;
   let game: Game;
   let clock: FakeClock;
+  let botOptions: {startError?: Error};
+  let botManager: ReturnType<typeof newBotManager>;
 
   beforeEach(() => {
     clock = new FakeClock();
-    instance = GameLoader.newTestInstance({sleepMillis: 0, evictMillis: 100, idleMillis: 1000, sweep: 'manual'}, clock);
+    botOptions = {};
+    botManager = newBotManager(botOptions);
+    instance = GameLoader.newTestInstance(
+      {sleepMillis: 0, evictMillis: 100, idleMillis: 1000, sweep: 'manual'},
+      clock,
+      botManager.manager,
+      'test-server-id',
+    );
     setTestGameLoader(instance);
     database = new TestDatabase();
     setTestDatabase(database);
@@ -70,6 +108,73 @@ describe('GameLoader', () => {
   it('gets game when it exists in database', async () => {
     const game1 = await instance.getGame('gameid');
     expect(game1!.id).to.eq(game.id);
+  });
+
+  it('reconciles a persisted surrendered seat after restart', async () => {
+    game.phase = Phase.ACTION;
+    game.surrenderedPlayerIds.add(game.players[0].id);
+    await database.saveGame(game);
+    instance.resetForTesting();
+
+    const result = await instance.reconcileSurrenderedBots();
+
+    expect(result).deep.include({started: 1, alreadyActive: 0, failed: 0});
+    expect(botManager.starts).deep.eq([{
+      gameId: game.id,
+      playerId: game.players[0].id,
+      serverId: 'test-server-id',
+    }]);
+  });
+
+  it('does not duplicate an active surrendered bot', async () => {
+    game.phase = Phase.ACTION;
+    game.surrenderedPlayerIds.add(game.players[0].id);
+    await database.saveGame(game);
+    botManager.active.add(game.players[0].id);
+    instance.resetForTesting();
+
+    const result = await instance.reconcileSurrenderedBots();
+
+    expect(result).deep.include({started: 0, alreadyActive: 1, failed: 0});
+    expect(botManager.starts).is.empty;
+  });
+
+  it('does not reconcile a finished game', async () => {
+    game.phase = Phase.END;
+    game.surrenderedPlayerIds.add(game.players[0].id);
+    await database.saveGame(game);
+    instance.resetForTesting();
+
+    const result = await instance.reconcileSurrenderedBots();
+
+    expect(result.started).eq(0);
+    expect(botManager.starts).is.empty;
+  });
+
+  it('does not reconcile an original bot seat', async () => {
+    game.phase = Phase.ACTION;
+    game.botPlayerIds.add(game.players[0].id);
+    game.surrenderedPlayerIds.add(game.players[0].id);
+    await database.saveGame(game);
+    instance.resetForTesting();
+
+    const result = await instance.reconcileSurrenderedBots();
+
+    expect(result.started).eq(0);
+    expect(botManager.starts).is.empty;
+  });
+
+  it('reports a sanitized reconciliation failure', async () => {
+    game.phase = Phase.ACTION;
+    game.surrenderedPlayerIds.add(game.players[0].id);
+    await database.saveGame(game);
+    botOptions.startError = new Error('private spawn detail');
+    instance.resetForTesting();
+
+    const result = await instance.reconcileSurrenderedBots();
+
+    expect(result.failed).eq(1);
+    expect(result.started).eq(0);
   });
 
   it('gets no game when fails to deserialize from database', async () => {

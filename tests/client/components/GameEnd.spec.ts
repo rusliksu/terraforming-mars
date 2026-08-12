@@ -46,6 +46,47 @@ describe('GameEnd', () => {
     });
 
     expect((wrapper.vm as any).playersInPlace.map((player: {name: string}) => player.name)).deep.eq(['Winner', 'Surrendered']);
-    expect(wrapper.find('[data-test="surrendered-player-flag"]').exists()).eq(true);
+    const flag = wrapper.find('[data-test="surrendered-player-flag"]');
+    expect(flag.exists()).eq(true);
+    expect(flag.attributes('title')).eq('Surrendered');
+    expect(wrapper.text()).not.to.contain('Left');
+  });
+
+  it('orders surrendered players by VP then megacredits', () => {
+    const winner = fakePublicPlayerModel({
+      id: 'p-winner' as any,
+      name: 'Winner',
+      victoryPointsBreakdown: {total: 70},
+    });
+    const lowCash = fakePublicPlayerModel({
+      id: 'p-low-cash' as any,
+      name: 'Low cash',
+      isSurrendered: true,
+      megacredits: 5,
+      victoryPointsBreakdown: {total: 100},
+    });
+    const highCash = fakePublicPlayerModel({
+      id: 'p-high-cash' as any,
+      name: 'High cash',
+      isSurrendered: true,
+      megacredits: 15,
+      victoryPointsBreakdown: {total: 100},
+    });
+    const wrapper = shallowMount(GameEnd, {
+      ...globalConfig,
+      props: {
+        playerView: fakePlayerViewModel({
+          players: [lowCash, winner, highCash],
+          thisPlayer: winner,
+        }),
+        spectator: fakeSpectatorModel(),
+      },
+    });
+
+    expect((wrapper.vm as any).playersInPlace.map((player: {name: string}) => player.name)).deep.eq([
+      'Winner',
+      'High cash',
+      'Low cash',
+    ]);
   });
 });

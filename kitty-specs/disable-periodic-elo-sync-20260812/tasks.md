@@ -13,11 +13,14 @@
 - [x] T005 Run parser, release guards, and diff validation.
 - [x] T006 Commit the task branch and attach Bead evidence.
 
-## Remaining gates
+## Delivery closeout
 
-- Task-owned PR lifecycle.
-- Separate staging validation after merge to `main`.
-- Separate authorized production deploy and systemd state verification.
+- [x] PR #125 merged to `main` as `503b8d0b59b76cdb9e205f16f0a89048a2ee6953`.
+- [x] Staging served the exact merged SHA and artifact `5f34dc2533b15bd257c9fcc88b616ac21f66a4cd211500cd6edeca09508fb3fa`; release smoke passed.
+- [x] Production promotion completed after the active realtime game finished and a fresh audit verified the remaining legacy `running` rows had no accepted inputs in 24 hours.
+- [x] Both preflight and before-public-switch gates reported zero non-ignored realtime games.
+- [x] Independent post-deploy verification confirmed matching staging/prod manifests, healthy public endpoints, active `tm-server` and `tm-elo`, inactive `tm-server-next`, and a free deploy lock.
+- [x] `tm-sync-elo.timer` remained disabled/inactive and `tm-sync-elo.service` remained inactive after the production restart.
 
 ## Live closeout evidence
 
@@ -29,4 +32,4 @@ At `2026-08-12T16:35:01Z`, after the separately authorized HOSTKEY operation:
 - Completed game `g53cc922b4f2d` was present in `elo-data.json`, proving the existing game-completion path updated ELO without periodic SQLite polling.
 - Installed HOSTKEY monitoring no longer listed `tm-sync-elo.timer` as critical; canonical monitoring commit: `639ba8c7ad7a19264963f6c1491917922a4c1aeb`.
 
-The production runtime invariant is already active. Commit `f5c2370e55` still needs task-owned PR delivery so future release scripts enforce it automatically.
+The production runtime and the deployed release scripts now enforce the invariant. Final delivery evidence is also recorded on Bead `tm-ai-kpp`.

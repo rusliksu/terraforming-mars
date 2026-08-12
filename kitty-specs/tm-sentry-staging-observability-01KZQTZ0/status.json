@@ -95,7 +95,8 @@
       "last_transition_at": "2026-08-12T08:06:19.743722+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Codemap commit efcd7109; combined suite 40/40; build:tests, lint:server, build:server, build, diff and SHA-256 gates passed; no external delivery."
+        "Codemap commit efcd7109; combined suite 40/40; build:tests, lint:server, build:server, build, diff and SHA-256 gates passed; no external delivery.",
+        "Ревью пройдено: ровно три owned codemap-файла; JSON/HTML/lock согласованы, fingerprint 393a1820c112ad4a7d8b774906f9477b801d310301863cbf4346f7f50fc37e35 воспроизводится; source commit d542dc99; профильный suite 40/40; build:tests, lint:server, dependency и diff gates green; внешний delivery не выполнялся."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {

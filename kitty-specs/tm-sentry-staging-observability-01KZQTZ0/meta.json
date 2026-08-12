@@ -1,4 +1,16 @@
 {
+  "acceptance_history": [
+    {
+      "acceptance_mode": "local",
+      "accepted_at": "2026-08-12T08:56:49.083847+00:00",
+      "accepted_by": "codex",
+      "accepted_from_commit": "f1fbe39d59bf94cfe374354fd68e314a3df7f1d0"
+    }
+  ],
+  "acceptance_mode": "local",
+  "accepted_at": "2026-08-12T08:56:49.083847+00:00",
+  "accepted_by": "codex",
+  "accepted_from_commit": "f1fbe39d59bf94cfe374354fd68e314a3df7f1d0",
   "created_at": "2026-08-11T07:18:04.262634+00:00",
   "flattened": false,
   "friendly_name": "Расширенная наблюдаемость Sentry на staging",

@@ -11,6 +11,7 @@ import {GlobalParameter} from '../../src/common/GlobalParameter';
 import {Phase} from '../../src/common/Phase';
 import {MicroMills} from '../../src/server/cards/base/MicroMills';
 import {EarthCatapult} from '../../src/server/cards/base/EarthCatapult';
+import {Rogers} from '../../src/server/cards/ceos/Rogers';
 
 describe('ServerModel', () => {
   let player: TestPlayer;
@@ -166,6 +167,20 @@ describe('ServerModel', () => {
     const response = Server.getPlayerModel(player);
 
     expect(response.game.inputSeq).eq(12);
+  });
+
+  it('exposes current-generation CEO effect state', () => {
+    createTestGame(false);
+    const rogers = new Rogers();
+    player.playedCards.push(rogers);
+
+    rogers.opgActionIsActive = true;
+    let response = Server.getPlayerModel(player);
+    expect(response.thisPlayer.tableau.find((card) => card.name === rogers.name)?.opgActionIsActive).eq(true);
+
+    rogers.opgActionIsActive = false;
+    response = Server.getPlayerModel(player);
+    expect(response.thisPlayer.tableau.find((card) => card.name === rogers.name)?.opgActionIsActive).eq(false);
   });
 
   it('exposes step-back capability only to the journal actor', () => {

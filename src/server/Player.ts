@@ -83,7 +83,7 @@ import {SelectStandardProjectToPlay} from './inputs/SelectStandardProjectToPlay'
 import {EarlyGameStats} from './game/EarlyGameStats';
 import {DEFAULT_PRELUDE_HANDICAP, normalizePreludeHandicap} from '../common/game/NewGameConfig';
 import type {ResearchPurchaseUndoState} from './game/ResearchPurchaseUndo';
-import {SURRENDER_CONFIRMATION_ANNOTATION} from './surrender/SurrenderInput';
+import {SURRENDER_ACTION_ANNOTATION, SURRENDER_CONFIRMATION_ANNOTATION} from './surrender/SurrenderInput';
 
 const THROW_STATE_ERRORS = Boolean(process.env.THROW_STATE_ERRORS);
 const TURN_NOTICE_DELAY_MS = 5000;
@@ -1293,7 +1293,9 @@ export class Player implements IPlayer {
   }
 
   private surrenderOption(): PlayerInput {
-    return new SelectOption('Surrender this game and start a bot', 'Surrender and start bot').andThen(() => {
+    return new SelectOption('Surrender this game and start a bot', 'Surrender and start bot')
+      .annotate(SURRENDER_ACTION_ANNOTATION)
+      .andThen(() => {
       const confirmation = new OrOptions()
         .setTitle('Surrender this game? A bot will continue playing for you.')
         .setButtonLabel('Confirm')

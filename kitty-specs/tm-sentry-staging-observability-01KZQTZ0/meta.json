@@ -1,0 +1,33 @@
+{
+  "accept_commit": "8abd861e0bf5a0e7655cf666f588f9faf95f4df7",
+  "acceptance_history": [
+    {
+      "accept_commit": "8abd861e0bf5a0e7655cf666f588f9faf95f4df7",
+      "acceptance_mode": "local",
+      "accepted_at": "2026-08-12T08:56:49.083847+00:00",
+      "accepted_by": "codex",
+      "accepted_from_commit": "f1fbe39d59bf94cfe374354fd68e314a3df7f1d0"
+    }
+  ],
+  "acceptance_mode": "local",
+  "accepted_at": "2026-08-12T08:56:49.083847+00:00",
+  "accepted_by": "codex",
+  "accepted_from_commit": "f1fbe39d59bf94cfe374354fd68e314a3df7f1d0",
+  "baseline_merge_commit": "d282e35d2a3b462bedcb66348655426bd9d9b417",
+  "created_at": "2026-08-11T07:18:04.262634+00:00",
+  "flattened": false,
+  "friendly_name": "Расширенная наблюдаемость Sentry на staging",
+  "mission_id": "01KZQTZ073ZWMV2M4S86DNCBH0",
+  "mission_number": null,
+  "mission_slug": "tm-sentry-staging-observability-01KZQTZ0",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Администратор custom-сервера должен видеть неожиданные ошибки staging с message, full stack, route, game/player IDs и gameplay input после обязательного удаления secrets; headers, cookies, query, IP, sessions, prod и deploy исключены.",
+  "purpose_tldr": "Получать воспроизводимый расширенный контекст staging-ошибок без секретов.",
+  "slug": "tm-sentry-staging-observability-01KZQTZ0",
+  "status_phase": "1",
+  "target_branch": "codex/tm-sentry-staging-observability",
+  "topology": "single_branch",
+  "vcs": "git",
+  "vcs_locked_at": "2026-08-11T13:06:57.120985+00:00"
+}

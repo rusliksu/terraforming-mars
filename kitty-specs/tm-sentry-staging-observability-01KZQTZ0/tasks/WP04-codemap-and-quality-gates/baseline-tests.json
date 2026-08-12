@@ -1,0 +1,13 @@
+{
+  "wp_id": "WP04",
+  "captured_at": "2026-08-11T19:18:27Z",
+  "base_branch": "codex/tm-sentry-staging-observability",
+  "base_commit": "455934f68a987f9d0268d78e353f80f48d763130",
+  "test_runner": "pytest",
+  "total": 0,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 0,
+  "failures": [],
+  "source_identity": "GateCoverageScopeSource/junit_xml"
+}

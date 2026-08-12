@@ -25,6 +25,16 @@ import {HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED} from '../../src/common/un
 import {HiTechLab} from '../../src/server/cards/promo/HiTechLab';
 import {LogMessageType} from '../../src/common/logs/LogMessageType';
 import {BotTakeoverManager} from '../../src/server/bot/BotTakeoverManager';
+import type {ErrorDiagnosticContext} from '../../src/server/server/SentryReporter';
+import {InputError} from '../../src/server/inputs/InputError';
+import {AppError} from '../../src/server/server/AppError';
+import {INVALID_RUN_ID} from '../../src/common/app/AppErrorId';
+import {runId} from '../../src/server/utils/server-ids';
+
+type CapturedError = {
+  error: unknown;
+  context: ErrorDiagnosticContext;
+};
 
 function newBotManager(options: {startError?: Error} = {}) {
   let active = false;
@@ -84,6 +94,39 @@ describe('PlayerInput', () => {
     scaffolding.url = '/player/input';
     await scaffolding.post(PlayerInput.INSTANCE, res);
     expect(res.content).eq('Bad request: missing id parameter');
+  });
+
+  it('captures an unexpected player lookup failure without gameplay input', async () => {
+    const captures: Array<CapturedError> = [];
+    const handler = new PlayerInput((error, context) => captures.push({error, context}));
+    const player = TestPlayer.BLUE.newPlayer();
+    const game = Game.newInstance('gameid-player-get', [player], player, 'spectatorid');
+    const lookupError = new Error('lookup failed');
+    scaffolding.url = `/player/input?id=${player.id}&private=query-secret`;
+    scaffolding.req.method = 'POST';
+    scaffolding.req.headers.authorization = 'Bearer header-secret';
+    scaffolding.ctx.clientIp = {address: '203.0.113.10', source: 'cf-connecting-ip'};
+    await scaffolding.ctx.gameLoader.add(game);
+    game.getPlayerById = () => {
+      throw lookupError;
+    };
+
+    await scaffolding.post(handler, res);
+
+    expect(captures).deep.eq([{
+      error: lookupError,
+      context: {
+        boundary: 'player-get',
+        method: 'POST',
+        route: '/player/input',
+        gameId: game.id,
+        playerId: player.id,
+      },
+    }]);
+    expect(JSON.stringify(captures)).not.contains('query-secret');
+    expect(JSON.stringify(captures)).not.contains('header-secret');
+    expect(JSON.stringify(captures)).not.contains('203.0.113.10');
+    expect(res.statusCode).eq(404);
   });
 
   it('performs undo action', async () => {
@@ -151,6 +194,8 @@ describe('PlayerInput', () => {
   });
 
   it('requires confirmation before undoing revealed hidden information', async () => {
+    const captures: Array<CapturedError> = [];
+    const handler = new PlayerInput((error, context) => captures.push({error, context}));
     const player = TestPlayer.BLUE.newPlayer({beginner: true});
     scaffolding.url = '/player/input?id=' + player.id;
     const game = Game.newInstance('gameid-hidden-undo', [player], player, 'spectatorid');
@@ -169,7 +214,7 @@ describe('PlayerInput', () => {
       return Promise.resolve(undo);
     };
 
-    const post = scaffolding.post(PlayerInput.INSTANCE, res);
+    const post = scaffolding.post(handler, res);
     const emit = Promise.resolve().then(() => {
       const orOptionsResponse: OrOptionsResponse = {type: 'or', index: 0, response: {type: 'option'}};
       req.emitter.emit('data', JSON.stringify(orOptionsResponse));
@@ -188,7 +233,7 @@ describe('PlayerInput', () => {
     const confirmedScaffolding = new RouteTestScaffolding(confirmedReq);
     confirmedScaffolding.ctx.gameLoader = scaffolding.ctx.gameLoader;
     confirmedScaffolding.url = '/player/input?id=' + player.id + '&confirmHiddenInformation=true';
-    const confirmedPost = confirmedScaffolding.post(PlayerInput.INSTANCE, confirmedRes);
+    const confirmedPost = confirmedScaffolding.post(handler, confirmedRes);
     const confirmedEmit = Promise.resolve().then(() => {
       const orOptionsResponse: OrOptionsResponse = {type: 'or', index: 0, response: {type: 'option'}};
       confirmedReq.emitter.emit('data', JSON.stringify(orOptionsResponse));
@@ -200,6 +245,7 @@ describe('PlayerInput', () => {
     expect(restoreCalled).eq(true);
     const warningLog = undo.gameLog[undo.gameLog.length - 1];
     expect(warningLog.type).eq(LogMessageType.IRREVERSIBLE_UNDO);
+    expect(captures).deep.eq([]);
   });
 
   it('records an accepted root input in the experimental replay journal', async () => {
@@ -301,6 +347,182 @@ describe('PlayerInput', () => {
     expect(response.message).eq('Unable to perform undo operation. Error retrieving game from database. Please try again.');
   });
 
+  it('captures the original unexpected undo failure with the parsed input snapshot', async () => {
+    const captures: Array<CapturedError> = [];
+    const handler = new PlayerInput((error, context) => captures.push({error, context}));
+    const player = TestPlayer.BLUE.newPlayer({beginner: true});
+    scaffolding.url = `/player/input?id=${player.id}`;
+    scaffolding.req.method = 'POST';
+    const game = Game.newInstance('gameid-player-undo', [player], player, 'spectatorid');
+    await scaffolding.ctx.gameLoader.add(game);
+    player.process(<OrOptionsResponse>{type: 'or', index: 1, response: {type: 'projectCard', card: CardName.POWER_PLANT_STANDARD_PROJECT, payment: Payment.of({megacredits: 11})}});
+    const options = cast(player.getWaitingFor(), OrOptions);
+    options.options.push(new UndoActionOption());
+    const undoError = new Error('restore failed');
+    scaffolding.ctx.gameLoader.restoreGameAt = () => Promise.reject(undoError);
+    const payload = {
+      type: 'or',
+      index: options.options.length - 1,
+      response: {type: 'option'},
+      debug: {authorization: 'Bearer route-secret'},
+    } as unknown as OrOptionsResponse;
+
+    const post = scaffolding.post(handler, res);
+    const emit = Promise.resolve().then(() => {
+      scaffolding.req.emitter.emit('data', JSON.stringify(payload));
+      scaffolding.req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+
+    expect(captures).deep.eq([{
+      error: undoError,
+      context: {
+        boundary: 'player-undo',
+        method: 'POST',
+        route: '/player/input',
+        gameId: game.id,
+        playerId: player.id,
+        gameplayInput: payload,
+      },
+    }]);
+    expect(JSON.parse(res.content).message).eq('Unable to perform undo operation. Error retrieving game from database. Please try again.');
+  });
+
+  it('does not capture an expected InputError created inside undo', async () => {
+    const captures: Array<CapturedError> = [];
+    const handler = new PlayerInput((error, context) => captures.push({error, context}));
+    const player = TestPlayer.BLUE.newPlayer({beginner: true});
+    scaffolding.url = `/player/input?id=${player.id}`;
+    scaffolding.req.method = 'POST';
+    const game = Game.newInstance('gameid-player-undo-expected', [player], player, 'spectatorid');
+    await scaffolding.ctx.gameLoader.add(game);
+    player.process(<OrOptionsResponse>{type: 'or', index: 1, response: {type: 'projectCard', card: CardName.POWER_PLANT_STANDARD_PROJECT, payment: Payment.of({megacredits: 11})}});
+    const options = cast(player.getWaitingFor(), OrOptions);
+    options.options.push(new UndoActionOption());
+    scaffolding.ctx.gameLoader.restoreGameAt = () => Promise.resolve(undefined as unknown as Game);
+    const payload: OrOptionsResponse = {
+      type: 'or',
+      index: options.options.length - 1,
+      response: {type: 'option'},
+    };
+
+    const post = scaffolding.post(handler, res);
+    const emit = Promise.resolve().then(() => {
+      scaffolding.req.emitter.emit('data', JSON.stringify(payload));
+      scaffolding.req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+
+    expect(captures).deep.eq([]);
+    expect(JSON.parse(res.content).message).eq('Unable to perform undo operation. Error retrieving game from database. Please try again.');
+  });
+
+  it('captures an unexpected main input failure with a detached parsed snapshot', async () => {
+    const captures: Array<CapturedError> = [];
+    const handler = new PlayerInput((error, context) => captures.push({error, context}));
+    const player = TestPlayer.BLUE.newPlayer();
+    scaffolding.url = `/player/input?id=${player.id}&private=query-secret`;
+    scaffolding.req.method = 'post';
+    const game = Game.newInstance('gameid-player-input', [player], player, 'spectatorid');
+    await scaffolding.ctx.gameLoader.add(game);
+    const processError = new Error('process failed');
+    player.process = (entity) => {
+      const diagnosticProbe = entity as unknown as {debug: {card: string}, runId?: string};
+      expect(diagnosticProbe).not.have.property('runId');
+      diagnosticProbe.debug.card = 'mutated-after-parse';
+      throw processError;
+    };
+    const payload = {type: 'option', runId, debug: {card: 'original-card'}};
+
+    const post = scaffolding.post(handler, res);
+    const emit = Promise.resolve().then(() => {
+      scaffolding.req.emitter.emit('data', JSON.stringify(payload));
+      scaffolding.req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+
+    expect(captures).deep.eq([{
+      error: processError,
+      context: {
+        boundary: 'player-input',
+        method: 'POST',
+        route: '/player/input',
+        gameId: game.id,
+        playerId: player.id,
+        gameplayInput: payload,
+      },
+    }]);
+    expect(JSON.parse(res.content).message).eq(processError.message);
+    expect(JSON.stringify(captures)).not.contains('query-secret');
+  });
+
+  it('does not capture malformed JSON or expected application errors', async () => {
+    const captures: Array<CapturedError> = [];
+    const handler = new PlayerInput((error, context) => captures.push({error, context}));
+    const player = TestPlayer.BLUE.newPlayer();
+    scaffolding.url = `/player/input?id=${player.id}`;
+    scaffolding.req.method = 'POST';
+    const game = Game.newInstance('gameid-player-expected', [player], player, 'spectatorid');
+    await scaffolding.ctx.gameLoader.add(game);
+
+    const malformedPost = scaffolding.post(handler, res);
+    const malformedEmit = Promise.resolve().then(() => {
+      scaffolding.req.emitter.emit('data', '}{');
+      scaffolding.req.emitter.emit('end');
+    });
+    await Promise.all([malformedEmit, malformedPost]);
+
+    expect(captures).deep.eq([]);
+
+    const invalidRunReq = new MockRequest();
+    const invalidRunRes = new MockResponse();
+    const invalidRunScaffolding = new RouteTestScaffolding(invalidRunReq);
+    invalidRunScaffolding.url = `/player/input?id=${player.id}`;
+    invalidRunReq.method = 'POST';
+    await invalidRunScaffolding.ctx.gameLoader.add(game);
+    const invalidRunPost = invalidRunScaffolding.post(handler, invalidRunRes);
+    const invalidRunEmit = Promise.resolve().then(() => {
+      invalidRunReq.emitter.emit('data', JSON.stringify({type: 'option', runId: `${runId}-stale`}));
+      invalidRunReq.emitter.emit('end');
+    });
+    await Promise.all([invalidRunEmit, invalidRunPost]);
+
+    expect(invalidRunRes.statusCode).eq(400);
+    expect(JSON.parse(invalidRunRes.content)).deep.eq({
+      id: INVALID_RUN_ID,
+      message: 'The server has restarted. Click OK to refresh this page.',
+    });
+    expect(captures).deep.eq([]);
+
+    for (const expected of [
+      {error: new AppError(INVALID_RUN_ID, 'expected app error'), id: INVALID_RUN_ID},
+      {error: new InputError('expected input error'), id: undefined},
+    ]) {
+      const expectedReq = new MockRequest();
+      const expectedRes = new MockResponse();
+      const expectedScaffolding = new RouteTestScaffolding(expectedReq);
+      expectedScaffolding.url = `/player/input?id=${player.id}`;
+      expectedReq.method = 'POST';
+      await expectedScaffolding.ctx.gameLoader.add(game);
+      player.process = () => {
+        throw expected.error;
+      };
+      const expectedPost = expectedScaffolding.post(handler, expectedRes);
+      const expectedEmit = Promise.resolve().then(() => {
+        expectedReq.emitter.emit('data', JSON.stringify({type: 'option'}));
+        expectedReq.emitter.emit('end');
+      });
+      await Promise.all([expectedEmit, expectedPost]);
+      expect(expectedRes.statusCode).eq(400);
+      expect(JSON.parse(expectedRes.content)).deep.eq({
+        ...(expected.id === undefined ? {} : {id: expected.id}),
+        message: expected.error.message,
+      });
+    }
+
+    expect(captures).deep.eq([]);
+  });
+
   it('sends 400 on server error', async () => {
     const player = TestPlayer.BLUE.newPlayer();
     scaffolding.url = `/player/input?id=${player.id}`;
@@ -388,6 +610,31 @@ describe('PlayerInput', () => {
     expect(JSON.stringify(auditEvents)).not.contains('secret-card-name');
   });
 
+  it('audits surrender accepted through player input', async () => {
+    const auditEvents: Array<AccessAuditRecordInput> = [];
+    const player = TestPlayer.BLUE.newPlayer();
+    scaffolding.url = `/player/input?id=${player.id}`;
+    scaffolding.req.method = 'POST';
+    scaffolding.ctx.accessAudit = {record: (event) => auditEvents.push(event)};
+    const game = Game.newInstance('gameid-audit-surrender', [player], player, 'spectatorid');
+    await scaffolding.ctx.gameLoader.add(game);
+    player.process = () => game.surrenderedPlayerIds.add(player.id);
+
+    const post = scaffolding.post(PlayerInput.INSTANCE, res);
+    const emit = Promise.resolve().then(() => {
+      scaffolding.req.emitter.emit('data', '{"type":"option"}');
+      scaffolding.req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+
+    expect(auditEvents.map((event) => event.event)).deep.eq([
+      'player_input_attempt',
+      'surrender_accepted',
+      'player_input_accepted',
+    ]);
+    expect(auditEvents[1].metadata).deep.eq({authorization: 'player'});
+  });
+
   it('commits surrender, starts a bot and audits through player input', async () => {
     const auditEvents: Array<AccessAuditRecordInput> = [];
     const [game, player] = testGame(2);
@@ -407,7 +654,6 @@ describe('PlayerInput', () => {
 
     const {manager, starts} = newBotManager();
     const handler = new PlayerInput(manager);
-
     const post = scaffolding.post(handler, res);
     const emit = Promise.resolve().then(() => {
       scaffolding.req.emitter.emit('data', '{"type":"or","index":0,"response":{"type":"option"}}');

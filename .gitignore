@@ -106,3 +106,12 @@ kitty-ops/ops-index.jsonl
 *.db
 .beads-credential-key
 .beads/proxieddb/
+
+# Spec Kitty: charter bundle derived files (auto-added by `charter generate`)
+.kittify/charter/directives.yaml
+.kittify/charter/governance.yaml
+.kittify/charter/metadata.yaml
+# Windows validator compatibility (Spec Kitty 3.2.5 expects these literals).
+.kittify\charter\directives.yaml
+.kittify\charter\governance.yaml
+.kittify\charter\metadata.yaml

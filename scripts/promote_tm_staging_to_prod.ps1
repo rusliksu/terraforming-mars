@@ -84,6 +84,8 @@ legacy_prod="/home/openclaw/terraforming-mars"
 service="tm-server"
 next_service="tm-server-next"
 elo_service="tm-elo"
+legacy_elo_timer="tm-sync-elo.timer"
+legacy_elo_sync_service="tm-sync-elo.service"
 prod_port="8081"
 next_port="8085"
 health_url="http://127.0.0.1:$prod_port"
@@ -117,6 +119,42 @@ nginx_snippet_backup="$work_root/nginx-before.conf"
 previous_current_link_target=""
 previous_current_link_existed=0
 scripts_dir="/home/openclaw/scripts"
+
+disable_periodic_elo_sync() {
+  local timer_load_state
+  local sync_load_state
+  local timer_active_state
+  local timer_unit_state
+  local sync_active_state
+
+  timer_load_state="$(systemctl --user show "$legacy_elo_timer" --property=LoadState --value 2>/dev/null || true)"
+  sync_load_state="$(systemctl --user show "$legacy_elo_sync_service" --property=LoadState --value 2>/dev/null || true)"
+
+  if [ -n "$timer_load_state" ] && [ "$timer_load_state" != "not-found" ]; then
+    systemctl --user disable --now "$legacy_elo_timer" || return 1
+  fi
+  if [ -n "$sync_load_state" ] && [ "$sync_load_state" != "not-found" ]; then
+    systemctl --user stop "$legacy_elo_sync_service" || return 1
+  fi
+
+  if [ -n "$timer_load_state" ] && [ "$timer_load_state" != "not-found" ]; then
+    timer_active_state="$(systemctl --user show "$legacy_elo_timer" --property=ActiveState --value 2>/dev/null || true)"
+    timer_unit_state="$(systemctl --user is-enabled "$legacy_elo_timer" 2>/dev/null || true)"
+    if [ "$timer_active_state" != "inactive" ] || { [ "$timer_unit_state" != "disabled" ] && [ "$timer_unit_state" != "masked" ]; }; then
+      echo "Legacy periodic ELO timer is not disabled and inactive: active=${timer_active_state:-unknown} enabled=${timer_unit_state:-unknown}." >&2
+      return 1
+    fi
+  fi
+  if [ -n "$sync_load_state" ] && [ "$sync_load_state" != "not-found" ]; then
+    sync_active_state="$(systemctl --user show "$legacy_elo_sync_service" --property=ActiveState --value 2>/dev/null || true)"
+    if [ "$sync_active_state" != "inactive" ]; then
+      echo "Legacy ELO reconciliation service is still active: ${sync_active_state:-unknown}." >&2
+      return 1
+    fi
+  fi
+
+  echo "Legacy periodic ELO polling disabled; game-completion ELO updates remain in tm-server."
+}
 
 normalize_release_permissions() {
   local candidate="$1"
@@ -737,6 +775,11 @@ if ! sudo test -f "$upstream_snippet"; then
   exit 1
 fi
 
+if ! disable_periodic_elo_sync; then
+  echo "Prod promote blocked: legacy periodic ELO polling could not be disabled." >&2
+  exit 50
+fi
+
 mkdir -p "$prod_root" "$prod_next_root" "$releases_root" "$shared_root/db" "$shared_root/logs" "$shared_root/elo" "$deps_root"
 if [ ! -f "$game_db_path" ]; then
   echo "Prod promote blocked: shared game.db is missing; migrate it separately with explicit approval before promotion." >&2
@@ -820,6 +863,10 @@ if [ -n "$expected_artifact_sha" ] && [ -n "$expected_git_sha" ] && \
   if ! publish_elo_helpers "$staging_current" "$expected_artifact_sha" "$expected_git_sha"; then
     echo "Promote no-op could not reconcile the ELO helper mirror." >&2
     exit 48
+  fi
+  if ! disable_periodic_elo_sync; then
+    echo "Promote no-op could not enforce the periodic ELO polling invariant." >&2
+    exit 50
   fi
   echo "Promote no-op"
   echo "reason=prod already serves the exact tested staging artifact"
@@ -984,6 +1031,11 @@ rm -f "$prod_next_current"
 if ! publish_elo_helpers "$new_release_dir" "$served_artifact_sha" "$served_git_sha"; then
   echo "Prod is serving the new release, but ELO helper mirror reconciliation failed; retry the same promotion." >&2
   exit 48
+fi
+
+if ! disable_periodic_elo_sync; then
+  echo "Prod is serving the new release, but the periodic ELO polling invariant failed." >&2
+  exit 50
 fi
 
 echo "Promote ok"

@@ -166,6 +166,59 @@ $promoteSource = Get-Content -LiteralPath $promotePath -Raw
 $rolloutSource = Get-Content -LiteralPath $rolloutPath -Raw
 $stagingSource = Get-Content -LiteralPath $stagingPath -Raw
 
+# Production releases disable the legacy five-minute SQLite reconciliation timer.
+# The tm-elo HTTP service is separate and remains part of normal health checks.
+$deployDisablePeriodicElo = Get-BashFunction -ScriptText $deployRemote -Name "disable_periodic_elo_sync"
+$promoteDisablePeriodicElo = Get-BashFunction -ScriptText $promoteRemote -Name "disable_periodic_elo_sync"
+Assert-True ($deployDisablePeriodicElo -eq $promoteDisablePeriodicElo) "Deploy and promote periodic ELO invariants drifted apart."
+Assert-True ($deployRemote.Contains('if [ "$environment" = "prod" ] && ! disable_periodic_elo_sync; then')) "Direct deploy does not scope periodic ELO shutdown to prod."
+Assert-True ($promoteRemote.Contains('if ! disable_periodic_elo_sync; then')) "Prod promote does not enforce the periodic ELO invariant."
+
+$periodicEloHarness = @'
+set -euo pipefail
+legacy_elo_timer="tm-sync-elo.timer"
+legacy_elo_sync_service="tm-sync-elo.service"
+mode="$1"
+calls="${TMPDIR:-/tmp}/tm-periodic-elo-calls-$$"
+: > "$calls"
+systemctl() {
+  printf '%s\n' "$*" >> "$calls"
+  case "$*" in
+    "--user show tm-sync-elo.timer --property=LoadState --value")
+      [ "$mode" = "missing" ] && printf 'not-found\n' || printf 'loaded\n'
+      ;;
+    "--user show tm-sync-elo.service --property=LoadState --value")
+      [ "$mode" = "missing" ] && printf 'not-found\n' || printf 'loaded\n'
+      ;;
+    "--user disable --now tm-sync-elo.timer"|"--user stop tm-sync-elo.service") ;;
+    "--user show tm-sync-elo.timer --property=ActiveState --value") printf 'inactive\n' ;;
+    "--user is-enabled tm-sync-elo.timer")
+      [ "$mode" = "stuck-enabled" ] && printf 'enabled\n' || printf 'disabled\n'
+      ;;
+    "--user show tm-sync-elo.service --property=ActiveState --value") printf 'inactive\n' ;;
+    *) return 1 ;;
+  esac
+}
+__DISABLE_FUNCTION__
+set +e
+disable_periodic_elo_sync
+result=$?
+set -e
+cat "$calls"
+rm -f "$calls"
+exit "$result"
+'@
+$periodicEloHarness = $periodicEloHarness.Replace('__DISABLE_FUNCTION__', $deployDisablePeriodicElo)
+$periodicEloActive = Invoke-Bash -ScriptText $periodicEloHarness -Arguments @('active')
+Assert-True ($periodicEloActive.ExitCode -eq 0) "Active periodic ELO timer was not disabled. stderr=$($periodicEloActive.StdErr)"
+Assert-True ($periodicEloActive.StdOut.Contains('--user disable --now tm-sync-elo.timer')) "Periodic ELO timer disable command was not issued."
+Assert-True ($periodicEloActive.StdOut.Contains('--user stop tm-sync-elo.service')) "Running periodic ELO reconciliation was not stopped."
+$periodicEloMissing = Invoke-Bash -ScriptText $periodicEloHarness -Arguments @('missing')
+Assert-True ($periodicEloMissing.ExitCode -eq 0) "Missing legacy ELO units should be accepted. stderr=$($periodicEloMissing.StdErr)"
+Assert-True (-not $periodicEloMissing.StdOut.Contains('--user disable --now tm-sync-elo.timer')) "Missing legacy ELO timer triggered a mutation."
+$periodicEloStuck = Invoke-Bash -ScriptText $periodicEloHarness -Arguments @('stuck-enabled')
+Assert-True ($periodicEloStuck.ExitCode -ne 0) "Still-enabled periodic ELO timer was accepted."
+
 # The intended full SHA must be captured after refresh and passed through both gates.
 Invoke-Expression (Get-PowerShellFunctionDefinition -Path $deployPath -Name "Assert-TmExpectedGitSha")
 Invoke-Expression (Get-PowerShellFunctionDefinition -Path $releasePath -Name "Assert-ReleasePins")

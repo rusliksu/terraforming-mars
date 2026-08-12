@@ -9,9 +9,12 @@ export const DEFAULT_MAX_SAVES_PER_GAME = 2048;
 export const ABSOLUTE_MAX_SAVES_PER_GAME = 4096;
 
 export function resolveMaxSavesPerGame(value: unknown = process.env.TM_MAX_SAVES_PER_GAME): number {
-  const candidate = value === undefined || value === null || value === ''
-    ? DEFAULT_MAX_SAVES_PER_GAME
-    : Number(value);
+  let candidate: number;
+  if (value === undefined || value === null || value === '') {
+    candidate = DEFAULT_MAX_SAVES_PER_GAME;
+  } else {
+    candidate = Number(value);
+  }
   if (!Number.isSafeInteger(candidate) || candidate <= 0 || candidate > ABSOLUTE_MAX_SAVES_PER_GAME) {
     const error = new Error(`TM_MAX_SAVES_PER_GAME must be an integer between 1 and ${ABSOLUTE_MAX_SAVES_PER_GAME}`);
     (error as Error & {code?: string}).code = 'HISTORY_LIMIT_CONFIG_INVALID';

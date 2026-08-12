@@ -1,16 +1,16 @@
 {
-  "event_count": 41,
-  "last_event_id": "01KZTKHQ7CZ10SQE07SQGDGT3Q",
-  "materialized_at": "2026-08-12T09:06:12.332282+00:00",
+  "event_count": 42,
+  "last_event_id": "01KZTKHT7FWKARYZWMM60RQD6J",
+  "materialized_at": "2026-08-12T09:06:15.407052+00:00",
   "mission_number": "",
   "mission_slug": "tm-sentry-staging-observability-01KZQTZ0",
   "mission_type": "software-dev",
   "summary": {
-    "approved": 3,
+    "approved": 2,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
-    "done": 1,
+    "done": 2,
     "for_review": 0,
     "in_progress": 0,
     "in_review": 0,
@@ -54,14 +54,14 @@
       ]
     },
     "WP02": {
-      "actor": "user",
+      "actor": "merge",
       "agent": "codex",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "approved",
-      "last_event_id": "01KZRWVX07KDY1RSBP3Y97ACM4",
-      "last_transition_at": "2026-08-11T17:10:34.247177+00:00",
+      "lane": "done",
+      "last_event_id": "01KZTKHT7FWKARYZWMM60RQD6J",
+      "last_transition_at": "2026-08-12T09:06:15.407052+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Review passed: commit 1b5d1b12; T007/T009/T011, focused 10/10, TypeScript, ESLint, diff-check, deletion test and all 8 anti-pattern gates PASS. WP frontmatter retained implementer profile node-norris; independent read-only reviewer supplied role separation."

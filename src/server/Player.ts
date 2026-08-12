@@ -1296,23 +1296,23 @@ export class Player implements IPlayer {
     return new SelectOption('Surrender this game and start a bot', 'Surrender and start bot')
       .annotate(SURRENDER_ACTION_ANNOTATION)
       .andThen(() => {
-      const confirmation = new OrOptions()
-        .setTitle('Surrender this game? A bot will continue playing for you.')
-        .setButtonLabel('Confirm')
-        .annotate(SURRENDER_CONFIRMATION_ANNOTATION);
+        const confirmation = new OrOptions()
+          .setTitle('Surrender this game? A bot will continue playing for you.')
+          .setButtonLabel('Confirm')
+          .annotate(SURRENDER_CONFIRMATION_ANNOTATION);
 
-      confirmation.options.push(new SelectOption('Surrender this game and start a bot', 'Surrender and start bot').andThen(() => {
-        return undefined;
-      }));
-      confirmation.options.push(new SelectOption('Continue playing', 'Continue').andThen(() => {
-        // The outer action callback increments these after the confirmation closes.
-        this.actionsTakenThisRound--;
-        this.actionsTakenThisGame--;
-        return undefined;
-      }));
+        confirmation.options.push(new SelectOption('Surrender this game and start a bot', 'Surrender and start bot').andThen(() => {
+          return undefined;
+        }));
+        confirmation.options.push(new SelectOption('Continue playing', 'Continue').andThen(() => {
+          // The outer action callback increments these after the confirmation closes.
+          this.actionsTakenThisRound--;
+          this.actionsTakenThisGame--;
+          return undefined;
+        }));
 
-      return confirmation;
-    });
+        return confirmation;
+      });
   }
 
   public takeActionForFinalGreenery(): void {

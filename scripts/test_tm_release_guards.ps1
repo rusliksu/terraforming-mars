@@ -497,6 +497,12 @@ Assert-True (-not $nodeGateCode.Contains('LIMIT')) "SQLite gate still has a trun
 Assert-True (-not $promoteRemote.Contains('/api/live-games')) "Promotion still relies on the filtered HTTP live-games endpoint."
 Assert-True ($nodeGateCode.Contains("new Database(dbPath, {readonly: true, fileMustExist: true})")) "SQLite gate is not explicitly read-only."
 Assert-True ($nodeGateCode.Contains("db.pragma('query_only = ON')")) "SQLite gate does not enable SQLite query-only mode."
+$latestSaveQueryMatch = [regex]::Match(
+    $nodeGateCode,
+    '(?ms)return db\.prepare\(`\n(?<query>.*?)\n\s*`\)\.all\(\);'
+)
+Assert-True $latestSaveQueryMatch.Success "Could not isolate the SQLite latest-save query."
+$latestSaveQuery = $latestSaveQueryMatch.Groups["query"].Value
 
 $gateFunctionMatch = [regex]::Match(
     $promoteRemote,
@@ -585,37 +591,32 @@ assert_no_realtime_games_sqlite "fixture"
     }
     Assert-True ($paddedRealtimeGate.ExitCode -eq 42) "Whitespace-padded running status did not block realtime promotion."
 
-    # Exercise the actual SQL selection as well as the classifier fixture hook.
-    $betterSqliteModuleRoot = Join-Path (Split-Path -Parent $PSScriptRoot) "node_modules"
-    if (-not (Test-Path -LiteralPath (Join-Path $betterSqliteModuleRoot "better-sqlite3")) -and
-        -not [string]::IsNullOrWhiteSpace($env:TM_RELEASE_TEST_NODE_MODULES)) {
-        $betterSqliteModuleRoot = $env:TM_RELEASE_TEST_NODE_MODULES
-    }
-    Assert-True (Test-Path -LiteralPath (Join-Path $betterSqliteModuleRoot "better-sqlite3")) "better-sqlite3 is required for the real SQLite gate fixture."
-    $realGateDb = Join-Path $advancedTempRoot "padded-status.db"
-    $createDbCode = @'
-const Database = require('better-sqlite3');
-const db = new Database(process.argv[1]);
-db.exec('CREATE TABLE games (game_id TEXT, game TEXT, status TEXT, save_id INTEGER)');
-db.prepare('INSERT INTO games VALUES (?, ?, ?, ?)').run(
-  'g_sql_padded',
-  JSON.stringify({id: 'g_sql_padded', phase: 'action', gameOptions: {turnBasedGame: false}, players: []}),
-  ' running ',
-  1,
-);
-db.close();
+    # Execute the production query against a real temporary SQLite database without npm dependencies.
+    $sqliteQueryFixture = @'
+import json
+import sqlite3
+import sys
+
+query = sys.stdin.read()
+connection = sqlite3.connect(":memory:")
+connection.execute("CREATE TABLE games (game_id TEXT, game TEXT, status TEXT, save_id INTEGER)")
+connection.execute(
+    "INSERT INTO games VALUES (?, ?, ?, ?)",
+    (
+        "g_sql_padded",
+        json.dumps({"id": "g_sql_padded", "phase": "action", "gameOptions": {"turnBasedGame": False}, "players": []}),
+        " running ",
+        1,
+    ),
+)
+rows = connection.execute(query).fetchall()
+print(json.dumps(rows, separators=(",", ":")))
 '@
-    $createDb = Invoke-TextProcess -FilePath $nodePath -ArgumentList @("-e", $createDbCode, $realGateDb) -InputText $null -Environment @{
-        NODE_PATH = $betterSqliteModuleRoot
-    }
-    Assert-True ($createDb.ExitCode -eq 0) "Could not create the real SQLite gate fixture. stderr=$($createDb.StdErr)"
-    $realGateDbBash = ConvertTo-TmBashSingleQuotedValue (ConvertTo-TmGitBashPath $realGateDb)
-    $realGateHarness = $gateHarness.Replace("game_db_path=$gateRootBash/unused.db", "game_db_path=$realGateDbBash")
-    $realPaddedGate = Invoke-Bash -ScriptText $realGateHarness -Arguments @('') -Environment @{
-        NODE_PATH = $betterSqliteModuleRoot
-    }
-    Assert-True ($realPaddedGate.ExitCode -eq 42) "The real SQLite query omitted whitespace-padded running status. stdout=$($realPaddedGate.StdOut) stderr=$($realPaddedGate.StdErr)"
-    Assert-True ($realPaddedGate.StdOut.Contains('running=1')) "The real SQLite query did not select exactly the padded running row."
+    $realSqliteQuery = Invoke-PythonSnippet -Code $sqliteQueryFixture -Json $latestSaveQuery
+    Assert-True ($realSqliteQuery.ExitCode -eq 0) "The production SQLite query could not run against the real fixture. stderr=$($realSqliteQuery.StdErr)"
+    $realSqliteRows = @($realSqliteQuery.StdOut | ConvertFrom-Json)
+    Assert-True ($realSqliteRows.Count -eq 1) "The production SQLite query did not select exactly one running row."
+    Assert-True ($realSqliteRows[0][0] -eq "g_sql_padded" -and $realSqliteRows[0][2] -eq " running ") "The production SQLite query omitted the whitespace-padded running row."
 
     $nonRunningRows = @(
         (New-LatestGameRow -GameId "g_not_running" -Status " not-running " -Game ([ordered]@{
@@ -638,7 +639,7 @@ db.close();
     Assert-True ($legacyRealtimeGate.ExitCode -eq 42) "Legacy save without a Telegram id was not classified as realtime."
 
     $ignoredGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('g_realtime') -Environment @{TM_RELEASE_LIVE_GATE_FIXTURE_JSON = $realtimeFixture}
-    Assert-True ($ignoredGate.ExitCode -eq 0) "Explicitly ignored abandoned realtime game still blocked promotion."
+    Assert-True ($ignoredGate.ExitCode -eq 0) "Explicitly ignored abandoned realtime game still blocked promotion. stdout=$($ignoredGate.StdOut) stderr=$($ignoredGate.StdErr)"
     Assert-True ($ignoredGate.StdOut.Contains('ignored=1 ignored_ids=g_realtime realtime=0')) "Ignored game id/count were not reported safely."
 
     $malformedRows = @(

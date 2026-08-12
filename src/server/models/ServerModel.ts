@@ -215,6 +215,9 @@ export class Server {
     // TODO(kberg): in theory this should be in all the other toModel calls.
     const model = waitingFor.toModel(player);
     model.warning = waitingFor.warning;
+    if (waitingFor.annotation !== undefined) {
+      model.annotation = waitingFor.annotation;
+    }
     return model;
     // showReset: player.game.inputsThisRound > 0 && player.game.resettable === true && player.game.phase === Phase.ACTION,
   }

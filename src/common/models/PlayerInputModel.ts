@@ -16,6 +16,8 @@ export type BaseInputModel = {
   title: string | Message;
   warning?: string | Message;
   buttonLabel: string;
+  /** Stable, non-secret identifier for machine-controlled prompt handling. */
+  annotation?: string;
   optional?: boolean;
 }
 

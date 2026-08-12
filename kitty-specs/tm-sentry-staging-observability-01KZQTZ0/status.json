@@ -1,5 +1,5 @@
 {
-  "event_count": 38,
+  "event_count": 40,
   "last_event_id": "01KZTHE1N44RRPXDF4FDBV0S2Q",
   "materialized_at": "2026-08-12T08:29:14.788936+00:00",
   "mission_number": "",
@@ -36,7 +36,22 @@
         "reviewer": "reviewer-renata",
         "verdict": "approved"
       },
-      "role": "reviewer"
+      "role": "reviewer",
+      "shell_pid": 32644,
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done",
+        "T005": "done",
+        "T006": "done",
+        "T008": "done",
+        "T010": "done",
+        "T021": "done"
+      },
+      "tracker_refs": [
+        "tmsentry-q1x.1"
+      ]
     },
     "WP02": {
       "actor": "user",
@@ -64,7 +79,10 @@
         "T007": "done",
         "T009": "done",
         "T011": "done"
-      }
+      },
+      "tracker_refs": [
+        "tmsentry-q1x.2"
+      ]
     },
     "WP03": {
       "actor": "user",
@@ -95,7 +113,10 @@
         "T014": "done",
         "T015": "done",
         "T016": "done"
-      }
+      },
+      "tracker_refs": [
+        "tmsentry-q1x.3"
+      ]
     },
     "WP04": {
       "actor": "user",
@@ -125,7 +146,10 @@
         "T018": "done",
         "T019": "done",
         "T020": "done"
-      }
+      },
+      "tracker_refs": [
+        "tmsentry-q1x.4"
+      ]
     }
   }
 }

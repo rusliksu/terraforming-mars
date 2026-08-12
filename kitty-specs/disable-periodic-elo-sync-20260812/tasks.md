@@ -18,3 +18,15 @@
 - Task-owned PR lifecycle.
 - Separate staging validation after merge to `main`.
 - Separate authorized production deploy and systemd state verification.
+
+## Live closeout evidence
+
+At `2026-08-12T16:35:01Z`, after the separately authorized HOSTKEY operation:
+
+- `tm-sync-elo.timer` was `inactive`, `dead`, and `disabled`, with no next elapse.
+- `tm-sync-elo.service` was inactive and had zero starts since the disable operation.
+- `tm-server` and `tm-elo` were active and running; public prod and ELO endpoints returned HTTP 200.
+- Completed game `g53cc922b4f2d` was present in `elo-data.json`, proving the existing game-completion path updated ELO without periodic SQLite polling.
+- Installed HOSTKEY monitoring no longer listed `tm-sync-elo.timer` as critical; canonical monitoring commit: `639ba8c7ad7a19264963f6c1491917922a4c1aeb`.
+
+The production runtime invariant is already active. Commit `f5c2370e55` still needs task-owned PR delivery so future release scripts enforce it automatically.

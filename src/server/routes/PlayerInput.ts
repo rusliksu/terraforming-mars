@@ -23,6 +23,11 @@ import type {AccessAuditEvent, AccessAuditRecordInput} from '../server/AccessAud
 import {prepareActionReplayEntry, recordAcceptedActionReplayEntry} from '../game/ActionReplay';
 import {HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED} from '../../common/undo';
 import {logIrreversibleUndo} from '../logs/logIrreversibleUndo';
+import {capture} from '../server/SentryReporter';
+import type {
+  ErrorDiagnosticBoundary,
+  ErrorDiagnosticContext,
+} from '../server/SentryReporter';
 
 type ShadowPromptSnapshot = {
   buttonLabel: string | null;
@@ -30,8 +35,14 @@ type ShadowPromptSnapshot = {
   type: string | null;
 };
 
+type CaptureError = (error: unknown, context: ErrorDiagnosticContext) => void;
+
 export class PlayerInput extends Handler {
   public static readonly INSTANCE = new PlayerInput();
+
+  constructor(private readonly captureError: CaptureError = capture) {
+    super();
+  }
 
   public override async post(req: Request, res: Response, ctx: Context): Promise<void> {
     const playerId = ctx.url.searchParams.get('id');
@@ -58,6 +69,11 @@ export class PlayerInput extends Handler {
       player = game.getPlayerById(playerId);
     } catch (err) {
       console.warn(`unable to find player ${playerId}`, err);
+      if (!(err instanceof AppError || err instanceof InputError)) {
+        this.captureUnexpected(err, playerDiagnosticContext(
+          'player-get', req.method, ctx.url.pathname, game.id, playerId,
+        ));
+      }
     }
     if (player === undefined) {
       responses.notFound(req, res);
@@ -76,7 +92,13 @@ export class PlayerInput extends Handler {
     return false;
   }
 
-  private async performUndo(_req: Request, _res: Response, ctx: Context, player: IPlayer): Promise<IPlayer> {
+  private async performUndo(
+    req: Request,
+    _res: Response,
+    ctx: Context,
+    player: IPlayer,
+    gameplayInput: InputResponse,
+  ): Promise<IPlayer> {
     /**
      * The `lastSaveId` property is incremented during every `takeAction`.
      * The first save being decremented is the increment during `takeAction` call
@@ -107,6 +129,9 @@ export class PlayerInput extends Handler {
         throw err;
       }
       console.error(err);
+      this.captureUnexpected(err, playerDiagnosticContext(
+        'player-undo', req.method, ctx.url.pathname, player.game.id, player.id, gameplayInput,
+      ));
       throw new InputError('Unable to perform undo operation. Error retrieving game from database. Please try again.');
     }
     return player;
@@ -139,7 +164,7 @@ export class PlayerInput extends Handler {
           validateRunId(entity);
           isUndo = this.isWaitingForUndo(player, entity);
           if (isUndo) {
-            player = await this.performUndo(req, res, ctx, player);
+            player = await this.performUndo(req, res, ctx, player, entityForLog);
             inputSeq = advanceShadowInputSeq(player, promptInputSeq);
             responses.writeJson(res, ctx, Server.getPlayerModel(player));
           } else {
@@ -190,6 +215,11 @@ export class PlayerInput extends Handler {
           });
           if (!(e instanceof AppError || e instanceof InputError)) {
             console.warn('Error processing input from player', e);
+            if (entityForLog !== undefined) {
+              this.captureUnexpected(e, playerDiagnosticContext(
+                'player-input', req.method, ctx.url.pathname, player.game.id, player.id, entityForLog,
+              ));
+            }
           }
           // TODO(kberg): use responses.ts, though that changes the output.
           res.writeHead(statusCode.badRequest, {
@@ -209,6 +239,36 @@ export class PlayerInput extends Handler {
       });
     });
   }
+
+  private captureUnexpected(error: unknown, context: ErrorDiagnosticContext): void {
+    try {
+      this.captureError(error, context);
+    } catch (_captureError) {
+      // Diagnostics must never change the existing player-input response path.
+    }
+  }
+}
+
+function playerDiagnosticContext(
+  boundary: ErrorDiagnosticBoundary,
+  method: string | undefined,
+  pathname: string | undefined,
+  gameId: string,
+  playerId: string,
+  gameplayInput?: unknown,
+): ErrorDiagnosticContext {
+  const context: ErrorDiagnosticContext = {boundary, gameId, playerId};
+  const normalizedMethod = method?.trim().toUpperCase();
+  if (normalizedMethod !== undefined && normalizedMethod.length > 0) {
+    context.method = normalizedMethod;
+  }
+  if (pathname !== undefined && pathname.length > 0) {
+    context.route = pathname;
+  }
+  if (gameplayInput !== undefined) {
+    context.gameplayInput = gameplayInput;
+  }
+  return context;
 }
 
 function recordPlayerInputAudit(

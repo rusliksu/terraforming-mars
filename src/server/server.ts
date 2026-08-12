@@ -24,10 +24,10 @@ import {timeAsync} from '@/server/utils/timer';
 import {GameLoader} from '@/server/database/GameLoader';
 import {globalInitialize} from '@/server/globalInitialize';
 import {SessionManager} from '@/server/server/auth/SessionManager';
+import {capture} from '@/server/server/SentryReporter';
+import {registerUncaughtExceptionHandler} from '@/server/server/SentryProcessBoundary';
 
-process.on('uncaughtException', (err: any) => {
-  console.error('UNCAUGHT EXCEPTION', err);
-});
+registerUncaughtExceptionHandler(capture);
 
 function requestHandler(req: http.IncomingMessage, res: http.ServerResponse): void {
   processRequest(req, res).catch((error) => {

@@ -1,16 +1,21 @@
 {
   "schema_version": 1,
-  "map_kind": "scoped-baseline",
-  "source_commit": "8a5604fa69f45898c3c18c4ac8f19104cb0e6ed5",
-  "generated_at": "2026-08-11T10:46:51Z",
+  "map_kind": "scoped-final",
+  "source_commit": "d542dc99e5e71d2081e0505d4233001247c37bfd",
+  "generated_at": "2026-08-11T19:21:58Z",
   "source_tree_was_clean": true,
   "scope": [
+    "package-lock.json",
     "package.json",
     "src/server/routes/PlayerInput.ts",
     "src/server/server.ts",
     "src/server/server/requestProcessor.ts",
+    "src/server/server/SentryProcessBoundary.ts",
+    "src/server/server/SentryReporter.ts",
     "tests/routes/PlayerInput.spec.ts",
-    "tests/server/requestProcessor.spec.ts"
+    "tests/server/requestProcessor.spec.ts",
+    "tests/server/server/SentryProcessBoundary.spec.ts",
+    "tests/server/server/SentryReporter.spec.ts"
   ],
   "excluded_directories": [
     ".git",
@@ -23,16 +28,34 @@
   "fingerprint_algorithm": "sha256(UTF-8 join of sorted path + NUL + lowercase per-file SHA-256 records, separated by LF)",
   "scope_excludes_codemap_artifacts": true,
   "file_fingerprints": {
-    "package.json": "84405cd7843a96897f3d10e27888a49b53903fce45e8effaf04b66bc474b6502",
-    "src/server/routes/PlayerInput.ts": "fb81b5784e46bdcfb73ec63bbe0dad7da50034aeb7f7412d3deee91199fd463f",
-    "src/server/server.ts": "7ad4fefb646e471cfe93e012636cb1f0673911d2a057f2bda287519e39abd81a",
-    "src/server/server/requestProcessor.ts": "de5474db3597ba6cef77d33212e67bac2ded89315b889feeb848dd456a21d976",
-    "tests/routes/PlayerInput.spec.ts": "5aba0f60e704f6b16ee2e4f65b045596dc03f75027096074735f8fd9acbc6ef2",
-    "tests/server/requestProcessor.spec.ts": "c56ef0bea383d6267ae8ea0a6b65972d15fdd17626248da2f5aea4c2fe88f541"
+    "package-lock.json": "80f97d0980bf623a1bbe92cb082c08d50dd7707aa9f9456d59c2b19ba217aecc",
+    "package.json": "34fc05a21fdc29e438d06aee9b6a30ee7d5ab35d41c2a95e2f2179cca7ae1bdd",
+    "src/server/routes/PlayerInput.ts": "52b9452c4926328939b6b78ccb24c764242ce509ff588ecdfc77ae902835481f",
+    "src/server/server.ts": "2e4062820674a35b111dd20718e6209f60a8616ceaf138a5b5dfeec8f773f232",
+    "src/server/server/requestProcessor.ts": "11a33d5b225f74c34131717ba7b418a80bc7571c3a868f66dbdf1a8f31afe94b",
+    "src/server/server/SentryProcessBoundary.ts": "002a2c736bac792bcc1bc8f774bb163d59aee7aa08135907d1cefe98877b5a01",
+    "src/server/server/SentryReporter.ts": "f4ea379cc2178038b9ba1c35271647444560ba11f155ab114dc92112fbbac64e",
+    "tests/routes/PlayerInput.spec.ts": "c820daba5789d6df3be1c8aab1067313c49cab5ce843707f32bdbd262f740ce7",
+    "tests/server/requestProcessor.spec.ts": "a38c08c35d26c9fe4461a49f15ebe74e509088799be439b46ff44e6fef254579",
+    "tests/server/server/SentryProcessBoundary.spec.ts": "6cfbcd8df2c6d4b82612e63102decd718776373e569db3429e9ade9c884883f4",
+    "tests/server/server/SentryReporter.spec.ts": "62dae695849572671526630c507080b7f056b8a8a44694a9fc98df3c1b9ffd80"
   },
-  "scope_fingerprint": "07e62dc1c96cd92c12684e42628c444187a4d479a807da315aaa2cd29734e511",
-  "changed_modules": [],
-  "new_modules": [],
+  "scope_fingerprint": "393a1820c112ad4a7d8b774906f9477b801d310301863cbf4346f7f50fc37e35",
+  "changed_modules": [
+    "package-lock.json",
+    "package.json",
+    "src/server/routes/PlayerInput.ts",
+    "src/server/server.ts",
+    "src/server/server/requestProcessor.ts",
+    "tests/routes/PlayerInput.spec.ts",
+    "tests/server/requestProcessor.spec.ts"
+  ],
+  "new_modules": [
+    "src/server/server/SentryProcessBoundary.ts",
+    "src/server/server/SentryReporter.ts",
+    "tests/server/server/SentryProcessBoundary.spec.ts",
+    "tests/server/server/SentryReporter.spec.ts"
+  ],
   "removed_modules": [],
-  "comparison": "Первый scoped baseline для Sentry touch surface; предыдущая remote codemap использована только как schema reference."
+  "comparison": "Итоговая scoped-карта подтверждает пять capture boundary, privacy pipeline и тестовый SDK envelope; реальная доставка в Sentry остаётся отдельным delivery gate."
 }

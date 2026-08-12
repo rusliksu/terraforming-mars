@@ -193,9 +193,11 @@ describe('ServerModel', () => {
     const response = Server.getWaitingFor(player, waitingFor);
 
     expect(response).not.to.be.undefined;
-    expect(response!.type).eq('or');
-    expect(response!.options[0].annotation).eq('surrender-action');
-    expect(response!.options[1].annotation).eq(undefined);
+    if (response?.type !== 'or') {
+      throw new Error('Expected an OrOptions response');
+    }
+    expect(response.options[0].annotation).eq('surrender-action');
+    expect(response.options[1].annotation).eq(undefined);
   });
 
   it('exposes step-back capability only to the journal actor', () => {

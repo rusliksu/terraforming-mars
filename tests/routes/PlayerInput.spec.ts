@@ -24,6 +24,7 @@ import {Comet} from '../../src/server/cards/base/Comet';
 import {HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED} from '../../src/common/undo';
 import {HiTechLab} from '../../src/server/cards/promo/HiTechLab';
 import {LogMessageType} from '../../src/common/logs/LogMessageType';
+import {BotTakeoverManager} from '../../src/server/bot/BotTakeoverManager';
 import type {ErrorDiagnosticContext} from '../../src/server/server/SentryReporter';
 import {InputError} from '../../src/server/inputs/InputError';
 import {AppError} from '../../src/server/server/AppError';
@@ -34,6 +35,33 @@ type CapturedError = {
   error: unknown;
   context: ErrorDiagnosticContext;
 };
+
+function newBotManager(options: {startError?: Error} = {}) {
+  let active = false;
+  const starts: Array<Parameters<BotTakeoverManager['start']>[0]> = [];
+  const manager: Pick<BotTakeoverManager, 'isActive' | 'start' | 'stop'> = {
+    isActive: () => active,
+    start: (startOptions) => {
+      if (options.startError !== undefined) {
+        throw options.startError;
+      }
+      active = true;
+      starts.push(startOptions);
+      return {
+        gameId: startOptions.gameId,
+        playerId: startOptions.playerId,
+        pid: 123,
+        startedAtMs: 1,
+        logFile: 'bot.log',
+      };
+    },
+    stop: () => {
+      active = false;
+      return undefined;
+    },
+  };
+  return {manager, starts};
+}
 
 describe('PlayerInput', () => {
   let scaffolding: RouteTestScaffolding;
@@ -605,6 +633,114 @@ describe('PlayerInput', () => {
       'player_input_accepted',
     ]);
     expect(auditEvents[1].metadata).deep.eq({authorization: 'player'});
+  });
+
+  it('commits surrender, starts a bot and audits through player input', async () => {
+    const auditEvents: Array<AccessAuditRecordInput> = [];
+    const [game, player] = testGame(2);
+    game.generation = 1;
+    game.phase = Phase.ACTION;
+    scaffolding.url = `/player/input?id=${player.id}`;
+    scaffolding.req.method = 'POST';
+    scaffolding.ctx.accessAudit = {record: (event) => auditEvents.push(event)};
+    await scaffolding.ctx.gameLoader.add(game);
+
+    player.clearWaitingFor();
+    player.takeAction(false);
+    const actions = cast(player.getWaitingFor(), OrOptions);
+    const surrenderIndex = actions.options.findIndex((option) => option.title === 'Surrender this game and start a bot');
+    expect(surrenderIndex).greaterThan(-1);
+    player.process({type: 'or', index: surrenderIndex, response: {type: 'option'}});
+
+    const {manager, starts} = newBotManager();
+    const handler = new PlayerInput(manager);
+    const post = scaffolding.post(handler, res);
+    const emit = Promise.resolve().then(() => {
+      scaffolding.req.emitter.emit('data', '{"type":"or","index":0,"response":{"type":"option"}}');
+      scaffolding.req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+
+    expect(res.statusCode).eq(200);
+    expect(game.surrenderedPlayerIds.has(player.id)).eq(true);
+    expect(game.botPlayerIds.has(player.id)).eq(false);
+    expect(game.hasPassedThisActionPhase(player)).eq(false);
+    expect(starts).deep.eq([{gameId: game.id, playerId: player.id, serverId: scaffolding.ctx.ids.serverId}]);
+    expect(JSON.parse(res.content).waitingFor.title).eq('Take your next action');
+    expect(auditEvents.map((event) => event.event)).deep.eq([
+      'player_input_attempt',
+      'surrender_accepted',
+      'player_input_accepted',
+    ]);
+    expect(auditEvents[1].metadata).deep.eq({authorization: 'player', botTakeover: 'started'});
+  });
+
+  it('rejects surrendered-seat input without the bot server capability', async () => {
+    const auditEvents: Array<AccessAuditRecordInput> = [];
+    const [game, player] = testGame(2);
+    game.surrenderedPlayerIds.add(player.id);
+    scaffolding.url = `/player/input?id=${player.id}`;
+    scaffolding.req.method = 'POST';
+    scaffolding.ctx.accessAudit = {record: (event) => auditEvents.push(event)};
+    await scaffolding.ctx.gameLoader.add(game);
+
+    let processed = 0;
+    player.process = () => {
+      processed++;
+    };
+
+    await scaffolding.post(PlayerInput.INSTANCE, res);
+
+    expect(res.statusCode).eq(400);
+    expect(res.content).eq('Bad request: surrendered player is controlled by a bot');
+    expect(processed).eq(0);
+    expect(auditEvents.map((event) => event.event)).deep.eq([
+      'player_input_attempt',
+      'player_input_rejected',
+    ]);
+    expect(auditEvents[1].metadata).deep.eq({reason: 'surrendered_bot_control'});
+
+    const botResponse = new MockResponse();
+    scaffolding.url = `/player/input?id=${player.id}&serverId=${scaffolding.ctx.ids.serverId}`;
+    const post = scaffolding.post(PlayerInput.INSTANCE, botResponse);
+    const emit = Promise.resolve().then(() => {
+      scaffolding.req.emitter.emit('data', '{"type":"option"}');
+      scaffolding.req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+
+    expect(botResponse.statusCode).eq(200);
+    expect(processed).eq(1);
+  });
+
+  it('rolls surrender back when the bot cannot start', async () => {
+    const [game, player] = testGame(2);
+    game.generation = 1;
+    game.phase = Phase.ACTION;
+    scaffolding.url = `/player/input?id=${player.id}`;
+    scaffolding.req.method = 'POST';
+    await scaffolding.ctx.gameLoader.add(game);
+
+    player.clearWaitingFor();
+    player.takeAction(false);
+    const actions = cast(player.getWaitingFor(), OrOptions);
+    const surrenderIndex = actions.options.findIndex((option) => option.title === 'Surrender this game and start a bot');
+    player.process({type: 'or', index: surrenderIndex, response: {type: 'option'}});
+
+    const {manager} = newBotManager({startError: new Error('spawn failed')});
+    const handler = new PlayerInput(manager);
+    const post = scaffolding.post(handler, res);
+    const emit = Promise.resolve().then(() => {
+      scaffolding.req.emitter.emit('data', '{"type":"or","index":0,"response":{"type":"option"}}');
+      scaffolding.req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+
+    const restored = await scaffolding.ctx.gameLoader.getGame(game.id);
+    expect(res.statusCode).eq(400);
+    expect(JSON.parse(res.content).message).contains('Unable to surrender');
+    expect(restored?.surrenderedPlayerIds.has(player.id)).eq(false);
+    expect(restored?.getPlayerById(player.id).getWaitingFor()).is.not.undefined;
   });
 
   it('audits rejected player input without raw payload', async () => {

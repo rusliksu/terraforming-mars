@@ -30,7 +30,7 @@ import {registerUncaughtExceptionHandler} from '@/server/server/SentryProcessBou
 registerUncaughtExceptionHandler(capture);
 
 function requestHandler(req: http.IncomingMessage, res: http.ServerResponse): void {
-  processRequest(req, res).catch((error) => {
+  processRequest(req, res, capture).catch((error) => {
     responses.internalServerError(req, res, error);
   });
 }

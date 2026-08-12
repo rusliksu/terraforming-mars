@@ -1,7 +1,7 @@
 {
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-08-11T10:03:56.424Z",
-  "generated_from_commit": "4cf34ffaaefa6d52371aa48d3393ee51268e0a2e",
+  "generated_at": "2026-08-12T10:59:13.731Z",
+  "generated_from_commit": "c18af9c9",
   "scope": [
     ".",
     ".github",
@@ -833,6 +833,97 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "id": "process-boundary",
+      "label": "Process error boundary",
+      "type": "service",
+      "path": "src/server/server/SentryProcessBoundary.ts",
+      "role": "Сохраняет локальный uncaughtException log первым и best-effort вызывает public capture с boundary process.",
+      "entrypoints": [
+        {
+          "path": "src/server/server/SentryProcessBoundary.ts",
+          "symbol": "registerUncaughtExceptionHandler(captureError)",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/server/SentryProcessBoundary.ts",
+          "symbol": "createUncaughtExceptionHandler(captureError, logError)",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/server/server/SentryProcessBoundary.spec.ts",
+          "symbol": "describe('Sentry process boundary')"
+        }
+      ],
+      "constraints": [
+        "Локальный log выполняется до Sentry capture.",
+        "Reporter failure не меняет process error path."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/server/SentryProcessBoundary.ts",
+          "symbol": "logError('UNCAUGHT EXCEPTION', error)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "sentry-reporter",
+      "label": "Sentry reporter",
+      "type": "service",
+      "path": "src/server/server/SentryReporter.ts",
+      "role": "Fail-closed privacy boundary for staging error events.",
+      "entrypoints": [
+        {
+          "path": "src/server/server/SentryReporter.ts",
+          "symbol": "createSentryReporter(config, transport)",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/server/SentryReporter.ts",
+          "symbol": "capture(error, context)",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/server/server/SentryReporter.spec.ts",
+          "symbol": "describe('SentryReporter')"
+        },
+        {
+          "path": "tests/server/requestProcessor.spec.ts",
+          "symbol": "request boundary capture"
+        },
+        {
+          "path": "tests/routes/PlayerInput.spec.ts",
+          "symbol": "PlayerInput capture paths"
+        }
+      ],
+      "constraints": [
+        "Включается только при DSN + exact staging + valid build head.",
+        "Финальный event строится по allowlist и повторно очищается beforeSend.",
+        "Реальная доставка в Sentry остаётся отдельным delivery gate."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/server/SentryReporter.ts",
+          "symbol": "beforeSend(event)",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/server/SentryReporter.ts",
+          "symbol": "dataCollection: {userInfo: false, cookies: false}",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/server/SentryReporter.ts",
+          "symbol": "sanitizeGameplayInput(context.gameplayInput)",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "edges": [
@@ -1282,6 +1373,58 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "server-entry",
+      "to": "process-boundary",
+      "type": "registers",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/server.ts",
+          "symbol": "registerUncaughtExceptionHandler(capture)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "process-boundary",
+      "to": "sentry-reporter",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/server/SentryProcessBoundary.ts",
+          "symbol": "captureError(error, {boundary: 'process'})",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "request-routing",
+      "to": "sentry-reporter",
+      "type": "captures",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/server/requestProcessor.ts",
+          "symbol": "captureError(error, {boundary: 'request', ...})",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "api-handlers",
+      "to": "sentry-reporter",
+      "type": "captures",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/routes/PlayerInput.ts",
+          "symbol": "captureUnexpected(error, playerDiagnosticContext(...))",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -1397,6 +1540,19 @@
         "database-facade"
       ],
       "outcome": "The server blocks undo, the browser asks for confirmation, and only an explicit retry restores/replays state."
+    },
+    {
+      "id": "flow-sentry-observability",
+      "name": "Staging error observability",
+      "trigger": "Unexpected process, request, undo, player lookup or player input error",
+      "steps": [
+        "server-entry",
+        "process-boundary",
+        "request-routing",
+        "api-handlers",
+        "sentry-reporter"
+      ],
+      "outcome": "Локальный gameplay/HTTP path сохраняется, а в Sentry формируется один очищенный staging event; внешняя доставка gated."
     }
   ],
   "unknowns": [
@@ -1419,5 +1575,17 @@
       ]
     }
   ],
-  "changed_modules": []
+  "changed_modules": [
+    "package.json",
+    "package-lock.json",
+    "src/server/routes/PlayerInput.ts",
+    "src/server/server.ts",
+    "src/server/server/requestProcessor.ts",
+    "src/server/server/SentryProcessBoundary.ts",
+    "src/server/server/SentryReporter.ts",
+    "tests/routes/PlayerInput.spec.ts",
+    "tests/server/requestProcessor.spec.ts",
+    "tests/server/server/SentryProcessBoundary.spec.ts",
+    "tests/server/server/SentryReporter.spec.ts"
+  ]
 }

@@ -11,6 +11,7 @@ import {daysAgoToSeconds} from './utils';
 import {MultiMap} from 'mnemonist';
 import {Session, SessionId} from '../auth/Session';
 import {toID} from '../../common/utils/utils';
+import {assertSaveIdWithinLimit, resolveMaxSavesPerGame} from './HistoryLimits';
 
 export const IN_MEMORY_SQLITE_PATH = ':memory:';
 
@@ -24,7 +25,11 @@ export class SQLite implements IDatabase {
     return this._db;
   }
 
-  constructor(private filename: undefined | string = undefined, private throwQuietFailures: boolean = false) {
+  constructor(
+    private filename: undefined | string = undefined,
+    private throwQuietFailures: boolean = false,
+    private readonly maxSavesPerGame: number = resolveMaxSavesPerGame(),
+  ) {
   }
 
   public async initialize(): Promise<void> {
@@ -205,6 +210,7 @@ export class SQLite implements IDatabase {
 
   async saveGame(game: IGame): Promise<void> {
     const thisSaveId = game.lastSaveId;
+    assertSaveIdWithinLimit(thisSaveId, this.maxSavesPerGame);
     const gameJSON = JSON.stringify(game.serialize());
 
     // This app has a bad habit of re-saving the same state. It hasn't been fully cleaned, but OK.

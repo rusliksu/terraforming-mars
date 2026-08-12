@@ -15,6 +15,7 @@ import {Clock} from '@/common/Timer';
 import {parseInterned} from './parseInterned';
 import {LogMessage} from '@/common/logs/LogMessage';
 import {compressToBrotli, decompressFromBrotli} from './compression';
+import {assertSaveIdWithinLimit} from './HistoryLimits';
 
 type StoredSerializedGame = Omit<SerializedGame, 'gameOptions' | 'gameLog'> & {logLength: number};
 
@@ -378,6 +379,9 @@ export class PostgreSQL implements IDatabase {
   }
 
   async saveGame(game: IGame): Promise<void> {
+    // Keep this check outside the transaction/catch: a budget breach must
+    // reject the caller instead of being converted into a successful no-op.
+    assertSaveIdWithinLimit(game.lastSaveId);
     const serialized = game.serialize();
     const options = JSON.stringify(serialized.gameOptions);
     const log = JSON.stringify(serialized.gameLog);

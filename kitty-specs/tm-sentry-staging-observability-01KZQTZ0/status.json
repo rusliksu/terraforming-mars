@@ -1,7 +1,7 @@
 {
-  "event_count": 34,
-  "last_event_id": "01KZTG42TZPXYR232EGFRZE7JG",
-  "materialized_at": "2026-08-12T08:06:19.743722+00:00",
+  "event_count": 35,
+  "last_event_id": "01KZTGBTDY14HX01HVAAZYM1H0",
+  "materialized_at": "2026-08-12T08:10:33.278884+00:00",
   "mission_number": "",
   "mission_slug": "tm-sentry-staging-observability-01KZQTZ0",
   "mission_type": "software-dev",
@@ -18,11 +18,11 @@
   },
   "work_packages": {
     "WP01": {
-      "actor": "user",
-      "force_count": 2,
+      "actor": "codex",
+      "force_count": 3,
       "lane": "approved",
-      "last_event_id": "01KZRSD9T3B6G415GG8SZNFZQJ",
-      "last_transition_at": "2026-08-11T16:10:10.115175+00:00",
+      "last_event_id": "01KZTGBTDY14HX01HVAAZYM1H0",
+      "last_transition_at": "2026-08-12T08:10:33.278884+00:00",
       "review_result": null
     },
     "WP02": {

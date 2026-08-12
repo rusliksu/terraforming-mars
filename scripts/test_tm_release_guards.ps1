@@ -209,6 +209,25 @@ $releaseIgnoreIndex = $releaseSource.IndexOf('$promoteArgs += @("-IgnoredRealtim
 Assert-True ($rolloutIgnoreIndex -ge 0 -and $releaseIgnoreIndex -ge 0) "Ignored realtime game ids are not forwarded rollout -> release -> promote."
 Assert-True ($promoteSource.Contains('$remoteScript = $remoteScript.Replace("__IGNORED_REALTIME_GAME_IDS_CSV__", $ignoredRealtimeGameIdsCsv)')) "Promote does not pass ignored ids into the locked remote gate."
 
+# The next-service health window is a validated operator input and is rendered into the real dry-run script.
+$pwshPath = (Get-Command pwsh -ErrorAction Stop | Select-Object -First 1).Source
+$defaultPromoteDryRun = Invoke-TextProcess -FilePath $pwshPath -ArgumentList @(
+    "-NoProfile", "-File", $promotePath, "-DryRun"
+) -InputText $null
+Assert-True ($defaultPromoteDryRun.ExitCode -eq 0) "Default promotion dry-run failed. stderr=$($defaultPromoteDryRun.StdErr)"
+Assert-True ($defaultPromoteDryRun.StdOut.Contains('next_health_timeout_seconds="180"')) "Default promotion health window is not 180 seconds."
+
+$overridePromoteDryRun = Invoke-TextProcess -FilePath $pwshPath -ArgumentList @(
+    "-NoProfile", "-File", $promotePath, "-DryRun", "-NextServiceHealthTimeoutSeconds", "240"
+) -InputText $null
+Assert-True ($overridePromoteDryRun.ExitCode -eq 0) "Promotion health-window override dry-run failed. stderr=$($overridePromoteDryRun.StdErr)"
+Assert-True ($overridePromoteDryRun.StdOut.Contains('next_health_timeout_seconds="240"')) "Promotion health-window override was not rendered."
+
+$invalidPromoteDryRun = Invoke-TextProcess -FilePath $pwshPath -ArgumentList @(
+    "-NoProfile", "-File", $promotePath, "-DryRun", "-NextServiceHealthTimeoutSeconds", "0"
+) -InputText $null
+Assert-True ($invalidPromoteDryRun.ExitCode -ne 0) "Promotion accepted a zero-second next-service health window."
+
 $refreshIndex = $rolloutSource.IndexOf('Invoke-CheckedPwsh -Arguments $refreshArgs')
 $captureIndex = $rolloutSource.IndexOf('$intendedGitSha = Get-TmFullGitSha')
 $deployPinIndex = $rolloutSource.IndexOf('"-ExpectedGitSha", $intendedGitSha', $captureIndex)
@@ -474,7 +493,6 @@ $nodeGateMatch = [regex]::Match(
 Assert-True $nodeGateMatch.Success "Could not find the SQLite latest-save gate implementation."
 $nodeGateCode = $nodeGateMatch.Groups["code"].Value
 Assert-True ($nodeGateCode.Contains('SELECT game_id, MAX(save_id) AS max_save_id')) "SQLite gate does not select the latest save for every game id."
-Assert-True ($nodeGateCode.Contains("WHERE latest.status = 'running'")) "SQLite gate does not classify every running latest save."
 Assert-True (-not $nodeGateCode.Contains('LIMIT')) "SQLite gate still has a truncating limit."
 Assert-True (-not $promoteRemote.Contains('/api/live-games')) "Promotion still relies on the filtered HTTP live-games endpoint."
 Assert-True ($nodeGateCode.Contains("new Database(dbPath, {readonly: true, fileMustExist: true})")) "SQLite gate is not explicitly read-only."
@@ -491,13 +509,14 @@ function New-LatestGameRow {
     param(
         [string]$GameId,
         [hashtable]$Game,
-        [int]$SaveId = 7
+        [int]$SaveId = 7,
+        [string]$Status = "running"
     )
 
     return [ordered]@{
         game_id = $GameId
         game = ($Game | ConvertTo-Json -Depth 20 -Compress)
-        status = "running"
+        status = $Status
         save_id = $SaveId
         visibility = "hidden-fixture"
     }
@@ -555,6 +574,58 @@ assert_no_realtime_games_sqlite "fixture"
     $realtimeFixture = ConvertTo-GateFixtureJson -Rows $realtimeRows
     $realtimeGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('') -Environment @{TM_RELEASE_LIVE_GATE_FIXTURE_JSON = $realtimeFixture}
     Assert-True ($realtimeGate.ExitCode -eq 42) "Explicit realtime save did not block with exit code 42."
+
+    $paddedRealtimeRows = @(
+        (New-LatestGameRow -GameId "g_padded_realtime" -Status " running " -Game ([ordered]@{
+            id = "g_padded_realtime"; phase = "action"; gameOptions = @{turnBasedGame = $false}; players = @()
+        }))
+    )
+    $paddedRealtimeGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('') -Environment @{
+        TM_RELEASE_LIVE_GATE_FIXTURE_JSON = (ConvertTo-GateFixtureJson -Rows $paddedRealtimeRows)
+    }
+    Assert-True ($paddedRealtimeGate.ExitCode -eq 42) "Whitespace-padded running status did not block realtime promotion."
+
+    # Exercise the actual SQL selection as well as the classifier fixture hook.
+    $betterSqliteModuleRoot = Join-Path (Split-Path -Parent $PSScriptRoot) "node_modules"
+    if (-not (Test-Path -LiteralPath (Join-Path $betterSqliteModuleRoot "better-sqlite3")) -and
+        -not [string]::IsNullOrWhiteSpace($env:TM_RELEASE_TEST_NODE_MODULES)) {
+        $betterSqliteModuleRoot = $env:TM_RELEASE_TEST_NODE_MODULES
+    }
+    Assert-True (Test-Path -LiteralPath (Join-Path $betterSqliteModuleRoot "better-sqlite3")) "better-sqlite3 is required for the real SQLite gate fixture."
+    $realGateDb = Join-Path $advancedTempRoot "padded-status.db"
+    $createDbCode = @'
+const Database = require('better-sqlite3');
+const db = new Database(process.argv[1]);
+db.exec('CREATE TABLE games (game_id TEXT, game TEXT, status TEXT, save_id INTEGER)');
+db.prepare('INSERT INTO games VALUES (?, ?, ?, ?)').run(
+  'g_sql_padded',
+  JSON.stringify({id: 'g_sql_padded', phase: 'action', gameOptions: {turnBasedGame: false}, players: []}),
+  ' running ',
+  1,
+);
+db.close();
+'@
+    $createDb = Invoke-TextProcess -FilePath $nodePath -ArgumentList @("-e", $createDbCode, $realGateDb) -InputText $null -Environment @{
+        NODE_PATH = $betterSqliteModuleRoot
+    }
+    Assert-True ($createDb.ExitCode -eq 0) "Could not create the real SQLite gate fixture. stderr=$($createDb.StdErr)"
+    $realGateDbBash = ConvertTo-TmBashSingleQuotedValue (ConvertTo-TmGitBashPath $realGateDb)
+    $realGateHarness = $gateHarness.Replace("game_db_path=$gateRootBash/unused.db", "game_db_path=$realGateDbBash")
+    $realPaddedGate = Invoke-Bash -ScriptText $realGateHarness -Arguments @('') -Environment @{
+        NODE_PATH = $betterSqliteModuleRoot
+    }
+    Assert-True ($realPaddedGate.ExitCode -eq 42) "The real SQLite query omitted whitespace-padded running status. stdout=$($realPaddedGate.StdOut) stderr=$($realPaddedGate.StdErr)"
+    Assert-True ($realPaddedGate.StdOut.Contains('running=1')) "The real SQLite query did not select exactly the padded running row."
+
+    $nonRunningRows = @(
+        (New-LatestGameRow -GameId "g_not_running" -Status " not-running " -Game ([ordered]@{
+            id = "g_not_running"; phase = "action"; gameOptions = @{turnBasedGame = $false}; players = @()
+        }))
+    )
+    $nonRunningGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('') -Environment @{
+        TM_RELEASE_LIVE_GATE_FIXTURE_JSON = (ConvertTo-GateFixtureJson -Rows $nonRunningRows)
+    }
+    Assert-True ($nonRunningGate.ExitCode -eq 43) "A normalized non-running status did not fail closed."
 
     $legacyRealtimeRows = @(
         (New-LatestGameRow -GameId "g_legacy_realtime" -Game ([ordered]@{

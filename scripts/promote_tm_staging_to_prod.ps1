@@ -7,6 +7,8 @@ param(
     [string]$ExpectedArtifactSha,
     [string]$ExpectedReleaseBaselineBase64,
     [string[]]$IgnoredRealtimeGameId,
+    [ValidateRange(1, 3600)]
+    [int]$NextServiceHealthTimeoutSeconds = 180,
     [switch]$DryRun
 )
 
@@ -86,6 +88,8 @@ prod_port="8081"
 next_port="8085"
 health_url="http://127.0.0.1:$prod_port"
 next_health_url="http://127.0.0.1:$next_port"
+next_health_timeout_seconds="__NEXT_SERVICE_HEALTH_TIMEOUT_SECONDS__"
+health_poll_delay_seconds=2
 elo_health_url="http://127.0.0.1:8082/api/elo-submit"
 release_url="${health_url%/}/release.json"
 release_url_fallback="${health_url%/}/assets/release.json"
@@ -416,7 +420,7 @@ function classifyLatestRows(rows, ignoredIds) {
     const gameId = row.game_id;
     if (typeof gameId !== 'string' || !GAME_ID.test(gameId) || seen.has(gameId)) throw new Error('invalid latest game id');
     seen.add(gameId);
-    if (row.status !== 'running' || typeof row.game !== 'string') throw new Error('malformed running latest row');
+    if (typeof row.status !== 'string' || row.status.trim() !== 'running' || typeof row.game !== 'string') throw new Error('malformed running latest row');
 
     const game = JSON.parse(row.game);
     if (game === null || typeof game !== 'object' || Array.isArray(game) || game.id !== gameId) throw new Error('serialized game mismatch');
@@ -475,7 +479,7 @@ function readLatestRunningRows(dbPath) {
       ) AS latest_save
         ON latest.game_id = latest_save.game_id
        AND latest.save_id = latest_save.max_save_id
-      WHERE latest.status = 'running'
+      WHERE trim(latest.status, char(9) || char(10) || char(11) || char(12) || char(13) || ' ') = 'running'
       ORDER BY latest.game_id
     `).all();
   } finally {
@@ -902,7 +906,8 @@ if ! systemctl --user restart "$next_service"; then
   rollback_before_public_switch
   exit 1
 fi
-if ! wait_for_http "$next_health_url" 20 2; then
+next_health_attempts=$(( (next_health_timeout_seconds + health_poll_delay_seconds - 1) / health_poll_delay_seconds ))
+if ! wait_for_http "$next_health_url" "$next_health_attempts" "$health_poll_delay_seconds"; then
   echo "Next service health check failed." >&2
   rollback_before_public_switch
   exit 1
@@ -1017,6 +1022,7 @@ $remoteScript = $remoteScript.Replace("__EXPECTED_GIT_SHA__", $expectedGitShaLow
 $remoteScript = $remoteScript.Replace("__EXPECTED_ARTIFACT_SHA__", $expectedArtifactShaLower)
 $remoteScript = $remoteScript.Replace("__EXPECTED_RELEASE_BASELINE_B64__", $ExpectedReleaseBaselineBase64)
 $remoteScript = $remoteScript.Replace("__IGNORED_REALTIME_GAME_IDS_CSV__", $ignoredRealtimeGameIdsCsv)
+$remoteScript = $remoteScript.Replace("__NEXT_SERVICE_HEALTH_TIMEOUT_SECONDS__", $NextServiceHealthTimeoutSeconds.ToString([Globalization.CultureInfo]::InvariantCulture))
 $remoteScript = $remoteScript.Replace("__RUN_TOKEN__", $promoteRunToken)
 
 if ($DryRun) {

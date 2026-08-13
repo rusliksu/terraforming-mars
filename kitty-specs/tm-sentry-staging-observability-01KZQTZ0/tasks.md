@@ -105,11 +105,11 @@ WP02 можно выполнять параллельно с WP03 после п�
 **Prompt**: `tasks/WP03-player-input-context.md`  
 **Estimated prompt size**: ~280 lines
 
-- [ ] T012 Добавить RED-регрессию unexpected get-player error с method/path/gameId/playerId и без выдуманного gameplay input.
-- [ ] T013 Добавить RED-регрессию unexpected undo error, захваченную один раз до преобразования в `InputError`, с доступным очищаемым input.
-- [ ] T014 Добавить RED-регрессии unexpected main input catch и нулевого capture для `AppError`, `InputError` и malformed JSON при прежних response payloads.
-- [ ] T015 Подключить reporter в трёх owning paths и передавать только обязательный boundary и реально доступные method/path/raw IDs/parsed input snapshot.
-- [ ] T016 Выполнить focused PlayerInput suite, доказать отсутствие дублей, неизменность entity/gameplay и независимость диагностического snapshot от последующих мутаций.
+- [x] T012 Добавить RED-регрессию unexpected get-player error с method/path/gameId/playerId и без выдуманного gameplay input.
+- [x] T013 Добавить RED-регрессию unexpected undo error, захваченную один раз до преобразования в `InputError`, с доступным очищаемым input.
+- [x] T014 Добавить RED-регрессии unexpected main input catch и нулевого capture для `AppError`, `InputError` и malformed JSON при прежних response payloads.
+- [x] T015 Подключить reporter в трёх owning paths и передавать только обязательный boundary и реально доступные method/path/raw IDs/parsed input snapshot.
+- [x] T016 Выполнить focused PlayerInput suite, доказать отсутствие дублей, неизменность entity/gameplay и независимость диагностического snapshot от последующих мутаций.
 
 ### Implementation sketch
 

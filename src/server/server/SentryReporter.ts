@@ -1,4 +1,5 @@
 import {isIP} from 'node:net';
+import fs from 'node:fs';
 import {
   defaultStackParser,
   Event,
@@ -8,7 +9,6 @@ import {
   NodeClient,
   StackFrame,
 } from '@sentry/node';
-import rawSettings from '../../genfiles/settings.json';
 
 export type ErrorDiagnosticBoundary =
   'process' |
@@ -29,7 +29,7 @@ export interface ErrorDiagnosticContext {
 export interface ReporterRuntimeConfig {
   dsn?: string;
   environment?: string;
-  buildHead?: string;
+  releaseGitSha?: string;
 }
 
 export type ReporterTransport = ConstructorParameters<typeof NodeClient>[0]['transport'];
@@ -48,7 +48,7 @@ const CIRCULAR = '[Circular]';
 const MAX_DEPTH = '[MaxDepth]';
 const UNREADABLE = '[Unreadable]';
 const UNSUPPORTED = '[Unsupported]';
-const VALID_BUILD_HEAD = /^[0-9a-f]{7,40}$/i;
+const VALID_RELEASE_GIT_SHA = /^[0-9a-f]{40}$/i;
 const VALID_BOUNDARIES = new Set<string>([
   'process',
   'request',
@@ -414,7 +414,20 @@ function allowlistedEvent(event: Event, release: string): ErrorEvent | null {
 function isEnabled(config: ReporterRuntimeConfig): config is Required<ReporterRuntimeConfig> {
   return typeof config.dsn === 'string' && config.dsn.trim() !== '' &&
     config.environment === 'staging' &&
-    typeof config.buildHead === 'string' && VALID_BUILD_HEAD.test(config.buildHead);
+    typeof config.releaseGitSha === 'string' && VALID_RELEASE_GIT_SHA.test(config.releaseGitSha);
+}
+
+export function readRuntimeReleaseGitSha(manifestPath = 'assets/release.json'): string | undefined {
+  try {
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as Record<string, unknown>;
+    if (manifest.environment !== 'staging' || manifest.sourceTreeClean !== true ||
+        typeof manifest.gitSha !== 'string' || !VALID_RELEASE_GIT_SHA.test(manifest.gitSha)) {
+      return undefined;
+    }
+    return manifest.gitSha.toLowerCase();
+  } catch (_error) {
+    return undefined;
+  }
 }
 
 export function createSentryReporter(
@@ -426,7 +439,7 @@ export function createSentryReporter(
   }
 
   try {
-    const release = config.buildHead;
+    const release = config.releaseGitSha.toLowerCase();
     const client = new NodeClient({
       dsn: config.dsn.trim(),
       environment: 'staging',
@@ -482,7 +495,7 @@ export function createSentryReporter(
 const defaultReporter = createSentryReporter({
   dsn: process.env.SENTRY_DSN,
   environment: process.env.SENTRY_ENVIRONMENT,
-  buildHead: rawSettings.head,
+  releaseGitSha: readRuntimeReleaseGitSha(),
 });
 
 export function capture(error: unknown, context: ErrorDiagnosticContext): void {

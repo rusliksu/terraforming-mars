@@ -1,10 +1,13 @@
 import {expect} from 'chai';
 import {NodeClient} from '@sentry/node';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
   createSentryReporter,
   ErrorDiagnosticContext,
   ReporterRuntimeConfig,
   ReporterTransport,
+  readRuntimeReleaseGitSha,
   SentryReporter,
 } from '../../../src/server/server/SentryReporter';
 
@@ -14,7 +17,7 @@ type Envelope = [Record<string, unknown>, EnvelopeItem[]];
 const ENABLED_CONFIG: ReporterRuntimeConfig = {
   dsn: 'https://public@example.invalid/1',
   environment: 'staging',
-  buildHead: 'deadbeef',
+  releaseGitSha: 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
 };
 
 class FakeTransport {
@@ -98,9 +101,10 @@ describe('SentryReporter', () => {
       {...ENABLED_CONFIG, dsn: '   '},
       {...ENABLED_CONFIG, environment: 'production'},
       {...ENABLED_CONFIG, environment: 'Staging'},
-      {...ENABLED_CONFIG, buildHead: undefined},
-      {...ENABLED_CONFIG, buildHead: 'n/a'},
-      {...ENABLED_CONFIG, buildHead: 'not-a-revision'},
+      {...ENABLED_CONFIG, releaseGitSha: undefined},
+      {...ENABLED_CONFIG, releaseGitSha: 'deadbeef'},
+      {...ENABLED_CONFIG, releaseGitSha: 'n/a'},
+      {...ENABLED_CONFIG, releaseGitSha: 'not-a-revision'},
     ];
 
     for (const config of disabledConfigs) {
@@ -112,7 +116,7 @@ describe('SentryReporter', () => {
     }
   });
 
-  it('enables only for DSN, exact staging, and a valid hex build head', async () => {
+  it('enables only for DSN, exact staging, and a full release git SHA', async () => {
     const {reporter, fake} = makeReporter();
 
     reporter.capture(new Error('enabled'), {boundary: 'process'});
@@ -128,11 +132,18 @@ describe('SentryReporter', () => {
     const originalDsn = process.env.SENTRY_DSN;
     const originalEnvironment = process.env.SENTRY_ENVIRONMENT;
     const originalCaptureEvent = Object.getOwnPropertyDescriptor(NodeClient.prototype, 'captureEvent');
+    const releasePath = path.resolve('assets/release.json');
+    const previousRelease = fs.existsSync(releasePath) ? fs.readFileSync(releasePath) : undefined;
     let capturedEvents = 0;
 
     try {
       process.env.SENTRY_DSN = 'https://public@example.invalid/1';
       process.env.SENTRY_ENVIRONMENT = 'staging';
+      fs.writeFileSync(releasePath, JSON.stringify({
+        environment: 'staging',
+        gitSha: ENABLED_CONFIG.releaseGitSha,
+        sourceTreeClean: true,
+      }));
       NodeClient.prototype.captureEvent = ((_event) => {
         capturedEvents++;
         return 'synthetic-event-id';
@@ -163,6 +174,39 @@ describe('SentryReporter', () => {
       } else {
         process.env.SENTRY_ENVIRONMENT = originalEnvironment;
       }
+      if (previousRelease === undefined) {
+        fs.rmSync(releasePath, {force: true});
+      } else {
+        fs.writeFileSync(releasePath, previousRelease);
+      }
+    }
+  });
+
+  it('reads the release only from a clean staging manifest with a full SHA', () => {
+    const fixture = path.resolve('assets/sentry-release-fixture.json');
+    try {
+      fs.writeFileSync(fixture, JSON.stringify({
+        environment: 'staging',
+        gitSha: 'ABCDEF0123456789ABCDEF0123456789ABCDEF01',
+        sourceTreeClean: true,
+      }));
+      expect(readRuntimeReleaseGitSha(fixture)).eq('abcdef0123456789abcdef0123456789abcdef01');
+
+      fs.writeFileSync(fixture, JSON.stringify({
+        environment: 'staging',
+        gitSha: 'abcdef0',
+        sourceTreeClean: true,
+      }));
+      expect(readRuntimeReleaseGitSha(fixture)).eq(undefined);
+
+      fs.writeFileSync(fixture, JSON.stringify({
+        environment: 'production',
+        gitSha: ENABLED_CONFIG.releaseGitSha,
+        sourceTreeClean: true,
+      }));
+      expect(readRuntimeReleaseGitSha(fixture)).eq(undefined);
+    } finally {
+      fs.rmSync(fixture, {force: true});
     }
   });
 
@@ -215,7 +259,7 @@ describe('SentryReporter', () => {
     expect(events).to.have.length(1);
     const event = events[0];
     expect(event.environment).eq('staging');
-    expect(event.release).eq('deadbeef');
+    expect(event.release).eq('deadbeefdeadbeefdeadbeefdeadbeefdeadbeef');
     expect(event.level).eq('error');
     expect(event.platform).eq('node');
 

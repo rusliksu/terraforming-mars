@@ -23,6 +23,7 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $deployScript = Join-Path $PSScriptRoot "deploy_tm_server.ps1"
 $smokeScript = Join-Path $PSScriptRoot "smoke_tm_staging.ps1"
 $snapshotScript = Join-Path $PSScriptRoot "capture_tm_release_state.ps1"
+$sentryReleaseScript = Join-Path $PSScriptRoot "report_tm_sentry_release.ps1"
 
 if (-not (Test-Path $deployScript)) {
     throw "Missing deploy script: $deployScript"
@@ -34,6 +35,10 @@ if (-not (Test-Path $smokeScript)) {
 
 if (-not (Test-Path $snapshotScript)) {
     throw "Missing release snapshot script: $snapshotScript"
+}
+
+if (-not (Test-Path $sentryReleaseScript)) {
+    throw "Missing Sentry release reporter: $sentryReleaseScript"
 }
 
 if (-not [string]::IsNullOrWhiteSpace($SourceRoot) -and -not (Test-Path $SourceRoot)) {
@@ -75,6 +80,11 @@ $preSnapshotPath = Join-Path $snapshotRunRoot "pre.json"
 $postSnapshotPath = Join-Path $snapshotRunRoot "post.json"
 
 if (-not $DryRun) {
+    & pwsh -File $sentryReleaseScript -HostAlias $HostAlias -PreflightOnly
+    if ($LASTEXITCODE -ne 0) {
+        throw "Sentry release preflight failed before staging deploy."
+    }
+
     $preSnapshotJson = & pwsh -File $snapshotScript -HostAlias $HostAlias -OutputPath $preSnapshotPath -OutputJson
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to capture pre-deploy release state."
@@ -89,6 +99,7 @@ if (-not $DryRun) {
 }
 
 $postSnapshotCaptured = $false
+$deployStartedAtUtc = [DateTimeOffset]::UtcNow.ToString("o", [Globalization.CultureInfo]::InvariantCulture)
 try {
     & pwsh @args
     if ($LASTEXITCODE -ne 0) {
@@ -109,17 +120,23 @@ try {
         }
         $postSnapshotCaptured = $true
         $postSnapshot = $postSnapshotJson | ConvertFrom-Json
-        if (-not [string]::IsNullOrWhiteSpace($ExpectedGitSha)) {
-            $manifest = $postSnapshot.environments.staging.manifest
-            $servedGitSha = [string]$manifest.gitSha
-            if ([string]$manifest.environment -ne "staging" -or
-                $manifest.sourceTreeClean -isnot [bool] -or
-                -not $manifest.sourceTreeClean -or
-                -not $servedGitSha.Equals($ExpectedGitSha, [System.StringComparison]::OrdinalIgnoreCase)) {
-                throw "Staging post-deploy snapshot does not serve the intended clean SHA. expected=$ExpectedGitSha actual=$servedGitSha"
+        . (Join-Path $PSScriptRoot "lib\TmSentryRelease.ps1")
+        $servedGitSha = Get-TmStagingReleaseGitSha -Snapshot $postSnapshot -ExpectedGitSha $ExpectedGitSha
+        Write-Host "Post-snapshot: $postSnapshotPath"
+
+        if ($SkipSmoke) {
+            Write-Host "Sentry deploy: skipped because -SkipSmoke was requested."
+        } else {
+            $deployFinishedAtUtc = [DateTimeOffset]::UtcNow.ToString("o", [Globalization.CultureInfo]::InvariantCulture)
+            & pwsh -File $sentryReleaseScript `
+                -HostAlias $HostAlias `
+                -ReleaseGitSha $servedGitSha `
+                -StartedAtUtc $deployStartedAtUtc `
+                -FinishedAtUtc $deployFinishedAtUtc
+            if ($LASTEXITCODE -ne 0) {
+                throw "Sentry release/deploy publication failed after verified staging deploy."
             }
         }
-        Write-Host "Post-snapshot: $postSnapshotPath"
     }
 } finally {
     if (-not $DryRun -and -not $postSnapshotCaptured) {

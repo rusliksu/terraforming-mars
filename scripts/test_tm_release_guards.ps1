@@ -157,6 +157,7 @@ $stagingPath = Join-Path $PSScriptRoot "deploy_tm_staging.ps1"
 $releasePath = Join-Path $PSScriptRoot "release_tm_prod.ps1"
 $promotePath = Join-Path $PSScriptRoot "promote_tm_staging_to_prod.ps1"
 $rolloutPath = Join-Path $PSScriptRoot "rollout_tm_server.ps1"
+$sentryReleasePath = Join-Path $PSScriptRoot "lib\TmSentryRelease.ps1"
 
 $deployRemote = Get-RemoteScriptBody -Path $deployPath
 $promoteRemote = Get-RemoteScriptBody -Path $promotePath
@@ -165,6 +166,7 @@ $releaseSource = Get-Content -LiteralPath $releasePath -Raw
 $promoteSource = Get-Content -LiteralPath $promotePath -Raw
 $rolloutSource = Get-Content -LiteralPath $rolloutPath -Raw
 $stagingSource = Get-Content -LiteralPath $stagingPath -Raw
+$sentryReleaseSource = Get-Content -LiteralPath $sentryReleasePath -Raw
 
 # Production releases disable the legacy five-minute SQLite reconciliation timer.
 # The tm-elo HTTP service is separate and remains part of normal health checks.
@@ -288,8 +290,9 @@ $releasePinIndex = $rolloutSource.IndexOf('"-ExpectedGitSha", $intendedGitSha', 
 Assert-True ($refreshIndex -ge 0 -and $captureIndex -gt $refreshIndex) "Rollout does not capture the intended SHA after refresh."
 Assert-True ($deployPinIndex -gt $captureIndex -and $releasePinIndex -gt $deployPinIndex) "Rollout does not pin both staging deploy and prod release to the intended SHA."
 Assert-True ($stagingSource.Contains('@("-ExpectedGitSha", $ExpectedGitSha)')) "Staging wrapper does not forward ExpectedGitSha."
-Assert-True ($stagingSource.Contains('$postSnapshot.environments.staging.manifest')) "Staging wrapper does not inspect the post-deploy manifest."
-Assert-True ($stagingSource.Contains('Staging post-deploy snapshot does not serve the intended clean SHA')) "Staging wrapper does not fail on post-deploy SHA drift."
+Assert-True ($stagingSource.Contains('Get-TmStagingReleaseGitSha -Snapshot $postSnapshot -ExpectedGitSha $ExpectedGitSha')) "Staging wrapper does not validate the post-deploy manifest."
+Assert-True ($sentryReleaseSource.Contains('$Snapshot.environments.staging.manifest')) "Staging manifest guard does not inspect the post-deploy manifest."
+Assert-True ($sentryReleaseSource.Contains('does not match ExpectedGitSha')) "Staging manifest guard does not fail on post-deploy SHA drift."
 
 # Release publication must establish public modes even under a strict inherited umask.
 $deployPermissionHelper = Get-BashFunction -ScriptText $deployRemote -Name "normalize_release_permissions"

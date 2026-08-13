@@ -1,7 +1,7 @@
 {
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-08-12T10:59:13.731Z",
-  "generated_from_commit": "c18af9c9",
+  "generated_at": "2026-08-13T07:15:00.000Z",
+  "generated_from_commit": "4144434f",
   "scope": [
     ".",
     ".github",
@@ -903,7 +903,7 @@
         }
       ],
       "constraints": [
-        "Включается только при DSN + exact staging + valid build head.",
+        "Включается только при DSN + exact staging + full clean staging SHA из assets/release.json.",
         "Финальный event строится по allowlist и повторно очищается beforeSend.",
         "Реальная доставка в Sentry остаётся отдельным delivery gate."
       ],
@@ -921,6 +921,69 @@
         {
           "path": "src/server/server/SentryReporter.ts",
           "symbol": "sanitizeGameplayInput(context.gameplayInput)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "staging-release",
+      "label": "Staging release pipeline",
+      "type": "worker",
+      "path": "scripts/rollout_tm_server.ps1",
+      "role": "Обновляет clean release checkout, разворачивает точный origin/main SHA в staging, выполняет smoke, фиксирует post-deploy snapshot и публикует идемпотентный Sentry release/deploy.",
+      "entrypoints": [
+        {
+          "path": "scripts/rollout_tm_server.ps1",
+          "symbol": "Deploy release checkout to staging",
+          "status": "confirmed"
+        },
+        {
+          "path": "scripts/deploy_tm_staging.ps1",
+          "symbol": "deploy -> smoke -> post snapshot",
+          "status": "confirmed"
+        },
+        {
+          "path": "scripts/report_tm_sentry_release.ps1",
+          "symbol": "Invoke-TmSentryRemoteReporter",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "scripts/test_tm_release_guards.ps1",
+          "symbol": "staging release guard assertions"
+        },
+        {
+          "path": "scripts/test_tm_sentry_release.ps1",
+          "symbol": "preflight, ordering and offline API oracle"
+        }
+      ],
+      "constraints": [
+        "Staging принимает только clean checkout, чей HEAD совпадает с origin/main.",
+        "Полный SHA, environment=staging и sourceTreeClean=true всегда проверяются по post-snapshot.",
+        "Sentry preflight выполняется до deploy; auth token остаётся только в deploy-only env на VPS.",
+        "Smoke можно пропустить через SkipSmoke; post-snapshot снимается, но Sentry deploy не публикуется.",
+        "DryRun не читает Sentry token и не использует Sentry API."
+      ],
+      "evidence": [
+        {
+          "path": "scripts/rollout_tm_server.ps1",
+          "symbol": "-ExpectedGitSha $intendedGitSha",
+          "status": "confirmed"
+        },
+        {
+          "path": "scripts/deploy_tm_staging.ps1",
+          "symbol": "smoke_tm_staging.ps1",
+          "status": "confirmed"
+        },
+        {
+          "path": "scripts/deploy_tm_staging.ps1",
+          "symbol": "capture_tm_release_state.ps1",
+          "status": "confirmed"
+        },
+        {
+          "path": "scripts/lib/tm_sentry_release_remote.py",
+          "symbol": "ensure_release + ensure_deploy under exclusive_lock",
           "status": "confirmed"
         }
       ]
@@ -1425,6 +1488,50 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "staging-release",
+      "to": "server-entry",
+      "type": "deploys",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "scripts/deploy_tm_staging.ps1",
+          "symbol": "deploy_tm_server.ps1 -Environment staging",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "staging-release",
+      "to": "external",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "scripts/capture_tm_release_state.ps1",
+          "symbol": "ssh host release snapshot",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "staging-release",
+      "to": "sentry-reporter",
+      "type": "coordinates-release",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "scripts/deploy_tm_staging.ps1",
+          "symbol": "Get-TmStagingReleaseGitSha",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/server/SentryReporter.ts",
+          "symbol": "readRuntimeReleaseGitSha",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -1553,6 +1660,16 @@
         "sentry-reporter"
       ],
       "outcome": "Локальный gameplay/HTTP path сохраняется, а в Sentry формируется один очищенный staging event; внешняя доставка gated."
+    },
+    {
+      "id": "flow-staging-release",
+      "name": "Проверенный staging release",
+      "trigger": "Оператор запускает rollout_tm_server.ps1 для clean origin/main checkout",
+      "steps": [
+        "staging-release",
+        "server-entry"
+      ],
+      "outcome": "Точный SHA развёрнут в staging и подтверждён post-snapshot; после успешного smoke тот же SHA идемпотентно зарегистрирован как Sentry release/deploy."
     }
   ],
   "unknowns": [
@@ -1586,6 +1703,17 @@
     "tests/routes/PlayerInput.spec.ts",
     "tests/server/requestProcessor.spec.ts",
     "tests/server/server/SentryProcessBoundary.spec.ts",
-    "tests/server/server/SentryReporter.spec.ts"
+    "tests/server/server/SentryReporter.spec.ts",
+    "scripts/rollout_tm_server.ps1",
+    "scripts/deploy_tm_staging.ps1",
+    "scripts/deploy_tm_server.ps1",
+    "scripts/capture_tm_release_state.ps1",
+    "scripts/smoke_tm_staging.ps1",
+    "scripts/test_tm_release_guards.ps1"
+    ,"scripts/report_tm_sentry_release.ps1"
+    ,"scripts/lib/TmSentryRelease.ps1"
+    ,"scripts/lib/tm_sentry_release_remote.py"
+    ,"scripts/test_tm_sentry_release.ps1"
+    ,"scripts/tests/test_tm_sentry_release_remote.py"
   ]
 }

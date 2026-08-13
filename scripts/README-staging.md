@@ -21,6 +21,13 @@ TM Telegram secrets are not source-managed. Keep `TM_BOT_TOKEN` in
 `EnvironmentFile`. Staging also loads the shared env file, but its unit must
 set `TM_DISABLE_TELEGRAM=1` so test/E2E games never send real turn notices.
 
+Keep the Sentry CI credential separate from that runtime environment. The
+runtime file may contain `SENTRY_DSN` and `SENTRY_ENVIRONMENT`, but
+`SENTRY_AUTH_TOKEN` must exist exactly once in
+`~/.config/tm-sentry-release.env`. Both files must be regular files owned by
+the service user with mode `600`. The staging wrapper checks this boundary on
+the VPS before it changes the release symlink or restarts the app.
+
 ## Safe default source
 
 The staging release source is the sibling clean checkout:
@@ -158,6 +165,13 @@ Deploy to staging from the safe default source:
 pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\deploy_tm_staging.ps1
 ```
 
+After deploy, the wrapper runs smoke, validates the clean staging
+`release.json` in the post-snapshot, and then creates or reuses the matching
+Sentry release/deploy for project `terraforming-mars-staging`. The runtime
+event release, Sentry release version, and manifest `gitSha` all use the same
+full 40-character SHA. The release API runs only on the VPS; the auth token is
+never passed back to the Windows caller.
+
 Deploy an isolated preview instance from any clean upstream/fork checkout:
 
 ```powershell
@@ -171,11 +185,16 @@ Dry run:
 pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\deploy_tm_staging.ps1 -DryRun
 ```
 
+Dry-run does not read the Sentry credential and does not call the Sentry API.
+
 Deploy to staging and skip smoke if you only need the rollout:
 
 ```powershell
 pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\deploy_tm_staging.ps1 -SkipSmoke
 ```
+
+`-SkipSmoke` keeps the emergency staging rollout path but deliberately skips
+the Sentry deploy record because the release was not smoke-verified.
 
 When `-SourceRoot` is supplied for staging, it is accepted only if that source
 is clean and its exact `HEAD` equals its local `origin/main`. Feature, local-only,

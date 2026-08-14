@@ -24,6 +24,11 @@ export class LogMessageBuilder extends MessageBuilder {
     return this;
   }
 
+  public forBotTakeover(): this {
+    this.type = LogMessageType.BOT_TAKEOVER;
+    return this;
+  }
+
   public from(from: From): this {
     if (isFromPlayer(from)) {
       return this.player(from.player);

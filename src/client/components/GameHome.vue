@@ -6,7 +6,15 @@
       <li v-for="(player, index) in (game === undefined ? [] : game.players)" :key="player.color" class="game-home-player-row">
         <span class="turn-order" v-i18n>{{getTurnOrder(index)}}</span>
         <span :class="'color-square ' + getPlayerCubeColorClass(player.color)">{{playerSymbol(player.color)}}</span>
-        <span class="player-name"><a :href="getHref(player.id)">{{player.name}}</a></span>
+        <span class="player-name">
+          <a :href="getHref(player.id)">{{player.name}}</a>
+          <span
+            v-if="player.isBotControlled"
+            class="bot-controlled-marker"
+            :title="$t('This player is controlled by a bot')"
+            :aria-label="$t('This player is controlled by a bot')"
+            role="status">BOT</span>
+        </span>
         <span class="game-home-copy"><AppButton title="copy" size="tiny" @click="copyUrl(player.id)"/></span>
         <span v-if="isPlayerUrlCopied(player.id)" class="copied-notice"><span v-i18n>Copied!</span></span>
       </li>

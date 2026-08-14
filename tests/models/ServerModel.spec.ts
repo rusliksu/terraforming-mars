@@ -200,6 +200,17 @@ describe('ServerModel', () => {
     expect(response.options[1].annotation).eq(undefined);
   });
 
+  it('exposes bot control for original and surrendered bot seats', () => {
+    [game, player, player2] = testGame(2);
+    game.setBotPlayerIds([player.id]);
+    game.surrenderedPlayerIds.add(player2.id);
+
+    const response = Server.getPlayerModel(player);
+
+    expect(response.players.find((p) => p.color === player.color)?.isBotControlled).is.true;
+    expect(response.players.find((p) => p.color === player2.color)?.isBotControlled).is.true;
+  });
+
   it('exposes step-back capability only to the journal actor', () => {
     createTestGame(false, true);
     game.actionReplayState = {

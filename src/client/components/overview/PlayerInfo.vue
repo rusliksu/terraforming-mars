@@ -5,6 +5,12 @@
           <div class="player-info-details">
             <div class="player-info-name-row">
               <span class="player-info-name" @click="togglePlayerDetails">{{ playerSymbol + player.name }}</span>
+              <span
+                v-if="player.isBotControlled"
+                class="bot-controlled-marker"
+                :title="$t('This player is controlled by a bot')"
+                :aria-label="$t('This player is controlled by a bot')"
+                role="status">BOT</span>
               <PlayerEloBadge :playerName="player.name" :tooltipCss="tooltipCss" :compact="true" :eloDelta="eloDelta" />
             </div>
             <span @click="togglePlayerDetails" v-for="(corporationName, index) in getCorporationName()" :key="index" v-i18n>

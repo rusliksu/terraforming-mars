@@ -10,7 +10,7 @@ describe('GameHome', () => {
     activePlayer: 'blue',
     id: 'game-id-123',
     phase: Phase.ACTION,
-    players: [{color: 'blue', id: 'p-blue', isSurrendered: false, name: 'Blue'}],
+    players: [{color: 'blue', id: 'p-blue', isBotControlled: false, isSurrendered: false, name: 'Blue'}],
     spectatorId: undefined,
     gameOptions: fakeGameOptionsModel(),
     lastSoloGeneration: 14,
@@ -51,6 +51,23 @@ describe('GameHome', () => {
     });
 
     expect(wrapper.find('[role="switch"]').exists()).is.false;
+  });
+
+  it('marks a bot-controlled player on the public game page', () => {
+    const wrapper = shallowMount(GameHome, {
+      ...globalConfig,
+      props: {
+        game: {
+          ...baseGame,
+          players: [{...baseGame.players[0], isBotControlled: true}],
+        },
+      },
+    });
+
+    const marker = wrapper.find('.bot-controlled-marker');
+    expect(marker.exists()).is.true;
+    expect(marker.text()).eq('BOT');
+    expect(marker.attributes('aria-label')).eq('This player is controlled by a bot');
   });
 
   it('keeps player links bare even when the lobby URL has a legacy fragment', () => {

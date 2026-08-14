@@ -2,7 +2,10 @@
   <div class='wf-options'>
     <label v-if="showtitle"><div>{{ $t(playerinput.title) }}</div></label>
     <label v-if="playerinput.warning !== undefined" class="card-warning"><div>({{ $t(playerinput.warning) }})</div></label>
-    <div v-for="(option, idx) in displayedOptions" :key="idx">
+    <div v-for="(option, idx) in displayedOptions"
+         :key="idx"
+         class="wf-option"
+         :data-input-annotation="option.annotation">
       <label class="form-radio" ref="optionLabels">
         <input v-model="selectedOption" type="radio" :name="radioElementName" :value="option" >
         <i class="form-icon" ></i>

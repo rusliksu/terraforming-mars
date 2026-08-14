@@ -38,7 +38,7 @@ describe('App', () => {
         id: 'game-id',
         name: 'Invite smoke',
         phase: Phase.ACTION,
-        players: [{color: 'blue', id: 'p-blue', isSurrendered: false, name: 'Blue'}],
+        players: [{color: 'blue', id: 'p-blue', isBotControlled: false, isSurrendered: false, name: 'Blue'}],
         spectatorId: 's-spectator',
         gameOptions: fakeGameOptionsModel(),
         lastSoloGeneration: 14,

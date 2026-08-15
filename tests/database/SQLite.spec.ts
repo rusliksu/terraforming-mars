@@ -85,5 +85,27 @@ describeDatabaseSuite({
       expect(restored.generation).eq(2);
       expect(await db.getSaveIds(game.id)).has.members([0, 1]);
     });
+
+    it('purgeUnfinishedGames removes stale games with padded running status', async () => {
+      const db = dbFactory();
+      const player = TestPlayer.BLACK.newPlayer();
+      const game = Game.newInstance('game-padded-running-status', [player], player, 'spectatorid');
+
+      await db.lastSaveGamePromise;
+      await db.saveGame(game);
+
+      const latestSaveId = Math.max(...await db.getSaveIds(game.id));
+      const nowSeconds = Math.floor(Date.now() / 1000);
+      const staleSeconds = nowSeconds - (2 * 86400);
+      for (const saveId of await db.getSaveIds(game.id)) {
+        await db.setSaveCreatedTime(game.id, saveId, staleSeconds);
+      }
+      db.database.prepare('UPDATE games SET status = ? WHERE game_id = ? AND save_id = ?').run(' running ', game.id, latestSaveId);
+
+      await db.purgeUnfinishedGames('1');
+
+      expect(await db.getSaveIds(game.id)).is.empty;
+      expect((await db.getParticipants()).find((entry) => entry.gameId === game.id)).is.undefined;
+    });
   },
 });

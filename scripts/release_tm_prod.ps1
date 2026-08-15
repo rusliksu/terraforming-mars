@@ -3,6 +3,8 @@ param(
     [string]$ExpectedGitSha,
     [string]$SnapshotRoot,
     [string[]]$IgnoredRealtimeGameId,
+    [ValidateRange(1, 365)]
+    [int]$RealtimeGameStaleDays = 10,
     [switch]$SkipStagingVerify,
     [switch]$SkipProdVerify,
     [switch]$DryRun
@@ -75,6 +77,7 @@ if ($DryRun) {
     if ($ignoredRealtimeGameIds.Count -gt 0) {
         $promoteDryRunArgs += @("-IgnoredRealtimeGameId", ($ignoredRealtimeGameIds -join ","))
     }
+    $promoteDryRunArgs += @("-RealtimeGameStaleDays", $RealtimeGameStaleDays)
     & pwsh @promoteDryRunArgs
     if ($LASTEXITCODE -ne 0) {
         throw "Promote dry run failed."
@@ -141,6 +144,7 @@ $promoteArgs += @("-ExpectedReleaseBaselineBase64", $releaseBaselineBase64)
 if ($ignoredRealtimeGameIds.Count -gt 0) {
     $promoteArgs += @("-IgnoredRealtimeGameId", ($ignoredRealtimeGameIds -join ","))
 }
+$promoteArgs += @("-RealtimeGameStaleDays", $RealtimeGameStaleDays)
 
 try {
     & pwsh @promoteArgs

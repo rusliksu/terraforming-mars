@@ -7,6 +7,8 @@ param(
     [string]$ExpectedArtifactSha,
     [string]$ExpectedReleaseBaselineBase64,
     [string[]]$IgnoredRealtimeGameId,
+    [ValidateRange(1, 365)]
+    [int]$RealtimeGameStaleDays = 10,
     [ValidateRange(1, 3600)]
     [int]$NextServiceHealthTimeoutSeconds = 180,
     [switch]$DryRun
@@ -102,6 +104,7 @@ required_git_sha="__EXPECTED_GIT_SHA__"
 required_artifact_sha="__EXPECTED_ARTIFACT_SHA__"
 expected_release_baseline_b64="__EXPECTED_RELEASE_BASELINE_B64__"
 ignored_realtime_game_ids_csv="__IGNORED_REALTIME_GAME_IDS_CSV__"
+realtime_game_stale_days="__REALTIME_GAME_STALE_DAYS__"
 run_token="__RUN_TOKEN__"
 work_root="/tmp/tm-promote-${run_token}"
 release_dir="$work_root/release"
@@ -430,11 +433,13 @@ assert_no_realtime_games_sqlite() {
   local ended_count
   local ignored_count
   local ignored_ids
+  local stale_count
+  local unknown_count
 
   set +e
   gate_output="$({
     cd "$prod_current"
-    node - "$game_db_path" "$ignored_realtime_game_ids_csv" <<'NODE'
+    node - "$game_db_path" "$ignored_realtime_game_ids_csv" "$realtime_game_stale_days" <<'NODE'
 'use strict';
 
 const GAME_ID = /^[A-Za-z0-9_-]{1,128}$/;
@@ -448,9 +453,19 @@ function parseIgnoredIds(csv) {
   return new Set(ids);
 }
 
-function classifyLatestRows(rows, ignoredIds) {
+function parseNonnegativeInteger(value) {
+  if (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) return value;
+  if (typeof value === 'string' && /^[0-9]+$/.test(value)) {
+    const parsed = Number(value);
+    if (Number.isSafeInteger(parsed)) return parsed;
+  }
+  return undefined;
+}
+
+function classifyLatestRows(rows, ignoredIds, nowSeconds, staleDays) {
   if (!Array.isArray(rows)) throw new Error('latest-save query did not return rows');
-  const result = {ended: [], turnBased: [], realtime: [], ignored: []};
+  const result = {ended: [], turnBased: [], realtime: [], stale: [], unknown: [], ignored: []};
+  const staleBefore = nowSeconds - (staleDays * 86400);
   const seen = new Set();
 
   for (const row of rows) {
@@ -491,7 +506,14 @@ function classifyLatestRows(rows, ignoredIds) {
     } else if (ignoredIds.has(gameId)) {
       result.ignored.push(gameId);
     } else {
-      result.realtime.push(gameId);
+      const createdTime = parseNonnegativeInteger(row.created_time);
+      if (createdTime === undefined || createdTime > nowSeconds) {
+        result.unknown.push(gameId);
+      } else if (createdTime < staleBefore) {
+        result.stale.push(gameId);
+      } else {
+        result.realtime.push(gameId);
+      }
     }
   }
 
@@ -508,7 +530,7 @@ function readLatestRunningRows(dbPath) {
   try {
     db.pragma('query_only = ON');
     return db.prepare(`
-      SELECT latest.game_id, latest.game, latest.status, latest.save_id
+      SELECT latest.game_id, latest.game, latest.status, latest.save_id, latest.created_time
       FROM games AS latest
       INNER JOIN (
         SELECT game_id, MAX(save_id) AS max_save_id
@@ -526,10 +548,15 @@ function readLatestRunningRows(dbPath) {
 }
 
 try {
-  const [dbPath, ignoredCsv = ''] = process.argv.slice(2);
+  const [dbPath, ignoredCsv = '', staleDaysText = '10'] = process.argv.slice(2);
   if (typeof dbPath !== 'string' || dbPath === '') throw new Error('database path is missing');
+  const staleDays = parseNonnegativeInteger(staleDaysText);
+  if (staleDays === undefined || staleDays < 1 || staleDays > 365) throw new Error('stale game age policy is invalid');
+  const nowText = process.env.TM_RELEASE_LIVE_GATE_NOW_SECONDS ?? String(Math.floor(Date.now() / 1000));
+  const nowSeconds = parseNonnegativeInteger(nowText);
+  if (nowSeconds === undefined) throw new Error('gate clock is invalid');
   const rows = readLatestRunningRows(dbPath);
-  const result = classifyLatestRows(rows, parseIgnoredIds(ignoredCsv));
+  const result = classifyLatestRows(rows, parseIgnoredIds(ignoredCsv), nowSeconds, staleDays);
   console.log(`running_count=${rows.length}`);
   console.log(`turn_based_count=${result.turnBased.length}`);
   console.log(`ended_count=${result.ended.length}`);
@@ -537,6 +564,8 @@ try {
   console.log(`ignored_ids=${result.ignored.join(',')}`);
   console.log(`realtime_count=${result.realtime.length}`);
   console.log(`realtime_ids=${result.realtime.join(',')}`);
+  console.log(`stale_count=${result.stale.length}`);
+  console.log(`unknown_count=${result.unknown.length}`);
 } catch (_) {
   console.error('TM live-game SQLite gate failed closed.');
   process.exit(43);
@@ -557,7 +586,9 @@ NODE
   ignored_ids="$(printf '%s\n' "$gate_output" | sed -n 's/^ignored_ids=//p')"
   realtime_count="$(printf '%s\n' "$gate_output" | sed -n 's/^realtime_count=//p')"
   realtime_ids="$(printf '%s\n' "$gate_output" | sed -n 's/^realtime_ids=//p')"
-  for count in "$running_count" "$turn_based_count" "$ended_count" "$ignored_count" "$realtime_count"; do
+  stale_count="$(printf '%s\n' "$gate_output" | sed -n 's/^stale_count=//p')"
+  unknown_count="$(printf '%s\n' "$gate_output" | sed -n 's/^unknown_count=//p')"
+  for count in "$running_count" "$turn_based_count" "$ended_count" "$ignored_count" "$realtime_count" "$stale_count" "$unknown_count"; do
     case "$count" in
       ''|*[!0-9]*)
         echo "Prod promote blocked at $checkpoint: malformed SQLite gate summary." >&2
@@ -572,9 +603,9 @@ NODE
       ;;
   esac
 
-  echo "Prod SQLite live-game gate at $checkpoint: running=$running_count turn_based=$turn_based_count ended=$ended_count ignored=$ignored_count ignored_ids=${ignored_ids:-none} realtime=$realtime_count realtime_ids=${realtime_ids:-none}"
-  if [ "$realtime_count" -gt 0 ]; then
-    echo "Prod promote blocked at $checkpoint: active realtime games=$realtime_count ids=${realtime_ids:-unknown}." >&2
+  echo "Prod SQLite live-game gate at $checkpoint: running=$running_count turn_based=$turn_based_count ended=$ended_count ignored=$ignored_count ignored_ids=${ignored_ids:-none} realtime=$realtime_count realtime_ids=${realtime_ids:-none} stale=$stale_count unknown=$unknown_count stale_days=$realtime_game_stale_days"
+  if [ "$realtime_count" -gt 0 ] || [ "$unknown_count" -gt 0 ]; then
+    echo "Prod promote blocked at $checkpoint: blocking realtime evidence=$realtime_count unknown_timestamp=$unknown_count ids=${realtime_ids:-unknown}." >&2
     return 42
   fi
 }
@@ -1074,6 +1105,7 @@ $remoteScript = $remoteScript.Replace("__EXPECTED_GIT_SHA__", $expectedGitShaLow
 $remoteScript = $remoteScript.Replace("__EXPECTED_ARTIFACT_SHA__", $expectedArtifactShaLower)
 $remoteScript = $remoteScript.Replace("__EXPECTED_RELEASE_BASELINE_B64__", $ExpectedReleaseBaselineBase64)
 $remoteScript = $remoteScript.Replace("__IGNORED_REALTIME_GAME_IDS_CSV__", $ignoredRealtimeGameIdsCsv)
+$remoteScript = $remoteScript.Replace("__REALTIME_GAME_STALE_DAYS__", $RealtimeGameStaleDays.ToString([Globalization.CultureInfo]::InvariantCulture))
 $remoteScript = $remoteScript.Replace("__NEXT_SERVICE_HEALTH_TIMEOUT_SECONDS__", $NextServiceHealthTimeoutSeconds.ToString([Globalization.CultureInfo]::InvariantCulture))
 $remoteScript = $remoteScript.Replace("__RUN_TOKEN__", $promoteRunToken)
 

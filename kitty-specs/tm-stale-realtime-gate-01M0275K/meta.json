@@ -7,6 +7,7 @@
   "mission_number": null,
   "mission_slug": "tm-stale-realtime-gate-01M0275K",
   "mission_type": "software-dev",
+  "pr_bound": true,
   "purpose_context": "The release operator needs the promotion gate to distinguish a recent realtime save from an abandoned stale database record without mutating production data or exposing private game state. Recent games and records with unknown timestamps remain blocking; only records older than the explicit ten-day policy are classified as stale.",
   "purpose_tldr": "Prevent stale SQLite game records from masquerading as active realtime games during production promotion.",
   "slug": "tm-stale-realtime-gate-01M0275K",

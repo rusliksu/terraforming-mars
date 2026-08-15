@@ -11,7 +11,7 @@ subtasks:
   - "T003"
   - "T004"
   - "T005"
-phase: "Phase 1 - Gate classification and verification"
+phase: "Phase 1 - Gate classification and verification complete; delivery gates remain"
 assignee: "rusliksu"
 agent: "codex"
 shell_pid: ""
@@ -19,6 +19,9 @@ history:
   - timestamp: "2026-08-15T08:10:00Z"
     agent: "codex"
     action: "Created after confirming the stale-record production-gate blocker."
+  - timestamp: "2026-08-15T08:25:33Z"
+    agent: "codex"
+    action: "Implemented and verified the stale classification policy locally; no push, merge, or deploy performed."
 ---
 
 # Work Package Prompt: WP01 - Stale realtime promotion classification

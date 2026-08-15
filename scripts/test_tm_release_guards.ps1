@@ -283,6 +283,20 @@ $invalidPromoteDryRun = Invoke-TextProcess -FilePath $pwshPath -ArgumentList @(
 ) -InputText $null
 Assert-True ($invalidPromoteDryRun.ExitCode -ne 0) "Promotion accepted a zero-second next-service health window."
 
+Assert-True ($defaultPromoteDryRun.StdOut.Contains('realtime_game_stale_days="10"')) "Default realtime stale policy is not ten days."
+$overrideStaleDaysPromoteDryRun = Invoke-TextProcess -FilePath $pwshPath -ArgumentList @(
+    "-NoProfile", "-File", $promotePath, "-DryRun", "-RealtimeGameStaleDays", "14"
+) -InputText $null
+Assert-True ($overrideStaleDaysPromoteDryRun.ExitCode -eq 0) "Realtime stale-day override dry-run failed. stderr=$($overrideStaleDaysPromoteDryRun.StdErr)"
+Assert-True ($overrideStaleDaysPromoteDryRun.StdOut.Contains('realtime_game_stale_days="14"')) "Realtime stale-day override was not rendered."
+
+$invalidStaleDaysPromoteDryRun = Invoke-TextProcess -FilePath $pwshPath -ArgumentList @(
+    "-NoProfile", "-File", $promotePath, "-DryRun", "-RealtimeGameStaleDays", "0"
+) -InputText $null
+Assert-True ($invalidStaleDaysPromoteDryRun.ExitCode -ne 0) "Promotion accepted a zero-day realtime stale policy."
+Assert-True ($releaseSource.Contains('$promoteDryRunArgs += @("-RealtimeGameStaleDays", $RealtimeGameStaleDays)')) "Release wrapper does not forward the realtime stale-day policy during dry-run."
+Assert-True ($releaseSource.Contains('$promoteArgs += @("-RealtimeGameStaleDays", $RealtimeGameStaleDays)')) "Release wrapper does not forward the realtime stale-day policy during promotion."
+
 $refreshIndex = $rolloutSource.IndexOf('Invoke-CheckedPwsh -Arguments $refreshArgs')
 $captureIndex = $rolloutSource.IndexOf('$intendedGitSha = Get-TmFullGitSha')
 $deployPinIndex = $rolloutSource.IndexOf('"-ExpectedGitSha", $intendedGitSha', $captureIndex)
@@ -544,10 +558,11 @@ Assert-True (-not $promoteRemote.Contains('rsync -a "$legacy_prod/db/"')) "Promo
 # Exercise the exact exhaustive SQLite latest-save gate, including legacy saves.
 $nodeGateMatch = [regex]::Match(
     $promoteRemote,
-    '(?ms)node - "\$game_db_path" "\$ignored_realtime_game_ids_csv" <<''NODE''\n(?<code>.*?)^NODE$'
+    '(?ms)node - "\$game_db_path" "\$ignored_realtime_game_ids_csv" "\$realtime_game_stale_days" <<''NODE''\n(?<code>.*?)^NODE$'
 )
 Assert-True $nodeGateMatch.Success "Could not find the SQLite latest-save gate implementation."
 $nodeGateCode = $nodeGateMatch.Groups["code"].Value
+Assert-True ($nodeGateCode.Contains('created_time')) "SQLite gate does not project the latest save timestamp."
 Assert-True ($nodeGateCode.Contains('SELECT game_id, MAX(save_id) AS max_save_id')) "SQLite gate does not select the latest save for every game id."
 Assert-True (-not $nodeGateCode.Contains('LIMIT')) "SQLite gate still has a truncating limit."
 Assert-True (-not $promoteRemote.Contains('/api/live-games')) "Promotion still relies on the filtered HTTP live-games endpoint."
@@ -572,7 +587,9 @@ function New-LatestGameRow {
         [string]$GameId,
         [hashtable]$Game,
         [int]$SaveId = 7,
-        [string]$Status = "running"
+        [string]$Status = "running",
+        [AllowNull()]
+        [object]$CreatedTime = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     )
 
     return [ordered]@{
@@ -580,6 +597,7 @@ function New-LatestGameRow {
         game = ($Game | ConvertTo-Json -Depth 20 -Compress)
         status = $Status
         save_id = $SaveId
+        created_time = $CreatedTime
         visibility = "hidden-fixture"
     }
 }
@@ -603,6 +621,7 @@ set -euo pipefail
 prod_current=$gateRootBash
 game_db_path=$gateRootBash/unused.db
 ignored_realtime_game_ids_csv="`$1"
+realtime_game_stale_days="`${2:-10}"
 node() { $nodePathBash "`$@"; }
 $gateHelper
 assert_no_realtime_games_sqlite "fixture"
@@ -634,8 +653,66 @@ assert_no_realtime_games_sqlite "fixture"
         }))
     )
     $realtimeFixture = ConvertTo-GateFixtureJson -Rows $realtimeRows
-    $realtimeGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('') -Environment @{TM_RELEASE_LIVE_GATE_FIXTURE_JSON = $realtimeFixture}
+    $realtimeGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('', '10') -Environment @{TM_RELEASE_LIVE_GATE_FIXTURE_JSON = $realtimeFixture}
     Assert-True ($realtimeGate.ExitCode -eq 42) "Explicit realtime save did not block with exit code 42."
+
+    $gateNowSeconds = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    $staleRows = @(
+        (New-LatestGameRow -GameId "g_stale" -CreatedTime ($gateNowSeconds - (11 * 86400)) -Game ([ordered]@{
+            id = "g_stale"; phase = "action"; gameOptions = @{turnBasedGame = $false}; players = @()
+        }))
+    )
+    $staleGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('', '10') -Environment @{
+        TM_RELEASE_LIVE_GATE_FIXTURE_JSON = (ConvertTo-GateFixtureJson -Rows $staleRows)
+        TM_RELEASE_LIVE_GATE_NOW_SECONDS = $gateNowSeconds
+    }
+    Assert-True ($staleGate.ExitCode -eq 0) "A realtime save older than the stale threshold blocked promotion. stdout=$($staleGate.StdOut) stderr=$($staleGate.StdErr)"
+    Assert-True ($staleGate.StdOut.Contains('realtime=0') -and $staleGate.StdOut.Contains('stale=1') -and $staleGate.StdOut.Contains('unknown=0')) "Stale realtime classification was not reported separately. stdout=$($staleGate.StdOut)"
+
+    $mixedFreshStaleUnknownRows = @(
+        (New-LatestGameRow -GameId "g_fresh" -CreatedTime ($gateNowSeconds - 86400) -Game ([ordered]@{
+            id = "g_fresh"; phase = "action"; gameOptions = @{turnBasedGame = $false}; players = @()
+        })),
+        (New-LatestGameRow -GameId "g_stale_mixed" -CreatedTime ($gateNowSeconds - (11 * 86400)) -Game ([ordered]@{
+            id = "g_stale_mixed"; phase = "action"; gameOptions = @{turnBasedGame = $false}; players = @()
+        })),
+        (New-LatestGameRow -GameId "g_unknown" -CreatedTime $null -Game ([ordered]@{
+            id = "g_unknown"; phase = "action"; gameOptions = @{turnBasedGame = $false}; players = @()
+        }))
+    )
+    $mixedFreshStaleUnknownGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('', '10') -Environment @{
+        TM_RELEASE_LIVE_GATE_FIXTURE_JSON = (ConvertTo-GateFixtureJson -Rows $mixedFreshStaleUnknownRows)
+        TM_RELEASE_LIVE_GATE_NOW_SECONDS = $gateNowSeconds
+    }
+    Assert-True ($mixedFreshStaleUnknownGate.ExitCode -eq 42) "Fresh and unknown realtime rows did not keep the gate blocking. stdout=$($mixedFreshStaleUnknownGate.StdOut) stderr=$($mixedFreshStaleUnknownGate.StdErr)"
+    Assert-True ($mixedFreshStaleUnknownGate.StdOut.Contains('realtime=1') -and $mixedFreshStaleUnknownGate.StdOut.Contains('stale=1') -and $mixedFreshStaleUnknownGate.StdOut.Contains('unknown=1')) "Fresh, stale, and unknown realtime counts were not separated. stdout=$($mixedFreshStaleUnknownGate.StdOut)"
+
+    $boundaryRows = @(
+        (New-LatestGameRow -GameId "g_boundary" -CreatedTime ($gateNowSeconds - (10 * 86400)) -Game ([ordered]@{
+            id = "g_boundary"; phase = "action"; gameOptions = @{turnBasedGame = $false}; players = @()
+        }))
+    )
+    $boundaryGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('', '10') -Environment @{
+        TM_RELEASE_LIVE_GATE_FIXTURE_JSON = (ConvertTo-GateFixtureJson -Rows $boundaryRows)
+        TM_RELEASE_LIVE_GATE_NOW_SECONDS = $gateNowSeconds
+    }
+    Assert-True ($boundaryGate.ExitCode -eq 42) "A realtime row exactly on the stale boundary was incorrectly exempted."
+    Assert-True ($boundaryGate.StdOut.Contains('realtime=1') -and $boundaryGate.StdOut.Contains('stale=0') -and $boundaryGate.StdOut.Contains('unknown=0')) "The stale boundary was not strict. stdout=$($boundaryGate.StdOut)"
+
+    $futureAndInvalidRows = @(
+        (New-LatestGameRow -GameId "g_future" -CreatedTime ($gateNowSeconds + 1) -Game ([ordered]@{
+            id = "g_future"; phase = "action"; gameOptions = @{turnBasedGame = $false}; players = @()
+        })),
+        (New-LatestGameRow -GameId "g_bad_time" -CreatedTime "not-a-timestamp" -Game ([ordered]@{
+            id = "g_bad_time"; phase = "action"; gameOptions = @{turnBasedGame = $false}; players = @()
+        }))
+    )
+    $futureAndInvalidGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('', '10') -Environment @{
+        TM_RELEASE_LIVE_GATE_FIXTURE_JSON = (ConvertTo-GateFixtureJson -Rows $futureAndInvalidRows)
+        TM_RELEASE_LIVE_GATE_NOW_SECONDS = $gateNowSeconds
+    }
+    Assert-True ($futureAndInvalidGate.ExitCode -eq 42) "Future or invalid timestamps did not fail closed."
+    Assert-True ($futureAndInvalidGate.StdOut.Contains('realtime=0') -and $futureAndInvalidGate.StdOut.Contains('stale=0') -and $futureAndInvalidGate.StdOut.Contains('unknown=2')) "Future or invalid timestamps were not reported as unknown. stdout=$($futureAndInvalidGate.StdOut)"
 
     $paddedRealtimeRows = @(
         (New-LatestGameRow -GameId "g_padded_realtime" -Status " running " -Game ([ordered]@{
@@ -655,14 +732,15 @@ import sys
 
 query = sys.stdin.read()
 connection = sqlite3.connect(":memory:")
-connection.execute("CREATE TABLE games (game_id TEXT, game TEXT, status TEXT, save_id INTEGER)")
+connection.execute("CREATE TABLE games (game_id TEXT, game TEXT, status TEXT, save_id INTEGER, created_time INTEGER)")
 connection.execute(
-    "INSERT INTO games VALUES (?, ?, ?, ?)",
+    "INSERT INTO games VALUES (?, ?, ?, ?, ?)",
     (
         "g_sql_padded",
         json.dumps({"id": "g_sql_padded", "phase": "action", "gameOptions": {"turnBasedGame": False}, "players": []}),
         " running ",
         1,
+        1786752000,
     ),
 )
 rows = connection.execute(query).fetchall()
@@ -672,14 +750,14 @@ print(json.dumps(rows, separators=(",", ":")))
     Assert-True ($realSqliteQuery.ExitCode -eq 0) "The production SQLite query could not run against the real fixture. stderr=$($realSqliteQuery.StdErr)"
     $realSqliteRows = @($realSqliteQuery.StdOut | ConvertFrom-Json)
     Assert-True ($realSqliteRows.Count -eq 1) "The production SQLite query did not select exactly one running row."
-    Assert-True ($realSqliteRows[0][0] -eq "g_sql_padded" -and $realSqliteRows[0][2] -eq " running ") "The production SQLite query omitted the whitespace-padded running row."
+    Assert-True ($realSqliteRows[0][0] -eq "g_sql_padded" -and $realSqliteRows[0][2] -eq " running " -and $realSqliteRows[0][4] -eq 1786752000) "The production SQLite query omitted the whitespace-padded running row or its save timestamp."
 
     $nonRunningRows = @(
         (New-LatestGameRow -GameId "g_not_running" -Status " not-running " -Game ([ordered]@{
             id = "g_not_running"; phase = "action"; gameOptions = @{turnBasedGame = $false}; players = @()
         }))
     )
-    $nonRunningGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('') -Environment @{
+    $nonRunningGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('', '10') -Environment @{
         TM_RELEASE_LIVE_GATE_FIXTURE_JSON = (ConvertTo-GateFixtureJson -Rows $nonRunningRows)
     }
     Assert-True ($nonRunningGate.ExitCode -eq 43) "A normalized non-running status did not fail closed."
@@ -689,12 +767,12 @@ print(json.dumps(rows, separators=(",", ":")))
             id = "g_legacy_realtime"; phase = "action"; players = @(@{telegramID = ""})
         }))
     )
-    $legacyRealtimeGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('') -Environment @{
+    $legacyRealtimeGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('', '10') -Environment @{
         TM_RELEASE_LIVE_GATE_FIXTURE_JSON = (ConvertTo-GateFixtureJson -Rows $legacyRealtimeRows)
     }
     Assert-True ($legacyRealtimeGate.ExitCode -eq 42) "Legacy save without a Telegram id was not classified as realtime."
 
-    $ignoredGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('g_realtime') -Environment @{TM_RELEASE_LIVE_GATE_FIXTURE_JSON = $realtimeFixture}
+    $ignoredGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('g_realtime', '10') -Environment @{TM_RELEASE_LIVE_GATE_FIXTURE_JSON = $realtimeFixture}
     Assert-True ($ignoredGate.ExitCode -eq 0) "Explicitly ignored abandoned realtime game still blocked promotion. stdout=$($ignoredGate.StdOut) stderr=$($ignoredGate.StdErr)"
     Assert-True ($ignoredGate.StdOut.Contains('ignored=1 ignored_ids=g_realtime realtime=0')) "Ignored game id/count were not reported safely."
 
@@ -704,7 +782,7 @@ print(json.dumps(rows, separators=(",", ":")))
             players = @(@{name = "MALFORMED_SECRET"; cardsInHand = @("DO_NOT_PRINT")})
         }))
     )
-    $malformedGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('') -Environment @{
+    $malformedGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('', '10') -Environment @{
         TM_RELEASE_LIVE_GATE_FIXTURE_JSON = (ConvertTo-GateFixtureJson -Rows $malformedRows)
     }
     Assert-True ($malformedGate.ExitCode -eq 43) "Malformed latest save did not fail closed with exit code 43."

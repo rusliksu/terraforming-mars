@@ -1,8 +1,8 @@
 # Mission Specification: Distinguish stale realtime game records
 
-**Mission Branch**: `codex/tm-stale-realtime-gate`  
-**Created**: 2026-08-15  
-**Status**: Approved  
+**Mission Branch**: `codex/tm-stale-realtime-gate`
+**Created**: 2026-08-15
+**Status**: Approved
 **Input**: Production promotion was blocked by a misleading count of 99 realtime games. The gate must separate stale database records from recent or unknown game state without mutating production data.
 
 ## User Scenarios & Testing *(mandatory)*
@@ -21,7 +21,6 @@
 -->
 
 ### User Story 1 - Safe production promotion diagnosis (Priority: P1)
-
 As a release operator, I want the production promotion gate to identify recent realtime games separately from stale unfinished records so that a stale database tail does not masquerade as the number of currently active games.
 
 **Why this priority**: A misleading blocker prevents a verified release from reaching production and encourages unsafe manual bypasses.

@@ -4,7 +4,7 @@
 
 **Bead**: `tm-ai-jrx`
 
-**Dependencies**: none  
+**Dependencies**: none
 **Owned files**: `scripts/promote_tm_staging_to_prod.ps1`, `scripts/release_tm_prod.ps1`, `scripts/test_tm_release_guards.ps1`, this mission directory
 
 - [x] T001 Add focused fixtures for fresh, stale, boundary, unknown, future, and invalid timestamps before implementation.

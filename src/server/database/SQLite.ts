@@ -157,7 +157,7 @@ export class SQLite implements IDatabase {
           GROUP BY game_id
         ) latest_save ON latest.game_id = latest_save.game_id AND latest.save_id = latest_save.max_save_id
         WHERE latest_save.latest_created_time < ?
-          and latest.status = 'running'
+          and TRIM(latest.status) = 'running'
           and COALESCE(json_extract(latest.game, '$.gameOptions.turnBasedGame'), 0) != 1`,
         [dateToSeconds]);
       let gameIds = selectResult.map((row) => row.game_id);

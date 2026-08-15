@@ -20,6 +20,7 @@ export type SimpleGameModel = {
 type SimplePlayerModel = {
     color: Color;
     id: PlayerId;
+    isBotControlled: boolean;
     isSurrendered: boolean;
     name: string;
 }

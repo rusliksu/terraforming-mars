@@ -8,6 +8,8 @@ import {statusCode} from '../../src/common/http/statusCode';
 import {AccessAuditRecordInput} from '../../src/server/server/AccessAudit';
 import {Phase} from '../../src/common/Phase';
 import {BotTakeoverManager} from '../../src/server/bot/BotTakeoverManager';
+import {LogMessageType} from '../../src/common/logs/LogMessageType';
+import {LogMessageDataType} from '../../src/common/logs/LogMessageDataType';
 
 function newBotManager() {
   let active = false;
@@ -68,6 +70,10 @@ describe('ApiSurrender', () => {
     expect(auditEvents[0].event).eq('surrender_accepted');
     expect(auditEvents[0].path).eq('api/surrender');
     expect(auditEvents[0].metadata).deep.eq({authorization: 'player', botTakeover: 'started'});
+    const takeoverLog = game.gameLog[game.gameLog.length - 1];
+    expect(takeoverLog.type).eq(LogMessageType.BOT_TAKEOVER);
+    expect(takeoverLog.message).eq('${0} left the game; a bot is now playing');
+    expect(takeoverLog.data).deep.eq([{type: LogMessageDataType.PLAYER, value: alice.color}]);
   });
 
   it('rejects repeated surrender', async () => {

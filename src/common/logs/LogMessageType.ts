@@ -7,4 +7,5 @@ export enum LogMessageType {
     // still carry messages with type 2. Don't reuse this value: an unknown type renders as a
     // regular message, which is what we want for those.
     IRREVERSIBLE_UNDO = 3,
+    BOT_TAKEOVER = 4,
 }

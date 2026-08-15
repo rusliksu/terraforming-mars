@@ -31,6 +31,7 @@ describe('GameEnd', () => {
     const surrendered = fakePublicPlayerModel({
       id: 'p-surrendered' as any,
       name: 'Surrendered',
+      isBotControlled: true,
       isSurrendered: true,
       victoryPointsBreakdown: {total: 100},
     });
@@ -49,6 +50,7 @@ describe('GameEnd', () => {
     const flag = wrapper.find('[data-test="surrendered-player-flag"]');
     expect(flag.exists()).eq(true);
     expect(flag.attributes('title')).eq('Surrendered');
+    expect(wrapper.find('.bot-controlled-marker').exists()).eq(true);
     expect(wrapper.text()).not.to.contain('Left');
   });
 

@@ -163,6 +163,7 @@ export default defineComponent({
       return {
         'log-message--canceled': this.message.canceled === true,
         'log-message--irreversible-undo': this.message.type === LogMessageType.IRREVERSIBLE_UNDO,
+        'log-message--bot-takeover': this.message.type === LogMessageType.BOT_TAKEOVER,
       };
     },
   },

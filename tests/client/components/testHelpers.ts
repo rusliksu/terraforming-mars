@@ -132,6 +132,7 @@ export function fakePublicPlayerModel(overrides?: RecursivePartial<PublicPlayerM
     id: 'p-blue-id' as any,
     influence: 0,
     isActive: false,
+    isBotControlled: false,
     isSurrendered: false,
     megacredits: 0,
     megacreditProduction: 0,

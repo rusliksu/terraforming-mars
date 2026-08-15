@@ -46,6 +46,7 @@ export async function surrenderPlayer(options: SurrenderPlayerOptions): Promise<
 
     manager.start({gameId: game.id, playerId: player.id, serverId});
     botStarted = !botWasActive;
+    game.log('${0} left the game; a bot is now playing', (builder) => builder.player(player).forBotTakeover());
     console.info('Surrender bot takeover started', {gameId: game.id});
     return {botTakeover: botWasActive ? 'already-active' : 'started'};
   } catch (error) {

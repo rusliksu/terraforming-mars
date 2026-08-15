@@ -66,6 +66,16 @@ describe('LogMessageComponent', () => {
     expect(wrapper.find('li').classes()).contains('log-message--irreversible-undo');
   });
 
+  it('marks bot takeover log messages', () => {
+    const message = new LogMessage(LogMessageType.BOT_TAKEOVER, 'A player left the game; a bot is now playing', []);
+    const wrapper = shallowMount(LogMessageComponent, {
+      ...globalConfig,
+      props: {message, viewModel: fakeViewModel()},
+    });
+
+    expect(wrapper.find('li').classes()).contains('log-message--bot-takeover');
+  });
+
   it('renders CARDS type as multiple card spans with locale-correct separator in English', () => {
     const message = new LogMessage(
       LogMessageType.DEFAULT,

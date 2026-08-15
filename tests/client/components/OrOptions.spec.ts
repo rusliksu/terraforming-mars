@@ -259,6 +259,30 @@ describe('OrOptions', () => {
     expect(vm.showChildSaveButton({type: 'option'})).to.be.false;
   });
 
+  it('visually separates the bot takeover action from ordinary actions', () => {
+    const component = mount(OrOptions, {
+      ...globalConfig,
+      global: {...globalConfig.global, components: {'PlayerInputFactory': PlayerInputFactory}},
+      props: {
+        playerView: {},
+        playerinput: {
+          type: 'or',
+          title: 'Take your action',
+          options: [
+            {type: 'option', title: 'Pass'},
+            {type: 'option', title: 'Surrender and start bot', annotation: 'surrender-action'},
+          ],
+        },
+        onsave: () => {},
+        showsave: true,
+      },
+    });
+
+    const takeoverOption = component.find('[data-input-annotation="surrender-action"]');
+    expect(takeoverOption.exists()).is.true;
+    expect(takeoverOption.classes()).contains('wf-option');
+  });
+
   it('child save button label includes card count', () => {
     const component = mount(OrOptions, {
       ...globalConfig,

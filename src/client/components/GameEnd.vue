@@ -128,6 +128,12 @@
                                 data-test="surrendered-player-flag"
                                 class="surrendered-player-flag"
                                 :title="$t('Surrendered')">&#9873;</span>
+                              <span
+                                v-if="p.isBotControlled"
+                                class="bot-controlled-marker"
+                                :title="$t('This player is controlled by a bot')"
+                                :aria-label="$t('This player is controlled by a bot')"
+                                role="status">BOT</span>
                               <PlayerEloBadge :playerName="p.name" :eloDelta="getEloDeltaForPlayer(p)" tooltipCss="tooltip tooltip-top" />
                             </span>
                             <div class="column-corporation">

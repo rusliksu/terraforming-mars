@@ -54,6 +54,7 @@ describe('ApiGame', () => {
           {
             'color': 'black',
             'id': 'p-black-id',
+            'isBotControlled': false,
             'isSurrendered': false,
             'name': 'player-black',
           },

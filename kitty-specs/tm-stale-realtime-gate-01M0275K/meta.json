@@ -1,0 +1,15 @@
+{
+  "coordination_branch": "kitty/mission-tm-stale-realtime-gate-01M0275K",
+  "created_at": "2026-08-15T08:03:48.001259+00:00",
+  "flattened": false,
+  "friendly_name": "Distinguish stale realtime game records",
+  "mission_id": "01M0275KMRWJT8ZFAWW7RQ7EN6",
+  "mission_number": null,
+  "mission_slug": "tm-stale-realtime-gate-01M0275K",
+  "mission_type": "software-dev",
+  "purpose_context": "The release operator needs the promotion gate to distinguish a recent realtime save from an abandoned stale database record without mutating production data or exposing private game state. Recent games and records with unknown timestamps remain blocking; only records older than the explicit ten-day policy are classified as stale.",
+  "purpose_tldr": "Prevent stale SQLite game records from masquerading as active realtime games during production promotion.",
+  "slug": "tm-stale-realtime-gate-01M0275K",
+  "target_branch": "codex/tm-stale-realtime-gate",
+  "topology": "coord"
+}

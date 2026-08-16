@@ -7,9 +7,10 @@
   "mission_number": null,
   "mission_slug": "surrender-last-active-player-finish-01M06771",
   "mission_type": "software-dev",
+  "pr_bound": true,
   "purpose_context": "When all but one multiplayer players explicitly surrender, the remaining player should win immediately. Every surrendered player shares the final place and keeps the recorded VP total, while place-based rating treats them as last-place finishers.",
   "purpose_tldr": "End a multiplayer game when only one player remains after surrender and rank surrenderers last.",
   "slug": "surrender-last-active-player-finish-01M06771",
-  "target_branch": "codex/tm-surrender-last-player-finish",
+  "target_branch": "main",
   "topology": "coord"
 }

@@ -637,7 +637,7 @@ describe('PlayerInput', () => {
 
   it('commits surrender, starts a bot and audits through player input', async () => {
     const auditEvents: Array<AccessAuditRecordInput> = [];
-    const [game, player] = testGame(2);
+    const [game, player] = testGame(3);
     game.generation = 1;
     game.phase = Phase.ACTION;
     scaffolding.url = `/player/input?id=${player.id}`;
@@ -714,7 +714,7 @@ describe('PlayerInput', () => {
   });
 
   it('rolls surrender back when the bot cannot start', async () => {
-    const [game, player] = testGame(2);
+    const [game, player] = testGame(3);
     game.generation = 1;
     game.phase = Phase.ACTION;
     scaffolding.url = `/player/input?id=${player.id}`;

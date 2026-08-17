@@ -86,7 +86,7 @@ import {ICard} from './cards/ICard';
 import {generateGameName} from './GameName';
 import {captureEarlyGameStats} from './game/EarlyGameStats';
 import type {ActionReplayState} from './game/ActionReplay';
-import {compareCompletionRank, hasSameCompletionRank} from '../common/game/CompletionOutcome';
+import {compareCompletionRank, getSharedRemainingPlaceRange, hasSameCompletionRank, isLastActivePlayerFinish} from '../common/game/CompletionOutcome';
 
 // Can be overridden by tests
 let createGameLog: () => Array<LogMessage> = () => [];
@@ -811,6 +811,15 @@ export class Game implements IGame, Logger {
     return this.marsIsTerraformed();
   }
 
+  public async finishAfterSurrender(): Promise<boolean> {
+    const surrenderedPlayerCount = this.players.filter((player) => this.surrenderedPlayerIds.has(player.id)).length;
+    if (this.phase === Phase.END || !isLastActivePlayerFinish(this.players.length, surrenderedPlayerCount)) {
+      return false;
+    }
+    await this.gotoEndGame();
+    return true;
+  }
+
   public isDoneWithFinalProduction(): boolean {
     return this.phase === Phase.END || (this.gameIsOver() && this.phase === Phase.PRODUCTION);
   }
@@ -1169,6 +1178,9 @@ export class Game implements IGame, Logger {
       this.log('This game id was ${0}', (b) => b.rawString(id));
     }
 
+    const surrenderedPlayerCount = this.players.filter((player) => this.surrenderedPlayerIds.has(player.id)).length;
+    const lastActivePlayerFinish = isLastActivePlayerFinish(this.players.length, surrenderedPlayerCount);
+    const sharedRemainingPlaceRange = lastActivePlayerFinish ? getSharedRemainingPlaceRange(this.players.length) : undefined;
     const rankedScores = this.players.map((player) => {
       const corporation = player.playedCards.filter(isICorporationCard).map(toName).join('|');
       const vpb = player.getVictoryPoints();
@@ -1177,6 +1189,7 @@ export class Game implements IGame, Logger {
         player,
         corporation,
         completionOutcome,
+        shareRemainingPlaces: lastActivePlayerFinish && completionOutcome === 'surrendered',
         vp: vpb.total,
         megacredits: player.megaCredits,
         vpb,
@@ -1186,7 +1199,7 @@ export class Game implements IGame, Logger {
     const scores: Array<Score> = [];
     rankedScores.forEach((entry, idx) => {
       const previous = rankedScores[idx - 1];
-      const place = previous !== undefined && hasSameCompletionRank(previous, entry) ?
+      const place = entry.shareRemainingPlaces ? sharedRemainingPlaceRange?.place : previous !== undefined && hasSameCompletionRank(previous, entry) ?
         scores[idx - 1].place :
         idx + 1;
       scores.push({
@@ -1195,6 +1208,8 @@ export class Game implements IGame, Logger {
         user: entry.player.user,
         soloWin: this.isSoloMode() ? this.isSoloModeWin() : undefined,
         place,
+        placeFrom: entry.shareRemainingPlaces ? sharedRemainingPlaceRange?.placeFrom : undefined,
+        placeTo: entry.shareRemainingPlaces ? sharedRemainingPlaceRange?.placeTo : undefined,
         playerScore: entry.vpb.total,
         megacredits: entry.player.megaCredits,
         victoryPointsBreakdown: entry.vpb,
@@ -1210,7 +1225,7 @@ export class Game implements IGame, Logger {
     this.phase = Phase.END;
     const gameLoader = GameLoader.getInstance();
     await gameLoader.saveGame(this);
-    gameLoader.completeGame(this);
+    await gameLoader.completeGame(this);
   }
 
   // Part of final greenery placement.

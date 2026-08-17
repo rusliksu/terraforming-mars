@@ -119,8 +119,8 @@ kitty-specs/surrender-last-active-player-finish-01M06771/
 
 ## Local Closeout
 
-Implementation and verification are complete in commit `c3730fe1d`. The task
-worktree is clean and the mission acceptance behavior is covered by the server,
-client, legacy ELO, and Python sync checks listed above. Delivery remains at the
-PR gate: no remote branch, PR, merge, or staging/live deployment has been
-created by this closeout.
+Implementation and verification are complete in commit `c3730fe1d`, with the
+mission closeout synchronized in `f906aef5d`. The task worktree is clean and the
+mission acceptance behavior is covered by the server, client, legacy ELO, and
+Python sync checks listed above. Draft PR #132 is open; merge and staging/live
+deployment remain separate gates.

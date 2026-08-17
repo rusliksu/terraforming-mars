@@ -581,11 +581,13 @@ describe('Game', () => {
     expect(savedScores.map((score) => ({
       playerName: score.playerName,
       place: score.place,
+      placeFrom: score.placeFrom,
+      placeTo: score.placeTo,
       playerScore: score.playerScore,
     }))).deep.eq([
-      {playerName: 'Alice', place: 1, playerScore: rawScores.get(alice.id)},
-      {playerName: 'Bob', place: 3, playerScore: rawScores.get(bob.id)},
-      {playerName: 'Carol', place: 3, playerScore: rawScores.get(carol.id)},
+      {playerName: 'Alice', place: 1, placeFrom: undefined, placeTo: undefined, playerScore: rawScores.get(alice.id)},
+      {playerName: 'Bob', place: 2.5, placeFrom: 2, placeTo: 3, playerScore: rawScores.get(bob.id)},
+      {playerName: 'Carol', place: 2.5, placeFrom: 2, placeTo: 3, playerScore: rawScores.get(carol.id)},
     ]);
   });
 

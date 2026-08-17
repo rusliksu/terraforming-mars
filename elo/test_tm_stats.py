@@ -461,6 +461,29 @@ def assert_provisional_elo_reduces_first_game_farm_delta(sync) -> None:
     assert players["rookie"]["elo"] == 1491
 
 
+def assert_final_surrender_midrank_has_no_achievement_credit(sync) -> None:
+    games = [{
+        "_key": "g-final-surrender",
+        "generation": 7,
+        "results": [
+            {"name": "winner", "displayName": "Winner", "place": 1, "vp": 50, "completionOutcome": "completed"},
+            {"name": "a", "displayName": "A", "place": 3, "placeFrom": 2, "placeTo": 4, "vp": 50, "completionOutcome": "surrendered"},
+            {"name": "b", "displayName": "B", "place": 3, "placeFrom": 2, "placeTo": 4, "vp": 50, "completionOutcome": "surrendered"},
+            {"name": "c", "displayName": "C", "place": 3, "placeFrom": 2, "placeTo": 4, "vp": 50, "completionOutcome": "surrendered"},
+        ],
+    }]
+
+    players = sync.rebuild_ratings(games)
+
+    assert players["winner"]["elo"] > 1500
+    for name in ("a", "b", "c"):
+        assert players[name]["elo"] < 1500
+        assert players[name]["elo_vp"] == 1500
+        assert players[name]["wins"] == 0
+        assert players[name]["top3"] == 0
+        assert players[name]["avgPlace"] == 0.333
+
+
 def assert_synthetic_elo_records_are_identified(sync) -> None:
     assert sync.is_synthetic_elo_record(
         {
@@ -526,6 +549,7 @@ def main() -> None:
     assert_player_name_overrides_apply_per_game(sync)
     assert_provisional_elo_caps_expected_score(sync)
     assert_provisional_elo_reduces_first_game_farm_delta(sync)
+    assert_final_surrender_midrank_has_no_achievement_credit(sync)
     assert_synthetic_elo_records_are_identified(sync)
     assert_quattrowow_aliases_replay_idempotently(sync)
     card_metadata = {

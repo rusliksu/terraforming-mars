@@ -2,8 +2,8 @@
 
 ## Game lifecycle state
 
-- `Game.players`: all players in the game; its length is the final place used
-  for forced-last surrenderers.
+- `Game.players`: all players in the game; its length defines the upper bound
+  of the surrendered players' shared range.
 - `Game.surrenderedPlayerIds`: explicit surrender membership persisted in the
   serialized game.
 - `Game.phase`: changes from `ACTION` to `END` exactly once for the early path.
@@ -18,21 +18,24 @@
 - `completionOutcome`: existing `completed`, `surrendered`, or `left` value.
 - `vp`: raw calculated victory points.
 - `megacredits`: raw final megacredits used by existing tie-breaks.
-- `forceLastPlace` (optional): true only for surrendered players when the
+- `shareRemainingPlaces` (optional): true only for surrendered players when the
   trigger invariant holds.
 
 Normal ordering remains outcome priority, VP descending, then megacredits
-descending. Forced-last entries compare after all non-forced entries and share
-one place.
+descending. Shared-remaining-place entries compare after the sole completed
+winner and tie with one another regardless of VP or megacredits.
 
 ## Persisted score/result
 
 - `Score.playerScore` and `Score.victoryPointsBreakdown` remain the player's
   raw values.
-- `Score.place` is `1` for the sole non-surrendered player and the total player
-  count for every forced-last surrendered player.
-- ELO stored results carry the existing `completionOutcome` plus the computed
-  place; VP-based comparisons continue to use `vp`.
+- `Score.place` is `1` for the sole non-surrendered player and `(N+2)/2` for
+  every surrendered player.
+- `Score.placeFrom` and `Score.placeTo` persist the visible shared range `2–N`.
+- ELO stored results carry the same range and effective place. Equal effective
+  places are pairwise draws; VP-based comparisons continue to use raw `vp`.
+- Surrender remains distinct from a technical `left`: it loses place-ELO but
+  does not add a leave-reliability strike or achievement credit.
 
 ## State transitions
 

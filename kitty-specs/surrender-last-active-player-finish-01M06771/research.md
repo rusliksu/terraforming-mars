@@ -16,17 +16,20 @@ the rule depend on turn navigation rather than the explicit surrender event.
 
 ## Decision: Extend the shared completion-rank value object
 
-**Decision**: Carry an optional forced-last flag through
-`CompletionRank` and use it in game-result and ELO ranking.
+**Decision**: Carry an optional shared-remaining-places flag through
+`CompletionRank` and use it in game-result and ELO ranking. Persist the visible
+range `2–N` separately from its midpoint `(N+2)/2`.
 
 **Rationale**: Game results and ELO currently share the outcome/VP/megacredit
-ordering helper. A single marker keeps normal tie-breaking unchanged and
-ensures stored-result rebuilds cannot accidentally restore surrendered players
-above the surviving player.
+ordering helper. A single marker keeps normal tie-breaking unchanged, ensures
+stored-result rebuilds cannot accidentally restore surrendered players above
+the surviving player, and makes every surrenderer a pairwise draw against the
+other surrenderers.
 
 **Alternatives considered**: Subtracting VP or mutating player state would
-break raw scoring and VP-based ELO; patching only `Game.gotoEndGame` would leave
-ELO summary ingestion and historical rebuilds inconsistent.
+break raw scoring and VP-based ELO. Storing only the total-player-count place
+would overstate the placement-stat penalty. Storing only a fractional place
+would make the visible result unclear, so range and midpoint remain distinct.
 
 ## Decision: Keep the existing completion outcome vocabulary
 

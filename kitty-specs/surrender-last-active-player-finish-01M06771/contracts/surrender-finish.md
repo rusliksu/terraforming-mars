@@ -14,4 +14,7 @@ the public response schema.
 
 The persisted result records every explicit surrender as completion outcome
 `surrendered`, preserves raw VP and its breakdown, and assigns each surrendered
-player the total-player-count place in the last-active-player scenario.
+player the shared range `2–N` plus effective place `(N+2)/2` in the
+last-active-player scenario. Place-ELO records a loss against the sole winner
+and a draw between surrenderers. VP-ELO and leave reliability remain unchanged;
+surrenderers receive no win or top-three achievement credit.

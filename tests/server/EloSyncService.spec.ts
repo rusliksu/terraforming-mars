@@ -115,7 +115,7 @@ describe('EloSyncService', () => {
     ]);
   });
 
-  it('ranks all surrendered players at the shared final place after the last active finish', () => {
+  it('ranks all surrendered players at the shared remaining-place midpoint after the last active finish', () => {
     const game = buildEloGameFromSummary({
       key: 'g-last-active-outcome-order',
       completedTime: 1,
@@ -135,14 +135,46 @@ describe('EloSyncService', () => {
     expect(game.results.map((result) => ({
       name: result.displayName,
       place: result.place,
+      placeFrom: result.placeFrom,
+      placeTo: result.placeTo,
       vp: result.vp,
       outcome: result.completionOutcome,
     }))).deep.eq([
-      {name: 'Alice', place: 1, vp: 50, outcome: 'completed'},
-      {name: 'Bob', place: 4, vp: 200, outcome: 'surrendered'},
-      {name: 'Carol', place: 4, vp: 300, outcome: 'surrendered'},
-      {name: 'Dan', place: 4, vp: 1, outcome: 'surrendered'},
+      {name: 'Alice', place: 1, placeFrom: undefined, placeTo: undefined, vp: 50, outcome: 'completed'},
+      {name: 'Bob', place: 3, placeFrom: 2, placeTo: 4, vp: 200, outcome: 'surrendered'},
+      {name: 'Carol', place: 3, placeFrom: 2, placeTo: 4, vp: 300, outcome: 'surrendered'},
+      {name: 'Dan', place: 3, placeFrom: 2, placeTo: 4, vp: 1, outcome: 'surrendered'},
     ]);
+  });
+
+  it('penalizes surrendered players in place Elo without awarding wins, top3, or leave strikes', () => {
+    const game = buildEloGameFromSummary({
+      key: 'g-last-active-sanction',
+      completedTime: 1,
+      server: 'test',
+      map: 'THARSIS',
+      generation: 10,
+      completionOutcomeKnown: true,
+      surrenderedPlayerIds: ['p-bob', 'p-carol', 'p-dan'],
+      players: [
+        {id: 'p-alice', name: 'Alice', vp: 100, corp: 'CrediCor'},
+        {id: 'p-bob', name: 'Bob', vp: 100, corp: 'Helion'},
+        {id: 'p-carol', name: 'Carol', vp: 100, corp: 'Inventrix'},
+        {id: 'p-dan', name: 'Dan', vp: 100, corp: 'Ecoline'},
+      ],
+    });
+
+    const rebuilt = rebuildEloData([game]);
+
+    expect(rebuilt.players.alice.elo).greaterThan(1500);
+    for (const name of ['bob', 'carol', 'dan']) {
+      expect(rebuilt.players[name].elo).lessThan(1500);
+      expect(rebuilt.players[name].elo_vp).eq(1500);
+      expect(rebuilt.players[name].wins).eq(0);
+      expect(rebuilt.players[name].top3).eq(0);
+      expect(rebuilt.players[name].avgPlaceScore).eq(0.333);
+      expect(rebuilt.players[name].completionReliability).deep.eq({games: 1, leaves: 0, rate: 0, eligible: false});
+    }
   });
 
   it('uses outcome places for place Elo without changing VP Elo', () => {
@@ -301,15 +333,24 @@ describe('EloSyncService', () => {
     await service.recordCompletedGame(game);
 
     const primary = JSON.parse(await fs.readFile(primaryPath, 'utf8'));
-    expect(primary.games[0].results.map((result: {displayName: string; place: number; vp: number; completionOutcome: string}) => ({
+    expect(primary.games[0].results.map((result: {
+      displayName: string;
+      place: number;
+      placeFrom?: number;
+      placeTo?: number;
+      vp: number;
+      completionOutcome: string;
+    }) => ({
       name: result.displayName,
       place: result.place,
+      placeFrom: result.placeFrom,
+      placeTo: result.placeTo,
       vp: result.vp,
       outcome: result.completionOutcome,
     }))).deep.eq([
-      {name: 'Alice', place: 1, vp: rawScores.get('Alice'), outcome: 'completed'},
-      {name: 'Bob', place: 3, vp: rawScores.get('Bob'), outcome: 'surrendered'},
-      {name: 'Carol', place: 3, vp: rawScores.get('Carol'), outcome: 'surrendered'},
+      {name: 'Alice', place: 1, placeFrom: undefined, placeTo: undefined, vp: rawScores.get('Alice'), outcome: 'completed'},
+      {name: 'Bob', place: 2.5, placeFrom: 2, placeTo: 3, vp: rawScores.get('Bob'), outcome: 'surrendered'},
+      {name: 'Carol', place: 2.5, placeFrom: 2, placeTo: 3, vp: rawScores.get('Carol'), outcome: 'surrendered'},
     ]);
   });
 

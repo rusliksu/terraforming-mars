@@ -3,7 +3,7 @@
 **Mission Branch**: `codex/tm-surrender-last-player-finish`  
 **Created**: 2026-08-17  
 **Status**: Approved for implementation  
-**Input**: Руслан подтвердил: если все игроки кроме одного явно сдались, партия завершается; несдавшийся игрок получает первое место, сдавшиеся совместно последнее место, raw VP не вычитаются, а place/ELO считается как последнее место.
+**Input**: Руслан подтвердил: если все игроки кроме одного явно сдались, партия завершается; несдавшийся игрок получает первое место, сдавшиеся делят диапазон мест 2–N, их effective place равен `(N+2)/2`, place-ELO считает поражение от победителя и ничью между сдавшимися, raw VP и VP-ELO не меняются.
 
 ## User Scenarios & Testing
 
@@ -28,11 +28,11 @@ another action.
 2. **Given** a two-player game, **When** one player confirms Surrender,
    **Then** the other player wins immediately and no extra bot turn is taken.
 
-### User Story 2 - Rank surrendered players last (Priority: P1)
+### User Story 2 - Share the remaining places (Priority: P1)
 
 As a player viewing the result, I want every player who surrendered in the
-last-active-player scenario to share the final place, so that surrender cannot
-produce a better place than the remaining active player.
+last-active-player scenario to share the remaining place range, so that the
+result is fair without inventing an order between tied surrenderers.
 
 **Why this priority**: The result must reflect the explicit surrender outcome
 and provide the corresponding place-based rating penalty.
@@ -45,11 +45,12 @@ completion outcomes in the stored result and ELO summary.
 
 1. **Given** three players where one completed player remains and two players
    surrendered, **When** the game finishes, **Then** the completed player has
-   place 1 and both surrendered players have place 3 with outcome
-   `surrendered`.
+   place 1 and both surrendered players share range 2–3 with effective place
+   2.5 and outcome `surrendered`.
 2. **Given** surrendered players with higher raw VP than the winner, **When**
-   the result is generated, **Then** their raw VP remains unchanged but their
-   place-based rating uses the shared final place.
+   the result is generated, **Then** their raw VP remains unchanged, their
+   place-based rating treats the winner as a win and the surrenderers as tied,
+   and their VP-based rating still uses raw VP.
 
 ### User Story 3 - Preserve ordinary surrender and normal games (Priority: P2)
 

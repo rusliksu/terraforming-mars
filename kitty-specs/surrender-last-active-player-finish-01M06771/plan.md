@@ -12,9 +12,9 @@ Add a single, idempotent finalization seam to the existing explicit-surrender
 flow. After the accepted surrender is persisted, the game checks whether one
 and only one multiplayer player remains non-surrendered. If so, it runs the
 existing end-game persistence path without starting a takeover bot. The shared
-completion-ranking helper carries a last-place marker for this case so raw VP
-and its breakdown remain intact while all surrendered players receive the
-total-player-count place in game results and place-based ELO inputs.
+completion-ranking helper carries a shared-remaining-places marker so raw VP
+and its breakdown remain intact while all surrendered players display range
+`2–N`, receive effective place `(N+2)/2`, and tie with one another in place-ELO.
 
 ## Technical Context
 
@@ -31,8 +31,8 @@ total-player-count place in game results and place-based ELO inputs.
 ## Charter Check
 
 PASS. The design follows the project charter: test-first focused Mocha coverage,
-small TypeScript changes at the existing lifecycle/ranking seams, no new
-dependency or persistence format, and no staging/live/production operation.
+small TypeScript changes at the existing lifecycle/ranking seams, backward-
+compatible optional result metadata, and no staging/live/production operation.
 The task branch is `codex/tm-surrender-last-player-finish`; the authoritative
 base and final merge target are both `main`.
 
@@ -44,13 +44,13 @@ base and final merge target are both `main`.
 2. `Game.finishAfterSurrender()` is a no-op for `Phase.END`, solo games, zero
    non-surrendered players, or any state other than exactly one remaining
    player. Otherwise it delegates to the existing end-game finalization path.
-3. `CompletionRank` gains an optional forced-last marker used only for
-   surrendered players in the last-active-player case. Comparisons keep the
-   current outcome/VP/megacredit order for every other game.
+3. `CompletionRank` gains an optional shared-remaining-places marker used only
+   for surrendered players in the last-active-player case. Comparisons keep
+   the current outcome/VP/megacredit order for every other game.
 4. `Game.gotoEndGame`, `buildCompletedGameSummary`, summary ingestion, and
-   stored-result repair all use the same marker and assign forced-last players
-   the total player count. Raw VP, megacredits, and VP breakdown are copied
-   unchanged.
+   stored-result repair all use the same marker and assign range `2–N` plus
+   midpoint `(N+2)/2`. Raw VP, megacredits, and VP breakdown are copied
+   unchanged; surrender does not become a technical leave strike.
 5. `GameLoader.completeGame` is awaited by the finalization path so the
    successful surrender response observes the persisted finished result and
    ELO recording has a single completion boundary.
@@ -66,9 +66,18 @@ src/server/IGame.ts
 src/server/surrender/SurrenderService.ts
 src/server/routes/ApiSurrender.ts
 src/server/elo/EloSyncService.ts
+src/client/components/GameEnd.vue
+src/client/utils/elo.ts
+elo/elo-api.js
+elo/index.html
+elo/tm-sync-elo.py
 tests/Game.spec.ts
+tests/client/components/GameEnd.spec.ts
+tests/client/utils/Elo.spec.ts
 tests/routes/ApiSurrender.spec.ts
 tests/server/EloSyncService.spec.ts
+tests/server/LegacyEloApi.spec.ts
+elo/test_tm_stats.py
 kitty-specs/surrender-last-active-player-finish-01M06771/
 ```
 
@@ -84,9 +93,9 @@ kitty-specs/surrender-last-active-player-finish-01M06771/
 
 ### IC-02 — Shared completion ranking and ELO projection
 
-- **Purpose**: Make surrendered players share the final place while retaining raw VP and existing outcome semantics.
+- **Purpose**: Make surrendered players share range `2–N` and its midpoint while retaining raw VP and existing outcome semantics.
 - **Relevant requirements**: FR-003, FR-004, FR-005, FR-006, FR-007
-- **Affected surfaces**: `src/common/game/CompletionOutcome.ts`, `src/server/Game.ts`, `src/server/elo/EloSyncService.ts`
+- **Affected surfaces**: `src/common/game/CompletionOutcome.ts`, `src/server/Game.ts`, `src/server/elo/EloSyncService.ts`, `elo/elo-api.js`, `elo/tm-sync-elo.py`, and the result UI
 - **Sequencing/depends-on**: IC-01 state predicate
 - **Risks**: ordinary surrender and completed/left tie-breaks must remain byte-for-byte equivalent outside the trigger.
 
@@ -94,7 +103,7 @@ kitty-specs/surrender-last-active-player-finish-01M06771/
 
 - **Purpose**: Prove the 2-, 3-, and 4-player early-finish behavior and preserve non-triggering flows.
 - **Relevant requirements**: NFR-001, NFR-002, NFR-003, SC-001 through SC-004
-- **Affected surfaces**: `tests/Game.spec.ts`, `tests/routes/ApiSurrender.spec.ts`, `tests/server/EloSyncService.spec.ts`
+- **Affected surfaces**: server, client, legacy ELO, and Python sync regression suites
 - **Sequencing/depends-on**: IC-01 and IC-02
 - **Risks**: tests must observe persisted scores and bot-manager calls rather than only internal flags.
 

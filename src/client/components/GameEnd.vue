@@ -78,6 +78,7 @@
                   <thead>
                       <tr v-i18n>
                           <th>Player</th>
+                          <th>Place</th>
                           <th>Before</th>
                           <th>Delta</th>
                           <th>After</th>
@@ -87,6 +88,7 @@
                   <tbody>
                       <tr v-for="entry in eloResults" :key="entry.color || entry.name" :class="getEndGamePlayerRowColorClass(entry.color)">
                           <td>{{ entry.name }}</td>
+                          <td>{{ entry.placeLabel }}</td>
                           <td>{{ entry.oldElo }}</td>
                           <td :class="getEloDeltaClass(entry.delta)">{{ formatEloDelta(entry.delta) }}</td>
                           <td>{{ entry.newElo }}</td>
@@ -100,6 +102,7 @@
               <table class="table game_end_table">
                   <thead>
                       <tr v-i18n>
+                          <th>Place</th>
                           <th><div class="card-delegate"></div></th>
                           <th><div class="tr"></div></th>
                           <th><div class="m-and-a tooltip tooltip-top" :data-tooltip="$t('Milestones points')">M</div></th>
@@ -120,6 +123,7 @@
                   </thead>
                   <tbody>
                       <tr v-for="p in playersInPlace" :key="p.color" :class="getEndGamePlayerRowColorClass(p.color)">
+                          <td data-test="result-place">{{ getPlayerPlaceLabel(p) }}</td>
                           <td>
                             <span class="game-end-name-and-elo">
                               <a :href="'player?id='+p.id+'&noredirect'">{{ p.name }}</a>
@@ -305,13 +309,14 @@ import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
 import {MADetail} from '@/common/game/VictoryPointsBreakdown';
 import {AwardName} from '@/common/ma/AwardName';
 import {buildEloResultsForPlayers, EloResultRow, ensureEloLoaded, findMatchingEloGame, sharedEloState} from '@/client/utils/elo';
-import {compareCompletionRank, hasSameCompletionRank} from '@/common/game/CompletionOutcome';
+import {compareCompletionRank, hasSameCompletionRank, isLastActivePlayerFinish} from '@/common/game/CompletionOutcome';
 
-function playerCompletionRank(player: PublicPlayerModel) {
+function playerCompletionRank(player: PublicPlayerModel, shareRemainingPlaces = false) {
   return {
     completionOutcome: player.isSurrendered ? 'surrendered' as const : 'completed' as const,
     vp: player.victoryPointsBreakdown.total,
     megacredits: player.megacredits,
+    shareRemainingPlaces: shareRemainingPlaces && player.isSurrendered,
   };
 }
 
@@ -347,6 +352,10 @@ export default defineComponent({
     players(): Array<PublicPlayerModel> {
       return getViewModel(this.playerView, this.spectator).players;
     },
+    lastActivePlayerFinish(): boolean {
+      const surrenderedPlayerCount = this.players.filter((player) => player.isSurrendered).length;
+      return isLastActivePlayerFinish(this.players.length, surrenderedPlayerCount);
+    },
     color(): Color {
       if (this.playerView !== undefined) {
         return this.playerView.thisPlayer.color;
@@ -372,8 +381,9 @@ export default defineComponent({
     },
     playersInPlace(): Array<PublicPlayerModel> {
       const copy = [...this.viewModel.players];
+      const shareRemainingPlaces = this.lastActivePlayerFinish;
       copy.sort(function(a:PublicPlayerModel, b:PublicPlayerModel) {
-        return compareCompletionRank(playerCompletionRank(a), playerCompletionRank(b));
+        return compareCompletionRank(playerCompletionRank(a, shareRemainingPlaces), playerCompletionRank(b, shareRemainingPlaces));
       });
       return copy;
     },
@@ -382,7 +392,10 @@ export default defineComponent({
       const firstWinner = sortedPlayers[0];
       const winners: PublicPlayerModel[] = [firstWinner];
       for (let i = 1; i < sortedPlayers.length; i++) {
-        if (hasSameCompletionRank(playerCompletionRank(sortedPlayers[i]), playerCompletionRank(firstWinner))) {
+        if (hasSameCompletionRank(
+          playerCompletionRank(sortedPlayers[i], this.lastActivePlayerFinish),
+          playerCompletionRank(firstWinner, this.lastActivePlayerFinish),
+        )) {
           winners.push(sortedPlayers[i]);
         }
       }
@@ -474,6 +487,26 @@ export default defineComponent({
     }
   },
   methods: {
+    getPlayerPlaceLabel(player: PublicPlayerModel): string {
+      if (this.lastActivePlayerFinish && player.isSurrendered) {
+        return this.players.length === 2 ? '2' : `2–${this.players.length}`;
+      }
+      const sortedPlayers = this.playersInPlace;
+      const index = sortedPlayers.findIndex((candidate) => candidate === player ||
+        (player.id !== undefined && candidate.id === player.id) ||
+        candidate.color === player.color);
+      if (index < 0) {
+        return '—';
+      }
+      let place = index + 1;
+      while (place > 1 && hasSameCompletionRank(
+        playerCompletionRank(sortedPlayers[place - 1], this.lastActivePlayerFinish),
+        playerCompletionRank(sortedPlayers[place - 2], this.lastActivePlayerFinish),
+      )) {
+        place--;
+      }
+      return String(place);
+    },
     async fetchEloResults() {
       await ensureEloLoaded(true);
       if (!sharedEloState.loaded) {

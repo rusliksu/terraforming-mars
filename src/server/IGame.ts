@@ -44,6 +44,8 @@ export interface Score {
   user?: string;
   soloWin?: boolean;
   place?: number;
+  placeFrom?: number;
+  placeTo?: number;
   megacredits?: number;
   victoryPointsBreakdown?: VictoryPointsBreakdown;
   earlyGameStats?: EarlyGameStats;

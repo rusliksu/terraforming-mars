@@ -22,7 +22,7 @@ describe('GameEnd', () => {
     expect(rematchLink?.attributes('href')).to.contain('new-game?cloneGameId=');
   });
 
-  it('places surrendered players last and marks them', () => {
+  it('places surrendered players in a shared remaining-place range and marks them', () => {
     const winner = fakePublicPlayerModel({
       id: 'p-winner' as any,
       name: 'Winner',
@@ -47,6 +47,8 @@ describe('GameEnd', () => {
     });
 
     expect((wrapper.vm as any).playersInPlace.map((player: {name: string}) => player.name)).deep.eq(['Winner', 'Surrendered']);
+    expect((wrapper.vm as any).getPlayerPlaceLabel(winner)).eq('1');
+    expect((wrapper.vm as any).getPlayerPlaceLabel(surrendered)).eq('2');
     const flag = wrapper.find('[data-test="surrendered-player-flag"]');
     expect(flag.exists()).eq(true);
     expect(flag.attributes('title')).eq('Surrendered');
@@ -54,7 +56,7 @@ describe('GameEnd', () => {
     expect(wrapper.text()).not.to.contain('Left');
   });
 
-  it('orders surrendered players by VP then megacredits', () => {
+  it('ties all surrendered players across the remaining places', () => {
     const winner = fakePublicPlayerModel({
       id: 'p-winner' as any,
       name: 'Winner',
@@ -85,10 +87,10 @@ describe('GameEnd', () => {
       },
     });
 
-    expect((wrapper.vm as any).playersInPlace.map((player: {name: string}) => player.name)).deep.eq([
-      'Winner',
-      'High cash',
-      'Low cash',
-    ]);
+    expect((wrapper.vm as any).playersInPlace.map((player: {name: string}) => player.name)).deep.eq(['Winner', 'Low cash', 'High cash']);
+    expect((wrapper.vm as any).getPlayerPlaceLabel(winner)).eq('1');
+    expect((wrapper.vm as any).getPlayerPlaceLabel(lowCash)).eq('2–3');
+    expect((wrapper.vm as any).getPlayerPlaceLabel(highCash)).eq('2–3');
+    expect(wrapper.findAll('[data-test="result-place"]').map((cell) => cell.text())).deep.eq(['1', '2–3', '2–3']);
   });
 });

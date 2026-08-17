@@ -4,7 +4,13 @@ export type CompletionRank = {
   completionOutcome: CompletionOutcome;
   vp: number;
   megacredits: number;
-  forceLastPlace?: boolean;
+  shareRemainingPlaces?: boolean;
+};
+
+export type SharedPlaceRange = {
+  place: number;
+  placeFrom: number;
+  placeTo: number;
 };
 
 const OUTCOME_PRIORITY: Record<CompletionOutcome, number> = {
@@ -21,13 +27,24 @@ export function isLastActivePlayerFinish(playerCount: number, surrenderedPlayerC
   return playerCount > 1 && surrenderedPlayerCount === playerCount - 1;
 }
 
-export function compareCompletionRank(left: CompletionRank, right: CompletionRank): number {
-  const leftIsForcedLast = left.forceLastPlace === true;
-  const rightIsForcedLast = right.forceLastPlace === true;
-  if (leftIsForcedLast !== rightIsForcedLast) {
-    return leftIsForcedLast ? 1 : -1;
+export function getSharedRemainingPlaceRange(playerCount: number): SharedPlaceRange {
+  if (playerCount <= 1) {
+    throw new RangeError('Shared remaining places require a multiplayer game');
   }
-  if (leftIsForcedLast) {
+  return {
+    place: (playerCount + 2) / 2,
+    placeFrom: 2,
+    placeTo: playerCount,
+  };
+}
+
+export function compareCompletionRank(left: CompletionRank, right: CompletionRank): number {
+  const leftSharesRemainingPlaces = left.shareRemainingPlaces === true;
+  const rightSharesRemainingPlaces = right.shareRemainingPlaces === true;
+  if (leftSharesRemainingPlaces !== rightSharesRemainingPlaces) {
+    return leftSharesRemainingPlaces ? 1 : -1;
+  }
+  if (leftSharesRemainingPlaces) {
     return 0;
   }
   const outcomeDelta = OUTCOME_PRIORITY[left.completionOutcome] - OUTCOME_PRIORITY[right.completionOutcome];
@@ -41,10 +58,10 @@ export function compareCompletionRank(left: CompletionRank, right: CompletionRan
 }
 
 export function hasSameCompletionRank(left: CompletionRank, right: CompletionRank): boolean {
-  const leftIsForcedLast = left.forceLastPlace === true;
-  const rightIsForcedLast = right.forceLastPlace === true;
-  if (leftIsForcedLast || rightIsForcedLast) {
-    return leftIsForcedLast && rightIsForcedLast;
+  const leftSharesRemainingPlaces = left.shareRemainingPlaces === true;
+  const rightSharesRemainingPlaces = right.shareRemainingPlaces === true;
+  if (leftSharesRemainingPlaces || rightSharesRemainingPlaces) {
+    return leftSharesRemainingPlaces && rightSharesRemainingPlaces;
   }
   return left.completionOutcome === right.completionOutcome &&
     left.vp === right.vp &&

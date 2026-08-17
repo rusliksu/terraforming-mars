@@ -9,6 +9,7 @@ import {getEloMirrorPath, getEloPrimaryPath} from './EloPaths';
 import {
   compareCompletionRank,
   CompletionOutcome,
+  getSharedRemainingPlaceRange,
   hasSameCompletionRank,
   isLastActivePlayerFinish,
   normalizeCompletionOutcome,
@@ -53,6 +54,8 @@ export type EloStoredResult = {
   newElo?: number;
   delta?: number;
   place: number;
+  placeFrom?: number;
+  placeTo?: number;
   vp: number;
   megacredits?: number;
   corp: string;
@@ -115,6 +118,8 @@ export type CompletedGamePlayerSummary = {
   name: string;
   user?: string;
   place?: number;
+  placeFrom?: number;
+  placeTo?: number;
   vp: number;
   megacredits?: number;
   corp: string;
@@ -264,7 +269,9 @@ export function buildEloGameFromSummary(summary: CompletedGameSummary): EloStore
         name: normalized.key,
         displayName: normalized.displayName,
         user: normalized.user,
-        place: typeof player.place === 'number' && Number.isFinite(player.place) && player.place > 0 ? Math.floor(player.place) : undefined,
+        place: typeof player.place === 'number' && Number.isFinite(player.place) && player.place > 0 ? player.place : undefined,
+        placeFrom: typeof player.placeFrom === 'number' && Number.isFinite(player.placeFrom) && player.placeFrom > 0 ? player.placeFrom : undefined,
+        placeTo: typeof player.placeTo === 'number' && Number.isFinite(player.placeTo) && player.placeTo > 0 ? player.placeTo : undefined,
         vp: player.vp,
         megacredits: typeof player.megacredits === 'number' && Number.isFinite(player.megacredits) ? player.megacredits : 0,
         corp: player.corp || '',
@@ -277,18 +284,19 @@ export function buildEloGameFromSummary(summary: CompletedGameSummary): EloStore
     normalizedPlayers.length,
     normalizedPlayers.filter((player) => player.completionOutcome === 'surrendered').length,
   ) && normalizedPlayers.filter((player) => player.completionOutcome === 'completed').length === 1;
+  const sharedRemainingPlaceRange = lastActivePlayerFinish ? getSharedRemainingPlaceRange(normalizedPlayers.length) : undefined;
   const sorted = normalizedPlayers.sort((a, b) => {
     if (hasKnownOutcomes) {
       return compareCompletionRank({
         completionOutcome: a.completionOutcome ?? 'completed',
         vp: a.vp,
         megacredits: a.megacredits,
-        forceLastPlace: lastActivePlayerFinish && a.completionOutcome === 'surrendered',
+        shareRemainingPlaces: lastActivePlayerFinish && a.completionOutcome === 'surrendered',
       }, {
         completionOutcome: b.completionOutcome ?? 'completed',
         vp: b.vp,
         megacredits: b.megacredits,
-        forceLastPlace: lastActivePlayerFinish && b.completionOutcome === 'surrendered',
+        shareRemainingPlaces: lastActivePlayerFinish && b.completionOutcome === 'surrendered',
       });
     }
     if (hasExplicitPlaces) {
@@ -300,20 +308,20 @@ export function buildEloGameFromSummary(summary: CompletedGameSummary): EloStore
   const results: Array<EloStoredResult> = [];
   for (let i = 0; i < sorted.length; i++) {
     const current = sorted[i];
-    const currentForceLastPlace = lastActivePlayerFinish && current.completionOutcome === 'surrendered';
-    let place = currentForceLastPlace ? normalizedPlayers.length : hasKnownOutcomes || !hasExplicitPlaces ? i + 1 : (current.place ?? i + 1);
+    const currentSharesRemainingPlaces = lastActivePlayerFinish && current.completionOutcome === 'surrendered';
+    let place = currentSharesRemainingPlaces ? sharedRemainingPlaceRange?.place ?? i + 1 : hasKnownOutcomes || !hasExplicitPlaces ? i + 1 : (current.place ?? i + 1);
     if (i > 0) {
       const previous = sorted[i - 1];
       const sameRank = hasKnownOutcomes ? hasSameCompletionRank({
         completionOutcome: current.completionOutcome ?? 'completed',
         vp: current.vp,
         megacredits: current.megacredits,
-        forceLastPlace: currentForceLastPlace,
+        shareRemainingPlaces: currentSharesRemainingPlaces,
       }, {
         completionOutcome: previous.completionOutcome ?? 'completed',
         vp: previous.vp,
         megacredits: previous.megacredits,
-        forceLastPlace: lastActivePlayerFinish && previous.completionOutcome === 'surrendered',
+        shareRemainingPlaces: lastActivePlayerFinish && previous.completionOutcome === 'surrendered',
       }) : !hasExplicitPlaces && current.vp === previous.vp && current.megacredits === previous.megacredits;
       if (sameRank) {
         place = results[i - 1].place;
@@ -324,6 +332,8 @@ export function buildEloGameFromSummary(summary: CompletedGameSummary): EloStore
       displayName: current.displayName,
       user: current.user,
       place,
+      placeFrom: currentSharesRemainingPlaces ? sharedRemainingPlaceRange?.placeFrom : current.placeFrom,
+      placeTo: currentSharesRemainingPlaces ? sharedRemainingPlaceRange?.placeTo : current.placeTo,
       vp: current.vp,
       megacredits: current.megacredits,
       corp: current.corp,
@@ -471,33 +481,39 @@ function rankStoredResultsByCompletionOutcome(results: Array<EloStoredResult>): 
     results.length,
     results.filter((result) => result.completionOutcome === 'surrendered').length,
   ) && results.filter((result) => result.completionOutcome === 'completed').length === 1;
+  const sharedRemainingPlaceRange = lastActivePlayerFinish ? getSharedRemainingPlaceRange(results.length) : undefined;
   const sorted = [...results].sort((left, right) => compareCompletionRank({
     completionOutcome: left.completionOutcome ?? 'completed',
     vp: left.vp,
     megacredits: left.megacredits ?? 0,
-    forceLastPlace: lastActivePlayerFinish && left.completionOutcome === 'surrendered',
+    shareRemainingPlaces: lastActivePlayerFinish && left.completionOutcome === 'surrendered',
   }, {
     completionOutcome: right.completionOutcome ?? 'completed',
     vp: right.vp,
     megacredits: right.megacredits ?? 0,
-    forceLastPlace: lastActivePlayerFinish && right.completionOutcome === 'surrendered',
+    shareRemainingPlaces: lastActivePlayerFinish && right.completionOutcome === 'surrendered',
   }));
   const ranked: Array<EloStoredResult> = [];
   sorted.forEach((result, index) => {
     const previous = sorted[index - 1];
-    const forceLastPlace = lastActivePlayerFinish && result.completionOutcome === 'surrendered';
+    const shareRemainingPlaces = lastActivePlayerFinish && result.completionOutcome === 'surrendered';
     const sameRank = previous !== undefined && hasSameCompletionRank({
       completionOutcome: result.completionOutcome ?? 'completed',
       vp: result.vp,
       megacredits: result.megacredits ?? 0,
-      forceLastPlace,
+      shareRemainingPlaces,
     }, {
       completionOutcome: previous.completionOutcome ?? 'completed',
       vp: previous.vp,
       megacredits: previous.megacredits ?? 0,
-      forceLastPlace: lastActivePlayerFinish && previous.completionOutcome === 'surrendered',
+      shareRemainingPlaces: lastActivePlayerFinish && previous.completionOutcome === 'surrendered',
     });
-    ranked.push({...result, place: forceLastPlace ? results.length : sameRank ? ranked[index - 1].place : index + 1});
+    ranked.push({
+      ...result,
+      place: shareRemainingPlaces ? sharedRemainingPlaceRange?.place ?? index + 1 : sameRank ? ranked[index - 1].place : index + 1,
+      placeFrom: shareRemainingPlaces ? sharedRemainingPlaceRange?.placeFrom : undefined,
+      placeTo: shareRemainingPlaces ? sharedRemainingPlaceRange?.placeTo : undefined,
+    });
   });
   return ranked;
 }
@@ -607,13 +623,16 @@ export function rebuildEloData(games: Array<EloStoredGame>): EloData {
       }
       current.elo = entry.newElo ?? current.elo;
       current.games += 1;
-      if (entry.place === 1) {
-        current.wins += 1;
-      } else if (entry.place < entries.length) {
-        current.wins += 0.5;
-      }
-      if (entry.place <= 3) {
-        current.top3 += 1;
+      const completedNormally = entry.completionOutcome !== 'surrendered' && entry.completionOutcome !== 'left';
+      if (completedNormally) {
+        if (entry.place === 1) {
+          current.wins += 1;
+        } else if (entry.place < entries.length) {
+          current.wins += 0.5;
+        }
+        if (entry.place <= 3) {
+          current.top3 += 1;
+        }
       }
       current.placeScoreSum += normalizedPlaceScore(entry.place, entries.length);
       current.totalVP += entry.vp;
@@ -703,14 +722,15 @@ function buildCompletedGameSummary(game: IGame, options: {
     rankedPlayers.length,
     rankedPlayers.filter((player) => player.completionOutcome === 'surrendered').length,
   ) && rankedPlayers.filter((player) => player.completionOutcome === 'completed').length === 1;
+  const sharedRemainingPlaceRange = lastActivePlayerFinish ? getSharedRemainingPlaceRange(rankedPlayers.length) : undefined;
   const sortedRankedPlayers = rankedPlayers.map((entry) => ({
     ...entry,
-    forceLastPlace: lastActivePlayerFinish && entry.completionOutcome === 'surrendered',
+    shareRemainingPlaces: lastActivePlayerFinish && entry.completionOutcome === 'surrendered',
   })).sort(compareCompletionRank);
   const players: Array<CompletedGamePlayerSummary> = [];
   sortedRankedPlayers.forEach((entry, idx) => {
     const previous = sortedRankedPlayers[idx - 1];
-    const place = entry.forceLastPlace ? game.players.length : previous !== undefined && hasSameCompletionRank(previous, entry) ?
+    const place = entry.shareRemainingPlaces ? sharedRemainingPlaceRange?.place : previous !== undefined && hasSameCompletionRank(previous, entry) ?
       players[idx - 1].place :
       idx + 1;
     players.push({
@@ -718,6 +738,8 @@ function buildCompletedGameSummary(game: IGame, options: {
       name: entry.player.name,
       user: entry.player.user,
       place,
+      placeFrom: entry.shareRemainingPlaces ? sharedRemainingPlaceRange?.placeFrom : undefined,
+      placeTo: entry.shareRemainingPlaces ? sharedRemainingPlaceRange?.placeTo : undefined,
       vp: entry.vp,
       megacredits: entry.megacredits,
       corp: entry.corp,

@@ -4,6 +4,7 @@ export type CompletionRank = {
   completionOutcome: CompletionOutcome;
   vp: number;
   megacredits: number;
+  forceLastPlace?: boolean;
 };
 
 const OUTCOME_PRIORITY: Record<CompletionOutcome, number> = {
@@ -16,7 +17,19 @@ export function normalizeCompletionOutcome(value: unknown): CompletionOutcome | 
   return value === 'completed' || value === 'surrendered' || value === 'left' ? value : undefined;
 }
 
+export function isLastActivePlayerFinish(playerCount: number, surrenderedPlayerCount: number): boolean {
+  return playerCount > 1 && surrenderedPlayerCount === playerCount - 1;
+}
+
 export function compareCompletionRank(left: CompletionRank, right: CompletionRank): number {
+  const leftIsForcedLast = left.forceLastPlace === true;
+  const rightIsForcedLast = right.forceLastPlace === true;
+  if (leftIsForcedLast !== rightIsForcedLast) {
+    return leftIsForcedLast ? 1 : -1;
+  }
+  if (leftIsForcedLast) {
+    return 0;
+  }
   const outcomeDelta = OUTCOME_PRIORITY[left.completionOutcome] - OUTCOME_PRIORITY[right.completionOutcome];
   if (outcomeDelta !== 0) {
     return outcomeDelta;
@@ -28,6 +41,11 @@ export function compareCompletionRank(left: CompletionRank, right: CompletionRan
 }
 
 export function hasSameCompletionRank(left: CompletionRank, right: CompletionRank): boolean {
+  const leftIsForcedLast = left.forceLastPlace === true;
+  const rightIsForcedLast = right.forceLastPlace === true;
+  if (leftIsForcedLast || rightIsForcedLast) {
+    return leftIsForcedLast && rightIsForcedLast;
+  }
   return left.completionOutcome === right.completionOutcome &&
     left.vp === right.vp &&
     left.megacredits === right.megacredits;

@@ -11,7 +11,7 @@ export class SurrenderError extends Error {
 }
 
 export type SurrenderResult = {
-  botTakeover: 'started' | 'already-active';
+  botTakeover: 'started' | 'already-active' | 'skipped-game-finished';
 };
 
 type SurrenderPlayerOptions = {
@@ -43,6 +43,10 @@ export async function surrenderPlayer(options: SurrenderPlayerOptions): Promise<
       await gameLoader.saveGame(game);
     }
     persisted = true;
+
+    if (await game.finishAfterSurrender()) {
+      return {botTakeover: 'skipped-game-finished'};
+    }
 
     manager.start({gameId: game.id, playerId: player.id, serverId});
     botStarted = !botWasActive;

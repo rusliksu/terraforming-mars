@@ -1,6 +1,6 @@
 # Implementation Plan: Finish After Last Active Player
 
-**Branch**: `codex/tm-surrender-last-player-finish` (PR source)  
+**Branch**: `codex/tm-surrender-last-player-finish` (prepared PR source)
 **Planning/base branch**: `main`  
 **Final merge target**: `main`  
 **Date**: 2026-08-17  
@@ -116,3 +116,11 @@ kitty-specs/surrender-last-active-player-finish-01M06771/
   plus mission artifacts.
 - Do not run a live server, modify production games, update manual ELO data,
   deploy, push, or open/merge a PR unless separately authorized.
+
+## Local Closeout
+
+Implementation and verification are complete in commit `c3730fe1d`. The task
+worktree is clean and the mission acceptance behavior is covered by the server,
+client, legacy ELO, and Python sync checks listed above. Delivery remains at the
+PR gate: no remote branch, PR, merge, or staging/live deployment has been
+created by this closeout.

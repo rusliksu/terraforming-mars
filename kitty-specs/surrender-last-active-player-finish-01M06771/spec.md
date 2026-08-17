@@ -2,8 +2,19 @@
 
 **Mission Branch**: `codex/tm-surrender-last-player-finish`  
 **Created**: 2026-08-17  
-**Status**: Approved for implementation  
+**Status**: Implemented locally; awaiting PR delivery
 **Input**: Руслан подтвердил: если все игроки кроме одного явно сдались, партия завершается; несдавшийся игрок получает первое место, сдавшиеся делят диапазон мест 2–N, их effective place равен `(N+2)/2`, place-ELO считает поражение от победителя и ничью между сдавшимися, raw VP и VP-ELO не меняются.
+
+## Local Implementation Evidence
+
+- Commit `c3730fe1d` on `codex/tm-surrender-last-player-finish` implements the
+  approved behavior on top of `22ac8145c`.
+- Server suite: 7401 passing; client suite: 587 passing; focused final-surrender
+  client tests: 9 passing; focused ELO tests: 31 passing.
+- `build:tests`, `build:server`, `build:client`, `lint:server`,
+  `lint:client`, Python ELO regressions, and `git diff --check` passed.
+- Push, PR, merge, staging/live deploy, and production database changes remain
+  separate delivery gates and are not complete.
 
 ## User Scenarios & Testing
 

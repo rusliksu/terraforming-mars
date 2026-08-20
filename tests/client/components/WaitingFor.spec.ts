@@ -396,6 +396,58 @@ describe('WaitingFor', () => {
     }
   });
 
+  it('refreshes the player view after a rejected stale input', async () => {
+    const originalFetch = global.fetch;
+    let refreshes = 0;
+    let alertCallback: () => void = () => {};
+    (global as any).fetch = () => Promise.resolve({
+      ok: false,
+      status: 400,
+      clone: () => ({
+        json: () => Promise.resolve({
+          id: '#unexpected-input',
+          message: 'This input is no longer valid',
+        }),
+      }),
+    });
+
+    try {
+      const wrapper = mountWaitingFor({
+        ...globalConfig,
+        global: {
+          ...globalConfig.global,
+          stubs: {
+            'PlayerInputFactory': true,
+          },
+        },
+        props: {
+          playerView: playerView as PlayerViewModel,
+          waitingfor: {
+            type: 'option',
+            title: 'test',
+            buttonLabel: 'save',
+          },
+        },
+      });
+      const root = wrapper.vm.$root as any;
+      root.updatePlayer = () => refreshes++;
+      root.showAlert = (title: string, message: string, cb: () => void) => {
+        expect(title).eq('Error with input');
+        expect(message).eq('This input is no longer valid');
+        alertCallback = cb;
+      };
+
+      wrapper.vm.fetchPlayerInput('player/input?id=p-player-id', {method: 'POST'});
+      await new Promise((resolve) => window.setTimeout(resolve, 0));
+
+      expect(refreshes).eq(0);
+      alertCallback();
+      expect(refreshes).eq(1);
+    } finally {
+      (global as any).fetch = originalFetch;
+    }
+  });
+
   it('shows a notification after permission is granted', async () => {
     PreferencesManager.INSTANCE.set('enable_sounds', false);
 

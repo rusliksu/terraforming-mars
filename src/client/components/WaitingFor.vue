@@ -215,7 +215,7 @@ export default defineComponent({
               }
               return;
             }
-            let cb = () => {};
+            let cb = () => root.updatePlayer();
             if (resp.id === INVALID_RUN_ID) {
               cb = () => setTimeout(() => window.location.reload(), 100);
             }

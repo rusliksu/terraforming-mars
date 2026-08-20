@@ -276,6 +276,30 @@ describe('SortableCards', () => {
       [CardName.BIRDS]: 2,
     });
   });
+  it('renders each card name once when refreshed props contain duplicates', async () => {
+    const sortable = mount(SortableCards, {
+      ...globalConfig,
+      props: {
+        cards: [{name: CardName.ANTS}, {name: CardName.CARTEL}],
+        playerId: 'foo',
+      },
+    });
+
+    await sortable.setProps({
+      cards: [
+        {name: CardName.ANTS},
+        {name: CardName.ANTS},
+        {name: CardName.CARTEL},
+        {name: CardName.CARTEL},
+      ],
+    });
+
+    const cards = sortable.findAllComponents({name: 'Card'});
+    expect(cards.map((card) => card.props().card.name)).to.deep.eq([
+      CardName.ANTS,
+      CardName.CARTEL,
+    ]);
+  });
   it('does not show point-and-click reorder affordances in experimental UI', () => {
     PreferencesManager.INSTANCE.set('experimental_ui', true);
     const sortable = mount(SortableCards, {

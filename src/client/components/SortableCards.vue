@@ -72,9 +72,17 @@ export default defineComponent({
   },
   methods: {
     getSortedCards() {
+      const cardNames = new Set<CardName>();
+      const uniqueCards = this.cards.filter((card) => {
+        if (cardNames.has(card.name)) {
+          return false;
+        }
+        cardNames.add(card.name);
+        return true;
+      });
       return CardOrderStorage.getOrdered(
         this.cardOrder,
-        this.cards,
+        uniqueCards,
       );
     },
     onDragStart(source: CardName): void {

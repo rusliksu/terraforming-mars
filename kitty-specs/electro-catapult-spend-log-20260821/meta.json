@@ -1,0 +1,15 @@
+{
+  "created_at": "2026-08-21T00:00:00+03:00",
+  "friendly_name": "Electro Catapult Spend Log",
+  "mission_id": "electro-catapult-spend-log-20260821",
+  "mission_slug": "electro-catapult-spend-log-20260821",
+  "mission_type": "software-dev",
+  "beads_id": "tm-ai-4w3",
+  "purpose_context": "Restore the missing public resource-spend detail when Electro Catapult is used without changing its gameplay or the generic behavior executor.",
+  "purpose_tldr": "Log whether Electro Catapult spent one plant or one steel.",
+  "slug": "electro-catapult-spend-log-20260821",
+  "target_branch": "main",
+  "topology": "single_branch",
+  "task_branch": "codex/electro-catapult-spend-log",
+  "governance_note": "Manual isolated mission fallback: Spec Kitty resolved the shared dirty primary checkout instead of this registered external worktree and returned SPEC_KITTY_REPO_NOT_INITIALIZED. No project initialization or writes were made in the primary checkout."
+}

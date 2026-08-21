@@ -16,6 +16,18 @@ function expectCssContains(source: string, expected: string): void {
 }
 
 describe('Styles', () => {
+  it('keeps the Capital visually distinct from an ordinary city', () => {
+    const board = read('src/styles/board.less');
+    const ares = read('src/styles/ares.less');
+    const city = cssBlock(board, '.board-space-tile--city');
+    const capital = cssBlock(board, '.board-space-tile--capital');
+
+    expect(city).to.contain('background: url(./assets/board_icons.png) -29px -29px no-repeat;');
+    expect(capital).to.contain('background: url(./assets/board_icons.png) -198px -83px no-repeat;');
+    expect(capital).not.to.contain('.board-space-tile--city();');
+    expect(cssBlock(ares, '.board-space-tile--capital-ares')).to.contain('.board-space-tile--capital();');
+  });
+
   it('uses a reserved coral pink treatment for the Toma persona', () => {
     const variables = read('src/styles/variables.less');
     const common = read('src/styles/common.less');

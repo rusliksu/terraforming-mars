@@ -33,4 +33,4 @@ For steel, retain the existing `player.pay(Payment.of({steel: 1}))` path so paym
 
 ## Local Closeout
 
-WP01 is complete. The card keeps its declarative action for bot/advisor inspection while overriding only runtime execution. Plant deduction, steel payment hooks, 7 M€ gain, two-option choice, automatic single-option selection, and repeated use are covered by focused tests. Production build, full server tests, TypeScript build, server lint, and diff checks passed. PR delivery remains in WP02; deployment remains out of scope.
+WP01 is complete. The card keeps its declarative action for bot/advisor inspection while overriding only runtime execution. Plant deduction, steel payment hooks, 7 M€ gain, two-option choice, automatic single-option selection, and repeated use are covered by focused tests. Production build, full server tests, TypeScript build, server lint, and diff checks passed. PR #135 is open and mergeable; CI is pending. Deployment remains out of scope.

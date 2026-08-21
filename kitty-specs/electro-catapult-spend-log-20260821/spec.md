@@ -2,7 +2,7 @@
 
 **Branch**: `codex/electro-catapult-spend-log`
 **Created**: 2026-08-21
-**Status**: Implemented and verified; PR delivery pending
+**Status**: Implemented and verified; PR #135 open, CI pending
 **Bead**: `tm-ai-4w3`
 **Input**: A live game showed `used Electro Catapult action` followed by `gained 7 M€`, but no public indication whether one plant or one steel was spent. Ruslan approved a narrow card-specific fix and PR.
 
@@ -48,3 +48,4 @@
 - `npm run lint:server`: passed.
 - `npm run build`: passed with only existing webpack asset-size warnings.
 - `git diff --check`: passed.
+- PR: `https://github.com/rusliksu/terraforming-mars/pull/135` (open and mergeable at delivery time).

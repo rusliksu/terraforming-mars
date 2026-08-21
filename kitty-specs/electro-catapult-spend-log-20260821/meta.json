@@ -5,6 +5,7 @@
   "mission_slug": "electro-catapult-spend-log-20260821",
   "mission_type": "software-dev",
   "beads_id": "tm-ai-4w3",
+  "pr_url": "https://github.com/rusliksu/terraforming-mars/pull/135",
   "purpose_context": "Restore the missing public resource-spend detail when Electro Catapult is used without changing its gameplay or the generic behavior executor.",
   "purpose_tldr": "Log whether Electro Catapult spent one plant or one steel.",
   "slug": "electro-catapult-spend-log-20260821",

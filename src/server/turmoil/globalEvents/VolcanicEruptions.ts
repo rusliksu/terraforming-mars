@@ -2,9 +2,6 @@ import {IGlobalEvent} from './IGlobalEvent';
 import {GlobalEvent} from './GlobalEvent';
 import {GlobalEventName} from '../../../common/turmoil/globalEvents/GlobalEventName';
 import {PartyName} from '../../../common/turmoil/PartyName';
-import {IGame} from '../../IGame';
-import {Resource} from '../../../common/Resource';
-import {Turmoil} from '../Turmoil';
 import {CardRenderer} from '../../cards/render/CardRenderer';
 
 export class VolcanicEruptions extends GlobalEvent implements IGlobalEvent {
@@ -14,18 +11,19 @@ export class VolcanicEruptions extends GlobalEvent implements IGlobalEvent {
       description: 'Increase temperature 2 steps. Increase heat production 1 step per influence.',
       revealedDelegate: PartyName.SCIENTISTS,
       currentDelegate: PartyName.KELVINISTS,
+      behavior: {
+        once: {
+          global: {
+            temperature: 2,
+          },
+        },
+        production: {
+          heat: {turmoil: {influence: {}}},
+        },
+      },
       renderData: CardRenderer.builder((b) => {
         b.temperature(2).nbsp.production((pb)=>pb.heat(1)).slash().influence();
       }),
-    });
-  }
-  public resolve(game: IGame, turmoil: Turmoil) {
-    game.increaseTemperature(game.playersInGenerationOrder[0], 2);
-    game.playersInGenerationOrder.forEach((player) => {
-      const amount = turmoil.getInfluence(player);
-      if (amount > 0) {
-        player.production.add(Resource.HEAT, amount, {log: true, from: {globalEvent: this}});
-      }
     });
   }
 }

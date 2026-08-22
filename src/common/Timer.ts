@@ -68,8 +68,8 @@ export class Timer {
     timer.running = d.running;
     timer.afterFirstAction = d.afterFirstAction;
 
-    // Should this be `Math.max(Timer.lastStoppedAt, d.lastStoppedAt)`?
-    Timer.lastStoppedAt = d.lastStoppedAt;
+    // Never move the shared timer backwards.
+    Timer.lastStoppedAt = Math.max(Timer.lastStoppedAt, d.lastStoppedAt);
     return timer;
   }
 

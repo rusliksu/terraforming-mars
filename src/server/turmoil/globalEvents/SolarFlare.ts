@@ -2,9 +2,6 @@ import {IGlobalEvent} from './IGlobalEvent';
 import {GlobalEvent} from './GlobalEvent';
 import {GlobalEventName} from '../../../common/turmoil/globalEvents/GlobalEventName';
 import {PartyName} from '../../../common/turmoil/PartyName';
-import {IGame} from '../../IGame';
-import {Resource} from '../../../common/Resource';
-import {Turmoil} from '../Turmoil';
 import {Tag} from '../../../common/cards/Tag';
 import {CardRenderer} from '../../cards/render/CardRenderer';
 import {Size} from '../../../common/cards/render/Size';
@@ -16,17 +13,20 @@ export class SolarFlare extends GlobalEvent implements IGlobalEvent {
       description: 'Lose 3 M€ for each space tag (max 5, then reduced by influence).',
       revealedDelegate: PartyName.UNITY,
       currentDelegate: PartyName.KELVINISTS,
+      behavior: {
+        lose: {
+          stock: {
+            megacredits: {
+              tag: Tag.SPACE,
+              turmoil: {max: 5, influence: {subtract: true}},
+              each: 3,
+            },
+          },
+        },
+      },
       renderData: CardRenderer.builder((b) => {
         b.minus().megacredits(3).slash().tag(Tag.SPACE).influence({size: Size.SMALL});
       }),
-    });
-  }
-  public resolve(game: IGame, turmoil: Turmoil) {
-    game.playersInGenerationOrder.forEach((player) => {
-      const amount = Math.min(5, player.tags.count(Tag.SPACE, 'raw')) - turmoil.getInfluence(player);
-      if (amount > 0) {
-        player.stock.deduct(Resource.MEGACREDITS, amount * 3, {log: true, from: {globalEvent: this}});
-      }
     });
   }
 }

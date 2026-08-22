@@ -1,0 +1,17 @@
+{
+  "created_at": "2026-08-22T16:48:50+03:00",
+  "friendly_name": "Sync Official Upstream 2026-08-22",
+  "mission_id": "sync-official-upstream-20260822",
+  "mission_slug": "sync-official-upstream-20260822",
+  "mission_type": "software-dev",
+  "beads_id": "tm-ai-2o5",
+  "purpose_context": "Bring the current official Terraforming Mars main into the custom server while preserving intentional custom behavior and releasing the exact verified artifact through staging to live.",
+  "purpose_tldr": "Synchronize official upstream into the custom TM server safely.",
+  "slug": "sync-official-upstream-20260822",
+  "target_branch": "main",
+  "topology": "single_branch",
+  "task_branch": "codex/tm-sync-upstream-20260822",
+  "upstream_sha": "7dfdbb353d362f38e6f77e50096c7463e431404c",
+  "base_sha": "c0a9a838e43a27aba159d376ab8266fbca184fb0",
+  "governance_note": "Manual isolated mission fallback: Spec Kitty 3.2.6 resolved the shared primary checkout instead of this registered external worktree and returned SPEC_KITTY_REPO_NOT_INITIALIZED. The dirty/detached primary checkout was not modified."
+}

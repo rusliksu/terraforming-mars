@@ -93,7 +93,7 @@ describe('LogMessageComponent', () => {
       ', ' +
       '<span class="log-card background-color-active">Birds</span>' +
       ', and ' +
-      '<span class="log-card background-color-global-event">Celestic</span>',
+      '<span class="log-card background-color-corporation">Celestic</span>',
     );
   });
 
@@ -113,7 +113,7 @@ describe('LogMessageComponent', () => {
     expect(cardsContainer.innerHTML).to.equal(
       '<span class="log-card background-color-active">Ants</span>' +
       ', ' +
-      '<span class="log-card background-color-global-event">Ecoline</span>' +
+      '<span class="log-card background-color-corporation">Ecoline</span>' +
       ', and ' +
       '<span class="log-card background-color-active">Birds</span>',
     );
@@ -137,7 +137,7 @@ describe('LogMessageComponent', () => {
         ', ' +
         '<span class="log-card background-color-active">Birds</span>' +
         ' et ' +
-        '<span class="log-card background-color-global-event">Celestic</span>',
+      '<span class="log-card background-color-corporation">Celestic</span>',
       );
     } finally {
       PreferencesManager.resetForTest();
@@ -162,7 +162,7 @@ describe('LogMessageComponent', () => {
         '、' +
         '<span class="log-card background-color-active">Birds</span>' +
         '、' +
-        '<span class="log-card background-color-global-event">Celestic</span>',
+      '<span class="log-card background-color-corporation">Celestic</span>',
       );
     } finally {
       PreferencesManager.resetForTest();

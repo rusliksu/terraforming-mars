@@ -7,6 +7,8 @@ import {Phase} from '@/common/Phase';
 import {LogMessage} from '@/common/logs/LogMessage';
 import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
 import {LogMessageType} from '@/common/logs/LogMessageType';
+import LogMessageComponent from '@/client/components/logpanel/LogMessageComponent.vue';
+import LogGenerationList from '@/client/components/logpanel/LogGenerationList.vue';
 
 type TestResizeObserverCallback = (entries: Array<unknown>, observer: unknown) => void;
 
@@ -124,10 +126,8 @@ describe('LogPanel', () => {
     });
 
     await Promise.resolve();
-    const recentTabs = wrapper.findAll('.log-recent-indicator');
-    expect(recentTabs).has.length(1);
-    expect(recentTabs[0].text()).eq('Last 100');
-    expect(recentTabs[0].classes()).contains('log-recent-indicator--selected');
+    expect(wrapper.findComponent(LogGenerationList).exists()).is.true;
+    expect((wrapper.vm as any).selectedRecentLimit).eq(100);
 
     (wrapper.vm as any).selectRecentLogs();
     await Promise.resolve();
@@ -141,6 +141,7 @@ describe('LogPanel', () => {
     const viewModel = fakeViewModel({
       id: 'p-blue-id' as any,
       game: {
+        generation: 1,
         phase: Phase.END,
         spectatorId: 's-spectatorid' as any,
       },
@@ -158,6 +159,22 @@ describe('LogPanel', () => {
     expect(fetchCalls).has.length(1);
     expect(fetchCalls[0]).includes('id=p-blue-id');
     expect(fetchCalls[0]).does.not.include('id=s-spectatorid');
+  });
+
+  it('emits spaceClicked when a log message emits spaceClicked', async () => {
+    const wrapper = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {
+        viewModel: fakeViewModel(),
+        color: 'blue',
+      },
+    });
+    (wrapper.vm as any).messages = [new LogMessage(LogMessageType.DEFAULT, 'Space', [])];
+    await wrapper.vm.$nextTick();
+
+    wrapper.findComponent(LogMessageComponent).vm.$emit('spaceClicked', '01');
+
+    expect(wrapper.emitted('spaceClicked')).deep.eq([['01']]);
   });
 
   it('filters visible logs by selected player without requesting another view', async () => {
@@ -389,5 +406,28 @@ describe('LogPanel', () => {
     expect((wrapper.vm as any).stickToBottom).eq(true);
     expect(panel.getScrollTop()).eq(520);
     expect(fetchCalls[fetchCalls.length - 1]).includes('limit=100');
+  });
+
+  it('shows the scroll button only when away from the bottom', async () => {
+    const panel = installScrollablePanel();
+    const wrapper = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {
+        viewModel: fakeViewModel({id: 'p-scroll-button-id' as any}),
+        color: 'blue',
+      },
+    });
+    await Promise.resolve();
+    await wrapper.vm.$nextTick();
+
+    panel.setScrollTop(0);
+    (wrapper.vm as any).handleScroll();
+    await wrapper.vm.$nextTick();
+    expect((wrapper.vm as any).showScrollToBottomButton).is.true;
+
+    panel.setScrollTop(320);
+    (wrapper.vm as any).handleScroll();
+    await wrapper.vm.$nextTick();
+    expect((wrapper.vm as any).showScrollToBottomButton).is.false;
   });
 });

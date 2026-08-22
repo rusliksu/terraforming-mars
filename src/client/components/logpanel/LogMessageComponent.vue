@@ -3,13 +3,12 @@
     v-if="message !== undefined && message.data !== undefined && message.message !== undefined"
     @click.prevent="$emit('click')"
     :class="classes">
-    <span v-if="message.type !== LogMessageType.NEW_GENERATION" :title="when" v-html="icon"></span>
+    <span v-if="message.type === LogMessageType.DEFAULT" :title="when" v-html="icon"></span>
     <template v-for="(data, idx) of entries" :key="idx">
       <span class="log-plain-text" v-if="typeof(data) === 'string'">{{ data }}</span>
       <span v-else>
         <span v-if="data.type === undefined || data.value === undefined"></span>
         <span v-else-if="data.type === LogMessageDataType.PLAYER" class="log-player" :class="'player_bg_color_' + data.value"> {{ getPlayerName(data.value) }} </span>
-        <span v-else-if="data.type === LogMessageDataType.CARDS" v-html="cardsToHtml(data)"></span>
         <span v-else-if="data.type === LogMessageDataType.CARD" v-html="cardToHtml(data)"></span>
         <span v-else-if="data.type === LogMessageDataType.GLOBAL_EVENT" class="log-card background-color-global-event" v-i18n>
           {{data.value}}
@@ -24,11 +23,13 @@
           {{undergroundResourceTokenDescription[data.value]}}
         </span>
         <span v-else-if="data.type === LogMessageDataType.SPACE" class="log-space-id" @click.prevent="$emit('spaceClicked', data.value)">
-            <svg width="20" height="14" viewBox="0 0 28 37">
+            <svg width="20" height="14" viewBox="0 0 28 38">
               <circle cx="14" cy="19" r="16" stroke="black" stroke-width="1" transform="translate(0, 2)" :fill="isMoonSpace(data.value) ? 'gray' : '#b7410e'" />
             </svg>
             {{ getSpaceName(data.value) }}
         </span>
+        <span v-else-if="data.type === LogMessageDataType.CARDS" v-html="cardsToHtml(data)"></span>
+
         <span v-else-if="data.type === LogMessageDataType.RAW_STRING">{{ data.value }}</span>
         <span v-else v-i18n>{{ data.value }}</span>
       </span>
@@ -44,7 +45,7 @@ import {CardName} from '@/common/cards/CardName';
 import {CardType} from '@/common/cards/CardType';
 import {LogMessage} from '@/common/logs/LogMessage';
 import {LogMessageType} from '@/common/logs/LogMessageType';
-import {LogMessageData} from '@/common/logs/LogMessageData';
+import {LogMessageData, LogMessageDataAttrs} from '@/common/logs/LogMessageData';
 import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
 import {ViewModel} from '@/common/models/PlayerModel';
 import {tileTypeToString} from '@/common/TileType';
@@ -54,11 +55,11 @@ import {undergroundResourceTokenDescription} from '@/common/underworld/Undergrou
 import {isMoonSpace, getSpaceName} from '@/common/boards/spaces';
 import {getPreferences} from '@/client/utils/PreferencesManager';
 import {gameLocaleToIntlLocale} from '@/client/utils/LocaleUtils';
-import {LogMessageDataAttrs} from '@/common/logs/LogMessageData';
+import {range} from '@/common/utils/utils';
 
 const cardTypeToCss: Record<CardType, string | undefined> = {
   event: 'background-color-events',
-  corporation: 'background-color-global-event',
+  corporation: 'background-color-corporation',
   active: 'background-color-active',
   automated: 'background-color-automated',
   prelude: 'background-color-prelude',
@@ -81,16 +82,27 @@ export default defineComponent({
     },
   },
   methods: {
+    cardToHtml(data: LogMessageData & {type: LogMessageDataType.CARD, value: CardName}) {
+      return this.innerCardToHtml(data.value, data.attrs);
+    },
     cardsToHtml(data: LogMessageData & {type: LogMessageDataType.CARDS, value: ReadonlyArray<CardName>}) {
+      if (data.attrs?.ellipsis) {
+        return '<span class="log-card background-color-standard-project">...</span>';
+      }
       const cardHtmls = data.value.map((cardName) => this.innerCardToHtml(cardName, data.attrs));
-      const htmlIndexes = cardHtmls.map((_cardHtml, idx) => String(idx));
-      const parts = this.formatter.formatToParts(htmlIndexes);
+      const htmlsAsIndexes = range(cardHtmls.length).map(String);
+      // These parts will be either type 'element', or type 'literal'.
+      // The 'element' parts represent the indexes of the cards (which will be filled in later)
+      // The 'literal' parts represent the text that combines everything together.
+      //
+      // So for English, if the cards are Algae , Birds, and Celestic, it returns
+      // ["Algae, ", "Birds, ", "and ", "Celestic"] with types ["element", "element", "literal", "element"]
+      //
+      // The tests show what this produces.
+      const parts = this.formatter.formatToParts(htmlsAsIndexes);
       return parts
         .map((part) => part.type === 'element' ? cardHtmls[Number(part.value)] : part.value)
         .join('');
-    },
-    cardToHtml(data: LogMessageData & {type: LogMessageDataType.CARD, value: CardName}) {
-      return this.innerCardToHtml(data.value, data.attrs);
     },
     innerCardToHtml(cardName: CardName, attrs?: LogMessageDataAttrs) {
       const card = getCard(cardName);
@@ -137,7 +149,6 @@ export default defineComponent({
     icon() {
       return this.message.playerId === undefined ? '&#x1f551;' : '&#x1f4ac;';
     },
-
     LogMessageType(): typeof LogMessageType {
       return LogMessageType;
     },

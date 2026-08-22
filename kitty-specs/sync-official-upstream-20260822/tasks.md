@@ -4,9 +4,9 @@
 
 **Status**: in_progress
 
-- [ ] Verify pinned refs and clean task worktree.
-- [ ] Merge official SHA `7dfdbb353d362f38e6f77e50096c7463e431404c`.
-- [ ] Resolve conflicts without dropping custom behavior.
+- [x] Verify pinned refs and clean task worktree.
+- [x] Merge official SHA `7dfdbb353d362f38e6f77e50096c7463e431404c`.
+- [x] Resolve conflicts without dropping custom behavior.
 - [ ] Verify ancestry and review the merge delta.
 
 ## WP02 — Validate and deliver PR
@@ -14,8 +14,8 @@
 **Status**: pending  
 **Depends on**: WP01
 
-- [ ] Run dependency, build, lint/type, focused, and broad test gates.
-- [ ] Pass `git diff --check` and review changed files.
+- [x] Run dependency, build, lint/type, focused, and broad test gates.
+- [x] Pass `git diff --check` and review changed files.
 - [ ] Commit, push, open PR, and verify CI.
 - [ ] Merge the validated task-owned PR.
 

@@ -610,6 +610,19 @@ export enum CardName {
   // For Playwright.
   SPECIAL_DESIGN_PROXY = 'Special Design:proxy',
 
+  // Proxy for when Executor is used for Global Events.
+  GLOBAL_EVENT_PROXY = 'Global Event Proxy',
+
+  // Automa
+  AUTOMA_METEOR_SHOWER = 'Meteor Shower:automa',
+  AUTOMA_INVASIVE_SPECIES = 'Invasive Species:automa',
+  AUTOMA_RESEARCH_AND_DEVELOPMENT = 'Research and Development:automa',
+  AUTOMA_OVERACHIEVEMENT = 'Overachievement:automa',
+  AUTOMA_EXPEDITED_CONSTRUCTION = 'Expedited Construction:automa',
+  AUTOMA_LOBBYISTS = 'Lobbyists:automa',
+  AUTOMA_LOCAL_NEURAL_INSTANCE = 'Local Neural Instance:automa',
+  AUTOMA_CORPORATE_COMPETITION = 'Corporate Competition:automa',
+
   // Ares expansion.
   BIOENGINEERING_ENCLOSURE = 'Bioengineering Enclosure',
   BIOFERTILIZER_FACILITY = 'Bio-Fertilizer Facility',

@@ -1,27 +1,29 @@
 <template>
   <div class="log-container">
-    <div class="log-generations">
-      <h2 :class="getTitleClasses()">
+    <LogGenerationList
+      :max="generation"
+      :selected="selectedGeneration"
+      :lastSoloGeneration="lastSoloGeneration"
+      @selected="selectGeneration">
+      <template #title>
+        <h2 :class="getTitleClasses()">
           <span v-i18n>Game log</span>
-      </h2>
-      <div class="log-gen-title"  v-i18n>Gen: </div>
-      <div class="log-gen-numbers">
-        <div v-for="n in getGenerationsRange()" :key="n" :class="getClassesGenIndicator(n)" @click.prevent="selectGeneration(n)">
-          {{ n }}
+        </h2>
+      </template>
+      <template #after-generations>
+        <div :class="getClassesRecentLogs()" @click.prevent="selectRecentLogs()" v-i18n>
+          Last 100
         </div>
-      </div>
-      <div :class="getClassesRecentLogs()" @click.prevent="selectRecentLogs()" v-i18n>
-        Last 100
-      </div>
-      <span class="label-additional" v-if="players.length === 1"><span :class="lastGenerationClass" v-i18n>of {{lastSoloGeneration}}</span></span>
-    </div>
+      </template>
+    </LogGenerationList>
     <div class="panel log-panel">
-      <div id="logpanel-scrollable" class="panel-body">
+      <div id="logpanel-scrollable" class="panel-body" @scroll="handleScroll">
         <ul v-if="messages">
-          <LogMessageComponent v-for="(message, index) in filteredMessages" :key="message.timestamp + '-' + index" :message="message" :viewModel="viewModel" @click="messageClicked(message)" @spaceClicked="spaceClicked"/>
+          <LogMessageComponent v-for="(message, index) in filteredMessages" :key="message.timestamp + '-' + index" :message="message" :viewModel="viewModel" @click="messageClicked(message)" @spaceClicked="$emit('spaceClicked', $event)"/>
         </ul>
       </div>
       <button
+        v-show="showScrollToBottomButton"
         type="button"
         class="log-latest-button"
         aria-label="Latest logs"
@@ -58,7 +60,7 @@
         >{{ player.name }}</button>
       </template>
     </div>
-    <CardPanel v-if="selectedMessage !== undefined" :message="selectedMessage" :players="players" @hide="selectedMessage = undefined"/>
+    <LogMessageInspector ref="messageInspector" :viewModel="viewModel"/>
   </div>
 </template>
 
@@ -72,10 +74,12 @@ import {LogMessageType} from '@/common/logs/LogMessageType';
 import {PublicPlayerModel, ViewModel} from '@/common/models/PlayerModel';
 import {playerColorClass} from '@/common/utils/utils';
 import {Color} from '@/common/Color';
-import {ParticipantId, SpaceId} from '@/common/Types';
+import {ParticipantId} from '@/common/Types';
 import LogMessageComponent from '@/client/components/logpanel/LogMessageComponent.vue';
-import CardPanel from '@/client/components/logpanel/CardPanel.vue';
-import {isMarsSpace} from '@/common/boards/spaces';
+import LogMessageInspector from '@/client/components/logpanel/LogMessageInspector.vue';
+import LogGenerationList from '@/client/components/logpanel/LogGenerationList.vue';
+import {SoundManager} from '@/client/utils/SoundManager';
+import {getPreferences} from '@/client/utils/PreferencesManager';
 
 let logAbortController: AbortController | undefined;
 
@@ -93,11 +97,15 @@ type LogPanelModel = {
   messages: Array<LogMessage>,
   selectedGeneration: number,
   selectedRecentLimit: number | undefined,
-  selectedMessage: LogMessage | undefined,
   selectedPlayerColor: Color | undefined,
   stickToBottom: boolean,
+  showScrollToBottomButton: boolean,
   isRestoringScrollPosition: boolean,
   resizeObserver: ResizeObserver | undefined,
+};
+
+type Refs = {
+  messageInspector: InstanceType<typeof LogMessageInspector>;
 };
 
 export default defineComponent({
@@ -122,43 +130,22 @@ export default defineComponent({
       messages: [],
       selectedGeneration: -1,
       selectedRecentLimit: undefined,
-      selectedMessage: undefined,
       selectedPlayerColor: undefined,
       stickToBottom: true,
+      showScrollToBottomButton: false,
       isRestoringScrollPosition: false,
       resizeObserver: undefined,
     };
   },
   components: {
     LogMessageComponent,
-    CardPanel,
+    LogMessageInspector,
+    LogGenerationList,
   },
+  emits: ['spaceClicked'],
   methods: {
     messageClicked(message: LogMessage) {
-      this.selectedMessage = message;
-    },
-    spaceClicked(spaceId: SpaceId) {
-      const id = isMarsSpace(spaceId) ? 'shortkey-board' : 'shortkey-moonBoard';
-      const el = document.getElementById(id);
-      el?.scrollIntoView({block: 'center', inline: 'center', behavior: 'auto'});
-
-      const regions = ['main_board', 'moon_board', 'moon_board_outer_spaces'];
-      for (const region of regions) {
-        const board = document.getElementById(region);
-        if (board !== null) {
-          const array = board.getElementsByClassName('board-log-highlight');
-          for (let i = 0, length = array.length; i < length; i++) {
-            const element = array[i] as HTMLElement;
-            if (element.getAttribute('data_log_highlight_id') === spaceId) {
-              element.classList.add('highlight');
-              setTimeout(() => {
-                element.classList.remove('highlight');
-              }, 3000);
-              return;
-            }
-          }
-        }
-      }
+      this.typedRefs.messageInspector.show(message);
     },
     selectGeneration(gen: number): void {
       if (gen !== this.selectedGeneration || this.selectedRecentLimit !== undefined) {
@@ -227,6 +214,9 @@ export default defineComponent({
           }
           messages.splice(0, messages.length);
           messages.push(...data);
+          if (getPreferences().enable_sounds && window.location.search.includes('experimental=1')) {
+            SoundManager.newLog();
+          }
           if (liveLogs || restoredState !== undefined) {
             this.$nextTick(() => {
               if (liveLogs) {
@@ -256,6 +246,7 @@ export default defineComponent({
       if (!this.isRestoringScrollPosition) {
         this.stickToBottom = this.isNearBottom();
       }
+      this.showScrollToBottomButton = !this.isNearBottom();
     },
     getScrollablePanel(): HTMLElement | null {
       return document.getElementById('logpanel-scrollable');
@@ -294,6 +285,7 @@ export default defineComponent({
       const scrollablePanel = this.getScrollablePanel();
       if (scrollablePanel !== null) {
         scrollablePanel.scrollTop = scrollablePanel.scrollHeight;
+        this.showScrollToBottomButton = false;
       }
     },
     restoreScrollTop(scrollTop: number) {
@@ -346,14 +338,17 @@ export default defineComponent({
     },
   },
   computed: {
+    typedRefs(): Refs {
+      return this.$refs as unknown as Refs;
+    },
     generation(): number {
       return this.viewModel.game.generation;
     },
     gameAge(): number {
       return this.viewModel.game.gameAge;
     },
-    lastSoloGeneration(): number {
-      return this.viewModel.game.lastSoloGeneration;
+    lastSoloGeneration(): number | undefined {
+      return this.players.length === 1 ? this.viewModel.game.lastSoloGeneration : undefined;
     },
     players(): Array<PublicPlayerModel> {
       return this.viewModel.players;
@@ -396,8 +391,6 @@ export default defineComponent({
       this.selectedPlayerColor = restoredState.selectedPlayerColor;
       this.stickToBottom = restoredState.stickToBottom;
     }
-    const scrollablePanel = this.getScrollablePanel();
-    scrollablePanel?.addEventListener('scroll', this.handleScroll);
     if (this.selectedRecentLimit !== undefined) {
       this.getRecentLogs(restoredState === undefined, restoredState);
     } else {
@@ -415,7 +408,6 @@ export default defineComponent({
         stickToBottom: this.stickToBottom,
       });
     }
-    scrollablePanel?.removeEventListener('scroll', this.handleScroll);
     this.teardownAutoScrollObserver();
   },
 });

@@ -71,8 +71,14 @@ describe('PlayerInputFactory', () => {
     runTest({
       type: 'initialCards',
       options: [
-        {type: 'card', title: SELECT_CORPORATION_TITLE, cards: []} as SelectCardModel,
-        {type: 'card', title: SELECT_PROJECTS_TITLE, cards: []} as SelectCardModel,
+        {
+          type: 'card', title: SELECT_CORPORATION_TITLE, buttonLabel: '', cards: [], max: 0, min: 0,
+          showOnlyInLearnerMode: false, selectBlueCardAction: false, showOwner: false, showSelectAll: false,
+        } as SelectCardModel,
+        {
+          type: 'card', title: SELECT_PROJECTS_TITLE, buttonLabel: '', cards: [], max: 0, min: 0,
+          showOnlyInLearnerMode: false, selectBlueCardAction: false, showOwner: false, showSelectAll: false,
+        } as SelectCardModel,
       ],
     });
   });

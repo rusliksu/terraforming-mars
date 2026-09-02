@@ -22,6 +22,7 @@ import Card from '@/client/components/card/Card.vue';
 import {CardName} from '@/common/cards/CardName';
 import {CardModel} from '@/common/models/CardModel';
 import {CardOrderStorage} from '@/client/utils/CardOrderStorage';
+import {comparing} from '@/common/utils/Ordering';
 
 type DataModel = {
   /** When true use the point-and-click reorder UI */

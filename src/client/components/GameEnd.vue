@@ -493,6 +493,9 @@ export default defineComponent({
     }
   },
   methods: {
+    cycleTileView(): void {
+      this.tileView = nextTileView(this.tileView);
+    },
     getPlayerPlaceLabel(player: PublicPlayerModel): string {
       if (this.lastActivePlayerFinish && player.isSurrendered) {
         return this.players.length === 2 ? '2' : `2–${this.players.length}`;

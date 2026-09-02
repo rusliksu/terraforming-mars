@@ -481,7 +481,7 @@ export class Executor implements BehaviorExecutor {
     if (behavior.steelValue === 1) {
       player.increaseSteelValue();
     }
-      if (player.game?.inDoubleDown !== true) {
+    if (player.game?.inDoubleDown !== true) {
       if (behavior.titanumValue === 1) {
         player.increaseTitaniumValue();
       }

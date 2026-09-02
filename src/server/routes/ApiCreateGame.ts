@@ -125,174 +125,174 @@ export class ApiCreateGame extends Handler {
     const body = await readBody(req);
     try {
       const gameReq = JSON.parse(body) as NewGameConfig;
-          const turnBasedGame = gameReq.turnBasedGame === true;
-          const botGame = gameReq.botGame === true;
-          if (turnBasedGame) {
-            const invalidTelegramPlayerIndex = gameReq.players.findIndex((player) => !isTelegramIdValid(player.telegramID));
-            if (invalidTelegramPlayerIndex !== -1) {
-              responses.badRequest(req, res, `invalid telegram id for player ${invalidTelegramPlayerIndex + 1}`);
-              return;
-            }
-            const missingTelegramPlayerIndex = gameReq.players.findIndex((player) => {
-              return isTelegramIdRequired(player) && normalizeTelegramId(player.telegramID) === '';
-            });
-            if (missingTelegramPlayerIndex !== -1) {
-              responses.badRequest(req, res, `missing telegram id for player ${missingTelegramPlayerIndex + 1}`);
-              return;
-            }
-          }
-          const normalizedTelegramIds = turnBasedGame ?
-            gameReq.players.map((player) => normalizeTelegramId(player.telegramID)) :
-            gameReq.players.map(() => '');
-          const gameId = safeCast(generateRandomId('g'), isGameId);
-          const spectatorId = safeCast(generateRandomId('s'), isSpectatorId);
-          const requestedPlayers = gameReq.players.map((player) => ({...player}));
-          const players = requestedPlayers.map((p) => {
-            return new Player(
-              p.name,
-              p.color,
-              p.beginner,
-              Number(p.handicap), // For some reason handicap is coming up a string.
-              safeCast(generateRandomId('p'), isPlayerId),
-              normalizePreludeHandicap(p.preludeHandicap),
-            );
-          });
-          // Assign telegramID from game request
-          players.forEach((p, i) => {
-            const telegramID = normalizedTelegramIds[i];
-            if (telegramID) {
-              p.telegramID = telegramID;
-            }
-          });
-          if (turnBasedGame) {
-            console.log(
-              `Async Telegram game create game=${gameId} ` +
+      const turnBasedGame = gameReq.turnBasedGame === true;
+      const botGame = gameReq.botGame === true;
+      if (turnBasedGame) {
+        const invalidTelegramPlayerIndex = gameReq.players.findIndex((player) => !isTelegramIdValid(player.telegramID));
+        if (invalidTelegramPlayerIndex !== -1) {
+          responses.badRequest(req, res, `invalid telegram id for player ${invalidTelegramPlayerIndex + 1}`);
+          return;
+        }
+        const missingTelegramPlayerIndex = gameReq.players.findIndex((player) => {
+          return isTelegramIdRequired(player) && normalizeTelegramId(player.telegramID) === '';
+        });
+        if (missingTelegramPlayerIndex !== -1) {
+          responses.badRequest(req, res, `missing telegram id for player ${missingTelegramPlayerIndex + 1}`);
+          return;
+        }
+      }
+      const normalizedTelegramIds = turnBasedGame ?
+        gameReq.players.map((player) => normalizeTelegramId(player.telegramID)) :
+        gameReq.players.map(() => '');
+      const gameId = safeCast(generateRandomId('g'), isGameId);
+      const spectatorId = safeCast(generateRandomId('s'), isSpectatorId);
+      const requestedPlayers = gameReq.players.map((player) => ({...player}));
+      const players = requestedPlayers.map((p) => {
+        return new Player(
+          p.name,
+          p.color,
+          p.beginner,
+          Number(p.handicap), // For some reason handicap is coming up a string.
+          safeCast(generateRandomId('p'), isPlayerId),
+          normalizePreludeHandicap(p.preludeHandicap),
+        );
+      });
+      // Assign telegramID from game request
+      players.forEach((p, i) => {
+        const telegramID = normalizedTelegramIds[i];
+        if (telegramID) {
+          p.telegramID = telegramID;
+        }
+      });
+      if (turnBasedGame) {
+        console.log(
+          `Async Telegram game create game=${gameId} ` +
               `recipients=${players.filter((player) => player.telegramID !== '').length}/${players.length} ` +
               `players=${players.map((player) => `${player.id}:${maskTelegramIdForLog(player.telegramID)}`).join(',')}`,
-            );
-          }
-          let firstPlayerIdx = 0;
-          for (let i = 0; i < requestedPlayers.length; i++) {
-            if (requestedPlayers[i].first === true) {
-              firstPlayerIdx = i;
-              break;
-            }
-          }
+        );
+      }
+      let firstPlayerIdx = 0;
+      for (let i = 0; i < requestedPlayers.length; i++) {
+        if (requestedPlayers[i].first === true) {
+          firstPlayerIdx = i;
+          break;
+        }
+      }
 
-          const boardSelection = gameReq.board;
-          const boards = ApiCreateGame.boardOptions(boardSelection);
-          gameReq.board = boards[Math.floor(Math.random() * boards.length)];
+      const boardSelection = gameReq.board;
+      const boards = ApiCreateGame.boardOptions(boardSelection);
+      gameReq.board = boards[Math.floor(Math.random() * boards.length)];
 
-          const gameOptions: GameOptions = {
-            altVenusBoard: gameReq.altVenusBoard,
-            aresExtension: gameReq.expansions.ares,
-            aresHazards: true, // Not a runtime option.
-            aresExtremeVariant: gameReq.aresExtremeVariant,
-            bannedCards: gameReq.bannedCards,
-            boardName: gameReq.board,
-            boardSelection,
-            ceoExtension: gameReq.expansions.ceo,
-            clonedGamedId: gameReq.clonedGamedId ?? undefined,
-            coloniesExtension: gameReq.expansions.colonies,
-            communityCardsOption: gameReq.expansions.community,
-            expansions: gameReq.expansions,
-            ceosDraftVariant: gameReq.ceosDraftVariant,
-            corporateEra: gameReq.expansions.corpera,
-            customCeos: gameReq.customCeos,
-            customColoniesList: gameReq.customColoniesList,
-            customCorporationsList: gameReq.customCorporationsList,
-            customPreludes: gameReq.customPreludes,
-            draftVariant: gameReq.draftVariant,
-            escapeVelocity: normalizeEscapeVelocityOptions(gameReq.escapeVelocity),
-            fastModeOption: gameReq.fastModeOption,
-            includedCards: gameReq.includedCards,
-            includeFanMA: gameReq.includeFanMA,
-            initialDraftVariant: gameReq.initialDraft,
-            initialDraftOneWay: gameReq.initialDraftOneWay === true,
-            modularMA: gameReq.modularMA,
-            noEloGame: gameReq.noEloGame === true,
-            turnBasedGame,
-            moonExpansion: gameReq.expansions.moon,
-            moonStandardProjectVariant: gameReq.moonStandardProjectVariant,
-            moonStandardProjectVariant1: gameReq.moonStandardProjectVariant1,
-            pathfindersExpansion: gameReq.expansions.pathfinders,
-            politicalAgendasExtension: gameReq.politicalAgendasExtension,
-            privateHands: gameReq.privateHands !== false,
-            prelude2Expansion: gameReq.expansions.prelude2,
-            preludeDraftVariant: gameReq.preludeDraftVariant,
-            preludeExtension: gameReq.expansions.prelude,
-            promoCardsOption: gameReq.expansions.promo,
-            randomMA: gameReq.randomMA,
-            removeNegativeGlobalEventsOption: gameReq.removeNegativeGlobalEventsOption,
-            requiresMoonTrackCompletion: gameReq.requiresMoonTrackCompletion,
-            requiresVenusTrackCompletion: gameReq.requiresVenusTrackCompletion,
-            showOtherPlayersVP: gameReq.showOtherPlayersVP,
-            showTimers: gameReq.showTimers,
-            shuffleMapOption: gameReq.shuffleMapOption,
-            solarPhaseOption: gameReq.solarPhaseOption,
-            soloTR: gameReq.soloTR,
-            startingCeos: gameReq.startingCeos,
-            startingCorporations: gameReq.startingCorporations,
-            startingPreludes: gameReq.startingPreludes,
-            starWarsExpansion: gameReq.expansions.starwars,
-            turmoilExtension: gameReq.expansions.turmoil,
-            twoCorpsVariant: gameReq.twoCorpsVariant,
-            underworldExpansion: gameReq.expansions.underworld,
-            deltaProjectExpansion: gameReq.expansions.deltaProject,
-            undoOption: gameReq.undoOption,
-            undoStepOption: gameReq.undoStepOption === true,
-            venusNextExtension: gameReq.expansions.venus,
-          };
+      const gameOptions: GameOptions = {
+        altVenusBoard: gameReq.altVenusBoard,
+        aresExtension: gameReq.expansions.ares,
+        aresHazards: true, // Not a runtime option.
+        aresExtremeVariant: gameReq.aresExtremeVariant,
+        bannedCards: gameReq.bannedCards,
+        boardName: gameReq.board,
+        boardSelection,
+        ceoExtension: gameReq.expansions.ceo,
+        clonedGamedId: gameReq.clonedGamedId ?? undefined,
+        coloniesExtension: gameReq.expansions.colonies,
+        communityCardsOption: gameReq.expansions.community,
+        expansions: gameReq.expansions,
+        ceosDraftVariant: gameReq.ceosDraftVariant,
+        corporateEra: gameReq.expansions.corpera,
+        customCeos: gameReq.customCeos,
+        customColoniesList: gameReq.customColoniesList,
+        customCorporationsList: gameReq.customCorporationsList,
+        customPreludes: gameReq.customPreludes,
+        draftVariant: gameReq.draftVariant,
+        escapeVelocity: normalizeEscapeVelocityOptions(gameReq.escapeVelocity),
+        fastModeOption: gameReq.fastModeOption,
+        includedCards: gameReq.includedCards,
+        includeFanMA: gameReq.includeFanMA,
+        initialDraftVariant: gameReq.initialDraft,
+        initialDraftOneWay: gameReq.initialDraftOneWay === true,
+        modularMA: gameReq.modularMA,
+        noEloGame: gameReq.noEloGame === true,
+        turnBasedGame,
+        moonExpansion: gameReq.expansions.moon,
+        moonStandardProjectVariant: gameReq.moonStandardProjectVariant,
+        moonStandardProjectVariant1: gameReq.moonStandardProjectVariant1,
+        pathfindersExpansion: gameReq.expansions.pathfinders,
+        politicalAgendasExtension: gameReq.politicalAgendasExtension,
+        privateHands: gameReq.privateHands !== false,
+        prelude2Expansion: gameReq.expansions.prelude2,
+        preludeDraftVariant: gameReq.preludeDraftVariant,
+        preludeExtension: gameReq.expansions.prelude,
+        promoCardsOption: gameReq.expansions.promo,
+        randomMA: gameReq.randomMA,
+        removeNegativeGlobalEventsOption: gameReq.removeNegativeGlobalEventsOption,
+        requiresMoonTrackCompletion: gameReq.requiresMoonTrackCompletion,
+        requiresVenusTrackCompletion: gameReq.requiresVenusTrackCompletion,
+        showOtherPlayersVP: gameReq.showOtherPlayersVP,
+        showTimers: gameReq.showTimers,
+        shuffleMapOption: gameReq.shuffleMapOption,
+        solarPhaseOption: gameReq.solarPhaseOption,
+        soloTR: gameReq.soloTR,
+        startingCeos: gameReq.startingCeos,
+        startingCorporations: gameReq.startingCorporations,
+        startingPreludes: gameReq.startingPreludes,
+        starWarsExpansion: gameReq.expansions.starwars,
+        turmoilExtension: gameReq.expansions.turmoil,
+        twoCorpsVariant: gameReq.twoCorpsVariant,
+        underworldExpansion: gameReq.expansions.underworld,
+        deltaProjectExpansion: gameReq.expansions.deltaProject,
+        undoOption: gameReq.undoOption,
+        undoStepOption: gameReq.undoStepOption === true,
+        venusNextExtension: gameReq.expansions.venus,
+      };
 
-          let game: IGame;
-          if (gameOptions.clonedGamedId !== undefined && !gameOptions.clonedGamedId.startsWith('#')) {
-            const serialized = await Database.getInstance().getGameVersion(gameOptions.clonedGamedId, 0);
-            game = Cloner.clone(gameId, players, firstPlayerIdx, serialized);
-          } else {
-            const seed = Number.isFinite(gameReq.seed) && gameReq.seed >= 0 && gameReq.seed < 1 ?
-              gameReq.seed : Math.random();
-            game = Game.newInstance(gameId, players, players[firstPlayerIdx], spectatorId, gameOptions, seed);
+      let game: IGame;
+      if (gameOptions.clonedGamedId !== undefined && !gameOptions.clonedGamedId.startsWith('#')) {
+        const serialized = await Database.getInstance().getGameVersion(gameOptions.clonedGamedId, 0);
+        game = Cloner.clone(gameId, players, firstPlayerIdx, serialized);
+      } else {
+        const seed = Number.isFinite(gameReq.seed) && gameReq.seed >= 0 && gameReq.seed < 1 ?
+          gameReq.seed : Math.random();
+        game = Game.newInstance(gameId, players, players[firstPlayerIdx], spectatorId, gameOptions, seed);
+      }
+
+      const botPlayers = botGame ? players.filter((_player, index) => requestedPlayers[index]?.isBot === true) : [];
+      game.setBotPlayerIds(botPlayers.map((player) => player.id));
+      const startedBotPlayerIds = new Array<string>();
+      try {
+        for (const botPlayer of botPlayers) {
+          this.botManager.start({
+            gameId: game.id,
+            playerId: botPlayer.id,
+            serverId: ctx.ids.serverId,
+          });
+          startedBotPlayerIds.push(botPlayer.id);
+        }
+      } catch (error) {
+        for (const playerId of startedBotPlayerIds) {
+          this.botManager.stop(safeCast(playerId, isPlayerId));
+        }
+        responses.badRequest(req, res, error instanceof Error ? error.message : String(error));
+        return;
+      }
+
+      await ctx.gameLoader.add(game);
+      // Send Telegram game start notifications
+      if (game.gameOptions.turnBasedGame === true) {
+        for (const p of game.players) {
+          if (p.telegramID) {
+            void sendGameStartNotice({
+              name: p.name,
+              id: p.id,
+              telegramID: p.telegramID,
+              lastNoticeMessageId: p.lastNoticeMessageId,
+              lastTurnNoticeKey: p.lastTurnNoticeKey,
+              game: p.game,
+            });
           }
-
-          const botPlayers = botGame ? players.filter((_player, index) => requestedPlayers[index]?.isBot === true) : [];
-          game.setBotPlayerIds(botPlayers.map((player) => player.id));
-          const startedBotPlayerIds = new Array<string>();
-          try {
-            for (const botPlayer of botPlayers) {
-              this.botManager.start({
-                gameId: game.id,
-                playerId: botPlayer.id,
-                serverId: ctx.ids.serverId,
-              });
-              startedBotPlayerIds.push(botPlayer.id);
-            }
-          } catch (error) {
-            for (const playerId of startedBotPlayerIds) {
-              this.botManager.stop(safeCast(playerId, isPlayerId));
-            }
-            responses.badRequest(req, res, error instanceof Error ? error.message : String(error));
-            return;
-          }
-
-          await ctx.gameLoader.add(game);
-          // Send Telegram game start notifications
-          if (game.gameOptions.turnBasedGame === true) {
-            for (const p of game.players) {
-              if (p.telegramID) {
-                void sendGameStartNotice({
-                  name: p.name,
-                  id: p.id,
-                  telegramID: p.telegramID,
-                  lastNoticeMessageId: p.lastNoticeMessageId,
-                  lastTurnNoticeKey: p.lastTurnNoticeKey,
-                  game: p.game,
-                });
-              }
-            }
-          }
-          responses.writeJson(res, ctx, Server.getSimpleGameModel(game, {
-            botPlayers: botPlayers.map((player) => player.id),
-          }));
+        }
+      }
+      responses.writeJson(res, ctx, Server.getSimpleGameModel(game, {
+        botPlayers: botPlayers.map((player) => player.id),
+      }));
     } catch (error) {
       responses.internalServerError(req, res, error);
     }

@@ -20,6 +20,7 @@ import {Response} from '../Response';
 import {QuotaConfig, QuotaHandler} from '../server/QuotaHandler';
 import {durationToMilliseconds} from '../utils/durations';
 import {BotTakeoverManager} from '../bot/BotTakeoverManager';
+import {readBody} from './readBody';
 
 export function normalizeTelegramId(telegramID: string | undefined): string {
   return (telegramID ?? '').trim();
@@ -114,29 +115,22 @@ export class ApiCreateGame extends Handler {
 
   // TODO(kberg): much of this code can be moved outside of handler, and that
   // would be better.
-  public override post(req: Request, res: Response, ctx: Context): Promise<void> {
-    return new Promise((resolve) => {
-      const withinQuota = this.quotaHandlers.map((handler) => handler.measure(ctx)).every((ok) => ok);
-      if (!withinQuota) {
-        responses.quotaExceeded(req, res);
-        resolve();
-        return;
-      }
+  public override async post(req: Request, res: Response, ctx: Context): Promise<void> {
+    const withinQuota = this.quotaHandlers.map((handler) => handler.measure(ctx)).every((ok) => ok);
+    if (!withinQuota) {
+      responses.quotaExceeded(req, res);
+      return;
+    }
 
-      let body = '';
-      req.on('data', function(data) {
-        body += data.toString();
-      });
-      req.once('end', async () => {
-        try {
-          const gameReq = JSON.parse(body) as NewGameConfig;
+    const body = await readBody(req);
+    try {
+      const gameReq = JSON.parse(body) as NewGameConfig;
           const turnBasedGame = gameReq.turnBasedGame === true;
           const botGame = gameReq.botGame === true;
           if (turnBasedGame) {
             const invalidTelegramPlayerIndex = gameReq.players.findIndex((player) => !isTelegramIdValid(player.telegramID));
             if (invalidTelegramPlayerIndex !== -1) {
               responses.badRequest(req, res, `invalid telegram id for player ${invalidTelegramPlayerIndex + 1}`);
-              resolve();
               return;
             }
             const missingTelegramPlayerIndex = gameReq.players.findIndex((player) => {
@@ -144,7 +138,6 @@ export class ApiCreateGame extends Handler {
             });
             if (missingTelegramPlayerIndex !== -1) {
               responses.badRequest(req, res, `missing telegram id for player ${missingTelegramPlayerIndex + 1}`);
-              resolve();
               return;
             }
           }
@@ -278,7 +271,6 @@ export class ApiCreateGame extends Handler {
               this.botManager.stop(safeCast(playerId, isPlayerId));
             }
             responses.badRequest(req, res, error instanceof Error ? error.message : String(error));
-            resolve();
             return;
           }
 
@@ -301,11 +293,8 @@ export class ApiCreateGame extends Handler {
           responses.writeJson(res, ctx, Server.getSimpleGameModel(game, {
             botPlayers: botPlayers.map((player) => player.id),
           }));
-        } catch (error) {
-          responses.internalServerError(req, res, error);
-        }
-        resolve();
-      });
-    });
+    } catch (error) {
+      responses.internalServerError(req, res, error);
+    }
   }
 }

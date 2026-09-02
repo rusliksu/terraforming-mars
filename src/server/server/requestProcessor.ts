@@ -43,6 +43,8 @@ import * as authcookies from './auth/authcookies';
 import {DiscordUser} from './auth/discord';
 import {getOrSetAccessAuditClientId} from './accessAuditClientId';
 import {getClientIp} from './clientIp';
+import {EndGameLog} from '../routes/EndGameLog';
+import {UrlParams} from '../routes/UrlParams';
 import * as responses from './responses';
 import {AppError} from './AppError';
 import {capture, ErrorDiagnosticContext} from './SentryReporter';
@@ -111,6 +113,7 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.API_WAITING_FOR, ApiWaitingFor.INSTANCE],
     [paths.AUTOPASS, Autopass.INSTANCE],
     [paths.CARDS, ServeApp.INSTANCE],
+    [paths.END_GAME_LOG, EndGameLog.INSTANCE],
     ['favicon.ico', ServeAsset.INSTANCE],
     [paths.GAME, GameHandler.INSTANCE],
     [paths.GAMES_OVERVIEW, GamesOverview.INSTANCE],
@@ -219,6 +222,7 @@ export async function processRequest(
         },
         sessionid: sessionid,
         user: user,
+        urlParams: new UrlParams(url.searchParams),
       };
 
       await handler.processRequest(req, res, ctx);

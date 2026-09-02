@@ -85,7 +85,9 @@
           :venusScaleLevel="game.venusScaleLevel"
           :boardName ="game.gameOptions.boardName"
           :aresData="game.aresData"
-          :altVenusBoard="game.gameOptions.altVenusBoard"/>
+          :altVenusBoard="game.gameOptions.altVenusBoard"
+          :tileView="tileView"
+          @toggleTileView="$emit('toggleTileView')"/>
 
         <Turmoil v-if="game.turmoil" :turmoil="game.turmoil"/>
 
@@ -131,6 +133,7 @@ export default defineComponent({
       required: true,
     },
   },
+  emits: ['toggleTileView'],
   computed: {
     thisPlayer(): PublicPlayerModel {
       return this.playerView.thisPlayer;

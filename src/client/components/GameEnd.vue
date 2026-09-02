@@ -262,8 +262,10 @@
                   :boardName ="game.gameOptions.boardName"
                   :oceans_count="game.oceans"
                   :oxygen_level="game.oxygenLevel"
-                  :temperature="game.temperature"/>
-            <MoonBoard v-if="game.moon !== undefined" :model="game.moon"/>
+                  :temperature="game.temperature"
+                  :tileView="tileView"
+                  @toggleTileView="cycleTileView()"/>
+            <MoonBoard v-if="game.moon !== undefined" :model="game.moon" :tileView="tileView"/>
             <div v-if="game.gameOptions.expansions.pathfinders">
               <PlanetaryTracks :tracks="game.pathfinders" :gameOptions="game.gameOptions"/>
             </div>
@@ -290,6 +292,7 @@ import {GameModel} from '@/common/models/GameModel';
 import {PlayerViewModel, PublicPlayerModel, ViewModel} from '@/common/models/PlayerModel';
 import Board from '@/client/components/Board.vue';
 import MoonBoard from '@/client/components/moon/MoonBoard.vue';
+import {nextTileView, TileView} from '@/client/components/board/TileView';
 import PlanetaryTracks from '@/client/components/pathfinders/PlanetaryTracks.vue';
 import DeltaProjectBoard from '@/client/components/delta/DeltaProjectBoard.vue';
 import LogPanel from '@/client/components/logpanel/LogPanel.vue';
@@ -377,7 +380,7 @@ export default defineComponent({
       if (id === undefined) {
         return undefined;
       }
-      return `${paths.API_GAME_LOGS}?id=${id}&full=true`;
+      return `${paths.END_GAME_LOG}?id=${id}`;
     },
     playersInPlace(): Array<PublicPlayerModel> {
       const copy = [...this.viewModel.players];
@@ -462,10 +465,13 @@ export default defineComponent({
         };
       });
     },
+    constants(): typeof constants {
+      return constants;
+    },
   },
-  data() {
+  data(): {tileView: TileView, eloResults: Array<EloResultRow>} {
     return {
-      constants,
+      tileView: 'show',
       eloResults: [] as Array<EloResultRow>,
     };
   },

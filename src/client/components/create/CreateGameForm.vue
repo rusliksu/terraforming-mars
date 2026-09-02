@@ -711,7 +711,7 @@ import {AgendaStyle} from '@/common/turmoil/Types';
 import PreferencesIcon from '@/client/components/PreferencesIcon.vue';
 import {byType, getCard, getCards} from '@/client/cards/ClientCardManifest';
 import type {ClientCard} from '@/common/cards/ClientCard';
-import {BoardNameType, NewGameConfig, NewPlayerModel, normalizePreludeHandicap} from '@/common/game/NewGameConfig';
+import {BoardNameType, NewPlayerModel, normalizePreludeHandicap} from '@/common/game/NewGameConfig';
 import {vueRoot} from '@/client/components/vueRoot';
 import {CreateGameModel} from './CreateGameModel';
 import {paths} from '@/common/app/paths';
@@ -1919,7 +1919,7 @@ export default defineComponent({
       };
       return `${WIKI}/Maps#${options[boardName]}`;
     },
-    async serializeSettings() {
+    async serializeSettings(): Promise<string | undefined> {
       let players = this.players.slice(0, this.playersCount);
 
       if (this.randomFirstPlayer) {
@@ -2060,7 +2060,7 @@ export default defineComponent({
 
         if (customColonies.length < neededColoniesCount) {
           window.alert(translateTextWithParams('Must select at least ${0} colonies', [neededColoniesCount.toString()]));
-          return;
+          return undefined;
         }
 
         let valid = true;
@@ -2075,7 +2075,7 @@ export default defineComponent({
           const confirm = window.confirm(translateText(
             'Some of the colonies you selected need expansions you have not enabled. Using them might break your game. Press OK to continue or Cancel to change your selections.'));
           if (confirm === false) {
-            return;
+            return undefined;
           }
         }
       }
@@ -2084,7 +2084,7 @@ export default defineComponent({
         const confirm = window.confirm(translateText(
           'We do not recommend playing a solo game without the Corporate Era. Press OK if you want to play without it.'));
         if (confirm === false) {
-          return;
+          return undefined;
         }
       }
 
@@ -2117,7 +2117,7 @@ export default defineComponent({
         const confirm = window.confirm(translateText(
           'It is possible with ThorGate, Standard Technology, Suitable Infrastructure, and High Temp. Superconductors for a player to have infinite energy production. Press OK to continue or Cancel to change your selections.'));
         if (confirm === false) {
-          return;
+          return undefined;
         }
       }
 
@@ -2141,7 +2141,7 @@ export default defineComponent({
         }
         if (customCorporations.length < neededCorpsCount) {
           window.alert(translateTextWithParams('Must select at least ${0} corporations', [neededCorpsCount.toString()]));
-          return;
+          return undefined;
         }
         let valid = true;
         for (const corp of customCorporations) {
@@ -2156,7 +2156,7 @@ export default defineComponent({
           const confirm = window.confirm(translateText(
             'Some of the corps you selected need expansions you have not enabled. Using them might break your game. Press OK to continue or Cancel to change your selections.'));
           if (confirm === false) {
-            return;
+            return undefined;
           }
         }
       } else {
@@ -2169,7 +2169,7 @@ export default defineComponent({
         const requiredPreludeCount = players.length * startingPreludes;
         if (customPreludes.length < requiredPreludeCount) {
           window.alert(translateTextWithParams('Must select at least ${0} Preludes', [requiredPreludeCount.toString()]));
-          return;
+          return undefined;
         }
         let valid = true;
         for (const prelude of customPreludes) {
@@ -2184,7 +2184,7 @@ export default defineComponent({
           const confirm = window.confirm(translateText(
             'Some of the Preludes you selected need expansions you have not enabled. Using them might break your game. Press OK to continue or Cancel to change your selections.'));
           if (confirm === false) {
-            return;
+            return undefined;
           }
         }
       } else {
@@ -2199,29 +2199,29 @@ export default defineComponent({
               return response.json();
             }
             if (response.status === 404) {
-              return;
+              return undefined;
             }
             return response.text().then((res) => new Error(res));
           });
         if (gameData === undefined) {
           alert(this.$t('Game id ' + this.clonedGameId + ' not found'));
-          return;
+          return undefined;
         }
         if (gameData instanceof Error) {
           alert(this.$t('Error looking for predefined game ' + gameData.message));
-          return;
+          return undefined;
         }
         clonedGamedId = this.clonedGameId;
         if (gameData.playerCount !== players.length) {
           alert(this.$t('Player count mismatch'));
           this.playersCount = gameData.playerCount;
-          return;
+          return undefined;
         }
       } else if (!this.seededGame) {
         clonedGamedId = undefined;
       }
 
-      const dataToSend: NewGameConfig = {
+      const dataToSend = {
         players,
         expansions: this.expansions,
         draftVariant,

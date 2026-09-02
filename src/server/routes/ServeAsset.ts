@@ -10,6 +10,7 @@ import {isProduction} from '../utils/server';
 import {Request} from '../Request';
 import {Response} from '../Response';
 import {isDynamicEloAssetPath, resolveEloAssetPath} from '../elo/EloPaths';
+import {RouteError} from './RouteError';
 
 type Encoding = 'gzip' | 'br';
 type ErrnoLikeError = Error & { code?: string };
@@ -59,8 +60,7 @@ export class ServeAsset extends Handler {
 
   public override async get(req: Request, res: Response, _ctx: Context): Promise<void> {
     if (req.url === undefined) {
-      responses.internalServerError(req, res, new Error('no url on request'));
-      return;
+      throw RouteError.internalServerError('no url on request');
     }
 
     // Remove leading slash and query parameters.
@@ -71,7 +71,7 @@ export class ServeAsset extends Handler {
     const toFile: {file?: string, encoding?: Encoding } = this.toFile(path, supportedEncodings);
 
     if (toFile.file === undefined) {
-      return responses.notFound(req, res);
+      throw RouteError.notFound();
     }
 
     const file = toFile.file;
@@ -132,7 +132,7 @@ export class ServeAsset extends Handler {
         return;
       }
       console.log(err);
-      responses.internalServerError(req, res, 'Cannot serve ' + path);
+      throw RouteError.internalServerError('Cannot serve ' + path);
     }
   }
 
@@ -254,7 +254,7 @@ export class ServeAsset extends Handler {
         }
       }
 
-      if (urlPath.endsWith('.png') || urlPath.endsWith('.jpg') || urlPath.endsWith('.json')) {
+      if (urlPath.endsWith('.png') || urlPath.endsWith('.jpg') || urlPath.endsWith('.json') || urlPath.endsWith('.svg')) {
         const assetsRoot = path.resolve('./assets');
         const resolvedFile = path.resolve(path.normalize(urlPath));
 

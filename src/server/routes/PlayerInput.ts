@@ -6,7 +6,6 @@ import {Context} from './IHandler';
 import {OrOptions} from '../inputs/OrOptions';
 import {UndoActionOption} from '../inputs/UndoActionOption';
 import {InputResponse, isOrOptionsResponse} from '../../common/inputs/InputResponse';
-import {isPlayerId} from '../../common/Types';
 import {Request} from '../Request';
 import {Response} from '../Response';
 import * as fs from 'fs';
@@ -32,6 +31,8 @@ import type {
   ErrorDiagnosticBoundary,
   ErrorDiagnosticContext,
 } from '../server/SentryReporter';
+import {RouteError} from './RouteError';
+import {readBody} from './readBody';
 
 type ShadowPromptSnapshot = {
   buttonLabel: string | null;
@@ -62,24 +63,14 @@ export class PlayerInput extends Handler {
   }
 
   public override async post(req: Request, res: Response, ctx: Context): Promise<void> {
-    const playerId = ctx.url.searchParams.get('id');
-    if (playerId === null) {
-      responses.badRequest(req, res, 'missing id parameter');
-      return;
-    }
-
-    if (!isPlayerId(playerId)) {
-      responses.badRequest(req, res, 'invalid player id');
-      return;
-    }
+    const playerId = ctx.urlParams.playerId('id');
 
     ctx.ipTracker.addParticipant(playerId, ctx.ip);
 
     // This is the exact same code as in `ApiPlayer`. I bet it's not the only place.
     const game = await ctx.gameLoader.getGame(playerId);
     if (game === undefined) {
-      responses.notFound(req, res);
-      return;
+      throw RouteError.notFound();
     }
     let player: IPlayer | undefined;
     try {
@@ -167,7 +158,7 @@ export class PlayerInput extends Handler {
     return player;
   }
 
-  private processInput(req: Request, res: Response, ctx: Context, player: IPlayer): Promise<void> {
+  private async processInput(req: Request, res: Response, ctx: Context, player: IPlayer): Promise<void> {
     // TODO(kberg): Find a better place for this optimization.
     for (const card of player.tableau) {
       card.clearWarnings();
@@ -175,18 +166,13 @@ export class PlayerInput extends Handler {
         card.additionalProjectCosts = undefined;
       }
     }
-    return new Promise((resolve) => {
-      let body = '';
-      req.on('data', (data) => {
-        body += data.toString();
-      });
-      req.once('end', async () => {
-        let entityForLog: InputResponse | undefined;
-        let isUndo = false;
-        let promptSnapshot: ShadowPromptSnapshot = emptyPromptSnapshot();
-        let promptInputSeq: number | null = null;
-        let inputSeq: number | null = null;
-        try {
+    const body = await readBody(req);
+    let entityForLog: InputResponse | undefined;
+    let isUndo = false;
+    let promptSnapshot: ShadowPromptSnapshot = emptyPromptSnapshot();
+    let promptInputSeq: number | null = null;
+    let inputSeq: number | null = null;
+    try {
           const entity = JSON.parse(body);
           entityForLog = cloneEntityForLog(entity);
           promptSnapshot = capturePromptSnapshot(player.getWaitingFor());
@@ -265,7 +251,6 @@ export class PlayerInput extends Handler {
             inputType: typeof entityForLog?.type === 'string' ? entityForLog.type : null,
             isUndo,
           });
-          resolve();
         } catch (e) {
           appendShadowInputLog(player, entityForLog, body, promptSnapshot, promptInputSeq, inputSeq, isUndo, 'rejected', e);
           recordPlayerInputAudit(req, ctx, player, 'player_input_rejected', {
@@ -286,18 +271,15 @@ export class PlayerInput extends Handler {
             'Content-Type': 'application/json',
           });
 
-          const id = e instanceof AppError ? e.id : undefined;
-          const message = e instanceof Error ? e.message : String(e);
-          const response: AppErrorResponse = {
-            id: id,
-            message: message,
-          };
-          res.write(JSON.stringify(response));
-          res.end();
-          resolve();
-        }
-      });
-    });
+      const id = e instanceof AppError ? e.id : undefined;
+      const message = e instanceof Error ? e.message : String(e);
+      const response: AppErrorResponse = {
+        id: id,
+        message: message,
+      };
+      res.write(JSON.stringify(response));
+      res.end();
+    }
   }
 
   private captureUnexpected(error: unknown, context: ErrorDiagnosticContext): void {

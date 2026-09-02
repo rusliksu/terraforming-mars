@@ -2,24 +2,24 @@
 
 ## WP01 — Integrate pinned upstream
 
-**Status**: in progress
+**Status**: complete
 
 - [x] Verify pinned refs and clean task worktree.
-- [ ] Merge official SHA and resolve conflicts.
-- [ ] Verify ancestry and inspect Boom Town/Double Down paths.
+- [x] Merge official SHA and resolve conflicts.
+- [x] Verify ancestry and inspect Boom Town/Double Down paths.
 
 ## WP02 — Correct and verify Boom Town
 
-**Status**: pending  
+**Status**: complete  
 **Depends on**: WP01
 
-- [ ] Add the focused regression test.
-- [ ] Implement the narrow fix.
-- [ ] Run targeted and proportionate broad checks.
+- [x] Add the focused regression test.
+- [x] Implement the narrow fix.
+- [x] Run targeted and proportionate broad checks.
 
 ## WP03 — Deliver and stage
 
-**Status**: pending  
+**Status**: in progress  
 **Depends on**: WP02
 
 - [ ] Push and merge the task-owned PR after green checks.

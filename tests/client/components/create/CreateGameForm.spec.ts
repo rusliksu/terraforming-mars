@@ -16,8 +16,8 @@ import {JSONObject} from '@/common/Types';
 function createGameSettings(overrides: JSONObject = {}): JSONObject {
   return {
     players: [
-      {name: 'Alice', color: 'red', beginner: false, handicap: 0},
-      {name: 'Bob', color: 'blue', beginner: false, handicap: 0},
+      {name: 'Alice', color: 'red', beginner: false, handicap: 0, first: false},
+      {name: 'Bob', color: 'blue', beginner: false, handicap: 0, first: true},
     ],
     expansions: DEFAULT_EXPANSIONS,
     board: BoardName.HELLAS,

@@ -417,21 +417,14 @@ export default defineComponent({
   },
   data() {
     return {
-      constants,
       spaceMap: new Map<string, SpaceModel>(this.spaces.map((s) => [s.id, s])),
     };
   },
   methods: {
     getAllSpacesOnMars(): Array<SpaceModel> {
-      const boardSpaces: Array<SpaceModel> = [...this.spaces];
-      boardSpaces.sort(
-        (space1: SpaceModel, space2: SpaceModel) => {
-          return parseInt(space1.id) - parseInt(space2.id);
-        },
-      );
-      return boardSpaces.filter((s: SpaceModel) => {
-        return s.spaceType !== SpaceType.COLONY;
-      });
+      return this.spaces
+        .filter((s) => s.spaceType !== SpaceType.COLONY)
+        .toSorted((space1, space2) => parseInt(space1.id) - parseInt(space2.id));
     },
     hasSpace(spaceId: SpaceId): boolean {
       return this.spaceMap.has(spaceId);
@@ -514,6 +507,9 @@ export default defineComponent({
     },
     SpaceName(): typeof SpaceName {
       return SpaceName;
+    },
+    constants(): typeof constants {
+      return constants;
     },
   },
 });

@@ -37,6 +37,7 @@ import {getMilestone} from '@/client/MilestoneAwardManifest';
 import {playerSymbol} from '@/client/utils/playerSymbol';
 import {Color, isReservedPlayerColor} from '@/common/Color';
 import {fitTextWhenReady} from '@/client/utils/textFit';
+import {comparing, reversed} from '@/common/utils/Ordering';
 
 type Refs = {
   name: HTMLElement | undefined;
@@ -106,7 +107,7 @@ export default defineComponent({
       return 'ma-name ma-name--' + this.milestone.name.replaceAll(' ', '-').replaceAll('.', '').toLowerCase();
     },
     sortedScores(): Array<MilestoneScore> {
-      return [...this.milestone.scores].sort((s1, s2) => s2.score - s1.score);
+      return this.milestone.scores.toSorted(reversed(comparing((score) => score.score)));
     },
     description(): string {
       return getMilestone(this.milestone.name).description;

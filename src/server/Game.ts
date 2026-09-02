@@ -43,6 +43,7 @@ import {AresHandler} from './ares/AresHandler';
 import {AresData} from '../common/ares/AresData';
 import {GameSetup} from './GameSetup';
 import {GameCards} from './GameCards';
+import {byKey} from '@/common/utils/Ordering';
 import {GlobalParameter} from '../common/GlobalParameter';
 import {AresSetup} from './ares/AresSetup';
 import {MoonData} from './moon/MoonData';
@@ -1760,7 +1761,7 @@ export class Game implements IGame, Logger {
           return true;
         }
       })
-      .sort((a, b) => a.cost - b.cost);
+      .toSorted(byKey('cost'));
   }
 
   public log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer, reservedForParticipant?: ParticipantId, hiddenFor?: Array<ParticipantId>}) {

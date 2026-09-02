@@ -19,7 +19,7 @@ export interface ViewModel {
   canUndoResearchPurchase?: boolean;
   game: GameModel;
   players: Array<PublicPlayerModel>;
-  id?: ParticipantId;
+  id: ParticipantId;
   thisPlayer: PublicPlayerModel | undefined;
   runId: string;
 }

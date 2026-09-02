@@ -80,7 +80,7 @@ export class ElectroCatapult extends ActionCard implements IProjectCard {
     return undefined;
   }
 
-  private spendAndGain(player: IPlayer, resource: Resource.PLANTS | Resource.STEEL) {
+  private spendAndGain(player: IPlayer, resource: typeof Resource.PLANTS | typeof Resource.STEEL) {
     if (resource === Resource.PLANTS) {
       player.stock.deduct(Resource.PLANTS, 1);
     } else {

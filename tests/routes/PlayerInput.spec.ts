@@ -30,6 +30,7 @@ import {InputError} from '../../src/server/inputs/InputError';
 import {AppError} from '../../src/server/server/AppError';
 import {INVALID_RUN_ID} from '../../src/common/app/AppErrorId';
 import {runId} from '../../src/server/utils/server-ids';
+import {statusCode} from '@/common/http/statusCode';
 
 type CapturedError = {
   error: unknown;
@@ -93,6 +94,7 @@ describe('PlayerInput', () => {
   it('fails when id not provided', async () => {
     scaffolding.url = '/player/input';
     await scaffolding.post(PlayerInput.INSTANCE, res);
+    expect(res.statusCode).eq(statusCode.badRequest);
     expect(res.content).eq('Bad request: missing id parameter');
   });
 
@@ -536,6 +538,7 @@ describe('PlayerInput', () => {
     });
     await Promise.all(([emit, post]));
 
+    expect(res.statusCode).eq(statusCode.badRequest);
     expect(res.content).matches(/Unexpected token/);
   });
 

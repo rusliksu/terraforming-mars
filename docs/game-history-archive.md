@@ -11,13 +11,14 @@ data and must never be served through HTTP or copied into public assets.
 | `src/server/archive/ArchiveFormat.ts` | JSON value types, bounded canonical encoding, hashes, source identity and coverage | Node crypto |
 | `src/server/archive/ArchiveCodec.ts` | Full/delta selection and inert structural reconstruction | ArchiveFormat |
 | `src/server/archive/ArchiveReader.ts` | Bounded local files, validated manifest, exact save lookup and complete verification | Format, codec, Node fs/path/zlib |
-| `src/server/archive/ArchiveFilesystem.ts` | Explicit private workspace policy, Windows ACLs and Linux publication sync | Reader path checks, Node fs/path/child process |
+| `src/server/archive/ArchiveFilesystem.ts` | Private archive/offline workspace policy, explicit maintenance source admission, Windows ACLs and Linux publication sync | Reader path checks, Node fs/path/child process |
 | `src/server/archive/HistorySource.ts` | Explicit offline file/SQLite selection, bounded transactions, ordered source fingerprints | Format, filesystem policy, reader file utilities, optional better-sqlite3 |
 | `src/server/archive/ArchivePreflight.ts` | Source revision and finite filesystem-capacity admission without output writes | Source, filesystem policy, Node statfs |
 | `src/server/archive/ArchiveCatalog.ts` | Current SQLite archive binding, logical save IDs, private fallback reads and bounded identity verification | Explicit SQLite handle, filesystem policy, reader, format |
 | `src/server/archive/SQLiteArchiveRetention.ts` | Stable selected capture, archive-before-prune transaction and rehydration before mutation | Explicit SQLite handle/path, catalog, writer, capacity admission |
 | `src/server/archive/ArchiveWriter.ts` | Private temporary output, verified readback, source recheck and immutable publication | Preflight, filesystem, codec, reader, Node fs/zlib |
 | `src/server/tools/archive-game-history.ts` | One-game offline preview/export CLI and code-only errors | Source, preflight, writer, Node argument parser |
+| `src/server/tools/maintain-game-history.ts` | One-game retention preview/apply with explicit offline or maintenance context | SQLite retention, filesystem policy, Node argument parser |
 
 No archive module imports Game, GameLoader, production database initialization, cache,
 routes or network clients. The trusted reader returns private JSON values;

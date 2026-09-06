@@ -14,19 +14,31 @@ normal database initialization, migrations or environment-based DB discovery.
 The [archive code map](game-history-archive.md#code-map) describes the underlying
 reader, writer, catalog and SQLite integration.
 
-All options are unique. `--offline`, `--database`, `--game`, `--archives`,
-`--workspace` and `--max-states` are required. The selected count budget must be
+All options are unique. Exactly one context, `--offline` or `--maintenance`, is
+required, together with `--database`, `--game`, `--archives`, `--workspace` and
+`--max-states`. The selected count budget must be
 1 through 4096; it can only tighten the fixed limits. Default mode opens SQLite
 read-only and returns a preview. Apply additionally requires `--apply`,
 `--exclusive` and the exact preview `--revision`. These assertions do not prove
 that another process has stopped. There is no force, fleet scan, unlimited mode,
 automatic retry, lock stealing, backup, vacuum or service control.
 
-Both DB and archive directory must be inside the explicitly supplied non-linked
-workspace, outside checkouts and excluded serving/runtime paths. Windows paths
-must be on D:. Linux requires an owned workspace with mode 0700. The archive
-directory must already exist. Do not create a symlink or change a path to bypass
-a refusal. The file must use DELETE journal mode and synchronous FULL or stronger;
+In `--offline` context, both DB and archive directory must be inside the supplied
+non-linked workspace, outside checkouts and excluded serving/runtime paths. This
+keeps the original offline policy, including its rejection of `prod` paths.
+
+The explicit `--maintenance` context admits an existing regular source database
+outside the archive workspace, including a `prod/shared/db` path. Its path must be
+absolute, non-linked and outside checkouts. On Linux the source must belong to
+the current user and must not be writable by group or others. Windows source and
+archive paths still require D:. No context infers a database from environment,
+changes file permissions or proves that server writers are stopped.
+
+In both contexts the archive remains inside its independently validated private
+workspace, outside serving/runtime paths and checkouts. Linux requires ownership
+and mode 0700 on that workspace. The archive directory must already exist. Do not
+use a symlink, move the database or change permissions to bypass a refusal.
+The file must use DELETE journal mode and synchronous FULL or stronger;
 the tool never converts WAL or another backend. Library retention and hydration
 set a five-second busy timeout which remains on that connection until changed or
 closed. The operator connection closes after the invocation.
@@ -56,6 +68,19 @@ After establishing exclusive access, rerun the same arguments with
 `--apply --exclusive --revision <the-returned-64-character-hash>`. On Linux replace
 all lab paths with paths inside the explicitly prepared private Linux workspace.
 Do not use actual game IDs or private paths in public command logs.
+
+For an existing runtime database and a separate private archive workspace, select
+`--maintenance` instead of `--offline`. This example shows the layout exercised
+with synthetic data by the subprocess test; use the admission gates below before
+any real operational invocation:
+
+```text
+node build/src/server/tools/maintain-game-history.js --maintenance --database /srv/tm-runtime/prod/shared/db/game.db --game g000000000008 --archives /srv/tm-history-archive/archives --workspace /srv/tm-history-archive --max-states 4
+```
+
+It still defaults to read-only preview. Apply requires the same explicit revision
+and exclusive assertion. Maintenance changes only source-path admission; private
+archive validation, finite resource bounds and atomic retention/hydration remain.
 
 Apply reports ARCHIVED, ALREADY_ARCHIVED or NOTHING_TO_PRUNE, the exact revision,
 row counts, fixed limits and database file bytes before/after. An actual prune also
@@ -130,6 +155,12 @@ Apply opens the explicitly authorized existing file read/write, allowing SQLite'
 normal journal recovery before continuing. If recovery itself fails, stop and
 restore the coordinated unit under separate approval. Do not restore only an old
 DB or only a subset of archive files over a running service.
+
+Subprocess tests also cover a runtime-shaped `prod/shared/db` source outside the
+private archive workspace: offline refuses, maintenance preview preserves bytes,
+and an explicit apply retains every logical state. Relative/directory/linked
+sources and conflicting contexts refuse. Linux additionally exercises source
+write permissions and private archive workspace permissions.
 
 Subprocess tests forcibly kill the real operator after rename, after the first
 DELETE and after commit, plus a real hydration after its first INSERT. They verify

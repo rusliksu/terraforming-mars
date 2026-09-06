@@ -3,7 +3,7 @@ import Database from 'better-sqlite3';
 import {execFile} from 'node:child_process';
 import fs from 'node:fs/promises';
 import {tmpdir} from 'node:os';
-import {join, resolve} from 'node:path';
+import {dirname, join, resolve} from 'node:path';
 import {promisify} from 'node:util';
 import {ArchiveCatalog} from '@/server/archive/ArchiveCatalog';
 
@@ -86,6 +86,73 @@ const supported = process.platform === 'win32' || (process.platform === 'linux' 
     const retry = await run(applyArgs(plan.sourceRevision));
     expect(retry.code, retry.stderr).eq(0); expect(JSON.parse(retry.stdout).removedRows).eq(0);
     expect(JSON.parse(retry.stdout).status).eq('ALREADY_ARCHIVED');
+  }).timeout(30000);
+
+  async function maintenanceLayout() {
+    const runtime = join(workspace, 'prod', 'shared', 'db');
+    await fs.mkdir(runtime, {recursive: true});
+    const moved = join(runtime, 'game.db');
+    await fs.rename(filename, moved);
+    filename = moved;
+    const archiveWorkspace = join(workspace, 'private-archive-workspace');
+    await fs.mkdir(archiveWorkspace, {mode: 0o700});
+    output = join(archiveWorkspace, 'archives');
+    await fs.mkdir(output);
+    workspace = archiveWorkspace;
+    return ['--maintenance', ...args().slice(1)];
+  }
+
+  it('maintains an explicit runtime database with an independent private archive workspace', async () => {
+    const argv = await maintenanceLayout();
+    const before = await fs.readFile(filename);
+    const offlineArgs = args(); offlineArgs[offlineArgs.indexOf('--workspace') + 1] = dirname(workspace);
+    const offline = await run(offlineArgs);
+    expect(offline.code).eq(1); expect(JSON.parse(offline.stderr).code).eq('SOURCE_UNSUPPORTED');
+    const preview = await run(argv);
+    expect(preview.code, preview.stderr).eq(0);
+    const plan = JSON.parse(preview.stdout);
+    expect(plan.status).eq('READY'); expect(plan.count).eq(4);
+    expect(await fs.readFile(filename)).deep.eq(before);
+    expect(await fs.readdir(output)).deep.eq([]);
+    const refused = await run([...argv, '--apply', '--revision', plan.sourceRevision]);
+    expect(refused.code).eq(2);
+    const applied = await run([...argv, '--apply', '--exclusive', '--revision', plan.sourceRevision]);
+    expect(applied.code, applied.stderr).eq(0); expect(JSON.parse(applied.stdout).removedRows).eq(2);
+    expect(applied.stdout).not.include(gameId); expect(applied.stdout).not.include(filename);
+    await checkHistory([0, 9]);
+  }).timeout(30000);
+
+  it('keeps maintenance source path and context validation before storage writes', async () => {
+    const argv = await maintenanceLayout();
+    const before = await fs.readFile(filename);
+    const both = await run([...argv, '--offline']);
+    expect(both.code).eq(2); expect(both.stdout).eq('');
+    const link = join(workspace, 'linked-db');
+    await fs.symlink(dirname(filename), link, 'junction');
+    for (const input of ['relative.sqlite', dirname(filename), join(link, 'game.db')]) {
+      const unsafe = argv.slice(); unsafe[unsafe.indexOf('--database') + 1] = input;
+      const result = await run(unsafe);
+      expect(result.code, result.stderr).eq(1); expect(result.stdout).eq('');
+    }
+    await fs.writeFile(join(dirname(filename), '.git'), 'gitdir: synthetic-checkout');
+    const checkout = await run(argv);
+    expect(checkout.code).eq(1); expect(JSON.parse(checkout.stderr).code).eq('SOURCE_UNSUPPORTED');
+    expect(await fs.readFile(filename)).deep.eq(before);
+    expect(await fs.readdir(output)).deep.eq([]);
+  }).timeout(30000);
+
+  (process.platform === 'linux' ? it : it.skip)('rejects a shared-writable source or non-private archive in maintenance context', async () => {
+    const argv = await maintenanceLayout();
+    const before = await fs.readFile(filename);
+    await fs.chmod(filename, 0o666);
+    const writableSource = await run(argv);
+    expect(writableSource.code).eq(1); expect(JSON.parse(writableSource.stderr).code).eq('SOURCE_UNSUPPORTED');
+    await fs.chmod(filename, 0o600);
+    await fs.chmod(workspace, 0o755);
+    const publicArchive = await run(argv);
+    expect(publicArchive.code).eq(1); expect(JSON.parse(publicArchive.stderr).code).eq('SOURCE_UNSUPPORTED');
+    expect(await fs.readFile(filename)).deep.eq(before);
+    expect(await fs.readdir(output)).deep.eq([]);
   }).timeout(30000);
 
   it('rejects stale revisions and exceeded budgets without deleting or publishing', async () => {

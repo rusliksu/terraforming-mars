@@ -2,10 +2,10 @@ import Database from 'better-sqlite3';
 import fs from 'node:fs/promises';
 import {parseArgs} from 'node:util';
 import {ArchiveError, integer, isHash, LIMITS, requireArchive} from '@/server/archive/ArchiveFormat';
-import {offlinePath} from '@/server/archive/ArchiveFilesystem';
+import {maintenanceDatabasePath, offlinePath} from '@/server/archive/ArchiveFilesystem';
 import {SQLiteArchiveRetention} from '@/server/archive/SQLiteArchiveRetention';
 
-const usage = 'Usage: maintain-game-history --offline --database <sqlite-file> --game <id> --archives <directory> --workspace <private-root> --max-states <1..4096> [--apply --exclusive --revision <sha256>]\n' +
+const usage = 'Usage: maintain-game-history (--offline | --maintenance) --database <sqlite-file> --game <id> --archives <directory> --workspace <private-root> --max-states <1..4096> [--apply --exclusive --revision <sha256>]\n' +
   'Defaults to a read-only preview of one completed game. Apply requires verified exclusive storage ownership.\n';
 
 async function main(): Promise<void> {
@@ -19,13 +19,13 @@ async function main(): Promise<void> {
     try {
       requireArchive(args.length <= 16 && args.every((arg) => arg.length <= 4096));
       const {values, tokens} = parseArgs({args, strict: true, allowPositionals: false, tokens: true, options: {
-        'offline': {type: 'boolean'}, 'database': {type: 'string'}, 'game': {type: 'string'},
+        'offline': {type: 'boolean'}, 'maintenance': {type: 'boolean'}, 'database': {type: 'string'}, 'game': {type: 'string'},
         'archives': {type: 'string'}, 'workspace': {type: 'string'}, 'max-states': {type: 'string'},
         'apply': {type: 'boolean'}, 'exclusive': {type: 'boolean'}, 'revision': {type: 'string'},
       }});
       const names = tokens.filter((token) => token.kind === 'option').map((token) => token.name);
       const maxStates = Number(values['max-states']);
-      requireArchive(new Set(names).size === names.length && values.offline === true &&
+      requireArchive(new Set(names).size === names.length && (values.offline === true) !== (values.maintenance === true) &&
         typeof values.database === 'string' && values.database.length > 0 &&
         typeof values.archives === 'string' && values.archives.length > 0 &&
         typeof values.workspace === 'string' && values.workspace.length > 0 &&
@@ -34,11 +34,13 @@ async function main(): Promise<void> {
         (values.apply === true ? values.exclusive === true && isHash(values.revision) :
           values.exclusive === undefined && values.revision === undefined));
       selection = {database: values.database, game: values.game, archives: values.archives,
-        workspace: values.workspace, maxStates, apply: values.apply === true, revision: values.revision};
+        workspace: values.workspace, maintenance: values.maintenance === true,
+        maxStates, apply: values.apply === true, revision: values.revision};
     } catch {
       throw new SyntaxError('INVALID_ARGUMENTS');
     }
-    const filename = await offlinePath(selection.database, selection.workspace);
+    const filename = selection.maintenance ? await maintenanceDatabasePath(selection.database) :
+      await offlinePath(selection.database, selection.workspace);
     requireArchive((await fs.stat(filename)).isFile(), 'SOURCE_UNSUPPORTED');
     db = new Database(filename, {readonly: !selection.apply, fileMustExist: true});
     const retention = new SQLiteArchiveRetention(db, filename, {root: selection.archives, workspace: selection.workspace});

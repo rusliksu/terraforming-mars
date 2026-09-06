@@ -1,7 +1,7 @@
 {
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-09-06T20:47:37.131Z",
-  "generated_from_commit": "04b6bca7ccaf5329f182ea41233e8cd687472458",
+  "generated_at": "2026-09-06T21:24:51.910Z",
+  "generated_from_commit": "6115b29310da1007f22be1caafd175647e4974a2",
   "scope": [
     ".",
     ".github",
@@ -1213,6 +1213,53 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "id": "replay-acceptance",
+      "label": "Браузерная приёмка реплея",
+      "type": "test",
+      "path": "scripts/replay/browser-smoke.js",
+      "role": "Создаёт конечные синтетические истории и проверяет настоящий UI/API, архив и задержку выбора кадра.",
+      "entrypoints": [
+        {
+          "path": "scripts/replay/create-fixture.ts",
+          "symbol": "createFixture",
+          "status": "confirmed"
+        },
+        {
+          "path": "scripts/replay/browser-smoke.js",
+          "symbol": "Playwright CLI run-code",
+          "status": "confirmed"
+        },
+        {
+          "path": "scripts/replay/browser-performance.js",
+          "symbol": "20 uncached transitions",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/routes/ApiReplay.spec.ts",
+          "symbol": "ApiReplay",
+          "status": "confirmed"
+        },
+        {
+          "path": "tests/database/ReplayArchive.spec.ts",
+          "symbol": "ReplayArchive",
+          "status": "confirmed"
+        }
+      ],
+      "constraints": [
+        "Все БД, снимки и измерения находятся под D:/tm-db/smartbot-lab.",
+        "Генератор создаёт только новый каталог; 4 и 100 сохранений, без production-данных."
+      ],
+      "evidence": [
+        {
+          "path": "docs/game-replay.md",
+          "symbol": "104 identical frames; p95 65/132 ms",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "edges": [
@@ -2022,7 +2069,13 @@
     "tests/client/components/overview/PlayersOverview.spec.ts",
     "src/locales/ru/replay.json",
     "tests/client/components/GameEnd.spec.ts",
-    "tests/client/components/SpectatorHome.spec.ts"
+    "tests/client/components/SpectatorHome.spec.ts",
+    "scripts/replay/create-fixture.ts",
+    "scripts/replay/browser-smoke.js",
+    "scripts/replay/browser-performance.js",
+    "docs/game-replay.md",
+    "docs/game-history-archive.md",
+    "docs/sqlite-history-retention.md"
   ],
   "verification_scope": {
     "paths": [
@@ -2051,8 +2104,14 @@
       "tests/client/components/overview/PlayersOverview.spec.ts",
       "src/locales/ru/replay.json",
       "tests/client/components/GameEnd.spec.ts",
-      "tests/client/components/SpectatorHome.spec.ts"
+      "tests/client/components/SpectatorHome.spec.ts",
+      "scripts/replay/create-fixture.ts",
+      "scripts/replay/browser-smoke.js",
+      "scripts/replay/browser-performance.js",
+      "docs/game-replay.md",
+      "docs/game-history-archive.md",
+      "docs/sqlite-history-retention.md"
     ],
-    "note": "Проверены связи модели, API/архивной SQLite, экрана и управления реплеем; остальные связи карты сохранены из прежнего снимка."
+    "note": "Проверены модель, API/архивная SQLite, экран, управление и воспроизводимая браузерная приёмка реплея; остальные связи карты сохранены из прежнего снимка."
   }
 }

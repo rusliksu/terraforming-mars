@@ -1,7 +1,7 @@
 {
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-08-13T07:15:00.000Z",
-  "generated_from_commit": "4144434f",
+  "generated_at": "2026-09-06T19:46:23.954Z",
+  "generated_from_commit": "5eee7b816ab0a7450297d5194460bee94b1b6071",
   "scope": [
     ".",
     ".github",
@@ -263,6 +263,11 @@
           "path": "src/server/Game.ts",
           "symbol": "export class Game",
           "status": "confirmed"
+        },
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "Game.deserialize(viewOnly)",
+          "status": "confirmed"
         }
       ],
       "tests": [
@@ -273,6 +278,11 @@
         {
           "path": "tests/Game.spec.ts",
           "symbol": "ends multiplayer when only one player has not surrendered"
+        },
+        {
+          "path": "tests/replay/ReplayView.spec.ts",
+          "symbol": "Replay view loading",
+          "status": "confirmed"
         }
       ],
       "constraints": [
@@ -987,6 +997,105 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "id": "replay-frame",
+      "label": "Публичный кадр реплея",
+      "type": "api",
+      "path": "src/server/replay/ReplayFrame.ts",
+      "role": "Загружает сохранение без продолжения игры и выбирает публичные поля и журнал.",
+      "entrypoints": [
+        {
+          "path": "src/server/replay/ReplayFrame.ts",
+          "symbol": "toReplayFrame",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/replay/ReplayFrame.spec.ts",
+          "symbol": "Replay frame projection",
+          "status": "confirmed"
+        },
+        {
+          "path": "tests/replay/ReplayView.spec.ts",
+          "symbol": "Replay view loading",
+          "status": "confirmed"
+        }
+      ],
+      "constraints": [
+        "Не выдаёт player ID, закрытые карты, приватные логи и сырые сохранения.",
+        "Не продолжает фазу, не сохраняет игру и не меняет общие часы."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/replay/ReplayFrame.ts",
+          "symbol": "Game.deserialize(saved, {viewOnly: true})",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "replay-contract",
+      "label": "Контракт кадра реплея",
+      "type": "contract",
+      "path": "src/common/models/ReplayModel.ts",
+      "role": "Общие типы списка сохранений и публичного кадра.",
+      "entrypoints": [
+        {
+          "path": "src/common/models/ReplayModel.ts",
+          "symbol": "ReplayIndex / ReplayFrame",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/replay/ReplayFrame.spec.ts",
+          "symbol": "Replay frame projection",
+          "status": "confirmed"
+        }
+      ],
+      "constraints": [
+        "Содержимое архива остаётся внутренним для сервера."
+      ],
+      "evidence": [
+        {
+          "path": "src/common/models/ReplayModel.ts",
+          "symbol": "ReplayLogMessage",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "public-models",
+      "label": "Публичные модели игры",
+      "type": "api",
+      "path": "src/server/models/ServerModel.ts",
+      "role": "Формирует существующие представления поля и игроков; реплей отдельно фильтрует ответ.",
+      "entrypoints": [
+        {
+          "path": "src/server/models/ServerModel.ts",
+          "symbol": "Server.getSpectatorModel",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/replay/ReplayFrame.spec.ts",
+          "symbol": "Replay frame projection",
+          "status": "confirmed"
+        }
+      ],
+      "constraints": [
+        "В обычном END-представлении присутствуют player ID; реплей их исключает."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/models/ServerModel.ts",
+          "symbol": "Server.getPlayer",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "edges": [
@@ -1532,6 +1641,45 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "replay-frame",
+      "to": "game-domain",
+      "type": "uses",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/replay/ReplayFrame.ts",
+          "symbol": "Game.deserialize(viewOnly)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "replay-frame",
+      "to": "public-models",
+      "type": "uses",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/replay/ReplayFrame.ts",
+          "symbol": "Server.getSpectatorModel",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "replay-frame",
+      "to": "replay-contract",
+      "type": "uses",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/replay/ReplayFrame.ts",
+          "symbol": "ReplayFrame",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -1693,27 +1841,24 @@
     }
   ],
   "changed_modules": [
-    "package.json",
-    "package-lock.json",
-    "src/server/routes/PlayerInput.ts",
-    "src/server/server.ts",
-    "src/server/server/requestProcessor.ts",
-    "src/server/server/SentryProcessBoundary.ts",
-    "src/server/server/SentryReporter.ts",
-    "tests/routes/PlayerInput.spec.ts",
-    "tests/server/requestProcessor.spec.ts",
-    "tests/server/server/SentryProcessBoundary.spec.ts",
-    "tests/server/server/SentryReporter.spec.ts",
-    "scripts/rollout_tm_server.ps1",
-    "scripts/deploy_tm_staging.ps1",
-    "scripts/deploy_tm_server.ps1",
-    "scripts/capture_tm_release_state.ps1",
-    "scripts/smoke_tm_staging.ps1",
-    "scripts/test_tm_release_guards.ps1"
-    ,"scripts/report_tm_sentry_release.ps1"
-    ,"scripts/lib/TmSentryRelease.ps1"
-    ,"scripts/lib/tm_sentry_release_remote.py"
-    ,"scripts/test_tm_sentry_release.ps1"
-    ,"scripts/tests/test_tm_sentry_release_remote.py"
-  ]
+    "src/common/Timer.ts",
+    "src/server/Game.ts",
+    "src/server/Player.ts",
+    "src/common/models/ReplayModel.ts",
+    "src/server/replay/ReplayFrame.ts",
+    "tests/replay/ReplayView.spec.ts",
+    "tests/replay/ReplayFrame.spec.ts"
+  ],
+  "verification_scope": {
+    "paths": [
+      "src/common/Timer.ts",
+      "src/server/Game.ts",
+      "src/server/Player.ts",
+      "src/common/models/ReplayModel.ts",
+      "src/server/replay/ReplayFrame.ts",
+      "tests/replay/ReplayView.spec.ts",
+      "tests/replay/ReplayFrame.spec.ts"
+    ],
+    "note": "Проверены связи режима просмотра и публичной проекции; остальные связи карты сохранены из прежнего снимка."
+  }
 }

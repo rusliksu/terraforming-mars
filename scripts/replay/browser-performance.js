@@ -1,4 +1,4 @@
-async (page) => {
+async function replayPerformance(page) {
   const origin = await page.evaluate(() => location.origin);
   if (!origin.startsWith('http://127.0.0.1:')) {
     throw new Error('Use the local synthetic server');
@@ -52,4 +52,4 @@ async (page) => {
     page.off('requestfinished', finished);
     page.off('requestfailed', finished);
   }
-};
+}

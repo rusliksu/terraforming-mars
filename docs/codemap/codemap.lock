@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "map_kind": "scoped-replay-update",
-  "source_commit": "6115b29310da1007f22be1caafd175647e4974a2",
-  "generated_at": "2026-09-06T21:24:51.910Z",
+  "source_commit": "aebc43b86382f5786718b229991b829f48f38ca3",
+  "generated_at": "2026-09-06T21:31:40.427Z",
   "source_tree_was_clean": false,
   "scope": [
     "docs/game-history-archive.md",
@@ -83,8 +83,8 @@
     "scripts/deploy_tm_staging.ps1": "1f2970e3296592c54838ea1709eb323c5209e8c166511152546061c0ca759eb7",
     "scripts/lib/TmSentryRelease.ps1": "02b6f39a15e5810c10ed522cc5f6bb02b33388dd685825b348a7f504a53d8ec1",
     "scripts/lib/tm_sentry_release_remote.py": "9ff9498618b4720d20bb701b06a32382288ea9e450246da9d56d8e56baaf399e",
-    "scripts/replay/browser-performance.js": "f45f9530a0e16ec52447703b3b5bf857b4fd31b497a92bc50ede69a52847a46d",
-    "scripts/replay/browser-smoke.js": "962d9486e922def206a25de829cf55f778285581f7ab964906a85e77005618cd",
+    "scripts/replay/browser-performance.js": "6f93e8d39a4d3ed37ed7dc99ae4f97c4680918397a7186cfe5d4fb088069a421",
+    "scripts/replay/browser-smoke.js": "276e333c28de44e2d31c1265d969be285651a830da3ec6115a2e03b3d8ad50f9",
     "scripts/replay/create-fixture.ts": "e9557d7fda97223f85c32d02af58bbd200cd171f97fcaa914b9272ecd206acf0",
     "scripts/report_tm_sentry_release.ps1": "b8bd70819d77acdfaeca19b05a41995d0064de0497935d4f396c6e41557d78ce",
     "scripts/rollout_tm_server.ps1": "09f5021f345d4890aae5e84fed4284ab2b57204683c9ca00bf22e274cd218728",
@@ -128,7 +128,7 @@
     "tests/server/server/SentryProcessBoundary.spec.ts": "6cfbcd8df2c6d4b82612e63102decd718776373e569db3429e9ade9c884883f4",
     "tests/server/server/SentryReporter.spec.ts": "a78d464170f713bcfa26f5e559762b68996adb788e966757f33e9d2f560e53d4"
   },
-  "scope_fingerprint": "a1380561f8e66ce5d70186da8a63df39fcac9595b3a07f34ff0d1ceda2debe63",
+  "scope_fingerprint": "f7a1b395d5cb15f509f1d111bb2965a8068b5cd486a923836b167cc433a1d265",
   "changed_modules": [
     "src/common/Timer.ts",
     "src/server/Game.ts",

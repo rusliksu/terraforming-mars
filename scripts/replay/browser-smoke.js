@@ -1,4 +1,4 @@
-async (page) => {
+async function replaySmoke(page) {
   const url = await page.evaluate(() => ({hostname: location.hostname, pathname: location.pathname,
     spectatorId: new URLSearchParams(location.search).get('id'), origin: location.origin}));
   if (url.hostname !== '127.0.0.1' || url.pathname !== '/replay' || url.spectatorId !== 'spectator-id-replay-ui') {
@@ -113,4 +113,4 @@ async (page) => {
     page.off('pageerror', errorListener);
     page.off('console', consoleListener);
   }
-};
+}

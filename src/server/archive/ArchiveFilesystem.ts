@@ -41,7 +41,7 @@ export async function offlinePath(path: string, workspace?: string): Promise<str
       requireArchive(stat.uid === process.getuid?.() && (stat.mode & 0o077) === 0, 'SOURCE_UNSUPPORTED');
     }
   }
-  let parent = absolute;
+  let parent = (await fs.stat(absolute)).isDirectory() ? absolute : dirname(absolute);
   while (dirname(parent) !== parent) {
     requireArchive(!await exists(resolve(parent, '.git')), 'SOURCE_UNSUPPORTED');
     parent = dirname(parent);

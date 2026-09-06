@@ -54,8 +54,9 @@ describe('Replay frame projection', () => {
     const saved = game.serialize();
     saved.players[0].timer = {sumElapsed: 1200, startedAt: 10, running: true, afterFirstAction: true, lastStoppedAt: 10};
     const frame = toReplayFrame(saved);
-    expect(frame.view.players[0].timer.sumElapsed).eq(1200);
-    expect(frame.view.players[0].timer.running).eq(false);
+    expect(frame.view.players[0].timer).deep.eq({
+      sumElapsed: 1200, startedAt: 10, running: false, afterFirstAction: true, lastStoppedAt: 10,
+    });
     expect(saved.players[0].timer.running).eq(true);
   });
 });

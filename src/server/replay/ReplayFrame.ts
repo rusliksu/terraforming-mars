@@ -27,7 +27,7 @@ function publicCard(card: CardModel): CardModel {
   };
 }
 
-function publicPlayer(player: PublicPlayerModel): PublicPlayerModel {
+function publicPlayer(player: PublicPlayerModel, timer: PublicPlayerModel['timer']): PublicPlayerModel {
   const vp = player.victoryPointsBreakdown;
   return {
     ...pick(player, ['actionsTakenThisRound', 'actionsThisGeneration', 'actionsTakenThisGame',
@@ -47,7 +47,7 @@ function publicPlayer(player: PublicPlayerModel): PublicPlayerModel {
     selfReplicatingRobotsCards: player.selfReplicatingRobotsCards.map(publicCard),
     protectedResources: pick(player.protectedResources, Units.keys),
     protectedProduction: pick(player.protectedProduction, Units.keys),
-    timer: {...pick(player.timer, ['sumElapsed', 'startedAt', 'afterFirstAction', 'lastStoppedAt']), running: false},
+    timer: {...pick(timer, ['sumElapsed', 'startedAt', 'afterFirstAction', 'lastStoppedAt']), running: false},
     underworldData: {
       corruption: player.underworldData.corruption,
       activeBonus: player.underworldData.activeBonus,
@@ -110,6 +110,7 @@ function publicGame(game: GameModel): GameModel {
 /** Builds a public frame without resuming the game or exposing the stored JSON. */
 export function toReplayFrame(saved: SerializedGame): ReplayFrame {
   const game = Game.deserialize(saved, {viewOnly: true});
+  const timers = Object.fromEntries(saved.players.map((player) => [player.color, player.timer] as const));
   for (const [index, player] of game.players.entries()) {
     player.timer = Timer.deserialize({...saved.players[index].timer, running: false}, false);
   }
@@ -117,7 +118,7 @@ export function toReplayFrame(saved: SerializedGame): ReplayFrame {
   return {
     saveId: saved.lastSaveId,
     view: {id: game.spectatorId, color: 'neutral', runId: 'replay', thisPlayer: undefined,
-      game: publicGame(model.game), players: model.players.map(publicPlayer)},
+      game: publicGame(model.game), players: model.players.map((player) => publicPlayer(player, timers[player.color]))},
     logs: game.gameLog
       .filter((message) => message.playerId === undefined && !message.hiddenFor?.includes(game.spectatorId))
       .map((message) => ({

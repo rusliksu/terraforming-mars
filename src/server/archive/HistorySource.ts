@@ -1,52 +1,30 @@
-import {lstat, open, opendir} from 'node:fs/promises';
+import {open, opendir} from 'node:fs/promises';
 import {createRequire} from 'node:module';
-import {dirname, resolve} from 'node:path';
+import {resolve} from 'node:path';
 import type Database from 'better-sqlite3';
 import {SavedState} from '@/server/archive/ArchiveCodec';
 import {ArchiveError, canonical, digest, integer, Json, LIMITS, object, parseJson,
   requireArchive, SourceMetadata, StateIndex} from '@/server/archive/ArchiveFormat';
 import {checkedPath, readBounded} from '@/server/archive/ArchiveReader';
+import {exists, offlinePath} from '@/server/archive/ArchiveFilesystem';
 
 type Selection = {kind: 'files' | 'sqlite'; path: string; gameId: string; offline: true;
-  schema?: string; engineRevision?: string};
+  schema?: string; engineRevision?: string; workspace?: string};
 export type HistorySnapshot = {entries: Array<StateIndex>; fingerprint: string; rawBytes: number; canonicalBytes: number};
 type Consume = (saved: SavedState) => Promise<void>;
 type RawSave = {saveId: number; bytes: Buffer};
-
-export async function exists(path: string): Promise<boolean> {
-  try {
-    await lstat(path); return true;
-  } catch (error) {
-    if (object(error) && error.code === 'ENOENT') {
-      return false;
-    }
-    throw error;
-  }
-}
-
-/** Stage A accepts explicitly offline D: paths outside checkouts and serving roots. */
-export async function offlinePath(path: string): Promise<string> {
-  requireArchive(process.platform === 'win32' && /^[dD]:[\\/]/.test(path), 'SOURCE_UNSUPPORTED');
-  const absolute = await checkedPath(path);
-  requireArchive(!/[\\/](prod|production|staging|preview|current|assets|public|static|build)([\\/]|$)/i.test(absolute), 'SOURCE_UNSUPPORTED');
-  requireArchive(absolute.toLowerCase() !== resolve('D:/tm-db/game.db').toLowerCase(), 'SOURCE_UNSUPPORTED');
-  let parent = absolute;
-  while (dirname(parent) !== parent) {
-    requireArchive(!await exists(resolve(parent, '.git')), 'SOURCE_UNSUPPORTED');
-    parent = dirname(parent);
-  }
-  return absolute;
-}
 
 /** Reads one explicitly selected completed history without initializing game storage. */
 export class HistorySource {
   public readonly metadata: SourceMetadata;
   public readonly path: string;
+  public readonly workspace: string | undefined;
   private readonly gameId: string;
   constructor(selection: Selection) {
     requireArchive(selection.offline === true && (selection.kind === 'files' || selection.kind === 'sqlite'), 'SOURCE_UNSUPPORTED');
     requireArchive(/^[a-zA-Z0-9_-]{1,64}$/.test(selection.gameId), 'SOURCE_UNSUPPORTED');
     this.path = selection.path;
+    this.workspace = selection.workspace;
     this.gameId = selection.gameId;
     this.metadata = Object.freeze({kind: selection.kind, schema: selection.schema ?? 'unknown', engineRevision: selection.engineRevision ?? 'unknown'});
     for (const value of [this.metadata.schema, this.metadata.engineRevision]) {
@@ -56,7 +34,7 @@ export class HistorySource {
 
   public async scan(consume?: Consume): Promise<HistorySnapshot> {
     try {
-      const root = await offlinePath(this.path);
+      const root = await offlinePath(this.path, this.workspace);
       return this.metadata.kind === 'files' ? await this.scanFiles(root, consume) : await this.scanSQLite(root, consume);
     } catch (error) {
       if (error instanceof ArchiveError && error.code !== 'ARCHIVE_CORRUPT') {

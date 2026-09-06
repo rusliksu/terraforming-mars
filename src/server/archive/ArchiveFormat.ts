@@ -10,7 +10,7 @@ export const LIMITS = Object.freeze({
 });
 export type ErrorCode = 'ARCHIVE_CORRUPT' | 'LIMIT_EXCEEDED' | 'SAVE_NOT_RECORDED' |
   'UNSUPPORTED_ARCHIVE_VERSION' | 'SOURCE_NOT_COMPLETED' | 'SOURCE_HISTORY_EMPTY' |
-  'SOURCE_UNSUPPORTED' | 'SOURCE_CHANGED' | 'ARCHIVE_CONFLICT' | 'IO_FAILURE';
+  'SOURCE_UNSUPPORTED' | 'SOURCE_CHANGED' | 'ARCHIVE_CONFLICT' | 'IO_FAILURE' | 'INSUFFICIENT_SPACE';
 export class ArchiveError extends Error {
   constructor(public readonly code: ErrorCode) {
     super(code);

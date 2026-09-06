@@ -12,11 +12,20 @@ import {MultiMap} from 'mnemonist';
 import {Session, SessionId} from '../auth/Session';
 import {toID} from '../../common/utils/utils';
 import {assertSaveIdWithinLimit, resolveMaxSavesPerGame} from './HistoryLimits';
+import {ArchiveLocation, SQLiteArchiveRetention} from '@/server/archive/SQLiteArchiveRetention';
 
 export const IN_MEMORY_SQLITE_PATH = ':memory:';
 
 export class SQLite implements IDatabase {
   private _db: BetterSqlite3.Database | undefined;
+  private _archive: SQLiteArchiveRetention | undefined;
+
+  protected get archive(): SQLiteArchiveRetention {
+    if (this._archive === undefined) {
+      throw new Error('attempt to get archive before initialize');
+    }
+    return this._archive;
+  }
 
   protected get db(): BetterSqlite3.Database {
     if (this._db === undefined) {
@@ -29,17 +38,20 @@ export class SQLite implements IDatabase {
     private filename: undefined | string = undefined,
     private throwQuietFailures: boolean = false,
     private readonly maxSavesPerGame: number = resolveMaxSavesPerGame(),
+    private readonly archiveLocation: ArchiveLocation = {
+      root: process.env.TM_HISTORY_ARCHIVE_ROOT ?? '', workspace: process.env.TM_HISTORY_ARCHIVE_WORKSPACE,
+    },
   ) {
   }
 
   public async initialize(): Promise<void> {
     const Database = require('better-sqlite3') as typeof import('better-sqlite3');
-    const dbFolder = path.resolve(process.cwd(), './db');
-    const dbPath = path.resolve(dbFolder, 'game.db');
+    const dbPath = path.resolve(process.cwd(), './db/game.db');
     if (this.filename === undefined) {
       this.filename = dbPath;
     }
     if (this.filename !== IN_MEMORY_SQLITE_PATH) {
+      const dbFolder = path.dirname(path.resolve(this.filename));
       if (!fs.existsSync(dbFolder)) {
         fs.mkdirSync(dbFolder);
       }
@@ -62,6 +74,9 @@ export class SQLite implements IDatabase {
         expiration_time timestamp not null,
         PRIMARY KEY (session_id)
       )`);
+    this._archive = new SQLiteArchiveRetention(this.db,
+      this.filename === IN_MEMORY_SQLITE_PATH ? this.filename : path.resolve(this.filename), this.archiveLocation);
+    this._archive.catalog.initialize();
   }
 
   public async getPlayerCount(gameId: GameId): Promise<number> {
@@ -115,32 +130,25 @@ export class SQLite implements IDatabase {
     return row.game_id;
   }
 
-  public async getSaveIds(gameId: GameId): Promise<Array<number>> {
-    const rows = await this.asyncAll('SELECT distinct save_id FROM games WHERE game_id = ?', [gameId]);
-    return rows.map((row) => row.save_id);
+  public getSaveIds(gameId: GameId): Promise<Array<number>> {
+    return this.archive.catalog.getSaveIds(gameId);
   }
 
   public async getGameVersion(gameId: GameId, saveId: number): Promise<SerializedGame> {
-    const sql = 'SELECT game_id, game FROM games WHERE game_id = ? and save_id = ?';
-    const row: { game_id: GameId, game: any; } = await this.asyncGet(sql, [gameId, saveId]);
-    if (row === undefined || row.game_id === undefined || row.game === undefined) {
-      throw new Error(`Game ${gameId} not found`);
+    const row: {game: string} | undefined = await this.asyncGet('SELECT game FROM games WHERE game_id = ? AND save_id = ?', [gameId, saveId]);
+    if (row !== undefined) {
+      return JSON.parse(row.game);
     }
-    return JSON.parse(row.game);
-  }
-
-  async getMaxSaveId(gameId: GameId): Promise<number> {
-    const row: { save_id: any; } = await this.asyncGet('SELECT MAX(save_id) AS save_id FROM games WHERE game_id = ?', [gameId]);
-    if (row === undefined) {
-      throw new Error(`bad game id ${gameId}`);
+    if (this.archive.catalog.getBinding(gameId) !== undefined) {
+      return await this.archive.catalog.getGameVersion(gameId, saveId) as unknown as SerializedGame;
     }
-    return row.save_id;
+    throw new Error(`Game ${gameId} not found`);
   }
 
   async markFinished(gameId: GameId): Promise<void> {
-    const promise1 = this.asyncRun('INSERT into completed_game (game_id) values (?)', [gameId]);
-    const promise2 = this.asyncRun('UPDATE games SET status = \'finished\' WHERE game_id = ?', [gameId]);
-    await Promise.all([promise1, promise2]);
+    await this.asyncRun(`INSERT INTO completed_game (game_id) VALUES (?)
+      ON CONFLICT (game_id) DO UPDATE SET completed_time = strftime('%s', 'now')`, [gameId]);
+    await this.asyncRun('UPDATE games SET status = \'finished\' WHERE game_id = ?', [gameId]);
   }
 
 
@@ -182,30 +190,8 @@ export class SQLite implements IDatabase {
     }
   }
 
-  async compressCompletedGames(compressCompletedGamesDays: string | undefined = process.env.COMPRESS_COMPLETED_GAMES_DAYS): Promise<void> {
-    if (compressCompletedGamesDays === undefined) {
-      return;
-    }
-    const dateToSeconds = daysAgoToSeconds(compressCompletedGamesDays, 0);
-    const selectResult = await this.asyncAll('SELECT DISTINCT game_id FROM completed_game WHERE completed_time < ?', [dateToSeconds]);
-    const gameIds = selectResult.map((row) => row.game_id);
-    console.log(`${gameIds.length} completed games to be compressed.`);
-    if (gameIds.length > 1000) {
-      gameIds.length = 1000;
-      console.log('Compressing 1000 games.');
-    }
-    for (const gameId of gameIds) {
-      // This isn't using await because nothing really depends on it.
-      this.compressCompletedGame(gameId);
-    }
-  }
-
-  async compressCompletedGame(gameId: GameId): Promise<BetterSqlite3.RunResult> {
-    const maxSaveId = await this.getMaxSaveId(gameId);
-    return this.asyncRun('DELETE FROM games WHERE game_id = ? AND save_id < ? AND save_id > 0', [gameId, maxSaveId])
-      .then(() => {
-        return this.asyncRun('DELETE FROM completed_game where game_id = ?', [gameId]);
-      });
+  async compressCompletedGames(_compressCompletedGamesDays?: string): Promise<void> {
+    // Only explicit archive maintenance may remove completed SQLite history.
   }
 
   async saveGame(game: IGame): Promise<void> {
@@ -220,9 +206,15 @@ export class SQLite implements IDatabase {
       await this.asyncGet('SELECT 1 FROM games WHERE game_id = ? AND save_id = 0', [game.id]) === undefined;
 
     // Insert
-    await this.runQuietly(
-      'INSERT INTO games (game_id, save_id, game, players, created_time) VALUES (?, ?, ?, ?, strftime(\'%s\', \'now\')) ON CONFLICT (game_id, save_id) DO UPDATE SET game = ?',
-      [game.id, thisSaveId, gameJSON, game.players.length, gameJSON]);
+    const sql = 'INSERT INTO games (game_id, save_id, game, players, created_time) VALUES (?, ?, ?, ?, strftime(\'%s\', \'now\')) ON CONFLICT (game_id, save_id) DO UPDATE SET game = ?';
+    const params = [game.id, thisSaveId, gameJSON, game.players.length, gameJSON];
+    if (this.archive.catalog.getBinding(game.id) === undefined) {
+      await this.runQuietly(sql, params);
+    } else {
+      await this.archive.withHydratedHistory(game.id, () => {
+        this.db.prepare(sql).run(params);
+      });
+    }
 
     if (isFirstSave) {
       const participantIds: Array<ParticipantId> = game.players.map(toID);
@@ -240,13 +232,19 @@ export class SQLite implements IDatabase {
     game.lastSaveId++;
   }
 
-  deleteGameNbrSaves(gameId: GameId, rollbackCount: number): Promise<void> {
+  async deleteGameNbrSaves(gameId: GameId, rollbackCount: number): Promise<void> {
     if (rollbackCount <= 0) {
       console.error(`invalid rollback count for ${gameId}: ${rollbackCount}`);
       // Should this be an error?
       return Promise.resolve();
     }
-    return this.runQuietly('DELETE FROM games WHERE rowid IN (SELECT rowid FROM games WHERE game_id = ? ORDER BY save_id DESC LIMIT ?)', [gameId, rollbackCount]);
+    const sql = 'DELETE FROM games WHERE rowid IN (SELECT rowid FROM games WHERE game_id = ? ORDER BY save_id DESC LIMIT ?)';
+    if (this.archive.catalog.getBinding(gameId) === undefined) {
+      return this.runQuietly(sql, [gameId, rollbackCount]);
+    }
+    await this.archive.withHydratedHistory(gameId, () => {
+      this.db.prepare(sql).run(gameId, rollbackCount);
+    });
   }
 
   public stats(): Promise<{[key: string]: string | number}> {

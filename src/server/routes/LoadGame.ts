@@ -40,7 +40,7 @@ export class LoadGame extends Handler {
     const rollbackCount = gameReq.rollbackCount;
     if (rollbackCount > 0) {
       try {
-        Database.getInstance().deleteGameNbrSaves(gameId, rollbackCount);
+        await Database.getInstance().deleteGameNbrSaves(gameId, rollbackCount);
       } catch (error) {
         console.error(error);
         throw RouteError.internalServerError();

@@ -11,6 +11,7 @@
               :player="p"
               :key="p.color"
               :playerView="playerView"
+              :readOnly="readOnly"
               :firstForGen="getIsFirstForGen(p)"
               :actionLabel="getActionLabel(p)"
               :eloDelta="getEloDelta(p)"
@@ -21,6 +22,7 @@
               :player="thisPlayer"
               :key="thisPlayer.color"
               :playerView="playerView"
+              :readOnly="readOnly"
               :firstForGen="getIsFirstForGen(thisPlayer)"
               :actionLabel="getActionLabel(thisPlayer)"
               :eloDelta="getEloDelta(thisPlayer)"
@@ -57,6 +59,10 @@ export const playerIndex = (
 export default defineComponent({
   name: 'PlayersOverview',
   props: {
+    readOnly: {
+      type: Boolean,
+      default: false,
+    },
     playerView: {
       type: Object as () => ViewModel,
       required: true,
@@ -105,7 +111,7 @@ export default defineComponent({
       return 0;
     },
     async fetchEloResults(): Promise<void> {
-      if (this.playerView.game.phase !== Phase.END) {
+      if (this.readOnly || this.playerView.game.phase !== Phase.END) {
         this.eloResults = [];
         return;
       }

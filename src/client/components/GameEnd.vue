@@ -37,6 +37,7 @@
           </div>
           <div class="game_end_navigation">
             <div>
+              <a v-if="game.spectatorId" :href="'replay?id=' + encodeURIComponent(game.spectatorId)" class="btn" v-i18n>Game replay</a>
               <a href="new-game">
                   <AppButton size="big" type="back" />
                   <span v-i18n>Create New Game</span>

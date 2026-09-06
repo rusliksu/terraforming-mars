@@ -1,7 +1,7 @@
 {
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-09-06T20:13:12.878Z",
-  "generated_from_commit": "de22cd1ca4402530a96a726e60a9362e3c3445ab",
+  "generated_at": "2026-09-06T20:44:03.967Z",
+  "generated_from_commit": "619e28b13f640e757f728405dc5107315bd20920",
   "scope": [
     ".",
     ".github",
@@ -1139,6 +1139,80 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "id": "replay-ui",
+      "label": "Экран реплея",
+      "type": "ui",
+      "path": "src/client/components/replay/ReplayHome.vue",
+      "role": "Показывает записанное поле, публичные сведения игроков и статический журнал; предоставляет управление просмотром.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/App.vue",
+          "symbol": "screen=replay",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/client/components/replay/ReplayHome.vue",
+          "symbol": "ReplayHome",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/components/replay/ReplayHome.spec.ts",
+          "symbol": "ReplayHome",
+          "status": "confirmed"
+        },
+        {
+          "path": "tests/client/components/App.spec.ts",
+          "symbol": "direct replay link",
+          "status": "confirmed"
+        }
+      ],
+      "constraints": [
+        "Не монтирует WaitingFor и LogPanel.",
+        "Передаёт readOnly в PlayersOverview; текущий Elo и живые часы отключены."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/components/replay/ReplayHome.vue",
+          "symbol": "GameBoardView / PlayersOverview / LogMessageComponent",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "replay-playback",
+      "label": "Управление воспроизведением",
+      "type": "module",
+      "path": "src/client/components/replay/useReplay.ts",
+      "role": "Последовательно запрашивает кадры, отменяет старый выбор, хранит до восьми кадров и останавливается на конце.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/replay/useReplay.ts",
+          "symbol": "useReplay",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/components/replay/useReplay.spec.ts",
+          "symbol": "Replay playback",
+          "status": "confirmed"
+        }
+      ],
+      "constraints": [
+        "Один запрос, конечный кеш, пауза при ручном выборе.",
+        "Запоздалые ответы и ошибки не меняют текущий выбор."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/components/replay/useReplay.ts",
+          "symbol": "revision / AbortController / schedule",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "edges": [
@@ -1736,6 +1810,32 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "replay-ui",
+      "to": "replay-playback",
+      "type": "uses",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/replay/ReplayHome.vue",
+          "symbol": "useReplay",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "replay-playback",
+      "to": "replay-api",
+      "type": "uses",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/replay/useReplay.ts",
+          "symbol": "paths.API_REPLAY",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -1908,7 +2008,21 @@
     "src/server/server/requestProcessor.ts",
     "src/common/app/paths.ts",
     "tests/routes/ApiReplay.spec.ts",
-    "tests/database/ReplayArchive.spec.ts"
+    "tests/database/ReplayArchive.spec.ts",
+    "src/client/components/replay/ReplayHome.vue",
+    "src/client/components/replay/useReplay.ts",
+    "src/client/components/App.vue",
+    "src/client/components/SpectatorHome.vue",
+    "src/client/components/GameEnd.vue",
+    "src/client/components/overview/PlayersOverview.vue",
+    "src/client/components/overview/PlayerInfo.vue",
+    "tests/client/components/replay/useReplay.spec.ts",
+    "tests/client/components/replay/ReplayHome.spec.ts",
+    "tests/client/components/App.spec.ts",
+    "tests/client/components/overview/PlayersOverview.spec.ts",
+    "src/locales/ru/replay.json",
+    "tests/client/components/GameEnd.spec.ts",
+    "tests/client/components/SpectatorHome.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -1923,8 +2037,22 @@
       "src/server/server/requestProcessor.ts",
       "src/common/app/paths.ts",
       "tests/routes/ApiReplay.spec.ts",
-      "tests/database/ReplayArchive.spec.ts"
+      "tests/database/ReplayArchive.spec.ts",
+      "src/client/components/replay/ReplayHome.vue",
+      "src/client/components/replay/useReplay.ts",
+      "src/client/components/App.vue",
+      "src/client/components/SpectatorHome.vue",
+      "src/client/components/GameEnd.vue",
+      "src/client/components/overview/PlayersOverview.vue",
+      "src/client/components/overview/PlayerInfo.vue",
+      "tests/client/components/replay/useReplay.spec.ts",
+      "tests/client/components/replay/ReplayHome.spec.ts",
+      "tests/client/components/App.spec.ts",
+      "tests/client/components/overview/PlayersOverview.spec.ts",
+      "src/locales/ru/replay.json",
+      "tests/client/components/GameEnd.spec.ts",
+      "tests/client/components/SpectatorHome.spec.ts"
     ],
-    "note": "Проверены связи режима просмотра, публичной проекции и API, включая архивную SQLite; остальные связи карты сохранены из прежнего снимка."
+    "note": "Проверены связи модели, API/архивной SQLite, экрана и управления реплеем; остальные связи карты сохранены из прежнего снимка."
   }
 }

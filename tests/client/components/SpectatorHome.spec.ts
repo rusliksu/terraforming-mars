@@ -3,9 +3,10 @@ import {expect} from 'chai';
 import {globalConfig} from './getLocalVue';
 import SpectatorHome from '@/client/components/SpectatorHome.vue';
 import {fakeGameModel, fakePublicPlayerModel} from './testHelpers';
+import {Phase} from '@/common/Phase';
 
 describe('SpectatorHome', () => {
-  it('mounts without errors', () => {
+  it('offers replay access only after the game ends', async () => {
     const player = fakePublicPlayerModel();
     const wrapper = shallowMount(SpectatorHome, {
       ...globalConfig,
@@ -28,6 +29,9 @@ describe('SpectatorHome', () => {
       },
     });
     expect(wrapper.exists()).to.be.true;
+    expect(wrapper.find('a[href^="replay?"]').exists()).eq(false);
+    await wrapper.setProps({spectator: {...wrapper.props('spectator'), game: fakeGameModel({phase: Phase.END})}});
+    expect(wrapper.get('a[href^="replay?"]').attributes('href')).eq('replay?id=s-spectator-id');
   });
 
   it('does not render a separate spectator hand block', () => {

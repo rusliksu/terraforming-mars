@@ -11,10 +11,12 @@ declare module 'better-sqlite3' {
   }
 
   export interface Database {
+    readonly name: string;
     readonly inTransaction: boolean;
     prepare(sql: string): Statement;
     pragma(source: string): unknown;
     exec(source: string): this;
+    transaction<T>(operation: () => T): {(): T; immediate(): T};
     close(): this;
   }
 

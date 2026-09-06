@@ -1,7 +1,7 @@
 # Private game history archive
 
-This is an offline archive foundation. It does not provide a Play button, change
-live persistence, or reclaim database space. Raw states contain private player
+This is a private archive foundation with SQLite history integration. It does
+not provide a Play button or shrink the SQLite file. Raw states contain private player
 data and must never be served through HTTP or copied into public assets.
 
 ## Code map
@@ -15,6 +15,7 @@ data and must never be served through HTTP or copied into public assets.
 | `src/server/archive/HistorySource.ts` | Explicit offline file/SQLite selection, bounded transactions, ordered source fingerprints | Format, filesystem policy, reader file utilities, optional better-sqlite3 |
 | `src/server/archive/ArchivePreflight.ts` | Source revision and finite filesystem-capacity admission without output writes | Source, filesystem policy, Node statfs |
 | `src/server/archive/ArchiveCatalog.ts` | Current SQLite archive binding, logical save IDs, private fallback reads and bounded identity verification | Explicit SQLite handle, filesystem policy, reader, format |
+| `src/server/archive/SQLiteArchiveRetention.ts` | Stable selected capture, archive-before-prune transaction and rehydration before mutation | Explicit SQLite handle/path, catalog, writer, capacity admission |
 | `src/server/archive/ArchiveWriter.ts` | Private temporary output, verified readback, source recheck and immutable publication | Preflight, filesystem, codec, reader, Node fs/zlib |
 | `src/server/tools/archive-game-history.ts` | One-game offline preview/export CLI and code-only errors | Source, preflight, writer, Node argument parser |
 
@@ -32,8 +33,8 @@ Neither function mutates source files. Missing saves fail with
 
 ## SQLite catalog contract
 
-The catalog is a private library; normal SQLite persistence and retention-tool
-integration remain pending. Its constructor receives an explicit SQLite handle,
+The catalog is a private library integrated with SQLite history reads and writes;
+the one-game operator CLI is the remaining delivery step. Its constructor receives an explicit SQLite handle,
 archive root and workspace. `initialize()` creates only `history_archives`.
 No gameplay module, environment-selected production DB or session is initialized.
 
@@ -53,12 +54,66 @@ Unbound games use live rows. Missing/corrupt archive data never becomes an empty
 successful fallback, and available current live rows remain readable.
 
 `archivedStates(binding)` streams identity-checked, bounded reconstruction for
-the future hydration caller. `assertCurrent`/`detach` support its synchronous
+the hydration caller. `assertCurrent`/`detach` support its synchronous
 transaction recheck; detach alone does not restore missing source rows. Callers
 must reconstruct first, then restore rows, detach and mutate atomically. The
 catalog never scans for or reattaches an old unbound revision. Catalog tests use
 native synthetic SQLite/files, including restart, live overrides, detached tails,
 corruption and a binding change during asynchronous lookup.
+
+## SQLite integration and transaction boundaries
+
+Normal SQLite initialization creates the catalog table. `TM_HISTORY_ARCHIVE_ROOT`
+and, on Linux, `TM_HISTORY_ARCHIVE_WORKSPACE` configure its private archive files.
+An unset root creates no archive and cannot satisfy a bound archive lookup or
+hydration. Existing current live rows remain readable. These settings never enable
+automatic pruning; SQLite's old `compressCompletedGames` DELETE-only path is now
+disabled even when `COMPRESS_COMPLETED_GAMES_DAYS` is set. PostgreSQL/filesystem
+maintenance is unchanged. This can retain more SQLite history until explicit
+maintenance is commissioned.
+
+The retention component receives an already-open SQLite connection and its exact
+file path. It checks that the capacity path matches that connection, rejects links,
+requires DELETE journaling and FULL-or-stronger synchronous commits, and validates
+the separate private archive root. It does not discover or open a production DB.
+The standalone export CLI keeps its stricter offline source/workspace exclusions.
+An operator caller must establish exclusive ownership before invoking apply; a
+boolean declaration or missing lock is not evidence that an old server is stopped.
+
+Preview does not create a catalog, archive or source row. Apply verifies the chosen
+revision, publishes/syncs and reads back the archive, then obtains BEGIN IMMEDIATE.
+Inside this synchronous transaction it rechecks the full ordered source fingerprint,
+actual ended phase and finished metadata, attaches the verified locator and deletes
+only the exact selected intermediate IDs. Save zero, when originally present, and
+the current last save stay live. The locator and row changes commit or roll back
+together. An unreferenced archive may remain after failure. A matching repeat verifies
+the current binding and remaining live overrides; a final-only history is a no-op.
+
+Before an archived game's save or rollback, all missing states are reconstructed
+within the fixed byte/count bounds. The transaction then rechecks the binding and
+live rows, restores missing rows, detaches and performs the requested SQL mutation.
+Reconstructed JSON is exact; auxiliary players/status/timestamp columns are copied
+from the retained latest row. Current live rows have precedence. Any reconstruction,
+capacity or transaction failure leaves the prior stored branch intact. The original
+immutable archive remains available but is never automatically rebound.
+
+No filesystem await occurs inside the shared SQLite transaction. Retention/hydration
+use one process worker and a five-second SQLite busy timeout, without retry loops.
+Capacity admission applies the same conservative total budget to archive storage
+and the DB/journal filesystem. Available capacity is the smaller of those two
+values; unrelated processes can still consume space after the check.
+
+`LoadGame` waits for rollback before loading/responding. Historical `getGameAt`
+uses the existing simulation mode to avoid research-phase deserialize saves.
+Replacing a resident game invalidates its old object for later save/completion.
+Actual clone, log restoration, rollback, reused IDs and repeated completion are
+covered with native SQLite and existing GameLoader/Cloner calls.
+
+The native test suite also covers late source drift, a failed second DELETE,
+rollback after detach, corrupt later archive groups, insufficient journal space,
+busy writers and an HTTP response held until reconstruction finishes. These checks
+are synthetic evidence. Live deployment, a selected-game data probe, backup,
+pruning, VACUUM and unattended operation still need their separate approvals.
 
 Canonical state encoding sorts object keys by JavaScript string comparison,
 retains array order and JSON null, and follows JSON.stringify for primitives.
@@ -146,8 +201,7 @@ directory-sync failure. They do not establish durability under every OS/hardware
 power-loss scenario. Actual platform execution must be recorded before delivery;
 private directory checks do not protect against a hostile concurrent local writer.
 
-Archive-before-prune integration, physical database reclamation, deployment and
-public replay remain separate stages.
+Physical database reclamation, deployment and public replay remain separate stages.
 
 ## Operator command
 

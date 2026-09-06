@@ -1,18 +1,16 @@
-import {execFile} from 'node:child_process';
 import fs, {FileHandle} from 'node:fs/promises';
-import {join, resolve, sep} from 'node:path';
-import {promisify} from 'node:util';
+import {join} from 'node:path';
 import {gzipSync} from 'node:zlib';
 import {makeRecord, SavedState} from '@/server/archive/ArchiveCodec';
 import {ArchiveError, canonical, Coverage, coverageOf, digest, GroupDescriptor, groupFilename, integer, LIMITS,
   Manifest, object, parseJson, requireArchive, sourceDigest, StateIndex} from '@/server/archive/ArchiveFormat';
 import {checkedPath, readBounded, verifyArchive} from '@/server/archive/ArchiveReader';
-import {exists, HistorySource, offlinePath} from '@/server/archive/HistorySource';
+import {exists, privateDirectory, syncDirectory, syncExistingFiles} from '@/server/archive/ArchiveFilesystem';
+import {ArchiveSource, preflight} from '@/server/archive/ArchivePreflight';
 
 export type ArchiveReceipt = {status: 'VERIFIED' | 'ALREADY_VERIFIED'; revision: string; count: number;
   format: Manifest['format']; codec: Manifest['codec']; coverage: Coverage; rawSourceBytes: number;
   groups: number; verifiedCount: number; canonicalStateBytes: number; compressedGroupBytes: number; manifestBytes: number};
-const execute = promisify(execFile);
 let exporting = false;
 
 function sanitized(error: unknown): ArchiveError {
@@ -36,38 +34,14 @@ async function releaseLock(lock: FileHandle, path: string): Promise<void> {
   }
 }
 
-async function privateDirectory(root: string): Promise<string> {
-  const directory = await fs.mkdtemp(join(root, '.pending-'));
-  const system = join(process.env.SystemRoot ?? 'C:\\Windows', 'System32');
-  const {stdout} = await execute(join(system, 'whoami.exe'), ['/user', '/fo', 'csv', '/nh']);
-  const sid = stdout.match(/S-1-[0-9-]+/)?.[0];
-  requireArchive(sid, 'IO_FAILURE');
-  await execute(join(system, 'icacls.exe'), [directory, '/inheritance:r', '/grant:r',
-    `*${sid}:(OI)(CI)F`, '*S-1-5-18:(OI)(CI)F', '*S-1-5-32-544:(OI)(CI)F', '/Q']);
-  await checkedPath(directory);
-  return directory;
-}
-
-function overlaps(left: string, right: string): boolean {
-  const a = resolve(left).toLowerCase();
-  const b = resolve(right).toLowerCase();
-  return a === b || a.startsWith(b + sep) || b.startsWith(a + sep);
-}
-
 /** Exports one completed offline history without deleting or replacing source data. */
-export async function exportHistory(source: HistorySource, outputRoot: string): Promise<ArchiveReceipt> {
+export async function exportHistory(source: ArchiveSource, outputRoot: string): Promise<ArchiveReceipt> {
   requireArchive(!exporting, 'ARCHIVE_CONFLICT');
   exporting = true;
   let lock: Awaited<ReturnType<typeof fs.open>> | undefined;
   let lockPath: string | undefined;
   try {
-    let root: string;
-    try {
-      root = await offlinePath(outputRoot);
-    } catch {
-      throw new ArchiveError('SOURCE_UNSUPPORTED');
-    }
-    requireArchive(!overlaps(source.path, root), 'SOURCE_UNSUPPORTED');
+    const {root, snapshot: before} = await preflight(source, outputRoot);
     lockPath = join(root, '.writer.lock');
     try {
       lock = await fs.open(lockPath, 'wx', 0o600);
@@ -77,7 +51,6 @@ export async function exportHistory(source: HistorySource, outputRoot: string): 
       }
       throw error;
     }
-    const before = await source.scan();
     const temporary = await privateDirectory(root);
     const groups: Array<GroupDescriptor> = [];
     const records: Array<string> = [];
@@ -143,6 +116,7 @@ export async function exportHistory(source: HistorySource, outputRoot: string): 
     const after = await source.scan();
     requireArchive(after.fingerprint === before.fingerprint, 'SOURCE_CHANGED');
     await checkedPath(root);
+    await syncDirectory(temporary);
     const destination = join(root, revision);
     if (await exists(destination)) {
       let originalReceipt: ArchiveReceipt;
@@ -158,6 +132,7 @@ export async function exportHistory(source: HistorySource, outputRoot: string): 
       } catch {
         throw new ArchiveError('ARCHIVE_CONFLICT');
       }
+      await syncExistingFiles(destination, ['manifest.json', 'receipt.json', ...groups.map((group) => groupFilename(group.ordinal))]);
       // Only this successful attempt's exact files are removed, never stale output.
       await checkedPath(temporary);
       for (const name of ['manifest.json', 'receipt.json', ...groups.map((group) => groupFilename(group.ordinal))]) {
@@ -167,6 +142,7 @@ export async function exportHistory(source: HistorySource, outputRoot: string): 
       return {...originalReceipt, status: 'ALREADY_VERIFIED'};
     }
     await fs.rename(temporary, destination);
+    await syncDirectory(root);
     return receipt;
   } catch (error) {
     throw sanitized(error);

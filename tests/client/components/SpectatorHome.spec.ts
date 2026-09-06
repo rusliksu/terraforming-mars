@@ -8,6 +8,10 @@ import {Phase} from '@/common/Phase';
 describe('SpectatorHome', () => {
   it('offers replay access only after the game ends', async () => {
     const player = fakePublicPlayerModel();
+    const spectator = {
+      game: fakeGameModel(), players: [player], id: 's-spectator-id' as const,
+      thisPlayer: player, runId: 'run-id', color: 'neutral' as const,
+    };
     const wrapper = shallowMount(SpectatorHome, {
       ...globalConfig,
       parentComponent: {
@@ -17,20 +21,11 @@ describe('SpectatorHome', () => {
           updateSpectator: () => {},
         },
       } as any,
-      props: {
-        spectator: {
-          game: fakeGameModel(),
-          players: [player],
-          id: 's-spectator-id',
-          thisPlayer: player,
-          runId: 'run-id',
-          color: 'neutral',
-        },
-      },
+      props: {spectator},
     });
     expect(wrapper.exists()).to.be.true;
     expect(wrapper.find('a[href^="replay?"]').exists()).eq(false);
-    await wrapper.setProps({spectator: {...wrapper.props('spectator'), game: fakeGameModel({phase: Phase.END})}});
+    await wrapper.setProps({spectator: {...spectator, game: fakeGameModel({phase: Phase.END})}});
     expect(wrapper.get('a[href^="replay?"]').attributes('href')).eq('replay?id=s-spectator-id');
   });
 

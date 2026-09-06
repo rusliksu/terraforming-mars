@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "map_kind": "scoped-replay-update",
-  "source_commit": "619e28b13f640e757f728405dc5107315bd20920",
-  "generated_at": "2026-09-06T20:44:03.967Z",
+  "source_commit": "04b6bca7ccaf5329f182ea41233e8cd687472458",
+  "generated_at": "2026-09-06T20:47:37.131Z",
   "source_tree_was_clean": false,
   "scope": [
     "package-lock.json",
@@ -103,7 +103,7 @@
     "src/server/server/requestProcessor.ts": "bb0311668f454a81c1e25c377031e25eaaeaa94f63f9bde3205ae79dc0a3af64",
     "tests/client/components/App.spec.ts": "f2072aaac771a66716493f7bd749430d897300132c3e624abc95977659925d99",
     "tests/client/components/GameEnd.spec.ts": "5df6d6f0f0198b2429edf39c31a06446dd8837d99b440ab169a6da8e47262b9e",
-    "tests/client/components/SpectatorHome.spec.ts": "a2074b5670a2970ce3676e39ede1dc994fe8c5663797c5951decb86a6d4fd56a",
+    "tests/client/components/SpectatorHome.spec.ts": "76877a3c3aba00e60d14ca18cb3361f2741044b45e4fefd92b85c96b5cde4517",
     "tests/client/components/overview/PlayersOverview.spec.ts": "28702be89c4951ce339db90d217015271d53e3b11439f21c9ec802012fb672ab",
     "tests/client/components/replay/ReplayHome.spec.ts": "c1685573800d23939ed0c6d500fb2c0fda880198148efa3956a259dc3ceeb9ed",
     "tests/client/components/replay/useReplay.spec.ts": "f0767b6331d8295d206185bcb8c527442417b904291f39b6962f48cc26e1fa32",
@@ -116,7 +116,7 @@
     "tests/server/server/SentryProcessBoundary.spec.ts": "6cfbcd8df2c6d4b82612e63102decd718776373e569db3429e9ade9c884883f4",
     "tests/server/server/SentryReporter.spec.ts": "a78d464170f713bcfa26f5e559762b68996adb788e966757f33e9d2f560e53d4"
   },
-  "scope_fingerprint": "8a6a3200df8892777b9564741f262166a2acd34ddbca19f93d05a6f6e2451b4c",
+  "scope_fingerprint": "6f8200476a6147f8ae8cefe44f00f07a8963f76613378231d4d8da94011a4ee8",
   "changed_modules": [
     "src/common/Timer.ts",
     "src/server/Game.ts",

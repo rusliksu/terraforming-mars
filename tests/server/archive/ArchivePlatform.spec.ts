@@ -103,10 +103,10 @@ const supported = process.platform === 'win32' || (process.platform === 'linux' 
     const argv = ['--offline', '--source', 'sqlite', '--input', file,
       '--game', gameId, '--output', output, '--workspace', workspace];
     const preview = await run([...argv, '--preview']);
-    expect(preview.code).eq(0); expect(JSON.parse(preview.stdout).databaseBytes).eq(before.length);
+    expect(preview.code, preview.stderr).eq(0); expect(JSON.parse(preview.stdout).databaseBytes).eq(before.length);
     expect(await fs.readdir(output)).deep.eq([]);
     const result = await run(argv);
-    expect(result.code).eq(0);
+    expect(result.code, result.stderr).eq(0);
     const archive = join(output, JSON.parse(result.stdout).revision);
     for (const state of states) {
       expect(await readSave(archive, state.lastSaveId)).deep.eq(state);

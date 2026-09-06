@@ -14,6 +14,7 @@ data and must never be served through HTTP or copied into public assets.
 | `src/server/archive/ArchiveFilesystem.ts` | Explicit private workspace policy, Windows ACLs and Linux publication sync | Reader path checks, Node fs/path/child process |
 | `src/server/archive/HistorySource.ts` | Explicit offline file/SQLite selection, bounded transactions, ordered source fingerprints | Format, filesystem policy, reader file utilities, optional better-sqlite3 |
 | `src/server/archive/ArchivePreflight.ts` | Source revision and finite filesystem-capacity admission without output writes | Source, filesystem policy, Node statfs |
+| `src/server/archive/ArchiveCatalog.ts` | Current SQLite archive binding, logical save IDs, private fallback reads and bounded identity verification | Explicit SQLite handle, filesystem policy, reader, format |
 | `src/server/archive/ArchiveWriter.ts` | Private temporary output, verified readback, source recheck and immutable publication | Preflight, filesystem, codec, reader, Node fs/zlib |
 | `src/server/tools/archive-game-history.ts` | One-game offline preview/export CLI and code-only errors | Source, preflight, writer, Node argument parser |
 
@@ -27,6 +28,37 @@ requested save. It does not claim that unread groups are valid.
 `verifyArchive(root)` reconstructs every record and checks the final ended state.
 Neither function mutates source files. Missing saves fail with
 `SAVE_NOT_RECORDED`; they never select the nearest available save.
+`readArchive(root)` streams the same verified records for bounded consumers.
+
+## SQLite catalog contract
+
+The catalog is a private library; normal SQLite persistence and retention-tool
+integration remain pending. Its constructor receives an explicit SQLite handle,
+archive root and workspace. `initialize()` creates only `history_archives`.
+No gameplay module, environment-selected production DB or session is initialized.
+
+`prepare(gameId, archiveName)` verifies a content-derived manifest name, SQLite
+source, every state identity/hash and the 512 MiB reconstructed-byte limit. It
+returns an immutable binding with current source revision, coverage and version.
+`attach(binding)` accepts only a binding prepared by that catalog instance inside
+an already open transaction. The eventual retention caller must recheck source
+identity and completion and perform exact pruning in the same transaction.
+Preparation alone is not source-deletion authority or power-loss proof.
+
+`getSaveIds` merges live IDs with only the current bound manifest; gaps remain
+gaps. Enumeration verifies manifest metadata, while `getGameVersion` verifies
+the requested gzip group and prefers a live row, including a live override
+committed during file reads. Detached or changed bindings refuse stale fallback.
+Unbound games use live rows. Missing/corrupt archive data never becomes an empty
+successful fallback, and available current live rows remain readable.
+
+`archivedStates(binding)` streams identity-checked, bounded reconstruction for
+the future hydration caller. `assertCurrent`/`detach` support its synchronous
+transaction recheck; detach alone does not restore missing source rows. Callers
+must reconstruct first, then restore rows, detach and mutate atomically. The
+catalog never scans for or reattaches an old unbound revision. Catalog tests use
+native synthetic SQLite/files, including restart, live overrides, detached tails,
+corruption and a binding change during asynchronous lookup.
 
 Canonical state encoding sorts object keys by JavaScript string comparison,
 retains array order and JSON null, and follows JSON.stringify for primitives.

@@ -138,8 +138,8 @@ export async function readSave(root: string, saveId: number): Promise<Json> {
   }
 }
 
-/** Reconstructs every recorded state without retaining the complete history. */
-export async function verifyArchive(root: string): Promise<number> {
+/** Streams verified private states without retaining the complete history. */
+export async function* readArchive(root: string): AsyncGenerator<SavedState> {
   try {
     const manifest = await readManifest(root);
     let count = 0;
@@ -149,11 +149,20 @@ export async function verifyArchive(root: string): Promise<number> {
         if (count === manifest.count) {
           requireArchive(object(saved.state) && saved.state.phase === 'end');
         }
+        yield saved;
       }
     }
     requireArchive(count === manifest.count);
-    return count;
   } catch (error) {
     throw sanitized(error);
   }
+}
+
+/** Reconstructs every recorded state without retaining the complete history. */
+export async function verifyArchive(root: string): Promise<number> {
+  let count = 0;
+  for await (const _saved of readArchive(root)) {
+    count++;
+  }
+  return count;
 }

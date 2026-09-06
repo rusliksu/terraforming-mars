@@ -49,6 +49,25 @@ export async function offlinePath(path: string, workspace?: string): Promise<str
   return absolute;
 }
 
+/** Admits an explicitly selected maintenance database independently of archive storage. */
+export async function maintenanceDatabasePath(path: string): Promise<string> {
+  requireArchive(process.platform === 'win32' || process.platform === 'linux', 'SOURCE_UNSUPPORTED');
+  requireArchive(isAbsolute(path), 'SOURCE_UNSUPPORTED');
+  if (process.platform === 'win32') {
+    requireArchive(/^[dD]:[\\/]/.test(path), 'SOURCE_UNSUPPORTED');
+  }
+  const absolute = await checkedPath(path);
+  const stat = await fs.stat(absolute);
+  requireArchive(stat.isFile(), 'SOURCE_UNSUPPORTED');
+  if (process.platform === 'linux') {
+    requireArchive(stat.uid === process.getuid?.() && (stat.mode & 0o022) === 0, 'SOURCE_UNSUPPORTED');
+  }
+  for (let parent = dirname(absolute); dirname(parent) !== parent; parent = dirname(parent)) {
+    requireArchive(!await exists(resolve(parent, '.git')), 'SOURCE_UNSUPPORTED');
+  }
+  return absolute;
+}
+
 export function overlaps(left: string, right: string): boolean {
   const normalize = (value: string) => process.platform === 'win32' ? resolve(value).toLowerCase() : resolve(value);
   const a = normalize(left);

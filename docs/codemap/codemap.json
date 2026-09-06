@@ -1,7 +1,7 @@
 {
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-09-06T19:59:15.603Z",
-  "generated_from_commit": "ac955cb1e65ae25c99b58820f37f842a2893e6f5",
+  "generated_at": "2026-09-06T20:13:12.878Z",
+  "generated_from_commit": "de22cd1ca4402530a96a726e60a9362e3c3445ab",
   "scope": [
     ".",
     ".github",
@@ -1096,6 +1096,49 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "id": "replay-api",
+      "label": "API реплея",
+      "type": "api",
+      "path": "src/server/routes/ApiReplay.ts",
+      "role": "По ссылке зрителя выдаёт список сохранений завершённой партии или точный публичный кадр.",
+      "entrypoints": [
+        {
+          "path": "src/server/routes/ApiReplay.ts",
+          "symbol": "ApiReplay.get",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/server/requestProcessor.ts",
+          "symbol": "paths.API_REPLAY",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/routes/ApiReplay.spec.ts",
+          "symbol": "ApiReplay",
+          "status": "confirmed"
+        },
+        {
+          "path": "tests/database/ReplayArchive.spec.ts",
+          "symbol": "ReplayArchive",
+          "status": "confirmed"
+        }
+      ],
+      "constraints": [
+        "Повторно проверяет завершённость и ссылку после чтения.",
+        "Не обращается к живому кешу и не пишет историю.",
+        "Лимит 4 параллельных запроса и 4096 сохранений."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/routes/ApiReplay.ts",
+          "symbol": "IDatabase.getParticipants / getGame / getSaveIds / getGameVersion",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "edges": [
@@ -1680,6 +1723,19 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "replay-api",
+      "to": "replay-frame",
+      "type": "uses",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/routes/ApiReplay.ts",
+          "symbol": "toReplayFrame",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -1847,7 +1903,12 @@
     "src/common/models/ReplayModel.ts",
     "src/server/replay/ReplayFrame.ts",
     "tests/replay/ReplayView.spec.ts",
-    "tests/replay/ReplayFrame.spec.ts"
+    "tests/replay/ReplayFrame.spec.ts",
+    "src/server/routes/ApiReplay.ts",
+    "src/server/server/requestProcessor.ts",
+    "src/common/app/paths.ts",
+    "tests/routes/ApiReplay.spec.ts",
+    "tests/database/ReplayArchive.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -1857,8 +1918,13 @@
       "src/common/models/ReplayModel.ts",
       "src/server/replay/ReplayFrame.ts",
       "tests/replay/ReplayView.spec.ts",
-      "tests/replay/ReplayFrame.spec.ts"
+      "tests/replay/ReplayFrame.spec.ts",
+      "src/server/routes/ApiReplay.ts",
+      "src/server/server/requestProcessor.ts",
+      "src/common/app/paths.ts",
+      "tests/routes/ApiReplay.spec.ts",
+      "tests/database/ReplayArchive.spec.ts"
     ],
-    "note": "Проверены связи режима просмотра и публичной проекции; остальные связи карты сохранены из прежнего снимка."
+    "note": "Проверены связи режима просмотра, публичной проекции и API, включая архивную SQLite; остальные связи карты сохранены из прежнего снимка."
   }
 }

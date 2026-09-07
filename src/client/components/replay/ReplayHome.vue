@@ -27,7 +27,7 @@
           :disabled="count < 2" :aria-label="$t('Saved state')"
           @input="seek(Number(($event.target as HTMLInputElement).value))">
       </label>
-      <p v-if="state.loading" class="replay-status" role="status" v-i18n>Loading replay...</p>
+      <p v-if="state.loading && !state.frame" class="replay-status" role="status" v-i18n>Loading replay...</p>
       <p v-else-if="state.frame" class="replay-status" role="status">
         <span v-i18n>Generation</span> {{ state.frame.view.game.generation }} ·
         <span v-i18n>{{ state.frame.view.game.phase }}</span> ·
@@ -41,7 +41,7 @@
     </div>
     <p v-else-if="state.index && count === 0" role="status" v-i18n>No saved states are available.</p>
 
-    <div v-if="state.frame" class="replay-frame" :data-replay-save="state.frame.saveId">
+    <div v-if="state.frame" class="replay-frame" :data-replay-save="state.frame.saveId" :aria-busy="state.loading">
       <div class="replay-players">
         <PlayersOverview :playerView="state.frame.view" :readOnly="true"/>
       </div>

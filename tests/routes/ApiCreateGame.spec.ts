@@ -150,7 +150,7 @@ describe('ApiCreateGame', () => {
     config.seed = 0.123456789;
     config.undoStepOption = true;
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -177,7 +177,7 @@ describe('ApiCreateGame', () => {
     ]);
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
 
@@ -205,7 +205,7 @@ describe('ApiCreateGame', () => {
     config.startingPreludes = constants.PRELUDE_CARDS_DEALT_PER_PLAYER;
 
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
 
@@ -230,7 +230,7 @@ describe('ApiCreateGame', () => {
     }]);
     config.noEloGame = true;
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
 
@@ -255,7 +255,7 @@ describe('ApiCreateGame', () => {
     }]);
     config.privateHands = false;
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
 
@@ -288,7 +288,7 @@ describe('ApiCreateGame', () => {
     config.initialDraft = true;
     config.initialDraftOneWay = true;
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
 
@@ -321,7 +321,7 @@ describe('ApiCreateGame', () => {
     config.initialDraft = false;
     config.initialDraftOneWay = true;
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
 
@@ -339,7 +339,7 @@ describe('ApiCreateGame', () => {
     scaffolding.ctx.gameLoader = gameLoader;
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(newGameConfig([{
+      req.emitString(JSON.stringify(newGameConfig([{
         name: 'Robot',
         color: 'blue',
         beginner: false,
@@ -371,7 +371,7 @@ describe('ApiCreateGame', () => {
     (config as unknown as {clonedGamedId: null}).clonedGamedId = null;
 
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -396,7 +396,7 @@ describe('ApiCreateGame', () => {
     (config as unknown as {escapeVelocity: null}).escapeVelocity = null;
 
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -426,7 +426,7 @@ describe('ApiCreateGame', () => {
     };
 
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -446,7 +446,7 @@ describe('ApiCreateGame', () => {
   it('forces GenuineGold name for gold players', async () => {
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(newGameConfig([{
+      req.emitString(JSON.stringify(newGameConfig([{
         name: 'Ilya',
         color: 'gold',
         beginner: false,
@@ -468,7 +468,7 @@ describe('ApiCreateGame', () => {
   it('keeps typed player names from changing the selected colors', async () => {
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(newGameConfig([
+      req.emitString(JSON.stringify(newGameConfig([
         {name: 'GydRo', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false},
         {name: 'Олеся', color: 'green', beginner: false, handicap: 0, first: false, isBot: false},
         {name: 'Паша', color: 'red', beginner: false, handicap: 0, first: false, isBot: false},
@@ -503,7 +503,7 @@ describe('ApiCreateGame', () => {
         telegramID: '@bad-id',
       }]);
       config.turnBasedGame = true;
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -524,7 +524,7 @@ describe('ApiCreateGame', () => {
         telegramID: '   ',
       }]);
       config.turnBasedGame = true;
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -535,7 +535,7 @@ describe('ApiCreateGame', () => {
   it('ignores telegram ids when async mode is disabled', async () => {
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(newGameConfig([{
+      req.emitString(JSON.stringify(newGameConfig([{
         name: 'Robot',
         color: 'blue',
         beginner: false,
@@ -558,7 +558,7 @@ describe('ApiCreateGame', () => {
   it('trims blank telegram ids before game creation', async () => {
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(newGameConfig([{
+      req.emitString(JSON.stringify(newGameConfig([{
         name: 'Robot',
         color: 'blue',
         beginner: false,
@@ -598,7 +598,7 @@ describe('ApiCreateGame', () => {
         isBot: true,
       }]);
       config.botGame = true;
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
 
@@ -630,7 +630,7 @@ describe('ApiCreateGame', () => {
 
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(newGameConfig([{
+      req.emitString(JSON.stringify(newGameConfig([{
         name: 'Robot',
         color: 'blue',
         beginner: false,
@@ -654,7 +654,7 @@ describe('ApiCreateGame', () => {
   it('red rover solo game', async () => {
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', JSON.stringify({players: [{name: 'a player', color: 'red'}]}));
+      scaffolding.req.emitString(JSON.stringify({players: [{name: 'a player', color: 'red'}]}));
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -667,7 +667,7 @@ describe('ApiCreateGame', () => {
   function postGame(handler: ApiCreateGame, request: MockRequest, response: MockResponse) {
     const post = handler.post(request, response, scaffolding.ctx);
     const emit = Promise.resolve().then(() => {
-      request.emitter.emit('data', JSON.stringify({players: [{name: 'a player', color: 'red'}]}));
+      request.emitString(JSON.stringify({players: [{name: 'a player', color: 'red'}]}));
       request.emitter.emit('end');
     });
     return Promise.all([emit, post]);

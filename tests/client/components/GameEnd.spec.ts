@@ -5,6 +5,13 @@ import GameEnd from '@/client/components/GameEnd.vue';
 import {fakePlayerViewModel, fakePublicPlayerModel, fakeSpectatorModel} from './testHelpers';
 
 describe('GameEnd', () => {
+  it('links to the replay with spectator access from a player results page', () => {
+    const playerView = fakePlayerViewModel();
+    playerView.game.spectatorId = 'sreplay-link';
+    const wrapper = shallowMount(GameEnd, {...globalConfig, props: {playerView, spectator: fakeSpectatorModel()}});
+    expect(wrapper.get('a[href^="replay?"]').attributes('href')).eq('replay?id=sreplay-link');
+  });
+
   it('mounts without errors', () => {
     const wrapper = shallowMount(GameEnd, {
       ...globalConfig,

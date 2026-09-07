@@ -2173,7 +2173,7 @@ export class Player implements IPlayer {
     return result;
   }
 
-  public static deserialize(d: SerializedPlayer): Player {
+  public static deserialize(d: SerializedPlayer, options: {restoreTimerClock?: boolean} = {}): Player {
     const player = new Player(d.name, d.color, d.beginner, Number(d.handicap), d.id, normalizePreludeHandicap(d.preludeHandicap));
 
     player.actionsTakenThisGame = d.actionsTakenThisGame;
@@ -2255,7 +2255,7 @@ export class Player implements IPlayer {
     // TODO(kberg): remove ?? 0 by 2026-11-01
     player.trThisGeneration = d.trThisGeneration ?? 0;
 
-    player.timer = Timer.deserialize(d.timer);
+    player.timer = Timer.deserialize(d.timer, options.restoreTimerClock);
     player.underworldData = d.underworldData;
 
     if (d.alliedParty !== undefined) {

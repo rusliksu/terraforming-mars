@@ -3,8 +3,12 @@
 The one-game operator command archives the exact recorded JSON history of a
 completed game, verifies its private files, and commits a locator with removal
 of only intermediate SQLite rows. The latest row and an existing save 0 stay
-live. This does not add public replay, shrink the database file or schedule
-automatic retention. PostgreSQL and filesystem retention are unchanged.
+live. This does not shrink the database file or schedule automatic retention.
+PostgreSQL and filesystem retention are unchanged.
+
+[Публичный реплей](game-replay.md) читает эту историю через отдельный API
+для завершённых партий. Просмотр не вызывает оператор архива, восстановление
+или удаление строк; сырые сохранения остаются приватными.
 
 ## Entry point and limits
 

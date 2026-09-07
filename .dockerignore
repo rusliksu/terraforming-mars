@@ -5,6 +5,7 @@ Dockerfile
 .nvmrc
 LICENSE
 tests
+scripts/replay/create-fixture.ts
 .gitignore
 .gitattributes
 .env.sample

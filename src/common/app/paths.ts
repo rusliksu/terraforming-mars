@@ -13,6 +13,7 @@ export const paths = {
   API_LOGOUT: 'api/logout',
   API_PLAYER: 'api/player',
   API_PROFILE: 'api/profile',
+  API_REPLAY: 'api/replay',
   API_SPECTATOR: 'api/spectator',
   API_STATS: 'api/stats',
   API_WAITING_FOR: 'api/waitingfor',
@@ -30,6 +31,7 @@ export const paths = {
   PLAYER: 'player',
   PLAYER_INPUT: 'player/input',
   RESET: 'reset',
+  REPLAY: 'replay',
   SPECTATOR: 'spectator',
   THE_END: 'the-end',
 } as const;

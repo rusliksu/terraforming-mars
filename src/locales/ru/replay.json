@@ -1,0 +1,21 @@
+{
+  "Back to game": "Вернуться к партии",
+  "Game replay": "Реплей партии",
+  "Public saved states. Some actions may fall between saves.": "Публичные сохранённые состояния. Между сохранениями могут быть пропущены действия.",
+  "Replay controls": "Управление реплеем",
+  "First save": "Первое сохранение",
+  "Previous save": "Предыдущее сохранение",
+  "Pause replay": "Пауза",
+  "Play replay": "Воспроизвести",
+  "Next save": "Следующее сохранение",
+  "Last save": "Последнее сохранение",
+  "Replay speed": "Скорость",
+  "Saved state": "Сохранение",
+  "Loading replay...": "Загрузка реплея...",
+  "Save ID": "ID сохранения",
+  "Replay unavailable. The game may have changed or its history cannot be read.": "Реплей недоступен. Возможно, партия изменилась или её историю не удалось прочитать.",
+  "Retry replay": "Повторить загрузку",
+  "No saved states are available.": "Сохранённые состояния недоступны.",
+  "Saved public log": "Публичный журнал сохранения",
+  "No public messages in this save.": "В этом сохранении нет публичных сообщений."
+}

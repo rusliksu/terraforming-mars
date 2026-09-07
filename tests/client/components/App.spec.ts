@@ -1,5 +1,6 @@
 import {shallowMount} from '@vue/test-utils';
 import {expect} from 'chai';
+import {vi} from 'vitest';
 import {paths} from '@/common/app/paths';
 import {statusCode} from '@/common/http/statusCode';
 import App from '@/client/components/App.vue';
@@ -11,7 +12,8 @@ import {Phase} from '@/common/Phase';
 describe('App', () => {
   const originalFetch = global.fetch;
 
-  afterEach(() => {
+  afterEach(async () => {
+    await vi.dynamicImportSettled();
     global.fetch = originalFetch;
     window.history.replaceState({}, '', '/');
   });
@@ -19,6 +21,19 @@ describe('App', () => {
   it('mounts without errors', () => {
     const wrapper = shallowMount(App, globalConfig);
     expect(wrapper.exists()).to.be.true;
+  });
+
+  it('opens a direct replay link without loading a live player or spectator model', () => {
+    window.history.replaceState({}, '', '/replay?id=sreplay');
+    const requests: Array<string> = [];
+    global.fetch = (async (url) => {
+      requests.push(String(url));
+      throw new Error('Live model requested');
+    }) as typeof fetch;
+    const wrapper = shallowMount(App, {global: {...globalConfig.global, stubs: {ReplayHome: true}}});
+    expect(wrapper.vm.screen).eq('replay');
+    expect(requests).deep.eq([]);
+    wrapper.unmount();
   });
 
   it('shows a specific message for stale game links', () => {

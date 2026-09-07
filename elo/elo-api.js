@@ -81,10 +81,11 @@ function rebuildElo(data) {
       var place = result.place || (ri + 1);
       var vp = result.vp || 0;
       var corp = result.corp || "";
+      var completedNormally = result.completionOutcome !== "surrendered" && result.completionOutcome !== "left";
       displayNames[nk] = result.displayName;
       gamesCount[nk] = (gamesCount[nk] || 0) + 1;
-      if (place === 1) firsts[nk] = (firsts[nk] || 0) + 1;
-      if (place <= 3) top3Counts[nk] = (top3Counts[nk] || 0) + 1;
+      if (completedNormally && place === 1) firsts[nk] = (firsts[nk] || 0) + 1;
+      if (completedNormally && place <= 3) top3Counts[nk] = (top3Counts[nk] || 0) + 1;
       placeScoreTotals[nk] = (placeScoreTotals[nk] || 0) + placementScore(place, n);
       totalVPs[nk] = (totalVPs[nk] || 0) + vp;
       if (Number(g.generation) > 0) {

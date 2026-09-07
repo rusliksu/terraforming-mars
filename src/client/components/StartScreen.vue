@@ -14,24 +14,6 @@
     <a class="start-screen-link start-screen-link--about" href="https://github.com/rusliksu/terraforming-mars#README" target="_blank" v-i18n>About us</a>
     <a class="start-screen-link start-screen-link--changelog" href="https://github.com/rusliksu/terraforming-mars/wiki/Changelog" target="_blank" v-i18n>Whats new?</a>
     <a class="start-screen-link start-screen-link--chat" :href="DISCORD_INVITE" target="_blank" v-i18n>Join us on Discord</a>
-    <section class="start-screen-live-games" aria-label="Current games">
-      <div class="start-screen-live-games__header">
-        <span v-i18n>Current games</span>
-        <span v-if="liveGamesStatus === 'loading'" class="start-screen-live-games__status" v-i18n>loading</span>
-      </div>
-      <a
-        v-for="game in liveGames"
-        :key="game.id"
-        class="start-screen-live-game"
-        :href="spectatorHref(game)"
-        :aria-label="'Spectate game: ' + playerNames(game)"
-      >
-        <span class="start-screen-live-game__dot"></span>
-        <span class="start-screen-live-game__players">{{ playerNames(game) }}</span>
-      </a>
-      <div v-if="liveGamesStatus === 'loaded' && liveGames.length === 0" class="start-screen-live-games__empty" v-i18n>No games online</div>
-      <div v-if="liveGamesStatus === 'error'" class="start-screen-live-games__empty" v-i18n>Could not load current games</div>
-    </section>
     <div class="start-screen-header start-screen-link--languages">
       <LanguageSwitcher />
       <div class="start-screen-version-cont">
@@ -53,69 +35,37 @@
 </div>
 </template>
 
-<script lang="ts">
-
-import {defineComponent} from 'vue';
+<script setup lang="ts">
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import LanguageSwitcher from '@/client/components/LanguageSwitcher.vue';
 import LanguageIcon from '@/client/components/LanguageIcon.vue';
 import PreferencesIcon from '@/client/components/PreferencesIcon.vue';
 
 import raw_settings from '@/genfiles/settings.json';
-import {paths} from '@/common/app/paths';
 import * as constants from '@/common/constants';
-import {Phase} from '@/common/Phase';
-import {LiveGameModel} from '@/common/models/LiveGameModel';
 
-type LiveGamesStatus = 'loading' | 'loaded' | 'error';
+const previousViewport = ref('');
 
-export default defineComponent({
-  name: 'StartScreen',
-  components: {
-    LanguageSwitcher,
-    LanguageIcon,
-    PreferencesIcon,
-  },
-  data(): {liveGames: Array<LiveGameModel>, liveGamesStatus: LiveGamesStatus} {
-    return {
-      liveGames: [],
-      liveGamesStatus: 'loading',
-    };
-  },
-  mounted() {
-    this.getLiveGames();
-  },
-  computed: {
-    raw_settings(): typeof raw_settings {
-      return raw_settings;
-    },
-    DISCORD_INVITE(): string {
-      return constants.DISCORD_INVITE;
-    },
-  },
-  methods: {
-    async getLiveGames(): Promise<void> {
-      try {
-        const response = await fetch(paths.API_LIVE_GAMES);
-        if (!response.ok) {
-          this.liveGamesStatus = 'error';
-          return;
-        }
-        const games = await response.json() as Array<LiveGameModel>;
-        this.liveGames = Array.isArray(games) ?
-          games.filter((game) => game.phase !== Phase.END) :
-          [];
-        this.liveGamesStatus = 'loaded';
-      } catch (error) {
-        this.liveGamesStatus = 'error';
-      }
-    },
-    playerNames(game: LiveGameModel): string {
-      return game.players.map((player) => player.name).join(' / ');
-    },
-    spectatorHref(game: LiveGameModel): string {
-      return game.spectatorId === undefined ? 'game?id=' + game.id : 'spectator?id=' + game.spectatorId;
-    },
-  },
+// Set the viewport width to width=device-width on the start screen so mobile browsers use their actual CSS viewport width.
+// The current global viewport is width=1260, which prevents the home page from using the device width on phones.
+// This is a temporary solution in order to make this edit scoped to the start screen.
+// TODO: Once responsiveness covers the whole project, this code should be removed and the tag in index.html should be updated directly.
+onMounted(() => {
+  const viewport = document.querySelector('meta[name="viewport"]');
+  if (viewport !== null) {
+    previousViewport.value = viewport.getAttribute('content') ?? '';
+    viewport.setAttribute(
+      'content',
+      'width=device-width, initial-scale=1, viewport-fit=cover',
+    );
+  }
 });
 
+onBeforeUnmount(() => {
+  document
+    .querySelector('meta[name="viewport"]')
+    ?.setAttribute('content', previousViewport.value);
+});
+
+const DISCORD_INVITE = constants.DISCORD_INVITE;
 </script>

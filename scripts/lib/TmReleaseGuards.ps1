@@ -36,6 +36,40 @@ function Assert-TmIgnoredRealtimeGameIds {
     }
 }
 
+function Assert-TmStagingSource {
+    param(
+        [Parameter(Mandatory)]
+        [string]$SourceRoot,
+        [AllowNull()]
+        [string]$HeadSha,
+        [AllowNull()]
+        [string]$OriginMainSha,
+        [AllowNull()]
+        [string]$GitStatus,
+        [switch]$AllowDirtySource,
+        [switch]$AllowPrimaryWorkingTree
+    )
+
+    if ($AllowDirtySource) {
+        throw "Staging source guard rejects -AllowDirtySource. Staging accepts only a clean checkout at origin/main."
+    }
+    if ($AllowPrimaryWorkingTree) {
+        throw "Staging source guard rejects -AllowPrimaryWorkingTree. Use a clean release checkout at origin/main."
+    }
+    if (-not [string]::IsNullOrWhiteSpace($GitStatus)) {
+        throw "Staging source must be clean: $SourceRoot"
+    }
+    if ([string]::IsNullOrWhiteSpace($OriginMainSha) -or $OriginMainSha -notmatch '^[0-9a-fA-F]{40}$') {
+        throw "Staging source has no valid origin/main SHA. Refresh the clean release checkout before deploy: $SourceRoot"
+    }
+    if ([string]::IsNullOrWhiteSpace($HeadSha) -or $HeadSha -notmatch '^[0-9a-fA-F]{40}$') {
+        throw "Staging source HEAD is not a full git SHA: $SourceRoot"
+    }
+    if (-not $HeadSha.Equals($OriginMainSha, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Staging source must equal origin/main. source=$SourceRoot head=$HeadSha origin/main=$OriginMainSha"
+    }
+}
+
 function ConvertTo-TmReleaseCasBaselineBase64 {
     param(
         [Parameter(Mandatory)]

@@ -24,13 +24,13 @@ import {timeAsync} from '@/server/utils/timer';
 import {GameLoader} from '@/server/database/GameLoader';
 import {globalInitialize} from '@/server/globalInitialize';
 import {SessionManager} from '@/server/server/auth/SessionManager';
+import {capture} from '@/server/server/SentryReporter';
+import {registerUncaughtExceptionHandler} from '@/server/server/SentryProcessBoundary';
 
-process.on('uncaughtException', (err: any) => {
-  console.error('UNCAUGHT EXCEPTION', err);
-});
+registerUncaughtExceptionHandler(capture);
 
 function requestHandler(req: http.IncomingMessage, res: http.ServerResponse): void {
-  processRequest(req, res).catch((error) => {
+  processRequest(req, res, capture).catch((error) => {
     responses.internalServerError(req, res, error);
   });
 }
@@ -118,7 +118,9 @@ async function start() {
     // Do not fail. Just continue. Stats aren't vital.
     console.error(err);
   }
-  GameLoader.getInstance().maintenance();
+  const gameLoader = GameLoader.getInstance();
+  void gameLoader.maintenance();
+  await GameLoader.reconcileSurrenderedBots();
 
   console.log(`Starting ${raw_settings.head}, built at ${raw_settings.builtAt}`);
 
@@ -140,9 +142,7 @@ async function start() {
   console.log('Server is ready.');
 }
 
-try {
-  start();
-} catch (err) {
+start().catch((err) => {
   console.error('Cannot start server:');
   console.error(err);
-}
+});

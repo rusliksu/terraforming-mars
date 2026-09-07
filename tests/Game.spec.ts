@@ -45,8 +45,6 @@ function noopGameLoader(): IGameLoader {
   return {
     add: () => Promise.resolve(),
     getIds: () => Promise.resolve([]),
-    getLastSaveTimeMs: () => Promise.resolve(undefined),
-    getLastSaveTimesMs: () => Promise.resolve(new Map()),
     getGame: () => Promise.resolve(undefined),
     getGameAt: () => Promise.reject(new Error('not implemented')),
     getGameAtOrBefore: () => Promise.reject(new Error('not implemented')),
@@ -540,6 +538,56 @@ describe('Game', () => {
     }))).deep.eq([
       {playerName: 'Bob', user: 'bob-user', playerScore: 80, place: 1, megacredits: 30},
       {playerName: 'Alice', user: 'alice-user', playerScore: 80, place: 2, megacredits: 12},
+    ]);
+  });
+
+  it('finishes after the last active surrender and preserves raw scores', async () => {
+    const alice = TestPlayer.BLUE.newPlayer({name: 'Alice'});
+    const bob = TestPlayer.RED.newPlayer({name: 'Bob'});
+    const carol = TestPlayer.YELLOW.newPlayer({name: 'Carol'});
+    const game = Game.newInstance('g-last-active-surrender', [alice, bob, carol], alice, 'spectatorid');
+    game.phase = Phase.ACTION;
+    alice.setTerraformRating(40);
+    bob.setTerraformRating(80);
+    carol.setTerraformRating(70);
+    game.surrenderedPlayerIds.add(bob.id);
+    game.surrenderedPlayerIds.add(carol.id);
+    const rawScores = new Map(game.players.map((player) => [player.id, player.getVictoryPoints().total]));
+
+    let savedScores: Array<Score> = [];
+    let completedGames = 0;
+    const database = new InMemoryDatabase();
+    database.saveGameResults = (_gameId, _players, _generations, _gameOptions, scores) => {
+      savedScores = scores;
+    };
+    const gameLoader = noopGameLoader();
+    gameLoader.completeGame = () => {
+      completedGames++;
+      return Promise.resolve();
+    };
+    setTestDatabase(database);
+    setTestGameLoader(gameLoader);
+
+    try {
+      expect(await game.finishAfterSurrender()).is.true;
+      expect(await game.finishAfterSurrender()).is.false;
+    } finally {
+      restoreTestGameLoader();
+      restoreTestDatabase();
+    }
+
+    expect(game.phase).eq(Phase.END);
+    expect(completedGames).eq(1);
+    expect(savedScores.map((score) => ({
+      playerName: score.playerName,
+      place: score.place,
+      placeFrom: score.placeFrom,
+      placeTo: score.placeTo,
+      playerScore: score.playerScore,
+    }))).deep.eq([
+      {playerName: 'Alice', place: 1, placeFrom: undefined, placeTo: undefined, playerScore: rawScores.get(alice.id)},
+      {playerName: 'Bob', place: 2.5, placeFrom: 2, placeTo: 3, playerScore: rawScores.get(bob.id)},
+      {playerName: 'Carol', place: 2.5, placeFrom: 2, placeTo: 3, playerScore: rawScores.get(carol.id)},
     ]);
   });
 
@@ -1086,6 +1134,52 @@ describe('Game', () => {
       .deep.eq(gameKeys.concat(...serializedValuesNotInGame).sort());
   });
 
+  it('persists bot and surrender state across game restore', () => {
+    const bot = TestPlayer.BLUE.newPlayer();
+    const human = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('gameid', [bot, human], bot, 'spectatorid');
+    game.setBotPlayerIds([bot.id]);
+    game.surrenderedPlayerIds.add(human.id);
+
+    const restored = Game.deserialize(game.serialize(), {simulation: true});
+
+    expect(Array.from(restored.botPlayerIds)).deep.eq([bot.id]);
+    expect(Array.from(restored.surrenderedPlayerIds)).deep.eq([human.id]);
+  });
+
+  it('does not end multiplayer based on surrendered seats', () => {
+    const alice = TestPlayer.BLUE.newPlayer();
+    const bob = TestPlayer.RED.newPlayer();
+    const carol = TestPlayer.YELLOW.newPlayer();
+    const game = Game.newInstance('game-surrender', [alice, bob, carol], alice, 'spectatorid');
+
+    game.surrenderedPlayerIds.add(alice.id);
+    expect(game.gameIsOver()).eq(false);
+
+    game.surrenderedPlayerIds.add(bob.id);
+    expect(game.gameIsOver()).eq(false);
+  });
+
+  it('keeps surrendered seats in research and final greenery', () => {
+    const alice = TestPlayer.BLUE.newPlayer();
+    const bob = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('game-surrender-flow', [alice, bob], alice, 'spectatorid');
+    alice.clearWaitingFor();
+    bob.clearWaitingFor();
+    game.surrenderedPlayerIds.add(alice.id);
+
+    game.generation = 2;
+    game.gotoResearchPhase();
+    expect(game.hasResearched(alice)).eq(false);
+    expect(alice.getWaitingFor()).is.not.undefined;
+
+    alice.clearWaitingFor();
+    bob.clearWaitingFor();
+    alice.plants = alice.plantsNeededForGreenery;
+    game.takeNextFinalGreeneryAction();
+    expect(alice.getWaitingFor()).is.not.undefined;
+  });
+
   it('enables action undo when loading a game with experimental step undo', () => {
     const player = TestPlayer.BLUE.newPlayer();
     const game = Game.newInstance('gameid', [player], player, 'spectatorid');
@@ -1376,6 +1470,28 @@ describe('Game', () => {
       GlobalParameter.OXYGEN,
       GlobalParameter.TEMPERATURE,
       GlobalParameter.OCEANS]);
+  });
+
+  it('keeps a surrendered first player responsible for WGT', () => {
+    const first = TestPlayer.BLUE.newPlayer();
+    const second = TestPlayer.RED.newPlayer();
+    const third = TestPlayer.BLACK.newPlayer();
+    const game = Game.newInstance(
+      'gameid',
+      [first, second, third],
+      first,
+      'spectatorid',
+      {solarPhaseOption: true},
+    );
+    game.surrenderedPlayerIds.add(first.id);
+
+    game.worldGovernmentTerraforming();
+
+    expect(waitingForGlobalParameters(first)).to.have.members([
+      GlobalParameter.OXYGEN,
+      GlobalParameter.TEMPERATURE,
+      GlobalParameter.OCEANS,
+    ]);
   });
 
   it('wgt includes all parameters at the game start, with Venus', () => {

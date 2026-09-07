@@ -2,7 +2,7 @@ import {shallowMount} from '@vue/test-utils';
 import {expect} from 'chai';
 import {globalConfig} from './getLocalVue';
 import GameEnd from '@/client/components/GameEnd.vue';
-import {fakePlayerViewModel, fakeSpectatorModel} from './testHelpers';
+import {fakePlayerViewModel, fakePublicPlayerModel, fakeSpectatorModel} from './testHelpers';
 
 describe('GameEnd', () => {
   it('mounts without errors', () => {
@@ -20,5 +20,77 @@ describe('GameEnd', () => {
     expect(rematchLink).to.not.be.undefined;
     expect(rematchLink?.attributes('title')).to.eq('Start a new game with the same initial setup');
     expect(rematchLink?.attributes('href')).to.contain('new-game?cloneGameId=');
+  });
+
+  it('places surrendered players in a shared remaining-place range and marks them', () => {
+    const winner = fakePublicPlayerModel({
+      id: 'p-winner' as any,
+      name: 'Winner',
+      victoryPointsBreakdown: {total: 70},
+    });
+    const surrendered = fakePublicPlayerModel({
+      id: 'p-surrendered' as any,
+      name: 'Surrendered',
+      isBotControlled: true,
+      isSurrendered: true,
+      victoryPointsBreakdown: {total: 100},
+    });
+    const wrapper = shallowMount(GameEnd, {
+      ...globalConfig,
+      props: {
+        playerView: fakePlayerViewModel({
+          players: [surrendered, winner],
+          thisPlayer: winner,
+        }),
+        spectator: fakeSpectatorModel(),
+      },
+    });
+
+    expect((wrapper.vm as any).playersInPlace.map((player: {name: string}) => player.name)).deep.eq(['Winner', 'Surrendered']);
+    expect((wrapper.vm as any).getPlayerPlaceLabel(winner)).eq('1');
+    expect((wrapper.vm as any).getPlayerPlaceLabel(surrendered)).eq('2');
+    const flag = wrapper.find('[data-test="surrendered-player-flag"]');
+    expect(flag.exists()).eq(true);
+    expect(flag.attributes('title')).eq('Surrendered');
+    expect(wrapper.find('.bot-controlled-marker').exists()).eq(true);
+    expect(wrapper.text()).not.to.contain('Left');
+  });
+
+  it('ties all surrendered players across the remaining places', () => {
+    const winner = fakePublicPlayerModel({
+      id: 'p-winner' as any,
+      name: 'Winner',
+      victoryPointsBreakdown: {total: 70},
+    });
+    const lowCash = fakePublicPlayerModel({
+      id: 'p-low-cash' as any,
+      name: 'Low cash',
+      isSurrendered: true,
+      megacredits: 5,
+      victoryPointsBreakdown: {total: 100},
+    });
+    const highCash = fakePublicPlayerModel({
+      id: 'p-high-cash' as any,
+      name: 'High cash',
+      isSurrendered: true,
+      megacredits: 15,
+      victoryPointsBreakdown: {total: 100},
+    });
+    const wrapper = shallowMount(GameEnd, {
+      ...globalConfig,
+      props: {
+        playerView: fakePlayerViewModel({
+          players: [lowCash, winner, highCash],
+          thisPlayer: winner,
+        }),
+        spectator: fakeSpectatorModel(),
+      },
+    });
+
+    expect((wrapper.vm as any).playersInPlace.map((player: {name: string}) => player.name)).deep.eq(['Winner', 'Low cash', 'High cash']);
+    expect((wrapper.vm as any).getPlayerPlaceLabel(winner)).eq('1');
+    expect((wrapper.vm as any).getPlayerPlaceLabel(lowCash)).eq('2–3');
+    expect((wrapper.vm as any).getPlayerPlaceLabel(highCash)).eq('2–3');
+    expect(wrapper.findAll('[data-test="result-place"]').map((cell) => cell.text())).deep.eq(['1', '2–3', '2–3']);
   });
 });

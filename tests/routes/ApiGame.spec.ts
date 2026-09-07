@@ -28,13 +28,14 @@ describe('ApiGame', () => {
     scaffolding.ctx.gameLoader.add(Game.newInstance('game-valid-id', [player], player, 'spectatorid'));
     scaffolding.url = '/api/game?id=invalidId';
     await scaffolding.get(ApiGame.INSTANCE, res);
-    expect(res.statusCode).eq(statusCode.notFound);
-    expect(res.content).eq('Not found: game not found');
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).eq('Bad request: invalid game id');
   });
 
   it('valid id', async () => {
     const player = TestPlayer.BLACK.newPlayer();
-    scaffolding.ctx.gameLoader.add(Game.newInstance('game-valid-id', [player], player, 'spectatorid'));
+    const game = Game.newInstance('game-valid-id', [player], player, 'spectatorid');
+    scaffolding.ctx.gameLoader.add(game);
     scaffolding.url = '/api/game?id=game-valid-id';
     await scaffolding.get(ApiGame.INSTANCE, res);
     // This test is probably brittle.
@@ -53,6 +54,8 @@ describe('ApiGame', () => {
           {
             'color': 'black',
             'id': 'p-black-id',
+            'isBotControlled': false,
+            'isSurrendered': false,
             'name': 'player-black',
           },
         ],
@@ -106,6 +109,7 @@ describe('ApiGame', () => {
         },
       },
     );
+    expect(res.content).not.contain('must-not-be-public');
   });
 
   it('audits successful game access', async () => {

@@ -52,7 +52,7 @@ export function prepareActionReplayEntry(
 
   const currentPromptFingerprint = promptFingerprintForPlayer(game, actorId);
   if (game.actionReplayState === undefined) {
-    const rootSnapshot = game.serialize();
+    const rootSnapshot = cloneSerializedGame(game.serialize());
     try {
       const replayedRoot = replayActionInputs(rootSnapshot, []);
       if (promptFingerprintForPlayer(replayedRoot, actorId) !== currentPromptFingerprint) {
@@ -154,7 +154,7 @@ export function stepBackActionInput(current: IGame, actorId: PlayerId): Game {
  * deliberately promoting it to live state.
  */
 export function replayActionInputs(rootSnapshot: SerializedGame, entries: ReadonlyArray<ActionInputEntry>): Game {
-  const snapshot = JSON.parse(JSON.stringify(rootSnapshot)) as SerializedGame;
+  const snapshot = cloneSerializedGame(rootSnapshot);
   for (const player of snapshot.players) {
     // Replaying prompts must not emit or delete real turn notices.
     player.telegramID = undefined;
@@ -175,6 +175,10 @@ export function replayActionInputs(rootSnapshot: SerializedGame, entries: Readon
     actor.process(JSON.parse(JSON.stringify(entry.input)) as InputResponse);
   }
   return game;
+}
+
+function cloneSerializedGame(snapshot: SerializedGame): SerializedGame {
+  return JSON.parse(JSON.stringify(snapshot)) as SerializedGame;
 }
 
 function restoreLiveOnlyState(replayed: Game, current: IGame): void {

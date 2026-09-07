@@ -6,39 +6,16 @@ import {GameId, isGameId, PlayerId, SpectatorId} from '../../src/common/Types';
 
 export class FakeGameLoader implements IGameLoader {
   private games: Map<GameId, IGame> = new Map();
-  private lastSaveTimeMs: Map<GameId, number> = new Map();
   public getGameCallCount = 0;
-  public lastSaveTimeCallCount = 0;
-  public lastSaveTimesCallCount = 0;
   add(game: IGame): Promise<void> {
     this.games.set(game.id, game);
-    this.lastSaveTimeMs.set(game.id, Date.now());
     return Promise.resolve();
-  }
-  setLastSaveTimeMs(gameId: GameId, lastSaveTimeMs: number | undefined): void {
-    if (lastSaveTimeMs === undefined) {
-      this.lastSaveTimeMs.delete(gameId);
-    } else {
-      this.lastSaveTimeMs.set(gameId, lastSaveTimeMs);
-    }
   }
   async getIds(): Promise<Array<GameIdLedger>> {
     return Array.from(this.games.keys())
       .map((gameId) => {
         return {gameId: gameId, participantIds: []};
       });
-  }
-  getLastSaveTimeMs(gameId: GameId): Promise<number | undefined> {
-    this.lastSaveTimeCallCount++;
-    return Promise.resolve(this.lastSaveTimeMs.get(gameId));
-  }
-  getLastSaveTimesMs(gameIds: Array<GameId>): Promise<Map<GameId, number | undefined>> {
-    this.lastSaveTimesCallCount++;
-    const result = new Map<GameId, number | undefined>();
-    for (const gameId of new Set(gameIds)) {
-      result.set(gameId, this.lastSaveTimeMs.get(gameId));
-    }
-    return Promise.resolve(result);
   }
   public getGame(id: GameId | PlayerId | SpectatorId): Promise<IGame | undefined> {
     this.getGameCallCount++;

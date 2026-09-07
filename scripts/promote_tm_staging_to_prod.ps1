@@ -7,6 +7,10 @@ param(
     [string]$ExpectedArtifactSha,
     [string]$ExpectedReleaseBaselineBase64,
     [string[]]$IgnoredRealtimeGameId,
+    [ValidateRange(1, 365)]
+    [int]$RealtimeGameStaleDays = 10,
+    [ValidateRange(1, 3600)]
+    [int]$NextServiceHealthTimeoutSeconds = 180,
     [switch]$DryRun
 )
 
@@ -74,6 +78,7 @@ set -euo pipefail
 staging_root="/home/openclaw/tm-runtime/staging"
 staging_current="$staging_root/current"
 prod_root="/home/openclaw/tm-runtime/prod"
+runtime_root="$prod_root"
 prod_current="$prod_root/current"
 prod_next_root="/home/openclaw/tm-runtime/prod-next"
 prod_next_current="$prod_next_root/current"
@@ -81,10 +86,14 @@ legacy_prod="/home/openclaw/terraforming-mars"
 service="tm-server"
 next_service="tm-server-next"
 elo_service="tm-elo"
+legacy_elo_timer="tm-sync-elo.timer"
+legacy_elo_sync_service="tm-sync-elo.service"
 prod_port="8081"
 next_port="8085"
 health_url="http://127.0.0.1:$prod_port"
 next_health_url="http://127.0.0.1:$next_port"
+next_health_timeout_seconds="__NEXT_SERVICE_HEALTH_TIMEOUT_SECONDS__"
+health_poll_delay_seconds=2
 elo_health_url="http://127.0.0.1:8082/api/elo-submit"
 release_url="${health_url%/}/release.json"
 release_url_fallback="${health_url%/}/assets/release.json"
@@ -95,6 +104,7 @@ required_git_sha="__EXPECTED_GIT_SHA__"
 required_artifact_sha="__EXPECTED_ARTIFACT_SHA__"
 expected_release_baseline_b64="__EXPECTED_RELEASE_BASELINE_B64__"
 ignored_realtime_game_ids_csv="__IGNORED_REALTIME_GAME_IDS_CSV__"
+realtime_game_stale_days="__REALTIME_GAME_STALE_DAYS__"
 run_token="__RUN_TOKEN__"
 work_root="/tmp/tm-promote-${run_token}"
 release_dir="$work_root/release"
@@ -112,6 +122,89 @@ nginx_snippet_backup="$work_root/nginx-before.conf"
 previous_current_link_target=""
 previous_current_link_existed=0
 scripts_dir="/home/openclaw/scripts"
+
+disable_periodic_elo_sync() {
+  local timer_load_state
+  local sync_load_state
+  local timer_active_state
+  local timer_unit_state
+  local sync_active_state
+
+  timer_load_state="$(systemctl --user show "$legacy_elo_timer" --property=LoadState --value 2>/dev/null || true)"
+  sync_load_state="$(systemctl --user show "$legacy_elo_sync_service" --property=LoadState --value 2>/dev/null || true)"
+
+  if [ -n "$timer_load_state" ] && [ "$timer_load_state" != "not-found" ]; then
+    systemctl --user disable --now "$legacy_elo_timer" || return 1
+  fi
+  if [ -n "$sync_load_state" ] && [ "$sync_load_state" != "not-found" ]; then
+    systemctl --user stop "$legacy_elo_sync_service" || return 1
+  fi
+
+  if [ -n "$timer_load_state" ] && [ "$timer_load_state" != "not-found" ]; then
+    timer_active_state="$(systemctl --user show "$legacy_elo_timer" --property=ActiveState --value 2>/dev/null || true)"
+    timer_unit_state="$(systemctl --user is-enabled "$legacy_elo_timer" 2>/dev/null || true)"
+    if [ "$timer_active_state" != "inactive" ] || { [ "$timer_unit_state" != "disabled" ] && [ "$timer_unit_state" != "masked" ]; }; then
+      echo "Legacy periodic ELO timer is not disabled and inactive: active=${timer_active_state:-unknown} enabled=${timer_unit_state:-unknown}." >&2
+      return 1
+    fi
+  fi
+  if [ -n "$sync_load_state" ] && [ "$sync_load_state" != "not-found" ]; then
+    sync_active_state="$(systemctl --user show "$legacy_elo_sync_service" --property=ActiveState --value 2>/dev/null || true)"
+    if [ "$sync_active_state" != "inactive" ]; then
+      echo "Legacy ELO reconciliation service is still active: ${sync_active_state:-unknown}." >&2
+      return 1
+    fi
+  fi
+
+  echo "Legacy periodic ELO polling disabled; game-completion ELO updates remain in tm-server."
+}
+
+normalize_release_permissions() {
+  local candidate="$1"
+  local resolved_releases
+  local resolved_candidate
+  local public_file
+
+  resolved_releases="$(readlink -f -- "$releases_root")" || return 49
+  resolved_candidate="$(readlink -f -- "$candidate")" || return 49
+  if [ "$(dirname -- "$resolved_candidate")" != "$resolved_releases" ]; then
+    echo "Release permission normalization rejected a candidate outside the releases root." >&2
+    return 49
+  fi
+  for public_file in build assets elo; do
+    if [ ! -d "$resolved_candidate/$public_file" ]; then
+      echo "Release permission normalization found an incomplete candidate." >&2
+      return 49
+    fi
+  done
+
+  chmod 755 "$runtime_root" "$releases_root" "$shared_root" "$shared_root/elo" "$resolved_candidate" || return 49
+  find "$resolved_candidate/build" "$resolved_candidate/assets" "$resolved_candidate/elo" -xdev -type d -exec chmod 755 {} + || return 49
+  find "$resolved_candidate/build" "$resolved_candidate/assets" "$resolved_candidate/elo" -xdev -type f -exec chmod 644 {} + || return 49
+  for public_file in package.json package-lock.json; do
+    if [ -f "$resolved_candidate/$public_file" ]; then
+      chmod 644 "$resolved_candidate/$public_file" || return 49
+    fi
+  done
+  for public_file in elo-data.json data.json solo-records.json stats.json; do
+    if [ -f "$shared_root/elo/$public_file" ]; then
+      chmod 664 "$shared_root/elo/$public_file" || return 49
+    fi
+  done
+
+  if find "$resolved_candidate/build" "$resolved_candidate/assets" "$resolved_candidate/elo" -xdev -type d ! -perm 0755 -print -quit | grep -q .; then
+    return 49
+  fi
+  if find "$resolved_candidate/build" "$resolved_candidate/assets" "$resolved_candidate/elo" -xdev -type f ! -perm 0644 -print -quit | grep -q .; then
+    return 49
+  fi
+  for public_file in "$resolved_candidate/assets/release.json" "$resolved_candidate/elo/data.json" "$resolved_candidate/elo/elo-data.json"; do
+    if [ ! -f "$public_file" ] || [ $((8#$(stat -Lc '%a' -- "$public_file") & 6)) -ne 4 ]; then
+      echo "Release permission normalization left a public endpoint unreadable or writable by others." >&2
+      return 49
+    fi
+  done
+}
 
 wait_for_http() {
   local url="$1"
@@ -340,11 +433,13 @@ assert_no_realtime_games_sqlite() {
   local ended_count
   local ignored_count
   local ignored_ids
+  local stale_count
+  local unknown_count
 
   set +e
   gate_output="$({
     cd "$prod_current"
-    node - "$game_db_path" "$ignored_realtime_game_ids_csv" <<'NODE'
+    node - "$game_db_path" "$ignored_realtime_game_ids_csv" "$realtime_game_stale_days" <<'NODE'
 'use strict';
 
 const GAME_ID = /^[A-Za-z0-9_-]{1,128}$/;
@@ -358,9 +453,19 @@ function parseIgnoredIds(csv) {
   return new Set(ids);
 }
 
-function classifyLatestRows(rows, ignoredIds) {
+function parseNonnegativeInteger(value) {
+  if (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) return value;
+  if (typeof value === 'string' && /^[0-9]+$/.test(value)) {
+    const parsed = Number(value);
+    if (Number.isSafeInteger(parsed)) return parsed;
+  }
+  return undefined;
+}
+
+function classifyLatestRows(rows, ignoredIds, nowSeconds, staleDays) {
   if (!Array.isArray(rows)) throw new Error('latest-save query did not return rows');
-  const result = {ended: [], turnBased: [], realtime: [], ignored: []};
+  const result = {ended: [], turnBased: [], realtime: [], stale: [], unknown: [], ignored: []};
+  const staleBefore = nowSeconds - (staleDays * 86400);
   const seen = new Set();
 
   for (const row of rows) {
@@ -368,7 +473,7 @@ function classifyLatestRows(rows, ignoredIds) {
     const gameId = row.game_id;
     if (typeof gameId !== 'string' || !GAME_ID.test(gameId) || seen.has(gameId)) throw new Error('invalid latest game id');
     seen.add(gameId);
-    if (row.status !== 'running' || typeof row.game !== 'string') throw new Error('malformed running latest row');
+    if (typeof row.status !== 'string' || row.status.trim() !== 'running' || typeof row.game !== 'string') throw new Error('malformed running latest row');
 
     const game = JSON.parse(row.game);
     if (game === null || typeof game !== 'object' || Array.isArray(game) || game.id !== gameId) throw new Error('serialized game mismatch');
@@ -401,7 +506,14 @@ function classifyLatestRows(rows, ignoredIds) {
     } else if (ignoredIds.has(gameId)) {
       result.ignored.push(gameId);
     } else {
-      result.realtime.push(gameId);
+      const createdTime = parseNonnegativeInteger(row.created_time);
+      if (createdTime === undefined || createdTime > nowSeconds) {
+        result.unknown.push(gameId);
+      } else if (createdTime < staleBefore) {
+        result.stale.push(gameId);
+      } else {
+        result.realtime.push(gameId);
+      }
     }
   }
 
@@ -418,7 +530,7 @@ function readLatestRunningRows(dbPath) {
   try {
     db.pragma('query_only = ON');
     return db.prepare(`
-      SELECT latest.game_id, latest.game, latest.status, latest.save_id
+      SELECT latest.game_id, latest.game, latest.status, latest.save_id, latest.created_time
       FROM games AS latest
       INNER JOIN (
         SELECT game_id, MAX(save_id) AS max_save_id
@@ -427,7 +539,7 @@ function readLatestRunningRows(dbPath) {
       ) AS latest_save
         ON latest.game_id = latest_save.game_id
        AND latest.save_id = latest_save.max_save_id
-      WHERE latest.status = 'running'
+      WHERE trim(latest.status, char(9) || char(10) || char(11) || char(12) || char(13) || ' ') = 'running'
       ORDER BY latest.game_id
     `).all();
   } finally {
@@ -436,10 +548,15 @@ function readLatestRunningRows(dbPath) {
 }
 
 try {
-  const [dbPath, ignoredCsv = ''] = process.argv.slice(2);
+  const [dbPath, ignoredCsv = '', staleDaysText = '10'] = process.argv.slice(2);
   if (typeof dbPath !== 'string' || dbPath === '') throw new Error('database path is missing');
+  const staleDays = parseNonnegativeInteger(staleDaysText);
+  if (staleDays === undefined || staleDays < 1 || staleDays > 365) throw new Error('stale game age policy is invalid');
+  const nowText = process.env.TM_RELEASE_LIVE_GATE_NOW_SECONDS ?? String(Math.floor(Date.now() / 1000));
+  const nowSeconds = parseNonnegativeInteger(nowText);
+  if (nowSeconds === undefined) throw new Error('gate clock is invalid');
   const rows = readLatestRunningRows(dbPath);
-  const result = classifyLatestRows(rows, parseIgnoredIds(ignoredCsv));
+  const result = classifyLatestRows(rows, parseIgnoredIds(ignoredCsv), nowSeconds, staleDays);
   console.log(`running_count=${rows.length}`);
   console.log(`turn_based_count=${result.turnBased.length}`);
   console.log(`ended_count=${result.ended.length}`);
@@ -447,6 +564,8 @@ try {
   console.log(`ignored_ids=${result.ignored.join(',')}`);
   console.log(`realtime_count=${result.realtime.length}`);
   console.log(`realtime_ids=${result.realtime.join(',')}`);
+  console.log(`stale_count=${result.stale.length}`);
+  console.log(`unknown_count=${result.unknown.length}`);
 } catch (_) {
   console.error('TM live-game SQLite gate failed closed.');
   process.exit(43);
@@ -467,7 +586,9 @@ NODE
   ignored_ids="$(printf '%s\n' "$gate_output" | sed -n 's/^ignored_ids=//p')"
   realtime_count="$(printf '%s\n' "$gate_output" | sed -n 's/^realtime_count=//p')"
   realtime_ids="$(printf '%s\n' "$gate_output" | sed -n 's/^realtime_ids=//p')"
-  for count in "$running_count" "$turn_based_count" "$ended_count" "$ignored_count" "$realtime_count"; do
+  stale_count="$(printf '%s\n' "$gate_output" | sed -n 's/^stale_count=//p')"
+  unknown_count="$(printf '%s\n' "$gate_output" | sed -n 's/^unknown_count=//p')"
+  for count in "$running_count" "$turn_based_count" "$ended_count" "$ignored_count" "$realtime_count" "$stale_count" "$unknown_count"; do
     case "$count" in
       ''|*[!0-9]*)
         echo "Prod promote blocked at $checkpoint: malformed SQLite gate summary." >&2
@@ -482,9 +603,9 @@ NODE
       ;;
   esac
 
-  echo "Prod SQLite live-game gate at $checkpoint: running=$running_count turn_based=$turn_based_count ended=$ended_count ignored=$ignored_count ignored_ids=${ignored_ids:-none} realtime=$realtime_count realtime_ids=${realtime_ids:-none}"
-  if [ "$realtime_count" -gt 0 ]; then
-    echo "Prod promote blocked at $checkpoint: active realtime games=$realtime_count ids=${realtime_ids:-unknown}." >&2
+  echo "Prod SQLite live-game gate at $checkpoint: running=$running_count turn_based=$turn_based_count ended=$ended_count ignored=$ignored_count ignored_ids=${ignored_ids:-none} realtime=$realtime_count realtime_ids=${realtime_ids:-none} stale=$stale_count unknown=$unknown_count stale_days=$realtime_game_stale_days"
+  if [ "$realtime_count" -gt 0 ] || [ "$unknown_count" -gt 0 ]; then
+    echo "Prod promote blocked at $checkpoint: blocking realtime evidence=$realtime_count unknown_timestamp=$unknown_count ids=${realtime_ids:-unknown}." >&2
     return 42
   fi
 }
@@ -685,6 +806,11 @@ if ! sudo test -f "$upstream_snippet"; then
   exit 1
 fi
 
+if ! disable_periodic_elo_sync; then
+  echo "Prod promote blocked: legacy periodic ELO polling could not be disabled." >&2
+  exit 50
+fi
+
 mkdir -p "$prod_root" "$prod_next_root" "$releases_root" "$shared_root/db" "$shared_root/logs" "$shared_root/elo" "$deps_root"
 if [ ! -f "$game_db_path" ]; then
   echo "Prod promote blocked: shared game.db is missing; migrate it separately with explicit approval before promotion." >&2
@@ -769,6 +895,10 @@ if [ -n "$expected_artifact_sha" ] && [ -n "$expected_git_sha" ] && \
     echo "Promote no-op could not reconcile the ELO helper mirror." >&2
     exit 48
   fi
+  if ! disable_periodic_elo_sync; then
+    echo "Promote no-op could not enforce the periodic ELO polling invariant." >&2
+    exit 50
+  fi
   echo "Promote no-op"
   echo "reason=prod already serves the exact tested staging artifact"
   echo "artifact_sha=$current_prod_artifact_sha"
@@ -842,13 +972,20 @@ ln -sfn "$shared_root/elo/solo-records.json" "$new_release_dir/elo/solo-records.
 ln -sfn "$shared_root/elo/stats.json" "$new_release_dir/elo/stats.json"
 ln -sfn "$deps_dir/node_modules" "$new_release_dir/node_modules"
 
+if ! normalize_release_permissions "$new_release_dir"; then
+  echo "Release permission normalization failed." >&2
+  rollback_before_public_switch
+  exit 49
+fi
+
 ln -sfn "$new_release_dir" "$prod_next_current"
 if ! systemctl --user restart "$next_service"; then
   echo "Next service restart failed." >&2
   rollback_before_public_switch
   exit 1
 fi
-if ! wait_for_http "$next_health_url" 20 2; then
+next_health_attempts=$(( (next_health_timeout_seconds + health_poll_delay_seconds - 1) / health_poll_delay_seconds ))
+if ! wait_for_http "$next_health_url" "$next_health_attempts" "$health_poll_delay_seconds"; then
   echo "Next service health check failed." >&2
   rollback_before_public_switch
   exit 1
@@ -927,6 +1064,11 @@ if ! publish_elo_helpers "$new_release_dir" "$served_artifact_sha" "$served_git_
   exit 48
 fi
 
+if ! disable_periodic_elo_sync; then
+  echo "Prod is serving the new release, but the periodic ELO polling invariant failed." >&2
+  exit 50
+fi
+
 echo "Promote ok"
 echo "source=$staging_current"
 echo "runtime_root=$prod_root"
@@ -963,6 +1105,8 @@ $remoteScript = $remoteScript.Replace("__EXPECTED_GIT_SHA__", $expectedGitShaLow
 $remoteScript = $remoteScript.Replace("__EXPECTED_ARTIFACT_SHA__", $expectedArtifactShaLower)
 $remoteScript = $remoteScript.Replace("__EXPECTED_RELEASE_BASELINE_B64__", $ExpectedReleaseBaselineBase64)
 $remoteScript = $remoteScript.Replace("__IGNORED_REALTIME_GAME_IDS_CSV__", $ignoredRealtimeGameIdsCsv)
+$remoteScript = $remoteScript.Replace("__REALTIME_GAME_STALE_DAYS__", $RealtimeGameStaleDays.ToString([Globalization.CultureInfo]::InvariantCulture))
+$remoteScript = $remoteScript.Replace("__NEXT_SERVICE_HEALTH_TIMEOUT_SECONDS__", $NextServiceHealthTimeoutSeconds.ToString([Globalization.CultureInfo]::InvariantCulture))
 $remoteScript = $remoteScript.Replace("__RUN_TOKEN__", $promoteRunToken)
 
 if ($DryRun) {

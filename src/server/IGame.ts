@@ -44,6 +44,8 @@ export interface Score {
   user?: string;
   soloWin?: boolean;
   place?: number;
+  placeFrom?: number;
+  placeTo?: number;
   megacredits?: number;
   victoryPointsBreakdown?: VictoryPointsBreakdown;
   earlyGameStats?: EarlyGameStats;
@@ -73,6 +75,11 @@ export interface IGame extends Logger {
   generation: number;
   readonly players: ReadonlyArray<IPlayer>;
   readonly playersInGenerationOrder: ReadonlyArray<IPlayer>;
+  /** Players created as automated participants; their games are excluded from reliability stats. */
+  readonly botPlayerIds: ReadonlySet<PlayerId>;
+  /** Human players who explicitly surrendered and are recorded as surrendered at game end. */
+  readonly surrenderedPlayerIds: Set<PlayerId>;
+  setBotPlayerIds(playerIds: ReadonlyArray<PlayerId>): void;
 
   /**
    * Stores the state of each global parameter at the end of each generation.
@@ -170,6 +177,8 @@ export interface IGame extends Logger {
   // The first player this generation
   readonly first: IPlayer;
   gameIsOver(): boolean;
+  /** Finish immediately when exactly one multiplayer player remains active after surrender. */
+  finishAfterSurrender(): Promise<boolean>;
   isDoneWithFinalProduction(): boolean;
   playerHasPassed(player: IPlayer): void;
   hasResearched(player: IPlayer): boolean;

@@ -1,0 +1,14 @@
+{
+  "created_at": "2026-08-06T17:07:06.915469+00:00",
+  "flattened": false,
+  "friendly_name": "Статистика доигрываемости партий",
+  "mission_id": "01KZC0NZGSZPTF74ZVYAJDDCKX",
+  "mission_number": null,
+  "mission_slug": "player-reliability-badge-01KZC0NZ",
+  "mission_type": "software-dev",
+  "purpose_context": "Добавить проверяемую статистику доигрываемости без изменения Elo, штрафов и prod/live-поведения.",
+  "purpose_tldr": "Показывать нейтральную статистику подтверждённых ливов за последние рейтинговые партии.",
+  "slug": "player-reliability-badge-01KZC0NZ",
+  "target_branch": "codex/player-reliability-badge",
+  "topology": "single_branch"
+}

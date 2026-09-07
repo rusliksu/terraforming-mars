@@ -52,24 +52,11 @@ function Get-ReleaseManifest {
         [string]$BaseServer
     )
 
-    $candidates = @(
-        "$BaseServer/assets/release.json",
-        "$BaseServer/release.json"
-    )
-    $errors = New-Object System.Collections.Generic.List[string]
-
-    foreach ($uri in $candidates) {
-        try {
-            return [pscustomobject]@{
-                url = $uri
-                manifest = Invoke-RestMethod -Uri $uri -Headers @{"Cache-Control"="no-cache"} -TimeoutSec 30
-            }
-        } catch {
-            $errors.Add(("{0}: {1}" -f $uri, $_.Exception.Message))
-        }
+    $uri = "$BaseServer/release.json"
+    return [pscustomobject]@{
+        url = $uri
+        manifest = Invoke-RestMethod -Uri $uri -Headers @{"Cache-Control"="no-cache"} -TimeoutSec 30
     }
-
-    throw "Release manifest check failed. Tried: $($errors -join ' | ')"
 }
 
 function New-SmokeGamePayload {
@@ -175,6 +162,26 @@ $elo = Invoke-WebRequest -Uri "$Server/elo/" -Headers @{"Cache-Control"="no-cach
 Assert-True ($elo.StatusCode -eq 200) "ELO page returned $($elo.StatusCode), expected 200."
 Assert-True ($elo.Content -match "TM ELO Ratings") "ELO page content check failed."
 
+$eloDataResults = @()
+foreach ($eloDataPath in @("data.json", "elo-data.json")) {
+    $eloDataUri = "$Server/elo/$eloDataPath"
+    $eloDataResponse = Invoke-WebRequest -Uri $eloDataUri -Headers @{"Cache-Control"="no-cache"} -TimeoutSec 30
+    Assert-True ($eloDataResponse.StatusCode -eq 200) "$eloDataUri returned $($eloDataResponse.StatusCode), expected 200."
+    try {
+        $eloDataJson = $eloDataResponse.Content | ConvertFrom-Json
+    } catch {
+        throw "$eloDataUri JSON parse failed: $($_.Exception.Message)"
+    }
+    Assert-True ($null -ne $eloDataJson.players) "$eloDataUri is missing players."
+    $eloPlayerCount = @($eloDataJson.players).Count
+    Assert-True ($eloPlayerCount -gt 0) "$eloDataUri contains no players."
+    $eloDataResults += [pscustomobject]@{
+        url = $eloDataUri
+        status = $eloDataResponse.StatusCode
+        playerCount = $eloPlayerCount
+    }
+}
+
 $statsResult = $null
 if ($elo.Content -match 'data-mode="stats"') {
     $stats = Invoke-WebRequest -Uri "$Server/elo/stats.json" -Headers @{"Cache-Control"="no-cache"} -TimeoutSec 30
@@ -254,6 +261,7 @@ $result = [pscustomobject]@{
     elo = [pscustomobject]@{
         status = $elo.StatusCode
         titleMatched = ($elo.Content -match "TM ELO Ratings")
+        data = $eloDataResults
     }
     stats = $statsResult
     release = if ($null -eq $releaseManifest) {
@@ -280,6 +288,9 @@ Write-Host "$($Environment.Substring(0,1).ToUpper() + $Environment.Substring(1))
 Write-Host "Server      : $($result.server)"
 Write-Host "Home        : $($result.home.status) X-TM-Env=$($result.home.env) badgeShown=$($result.home.badgeShown)"
 Write-Host "ELO         : $($result.elo.status) title matched"
+foreach ($eloDataResult in $result.elo.data) {
+    Write-Host "ELO data    : $($eloDataResult.status) players=$($eloDataResult.playerCount) url=$($eloDataResult.url)"
+}
 if ($null -ne $result.stats) {
     Write-Host "Stats       : $($result.stats.status) games=$($result.stats.gameCount) detailed=$($result.stats.detailedGameCount) playerGames=$($result.stats.playerGameCount) detailedPlayerGames=$($result.stats.detailedPlayerGameCount) cards=$($result.stats.cardCount)"
 }

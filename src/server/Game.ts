@@ -43,6 +43,7 @@ import {AresHandler} from './ares/AresHandler';
 import {AresData} from '../common/ares/AresData';
 import {GameSetup} from './GameSetup';
 import {GameCards} from './GameCards';
+import {byKey} from '@/common/utils/Ordering';
 import {GlobalParameter} from '../common/GlobalParameter';
 import {AresSetup} from './ares/AresSetup';
 import {MoonData} from './moon/MoonData';
@@ -86,6 +87,7 @@ import {ICard} from './cards/ICard';
 import {generateGameName} from './GameName';
 import {captureEarlyGameStats} from './game/EarlyGameStats';
 import type {ActionReplayState} from './game/ActionReplay';
+import {compareCompletionRank, getSharedRemainingPlaceRange, hasSameCompletionRank, isLastActivePlayerFinish} from '../common/game/CompletionOutcome';
 
 // Can be overridden by tests
 let createGameLog: () => Array<LogMessage> = () => [];
@@ -112,6 +114,8 @@ export class Game implements IGame, Logger {
   public readonly name: string;
   public readonly gameOptions: Readonly<GameOptions>;
   public readonly players: ReadonlyArray<IPlayer>;
+  public readonly botPlayerIds = new Set<PlayerId>();
+  public readonly surrenderedPlayerIds = new Set<PlayerId>();
   // The API makes this readonly.
   public playersInGenerationOrder: ReadonlyArray<IPlayer> = [];
 
@@ -476,6 +480,14 @@ export class Game implements IGame, Logger {
     return game;
   }
 
+  public setBotPlayerIds(playerIds: ReadonlyArray<PlayerId>): void {
+    this.botPlayerIds.clear();
+    for (const playerId of playerIds) {
+      this.botPlayerIds.add(playerId);
+    }
+    this.surrenderedPlayerIds.clear();
+  }
+
   /** Properly starts the game with the project draft, or initial research phase. */
   private gotoInitialPhase(): void {
     // Initial Draft
@@ -500,6 +512,8 @@ export class Game implements IGame, Logger {
       awards: this.awards.map(toName),
       beholdTheEmperor: this.beholdTheEmperor,
       board: this.board.serialize(),
+      botPlayerIds: Array.from(this.botPlayerIds),
+      surrenderedPlayerIds: Array.from(this.surrenderedPlayerIds),
       claimedMilestones: serializeClaimedMilestones(this.claimedMilestones),
       ceoDeck: this.ceoDeck.serialize(),
       colonies: this.colonies.map((colony) => colony.serialize()),
@@ -781,6 +795,7 @@ export class Game implements IGame, Logger {
     this.players.forEach((player) => {
       player.runResearchPhase();
     });
+    this.advanceAfterResearchIfReady();
   }
 
   private gotoDraftPhase(): void {
@@ -795,6 +810,15 @@ export class Game implements IGame, Logger {
       return this.generation === this.lastSoloGeneration();
     }
     return this.marsIsTerraformed();
+  }
+
+  public async finishAfterSurrender(): Promise<boolean> {
+    const surrenderedPlayerCount = this.players.filter((player) => this.surrenderedPlayerIds.has(player.id)).length;
+    if (this.phase === Phase.END || !isLastActivePlayerFinish(this.players.length, surrenderedPlayerCount)) {
+      return false;
+    }
+    await this.gotoEndGame();
+    return true;
   }
 
   public isDoneWithFinalProduction(): boolean {
@@ -819,7 +843,7 @@ export class Game implements IGame, Logger {
       return;
     }
     if (this.gameIsOver()) {
-      this.log('Final greenery placement', (b) => b.forNewGeneration());
+      this.log('Final greenery placement', (b) => b.forNotice());
       this.takeNextFinalGreeneryAction();
       return;
     } else {
@@ -929,6 +953,7 @@ export class Game implements IGame, Logger {
       if (player.tableau.has(CardName.PRESERVATION_PROGRAM)) {
         player.preservationProgram = true;
       }
+      player.trThisGeneration = 0;
     });
 
     if (this.gameOptions.draftVariant) {
@@ -1084,15 +1109,20 @@ export class Game implements IGame, Logger {
   public playerIsFinishedWithResearchPhase(player: IPlayer): void {
     this.deferredActions.runAllFor(player, () => {
       this.researchedPlayers.add(player.id);
-      if (this.researchedPlayers.size === this.players.length) {
-        this.researchedPlayers.clear();
-        this.phase = Phase.ACTION;
-        this.passedPlayers.clear();
-        this.potentiallyChangeFirstPlayer();
-
-        this.startActionsForPlayer(this.first);
-      }
+      this.advanceAfterResearchIfReady();
     });
+  }
+
+  private advanceAfterResearchIfReady(): void {
+    if (this.researchedPlayers.size !== this.players.length) {
+      return;
+    }
+    this.researchedPlayers.clear();
+    this.phase = Phase.ACTION;
+    this.passedPlayers.clear();
+    this.potentiallyChangeFirstPlayer();
+
+    this.startActionsForPlayer(this.first);
   }
 
   public getPlayerBefore(player: IPlayer): IPlayer {
@@ -1150,26 +1180,28 @@ export class Game implements IGame, Logger {
       this.log('This game id was ${0}', (b) => b.rawString(id));
     }
 
+    const surrenderedPlayerCount = this.players.filter((player) => this.surrenderedPlayerIds.has(player.id)).length;
+    const lastActivePlayerFinish = isLastActivePlayerFinish(this.players.length, surrenderedPlayerCount);
+    const sharedRemainingPlaceRange = lastActivePlayerFinish ? getSharedRemainingPlaceRange(this.players.length) : undefined;
     const rankedScores = this.players.map((player) => {
       const corporation = player.playedCards.filter(isICorporationCard).map(toName).join('|');
       const vpb = player.getVictoryPoints();
-      return {player, corporation, vpb};
-    }).sort((left, right) => {
-      if (left.vpb.total !== right.vpb.total) {
-        return right.vpb.total - left.vpb.total;
-      }
-      if (left.player.megaCredits !== right.player.megaCredits) {
-        return right.player.megaCredits - left.player.megaCredits;
-      }
-      return 0;
-    });
+      const completionOutcome = this.surrenderedPlayerIds.has(player.id) ? 'surrendered' as const : 'completed' as const;
+      return {
+        player,
+        corporation,
+        completionOutcome,
+        shareRemainingPlaces: lastActivePlayerFinish && completionOutcome === 'surrendered',
+        vp: vpb.total,
+        megacredits: player.megaCredits,
+        vpb,
+      };
+    }).sort(compareCompletionRank);
 
     const scores: Array<Score> = [];
     rankedScores.forEach((entry, idx) => {
       const previous = rankedScores[idx - 1];
-      const place = previous !== undefined &&
-        previous.vpb.total === entry.vpb.total &&
-        previous.player.megaCredits === entry.player.megaCredits ?
+      const place = entry.shareRemainingPlaces ? sharedRemainingPlaceRange?.place : previous !== undefined && hasSameCompletionRank(previous, entry) ?
         scores[idx - 1].place :
         idx + 1;
       scores.push({
@@ -1178,6 +1210,8 @@ export class Game implements IGame, Logger {
         user: entry.player.user,
         soloWin: this.isSoloMode() ? this.isSoloModeWin() : undefined,
         place,
+        placeFrom: entry.shareRemainingPlaces ? sharedRemainingPlaceRange?.placeFrom : undefined,
+        placeTo: entry.shareRemainingPlaces ? sharedRemainingPlaceRange?.placeTo : undefined,
         playerScore: entry.vpb.total,
         megacredits: entry.player.megaCredits,
         victoryPointsBreakdown: entry.vpb,
@@ -1193,7 +1227,7 @@ export class Game implements IGame, Logger {
     this.phase = Phase.END;
     const gameLoader = GameLoader.getInstance();
     await gameLoader.saveGame(this);
-    gameLoader.completeGame(this);
+    await gameLoader.completeGame(this);
   }
 
   // Part of final greenery placement.
@@ -1220,11 +1254,10 @@ export class Game implements IGame, Logger {
       if (this.donePlayers.has(player.id)) {
         continue;
       }
-
       // You many not place greeneries in solo mode unless you have already won the game
       // (e.g. completed global parameters, reached TR63.)
       if (this.isSoloMode() && !this.isSoloModeWin()) {
-        this.log('Final greenery phase is skipped since you did not complete the win condition.', (b) => b.forNewGeneration());
+        this.log('Final greenery phase is skipped since you did not complete the win condition.', (b) => b.forNotice());
         continue;
       }
 
@@ -1728,7 +1761,7 @@ export class Game implements IGame, Logger {
           return true;
         }
       })
-      .sort((a, b) => a.cost - b.cost);
+      .toSorted(byKey('cost'));
   }
 
   public log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer, reservedForParticipant?: ParticipantId, hiddenFor?: Array<ParticipantId>}) {
@@ -1877,6 +1910,14 @@ export class Game implements IGame, Logger {
     game.nomadSpace = d.nomadSpace;
     game.tradeEmbargo = d.tradeEmbargo ?? false;
     game.beholdTheEmperor = d.beholdTheEmperor ?? false;
+    game.botPlayerIds.clear();
+    for (const playerId of d.botPlayerIds ?? []) {
+      game.botPlayerIds.add(playerId);
+    }
+    game.surrenderedPlayerIds.clear();
+    for (const playerId of d.surrenderedPlayerIds ?? []) {
+      game.surrenderedPlayerIds.add(playerId);
+    }
     game.globalsPerGeneration = d.globalsPerGeneration;
 
     // TODO(kberg): Remove this migration code by 2026-08-01

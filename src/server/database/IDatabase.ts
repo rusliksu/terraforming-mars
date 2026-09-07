@@ -60,17 +60,6 @@ export interface IDatabase {
     getGameIds(): Promise<Array<GameId>>;
 
     /**
-     * Return the wall-clock time of the latest meaningful save for a game.
-     * Isolated maintenance-style saves after a long inactivity gap do not count as player activity.
-     */
-    getLastSaveTimeMs(gameId: GameId): Promise<number | undefined>;
-
-    /**
-     * Return the latest meaningful save times for many games.
-     */
-    getLastSaveTimesMs(gameIds: Array<GameId>): Promise<Map<GameId, number | undefined>>;
-
-    /**
      * Get the player count for a game.
      *
      * @param gameId the game id to search for

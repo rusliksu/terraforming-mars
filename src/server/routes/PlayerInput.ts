@@ -5,8 +5,7 @@ import {Handler} from './Handler';
 import {Context} from './IHandler';
 import {OrOptions} from '../inputs/OrOptions';
 import {UndoActionOption} from '../inputs/UndoActionOption';
-import {InputResponse} from '../../common/inputs/InputResponse';
-import {isPlayerId} from '../../common/Types';
+import {InputResponse, isOrOptionsResponse} from '../../common/inputs/InputResponse';
 import {Request} from '../Request';
 import {Response} from '../Response';
 import * as fs from 'fs';
@@ -23,6 +22,17 @@ import type {AccessAuditEvent, AccessAuditRecordInput} from '../server/AccessAud
 import {prepareActionReplayEntry, recordAcceptedActionReplayEntry} from '../game/ActionReplay';
 import {HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED} from '../../common/undo';
 import {logIrreversibleUndo} from '../logs/logIrreversibleUndo';
+import {BotTakeoverManager} from '../bot/BotTakeoverManager';
+import {SURRENDER_CONFIRMATION_ANNOTATION} from '../surrender/SurrenderInput';
+import {SurrenderError, surrenderPlayer} from '../surrender/SurrenderService';
+import type {SurrenderBotManager} from '../surrender/SurrenderService';
+import {capture} from '../server/SentryReporter';
+import type {
+  ErrorDiagnosticBoundary,
+  ErrorDiagnosticContext,
+} from '../server/SentryReporter';
+import {RouteError} from './RouteError';
+import {readBody} from './readBody';
 
 type ShadowPromptSnapshot = {
   buttonLabel: string | null;
@@ -30,40 +40,59 @@ type ShadowPromptSnapshot = {
   type: string | null;
 };
 
+type CaptureError = (error: unknown, context: ErrorDiagnosticContext) => void;
+
 export class PlayerInput extends Handler {
   public static readonly INSTANCE = new PlayerInput();
 
-  public override async post(req: Request, res: Response, ctx: Context): Promise<void> {
-    const playerId = ctx.url.searchParams.get('id');
-    if (playerId === null) {
-      responses.badRequest(req, res, 'missing id parameter');
-      return;
-    }
+  private readonly captureError: CaptureError;
+  private readonly botTakeoverManager: SurrenderBotManager;
 
-    if (!isPlayerId(playerId)) {
-      responses.badRequest(req, res, 'invalid player id');
-      return;
+  constructor(
+    captureOrManager: CaptureError | SurrenderBotManager = capture,
+    botTakeoverManager: SurrenderBotManager = BotTakeoverManager.INSTANCE,
+  ) {
+    super();
+    if (typeof captureOrManager === 'function') {
+      this.captureError = captureOrManager;
+      this.botTakeoverManager = botTakeoverManager;
+    } else {
+      this.captureError = capture;
+      this.botTakeoverManager = captureOrManager;
     }
+  }
+
+  public override async post(req: Request, res: Response, ctx: Context): Promise<void> {
+    const playerId = ctx.urlParams.playerId('id');
 
     ctx.ipTracker.addParticipant(playerId, ctx.ip);
 
     // This is the exact same code as in `ApiPlayer`. I bet it's not the only place.
     const game = await ctx.gameLoader.getGame(playerId);
     if (game === undefined) {
-      responses.notFound(req, res);
-      return;
+      throw RouteError.notFound();
     }
     let player: IPlayer | undefined;
     try {
       player = game.getPlayerById(playerId);
     } catch (err) {
       console.warn(`unable to find player ${playerId}`, err);
+      if (!(err instanceof AppError || err instanceof InputError)) {
+        this.captureUnexpected(err, playerDiagnosticContext(
+          'player-get', req.method, ctx.url.pathname, game.id, playerId,
+        ));
+      }
     }
     if (player === undefined) {
       responses.notFound(req, res);
       return;
     }
     recordPlayerInputAudit(req, ctx, player, 'player_input_attempt');
+    if (game.surrenderedPlayerIds.has(player.id) && !this.hasServerIdAccess(ctx)) {
+      recordPlayerInputAudit(req, ctx, player, 'player_input_rejected', {reason: 'surrendered_bot_control'});
+      responses.badRequest(req, res, 'surrendered player is controlled by a bot');
+      return;
+    }
     return this.processInput(req, res, ctx, player);
   }
 
@@ -76,7 +105,21 @@ export class PlayerInput extends Handler {
     return false;
   }
 
-  private async performUndo(_req: Request, _res: Response, ctx: Context, player: IPlayer): Promise<IPlayer> {
+  private isSurrenderConfirmation(player: IPlayer, entity: InputResponse): boolean {
+    const waitingFor = player.getWaitingFor();
+    return isOrOptionsResponse(entity) &&
+      entity.index === 0 &&
+      waitingFor instanceof OrOptions &&
+      waitingFor.annotation === SURRENDER_CONFIRMATION_ANNOTATION;
+  }
+
+  private async performUndo(
+    req: Request,
+    _res: Response,
+    ctx: Context,
+    player: IPlayer,
+    gameplayInput: InputResponse,
+  ): Promise<IPlayer> {
     /**
      * The `lastSaveId` property is incremented during every `takeAction`.
      * The first save being decremented is the increment during `takeAction` call
@@ -107,12 +150,15 @@ export class PlayerInput extends Handler {
         throw err;
       }
       console.error(err);
+      this.captureUnexpected(err, playerDiagnosticContext(
+        'player-undo', req.method, ctx.url.pathname, player.game.id, player.id, gameplayInput,
+      ));
       throw new InputError('Unable to perform undo operation. Error retrieving game from database. Please try again.');
     }
     return player;
   }
 
-  private processInput(req: Request, res: Response, ctx: Context, player: IPlayer): Promise<void> {
+  private async processInput(req: Request, res: Response, ctx: Context, player: IPlayer): Promise<void> {
     // TODO(kberg): Find a better place for this optimization.
     for (const card of player.tableau) {
       card.clearWarnings();
@@ -120,91 +166,151 @@ export class PlayerInput extends Handler {
         card.additionalProjectCosts = undefined;
       }
     }
-    return new Promise((resolve) => {
-      let body = '';
-      req.on('data', (data) => {
-        body += data.toString();
-      });
-      req.once('end', async () => {
-        let entityForLog: InputResponse | undefined;
-        let isUndo = false;
-        let promptSnapshot: ShadowPromptSnapshot = emptyPromptSnapshot();
-        let promptInputSeq: number | null = null;
-        let inputSeq: number | null = null;
+    const body = await readBody(req);
+    let entityForLog: InputResponse | undefined;
+    let isUndo = false;
+    let promptSnapshot: ShadowPromptSnapshot = emptyPromptSnapshot();
+    let promptInputSeq: number | null = null;
+    let inputSeq: number | null = null;
+    try {
+      const entity = JSON.parse(body);
+      entityForLog = cloneEntityForLog(entity);
+      promptSnapshot = capturePromptSnapshot(player.getWaitingFor());
+      promptInputSeq = player.game.shadowInputSeq ?? 0;
+      validateRunId(entity);
+      isUndo = this.isWaitingForUndo(player, entity);
+      const isSurrender = this.isSurrenderConfirmation(player, entity);
+      if (isUndo) {
+        player = await this.performUndo(req, res, ctx, player, entityForLog);
+        inputSeq = advanceShadowInputSeq(player, promptInputSeq);
+        responses.writeJson(res, ctx, Server.getPlayerModel(player));
+      } else {
+        const previousSaveGamePromise = player.game.saveGamePromise;
+        const stepUndoEnabled = player.game.gameOptions.undoStepOption === true;
+        const replayEntry = stepUndoEnabled && !isSurrender ?
+          prepareActionReplayEntry(player.game, player.id, entity) :
+          undefined;
+        if (!stepUndoEnabled && player.game.actionReplayState !== undefined) {
+          player.game.actionReplayState = null;
+        }
         try {
-          const entity = JSON.parse(body);
-          entityForLog = cloneEntityForLog(entity);
-          promptSnapshot = capturePromptSnapshot(player.getWaitingFor());
-          promptInputSeq = player.game.shadowInputSeq ?? 0;
-          validateRunId(entity);
-          isUndo = this.isWaitingForUndo(player, entity);
-          if (isUndo) {
-            player = await this.performUndo(req, res, ctx, player);
-            inputSeq = advanceShadowInputSeq(player, promptInputSeq);
-            responses.writeJson(res, ctx, Server.getPlayerModel(player));
+          if (isSurrender) {
+            const surrenderResult = await surrenderPlayer({
+              game: player.game,
+              player,
+              gameLoader: ctx.gameLoader,
+              manager: this.botTakeoverManager,
+              serverId: ctx.ids.serverId,
+              advance: () => {
+                if (player.game.actionReplayState !== undefined) {
+                  player.game.actionReplayState = null;
+                }
+                inputSeq = advanceShadowInputSeq(player, promptInputSeq);
+                player.process(entity);
+              },
+            });
+            recordPlayerInputAudit(req, ctx, player, 'surrender_accepted', {
+              authorization: 'player',
+              botTakeover: surrenderResult.botTakeover,
+            });
           } else {
             inputSeq = advanceShadowInputSeq(player, promptInputSeq);
-            const previousSaveGamePromise = player.game.saveGamePromise;
-            const stepUndoEnabled = player.game.gameOptions.undoStepOption === true;
-            const replayEntry = stepUndoEnabled ?
-              prepareActionReplayEntry(player.game, player.id, entity) :
-              undefined;
-            if (!stepUndoEnabled && player.game.actionReplayState !== undefined) {
-              player.game.actionReplayState = null;
+            const wasSurrendered = player.game.surrenderedPlayerIds.has(player.id);
+            player.process(entity);
+            if (!wasSurrendered && player.game.surrenderedPlayerIds.has(player.id)) {
+              recordPlayerInputAudit(req, ctx, player, 'surrender_accepted', {authorization: 'player'});
             }
-            try {
-              player.process(entity);
-            } catch (err) {
-              player.game.shadowInputSeq = promptInputSeq;
-              inputSeq = null;
-              throw err;
-            }
-            const savedNewRoot = player.game.saveGamePromise !== previousSaveGamePromise;
-            if (savedNewRoot) {
-              await player.game.saveGamePromise;
-            }
-            if (replayEntry !== undefined) {
-              recordAcceptedActionReplayEntry(player.game, replayEntry);
-              if (savedNewRoot && player.game.actionReplayState !== undefined && player.game.actionReplayState !== null) {
-                player.game.actionReplayState.resetBeforeNextInput = true;
-              }
-            }
-            responses.writeJson(res, ctx, Server.getPlayerModel(player));
           }
-          appendShadowInputLog(player, entityForLog, body, promptSnapshot, promptInputSeq, inputSeq, isUndo, 'accepted');
-          recordPlayerInputAudit(req, ctx, player, 'player_input_accepted', {
-            inputType: typeof entityForLog?.type === 'string' ? entityForLog.type : null,
-            isUndo,
-          });
-          resolve();
-        } catch (e) {
-          appendShadowInputLog(player, entityForLog, body, promptSnapshot, promptInputSeq, inputSeq, isUndo, 'rejected', e);
-          recordPlayerInputAudit(req, ctx, player, 'player_input_rejected', {
-            inputType: typeof entityForLog?.type === 'string' ? entityForLog.type : null,
-            isUndo,
-            errorId: e instanceof AppError ? e.id : null,
-          });
-          if (!(e instanceof AppError || e instanceof InputError)) {
-            console.warn('Error processing input from player', e);
+        } catch (err) {
+          player.game.shadowInputSeq = promptInputSeq;
+          inputSeq = null;
+          if (isSurrender) {
+            const restoredGame = await ctx.gameLoader.getGame(player.game.id);
+            if (restoredGame !== undefined) {
+              restoredGame.shadowInputSeq = promptInputSeq;
+              player = restoredGame.getPlayerById(player.id);
+            }
+            recordPlayerInputAudit(req, ctx, player, 'surrender_rejected', {authorization: 'player'});
           }
-          // TODO(kberg): use responses.ts, though that changes the output.
-          res.writeHead(statusCode.badRequest, {
-            'Content-Type': 'application/json',
-          });
-
-          const id = e instanceof AppError ? e.id : undefined;
-          const message = e instanceof Error ? e.message : String(e);
-          const response: AppErrorResponse = {
-            id: id,
-            message: message,
-          };
-          res.write(JSON.stringify(response));
-          res.end();
-          resolve();
+          throw err;
         }
+        const savedNewRoot = player.game.saveGamePromise !== previousSaveGamePromise;
+        if (savedNewRoot) {
+          await player.game.saveGamePromise;
+        }
+        if (replayEntry !== undefined) {
+          recordAcceptedActionReplayEntry(player.game, replayEntry);
+          if (savedNewRoot && player.game.actionReplayState !== undefined && player.game.actionReplayState !== null) {
+            player.game.actionReplayState.resetBeforeNextInput = true;
+          }
+        }
+        responses.writeJson(res, ctx, Server.getPlayerModel(player));
+      }
+      appendShadowInputLog(player, entityForLog, body, promptSnapshot, promptInputSeq, inputSeq, isUndo, 'accepted');
+      recordPlayerInputAudit(req, ctx, player, 'player_input_accepted', {
+        inputType: typeof entityForLog?.type === 'string' ? entityForLog.type : null,
+        isUndo,
       });
-    });
+    } catch (e) {
+      appendShadowInputLog(player, entityForLog, body, promptSnapshot, promptInputSeq, inputSeq, isUndo, 'rejected', e);
+      recordPlayerInputAudit(req, ctx, player, 'player_input_rejected', {
+        inputType: typeof entityForLog?.type === 'string' ? entityForLog.type : null,
+        isUndo,
+        errorId: e instanceof AppError ? e.id : null,
+      });
+      if (!(e instanceof AppError || e instanceof InputError || e instanceof SurrenderError)) {
+        console.warn('Error processing input from player', e);
+        if (entityForLog !== undefined) {
+          this.captureUnexpected(e, playerDiagnosticContext(
+            'player-input', req.method, ctx.url.pathname, player.game.id, player.id, entityForLog,
+          ));
+        }
+      }
+      // TODO(kberg): use responses.ts, though that changes the output.
+      res.writeHead(statusCode.badRequest, {
+        'Content-Type': 'application/json',
+      });
+
+      const id = e instanceof AppError ? e.id : undefined;
+      const message = e instanceof Error ? e.message : String(e);
+      const response: AppErrorResponse = {
+        id: id,
+        message: message,
+      };
+      res.write(JSON.stringify(response));
+      res.end();
+    }
   }
+
+  private captureUnexpected(error: unknown, context: ErrorDiagnosticContext): void {
+    try {
+      this.captureError(error, context);
+    } catch (_captureError) {
+      // Diagnostics must never change the existing player-input response path.
+    }
+  }
+}
+
+function playerDiagnosticContext(
+  boundary: ErrorDiagnosticBoundary,
+  method: string | undefined,
+  pathname: string | undefined,
+  gameId: string,
+  playerId: string,
+  gameplayInput?: unknown,
+): ErrorDiagnosticContext {
+  const context: ErrorDiagnosticContext = {boundary, gameId, playerId};
+  const normalizedMethod = method?.trim().toUpperCase();
+  if (normalizedMethod !== undefined && normalizedMethod.length > 0) {
+    context.method = normalizedMethod;
+  }
+  if (pathname !== undefined && pathname.length > 0) {
+    context.route = pathname;
+  }
+  if (gameplayInput !== undefined) {
+    context.gameplayInput = gameplayInput;
+  }
+  return context;
 }
 
 function recordPlayerInputAudit(

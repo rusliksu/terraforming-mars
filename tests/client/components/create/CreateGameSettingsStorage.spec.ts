@@ -12,14 +12,17 @@ describe('CreateGameSettingsStorage', () => {
   });
 
   it('saves and reloads game settings', () => {
-    storage.saveSettings({
-      players: [{name: 'Alice', color: 'red', beginner: false, handicap: 0}],
+    const config = {
+      players: [{name: 'Alice', color: 'red', beginner: false, handicap: 0, first: true}],
       board: 'hellas',
       solarPhaseOption: true,
-    });
+      clonedGamedId: 'g123',
+    };
+
+    storage.saveSettings(config);
 
     expect(storage.loadSettings()).deep.eq({
-      players: [{name: 'Alice', color: 'red', beginner: false, handicap: 0, isBot: false}],
+      players: [{name: 'Alice', color: 'red', beginner: false, handicap: 0, first: true, isBot: false}],
       board: 'hellas',
       solarPhaseOption: true,
       turnBasedGame: false,

@@ -14,6 +14,11 @@ type LegacyEloResult = {
 
 type LegacyEloData = {
   players: Record<string, {
+    elo: number;
+    elo_vp: number;
+    wins: number;
+    top3: number;
+    avgPlace: number;
     totalGens: number;
     avgGens: number;
     totalMargin: number;
@@ -78,5 +83,31 @@ describe('legacy elo-api', () => {
     expect(finalGame.results[1].delta).not.eq(0);
     expect(finalGame.results[2].delta).lt(0);
     expect(finalGame.results.every((entry) => entry.oldElo !== 0 || entry.newElo !== 0)).is.true;
+  });
+
+  it('treats final surrender midranks as losses without achievement credit', () => {
+    const data: LegacyEloData = {
+      players: {},
+      games: [{
+        generation: 7,
+        results: [
+          {name: 'winner', displayName: 'Winner', place: 1, vp: 50, completionOutcome: 'completed', oldElo: 0, newElo: 0, delta: 0},
+          {name: 'a', displayName: 'A', place: 3, placeFrom: 2, placeTo: 4, vp: 50, completionOutcome: 'surrendered', oldElo: 0, newElo: 0, delta: 0},
+          {name: 'b', displayName: 'B', place: 3, placeFrom: 2, placeTo: 4, vp: 50, completionOutcome: 'surrendered', oldElo: 0, newElo: 0, delta: 0},
+          {name: 'c', displayName: 'C', place: 3, placeFrom: 2, placeTo: 4, vp: 50, completionOutcome: 'surrendered', oldElo: 0, newElo: 0, delta: 0},
+        ],
+      }],
+    };
+
+    rebuildElo(data);
+
+    expect(data.players.winner.elo).gt(1500);
+    for (const name of ['a', 'b', 'c']) {
+      expect(data.players[name].elo).lt(1500);
+      expect(data.players[name].elo_vp).eq(1500);
+      expect(data.players[name].wins).eq(0);
+      expect(data.players[name].top3).eq(0);
+      expect(data.players[name].avgPlace).eq(0.3333);
+    }
   });
 });

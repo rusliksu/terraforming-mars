@@ -5,7 +5,8 @@ import {Request} from '../Request';
 import {Response} from '../Response';
 import {SessionId} from '../auth/Session';
 import {GameLoader} from '../database/GameLoader';
-import {ApiBotTakeover} from '../routes/ApiBotTakeover';
+import {InputError} from '../inputs/InputError';
+import {ApiSurrender} from '../routes/ApiSurrender';
 import {ApiCloneableGame} from '../routes/ApiCloneableGame';
 import {ApiCreateGame} from '../routes/ApiCreateGame';
 import {ApiGame} from '../routes/ApiGame';
@@ -14,7 +15,6 @@ import {ApiGameLogs} from '../routes/ApiGameLogs';
 import {ApiGames} from '../routes/ApiGames';
 import {ApiHeapSnapshot} from '../routes/ApiHeapSnapshot';
 import {ApiIPs} from '../routes/ApiIPs';
-import {ApiLiveGames} from '../routes/ApiLiveGames';
 import {ApiLogout} from '../routes/ApiLogout';
 import {ApiMetrics} from '../routes/ApiMetrics';
 import {ApiPlayer} from '../routes/ApiPlayer';
@@ -43,7 +43,11 @@ import * as authcookies from './auth/authcookies';
 import {DiscordUser} from './auth/discord';
 import {getOrSetAccessAuditClientId} from './accessAuditClientId';
 import {getClientIp} from './clientIp';
+import {EndGameLog} from '../routes/EndGameLog';
+import {UrlParams} from '../routes/UrlParams';
 import * as responses from './responses';
+import {AppError} from './AppError';
+import {capture, ErrorDiagnosticContext} from './SentryReporter';
 
 const metrics = {
   request_count: new prometheus.Counter({
@@ -93,7 +97,7 @@ const handlers: Map<string, IHandler> = new Map(
   [
     ['', ServeApp.INSTANCE],
     [paths.ADMIN, ServeApp.INSTANCE],
-    [paths.API_BOT_TAKEOVER, ApiBotTakeover.INSTANCE],
+    [paths.API_SURRENDER, ApiSurrender.INSTANCE],
     [paths.API_CLONEABLEGAME, ApiCloneableGame.INSTANCE],
     [paths.API_CREATEGAME, ApiCreateGame.INSTANCE],
     [paths.API_GAME, ApiGame.INSTANCE],
@@ -102,7 +106,6 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.API_GAMES, ApiGames.INSTANCE],
     [paths.API_HEAP_SNAPSHOT, ApiHeapSnapshot.INSTANCE],
     [paths.API_IPS, ApiIPs.INSTANCE],
-    [paths.API_LIVE_GAMES, ApiLiveGames.INSTANCE],
     [paths.API_METRICS, ApiMetrics.INSTANCE],
     [paths.API_PLAYER, ApiPlayer.INSTANCE],
     [paths.API_STATS, ApiStats.INSTANCE],
@@ -110,6 +113,7 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.API_WAITING_FOR, ApiWaitingFor.INSTANCE],
     [paths.AUTOPASS, Autopass.INSTANCE],
     [paths.CARDS, ServeApp.INSTANCE],
+    [paths.END_GAME_LOG, EndGameLog.INSTANCE],
     ['favicon.ico', ServeAsset.INSTANCE],
     [paths.GAME, GameHandler.INSTANCE],
     [paths.GAMES_OVERVIEW, GamesOverview.INSTANCE],
@@ -165,9 +169,16 @@ function getAuthenticatedUser(req: Request): { user: DiscordUser | undefined; se
   return {user, sessionid};
 }
 
-export async function processRequest(req: Request, res: Response): Promise<void> {
+type CaptureError = (error: unknown, context: ErrorDiagnosticContext) => void;
+
+export async function processRequest(
+  req: Request,
+  res: Response,
+  captureError: CaptureError = capture,
+): Promise<void> {
   const start = process.hrtime.bigint();
   let metricsPathname = '_unknown_';
+  let requestRoute: string | undefined;
   try {
     const clientIp = getClientIp(req);
     ipTracker.add(clientIp.address);
@@ -189,6 +200,7 @@ export async function processRequest(req: Request, res: Response): Promise<void>
     const accessAuditClientId = process.env.TM_ACCESS_AUDIT === '1' ? getOrSetAccessAuditClientId(req, res) : undefined;
 
     const pathname = url.pathname.substring(1); // Remove leading '/'
+    requestRoute = url.pathname;
     const handler = getHandler(pathname);
     if (handler !== undefined) {
       // No need to report every asset. Summarize.
@@ -210,12 +222,29 @@ export async function processRequest(req: Request, res: Response): Promise<void>
         },
         sessionid: sessionid,
         user: user,
+        urlParams: new UrlParams(url.searchParams),
       };
 
       await handler.processRequest(req, res, ctx);
     } else {
       responses.notFound(req, res);
     }
+  } catch (error) {
+    if (!(error instanceof AppError) && !(error instanceof InputError)) {
+      const context: ErrorDiagnosticContext = {
+        boundary: 'request',
+        method: req.method?.trim().toUpperCase(),
+      };
+      if (requestRoute !== undefined) {
+        context.route = requestRoute;
+      }
+      try {
+        captureError(error, context);
+      } catch (_reporterError) {
+        // Reporting is best-effort and must never replace the request error.
+      }
+    }
+    throw error;
   } finally {
     const durationNanos = Number(process.hrtime.bigint() - start);
     const durationMillis = durationNanos / 1_000_000;

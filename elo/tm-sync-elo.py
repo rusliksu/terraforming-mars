@@ -1827,11 +1827,12 @@ def rebuild_ratings(games: List[dict]) -> Dict[str, dict]:
             current["games"] += 1
             # Placement scoring: 1st=1, 2nd=0.5, last=0
             num_players = len(entries)
-            if entry["place"] == 1:
+            completed_normally = entry.get("completionOutcome") not in ("surrendered", "left")
+            if completed_normally and entry["place"] == 1:
                 current["wins"] += 1
-            elif entry["place"] < num_players:
+            elif completed_normally and entry["place"] < num_players:
                 current["wins"] += 0.5
-            if entry["place"] <= 3:
+            if completed_normally and entry["place"] <= 3:
                 current["top3"] += 1
             current["placeScoreSum"] += normalized_place_score(entry["place"], num_players)
             current["totalVP"] += entry.get("vp", 0)

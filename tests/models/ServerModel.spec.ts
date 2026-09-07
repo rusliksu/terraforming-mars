@@ -11,6 +11,8 @@ import {GlobalParameter} from '../../src/common/GlobalParameter';
 import {Phase} from '../../src/common/Phase';
 import {MicroMills} from '../../src/server/cards/base/MicroMills';
 import {EarthCatapult} from '../../src/server/cards/base/EarthCatapult';
+import {OrOptions} from '../../src/server/inputs/OrOptions';
+import {SelectOption} from '../../src/server/inputs/SelectOption';
 
 describe('ServerModel', () => {
   let player: TestPlayer;
@@ -166,6 +168,47 @@ describe('ServerModel', () => {
     const response = Server.getPlayerModel(player);
 
     expect(response.game.inputSeq).eq(12);
+  });
+
+  it('exposes stable PlayerInput annotations to machine-controlled clients', () => {
+    [game, player] = testGame(1);
+    const waitingFor = new OrOptions(
+      new SelectOption('Surrender this game and start a bot'),
+      new SelectOption('Continue playing'),
+    ).annotate('surrender-confirmation');
+
+    const response = Server.getWaitingFor(player, waitingFor);
+
+    expect(response).not.to.be.undefined;
+    expect(response!.annotation).eq('surrender-confirmation');
+  });
+
+  it('exposes annotations on nested machine-controlled options', () => {
+    [game, player] = testGame(1);
+    const waitingFor = new OrOptions(
+      new SelectOption('Surrender').annotate('surrender-action'),
+      new SelectOption('Continue'),
+    );
+
+    const response = Server.getWaitingFor(player, waitingFor);
+
+    expect(response).not.to.be.undefined;
+    if (response?.type !== 'or') {
+      throw new Error('Expected an OrOptions response');
+    }
+    expect(response.options[0].annotation).eq('surrender-action');
+    expect(response.options[1].annotation).eq(undefined);
+  });
+
+  it('exposes bot control for original and surrendered bot seats', () => {
+    [game, player, player2] = testGame(2);
+    game.setBotPlayerIds([player.id]);
+    game.surrenderedPlayerIds.add(player2.id);
+
+    const response = Server.getPlayerModel(player);
+
+    expect(response.players.find((p) => p.color === player.color)?.isBotControlled).is.true;
+    expect(response.players.find((p) => p.color === player2.color)?.isBotControlled).is.true;
   });
 
   it('exposes step-back capability only to the journal actor', () => {

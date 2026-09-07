@@ -1,6 +1,6 @@
 export const paths = {
   ADMIN: 'admin',
-  API_BOT_TAKEOVER: 'api/bot-takeover',
+  API_SURRENDER: 'api/surrender',
   API_CLONEABLEGAME: 'api/cloneablegame',
   API_CREATEGAME: 'api/creategame',
   API_GAME: 'api/game',
@@ -9,7 +9,6 @@ export const paths = {
   API_GAMES: 'api/games',
   API_HEAP_SNAPSHOT: 'api/heapsnapshot',
   API_IPS: 'api/ips',
-  API_LIVE_GAMES: 'api/live-games',
   API_METRICS: 'api/metrics',
   API_LOGOUT: 'api/logout',
   API_PLAYER: 'api/player',
@@ -20,6 +19,7 @@ export const paths = {
   AUTH_DISCORD_CALLBACK: 'auth/discord/callback',
   AUTOPASS: 'autopass',
   CARDS: 'cards',
+  END_GAME_LOG: 'end_game_log',
   GAME: 'game',
   GAMES_OVERVIEW: 'games-overview',
   HELP: 'help',

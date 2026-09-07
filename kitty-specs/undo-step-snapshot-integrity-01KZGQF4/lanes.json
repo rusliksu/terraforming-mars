@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "mission_slug": "undo-step-snapshot-integrity-01KZGQF4",
+  "mission_id": "01KZGQF4D0GFWDAR0PXACBME4W",
+  "mission_branch": "kitty/mission-undo-step-snapshot-integrity-01KZGQF4",
+  "target_branch": "codex/undo-step-snapshot-integrity",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "docs/architecture/step-undo-experiment-plan.md",
+        "src/server/game/ActionReplay.ts",
+        "tests/server/game/ActionReplay.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    }
+  ],
+  "computed_at": "2026-08-08T13:08:26.154691+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": []
+}

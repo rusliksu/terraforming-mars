@@ -10,7 +10,6 @@ export class InMemoryDatabase implements IDatabase {
   public games: Map<GameId, Array<SerializedGame | undefined>> = new Map();
   protected completedGames: Map<GameId, Date> = new Map();
   protected sessions: Map<SessionId, Session> = new Map();
-  protected lastSaveTimes: Map<GameId, number> = new Map();
   private clock: Clock;
 
   constructor(clock: Clock = new Clock()) {
@@ -62,16 +61,6 @@ export class InMemoryDatabase implements IDatabase {
   getGameIds(): Promise<GameId[]> {
     return Promise.resolve(Array.from(this.games.keys()));
   }
-  getLastSaveTimeMs(gameId: GameId): Promise<number | undefined> {
-    return Promise.resolve(this.lastSaveTimes.get(gameId));
-  }
-  getLastSaveTimesMs(gameIds: Array<GameId>): Promise<Map<GameId, number | undefined>> {
-    const result = new Map<GameId, number | undefined>();
-    for (const gameId of new Set(gameIds)) {
-      result.set(gameId, this.lastSaveTimes.get(gameId));
-    }
-    return Promise.resolve(result);
-  }
   async getPlayerCount(gameId: GameId): Promise<number> {
     const game = await this.getGame(gameId);
     return game.players.length;
@@ -84,7 +73,6 @@ export class InMemoryDatabase implements IDatabase {
       row.push(undefined);
     }
     row[game.lastSaveId] = game.serialize();
-    this.lastSaveTimes.set(game.id, this.clock.now());
     game.lastSaveId++;
     return Promise.resolve();
   }

@@ -152,10 +152,10 @@ export const PLAYER_PROFILES: ReadonlyArray<PlayerProfile> = [
     telegramID: '317238880',
   },
   {
-    id: 'alexandr',
-    name: 'Александр',
-    preferredColor: 'blue',
-    aliases: ['александр'],
+    id: 'quattrowow',
+    name: 'Quattrowow',
+    preferredColor: 'pink',
+    aliases: ['quattrowow', 'александр', 'саша'],
   },
 ];
 

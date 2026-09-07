@@ -99,7 +99,7 @@ onMounted(initialize);
 .replay-error { padding: 16px 0; }
 .replay-frame { min-width: 0; }
 .replay-players, .replay-board { position: relative; max-width: 100%; overflow-x: auto; margin-top: 16px; }
-.replay-colonies { display: flex; flex-wrap: wrap; gap: 12px; }
+.replay-colonies { display: flex; flex-wrap: wrap; gap: 12px; max-width: 100%; overflow-x: auto; }
 .replay-colonies h2 { width: 100%; }
 .replay-log { margin-top: 20px; overflow-wrap: anywhere; }
 .replay-log ol { max-height: 360px; overflow-y: auto; padding: 0 12px; list-style: none; }

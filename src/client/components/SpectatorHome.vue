@@ -5,6 +5,7 @@
       <div class="player_home_block">
         <DynamicTitle title="This game is over!" :color="spectator.color"/>
         <a :href="'the-end?id='+ spectator.id" v-i18n>Go to game results</a>
+        <a class="btn" :href="'replay?id=' + encodeURIComponent(spectator.id)" v-i18n>Game replay</a>
       </div>
     </div>
 

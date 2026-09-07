@@ -1808,10 +1808,13 @@ export class Game implements IGame, Logger {
     return addDays(this.createdTime, days).getTime();
   }
 
-  public static deserialize(d: SerializedGame, options: {simulation?: boolean} = {}): Game {
+  public static deserialize(d: SerializedGame, options: {simulation?: boolean; viewOnly?: boolean} = {}): Game {
+    if (options.viewOnly) {
+      d = structuredClone(d);
+    }
     const gameOptions = deserializeGameOptions(d);
 
-    const players = d.players.map((element) => Player.deserialize(element));
+    const players = d.players.map((element) => Player.deserialize(element, {restoreTimerClock: !options.viewOnly}));
     const first = players.find((player) => player.id === d.first);
     if (first === undefined) {
       throw new Error(`Player ${d.first} not found when rebuilding First Player`);
@@ -1828,7 +1831,7 @@ export class Game implements IGame, Logger {
     const ceoDeck = CeoDeck.deserialize(d.ceoDeck, rng);
 
     const game = new Game(d.id, d.name, players, first, d.activePlayer, d.spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, d.tags);
-    game.simulationMode = options.simulation === true;
+    game.simulationMode = options.simulation === true || options.viewOnly === true;
     game.resettable = true;
     game.spectatorId = d.spectatorId;
     game.createdTime = new Date(d.createdTimeMs);
@@ -1930,6 +1933,9 @@ export class Game implements IGame, Logger {
     }
     game.verminInEffect = d.verminInEffect;
     game.exploitationOfVenusInEffect = d.exploitationOfVenusInEffect;
+    if (options.viewOnly) {
+      return game;
+    }
     // Still in Draft or Research of generation 1
     if (game.generation === 1 && players.some((p) => p.playedCards.filter(isICorporationCard).length === 0)) {
       if (game.phase === Phase.INITIALDRAFTING) {

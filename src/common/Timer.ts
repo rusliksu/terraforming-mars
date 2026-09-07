@@ -61,7 +61,7 @@ export class Timer {
     };
   }
 
-  public static deserialize(d: SerializedTimer): Timer {
+  public static deserialize(d: SerializedTimer, restoreSharedClock = true): Timer {
     const timer = new Timer(REAL_CLOCK);
     timer.sumElapsed = d.sumElapsed;
     timer.startedAt = d.startedAt;
@@ -69,7 +69,9 @@ export class Timer {
     timer.afterFirstAction = d.afterFirstAction;
 
     // Never move the shared timer backwards.
-    Timer.lastStoppedAt = Math.max(Timer.lastStoppedAt, d.lastStoppedAt);
+    if (restoreSharedClock) {
+      Timer.lastStoppedAt = Math.max(Timer.lastStoppedAt, d.lastStoppedAt);
+    }
     return timer;
   }
 

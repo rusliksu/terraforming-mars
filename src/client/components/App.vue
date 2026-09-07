@@ -36,6 +36,7 @@
         :player-view="playerView"
         :spectator="spectator"
       />
+      <ReplayHome v-else-if="screen === 'replay'"/>
       <GamesOverview
         v-else-if="screen === 'games-overview'"
       />
@@ -65,6 +66,7 @@ const LoginHome = defineAsyncComponent(() => import(/* webpackChunkName: "login"
 const LoadGameForm = defineAsyncComponent(() => import(/* webpackChunkName: "load-game" */ '@/client/components/LoadGameForm.vue'));
 const PlayerHome = defineAsyncComponent(() => import(/* webpackChunkName: "player-home" */ '@/client/components/PlayerHome.vue'));
 const SpectatorHome = defineAsyncComponent(() => import(/* webpackChunkName: "spectator-home" */ '@/client/components/SpectatorHome.vue'));
+const ReplayHome = defineAsyncComponent(() => import(/* webpackChunkName: "replay" */ '@/client/components/replay/ReplayHome.vue'));
 const StartScreen = defineAsyncComponent(() => import(/* webpackChunkName: "start-screen" */ '@/client/components/StartScreen.vue'));
 import {$t, setTranslationContext} from '@/client/directives/i18n';
 import {paths} from '@/common/app/paths';
@@ -88,6 +90,7 @@ type Screen = 'admin' |
             'load' |
             'login-home' |
             'player-home' |
+            'replay' |
             'spectator-home' |
             'start-screen' |
             'the-end';
@@ -172,6 +175,7 @@ export default defineComponent({
     GameHome,
     PlayerHome,
     SpectatorHome,
+    ReplayHome,
     GameEnd,
     GamesOverview,
     CardList,
@@ -321,6 +325,8 @@ export default defineComponent({
       app.screen = 'help';
     } else if (currentPathname === paths.SPECTATOR) {
       app.updateSpectator();
+    } else if (currentPathname === paths.REPLAY) {
+      app.screen = 'replay';
     } else if (currentPathname === paths.ADMIN) {
       app.screen = 'admin';
     } else if (currentPathname === paths.LOGIN) {
@@ -331,3 +337,8 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.topmost-replay > .main-container { margin: 0; }
+.topmost-replay > .notice { position: static; margin: 24px; }
+</style>

@@ -1,8 +1,10 @@
 # Private game history archive
 
-This is a private archive foundation with SQLite history integration. It does
-not provide a Play button or shrink the SQLite file. Raw states contain private player
-data and must never be served through HTTP or copied into public assets.
+Архив хранит приватные сохранения и подключён к истории SQLite.
+Отдельный [публичный реплей](game-replay.md) показывает завершённые партии
+через проверку ссылки зрителя и явную проекцию полей. Сырые состояния
+содержат приватные данные: их нельзя отдавать по HTTP или копировать в assets.
+Архивирование само по себе не уменьшает размер файла SQLite.
 
 ## Code map
 
@@ -20,9 +22,10 @@ data and must never be served through HTTP or copied into public assets.
 | `src/server/tools/archive-game-history.ts` | One-game offline preview/export CLI and code-only errors | Source, preflight, writer, Node argument parser |
 | `src/server/tools/maintain-game-history.ts` | One-game retention preview/apply with explicit offline or maintenance context | SQLite retention, filesystem policy, Node argument parser |
 
-No archive module imports Game, GameLoader, production database initialization, cache,
-routes or network clients. The trusted reader returns private JSON values;
-a future public replay projection needs a separate visibility contract.
+Модули архива не импортируют Game, GameLoader, инициализацию production-БД,
+кеш, маршруты или сетевые клиенты. Доверенный читатель возвращает приватный
+JSON; публичная проекция реплея находится отдельно, в
+`src/server/replay/ReplayFrame.ts`.
 
 `readSave(root, saveId)` reads the manifest and only the containing gzip group.
 It verifies compressed bytes and every base/result hash traversed before the
@@ -34,10 +37,11 @@ Neither function mutates source files. Missing saves fail with
 
 ## SQLite catalog contract
 
-The catalog is a private library integrated with SQLite history reads and writes;
-the one-game operator CLI is the remaining delivery step. Its constructor receives an explicit SQLite handle,
-archive root and workspace. `initialize()` creates only `history_archives`.
-No gameplay module, environment-selected production DB or session is initialized.
+Каталог — приватная библиотека чтения и записи истории SQLite. Оператор одной
+партии описан в [инструкции хранения истории](sqlite-history-retention.md).
+Конструктор получает явные SQLite handle, корень архива и рабочий каталог.
+`initialize()` создаёт только `history_archives`; игровые модули, сессии
+и production-БД из окружения не инициализируются.
 
 `prepare(gameId, archiveName)` verifies a content-derived manifest name, SQLite
 source, every state identity/hash and the 512 MiB reconstructed-byte limit. It

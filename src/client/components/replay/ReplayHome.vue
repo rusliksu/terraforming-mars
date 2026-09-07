@@ -27,7 +27,7 @@
           :disabled="count < 2" :aria-label="$t('Saved state')"
           @input="seek(Number(($event.target as HTMLInputElement).value))">
       </label>
-      <p v-if="state.loading" class="replay-status" role="status" v-i18n>Loading replay...</p>
+      <p v-if="state.loading && !state.frame" class="replay-status" role="status" v-i18n>Loading replay...</p>
       <p v-else-if="state.frame" class="replay-status" role="status">
         <span v-i18n>Generation</span> {{ state.frame.view.game.generation }} ·
         <span v-i18n>{{ state.frame.view.game.phase }}</span> ·
@@ -41,7 +41,7 @@
     </div>
     <p v-else-if="state.index && count === 0" role="status" v-i18n>No saved states are available.</p>
 
-    <div v-if="state.frame" class="replay-frame" :data-replay-save="state.frame.saveId">
+    <div v-if="state.frame" class="replay-frame" :data-replay-save="state.frame.saveId" :aria-busy="state.loading">
       <div class="replay-players">
         <PlayersOverview :playerView="state.frame.view" :readOnly="true"/>
       </div>
@@ -99,7 +99,7 @@ onMounted(initialize);
 .replay-error { padding: 16px 0; }
 .replay-frame { min-width: 0; }
 .replay-players, .replay-board { position: relative; max-width: 100%; overflow-x: auto; margin-top: 16px; }
-.replay-colonies { display: flex; flex-wrap: wrap; gap: 12px; }
+.replay-colonies { display: flex; flex-wrap: wrap; gap: 12px; max-width: 100%; overflow-x: auto; }
 .replay-colonies h2 { width: 100%; }
 .replay-log { margin-top: 20px; overflow-wrap: anywhere; }
 .replay-log ol { max-height: 360px; overflow-y: auto; padding: 0 12px; list-style: none; }

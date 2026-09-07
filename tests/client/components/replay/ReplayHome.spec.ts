@@ -67,6 +67,25 @@ describe('ReplayHome', () => {
     wrapper.unmount();
   });
 
+  it('keeps the board and its status mounted while the next frame is loading', async () => {
+    const wrapper = mount();
+    await flushPromises();
+    const board = wrapper.getComponent(GameBoardView).element;
+    const status = wrapper.get('[role="status"]').text();
+    let release: (response: Response) => void = () => {};
+    vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>((resolve) => {
+      release = resolve;
+    })));
+    await wrapper.get('[aria-label="Next save"]').trigger('click');
+    expect(wrapper.getComponent(GameBoardView).element).toBe(board);
+    expect(wrapper.get('[role="status"]').text()).toBe(status);
+    expect(wrapper.get('.replay-frame').attributes('aria-busy')).toBe('true');
+    release({ok: false} as Response);
+    await flushPromises();
+    expect(wrapper.find('.replay-frame').exists()).toBe(false);
+    wrapper.unmount();
+  });
+
   it('shows a safe error instead of the old frame and offers retry and return', async () => {
     const wrapper = mount();
     await flushPromises();

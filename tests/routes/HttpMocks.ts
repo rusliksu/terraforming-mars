@@ -12,11 +12,26 @@ export class MockRequest implements Request {
     address: () => '127.0.0.1',
     remoteAddress: '127.0.0.1',
   };
-  public once(type: 'end', cb: () => void): void {
+  public once(type: 'end' | 'error' | 'close', cb: (err?: Error) => void): void {
     this.emitter.once(type, cb);
   }
   public on(type: 'data', cb: (dat: Buffer) => void): void {
     this.emitter.on(type, cb);
+  }
+  /* True once `pause` has been called. */
+  public paused = false;
+  public pause(): void {
+    this.paused = true;
+  }
+  // Delivers `chunk` as the buffer a real request would carry.
+  public emitString(chunk: string): void {
+    this.emitter.emit('data', Buffer.from(chunk));
+  }
+  public emitError(err: Error): void {
+    this.emitter.emit('error', err);
+  }
+  public emitClose(): void {
+    this.emitter.emit('close');
   }
 }
 

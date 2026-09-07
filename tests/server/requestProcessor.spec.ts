@@ -150,7 +150,7 @@ describe('requestProcessor', () => {
         captured.push({error, context});
       });
       await new Promise<void>((resolve) => setImmediate(resolve));
-      req.emitter.emit('data', malformedBody);
+      req.emitString(malformedBody);
       req.emitter.emit('end');
       await processing;
 

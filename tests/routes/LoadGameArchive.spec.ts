@@ -77,7 +77,7 @@ const supported = process.platform === 'win32' || (process.platform === 'linux' 
 
   function put() {
     const response = scaffolding.put(LoadGame.INSTANCE, res);
-    req.emitter.emit('data', JSON.stringify({gameId, rollbackCount: 2}));
+    req.emitString(JSON.stringify({gameId, rollbackCount: 2}));
     req.emitter.emit('end');
     return response;
   }

@@ -149,7 +149,7 @@ describe('PlayerInput', () => {
     const post = scaffolding.post(PlayerInput.INSTANCE, res);
     const emit = Promise.resolve().then(() => {
       const orOptionsResponse: OrOptionsResponse = {type: 'or', index: options.options.length - 1, response: {type: 'option'}};
-      req.emitter.emit('data', JSON.stringify(orOptionsResponse));
+      req.emitString(JSON.stringify(orOptionsResponse));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -184,7 +184,7 @@ describe('PlayerInput', () => {
     const post = scaffolding.post(PlayerInput.INSTANCE, res);
     const emit = Promise.resolve().then(() => {
       const orOptionsResponse: OrOptionsResponse = {type: 'or', index: 0, response: {type: 'option'}};
-      req.emitter.emit('data', JSON.stringify(orOptionsResponse));
+      req.emitString(JSON.stringify(orOptionsResponse));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -219,7 +219,7 @@ describe('PlayerInput', () => {
     const post = scaffolding.post(handler, res);
     const emit = Promise.resolve().then(() => {
       const orOptionsResponse: OrOptionsResponse = {type: 'or', index: 0, response: {type: 'option'}};
-      req.emitter.emit('data', JSON.stringify(orOptionsResponse));
+      req.emitString(JSON.stringify(orOptionsResponse));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -238,7 +238,7 @@ describe('PlayerInput', () => {
     const confirmedPost = confirmedScaffolding.post(handler, confirmedRes);
     const confirmedEmit = Promise.resolve().then(() => {
       const orOptionsResponse: OrOptionsResponse = {type: 'or', index: 0, response: {type: 'option'}};
-      confirmedReq.emitter.emit('data', JSON.stringify(orOptionsResponse));
+      confirmedReq.emitString(JSON.stringify(orOptionsResponse));
       confirmedReq.emitter.emit('end');
     });
     await Promise.all([confirmedEmit, confirmedPost]);
@@ -264,7 +264,7 @@ describe('PlayerInput', () => {
 
     const post = scaffolding.post(PlayerInput.INSTANCE, res);
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify({type: 'card', cards: [CardName.PROJECT_EDEN]}));
+      req.emitString(JSON.stringify({type: 'card', cards: [CardName.PROJECT_EDEN]}));
       req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -294,7 +294,7 @@ describe('PlayerInput', () => {
       localScaffolding.url = '/player/input?id=' + player.id;
       const post = localScaffolding.post(PlayerInput.INSTANCE, localRes);
       const emit = Promise.resolve().then(() => {
-        localReq.emitter.emit('data', JSON.stringify(input));
+        localReq.emitString(JSON.stringify(input));
         localReq.emitter.emit('end');
       });
       await Promise.all([emit, post]);
@@ -339,7 +339,7 @@ describe('PlayerInput', () => {
     const post = scaffolding.post(PlayerInput.INSTANCE, res);
     const emit = Promise.resolve().then(() => {
       const orOptionsResponse: OrOptionsResponse = {type: 'or', index: options.options.length - 1, response: {type: 'option'}};
-      scaffolding.req.emitter.emit('data', JSON.stringify(orOptionsResponse));
+      scaffolding.req.emitString(JSON.stringify(orOptionsResponse));
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -371,7 +371,7 @@ describe('PlayerInput', () => {
 
     const post = scaffolding.post(handler, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', JSON.stringify(payload));
+      scaffolding.req.emitString(JSON.stringify(payload));
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -410,7 +410,7 @@ describe('PlayerInput', () => {
 
     const post = scaffolding.post(handler, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', JSON.stringify(payload));
+      scaffolding.req.emitString(JSON.stringify(payload));
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -438,7 +438,7 @@ describe('PlayerInput', () => {
 
     const post = scaffolding.post(handler, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', JSON.stringify(payload));
+      scaffolding.req.emitString(JSON.stringify(payload));
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -469,7 +469,7 @@ describe('PlayerInput', () => {
 
     const malformedPost = scaffolding.post(handler, res);
     const malformedEmit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', '}{');
+      scaffolding.req.emitString('}{');
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([malformedEmit, malformedPost]);
@@ -484,7 +484,7 @@ describe('PlayerInput', () => {
     await invalidRunScaffolding.ctx.gameLoader.add(game);
     const invalidRunPost = invalidRunScaffolding.post(handler, invalidRunRes);
     const invalidRunEmit = Promise.resolve().then(() => {
-      invalidRunReq.emitter.emit('data', JSON.stringify({type: 'option', runId: `${runId}-stale`}));
+      invalidRunReq.emitString(JSON.stringify({type: 'option', runId: `${runId}-stale`}));
       invalidRunReq.emitter.emit('end');
     });
     await Promise.all([invalidRunEmit, invalidRunPost]);
@@ -511,7 +511,7 @@ describe('PlayerInput', () => {
       };
       const expectedPost = expectedScaffolding.post(handler, expectedRes);
       const expectedEmit = Promise.resolve().then(() => {
-        expectedReq.emitter.emit('data', JSON.stringify({type: 'option'}));
+        expectedReq.emitString(JSON.stringify({type: 'option'}));
         expectedReq.emitter.emit('end');
       });
       await Promise.all([expectedEmit, expectedPost]);
@@ -533,7 +533,7 @@ describe('PlayerInput', () => {
 
     const post = scaffolding.post(PlayerInput.INSTANCE, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', '}{');
+      scaffolding.req.emitString('}{');
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -559,7 +559,7 @@ describe('PlayerInput', () => {
 
     const post = scaffolding.post(PlayerInput.INSTANCE, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', JSON.stringify({type: 'option'}));
+      scaffolding.req.emitString(JSON.stringify({type: 'option'}));
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -582,7 +582,7 @@ describe('PlayerInput', () => {
 
     const post = scaffolding.post(PlayerInput.INSTANCE, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', '{"type":"option","debug":"secret-card-name"}');
+      scaffolding.req.emitString('{"type":"option","debug":"secret-card-name"}');
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -625,7 +625,7 @@ describe('PlayerInput', () => {
 
     const post = scaffolding.post(PlayerInput.INSTANCE, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', '{"type":"option"}');
+      scaffolding.req.emitString('{"type":"option"}');
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -659,7 +659,7 @@ describe('PlayerInput', () => {
     const handler = new PlayerInput(manager);
     const post = scaffolding.post(handler, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', '{"type":"or","index":0,"response":{"type":"option"}}');
+      scaffolding.req.emitString('{"type":"or","index":0,"response":{"type":"option"}}');
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -707,7 +707,7 @@ describe('PlayerInput', () => {
     scaffolding.url = `/player/input?id=${player.id}&serverId=${scaffolding.ctx.ids.serverId}`;
     const post = scaffolding.post(PlayerInput.INSTANCE, botResponse);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', '{"type":"option"}');
+      scaffolding.req.emitString('{"type":"option"}');
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -734,7 +734,7 @@ describe('PlayerInput', () => {
     const handler = new PlayerInput(manager);
     const post = scaffolding.post(handler, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', '{"type":"or","index":0,"response":{"type":"option"}}');
+      scaffolding.req.emitString('{"type":"or","index":0,"response":{"type":"option"}}');
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -759,7 +759,7 @@ describe('PlayerInput', () => {
 
     const post = scaffolding.post(PlayerInput.INSTANCE, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', '{"type":"option","debug":"secret-card-name"');
+      scaffolding.req.emitString('{"type":"option","debug":"secret-card-name"');
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -807,7 +807,7 @@ describe('PlayerInput', () => {
     const rawBody = JSON.stringify(payload);
     const post = scaffolding.post(PlayerInput.INSTANCE, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', rawBody);
+      scaffolding.req.emitString(rawBody);
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);

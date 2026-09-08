@@ -24,12 +24,12 @@
       <PlayerHome
         v-else-if="screen === 'player-home' && playerView !== undefined"
         :player-view="playerView"
-        :key="playerkey"
+        :view-revision="viewRevision"
       />
       <SpectatorHome
         v-else-if="screen === 'spectator-home' && spectator !== undefined"
         :spectator="spectator"
-        :key="'spectator-' + playerkey"
+        :key="'spectator-' + viewRevision"
       />
       <GameEnd
         v-else-if="screen === 'the-end'"
@@ -104,10 +104,10 @@ export type MainAppData = {
      */
     spectator?: SpectatorModel;
     playerView?: PlayerViewModel;
-    // playerKey might seem to serve no function, but it's basically an arbitrary value used
-    // to force a rerender / refresh.
-    // See https://michaelnthiessen.com/force-re-render/
-    playerkey: number;
+    // Increments for each accepted view model. PlayerHome stays mounted and uses
+    // this revision to reset only its action-input boundary. SpectatorHome keeps
+    // its existing full-remount behavior.
+    viewRevision: number;
     isServerSideRequestInProgress: boolean;
     componentsVisibility: {[x: string]: boolean};
     game: SimpleGameModel | undefined;
@@ -149,7 +149,7 @@ export default defineComponent({
   data(): MainAppData {
     return {
       screen: 'empty',
-      playerkey: 0,
+      viewRevision: 0,
       isServerSideRequestInProgress: false,
       componentsVisibility: {
         'milestones': true,
@@ -184,6 +184,11 @@ export default defineComponent({
     LoginHome,
   },
   methods: {
+    applyPlayerView(playerView: PlayerViewModel): void {
+      this.playerView = playerView;
+      setTranslationContext(playerView);
+      this.viewRevision++;
+    },
     showAlert(title: string, message: string, cb: () => void = () => {}): void {
       const dialogElement: HTMLElement | null = document.getElementById('alert-dialog');
       const buttonElement: HTMLElement | null = document.getElementById('alert-dialog-button');
@@ -227,12 +232,11 @@ export default defineComponent({
         })
         .then((model: ViewModel) => {
           if (path === paths.PLAYER) {
-            app.playerView = model as PlayerViewModel;
-            setTranslationContext(app.playerView);
+            this.applyPlayerView(model as PlayerViewModel);
           } else if (path === paths.SPECTATOR) {
             app.spectator = model as SpectatorModel;
+            app.viewRevision++;
           }
-          app.playerkey++;
           if (
             model.game.phase === 'end' &&
               window.location.search.includes('&noredirect') === false

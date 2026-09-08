@@ -125,6 +125,23 @@ describe('GeologicalExpedition', () => {
     expect(player.steel).eq(0);
   });
 
+  it('grants a bonus when replacing an Ares hazard', () => {
+    [game, player] = testGame(1, {aresExtension: true, aresHazards: false});
+    game.board = EmptyBoard.newInstance();
+    player.megaCredits = 8;
+    player.playedCards.push(card);
+
+    const hazardSpace = game.board.getAvailableSpacesForCity(player)[0];
+    hazardSpace.bonus = [SpaceBonus.PLANT];
+    hazardSpace.tile = {tileType: TileType.DUST_STORM_MILD, protectedHazard: false};
+
+    game.addCity(player, hazardSpace);
+
+    expect(hazardSpace.tile?.tileType).eq(TileType.CITY);
+    expect(hazardSpace.tile?.covers).is.undefined;
+    expect(player.plants).eq(1);
+  });
+
   it('does not grant covered ocean bonuses for New Holland', () => {
     const newHolland = new NewHolland();
     [game, player] = testGame(1);

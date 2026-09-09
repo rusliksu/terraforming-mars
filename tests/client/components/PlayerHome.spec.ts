@@ -107,6 +107,52 @@ describe('PlayerHome', () => {
     wrapper.unmount();
   });
 
+  it('remounts the setup action boundary when a new player view arrives', async () => {
+    let waitingMounts = 0;
+    let waitingUnmounts = 0;
+    const WaitingForStub = defineComponent({
+      setup() {
+        onMounted(() => waitingMounts++);
+        onUnmounted(() => waitingUnmounts++);
+      },
+      template: '<div class="waiting-stub"></div>',
+    });
+    const firstPlayer = fakePublicPlayerModel({tableau: []});
+    const firstView = fakePlayerViewModel({
+      thisPlayer: firstPlayer,
+      players: [firstPlayer],
+      waitingFor: {type: 'option', title: 'Pick a corporation', buttonLabel: 'Save'},
+    });
+    const wrapper = shallowMount(PlayerHome, {
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {PlayerSetupView: false, WaitingFor: WaitingForStub},
+      },
+      parentComponent: {
+        methods: {
+          getVisibilityState: () => true,
+          setVisibilityState: () => {},
+        },
+      } as any,
+      props: {
+        playerView: firstView,
+        settings: raw_settings,
+        viewRevision: 0,
+      },
+    });
+    expect(waitingMounts).eq(1);
+
+    const secondPlayer = fakePublicPlayerModel({tableau: [], megacredits: 42});
+    const secondView = fakePlayerViewModel({thisPlayer: secondPlayer, players: [secondPlayer], waitingFor: undefined});
+    await wrapper.setProps({playerView: secondView, viewRevision: 1});
+    await nextTick();
+
+    expect(waitingMounts).eq(2);
+    expect(waitingUnmounts).eq(1);
+    wrapper.unmount();
+  });
+
   it('does not render standalone surrender or bot takeover controls', () => {
     const wrapper = mountPlayerHome();
     expect(wrapper.find('[data-test="bot-takeover-control"]').exists()).is.false;

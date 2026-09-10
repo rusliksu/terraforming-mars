@@ -110,7 +110,7 @@ describe('ReplayHome', () => {
     const back = wrapper.get('a');
     expect(back.attributes('href')).toBe('/spectator?id=sreplay');
     expect(back.attributes('data-tooltip')).toBe('Back to the game page, where the lobby lists every player link');
-    expect(wrapper.get('.replay-back-hint').text()).toBe('The game page is the lobby: players enter the game from there.');
+    expect(wrapper.find('.replay-back-hint').exists()).toBe(false);
     wrapper.unmount();
   });
 

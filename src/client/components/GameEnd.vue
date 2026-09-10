@@ -67,10 +67,6 @@
                   <span>Elo &amp; History</span>
               </a>
             </div>
-            <p class="game-end-navigation-hint" data-test="end-game-navigation-hint">
-              <span class="game-end-navigation-hint-badge" v-i18n>Lobby tip</span>
-              <span v-i18n>Players enter a game from its lobby page by clicking their name there. Create New Game opens a fresh lobby; only this game's lobby keeps its players and the rematch link.</span>
-            </p>
           </div>
           <div v-if="spectatorUrl" class="game-end-spectator" style="text-align:center;margin:8px 0;font-size:12px;color:#888">
             <span>Spectator: </span><a :href="spectatorUrl" style="color:#ff7f50">{{ spectatorUrl }}</a>

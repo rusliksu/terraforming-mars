@@ -2,19 +2,12 @@
   <div id="game-home" class="game-home-container">
     <h1><span v-i18n>Terraforming Mars</span> [<span v-i18n>game id:</span> <span>{{getGameId()}}</span>]</h1>
     <h4><span v-i18n>Instructions: Share this page with all players. Each player can open it on any device and then click their name.</span></h4>
-    <p class="game-home-hint" data-test="lobby-enter-hint">
-      <span class="game-home-hint-badge" v-i18n>How to enter</span>
-      <span v-i18n>Click your name below. This page is the game lobby: keep its link to come back to it at any time.</span>
-    </p>
     <ul>
       <li v-for="(player, index) in (game === undefined ? [] : game.players)" :key="player.color" class="game-home-player-row">
         <span class="turn-order" v-i18n>{{getTurnOrder(index)}}</span>
         <span :class="'color-square ' + getPlayerCubeColorClass(player.color)">{{playerSymbol(player.color)}}</span>
         <span class="player-name">
-          <a :href="getHref(player.id)" :title="$t('Enter the game as this player')" data-test="enter-game-link">
-            <span class="player-name-text">{{player.name}}</span>
-            <span class="enter-game-hint" v-i18n>Enter game</span>
-          </a>
+          <a :href="getHref(player.id)" :title="$t('Enter the game as this player')" data-test="enter-game-link">{{player.name}}</a>
           <span
             v-if="player.isBotControlled"
             class="bot-controlled-marker"
@@ -28,12 +21,7 @@
       <li v-if="game !== undefined && game.spectatorId" class="game-home-player-row game-home-player-row--spectator">
         <span class="turn-order"></span>
         <span class="color-square"></span>
-        <span class="player-name">
-          <a :href="getHref(game.spectatorId)" :title="$t('Watch the game without playing')">
-            <span class="player-name-text" v-i18n>Spectator</span>
-            <span class="enter-game-hint" v-i18n>Watch</span>
-          </a>
-        </span>
+        <span class="player-name"><a :href="getHref(game.spectatorId)" :title="$t('Watch the game without playing')" v-i18n>Spectator</a></span>
         <span class="game-home-copy"><AppButton title="copy" size="tiny" @click="copyUrl(game.spectatorId)"/></span>
       </li>
     </ul>
@@ -43,7 +31,6 @@
         <AppButton size="big" type="back" />
         <span>♻ </span><span v-i18n>Recreate game (same setup)</span>
       </a>
-      <span class="game-home-hint" v-i18n>Opens a new lobby with the same settings</span>
     </div>
 
     <div class="spacing-setup"></div>

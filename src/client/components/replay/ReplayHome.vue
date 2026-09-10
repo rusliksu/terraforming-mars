@@ -1,7 +1,11 @@
 <template>
   <main class="replay-home">
     <header class="replay-heading">
-      <a :href="'/spectator?id=' + encodeURIComponent(spectatorId)" v-i18n>Back to game</a>
+      <p class="replay-back-row">
+        <a class="replay-back tooltip tooltip-bottom" :href="'/spectator?id=' + encodeURIComponent(spectatorId)"
+          :data-tooltip="$t('Back to the game page, where the lobby lists every player link')" v-i18n>Back to game</a>
+        <span class="replay-back-hint" v-i18n>The game page is the lobby: players enter the game from there.</span>
+      </p>
       <h1><span v-i18n>Game replay</span><span v-if="state.index?.name"> · {{ state.index.name }}</span></h1>
       <p v-i18n>Public saved states. Some actions may fall between saves.</p>
     </header>
@@ -46,8 +50,10 @@
         <PlayersOverview :playerView="state.frame.view" :readOnly="true"/>
       </div>
       <div class="replay-board">
-        <GameBoardView :game="state.frame.view.game" :players="state.frame.view.players" :tileView="tileView"
-          @toggleTileView="tileView = nextTileView(tileView)"/>
+        <div class="replay-board-inner" data-test="replay-board-inner">
+          <GameBoardView :game="state.frame.view.game" :players="state.frame.view.players" :tileView="tileView"
+            @toggleTileView="tileView = nextTileView(tileView)"/>
+        </div>
       </div>
       <section v-if="state.frame.view.game.colonies.length > 0" class="replay-colonies">
         <h2 v-i18n>Colonies</h2>
@@ -83,9 +89,12 @@ onMounted(initialize);
 </script>
 
 <style scoped>
-.replay-home { width: 100%; max-width: 1280px; min-width: 0; margin: 0 auto; padding: 16px; box-sizing: border-box; }
+.replay-home { width: 100%; max-width: 1600px; min-width: 0; margin: 0 auto; padding: 16px; box-sizing: border-box; }
 .replay-heading h1 { font-size: 24px; overflow-wrap: anywhere; }
 .replay-heading p { color: #bbb; }
+.replay-back-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0 0 8px; }
+.replay-back { text-decoration: underline; }
+.replay-back-hint { font-size: 14px; }
 .replay-controls { position: sticky; top: 0; z-index: 20; padding: 12px; background: #242424; border: 1px solid #555; border-radius: 8px; }
 .replay-buttons { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .replay-buttons .btn { min-width: 38px; min-height: 38px; }
@@ -99,6 +108,15 @@ onMounted(initialize);
 .replay-error { padding: 16px 0; }
 .replay-frame { min-width: 0; }
 .replay-players, .replay-board { position: relative; max-width: 100%; overflow-x: auto; margin-top: 16px; }
+/* The board is the main element of the replay: scale it up when the viewport has room.
+   Without zoom support the board keeps its natural size and the block still scrolls. */
+.replay-board-inner { zoom: var(--replay-board-zoom, 1); }
+@media (min-width: 1200px) {
+  .replay-board-inner { --replay-board-zoom: 1.3; }
+}
+@media (min-width: 1700px) {
+  .replay-board-inner { --replay-board-zoom: 1.5; }
+}
 .replay-colonies { display: flex; flex-wrap: wrap; gap: 12px; max-width: 100%; overflow-x: auto; }
 .replay-colonies h2 { width: 100%; }
 .replay-log { margin-top: 20px; overflow-wrap: anywhere; }

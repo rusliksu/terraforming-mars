@@ -99,6 +99,21 @@ describe('ReplayHome', () => {
     expect(wrapper.get('a').attributes('href')).toBe('/spectator?id=sreplay');
   });
 
+  it('keeps the board as the main scalable element and explains the way back to the lobby', async () => {
+    const wrapper = mount();
+    await flushPromises();
+
+    const scaler = wrapper.get('[data-test="replay-board-inner"]');
+    expect(scaler.findComponent(GameBoardView).exists()).toBe(true);
+    expect(scaler.element.contains(wrapper.getComponent(GameBoardView).element)).toBe(true);
+
+    const back = wrapper.get('a');
+    expect(back.attributes('href')).toBe('/spectator?id=sreplay');
+    expect(back.attributes('data-tooltip')).toBe('Back to the game page, where the lobby lists every player link');
+    expect(wrapper.get('.replay-back-hint').text()).toBe('The game page is the lobby: players enter the game from there.');
+    wrapper.unmount();
+  });
+
   it('distinguishes no saves and one saved frame', async () => {
     ids = [];
     const empty = mount();

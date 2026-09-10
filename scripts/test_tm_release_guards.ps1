@@ -978,4 +978,80 @@ Assert-True ($promoteRemote.Contains('sudo cp -a --remove-destination -- "$nginx
 Assert-True ($promoteRemote.Contains('rollback_after_public_switch "Could not switch public traffic to the next backend."')) "Next-backend nginx failure does not enter transactional rollback."
 Assert-True ($promoteRemote.Contains('rollback_after_public_switch "Could not switch public traffic back to the primary backend."')) "Final nginx failure does not enter transactional rollback."
 
+# Abandoned realtime games are declared once in an operator-owned ledger. Release and
+# rollout merge it with the explicit per-run ids; nothing infers an abandoned game, and
+# every merged id is echoed before the locked remote gate runs.
+$ledgerTempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("tm-ignored-ledger-" + [guid]::NewGuid().ToString("N"))
+New-Item -ItemType Directory -Path $ledgerTempRoot -Force | Out-Null
+try {
+    $ledgerPath = Join-Path $ledgerTempRoot "prod-ignored-games.txt"
+
+    Assert-True ((@(Read-TmIgnoredRealtimeGameIdLedger -Path $ledgerPath)).Count -eq 0) "A missing ignored-games ledger is not empty."
+
+    Set-Content -LiteralPath $ledgerPath -Encoding utf8 -Value @(
+        "# comment only",
+        "",
+        "g_abandoned",
+        "g_second   # abandoned 2026-09-08",
+        "g_abandoned"
+    )
+    $ledgerEntries = @(Read-TmIgnoredRealtimeGameIdLedgerEntries -Path $ledgerPath)
+    Assert-True ((($ledgerEntries | ForEach-Object { $_.GameId }) -join ",") -eq "g_abandoned,g_second") "Ignored-games ledger parsing did not keep order and deduplicate."
+    Assert-True ($ledgerEntries[1].Note -eq "abandoned 2026-09-08") "Ignored-games ledger lost the inline note."
+    Assert-True (((@(Read-TmIgnoredRealtimeGameIdLedger -Path $ledgerPath)) -join ",") -eq "g_abandoned,g_second") "Ignored-games ledger ids drifted from its entries."
+
+    Set-Content -LiteralPath $ledgerPath -Encoding utf8 -Value @("g1; rm -rf /")
+    Assert-Throws {
+        Read-TmIgnoredRealtimeGameIdLedger -Path $ledgerPath | Out-Null
+    } "An unsafe ignored-games ledger line was accepted."
+
+    $mergedIds = @(Merge-TmIgnoredRealtimeGameIds -Primary @("g_abandoned") -Additional @("g_second", "g_abandoned"))
+    Assert-True (($mergedIds -join ",") -eq "g_abandoned,g_second") "Ledger and per-run ids were not merged in order without duplicates."
+
+    $writtenEntries = @(Set-TmIgnoredRealtimeGameIdLedger -Path $ledgerPath -Entries @(
+        [pscustomobject]@{GameId = "g_second"; Note = "keep"},
+        "g_abandoned"
+    ))
+    Assert-True ((($writtenEntries | ForEach-Object { $_.GameId }) -join ",") -eq "g_abandoned,g_second") "Ledger write did not return a canonical order."
+    $ledgerLines = @(Get-Content -LiteralPath $ledgerPath)
+    Assert-True ($ledgerLines -contains "g_abandoned") "Ledger write dropped an id."
+    Assert-True ($ledgerLines -contains "g_second  # keep") "Ledger write dropped a preserved note."
+    Assert-True (@(Get-ChildItem -LiteralPath $ledgerTempRoot -Filter "*.tmp-*").Count -eq 0) "Ledger write left a temporary file behind."
+
+    $helperPath = Join-Path $PSScriptRoot "tm_ignored_realtime_games.ps1"
+    Assert-True (Test-Path -LiteralPath $helperPath) "Missing ignored-games ledger helper script."
+    $pwshForLedger = (Get-Command pwsh -ErrorAction Stop | Select-Object -First 1).Source
+
+    $listResult = Invoke-TextProcess -FilePath $pwshForLedger -ArgumentList @("-NoProfile", "-File", $helperPath, "-Path", $ledgerPath, "-List") -InputText $null
+    Assert-True ($listResult.ExitCode -eq 0) "Ledger helper -List failed. stderr=$($listResult.StdErr)"
+    Assert-True ($listResult.StdOut.Contains("g_abandoned") -and $listResult.StdOut.Contains("g_second")) "Ledger helper -List did not print the ledger."
+
+    $defaultListResult = Invoke-TextProcess -FilePath $pwshForLedger -ArgumentList @("-NoProfile", "-File", $helperPath, "-DryRun") -InputText $null
+    Assert-True ($defaultListResult.ExitCode -eq 0 -and $defaultListResult.StdOut.Contains("prod-ignored-games.txt")) "Ledger helper does not resolve the default ledger path."
+
+    $addResult = Invoke-TextProcess -FilePath $pwshForLedger -ArgumentList @("-NoProfile", "-File", $helperPath, "-Path", $ledgerPath, "-Add", "g_third", "-Note", "abandoned") -InputText $null
+    Assert-True ($addResult.ExitCode -eq 0) "Ledger helper -Add failed. stderr=$($addResult.StdErr)"
+    Assert-True ((@(Get-Content -LiteralPath $ledgerPath) -contains "g_third  # abandoned")) "Ledger helper -Add did not write the id with its note."
+
+    $removeResult = Invoke-TextProcess -FilePath $pwshForLedger -ArgumentList @("-NoProfile", "-File", $helperPath, "-Path", $ledgerPath, "-Remove", "g_third") -InputText $null
+    Assert-True ($removeResult.ExitCode -eq 0 -and $removeResult.StdOut.Contains("Removed: g_third")) "Ledger helper -Remove did not report the removal."
+    Assert-True (-not (@(Get-Content -LiteralPath $ledgerPath) -contains "g_third  # abandoned")) "Ledger helper -Remove kept the id."
+
+    $dryRunAdd = Invoke-TextProcess -FilePath $pwshForLedger -ArgumentList @("-NoProfile", "-File", $helperPath, "-Path", $ledgerPath, "-Add", "g_fourth", "-DryRun") -InputText $null
+    Assert-True ($dryRunAdd.ExitCode -eq 0 -and $dryRunAdd.StdOut.Contains("Dry run")) "Ledger helper dry run did not report itself."
+    Assert-True (-not (@(Get-Content -LiteralPath $ledgerPath) -contains "g_fourth")) "Ledger helper dry run wrote the ledger."
+
+    $unsafeAdd = Invoke-TextProcess -FilePath $pwshForLedger -ArgumentList @("-NoProfile", "-File", $helperPath, "-Path", $ledgerPath, "-Add", "g1;rm") -InputText $null
+    Assert-True ($unsafeAdd.ExitCode -ne 0) "Ledger helper accepted an unsafe game id."
+} finally {
+    Remove-Item -LiteralPath $ledgerTempRoot -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+Assert-True ($releaseSource.Contains('$ledgerIgnoredRealtimeGameIds = @(Read-TmIgnoredRealtimeGameIdLedger -Path $ignoredRealtimeGameIdLedgerPath)')) "Prod release does not read the ignored-games ledger."
+Assert-True ($releaseSource.Contains('$ignoredRealtimeGameIds = @(Merge-TmIgnoredRealtimeGameIds -Primary $ledgerIgnoredRealtimeGameIds -Additional $cliIgnoredRealtimeGameIds)')) "Prod release does not merge the ignored-games ledger with the per-run ids."
+Assert-True ($releaseSource.Contains('Write-Host ("Ignored realtime games: ledger={0} cli={1} total={2}"')) "Prod release does not echo the merged ignored-game counts."
+Assert-True ($releaseSource.Contains('Write-Host ("Ignored realtime ids   : {0}" -f ($ignoredRealtimeGameIds -join ","))')) "Prod release does not echo the merged ignored-game ids."
+Assert-True ($releaseSource.Contains('[string]$IgnoredRealtimeGameIdFile')) "Prod release has no ignored-games ledger override parameter."
+Assert-True ($rolloutSource.Contains('$releaseArgs += @("-IgnoredRealtimeGameIdFile", $IgnoredRealtimeGameIdFile)')) "Rollout does not forward an explicit ignored-games ledger."
+
 Write-Host "tm release guards regressions: OK"

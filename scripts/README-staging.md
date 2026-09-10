@@ -76,6 +76,42 @@ still require `-RestartWatchersDuringServiceSync`.
 - Trust `release.json`, not folder mtimes or guesses. Staging and prod should always be able to prove they serve the same artifact hash.
 - VPS runtime should be immutable-by-default: release code lives under `/home/openclaw/tm-runtime/<env>/releases/*`, services run from `/home/openclaw/tm-runtime/<env>/current`, and mutable data lives under `/home/openclaw/tm-runtime/<env>/shared`.
 
+## Abandoned Realtime Games
+
+The prod promote gate blocks while a non-turn-based game was saved within
+`-RealtimeGameStaleDays` (default 10). A game the group has abandoned keeps
+blocking until that window passes, so confirm it once in the operator ledger
+instead of repeating the ids on every release.
+
+- Ledger: `C:\Users\Ruslan\tm\.tmp\tm-release\prod-ignored-games.txt`
+  (override with `-IgnoredRealtimeGameIdFile`; never committed, never inferred).
+- Format: one `<game-id>` per line, optional trailing `# note`.
+
+```powershell
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\tm_ignored_realtime_games.ps1 -List
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\tm_ignored_realtime_games.ps1 -Add g1c62f3657ee8 -Note "idle since 2026-09-09"
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\tm_ignored_realtime_games.ps1 -Remove g1c62f3657ee8
+```
+
+Only a human declares a game abandoned: nothing infers it, `release_tm_prod.ps1`
+and `rollout_tm_server.ps1` merge the ledger with the per-run
+`-IgnoredRealtimeGameId` ids, and the merged count and ids are echoed before the
+locked remote gate runs. The gate itself is unchanged and still fails closed for
+unknown ids, for games whose save timestamp is missing, and for every game that
+is not listed.
+
+The current idle time of every running game is visible read-only from the
+release checkout; the query mirrors the gate's own latest-save lookup:
+
+```bash
+sqlite3 -readonly "file:/home/openclaw/tm-runtime/prod/shared/db/game.db?mode=ro" -json \
+  "SELECT latest.game_id, CAST(strftime('%s','now') AS INTEGER) - latest.created_time AS idle_seconds \
+   FROM games AS latest \
+   INNER JOIN (SELECT game_id AS gid, MAX(save_id) AS max_save_id FROM games GROUP BY game_id) AS m \
+     ON latest.game_id = m.gid AND latest.save_id = m.max_save_id \
+   WHERE trim(latest.status) = 'running' ORDER BY idle_seconds ASC;"
+```
+
 ## Branch Naming
 
 - `main`: your fork's integration branch on `origin`. Only release commits that are intended to live there.

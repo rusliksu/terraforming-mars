@@ -31,13 +31,6 @@ import {fitTextWhenReady} from '@/client/utils/textFit';
 
 export type RenderType = 'coming' | 'current' | 'distant' | 'prior';
 
-type DataModel = {
-  renderData: ICardRenderRoot;
-  description: string;
-  revealed: PartyName;
-  current: PartyName;
-};
-
 type Refs = {
   title: HTMLElement | undefined;
 };
@@ -54,7 +47,8 @@ export default defineComponent({
   },
   watch: {
     // Turmoil.vue renders each distant/coming/current slot without a :key, so as the game
-    // proceeds the same component instance can get a new globalEventName without remounting.
+    // proceeds the same component instance receives the next event of that slot. The card
+    // content below is derived from the prop, so only the fitted title has to follow it.
     globalEventName() {
       this.fitTitle();
     },
@@ -73,25 +67,33 @@ export default defineComponent({
       default: false,
     },
   },
-  data(): DataModel {
-    const globalEvent: IClientGlobalEvent | undefined = getGlobalEvent(this.globalEventName);
-    if (globalEvent === undefined) {
-      throw new Error(`Can't find card ${this.globalEventName}`);
-    }
-
-    return {
-      renderData: globalEvent.renderData,
-      revealed: globalEvent.revealedDelegate,
-      current: globalEvent.currentDelegate,
-      description: globalEvent.description,
-    };
-  },
   methods: {
     fitTitle(): void {
       fitTextWhenReady(this.typedRefs.title, 'global-event-title');
     },
   },
   computed: {
+    // Never snapshot the manifest entry: the same instance renders a new global event
+    // every generation, and a copied value would keep the previous card's body.
+    globalEvent(): IClientGlobalEvent {
+      const globalEvent: IClientGlobalEvent | undefined = getGlobalEvent(this.globalEventName);
+      if (globalEvent === undefined) {
+        throw new Error(`Can't find card ${this.globalEventName}`);
+      }
+      return globalEvent;
+    },
+    renderData(): ICardRenderRoot {
+      return this.globalEvent.renderData;
+    },
+    revealed(): PartyName {
+      return this.globalEvent.revealedDelegate;
+    },
+    current(): PartyName {
+      return this.globalEvent.currentDelegate;
+    },
+    description(): string {
+      return this.globalEvent.description;
+    },
     klass(): string {
       const common = 'global-event global-event--' + this.type;
       if (this.showDistance) {

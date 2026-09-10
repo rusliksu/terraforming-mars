@@ -5,7 +5,9 @@
       <div class="start-screen-title-top">TERRAFORMING</div>
       <div class="start-screen-title-bottom">MARS</div>
     </div>
-    <a class="start-screen-link start-screen-link--new-game" href="new-game" v-i18n>New game</a>
+    <a class="start-screen-link start-screen-link--new-game" href="new-game"
+       :title="$t('Create a game, then share its lobby link with the other players')"
+       :aria-label="$t('New game')" v-i18n>New game</a>
     <a class="start-screen-link start-screen-link--how-to-play" href="/elo/">Game History & Elo</a>
     <a class="start-screen-link start-screen-link--how-to-play" href="https://github.com/rusliksu/terraforming-mars/wiki/Rulebooks" target="_blank" v-i18n>How to Play</a>
     <a class="start-screen-link start-screen-link--cards-list" href="cards" target="_blank" v-i18n>Cards list</a>

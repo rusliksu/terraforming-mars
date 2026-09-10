@@ -37,29 +37,40 @@
           </div>
           <div class="game_end_navigation">
             <div>
-              <a v-if="game.spectatorId" :href="'replay?id=' + encodeURIComponent(game.spectatorId)">
+              <a v-if="game.spectatorId" :href="'replay?id=' + encodeURIComponent(game.spectatorId)"
+                 class="game-end-navigation-link tooltip tooltip-top"
+                 :data-tooltip="$t('Watch the saved states of this game')">
                   <AppButton size="big" type="back" />
                   <span v-i18n>Game replay</span>
               </a>
-              <a href="new-game">
+              <a href="new-game" class="game-end-navigation-link tooltip tooltip-top"
+                 :data-tooltip="$t('Start a new game and invite the other players')">
                   <AppButton size="big" type="back" />
                   <span v-i18n>Create New Game</span>
               </a>
 
-              <a :href="'new-game?cloneGameId=' + game.gameId" :title="$t('Start a new game with the same initial setup')">
+              <a :href="'new-game?cloneGameId=' + game.gameId" :title="$t('Start a new game with the same initial setup')"
+                 class="game-end-navigation-link tooltip tooltip-top"
+                 :data-tooltip="$t('Open a new lobby with the same settings')">
                   <AppButton size="big" type="back" />
                   <span>♻ </span><span v-i18n>Rematch (same setup)</span>
               </a>
 
-              <a href=".">
+              <a href="." class="game-end-navigation-link tooltip tooltip-top"
+                 :data-tooltip="$t('Main menu: start a game or open the guides')">
                   <AppButton size="big" type="back" />
                   <span v-i18n>Go to main page</span>
               </a>
-              <a href="history.html">
+              <a href="history.html" class="game-end-navigation-link tooltip tooltip-top"
+                 :data-tooltip="$t('Elo ratings and finished games')">
                   <AppButton size="big" type="back" />
                   <span>Elo &amp; History</span>
               </a>
             </div>
+            <p class="game-end-navigation-hint" data-test="end-game-navigation-hint">
+              <span class="game-end-navigation-hint-badge" v-i18n>Lobby tip</span>
+              <span v-i18n>Players enter a game from its lobby page by clicking their name there. Create New Game opens a fresh lobby; only this game's lobby keeps its players and the rematch link.</span>
+            </p>
           </div>
           <div v-if="spectatorUrl" class="game-end-spectator" style="text-align:center;margin:8px 0;font-size:12px;color:#888">
             <span>Spectator: </span><a :href="spectatorUrl" style="color:#ff7f50">{{ spectatorUrl }}</a>

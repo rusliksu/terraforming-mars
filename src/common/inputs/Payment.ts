@@ -78,6 +78,19 @@ export namespace Payment {
 }
 
 /**
+ * The megacredit value of the resources in this payment, using the standard exchange rates.
+ *
+ * This is what the player actually paid, which can be steel, titanium, heat or resources on
+ * cards instead of plain megacredits.
+ */
+export function paymentTotal(payment: Payment | undefined): number {
+  if (payment === undefined) {
+    return 0;
+  }
+  return SPENDABLE_RESOURCES.reduce((total, unit) => total + (payment[unit] ?? 0) * DEFAULT_PAYMENT_VALUES[unit], 0);
+}
+
+/**
  * See PaymentOptions.
  */
 type WaysToPay = Exclude<SpendableResource, 'megacredits'> | 'lunaTradeFederationTitanium';

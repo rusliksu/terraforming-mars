@@ -36,6 +36,39 @@ body {
   }
 }
 
+// Small plaques that explain where the end-game entries lead.
+.game_end_navigation .game-end-navigation-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.game-end-navigation-hint {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 620px;
+  margin: 16px auto 0;
+  font-size: @font_size_normal;
+  color: #bbb;
+}
+
+.game-end-navigation-hint-badge {
+  padding: 1px 6px;
+  border: 1px solid #666;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #ddd;
+}
+
+@media (max-width: 700px) {
+  .game-end-navigation-hint {
+    margin: 12px 8px 0;
+    font-size: @font_size_small;
+  }
+}
+
 .game_end_table {
   width: auto;
   background: @grey_900;

@@ -9,7 +9,7 @@ import {Color, normalizePlayerNameForColor} from '../common/Color';
 import {ICorporationCard} from './cards/corporation/ICorporationCard';
 import {IGame} from './IGame';
 import {Game} from './Game';
-import {Payment, PaymentOptions, DEFAULT_PAYMENT_VALUES} from '../common/inputs/Payment';
+import {Payment, PaymentOptions, DEFAULT_PAYMENT_VALUES, paymentTotal} from '../common/inputs/Payment';
 import {SpendableResource, SPENDABLE_RESOURCES, SpendableCardResource, CARD_FOR_SPENDABLE_RESOURCE} from '../common/inputs/Spendable';
 import {IAward} from './awards/IAward';
 import {ICard, isIActionCard, IActionCard} from './cards/ICard';
@@ -398,9 +398,10 @@ export class Player implements IPlayer {
       this.game.defer(
         new SelectPaymentDeferred(this, redsCost, {title: 'Select how to pay for TR increase'}),
         Priority.COST)
-        .andThen(() => {
+        .andThen((payment) => {
+          // Report what the player actually paid, which can be resources instead of megacredits.
           this.game.log('${0} paid ${1} M€ for Turmoil ${2} policy', (b) =>
-            b.player(this).number(redsCost).partyName(PartyName.REDS));
+            b.player(this).number(paymentTotal(payment)).partyName(PartyName.REDS));
           raiseRating();
           return undefined;
         });

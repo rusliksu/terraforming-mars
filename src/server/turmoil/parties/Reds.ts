@@ -14,6 +14,7 @@ import {SelectOption} from '../../inputs/SelectOption';
 import {MoonExpansion} from '../../moon/MoonExpansion';
 import {GlobalParameter} from '../../../common/GlobalParameter';
 import {TITLES} from '../../inputs/titles';
+import {paymentTotal} from '../../../common/inputs/Payment';
 
 export class Reds extends Party implements IParty {
   readonly name = PartyName.REDS;
@@ -88,7 +89,12 @@ class RedsPolicy02 implements IPolicy {
 
     const amountToPay = Math.min(amountPlayerHas, 3);
     if (amountToPay > 0) {
-      player.game.defer(new SelectPaymentDeferred(player, amountToPay, {title: 'Select how to pay for tile placement'}));
+      player.game.defer(new SelectPaymentDeferred(player, amountToPay, {title: 'Select how to pay for tile placement'}))
+        .andThen((payment) => {
+          player.game.log('${0} paid ${1} M€ for Turmoil ${2} policy', (b) =>
+            b.player(player).number(paymentTotal(payment)).partyName(PartyName.REDS));
+          return undefined;
+        });
     }
   }
 }
@@ -164,7 +170,9 @@ class RedsPolicy03 implements IPolicy {
     player.politicalAgendasActionUsedCount += 1;
 
     game.defer(new SelectPaymentDeferred(player, 4, {title: TITLES.payForPartyAction(PartyName.REDS)}))
-      .andThen(() => {
+      .andThen((payment) => {
+        game.log('${0} paid ${1} M€ for Turmoil ${2} policy', (b) =>
+          b.player(player).number(paymentTotal(payment)).partyName(PartyName.REDS));
         const orOptions = new OrOptions();
 
         // Decrease temperature option

@@ -115,9 +115,8 @@ describe('GameEnd', () => {
     expect(tooltipFor('Go to main page')).eq('Main menu: start a game or open the guides');
     expect(tooltipFor('Elo & History')).eq('Elo ratings and finished games');
 
-    const hint = wrapper.find('[data-test="end-game-navigation-hint"]');
-    expect(hint.exists()).is.true;
-    expect(hint.text()).to.contain('Lobby tip');
-    expect(hint.text()).to.contain('Players enter a game from its lobby page');
+    // The entries explain themselves through tooltips; no extra plaque on the page.
+    expect(wrapper.find('[data-test="end-game-navigation-hint"]').exists()).is.false;
+    expect(wrapper.find('.game-end-navigation-hint').exists()).is.false;
   });
 });

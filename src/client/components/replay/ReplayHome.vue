@@ -4,7 +4,6 @@
       <p class="replay-back-row">
         <a class="replay-back tooltip tooltip-bottom" :href="'/spectator?id=' + encodeURIComponent(spectatorId)"
           :data-tooltip="$t('Back to the game page, where the lobby lists every player link')" v-i18n>Back to game</a>
-        <span class="replay-back-hint" v-i18n>The game page is the lobby: players enter the game from there.</span>
       </p>
       <h1><span v-i18n>Game replay</span><span v-if="state.index?.name"> · {{ state.index.name }}</span></h1>
       <p v-i18n>Public saved states. Some actions may fall between saves.</p>
@@ -92,9 +91,8 @@ onMounted(initialize);
 .replay-home { width: 100%; max-width: 1600px; min-width: 0; margin: 0 auto; padding: 16px; box-sizing: border-box; }
 .replay-heading h1 { font-size: 24px; overflow-wrap: anywhere; }
 .replay-heading p { color: #bbb; }
-.replay-back-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0 0 8px; }
+.replay-back-row { margin: 0 0 8px; }
 .replay-back { text-decoration: underline; }
-.replay-back-hint { font-size: 14px; }
 .replay-controls { position: sticky; top: 0; z-index: 20; padding: 12px; background: #242424; border: 1px solid #555; border-radius: 8px; }
 .replay-buttons { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .replay-buttons .btn { min-width: 38px; min-height: 38px; }

@@ -89,33 +89,25 @@ describe('GameHome', () => {
     expect(wrapper.vm.getHref('p-blue')).not.contain('serverId');
   });
 
-  it('explains how to enter the game from the lobby', () => {
+  it('links every player by name without adding hint plaques to the lobby', () => {
     const wrapper = shallowMount(GameHome, {
       ...globalConfig,
       props: {game: baseGame},
     });
-
-    const hint = wrapper.find('[data-test="lobby-enter-hint"]');
-    expect(hint.exists()).is.true;
-    expect(hint.text()).to.contain('How to enter');
-    expect(hint.text()).to.contain('Click your name below');
 
     const enterLink = wrapper.find('[data-test="enter-game-link"]');
     expect(enterLink.exists()).is.true;
     expect(enterLink.attributes('href')).eq('player?id=p-blue');
     expect(enterLink.attributes('title')).eq('Enter the game as this player');
-    expect(enterLink.find('.enter-game-hint').text()).eq('Enter game');
-  });
+    expect(enterLink.text()).eq('Blue');
 
-  it('hints that the lobby link stays available and how a rematch starts', () => {
-    const wrapper = shallowMount(GameHome, {
-      ...globalConfig,
-      props: {game: baseGame},
-    });
-
+    // The lobby explains itself through the instructions line and link titles only.
+    expect(wrapper.find('[data-test="lobby-enter-hint"]').exists()).is.false;
+    expect(wrapper.find('.enter-game-hint').exists()).is.false;
+    expect(wrapper.find('.game-home-hint').exists()).is.false;
     const recreate = wrapper.find('.game-home-recreate');
     expect(recreate.text()).to.contain('Recreate game (same setup)');
-    expect(recreate.text()).to.contain('Opens a new lobby with the same settings');
+    expect(recreate.text()).not.to.contain('Opens a new lobby');
   });
 
   it('keeps player links bare when the lobby has no capability fragment', () => {

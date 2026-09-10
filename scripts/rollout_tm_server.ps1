@@ -4,6 +4,7 @@ param(
     [string]$TierlistRoot,
     [string]$SnapshotRoot,
     [string[]]$IgnoredRealtimeGameId,
+    [string]$IgnoredRealtimeGameIdFile,
     [switch]$BootstrapIfMissing,
     [switch]$AllowDirtyReleaseCheckout,
     [switch]$AllowDirtySource,
@@ -185,6 +186,9 @@ if ($PromoteProd) {
     }
     if ($ignoredRealtimeGameIds.Count -gt 0) {
         $releaseArgs += @("-IgnoredRealtimeGameId", ($ignoredRealtimeGameIds -join ","))
+    }
+    if (-not [string]::IsNullOrWhiteSpace($IgnoredRealtimeGameIdFile)) {
+        $releaseArgs += @("-IgnoredRealtimeGameIdFile", $IgnoredRealtimeGameIdFile)
     }
     if ($DryRun) {
         $releaseArgs += "-DryRun"

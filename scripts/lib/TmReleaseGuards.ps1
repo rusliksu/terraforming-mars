@@ -36,6 +36,167 @@ function Assert-TmIgnoredRealtimeGameIds {
     }
 }
 
+function Get-TmIgnoredRealtimeGameIdLedgerDefaultPath {
+    # Operator-local ledger beside the deploy snapshots. It is read-only input for the
+    # release scripts and is never committed to the repository.
+    $scriptsRoot = Split-Path -Parent $PSScriptRoot
+    $repoRoot = Split-Path -Parent $scriptsRoot
+    $workspaceRoot = Split-Path -Parent $repoRoot
+    return Join-Path $workspaceRoot ".tmp\tm-release\prod-ignored-games.txt"
+}
+
+function Get-TmIgnoredRealtimeGameIdLedgerPath {
+    param(
+        [AllowNull()]
+        [string]$Path
+    )
+
+    if (-not [string]::IsNullOrWhiteSpace($Path)) {
+        return [System.IO.Path]::GetFullPath($Path)
+    }
+
+    return Get-TmIgnoredRealtimeGameIdLedgerDefaultPath
+}
+
+function Read-TmIgnoredRealtimeGameIdLedgerEntries {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        return @()
+    }
+
+    $entries = [System.Collections.Generic.List[psobject]]::new()
+    $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    $lineNumber = 0
+    foreach ($rawLine in @(Get-Content -LiteralPath $Path)) {
+        $lineNumber++
+        $line = [string]$rawLine
+        $note = ""
+        $commentIndex = $line.IndexOf("#")
+        if ($commentIndex -ge 0) {
+            $note = $line.Substring($commentIndex + 1).Trim()
+            $line = $line.Substring(0, $commentIndex)
+        }
+        $candidate = $line.Trim()
+        if ([string]::IsNullOrWhiteSpace($candidate)) {
+            continue
+        }
+        if ($candidate -notmatch '^[A-Za-z0-9_-]{1,128}$') {
+            throw "Ignored-games ledger line $lineNumber is not a game id: '$($rawLine.Trim())'"
+        }
+        foreach ($gameId in @(Assert-TmIgnoredRealtimeGameIds -GameIds @($candidate))) {
+            if (-not $seen.Add($gameId)) {
+                continue
+            }
+            $entries.Add([pscustomobject]@{GameId = $gameId; Note = $note})
+        }
+    }
+
+    return $entries.ToArray()
+}
+
+function Read-TmIgnoredRealtimeGameIdLedger {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+
+    return @(Read-TmIgnoredRealtimeGameIdLedgerEntries -Path $Path | ForEach-Object { $_.GameId })
+}
+
+function Merge-TmIgnoredRealtimeGameIds {
+    param(
+        [AllowNull()]
+        [string[]]$Primary,
+        [AllowNull()]
+        [string[]]$Additional
+    )
+
+    $merged = [System.Collections.Generic.List[string]]::new()
+    $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($list in @($Primary, $Additional)) {
+        if ($null -eq $list) {
+            continue
+        }
+        foreach ($value in @($list)) {
+            $candidate = [string]$value
+            if ([string]::IsNullOrWhiteSpace($candidate)) {
+                continue
+            }
+            foreach ($gameId in @(Assert-TmIgnoredRealtimeGameIds -GameIds @($candidate.Trim()))) {
+                if ($seen.Add($gameId)) {
+                    $merged.Add($gameId)
+                }
+            }
+        }
+    }
+
+    return $merged.ToArray()
+}
+
+function Set-TmIgnoredRealtimeGameIdLedger {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path,
+        [AllowNull()]
+        [object[]]$Entries
+    )
+
+    $normalized = [System.Collections.Generic.List[psobject]]::new()
+    $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($entry in @($Entries)) {
+        if ($null -eq $entry) {
+            continue
+        }
+        $gameId = ""
+        $note = ""
+        if ($entry -is [string]) {
+            $gameId = [string]$entry
+        } else {
+            if ($null -ne $entry.PSObject.Properties["GameId"]) {
+                $gameId = [string]$entry.GameId
+            }
+            if ($null -ne $entry.PSObject.Properties["Note"]) {
+                $note = ([string]$entry.Note).Trim()
+            }
+        }
+        if ([string]::IsNullOrWhiteSpace($gameId)) {
+            continue
+        }
+        foreach ($validated in @(Assert-TmIgnoredRealtimeGameIds -GameIds @($gameId.Trim()))) {
+            if (-not $seen.Add($validated)) {
+                continue
+            }
+            $normalized.Add([pscustomobject]@{GameId = $validated; Note = $note})
+        }
+    }
+
+    $directory = Split-Path -Parent $Path
+    if (-not [string]::IsNullOrWhiteSpace($directory) -and -not (Test-Path -LiteralPath $directory)) {
+        New-Item -ItemType Directory -Path $directory -Force | Out-Null
+    }
+
+    $lines = [System.Collections.Generic.List[string]]::new()
+    $lines.Add("# Games confirmed abandoned by the operator for the TM prod promote gate.")
+    $lines.Add("# One <game-id> per line, optional trailing '# note'. Never inferred automatically.")
+    foreach ($entry in @($normalized | Sort-Object -Property GameId)) {
+        if ([string]::IsNullOrWhiteSpace($entry.Note)) {
+            $lines.Add($entry.GameId)
+        } else {
+            $lines.Add(("{0}  # {1}" -f $entry.GameId, $entry.Note))
+        }
+    }
+
+    $temporary = "{0}.tmp-{1}" -f $Path, $PID
+    Set-Content -LiteralPath $temporary -Value $lines -Encoding utf8
+    Move-Item -LiteralPath $temporary -Destination $Path -Force
+
+    return @($normalized | Sort-Object -Property GameId)
+}
+
 function Assert-TmStagingSource {
     param(
         [Parameter(Mandatory)]

@@ -35,6 +35,48 @@
     cursor: pointer;
     min-width: 0;
     white-space: nowrap;
+
+    > a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+  }
+  .player-name-text {
+    text-decoration: underline;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  // Small plaques that explain the lobby entries without changing its layout.
+  .enter-game-hint,
+  .game-home-hint {
+    font-size: @font_size_small;
+    font-weight: normal;
+    color: #bbb;
+    text-decoration: none;
+    text-transform: none;
+  }
+  .enter-game-hint {
+    flex: 0 0 auto;
+    padding: 0 5px;
+    border: 1px solid #666;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.35);
+  }
+  .game-home-hint {
+    margin-left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .game-home-hint-badge {
+    padding: 1px 6px;
+    border: 1px solid #666;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.35);
+    color: #ddd;
   }
   .bot-toggle-placeholder {
     display: block;
@@ -92,6 +134,14 @@
       grid-area: name;
       overflow: hidden;
       text-overflow: ellipsis;
+
+      .enter-game-hint {
+        display: none;
+      }
+    }
+    .game-home-hint {
+      margin-left: 8px;
+      font-size: @font_size_normal;
     }
     .bot-toggle {
       grid-area: bot;

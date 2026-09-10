@@ -100,4 +100,24 @@ describe('GameEnd', () => {
     expect((wrapper.vm as any).getPlayerPlaceLabel(highCash)).eq('2–3');
     expect(wrapper.findAll('[data-test="result-place"]').map((cell) => cell.text())).deep.eq(['1', '2–3', '2–3']);
   });
+
+  it('explains where every end-game navigation entry leads', () => {
+    const playerView = fakePlayerViewModel();
+    playerView.game.spectatorId = 'sreplay-link';
+    const wrapper = shallowMount(GameEnd, {...globalConfig, props: {playerView, spectator: fakeSpectatorModel()}});
+
+    const tooltipFor = (text: string) => wrapper.findAll('a')
+      .find((link) => link.text().includes(text))?.attributes('data-tooltip');
+
+    expect(tooltipFor('Game replay')).eq('Watch the saved states of this game');
+    expect(tooltipFor('Create New Game')).eq('Start a new game and invite the other players');
+    expect(tooltipFor('Rematch (same setup)')).eq('Open a new lobby with the same settings');
+    expect(tooltipFor('Go to main page')).eq('Main menu: start a game or open the guides');
+    expect(tooltipFor('Elo & History')).eq('Elo ratings and finished games');
+
+    const hint = wrapper.find('[data-test="end-game-navigation-hint"]');
+    expect(hint.exists()).is.true;
+    expect(hint.text()).to.contain('Lobby tip');
+    expect(hint.text()).to.contain('Players enter a game from its lobby page');
+  });
 });

@@ -15,7 +15,7 @@
     <AppButton title="Undo card purchase (experimental)" type="submit" size="normal" @click="undoResearchPurchase" />
   </div>
   <div v-if="waitingfor !== undefined" class="wf-root">
-    <template v-if="preferences().experimental_ui && playerView.game.phase === Phase.ACTION && playerView.thisPlayer?.isActive !== true">
+    <template v-if="preferences().experimental_ui && playerView.game.phase === Phase.ACTION">
       <input type="checkbox" name="suspend" id="suspend-checkbox" v-model="suspend" @change="updateSuspend">
       <label for="suspend-checkbox">
         <span v-i18n>Pause updates</span>
@@ -215,7 +215,7 @@ export default defineComponent({
               }
               return;
             }
-            let cb = () => {};
+            let cb = () => root.updatePlayer();
             if (resp.id === INVALID_RUN_ID) {
               cb = () => setTimeout(() => window.location.reload(), 100);
             }
@@ -243,14 +243,11 @@ export default defineComponent({
         };
       }
     },
-    updatePlayerView(playerView: PlayerViewModel | undefined) {
+    updatePlayerView(playerView: PlayerViewModel) {
       if (this.suspend === false) {
         const root = vueRoot(this);
-        root.screen = 'empty';
-        root.playerView = playerView;
-        root.playerkey++;
-        root.screen = 'player-home';
-        if (this.playerView.game.phase === 'end' && window.location.pathname !== paths.THE_END) {
+        root.applyPlayerView(playerView);
+        if (playerView.game.phase === 'end' && window.location.pathname !== paths.THE_END) {
           window.location = window.location as any as (string & Location);
         }
         this.savedPlayerView = undefined;

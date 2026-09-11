@@ -1,0 +1,29 @@
+schema_version: 1.0.0
+mission: software-dev
+profile: minimal
+answers:
+  project_intent: Поддерживать сервер Terraforming Mars предсказуемыми 
+    проверяемыми изменениями без нарушения игрового и HTTP-поведения.
+  languages_frameworks: TypeScript 6, Node.js 22, CommonJS backend и Vue 
+    frontend; Mocha 11 и Chai 6 для тестов.
+  testing_requirements: TDD для нового поведения; focused Mocha tests, 
+    build:tests, lint:server, build:server и полный build; не вводить 
+    неподтверждённый coverage threshold.
+  quality_gates: Профильные тесты, build:tests, lint:server, build:server, 
+    полный build, git diff --check и актуальная карта кода.
+  review_policy: Не менее одного focused review перед merge; code changes идут в
+    task-owned branch/worktree и через PR в main.
+  performance_targets: Нет общего числового target; успешный request path не 
+    должен получать блокирующую внешнюю работу, а конкретные 
+    performance-критерии задаёт mission.
+  deployment_constraints: Windows local development и Linux staging; push, 
+    merge, secret configuration, deploy, live и production actions требуют 
+    отдельных явных gates.
+selected_paradigms: []
+selected_directives: []
+selected_tactics: []
+available_tools:
+- git
+- spec-kitty
+agent_profile:
+agent_role:

@@ -118,7 +118,37 @@ describe('WaitingFor', () => {
     expect(wrapper.text()).to.include('Not your turn');
   });
 
-  it('shows a clearer pause-updates label in experimental UI', async () => {
+  it('applies an action response through the root player-view contract without cycling screens', () => {
+    const wrapper = mountWaitingFor({
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {'PlayerInputFactory': true},
+      },
+      props: {
+        playerView: playerView as PlayerViewModel,
+        waitingfor: undefined,
+      },
+    });
+    const nextPlayerView = {...playerView, runId: 'next-run'} as PlayerViewModel;
+    const root = wrapper.vm.$root as any;
+    let applied: PlayerViewModel | undefined;
+    root.screen = 'player-home';
+    root.viewRevision = 4;
+    root.applyPlayerView = (model: PlayerViewModel) => {
+      applied = model;
+      root.playerView = model;
+      root.viewRevision++;
+    };
+
+    wrapper.vm.updatePlayerView(nextPlayerView);
+
+    expect(applied).eq(nextPlayerView);
+    expect(root.screen).eq('player-home');
+    expect(root.viewRevision).eq(5);
+  });
+
+  it('shows a clearer pause-updates label in experimental UI', () => {
     PreferencesManager.INSTANCE.set('experimental_ui', true);
 
     const wrapper = mountWaitingFor({
@@ -143,14 +173,6 @@ describe('WaitingFor', () => {
 
     expect(wrapper.text()).to.include('Pause updates');
     expect(wrapper.text()).to.not.include('Suspend');
-
-    await wrapper.setProps({
-      playerView: {
-        ...playerView,
-        thisPlayer: {...thisPlayer, isActive: true},
-      } as PlayerViewModel,
-    });
-    expect(wrapper.text()).to.not.include('Pause updates');
   });
 
   it('adds one-step undo to the main action radio options and routes it to the step reset', () => {
@@ -401,6 +423,58 @@ describe('WaitingFor', () => {
     } finally {
       (global as any).fetch = originalFetch;
       (window as any).confirm = originalConfirm;
+    }
+  });
+
+  it('refreshes the player view after a rejected stale input', async () => {
+    const originalFetch = global.fetch;
+    let refreshes = 0;
+    let alertCallback: () => void = () => {};
+    (global as any).fetch = () => Promise.resolve({
+      ok: false,
+      status: 400,
+      clone: () => ({
+        json: () => Promise.resolve({
+          id: '#unexpected-input',
+          message: 'This input is no longer valid',
+        }),
+      }),
+    });
+
+    try {
+      const wrapper = mountWaitingFor({
+        ...globalConfig,
+        global: {
+          ...globalConfig.global,
+          stubs: {
+            'PlayerInputFactory': true,
+          },
+        },
+        props: {
+          playerView: playerView as PlayerViewModel,
+          waitingfor: {
+            type: 'option',
+            title: 'test',
+            buttonLabel: 'save',
+          },
+        },
+      });
+      const root = wrapper.vm.$root as any;
+      root.updatePlayer = () => refreshes++;
+      root.showAlert = (title: string, message: string, cb: () => void) => {
+        expect(title).eq('Error with input');
+        expect(message).eq('This input is no longer valid');
+        alertCallback = cb;
+      };
+
+      wrapper.vm.fetchPlayerInput('player/input?id=p-player-id', {method: 'POST'});
+      await new Promise((resolve) => window.setTimeout(resolve, 0));
+
+      expect(refreshes).eq(0);
+      alertCallback();
+      expect(refreshes).eq(1);
+    } finally {
+      (global as any).fetch = originalFetch;
     }
   });
 

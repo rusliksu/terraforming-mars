@@ -3,9 +3,10 @@ import {IGame, Score} from '../IGame';
 import {GameOptions} from '../game/GameOptions';
 import {GameId, isGameId, ParticipantId} from '../../common/Types';
 import {SerializedGame} from '../SerializedGame';
-import {Dirent, existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync} from 'fs';
+import {Dirent, existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync} from 'fs';
 import {Session, SessionId} from '../auth/Session';
 import {toID} from '../../common/utils/utils';
+import {assertSaveIdWithinLimit, resolveMaxSavesPerGame} from './HistoryLimits';
 
 const path = require('path');
 const defaultDbFolder = path.resolve(process.cwd(), './db/files');
@@ -17,7 +18,7 @@ export class LocalFilesystem implements IDatabase {
   private readonly sessionsFolder: string;
   public static quiet: boolean = false;
 
-  constructor(dbFolder: string = defaultDbFolder) {
+  constructor(dbFolder: string = defaultDbFolder, private readonly maxSavesPerGame: number = resolveMaxSavesPerGame()) {
     this.dbFolder = dbFolder;
     this.historyFolder = path.resolve(dbFolder, 'history');
     this.completedFolder = path.resolve(dbFolder, 'completed');
@@ -54,12 +55,14 @@ export class LocalFilesystem implements IDatabase {
 
   saveGame(game: IGame): Promise<void> {
     console.log(`saving ${game.id} at position ${game.lastSaveId}`);
+    assertSaveIdWithinLimit(game.lastSaveId, this.maxSavesPerGame);
     this.saveSerializedGame(game.serialize());
     game.lastSaveId++;
     return Promise.resolve();
   }
 
   saveSerializedGame(serializedGame: SerializedGame): void {
+    assertSaveIdWithinLimit(serializedGame.lastSaveId, this.maxSavesPerGame);
     const text = JSON.stringify(serializedGame, null, 2);
     writeFileSync(this.filename(serializedGame.id), text);
     writeFileSync(this.historyFilename(serializedGame.id, serializedGame.lastSaveId), text);
@@ -137,26 +140,6 @@ export class LocalFilesystem implements IDatabase {
       }
     });
     return Promise.resolve(gameIds);
-  }
-
-  getLastSaveTimeMs(gameId: GameId): Promise<number | undefined> {
-    return Promise.resolve(this.getLastSaveTimeMsSync(gameId));
-  }
-
-  getLastSaveTimesMs(gameIds: Array<GameId>): Promise<Map<GameId, number | undefined>> {
-    const result = new Map<GameId, number | undefined>();
-    for (const gameId of new Set(gameIds)) {
-      result.set(gameId, this.getLastSaveTimeMsSync(gameId));
-    }
-    return Promise.resolve(result);
-  }
-
-  private getLastSaveTimeMsSync(gameId: GameId): number | undefined {
-    const filename = this.filename(gameId);
-    if (!existsSync(filename)) {
-      return undefined;
-    }
-    return statSync(filename).mtimeMs;
   }
 
   saveGameResults(gameId: GameId, players: number, generations: number, gameOptions: GameOptions, scores: Array<Score>): void {

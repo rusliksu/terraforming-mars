@@ -11,7 +11,7 @@ export type SimpleGameModel = {
     name: string;
     phase: Phase;
     players: Array<SimplePlayerModel>;
-    spectatorId: SpectatorId | undefined;
+    spectatorId: SpectatorId;
     gameOptions: GameOptionsModel;
     lastSoloGeneration: number;
     expectedPurgeTimeMs: number;
@@ -20,5 +20,7 @@ export type SimpleGameModel = {
 type SimplePlayerModel = {
     color: Color;
     id: PlayerId;
+    isBotControlled: boolean;
+    isSurrendered: boolean;
     name: string;
 }

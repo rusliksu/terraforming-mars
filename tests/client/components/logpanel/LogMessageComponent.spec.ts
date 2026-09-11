@@ -66,6 +66,16 @@ describe('LogMessageComponent', () => {
     expect(wrapper.find('li').classes()).contains('log-message--irreversible-undo');
   });
 
+  it('marks bot takeover log messages', () => {
+    const message = new LogMessage(LogMessageType.BOT_TAKEOVER, 'A player left the game; a bot is now playing', []);
+    const wrapper = shallowMount(LogMessageComponent, {
+      ...globalConfig,
+      props: {message, viewModel: fakeViewModel()},
+    });
+
+    expect(wrapper.find('li').classes()).contains('log-message--bot-takeover');
+  });
+
   it('renders CARDS type as multiple card spans with locale-correct separator in English', () => {
     const message = new LogMessage(
       LogMessageType.DEFAULT,
@@ -83,7 +93,7 @@ describe('LogMessageComponent', () => {
       ', ' +
       '<span class="log-card background-color-active">Birds</span>' +
       ', and ' +
-      '<span class="log-card background-color-global-event">Celestic</span>',
+      '<span class="log-card background-color-corporation">Celestic</span>',
     );
   });
 
@@ -103,7 +113,7 @@ describe('LogMessageComponent', () => {
     expect(cardsContainer.innerHTML).to.equal(
       '<span class="log-card background-color-active">Ants</span>' +
       ', ' +
-      '<span class="log-card background-color-global-event">Ecoline</span>' +
+      '<span class="log-card background-color-corporation">Ecoline</span>' +
       ', and ' +
       '<span class="log-card background-color-active">Birds</span>',
     );
@@ -127,7 +137,7 @@ describe('LogMessageComponent', () => {
         ', ' +
         '<span class="log-card background-color-active">Birds</span>' +
         ' et ' +
-        '<span class="log-card background-color-global-event">Celestic</span>',
+      '<span class="log-card background-color-corporation">Celestic</span>',
       );
     } finally {
       PreferencesManager.resetForTest();
@@ -152,7 +162,7 @@ describe('LogMessageComponent', () => {
         '、' +
         '<span class="log-card background-color-active">Birds</span>' +
         '、' +
-        '<span class="log-card background-color-global-event">Celestic</span>',
+      '<span class="log-card background-color-corporation">Celestic</span>',
       );
     } finally {
       PreferencesManager.resetForTest();

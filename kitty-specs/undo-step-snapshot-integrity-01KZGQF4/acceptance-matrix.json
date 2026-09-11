@@ -1,0 +1,69 @@
+{
+  "mission_slug": "undo-step-snapshot-integrity-01KZGQF4",
+  "mission_number": "",
+  "mission_type": "software-dev",
+  "overall_verdict": "pass",
+  "criteria": [
+    {
+      "criterion_id": "FR-001",
+      "description": "The replay root remains unchanged after live log, global contribution, and nested player-state mutations",
+      "proof_type": "automated_test",
+      "evidence": "ActionReplay.spec.ts: keeps the root snapshot unchanged after live state mutates; observed RED on shallow capture and GREEN after detached capture",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-08-08T13:42:00Z",
+      "notes": "Covers gameLog, globalParameterSteps, and removingPlayers aliases"
+    },
+    {
+      "criterion_id": "FR-002",
+      "description": "Giant Ice Asteroid contributions and oceans are counted once after two sequential step-backs and replay",
+      "proof_type": "automated_test",
+      "evidence": "ActionReplay.spec.ts Giant Ice Asteroid production-flow regression; focused suite 15 passing and full server suite 7365 passing",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-08-08T13:42:00Z",
+      "notes": "Asserts intermediate 2/1, fully rewound 0/0, and final replayed 2/2 contribution states"
+    },
+    {
+      "criterion_id": "FR-003",
+      "description": "Live game log mutation cannot contaminate the replay root or be replayed twice through aliasing",
+      "proof_type": "automated_test",
+      "evidence": "ActionReplay.spec.ts root mutation-isolation assertion on rootSnapshot.gameLog length",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-08-08T13:42:00Z",
+      "notes": "The regression failed before production code changed"
+    },
+    {
+      "criterion_id": "FR-004",
+      "description": "A single JSON detachment boundary protects the complete SerializedGame graph without field-specific patches",
+      "proof_type": "automated_test",
+      "evidence": "ActionReplay.ts captures cloneSerializedGame(game.serialize()) and clones the immutable root again for each replay",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-08-08T13:42:00Z",
+      "notes": "No Game, Player, card, tile, or expansion serializer changed"
+    },
+    {
+      "criterion_id": "FR-005",
+      "description": "Existing deterministic replay and hidden-information protections retain their behavior",
+      "proof_type": "automated_test",
+      "evidence": "All five ActionReplay tests pass, including Project Eden fingerprint failure and Hi-Tech Lab hidden-information scenarios; full server suite 7365 passing",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-08-08T13:42:00Z",
+      "notes": "No prompt fingerprint, grouping, hidden-information, or full undo code changed"
+    },
+    {
+      "criterion_id": "FR-006",
+      "description": "The architecture document records JSON detachment, root immutability, and per-replay cloning",
+      "proof_type": "automated_test",
+      "evidence": "docs/architecture/step-undo-experiment-plan.md documents the invariant and regression coverage",
+      "pass_fail": "pass",
+      "verified_by": "codex",
+      "verified_at": "2026-08-08T13:42:00Z",
+      "notes": "Experimental and deployment caveats remain intact"
+    }
+  ],
+  "negative_invariants": []
+}

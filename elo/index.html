@@ -1667,6 +1667,14 @@ function resultForProfile(game, profile) {
   }) || null;
 }
 
+function resultPlaceLabel(result) {
+  var placeFrom = Number(result && result.placeFrom || 0);
+  var placeTo = Number(result && result.placeTo || 0);
+  if (placeFrom > 0 && placeTo > placeFrom) return placeFrom + "–" + placeTo;
+  var place = Number(result && result.place || 0);
+  return place > 0 ? String(place) : "";
+}
+
 function renderProfileRecentGames(profile) {
   var games = getVisibleGames().slice().reverse().filter(function(game) {
     return resultForProfile(game, profile) !== null;
@@ -1680,7 +1688,8 @@ function renderProfileRecentGames(profile) {
       var result = resultForProfile(game, profile) || {};
       var bits = [];
       if (game.generation) bits.push("Gen " + game.generation);
-      if (result.place) bits.push("#" + result.place);
+      var placeLabel = resultPlaceLabel(result);
+      if (placeLabel) bits.push("#" + placeLabel);
       if (result.vp) bits.push(result.vp + " VP");
       if (typeof result.delta === "number") bits.push(formatMargin(result.delta));
       if (result.corp) bits.push(result.corp);

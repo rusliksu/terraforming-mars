@@ -7,6 +7,7 @@ import {Request} from '../Request';
 import {Response} from '../Response';
 import {SerializedGame} from '../SerializedGame';
 import {DEFAULT_PRELUDE_HANDICAP, NewGameConfig} from '../../common/game/NewGameConfig';
+import {RouteError} from './RouteError';
 
 export class ApiCloneableGame extends Handler {
   public static readonly INSTANCE = new ApiCloneableGame();
@@ -46,7 +47,7 @@ export class ApiCloneableGame extends Handler {
       })
       .catch((err) => {
         console.warn('Could not load cloneable game: ', err);
-        responses.notFound(req, res);
+        throw RouteError.notFound();
       });
   }
 

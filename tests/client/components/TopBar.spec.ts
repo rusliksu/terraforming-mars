@@ -51,6 +51,7 @@ describe('TopBar', () => {
     const topBar = wrapper.find('.top-bar');
     expect(topBar.findComponent({name: 'TerraformedBanner'}).exists()).to.be.true;
     expect(wrapper.find('.top-bar-container > terraformed-banner-stub').exists()).to.be.false;
+    expect(topBar.element.firstElementChild?.tagName.toLowerCase()).eq('terraformed-banner-stub');
   });
 
   it('does not render the terraformed status before terraforming is complete', () => {

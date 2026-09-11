@@ -24,13 +24,16 @@
       border: 2px solid rgba(170, 170, 170, 0.6);
       border-radius: 8px;
       &:hover{
-        background: #ccc;
+        background: #aaa;
         color: black;
       }
     }
     .log-gen-indicator--selected {
       background: #ccc;
       color: black;
+      &:hover {
+        background: #ccc;
+      }
     }
   }
   .log-recent-indicator {
@@ -48,36 +51,88 @@
     background: #ccc;
     color: black;
   }
-  .log-player-filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-left: 16px;
-  }
-  .log-player-filter {
+}
+
+.log-player-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 4px 5px 0;
+  max-width: 860px;
+}
+
+.log-player-filter {
+  border: 1px solid rgba(170, 170, 170, 0.6);
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.2;
+  padding: 1px 8px;
+
+  &:not(.log-player-filter--player) {
     background: transparent;
-    border: 2px solid rgba(170, 170, 170, 0.6);
-    border-radius: 8px;
     color: inherit;
-    cursor: pointer;
-    font: inherit;
-    padding: 2px 12px;
-    &:hover:not(.log-player-filter--player) {
-      background: #ccc;
-      color: black;
-    }
-    &.log-player-filter--player:hover {
-      filter: brightness(1.15);
-    }
   }
-  .log-player-filter--selected {
-    border-color: #fff;
-    box-shadow: 0 0 0 1px #fff;
-  }
-  .log-player-filter--selected-all {
+
+  &:hover:not(.log-player-filter--player) {
     background: #ccc;
     color: black;
   }
+
+  &.log-player-filter--player:hover {
+    filter: brightness(1.15);
+  }
+}
+
+.log-latest-button {
+  position: absolute;
+  right: 28px;
+  bottom: 8px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid rgba(170, 170, 170, 0.55);
+  border-radius: 4px;
+  background: rgba(51, 51, 51, 0.9);
+  color: #ddd;
+  cursor: pointer;
+
+  &:hover {
+    background: #ccc;
+    color: black;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ccc;
+    outline-offset: 2px;
+  }
+}
+
+.log-latest-button-icon {
+  width: 16px;
+  height: 16px;
+
+  path {
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.log-player-filter--selected {
+  border-color: #fff;
+  box-shadow: 0 0 0 1px #fff;
+}
+
+.log-player-filter.log-player-filter--selected-all {
+  background: #ccc;
+  color: black;
 }
 
 .log-panel {
@@ -89,6 +144,11 @@
   max-width: 860px;
   background: @grey_900;
   position: relative;
+
+  > .panel-body {
+    padding-right: 64px;
+    scrollbar-gutter: stable;
+  }
 
   li {
     margin-top: 0;
@@ -107,6 +167,12 @@
   .log-message--irreversible-undo,
   .log-message--irreversible-undo span {
     color: @adjacency-cost;
+    font-weight: bold;
+  }
+
+  .log-message--bot-takeover,
+  .log-message--bot-takeover span {
+    color: #ff4b5c;
     font-weight: bold;
   }
 
@@ -191,6 +257,6 @@
     color: #888;
     position: absolute;
     bottom: 0px;
-    right: 50px;
+    right: 68px;
   }
 }

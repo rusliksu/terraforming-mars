@@ -7,11 +7,12 @@ import {Warning} from '../cards/Warning';
 
 export interface CardModel {
     name: CardName;
-    resources?: number | undefined;
+    resources?: number;
     calculatedCost?: number;
     isSelfReplicatingRobotsCard?: boolean,
     discount?: Array<CardDiscount>,
     isDisabled?: boolean; // Used with Pharmacy Union
+    opgActionIsActive?: boolean; // Current-generation CEO effect state.
     additionalProjectCosts?: AdditionalProjectCosts;
     warnings?: ReadonlyArray<Warning>;
     reserveUnits?: Readonly<Units>; // Written for The Moon, but useful in other contexts.

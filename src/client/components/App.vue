@@ -24,18 +24,19 @@
       <PlayerHome
         v-else-if="screen === 'player-home' && playerView !== undefined"
         :player-view="playerView"
-        :key="playerkey"
+        :view-revision="viewRevision"
       />
       <SpectatorHome
         v-else-if="screen === 'spectator-home' && spectator !== undefined"
         :spectator="spectator"
-        :key="'spectator-' + playerkey"
+        :key="'spectator-' + viewRevision"
       />
       <GameEnd
         v-else-if="screen === 'the-end'"
         :player-view="playerView"
         :spectator="spectator"
       />
+      <ReplayHome v-else-if="screen === 'replay'"/>
       <GamesOverview
         v-else-if="screen === 'games-overview'"
       />
@@ -65,6 +66,7 @@ const LoginHome = defineAsyncComponent(() => import(/* webpackChunkName: "login"
 const LoadGameForm = defineAsyncComponent(() => import(/* webpackChunkName: "load-game" */ '@/client/components/LoadGameForm.vue'));
 const PlayerHome = defineAsyncComponent(() => import(/* webpackChunkName: "player-home" */ '@/client/components/PlayerHome.vue'));
 const SpectatorHome = defineAsyncComponent(() => import(/* webpackChunkName: "spectator-home" */ '@/client/components/SpectatorHome.vue'));
+const ReplayHome = defineAsyncComponent(() => import(/* webpackChunkName: "replay" */ '@/client/components/replay/ReplayHome.vue'));
 const StartScreen = defineAsyncComponent(() => import(/* webpackChunkName: "start-screen" */ '@/client/components/StartScreen.vue'));
 import {$t, setTranslationContext} from '@/client/directives/i18n';
 import {paths} from '@/common/app/paths';
@@ -88,6 +90,7 @@ type Screen = 'admin' |
             'load' |
             'login-home' |
             'player-home' |
+            'replay' |
             'spectator-home' |
             'start-screen' |
             'the-end';
@@ -101,10 +104,10 @@ export type MainAppData = {
      */
     spectator?: SpectatorModel;
     playerView?: PlayerViewModel;
-    // playerKey might seem to serve no function, but it's basically an arbitrary value used
-    // to force a rerender / refresh.
-    // See https://michaelnthiessen.com/force-re-render/
-    playerkey: number;
+    // Increments for each accepted view model. PlayerHome stays mounted and uses
+    // this revision to reset only its action-input boundary. SpectatorHome keeps
+    // its existing full-remount behavior.
+    viewRevision: number;
     isServerSideRequestInProgress: boolean;
     componentsVisibility: {[x: string]: boolean};
     game: SimpleGameModel | undefined;
@@ -146,7 +149,7 @@ export default defineComponent({
   data(): MainAppData {
     return {
       screen: 'empty',
-      playerkey: 0,
+      viewRevision: 0,
       isServerSideRequestInProgress: false,
       componentsVisibility: {
         'milestones': true,
@@ -172,6 +175,7 @@ export default defineComponent({
     GameHome,
     PlayerHome,
     SpectatorHome,
+    ReplayHome,
     GameEnd,
     GamesOverview,
     CardList,
@@ -180,6 +184,11 @@ export default defineComponent({
     LoginHome,
   },
   methods: {
+    applyPlayerView(playerView: PlayerViewModel): void {
+      this.playerView = playerView;
+      setTranslationContext(playerView);
+      this.viewRevision++;
+    },
     showAlert(title: string, message: string, cb: () => void = () => {}): void {
       const dialogElement: HTMLElement | null = document.getElementById('alert-dialog');
       const buttonElement: HTMLElement | null = document.getElementById('alert-dialog-button');
@@ -223,12 +232,11 @@ export default defineComponent({
         })
         .then((model: ViewModel) => {
           if (path === paths.PLAYER) {
-            app.playerView = model as PlayerViewModel;
-            setTranslationContext(app.playerView);
+            this.applyPlayerView(model as PlayerViewModel);
           } else if (path === paths.SPECTATOR) {
             app.spectator = model as SpectatorModel;
+            app.viewRevision++;
           }
-          app.playerkey++;
           if (
             model.game.phase === 'end' &&
               window.location.search.includes('&noredirect') === false
@@ -321,6 +329,8 @@ export default defineComponent({
       app.screen = 'help';
     } else if (currentPathname === paths.SPECTATOR) {
       app.updateSpectator();
+    } else if (currentPathname === paths.REPLAY) {
+      app.screen = 'replay';
     } else if (currentPathname === paths.ADMIN) {
       app.screen = 'admin';
     } else if (currentPathname === paths.LOGIN) {
@@ -331,3 +341,8 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.topmost-replay > .main-container { margin: 0; }
+.topmost-replay > .notice { position: static; margin: 24px; }
+</style>

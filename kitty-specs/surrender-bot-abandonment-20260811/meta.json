@@ -1,0 +1,18 @@
+{
+  "mission_id": "manual-surrender-bot-abandonment-20260811",
+  "mission_number": null,
+  "slug": "surrender-bot-abandonment-20260811",
+  "mission_slug": "surrender-bot-abandonment-20260811",
+  "friendly_name": "Сдача с передачей места боту",
+  "purpose_tldr": "Сделать явную сдачу безопасным продолжением партии через бота и отличать ее от молчаливого лива в рейтинге.",
+  "purpose_context": "Игрок, который честно нажал Surrender, не должен блокировать обязательные фазы и не должен считаться ливнувшим. Место передается боту, а рейтинг различает продолживших игру, сдавшихся и реально покинувших партию.",
+  "mission_type": "software-dev",
+  "target_branch": "main",
+  "planning_branch": "codex/surrender-bot-abandonment",
+  "base_sha": "b89ea4d9ccb9eff549daade1e88534bc9e055905",
+  "vcs": "git",
+  "created_at": "2026-08-11T08:20:24Z",
+  "governance_mode": "manual-isolated-fallback",
+  "governance_note": "Spec Kitty 3.2.5 resolves the primary checkout branch instead of this registered task worktree; the user approved the isolated manual baseline.",
+  "bead": "tm-ai-wq5"
+}

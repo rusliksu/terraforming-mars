@@ -5,7 +5,10 @@ import {CardName} from '@/common/cards/CardName';
 import PlayerInfo from '@/client/components/overview/PlayerInfo.vue';
 import {PlayerViewModel, PublicPlayerModel} from '@/common/models/PlayerModel';
 import {RecursivePartial} from '@/common/utils/utils';
-import {fakeGameModel, fakePublicPlayerModel, fakeTimerModel} from '../testHelpers';
+import {fakeGameModel, fakePlayerViewModel, fakePublicPlayerModel, fakeTimerModel} from '../testHelpers';
+import {asComplete} from '../utils/models';
+import {defineComponent, nextTick, onMounted, onUnmounted} from 'vue';
+import {Tag} from '@/common/cards/Tag';
 
 describe('PlayerInfo', () => {
   it('Played card count test', () => {
@@ -43,8 +46,8 @@ describe('PlayerInfo', () => {
         },
       },
       props: {
-        player: thisPlayer,
-        playerView: playerView,
+        player: asComplete<PublicPlayerModel>(thisPlayer),
+        playerView: asComplete<PlayerViewModel>(playerView),
         playerIndex: 0,
         actionLabel: 'none',
       },
@@ -172,6 +175,34 @@ describe('PlayerInfo', () => {
     expect(badge.props('eloDelta')).eq(-8);
   });
 
+  it('shows a bot-controlled marker', () => {
+    const player = fakePublicPlayerModel({isBotControlled: true});
+    const playerView = {
+      id: 'player-id',
+      thisPlayer: player,
+      game: fakeGameModel(),
+      players: [player],
+      runId: 'run-id',
+    } as any as PlayerViewModel;
+
+    const playerInfo = shallowMount(PlayerInfo, {
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        mocks: {
+          getVisibilityState: () => false,
+          setVisibilityState: () => {},
+          isServerSideRequestInProgress: false,
+        },
+      },
+      props: {player, playerView, playerIndex: 0, actionLabel: 'none'},
+    });
+
+    const marker = playerInfo.find('.bot-controlled-marker');
+    expect(marker.exists()).is.true;
+    expect(marker.text()).eq('BOT');
+  });
+
   it('does not show spectator hand control to a player', () => {
     const player = fakePublicPlayerModel({
       color: 'blue',
@@ -210,5 +241,60 @@ describe('PlayerInfo', () => {
     });
 
     expect(playerInfo.find('.spectator-hand-button').exists()).eq(false);
+  });
+
+  it('remounts cached tag details when a played tag changes', async () => {
+    let mounts = 0;
+    let unmounts = 0;
+    const PlayerTagsStub = defineComponent({
+      setup() {
+        onMounted(() => mounts++);
+        onUnmounted(() => unmounts++);
+      },
+      template: '<div class="player-tags-stub"></div>',
+    });
+    const firstPlayer = fakePublicPlayerModel({color: 'blue'});
+    const firstView = fakePlayerViewModel({
+      thisPlayer: firstPlayer,
+      game: fakeGameModel({gameAge: 10, undoCount: 0}),
+      players: [firstPlayer],
+      runId: 'first-run',
+    });
+    const wrapper = shallowMount(PlayerInfo, {
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {PlayerTags: PlayerTagsStub},
+        mocks: {
+          getVisibilityState: () => false,
+          setVisibilityState: () => {},
+          isServerSideRequestInProgress: false,
+        },
+      },
+      props: {
+        player: firstPlayer,
+        playerView: firstView,
+        playerIndex: 0,
+        actionLabel: 'none',
+      },
+    });
+    expect(mounts).eq(1);
+
+    const secondPlayer = fakePublicPlayerModel({
+      color: 'blue',
+      tags: {...firstPlayer.tags, [Tag.VENUS]: 1},
+    });
+    const secondView = fakePlayerViewModel({
+      thisPlayer: secondPlayer,
+      game: fakeGameModel({gameAge: 11, undoCount: 0}),
+      players: [secondPlayer],
+      runId: 'second-run',
+    });
+    await wrapper.setProps({player: secondPlayer, playerView: secondView});
+    await nextTick();
+
+    expect(mounts).eq(2);
+    expect(unmounts).eq(1);
+    wrapper.unmount();
   });
 });

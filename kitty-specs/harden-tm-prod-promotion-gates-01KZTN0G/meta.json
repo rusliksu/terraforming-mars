@@ -1,0 +1,15 @@
+{
+  "created_at": "2026-08-12T09:31:46.040617+00:00",
+  "friendly_name": "Harden TM Prod Promotion Gates",
+  "mission_id": "01KZTN0GZKPESGFVB3DBCZT9XX",
+  "mission_number": null,
+  "mission_slug": "harden-tm-prod-promotion-gates-01KZTN0G",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_tldr": "Prevent false-safe and false-failed TM production promotions.",
+  "slug": "harden-tm-prod-promotion-gates-01KZTN0G",
+  "target_branch": "main",
+  "topology": "single_branch",
+  "manual_workflow_authorized": true,
+  "beads_id": "tm-ai-o3t"
+}

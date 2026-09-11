@@ -63,11 +63,16 @@ type ActionReplayState = {
 
 - Start or replace the journal at a restorable root prompt (normal action,
   prelude, CEO action, and other supported roots).
+- Detach the serialized root through the JSON persistence boundary before
+  storing it. `Game.serialize()` may reuse JSON-compatible nested objects from
+  the live game, but `rootSnapshot` is immutable after capture and must not
+  observe later log, global-contribution, card, tile, or expansion mutations.
 - After an input is validated and accepted, append it with the actor and the
   fingerprint of the prompt it answered. Rejected inputs are never appended.
 - To go back one step, deserialize the root snapshot in replay mode and process
   all journal entries except the last one. Verify every prompt fingerprint
-  before processing. The resulting live game should be at the preceding screen.
+  before processing. Every replay receives its own mutable clone of the root;
+  the resulting live game should be at the preceding screen.
 - Replace the cached game only after the entire replay succeeds and the resulting
   prompt matches the expected predecessor. On any mismatch, leave the live game
   untouched and offer full-action undo.
@@ -114,6 +119,9 @@ card-selection confirmation screen.
       and the server reports a replayable previous step.
 - [x] Validate Project Eden tile placement, Hi-Tech Lab after final card choice,
       failed prompt fingerprints, and replay divergence.
+- [x] Validate root-snapshot isolation and a multi-global Giant Ice Asteroid
+      replay so contributions, logs, and representative nested state cannot be
+      applied twice through shared serialized references.
 - [ ] Validate payment, Charity Donation, multi-player actor changes, and server
       restart behavior.
 - [ ] Deploy to staging only after the focused suite and full server suite pass.
@@ -141,3 +149,5 @@ card-selection confirmation screen.
 - 2026-07-13: Use root snapshot plus deterministic input replay as the preferred
   continuation model.
 - 2026-07-13: Drop the extra confirmation-before-card-selection design.
+- 2026-08-08: Make the root snapshot JSON-detached at capture; serializers do
+  not individually own the step-replay immutability guarantee.

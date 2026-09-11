@@ -24,7 +24,9 @@ export class Election extends GlobalEvent implements IGlobalEvent {
     });
   }
 
-  public resolve(game: IGame, turmoil: Turmoil) {
+  public override bespokeResolve(game: IGame) {
+    const turmoil = Turmoil.getTurmoil(game);
+
     // Solo
     if (game.isSoloMode()) {
       const player = game.players[0];
@@ -35,7 +37,7 @@ export class Election extends GlobalEvent implements IGlobalEvent {
         player.increaseTerraformRating(1, {log: true});
       }
     } else {
-      const players = game.players.slice().sort(
+      const players = game.players.toSorted(
         (p1, p2) => this.getScore(p2, turmoil, game) - this.getScore(p1, turmoil, game),
       );
 

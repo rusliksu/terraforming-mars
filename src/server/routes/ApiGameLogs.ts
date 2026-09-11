@@ -2,7 +2,6 @@ import * as responses from '../server/responses';
 import {Handler} from './Handler';
 import {Context} from './IHandler';
 import {GameLogs} from './GameLogs';
-import {isPlayerId, isSpectatorId} from '../../common/Types';
 import {Request} from '../Request';
 import {Response} from '../Response';
 
@@ -14,15 +13,7 @@ export class ApiGameLogs extends Handler {
 
   public override async get(req: Request, res: Response, ctx: Context): Promise<void> {
     const searchParams = ctx.url.searchParams;
-    const id = searchParams.get('id');
-    if (!id) {
-      responses.badRequest(req, res, 'missing id parameter');
-      return;
-    }
-    if (!isPlayerId(id) && !isSpectatorId(id)) {
-      responses.badRequest(req, res, 'invalid player id');
-      return;
-    }
+    const id = ctx.urlParams.participantId('id');
     const game = await ctx.gameLoader.getGame(id);
     if (game === undefined) {
       responses.notFound(req, res, 'game not found');

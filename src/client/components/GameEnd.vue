@@ -53,7 +53,7 @@
                  class="game-end-navigation-link tooltip tooltip-top"
                  :data-tooltip="$t('Open a new lobby with the same settings')">
                   <AppButton size="big" type="back" />
-                  <span>♻ </span><span v-i18n>Rematch (same setup)</span>
+                  <span>♻&nbsp;</span><span v-i18n>Rematch (same setup)</span>
               </a>
 
               <a href="." class="game-end-navigation-link tooltip tooltip-top"

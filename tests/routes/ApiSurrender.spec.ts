@@ -8,6 +8,9 @@ import {statusCode} from '../../src/common/http/statusCode';
 import {AccessAuditRecordInput} from '../../src/server/server/AccessAudit';
 import {Phase} from '../../src/common/Phase';
 import {BotTakeoverManager} from '../../src/server/bot/BotTakeoverManager';
+import {LogMessageType} from '../../src/common/logs/LogMessageType';
+import {LogMessageDataType} from '../../src/common/logs/LogMessageDataType';
+import {restoreTestGameLoader, setTestGameLoader} from '../testing/setup';
 
 function newBotManager() {
   let active = false;
@@ -46,7 +49,8 @@ describe('ApiSurrender', () => {
   it('records surrender and starts a bot without passing', async () => {
     const alice = TestPlayer.BLACK.newPlayer();
     const bob = TestPlayer.RED.newPlayer();
-    const game = Game.newInstance('g123456789abc', [alice, bob], alice, 'spectatorid');
+    const carol = TestPlayer.YELLOW.newPlayer();
+    const game = Game.newInstance('g123456789abc', [alice, bob, carol], alice, 'spectatorid');
     game.phase = Phase.ACTION;
     game.generation = 1;
     alice.clearWaitingFor();
@@ -68,6 +72,38 @@ describe('ApiSurrender', () => {
     expect(auditEvents[0].event).eq('surrender_accepted');
     expect(auditEvents[0].path).eq('api/surrender');
     expect(auditEvents[0].metadata).deep.eq({authorization: 'player', botTakeover: 'started'});
+    const takeoverLog = game.gameLog[game.gameLog.length - 1];
+    expect(takeoverLog.type).eq(LogMessageType.BOT_TAKEOVER);
+    expect(takeoverLog.message).eq('${0} left the game; a bot is now playing');
+    expect(takeoverLog.data).deep.eq([{type: LogMessageDataType.PLAYER, value: alice.color}]);
+  });
+
+  it('finishes when the last active player remains without starting a bot', async () => {
+    const alice = TestPlayer.BLACK.newPlayer();
+    const bob = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('g123456789abc', [alice, bob], alice, 'spectatorid');
+    game.phase = Phase.ACTION;
+    alice.clearWaitingFor();
+    alice.takeAction(false);
+    await scaffolding.ctx.gameLoader.add(game);
+    setTestGameLoader(scaffolding.ctx.gameLoader);
+    const auditEvents: Array<AccessAuditRecordInput> = [];
+    scaffolding.ctx.accessAudit = {record: (event) => auditEvents.push(event)};
+    const {manager, starts} = newBotManager();
+    const route = new ApiSurrender(manager);
+
+    try {
+      scaffolding.url = `/api/surrender?playerId=${alice.id}`;
+      await route.processRequest(scaffolding.req, res, scaffolding.ctx);
+    } finally {
+      restoreTestGameLoader();
+    }
+
+    expect(res.statusCode).eq(statusCode.ok);
+    expect(game.phase).eq(Phase.END);
+    expect(starts).deep.eq([]);
+    expect(JSON.parse(res.content).surrenderedPlayers).deep.eq([alice.id]);
+    expect(auditEvents[0].metadata).deep.eq({authorization: 'player', botTakeover: 'skipped-game-finished'});
   });
 
   it('rejects repeated surrender', async () => {

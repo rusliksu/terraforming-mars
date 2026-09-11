@@ -19,7 +19,7 @@ export interface ViewModel {
   canUndoResearchPurchase?: boolean;
   game: GameModel;
   players: Array<PublicPlayerModel>;
-  id?: ParticipantId;
+  id: ParticipantId;
   thisPlayer: PublicPlayerModel | undefined;
   runId: string;
 }
@@ -63,6 +63,7 @@ export type PublicPlayerModel = {
   id: PlayerId | undefined;
   influence: number;
   isActive: boolean;
+  isBotControlled: boolean;
   isSurrendered: boolean;
   lastCardPlayed?: CardName;
   megacredits: number;

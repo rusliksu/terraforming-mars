@@ -5,7 +5,13 @@
           <div class="player-info-details">
             <div class="player-info-name-row">
               <span class="player-info-name" @click="togglePlayerDetails">{{ playerSymbol + player.name }}</span>
-              <PlayerEloBadge :playerName="player.name" :tooltipCss="tooltipCss" :compact="true" :eloDelta="eloDelta" />
+              <span
+                v-if="player.isBotControlled"
+                class="bot-controlled-marker"
+                :title="$t('This player is controlled by a bot')"
+                :aria-label="$t('This player is controlled by a bot')"
+                role="status">BOT</span>
+              <PlayerEloBadge v-if="!readOnly" :playerName="player.name" :tooltipCss="tooltipCss" :compact="true" :eloDelta="eloDelta" />
             </div>
             <span @click="togglePlayerDetails" v-for="(corporationName, index) in getCorporationName()" :key="index" v-i18n>
               <div class="player-info-corp" :title="$t(corporationName)">
@@ -15,7 +21,7 @@
           </div>
           <div>
             <div class="icon-first-player" v-if="firstForGen && playerView.players.length > 1" v-i18n>1st</div>
-            <PlayerStatus :timer="player.timer" :showTimer="playerView.game.gameOptions.showTimers" :liveTimer="playerView.game.phase !== Phase.END" :firstForGen="firstForGen" v-trim-whitespace :actionLabel="actionLabel"/>
+            <PlayerStatus :timer="player.timer" :showTimer="playerView.game.gameOptions.showTimers" :liveTimer="!readOnly && playerView.game.phase !== Phase.END" :firstForGen="firstForGen" v-trim-whitespace :actionLabel="actionLabel"/>
           </div>
         </div>
           <PlayerResources :player="player" v-trim-whitespace />
@@ -39,7 +45,7 @@
             <span class="tag-count-display">{{ availableBlueActionCount() }}</span>
           </div>
         </div>
-        <PlayerTags :player="player" :playerView="playerView" :hideZeroTags="hideZeroTags" :isTopBar="isTopBar" />
+        <PlayerTags :player="player" :playerView="playerView" :hideZeroTags="hideZeroTags" :isTopBar="isTopBar" :key="playerView.game.gameAge + '-' + playerView.game.undoCount" />
         <PlayerAlliedParty :player="player"/>
       </div>
 </template>
@@ -66,6 +72,10 @@ import {playerTableauVisibilityKey, spectatorHandVisibilityKey} from './playerVi
 export default defineComponent({
   name: 'PlayerInfo',
   props: {
+    readOnly: {
+      type: Boolean,
+      default: false,
+    },
     player: {
       type: Object as () => PublicPlayerModel,
       required: true,

@@ -29,6 +29,7 @@
     <div v-if="thisPlayer.tableau.length > 0">
       <div class="player_home_block">
         <GameBoardView
+          ref="gameBoardView"
           :game="game"
           :tileView="tileView"
           :players="playerView.players"
@@ -41,14 +42,14 @@
 
       <a class="hotkey-target"></a>
       <div class="player_home_block nofloat" v-if="!isInitialDraftingPhase">
-        <LogPanel :viewModel="playerView" :color="thisPlayer.color" :step="game.step"/>
+        <LogPanel :viewModel="playerView" :color="thisPlayer.color" :step="game.step" @spaceClicked="onSpaceClicked"/>
       </div>
 
       <a class="hotkey-target"></a>
       <div class="player_home_block player_home_block--actions nofloat">
         <a name="actions" class="player_home_anchor"></a>
         <DynamicTitle title="Actions" :color="thisPlayer.color"/>
-        <WaitingFor v-if="game.phase !== 'end'" :playerView="playerView" :waitingfor="playerView.waitingFor"/>
+        <WaitingFor v-if="game.phase !== 'end'" :playerView="playerView" :waitingfor="playerView.waitingFor" :key="'waiting-' + viewRevision"/>
       </div>
 
       <div class="player_home_block player_home_block--hand" v-if="playerView.draftedCards.length > 0">
@@ -125,7 +126,7 @@
     </div>
 
     <template v-if="thisPlayer.tableau.length === 0">
-      <PlayerSetupView :playerView="playerView" :tileView="tileView"/>
+      <PlayerSetupView :playerView="playerView" :tileView="tileView" :viewRevision="viewRevision" @toggleTileView="cycleTileView()"/>
     </template>
 
     <div v-if="game.colonies.length > 0" class="player_home_block" ref="colonies" id="shortkey-colonies">
@@ -143,7 +144,7 @@
       </div>
     </div>
 
-    <div v-if="game.spectatorId">
+    <div>
       <a :href="'/spectator?id=' +game.spectatorId" target="_blank" rel="noopener noreferrer" v-i18n>Spectator link</a>
     </div>
     <PurgeWarning :expectedPurgeTimeMs="game.expectedPurgeTimeMs"/>
@@ -225,6 +226,10 @@ export default defineComponent({
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
+      required: true,
+    },
+    viewRevision: {
+      type: Number,
       required: true,
     },
   },

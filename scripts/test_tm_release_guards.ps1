@@ -157,6 +157,7 @@ $stagingPath = Join-Path $PSScriptRoot "deploy_tm_staging.ps1"
 $releasePath = Join-Path $PSScriptRoot "release_tm_prod.ps1"
 $promotePath = Join-Path $PSScriptRoot "promote_tm_staging_to_prod.ps1"
 $rolloutPath = Join-Path $PSScriptRoot "rollout_tm_server.ps1"
+$sentryReleasePath = Join-Path $PSScriptRoot "lib\TmSentryRelease.ps1"
 
 $deployRemote = Get-RemoteScriptBody -Path $deployPath
 $promoteRemote = Get-RemoteScriptBody -Path $promotePath
@@ -165,6 +166,60 @@ $releaseSource = Get-Content -LiteralPath $releasePath -Raw
 $promoteSource = Get-Content -LiteralPath $promotePath -Raw
 $rolloutSource = Get-Content -LiteralPath $rolloutPath -Raw
 $stagingSource = Get-Content -LiteralPath $stagingPath -Raw
+$sentryReleaseSource = Get-Content -LiteralPath $sentryReleasePath -Raw
+
+# Production releases disable the legacy five-minute SQLite reconciliation timer.
+# The tm-elo HTTP service is separate and remains part of normal health checks.
+$deployDisablePeriodicElo = Get-BashFunction -ScriptText $deployRemote -Name "disable_periodic_elo_sync"
+$promoteDisablePeriodicElo = Get-BashFunction -ScriptText $promoteRemote -Name "disable_periodic_elo_sync"
+Assert-True ($deployDisablePeriodicElo -eq $promoteDisablePeriodicElo) "Deploy and promote periodic ELO invariants drifted apart."
+Assert-True ($deployRemote.Contains('if [ "$environment" = "prod" ] && ! disable_periodic_elo_sync; then')) "Direct deploy does not scope periodic ELO shutdown to prod."
+Assert-True ($promoteRemote.Contains('if ! disable_periodic_elo_sync; then')) "Prod promote does not enforce the periodic ELO invariant."
+
+$periodicEloHarness = @'
+set -euo pipefail
+legacy_elo_timer="tm-sync-elo.timer"
+legacy_elo_sync_service="tm-sync-elo.service"
+mode="$1"
+calls="${TMPDIR:-/tmp}/tm-periodic-elo-calls-$$"
+: > "$calls"
+systemctl() {
+  printf '%s\n' "$*" >> "$calls"
+  case "$*" in
+    "--user show tm-sync-elo.timer --property=LoadState --value")
+      [ "$mode" = "missing" ] && printf 'not-found\n' || printf 'loaded\n'
+      ;;
+    "--user show tm-sync-elo.service --property=LoadState --value")
+      [ "$mode" = "missing" ] && printf 'not-found\n' || printf 'loaded\n'
+      ;;
+    "--user disable --now tm-sync-elo.timer"|"--user stop tm-sync-elo.service") ;;
+    "--user show tm-sync-elo.timer --property=ActiveState --value") printf 'inactive\n' ;;
+    "--user is-enabled tm-sync-elo.timer")
+      [ "$mode" = "stuck-enabled" ] && printf 'enabled\n' || printf 'disabled\n'
+      ;;
+    "--user show tm-sync-elo.service --property=ActiveState --value") printf 'inactive\n' ;;
+    *) return 1 ;;
+  esac
+}
+__DISABLE_FUNCTION__
+set +e
+disable_periodic_elo_sync
+result=$?
+set -e
+cat "$calls"
+rm -f "$calls"
+exit "$result"
+'@
+$periodicEloHarness = $periodicEloHarness.Replace('__DISABLE_FUNCTION__', $deployDisablePeriodicElo)
+$periodicEloActive = Invoke-Bash -ScriptText $periodicEloHarness -Arguments @('active')
+Assert-True ($periodicEloActive.ExitCode -eq 0) "Active periodic ELO timer was not disabled. stderr=$($periodicEloActive.StdErr)"
+Assert-True ($periodicEloActive.StdOut.Contains('--user disable --now tm-sync-elo.timer')) "Periodic ELO timer disable command was not issued."
+Assert-True ($periodicEloActive.StdOut.Contains('--user stop tm-sync-elo.service')) "Running periodic ELO reconciliation was not stopped."
+$periodicEloMissing = Invoke-Bash -ScriptText $periodicEloHarness -Arguments @('missing')
+Assert-True ($periodicEloMissing.ExitCode -eq 0) "Missing legacy ELO units should be accepted. stderr=$($periodicEloMissing.StdErr)"
+Assert-True (-not $periodicEloMissing.StdOut.Contains('--user disable --now tm-sync-elo.timer')) "Missing legacy ELO timer triggered a mutation."
+$periodicEloStuck = Invoke-Bash -ScriptText $periodicEloHarness -Arguments @('stuck-enabled')
+Assert-True ($periodicEloStuck.ExitCode -ne 0) "Still-enabled periodic ELO timer was accepted."
 
 # The intended full SHA must be captured after refresh and passed through both gates.
 Invoke-Expression (Get-PowerShellFunctionDefinition -Path $deployPath -Name "Assert-TmExpectedGitSha")
@@ -228,6 +283,20 @@ $invalidPromoteDryRun = Invoke-TextProcess -FilePath $pwshPath -ArgumentList @(
 ) -InputText $null
 Assert-True ($invalidPromoteDryRun.ExitCode -ne 0) "Promotion accepted a zero-second next-service health window."
 
+Assert-True ($defaultPromoteDryRun.StdOut.Contains('realtime_game_stale_days="10"')) "Default realtime stale policy is not ten days."
+$overrideStaleDaysPromoteDryRun = Invoke-TextProcess -FilePath $pwshPath -ArgumentList @(
+    "-NoProfile", "-File", $promotePath, "-DryRun", "-RealtimeGameStaleDays", "14"
+) -InputText $null
+Assert-True ($overrideStaleDaysPromoteDryRun.ExitCode -eq 0) "Realtime stale-day override dry-run failed. stderr=$($overrideStaleDaysPromoteDryRun.StdErr)"
+Assert-True ($overrideStaleDaysPromoteDryRun.StdOut.Contains('realtime_game_stale_days="14"')) "Realtime stale-day override was not rendered."
+
+$invalidStaleDaysPromoteDryRun = Invoke-TextProcess -FilePath $pwshPath -ArgumentList @(
+    "-NoProfile", "-File", $promotePath, "-DryRun", "-RealtimeGameStaleDays", "0"
+) -InputText $null
+Assert-True ($invalidStaleDaysPromoteDryRun.ExitCode -ne 0) "Promotion accepted a zero-day realtime stale policy."
+Assert-True ($releaseSource.Contains('$promoteDryRunArgs += @("-RealtimeGameStaleDays", $RealtimeGameStaleDays)')) "Release wrapper does not forward the realtime stale-day policy during dry-run."
+Assert-True ($releaseSource.Contains('$promoteArgs += @("-RealtimeGameStaleDays", $RealtimeGameStaleDays)')) "Release wrapper does not forward the realtime stale-day policy during promotion."
+
 $refreshIndex = $rolloutSource.IndexOf('Invoke-CheckedPwsh -Arguments $refreshArgs')
 $captureIndex = $rolloutSource.IndexOf('$intendedGitSha = Get-TmFullGitSha')
 $deployPinIndex = $rolloutSource.IndexOf('"-ExpectedGitSha", $intendedGitSha', $captureIndex)
@@ -235,8 +304,9 @@ $releasePinIndex = $rolloutSource.IndexOf('"-ExpectedGitSha", $intendedGitSha', 
 Assert-True ($refreshIndex -ge 0 -and $captureIndex -gt $refreshIndex) "Rollout does not capture the intended SHA after refresh."
 Assert-True ($deployPinIndex -gt $captureIndex -and $releasePinIndex -gt $deployPinIndex) "Rollout does not pin both staging deploy and prod release to the intended SHA."
 Assert-True ($stagingSource.Contains('@("-ExpectedGitSha", $ExpectedGitSha)')) "Staging wrapper does not forward ExpectedGitSha."
-Assert-True ($stagingSource.Contains('$postSnapshot.environments.staging.manifest')) "Staging wrapper does not inspect the post-deploy manifest."
-Assert-True ($stagingSource.Contains('Staging post-deploy snapshot does not serve the intended clean SHA')) "Staging wrapper does not fail on post-deploy SHA drift."
+Assert-True ($stagingSource.Contains('Get-TmStagingReleaseGitSha -Snapshot $postSnapshot -ExpectedGitSha $ExpectedGitSha')) "Staging wrapper does not validate the post-deploy manifest."
+Assert-True ($sentryReleaseSource.Contains('$Snapshot.environments.staging.manifest')) "Staging manifest guard does not inspect the post-deploy manifest."
+Assert-True ($sentryReleaseSource.Contains('does not match ExpectedGitSha')) "Staging manifest guard does not fail on post-deploy SHA drift."
 
 # Release publication must establish public modes even under a strict inherited umask.
 $deployPermissionHelper = Get-BashFunction -ScriptText $deployRemote -Name "normalize_release_permissions"
@@ -488,10 +558,11 @@ Assert-True (-not $promoteRemote.Contains('rsync -a "$legacy_prod/db/"')) "Promo
 # Exercise the exact exhaustive SQLite latest-save gate, including legacy saves.
 $nodeGateMatch = [regex]::Match(
     $promoteRemote,
-    '(?ms)node - "\$game_db_path" "\$ignored_realtime_game_ids_csv" <<''NODE''\n(?<code>.*?)^NODE$'
+    '(?ms)node - "\$game_db_path" "\$ignored_realtime_game_ids_csv" "\$realtime_game_stale_days" <<''NODE''\n(?<code>.*?)^NODE$'
 )
 Assert-True $nodeGateMatch.Success "Could not find the SQLite latest-save gate implementation."
 $nodeGateCode = $nodeGateMatch.Groups["code"].Value
+Assert-True ($nodeGateCode.Contains('created_time')) "SQLite gate does not project the latest save timestamp."
 Assert-True ($nodeGateCode.Contains('SELECT game_id, MAX(save_id) AS max_save_id')) "SQLite gate does not select the latest save for every game id."
 Assert-True (-not $nodeGateCode.Contains('LIMIT')) "SQLite gate still has a truncating limit."
 Assert-True (-not $promoteRemote.Contains('/api/live-games')) "Promotion still relies on the filtered HTTP live-games endpoint."
@@ -516,7 +587,9 @@ function New-LatestGameRow {
         [string]$GameId,
         [hashtable]$Game,
         [int]$SaveId = 7,
-        [string]$Status = "running"
+        [string]$Status = "running",
+        [AllowNull()]
+        [object]$CreatedTime = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
     )
 
     return [ordered]@{
@@ -524,6 +597,7 @@ function New-LatestGameRow {
         game = ($Game | ConvertTo-Json -Depth 20 -Compress)
         status = $Status
         save_id = $SaveId
+        created_time = $CreatedTime
         visibility = "hidden-fixture"
     }
 }
@@ -547,6 +621,7 @@ set -euo pipefail
 prod_current=$gateRootBash
 game_db_path=$gateRootBash/unused.db
 ignored_realtime_game_ids_csv="`$1"
+realtime_game_stale_days="`${2:-10}"
 node() { $nodePathBash "`$@"; }
 $gateHelper
 assert_no_realtime_games_sqlite "fixture"
@@ -578,8 +653,66 @@ assert_no_realtime_games_sqlite "fixture"
         }))
     )
     $realtimeFixture = ConvertTo-GateFixtureJson -Rows $realtimeRows
-    $realtimeGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('') -Environment @{TM_RELEASE_LIVE_GATE_FIXTURE_JSON = $realtimeFixture}
+    $realtimeGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('', '10') -Environment @{TM_RELEASE_LIVE_GATE_FIXTURE_JSON = $realtimeFixture}
     Assert-True ($realtimeGate.ExitCode -eq 42) "Explicit realtime save did not block with exit code 42."
+
+    $gateNowSeconds = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    $staleRows = @(
+        (New-LatestGameRow -GameId "g_stale" -CreatedTime ($gateNowSeconds - (11 * 86400)) -Game ([ordered]@{
+            id = "g_stale"; phase = "action"; gameOptions = @{turnBasedGame = $false}; players = @()
+        }))
+    )
+    $staleGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('', '10') -Environment @{
+        TM_RELEASE_LIVE_GATE_FIXTURE_JSON = (ConvertTo-GateFixtureJson -Rows $staleRows)
+        TM_RELEASE_LIVE_GATE_NOW_SECONDS = $gateNowSeconds
+    }
+    Assert-True ($staleGate.ExitCode -eq 0) "A realtime save older than the stale threshold blocked promotion. stdout=$($staleGate.StdOut) stderr=$($staleGate.StdErr)"
+    Assert-True ($staleGate.StdOut.Contains('realtime=0') -and $staleGate.StdOut.Contains('stale=1') -and $staleGate.StdOut.Contains('unknown=0')) "Stale realtime classification was not reported separately. stdout=$($staleGate.StdOut)"
+
+    $mixedFreshStaleUnknownRows = @(
+        (New-LatestGameRow -GameId "g_fresh" -CreatedTime ($gateNowSeconds - 86400) -Game ([ordered]@{
+            id = "g_fresh"; phase = "action"; gameOptions = @{turnBasedGame = $false}; players = @()
+        })),
+        (New-LatestGameRow -GameId "g_stale_mixed" -CreatedTime ($gateNowSeconds - (11 * 86400)) -Game ([ordered]@{
+            id = "g_stale_mixed"; phase = "action"; gameOptions = @{turnBasedGame = $false}; players = @()
+        })),
+        (New-LatestGameRow -GameId "g_unknown" -CreatedTime $null -Game ([ordered]@{
+            id = "g_unknown"; phase = "action"; gameOptions = @{turnBasedGame = $false}; players = @()
+        }))
+    )
+    $mixedFreshStaleUnknownGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('', '10') -Environment @{
+        TM_RELEASE_LIVE_GATE_FIXTURE_JSON = (ConvertTo-GateFixtureJson -Rows $mixedFreshStaleUnknownRows)
+        TM_RELEASE_LIVE_GATE_NOW_SECONDS = $gateNowSeconds
+    }
+    Assert-True ($mixedFreshStaleUnknownGate.ExitCode -eq 42) "Fresh and unknown realtime rows did not keep the gate blocking. stdout=$($mixedFreshStaleUnknownGate.StdOut) stderr=$($mixedFreshStaleUnknownGate.StdErr)"
+    Assert-True ($mixedFreshStaleUnknownGate.StdOut.Contains('realtime=1') -and $mixedFreshStaleUnknownGate.StdOut.Contains('stale=1') -and $mixedFreshStaleUnknownGate.StdOut.Contains('unknown=1')) "Fresh, stale, and unknown realtime counts were not separated. stdout=$($mixedFreshStaleUnknownGate.StdOut)"
+
+    $boundaryRows = @(
+        (New-LatestGameRow -GameId "g_boundary" -CreatedTime ($gateNowSeconds - (10 * 86400)) -Game ([ordered]@{
+            id = "g_boundary"; phase = "action"; gameOptions = @{turnBasedGame = $false}; players = @()
+        }))
+    )
+    $boundaryGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('', '10') -Environment @{
+        TM_RELEASE_LIVE_GATE_FIXTURE_JSON = (ConvertTo-GateFixtureJson -Rows $boundaryRows)
+        TM_RELEASE_LIVE_GATE_NOW_SECONDS = $gateNowSeconds
+    }
+    Assert-True ($boundaryGate.ExitCode -eq 42) "A realtime row exactly on the stale boundary was incorrectly exempted."
+    Assert-True ($boundaryGate.StdOut.Contains('realtime=1') -and $boundaryGate.StdOut.Contains('stale=0') -and $boundaryGate.StdOut.Contains('unknown=0')) "The stale boundary was not strict. stdout=$($boundaryGate.StdOut)"
+
+    $futureAndInvalidRows = @(
+        (New-LatestGameRow -GameId "g_future" -CreatedTime ($gateNowSeconds + 1) -Game ([ordered]@{
+            id = "g_future"; phase = "action"; gameOptions = @{turnBasedGame = $false}; players = @()
+        })),
+        (New-LatestGameRow -GameId "g_bad_time" -CreatedTime "not-a-timestamp" -Game ([ordered]@{
+            id = "g_bad_time"; phase = "action"; gameOptions = @{turnBasedGame = $false}; players = @()
+        }))
+    )
+    $futureAndInvalidGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('', '10') -Environment @{
+        TM_RELEASE_LIVE_GATE_FIXTURE_JSON = (ConvertTo-GateFixtureJson -Rows $futureAndInvalidRows)
+        TM_RELEASE_LIVE_GATE_NOW_SECONDS = $gateNowSeconds
+    }
+    Assert-True ($futureAndInvalidGate.ExitCode -eq 42) "Future or invalid timestamps did not fail closed."
+    Assert-True ($futureAndInvalidGate.StdOut.Contains('realtime=0') -and $futureAndInvalidGate.StdOut.Contains('stale=0') -and $futureAndInvalidGate.StdOut.Contains('unknown=2')) "Future or invalid timestamps were not reported as unknown. stdout=$($futureAndInvalidGate.StdOut)"
 
     $paddedRealtimeRows = @(
         (New-LatestGameRow -GameId "g_padded_realtime" -Status " running " -Game ([ordered]@{
@@ -599,14 +732,15 @@ import sys
 
 query = sys.stdin.read()
 connection = sqlite3.connect(":memory:")
-connection.execute("CREATE TABLE games (game_id TEXT, game TEXT, status TEXT, save_id INTEGER)")
+connection.execute("CREATE TABLE games (game_id TEXT, game TEXT, status TEXT, save_id INTEGER, created_time INTEGER)")
 connection.execute(
-    "INSERT INTO games VALUES (?, ?, ?, ?)",
+    "INSERT INTO games VALUES (?, ?, ?, ?, ?)",
     (
         "g_sql_padded",
         json.dumps({"id": "g_sql_padded", "phase": "action", "gameOptions": {"turnBasedGame": False}, "players": []}),
         " running ",
         1,
+        1786752000,
     ),
 )
 rows = connection.execute(query).fetchall()
@@ -616,14 +750,14 @@ print(json.dumps(rows, separators=(",", ":")))
     Assert-True ($realSqliteQuery.ExitCode -eq 0) "The production SQLite query could not run against the real fixture. stderr=$($realSqliteQuery.StdErr)"
     $realSqliteRows = @($realSqliteQuery.StdOut | ConvertFrom-Json)
     Assert-True ($realSqliteRows.Count -eq 1) "The production SQLite query did not select exactly one running row."
-    Assert-True ($realSqliteRows[0][0] -eq "g_sql_padded" -and $realSqliteRows[0][2] -eq " running ") "The production SQLite query omitted the whitespace-padded running row."
+    Assert-True ($realSqliteRows[0][0] -eq "g_sql_padded" -and $realSqliteRows[0][2] -eq " running " -and $realSqliteRows[0][4] -eq 1786752000) "The production SQLite query omitted the whitespace-padded running row or its save timestamp."
 
     $nonRunningRows = @(
         (New-LatestGameRow -GameId "g_not_running" -Status " not-running " -Game ([ordered]@{
             id = "g_not_running"; phase = "action"; gameOptions = @{turnBasedGame = $false}; players = @()
         }))
     )
-    $nonRunningGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('') -Environment @{
+    $nonRunningGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('', '10') -Environment @{
         TM_RELEASE_LIVE_GATE_FIXTURE_JSON = (ConvertTo-GateFixtureJson -Rows $nonRunningRows)
     }
     Assert-True ($nonRunningGate.ExitCode -eq 43) "A normalized non-running status did not fail closed."
@@ -633,12 +767,12 @@ print(json.dumps(rows, separators=(",", ":")))
             id = "g_legacy_realtime"; phase = "action"; players = @(@{telegramID = ""})
         }))
     )
-    $legacyRealtimeGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('') -Environment @{
+    $legacyRealtimeGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('', '10') -Environment @{
         TM_RELEASE_LIVE_GATE_FIXTURE_JSON = (ConvertTo-GateFixtureJson -Rows $legacyRealtimeRows)
     }
     Assert-True ($legacyRealtimeGate.ExitCode -eq 42) "Legacy save without a Telegram id was not classified as realtime."
 
-    $ignoredGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('g_realtime') -Environment @{TM_RELEASE_LIVE_GATE_FIXTURE_JSON = $realtimeFixture}
+    $ignoredGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('g_realtime', '10') -Environment @{TM_RELEASE_LIVE_GATE_FIXTURE_JSON = $realtimeFixture}
     Assert-True ($ignoredGate.ExitCode -eq 0) "Explicitly ignored abandoned realtime game still blocked promotion. stdout=$($ignoredGate.StdOut) stderr=$($ignoredGate.StdErr)"
     Assert-True ($ignoredGate.StdOut.Contains('ignored=1 ignored_ids=g_realtime realtime=0')) "Ignored game id/count were not reported safely."
 
@@ -648,7 +782,7 @@ print(json.dumps(rows, separators=(",", ":")))
             players = @(@{name = "MALFORMED_SECRET"; cardsInHand = @("DO_NOT_PRINT")})
         }))
     )
-    $malformedGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('') -Environment @{
+    $malformedGate = Invoke-Bash -ScriptText $gateHarness -Arguments @('', '10') -Environment @{
         TM_RELEASE_LIVE_GATE_FIXTURE_JSON = (ConvertTo-GateFixtureJson -Rows $malformedRows)
     }
     Assert-True ($malformedGate.ExitCode -eq 43) "Malformed latest save did not fail closed with exit code 43."
@@ -843,5 +977,81 @@ Assert-True ($promoteRemote.Contains('sudo cp -a -- "$upstream_snippet" "$nginx_
 Assert-True ($promoteRemote.Contains('sudo cp -a --remove-destination -- "$nginx_snippet_backup" "$upstream_snippet"')) "Rollback does not restore the exact nginx snippet."
 Assert-True ($promoteRemote.Contains('rollback_after_public_switch "Could not switch public traffic to the next backend."')) "Next-backend nginx failure does not enter transactional rollback."
 Assert-True ($promoteRemote.Contains('rollback_after_public_switch "Could not switch public traffic back to the primary backend."')) "Final nginx failure does not enter transactional rollback."
+
+# Abandoned realtime games are declared once in an operator-owned ledger. Release and
+# rollout merge it with the explicit per-run ids; nothing infers an abandoned game, and
+# every merged id is echoed before the locked remote gate runs.
+$ledgerTempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("tm-ignored-ledger-" + [guid]::NewGuid().ToString("N"))
+New-Item -ItemType Directory -Path $ledgerTempRoot -Force | Out-Null
+try {
+    $ledgerPath = Join-Path $ledgerTempRoot "prod-ignored-games.txt"
+
+    Assert-True ((@(Read-TmIgnoredRealtimeGameIdLedger -Path $ledgerPath)).Count -eq 0) "A missing ignored-games ledger is not empty."
+
+    Set-Content -LiteralPath $ledgerPath -Encoding utf8 -Value @(
+        "# comment only",
+        "",
+        "g_abandoned",
+        "g_second   # abandoned 2026-09-08",
+        "g_abandoned"
+    )
+    $ledgerEntries = @(Read-TmIgnoredRealtimeGameIdLedgerEntries -Path $ledgerPath)
+    Assert-True ((($ledgerEntries | ForEach-Object { $_.GameId }) -join ",") -eq "g_abandoned,g_second") "Ignored-games ledger parsing did not keep order and deduplicate."
+    Assert-True ($ledgerEntries[1].Note -eq "abandoned 2026-09-08") "Ignored-games ledger lost the inline note."
+    Assert-True (((@(Read-TmIgnoredRealtimeGameIdLedger -Path $ledgerPath)) -join ",") -eq "g_abandoned,g_second") "Ignored-games ledger ids drifted from its entries."
+
+    Set-Content -LiteralPath $ledgerPath -Encoding utf8 -Value @("g1; rm -rf /")
+    Assert-Throws {
+        Read-TmIgnoredRealtimeGameIdLedger -Path $ledgerPath | Out-Null
+    } "An unsafe ignored-games ledger line was accepted."
+
+    $mergedIds = @(Merge-TmIgnoredRealtimeGameIds -Primary @("g_abandoned") -Additional @("g_second", "g_abandoned"))
+    Assert-True (($mergedIds -join ",") -eq "g_abandoned,g_second") "Ledger and per-run ids were not merged in order without duplicates."
+
+    $writtenEntries = @(Set-TmIgnoredRealtimeGameIdLedger -Path $ledgerPath -Entries @(
+        [pscustomobject]@{GameId = "g_second"; Note = "keep"},
+        "g_abandoned"
+    ))
+    Assert-True ((($writtenEntries | ForEach-Object { $_.GameId }) -join ",") -eq "g_abandoned,g_second") "Ledger write did not return a canonical order."
+    $ledgerLines = @(Get-Content -LiteralPath $ledgerPath)
+    Assert-True ($ledgerLines -contains "g_abandoned") "Ledger write dropped an id."
+    Assert-True ($ledgerLines -contains "g_second  # keep") "Ledger write dropped a preserved note."
+    Assert-True (@(Get-ChildItem -LiteralPath $ledgerTempRoot -Filter "*.tmp-*").Count -eq 0) "Ledger write left a temporary file behind."
+
+    $helperPath = Join-Path $PSScriptRoot "tm_ignored_realtime_games.ps1"
+    Assert-True (Test-Path -LiteralPath $helperPath) "Missing ignored-games ledger helper script."
+    $pwshForLedger = (Get-Command pwsh -ErrorAction Stop | Select-Object -First 1).Source
+
+    $listResult = Invoke-TextProcess -FilePath $pwshForLedger -ArgumentList @("-NoProfile", "-File", $helperPath, "-Path", $ledgerPath, "-List") -InputText $null
+    Assert-True ($listResult.ExitCode -eq 0) "Ledger helper -List failed. stderr=$($listResult.StdErr)"
+    Assert-True ($listResult.StdOut.Contains("g_abandoned") -and $listResult.StdOut.Contains("g_second")) "Ledger helper -List did not print the ledger."
+
+    $defaultListResult = Invoke-TextProcess -FilePath $pwshForLedger -ArgumentList @("-NoProfile", "-File", $helperPath, "-DryRun") -InputText $null
+    Assert-True ($defaultListResult.ExitCode -eq 0 -and $defaultListResult.StdOut.Contains("prod-ignored-games.txt")) "Ledger helper does not resolve the default ledger path."
+
+    $addResult = Invoke-TextProcess -FilePath $pwshForLedger -ArgumentList @("-NoProfile", "-File", $helperPath, "-Path", $ledgerPath, "-Add", "g_third", "-Note", "abandoned") -InputText $null
+    Assert-True ($addResult.ExitCode -eq 0) "Ledger helper -Add failed. stderr=$($addResult.StdErr)"
+    Assert-True ((@(Get-Content -LiteralPath $ledgerPath) -contains "g_third  # abandoned")) "Ledger helper -Add did not write the id with its note."
+
+    $removeResult = Invoke-TextProcess -FilePath $pwshForLedger -ArgumentList @("-NoProfile", "-File", $helperPath, "-Path", $ledgerPath, "-Remove", "g_third") -InputText $null
+    Assert-True ($removeResult.ExitCode -eq 0 -and $removeResult.StdOut.Contains("Removed: g_third")) "Ledger helper -Remove did not report the removal."
+    Assert-True (-not (@(Get-Content -LiteralPath $ledgerPath) -contains "g_third  # abandoned")) "Ledger helper -Remove kept the id."
+
+    $dryRunAdd = Invoke-TextProcess -FilePath $pwshForLedger -ArgumentList @("-NoProfile", "-File", $helperPath, "-Path", $ledgerPath, "-Add", "g_fourth", "-DryRun") -InputText $null
+    Assert-True ($dryRunAdd.ExitCode -eq 0 -and $dryRunAdd.StdOut.Contains("Dry run")) "Ledger helper dry run did not report itself."
+    Assert-True (-not (@(Get-Content -LiteralPath $ledgerPath) -contains "g_fourth")) "Ledger helper dry run wrote the ledger."
+
+    $unsafeAdd = Invoke-TextProcess -FilePath $pwshForLedger -ArgumentList @("-NoProfile", "-File", $helperPath, "-Path", $ledgerPath, "-Add", "g1;rm") -InputText $null
+    Assert-True ($unsafeAdd.ExitCode -ne 0) "Ledger helper accepted an unsafe game id."
+} finally {
+    Remove-Item -LiteralPath $ledgerTempRoot -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+Assert-True ($releaseSource.Contains('$ledgerIgnoredRealtimeGameIds = @(Read-TmIgnoredRealtimeGameIdLedger -Path $ignoredRealtimeGameIdLedgerPath)')) "Prod release does not read the ignored-games ledger."
+Assert-True ($releaseSource.Contains('$ignoredRealtimeGameIds = @(Merge-TmIgnoredRealtimeGameIds -Primary $ledgerIgnoredRealtimeGameIds -Additional $cliIgnoredRealtimeGameIds)')) "Prod release does not merge the ignored-games ledger with the per-run ids."
+Assert-True ($releaseSource.Contains('Write-Host ("Ignored realtime games: ledger={0} cli={1} total={2}"')) "Prod release does not echo the merged ignored-game counts."
+Assert-True ($releaseSource.Contains('Write-Host ("Ignored realtime ids   : {0}" -f ($ignoredRealtimeGameIds -join ","))')) "Prod release does not echo the merged ignored-game ids."
+Assert-True ($releaseSource.Contains('[string]$IgnoredRealtimeGameIdFile')) "Prod release has no ignored-games ledger override parameter."
+Assert-True ($rolloutSource.Contains('$releaseArgs += @("-IgnoredRealtimeGameIdFile", $IgnoredRealtimeGameIdFile)')) "Rollout does not forward an explicit ignored-games ledger."
 
 Write-Host "tm release guards regressions: OK"

@@ -140,7 +140,7 @@ export abstract class Card implements ICard {
       Card.validateTilesBuilt(external);
       step = 5;
     } catch (e) {
-      throw new Error(`Cannot validate ${name} (${step}): ${e}`);
+      throw new Error(`Cannot validate ${name} (${step})`, {cause: e});
     }
 
     const translatedRequirements = asArray(external.requirements ?? []).map((req) => populateCount(req));
@@ -514,6 +514,9 @@ export function validateBehavior(behavior: Behavior | undefined, name: CardName)
     // Don't spend heat with other types yet. It's probably not compatible. Check carefully.
     if (spend.heat) {
       validate(Object.keys(spend).length === 1, 'spend.heat cannot be used with another spend');
+    }
+    if (spend.canUseSteel || spend.canUseTitanium) {
+      validate(spend.megacredits !== undefined, 'spend.canUseSteel and spend.canUseTitanium only works with spend.megacredits');
     }
   }
 }

@@ -6,14 +6,22 @@
       <li v-for="(player, index) in (game === undefined ? [] : game.players)" :key="player.color" class="game-home-player-row">
         <span class="turn-order" v-i18n>{{getTurnOrder(index)}}</span>
         <span :class="'color-square ' + getPlayerCubeColorClass(player.color)">{{playerSymbol(player.color)}}</span>
-        <span class="player-name"><a :href="getHref(player.id)">{{player.name}}</a></span>
+        <span class="player-name">
+          <a :href="getHref(player.id)" :title="$t('Enter the game as this player')" data-test="enter-game-link">{{player.name}}</a>
+          <span
+            v-if="player.isBotControlled"
+            class="bot-controlled-marker"
+            :title="$t('This player is controlled by a bot')"
+            :aria-label="$t('This player is controlled by a bot')"
+            role="status">BOT</span>
+        </span>
         <span class="game-home-copy"><AppButton title="copy" size="tiny" @click="copyUrl(player.id)"/></span>
         <span v-if="isPlayerUrlCopied(player.id)" class="copied-notice"><span v-i18n>Copied!</span></span>
       </li>
       <li v-if="game !== undefined && game.spectatorId" class="game-home-player-row game-home-player-row--spectator">
         <span class="turn-order"></span>
         <span class="color-square"></span>
-        <span class="player-name"><a :href="getHref(game.spectatorId)" v-i18n>Spectator</a></span>
+        <span class="player-name"><a :href="getHref(game.spectatorId)" :title="$t('Watch the game without playing')" v-i18n>Spectator</a></span>
         <span class="game-home-copy"><AppButton title="copy" size="tiny" @click="copyUrl(game.spectatorId)"/></span>
       </li>
     </ul>
@@ -80,10 +88,12 @@ export default defineComponent({
     GameSetupDetail,
     PurgeWarning,
   },
+
   data() {
     return {
       // Variable to keep the state for the current copied player id. Used to display message of which button and which player playable link is currently in the clipboard
       urlCopiedPlayerId: DEFAULT_COPIED_PLAYER_ID,
+      previousViewport: '',
     };
   },
   methods: {
@@ -138,6 +148,23 @@ export default defineComponent({
     // Reset the copied player id after 3 seconds to hide the "copied" message
     setInterval(this.setCopiedIdToDefault, 3000);
     setDocumentTitle(this.game.name);
+    // Set the viewport width to width=device-width on the create game form so mobile browsers use their actual CSS viewport width.
+    // The current global viewport is width=1260, which prevents the create game form from using the device width on phones.
+    // This is a temporary solution in order to make this edit scoped to the create game form.
+    // TODO: Once responsiveness covers the whole project, this code should be removed and the tag in index.html should be updated directly.
+    const viewport = document.querySelector('meta[name="viewport"]');
+    if (viewport !== null) {
+      this.previousViewport = viewport.getAttribute('content') ?? '';
+      viewport.setAttribute(
+        'content',
+        'width=device-width, initial-scale=1, viewport-fit=cover',
+      );
+    }
+  },
+  beforeUnmount() {
+    document
+      .querySelector('meta[name="viewport"]')
+      ?.setAttribute('content', this.previousViewport);
   },
 });
 

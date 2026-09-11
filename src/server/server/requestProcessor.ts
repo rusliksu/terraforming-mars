@@ -19,6 +19,7 @@ import {ApiLogout} from '../routes/ApiLogout';
 import {ApiMetrics} from '../routes/ApiMetrics';
 import {ApiPlayer} from '../routes/ApiPlayer';
 import {ApiProfile} from '../routes/ApiProfile';
+import {ApiReplay} from '../routes/ApiReplay';
 import {ApiSpectator} from '../routes/ApiSpectator';
 import {ApiStats} from '../routes/ApiStats';
 import {ApiWaitingFor} from '../routes/ApiWaitingFor';
@@ -43,6 +44,8 @@ import * as authcookies from './auth/authcookies';
 import {DiscordUser} from './auth/discord';
 import {getOrSetAccessAuditClientId} from './accessAuditClientId';
 import {getClientIp} from './clientIp';
+import {EndGameLog} from '../routes/EndGameLog';
+import {UrlParams} from '../routes/UrlParams';
 import * as responses from './responses';
 import {AppError} from './AppError';
 import {capture, ErrorDiagnosticContext} from './SentryReporter';
@@ -106,11 +109,13 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.API_IPS, ApiIPs.INSTANCE],
     [paths.API_METRICS, ApiMetrics.INSTANCE],
     [paths.API_PLAYER, ApiPlayer.INSTANCE],
+    [paths.API_REPLAY, ApiReplay.INSTANCE],
     [paths.API_STATS, ApiStats.INSTANCE],
     [paths.API_SPECTATOR, ApiSpectator.INSTANCE],
     [paths.API_WAITING_FOR, ApiWaitingFor.INSTANCE],
     [paths.AUTOPASS, Autopass.INSTANCE],
     [paths.CARDS, ServeApp.INSTANCE],
+    [paths.END_GAME_LOG, EndGameLog.INSTANCE],
     ['favicon.ico', ServeAsset.INSTANCE],
     [paths.GAME, GameHandler.INSTANCE],
     [paths.GAMES_OVERVIEW, GamesOverview.INSTANCE],
@@ -131,6 +136,7 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.PLAYER_INPUT, PlayerInput.INSTANCE],
     [paths.API_PROFILE, ApiProfile.INSTANCE],
     [paths.RESET, Reset.INSTANCE],
+    [paths.REPLAY, ServeApp.INSTANCE],
     [paths.SPECTATOR, ServeApp.INSTANCE],
     ['styles.css', ServeAsset.INSTANCE],
     [paths.THE_END, ServeApp.INSTANCE],
@@ -219,6 +225,7 @@ export async function processRequest(
         },
         sessionid: sessionid,
         user: user,
+        urlParams: new UrlParams(url.searchParams),
       };
 
       await handler.processRequest(req, res, ctx);

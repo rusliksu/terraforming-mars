@@ -73,6 +73,41 @@ describe('Reds', () => {
     expect(player.megaCredits).to.eq(0);
   });
 
+  it('Ruling policy 2: states who placed the tile and what was actually paid', () => {
+    setRulingParty(game, PartyName.REDS, 'rp02');
+
+    player.megaCredits = 3;
+    addGreenery(player, '10');
+    runAllActions(game);
+
+    expect(player.megaCredits).to.eq(0);
+    expect(game.gameLog.map(formatMessage)).includes('blue paid 3 M€ for Turmoil Reds policy');
+  });
+
+  it('Ruling policy 2: reports a partial payment when the player cannot pay in full', () => {
+    setRulingParty(game, PartyName.REDS, 'rp02');
+
+    player.megaCredits = 2;
+    addGreenery(player, '10');
+    runAllActions(game);
+
+    expect(player.megaCredits).to.eq(0);
+    expect(game.gameLog.map(formatMessage)).includes('blue paid 2 M€ for Turmoil Reds policy');
+  });
+
+  it('Ruling policy 3: states who used the party action and what was actually paid', () => {
+    setRulingParty(game, PartyName.REDS, 'rp03');
+
+    const redsPolicy = REDS_POLICY_3;
+    player.megaCredits = 7;
+    game.increaseOxygenLevel(player, 1);
+    redsPolicy.action(player);
+    runAllActions(game);
+
+    expect(player.megaCredits).to.eq(3);
+    expect(game.gameLog.map(formatMessage)).includes('blue paid 4 M€ for Turmoil Reds policy');
+  });
+
   it('Ruling policy 3: Pay 4 M€ to reduce a non-maxed global parameter 1 step', () => {
     setRulingParty(game, PartyName.REDS, 'rp03');
 

@@ -25,6 +25,9 @@ export type EloGameResult = {
   oldElo?: number;
   newElo?: number;
   delta?: number;
+  place?: number;
+  placeFrom?: number;
+  placeTo?: number;
   vp?: number;
 };
 
@@ -41,6 +44,7 @@ export type EloResultRow = {
   oldElo: number;
   newElo: number;
   delta: number;
+  placeLabel: string;
   avgPlaceScore?: number;
 };
 
@@ -242,6 +246,13 @@ export function fallbackEloEntry(playerName: string): EloEntry | null {
   };
 }
 
+export function formatEloPlace(result: EloGameResult): string {
+  if (typeof result.placeFrom === 'number' && typeof result.placeTo === 'number' && result.placeTo > result.placeFrom) {
+    return `${result.placeFrom}–${result.placeTo}`;
+  }
+  return typeof result.place === 'number' ? String(result.place) : '—';
+}
+
 export function findMatchingEloGame(games: Array<EloGame>, players: Array<EloPlayerSummary>): EloGame | undefined {
   return [...games].reverse().find((game) => {
     const results = Array.isArray(game.results) ? game.results : [];
@@ -277,6 +288,7 @@ export function buildEloResultsForPlayers(
       oldElo,
       newElo,
       delta,
+      placeLabel: formatEloPlace(result),
       avgPlaceScore: eloEntry?.avgPlaceScore,
     });
   }

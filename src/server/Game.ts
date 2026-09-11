@@ -43,6 +43,7 @@ import {AresHandler} from './ares/AresHandler';
 import {AresData} from '../common/ares/AresData';
 import {GameSetup} from './GameSetup';
 import {GameCards} from './GameCards';
+import {byKey} from '@/common/utils/Ordering';
 import {GlobalParameter} from '../common/GlobalParameter';
 import {AresSetup} from './ares/AresSetup';
 import {MoonData} from './moon/MoonData';
@@ -86,7 +87,7 @@ import {ICard} from './cards/ICard';
 import {generateGameName} from './GameName';
 import {captureEarlyGameStats} from './game/EarlyGameStats';
 import type {ActionReplayState} from './game/ActionReplay';
-import {compareCompletionRank, hasSameCompletionRank} from '../common/game/CompletionOutcome';
+import {compareCompletionRank, getSharedRemainingPlaceRange, hasSameCompletionRank, isLastActivePlayerFinish} from '../common/game/CompletionOutcome';
 
 // Can be overridden by tests
 let createGameLog: () => Array<LogMessage> = () => [];
@@ -811,6 +812,15 @@ export class Game implements IGame, Logger {
     return this.marsIsTerraformed();
   }
 
+  public async finishAfterSurrender(): Promise<boolean> {
+    const surrenderedPlayerCount = this.players.filter((player) => this.surrenderedPlayerIds.has(player.id)).length;
+    if (this.phase === Phase.END || !isLastActivePlayerFinish(this.players.length, surrenderedPlayerCount)) {
+      return false;
+    }
+    await this.gotoEndGame();
+    return true;
+  }
+
   public isDoneWithFinalProduction(): boolean {
     return this.phase === Phase.END || (this.gameIsOver() && this.phase === Phase.PRODUCTION);
   }
@@ -833,7 +843,7 @@ export class Game implements IGame, Logger {
       return;
     }
     if (this.gameIsOver()) {
-      this.log('Final greenery placement', (b) => b.forNewGeneration());
+      this.log('Final greenery placement', (b) => b.forNotice());
       this.takeNextFinalGreeneryAction();
       return;
     } else {
@@ -943,6 +953,7 @@ export class Game implements IGame, Logger {
       if (player.tableau.has(CardName.PRESERVATION_PROGRAM)) {
         player.preservationProgram = true;
       }
+      player.trThisGeneration = 0;
     });
 
     if (this.gameOptions.draftVariant) {
@@ -1169,6 +1180,9 @@ export class Game implements IGame, Logger {
       this.log('This game id was ${0}', (b) => b.rawString(id));
     }
 
+    const surrenderedPlayerCount = this.players.filter((player) => this.surrenderedPlayerIds.has(player.id)).length;
+    const lastActivePlayerFinish = isLastActivePlayerFinish(this.players.length, surrenderedPlayerCount);
+    const sharedRemainingPlaceRange = lastActivePlayerFinish ? getSharedRemainingPlaceRange(this.players.length) : undefined;
     const rankedScores = this.players.map((player) => {
       const corporation = player.playedCards.filter(isICorporationCard).map(toName).join('|');
       const vpb = player.getVictoryPoints();
@@ -1177,6 +1191,7 @@ export class Game implements IGame, Logger {
         player,
         corporation,
         completionOutcome,
+        shareRemainingPlaces: lastActivePlayerFinish && completionOutcome === 'surrendered',
         vp: vpb.total,
         megacredits: player.megaCredits,
         vpb,
@@ -1186,7 +1201,7 @@ export class Game implements IGame, Logger {
     const scores: Array<Score> = [];
     rankedScores.forEach((entry, idx) => {
       const previous = rankedScores[idx - 1];
-      const place = previous !== undefined && hasSameCompletionRank(previous, entry) ?
+      const place = entry.shareRemainingPlaces ? sharedRemainingPlaceRange?.place : previous !== undefined && hasSameCompletionRank(previous, entry) ?
         scores[idx - 1].place :
         idx + 1;
       scores.push({
@@ -1195,6 +1210,8 @@ export class Game implements IGame, Logger {
         user: entry.player.user,
         soloWin: this.isSoloMode() ? this.isSoloModeWin() : undefined,
         place,
+        placeFrom: entry.shareRemainingPlaces ? sharedRemainingPlaceRange?.placeFrom : undefined,
+        placeTo: entry.shareRemainingPlaces ? sharedRemainingPlaceRange?.placeTo : undefined,
         playerScore: entry.vpb.total,
         megacredits: entry.player.megaCredits,
         victoryPointsBreakdown: entry.vpb,
@@ -1210,7 +1227,7 @@ export class Game implements IGame, Logger {
     this.phase = Phase.END;
     const gameLoader = GameLoader.getInstance();
     await gameLoader.saveGame(this);
-    gameLoader.completeGame(this);
+    await gameLoader.completeGame(this);
   }
 
   // Part of final greenery placement.
@@ -1240,7 +1257,7 @@ export class Game implements IGame, Logger {
       // You many not place greeneries in solo mode unless you have already won the game
       // (e.g. completed global parameters, reached TR63.)
       if (this.isSoloMode() && !this.isSoloModeWin()) {
-        this.log('Final greenery phase is skipped since you did not complete the win condition.', (b) => b.forNewGeneration());
+        this.log('Final greenery phase is skipped since you did not complete the win condition.', (b) => b.forNotice());
         continue;
       }
 
@@ -1744,7 +1761,7 @@ export class Game implements IGame, Logger {
           return true;
         }
       })
-      .sort((a, b) => a.cost - b.cost);
+      .toSorted(byKey('cost'));
   }
 
   public log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer, reservedForParticipant?: ParticipantId, hiddenFor?: Array<ParticipantId>}) {
@@ -1791,10 +1808,13 @@ export class Game implements IGame, Logger {
     return addDays(this.createdTime, days).getTime();
   }
 
-  public static deserialize(d: SerializedGame, options: {simulation?: boolean} = {}): Game {
+  public static deserialize(d: SerializedGame, options: {simulation?: boolean; viewOnly?: boolean} = {}): Game {
+    if (options.viewOnly) {
+      d = structuredClone(d);
+    }
     const gameOptions = deserializeGameOptions(d);
 
-    const players = d.players.map((element) => Player.deserialize(element));
+    const players = d.players.map((element) => Player.deserialize(element, {restoreTimerClock: !options.viewOnly}));
     const first = players.find((player) => player.id === d.first);
     if (first === undefined) {
       throw new Error(`Player ${d.first} not found when rebuilding First Player`);
@@ -1811,7 +1831,7 @@ export class Game implements IGame, Logger {
     const ceoDeck = CeoDeck.deserialize(d.ceoDeck, rng);
 
     const game = new Game(d.id, d.name, players, first, d.activePlayer, d.spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, d.tags);
-    game.simulationMode = options.simulation === true;
+    game.simulationMode = options.simulation === true || options.viewOnly === true;
     game.resettable = true;
     game.spectatorId = d.spectatorId;
     game.createdTime = new Date(d.createdTimeMs);
@@ -1913,6 +1933,9 @@ export class Game implements IGame, Logger {
     }
     game.verminInEffect = d.verminInEffect;
     game.exploitationOfVenusInEffect = d.exploitationOfVenusInEffect;
+    if (options.viewOnly) {
+      return game;
+    }
     // Still in Draft or Research of generation 1
     if (game.generation === 1 && players.some((p) => p.playedCards.filter(isICorporationCard).length === 0)) {
       if (game.phase === Phase.INITIALDRAFTING) {

@@ -19,7 +19,7 @@ function recordSurrenderAudit(
   player: IPlayer,
   event: AccessAuditEvent,
   authorization: 'admin' | 'player' | 'denied',
-  botTakeover?: 'started' | 'already-active',
+  botTakeover?: 'started' | 'already-active' | 'skipped-game-finished',
 ): void {
   ctx.accessAudit.record({
     event,
@@ -65,7 +65,7 @@ export class ApiSurrender extends Handler {
       return;
     }
 
-    let botTakeover: 'started' | 'already-active';
+    let botTakeover: 'started' | 'already-active' | 'skipped-game-finished';
     try {
       const result = await surrenderPlayer({
         game,

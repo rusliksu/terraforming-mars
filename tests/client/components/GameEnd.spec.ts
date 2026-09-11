@@ -5,6 +5,13 @@ import GameEnd from '@/client/components/GameEnd.vue';
 import {fakePlayerViewModel, fakePublicPlayerModel, fakeSpectatorModel} from './testHelpers';
 
 describe('GameEnd', () => {
+  it('links to the replay with spectator access from a player results page', () => {
+    const playerView = fakePlayerViewModel();
+    playerView.game.spectatorId = 'sreplay-link';
+    const wrapper = shallowMount(GameEnd, {...globalConfig, props: {playerView, spectator: fakeSpectatorModel()}});
+    expect(wrapper.get('a[href^="replay?"]').attributes('href')).eq('replay?id=sreplay-link');
+  });
+
   it('mounts without errors', () => {
     const wrapper = shallowMount(GameEnd, {
       ...globalConfig,
@@ -22,7 +29,7 @@ describe('GameEnd', () => {
     expect(rematchLink?.attributes('href')).to.contain('new-game?cloneGameId=');
   });
 
-  it('places surrendered players last and marks them', () => {
+  it('places surrendered players in a shared remaining-place range and marks them', () => {
     const winner = fakePublicPlayerModel({
       id: 'p-winner' as any,
       name: 'Winner',
@@ -31,6 +38,7 @@ describe('GameEnd', () => {
     const surrendered = fakePublicPlayerModel({
       id: 'p-surrendered' as any,
       name: 'Surrendered',
+      isBotControlled: true,
       isSurrendered: true,
       victoryPointsBreakdown: {total: 100},
     });
@@ -46,13 +54,16 @@ describe('GameEnd', () => {
     });
 
     expect((wrapper.vm as any).playersInPlace.map((player: {name: string}) => player.name)).deep.eq(['Winner', 'Surrendered']);
+    expect((wrapper.vm as any).getPlayerPlaceLabel(winner)).eq('1');
+    expect((wrapper.vm as any).getPlayerPlaceLabel(surrendered)).eq('2');
     const flag = wrapper.find('[data-test="surrendered-player-flag"]');
     expect(flag.exists()).eq(true);
     expect(flag.attributes('title')).eq('Surrendered');
+    expect(wrapper.find('.bot-controlled-marker').exists()).eq(true);
     expect(wrapper.text()).not.to.contain('Left');
   });
 
-  it('orders surrendered players by VP then megacredits', () => {
+  it('ties all surrendered players across the remaining places', () => {
     const winner = fakePublicPlayerModel({
       id: 'p-winner' as any,
       name: 'Winner',
@@ -83,10 +94,29 @@ describe('GameEnd', () => {
       },
     });
 
-    expect((wrapper.vm as any).playersInPlace.map((player: {name: string}) => player.name)).deep.eq([
-      'Winner',
-      'High cash',
-      'Low cash',
-    ]);
+    expect((wrapper.vm as any).playersInPlace.map((player: {name: string}) => player.name)).deep.eq(['Winner', 'Low cash', 'High cash']);
+    expect((wrapper.vm as any).getPlayerPlaceLabel(winner)).eq('1');
+    expect((wrapper.vm as any).getPlayerPlaceLabel(lowCash)).eq('2–3');
+    expect((wrapper.vm as any).getPlayerPlaceLabel(highCash)).eq('2–3');
+    expect(wrapper.findAll('[data-test="result-place"]').map((cell) => cell.text())).deep.eq(['1', '2–3', '2–3']);
+  });
+
+  it('explains where every end-game navigation entry leads', () => {
+    const playerView = fakePlayerViewModel();
+    playerView.game.spectatorId = 'sreplay-link';
+    const wrapper = shallowMount(GameEnd, {...globalConfig, props: {playerView, spectator: fakeSpectatorModel()}});
+
+    const tooltipFor = (text: string) => wrapper.findAll('a')
+      .find((link) => link.text().includes(text))?.attributes('data-tooltip');
+
+    expect(tooltipFor('Game replay')).eq('Watch the saved states of this game');
+    expect(tooltipFor('Create New Game')).eq('Start a new game and invite the other players');
+    expect(tooltipFor('Rematch (same setup)')).eq('Open a new lobby with the same settings');
+    expect(tooltipFor('Go to main page')).eq('Main menu: start a game or open the guides');
+    expect(tooltipFor('Elo & History')).eq('Elo ratings and finished games');
+
+    // The entries explain themselves through tooltips; no extra plaque on the page.
+    expect(wrapper.find('[data-test="end-game-navigation-hint"]').exists()).is.false;
+    expect(wrapper.find('.game-end-navigation-hint').exists()).is.false;
   });
 });

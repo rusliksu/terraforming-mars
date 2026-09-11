@@ -9,7 +9,7 @@ import {Color, normalizePlayerNameForColor} from '../common/Color';
 import {ICorporationCard} from './cards/corporation/ICorporationCard';
 import {IGame} from './IGame';
 import {Game} from './Game';
-import {Payment, PaymentOptions, DEFAULT_PAYMENT_VALUES} from '../common/inputs/Payment';
+import {Payment, PaymentOptions, DEFAULT_PAYMENT_VALUES, paymentTotal} from '../common/inputs/Payment';
 import {SpendableResource, SPENDABLE_RESOURCES, SpendableCardResource, CARD_FOR_SPENDABLE_RESOURCE} from '../common/inputs/Spendable';
 import {IAward} from './awards/IAward';
 import {ICard, isIActionCard, IActionCard} from './cards/ICard';
@@ -83,7 +83,7 @@ import {SelectStandardProjectToPlay} from './inputs/SelectStandardProjectToPlay'
 import {EarlyGameStats} from './game/EarlyGameStats';
 import {DEFAULT_PRELUDE_HANDICAP, normalizePreludeHandicap} from '../common/game/NewGameConfig';
 import type {ResearchPurchaseUndoState} from './game/ResearchPurchaseUndo';
-import {SURRENDER_CONFIRMATION_ANNOTATION} from './surrender/SurrenderInput';
+import {SURRENDER_ACTION_ANNOTATION, SURRENDER_CONFIRMATION_ANNOTATION} from './surrender/SurrenderInput';
 
 const THROW_STATE_ERRORS = Boolean(process.env.THROW_STATE_ERRORS);
 const TURN_NOTICE_DELAY_MS = 5000;
@@ -188,6 +188,7 @@ export class Player implements IPlayer {
   // cards that provide 'next card' discounts. This will clear between turns.
   public removedFromPlayCards: Array<IProjectCard> = [];
   public preservationProgram = false;
+  public trThisGeneration = 0;
   public underworldData: UnderworldPlayerData = UnderworldExpansion.initializePlayer();
   public deltaProjectData?: DeltaProjectPlayerModel;
   public standardProjectsThisGeneration: Set<CardName> = new Set();
@@ -356,7 +357,12 @@ export class Player implements IPlayer {
   }
 
   public increaseTerraformRating(steps: number = 1, opts: {log?: boolean, from?: From} = {}) {
-    if (this.preservationProgram === true && this.game.phase === Phase.ACTION) {
+    const inActionPhase = this.game.phase === Phase.ACTION;
+    const isFirstTrThisGeneration = this.trThisGeneration === 0;
+    if (inActionPhase) {
+      this.trThisGeneration += steps;
+    }
+    if (this.preservationProgram === true && inActionPhase && isFirstTrThisGeneration) {
       steps--;
       this.game.log('${0} for ${1} is blocking 1 TR', (b) => b.cardName(CardName.PRESERVATION_PROGRAM).player(this));
       this.preservationProgram = false;
@@ -392,9 +398,10 @@ export class Player implements IPlayer {
       this.game.defer(
         new SelectPaymentDeferred(this, redsCost, {title: 'Select how to pay for TR increase'}),
         Priority.COST)
-        .andThen(() => {
+        .andThen((payment) => {
+          // Report what the player actually paid, which can be resources instead of megacredits.
           this.game.log('${0} paid ${1} M€ for Turmoil ${2} policy', (b) =>
-            b.player(this).number(redsCost).partyName(PartyName.REDS));
+            b.player(this).number(paymentTotal(payment)).partyName(PartyName.REDS));
           raiseRating();
           return undefined;
         });
@@ -1293,24 +1300,26 @@ export class Player implements IPlayer {
   }
 
   private surrenderOption(): PlayerInput {
-    return new SelectOption('Surrender this game and start a bot', 'Surrender and start bot').andThen(() => {
-      const confirmation = new OrOptions()
-        .setTitle('Surrender this game? A bot will continue playing for you.')
-        .setButtonLabel('Confirm')
-        .annotate(SURRENDER_CONFIRMATION_ANNOTATION);
+    return new SelectOption('Surrender this game and start a bot', 'Surrender and start bot')
+      .annotate(SURRENDER_ACTION_ANNOTATION)
+      .andThen(() => {
+        const confirmation = new OrOptions()
+          .setTitle('Surrender this game? A bot will continue playing for you.')
+          .setButtonLabel('Confirm')
+          .annotate(SURRENDER_CONFIRMATION_ANNOTATION);
 
-      confirmation.options.push(new SelectOption('Surrender this game and start a bot', 'Surrender and start bot').andThen(() => {
-        return undefined;
-      }));
-      confirmation.options.push(new SelectOption('Continue playing', 'Continue').andThen(() => {
-        // The outer action callback increments these after the confirmation closes.
-        this.actionsTakenThisRound--;
-        this.actionsTakenThisGame--;
-        return undefined;
-      }));
+        confirmation.options.push(new SelectOption('Surrender this game and start a bot', 'Surrender and start bot').andThen(() => {
+          return undefined;
+        }));
+        confirmation.options.push(new SelectOption('Continue playing', 'Continue').andThen(() => {
+          // The outer action callback increments these after the confirmation closes.
+          this.actionsTakenThisRound--;
+          this.actionsTakenThisGame--;
+          return undefined;
+        }));
 
-      return confirmation;
-    });
+        return confirmation;
+      });
   }
 
   public takeActionForFinalGreenery(): void {
@@ -2093,6 +2102,7 @@ export class Player implements IPlayer {
       // Luna Trade Federation
       canUseTitaniumAsMegacredits: this.canUseTitaniumAsMegacredits,
       preservationProgram: this.preservationProgram,
+      trThisGeneration: this.trThisGeneration,
       // This generation / this round
       actionsTakenThisRound: this.actionsTakenThisRound,
       availableActionsThisRound: this.availableActionsThisRound,
@@ -2164,7 +2174,7 @@ export class Player implements IPlayer {
     return result;
   }
 
-  public static deserialize(d: SerializedPlayer): Player {
+  public static deserialize(d: SerializedPlayer, options: {restoreTimerClock?: boolean} = {}): Player {
     const player = new Player(d.name, d.color, d.beginner, Number(d.handicap), d.id, normalizePreludeHandicap(d.preludeHandicap));
 
     player.actionsTakenThisGame = d.actionsTakenThisGame;
@@ -2243,8 +2253,10 @@ export class Player implements IPlayer {
     player.researchPurchaseUndo = d.researchPurchaseUndo;
     player.autopass = d.autoPass ?? false;
     player.preservationProgram = d.preservationProgram ?? false;
+    // TODO(kberg): remove ?? 0 by 2026-11-01
+    player.trThisGeneration = d.trThisGeneration ?? 0;
 
-    player.timer = Timer.deserialize(d.timer);
+    player.timer = Timer.deserialize(d.timer, options.restoreTimerClock);
     player.underworldData = d.underworldData;
 
     if (d.alliedParty !== undefined) {

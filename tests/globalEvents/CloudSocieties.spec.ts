@@ -15,7 +15,7 @@ describe('CloudSocieties', () => {
     turmoil.dominantParty = new Kelvinists();
     turmoil.dominantParty.partyLeader = player;
     turmoil.dominantParty.delegates.add(player);
-    card.resolve(game, turmoil);
+    card.resolve(game);
     expectLog(game, floatingHabs.name, '1');
     game.deferredActions.runNext();
 

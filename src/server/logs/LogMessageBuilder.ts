@@ -14,6 +14,11 @@ export class LogMessageBuilder extends MessageBuilder {
     this.type = LogMessageType.DEFAULT;
   }
 
+  public forNotice(): this {
+    this.type = LogMessageType.NOTICE;
+    return this;
+  }
+
   public forNewGeneration(): this {
     this.type = LogMessageType.NEW_GENERATION;
     return this;
@@ -21,6 +26,11 @@ export class LogMessageBuilder extends MessageBuilder {
 
   public forIrreversibleUndo(): this {
     this.type = LogMessageType.IRREVERSIBLE_UNDO;
+    return this;
+  }
+
+  public forBotTakeover(): this {
+    this.type = LogMessageType.BOT_TAKEOVER;
     return this;
   }
 

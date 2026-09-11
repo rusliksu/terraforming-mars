@@ -21,6 +21,13 @@ TM Telegram secrets are not source-managed. Keep `TM_BOT_TOKEN` in
 `EnvironmentFile`. Staging also loads the shared env file, but its unit must
 set `TM_DISABLE_TELEGRAM=1` so test/E2E games never send real turn notices.
 
+Keep the Sentry CI credential separate from that runtime environment. The
+runtime file may contain `SENTRY_DSN` and `SENTRY_ENVIRONMENT`, but
+`SENTRY_AUTH_TOKEN` must exist exactly once in
+`~/.config/tm-sentry-release.env`. Both files must be regular files owned by
+the service user with mode `600`. The staging wrapper checks this boundary on
+the VPS before it changes the release symlink or restarts the app.
+
 ## Safe default source
 
 The staging release source is the sibling clean checkout:
@@ -68,6 +75,42 @@ still require `-RestartWatchersDuringServiceSync`.
 - Do not hot-patch source-managed `elo/*` files on the VPS. Only `elo-data.json`, `data.json`, logs, and similar generated outputs should remain mutable there.
 - Trust `release.json`, not folder mtimes or guesses. Staging and prod should always be able to prove they serve the same artifact hash.
 - VPS runtime should be immutable-by-default: release code lives under `/home/openclaw/tm-runtime/<env>/releases/*`, services run from `/home/openclaw/tm-runtime/<env>/current`, and mutable data lives under `/home/openclaw/tm-runtime/<env>/shared`.
+
+## Abandoned Realtime Games
+
+The prod promote gate blocks while a non-turn-based game was saved within
+`-RealtimeGameStaleDays` (default 10). A game the group has abandoned keeps
+blocking until that window passes, so confirm it once in the operator ledger
+instead of repeating the ids on every release.
+
+- Ledger: `C:\Users\Ruslan\tm\.tmp\tm-release\prod-ignored-games.txt`
+  (override with `-IgnoredRealtimeGameIdFile`; never committed, never inferred).
+- Format: one `<game-id>` per line, optional trailing `# note`.
+
+```powershell
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\tm_ignored_realtime_games.ps1 -List
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\tm_ignored_realtime_games.ps1 -Add g1c62f3657ee8 -Note "idle since 2026-09-09"
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\tm_ignored_realtime_games.ps1 -Remove g1c62f3657ee8
+```
+
+Only a human declares a game abandoned: nothing infers it, `release_tm_prod.ps1`
+and `rollout_tm_server.ps1` merge the ledger with the per-run
+`-IgnoredRealtimeGameId` ids, and the merged count and ids are echoed before the
+locked remote gate runs. The gate itself is unchanged and still fails closed for
+unknown ids, for games whose save timestamp is missing, and for every game that
+is not listed.
+
+The current idle time of every running game is visible read-only from the
+release checkout; the query mirrors the gate's own latest-save lookup:
+
+```bash
+sqlite3 -readonly "file:/home/openclaw/tm-runtime/prod/shared/db/game.db?mode=ro" -json \
+  "SELECT latest.game_id, CAST(strftime('%s','now') AS INTEGER) - latest.created_time AS idle_seconds \
+   FROM games AS latest \
+   INNER JOIN (SELECT game_id AS gid, MAX(save_id) AS max_save_id FROM games GROUP BY game_id) AS m \
+     ON latest.game_id = m.gid AND latest.save_id = m.max_save_id \
+   WHERE trim(latest.status) = 'running' ORDER BY idle_seconds ASC;"
+```
 
 ## Branch Naming
 
@@ -158,6 +201,13 @@ Deploy to staging from the safe default source:
 pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\deploy_tm_staging.ps1
 ```
 
+After deploy, the wrapper runs smoke, validates the clean staging
+`release.json` in the post-snapshot, and then creates or reuses the matching
+Sentry release/deploy for project `terraforming-mars-staging`. The runtime
+event release, Sentry release version, and manifest `gitSha` all use the same
+full 40-character SHA. The release API runs only on the VPS; the auth token is
+never passed back to the Windows caller.
+
 Deploy an isolated preview instance from any clean upstream/fork checkout:
 
 ```powershell
@@ -171,11 +221,16 @@ Dry run:
 pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\deploy_tm_staging.ps1 -DryRun
 ```
 
+Dry-run does not read the Sentry credential and does not call the Sentry API.
+
 Deploy to staging and skip smoke if you only need the rollout:
 
 ```powershell
 pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\deploy_tm_staging.ps1 -SkipSmoke
 ```
+
+`-SkipSmoke` keeps the emergency staging rollout path but deliberately skips
+the Sentry deploy record because the release was not smoke-verified.
 
 When `-SourceRoot` is supplied for staging, it is accepted only if that source
 is clean and its exact `HEAD` equals its local `origin/main`. Feature, local-only,

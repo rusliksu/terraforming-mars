@@ -9,6 +9,7 @@ import {isPlayerId, isSpectatorId} from '../../common/Types';
 import {Request} from '../Request';
 import {Response} from '../Response';
 import {getUserAgent} from './auditRequest';
+import {RouteError} from './RouteError';
 
 export class ApiWaitingFor extends Handler {
   public static readonly INSTANCE = new ApiWaitingFor();
@@ -53,58 +54,60 @@ export class ApiWaitingFor extends Handler {
   }
 
   public override async get(req: Request, res: Response, ctx: Context): Promise<void> {
-    const id = String(ctx.url.searchParams.get('id'));
-    const gameAge = Number(ctx.url.searchParams.get('gameAge'));
-    const undoCount = Number(ctx.url.searchParams.get('undoCount'));
+    const id = ctx.urlParams.participantId('id');
+    const gameAge = ctx.urlParams.number('gameAge');
+    const undoCount = ctx.urlParams.number('undoCount');
 
-    let game: IGame | undefined;
-    if (isSpectatorId(id) || isPlayerId(id)) {
-      game = await ctx.gameLoader.getGame(id);
-    }
+    const game = await ctx.gameLoader.getGame(id);
     if (game === undefined) {
-      responses.notFound(req, res, 'cannot find game for that player');
-      return;
+      throw RouteError.notFound('cannot find game for that player');
     }
-    try {
-      if (isPlayerId(id)) {
-        const player = game.getPlayerById(id);
-        if (!this.isUser(player.user, ctx) && !this.hasServerIdAccess(ctx)) {
-          responses.notAuthorized(req, res);
-          return;
-        }
-        ctx.ipTracker.addParticipant(id, ctx.ip);
+
+    if (isSpectatorId(id)) {
+      if (process.env.TM_ACCESS_AUDIT_WAITING_FOR === '1') {
         ctx.accessAudit.record({
-          event: 'waiting_for_player',
+          event: 'waiting_for_spectator',
           method: req.method ?? '',
           path: 'api/waitingfor',
           gameId: game.id,
           participantId: id,
-          participantKind: 'player',
+          participantKind: 'spectator',
           clientIp: ctx.clientIp,
           userAgent: getUserAgent(req),
         });
-        responses.writeJson(res, ctx, this.getPlayerWaitingForModel(player, game, gameAge, undoCount));
-      } else if (isSpectatorId(id)) {
-        if (process.env.TM_ACCESS_AUDIT_WAITING_FOR === '1') {
-          ctx.accessAudit.record({
-            event: 'waiting_for_spectator',
-            method: req.method ?? '',
-            path: 'api/waitingfor',
-            gameId: game.id,
-            participantId: id,
-            participantKind: 'spectator',
-            clientIp: ctx.clientIp,
-            userAgent: getUserAgent(req),
-          });
-        }
-        responses.writeJson(res, ctx, this.getSpectatorWaitingForModel(game, gameAge, undoCount));
-      } else {
-        responses.internalServerError(req, res, 'id not found');
       }
+      responses.writeJson(res, ctx, this.getSpectatorWaitingForModel(game, gameAge, undoCount));
+      return;
+    }
+
+    if (!isPlayerId(id)) {
+      throw RouteError.badRequest('id not found');
+    }
+
+    let player: IPlayer;
+    try {
+      player = game.getPlayerById(id);
     } catch (err) {
       // This is basically impossible since getPlayerById ensures that the player is on that game.
       console.warn(`unable to find player ${id}`, err);
-      responses.notFound(req, res, 'player not found');
+      throw RouteError.notFound('player not found');
     }
+
+    if (!this.isUser(player.user, ctx) && !this.hasServerIdAccess(ctx)) {
+      responses.notAuthorized(req, res);
+      return;
+    }
+    ctx.ipTracker.addParticipant(id, ctx.ip);
+    ctx.accessAudit.record({
+      event: 'waiting_for_player',
+      method: req.method ?? '',
+      path: 'api/waitingfor',
+      gameId: game.id,
+      participantId: id,
+      participantKind: 'player',
+      clientIp: ctx.clientIp,
+      userAgent: getUserAgent(req),
+    });
+    responses.writeJson(res, ctx, this.getPlayerWaitingForModel(player, game, gameAge, undoCount));
   }
 }

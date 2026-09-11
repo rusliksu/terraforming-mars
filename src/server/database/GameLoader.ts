@@ -99,6 +99,7 @@ export class GameLoader implements IGameLoader {
   private readonly botTakeoverManager: SurrenderBotManager;
   private readonly botServerId: string;
   private purgedGames: Array<GameId>;
+  private readonly replacedGames = new WeakSet<IGame>();
 
   private constructor(
     config: CacheConfig,
@@ -181,6 +182,10 @@ export class GameLoader implements IGameLoader {
   public async add(game: IGame): Promise<void> {
     const d = await this.cache.getGames();
     const isNew = !d.games.has(game.id);
+    const previous = d.games.get(game.id);
+    if (previous !== undefined && previous !== game) {
+      this.replacedGames.add(previous);
+    }
     d.games.set(game.id, game);
     this.cache.touch(game.id);
     if (game.spectatorId !== undefined) {
@@ -316,7 +321,7 @@ export class GameLoader implements IGameLoader {
 
   public async getGameAt(gameId: GameId, saveId: number): Promise<IGame> {
     const serializedGame = await Database.getInstance().getGameVersion(gameId, saveId);
-    return Game.deserialize(serializedGame);
+    return Game.deserialize(serializedGame, {simulation: true});
   }
 
   public async getGameAtOrBefore(gameId: GameId, saveId: number): Promise<IGame> {
@@ -364,6 +369,7 @@ export class GameLoader implements IGameLoader {
   }
 
   public async completeGame(game: IGame) {
+    this.assertNotReplaced(game);
     const database = Database.getInstance();
     await database.saveGame(game);
     try {
@@ -378,10 +384,17 @@ export class GameLoader implements IGameLoader {
   }
 
   public saveGame(game: IGame): Promise<void> {
+    this.assertNotReplaced(game);
     if (this.purgedGames.includes(game.id)) {
       throw new Error('This game no longer exists');
     }
     return Database.getInstance().saveGame(game);
+  }
+
+  private assertNotReplaced(game: IGame): void {
+    if (this.replacedGames.has(game)) {
+      throw new Error('Game state changed; reload before saving.');
+    }
   }
 
   public async maintenance() {

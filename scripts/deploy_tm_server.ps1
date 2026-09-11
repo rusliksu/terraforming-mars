@@ -426,6 +426,8 @@ current_link="__CURRENT_LINK__"
 legacy_root="__LEGACY_ROOT__"
 service="__SERVICE__"
 elo_service="__ELO_SERVICE__"
+legacy_elo_timer="tm-sync-elo.timer"
+legacy_elo_sync_service="tm-sync-elo.service"
 health_url="__HEALTH__"
 elo_health_url="__ELO_HEALTH__"
 expected_artifact_sha="__ARTIFACT_SHA__"
@@ -448,6 +450,42 @@ previous_current=""
 elo_files="index.html audit_player_names.py elo-api.js elo_aliases.py excluded_games.json fix_elo_dupes.py import_gamedb_to_elo.py migrate_elo_nicknames.py player_name_aliases.json player_name_overrides.json tm-sync-elo.py"
 deploy_lock_file="/home/openclaw/tm-runtime/.deploy.lock"
 deploy_lock_info="/home/openclaw/tm-runtime/.deploy.lock.info"
+
+disable_periodic_elo_sync() {
+  local timer_load_state
+  local sync_load_state
+  local timer_active_state
+  local timer_unit_state
+  local sync_active_state
+
+  timer_load_state="$(systemctl --user show "$legacy_elo_timer" --property=LoadState --value 2>/dev/null || true)"
+  sync_load_state="$(systemctl --user show "$legacy_elo_sync_service" --property=LoadState --value 2>/dev/null || true)"
+
+  if [ -n "$timer_load_state" ] && [ "$timer_load_state" != "not-found" ]; then
+    systemctl --user disable --now "$legacy_elo_timer" || return 1
+  fi
+  if [ -n "$sync_load_state" ] && [ "$sync_load_state" != "not-found" ]; then
+    systemctl --user stop "$legacy_elo_sync_service" || return 1
+  fi
+
+  if [ -n "$timer_load_state" ] && [ "$timer_load_state" != "not-found" ]; then
+    timer_active_state="$(systemctl --user show "$legacy_elo_timer" --property=ActiveState --value 2>/dev/null || true)"
+    timer_unit_state="$(systemctl --user is-enabled "$legacy_elo_timer" 2>/dev/null || true)"
+    if [ "$timer_active_state" != "inactive" ] || { [ "$timer_unit_state" != "disabled" ] && [ "$timer_unit_state" != "masked" ]; }; then
+      echo "Legacy periodic ELO timer is not disabled and inactive: active=${timer_active_state:-unknown} enabled=${timer_unit_state:-unknown}." >&2
+      return 1
+    fi
+  fi
+  if [ -n "$sync_load_state" ] && [ "$sync_load_state" != "not-found" ]; then
+    sync_active_state="$(systemctl --user show "$legacy_elo_sync_service" --property=ActiveState --value 2>/dev/null || true)"
+    if [ "$sync_active_state" != "inactive" ]; then
+      echo "Legacy ELO reconciliation service is still active: ${sync_active_state:-unknown}." >&2
+      return 1
+    fi
+  fi
+
+  echo "Legacy periodic ELO polling disabled; game-completion ELO updates remain in tm-server."
+}
 
 normalize_release_permissions() {
   local candidate="$1"
@@ -629,6 +667,11 @@ if [ -n "$elo_service" ]; then
   fi
 fi
 
+if [ "$environment" = "prod" ] && ! disable_periodic_elo_sync; then
+  echo "Prod deploy blocked: legacy periodic ELO polling could not be disabled." >&2
+  exit 50
+fi
+
 if [ "$environment" = "staging" ] && [ "$force_redeploy" != "1" ] && [ "$candidate_source_tree_clean" = "true" ]; then
   served_noop_release_json=""
   if served_noop_release_json="$(curl -fsS "$release_url" 2>/dev/null || curl -fsS "$release_url_fallback" 2>/dev/null)"; then
@@ -783,6 +826,12 @@ if [ -n "$elo_health_url" ]; then
     rollback
     exit 1
   fi
+fi
+
+if [ "$environment" = "prod" ] && ! disable_periodic_elo_sync; then
+  echo "Prod deploy completed service health checks, but the periodic ELO polling invariant failed." >&2
+  rollback
+  exit 50
 fi
 
 served_release_json=""

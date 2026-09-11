@@ -49,7 +49,7 @@
     </template>
 
     <DynamicTitle v-if="playerView.pickedCorporationCard.length === 0" title="Select initial cards:" :color="thisPlayer.color"/>
-    <WaitingFor v-if="game.phase !== 'end'" :playerView="playerView" :waitingfor="playerView.waitingFor"/>
+    <WaitingFor v-if="game.phase !== 'end'" :playerView="playerView" :waitingfor="playerView.waitingFor" :key="'waiting-' + viewRevision"/>
     <div class="player_home_block nofloat" v-if="isInitialDraftingPhase">
       <LogPanel :viewModel="playerView" :color="thisPlayer.color" :step="game.step"/>
     </div>
@@ -85,7 +85,9 @@
           :venusScaleLevel="game.venusScaleLevel"
           :boardName ="game.gameOptions.boardName"
           :aresData="game.aresData"
-          :altVenusBoard="game.gameOptions.altVenusBoard"/>
+          :altVenusBoard="game.gameOptions.altVenusBoard"
+          :tileView="tileView"
+          @toggleTileView="$emit('toggleTileView')"/>
 
         <Turmoil v-if="game.turmoil" :turmoil="game.turmoil"/>
 
@@ -130,7 +132,12 @@ export default defineComponent({
       type: String as () => TileView,
       required: true,
     },
+    viewRevision: {
+      type: Number,
+      required: true,
+    },
   },
+  emits: ['toggleTileView'],
   computed: {
     thisPlayer(): PublicPlayerModel {
       return this.playerView.thisPlayer;

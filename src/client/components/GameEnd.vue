@@ -37,21 +37,32 @@
           </div>
           <div class="game_end_navigation">
             <div>
-              <a href="new-game">
+              <a v-if="game.spectatorId" :href="'replay?id=' + encodeURIComponent(game.spectatorId)"
+                 class="game-end-navigation-link tooltip tooltip-top"
+                 :data-tooltip="$t('Watch the saved states of this game')">
+                  <AppButton size="big" type="back" />
+                  <span v-i18n>Game replay</span>
+              </a>
+              <a href="new-game" class="game-end-navigation-link tooltip tooltip-top"
+                 :data-tooltip="$t('Start a new game and invite the other players')">
                   <AppButton size="big" type="back" />
                   <span v-i18n>Create New Game</span>
               </a>
 
-              <a :href="'new-game?cloneGameId=' + game.gameId" :title="$t('Start a new game with the same initial setup')">
+              <a :href="'new-game?cloneGameId=' + game.gameId" :title="$t('Start a new game with the same initial setup')"
+                 class="game-end-navigation-link tooltip tooltip-top"
+                 :data-tooltip="$t('Open a new lobby with the same settings')">
                   <AppButton size="big" type="back" />
-                  <span>♻ </span><span v-i18n>Rematch (same setup)</span>
+                  <span>♻&nbsp;</span><span v-i18n>Rematch (same setup)</span>
               </a>
 
-              <a href=".">
+              <a href="." class="game-end-navigation-link tooltip tooltip-top"
+                 :data-tooltip="$t('Main menu: start a game or open the guides')">
                   <AppButton size="big" type="back" />
                   <span v-i18n>Go to main page</span>
               </a>
-              <a href="history.html">
+              <a href="history.html" class="game-end-navigation-link tooltip tooltip-top"
+                 :data-tooltip="$t('Elo ratings and finished games')">
                   <AppButton size="big" type="back" />
                   <span>Elo &amp; History</span>
               </a>
@@ -78,6 +89,7 @@
                   <thead>
                       <tr v-i18n>
                           <th>Player</th>
+                          <th>Place</th>
                           <th>Before</th>
                           <th>Delta</th>
                           <th>After</th>
@@ -87,6 +99,7 @@
                   <tbody>
                       <tr v-for="entry in eloResults" :key="entry.color || entry.name" :class="getEndGamePlayerRowColorClass(entry.color)">
                           <td>{{ entry.name }}</td>
+                          <td>{{ entry.placeLabel }}</td>
                           <td>{{ entry.oldElo }}</td>
                           <td :class="getEloDeltaClass(entry.delta)">{{ formatEloDelta(entry.delta) }}</td>
                           <td>{{ entry.newElo }}</td>
@@ -100,6 +113,7 @@
               <table class="table game_end_table">
                   <thead>
                       <tr v-i18n>
+                          <th>Place</th>
                           <th><div class="card-delegate"></div></th>
                           <th><div class="tr"></div></th>
                           <th><div class="m-and-a tooltip tooltip-top" :data-tooltip="$t('Milestones points')">M</div></th>
@@ -120,6 +134,7 @@
                   </thead>
                   <tbody>
                       <tr v-for="p in playersInPlace" :key="p.color" :class="getEndGamePlayerRowColorClass(p.color)">
+                          <td data-test="result-place">{{ getPlayerPlaceLabel(p) }}</td>
                           <td>
                             <span class="game-end-name-and-elo">
                               <a :href="'player?id='+p.id+'&noredirect'">{{ p.name }}</a>
@@ -128,6 +143,12 @@
                                 data-test="surrendered-player-flag"
                                 class="surrendered-player-flag"
                                 :title="$t('Surrendered')">&#9873;</span>
+                              <span
+                                v-if="p.isBotControlled"
+                                class="bot-controlled-marker"
+                                :title="$t('This player is controlled by a bot')"
+                                :aria-label="$t('This player is controlled by a bot')"
+                                role="status">BOT</span>
                               <PlayerEloBadge :playerName="p.name" :eloDelta="getEloDeltaForPlayer(p)" tooltipCss="tooltip tooltip-top" />
                             </span>
                             <div class="column-corporation">
@@ -252,8 +273,10 @@
                   :boardName ="game.gameOptions.boardName"
                   :oceans_count="game.oceans"
                   :oxygen_level="game.oxygenLevel"
-                  :temperature="game.temperature"/>
-            <MoonBoard v-if="game.moon !== undefined" :model="game.moon"/>
+                  :temperature="game.temperature"
+                  :tileView="tileView"
+                  @toggleTileView="cycleTileView()"/>
+            <MoonBoard v-if="game.moon !== undefined" :model="game.moon" :tileView="tileView"/>
             <div v-if="game.gameOptions.expansions.pathfinders">
               <PlanetaryTracks :tracks="game.pathfinders" :gameOptions="game.gameOptions"/>
             </div>
@@ -280,6 +303,7 @@ import {GameModel} from '@/common/models/GameModel';
 import {PlayerViewModel, PublicPlayerModel, ViewModel} from '@/common/models/PlayerModel';
 import Board from '@/client/components/Board.vue';
 import MoonBoard from '@/client/components/moon/MoonBoard.vue';
+import {nextTileView, TileView} from '@/client/components/board/TileView';
 import PlanetaryTracks from '@/client/components/pathfinders/PlanetaryTracks.vue';
 import DeltaProjectBoard from '@/client/components/delta/DeltaProjectBoard.vue';
 import LogPanel from '@/client/components/logpanel/LogPanel.vue';
@@ -299,13 +323,14 @@ import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
 import {MADetail} from '@/common/game/VictoryPointsBreakdown';
 import {AwardName} from '@/common/ma/AwardName';
 import {buildEloResultsForPlayers, EloResultRow, ensureEloLoaded, findMatchingEloGame, sharedEloState} from '@/client/utils/elo';
-import {compareCompletionRank, hasSameCompletionRank} from '@/common/game/CompletionOutcome';
+import {compareCompletionRank, hasSameCompletionRank, isLastActivePlayerFinish} from '@/common/game/CompletionOutcome';
 
-function playerCompletionRank(player: PublicPlayerModel) {
+function playerCompletionRank(player: PublicPlayerModel, shareRemainingPlaces = false) {
   return {
     completionOutcome: player.isSurrendered ? 'surrendered' as const : 'completed' as const,
     vp: player.victoryPointsBreakdown.total,
     megacredits: player.megacredits,
+    shareRemainingPlaces: shareRemainingPlaces && player.isSurrendered,
   };
 }
 
@@ -341,6 +366,10 @@ export default defineComponent({
     players(): Array<PublicPlayerModel> {
       return getViewModel(this.playerView, this.spectator).players;
     },
+    lastActivePlayerFinish(): boolean {
+      const surrenderedPlayerCount = this.players.filter((player) => player.isSurrendered).length;
+      return isLastActivePlayerFinish(this.players.length, surrenderedPlayerCount);
+    },
     color(): Color {
       if (this.playerView !== undefined) {
         return this.playerView.thisPlayer.color;
@@ -362,12 +391,13 @@ export default defineComponent({
       if (id === undefined) {
         return undefined;
       }
-      return `${paths.API_GAME_LOGS}?id=${id}&full=true`;
+      return `${paths.END_GAME_LOG}?id=${id}`;
     },
     playersInPlace(): Array<PublicPlayerModel> {
       const copy = [...this.viewModel.players];
+      const shareRemainingPlaces = this.lastActivePlayerFinish;
       copy.sort(function(a:PublicPlayerModel, b:PublicPlayerModel) {
-        return compareCompletionRank(playerCompletionRank(a), playerCompletionRank(b));
+        return compareCompletionRank(playerCompletionRank(a, shareRemainingPlaces), playerCompletionRank(b, shareRemainingPlaces));
       });
       return copy;
     },
@@ -376,7 +406,10 @@ export default defineComponent({
       const firstWinner = sortedPlayers[0];
       const winners: PublicPlayerModel[] = [firstWinner];
       for (let i = 1; i < sortedPlayers.length; i++) {
-        if (hasSameCompletionRank(playerCompletionRank(sortedPlayers[i]), playerCompletionRank(firstWinner))) {
+        if (hasSameCompletionRank(
+          playerCompletionRank(sortedPlayers[i], this.lastActivePlayerFinish),
+          playerCompletionRank(firstWinner, this.lastActivePlayerFinish),
+        )) {
           winners.push(sortedPlayers[i]);
         }
       }
@@ -443,10 +476,13 @@ export default defineComponent({
         };
       });
     },
+    constants(): typeof constants {
+      return constants;
+    },
   },
-  data() {
+  data(): {tileView: TileView, eloResults: Array<EloResultRow>} {
     return {
-      constants,
+      tileView: 'show',
       eloResults: [] as Array<EloResultRow>,
     };
   },
@@ -468,6 +504,29 @@ export default defineComponent({
     }
   },
   methods: {
+    cycleTileView(): void {
+      this.tileView = nextTileView(this.tileView);
+    },
+    getPlayerPlaceLabel(player: PublicPlayerModel): string {
+      if (this.lastActivePlayerFinish && player.isSurrendered) {
+        return this.players.length === 2 ? '2' : `2–${this.players.length}`;
+      }
+      const sortedPlayers = this.playersInPlace;
+      const index = sortedPlayers.findIndex((candidate) => candidate === player ||
+        (player.id !== undefined && candidate.id === player.id) ||
+        candidate.color === player.color);
+      if (index < 0) {
+        return '—';
+      }
+      let place = index + 1;
+      while (place > 1 && hasSameCompletionRank(
+        playerCompletionRank(sortedPlayers[place - 1], this.lastActivePlayerFinish),
+        playerCompletionRank(sortedPlayers[place - 2], this.lastActivePlayerFinish),
+      )) {
+        place--;
+      }
+      return String(place);
+    },
     async fetchEloResults() {
       await ensureEloLoaded(true);
       if (!sharedEloState.loaded) {

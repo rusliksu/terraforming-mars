@@ -1,7 +1,7 @@
 {
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-08-12T10:59:13.731Z",
-  "generated_from_commit": "c18af9c9",
+  "generated_at": "2026-09-07T08:30:18.799Z",
+  "generated_from_commit": "9697d6050dd3b171a563a42e009973fa33084608",
   "scope": [
     ".",
     ".github",
@@ -263,6 +263,11 @@
           "path": "src/server/Game.ts",
           "symbol": "export class Game",
           "status": "confirmed"
+        },
+        {
+          "path": "src/server/Game.ts",
+          "symbol": "Game.deserialize(viewOnly)",
+          "status": "confirmed"
         }
       ],
       "tests": [
@@ -273,6 +278,11 @@
         {
           "path": "tests/Game.spec.ts",
           "symbol": "ends multiplayer when only one player has not surrendered"
+        },
+        {
+          "path": "tests/replay/ReplayView.spec.ts",
+          "symbol": "Replay view loading",
+          "status": "confirmed"
         }
       ],
       "constraints": [
@@ -903,7 +913,7 @@
         }
       ],
       "constraints": [
-        "Включается только при DSN + exact staging + valid build head.",
+        "Включается только при DSN + exact staging + full clean staging SHA из assets/release.json.",
         "Финальный event строится по allowlist и повторно очищается beforeSend.",
         "Реальная доставка в Sentry остаётся отдельным delivery gate."
       ],
@@ -921,6 +931,332 @@
         {
           "path": "src/server/server/SentryReporter.ts",
           "symbol": "sanitizeGameplayInput(context.gameplayInput)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "staging-release",
+      "label": "Staging release pipeline",
+      "type": "worker",
+      "path": "scripts/rollout_tm_server.ps1",
+      "role": "Обновляет clean release checkout, разворачивает точный origin/main SHA в staging, выполняет smoke, фиксирует post-deploy snapshot и публикует идемпотентный Sentry release/deploy.",
+      "entrypoints": [
+        {
+          "path": "scripts/rollout_tm_server.ps1",
+          "symbol": "Deploy release checkout to staging",
+          "status": "confirmed"
+        },
+        {
+          "path": "scripts/deploy_tm_staging.ps1",
+          "symbol": "deploy -> smoke -> post snapshot",
+          "status": "confirmed"
+        },
+        {
+          "path": "scripts/report_tm_sentry_release.ps1",
+          "symbol": "Invoke-TmSentryRemoteReporter",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "scripts/test_tm_release_guards.ps1",
+          "symbol": "staging release guard assertions"
+        },
+        {
+          "path": "scripts/test_tm_sentry_release.ps1",
+          "symbol": "preflight, ordering and offline API oracle"
+        }
+      ],
+      "constraints": [
+        "Staging принимает только clean checkout, чей HEAD совпадает с origin/main.",
+        "Полный SHA, environment=staging и sourceTreeClean=true всегда проверяются по post-snapshot.",
+        "Sentry preflight выполняется до deploy; auth token остаётся только в deploy-only env на VPS.",
+        "Smoke можно пропустить через SkipSmoke; post-snapshot снимается, но Sentry deploy не публикуется.",
+        "DryRun не читает Sentry token и не использует Sentry API."
+      ],
+      "evidence": [
+        {
+          "path": "scripts/rollout_tm_server.ps1",
+          "symbol": "-ExpectedGitSha $intendedGitSha",
+          "status": "confirmed"
+        },
+        {
+          "path": "scripts/deploy_tm_staging.ps1",
+          "symbol": "smoke_tm_staging.ps1",
+          "status": "confirmed"
+        },
+        {
+          "path": "scripts/deploy_tm_staging.ps1",
+          "symbol": "capture_tm_release_state.ps1",
+          "status": "confirmed"
+        },
+        {
+          "path": "scripts/lib/tm_sentry_release_remote.py",
+          "symbol": "ensure_release + ensure_deploy under exclusive_lock",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "replay-frame",
+      "label": "Публичный кадр реплея",
+      "type": "api",
+      "path": "src/server/replay/ReplayFrame.ts",
+      "role": "Загружает сохранение без продолжения игры и выбирает публичные поля и журнал.",
+      "entrypoints": [
+        {
+          "path": "src/server/replay/ReplayFrame.ts",
+          "symbol": "toReplayFrame",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/replay/ReplayFrame.spec.ts",
+          "symbol": "Replay frame projection",
+          "status": "confirmed"
+        },
+        {
+          "path": "tests/replay/ReplayView.spec.ts",
+          "symbol": "Replay view loading",
+          "status": "confirmed"
+        }
+      ],
+      "constraints": [
+        "Не выдаёт player ID, закрытые карты, приватные логи и сырые сохранения.",
+        "Не продолжает фазу, не сохраняет игру и не меняет общие часы."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/replay/ReplayFrame.ts",
+          "symbol": "Game.deserialize(saved, {viewOnly: true})",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "replay-contract",
+      "label": "Контракт кадра реплея",
+      "type": "contract",
+      "path": "src/common/models/ReplayModel.ts",
+      "role": "Общие типы списка сохранений и публичного кадра.",
+      "entrypoints": [
+        {
+          "path": "src/common/models/ReplayModel.ts",
+          "symbol": "ReplayIndex / ReplayFrame",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/replay/ReplayFrame.spec.ts",
+          "symbol": "Replay frame projection",
+          "status": "confirmed"
+        }
+      ],
+      "constraints": [
+        "Содержимое архива остаётся внутренним для сервера."
+      ],
+      "evidence": [
+        {
+          "path": "src/common/models/ReplayModel.ts",
+          "symbol": "ReplayLogMessage",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "public-models",
+      "label": "Публичные модели игры",
+      "type": "api",
+      "path": "src/server/models/ServerModel.ts",
+      "role": "Формирует существующие представления поля и игроков; реплей отдельно фильтрует ответ.",
+      "entrypoints": [
+        {
+          "path": "src/server/models/ServerModel.ts",
+          "symbol": "Server.getSpectatorModel",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/replay/ReplayFrame.spec.ts",
+          "symbol": "Replay frame projection",
+          "status": "confirmed"
+        }
+      ],
+      "constraints": [
+        "В обычном END-представлении присутствуют player ID; реплей их исключает."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/models/ServerModel.ts",
+          "symbol": "Server.getPlayer",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "replay-api",
+      "label": "API реплея",
+      "type": "api",
+      "path": "src/server/routes/ApiReplay.ts",
+      "role": "По ссылке зрителя выдаёт список сохранений завершённой партии или точный публичный кадр.",
+      "entrypoints": [
+        {
+          "path": "src/server/routes/ApiReplay.ts",
+          "symbol": "ApiReplay.get",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/server/requestProcessor.ts",
+          "symbol": "paths.API_REPLAY",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/routes/ApiReplay.spec.ts",
+          "symbol": "ApiReplay",
+          "status": "confirmed"
+        },
+        {
+          "path": "tests/database/ReplayArchive.spec.ts",
+          "symbol": "ReplayArchive",
+          "status": "confirmed"
+        }
+      ],
+      "constraints": [
+        "Повторно проверяет завершённость и ссылку после чтения.",
+        "Не обращается к живому кешу и не пишет историю.",
+        "Лимит 4 параллельных запроса и 4096 сохранений."
+      ],
+      "evidence": [
+        {
+          "path": "src/server/routes/ApiReplay.ts",
+          "symbol": "IDatabase.getParticipants / getGame / getSaveIds / getGameVersion",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "replay-ui",
+      "label": "Экран реплея",
+      "type": "ui",
+      "path": "src/client/components/replay/ReplayHome.vue",
+      "role": "Показывает записанное поле, публичные сведения игроков и статический журнал; предоставляет управление просмотром.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/App.vue",
+          "symbol": "screen=replay",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/client/components/replay/ReplayHome.vue",
+          "symbol": "ReplayHome",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/components/replay/ReplayHome.spec.ts",
+          "symbol": "ReplayHome",
+          "status": "confirmed"
+        },
+        {
+          "path": "tests/client/components/App.spec.ts",
+          "symbol": "direct replay link",
+          "status": "confirmed"
+        }
+      ],
+      "constraints": [
+        "Не монтирует WaitingFor и LogPanel.",
+        "Передаёт readOnly в PlayersOverview; текущий Elo и живые часы отключены."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/components/replay/ReplayHome.vue",
+          "symbol": "GameBoardView / PlayersOverview / LogMessageComponent",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "replay-playback",
+      "label": "Управление воспроизведением",
+      "type": "module",
+      "path": "src/client/components/replay/useReplay.ts",
+      "role": "Последовательно запрашивает кадры, отменяет старый выбор, хранит до восьми кадров и останавливается на конце.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/replay/useReplay.ts",
+          "symbol": "useReplay",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/components/replay/useReplay.spec.ts",
+          "symbol": "Replay playback",
+          "status": "confirmed"
+        }
+      ],
+      "constraints": [
+        "Один запрос, конечный кеш, пауза при ручном выборе.",
+        "Запоздалые ответы и ошибки не меняют текущий выбор."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/components/replay/useReplay.ts",
+          "symbol": "revision / AbortController / schedule",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "replay-acceptance",
+      "label": "Браузерная приёмка реплея",
+      "type": "test",
+      "path": "scripts/replay/browser-smoke.js",
+      "role": "Создаёт конечные синтетические истории и проверяет настоящий UI/API, архив и задержку выбора кадра.",
+      "entrypoints": [
+        {
+          "path": "scripts/replay/create-fixture.ts",
+          "symbol": "createFixture",
+          "status": "confirmed"
+        },
+        {
+          "path": "scripts/replay/browser-smoke.js",
+          "symbol": "Playwright CLI run-code",
+          "status": "confirmed"
+        },
+        {
+          "path": "scripts/replay/browser-performance.js",
+          "symbol": "20 uncached transitions",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/routes/ApiReplay.spec.ts",
+          "symbol": "ApiReplay",
+          "status": "confirmed"
+        },
+        {
+          "path": "tests/database/ReplayArchive.spec.ts",
+          "symbol": "ReplayArchive",
+          "status": "confirmed"
+        }
+      ],
+      "constraints": [
+        "Все БД, снимки и измерения находятся под D:/tm-db/smartbot-lab.",
+        "Генератор создаёт только новый каталог; 4 и 100 сохранений, без production-данных."
+      ],
+      "evidence": [
+        {
+          "path": "docs/game-replay.md",
+          "symbol": "104 identical frames; p95 65/132 ms",
           "status": "confirmed"
         }
       ]
@@ -1425,6 +1761,128 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "staging-release",
+      "to": "server-entry",
+      "type": "deploys",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "scripts/deploy_tm_staging.ps1",
+          "symbol": "deploy_tm_server.ps1 -Environment staging",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "staging-release",
+      "to": "external",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "scripts/capture_tm_release_state.ps1",
+          "symbol": "ssh host release snapshot",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "staging-release",
+      "to": "sentry-reporter",
+      "type": "coordinates-release",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "scripts/deploy_tm_staging.ps1",
+          "symbol": "Get-TmStagingReleaseGitSha",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/server/SentryReporter.ts",
+          "symbol": "readRuntimeReleaseGitSha",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "replay-frame",
+      "to": "game-domain",
+      "type": "uses",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/replay/ReplayFrame.ts",
+          "symbol": "Game.deserialize(viewOnly)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "replay-frame",
+      "to": "public-models",
+      "type": "uses",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/replay/ReplayFrame.ts",
+          "symbol": "Server.getSpectatorModel",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "replay-frame",
+      "to": "replay-contract",
+      "type": "uses",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/replay/ReplayFrame.ts",
+          "symbol": "ReplayFrame",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "replay-api",
+      "to": "replay-frame",
+      "type": "uses",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/routes/ApiReplay.ts",
+          "symbol": "toReplayFrame",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "replay-ui",
+      "to": "replay-playback",
+      "type": "uses",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/replay/ReplayHome.vue",
+          "symbol": "useReplay",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "replay-playback",
+      "to": "replay-api",
+      "type": "uses",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/replay/useReplay.ts",
+          "symbol": "paths.API_REPLAY",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -1553,6 +2011,16 @@
         "sentry-reporter"
       ],
       "outcome": "Локальный gameplay/HTTP path сохраняется, а в Sentry формируется один очищенный staging event; внешняя доставка gated."
+    },
+    {
+      "id": "flow-staging-release",
+      "name": "Проверенный staging release",
+      "trigger": "Оператор запускает rollout_tm_server.ps1 для clean origin/main checkout",
+      "steps": [
+        "staging-release",
+        "server-entry"
+      ],
+      "outcome": "Точный SHA развёрнут в staging и подтверждён post-snapshot; после успешного smoke тот же SHA идемпотентно зарегистрирован как Sentry release/deploy."
     }
   ],
   "unknowns": [
@@ -1576,16 +2044,74 @@
     }
   ],
   "changed_modules": [
-    "package.json",
-    "package-lock.json",
-    "src/server/routes/PlayerInput.ts",
-    "src/server/server.ts",
+    "src/common/Timer.ts",
+    "src/server/Game.ts",
+    "src/server/Player.ts",
+    "src/common/models/ReplayModel.ts",
+    "src/server/replay/ReplayFrame.ts",
+    "tests/replay/ReplayView.spec.ts",
+    "tests/replay/ReplayFrame.spec.ts",
+    "src/server/routes/ApiReplay.ts",
     "src/server/server/requestProcessor.ts",
-    "src/server/server/SentryProcessBoundary.ts",
-    "src/server/server/SentryReporter.ts",
-    "tests/routes/PlayerInput.spec.ts",
-    "tests/server/requestProcessor.spec.ts",
-    "tests/server/server/SentryProcessBoundary.spec.ts",
-    "tests/server/server/SentryReporter.spec.ts"
-  ]
+    "src/common/app/paths.ts",
+    "tests/routes/ApiReplay.spec.ts",
+    "tests/database/ReplayArchive.spec.ts",
+    "src/client/components/replay/ReplayHome.vue",
+    "src/client/components/replay/useReplay.ts",
+    "src/client/components/App.vue",
+    "src/client/components/SpectatorHome.vue",
+    "src/client/components/GameEnd.vue",
+    "src/client/components/overview/PlayersOverview.vue",
+    "src/client/components/overview/PlayerInfo.vue",
+    "tests/client/components/replay/useReplay.spec.ts",
+    "tests/client/components/replay/ReplayHome.spec.ts",
+    "tests/client/components/App.spec.ts",
+    "tests/client/components/overview/PlayersOverview.spec.ts",
+    "src/locales/ru/replay.json",
+    "tests/client/components/GameEnd.spec.ts",
+    "tests/client/components/SpectatorHome.spec.ts",
+    "scripts/replay/create-fixture.ts",
+    "scripts/replay/browser-smoke.js",
+    "scripts/replay/browser-performance.js",
+    "docs/game-replay.md",
+    "docs/game-history-archive.md",
+    "docs/sqlite-history-retention.md"
+  ],
+  "verification_scope": {
+    "paths": [
+      "src/common/Timer.ts",
+      "src/server/Game.ts",
+      "src/server/Player.ts",
+      "src/common/models/ReplayModel.ts",
+      "src/server/replay/ReplayFrame.ts",
+      "tests/replay/ReplayView.spec.ts",
+      "tests/replay/ReplayFrame.spec.ts",
+      "src/server/routes/ApiReplay.ts",
+      "src/server/server/requestProcessor.ts",
+      "src/common/app/paths.ts",
+      "tests/routes/ApiReplay.spec.ts",
+      "tests/database/ReplayArchive.spec.ts",
+      "src/client/components/replay/ReplayHome.vue",
+      "src/client/components/replay/useReplay.ts",
+      "src/client/components/App.vue",
+      "src/client/components/SpectatorHome.vue",
+      "src/client/components/GameEnd.vue",
+      "src/client/components/overview/PlayersOverview.vue",
+      "src/client/components/overview/PlayerInfo.vue",
+      "tests/client/components/replay/useReplay.spec.ts",
+      "tests/client/components/replay/ReplayHome.spec.ts",
+      "tests/client/components/App.spec.ts",
+      "tests/client/components/overview/PlayersOverview.spec.ts",
+      "src/locales/ru/replay.json",
+      "tests/client/components/GameEnd.spec.ts",
+      "tests/client/components/SpectatorHome.spec.ts",
+      "scripts/replay/create-fixture.ts",
+      "scripts/replay/browser-smoke.js",
+      "scripts/replay/browser-performance.js",
+      "docs/game-replay.md",
+      "docs/game-history-archive.md",
+      "docs/sqlite-history-retention.md"
+    ],
+    "note": "Проверены модель, API/архивная SQLite, экран, управление и воспроизводимая браузерная приёмка реплея; остальные связи карты сохранены из прежнего снимка."
+  }
 }

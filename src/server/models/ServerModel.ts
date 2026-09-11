@@ -43,6 +43,7 @@ export class Server {
       players: game.playersInGenerationOrder.map((player) => ({
         color: player.color,
         id: player.id,
+        isBotControlled: this.isBotControlled(game, player.id),
         isSurrendered: game.surrenderedPlayerIds.has(player.id),
         name: player.name,
       })),
@@ -215,6 +216,9 @@ export class Server {
     // TODO(kberg): in theory this should be in all the other toModel calls.
     const model = waitingFor.toModel(player);
     model.warning = waitingFor.warning;
+    if (waitingFor.annotation !== undefined) {
+      model.annotation = waitingFor.annotation;
+    }
     return model;
     // showReset: player.game.inputsThisRound > 0 && player.game.resettable === true && player.game.phase === Phase.ACTION,
   }
@@ -244,6 +248,7 @@ export class Server {
       id: game.phase === Phase.END ? player.id : undefined,
       influence: Turmoil.ifTurmoilElse(game, (turmoil) => turmoil.getInfluence(player), () => 0),
       isActive: player.id === game.activePlayer.id,
+      isBotControlled: this.isBotControlled(game, player.id),
       isSurrendered: game.surrenderedPlayerIds.has(player.id),
       lastCardPlayed: player.lastCardPlayed,
       megacredits: player.megaCredits,
@@ -310,6 +315,10 @@ export class Server {
     model.deltaProject = player.deltaProjectData;
 
     return model;
+  }
+
+  private static isBotControlled(game: IGame, playerId: PlayerId): boolean {
+    return game.botPlayerIds.has(playerId) || game.surrenderedPlayerIds.has(playerId);
   }
 
   private static getResourceProtections(player: IPlayer) {

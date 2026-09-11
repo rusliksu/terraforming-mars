@@ -2,8 +2,8 @@ import {shallowMount} from '@vue/test-utils';
 import {expect} from 'chai';
 import {globalConfig} from '../getLocalVue';
 import GameOverview from '@/client/components/admin/GameOverview.vue';
-import {fakeGameOptionsModel} from '../testHelpers';
-import {Phase} from '@/common/Phase';
+import {SimpleGameModel} from '@/common/models/SimpleGameModel';
+import {asComplete} from '../utils/models';
 
 describe('GameOverview', () => {
   it('mounts without errors', () => {
@@ -11,19 +11,8 @@ describe('GameOverview', () => {
       ...globalConfig,
       props: {
         status: 'loading',
-        game: {
-          activePlayer: 'black',
-          botPlayers: [],
-          gameOptions: fakeGameOptionsModel(),
-          id: 'g123456789abc',
-          lastSoloGeneration: 14,
-          phase: Phase.ACTION,
-          players: [{color: 'black', id: 'p-black-id', name: 'player-black'}],
-          spectatorId: undefined,
-          expectedPurgeTimeMs: 0,
-        },
+        game: asComplete<SimpleGameModel>({}),
         id: 'game-123',
-        serverIdOverride: '1',
       },
     });
     expect(wrapper.exists()).to.be.true;
@@ -34,17 +23,9 @@ describe('GameOverview', () => {
       ...globalConfig,
       props: {
         status: 'done',
-        game: {
-          activePlayer: 'black',
+        game: asComplete<SimpleGameModel>({
           botPlayers: ['p-black-id'],
-          gameOptions: fakeGameOptionsModel(),
-          id: 'g123456789abc',
-          lastSoloGeneration: 14,
-          phase: Phase.ACTION,
-          players: [{color: 'black', id: 'p-black-id', name: 'player-black'}],
-          spectatorId: undefined,
-          expectedPurgeTimeMs: 0,
-        },
+        }),
         id: 'g123456789abc',
         serverIdOverride: '1',
       },

@@ -4,7 +4,7 @@
       <div class="card-content-wrapper" v-i18n>
         <CardParty class="card-party--revealed" :party="revealed" />
         <CardParty class="card-party--current" :party="current" />
-        <div class="global-event-title"><span class="global-event-name">{{globalEventName}}</span></div>
+        <div ref="title" class="global-event-title">{{globalEventName}}</div>
         <div class="card-content global-event-card-content">
           <CardRenderData v-if="renderData !== undefined" :renderData="renderData" />
           <CardDescription :item='description' />
@@ -27,14 +27,12 @@ import CardDescription from '@/client/components/card/CardDescription.vue';
 import {GlobalEventName} from '@/common/turmoil/globalEvents/GlobalEventName';
 import {ICardRenderRoot} from '@/common/cards/render/Types';
 import {PartyName} from '@/common/turmoil/PartyName';
+import {fitTextWhenReady} from '@/client/utils/textFit';
 
 export type RenderType = 'coming' | 'current' | 'distant' | 'prior';
 
-type DataModel = {
-  renderData: ICardRenderRoot;
-  description: string;
-  revealed: PartyName;
-  current: PartyName;
+type Refs = {
+  title: HTMLElement | undefined;
 };
 
 export default defineComponent({
@@ -43,6 +41,17 @@ export default defineComponent({
     CardRenderData,
     CardParty,
     CardDescription,
+  },
+  mounted() {
+    this.fitTitle();
+  },
+  watch: {
+    // Turmoil.vue renders each distant/coming/current slot without a :key, so as the game
+    // proceeds the same component instance receives the next event of that slot. The card
+    // content below is derived from the prop, so only the fitted title has to follow it.
+    globalEventName() {
+      this.fitTitle();
+    },
   },
   props: {
     globalEventName: {
@@ -58,26 +67,42 @@ export default defineComponent({
       default: false,
     },
   },
-  data(): DataModel {
-    const globalEvent: IClientGlobalEvent | undefined = getGlobalEvent(this.globalEventName);
-    if (globalEvent === undefined) {
-      throw new Error(`Can't find card ${this.globalEventName}`);
-    }
-
-    return {
-      renderData: globalEvent.renderData,
-      revealed: globalEvent.revealedDelegate,
-      current: globalEvent.currentDelegate,
-      description: globalEvent.description,
-    };
+  methods: {
+    fitTitle(): void {
+      fitTextWhenReady(this.typedRefs.title, 'global-event-title');
+    },
   },
   computed: {
+    // Never snapshot the manifest entry: the same instance renders a new global event
+    // every generation, and a copied value would keep the previous card's body.
+    globalEvent(): IClientGlobalEvent {
+      const globalEvent: IClientGlobalEvent | undefined = getGlobalEvent(this.globalEventName);
+      if (globalEvent === undefined) {
+        throw new Error(`Can't find card ${this.globalEventName}`);
+      }
+      return globalEvent;
+    },
+    renderData(): ICardRenderRoot {
+      return this.globalEvent.renderData;
+    },
+    revealed(): PartyName {
+      return this.globalEvent.revealedDelegate;
+    },
+    current(): PartyName {
+      return this.globalEvent.currentDelegate;
+    },
+    description(): string {
+      return this.globalEvent.description;
+    },
     klass(): string {
       const common = 'global-event global-event--' + this.type;
       if (this.showDistance) {
         return common + ' global-event--show-distance';
       }
       return common;
+    },
+    typedRefs(): Refs {
+      return this.$refs as unknown as Refs;
     },
   },
 });

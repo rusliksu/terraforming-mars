@@ -541,6 +541,56 @@ describe('Game', () => {
     ]);
   });
 
+  it('finishes after the last active surrender and preserves raw scores', async () => {
+    const alice = TestPlayer.BLUE.newPlayer({name: 'Alice'});
+    const bob = TestPlayer.RED.newPlayer({name: 'Bob'});
+    const carol = TestPlayer.YELLOW.newPlayer({name: 'Carol'});
+    const game = Game.newInstance('g-last-active-surrender', [alice, bob, carol], alice, 'spectatorid');
+    game.phase = Phase.ACTION;
+    alice.setTerraformRating(40);
+    bob.setTerraformRating(80);
+    carol.setTerraformRating(70);
+    game.surrenderedPlayerIds.add(bob.id);
+    game.surrenderedPlayerIds.add(carol.id);
+    const rawScores = new Map(game.players.map((player) => [player.id, player.getVictoryPoints().total]));
+
+    let savedScores: Array<Score> = [];
+    let completedGames = 0;
+    const database = new InMemoryDatabase();
+    database.saveGameResults = (_gameId, _players, _generations, _gameOptions, scores) => {
+      savedScores = scores;
+    };
+    const gameLoader = noopGameLoader();
+    gameLoader.completeGame = () => {
+      completedGames++;
+      return Promise.resolve();
+    };
+    setTestDatabase(database);
+    setTestGameLoader(gameLoader);
+
+    try {
+      expect(await game.finishAfterSurrender()).is.true;
+      expect(await game.finishAfterSurrender()).is.false;
+    } finally {
+      restoreTestGameLoader();
+      restoreTestDatabase();
+    }
+
+    expect(game.phase).eq(Phase.END);
+    expect(completedGames).eq(1);
+    expect(savedScores.map((score) => ({
+      playerName: score.playerName,
+      place: score.place,
+      placeFrom: score.placeFrom,
+      placeTo: score.placeTo,
+      playerScore: score.playerScore,
+    }))).deep.eq([
+      {playerName: 'Alice', place: 1, placeFrom: undefined, placeTo: undefined, playerScore: rawScores.get(alice.id)},
+      {playerName: 'Bob', place: 2.5, placeFrom: 2, placeTo: 3, playerScore: rawScores.get(bob.id)},
+      {playerName: 'Carol', place: 2.5, placeFrom: 2, placeTo: 3, playerScore: rawScores.get(carol.id)},
+    ]);
+  });
+
   it('captures generation 1 and 2 cards, colonies, and production in the final score', async () => {
     const player = TestPlayer.BLUE.newPlayer({name: 'Alice'});
     const otherPlayer = TestPlayer.RED.newPlayer({name: 'Bob'});

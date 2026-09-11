@@ -115,6 +115,68 @@ describe('EloSyncService', () => {
     ]);
   });
 
+  it('ranks all surrendered players at the shared remaining-place midpoint after the last active finish', () => {
+    const game = buildEloGameFromSummary({
+      key: 'g-last-active-outcome-order',
+      completedTime: 1,
+      server: 'test',
+      map: 'THARSIS',
+      generation: 10,
+      completionOutcomeKnown: true,
+      surrenderedPlayerIds: ['p-bob', 'p-carol', 'p-dan'],
+      players: [
+        {id: 'p-alice', name: 'Alice', vp: 50, megacredits: 0, corp: 'CrediCor'},
+        {id: 'p-bob', name: 'Bob', vp: 200, megacredits: 0, corp: 'Helion'},
+        {id: 'p-carol', name: 'Carol', vp: 300, megacredits: 99, corp: 'Inventrix'},
+        {id: 'p-dan', name: 'Dan', vp: 1, megacredits: 1, corp: 'Ecoline'},
+      ],
+    });
+
+    expect(game.results.map((result) => ({
+      name: result.displayName,
+      place: result.place,
+      placeFrom: result.placeFrom,
+      placeTo: result.placeTo,
+      vp: result.vp,
+      outcome: result.completionOutcome,
+    }))).deep.eq([
+      {name: 'Alice', place: 1, placeFrom: undefined, placeTo: undefined, vp: 50, outcome: 'completed'},
+      {name: 'Bob', place: 3, placeFrom: 2, placeTo: 4, vp: 200, outcome: 'surrendered'},
+      {name: 'Carol', place: 3, placeFrom: 2, placeTo: 4, vp: 300, outcome: 'surrendered'},
+      {name: 'Dan', place: 3, placeFrom: 2, placeTo: 4, vp: 1, outcome: 'surrendered'},
+    ]);
+  });
+
+  it('penalizes surrendered players in place Elo without awarding wins, top3, or leave strikes', () => {
+    const game = buildEloGameFromSummary({
+      key: 'g-last-active-sanction',
+      completedTime: 1,
+      server: 'test',
+      map: 'THARSIS',
+      generation: 10,
+      completionOutcomeKnown: true,
+      surrenderedPlayerIds: ['p-bob', 'p-carol', 'p-dan'],
+      players: [
+        {id: 'p-alice', name: 'Alice', vp: 100, corp: 'CrediCor'},
+        {id: 'p-bob', name: 'Bob', vp: 100, corp: 'Helion'},
+        {id: 'p-carol', name: 'Carol', vp: 100, corp: 'Inventrix'},
+        {id: 'p-dan', name: 'Dan', vp: 100, corp: 'Ecoline'},
+      ],
+    });
+
+    const rebuilt = rebuildEloData([game]);
+
+    expect(rebuilt.players.alice.elo).greaterThan(1500);
+    for (const name of ['bob', 'carol', 'dan']) {
+      expect(rebuilt.players[name].elo).lessThan(1500);
+      expect(rebuilt.players[name].elo_vp).eq(1500);
+      expect(rebuilt.players[name].wins).eq(0);
+      expect(rebuilt.players[name].top3).eq(0);
+      expect(rebuilt.players[name].avgPlaceScore).eq(0.333);
+      expect(rebuilt.players[name].completionReliability).deep.eq({games: 1, leaves: 0, rate: 0, eligible: false});
+    }
+  });
+
   it('uses outcome places for place Elo without changing VP Elo', () => {
     const outcomeGame = buildEloGameFromSummary({
       key: 'g-outcome-elo',
@@ -185,10 +247,11 @@ describe('EloSyncService', () => {
         {id: 'p-alice', name: 'Alice', vp: 50, megacredits: 0, corp: 'CrediCor'},
         {id: 'p-bob', name: 'Bob', vp: 90, megacredits: 10, corp: 'Helion'},
         {id: 'p-carol', name: 'Carol', vp: 90, megacredits: 10, corp: 'Inventrix'},
+        {id: 'p-dan', name: 'Dan', vp: 40, megacredits: 0, corp: 'Ecoline'},
       ],
     });
 
-    expect(game.results.map((result) => result.place)).deep.eq([1, 2, 2]);
+    expect(game.results.map((result) => result.place)).deep.eq([1, 2, 3, 3]);
   });
 
   it('counts surrendered as known without counting a leave', () => {
@@ -254,6 +317,41 @@ describe('EloSyncService', () => {
 
     const afterAutomated = JSON.parse(await fs.readFile(primaryPath, 'utf8'));
     expect(afterAutomated.games.map((entry: {_key: string}) => entry._key)).deep.eq(['g-surrendered-player']);
+  });
+
+  it('persists a shared final place for all surrendered players', async () => {
+    const alice = TestPlayer.BLUE.newPlayer({name: 'Alice'});
+    const bob = TestPlayer.RED.newPlayer({name: 'Bob'});
+    const carol = TestPlayer.YELLOW.newPlayer({name: 'Carol'});
+    const game = Game.newInstance('g-last-active-summary', [alice, bob, carol], alice, 'spectatorid');
+    game.surrenderedPlayerIds.add(bob.id);
+    game.surrenderedPlayerIds.add(carol.id);
+    bob.setTerraformRating(80);
+    carol.setTerraformRating(70);
+    const rawScores = new Map(game.players.map((player) => [player.name, player.getVictoryPoints().total]));
+
+    await service.recordCompletedGame(game);
+
+    const primary = JSON.parse(await fs.readFile(primaryPath, 'utf8'));
+    expect(primary.games[0].results.map((result: {
+      displayName: string;
+      place: number;
+      placeFrom?: number;
+      placeTo?: number;
+      vp: number;
+      completionOutcome: string;
+    }) => ({
+      name: result.displayName,
+      place: result.place,
+      placeFrom: result.placeFrom,
+      placeTo: result.placeTo,
+      vp: result.vp,
+      outcome: result.completionOutcome,
+    }))).deep.eq([
+      {name: 'Alice', place: 1, placeFrom: undefined, placeTo: undefined, vp: rawScores.get('Alice'), outcome: 'completed'},
+      {name: 'Bob', place: 2.5, placeFrom: 2, placeTo: 3, vp: rawScores.get('Bob'), outcome: 'surrendered'},
+      {name: 'Carol', place: 2.5, placeFrom: 2, placeTo: 3, vp: rawScores.get('Carol'), outcome: 'surrendered'},
+    ]);
   });
 
   it('treats an overlapping surrendered and left ID as left and reports the invariant', () => {

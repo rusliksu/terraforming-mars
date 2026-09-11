@@ -3,6 +3,9 @@ param(
     [string]$ExpectedGitSha,
     [string]$SnapshotRoot,
     [string[]]$IgnoredRealtimeGameId,
+    [string]$IgnoredRealtimeGameIdFile,
+    [ValidateRange(1, 365)]
+    [int]$RealtimeGameStaleDays = 10,
     [switch]$SkipStagingVerify,
     [switch]$SkipProdVerify,
     [switch]$DryRun
@@ -12,7 +15,18 @@ $ErrorActionPreference = "Stop"
 
 . (Join-Path $PSScriptRoot "lib\TmReleaseGuards.ps1")
 
-$ignoredRealtimeGameIds = @(Assert-TmIgnoredRealtimeGameIds -GameIds $IgnoredRealtimeGameId)
+$cliIgnoredRealtimeGameIds = @(Assert-TmIgnoredRealtimeGameIds -GameIds $IgnoredRealtimeGameId)
+$ignoredRealtimeGameIdLedgerPath = Get-TmIgnoredRealtimeGameIdLedgerPath -Path $IgnoredRealtimeGameIdFile
+$ledgerIgnoredRealtimeGameIds = @(Read-TmIgnoredRealtimeGameIdLedger -Path $ignoredRealtimeGameIdLedgerPath)
+$ignoredRealtimeGameIds = @(Merge-TmIgnoredRealtimeGameIds -Primary $ledgerIgnoredRealtimeGameIds -Additional $cliIgnoredRealtimeGameIds)
+
+# Every ignored game is echoed before the locked remote gate runs, so the exception
+# stays auditable even when the ids come from the operator ledger.
+Write-Host ("Ignored realtime games: ledger={0} cli={1} total={2}" -f $ledgerIgnoredRealtimeGameIds.Count, $cliIgnoredRealtimeGameIds.Count, $ignoredRealtimeGameIds.Count)
+Write-Host ("Ignored realtime ledger: {0}" -f $ignoredRealtimeGameIdLedgerPath)
+if ($ignoredRealtimeGameIds.Count -gt 0) {
+    Write-Host ("Ignored realtime ids   : {0}" -f ($ignoredRealtimeGameIds -join ","))
+}
 
 $verifyScript = Join-Path $PSScriptRoot "verify_tm_server.ps1"
 $promoteScript = Join-Path $PSScriptRoot "promote_tm_staging_to_prod.ps1"
@@ -75,6 +89,7 @@ if ($DryRun) {
     if ($ignoredRealtimeGameIds.Count -gt 0) {
         $promoteDryRunArgs += @("-IgnoredRealtimeGameId", ($ignoredRealtimeGameIds -join ","))
     }
+    $promoteDryRunArgs += @("-RealtimeGameStaleDays", $RealtimeGameStaleDays)
     & pwsh @promoteDryRunArgs
     if ($LASTEXITCODE -ne 0) {
         throw "Promote dry run failed."
@@ -141,6 +156,7 @@ $promoteArgs += @("-ExpectedReleaseBaselineBase64", $releaseBaselineBase64)
 if ($ignoredRealtimeGameIds.Count -gt 0) {
     $promoteArgs += @("-IgnoredRealtimeGameId", ($ignoredRealtimeGameIds -join ","))
 }
+$promoteArgs += @("-RealtimeGameStaleDays", $RealtimeGameStaleDays)
 
 try {
     & pwsh @promoteArgs

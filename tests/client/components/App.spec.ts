@@ -35,13 +35,12 @@ describe('App', () => {
       components: {PlayerTimer},
       props: {
         playerView: {type: Object, required: true},
-        viewRevision: {type: Number, default: 0},
       },
       setup() {
         onMounted(() => mounts++);
         onUnmounted(() => unmounts++);
       },
-      template: '<div data-test="player-home-stub">{{playerView.runId}}:{{viewRevision}}<PlayerTimer :timer="playerView.thisPlayer.timer" :live="true" /></div>',
+      template: '<div data-test="player-home-stub">{{playerView.runId}}<PlayerTimer :timer="playerView.thisPlayer.timer" :live="true" /></div>',
     });
     const wrapper = shallowMount(App, {
       global: {

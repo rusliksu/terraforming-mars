@@ -12,7 +12,6 @@ describe('PlayerSetupView', () => {
       props: {
         playerView: fakePlayerViewModel(),
         tileView: 'show',
-        viewRevision: 0,
       },
     });
     expect(wrapper.exists()).to.be.true;
@@ -41,7 +40,6 @@ describe('PlayerSetupView', () => {
           }),
         }),
         tileView: 'show',
-        viewRevision: 0,
       },
     });
 

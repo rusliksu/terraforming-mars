@@ -49,7 +49,7 @@
       <div class="player_home_block player_home_block--actions nofloat">
         <a name="actions" class="player_home_anchor"></a>
         <DynamicTitle title="Actions" :color="thisPlayer.color"/>
-        <WaitingFor v-if="game.phase !== 'end'" :playerView="playerView" :waitingfor="playerView.waitingFor" :key="'waiting-' + viewRevision"/>
+        <WaitingFor v-if="game.phase !== 'end'" :playerView="playerView" :waitingfor="playerView.waitingFor"/>
       </div>
 
       <div class="player_home_block player_home_block--hand" v-if="playerView.draftedCards.length > 0">
@@ -126,7 +126,7 @@
     </div>
 
     <template v-if="thisPlayer.tableau.length === 0">
-      <PlayerSetupView :playerView="playerView" :tileView="tileView" :viewRevision="viewRevision" @toggleTileView="cycleTileView()"/>
+      <PlayerSetupView :playerView="playerView" :tileView="tileView" @toggleTileView="cycleTileView()"/>
     </template>
 
     <div v-if="game.colonies.length > 0" class="player_home_block" ref="colonies" id="shortkey-colonies">
@@ -226,10 +226,6 @@ export default defineComponent({
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
-      required: true,
-    },
-    viewRevision: {
-      type: Number,
       required: true,
     },
   },

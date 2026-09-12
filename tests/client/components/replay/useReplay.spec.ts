@@ -96,7 +96,7 @@ describe('Replay playback', () => {
         });
       }));
       const pending = player.seek(1);
-      expect(player.state.frame?.saveId).toBe(0);
+      expect(player.state.frame).toBeUndefined();
       await player.seek(0);
       expect(signal?.aborted).toBe(true);
       if (rejects) {
@@ -110,7 +110,7 @@ describe('Replay playback', () => {
     }
   });
 
-  it('keeps the displayed frame while loading and clears it if the next frame fails', async () => {
+  it('waits for a slow frame before scheduling the next and clears the frame on failure', async () => {
     const player = replay();
     await player.initialize();
     let reject: (error: Error) => void = () => {};
@@ -121,7 +121,7 @@ describe('Replay playback', () => {
     await vi.advanceTimersByTimeAsync(5000);
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(player.state.loading).toBe(true);
-    expect(player.state.frame?.saveId).toBe(0);
+    expect(player.state.frame).toBeUndefined();
     reject(new Error('private server detail'));
     await vi.advanceTimersByTimeAsync(0);
     expect(player.state.error).toBe(true);

@@ -243,11 +243,14 @@ export default defineComponent({
         };
       }
     },
-    updatePlayerView(playerView: PlayerViewModel) {
+    updatePlayerView(playerView: PlayerViewModel | undefined) {
       if (this.suspend === false) {
         const root = vueRoot(this);
-        root.applyPlayerView(playerView);
-        if (playerView.game.phase === 'end' && window.location.pathname !== paths.THE_END) {
+        root.screen = 'empty';
+        root.playerView = playerView;
+        root.playerkey++;
+        root.screen = 'player-home';
+        if (this.playerView.game.phase === 'end' && window.location.pathname !== paths.THE_END) {
           window.location = window.location as any as (string & Location);
         }
         this.savedPlayerView = undefined;

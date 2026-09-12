@@ -45,7 +45,7 @@
             <span class="tag-count-display">{{ availableBlueActionCount() }}</span>
           </div>
         </div>
-        <PlayerTags :player="player" :playerView="playerView" :hideZeroTags="hideZeroTags" :isTopBar="isTopBar" :key="playerView.game.gameAge + '-' + playerView.game.undoCount" />
+        <PlayerTags :player="player" :playerView="playerView" :hideZeroTags="hideZeroTags" :isTopBar="isTopBar" />
         <PlayerAlliedParty :player="player"/>
       </div>
 </template>

@@ -25,6 +25,7 @@
         v-else-if="screen === 'player-home' && playerView !== undefined"
         :player-view="playerView"
         :view-revision="viewRevision"
+        :key="viewRevision"
       />
       <SpectatorHome
         v-else-if="screen === 'spectator-home' && spectator !== undefined"
@@ -104,9 +105,7 @@ export type MainAppData = {
      */
     spectator?: SpectatorModel;
     playerView?: PlayerViewModel;
-    // Increments for each accepted view model. PlayerHome stays mounted and uses
-    // this revision to reset only its action-input boundary. SpectatorHome keeps
-    // its existing full-remount behavior.
+    // Revision of the accepted view model, resetting view-local state and timers.
     viewRevision: number;
     isServerSideRequestInProgress: boolean;
     componentsVisibility: {[x: string]: boolean};

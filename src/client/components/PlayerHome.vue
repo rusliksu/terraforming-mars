@@ -80,11 +80,11 @@
           <DynamicTitle title="Played Cards" :color="thisPlayer.color" />
           <div class="played-cards-filters">
             <div :class="getHideButtonClass('ACTIVE')" @click.prevent="toggle('ACTIVE')">
-              <div class="played-cards-count">{{getCardsByType(thisPlayer.tableau, [CardType.ACTIVE]).length.toString()}}</div>
+              <div class="played-cards-count">{{getCardsByType(thisPlayer.tableau, [CardType.ACTIVE, CardType.PRELUDE]).filter(isActive).length.toString()}}</div>
               <div class="played-cards-selection" v-i18n>{{ getToggleLabel('ACTIVE')}}</div>
             </div>
             <div :class="getHideButtonClass('AUTOMATED')" @click.prevent="toggle('AUTOMATED')">
-              <div class="played-cards-count">{{getCardsByType(thisPlayer.tableau, [CardType.AUTOMATED, CardType.PRELUDE]).length.toString()}}</div>
+              <div class="played-cards-count">{{getCardsByType(thisPlayer.tableau, [CardType.AUTOMATED, CardType.PRELUDE]).filter(isNotActive).length.toString()}}</div>
               <div class="played-cards-selection" v-i18n>{{ getToggleLabel('AUTOMATED')}}</div>
             </div>
             <div :class="getHideButtonClass('EVENT')" @click.prevent="toggle('EVENT')">
@@ -196,6 +196,16 @@ const typeToDataModel: Record<ToggleableCardType, {key: keyof PlayerHomeModel, p
   AUTOMATED: {key: 'showAutomatedCards', preference: 'hide_automated_cards'},
   EVENT: {key: 'showEventCards', preference: 'hide_event_cards'},
 } as const;
+
+/**
+ * A tableau card counts as active when it keeps doing something: it is a blue card, it has an
+ * action, or it has an ongoing effect (a trigger). Effect-only cards used to fall through to the
+ * automated stack, which is why e.g. Albedo Plants was missing from the active filter.
+ */
+function isActiveCard(cardModel: CardModel): boolean {
+  const card = getCardOrThrow(cardModel.name);
+  return card.type === CardType.ACTIVE || card.hasAction || card.hasEffect;
+}
 
 export default defineComponent({
   name: 'PlayerHome',
@@ -309,11 +319,10 @@ export default defineComponent({
       }
     },
     isActive(cardModel: CardModel): boolean {
-      const card = getCardOrThrow(cardModel.name);
-      return card.type === CardType.ACTIVE || card.hasAction;
+      return isActiveCard(cardModel);
     },
     isNotActive(cardModel: CardModel): boolean {
-      return !getCardOrThrow(cardModel.name).hasAction;
+      return !isActiveCard(cardModel);
     },
   },
 });

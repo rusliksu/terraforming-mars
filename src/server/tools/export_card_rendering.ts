@@ -3,7 +3,7 @@ import fs from 'fs';
 
 import {ALL_MODULE_MANIFESTS} from '../cards/AllManifests';
 import {CardManifest, GlobalEventManifest, ModuleManifest} from '../cards/ModuleManifest';
-import {ICard, isIActionCard} from '../cards/ICard';
+import {ICard, isIActionCard, isICardWithEffect} from '../cards/ICard';
 import {Expansion, GameModule} from '../../common/cards/GameModule';
 import {IGlobalEvent} from '../turmoil/globalEvents/IGlobalEvent';
 import {IClientGlobalEvent} from '../../common/turmoil/IClientGlobalEvent';
@@ -100,6 +100,7 @@ class CardProcessor {
       cardCost: cardCost,
       compatibility: [],
       hasAction: isIActionCard(card),
+      hasEffect: isICardWithEffect(card),
     };
 
     if (card.requirements) {

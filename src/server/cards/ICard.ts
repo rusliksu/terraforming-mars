@@ -231,3 +231,32 @@ export interface IActionCard {
 export function isIActionCard(object: any): object is IActionCard {
   return object !== undefined && object.canAct !== undefined && object.action !== undefined;
 }
+
+const EFFECT_HOOKS: ReadonlyArray<keyof ICard> = [
+  'onCardPlayed',
+  'onCardPlayedByAnyPlayer',
+  'onNonCardTagAdded',
+  'onNonCardTagAddedByAnyPlayer',
+  'onTilePlaced',
+  'onGlobalParameterIncrease',
+  'onIncreaseTerraformRatingByAnyPlayer',
+  'onResourceAdded',
+  'onProductionGain',
+  'onProductionPhase',
+  'onColonyAddedByAnyPlayer',
+  'onIdentificationByAnyPlayer',
+  'onClaim',
+];
+
+/**
+ * Describes cards with an ongoing effect: they react to tags, tiles, global parameters, resources
+ * or the production phase long after they were played. `Card` declares only `onDiscard` and
+ * `StandardProjectCard` only `onStandardProject`, so every hook below is implemented by concrete
+ * cards. Actions are described by `isIActionCard` instead.
+ */
+export function isICardWithEffect(object: any): object is ICard {
+  if (object === undefined || object === null) {
+    return false;
+  }
+  return EFFECT_HOOKS.some((hook) => object[hook] !== undefined);
+}

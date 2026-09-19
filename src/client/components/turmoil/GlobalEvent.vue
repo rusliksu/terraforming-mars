@@ -21,7 +21,7 @@
 import {defineComponent} from 'vue';
 import CardRenderData from '@/client/components/card/CardRenderData.vue';
 import CardParty from '@/client/components/card/CardParty.vue';
-import {IClientGlobalEvent} from '@/common/turmoil/IClientGlobalEvent';
+import {ClientGlobalEvent} from '@/common/turmoil/ClientGlobalEvent';
 import {getGlobalEvent} from '@/client/turmoil/ClientGlobalEventManifest';
 import CardDescription from '@/client/components/card/CardDescription.vue';
 import {GlobalEventName} from '@/common/turmoil/globalEvents/GlobalEventName';
@@ -75,8 +75,8 @@ export default defineComponent({
   computed: {
     // Never snapshot the manifest entry: the same instance renders a new global event
     // every generation, and a copied value would keep the previous card's body.
-    globalEvent(): IClientGlobalEvent {
-      const globalEvent: IClientGlobalEvent | undefined = getGlobalEvent(this.globalEventName);
+    globalEvent(): ClientGlobalEvent {
+      const globalEvent: ClientGlobalEvent | undefined = getGlobalEvent(this.globalEventName);
       if (globalEvent === undefined) {
         throw new Error(`Can't find card ${this.globalEventName}`);
       }

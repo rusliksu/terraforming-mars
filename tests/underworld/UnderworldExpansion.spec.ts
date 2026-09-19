@@ -10,6 +10,7 @@ import {Units} from '../../src/common/Units';
 import {Cryptocurrency} from '../../src/server/cards/pathfinders/Cryptocurrency';
 import {MartianCulture} from '../../src/server/cards/pathfinders/MartianCulture';
 import {GHGProducingBacteria} from '../../src/server/cards/base/GHGProducingBacteria';
+import {Asteroid} from '../../src/server/cards/base/Asteroid';
 import {RegolithEaters} from '../../src/server/cards/base/RegolithEaters';
 import {SelectCard} from '../../src/server/inputs/SelectCard';
 import {TileType} from '../../src/common/TileType';
@@ -18,6 +19,9 @@ import {Phase} from '../../src/common/Phase';
 import {LawSuit} from '../../src/server/cards/promo/LawSuit';
 import {PlayerInput} from '../../src/server/PlayerInput';
 import {OrOptions} from '../../src/server/inputs/OrOptions';
+import {SelectOption} from '../../src/server/inputs/SelectOption';
+import {Priority} from '../../src/server/deferredActions/Priority';
+import {Resource} from '../../src/common/Resource';
 import {PrivateMilitaryContractor} from '../../src/server/cards/underworld/PrivateMilitaryContractor';
 import {Tag} from '../../src/common/cards/Tag';
 import {BoardName} from '../../src/common/boards/BoardName';
@@ -346,7 +350,7 @@ describe('UnderworldExpansion', () => {
 
   it('Rey Skywalker space is not identifiable or excavatable', () => {
     const space = UnderworldExpansion.identifiableSpaces(player1)[0];
-    game.simpleAddTile(player1, space, {tileType: TileType.REY_SKYWALKER});
+    space.cube = 'rey-skywalker';
 
     expect(UnderworldExpansion.identifiableSpaces(player1)).not.contains(space);
     expect(UnderworldExpansion.excavatableSpaces(player1)).not.contains(space);
@@ -356,7 +360,7 @@ describe('UnderworldExpansion', () => {
 
   it('Martian Nature Wonders space is identifiable and excavatable', () => {
     const space = UnderworldExpansion.identifiableSpaces(player1)[0];
-    game.simpleAddTile(player1, space, {tileType: TileType.MARTIAN_NATURE_WONDERS});
+    space.cube = 'martian-nature-wonders';
 
     expect(UnderworldExpansion.identifiableSpaces(player1)).contains(space);
     expect(UnderworldExpansion.excavatableSpaces(player1)).contains(space);
@@ -475,6 +479,7 @@ describe('UnderworldExpansion', () => {
     game.increaseTemperature(player2, 2);
     runAllActions(game);
     const selectCard1 = cast(player1.popWaitingFor(), SelectCard);
+    expect(selectCard1.cards).deep.eq([microbeCard1, microbeCard2]);
     selectCard1.cb([microbeCard1]);
 
     expect(player1.getCardsWithResources()).deep.eq([microbeCard1]);
@@ -483,6 +488,7 @@ describe('UnderworldExpansion', () => {
     runAllActions(game);
 
     const selectCard2 = cast(player1.popWaitingFor(), SelectCard);
+    expect(selectCard2.cards).deep.eq([microbeCard1, microbeCard2]);
     selectCard2.cb([microbeCard2]);
     expect(player1.getCardsWithResources()).deep.eq([microbeCard1, microbeCard2]);
     expect(microbeCard2.resourceCount).eq(1);
@@ -510,6 +516,20 @@ describe('UnderworldExpansion', () => {
     game.increaseTemperature(player2, 2);
     runAllActions(game);
     expect(player1.stock.titanium).eq(2);
+  });
+
+  it('temperature bonus resolves before the temperature-raising card removes plants', () => {
+    player1.underworldData.activeBonus = 'plant2pertemp';
+    expect(player1.stock.plants).eq(0);
+
+    // Asteroid raises the temperature 1 step and then removes up to 3 plants.
+    player2.playCard(new Asteroid());
+    runAllActions(game);
+
+    expect(player1.stock.plants).eq(2);
+
+    const orOptions = cast(player2.popWaitingFor(), OrOptions);
+    expect(orOptions.options.map((option) => formatMessage(option.title))).includes(`Remove 2 plants from ${player1.color}`);
   });
 
   it('temperature bonus applies to Solar Phase', () => {
@@ -625,6 +645,26 @@ describe('UnderworldExpansion', () => {
     expect(tester.called).is.true;
     expect(tester.proceed).is.false;
     expect(player1.underworldData.corruption).eq(0);
+  });
+
+  it('maybeBlockAttack - resolves before opponent triggers', () => {
+    player1.underworldData.corruption = 1;
+    player1.megaCredits = 10;
+    // Stands in for one of player1's cards that triggers during player2's turn.
+    player1.defer(new SelectOption('opponent trigger'), Priority.OPPONENT_TRIGGER);
+
+    player1.attack(player2, Resource.MEGACREDITS, 4);
+    runAllActions(game);
+
+    // Even though it was deferred second, blocking is resolved first.
+    const orOptions = cast(player1.popWaitingFor(), OrOptions);
+    expect(orOptions.options.map((option) => option.title)).deep.eq(['Block with corruption', 'Do not block']);
+
+    orOptions.options[1].cb();
+    expect(player1.megaCredits).eq(6);
+
+    runAllActions(game);
+    expect(cast(player1.popWaitingFor(), SelectOption).title).eq('opponent trigger');
   });
 
   it('maybeBlockAttack - block self', () => {

@@ -23,9 +23,9 @@ import {GlobalParameter} from '../../common/GlobalParameter';
 import {Tag} from '../../common/cards/Tag';
 import {UnderworldPlayerData} from '../../common/underworld/UnderworldPlayerData';
 import {GainAnyResourceButScienceDeferred} from '../deferredActions/GainAnyResourceButScienceDeferred';
-import {TileType} from '../../common/TileType';
 import {GainResourcesDeferred} from '../deferredActions/GainResourcesDeferred';
 import {GainProduction} from '../deferredActions/GainProduction';
+import {Priority} from '../deferredActions/Priority';
 
 export class UnderworldExpansion {
   private constructor() {}
@@ -114,10 +114,11 @@ export class UnderworldExpansion {
       return false;
     }
     if (space.tile !== undefined) {
-      // Players may still identify on Martian Nature Wonders (but not Rey Skywalker, which blocks tokens)
-      if (space.tile.tileType !== TileType.MARTIAN_NATURE_WONDERS) {
-        return false;
-      }
+      return false;
+    }
+    // Players may still identify on Martian Nature Wonders, but Rey Skywalker blocks tokens.
+    if (space.cube === 'rey-skywalker') {
+      return false;
     }
 
     if (space.spaceType === SpaceType.COLONY || space.spaceType === SpaceType.RESTRICTED) {
@@ -203,10 +204,11 @@ export class UnderworldExpansion {
       }
 
       if (space.tile !== undefined) {
-        // Players may still excavate from Martian Nature Wonders (but not Rey Skywalker, which blocks tokens)
-        if (space.tile.tileType !== TileType.MARTIAN_NATURE_WONDERS) {
-          return false;
-        }
+        return false;
+      }
+      // Players may still excavate from Martian Nature Wonders, but Rey Skywalker blocks tokens.
+      if (space.cube === 'rey-skywalker') {
+        return false;
       }
 
       if (space.undergroundResources === 'ocean' && !player.canAfford({cost: 4, tr: {oceans: 1}})) {
@@ -256,10 +258,11 @@ export class UnderworldExpansion {
     const game = player.game;
     validateUnderworldExpansion(game);
     if (space.tile !== undefined) {
-      // Players may still excavate from Martian Nature Wonders (but not Rey Skywalker, which blocks tokens)
-      if (space.tile.tileType !== TileType.MARTIAN_NATURE_WONDERS) {
-        throw new Error(`cannot excavate space ${space.id} which has a tile.`);
-      }
+      throw new Error(`cannot excavate space ${space.id} which has a tile.`);
+    }
+    // Players may still excavate from Martian Nature Wonders, but Rey Skywalker blocks tokens.
+    if (space.cube === 'rey-skywalker') {
+      throw new Error(`cannot excavate space ${space.id} which has a cube.`);
     }
 
     if (space.undergroundResources === undefined) {
@@ -280,9 +283,7 @@ export class UnderworldExpansion {
     this.claimToken(player, undergroundResource, /* isExcavate= */ true, space);
 
     for (const adjacentSpace of game.board.getAdjacentSpaces(space)) {
-      if (adjacentSpace.tile === undefined) {
-        UnderworldExpansion.identify(game, adjacentSpace, player);
-      }
+      UnderworldExpansion.identify(game, adjacentSpace, player);
     }
 
     const leaser = game.getCardPlayerOrUndefined(CardName.EXCAVATOR_LEASING);
@@ -555,34 +556,45 @@ export class UnderworldExpansion {
     }
   }
 
+  static gainCardResource(player: IPlayer, resource: CardResource, steps: number, count: number) {
+    for (let i = 0; i < steps; i++) {
+      player.game.defer(new AddResourcesToCard(player, resource, {count}));
+    }
+  }
+
+  static gainStandardResource(player: IPlayer, resource: Resource, steps: number, count: number) {
+    // The default priority runs before ATTACK_OPPONENT, so in this case an opponent (here, known as `player`
+    // gains their plants from your asteroid-type card before you remove them afterwards from the same card.
+    player.game.defer(
+      new GainResourcesDeferred(player, resource, {count: count * steps, log: true}),
+      Priority.DEFAULT);
+  }
+
   // TODO(kberg): add viz for temperature bonus.
   static onTemperatureChange(game: IGame, steps: number) {
     game.playersInGenerationOrder.forEach((player) => {
       switch (player.underworldData.activeBonus) {
       case 'data1pertemp':
+        this.gainCardResource(player, CardResource.DATA, steps, 1);
+        break;
       case 'microbe1pertemp':
-        const resource = player.underworldData.activeBonus === 'data1pertemp' ? CardResource.DATA : CardResource.MICROBE;
-        for (let i = 0; i < steps; i++) {
-          player.game.defer(new AddResourcesToCard(player, resource));
-        }
+        this.gainCardResource(player, CardResource.MICROBE, steps, 1);
         break;
       case 'microbe2pertemp':
-        for (let i = 0; i < steps; i++) {
-          player.game.defer(new AddResourcesToCard(player, CardResource.MICROBE, {count: 2}));
-        }
+        this.gainCardResource(player, CardResource.MICROBE, steps, 2);
         break;
 
       case 'mcprod1pertemp':
         player.game.defer(new GainProduction(player, Resource.MEGACREDITS, {count: steps, log: true}));
         break;
       case 'plant2pertemp':
-        player.game.defer(new GainResourcesDeferred(player, Resource.PLANTS, {count: 2 * steps, log: true}));
+        this.gainStandardResource(player, Resource.PLANTS, steps, 2);
         break;
       case 'steel2pertemp':
-        player.game.defer(new GainResourcesDeferred(player, Resource.STEEL, {count: 2 * steps, log: true}));
+        this.gainStandardResource(player, Resource.STEEL, steps, 2);
         break;
       case 'titanium1pertemp':
-        player.game.defer(new GainResourcesDeferred(player, Resource.TITANIUM, {count: steps, log: true}));
+        this.gainStandardResource(player, Resource.TITANIUM, steps, 1);
         break;
       case undefined:
         break;

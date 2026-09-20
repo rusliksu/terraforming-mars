@@ -17,14 +17,21 @@ $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "lib\TmReleaseGuards.ps1")
 
 $cliIgnoredRealtimeGameIds = @(Assert-TmIgnoredRealtimeGameIds -GameIds $IgnoredRealtimeGameId)
-$ignoredRealtimeGameIdLedgerPath = Get-TmIgnoredRealtimeGameIdLedgerPath -Path $IgnoredRealtimeGameIdFile
-$ledgerIgnoredRealtimeGameIds = @(Read-TmIgnoredRealtimeGameIdLedger -Path $ignoredRealtimeGameIdLedgerPath)
+$ignoredRealtimeGameIdLedgerPath = Get-TmIgnoredRealtimeGameIdLedgerPath -Path $IgnoredRealtimeGameIdFile -ExplicitOnly
+$ledgerIgnoredRealtimeGameIds = @()
+if ($null -ne $ignoredRealtimeGameIdLedgerPath) {
+    $ledgerIgnoredRealtimeGameIds = @(Read-TmIgnoredRealtimeGameIdLedger -Path $ignoredRealtimeGameIdLedgerPath)
+}
 $ignoredRealtimeGameIds = @(Merge-TmIgnoredRealtimeGameIds -Primary $ledgerIgnoredRealtimeGameIds -Additional $cliIgnoredRealtimeGameIds)
+$ignoredRealtimeGameIdLedgerLabel = "not supplied"
+if ($null -ne $ignoredRealtimeGameIdLedgerPath) {
+    $ignoredRealtimeGameIdLedgerLabel = $ignoredRealtimeGameIdLedgerPath
+}
 
 # Every ignored game is echoed before the locked remote gate runs, so the exception
 # stays auditable even when the ids come from the operator ledger.
 Write-Host ("Ignored realtime games: ledger={0} cli={1} total={2}" -f $ledgerIgnoredRealtimeGameIds.Count, $cliIgnoredRealtimeGameIds.Count, $ignoredRealtimeGameIds.Count)
-Write-Host ("Ignored realtime ledger: {0}" -f $ignoredRealtimeGameIdLedgerPath)
+Write-Host ("Ignored realtime ledger: {0}" -f $ignoredRealtimeGameIdLedgerLabel)
 if ($ignoredRealtimeGameIds.Count -gt 0) {
     Write-Host ("Ignored realtime ids   : {0}" -f ($ignoredRealtimeGameIds -join ","))
 }

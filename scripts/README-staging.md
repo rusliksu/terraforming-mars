@@ -84,7 +84,8 @@ confirmed abandoned in the operator ledger. `-RealtimeGameStaleDays` (default
 promotion.
 
 - Ledger: `C:\Users\Ruslan\tm\.tmp\tm-release\prod-ignored-games.txt`
-  (override with `-IgnoredRealtimeGameIdFile`; never committed, never inferred).
+  (opt in with `-IgnoredRealtimeGameIdFile`; never committed, never inferred,
+  and never loaded automatically by a release).
 - Format: one `<game-id>` per line, optional trailing `# note`.
 
 ```powershell
@@ -93,12 +94,12 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\tm_ignored_
 pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\tm_ignored_realtime_games.ps1 -Remove g1c62f3657ee8
 ```
 
-Only a human declares a game abandoned: nothing infers it, `release_tm_prod.ps1`
-and `rollout_tm_server.ps1` merge the ledger with the per-run
-`-IgnoredRealtimeGameId` ids, and the merged count and ids are echoed before the
-locked remote gate runs. The gate fails closed for unknown ids, missing or
-future save timestamps, fresh realtime games, and stale realtime games that are
-not explicitly listed.
+Only a human declares a game abandoned: nothing infers it. `release_tm_prod.ps1`
+and `rollout_tm_server.ps1` merge a ledger only when its path is supplied explicitly
+with the per-run `-IgnoredRealtimeGameId` ids, and the merged count and ids are
+echoed before the locked remote gate runs. The gate fails closed for unknown ids,
+missing or future save timestamps, fresh realtime games, and stale realtime games
+that are not explicitly listed.
 
 The current idle time of every running game is visible read-only from the
 release checkout; the query mirrors the gate's own latest-save lookup:

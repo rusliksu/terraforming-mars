@@ -48,11 +48,16 @@ function Get-TmIgnoredRealtimeGameIdLedgerDefaultPath {
 function Get-TmIgnoredRealtimeGameIdLedgerPath {
     param(
         [AllowNull()]
-        [string]$Path
+        [string]$Path,
+        [switch]$ExplicitOnly
     )
 
     if (-not [string]::IsNullOrWhiteSpace($Path)) {
         return [System.IO.Path]::GetFullPath($Path)
+    }
+
+    if ($ExplicitOnly) {
+        return $null
     }
 
     return Get-TmIgnoredRealtimeGameIdLedgerDefaultPath

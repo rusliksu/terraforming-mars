@@ -283,6 +283,8 @@ $releasePinnedDryRun = Invoke-TextProcess -FilePath $pwshPath -ArgumentList @(
 ) -InputText $null
 Assert-True ($releasePinnedDryRun.ExitCode -eq 0) "Pinned release dry-run failed. stderr=$($releasePinnedDryRun.StdErr)"
 Assert-True ($releasePinnedDryRun.StdOut.Contains("Expect : artifact=$artifactSha git=$shaA")) "Release dry-run does not preserve both exact pins through the nested promotion wrapper."
+Assert-True ($releasePinnedDryRun.StdOut.Contains("Ignored realtime games: ledger=0 cli=0 total=0")) "Release dry-run loads ignored games without an explicit per-run input."
+Assert-True ($releasePinnedDryRun.StdOut.Contains("Ignored realtime ledger: not supplied")) "Release dry-run does not report that the operator ledger is disabled by default."
 
 $defaultPromoteDryRun = Invoke-TextProcess -FilePath $pwshPath -ArgumentList @(
     "-NoProfile", "-File", $promotePath, "-DryRun"
@@ -1003,15 +1005,17 @@ Assert-True (-not $promoteRemote.Contains('set_proxy_port "$next_port"')) "Promo
 Assert-True ($promoteRemote.Contains('restore_database_backup')) "Rollback does not restore the verified SQLite backup."
 Assert-True ($promoteRemote.Contains('trap handle_promote_exit EXIT') -and $promoteRemote.Contains('Unexpected failure during the single-writer window')) "Unexpected errors can strand production inside the single-writer window."
 
-# Abandoned realtime games are declared once in an operator-owned ledger. Release and
-# rollout merge it with the explicit per-run ids; nothing infers an abandoned game, and
-# every merged id is echoed before the locked remote gate runs.
+# Abandoned realtime games may be declared in an operator-owned ledger. Release and
+# rollout use it only when its path is supplied explicitly; nothing infers an abandoned
+# game, and every merged id is echoed before the locked remote gate runs.
 $ledgerTempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("tm-ignored-ledger-" + [guid]::NewGuid().ToString("N"))
 New-Item -ItemType Directory -Path $ledgerTempRoot -Force | Out-Null
 try {
     $ledgerPath = Join-Path $ledgerTempRoot "prod-ignored-games.txt"
 
     Assert-True ((@(Read-TmIgnoredRealtimeGameIdLedger -Path $ledgerPath)).Count -eq 0) "A missing ignored-games ledger is not empty."
+    Assert-True ($null -eq (Get-TmIgnoredRealtimeGameIdLedgerPath -Path $null -ExplicitOnly)) "An omitted release ledger path still resolves to the default ledger."
+    Assert-True ((Get-TmIgnoredRealtimeGameIdLedgerPath -Path $ledgerPath -ExplicitOnly) -eq [System.IO.Path]::GetFullPath($ledgerPath)) "An explicit release ledger path was not preserved."
 
     Set-Content -LiteralPath $ledgerPath -Encoding utf8 -Value @(
         "# comment only",
@@ -1072,7 +1076,9 @@ try {
     Remove-Item -LiteralPath $ledgerTempRoot -Recurse -Force -ErrorAction SilentlyContinue
 }
 
-Assert-True ($releaseSource.Contains('$ledgerIgnoredRealtimeGameIds = @(Read-TmIgnoredRealtimeGameIdLedger -Path $ignoredRealtimeGameIdLedgerPath)')) "Prod release does not read the ignored-games ledger."
+Assert-True ($releaseSource.Contains('Get-TmIgnoredRealtimeGameIdLedgerPath -Path $IgnoredRealtimeGameIdFile -ExplicitOnly')) "Prod release does not require an explicit ignored-games ledger path."
+Assert-True ($releaseSource.Contains('$ledgerIgnoredRealtimeGameIds = @()')) "Prod release does not keep ledger ids empty when no path is supplied."
+Assert-True ($releaseSource.Contains('@(Read-TmIgnoredRealtimeGameIdLedger -Path $ignoredRealtimeGameIdLedgerPath)')) "Prod release does not read an explicitly supplied ignored-games ledger."
 Assert-True ($releaseSource.Contains('$ignoredRealtimeGameIds = @(Merge-TmIgnoredRealtimeGameIds -Primary $ledgerIgnoredRealtimeGameIds -Additional $cliIgnoredRealtimeGameIds)')) "Prod release does not merge the ignored-games ledger with the per-run ids."
 Assert-True ($releaseSource.Contains('Write-Host ("Ignored realtime games: ledger={0} cli={1} total={2}"')) "Prod release does not echo the merged ignored-game counts."
 Assert-True ($releaseSource.Contains('Write-Host ("Ignored realtime ids   : {0}" -f ($ignoredRealtimeGameIds -join ","))')) "Prod release does not echo the merged ignored-game ids."

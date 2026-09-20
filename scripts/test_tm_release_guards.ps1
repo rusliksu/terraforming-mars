@@ -861,6 +861,24 @@ print(f"{integrity}:{value}")
 '@ -Json '' -Arguments @($sqliteCopy)
     Assert-True ($inspectSqlite.ExitCode -eq 0 -and $inspectSqlite.StdOut.Trim() -eq 'ok:preserved') "Verified SQLite copy is not restorable and intact."
 
+    # The bounded static copy is used only after the source is quiescent, and is
+    # rehearsed against the consistent online snapshot before service shutdown.
+    $staticCopyHelper = Get-BashFunction -ScriptText $promoteRemote -Name "create_static_database_copy"
+    $staticCopyPath = Join-Path $advancedTempRoot "static-copy.db"
+    $staticCopyHarness = @'
+set -euo pipefail
+python3() { __PYTHON__ "$@"; }
+__STATIC_COPY_FUNCTION__
+create_static_database_copy "$1" "$2"
+'@
+    $staticCopyHarness = $staticCopyHarness.Replace('__PYTHON__', $pythonPathBash).Replace('__STATIC_COPY_FUNCTION__', $staticCopyHelper)
+    $staticCopyResult = Invoke-Bash -ScriptText $staticCopyHarness -Arguments @(
+        (ConvertTo-TmGitBashPath $sqliteCopy),
+        (ConvertTo-TmGitBashPath $staticCopyPath)
+    )
+    Assert-True ($staticCopyResult.ExitCode -eq 0) "Bounded static SQLite copy failed. stderr=$($staticCopyResult.StdErr)"
+    Assert-True ((Get-FileHash -LiteralPath $sqliteCopy -Algorithm SHA256).Hash -eq (Get-FileHash -LiteralPath $staticCopyPath -Algorithm SHA256).Hash) "Bounded static SQLite copy differs from its quiescent source."
+
     $sqliteBackupHelper = Get-BashFunction -ScriptText $promoteRemote -Name "create_verified_sqlite_backup"
     $backupRoot = Join-Path $advancedTempRoot "backups"
     $backupPath = Join-Path $backupRoot "rollback.db"
@@ -872,12 +890,12 @@ game_db_path="$1"
 backup_root="$2"
 database_backup="$3"
 database_restore_probe="$4"
-__COPY_FUNCTION__
+__STATIC_COPY_FUNCTION__
 __BACKUP_FUNCTION__
 create_verified_sqlite_backup
 '@
     $sqliteBackupHarness = $sqliteBackupHarness.Replace('__PYTHON__', $pythonPathBash).
-        Replace('__COPY_FUNCTION__', $sqliteCopyHelper).
+        Replace('__STATIC_COPY_FUNCTION__', $staticCopyHelper).
         Replace('__BACKUP_FUNCTION__', $sqliteBackupHelper)
     $sqliteBackupResult = Invoke-Bash -ScriptText $sqliteBackupHarness -Arguments @(
         (ConvertTo-TmGitBashPath $sqliteSource),
@@ -885,8 +903,9 @@ create_verified_sqlite_backup
         (ConvertTo-TmGitBashPath $backupPath),
         (ConvertTo-TmGitBashPath $restoreProbePath)
     )
-    Assert-True ($sqliteBackupResult.ExitCode -eq 0) "Verified SQLite backup and restore probe failed. stderr=$($sqliteBackupResult.StdErr)"
-    Assert-True ((Test-Path -LiteralPath $backupPath) -and (Test-Path -LiteralPath $restoreProbePath)) "Verified SQLite backup did not retain both proof artifacts."
+    Assert-True ($sqliteBackupResult.ExitCode -eq 0) "Verified quiescent SQLite backup failed. stderr=$($sqliteBackupResult.StdErr)"
+    Assert-True ((Test-Path -LiteralPath $backupPath) -and -not (Test-Path -LiteralPath $restoreProbePath)) "Cutover backup unexpectedly performed a second full copy during downtime."
+    Assert-True ((Get-FileHash -LiteralPath $sqliteSource -Algorithm SHA256).Hash -eq (Get-FileHash -LiteralPath $backupPath -Algorithm SHA256).Hash) "Verified quiescent SQLite backup differs from its source."
 
     # Fixed-path ELO mirrors publish atomically per file and repair a partial prior attempt.
     $publishHelper = Get-BashFunction -ScriptText $promoteRemote -Name "publish_elo_helpers"

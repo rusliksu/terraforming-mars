@@ -7,6 +7,12 @@ param(
     [string]$IgnoredRealtimeGameIdFile,
     [ValidateRange(1, 365)]
     [int]$RealtimeGameStaleDays = 10,
+    [ValidateRange(120, 1800)]
+    [int]$SqliteCopyTimeoutSeconds = 600,
+    [ValidateRange(30, 900)]
+    [int]$StaticCopyTimeoutSeconds = 120,
+    [ValidateRange(120, 3600)]
+    [int]$MaintenanceWindowSeconds = 600,
     [switch]$SkipStagingVerify,
     [switch]$SkipProdVerify,
     [switch]$DryRun
@@ -38,6 +44,7 @@ if ($ignoredRealtimeGameIds.Count -gt 0) {
 
 $verifyScript = Join-Path $PSScriptRoot "verify_tm_server.ps1"
 $promoteScript = Join-Path $PSScriptRoot "promote_tm_staging_to_prod.ps1"
+$rehearseScript = Join-Path $PSScriptRoot "rehearse_tm_prod.ps1"
 $snapshotScript = Join-Path $PSScriptRoot "capture_tm_release_state.ps1"
 
 if (-not (Test-Path $verifyScript)) {
@@ -46,6 +53,10 @@ if (-not (Test-Path $verifyScript)) {
 
 if (-not (Test-Path $promoteScript)) {
     throw "Missing promote script: $promoteScript"
+}
+
+if (-not (Test-Path $rehearseScript)) {
+    throw "Missing prod rehearsal script: $rehearseScript"
 }
 
 if (-not (Test-Path $snapshotScript)) {
@@ -95,9 +106,10 @@ if ($DryRun) {
     if (-not $SkipStagingVerify) {
         Write-Host "1. Verify staging with a real create-game smoke and release manifest."
     }
-    Write-Host "2. Promote the tested staging build to prod."
+    Write-Host "2. Rehearse DB copy, codec validation, and restore probe within the maintenance budget."
+    Write-Host "3. Promote the tested staging build to prod with writes closed until commit."
     if (-not $SkipProdVerify) {
-        Write-Host "3. Verify prod homepage, /elo/, and release manifest without creating a test game."
+        Write-Host "4. Verify prod homepage, /elo/, and release manifest without creating a test game."
     }
     Write-Host ""
     $promoteDryRunArgs = @("-File", $promoteScript, "-HostAlias", $HostAlias, "-DryRun")
@@ -111,6 +123,8 @@ if ($DryRun) {
         $promoteDryRunArgs += @("-IgnoredRealtimeGameId", ($ignoredRealtimeGameIds -join ","))
     }
     $promoteDryRunArgs += @("-RealtimeGameStaleDays", $RealtimeGameStaleDays)
+    $promoteDryRunArgs += @("-SqliteCopyTimeoutSeconds", $SqliteCopyTimeoutSeconds)
+    $promoteDryRunArgs += @("-StaticCopyTimeoutSeconds", $StaticCopyTimeoutSeconds)
     & pwsh @promoteDryRunArgs
     if ($LASTEXITCODE -ne 0) {
         throw "Promote dry run failed."
@@ -139,6 +153,11 @@ if ($SkipStagingVerify) {
 }
 
 Assert-ReleasePins -ExpectedGitSha $ExpectedGitSha -ExpectedArtifactSha $ExpectedArtifactSha -StagingGitSha $stagingGitSha -ArtifactSha $stagingArtifactSha
+
+& pwsh -File $rehearseScript -HostAlias $HostAlias -ExpectedGitSha $ExpectedGitSha -ExpectedArtifactSha $ExpectedArtifactSha -SqliteCopyTimeoutSeconds $SqliteCopyTimeoutSeconds -StaticCopyTimeoutSeconds $StaticCopyTimeoutSeconds -MaintenanceWindowSeconds $MaintenanceWindowSeconds
+if ($LASTEXITCODE -ne 0) {
+    throw "Production rehearsal failed. Promote aborted before any service mutation."
+}
 
 if ([string]::IsNullOrWhiteSpace($SnapshotRoot)) {
     $repoRoot = Split-Path -Parent $PSScriptRoot
@@ -178,6 +197,8 @@ if ($ignoredRealtimeGameIds.Count -gt 0) {
     $promoteArgs += @("-IgnoredRealtimeGameId", ($ignoredRealtimeGameIds -join ","))
 }
 $promoteArgs += @("-RealtimeGameStaleDays", $RealtimeGameStaleDays)
+$promoteArgs += @("-SqliteCopyTimeoutSeconds", $SqliteCopyTimeoutSeconds)
+$promoteArgs += @("-StaticCopyTimeoutSeconds", $StaticCopyTimeoutSeconds)
 
 try {
     & pwsh @promoteArgs

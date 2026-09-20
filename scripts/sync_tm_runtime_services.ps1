@@ -4,16 +4,13 @@ param(
     [string]$FallbackSshUser = "openclaw",
     [string]$FallbackSshKeyPath = "$HOME\\.ssh\\id_ed25519",
     [string]$ProdService = "tm-server.service",
-    [string]$ProdNextService = "tm-server-next.service",
+    [string]$LegacyProdNextService = "tm-server-next.service",
     [string]$StagingService = "tm-server-staging.service",
     [string]$EloService = "tm-elo.service",
     [string]$ProdRuntimeRoot = "/home/openclaw/tm-runtime/prod",
-    [string]$ProdNextRuntimeRoot = "/home/openclaw/tm-runtime/prod-next",
     [string]$StagingRuntimeRoot = "/home/openclaw/tm-runtime/staging",
     [string]$ProdPort = "8081",
     [string]$ProdHost = "127.0.0.1",
-    [string]$ProdNextPort = "8085",
-    [string]$ProdNextHost = "127.0.0.1",
     [string]$StagingPort = "8084",
     [string]$StagingHost = "127.0.0.1",
     [string]$DefaultAutoJoinScript = "/home/openclaw/repos/tm-tierlist/bot/auto-join.js",
@@ -102,12 +99,8 @@ $prodEnv = Get-ServiceEnvironmentMap -ServiceName $ProdService
 $stagingEnv = Get-ServiceEnvironmentMap -ServiceName $StagingService
 
 if ($DryRun) {
-    if (-not ($prodEnv.ContainsKey('SERVER_ID')) -or [string]::IsNullOrWhiteSpace($prodEnv['SERVER_ID'])) {
-        $prodEnv['SERVER_ID'] = 'prod-placeholder'
-    }
-    if (-not ($stagingEnv.ContainsKey('SERVER_ID')) -or [string]::IsNullOrWhiteSpace($stagingEnv['SERVER_ID'])) {
-        $stagingEnv['SERVER_ID'] = 'staging-placeholder'
-    }
+    $prodEnv['SERVER_ID'] = 'prod-redacted'
+    $stagingEnv['SERVER_ID'] = 'staging-redacted'
     if (-not ($stagingEnv.ContainsKey('TM_SERVER_URL')) -or [string]::IsNullOrWhiteSpace($stagingEnv['TM_SERVER_URL'])) {
         $stagingEnv['TM_SERVER_URL'] = $DefaultStagingUrl
     }
@@ -115,7 +108,6 @@ if ($DryRun) {
 
 $prodServerId = Require-Env -Map $prodEnv -Key 'SERVER_ID' -ServiceName $ProdService
 $stagingServerId = Require-Env -Map $stagingEnv -Key 'SERVER_ID' -ServiceName $StagingService
-$prodNextServerId = "next-$prodServerId"
 $autoJoinScript = if ($prodEnv.ContainsKey('TM_AUTO_JOIN_SCRIPT')) {
     $prodEnv['TM_AUTO_JOIN_SCRIPT']
 } elseif ($stagingEnv.ContainsKey('TM_AUTO_JOIN_SCRIPT')) {
@@ -126,10 +118,8 @@ $autoJoinScript = if ($prodEnv.ContainsKey('TM_AUTO_JOIN_SCRIPT')) {
 $shadowLogDir = if ($prodEnv.ContainsKey('SHADOW_LOG_DIR')) { $prodEnv['SHADOW_LOG_DIR'] } else { $DefaultShadowLogDir }
 $stagingUrl = if ($stagingEnv.ContainsKey('TM_SERVER_URL')) { $stagingEnv['TM_SERVER_URL'] } else { $DefaultStagingUrl }
 $prodCurrentDir = "$ProdRuntimeRoot/current"
-$prodNextCurrentDir = "$ProdNextRuntimeRoot/current"
 $stagingCurrentDir = "$StagingRuntimeRoot/current"
 $prodEloDataDir = "$ProdRuntimeRoot/shared/elo"
-$prodNextEloDataDir = "$ProdNextRuntimeRoot/shared/elo"
 $stagingEloDataDir = "$StagingRuntimeRoot/shared/elo"
 
 $prodContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-server.service.template') -Replacements @{
@@ -154,27 +144,15 @@ $stagingContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-serv
     '__TURN_NOTICE_REMINDER_MS__' = $TurnNoticeReminderMs
 }
 
-$prodNextContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-server-next.service.template') -Replacements @{
-    '__PROD_NEXT_CURRENT_DIR__' = $prodNextCurrentDir
-    '__PROD_NEXT_PORT__' = $ProdNextPort
-    '__PROD_NEXT_HOST__' = $ProdNextHost
-    '__PROD_NEXT_SERVER_ID__' = $prodNextServerId
-    '__PROD_NEXT_ELO_DATA_DIR__' = $prodNextEloDataDir
-    '__AUTO_JOIN_SCRIPT__' = $autoJoinScript
-    '__TURN_NOTICE_REMINDER_MS__' = $TurnNoticeReminderMs
-}
-
 $eloContent = Render-Template -TemplatePath (Join-Path $templateDir 'tm-elo.service.template') -Replacements @{
     '__PROD_CURRENT_DIR__' = $prodCurrentDir
 }
 
 Write-Host "Target VPS: $VpsHost"
 Write-Host "Prod SERVER_ID: $(Format-SecretSummary $prodServerId)"
-Write-Host "Prod-next SERVER_ID: $(Format-SecretSummary $prodNextServerId)"
 Write-Host "Staging SERVER_ID: $(Format-SecretSummary $stagingServerId)"
 Write-Host "Auto-join script: $autoJoinScript"
 Write-Host "Prod current dir: $prodCurrentDir"
-Write-Host "Prod-next current dir: $prodNextCurrentDir"
 Write-Host "Staging current dir: $stagingCurrentDir"
 Write-Host "Shadow log dir: $shadowLogDir"
 Write-Host "Staging URL: $stagingUrl"
@@ -186,9 +164,6 @@ if ($DryRun) {
     Write-Host "=== $ProdService ==="
     Write-Host $prodContent
     Write-Host ""
-    Write-Host "=== $ProdNextService ==="
-    Write-Host $prodNextContent
-    Write-Host ""
     Write-Host "=== $StagingService ==="
     Write-Host $stagingContent
     Write-Host ""
@@ -198,7 +173,6 @@ if ($DryRun) {
 }
 
 $prodBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($prodContent))
-$prodNextBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($prodNextContent))
 $stagingBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($stagingContent))
 $eloBase64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($eloContent))
 
@@ -211,7 +185,6 @@ from pathlib import Path
 
 files = {
     Path.home() / ".config/systemd/user/$ProdService": "$prodBase64",
-    Path.home() / ".config/systemd/user/$ProdNextService": "$prodNextBase64",
     Path.home() / ".config/systemd/user/$StagingService": "$stagingBase64",
     Path.home() / ".config/systemd/user/$EloService": "$eloBase64",
 }
@@ -230,11 +203,13 @@ for dropin_rel in [
     if dropin_dir.exists() and not any(dropin_dir.iterdir()):
         dropin_dir.rmdir()
 PY
+systemctl --user disable --now $LegacyProdNextService >/dev/null 2>&1 || true
+rm -f ~/.config/systemd/user/$LegacyProdNextService
 systemctl --user daemon-reload
 echo '--- tm-server.service'
 systemctl --user cat $ProdService
-echo '--- tm-server-next.service'
-systemctl --user cat $ProdNextService
+echo '--- legacy next server'
+echo 'disabled and removed: $LegacyProdNextService'
 echo '--- tm-server-staging.service'
 systemctl --user cat $StagingService
 echo '--- tm-elo.service'

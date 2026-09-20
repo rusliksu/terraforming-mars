@@ -9,6 +9,10 @@ param(
     [string[]]$IgnoredRealtimeGameId,
     [ValidateRange(1, 365)]
     [int]$RealtimeGameStaleDays = 10,
+    [ValidateRange(120, 1800)]
+    [int]$SqliteCopyTimeoutSeconds = 600,
+    [ValidateRange(30, 900)]
+    [int]$StaticCopyTimeoutSeconds = 120,
     [switch]$DryRun
 )
 
@@ -101,6 +105,8 @@ required_artifact_sha="__EXPECTED_ARTIFACT_SHA__"
 expected_release_baseline_b64="__EXPECTED_RELEASE_BASELINE_B64__"
 ignored_realtime_game_ids_csv="__IGNORED_REALTIME_GAME_IDS_CSV__"
 realtime_game_stale_days="__REALTIME_GAME_STALE_DAYS__"
+sqlite_copy_timeout_seconds="__SQLITE_COPY_TIMEOUT_SECONDS__"
+static_copy_timeout_seconds="__STATIC_COPY_TIMEOUT_SECONDS__"
 run_token="__RUN_TOKEN__"
 work_root="/tmp/tm-promote-${run_token}"
 release_dir="$work_root/release"
@@ -119,6 +125,7 @@ elo_files="index.html audit_player_names.py elo-api.js elo_aliases.py excluded_g
 deploy_lock_file="/home/openclaw/tm-runtime/.deploy.lock"
 deploy_lock_info="/home/openclaw/tm-runtime/.deploy.lock.info"
 game_db_path="$shared_root/db/game.db"
+promotion_write_gate="$shared_root/db/.promotion-write-gate"
 previous_current_link_target=""
 previous_current_link_existed=0
 primary_stopped=0
@@ -618,7 +625,8 @@ NODE
 create_verified_sqlite_copy() {
   local source_path="$1"
   local destination_path="$2"
-  python3 - "$source_path" "$destination_path" <<'PY'
+  local timeout_seconds="${sqlite_copy_timeout_seconds:-600}"
+  timeout --signal=TERM --kill-after=5 "${timeout_seconds}s" python3 - "$source_path" "$destination_path" <<'PY'
 import os
 import pathlib
 import sqlite3
@@ -658,17 +666,46 @@ except Exception:
 PY
 }
 
-create_verified_sqlite_backup() {
-  mkdir -p "$backup_root"
-  if ! create_verified_sqlite_copy "$game_db_path" "$database_backup"; then
+create_static_database_copy() {
+  local source_path="$1"
+  local destination_path="$2"
+  local source_size
+  local destination_size
+  local timeout_seconds="${static_copy_timeout_seconds:-120}"
+  rm -f "$destination_path"
+  mkdir -p "$(dirname "$destination_path")"
+  timeout --signal=TERM --kill-after=5 "${timeout_seconds}s" cp --sparse=auto -- "$source_path" "$destination_path"
+  python3 - "$destination_path" <<'PY'
+import os
+import sys
+
+with open(sys.argv[1], "r+b") as database_file:
+    os.fsync(database_file.fileno())
+PY
+  source_size="$(stat -c %s "$source_path")"
+  destination_size="$(stat -c %s "$destination_path")"
+  if [ -z "$source_size" ] || [ "$source_size" -le 0 ] || [ "$source_size" != "$destination_size" ]; then
     return 51
   fi
-  if ! create_verified_sqlite_copy "$database_backup" "$database_restore_probe"; then
+  python3 - "$destination_path" <<'PY'
+import sqlite3
+import sys
+
+database = sqlite3.connect(f"file:{sys.argv[1]}?mode=ro", uri=True, timeout=5)
+try:
+    database.execute("SELECT name FROM sqlite_master LIMIT 1").fetchone()
+finally:
+    database.close()
+PY
+}
+
+create_verified_sqlite_backup() {
+  mkdir -p "$backup_root"
+  if ! create_static_database_copy "$game_db_path" "$database_backup"; then
     return 51
   fi
   backup_sha="$(sha256sum "$database_backup" | awk '{print $1}')"
-  restore_probe_sha="$(sha256sum "$database_restore_probe" | awk '{print $1}')"
-  if [ -z "$backup_sha" ] || [ "$backup_sha" != "$restore_probe_sha" ]; then
+  if [ -z "$backup_sha" ]; then
     return 51
   fi
   echo "Verified SQLite backup: path=$database_backup sha256=$backup_sha"
@@ -680,7 +717,7 @@ restore_database_backup() {
     return 52
   fi
   rm -f "$restore_tmp" "$game_db_path-wal" "$game_db_path-shm"
-  if ! create_verified_sqlite_copy "$database_backup" "$restore_tmp"; then
+  if ! create_static_database_copy "$database_backup" "$restore_tmp"; then
     return 52
   fi
   if ! mv -f "$restore_tmp" "$game_db_path"; then
@@ -746,6 +783,7 @@ restore_previous_release() {
     restore_failed=1
   fi
 
+  rm -f "$promotion_write_gate"
   if ! systemctl --user start "$service"; then
     restore_failed=1
   elif ! wait_for_http "$health_url" 20 2; then
@@ -765,6 +803,7 @@ rollback_before_cutover() {
   local resume_failed=0
   echo "$1" >&2
   if [ "$primary_stopped" = "1" ]; then
+    rm -f "$promotion_write_gate"
     if ! systemctl --user start "$service"; then
       resume_failed=1
     elif ! wait_for_http "$health_url" 20 2; then
@@ -956,6 +995,14 @@ if [ -n "$expected_artifact_sha" ] && [ -n "$expected_git_sha" ] && \
     echo "Promote no-op could not enforce the periodic ELO polling invariant." >&2
     exit 50
   fi
+  if ! wait_for_elo "$elo_health_url" 10 2; then
+    echo "Promote no-op could not confirm ELO health before reopening writes." >&2
+    exit 55
+  fi
+  if ! rm -f "$promotion_write_gate"; then
+    echo "Promote no-op could not reopen production writes." >&2
+    exit 55
+  fi
   echo "Promote no-op"
   echo "reason=prod already serves the exact tested staging artifact"
   echo "artifact_sha=$current_prod_artifact_sha"
@@ -1048,6 +1095,13 @@ rehearsal_after_sha="$(sha256sum "$rehearsal_db" | awk '{print $1}')"
 if [ -z "$rehearsal_before_sha" ] || [ "$rehearsal_before_sha" != "$rehearsal_after_sha" ]; then
   rollback_before_cutover "Candidate validation modified the rehearsal database."
 fi
+if ! create_static_database_copy "$rehearsal_db" "$database_restore_probe"; then
+  rollback_before_cutover "Could not rehearse the bounded static database restore path."
+fi
+restore_probe_sha="$(sha256sum "$database_restore_probe" | awk '{print $1}')"
+if [ -z "$restore_probe_sha" ] || [ "$rehearsal_before_sha" != "$restore_probe_sha" ]; then
+  rollback_before_cutover "Static database restore rehearsal differs from its verified source."
+fi
 
 primary_stopped=1
 cutover_in_progress=1
@@ -1064,6 +1118,10 @@ fi
 
 if ! create_verified_sqlite_backup; then
   rollback_before_cutover "Could not create and restore-probe a consistent production SQLite backup."
+fi
+
+if ! printf 'promotion=%s\n' "$run_token" > "$promotion_write_gate"; then
+  rollback_after_cutover "Could not close production writes before candidate startup."
 fi
 
 if ! ln -sfn "$shared_root/db" "$new_release_dir/db"; then
@@ -1105,6 +1163,10 @@ if ! wait_for_elo "$elo_health_url" 10 2; then
   rollback_after_cutover "ELO health check failed after the release switch."
 fi
 cutover_in_progress=0
+if ! rm -f "$promotion_write_gate"; then
+  echo "Prod passed cutover checks but writes remain closed; retry the exact promotion to reconcile the gate." >&2
+  exit 55
+fi
 
 # Publish fixed-path cron/helper mirrors atomically after the public release transaction.
 # If this fails, a retry reaches the exact-prod no-op above and reconciles the full set.
@@ -1153,6 +1215,8 @@ $remoteScript = $remoteScript.Replace("__EXPECTED_ARTIFACT_SHA__", $expectedArti
 $remoteScript = $remoteScript.Replace("__EXPECTED_RELEASE_BASELINE_B64__", $ExpectedReleaseBaselineBase64)
 $remoteScript = $remoteScript.Replace("__IGNORED_REALTIME_GAME_IDS_CSV__", $ignoredRealtimeGameIdsCsv)
 $remoteScript = $remoteScript.Replace("__REALTIME_GAME_STALE_DAYS__", $RealtimeGameStaleDays.ToString([Globalization.CultureInfo]::InvariantCulture))
+$remoteScript = $remoteScript.Replace("__SQLITE_COPY_TIMEOUT_SECONDS__", $SqliteCopyTimeoutSeconds.ToString([Globalization.CultureInfo]::InvariantCulture))
+$remoteScript = $remoteScript.Replace("__STATIC_COPY_TIMEOUT_SECONDS__", $StaticCopyTimeoutSeconds.ToString([Globalization.CultureInfo]::InvariantCulture))
 $remoteScript = $remoteScript.Replace("__RUN_TOKEN__", $promoteRunToken)
 
 if ($DryRun) {

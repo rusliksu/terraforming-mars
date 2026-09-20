@@ -49,6 +49,7 @@ import {UrlParams} from '../routes/UrlParams';
 import * as responses from './responses';
 import {AppError} from './AppError';
 import {capture, ErrorDiagnosticContext} from './SentryReporter';
+import {isPromotionWriteBlocked} from './PromotionWriteGate';
 
 const metrics = {
   request_count: new prometheus.Counter({
@@ -200,6 +201,10 @@ export async function processRequest(
     }
 
     const url = new URL(req.url, `http://${req.headers.host}`);
+    if (isPromotionWriteBlocked(req.method)) {
+      responses.serviceUnavailable(res);
+      return;
+    }
     const accessAuditClientId = process.env.TM_ACCESS_AUDIT === '1' ? getOrSetAccessAuditClientId(req, res) : undefined;
 
     const pathname = url.pathname.substring(1); // Remove leading '/'

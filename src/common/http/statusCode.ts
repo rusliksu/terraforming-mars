@@ -22,6 +22,8 @@ export const statusCode = {
   tooManyRequests: 429,
   /** 500: internal server error */
   internalServerError: 500,
+  /** 503: service unavailable */
+  serviceUnavailable: 503,
   /** 200: ok */
   ok: 200,
 } as const;

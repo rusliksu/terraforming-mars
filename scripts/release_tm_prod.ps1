@@ -1,6 +1,7 @@
 param(
     [string]$HostAlias = "hostkey-codex",
     [string]$ExpectedGitSha,
+    [string]$ExpectedArtifactSha,
     [string]$SnapshotRoot,
     [string[]]$IgnoredRealtimeGameId,
     [string]$IgnoredRealtimeGameIdFile,
@@ -47,6 +48,7 @@ if (-not (Test-Path $snapshotScript)) {
 function Assert-ReleasePins {
     param(
         [string]$ExpectedGitSha,
+        [string]$ExpectedArtifactSha,
         [string]$StagingGitSha,
         [string]$ArtifactSha
     )
@@ -63,13 +65,22 @@ function Assert-ReleasePins {
     if ($ArtifactSha -notmatch '^[0-9a-fA-F]{64}$') {
         throw "Staging release manifest must contain a 64-character artifactSha256."
     }
+    if ($ExpectedArtifactSha -notmatch '^[0-9a-fA-F]{64}$') {
+        throw "ExpectedArtifactSha is required and must be a 64-character SHA-256."
+    }
+    if (-not $ArtifactSha.Equals($ExpectedArtifactSha, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Tested staging artifact drifted from the intended artifact. expected=$ExpectedArtifactSha actual=$ArtifactSha"
+    }
 }
 
 if (-not $DryRun -and $ExpectedGitSha -notmatch '^[0-9a-fA-F]{40}$') {
     throw "ExpectedGitSha is required for prod release and must be a full 40-character git SHA."
 }
+if (-not $DryRun -and $ExpectedArtifactSha -notmatch '^[0-9a-fA-F]{64}$') {
+    throw "ExpectedArtifactSha is required for prod release and must be a 64-character SHA-256."
+}
 
-$expectedArtifactSha = $null
+$stagingArtifactSha = $null
 $stagingGitSha = $null
 
 if ($DryRun) {
@@ -85,6 +96,9 @@ if ($DryRun) {
     $promoteDryRunArgs = @("-File", $promoteScript, "-HostAlias", $HostAlias, "-DryRun")
     if (-not [string]::IsNullOrWhiteSpace($ExpectedGitSha)) {
         $promoteDryRunArgs += @("-ExpectedGitSha", $ExpectedGitSha)
+    }
+    if (-not [string]::IsNullOrWhiteSpace($ExpectedArtifactSha)) {
+        $promoteDryRunArgs += @("-ExpectedArtifactSha", $ExpectedArtifactSha)
     }
     if ($ignoredRealtimeGameIds.Count -gt 0) {
         $promoteDryRunArgs += @("-IgnoredRealtimeGameId", ($ignoredRealtimeGameIds -join ","))
@@ -103,7 +117,7 @@ if (-not $SkipStagingVerify) {
         throw "Staging verification failed. Promote aborted."
     }
     $stagingVerify = $stagingVerifyJson | ConvertFrom-Json
-    $expectedArtifactSha = [string]$stagingVerify.release.artifactSha256
+    $stagingArtifactSha = [string]$stagingVerify.release.artifactSha256
     $stagingGitSha = [string]$stagingVerify.release.gitSha
 }
 
@@ -113,11 +127,11 @@ if ($SkipStagingVerify) {
         throw "Failed to read staging release manifest. Promote aborted."
     }
     $stagingManifest = $stagingManifestJson | ConvertFrom-Json
-    $expectedArtifactSha = [string]$stagingManifest.release.artifactSha256
+    $stagingArtifactSha = [string]$stagingManifest.release.artifactSha256
     $stagingGitSha = [string]$stagingManifest.release.gitSha
 }
 
-Assert-ReleasePins -ExpectedGitSha $ExpectedGitSha -StagingGitSha $stagingGitSha -ArtifactSha $expectedArtifactSha
+Assert-ReleasePins -ExpectedGitSha $ExpectedGitSha -ExpectedArtifactSha $ExpectedArtifactSha -StagingGitSha $stagingGitSha -ArtifactSha $stagingArtifactSha
 
 if ([string]::IsNullOrWhiteSpace($SnapshotRoot)) {
     $repoRoot = Split-Path -Parent $PSScriptRoot
@@ -138,7 +152,7 @@ if ($preSnapshot.deployLock.busy -eq $true) {
 }
 $snapshotStagingGitSha = [string]$preSnapshot.environments.staging.manifest.gitSha
 $snapshotStagingArtifactSha = [string]$preSnapshot.environments.staging.manifest.artifactSha256
-if (-not $snapshotStagingGitSha.Equals($ExpectedGitSha, [System.StringComparison]::OrdinalIgnoreCase) -or $snapshotStagingArtifactSha -ne $expectedArtifactSha) {
+if (-not $snapshotStagingGitSha.Equals($ExpectedGitSha, [System.StringComparison]::OrdinalIgnoreCase) -or $snapshotStagingArtifactSha -ne $stagingArtifactSha) {
     throw "Staging changed between verification and pre-promote snapshot. Promote aborted."
 }
 $releaseBaselineBase64 = ConvertTo-TmReleaseCasBaselineBase64 -Snapshot $preSnapshot
@@ -148,8 +162,8 @@ $promoteArgs = @(
     "-File", $promoteScript,
     "-HostAlias", $HostAlias
 )
-if (-not [string]::IsNullOrWhiteSpace($expectedArtifactSha)) {
-    $promoteArgs += @("-ExpectedArtifactSha", $expectedArtifactSha)
+if (-not [string]::IsNullOrWhiteSpace($stagingArtifactSha)) {
+    $promoteArgs += @("-ExpectedArtifactSha", $stagingArtifactSha)
 }
 $promoteArgs += @("-ExpectedGitSha", $ExpectedGitSha)
 $promoteArgs += @("-ExpectedReleaseBaselineBase64", $releaseBaselineBase64)
@@ -173,8 +187,8 @@ try {
         $prodArtifactSha = [string]$prodVerify.release.artifactSha256
         $prodGitSha = [string]$prodVerify.release.gitSha
 
-        if ($prodArtifactSha -ne $expectedArtifactSha) {
-            throw "Prod artifact hash mismatch after promote. staging=$expectedArtifactSha prod=$prodArtifactSha"
+        if ($prodArtifactSha -ne $stagingArtifactSha) {
+            throw "Prod artifact hash mismatch after promote. staging=$stagingArtifactSha prod=$prodArtifactSha"
         }
         if (-not $prodGitSha.Equals($ExpectedGitSha, [System.StringComparison]::OrdinalIgnoreCase)) {
             throw "Prod git sha mismatch after promote. intended=$ExpectedGitSha prod=$prodGitSha"

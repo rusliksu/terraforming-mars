@@ -78,10 +78,10 @@ still require `-RestartWatchersDuringServiceSync`.
 
 ## Abandoned Realtime Games
 
-The prod promote gate blocks while a non-turn-based game was saved within
-`-RealtimeGameStaleDays` (default 10). A game the group has abandoned keeps
-blocking until that window passes, so confirm it once in the operator ledger
-instead of repeating the ids on every release.
+The prod promote gate blocks every non-turn-based game unless its exact ID was
+confirmed abandoned in the operator ledger. `-RealtimeGameStaleDays` (default
+10) only separates old evidence in the audit output; age never authorizes a
+promotion.
 
 - Ledger: `C:\Users\Ruslan\tm\.tmp\tm-release\prod-ignored-games.txt`
   (override with `-IgnoredRealtimeGameIdFile`; never committed, never inferred).
@@ -96,9 +96,9 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\tm_ignored_
 Only a human declares a game abandoned: nothing infers it, `release_tm_prod.ps1`
 and `rollout_tm_server.ps1` merge the ledger with the per-run
 `-IgnoredRealtimeGameId` ids, and the merged count and ids are echoed before the
-locked remote gate runs. The gate itself is unchanged and still fails closed for
-unknown ids, for games whose save timestamp is missing, and for every game that
-is not listed.
+locked remote gate runs. The gate fails closed for unknown ids, missing or
+future save timestamps, fresh realtime games, and stale realtime games that are
+not explicitly listed.
 
 The current idle time of every running game is visible read-only from the
 release checkout; the query mirrors the gate's own latest-save lookup:
@@ -186,8 +186,9 @@ Recommended multi-session flow:
 3. In one release task, refresh/build the clean checkout and verify the exact
    `origin/main` commit.
 4. Deploy once to staging and run the combined smoke/screenshots.
-5. Promote with `release_tm_prod.ps1`, which pins staging's `gitSha` and
-   `artifactSha256`, refuses drift, and fails closed when realtime games exist.
+5. Read the exact staging `gitSha` and `artifactSha256`, then promote with
+   `release_tm_prod.ps1`, which requires both literal pins, refuses drift, and
+   fails closed when an unconfirmed realtime game exists.
 
 Refresh the clean release checkout before a real rollout:
 
@@ -242,8 +243,10 @@ release-checkout commit:
 
 ```powershell
 $intendedGitSha = git -C C:\Users\Ruslan\tm\terraforming-mars-release-main rev-parse HEAD
+$intendedArtifactSha = (Invoke-RestMethod https://staging.tm.knightbyte.win/assets/release.json).artifactSha256
 pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\release_tm_prod.ps1 `
-  -ExpectedGitSha $intendedGitSha
+  -ExpectedGitSha $intendedGitSha `
+  -ExpectedArtifactSha $intendedArtifactSha
 ```
 
 The production gate reads every latest running save directly from the live
@@ -338,8 +341,10 @@ Run the full automated release gate:
 
 ```powershell
 $intendedGitSha = git -C C:\Users\Ruslan\tm\terraforming-mars-release-main rev-parse HEAD
+$intendedArtifactSha = (Invoke-RestMethod https://staging.tm.knightbyte.win/assets/release.json).artifactSha256
 pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\release_tm_prod.ps1 `
-  -ExpectedGitSha $intendedGitSha
+  -ExpectedGitSha $intendedGitSha `
+  -ExpectedArtifactSha $intendedArtifactSha
 ```
 
 Run smoke manually:
@@ -376,6 +381,11 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\verify_tm_s
 - Prod and staging are split by host on `443` via SNI.
 - The `STAGING` badge is host-gated and appears only on `staging.tm.knightbyte.win`.
 - `release_tm_prod.ps1` replaces the old manual "check staging, then promote, then open prod" step with scripted gates.
+- Promotion validates every latest save with the candidate codec on an
+  integrity-checked SQLite copy. It then uses a short single-writer maintenance
+  window: stop primary, re-check games, create and restore-probe a consistent
+  backup, switch the release, and start primary. Failed startup restores both
+  the previous release and database backup.
 - `release.json` is generated during deploy and is used to prove that staging and prod serve the same artifact hash after promote.
 - Rollout syncs `build/`, `assets/`, and the source-managed subset of `elo/` (`index.html`, `elo-api.js`, aliases, and maintenance scripts). It deliberately preserves live Elo data files on the VPS.
 - Rollout also carries `package.json` and `package-lock.json`; runtime dependencies are resolved into a managed cache under `/home/openclaw/tm-runtime/<env>/shared/deps/<package-lock-sha256>` instead of linking back to legacy checkout `node_modules`.

@@ -3,6 +3,7 @@ param(
     [string]$ReleaseRoot,
     [string]$TierlistRoot,
     [string]$SnapshotRoot,
+    [string]$ExpectedArtifactSha,
     [string[]]$IgnoredRealtimeGameId,
     [string]$IgnoredRealtimeGameIdFile,
     [switch]$BootstrapIfMissing,
@@ -170,10 +171,14 @@ Write-Host ""
 $step++
 
 if ($PromoteProd) {
+    if (-not $DryRun -and $ExpectedArtifactSha -notmatch '^[0-9a-fA-F]{64}$') {
+        throw "ExpectedArtifactSha is required when PromoteProd is requested. Stage first, inspect the manifest, then pass its exact hash."
+    }
     $releaseArgs = @(
         "-File", $releaseScript,
         "-HostAlias", $HostAlias,
-        "-ExpectedGitSha", $intendedGitSha
+        "-ExpectedGitSha", $intendedGitSha,
+        "-ExpectedArtifactSha", $ExpectedArtifactSha
     )
     if ($SkipStagingVerify) {
         $releaseArgs += "-SkipStagingVerify"

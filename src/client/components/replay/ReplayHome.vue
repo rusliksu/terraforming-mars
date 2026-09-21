@@ -88,7 +88,7 @@ onMounted(initialize);
 </script>
 
 <style scoped>
-.replay-home { width: 100%; max-width: 1600px; min-width: 0; margin: 0 auto; padding: 16px; box-sizing: border-box; }
+.replay-home { width: 100%; min-width: 0; margin: 0 auto; padding: 16px; box-sizing: border-box; }
 .replay-heading h1 { font-size: 24px; overflow-wrap: anywhere; }
 .replay-heading p { color: #bbb; }
 .replay-back-row { margin: 0 0 8px; }
@@ -106,19 +106,21 @@ onMounted(initialize);
 .replay-error { padding: 16px 0; }
 .replay-frame { min-width: 0; }
 .replay-players, .replay-board { position: relative; max-width: 100%; overflow-x: auto; margin-top: 16px; }
+.replay-players :deep(.players-overview) { display: block; }
+.replay-players :deep(.player-info) { flex-wrap: wrap; }
 /* The board is the main element of the replay: scale it up when the viewport has room.
    Without zoom support the board keeps its natural size and the block still scrolls. */
 .replay-board-inner { zoom: var(--replay-board-zoom, 1); }
-@media (min-width: 1200px) {
+@media (min-width: 1560px) {
   .replay-board-inner { --replay-board-zoom: 1.3; }
 }
-@media (min-width: 1700px) {
+@media (min-width: 1800px) {
   .replay-board-inner { --replay-board-zoom: 1.5; }
 }
-.replay-colonies { display: flex; flex-wrap: wrap; gap: 12px; max-width: 100%; overflow-x: auto; }
+.replay-colonies { display: flex; flex-wrap: wrap; gap: 12px; max-width: 100%; }
 .replay-colonies h2 { width: 100%; }
 .replay-log { margin-top: 20px; overflow-wrap: anywhere; }
-.replay-log ol { max-height: 360px; overflow-y: auto; padding: 0 12px; list-style: none; }
+.replay-log ol { padding: 0 12px; list-style: none; }
 .replay-home button:focus-visible, .replay-home select:focus-visible, .replay-home input:focus-visible { outline: 3px solid #ffc567; outline-offset: 3px; }
 @media (max-width: 600px) {
   .replay-home { padding: 8px; }
@@ -126,5 +128,8 @@ onMounted(initialize);
   .replay-buttons { gap: 6px; }
   .replay-speed { margin-left: 0; width: 100%; }
   .replay-position { flex-direction: column; align-items: stretch; gap: 4px; }
+}
+@media (max-width: 480px) {
+  .replay-colonies :deep(.colony-card) { zoom: 0.65; }
 }
 </style>

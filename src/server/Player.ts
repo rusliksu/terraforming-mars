@@ -395,16 +395,20 @@ export class Player implements IPlayer {
         // Cannot pay Reds, will not increase TR
         return;
       }
-      this.game.defer(
-        new SelectPaymentDeferred(this, redsCost, {title: 'Select how to pay for TR increase'}),
-        Priority.COST)
-        .andThen((payment) => {
-          // Report what the player actually paid, which can be resources instead of megacredits.
-          this.game.log('${0} paid ${1} M€ for Turmoil ${2} policy', (b) =>
-            b.player(this).number(paymentTotal(payment)).partyName(PartyName.REDS));
-          raiseRating();
+      this.defer(() => {
+        // Earlier queued payments may have consumed the available funds.
+        if (!this.canAfford(redsCost)) {
           return undefined;
-        });
+        }
+        return new SelectPaymentDeferred(this, redsCost, {title: 'Select how to pay for TR increase'})
+          .andThen((payment) => {
+            // Report what the player actually paid, which can be resources instead of megacredits.
+            this.game.log('${0} paid ${1} M€ for Turmoil ${2} policy', (b) =>
+              b.player(this).number(paymentTotal(payment)).partyName(PartyName.REDS));
+            raiseRating();
+            return undefined;
+          }).execute();
+      }, Priority.COST);
     } else {
       raiseRating();
     }

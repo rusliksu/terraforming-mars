@@ -8,6 +8,8 @@ import {OrOptions} from '../../../src/server/inputs/OrOptions';
 import {testGame} from '../../TestGame';
 import {PartyName} from '../../../src/common/turmoil/PartyName';
 import {cast} from '@/common/utils/utils';
+import {SelectPayment} from '@/server/inputs/SelectPayment';
+import {Payment} from '@/common/inputs/Payment';
 
 describe('Reds', () => {
   let player: TestPlayer;
@@ -71,6 +73,38 @@ describe('Reds', () => {
     addGreenery(player, '10');
     runAllActions(game);
     expect(player.megaCredits).to.eq(0);
+  });
+
+  for (const [credits, expectedIncrease] of [[3, 1], [6, 2]]) {
+    it(`limits queued TR increases to the available ${credits} M€`, () => {
+      setRulingParty(game, PartyName.REDS, 'rp01');
+      player.megaCredits = credits;
+      const initialTR = player.terraformRating;
+
+      player.increaseTerraformRating();
+      player.increaseTerraformRating();
+      runAllActions(game);
+
+      expect(player.megaCredits).eq(0);
+      expect(player.terraformRating).eq(initialTR + expectedIncrease);
+    });
+  }
+
+  it('rechecks queued TR payments after spending heat', () => {
+    setRulingParty(game, PartyName.REDS, 'rp01');
+    player.canUseHeatAsMegaCredits = true;
+    player.heat = 3;
+    const initialTR = player.terraformRating;
+
+    player.increaseTerraformRating();
+    player.increaseTerraformRating();
+    runAllActions(game);
+    cast(player.popWaitingFor(), SelectPayment).cb(Payment.of({heat: 3}));
+    runAllActions(game);
+
+    expect(player.heat).eq(0);
+    expect(player.terraformRating).eq(initialTR + 1);
+    expect(player.getWaitingFor()).is.undefined;
   });
 
   it('Ruling policy 2: states who placed the tile and what was actually paid', () => {

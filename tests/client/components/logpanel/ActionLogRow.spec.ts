@@ -45,6 +45,8 @@ describe('ActionLogRow', () => {
     expect(wrapper.findAll('.action-log-effect')).to.have.length(2);
     expect(wrapper.find('.action-log-production-box .resource_icon--energy').exists()).to.be.true;
     expect(wrapper.get('.resource_icon--megacredits').element.parentElement?.textContent).to.contain('+6');
+    expect(wrapper.get('.action-log-source').text()).eq('🌊×3');
+    expect(wrapper.findAll('.action-log-effect')[1].attributes('aria-label')).eq('+6 megacredits from 3 ocean(s) · Blue');
   });
 
   it('names the affected player beside a signed TR change', () => {

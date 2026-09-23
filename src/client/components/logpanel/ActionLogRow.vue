@@ -6,14 +6,15 @@
           @click="$emit('messageClicked', entry.messages[0])" @spaceClicked="$emit('spaceClicked', $event)"/>
       </ul>
       <div class="action-log-effects">
-        <span v-for="(effect, index) in effects" :key="index" class="action-log-effect"
-          :aria-label="effectLabel(effect)" :title="effectLabel(effect)">
-          <span class="action-log-effect-visual" :class="{'production-box action-log-production-box': effect.kind === 'resource' && effect.production}">
-            <span class="action-log-effect-amount">{{ effect.amount > 0 ? '+' : '' }}{{ effect.amount }}</span>
-            <i v-if="effect.kind === 'resource'" class="resource_icon" :class="'resource_icon--' + effect.resource" aria-hidden="true"></i>
+        <span v-for="(summary, index) in effects" :key="index" class="action-log-effect"
+          :aria-label="effectLabel(summary)" :title="effectLabel(summary)">
+          <span class="action-log-effect-visual" :class="{'production-box action-log-production-box': summary.effect.kind === 'resource' && summary.effect.production}">
+            <span class="action-log-effect-amount">{{ summary.effect.amount > 0 ? '+' : '' }}{{ summary.effect.amount }}</span>
+            <i v-if="summary.effect.kind === 'resource'" class="resource_icon" :class="'resource_icon--' + summary.effect.resource" aria-hidden="true"></i>
             <i v-else class="resource_icon resource_icon--rating" aria-hidden="true"></i>
           </span>
-          <span v-if="differentPlayer(effect.player)" class="action-log-target">{{ playerName(effect.player) }}</span>
+          <span v-if="summary.oceanCount !== undefined" class="action-log-source" aria-hidden="true">🌊×{{ summary.oceanCount }}</span>
+          <span v-if="differentPlayer(summary.effect.player)" class="action-log-target">{{ playerName(summary.effect.player) }}</span>
         </span>
         <button v-for="spaceId in locations" :key="spaceId" type="button" class="action-log-location"
           :title="getSpaceName(spaceId)" @click="$emit('spaceClicked', spaceId)">
@@ -58,9 +59,13 @@ defineEmits<{
 }>();
 
 const expanded = ref(false);
-const effects = computed(() => props.entry.messages.flatMap((message) => {
-  const effect = message.effect ?? oceanBonusEffect(message);
-  return effect === undefined ? [] : [effect];
+type EffectSummary = {effect: LogEffect, oceanCount?: number};
+const effects = computed(() => props.entry.messages.flatMap((message): Array<EffectSummary> => {
+  if (message.effect !== undefined) {
+    return [{effect: message.effect}];
+  }
+  const oceanBonus = oceanBonusEffect(message);
+  return oceanBonus === undefined ? [] : [oceanBonus];
 }));
 const locations = computed(() => Array.from(new Set(props.entry.messages.slice(1).flatMap((message) =>
   message.data.flatMap((datum) => datum.type === LogMessageDataType.SPACE ? [datum.value] : [])))).filter((id) => getSpaceName(id) !== 'n/a'));
@@ -74,12 +79,13 @@ function differentPlayer(color: Color): boolean {
   return actor.value === undefined || actor.value !== color;
 }
 
-function effectLabel(effect: LogEffect): string {
+function effectLabel({effect, oceanCount}: EffectSummary): string {
   const type = effect.kind === 'tr' ? 'TR' : `${effect.resource}${effect.production ? ' production' : ''}`;
-  return `${effect.amount > 0 ? '+' : ''}${effect.amount} ${type} · ${playerName(effect.player)}`;
+  const source = oceanCount === undefined ? '' : ` from ${oceanCount} ocean(s)`;
+  return `${effect.amount > 0 ? '+' : ''}${effect.amount} ${type}${source} · ${playerName(effect.player)}`;
 }
 
-function oceanBonusEffect(message: LogMessage): LogEffect | undefined {
+function oceanBonusEffect(message: LogMessage): EffectSummary | undefined {
   if (message.message !== '${0} gained ${1} M€ from ${2} ocean(s)' || message.data.length !== 3 ||
       message.data[0].type !== LogMessageDataType.PLAYER ||
       message.data[1].type !== LogMessageDataType.RAW_STRING ||
@@ -87,10 +93,14 @@ function oceanBonusEffect(message: LogMessage): LogEffect | undefined {
     return undefined;
   }
   const amount = Number(message.data[1].value);
+  const oceanCount = Number(message.data[2].value);
   if (!Number.isSafeInteger(amount) || amount <= 0) {
     return undefined;
   }
-  return {kind: 'resource', resource: Resource.MEGACREDITS, production: false, amount, player: message.data[0].value};
+  return {
+    effect: {kind: 'resource', resource: Resource.MEGACREDITS, production: false, amount, player: message.data[0].value},
+    oceanCount: Number.isSafeInteger(oceanCount) && oceanCount > 0 ? oceanCount : undefined,
+  };
 }
 </script>
 
@@ -105,6 +115,7 @@ function oceanBonusEffect(message: LogMessage): LogEffect | undefined {
 .action-log-effect-amount { font-weight: bold; }
 .action-log-effect .resource_icon { display: inline-block; width: 21px; height: 21px; background-size: contain; }
 .action-log-effect .action-log-production-box { min-width: 52px; width: auto; height: 29px; padding: 2px 5px; margin: 0; line-height: normal; box-sizing: border-box; color: #fff; }
+.action-log-source { font-size: 0.8em; color: #b8d9f2; }
 .action-log-location { border: 1px solid #999; border-radius: 4px; background: #42424a; color: inherit; cursor: pointer; white-space: nowrap; }
 .action-log-location:focus-visible { outline: 2px solid #ffc567; }
 .action-log-target, .action-log-incomplete { font-size: 0.8em; color: #bbb; }

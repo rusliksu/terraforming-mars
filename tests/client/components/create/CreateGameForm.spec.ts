@@ -757,6 +757,27 @@ describe('CreateGameForm', () => {
     expect(vm.customColonies).to.include(ColonyName.IAPETUS_II);
   });
 
+  it('explains why saved cards from disabled expansions are not selected', async () => {
+    const wrapper = shallowMount(CreateGameForm, {...globalConfig});
+    const vm = wrapper.vm as any;
+
+    const processor = vm.applySettings(createGameSettings({
+      expansions: {...DEFAULT_EXPANSIONS, prelude: true, turmoil: false, promo: false},
+      customCorporationsList: [CardName.ECOLINE, CardName.PRISTAR, CardName.TERRALABS_RESEARCH],
+      customPreludes: [CardName.BIOFUELS, CardName.BOOM_TOWN],
+    }));
+    await wrapper.vm.$nextTick();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+
+    expect(processor.warnings).to.deep.eq([
+      'Cards requiring disabled expansions were not selected: Pristar, TerraLabs Research, Boom Town. Enable their expansions and select them again.',
+    ]);
+    expect(vm.customCorporations).not.to.include(CardName.PRISTAR);
+    expect(vm.customCorporations).not.to.include(CardName.TERRALABS_RESEARCH);
+    expect(vm.customPreludes).not.to.include(CardName.BOOM_TOWN);
+  });
+
   it('excludes Double Down by default when the Merger variant is enabled', async () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,

@@ -89,7 +89,7 @@
       </div>
       <div class="replay-board">
         <div class="replay-board-inner" data-test="replay-board-inner">
-          <GameBoardView :game="state.frame.view.game" :players="state.frame.view.players" :tileView="tileView"
+          <GameBoardView ref="gameBoardView" :game="state.frame.view.game" :players="state.frame.view.players" :tileView="tileView"
             @toggleTileView="tileView = nextTileView(tileView)"/>
         </div>
       </div>
@@ -180,8 +180,9 @@ function messageClicked(message: LogMessage) {
   }
 }
 
-function spaceClicked(_spaceId: SpaceId) {
-  document.querySelector('.replay-board')?.scrollIntoView({behavior: 'smooth', block: 'center'});
+const gameBoardView = ref<InstanceType<typeof GameBoardView>>();
+function spaceClicked(spaceId: SpaceId) {
+  gameBoardView.value?.highlightSpace(spaceId);
 }
 onMounted(initialize);
 </script>

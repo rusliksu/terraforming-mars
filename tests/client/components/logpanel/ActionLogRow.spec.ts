@@ -46,4 +46,24 @@ describe('ActionLogRow', () => {
     expect(wrapper.find('.action-log-production-box .resource_icon--energy').exists()).to.be.true;
     expect(wrapper.get('.resource_icon--megacredits').element.parentElement?.textContent).to.contain('+6');
   });
+
+  it('names the affected player beside a signed TR change', () => {
+    const action = new LogMessage(LogMessageType.DEFAULT, 'Blue played a card', [
+      {type: LogMessageDataType.PLAYER, value: 'blue'},
+    ]);
+    const changed = new LogMessage(LogMessageType.DEFAULT, 'Red lost 1 TR', []);
+    changed.effect = {kind: 'tr', amount: -1, player: 'red'};
+    const entry = {kind: 'action' as const, id: 'action-3', messages: [action, changed], complete: true};
+    const wrapper = shallowMount(ActionLogRow, {
+      ...globalConfig,
+      props: {entry, viewModel: fakeViewModel({players: [
+        fakePublicPlayerModel({color: 'blue', name: 'Blue'}),
+        fakePublicPlayerModel({color: 'red', name: 'Red'}),
+      ]})},
+    });
+
+    expect(wrapper.find('.resource_icon--rating').exists()).to.be.true;
+    expect(wrapper.get('.action-log-effect').attributes('aria-label')).eq('-1 TR · Red');
+    expect(wrapper.get('.action-log-target').text()).eq('Red');
+  });
 });

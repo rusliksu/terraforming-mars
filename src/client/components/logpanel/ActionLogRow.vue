@@ -67,7 +67,9 @@ const expanded = ref(false);
 type EffectSummary = {effect: LogEffect, oceanCount?: number};
 const payments = computed(() => {
   const payment = props.entry.messages[0].payment;
-  if (payment === undefined) return [];
+  if (payment === undefined) {
+    return [];
+  }
   return ([Resource.MEGACREDITS, Resource.STEEL, Resource.TITANIUM] as const)
     .map((resource) => ({resource, amount: payment[resource]}))
     .filter(({amount}) => Number.isSafeInteger(amount) && amount > 0);

@@ -2,11 +2,21 @@ import {LogMessageType} from './LogMessageType';
 import {LogMessageData} from './LogMessageData';
 import {Message} from './Message';
 import {ParticipantId} from '../Types';
+import {Color} from '../Color';
+import {Resource} from '../Resource';
+
+export type LogEffect =
+  | {kind: 'resource', resource: Resource, production: boolean, amount: number, player: Color}
+  | {kind: 'tr', amount: number, player: Color};
 
 export class LogMessage implements Message {
   public playerId?: ParticipantId;
   public hiddenFor?: Array<ParticipantId>;
   public canceled?: boolean;
+  public actionId?: string;
+  public actionStart?: boolean;
+  public actionEnd?: boolean;
+  public effect?: LogEffect;
   public timestamp = Date.now();
   public type?: LogMessageType;
   constructor(

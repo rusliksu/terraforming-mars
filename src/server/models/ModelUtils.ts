@@ -51,6 +51,9 @@ export function cardsToModel(
       discount: discount,
       cloneTag: isICloneTagCard(card) ? card.cloneTag : undefined,
     };
+    if ('opgActionIsActive' in card && typeof card.opgActionIsActive === 'boolean') {
+      model.opgActionIsActive = card.opgActionIsActive;
+    }
     if (isIStandardProjectCard(card)) {
       model.standardProjectCanPayWith = card.canPayWith(player);
     }

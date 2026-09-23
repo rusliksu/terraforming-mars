@@ -29,6 +29,7 @@ export function useReplay(spectatorId: string) {
     request = new AbortController();
     state.loading = true;
     state.error = false;
+    state.frame = undefined;
     return {signal: request.signal, current: ++revision};
   }
 
@@ -50,7 +51,6 @@ export function useReplay(spectatorId: string) {
     }
     state.loading = false;
     state.error = true;
-    state.frame = undefined;
     pause();
   }
 
@@ -90,7 +90,6 @@ export function useReplay(spectatorId: string) {
     pause();
     cache.clear();
     state.index = undefined;
-    state.frame = undefined;
     const {signal, current} = beginRequest();
     try {
       const index = await read<ReplayIndex>(signal);

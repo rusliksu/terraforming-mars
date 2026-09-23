@@ -15,7 +15,7 @@ import {Space} from './boards/Space';
 import {Tile} from './Tile';
 import {LogMessageBuilder} from './logs/LogMessageBuilder';
 import {LogHelper} from './LogHelper';
-import {LogMessage} from '../common/logs/LogMessage';
+import {LogEffect, LogMessage} from '../common/logs/LogMessage';
 import {milestoneManifest} from './milestones/Milestones';
 import {awardManifest} from './awards/Awards';
 import {PartyHooks} from './turmoil/parties/PartyHooks';
@@ -92,6 +92,8 @@ import {compareCompletionRank, getSharedRemainingPlaceRange, hasSameCompletionRa
 // Can be overridden by tests
 let createGameLog: () => Array<LogMessage> = () => [];
 
+type SaveGame = (game: IGame) => Promise<void>;
+
 export function setGameLog(f: () => Array<LogMessage>) {
   createGameLog = f;
 }
@@ -131,6 +133,7 @@ export class Game implements IGame, Logger {
   public gameAge: number = 0; // Each log event increases it
   public shadowInputSeq: number = 0;
   public gameLog: Array<LogMessage> = createGameLog();
+  public logActionContext?: {id: string, actor: IPlayer, generation: number, phase: Phase, ordinal: number, firstMessage: boolean};
   public undoCount: number = 0; // Each undo increases it
   public actionReplayState: ActionReplayState | null | undefined = undefined;
   public inputsThisRound = 0;
@@ -223,7 +226,8 @@ export class Game implements IGame, Logger {
     corporationDeck: CorporationDeck,
     preludeDeck: PreludeDeck,
     ceoDeck: CeoDeck,
-    tags: ReadonlyArray<Tag>) {
+    tags: ReadonlyArray<Tag>,
+    private readonly saveGame: SaveGame = (game) => GameLoader.getInstance().saveGame(game)) {
     this.id = id;
     this.name = name;
     this.gameOptions = {...gameOptions};
@@ -279,7 +283,8 @@ export class Game implements IGame, Logger {
     firstPlayer: IPlayer,
     spectatorId: SpectatorId,
     partialOptions: Partial<GameOptions> = {},
-    seed = 0): Game {
+    seed = 0,
+    saveGame?: SaveGame): Game {
     if (partialOptions.expansions === undefined) {
       partialOptions.expansions = {
         corpera: partialOptions.corporateEra ?? false,
@@ -356,7 +361,7 @@ export class Game implements IGame, Logger {
     }
 
     const name = generateGameName(UnseededRandom.INSTANCE);
-    const game = new Game(id, name, players, firstPlayer, activePlayer, spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, Array.from(tags));
+    const game = new Game(id, name, players, firstPlayer, activePlayer, spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, Array.from(tags), saveGame);
     // This evaluation of created time doesn't match what's stored in the database, but that's fine.
     game.createdTime = new Date();
     // Initialize Ares data
@@ -503,7 +508,7 @@ export class Game implements IGame, Logger {
     if (this.simulationMode) {
       return;
     }
-    this.saveGamePromise = GameLoader.getInstance().saveGame(this);
+    this.saveGamePromise = this.saveGame(this);
   }
 
   public serialize(): SerializedGame {
@@ -1550,9 +1555,7 @@ export class Game implements IGame, Logger {
 
   public simpleAddTile(player: IPlayer, space: Space, tile: Tile) {
     space.tile = tile;
-    if (tile.tileType === TileType.OCEAN ||
-      tile.tileType === TileType.MARTIAN_NATURE_WONDERS ||
-      tile.tileType === TileType.REY_SKYWALKER) {
+    if (tile.tileType === TileType.OCEAN) {
       space.player = undefined;
     } else {
       space.player = player;
@@ -1764,13 +1767,25 @@ export class Game implements IGame, Logger {
       .toSorted(byKey('cost'));
   }
 
-  public log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer, reservedForParticipant?: ParticipantId, hiddenFor?: Array<ParticipantId>}) {
+  public log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer, reservedForParticipant?: ParticipantId, hiddenFor?: Array<ParticipantId>, effect?: LogEffect}) {
     const builder = new LogMessageBuilder(message);
     f?.(builder);
     const logMessage = builder.build();
     logMessage.playerId = options?.reservedFor?.id ?? options?.reservedForParticipant;
     if (options?.hiddenFor !== undefined) {
       logMessage.hiddenFor = options.hiddenFor;
+    }
+    if (options?.effect !== undefined) {
+      logMessage.effect = options.effect;
+    }
+    const context = this.logActionContext;
+    if (context !== undefined && context.actor.actionsTakenThisGame === context.ordinal &&
+        this.generation === context.generation && this.phase === context.phase) {
+      logMessage.actionId = context.id;
+      if (context.firstMessage) {
+        logMessage.actionStart = true;
+        context.firstMessage = false;
+      }
     }
     this.gameLog.push(logMessage);
     this.gameAge++;
@@ -1808,7 +1823,7 @@ export class Game implements IGame, Logger {
     return addDays(this.createdTime, days).getTime();
   }
 
-  public static deserialize(d: SerializedGame, options: {simulation?: boolean; viewOnly?: boolean} = {}): Game {
+  public static deserialize(d: SerializedGame, options: {simulation?: boolean; viewOnly?: boolean; saveGame?: SaveGame} = {}): Game {
     if (options.viewOnly) {
       d = structuredClone(d);
     }
@@ -1830,7 +1845,7 @@ export class Game implements IGame, Logger {
 
     const ceoDeck = CeoDeck.deserialize(d.ceoDeck, rng);
 
-    const game = new Game(d.id, d.name, players, first, d.activePlayer, d.spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, d.tags);
+    const game = new Game(d.id, d.name, players, first, d.activePlayer, d.spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, d.tags, options.saveGame);
     game.simulationMode = options.simulation === true || options.viewOnly === true;
     game.resettable = true;
     game.spectatorId = d.spectatorId;

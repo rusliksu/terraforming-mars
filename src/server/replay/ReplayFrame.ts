@@ -122,7 +122,7 @@ export function toReplayFrame(saved: SerializedGame): ReplayFrame {
     logs: game.gameLog
       .filter((message) => message.playerId === undefined && !message.hiddenFor?.includes(game.spectatorId))
       .map((message) => ({
-        ...pick(message, ['type', 'message', 'timestamp', 'canceled']),
+        ...pick(message, ['type', 'message', 'timestamp', 'canceled', 'actionId', 'actionStart', 'actionEnd', 'effect']),
         data: message.data.map((datum) => ({
           type: datum.type, value: datum.value,
           attrs: datum.attrs === undefined ? undefined : pick(datum.attrs, ['tags', 'cost', 'ellipsis']),

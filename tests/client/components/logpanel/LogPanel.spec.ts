@@ -217,6 +217,27 @@ describe('LogPanel', () => {
     expect(wrapper.find('.log-panel').element.nextElementSibling).eq(wrapper.find('.log-player-filters').element);
   });
 
+  it('keeps ordinary action messages as separate original rows', async () => {
+    const wrapper = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {viewModel: fakeViewModel(), color: 'blue'},
+    });
+    const played = new LogMessage(LogMessageType.DEFAULT, 'Blue played a card', []);
+    played.actionId = 'one-action';
+    played.actionStart = true;
+    const gained = new LogMessage(LogMessageType.DEFAULT, 'Blue gained 2 steel', []);
+    gained.actionId = 'one-action';
+    gained.actionEnd = true;
+    await Promise.resolve();
+    await Promise.resolve();
+    (wrapper.vm as any).messages = [played, gained];
+    (wrapper.vm as any).selectedPlayerColor = undefined;
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.findAllComponents(LogMessageComponent)).to.have.length(2);
+    expect(wrapper.find('.action-log-row').exists()).to.be.false;
+  });
+
   it('includes the current player\'s private draft logs in their filter without requesting another view', async () => {
     const blue = fakePublicPlayerModel({color: 'blue', id: 'p-blue-id' as any, name: 'Blue'});
     const wrapper = shallowMount(LogPanel, {

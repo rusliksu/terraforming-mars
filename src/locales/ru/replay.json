@@ -17,5 +17,6 @@
   "Retry replay": "Повторить загрузку",
   "No saved states are available.": "Сохранённые состояния недоступны.",
   "Saved public log": "Публичный журнал сохранения",
-  "No public messages in this save.": "В этом сохранении нет публичных сообщений."
+  "No public messages in this save.": "В этом сохранении нет публичных сообщений.",
+  "Latest event in view": "Последнее событие в выбранном журнале"
 }

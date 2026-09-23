@@ -125,3 +125,9 @@ export function quotaExceeded(req: Request, res: Response) {
   res.write('Quota exceeded');
   res.end();
 }
+
+export function serviceUnavailable(res: Response): void {
+  res.writeHead(statusCode.serviceUnavailable);
+  res.write('Maintenance in progress');
+  res.end();
+}

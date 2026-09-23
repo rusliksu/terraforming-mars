@@ -9,8 +9,10 @@ param(
     [string[]]$IgnoredRealtimeGameId,
     [ValidateRange(1, 365)]
     [int]$RealtimeGameStaleDays = 10,
-    [ValidateRange(1, 3600)]
-    [int]$NextServiceHealthTimeoutSeconds = 180,
+    [ValidateRange(120, 1800)]
+    [int]$SqliteCopyTimeoutSeconds = 600,
+    [ValidateRange(30, 900)]
+    [int]$StaticCopyTimeoutSeconds = 120,
     [switch]$DryRun
 )
 
@@ -40,6 +42,12 @@ function Assert-OptionalSha {
 
 Assert-OptionalSha -Name "ExpectedGitSha" -Value $ExpectedGitSha -AllowedLengths @(40)
 Assert-OptionalSha -Name "ExpectedArtifactSha" -Value $ExpectedArtifactSha -AllowedLengths @(64)
+if (-not $DryRun -and [string]::IsNullOrWhiteSpace($ExpectedGitSha)) {
+    throw "ExpectedGitSha is required for production promotion."
+}
+if (-not $DryRun -and [string]::IsNullOrWhiteSpace($ExpectedArtifactSha)) {
+    throw "ExpectedArtifactSha is required for production promotion."
+}
 
 if (-not $DryRun) {
     if ([string]::IsNullOrWhiteSpace($ExpectedGitSha)) {
@@ -80,37 +88,36 @@ staging_current="$staging_root/current"
 prod_root="/home/openclaw/tm-runtime/prod"
 runtime_root="$prod_root"
 prod_current="$prod_root/current"
-prod_next_root="/home/openclaw/tm-runtime/prod-next"
-prod_next_current="$prod_next_root/current"
 legacy_prod="/home/openclaw/terraforming-mars"
 service="tm-server"
-next_service="tm-server-next"
 elo_service="tm-elo"
 legacy_elo_timer="tm-sync-elo.timer"
 legacy_elo_sync_service="tm-sync-elo.service"
 prod_port="8081"
-next_port="8085"
 health_url="http://127.0.0.1:$prod_port"
-next_health_url="http://127.0.0.1:$next_port"
-next_health_timeout_seconds="__NEXT_SERVICE_HEALTH_TIMEOUT_SECONDS__"
 health_poll_delay_seconds=2
 elo_health_url="http://127.0.0.1:8082/api/elo-submit"
 release_url="${health_url%/}/release.json"
 release_url_fallback="${health_url%/}/assets/release.json"
-next_release_url="${next_health_url%/}/release.json"
-next_release_url_fallback="${next_health_url%/}/assets/release.json"
 upstream_snippet="/etc/nginx/snippets/tm-prod-active-upstream.conf"
 required_git_sha="__EXPECTED_GIT_SHA__"
 required_artifact_sha="__EXPECTED_ARTIFACT_SHA__"
 expected_release_baseline_b64="__EXPECTED_RELEASE_BASELINE_B64__"
 ignored_realtime_game_ids_csv="__IGNORED_REALTIME_GAME_IDS_CSV__"
 realtime_game_stale_days="__REALTIME_GAME_STALE_DAYS__"
+sqlite_copy_timeout_seconds="__SQLITE_COPY_TIMEOUT_SECONDS__"
+static_copy_timeout_seconds="__STATIC_COPY_TIMEOUT_SECONDS__"
 run_token="__RUN_TOKEN__"
 work_root="/tmp/tm-promote-${run_token}"
 release_dir="$work_root/release"
+rehearsal_root="$work_root/rehearsal"
+rehearsal_db="$rehearsal_root/game.db"
 shared_root="$prod_root/shared"
 deps_root="$shared_root/deps"
 releases_root="$prod_root/releases"
+backup_root="$prod_root/backups"
+database_backup="$backup_root/${run_token}-game.db"
+database_restore_probe="$work_root/restore-probe.db"
 new_release_dir=""
 previous_current=""
 active_proxy_port="$prod_port"
@@ -118,9 +125,11 @@ elo_files="index.html audit_player_names.py elo-api.js elo_aliases.py excluded_g
 deploy_lock_file="/home/openclaw/tm-runtime/.deploy.lock"
 deploy_lock_info="/home/openclaw/tm-runtime/.deploy.lock.info"
 game_db_path="$shared_root/db/game.db"
-nginx_snippet_backup="$work_root/nginx-before.conf"
+promotion_write_gate="$shared_root/db/.promotion-write-gate"
 previous_current_link_target=""
 previous_current_link_existed=0
+primary_stopped=0
+cutover_in_progress=0
 scripts_dir="/home/openclaw/scripts"
 
 disable_periodic_elo_sync() {
@@ -429,6 +438,7 @@ assert_no_realtime_games_sqlite() {
   local running_count
   local realtime_count
   local realtime_ids
+  local stale_ids
   local turn_based_count
   local ended_count
   local ignored_count
@@ -565,6 +575,7 @@ try {
   console.log(`realtime_count=${result.realtime.length}`);
   console.log(`realtime_ids=${result.realtime.join(',')}`);
   console.log(`stale_count=${result.stale.length}`);
+  console.log(`stale_ids=${result.stale.join(',')}`);
   console.log(`unknown_count=${result.unknown.length}`);
 } catch (_) {
   console.error('TM live-game SQLite gate failed closed.');
@@ -587,6 +598,7 @@ NODE
   realtime_count="$(printf '%s\n' "$gate_output" | sed -n 's/^realtime_count=//p')"
   realtime_ids="$(printf '%s\n' "$gate_output" | sed -n 's/^realtime_ids=//p')"
   stale_count="$(printf '%s\n' "$gate_output" | sed -n 's/^stale_count=//p')"
+  stale_ids="$(printf '%s\n' "$gate_output" | sed -n 's/^stale_ids=//p')"
   unknown_count="$(printf '%s\n' "$gate_output" | sed -n 's/^unknown_count=//p')"
   for count in "$running_count" "$turn_based_count" "$ended_count" "$ignored_count" "$realtime_count" "$stale_count" "$unknown_count"; do
     case "$count" in
@@ -596,17 +608,120 @@ NODE
         ;;
     esac
   done
-  case "$ignored_ids,$realtime_ids" in
+  case "$ignored_ids,$realtime_ids,$stale_ids" in
     *[!A-Za-z0-9_,-]*)
       echo "Prod promote blocked at $checkpoint: malformed SQLite gate identifiers." >&2
       return 43
       ;;
   esac
 
-  echo "Prod SQLite live-game gate at $checkpoint: running=$running_count turn_based=$turn_based_count ended=$ended_count ignored=$ignored_count ignored_ids=${ignored_ids:-none} realtime=$realtime_count realtime_ids=${realtime_ids:-none} stale=$stale_count unknown=$unknown_count stale_days=$realtime_game_stale_days"
-  if [ "$realtime_count" -gt 0 ] || [ "$unknown_count" -gt 0 ]; then
-    echo "Prod promote blocked at $checkpoint: blocking realtime evidence=$realtime_count unknown_timestamp=$unknown_count ids=${realtime_ids:-unknown}." >&2
+  echo "Prod SQLite live-game gate at $checkpoint: running=$running_count turn_based=$turn_based_count ended=$ended_count ignored=$ignored_count ignored_ids=${ignored_ids:-none} realtime=$realtime_count realtime_ids=${realtime_ids:-none} stale=$stale_count stale_ids=${stale_ids:-none} unknown=$unknown_count stale_days=$realtime_game_stale_days"
+  if [ "$realtime_count" -gt 0 ] || [ "$stale_count" -gt 0 ] || [ "$unknown_count" -gt 0 ]; then
+    echo "Prod promote blocked at $checkpoint: unconfirmed realtime=$realtime_count stale=$stale_count unknown_timestamp=$unknown_count ids=${realtime_ids:-none},${stale_ids:-none}." >&2
     return 42
+  fi
+}
+
+create_verified_sqlite_copy() {
+  local source_path="$1"
+  local destination_path="$2"
+  local timeout_seconds="${sqlite_copy_timeout_seconds:-600}"
+  timeout --signal=TERM --kill-after=5 "${timeout_seconds}s" python3 - "$source_path" "$destination_path" <<'PY'
+import os
+import pathlib
+import sqlite3
+import sys
+
+source = pathlib.Path(sys.argv[1])
+destination = pathlib.Path(sys.argv[2])
+temporary = destination.with_name(f".{destination.name}.{os.getpid()}.tmp")
+
+if not source.is_file():
+    raise SystemExit(51)
+destination.parent.mkdir(parents=True, exist_ok=True)
+for path in (temporary, destination):
+    try:
+        path.unlink()
+    except FileNotFoundError:
+        pass
+
+try:
+    source_db = sqlite3.connect(f"file:{source}?mode=ro", uri=True)
+    destination_db = sqlite3.connect(temporary)
+    try:
+        source_db.backup(destination_db)
+        result = [row[0] for row in destination_db.execute("PRAGMA integrity_check")]
+        if result != ["ok"]:
+            raise RuntimeError("integrity check failed")
+    finally:
+        destination_db.close()
+        source_db.close()
+    os.replace(temporary, destination)
+except Exception:
+    try:
+        temporary.unlink()
+    except FileNotFoundError:
+        pass
+    raise SystemExit(51)
+PY
+}
+
+create_static_database_copy() {
+  local source_path="$1"
+  local destination_path="$2"
+  local source_size
+  local destination_size
+  local timeout_seconds="${static_copy_timeout_seconds:-120}"
+  rm -f "$destination_path"
+  mkdir -p "$(dirname "$destination_path")"
+  timeout --signal=TERM --kill-after=5 "${timeout_seconds}s" cp --sparse=auto -- "$source_path" "$destination_path"
+  python3 - "$destination_path" <<'PY'
+import os
+import sys
+
+with open(sys.argv[1], "r+b") as database_file:
+    os.fsync(database_file.fileno())
+PY
+  source_size="$(stat -c %s "$source_path")"
+  destination_size="$(stat -c %s "$destination_path")"
+  if [ -z "$source_size" ] || [ "$source_size" -le 0 ] || [ "$source_size" != "$destination_size" ]; then
+    return 51
+  fi
+  python3 - "$destination_path" <<'PY'
+import sqlite3
+import sys
+
+database = sqlite3.connect(f"file:{sys.argv[1]}?mode=ro", uri=True, timeout=5)
+try:
+    database.execute("SELECT name FROM sqlite_master LIMIT 1").fetchone()
+finally:
+    database.close()
+PY
+}
+
+create_verified_sqlite_backup() {
+  mkdir -p "$backup_root"
+  if ! create_static_database_copy "$game_db_path" "$database_backup"; then
+    return 51
+  fi
+  backup_sha="$(sha256sum "$database_backup" | awk '{print $1}')"
+  if [ -z "$backup_sha" ]; then
+    return 51
+  fi
+  echo "Verified SQLite backup: path=$database_backup sha256=$backup_sha"
+}
+
+restore_database_backup() {
+  local restore_tmp="$shared_root/db/.game.db.${run_token}.restore"
+  if [ ! -f "$database_backup" ]; then
+    return 52
+  fi
+  rm -f "$restore_tmp" "$game_db_path-wal" "$game_db_path-shm"
+  if ! create_static_database_copy "$database_backup" "$restore_tmp"; then
+    return 52
+  fi
+  if ! mv -f "$restore_tmp" "$game_db_path"; then
+    return 52
   fi
 }
 
@@ -641,30 +756,6 @@ require_primary_proxy_backend() {
   fi
 }
 
-set_proxy_port() {
-  local port="$1"
-  local tmp
-  if ! tmp="$(mktemp)"; then
-    return 1
-  fi
-  if ! printf 'set $tm_prod_backend http://127.0.0.1:%s;\n' "$port" > "$tmp"; then
-    rm -f "$tmp"
-    return 1
-  fi
-  if ! sudo install -m 644 "$tmp" "$upstream_snippet"; then
-    rm -f "$tmp"
-    return 1
-  fi
-  rm -f "$tmp"
-  if ! sudo nginx -t >/dev/null; then
-    return 1
-  fi
-  if ! sudo systemctl reload nginx; then
-    return 1
-  fi
-  active_proxy_port="$port"
-}
-
 cleanup_new_release() {
   if [ -n "$new_release_dir" ] && [ -d "$new_release_dir" ] && [ "$new_release_dir" != "$previous_current" ]; then
     rm -rf "$new_release_dir"
@@ -672,26 +763,17 @@ cleanup_new_release() {
 }
 
 cleanup_work_root() {
-  if [ -e "$nginx_snippet_backup" ]; then
-    sudo rm -f "$nginx_snippet_backup" || true
-  fi
   rm -rf "$work_root"
 }
 
-backup_public_state() {
-  if ! mkdir -p "$work_root"; then
-    return 1
-  fi
-  if ! sudo rm -f "$nginx_snippet_backup"; then
-    return 1
-  fi
-  if ! sudo cp -a -- "$upstream_snippet" "$nginx_snippet_backup"; then
-    return 1
-  fi
-}
-
-restore_public_state() {
+restore_previous_release() {
   local restore_failed=0
+
+  systemctl --user stop "$service" || true
+  if ! restore_database_backup; then
+    echo "Database rollback failed; refusing to start either release." >&2
+    return 1
+  fi
 
   if [ "$previous_current_link_existed" = "1" ]; then
     if ! ln -sfn "$previous_current_link_target" "$prod_current"; then
@@ -701,26 +783,11 @@ restore_public_state() {
     restore_failed=1
   fi
 
-  if ! systemctl --user restart "$service"; then
+  rm -f "$promotion_write_gate"
+  if ! systemctl --user start "$service"; then
     restore_failed=1
   elif ! wait_for_http "$health_url" 20 2; then
     restore_failed=1
-  fi
-
-  if [ ! -f "$nginx_snippet_backup" ]; then
-    restore_failed=1
-  elif ! sudo cp -a --remove-destination -- "$nginx_snippet_backup" "$upstream_snippet"; then
-    restore_failed=1
-  elif ! sudo nginx -t >/dev/null; then
-    restore_failed=1
-  elif ! sudo systemctl reload nginx; then
-    restore_failed=1
-  elif ! active_proxy_port="$(read_proxy_port)"; then
-    restore_failed=1
-  elif [ "$active_proxy_port" != "$prod_port" ]; then
-    restore_failed=1
-  else
-    :
   fi
 
   if ! systemctl --user restart "$elo_service"; then
@@ -732,24 +799,56 @@ restore_public_state() {
   return "$restore_failed"
 }
 
-rollback_before_public_switch() {
-  systemctl --user stop "$next_service" || true
-  rm -f "$prod_next_current"
+rollback_before_cutover() {
+  local resume_failed=0
+  echo "$1" >&2
+  if [ "$primary_stopped" = "1" ]; then
+    rm -f "$promotion_write_gate"
+    if ! systemctl --user start "$service"; then
+      resume_failed=1
+    elif ! wait_for_http "$health_url" 20 2; then
+      resume_failed=1
+    fi
+    primary_stopped=0
+    cutover_in_progress=0
+  fi
+  if [ "$resume_failed" = "1" ]; then
+    echo "The old primary failed to resume; candidate and diagnostic artifacts were retained." >&2
+    exit 53
+  fi
   cleanup_new_release
   cleanup_work_root
+  exit 1
 }
 
-rollback_after_public_switch() {
+rollback_after_cutover() {
   echo "$1" >&2
-  if restore_public_state; then
-    systemctl --user stop "$next_service" || true
-    rm -f "$prod_next_current"
+  if restore_previous_release; then
+    primary_stopped=0
+    cutover_in_progress=0
     cleanup_new_release
     cleanup_work_root
   else
-    echo "Automatic rollback was incomplete; next backend and rollback artifacts were retained." >&2
+    cutover_in_progress=0
+    echo "Automatic rollback was incomplete; the verified database backup was retained at $database_backup." >&2
   fi
   exit 1
+}
+
+handle_promote_exit() {
+  local status=$?
+  trap - EXIT
+  rm -f "$deploy_lock_info"
+  if [ "$status" -ne 0 ] && [ "$cutover_in_progress" = "1" ]; then
+    echo "Unexpected failure during the single-writer window; attempting guarded recovery." >&2
+    if [ -f "$database_backup" ]; then
+      restore_previous_release || echo "Guarded recovery failed; backup retained at $database_backup." >&2
+    else
+      systemctl --user start "$service" || true
+      wait_for_http "$health_url" 20 2 || true
+    fi
+  fi
+  exit "$status"
 }
 
 mkdir -p "$(dirname "$deploy_lock_file")"
@@ -770,7 +869,7 @@ fi
   echo "started_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo "pid=$$"
 } > "$deploy_lock_info"
-trap 'rm -f "$deploy_lock_info"' EXIT
+trap handle_promote_exit EXIT
 
 set +e
 assert_release_cas "$expected_release_baseline_b64" "/home/openclaw/tm-runtime"
@@ -793,10 +892,6 @@ if ! systemctl --user cat "$service" | grep -F "WorkingDirectory=$prod_current" 
   echo "Service $service is not pointed at $prod_current. Run sync_tm_runtime_services.ps1 first." >&2
   exit 1
 fi
-if ! systemctl --user cat "$next_service" | grep -F "WorkingDirectory=$prod_next_current" >/dev/null; then
-  echo "Service $next_service is not pointed at $prod_next_current. Run sync_tm_runtime_services.ps1 first." >&2
-  exit 1
-fi
 if ! systemctl --user cat "$elo_service" | grep -F "$prod_current/elo/elo-api.js" >/dev/null; then
   echo "Service $elo_service is not pointed at $prod_current. Run sync_tm_runtime_services.ps1 first." >&2
   exit 1
@@ -811,7 +906,7 @@ if ! disable_periodic_elo_sync; then
   exit 50
 fi
 
-mkdir -p "$prod_root" "$prod_next_root" "$releases_root" "$shared_root/db" "$shared_root/logs" "$shared_root/elo" "$deps_root"
+mkdir -p "$prod_root" "$releases_root" "$backup_root" "$shared_root/db" "$shared_root/logs" "$shared_root/elo" "$deps_root"
 if [ ! -f "$game_db_path" ]; then
   echo "Prod promote blocked: shared game.db is missing; migrate it separately with explicit approval before promotion." >&2
   exit 49
@@ -841,6 +936,7 @@ if [ "$previous_current_link_existed" != "1" ] || [ -z "$previous_current_link_t
 fi
 test -f "$staging_current/build/main.js"
 test -f "$staging_current/build/src/server/server.js"
+test -f "$staging_current/build/src/server/tools/validate_saved_games.js"
 test -f "$staging_current/assets/index.html"
 test -f "$staging_current/assets/release.json"
 test -f "$staging_current/elo/index.html"
@@ -898,6 +994,14 @@ if [ -n "$expected_artifact_sha" ] && [ -n "$expected_git_sha" ] && \
   if ! disable_periodic_elo_sync; then
     echo "Promote no-op could not enforce the periodic ELO polling invariant." >&2
     exit 50
+  fi
+  if ! wait_for_elo "$elo_health_url" 10 2; then
+    echo "Promote no-op could not confirm ELO health before reopening writes." >&2
+    exit 55
+  fi
+  if ! rm -f "$promotion_write_gate"; then
+    echo "Promote no-op could not reopen production writes." >&2
+    exit 55
   fi
   echo "Promote no-op"
   echo "reason=prod already serves the exact tested staging artifact"
@@ -964,7 +1068,6 @@ mkdir -p "$new_release_dir/elo"
 for file in $elo_files; do
   cp "$release_dir/elo/$file" "$new_release_dir/elo/$file"
 done
-ln -sfn "$shared_root/db" "$new_release_dir/db"
 ln -sfn "$shared_root/logs" "$new_release_dir/logs"
 ln -sfn "$shared_root/elo/elo-data.json" "$new_release_dir/elo/elo-data.json"
 ln -sfn "$shared_root/elo/data.json" "$new_release_dir/elo/data.json"
@@ -974,88 +1077,96 @@ ln -sfn "$deps_dir/node_modules" "$new_release_dir/node_modules"
 
 if ! normalize_release_permissions "$new_release_dir"; then
   echo "Release permission normalization failed." >&2
-  rollback_before_public_switch
-  exit 49
+  rollback_before_cutover "Release permission normalization failed."
 fi
 
-ln -sfn "$new_release_dir" "$prod_next_current"
-if ! systemctl --user restart "$next_service"; then
-  echo "Next service restart failed." >&2
-  rollback_before_public_switch
-  exit 1
+mkdir -p "$rehearsal_root"
+if ! create_verified_sqlite_copy "$game_db_path" "$rehearsal_db"; then
+  rollback_before_cutover "Could not create an integrity-checked production DB rehearsal copy."
 fi
-next_health_attempts=$(( (next_health_timeout_seconds + health_poll_delay_seconds - 1) / health_poll_delay_seconds ))
-if ! wait_for_http "$next_health_url" "$next_health_attempts" "$health_poll_delay_seconds"; then
-  echo "Next service health check failed." >&2
-  rollback_before_public_switch
-  exit 1
+rehearsal_before_sha="$(sha256sum "$rehearsal_db" | awk '{print $1}')"
+if ! (
+  cd "$new_release_dir"
+  node build/src/server/tools/validate_saved_games.js "$rehearsal_db"
+); then
+  rollback_before_cutover "Candidate could not deserialize and serialize every latest production save."
+fi
+rehearsal_after_sha="$(sha256sum "$rehearsal_db" | awk '{print $1}')"
+if [ -z "$rehearsal_before_sha" ] || [ "$rehearsal_before_sha" != "$rehearsal_after_sha" ]; then
+  rollback_before_cutover "Candidate validation modified the rehearsal database."
+fi
+if ! create_static_database_copy "$rehearsal_db" "$database_restore_probe"; then
+  rollback_before_cutover "Could not rehearse the bounded static database restore path."
+fi
+restore_probe_sha="$(sha256sum "$database_restore_probe" | awk '{print $1}')"
+if [ -z "$restore_probe_sha" ] || [ "$rehearsal_before_sha" != "$restore_probe_sha" ]; then
+  rollback_before_cutover "Static database restore rehearsal differs from its verified source."
 fi
 
-next_release_json="$(read_release_json "$next_release_url" "$next_release_url_fallback")"
-next_artifact_sha="$(printf '%s' "$next_release_json" | python3 -c 'import json, sys; print(json.load(sys.stdin).get("artifactSha256", ""))')"
-next_git_sha="$(printf '%s' "$next_release_json" | python3 -c 'import json, sys; print(json.load(sys.stdin).get("gitSha", ""))')"
-if [ "$next_artifact_sha" != "$expected_artifact_sha" ] || { [ -n "$expected_git_sha" ] && [ "$next_git_sha" != "$expected_git_sha" ]; }; then
-  echo "Next service manifest mismatch." >&2
-  rollback_before_public_switch
-  exit 1
-fi
-
-if ! backup_public_state; then
-  echo "Could not back up the exact nginx public routing state." >&2
-  rollback_before_public_switch
-  exit 1
+primary_stopped=1
+cutover_in_progress=1
+if ! systemctl --user stop "$service"; then
+  rollback_before_cutover "Could not stop the old primary server for the single-writer cutover."
 fi
 
 if assert_no_realtime_games_sqlite "before-public-switch"; then
   :
 else
   gate_exit=$?
-  rollback_before_public_switch
-  exit "$gate_exit"
+  rollback_before_cutover "Final live-game gate blocked promotion with exit $gate_exit."
+fi
+
+if ! create_verified_sqlite_backup; then
+  rollback_before_cutover "Could not create and restore-probe a consistent production SQLite backup."
+fi
+
+if ! printf 'promotion=%s\n' "$run_token" > "$promotion_write_gate"; then
+  rollback_after_cutover "Could not close production writes before candidate startup."
+fi
+
+if ! ln -sfn "$shared_root/db" "$new_release_dir/db"; then
+  rollback_after_cutover "Could not attach the candidate release to the production database."
 fi
 
 if ! ln -sfn "$new_release_dir" "$prod_current"; then
-  rollback_after_public_switch "Could not switch prod current to the candidate release."
+  rollback_after_cutover "Could not switch prod current to the candidate release."
 fi
-if ! set_proxy_port "$next_port"; then
-  rollback_after_public_switch "Could not switch public traffic to the next backend."
+
+if ! systemctl --user start "$service"; then
+  rollback_after_cutover "Primary prod service failed to start after the release switch."
+fi
+if ! wait_for_http "$health_url" 20 2; then
+  rollback_after_cutover "Primary prod service health check failed after the release switch."
+fi
+primary_stopped=0
+
+if ! served_release_json="$(read_release_json "$release_url" "$release_url_fallback")"; then
+  rollback_after_cutover "Could not read the primary prod release manifest after restart."
+fi
+if ! served_artifact_sha="$(printf '%s' "$served_release_json" | python3 -c 'import json, sys; print(json.load(sys.stdin).get("artifactSha256", ""))')"; then
+  rollback_after_cutover "Primary prod release manifest is malformed after restart."
+fi
+if ! served_git_sha="$(printf '%s' "$served_release_json" | python3 -c 'import json, sys; print(json.load(sys.stdin).get("gitSha", ""))')"; then
+  rollback_after_cutover "Primary prod release manifest is malformed after restart."
+fi
+if [ -z "$served_artifact_sha" ] || [ "$served_artifact_sha" != "$expected_artifact_sha" ]; then
+  rollback_after_cutover "Primary prod service manifest hash mismatch after restart."
+fi
+if [ -n "$expected_git_sha" ] && [ "$served_git_sha" != "$expected_git_sha" ]; then
+  rollback_after_cutover "Primary prod service git sha mismatch after restart."
 fi
 
 if ! systemctl --user restart "$elo_service"; then
-  rollback_after_public_switch "ELO restart failed after switching public traffic to next."
+  rollback_after_cutover "ELO restart failed after the release switch."
 fi
 if ! wait_for_elo "$elo_health_url" 10 2; then
-  rollback_after_public_switch "ELO health check failed after switching public traffic to next."
+  rollback_after_cutover "ELO health check failed after the release switch."
 fi
-
-if ! systemctl --user restart "$service"; then
-  rollback_after_public_switch "Primary prod service restart failed after switching public traffic to next."
+cutover_in_progress=0
+if ! rm -f "$promotion_write_gate"; then
+  echo "Prod passed cutover checks but writes remain closed; retry the exact promotion to reconcile the gate." >&2
+  exit 55
 fi
-if ! wait_for_http "$health_url" 20 2; then
-  rollback_after_public_switch "Primary prod service health check failed after switching public traffic to next."
-fi
-
-if ! served_release_json="$(read_release_json "$release_url" "$release_url_fallback")"; then
-  rollback_after_public_switch "Could not read the primary prod release manifest after restart."
-fi
-if ! served_artifact_sha="$(printf '%s' "$served_release_json" | python3 -c 'import json, sys; print(json.load(sys.stdin).get("artifactSha256", ""))')"; then
-  rollback_after_public_switch "Primary prod release manifest is malformed after restart."
-fi
-if ! served_git_sha="$(printf '%s' "$served_release_json" | python3 -c 'import json, sys; print(json.load(sys.stdin).get("gitSha", ""))')"; then
-  rollback_after_public_switch "Primary prod release manifest is malformed after restart."
-fi
-if [ -z "$served_artifact_sha" ] || [ "$served_artifact_sha" != "$expected_artifact_sha" ]; then
-  rollback_after_public_switch "Primary prod service manifest hash mismatch after restart."
-fi
-if [ -n "$expected_git_sha" ] && [ "$served_git_sha" != "$expected_git_sha" ]; then
-  rollback_after_public_switch "Primary prod service git sha mismatch after restart."
-fi
-
-if ! set_proxy_port "$prod_port"; then
-  rollback_after_public_switch "Could not switch public traffic back to the primary backend."
-fi
-systemctl --user stop "$next_service" || true
-rm -f "$prod_next_current"
 
 # Publish fixed-path cron/helper mirrors atomically after the public release transaction.
 # If this fails, a retry reaches the exact-prod no-op above and reconciles the full set.
@@ -1073,22 +1184,20 @@ echo "Promote ok"
 echo "source=$staging_current"
 echo "runtime_root=$prod_root"
 echo "current_link=$prod_current"
-echo "next_current_link=$prod_next_current"
 echo "legacy_root=$legacy_prod"
 echo "release_dir=$new_release_dir"
 echo "previous_current=$previous_current"
 echo "service=$service"
-echo "next_service=$next_service"
 echo "elo_service=$elo_service"
 echo "active_proxy_port=$active_proxy_port"
 echo "health_url=$health_url"
-echo "next_health_url=$next_health_url"
 echo "elo_health_url=$elo_health_url"
 echo "release_url=$release_url"
 echo "artifact_sha=$served_artifact_sha"
 echo "git_sha=$served_git_sha"
 echo "dependency_sha=$expected_dependency_sha"
 echo "dependencies_dir=$deps_dir"
+echo "database_backup=$database_backup"
 
 cleanup_work_root
 '@
@@ -1106,7 +1215,8 @@ $remoteScript = $remoteScript.Replace("__EXPECTED_ARTIFACT_SHA__", $expectedArti
 $remoteScript = $remoteScript.Replace("__EXPECTED_RELEASE_BASELINE_B64__", $ExpectedReleaseBaselineBase64)
 $remoteScript = $remoteScript.Replace("__IGNORED_REALTIME_GAME_IDS_CSV__", $ignoredRealtimeGameIdsCsv)
 $remoteScript = $remoteScript.Replace("__REALTIME_GAME_STALE_DAYS__", $RealtimeGameStaleDays.ToString([Globalization.CultureInfo]::InvariantCulture))
-$remoteScript = $remoteScript.Replace("__NEXT_SERVICE_HEALTH_TIMEOUT_SECONDS__", $NextServiceHealthTimeoutSeconds.ToString([Globalization.CultureInfo]::InvariantCulture))
+$remoteScript = $remoteScript.Replace("__SQLITE_COPY_TIMEOUT_SECONDS__", $SqliteCopyTimeoutSeconds.ToString([Globalization.CultureInfo]::InvariantCulture))
+$remoteScript = $remoteScript.Replace("__STATIC_COPY_TIMEOUT_SECONDS__", $StaticCopyTimeoutSeconds.ToString([Globalization.CultureInfo]::InvariantCulture))
 $remoteScript = $remoteScript.Replace("__RUN_TOKEN__", $promoteRunToken)
 
 if ($DryRun) {

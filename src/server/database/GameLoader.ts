@@ -64,6 +64,11 @@ const metrics = {
     labelNames: ['players'] as const,
     registers: [prometheus.register],
   }),
+  expiredSessionsDeleted: new prometheus.Counter({
+    name: 'expired_sessions_deleted',
+    help: 'Number of expired sessions deleted from storage',
+    registers: [prometheus.register],
+  }),
   gamesInMemory: new prometheus.Gauge({
     name: 'games_in_memory',
     help: 'Number of games currently loaded in memory',
@@ -242,7 +247,7 @@ export class GameLoader implements IGameLoader {
           console.error(`GameLoader:loadGame: game ${gameId} not found`);
           return undefined;
         }
-        const game = Game.deserialize(serializedGame);
+        const game = Game.deserialize(serializedGame, {saveGame: this.saveGame.bind(this)});
         await this.add(game);
         this.reconcileGame(game);
         console.log(`GameLoader loaded game ${gameId} into memory from database`);
@@ -321,7 +326,7 @@ export class GameLoader implements IGameLoader {
 
   public async getGameAt(gameId: GameId, saveId: number): Promise<IGame> {
     const serializedGame = await Database.getInstance().getGameVersion(gameId, saveId);
-    return Game.deserialize(serializedGame, {simulation: true});
+    return Game.deserialize(serializedGame, {simulation: true, saveGame: this.saveGame.bind(this)});
   }
 
   public async getGameAtOrBefore(gameId: GameId, saveId: number): Promise<IGame> {
@@ -342,7 +347,7 @@ export class GameLoader implements IGameLoader {
       await database.deleteGameNbrSaves(gameId, deletes);
     }
     const serializedGame = await database.getGameVersion(gameId, restoreSaveId);
-    const game = Game.deserialize(serializedGame);
+    const game = Game.deserialize(serializedGame, {saveGame: this.saveGame.bind(this)});
     appendCanceledLogMessages(current, game);
     await this.add(game);
     game.undoCount++;
@@ -403,6 +408,8 @@ export class GameLoader implements IGameLoader {
     this.purgedGames.push(...purgedGames);
     metrics.gamesPurged.inc(purgedGames.length);
     await database.compressCompletedGames();
+    const prunedSessions = await database.deleteExpiredSessions();
+    metrics.expiredSessionsDeleted.inc(prunedSessions);
   }
 }
 

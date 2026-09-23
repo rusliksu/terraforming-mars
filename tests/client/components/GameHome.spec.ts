@@ -89,6 +89,27 @@ describe('GameHome', () => {
     expect(wrapper.vm.getHref('p-blue')).not.contain('serverId');
   });
 
+  it('links every player by name without adding hint plaques to the lobby', () => {
+    const wrapper = shallowMount(GameHome, {
+      ...globalConfig,
+      props: {game: baseGame},
+    });
+
+    const enterLink = wrapper.find('[data-test="enter-game-link"]');
+    expect(enterLink.exists()).is.true;
+    expect(enterLink.attributes('href')).eq('player?id=p-blue');
+    expect(enterLink.attributes('title')).eq('Enter the game as this player');
+    expect(enterLink.text()).eq('Blue');
+
+    // The lobby explains itself through the instructions line and link titles only.
+    expect(wrapper.find('[data-test="lobby-enter-hint"]').exists()).is.false;
+    expect(wrapper.find('.enter-game-hint').exists()).is.false;
+    expect(wrapper.find('.game-home-hint').exists()).is.false;
+    const recreate = wrapper.find('.game-home-recreate');
+    expect(recreate.text()).to.contain('Recreate game (same setup)');
+    expect(recreate.text()).not.to.contain('Opens a new lobby');
+  });
+
   it('keeps player links bare when the lobby has no capability fragment', () => {
     const wrapper = shallowMount(GameHome, {
       ...globalConfig,

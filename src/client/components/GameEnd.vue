@@ -37,22 +37,32 @@
           </div>
           <div class="game_end_navigation">
             <div>
-              <a v-if="game.spectatorId" :href="'replay?id=' + encodeURIComponent(game.spectatorId)" class="btn" v-i18n>Game replay</a>
-              <a href="new-game">
+              <a v-if="game.spectatorId" :href="'replay?id=' + encodeURIComponent(game.spectatorId)"
+                 class="game-end-navigation-link tooltip tooltip-top"
+                 :data-tooltip="$t('Watch the saved states of this game')">
+                  <AppButton size="big" type="back" />
+                  <span v-i18n>Game replay</span>
+              </a>
+              <a href="new-game" class="game-end-navigation-link tooltip tooltip-top"
+                 :data-tooltip="$t('Start a new game and invite the other players')">
                   <AppButton size="big" type="back" />
                   <span v-i18n>Create New Game</span>
               </a>
 
-              <a :href="'new-game?cloneGameId=' + game.gameId" :title="$t('Start a new game with the same initial setup')">
+              <a :href="'new-game?cloneGameId=' + game.gameId" :title="$t('Start a new game with the same initial setup')"
+                 class="game-end-navigation-link tooltip tooltip-top"
+                 :data-tooltip="$t('Open a new lobby with the same settings')">
                   <AppButton size="big" type="back" />
-                  <span>♻ </span><span v-i18n>Rematch (same setup)</span>
+                  <span>♻&nbsp;</span><span v-i18n>Rematch (same setup)</span>
               </a>
 
-              <a href=".">
+              <a href="." class="game-end-navigation-link tooltip tooltip-top"
+                 :data-tooltip="$t('Main menu: start a game or open the guides')">
                   <AppButton size="big" type="back" />
                   <span v-i18n>Go to main page</span>
               </a>
-              <a href="history.html">
+              <a href="history.html" class="game-end-navigation-link tooltip tooltip-top"
+                 :data-tooltip="$t('Elo ratings and finished games')">
                   <AppButton size="big" type="back" />
                   <span>Elo &amp; History</span>
               </a>

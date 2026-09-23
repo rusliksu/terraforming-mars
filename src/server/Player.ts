@@ -9,7 +9,7 @@ import {Color, normalizePlayerNameForColor} from '../common/Color';
 import {ICorporationCard} from './cards/corporation/ICorporationCard';
 import {IGame} from './IGame';
 import {Game} from './Game';
-import {Payment, PaymentOptions, DEFAULT_PAYMENT_VALUES} from '../common/inputs/Payment';
+import {Payment, PaymentOptions, DEFAULT_PAYMENT_VALUES, paymentTotal} from '../common/inputs/Payment';
 import {SpendableResource, SPENDABLE_RESOURCES, SpendableCardResource, CARD_FOR_SPENDABLE_RESOURCE} from '../common/inputs/Spendable';
 import {IAward} from './awards/IAward';
 import {ICard, isIActionCard, IActionCard} from './cards/ICard';
@@ -377,9 +377,11 @@ export class Player implements IPlayer {
       if (opts.log === true) {
         if (opts.from !== undefined) {
           const from = opts.from;
-          this.game.log('${0} gained ${1} TR from ${2}', (b) => b.player(this).number(steps).from(from));
+          this.game.log('${0} gained ${1} TR from ${2}', (b) => b.player(this).number(steps).from(from),
+            {effect: {kind: 'tr', amount: steps, player: this.color}});
         } else {
-          this.game.log('${0} gained ${1} TR', (b) => b.player(this).number(steps));
+          this.game.log('${0} gained ${1} TR', (b) => b.player(this).number(steps),
+            {effect: {kind: 'tr', amount: steps, player: this.color}});
         }
       }
       for (const cardOwner of this.game.playersInGenerationOrder) {
@@ -395,15 +397,20 @@ export class Player implements IPlayer {
         // Cannot pay Reds, will not increase TR
         return;
       }
-      this.game.defer(
-        new SelectPaymentDeferred(this, redsCost, {title: 'Select how to pay for TR increase'}),
-        Priority.COST)
-        .andThen(() => {
-          this.game.log('${0} paid ${1} M€ for Turmoil ${2} policy', (b) =>
-            b.player(this).number(redsCost).partyName(PartyName.REDS));
-          raiseRating();
+      this.defer(() => {
+        // Earlier queued payments may have consumed the available funds.
+        if (!this.canAfford(redsCost)) {
           return undefined;
-        });
+        }
+        return new SelectPaymentDeferred(this, redsCost, {title: 'Select how to pay for TR increase'})
+          .andThen((payment) => {
+            // Report what the player actually paid, which can be resources instead of megacredits.
+            this.game.log('${0} paid ${1} M€ for Turmoil ${2} policy', (b) =>
+              b.player(this).number(paymentTotal(payment)).partyName(PartyName.REDS));
+            raiseRating();
+            return undefined;
+          }).execute();
+      }, Priority.COST);
     } else {
       raiseRating();
     }
@@ -412,7 +419,8 @@ export class Player implements IPlayer {
   public decreaseTerraformRating(steps: number = 1, opts: {log?: boolean} = {}) {
     this.terraformRating -= steps;
     if (opts.log === true) {
-      this.game.log('${0} lost ${1} TR', (b) => b.player(this).number(steps));
+      this.game.log('${0} lost ${1} TR', (b) => b.player(this).number(steps),
+        {effect: {kind: 'tr', amount: -steps, player: this.color}});
     }
   }
 
@@ -465,7 +473,9 @@ export class Player implements IPlayer {
   }
 
   public maybeBlockAttack(perpetrator: IPlayer, msg: Message | string, cb: (proceed: boolean) => PlayerInput | undefined): void {
-    this.defer(UnderworldExpansion.maybeBlockAttack(this, perpetrator, msg, cb));
+    this.defer(
+      UnderworldExpansion.maybeBlockAttack(this, perpetrator, msg, cb),
+      Priority.MAYBE_BLOCK_ATTACK);
   }
 
   public attack(perpetrator: IPlayer, resource: Resource, count: number, options?: {log?: boolean, stealing?: boolean}): void {
@@ -1714,6 +1724,13 @@ export class Player implements IPlayer {
   }
 
   private incrementActionsTaken(): void {
+    const context = this.game.logActionContext;
+    if (context?.actor === this) {
+      const lastMessage = this.game.gameLog.findLast((message) => message.actionId === context.id);
+      if (lastMessage !== undefined) {
+        lastMessage.actionEnd = true;
+      }
+    }
     this.actionsTakenThisRound++;
     this.actionsTakenThisGame++;
   }
@@ -1860,6 +1877,17 @@ export class Player implements IPlayer {
     }
     const waitingFor = this.waitingFor;
     const waitingForCb = this.waitingForCb;
+    const game = this.game;
+    const logStart = game.gameLog.length;
+    const previousLogContext = game.logActionContext;
+    if (game.phase === Phase.ACTION || game.phase === Phase.PRELUDES || game.phase === Phase.CEOS) {
+      const id = `${game.generation}:${game.phase}:${this.color}:${this.actionsTakenThisGame}`;
+      game.logActionContext = {
+        id, actor: this, generation: game.generation, phase: game.phase,
+        ordinal: this.actionsTakenThisGame,
+        firstMessage: !game.gameLog.some((message) => message.actionId === id),
+      };
+    }
     this.waitingFor = undefined;
     this.waitingForCb = undefined;
     try {
@@ -1874,8 +1902,17 @@ export class Player implements IPlayer {
         this._turnNoticeSentThisRound = false;
       }
     } catch (err) {
+      for (const message of game.gameLog.slice(logStart)) {
+        if (message.actionId === game.logActionContext?.id) {
+          delete message.actionId;
+          delete message.actionStart;
+          delete message.actionEnd;
+        }
+      }
       this.setWaitingFor(waitingFor, waitingForCb);
       throw err;
+    } finally {
+      game.logActionContext = previousLogContext;
     }
   }
 

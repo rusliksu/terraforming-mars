@@ -301,7 +301,7 @@ export class ApiQuickGame extends Handler {
       };
 
       const seed = Math.random();
-      const game = Game.newInstance(gameId, players, players[firstPlayerIdx], spectatorId, gameOptions, seed);
+      const game = Game.newInstance(gameId, players, players[firstPlayerIdx], spectatorId, gameOptions, seed, ctx.gameLoader.saveGame.bind(ctx.gameLoader));
       await ctx.gameLoader.add(game);
 
       const host = req.headers.host || 'localhost:8081';

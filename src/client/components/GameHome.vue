@@ -7,7 +7,7 @@
         <span class="turn-order" v-i18n>{{getTurnOrder(index)}}</span>
         <span :class="'color-square ' + getPlayerCubeColorClass(player.color)">{{playerSymbol(player.color)}}</span>
         <span class="player-name">
-          <a :href="getHref(player.id)">{{player.name}}</a>
+          <a :href="getHref(player.id)" :title="$t('Enter the game as this player')" data-test="enter-game-link">{{player.name}}</a>
           <span
             v-if="player.isBotControlled"
             class="bot-controlled-marker"
@@ -21,7 +21,7 @@
       <li v-if="game !== undefined && game.spectatorId" class="game-home-player-row game-home-player-row--spectator">
         <span class="turn-order"></span>
         <span class="color-square"></span>
-        <span class="player-name"><a :href="getHref(game.spectatorId)" v-i18n>Spectator</a></span>
+        <span class="player-name"><a :href="getHref(game.spectatorId)" :title="$t('Watch the game without playing')" v-i18n>Spectator</a></span>
         <span class="game-home-copy"><AppButton title="copy" size="tiny" @click="copyUrl(game.spectatorId)"/></span>
       </li>
     </ul>

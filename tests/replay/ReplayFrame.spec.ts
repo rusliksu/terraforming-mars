@@ -32,7 +32,7 @@ describe('Replay frame projection', () => {
     game.gameLog = [publicLog, new LogMessage(LogMessageType.DEFAULT, 'private-log-sentinel', [], red.id), hiddenLog];
     const saved = game.serialize();
     saved.lastSaveId = 9;
-    saved.gameOptions.clonedGamedId = 'private-clone-sentinel';
+    saved.gameOptions.clonedGamedId = 'gprivate-clone-sentinel';
     saved.gameOptions.customCorporationsList = [CardName.BIRDS];
     saved.gameOptions.modularMA = true;
     saved.gameOptions.startingCorporations = 7;
@@ -55,7 +55,7 @@ describe('Replay frame projection', () => {
     expect(frame.view.game.gameOptions.customCorporationsList).deep.eq([]);
     expect(frame.view.game.gameOptions.modularMA).eq(false);
     expect(frame.view.game.gameOptions.startingCorporations).eq(0);
-    expect(JSON.stringify(frame)).not.to.contain('private-clone-sentinel');
+    expect(JSON.stringify(frame)).not.to.contain('gprivate-clone-sentinel');
     for (const secret of [blue.id, red.id, CardName.BIRDS, CardName.ASTEROID,
       'private-telegram-sentinel', 'private-log-sentinel', 'hidden-log-sentinel', 'private-expansion-sentinel']) {
       expect(JSON.stringify(frame), secret).not.to.contain(secret);

@@ -5,6 +5,11 @@ import GameBoardView from '@/client/components/GameBoardView.vue';
 import PlayersOverview from '@/client/components/overview/PlayersOverview.vue';
 import {ReplayFrame} from '@/common/models/ReplayModel';
 import {LogMessageType} from '@/common/logs/LogMessageType';
+import {LogMessage} from '@/common/logs/LogMessage';
+import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
+import {CardName} from '@/common/cards/CardName';
+import LogMessageComponent from '@/client/components/logpanel/LogMessageComponent.vue';
+import LogGenerationList from '@/client/components/logpanel/LogGenerationList.vue';
 import {globalConfig} from '../getLocalVue';
 import {fakeGameModel, fakePublicPlayerModel} from '../testHelpers';
 
@@ -65,6 +70,52 @@ describe('ReplayHome', () => {
     expect(wrapper.find('waiting-for-stub').exists()).toBe(false);
     expect(wrapper.find('log-panel-stub').exists()).toBe(false);
     wrapper.unmount();
+  });
+
+  it('keeps replay-only log above the board and filters and inspects the selected frame', async () => {
+    const generation = (number: number) => new LogMessage(LogMessageType.NEW_GENERATION, 'Generation ${0}', [
+      {type: LogMessageDataType.RAW_STRING, value: String(number)},
+    ]);
+    const playerLog = (color: 'blue' | 'red', message: string) => new LogMessage(LogMessageType.DEFAULT, message, [
+      {type: LogMessageDataType.PLAYER, value: color},
+    ]);
+    const cardLog = new LogMessage(LogMessageType.DEFAULT, 'Blue played Great Dam', [
+      {type: LogMessageDataType.PLAYER, value: 'blue'},
+      {type: LogMessageDataType.CARD, value: CardName.GREAT_DAM_PROMO},
+    ]);
+    const frame: ReplayFrame = {saveId: 0,
+      view: {id: 'sreplay', runId: 'replay', color: 'neutral', thisPlayer: undefined,
+        game: fakeGameModel({generation: 2}), players: [
+          fakePublicPlayerModel({color: 'blue', name: 'Blue'}),
+          fakePublicPlayerModel({color: 'red', name: 'Red'}),
+        ]},
+      logs: [generation(1), cardLog, playerLog('red', 'Red generation 1'),
+        generation(2), playerLog('blue', 'Blue generation 2'), playerLog('red', 'Red generation 2')]};
+    vi.stubGlobal('fetch', vi.fn(async (url) => ({ok: true, json: async () =>
+      new URL(String(url), 'http://localhost').searchParams.has('saveId') ? frame :
+        {name: 'Recorded game', spectatorId: 'sreplay', saveIds: [0]}})));
+
+    const wrapper = mount();
+    await flushPromises();
+    const log = wrapper.get('.replay-log').element;
+    const players = wrapper.get('.replay-players').element;
+    const board = wrapper.get('.replay-board').element;
+    expect(log.compareDocumentPosition(players) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(log.compareDocumentPosition(board) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(wrapper.text()).toContain('Red generation 2');
+    expect(wrapper.text()).not.toContain('Red generation 1');
+
+    wrapper.getComponent(LogGenerationList).vm.$emit('selected', 1);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.text()).toContain('Red generation 1');
+    expect(wrapper.text()).not.toContain('Red generation 2');
+    await wrapper.findAll('.log-player-filter')[1].trigger('click');
+    expect(wrapper.text()).not.toContain('Red generation 1');
+    const card = wrapper.findAllComponents(LogMessageComponent).find((component) => component.props('message').message === cardLog.message);
+    expect(card).toBeDefined();
+    card!.vm.$emit('click');
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('.replay-card-overlay').exists()).toBe(true);
   });
 
   it('shows a safe error instead of the old frame and offers retry and return', async () => {

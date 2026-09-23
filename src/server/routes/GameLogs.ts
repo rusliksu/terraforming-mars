@@ -17,6 +17,12 @@ export class GameLogs {
   private cloneMessage(message: LogMessage, text: string, data: Array<LogMessageData>): LogMessage {
     const clone = new LogMessage(message.type ?? LogMessageType.DEFAULT, text, data, message.playerId);
     clone.timestamp = message.timestamp;
+    clone.canceled = message.canceled;
+    clone.hiddenFor = message.hiddenFor;
+    clone.actionId = message.actionId;
+    clone.actionStart = message.actionStart;
+    clone.actionEnd = message.actionEnd;
+    clone.effect = message.effect;
     return clone;
   }
 

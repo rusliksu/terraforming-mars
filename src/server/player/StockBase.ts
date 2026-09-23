@@ -174,6 +174,6 @@ export abstract class BaseStock {
       if (from !== undefined) {
         b.from(from);
       }
-    });
+    }, {effect: {kind: 'resource', resource, production, amount, player: this.player.color}});
   }
 }

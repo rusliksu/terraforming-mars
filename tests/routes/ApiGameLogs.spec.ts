@@ -55,6 +55,26 @@ describe('ApiGameLogs', () => {
     expect(messages[messages.length - 1].data[0].value).eq('50');
   });
 
+  it('filters private action effects before returning logs to another player', async () => {
+    const [game, blue, red] = testGame(2);
+    game.gameLog.length = 0;
+    game.log('Public action');
+    game.gameLog[0].actionId = 'action-1';
+    game.gameLog[0].actionStart = true;
+    game.log('Private result', () => {}, {reservedFor: red});
+    game.gameLog[1].actionId = 'action-1';
+    game.gameLog[1].actionEnd = true;
+    game.gameLog[1].effect = {kind: 'resource', resource: 'megacredits', production: false, amount: 999, player: red.color};
+    await scaffolding.ctx.gameLoader.add(game);
+
+    scaffolding.url = '/api/game/logs?id=' + blue.id;
+    await scaffolding.get(ApiGameLogs.INSTANCE, res);
+    const messages = JSON.parse(res.content);
+    expect(messages.map((message: {message: string}) => message.message)).deep.eq(['Public action']);
+    expect(messages[0].actionId).eq('action-1');
+    expect(JSON.stringify(messages)).not.to.contain('999');
+  });
+
   it('pulls logs for most recent generation', async () => {
     const [game, player] = testGame(1);
     scaffolding.url = '/api/game/logs?id=' + player.id + '&generation=50';

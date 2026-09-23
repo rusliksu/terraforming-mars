@@ -267,6 +267,11 @@
     "Draw 3 cards": "Добрать 3 карты",
 
     "Game log": "Лог игры",
+    "Last 100": "Последние 100",
+    "Show details": "Показать подробности",
+    "Hide details": "Скрыть подробности",
+    "Action continues": "Действие продолжается",
+    "production": "производство",
     "Select a card to keep and pass the rest to ${0}": "Выберите карту и передайте остальные игроку ${0}",
     "Keep": "Взять",
     "Discard": "Сбросить",

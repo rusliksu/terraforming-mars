@@ -23,8 +23,12 @@ describe('Replay frame projection', () => {
     game.phase = Phase.END;
     const publicLog = new LogMessage(LogMessageType.DEFAULT, 'Recorded public message', []);
     publicLog.hiddenFor = [blue.id];
+    publicLog.actionId = 'visible-action';
+    publicLog.effect = {kind: 'resource', resource: 'megacredits', production: false, amount: 6, player: blue.color};
     const hiddenLog = new LogMessage(LogMessageType.DEFAULT, 'hidden-log-sentinel', []);
     hiddenLog.hiddenFor = [game.spectatorId];
+    hiddenLog.actionId = 'hidden-action';
+    hiddenLog.effect = {kind: 'resource', resource: 'megacredits', production: false, amount: 999, player: red.color};
     game.gameLog = [publicLog, new LogMessage(LogMessageType.DEFAULT, 'private-log-sentinel', [], red.id), hiddenLog];
     const saved = game.serialize();
     saved.lastSaveId = 9;
@@ -42,10 +46,14 @@ describe('Replay frame projection', () => {
     expect(frame.view.players[0].megacreditProduction).eq(4);
     expect(frame.view.players[0].tableau.map((card) => card.name)).deep.eq([CardName.CREDICOR]);
     expect(frame.logs.map((message) => message.message)).deep.eq(['Recorded public message']);
+    expect(frame.logs[0].actionId).eq('visible-action');
+    expect(frame.logs[0].effect).deep.eq(publicLog.effect);
     for (const secret of [blue.id, red.id, CardName.BIRDS, CardName.ASTEROID,
       'private-telegram-sentinel', 'private-log-sentinel', 'hidden-log-sentinel', 'private-expansion-sentinel']) {
       expect(JSON.stringify(frame), secret).not.to.contain(secret);
     }
+    expect(JSON.stringify(frame)).not.to.contain('hidden-action');
+    expect(JSON.stringify(frame)).not.to.contain('999');
     expect(saved).deep.eq(before);
   });
 

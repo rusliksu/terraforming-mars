@@ -226,6 +226,7 @@ onMounted(initialize);
 .replay-card-overlay { position: fixed; inset: 0; z-index: 40; display: flex; justify-content: center; align-items: center; overflow: auto; padding: 16px; box-sizing: border-box; background: #000b; }
 .replay-card-overlay :deep(.card-panel) { max-width: 100%; max-height: calc(100vh - 32px); overflow: auto; }
 .replay-log :deep(.log-generations) { margin-bottom: 8px; }
+.replay-log :deep(.log-gen-numbers) { flex-wrap: wrap; min-width: 0; max-width: 100%; }
 .replay-log :deep(.log-player-filters) { margin-bottom: 10px; }
 .replay-home button:focus-visible, .replay-home select:focus-visible, .replay-home input:focus-visible { outline: 3px solid #ffc567; outline-offset: 3px; }
 @media (max-width: 600px) {

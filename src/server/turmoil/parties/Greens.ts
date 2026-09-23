@@ -27,7 +27,7 @@ export class Greens extends Party implements IParty {
 
 class GreensBonus01 extends Bonus {
   readonly id = 'gb01' as const;
-  readonly description = 'Gain 1 M€ for each Plant, Microbe and Animal tag you have';
+  readonly description = 'Gain 1 M€ for each plant, microbe and animal tag you have';
 
   getScore(player: IPlayer) {
     return player.tags.count(Tag.PLANT, 'raw') +
@@ -100,7 +100,7 @@ class GreensPolicy03 implements IPolicy {
 
 class GreensPolicy04 implements IPolicy {
   readonly id = 'gp04' as const;
-  readonly description = 'Spend 5 M€ to gain 3 plants or add 2 microbes to ANY card (Turmoil Greens)';
+  readonly description = 'Spend 5 M€ to gain 3 plants or add 2 microbes to ANY card';
 
   canAct(player: IPlayer) {
     return player.canAfford(5) && player.politicalAgendasActionUsedCount < POLITICAL_AGENDAS_MAX_ACTION_USES;

@@ -4,6 +4,7 @@
     :groups="GROUPS"
     :itemsByGroup="ALL_CARDS_BY_MODULE"
     :selected="initialSelected"
+    :selectable="selectable"
     @update:selected="$emit('corporation-list-changed', $event)"
     @close="$emit('close')"
   >
@@ -48,6 +49,7 @@ export default defineComponent({
   props: {
     expansions: {type: Object as () => Record<Expansion, boolean>, required: true},
     selected: {type: Array as () => Array<CardName>, required: true},
+    selectable: {type: Array as () => Array<CardName>, required: false},
   },
   data() {
     const initialSelected: Array<CardName> = this.selected.length > 0 ? [...this.selected] : [

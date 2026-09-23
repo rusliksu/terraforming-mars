@@ -10,6 +10,7 @@ import {ICorporationCard} from './cards/corporation/ICorporationCard';
 import {IGame} from './IGame';
 import {Game} from './Game';
 import {Payment, PaymentOptions, DEFAULT_PAYMENT_VALUES, paymentTotal} from '../common/inputs/Payment';
+import {LogPayment} from '../common/logs/LogMessage';
 import {SpendableResource, SPENDABLE_RESOURCES, SpendableCardResource, CARD_FOR_SPENDABLE_RESOURCE} from '../common/inputs/Spendable';
 import {IAward} from './awards/IAward';
 import {ICard, isIActionCard, IActionCard} from './cards/ICard';
@@ -1002,7 +1003,15 @@ export class Player implements IPlayer {
 
     if (selectedCard.type !== CardType.PROXY) {
       this.lastCardPlayed = selectedCard.name;
-      this.game.log('${0} played ${1}', (b) => b.player(this).card(selectedCard));
+      const hasCompleteLogPayment = payment !== undefined && SPENDABLE_RESOURCES.every((resource) => {
+        const amount = payment[resource];
+        return Number.isSafeInteger(amount) && amount >= 0 &&
+          (resource === 'megacredits' || resource === 'steel' || resource === 'titanium' || amount === 0);
+      });
+      const logPayment: LogPayment | undefined = hasCompleteLogPayment &&
+        payment.megacredits + payment.steel + payment.titanium > 0 ?
+        {megacredits: payment.megacredits, steel: payment.steel, titanium: payment.titanium} : undefined;
+      this.game.log('${0} played ${1}', (b) => b.player(this).card(selectedCard), {payment: logPayment});
     }
 
     // Play the card

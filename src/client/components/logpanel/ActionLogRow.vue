@@ -6,6 +6,11 @@
           @click="$emit('messageClicked', entry.messages[0])" @spaceClicked="$emit('spaceClicked', $event)"/>
       </ul>
       <div class="action-log-effects">
+        <span v-for="payment in payments" :key="payment.resource" class="action-log-payment"
+          :aria-label="`Paid ${payment.amount} ${payment.resource}`" :title="`Paid ${payment.amount} ${payment.resource}`">
+          <span class="action-log-effect-amount">−{{ payment.amount }}</span>
+          <i class="resource_icon" :class="'resource_icon--' + payment.resource" aria-hidden="true"></i>
+        </span>
         <span v-for="(summary, index) in effects" :key="index" class="action-log-effect"
           :aria-label="effectLabel(summary)" :title="effectLabel(summary)">
           <span class="action-log-effect-visual" :class="{'production-box action-log-production-box': summary.effect.kind === 'resource' && summary.effect.production}">
@@ -60,6 +65,15 @@ defineEmits<{
 
 const expanded = ref(false);
 type EffectSummary = {effect: LogEffect, oceanCount?: number};
+const payments = computed(() => {
+  const payment = props.entry.messages[0].payment;
+  if (payment === undefined) {
+    return [];
+  }
+  return ([Resource.MEGACREDITS, Resource.STEEL, Resource.TITANIUM] as const)
+    .map((resource) => ({resource, amount: payment[resource]}))
+    .filter(({amount}) => Number.isSafeInteger(amount) && amount > 0);
+});
 const effects = computed(() => props.entry.messages.flatMap((message): Array<EffectSummary> => {
   if (message.effect !== undefined) {
     return [{effect: message.effect}];
@@ -110,10 +124,11 @@ function oceanBonusEffect(message: LogMessage): EffectSummary | undefined {
 .action-log-title, .action-log-detail-list { padding: 0; margin: 0; list-style: none; }
 .action-log-title { flex: 1 1 290px; min-width: 0; font-weight: bold; }
 .action-log-effects { flex: 2 1 280px; min-width: 0; }
-.action-log-effect { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.action-log-effect, .action-log-payment { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.action-log-payment { color: #e9c8b4; }
 .action-log-effect-visual { display: inline-flex; align-items: center; gap: 4px; }
 .action-log-effect-amount { font-weight: bold; }
-.action-log-effect .resource_icon { display: inline-block; width: 21px; height: 21px; background-size: contain; }
+.action-log-effect .resource_icon, .action-log-payment .resource_icon { display: inline-block; width: 21px; height: 21px; background-size: contain; }
 .action-log-effect .action-log-production-box { min-width: 52px; width: auto; height: 29px; padding: 2px 5px; margin: 0; line-height: normal; box-sizing: border-box; color: #fff; }
 .action-log-source { font-size: 0.8em; color: #b8d9f2; }
 .action-log-location { border: 1px solid #999; border-radius: 4px; background: #42424a; color: inherit; cursor: pointer; white-space: nowrap; }

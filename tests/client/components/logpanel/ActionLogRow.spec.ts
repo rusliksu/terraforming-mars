@@ -20,11 +20,30 @@ describe('ActionLogRow', () => {
     });
 
     expect(wrapper.text()).to.contain('+2');
+    expect(wrapper.find('.action-log-payment').exists()).is.false;
     expect(wrapper.find('.resource_icon--steel').exists()).to.be.true;
     expect(wrapper.findAllComponents(LogMessageComponent)).to.have.length(1);
     await wrapper.get('button').trigger('click');
     expect(wrapper.get('button').attributes('aria-expanded')).eq('true');
     expect(wrapper.findAllComponents(LogMessageComponent)).to.have.length(2);
+  });
+
+  it('shows recorded card costs before gains, including each paid resource', () => {
+    const action = new LogMessage(LogMessageType.DEFAULT, 'Blue played a card', []);
+    action.payment = {megacredits: 14, steel: 2, titanium: 1};
+    const gained = new LogMessage(LogMessageType.DEFAULT, 'Blue gained 2 steel', []);
+    gained.effect = {kind: 'resource', resource: 'steel', production: false, amount: 2, player: 'blue'};
+    const entry = {kind: 'action' as const, id: 'action-payment', messages: [action, gained], complete: true};
+    const wrapper = shallowMount(ActionLogRow, {
+      ...globalConfig,
+      props: {entry, viewModel: fakeViewModel({players: [fakePublicPlayerModel({color: 'blue', name: 'Blue'})]})},
+    });
+
+    expect(wrapper.findAll('.action-log-payment').map((chip) => chip.attributes('aria-label')))
+      .deep.eq(['Paid 14 megacredits', 'Paid 2 steel', 'Paid 1 titanium']);
+    expect(wrapper.findAll('.action-log-payment').map((chip) => chip.text())).deep.eq(['−14', '−2', '−1']);
+    expect(wrapper.get('.action-log-effects').element.firstElementChild?.classList.contains('action-log-payment')).is.true;
+    expect(wrapper.get('.action-log-effect').text()).to.contain('+2');
   });
 
   it('shows a logged ocean bonus as coins and frames production', () => {

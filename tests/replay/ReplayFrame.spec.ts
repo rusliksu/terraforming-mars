@@ -25,10 +25,12 @@ describe('Replay frame projection', () => {
     publicLog.hiddenFor = [blue.id];
     publicLog.actionId = 'visible-action';
     publicLog.effect = {kind: 'resource', resource: 'megacredits', production: false, amount: 6, player: blue.color};
+    publicLog.payment = {megacredits: 14, steel: 2, titanium: 0};
     const hiddenLog = new LogMessage(LogMessageType.DEFAULT, 'hidden-log-sentinel', []);
     hiddenLog.hiddenFor = [game.spectatorId];
     hiddenLog.actionId = 'hidden-action';
     hiddenLog.effect = {kind: 'resource', resource: 'megacredits', production: false, amount: 999, player: red.color};
+    hiddenLog.payment = {megacredits: 999999, steel: 0, titanium: 0};
     game.gameLog = [publicLog, new LogMessage(LogMessageType.DEFAULT, 'private-log-sentinel', [], red.id), hiddenLog];
     const saved = game.serialize();
     saved.lastSaveId = 9;
@@ -52,6 +54,7 @@ describe('Replay frame projection', () => {
     expect(frame.logs.map((message) => message.message)).deep.eq(['Recorded public message']);
     expect(frame.logs[0].actionId).eq('visible-action');
     expect(frame.logs[0].effect).deep.eq(publicLog.effect);
+    expect(frame.logs[0].payment).deep.eq(publicLog.payment);
     expect(frame.view.game.gameOptions.customCorporationsList).deep.eq([]);
     expect(frame.view.game.gameOptions.modularMA).eq(false);
     expect(frame.view.game.gameOptions.startingCorporations).eq(0);

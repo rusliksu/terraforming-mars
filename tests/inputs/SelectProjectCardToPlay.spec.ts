@@ -56,4 +56,30 @@ describe('SelectProjectCardToPlay', () => {
     expect(player.playedCards).has.length(1);
     expect(player.playedCards.get(CardName.AQUIFER_PUMPING)).is.not.undefined;
   });
+
+  it('records the actual mixed card payment on the public play message', () => {
+    player.megaCredits = 20;
+    player.steel = 2;
+    new SelectProjectCardToPlay(player, [aquiferPumping]).andThen(cb).process({
+      type: 'projectCard', card: CardName.AQUIFER_PUMPING,
+      payment: Payment.of({megacredits: 14, steel: 2}),
+    });
+
+    expect(player.megaCredits).eq(6);
+    expect(player.steel).eq(0);
+    expect(player.game.gameLog.find((message) => message.message === '${0} played ${1}')?.payment)
+      .deep.eq({megacredits: 14, steel: 2, titanium: 0});
+  });
+
+  it('hides the whole expense when heat also paid for the card', () => {
+    player.megaCredits = 20;
+    player.heat = 4;
+    player.canUseHeatAsMegaCredits = true;
+    new SelectProjectCardToPlay(player, [aquiferPumping]).andThen(cb).process({
+      type: 'projectCard', card: CardName.AQUIFER_PUMPING,
+      payment: Payment.of({megacredits: 14, heat: 4}),
+    });
+
+    expect(player.game.gameLog.find((message) => message.message === '${0} played ${1}')?.payment).is.undefined;
+  });
 });

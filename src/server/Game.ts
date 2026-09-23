@@ -15,7 +15,7 @@ import {Space} from './boards/Space';
 import {Tile} from './Tile';
 import {LogMessageBuilder} from './logs/LogMessageBuilder';
 import {LogHelper} from './LogHelper';
-import {LogEffect, LogMessage} from '../common/logs/LogMessage';
+import {LogEffect, LogMessage, LogPayment} from '../common/logs/LogMessage';
 import {milestoneManifest} from './milestones/Milestones';
 import {awardManifest} from './awards/Awards';
 import {PartyHooks} from './turmoil/parties/PartyHooks';
@@ -1767,7 +1767,7 @@ export class Game implements IGame, Logger {
       .toSorted(byKey('cost'));
   }
 
-  public log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer, reservedForParticipant?: ParticipantId, hiddenFor?: Array<ParticipantId>, effect?: LogEffect}) {
+  public log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer, reservedForParticipant?: ParticipantId, hiddenFor?: Array<ParticipantId>, effect?: LogEffect, payment?: LogPayment}) {
     const builder = new LogMessageBuilder(message);
     f?.(builder);
     const logMessage = builder.build();
@@ -1777,6 +1777,9 @@ export class Game implements IGame, Logger {
     }
     if (options?.effect !== undefined) {
       logMessage.effect = options.effect;
+    }
+    if (options?.payment !== undefined) {
+      logMessage.payment = options.payment;
     }
     const context = this.logActionContext;
     if (context !== undefined && context.actor.actionsTakenThisGame === context.ordinal &&

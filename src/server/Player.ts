@@ -377,9 +377,11 @@ export class Player implements IPlayer {
       if (opts.log === true) {
         if (opts.from !== undefined) {
           const from = opts.from;
-          this.game.log('${0} gained ${1} TR from ${2}', (b) => b.player(this).number(steps).from(from));
+          this.game.log('${0} gained ${1} TR from ${2}', (b) => b.player(this).number(steps).from(from),
+            {effect: {kind: 'tr', amount: steps, player: this.color}});
         } else {
-          this.game.log('${0} gained ${1} TR', (b) => b.player(this).number(steps));
+          this.game.log('${0} gained ${1} TR', (b) => b.player(this).number(steps),
+            {effect: {kind: 'tr', amount: steps, player: this.color}});
         }
       }
       for (const cardOwner of this.game.playersInGenerationOrder) {
@@ -417,7 +419,8 @@ export class Player implements IPlayer {
   public decreaseTerraformRating(steps: number = 1, opts: {log?: boolean} = {}) {
     this.terraformRating -= steps;
     if (opts.log === true) {
-      this.game.log('${0} lost ${1} TR', (b) => b.player(this).number(steps));
+      this.game.log('${0} lost ${1} TR', (b) => b.player(this).number(steps),
+        {effect: {kind: 'tr', amount: -steps, player: this.color}});
     }
   }
 
@@ -1721,6 +1724,13 @@ export class Player implements IPlayer {
   }
 
   private incrementActionsTaken(): void {
+    const context = this.game.logActionContext;
+    if (context?.actor === this) {
+      const lastMessage = this.game.gameLog.findLast((message) => message.actionId === context.id);
+      if (lastMessage !== undefined) {
+        lastMessage.actionEnd = true;
+      }
+    }
     this.actionsTakenThisRound++;
     this.actionsTakenThisGame++;
   }
@@ -1867,6 +1877,17 @@ export class Player implements IPlayer {
     }
     const waitingFor = this.waitingFor;
     const waitingForCb = this.waitingForCb;
+    const game = this.game;
+    const logStart = game.gameLog.length;
+    const previousLogContext = game.logActionContext;
+    if (game.phase === Phase.ACTION || game.phase === Phase.PRELUDES || game.phase === Phase.CEOS) {
+      const id = `${game.generation}:${game.phase}:${this.color}:${this.actionsTakenThisGame}`;
+      game.logActionContext = {
+        id, actor: this, generation: game.generation, phase: game.phase,
+        ordinal: this.actionsTakenThisGame,
+        firstMessage: !game.gameLog.some((message) => message.actionId === id),
+      };
+    }
     this.waitingFor = undefined;
     this.waitingForCb = undefined;
     try {
@@ -1881,8 +1902,17 @@ export class Player implements IPlayer {
         this._turnNoticeSentThisRound = false;
       }
     } catch (err) {
+      for (const message of game.gameLog.slice(logStart)) {
+        if (message.actionId === game.logActionContext?.id) {
+          delete message.actionId;
+          delete message.actionStart;
+          delete message.actionEnd;
+        }
+      }
       this.setWaitingFor(waitingFor, waitingForCb);
       throw err;
+    } finally {
+      game.logActionContext = previousLogContext;
     }
   }
 

@@ -8,7 +8,8 @@ export type ReplayIndex = {
   saveIds: ReadonlyArray<number>;
 };
 
-export type ReplayLogMessage = Pick<LogMessage, 'type' | 'message' | 'data' | 'timestamp' | 'canceled'>;
+export type ReplayLogMessage = Pick<LogMessage, 'type' | 'message' | 'data' | 'timestamp' | 'canceled' |
+  'actionId' | 'actionStart' | 'actionEnd' | 'effect'>;
 
 export type ReplayFrame = {
   saveId: number;

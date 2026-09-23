@@ -15,7 +15,7 @@ import {Space} from './boards/Space';
 import {Tile} from './Tile';
 import {LogMessageBuilder} from './logs/LogMessageBuilder';
 import {LogHelper} from './LogHelper';
-import {LogMessage} from '../common/logs/LogMessage';
+import {LogEffect, LogMessage} from '../common/logs/LogMessage';
 import {milestoneManifest} from './milestones/Milestones';
 import {awardManifest} from './awards/Awards';
 import {PartyHooks} from './turmoil/parties/PartyHooks';
@@ -133,6 +133,7 @@ export class Game implements IGame, Logger {
   public gameAge: number = 0; // Each log event increases it
   public shadowInputSeq: number = 0;
   public gameLog: Array<LogMessage> = createGameLog();
+  public logActionContext?: {id: string, actor: IPlayer, generation: number, phase: Phase, ordinal: number, firstMessage: boolean};
   public undoCount: number = 0; // Each undo increases it
   public actionReplayState: ActionReplayState | null | undefined = undefined;
   public inputsThisRound = 0;
@@ -1766,13 +1767,25 @@ export class Game implements IGame, Logger {
       .toSorted(byKey('cost'));
   }
 
-  public log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer, reservedForParticipant?: ParticipantId, hiddenFor?: Array<ParticipantId>}) {
+  public log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer, reservedForParticipant?: ParticipantId, hiddenFor?: Array<ParticipantId>, effect?: LogEffect}) {
     const builder = new LogMessageBuilder(message);
     f?.(builder);
     const logMessage = builder.build();
     logMessage.playerId = options?.reservedFor?.id ?? options?.reservedForParticipant;
     if (options?.hiddenFor !== undefined) {
       logMessage.hiddenFor = options.hiddenFor;
+    }
+    if (options?.effect !== undefined) {
+      logMessage.effect = options.effect;
+    }
+    const context = this.logActionContext;
+    if (context !== undefined && context.actor.actionsTakenThisGame === context.ordinal &&
+        this.generation === context.generation && this.phase === context.phase) {
+      logMessage.actionId = context.id;
+      if (context.firstMessage) {
+        logMessage.actionStart = true;
+        context.firstMessage = false;
+      }
     }
     this.gameLog.push(logMessage);
     this.gameAge++;

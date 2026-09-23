@@ -66,4 +66,24 @@ describe('ActionLogRow', () => {
     expect(wrapper.get('.action-log-effect').attributes('aria-label')).eq('-1 TR · Red');
     expect(wrapper.get('.action-log-target').text()).eq('Red');
   });
+
+  it('links a logged tile location from the collapsed action to its board space', async () => {
+    const action = new LogMessage(LogMessageType.DEFAULT, 'Blue played Great Dam', []);
+    const placement = new LogMessage(LogMessageType.DEFAULT, '${0} ${1} ${2} at ${3}', [
+      {type: LogMessageDataType.PLAYER, value: 'blue'},
+      {type: LogMessageDataType.RAW_STRING, value: 'placed'},
+      {type: LogMessageDataType.RAW_STRING, value: 'ocean tile'},
+      {type: LogMessageDataType.SPACE, value: '43'},
+    ]);
+    const entry = {kind: 'action' as const, id: 'action-4', messages: [action, placement], complete: true};
+    const wrapper = shallowMount(ActionLogRow, {
+      ...globalConfig,
+      props: {entry, viewModel: fakeViewModel({players: [fakePublicPlayerModel({color: 'blue', name: 'Blue'})]})},
+    });
+
+    expect(wrapper.get('.action-log-location').text()).to.contain('F6');
+    expect(wrapper.findAllComponents(LogMessageComponent)).to.have.length(1);
+    await wrapper.get('.action-log-location').trigger('click');
+    expect(wrapper.emitted('spaceClicked')?.[0]).to.deep.equal(['43']);
+  });
 });

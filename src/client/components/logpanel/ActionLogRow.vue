@@ -15,6 +15,10 @@
           </span>
           <span v-if="differentPlayer(effect.player)" class="action-log-target">{{ playerName(effect.player) }}</span>
         </span>
+        <button v-for="spaceId in locations" :key="spaceId" type="button" class="action-log-location"
+          :title="getSpaceName(spaceId)" @click="$emit('spaceClicked', spaceId)">
+          ⌖ {{ getSpaceName(spaceId) }}
+        </button>
       </div>
       <button v-if="entry.messages.length > 1" type="button" class="action-log-details"
         :aria-expanded="expanded" @click="expanded = !expanded">
@@ -39,6 +43,7 @@ import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
 import {Color} from '@/common/Color';
 import {Resource} from '@/common/Resource';
 import {SpaceId} from '@/common/Types';
+import {getSpaceName} from '@/common/boards/spaces';
 import {ViewModel} from '@/common/models/PlayerModel';
 import LogMessageComponent from './LogMessageComponent.vue';
 
@@ -57,6 +62,8 @@ const effects = computed(() => props.entry.messages.flatMap((message) => {
   const effect = message.effect ?? oceanBonusEffect(message);
   return effect === undefined ? [] : [effect];
 }));
+const locations = computed(() => Array.from(new Set(props.entry.messages.slice(1).flatMap((message) =>
+  message.data.flatMap((datum) => datum.type === LogMessageDataType.SPACE ? [datum.value] : [])))).filter((id) => getSpaceName(id) !== 'n/a'));
 const actor = computed(() => props.entry.messages[0].data.find((datum) => datum.type === LogMessageDataType.PLAYER)?.value);
 
 function playerName(color: Color): string {
@@ -98,6 +105,8 @@ function oceanBonusEffect(message: LogMessage): LogEffect | undefined {
 .action-log-effect-amount { font-weight: bold; }
 .action-log-effect .resource_icon { display: inline-block; width: 21px; height: 21px; background-size: contain; }
 .action-log-effect .action-log-production-box { min-width: 52px; width: auto; height: 29px; padding: 2px 5px; margin: 0; line-height: normal; box-sizing: border-box; color: #fff; }
+.action-log-location { border: 1px solid #999; border-radius: 4px; background: #42424a; color: inherit; cursor: pointer; white-space: nowrap; }
+.action-log-location:focus-visible { outline: 2px solid #ffc567; }
 .action-log-target, .action-log-incomplete { font-size: 0.8em; color: #bbb; }
 .action-log-details { border: 1px solid #999; border-radius: 4px; background: transparent; color: inherit; cursor: pointer; }
 .action-log-details:focus-visible { outline: 2px solid #ffc567; }

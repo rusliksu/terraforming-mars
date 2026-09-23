@@ -621,6 +621,7 @@
                 @corporation-list-changed="updateCustomCorporations"
                 :expansions="expansions"
                 :selected="customCorporations"
+                :selectable="getSelectableCustomCorporations()"
                 @close="showCorporationList = false"
             />
 
@@ -631,6 +632,7 @@
                 @prelude-list-changed="updateCustomPreludes"
                 :expansions="expansions"
                 :selected="customPreludes"
+                :selectable="getSelectableCustomPreludes()"
                 @close="showPreludesList = false"
             />
 
@@ -1028,6 +1030,17 @@ export default defineComponent({
       this.uploading = true;
       try {
         processor.applyJSON(json, {preserveAsyncGame: options.preserveAsyncGame});
+        const selectableCorporations = new Set(this.getSelectableCustomCorporations());
+        const selectablePreludes = new Set(this.getSelectableCustomPreludes());
+        const unavailableCards = [
+          ...component.customCorporations.filter((name) => getCard(name) !== undefined && !selectableCorporations.has(name)),
+          ...component.customPreludes.filter((name) => getCard(name) !== undefined && !selectablePreludes.has(name)),
+        ];
+        if (unavailableCards.length > 0) {
+          processor.warnings.push(
+            `Cards requiring disabled expansions were not selected: ${unique(unavailableCards).join(', ')}. Enable their expansions and select them again.`,
+          );
+        }
         if (component.turnBasedGame === true) {
           this.fillKnownTelegramIdsForPlayers(this.getPlayers());
         }

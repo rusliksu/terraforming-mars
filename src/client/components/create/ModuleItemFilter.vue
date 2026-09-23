@@ -28,8 +28,8 @@
               </div>
             </div>
             <div v-for="item in itemsByGroup[group.key]" :key="item" v-show="include(item)">
-              <label class="form-checkbox">
-                <input type="checkbox" v-model="localSelected" :value="item">
+              <label class="form-checkbox" :title="isSelectable(item) ? undefined : $t('Enable required expansions to select this card')">
+                <input type="checkbox" v-model="localSelected" :value="item" :disabled="!isSelectable(item)">
                 <i class="form-icon"></i>
                 <slot name="item" :itemName="item" :icon="icon"></slot>
               </label>
@@ -52,6 +52,7 @@ const props = defineProps<{
   groups: Array<Group>;
   itemsByGroup: Record<string, Array<T>>;
   selected: Array<T>;
+  selectable?: Array<T>;
 }>();
 
 const emit = defineEmits<{
@@ -73,9 +74,13 @@ function getItemsByGroup(key: string): Array<T> {
   return (props.itemsByGroup[key] ?? []).slice();
 }
 
+function isSelectable(item: T): boolean {
+  return props.selectable === undefined || props.selectable.includes(item);
+}
+
 function selectAll(key: string) {
   for (const item of getItemsByGroup(key)) {
-    if (!localSelected.value.includes(item)) {
+    if (isSelectable(item) && !localSelected.value.includes(item)) {
       localSelected.value.push(item);
     }
   }
@@ -96,6 +101,9 @@ function selectNone(key: string) {
 
 function invertSelection(key: string) {
   for (const item of getItemsByGroup(key)) {
+    if (!isSelectable(item)) {
+      continue;
+    }
     if (localSelected.value.includes(item)) {
       removeFromSelection(item);
     } else {

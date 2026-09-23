@@ -32,6 +32,10 @@ describe('Replay frame projection', () => {
     game.gameLog = [publicLog, new LogMessage(LogMessageType.DEFAULT, 'private-log-sentinel', [], red.id), hiddenLog];
     const saved = game.serialize();
     saved.lastSaveId = 9;
+    saved.gameOptions.clonedGamedId = 'gprivate-clone-sentinel';
+    saved.gameOptions.customCorporationsList = [CardName.BIRDS];
+    saved.gameOptions.modularMA = true;
+    saved.gameOptions.startingCorporations = 7;
     if (saved.aresData === undefined) {
       throw new Error('Ares fixture missing');
     }
@@ -48,6 +52,10 @@ describe('Replay frame projection', () => {
     expect(frame.logs.map((message) => message.message)).deep.eq(['Recorded public message']);
     expect(frame.logs[0].actionId).eq('visible-action');
     expect(frame.logs[0].effect).deep.eq(publicLog.effect);
+    expect(frame.view.game.gameOptions.customCorporationsList).deep.eq([]);
+    expect(frame.view.game.gameOptions.modularMA).eq(false);
+    expect(frame.view.game.gameOptions.startingCorporations).eq(0);
+    expect(JSON.stringify(frame)).not.to.contain('gprivate-clone-sentinel');
     for (const secret of [blue.id, red.id, CardName.BIRDS, CardName.ASTEROID,
       'private-telegram-sentinel', 'private-log-sentinel', 'hidden-log-sentinel', 'private-expansion-sentinel']) {
       expect(JSON.stringify(frame), secret).not.to.contain(secret);

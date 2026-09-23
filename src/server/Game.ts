@@ -1937,15 +1937,6 @@ export class Game implements IGame, Logger {
       game.surrenderedPlayerIds.add(playerId);
     }
     game.globalsPerGeneration = d.globalsPerGeneration;
-
-    // TODO(kberg): Remove this migration code by 2026-08-01
-    for (const generation of game.globalsPerGeneration) {
-      const asany = generation as any;
-      if (asany['moon-logistics']) {
-        generation['moon-logistic'] = asany['moon-logistics'];
-        delete asany['moon-logistics'];
-      }
-    }
     game.verminInEffect = d.verminInEffect;
     game.exploitationOfVenusInEffect = d.exploitationOfVenusInEffect;
     if (options.viewOnly) {

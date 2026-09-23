@@ -106,6 +106,18 @@ describe('ApiGame', () => {
           'twoCorpsVariant': false,
           'undoOption': false,
           'undoStepOption': false,
+
+          'aresHazards': true,
+          'customCeos': [],
+          'customColoniesList': [],
+          'customCorporationsList': [],
+          'customPreludes': [],
+          'modularMA': false,
+          'moonStandardProjectVariant': false,
+          'moonStandardProjectVariant1': false,
+          'startingCeos': 3,
+          'startingCorporations': 2,
+          'startingPreludes': 4,
         },
       },
     );

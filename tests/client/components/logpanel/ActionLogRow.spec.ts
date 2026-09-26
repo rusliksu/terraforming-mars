@@ -5,10 +5,36 @@ import LogMessageComponent from '@/client/components/logpanel/LogMessageComponen
 import {LogMessage} from '@/common/logs/LogMessage';
 import {LogMessageType} from '@/common/logs/LogMessageType';
 import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
+import {GlobalParameter} from '@/common/GlobalParameter';
 import {fakePublicPlayerModel, fakeViewModel} from '../testHelpers';
 import {globalConfig} from '../getLocalVue';
 
 describe('ActionLogRow', () => {
+  it('shows global track changes with actual units and the affected player', () => {
+    const action = new LogMessage(LogMessageType.DEFAULT, 'Red played a card', [
+      {type: LogMessageDataType.PLAYER, value: 'red'},
+    ]);
+    action.replayGlobalEffects = [
+      {kind: 'global', parameter: GlobalParameter.OXYGEN, amount: 1, player: 'blue'},
+      {kind: 'global', parameter: GlobalParameter.TEMPERATURE, amount: 1, player: 'blue'},
+      {kind: 'global', parameter: GlobalParameter.VENUS, amount: 1, player: 'blue'},
+    ];
+    const entry = {kind: 'action' as const, id: 'global-action', messages: [action], complete: true};
+    const wrapper = shallowMount(ActionLogRow, {
+      ...globalConfig,
+      props: {entry, viewModel: fakeViewModel({players: [
+        fakePublicPlayerModel({color: 'red', name: 'Red'}),
+        fakePublicPlayerModel({color: 'blue', name: 'Дамир'}),
+      ]})},
+    });
+
+    expect(wrapper.findAll('.action-log-effect-amount').map((amount) => amount.text())).deep.eq(['+1%', '+2°C', '+2%']);
+    expect(wrapper.findAll('.action-log-effect').map((effect) => effect.attributes('aria-label'))).deep.eq([
+      '+1% oxygen · Дамир', '+2°C temperature · Дамир', '+2% Venus scale · Дамир',
+    ]);
+    expect(wrapper.findAll('.action-log-target').map((target) => target.classes().includes('player_bg_color_blue'))).deep.eq([true, true, true]);
+  });
+
   it('shows an applied resource result and expands the remaining original message', async () => {
     const action = new LogMessage(LogMessageType.DEFAULT, 'Blue played a card', []);
     const gained = new LogMessage(LogMessageType.DEFAULT, 'Blue gained 2 steel', []);

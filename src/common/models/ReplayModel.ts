@@ -9,7 +9,7 @@ export type ReplayIndex = {
 };
 
 export type ReplayLogMessage = Pick<LogMessage, 'type' | 'message' | 'data' | 'timestamp' | 'canceled' |
-  'actionId' | 'actionStart' | 'actionEnd' | 'effect' | 'payment'>;
+  'actionId' | 'actionStart' | 'actionEnd' | 'effect' | 'payment' | 'replayGlobalEffects'>;
 
 export type ReplayFrame = {
   saveId: number;

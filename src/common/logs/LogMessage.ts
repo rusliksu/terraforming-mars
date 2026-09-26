@@ -4,10 +4,18 @@ import {Message} from './Message';
 import {ParticipantId} from '../Types';
 import {Color} from '../Color';
 import {Resource} from '../Resource';
+import {GlobalParameter} from '../GlobalParameter';
 
 export type LogEffect =
   | {kind: 'resource', resource: Resource, production: boolean, amount: number, player: Color}
   | {kind: 'tr', amount: number, player: Color};
+
+export type LogGlobalEffect = {
+  kind: 'global';
+  parameter: typeof GlobalParameter.OXYGEN | typeof GlobalParameter.TEMPERATURE | typeof GlobalParameter.VENUS;
+  amount: number;
+  player: Color;
+};
 
 export type LogPayment = {megacredits: number, steel: number, titanium: number, energy?: number};
 
@@ -19,6 +27,7 @@ export class LogMessage implements Message {
   public actionStart?: boolean;
   public actionEnd?: boolean;
   public effect?: LogEffect;
+  public replayGlobalEffects?: Array<LogGlobalEffect>;
   public payment?: LogPayment;
   public timestamp = Date.now();
   public type?: LogMessageType;

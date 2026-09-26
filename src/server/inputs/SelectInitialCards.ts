@@ -10,6 +10,7 @@ import {OptionsInput} from './OptionsPlayerInput';
 import {InputResponse, isSelectInitialCardsResponse} from '../../common/inputs/InputResponse';
 import {PlayerInput} from '../PlayerInput';
 import {normalizePreludeHandicap} from '../../common/game/NewGameConfig';
+import {LogHelper} from '../LogHelper';
 
 type Inputs = {
   corp: PlayerInput | undefined,
@@ -105,7 +106,8 @@ export class SelectInitialCards extends OptionsInput<undefined> {
       throw new InputError('Too many cards selected');
     }
 
-    game.log('You selected ${0} from ${1}', (b) => b.card(corporation).cards(player.dealtCorporationCards), {reservedFor: player});
+    LogHelper.logPrivateCardSelection(player, 'selected', [corporation],
+      player.dealtCorporationCards.filter((card) => card.name !== corporation.name));
 
     for (const card of player.dealtProjectCards) {
       if (player.cardsInHand.includes(card) === false) {

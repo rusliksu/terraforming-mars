@@ -282,6 +282,63 @@ describe('ApiGameLogs', () => {
     expect(res.content).eq('Bad request: cannot fetch game-end log');
   });
 
+  it('separates legacy corporation choices without changing stored logs or their visibility', async () => {
+    const [game, player, other] = testGame(2);
+    game.gameLog.length = 0;
+    game.log('You selected ${0} from ${1}', (b) => b
+      .cardName(CardName.HELION)
+      .cards([CardName.INVENTRIX, CardName.HELION, CardName.THARSIS_REPUBLIC]), {reservedFor: player});
+    const stored = JSON.stringify(game.gameLog);
+    await scaffolding.ctx.gameLoader.add(game);
+
+    scaffolding.url = '/api/game/logs?id=' + player.id;
+    await scaffolding.get(ApiGameLogs.INSTANCE, res);
+    const [message] = JSON.parse(res.content);
+    expect(message.message).eq('You selected ${0} skipping ${1}');
+    expect(message.playerId).eq(player.id);
+    expect(message.data.map((datum: {value: unknown}) => datum.value)).deep.eq([
+      CardName.HELION, [CardName.INVENTRIX, CardName.THARSIS_REPUBLIC],
+    ]);
+
+    for (const id of [other.id, game.spectatorId]) {
+      res = new MockResponse();
+      scaffolding.url = '/api/game/logs?id=' + id;
+      await scaffolding.get(ApiGameLogs.INSTANCE, res);
+      expect(JSON.parse(res.content)).is.empty;
+    }
+
+    game.phase = Phase.END;
+    res = new MockResponse();
+    scaffolding.url = '/api/game/logs?id=' + game.spectatorId + '&generation=1';
+    await scaffolding.get(ApiGameLogs.INSTANCE, res);
+    const [finished] = JSON.parse(res.content);
+    expect(finished.message).eq('${0} selected ${1} skipping ${2}');
+    expect(finished.data).deep.eq([
+      {type: LogMessageDataType.PLAYER, value: player.color},
+      {type: LogMessageDataType.CARD, value: CardName.HELION},
+      {type: LogMessageDataType.CARDS, value: [CardName.INVENTRIX, CardName.THARSIS_REPUBLIC]},
+    ]);
+
+    res = new MockResponse();
+    scaffolding.url = '/api/game/logs?id=' + player.id + '&full';
+    await scaffolding.get(ApiGameLogs.INSTANCE, res);
+    expect(res.content).eq(`${player.name} selected Helion skipping Inventrix,Tharsis Republic`);
+    expect(JSON.stringify(game.gameLog)).eq(stored);
+  });
+
+  it('omits an empty skipped list from a legacy single-corporation choice', async () => {
+    const [game, player] = testGame(1);
+    game.gameLog.length = 0;
+    game.log('You selected ${0} from ${1}', (b) => b.cardName(CardName.HELION).cards([CardName.HELION]), {reservedFor: player});
+    await scaffolding.ctx.gameLoader.add(game);
+
+    scaffolding.url = '/api/game/logs?id=' + player.id;
+    await scaffolding.get(ApiGameLogs.INSTANCE, res);
+    const [message] = JSON.parse(res.content);
+    expect(message.message).eq('You selected ${0}');
+    expect(message.data).deep.eq([{type: LogMessageDataType.CARD, value: CardName.HELION}]);
+  });
+
   it('Pulls full logs at game end', async () => {
     const player = TestPlayer.BLACK.newPlayer();
     const player2 = TestPlayer.BLUE.newPlayer();

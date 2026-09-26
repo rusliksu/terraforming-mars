@@ -68,11 +68,11 @@ describe('SelectInitialCards', () => {
     expect(player.game.projectDeck.discardPile.map(toName)).to.have.members([CardName.BACTOVIRAL_RESEARCH, CardName.COMET_AIMING, CardName.DIRIGIBLES]);
     expect(player.game.corporationDeck.discardPile.map(toName)).to.have.members([CardName.HELION]);
 
-    const corporationLog = player.game.gameLog.find((entry) => entry.message === 'You selected ${0} from ${1}');
+    const corporationLog = player.game.gameLog.find((entry) => entry.message === 'You selected ${0} skipping ${1}');
     expect(corporationLog?.playerId).eq(player.id);
     expect(corporationLog?.data.map((datum) => datum.value)).deep.eq([
-      CardName.INVENTRIX,
-      [CardName.INVENTRIX, CardName.HELION],
+      [CardName.INVENTRIX],
+      [CardName.HELION],
     ]);
   });
 

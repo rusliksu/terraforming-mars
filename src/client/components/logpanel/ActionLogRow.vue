@@ -19,7 +19,8 @@
             <i v-else class="resource_icon resource_icon--rating" aria-hidden="true"></i>
           </span>
           <span v-if="summary.oceanCount !== undefined" class="action-log-source" aria-hidden="true">🌊×{{ summary.oceanCount }}</span>
-          <span v-if="differentPlayer(summary.effect.player)" class="action-log-target">{{ playerName(summary.effect.player) }}</span>
+          <span v-if="differentPlayer(summary.effect.player)" class="log-player action-log-target"
+            :class="playerColorClass(summary.effect.player, 'bg')">{{ playerName(summary.effect.player) }}</span>
         </span>
         <button v-for="spaceId in locations" :key="spaceId" type="button" class="action-log-location"
           :title="getSpaceName(spaceId)" @click="$emit('spaceClicked', spaceId)">
@@ -49,6 +50,7 @@ import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
 import {Color} from '@/common/Color';
 import {Resource} from '@/common/Resource';
 import {SpaceId} from '@/common/Types';
+import {playerColorClass} from '@/common/utils/utils';
 import {getSpaceName} from '@/common/boards/spaces';
 import {ViewModel} from '@/common/models/PlayerModel';
 import LogMessageComponent from './LogMessageComponent.vue';
@@ -133,7 +135,7 @@ function oceanBonusEffect(message: LogMessage): EffectSummary | undefined {
 .action-log-source { font-size: 0.8em; color: #b8d9f2; }
 .action-log-location { border: 1px solid #999; border-radius: 4px; background: #42424a; color: inherit; cursor: pointer; white-space: nowrap; }
 .action-log-location:focus-visible { outline: 2px solid #ffc567; }
-.action-log-target, .action-log-incomplete { font-size: 0.8em; color: #bbb; }
+.action-log-incomplete { font-size: 0.8em; color: #bbb; }
 .action-log-details { border: 1px solid #999; border-radius: 4px; background: transparent; color: inherit; cursor: pointer; }
 .action-log-details:focus-visible { outline: 2px solid #ffc567; }
 .action-log-detail-list { margin-top: 6px; padding-left: 10px; border-left: 1px solid #777; }

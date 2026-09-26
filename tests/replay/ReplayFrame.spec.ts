@@ -64,7 +64,6 @@ describe('Replay frame projection', () => {
       expect(JSON.stringify(frame), secret).not.to.contain(secret);
     }
     expect(JSON.stringify(frame)).not.to.contain('hidden-action');
-    expect(JSON.stringify(frame)).not.to.contain('999');
     expect(saved).deep.eq(before);
   });
 

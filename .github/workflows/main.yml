@@ -33,6 +33,9 @@ jobs:
     - name: Test release guardrails
       shell: pwsh
       run: ./scripts/test_tm_release_guards.ps1
+    - name: Test server smoke verification
+      shell: pwsh
+      run: ./scripts/test_tm_verify_server.ps1
     - run: npm ci
     - run: npm run make:static
     - run: npm run lint

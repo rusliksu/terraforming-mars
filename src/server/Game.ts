@@ -15,7 +15,7 @@ import {Space} from './boards/Space';
 import {Tile} from './Tile';
 import {LogMessageBuilder} from './logs/LogMessageBuilder';
 import {LogHelper} from './LogHelper';
-import {LogEffect, LogMessage} from '../common/logs/LogMessage';
+import {LogEffect, LogGlobalEffect, LogMessage, LogPayment} from '../common/logs/LogMessage';
 import {milestoneManifest} from './milestones/Milestones';
 import {awardManifest} from './awards/Awards';
 import {PartyHooks} from './turmoil/parties/PartyHooks';
@@ -133,7 +133,7 @@ export class Game implements IGame, Logger {
   public gameAge: number = 0; // Each log event increases it
   public shadowInputSeq: number = 0;
   public gameLog: Array<LogMessage> = createGameLog();
-  public logActionContext?: {id: string, actor: IPlayer, generation: number, phase: Phase, ordinal: number, firstMessage: boolean};
+  public logActionContext?: {id: string, actor: IPlayer, generation: number, phase: Phase, ordinal: number, firstMessage: boolean, pendingGlobalEffects?: Array<LogGlobalEffect>};
   public undoCount: number = 0; // Each undo increases it
   public actionReplayState: ActionReplayState | null | undefined = undefined;
   public inputsThisRound = 0;
@@ -1297,7 +1297,9 @@ export class Game implements IGame, Logger {
 
     // PoliticalAgendas Reds P3 && Magnetic Field Stimulation Delays hook
     if (increments < 0) {
+      const before = this.oxygenLevel;
       this.oxygenLevel = Math.max(constants.MIN_OXYGEN_LEVEL, this.oxygenLevel + increments);
+      this.recordReplayGlobalEffect(player, GlobalParameter.OXYGEN, this.oxygenLevel - before);
       return undefined;
     }
 
@@ -1315,6 +1317,7 @@ export class Game implements IGame, Logger {
     }
 
     this.oxygenLevel += steps;
+    this.recordReplayGlobalEffect(player, GlobalParameter.OXYGEN, steps);
 
     AresHandler.ifAres(this, (aresData) => {
       AresHandler.onOxygenChange(this, aresData);
@@ -1332,7 +1335,9 @@ export class Game implements IGame, Logger {
 
     // PoliticalAgendas Reds P3 hook
     if (increments === -1) {
+      const before = this.venusScaleLevel;
       this.venusScaleLevel = Math.max(constants.MIN_VENUS_SCALE, this.venusScaleLevel + increments * 2);
+      this.recordReplayGlobalEffect(player, GlobalParameter.VENUS, (this.venusScaleLevel - before) / 2);
       return -1;
     }
 
@@ -1378,6 +1383,7 @@ export class Game implements IGame, Logger {
     }
 
     this.venusScaleLevel += steps * 2;
+    this.recordReplayGlobalEffect(player, GlobalParameter.VENUS, steps);
 
     return steps;
   }
@@ -1392,7 +1398,9 @@ export class Game implements IGame, Logger {
     }
 
     if (increments === -2 || increments === -1) {
+      const before = this.temperature;
       this.temperature = Math.max(constants.MIN_TEMPERATURE, this.temperature + increments * 2);
+      this.recordReplayGlobalEffect(player, GlobalParameter.TEMPERATURE, (this.temperature - before) / 2);
       return undefined;
     }
 
@@ -1424,6 +1432,7 @@ export class Game implements IGame, Logger {
     }
 
     this.temperature += steps * 2;
+    this.recordReplayGlobalEffect(player, GlobalParameter.TEMPERATURE, steps);
 
     AresHandler.ifAres(this, (aresData) => {
       AresHandler.onTemperatureChange(this, aresData);
@@ -1767,7 +1776,27 @@ export class Game implements IGame, Logger {
       .toSorted(byKey('cost'));
   }
 
-  public log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer, reservedForParticipant?: ParticipantId, hiddenFor?: Array<ParticipantId>, effect?: LogEffect}) {
+  private recordReplayGlobalEffect(player: IPlayer, parameter: LogGlobalEffect['parameter'], amount: number): void {
+    const context = this.logActionContext;
+    if (amount === 0 || context === undefined || context.actor.actionsTakenThisGame !== context.ordinal ||
+        this.generation !== context.generation || this.phase !== context.phase) {
+      return;
+    }
+    const effect: LogGlobalEffect = {kind: 'global', parameter, amount, player: player.color};
+    for (let index = this.gameLog.length - 1; index >= 0; index--) {
+      const message = this.gameLog[index];
+      if (message.actionId !== context.id) {
+        break;
+      }
+      if (message.playerId === undefined && message.hiddenFor === undefined && message.canceled !== true) {
+        (message.replayGlobalEffects ??= []).push(effect);
+        return;
+      }
+    }
+    (context.pendingGlobalEffects ??= []).push(effect);
+  }
+
+  public log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer, reservedForParticipant?: ParticipantId, hiddenFor?: Array<ParticipantId>, effect?: LogEffect, payment?: LogPayment}) {
     const builder = new LogMessageBuilder(message);
     f?.(builder);
     const logMessage = builder.build();
@@ -1778,6 +1807,9 @@ export class Game implements IGame, Logger {
     if (options?.effect !== undefined) {
       logMessage.effect = options.effect;
     }
+    if (options?.payment !== undefined) {
+      logMessage.payment = options.payment;
+    }
     const context = this.logActionContext;
     if (context !== undefined && context.actor.actionsTakenThisGame === context.ordinal &&
         this.generation === context.generation && this.phase === context.phase) {
@@ -1785,6 +1817,10 @@ export class Game implements IGame, Logger {
       if (context.firstMessage) {
         logMessage.actionStart = true;
         context.firstMessage = false;
+      }
+      if (logMessage.playerId === undefined && logMessage.hiddenFor === undefined && context.pendingGlobalEffects !== undefined) {
+        logMessage.replayGlobalEffects = context.pendingGlobalEffects;
+        context.pendingGlobalEffects = undefined;
       }
     }
     this.gameLog.push(logMessage);

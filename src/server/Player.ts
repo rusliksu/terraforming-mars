@@ -11,6 +11,7 @@ import {IGame} from './IGame';
 import {Game} from './Game';
 import {Payment, PaymentOptions, DEFAULT_PAYMENT_VALUES, paymentTotal} from '../common/inputs/Payment';
 import {SpendableResource, SPENDABLE_RESOURCES, SpendableCardResource, CARD_FOR_SPENDABLE_RESOURCE} from '../common/inputs/Spendable';
+import {toLogPayment} from './logs/toLogPayment';
 import {IAward} from './awards/IAward';
 import {ICard, isIActionCard, IActionCard} from './cards/ICard';
 import {IMilestone} from './milestones/IMilestone';
@@ -1002,7 +1003,8 @@ export class Player implements IPlayer {
 
     if (selectedCard.type !== CardType.PROXY) {
       this.lastCardPlayed = selectedCard.name;
-      this.game.log('${0} played ${1}', (b) => b.player(this).card(selectedCard));
+      const logPayment = payment === undefined ? undefined : toLogPayment(payment);
+      this.game.log('${0} played ${1}', (b) => b.player(this).card(selectedCard), {payment: logPayment});
     }
 
     // Play the card

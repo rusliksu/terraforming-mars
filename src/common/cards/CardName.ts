@@ -173,6 +173,7 @@ export enum CardName {
   MICRO_MILLS = 'Micro-Mills',
   MINE = 'Mine',
   MINERAL_DEPOSIT = 'Mineral Deposit',
+  MINERAL_DEPOSIT_REBALANCED = 'Mineral Deposit (6 MC test)',
   MIRANDA_RESORT = 'Miranda Resort',
   MINING_AREA = 'Mining Area',
   MINING_COLONY = 'Mining Colony',

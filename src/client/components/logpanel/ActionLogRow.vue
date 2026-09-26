@@ -6,15 +6,25 @@
           @click="$emit('messageClicked', entry.messages[0])" @spaceClicked="$emit('spaceClicked', $event)"/>
       </ul>
       <div class="action-log-effects">
+        <span v-for="payment in payments" :key="payment.key" class="action-log-payment"
+          :aria-label="`Paid ${payment.amount} ${payment.resource}`" :title="`Paid ${payment.amount} ${payment.resource}`">
+          <span class="action-log-effect-amount">−{{ payment.amount }}</span>
+          <i class="resource_icon" :class="'resource_icon--' + payment.resource" aria-hidden="true"></i>
+        </span>
         <span v-for="(summary, index) in effects" :key="index" class="action-log-effect"
           :aria-label="effectLabel(summary)" :title="effectLabel(summary)">
           <span class="action-log-effect-visual" :class="{'production-box action-log-production-box': summary.effect.kind === 'resource' && summary.effect.production}">
-            <span class="action-log-effect-amount">{{ summary.effect.amount > 0 ? '+' : '' }}{{ summary.effect.amount }}</span>
+            <span v-if="effectAmount(summary.effect)" class="action-log-effect-amount">{{ effectAmount(summary.effect) }}</span>
             <i v-if="summary.effect.kind === 'resource'" class="resource_icon" :class="'resource_icon--' + summary.effect.resource" aria-hidden="true"></i>
-            <i v-else class="resource_icon resource_icon--rating" aria-hidden="true"></i>
+            <i v-else-if="summary.effect.kind === 'tr'" class="resource_icon resource_icon--rating" aria-hidden="true"></i>
+            <template v-else>
+              <img v-for="icon in globalIconCount(summary.effect.amount)" :key="icon" class="action-log-global-icon"
+                :src="'/assets/global-parameters/' + summary.effect.parameter + '.png'" alt="" aria-hidden="true">
+            </template>
           </span>
           <span v-if="summary.oceanCount !== undefined" class="action-log-source" aria-hidden="true">🌊×{{ summary.oceanCount }}</span>
-          <span v-if="differentPlayer(summary.effect.player)" class="action-log-target">{{ playerName(summary.effect.player) }}</span>
+          <span v-if="differentPlayer(summary.effect.player)" class="log-player action-log-target"
+            :class="playerColorClass(summary.effect.player, 'bg')">{{ playerName(summary.effect.player) }}</span>
         </span>
         <button v-for="spaceId in locations" :key="spaceId" type="button" class="action-log-location"
           :title="getSpaceName(spaceId)" @click="$emit('spaceClicked', spaceId)">
@@ -38,12 +48,14 @@
 <script setup lang="ts">
 import {computed, ref} from 'vue';
 import {ActionLogEntry} from '@/common/logs/ActionLog';
-import {LogEffect} from '@/common/logs/LogMessage';
+import {LogEffect, LogGlobalEffect} from '@/common/logs/LogMessage';
 import {LogMessage} from '@/common/logs/LogMessage';
 import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
 import {Color} from '@/common/Color';
 import {Resource} from '@/common/Resource';
+import {GlobalParameter} from '@/common/GlobalParameter';
 import {SpaceId} from '@/common/Types';
+import {playerColorClass} from '@/common/utils/utils';
 import {getSpaceName} from '@/common/boards/spaces';
 import {ViewModel} from '@/common/models/PlayerModel';
 import LogMessageComponent from './LogMessageComponent.vue';
@@ -59,13 +71,27 @@ defineEmits<{
 }>();
 
 const expanded = ref(false);
-type EffectSummary = {effect: LogEffect, oceanCount?: number};
+type EffectSummary = {effect: LogEffect | LogGlobalEffect, oceanCount?: number};
+const payments = computed(() => props.entry.messages.flatMap((message, messageIndex) => {
+  const payment = message.payment;
+  if (payment === undefined) {
+    return [];
+  }
+  return ([Resource.MEGACREDITS, Resource.STEEL, Resource.TITANIUM, Resource.ENERGY] as const)
+    .map((resource) => ({key: `${messageIndex}-${resource}`, resource, amount: payment[resource] ?? 0}))
+    .filter(({amount}) => Number.isSafeInteger(amount) && amount > 0);
+}));
 const effects = computed(() => props.entry.messages.flatMap((message): Array<EffectSummary> => {
+  const result: Array<EffectSummary> = (message.replayGlobalEffects ?? []).map((effect) => ({effect}));
   if (message.effect !== undefined) {
-    return [{effect: message.effect}];
+    result.unshift({effect: message.effect});
+    return result;
   }
   const oceanBonus = oceanBonusEffect(message);
-  return oceanBonus === undefined ? [] : [oceanBonus];
+  if (oceanBonus !== undefined) {
+    result.unshift(oceanBonus);
+  }
+  return result;
 }));
 const locations = computed(() => Array.from(new Set(props.entry.messages.slice(1).flatMap((message) =>
   message.data.flatMap((datum) => datum.type === LogMessageDataType.SPACE ? [datum.value] : [])))).filter((id) => getSpaceName(id) !== 'n/a'));
@@ -80,9 +106,28 @@ function differentPlayer(color: Color): boolean {
 }
 
 function effectLabel({effect, oceanCount}: EffectSummary): string {
+  if (effect.kind === 'global') {
+    const name = effect.parameter === GlobalParameter.OXYGEN ? 'oxygen' :
+      effect.parameter === GlobalParameter.TEMPERATURE ? 'temperature' : 'Venus scale';
+    return `${effect.amount > 0 ? '+' : ''}${effect.amount} ${name} step(s) · ${playerName(effect.player)}`;
+  }
   const type = effect.kind === 'tr' ? 'TR' : `${effect.resource}${effect.production ? ' production' : ''}`;
   const source = oceanCount === undefined ? '' : ` from ${oceanCount} ocean(s)`;
   return `${effect.amount > 0 ? '+' : ''}${effect.amount} ${type}${source} · ${playerName(effect.player)}`;
+}
+
+function effectAmount(effect: LogEffect | LogGlobalEffect): string {
+  if (effect.kind === 'global') {
+    const amount = Math.abs(effect.amount);
+    const number = amount >= 1 && amount <= 3 ? '' : String(amount);
+    return `${effect.amount < 0 ? '−' : ''}${number}`;
+  }
+  return `${effect.amount > 0 ? '+' : ''}${effect.amount}`;
+}
+
+function globalIconCount(amount: number): number {
+  const count = Math.abs(amount);
+  return count >= 1 && count <= 3 ? count : 1;
 }
 
 function oceanBonusEffect(message: LogMessage): EffectSummary | undefined {
@@ -110,15 +155,17 @@ function oceanBonusEffect(message: LogMessage): EffectSummary | undefined {
 .action-log-title, .action-log-detail-list { padding: 0; margin: 0; list-style: none; }
 .action-log-title { flex: 1 1 290px; min-width: 0; font-weight: bold; }
 .action-log-effects { flex: 2 1 280px; min-width: 0; }
-.action-log-effect { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.action-log-effect, .action-log-payment { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.action-log-payment { color: #e9c8b4; }
 .action-log-effect-visual { display: inline-flex; align-items: center; gap: 4px; }
 .action-log-effect-amount { font-weight: bold; }
-.action-log-effect .resource_icon { display: inline-block; width: 21px; height: 21px; background-size: contain; }
+.action-log-global-icon { display: block; width: auto; height: 24px; max-width: 32px; object-fit: contain; }
+.action-log-effect .resource_icon, .action-log-payment .resource_icon { display: inline-block; width: 21px; height: 21px; background-size: contain; }
 .action-log-effect .action-log-production-box { min-width: 52px; width: auto; height: 29px; padding: 2px 5px; margin: 0; line-height: normal; box-sizing: border-box; color: #fff; }
 .action-log-source { font-size: 0.8em; color: #b8d9f2; }
 .action-log-location { border: 1px solid #999; border-radius: 4px; background: #42424a; color: inherit; cursor: pointer; white-space: nowrap; }
 .action-log-location:focus-visible { outline: 2px solid #ffc567; }
-.action-log-target, .action-log-incomplete { font-size: 0.8em; color: #bbb; }
+.action-log-incomplete { font-size: 0.8em; color: #bbb; }
 .action-log-details { border: 1px solid #999; border-radius: 4px; background: transparent; color: inherit; cursor: pointer; }
 .action-log-details:focus-visible { outline: 2px solid #ffc567; }
 .action-log-detail-list { margin-top: 6px; padding-left: 10px; border-left: 1px solid #777; }

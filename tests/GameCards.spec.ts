@@ -97,6 +97,22 @@ describe('GameCards', () => {
     expect(names).to.contain(CardName.VENUSIAN_INSECTS);
   });
 
+  it('replaces Mineral Deposit only when its test variant is included', () => {
+    const normal = new GameCards(DEFAULT_GAME_OPTIONS).getProjectCards();
+    expect(normal.find((card) => card.name === CardName.MINERAL_DEPOSIT)?.cost).to.eq(5);
+    expect(normal.some((card) => card.name === CardName.MINERAL_DEPOSIT_REBALANCED)).to.be.false;
+
+    const variant = new GameCards({
+      ...DEFAULT_GAME_OPTIONS,
+      includedCards: [CardName.MINERAL_DEPOSIT_REBALANCED],
+    }).getProjectCards();
+    expect(variant.some((card) => card.name === CardName.MINERAL_DEPOSIT)).to.be.false;
+    expect(variant.find((card) => card.name === CardName.MINERAL_DEPOSIT_REBALANCED)?.cost).to.eq(6);
+
+    const anotherNormal = new GameCards(DEFAULT_GAME_OPTIONS).getProjectCards();
+    expect(anotherNormal.find((card) => card.name === CardName.MINERAL_DEPOSIT)?.cost).to.eq(5);
+  });
+
   it('does not add custom corporations from disabled modules except allowed Turmoil corps', () => {
     const gameOptions: GameOptions = {
       ...DEFAULT_GAME_OPTIONS,

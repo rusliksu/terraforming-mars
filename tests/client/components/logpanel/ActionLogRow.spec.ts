@@ -5,10 +5,64 @@ import LogMessageComponent from '@/client/components/logpanel/LogMessageComponen
 import {LogMessage} from '@/common/logs/LogMessage';
 import {LogMessageType} from '@/common/logs/LogMessageType';
 import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
+import {GlobalParameter} from '@/common/GlobalParameter';
 import {fakePublicPlayerModel, fakeViewModel} from '../testHelpers';
 import {globalConfig} from '../getLocalVue';
 
 describe('ActionLogRow', () => {
+  it('shows one to three global steps as game icons and names the affected player', () => {
+    const action = new LogMessage(LogMessageType.DEFAULT, 'Red played a card', [
+      {type: LogMessageDataType.PLAYER, value: 'red'},
+    ]);
+    action.replayGlobalEffects = [
+      {kind: 'global', parameter: GlobalParameter.OXYGEN, amount: 1, player: 'blue'},
+      {kind: 'global', parameter: GlobalParameter.TEMPERATURE, amount: 2, player: 'blue'},
+      {kind: 'global', parameter: GlobalParameter.VENUS, amount: 3, player: 'blue'},
+    ];
+    const entry = {kind: 'action' as const, id: 'global-action', messages: [action], complete: true};
+    const wrapper = shallowMount(ActionLogRow, {
+      ...globalConfig,
+      props: {entry, viewModel: fakeViewModel({players: [
+        fakePublicPlayerModel({color: 'red', name: 'Red'}),
+        fakePublicPlayerModel({color: 'blue', name: 'Дамир'}),
+      ]})},
+    });
+
+    expect(wrapper.find('.action-log-effect-amount').exists()).is.false;
+    expect(wrapper.findAll('.action-log-effect').map((effect) => effect.attributes('aria-label'))).deep.eq([
+      '+1 oxygen step(s) · Дамир', '+2 temperature step(s) · Дамир', '+3 Venus scale step(s) · Дамир',
+    ]);
+    expect(wrapper.findAll('.action-log-global-icon').map((icon) => icon.attributes('src'))).deep.eq([
+      '/assets/global-parameters/oxygen.png',
+      '/assets/global-parameters/temperature.png',
+      '/assets/global-parameters/temperature.png',
+      '/assets/global-parameters/venus.png',
+      '/assets/global-parameters/venus.png',
+      '/assets/global-parameters/venus.png',
+    ]);
+    expect(wrapper.findAll('.action-log-global-icon').map((icon) => icon.attributes('alt'))).deep.eq(['', '', '', '', '', '']);
+    expect(wrapper.findAll('.action-log-target').map((target) => target.classes().includes('player_bg_color_blue'))).deep.eq([true, true, true]);
+  });
+
+  it('keeps reductions distinct and uses a count for larger global changes', () => {
+    const action = new LogMessage(LogMessageType.DEFAULT, 'Blue changed tracks', []);
+    action.replayGlobalEffects = [
+      {kind: 'global', parameter: GlobalParameter.TEMPERATURE, amount: -2, player: 'blue'},
+      {kind: 'global', parameter: GlobalParameter.VENUS, amount: 4, player: 'blue'},
+    ];
+    const wrapper = shallowMount(ActionLogRow, {
+      ...globalConfig,
+      props: {
+        entry: {kind: 'action', id: 'global-counts', messages: [action], complete: true},
+        viewModel: fakeViewModel(),
+      },
+    });
+
+    const effects = wrapper.findAll('.action-log-effect');
+    expect(effects.map((effect) => effect.get('.action-log-effect-amount').text())).deep.eq(['−', '4']);
+    expect(effects.map((effect) => effect.findAll('.action-log-global-icon').length)).deep.eq([2, 1]);
+  });
+
   it('shows an applied resource result and expands the remaining original message', async () => {
     const action = new LogMessage(LogMessageType.DEFAULT, 'Blue played a card', []);
     const gained = new LogMessage(LogMessageType.DEFAULT, 'Blue gained 2 steel', []);
@@ -20,11 +74,48 @@ describe('ActionLogRow', () => {
     });
 
     expect(wrapper.text()).to.contain('+2');
+    expect(wrapper.find('.action-log-payment').exists()).is.false;
     expect(wrapper.find('.resource_icon--steel').exists()).to.be.true;
     expect(wrapper.findAllComponents(LogMessageComponent)).to.have.length(1);
     await wrapper.get('button').trigger('click');
     expect(wrapper.get('button').attributes('aria-expanded')).eq('true');
     expect(wrapper.findAllComponents(LogMessageComponent)).to.have.length(2);
+  });
+
+  it('shows recorded card costs before gains, including each paid resource', () => {
+    const action = new LogMessage(LogMessageType.DEFAULT, 'Blue played a card', []);
+    action.payment = {megacredits: 14, steel: 2, titanium: 1};
+    const gained = new LogMessage(LogMessageType.DEFAULT, 'Blue gained 2 steel', []);
+    gained.effect = {kind: 'resource', resource: 'steel', production: false, amount: 2, player: 'blue'};
+    const entry = {kind: 'action' as const, id: 'action-payment', messages: [action, gained], complete: true};
+    const wrapper = shallowMount(ActionLogRow, {
+      ...globalConfig,
+      props: {entry, viewModel: fakeViewModel({players: [fakePublicPlayerModel({color: 'blue', name: 'Blue'})]})},
+    });
+
+    expect(wrapper.findAll('.action-log-payment').map((chip) => chip.attributes('aria-label')))
+      .deep.eq(['Paid 14 megacredits', 'Paid 2 steel', 'Paid 1 titanium']);
+    expect(wrapper.findAll('.action-log-payment').map((chip) => chip.text())).deep.eq(['−14', '−2', '−1']);
+    expect(wrapper.get('.action-log-effects').element.firstElementChild?.classList.contains('action-log-payment')).is.true;
+    expect(wrapper.get('.action-log-effect').text()).to.contain('+2');
+  });
+
+  it('shows the exact energy spent on a later trade message before its gain', () => {
+    const action = new LogMessage(LogMessageType.DEFAULT, 'Blue played Trade Advance', []);
+    const trade = new LogMessage(LogMessageType.DEFAULT, 'Blue traded with Luna', []);
+    trade.payment = {megacredits: 0, steel: 0, titanium: 0, energy: 3};
+    const gained = new LogMessage(LogMessageType.DEFAULT, 'Blue gained 17 M€', []);
+    gained.effect = {kind: 'resource', resource: 'megacredits', production: false, amount: 17, player: 'blue'};
+    const entry = {kind: 'action' as const, id: 'action-trade', messages: [action, trade, gained], complete: true};
+    const wrapper = shallowMount(ActionLogRow, {
+      ...globalConfig,
+      props: {entry, viewModel: fakeViewModel({players: [fakePublicPlayerModel({color: 'blue', name: 'Blue'})]})},
+    });
+
+    expect(wrapper.get('.action-log-payment').attributes('aria-label')).eq('Paid 3 energy');
+    expect(wrapper.find('.action-log-payment .resource_icon--energy').exists()).is.true;
+    expect(wrapper.get('.action-log-effects').element.firstElementChild?.classList.contains('action-log-payment')).is.true;
+    expect(wrapper.get('.action-log-effect').text()).to.contain('+17');
   });
 
   it('shows a logged ocean bonus as coins and frames production', () => {
@@ -50,23 +141,25 @@ describe('ActionLogRow', () => {
   });
 
   it('names the affected player beside a signed TR change', () => {
-    const action = new LogMessage(LogMessageType.DEFAULT, 'Blue played a card', [
-      {type: LogMessageDataType.PLAYER, value: 'blue'},
+    const action = new LogMessage(LogMessageType.DEFAULT, 'Red played a card', [
+      {type: LogMessageDataType.PLAYER, value: 'red'},
     ]);
-    const changed = new LogMessage(LogMessageType.DEFAULT, 'Red lost 1 TR', []);
-    changed.effect = {kind: 'tr', amount: -1, player: 'red'};
+    const changed = new LogMessage(LogMessageType.DEFAULT, 'Damir lost 1 TR', []);
+    changed.effect = {kind: 'tr', amount: -1, player: 'blue'};
     const entry = {kind: 'action' as const, id: 'action-3', messages: [action, changed], complete: true};
     const wrapper = shallowMount(ActionLogRow, {
       ...globalConfig,
       props: {entry, viewModel: fakeViewModel({players: [
-        fakePublicPlayerModel({color: 'blue', name: 'Blue'}),
         fakePublicPlayerModel({color: 'red', name: 'Red'}),
+        fakePublicPlayerModel({color: 'blue', name: 'Дамир'}),
       ]})},
     });
 
     expect(wrapper.find('.resource_icon--rating').exists()).to.be.true;
-    expect(wrapper.get('.action-log-effect').attributes('aria-label')).eq('-1 TR · Red');
-    expect(wrapper.get('.action-log-target').text()).eq('Red');
+    expect(wrapper.get('.action-log-effect').attributes('aria-label')).eq('-1 TR · Дамир');
+    expect(wrapper.get('.action-log-target').text()).eq('Дамир');
+    expect(wrapper.get('.action-log-target').classes()).to.include('log-player');
+    expect(wrapper.get('.action-log-target').classes()).to.include('player_bg_color_blue');
   });
 
   it('links a logged tile location from the collapsed action to its board space', async () => {

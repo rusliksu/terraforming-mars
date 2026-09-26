@@ -10,14 +10,14 @@ import {fakePublicPlayerModel, fakeViewModel} from '../testHelpers';
 import {globalConfig} from '../getLocalVue';
 
 describe('ActionLogRow', () => {
-  it('shows global track changes with actual units and the affected player', () => {
+  it('shows one to three global steps as game icons and names the affected player', () => {
     const action = new LogMessage(LogMessageType.DEFAULT, 'Red played a card', [
       {type: LogMessageDataType.PLAYER, value: 'red'},
     ]);
     action.replayGlobalEffects = [
       {kind: 'global', parameter: GlobalParameter.OXYGEN, amount: 1, player: 'blue'},
-      {kind: 'global', parameter: GlobalParameter.TEMPERATURE, amount: 1, player: 'blue'},
-      {kind: 'global', parameter: GlobalParameter.VENUS, amount: 1, player: 'blue'},
+      {kind: 'global', parameter: GlobalParameter.TEMPERATURE, amount: 2, player: 'blue'},
+      {kind: 'global', parameter: GlobalParameter.VENUS, amount: 3, player: 'blue'},
     ];
     const entry = {kind: 'action' as const, id: 'global-action', messages: [action], complete: true};
     const wrapper = shallowMount(ActionLogRow, {
@@ -28,17 +28,39 @@ describe('ActionLogRow', () => {
       ]})},
     });
 
-    expect(wrapper.findAll('.action-log-effect-amount').map((amount) => amount.text())).deep.eq(['+1%', '+2°C', '+2%']);
+    expect(wrapper.find('.action-log-effect-amount').exists()).is.false;
     expect(wrapper.findAll('.action-log-effect').map((effect) => effect.attributes('aria-label'))).deep.eq([
-      '+1% oxygen · Дамир', '+2°C temperature · Дамир', '+2% Venus scale · Дамир',
+      '+1 oxygen step(s) · Дамир', '+2 temperature step(s) · Дамир', '+3 Venus scale step(s) · Дамир',
     ]);
     expect(wrapper.findAll('.action-log-global-icon').map((icon) => icon.attributes('src'))).deep.eq([
       '/assets/global-parameters/oxygen.png',
       '/assets/global-parameters/temperature.png',
+      '/assets/global-parameters/temperature.png',
+      '/assets/global-parameters/venus.png',
+      '/assets/global-parameters/venus.png',
       '/assets/global-parameters/venus.png',
     ]);
-    expect(wrapper.findAll('.action-log-global-icon').map((icon) => icon.attributes('alt'))).deep.eq(['', '', '']);
+    expect(wrapper.findAll('.action-log-global-icon').map((icon) => icon.attributes('alt'))).deep.eq(['', '', '', '', '', '']);
     expect(wrapper.findAll('.action-log-target').map((target) => target.classes().includes('player_bg_color_blue'))).deep.eq([true, true, true]);
+  });
+
+  it('keeps reductions distinct and uses a count for larger global changes', () => {
+    const action = new LogMessage(LogMessageType.DEFAULT, 'Blue changed tracks', []);
+    action.replayGlobalEffects = [
+      {kind: 'global', parameter: GlobalParameter.TEMPERATURE, amount: -2, player: 'blue'},
+      {kind: 'global', parameter: GlobalParameter.VENUS, amount: 4, player: 'blue'},
+    ];
+    const wrapper = shallowMount(ActionLogRow, {
+      ...globalConfig,
+      props: {
+        entry: {kind: 'action', id: 'global-counts', messages: [action], complete: true},
+        viewModel: fakeViewModel(),
+      },
+    });
+
+    const effects = wrapper.findAll('.action-log-effect');
+    expect(effects.map((effect) => effect.get('.action-log-effect-amount').text())).deep.eq(['−', '4']);
+    expect(effects.map((effect) => effect.findAll('.action-log-global-icon').length)).deep.eq([2, 1]);
   });
 
   it('shows an applied resource result and expands the remaining original message', async () => {

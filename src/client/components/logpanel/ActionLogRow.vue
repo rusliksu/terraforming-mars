@@ -6,7 +6,7 @@
           @click="$emit('messageClicked', entry.messages[0])" @spaceClicked="$emit('spaceClicked', $event)"/>
       </ul>
       <div class="action-log-effects">
-        <span v-for="payment in payments" :key="payment.resource" class="action-log-payment"
+        <span v-for="payment in payments" :key="payment.key" class="action-log-payment"
           :aria-label="`Paid ${payment.amount} ${payment.resource}`" :title="`Paid ${payment.amount} ${payment.resource}`">
           <span class="action-log-effect-amount">−{{ payment.amount }}</span>
           <i class="resource_icon" :class="'resource_icon--' + payment.resource" aria-hidden="true"></i>
@@ -65,15 +65,15 @@ defineEmits<{
 
 const expanded = ref(false);
 type EffectSummary = {effect: LogEffect, oceanCount?: number};
-const payments = computed(() => {
-  const payment = props.entry.messages[0].payment;
+const payments = computed(() => props.entry.messages.flatMap((message, messageIndex) => {
+  const payment = message.payment;
   if (payment === undefined) {
     return [];
   }
-  return ([Resource.MEGACREDITS, Resource.STEEL, Resource.TITANIUM] as const)
-    .map((resource) => ({resource, amount: payment[resource]}))
+  return ([Resource.MEGACREDITS, Resource.STEEL, Resource.TITANIUM, Resource.ENERGY] as const)
+    .map((resource) => ({key: `${messageIndex}-${resource}`, resource, amount: payment[resource] ?? 0}))
     .filter(({amount}) => Number.isSafeInteger(amount) && amount > 0);
-});
+}));
 const effects = computed(() => props.entry.messages.flatMap((message): Array<EffectSummary> => {
   if (message.effect !== undefined) {
     return [{effect: message.effect}];

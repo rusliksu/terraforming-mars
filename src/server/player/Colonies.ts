@@ -16,6 +16,7 @@ import {TradeWithCollegiumCopernicus} from '../cards/pathfinders/CollegiumCopern
 import {message} from '../logs/MessageBuilder';
 import {TradeWithDarksideSmugglersUnion} from '../cards/moon/DarksideSmugglersUnion';
 import {Payment} from '../../common/inputs/Payment';
+import {toLogPayment} from '../logs/toLogPayment';
 import {TradeWithHectateSpeditions} from '../cards/underworld/HecateSpeditions';
 import {ColonyName} from '../../../src/common/colonies/ColonyName';
 
@@ -194,7 +195,8 @@ export class TradeWithEnergy implements IColonyTrader {
 
   public trade(colony: IColony) {
     this.player.stock.deduct(Resource.ENERGY, this.tradeCost);
-    this.player.game.log('${0} spent ${1} energy to trade with ${2}', (b) => b.player(this.player).number(this.tradeCost).colony(colony));
+    this.player.game.log('${0} spent ${1} energy to trade with ${2}', (b) => b.player(this.player).number(this.tradeCost).colony(colony),
+      {payment: toLogPayment(Payment.EMPTY, this.tradeCost)});
     colony.trade(this.player);
   }
 }
@@ -214,8 +216,10 @@ export class TradeWithTitanium implements IColonyTrader {
   }
 
   public trade(colony: IColony) {
-    this.player.pay(Payment.of({titanium: this.tradeCost}));
-    this.player.game.log('${0} spent ${1} titanium to trade with ${2}', (b) => b.player(this.player).number(this.tradeCost).colony(colony));
+    const payment = Payment.of({titanium: this.tradeCost});
+    this.player.pay(payment);
+    this.player.game.log('${0} spent ${1} titanium to trade with ${2}', (b) => b.player(this.player).number(this.tradeCost).colony(colony),
+      {payment: toLogPayment(payment)});
     colony.trade(this.player);
   }
 }
@@ -243,8 +247,9 @@ export class TradeWithMegacredits implements IColonyTrader {
   public trade(colony: IColony) {
     this.player.game.defer(new SelectPaymentDeferred(this.player, this.tradeCost,
       {title: message('Select how to pay ${0} for colony trade', (b) => b.number(this.tradeCost))}))
-      .andThen(() => {
-        this.player.game.log('${0} spent ${1} M€ to trade with ${2}', (b) => b.player(this.player).number(this.tradeCost).colony(colony));
+      .andThen((payment) => {
+        this.player.game.log('${0} spent ${1} M€ to trade with ${2}', (b) => b.player(this.player).number(this.tradeCost).colony(colony),
+          {payment: toLogPayment(payment)});
         colony.trade(this.player);
       });
   }

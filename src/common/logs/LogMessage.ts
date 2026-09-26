@@ -9,7 +9,7 @@ export type LogEffect =
   | {kind: 'resource', resource: Resource, production: boolean, amount: number, player: Color}
   | {kind: 'tr', amount: number, player: Color};
 
-export type LogPayment = {megacredits: number, steel: number, titanium: number};
+export type LogPayment = {megacredits: number, steel: number, titanium: number, energy?: number};
 
 export class LogMessage implements Message {
   public playerId?: ParticipantId;

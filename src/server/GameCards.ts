@@ -110,6 +110,9 @@ export class GameCards {
   public getProjectCards() {
     const cards = this.getCards<IProjectCard>('projectCards');
     this.addCustomCards(cards, this.gameOptions.includedCards);
+    if (this.gameOptions.includedCards.includes(CardName.MINERAL_DEPOSIT_REBALANCED)) {
+      return cards.filter((card) => card.name !== CardName.MINERAL_DEPOSIT && isIProjectCard(card));
+    }
     return cards.filter(isIProjectCard);
   }
   public getStandardProjects() {

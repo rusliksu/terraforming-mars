@@ -18,7 +18,7 @@
             <i v-if="summary.effect.kind === 'resource'" class="resource_icon" :class="'resource_icon--' + summary.effect.resource" aria-hidden="true"></i>
             <i v-else-if="summary.effect.kind === 'tr'" class="resource_icon resource_icon--rating" aria-hidden="true"></i>
             <img v-else class="action-log-global-icon"
-              :src="'/assets/global-parameters/' + summary.effect.parameter + '.png'" alt="" aria-hidden="true"/>
+              :src="'/assets/global-parameters/' + summary.effect.parameter + '.png'" alt="" aria-hidden="true">
           </span>
           <span v-if="summary.oceanCount !== undefined" class="action-log-source" aria-hidden="true">🌊×{{ summary.oceanCount }}</span>
           <span v-if="differentPlayer(summary.effect.player)" class="log-player action-log-target"

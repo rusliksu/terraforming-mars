@@ -41,6 +41,7 @@
         v-else-if="screen === 'games-overview'"
       />
       <CardList v-else-if="screen === 'cards'"/>
+      <CardMaker v-else-if="screen === 'card-maker'"/>
       <AdminHome v-else-if="screen === 'admin'"/>
       <LoginHome v-else-if="screen === 'login-home'"/>
       <Help v-else-if="screen === 'help'"/>
@@ -57,6 +58,7 @@ import * as constants from '@/common/constants';
 
 const AdminHome = defineAsyncComponent(() => import(/* webpackChunkName: "admin" */ '@/client/components/admin/AdminHome.vue'));
 const CardList = defineAsyncComponent(() => import(/* webpackChunkName: "card-list" */ '@/client/components/cardlist/CardList.vue'));
+const CardMaker = defineAsyncComponent(() => import(/* webpackChunkName: "card-maker" */ '@/client/components/cardmaker/CardMaker.vue'));
 const CreateGameForm = defineAsyncComponent(() => import(/* webpackChunkName: "create-game" */ '@/client/components/create/CreateGameForm.vue'));
 const GameEnd = defineAsyncComponent(() => import(/* webpackChunkName: "game-end" */ '@/client/components/GameEnd.vue'));
 const GameHome = defineAsyncComponent(() => import(/* webpackChunkName: "game-home" */ '@/client/components/GameHome.vue'));
@@ -83,6 +85,7 @@ import {setDocumentTitle} from '../utils/documentTitle';
 type Screen = 'admin' |
             'create-game-form' |
             'cards' |
+            'card-maker' |
             'empty' |
             'game-home' |
             'games-overview' |
@@ -179,6 +182,7 @@ export default defineComponent({
     GameEnd,
     GamesOverview,
     CardList,
+    CardMaker,
     Help,
     AdminHome,
     LoginHome,
@@ -321,6 +325,8 @@ export default defineComponent({
       app.screen = 'load';
     } else if (currentPathname === paths.CARDS) {
       app.screen = 'cards';
+    } else if (currentPathname === paths.CARD_MAKER) {
+      app.screen = 'card-maker';
     } else if (currentPathname === paths.HELP) {
       app.screen = 'help';
     } else if (currentPathname === paths.SPECTATOR) {
@@ -341,4 +347,6 @@ export default defineComponent({
 <style scoped>
 .topmost-replay > .main-container { margin: 0; }
 .topmost-replay > .notice { position: static; margin: 24px; }
+.topmost-card-maker > .main-container { margin: 0; }
+.topmost-card-maker > .notice { position: static; margin: 24px; }
 </style>

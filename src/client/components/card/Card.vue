@@ -17,7 +17,7 @@
       <CardExpansion :expansion="cardExpansion" :isCorporation="isCorporationCard" :isResourceCard="isResourceCard" :compatibility="cardCompatibility" />
       <CardResourceCounter v-if="hasResourceType" :amount="resourceAmount" :type="resourceType" />
       <CardVictoryPoints v-if="cardMetadata.victoryPoints" :victoryPoints="cardMetadata.victoryPoints" />
-      <CardExtraContent :card="card" />
+      <CardExtraContent v-if="previewCard === undefined" :card="card" />
       <slot></slot>
   </div>
 </template>
@@ -46,6 +46,7 @@ import {getCardOrThrow} from '@/client/cards/ClientCardManifest';
 import {Color} from '@/common/Color';
 import {CardRequirementDescriptor} from '@/common/cards/CardRequirementDescriptor';
 import {GameModule} from '@/common/cards/GameModule';
+import {ClientCard} from '@/common/cards/ClientCard';
 
 
 export default defineComponent({
@@ -65,6 +66,10 @@ export default defineComponent({
     card: {
       type: Object as () => CardModel,
       required: true,
+    },
+    previewCard: {
+      type: Object as () => ClientCard | undefined,
+      default: undefined,
     },
     actionUsed: {
       type: Boolean,
@@ -89,15 +94,14 @@ export default defineComponent({
     },
   },
   data() {
-    const cardName = this.card.name;
-    const card = getCardOrThrow(cardName);
-
     return {
-      cardInstance: card,
       hovering: false,
     };
   },
   computed: {
+    cardInstance(): ClientCard {
+      return this.previewCard ?? getCardOrThrow(this.card.name);
+    },
     cardExpansion(): GameModule {
       return this.cardInstance.module;
     },
@@ -198,7 +202,7 @@ export default defineComponent({
       return '';
     },
     hasHelpText(): boolean {
-      return CARD_HELP_TEXT[this.card.name] !== undefined;
+      return this.previewCard === undefined && CARD_HELP_TEXT[this.card.name] !== undefined;
     },
     showPlayerCube(): boolean {
       return false;

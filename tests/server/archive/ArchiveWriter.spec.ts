@@ -6,8 +6,7 @@ import {HistorySource} from '@/server/archive/HistorySource';
 import {exportHistory} from '@/server/archive/ArchiveWriter';
 import {readManifest, readSave, verifyArchive} from '@/server/archive/ArchiveReader';
 
-(process.platform === 'win32' ? describe : describe.skip)('ArchiveWriter', function() {
-  this.timeout(10_000);
+const archiveWriterSuite = (process.platform === 'win32' ? describe : describe.skip)('ArchiveWriter', () => {
   let root: string;
   let source: HistorySource;
   let output: string;
@@ -196,6 +195,9 @@ import {readManifest, readSave, verifyArchive} from '@/server/archive/ArchiveRea
     expect(await verifyArchive(join(output, revisions[0]))).eq(23);
   });
 });
+if (archiveWriterSuite !== undefined) {
+  archiveWriterSuite.timeout(10_000);
+}
 
 async function refused(operation: Promise<unknown>, code: string) {
   try {

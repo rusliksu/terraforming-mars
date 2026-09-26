@@ -87,23 +87,25 @@ describe('ActionLogRow', () => {
   });
 
   it('names the affected player beside a signed TR change', () => {
-    const action = new LogMessage(LogMessageType.DEFAULT, 'Blue played a card', [
-      {type: LogMessageDataType.PLAYER, value: 'blue'},
+    const action = new LogMessage(LogMessageType.DEFAULT, 'Red played a card', [
+      {type: LogMessageDataType.PLAYER, value: 'red'},
     ]);
-    const changed = new LogMessage(LogMessageType.DEFAULT, 'Red lost 1 TR', []);
-    changed.effect = {kind: 'tr', amount: -1, player: 'red'};
+    const changed = new LogMessage(LogMessageType.DEFAULT, 'Damir lost 1 TR', []);
+    changed.effect = {kind: 'tr', amount: -1, player: 'blue'};
     const entry = {kind: 'action' as const, id: 'action-3', messages: [action, changed], complete: true};
     const wrapper = shallowMount(ActionLogRow, {
       ...globalConfig,
       props: {entry, viewModel: fakeViewModel({players: [
-        fakePublicPlayerModel({color: 'blue', name: 'Blue'}),
         fakePublicPlayerModel({color: 'red', name: 'Red'}),
+        fakePublicPlayerModel({color: 'blue', name: 'Дамир'}),
       ]})},
     });
 
     expect(wrapper.find('.resource_icon--rating').exists()).to.be.true;
-    expect(wrapper.get('.action-log-effect').attributes('aria-label')).eq('-1 TR · Red');
-    expect(wrapper.get('.action-log-target').text()).eq('Red');
+    expect(wrapper.get('.action-log-effect').attributes('aria-label')).eq('-1 TR · Дамир');
+    expect(wrapper.get('.action-log-target').text()).eq('Дамир');
+    expect(wrapper.get('.action-log-target').classes()).to.include('log-player');
+    expect(wrapper.get('.action-log-target').classes()).to.include('player_bg_color_blue');
   });
 
   it('links a logged tile location from the collapsed action to its board space', async () => {

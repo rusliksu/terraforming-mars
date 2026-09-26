@@ -68,7 +68,7 @@ function publicPlayer(player: PublicPlayerModel, timer: PublicPlayerModel['timer
 function publicGame(game: GameModel): GameModel {
   const ares = game.aresData;
   return {
-    ...pick(game, ['awards', 'colonies', 'deckSize', 'discardPileSize', 'discardedColonies', 'gameAge', 'gameId',
+    ...pick(game, ['awards', 'colonies', 'deckSize', 'discardPileSize', 'discardedColonies', 'otherDeckSizes', 'gameAge', 'gameId',
       'inputSeq', 'generation', 'isSoloModeWin', 'isTerraformed', 'lastSoloGeneration', 'milestones',
       'name', 'oceans', 'oxygenLevel', 'passedPlayers', 'pathfinders', 'phase', 'spaces', 'spectatorId',
       'step', 'temperature', 'tags', 'undoCount', 'venusScaleLevel']),

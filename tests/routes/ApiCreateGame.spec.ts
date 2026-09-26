@@ -15,6 +15,80 @@ import {
 } from '../../src/common/Color';
 import * as constants from '../../src/common/constants';
 import {FakeClock} from '../common/FakeClock';
+import {CardName} from '../../src/common/cards/CardName';
+
+// A complete create-game request for a one-player game.
+function newGameConfigForTest(): NewGameConfig {
+  return {
+    players: [{
+      name: 'Robot',
+      color: 'blue',
+      beginner: false,
+      handicap: 0,
+      first: true,
+      isBot: false,
+    }],
+    expansions: {
+      corpera: true,
+      promo: false,
+      venus: false,
+      colonies: false,
+      prelude: false,
+      prelude2: false,
+      turmoil: false,
+      community: false,
+      ares: false,
+      moon: false,
+      pathfinders: false,
+      ceo: false,
+      starwars: false,
+      underworld: false,
+      deltaProject: false,
+    },
+    board: RandomBoardOption.OFFICIAL,
+    seed: 0,
+    randomFirstPlayer: false,
+    clonedGamedId: undefined,
+    undoOption: false,
+    showTimers: false,
+    fastModeOption: false,
+    showOtherPlayersVP: false,
+    privateHands: true,
+    noEloGame: false,
+    turnBasedGame: false,
+    botGame: false,
+    aresExtremeVariant: false,
+    politicalAgendasExtension: 'Standard',
+    solarPhaseOption: false,
+    removeNegativeGlobalEventsOption: false,
+    modularMA: false,
+    draftVariant: false,
+    initialDraft: false,
+    initialDraftOneWay: false,
+    preludeDraftVariant: false,
+    ceosDraftVariant: false,
+    startingCorporations: 0,
+    shuffleMapOption: false,
+    randomMA: RandomMAOptionType.NONE,
+    includeFanMA: false,
+    soloTR: false,
+    customCorporationsList: [],
+    bannedCards: [],
+    includedCards: [],
+    customColoniesList: [],
+    customPreludes: [],
+    requiresMoonTrackCompletion: false,
+    requiresVenusTrackCompletion: false,
+    moonStandardProjectVariant: false,
+    moonStandardProjectVariant1: false,
+    altVenusBoard: false,
+    escapeVelocity: undefined,
+    twoCorpsVariant: false,
+    customCeos: [],
+    startingCeos: 0,
+    startingPreludes: 0,
+  };
+}
 
 function newGameConfig(players: NewGameConfig['players']): NewGameConfig {
   return {
@@ -660,6 +734,93 @@ describe('ApiCreateGame', () => {
     await Promise.all(([emit, post]));
 
     expect(res.statusCode).eq(statusCode.internalServerError);
+  });
+
+  async function postConfig(config: object) {
+    const post = scaffolding.post(apiCreateGame, res);
+    const emit = Promise.resolve().then(() => {
+      scaffolding.req.emitString(JSON.stringify(config));
+      scaffolding.req.emitter.emit('end');
+    });
+    await Promise.all(([emit, post]));
+  }
+
+  const twoPlayers = [{name: 'a', color: 'red'}, {name: 'b', color: 'blue'}];
+
+  it('rejects a custom corporation list smaller than players × starting corporations', async () => {
+    await postConfig({
+      players: twoPlayers,
+      startingCorporations: 2,
+      customCorporationsList: [CardName.CREDICOR, CardName.ECOLINE, CardName.HELION],
+      customPreludes: [],
+    });
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('at least 4 corporations');
+  });
+
+  it('accepts a custom corporation list of exactly players × starting corporations', async () => {
+    await postConfig({
+      players: twoPlayers,
+      startingCorporations: 2,
+      customCorporationsList: [CardName.CREDICOR, CardName.ECOLINE, CardName.HELION, CardName.INVENTRIX],
+      customPreludes: [],
+    });
+    expect(res.statusCode).not.eq(statusCode.badRequest);
+  });
+
+  it('rejects a custom prelude list smaller than players × starting preludes', async () => {
+    await postConfig({
+      players: twoPlayers,
+      startingPreludes: 4,
+      customCorporationsList: [],
+      customPreludes: [CardName.ALLIED_BANK, CardName.AQUIFER_TURBINES, CardName.BIOFUELS, CardName.BIOLAB, CardName.BIOSPHERE_SUPPORT, CardName.BUSINESS_EMPIRE, CardName.DOME_FARMING],
+    });
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('at least 8 preludes');
+  });
+
+  it('rejects a custom CEO list smaller than players × CEOs dealt', async () => {
+    await postConfig({
+      players: twoPlayers,
+      startingCeos: 1,
+      customCorporationsList: [],
+      customPreludes: [],
+      customCeos: [CardName.FLOYD, CardName.HAL9000, CardName.KAREN, CardName.GORDON, CardName.ULRICH],
+    });
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('at least 6 CEOs');
+  });
+
+  async function createdEscapeVelocity(escapeVelocity: object) {
+    await postConfig({...newGameConfigForTest(), escapeVelocity});
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    return game?.gameOptions.escapeVelocity;
+  }
+
+  it('keeps valid escape velocity options', async () => {
+    const options = {
+      thresholdMinutes: 35,
+      bonusSectionsPerAction: 2,
+      penaltyPeriodMinutes: 3,
+      penaltyVPPerPeriod: 1,
+    };
+    expect(await createdEscapeVelocity(options)).deep.eq(options);
+  });
+
+  it('replaces invalid escape velocity options with defaults', async () => {
+    expect(await createdEscapeVelocity({
+      thresholdMinutes: '35',
+      bonusSectionsPerAction: -1,
+      penaltyPeriodMinutes: '',
+      penaltyVPPerPeriod: 1,
+    })).deep.eq({
+      thresholdMinutes: 35,
+      bonusSectionsPerAction: 2,
+      penaltyPeriodMinutes: 2,
+      penaltyVPPerPeriod: 1,
+    });
   });
 
   // Issues one create-game POST against `handler`, using fresh request/response objects,

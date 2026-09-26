@@ -119,21 +119,29 @@ export class GameCards {
     return this.getCards<IStandardProjectCard>('standardProjects');
   }
   public getCorporationCards(): Array<ICorporationCard> {
+    if (this.gameOptions.customCorporationsList.length > 0) {
+      const selected: Array<ICorporationCard> = [];
+      this.addCustomCards(selected, this.gameOptions.customCorporationsList, {respectModuleSelection: true});
+      return selected.filter((card) => card.name !== CardName.BEGINNER_CORPORATION);
+    }
     const cards = this.getCards<ICorporationCard>('corporationCards')
       .filter((card) => card.name !== CardName.BEGINNER_CORPORATION);
-    this.addCustomCards(cards, this.gameOptions.customCorporationsList, {respectModuleSelection: true});
     return cards;
   }
   public getPreludeCards() {
-    let preludes = this.getCards<IPreludeCard>('preludeCards');
-    // https://github.com/terraforming-mars/terraforming-mars/issues/2833
-    // Make Valley Trust playable even when Preludes is out of the game
-    // by preparing a deck of preludes.
-    if (preludes.length === 0) {
-      preludes = this.instantiate(PRELUDE_CARD_MANIFEST.preludeCards);
+    let preludes: Array<IPreludeCard>;
+    if (this.gameOptions.customPreludes.length > 0) {
+      preludes = [];
+      this.addCustomCards(preludes, this.gameOptions.customPreludes, {respectModuleSelection: true});
+    } else {
+      preludes = this.getCards<IPreludeCard>('preludeCards');
+      // https://github.com/terraforming-mars/terraforming-mars/issues/2833
+      // Make Valley Trust playable even when Preludes is out of the game
+      // by preparing a deck of preludes.
+      if (preludes.length === 0) {
+        preludes = this.instantiate(PRELUDE_CARD_MANIFEST.preludeCards);
+      }
     }
-    this.addCustomCards(preludes, this.gameOptions.customPreludes, {respectModuleSelection: true});
-
     if (this.gameOptions.twoCorpsVariant) {
       // As each player who doesn't have Merger is dealt Merger in SelectInitialCards.ts,
       // remove it from the deck to avoid possible conflicts (e.g. Valley Trust / New Partner)
@@ -143,9 +151,12 @@ export class GameCards {
   }
 
   public getCeoCards() {
-    const ceos = this.getCards<ICeoCard>('ceoCards');
-    this.addCustomCards(ceos, this.gameOptions.customCeos, {respectModuleSelection: true});
-    return ceos;
+    if (this.gameOptions.customCeos.length > 0) {
+      const selected: Array<ICeoCard> = [];
+      this.addCustomCards(selected, this.gameOptions.customCeos, {respectModuleSelection: true});
+      return selected;
+    }
+    return this.getCards<ICeoCard>('ceoCards');
   }
 
   /**
@@ -235,6 +246,7 @@ export class GameCards {
     }
   }
 
+  /* Instantiates compatible cards from each enabled module, then applies game exclusions. */
   private getCards<T extends ICard>(cardManifestName: keyof ModuleManifest) : Array<T> {
     let cards: Array<T> = [];
     for (const moduleManifest of this.moduleManifests) {

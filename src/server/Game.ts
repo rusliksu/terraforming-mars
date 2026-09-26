@@ -41,7 +41,7 @@ import {Turmoil} from './turmoil/Turmoil';
 import {RandomMAOptionType} from '../common/ma/RandomMAOptionType';
 import {AresHandler} from './ares/AresHandler';
 import {AresData} from '../common/ares/AresData';
-import {GameSetup} from './GameSetup';
+import {GameSetup, normalizeBoardName} from './GameSetup';
 import {GameCards} from './GameCards';
 import {byKey} from '@/common/utils/Ordering';
 import {GlobalParameter} from '../common/GlobalParameter';
@@ -61,6 +61,7 @@ import {AddResourcesToCard} from './deferredActions/AddResourcesToCard';
 import {ColonyDeserializer} from './colonies/ColonyDeserializer';
 import {GameLoader} from './database/GameLoader';
 import {DEFAULT_GAME_OPTIONS, GameOptions} from './game/GameOptions';
+import {normalizeEscapeVelocityOptions} from '../common/game/EscapeVelocityOptions';
 import {CorporationDeck, PreludeDeck, ProjectDeck, CeoDeck} from './cards/Deck';
 import {Logger} from './logs/Logger';
 import {addDays, stringToNumber} from './database/utils';
@@ -101,6 +102,8 @@ export function setGameLog(f: () => Array<LogMessage>) {
 function deserializeGameOptions(d: SerializedGame): GameOptions {
   const serializedOptions = (d.gameOptions ?? {}) as Partial<GameOptions>;
   const gameOptions = {...DEFAULT_GAME_OPTIONS, ...serializedOptions};
+  gameOptions.boardName = normalizeBoardName(gameOptions.boardName);
+  gameOptions.escapeVelocity = normalizeEscapeVelocityOptions(gameOptions.escapeVelocity);
   if (gameOptions.undoStepOption) {
     gameOptions.undoOption = true;
   }
@@ -330,13 +333,13 @@ export class Game implements IGame, Logger {
     projectDeck.shuffle();
 
     const corporationDeck = new CorporationDeck(gameCards.getCorporationCards(), [], rng);
-    corporationDeck.shuffle(gameOptions.customCorporationsList);
+    corporationDeck.shuffle();
 
     const preludeDeck = new PreludeDeck(gameCards.getPreludeCards(), [], rng);
-    preludeDeck.shuffle(gameOptions.customPreludes);
+    preludeDeck.shuffle();
 
     const ceoDeck = new CeoDeck(gameCards.getCeoCards(), [], rng);
-    ceoDeck.shuffle(gameOptions.customCeos);
+    ceoDeck.shuffle();
 
     const activePlayer = firstPlayer.id;
 

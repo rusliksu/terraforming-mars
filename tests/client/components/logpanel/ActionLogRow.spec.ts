@@ -46,6 +46,24 @@ describe('ActionLogRow', () => {
     expect(wrapper.get('.action-log-effect').text()).to.contain('+2');
   });
 
+  it('shows the exact energy spent on a later trade message before its gain', () => {
+    const action = new LogMessage(LogMessageType.DEFAULT, 'Blue played Trade Advance', []);
+    const trade = new LogMessage(LogMessageType.DEFAULT, 'Blue traded with Luna', []);
+    trade.payment = {megacredits: 0, steel: 0, titanium: 0, energy: 3};
+    const gained = new LogMessage(LogMessageType.DEFAULT, 'Blue gained 17 M€', []);
+    gained.effect = {kind: 'resource', resource: 'megacredits', production: false, amount: 17, player: 'blue'};
+    const entry = {kind: 'action' as const, id: 'action-trade', messages: [action, trade, gained], complete: true};
+    const wrapper = shallowMount(ActionLogRow, {
+      ...globalConfig,
+      props: {entry, viewModel: fakeViewModel({players: [fakePublicPlayerModel({color: 'blue', name: 'Blue'})]})},
+    });
+
+    expect(wrapper.get('.action-log-payment').attributes('aria-label')).eq('Paid 3 energy');
+    expect(wrapper.find('.action-log-payment .resource_icon--energy').exists()).is.true;
+    expect(wrapper.get('.action-log-effects').element.firstElementChild?.classList.contains('action-log-payment')).is.true;
+    expect(wrapper.get('.action-log-effect').text()).to.contain('+17');
+  });
+
   it('shows a logged ocean bonus as coins and frames production', () => {
     const action = new LogMessage(LogMessageType.DEFAULT, 'Blue played Great Dam', []);
     const production = new LogMessage(LogMessageType.DEFAULT, 'Blue gained 2 energy production', []);

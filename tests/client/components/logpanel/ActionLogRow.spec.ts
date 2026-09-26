@@ -32,6 +32,12 @@ describe('ActionLogRow', () => {
     expect(wrapper.findAll('.action-log-effect').map((effect) => effect.attributes('aria-label'))).deep.eq([
       '+1% oxygen · Дамир', '+2°C temperature · Дамир', '+2% Venus scale · Дамир',
     ]);
+    expect(wrapper.findAll('.action-log-global-icon').map((icon) => icon.attributes('src'))).deep.eq([
+      '/assets/global-parameters/oxygen.png',
+      '/assets/global-parameters/temperature.png',
+      '/assets/global-parameters/venus.png',
+    ]);
+    expect(wrapper.findAll('.action-log-global-icon').map((icon) => icon.attributes('alt'))).deep.eq(['', '', '']);
     expect(wrapper.findAll('.action-log-target').map((target) => target.classes().includes('player_bg_color_blue'))).deep.eq([true, true, true]);
   });
 

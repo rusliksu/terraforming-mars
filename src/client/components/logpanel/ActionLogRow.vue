@@ -14,11 +14,13 @@
         <span v-for="(summary, index) in effects" :key="index" class="action-log-effect"
           :aria-label="effectLabel(summary)" :title="effectLabel(summary)">
           <span class="action-log-effect-visual" :class="{'production-box action-log-production-box': summary.effect.kind === 'resource' && summary.effect.production}">
-            <span class="action-log-effect-amount">{{ effectAmount(summary.effect) }}</span>
+            <span v-if="effectAmount(summary.effect)" class="action-log-effect-amount">{{ effectAmount(summary.effect) }}</span>
             <i v-if="summary.effect.kind === 'resource'" class="resource_icon" :class="'resource_icon--' + summary.effect.resource" aria-hidden="true"></i>
             <i v-else-if="summary.effect.kind === 'tr'" class="resource_icon resource_icon--rating" aria-hidden="true"></i>
-            <img v-else class="action-log-global-icon"
-              :src="'/assets/global-parameters/' + summary.effect.parameter + '.png'" alt="" aria-hidden="true">
+            <template v-else>
+              <img v-for="icon in globalIconCount(summary.effect.amount)" :key="icon" class="action-log-global-icon"
+                :src="'/assets/global-parameters/' + summary.effect.parameter + '.png'" alt="" aria-hidden="true">
+            </template>
           </span>
           <span v-if="summary.oceanCount !== undefined" class="action-log-source" aria-hidden="true">🌊×{{ summary.oceanCount }}</span>
           <span v-if="differentPlayer(summary.effect.player)" class="log-player action-log-target"
@@ -107,7 +109,7 @@ function effectLabel({effect, oceanCount}: EffectSummary): string {
   if (effect.kind === 'global') {
     const name = effect.parameter === GlobalParameter.OXYGEN ? 'oxygen' :
       effect.parameter === GlobalParameter.TEMPERATURE ? 'temperature' : 'Venus scale';
-    return `${effectAmount(effect)} ${name} · ${playerName(effect.player)}`;
+    return `${effect.amount > 0 ? '+' : ''}${effect.amount} ${name} step(s) · ${playerName(effect.player)}`;
   }
   const type = effect.kind === 'tr' ? 'TR' : `${effect.resource}${effect.production ? ' production' : ''}`;
   const source = oceanCount === undefined ? '' : ` from ${oceanCount} ocean(s)`;
@@ -115,9 +117,17 @@ function effectLabel({effect, oceanCount}: EffectSummary): string {
 }
 
 function effectAmount(effect: LogEffect | LogGlobalEffect): string {
-  const amount = effect.kind === 'global' && effect.parameter !== GlobalParameter.OXYGEN ? effect.amount * 2 : effect.amount;
-  const suffix = effect.kind === 'global' ? effect.parameter === GlobalParameter.TEMPERATURE ? '°C' : '%' : '';
-  return `${amount > 0 ? '+' : ''}${amount}${suffix}`;
+  if (effect.kind === 'global') {
+    const amount = Math.abs(effect.amount);
+    const number = amount >= 1 && amount <= 3 ? '' : String(amount);
+    return `${effect.amount < 0 ? '−' : ''}${number}`;
+  }
+  return `${effect.amount > 0 ? '+' : ''}${effect.amount}`;
+}
+
+function globalIconCount(amount: number): number {
+  const count = Math.abs(amount);
+  return count >= 1 && count <= 3 ? count : 1;
 }
 
 function oceanBonusEffect(message: LogMessage): EffectSummary | undefined {

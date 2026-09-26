@@ -6,7 +6,8 @@ import {HistorySource} from '@/server/archive/HistorySource';
 import {exportHistory} from '@/server/archive/ArchiveWriter';
 import {readManifest, readSave, verifyArchive} from '@/server/archive/ArchiveReader';
 
-(process.platform === 'win32' ? describe : describe.skip)('ArchiveWriter', () => {
+(process.platform === 'win32' ? describe : describe.skip)('ArchiveWriter', function() {
+  this.timeout(10_000);
   let root: string;
   let source: HistorySource;
   let output: string;

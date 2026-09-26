@@ -72,7 +72,7 @@ describe('ApiGameLogs', () => {
     const messages = JSON.parse(res.content);
     expect(messages.map((message: {message: string}) => message.message)).deep.eq(['Public action']);
     expect(messages[0].actionId).eq('action-1');
-    expect(JSON.stringify(messages)).not.to.contain('999');
+    expect(messages[0]).not.to.have.property('effect');
   });
 
   it('pulls logs for most recent generation', async () => {

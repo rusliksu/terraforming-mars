@@ -102,7 +102,15 @@ export class GameLogs {
 
     // Default view keeps the payload small. An explicit generation request should
     // always return the full generation, including the current one.
-    const labelOwner = (message: LogMessage) => showAllMessages ? this.labelPrivateMessageOwner(message, game) : message;
+    const labelOwner = (message: LogMessage): LogMessage => {
+      const labeled = showAllMessages ? this.labelPrivateMessageOwner(message, game) : message;
+      if (labeled.replayGlobalEffects === undefined) {
+        return labeled;
+      }
+      const regularLog = {...labeled};
+      delete regularLog.replayGlobalEffects;
+      return regularLog;
+    };
     if (generation === null) {
       return game.gameLog.filter(messagesForPlayer).slice(-this.getRecentLogLimit(limit)).map(labelOwner);
     }

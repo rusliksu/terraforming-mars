@@ -17,7 +17,8 @@
             <span class="action-log-effect-amount">{{ effectAmount(summary.effect) }}</span>
             <i v-if="summary.effect.kind === 'resource'" class="resource_icon" :class="'resource_icon--' + summary.effect.resource" aria-hidden="true"></i>
             <i v-else-if="summary.effect.kind === 'tr'" class="resource_icon resource_icon--rating" aria-hidden="true"></i>
-            <span v-else class="action-log-global-symbol" aria-hidden="true">{{ globalSymbol(summary.effect.parameter) }}</span>
+            <img v-else class="action-log-global-icon"
+              :src="'/assets/global-parameters/' + summary.effect.parameter + '.png'" alt="" aria-hidden="true"/>
           </span>
           <span v-if="summary.oceanCount !== undefined" class="action-log-source" aria-hidden="true">🌊×{{ summary.oceanCount }}</span>
           <span v-if="differentPlayer(summary.effect.player)" class="log-player action-log-target"
@@ -119,10 +120,6 @@ function effectAmount(effect: LogEffect | LogGlobalEffect): string {
   return `${amount > 0 ? '+' : ''}${amount}${suffix}`;
 }
 
-function globalSymbol(parameter: LogGlobalEffect['parameter']): string {
-  return parameter === GlobalParameter.OXYGEN ? 'O₂' : parameter === GlobalParameter.TEMPERATURE ? '🌡' : '♀';
-}
-
 function oceanBonusEffect(message: LogMessage): EffectSummary | undefined {
   if (message.message !== '${0} gained ${1} M€ from ${2} ocean(s)' || message.data.length !== 3 ||
       message.data[0].type !== LogMessageDataType.PLAYER ||
@@ -152,7 +149,7 @@ function oceanBonusEffect(message: LogMessage): EffectSummary | undefined {
 .action-log-payment { color: #e9c8b4; }
 .action-log-effect-visual { display: inline-flex; align-items: center; gap: 4px; }
 .action-log-effect-amount { font-weight: bold; }
-.action-log-global-symbol { font-size: 1.1em; font-weight: bold; }
+.action-log-global-icon { display: block; width: auto; height: 24px; max-width: 32px; object-fit: contain; }
 .action-log-effect .resource_icon, .action-log-payment .resource_icon { display: inline-block; width: 21px; height: 21px; background-size: contain; }
 .action-log-effect .action-log-production-box { min-width: 52px; width: auto; height: 29px; padding: 2px 5px; margin: 0; line-height: normal; box-sizing: border-box; color: #fff; }
 .action-log-source { font-size: 0.8em; color: #b8d9f2; }

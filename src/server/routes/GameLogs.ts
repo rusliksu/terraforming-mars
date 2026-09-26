@@ -8,6 +8,20 @@ import {LogMessageData} from '../../common/logs/LogMessageData';
 import {LogMessageDataType} from '../../common/logs/LogMessageDataType';
 
 export class GameLogs {
+  private normalizeCorporationSelection(message: LogMessage): LogMessage {
+    const [selected, offered] = message.data;
+    if (message.message !== 'You selected ${0} from ${1}' || message.data.length !== 2 ||
+      selected?.type !== LogMessageDataType.CARD || offered?.type !== LogMessageDataType.CARDS) {
+      return message;
+    }
+    const skipped = offered.value.filter((name) => name !== selected.value);
+    return {
+      ...message,
+      message: skipped.length > 0 ? 'You selected ${0} skipping ${1}' : 'You selected ${0}',
+      data: skipped.length > 0 ? [selected, {...offered, value: skipped}] : [selected],
+    };
+  }
+
   private shiftDataPlaceholders(message: string): string {
     return message.replace(/\$\{(\d{1,2})\}/gi, (_match, idx) => {
       return '${' + (Number(idx) + 1) + '}';
@@ -103,7 +117,8 @@ export class GameLogs {
     // Default view keeps the payload small. An explicit generation request should
     // always return the full generation, including the current one.
     const labelOwner = (message: LogMessage): LogMessage => {
-      const labeled = showAllMessages ? this.labelPrivateMessageOwner(message, game) : message;
+      const normalized = this.normalizeCorporationSelection(message);
+      const labeled = showAllMessages ? this.labelPrivateMessageOwner(normalized, game) : normalized;
       if (labeled.replayGlobalEffects === undefined) {
         return labeled;
       }
@@ -122,7 +137,7 @@ export class GameLogs {
       throw new Error('Game is not over');
     }
 
-    return game.gameLog.filter((message) => message.canceled !== true).map((message) => Log.applyData(this.labelPrivateMessageOwner(message, game), (datum: LogMessageData) => {
+    return game.gameLog.filter((message) => message.canceled !== true).map((message) => Log.applyData(this.labelPrivateMessageOwner(this.normalizeCorporationSelection(message), game), (datum: LogMessageData) => {
       if (datum.type === undefined || datum.value === undefined) {
         return '';
       }

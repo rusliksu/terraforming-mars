@@ -43,6 +43,13 @@ describe('LogPanel', () => {
     };
   }
 
+  async function flushLogs(wrapper: ReturnType<typeof shallowMount>) {
+    await Promise.resolve();
+    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+  }
+
   beforeEach(() => {
     originalFetch = (global as any).fetch;
     originalResizeObserver = (global as any).ResizeObserver;
@@ -78,7 +85,6 @@ describe('LogPanel', () => {
       ...globalConfig,
       props: {
         viewModel: fakeViewModel(),
-        color: 'blue',
       },
     });
     expect(wrapper.exists()).to.be.true;
@@ -90,7 +96,6 @@ describe('LogPanel', () => {
       ...globalConfig,
       props: {
         viewModel,
-        color: 'blue',
         step: 0,
       },
     });
@@ -121,7 +126,6 @@ describe('LogPanel', () => {
       ...globalConfig,
       props: {
         viewModel,
-        color: 'blue',
       },
     });
 
@@ -150,7 +154,6 @@ describe('LogPanel', () => {
       ...globalConfig,
       props: {
         viewModel,
-        color: 'blue',
       },
     });
 
@@ -166,7 +169,6 @@ describe('LogPanel', () => {
       ...globalConfig,
       props: {
         viewModel: fakeViewModel(),
-        color: 'blue',
       },
     });
     (wrapper.vm as any).messages = [new LogMessage(LogMessageType.DEFAULT, 'Space', [])];
@@ -184,7 +186,6 @@ describe('LogPanel', () => {
       ...globalConfig,
       props: {
         viewModel: fakeViewModel({players: [blue, red]}),
-        color: 'blue',
       },
     });
     const generation = new LogMessage(LogMessageType.NEW_GENERATION, 'Generation ${0}', []);
@@ -207,7 +208,6 @@ describe('LogPanel', () => {
       ...globalConfig,
       props: {
         viewModel: fakeViewModel({players: [blue, red]}),
-        color: 'blue',
       },
     });
 
@@ -220,7 +220,7 @@ describe('LogPanel', () => {
   it('keeps ordinary action messages as separate original rows', async () => {
     const wrapper = shallowMount(LogPanel, {
       ...globalConfig,
-      props: {viewModel: fakeViewModel(), color: 'blue'},
+      props: {viewModel: fakeViewModel()},
     });
     const played = new LogMessage(LogMessageType.DEFAULT, 'Blue played a card', []);
     played.actionId = 'one-action';
@@ -244,7 +244,6 @@ describe('LogPanel', () => {
       ...globalConfig,
       props: {
         viewModel: fakeViewModel({players: [blue, fakePublicPlayerModel({color: 'red', name: 'Red'})]}),
-        color: 'blue',
       },
     });
     const generation = new LogMessage(LogMessageType.NEW_GENERATION, 'Generation ${0}', []);
@@ -284,7 +283,6 @@ describe('LogPanel', () => {
       ...globalConfig,
       props: {
         viewModel: fakeViewModel(),
-        color: 'blue',
       },
     });
 
@@ -327,7 +325,6 @@ describe('LogPanel', () => {
       ...globalConfig,
       props: {
         viewModel,
-        color: 'blue',
       },
     });
 
@@ -368,7 +365,7 @@ describe('LogPanel', () => {
     const viewModel = {...baseViewModel, game: {...baseViewModel.game, generation: 3}};
     const first = shallowMount(LogPanel, {
       ...globalConfig,
-      props: {viewModel, color: 'blue'},
+      props: {viewModel},
     });
 
     await Promise.resolve();
@@ -381,7 +378,7 @@ describe('LogPanel', () => {
 
     const second = shallowMount(LogPanel, {
       ...globalConfig,
-      props: {viewModel, color: 'blue'},
+      props: {viewModel},
     });
     await Promise.resolve();
     await Promise.resolve();
@@ -405,7 +402,6 @@ describe('LogPanel', () => {
       ...globalConfig,
       props: {
         viewModel: fakeViewModel({id: 'p-latest-id' as any, players: [blue, red]}),
-        color: 'blue',
       },
     });
     await Promise.resolve();
@@ -435,7 +431,6 @@ describe('LogPanel', () => {
       ...globalConfig,
       props: {
         viewModel: fakeViewModel({id: 'p-scroll-button-id' as any}),
-        color: 'blue',
       },
     });
     await Promise.resolve();
@@ -450,5 +445,80 @@ describe('LogPanel', () => {
     (wrapper.vm as any).handleScroll();
     await wrapper.vm.$nextTick();
     expect((wrapper.vm as any).showScrollToBottomButton).is.false;
+  });
+
+  it('returns to the latest recent logs and the end of the log', async () => {
+    const panel = installScrollablePanel();
+    const baseViewModel = fakeViewModel({id: 'p-latest-reader' as any});
+    const viewModel = {...baseViewModel, game: {...baseViewModel.game, generation: 3}};
+    const wrapper = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {viewModel},
+    });
+    await flushLogs(wrapper);
+
+    (wrapper.vm as any).selectedGeneration = 1;
+    panel.setScrollTop(80);
+    await wrapper.find('[data-test="log-latest"]').trigger('click');
+    await flushLogs(wrapper);
+
+    expect((wrapper.vm as any).selectedGeneration).eq(-1);
+    expect((wrapper.vm as any).selectedRecentLimit).eq(100);
+    expect(fetchCalls[fetchCalls.length - 1]).includes('limit=100');
+    expect(panel.getScrollTop()).eq(520);
+  });
+
+  // The real app never patches an existing LogPanel's props in place: App.vue forces a
+  // full unmount/remount (via a `:key` bump) on every game-state refresh. These tests
+  // simulate that by unmounting and mounting a fresh instance, exactly like the app does.
+  it('follows the latest recent logs across a remount when previously following', async () => {
+    const baseViewModel = fakeViewModel({id: 'p-live-follower' as any});
+    const viewModel = {...baseViewModel, game: {...baseViewModel.game, generation: 2}};
+    const first = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {viewModel},
+    });
+    await flushLogs(first);
+    // Module-level view state can be left behind by earlier tests, so explicitly
+    // establish "following" mode rather than relying on the freshly-mounted default.
+    (first.vm as any).showLatestLogs();
+    await flushLogs(first);
+    first.unmount();
+
+    const nextViewModel = {...viewModel, game: {...viewModel.game, generation: 3}};
+    const second = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {viewModel: nextViewModel},
+    });
+    await flushLogs(second);
+
+    expect((second.vm as any).selectedGeneration).eq(-1);
+    expect((second.vm as any).selectedRecentLimit).eq(100);
+    expect(fetchCalls[fetchCalls.length - 1]).includes('limit=100');
+  });
+
+  it('does not jump generations across a remount after the player navigates away', async () => {
+    const baseViewModel = fakeViewModel({id: 'p-history-reader' as any});
+    const viewModel = {...baseViewModel, game: {...baseViewModel.game, generation: 3}};
+    const first = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {viewModel},
+    });
+    await flushLogs(first);
+
+    (first.vm as any).selectGeneration(1);
+    await flushLogs(first);
+    first.unmount();
+    fetchCalls.length = 0;
+
+    const nextViewModel = {...viewModel, game: {...viewModel.game, generation: 4}};
+    const second = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {viewModel: nextViewModel},
+    });
+    await flushLogs(second);
+
+    expect((second.vm as any).selectedGeneration).eq(1);
+    expect(fetchCalls[fetchCalls.length - 1]).includes('generation=1');
   });
 });

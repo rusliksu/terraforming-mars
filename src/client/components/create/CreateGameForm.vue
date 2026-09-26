@@ -730,6 +730,7 @@ import {getColony} from '@/client/colonies/ClientColonyManifest';
 import {RULEBOOK_URLS, WIKI, WIKI_URLS} from '@/client/utils/WikiLinks';
 import {setDocumentTitle} from '@/client/utils/documentTitle';
 import {ensureEloLoaded, sharedEloState} from '@/client/utils/elo';
+import {sanitizeEscapeVelocityOptions} from '@/common/game/escapeVelocity';
 
 const REVISED_COUNT_ALGORITHM = false;
 const PROFILE_TELEGRAM_IDS_KEY = 'tm_player_profile_telegram_ids';
@@ -2209,6 +2210,15 @@ export default defineComponent({
         customPreludes.length = 0;
       }
 
+      // Check custom CEO count. The server deals at least CEO_CARDS_DEALT_PER_PLAYER CEOs to each player.
+      if (customCeos.length > 0) {
+        const requiredCeoCount = players.length * Math.max(startingCeos, constants.CEO_CARDS_DEALT_PER_PLAYER);
+        if (customCeos.length < requiredCeoCount) {
+          window.alert(translateTextWithParams('Must select at least ${0} CEOs', [requiredCeoCount.toString()]));
+          return undefined;
+        }
+      }
+
       // Clone game checks
       if (this.clonedGameId !== undefined && this.seededGame) {
         const gameData = await fetch(paths.API_CLONEABLEGAME + '?id=' + this.clonedGameId)
@@ -2283,12 +2293,12 @@ export default defineComponent({
         moonStandardProjectVariant1: this.moonStandardProjectVariant1,
         altVenusBoard: this.altVenusBoard,
         escapeVelocity: this.escapeVelocityMode ?
-          {
+          sanitizeEscapeVelocityOptions({
             thresholdMinutes: this.escapeVelocityThreshold,
             bonusSectionsPerAction: this.escapeVelocityBonusSeconds,
             penaltyPeriodMinutes: this.escapeVelocityPeriod,
             penaltyVPPerPeriod: this.escapeVelocityPenalty,
-          } : undefined,
+          }) : undefined,
         twoCorpsVariant,
         startingCeos,
         startingPreludes,

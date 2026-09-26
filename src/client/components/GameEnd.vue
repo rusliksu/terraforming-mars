@@ -15,7 +15,7 @@
                       <ul class="game_end_list">
                           <li v-i18n>Try to win with expansions enabled</li>
                           <li v-i18n>Try to win before the last generation</li>
-                          <li><span v-i18n>Can you get</span> {{ players[0].victoryPointsBreakdown.total + 10 }}<span v-i18n>+ Victory Points?</span></li>
+                          <li><span v-i18n>Can you get</span> {{ participant.players[0].victoryPointsBreakdown.total + 10 }}<span v-i18n>+ Victory Points?</span></li>
                       </ul>
                   </div>
               </div>
@@ -280,10 +280,10 @@
             <div v-if="game.gameOptions.expansions.pathfinders">
               <PlanetaryTracks :tracks="game.pathfinders" :gameOptions="game.gameOptions"/>
             </div>
-            <DeltaProjectBoard v-if="game.gameOptions.expansions.deltaProject" :players="players"/>
+            <DeltaProjectBoard v-if="game.gameOptions.expansions.deltaProject" :players="participant.players"/>
           </div>
           <div class="game_end_block--log game-end-column">
-            <LogPanel :color="color" :viewModel="viewModel"/>
+            <LogPanel :viewModel="participant"/>
             <a :href="downloadLogUrl" target="_blank" v-i18n>Download game log</a>
           </div>
         </div>
@@ -300,7 +300,7 @@ import {setFaviconStatus} from '@/client/utils/favicon';
 import {getPreferences} from '@/client/utils/PreferencesManager';
 import {paths} from '@/common/app/paths';
 import {GameModel} from '@/common/models/GameModel';
-import {PlayerViewModel, PublicPlayerModel, ViewModel} from '@/common/models/PlayerModel';
+import {PublicPlayerModel, ViewModel} from '@/common/models/PlayerModel';
 import Board from '@/client/components/Board.vue';
 import MoonBoard from '@/client/components/moon/MoonBoard.vue';
 import {nextTileView, TileView} from '@/client/components/board/TileView';
@@ -312,7 +312,6 @@ import VictoryPointChart, {DataSet} from '@/client/components/gameend/VictoryPoi
 import PlayerEloBadge from '@/client/components/overview/PlayerEloBadge.vue';
 import {playerColorClass} from '@/common/utils/utils';
 import {Timer} from '@/common/Timer';
-import {SpectatorModel} from '@/common/models/SpectatorModel';
 import {Color} from '@/common/Color';
 import {CardType} from '@/common/cards/CardType';
 import {getCard} from '@/client/cards/ClientCardManifest';
@@ -334,50 +333,24 @@ function playerCompletionRank(player: PublicPlayerModel, shareRemainingPlaces = 
   };
 }
 
-function getViewModel(playerView: ViewModel | undefined, spectator: ViewModel | undefined): ViewModel {
-  if (playerView !== undefined) {
-    return playerView;
-  }
-  if (spectator !== undefined) {
-    return spectator;
-  }
-  throw new Error('Neither playerView nor spectator are defined');
-}
-
 export default defineComponent({
   name: 'GameEnd',
   props: {
-    playerView: {
-      type: Object as () => PlayerViewModel | undefined,
-      required: true,
-    },
-    spectator: {
-      type: Object as () => SpectatorModel | undefined,
+    participant: {
+      type: Object as () => ViewModel,
       required: true,
     },
   },
   computed: {
-    viewModel(): ViewModel {
-      return getViewModel(this.playerView, this.spectator);
-    },
     game(): GameModel {
-      return getViewModel(this.playerView, this.spectator).game;
+      return this.participant.game;
     },
     players(): Array<PublicPlayerModel> {
-      return getViewModel(this.playerView, this.spectator).players;
+      return this.participant.players;
     },
     lastActivePlayerFinish(): boolean {
       const surrenderedPlayerCount = this.players.filter((player) => player.isSurrendered).length;
       return isLastActivePlayerFinish(this.players.length, surrenderedPlayerCount);
-    },
-    color(): Color {
-      if (this.playerView !== undefined) {
-        return this.playerView.thisPlayer.color;
-      }
-      if (this.spectator !== undefined) {
-        return this.spectator.color;
-      }
-      throw new Error('Neither playerView nor spectator are defined');
     },
     spectatorUrl(): string | null {
       const sid = this.game.spectatorId;
@@ -387,14 +360,10 @@ export default defineComponent({
       return window.location.origin + '/spectator?id=' + sid;
     },
     downloadLogUrl() {
-      const id = this.playerView?.id || this.spectator?.id;
-      if (id === undefined) {
-        return undefined;
-      }
-      return `${paths.END_GAME_LOG}?id=${id}`;
+      return `${paths.END_GAME_LOG}?id=${this.participant.id}`;
     },
     playersInPlace(): Array<PublicPlayerModel> {
-      const copy = [...this.viewModel.players];
+      const copy = [...this.participant.players];
       const shareRemainingPlaces = this.lastActivePlayerFinish;
       copy.sort(function(a:PublicPlayerModel, b:PublicPlayerModel) {
         return compareCompletionRank(playerCompletionRank(a, shareRemainingPlaces), playerCompletionRank(b, shareRemainingPlaces));
@@ -416,10 +385,10 @@ export default defineComponent({
       return winners;
     },
     isSoloGame(): boolean {
-      return this.players.length === 1;
+      return this.participant.players.length === 1;
     },
     vpDataset(): ReadonlyArray<DataSet> {
-      return this.players.map((player) => {
+      return this.participant.players.map((player) => {
         return {
           label: player.name,
           data: player.victoryPointsByGeneration,
@@ -452,7 +421,7 @@ export default defineComponent({
       return dataset;
     },
     playerContributionsData(): Array<{player: string, color: Color, temp: number, oxygen: number, oceans: number, venus?: number, moonHabitat?: number, moonMining?: number, moonLogistic?: number, total: number}> {
-      return this.players.map((player) => {
+      return this.participant.players.map((player) => {
         const steps = player.globalParameterSteps || {};
         const temp = steps[GlobalParameter.TEMPERATURE] || 0;
         const oxygen = steps[GlobalParameter.OXYGEN] || 0;

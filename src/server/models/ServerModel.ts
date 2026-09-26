@@ -18,7 +18,7 @@ import {ClaimedMilestoneModel, MilestoneScore} from '../../common/models/Claimed
 import {FundedAwardModel, AwardScore} from '../../common/models/FundedAwardModel';
 import {getTurmoilModel} from '../models/TurmoilModel';
 import {SpectatorModel} from '../../common/models/SpectatorModel';
-import {GameModel} from '../../common/models/GameModel';
+import {GameModel, OtherDeckSizesModel} from '../../common/models/GameModel';
 import {Turmoil} from '../turmoil/Turmoil';
 import {createPathfindersModel} from './PathfindersModel';
 import {MoonModel} from '../../common/models/MoonModel';
@@ -54,6 +54,21 @@ export class Server {
     };
   }
 
+  private static getOtherDeckSizes(game: IGame): OtherDeckSizesModel {
+    const options = game.gameOptions;
+    const sizes = (deck: {drawPile: ReadonlyArray<unknown>, discardPile: ReadonlyArray<unknown>}) => ({
+      drawPile: deck.drawPile.length,
+      discardPile: deck.discardPile.length,
+    });
+    const dealer = game.turmoil?.globalEventDealer;
+    return {
+      corporations: sizes(game.corporationDeck),
+      preludes: options.preludeExtension ? sizes(game.preludeDeck) : undefined,
+      ceos: options.ceoExtension ? sizes(game.ceoDeck) : undefined,
+      globalEvents: dealer === undefined ? undefined : {drawPile: dealer.deck.length, discardPile: dealer.discards.length},
+    };
+  }
+
   public static getGameModel(game: IGame): GameModel {
     const turmoil = getTurmoilModel(game);
 
@@ -63,6 +78,7 @@ export class Server {
       colonies: coloniesToModel(game, game.colonies, false, true),
       deckSize: game.projectDeck.drawPile.length,
       discardPileSize: game.projectDeck.discardPile.length,
+      otherDeckSizes: this.getOtherDeckSizes(game),
       discardedColonies: game.discardedColonies.map(toName),
       expectedPurgeTimeMs: game.expectedPurgeTimeMs(),
       gameAge: game.gameAge,
@@ -117,6 +133,7 @@ export class Server {
       draftedCards: cardsToModel(player, player.draftedCards, {showCalculatedCost: true}),
       game: this.getGameModel(player.game),
       id: player.id,
+      color: player.color,
       runId: runId,
       pickedCorporationCard: player.pickedCorporationCard ? cardsToModel(player, [player.pickedCorporationCard]) : [],
       preludeCardsInHand: cardsToModel(player, player.preludeCardsInHand),

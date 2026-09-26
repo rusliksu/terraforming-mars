@@ -2,13 +2,13 @@ import {shallowMount} from '@vue/test-utils';
 import {expect} from 'chai';
 import {globalConfig} from './getLocalVue';
 import GameEnd from '@/client/components/GameEnd.vue';
-import {fakePlayerViewModel, fakePublicPlayerModel, fakeSpectatorModel} from './testHelpers';
+import {fakePlayerViewModel, fakePublicPlayerModel} from './testHelpers';
 
 describe('GameEnd', () => {
   it('links to the replay with spectator access from a player results page', () => {
     const playerView = fakePlayerViewModel();
     playerView.game.spectatorId = 'sreplay-link';
-    const wrapper = shallowMount(GameEnd, {...globalConfig, props: {playerView, spectator: fakeSpectatorModel()}});
+    const wrapper = shallowMount(GameEnd, {...globalConfig, props: {participant: playerView}});
     expect(wrapper.get('a[href^="replay?"]').attributes('href')).eq('replay?id=sreplay-link');
   });
 
@@ -16,8 +16,7 @@ describe('GameEnd', () => {
     const wrapper = shallowMount(GameEnd, {
       ...globalConfig,
       props: {
-        playerView: fakePlayerViewModel(),
-        spectator: fakeSpectatorModel(),
+        participant: fakePlayerViewModel(),
       },
     });
     expect(wrapper.exists()).to.be.true;
@@ -45,11 +44,10 @@ describe('GameEnd', () => {
     const wrapper = shallowMount(GameEnd, {
       ...globalConfig,
       props: {
-        playerView: fakePlayerViewModel({
+        participant: fakePlayerViewModel({
           players: [surrendered, winner],
           thisPlayer: winner,
         }),
-        spectator: fakeSpectatorModel(),
       },
     });
 
@@ -86,11 +84,10 @@ describe('GameEnd', () => {
     const wrapper = shallowMount(GameEnd, {
       ...globalConfig,
       props: {
-        playerView: fakePlayerViewModel({
+        participant: fakePlayerViewModel({
           players: [lowCash, winner, highCash],
           thisPlayer: winner,
         }),
-        spectator: fakeSpectatorModel(),
       },
     });
 
@@ -104,7 +101,7 @@ describe('GameEnd', () => {
   it('explains where every end-game navigation entry leads', () => {
     const playerView = fakePlayerViewModel();
     playerView.game.spectatorId = 'sreplay-link';
-    const wrapper = shallowMount(GameEnd, {...globalConfig, props: {playerView, spectator: fakeSpectatorModel()}});
+    const wrapper = shallowMount(GameEnd, {...globalConfig, props: {participant: playerView}});
 
     const tooltipFor = (text: string) => wrapper.findAll('a')
       .find((link) => link.text().includes(text))?.attributes('data-tooltip');

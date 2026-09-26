@@ -115,10 +115,6 @@ export default defineComponent({
       type: Object as () => ViewModel,
       required: true,
     },
-    color: {
-      type: String as () => Color,
-      required: true,
-    },
     step: {
       type: Number,
       required: false,
@@ -330,7 +326,7 @@ export default defineComponent({
     },
     getTitleClasses(): string {
       const classes = ['log-title'];
-      classes.push(playerColorClass(this.color, 'shadow'));
+      classes.push(playerColorClass(this.viewModel.color, 'shadow'));
       return classes.join(' ');
     },
     lastGenerationClass(): string {

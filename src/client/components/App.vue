@@ -32,9 +32,8 @@
         :key="'spectator-' + playerkey"
       />
       <GameEnd
-        v-else-if="screen === 'the-end'"
-        :player-view="playerView"
-        :spectator="spectator"
+        v-else-if="screen === 'the-end' && participant !== undefined"
+        :participant="participant"
       />
       <ReplayHome v-else-if="screen === 'replay'"/>
       <GamesOverview
@@ -182,6 +181,11 @@ export default defineComponent({
     Help,
     AdminHome,
     LoginHome,
+  },
+  computed: {
+    participant(): ViewModel | undefined {
+      return this.playerView ?? this.spectator;
+    },
   },
   methods: {
     showAlert(title: string, message: string, cb: () => void = () => {}): void {

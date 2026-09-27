@@ -30,7 +30,8 @@
       "notes": [
         "Corrected source pinned and validated: Node22 lint/build/test compilation, 10407 server and 784 client tests; independent review requested.",
         "Independent review at 0ce03f8e37 requires count and scope-ledger corrections",
-        "Addressed independent review: 475 entries, module and contract dispositions, partial source limits and preserved admin scope; existing validation remains valid."
+        "Addressed independent review: 475 entries, module and contract dispositions, partial source limits and preserved admin scope; existing validation remains valid.",
+        "Independent /root/port_review approved e90647a5c3: 475 manifest entries, exact 1441-path/blob coverage, 14 PR ancestry and Node22 source checks. Parent verified research/archive contracts. Cache/FakeGameLoader admin-only exclusion remains a documented nonblocking ledger nit."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,

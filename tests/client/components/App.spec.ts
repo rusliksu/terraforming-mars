@@ -26,6 +26,13 @@ describe('App', () => {
     expect(wrapper.exists()).to.be.true;
   });
 
+  it('opens a direct card maker link', () => {
+    window.history.replaceState({}, '', '/card-maker');
+    const wrapper = shallowMount(App, globalConfig);
+    expect(wrapper.vm.screen).eq('card-maker');
+    wrapper.unmount();
+  });
+
   it('restarts the visible timer when a refreshed player view starts the next turn', async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-09-12T12:00:00Z'));

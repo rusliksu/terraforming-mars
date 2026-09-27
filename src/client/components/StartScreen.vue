@@ -11,6 +11,7 @@
     <a class="start-screen-link start-screen-link--how-to-play" href="/elo/">Game History & Elo</a>
     <a class="start-screen-link start-screen-link--how-to-play" href="https://github.com/rusliksu/terraforming-mars/wiki/Rulebooks" target="_blank" v-i18n>How to Play</a>
     <a class="start-screen-link start-screen-link--cards-list" href="cards" target="_blank" v-i18n>Cards list</a>
+    <a class="start-screen-link start-screen-link--cards-list" href="card-maker" target="_blank">Card maker (preview)</a>
     <a class="start-screen-link start-screen-link--cards-list" href="/tierlist/" target="_blank">Tier List</a>
     <a class="start-screen-link start-screen-link--board-game" href="https://boardgamegeek.com/boardgame/167791/terraforming-mars" target="_blank" v-i18n>Board game</a>
     <a class="start-screen-link start-screen-link--about" href="https://github.com/rusliksu/terraforming-mars#README" target="_blank" v-i18n>About us</a>

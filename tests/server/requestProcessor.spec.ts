@@ -198,6 +198,16 @@ describe('requestProcessor', () => {
     expect(req.url).eq('/assets/index.html');
   });
 
+  it('serves the card maker as an app page', async () => {
+    const req = new MockRequest();
+    const res = new MockResponse();
+    req.url = '/card-maker';
+    await processRequest(req, res);
+
+    expect(req.url).eq('/assets/index.html');
+    expect(res.statusCode).eq(statusCode.ok);
+  });
+
   it('routes sw.js to the asset handler', async () => {
     const originalGetInstance = GameLoader.getInstance;
     (GameLoader as typeof GameLoader & {getInstance: typeof GameLoader.getInstance}).getInstance = (() => {

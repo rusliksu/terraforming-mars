@@ -12,6 +12,7 @@
 - Preserve existing tests. Port source regression tests and add target integration regressions; do not fix failures by deleting assertions without proving a stale expectation.
 
 ## Completeness and exceptions
+The corrected reference incorporating PRs 1-14 has 41 textual conflicts with target; `research/merge-conflicts.txt` records that later preview. The 40-conflict figure above refers to the original fanmade baseline before those PRs.
 `research/source-files.csv` enumerates changes from the shared ancestor. Classification must distinguish capability, required support, unrelated upstream/tooling/localization drift, already-present behavior, and source stubs. Every pending item must receive a disposition and evidence before final acceptance. New modules include Sillyfication, BetterMars, Custom Cards, Conglomerates, Corporate Betterments, Ides of Mars, Rob Antilles, More Parties, Venus Phase 2, Industries, High Orbit and Solaris. Maps/editors, global-parameter customization, custom-card libraries, party variants and other non-module capabilities remain in scope.
 
 ## Risks and verification

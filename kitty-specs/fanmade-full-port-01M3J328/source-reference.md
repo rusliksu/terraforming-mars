@@ -24,7 +24,7 @@ Logs: local temporary `fanmade-port-source-{make-static,lint,build,build-tests,t
 Target baseline also passed make:static, build:server and build:tests on Node 22 before code transfer.
 
 ## Capability inventory
-`research/source-files.csv` classifies 1,441 source changes: 1,324 server/common/test paths and 117 client/style/asset/locale paths. Transfer status remains planned until target verification. `research/module-inventory.json` records exact card names from the compiled source manifests: 575 entries across eleven static manifests; Custom Cards is the twelfth module and uses its dynamic library. Non-module functionality includes configurable Mars/Moon/Venus maps and editors, map/card library codecs and routes, parameter tracks, variant options, milestones and awards. They remain in the inventory and are not excluded as tooling.
+`research/source-files.csv` classifies 1,441 source changes by module/boundary, with blob identities, rename origins and explicit dispositions. Administrative purge controls are retained from target; mixed database files import library support only. Transfer status remains planned until target verification. `research/module-inventory.json` records exact card names from the compiled source manifests: 475 entries across eleven static manifests; Custom Cards is the twelfth module and uses its dynamic library. Non-module functionality includes configurable Mars/Moon/Venus maps and editors, map/card library codecs and routes, parameter tracks, variant options, milestones and awards. They remain in the inventory and are not excluded as tooling.
 
 ## Source limitations
 - `SpomePolicy04` exposes an explicitly unimplemented EPIC town/city-track policy. Preserve its disclosed limitation; do not invent the missing expansion.

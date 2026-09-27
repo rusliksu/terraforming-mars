@@ -92,7 +92,8 @@
       "last_transition_at": "2026-09-27T21:02:14.953223+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Client integration ac91b69b5f; 999 tests, full lint/build/typechecks and desktop390 browser pass. Browser artifacts preserved outside checkout, clean implementation tree. See research/client-port-evidence.md."
+        "Client integration ac91b69b5f; 999 tests, full lint/build/typechecks and desktop390 browser pass. Browser artifacts preserved outside checkout, clean implementation tree. See research/client-port-evidence.md.",
+        "Independent review approves ac91b69b5f; parent verified 999 client tests, lint/build/types and real desktop390 smoke. See research/WP03-review.md; compatibility remains WP04."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {

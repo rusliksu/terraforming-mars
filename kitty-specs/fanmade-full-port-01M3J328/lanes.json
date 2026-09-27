@@ -32,14 +32,27 @@
         "src/common/**",
         "src/server/**",
         "tests/*.ts",
+        "tests/awards/**",
+        "tests/behavior/**",
         "tests/boards/**",
         "tests/cards/**",
+        "tests/common/**",
+        "tests/conglomerates/**",
+        "tests/database/**",
         "tests/deferredActions/**",
+        "tests/delta/**",
+        "tests/game/**",
+        "tests/industries/**",
+        "tests/ma/**",
         "tests/models/**",
+        "tests/moon/**",
         "tests/player/**",
+        "tests/replay/**",
         "tests/routes/**",
+        "tests/server/**",
         "tests/testing/**",
-        "tests/turmoil/**"
+        "tests/turmoil/**",
+        "tests/venusPhase2/**"
       ],
       "predicted_surfaces": [
         "api",
@@ -105,10 +118,10 @@
       "parallel_group": 4
     }
   ],
-  "computed_at": "2026-09-27T19:00:03.077331+00:00",
+  "computed_at": "2026-09-27T19:31:11.787157+00:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [
     "WP01"
   ],
-  "planning_commit_sha": "b0e2e181388895b980cd218b8623e8de7862796b"
+  "planning_commit_sha": "9bb11009f021d1e67a9ede4dd90e45598be89996"
 }

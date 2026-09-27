@@ -10,6 +10,7 @@ import {Space} from '../boards/Space';
 import {once} from './Lazy';
 import {Turmoil} from '../turmoil/Turmoil';
 import {CardName} from '../../common/cards/CardName';
+import {VenusPhase2Expansion} from '../venusPhase2/VenusPhase2Expansion';
 
 /**
  * Counts things in game state.
@@ -120,6 +121,13 @@ export class Counter implements ICounter {
       case 'everywhere':
       default:
         sum += maybeAdjacentSpaces(game.board.getCities(p)).length;
+        // Venus's Cloud City (and Stratopolis/Maxwell Base) tiles live on a genuinely separate
+        // board, so they can never be "adjacent to this card's tile" -- only add them for a
+        // plain, unqualified city count (e.g. Aerosport Tournament's "1 M€ per city tile in
+        // play", no `where` and no `nextToThis`).
+        if (countable.nextToThis === undefined) {
+          sum += VenusPhase2Expansion.getCitiesCount(game, p);
+        }
       }
     }
 

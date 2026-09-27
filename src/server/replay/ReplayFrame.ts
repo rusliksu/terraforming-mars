@@ -1,3 +1,4 @@
+import {GlobalParametersConfig, ParameterTrack} from '@/common/GlobalParameterConfig';
 import {GlobalParameter} from '@/common/GlobalParameter';
 import {HAZARD_CONSTRAINTS} from '@/common/ares/AresData';
 import {LogMessageData} from '@/common/logs/LogMessageData';
@@ -14,6 +15,25 @@ import {SerializedGame} from '@/server/SerializedGame';
 /** Selects response fields explicitly so newly added model fields stay private. */
 function pick<T, K extends keyof T>(source: T, keys: ReadonlyArray<K>): Pick<T, K> {
   return Object.fromEntries(keys.map((key) => [key, source[key]])) as Pick<T, K>;
+}
+
+function publicTrack(track: ParameterTrack): ParameterTrack {
+  return {
+    ...pick(track, ['min', 'max', 'step']),
+    bonuses: track.bonuses.map((bonus) => 'amount' in bonus ?
+      pick(bonus, ['value', 'kind', 'amount']) : pick(bonus, ['value', 'kind'])),
+  };
+}
+
+function publicParameters(parameters: GlobalParametersConfig | undefined): GlobalParametersConfig | undefined {
+  if (parameters === undefined) {
+    return undefined;
+  }
+  return {
+    temperature: publicTrack(parameters.temperature), oxygen: publicTrack(parameters.oxygen),
+    venus: publicTrack(parameters.venus), oceans: pick(parameters.oceans, ['max']),
+    heatForTemperature: parameters.heatForTemperature,
+  };
 }
 
 function publicCard(card: CardModel): CardModel {
@@ -38,11 +58,17 @@ function publicPlayer(player: PublicPlayerModel, timer: PublicPlayerModel['timer
       'steelProduction', 'steelValue', 'tags', 'terraformRating', 'titanium', 'titaniumProduction',
       'titaniumValue', 'tradesThisGeneration', 'victoryPointsByGeneration']),
     id: undefined,
+    conglomeratesTeamColor: player.conglomeratesTeamColor,
+    conglomeratesData: {
+      coordination: player.conglomeratesData.coordination,
+      teamActionCosts: pick(player.conglomeratesData.teamActionCosts, ['givePatent', 'facilitySharing', 'donation']),
+    },
     alliedParty: player.alliedParty === undefined ? undefined : {
       partyName: player.alliedParty.partyName,
       agenda: pick(player.alliedParty.agenda, ['bonusId', 'policyId']),
     },
-    deltaProject: player.deltaProject === undefined ? undefined : pick(player.deltaProject, ['position', 'jovianBonus']),
+    deltaProject: player.deltaProject === undefined ? undefined : pick(player.deltaProject, ['position', 'jovianBonus', 'blocked']),
+    epsilonDample: player.epsilonDample === undefined ? undefined : pick(player.epsilonDample, ['position', 'jovianBonus', 'blocked']),
     tableau: player.tableau.map(publicCard),
     selfReplicatingRobotsCards: player.selfReplicatingRobotsCards.map(publicCard),
     protectedResources: pick(player.protectedResources, Units.keys),
@@ -56,7 +82,7 @@ function publicPlayer(player: PublicPlayerModel, timer: PublicPlayerModel['timer
     globalParameterSteps: pick(player.globalParameterSteps, Object.values(GlobalParameter)),
     victoryPointsBreakdown: {
       ...pick(vp, ['terraformRating', 'milestones', 'awards', 'greenery', 'city', 'escapeVelocity', 'moonHabitats',
-        'moonMines', 'moonRoads', 'planetaryTracks', 'victoryPoints', 'total', 'negativeVP']),
+        'moonMines', 'moonRoads', 'venusCloudCities', 'venusGasMines', 'planetaryTracks', 'victoryPoints', 'total', 'negativeVP']),
       detailsCards: vp.detailsCards.map((card) => pick(card, ['cardName', 'victoryPoint'])),
       detailsMilestones: vp.detailsMilestones.map((detail) => pick(detail, ['message', 'messageArgs', 'victoryPoint'])),
       detailsAwards: vp.detailsAwards.map((detail) => pick(detail, ['message', 'messageArgs', 'victoryPoint'])),
@@ -73,6 +99,15 @@ function publicGame(game: GameModel): GameModel {
       'name', 'oceans', 'oxygenLevel', 'passedPlayers', 'pathfinders', 'phase', 'spaces', 'spectatorId',
       'step', 'temperature', 'tags', 'undoCount', 'venusScaleLevel']),
     expectedPurgeTimeMs: 0,
+    conglomerates: game.conglomerates === undefined ? undefined : {
+      teams: game.conglomerates.teams.map((team) => ({
+        ...pick(team, ['id', 'playerColors', 'teamColor', 'memberScores', 'name']),
+        playerIds: [],
+        victoryPoints: pick(team.victoryPoints, ['players', 'milestones', 'awards', 'bonuses', 'total']),
+      })),
+    },
+    highOrbitMarket: game.highOrbitMarket?.map((row) => pick(row, ['locked', 'slots'])),
+    venusPhase2: game.venusPhase2 === undefined ? undefined : pick(game.venusPhase2, ['spaces']),
     globalsPerGeneration: game.globalsPerGeneration.map((generation) => pick(generation, Object.values(GlobalParameter))),
     aresData: ares === undefined ? undefined : {
       includeHazards: ares.includeHazards,
@@ -81,6 +116,8 @@ function publicGame(game: GameModel): GameModel {
       milestoneResults: [],
     },
     gameOptions: {
+      globalParameters: publicParameters(game.gameOptions.globalParameters),
+      customBoardRows: game.gameOptions.customBoardRows,
       ...pick(game.gameOptions, ['altVenusBoard', 'aresExtremeVariant', 'boardName', 'bannedCards', 'expansions',
         'draftVariant', 'fastModeOption', 'includedCards', 'includeFanMA', 'initialDraftVariant', 'initialDraftOneWay',
         'noEloGame', 'turnBasedGame', 'preludeDraftVariant', 'ceosDraftVariant', 'politicalAgendasExtension',
@@ -106,14 +143,10 @@ function publicGame(game: GameModel): GameModel {
     moon: game.moon === undefined ? undefined : pick(game.moon, ['spaces', 'habitatRate', 'miningRate', 'logisticRate']),
     turmoil: game.turmoil === undefined ? undefined : {
       ...pick(game.turmoil, ['chairman', 'ruling', 'dominant', 'parties', 'lobby', 'reserve', 'distant', 'coming', 'current', 'policyActionUsers']),
-      politicalAgendas: game.turmoil.politicalAgendas === undefined ? undefined : {
-        marsFirst: pick(game.turmoil.politicalAgendas.marsFirst, ['bonusId', 'policyId']),
-        scientists: pick(game.turmoil.politicalAgendas.scientists, ['bonusId', 'policyId']),
-        unity: pick(game.turmoil.politicalAgendas.unity, ['bonusId', 'policyId']),
-        greens: pick(game.turmoil.politicalAgendas.greens, ['bonusId', 'policyId']),
-        reds: pick(game.turmoil.politicalAgendas.reds, ['bonusId', 'policyId']),
-        kelvinists: pick(game.turmoil.politicalAgendas.kelvinists, ['bonusId', 'policyId']),
-      },
+      politicalAgendas: game.turmoil.politicalAgendas === undefined ? undefined : Object.fromEntries(
+        Object.entries(game.turmoil.politicalAgendas)
+          .filter(([, agenda]) => agenda !== undefined)
+          .map(([party, agenda]) => [party, pick(agenda, ['bonusId', 'policyId'])])),
     },
   };
 }

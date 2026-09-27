@@ -13,6 +13,9 @@ import {GameId, SpectatorId} from '../Types';
 import {ColonyName} from '../colonies/ColonyName';
 import {GlobalParameter} from '../GlobalParameter';
 import {Tag} from '../cards/Tag';
+import {ConglomeratesModel} from './ConglomeratesModel';
+import {VenusPhase2Model} from './VenusPhase2Model';
+import {HighOrbitMarketRow} from '../highOrbit/HighOrbitMarket';
 
 export type DeckSizeModel = {
   drawPile: number;
@@ -32,6 +35,7 @@ export type GameModel = {
   aresData: AresData | undefined;
   awards: ReadonlyArray<FundedAwardModel>;
   colonies: ReadonlyArray<ColonyModel>;
+  conglomerates: ConglomeratesModel | undefined;
   discardedColonies: ReadonlyArray<ColonyName>;
   deckSize: number;
   discardPileSize: number;
@@ -43,6 +47,7 @@ export type GameModel = {
   gameOptions: GameOptionsModel;
   generation: number;
   globalsPerGeneration: ReadonlyArray<Partial<Record<GlobalParameter, number>>>,
+  highOrbitMarket: ReadonlyArray<HighOrbitMarketRow> | undefined;
   isSoloModeWin: boolean;
   lastSoloGeneration: number,
   milestones: ReadonlyArray<ClaimedMilestoneModel>;
@@ -62,4 +67,5 @@ export type GameModel = {
   turmoil: TurmoilModel | undefined;
   undoCount: number;
   venusScaleLevel: number;
+  venusPhase2: VenusPhase2Model | undefined;
 }

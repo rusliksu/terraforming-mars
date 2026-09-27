@@ -1,7 +1,7 @@
 import {CardMetadata} from '../../common/cards/CardMetadata';
 import {CardName} from '../../common/cards/CardName';
 import {CardType} from '../../common/cards/CardType';
-import {CardDiscount, GlobalParameterRequirementBonus} from '../../common/cards/Types';
+import {CardDiscount, GlobalParameterRequirementBonus, TagCardRequirementBonus} from '../../common/cards/Types';
 import {AdjacencyBonus} from '../ares/AdjacencyBonus';
 import {CardResource} from '../../common/CardResource';
 import {Tag} from '../../common/cards/Tag';
@@ -54,6 +54,7 @@ type SharedProperties = {
   initialActionText?: string;
   firstAction?: Behavior & {text: string};
   globalParameterRequirementBonus?: GlobalParameterRequirementBonus;
+  tagCardRequirementBonus?: TagCardRequirementBonus;
   metadata: CardMetadata;
   requirements?: CardRequirementsDescriptor;
   name: CardName;
@@ -188,13 +189,16 @@ export abstract class Card implements ICard {
   public get behavior() {
     return this.properties.behavior;
   }
+  public get actionBehavior() {
+    return this.properties.action;
+  }
   public get cardCost() {
     return this.properties.cardCost;
   }
-  public get type() {
+  public get type(): CardType {
     return this.properties.type;
   }
-  public get cost() {
+  public get cost(): number {
     return this.properties.cost === undefined ? 0 : this.properties.cost;
   }
   public get initialActionText() {
@@ -221,7 +225,7 @@ export abstract class Card implements ICard {
   public get startingMegaCredits() {
     return this.properties.startingMegaCredits === undefined ? 0 : this.properties.startingMegaCredits;
   }
-  public get tags() {
+  public get tags(): Array<Tag> {
     return this.properties.tags === undefined ? [] : this.properties.tags;
   }
   public get cardDiscount() {
@@ -440,6 +444,10 @@ export abstract class Card implements ICard {
     return sum;
   }
 
+  public getOwnCostReduction(_player: IPlayer): number {
+    return 0;
+  }
+
   public getGlobalParameterRequirementBonus(player: IPlayer, parameter: GlobalParameter): number {
     if (this.properties.globalParameterRequirementBonus !== undefined) {
       const globalParameterRequirementBonus = this.properties.globalParameterRequirementBonus;
@@ -454,6 +462,22 @@ export abstract class Card implements ICard {
         }
       }
       return globalParameterRequirementBonus.steps;
+    }
+    return 0;
+  }
+
+  public getTagCardRequirementBonus(player: IPlayer, tag: Tag): number {
+    if (this.properties.tagCardRequirementBonus !== undefined) {
+      const tagCardRequirementBonus = this.properties.tagCardRequirementBonus;
+      if (tagCardRequirementBonus.nextCardOnly === true) {
+        if (player.lastCardPlayed !== this.name) {
+          return 0;
+        }
+      }
+      if (tagCardRequirementBonus.tag !== tag) {
+        return 0;
+      }
+      return tagCardRequirementBonus.steps;
     }
     return 0;
   }

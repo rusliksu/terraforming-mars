@@ -49,6 +49,21 @@ describe('CardRequirements', () => {
     }
   });
 
+  it('satisfies properly for uniqueTags', () => {
+    const requirements = {uniqueTags: 5};
+    const tags = [Tag.SCIENCE, Tag.BUILDING, Tag.PLANT, Tag.ANIMAL, Tag.SPACE];
+    expect(satisfies(requirements, player)).eq(false);
+    for (const tag of tags.slice(0, 4)) {
+      player.playedCards.push(fakeCard({tags: [tag]}));
+    }
+    expect(satisfies(requirements, player)).eq(false);
+    player.playedCards.push(fakeCard({tags: [tags[4]]}));
+    expect(satisfies(requirements, player)).eq(true);
+    // A duplicate tag doesn't count twice.
+    player.playedCards.push(fakeCard({tags: [Tag.SCIENCE]}));
+    expect(satisfies(requirements, player)).eq(true);
+  });
+
   it('satisfies properly for temperature max', () => {
     const requirements = {temperature: -10, max: true};
     expect(satisfies(requirements, player)).eq(true);

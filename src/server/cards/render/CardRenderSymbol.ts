@@ -13,12 +13,14 @@ export class CardRenderSymbol implements ICardRenderSymbol {
   public readonly size: Size;
   public readonly isIcon: LiteBoolean;
   public readonly isSuperscript: LiteBoolean;
+  public readonly teammate?: true;
 
-  private constructor(type: CardRenderSymbolType, options: {size?: Size, isIcon?: boolean, isSuperscript?: boolean}) {
+  private constructor(type: CardRenderSymbolType, options: {size?: Size, isIcon?: boolean, isSuperscript?: boolean, teammate?: boolean}) {
     this.type = type;
     this.size = options.size ?? Size.MEDIUM;
     this.isIcon = options.isIcon ? true : undefined;
     this.isSuperscript = options.isSuperscript ? true : undefined;
+    this.teammate = options.teammate ? true : undefined;
   }
 
   public static asterix(size?: Size): CardRenderSymbol {
@@ -42,8 +44,8 @@ export class CardRenderSymbol implements ICardRenderSymbol {
   public static colon(size?: Size): CardRenderSymbol {
     return new CardRenderSymbol(CardRenderSymbolType.COLON, {size});
   }
-  public static arrow(size?: Size): CardRenderSymbol {
-    return new CardRenderSymbol(CardRenderSymbolType.ARROW, {size, isIcon: true});
+  public static arrow(size?: Size, teammate?: boolean): CardRenderSymbol {
+    return new CardRenderSymbol(CardRenderSymbolType.ARROW, {size, isIcon: true, teammate});
   }
   public static bracketOpen(): CardRenderSymbol {
     return new CardRenderSymbol(CardRenderSymbolType.BRACKET_OPEN, {isSuperscript: true});

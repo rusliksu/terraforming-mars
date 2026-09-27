@@ -21,6 +21,9 @@ export type Space = {
   /** When true, this is a volcanic space. */
   volcanic?: boolean;
 
+  /** When true, this space is reserved and cannot take a general tile placement (custom boards). */
+  reserved?: boolean;
+
   /** The tile placed on top of the space. Could be a hazard tile. */
   tile?: Tile;
   /** The player who owns this tile. Will show a token, even the neutral player */

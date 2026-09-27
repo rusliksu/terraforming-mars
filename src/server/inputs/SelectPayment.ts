@@ -27,6 +27,7 @@ export class SelectPayment extends BasePlayerInput<Payment> {
       paymentOptions: {
         // TODO(kberg): These are set both here and in Player. Consolidate, perhaps.
         heat: player.canUseHeatAsMegaCredits,
+        energy: player.canUseEnergyAsMegaCredits,
         lunaTradeFederationTitanium: player.canUseTitaniumAsMegacredits,
         ...this.paymentOptions,
       },

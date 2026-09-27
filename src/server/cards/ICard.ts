@@ -18,6 +18,7 @@ import {CardRequirementDescriptor} from '../../common/cards/CardRequirementDescr
 import {OneOrArray} from '../../common/utils/types';
 import {JSONValue} from '../../common/Types';
 import {IStandardProjectCard} from './IStandardProjectCard';
+import {ICardRenderItem} from '../../common/cards/render/Types';
 import {Warning} from '../../common/cards/Warning';
 import {Resource} from '../../common/Resource';
 import {Units} from '../../common/Units';
@@ -55,6 +56,12 @@ export interface ICard {
    */
   getCardDiscount?(player: IPlayer, card: IProjectCard): number;
   /**
+   * Describes the M€ discount `player` could apply to playing THIS card itself, unlike
+   * `getCardDiscount` (which only ever applies to OTHER cards, since a card isn't in the
+   * player's tableau yet while its own purchase cost is being computed).
+   */
+  getOwnCostReduction?(player: IPlayer): number;
+  /**
    * Describes type of discount this card applies to other cards.
    *
    * Achieves the same thing as `getCardDiscount` but for the simplest, most common use cases.
@@ -66,6 +73,17 @@ export interface ICard {
    * Describes the M€ discount `player` could apply to playing `card`.
    */
   getStandardProjectDiscount?(player: IPlayer, card: IStandardProjectCard): number;
+  /**
+   * Extra M€ `activePlayer` must pay to play `card`, imposed by this card belonging to
+   * `cardOwner` - a tax/tariff effect (e.g. Blockhouse), unlike `getCardDiscount` which
+   * only ever benefits the acting player's own plays. Called for every player's cost,
+   * including `cardOwner` themselves.
+   */
+  getCardCostIncrease?(cardOwner: IPlayer, activePlayer: IPlayer, card: IProjectCard): number;
+  /**
+   * The standard-project analog of `getCardCostIncrease`.
+   */
+  getStandardProjectCostIncrease?(cardOwner: IPlayer, activePlayer: IPlayer, standardProject: IStandardProjectCard): number;
 
   /**
    * The +/- bonus applied to global parameter requirements, e.g. Adaptation Technology.
@@ -76,6 +94,13 @@ export interface ICard {
    * see `globalParameterRequirementBonus` for more information.
    */
   getGlobalParameterRequirementBonus(player: IPlayer, parameter: GlobalParameter): number;
+  /**
+   * The +/- bonus applied to a tag-count requirement, e.g. Excavation Syria Planum.
+   *
+   * NB: Instances of `Card` allow using a JSON object to describe the tag requirement bonus,
+   * see `tagCardRequirementBonus` for more information.
+   */
+  getTagCardRequirementBonus(player: IPlayer, tag: Tag): number;
   victoryPoints?: number | 'special' | CountableVictoryPoints,
   getVictoryPoints(player: IPlayer, context?: GetVictoryPointsContext): number;
   /** Returns any dynamic influence value */
@@ -84,8 +109,37 @@ export interface ICard {
   onCardPlayed?(player: IPlayer, card: ICard): PlayerInput | undefined | void;
   onCardPlayedByAnyPlayer?(thisCardOwner: IPlayer, card: ICard, activePlayer: IPlayer): PlayerInput | undefined | void;
   onCardPlayedFromAnyPlayer?: never;
+  /**
+   * Callback when ANY player draws one or more cards (via the normal "draw N cards" path).
+   *
+   * @param cardOwner the player who owns THIS CARD.
+   * @param drawingPlayer the player who drew the card(s).
+   * @param count how many cards were drawn in this batch.
+   */
+  onCardsDrawn?(cardOwner: IPlayer, drawingPlayer: IPlayer, count: number): void;
   onStandardProject?(player: IPlayer, project: IStandardProjectCard): void;
   onTilePlaced?(cardOwner: IPlayer, activePlayer: IPlayer, space: Space, boardType: BoardType): void;
+  /**
+   * Called once, on every card in every player's tableau, after the final greenery phase
+   * concludes for every player but before end-of-game scoring runs. For cards with a forced
+   * one-shot effect that has to happen at that exact moment (e.g. idesOfMars' Hidden City:
+   * "place a City on Mars" as the very last tile placement of the game).
+   *
+   * Implementations should `player.defer(...)` their own work rather than acting synchronously,
+   * and must track their own idempotency (e.g. a `this.data` flag, or checking board state)
+   * since Game.ts's resolution loop may call this more than once while deferred actions drain.
+   */
+  onFinalGreeneryPlacementComplete?(player: IPlayer): void;
+  /**
+   * Called on every card in every player's tableau whenever anybody moves a marker (either
+   * direction) on the Delta Project track.
+   *
+   * @param cardOwner the player who owns THIS CARD.
+   * @param mover the player whose marker moved.
+   * @param steps how many steps were taken in this one move.
+   * @param forward true if advancing, false if retreating (Epsilon Dample only).
+   */
+  onDeltaTrackMoved?(cardOwner: IPlayer, mover: IPlayer, steps: number, forward: boolean): void;
   onDiscard?(player: IPlayer): void;
   /**
    * Called when anybody gains TR
@@ -107,6 +161,16 @@ export interface ICard {
    * @param count the number of resources added to `card`
    */
   onResourceAdded?(player: IPlayer, playedCard: ICard, count: number): void;
+
+  /**
+   * Optional callback when any player adds resources to any card.
+   *
+   * @param cardOwner the player who owns THIS CARD.
+   * @param activePlayer the player who added the resources.
+   * @param playedCard the card that received resources.
+   * @param count the number of resources added to `playedCard`.
+   */
+  onResourceAddedByAnyPlayer?(cardOwner: IPlayer, activePlayer: IPlayer, playedCard: ICard, count: number): void;
 
 
   /**
@@ -135,6 +199,13 @@ export interface ICard {
    */
   onProductionGain?(player: IPlayer, resource: Resource, amount: number): void;
   /**
+   * Callback when ANY player gains (or loses) production.
+   *
+   * @param cardOwner the player who owns THIS CARD.
+   * @param activePlayer the player whose production changed.
+   */
+  onProductionGainByAnyPlayer?(cardOwner: IPlayer, activePlayer: IPlayer, resource: Resource, amount: number): void;
+  /**
    * Callback during the production phase. Used to reset between generations.
    *
    * @param player the card owner.
@@ -150,8 +221,20 @@ export interface ICard {
   onColonyAddedByAnyPlayer?(cardOwner: IPlayer, colonyOwner: IPlayer): void;
   onColonyAdded?: never;
 
+  /**
+   * Callback when ANY player completes a trade action (a standard colony trade, or a card-based
+   * trade action that ultimately calls `Colony.trade`).
+   *
+   * @param cardOwner the player who owns this card.
+   * @param player the player who performed the trade.
+   */
+  onTradeByAnyPlayer?(cardOwner: IPlayer, player: IPlayer): void;
+
   onNonCardTagAdded?(player: IPlayer, tag: Tag): void;
   onNonCardTagAddedByAnyPlayer?(cardOwner: IPlayer, tag: Tag): void;
+
+  /** Called after `delegateOwner` sends one of their own (non-neutral) delegates to a party. */
+  onDelegateSent?(cardOwner: IPlayer, delegateOwner: IPlayer): void;
 
   readonly cost?: number; /** Used with IProjectCard and PreludeCard. */
   readonly type: CardType;
@@ -170,6 +253,17 @@ export interface ICard {
   clearWarnings(): void;
 
   readonly behavior?: Behavior,
+
+  /** The card's repeatable action, as data - distinct from `action()`, the callable method
+   * (only present on IActionCard) that behavior actually executes. */
+  readonly actionBehavior?: Behavior,
+
+  /**
+   * Render items describing resources currently stored on this card, for cards (like
+   * InSpire) whose stored-resource state isn't just `resourceCount`/`resourceType` and so
+   * doesn't otherwise show up anywhere in the client - see ModelUtils.ts / CardModel.
+   */
+  renderStoredResources?(): ReadonlyArray<ICardRenderItem>,
 
   /**
    * Returns the contents of the card's production box.

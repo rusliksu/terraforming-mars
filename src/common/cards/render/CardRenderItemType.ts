@@ -77,6 +77,9 @@ export const CardRenderItemType = {
   CORRUPTION_SHIELD: 'corruptive-block',
   GEOSCAN_ICON: 'geoscan-icon',
   UNDERGROUND_SHELTERS: 'underground-shelters',
+
+  // Conglomerates
+  COORDINATION: 'coordination',
 } as const;
 
 export type CardRenderItemType = typeof CardRenderItemType[keyof typeof CardRenderItemType];

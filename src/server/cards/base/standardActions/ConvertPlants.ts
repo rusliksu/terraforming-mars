@@ -6,6 +6,8 @@ import {MAX_OXYGEN_LEVEL} from '../../../../common/constants';
 import {SelectSpace} from '../../../inputs/SelectSpace';
 import {Units} from '../../../../common/Units';
 import {message} from '../../../logs/MessageBuilder';
+import {InsectPollinators} from '../../idesofmars/InsectPollinators';
+import {Space} from '../../../boards/Space';
 
 
 export class ConvertPlants extends StandardActionCard {
@@ -23,11 +25,27 @@ export class ConvertPlants extends StandardActionCard {
     });
   }
 
+  // Insect Pollinators (idesOfMars, fan): a greenery placed next to one of the acting
+  // player's own greeneries costs 1 plant less. Cheapest cost across all currently
+  // available spaces, used to gate canAct without knowing the space yet.
+  private cheapestCost(player: IPlayer, spaces: ReadonlyArray<Space>): number {
+    let min = player.plantsNeededForGreenery;
+    for (const space of spaces) {
+      const cost = player.plantsNeededForGreenery - InsectPollinators.getDiscount(player, space);
+      if (cost < min) {
+        min = cost;
+      }
+    }
+    return min;
+  }
+
   public canAct(player: IPlayer): boolean {
-    if (player.plants < player.plantsNeededForGreenery) {
+    const spaces = player.game.board.getAvailableSpacesForGreenery(player);
+    if (spaces.length === 0) {
       return false;
     }
-    if (player.game.board.getAvailableSpacesForGreenery(player).length === 0) {
+    const cost = this.cheapestCost(player, spaces);
+    if (player.plants < cost) {
       return false;
     }
     if (player.game.getOxygenLevel() === MAX_OXYGEN_LEVEL) {
@@ -38,18 +56,18 @@ export class ConvertPlants extends StandardActionCard {
     return player.canAfford({
       cost: 0,
       tr: {oxygen: 1},
-      reserveUnits: Units.of({plants: player.plantsNeededForGreenery}),
+      reserveUnits: Units.of({plants: cost}),
     });
   }
 
   public action(player: IPlayer) {
     return new SelectSpace(
-      message('Convert ${0} plants into greenery', (b) => b.number(player.plantsNeededForGreenery)),
+      message('Convert plants into a greenery'),
       player.game.board.getAvailableSpacesForGreenery(player))
       .andThen((space) => {
         this.actionUsed(player);
         player.game.addGreenery(player, space);
-        player.plants -= player.plantsNeededForGreenery;
+        player.plants -= player.plantsNeededForGreenery - InsectPollinators.getDiscount(player, space);
         return undefined;
       });
   }

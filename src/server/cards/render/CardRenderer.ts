@@ -443,6 +443,11 @@ abstract class Builder<T> {
     return this._appendToRow(item);
   }
 
+  public coordination(count: number = 1, options?: ItemOptions) {
+    const item = new CardRenderItem(CardRenderItemType.COORDINATION, count, options);
+    return this._appendToRow(item);
+  }
+
   public undergroundResources(count: number = 1, options?: ItemOptions) {
     const item = new CardRenderItem(CardRenderItemType.UNDERGROUND_RESOURCES, count, options);
     return this._appendToRow(item);
@@ -535,6 +540,11 @@ abstract class Builder<T> {
 
   public arrow(size: Size = Size.MEDIUM): this {
     return this._appendToRow(CardRenderSymbol.arrow(size));
+  }
+
+  /** Conglomerates: an arrow rendered green, showing this step triggers a teammate's action. */
+  public teammateArrow(size: Size = Size.MEDIUM): this {
+    return this._appendToRow(CardRenderSymbol.arrow(size, true));
   }
 
   public equals(size: Size = Size.MEDIUM): this {

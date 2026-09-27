@@ -15,6 +15,7 @@ export type SimpleGameModel = {
     gameOptions: GameOptionsModel;
     lastSoloGeneration: number;
     expectedPurgeTimeMs: number;
+    createdTimeMs: number;
 }
 
 type SimplePlayerModel = {

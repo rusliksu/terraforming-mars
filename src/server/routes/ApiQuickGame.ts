@@ -240,6 +240,19 @@ export class ApiQuickGame extends Handler {
       gameReq.board = boards[Math.floor(Math.random() * boards.length)];
 
       const gameOptions: GameOptions = {
+        sillyficationExpansion: gameReq.expansions.sillyfication,
+        betterMarsExpansion: gameReq.expansions.betterMars,
+        customCardsExpansion: gameReq.expansions.customCards,
+        conglomeratesExpansion: gameReq.expansions.conglomerates,
+        corporateBettermentsExpansion: gameReq.expansions.corporateBetterments,
+        idesOfMarsExpansion: gameReq.expansions.idesOfMars,
+        robAntillesExpansion: gameReq.expansions.robAntilles,
+        morePartiesExpansion: gameReq.expansions.moreParties,
+        venusPhase2Expansion: gameReq.expansions.venusPhase2,
+        industriesExpansion: gameReq.expansions.industries,
+        highOrbitExpansion: gameReq.expansions.highOrbit,
+        solarisExpansion: gameReq.expansions.solaris,
+        conglomeratesTeamAssignments: gameReq.expansions.conglomerates ? gameReq.players.map((p) => p.team ?? 0) : undefined,
         altVenusBoard: gameReq.altVenusBoard,
         aresExtension: gameReq.expansions.ares,
         aresHazards: true,

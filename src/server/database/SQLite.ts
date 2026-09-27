@@ -13,6 +13,8 @@ import {Session, SessionId} from '../auth/Session';
 import {toID} from '../../common/utils/utils';
 import {assertSaveIdWithinLimit, resolveMaxSavesPerGame} from './HistoryLimits';
 import {ArchiveLocation, SQLiteArchiveRetention} from '@/server/archive/SQLiteArchiveRetention';
+import {MapLibraryEntry, MapLibraryEntryId, MapLibraryStatus} from '../../common/boards/MapLibraryEntry';
+import {CustomCardLibraryEntry, CustomCardEntryId, CustomCardStatus} from '../../common/cards/CustomCardLibraryEntry';
 
 export const IN_MEMORY_SQLITE_PATH = ':memory:';
 
@@ -77,6 +79,29 @@ export class SQLite implements IDatabase {
     this._archive = new SQLiteArchiveRetention(this.db,
       this.filename === IN_MEMORY_SQLITE_PATH ? this.filename : path.resolve(this.filename), this.archiveLocation);
     this._archive.catalog.initialize();
+
+    await this.asyncRun(
+      `CREATE TABLE IF NOT EXISTS map_library(
+        id varchar not null,
+        code text not null,
+        description varchar not null,
+        submitted_by varchar not null,
+        origin varchar not null,
+        status varchar not null,
+        created_time timestamp not null default (strftime('%s', 'now')),
+        PRIMARY KEY (id)
+      )`);
+
+    await this.asyncRun(
+      `CREATE TABLE IF NOT EXISTS custom_card_library(
+        id varchar not null,
+        definition text not null,
+        share_code text not null,
+        submitted_by varchar not null,
+        status varchar not null,
+        created_time timestamp not null default (strftime('%s', 'now')),
+        PRIMARY KEY (id)
+      )`);
   }
 
   public async getPlayerCount(gameId: GameId): Promise<number> {
@@ -300,6 +325,83 @@ export class SQLite implements IDatabase {
         expirationTimeMillis: row.expiration_time * 1000,
       };
     });
+  }
+
+  public async listMapLibraryEntries(): Promise<Array<MapLibraryEntry>> {
+    const rows = await this.asyncAll('SELECT * FROM map_library ORDER BY created_time DESC');
+    return rows.map((row) => this.rowToMapLibraryEntry(row));
+  }
+
+  public async getMapLibraryEntry(id: MapLibraryEntryId): Promise<MapLibraryEntry | undefined> {
+    const row = await this.asyncGet('SELECT * FROM map_library WHERE id = ?', [id]);
+    return row === undefined ? undefined : this.rowToMapLibraryEntry(row);
+  }
+
+  public async insertMapLibraryEntry(entry: MapLibraryEntry): Promise<void> {
+    await this.asyncRun(
+      'INSERT INTO map_library (id, code, description, submitted_by, origin, status, created_time) VALUES(?, ?, ?, ?, ?, ?, ?)',
+      [entry.id, entry.code, entry.description, entry.submittedBy, entry.origin, entry.status, entry.createdAt / 1000]);
+  }
+
+  public async setMapLibraryEntryStatus(id: MapLibraryEntryId, status: MapLibraryStatus): Promise<void> {
+    await this.asyncRun('UPDATE map_library SET status = ? WHERE id = ?', [status, id]);
+  }
+
+  public async deleteMapLibraryEntry(id: MapLibraryEntryId): Promise<void> {
+    await this.asyncRun('DELETE FROM map_library WHERE id = ?', [id]);
+  }
+
+  private rowToMapLibraryEntry(row: any): MapLibraryEntry {
+    return {
+      id: row.id,
+      code: row.code,
+      description: row.description,
+      submittedBy: row.submitted_by,
+      origin: row.origin,
+      status: row.status,
+      createdAt: row.created_time * 1000,
+    };
+  }
+
+  public async listCustomCardLibraryEntries(): Promise<Array<CustomCardLibraryEntry>> {
+    const rows = await this.asyncAll('SELECT * FROM custom_card_library ORDER BY created_time DESC');
+    return rows.map((row) => this.rowToCustomCardLibraryEntry(row));
+  }
+
+  public async getCustomCardLibraryEntry(id: CustomCardEntryId): Promise<CustomCardLibraryEntry | undefined> {
+    const row = await this.asyncGet('SELECT * FROM custom_card_library WHERE id = ?', [id]);
+    return row === undefined ? undefined : this.rowToCustomCardLibraryEntry(row);
+  }
+
+  public async insertCustomCardLibraryEntry(entry: CustomCardLibraryEntry): Promise<void> {
+    await this.asyncRun(
+      'INSERT INTO custom_card_library (id, definition, share_code, submitted_by, status, created_time) VALUES(?, ?, ?, ?, ?, ?)',
+      [entry.id, JSON.stringify(entry.definition), entry.shareCode, entry.submittedBy, entry.status, entry.createdAt / 1000]);
+  }
+
+  public async setCustomCardLibraryEntryStatus(id: CustomCardEntryId, status: CustomCardStatus): Promise<void> {
+    await this.asyncRun('UPDATE custom_card_library SET status = ? WHERE id = ?', [status, id]);
+  }
+
+  public async updateCustomCardLibraryEntry(id: CustomCardEntryId, entry: CustomCardLibraryEntry): Promise<void> {
+    await this.asyncRun(
+      'UPDATE custom_card_library SET definition = ?, share_code = ?, submitted_by = ?, status = ? WHERE id = ?',
+      [JSON.stringify(entry.definition), entry.shareCode, entry.submittedBy, entry.status, id]);
+  }
+
+  public async deleteCustomCardLibraryEntry(id: CustomCardEntryId): Promise<void> {
+    await this.asyncRun('DELETE FROM custom_card_library WHERE id = ?', [id]);
+  }
+
+  private rowToCustomCardLibraryEntry(row: any): CustomCardLibraryEntry {
+    return {
+      id: row.id,
+      definition: JSON.parse(row.definition),
+      shareCode: row.share_code,
+      submittedBy: row.submitted_by,
+      status: row.status,
+      createdAt: row.created_time * 1000,
+    };
   }
 
   protected asyncRun(sql: string, params?: any): Promise<BetterSqlite3.RunResult> {

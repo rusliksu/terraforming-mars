@@ -6,6 +6,7 @@ import {Board} from '../../../src/server/boards/Board';
 import {TileType} from '../../../src/common/TileType';
 import {testGame} from '../../TestGame';
 import {Metropolist} from '../../../src/server/awards/modular/Metropolist';
+import {VenusPhase2Expansion} from '../../../src/server/venusPhase2/VenusPhase2Expansion';
 
 describe('Metropolist', () => {
   let award : Metropolist;
@@ -38,5 +39,14 @@ describe('Metropolist', () => {
 
     game.simpleAddTile(player, landSpaces[4], {tileType: TileType.OCEAN_CITY});
     expect(award.getScore(player)).eq(5);
+  });
+
+  it('Also counts a Cloud City tile on Venus Phase 2\'s separate surface board', () => {
+    [game, player] = testGame(2, {venusPhase2Expansion: true});
+    const venusSurface = VenusPhase2Expansion.venusPhase2Data(game).venusSurface;
+    const [space] = venusSurface.getAvailableSpacesForLand(player);
+    VenusPhase2Expansion.addCloudCityTile(player, space.id);
+
+    expect(award.getScore(player)).eq(1);
   });
 });

@@ -2,6 +2,7 @@ import {Phase} from '../../common/Phase';
 import {IPlayer} from '../IPlayer';
 import {Board} from '../boards/Board';
 import {MoonExpansion} from '../moon/MoonExpansion';
+import {VenusPhase2Expansion} from '../venusPhase2/VenusPhase2Expansion';
 import {PathfindersExpansion} from '../pathfinders/PathfindersExpansion';
 import {DeltaProjectExpansion} from '../delta/DeltaProjectExpansion';
 import {Turmoil} from '../turmoil/Turmoil';
@@ -9,41 +10,44 @@ import {VictoryPointsBreakdownBuilder} from './VictoryPointsBreakdownBuilder';
 import {FundedAward} from '../awards/FundedAward';
 import {AwardScorer} from '../awards/AwardScorer';
 import {CardName} from '../../common/cards/CardName';
+import {ConglomeratesExpansion} from '../conglomerates/ConglomeratesExpansion';
 
 export function calculateVictoryPoints(player: IPlayer) {
   const builder = new VictoryPointsBreakdownBuilder();
 
   // Victory points from cards
+  // idesOfMars' Public Relations: this player's own negative-VP cards no longer count against
+  // them (doesn't affect the Vermin penalty below, which isn't "a card you own").
+  const ignoreOwnNegativeVP = player.tableau.some((c) => c.name === CardName.PUBLIC_RELATIONS);
   let playerOwnsVermin = false; // For Vermin
-  let negativeVP = 0; // For Underworld.
   for (const playedCard of player.tableau) {
     if (playedCard.victoryPoints !== undefined) {
       const vp = playedCard.getVictoryPoints(player);
-      builder.setVictoryPoints('victoryPoints', vp, playedCard.name);
-      if (vp < 0) {
-        negativeVP += vp;
-      }
+      builder.setVictoryPoints('victoryPoints', ignoreOwnNegativeVP && vp < 0 ? 0 : vp, playedCard.name);
     }
     playerOwnsVermin ||= playedCard.name === CardName.VERMIN;
   }
 
   // Apply the Vermin penalty to other players. Vermin owner is penalized by the card itself.
   if (player.game.verminInEffect && playerOwnsVermin === false) {
-    const cities = player.game.board.getCities(player).length;
+    const cities = player.game.board.getCities(player).length + VenusPhase2Expansion.getCitiesCount(player.game, player);
     builder.setVictoryPoints('victoryPoints', cities * -1, CardName.VERMIN);
-    negativeVP -= cities;
   }
+
+  const negativeVP = calculateNegativeVP(player); // For Underworld.
 
   // Victory points from TR
   builder.setVictoryPoints('terraformRating', player.terraformRating);
 
-  // Victory points from awards
-  giveAwards(player, builder);
-
-  // Victory points from milestones
-  for (const milestone of player.game.claimedMilestones) {
-    if (milestone.player !== undefined && milestone.player.id === player.id) {
-      builder.setVictoryPoints('milestones', 5, 'Claimed ${0} milestone', [milestone.milestone.name]);
+  // Victory points from awards and milestones -- in a Conglomerates game these are team-only
+  // VP, never folded into an individual player's own total (see
+  // ConglomeratesExpansion.calculateTeamVictoryPoints, the sole place they're added up).
+  if (!player.game.gameOptions.conglomeratesExpansion) {
+    giveAwards(player, builder);
+    for (const milestone of player.game.claimedMilestones) {
+      if (milestone.player !== undefined && milestone.player.id === player.id) {
+        builder.setVictoryPoints('milestones', 5, 'Claimed ${0} milestone', [milestone.milestone.name]);
+      }
     }
   }
 
@@ -79,6 +83,7 @@ export function calculateVictoryPoints(player: IPlayer) {
     builder.setVictoryPoints('victoryPoints', coloniesVP, 'Colony VP');
   }
   MoonExpansion.calculateVictoryPoints(player, builder);
+  VenusPhase2Expansion.calculateVictoryPoints(player, builder);
   PathfindersExpansion.calculateVictoryPoints(player, builder);
   DeltaProjectExpansion.calculateVictoryPoints(player, builder);
 
@@ -86,6 +91,13 @@ export function calculateVictoryPoints(player: IPlayer) {
   if (player.game.gameOptions.underworldExpansion === true) {
     const bribe = Math.min(Math.abs(negativeVP), player.underworldData.corruption);
     builder.setVictoryPoints('victoryPoints', bribe, 'Underworld Corruption Bribe');
+
+    if (player.game.gameOptions.conglomeratesExpansion) {
+      const assist = ConglomeratesExpansion.teammateCorruptionAssist(player, negativeVP, bribe);
+      if (assist > 0) {
+        builder.setVictoryPoints('victoryPoints', assist, 'Teammate Corruption Bribe');
+      }
+    }
   }
 
   // Escape velocity VP penalty
@@ -103,6 +115,40 @@ export function calculateVictoryPoints(player: IPlayer) {
   }
 
   return builder.build();
+}
+
+/**
+ * A player's negative VP from cards and the Vermin penalty -- the same total the Underworld
+ * corruption bribe above offsets.
+ *
+ * Not exported: `ConglomeratesExpansion` needs the equivalent for a teammate (to see how much
+ * of their corruption is "leftover" after covering their own negative VP), but importing this
+ * function here would put an edge from ConglomeratesExpansion back to this file, on top of the
+ * existing edge the other way (this file imports `ConglomeratesExpansion` above, for
+ * `teammateCorruptionAssist`) -- that cycle triggers a real "cannot access before
+ * initialization" crash at module load, so `ConglomeratesExpansion.ts` keeps its own small
+ * copy of this instead of importing it.
+ */
+function calculateNegativeVP(player: IPlayer): number {
+  // idesOfMars' Public Relations: mirrors the same card-level exclusion applied above, so a
+  // player who no longer suffers their own negative-VP cards also doesn't get an Underworld
+  // corruption bribe for VP they were never docked in the first place.
+  const ignoreOwnNegativeVP = player.tableau.some((c) => c.name === CardName.PUBLIC_RELATIONS);
+  let negativeVP = 0;
+  let playerOwnsVermin = false;
+  for (const playedCard of player.tableau) {
+    if (playedCard.victoryPoints !== undefined && !ignoreOwnNegativeVP) {
+      const vp = playedCard.getVictoryPoints(player);
+      if (vp < 0) {
+        negativeVP += vp;
+      }
+    }
+    playerOwnsVermin ||= playedCard.name === CardName.VERMIN;
+  }
+  if (player.game.verminInEffect && playerOwnsVermin === false) {
+    negativeVP -= player.game.board.getCities(player).length + VenusPhase2Expansion.getCitiesCount(player.game, player);
+  }
+  return negativeVP;
 }
 
 function maybeSetVP(thisPlayer: IPlayer, awardWinner: IPlayer, fundedAward: FundedAward, vps: number, place: '1st' | '2nd', builder: VictoryPointsBreakdownBuilder) {

@@ -16,6 +16,7 @@ import {SpaceBonus} from '../../src/common/boards/SpaceBonus';
 import {maxOutOceans, setRulingParty, setTemperature} from '../TestingUtils';
 import {PartyName} from '../../src/common/turmoil/PartyName';
 import * as constants from '../../src/common/constants';
+import {DEFAULT_GLOBAL_PARAMETERS} from '../../src/common/GlobalParameterConfig';
 
 describe('MarsBoard', () => {
   let board: MarsBoard;
@@ -224,6 +225,51 @@ describe('MarsBoard', () => {
       expect(MarsBoard.canAffordPlacementBonuses(player, space)).is.false;
       player.megaCredits = constants.TERRA_CIMMERIA_COLONY_COST;
       expect(MarsBoard.canAffordPlacementBonuses(player, space)).is.true;
+    });
+
+    it('a custom board can override the OCEAN/TEMPERATURE/COLONY bonus costs', () => {
+      const [customGame, customPlayer] = testGame(1, {
+        customBoard: {
+          version: 1, name: 'x', rows: 9, spaces: [], milestones: [], awards: [],
+          placementBonusCosts: {ocean: 2, temperature: 9, colony: 1},
+        },
+      });
+      const customSpace = customGame.board.getSpaceOrThrow('15');
+
+      customSpace.bonus = [SpaceBonus.OCEAN];
+      customPlayer.megaCredits = 1;
+      expect(MarsBoard.canAffordPlacementBonuses(customPlayer, customSpace)).is.false;
+      customPlayer.megaCredits = 2;
+      expect(MarsBoard.canAffordPlacementBonuses(customPlayer, customSpace)).is.true;
+
+      customSpace.bonus = [SpaceBonus.TEMPERATURE];
+      customPlayer.megaCredits = 8;
+      expect(MarsBoard.canAffordPlacementBonuses(customPlayer, customSpace)).is.false;
+      customPlayer.megaCredits = 9;
+      expect(MarsBoard.canAffordPlacementBonuses(customPlayer, customSpace)).is.true;
+
+      customSpace.bonus = [SpaceBonus.COLONY];
+      customPlayer.megaCredits = 0;
+      expect(MarsBoard.canAffordPlacementBonuses(customPlayer, customSpace)).is.false;
+      customPlayer.megaCredits = 1;
+      expect(MarsBoard.canAffordPlacementBonuses(customPlayer, customSpace)).is.true;
+    });
+
+    it('a custom board with a stretched temperature max still charges the TEMPERATURE bonus', () => {
+      // Regression: this used to compare against the constant MAX_TEMPERATURE (8) instead of
+      // the game's actual configured max, so a stretched track was treated as already maxed.
+      const [customGame, customPlayer] = testGame(1, {
+        customBoard: {version: 1, name: 'x', rows: 9, spaces: [], milestones: [], awards: []},
+        globalParameters: {
+          ...DEFAULT_GLOBAL_PARAMETERS,
+          temperature: {...DEFAULT_GLOBAL_PARAMETERS.temperature, max: 20},
+        },
+      });
+      setTemperature(customGame, 10);
+      const customSpace = customGame.board.getSpaceOrThrow('15');
+      customSpace.bonus = [SpaceBonus.TEMPERATURE];
+      customPlayer.megaCredits = constants.VASTITAS_BOREALIS_BONUS_TEMPERATURE_COST - 1;
+      expect(MarsBoard.canAffordPlacementBonuses(customPlayer, customSpace)).is.false;
     });
 
     it('Sums multiple unaffordable bonuses', () => {

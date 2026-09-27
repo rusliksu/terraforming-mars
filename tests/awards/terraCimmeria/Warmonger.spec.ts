@@ -99,17 +99,23 @@ describe('Warmonger', () => {
 
   const expectedEvents: ReadonlyArray<CardName> = [CardName.AIR_RAID, CardName.ASTEROID, CardName.ANTI_TRUST_CRACKDOWN, CardName.BIG_ASTEROID,
     CardName.CORPORATE_THEFT, CardName.COMET, CardName.CLASS_ACTION_LAWSUIT, CardName.CORPORATE_BLACKMAIL, CardName.COMET_FOR_VENUS,
-    CardName.DEEPNUKING, CardName.DEIMOS_DOWN, CardName.DEIMOS_DOWN_ARES, CardName.DEIMOS_DOWN_PROMO,
+    CardName.DEBRIS_FIELD, CardName.DEEPNUKING, CardName.DEIMOS_DOWN, CardName.DEIMOS_DOWN_ARES, CardName.DEIMOS_DOWN_PROMO,
     CardName.DUST_STORM, CardName.FLOODING, CardName.GIANT_ICE_ASTEROID, CardName.HIRED_RAIDERS, CardName.HIRED_RAIDERS_UNDERWORLD,
     CardName.IMPACTOR_SWARM, CardName.INFRASTRUCTURE_OVERLOAD, /* CardName.LAW_SUIT is counted via player.warmongerCards */ CardName.MERCENARY_SQUAD,
     CardName.METALLIC_ASTEROID, CardName.MINING_EXPEDITION, CardName.MONOPOLY, CardName.PUBLIC_SPONSORED_GRANT, CardName.PLANT_TAX,
     CardName.RECKLESS_DETONATION, CardName.REVOLTING_COLONISTS, CardName.ROAD_PIRACY, CardName.SABOTAGE,
     CardName.SMALL_ASTEROID, CardName.SMALL_COMET, CardName.SOLAR_STORM, CardName.SPECIAL_PERMIT,
-    CardName.VIRUS,
+    CardName.VIRUS, CardName.PRECIOUS_METAL_ASTEROID, CardName.SUPERNOVA_EXPLOSION,
   ] as const;
   for (const manifest of ALL_MODULE_MANIFESTS) {
     for (const projectCard of CardManifest.values(manifest.projectCards)) {
       const card = new projectCard.Factory();
+      // DeimosDoubleDownCopy has no fixed identity of its own - it delegates everything
+      // (including `type`) to whatever real card it's wrapping, which defaults to Comet
+      // outside of an actual game. Not a real event to test here.
+      if (card.name === CardName.DEIMOS_DOUBLE_DOWN_COPY) {
+        continue;
+      }
       if (card.type !== CardType.EVENT) {
         continue;
       }

@@ -1,6 +1,7 @@
 import {BaseMilestone} from '../IMilestone';
 import {IPlayer} from '../../IPlayer';
 import {isSpecialTileSpace, Board} from '../../boards/Board';
+import {VenusPhase2Expansion} from '../../venusPhase2/VenusPhase2Expansion';
 
 export class Landshaper extends BaseMilestone {
   constructor() {
@@ -26,7 +27,7 @@ export class Landshaper extends BaseMilestone {
       score+=1;
     }
 
-    if (player.game.board.getCities(player).length > 0) {
+    if (player.game.board.getCities(player).length > 0 || VenusPhase2Expansion.getCitiesCount(player.game, player) > 0) {
       score+=1;
     }
     if (player.game.board.getGreeneries(player).length > 0) {

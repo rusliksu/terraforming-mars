@@ -4,7 +4,7 @@ import {Priority} from '../deferredActions/Priority';
 import {OrOptions} from '../inputs/OrOptions';
 import {SelectOption} from '../inputs/SelectOption';
 import {ICloneTagCard} from '../cards/pathfinders/ICloneTagCard';
-import {IProjectCard} from '../cards/IProjectCard';
+import {ICard} from '../cards/ICard';
 import {isPlanetaryTag, PLANETARY_TAGS, PlanetaryTag} from '../pathfinders/PathfindersData';
 import {intersection} from '../../common/utils/utils';
 import {message} from '../logs/MessageBuilder';
@@ -21,7 +21,7 @@ import {Message} from '../../common/logs/Message';
 export class DeclareCloneTag extends DeferredAction<PlanetaryTag> {
   public constructor(
     player: IPlayer,
-    public card: IProjectCard & ICloneTagCard,
+    public card: ICard & ICloneTagCard,
     public title: string | Message | undefined = undefined) {
     super(player, Priority.DECLARE_CLONE_TAG);
   }

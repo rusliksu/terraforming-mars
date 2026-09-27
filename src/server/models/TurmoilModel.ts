@@ -4,6 +4,18 @@ import {IGame} from '../IGame';
 import {PoliticalAgendas} from '../turmoil/PoliticalAgendas';
 import {Delegate, Turmoil} from '../turmoil/Turmoil';
 import {DelegatesModel, PartyModel, PoliticalAgendasModel, TurmoilModel} from '../../common/models/TurmoilModel';
+import {ConglomeratesExpansion} from '../conglomerates/ConglomeratesExpansion';
+import {Agenda} from '../../common/turmoil/Types';
+
+// More Parties games randomly select 6 of the 12 available parties (see
+// Turmoil.createParties), so not every PartyName is necessarily in play this game --
+// PoliticalAgendas.getAgenda throws for a party that isn't, so check first.
+function getAgendaIfInPlay(turmoil: Turmoil, partyName: PartyName): Agenda | undefined {
+  if (!turmoil.parties.some((party) => party.name === partyName)) {
+    return undefined;
+  }
+  return PoliticalAgendas.getAgenda(turmoil, partyName);
+}
 
 export function getTurmoilModel(game: IGame): TurmoilModel | undefined {
   return Turmoil.ifTurmoilElse(game, (turmoil) => {
@@ -33,12 +45,18 @@ export function getTurmoilModel(game: IGame): TurmoilModel | undefined {
     });
 
     const politicalAgendas: PoliticalAgendasModel = {
-      marsFirst: PoliticalAgendas.getAgenda(turmoil, PartyName.MARS),
-      scientists: PoliticalAgendas.getAgenda(turmoil, PartyName.SCIENTISTS),
-      unity: PoliticalAgendas.getAgenda(turmoil, PartyName.UNITY),
-      greens: PoliticalAgendas.getAgenda(turmoil, PartyName.GREENS),
-      reds: PoliticalAgendas.getAgenda(turmoil, PartyName.REDS),
-      kelvinists: PoliticalAgendas.getAgenda(turmoil, PartyName.KELVINISTS),
+      marsFirst: getAgendaIfInPlay(turmoil, PartyName.MARS),
+      scientists: getAgendaIfInPlay(turmoil, PartyName.SCIENTISTS),
+      unity: getAgendaIfInPlay(turmoil, PartyName.UNITY),
+      greens: getAgendaIfInPlay(turmoil, PartyName.GREENS),
+      reds: getAgendaIfInPlay(turmoil, PartyName.REDS),
+      kelvinists: getAgendaIfInPlay(turmoil, PartyName.KELVINISTS),
+      populists: getAgendaIfInPlay(turmoil, PartyName.POPULISTS),
+      spome: getAgendaIfInPlay(turmoil, PartyName.SPOME),
+      empower: getAgendaIfInPlay(turmoil, PartyName.EMPOWER),
+      bureaucrats: getAgendaIfInPlay(turmoil, PartyName.BUREAUCRATS),
+      centrists: getAgendaIfInPlay(turmoil, PartyName.CENTRISTS),
+      transhumanists: getAgendaIfInPlay(turmoil, PartyName.TRANSHUMANISTS),
     };
 
     const policyActionUsers = Array.from(
@@ -91,6 +109,9 @@ function getParties(game: IGame): Array<PartyModel> {
     () => []);
 }
 
-function delegateColor(delegate: Delegate) {
-  return delegate === 'NEUTRAL' ? 'neutral' : delegate.color;
+function delegateColor(delegate: Delegate): Color {
+  if (delegate === 'NEUTRAL') {
+    return 'neutral';
+  }
+  return ConglomeratesExpansion.teamDisplayColor(delegate) ?? delegate.color;
 }

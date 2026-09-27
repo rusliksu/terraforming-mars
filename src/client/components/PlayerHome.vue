@@ -1,6 +1,9 @@
 <template>
   <div id="player-home" :class="(game.turmoil ? 'with-turmoil': '')">
     <TopBar :playerView="playerView" />
+    <p v-if="game.automationCompatibility?.unsupportedFeatures.length" class="player_home_block" v-i18n>
+      SmartBot and advisor do not support these game options.
+    </p>
 
     <div v-if="game.phase === 'end'">
       <div class="player_home_block">

@@ -1,3 +1,5 @@
+import {DeimosDoubleDownCopy} from '@/server/cards/sillyfication/DeimosDoubleDownCopy';
+import {Server} from '@/server/models/ServerModel';
 import {expect} from 'chai';
 import {Phase} from '@/common/Phase';
 import {GlobalParameter} from '@/common/GlobalParameter';
@@ -148,6 +150,16 @@ describe('Replay frame projection', () => {
     for (const privateValue of [...game.players.map((p) => p.id), CardName.BIRDS, 'hidden-track-sentinel']) {
       expect(JSON.stringify(frame)).not.to.contain(privateValue);
     }
+  });
+
+  it('preserves the public face of a dynamic copied card', () => {
+    const [game, player] = testGame(2);
+    player.playedCards.push(new DeimosDoubleDownCopy(CardName.COMET));
+    const live = Server.getSpectatorModel(game).players[0].tableau[0];
+    expect(live.customCard).not.eq(undefined);
+    const replay = toReplayFrame(game.serialize()).view.players[0].tableau[0];
+    expect(replay.customCard).deep.eq(live.customCard);
+    expect(replay.combinedDisplayName).eq(live.combinedDisplayName);
   });
 
   it('freezes recorded timers instead of advancing them while the replay is viewed', () => {

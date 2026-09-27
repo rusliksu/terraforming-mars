@@ -1,3 +1,4 @@
+import {serializeDynamicCards} from '../DynamicCardState';
 import {IProjectCard} from '../IProjectCard';
 import {Card} from '../Card';
 import {CardType} from '../../../common/cards/CardType';
@@ -10,7 +11,7 @@ import {CardRenderer} from '../render/CardRenderer';
 import {Size} from '../../../common/cards/render/Size';
 import {uppercase} from '../Options';
 import {SerializedCard} from '../../SerializedCard';
-import {newProjectCard} from '../../createCard';
+import {deserializeProjectCard} from '../cardSerialization';
 import {VenusPhase2Expansion} from '../../venusPhase2/VenusPhase2Expansion';
 
 export class OrganicWasteRecycling extends Card implements IProjectCard {
@@ -90,7 +91,7 @@ export class OrganicWasteRecycling extends Card implements IProjectCard {
   public serialize(serialized: SerializedCard): void {
     serialized.targetCards = this.targetCards.map((t) => {
       return {
-        card: {name: t.name},
+        card: serializeDynamicCards([t])?.[0].card ?? {name: t.name},
         resourceCount: t.resourceCount,
       };
     });
@@ -100,7 +101,7 @@ export class OrganicWasteRecycling extends Card implements IProjectCard {
     if (serialized.targetCards !== undefined) {
       this.targetCards = [];
       serialized.targetCards.forEach((targetCard) => {
-        const card = newProjectCard(targetCard.card.name);
+        const card = deserializeProjectCard(targetCard.card);
         if (card !== undefined) {
           card.resourceCount = targetCard.resourceCount;
           this.targetCards.push(card);

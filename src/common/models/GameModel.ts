@@ -1,3 +1,4 @@
+import {AutomationCompatibility} from './AutomationCompatibility';
 import {GameOptionsModel} from './GameOptionsModel';
 import {ColonyModel} from './ColonyModel';
 import {Color} from '../Color';
@@ -32,6 +33,7 @@ export type OtherDeckSizesModel = {
 
 // Common data about a game not assocaited with a player (eg the temperature.)
 export type GameModel = {
+  automationCompatibility?: AutomationCompatibility;
   aresData: AresData | undefined;
   awards: ReadonlyArray<FundedAwardModel>;
   colonies: ReadonlyArray<ColonyModel>;

@@ -1,3 +1,4 @@
+import {getAutomationCompatibility} from '../bot/AutomationCompatibility';
 import {CardModel} from '../../common/models/CardModel';
 import {Color} from '../../common/Color';
 import {IGame} from '../IGame';
@@ -40,6 +41,7 @@ export class Server {
     botPlayers?: Array<PlayerId>;
   }): SimpleGameModel {
     return {
+      automationCompatibility: getAutomationCompatibility(game.gameOptions),
       activePlayer: game.activePlayer.color,
       botPlayers: options?.botPlayers,
       id: game.id,
@@ -79,6 +81,7 @@ export class Server {
     const turmoil = getTurmoilModel(game);
 
     return {
+      automationCompatibility: getAutomationCompatibility(game.gameOptions),
       aresData: game.aresData,
       awards: this.getAwards(game),
       colonies: coloniesToModel(game, game.colonies, false, true),

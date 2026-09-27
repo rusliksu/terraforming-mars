@@ -1,3 +1,4 @@
+import {deserializeProjectCard, serializeProjectCard} from '../cardSerialization';
 import {CardName} from '../../../common/cards/CardName';
 import {CardType} from '../../../common/cards/CardType';
 import {CardMetadata} from '../../../common/cards/CardMetadata';
@@ -59,8 +60,11 @@ export class DeimosDoubleDownCopy implements IProjectCard {
 
   private cachedSource: IProjectCard | undefined;
 
-  constructor(sourceCardName: CardName = CardName.COMET) {
-    this.sourceCardName = sourceCardName;
+  constructor(source: CardName | IProjectCard = CardName.COMET) {
+    this.sourceCardName = typeof source === 'string' ? source : source.name;
+    if (typeof source !== 'string') {
+      this.cachedSource = deserializeProjectCard(serializeProjectCard(source));
+    }
   }
 
   private get source(): IProjectCard {
@@ -146,8 +150,14 @@ export class DeimosDoubleDownCopy implements IProjectCard {
 
   public serialize(serialized: SerializedCard): void {
     serialized.data = {sourceCardName: this.sourceCardName};
+    serialized.copiedSource = serializeProjectCard(this.source);
   }
   public deserialize(serialized: SerializedCard): void {
+    if (serialized.copiedSource !== undefined) {
+      this.cachedSource = deserializeProjectCard(serialized.copiedSource);
+      this.sourceCardName = this.cachedSource.name;
+      return;
+    }
     const data = serialized.data as {sourceCardName?: CardName} | undefined;
     if (data?.sourceCardName !== undefined) {
       this.sourceCardName = data.sourceCardName;

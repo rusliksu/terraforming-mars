@@ -173,12 +173,14 @@ export abstract class Card implements ICard {
     return internal;
   }
 
-  constructor(external: StaticCardProperties) {
+  constructor(external: StaticCardProperties, cacheProperties = true) {
     const name = external.name;
-    let internal = cardProperties.get(name);
+    let internal = cacheProperties ? cardProperties.get(name) : undefined;
     if (internal === undefined) {
       internal = this.internalize(external);
-      cardProperties.set(name, internal);
+      if (cacheProperties) {
+        cardProperties.set(name, internal);
+      }
     }
     this.properties = internal;
   }

@@ -45,7 +45,7 @@ export class DeimosDoubleDown extends PreludeCard {
     return new SelectCard('Select a Space event to copy to every player', 'Copy', spaceEvents)
       .andThen(([card]) => {
         for (const p of player.game.players) {
-          p.cardsInHand.push(new DeimosDoubleDownCopy(card.name));
+          p.cardsInHand.push(new DeimosDoubleDownCopy(card));
         }
         player.game.log('${0} gave every player a copy of ${1}', (b) => b.player(player).card(card));
         return undefined;

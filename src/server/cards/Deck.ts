@@ -1,5 +1,6 @@
+import {serializeDynamicCards, restoreDynamicCards} from './DynamicCardState';
 import {SerializedDeck} from './SerializedDeck';
-import {cardsFromJSON, ceosFromJSON, corporationCardsFromJSON, preludesFromJSON} from '../createCard';
+import {ceosFromJSON, corporationCardsFromJSON, preludesFromJSON} from '../createCard';
 import {CardName} from '../../common/cards/CardName';
 import {Random} from '../../common/utils/Random';
 import {ICorporationCard} from './corporation/ICorporationCard';
@@ -176,9 +177,22 @@ export class ProjectDeck extends Deck<IProjectCard> {
     return card;
   }
 
+  public override serialize(): SerializedDeck {
+    const saved = super.serialize();
+    const drawPileState = serializeDynamicCards(this.drawPile);
+    const discardPileState = serializeDynamicCards(this.discardPile);
+    if (drawPileState !== undefined) {
+      saved.drawPileState = drawPileState;
+    }
+    if (discardPileState !== undefined) {
+      saved.discardPileState = discardPileState;
+    }
+    return saved;
+  }
+
   public static deserialize(d: SerializedDeck, random: Random): ProjectDeck {
-    const deck = cardsFromJSON(d.drawPile);
-    const discarded = cardsFromJSON(d.discardPile);
+    const deck = restoreDynamicCards(d.drawPile, d.drawPileState);
+    const discarded = restoreDynamicCards(d.discardPile, d.discardPileState);
     return new ProjectDeck(deck, discarded, random);
   }
 }

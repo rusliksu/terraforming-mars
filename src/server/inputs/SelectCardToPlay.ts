@@ -1,5 +1,5 @@
 import {BasePlayerInput} from '../PlayerInput';
-import {isPayment, Payment} from '../../common/inputs/Payment';
+import {Payment} from '../../common/inputs/Payment';
 import {IProjectCard} from '../cards/IProjectCard';
 import {isIStandardProjectCard, IStandardProjectCard} from '../cards/IStandardProjectCard';
 import {Units} from '../../common/Units';
@@ -84,10 +84,12 @@ export abstract class SelectCardToPlay<T extends IProjectCard | IStandardProject
     if (!isSelectProjectCardToPlayResponse(input)) {
       throw new InputError('Not a valid SelectProjectCardToPlayResponse');
     }
-    if (!isPayment(input.payment)) {
+    const payment = Payment.fromResponse(input.payment);
+    if (payment === undefined) {
       throw new InputError('payment is not a valid type');
     }
 
+    input = {...input, payment};
     const cardIndex = this.cards.findIndex((card) => card.name === input.card);
     if (cardIndex === -1) {
       throw new InputError('Unknown card name ' + input.card);

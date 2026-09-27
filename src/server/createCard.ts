@@ -1,3 +1,4 @@
+import {CustomCardDefinition} from '../common/cards/CustomCardDefinition';
 import {ICard} from './cards/ICard';
 import {IProjectCard} from './cards/IProjectCard';
 import {CardManifest, ModuleManifest} from './cards/ModuleManifest';
@@ -98,3 +99,7 @@ export function preludesFromJSON(cards: ReadonlyArray<CardName>): Array<IPrelude
   return cfj(cards, newPrelude);
 }
 
+
+export function newCustomCard(definition: CustomCardDefinition): DataDrivenCard {
+  return new DataDrivenCard(definition);
+}

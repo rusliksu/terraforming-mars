@@ -682,6 +682,31 @@ describe('ApiCreateGame', () => {
     expect(game!.players[0].telegramID).eq('');
   });
 
+  it('rejects unsupported bot games before saving or spawning', async () => {
+    let saved = false;
+    let started = false;
+    scaffolding.ctx.gameLoader.saveGame = async () => {
+      saved = true;
+    };
+    apiCreateGame = new ApiCreateGame([{limit: 99999, perMs: 1}], {
+      start: () => {
+        started = true; throw new Error('must not spawn');
+      }, stop: () => undefined,
+    });
+    const config = newGameConfigForTest();
+    config.botGame = true;
+    config.players[0].isBot = true;
+    config.expansions.sillyfication = true;
+    const post = scaffolding.post(apiCreateGame, res);
+    req.emitString(JSON.stringify(config));
+    req.emitter.emit('end');
+    await post;
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('not supported');
+    expect(saved).eq(false);
+    expect(started).eq(false);
+  });
+
   it('starts bot takeover for bot players during game creation', async () => {
     const starts = new Array<{gameId: string; playerId: string; serverId: string}>();
     apiCreateGame = new ApiCreateGame([{limit: 99999, perMs: 1}], {

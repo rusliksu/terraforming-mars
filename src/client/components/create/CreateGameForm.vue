@@ -2780,7 +2780,7 @@ export default defineComponent({
             }
           }
         }
-        if (botEntries.length > 0) {
+        if (botEntries.length > 0 && !json.automationCompatibility?.unsupportedFeatures.length) {
           const cmd = 'node smartbot.js --game ' + json.id + ' --players "' + botEntries.join(',') + '"';
           prompt('Bot command (copy with Ctrl+C):', cmd);
         }

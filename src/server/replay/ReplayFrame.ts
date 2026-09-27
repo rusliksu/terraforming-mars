@@ -39,7 +39,9 @@ function publicParameters(parameters: GlobalParametersConfig | undefined): Globa
 function publicCard(card: CardModel): CardModel {
   return {
     ...pick(card, ['name', 'resources', 'calculatedCost', 'isSelfReplicatingRobotsCard', 'isDisabled',
-      'bonusResource', 'cloneTag', 'standardProjectCanPayWith', 'warnings']),
+      'bonusResource', 'cloneTag', 'standardProjectCanPayWith', 'warnings', 'combinedDisplayName', 'inSpireResources']),
+    customCard: card.customCard === undefined ? undefined : pick(card.customCard,
+      ['type', 'cost', 'tags', 'requirements', 'metadata', 'resourceType', 'module', 'compatibility']),
     discount: card.discount?.map((discount) => pick(discount, ['amount', 'tag'])),
     additionalProjectCosts: card.additionalProjectCosts === undefined ? undefined :
       pick(card.additionalProjectCosts, ['thinkTankResources', 'aeronGenomicsResources', 'redsCost']),

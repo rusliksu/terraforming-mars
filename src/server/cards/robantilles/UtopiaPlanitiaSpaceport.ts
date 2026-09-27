@@ -1,3 +1,5 @@
+import {SerializedCard} from '../../SerializedCard';
+import {deserializeProjectCard, serializeProjectCard} from '../cardSerialization';
 import {IProjectCard} from '../IProjectCard';
 import {ICard, IActionCard} from '../ICard';
 import {Tag} from '../../../common/cards/Tag';
@@ -26,6 +28,15 @@ type SpaceportData = {capturedCard?: CardName};
  */
 export class UtopiaPlanitiaSpaceport extends Card implements IProjectCard, IActionCard {
   public data: SpaceportData = {};
+  private capturedCard?: SerializedCard;
+
+  public serialize(serialized: SerializedCard): void {
+    serialized.capturedCard = this.capturedCard;
+  }
+
+  public deserialize(serialized: SerializedCard): void {
+    this.capturedCard = serialized.capturedCard;
+  }
 
   constructor() {
     super({
@@ -67,6 +78,7 @@ export class UtopiaPlanitiaSpaceport extends Card implements IProjectCard, IActi
         .andThen(() => {
           player.playedCards.remove(eventCard);
           this.data = {capturedCard: eventCard.name};
+          this.capturedCard = serializeProjectCard(eventCard);
           player.game.log('${0} placed ${1} on ${2}', (b) => b.player(player).card(eventCard).card(this));
           return undefined;
         }),
@@ -83,7 +95,7 @@ export class UtopiaPlanitiaSpaceport extends Card implements IProjectCard, IActi
     if (cardName === undefined) {
       return undefined;
     }
-    const card = newProjectCard(cardName);
+    const card = this.capturedCard === undefined ? newProjectCard(cardName) : deserializeProjectCard(this.capturedCard);
     if (card === undefined) {
       return undefined;
     }
@@ -98,6 +110,7 @@ export class UtopiaPlanitiaSpaceport extends Card implements IProjectCard, IActi
         }
         player.removedFromPlayCards.push(card);
         this.data = {};
+        this.capturedCard = undefined;
         return undefined;
       });
     return undefined;

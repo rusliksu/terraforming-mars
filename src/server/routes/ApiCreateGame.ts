@@ -1,3 +1,4 @@
+import {getAutomationCompatibility, automationUnavailableReason} from '../bot/AutomationCompatibility';
 import {sendGameStartNotice} from '../TelegramBot';
 import * as responses from '../server/responses';
 import {Handler} from './Handler';
@@ -284,11 +285,22 @@ export class ApiCreateGame extends Handler {
         venusNextExtension: gameReq.expansions.venus,
       };
 
+      const requireBotCompatibility = (options: Partial<GameOptions>, newGame: boolean) => {
+        if (!botGame || !requestedPlayers.some((player) => player.isBot)) {
+          return;
+        }
+        const reason = automationUnavailableReason(getAutomationCompatibility(options, newGame));
+        if (reason !== undefined) {
+          throw RouteError.badRequest(reason);
+        }
+      };
       let game: IGame;
       if (gameOptions.clonedGamedId !== undefined && !gameOptions.clonedGamedId.startsWith('#')) {
         const serialized = await Database.getInstance().getGameVersion(gameOptions.clonedGamedId, 0);
+        requireBotCompatibility(serialized.gameOptions, false);
         game = Cloner.clone(gameId, players, firstPlayerIdx, serialized, ctx.gameLoader.saveGame.bind(ctx.gameLoader));
       } else {
+        requireBotCompatibility(gameOptions, true);
         const seed = Number.isFinite(gameReq.seed) && gameReq.seed >= 0 && gameReq.seed < 1 ?
           gameReq.seed : Math.random();
         game = Game.newInstance(gameId, players, players[firstPlayerIdx], spectatorId, gameOptions, seed, ctx.gameLoader.saveGame.bind(ctx.gameLoader));
@@ -300,6 +312,7 @@ export class ApiCreateGame extends Handler {
       try {
         for (const botPlayer of botPlayers) {
           this.botManager.start({
+            compatibility: getAutomationCompatibility(game.gameOptions),
             gameId: game.id,
             playerId: botPlayer.id,
             serverId: ctx.ids.serverId,

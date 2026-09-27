@@ -17,15 +17,13 @@ import {CustomCardDefinition} from '../../common/cards/CustomCardDefinition';
  * `CustomCardDefinition` deliberately can't import that server-only type (see
  * CustomCardDefinition.ts's `UncheckedBehavior` doc comment).
  *
- * `def.cardName` is cast to `CardName` -- safe (see the Custom Card Maker plan): `CardName` is a
- * closed enum but nothing else in the codebase assumes it's exhaustively closed. The one real
- * hazard is `Card.ts`'s process-lifetime `cardProperties` cache, keyed by this name: two
- * `DataDrivenCard`s must never be constructed with the same `cardName` but a different
- * definition (the registry's boot/refresh logic is responsible for this invariant, not this
- * class).
+ * Each instance pins its definition so library edits cannot change an active game.
  */
 export class DataDrivenCard extends Card implements IProjectCard {
+  public readonly definition: CustomCardDefinition;
+
   constructor(def: CustomCardDefinition) {
+    def = structuredClone(def);
     super({
       name: def.cardName as unknown as CardName,
       type: def.type,
@@ -40,6 +38,7 @@ export class DataDrivenCard extends Card implements IProjectCard {
         renderData: def.renderData,
         description: def.description,
       },
-    });
+    }, false);
+    this.definition = def;
   }
 }

@@ -1,10 +1,11 @@
+import {isDataDrivenCard} from '../CustomCardRegistry';
 import {IProjectCard} from '../IProjectCard';
 import {Card} from '../Card';
 import {CardType} from '../../../common/cards/CardType';
 import {IPlayer} from '../../IPlayer';
 import {CardName} from '../../../common/cards/CardName';
 import {SelectCard} from '../../inputs/SelectCard';
-import {newProjectCard} from '../../createCard';
+import {newProjectCard, newCustomCard} from '../../createCard';
 import {CardRenderer} from '../render/CardRenderer';
 import {digit} from '../Options';
 
@@ -50,7 +51,7 @@ export class ProjectImitators extends Card implements IProjectCard {
     const targets = this.targets(player);
     return new SelectCard('Select a card to copy into your hand', 'Copy', targets, {showOwner: true})
       .andThen(([card]) => {
-        const copy = newProjectCard(card.name);
+        const copy = isDataDrivenCard(card) ? newCustomCard(card.definition) : newProjectCard(card.name);
         if (copy !== undefined) {
           player.cardsInHand.push(copy);
           this.data = {card: card.name, generation: player.game.generation};

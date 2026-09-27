@@ -45,6 +45,7 @@ describe('ApiGame', () => {
     json.name = 'game-name';
     expect(json).deep.eq(
       {
+        'automationCompatibility': {version: 1, unsupportedFeatures: []},
         'activePlayer': 'black',
         'createdTimeMs': -1,
         'expectedPurgeTimeMs': -1,

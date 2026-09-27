@@ -1,3 +1,6 @@
+import {serializeDynamicCards, restoreDynamicCards} from './cards/DynamicCardState';
+import {getAutomationCompatibility} from './bot/AutomationCompatibility';
+import {isLastActivePlayerFinish} from '../common/game/CompletionOutcome';
 import {sendTurnNotice, deleteTurnNotice, deleteTurnNoticeMessage, getStoredTurnNoticeUpdatedAt} from './TelegramBot';
 import * as constants from '../common/constants';
 import {PlayerId} from '../common/Types';
@@ -2200,7 +2203,9 @@ export class Player implements IPlayer {
 
     if (this.game.players.length > 1 &&
       !this.game.botPlayerIds.has(this.id) &&
-      !this.game.surrenderedPlayerIds.has(this.id)) {
+      !this.game.surrenderedPlayerIds.has(this.id) &&
+      (getAutomationCompatibility(this.game.gameOptions).unsupportedFeatures.length === 0 ||
+        isLastActivePlayerFinish(this.game.players.length, this.game.surrenderedPlayerIds.size + 1))) {
       action.options.push(this.surrenderOption());
     }
 
@@ -2455,6 +2460,13 @@ export class Player implements IPlayer {
 
   public serialize(): SerializedPlayer {
     const result: SerializedPlayer = {
+      projectCardStates: {
+        cardsInHand: serializeDynamicCards(this.cardsInHand),
+        dealtProjectCards: serializeDynamicCards(this.dealtProjectCards),
+        draftedCards: serializeDynamicCards(this.draftedCards),
+        draftHand: serializeDynamicCards(this.draftHand),
+        removedFromPlayCards: serializeDynamicCards(this.removedFromPlayCards),
+      },
       id: this.id,
       user: this.user,
       telegramID: this.telegramID || undefined,
@@ -2645,7 +2657,7 @@ export class Player implements IPlayer {
     player.lastTurnReminderNoticeKey = d.lastTurnReminderNoticeKey ?? '';
 
     // Rebuild removed from play cards (Playwrights, Odyssey)
-    player.removedFromPlayCards = cardsFromJSON(d.removedFromPlayCards);
+    player.removedFromPlayCards = restoreDynamicCards(d.removedFromPlayCards, d.projectCardStates?.removedFromPlayCards);
 
     if (d.pickedCorporationCard !== undefined) {
       player.pickedCorporationCard = newCorporationCard(d.pickedCorporationCard);
@@ -2655,15 +2667,15 @@ export class Player implements IPlayer {
     player.dealtCorporationCards = corporationCardsFromJSON(d.dealtCorporationCards);
     player.dealtPreludeCards = preludesFromJSON(d.dealtPreludeCards);
     player.dealtCeoCards = ceosFromJSON(d.dealtCeoCards);
-    player.dealtProjectCards = cardsFromJSON(d.dealtProjectCards);
+    player.dealtProjectCards = restoreDynamicCards(d.dealtProjectCards, d.projectCardStates?.dealtProjectCards);
     player.deltaProjectData = d.deltaProject;
     player.epsilonDampleData = d.epsilonDample;
-    player.cardsInHand = cardsFromJSON(d.cardsInHand);
+    player.cardsInHand = restoreDynamicCards(d.cardsInHand, d.projectCardStates?.cardsInHand);
     // I don't like "as IPreludeCard" but this is pretty safe.
     player.preludeCardsInHand = cardsFromJSON(d.preludeCardsInHand) as Array<IPreludeCard>;
     player.ceoCardsInHand = new Set(ceosFromJSON(d.ceoCardsInHand));
     player.playedCards.deserialize(d.playedCards);
-    player.draftedCards = cardsFromJSON(d.draftedCards);
+    player.draftedCards = restoreDynamicCards(d.draftedCards, d.projectCardStates?.draftedCards);
     player.researchPurchaseUndo = d.researchPurchaseUndo;
     player.autopass = d.autoPass ?? false;
     player.preservationProgram = d.preservationProgram ?? false;
@@ -2682,7 +2694,7 @@ export class Player implements IPlayer {
       player._alliedParty = d.alliedParty;
     }
 
-    player.draftHand = cardsFromJSON(d.draftHand);
+    player.draftHand = restoreDynamicCards(d.draftHand, d.projectCardStates?.draftHand);
     if (d.globalParameterSteps) {
       player.globalParameterSteps = {...DEFAULT_GLOBAL_PARAMETER_STEPS, ...d.globalParameterSteps};
     }

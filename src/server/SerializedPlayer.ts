@@ -1,7 +1,7 @@
 import {PlayerId} from '../common/Types';
 import {CardName} from '../common/cards/CardName';
 import {Color} from '../common/Color';
-import {SerializedCard} from './SerializedCard';
+import {DynamicCardState, SerializedCard} from './SerializedCard';
 import {SerializedTimer} from '../common/SerializedTimer';
 import {AlliedParty} from '../common/turmoil/Types';
 import {GlobalParameter} from '../common/GlobalParameter';
@@ -15,7 +15,10 @@ import type {ResearchPurchaseUndoState} from './game/ResearchPurchaseUndo';
 interface DeprecatedFields {
 }
 
+export type ProjectCardZone = 'cardsInHand' | 'dealtProjectCards' | 'draftedCards' | 'draftHand' | 'removedFromPlayCards';
+
 export interface SerializedPlayer extends DeprecatedFields{
+  projectCardStates?: Partial<Record<ProjectCardZone, Array<DynamicCardState>>>;
   actionsTakenThisGame: number;
   actionsTakenAtGenerationStart?: number;
   actionsTakenThisRound: number;

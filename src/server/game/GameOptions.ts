@@ -13,6 +13,8 @@ import {SimpleCustomBoardDefinition} from '../../common/boards/SimpleCustomBoard
 import {GlobalParametersConfig} from '../../common/GlobalParameterConfig';
 
 export type GameOptions = {
+  /** Marks the expanded card pool; absent in pre-port saves. */
+  fanmadeCardPool?: boolean;
   /** The resolved runtime board for this game. */
   boardName: BoardName;
   /** The original create-game board selection, used by rematch setup. */

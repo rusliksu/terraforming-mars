@@ -372,7 +372,7 @@ export class Game implements IGame, Logger {
         solaris: partialOptions.solarisExpansion ?? false,
       };
     }
-    const gameOptions = {...DEFAULT_GAME_OPTIONS, ...partialOptions};
+    const gameOptions = {...DEFAULT_GAME_OPTIONS, ...partialOptions, fanmadeCardPool: true};
     if (gameOptions.undoStepOption) {
       gameOptions.undoOption = true;
     }

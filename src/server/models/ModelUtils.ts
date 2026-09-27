@@ -12,7 +12,7 @@ import {CardName} from '../../common/cards/CardName';
 import {Tag} from '../../common/cards/Tag';
 import {asArray} from '../../common/utils/utils';
 import {isIStandardProjectCard} from '../cards/IStandardProjectCard';
-import {isCustomCardName, getCustomCardDefinition} from '../cards/CustomCardRegistry';
+import {isDataDrivenCard} from '../cards/CustomCardRegistry';
 import {NEUTRAL_COLONY_OWNER} from '../../common/Types';
 
 export function cardsToModel(
@@ -90,7 +90,7 @@ export function cardsToModel(
     // A Custom Card Maker card's name isn't in the client's compiled static manifest, so
     // Card.vue can't resolve its face (cost/tags/icons/requirements) the normal way -- carry
     // that data over the wire instead. See CustomCardModel's doc comment.
-    if (isCustomCardName(card.name)) {
+    if (isDataDrivenCard(card)) {
       model.customCard = {
         type: card.type,
         cost: card.cost,
@@ -99,7 +99,7 @@ export function cardsToModel(
         metadata: card.metadata,
         resourceType: card.resourceType,
         module: 'customCards',
-        compatibility: getCustomCardDefinition(card.name)?.compatibility ?? [],
+        compatibility: card.definition.compatibility ?? [],
       };
     }
     // Same reasoning as Custom Card Maker cards above: DeimosDoubleDownCopy's face varies

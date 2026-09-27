@@ -1,3 +1,4 @@
+import {AutomationCompatibility} from './AutomationCompatibility';
 
 import {Color} from '../Color';
 import {PlayerId, GameId, SpectatorId} from '../Types';
@@ -5,6 +6,7 @@ import {Phase} from '../Phase';
 import {GameOptionsModel} from './GameOptionsModel';
 
 export type SimpleGameModel = {
+  automationCompatibility?: AutomationCompatibility;
     activePlayer: Color;
     botPlayers?: Array<PlayerId>;
     id: GameId;

@@ -45,6 +45,15 @@ export const DEFAULT_PAYMENT_VALUES = {
 } satisfies Record<SpendableResource, number>;
 
 export namespace Payment {
+  /** Supply newly added resources for clients and recordings from before the fan port. */
+  export function fromResponse(value: unknown): Payment | undefined {
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+      return undefined;
+    }
+    const normalized = {energy: 0, nereidMicrobes: 0, anyFloaters: 0, ...value};
+    return isPayment(normalized) ? normalized : undefined;
+  }
+
   export const EMPTY: Readonly<Payment> = {
     heat: 0,
     energy: 0,

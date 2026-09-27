@@ -1,7 +1,7 @@
 {
-  "event_count": 19,
-  "last_event_id": "01M3J829GZ73KNAC78D9QWJXMH",
-  "materialized_at": "2026-09-27T20:14:24.287923+00:00",
+  "event_count": 21,
+  "last_event_id": "01M3J83AH077NZWJAD8KXP9ZDX",
+  "materialized_at": "2026-09-27T20:14:58.076552+00:00",
   "mission_number": "",
   "mission_slug": "fanmade-full-port-01M3J328",
   "mission_type": "software-dev",
@@ -12,9 +12,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 3
+    "planned": 2
   },
   "work_packages": {
     "WP01": {
@@ -82,11 +82,14 @@
       }
     },
     "WP03": {
-      "actor": "finalize-tasks",
+      "actor": "codex",
+      "agent": "codex",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M3J3SXEYB1QSMF3J5GK5MKTN",
-      "last_transition_at": "2026-09-27T18:59:55.486090+00:00"
+      "lane": "in_progress",
+      "last_event_id": "01M3J83AH077NZWJAD8KXP9ZDX",
+      "last_transition_at": "2026-09-27T20:14:58.076552+00:00",
+      "shell_pid": 39424,
+      "shell_pid_created_at": "1790540090.3679144"
     },
     "WP04": {
       "actor": "finalize-tasks",

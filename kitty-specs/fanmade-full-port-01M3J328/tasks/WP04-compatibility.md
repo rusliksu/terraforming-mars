@@ -129,3 +129,7 @@ T012: add public, versioned automation compatibility and guard the three owned p
 T011/T013 confirmed by three failing round-trip tests: preserve dynamic definitions and copied event identity across save/undo, library changes and nested storage. Add optional state sidecars to retain all legacy name-array shapes; ordinary cards retain their existing serialization and cache.
 
 Review correction: Cloner must preserve embedded definition text/card identities while remapping actual player IDs. Synthetic name-equals-ID regression covers the collision.
+
+## Activity Log
+
+- 2026-09-27T21:52:44Z – codex – shell_pid=27828 – Server compatibility committed at20c6a55ed3;10966 server tests,999 client tests,build/lint/compile and390px UI passed. Bounded server review approved. T012 remains open pending user decision for separate tm-advisor consumer guard; no overall acceptance,PR,merge or staging claimed.

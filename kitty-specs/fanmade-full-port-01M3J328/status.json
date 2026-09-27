@@ -1,7 +1,7 @@
 {
-  "event_count": 9,
-  "last_event_id": "01M3J5BK0Z9E4T3KYHF2XKAVBQ",
-  "materialized_at": "2026-09-27T19:27:03.199548+00:00",
+  "event_count": 11,
+  "last_event_id": "01M3J5BQ9CWXXNEAX6KHZWTPRH",
+  "materialized_at": "2026-09-27T19:27:07.562497+00:00",
   "mission_number": "",
   "mission_slug": "fanmade-full-port-01M3J328",
   "mission_type": "software-dev",
@@ -12,25 +12,27 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 5
+    "planned": 4
   },
   "work_packages": {
     "WP01": {
-      "actor": "user",
-      "agent": "codex",
+      "actor": "codex",
+      "agent": null,
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "lane": "planned",
-      "last_event_id": "01M3J5BK0Z9E4T3KYHF2XKAVBQ",
-      "last_transition_at": "2026-09-27T19:27:03.199548+00:00",
+      "lane": "in_progress",
+      "last_event_id": "01M3J5BQ9CWXXNEAX6KHZWTPRH",
+      "last_transition_at": "2026-09-27T19:27:07.562497+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Corrected source pinned and validated: Node22 lint/build/test compilation, 10407 server and 784 client tests; independent review requested."
+        "Corrected source pinned and validated: Node22 lint/build/test compilation, 10407 server and 784 client tests; independent review requested.",
+        "Independent review at 0ce03f8e37 requires count and scope-ledger corrections"
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "C:\\Users\\Ruslan\\.codex-worktrees\\terraforming-mars-fanmade-full-port-owned\\kitty-specs\\fanmade-full-port-01M3J328\\tasks\\WP01-source-reference\\review-cycle-1.md",
         "reference": "review-cycle://fanmade-full-port-01M3J328/WP01-source-reference/review-cycle-1.md",
@@ -38,12 +40,12 @@
         "verdict": "changes_requested"
       },
       "role": "implementer",
-      "shell_pid": 22412,
-      "shell_pid_created_at": "1790535924.2059076",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T001": "done",
-        "T002": "done",
-        "T003": "done"
+        "T001": "planned",
+        "T002": "planned",
+        "T003": "planned"
       }
     },
     "WP02": {

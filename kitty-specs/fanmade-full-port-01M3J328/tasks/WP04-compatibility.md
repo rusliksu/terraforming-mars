@@ -27,6 +27,58 @@ execution_mode: code_change
 lane: planned
 owned_files:
 - tests/fanmade-compat/**
+- src/server/database/Cloner.ts
+- tests/database/Cloner.spec.ts
+- tests/routes/ApiGame.spec.ts
+- tests/routes/PlayerInput.spec.ts
+- src/server/cards/CustomCardRegistry.ts
+- src/server/createCard.ts
+- src/server/SerializedCard.ts
+- src/server/SerializedPlayer.ts
+- src/server/cards/Card.ts
+- src/server/cards/DataDrivenCard.ts
+- src/server/cards/DynamicCardState.ts
+- src/server/cards/cardSerialization.ts
+- src/server/cards/Deck.ts
+- src/server/cards/SerializedDeck.ts
+- src/server/cards/sillyfication/DeimosDoubleDown.ts
+- src/server/cards/sillyfication/DeimosDoubleDownCopy.ts
+- src/server/cards/sillyfication/ProjectImitators.ts
+- src/server/cards/promo/SelfReplicatingRobots.ts
+- src/server/cards/solaris/SelfReplicatingRobotsSolaris.ts
+- src/server/cards/robantilles/OrganicWasteRecycling.ts
+- src/server/cards/robantilles/UtopiaPlanitiaSpaceport.ts
+- src/server/models/ModelUtils.ts
+- src/common/models/AutomationCompatibility.ts
+- src/common/models/GameModel.ts
+- src/common/models/SimpleGameModel.ts
+- src/server/bot/AutomationCompatibility.ts
+- src/server/bot/BotTakeoverManager.ts
+- src/server/surrender/SurrenderService.ts
+- src/server/database/GameLoader.ts
+- src/server/game/GameOptions.ts
+- src/server/Game.ts
+- src/server/Player.ts
+- src/server/models/ServerModel.ts
+- src/server/routes/ApiCreateGame.ts
+- src/locales/ru/ui.json
+- src/client/components/PlayerHome.vue
+- src/client/components/create/CreateGameForm.vue
+- tests/routes/ApiCreateGame.spec.ts
+- tests/routes/ApiSurrender.spec.ts
+- tests/database/GameLoader.spec.ts
+- tests/server/bot/**
+- src/common/inputs/Payment.ts
+- src/server/inputs/SelectPayment.ts
+- src/server/inputs/SelectCardToPlay.ts
+- src/server/replay/ReplayFrame.ts
+- src/server/routes/ApiCloneableGame.ts
+- src/server/routes/ApiQuickGame.ts
+- tests/inputs/SelectPayment.spec.ts
+- tests/inputs/SelectProjectCardToPlay.spec.ts
+- tests/replay/ReplayFrame.spec.ts
+- tests/routes/ApiCloneableGame.spec.ts
+- tests/routes/ApiQuickGame.spec.ts
 role: implementer
 tags: []
 task_type: implement
@@ -67,3 +119,13 @@ Inspect actual code and before/after behavior, not only green tests. Do not mark
 ## Activity log
 - 2026-09-27T19:00:00Z - codex - Authored from user-approved implementation plan.
 
+
+## Sequential corrective scope
+
+T011/T013: normalize only the two newly introduced payment fields at input parsing; preserve dynamic public card faces in replay; retain custom boards and teams in rematch/quick-game configuration. Tests remain beside their owning flows. Root is the sole writer; WP02/WP03 are complete.
+
+T012: add public, versioned automation compatibility and guard the three owned process-launch paths before mutation. New-game pool provenance preserves legacy Pathfinders/Delta saves while marking their expanded pools unsupported. This is a compatibility boundary, not strategy work.
+
+T011/T013 confirmed by three failing round-trip tests: preserve dynamic definitions and copied event identity across save/undo, library changes and nested storage. Add optional state sidecars to retain all legacy name-array shapes; ordinary cards retain their existing serialization and cache.
+
+Review correction: Cloner must preserve embedded definition text/card identities while remapping actual player IDs. Synthetic name-equals-ID regression covers the collision.

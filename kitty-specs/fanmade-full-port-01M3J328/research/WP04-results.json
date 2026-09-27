@@ -1,0 +1,62 @@
+{
+  "codeCommit": "20c6a55ed3a706fa1ca593f23d97b1e0c1226ef8",
+  "node": "22.23.3",
+  "server": {
+    "exitCode": 0,
+    "passing": 10966,
+    "pending": 3,
+    "log": "fanmade-port-compat-server-reviewed.log"
+  },
+  "client": {
+    "exitCode": 0,
+    "passing": 999,
+    "files": 183,
+    "log": "fanmade-port-compat-full-client.log"
+  },
+  "fullBuild": {
+    "exitCode": 0,
+    "webpackWarnings": 3,
+    "log": "fanmade-port-compat-build.log"
+  },
+  "finalServerBuild": {
+    "exitCode": 0,
+    "log": "fanmade-port-compat-server-build-reviewed.log"
+  },
+  "finalClientBuild": {
+    "exitCode": 0,
+    "log": "fanmade-port-compat-ui-final.log"
+  },
+  "fullLint": {
+    "exitCode": 0,
+    "log": "fanmade-port-compat-full-lint.log"
+  },
+  "finalEslint": {
+    "exitCode": 0,
+    "log": "fanmade-port-compat-eslint-reviewed.log"
+  },
+  "finalI18n": {
+    "exitCode": 0,
+    "log": "fanmade-port-compat-i18n-reviewed.log"
+  },
+  "testCompile": {
+    "exitCode": 0,
+    "log": "fanmade-port-compat-tests-reviewed.log"
+  },
+  "browser": {
+    "width": 390,
+    "errors": [],
+    "noticeBounds": {
+      "x": 70,
+      "width": 320,
+      "height": 69
+    },
+    "mockedRoutes": [
+      "/elo/data.json",
+      "/elo/elo-data.json"
+    ],
+    "gameplayMocks": false,
+    "stopped": true
+  },
+  "inventoryPaths": 1441,
+  "overallAcceptance": "pending external FR006 scope decision and WP05 delivery/staging"
+}

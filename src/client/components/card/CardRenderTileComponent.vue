@@ -150,6 +150,59 @@ const TILE_CLASSES: Record<TileType, Classes> = {
   [TileType.NEURAL_INSTANCE]: {
     tile: 'card-tile-neural-instance',
   },
+  [TileType.GARBAGE_DUMP]: {},
+  [TileType.PUMPING_HUB]: {},
+  [TileType.INVAK_CITY]: {}, // This isn't shown on a card
+  [TileType.ANIMAL_DOME]: {
+    tile: 'card-tile-animal-dome',
+  },
+  [TileType.BIOLOGICAL_DOME]: {
+    tile: 'card-tile-biological-dome',
+  },
+  [TileType.SEDIMENT]: {
+    tile: 'card-tile-sediment',
+  },
+  [TileType.SUBURBS]: {},
+  // Harbor Borealis's source art has a visible Getty Images watermark, so it isn't wired up
+  // yet -- still rendering as a generic empty tile pending a clean asset.
+  [TileType.HARBOR_BOREALIS]: {},
+  [TileType.VENUS_CLOUD_CITY]: {
+    tile: 'card-tile-venus-cloud-city',
+  },
+  [TileType.VENUS_GAS_MINE]: {
+    tile: 'card-tile-venus-gas-mine',
+  },
+  [TileType.VENUS_FLOATER_ARRAY]: {
+    tile: 'card-tile-venus-floater-array',
+  },
+  [TileType.INDUSTRIAL_METROPOLIS]: {
+    tile: 'card-tile-industrial-metropolis',
+  },
+  [TileType.PARADISE_CITY]: {
+    tile: 'card-tile-paradise-city',
+  },
+  [TileType.INDUSTRY_HEAT]: {
+    tile: 'card-tile-industry-heat',
+  },
+  [TileType.INDUSTRY_MONEY]: {
+    tile: 'card-tile-industry-money',
+  },
+  [TileType.INDUSTRY_ENERGY]: {
+    tile: 'card-tile-industry-energy',
+  },
+  [TileType.INDUSTRY_STEEL]: {
+    tile: 'card-tile-industry-steel',
+  },
+  [TileType.INDUSTRY_PLANT]: {
+    tile: 'card-tile-industry-plant',
+  },
+  [TileType.INDUSTRY_TITANIUM]: {
+    tile: 'card-tile-industry-titanium',
+  },
+  [TileType.INDUSTRY_WILD]: {
+    tile: 'card-tile-industry-wild',
+  },
+  [TileType.MENAGERIE]: {},
 };
 
 export default defineComponent({

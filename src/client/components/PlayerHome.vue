@@ -178,6 +178,7 @@ import {CardType} from '@/common/cards/CardType';
 import {getCardsByType, isCardActivated} from '@/client/utils/CardUtils';
 import {sortActiveCards} from '@/client/utils/ActiveCardsSortingOrder';
 import {CardModel} from '@/common/models/CardModel';
+import {buildClientCardFromCustom} from '@/client/cards/CustomCardAdapter';
 import {getCardOrThrow} from '../cards/ClientCardManifest';
 import {Phase} from '@/common/Phase';
 import {HomeMixin} from '@/client/mixins/HomeMixin';
@@ -204,7 +205,8 @@ const typeToDataModel: Record<ToggleableCardType, {key: keyof PlayerHomeModel, p
  * automated stack, which is why e.g. Albedo Plants was missing from the active filter.
  */
 function isActiveCard(cardModel: CardModel): boolean {
-  const card = getCardOrThrow(cardModel.name);
+  const card = cardModel.customCard === undefined ? getCardOrThrow(cardModel.name) :
+    buildClientCardFromCustom(cardModel.name, cardModel.customCard);
   return card.type === CardType.ACTIVE || card.hasAction || card.hasEffect;
 }
 

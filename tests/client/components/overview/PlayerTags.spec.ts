@@ -1,4 +1,4 @@
-import {shallowMount, VueWrapper, DOMWrapper} from '@vue/test-utils';
+import {mount, shallowMount, VueWrapper, DOMWrapper} from '@vue/test-utils';
 import {globalConfig} from '../getLocalVue';
 import {expect} from 'chai';
 import {CardName} from '@/common/cards/CardName';
@@ -61,6 +61,9 @@ describe('PlayerTags', () => {
       },
       underworldData: {
         tokens: [],
+      },
+      conglomeratesData: {
+        coordination: 0,
       },
       victoryPointsBreakdown: {
         total: 1,
@@ -153,5 +156,33 @@ describe('PlayerTags', () => {
     const cityCount = wrapper.vm.tagsInOrder.find((t: any) => t.name === SpecialTags.CITY_COUNT);
     expect(cityCount.points).to.eq(0);
     expect(cityCount.asterisk).to.eq(true);
+  });
+
+  it('renders Artificial Moon Galactic count and points', () => {
+    const player = asComplete<PublicPlayerModel>({
+      ...wrapper.props('player'),
+      tableau: [{name: CardName.ARTIFICIAL_MOON}],
+      tags: {...wrapper.props('player').tags, [Tag.GALACTIC]: 1},
+    });
+    const playerView = wrapper.props('playerView');
+    wrapper = mount(PlayerTags, {
+      ...globalConfig,
+      props: {
+        player,
+        playerView: {
+          ...playerView,
+          thisPlayer: player,
+          game: {...playerView.game, tags: [...playerView.game.tags, Tag.GALACTIC]},
+        },
+      },
+    });
+
+    const galactic = wrapper.findAll('.tag-and-discount').find((tag) => tag.find('.tag-galactic').exists());
+    expect(galactic?.find('.tag-count-display').text()).to.eq('1');
+    expect(galactic?.find('.points-per-tag').text()).to.eq('3');
+  });
+
+  it('hides Galactic when the game does not include the tag', () => {
+    expect(wrapper.find('tag-count-stub[tag="galactic"]').exists()).to.eq(false);
   });
 });

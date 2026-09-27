@@ -72,6 +72,49 @@ describe('DeltaProjectBoard', () => {
     expect(wrapper.vm.playersAtPosition(5)).to.deep.eq(['blue', 'red']);
   });
 
+  it('places a player at both their primary and Epsilon Dample positions', () => {
+    const player = fakePublicPlayerModel({
+      color: 'blue',
+      deltaProject: {position: 3, jovianBonus: false},
+      epsilonDample: {position: 7, jovianBonus: false},
+    });
+    const wrapper = shallowMount(DeltaProjectBoard, {
+      ...globalConfig,
+      props: {players: [player]},
+    });
+    expect(wrapper.vm.playersAtPosition(3)).to.deep.eq(['blue']);
+    expect(wrapper.vm.playersAtPosition(7)).to.deep.eq(['blue']);
+  });
+
+  it('shows both of the same player\'s markers when they land on the same position', () => {
+    const player = fakePublicPlayerModel({
+      color: 'blue',
+      deltaProject: {position: 5, jovianBonus: false},
+      epsilonDample: {position: 5, jovianBonus: false},
+    });
+    const wrapper = shallowMount(DeltaProjectBoard, {
+      ...globalConfig,
+      props: {players: [player]},
+    });
+    expect(wrapper.vm.playersAtPosition(5)).to.deep.eq(['blue', 'blue']);
+  });
+
+  it('counts a second marker toward the dynamic empty-slot total', () => {
+    const blue = fakePublicPlayerModel({
+      color: 'blue',
+      deltaProject: {position: 0, jovianBonus: false},
+      epsilonDample: {position: 0, jovianBonus: false},
+    });
+    const red = fakePublicPlayerModel({color: 'red', deltaProject: {position: 0, jovianBonus: false}});
+    const wrapper = shallowMount(DeltaProjectBoard, {
+      ...globalConfig,
+      props: {players: [blue, red]},
+    });
+    // 3 markers total (blue's 2 + red's 1), all occupying the start position.
+    expect(wrapper.vm.emptySlotsStart()).to.eq(0);
+    expect(wrapper.vm.playersAtPosition(0)).to.have.length(3);
+  });
+
   it('treats missing deltaProject data as not on the track', () => {
     const player = fakePublicPlayerModel({color: 'blue'});
     const wrapper = shallowMount(DeltaProjectBoard, {

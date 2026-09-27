@@ -2,12 +2,12 @@
   <div class="card-container filterDiv hover-hide-res" :class="cardClasses">
       <div class="card-content-wrapper" v-i18n @mouseover="hovering = true" @mouseleave="hovering = false">
           <div v-if="!isStandardProject" class="card-cost-and-tags">
-              <CardCost :amount="cost" :newCost="reducedCost" />
+              <div><CardCost :amount="cost" :newCost="reducedCost" :titanium="isInfrastructure" /></div>
               <div v-if="showPlayerCube" :class="playerCubeClass"></div>
               <CardHelp v-if="hasHelpText" :name="card.name" :hovering="hovering" />
               <CardTags :tags="tags" />
           </div>
-          <CardTitle :title="card.name" :type="cardType"/>
+          <CardTitle :title="card.name" :type="cardType" :displayTitle="card.combinedDisplayName" :tags="tags"/>
           <CardContent
               :metadata="cardMetadata"
               :requirements="cardRequirements"
@@ -16,7 +16,9 @@
       </div>
       <CardExpansion :expansion="cardExpansion" :isCorporation="isCorporationCard" :isResourceCard="isResourceCard" :compatibility="cardCompatibility" />
       <CardResourceCounter v-if="hasResourceType" :amount="resourceAmount" :type="resourceType" />
-      <CardVictoryPoints v-if="cardMetadata.victoryPoints" :victoryPoints="cardMetadata.victoryPoints" />
+      <CardVictoryPoints
+        v-if="cardMetadata.victoryPoints !== undefined"
+        :victoryPoints="cardMetadata.victoryPoints" />
       <CardExtraContent :card="card" />
       <slot></slot>
   </div>
@@ -38,11 +40,13 @@ import CardVictoryPoints from './CardVictoryPoints.vue';
 import CardContent from './CardContent.vue';
 import CardHelp from './CardHelp.vue';
 import {CardType} from '@/common/cards/CardType';
+import {CardName} from '@/common/cards/CardName';
 import {CardMetadata} from '@/common/cards/CardMetadata';
 import {Tag} from '@/common/cards/Tag';
 import {getPreferences} from '@/client/utils/PreferencesManager';
 import {CardResource} from '@/common/CardResource';
-import {getCardOrThrow} from '@/client/cards/ClientCardManifest';
+import {getCard} from '@/client/cards/ClientCardManifest';
+import {buildClientCardFromCustom} from '@/client/cards/CustomCardAdapter';
 import {Color} from '@/common/Color';
 import {CardRequirementDescriptor} from '@/common/cards/CardRequirementDescriptor';
 import {GameModule} from '@/common/cards/GameModule';
@@ -90,7 +94,15 @@ export default defineComponent({
   },
   data() {
     const cardName = this.card.name;
-    const card = getCardOrThrow(cardName);
+    // A card not in the compiled static manifest is always a Custom Card Maker card -- its
+    // face-of-card data instead came over the wire in `card.customCard` (see CustomCardModel's
+    // doc comment). Fail loudly (matching getCardOrThrow's old behavior) if somehow neither
+    // resolves -- that's a server-side bug, not something to silently paper over here.
+    const staticCard = getCard(cardName);
+    const card = staticCard ?? (this.card.customCard && buildClientCardFromCustom(cardName, this.card.customCard));
+    if (card === undefined || card === null) {
+      throw new Error(`card not found ${cardName}`);
+    }
 
     return {
       cardInstance: card,
@@ -125,6 +137,13 @@ export default defineComponent({
         tags.push(Tag.EVENT);
       }
       return tags;
+    },
+    // High Orbit (fan): Infrastructure-tagged "Silver" cards render with a distinct silver
+    // header and a Titanium (not M€) cost badge, regardless of CardType. Planetary Outpost is
+    // visually a Silver card too (same native-Titanium payment) despite deliberately carrying
+    // no Infrastructure tag -- see PlanetaryOutpost.ts.
+    isInfrastructure(): boolean {
+      return this.tags.includes(Tag.INFRASTRUCTURE) || this.card.name === CardName.PLANETARY_OUTPOST;
     },
     cost(): number | undefined {
       return this.isProjectCard ? this.cardInstance.cost : undefined;

@@ -206,6 +206,29 @@
   &.party-background--kelvinists {
     background-position: -873px 316px;
   }
+
+  // The 6 fan-expansion parties (idesOfMars/robAntilles) have no bespoke artwork of their
+  // own yet, so each duplicates one of the 6 official party card backgrounds above rather
+  // than falling through to the default (0,0) crop, which showed unrelated icons from the
+  // top of the sprite sheet instead of a party card.
+  &.party-background--populists {
+    background-position: -23px 316px;
+  }
+  &.party-background--spome {
+    background-position: -193px 316px;
+  }
+  &.party-background--empower {
+    background-position: -363px 316px;
+  }
+  &.party-background--bureaucrats {
+    background-position: -533px 316px;
+  }
+  &.party-background--centrists {
+    background-position: -703px 316px;
+  }
+  &.party-background--transhumanists {
+    background-position: -873px 316px;
+  }
 }
 
 .party-badge {
@@ -245,6 +268,34 @@
 
   &.party-badge--kelvinists {
     background: #5d4d4d;
+  }
+
+  &.party-badge--populists {
+    background: #d6249f;
+  }
+
+  &.party-badge--spome {
+    background: #a4d90c;
+    color: @grey_900;
+  }
+
+  &.party-badge--empower {
+    background: #8e44ad;
+  }
+
+  &.party-badge--bureaucrats {
+    background: #c4c4c4;
+    color: @grey_900;
+  }
+
+  &.party-badge--centrists {
+    background: #f1c40f;
+    color: @grey_900;
+  }
+
+  &.party-badge--transhumanists {
+    background: #17c9d1;
+    color: @grey_900;
   }
 }
 
@@ -290,6 +341,37 @@
 
   &.party-name--kelvinists {
     background: #5d4d4d;
+  }
+
+  &.party-name--populists {
+    background: #d6249f;
+  }
+
+  &.party-name--spome {
+    background: #a4d90c;
+    color: @grey_900;
+  }
+
+  &.party-name--empower {
+    background: #8e44ad;
+  }
+
+  &.party-name--bureaucrats {
+    background: #c4c4c4;
+    color: @grey_900;
+  }
+
+  &.party-name--centrists {
+    background: #f1c40f;
+    color: @grey_900;
+  }
+
+  &.party-name--transhumanists {
+    background: #17c9d1;
+    color: @grey_900;
+    // "Transhumanists" is longer than any official party name and overflows the
+    // fixed-width pill at the default font size.
+    font-size: 10px;
   }
 }
 
@@ -791,6 +873,14 @@
   background-position: 0px;
 }
 
+// The "diverse tag" (any distinct tag) icon -- same rainbow gradient as AriAdore's card-level
+// .card-resource-diverse (cards_v2.less), which only works nested inside .card-container.
+// background-image (not the `background` shorthand) so it combines cleanly with whichever base
+// tag class (.resource-tag, .card-icon) provides the sizing here.
+.tag-diverse {
+  background-image: linear-gradient(to bottom right, green, yellow, red);
+}
+
 .red-arrow-infinity {
   background-image: url(./assets/misc/arrow_infinity.png);
   background-size: 30px;
@@ -829,6 +919,28 @@ input[type="radio"]:checked + .party-container::after {
 .unavailable-party {
   filter: brightness(0.4);
   cursor: default;
+}
+
+// Styles the hover tooltip shown by TurmoilAgenda.vue. That component moves this element out
+// to the very end of <body> (via Vue's <Teleport>) instead of leaving it next to the icon it
+// describes, and positions it in JavaScript using the icon's on-screen coordinates. That's
+// needed because the turmoil board's container clips or shrinks anything drawn inside it, so a
+// tooltip placed the normal way (as a child of the icon, sized by CSS alone) would get cut off
+// or squashed along with it.
+.agenda-tooltip-portal {
+  position: fixed;
+  transform: translateX(-50%);
+  background: rgba(48, 55, 66, .95);
+  color: #fff;
+  border-radius: .1rem;
+  padding: .3rem .5rem;
+  width: max-content;
+  max-width: 320px;
+  text-align: center;
+  line-height: 1.35;
+  font-size: .75rem;
+  pointer-events: none;
+  z-index: 9999;
 }
 
 .greenery-tile-turmoil {

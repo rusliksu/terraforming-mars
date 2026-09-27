@@ -57,7 +57,6 @@ describe('CardVictoryPoints', () => {
     expect((wrapper.findComponent('[data-test=item]') as VueWrapper<any>).props().item.tag).eq('science');
   });
 
-
   function prop(vps: RecursivePartial<CardRenderDynamicVictoryPoints>) {
     return {
       victoryPoints: {

@@ -16,4 +16,27 @@ describe('CardTitle', () => {
     });
     expect(wrapper.exists()).to.be.true;
   });
+
+  it('renders the real title with no displayTitle prop', () => {
+    const wrapper = shallowMount(CardTitle, {
+      ...globalConfig,
+      props: {
+        title: 'Gigantic Asteroid' as CardName,
+        type: CardType.AUTOMATED,
+      },
+    });
+    expect(wrapper.text()).to.contain('Gigantic Asteroid');
+  });
+
+  it('renders displayTitle in place of title', () => {
+    const wrapper = shallowMount(CardTitle, {
+      ...globalConfig,
+      props: {
+        title: 'Gigantic Asteroid' as CardName,
+        type: CardType.AUTOMATED,
+        displayTitle: 'Diverse Gigantic Asteroid',
+      },
+    });
+    expect(wrapper.text()).to.contain('Diverse Gigantic Asteroid');
+  });
 });

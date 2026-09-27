@@ -2,8 +2,33 @@
   display: flex;
   flex-flow: row;
   white-space: nowrap;
-  filter: grayscale(0.3);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  padding: 2px;
+
+  // Scoped to this container specifically (not the bare .resource_icon class), since that
+  // class is also used well outside the player resource bar -- payment dialogs
+  // (PaymentUnit.vue, PaymentForm.vue), SelectResource.vue, etc. -- none of which were ever
+  // meant to be desaturated. This regressed once already: putting `filter: grayscale(0.3)`
+  // directly on .resource_icon itself (to let .resource_icon--coordination opt back out with
+  // its own `filter: none`) accidentally grayed out every payment icon in the game too.
+  .resource_icon {
+    filter: grayscale(0.3);
+  }
+
+  .resource_icon--coordination {
+    filter: none;
+  }
 }
+
+// Conglomerates: outline a player's own resource bar in their team's shared Turmoil delegate
+// color, so which team someone belongs to is visible at a glance without opening the team panel.
+each(@players, {
+@c: ~"player_@{value}";
+.resource_items_cont--team_@{value} {
+  border-color: @@c;
+}
+})
 
 .resource_item {
   display: flex;
@@ -105,6 +130,42 @@ each(@resource_types, {
 }
 .resource_icon--corruption {
   background-image: url(./assets/underworld/corruption.png);
+}
+// Conglomerates: no art asset, so CSS-only -- same blue-box/handshake styling as the
+// Coordination icon used elsewhere (card renders, the tag overview). The bevel relies on two
+// similar blues for contrast, which the bar's own grayscale filter (see
+// .resource_items_cont .resource_icon above, and its .resource_icon--coordination override
+// right below it) would otherwise crush almost flat.
+.resource_icon--coordination {
+  background: linear-gradient(to bottom, #2e58bf 50%, #0f2c6e 50%);
+  border: 1px solid black;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+
+  // Real element, not `::after`: this icon (unlike the card-render/milestone versions) also
+  // carries `tooltip`/`tooltip-bottom` classes for its hover tooltip, and Spectre's tooltip
+  // CSS *also* uses `::after` on that same element for its bubble -- an element only has one
+  // `::after`, so the two rules were merging, with the tooltip library's own positioning
+  // (opacity:0 until hover, its own top/bottom offsets) winning over this inset fill and
+  // making it invisible. A real child element can't collide with a pseudo-element that way.
+  .resource_icon--coordination-fill {
+    position: absolute;
+    inset: 2px;
+    background: linear-gradient(to bottom, #4a78e0 50%, #1f4682 50%);
+    display: block;
+  }
+
+  &::before {
+    content: "🤝";
+    position: relative;
+    z-index: 1;
+    display: block;
+    top: -1px;
+    font-size: 20px;
+    line-height: 36px;
+    text-align: center;
+  }
 }
 .resource_icon--auroraidata {
   background-image: url("assets/resources/data.png");

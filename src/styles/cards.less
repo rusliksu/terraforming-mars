@@ -227,6 +227,12 @@ input[type="radio"]:checked+.filterDiv::after {
   background: linear-gradient(-60deg, #a0a0a7 10%, #c0c0c0, #a0a0a7 90%);
 }
 
+/* High Orbit (fan): Infrastructure-tagged "Silver" cards -- distinct from standard projects'
+   grey so the two don't visually read as the same thing. */
+.background-color-infrastructure {
+  background: linear-gradient(-60deg, #6d7278 10%, #9aa0a8, #6d7278 90%);
+}
+
 .background-color-global-event {
   background: #EEE;
 }
@@ -404,6 +410,84 @@ input[type="radio"]:checked+.filterDiv::after {
   content: "";
 }
 
+// Placeholder art: reuses the Community look with a silly badge.
+// Swap for a real sprite by pointing this at an expansion_icon_sillyfication.png.
+.sillyfication-icon:after {
+  .expansion-icon-base();
+  color: @grey_900;
+  background: moccasin;
+  font-weight: bold;
+  font-size: 12px;
+  line-height: 16px;
+  content: "🤪";
+}
+
+// BetterMars: just uses the Mars tag sprite as its badge.
+.betterMars-icon:after {
+  .expansion-icon-base();
+  background-image: url("./assets/tags/mars.png");
+  background-size: 14px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: white;
+  content: "";
+}
+
+// Corporate Betterments: same office-building emoji badge as the game-setup icon above.
+.corporateBetterments-icon:after {
+  .expansion-icon-base();
+  background: white;
+  font-size: 12px;
+  line-height: 16px;
+  content: "🏢";
+}
+
+// Ides of Mars: same dagger emoji badge as the game-setup icon above.
+.idesOfMars-icon:after {
+  .expansion-icon-base();
+  background: white;
+  font-size: 12px;
+  line-height: 16px;
+  content: "🗡️";
+}
+
+// Rob Antilles: same television emoji badge as the game-setup icon above.
+.robAntilles-icon:after {
+  .expansion-icon-base();
+  background: white;
+  font-size: 12px;
+  line-height: 16px;
+  content: "📺";
+}
+
+// More Parties has no cards of its own, but cards from other fan expansions that require its
+// 6 Turmoil parties show this as a secondary compatibility badge (see CardExpansion.vue).
+.moreParties-icon:after {
+  .expansion-icon-base();
+  background: white;
+  font-size: 12px;
+  line-height: 16px;
+  content: "🗳️";
+}
+
+// Venus Phase 2: same cloud emoji badge as the game-setup icon above.
+.venusPhase2-icon:after {
+  .expansion-icon-base();
+  background: white;
+  font-size: 12px;
+  line-height: 16px;
+  content: "☁️";
+}
+
+// Industries: same factory emoji badge as the game-setup icon above.
+.industries-icon:after {
+  .expansion-icon-base();
+  background: white;
+  font-size: 12px;
+  line-height: 16px;
+  content: "🏭";
+}
+
 /*********** Style the tags ************/
 
 .tag-wild {
@@ -478,6 +562,31 @@ input[type="radio"]:checked+.filterDiv::after {
 
 .tag-none {
   background-image: url("./assets/tags/tag-none.png");
+}
+
+// High Orbit (fan): no dedicated icon art yet -- a satellite emoji placeholder, same
+// CSS-only trick used for the expansion-icon-* classes below.
+.tag-infrastructure {
+  background-image: none;
+  text-align: center;
+
+  &::before {
+    content: "🛰️";
+    font-size: 18px;
+    line-height: 30px;
+  }
+}
+
+// Solaris (fan): no dedicated icon art yet -- a galaxy emoji placeholder, same trick.
+.tag-galactic {
+  background-image: none;
+  text-align: center;
+
+  &::before {
+    content: "🌌";
+    font-size: 18px;
+    line-height: 30px;
+  }
 }
 
 .tag-asterisk {
@@ -623,6 +732,11 @@ input[type="radio"]:checked+.filterDiv::after {
   filter: drop-shadow(1px 0px 1px #c33) drop-shadow(-1px 0px 1px #c33) drop-shadow(0px 1px 1px #c33) drop-shadow(0px -1px 1px #c33) !important;
 }
 
+// Conglomerates: marks an icon as belonging to, or going to, a teammate.
+.green-outline {
+  filter: drop-shadow(1px 0px 1px #2ecc71) drop-shadow(-1px 0px 1px #2ecc71) drop-shadow(0px 1px 1px #2ecc71) drop-shadow(0px -1px 1px #2ecc71) !important;
+}
+
 /************** Tiles**************/
 .tile {
   position: relative;
@@ -664,6 +778,42 @@ input[type="radio"]:checked+.filterDiv::after {
 
 .special-tile {
   background-image: url(./assets/tiles/special.png);
+}
+
+// Venus Phase 2 (fan): the /help Tiles glossary's own simple `.tile` + bare-modifier icons -
+// separate from cards_v2.less's `.card-container .card-tile-venus-*` (nested, card-face-icon
+// sized) and board.less's `.board-space-tile--venus-*` (hex-space `background` shorthand) so
+// this page doesn't depend on either's ancestor/shorthand assumptions. Same source art (still
+// shot sideways) and rotation fix as both of those - but `.tile`'s own `background-size: 40px
+// 46px` (non-uniform - stretched to fit a non-square box) has to be overridden to a single,
+// uniform value here, or rotating that already-stretched image 90deg comes out visibly
+// squashed. Sized to the box's *smaller* dimension (40, its width) rather than 46 (its
+// height): a square image at 40x40 stays fully inside the 40x46 box - and, since a square's
+// bounding box doesn't change under a 90deg rotation, stays fully inside it after rotating
+// too. Using 46 instead fit vertically but overflowed (and got clipped) horizontally before
+// the rotation, which became top/bottom clipping after it.
+.venus-cloud-city-tile {
+  background-image: url(./assets/tiles/venus_cloud_city_board_tile.png);
+  background-size: 40px;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: rotate(90deg);
+}
+
+.venus-gas-mine-tile {
+  background-image: url(./assets/tiles/venus_gas_mine_board_tile.png);
+  background-size: 40px;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: rotate(90deg);
+}
+
+.venus-floater-array-tile {
+  background-image: url(./assets/tiles/venus_floater_array_board_tile.png);
+  background-size: 40px;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: rotate(90deg);
 }
 
 .oxygen-tile {
@@ -1078,6 +1228,147 @@ input[type="radio"]:checked+.filterDiv::after {
 
 .expansion-icon-deltaProject {
   background-image: url(./assets/expansion_icons/expansion_icon_deltaProject.png);
+}
+
+// Placeholder "art": the tongue-out emoji, matching the card-title badge.
+// Works in both the .expansion-icon (25px) and .create-game-expansion-icon (30px) boxes.
+.expansion-icon-sillyfication {
+  background-image: none;
+  text-align: center;
+
+  &::before {
+    content: "🤪";
+    font-size: 20px;
+    line-height: 1.35;
+  }
+}
+
+// BetterMars uses the Mars tag sprite as its expansion icon.
+.expansion-icon-betterMars {
+  background-image: url(./assets/tags/mars.png);
+}
+
+// Custom Cards: a pencil glyph, same trick as Sillyfication above.
+.expansion-icon-customCards {
+  background-image: none;
+  background-color: #2c3e50;
+  border-radius: 50%;
+  text-align: center;
+
+  &::before {
+    content: "✎";
+    color: white;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+}
+
+// Conglomerates: a handshake emoji, same CSS-only trick as Sillyfication above.
+.expansion-icon-conglomerates {
+  background-image: none;
+  text-align: center;
+
+  &::before {
+    content: "🤝";
+    font-size: 18px;
+    line-height: 1.35;
+  }
+}
+
+// Corporate Betterments: an office-building emoji, same CSS-only trick as above.
+.expansion-icon-corporateBetterments {
+  background-image: none;
+  text-align: center;
+
+  &::before {
+    content: "🏢";
+    font-size: 18px;
+    line-height: 1.35;
+  }
+}
+
+// Ides of Mars: a dagger emoji (Ides of March pun), same CSS-only trick as above.
+.expansion-icon-idesOfMars {
+  background-image: none;
+  text-align: center;
+
+  &::before {
+    content: "🗡️";
+    font-size: 18px;
+    line-height: 1.35;
+  }
+}
+
+// Rob Antilles: a television emoji, same CSS-only trick as above.
+.expansion-icon-robAntilles {
+  background-image: none;
+  text-align: center;
+
+  &::before {
+    content: "📺";
+    font-size: 18px;
+    line-height: 1.35;
+  }
+}
+
+// More Parties: a ballot-box emoji, same CSS-only trick as above.
+.expansion-icon-moreParties {
+  background-image: none;
+  text-align: center;
+
+  &::before {
+    content: "🗳️";
+    font-size: 18px;
+    line-height: 1.35;
+  }
+}
+
+// Venus Phase 2: a cloud emoji (Venus's cloud decks), same CSS-only trick as above.
+.expansion-icon-venusPhase2 {
+  background-image: none;
+  text-align: center;
+
+  &::before {
+    content: "☁️";
+    font-size: 18px;
+    line-height: 1.35;
+  }
+}
+
+// Industries: a factory emoji, same CSS-only trick as above.
+.expansion-icon-industries {
+  background-image: none;
+  text-align: center;
+
+  &::before {
+    content: "🏭";
+    font-size: 18px;
+    line-height: 1.35;
+  }
+}
+
+// High Orbit: a satellite emoji, same CSS-only trick as above.
+.expansion-icon-highOrbit {
+  background-image: none;
+  text-align: center;
+
+  &::before {
+    content: "🛰️";
+    font-size: 18px;
+    line-height: 1.35;
+  }
+}
+
+// Solaris: a galaxy emoji, same CSS-only trick as above.
+.expansion-icon-solaris {
+  background-image: none;
+  text-align: center;
+
+  &::before {
+    content: "🌌";
+    font-size: 18px;
+    line-height: 1.35;
+  }
 }
 
 .card-standard-project {

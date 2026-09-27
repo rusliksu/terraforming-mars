@@ -114,10 +114,15 @@
     "WP04": {
       "actor": "codex",
       "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
       "lane": "in_progress",
       "last_event_id": "01M3JAWMR99M9Z6EPMBDBW35FY",
       "last_transition_at": "2026-09-27T21:03:44.902871+00:00",
+      "model": "__resolved_model_absent__",
+      "provider": "__resolved_provider_absent__",
+      "role": "implementer",
       "shell_pid": 27828,
       "shell_pid_created_at": "1790543016.874276"
     },

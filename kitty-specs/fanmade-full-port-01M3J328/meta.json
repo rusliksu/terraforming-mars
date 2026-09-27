@@ -13,5 +13,7 @@
   "retain_worktrees": true,
   "slug": "fanmade-full-port-01M3J328",
   "target_branch": "codex/fanmade-full-port",
-  "topology": "single_branch"
+  "topology": "single_branch",
+  "vcs": "git",
+  "vcs_locked_at": "2026-09-27T19:31:17.876085+00:00"
 }

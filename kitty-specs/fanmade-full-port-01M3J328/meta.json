@@ -1,9 +1,31 @@
 {
+  "accept_commit": "e557bc18b2a202c8f152fb8e0603cf24915e4e51",
+  "acceptance_history": [
+    {
+      "accept_commit": "ce0a0d0bc10bcccdddf4240000d168b2ef62f879",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-10-03T13:40:59.190042+00:00",
+      "accepted_by": "Руслан",
+      "accepted_from_commit": "6e83e18b2852ef85509e4480d11351f56d30af9d"
+    },
+    {
+      "accept_commit": "e557bc18b2a202c8f152fb8e0603cf24915e4e51",
+      "acceptance_mode": "pr",
+      "accepted_at": "2026-10-03T13:41:52.648176+00:00",
+      "accepted_by": "Руслан",
+      "accepted_from_commit": "4a05255f646ef3f46b644df6c8734747dd4c6f03"
+    }
+  ],
+  "acceptance_mode": "pr",
+  "accepted_at": "2026-10-03T13:41:52.648176+00:00",
+  "accepted_by": "Руслан",
+  "accepted_from_commit": "4a05255f646ef3f46b644df6c8734747dd4c6f03",
+  "baseline_merge_commit": "7f8e15e4518bb70c31ee7accc45390e91978b7d9",
   "created_at": "2026-09-27T18:47:00.351097+00:00",
   "flattened": false,
   "friendly_name": "Full fanmade mechanics integration",
   "mission_id": "01M3J328ANFPKEQ4YMWHX8FNPB",
-  "mission_number": null,
+  "mission_number": 2,
   "mission_slug": "fanmade-full-port-01M3J328",
   "mission_type": "software-dev",
   "pr_bound": true,
@@ -12,6 +34,7 @@
   "retain_branches": true,
   "retain_worktrees": true,
   "slug": "fanmade-full-port-01M3J328",
+  "status_phase": "1",
   "target_branch": "codex/fanmade-full-port",
   "topology": "single_branch",
   "vcs": "git",

@@ -727,22 +727,24 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <div class="create-game-action-row">
-                            <div class="create-game-action">
-                                <AppButton title="Create game" size="big" @click="createGame"/>
-                                <AppButton title="Reset" size="big" @click="resetSettings"/>
+                <div class="create-game-action-row">
+                    <div class="create-game-action">
+                        <label>
+                            <div class="btn btn-primary btn-action btn-lg"><i class="icon icon-upload"></i></div>
+                            <input style="display: none" type="file" accept=".json" id="settings-file" ref="file" @change="uploadSettings()">
+                        </label>
 
-                                <label>
-                                    <div class="btn btn-primary btn-action btn-lg"><i class="icon icon-upload"></i></div>
-                                    <input style="display: none" type="file" accept=".json" id="settings-file" ref="file" @change="uploadSettings()">
-                                </label>
+                        <label>
+                            <div @click="downloadSettings()" class="btn btn-primary btn-action btn-lg"><i class="icon icon-download"></i></div>
+                        </label>
 
-                                <label>
-                                    <div @click="downloadSettings()" class="btn btn-primary btn-action btn-lg"><i class="icon icon-download"></i></div>
-                                </label>
-                            </div>
-                        </div>
+                        <AppButton class="create-game-action-gap" title="Reset" size="big" @click="resetSettings"/>
+                        <AppButton class="create-game-action-gap" title="Create game" size="big" @click="createGame" :disabled="hasBlockingValidationErrors"/>
+                        <span v-if="hasBlockingValidationErrors" class="create-game-custom-preludes-warning create-game-validation-blocker" @click="showValidationErrors = true">&#9888;&#xFE0E;</span>
+                        <span v-else-if="hasValidationProblems" class="create-game-validation-warning" @click="showValidationErrors = true">&#9888;&#xFE0F;</span>
                     </div>
                 </div>
             </div>
@@ -812,6 +814,7 @@
               />
             </div>
           <PreferencesIcon/>
+          <ValidationErrorsPopup v-if="showValidationErrors" :errors="validationErrors" @close="showValidationErrors = false"/>
         </div>
 </template>
 
@@ -853,7 +856,7 @@ import {AgendaStyle} from '@/common/turmoil/Types';
 import PreferencesIcon from '@/client/components/PreferencesIcon.vue';
 import {byType, getCard, getCards} from '@/client/cards/ClientCardManifest';
 import type {ClientCard} from '@/common/cards/ClientCard';
-import {BoardNameType, NewPlayerModel, normalizePreludeHandicap} from '@/common/game/NewGameConfig';
+import {BoardNameType, NewGameConfig, NewPlayerModel, normalizePreludeHandicap} from '@/common/game/NewGameConfig';
 import {vueRoot} from '@/client/components/vueRoot';
 import {CreateGameModel} from './CreateGameModel';
 import {paths} from '@/common/app/paths';
@@ -866,8 +869,9 @@ import {RULEBOOK_URLS, WIKI, WIKI_URLS} from '@/client/utils/WikiLinks';
 import {setDocumentTitle} from '@/client/utils/documentTitle';
 import {ensureEloLoaded, sharedEloState} from '@/client/utils/elo';
 import {sanitizeEscapeVelocityOptions} from '@/common/game/escapeVelocity';
+import {validateNewGameConfig, validationDetails, ValidationErrors} from '@/common/game/validateNewGameConfig';
+import ValidationErrorsPopup from './ValidationErrorsPopup.vue';
 
-const REVISED_COUNT_ALGORITHM = false;
 const PROFILE_TELEGRAM_IDS_KEY = 'tm_player_profile_telegram_ids';
 
 const CUSTOM_CARD_MODULE_EXCEPTIONS = new Set<CardName>([
@@ -925,7 +929,6 @@ type RememberCustomSelectionExclusionOptions = {
 type SyncCustomSelectionOptions = {
   preserveExplicitFanColonies?: boolean;
 };
-
 type Refs = {
   file: HTMLInputElement;
   templateFile: HTMLInputElement;
@@ -935,6 +938,7 @@ type Refs = {
 };
 
 type FormModel = {
+  showValidationErrors: boolean;
   preludeToggled: boolean;
   uploading: boolean;
   selectedTemplate: string;
@@ -970,6 +974,7 @@ export default defineComponent({
   data(): CreateGameModel & FormModel {
     return {
       ...defaultCreateGameModel(),
+      showValidationErrors: false,
       preludeToggled: false,
       uploading: false,
       selectedTemplate: '',
@@ -1000,6 +1005,7 @@ export default defineComponent({
     CorporationsFilter,
     PreludesFilter,
     PreferencesIcon,
+    ValidationErrorsPopup,
   },
   watch: {
     allOfficialExpansions(value: boolean) {
@@ -1185,6 +1191,83 @@ export default defineComponent({
   computed: {
     wikiUrls(): typeof RULEBOOK_URLS & typeof WIKI_URLS {
       return {...RULEBOOK_URLS, ...WIKI_URLS};
+    },
+    /**
+     * The game settings, as they'd be sent to the server.
+     *
+     * serializeSettings finishes the players and the escape velocity values, and checks the cloned game.
+     */
+    newGameConfig(): NewGameConfig {
+      return {
+        players: this.players.slice(0, this.playersCount),
+        expansions: this.expansions,
+        draftVariant: this.draftVariant,
+        showOtherPlayersVP: this.showOtherPlayersVP,
+        customCorporationsList: this.customCorporations,
+        customColoniesList: this.customColonies,
+        customCeos: this.customCeos,
+        customPreludes: this.customPreludes,
+        bannedCards: this.bannedCards,
+        includedCards: this.includedCards,
+        board: this.board,
+        seed: this.seed,
+        solarPhaseOption: this.solarPhaseOption,
+        aresExtremeVariant: this.aresExtremeVariant,
+        politicalAgendasExtension: this.politicalAgendasExtension,
+        undoOption: this.undoOption,
+        undoStepOption: this.undoStepOption,
+        privateHands: this.privateHands,
+        noEloGame: this.noEloGame,
+        turnBasedGame: this.turnBasedGame,
+        botGame: this.botGame,
+        showTimers: this.showTimers,
+        fastModeOption: this.fastModeOption,
+        removeNegativeGlobalEventsOption: this.removeNegativeGlobalEventsOption,
+        includeFanMA: this.includeFanMA,
+        modularMA: this.modularMA,
+        startingCorporations: this.startingCorporations,
+        soloTR: this.soloTR,
+        clonedGamedId: this.seededGame ? this.clonedGameId : undefined,
+        initialDraft: this.initialDraft,
+        initialDraftOneWay: this.initialDraft && this.initialDraftOneWay,
+        preludeDraftVariant: this.preludeDraftVariant ?? false,
+        ceosDraftVariant: this.ceosDraftVariant ?? false,
+        randomMA: this.randomMA,
+        shuffleMapOption: this.shuffleMapOption,
+        randomFirstPlayer: this.randomFirstPlayer,
+        requiresVenusTrackCompletion: this.requiresVenusTrackCompletion,
+        requiresMoonTrackCompletion: this.requiresMoonTrackCompletion,
+        moonStandardProjectVariant: this.moonStandardProjectVariant,
+        moonStandardProjectVariant1: this.moonStandardProjectVariant1,
+        altVenusBoard: this.altVenusBoard,
+        // Not sanitized, so validation can catch negative values.
+        escapeVelocity: this.escapeVelocityMode ? {
+          thresholdMinutes: this.escapeVelocityThreshold,
+          bonusSectionsPerAction: this.escapeVelocityBonusSeconds,
+          penaltyPeriodMinutes: this.escapeVelocityPeriod,
+          penaltyVPPerPeriod: this.escapeVelocityPenalty,
+        } : undefined,
+        twoCorpsVariant: this.twoCorpsVariant,
+        startingCeos: this.startingCeos,
+        startingPreludes: this.startingPreludes,
+      };
+    },
+    validationErrors(): ValidationErrors {
+      return validateNewGameConfig(this.newGameConfig, {
+        getCardCompatibility: (name) => getCard(name)?.compatibility ?? [],
+        getColonyExpansion: (name) => {
+          return getColony(name)?.expansion;
+        },
+      });
+    },
+    hasValidationProblems(): boolean {
+      return Object.values(this.validationErrors).some((value) => Array.isArray(value) ? value.length > 0 : Boolean(value));
+    },
+    hasBlockingValidationErrors(): boolean {
+      return (Object.keys(validationDetails) as Array<keyof ValidationErrors>).some((key) => {
+        const value = this.validationErrors[key];
+        return validationDetails[key].blocking && (Array.isArray(value) ? value.length > 0 : Boolean(value));
+      });
     },
     typedRefs(): Refs {
       return this.$refs as Refs;
@@ -2360,6 +2443,10 @@ export default defineComponent({
       return `${WIKI}/Maps#${options[boardName]}`;
     },
     async serializeSettings(): Promise<string | undefined> {
+      if (this.hasBlockingValidationErrors) {
+        this.showValidationErrors = true;
+        return;
+      }
       let players = this.players.slice(0, this.playersCount);
 
       if (this.randomFirstPlayer) {
@@ -2519,158 +2606,6 @@ export default defineComponent({
       const startingPreludes = this.startingPreludes;
       let clonedGamedId: undefined | GameId = undefined;
 
-      // Check custom colony count
-      if (customColonies.length > 0) {
-        const playersCount = players.length;
-        let neededColoniesCount = playersCount + 2;
-        if (playersCount === 1) {
-          neededColoniesCount = 4;
-        } else if (playersCount === 2) {
-          neededColoniesCount = 5;
-        }
-
-        if (customColonies.length < neededColoniesCount) {
-          window.alert(translateTextWithParams('Must select at least ${0} colonies', [neededColoniesCount.toString()]));
-          return undefined;
-        }
-
-        let valid = true;
-        for (const colonyName of customColonies) {
-          const colony = getColony(colonyName);
-          if (colony.expansion !== undefined && !this.expansions[colony.expansion]) {
-            valid = false;
-            break;
-          }
-        }
-        if (valid === false) {
-          const confirm = window.confirm(translateText(
-            'Some of the colonies you selected need expansions you have not enabled. Using them might break your game. Press OK to continue or Cancel to change your selections.'));
-          if (confirm === false) {
-            return undefined;
-          }
-        }
-      }
-
-      if (players.length === 1 && this.expansions.corpera === false) {
-        const confirm = window.confirm(translateText(
-          'We do not recommend playing a solo game without the Corporate Era. Press OK if you want to play without it.'));
-        if (confirm === false) {
-          return undefined;
-        }
-      }
-
-      // Check Prelude 2 + Pathfinders infinite energy production
-      let energyProductionBug = true;
-      if (customCorporations.length > 0 && !customCorporations.includes(CardName.THORGATE)) {
-        energyProductionBug = false;
-      }
-      if (this.bannedCards.includes(CardName.STANDARD_TECHNOLOGY)) {
-        energyProductionBug = false;
-      }
-
-      if (this.bannedCards.includes(CardName.SUITABLE_INFRASTRUCTURE)) {
-        energyProductionBug = false;
-      } else {
-        if (this.expansions.prelude2 === false && !this.includedCards.includes(CardName.SUITABLE_INFRASTRUCTURE)) {
-          energyProductionBug = false;
-        }
-      }
-
-      if (this.bannedCards.includes(CardName.HIGH_TEMP_SUPERCONDUCTORS)) {
-        energyProductionBug = false;
-      } else {
-        if (this.expansions.pathfinders === false && !this.includedCards.includes(CardName.HIGH_TEMP_SUPERCONDUCTORS)) {
-          energyProductionBug = false;
-        }
-      }
-
-      if (energyProductionBug === true) {
-        const confirm = window.confirm(translateText(
-          'It is possible with ThorGate, Standard Technology, Suitable Infrastructure, and High Temp. Superconductors for a player to have infinite energy production. Press OK to continue or Cancel to change your selections.'));
-        if (confirm === false) {
-          return undefined;
-        }
-      }
-
-      // Check custom corp count
-      if (customCorporations.length > 0) {
-        let neededCorpsCount = players.length * startingCorporations;
-        if (REVISED_COUNT_ALGORITHM) {
-          if (this.twoCorpsVariant) {
-            // Add an additional 4 for the Merger prelude
-            // Everyone-Merger needs an additional 4 corps per player
-            //  NB: This will not cover the case when no custom corp list is set!
-            //  It _can_ come about if  the number of corps included in all expansions is still not enough.
-            neededCorpsCount = (players.length * startingCorporations) + (players.length * 4);
-          } else {
-            neededCorpsCount = players.length * startingCorporations;
-            // Merger Prelude alone needs 4 additional preludes
-            if (this.expansions.prelude && this.expansions.promo) {
-              neededCorpsCount += 4;
-            }
-          }
-        }
-        if (customCorporations.length < neededCorpsCount) {
-          window.alert(translateTextWithParams('Must select at least ${0} corporations', [neededCorpsCount.toString()]));
-          return undefined;
-        }
-        let valid = true;
-        for (const corp of customCorporations) {
-          const card = getCard(corp);
-          for (const module of card?.compatibility ?? []) {
-            if (!this.expansions[module]) {
-              valid = false;
-            }
-          }
-        }
-        if (valid === false) {
-          const confirm = window.confirm(translateText(
-            'Some of the corps you selected need expansions you have not enabled. Using them might break your game. Press OK to continue or Cancel to change your selections.'));
-          if (confirm === false) {
-            return undefined;
-          }
-        }
-      } else {
-        customCorporations.length = 0;
-      }
-
-      // TODO(kberg): this is a direct copy of the code right above.
-      // Check custom prelude count
-      if (customPreludes.length > 0) {
-        const requiredPreludeCount = players.length * startingPreludes;
-        if (customPreludes.length < requiredPreludeCount) {
-          window.alert(translateTextWithParams('Must select at least ${0} Preludes', [requiredPreludeCount.toString()]));
-          return undefined;
-        }
-        let valid = true;
-        for (const prelude of customPreludes) {
-          const card = getCard(prelude);
-          for (const module of card?.compatibility ?? []) {
-            if (!this.expansions[module]) {
-              valid = false;
-            }
-          }
-        }
-        if (valid === false) {
-          const confirm = window.confirm(translateText(
-            'Some of the Preludes you selected need expansions you have not enabled. Using them might break your game. Press OK to continue or Cancel to change your selections.'));
-          if (confirm === false) {
-            return undefined;
-          }
-        }
-      } else {
-        customPreludes.length = 0;
-      }
-
-      // Check custom CEO count. The server deals at least CEO_CARDS_DEALT_PER_PLAYER CEOs to each player.
-      if (customCeos.length > 0) {
-        const requiredCeoCount = players.length * Math.max(startingCeos, constants.CEO_CARDS_DEALT_PER_PLAYER);
-        if (customCeos.length < requiredCeoCount) {
-          window.alert(translateTextWithParams('Must select at least ${0} CEOs', [requiredCeoCount.toString()]));
-          return undefined;
-        }
-      }
-
       // Clone game checks
       if (this.clonedGameId !== undefined && this.seededGame) {
         const gameData = await fetch(paths.API_CLONEABLEGAME + '?id=' + this.clonedGameId)
@@ -2763,6 +2698,9 @@ export default defineComponent({
       return JSON.stringify(dataToSend, undefined, 4);
     },
     async createGame() {
+      if (this.hasBlockingValidationErrors) {
+        return;
+      }
       const dataToSend = await this.serializeSettings();
 
       if (dataToSend === undefined) {

@@ -257,7 +257,6 @@ const OTHERS: ReadonlyArray<IconEntry> = [
   {iconClass: 'help-icon-delegate', label: 'Delegate', official: true},
   {iconClass: 'help-icon-influence influence', label: 'Influence', official: true},
 ];
-
 export default defineComponent({
   name: 'HelpIconology',
   data() {

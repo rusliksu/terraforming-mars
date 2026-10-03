@@ -3,6 +3,7 @@ import {Resource} from '../../common/Resource';
 import {From, isFromPlayer} from '../logs/From';
 import {BaseStock} from './StockBase';
 import {IPlayer} from '../IPlayer';
+import {PRODUCTION_MINIMUMS} from '../../common/constants';
 import {CardName} from '../../common/cards/CardName';
 import {RebalanceSeebeckProductionLoss} from '../deferredActions/RebalanceSeebeckProductionLoss';
 import {OrcTurbinesProductionSwap} from '../deferredActions/OrcTurbinesProductionSwap';
@@ -10,7 +11,7 @@ import {TurmoilHandler} from '../turmoil/TurmoilHandler';
 
 export class Production extends BaseStock {
   constructor(player: IPlayer) {
-    super(player, -5);
+    super(player, PRODUCTION_MINIMUMS.megacredits);
   }
   public add(
     resource: Resource,
@@ -41,7 +42,7 @@ export class Production extends BaseStock {
       return;
     }
 
-    const adj = resource === Resource.MEGACREDITS ? -5 : 0;
+    const adj = PRODUCTION_MINIMUMS[resource];
     const delta = (amount >= 0) ? amount : Math.max(amount, -(this[resource] - adj));
     this[resource] += delta;
 

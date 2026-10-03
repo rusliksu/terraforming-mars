@@ -513,7 +513,7 @@ describe('ApiCreateGame', () => {
     expect(game!.gameOptions.escapeVelocity).eq(undefined);
   });
 
-  it('normalizes malformed escape velocity options to defaults', async () => {
+  it('normalizes out-of-range escape velocity options to defaults', async () => {
     const post = scaffolding.post(apiCreateGame, res);
     const config = newGameConfig([{
       name: 'Robot',
@@ -524,9 +524,9 @@ describe('ApiCreateGame', () => {
       isBot: false,
     }]);
     config.escapeVelocity = {
-      thresholdMinutes: -9999,
-      bonusSectionsPerAction: -9999,
-      penaltyPeriodMinutes: -12,
+      thresholdMinutes: 9999,
+      bonusSectionsPerAction: 9999,
+      penaltyPeriodMinutes: 12,
       penaltyVPPerPeriod: 999999,
     };
 
@@ -964,7 +964,7 @@ describe('ApiCreateGame', () => {
   it('replaces invalid escape velocity options with defaults', async () => {
     expect(await createdEscapeVelocity({
       thresholdMinutes: '35',
-      bonusSectionsPerAction: -1,
+      bonusSectionsPerAction: 'x',
       penaltyPeriodMinutes: '',
       penaltyVPPerPeriod: 1,
     })).deep.eq({
@@ -973,6 +973,20 @@ describe('ApiCreateGame', () => {
       penaltyPeriodMinutes: 2,
       penaltyVPPerPeriod: 1,
     });
+  });
+
+  it('rejects negative escape velocity options', async () => {
+    await postConfig({
+      ...newGameConfigForTest(),
+      escapeVelocity: {
+        thresholdMinutes: -5,
+        bonusSectionsPerAction: 2,
+        penaltyPeriodMinutes: 2,
+        penaltyVPPerPeriod: 1,
+      },
+    });
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('Escape Velocity values cannot be negative');
   });
 
   // Issues one create-game POST against `handler`, using fresh request/response objects,

@@ -72,9 +72,15 @@ import {setFaviconStatus, setFaviconTurnFrame} from '@/client/utils/favicon';
 import AppButton from '@/client/components/common/AppButton.vue';
 
 let ui_update_timeout_id: number | undefined;
+let otherPlayersTimer: number | undefined;
 let documentTitleTimer: number | undefined;
 let animationFrame = 0;
 let undoChoiceSequence = 0;
+
+// How often to refresh other players' status during simultaneous phases.
+const OTHER_PLAYERS_INTERVAL = 3000;
+// Phases where every player makes a choice at the same time.
+const SIMULTANEOUS_PHASES: ReadonlyArray<Phase> = [Phase.INITIALDRAFTING, Phase.DRAFTING, Phase.RESEARCH];
 
 // The spinning ◑◒◐◓ symbol used to indicate it's your turn.
 const TURN_SEQUENCE = '◑◒◐◓';
@@ -302,6 +308,37 @@ export default defineComponent({
       };
       ui_update_timeout_id = window.setTimeout(askForUpdate, raw_settings.waitingForTimeout);
     },
+    /**
+     * While this player makes a simultaneous choice (e.g. drafting), keep the other
+     * players' status current without redrawing the choice in progress.
+     */
+    watchOtherPlayers() {
+      const playerView = this.playerView;
+      window.clearTimeout(otherPlayersTimer);
+      // Schedule the next poll only after this one finishes, so responses can't arrive out of order.
+      const timer = window.setTimeout(async () => {
+        try {
+          const response = await fetch(paths.API_PLAYER + window.location.search);
+          if (response.ok) {
+            const latest: PlayerViewModel = await response.json();
+            playerView.players = latest.players;
+          } else {
+            console.warn('Unable to update other players', response.status, response.statusText);
+            // Client errors (e.g. the game no longer exists) won't recover, so stop polling.
+            if (response.status < 500) {
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn('Unable to update other players', e);
+        }
+        // Stop if the component unmounted or another poll started while this one was in flight.
+        if (otherPlayersTimer === timer) {
+          this.watchOtherPlayers();
+        }
+      }, OTHER_PLAYERS_INTERVAL);
+      otherPlayersTimer = timer;
+    },
     async notify() {
       if (getPreferences().enable_sounds) {
         SoundManager.playActivePlayerSound();
@@ -412,6 +449,8 @@ export default defineComponent({
     window.clearInterval(documentTitleTimer);
     if (this.waitingfor === undefined || this.waitingfor.optional) {
       this.waitForUpdate();
+    } else if (this.playerView.players.length > 1 && SIMULTANEOUS_PHASES.includes(this.playerView.game.phase)) {
+      this.watchOtherPlayers();
     }
     if (this.playerView.players.length > 1 && this.waitingfor !== undefined && !this.waitingfor.optional) {
       documentTitleTimer = window.setInterval(() => this.animateTitle(), 1000);
@@ -419,6 +458,9 @@ export default defineComponent({
   },
   unmounted() {
     window.clearTimeout(ui_update_timeout_id);
+    ui_update_timeout_id = undefined;
+    window.clearTimeout(otherPlayersTimer);
+    otherPlayersTimer = undefined;
     window.clearInterval(documentTitleTimer);
   },
   computed: {

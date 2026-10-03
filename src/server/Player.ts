@@ -4,7 +4,7 @@ import {isLastActivePlayerFinish} from '../common/game/CompletionOutcome';
 import {sendTurnNotice, deleteTurnNotice, deleteTurnNoticeMessage, getStoredTurnNoticeUpdatedAt} from './TelegramBot';
 import * as constants from '../common/constants';
 import {PlayerId} from '../common/Types';
-import {MILESTONE_COST, REDS_RULING_POLICY_COST} from '../common/constants';
+import {MILESTONE_COST, PRODUCTION_MINIMUMS, REDS_RULING_POLICY_COST} from '../common/constants';
 import {cardsFromJSON, ceosFromJSON, corporationCardsFromJSON, newCorporationCard, newProjectCard, preludesFromJSON} from './createCard';
 import {CardName} from '../common/cards/CardName';
 import {CardType} from '../common/cards/CardType';
@@ -205,9 +205,10 @@ export class Player implements IPlayer {
   public warmongerCards: number = 0;
   // Industries (fan expansion)
   public industryTilesPlaced: number = 0;
-  // For Playwrights corp.
-  // removedFromPlayCards is a bit of a misname: it's a temporary storage for
-  // cards that provide 'next card' discounts. This will clear between turns.
+  // For Playwrights and Odyssey.
+  // removedFromPlayCards is a bit of a misname: it holds replayed events, so their
+  // 'next card' discounts still apply. It is never cleared; stale entries are
+  // harmless because those discounts only apply while lastCardPlayed matches.
   public removedFromPlayCards: Array<IProjectCard> = [];
   public preservationProgram = false;
   public trThisGeneration = 0;
@@ -504,7 +505,7 @@ export class Player implements IPlayer {
   }
 
   public canHaveProductionReduced(resource: Resource, minQuantity: number, attacker: IPlayer) {
-    const reducable = this.production[resource] + (resource === Resource.MEGACREDITS ? 5 : 0);
+    const reducable = this.production[resource] - PRODUCTION_MINIMUMS[resource];
     if (reducable < minQuantity) {
       return false;
     }

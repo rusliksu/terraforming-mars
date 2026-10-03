@@ -389,7 +389,7 @@
     "Ok 1": "",
     "Ok 2": "",
 
-    "Starting Megacredits:": "Startkapitaal:",
+    "Starting M€:": "Startkapitaal:",
     "After Preludes:": "Na Preludes:",
 
     "Select card to add 1 resource": "Kies een kaart om 1 grondstof toe te voegen",
@@ -579,7 +579,6 @@
 
     "Choose 1 unit(s) of production to lose": "Kies 1 productie-eenheid die je verliest",
     "Choose 2 unit(s) of production to lose": "Kies 2 productie-eenheden die je verliest",
-    "Which resource production would you prefer to decrease?": "Welk type productie vermindert u het liefst?",
     "Amplify erosions at:": "Verhoog erosie bij:",
 
     "Select a card to keep and pass the rest to ${0}": "Selecteer een kaart om te houden en geef de rest door aan ${0}",

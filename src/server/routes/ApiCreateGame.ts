@@ -26,6 +26,7 @@ import {DEFAULT_EXPANSIONS} from '../../common/cards/GameModule';
 import {readBody} from './readBody';
 import {RouteError} from './RouteError';
 import {CEO_CARDS_DEALT_PER_PLAYER} from '../../common/constants';
+import {hasNegativeEscapeVelocityOption} from '../../common/game/escapeVelocity';
 
 export function normalizeTelegramId(telegramID: string | undefined): string {
   return (telegramID ?? '').trim();
@@ -94,7 +95,7 @@ export class ApiCreateGame extends Handler {
   public validateCustomLists(gameReq: NewGameConfig): void {
     const playerCount = gameReq.players.length;
 
-    function validate(list: Array<unknown> | undefined, perPlayerCount: number, type: string): void {
+    function validate(list: ReadonlyArray<unknown> | undefined, perPlayerCount: number, type: string): void {
       if (list === undefined) {
         return;
       }
@@ -141,6 +142,9 @@ export class ApiCreateGame extends Handler {
       const normalizedTelegramIds = turnBasedGame ?
         gameReq.players.map((player) => normalizeTelegramId(player.telegramID)) :
         gameReq.players.map(() => '');
+      if (gameReq.escapeVelocity !== undefined && gameReq.escapeVelocity !== null && hasNegativeEscapeVelocityOption(gameReq.escapeVelocity)) {
+        throw RouteError.badRequest('Escape Velocity values cannot be negative.');
+      }
       const gameId = safeCast(generateRandomId('g'), isGameId);
       const spectatorId = safeCast(generateRandomId('s'), isSpectatorId);
       const requestedPlayers = gameReq.players.map((player) => ({...player}));

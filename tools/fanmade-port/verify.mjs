@@ -68,7 +68,8 @@ function main() {
   const head = spawnSync('git', ['rev-parse', 'HEAD'], {cwd: repoRoot, encoding: 'utf8'});
   if (head.status !== 0) throw new Error('Cannot pin the checkout HEAD.');
   const checks = ['make:static', 'lint', 'build', 'build:test', 'test:server', 'test:client'].map(name => ({
-    name, command: process.execPath, args: [path.resolve(values['npm-cli']), 'run', name],
+    name, command: process.execPath, args: [path.resolve(values['npm-cli']), 'run', name,
+      ...(name === 'test:server' ? ['--', '--jobs', '4'] : [])],
   }));
   checks.push({name: 'module-matrix', command: process.execPath,
     args: ['node_modules/mocha/bin/mocha.js', '--parallel', '--jobs', '4', '--import=tsx', '--require', 'tests/testing/setup.ts', ...matrixFiles]});

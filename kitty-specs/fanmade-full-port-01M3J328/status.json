@@ -1,0 +1,163 @@
+{
+  "event_count": 31,
+  "last_event_id": "01M40QVFZXEBGB74SGDHX9YHSK",
+  "materialized_at": "2026-10-03T11:19:40.795201+00:00",
+  "mission_number": "",
+  "mission_slug": "fanmade-full-port-01M3J328",
+  "mission_type": "software-dev",
+  "summary": {
+    "approved": 4,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 0,
+    "for_review": 0,
+    "in_progress": 1,
+    "in_review": 0,
+    "planned": 0
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "user",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 1,
+      "lane": "approved",
+      "last_event_id": "01M3J5G39CVWWQ41636WG71ZXR",
+      "last_transition_at": "2026-09-27T19:29:30.924628+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Corrected source pinned and validated: Node22 lint/build/test compilation, 10407 server and 784 client tests; independent review requested.",
+        "Independent review at 0ce03f8e37 requires count and scope-ledger corrections",
+        "Addressed independent review: 475 entries, module and contract dispositions, partial source limits and preserved admin scope; existing validation remains valid.",
+        "Independent /root/port_review approved e90647a5c3: 475 manifest entries, exact 1441-path/blob coverage, 14 PR ancestry and Node22 source checks. Parent verified research/archive contracts. Cache/FakeGameLoader admin-only exclusion remains a documented nonblocking ledger nit."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "C:\\Users\\Ruslan\\.codex-worktrees\\terraforming-mars-fanmade-full-port-owned\\kitty-specs\\fanmade-full-port-01M3J328\\tasks\\WP01-source-reference\\review-cycle-2.md",
+        "reference": "review-cycle://fanmade-full-port-01M3J328/WP01-source-reference/review-cycle-2.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 39824,
+      "shell_pid_created_at": "1790537320.6393628",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done"
+      }
+    },
+    "WP02": {
+      "actor": "user",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "approved",
+      "last_event_id": "01M3J829GZ73KNAC78D9QWJXMH",
+      "last_transition_at": "2026-09-27T20:14:24.287923+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Server port dd86774c80; Node22 server build, backend tsc/lint, 10928 server tests and final replay 9 pass; client compilation intentionally pending WP03. Evidence research/server-port-evidence.md.",
+        "Independent bounded review approves dd86774c80; all reproduced findings resolved; parent confirmed builds, 10928 server tests, 9 final replay tests. See research/WP02-review.md; client/save capability acceptance remains WP03/WP04."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "C:\\Users\\Ruslan\\.codex-worktrees\\terraforming-mars-fanmade-full-port-owned\\kitty-specs\\fanmade-full-port-01M3J328\\tasks\\WP02-gameplay-port\\review-cycle-1.md",
+        "reference": "review-cycle://fanmade-full-port-01M3J328/WP02-gameplay-port/review-cycle-1.md",
+        "reviewer": "port_review",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 39928,
+      "shell_pid_created_at": "1790539915.687532",
+      "subtasks": {
+        "T004": "done",
+        "T005": "done",
+        "T006": "done",
+        "T007": "done"
+      }
+    },
+    "WP03": {
+      "actor": "user",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "approved",
+      "last_event_id": "01M3JASWX90NQ3XKXHR94GMHKH",
+      "last_transition_at": "2026-09-27T21:02:14.953223+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Client integration ac91b69b5f; 999 tests, full lint/build/typechecks and desktop390 browser pass. Browser artifacts preserved outside checkout, clean implementation tree. See research/client-port-evidence.md.",
+        "Independent review approves ac91b69b5f; parent verified 999 client tests, lint/build/types and real desktop390 smoke. See research/WP03-review.md; compatibility remains WP04."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "C:\\Users\\Ruslan\\.codex-worktrees\\terraforming-mars-fanmade-full-port-owned\\kitty-specs\\fanmade-full-port-01M3J328\\tasks\\WP03-client-port\\review-cycle-1.md",
+        "reference": "review-cycle://fanmade-full-port-01M3J328/WP03-client-port/review-cycle-1.md",
+        "reviewer": "port_review",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 28452,
+      "shell_pid_created_at": "1790542840.4481747",
+      "subtasks": {
+        "T008": "done",
+        "T009": "done",
+        "T010": "done"
+      }
+    },
+    "WP04": {
+      "actor": "codex",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "approved",
+      "last_event_id": "01M40QGW4V0YFY0MK427R7H6V3",
+      "last_transition_at": "2026-10-03T11:13:52.795771+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Server 20c6a55ed3 and merged external PR908 validated; evidence on planning branch in research/external-compatibility-evidence.md.",
+        "Independent port_review approves unchanged server20c6a55 and merged external PR908/024f191; parent verified suites, mirrors, browser and ancestry. See research/WP04-review.md."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "C:\\Users\\Ruslan\\.codex-worktrees\\terraforming-mars-fanmade-full-port-owned\\kitty-specs\\fanmade-full-port-01M3J328\\tasks\\WP04-compatibility\\review-cycle-1.md",
+        "reference": "review-cycle://fanmade-full-port-01M3J328/WP04-compatibility/review-cycle-1.md",
+        "reviewer": "codex",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 5488,
+      "shell_pid_created_at": "1791025872.389065",
+      "subtasks": {
+        "T011": "done",
+        "T012": "done",
+        "T013": "done"
+      }
+    },
+    "WP05": {
+      "actor": "codex",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 0,
+      "lane": "in_progress",
+      "last_event_id": "01M40QVFZXEBGB74SGDHX9YHSK",
+      "last_transition_at": "2026-10-03T11:19:40.795201+00:00",
+      "model": "__resolved_model_absent__",
+      "provider": "__resolved_provider_absent__",
+      "role": "implementer",
+      "shell_pid": 27068,
+      "shell_pid_created_at": "1791026371.639276",
+      "subtasks": {
+        "T014": "done"
+      }
+    }
+  }
+}

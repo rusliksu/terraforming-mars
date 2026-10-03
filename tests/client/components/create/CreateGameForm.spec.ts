@@ -1,4 +1,4 @@
-import {shallowMount} from '@vue/test-utils';
+import {mount, shallowMount} from '@vue/test-utils';
 import {globalConfig} from '../getLocalVue';
 import {expect} from 'chai';
 import CreateGameForm from '@/client/components/create/CreateGameForm.vue';
@@ -14,6 +14,8 @@ import {DEFAULT_EXPANSIONS} from '@/common/cards/GameModule';
 import {JSONObject} from '@/common/Types';
 import {NewGameConfig} from '@/common/game/NewGameConfig';
 import {CreateGameModel} from '@/client/components/create/CreateGameModel';
+import {ValidationErrors} from '@/common/game/validateNewGameConfig';
+import {RandomMAOptionType} from '@/common/ma/RandomMAOptionType';
 
 function createGameSettings(overrides: JSONObject = {}): JSONObject {
   return {
@@ -39,9 +41,7 @@ function cardNames(count: number): Array<CardName> {
 }
 
 /*
- * Serializes a two-player game's settings after `setup` adjusts the form.
- *
- * Accepts every confirmation and collects every alert.
+ * Serializes a two-player game after adjusting the form.
  */
 async function serializeTwoPlayerGameSettings(setup: (model: CreateGameModel) => void): Promise<{config: NewGameConfig | undefined, alerts: Array<string>}> {
   const originalAlert = global.alert;
@@ -64,6 +64,16 @@ async function serializeTwoPlayerGameSettings(setup: (model: CreateGameModel) =>
     global.alert = originalAlert;
     global.confirm = originalConfirm;
   }
+}
+
+function validateTwoPlayerGame(setup: (model: CreateGameModel) => void): ValidationErrors {
+  const wrapper = shallowMount(CreateGameForm, {
+    ...globalConfig,
+  });
+  const model = wrapper.vm as unknown as CreateGameModel;
+  model.playersCount = 2;
+  setup(model);
+  return (wrapper.vm as any).validationErrors;
 }
 
 describe('CreateGameForm', () => {
@@ -105,6 +115,66 @@ describe('CreateGameForm', () => {
     expect(text.indexOf('Async game (Telegram)')).to.be.lessThan(text.indexOf('Bot players'));
     expect(text.indexOf('Bot players')).to.be.lessThan(text.indexOf('Filter'));
     expect(wrapper.text()).not.to.contain('/start');
+  });
+
+  it('links each fan expansion checkbox to its own rules page on this fork\'s own wiki', () => {
+    // None of these are part of the upstream project, so unlike the official expansions'
+    // (whose info icons link to the shared upstream wiki), their links must point at this
+    // fork's own wiki instead.
+    const wrapper = mount(CreateGameForm, {...globalConfig});
+    const expected: Record<string, string> = {
+      'conglomerates-checkbox': 'Conglomerates',
+      'sillyfication-checkbox': 'Sillyfication',
+      'betterMars-checkbox': 'BetterMars',
+    };
+    for (const [id, page] of Object.entries(expected)) {
+      const link = wrapper.find(`#${id}`).element.nextElementSibling!.querySelector('a');
+      expect(link?.getAttribute('href')).to.eq(`https://github.com/JessyIsCute/terraforming-mars/wiki/${page}`);
+    }
+  });
+
+  it('keeps the randomMA and agendas toggle checkboxes in sync with restored state', async () => {
+    // Regression: these two checkboxes toggle their bound value via @change instead of
+    // v-model, so restoring settings (e.g. after a page refresh) updated the underlying data
+    // and the sub-option radios (which do use v-model) but left the checkbox itself showing
+    // unchecked -- looking like the feature was off while its sub-option was highlighted on.
+    const wrapper = mount(CreateGameForm, {...globalConfig});
+    const vm = wrapper.vm as any;
+
+    vm.playersCount = 2; // the randomMA/agendas section only renders for 2+ players
+    vm.randomMA = RandomMAOptionType.LIMITED;
+    vm.expansions.turmoil = true;
+    vm.politicalAgendasExtension = 'Random';
+    await wrapper.vm.$nextTick();
+
+    expect((wrapper.find('#randomMA-checkbox').element as HTMLInputElement).checked).to.be.true;
+    expect((wrapper.find('#politicalAgendas-checkbox').element as HTMLInputElement).checked).to.be.true;
+
+    vm.randomMA = RandomMAOptionType.NONE;
+    vm.politicalAgendasExtension = 'Standard';
+    await wrapper.vm.$nextTick();
+
+    expect((wrapper.find('#randomMA-checkbox').element as HTMLInputElement).checked).to.be.false;
+    expect((wrapper.find('#politicalAgendas-checkbox').element as HTMLInputElement).checked).to.be.false;
+  });
+
+  it('has a custom map code field that loads a board from a pasted code', async () => {
+    const wrapper = shallowMount(CreateGameForm, {...globalConfig});
+    const field = wrapper.find('#custom-map-code');
+    expect(field.exists()).to.be.true;
+
+    const {encodeCustomBoard} = await import('@/common/boards/customBoardCodec');
+    const {blankCustomBoard} = await import('@/common/boards/CustomBoardDefinition');
+    const code = encodeCustomBoard(blankCustomBoard(9, 'Pasted Map'));
+
+    await field.setValue(code);
+    expect((wrapper.vm as any).board).to.eq(BoardName.CUSTOM);
+    expect((wrapper.vm as any).customBoardCode).to.eq(code);
+    expect((wrapper.vm as any).customBoardName).to.eq('Pasted Map');
+
+    await field.setValue('garbage');
+    expect((wrapper.vm as any).customBoardCode).to.be.undefined;
+    expect((wrapper.vm as any).customBoardCodeError).to.not.eq('');
   });
 
   it('restores the last saved game settings on load', async () => {
@@ -168,6 +238,30 @@ describe('CreateGameForm', () => {
     expect(wrapper.findAllComponents({name: 'AppButton'}).map((button) => button.props('title'))).includes('Reset');
   });
 
+  it('clearCustomLists clears only the custom/banned/included card lists, not the rest of the form', async () => {
+    const wrapper = shallowMount(CreateGameForm, {...globalConfig});
+    const vm = wrapper.vm as any;
+    vm.board = BoardName.HELLAS;
+    vm.customCorporations = [CardName.THORGATE];
+    vm.customPreludes = [CardName.MERGER];
+    vm.customCeos = [CardName.HAL9000];
+    vm.customColonies = ['Callisto'];
+    vm.bannedCards = [CardName.MERGER];
+    vm.includedCards = [CardName.THORGATE];
+
+    vm.clearCustomLists();
+    await wrapper.vm.$nextTick();
+
+    expect(vm.customCorporations).deep.eq([]);
+    expect(vm.customPreludes).deep.eq([]);
+    expect(vm.customCeos).deep.eq([]);
+    expect(vm.customColonies).deep.eq([]);
+    expect(vm.bannedCards).deep.eq([]);
+    expect(vm.includedCards).deep.eq([]);
+    // Untouched -- this is deliberately narrower than resetSettings().
+    expect(vm.board).eq(BoardName.HELLAS);
+  });
+
   it('clears uploading when applying settings throws', () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
@@ -180,6 +274,135 @@ describe('CreateGameForm', () => {
       ],
     }))).throws('Colors are duplicated');
     expect((wrapper.vm as any).uploading).eq(false);
+  });
+
+  it('auto-assigns Conglomerates teams by table order when the expansion is toggled on', async () => {
+    const wrapper = shallowMount(CreateGameForm, {...globalConfig});
+    const vm = wrapper.vm as any;
+    vm.playersCount = 4;
+
+    vm.expansions.conglomerates = true;
+    await wrapper.vm.$nextTick();
+
+    expect(vm.players.slice(0, 4).map((p: any) => p.team)).to.deep.eq([0, 1, 0, 1]);
+  });
+
+  it('forces team 1 to red+yellow and team 2 to green+blue when the expansion is toggled on', async () => {
+    const wrapper = shallowMount(CreateGameForm, {...globalConfig});
+    const vm = wrapper.vm as any;
+    vm.playersCount = 4;
+
+    vm.expansions.conglomerates = true;
+    await wrapper.vm.$nextTick();
+
+    // Default table-order pairing: players 0&2 are team 1, players 1&3 are team 2.
+    expect(vm.players.slice(0, 4).map((p: any) => p.color)).to.deep.eq(['red', 'green', 'yellow', 'blue']);
+  });
+
+  it('re-forces colors when a player\'s team is changed via the dropdown', async () => {
+    const wrapper = shallowMount(CreateGameForm, {...globalConfig});
+    const vm = wrapper.vm as any;
+    vm.playersCount = 4;
+    vm.expansions.conglomerates = true;
+    await wrapper.vm.$nextTick();
+
+    // Swap player 0 onto team 2 (index 1) -- player 2 becomes the sole/first team-1 member.
+    vm.players[0].team = 1;
+    vm.forceConglomeratesColors();
+
+    expect(vm.players[2].color).to.eq('red');
+  });
+
+  it('locks the color picker while Conglomerates is on', async () => {
+    const wrapper = mount(CreateGameForm, {...globalConfig});
+    const vm = wrapper.vm as any;
+    vm.playersCount = 4;
+    vm.expansions.conglomerates = true;
+    await wrapper.vm.$nextTick();
+
+    const colorInputs = wrapper.findAll('input[type=radio][name=playerColor1]');
+    expect(colorInputs.length).to.be.greaterThan(0);
+    expect(colorInputs.every((input) => (input.element as HTMLInputElement).disabled)).to.be.true;
+  });
+
+  it('recomputes Conglomerates teams when the player count changes', async () => {
+    const wrapper = shallowMount(CreateGameForm, {...globalConfig});
+    const vm = wrapper.vm as any;
+    vm.playersCount = 4;
+    vm.expansions.conglomerates = true;
+    await wrapper.vm.$nextTick();
+
+    vm.playersCount = 6;
+    await wrapper.vm.$nextTick();
+
+    expect(vm.players.slice(0, 6).map((p: any) => p.team)).to.deep.eq([0, 1, 2, 0, 1, 2]);
+  });
+
+  it('blocks game creation when Conglomerates teams are unbalanced', async () => {
+    const originalAlert = global.alert;
+    const alerts: Array<string> = [];
+    global.alert = ((message: string) => alerts.push(message)) as typeof alert;
+
+    try {
+      const wrapper = shallowMount(CreateGameForm, {...globalConfig});
+      const vm = wrapper.vm as any;
+      vm.playersCount = 4;
+      vm.expansions.conglomerates = true;
+      await wrapper.vm.$nextTick();
+      // Break the balanced default: put three players on team 0.
+      vm.players[1].team = 0;
+
+      const serialized = await vm.serializeSettings();
+      const config = serialized === undefined ? undefined : JSON.parse(serialized);
+
+      expect(config).to.be.undefined;
+      expect(alerts).to.deep.eq(['Each Conglomerates team must have exactly 2 players']);
+    } finally {
+      global.alert = originalAlert;
+    }
+  });
+
+  it('allows game creation when Conglomerates teams are balanced', async () => {
+    const wrapper = shallowMount(CreateGameForm, {...globalConfig});
+    const vm = wrapper.vm as any;
+    vm.playersCount = 4;
+    vm.randomFirstPlayer = false;
+    vm.expansions.conglomerates = true;
+    await wrapper.vm.$nextTick();
+
+    const serialized = await vm.serializeSettings();
+    const config = serialized === undefined ? undefined : JSON.parse(serialized);
+
+    expect(config).to.not.be.undefined;
+    expect(config.players.map((p: any) => p.team)).to.deep.eq([0, 1, 0, 1]);
+  });
+
+  it('rotates (not shuffles) player order for Conglomerates games, so teams stay alternating', async () => {
+    // A full shuffle could seat both members of a team next to each other, breaking the
+    // alternating "sitting crossed" seating team assignment implies (and hate-drafting with
+    // it). Run many trials since the rotation amount is random -- every result must still
+    // alternate team-wise, cyclically, no matter where the rotation lands.
+    const originalRandom = Math.random;
+    try {
+      for (let trial = 0; trial < 20; trial++) {
+        Math.random = () => trial / 20;
+        const wrapper = shallowMount(CreateGameForm, {...globalConfig});
+        const vm = wrapper.vm as any;
+        vm.playersCount = 4;
+        vm.expansions.conglomerates = true;
+        await wrapper.vm.$nextTick();
+
+        const serialized = await vm.serializeSettings();
+        const config = serialized === undefined ? undefined : JSON.parse(serialized);
+        const teams = config.players.map((p: any) => p.team);
+        expect(teams).to.have.lengthOf(4);
+        for (let i = 0; i < teams.length; i++) {
+          expect(teams[i]).to.not.eq(teams[(i + 1) % teams.length]);
+        }
+      }
+    } finally {
+      Math.random = originalRandom;
+    }
   });
 
   it('saves current settings before creating a game', async () => {
@@ -1338,61 +1561,50 @@ describe('CreateGameForm', () => {
       expect(vm.players[0].name).to.eq(testCase.inputName);
     }
   });
-  it('requires enough custom corporations for every player', async () => {
-    const tooFew = await serializeTwoPlayerGameSettings((model) => model.customCorporations = cardNames(3));
-    expect(tooFew.config).is.undefined;
-    expect(tooFew.alerts).deep.eq(['Must select at least 4 corporations']);
-
-    const enough = await serializeTwoPlayerGameSettings((model) => model.customCorporations = cardNames(4));
-    expect(enough.config?.customCorporationsList).has.length(4);
-    expect(enough.alerts).is.empty;
+  it('validates the form settings', () => {
+    expect(validateTwoPlayerGame((model) => model.customCorporations = cardNames(3)).notEnoughCorporations).eq(4);
+    expect(validateTwoPlayerGame((model) => model.customCorporations = cardNames(4)).notEnoughCorporations).eq(0);
   });
 
-  it('requires enough custom preludes for every player', async () => {
-    const tooFew = await serializeTwoPlayerGameSettings((model) => model.customPreludes = cardNames(7));
-    expect(tooFew.config).is.undefined;
-    expect(tooFew.alerts).deep.eq(['Must select at least 8 Preludes']);
-
-    const enough = await serializeTwoPlayerGameSettings((model) => model.customPreludes = cardNames(8));
-    expect(enough.config?.customPreludes).has.length(8);
-    expect(enough.alerts).is.empty;
+  it('does not serialize a blocked custom corporation selection', async () => {
+    const result = await serializeTwoPlayerGameSettings((model) => model.customCorporations = cardNames(3));
+    expect(result.config).is.undefined;
+    expect(result.alerts).is.empty;
   });
 
-  it('requires enough custom CEOs for every player', async () => {
-    const tooFew = await serializeTwoPlayerGameSettings((model) => model.customCeos = cardNames(5));
-    expect(tooFew.config).is.undefined;
-    expect(tooFew.alerts).deep.eq(['Must select at least 6 CEOs']);
-
-    const enough = await serializeTwoPlayerGameSettings((model) => model.customCeos = cardNames(6));
-    expect(enough.config?.customCeos).has.length(6);
-    expect(enough.alerts).is.empty;
+  it('ignores unknown colony names when validating', () => {
+    const errors = validateTwoPlayerGame((model) => model.customColonies = ['Unknown Colony' as ColonyName]);
+    expect(errors.coloniesMissingExpansions).deep.eq([]);
   });
 
-  it('requires enough custom CEOs for more than the minimum starting CEOs', async () => {
-    const tooFew = await serializeTwoPlayerGameSettings((model) => {
-      model.startingCeos = 4;
-      model.customCeos = cardNames(7);
+  it('disables Create game when there is a blocking error', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
     });
-    expect(tooFew.config).is.undefined;
-    expect(tooFew.alerts).deep.eq(['Must select at least 8 CEOs']);
-  });
+    const createGameButton = () => wrapper.findAllComponents({name: 'AppButton'}).find((button) => button.props('title') === 'Create game');
+    expect(createGameButton()?.props('disabled')).is.false;
+    expect(wrapper.find('.create-game-custom-preludes-warning').exists()).is.false;
 
-  it('requires the minimum number of custom CEOs even with fewer starting CEOs', async () => {
-    const tooFew = await serializeTwoPlayerGameSettings((model) => {
-      model.startingCeos = 1;
-      model.customCeos = cardNames(5);
-    });
-    expect(tooFew.config).is.undefined;
-    expect(tooFew.alerts).deep.eq(['Must select at least 6 CEOs']);
+    (wrapper.vm as any).playersCount = 2;
+    (wrapper.vm as any).customCorporations = cardNames(3);
+    await wrapper.vm.$nextTick();
+
+    expect(createGameButton()?.props('disabled')).is.true;
+    expect(wrapper.find('.create-game-custom-preludes-warning').exists()).is.true;
   });
 
   it('replaces a cleared escape velocity field with its default', async () => {
-    const {config} = await serializeTwoPlayerGameSettings((model) => {
-      model.escapeVelocityMode = true;
-      model.escapeVelocityThreshold = 35;
-      // A cleared number input binds as an empty string.
-      model.escapeVelocityPeriod = '' as unknown as number;
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
     });
+    const model = wrapper.vm as unknown as CreateGameModel;
+    model.playersCount = 2;
+    model.escapeVelocityMode = true;
+    model.escapeVelocityThreshold = 35;
+    // A cleared number input binds as an empty string.
+    model.escapeVelocityPeriod = '' as unknown as number;
+    const serialized = await (wrapper.vm as any).serializeSettings();
+    const config: NewGameConfig | undefined = serialized === undefined ? undefined : JSON.parse(serialized);
     expect(config?.escapeVelocity).deep.eq({
       thresholdMinutes: 35,
       bonusSectionsPerAction: 2,

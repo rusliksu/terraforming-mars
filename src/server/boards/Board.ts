@@ -6,10 +6,8 @@ import {BASE_OCEAN_TILES, CITY_TILES, GREENERY_TILES, HAZARD_TILES, OCEAN_TILES,
 import {SerializedBoard, SerializedSpace} from './SerializedBoard';
 import {CardName} from '../../common/cards/CardName';
 import {AresHandler} from '../ares/AresHandler';
-import {Units} from '../../common/Units';
-import {hazardSeverity} from '../../common/AresTileType';
+import {AresProductionCost, EMPTY_ARES_PRODUCTION_COST} from '../ares/AdjacencyCost';
 import {TR_SOURCES, TRSource} from '../../common/cards/TRSource';
-import {sum} from '../../common/utils/utils';
 import {LEGACY_CUBE_TILES} from '@/common/boards/SpaceCube';
 
 /**
@@ -18,7 +16,7 @@ import {LEGACY_CUBE_TILES} from '@/common/boards/SpaceCube';
  */
 export type SpaceCosts = {
   megacredits: number,
-  production: number,
+  production: AresProductionCost,
   tr: TRSource,
 };
 
@@ -38,9 +36,12 @@ export abstract class Board {
 
   public constructor(
     public readonly spaces: ReadonlyArray<Space>,
-    public readonly noctisCitySpaceId?: SpaceId | undefined) {
-    this.maxX = Math.max(...spaces.map((s) => s.x));
-    this.maxY = Math.max(...spaces.map((s) => s.y));
+    public readonly noctisCitySpaceId?: SpaceId | undefined,
+    // Custom boards may carve away entire edge rows; an explicit extent keeps the
+    // `computeAdjacentSpaces` middle-row pivot anchored to the intended grid size.
+    extent?: {maxX: number, maxY: number}) {
+    this.maxX = extent?.maxX ?? Math.max(...spaces.map((s) => s.x));
+    this.maxY = extent?.maxY ?? Math.max(...spaces.map((s) => s.y));
     spaces.forEach((space) => {
       const adjacentSpaces = this.computeAdjacentSpaces(space);
       const filtered = adjacentSpaces.filter((space) => space !== undefined);
@@ -137,15 +138,23 @@ export abstract class Board {
   }
 
   /**
+   * True when a space is reserved and cannot take a general tile placement. On the standard
+   * boards that's just Noctis City; custom boards may flag additional reserved spaces.
+   */
+  protected isReservedSpace(space: Space): boolean {
+    return space.id === this.noctisCitySpaceId;
+  }
+
+  /**
    * Update `costs` with any costs for this `space`.
    *
    * @returns `true` when costs has changed, `false` when it has not.
    */
   protected spaceCosts(_space: Space): SpaceCosts {
-    return {megacredits: 0, production: 0, tr: {}};
+    return {megacredits: 0, production: {...EMPTY_ARES_PRODUCTION_COST}, tr: {}};
   }
 
-  private computeAdditionalCosts(space: Space, aresExtension: boolean, multiplier: number | undefined): SpaceCosts {
+  private computeAdditionalCosts(player: IPlayer, space: Space, multiplier: number | undefined, subjectToHazardAdjacency: boolean): SpaceCosts {
     const costs: SpaceCosts = this.spaceCosts(space);
     if (multiplier !== undefined) {
       costs.megacredits *= multiplier;
@@ -157,49 +166,26 @@ export abstract class Board {
       }
     }
 
-    if (aresExtension === false) {
+    if (player.game.gameOptions.aresExtension === false) {
       return costs;
     }
 
-    switch (hazardSeverity(space.tile?.tileType)) {
-    case 'mild':
-      costs.megacredits += 8;
-      costs.tr.tr = (costs.tr.tr ?? 0) + 1;
-      break;
-    case 'severe':
-      costs.megacredits += 16;
-      costs.tr.tr = (costs.tr.tr ?? 0) + 2;
-      break;
+    const aresCosts = AresHandler.computePlacementCosts(player, this, space, subjectToHazardAdjacency);
+    costs.megacredits += aresCosts.megacredits;
+    if (aresCosts.tr > 0) {
+      costs.tr.tr = (costs.tr.tr ?? 0) + aresCosts.tr;
     }
-
-    for (const adjacentSpace of this.getAdjacentSpaces(space)) {
-      switch (hazardSeverity(adjacentSpace.tile?.tileType)) {
-      case 'mild':
-        costs.production += 1;
-        break;
-      case 'severe':
-        costs.production += 2;
-        break;
-      }
-      if (adjacentSpace.adjacency !== undefined) {
-        const adjacency = adjacentSpace.adjacency;
-        costs.megacredits += adjacency.cost ?? 0;
-        // TODO(kberg): offset costs with heat and MC bonuses.
-        // for (const bonus of adjacency.bonus) {
-        //   case (bonus) {
-        //     switch SpaceBonus.MEGACREDITS:
-        //       costs.stock.megacredits--;
-        //     switch SpaceBonus.MEGACREDITS:
-        //       costs.stock.megacredits--;
-        //   }
-        // }
-      }
-    }
+    costs.production = aresCosts.production;
     return costs;
   }
 
-  public canAfford(player: IPlayer, space: Space, canAffordOptions?: CanAffordOptions) {
-    const additionalCosts = this.computeAdditionalCosts(space, player.game.gameOptions.aresExtension, canAffordOptions?.bonusMultiplier);
+  /**
+   * Returns true when `player` can pay the additional costs of placing a tile on `space`.
+   *
+   * `subjectToHazardAdjacency` is false for ocean tiles, which don't pay Ares hazard production costs.
+   */
+  public canAfford(player: IPlayer, space: Space, canAffordOptions?: CanAffordOptions, subjectToHazardAdjacency: boolean = true) {
+    const additionalCosts = this.computeAdditionalCosts(player, space, canAffordOptions?.bonusMultiplier, subjectToHazardAdjacency);
     if (additionalCosts.megacredits > 0) {
       const plan: CanAffordOptions = canAffordOptions !== undefined ? {...canAffordOptions} : {cost: 0, tr: {}};
       plan.cost += additionalCosts.megacredits;
@@ -214,15 +200,10 @@ export abstract class Board {
         return false;
       }
     }
-    if (additionalCosts.production > 0) {
-      // +5 because megacredits goes to -5
-      const availableProduction = sum(Units.values(player.production)) + 5;
-      return availableProduction > additionalCosts.production;
-    }
-    return true;
+    return AresHandler.canPayProduction(player, additionalCosts.production);
   }
 
-  public getAvailableSpacesOnLand(player: IPlayer, canAffordOptions?: CanAffordOptions): ReadonlyArray<Space> {
+  public getAvailableSpacesOnLand(player: IPlayer, canAffordOptions?: CanAffordOptions, subjectToHazardAdjacency: boolean = true): ReadonlyArray<Space> {
     // Does this also apply to cove spaces?
     const landSpaces = this.getSpaces(SpaceType.LAND).filter((space) => {
       // A space is available if it doesn't have a player marker on it, or it belongs to |player|
@@ -230,7 +211,7 @@ export abstract class Board {
         return false;
       }
 
-      if (space.id === this.noctisCitySpaceId) {
+      if (this.isReservedSpace(space)) {
         return false;
       }
 
@@ -248,7 +229,7 @@ export abstract class Board {
         return false;
       }
 
-      return this.canAfford(player, space, canAffordOptions);
+      return this.canAfford(player, space, canAffordOptions, subjectToHazardAdjacency);
     });
     return landSpaces;
   }
@@ -303,7 +284,8 @@ export abstract class Board {
     return space.spaceType === SpaceType.LAND &&
       space.tile === undefined &&
       space.id !== this.noctisCitySpaceId &&
-      space.cube === undefined;
+      space.cube === undefined &&
+      !this.isReservedSpace(space);
   }
 
   public static isCitySpace(space: Space): boolean {
@@ -374,6 +356,9 @@ export abstract class Board {
         if (space.coOwner !== undefined) {
           serialized.coOwner = space.coOwner.id;
         }
+        if (space.reserved) {
+          serialized.reserved = true;
+        }
         if (space.volcanic) {
           serialized.volcanic = true;
         }
@@ -427,6 +412,9 @@ export abstract class Board {
     if (serialized.volcanic !== undefined) {
       space.volcanic = serialized.volcanic;
     }
+    if (serialized.reserved !== undefined) {
+      space.reserved = serialized.reserved;
+    }
     return space;
   }
 
@@ -444,6 +432,9 @@ export function isSpecialTile(tileType: TileType | undefined): boolean {
   case TileType.MOON_HABITAT:
   case TileType.MOON_MINE:
   case TileType.MOON_ROAD:
+  case TileType.VENUS_CLOUD_CITY:
+  case TileType.VENUS_GAS_MINE:
+  case TileType.VENUS_FLOATER_ARRAY:
   case TileType.EROSION_MILD: // Hazard tiles are "special" but they don't count for the typical intent of what a special tile represents.
   case TileType.EROSION_SEVERE:
   case TileType.DUST_STORM_MILD:

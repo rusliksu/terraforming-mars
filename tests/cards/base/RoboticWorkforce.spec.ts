@@ -36,6 +36,11 @@ import {LunarMineUrbanization} from '../../../src/server/cards/moon/LunarMineUrb
 import {TitaniumMine} from '../../../src/server/cards/base/TitaniumMine';
 import {cast, toName} from '../../../src/common/utils/utils';
 import {Odyssey} from '../../../src/server/cards/pathfinders/Odyssey';
+import {ImmigrantCity} from '../../../src/server/cards/base/ImmigrantCity';
+import {NoctisCity} from '../../../src/server/cards/base/NoctisCity';
+import {FrontierTown} from '../../../src/server/cards/prelude2/FrontierTown';
+import {Outskirts} from '../../../src/server/cards/venusPhase2/Outskirts';
+import {ICardRenderRoot, isICardRenderProductionBox} from '../../../src/common/cards/render/Types';
 
 describe('RoboticWorkforce', () => {
   let card: RoboticWorkforce;
@@ -292,6 +297,51 @@ describe('RoboticWorkforce', () => {
     expect(player.production.asUnits()).deep.eq(Units.of({megacredits: 3}));
   });
 
+  it('Should work with Immigrant City', () => {
+    const immigrantCity = new ImmigrantCity();
+    player.playedCards.push(immigrantCity);
+    player.production.add(Resource.ENERGY, 2);
+
+    expect(card.canPlay(player)).is.true;
+    cast(card.play(player), undefined);
+    runAllActions(game);
+    const selectCard = cast(player.popWaitingFor(), SelectCard);
+
+    selectCard.cb([immigrantCity]);
+    expect(player.production.energy).to.eq(1);
+    expect(player.production.megacredits).to.eq(-2);
+  });
+
+  it('Should work with Frontier Town', () => {
+    const frontierTown = new FrontierTown();
+    player.playedCards.push(frontierTown);
+    player.production.add(Resource.ENERGY, 2);
+
+    expect(card.canPlay(player)).is.true;
+    cast(card.play(player), undefined);
+    runAllActions(game);
+    const selectCard = cast(player.popWaitingFor(), SelectCard);
+
+    selectCard.cb([frontierTown]);
+    expect(player.production.energy).to.eq(1);
+    expect(player.production.megacredits).to.eq(0);
+  });
+
+  it('Should work with Noctis City', () => {
+    const noctisCity = new NoctisCity();
+    player.playedCards.push(noctisCity);
+    player.production.add(Resource.ENERGY, 2);
+
+    expect(card.canPlay(player)).is.true;
+    cast(card.play(player), undefined);
+    runAllActions(game);
+    const selectCard = cast(player.popWaitingFor(), SelectCard);
+
+    selectCard.cb([noctisCity]);
+    expect(player.production.energy).to.eq(1);
+    expect(player.production.megacredits).to.eq(3);
+  });
+
   it('Events with building tags should be unselectable without Odyssey', () => {
     const lunarMineUrbanization = new LunarMineUrbanization();
     const titaniumMine = new TitaniumMine();
@@ -311,6 +361,13 @@ describe('RoboticWorkforce', () => {
     expect(selectCard2.cards.map(toName)).to.have.members([titaniumMine.name, lunarMineUrbanization.name]);
   });
 
+  it('does not copy placement-only production changes', () => {
+    player.playedCards.push(new Outskirts());
+    player.production.override({energy: 2});
+
+    expect(card.canPlay(player)).is.false;
+  });
+
   describe('test all cards', () => {
     ALL_MODULE_MANIFESTS.forEach((manifest) => {
       const cards: CardManifest<ICard> = {...manifest.projectCards, ...manifest.preludeCards, ...manifest.corporationCards};
@@ -319,6 +376,27 @@ describe('RoboticWorkforce', () => {
           const card = new factory!.Factory();
           // Cards that are tough to test (and might even have tests above.)
           if (card.name === CardName.SOLAR_FARM || card.name === CardName.SMALL_OPEN_PIT_MINE) {
+            return;
+          }
+          // These place a tile with a placement prerequisite (an off-world city, an existing
+          // greenery, an ocean adjacent to a city) that this generic test's fixed board setup
+          // doesn't provide, so they have no legal space to place on here. Real playability is
+          // covered by their own dedicated tests.
+          if (card.name === CardName.FLYING_GARDEN || card.name === CardName.SUBURBS || card.name === CardName.HARBOR_BOREALIS) {
+            return;
+          }
+          // These place a tile on the Venus Phase 2 surface board, which this generic test's
+          // game setup doesn't enable (no venusPhase2Expansion), so venusPhase2Data() throws.
+          // Real playability is covered by their own dedicated tests.
+          if (card.name === CardName.COOLING_PILLARS || card.name === CardName.ARGON_MINE ||
+              card.name === CardName.XENON_MINE || card.name === CardName.RADON_MINE ||
+              card.name === CardName.KRYPTON_MINE || card.name === CardName.ALPHA_REGIO_INCUBATORS ||
+              card.name === CardName.ISHTAR_ENERGY_NETWORK) {
+            return;
+          }
+          // Needs an owned greenery with an adjacent greenery, which this generic test's fixed
+          // board setup doesn't provide. Real playability is covered by its own dedicated test.
+          if (card.name === CardName.MENAGERIE) {
             return;
           }
 
@@ -378,8 +456,8 @@ describe('RoboticWorkforce', () => {
 
         // SelectSpace will trigger production changes in the right cards (e.g. Mining Rights)
         while (game.deferredActions.length) {
-          runNextAction(game);
-          const waitingFor = player.popWaitingFor();
+          // Some actions (e.g. PlaceCityTile) return their input rather than setting waitingFor.
+          const waitingFor = runNextAction(game) ?? player.popWaitingFor();
           if (waitingFor instanceof SelectSpace) {
             waitingFor.cb(waitingFor.spaces[0]);
           }
@@ -390,13 +468,18 @@ describe('RoboticWorkforce', () => {
       }
 
       console.log(`        ${card.name}: ${include ? 'eligible' : 'ineligible'}`);
-      // The card must have behavior, or a productionBox method.
-      if (include) {
-        if (card.productionBox === undefined) {
-          const production = card.behavior?.production;
-          if (production === undefined || (Units.isUnits(production) && Units.isEmpty(production))) {
-            fail(card.name + ' should be registered for Robotic Workforce');
-          }
+      // Placement effects are not production boxes.
+      const renderData = include ? card.metadata.renderData : undefined;
+      const hasProductionBox = renderData?.is === 'root' &&
+        (renderData as ICardRenderRoot).rows.some((row) => row.some(isICardRenderProductionBox));
+      if (include && hasProductionBox) {
+        const changed = ALL_RESOURCES.filter((r) => player.production[r] !== 2);
+        const declared = card.productionBox !== undefined ?
+          ALL_RESOURCES.filter((r) => card.productionBox!(player)[r] !== 0) :
+          Object.keys(card.behavior?.production ?? {});
+        const missing = changed.filter((r) => !declared.includes(r));
+        if (missing.length > 0) {
+          fail(card.name + ' should be registered for Robotic Workforce (undeclared: ' + missing.join(', ') + ')');
         }
       }
     };

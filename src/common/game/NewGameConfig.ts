@@ -31,6 +31,8 @@ export interface NewPlayerModel {
   isBot: boolean;
   profileId?: string;
   telegramID?: string;
+  /** Conglomerates only: which team this player is on. Players sharing a value are teammates. */
+  team?: number;
 }
 
 export type EscapeVelocityOptions = {
@@ -47,10 +49,16 @@ export type EscapeVelocityOptions = {
 /**
  * Like GameOptions, but the data structure sent from the new game page.
  */
-export interface NewGameConfig {
+export type NewGameConfig = {
   players: Array<NewPlayerModel>;
   expansions: Record<Expansion, boolean>,
   board: BoardNameType;
+  /** Opaque map-editor code, required when `board` is `BoardName.CUSTOM`. */
+  customBoardCode?: string;
+  /** Opaque map-editor code overriding the Moon board's own hard-coded default layout. */
+  customMoonBoardCode?: string;
+  /** Opaque map-editor code overriding the Venus Phase 2 board's own hard-coded default layout. */
+  customVenusSurfaceBoardCode?: string;
   seed: number;
   randomFirstPlayer: boolean;
 
@@ -87,11 +95,11 @@ export interface NewGameConfig {
   randomMA: RandomMAOptionType;
   includeFanMA: boolean,
   soloTR: boolean; // Solo victory by getting TR 63 by game end
-  customCorporationsList: Array<CardName>;
-  bannedCards: Array<CardName>;
-  includedCards: Array<CardName>;
-  customColoniesList: Array<ColonyName>;
-  customPreludes: Array<CardName>;
+  customCorporationsList: ReadonlyArray<CardName>;
+  bannedCards: ReadonlyArray<CardName>;
+  includedCards: ReadonlyArray<CardName>;
+  customColoniesList: ReadonlyArray<ColonyName>;
+  customPreludes: ReadonlyArray<CardName>;
   requiresMoonTrackCompletion: boolean; // Moon must be completed to end the game
   requiresVenusTrackCompletion: boolean; // Venus must be completed to end the game
   moonStandardProjectVariant: boolean;
@@ -99,7 +107,7 @@ export interface NewGameConfig {
   altVenusBoard: boolean;
   escapeVelocity: EscapeVelocityOptions | undefined;
   twoCorpsVariant: boolean;
-  customCeos: Array<CardName>;
+  customCeos: ReadonlyArray<CardName>;
   startingCeos: number;
   startingPreludes: number;
 }

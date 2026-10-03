@@ -6,6 +6,7 @@ import {Ceres} from '@/server/colonies/Ceres';
 import {Luna} from '@/server/colonies/Luna';
 import {Huan} from '@/server/cards/ceos/Huan';
 import {DarksideSmugglersUnion} from '@/server/cards/moon/DarksideSmugglersUnion';
+import {DeltaWorks} from '@/server/cards/delta/DeltaWorks';
 import {CardName} from '@/common/cards/CardName';
 import {Naomi} from '@/server/cards/ceos/Naomi';
 import {OrOptions} from '@/server/inputs/OrOptions';
@@ -86,6 +87,9 @@ describe('Own-player colony trade context', () => {
     const {player: heatPlayer} = setup();
     heatPlayer.canUseHeatAsMegaCredits = true;
     expect(Server.getPlayerModel(heatPlayer).thisPlayer.colonyTradeContext?.additionalPaymentMechanism).eq(true);
+    const {player: steelPlayer} = setup();
+    steelPlayer.playedCards.push(new DeltaWorks());
+    expect(Server.getPlayerModel(steelPlayer).thisPlayer.colonyTradeContext?.additionalPaymentMechanism).eq(true);
   });
 
   it('reports known next-generation Huan restrictions from the game state', () => {

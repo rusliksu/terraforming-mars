@@ -98,6 +98,122 @@
       left: 47px;
       top: 9px;
     }
+    // Sillyfication corps: jaunty, two-tone, nudged left/down so the tags don't cover them.
+    .card-wellness-deluxe-logo,
+    .card-venus-ventures-logo,
+    .card-nereid-biosystems-logo {
+      position: absolute;
+      top: 18px;
+      left: -6px;
+      width: 150px;
+      font-family: 'Comic Sans MS', 'Chalkboard SE', 'Segoe Print', cursive;
+      font-size: 24px;
+      font-weight: bold;
+      line-height: 24px;
+      text-transform: none;
+      text-shadow: -1px 0 #333, 0 1px #333, 1px 0 #333, 0 -1px #333, 4px 3px 5px grey;
+    }
+    .card-venus-ventures-logo .word-1 {
+      color: #ffb347;
+      display: block;
+    }
+    // "VENTURES" is longer than "VENUS", so drop it to its own line, shrink it,
+    // and tuck it up and to the left under the first word.
+    .card-venus-ventures-logo .word-2 {
+      color: #ffd54a;
+      display: block;
+      font-size: 17px;
+      line-height: 15px;
+      margin-top: -3px;
+      margin-left: -2px;
+    }
+    .card-wellness-deluxe-logo .word-1 {
+      color: #ff5db1;
+      display: block;
+    }
+    // Same treatment as Venus Ventures: "DELUXE" drops to its own line, smaller,
+    // tucked up and to the left under "WELLNESS".
+    .card-wellness-deluxe-logo .word-2 {
+      color: #a86ce0;
+      display: block;
+      font-size: 17px;
+      line-height: 15px;
+      margin-top: -3px;
+      margin-left: -2px;
+    }
+    // "NEREID" is water (dark blue); "BIO" is microbial (light green), "SYSTEMS" is orange.
+    .card-nereid-biosystems-logo .word-1 {
+      color: #16407a;
+      display: block;
+    }
+    // Same treatment as Venus Ventures/Wellness Deluxe: the longer second word drops to
+    // its own line, smaller, tucked up and to the left under the first word. "BIOSYSTEMS"
+    // is longer than the other second words here, so it's sized down a touch more.
+    .card-nereid-biosystems-logo .word-2 {
+      display: block;
+      font-size: 15px;
+      line-height: 14px;
+      margin-top: -3px;
+      margin-left: -2px;
+    }
+    .card-nereid-biosystems-logo .word-2 .bio {
+      color: #8bc34a;
+    }
+    .card-nereid-biosystems-logo .word-2 .systems {
+      color: #ff9800;
+    }
+    // "THE" / "SYN" / "DICATE" stacked as three horizontal lines, "SYN"+"DICATE"
+    // reading as "SYNDICATE" top to bottom.
+    .card-the-syndicate-logo {
+      position: absolute;
+      top: 10px;
+      left: 4px;
+      width: 140px;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-weight: bold;
+      text-transform: none;
+      display: flex;
+      flex-direction: column;
+      line-height: 1;
+    }
+    .card-the-syndicate-logo .word-1,
+    .card-the-syndicate-logo .word-1b {
+      color: #c9a24b;
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-shadow: -1px 0 #1a0000, 0 1px #1a0000, 1px 0 #1a0000, 0 -1px #1a0000, 3px 2px 4px grey;
+    }
+    .card-the-syndicate-logo .word-1 {
+      margin-top: 2px;
+    }
+    .card-the-syndicate-logo .word-1b {
+      margin-top: 2px;
+    }
+    .card-the-syndicate-logo .word-2 {
+      color: #8b0000;
+      font-size: 13px;
+      letter-spacing: 1px;
+      margin-top: 2px;
+      text-shadow: -1px 0 #1a0000, 0 1px #1a0000, 1px 0 #1a0000, 0 -1px #1a0000, 3px 2px 4px grey;
+    }
+    .card-critterworld-logo {
+      position: absolute;
+      top: 16px;
+      left: -4px;
+      width: 160px;
+      font-family: 'Arial Rounded MT Bold', 'Comic Sans MS', 'Century Gothic', sans-serif;
+      font-size: 26px;
+      font-weight: bold;
+      line-height: 26px;
+      text-transform: none;
+      text-shadow: -1px 0 #333, 0 1px #333, 1px 0 #333, 0 -1px #333, 4px 3px 5px grey;
+    }
+    .card-critterworld-logo .word-1 {
+      color: #3fa34d;
+    }
+    .card-critterworld-logo .word-2 {
+      color: #1fb5a8;
+    }
     .card-poseidon-logo {
       display: inline-block;
       font-family: "Times New Roman", Arial, sans-serif;
@@ -1228,6 +1344,150 @@
         font-size: 24px;
       }
     }
+    // Reuses the Delta Project expansion's chevron icon as a badge next to the name -
+    // an electric cyan/violet pair for an energy corp that's all about the Delta track.
+    .card-epsilon-dample-logo {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      .epsilon-dample-icon {
+        width: 34px;
+        margin-top: 4px;
+        flex-shrink: 0;
+      }
+      .epsilon-dample-title {
+        font-family: 'Eurostile', 'Arial Narrow', sans-serif;
+        font-weight: bold;
+        line-height: 1;
+        text-transform: none;
+      }
+      .epsilon-dample-title .word-1 {
+        color: #22d3ee;
+        font-size: 15px;
+        letter-spacing: 1px;
+        text-shadow: -1px 0 #0a1a2a, 0 1px #0a1a2a, 1px 0 #0a1a2a, 0 -1px #0a1a2a, 3px 2px 4px grey;
+      }
+      .epsilon-dample-title .word-2 {
+        color: #8b5cf6;
+        font-size: 15px;
+        letter-spacing: 1px;
+        margin-top: 1px;
+        text-shadow: -1px 0 #0a1a2a, 0 1px #0a1a2a, 1px 0 #0a1a2a, 0 -1px #0a1a2a, 3px 2px 4px grey;
+      }
+    }
+    // Same expansion icon as Epsilon Dample (sibling Delta Project corp), but a brass/gold
+    // toll-booth palette instead of Epsilon's cyan/violet.
+    .card-zeta-tollkeeper-logo {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      text-align: left;
+      .zeta-tollkeeper-icon {
+        width: 34px;
+        margin-top: 4px;
+        flex-shrink: 0;
+      }
+      .zeta-tollkeeper-title {
+        font-family: 'Eurostile', 'Arial Narrow', sans-serif;
+        font-weight: bold;
+        line-height: 1;
+        text-transform: none;
+      }
+      .zeta-tollkeeper-title .word-1 {
+        color: #e0b23a;
+        font-size: 15px;
+        letter-spacing: 1px;
+        text-shadow: -1px 0 #2a1a0a, 0 1px #2a1a0a, 1px 0 #2a1a0a, 0 -1px #2a1a0a, 3px 2px 4px grey;
+      }
+      .zeta-tollkeeper-title .word-2 {
+        color: #6d4aa8;
+        font-size: 12px;
+        letter-spacing: 1px;
+        margin-top: 2px;
+        text-shadow: -1px 0 #2a1a0a, 0 1px #2a1a0a, 1px 0 #2a1a0a, 0 -1px #2a1a0a, 3px 2px 4px grey;
+      }
+    }
+    // Broadcast/press theme: steel-blue "PLANET" over a bold red "PR" stamp.
+    .card-planet-pr-logo {
+      position: absolute;
+      top: 14px;
+      left: 2px;
+      width: 130px;
+      text-align: left;
+      font-family: 'Eurostile', 'Arial Narrow', Arial, sans-serif;
+      font-weight: bold;
+      line-height: 1;
+      text-transform: none;
+      .word-1 {
+        display: block;
+        color: #3a6ea5;
+        font-size: 18px;
+        letter-spacing: 2px;
+        text-shadow: -1px 0 #0a1a2a, 0 1px #0a1a2a, 1px 0 #0a1a2a, 0 -1px #0a1a2a, 3px 2px 4px grey;
+      }
+      .word-2 {
+        display: block;
+        color: #d1372e;
+        font-size: 26px;
+        letter-spacing: 3px;
+        margin-top: 2px;
+        text-shadow: -1px 0 #2a0a0a, 0 1px #2a0a0a, 1px 0 #2a0a0a, 0 -1px #2a0a0a, 3px 2px 4px grey;
+      }
+    }
+    // Thermoelectric theme (the Seebeck effect converts heat to electricity): blue
+    // "SISTEMAS" overlapping a red-orange "SEEBECK", diagonally offset like current
+    // flowing from one word into the next.
+    .card-sistemas-seebeck-logo {
+      position: absolute;
+      top: 12px;
+      left: -4px;
+      width: 155px;
+      text-align: left;
+      font-family: 'Eurostile', 'Arial Narrow', Arial, sans-serif;
+      font-weight: bold;
+      line-height: 1;
+      text-transform: none;
+      .word-1 {
+        display: block;
+        color: #2f7fd6;
+        font-size: 17px;
+        letter-spacing: 1px;
+        text-shadow: -1px 0 #0a1a2a, 0 1px #0a1a2a, 1px 0 #0a1a2a, 0 -1px #0a1a2a, 3px 2px 4px grey;
+      }
+      .word-2 {
+        display: block;
+        color: #e0522c;
+        font-size: 17px;
+        letter-spacing: 1px;
+        margin-top: 1px;
+        margin-left: 12px;
+        text-shadow: -1px 0 #2a0a0a, 0 1px #2a0a0a, 1px 0 #2a0a0a, 0 -1px #2a0a0a, 3px 2px 4px grey;
+      }
+    }
+    // Purple-to-blue "Spire" with a small muted "In" prefix, echoing the tall-tower theme
+    // of the reference art without reusing the real Spire card's identity.
+    .card-in-spire-logo {
+      position: absolute;
+      top: 18px;
+      left: 2px;
+      width: 140px;
+      text-align: left;
+      font-family: Georgia, 'Times New Roman', serif;
+      line-height: 1;
+      text-transform: none;
+      .word-1 {
+        color: #b9a8d9;
+        font-size: 16px;
+        font-style: italic;
+      }
+      .word-2 {
+        color: #7c3aed;
+        font-size: 26px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        text-shadow: -1px 0 #1a0a2a, 0 1px #1a0a2a, 1px 0 #1a0a2a, 0 -1px #1a0a2a, 3px 2px 4px grey;
+      }
+    }
     .card-anubis-securities-logo {
       .anubis-securities-svg-logo {
         width: 74px;
@@ -1359,7 +1619,7 @@
     display: flex;
     flex-flow: column;
     justify-content: center;
-    min-height: 130px;
+    min-height: 144px;
     border-radius: 10px;
     background: linear-gradient(to bottom right, #cccccc, #aaaaaa, #dddddd, #cccccc, #aaaaaa, #cacaca, #aaaaaa, #cccccc);
     box-shadow: 0 0 0px 1px rgba(0, 0, 0.5);
@@ -1613,6 +1873,37 @@
     background-image: url(./assets/underworld/corruption.png);
   }
 
+  // Conglomerates: no art assets, so CSS-only icons -- squares matching the shape other
+  // resource icons use here (.card-resource-base is a plain square).
+  .card-resource-coordination {
+    background: linear-gradient(to bottom, #2e58bf 50%, #0f2c6e 50%);
+    border: 1px solid black;
+    box-sizing: border-box;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+
+    // Inner fill, inset from the bevel ring above: same bright-top/dark-bottom
+    // treatment as the ring, one shade lighter/darker, echoing the beveled look
+    // of the real resource token art.
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 3px;
+      background: linear-gradient(to bottom, #4a78e0 50%, #1f4682 50%);
+      z-index: 0;
+    }
+
+    &::before {
+      content: "🤝";
+      position: relative;
+      z-index: 1;
+      top: -2px;
+      font-size: 18px;
+      line-height: 28px;
+    }
+  }
+
   .card-neutral-delegate {
     .card-delegate();
     background-image: url(./assets/underworld/neutral-delegate.png) !important;
@@ -1822,6 +2113,10 @@
     background-repeat: no-repeat;
     background-position: 0px;
   }
+  // Conglomerates: recolors the red arrow asset green, for "this triggers a teammate's action".
+  .card-arrow--teammate {
+    filter: hue-rotate(110deg) saturate(1.6);
+  }
 
 
   /*colony special*/
@@ -1961,6 +2256,14 @@
   // (Same for tag-wild-resource below.) Rename to a resource-based class.
   .tag-floater {
     background-image: url("./assets/resources/floater.png");
+    border-radius: 0px;
+  }
+  .tag-data {
+    background-image: url("./assets/resources/data.png");
+    border-radius: 0px;
+  }
+  .tag-animal-resource {
+    background-image: url("./assets/resources/animal.png");
     border-radius: 0px;
   }
   .tag-wild-resource {
@@ -2416,6 +2719,126 @@
     height: 59px;
     background-size: 47px 59px;
   }
+  // Rob Antilles: dedicated card art (replaces the earlier placeholder icons).
+  .card-tile-animal-dome {
+    background-image: url(./assets/tiles/animal_dome.png);
+    width: 40px;
+    height: 47px;
+    background-size: 40px;
+    background-repeat: no-repeat;
+  }
+  .card-tile-biological-dome {
+    background-image: url(./assets/tiles/biological_dome.png);
+    width: 40px;
+    height: 47px;
+    background-size: 40px;
+    background-repeat: no-repeat;
+  }
+  .card-tile-sediment {
+    background-image: url(./assets/tiles/sediment.png);
+    width: 40px;
+    height: 47px;
+    background-size: 40px;
+    background-repeat: no-repeat;
+  }
+  .card-tile-industrial-metropolis {
+    background-image: url(./assets/tiles/industrial_metropolis.png);
+    width: 40px;
+    height: 47px;
+    background-size: 40px;
+    background-repeat: no-repeat;
+  }
+  .card-tile-paradise-city {
+    background-image: url(./assets/tiles/paradise_city.png);
+    width: 40px;
+    height: 47px;
+    background-size: 40px;
+    background-repeat: no-repeat;
+  }
+  // The source PNGs are all shot sideways -- rotated 90deg clockwise here to correct them (see
+  // the matching .board-space-tile--venus-* comment in board.less).
+  .card-tile-venus-cloud-city {
+    background-image: url(./assets/tiles/venus_cloud_city.png);
+    width: 40px;
+    height: 47px;
+    background-size: 40px;
+    background-repeat: no-repeat;
+    transform: rotate(90deg);
+  }
+  .card-tile-venus-gas-mine {
+    background-image: url(./assets/tiles/venus_gas_mine.png);
+    width: 40px;
+    height: 47px;
+    background-size: 40px;
+    background-repeat: no-repeat;
+    transform: rotate(90deg);
+  }
+  .card-tile-venus-floater-array {
+    background-image: url(./assets/tiles/venus_floater_array.png);
+    width: 40px;
+    height: 47px;
+    background-size: 40px;
+    background-repeat: no-repeat;
+    transform: rotate(90deg);
+  }
+  // Industries: shares its art with the board tile (a plain hex icon, no separate card-scale
+  // asset). The source PNGs are sideways -- same 90deg-clockwise rotation fix as Venus Phase 2.
+  .card-tile-industry-heat {
+    background-image: url(./assets/tiles/industry_heat_board_tile.png);
+    width: 40px;
+    height: 47px;
+    background-size: 40px;
+    background-repeat: no-repeat;
+    transform: rotate(90deg);
+  }
+  .card-tile-industry-money {
+    background-image: url(./assets/tiles/industry_money_board_tile.png);
+    width: 40px;
+    height: 47px;
+    background-size: 40px;
+    background-repeat: no-repeat;
+    transform: rotate(90deg);
+  }
+  .card-tile-industry-energy {
+    background-image: url(./assets/tiles/industry_energy_board_tile.png);
+    width: 40px;
+    height: 47px;
+    background-size: 40px;
+    background-repeat: no-repeat;
+    transform: rotate(90deg);
+  }
+  .card-tile-industry-steel {
+    background-image: url(./assets/tiles/industry_steel_board_tile.png);
+    width: 40px;
+    height: 47px;
+    background-size: 40px;
+    background-repeat: no-repeat;
+    transform: rotate(90deg);
+  }
+  .card-tile-industry-plant {
+    background-image: url(./assets/tiles/industry_plant_board_tile.png);
+    width: 40px;
+    height: 47px;
+    background-size: 40px;
+    background-repeat: no-repeat;
+    transform: rotate(90deg);
+  }
+  .card-tile-industry-titanium {
+    background-image: url(./assets/tiles/industry_titanium_board_tile.png);
+    width: 40px;
+    height: 47px;
+    background-size: 40px;
+    background-repeat: no-repeat;
+    transform: rotate(90deg);
+  }
+  .card-tile-industry-wild {
+    background-image: url(./assets/tiles/industry_wild_board_tile.png);
+    width: 40px;
+    height: 47px;
+    background-size: 40px;
+    transform: rotate(90deg);
+    background-repeat: no-repeat;
+  }
   .greenery-tile {
     background-image: url(./assets/tiles/greenery_no_O2.png);
   }
@@ -2616,6 +3039,11 @@
       filter: drop-shadow(0px 0px 1px black);
       color: #000;
     }
+    // High Orbit (fan): Infrastructure cards' top-left number is a Titanium cost, not M€.
+    .card-cost-titanium {
+      background-image: url(./assets/resources/titanium.png);
+      color: #fff;
+    }
     .card-cost-transition {
       position: absolute;
       background-image: url(./assets/misc/cost-transition-arrow.png);
@@ -2783,7 +3211,7 @@
   transform: scale(1.35);
 }
 
-@parties: greens, kelvinists, mars-first, reds, scientists, unity;
+@parties: greens, kelvinists, mars-first, reds, scientists, unity, bureaucrats, centrists, empower, populists, spome, transhumanists;
 /* stylelint-disable @stylistic/indentation */
 each(@parties, {
   .card-party--@{value} {
@@ -2819,6 +3247,51 @@ each(@parties, {
   }
 }
 
+// InSpire (Pathfinders): the resources currently stored on this card - a dark strip
+// tucked at the bottom of the card face so it reads as "held here", not as a production
+// change (which uses these same steel/titanium/energy/plants/M€ icons elsewhere).
+.in-spire-resources {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  right: 4px;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1px;
+  padding: 2px 4px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 4px;
+
+  .card-item-container {
+    display: inline-flex;
+    align-items: center;
+  }
+  // Steel/titanium/energy/plants/M€ ignore the small-size modifier at this item type (see
+  // CardRenderItemComponent's componentClassArray), so their default 30px render size has
+  // to be forced down here instead.
+  .card-resource {
+    width: 16px !important;
+    height: 16px !important;
+    background-size: 16px !important;
+    font-size: 11px !important;
+    line-height: 16px !important;
+    margin: 0 1px !important;
+  }
+  .card-res-amount {
+    color: white;
+    font-size: 11px;
+  }
+}
+.in-spire-resources-label {
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  margin-right: 2px;
+  white-space: nowrap;
+}
+
 // resources.less also has a variable called resource_types.
 @card_resource_types: microbe, animal, science, floater, fighter, camp,
   asteroid, disease, preservation, data, syndicate-fleet, cube,
@@ -2834,4 +3307,37 @@ each(@card_resource_types, {
 
 .card-resource-cube {
   background-image: url("./assets/cube.png");
+}
+
+// Ore (High Orbit, fan): no sprite yet -- reuses the Graphene icon, flipped 180deg, as a
+// stand-in placeholder.
+.card-resource-ore {
+  background-image: url("./assets/resources/graphene.png");
+  transform: rotate(180deg);
+}
+
+// Loot/Budget (Ides of Mars, fan) and Relic (Rob Antilles, fan): no sprites yet either -- same
+// emoji-placeholder treatment as Ore above.
+.card-resource-loot {
+  background: #8b5a2b;
+  text-align: center;
+  &::before {
+    content: "💰";
+  }
+}
+
+.card-resource-budget {
+  background: #8b5a2b;
+  text-align: center;
+  &::before {
+    content: "📊";
+  }
+}
+
+.card-resource-relic {
+  background: #8b5a2b;
+  text-align: center;
+  &::before {
+    content: "🏺";
+  }
 }

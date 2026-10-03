@@ -24,6 +24,36 @@
   background: url(./assets/board/mars-without-venus.png) no-repeat;
 }
 
+// Custom boards can be larger than the viewport and don't line up with the painted
+// hexes, so the Mars artwork sits behind them only as a scaled backdrop for atmosphere.
+.board-cont--custom {
+  width: auto;
+  max-width: 95vw;
+  max-height: 82vh;
+  overflow: auto;
+  // A large scrollable region whose content can change size (bigger board, more bonuses
+  // painted) is exactly what confuses the browser's scroll-anchoring heuristic on a long page
+  // (Turmoil/Pathfinders panels below it) -- opt it and its content out as an anchor candidate.
+  overflow-anchor: none;
+  background: #15131f url("./assets/board/mars-without-venus.png") no-repeat center / cover;
+  border-radius: 6px;
+
+  .board--custom {
+    position: relative;
+    margin: 20px;
+    overflow-anchor: none;
+  }
+}
+
+// A custom board that uses the standard parameter tracks keeps the normal painted-Mars
+// container; only the hex grid is transformed (see Board.vue fitTransform) to fit the curve.
+// Same scroll-anchoring opt-out as .board-cont--custom: a big board that scales/re-layouts
+// on every render (fitTransform) shouldn't be used by the browser as a scroll anchor.
+.board--custom-fit {
+  position: relative;
+  overflow-anchor: none;
+}
+
 .board-legend {
   position: absolute;
   margin: -67px 0 0 -100px;
@@ -75,6 +105,43 @@
   &.board-space-bonus-pos--3 {
     margin: 23px 0 0 14px;
   }
+
+  // Beyond 3 icons, position is computed per-icon by Bonus.vue's getStyle() (left/top),
+  // not by a fixed margin -- this class only clears the default margin out of the way.
+  &.board-space-bonus-pos--grid {
+    margin: 0;
+  }
+
+  // Shrink to fit a computed grid (see Bonus.vue's GRID_ICON_SIZE/getStyle()) once more
+  // than 3 bonuses are stacked on one space. !important overrides the per-type size rules
+  // below. Keep this size in sync with Bonus.vue's GRID_ICON_SIZE constant.
+  &.board-space-bonus--compact {
+    width: 12px !important;
+    height: 12px !important;
+    background-size: 12px !important;
+  }
+}
+
+// Sits directly on top of the coin icon (like a card's own "amount inside" M€ rendering --
+// see .money in cards.less) rather than as a corner badge, so the count reads as part of the
+// coin itself.
+.board-space-bonus-count {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  line-height: 1;
+  font-style: normal;
+  font-weight: bold;
+  color: black;
+  text-shadow: 0 0 2px white, 0 0 2px white;
+  pointer-events: none;
+}
+
+.board-space-bonus--compact .board-space-bonus-count {
+  font-size: 8px;
 }
 
 .board-space-bonus--plant {
@@ -187,7 +254,10 @@
 }
 
 .board-space-bonus--megacredit {
-  background: url(./assets/misc/1mc.png) no-repeat;
+  // The blank coin (no baked-in digit) -- same asset card icons use for their own "amount
+  // inside" rendering (.money in cards.less) -- since board-space-bonus-count always overlays
+  // the real count on top, for any number of stacked M€ bonuses, not just 1 or 2.
+  background: url(./assets/resources/megacredit.png) no-repeat;
   background-size: 16px;
 }
 
@@ -201,6 +271,11 @@
   background-size: 16px;
 }
 // TODO(kberg): end these aren't really board space bonuses.
+
+.board-space-bonus--floater {
+  background: url(./assets/resources/floater.png) no-repeat;
+  background-size: 16px;
+}
 
 .board-space-tile--ocean {
   background: url(./assets/board_icons.png) -79px -29px no-repeat;
@@ -265,6 +340,16 @@
   .special-tile-board('./assets/tiles/special_tile_icons/restricted_area.png');
 }
 
+// Sillyfication: placeholder art, reuses the restricted-area icon.
+.board-space-tile--garbage_dump {
+  .special-tile-board('./assets/tiles/special_tile_icons/restricted_area.png');
+}
+
+// Rob Antilles: placeholder art, reuses the great-dam icon (also a water/energy tile).
+.board-space-tile--pumping_hub {
+  .special-tile-board('./assets/tiles/special_tile_icons/great_dam.png');
+}
+
 .board-space-tile--great_dam {
   .special-tile-board('./assets/tiles/special_tile_icons/great_dam.png');
 }
@@ -282,6 +367,83 @@
   width: 44px;
   height: 50px;
   background-size: 44px, 50px;
+}
+
+// Rob Antilles: dedicated board art (replaces the earlier placeholder icons).
+.board-space-tile--animal_dome {
+  background: url("./assets/tiles/animal_dome_board_tile.png") no-repeat center / 46px;
+}
+
+.board-space-tile--biological_dome {
+  background: url("./assets/tiles/biological_dome_board_tile.png") no-repeat center / 46px;
+}
+
+.board-space-tile--sediment {
+  background: url("./assets/tiles/sediment_board_tile.png") no-repeat center / 46px;
+}
+
+.board-space-tile--industrial_metropolis {
+  background: url("./assets/tiles/industrial_metropolis_board_tile.png") no-repeat center / 46px;
+}
+
+.board-space-tile--paradise_city {
+  background: url("./assets/tiles/paradise_city_board_tile.png") no-repeat center / 46px;
+}
+
+// Venus Phase 2: the Venus surface board's own 3 tiles. The source PNGs (from the user's
+// downloaded tile art) are all shot sideways -- rotated 90deg clockwise here to correct them,
+// same technique pathfinders.less's .board-space-tile--crashlanding-rotated uses.
+.board-space-tile--venus-cloud-city {
+  background: url("./assets/tiles/venus_cloud_city_board_tile.png") no-repeat center / 46px;
+  transform: rotate(90deg);
+}
+
+.board-space-tile--venus-gas-mine {
+  background: url("./assets/tiles/venus_gas_mine_board_tile.png") no-repeat center / 46px;
+  transform: rotate(90deg);
+}
+
+.board-space-tile--venus-floater-array {
+  background: url("./assets/tiles/venus_floater_array_board_tile.png") no-repeat center / 46px;
+  transform: rotate(90deg);
+}
+
+// Industries: dedicated board art per resource flavor. The source PNGs (from the user's
+// downloaded tile art) are all shot sideways -- rotated 90deg clockwise here to correct
+// them, same technique used for Venus Phase 2's tiles above.
+.board-space-tile--industry_heat {
+  background: url("./assets/tiles/industry_heat_board_tile.png") no-repeat center / 46px;
+  transform: rotate(90deg);
+}
+
+.board-space-tile--industry_money {
+  background: url("./assets/tiles/industry_money_board_tile.png") no-repeat center / 46px;
+  transform: rotate(90deg);
+}
+
+.board-space-tile--industry_energy {
+  background: url("./assets/tiles/industry_energy_board_tile.png") no-repeat center / 46px;
+  transform: rotate(90deg);
+}
+
+.board-space-tile--industry_steel {
+  background: url("./assets/tiles/industry_steel_board_tile.png") no-repeat center / 46px;
+  transform: rotate(90deg);
+}
+
+.board-space-tile--industry_plant {
+  background: url("./assets/tiles/industry_plant_board_tile.png") no-repeat center / 46px;
+  transform: rotate(90deg);
+}
+
+.board-space-tile--industry_titanium {
+  background: url("./assets/tiles/industry_titanium_board_tile.png") no-repeat center / 46px;
+  transform: rotate(90deg);
+}
+
+.board-space-tile--industry_wild {
+  background: url("./assets/tiles/industry_wild_board_tile.png") no-repeat center / 46px;
+  transform: rotate(90deg);
 }
 
 .board-cube {
@@ -908,6 +1070,20 @@
   background-color: #fff6;
 }
 
+// Venus Phase 2: Stratopolis/Maxwell Base's reserved spot, before its city tile is placed --
+// without this it renders identically to plain land and is easy to miss entirely.
+.board-space-type-land-venusReserved {
+  background-color: rgba(120, 200, 255, 0.45);
+}
+
+// Venus Phase 2: Gas Mine-only spaces get a yellow tint, matching the Gas Mine tile art's
+// own color scheme, so they read as visibly reserved before a tile is placed.
+.board-space-type-gaslight {
+  background: url(./assets/hex_white.png) no-repeat;
+  background-color: rgba(230, 190, 40, 0.55);
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+}
+
 .board-space-type-ocean {
   background: url(./assets/hex_blue.png) no-repeat;
   clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
@@ -921,6 +1097,14 @@
 .board-space-type-volcanic-cove {
   background: url(./assets/pathfinders/volcanic-cove.png) no-repeat;
   background-color: #8304;
+}
+
+// Restricted spaces have no art on the official boards (the painting shows them); custom
+// boards need a visible fill.
+.board-space-type-restricted {
+  background: url(./assets/hex_white.png) no-repeat;
+  background-color: rgba(60, 60, 70, 0.75);
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
 }
 
 .board-space-type-deflection-zone {
@@ -955,8 +1139,9 @@
     background-color: #444;
     clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
     cursor: pointer;
+    box-sizing: border-box;
     width: 46px;
-    height: 51px;
+    height: 50px;
     line-height: 12px;
     padding-top: 14px;
     text-align: center;

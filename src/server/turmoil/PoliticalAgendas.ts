@@ -1,10 +1,11 @@
 import {ChoosePoliticalAgenda} from '../deferredActions/ChoosePoliticalAgenda';
+import {ChooseNewPartyAgenda} from '../deferredActions/ChooseNewPartyAgenda';
 import {IGame} from '../IGame';
 import {IBonus} from './Bonus';
 import {IParty} from './parties/IParty';
 import {PartyName} from '../../common/turmoil/PartyName';
 import {IPolicy} from './Policy';
-import {Turmoil} from './Turmoil';
+import {Delegate, Turmoil} from './Turmoil';
 import {Agenda, AgendaStyle} from '../../common/turmoil/Types';
 
 export type PoliticalAgendasData = {
@@ -39,7 +40,9 @@ export class PoliticalAgendas {
     };
   }
 
-  private static getRandomAgenda(party: IParty): Agenda {
+  // Public: also used by Turmoil.swapInParty (More Parties) to seed an agenda for a party that
+  // enters play mid-game.
+  public static getRandomAgenda(party: IParty): Agenda {
     const bonus: IBonus = PoliticalAgendas.randomElement(party.bonuses);
     const policy: IPolicy = PoliticalAgendas.randomElement(party.policies);
 
@@ -84,9 +87,53 @@ export class PoliticalAgendas {
           agenda.policyId = policyId;
           turmoil.onAgendaSelected(game);
         }));
+    } else if (politicalAgendasData.agendaStyle === 'PartyLeaders') {
+      // The ruling party's bonus can already change mid-generation via onPartyLeaderChange;
+      // its policy is locked until now, when the confirmed chairman picks the next one.
+      const agenda = this.getAgenda(turmoil, rulingParty.name);
+      if (chairman === 'NEUTRAL') {
+        agenda.policyId = this.getRandomAgenda(rulingParty).policyId;
+        turmoil.onAgendaSelected(game);
+      } else {
+        game.defer(new ChooseNewPartyAgenda(chairman, rulingParty, 'policy', (_bonusId, policyId) => {
+          if (policyId !== undefined) {
+            agenda.policyId = policyId;
+          }
+          turmoil.onAgendaSelected(game);
+        }));
+      }
     } else {
       turmoil.onAgendaSelected(game);
     }
+  }
+
+  // More Parties: fired whenever a party's leader changes (including a first assignment).
+  // A real player who becomes leader chooses that party's new bonus, and its policy too
+  // unless the party is currently ruling (policy stays locked until the next Chairman
+  // election). A neutral leader randomizes the same unlocked parts of the agenda.
+  public static onPartyLeaderChange(turmoil: Turmoil, party: IParty, newLeader: Delegate, game: IGame): void {
+    if (turmoil.politicalAgendasData.agendaStyle !== 'PartyLeaders') {
+      return;
+    }
+    const agenda = this.getAgenda(turmoil, party.name);
+    const isRuling = turmoil.rulingParty.name === party.name;
+    if (newLeader === 'NEUTRAL') {
+      const random = this.getRandomAgenda(party);
+      agenda.bonusId = random.bonusId;
+      if (!isRuling) {
+        agenda.policyId = random.policyId;
+      }
+      return;
+    }
+    const choice = isRuling ? 'bonus' : 'both';
+    game.defer(new ChooseNewPartyAgenda(newLeader, party, choice, (bonusId, policyId) => {
+      if (bonusId !== undefined) {
+        agenda.bonusId = bonusId;
+      }
+      if (policyId !== undefined) {
+        agenda.policyId = policyId;
+      }
+    }));
   }
 
   public static serialize(agenda: PoliticalAgendasData): SerializedPoliticalAgendasData {

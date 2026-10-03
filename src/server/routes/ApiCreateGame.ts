@@ -1,3 +1,4 @@
+import {getAutomationCompatibility, automationUnavailableReason} from '../bot/AutomationCompatibility';
 import {sendGameStartNotice} from '../TelegramBot';
 import * as responses from '../server/responses';
 import {Handler} from './Handler';
@@ -5,6 +6,8 @@ import {Context} from './IHandler';
 import {Database} from '../database/Database';
 import {BoardName} from '../../common/boards/BoardName';
 import {RandomBoardOption} from '../../common/boards/RandomBoardOption';
+import {decodeCustomBoard} from '../../common/boards/customBoardCodec';
+import {decodeSimpleBoard} from '../../common/boards/simpleBoardCodec';
 import {Cloner} from '../database/Cloner';
 import {Game} from '../Game';
 import {GameOptions} from '../game/GameOptions';
@@ -17,12 +20,13 @@ import {generateRandomId} from '../utils/server-ids';
 import {IGame} from '../IGame';
 import {Request} from '../Request';
 import {Response} from '../Response';
-import {QuotaConfig, QuotaHandler} from '../server/QuotaHandler';
-import {durationToMilliseconds} from '../utils/durations';
+import {QuotaConfig, QuotaHandler, getQuotaConfigsFromEnv} from '../server/QuotaHandler';
 import {BotTakeoverManager} from '../bot/BotTakeoverManager';
+import {DEFAULT_EXPANSIONS} from '../../common/cards/GameModule';
 import {readBody} from './readBody';
 import {RouteError} from './RouteError';
 import {CEO_CARDS_DEALT_PER_PLAYER} from '../../common/constants';
+import {hasNegativeEscapeVelocityOption} from '../../common/game/escapeVelocity';
 
 export function normalizeTelegramId(telegramID: string | undefined): string {
   return (telegramID ?? '').trim();
@@ -46,45 +50,11 @@ function maskTelegramIdForLog(telegramID: string): string {
 
 type CreateGameRouteDeps = Pick<BotTakeoverManager, 'start' | 'stop'>;
 
-function parseQuotaConfig(struct: any): QuotaConfig {
-  let {limit} = struct;
-  const {per} = struct;
-  if (limit === undefined) {
-    throw new Error('limit is absent');
-  }
-  limit = Number.parseInt(limit);
-  if (isNaN(limit)) {
-    throw new Error('limit is invalid');
-  }
-  if (per === undefined) {
-    throw new Error('per is absent');
-  }
-  const perMs = durationToMilliseconds(per);
-  if (isNaN(perMs)) {
-    throw new Error('per is invalid');
-  }
-  return {limit, perMs};
-}
-
 // GAME_QUOTA accepts either a single {limit, per} object, or a JSON array of
 // them for multiple independent tiers (e.g. a burst limit and a daily limit).
 // A request must satisfy every configured tier to succeed.
 function getQuotaConfigs(): Array<QuotaConfig> {
-  const defaultQuota = {limit: 1, perMs: 1}; // Effectively, no limit.
-  const val = process.env.GAME_QUOTA;
-  if (val) {
-    try {
-      const parsed = JSON.parse(val);
-      const structs = Array.isArray(parsed) ? parsed : [parsed];
-      if (structs.length === 0) {
-        throw new Error('GAME_QUOTA array is empty');
-      }
-      return structs.map(parseQuotaConfig);
-    } catch (e) {
-      console.warn('While initialzing quota:', (e instanceof Error ? e.message : e));
-    }
-  }
-  return [defaultQuota];
+  return getQuotaConfigsFromEnv('GAME_QUOTA', {limit: 1, perMs: 1}); // Effectively, no limit.
 }
 
 export class ApiCreateGame extends Handler {
@@ -100,7 +70,8 @@ export class ApiCreateGame extends Handler {
   }
 
   public static boardOptions(board: RandomBoardOption | BoardName): Array<BoardName> {
-    const allBoards = Object.values(BoardName);
+    // A custom board needs its own definition and can't be chosen by a random roll.
+    const allBoards = Object.values(BoardName).filter((name) => name !== BoardName.CUSTOM);
 
     if (board === RandomBoardOption.ALL) {
       return allBoards;
@@ -124,7 +95,7 @@ export class ApiCreateGame extends Handler {
   public validateCustomLists(gameReq: NewGameConfig): void {
     const playerCount = gameReq.players.length;
 
-    function validate(list: Array<unknown> | undefined, perPlayerCount: number, type: string): void {
+    function validate(list: ReadonlyArray<unknown> | undefined, perPlayerCount: number, type: string): void {
       if (list === undefined) {
         return;
       }
@@ -150,6 +121,7 @@ export class ApiCreateGame extends Handler {
     const body = await readBody(req);
     try {
       const gameReq = JSON.parse(body) as NewGameConfig;
+      gameReq.expansions = {...DEFAULT_EXPANSIONS, ...gameReq.expansions};
       this.validateCustomLists(gameReq);
       const turnBasedGame = gameReq.turnBasedGame === true;
       const botGame = gameReq.botGame === true;
@@ -170,6 +142,9 @@ export class ApiCreateGame extends Handler {
       const normalizedTelegramIds = turnBasedGame ?
         gameReq.players.map((player) => normalizeTelegramId(player.telegramID)) :
         gameReq.players.map(() => '');
+      if (gameReq.escapeVelocity !== undefined && gameReq.escapeVelocity !== null && hasNegativeEscapeVelocityOption(gameReq.escapeVelocity)) {
+        throw RouteError.badRequest('Escape Velocity values cannot be negative.');
+      }
       const gameId = safeCast(generateRandomId('g'), isGameId);
       const spectatorId = safeCast(generateRandomId('s'), isSpectatorId);
       const requestedPlayers = gameReq.players.map((player) => ({...player}));
@@ -206,11 +181,42 @@ export class ApiCreateGame extends Handler {
       }
 
       const boardSelection = gameReq.board;
-      const boards = ApiCreateGame.boardOptions(boardSelection);
-      gameReq.board = boards[Math.floor(Math.random() * boards.length)];
+      let customBoard: GameOptions['customBoard'] = undefined;
+      if (gameReq.board === BoardName.CUSTOM) {
+        if (gameReq.customBoardCode === undefined) {
+          throw new Error('A custom board was selected but no map code was provided.');
+        }
+        customBoard = decodeCustomBoard(gameReq.customBoardCode);
+      } else {
+        const boards = ApiCreateGame.boardOptions(gameReq.board);
+        gameReq.board = boards[Math.floor(Math.random() * boards.length)];
+      }
+
+      // Unlike Mars's customBoard, these aren't a board *selection* -- Moon/Venus Phase 2 are
+      // always-on secondary boards bundled with their expansion, so a code here is just an
+      // optional override of that board's own hard-coded default layout, silently ignored (not
+      // decoded at all) if the matching expansion isn't even on.
+      let customMoonBoard: GameOptions['customMoonBoard'] = undefined;
+      if (gameReq.expansions.moon && gameReq.customMoonBoardCode !== undefined) {
+        customMoonBoard = decodeSimpleBoard(gameReq.customMoonBoardCode);
+        if (customMoonBoard.boardType !== 'moon') {
+          throw new Error(`That code is for ${customMoonBoard.boardType}, not the Moon.`);
+        }
+      }
+      let customVenusSurfaceBoard: GameOptions['customVenusSurfaceBoard'] = undefined;
+      if (gameReq.expansions.venusPhase2 && gameReq.customVenusSurfaceBoardCode !== undefined) {
+        customVenusSurfaceBoard = decodeSimpleBoard(gameReq.customVenusSurfaceBoardCode);
+        if (customVenusSurfaceBoard.boardType !== 'venusPhase2') {
+          throw new Error(`That code is for ${customVenusSurfaceBoard.boardType}, not Venus Phase 2.`);
+        }
+      }
 
       const gameOptions: GameOptions = {
         altVenusBoard: gameReq.altVenusBoard,
+        customBoard,
+        customMoonBoard,
+        customVenusSurfaceBoard,
+        globalParameters: customBoard?.globalParameters,
         aresExtension: gameReq.expansions.ares,
         aresHazards: true, // Not a runtime option.
         aresExtremeVariant: gameReq.aresExtremeVariant,
@@ -221,6 +227,8 @@ export class ApiCreateGame extends Handler {
         clonedGamedId: gameReq.clonedGamedId ?? undefined,
         coloniesExtension: gameReq.expansions.colonies,
         communityCardsOption: gameReq.expansions.community,
+        conglomeratesExpansion: gameReq.expansions.conglomerates,
+        conglomeratesTeamAssignments: gameReq.expansions.conglomerates ? gameReq.players.map((p) => p.team ?? 0) : undefined,
         expansions: gameReq.expansions,
         ceosDraftVariant: gameReq.ceosDraftVariant,
         corporateEra: gameReq.expansions.corpera,
@@ -240,6 +248,14 @@ export class ApiCreateGame extends Handler {
         turnBasedGame,
         moonExpansion: gameReq.expansions.moon,
         moonStandardProjectVariant: gameReq.moonStandardProjectVariant,
+        corporateBettermentsExpansion: gameReq.expansions.corporateBetterments,
+        idesOfMarsExpansion: gameReq.expansions.idesOfMars,
+        industriesExpansion: gameReq.expansions.industries,
+        highOrbitExpansion: gameReq.expansions.highOrbit,
+        solarisExpansion: gameReq.expansions.solaris,
+        robAntillesExpansion: gameReq.expansions.robAntilles,
+        morePartiesExpansion: gameReq.expansions.moreParties,
+        venusPhase2Expansion: gameReq.expansions.venusPhase2,
         moonStandardProjectVariant1: gameReq.moonStandardProjectVariant1,
         pathfindersExpansion: gameReq.expansions.pathfinders,
         politicalAgendasExtension: gameReq.politicalAgendasExtension,
@@ -265,16 +281,30 @@ export class ApiCreateGame extends Handler {
         twoCorpsVariant: gameReq.twoCorpsVariant,
         underworldExpansion: gameReq.expansions.underworld,
         deltaProjectExpansion: gameReq.expansions.deltaProject,
+        sillyficationExpansion: gameReq.expansions.sillyfication,
+        betterMarsExpansion: gameReq.expansions.betterMars,
+        customCardsExpansion: gameReq.expansions.customCards,
         undoOption: gameReq.undoOption,
         undoStepOption: gameReq.undoStepOption === true,
         venusNextExtension: gameReq.expansions.venus,
       };
 
+      const requireBotCompatibility = (options: Partial<GameOptions>, newGame: boolean) => {
+        if (!botGame || !requestedPlayers.some((player) => player.isBot)) {
+          return;
+        }
+        const reason = automationUnavailableReason(getAutomationCompatibility(options, newGame));
+        if (reason !== undefined) {
+          throw RouteError.badRequest(reason);
+        }
+      };
       let game: IGame;
       if (gameOptions.clonedGamedId !== undefined && !gameOptions.clonedGamedId.startsWith('#')) {
         const serialized = await Database.getInstance().getGameVersion(gameOptions.clonedGamedId, 0);
+        requireBotCompatibility(serialized.gameOptions, false);
         game = Cloner.clone(gameId, players, firstPlayerIdx, serialized, ctx.gameLoader.saveGame.bind(ctx.gameLoader));
       } else {
+        requireBotCompatibility(gameOptions, true);
         const seed = Number.isFinite(gameReq.seed) && gameReq.seed >= 0 && gameReq.seed < 1 ?
           gameReq.seed : Math.random();
         game = Game.newInstance(gameId, players, players[firstPlayerIdx], spectatorId, gameOptions, seed, ctx.gameLoader.saveGame.bind(ctx.gameLoader));
@@ -286,6 +316,7 @@ export class ApiCreateGame extends Handler {
       try {
         for (const botPlayer of botPlayers) {
           this.botManager.start({
+            compatibility: getAutomationCompatibility(game.gameOptions),
             gameId: game.id,
             playerId: botPlayer.id,
             serverId: ctx.ids.serverId,

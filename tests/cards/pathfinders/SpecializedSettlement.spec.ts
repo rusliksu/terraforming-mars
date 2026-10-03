@@ -83,12 +83,10 @@ describe('SpecializedSettlement', () => {
 
 
   it('play - megacredits', () => {
-    expect(() => {
-      singleResourceTest(
-        SpaceBonus.MEGACREDITS,
-        {megacredits: 1},
-        {energy: 0, megacredits: 4});
-    }).to.throw(/Unhandled space bonus/);
+    singleResourceTest(
+      SpaceBonus.MEGACREDITS,
+      {megacredits: 1},
+      {energy: 0, megacredits: 4});
     cast(player.popWaitingFor(), undefined);
   });
 

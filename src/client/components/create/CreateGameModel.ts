@@ -16,6 +16,9 @@ export type CreateGameModel = {
   botGame: boolean;
   ceosDraftVariant: boolean | undefined;
   clonedGameId: GameId | undefined;
+  customBoardCode: string | undefined;
+  customMoonBoardCode: string | undefined;
+  customVenusSurfaceBoardCode: string | undefined;
   customCeos: Array<CardName>;
   customColonies: Array<ColonyName>;
   customCorporations: Array<CardName>;

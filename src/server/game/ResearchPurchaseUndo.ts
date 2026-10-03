@@ -4,6 +4,7 @@ import type {SerializedPlayer} from '../SerializedPlayer';
 export interface ResearchPurchaseUndoState {
   playerSnapshot: SerializedPlayer;
   cardCount: number;
+  keepMax?: number;
   cardsInHandStartIndex: number;
   projectDiscardStartIndex: number;
   generation: number;

@@ -3,7 +3,7 @@
     <section>
       <dialog id="alert-dialog" class="alert-dialog">
         <form method="dialog">
-          <p id="alert-title" class="title" v-i18n>Error with input</p>
+          <p id="alert-dialog-title" class="title" v-i18n>Error with input</p>
           <p id="alert-dialog-message"></p>
           <menu class="dialog-menu centered-content">
             <button id="alert-dialog-button" class="btn btn-lg btn-primary">OK</button>
@@ -40,6 +40,10 @@
         v-else-if="screen === 'games-overview'"
       />
       <CardList v-else-if="screen === 'cards'"/>
+      <CardMaker v-else-if="screen === 'card-maker'"/>
+      <CardLibrary v-else-if="screen === 'card-library'"/>
+      <MapEditor v-else-if="screen === 'map-editor'"/>
+      <MapLibrary v-else-if="screen === 'map-library'"/>
       <AdminHome v-else-if="screen === 'admin'"/>
       <LoginHome v-else-if="screen === 'login-home'"/>
       <Help v-else-if="screen === 'help'"/>
@@ -67,6 +71,10 @@ const PlayerHome = defineAsyncComponent(() => import(/* webpackChunkName: "playe
 const SpectatorHome = defineAsyncComponent(() => import(/* webpackChunkName: "spectator-home" */ '@/client/components/SpectatorHome.vue'));
 const ReplayHome = defineAsyncComponent(() => import(/* webpackChunkName: "replay" */ '@/client/components/replay/ReplayHome.vue'));
 const StartScreen = defineAsyncComponent(() => import(/* webpackChunkName: "start-screen" */ '@/client/components/StartScreen.vue'));
+const MapEditor = defineAsyncComponent(() => import(/* webpackChunkName: "map-editor" */ '@/client/components/MapEditor.vue'));
+const CardMaker = defineAsyncComponent(() => import(/* webpackChunkName: "card-maker" */ '@/client/components/cardmaker/CardMaker.vue'));
+const CardLibrary = defineAsyncComponent(() => import(/* webpackChunkName: "card-library" */ '@/client/components/cardlibrary/CardLibrary.vue'));
+const MapLibrary = defineAsyncComponent(() => import(/* webpackChunkName: "map-library" */ '@/client/components/maplibrary/MapLibrary.vue'));
 import {$t, setTranslationContext} from '@/client/directives/i18n';
 import {paths} from '@/common/app/paths';
 import {PlayerViewModel, ViewModel} from '@/common/models/PlayerModel';
@@ -88,6 +96,10 @@ type Screen = 'admin' |
             'help' |
             'load' |
             'login-home' |
+            'card-maker' |
+            'card-library' |
+            'map-editor' |
+            'map-library' |
             'player-home' |
             'replay' |
             'spectator-home' |
@@ -169,6 +181,10 @@ export default defineComponent({
   },
   components: {
     StartScreen,
+    MapEditor,
+    MapLibrary,
+    CardMaker,
+    CardLibrary,
     CreateGameForm,
     LoadGameForm,
     GameHome,
@@ -325,6 +341,14 @@ export default defineComponent({
       app.screen = 'load';
     } else if (currentPathname === paths.CARDS) {
       app.screen = 'cards';
+    } else if (currentPathname === paths.CUSTOM_CARD_MAKER) {
+      app.screen = 'card-maker';
+    } else if (currentPathname === paths.CARD_LIBRARY) {
+      app.screen = 'card-library';
+    } else if (currentPathname === paths.MAP_EDITOR) {
+      app.screen = 'map-editor';
+    } else if (currentPathname === paths.MAP_LIBRARY) {
+      app.screen = 'map-library';
     } else if (currentPathname === paths.HELP) {
       app.screen = 'help';
     } else if (currentPathname === paths.SPECTATOR) {

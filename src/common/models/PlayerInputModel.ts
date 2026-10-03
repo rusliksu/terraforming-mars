@@ -58,6 +58,8 @@ export type SelectProjectCardToPlayModel = BaseInputModel & {
   kuiperAsteroids: number;
   auroraiData: number;
   spireScience: number;
+  nereidMicrobes: number;
+  anyFloaters: number;
 }
 
 export type SelectCardModel = BaseInputModel & {
@@ -126,6 +128,8 @@ export type SelectPartyModel = BaseInputModel & {
 export type SelectProductionToLoseModel = BaseInputModel & {
   type: 'productionToLose';
   payProduction: PayProductionModel;
+  /** Required two-step losses from a single production type. */
+  pairs?: number;
 }
 
 export type ShiftAresGlobalParametersModel = BaseInputModel & {

@@ -6,7 +6,6 @@ import {CanAffordOptions, IPlayer} from '../IPlayer';
 import {ENERGY_TRADE_COST, MC_TRADE_COST, TITANIUM_TRADE_COST} from '../../common/constants';
 import {IColony} from '../colonies/IColony';
 import {SelectPaymentDeferred} from '../deferredActions/SelectPaymentDeferred';
-import {Resource} from '../../common/Resource';
 import {TradeWithTitanFloatingLaunchPad} from '../cards/colonies/TitanFloatingLaunchPad';
 import {OrOptions} from '../inputs/OrOptions';
 import {SelectOption} from '../inputs/SelectOption';
@@ -18,6 +17,7 @@ import {TradeWithDarksideSmugglersUnion} from '../cards/moon/DarksideSmugglersUn
 import {Payment} from '../../common/inputs/Payment';
 import {toLogPayment} from '../logs/toLogPayment';
 import {TradeWithHectateSpeditions} from '../cards/underworld/HecateSpeditions';
+import {TradeWithSteel} from '../cards/delta/DeltaWorks';
 import {ColonyName} from '../../../src/common/colonies/ColonyName';
 import {ColonyTradeContextModel} from '@/common/models/ColonyTradeContextModel';
 import {ColonyBenefit} from '@/common/colonies/ColonyBenefit';
@@ -66,6 +66,7 @@ export class Colonies {
       {handler: new TradeWithTitanFloatingLaunchPad(player), cardName: CardName.TITAN_FLOATING_LAUNCHPAD},
       {handler: new TradeWithCollegiumCopernicus(player), cardName: CardName.COLLEGIUM_COPERNICUS},
       {handler: new TradeWithHectateSpeditions(player), cardName: CardName.HECATE_SPEDITIONS},
+      {handler: new TradeWithSteel(player), cardName: CardName.DELTA_WORKS},
       {handler: new TradeWithEnergy(player)},
       {handler: new TradeWithTitanium(player)},
       {handler: new TradeWithMegacredits(player)},
@@ -263,17 +264,23 @@ export class TradeWithEnergy implements IColonyTrader {
   }
 
   public canUse() {
-    return this.player.energy >= this.tradeCost;
+    return this.player.availableEnergy() >= this.tradeCost;
   }
   public optionText() {
     return message('Pay ${0} energy', (b) => b.number(this.tradeCost));
   }
 
   public trade(colony: IColony) {
-    this.player.stock.deduct(Resource.ENERGY, this.tradeCost);
-    this.player.game.log('${0} spent ${1} energy to trade with ${2}', (b) => b.player(this.player).number(this.tradeCost).colony(colony),
-      {payment: toLogPayment(Payment.EMPTY, this.tradeCost)});
-    colony.trade(this.player);
+    const energyBefore = this.player.energy;
+    const heatBefore = this.player.heat;
+    const floatersBefore = this.player.resourcesOnCard(CardName.STORMCRAFT_INCORPORATED);
+    this.player.defer(this.player.spendEnergy(this.tradeCost, () => {
+      this.player.game.log('${0} spent ${1} energy to trade with ${2}', (b) => b.player(this.player).number(this.tradeCost).colony(colony),
+        {payment: floatersBefore === this.player.resourcesOnCard(CardName.STORMCRAFT_INCORPORATED) ?
+          toLogPayment(Payment.of({heat: heatBefore - this.player.heat}), energyBefore - this.player.energy) : undefined});
+      colony.trade(this.player);
+      return undefined;
+    }));
   }
 }
 

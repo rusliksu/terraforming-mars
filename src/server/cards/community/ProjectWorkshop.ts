@@ -41,12 +41,15 @@ export class ProjectWorkshop extends CorporationCard implements ICorporationCard
           b.megacredits(39).steel(1).titanium(1).cards(1, {secondaryTag: AltSecondaryTag.BLUE});
           b.corpBox('action', (cb) => {
             cb.vSpace(Size.LARGE);
+            cb.br;
             cb.action(undefined, (eb) => {
               eb.text('flip', {size: Size.SMALL, uppercase}).cards(1, {secondaryTag: AltSecondaryTag.BLUE});
               eb.startAction.text('?', {uppercase}).tr(1, {size: Size.SMALL});
               eb.cards(2, {digit});
             });
+            cb.br;
             cb.vSpace(Size.SMALL);
+            cb.br;
             cb.action('Flip and discard a played blue card to convert any VP on it into TR and draw 2 cards, or spend 3 M€ to draw a blue card.', (eb) => {
               eb.or().megacredits(3).startAction.cards(1, {secondaryTag: AltSecondaryTag.BLUE});
             });

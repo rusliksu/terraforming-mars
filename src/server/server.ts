@@ -23,6 +23,8 @@ import {processRequest} from '@/server/server/requestProcessor';
 import {timeAsync} from '@/server/utils/timer';
 import {GameLoader} from '@/server/database/GameLoader';
 import {globalInitialize} from '@/server/globalInitialize';
+import {seedOfficialMapLibrary} from '@/server/database/seedOfficialMapLibrary';
+import {refreshCustomCardRegistry} from '@/server/cards/CustomCardRegistry';
 import {SessionManager} from '@/server/server/auth/SessionManager';
 import {capture} from '@/server/server/SentryReporter';
 import {registerUncaughtExceptionHandler} from '@/server/server/SentryProcessBoundary';
@@ -106,6 +108,9 @@ async function start() {
     .then((v) => {
       metrics.startDatabase.set(v.duration);
     });
+
+  await seedOfficialMapLibrary();
+  await refreshCustomCardRegistry();
 
   // Initialize the session manager after initializing the database.
   await SessionManager.getInstance().initialize();

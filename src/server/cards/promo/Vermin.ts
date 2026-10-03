@@ -11,6 +11,7 @@ import {Board} from '../../boards/Board';
 import {Space} from '../../boards/Space';
 import {IActionCard} from '../ICard';
 import {vermin} from '../render/DynamicVictoryPoints';
+import {VenusPhase2Expansion} from '../../venusPhase2/VenusPhase2Expansion';
 
 export class Vermin extends ActionCard implements IProjectCard, IActionCard {
   constructor() {
@@ -62,7 +63,7 @@ export class Vermin extends ActionCard implements IProjectCard, IActionCard {
 
   public override getVictoryPoints(player: IPlayer) {
     if (player.game.verminInEffect) {
-      return -1 * player.game.board.getCities(player).length;
+      return -1 * (player.game.board.getCities(player).length + VenusPhase2Expansion.getCitiesCount(player.game, player));
     }
     return 0;
   }

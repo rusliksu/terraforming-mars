@@ -705,6 +705,49 @@
       margin-left: -2px;
     }
 
+    // Conglomerates: each team's combined score for this milestone/award, shown as a row of
+    // badges above the per-player scores. Each badge is sized and positioned to span exactly
+    // 2 player-score badges (.ma-score is 24px + 2px/2px margin = 28px per slot, so a team
+    // badge is 52px + 2px/2px margin = 56px = 2 slots) so it visually sits directly above its
+    // own two members' scores -- see the `sortedScores` computed, which groups and orders the
+    // player-score row by team (highest team leftmost) to match, instead of a flat individual
+    // ranking, so the alignment is actually correct and not just visually similar-sized.
+    .ma-team-scores {
+      display: block;
+      width: 144px;
+      margin: 2px 0 0 -2px;
+    }
+
+    .ma-team-score {
+      display: inline-block;
+      width: 52px;
+      height: 18px;
+      line-height: 18px;
+      border-radius: 2px;
+      margin: 0 2px;
+      padding: 0 2px;
+      box-sizing: border-box;
+      text-align: center;
+      font-size: 13px;
+      font-weight: bold;
+      font-family: Prototype, sans-serif;
+      color: #ffcc64;
+      background: #1a1a1a;
+      box-shadow: 0 0 1px 1px black;
+    }
+
+    // Outline each team's score in that team's own shared Turmoil delegate color (see
+    // PlayerResources.vue's own team-colored outline for the same color), so which bracket
+    // goes with which team is obvious without cross-referencing the player scores below it.
+    .ma-team-score {
+      each(@players, {
+        @c: ~"player_@{value}";
+        &--@{value} {
+          box-shadow: 0 0 0 2px @@c;
+        }
+      });
+    }
+
     .ma-player {
       margin: 25px 0 0 70px;
       position: absolute;
@@ -716,6 +759,7 @@
 
     .ma-name {
       display: inline-block;
+      position: relative;
       width: 140px;
       height: 83px;
       color: black;
@@ -788,14 +832,83 @@
       builder7, legend4, pioneer4, metallurgist, spacefarer4, tactician4,
       terraformer29, terran5, trader, tycoon10, suburbian, briber, merchant,
     ;
+    // Images are expected to be 140px x 83px
+    // background-size: 200px;
+    // background-position: -30px -5px;
     each(@ma-name, {
-    .ma-name--@{value} {
-      background-image: url("assets/ma/@{value}.png");
-      // Images are expected to be 140px x 83px
-      // background-size: 200px;
-      // background-position: -30px -5px;
+      .ma-name--@{value} {
+        background-image: url("assets/ma/@{value}.png");
       }
-    })
+    });
+
+    // Conglomerates milestone variants have no dedicated art -- reuse the base milestone's
+    // image (Milestone.vue then draws a small patch over the corner number, see
+    // .ma-number-patch below, using CONGLOMERATES_MILESTONE_NUMBERS to know the real value).
+    // The per-variant left/top pair is the base image's own number badge position, measured
+    // by pixel-analyzing each source PNG (a plain fixed offset doesn't work: the badge's
+    // position varies a lot image to image, e.g. Terraformer's badge sits at x=8 while
+    // Capitalist's sits at x=27, both inside the same 140x83 frame). The 16 expansion
+    // milestones at the end of this list (hoverlord11 onward) use a 16/22 placeholder --
+    // the average of every measured position above -- pending an actual pixel measurement.
+    @ma-name-conglomerates:
+      agronomist6 agronomist 18 21, architect5 architect 18 21, builder12 builder 18 21,
+      c-forester5 c-forester 25 22, capitalist96 capitalist 27 17, coastguard5 coastguard 3 23,
+      colonizer6 colonizer 32 21, diversifier10 diversifier 18 22, ecologist6 ecologist 1 23,
+      economizer8 economizer 13 23, energizer9 energizer 13 21, engineer15 engineer 1 23,
+      farmer8 farmer 4 17, firestarter30 firestarter 27 22, forester6 forester 24 23,
+      fundraiser18 fundraiser 13 23, gambler3 gambler 21 20, gardener5 gardener 16 21,
+      generalist2 generalist 18 21, geologist5 geologist 16 23, irrigator6 irrigator 3 23,
+      land-specialist5 land-specialist 16 21, legend8 legend 18 21, martian6 martian 18 23,
+      mayor5 mayor 16 23, pioneer5 pioneer 16 21, planner24 planner 16 23,
+      polar-explorer5 polar-explorer 15 23, researcher6 researcher 18 23, rim-settler5 rim-settler 18 23,
+      smith9 smith 8 21, spacefarer9 spacefarer 25 22, specialist15 specialist 13 23,
+      t-collector5 t-collector 10 26, tactician8 tactician 15 23, terra-pioneer8 terra-pioneer 28 20,
+      terraformer53 terraformer 8 23, terran9 terran 25 20, tradesman5 tradesman 24 20,
+      tropicalist5 tropicalist 23 21, tycoon23 tycoon 2 23, v-electrician6 v-electrician 25 20,
+      v-spacefarer6 v-spacefarer 18 23,
+      hoverlord11 hoverlord 16 22, hydrologist6 hydrologist 16 22, landshaper5 landshaper 16 22,
+      lobbyist11 lobbyist 16 22, lunarchitect9 lunarchitect 16 22, metallurgist9 metallurgist 16 22,
+      networker5 networker 16 22, one-giant-step9 one-giant-step 16 22, philantropist8 philantropist 16 22,
+      producer24 producer 16 22, purifier5 purifier 16 22, risktaker5 risktaker 16 22,
+      sponsor5 sponsor 16 22, thawer8 thawer 16 22, trader5 trader 16 22,
+      tunneler11 tunneler 16 22;
+    .ma-name {
+      each(@ma-name-conglomerates, {
+        @variant: extract(@value, 1);
+        @base: extract(@value, 2);
+        @left: extract(@value, 3);
+        @top: extract(@value, 4);
+        &--@{variant} {
+          background-image: url("assets/ma/@{base}.png");
+          .ma-number-patch {
+            left: unit(@left, px);
+            top: unit(@top, px);
+          }
+        }
+      });
+    }
+
+    // A small patch drawn over the reused image's corner number, showing the real
+    // Conglomerates-scaled value. Deliberately one consistent style (gold hex, black bold
+    // number) rather than trying to match each base image's own badge color/shape -- reading
+    // through the ~40 source images showed enough variety (circles, hexagons, diamonds, at
+    // least 6 different badge colors) that faithfully recreating each one via CSS wasn't
+    // realistic without real image-editing tools; a consistent "team variant" look is more
+    // achievable and arguably clearer anyway. Position (top/left) is set per-variant above.
+    .ma-number-patch {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+      background: linear-gradient(to bottom, #e8c66a, #b8912f);
+      border: 1px solid #5c4210;
+      color: #1a1200;
+      font-weight: bold;
+      font-size: 11px;
+      line-height: 24px;
+      text-align: center;
+      z-index: 1;
+    }
 
     .ma-description {
       display: inline-block;
@@ -822,11 +935,18 @@
 }
 
 .milestone-award-inline {
+  position: relative;
   white-space: nowrap;
   color: #000;
   text-transform: uppercase;
   background: linear-gradient(to right, #e28c22, #ffcc64, #e28c22);
-  padding: 1px 33px 1px 10px;
+  // Symmetric padding: the old 33px right / 10px left split existed to leave room for the
+  // Coordination decoration when it was `position: absolute`-ed directly into that space.
+  // Now that it's a normal flex child of .milestone-award-price-row, an asymmetric padding
+  // just pushes the (correctly centered, within its own content box) row visually left of
+  // the pill's true bounds -- width is content-box (no box-sizing override here), so extra
+  // right padding adds space beyond, not inside, where the content actually centers.
+  padding: 1px 10px;
   width: 190px;
   letter-spacing: 1px;
   text-align: center;
@@ -843,21 +963,82 @@
     background: @grey_850;
   }
 }
+// The price row: normally just the MC price badge, plus (in Conglomerates games) an arrow and
+// a Coordination icon showing the extra reward. A flex row so the whole group centers as one
+// unit within the pill and every icon vertically aligns automatically -- previous rounds tried
+// to hand-position the arrow/Coordination icon with `position: absolute` pixel offsets against
+// `.milestone-award-price`'s `transform: scale(0.8)`, which repeatedly produced slightly-wrong
+// results because a CSS transform changes an element's paint, not its layout box or the
+// offsets other elements are measured from. Dropping the transform (using real, already-small
+// sizes instead) removes that whole class of error.
+.milestone-award-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 24px;
+}
+
 .milestone-award-price {
   background-image: url(./assets/resources/megacredit.png);
-  width: 30px;
-  height: 30px;
-  line-height: 30px;
-  background-size: 30px;
-  margin-top: -3px;
-  margin-left: 70px;
-  transform: scale(0.8);
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  background-size: 24px;
+  flex: none;
 
   font-family: Prototype, sans-serif;
   color: black;
   font-weight: normal;
-  font-size: 18px;
+  font-size: 15px;
   text-align: center;
+}
+
+.milestone-award-arrow {
+  flex: none;
+  // short-arrow.png is 387x248 (not square) -- `background-size: 15px` only sets the width,
+  // so the height auto-scaled to ~9.6px and sat top-aligned in a 15x15 box, leaving empty
+  // space below it that made the arrow look both smaller and higher than it should. Sizing
+  // the box to the image's real ~1.56:1 ratio fills it completely, so flex's
+  // `align-items: center` on .milestone-award-price-row centers the actual visible glyph.
+  width: 22px;
+  height: 14px;
+  background-image: url(./assets/misc/short-arrow.png);
+  background-size: 22px 14px;
+  background-repeat: no-repeat;
+}
+
+.milestone-award-coordination {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  box-sizing: border-box;
+  border: 1px solid black;
+  background: linear-gradient(to bottom, #2e58bf 50%, #0f2c6e 50%);
+  overflow: hidden;
+  position: relative;
+
+  // Inner fill, inset from the bevel ring above: same bright-top/dark-bottom treatment as
+  // the ring, one shade lighter/darker -- matches .card-resource-coordination/
+  // .resource_icon--coordination exactly. Inset is tighter than the 36px resource-bar/card
+  // version's 3-4px since this icon renders at 24px -- the same absolute inset reads
+  // proportionally thicker at this smaller size.
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    background: linear-gradient(to bottom, #4a78e0 50%, #1f4682 50%);
+  }
+
+  &::before {
+    content: "🤝";
+    position: relative;
+    z-index: 1;
+    display: block;
+    font-size: 13px;
+    line-height: 24px;
+    text-align: center;
+  }
 }
 
 .player_home_block--setup {
@@ -1174,6 +1355,13 @@
     margin-top: 12px;
     font-size: 16px;
   }
+
+  .card-sort-buttons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 10px 0 0 10px;
+  }
 }
 
 .hiding-card-button {
@@ -1228,7 +1416,7 @@
 }
 
 .select-initial-cards {
-  .megacredits {
+  .starting-megacredits {
     display: inline-block;
     font-size: 26px;
     width: 50px;

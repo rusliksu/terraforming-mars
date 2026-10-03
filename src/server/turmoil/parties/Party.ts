@@ -3,8 +3,12 @@ import {IGame} from '../../IGame';
 import {IPlayer} from '../../IPlayer';
 import {Delegate, NeutralPlayer} from '../Turmoil';
 import {CardName} from '../../../common/cards/CardName';
+import {PartyName} from '../../../common/turmoil/PartyName';
+import {PoliticalAgendas} from '../PoliticalAgendas';
+import {IParty} from './IParty';
 
 export abstract class Party {
+  public abstract name: PartyName;
   public partyLeader: undefined | Delegate = undefined;
   public delegates = new MultiSet<Delegate>();
 
@@ -25,6 +29,9 @@ export abstract class Party {
     const cardPlayer = game.getCardPlayerOrUndefined(CardName.CORRIDORS_OF_POWER);
     if (cardPlayer === delegate) {
       cardPlayer.drawCard();
+    }
+    if (game.turmoil !== undefined) {
+      PoliticalAgendas.onPartyLeaderChange(game.turmoil, this as unknown as IParty, delegate, game);
     }
   }
 

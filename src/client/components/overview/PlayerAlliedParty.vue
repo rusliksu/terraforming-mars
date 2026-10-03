@@ -1,7 +1,7 @@
 <template>
     <div class="player-allied-party">
         <div v-if="player.alliedParty" class='allied-policy-block'>
-            <TurmoilAgenda :id="player.alliedParty.agenda.policyId" :show-party-badge="true"/>
+            <TurmoilAgenda :id="player.alliedParty.agenda.policyId" :show-party-badge="true" :morePartiesExpansion="morePartiesExpansion"/>
         </div>
     </div>
 </template>
@@ -18,6 +18,10 @@ export default defineComponent({
     player: {
       type: Object as () => PublicPlayerModel,
       required: true,
+    },
+    morePartiesExpansion: {
+      type: Boolean,
+      default: false,
     },
   },
   components: {

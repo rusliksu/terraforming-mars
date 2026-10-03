@@ -120,6 +120,12 @@ export abstract class Colony implements IColony {
     * @param decreaseTrackAfterTrade when false, the track does not decrease after trading.
     */
   public trade(player: IPlayer, tradeOptions: TradeOptions = {}, bonusTradeOffset = 0): void {
+    for (const cardOwner of player.game.players) {
+      for (const card of cardOwner.tableau) {
+        card.onTradeByAnyPlayer?.(cardOwner, player);
+      }
+    }
+
     const tradeOffset = player.colonies.tradeOffset + bonusTradeOffset;
     const maxPossibleTrackPosition = Math.min(this.trackPosition + tradeOffset, MAX_COLONY_TRACK_POSITION);
     const steps = maxPossibleTrackPosition - this.trackPosition;

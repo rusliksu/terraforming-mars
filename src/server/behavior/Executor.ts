@@ -34,7 +34,7 @@ import {UnderworldExpansion} from '../underworld/UnderworldExpansion';
 import {SelectResource} from '../inputs/SelectResource';
 import {RemoveResourcesFromCard} from '../deferredActions/RemoveResourcesFromCard';
 import {isIProjectCard} from '../cards/IProjectCard';
-import {MAXIMUM_HABITAT_RATE, MAXIMUM_LOGISTIC_RATE, MAXIMUM_MINING_RATE, MAX_OCEAN_TILES, MAX_OXYGEN_LEVEL, MAX_TEMPERATURE, MAX_VENUS_SCALE} from '../../common/constants';
+import {MAXIMUM_HABITAT_RATE, MAXIMUM_LOGISTIC_RATE, MAXIMUM_MINING_RATE, PRODUCTION_MINIMUMS} from '../../common/constants';
 import {CardName} from '../../common/cards/CardName';
 import {SelectCard} from '../inputs/SelectCard';
 import {IGlobalEvent, isIGlobalEvent} from '../turmoil/globalEvents/IGlobalEvent';
@@ -48,11 +48,10 @@ import {AddResourcesToAnyCardExecutor} from './AddResourcesToAnyCardExecutor';
  * went negative takes nothing instead of granting a gain, and never more than the player
  * can give up, so `add` logs the amount that really changed.
  */
-function loseable(units: Units, stock: BaseStock, minMegacredits: number): Units {
+function loseable(units: Units, stock: BaseStock, minimums: Units): Units {
   const capped = {...Units.EMPTY};
   for (const key of Units.keys) {
-    const floor = key === 'megacredits' ? minMegacredits : 0;
-    capped[key] = Math.max(0, Math.min(units[key], stock[key] - floor));
+    capped[key] = Math.max(0, Math.min(units[key], stock[key] - minimums[key]));
   }
   return capped;
 }
@@ -86,22 +85,22 @@ export class Executor implements BehaviorExecutor {
 
     if (behavior.global !== undefined) {
       const g = behavior.global;
-      if (g.temperature !== undefined && game.getTemperature() >= MAX_TEMPERATURE) {
+      if (g.temperature !== undefined && game.getTemperature() >= game.parameters.temperature.max) {
         card.addWarning('maxtemp');
       }
-      if (g.oxygen !== undefined && game.getOxygenLevel() >= MAX_OXYGEN_LEVEL) {
+      if (g.oxygen !== undefined && game.getOxygenLevel() >= game.parameters.oxygen.max) {
         if (g.oxygen < 0) {
           card.addWarning('maxoxygen-reduce');
         } else {
           card.addWarning('maxoxygen');
         }
       }
-      if (g.venus !== undefined && game.getVenusScaleLevel() >= MAX_VENUS_SCALE) {
+      if (g.venus !== undefined && game.getVenusScaleLevel() >= game.parameters.venus.max) {
         card.addWarning('maxvenus');
       }
     }
 
-    if (behavior.ocean !== undefined && game.board.getOceanSpaces().length >= MAX_OCEAN_TILES) {
+    if (behavior.ocean !== undefined && game.board.getOceanSpaces().length >= game.parameters.oceans.max) {
       card.addWarning('maxoceans');
     }
 
@@ -138,7 +137,7 @@ export class Executor implements BehaviorExecutor {
         if (!required) {
           continue;
         }
-        const available = unit === 'heat' ? player.availableHeat() : player[unit];
+        const available = unit === 'heat' ? player.availableHeat() : unit === 'energy' ? player.availableEnergy() : player[unit];
         if (available < required) {
           return false;
         }
@@ -376,7 +375,11 @@ export class Executor implements BehaviorExecutor {
         player.stock.deduct(Resource.PLANTS, spend.plants);
       }
       if (spend.energy) {
-        player.stock.deduct(Resource.ENERGY, spend.energy);
+        player.defer(player.spendEnergy(spend.energy, () => {
+          this.execute(remainder, player, inputCard, executionOptions);
+          return undefined;
+        }));
+        return;
       }
       if (spend.heat) {
         player.defer(player.spendHeat(spend.heat, () => {
@@ -439,12 +442,11 @@ export class Executor implements BehaviorExecutor {
     if (behavior.lose !== undefined) {
       const lose = behavior.lose;
       if (lose.production) {
-        // Production megacredits bottom out at -5, not 0.
-        const units = loseable(ctx.countUnits(lose.production), player.production, -5);
+        const units = loseable(ctx.countUnits(lose.production), player.production, PRODUCTION_MINIMUMS);
         player.production.adjust(Units.negative(units), {log: true, from});
       }
       if (lose.stock) {
-        const units = loseable(ctx.countUnits(lose.stock), player.stock, 0);
+        const units = loseable(ctx.countUnits(lose.stock), player.stock, Units.EMPTY);
         player.stock.adjust(Units.negative(units), {log: true, from});
       }
     }

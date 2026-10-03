@@ -1,5 +1,11 @@
 {
     "Turmoil": "Кризис",
+    "Party reference": "Памятка по партиям",
+    "Available bonuses": "Доступные бонусы",
+    "Available policies": "Доступные политики",
+    "Current selection": "Сейчас выбрано",
+    "When you become chairman, choose either a bonus or a policy.": "Став председателем, выберите либо бонус, либо политику.",
+    "Current selections are marked. Change them through the game prompt.": "Текущие варианты отмечены. Меняйте их в предложенном игрой выборе.",
     "Send a delegate in an area (from lobby)": "Отправить делегата (из очереди)",
     "Send a delegate in an area (5 M€)": "Отправить делегата (за 5 M€)",
     "Policies": "Политики правящих партий",

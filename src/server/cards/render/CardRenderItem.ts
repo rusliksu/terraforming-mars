@@ -14,6 +14,8 @@ export type ItemOptions = Partial<{
   size: Size;
   amount: number;
   all: boolean;
+  /** Conglomerates: outline this item green to show it belongs to, or goes to, a teammate. */
+  teammate: boolean;
   digit: boolean;
   played: boolean;
   secondaryTag: Tag | AltSecondaryTag;
@@ -32,6 +34,7 @@ export type ItemOptions = Partial<{
 export class CardRenderItem implements ICardRenderItem {
   public readonly is = 'item';
   public anyPlayer?: boolean;
+  public teammate?: boolean;
   public showDigit?: true;
   public amountInside?: true;
   public text?: string;
@@ -68,6 +71,7 @@ export class CardRenderItem implements ICardRenderItem {
       this.amount = options.amount;
     }
     this.anyPlayer = options.all;
+    this.teammate = options.teammate;
     this.secondaryTag = options.secondaryTag;
 
     if (options.clone === true) {

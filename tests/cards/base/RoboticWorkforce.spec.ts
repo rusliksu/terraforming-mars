@@ -40,7 +40,7 @@ import {ImmigrantCity} from '../../../src/server/cards/base/ImmigrantCity';
 import {NoctisCity} from '../../../src/server/cards/base/NoctisCity';
 import {FrontierTown} from '../../../src/server/cards/prelude2/FrontierTown';
 import {Outskirts} from '../../../src/server/cards/venusPhase2/Outskirts';
-import {isICardRenderProductionBox} from '../../../src/common/cards/render/Types';
+import {ICardRenderRoot, isICardRenderProductionBox} from '../../../src/common/cards/render/Types';
 
 describe('RoboticWorkforce', () => {
   let card: RoboticWorkforce;
@@ -469,7 +469,9 @@ describe('RoboticWorkforce', () => {
 
       console.log(`        ${card.name}: ${include ? 'eligible' : 'ineligible'}`);
       // Placement effects are not production boxes.
-      const hasProductionBox = include && card.metadata.renderData?.rows.some((row) => row.some(isICardRenderProductionBox));
+      const renderData = include ? card.metadata.renderData : undefined;
+      const hasProductionBox = renderData?.is === 'root' &&
+        (renderData as ICardRenderRoot).rows.some((row) => row.some(isICardRenderProductionBox));
       if (include && hasProductionBox) {
         const changed = ALL_RESOURCES.filter((r) => player.production[r] !== 2);
         const declared = card.productionBox !== undefined ?

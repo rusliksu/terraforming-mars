@@ -15,6 +15,9 @@ requirement_refs:
 planning_base_branch: codex/fanmade-full-port
 merge_target_branch: codex/fanmade-full-port
 branch_strategy: Planning artifacts for this mission were generated on codex/fanmade-full-port. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into codex/fanmade-full-port unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-fanmade-full-port-01M3J328
+base_commit: 42e2d4f6614da2ad414dba59bdab111b3ec799cb
+created_at: '2026-10-03T11:19:40.432343+00:00'
 subtasks:
 - T014
 - T015

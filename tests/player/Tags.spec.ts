@@ -89,7 +89,65 @@ describe('Tags', () => {
     expect(player.tags.distinctCount('default')).eq(2);
   });
 
-  // cardTagCount()
+  describe('cardTagCount', () => {
+    it('counts a single tag', () => {
+      const card = fakeCard({tags: [Tag.SCIENCE, Tag.SCIENCE, Tag.BUILDING]});
+      expect(tags.cardTagCount(card, Tag.SCIENCE)).eq(2);
+    });
+
+    it('counts an array of tags', () => {
+      const card = fakeCard({tags: [Tag.ANIMAL, Tag.PLANT, Tag.MICROBE, Tag.BUILDING]});
+      expect(tags.cardTagCount(card, [Tag.ANIMAL, Tag.PLANT, Tag.MICROBE])).eq(3);
+    });
+
+    it('Habitat Marte: counts Mars tags as Science, single-tag target', () => {
+      player.playedCards.push(newCard(CardName.HABITAT_MARTE)!);
+      const card = fakeCard({tags: [Tag.MARS, Tag.SCIENCE, Tag.BUILDING]});
+      expect(tags.cardTagCount(card, Tag.SCIENCE)).eq(2);
+    });
+
+    it('Habitat Marte: counts Mars tags as Science, array target', () => {
+      player.playedCards.push(newCard(CardName.HABITAT_MARTE)!);
+      const card = fakeCard({tags: [Tag.MARS, Tag.BUILDING]});
+      expect(tags.cardTagCount(card, [Tag.SCIENCE, Tag.EARTH])).eq(1);
+    });
+
+    it('without Habitat Marte, Mars tags do not count as Science', () => {
+      const card = fakeCard({tags: [Tag.MARS]});
+      expect(tags.cardTagCount(card, Tag.SCIENCE)).eq(0);
+    });
+
+    it('Nereid Biosystems: counts Jovian tags as Microbe, single-tag target', () => {
+      player.playedCards.push(newCard(CardName.NEREID_BIOSYSTEMS)!);
+      const card = fakeCard({tags: [Tag.JOVIAN, Tag.MICROBE, Tag.BUILDING]});
+      expect(tags.cardTagCount(card, Tag.MICROBE)).eq(2);
+    });
+
+    it('Nereid Biosystems: counts Jovian tags as Microbe, array target', () => {
+      player.playedCards.push(newCard(CardName.NEREID_BIOSYSTEMS)!);
+      const card = fakeCard({tags: [Tag.JOVIAN, Tag.ANIMAL]});
+      expect(tags.cardTagCount(card, [Tag.ANIMAL, Tag.PLANT, Tag.MICROBE])).eq(2);
+    });
+
+    it('without Nereid Biosystems, Jovian tags do not count as Microbe', () => {
+      const card = fakeCard({tags: [Tag.JOVIAN]});
+      expect(tags.cardTagCount(card, Tag.MICROBE)).eq(0);
+    });
+  });
+
+  describe('cardHasTag', () => {
+    it('Nereid Biosystems: a Jovian-tagged card counts as having a Microbe tag', () => {
+      player.playedCards.push(newCard(CardName.NEREID_BIOSYSTEMS)!);
+      const card = fakeCard({tags: [Tag.JOVIAN]});
+      expect(tags.cardHasTag(card, Tag.MICROBE)).is.true;
+    });
+
+    it('without Nereid Biosystems, a Jovian-tagged card does not count as having a Microbe tag', () => {
+      const card = fakeCard({tags: [Tag.JOVIAN]});
+      expect(tags.cardHasTag(card, Tag.MICROBE)).is.false;
+    });
+  });
+
   // multipleCount
 
   const tagsInGameRuns: ReadonlyArray<{options: Partial<GameOptions>, expected: number}> = [

@@ -101,4 +101,34 @@ describe('GlobalEventDealer', () => {
     expect(deckHasCard(newDealer({}), GlobalEventName.BALANCED_DEVELOPMENT)).is.false;
     expect(deckHasCard(newDealer({pathfindersExpansion: true}), GlobalEventName.BALANCED_DEVELOPMENT)).is.true;
   });
+
+  // More Parties (fan) events whose reward is meaningless without the referenced expansion's
+  // own cards/mechanics (e.g. Ore only exists on High Orbit's Infrastructure cards) -- see
+  // MorePartiesCardManifest.ts.
+  it('dealer filters More Parties events requiring High Orbit', () => {
+    expect(deckHasCard(newDealer({morePartiesExpansion: true}), GlobalEventName.KUIPERS_EXPANSION)).is.false;
+    expect(deckHasCard(newDealer({morePartiesExpansion: true, highOrbitExpansion: true}), GlobalEventName.KUIPERS_EXPANSION)).is.true;
+    expect(deckHasCard(newDealer({morePartiesExpansion: true}), GlobalEventName.SANCTION_ON_THE_OUTSKIRTS)).is.false;
+    expect(deckHasCard(newDealer({morePartiesExpansion: true, highOrbitExpansion: true}), GlobalEventName.SANCTION_ON_THE_OUTSKIRTS)).is.true;
+  });
+
+  it('dealer filters More Parties events requiring Venus', () => {
+    expect(deckHasCard(newDealer({morePartiesExpansion: true}), GlobalEventName.ATMOSPHERIC_PORTS)).is.false;
+    expect(deckHasCard(newDealer({morePartiesExpansion: true, venusNextExtension: true}), GlobalEventName.ATMOSPHERIC_PORTS)).is.true;
+    expect(deckHasCard(newDealer({morePartiesExpansion: true}), GlobalEventName.VENUS_VOLCANISM)).is.false;
+    expect(deckHasCard(newDealer({morePartiesExpansion: true, venusNextExtension: true}), GlobalEventName.VENUS_VOLCANISM)).is.true;
+  });
+
+  it('dealer filters More Parties events requiring Colonies', () => {
+    expect(deckHasCard(newDealer({morePartiesExpansion: true}), GlobalEventName.INDEPENDENT_CARRIERS)).is.false;
+    expect(deckHasCard(newDealer({morePartiesExpansion: true, coloniesExtension: true}), GlobalEventName.INDEPENDENT_CARRIERS)).is.true;
+    expect(deckHasCard(newDealer({morePartiesExpansion: true}), GlobalEventName.POPULATION_COLLAPSES)).is.false;
+    expect(deckHasCard(newDealer({morePartiesExpansion: true, coloniesExtension: true}), GlobalEventName.POPULATION_COLLAPSES)).is.true;
+  });
+
+  it('does not filter More Parties events that degrade gracefully without an expansion', () => {
+    // ClosedBiospheres offers 3 rewards (floater/titanium/steel); losing the Venus-only floater
+    // option still leaves 2 working choices, so it isn't gated on Venus like the cards above.
+    expect(deckHasCard(newDealer({morePartiesExpansion: true}), GlobalEventName.CLOSED_BIOSPHERES)).is.true;
+  });
 });

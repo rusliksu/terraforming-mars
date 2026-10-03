@@ -99,6 +99,17 @@ export function setRulingParty(game: IGame, partyName: PartyName, policyId?: Pol
   game.phase = Phase.ACTION;
 }
 
+// More Parties randomly picks 6 of 12 parties per game (see Turmoil.shufflePartyNames). Tests
+// that need a specific non-official party to exist (e.g. to set it as ruling) should call this
+// in beforeEach and call the returned function in afterEach to restore real shuffling.
+export function forcePartiesInPlay(...names: ReadonlyArray<PartyName>): () => void {
+  const original = Turmoil.shufflePartyNames;
+  Turmoil.shufflePartyNames = (allNames) => [...names, ...allNames.filter((name) => !names.includes(name))];
+  return () => {
+    Turmoil.shufflePartyNames = original;
+  };
+}
+
 // Just shortcuts to some often called methods
 // related to the deferred actions queue
 export function runAllActions(game: IGame) {
@@ -196,6 +207,9 @@ class FakeCard implements IProjectCard {
     return 0;
   }
   public getGlobalParameterRequirementBonus(): number {
+    return 0;
+  }
+  public getTagCardRequirementBonus(): number {
     return 0;
   }
   public type = CardType.ACTIVE;

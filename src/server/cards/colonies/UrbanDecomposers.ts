@@ -6,6 +6,7 @@ import {CardName} from '../../../common/cards/CardName';
 import {CardResource} from '../../../common/CardResource';
 import {CardRenderer} from '../render/CardRenderer';
 import {Card} from '../Card';
+import {VenusPhase2Expansion} from '../../venusPhase2/VenusPhase2Expansion';
 
 export class UrbanDecomposers extends Card implements IProjectCard {
   constructor() {
@@ -36,6 +37,6 @@ export class UrbanDecomposers extends Card implements IProjectCard {
     player.game.colonies.forEach((colony) => {
       coloniesCount += colony.colonies.filter((owner) => owner === player.id).length;
     });
-    return coloniesCount > 0 && player.game.board.getCities(player).length > 0;
+    return coloniesCount > 0 && (player.game.board.getCities(player).length > 0 || VenusPhase2Expansion.getCitiesCount(player.game, player) > 0);
   }
 }

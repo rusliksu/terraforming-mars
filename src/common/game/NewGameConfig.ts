@@ -31,6 +31,8 @@ export interface NewPlayerModel {
   isBot: boolean;
   profileId?: string;
   telegramID?: string;
+  /** Conglomerates only: which team this player is on. Players sharing a value are teammates. */
+  team?: number;
 }
 
 export type EscapeVelocityOptions = {
@@ -51,6 +53,12 @@ export interface NewGameConfig {
   players: Array<NewPlayerModel>;
   expansions: Record<Expansion, boolean>,
   board: BoardNameType;
+  /** Opaque map-editor code, required when `board` is `BoardName.CUSTOM`. */
+  customBoardCode?: string;
+  /** Opaque map-editor code overriding the Moon board's own hard-coded default layout. */
+  customMoonBoardCode?: string;
+  /** Opaque map-editor code overriding the Venus Phase 2 board's own hard-coded default layout. */
+  customVenusSurfaceBoardCode?: string;
   seed: number;
   randomFirstPlayer: boolean;
 

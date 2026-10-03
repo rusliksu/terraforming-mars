@@ -11,6 +11,7 @@ import {PartyName} from '../turmoil/PartyName';
 import {Agenda} from '../turmoil/Types';
 import {Tag} from '../cards/Tag';
 import {UnderworldPlayerData} from '../underworld/UnderworldPlayerData';
+import {ConglomeratesPlayerData} from '../conglomerates/ConglomeratesPlayerData';
 import {GlobalParameter} from '../GlobalParameter';
 import {DeltaProjectPlayerModel} from './DeltaProjectPlayerModel';
 
@@ -55,6 +56,7 @@ export type PublicPlayerModel = {
   coloniesCount: number;
   color: Color;
   deltaProject?: DeltaProjectPlayerModel;
+  epsilonDample?: DeltaProjectPlayerModel;
   energy: number;
   energyProduction: number;
   fleetSize: number;
@@ -91,6 +93,9 @@ export type PublicPlayerModel = {
   titaniumValue: number;
   tradesThisGeneration: number;
   underworldData: UnderworldPlayerData,
+  conglomeratesData: ConglomeratesPlayerData,
+  /** This player's shared Conglomerates team color (see ConglomeratesExpansion.teamDisplayColor), undefined if teamless or the expansion is off. */
+  conglomeratesTeamColor?: Color,
   victoryPointsBreakdown: VictoryPointsBreakdown;
   victoryPointsByGeneration: ReadonlyArray<number>;
   globalParameterSteps: Partial<Record<GlobalParameter, number>>;

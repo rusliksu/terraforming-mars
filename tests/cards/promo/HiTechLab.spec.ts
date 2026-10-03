@@ -1,5 +1,6 @@
 import {expect} from 'chai';
 import {HiTechLab} from '../../../src/server/cards/promo/HiTechLab';
+import {SistemasSeebeck} from '../../../src/server/cards/pathfinders/SistemasSeebeck';
 import {SelectAmount} from '../../../src/server/inputs/SelectAmount';
 import {Resource} from '../../../src/common/Resource';
 import {TestPlayer} from '../../TestPlayer';
@@ -46,5 +47,18 @@ describe('HiTechLab', () => {
   it('Should give victory points', () => {
     card.play(player);
     expect(card.getVictoryPoints(player)).to.eq(1);
+  });
+
+  it('with Sistemas Seebeck, heat covers an energy shortfall', () => {
+    player.playedCards.push(new SistemasSeebeck());
+    player.energy = 0;
+    player.heat = 5;
+    expect(card.canAct(player)).is.true;
+
+    const selectAmount = cast(card.action(player), SelectAmount);
+    selectAmount.cb(3);
+
+    expect(player.heat).to.eq(2);
+    expect(player.energy).to.eq(0);
   });
 });

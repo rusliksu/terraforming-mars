@@ -1,3 +1,4 @@
+import {getAutomationCompatibility, automationUnavailableReason} from '../bot/AutomationCompatibility';
 import prometheus from 'prom-client';
 import {Database} from './Database';
 import {Game} from '../Game';
@@ -303,7 +304,14 @@ export class GameLoader implements IGameLoader {
       }
       try {
         game.getPlayerById(playerId);
-        this.botTakeoverManager.start({gameId: game.id, playerId, serverId: this.botServerId});
+        const compatibility = getAutomationCompatibility(game.gameOptions);
+        const reason = automationUnavailableReason(compatibility);
+        if (reason !== undefined) {
+          result.failed++;
+          console.warn('Surrender bot unavailable', {gameId: game.id, reason});
+          continue;
+        }
+        this.botTakeoverManager.start({compatibility, gameId: game.id, playerId, serverId: this.botServerId});
         result.started++;
       } catch (_error) {
         result.failed++;

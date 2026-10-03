@@ -1,3 +1,6 @@
+import {getAutomationCompatibility} from '../bot/AutomationCompatibility';
+import {decodeCustomBoard} from '../../common/boards/customBoardCodec';
+import {decodeSimpleBoard} from '../../common/boards/simpleBoardCodec';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as responses from '../server/responses';
@@ -101,6 +104,9 @@ export class ApiQuickGame extends Handler {
   private settingsToConfig(settings: Record<string, any>, playerCount: number): NewGameConfig {
     const expansions = this.buildExpansions(settings);
     const players = this.generatePlayers(playerCount);
+    if (expansions.conglomerates) {
+      players.forEach((player, index) => player.team = settings.players?.[index]?.team ?? Math.floor(index / 2));
+    }
 
     let board: BoardName | RandomBoardOption = RandomBoardOption.ALL;
     if (settings.board) {
@@ -147,6 +153,9 @@ export class ApiQuickGame extends Handler {
       players,
       expansions,
       board,
+      customBoardCode: settings.customBoardCode,
+      customMoonBoardCode: settings.customMoonBoardCode,
+      customVenusSurfaceBoardCode: settings.customVenusSurfaceBoardCode,
       seed: Math.random(),
       randomFirstPlayer: settings.randomFirstPlayer ?? true,
       clonedGamedId: undefined,
@@ -236,16 +245,50 @@ export class ApiQuickGame extends Handler {
         0;
 
       const boardSelection = gameReq.board;
-      const boards = ApiCreateGame.boardOptions(boardSelection);
-      gameReq.board = boards[Math.floor(Math.random() * boards.length)];
+      let customBoard: GameOptions['customBoard'];
+      let resolvedBoard = BoardName.CUSTOM;
+      if (boardSelection === BoardName.CUSTOM) {
+        if (gameReq.customBoardCode === undefined) {
+          throw new Error('A custom board requires a map code.');
+        }
+        customBoard = decodeCustomBoard(gameReq.customBoardCode);
+      } else {
+        const boards = ApiCreateGame.boardOptions(boardSelection);
+        resolvedBoard = boards[Math.floor(Math.random() * boards.length)];
+      }
+      const customMoonBoard = gameReq.expansions.moon && gameReq.customMoonBoardCode !== undefined ?
+        decodeSimpleBoard(gameReq.customMoonBoardCode) : undefined;
+      const customVenusSurfaceBoard = gameReq.expansions.venusPhase2 && gameReq.customVenusSurfaceBoardCode !== undefined ?
+        decodeSimpleBoard(gameReq.customVenusSurfaceBoardCode) : undefined;
+      if (customMoonBoard !== undefined && customMoonBoard.boardType !== 'moon') {
+        throw new Error('Expected a Moon map.');
+      }
+      if (customVenusSurfaceBoard !== undefined && customVenusSurfaceBoard.boardType !== 'venusPhase2') {
+        throw new Error('Expected a Venus map.');
+      }
 
       const gameOptions: GameOptions = {
+        customBoard, customMoonBoard, customVenusSurfaceBoard,
+        globalParameters: customBoard?.globalParameters,
+        sillyficationExpansion: gameReq.expansions.sillyfication,
+        betterMarsExpansion: gameReq.expansions.betterMars,
+        customCardsExpansion: gameReq.expansions.customCards,
+        conglomeratesExpansion: gameReq.expansions.conglomerates,
+        corporateBettermentsExpansion: gameReq.expansions.corporateBetterments,
+        idesOfMarsExpansion: gameReq.expansions.idesOfMars,
+        robAntillesExpansion: gameReq.expansions.robAntilles,
+        morePartiesExpansion: gameReq.expansions.moreParties,
+        venusPhase2Expansion: gameReq.expansions.venusPhase2,
+        industriesExpansion: gameReq.expansions.industries,
+        highOrbitExpansion: gameReq.expansions.highOrbit,
+        solarisExpansion: gameReq.expansions.solaris,
+        conglomeratesTeamAssignments: gameReq.expansions.conglomerates ? gameReq.players.map((p) => p.team ?? 0) : undefined,
         altVenusBoard: gameReq.altVenusBoard,
         aresExtension: gameReq.expansions.ares,
         aresHazards: true,
         aresExtremeVariant: gameReq.aresExtremeVariant,
         bannedCards: gameReq.bannedCards,
-        boardName: gameReq.board,
+        boardName: resolvedBoard,
         boardSelection,
         ceoExtension: gameReq.expansions.ceo,
         clonedGamedId: gameReq.clonedGamedId,
@@ -308,6 +351,7 @@ export class ApiQuickGame extends Handler {
       const proto = req.headers['x-forwarded-proto'] || 'http';
       const baseUrl = proto + '://' + host;
       const result = {
+        automationCompatibility: getAutomationCompatibility(game.gameOptions),
         id: game.id,
         spectatorUrl: baseUrl + '/spectator?id=' + spectatorId,
         players: game.playersInGenerationOrder.map((p) => ({

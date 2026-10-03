@@ -1,0 +1,4 @@
+source,finding,evidence
+target,Authoritative base pinned,source-pins.json
+fanmade,Fourteen PR heads fetched and pinned,source-pins.json
+merge-preview,40 textual merge conflicts before source PR corrections,common ancestor merge-tree

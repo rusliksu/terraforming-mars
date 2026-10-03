@@ -1,9 +1,34 @@
+import {Phase} from '../../src/common/Phase';
+import {DataDrivenCard} from '../../src/server/cards/DataDrivenCard';
+import {blankCustomCard} from '../../src/common/cards/CustomCardDefinition';
 import {expect} from 'chai';
 import {Cloner} from '../../src/server/database/Cloner';
 import {Game} from '../../src/server/Game';
 import {Player} from '../../src/server/Player';
 
 describe('Cloner', () => {
+  it('remaps player identities without rewriting dynamic card identity or text', () => {
+    const player = new Player('source', 'blue', true, 0, 'p-source-id');
+    const game = Game.newInstance('g-source', [player], player, 'spectatorid');
+    game.generation = 2;
+    game.phase = Phase.ACTION;
+    const definition = {...blankCustomCard(player.id), description: player.id};
+    player.cardsInHand = [new DataDrivenCard(definition)];
+    player.lastCardPlayed = player.cardsInHand[0].name;
+    player.actionsThisGeneration.add(player.cardsInHand[0].name);
+    player.playedCards.push(new DataDrivenCard(definition));
+    game.projectDeck.drawPile = [new DataDrivenCard(definition)];
+    const replacement = new Player('replacement', 'red', true, 0, 'p-replacement-id');
+    const cloned = Cloner.clone('g-clone', [replacement], 0, JSON.parse(JSON.stringify(game.serialize())));
+    expect(cloned.players[0].id).eq(replacement.id);
+    expect(cloned.activePlayer.id).eq(replacement.id);
+    expect(cloned.players[0].cardsInHand[0].name).eq(player.id);
+    expect(cloned.players[0].lastCardPlayed).eq(player.id);
+    expect([...cloned.players[0].actionsThisGeneration]).deep.eq([player.id]);
+    expect(cloned.projectDeck.drawPile[0].name).eq(player.id);
+    expect(cloned.players[0].playedCards.last()?.metadata.description).eq(player.id);
+  });
+
   it('solo game preserved', () => {
     const player = new Player('old-player1', 'yellow', true, 9, 'p-old-player1-id');
     const game = Game.newInstance(

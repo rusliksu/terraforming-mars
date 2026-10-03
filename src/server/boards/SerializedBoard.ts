@@ -15,6 +15,7 @@ export interface SerializedSpace {
   id: SpaceId;
   spaceType: SpaceType;
   volcanic?: true;
+  reserved?: true;
   tile?: Tile;
   cube?: SpaceCube;
   player?: PlayerId;

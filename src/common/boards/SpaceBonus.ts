@@ -33,6 +33,9 @@ export enum SpaceBonus {
     // Terra Cimmeria Nova-specific
     COLONY, // 17
     TEMPERATURE_4MC, // 18, Vastitas Borealis Nova-specific, costs 4MC not 3
+
+    // Venus Phase 2 map editor-specific
+    FLOATER, // 19
 }
 
 const TO_STRING_MAP = {
@@ -55,6 +58,7 @@ const TO_STRING_MAP = {
   [SpaceBonus.DELEGATE]: 'Delegate',
   [SpaceBonus.COLONY]: 'Colony',
   [SpaceBonus.TEMPERATURE_4MC]: 'Temperature',
+  [SpaceBonus.FLOATER]: 'Floater',
 } satisfies Record<SpaceBonus, string>;
 
 export namespace SpaceBonus {

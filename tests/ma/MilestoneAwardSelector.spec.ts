@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 import {awardManifest} from '../../src/server/awards/Awards';
-import {milestoneManifest} from '../../src/server/milestones/Milestones';
+import {CONGLOMERATES_MILESTONE_MAP, milestoneManifest} from '../../src/server/milestones/Milestones';
 import {chooseMilestonesAndAwards, getCandidates, LIMITED_SYNERGY, maximumSynergy, verifySynergyRules} from '../../src/server/ma/MilestoneAwardSelector';
 import {RandomMAOptionType} from '../../src/common/ma/RandomMAOptionType';
 import {intersection} from '../../src/common/utils/utils';
@@ -197,4 +197,53 @@ describe('MilestoneAwardSelector', () => {
   function choose(options: Partial<GameOptions>) {
     return chooseMilestonesAndAwards({...DEFAULT_GAME_OPTIONS, ...options});
   }
+
+  describe('Conglomerates milestone scaling', () => {
+    it('swaps Tharsis board milestones for their scaled Conglomerates siblings', () => {
+      const mas = choose({
+        boardName: BoardName.THARSIS,
+        randomMA: RandomMAOptionType.NONE,
+        conglomeratesExpansion: true,
+      });
+      expect(mas.milestones).to.deep.eq(['Terraformer53', 'Mayor5', 'Gardener5', 'Builder12', 'Planner24']);
+    });
+
+    it('does not swap milestone names when Conglomerates is off', () => {
+      const mas = choose({
+        boardName: BoardName.THARSIS,
+        randomMA: RandomMAOptionType.NONE,
+        conglomeratesExpansion: false,
+      });
+      expect(mas.milestones).to.deep.eq(['Terraformer', 'Mayor', 'Gardener', 'Builder', 'Planner']);
+    });
+
+    it('leaves Minimalist (a maximum, not minimum, threshold) unswapped on Amazonis', () => {
+      const mas = choose({
+        boardName: BoardName.AMAZONIS,
+        randomMA: RandomMAOptionType.NONE,
+        conglomeratesExpansion: true,
+      });
+      expect(mas.milestones).to.contain('Minimalist');
+    });
+
+    it('swaps Generalist (Elysium) for its redefined team variant, not a 1.5x scale', () => {
+      const mas = choose({
+        boardName: BoardName.ELYSIUM,
+        randomMA: RandomMAOptionType.NONE,
+        conglomeratesExpansion: true,
+      });
+      expect(mas.milestones).to.contain('Generalist2');
+    });
+
+    it('never offers a Conglomerates milestone variant as a random candidate', () => {
+      const [milestones] = getCandidates({
+        ...DEFAULT_GAME_OPTIONS,
+        randomMA: RandomMAOptionType.UNLIMITED,
+        conglomeratesExpansion: true,
+        includeFanMA: true,
+      });
+      const variantNames = Object.values(CONGLOMERATES_MILESTONE_MAP);
+      expect(intersection(milestones as Array<string>, variantNames as Array<string>)).is.empty;
+    });
+  });
 });

@@ -1,0 +1,80 @@
+{
+  "targetRepository": "rusliksu/terraforming-mars",
+  "targetBase": "4ea59edde3ea2a2821ac95da6d10a857eff8f1be",
+  "sourceRepository": "JessyIsCute/terraforming-mars",
+  "sourceBase": "be1ae440e62a01ecf77eb345e6d153ca60e643df",
+  "commonAncestor": "17dbc9dc26f380260b743a3db7021537d3790e4f",
+  "pullRequests": [
+    {
+      "number": 1,
+      "sha": "67cc8f8939a72a5891923ff3428b57c5df5b8003",
+      "url": "https://github.com/JessyIsCute/terraforming-mars/pull/1"
+    },
+    {
+      "number": 2,
+      "sha": "17f91ff773a3fe8a750bb1e3e6a0f485007aa9c7",
+      "url": "https://github.com/JessyIsCute/terraforming-mars/pull/2"
+    },
+    {
+      "number": 3,
+      "sha": "968697718e9efeeecf2ee172d7238d8c5d0bf13b",
+      "url": "https://github.com/JessyIsCute/terraforming-mars/pull/3"
+    },
+    {
+      "number": 4,
+      "sha": "14729d7217d236933408b9b66ff03555bba99fef",
+      "url": "https://github.com/JessyIsCute/terraforming-mars/pull/4"
+    },
+    {
+      "number": 5,
+      "sha": "2622162f4585f292ac207261c410af592e8c936a",
+      "url": "https://github.com/JessyIsCute/terraforming-mars/pull/5"
+    },
+    {
+      "number": 6,
+      "sha": "a34c8fb765fcf71d66e19af2e6738edc797bb149",
+      "url": "https://github.com/JessyIsCute/terraforming-mars/pull/6"
+    },
+    {
+      "number": 7,
+      "sha": "44489ed9f43482324670c48a875448c72a74f43e",
+      "url": "https://github.com/JessyIsCute/terraforming-mars/pull/7"
+    },
+    {
+      "number": 8,
+      "sha": "b248051359568a871131117a831b4fbcc423a1a2",
+      "url": "https://github.com/JessyIsCute/terraforming-mars/pull/8"
+    },
+    {
+      "number": 9,
+      "sha": "86f6f980e00b7289ac1d2df8b8c9ad812a4ebffe",
+      "url": "https://github.com/JessyIsCute/terraforming-mars/pull/9"
+    },
+    {
+      "number": 10,
+      "sha": "b90966cb318d54fcaa6846bb64eeff01f2faa3da",
+      "url": "https://github.com/JessyIsCute/terraforming-mars/pull/10"
+    },
+    {
+      "number": 11,
+      "sha": "e849238bd92fdcb408dc008a7531d4843537832f",
+      "url": "https://github.com/JessyIsCute/terraforming-mars/pull/11"
+    },
+    {
+      "number": 12,
+      "sha": "bacc6b336ddc3f2174d0dfc7f93415cf17096677",
+      "url": "https://github.com/JessyIsCute/terraforming-mars/pull/12"
+    },
+    {
+      "number": 13,
+      "sha": "0143a5d508e6708f7df3ff4ab54f3b7b3728cc0d",
+      "url": "https://github.com/JessyIsCute/terraforming-mars/pull/13"
+    },
+    {
+      "number": 14,
+      "sha": "c913294e0e779656689dbaa807167c936e08f2b7",
+      "url": "https://github.com/JessyIsCute/terraforming-mars/pull/14"
+    }
+  ],
+  "combinedSource": "8d5a68deb229b6e77c990e2ae0a6764ceb0a44bd"
+}

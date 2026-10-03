@@ -1,12 +1,13 @@
 import {PlayerId} from '../common/Types';
 import {CardName} from '../common/cards/CardName';
 import {Color} from '../common/Color';
-import {SerializedCard} from './SerializedCard';
+import {DynamicCardState, SerializedCard} from './SerializedCard';
 import {SerializedTimer} from '../common/SerializedTimer';
 import {AlliedParty} from '../common/turmoil/Types';
 import {GlobalParameter} from '../common/GlobalParameter';
 import {DiscordId} from './server/auth/discord';
 import {UnderworldPlayerData} from '../common/underworld/UnderworldPlayerData';
+import {ConglomeratesPlayerData} from '../common/conglomerates/ConglomeratesPlayerData';
 import {DeltaProjectPlayerModel} from '../common/models/DeltaProjectPlayerModel';
 import {EarlyGameStats} from './game/EarlyGameStats';
 import type {ResearchPurchaseUndoState} from './game/ResearchPurchaseUndo';
@@ -14,8 +15,12 @@ import type {ResearchPurchaseUndoState} from './game/ResearchPurchaseUndo';
 interface DeprecatedFields {
 }
 
+export type ProjectCardZone = 'cardsInHand' | 'dealtProjectCards' | 'draftedCards' | 'draftHand' | 'removedFromPlayCards';
+
 export interface SerializedPlayer extends DeprecatedFields{
+  projectCardStates?: Partial<Record<ProjectCardZone, Array<DynamicCardState>>>;
   actionsTakenThisGame: number;
+  actionsTakenAtGenerationStart?: number;
   actionsTakenThisRound: number;
   availableActionsThisRound?: number;
   actionsThisGeneration: Array<CardName>;
@@ -23,6 +28,8 @@ export interface SerializedPlayer extends DeprecatedFields{
   autoPass: boolean;
   beginner: boolean;
   canUseHeatAsMegaCredits: boolean;
+  // Optional for backward compatibility with games serialized before this field existed.
+  canUseEnergyAsMegaCredits?: boolean;
   canUseTitaniumAsMegacredits: boolean;
   canUsePlantsAsMegaCredits: boolean;
   cardCost: number;
@@ -38,6 +45,7 @@ export interface SerializedPlayer extends DeprecatedFields{
   dealtPreludeCards: Array<CardName>;
   dealtProjectCards: Array<CardName>;
   deltaProject?: DeltaProjectPlayerModel;
+  epsilonDample?: DeltaProjectPlayerModel;
   draftedCards: Array<CardName>;
   draftHand: Array<CardName>,
   energy: number;
@@ -57,6 +65,8 @@ export interface SerializedPlayer extends DeprecatedFields{
   lastNoticeMessageId?: number;
   lastTurnNoticeKey?: string;
   lastTurnReminderNoticeKey?: string;
+  lastGreeneryActionNumber?: number;
+  nextResearchKeepMax?: number;
   megaCreditProduction: number;
   megaCredits: number;
   name: string;
@@ -76,10 +86,14 @@ export interface SerializedPlayer extends DeprecatedFields{
   researchPurchaseUndo?: ResearchPurchaseUndoState;
   removingPlayers: Array<PlayerId>;
   scienceTagCount: number;
+  spaceTagCount?: number;
+  energyTagCount?: number;
+  wildTagCount?: number;
   standardProjectsThisGeneration: Array<CardName>;
   steel: number;
   steelProduction: number;
   steelValue: number;
+  floaterValue?: number;
   terraformRating: number;
   timer: SerializedTimer;
   titanium: number;
@@ -88,11 +102,15 @@ export interface SerializedPlayer extends DeprecatedFields{
   totalDelegatesPlaced: number;
   tradesThisGeneration: number;
   trThisGeneration: number;
+  administrativeDelayActiveGeneration?: number;
+  oneActionPerTurnActiveGeneration?: number;
   turmoilPolicyActionUsed: boolean;
   underworldData: UnderworldPlayerData;
+  conglomeratesData?: ConglomeratesPlayerData;
   victoryPointsByGeneration: Array<number>;
   user?: DiscordId;
   telegramID?: string;
   warmongerCards: number;
+  industryTilesPlaced?: number;
   withinDeflectionZone: boolean;
 }

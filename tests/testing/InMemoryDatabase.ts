@@ -5,11 +5,15 @@ import {GameIdLedger, IDatabase} from '../../src/server/database/IDatabase';
 import {GameId, ParticipantId} from '../../src/common/Types';
 import {Session, SessionId} from '../../src/server/auth/Session';
 import {Clock} from '../../src/common/Timer';
+import {MapLibraryEntry, MapLibraryEntryId, MapLibraryStatus} from '../../src/common/boards/MapLibraryEntry';
+import {CustomCardLibraryEntry, CustomCardEntryId, CustomCardStatus} from '../../src/common/cards/CustomCardLibraryEntry';
 
 export class InMemoryDatabase implements IDatabase {
   public games: Map<GameId, Array<SerializedGame | undefined>> = new Map();
   protected completedGames: Map<GameId, Date> = new Map();
   protected sessions: Map<SessionId, Session> = new Map();
+  protected mapLibraryEntries: Map<MapLibraryEntryId, MapLibraryEntry> = new Map();
+  protected customCardLibraryEntries: Map<CustomCardEntryId, CustomCardLibraryEntry> = new Map();
   private clock: Clock;
 
   constructor(clock: Clock = new Clock()) {
@@ -96,6 +100,14 @@ export class InMemoryDatabase implements IDatabase {
     this.completedGames.set(gameId, new Date(this.clock.now()));
     return Promise.resolve();
   }
+  deleteGame(gameId: GameId): Promise<void> {
+    this.games.delete(gameId);
+    this.completedGames.delete(gameId);
+    return Promise.resolve();
+  }
+  getFinishedGameIds(): Promise<Array<GameId>> {
+    return Promise.resolve(Array.from(this.completedGames.keys()));
+  }
   purgeUnfinishedGames(): Promise<Array<GameId>> {
     const keys = [...this.games.keys()];
     for (const key of keys) {
@@ -138,6 +150,54 @@ export class InMemoryDatabase implements IDatabase {
   getSessions(): Promise<Array<Session>> {
     const now = this.clock.now();
     return Promise.resolve(Array.from(this.sessions.values()).filter((e) => e.expirationTimeMillis > now));
+  }
+  listMapLibraryEntries(): Promise<Array<MapLibraryEntry>> {
+    return Promise.resolve(Array.from(this.mapLibraryEntries.values()).sort((a, b) => b.createdAt - a.createdAt));
+  }
+  getMapLibraryEntry(id: MapLibraryEntryId): Promise<MapLibraryEntry | undefined> {
+    return Promise.resolve(this.mapLibraryEntries.get(id));
+  }
+  insertMapLibraryEntry(entry: MapLibraryEntry): Promise<void> {
+    this.mapLibraryEntries.set(entry.id, entry);
+    return Promise.resolve();
+  }
+  setMapLibraryEntryStatus(id: MapLibraryEntryId, status: MapLibraryStatus): Promise<void> {
+    const entry = this.mapLibraryEntries.get(id);
+    if (entry === undefined) {
+      throw new Error(`map library entry ${id} not found`);
+    }
+    entry.status = status;
+    return Promise.resolve();
+  }
+  deleteMapLibraryEntry(id: MapLibraryEntryId): Promise<void> {
+    this.mapLibraryEntries.delete(id);
+    return Promise.resolve();
+  }
+  listCustomCardLibraryEntries(): Promise<Array<CustomCardLibraryEntry>> {
+    return Promise.resolve(Array.from(this.customCardLibraryEntries.values()).sort((a, b) => b.createdAt - a.createdAt));
+  }
+  getCustomCardLibraryEntry(id: CustomCardEntryId): Promise<CustomCardLibraryEntry | undefined> {
+    return Promise.resolve(this.customCardLibraryEntries.get(id));
+  }
+  insertCustomCardLibraryEntry(entry: CustomCardLibraryEntry): Promise<void> {
+    this.customCardLibraryEntries.set(entry.id, entry);
+    return Promise.resolve();
+  }
+  setCustomCardLibraryEntryStatus(id: CustomCardEntryId, status: CustomCardStatus): Promise<void> {
+    const entry = this.customCardLibraryEntries.get(id);
+    if (entry === undefined) {
+      throw new Error(`custom card library entry ${id} not found`);
+    }
+    entry.status = status;
+    return Promise.resolve();
+  }
+  updateCustomCardLibraryEntry(id: CustomCardEntryId, entry: CustomCardLibraryEntry): Promise<void> {
+    this.customCardLibraryEntries.set(id, entry);
+    return Promise.resolve();
+  }
+  deleteCustomCardLibraryEntry(id: CustomCardEntryId): Promise<void> {
+    this.customCardLibraryEntries.delete(id);
+    return Promise.resolve();
   }
   deleteExpiredSessions(): Promise<number> {
     const now = this.clock.now();

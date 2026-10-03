@@ -7,6 +7,8 @@ import {FakeLocalStorage} from './FakeLocalStorage';
 import raw_settings from '@/genfiles/settings.json';
 import {Phase} from '@/common/Phase';
 import StackedCards from '@/client/components/StackedCards.vue';
+import {CardType} from '@/common/cards/CardType';
+import {CardName} from '@/common/cards/CardName';
 import {CardModel} from '@/common/models/CardModel';
 
 describe('PlayerHome', () => {
@@ -71,5 +73,14 @@ describe('PlayerHome', () => {
     // active, and neither may also stay in the automated stack.
     const automatedCards = wrapper.findComponent(StackedCards).props('cards') as Array<CardModel>;
     expect(automatedCards.map((card) => card.name)).to.deep.eq(['Micro-Mills']);
+  });
+  it('shows dynamic custom cards in the active and automated tableau sections', () => {
+    const tableau: Array<CardModel> = [CardType.ACTIVE, CardType.AUTOMATED].map((type) => ({
+      name: `Smoke custom ${type}` as CardName,
+      customCard: {type, cost: 4, tags: [], requirements: [], metadata: {description: 'Custom effect'}, module: 'customCards', compatibility: []},
+    }));
+    const wrapper = mountPlayerHome(Phase.ACTION, {tableau});
+    expect(wrapper.findAll('.played-cards-count').map((el) => el.text())).deep.eq(['1', '1', '0']);
+    expect(wrapper.findComponent(StackedCards).props('cards')).deep.eq([tableau[1]]);
   });
 });

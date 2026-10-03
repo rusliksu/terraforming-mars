@@ -286,6 +286,60 @@
           <div class="voltagon-title">VOLTAGON</div>
         </div>
       </template>
+      <template v-else-if="title === CardName.VENUS_VENTURES">
+        <div class="card-venus-ventures-logo"><span class="word-1">VENUS</span> <span class="word-2">VENTURES</span></div>
+      </template>
+      <template v-else-if="title === CardName.CRITTERWORLD">
+        <div class="card-critterworld-logo"><span class="word-1">Critter</span><span class="word-2">world</span></div>
+      </template>
+      <template v-else-if="title === CardName.WELLNESS_DELUXE">
+        <div class="card-wellness-deluxe-logo"><span class="word-1">WELLNESS</span> <span class="word-2">DELUXE</span></div>
+      </template>
+      <template v-else-if="title === CardName.NEREID_BIOSYSTEMS">
+        <div class="card-nereid-biosystems-logo"><span class="word-1">NEREID</span> <span class="word-2"><span class="bio">BIO</span><span class="systems">SYSTEMS</span></span></div>
+      </template>
+      <template v-else-if="title === CardName.THE_SYNDICATE">
+        <div class="card-the-syndicate-logo">
+          <span class="word-1">THE</span>
+          <span class="word-1b">SYN</span>
+          <span class="word-2">DICATE</span>
+        </div>
+      </template>
+      <template v-else-if="title === CardName.EPSILON_DAMPLE">
+        <div class="card-epsilon-dample-logo">
+          <img class="epsilon-dample-icon" src="assets/expansion_icons/expansion_icon_deltaProject.png">
+          <div class="epsilon-dample-title">
+            <div class="word-1">EPSILON</div>
+            <div class="word-2">DAMPLE</div>
+          </div>
+        </div>
+      </template>
+      <template v-else-if="title === CardName.ZETA_TOLLKEEPER">
+        <div class="card-zeta-tollkeeper-logo">
+          <img class="zeta-tollkeeper-icon" src="assets/expansion_icons/expansion_icon_deltaProject.png">
+          <div class="zeta-tollkeeper-title">
+            <div class="word-1">ZETA</div>
+            <div class="word-2">TOLLKEEPER</div>
+          </div>
+        </div>
+      </template>
+      <template v-else-if="title === CardName.PLANET_PR">
+        <div class="card-planet-pr-logo">
+          <div class="word-1">PLANET</div>
+          <div class="word-2">PR</div>
+        </div>
+      </template>
+      <template v-else-if="title === CardName.SISTEMAS_SEEBECK">
+        <div class="card-sistemas-seebeck-logo">
+          <div class="word-1">SISTEMAS</div>
+          <div class="word-2">SEEBECK</div>
+        </div>
+      </template>
+      <template v-else-if="title === CardName.IN_SPIRE">
+        <div class="card-in-spire-logo">
+          <span class="word-1">In</span><span class="word-2">Spire</span>
+        </div>
+      </template>
     </template>
     <template v-else>
       <div :class="logoClass">{{capsTitle}}</div>
@@ -320,11 +374,13 @@ const logos: Partial<Record<CardName, 'image' | 'css' | 'bespoke'>> = {
   [CardName.CHIMERA]: 'image',
   [CardName.COLLEGIUM_COPERNICUS]: 'image',
   [CardName.CREDICOR]: 'css',
+  [CardName.CRITTERWORLD]: 'bespoke',
   [CardName.CRESCENT_RESEARCH_ASSOCIATION]: 'bespoke',
   [CardName.CURIOSITY_II]: 'bespoke',
   [CardName.DEMETRON_LABS]: 'bespoke',
   [CardName.ECOLINE]: 'css',
   [CardName.ECOTEC]: 'bespoke',
+  [CardName.EPSILON_DAMPLE]: 'bespoke',
   [CardName.ERIS]: 'bespoke',
   [CardName.FACTORUM]: 'css',
   [CardName.GAGARIN_MOBILE_BASE]: 'bespoke',
@@ -334,6 +390,7 @@ const logos: Partial<Record<CardName, 'image' | 'css' | 'bespoke'>> = {
   [CardName.HELION]: 'css',
   [CardName.HENKEI_GENETICS]: 'bespoke',
   [CardName.INCITE]: 'bespoke',
+  [CardName.IN_SPIRE]: 'bespoke',
   [CardName.INTERPLANETARY_CINEMATICS]: 'bespoke',
   [CardName.INTRAGEN_SANCTUARY_HEADQUARTERS]: 'image',
   [CardName.INVENTRIX]: 'bespoke',
@@ -357,12 +414,14 @@ const logos: Partial<Record<CardName, 'image' | 'css' | 'bespoke'>> = {
   [CardName.MONS_INSURANCE]: 'bespoke',
   [CardName.MORNING_STAR_INC]: 'css',
   [CardName.NANOTECH_INDUSTRIES]: 'image',
+  [CardName.NEREID_BIOSYSTEMS]: 'bespoke',
   [CardName.NIRGAL_ENTERPRISES]: 'bespoke',
   [CardName.ODYSSEY]: 'image',
   [CardName.PALLADIN_SHIPPING]: 'bespoke',
   [CardName.PHARMACY_UNION]: 'bespoke',
   [CardName.PHILARES]: 'bespoke',
   [CardName.PHOBOLOG]: 'css',
+  [CardName.PLANET_PR]: 'bespoke',
   [CardName.PLAYWRIGHTS]: 'bespoke',
   [CardName.POINT_LUNA]: 'css',
   [CardName.POLARIS]: 'image',
@@ -370,6 +429,7 @@ const logos: Partial<Record<CardName, 'image' | 'css' | 'bespoke'>> = {
   [CardName.POLYPHEMOS]: 'css',
   [CardName.POSEIDON]: 'css',
   [CardName.PRISTAR]: 'css',
+  [CardName.PRISTAR_BETTER_MARS]: 'css',
   [CardName.PROJECT_WORKSHOP]: 'bespoke',
   [CardName.RECYCLON]: 'bespoke',
   [CardName.RINGCOM]: 'image',
@@ -378,6 +438,7 @@ const logos: Partial<Record<CardName, 'image' | 'css' | 'bespoke'>> = {
   [CardName.SAGITTA_FRONTIER_SERVICES]: 'bespoke',
   [CardName.SATURN_SYSTEMS]: 'bespoke',
   [CardName.SEPTUM_TRIBUS]: 'bespoke',
+  [CardName.SISTEMAS_SEEBECK]: 'bespoke',
   [CardName.SOLBANK]: 'bespoke',
   [CardName.SOYLENT_SEEDLING_SYSTEMS]: 'image',
   [CardName.SPIRE]: 'image',
@@ -391,15 +452,19 @@ const logos: Partial<Record<CardName, 'image' | 'css' | 'bespoke'>> = {
   [CardName.THE_ARCHAIC_FOUNDATION_INSTITUTE]: 'image',
   [CardName.THE_DARKSIDE_OF_THE_MOON_SYNDICATE]: 'image',
   [CardName.THE_GRAND_LUNA_CAPITAL_GROUP]: 'image',
+  [CardName.THE_SYNDICATE]: 'bespoke',
   [CardName.THORGATE]: 'css',
   [CardName.TYCHO_MAGNETICS]: 'bespoke',
   [CardName.UNITED_NATIONS_MARS_INITIATIVE]: 'bespoke',
   [CardName.UNITED_NATIONS_MISSION_ONE]: 'bespoke',
   [CardName.UTOPIA_INVEST]: 'bespoke',
   [CardName.VALLEY_TRUST]: 'bespoke',
+  [CardName.VENUS_VENTURES]: 'bespoke',
   [CardName.VIRON]: 'css',
   [CardName.VITOR]: 'bespoke',
   [CardName.VOLTAGON]: 'bespoke',
+  [CardName.WELLNESS_DELUXE]: 'bespoke',
+  [CardName.ZETA_TOLLKEEPER]: 'bespoke',
 };
 
 export default defineComponent({
@@ -422,7 +487,9 @@ export default defineComponent({
       switch (type) {
       case 'image':
       case 'css':
-        const local = this.title.toLowerCase()
+        // Strip a display suffix like ":bm"/":s" (BetterMars/Sillyfication replacement
+        // cards) so the variant reuses its base card's logo instead of a broken one.
+        const local = this.title.split(':')[0].toLowerCase()
           .replaceAll(' ', '-')
           .replaceAll('&', '')
           .replaceAll('--', '-');
@@ -432,7 +499,7 @@ export default defineComponent({
       }
     },
     capsTitle(): string {
-      return logos[this.title] === 'image' ? '' : this.title.toUpperCase();
+      return logos[this.title] === 'image' ? '' : this.title.split(':')[0].toUpperCase();
     },
   },
 });

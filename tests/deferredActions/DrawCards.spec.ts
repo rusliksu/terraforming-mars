@@ -26,6 +26,24 @@ describe('DrawCards', () => {
     expect(projectDeck.discardPile).has.length(0);
   });
 
+  it('fires onCardsDrawn for every tableau card, for every player, with the drawn count', () => {
+    const player2 = game.players.find((p) => p.id !== player.id)!;
+    const calls: Array<[string, string, number]> = [];
+    const watcher = {
+      name: 'Watcher' as any,
+      tags: [],
+      onCardsDrawn: (cardOwner: {id: string}, drawingPlayer: {id: string}, count: number) => {
+        calls.push([cardOwner.id, drawingPlayer.id, count]);
+      },
+    };
+    player.playedCards.push(watcher as any);
+    player2.playedCards.push(watcher as any);
+
+    DrawCards.keepAll(player, 2).execute();
+
+    expect(calls).to.have.deep.members([[player.id, player.id, 2], [player2.id, player.id, 2]]);
+  });
+
   it('draws 3 special', () => {
     DrawCards.keepAll(player, 3, {cardType: CardType.ACTIVE, tag: Tag.SPACE}).execute();
     expect(player.cardsInHand).has.length(3);

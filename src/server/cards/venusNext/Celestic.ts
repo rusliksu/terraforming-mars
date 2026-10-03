@@ -34,6 +34,7 @@ export class Celestic extends ActiveCorporationCard {
             ce.action('Add a floater to ANY card. 1 VP per 3 floaters on this card.', (eb) => {
               eb.empty().startAction.resource(CardResource.FLOATER).asterix();
             });
+            ce.br;
             ce.vSpace(); // to offset the description to the top a bit so it can be readable
           });
         }),

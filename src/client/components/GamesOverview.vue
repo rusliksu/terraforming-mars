@@ -2,6 +2,11 @@
   <div id="games-overview" class="games-overview-container">
     <h1 v-i18n>{{ constants.APP_NAME }} — Games Overview</h1>
       <p v-i18n>The following games are available on this server:</p>
+      <p class="games-overview-admin-links">
+        <a :href="`${paths.MAP_LIBRARY}?serverId=${serverId}`" v-i18n>Map library admin</a>
+        &nbsp;|&nbsp;
+        <a :href="`${paths.CARD_LIBRARY}?serverId=${serverId}`" v-i18n>Card library admin</a>
+      </p>
       <table>
         <GameOverview v-for="entry in entries" :key="entry.id" :id="entry.id" :game="entry.game" :status="entry.status"/>
       </table>
@@ -10,6 +15,7 @@
 
 <script lang="ts">
 
+import {paths} from '@/common/app/paths';
 import {defineComponent} from 'vue';
 import * as constants from '@/common/constants';
 import GameOverview from '@/client/components/admin/GameOverview.vue';
@@ -85,6 +91,7 @@ export default defineComponent({
     },
   },
   computed: {
+    paths: () => paths,
     constants(): typeof constants {
       return constants;
     },

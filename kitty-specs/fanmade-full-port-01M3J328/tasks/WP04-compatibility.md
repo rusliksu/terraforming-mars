@@ -133,3 +133,7 @@ Review correction: Cloner must preserve embedded definition text/card identities
 ## Activity Log
 
 - 2026-09-27T21:52:44Z – codex – shell_pid=27828 – Server compatibility committed at20c6a55ed3;10966 server tests,999 client tests,build/lint/compile and390px UI passed. Bounded server review approved. T012 remains open pending user decision for separate tm-advisor consumer guard; no overall acceptance,PR,merge or staging claimed.
+
+## Authorized external corrective package
+
+User approved on 2026-10-03. External task-owned workspace: C:/Users/Ruslan/.codex-worktrees/tm-tierlist-fanmade-card-support-fanmade-automation-compatibility, branch codex/fanmade-automation-compatibility, base ddbb96e3177bdb3a3c93528f03aa1afb13ea524e. Sole writer: root. Bounded responsibility: bot API polling/submission and extension/advisor unavailable boundary plus focused tests, mirror synchronization and separate PR. Exact files are recorded in external-compatibility-evidence.md. No strategy or numeric score changes.

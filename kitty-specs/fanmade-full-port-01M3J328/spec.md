@@ -156,7 +156,7 @@ Ruslan approved the complete implementation plan on 2026-09-27. Players creating
 ## Constraints
 | ID | Constraint | Status |
 |---|---|---|
-| C-001 | Target repository is rusliksu/terraforming-mars; work and mission artifacts stay in the owned worktree and enter main through PR. | accepted |
+| C-001 | Target repository is rusliksu/terraforming-mars; work and mission artifacts stay in the owned worktree and enter main through PR. User approved a separate bounded compatibility PR in rusliksu/tm-advisor on 2026-10-03. | accepted |
 | C-002 | Do not alter the dirty day-to-day checkout, production service/database, credentials, DNS or live games. | accepted |
 | C-003 | Final staging deployment uses the existing clean exact-origin/main release process and its drift/lock guards. Production deployment requires separate approval. | accepted |
 | C-004 | Do not invent missing rules for source stubs or silently decide disputed rules/balance. Record and escalate disputed behavior. | accepted |
@@ -172,3 +172,7 @@ Ruslan approved the complete implementation plan on 2026-09-27. Players creating
 
 ## Delivery
 Sequential work packages share one task-owned branch. The mission target is codex/fanmade-full-port; the hosting PR target is main. Keep source inventory, pinned SHA manifest, bug ledger and test evidence with the mission. A passing reference-source suite alone does not prove target compatibility. Do not declare the mission complete before combined validation and the permitted staging gate.
+
+## Approved scope delta 2026-10-03
+
+Ruslan explicitly authorized the separate tm-advisor compatibility PR. Add consumer guards for unsupported automation/advice before action submission or numerical recommendations; missing/empty metadata preserves old-server behavior. No strategy, scoring, data evaluation, live extension installation, or production deployment is added. This closes the existing FR006 requirement. Normal checks and own-repository PR delivery follow existing gates.

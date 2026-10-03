@@ -35,3 +35,7 @@ flowchart LR
 Use fresh isolated dependencies and Node 22. Run module-focused tests during transfer, then full lint/build/test compilation/server/client checks. Old saves lacking new fields must load and retain target-only state; fan deferred choices must survive save/resume. Test each module plus supported combinations and disabled parity. Browser evidence covers setup, boards, new inputs and 390px layouts. Existing advisor requests must remain compatible; unsupported new mechanics cannot pretend to be supported.
 
 Before merge verify exact remote head, required CI, review blockers and authoritative base. Before staging follow workspace release rules: clean exact origin/main source, snapshots, lock and concurrent-drift checks, post-deploy UI/API verification. No live DB import or production mutation. Keep pending acceptance criteria open when an external gate blocks delivery.
+
+## Approved FR006 consumer followup
+
+Deliver a separate narrow PR to rusliksu/tm-advisor from codex/fanmade-automation-compatibility, based on origin/master ddbb96e3177bdb3a3c93528f03aa1afb13ea524e. WP04 owns the evidence and links. Add guards outside bot decision fallback, and at canonical extension state/scoring boundaries; synchronize byte-identical runtime mirrors. Use synthetic responses and zero-input-POST regressions. Continue WP04 review and WP05 after validated delivery.

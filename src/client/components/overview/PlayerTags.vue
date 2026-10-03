@@ -79,6 +79,7 @@ const ORDER: Array<InterfaceTagsType> = [
   Tag.MOON,
   Tag.MARS,
   Tag.CRIME,
+  Tag.GALACTIC,
   'separator',
   Tag.EVENT,
   SpecialTags.NONE,
@@ -109,6 +110,7 @@ const isInGame = (tag: InterfaceTagsType, game: GameModel): boolean => {
   case Tag.MOON:
   case Tag.MARS:
   case Tag.CRIME:
+  case Tag.GALACTIC:
     return game.tags.includes(tag);
   }
   return true;
@@ -218,7 +220,7 @@ export default defineComponent({
 
     // Other modifiers
     if (this.playerView.game.turmoil?.ruling === PartyName.UNITY &&
-      this.playerView.game.turmoil.politicalAgendas?.unity.policyId === 'up04') {
+      this.playerView.game.turmoil.politicalAgendas?.unity?.policyId === 'up04') {
       details[Tag.SPACE].discount += 2;
     }
 

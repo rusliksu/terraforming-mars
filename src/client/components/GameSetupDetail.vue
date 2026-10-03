@@ -17,6 +17,19 @@
               <a v-if="gameOptions.expansions.underworld" :href="rulebookUrls.underworld" class="tooltip" data-tooltip="Underworld rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-underworld"></div></a>
               <a v-if="gameOptions.expansions.starwars" :href="rulebookUrls.starwars" class="tooltip" data-tooltip="Star Wars rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-starwars"></div></a>
               <a v-if="gameOptions.expansions.deltaProject" :href="rulebookUrls.deltaProject" class="tooltip" data-tooltip="Delta Project rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-deltaProject"></div></a>
+              <a v-if="gameOptions.expansions.sillyfication" :href="rulebookUrls.sillyfication" class="tooltip" data-tooltip="Sillyfication rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-sillyfication"></div></a>
+              <a v-if="gameOptions.expansions.betterMars" :href="rulebookUrls.betterMars" class="tooltip" data-tooltip="BetterMars rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-betterMars"></div></a>
+              <a v-if="gameOptions.expansions.customCards" :href="rulebookUrls.customCards" class="tooltip" data-tooltip="Custom Cards rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-customCards"></div></a>
+              <a v-if="gameOptions.expansions.conglomerates" :href="rulebookUrls.conglomerates" class="tooltip" data-tooltip="Conglomerates rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-conglomerates"></div></a>
+              <a v-if="gameOptions.expansions.corporateBetterments" :href="rulebookUrls.corporateBetterments" class="tooltip" data-tooltip="Corporate Betterments rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-corporateBetterments"></div></a>
+              <a v-if="gameOptions.expansions.idesOfMars" :href="rulebookUrls.idesOfMars" class="tooltip" data-tooltip="Ides of Mars rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-idesOfMars"></div></a>
+              <a v-if="gameOptions.expansions.robAntilles" :href="rulebookUrls.robAntilles" class="tooltip" data-tooltip="Rob Antilles rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-robAntilles"></div></a>
+              <a v-if="gameOptions.expansions.moreParties" :href="rulebookUrls.moreParties" class="tooltip" data-tooltip="More Parties rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-moreParties"></div></a>
+              <a v-if="gameOptions.expansions.venusPhase2" :href="rulebookUrls.venusPhase2" class="tooltip" data-tooltip="Venus: Phase 2 rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-venusPhase2"></div></a>
+              <a v-if="gameOptions.expansions.industries" :href="rulebookUrls.industries" class="tooltip" data-tooltip="Industries rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-industries"></div></a>
+              <a v-if="gameOptions.expansions.highOrbit" :href="rulebookUrls.highOrbit" class="tooltip" data-tooltip="High Orbit rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-highOrbit"></div></a>
+              <a v-if="gameOptions.expansions.solaris" :href="rulebookUrls.solaris" class="tooltip" data-tooltip="Solaris rules" target="_blank"><div class="create-game-expansion-icon expansion-icon-solaris"></div></a>
+              <a v-if="gameOptions.expansions.corpera" :href="rulebookUrls.corpera" class="tooltip" data-tooltip="Corporate Era rulebook" target="_blank"><div class="create-game-expansion-icon expansion-icon-CE"></div></a>
             </li>
 
             <li><div class="setup-item" v-i18n>Board:</div>
@@ -104,6 +117,7 @@ const boardColorClass: Record<BoardName, string> = {
   [BoardName.VASTITAS_BOREALIS]: 'game-config board-vastitas_borealis map',
   [BoardName.TERRA_CIMMERIA]: 'game-config board-terra_cimmeria map',
   [BoardName.HOLLANDIA]: 'game-config board-hollandia map',
+  [BoardName.CUSTOM]: 'game-config board-custom map',
 };
 
 export default defineComponent({

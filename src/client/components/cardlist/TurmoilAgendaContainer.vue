@@ -1,7 +1,7 @@
 <template>
   <div class="container">
   <div class="agenda-title"><CardParty :party="party" /><span>{{ agendaType }} {{ agenda.num }} <span class="small">{{ $t(agenda.name) }} {{ $t(agenda.type) }}</span></span></div>
-  <TurmoilAgenda class="agenda" :id="agendaId" />
+  <TurmoilAgenda class="agenda" :id="agendaId" :morePartiesExpansion="morePartiesExpansion" />
   <div class="description" v-i18n>{{ description }}</div>
   </div>
 </template>
@@ -19,10 +19,14 @@ const props = defineProps({
     type: String as () => BonusId | PolicyId,
     required: true,
   },
+  morePartiesExpansion: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const agenda = computed<AgendaInfo>(() => agendaInfoById(props.agendaId));
-const description = computed<string>(() => getAgendaOrThrow(props.agendaId).description);
+const description = computed<string>(() => getAgendaOrThrow(props.agendaId, props.morePartiesExpansion).description);
 const party = computed<PartyName>(() => agenda.value.name);
 const agendaType = computed<string>(() => agenda.value.type === 'Bonus' ? '⚡' : '⚖️');
 </script>
@@ -69,7 +73,7 @@ const agendaType = computed<string>(() => agenda.value.type === 'Bonus' ? '⚡' 
 
   .description {
     text-align: center;
-    font-size: 12px;
+    padding-top: 8px;
     line-height: 1.3;
     color: white;
   }

@@ -34,10 +34,13 @@ export class Astrodrill extends CorporationCard implements ICorporationCard, IAc
           b.megacredits(35).nbsp.resource(CardResource.ASTEROID, {amount: 3, digit});
           b.corpBox('action', (ce) => {
             ce.vSpace(Size.LARGE);
+            ce.br;
             ce.action(undefined, (eb) => {
               eb.empty().startAction.resource(CardResource.ASTEROID).asterix().slash().wild(1).or();
             });
+            ce.br;
             ce.vSpace();
+            ce.br;
             ce.action('Add an asteroid resource to ANY card OR gain any standard resource, OR remove an asteroid resource from this card to gain 3 titanium.', (eb) => {
               eb.resource(CardResource.ASTEROID).startAction.titanium(3, {digit});
             });

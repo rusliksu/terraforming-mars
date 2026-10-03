@@ -6,6 +6,15 @@
 
     <div class="ma-name ma-name--awards award-block" :class="nameCss">
       <span ref="name" v-i18n>{{ award.name }}</span>
+      <div v-if="award.teamScores !== undefined" class="ma-team-scores">
+        <span
+          v-for="(team, idx) in award.teamScores"
+          :key="idx"
+          class="ma-team-score"
+          :class="team.teamColor !== undefined ? `ma-team-score--${team.teamColor}` : ''"
+          data-test="team-score"
+        >{{ team.score }}</span>
+      </div>
       <div v-if="showScores" class="ma-scores player_home_block--milestones-and-awards-scores">
         <template v-for="score in sortedScores" :key="score.color">
           <p
@@ -38,7 +47,7 @@ import {getAward} from '@/client/MilestoneAwardManifest';
 import {playerSymbol} from '@/client/utils/playerSymbol';
 import {Color, isReservedPlayerColor} from '@/common/Color';
 import {fitTextWhenReady} from '@/client/utils/textFit';
-import {comparing, reversed} from '@/common/utils/Ordering';
+import {groupScoresByTeam} from '@/client/utils/groupScoresByTeam';
 
 type Refs = {
   name: HTMLElement | undefined;
@@ -57,6 +66,13 @@ export default defineComponent({
     },
     showDescription: {
       type: Boolean,
+    },
+    // Awards are funded/ranked at the team level in Conglomerates games (see
+    // ConglomeratesExpansion.calculateVictoryPoints) -- appended to the description so it's
+    // clear the ranking is combined, not per-player.
+    conglomeratesExpansion: {
+      type: Boolean,
+      default: false,
     },
   },
   mounted() {
@@ -95,10 +111,14 @@ export default defineComponent({
       return 'ma-name--' + this.award.name.replaceAll(' ', '-').replaceAll('.', '').toLowerCase();
     },
     sortedScores(): Array<AwardScore> {
-      return this.award.scores.toSorted(reversed(comparing((score) => score.score)));
+      return groupScoresByTeam(this.award.scores, this.award.teamScores);
     },
     description(): string {
-      return getAward(this.award.name).description;
+      const base = getAward(this.award.name).description;
+      if (this.conglomeratesExpansion) {
+        return `${base} between you and your teammate`;
+      }
+      return base;
     },
   },
 });

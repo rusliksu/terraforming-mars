@@ -12,6 +12,9 @@ import {statusCode} from '../../src/common/http/statusCode';
 import {cast} from '@/common/utils/utils';
 import {SelectInitialCards} from '../../src/server/inputs/SelectInitialCards';
 import {DiscordUser} from '../../src/server/server/auth/discord';
+import {MapLibraryEntry} from '../../src/common/boards/MapLibraryEntry';
+import {CustomCardLibraryEntry} from '../../src/common/cards/CustomCardLibraryEntry';
+import {blankCustomCard} from '../../src/common/cards/CustomCardDefinition';
 
 // Removes any fields that have undefined values, and filters undefined from arrays.
 function stripUndefined(obj: unknown): unknown {
@@ -518,6 +521,105 @@ export function describeDatabaseSuite<T extends ITestDatabase>(dtor: DatabaseTes
     it('stats', async () => {
       const result = await db.stats();
       expect(result).deep.eq(dtor.stats);
+    });
+
+    describe('map library', () => {
+      const entry: MapLibraryEntry = {
+        id: 'm123',
+        code: 'TMB3fake',
+        description: 'a test map',
+        submittedBy: 'someone',
+        origin: 'fanmade',
+        status: 'submitted',
+        createdAt: 1700000000000,
+      };
+
+      it('insert and list', async () => {
+        await db.insertMapLibraryEntry(entry);
+        const entries = await db.listMapLibraryEntries();
+        expect(entries).deep.eq([entry]);
+      });
+
+      it('get - found and not found', async () => {
+        await db.insertMapLibraryEntry(entry);
+        expect(await db.getMapLibraryEntry('m123')).deep.eq(entry);
+        expect(await db.getMapLibraryEntry('m-nope')).eq(undefined);
+      });
+
+      it('setMapLibraryEntryStatus', async () => {
+        await db.insertMapLibraryEntry(entry);
+        await db.setMapLibraryEntryStatus('m123', 'approved');
+        const updated = await db.getMapLibraryEntry('m123');
+        expect(updated?.status).eq('approved');
+      });
+
+      it('deleteMapLibraryEntry', async () => {
+        await db.insertMapLibraryEntry(entry);
+        await db.deleteMapLibraryEntry('m123');
+        expect(await db.listMapLibraryEntries()).deep.eq([]);
+      });
+
+      it('listMapLibraryEntries orders newest first', async () => {
+        await db.insertMapLibraryEntry({...entry, id: 'm1', createdAt: 1000});
+        await db.insertMapLibraryEntry({...entry, id: 'm2', createdAt: 3000});
+        await db.insertMapLibraryEntry({...entry, id: 'm3', createdAt: 2000});
+        const ids = (await db.listMapLibraryEntries()).map((e) => e.id);
+        expect(ids).deep.eq(['m2', 'm3', 'm1']);
+      });
+    });
+
+    describe('custom card library', () => {
+      const entry: CustomCardLibraryEntry = {
+        id: 'c123',
+        definition: blankCustomCard('Test Card'),
+        shareCode: 'TMC1fake',
+        submittedBy: 'someone',
+        status: 'submitted',
+        createdAt: 1700000000000,
+      };
+
+      it('insert and list', async () => {
+        await db.insertCustomCardLibraryEntry(entry);
+        const entries = await db.listCustomCardLibraryEntries();
+        expect(entries).deep.eq([entry]);
+      });
+
+      it('get - found and not found', async () => {
+        await db.insertCustomCardLibraryEntry(entry);
+        expect(await db.getCustomCardLibraryEntry('c123')).deep.eq(entry);
+        expect(await db.getCustomCardLibraryEntry('c-nope')).eq(undefined);
+      });
+
+      it('setCustomCardLibraryEntryStatus', async () => {
+        await db.insertCustomCardLibraryEntry(entry);
+        await db.setCustomCardLibraryEntryStatus('c123', 'approved');
+        const updated = await db.getCustomCardLibraryEntry('c123');
+        expect(updated?.status).eq('approved');
+      });
+
+      it('updateCustomCardLibraryEntry replaces the whole entry (admin set-behavior)', async () => {
+        await db.insertCustomCardLibraryEntry(entry);
+        const updatedEntry: CustomCardLibraryEntry = {
+          ...entry,
+          definition: {...entry.definition, behavior: {stock: {steel: 5}}},
+        };
+        await db.updateCustomCardLibraryEntry('c123', updatedEntry);
+        expect(await db.getCustomCardLibraryEntry('c123')).deep.eq(updatedEntry);
+      });
+
+      it('deleteCustomCardLibraryEntry', async () => {
+        await db.insertCustomCardLibraryEntry(entry);
+        await db.deleteCustomCardLibraryEntry('c123');
+        expect(await db.listCustomCardLibraryEntries()).deep.eq([]);
+      });
+
+      it('listCustomCardLibraryEntries orders newest first', async () => {
+        await db.insertCustomCardLibraryEntry({...entry, id: 'c1', createdAt: 1000});
+        await db.insertCustomCardLibraryEntry({...entry, id: 'c2', createdAt: 3000});
+        await db.insertCustomCardLibraryEntry({...entry, id: 'c3', createdAt: 2000});
+        const ids = (await db.listCustomCardLibraryEntries()).map((e) => e.id);
+        expect(ids).deep.eq(['c2', 'c3', 'c1']);
+      });
     });
 
     dtor.otherTests?.(() => db);

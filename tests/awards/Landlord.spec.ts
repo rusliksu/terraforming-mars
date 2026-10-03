@@ -3,6 +3,7 @@ import {Landlord} from '../../src/server/awards/Landlord';
 import {SpaceName} from '../../src/common/boards/SpaceName';
 import {MoonExpansion} from '../../src/server/moon/MoonExpansion';
 import {NamedMoonSpaces} from '../../src/common/moon/NamedMoonSpaces';
+import {VenusPhase2Expansion} from '../../src/server/venusPhase2/VenusPhase2Expansion';
 import {EmptyBoard} from '../testing/EmptyBoard';
 import {AresHazards} from '../../src/server/ares/AresHazards';
 import {TileType} from '../../src/common/TileType';
@@ -40,6 +41,20 @@ describe('Landlord', () => {
 
     MoonExpansion.addMineTile(player, NamedMoonSpaces.MARE_IMBRIUM);
     expect(award.getScore(player)).to.eq(3);
+  });
+
+  it('Includes Venus Phase 2\'s surface board', () => {
+    const [game, player] = testGame(2, {venusPhase2Expansion: true});
+
+    expect(award.getScore(player)).to.eq(0);
+
+    addCity(player, SpaceName.NOCTIS_CITY);
+    expect(award.getScore(player)).to.eq(1);
+
+    const venusSurface = VenusPhase2Expansion.venusPhase2Data(game).venusSurface;
+    const [space] = venusSurface.getAvailableSpacesForLand(player);
+    VenusPhase2Expansion.addCloudCityTile(player, space.id);
+    expect(award.getScore(player)).to.eq(2);
   });
 
   it('Co-owner counts on The Moon', () => {

@@ -10,6 +10,7 @@ import {CardName} from '@/common/cards/CardName';
 import raw_settings from '@/genfiles/settings.json';
 import {Phase} from '@/common/Phase';
 import StackedCards from '@/client/components/StackedCards.vue';
+import {CardType} from '@/common/cards/CardType';
 import {CardModel} from '@/common/models/CardModel';
 
 describe('PlayerHome', () => {
@@ -98,5 +99,14 @@ describe('PlayerHome', () => {
     await wrapper.vm.$nextTick();
 
     expect(wrapper.findComponent(SortableCards).props('sortOrder')).to.deep.eq({key: 'vp', reversed: false});
+  });
+  it('shows dynamic custom cards in the active and automated tableau sections', () => {
+    const tableau: Array<CardModel> = [CardType.ACTIVE, CardType.AUTOMATED].map((type) => ({
+      name: `Smoke custom ${type}` as CardName,
+      customCard: {type, cost: 4, tags: [], requirements: [], metadata: {description: 'Custom effect'}, module: 'customCards', compatibility: []},
+    }));
+    const wrapper = mountPlayerHome(Phase.ACTION, {tableau});
+    expect(wrapper.findAll('.played-cards-count').map((el) => el.text())).deep.eq(['1', '1', '0']);
+    expect(wrapper.findComponent(StackedCards).props('cards')).deep.eq([tableau[1]]);
   });
 });

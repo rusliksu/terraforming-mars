@@ -40,7 +40,13 @@
 .help-iconology-container {
   padding: 20px;
   display : flex;
-  flex-flow: row wrap;
+  // Kept to exactly one row of columns (Card Tags / Resources / Tiles / Global Parameters /
+  // Others) rather than wrapping - the widened Resources and Tiles columns (more fan entries,
+  // some rows with several expansion icons) made the 5 columns just barely too wide for
+  // typical viewports, which wrapped the last column onto its own second row instead of
+  // sitting beside the rest. Scrolls horizontally on narrower windows instead.
+  flex-flow: row nowrap;
+  overflow-x: auto;
 }
 
 .help-standard-projects-container {
@@ -316,6 +322,12 @@
 // wide multi-icon agenda (e.g. "Pay 10 M€ to draw 3 cards") would force that whole column wider
 // than the others instead of wrapping inside its own cell -- this got much worse on narrow
 // screens, where there's less room to absorb the overflow.
+.help-party-note {
+  color: #999;
+  font-size: 10px;
+  font-style: italic;
+}
+
 .help-agenda-section {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -359,7 +371,6 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
-
 .help-rulebooks-container {
   display: flex;
   flex-direction: row;

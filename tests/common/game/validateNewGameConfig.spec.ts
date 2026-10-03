@@ -5,7 +5,7 @@ import {RandomBoardOption} from '../../../src/common/boards/RandomBoardOption';
 import {RandomMAOptionType} from '../../../src/common/ma/RandomMAOptionType';
 import {CardName} from '../../../src/common/cards/CardName';
 import {ColonyName} from '../../../src/common/colonies/ColonyName';
-import {Expansion} from '../../../src/common/cards/GameModule';
+import {DEFAULT_EXPANSIONS, Expansion} from '../../../src/common/cards/GameModule';
 import {LogMessageDataType} from '../../../src/common/logs/LogMessageDataType';
 import {CEO_CARDS_DEALT_PER_PLAYER} from '../../../src/common/constants';
 
@@ -21,6 +21,7 @@ function newGameConfig(overrides: Partial<NewGameConfig> = {}): NewGameConfig {
   return {
     players: players(2),
     expansions: {
+      ...DEFAULT_EXPANSIONS,
       corpera: true,
       promo: false,
       venus: false,

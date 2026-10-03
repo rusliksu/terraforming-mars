@@ -325,10 +325,10 @@ import {AwardName} from '@/common/ma/AwardName';
 import {buildEloResultsForPlayers, EloResultRow, ensureEloLoaded, findMatchingEloGame, sharedEloState} from '@/client/utils/elo';
 import {compareCompletionRank, hasSameCompletionRank, isLastActivePlayerFinish} from '@/common/game/CompletionOutcome';
 
-function playerCompletionRank(player: PublicPlayerModel, shareRemainingPlaces = false) {
+function playerCompletionRank(player: PublicPlayerModel, shareRemainingPlaces = false, vp = player.victoryPointsBreakdown.total) {
   return {
     completionOutcome: player.isSurrendered ? 'surrendered' as const : 'completed' as const,
-    vp: player.victoryPointsBreakdown.total,
+    vp,
     megacredits: player.megacredits,
     shareRemainingPlaces: shareRemainingPlaces && player.isSurrendered,
   };
@@ -366,8 +366,8 @@ export default defineComponent({
     playersInPlace(): Array<PublicPlayerModel> {
       const copy = [...this.participant.players];
       const shareRemainingPlaces = this.lastActivePlayerFinish;
-      copy.sort(function(a:PublicPlayerModel, b:PublicPlayerModel) {
-        return compareCompletionRank(playerCompletionRank(a, shareRemainingPlaces), playerCompletionRank(b, shareRemainingPlaces));
+      copy.sort((a: PublicPlayerModel, b: PublicPlayerModel) => {
+        return compareCompletionRank(playerCompletionRank(a, shareRemainingPlaces, this.playerRankingScore(a)), playerCompletionRank(b, shareRemainingPlaces, this.playerRankingScore(b)));
       });
       return copy;
     },
@@ -377,8 +377,8 @@ export default defineComponent({
       const winners: PublicPlayerModel[] = [firstWinner];
       for (let i = 1; i < sortedPlayers.length; i++) {
         if (hasSameCompletionRank(
-          playerCompletionRank(sortedPlayers[i], this.lastActivePlayerFinish),
-          playerCompletionRank(firstWinner, this.lastActivePlayerFinish),
+          playerCompletionRank(sortedPlayers[i], this.lastActivePlayerFinish, this.playerRankingScore(sortedPlayers[i])),
+          playerCompletionRank(firstWinner, this.lastActivePlayerFinish, this.playerRankingScore(firstWinner)),
         )) {
           winners.push(sortedPlayers[i]);
         }
@@ -491,8 +491,8 @@ export default defineComponent({
       }
       let place = index + 1;
       while (place > 1 && hasSameCompletionRank(
-        playerCompletionRank(sortedPlayers[place - 1], this.lastActivePlayerFinish),
-        playerCompletionRank(sortedPlayers[place - 2], this.lastActivePlayerFinish),
+        playerCompletionRank(sortedPlayers[place - 1], this.lastActivePlayerFinish, this.playerRankingScore(sortedPlayers[place - 1])),
+        playerCompletionRank(sortedPlayers[place - 2], this.lastActivePlayerFinish, this.playerRankingScore(sortedPlayers[place - 2])),
       )) {
         place--;
       }
@@ -531,6 +531,16 @@ export default defineComponent({
     getEloDeltaForPlayer(player: PublicPlayerModel): number | undefined {
       const result = this.eloResults.find((entry) => entry.color === player.color || entry.name === player.name);
       return result?.delta;
+    },
+    // Conglomerates: milestone/award VP is team-only and never folded into a player's own
+    // victoryPointsBreakdown.total (see ConglomeratesExpansion.calculateTeamVictoryPoints on
+    // the server) -- so ranking must compare each player's *team* total, not their own, or a
+    // team's shared milestone/award VP would silently vanish from who's declared the winner.
+    // Falls back to the player's own total when there's no team (not a Conglomerates game, or
+    // this player has no team entry).
+    playerRankingScore(player: PublicPlayerModel): number {
+      const team = this.game.conglomerates?.teams.find((t) => t.playerColors.includes(player.color));
+      return team?.victoryPoints.total ?? player.victoryPointsBreakdown.total;
     },
     getEndGamePlayerRowColorClass(color: Color): string {
       return playerColorClass(color, 'bg_transparent');

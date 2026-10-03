@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "mission_slug": "fanmade-full-port-01M3J328",
+  "mission_id": "01M3J328ANFPKEQ4YMWHX8FNPB",
+  "mission_branch": "kitty/mission-fanmade-full-port-01M3J328",
+  "target_branch": "codex/fanmade-full-port",
+  "lanes": [
+    {
+      "lane_id": "lane-planning",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "kitty-specs/fanmade-full-port-01M3J328/research/**",
+        "kitty-specs/fanmade-full-port-01M3J328/source-pins.json",
+        "kitty-specs/fanmade-full-port-01M3J328/source-reference.md"
+      ],
+      "predicted_surfaces": [
+        "planning"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "package-lock.json",
+        "package.json",
+        "src/common/**",
+        "src/server/**",
+        "tests/*.ts",
+        "tests/awards/**",
+        "tests/behavior/**",
+        "tests/boards/**",
+        "tests/cards/**",
+        "tests/common/**",
+        "tests/conglomerates/**",
+        "tests/database/**",
+        "tests/deferredActions/**",
+        "tests/delta/**",
+        "tests/game/**",
+        "tests/industries/**",
+        "tests/ma/**",
+        "tests/models/**",
+        "tests/moon/**",
+        "tests/player/**",
+        "tests/replay/**",
+        "tests/routes/**",
+        "tests/server/**",
+        "tests/testing/**",
+        "tests/turmoil/**",
+        "tests/venusPhase2/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-planning"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "assets/**",
+        "src/client/**",
+        "src/locales/**",
+        "src/styles/**",
+        "tests/client/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "app-shell",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "tests/fanmade-compat/**"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "tools/fanmade-port/**"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 4
+    }
+  ],
+  "computed_at": "2026-09-27T19:31:11.787157+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [
+    "WP01"
+  ],
+  "planning_commit_sha": "9bb11009f021d1e67a9ede4dd90e45598be89996"
+}

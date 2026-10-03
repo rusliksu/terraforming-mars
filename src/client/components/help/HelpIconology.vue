@@ -57,16 +57,51 @@
                     <div v-for="expansion in entry.expansions" :key="expansion" class="expansion-icon" :class="expansionIconClass(expansion)"></div>
                 </div>
             </template>
+            <template v-if="resourcesNotOnCards.length > 0">
+                <br>
+                <div>
+                    <div class="help-icon-sublabel" v-i18n>
+                        Fan Expansion Resources (Not on Cards)
+                    </div>
+                </div>
+                <div v-for="entry in resourcesNotOnCards" :key="entry.label">
+                    <div class="help-icon-resource" :class="entry.iconClass"></div>
+                    <div class="help-icon-label" v-i18n>{{ entry.label }}</div>
+                    <div v-for="expansion in entry.expansions" :key="expansion" class="expansion-icon" :class="expansionIconClass(expansion)"></div>
+                </div>
+            </template>
         </div>
 
         <div class="help-icons-column">
             <div>
                 <div class="help-icons-section-heading" v-i18n>Tiles</div>
             </div>
-            <div v-for="entry in tiles" :key="entry.label">
+            <div v-for="entry in officialTiles" :key="entry.label">
                 <div class="tile" :class="entry.iconClass"></div>
                 <div class="help-icon-label" v-i18n>{{ entry.label }}</div>
             </div>
+            <template v-if="moonTiles.length > 0">
+                <br>
+                <div>
+                    <div class="help-icon-sublabel" v-i18n>Fan Tiles: The Moon</div>
+                </div>
+                <div v-for="entry in moonTiles" :key="entry.label">
+                    <div class="tile" :class="entry.iconClass"></div>
+                    <div class="help-icon-label" v-i18n>{{ entry.label }}</div>
+                    <div v-for="expansion in entry.expansions" :key="expansion" class="expansion-icon" :class="expansionIconClass(expansion)"></div>
+                </div>
+            </template>
+            <template v-if="venusPhase2Tiles.length > 0">
+                <br>
+                <div>
+                    <div class="help-icon-sublabel" v-i18n>Fan Tiles: Venus: Phase 2</div>
+                </div>
+                <div v-for="entry in venusPhase2Tiles" :key="entry.label">
+                    <div class="tile" :class="entry.iconClass"></div>
+                    <div class="help-icon-label" v-i18n>{{ entry.label }}</div>
+                    <div v-for="expansion in entry.expansions" :key="expansion" class="expansion-icon" :class="expansionIconClass(expansion)"></div>
+                </div>
+            </template>
         </div>
 
         <div class="help-icons-column">
@@ -94,7 +129,10 @@ import {defineComponent} from 'vue';
 import {GameModule} from '@/common/cards/GameModule';
 
 // A single icon-legend entry: the CSS class that draws the icon, its label, and (for anything
-// that came from a specific expansion) the small expansion badge(s) shown next to it.
+// that came from a specific expansion) the small expansion badge(s) shown next to it. This lets
+// a new tag/resource/tile be added as a data entry instead of a hand-typed markup block -- and
+// the `official` split below is what makes this cleanly separable for an upstream PR (see the
+// clean, official-only version of this file on the help-modular branch).
 type IconEntry = {
   iconClass: string;
   label: string;
@@ -130,6 +168,8 @@ const CARD_TAGS: ReadonlyArray<IconEntry> = [
   {iconClass: 'tag-mars', label: 'Mars', official: false, expansions: ['pathfinders']},
   {iconClass: 'tag-clone', label: 'Clone', official: false, expansions: ['pathfinders']},
   {iconClass: 'tag-crime', label: 'Crime', official: false, expansions: ['underworld']},
+  {iconClass: 'tag-infrastructure', label: 'Infrastructure', official: false, expansions: ['highOrbit']},
+  {iconClass: 'tag-galactic', label: 'Galactic', official: false, expansions: ['solaris']},
 ];
 
 const STANDARD_RESOURCES: ReadonlyArray<IconEntry> = [
@@ -151,7 +191,10 @@ const CARD_RESOURCES: ReadonlyArray<IconEntry> = [
   {iconClass: 'camp', label: 'Camp', official: true, expansions: ['colonies']},
   {iconClass: 'disease', label: 'Disease', official: true, expansions: ['promo']},
   {iconClass: 'fighter', label: 'Fighter', official: true},
-  {iconClass: 'card-resource-cube', label: 'Resource cube', official: false, expansions: ['moon']},
+  {iconClass: 'card-resource-director', label: 'Director', official: true, expansions: ['prelude2']},
+  {iconClass: 'card-resource-graphene', label: 'Graphene', official: true, expansions: ['promo']},
+  {iconClass: 'card-resource-hydroelectric-resource', label: 'Hydroelectric resource', official: true, expansions: ['promo']},
+  {iconClass: 'card-resource-cube', label: 'Resource cube', official: false, expansions: ['ares', 'moon', 'pathfinders', 'idesOfMars']},
   {iconClass: 'card-resource-data', label: 'Data', official: false, expansions: ['moon', 'pathfinders']},
   {iconClass: 'card-resource-syndicate-fleet', label: 'Syndicate Fleet', official: false, expansions: ['moon']},
   {iconClass: 'card-resource-venusian-habitat', label: 'Venusian Habitat', official: false, expansions: ['pathfinders']},
@@ -165,6 +208,17 @@ const CARD_RESOURCES: ReadonlyArray<IconEntry> = [
   {iconClass: 'card-resource-journalism', label: 'Journalism', official: false, expansions: ['underworld']},
   {iconClass: 'card-resource-activist', label: 'Activist', official: false, expansions: ['underworld']},
   {iconClass: 'card-resource-supply-chain', label: 'Supply Chain', official: false, expansions: ['underworld']},
+  {iconClass: 'card-resource-loot', label: 'Loot', official: false, expansions: ['idesOfMars']},
+  {iconClass: 'card-resource-budget', label: 'Budget', official: false, expansions: ['idesOfMars']},
+  {iconClass: 'card-resource-relic', label: 'Relic', official: false, expansions: ['robAntilles']},
+  {iconClass: 'card-resource-ore', label: 'Ore', official: false, expansions: ['highOrbit']},
+];
+
+// Resources tracked per-player rather than printed on any card -- documented separately since
+// they don't fit the "Resources on Cards" framing above.
+const RESOURCES_NOT_ON_CARDS: ReadonlyArray<IconEntry> = [
+  {iconClass: 'tag-corruption-count', label: 'Corruption', official: false, expansions: ['underworld']},
+  {iconClass: 'resource_icon resource_icon--coordination', label: 'Coordination', official: false, expansions: ['conglomerates']},
 ];
 
 const TILES: ReadonlyArray<IconEntry> = [
@@ -172,6 +226,18 @@ const TILES: ReadonlyArray<IconEntry> = [
   {iconClass: 'city-tile', label: 'City', official: true},
   {iconClass: 'ocean-tile', label: 'Ocean', official: true},
   {iconClass: 'special-tile', label: 'Special', official: true},
+];
+
+const MOON_TILES: ReadonlyArray<IconEntry> = [
+  {iconClass: 'card-tile-lunar-mine', label: 'Mine', official: false, expansions: ['moon']},
+  {iconClass: 'card-tile-lunar-habitat', label: 'Habitat', official: false, expansions: ['moon']},
+  {iconClass: 'card-tile-lunar-road', label: 'Road', official: false, expansions: ['moon']},
+];
+
+const VENUS_PHASE2_TILES: ReadonlyArray<IconEntry> = [
+  {iconClass: 'venus-cloud-city-tile', label: 'Cloud City', official: false, expansions: ['venusPhase2']},
+  {iconClass: 'venus-gas-mine-tile', label: 'Gas Mine', official: false, expansions: ['venusPhase2']},
+  {iconClass: 'venus-floater-array-tile', label: 'Floater Array', official: false, expansions: ['venusPhase2']},
 ];
 
 const GLOBAL_PARAMETERS: ReadonlyArray<IconEntry> = [
@@ -191,13 +257,15 @@ const OTHERS: ReadonlyArray<IconEntry> = [
   {iconClass: 'help-icon-delegate', label: 'Delegate', official: true},
   {iconClass: 'help-icon-influence influence', label: 'Influence', official: true},
 ];
-
 export default defineComponent({
   name: 'HelpIconology',
   data() {
     return {
       standardResources: STANDARD_RESOURCES,
-      tiles: TILES,
+      resourcesNotOnCards: RESOURCES_NOT_ON_CARDS,
+      officialTiles: TILES,
+      moonTiles: MOON_TILES,
+      venusPhase2Tiles: VENUS_PHASE2_TILES,
       globalParameters: GLOBAL_PARAMETERS,
       others: OTHERS,
     };

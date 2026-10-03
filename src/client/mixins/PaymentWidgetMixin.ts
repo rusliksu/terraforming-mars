@@ -1,6 +1,7 @@
 // Common code for SelectPayment and SelectProjectCardToPlay
 import {defineComponent} from 'vue';
 import {CardName} from '@/common/cards/CardName';
+import {Tag} from '@/common/cards/Tag';
 import {CardModel} from '@/common/models/CardModel';
 import {SelectPaymentModel, SelectProjectCardToPlayModel} from '@/common/models/PlayerInputModel';
 import {PlayerViewModel} from '@/common/models/PlayerModel';
@@ -70,12 +71,30 @@ export const PaymentWidgetMixin = defineComponent({
     getResourceRate(unit: SpendableResource): number {
       switch (unit) {
       case 'steel':
-        return this.playerView.thisPlayer.steelValue;
+        return this.getSteelResourceRate();
       case 'titanium':
         return this.getTitaniumResourceRate();
       default:
         return DEFAULT_PAYMENT_VALUES[unit];
       }
+    },
+    getSteelResourceRate(): number {
+      const baseValue = this.playerView.thisPlayer.steelValue;
+      return this.hasBlockhouseSteelBonus() ? baseValue + 2 : baseValue;
+    },
+    // Blockhouse: steel is worth 2 M€ extra when paying for a City-tagged card or the
+    // City standard project (which carries no Tag.CITY of its own, so it's checked by name).
+    hasBlockhouseSteelBonus(): boolean {
+      if (this.card === undefined) {
+        return false;
+      }
+      if (!this.playerView.thisPlayer.tableau.some((c) => c.name === CardName.BLOCKHOUSE)) {
+        return false;
+      }
+      if (this.card.name === CardName.CITY_STANDARD_PROJECT) {
+        return true;
+      }
+      return getCard(this.card.name)?.tags.includes(Tag.CITY) === true;
     },
     getTitaniumResourceRate(): number {
       const paymentOptions = this.playerinput.paymentOptions;
@@ -91,6 +110,7 @@ export const PaymentWidgetMixin = defineComponent({
       const units: Record<SpendableResource, number> = {
         megacredits: thisPlayer.megacredits,
         heat: this.available ? this.available.heat : this.availableHeat(),
+        energy: this.available ? this.available.energy : thisPlayer.energy,
         steel: this.available ? this.available.steel : thisPlayer.steel,
         titanium: this.available ? this.available.titanium : thisPlayer.titanium,
         plants: this.available ? this.available.plants : thisPlayer.plants,
@@ -102,6 +122,8 @@ export const PaymentWidgetMixin = defineComponent({
         auroraiData: this.playerinput.auroraiData,
         graphene: this.playerinput.graphene,
         kuiperAsteroids: this.playerinput.kuiperAsteroids,
+        nereidMicrobes: this.playerinput.type === 'projectCard' ? this.playerinput.nereidMicrobes : 0,
+        anyFloaters: this.playerinput.type === 'projectCard' ? this.playerinput.anyFloaters : 0,
       };
 
       // Stratospheric Birds requires discarding one floater from any card.
@@ -145,10 +167,13 @@ export const PaymentWidgetMixin = defineComponent({
     availableHeat(): number {
       const thisPlayer = this.playerView.thisPlayer;
       const stormcraft = thisPlayer.tableau.find((card) => card.name === CardName.STORMCRAFT_INCORPORATED);
-      if (stormcraft?.resources !== undefined) {
-        return thisPlayer.heat + (stormcraft.resources * 2);
+      let heat = thisPlayer.heat + (stormcraft?.resources !== undefined ? stormcraft.resources * 2 : 0);
+      // Sistemas Seebeck: energy and heat are one pool, so energy can cover a heat payment
+      // (Merger'd Helion, or anything else that lets heat be spent as M€) too.
+      if (thisPlayer.tableau.some((card) => card.name === CardName.SISTEMAS_SEEBECK)) {
+        heat += thisPlayer.energy;
       }
-      return thisPlayer.heat;
+      return heat;
     },
   },
 });

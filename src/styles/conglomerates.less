@@ -1,0 +1,120 @@
+// Conglomerates: the live team-score panel (ConglomeratesTeams.vue).
+
+.conglomerates-teams-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.conglomerates-team {
+  background: @grey_850;
+  border-radius: 6px;
+  padding: 8px 12px;
+  min-width: 180px;
+}
+
+.conglomerates-team-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.conglomerates-team-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.conglomerates-team-name {
+  flex: 1;
+  color: #fff;
+  font-weight: bold;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// The team's combined score: a VP-badge icon with the total below it, standalone and
+// prominent (vs. the per-member "(6)(3)" row below it) so the two are unmistakably grouped --
+// outlined in the team's shared Turmoil delegate color (see PlayerResources.vue's own
+// team-colored outline for the same color).
+.conglomerates-team-total {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: fit-content;
+  margin: 2px 0 6px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: #1a1a1a;
+  border: 3px solid #888;
+}
+
+.conglomerates-team-total-icon {
+  width: 28px;
+  height: 28px;
+  line-height: 28px;
+  border-radius: 50%;
+  text-align: center;
+  font-size: 16px;
+  color: black;
+  background: linear-gradient(#cc8b00, #805700, #805700);
+  border-top: 1px solid #dddddd;
+  border-left: 1px solid #dddddd;
+  border-bottom: 1px solid #898989;
+  border-right: 1px solid #898989;
+}
+
+.conglomerates-team-total-score {
+  color: #ffcc64;
+  font-weight: bold;
+  font-size: 26px;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+each(@players, {
+  @c: ~"player_@{value}";
+  .conglomerates-team-total--@{value} {
+    border-color: @@c;
+    box-shadow: 0 0 6px @@c;
+  }
+});
+
+// The per-member score row (e.g. "(6) (3)"), shown right under the team total -- one entry
+// per member, in the same order as the header's color swatches.
+.conglomerates-team-members {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: #ddd;
+  font-size: 13px;
+}
+
+.conglomerates-team-member-score {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+
+  .conglomerates-team-swatch {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+.conglomerates-team-breakdown {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
+  color: #ccc;
+  font-size: 12px;
+}
+
+.conglomerates-team-row {
+  display: contents;
+}

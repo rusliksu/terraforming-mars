@@ -41,10 +41,13 @@ describe('ApiGame', () => {
     // This test is probably brittle.
     const json = JSON.parse(res.content);
     json.expectedPurgeTimeMs = -1;
+    json.createdTimeMs = -1;
     json.name = 'game-name';
     expect(json).deep.eq(
       {
+        'automationCompatibility': {version: 1, unsupportedFeatures: []},
         'activePlayer': 'black',
+        'createdTimeMs': -1,
         'expectedPurgeTimeMs': -1,
         'id': 'game-valid-id',
         'lastSoloGeneration': 14,
@@ -68,20 +71,32 @@ describe('ApiGame', () => {
           'draftVariant': false,
           'expansions': {
             'ares': false,
+            'betterMars': false,
+            'customCards': false,
             'ceo': false,
             'colonies': false,
             'community': false,
+            'conglomerates': false,
             'corpera': true,
+            'corporateBetterments': false,
             'deltaProject': false,
+            'highOrbit': false,
+            'idesOfMars': false,
+            'industries': false,
             'moon': false,
+            'moreParties': false,
             'pathfinders': false,
             'prelude': false,
             'prelude2': false,
             'promo': false,
+            'robAntilles': false,
+            'sillyfication': false,
+            'solaris': false,
             'starwars': false,
             'turmoil': false,
             'underworld': false,
             'venus': false,
+            'venusPhase2': false,
           },
           'fastModeOption': false,
           'includedCards': [],

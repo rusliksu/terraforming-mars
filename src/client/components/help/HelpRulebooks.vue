@@ -51,6 +51,18 @@ const fanExpansions: ReadonlyArray<RulebookEntry> = [
   {module: 'starwars', name: 'Star Wars', iconClass: 'starwars', url: RULEBOOK_URLS.starwars},
   {module: 'underworld', name: 'Underworld', iconClass: 'underworld', url: RULEBOOK_URLS.underworld},
   {module: 'deltaProject', name: 'Delta Project', iconClass: 'deltaProject', url: RULEBOOK_URLS.deltaProject},
+  {module: 'sillyfication', name: 'Sillyfication', iconClass: 'sillyfication', url: RULEBOOK_URLS.sillyfication},
+  {module: 'betterMars', name: 'BetterMars', iconClass: 'betterMars', url: RULEBOOK_URLS.betterMars},
+  {module: 'customCards', name: 'Custom Cards', iconClass: 'customCards', url: RULEBOOK_URLS.customCards},
+  {module: 'conglomerates', name: 'Conglomerates', iconClass: 'conglomerates', url: RULEBOOK_URLS.conglomerates},
+  {module: 'corporateBetterments', name: 'Corporate Betterments', iconClass: 'corporateBetterments', url: RULEBOOK_URLS.corporateBetterments},
+  {module: 'idesOfMars', name: 'Ides of Mars', iconClass: 'idesOfMars', url: RULEBOOK_URLS.idesOfMars},
+  {module: 'robAntilles', name: 'Rob Antilles', iconClass: 'robAntilles', url: RULEBOOK_URLS.robAntilles},
+  {module: 'moreParties', name: 'More Parties', iconClass: 'moreParties', url: RULEBOOK_URLS.moreParties},
+  {module: 'venusPhase2', name: 'Venus: Phase 2', iconClass: 'venusPhase2', url: RULEBOOK_URLS.venusPhase2},
+  {module: 'industries', name: 'Industries', iconClass: 'industries', url: RULEBOOK_URLS.industries},
+  {module: 'highOrbit', name: 'High Orbit', iconClass: 'highOrbit', url: RULEBOOK_URLS.highOrbit},
+  {module: 'solaris', name: 'Solaris', iconClass: 'solaris', url: RULEBOOK_URLS.solaris},
 ];
 
 export default defineComponent({

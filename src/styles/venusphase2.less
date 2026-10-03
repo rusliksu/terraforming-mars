@@ -1,0 +1,108 @@
+// Venus Phase 2's own board. No painted board texture exists (unlike Moon's board.png), so the
+// hex grid is positioned generically -- same customSpacePixel/customBoardPixelSize formula the
+// map editor's custom Mars boards already use -- rather than ~30 hand-tuned per-space CSS rules.
+// A full-planet render sits behind it as an atmospheric backdrop, the same trick
+// .board-cont--custom already uses for custom Mars boards over the painted Tharsis art.
+.venus-board-cont {
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+  width: auto;
+  max-width: 95vw;
+  max-height: 82vh;
+  overflow: auto;
+  overflow-anchor: none;
+  margin: 20px auto 0;
+  // Position/size come from --venus-backdrop-position/-size so the map editor's backdrop-alignment
+  // tool can override them live via an inline style on an ancestor element -- CSS custom properties
+  // inherit through the DOM regardless of Vue component boundaries, so SimpleMapEditor.vue's
+  // preview doesn't need this component's own template to expose a prop for it. Deliberately NOT
+  // declared here with a fallback default: a custom property declared directly on an element always
+  // wins over one inherited from an ancestor, so setting a default here would silently shadow every
+  // override from the editor's wrapper div. The var() fallback below supplies the default instead,
+  // which only applies when nothing up the tree has set the property at all. 0% 0% / 92% is the
+  // calibrated result of the editor's backdrop tool, confirmed to look right in-browser.
+  //
+  // Deliberately no background-color: the source PNG is a lit sphere on a transparent
+  // background, and a solid fill here would show through as a mismatched dark rectangle around
+  // it instead of blending into the page underneath, wherever the image doesn't fully cover.
+  background: url("./assets/venusPhase2/venus-planet-backdrop.png") no-repeat var(--venus-backdrop-position, 0% 0%) / var(--venus-backdrop-size, 92%);
+  border-radius: 6px;
+
+  .board--venus {
+    position: relative;
+    margin: 20px;
+    overflow-anchor: none;
+  }
+}
+
+// Stratopolis/Maxwell Base's Noctis-City-style callout labels (dot + leader line + name), drawn by
+// VenusSurfaceBoard.vue's reservedLegendEntries. Unlike Mars's .board-legend (which uses a fixed
+// negative margin to overlay a hand-tuned SVG on top of a differently-sized parent), this SVG is
+// given the board's own exact pixel dimensions and simply overlaid inset:0, since its coordinates
+// are computed from each space's real position rather than hand-picked against a painted texture.
+.venus-board-legend {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  pointer-events: none;
+  // Labels are pushed well outside the grid toward the nearest board edge, which can land them
+  // slightly past this SVG's own width/height (sized to the hex grid, not the label push
+  // distance) -- let them paint there instead of clipping at the SVG's bounding box.
+  overflow: visible;
+}
+
+.venus-board-outer-spaces {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  gap: 6px;
+  margin: 8px;
+}
+
+// The 0-30 range still renders on the official Mars-board Venus curve, same as always --
+// this is only the 30-60 extension, since the official curve has no room painted past 30.
+// A plain normal-flow row, deliberately OUTSIDE .venus-board-cont (see the comment in
+// VenusSurfaceBoard.vue's template for why: that container's backdrop sizing is a percentage of
+// its own box, so a normal-flow child inside it would distort the backdrop as well as push the
+// grid down -- living entirely outside it means this can safely sit in normal flow without
+// touching the board's own layout at all).
+//
+// Deliberately NOT centered: .venus-board-cont below is display:inline-block with an ineffective
+// `margin: auto` (auto margins don't center inline-block boxes), so it actually renders flush left
+// against the page's own left padding, not centered in the page. Centering this row instead would
+// float it off to the right of where the board itself actually sits -- left-aligned here matches
+// the board's real position.
+// The negative bottom margin pulls .venus-board-cont's own 20px top margin (plus this row's
+// height) in closer -- venus-track-30-60.png has a lot of transparent padding baked in below the
+// painted arc itself (real space between the numbers and the image's own bottom edge), which
+// otherwise reads as extra empty space above the planet on top of the two elements' own margins.
+.venus-scale-track-2-row {
+  margin: 4px 0 -85px;
+}
+
+// Same transparent-padding note as the row above -- kept on the smaller side so that dead space
+// stays modest in absolute pixels too, pending the calibration tool below possibly wanting a
+// cropped version of the source image instead.
+.venus-scale-track-2 {
+  position: relative;
+  width: 380px;
+  max-width: 85vw;
+  aspect-ratio: 2200 / 715;
+  background: url("./assets/venusPhase2/venus-track-30-60.png") no-repeat center / contain;
+
+  &__marker {
+    position: absolute;
+    // left/top set inline per-instance as percentages by VenusSurfaceBoard.vue's
+    // VENUS_2_TRACK_POSITIONS -- see that component for where these numbers come from.
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #000;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+  }
+}

@@ -203,7 +203,10 @@
     }
   }
 
-  // Each entry: <val> <margin-top> <margin-left> <rotation>
+  // Each entry: <val> <margin-top> <margin-left> <rotation>. Venus uses the official 2-unit step
+  // throughout, even with Venus Phase 2 on -- it extends the track's length to 60 rather than
+  // shrinking the step, so only even values ever need a position here (see venusphase2.less's
+  // .venus-scale-track-2 for the 30-60 half, rendered as its own separate curve).
   @venus-vals:
     0 88px 107px -45deg,
     2 72px 129px -36deg,
@@ -275,5 +278,94 @@
 
   .global-numbers-temperature {
     each(@temperature-vals, .(@v) { .pin-and-rotate(@v); });
+  }
+
+  // "Pegged past official max" indicator: a small counter badge showing how many extra steps
+  // beyond the official ceiling (8 for temperature, 14 for oxygen) the live value represents.
+  // Only rendered (see Board.vue's extraStepsBeyondOfficial()) once that count is > 0.
+  // Positioned just beyond each curve's top-most painted mark (val-8 / val-14), extrapolated one
+  // step further along that mark's own trajectory so it reads as a natural continuation of the
+  // spiral rather than a stray overlay.
+  .global-numbers-extra {
+    position: absolute;
+    min-width: 20px;
+    height: 18px;
+    line-height: 18px;
+    padding: 0 4px;
+    border-radius: 9px;
+    background: #bb8760; // same accent as .val-is-active's ring, so it reads as linked to it
+    color: white;
+    font-family: Prototype, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+    box-shadow: 0 0 2px 1px rgba(0, 0, 0, .7);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .global-numbers-temperature-extra {
+    .global-numbers-extra();
+    // Extrapolated one step past val-8 (117px, 494px, -40deg) using the 6->8 delta.
+    margin: 97px 0 0 479px;
+  }
+
+  .global-numbers-oxygen-extra {
+    .global-numbers-extra();
+    // Extrapolated one step past val-14 (128px, 72px, 37deg) using the 13->14 delta.
+    margin: 103px 0 0 88px;
+  }
+}
+
+// Custom boards can be any size and can stretch the parameter ranges past the values
+// the painted curve covers, so the tracks drop the curve and become a plain labelled
+// readout that sits outside the board rather than overlaid on it.
+.global-numbers.global-numbers--custom {
+  position: static;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 6px 0 12px;
+  font-size: 13px;
+
+  .global-numbers-temperature,
+  .global-numbers-oxygen,
+  .global-numbers-venus,
+  .global-numbers-oceans {
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 3px;
+    margin: 0;
+  }
+
+  .global-numbers-temperature::before { content: "Temperature"; }
+  .global-numbers-oxygen::before { content: "Oxygen"; }
+  .global-numbers-venus::before { content: "Venus"; }
+  .global-numbers-oceans::before { content: "Oceans"; }
+
+  .global-numbers-temperature::before,
+  .global-numbers-oxygen::before,
+  .global-numbers-venus::before,
+  .global-numbers-oceans::before {
+    flex: 0 0 92px;
+    font-weight: bold;
+    color: #daab63;
+  }
+
+  .global-numbers-value {
+    position: static !important;
+    margin: 0 !important;
+    transform: none !important;
+    width: 24px;
+    height: 22px;
+    line-height: 22px;
+    background: rgba(0, 0, 0, 0.35);
+  }
+
+  .global-numbers-oceans {
+    font-size: 20px;
+    color: #3682b4;
   }
 }

@@ -35,6 +35,7 @@ import {MicroMills} from '../../src/server/cards/base/MicroMills';
 import {HeatTrappers} from '../../src/server/cards/base/HeatTrappers';
 import {PartyName} from '../../src/common/turmoil/PartyName';
 import {Helion} from '../../src/server/cards/corporation/Helion';
+import {SistemasSeebeck} from '../../src/server/cards/pathfinders/SistemasSeebeck';
 import {SelectPayment} from '../../src/server/inputs/SelectPayment';
 import {CardName} from '../../src/common/cards/CardName';
 import {cast} from '@/common/utils/utils';
@@ -872,6 +873,41 @@ describe('Executor', () => {
     andOptions.cb(undefined);
 
     expect(stormcraft.resourceCount).eq(0);
+  });
+
+  it('spend - heat - Sistemas Seebeck can cover a heat shortfall with energy', () => {
+    player.playedCards.push(new SistemasSeebeck());
+    const behavior = {spend: {heat: 3}};
+    player.heat = 1;
+    player.energy = 1;
+    expect(executor.canExecute(behavior, player, fake)).is.false;
+
+    player.energy = 2;
+    expect(executor.canExecute(behavior, player, fake)).is.true;
+    executor.execute(behavior, player, fake);
+    expect(player.heat).eq(0);
+    expect(player.energy).eq(0);
+  });
+
+  it('spend - energy - Sistemas Seebeck can cover an energy shortfall with heat', () => {
+    player.playedCards.push(new SistemasSeebeck());
+    const behavior = {spend: {energy: 3}};
+    player.energy = 1;
+    player.heat = 1;
+    expect(executor.canExecute(behavior, player, fake)).is.false;
+
+    player.heat = 2;
+    expect(executor.canExecute(behavior, player, fake)).is.true;
+    executor.execute(behavior, player, fake);
+    expect(player.energy).eq(0);
+    expect(player.heat).eq(0);
+  });
+
+  it('spend - heat - without Sistemas Seebeck, energy cannot cover a heat shortfall', () => {
+    const behavior = {spend: {heat: 3}};
+    player.heat = 1;
+    player.energy = 5;
+    expect(executor.canExecute(behavior, player, fake)).is.false;
   });
 
   it('spend - heat - Helion, reds are in power', () => {

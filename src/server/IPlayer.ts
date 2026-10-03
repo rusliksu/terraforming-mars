@@ -27,6 +27,7 @@ import {Color} from '../common/Color';
 import {OrOptions} from './inputs/OrOptions';
 import {Stock} from './player/Stock';
 import {UnderworldPlayerData} from '../common/underworld/UnderworldPlayerData';
+import {ConglomeratesPlayerData} from '../common/conglomerates/ConglomeratesPlayerData';
 import {DeltaProjectPlayerModel} from '../common/models/DeltaProjectPlayerModel';
 import {AlliedParty} from '../common/turmoil/Types';
 import {IParty} from './turmoil/parties/IParty';
@@ -94,6 +95,11 @@ export interface IPlayer {
 
   // Helion
   canUseHeatAsMegaCredits: boolean;
+  // Turmoil More Parties: Empower Policy 1, only while that policy is in effect.
+  canUseEnergyAsMegaCredits: boolean;
+  // Sistemas Seebeck (fan): set right before an action resolves to mark it as free -
+  // takeAction() checks and clears this instead of incrementing actionsTakenThisRound.
+  skipNextActionIncrement: boolean;
   // Luna Trade Federation
   canUseTitaniumAsMegacredits: boolean;
   // Martian Lumber Corp
@@ -102,6 +108,8 @@ export interface IPlayer {
   // This generation / this round
   actionsTakenThisRound: number;
   lastCardPlayed: CardName | undefined;
+  lastGreeneryActionNumber: number | undefined;
+  nextResearchKeepMax: number | undefined;
   pendingInitialActions: Array<ICorporationCard>;
 
   // Cards
@@ -143,6 +151,8 @@ export interface IPlayer {
   // Cards this player has played that count toward the Warmonger award but don't live
   // in this player's tableau (e.g. Lawsuit, which lives in the sued player's event pile).
   warmongerCards: number;
+  /** Industries tile count, capped at 13 and gated by power tags. */
+  industryTilesPlaced: number;
   // For Playwrights and Odyssey.
   // removedFromPlayCards is a bit of a misname: it holds replayed events, so their
   // 'next card' discounts still apply. It is never cleared; stale entries are
@@ -161,6 +171,14 @@ export interface IPlayer {
    * For Preservation Program.
    */
   trThisGeneration: number;
+  /**
+   * When set to the current generation, this player may end their turn having taken 0
+   * actions this round without it counting as passing.
+   *
+   * For Administrative Delay (idesOfMars, fan).
+   */
+  administrativeDelayActiveGeneration: number | undefined;
+  oneActionPerTurnActiveGeneration: number | undefined;
   /**
    * The list of standard projects (EXCEPT SELL PATENTS) this player has taken this generation.
    *
@@ -185,12 +203,17 @@ export interface IPlayer {
 
   // Stats
   actionsTakenThisGame: number;
+  actionsTakenAtGenerationStart: number;
   victoryPointsByGeneration: Array<number>;
   totalDelegatesPlaced: number;
   earlyGameStats: EarlyGameStats;
 
   underworldData: UnderworldPlayerData;
+  conglomeratesData: ConglomeratesPlayerData;
+  teammates(): ReadonlyArray<IPlayer>;
   deltaProjectData?: DeltaProjectPlayerModel;
+  /** Epsilon Dample's second Delta Project marker. */
+  epsilonDampleData?: DeltaProjectPlayerModel;
   readonly alliedParty?: AlliedParty;
 
   tearDown(): void;
@@ -211,6 +234,8 @@ export interface IPlayer {
   getSteelValue(): number;
   increaseSteelValue(): void;
   decreaseSteelValue(): void;
+  getFloaterValue(): number;
+  increaseFloaterValue(): void;
   increaseTerraformRating(steps?: number, opts?: {log?: boolean, from?: From}): void;
   decreaseTerraformRating(steps?: number, opts?: {log?: boolean}): void;
   setTerraformRating(value: number): void;
@@ -220,6 +245,7 @@ export interface IPlayer {
   getVictoryPoints(): VictoryPointsBreakdown;
   plantsAreProtected(): boolean;
   alloysAreProtected(): boolean;
+  megacreditsAreProtected(): boolean;
   /**
    * Return true when |resource| cannot be stolen from this player.
    */
@@ -283,6 +309,11 @@ export interface IPlayer {
    */
   temporaryGlobalParameterRequirementBonus: number;
   /**
+   * For the given tag, return a sum of all tag-count requirement bonuses this
+   * player has thanks to played cards (e.g. Excavation Syria Planum).
+   */
+  getTagCardRequirementBonus(tag: Tag): number;
+  /**
    * Called when this player is responsible for increasing a global parameter.
    */
   onGlobalParameterIncrease(parameter: GlobalParameter, steps: number): void;
@@ -322,7 +353,7 @@ export interface IPlayer {
   runProductionPhase(): void;
   finishProductionPhase(): void;
 
-  runResearchPhase(): void;
+  runResearchPhase(restoring?: boolean): void;
   canUndoResearchPurchase(): boolean;
   undoResearchPurchase(): void;
   getCardCost(card: IProjectCard): number;
@@ -336,6 +367,8 @@ export interface IPlayer {
   pay(payment: Payment): void;
   availableHeat(): number;
   spendHeat(amount: number, cb?: () => (undefined | PlayerInput)) : PlayerInput | undefined;
+  availableEnergy(): number;
+  spendEnergy(amount: number, cb?: () => (undefined | PlayerInput)): PlayerInput | undefined;
 
   playCard(selectedCard: IProjectCard, payment?: Payment, cardAction?: CardAction): void;
   onCardPlayed(card: ICard): void;
@@ -374,6 +407,9 @@ export interface IPlayer {
 
   /** Returns the cost a player must spend to claim a milestone. Public for Briber. */
   milestoneCost(): number;
+
+  /** Returns the cost a player must spend to fund an award. Public for TranshumanistsPolicy04. */
+  awardFundingCost(): number;
 
   /** Shorthand for deferring evaluating a PlayerInput */
   defer(input: PlayerInput | undefined | void | (() => PlayerInput | undefined | void), priority?: Priority): void;

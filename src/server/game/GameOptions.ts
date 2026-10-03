@@ -8,12 +8,25 @@ import {RandomMAOptionType} from '../../common/ma/RandomMAOptionType';
 import {AgendaStyle} from '../../common/turmoil/Types';
 import {Expansion} from '../../common/cards/GameModule';
 import {EscapeVelocityOptions} from '../../common/game/NewGameConfig';
+import {CustomBoardDefinition} from '../../common/boards/CustomBoardDefinition';
+import {SimpleCustomBoardDefinition} from '../../common/boards/SimpleCustomBoardDefinition';
+import {GlobalParametersConfig} from '../../common/GlobalParameterConfig';
 
 export type GameOptions = {
+  /** Marks the expanded card pool; absent in pre-port saves. */
+  fanmadeCardPool?: boolean;
   /** The resolved runtime board for this game. */
   boardName: BoardName;
   /** The original create-game board selection, used by rematch setup. */
   boardSelection?: BoardName | RandomBoardOption;
+  /** The board layout when `boardName` is `BoardName.CUSTOM`. Persisted for the life of the game. */
+  customBoard?: CustomBoardDefinition;
+  /** A user-authored Moon surface layout. Absent means MoonBoard's own hard-coded default. */
+  customMoonBoard?: SimpleCustomBoardDefinition;
+  /** A user-authored Venus surface layout. Absent means VenusSurfaceBoard's own hard-coded default. */
+  customVenusSurfaceBoard?: SimpleCustomBoardDefinition;
+  /** Global-parameter track overrides (from a custom board). Absent means the official tracks. */
+  globalParameters?: GlobalParametersConfig;
   clonedGamedId: GameId | undefined;
 
   // Configuration
@@ -47,6 +60,20 @@ export type GameOptions = {
   starWarsExpansion: boolean;
   underworldExpansion: boolean;
   deltaProjectExpansion: boolean;
+  sillyficationExpansion: boolean;
+  betterMarsExpansion: boolean;
+  customCardsExpansion: boolean;
+  conglomeratesExpansion: boolean;
+  corporateBettermentsExpansion: boolean;
+  idesOfMarsExpansion: boolean;
+  robAntillesExpansion: boolean;
+  morePartiesExpansion: boolean;
+  venusPhase2Expansion: boolean;
+  industriesExpansion: boolean;
+  highOrbitExpansion: boolean;
+  solarisExpansion: boolean;
+  /** One team-index per player (same order as the player list), chosen at game creation. Undefined falls back to pairing by table order. */
+  conglomeratesTeamAssignments: Array<number> | undefined;
 
   expansions: Record<Expansion, boolean>,
 
@@ -91,6 +118,10 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
   aresHazards: true,
   aresExtremeVariant: false,
   boardName: BoardName.THARSIS,
+  customBoard: undefined,
+  customMoonBoard: undefined,
+  customVenusSurfaceBoard: undefined,
+  globalParameters: undefined,
   bannedCards: [],
   includedCards: [],
   ceoExtension: false,
@@ -120,6 +151,18 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
     starwars: false,
     underworld: false,
     deltaProject: false,
+    sillyfication: false,
+    betterMars: false,
+    customCards: false,
+    conglomerates: false,
+    corporateBetterments: false,
+    idesOfMars: false,
+    robAntilles: false,
+    moreParties: false,
+    venusPhase2: false,
+    industries: false,
+    highOrbit: false,
+    solaris: false,
   },
   fastModeOption: false,
   includeFanMA: false,
@@ -155,6 +198,19 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
   turmoilExtension: false,
   underworldExpansion: false,
   deltaProjectExpansion: false,
+  sillyficationExpansion: false,
+  betterMarsExpansion: false,
+  customCardsExpansion: false,
+  conglomeratesExpansion: false,
+  corporateBettermentsExpansion: false,
+  idesOfMarsExpansion: false,
+  robAntillesExpansion: false,
+  morePartiesExpansion: false,
+  venusPhase2Expansion: false,
+  industriesExpansion: false,
+  highOrbitExpansion: false,
+  solarisExpansion: false,
+  conglomeratesTeamAssignments: undefined,
   undoOption: false,
   undoStepOption: false,
   venusNextExtension: false,

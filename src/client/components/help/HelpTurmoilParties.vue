@@ -9,11 +9,12 @@
             <div :class="'card-party card-party--'+partyLogoSlug(party.name)"></div>
             <div :class="'party-name party-name--'+partyNameToCss(party.name)" v-i18n>{{party.name}}</div>
           </div>
+          <div v-if="party.requiresMoreParties" class="help-party-note" v-i18n>Requires the "More Parties" fan expansion</div>
 
           <div class="help-agenda-section">
             <div class="help-agenda-card" v-for="id in party.bonusIds" :key="id">
-              <TurmoilAgenda :id="id" />
-              <div class="help-agenda-description" v-i18n>{{ agendaDescription(id) }}</div>
+              <TurmoilAgenda :id="id" :morePartiesExpansion="party.requiresMoreParties" />
+              <div class="help-agenda-description" v-i18n>{{ agendaDescription(id, party.requiresMoreParties) }}</div>
             </div>
           </div>
 
@@ -21,8 +22,8 @@
 
           <div class="help-agenda-section">
             <div class="help-agenda-card" v-for="id in party.policyIds" :key="id">
-              <TurmoilAgenda :id="id" />
-              <div class="help-agenda-description" v-i18n>{{ agendaDescription(id) }}</div>
+              <TurmoilAgenda :id="id" :morePartiesExpansion="party.requiresMoreParties" />
+              <div class="help-agenda-description" v-i18n>{{ agendaDescription(id, party.requiresMoreParties) }}</div>
             </div>
           </div>
         </div>
@@ -32,28 +33,40 @@
 <script setup lang="ts">
 import {computed} from 'vue';
 import {PartyName} from '@/common/turmoil/PartyName';
-import {agendaInfoById, BONUS_IDS, POLICY_IDS, BonusId, PolicyId} from '@/common/turmoil/Types';
-import {getAgendaOrThrow} from '@/client/turmoil/ClientAgendaManifest';
+import {BonusId, PolicyId} from '@/common/turmoil/Types';
+import {getAgendaOrThrow, getPartyAgendaIds} from '@/client/turmoil/ClientAgendaManifest';
 import TurmoilAgenda from '@/client/components/turmoil/TurmoilAgenda.vue';
 
 type PartyHelpEntry = {
   name: PartyName;
   bonusIds: ReadonlyArray<BonusId>;
   policyIds: ReadonlyArray<PolicyId>;
+  requiresMoreParties: boolean;
 };
+
+const MORE_PARTIES: ReadonlyArray<PartyName> = [
+  PartyName.POPULISTS,
+  PartyName.SPOME,
+  PartyName.EMPOWER,
+  PartyName.BUREAUCRATS,
+  PartyName.CENTRISTS,
+  PartyName.TRANSHUMANISTS,
+];
 
 const parties = computed<Array<PartyHelpEntry>>(() => {
   return Object.values(PartyName).map((name) => {
+    const ids = getPartyAgendaIds(name);
     return {
       name,
-      bonusIds: BONUS_IDS.filter((id) => agendaInfoById(id).name === name),
-      policyIds: POLICY_IDS.filter((id) => agendaInfoById(id).name === name),
+      bonusIds: ids.bonuses,
+      policyIds: ids.policies,
+      requiresMoreParties: MORE_PARTIES.includes(name),
     };
   });
 });
 
-function agendaDescription(id: BonusId | PolicyId): string {
-  return getAgendaOrThrow(id).description;
+function agendaDescription(id: BonusId | PolicyId, morePartiesExpansion: boolean): string {
+  return getAgendaOrThrow(id, morePartiesExpansion).description;
 }
 
 function partyNameToCss(party: PartyName): string {

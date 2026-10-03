@@ -29,6 +29,7 @@ export class Arklight extends CorporationCard implements ICorporationCard {
             ce.effect('When you play an animal or plant tag, including this, add 1 animal to this card.', (eb) => {
               eb.tag(Tag.ANIMAL).slash().tag(Tag.PLANT).startEffect.resource(CardResource.ANIMAL);
             });
+            ce.br;
             ce.vSpace(); // to offset the description to the top a bit so it can be readable
           });
         }),

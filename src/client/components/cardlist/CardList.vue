@@ -46,7 +46,7 @@
 
           <span v-for="expansion in allModules" :key="expansion">
             <input type="checkbox" :name="expansion" :id="`${expansion}-checkbox`" v-model="expansions[expansion]">
-            <label :for="`${expansion}-checkbox`" class="expansion-button">
+            <label :for="`${expansion}-checkbox`" class="expansion-button tooltip" :data-tooltip="moduleName(expansion)">
               <div class='expansion-icon' :class="expansionIconClass(expansion)"></div>
             </label>
           </span>
@@ -177,8 +177,17 @@
       <section v-show="visibleAgendaIds.length > 0">
         <h2 v-i18n>Agendas</h2>
         <div class="player_home_colony_cont">
-          <div class="player_home_colony" v-for="id in visibleAgendaIds" :key="id" v-memo="[id]">
-            <TurmoilAgendaContainer :agendaId="id" />
+          <div class="player_home_colony" v-for="id in visibleAgendaIds" :key="id" v-memo="[id, expansions.moreParties]">
+            <TurmoilAgendaContainer :agendaId="id" :morePartiesExpansion="expansions.moreParties" />
+          </div>
+        </div>
+      </section>
+
+      <section v-show="visibleNewPartyAgendaIds.length > 0">
+        <h2 v-i18n>More Parties Agendas</h2>
+        <div class="player_home_colony_cont">
+          <div class="player_home_colony" v-for="id in visibleNewPartyAgendaIds" :key="id" v-memo="[id, expansions.moreParties]">
+            <TurmoilAgendaContainer :agendaId="id" :morePartiesExpansion="expansions.moreParties" />
           </div>
         </div>
       </section>
@@ -206,7 +215,7 @@ import {byType, getCard, getCardOrThrow, getCards} from '@/client/cards/ClientCa
 import {COMMUNITY_COLONY_NAMES, OFFICIAL_COLONY_NAMES, PATHFINDERS_COLONY_NAMES} from '@/common/colonies/AllColonies';
 import {ColonyModel} from '@/common/models/ColonyModel';
 import {ColonyName} from '@/common/colonies/ColonyName';
-import {GameModule, GAME_MODULES} from '@/common/cards/GameModule';
+import {GameModule, GAME_MODULES, MODULE_NAMES} from '@/common/cards/GameModule';
 import {Tag} from '@/common/cards/Tag';
 import {getColonyOrThrow} from '@/client/colonies/ClientColonyManifest';
 import {ClientCard} from '@/common/cards/ClientCard';
@@ -217,7 +226,8 @@ import {ClaimedMilestoneModel} from '@/common/models/ClaimedMilestoneModel';
 import {FundedAwardModel} from '@/common/models/FundedAwardModel';
 import {TypeOption, CardListModel, hashToModel, modelToHash, ResourceOption, TagOption} from '@/client/components/cardlist/CardListModel';
 import {getAward, getMilestone} from '@/client/MilestoneAwardManifest';
-import {BonusId, BONUS_IDS, PolicyId, POLICY_IDS, agendaIdDescription} from '@/common/turmoil/Types';
+import {BonusId, BONUS_IDS, PolicyId, POLICY_IDS, agendaIdDescription, agendaInfoById} from '@/common/turmoil/Types';
+import {PartyName} from '@/common/turmoil/PartyName';
 import Card from '@/client/components/card/Card.vue';
 import Colony from '@/client/components/colonies/Colony.vue';
 import GlobalEvent from '@/client/components/turmoil/GlobalEvent.vue';
@@ -235,6 +245,18 @@ import {textFitMetrics} from '@/client/utils/textFit';
 type Refs = {
   filter: HTMLInputElement;
 };
+
+// The 6 new More Parties parties -- their bonus/policy ids should only be visible when that
+// expansion is enabled, unlike the 6 official parties (whose *rework* content is still governed
+// by the same ids, so it's shown whenever Turmoil is on regardless of More Parties).
+const NEW_PARTIES: ReadonlySet<PartyName> = new Set([
+  PartyName.POPULISTS,
+  PartyName.SPOME,
+  PartyName.EMPOWER,
+  PartyName.BUREAUCRATS,
+  PartyName.CENTRISTS,
+  PartyName.TRANSHUMANISTS,
+]);
 
 export default defineComponent({
   name: 'CardList',
@@ -289,13 +311,7 @@ export default defineComponent({
       ];
     },
     allTags(): Array<TagOption> {
-      const results: Array<TagOption> = [];
-      for (const tag in Tag) {
-        if (Object.hasOwn(Tag, tag)) {
-          results.push((<any>Tag)[tag]);
-        }
-      }
-      return results.concat('none');
+      return [...getEnumStringValues(Tag), 'none'];
     },
     allResources(): Array<ResourceOption> {
       return [...getEnumStringValues(CardResource), 'none'];
@@ -359,7 +375,13 @@ export default defineComponent({
       if (!this.types.agendas) {
         return [];
       }
-      return this.allAgendaIds.filter((id) => this.include(id, 'agenda'));
+      return this.allAgendaIds.filter((id) => this.showAgenda(id) && !this.isNewPartyAgenda(id));
+    },
+    visibleNewPartyAgendaIds(): Array<PolicyId | BonusId> {
+      if (!this.types.agendas) {
+        return [];
+      }
+      return this.allAgendaIds.filter((id) => this.showAgenda(id) && this.isNewPartyAgenda(id));
     },
     agendaIdDescription(): typeof agendaIdDescription {
       return agendaIdDescription;
@@ -457,6 +479,9 @@ export default defineComponent({
       default: return `expansion-icon-${expansion}`;
       }
     },
+    moduleName(expansion: GameModule): string {
+      return MODULE_NAMES[expansion];
+    },
     filterByTags(card: ClientCard): boolean {
       if (card.tags.length === 0) {
         return this.tags['none'] === true;
@@ -528,6 +553,16 @@ export default defineComponent({
         return false;
       }
       return this.expansions[getMilestone(name).requirements ?? 'base'] === true;
+    },
+    isNewPartyAgenda(id: PolicyId | BonusId): boolean {
+      return NEW_PARTIES.has(agendaInfoById(id).name as PartyName);
+    },
+    showAgenda(id: PolicyId | BonusId): boolean {
+      if (!this.include(id, 'agenda')) {
+        return false;
+      }
+      const requiredExpansion = this.isNewPartyAgenda(id) ? 'moreParties' : 'turmoil';
+      return this.expansions[requiredExpansion] === true;
     },
     showAward(name: AwardName): boolean {
       if (!this.include(name, 'ma')) {

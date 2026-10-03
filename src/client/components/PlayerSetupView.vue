@@ -57,8 +57,8 @@
     <DynamicTitle title="Game details" :color="thisPlayer.color"/>
 
     <div class="player_home_block" v-if="playerView.players.length > 1">
-      <Milestones :showScores="true" :milestones="game.milestones" />
-      <Awards :show-scores="true" :awards="game.awards" />
+      <Milestones :showScores="true" :milestones="game.milestones" :conglomeratesExpansion="game.gameOptions.expansions.conglomerates" />
+      <Awards :show-scores="true" :awards="game.awards" :conglomeratesExpansion="game.gameOptions.expansions.conglomerates" />
     </div>
 
     <div class="player_home_block player_home_block--turnorder nofloat" v-if="playerView.players.length>1">
@@ -84,17 +84,22 @@
           :expansions="game.gameOptions.expansions"
           :venusScaleLevel="game.venusScaleLevel"
           :boardName ="game.gameOptions.boardName"
+          :globalParameters="game.gameOptions.globalParameters"
+          :customBoardRows="game.gameOptions.customBoardRows"
           :aresData="game.aresData"
           :altVenusBoard="game.gameOptions.altVenusBoard"
           :tileView="tileView"
           @toggleTileView="$emit('toggleTileView')"/>
 
-        <Turmoil v-if="game.turmoil" :turmoil="game.turmoil"/>
+        <Turmoil v-if="game.turmoil" :turmoil="game.turmoil" :morePartiesExpansion="game.gameOptions.expansions.moreParties" :agendaStyle="game.gameOptions.politicalAgendasExtension"/>
 
         <PlanetaryTracks v-if="game.gameOptions.expansions.pathfinders" :tracks="game.pathfinders" :gameOptions="game.gameOptions"/>
 
         <a name="moonBoard" class="player_home_anchor"></a>
         <MoonBoard v-if="game.moon !== undefined" :model="game.moon" :tileView="tileView"/>
+        <VenusSurfaceBoard v-if="game.venusPhase2" :model="game.venusPhase2" :tileView="tileView" :venusScaleLevel="game.venusScaleLevel"/>
+        <HighOrbitMarket v-if="game.highOrbitMarket" :market="game.highOrbitMarket"/>
+        <ConglomeratesTeams v-if="game.conglomerates" :model="game.conglomerates"/>
         <DeltaProjectBoard v-if="game.gameOptions.expansions.deltaProject" :players="playerView.players"/>
       </div>
     </details>
@@ -104,6 +109,9 @@
 <script lang="ts">
 import {defineComponent} from 'vue';
 
+import VenusSurfaceBoard from '@/client/components/venusPhase2/VenusSurfaceBoard.vue';
+import HighOrbitMarket from '@/client/components/highOrbit/HighOrbitMarket.vue';
+import ConglomeratesTeams from '@/client/components/conglomerates/ConglomeratesTeams.vue';
 import Board from '@/client/components/Board.vue';
 import Card from '@/client/components/card/Card.vue';
 import DeltaProjectBoard from '@/client/components/delta/DeltaProjectBoard.vue';
@@ -146,6 +154,9 @@ export default defineComponent({
     },
   },
   components: {
+    ConglomeratesTeams,
+    HighOrbitMarket,
+    VenusSurfaceBoard,
     Board,
     Card,
     DynamicTitle,

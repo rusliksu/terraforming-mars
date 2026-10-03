@@ -6,9 +6,16 @@ export type AgendaStyle =
   /** Randomly choose policies and bonuses, which remain for the entire game. */
   'Random' |
   /** The incoming chairman sets the incoming policy and bonus each generation. */
-  'Chairman';
+  'Chairman' |
+  /**
+   * More Parties: whoever becomes (or already is) a party's leader immediately chooses
+   * that party's bonus, and its policy too unless the party is currently ruling (its policy
+   * stays locked until the next Chairman election). A neutral delegate becoming leader
+   * re-randomizes both instead. Forced on whenever the More Parties expansion is enabled.
+   */
+  'PartyLeaders';
 
-const PARTIES = ['m', 's', 'u', 'k', 'r', 'g'] as const;
+const PARTIES = ['m', 's', 'u', 'k', 'r', 'g', 'pop', 'spo', 'emp', 'bur', 'cen', 'tra'] as const;
 const BONUS_SUFFIXES = ['b01', 'b02'] as const;
 const POLICY_SUFFIXES = ['p01', 'p02', 'p03', 'p04'] as const;
 
@@ -41,6 +48,12 @@ const names: Record<Party, PartyName> = {
   k: PartyName.KELVINISTS,
   r: PartyName.REDS,
   g: PartyName.GREENS,
+  pop: PartyName.POPULISTS,
+  spo: PartyName.SPOME,
+  emp: PartyName.EMPOWER,
+  bur: PartyName.BUREAUCRATS,
+  cen: PartyName.CENTRISTS,
+  tra: PartyName.TRANSHUMANISTS,
 } as const;
 
 export type AgendaInfo = {
@@ -50,9 +63,13 @@ export type AgendaInfo = {
 };
 
 export function agendaInfoById(id: BonusId | PolicyId): AgendaInfo {
-  const p = id[0] as Party;
-  const type: 'Bonus' | 'Policy' = id[1] === 'b' ? 'Bonus' : 'Policy';
-  const num = id.substring(2);
+  // The suffix (bonus/policy marker + 2-digit number) is always exactly 3 characters -- 'b01',
+  // 'b02', 'p01'..'p04' -- regardless of how long the party prefix itself is (1 character for
+  // the 6 official parties, up to 3 for the 6 More Parties ones, e.g. 'bur').
+  const suffix = id.slice(-3);
+  const p = id.slice(0, -3) as Party;
+  const type: 'Bonus' | 'Policy' = suffix[0] === 'b' ? 'Bonus' : 'Policy';
+  const num = suffix.slice(1);
   const name = names[p];
   return {name, type, num};
 }

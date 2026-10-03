@@ -668,7 +668,7 @@ describe('PlayerInput', () => {
     expect(game.surrenderedPlayerIds.has(player.id)).eq(true);
     expect(game.botPlayerIds.has(player.id)).eq(false);
     expect(game.hasPassedThisActionPhase(player)).eq(false);
-    expect(starts).deep.eq([{gameId: game.id, playerId: player.id, serverId: scaffolding.ctx.ids.serverId}]);
+    expect(starts).deep.eq([{compatibility: {version: 1, unsupportedFeatures: []}, gameId: game.id, playerId: player.id, serverId: scaffolding.ctx.ids.serverId}]);
     expect(JSON.parse(res.content).waitingFor.title).eq('Take your next action');
     expect(auditEvents.map((event) => event.event)).deep.eq([
       'player_input_attempt',

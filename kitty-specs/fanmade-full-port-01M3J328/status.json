@@ -122,7 +122,8 @@
       "last_transition_at": "2026-10-03T11:13:52.795771+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Server 20c6a55ed3 and merged external PR908 validated; evidence on planning branch in research/external-compatibility-evidence.md."
+        "Server 20c6a55ed3 and merged external PR908 validated; evidence on planning branch in research/external-compatibility-evidence.md.",
+        "Independent port_review approves unchanged server20c6a55 and merged external PR908/024f191; parent verified suites, mirrors, browser and ancestry. See research/WP04-review.md."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {

@@ -11,6 +11,7 @@ import {GlobalEventName} from '../turmoil/globalEvents/GlobalEventName';
 import {Warning} from '../cards/Warning';
 import {Units} from '../Units';
 import {ClaimedToken} from '../underworld/UnderworldPlayerData';
+import {ColonyTrackChoiceModel} from './ColonyTradeContextModel';
 
 export type BaseInputModel = {
   title: string | Message;
@@ -29,6 +30,7 @@ export type AndOptionsModel = BaseInputModel & {
 export type OrOptionsModel = BaseInputModel & {
   type: 'or';
   options: Array<PlayerInputModel>;
+  colonyTrackChoices?: ColonyTrackChoiceModel;
   // When set, initialIdx represents the option within `options` that should be
   // shows as the default selection.
   initialIdx?: number;

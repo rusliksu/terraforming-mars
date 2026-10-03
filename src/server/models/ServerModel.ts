@@ -331,6 +331,10 @@ export class Server {
 
     model.deltaProject = player.deltaProjectData;
 
+    if (modelIsForThisPlayer && game.gameOptions.coloniesExtension) {
+      model.colonyTradeContext = player.colonies.getTradeContext();
+    }
+
     return model;
   }
 

@@ -161,9 +161,7 @@ export abstract class Colony implements IColony {
       player.colonies.usedTradeFleets++;
     }
 
-    if (player.tableau.has(CardName.VENUS_TRADE_HUB)) {
-      player.stock.add(Resource.MEGACREDITS, 3, {log: true});
-    }
+    player.stock.add(Resource.MEGACREDITS, player.colonies.getFixedTradeBonusMC(), {log: true});
 
     // !== false because default is true.
     if (options.decreaseTrackAfterTrade !== false) {

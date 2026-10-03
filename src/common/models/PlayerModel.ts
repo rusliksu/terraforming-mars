@@ -13,6 +13,7 @@ import {Tag} from '../cards/Tag';
 import {UnderworldPlayerData} from '../underworld/UnderworldPlayerData';
 import {GlobalParameter} from '../GlobalParameter';
 import {DeltaProjectPlayerModel} from './DeltaProjectPlayerModel';
+import {ColonyTradeContextModel} from './ColonyTradeContextModel';
 
 export interface ViewModel {
   canStepBack?: boolean;
@@ -53,6 +54,7 @@ export type PublicPlayerModel = {
   cardsInHandNbr: number;
   citiesCount: number;
   coloniesCount: number;
+  colonyTradeContext?: ColonyTradeContextModel;
   color: Color;
   deltaProject?: DeltaProjectPlayerModel;
   energy: number;

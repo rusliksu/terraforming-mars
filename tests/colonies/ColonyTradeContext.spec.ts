@@ -5,6 +5,8 @@ import {TradeWithEnergy} from '@/server/player/Colonies';
 import {Ceres} from '@/server/colonies/Ceres';
 import {Luna} from '@/server/colonies/Luna';
 import {Huan} from '@/server/cards/ceos/Huan';
+import {DarksideSmugglersUnion} from '@/server/cards/moon/DarksideSmugglersUnion';
+import {CardName} from '@/common/cards/CardName';
 import {Naomi} from '@/server/cards/ceos/Naomi';
 import {OrOptions} from '@/server/inputs/OrOptions';
 import {testGame} from '@tests/TestGame';
@@ -74,6 +76,16 @@ describe('Own-player colony trade context', () => {
     const context = Server.getPlayerModel(player).thisPlayer.colonyTradeContext;
     expect(context?.remainingActionsThisTurn).eq(1);
     expect(context?.tradeAvailable).eq(false);
+  });
+
+  it('keeps a used special payment mechanism outside the future stock projection', () => {
+    const {player} = setup();
+    player.playedCards.push(new DarksideSmugglersUnion());
+    player.actionsThisGeneration.add(CardName.DARKSIDE_SMUGGLERS_UNION);
+    expect(Server.getPlayerModel(player).thisPlayer.colonyTradeContext?.additionalPaymentMechanism).eq(true);
+    player.playedCards.clear();
+    player.canUseHeatAsMegaCredits = true;
+    expect(Server.getPlayerModel(player).thisPlayer.colonyTradeContext?.additionalPaymentMechanism).eq(true);
   });
 
   it('reports known next-generation Huan restrictions from the game state', () => {

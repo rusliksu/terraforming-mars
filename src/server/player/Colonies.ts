@@ -59,16 +59,16 @@ export class Colonies {
     return undefined;
   }
 
-  private getTradeHandlers(): Array<IColonyTrader> {
+  private getTradeHandlers(): Array<{handler: IColonyTrader; cardName?: CardName}> {
     const player = this.player;
     return [
-      new TradeWithDarksideSmugglersUnion(player),
-      new TradeWithTitanFloatingLaunchPad(player),
-      new TradeWithCollegiumCopernicus(player),
-      new TradeWithHectateSpeditions(player),
-      new TradeWithEnergy(player),
-      new TradeWithTitanium(player),
-      new TradeWithMegacredits(player),
+      {handler: new TradeWithDarksideSmugglersUnion(player), cardName: CardName.DARKSIDE_SMUGGLERS_UNION},
+      {handler: new TradeWithTitanFloatingLaunchPad(player), cardName: CardName.TITAN_FLOATING_LAUNCHPAD},
+      {handler: new TradeWithCollegiumCopernicus(player), cardName: CardName.COLLEGIUM_COPERNICUS},
+      {handler: new TradeWithHectateSpeditions(player), cardName: CardName.HECATE_SPEDITIONS},
+      {handler: new TradeWithEnergy(player)},
+      {handler: new TradeWithTitanium(player)},
+      {handler: new TradeWithMegacredits(player)},
     ];
   }
 
@@ -77,9 +77,9 @@ export class Colonies {
     const player = this.player;
     const game = player.game;
     const handlers = this.getTradeHandlers();
-    let additionalPaymentAvailable = false;
+    let additionalPaymentMechanism = false;
     const payments: Array<ColonyTradeContextModel['payments'][number]> = [];
-    for (const handler of handlers) {
+    for (const {handler, cardName} of handlers) {
       if (handler instanceof TradeWithEnergy || handler instanceof TradeWithTitanium || handler instanceof TradeWithMegacredits) {
         const resource = handler instanceof TradeWithEnergy ? Resource.ENERGY :
           handler instanceof TradeWithTitanium ? Resource.TITANIUM : Resource.MEGACREDITS;
@@ -87,14 +87,14 @@ export class Colonies {
         const stockAvailable = player.stock[resource] >= handler.tradeCost;
         payments.push({resource, amount: handler.tradeCost, available: available && stockAvailable});
         if (available && !stockAvailable) {
-          additionalPaymentAvailable = true;
+          additionalPaymentMechanism = true;
         }
-      } else if (handler.canUse()) {
-        additionalPaymentAvailable = true;
+      } else if (handler.canUse() || (cardName !== undefined && player.tableau.has(cardName))) {
+        additionalPaymentMechanism = true;
       }
     }
-    if (player.canUseHeatAsMegaCredits && player.heat > 0) {
-      additionalPaymentAvailable = true;
+    if (player.canUseHeatAsMegaCredits) {
+      additionalPaymentMechanism = true;
     }
 
     const stockColonies: Array<ColonyTradeContextModel['stockColonies'][number]> = [];
@@ -131,7 +131,7 @@ export class Colonies {
       stockColonies,
       ordinaryProduction: !player.tableau.has(CardName.SUPERCAPACITORS) &&
         !player.tableau.some((card) => card.onProductionPhase !== undefined),
-      additionalPaymentAvailable,
+      additionalPaymentMechanism,
       nextGenerationTradeAccess,
       gameCanContinue: !game.gameIsOver(),
     };
@@ -150,7 +150,7 @@ export class Colonies {
     const howToPayForTrade = new OrOptions()
       .setTitle('Pay trade fee')
       .setButtonLabel('Pay');
-    handlers.forEach((handler) => {
+    handlers.forEach(({handler}) => {
       if (handler.canUse()) {
         howToPayForTrade.options.push(new SelectOption(
           handler.optionText()).andThen(() => {

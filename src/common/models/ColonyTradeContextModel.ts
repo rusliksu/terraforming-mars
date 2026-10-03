@@ -22,7 +22,7 @@ export type ColonyTradeContextModel = {
     ownBonus: {resource: Resource; amount: number};
   }>;
   ordinaryProduction: boolean;
-  additionalPaymentAvailable: boolean;
+  additionalPaymentMechanism: boolean;
   nextGenerationTradeAccess: 'normal' | 'blocked' | 'unknown';
   gameCanContinue: boolean;
 };

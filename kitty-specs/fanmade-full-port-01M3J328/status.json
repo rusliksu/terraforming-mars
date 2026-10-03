@@ -1,31 +1,31 @@
 {
-  "event_count": 31,
-  "last_event_id": "01M40QVFZXEBGB74SGDHX9YHSK",
-  "materialized_at": "2026-10-03T11:19:40.795201+00:00",
-  "mission_number": "",
+  "event_count": 41,
+  "last_event_id": "01M4103C510BXQE1HS4XPB0SY9",
+  "materialized_at": "2026-10-03T13:43:47.617666+00:00",
+  "mission_number": "2",
   "mission_slug": "fanmade-full-port-01M3J328",
   "mission_type": "software-dev",
   "summary": {
-    "approved": 4,
+    "approved": 0,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
-    "done": 0,
+    "done": 5,
     "for_review": 0,
-    "in_progress": 1,
+    "in_progress": 0,
     "in_review": 0,
     "planned": 0
   },
   "work_packages": {
     "WP01": {
-      "actor": "user",
+      "actor": "merge",
       "agent": "codex",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "lane": "approved",
-      "last_event_id": "01M3J5G39CVWWQ41636WG71ZXR",
-      "last_transition_at": "2026-09-27T19:29:30.924628+00:00",
+      "lane": "done",
+      "last_event_id": "01M4102MYKS07MW6W9EMTGVSH0",
+      "last_transition_at": "2026-10-03T13:43:23.859593+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Corrected source pinned and validated: Node22 lint/build/test compilation, 10407 server and 784 client tests; independent review requested.",
@@ -51,14 +51,14 @@
       }
     },
     "WP02": {
-      "actor": "user",
+      "actor": "merge",
       "agent": "codex",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "approved",
-      "last_event_id": "01M3J829GZ73KNAC78D9QWJXMH",
-      "last_transition_at": "2026-09-27T20:14:24.287923+00:00",
+      "lane": "done",
+      "last_event_id": "01M4102TJR0PR286PK3EY6ZZ5C",
+      "last_transition_at": "2026-10-03T13:43:29.624250+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Server port dd86774c80; Node22 server build, backend tsc/lint, 10928 server tests and final replay 9 pass; client compilation intentionally pending WP03. Evidence research/server-port-evidence.md.",
@@ -82,14 +82,14 @@
       }
     },
     "WP03": {
-      "actor": "user",
+      "actor": "merge",
       "agent": "codex",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "approved",
-      "last_event_id": "01M3JASWX90NQ3XKXHR94GMHKH",
-      "last_transition_at": "2026-09-27T21:02:14.953223+00:00",
+      "lane": "done",
+      "last_event_id": "01M410302ASPXDEHAZ1E3JWY7V",
+      "last_transition_at": "2026-10-03T13:43:35.242491+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Client integration ac91b69b5f; 999 tests, full lint/build/typechecks and desktop390 browser pass. Browser artifacts preserved outside checkout, clean implementation tree. See research/client-port-evidence.md.",
@@ -112,14 +112,14 @@
       }
     },
     "WP04": {
-      "actor": "codex",
+      "actor": "merge",
       "agent": "codex",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "approved",
-      "last_event_id": "01M40QGW4V0YFY0MK427R7H6V3",
-      "last_transition_at": "2026-10-03T11:13:52.795771+00:00",
+      "lane": "done",
+      "last_event_id": "01M41037BP34B47VYA0H55GG4J",
+      "last_transition_at": "2026-10-03T13:43:42.710983+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Server 20c6a55ed3 and merged external PR908 validated; evidence on planning branch in research/external-compatibility-evidence.md.",
@@ -142,21 +142,34 @@
       }
     },
     "WP05": {
-      "actor": "codex",
+      "actor": "merge",
       "agent": "codex",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
-      "force_count": 0,
-      "lane": "in_progress",
-      "last_event_id": "01M40QVFZXEBGB74SGDHX9YHSK",
-      "last_transition_at": "2026-10-03T11:19:40.795201+00:00",
+      "force_count": 1,
+      "lane": "done",
+      "last_event_id": "01M4103C510BXQE1HS4XPB0SY9",
+      "last_transition_at": "2026-10-03T13:43:47.617666+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Combined c225 validation, merged PR181 with all6 CI checks, exact-origin/main staging07c7c4 and real browser/API proof complete. Production snapshot unchanged. Evidence research/WP05-staging-proof.md/json.",
+        "Combined verification and hosting delivery complete; historical staging proof recorded before handoff.",
+        "Independent port_review approved T014-T016 after real staging proof; parent verified eight prompt checks, unchanged implementation and canonical evidence. Parent alone owns shared mission metadata."
+      ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
-      "shell_pid": 27068,
-      "shell_pid_created_at": "1791026371.639276",
+      "review_result": {
+        "feedback_path": "C:\\Users\\Ruslan\\.codex-worktrees\\terraforming-mars-fanmade-full-port-owned\\kitty-specs\\fanmade-full-port-01M3J328\\tasks\\WP05-acceptance-staging\\review-cycle-1.md",
+        "reference": "review-cycle://fanmade-full-port-01M3J328/WP05-acceptance-staging/review-cycle-1.md",
+        "reviewer": "codex",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 18824,
+      "shell_pid_created_at": "1791034551.6776805",
       "subtasks": {
-        "T014": "done"
+        "T014": "done",
+        "T015": "done",
+        "T016": "done"
       }
     }
   }

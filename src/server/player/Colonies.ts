@@ -19,6 +19,7 @@ import {toLogPayment} from '../logs/toLogPayment';
 import {TradeWithHectateSpeditions} from '../cards/underworld/HecateSpeditions';
 import {TradeWithSteel} from '../cards/delta/DeltaWorks';
 import {ColonyName} from '../../../src/common/colonies/ColonyName';
+import {Resource} from '../../common/Resource';
 import {ColonyTradeContextModel} from '@/common/models/ColonyTradeContextModel';
 import {ColonyBenefit} from '@/common/colonies/ColonyBenefit';
 

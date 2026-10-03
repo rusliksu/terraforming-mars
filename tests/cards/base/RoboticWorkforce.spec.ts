@@ -39,6 +39,8 @@ import {Odyssey} from '../../../src/server/cards/pathfinders/Odyssey';
 import {ImmigrantCity} from '../../../src/server/cards/base/ImmigrantCity';
 import {NoctisCity} from '../../../src/server/cards/base/NoctisCity';
 import {FrontierTown} from '../../../src/server/cards/prelude2/FrontierTown';
+import {Outskirts} from '../../../src/server/cards/venusPhase2/Outskirts';
+import {isICardRenderProductionBox} from '../../../src/common/cards/render/Types';
 
 describe('RoboticWorkforce', () => {
   let card: RoboticWorkforce;
@@ -359,6 +361,13 @@ describe('RoboticWorkforce', () => {
     expect(selectCard2.cards.map(toName)).to.have.members([titaniumMine.name, lunarMineUrbanization.name]);
   });
 
+  it('does not copy placement-only production changes', () => {
+    player.playedCards.push(new Outskirts());
+    player.production.override({energy: 2});
+
+    expect(card.canPlay(player)).is.false;
+  });
+
   describe('test all cards', () => {
     ALL_MODULE_MANIFESTS.forEach((manifest) => {
       const cards: CardManifest<ICard> = {...manifest.projectCards, ...manifest.preludeCards, ...manifest.corporationCards};
@@ -459,8 +468,9 @@ describe('RoboticWorkforce', () => {
       }
 
       console.log(`        ${card.name}: ${include ? 'eligible' : 'ineligible'}`);
-      // Every production that changed must be declared in behavior or a productionBox method.
-      if (include) {
+      // Placement effects are not production boxes.
+      const hasProductionBox = include && card.metadata.renderData?.rows.some((row) => row.some(isICardRenderProductionBox));
+      if (include && hasProductionBox) {
         const changed = ALL_RESOURCES.filter((r) => player.production[r] !== 2);
         const declared = card.productionBox !== undefined ?
           ALL_RESOURCES.filter((r) => card.productionBox!(player)[r] !== 0) :

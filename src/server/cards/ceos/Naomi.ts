@@ -4,7 +4,8 @@ import {PlayerInput} from '../../PlayerInput';
 import {CardRenderer} from '../render/CardRenderer';
 import {CeoCard} from './CeoCard';
 import {MAX_COLONY_TRACK_POSITION} from '../../../common/constants';
-import {OrOptions} from '../../inputs/OrOptions';
+import {ColonyTrackChoice} from '@/server/inputs/ColonyTrackChoice';
+import {ColonyTrackChoiceModel} from '@/common/models/ColonyTradeContextModel';
 import {SelectOption} from '../../inputs/SelectOption';
 import {ColoniesHandler} from '../../colonies/ColoniesHandler';
 import {Resource} from '../../../common/Resource';
@@ -37,15 +38,22 @@ export class Naomi extends CeoCard implements ICeoCard {
     this.isDisabled = true;
     const game = player.game;
     const activeColonies = game.colonies.filter((colony) => colony.isActive);
+    const choices: Array<ColonyTrackChoiceModel['colonies'][number]> = activeColonies.map((colony) => ({
+      name: colony.name,
+      originalTrackPosition: colony.trackPosition,
+      choice: 'pending',
+    }));
 
-    activeColonies.forEach((colony) => {
-      player.defer(() => new OrOptions(
+    activeColonies.forEach((colony, index) => {
+      player.defer(() => new ColonyTrackChoice(colony.name, choices,
         new SelectOption('Move the ' + colony.name + ' tile track marker to its HIGHEST value').andThen(() => {
           colony.trackPosition = MAX_COLONY_TRACK_POSITION;
+          choices[index].choice = 'high';
           return undefined;
         }),
         new SelectOption('Move the ' + colony.name + ' tile track marker to its LOWEST value').andThen(() => {
           colony.trackPosition = colony.colonies.length;
+          choices[index].choice = 'low';
           return undefined;
         }),
       ));

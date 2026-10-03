@@ -362,6 +362,10 @@ export class Server {
     model.deltaProject = player.deltaProjectData;
     model.epsilonDample = player.epsilonDampleData;
 
+    if (modelIsForThisPlayer && game.gameOptions.coloniesExtension) {
+      model.colonyTradeContext = player.colonies.getTradeContext();
+    }
+
     return model;
   }
 

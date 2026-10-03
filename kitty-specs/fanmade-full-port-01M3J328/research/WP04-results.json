@@ -58,5 +58,7 @@
     "stopped": true
   },
   "inventoryPaths": 1441,
-  "overallAcceptance": "pending external FR006 scope decision and WP05 delivery/staging"
+  "externalConsumerMerge": "024f19153cf2331d2c0044e2ef038f789683c6d9",
+  "externalConsumerPR": "https://github.com/rusliksu/tm-advisor/pull/908",
+  "overallAcceptance": "WP04 approved; mission pending WP05 delivery/staging"
 }

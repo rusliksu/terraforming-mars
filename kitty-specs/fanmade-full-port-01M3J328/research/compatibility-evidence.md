@@ -2,9 +2,10 @@
 
 ## Scope and status
 
-Server-side compatibility package reviewed at `20c6a55ed3a706fa1ca593f23d97b1e0c1226ef8`; external FR006 consumer protection remains open.
-WP04 stays in progress and WP05 has not started. No hosting PR, merge, staging or production
-operation is claimed for the full port. The scope decision for a separate tm-advisor PR is pending.
+Server-side compatibility package reviewed at `20c6a55ed3a706fa1ca593f23d97b1e0c1226ef8`;
+external FR006 consumer protection was authorized and delivered through merged tm-advisor PR908
+at `024f19153cf2331d2c0044e2ef038f789683c6d9`. Independent combined WP04 review approves.
+Full-port hosting delivery and staging remain WP05; no production operation is claimed.
 
 ## Confirmed fixes
 
@@ -43,9 +44,11 @@ surrender is rejected before mutation, and startup reconciliation does not spawn
 bots. The process-launch sink requires compatibility metadata. Terminal surrender remains
 available. A concise English/Russian UI notice exposes unsupported game options.
 
-The standalone tm-advisor consumers do not yet consume this field. Parent asked whether to add
-a separate bounded PR there (no strategy/scoring changes) or retain server-only scope. Do not
-mark FR006 or the mission accepted until that decision and the required work are complete.
+Standalone tm-advisor bot, extension, service and Python consumers now honor the field before
+automatic input/advice, clear stale advice and preserve supported/legacy behavior. See
+external-compatibility-evidence.md for exact commits, zero-POST and callback regressions,
+full consumer-suite validation and isolated browser limits. FR006 is satisfied; mission acceptance
+still requires WP05 delivery and staging.
 
 ## Verification
 

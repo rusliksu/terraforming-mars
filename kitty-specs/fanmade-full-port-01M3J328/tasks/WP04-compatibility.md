@@ -122,7 +122,7 @@ Inspect actual code and before/after behavior, not only green tests. Do not mark
 
 ## Sequential corrective scope
 
-T011/T013: normalize only the two newly introduced payment fields at input parsing; preserve dynamic public card faces in replay; retain custom boards and teams in rematch/quick-game configuration. Tests remain beside their owning flows. Root is the sole writer; WP02/WP03 are complete.
+T011/T013: normalize only the three newly introduced payment fields at input parsing; preserve dynamic public card faces in replay; retain custom boards and teams in rematch/quick-game configuration. Tests remain beside their owning flows. Root is the sole writer; WP02/WP03 are complete.
 
 T012: add public, versioned automation compatibility and guard the three owned process-launch paths before mutation. New-game pool provenance preserves legacy Pathfinders/Delta saves while marking their expanded pools unsupported. This is a compatibility boundary, not strategy work.
 

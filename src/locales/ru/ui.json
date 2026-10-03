@@ -25,7 +25,7 @@
     "Beginner?": "Новичок?",
     "Goes First?": "Ходит первым?",
     "Corporate Era": "Эпоха корпораций",
-    "We do not recommend playing a solo game without the Corporate Era. Press OK if you want to play without it.": "Мы не рекомендуем играть в соло без дополнения Эра корпораций. Нажмите OK, если хотите продолжить.",
+    "We do not recommend playing a solo game without the Corporate Era.": "Мы не рекомендуем играть в соло без дополнения Эра корпораций.",
     "Async Telegram game will send turn notifications to ${0} player(s). Confirm that each Telegram ID belongs to the matching player.": "Асинхронная игра с Telegram будет отправлять уведомления о ходе. Получателей: ${0}. Подтвердите, что каждый Telegram ID указан напротив правильного игрока.",
 
     "Color:": "Цвет:",
@@ -380,7 +380,7 @@
     "Show information that can be helpful to players who are still learning the games": "Показать информацию, которая может\nоказаться полезной для новых игроков",
     "Test out any possible new experimental UI features for feedback.": "Протестируйте новые экспериментальные функции\nпользовательского интерфейса, и оставьте отзыв.",
 
-    "Starting Megacredits:": "Начальные мегакредиты:",
+    "Starting M€:": "Начальные мегакредиты:",
     "After Preludes:": "После прологов:",
     "You selected too many corporations": "Вы выбрали слишком много корпораций",
     "Select 2 preludes": "Выберите 2 карты прологов",

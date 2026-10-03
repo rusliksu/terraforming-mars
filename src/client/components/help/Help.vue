@@ -17,6 +17,11 @@
                 <span v-i18n>Game Phases</span>
             </label>
 
+            <input type="radio" name="help-tab" id="radio-turmoil-parties" value="turmoil-parties" v-model="currentPage">
+            <label for="radio-turmoil-parties">
+                <span v-i18n>Political Parties</span>
+            </label>
+
             <input type="radio" name="help-tab" id="radio-hotkeys" value="hotkeys" v-model="currentPage">
             <label for="radio-hotkeys">
                 <span v-i18n>Hot Keys</span>
@@ -26,13 +31,20 @@
             <label for="radio-rulebooks">
                 <span v-i18n>Rules</span>
             </label>
+
+            <input type="radio" name="help-tab" id="radio-solo-rules" value="solo-rules" v-model="currentPage">
+            <label for="radio-solo-rules">
+                <span v-i18n>Solo Rules</span>
+            </label>
         </div>
 
         <HelpIconology v-if="isOpen('iconology')"/>
         <HelpStandardProjects v-if="isOpen('standard-projects')"/>
         <HelpPhases v-if="isOpen('phases')"/>
+        <HelpTurmoilParties v-if="isOpen('turmoil-parties')"/>
         <HelpRulebooks v-if="isOpen('rulebooks')"/>
         <HelpHotkeys v-if="isOpen('hotkeys')"/>
+        <HelpSoloRules v-if="isOpen('solo-rules')"/>
     </div>
 </template>
 <script lang="ts">
@@ -41,9 +53,11 @@ import HelpIconology from '@/client/components/help/HelpIconology.vue';
 import HelpPhases from '@/client/components/help/HelpPhases.vue';
 import HelpHotkeys from '@/client/components/help/HelpHotkeys.vue';
 import HelpRulebooks from '@/client/components/help/HelpRulebooks.vue';
+import HelpSoloRules from '@/client/components/help/HelpSoloRules.vue';
 import HelpStandardProjects from '@/client/components/help/HelpStandardProjects.vue';
+import HelpTurmoilParties from '@/client/components/help/HelpTurmoilParties.vue';
 
-const TABS = ['iconology', 'standard-projects', 'phases', 'hotkeys', 'rulebooks'] as const;
+const TABS = ['iconology', 'standard-projects', 'phases', 'turmoil-parties', 'hotkeys', 'rulebooks', 'solo-rules'] as const;
 type Tab = typeof TABS[number];
 
 export interface HelpPageModel {
@@ -62,7 +76,9 @@ export default defineComponent({
     HelpPhases,
     HelpRulebooks,
     HelpStandardProjects,
+    HelpTurmoilParties,
     HelpHotkeys,
+    HelpSoloRules,
   },
   mounted() {
     const hash = window.location.hash.replace('#', '') as Tab;

@@ -69,11 +69,12 @@
             <div class="played-cards-selection" v-i18n>{{ getToggleLabel('HAND')}}</div>
           </div>
           <div class="text-overview" v-i18n>[ toggle cards in hand ]</div>
+          <CardSortButtons v-model:sortOrder="handSortOrder"/>
         </div>
         <SortableCards v-show="isVisible('HAND')" :playerId="playerView.id"
                         :cards="playerView.preludeCardsInHand
                                 .concat(playerView.ceoCardsInHand)
-                                .concat(playerView.cardsInHand)"/>
+                                .concat(playerView.cardsInHand)" v-model:sortOrder="handSortOrder"/>
       </div>
 
       <div class="player_home_block player_home_block--cards">
@@ -166,6 +167,8 @@ import GameBoardView from '@/client/components/GameBoardView.vue';
 import PlayerSetupView from '@/client/components/PlayerSetupView.vue';
 import DynamicTitle from '@/client/components/common/DynamicTitle.vue';
 import SortableCards from '@/client/components/SortableCards.vue';
+import CardSortButtons from '@/client/components/CardSortButtons.vue';
+import {SortOrder} from '@/client/utils/SortOrder';
 import TopBar from '@/client/components/TopBar.vue';
 import StackedCards from '@/client/components/StackedCards.vue';
 import PurgeWarning from '@/client/components/common/PurgeWarning.vue';
@@ -187,11 +190,13 @@ type PlayerHomeModel = {
   showActiveCards: boolean;
   showAutomatedCards: boolean;
   showEventCards: boolean;
+  /** Current sort order of the hand, or undefined before the player picks one and after they reorder by hand. */
+  handSortOrder: SortOrder | undefined;
 }
 
 type ToggleableCardType = 'HAND' | 'ACTIVE' | 'AUTOMATED' | 'EVENT';
 
-const typeToDataModel: Record<ToggleableCardType, {key: keyof PlayerHomeModel, preference: keyof Preferences}> = {
+const typeToDataModel: Record<ToggleableCardType, {key: Exclude<keyof PlayerHomeModel, 'handSortOrder'>, preference: keyof Preferences}> = {
   HAND: {key: 'showHand', preference: 'hide_hand'},
   ACTIVE: {key: 'showActiveCards', preference: 'hide_active_cards'},
   AUTOMATED: {key: 'showAutomatedCards', preference: 'hide_automated_cards'},
@@ -218,6 +223,7 @@ export default defineComponent({
       showActiveCards: !preferences.hide_active_cards,
       showAutomatedCards: !preferences.hide_automated_cards,
       showEventCards: !preferences.hide_event_cards,
+      handSortOrder: undefined,
     };
   },
   watch: {
@@ -277,6 +283,7 @@ export default defineComponent({
     Colony,
     LogPanel,
     SortableCards,
+    CardSortButtons,
     TopBar,
     GameBoardView,
     PlayerSetupView,

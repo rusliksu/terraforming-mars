@@ -857,24 +857,42 @@
   margin-top: 15px;
 }
 
+@media only screen and (min-width: 1024px) {
+  .create-game {
+    // Fit the page to the screen: the form panel takes the leftover height and its options
+    // scroll on their own, so the heading, the action bar under the options, and the links
+    // below the panel are always visible. Narrower screens stack the options, which leaves
+    // too little room for this, so the whole page scrolls instead.
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    height: 100dvh;
+
+    > * {
+      flex: none;
+    }
+
+    > .create-game-form {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+
+      > .create-game-options {
+        flex: 1 1 auto;
+        min-height: 0;
+        // Hidden tooltips can stick out past the right edge; don't scroll sideways for them.
+        overflow: hidden auto;
+      }
+
+      > .create-game-action-row {
+        flex: none;
+      }
+    }
+  }
+}
+
 .create-game {
-  // Fit the page to the screen: the form panel takes the leftover height and scrolls
-  // on its own, so the heading and the links below it are always visible.
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-  height: 100dvh;
-
-  > * {
-    flex: none;
-  }
-
-  > .create-game-form {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-  }
-
   > h1 {
     margin: 0px;
   }
@@ -900,14 +918,12 @@
     }
   }
 
-  // Keep the action buttons in view while the rest of the form scrolls. The row takes a
-  // full line so the bar starts at the left, but is transparent and lets clicks through,
-  // so only the bar itself covers the form.
+  // When the whole page scrolls, keep the action buttons pinned to the bottom of the screen.
+  // The row is transparent and lets clicks through, so only the bar itself covers the form.
   .create-game-action-row {
     position: sticky;
     bottom: 0;
     z-index: 2;
-    flex-basis: 100%;
     pointer-events: none;
   }
 
@@ -916,6 +932,10 @@
     padding: 10px;
     background: #000000;
     pointer-events: auto;
+  }
+
+  .create-game-action-gap {
+    margin-left: 12px;
   }
 }
 
@@ -965,8 +985,7 @@
     }
   }
 
-  .create-game-players-cont,
-  .create-game-action-row {
+  .create-game-players-cont {
     grid-column: 1 / -1;
   }
 
@@ -984,6 +1003,29 @@
     width: 100%;
     padding: 16px;
   }
+}
+
+.create-game-custom-preludes-warning {
+  color: red;
+  cursor: pointer;
+}
+
+.create-game-validation-warning {
+  cursor: pointer;
+}
+
+// The text-style warning sign renders smaller than the emoji one.
+.create-game-validation-blocker {
+  font-size: 1.5em;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+// Size the popup to its content rather than PopupPanel's fixed 90vw x 90vh.
+.popup-outer.create-game-validation-popup .popup-inner {
+  width: min(90vw, 800px);
+  height: auto;
+  max-height: 90vh;
 }
 
 @media only screen and (max-width: 767px) {

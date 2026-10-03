@@ -23,6 +23,7 @@ import {CardName} from '@/common/cards/CardName';
 import {CardModel} from '@/common/models/CardModel';
 import {CardOrderStorage} from '@/client/utils/CardOrderStorage';
 import {comparing} from '@/common/utils/Ordering';
+import {SortOrder, sortCards} from '@/client/utils/SortOrder';
 
 type DataModel = {
   /** When true use the point-and-click reorder UI */
@@ -46,6 +47,23 @@ export default defineComponent({
     playerId: {
       type: String,
       required: true,
+    },
+    /**
+     * Current sort order, or undefined once the player reorders by hand.
+     *
+     * Changing it re-sorts the cards.
+     */
+    sortOrder: {
+      type: Object as () => SortOrder | undefined,
+      required: false,
+    },
+  },
+  emits: ['update:sortOrder'],
+  watch: {
+    sortOrder(sortOrder: SortOrder | undefined): void {
+      if (sortOrder !== undefined) {
+        this.sortBy(sortOrder);
+      }
     },
   },
   data(): DataModel {
@@ -86,6 +104,10 @@ export default defineComponent({
         uniqueCards,
       );
     },
+    sortBy(sortOrder: SortOrder): void {
+      sortCards(this.getSortedCards(), sortOrder).forEach((card, index) => this.cardOrder[card.name] = index + 1);
+      CardOrderStorage.updateCardOrder(this.playerId, this.cardOrder);
+    },
     onDragStart(source: CardName): void {
       this.dragCard = source;
     },
@@ -121,6 +143,7 @@ export default defineComponent({
       ordered.forEach((name, index) => {
         this.cardOrder[name] = index + 1;
       });
+      this.$emit('update:sortOrder');
       CardOrderStorage.updateCardOrder(this.playerId, this.cardOrder);
     },
     doNotDragAndDropOnReorder() {
@@ -150,6 +173,7 @@ export default defineComponent({
                 .forEach((entry, i) => {
                   this.cardOrder[entry[0]] = i+1;
                 });
+              this.$emit('update:sortOrder');
               CardOrderStorage.updateCardOrder(this.playerId, this.cardOrder);
             }
           }

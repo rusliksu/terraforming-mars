@@ -38,25 +38,22 @@ export class Naomi extends CeoCard implements ICeoCard {
     this.isDisabled = true;
     const game = player.game;
     const activeColonies = game.colonies.filter((colony) => colony.isActive);
-    const choices: ColonyTrackChoiceModel = {
-      version: 1,
-      colonies: activeColonies.map((colony) => ({
-        name: colony.name,
-        originalTrackPosition: colony.trackPosition,
-        choice: 'pending',
-      })),
-    };
+    const choices: Array<ColonyTrackChoiceModel['colonies'][number]> = activeColonies.map((colony) => ({
+      name: colony.name,
+      originalTrackPosition: colony.trackPosition,
+      choice: 'pending',
+    }));
 
     activeColonies.forEach((colony, index) => {
-      player.defer(() => new ColonyTrackChoice(choices,
+      player.defer(() => new ColonyTrackChoice(colony.name, choices,
         new SelectOption('Move the ' + colony.name + ' tile track marker to its HIGHEST value').andThen(() => {
           colony.trackPosition = MAX_COLONY_TRACK_POSITION;
-          choices.colonies[index].choice = 'high';
+          choices[index].choice = 'high';
           return undefined;
         }),
         new SelectOption('Move the ' + colony.name + ' tile track marker to its LOWEST value').andThen(() => {
           colony.trackPosition = colony.colonies.length;
-          choices.colonies[index].choice = 'low';
+          choices[index].choice = 'low';
           return undefined;
         }),
       ));

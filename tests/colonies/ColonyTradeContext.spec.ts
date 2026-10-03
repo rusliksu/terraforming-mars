@@ -83,9 +83,9 @@ describe('Own-player colony trade context', () => {
     player.playedCards.push(new DarksideSmugglersUnion());
     player.actionsThisGeneration.add(CardName.DARKSIDE_SMUGGLERS_UNION);
     expect(Server.getPlayerModel(player).thisPlayer.colonyTradeContext?.additionalPaymentMechanism).eq(true);
-    player.playedCards.clear();
-    player.canUseHeatAsMegaCredits = true;
-    expect(Server.getPlayerModel(player).thisPlayer.colonyTradeContext?.additionalPaymentMechanism).eq(true);
+    const {player: heatPlayer} = setup();
+    heatPlayer.canUseHeatAsMegaCredits = true;
+    expect(Server.getPlayerModel(heatPlayer).thisPlayer.colonyTradeContext?.additionalPaymentMechanism).eq(true);
   });
 
   it('reports known next-generation Huan restrictions from the game state', () => {
@@ -103,12 +103,13 @@ describe('Own-player colony trade context', () => {
     card.action(player);
     const first = cast(game.deferredActions.pop()!.execute(), OrOptions);
     const firstModel = first.toModel(player);
-    expect(firstModel.colonyTrackChoices).deep.eq({version: 1, colonies: [
+    expect(firstModel.colonyTrackChoices).deep.eq({version: 1, currentColony: ceres.name, colonies: [
       {name: ceres.name, originalTrackPosition: 3, choice: 'pending'},
       {name: luna.name, originalTrackPosition: 2, choice: 'pending'},
     ]});
     first.options[0].cb();
     const second = cast(game.deferredActions.pop()!.execute(), OrOptions);
+    expect(second.toModel(player).colonyTrackChoices?.currentColony).eq(luna.name);
     expect(second.toModel(player).colonyTrackChoices?.colonies[0]).deep.eq({
       name: ceres.name, originalTrackPosition: 3, choice: 'high',
     });

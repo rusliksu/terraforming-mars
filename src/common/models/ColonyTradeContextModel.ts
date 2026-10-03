@@ -30,6 +30,7 @@ export type ColonyTradeContextModel = {
 /** Activation baseline and resolved choices for a multi-tile HIGH/LOW action. */
 export type ColonyTrackChoiceModel = {
   version: 1;
+  currentColony: ColonyName;
   colonies: ReadonlyArray<{
     name: ColonyName;
     originalTrackPosition: number;

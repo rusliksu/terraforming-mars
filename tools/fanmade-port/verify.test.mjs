@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {mkdirSync, mkdtempSync} from 'node:fs';
+import {mkdirSync, mkdtempSync, readFileSync, statSync} from 'node:fs';
 import path from 'node:path';
 import {runChecks} from './verify.mjs';
 
@@ -19,4 +19,12 @@ assert.equal(timedOut.passed, false);
 assert.equal(timedOut.results[0].error, 'ETIMEDOUT');
 assert.equal(runChecks([{name: 'missing', command: path.join(outputDir, 'absent-command'), args: []}], options).passed, false);
 assert.equal(runChecks([check('all-success', 'process.exit(0)')], options).passed, true);
+const colonNames = runChecks(['build:test', 'test:server', 'test:client']
+  .map(name => check(name, 'console.log("normal log")')), options);
+assert.equal(colonNames.passed, true);
+for (const result of colonNames.results) {
+  assert.equal(path.basename(result.log).includes(':'), false);
+  assert.equal(statSync(result.log).isFile(), true);
+  assert.match(readFileSync(result.log, 'utf8'), /normal log/);
+}
 console.log('verification runner exit, timeout and spawn-failure contracts: PASS');

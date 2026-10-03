@@ -1,5 +1,5 @@
 import {spawnSync} from 'node:child_process';
-import {closeSync, mkdirSync, openSync, realpathSync, writeFileSync} from 'node:fs';
+import {closeSync, existsSync, mkdirSync, mkdtempSync, openSync, realpathSync, writeFileSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {parseArgs} from 'node:util';
@@ -9,7 +9,7 @@ const timeoutMs = 10 * 60 * 1000;
 
 /** Records one bounded command's actual exit status, including spawn failure or timeout. */
 export function runCheck(check, {cwd, env = process.env, outputDir, timeout = timeoutMs}) {
-  const log = path.join(outputDir, check.name + '.log');
+  const log = path.join(outputDir, check.name.replace(/[^a-z0-9_-]/gi, '-') + '.log');
   const fd = openSync(log, 'w');
   let child;
   const started = Date.now();
@@ -57,22 +57,39 @@ function main() {
   if (Number(process.versions.node.split('.')[0]) !== 22) throw new Error('Run the combined verification with Node22.');
   const {values} = parseArgs({options: {'output-dir': {type: 'string'}, 'npm-cli': {type: 'string'}}});
   if (!values['output-dir'] || !values['npm-cli']) throw new Error('Required: --output-dir <absolute D: directory> --npm-cli <npm-cli.js>');
-  const outputDir = path.resolve(values['output-dir']);
-  if (!path.isAbsolute(values['output-dir']) || !/^D:[\\/]/i.test(outputDir)) throw new Error('Artifacts must remain on D:.');
-  mkdirSync(outputDir, {recursive: true});
-  if (!/^D:[\\/]/i.test(realpathSync(outputDir))) throw new Error('Artifact directory resolves outside D:.');
+  const artifactRoot = path.resolve(values['output-dir']);
+  if (!path.isAbsolute(values['output-dir']) || !/^D:[\\/]/i.test(artifactRoot)) throw new Error('Artifacts must remain on D:.');
+  let ancestor = artifactRoot;
+  while (!existsSync(ancestor)) ancestor = path.dirname(ancestor);
+  if (!/^D:[\\/]/i.test(realpathSync(ancestor))) throw new Error('Artifact directory resolves outside D:.');
+  mkdirSync(artifactRoot, {recursive: true});
+  if (!/^D:[\\/]/i.test(realpathSync(artifactRoot))) throw new Error('Artifact directory resolves outside D:.');
+  const outputDir = mkdtempSync(path.join(artifactRoot, 'run-'));
   const head = spawnSync('git', ['rev-parse', 'HEAD'], {cwd: repoRoot, encoding: 'utf8'});
   if (head.status !== 0) throw new Error('Cannot pin the checkout HEAD.');
-  const checks = ['lint', 'build', 'build:test', 'test:server', 'test:client'].map(name => ({
+  const checks = ['make:static', 'lint', 'build', 'build:test', 'test:server', 'test:client'].map(name => ({
     name, command: process.execPath, args: [path.resolve(values['npm-cli']), 'run', name],
   }));
   checks.push({name: 'module-matrix', command: process.execPath,
     args: ['node_modules/mocha/bin/mocha.js', '--parallel', '--jobs', '4', '--import=tsx', '--require', 'tests/testing/setup.ts', ...matrixFiles]});
+  for (const file of matrixFiles.filter(file => !file.includes('*'))) {
+    if (!existsSync(path.join(repoRoot, file))) throw new Error('Missing module matrix test: ' + file);
+  }
   const env = {...process.env, PATH: path.dirname(process.execPath) + path.delimiter + process.env.PATH,
     TEMP: outputDir, TMP: outputDir, TMPDIR: outputDir, ELO_DATA_DIR: path.join(outputDir, 'elo'), TM_DISABLE_TELEGRAM: '1'};
-  const outcome = runChecks(checks, {cwd: repoRoot, env, outputDir});
-  writeFileSync(path.join(outputDir, 'results.json'), JSON.stringify({sourceSha: head.stdout.trim(), node: process.version,
-    recordedAt: new Date().toISOString(), timeoutMs, ...outcome}, null, 2));
+  const manifestPath = path.join(outputDir, 'results.json');
+  const manifest = {sourceSha: head.stdout.trim(), node: process.version, startedAt: new Date().toISOString(), timeoutMs};
+  writeFileSync(manifestPath, JSON.stringify({...manifest, status: 'running', passed: false}));
+  console.log('Verification evidence: ' + outputDir);
+  let outcome;
+  try {
+    outcome = runChecks(checks, {cwd: repoRoot, env, outputDir});
+    writeFileSync(manifestPath, JSON.stringify({...manifest, recordedAt: new Date().toISOString(),
+      status: outcome.passed ? 'passed' : 'failed', ...outcome}, null, 2));
+  } catch (error) {
+    writeFileSync(manifestPath, JSON.stringify({...manifest, status: 'failed', passed: false, error: error.message}));
+    throw error;
+  }
   if (!outcome.passed) process.exitCode = outcome.results.at(-1)?.exitCode || 1;
 }
 

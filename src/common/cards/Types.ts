@@ -26,6 +26,18 @@ export type GlobalParameterRequirementBonus = {
 };
 
 /**
+ * A type of tag-count requirement bonus (e.g. Excavation Syria Planum).
+ */
+export type TagCardRequirementBonus = {
+  /** The size of the bonus. */
+  steps: number,
+  /** The tag whose requirement count this reduces (or increases). */
+  tag: Tag,
+  /** This bonus only applies to the next card played when this is true. */
+  nextCardOnly?: boolean,
+};
+
+/**
  * Describes which non-megacredit resources a standard project accepts as payment.
  */
 export type StandardProjectCanPayWith = {
@@ -33,6 +45,8 @@ export type StandardProjectCanPayWith = {
   titanium?: boolean,
   seeds?: boolean,
   kuiperAsteroids?: boolean,
+  /** Floaters pulled from ANY of the player's cards, not one fixed card -- see Spendable.ts. */
+  anyFloaters?: boolean,
 }
 
 /**
@@ -45,4 +59,6 @@ export type AdditionalProjectCosts = {
   aeronGenomicsResources?: number,
   /** Any predicted fees required to play this card because Reds are in power. */
   redsCost?: number,
+  /** Conglomerates: this Team Action's actual current Coordination cost, which climbs by 1 every time this player uses it (not their teammate), resetting each generation -- shown since the card's own icon always shows its unescalated base cost. */
+  conglomeratesCost?: number,
 }

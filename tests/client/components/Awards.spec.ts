@@ -282,6 +282,47 @@ describe('Awards', () => {
     });
   });
 
+  it('shows Conglomerates-scaled spot prices (12/18/24) when the expansion is on', () => {
+    const wrapper = shallowMount(Awards, {
+      ...globalConfig,
+      props: {
+        awards: [],
+        preferences: learnerModeOn,
+        conglomeratesExpansion: true,
+      },
+    });
+
+    const prices = wrapper.findAll('[data-test=spot-price]')
+      .map((priceWrapper) => parseInt(priceWrapper.text()));
+
+    expect(prices).to.be.deep.eq([12, 18, 24]);
+  });
+
+  it('shows a Coordination icon next to the price when Conglomerates is on', () => {
+    const wrapper = shallowMount(Awards, {
+      ...globalConfig,
+      props: {
+        awards: [],
+        preferences: learnerModeOn,
+        conglomeratesExpansion: true,
+      },
+    });
+
+    expect(wrapper.findAll('.milestone-award-coordination')).to.have.lengthOf(3);
+  });
+
+  it('does not show a Coordination icon when Conglomerates is off', () => {
+    const wrapper = shallowMount(Awards, {
+      ...globalConfig,
+      props: {
+        awards: [],
+        preferences: learnerModeOn,
+      },
+    });
+
+    expect(wrapper.find('.milestone-award-coordination').exists()).to.be.false;
+  });
+
   it('toggles award descriptions on click', async () => {
     const awards = [
       createAward({id: 1, funded: true}),

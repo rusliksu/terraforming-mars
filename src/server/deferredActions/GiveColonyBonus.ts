@@ -1,5 +1,5 @@
 import {IPlayer} from '../IPlayer';
-import {PlayerId} from '../../common/Types';
+import {NEUTRAL_COLONY_OWNER, PlayerId} from '../../common/Types';
 import {IColony} from '../colonies/IColony';
 import {DeferredAction} from './DeferredAction';
 import {Priority} from './Priority';
@@ -18,12 +18,11 @@ export class GiveColonyBonus extends DeferredAction {
   }
 
   public execute() {
-    if (this.colony.colonies.length === 0) {
-      this.cb(undefined);
-      return undefined;
-    }
-
     for (const playerId of this.colony.colonies) {
+      // A sold colony slot (Colony Sale) belongs to no one - it gets no bonus.
+      if (playerId === NEUTRAL_COLONY_OWNER) {
+        continue;
+      }
       if (!this.selfish) {
         // Normal behavior; colony owners get their bonuses.
         this.waitingFor.add(playerId);
@@ -33,6 +32,11 @@ export class GiveColonyBonus extends DeferredAction {
         this.waitingFor.add(this.player.id);
         this.playersWithBonuses.add(this.player.id);
       }
+    }
+
+    if (this.playersWithBonuses.size === 0) {
+      this.cb(undefined);
+      return undefined;
     }
 
     for (const playerId of this.waitingFor.keys()) {

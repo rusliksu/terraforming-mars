@@ -12,6 +12,8 @@
     <a class="start-screen-link start-screen-link--how-to-play" href="https://github.com/rusliksu/terraforming-mars/wiki/Rulebooks" target="_blank" v-i18n>How to Play</a>
     <a class="start-screen-link start-screen-link--cards-list" href="cards" target="_blank" v-i18n>Cards list</a>
     <a class="start-screen-link start-screen-link--cards-list" href="/tierlist/" target="_blank">Tier List</a>
+    <a class="start-screen-link start-screen-link--map-library" href="map-library" v-i18n>Map library</a>
+    <a class="start-screen-link start-screen-link--card-maker" href="card-maker" v-i18n>Card maker</a>
     <a class="start-screen-link start-screen-link--board-game" href="https://boardgamegeek.com/boardgame/167791/terraforming-mars" target="_blank" v-i18n>Board game</a>
     <a class="start-screen-link start-screen-link--about" href="https://github.com/rusliksu/terraforming-mars#README" target="_blank" v-i18n>About us</a>
     <a class="start-screen-link start-screen-link--changelog" href="https://github.com/rusliksu/terraforming-mars/wiki/Changelog" target="_blank" v-i18n>Whats new?</a>
@@ -38,13 +40,13 @@
 </template>
 
 <script setup lang="ts">
+import {DISCORD_INVITE} from '@/common/constants';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import LanguageSwitcher from '@/client/components/LanguageSwitcher.vue';
 import LanguageIcon from '@/client/components/LanguageIcon.vue';
 import PreferencesIcon from '@/client/components/PreferencesIcon.vue';
 
 import raw_settings from '@/genfiles/settings.json';
-import * as constants from '@/common/constants';
 
 const previousViewport = ref('');
 
@@ -68,6 +70,4 @@ onBeforeUnmount(() => {
     .querySelector('meta[name="viewport"]')
     ?.setAttribute('content', previousViewport.value);
 });
-
-const DISCORD_INVITE = constants.DISCORD_INVITE;
 </script>

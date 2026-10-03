@@ -1,3 +1,5 @@
+import {DeimosDoubleDownCopy} from '@/server/cards/sillyfication/DeimosDoubleDownCopy';
+import {Server} from '@/server/models/ServerModel';
 import {expect} from 'chai';
 import {Phase} from '@/common/Phase';
 import {GlobalParameter} from '@/common/GlobalParameter';
@@ -13,6 +15,10 @@ import {Helion} from '@/server/cards/corporation/Helion';
 import {Birds} from '@/server/cards/base/Birds';
 import {Asteroid} from '@/server/cards/base/Asteroid';
 import {testGame} from '@tests/TestGame';
+
+import {BoardName} from '@/common/boards/BoardName';
+import {blankCustomBoard} from '@/common/boards/CustomBoardDefinition';
+import {DEFAULT_GLOBAL_PARAMETERS} from '@/common/GlobalParameterConfig';
 
 describe('Replay frame projection', () => {
   it('records actual global parameter steps on a public action for replay only', () => {
@@ -121,6 +127,39 @@ describe('Replay frame projection', () => {
     }
     expect(JSON.stringify(frame)).not.to.contain('hidden-action');
     expect(saved).deep.eq(before);
+  });
+
+  it('preserves public fan board and track state without access IDs or private fields', () => {
+    const parameters = structuredClone(DEFAULT_GLOBAL_PARAMETERS);
+    parameters.temperature.max = 12;
+    const [game, blue] = testGame(4, {
+      boardName: BoardName.CUSTOM, customBoard: blankCustomBoard(7, 'Replay'),
+      globalParameters: structuredClone(parameters), conglomeratesExpansion: true,
+    });
+    blue.epsilonDampleData = {position: 2, jovianBonus: false, blocked: true};
+    blue.deltaProjectData = {position: 3, jovianBonus: true, blocked: true};
+    blue.cardsInHand = [new Birds()];
+    const saved = game.serialize();
+    Object.assign(saved.gameOptions.globalParameters!.temperature, {privateField: 'hidden-track-sentinel'});
+    const frame = toReplayFrame(saved);
+    expect(frame.view.game.gameOptions.customBoardRows).eq(7);
+    expect(frame.view.game.gameOptions.globalParameters).deep.eq(parameters);
+    expect(frame.view.players[0].epsilonDample).deep.eq(blue.epsilonDampleData);
+    expect(frame.view.players[0].deltaProject).deep.eq(blue.deltaProjectData);
+    expect(frame.view.game.conglomerates?.teams).has.length(2);
+    for (const privateValue of [...game.players.map((p) => p.id), CardName.BIRDS, 'hidden-track-sentinel']) {
+      expect(JSON.stringify(frame)).not.to.contain(privateValue);
+    }
+  });
+
+  it('preserves the public face of a dynamic copied card', () => {
+    const [game, player] = testGame(2);
+    player.playedCards.push(new DeimosDoubleDownCopy(CardName.COMET));
+    const live = Server.getSpectatorModel(game).players[0].tableau[0];
+    expect(live.customCard).not.eq(undefined);
+    const replay = toReplayFrame(game.serialize()).view.players[0].tableau[0];
+    expect(replay.customCard).deep.eq(live.customCard);
+    expect(replay.combinedDisplayName).eq(live.combinedDisplayName);
   });
 
   it('freezes recorded timers instead of advancing them while the replay is viewed', () => {

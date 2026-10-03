@@ -175,6 +175,7 @@ export function fakePublicPlayerModel(overrides?: RecursivePartial<PublicPlayerM
     titaniumValue: 3,
     tradesThisGeneration: 0,
     underworldData: {corruption: 0, excavations: [], tokens: []},
+    conglomeratesData: {coordination: 0},
     victoryPointsBreakdown: {
       terraformRating: 20,
       milestones: 0,
@@ -268,6 +269,30 @@ export function fakePoliticalAgendasModel(): PoliticalAgendasModel {
     kelvinists: {
       bonusId: 'kb01',
       policyId: 'kp01',
+    },
+    populists: {
+      bonusId: 'popb01',
+      policyId: 'popp01',
+    },
+    spome: {
+      bonusId: 'spob01',
+      policyId: 'spop01',
+    },
+    empower: {
+      bonusId: 'empb01',
+      policyId: 'empp01',
+    },
+    bureaucrats: {
+      bonusId: 'burb01',
+      policyId: 'burp01',
+    },
+    centrists: {
+      bonusId: 'cenb01',
+      policyId: 'cenp01',
+    },
+    transhumanists: {
+      bonusId: 'trab01',
+      policyId: 'trap01',
     },
   };
 }

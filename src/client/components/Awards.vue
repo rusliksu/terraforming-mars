@@ -25,7 +25,13 @@
             :key="spotPrice"
             class="milestone-award-inline unpaid"
           >
-            <div class="milestone-award-price" data-test="spot-price" v-text="spotPrice" ></div>
+            <div class="milestone-award-price-row">
+              <div class="milestone-award-price" data-test="spot-price" v-text="spotPrice"></div>
+              <template v-if="conglomeratesExpansion">
+                <div class="milestone-award-arrow" :title="$t('You also gain 1 Coordination')"></div>
+                <div class="milestone-award-coordination" data-test="award-coordination-icon" :title="$t('You also gain 1 Coordination')"></div>
+              </template>
+            </div>
           </span>
         </span>
       </div>
@@ -38,6 +44,7 @@
             :award="award"
             :showScores="showScores"
             :showDescription="showDescription"
+            :conglomeratesExpansion="conglomeratesExpansion"
           />
         </div>
       </span>
@@ -68,6 +75,11 @@ export default defineComponent({
     preferences: {
       type: Object as () => Readonly<Preferences>,
       default: () => PreferencesManager.INSTANCE.values(),
+    },
+    // Conglomerates raises the funding cost's base from 8 to 12 -- see Game.getAwardFundingCost().
+    conglomeratesExpansion: {
+      type: Boolean,
+      default: false,
     },
   },
   data() {
@@ -104,7 +116,8 @@ export default defineComponent({
       return this.awards.filter(isFunded);
     },
     availableAwardSpots(): number[] {
-      return AWARD_COSTS.slice(this.fundedAwards.length);
+      const costs = this.conglomeratesExpansion ? AWARD_COSTS.map((cost) => cost + 4) : AWARD_COSTS;
+      return costs.slice(this.fundedAwards.length);
     },
     isLearnerModeOn(): boolean {
       return this.preferences.learner_mode;

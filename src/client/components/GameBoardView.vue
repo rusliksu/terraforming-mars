@@ -6,6 +6,8 @@
     :expansions="game.gameOptions.expansions"
     :venusScaleLevel="game.venusScaleLevel"
     :boardName ="game.gameOptions.boardName"
+    :globalParameters="game.gameOptions.globalParameters"
+    :customBoardRows="game.gameOptions.customBoardRows"
     :oceans_count="game.oceans"
     :oxygen_level="game.oxygenLevel"
     :temperature="game.temperature"
@@ -18,12 +20,17 @@
 
   <template v-if="game.turmoil">
     <a class="hotkey-target"></a>
-    <Turmoil :turmoil="game.turmoil"/>
+    <Turmoil :turmoil="game.turmoil" :morePartiesExpansion="game.gameOptions.expansions.moreParties" :agendaStyle="game.gameOptions.politicalAgendasExtension"/>
   </template>
 
   <template v-if="game.moon">
     <a class="hotkey-target"></a>
     <MoonBoard :model="game.moon" :tileView="tileView" id="shortkey-moonBoard"/>
+  </template>
+
+  <template v-if="game.venusPhase2">
+    <a class="hotkey-target"></a>
+    <VenusSurfaceBoard :model="game.venusPhase2" :tileView="tileView" :venusScaleLevel="game.venusScaleLevel" id="shortkey-venusBoard"/>
   </template>
 
   <template v-if="game.gameOptions.expansions.pathfinders">
@@ -33,11 +40,21 @@
 
   <DeltaProjectBoard v-if="game.gameOptions.expansions.deltaProject" :players="players"/>
 
+  <template v-if="game.highOrbitMarket">
+    <a class="hotkey-target"></a>
+    <HighOrbitMarket :market="game.highOrbitMarket"/>
+  </template>
+
   <div v-if="players.length > 1" class="player_home_block--milestones-and-awards">
     <a class="hotkey-target"></a>
-    <Milestones :milestones="game.milestones" />
-    <Awards :awards="game.awards" />
+    <Milestones :milestones="game.milestones" :conglomeratesExpansion="game.gameOptions.expansions.conglomerates" />
+    <Awards :awards="game.awards" :conglomeratesExpansion="game.gameOptions.expansions.conglomerates" />
   </div>
+
+  <template v-if="game.conglomerates">
+    <a class="hotkey-target"></a>
+    <ConglomeratesTeams :model="game.conglomerates"/>
+  </template>
 </template>
 
 <script lang="ts">
@@ -52,7 +69,10 @@ import Milestones from '@/client/components/Milestones.vue';
 import Awards from '@/client/components/Awards.vue';
 import Turmoil from '@/client/components/turmoil/Turmoil.vue';
 import MoonBoard from '@/client/components/moon/MoonBoard.vue';
+import VenusSurfaceBoard from '@/client/components/venusPhase2/VenusSurfaceBoard.vue';
 import PlanetaryTracks from '@/client/components/pathfinders/PlanetaryTracks.vue';
+import ConglomeratesTeams from '@/client/components/conglomerates/ConglomeratesTeams.vue';
+import HighOrbitMarket from '@/client/components/highOrbit/HighOrbitMarket.vue';
 import {TileView} from './board/TileView';
 import {scrollToSpace} from '@/client/utils/boardScroll';
 
@@ -80,13 +100,16 @@ export default defineComponent({
     Awards,
     Turmoil,
     MoonBoard,
+    VenusSurfaceBoard,
     PlanetaryTracks,
+    ConglomeratesTeams,
+    HighOrbitMarket,
   },
   methods: {
     highlightSpace(spaceId: SpaceId) {
       scrollToSpace(spaceId);
 
-      const regions = ['main_board', 'moon_board', 'moon_board_outer_spaces'];
+      const regions = ['main_board', 'moon_board', 'moon_board_outer_spaces', 'venus_board', 'venus_board_outer_spaces'];
       for (const region of regions) {
         const board = document.getElementById(region);
         if (board !== null) {

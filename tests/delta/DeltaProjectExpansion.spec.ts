@@ -17,6 +17,8 @@ import {SpaceRelay} from '../../src/server/cards/pathfinders/SpaceRelay';
 import {RegolithEaters} from '../../src/server/cards/base/RegolithEaters';
 import {VictoryPointsBreakdownBuilder} from '../../src/server/game/VictoryPointsBreakdownBuilder';
 import {Game} from '../../src/server/Game';
+import {GameCards} from '../../src/server/GameCards';
+import {DEFAULT_GAME_OPTIONS} from '../../src/server/game/GameOptions';
 import {cast} from '@/common/utils/utils';
 import {IPlayer} from '@/server/IPlayer';
 
@@ -491,6 +493,15 @@ describe('DeltaProjectExpansion', () => {
       expect(p.preludeCardsInHand.some((c) => c.name === CardName.DELTA_PROJECT)).is.false;
     });
 
+    it('is not drawable from the normal prelude pool - it is only ever force-dealt', () => {
+      // Regression: it used to also sit in the shared prelude deck, so besides every
+      // player getting it for free, it could also be drawn (and end up duplicated, or
+      // taking up a slot meant for a real prelude) through the normal prelude draft.
+      const gameCards = new GameCards({...DEFAULT_GAME_OPTIONS, preludeExtension: true, deltaProjectExpansion: true});
+      const pool = gameCards.getPreludeCards();
+      expect(pool.some((c) => c.name === CardName.DELTA_PROJECT)).is.false;
+    });
+
     it('canAct returns false with no energy', () => {
       const card = new DeltaProject();
       player.energy = 0;
@@ -559,6 +570,195 @@ describe('DeltaProjectExpansion', () => {
       const p2 = restored.getPlayerById(player2.id).deltaProjectData!;
       expect(p2.position).eq(10);
       expect(p2.jovianBonus).is.false;
+    });
+  });
+
+  describe('Epsilon Dample second marker', () => {
+    beforeEach(() => {
+      player.epsilonDampleData = {position: 0, jovianBonus: false};
+    });
+
+    it('advances independently of the primary marker', () => {
+      setupPlayerForThreeStepsFromStart(player);
+      player.deltaProjectData!.position = 0;
+
+      DeltaProjectExpansion.advanceEpsilon(player, 3);
+
+      expect(player.epsilonDampleData!.position).eq(3);
+      expect(player.deltaProjectData!.position).eq(0);
+    });
+
+    it('grants the landing reward, same as the primary marker', () => {
+      setupPlayerForThreeStepsFromStart(player);
+
+      DeltaProjectExpansion.advanceEpsilon(player, 3);
+      runAllActions(game);
+
+      expect(player.production.megacredits).eq(2); // position 3: Earth tag reward
+    });
+
+    it('both markers can independently grant a Jovian tag at position 8', () => {
+      prepareAdvanceFrom7To8(player);
+
+      DeltaProjectExpansion.advance(player, 1);
+      expect(player.tags.extraJovianTags).eq(1);
+
+      player.energy = 8;
+      DeltaProjectExpansion.advanceEpsilon(player, 8);
+      expect(player.tags.extraJovianTags).eq(2);
+    });
+
+    it('the Jovian tag itself is still one-time per marker, even though other rewards can be farmed', () => {
+      playAllDeltaTrackTags(player);
+      player.epsilonDampleData!.position = 8;
+      player.energy = 4;
+
+      DeltaProjectExpansion.retreatEpsilon(player, 1); // position 7
+      player.energy = 1;
+      DeltaProjectExpansion.advanceEpsilon(player, 1); // back to position 8 - already have the tag
+      player.energy = 1;
+      DeltaProjectExpansion.retreatEpsilon(player, 1); // position 7 again
+      player.energy = 1;
+      DeltaProjectExpansion.advanceEpsilon(player, 1); // position 8 again
+
+      expect(player.tags.extraJovianTags).eq(1);
+    });
+
+    it('retreating does not require tags, and grants the landing reward', () => {
+      player.epsilonDampleData!.position = 5;
+      player.energy = 5;
+      player.production.override({megacredits: 0});
+
+      DeltaProjectExpansion.retreatEpsilon(player, 2);
+
+      expect(player.epsilonDampleData!.position).eq(3);
+      expect(player.energy).eq(3);
+      expect(player.production.megacredits).eq(2);
+    });
+
+    it('re-landing on the same position grants its reward again - shuttling back and forth farms rewards', () => {
+      playAllDeltaTrackTags(player);
+      player.energy = 4;
+      player.production.override({titanium: 0});
+
+      DeltaProjectExpansion.advanceEpsilon(player, 4); // straight to position 4 (Space)
+      runAllActions(game);
+      expect(player.production.titanium).eq(1);
+
+      player.energy = 1;
+      DeltaProjectExpansion.retreatEpsilon(player, 1); // position 3 (Earth)
+      runAllActions(game);
+
+      player.energy = 1;
+      DeltaProjectExpansion.advanceEpsilon(player, 1); // back to position 4 (Space) - again
+      runAllActions(game);
+
+      // Position 4's reward fired both times this marker landed there.
+      expect(player.production.titanium).eq(2);
+    });
+
+    it('advancing to a new position triggers its reward', () => {
+      setupPlayerForThreeStepsFromStart(player);
+      DeltaProjectExpansion.advanceEpsilon(player, 3);
+      runAllActions(game);
+
+      player.energy = 1;
+      player.playedCards.push(fakeCard({tags: [Tag.SPACE]}));
+      DeltaProjectExpansion.advanceEpsilon(player, 1);
+      runAllActions(game);
+
+      expect(player.production.titanium).eq(1); // position 4: Space tag reward
+    });
+
+    it('cannot retreat below position 0', () => {
+      player.epsilonDampleData!.position = 1;
+      player.energy = 5;
+
+      expect(DeltaProjectExpansion.getValidEpsilonRetreatSteps(player)).deep.eq([1]);
+    });
+
+    it('a player cannot stack both of their own markers on the same VP spot', () => {
+      playAllDeltaTrackTags(player);
+      player.energy = 20;
+      player.deltaProjectData!.position = 9;
+      player.epsilonDampleData!.position = 9;
+
+      DeltaProjectExpansion.advance(player, 1);
+      expect(player.deltaProjectData!.position).eq(VP2_POSITION);
+
+      const steps = DeltaProjectExpansion.getValidEpsilonAdvanceSteps(player);
+      expect(steps).to.not.include(1);
+    });
+
+    it('VP from the two markers does not stack - takes the higher of the two', () => {
+      player.deltaProjectData!.position = VP2_POSITION;
+      player.epsilonDampleData!.position = VP5_POSITION;
+
+      expectDeltaVp(player, 5);
+    });
+
+    it('locks in place at the 2VP spot - no further advance or retreat', () => {
+      player.epsilonDampleData!.position = VP2_POSITION;
+      player.energy = 10;
+
+      expect(DeltaProjectExpansion.getValidEpsilonAdvanceSteps(player)).deep.eq([]);
+      expect(DeltaProjectExpansion.getValidEpsilonRetreatSteps(player)).deep.eq([]);
+    });
+
+    it('locks in place at the 5VP spot - no further retreat', () => {
+      player.epsilonDampleData!.position = VP5_POSITION;
+      player.energy = 10;
+
+      expect(DeltaProjectExpansion.getValidEpsilonAdvanceSteps(player)).deep.eq([]);
+      expect(DeltaProjectExpansion.getValidEpsilonRetreatSteps(player)).deep.eq([]);
+    });
+
+    it('reaching the 2VP spot locks the marker there immediately', () => {
+      playAllDeltaTrackTags(player);
+      player.epsilonDampleData!.position = 9;
+      player.energy = 10;
+
+      DeltaProjectExpansion.advanceEpsilon(player, 1);
+
+      expect(player.epsilonDampleData!.position).eq(VP2_POSITION);
+      expect(DeltaProjectExpansion.getValidEpsilonAdvanceSteps(player)).deep.eq([]);
+      expect(DeltaProjectExpansion.getValidEpsilonRetreatSteps(player)).deep.eq([]);
+    });
+
+    it('the primary marker is unaffected by the VP-lock and can still advance from 2VP to 5VP', () => {
+      playAllDeltaTrackTags(player);
+      player.deltaProjectData!.position = VP2_POSITION;
+      player.energy = 10;
+
+      expect(DeltaProjectExpansion.getValidAdvanceSteps(player)).deep.eq([1]);
+    });
+  });
+
+  describe('Zeta Tollkeeper', () => {
+    beforeEach(() => {
+      player.playedCards.push(fakeCard({name: CardName.ZETA_TOLLKEEPER}));
+    });
+
+    it('does not affect getValidAdvanceSteps, and buildAdvanceInput is just the plain step input', () => {
+      playAllDeltaTrackTags(player);
+      player.energy = 2;
+      expect(DeltaProjectExpansion.getValidAdvanceSteps(player)).deep.eq([1, 2]);
+
+      const stepInput = cast(DeltaProjectExpansion.buildAdvanceInput(player), DeltaProjectInput);
+      expect(stepInput.validSteps).deep.eq([1, 2]);
+    });
+
+    it('advancing only grants the landing position reward, not every earlier one', () => {
+      playAllDeltaTrackTags(player);
+      player.deltaProjectData!.position = 3; // already past positions 1-3 by some other means
+      player.energy = 2;
+      player.production.override({titanium: 0});
+
+      DeltaProjectExpansion.advance(player, 1); // to position 4 (Space) - a single step
+
+      expect(player.production.titanium).eq(1);
+      // No queued rewards for the earlier positions - that multiplier is gone.
+      expect(game.deferredActions).has.lengthOf(0);
     });
   });
 });

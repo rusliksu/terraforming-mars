@@ -12,9 +12,12 @@ export class DeltaProjectInput extends BasePlayerInput<number> {
    */
   constructor(
     public validSteps: ReadonlyArray<number>,
+    options?: {reverse?: boolean},
   ) {
-    super('deltaProject', 'Select the amount of energy to spend to advance on the track');
-    this.buttonLabel = 'Advance';
+    super('deltaProject', options?.reverse === true ?
+      'Select the amount of energy to spend to move backward on the track' :
+      'Select the amount of energy to spend to advance on the track');
+    this.buttonLabel = options?.reverse === true ? 'Move backward' : 'Advance';
   }
 
   public toModel(): DeltaProjectInputModel {

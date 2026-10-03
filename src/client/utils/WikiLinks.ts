@@ -3,6 +3,10 @@ import {GameModule} from '@/common/cards/GameModule';
 export const WIKI = 'https://github.com/terraforming-mars/terraforming-mars/wiki';
 const CUSTOM_DOCS = 'https://github.com/rusliksu/terraforming-mars/blob/main/docs/variants';
 
+// Conglomerates isn't part of the upstream project, so its rules page lives on this fork's
+// own wiki instead of the shared one above.
+export const FORK_WIKI = 'https://github.com/JessyIsCute/terraforming-mars/wiki';
+
 export const RULEBOOK_URLS: Record<GameModule, string> = {
   base: `${WIKI}/Rulebooks`,
   corpera: `${WIKI}/Rulebooks`,
@@ -20,6 +24,18 @@ export const RULEBOOK_URLS: Record<GameModule, string> = {
   starwars: `${WIKI}/StarWars`,
   underworld: `${WIKI}/Underworld`,
   deltaProject: `${WIKI}/Delta-Project`,
+  sillyfication: `${FORK_WIKI}/Sillyfication`,
+  betterMars: `${FORK_WIKI}/BetterMars`,
+  customCards: `${WIKI}/Community`,
+  conglomerates: `${FORK_WIKI}/Conglomerates`,
+  corporateBetterments: `${FORK_WIKI}/Corporate-Betterments`,
+  idesOfMars: `${FORK_WIKI}/Ides-of-Mars`,
+  robAntilles: `${FORK_WIKI}/Rob-Antilles`,
+  moreParties: `${FORK_WIKI}/More-Parties`,
+  venusPhase2: `${FORK_WIKI}/Venus-Phase-2`,
+  industries: `${FORK_WIKI}/Industries`,
+  highOrbit: `${FORK_WIKI}/High-Orbit`,
+  solaris: `${FORK_WIKI}/Solaris`,
 };
 
 export const WIKI_URLS = {

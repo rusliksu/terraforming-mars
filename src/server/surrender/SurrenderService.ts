@@ -1,3 +1,5 @@
+import {getAutomationCompatibility, automationUnavailableReason} from '../bot/AutomationCompatibility';
+import {isLastActivePlayerFinish} from '../../common/game/CompletionOutcome';
 import {Phase} from '../../common/Phase';
 import {Game} from '../Game';
 import {IGame} from '../IGame';
@@ -27,6 +29,12 @@ export async function surrenderPlayer(options: SurrenderPlayerOptions): Promise<
   const {game, player, gameLoader, manager, serverId, advance} = options;
   validateSurrender(game, player);
 
+  const compatibility = getAutomationCompatibility(game.gameOptions);
+  const reason = automationUnavailableReason(compatibility);
+  const surrenderedCount = game.players.filter((p) => game.surrenderedPlayerIds.has(p.id)).length;
+  if (!isLastActivePlayerFinish(game.players.length, surrenderedCount + 1) && reason !== undefined) {
+    throw new SurrenderError(reason);
+  }
   const snapshot = game.serialize();
   const previousSaveGamePromise = game.saveGamePromise;
   const botWasActive = manager.isActive(player.id);
@@ -48,7 +56,7 @@ export async function surrenderPlayer(options: SurrenderPlayerOptions): Promise<
       return {botTakeover: 'skipped-game-finished'};
     }
 
-    manager.start({gameId: game.id, playerId: player.id, serverId});
+    manager.start({compatibility, gameId: game.id, playerId: player.id, serverId});
     botStarted = !botWasActive;
     game.log('${0} left the game; a bot is now playing', (builder) => builder.player(player).forBotTakeover());
     console.info('Surrender bot takeover started', {gameId: game.id});

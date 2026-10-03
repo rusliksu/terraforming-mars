@@ -10,6 +10,8 @@ export const CARD_RENAMES = new Map<string, CardName>([
   ['Astrodrill', CardName.ASTRODRILL],
   ['EcoLine', CardName.ECOLINE],
   ['Colony', CardName.BUILD_COLONY_STANDARD_PROJECT],
+  // Renamed to avoid a name conflict with Henkei Genetics.
+  ['Nereid Genetics', CardName.NEREID_BIOSYSTEMS],
 ]);
 
 export function resolveCardName(cardName: CardName): CardName {

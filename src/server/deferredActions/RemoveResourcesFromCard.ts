@@ -22,6 +22,7 @@ export class RemoveResourcesFromCard extends DeferredAction<Response> {
   private title: string | Message;
   private log: boolean;
   private min: number;
+  private restrictToPlayer: IPlayer | undefined;
 
   public override priority: Priority = Priority.ATTACK_OPPONENT;
   constructor(
@@ -40,6 +41,9 @@ export class RemoveResourcesFromCard extends DeferredAction<Response> {
       log?: boolean,
       /** Minimum resources a card must have to be offered as a target. Default 1 — most callers remove "up to count," not exactly count. */
       min?: number,
+      /** Narrow `source` down to one specific player (e.g. "opponents" who also placed a
+       * particular tile), instead of every player that `source` would otherwise allow. */
+      restrictToPlayer?: IPlayer,
     }) {
     super(player, Priority.ATTACK_OPPONENT);
     this.cardResource = cardResource;
@@ -51,6 +55,7 @@ export class RemoveResourcesFromCard extends DeferredAction<Response> {
     this.log = options?.log ?? false;
     this.title = options?.title ?? (`Select card to remove ${count} ${cardResource}(s)`);
     this.min = options?.min ?? 1;
+    this.restrictToPlayer = options?.restrictToPlayer;
     if (this.source === 'self') {
       this.priority = Priority.LOSE_RESOURCE_OR_PRODUCTION;
       if (this.blockable) {
@@ -66,7 +71,11 @@ export class RemoveResourcesFromCard extends DeferredAction<Response> {
       return undefined;
     }
 
-    const cards = RemoveResourcesFromCard.getAvailableTargetCards(this.player, this.cardResource, this.source, this.min);
+    let cards = RemoveResourcesFromCard.getAvailableTargetCards(this.player, this.cardResource, this.source, this.min);
+    if (this.restrictToPlayer !== undefined) {
+      const restrictToPlayer = this.restrictToPlayer;
+      cards = cards.filter((card) => this.player.game.getCardPlayerOrThrow(card.name) === restrictToPlayer);
+    }
 
     if (cards.length === 0) {
       this.cb({card: undefined, owner: undefined, proceed: false});
@@ -116,6 +125,11 @@ export class RemoveResourcesFromCard extends DeferredAction<Response> {
   }
 
   public static getAvailableTargetCards(player: IPlayer, resourceType: CardResource | undefined, source: Source = 'all', min: number = 1): Array<ICard> {
+    // Solaris (fan): Anti Fraud Investigation blocks all resource removal from cards for the
+    // rest of the generation it's played. See IGame.resourceRemovalBlockedThisGeneration.
+    if (player.game.resourceRemovalBlockedThisGeneration) {
+      return [];
+    }
     const resourceCards: Array<ICard> = [];
     for (const p of player.game.players) {
       if (p === player) {
@@ -134,7 +148,11 @@ export class RemoveResourcesFromCard extends DeferredAction<Response> {
         }
       } else {
         if (source !== 'self') {
-          const hasProtetedHabitats = p.tableau.has(CardName.PROTECTED_HABITATS);
+          const hasProtetedHabitats = p.tableau.has(CardName.PROTECTED_HABITATS) ||
+            p.tableau.has(CardName.PROTECTED_HABITATS_BETTER_MARS);
+          // Martian Rangers (Rob Antilles): "Opponents cannot remove your Animals" -- narrower
+          // than Protected Habitats above (Animal only, not Microbe).
+          const hasMartianRangers = p.tableau.has(CardName.MARTIAN_RANGERS);
           for (const card of p.getCardsWithResources(resourceType)) {
             if (card.resourceCount < min) {
               continue;
@@ -146,6 +164,9 @@ export class RemoveResourcesFromCard extends DeferredAction<Response> {
               if (card.resourceType === CardResource.ANIMAL || card.resourceType === CardResource.MICROBE) {
                 continue;
               }
+            }
+            if (hasMartianRangers && card.resourceType === CardResource.ANIMAL) {
+              continue;
             }
             resourceCards.push(card);
           }

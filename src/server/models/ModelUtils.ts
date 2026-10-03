@@ -12,6 +12,8 @@ import {CardName} from '../../common/cards/CardName';
 import {Tag} from '../../common/cards/Tag';
 import {asArray} from '../../common/utils/utils';
 import {isIStandardProjectCard} from '../cards/IStandardProjectCard';
+import {isDataDrivenCard} from '../cards/CustomCardRegistry';
+import {NEUTRAL_COLONY_OWNER} from '../../common/Types';
 
 export function cardsToModel(
   player: IPlayer,
@@ -33,6 +35,10 @@ export function cardsToModel(
     if (card.name === CardName.MARS_DIRECT) {
       discount = [{tag: Tag.MARS, amount: player.tags.count(Tag.MARS)}];
     }
+    if (card.name === CardName.VENUPHILE) {
+      discount = [{tag: Tag.VENUS, amount: Math.min(Math.floor(player.tags.count(Tag.VENUS) / 2), 5)}];
+    }
+    const inSpireResources = card.renderStoredResources?.();
 
     let calculatedCost = card.cost;
     if (options.showCalculatedCost) {
@@ -50,6 +56,7 @@ export function cardsToModel(
       bonusResource: isIProjectCard(card) ? card.bonusResource : undefined,
       discount: discount,
       cloneTag: isICloneTagCard(card) ? card.cloneTag : undefined,
+      inSpireResources,
     };
     if ('opgActionIsActive' in card && typeof card.opgActionIsActive === 'boolean') {
       model.opgActionIsActive = card.opgActionIsActive;
@@ -64,7 +71,7 @@ export function cardsToModel(
     }
     const playCardMetadata = options?.extras?.get(card.name);
 
-    if (isIProjectCard(card) && card.additionalProjectCosts) {
+    if ((isIProjectCard(card) || isIStandardProjectCard(card)) && card.additionalProjectCosts) {
       model.additionalProjectCosts = card.additionalProjectCosts;
     }
 
@@ -80,6 +87,42 @@ export function cardsToModel(
     if (card.warnings.size > 0) {
       model.warnings = Array.from(card.warnings);
     }
+    // A Custom Card Maker card's name isn't in the client's compiled static manifest, so
+    // Card.vue can't resolve its face (cost/tags/icons/requirements) the normal way -- carry
+    // that data over the wire instead. See CustomCardModel's doc comment.
+    if (isDataDrivenCard(card)) {
+      model.customCard = {
+        type: card.type,
+        cost: card.cost,
+        tags: card.tags,
+        requirements: card.requirements,
+        metadata: card.metadata,
+        resourceType: card.resourceType,
+        module: 'customCards',
+        compatibility: card.definition.compatibility ?? [],
+      };
+    }
+    // Same reasoning as Custom Card Maker cards above: DeimosDoubleDownCopy's face varies
+    // per instance (whichever Space event it copies), so it's not in the static manifest
+    // either - see DeimosDoubleDownCopy.ts's doc comment.
+    if (card.name === CardName.DEIMOS_DOUBLE_DOWN_COPY) {
+      model.customCard = {
+        type: card.type,
+        cost: card.cost,
+        tags: card.tags,
+        requirements: card.requirements,
+        metadata: card.metadata,
+        resourceType: card.resourceType,
+        module: 'sillyfication',
+        compatibility: ['sillyfication'],
+      };
+      // Cast rather than importing the concrete class, which would create a circular
+      // import through createCard.ts/AllManifests.ts (ModelUtils.ts is imported from very
+      // early in that chain) - safe here since the name check above already confirms the
+      // real runtime type.
+      const sourceCardName = (card as unknown as {sourceCardName: CardName}).sourceCardName;
+      model.combinedDisplayName = `${sourceCardName} Copy`;
+    }
     return model;
   });
 }
@@ -91,7 +134,7 @@ export function coloniesToModel(game: IGame, colonies: Array<IColony>, showTileO
   return colonies.map(
     (colony): ColonyModel => ({
       colonies: colony.colonies.map(
-        (playerId): Color => game.getPlayerById(playerId).color,
+        (playerId): Color => playerId === NEUTRAL_COLONY_OWNER ? 'neutral' : game.getPlayerById(playerId).color,
       ),
       isActive: isActive && colony.isActive && showTileOnly === false,
       name: colony.name,

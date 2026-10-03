@@ -1,5 +1,5 @@
 <template>
-  <div v-if="typeof victoryPoints !== 'number'" :class="classes">
+  <div v-if="victoryPoints !== undefined && typeof victoryPoints !== 'number'" :class="classes">
     <template v-if="victoryPoints.targetOneOrMore">
        <!-- This is the Search for Life special case. -->
       <div class="card-points-item-first">
@@ -20,7 +20,7 @@
     </template>
     <div v-if="victoryPoints.asterisk === true">*</div>
   </div>
-  <div v-else class="card-points card-points-big">{{ victoryPoints }}</div>
+  <div v-else :class="numberClasses">{{ totalNumber }}</div>
 </template>
 
 <script lang="ts">
@@ -38,7 +38,7 @@ export default defineComponent({
   props: {
     victoryPoints: {
       type: [Number, Object as () => CardRenderDynamicVictoryPoints],
-      required: true,
+      default: undefined,
     },
   },
   components: {
@@ -46,25 +46,24 @@ export default defineComponent({
   },
   computed: {
     classes(): string {
-      if (typeof this.victoryPoints === 'number') {
+      if (this.victoryPoints === undefined || typeof this.victoryPoints === 'number') {
         return '';
-      } else {
-        const classes: string[] = ['card-points'];
-        if (this.victoryPoints.vermin) {
-          classes.push('card-points-normal');
-          classes.push('card-points-vermin');
-          classes.push('red-outline');
-        } else if (this.victoryPoints.anyPlayer) {
-          classes.push('card-points-big');
-          classes.push('red-outline');
-        } else {
-          classes.push('card-points-normal');
-        }
-        return classes.join(' ');
       }
+      const classes: string[] = ['card-points'];
+      if (this.victoryPoints.vermin) {
+        classes.push('card-points-normal');
+        classes.push('card-points-vermin');
+        classes.push('red-outline');
+      } else if (this.victoryPoints.anyPlayer) {
+        classes.push('card-points-big');
+        classes.push('red-outline');
+      } else {
+        classes.push('card-points-normal');
+      }
+      return classes.join(' ');
     },
     points(): string {
-      if (typeof this.victoryPoints === 'number') {
+      if (this.victoryPoints === undefined || typeof this.victoryPoints === 'number') {
         return '';
       }
       const vps = this.victoryPoints;
@@ -83,6 +82,12 @@ export default defineComponent({
         }
       }
       return `${vps.points}/${vps.target}`;
+    },
+    totalNumber(): number {
+      return typeof this.victoryPoints === 'number' ? this.victoryPoints : 0;
+    },
+    numberClasses(): string {
+      return 'card-points card-points-big';
     },
     animal(): ICardRenderItem {
       return {is: 'item', type: CardRenderItemType.RESOURCE, resource: CardResource.ANIMAL, size: Size.SMALL, amount: 1};

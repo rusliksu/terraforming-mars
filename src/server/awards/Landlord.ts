@@ -2,6 +2,7 @@ import {IAward} from './IAward';
 import {IPlayer} from '../IPlayer';
 import {TileType} from '../../common/TileType';
 import {Board} from '../boards/Board';
+import {VenusPhase2Expansion} from '../venusPhase2/VenusPhase2Expansion';
 
 export class Landlord implements IAward {
   public readonly name = 'Landlord';
@@ -20,6 +21,8 @@ export class Landlord implements IAward {
       .filter(Board.hasRealTile)
       .filter(Board.ownedBy(player)).length;
 
-    return marsSpaceCount + moonSpaceCount;
+    const venusSpaceCount = VenusPhase2Expansion.getRealTileCount(player.game, player);
+
+    return marsSpaceCount + moonSpaceCount + venusSpaceCount;
   }
 }

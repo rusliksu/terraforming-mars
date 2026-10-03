@@ -33,10 +33,13 @@ export class PharmacyUnion extends CorporationCard implements ICorporationCard {
           b.text('(You start with 54 M€. Draw a Science card.)', {size: Size.TINY, isBold: false});
           b.corpBox('effect', (ce) => {
             ce.vSpace(Size.LARGE);
+            ce.br;
             ce.effect(undefined, (eb) => {
               eb.tag(Tag.MICROBE, {all}).startEffect.resource(CardResource.DISEASE).megacredits(-4);
             });
+            ce.br;
             ce.vSpace();
+            ce.br;
             ce.effect('When ANY microbe tag is played, add a disease here and lose 4 M€ or as much as possible. When you play a science tag, remove a disease here and gain 1 TR OR if there are no diseases here, you MAY put this card face down in your EVENTS PILE to gain 3 TR.', (eb) => {
               eb.tag(Tag.SCIENCE).startEffect.minus().resource(CardResource.DISEASE);
               eb.tr(1, {size: Size.SMALL}).slash().tr(3, {size: Size.SMALL, digit});
@@ -81,7 +84,9 @@ export class PharmacyUnion extends CorporationCard implements ICorporationCard {
     const game = player.game;
 
     const hasScienceTag = player.tags.cardHasTag(card, Tag.SCIENCE);
-    const hasMicrobesTag = card.tags.includes(Tag.MICROBE);
+    // Whether the card that was played has (or counts as having, e.g. Nereid Biosystems)
+    // a microbe tag is a property of whoever played it, not of Pharmacy Union's owner.
+    const hasMicrobesTag = activePlayer.tags.cardHasTag(card, Tag.MICROBE);
 
     if (player === activePlayer && hasScienceTag) {
       // Edge case, let player pick order of resolution (see https://github.com/bafolts/terraforming-mars/issues/1286)
@@ -117,7 +122,7 @@ export class PharmacyUnion extends CorporationCard implements ICorporationCard {
 
     if (hasMicrobesTag) {
       player.defer(() => {
-        const microbeTagCount = card.tags.filter((cardTag) => cardTag === Tag.MICROBE).length;
+        const microbeTagCount = activePlayer.tags.cardTagCount(card, Tag.MICROBE);
         this.addDisease(player, microbeTagCount);
         return undefined;
       }, Priority.PHARMACY_UNION);

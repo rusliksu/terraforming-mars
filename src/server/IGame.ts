@@ -1,5 +1,7 @@
 import {MarsBoard} from './boards/MarsBoard';
+import {GlobalParametersConfig} from '../common/GlobalParameterConfig';
 import {CardName} from '../common/cards/CardName';
+import {HighOrbitMarketRow} from '../common/highOrbit/HighOrbitMarket';
 import {ClaimedMilestone} from './milestones/ClaimedMilestone';
 import {IColony} from './colonies/IColony';
 import {Color} from '../common/Color';
@@ -15,13 +17,14 @@ import {PlayerId, GameId, SpectatorId, SpaceId, isGameId, ParticipantId} from '.
 import {AndThen, DeferredAction} from './deferredActions/DeferredAction';
 import {Priority} from './deferredActions/Priority';
 import {DeferredActionsQueue} from './deferredActions/DeferredActionsQueue';
-import {SerializedGame} from './SerializedGame';
+import {AdditionalResearch, SerializedGame} from './SerializedGame';
 import {SpaceBonus} from '../common/boards/SpaceBonus';
 import {TileType} from '../common/TileType';
 import {ICard} from './cards/ICard';
 import {Turmoil} from './turmoil/Turmoil';
 import {AresData} from '../common/ares/AresData';
 import {MoonData} from './moon/MoonData';
+import {VenusPhase2Data} from './venusPhase2/VenusPhase2Data';
 import {SeededRandom} from '../common/utils/Random';
 import {PathfindersData} from './pathfinders/PathfindersData';
 import {GameOptions} from './game/GameOptions';
@@ -31,6 +34,7 @@ import {Tile} from './Tile';
 import {Logger} from './logs/Logger';
 import {GlobalParameter} from '../common/GlobalParameter';
 import {UnderworldData} from './underworld/UnderworldData';
+import {ConglomeratesData} from './conglomerates/ConglomeratesData';
 import {OrOptions} from './inputs/OrOptions';
 import {IStandardProjectCard} from './cards/IStandardProjectCard';
 import {VictoryPointsBreakdown} from '../common/game/VictoryPointsBreakdown';
@@ -72,7 +76,42 @@ export interface IGame extends Logger {
   actionReplayState: ActionReplayState | null | undefined;
   inputsThisRound: number;
   resettable: boolean;
+  skipGeneration1Actions: boolean;
   generation: number;
+  /**
+   * High Orbit (fan): tracks which CardNames have already been played THIS generation, across
+   * all players. Used by Planetary Outpost -- since several separate physical copies of it
+   * exist in the shared market (see highOrbitMarket below), a per-card-instance flag wouldn't
+   * work; this is a generation-scoped, game-wide set instead. Reset in `startGeneration`.
+   */
+  cardsPlayedThisGeneration: Set<CardName>;
+  /**
+   * High Orbit (fan): the shared Infrastructure card market -- always 3 rows of 5 slots (see
+   * HighOrbitMarketRow). These cards are never shuffled into the project deck (see
+   * GameCards.getProjectCards). Dealt from highOrbitDeck in `Game.newInstance` when
+   * highOrbitExpansion is enabled. Buying a card (via `Player.getHighOrbitInfrastructureOptions`)
+   * empties its slot and locks the whole row for the rest of the generation; `startGeneration`
+   * unlocks every row and refills any empty slots from highOrbitDeck.
+   */
+  highOrbitMarket: Array<HighOrbitMarketRow>;
+  /**
+   * High Orbit (fan): the shuffled remainder of physical Infrastructure card copies not
+   * currently dealt into highOrbitMarket. Populated from HighOrbitCardManifest.HIGH_ORBIT_SUPPLY
+   * in `Game.newInstance`, drawn from to refill market slots at the start of each generation.
+   */
+  highOrbitDeck: Array<CardName>;
+  /**
+   * Solaris (fan): Anti Fraud Investigation. When true, no player may remove resources from
+   * any card for the rest of the generation. Set true by Anti Fraud Investigation's play
+   * effect, reset to false at the start of each generation (mirroring
+   * `cardsPlayedThisGeneration` above). Enforced at `RemoveResourcesFromCard.getAvailableTargetCards`,
+   * the shared choke point used both by the declarative `removeResourcesFromAnyCard` behavior
+   * and by most bespoke "remove a resource from any card" card effects (e.g. Predators).
+   * It does not intercept every direct `player.removeResourceFrom(...)` call in the codebase
+   * (a handful of cards, like Space Privateers' self-penalty when an attack is blocked, call
+   * that directly rather than going through the shared deferred action) -- see card comment.
+   */
+  resourceRemovalBlockedThisGeneration: boolean;
   readonly players: ReadonlyArray<IPlayer>;
   readonly playersInGenerationOrder: ReadonlyArray<IPlayer>;
   /** Players created as automated participants; their games are excluded from reliability stats. */
@@ -93,6 +132,8 @@ export interface IGame extends Logger {
   ceoDeck: CeoDeck;
   corporationDeck: CorporationDeck;
   board: MarsBoard;
+  /** Global-parameter track limits and bonus thresholds (custom boards may override these). */
+  readonly parameters: GlobalParametersConfig;
   activePlayer: IPlayer;
   claimedMilestones: Array<ClaimedMilestone>;
   milestones: Array<IMilestone>;
@@ -106,8 +147,10 @@ export interface IGame extends Logger {
   inTurmoil: boolean;
   aresData: AresData | undefined;
   moonData: MoonData | undefined;
+  venusPhase2Data: VenusPhase2Data | undefined;
   pathfindersData: PathfindersData | undefined;
   underworldData: UnderworldData;
+  conglomerates: ConglomeratesData;
 
   // Card-specific data
 
@@ -132,6 +175,12 @@ export interface IGame extends Logger {
   tradeEmbargo: boolean;
   /** True when Behold The Emperor is in effect this coming Turmoil phase */
   beholdTheEmperor: boolean;
+  /**
+   * For Backstabbing (idesOfMars, fan): if this player has a delegate in the winning party
+   * at the next Turmoil phase, they become chairman instead of that party's leader. Consumed
+   * (cleared) by that Turmoil phase whether or not it actually applied.
+   */
+  backstabbingPlayer: PlayerId | undefined;
   /** Double Down: tracking when an action is due to double down. Does not need to be serialized. */
   inDoubleDown: boolean;
   /**
@@ -153,6 +202,9 @@ export interface IGame extends Logger {
   /** Initiates the first research phase, which is when a player chooses their starting hand, corps and preludes. */
   gotoInitialResearchPhase(): void;
   gotoResearchPhase(): void;
+  additionalResearch: AdditionalResearch | undefined;
+  requestAdditionalResearch(): void;
+  startAdditionalResearch(): void;
   save(): void;
   serialize(): SerializedGame;
   isSoloMode() :boolean;
@@ -169,6 +221,10 @@ export interface IGame extends Logger {
   hasBeenFunded(award: IAward): boolean;
   allAwardsFunded(): boolean;
   allMilestonesClaimed(): boolean;
+  /** A random milestone compatible with this game but not already in play, or undefined if none remain. */
+  getUnusedMilestoneCandidate(): IMilestone | undefined;
+  /** A random award compatible with this game but not already in play, or undefined if none remain. */
+  getUnusedAwardCandidate(): IAward | undefined;
   hasPassedThisActionPhase(player: IPlayer): boolean;
   // Public for testing.
   incrementFirstPlayer(): void;

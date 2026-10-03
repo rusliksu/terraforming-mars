@@ -11,6 +11,18 @@ import {fakeGameOptionsModel, fakePlayerViewModel, fakePublicPlayerModel, fakeTi
 import {Phase} from '@/common/Phase';
 import {defineComponent, nextTick, onMounted, onUnmounted} from 'vue';
 
+const appConfig = {
+  ...globalConfig,
+  global: {
+    ...globalConfig.global,
+    // Explicit components avoid starting asynchronous imports.
+    stubs: {
+      StartScreen: {template: '<div data-test="start-screen"></div>'},
+      MapLibrary: {template: '<div data-test="map-library"></div>'},
+    },
+  },
+};
+
 describe('App', () => {
   const originalFetch = global.fetch;
 
@@ -24,6 +36,20 @@ describe('App', () => {
   it('mounts without errors', () => {
     const wrapper = shallowMount(App, globalConfig);
     expect(wrapper.exists()).to.be.true;
+  });
+
+  it('routes / to the start screen', async () => {
+    history.pushState({}, '', '/');
+    const wrapper = shallowMount(App, appConfig);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-test="start-screen"]').exists()).to.be.true;
+  });
+
+  it('routes /map-library to the map-library screen', async () => {
+    history.pushState({}, '', '/map-library');
+    const wrapper = shallowMount(App, appConfig);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-test="map-library"]').exists()).to.be.true;
   });
 
   it('restarts the visible timer when a refreshed player view starts the next turn', async () => {

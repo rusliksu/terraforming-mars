@@ -6,6 +6,10 @@ import {CardName} from '../src/common/cards/CardName';
 import {CardManifest} from '../src/server/cards/ModuleManifest';
 import {DEFAULT_GAME_OPTIONS, GameOptions} from '../src/server/game/GameOptions';
 import {toName} from '../src/common/utils/utils';
+import {refreshCustomCardRegistry} from '../src/server/cards/CustomCardRegistry';
+import {blankCustomCard, CustomCardDefinition} from '../src/common/cards/CustomCardDefinition';
+import {InMemoryDatabase} from './testing/InMemoryDatabase';
+import {restoreTestDatabase, setTestDatabase} from './testing/setup';
 
 describe('GameCards', () => {
   it('correctly removes projectCardsToRemove', () => {
@@ -233,6 +237,71 @@ describe('GameCards', () => {
     const ecolines = corps.filter((c) => c.name === CardName.ECOLINE);
     expect(thorgates).to.have.length(1);
     expect(ecolines).to.have.length(1);
+  });
+
+  describe('custom card library injection', () => {
+    afterEach(async () => {
+      restoreTestDatabase();
+      await refreshCustomCardRegistry();
+    });
+
+    async function registerCustomCard(def: CustomCardDefinition): Promise<void> {
+      const db = new InMemoryDatabase();
+      setTestDatabase(db);
+      await db.insertCustomCardLibraryEntry({
+        id: 'c1', definition: def, shareCode: 'x', submittedBy: '', status: 'approved', createdAt: 1,
+      });
+      await refreshCustomCardRegistry();
+    }
+
+    it('does not include custom cards when the toggle is off', async () => {
+      await registerCustomCard(blankCustomCard('Off Card'));
+      const gameOptions: GameOptions = {...DEFAULT_GAME_OPTIONS, corporateEra: true, customCardsExpansion: false};
+      const names = new GameCards(gameOptions).getProjectCards().map(toName);
+      expect(names).to.not.contain('Off Card');
+    });
+
+    it('includes approved custom cards when the toggle is on', async () => {
+      await registerCustomCard(blankCustomCard('On Card'));
+      const gameOptions: GameOptions = {...DEFAULT_GAME_OPTIONS, corporateEra: true, customCardsExpansion: true};
+      const names = new GameCards(gameOptions).getProjectCards().map(toName);
+      expect(names).to.contain('On Card');
+    });
+
+    it('excludes a custom card whose expansion-compatibility is not enabled for this game', async () => {
+      const def = blankCustomCard('Venus Card');
+      def.compatibility = ['venus'];
+      await registerCustomCard(def);
+      const gameOptions: GameOptions = {...DEFAULT_GAME_OPTIONS, corporateEra: true, customCardsExpansion: true};
+      const names = new GameCards(gameOptions).getProjectCards().map(toName);
+      expect(names).to.not.contain('Venus Card');
+    });
+
+    it('includes a custom card once its required expansion is enabled', async () => {
+      const def = blankCustomCard('Venus Card 2');
+      def.compatibility = ['venus'];
+      await registerCustomCard(def);
+      const gameOptions: GameOptions = {
+        ...DEFAULT_GAME_OPTIONS,
+        corporateEra: true,
+        customCardsExpansion: true,
+        expansions: {...DEFAULT_GAME_OPTIONS.expansions, venus: true},
+      };
+      const names = new GameCards(gameOptions).getProjectCards().map(toName);
+      expect(names).to.contain('Venus Card 2');
+    });
+
+    it('bannedCards suppresses an individual custom card', async () => {
+      await registerCustomCard(blankCustomCard('Banned Card'));
+      const gameOptions: GameOptions = {
+        ...DEFAULT_GAME_OPTIONS,
+        corporateEra: true,
+        customCardsExpansion: true,
+        bannedCards: ['Banned Card' as CardName],
+      };
+      const names = new GameCards(gameOptions).getProjectCards().map(toName);
+      expect(names).to.not.contain('Banned Card');
+    });
   });
 
   it('customCorporationsList restricts the corporation deck to only those corps', () => {

@@ -33,6 +33,9 @@ export class SelectPaymentDeferred extends DeferredAction<Payment> {
     if (this.player.canUseHeatAsMegaCredits && this.player.availableHeat() > 0) {
       return false;
     }
+    if (this.player.canUseEnergyAsMegaCredits && this.player.availableEnergy() > 0) {
+      return false;
+    }
     if (this.options.canUseSteel && this.player.steel > 0) {
       return false;
     }
@@ -81,6 +84,7 @@ export class SelectPaymentDeferred extends DeferredAction<Payment> {
         steel: this.options.canUseSteel || false,
         titanium: this.options.canUseTitanium || false,
         heat: this.player.canUseHeatAsMegaCredits,
+        energy: this.player.canUseEnergyAsMegaCredits,
         seeds: this.options.canUseSeeds || false,
         auroraiData: this.options.canUseAuroraiData || false,
         spireScience: this.options.canUseSpireScience || false,

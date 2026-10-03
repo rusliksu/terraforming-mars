@@ -21,6 +21,7 @@ import {TerraCimmeriaNovaBoard} from './boards/TerraCimmeriaNovaBoard';
 import {Board} from './boards/Board';
 import {Space} from './boards/Space';
 import {HollandiaBoard} from './boards/HollandiaBoard';
+import {CustomBoard} from './boards/CustomBoard';
 
 type BoardFactory = (new (spaces: ReadonlyArray<Space>) => MarsBoard) & {newInstance: (gameOptions: GameOptions, rng: Random) => MarsBoard};
 
@@ -46,6 +47,7 @@ const boards: Record<BoardName, BoardFactory> = {
   [BoardName.TERRA_CIMMERIA]: TerraCimmeriaBoard,
   [BoardName.VASTITAS_BOREALIS]: VastitasBorealisBoard,
   [BoardName.HOLLANDIA]: HollandiaBoard,
+  [BoardName.CUSTOM]: CustomBoard,
 } satisfies Record<BoardName, BoardFactory>;
 
 export class GameSetup {
@@ -57,6 +59,11 @@ export class GameSetup {
   public static deserializeBoard(players: Array<IPlayer>, gameOptions: GameOptions, d: SerializedGame) {
     const playersForBoard = players.length !== 1 ? players : [players[0], GameSetup.neutralPlayerFor(d.id)];
     const deserialized = Board.deserialize(d.board, playersForBoard).spaces;
+    if (gameOptions.boardName === BoardName.CUSTOM) {
+      // The custom board's row count anchors its adjacency geometry; recover it from the
+      // persisted definition rather than inferring it from a possibly-carved outline.
+      return new CustomBoard(deserialized, gameOptions.customBoard?.rows);
+    }
     const Factory: BoardFactory = boards[gameOptions.boardName];
     return new Factory(deserialized);
   }

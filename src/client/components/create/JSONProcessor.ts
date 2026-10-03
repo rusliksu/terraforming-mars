@@ -84,6 +84,9 @@ export class JSONProcessor {
     this.bannedCards = set(json_constants.BANNED_CARDS);
     this.includedCards = set(json_constants.INCLUDED_CARDS);
 
+    this.model.customBoardCode = undefined;
+    this.model.customMoonBoardCode = undefined;
+    this.model.customVenusSurfaceBoardCode = undefined;
     this.model.playersCount = normalizedPlayers.length;
     this.model.showBannedCards = this.bannedCards.length > 0;
     this.model.showIncludedCards = this.includedCards.length > 0;
@@ -106,6 +109,18 @@ export class JSONProcessor {
       starwars: json_constants.STARWARSEXPANSION,
       underworld: json_constants.UNDERWORLDEXPANSION,
       deltaProject: json_constants.DELTA_PROJECT_EXPANSION,
+      sillyfication: json_constants.SILLYFICATION_EXPANSION,
+      betterMars: json_constants.BETTER_MARS_EXPANSION,
+      customCards: json_constants.CUSTOM_CARDS_EXPANSION,
+      conglomerates: json_constants.CONGLOMERATES_EXPANSION,
+      corporateBetterments: json_constants.CORPORATE_BETTERMENTS_EXPANSION,
+      idesOfMars: json_constants.IDES_OF_MARS_EXPANSION,
+      robAntilles: json_constants.ROB_ANTILLES_EXPANSION,
+      moreParties: json_constants.MORE_PARTIES_EXPANSION,
+      venusPhase2: json_constants.VENUS_PHASE_2_EXPANSION,
+      industries: json_constants.INDUSTRIES_EXPANSION,
+      highOrbit: json_constants.HIGH_ORBIT_EXPANSION,
+      solaris: json_constants.SOLARIS_EXPANSION,
     } as const;
     for (const expansion of Object.keys(oldExpansionFields)) {
       const x = oldExpansionFields[expansion as Expansion];

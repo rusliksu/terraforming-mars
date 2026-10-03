@@ -4,7 +4,7 @@
     <div v-if="isCorporation()" class="corporation-label">corporation</div>
     <div v-if="isCeo()" class="ceo-label">CEO</div>
     <CardCorporationLogo v-if="isCorporation()" :title="title"/>
-    <div v-else ref="title" :class="getClasses()">{{ titleWithoutSuffix }}</div>
+    <div v-else ref="title" :class="getClasses()">{{ displayTitleWithoutSuffix }}</div>
   </div>
 </template>
 
@@ -14,6 +14,7 @@ import {defineComponent} from 'vue';
 import {CardType} from '@/common/cards/CardType';
 import CardCorporationLogo from '@/client/components/card/CardCorporationLogo.vue';
 import {CardName} from '@/common/cards/CardName';
+import {Tag} from '@/common/cards/Tag';
 import {fitTextWhenReady} from '@/client/utils/textFit';
 
 type Refs = {
@@ -32,6 +33,20 @@ export default defineComponent({
       type: String as () => CardType,
       required: true,
     },
+    // DeimosDoubleDownCopy (sillyfication): overrides the displayed title (e.g. "<real
+    // card name> Copy") without touching `title` itself, which stays the real CardName --
+    // CardCorporationLogo and other consumers below still need the exact name.
+    displayTitle: {
+      type: String,
+      default: undefined,
+    },
+    // High Orbit (fan): Infrastructure-tagged "Silver" cards render with a distinct silver
+    // header regardless of CardType -- they still need to be ACTIVE/AUTOMATED for normal
+    // tableau/action/tag semantics, so this is a visual override, not a type change.
+    tags: {
+      type: Array as () => Array<Tag>,
+      default: () => [],
+    },
   },
   components: {
     CardCorporationLogo,
@@ -43,6 +58,9 @@ export default defineComponent({
     // Re-fit if the title prop changes on a reused instance. Card lists are keyed
     // by name today, so this is insurance against an unkeyed or index-keyed list.
     title() {
+      this.fitTitle();
+    },
+    displayTitle() {
       this.fitTitle();
     },
   },
@@ -65,10 +83,18 @@ export default defineComponent({
     isPrelude(): boolean {
       return this.type === CardType.PRELUDE;
     },
+    isInfrastructure(): boolean {
+      // Planetary Outpost (High Orbit, fan) is still visually a Silver card -- paid the same
+      // native-Titanium way as the rest -- even though it deliberately carries no Infrastructure
+      // tag (no Space>Infrastructure requirement either). See PlanetaryOutpost.ts.
+      return this.tags.includes(Tag.INFRASTRUCTURE) || this.title === CardName.PLANETARY_OUTPOST;
+    },
     getClasses(): string {
       const classes: Array<String> = ['card-title'];
 
-      if (this.type === CardType.AUTOMATED) {
+      if (this.isInfrastructure()) {
+        classes.push('background-color-infrastructure');
+      } else if (this.type === CardType.AUTOMATED) {
         classes.push('background-color-automated');
       } else if (this.type === CardType.ACTIVE) {
         classes.push('background-color-active');
@@ -94,8 +120,8 @@ export default defineComponent({
     },
   },
   computed: {
-    titleWithoutSuffix(): string {
-      return this.title.split(':')[0];
+    displayTitleWithoutSuffix(): string {
+      return (this.displayTitle ?? this.title).split(':')[0];
     },
     typedRefs(): Refs {
       return this.$refs as unknown as Refs;

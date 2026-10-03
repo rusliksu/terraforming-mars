@@ -73,6 +73,25 @@ export class GlobalEventDealer {
       starwars: gameOptions.starWarsExpansion,
       underworld: gameOptions.underworldExpansion,
       deltaProject: gameOptions.deltaProjectExpansion,
+      sillyfication: gameOptions.sillyficationExpansion,
+      betterMars: gameOptions.betterMarsExpansion,
+      // Neither has a ModuleManifest/global events of its own -- included only to satisfy Record<GameModule, boolean>.
+      customCards: gameOptions.customCardsExpansion,
+      // No ModuleManifest/global events of its own -- included only to satisfy Record<GameModule, boolean>.
+      conglomerates: gameOptions.conglomeratesExpansion,
+      // No ModuleManifest/global events of its own -- included only to satisfy Record<GameModule, boolean>.
+      corporateBetterments: gameOptions.corporateBettermentsExpansion,
+      idesOfMars: gameOptions.idesOfMarsExpansion,
+      robAntilles: gameOptions.robAntillesExpansion,
+      moreParties: gameOptions.morePartiesExpansion,
+      // No ModuleManifest/global events of its own -- included only to satisfy Record<GameModule, boolean>.
+      venusPhase2: gameOptions.venusPhase2Expansion,
+      // No ModuleManifest/global events of its own -- included only to satisfy Record<GameModule, boolean>.
+      industries: gameOptions.industriesExpansion,
+      // No ModuleManifest/global events of its own -- included only to satisfy Record<GameModule, boolean>.
+      highOrbit: gameOptions.highOrbitExpansion,
+      // No ModuleManifest/global events of its own -- included only to satisfy Record<GameModule, boolean>.
+      solaris: gameOptions.solarisExpansion,
     };
 
     for (const manifest of ALL_MODULE_MANIFESTS) {

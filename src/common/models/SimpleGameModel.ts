@@ -7,6 +7,7 @@ import {Phase} from '../Phase';
 import {GameOptionsModel} from './GameOptionsModel';
 
 export type SimpleGameModel = {
+  fanmadeCatalogRevision?: string;
   automationCompatibility?: AutomationCompatibility;
   astraMechanicaReplayTargetExclusions?: ReadonlyArray<CardName>;
     activePlayer: Color;

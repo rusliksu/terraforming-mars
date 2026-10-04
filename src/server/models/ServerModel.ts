@@ -38,11 +38,14 @@ import {MAX_AWARDS, MAX_MILESTONES} from '../../common/constants';
 import {AstraMechanica} from '../cards/promo/AstraMechanica';
 
 export class Server {
+  private static readonly FANMADE_CATALOG_REVISION = 'fanmade:custom-reviewed';
+
   public static getSimpleGameModel(game: IGame, options?: {
     botPlayers?: Array<PlayerId>;
   }): SimpleGameModel {
     return {
       automationCompatibility: getAutomationCompatibility(game.gameOptions),
+      fanmadeCatalogRevision: Server.FANMADE_CATALOG_REVISION,
       astraMechanicaReplayTargetExclusions: AstraMechanica.UNUSABLE_CARDS,
       activePlayer: game.activePlayer.color,
       botPlayers: options?.botPlayers,
@@ -84,6 +87,7 @@ export class Server {
 
     return {
       automationCompatibility: getAutomationCompatibility(game.gameOptions),
+      fanmadeCatalogRevision: Server.FANMADE_CATALOG_REVISION,
       astraMechanicaReplayTargetExclusions: AstraMechanica.UNUSABLE_CARDS,
       aresData: game.aresData,
       awards: this.getAwards(game),

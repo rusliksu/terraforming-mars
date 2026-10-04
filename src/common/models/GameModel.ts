@@ -34,6 +34,7 @@ export type OtherDeckSizesModel = {
 
 // Common data about a game not assocaited with a player (eg the temperature.)
 export type GameModel = {
+  fanmadeCatalogRevision?: string;
   automationCompatibility?: AutomationCompatibility;
   astraMechanicaReplayTargetExclusions?: ReadonlyArray<CardName>;
   aresData: AresData | undefined;

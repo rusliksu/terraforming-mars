@@ -46,6 +46,7 @@ describe('ApiGame', () => {
     expect(json).deep.eq(
       {
         'automationCompatibility': {version: 1, unsupportedFeatures: []},
+        'astraMechanicaReplayTargetExclusions': ['Patent Manipulation', 'Hostile Takeover'],
         'activePlayer': 'black',
         'createdTimeMs': -1,
         'expectedPurgeTimeMs': -1,

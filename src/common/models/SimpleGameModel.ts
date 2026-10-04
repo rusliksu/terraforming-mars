@@ -1,4 +1,5 @@
 import {AutomationCompatibility} from './AutomationCompatibility';
+import {CardName} from '../cards/CardName';
 
 import {Color} from '../Color';
 import {PlayerId, GameId, SpectatorId} from '../Types';
@@ -8,6 +9,7 @@ import {GameOptionsModel} from './GameOptionsModel';
 export type SimpleGameModel = {
   fanmadeCatalogRevision?: string;
   automationCompatibility?: AutomationCompatibility;
+  astraMechanicaReplayTargetExclusions?: ReadonlyArray<CardName>;
     activePlayer: Color;
     botPlayers?: Array<PlayerId>;
     id: GameId;

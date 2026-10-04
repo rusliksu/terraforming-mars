@@ -35,6 +35,7 @@ import {cardsToModel, coloniesToModel} from './ModelUtils';
 import {runId} from '../utils/server-ids';
 import {toName} from '../../common/utils/utils';
 import {MAX_AWARDS, MAX_MILESTONES} from '../../common/constants';
+import {AstraMechanica} from '../cards/promo/AstraMechanica';
 
 export class Server {
   private static readonly FANMADE_CATALOG_REVISION = 'fanmade:custom-reviewed';
@@ -45,6 +46,7 @@ export class Server {
     return {
       automationCompatibility: getAutomationCompatibility(game.gameOptions),
       fanmadeCatalogRevision: Server.FANMADE_CATALOG_REVISION,
+      astraMechanicaReplayTargetExclusions: AstraMechanica.UNUSABLE_CARDS,
       activePlayer: game.activePlayer.color,
       botPlayers: options?.botPlayers,
       id: game.id,
@@ -86,6 +88,7 @@ export class Server {
     return {
       automationCompatibility: getAutomationCompatibility(game.gameOptions),
       fanmadeCatalogRevision: Server.FANMADE_CATALOG_REVISION,
+      astraMechanicaReplayTargetExclusions: AstraMechanica.UNUSABLE_CARDS,
       aresData: game.aresData,
       awards: this.getAwards(game),
       colonies: coloniesToModel(game, game.colonies, false, true),

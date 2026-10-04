@@ -17,6 +17,7 @@ import {Tag} from '../cards/Tag';
 import {ConglomeratesModel} from './ConglomeratesModel';
 import {VenusPhase2Model} from './VenusPhase2Model';
 import {HighOrbitMarketRow} from '../highOrbit/HighOrbitMarket';
+import {CardName} from '../cards/CardName';
 
 export type DeckSizeModel = {
   drawPile: number;
@@ -35,6 +36,7 @@ export type OtherDeckSizesModel = {
 export type GameModel = {
   fanmadeCatalogRevision?: string;
   automationCompatibility?: AutomationCompatibility;
+  astraMechanicaReplayTargetExclusions?: ReadonlyArray<CardName>;
   aresData: AresData | undefined;
   awards: ReadonlyArray<FundedAwardModel>;
   colonies: ReadonlyArray<ColonyModel>;

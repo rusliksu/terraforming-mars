@@ -26,9 +26,8 @@ export class AstraMechanica extends Card implements IProjectCard {
     });
   }
 
-  private static UNUSABLE_CARDS = [
+  public static readonly UNUSABLE_CARDS: ReadonlyArray<CardName> = [
     CardName.PATENT_MANIPULATION,
-    CardName.RETURN_TO_ABANDONED_TECHNOLOGY,
     CardName.HOSTILE_TAKEOVER,
   ];
 

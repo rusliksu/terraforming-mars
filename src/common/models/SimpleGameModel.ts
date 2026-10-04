@@ -6,6 +6,7 @@ import {Phase} from '../Phase';
 import {GameOptionsModel} from './GameOptionsModel';
 
 export type SimpleGameModel = {
+  fanmadeCatalogRevision?: string;
   automationCompatibility?: AutomationCompatibility;
     activePlayer: Color;
     botPlayers?: Array<PlayerId>;

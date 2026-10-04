@@ -37,11 +37,14 @@ import {toName} from '../../common/utils/utils';
 import {MAX_AWARDS, MAX_MILESTONES} from '../../common/constants';
 
 export class Server {
+  private static readonly FANMADE_CATALOG_REVISION = 'fanmade:custom-reviewed';
+
   public static getSimpleGameModel(game: IGame, options?: {
     botPlayers?: Array<PlayerId>;
   }): SimpleGameModel {
     return {
       automationCompatibility: getAutomationCompatibility(game.gameOptions),
+      fanmadeCatalogRevision: Server.FANMADE_CATALOG_REVISION,
       activePlayer: game.activePlayer.color,
       botPlayers: options?.botPlayers,
       id: game.id,
@@ -82,6 +85,7 @@ export class Server {
 
     return {
       automationCompatibility: getAutomationCompatibility(game.gameOptions),
+      fanmadeCatalogRevision: Server.FANMADE_CATALOG_REVISION,
       aresData: game.aresData,
       awards: this.getAwards(game),
       colonies: coloniesToModel(game, game.colonies, false, true),

@@ -16,6 +16,13 @@ import {OrOptions} from '../../src/server/inputs/OrOptions';
 import {SelectOption} from '../../src/server/inputs/SelectOption';
 
 describe('ServerModel', () => {
+  it('advertises the current Astra replay exclusions in both public models', () => {
+    const [game, player] = testGame(2);
+    const exclusions = ['Patent Manipulation', 'Hostile Takeover'];
+    expect(Server.getSimpleGameModel(game).astraMechanicaReplayTargetExclusions).deep.eq(exclusions);
+    expect(Server.getPlayerModel(player).game.astraMechanicaReplayTargetExclusions).deep.eq(exclusions);
+  });
+
   let player: TestPlayer;
   let player2: TestPlayer;
   let game: IGame;

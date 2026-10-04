@@ -35,6 +35,7 @@ import {cardsToModel, coloniesToModel} from './ModelUtils';
 import {runId} from '../utils/server-ids';
 import {toName} from '../../common/utils/utils';
 import {MAX_AWARDS, MAX_MILESTONES} from '../../common/constants';
+import {AstraMechanica} from '../cards/promo/AstraMechanica';
 
 export class Server {
   public static getSimpleGameModel(game: IGame, options?: {
@@ -42,6 +43,7 @@ export class Server {
   }): SimpleGameModel {
     return {
       automationCompatibility: getAutomationCompatibility(game.gameOptions),
+      astraMechanicaReplayTargetExclusions: AstraMechanica.UNUSABLE_CARDS,
       activePlayer: game.activePlayer.color,
       botPlayers: options?.botPlayers,
       id: game.id,
@@ -82,6 +84,7 @@ export class Server {
 
     return {
       automationCompatibility: getAutomationCompatibility(game.gameOptions),
+      astraMechanicaReplayTargetExclusions: AstraMechanica.UNUSABLE_CARDS,
       aresData: game.aresData,
       awards: this.getAwards(game),
       colonies: coloniesToModel(game, game.colonies, false, true),

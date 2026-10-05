@@ -21,6 +21,9 @@ import {HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED} from '../../src/common/un
 import {HiTechLab} from '../../src/server/cards/promo/HiTechLab';
 import {LogMessageType} from '../../src/common/logs/LogMessageType';
 import {appendCanceledLogMessages} from '../../src/server/logs/appendCanceledLogMessages';
+import {Diversifier} from '@/server/milestones/Diversifier';
+import {Resource} from '@/common/Resource';
+import {ApiPlayer} from '@/server/routes/ApiPlayer';
 
 describe('Reset', () => {
   let scaffolding: RouteTestScaffolding;
@@ -118,6 +121,7 @@ describe('Reset', () => {
     const game = rawGame as Game;
     game.generation = 2;
     game.phase = Phase.RESEARCH;
+    game.milestones = [new Diversifier()];
     player.megaCredits = 10;
     player.draftedCards = [new ArcticAlgae(), new BiomassCombustors()];
     player.runResearchPhase();
@@ -139,6 +143,21 @@ describe('Reset', () => {
       CardName.BIOMASS_COMBUSTORS,
     ]);
     expect(game.gameLog.some((message) => message.canceled === true)).is.true;
+    expect(player.tags.distinctCount('milestone')).eq(0);
+    expect(player.megaCredits).eq(10);
+    expect(player.colonies.canTrade()).is.false;
+    player.production.add(Resource.ENERGY, 1, {log: true});
+    player.stock.add(Resource.MEGACREDITS, 1, {log: true});
+    expect(player.production.energy).eq(1);
+    expect(player.megaCredits).eq(11);
+    player.process({type: 'card', cards: [CardName.BIOMASS_COMBUSTORS]});
+    expect(player.megaCredits).eq(8);
+    expect(player.cardsInHand.map((card) => card.name)).deep.eq([CardName.BIOMASS_COMBUSTORS]);
+    const playerResponse = new MockResponse();
+    scaffolding.url = `/api/player?id=${player.id}`;
+    await scaffolding.get(ApiPlayer.INSTANCE, playerResponse);
+    expect(playerResponse.statusCode, playerResponse.content).eq(200);
+    expect(JSON.parse(playerResponse.content).thisPlayer.megacredits).eq(8);
   });
 
   it('warns before reloading an action that revealed deck information', async () => {

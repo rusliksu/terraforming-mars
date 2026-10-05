@@ -322,7 +322,8 @@ export class Player implements IPlayer {
     public beginner: boolean,
     public handicap: number = 0,
     id: PlayerId,
-    public preludeHandicap: number = DEFAULT_PRELUDE_HANDICAP) {
+    public preludeHandicap: number = DEFAULT_PRELUDE_HANDICAP,
+    helperOwner?: IPlayer) {
     this.id = id;
     this.name = normalizePlayerNameForColor(this.color, this.name);
     this.preludeHandicap = normalizePreludeHandicap(this.preludeHandicap);
@@ -333,10 +334,10 @@ export class Player implements IPlayer {
     // Ideally the right thing is to invert how players and games get created.
     // But one thing at a time.
     this.game = undefined as unknown as Game;
-    this.tags = new Tags(this);
-    this.colonies = new Colonies(this);
-    this.production = new Production(this);
-    this.stock = new Stock(this);
+    this.tags = new Tags(helperOwner ?? this);
+    this.colonies = new Colonies(helperOwner ?? this);
+    this.production = new Production(helperOwner ?? this);
+    this.stock = new Stock(helperOwner ?? this);
   }
 
   public setup(game: IGame) {
@@ -895,7 +896,7 @@ export class Player implements IPlayer {
     }
 
     const game = this.game;
-    Object.assign(this, Player.deserialize(state.playerSnapshot));
+    Object.assign(this, Player.deserialize(state.playerSnapshot, {helperOwner: this}));
     this.setup(game);
     this.researchPurchaseUndo = undefined;
     for (let index = state.logStartIndex ?? 0; index < (state.logEndIndex ?? 0); index++) {
@@ -2591,8 +2592,8 @@ export class Player implements IPlayer {
     return result;
   }
 
-  public static deserialize(d: SerializedPlayer, options: {restoreTimerClock?: boolean} = {}): Player {
-    const player = new Player(d.name, d.color, d.beginner, Number(d.handicap), d.id, normalizePreludeHandicap(d.preludeHandicap));
+  public static deserialize(d: SerializedPlayer, options: {restoreTimerClock?: boolean, helperOwner?: IPlayer} = {}): Player {
+    const player = new Player(d.name, d.color, d.beginner, Number(d.handicap), d.id, normalizePreludeHandicap(d.preludeHandicap), options.helperOwner);
 
     player.actionsTakenThisGame = d.actionsTakenThisGame;
     player.actionsTakenAtGenerationStart = d.actionsTakenAtGenerationStart ?? 0;

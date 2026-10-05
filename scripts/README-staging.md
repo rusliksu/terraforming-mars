@@ -259,6 +259,41 @@ automatically. Promotion requires the existing
 `/home/openclaw/tm-runtime/prod/shared/db/game.db`; it never bootstraps or
 migrates a production database.
 
+### Interrupted promotion observer
+
+The promotion payload runs on the VPS in a detached Linux session. Closing
+Codex, cancelling the local observer, or losing SSH does **not** cancel that
+operation. Its existing deploy lock, pinned artifact, game gates, backup, and
+rollback checks remain in force. Do not start a new release to find its status.
+
+Before launch, the script prints a run token and a reconnect command. Reconnect
+to that exact operation without uploading or re-running any payload:
+
+```powershell
+pwsh -File scripts/promote_tm_staging_to_prod.ps1 -HostAlias hostkey-codex `
+  -ResumeRunToken <printed-run-token>
+```
+
+The observer reports the original exit code and log from
+`/home/openclaw/tm-runtime/prod/promotion-jobs/<run-token>`. A missing result or
+dead worker is an unknown outcome, never success or permission to retry. A
+timeout stops observation only. Job files are private (directory 700, files
+600), retained for diagnosis, and are not automatically deleted.
+
+This protects against losing the controlling connection, not a VPS reboot,
+OOM kill, or `SIGKILL` of the detached worker. If the observer was interrupted,
+finish the normal read-only runtime snapshot and public verification after
+checking its result; `-ResumeRunToken` itself does not repeat the outer release
+wrapper's post-deploy verification.
+
+Local lifecycle regressions use real Linux process groups and a file-backed
+service fixture, never a production DB or service:
+`pwsh -File scripts/test_tm_durable_promotion.ps1`. On Windows, the test runs
+in the `spec-kitty-baseline` WSL distro (override with `-WslDistribution`);
+on Linux it runs directly. Windows fixture inputs are retained under
+`D:\tm-db\smartbot-lab\durable-promotion` and Linux processes use a temporary
+fixture directory.
+
 Rollback an environment to the previous immutable release:
 
 ```powershell

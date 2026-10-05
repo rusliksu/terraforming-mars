@@ -12,6 +12,11 @@ jobs:
     - uses: actions/setup-node@v5
       with:
         node-version: 22
+    - name: Test durable production promotion lifecycle
+      shell: pwsh
+      run: |
+        ./scripts/test_tm_durable_job_observer.ps1
+        ./scripts/test_tm_durable_promotion.ps1
     - run: npm ci
     - run: npm run make:static
     - run: npm run lint
@@ -33,6 +38,9 @@ jobs:
     - name: Test release guardrails
       shell: pwsh
       run: ./scripts/test_tm_release_guards.ps1
+    - name: Test durable job observer
+      shell: pwsh
+      run: ./scripts/test_tm_durable_job_observer.ps1
     - name: Test server smoke verification
       shell: pwsh
       run: ./scripts/test_tm_verify_server.ps1

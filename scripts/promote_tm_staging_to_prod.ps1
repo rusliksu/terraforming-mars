@@ -6,6 +6,7 @@ param(
     [string]$ExpectedGitSha,
     [string]$ExpectedArtifactSha,
     [string]$ExpectedReleaseBaselineBase64,
+    [string]$ResumeRunToken,
     [string[]]$IgnoredRealtimeGameId,
     [ValidateRange(1, 365)]
     [int]$RealtimeGameStaleDays = 10,
@@ -20,6 +21,16 @@ $ErrorActionPreference = "Stop"
 
 . (Join-Path $PSScriptRoot "lib\TmRemoteTools.ps1")
 . (Join-Path $PSScriptRoot "lib\TmReleaseGuards.ps1")
+. (Join-Path $PSScriptRoot "lib\TmDurableRemoteJob.ps1")
+
+if (-not [string]::IsNullOrEmpty($ResumeRunToken)) {
+    if ($ResumeRunToken -notmatch '^\d{14}-\d+-[0-9a-f]{32}$' -or $DryRun) {
+        throw "ResumeRunToken must be an existing promotion token; resume cannot be combined with DryRun."
+    }
+    # Observation only: never upload a payload, restart a service, or retry here.
+    Wait-TmDurableRemoteJob -HostAlias $HostAlias -JobDirectory "/home/openclaw/tm-runtime/prod/promotion-jobs/$ResumeRunToken"
+    exit 0
+}
 
 Assert-TmReleaseCasBaselineBase64 -Token $ExpectedReleaseBaselineBase64
 $ignoredRealtimeGameIds = @(Assert-TmIgnoredRealtimeGameIds -GameIds $IgnoredRealtimeGameId)
@@ -65,20 +76,6 @@ $expectedGitShaLower = if ([string]::IsNullOrWhiteSpace($ExpectedGitSha)) { "" }
 $expectedArtifactShaLower = if ([string]::IsNullOrWhiteSpace($ExpectedArtifactSha)) { "" } else { $ExpectedArtifactSha.ToLowerInvariant() }
 $ignoredRealtimeGameIdsCsv = $ignoredRealtimeGameIds -join ","
 $promoteRunToken = New-TmReleaseRunToken
-
-function Invoke-RemoteCommand {
-    param(
-        [string]$Command,
-        [string]$InputText = "",
-        [int]$TimeoutSeconds = 1800
-    )
-
-    if ([string]::IsNullOrEmpty($InputText)) {
-        return Invoke-TmSshCommand -HostAlias $HostAlias -RemoteCommand $Command
-    }
-
-    return Invoke-TmSshScript -HostAlias $HostAlias -ScriptText $InputText
-}
 
 $remoteScript = @'
 set -euo pipefail
@@ -1227,4 +1224,13 @@ if ($DryRun) {
 }
 
 $remoteScriptLf = $remoteScript -replace "`r`n", "`n"
-Invoke-RemoteCommand -Command "bash -s" -InputText $remoteScriptLf
+$jobDirectory = "/home/openclaw/tm-runtime/prod/promotion-jobs/$promoteRunToken"
+Write-Host "Run token: $promoteRunToken"
+Write-Host "Reconnect (observation only): pwsh -File scripts/promote_tm_staging_to_prod.ps1 -HostAlias $HostAlias -ResumeRunToken $promoteRunToken"
+try {
+    Invoke-TmSshScript -HostAlias $HostAlias -ScriptText (Get-TmDurableJobStartScript -JobDirectory $jobDirectory -ScriptText $remoteScriptLf) | Write-Host
+    Wait-TmDurableRemoteJob -HostAlias $HostAlias -JobDirectory $jobDirectory
+} catch {
+    Write-Warning "Check run $promoteRunToken before any new promotion. Losing the observer does not cancel the remote job."
+    throw
+}

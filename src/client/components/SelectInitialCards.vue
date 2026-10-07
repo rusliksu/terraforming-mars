@@ -418,13 +418,11 @@ export default defineComponent({
     },
     preludeCardOption() {
       const option = getOption(this.playerinput.options, titles.SELECT_PRELUDE_TITLE);
-      if (getPreferences().experimental_ui) {
-        return {
-          ...option,
-          max: option.cards.length,
-        };
-      }
-      return option;
+      return {
+        ...option,
+        title: option.min === 1 ? 'Select 1 Prelude card' : option.title,
+        max: getPreferences().experimental_ui ? option.cards.length : option.max,
+      };
     },
     ceoCardOption() {
       const option = getOption(this.playerinput.options, titles.SELECT_CEO_TITLE);

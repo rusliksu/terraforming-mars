@@ -257,7 +257,9 @@
         "Allocation conflict resolved through documented manual merge f3857a42d; native allocator subsequently merged approved lane-f and lane-g into clean lane-h038fbe29b. All seven approvals durable, complete union preserved and independently verified. Resume through canonical blocked -> in_progress transition; no review rejection, force or guard bypass."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer"
+      "role": "implementer",
+      "shell_pid": 40640,
+      "shell_pid_created_at": "1791649251.3457825"
     },
     "WP09": {
       "actor": "finalize-tasks",

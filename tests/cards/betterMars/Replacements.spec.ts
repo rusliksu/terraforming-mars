@@ -151,6 +151,17 @@ describe('BetterMars replacement cards', () => {
     expect(pool).to.not.contain(CardName.MEAT_INDUSTRY);
   });
 
+  it('removes replaced preludes from an explicit custom list', () => {
+    const cards = new GameCards({
+      ...DEFAULT_GAME_OPTIONS,
+      preludeExtension: true,
+      pathfindersExpansion: true,
+      betterMarsExpansion: true,
+      customPreludes: [CardName.EARLY_SETTLEMENT, CardName.EARLY_SETTLEMENT_BETTER_MARS],
+    });
+    expect(cards.getPreludeCards().map(toName)).to.deep.eq([CardName.EARLY_SETTLEMENT_BETTER_MARS]);
+  });
+
   it('Luna Metropolis:bm also requires the Moon expansion, since it counts Moon tags', () => {
     // Its bonus scales with Moon tags, so it needs the Moon expansion to be anything
     // but a fixed, non-scaling +1 M€ from its own tag - Venus alone isn't enough.

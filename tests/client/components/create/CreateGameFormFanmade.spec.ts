@@ -10,6 +10,7 @@ import {blankSimpleBoard} from '@/common/boards/SimpleCustomBoardDefinition';
 import {encodeSimpleBoard} from '@/common/boards/simpleBoardCodec';
 import {BoardName} from '@/common/boards/BoardName';
 import {CardName} from '@/common/cards/CardName';
+import PreludesFilter from '@/client/components/create/PreludesFilter.vue';
 
 describe('Fanmade setup in the custom form', () => {
   beforeEach(() => {
@@ -28,6 +29,29 @@ describe('Fanmade setup in the custom form', () => {
     vm.expansions.sillyfication = false;
     await wrapper.vm.$nextTick();
     expect(vm.customCorporations).not.includes(CardName.WELLNESS_DELUXE);
+  });
+
+  it('replaces the original prelude in setup when BetterMars is available', async () => {
+    const wrapper = shallowMount(CreateGameForm, globalConfig);
+    const vm = wrapper.vm as any;
+    vm.expansions.prelude = true;
+    vm.expansions.pathfinders = true;
+    vm.showPreludesList = true;
+    await wrapper.vm.$nextTick();
+    vm.expansions.betterMars = true;
+    await wrapper.vm.$nextTick();
+    const filter = wrapper.findComponent(PreludesFilter);
+    expect(filter.props('selectable')).includes(CardName.EARLY_SETTLEMENT_BETTER_MARS);
+    expect(filter.props('selectable')).not.includes(CardName.EARLY_SETTLEMENT);
+    expect(filter.props('selected')).includes(CardName.EARLY_SETTLEMENT_BETTER_MARS);
+    expect(filter.props('selected')).not.includes(CardName.EARLY_SETTLEMENT);
+
+    vm.expansions.pathfinders = false;
+    await wrapper.vm.$nextTick();
+    expect(filter.props('selectable')).includes(CardName.EARLY_SETTLEMENT);
+    expect(filter.props('selectable')).not.includes(CardName.EARLY_SETTLEMENT_BETTER_MARS);
+    expect(filter.props('selected')).includes(CardName.EARLY_SETTLEMENT);
+    expect(filter.props('selected')).not.includes(CardName.EARLY_SETTLEMENT_BETTER_MARS);
   });
 
   it('round-trips all custom board codes through templates and clears them on reset', async () => {

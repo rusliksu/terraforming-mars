@@ -253,6 +253,14 @@ MilestoneProcessor.makeJson();
 AwardProcessor.makeJson();
 
 fs.writeFileSync('src/genfiles/cards.json', JSON.stringify(CardProcessor.json, null, 2));
+const replacementRules = ALL_MODULE_MANIFESTS
+  .filter((manifest) => manifest.cardsToRemove.size > 0 || manifest.conditionalCardsToRemove.size > 0)
+  .map((manifest) => ({
+    module: manifest.module,
+    cardsToRemove: Array.from(manifest.cardsToRemove),
+    conditionalCardsToRemove: Array.from(manifest.conditionalCardsToRemove),
+  }));
+fs.writeFileSync('src/genfiles/card-replacement-rules.json', JSON.stringify(replacementRules, null, 2));
 fs.writeFileSync('src/genfiles/events.json', JSON.stringify(GlobalEventProcessor.json, null, 2));
 fs.writeFileSync('src/genfiles/agendas.json', JSON.stringify(AgendaProcessor.json, null, 2));
 fs.writeFileSync('src/genfiles/agendas-more-parties.json', JSON.stringify(AgendaProcessor.moreJson, null, 2));

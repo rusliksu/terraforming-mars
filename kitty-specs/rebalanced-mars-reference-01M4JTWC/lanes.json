@@ -77,6 +77,13 @@
         "WP03"
       ],
       "write_scope": [
+        "docs/codemap/codemap.html",
+        "docs/codemap/codemap.json",
+        "docs/codemap/codemap.lock",
+        "src/server/cards/base/standardActions/ConvertHeat.ts",
+        "src/server/cards/ICard.ts",
+        "src/server/cards/promo/ArcadianCommunities.ts",
+        "src/server/cards/promo/MonsInsurance.ts",
         "src/server/cards/rebalanced/AphroditeRebalanced.ts",
         "src/server/cards/rebalanced/ArcadianCommunitiesRebalanced.ts",
         "src/server/cards/rebalanced/AridorRebalanced.ts",
@@ -93,6 +100,9 @@
         "src/server/cards/rebalanced/MiningGuildRebalanced.ts",
         "src/server/cards/rebalanced/MonsInsuranceRebalanced.ts",
         "src/server/cards/rebalanced/MorningStarIncRebalanced.ts",
+        "src/server/Game.ts",
+        "src/server/Player.ts",
+        "src/server/turmoil/parties/Reds.ts",
         "tests/cards/rebalanced/Corporations1.spec.ts"
       ],
       "predicted_surfaces": [
@@ -298,7 +308,7 @@
       "parallel_group": 3
     }
   ],
-  "computed_at": "2026-10-10T12:14:59.399576+00:00",
+  "computed_at": "2026-10-10T15:14:59.399576+03:00",
   "computed_from": "dependency_graph+ownership",
   "planning_artifact_wps": [],
   "planning_commit_sha": "d0ec8d24ee031d8592ba2296e458eb32133028a7"

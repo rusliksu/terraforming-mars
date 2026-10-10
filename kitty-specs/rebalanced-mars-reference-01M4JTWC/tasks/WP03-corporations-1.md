@@ -58,6 +58,16 @@ owned_files:
 - src/server/cards/rebalanced/MonsInsuranceRebalanced.ts
 - src/server/cards/rebalanced/MorningStarIncRebalanced.ts
 - tests/cards/rebalanced/Corporations1.spec.ts
+- src/server/Game.ts
+- src/server/Player.ts
+- src/server/cards/ICard.ts
+- src/server/cards/base/standardActions/ConvertHeat.ts
+- src/server/cards/promo/ArcadianCommunities.ts
+- src/server/cards/promo/MonsInsurance.ts
+- src/server/turmoil/parties/Reds.ts
+- docs/codemap/codemap.json
+- docs/codemap/codemap.html
+- docs/codemap/codemap.lock
 role: implementer
 tags: []
 tracker_refs: []
@@ -111,6 +121,8 @@ tracker_refs: []
 | Morning Star Inc.(⚖) | MorningStarIncRebalanced |
 
 ## Подзадачи
+
+Уточнение T012 по фактическим call sites: родитель назначил общие поверхности Game/Player/ICard, исходные Arcadian/Mons, ConvertHeat/Reds и три codemap-артефакта. Они реализуют уже согласованные эффекты, не добавляют правила или миграцию данных. WP01 уже принят; WP09 ещё не начат. На пересекающихся путях допускается один writer, изменения и старые правила проверяются отдельно. Scope warning исходной узкой декларации устранён её синхронизацией с назначенным и проверенным diff.
 
 ### T010 — Зафиксировать стартовые ресурсы, теги, очки и изменения эффектов каждой корпорации группы.
 

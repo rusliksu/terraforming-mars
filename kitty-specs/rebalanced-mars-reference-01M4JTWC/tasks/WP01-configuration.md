@@ -9,6 +9,9 @@ requirement_refs:
 planning_base_branch: codex/rebalanced-mars-reference
 merge_target_branch: codex/rebalanced-mars-reference
 branch_strategy: Planning artifacts for this mission were generated on codex/rebalanced-mars-reference. During /spec-kitty.implement this WP may branch from a dependency-specific base, but completed changes must merge back into codex/rebalanced-mars-reference unless the human explicitly redirects the landing branch.
+base_branch: kitty/mission-rebalanced-mars-reference-01M4JTWC
+base_commit: 9bf50c68a0fd51fc0105256e2c3eae43625d0b1c
+created_at: '2026-10-10T12:23:56.149025+00:00'
 subtasks:
 - T001
 - T002

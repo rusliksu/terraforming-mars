@@ -10,5 +10,7 @@
   "purpose_tldr": "Перенести 113 замен Rebalanced с поддержкой Prelude 2 и совместной работы Better Mars.",
   "slug": "rebalanced-mars-reference-01M4JTWC",
   "target_branch": "codex/rebalanced-mars-reference",
-  "topology": "single_branch"
+  "topology": "single_branch",
+  "vcs": "git",
+  "vcs_locked_at": "2026-10-10T12:23:50.576422+00:00"
 }

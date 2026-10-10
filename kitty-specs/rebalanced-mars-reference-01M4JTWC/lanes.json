@@ -151,6 +151,8 @@
         "WP05"
       ],
       "write_scope": [
+        "src/server/behavior/Executor.ts",
+        "tests/behavior/Executor.spec.ts",
         "src/common/cards/RequirementType.ts",
         "src/common/cards/CardRequirementDescriptor.ts",
         "src/server/cards/CardRequirementDescriptor.ts",

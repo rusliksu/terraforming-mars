@@ -1,0 +1,305 @@
+{
+  "version": 1,
+  "mission_slug": "rebalanced-mars-reference-01M4JTWC",
+  "mission_id": "01M4JTWCBV7BE608GF6RBAQ6TT",
+  "mission_branch": "kitty/mission-rebalanced-mars-reference-01M4JTWC",
+  "target_branch": "codex/rebalanced-mars-reference",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/client/components/cardlist/CardListModel.ts",
+        "src/client/components/create/JSONProcessor.ts",
+        "src/client/components/create/json.ts",
+        "src/client/utils/WikiLinks.ts",
+        "src/common/cards/CardName.ts",
+        "src/common/cards/GameModule.ts",
+        "src/server/Game.ts",
+        "src/server/game/GameOptions.ts",
+        "src/server/models/ServerModel.ts",
+        "src/server/routes/ApiCreateGame.ts",
+        "src/server/routes/ApiQuickGame.ts",
+        "src/server/turmoil/globalEvents/GlobalEventDealer.ts",
+        "tests/cards/rebalanced/Reference.spec.ts",
+        "tests/cards/rebalanced/reference.json"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "src/server/cards/rebalanced/BiofuelsRebalanced.ts",
+        "src/server/cards/rebalanced/BiosphereSupportRebalanced.ts",
+        "src/server/cards/rebalanced/BuildColonyStandardProjectRebalanced.ts",
+        "src/server/cards/rebalanced/DomeFarmingRebalanced.ts",
+        "src/server/cards/rebalanced/DonationRebalanced.ts",
+        "src/server/cards/rebalanced/EarlySettlementRebalanced.ts",
+        "src/server/cards/rebalanced/EccentricSponsorRebalanced.ts",
+        "src/server/cards/rebalanced/GalileanMiningRebalanced.ts",
+        "src/server/cards/rebalanced/HugeAsteroidRebalanced.ts",
+        "src/server/cards/rebalanced/IoResearchOutpostRebalanced.ts",
+        "src/server/cards/rebalanced/LoanRebalanced.ts",
+        "src/server/cards/rebalanced/MartianIndustriesRebalanced.ts",
+        "src/server/cards/rebalanced/MetalsCompanyRebalanced.ts",
+        "src/server/cards/rebalanced/MoholeExcavationRebalanced.ts",
+        "src/server/cards/rebalanced/MoholeRebalanced.ts",
+        "src/server/cards/rebalanced/NitrogenDeliveryRebalanced.ts",
+        "src/server/cards/rebalanced/OrbitalConstructionYardRebalanced.ts",
+        "src/server/cards/rebalanced/PolarIndustriesRebalanced.ts",
+        "src/server/cards/rebalanced/SelfSufficientSettlementRebalanced.ts",
+        "src/server/cards/rebalanced/SmeltingPlantRebalanced.ts",
+        "src/server/cards/rebalanced/SocietySupportRebalanced.ts",
+        "src/server/cards/rebalanced/SupplyDropRebalanced.ts",
+        "tests/cards/rebalanced/Preludes.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/server/cards/rebalanced/AphroditeRebalanced.ts",
+        "src/server/cards/rebalanced/ArcadianCommunitiesRebalanced.ts",
+        "src/server/cards/rebalanced/AridorRebalanced.ts",
+        "src/server/cards/rebalanced/ArklightRebalanced.ts",
+        "src/server/cards/rebalanced/AstrodrillRebalanced.ts",
+        "src/server/cards/rebalanced/CelesticRebalanced.ts",
+        "src/server/cards/rebalanced/CheungShingMARSRebalanced.ts",
+        "src/server/cards/rebalanced/EcoLineRebalanced.ts",
+        "src/server/cards/rebalanced/FactorumRebalanced.ts",
+        "src/server/cards/rebalanced/HelionRebalanced.ts",
+        "src/server/cards/rebalanced/InterplanetaryCinematicsRebalanced.ts",
+        "src/server/cards/rebalanced/InventrixRebalanced.ts",
+        "src/server/cards/rebalanced/LakefrontResortsRebalanced.ts",
+        "src/server/cards/rebalanced/MiningGuildRebalanced.ts",
+        "src/server/cards/rebalanced/MonsInsuranceRebalanced.ts",
+        "src/server/cards/rebalanced/MorningStarIncRebalanced.ts",
+        "tests/cards/rebalanced/Corporations1.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "src/server/cards/rebalanced/PhoboLogRebalanced.ts",
+        "src/server/cards/rebalanced/PointLunaRebalanced.ts",
+        "src/server/cards/rebalanced/PolyphemosRebalanced.ts",
+        "src/server/cards/rebalanced/PoseidonRebalanced.ts",
+        "src/server/cards/rebalanced/PristarRebalanced.ts",
+        "src/server/cards/rebalanced/RecyclonRebalanced.ts",
+        "src/server/cards/rebalanced/RobinsonIndustriesRebalanced.ts",
+        "src/server/cards/rebalanced/SpliceRebalanced.ts",
+        "src/server/cards/rebalanced/StormCraftIncorporatedRebalanced.ts",
+        "src/server/cards/rebalanced/TerralabsResearchRebalanced.ts",
+        "src/server/cards/rebalanced/TharsisRepublicRebalanced.ts",
+        "src/server/cards/rebalanced/ThorgateRebalanced.ts",
+        "src/server/cards/rebalanced/UnitedNationsMarsInitiativeRebalanced.ts",
+        "src/server/cards/rebalanced/UtopiaInvestRebalanced.ts",
+        "src/server/cards/rebalanced/VironRebalanced.ts",
+        "src/server/cards/rebalanced/VitorRebalanced.ts",
+        "tests/cards/rebalanced/Corporations2.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "src/server/cards/rebalanced/AdaptedLichenRebalanced.ts",
+        "src/server/cards/rebalanced/AdvancedAlloysRebalanced.ts",
+        "src/server/cards/rebalanced/AerobrakedAmmoniaAsteroidRebalanced.ts",
+        "src/server/cards/rebalanced/AsteroidHollowingRebalanced.ts",
+        "src/server/cards/rebalanced/AsteroidMiningConsortiumRebalanced.ts",
+        "src/server/cards/rebalanced/BactoviralResearchRebalanced.ts",
+        "src/server/cards/rebalanced/BlackPolarDustRebalanced.ts",
+        "src/server/cards/rebalanced/BuildingIndustriesRebalanced.ts",
+        "src/server/cards/rebalanced/CartelRebalanced.ts",
+        "src/server/cards/rebalanced/CloudSeedingRebalanced.ts",
+        "src/server/cards/rebalanced/CommunityServicesRebalanced.ts",
+        "src/server/cards/rebalanced/CorporateStrongholdRebalanced.ts",
+        "src/server/cards/rebalanced/CuttingEdgeTechnologyRebalanced.ts",
+        "src/server/cards/rebalanced/DeimosDownPromoRebalanced.ts",
+        "src/server/cards/rebalanced/DesignedMicroOrganismsRebalanced.ts",
+        "src/server/cards/rebalanced/EarthCatapultRebalanced.ts",
+        "src/server/cards/rebalanced/EarthOfficeRebalanced.ts",
+        "src/server/cards/rebalanced/EnergyMarketRebalanced.ts",
+        "src/server/cards/rebalanced/EnergySavingRebalanced.ts",
+        "src/server/cards/rebalanced/EnergyTappingRebalanced.ts",
+        "tests/cards/rebalanced/Projects1.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "src/server/cards/rebalanced/ExtractorBalloonsRebalanced.ts",
+        "src/server/cards/rebalanced/FloaterLeasingRebalanced.ts",
+        "src/server/cards/rebalanced/ForcedPrecipitationRebalanced.ts",
+        "src/server/cards/rebalanced/FuelFactoryRebalanced.ts",
+        "src/server/cards/rebalanced/GHGImportFromVenusRebalanced.ts",
+        "src/server/cards/rebalanced/GMOContractRebalanced.ts",
+        "src/server/cards/rebalanced/HackersRebalanced.ts",
+        "src/server/cards/rebalanced/HeatTrappersRebalanced.ts",
+        "src/server/cards/rebalanced/IndustrialCenterRebalanced.ts",
+        "src/server/cards/rebalanced/InsectsRebalanced.ts",
+        "src/server/cards/rebalanced/JetStreamMicroscrappersRebalanced.ts",
+        "src/server/cards/rebalanced/MarsUniversityRebalanced.ts",
+        "src/server/cards/rebalanced/MartianRailsRebalanced.ts",
+        "src/server/cards/rebalanced/MassConverterRebalanced.ts",
+        "src/server/cards/rebalanced/MeatIndustryRebalanced.ts",
+        "src/server/cards/rebalanced/MicroMillsRebalanced.ts",
+        "src/server/cards/rebalanced/OrbitalCleanupRebalanced.ts",
+        "src/server/cards/rebalanced/OutdoorSportsRebalanced.ts",
+        "src/server/cards/rebalanced/ReleaseOfInertGasesRebalanced.ts",
+        "src/server/cards/rebalanced/ResearchOutpostRebalanced.ts",
+        "tests/cards/rebalanced/Projects2.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering",
+        "legacy-cleanup"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "src/server/cards/rebalanced/RestrictedAreaRebalanced.ts",
+        "src/server/cards/rebalanced/RotatorImpactsRebalanced.ts",
+        "src/server/cards/rebalanced/SabotageRebalanced.ts",
+        "src/server/cards/rebalanced/SkyDocksRebalanced.ts",
+        "src/server/cards/rebalanced/SnowAlgaeRebalanced.ts",
+        "src/server/cards/rebalanced/SoilFactoryRebalanced.ts",
+        "src/server/cards/rebalanced/SolarPowerRebalanced.ts",
+        "src/server/cards/rebalanced/SpinoffDepartmentRebalanced.ts",
+        "src/server/cards/rebalanced/StratopolisRebalanced.ts",
+        "src/server/cards/rebalanced/StripMineRebalanced.ts",
+        "src/server/cards/rebalanced/TitanAirScrappingRebalanced.ts",
+        "src/server/cards/rebalanced/TollStationRebalanced.ts",
+        "src/server/cards/rebalanced/TopsoilContractRebalanced.ts",
+        "src/server/cards/rebalanced/TropicalResortRebalanced.ts",
+        "src/server/cards/rebalanced/UndergroundCityRebalanced.ts",
+        "src/server/cards/rebalanced/UndergroundDetonationsRebalanced.ts",
+        "src/server/cards/rebalanced/ViralEnhancersRebalanced.ts",
+        "src/server/cards/rebalanced/WarpDriveRebalanced.ts",
+        "src/server/cards/rebalanced/ZeppelinsRebalanced.ts",
+        "tests/cards/rebalanced/Projects3.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "artifact-rendering"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-h",
+      "wp_ids": [
+        "WP08"
+      ],
+      "write_scope": [
+        "src/server/GameCards.ts",
+        "src/server/cards/AllManifests.ts",
+        "src/server/cards/rebalanced/CombinedVariants.ts",
+        "src/server/cards/rebalanced/RebalancedCardManifest.ts",
+        "tests/cards/rebalanced/Combinations.spec.ts",
+        "tests/cards/rebalanced/Replacements.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-b",
+        "lane-c",
+        "lane-d",
+        "lane-e",
+        "lane-f",
+        "lane-g"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-i",
+      "wp_ids": [
+        "WP09"
+      ],
+      "write_scope": [
+        "docs/codemap/codemap.html",
+        "docs/codemap/codemap.json",
+        "docs/codemap/codemap.lock",
+        "src/client/components/GameSetupDetail.vue",
+        "src/client/components/create/CreateGameForm.vue",
+        "src/client/components/help/HelpRulebooks.vue",
+        "src/styles/cards.less",
+        "tests/client/components/create/Rebalanced.spec.ts",
+        "tests/fanmade-compat/RebalancedLifecycle.spec.ts",
+        "tools/fanmade-port/fanmade-catalog-source-manifest.json"
+      ],
+      "predicted_surfaces": [
+        "api"
+      ],
+      "depends_on_lanes": [
+        "lane-h"
+      ],
+      "parallel_group": 3
+    }
+  ],
+  "computed_at": "2026-10-10T12:14:59.399576+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "d0ec8d24ee031d8592ba2296e458eb32133028a7"
+}

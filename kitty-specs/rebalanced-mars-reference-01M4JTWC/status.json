@@ -1,7 +1,7 @@
 {
-  "event_count": 46,
-  "last_event_id": "01M4K6QC17YRG13EXVDJ1ZT492",
-  "materialized_at": "2026-10-10T15:25:54.087431+00:00",
+  "event_count": 47,
+  "last_event_id": "01M4K6VQYD0798VW9S5ENEHWT8",
+  "materialized_at": "2026-10-10T15:28:17.357178+00:00",
   "mission_number": "",
   "mission_slug": "rebalanced-mars-reference-01M4JTWC",
   "mission_type": "software-dev",
@@ -13,8 +13,8 @@
     "done": 0,
     "for_review": 2,
     "in_progress": 1,
-    "in_review": 1,
-    "planned": 2
+    "in_review": 0,
+    "planned": 3
   },
   "work_packages": {
     "WP01": {
@@ -118,15 +118,21 @@
       "agent": "codex",
       "agent_profile": "generic-agent",
       "agent_profile_version": "1.0",
-      "force_count": 0,
-      "lane": "in_review",
-      "last_event_id": "01M4K67GSDAWW2G4K7KYTATRBH",
-      "last_transition_at": "2026-10-10T15:17:14.669451+00:00",
+      "force_count": 1,
+      "lane": "planned",
+      "last_event_id": "01M4K6VQYD0798VW9S5ENEHWT8",
+      "last_transition_at": "2026-10-10T15:28:17.357178+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "16 корпораций;46 тестов повторены родителем после отображения Splice52M€, старт и самоэффект прежние.17 назначенных файлов; типы/lint/мутации зелёные. Регистрация и общие consumersVitor/Poseidon/Tharsis/Kelvinists — WP08, shared paths последовательно."
       ],
       "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "C:\\Users\\Ruslan\\.codex-worktrees\\rebalanced-mars-reference-owned\\kitty-specs\\rebalanced-mars-reference-01M4JTWC\\tasks\\WP04-corporations-2\\review-cycle-1.md",
+        "reference": "review-cycle://rebalanced-mars-reference-01M4JTWC/WP04-corporations-2/review-cycle-1.md",
+        "reviewer": "rebalanced_review",
+        "verdict": "changes_requested"
+      },
       "role": "reviewer",
       "shell_pid": 10712,
       "shell_pid_created_at": "1791645426.1158664",

@@ -287,7 +287,8 @@
       "last_transition_at": "2026-10-10T18:24:24.715935+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Кандидат 675e073f8: все локальные проверки завершены; 11608 серверных, 1049 клиентских и полная матрица дополнений прошли. 18 owned paths; независимое ревью ожидается. Выпуск после объединения остаётся обязательным."
+        "Кандидат 675e073f8: все локальные проверки завершены; 11608 серверных, 1049 клиентских и полная матрица дополнений прошли. 18 owned paths; независимое ревью ожидается. Выпуск после объединения остаётся обязательным.",
+        "Независимое ревью PASS commit675e073f87fe4ab8fa22bc182f035227af8ecdf7: checklist1–8 PASS, 18 paths/hashes сверены родителем; 11608 server/1049 client/201 matrix. Shared JSONProcessor с WP01, Astrodrill с WP03/WP08 и codemap после всех approved dependencies явно координированы canonical ownership WP09. CI/staging и prod-unchanged proof остаются обязательным выпуском после объединения."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {

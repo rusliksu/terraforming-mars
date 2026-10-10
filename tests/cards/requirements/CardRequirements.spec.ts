@@ -19,6 +19,7 @@ import {CardRequirementDescriptor} from '../../../src/common/cards/CardRequireme
 import {IPlayer} from '../../../src/server/IPlayer';
 import {asArray} from '../../../src/common/utils/utils';
 import {cast} from '../../../src/common/utils/utils';
+import {AsteroidMiningConsortiumRebalanced} from '@/server/cards/rebalanced/AsteroidMiningConsortiumRebalanced';
 
 function compile(req: OneOrArray<CardRequirementDescriptor>) {
   return CardRequirements.compile(asArray(req));
@@ -34,6 +35,26 @@ describe('CardRequirements', () => {
 
   beforeEach(() => {
     [/* game */, player, player2] = testGame(2, {turmoilExtension: true});
+  });
+
+  it('compiles generation limits without global parameter bonuses', () => {
+    const card = new AsteroidMiningConsortiumRebalanced();
+    expect(card.requirements).deep.eq([{generation: 4, count: 4}]);
+    const requirements = compile({generation: 4});
+    player.playCard(new AdaptationTechnology());
+    for (const [generation, expected] of [[3, false], [4, true], [5, true]] as const) {
+      player.game.generation = generation;
+      expect(requirements.satisfies(player, card)).eq(expected);
+      expect(card.canPlay(player)).eq(expected);
+    }
+  });
+
+  it('compiles maximum generation limits with an inclusive boundary', () => {
+    const requirement = compile({generation: 4, max: true});
+    for (const [generation, expected] of [[3, true], [4, true], [5, false]] as const) {
+      player.game.generation = generation;
+      expect(requirement.satisfies(player, new AsteroidMiningConsortiumRebalanced())).eq(expected);
+    }
   });
 
   it('satisfies properly for oceans', () => {

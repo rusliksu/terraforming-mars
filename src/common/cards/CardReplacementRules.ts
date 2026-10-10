@@ -14,14 +14,34 @@ export function filterReplacedCards<T extends {name: CardName}>(
 ): Array<T> {
   const presentNames = new Set(cards.map((card) => card.name));
   const removedNames = new Set<CardName>();
+  const replacements = new Map<CardName, Array<CardName>>();
   for (const manifest of manifests) {
     for (const name of manifest.cardsToRemove) {
       removedNames.add(name);
     }
     for (const [original, replacement] of manifest.conditionalCardsToRemove) {
-      if (presentNames.has(replacement)) {
-        removedNames.add(original);
+      const targets = replacements.get(original) ?? [];
+      targets.push(replacement);
+      replacements.set(original, targets);
+    }
+  }
+  const hasAvailableReplacement = (name: CardName, visited: Set<CardName>): boolean => {
+    for (const replacement of replacements.get(name) ?? []) {
+      if (visited.has(replacement)) {
+        continue;
       }
+      if (presentNames.has(replacement) && !removedNames.has(replacement)) {
+        return true;
+      }
+      if (hasAvailableReplacement(replacement, new Set([...visited, replacement]))) {
+        return true;
+      }
+    }
+    return false;
+  };
+  for (const name of replacements.keys()) {
+    if (hasAvailableReplacement(name, new Set([name]))) {
+      removedNames.add(name);
     }
   }
   return cards.filter((card) => !removedNames.has(card.name));

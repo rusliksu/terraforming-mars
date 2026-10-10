@@ -42,6 +42,10 @@ export class MiningGuild extends CorporationCard implements ICorporationCard {
     });
   }
 
+  public onPlacementBonusClaimed(player: IPlayer, space: Space): void {
+    this.onTilePlaced(player, player, space, BoardType.MARS);
+  }
+
   public onTilePlaced(cardOwner: IPlayer, activePlayer: IPlayer, space: Space, boardType: BoardType) {
     // Nerfing on The Moon.
     if (boardType !== BoardType.MARS) {

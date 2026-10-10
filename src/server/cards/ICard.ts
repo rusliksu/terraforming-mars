@@ -24,6 +24,7 @@ import {Resource} from '../../common/Resource';
 import {Units} from '../../common/Units';
 import {SerializedCard} from '../SerializedCard';
 import {UndergroundResourceToken} from '../../common/underworld/UndergroundResourceToken';
+import {PartyName} from '../../common/turmoil/PartyName';
 
 /*
  * Represents a card which has an action that itself allows a player
@@ -73,6 +74,19 @@ export interface ICard {
    * Describes the M€ discount `player` could apply to playing `card`.
    */
   getStandardProjectDiscount?(player: IPlayer, card: IStandardProjectCard): number;
+  /** The M€ discount on a party's paid action. */
+  getPartyActionDiscount?(player: IPlayer, party: PartyName): number;
+  /** Guaranteed plants gained when playing a card, before balancing its plant cost. */
+  getPlantsOnCardPlayed?(player: IPlayer, card: ICard): number;
+  /** Guaranteed personal M€ production from a colony placement. */
+  getColonyPlacementMegaCreditProduction?(cardOwner: IPlayer, colonyOwner: IPlayer): number;
+  /** Guaranteed M€ production from placing a city on the supplied space. */
+  getCityPlacementMegaCreditProduction?(cardOwner: IPlayer, activePlayer: IPlayer, space: Space): number;
+  /** Placement-bonus effects when a space is claimed without placing a tile. */
+  onPlacementBonusClaimed?(player: IPlayer, space: Space): void;
+  readonly hasFloaterIcon?: boolean;
+  readonly isAttackCard?: boolean;
+  readonly changesOwnProduction?: boolean;
   /**
    * Extra M€ `activePlayer` must pay to play `card`, imposed by this card belonging to
    * `cardOwner` - a tax/tariff effect (e.g. Blockhouse), unlike `getCardDiscount` which
@@ -151,6 +165,16 @@ export interface ICard {
   onIncreaseTerraformRatingByAnyPlayer?(cardOwner: IPlayer, player: IPlayer, steps: number): void;
   onIncreaseTerraformRating?: never;
   onGlobalParameterIncrease?(player: IPlayer, parameter: GlobalParameter, steps: number): void;
+  /** Called for every tableau before rewards for an actual global parameter increase. */
+  onGlobalParameterIncreaseByAnyPlayer?(cardOwner: IPlayer, activePlayer: IPlayer, parameter: GlobalParameter, steps: number): void;
+  /** Predicts M€ paid to `activePlayer` before TR costs, without changing state. */
+  getGlobalParameterIncreaseMegaCredits?(cardOwner: IPlayer, activePlayer: IPlayer, parameter: GlobalParameter, steps: number): number;
+  /** Grants the bonus for placing a tile on the owner's reserved space. */
+  onReservedSpacePlaced?(player: IPlayer, space: Space): void;
+  /** Pays an insurance claim; an undefined claimant represents the neutral player. */
+  onInsuranceClaim?(owner: IPlayer, claimant: IPlayer | undefined): void;
+  /** The heat cost of the owner's standard temperature conversion. */
+  getHeatConversionCost?(player: IPlayer): number;
 
   /**
    * Optional callback when a resource is added to this card.
@@ -322,6 +346,10 @@ export interface IActionCard {
   canAct(player: IPlayer): boolean;
 }
 
+export function getPlantsOnCardPlayed(player: IPlayer, card: ICard): number {
+  return player.tableau.asArray().reduce((total, playedCard) => total + (playedCard.getPlantsOnCardPlayed?.(player, card) ?? 0), 0);
+}
+
 export function isIActionCard(object: any): object is IActionCard {
   return object !== undefined && object.canAct !== undefined && object.action !== undefined;
 }
@@ -333,6 +361,10 @@ const EFFECT_HOOKS: ReadonlyArray<keyof ICard> = [
   'onNonCardTagAddedByAnyPlayer',
   'onTilePlaced',
   'onGlobalParameterIncrease',
+  'onGlobalParameterIncreaseByAnyPlayer',
+  'onReservedSpacePlaced',
+  'onPlacementBonusClaimed',
+  'onInsuranceClaim',
   'onIncreaseTerraformRatingByAnyPlayer',
   'onResourceAdded',
   'onProductionGain',

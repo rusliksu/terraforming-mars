@@ -8,6 +8,8 @@ export interface ICorporationCard extends ICard {
   type: CardType.CORPORATION;
   initialActionText?: string;
   initialAction?(player: IPlayer): PlayerInput | undefined;
+  /** False when the mandatory initial action has no legal effect. */
+  canTakeInitialAction?(player: IPlayer): boolean;
   firstAction?: Behavior,
   startingMegaCredits: number;
   cardCost?: number;

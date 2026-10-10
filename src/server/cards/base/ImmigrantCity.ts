@@ -15,6 +15,7 @@ import {Board} from '../../boards/Board';
 import {CardRenderer} from '../render/CardRenderer';
 import {all} from '../Options';
 import {MarsBoard} from '../../boards/MarsBoard';
+import {PRODUCTION_MINIMUMS} from '../../../common/constants';
 
 export class ImmigrantCity extends Card implements IProjectCard {
   constructor() {
@@ -45,7 +46,10 @@ export class ImmigrantCity extends Card implements IProjectCard {
     const availableSpaces = player.game.board.getAvailableSpacesForCity(player);
     const hasEnergyProduction = MarsBoard.hasEnergyCoverage(player, availableSpaces);
     const canPlaceCityOnMars = availableSpaces.length > 0;
-    const canDecreaseMcProduction = player.production.megacredits >= -4 || player.tableau.has(CardName.THARSIS_REPUBLIC);
+    const canDecreaseMcProduction = availableSpaces.some((space) => {
+      const bonus = player.tableau.asArray().reduce((total, card) => total + (card.getCityPlacementMegaCreditProduction?.(player, player, space) ?? 0), 0);
+      return player.production.megacredits + 1 + bonus - 2 >= PRODUCTION_MINIMUMS.megacredits;
+    });
 
     return hasEnergyProduction && canDecreaseMcProduction && canPlaceCityOnMars;
   }

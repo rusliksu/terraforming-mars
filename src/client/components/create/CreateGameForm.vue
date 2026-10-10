@@ -223,6 +223,12 @@
                                 <span v-i18n>BetterMars</span>&nbsp;<span title="A fan expansion: Mars-flavoured card variants">(&#945;)</span>&nbsp;<a :href="wikiUrls.betterMars" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                             </label>
 
+                            <input type="checkbox" name="rebalanced" id="rebalanced-checkbox" v-model="expansions.rebalanced">
+                            <label for="rebalanced-checkbox" class="expansion-button">
+                                <div class="create-game-expansion-icon expansion-icon-rebalanced"></div>
+                                <span v-i18n>Rebalanced</span>&nbsp;<a :href="wikiUrls.rebalanced" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+                            </label>
+
                             <input type="checkbox" name="customCards" id="customCards-checkbox" v-model="expansions.customCards">
                             <label for="customCards-checkbox" class="expansion-button">
                                 <div class="create-game-expansion-icon expansion-icon-customCards"></div>
@@ -1067,6 +1073,9 @@ export default defineComponent({
     },
     'expansions.betterMars': function(value: boolean) {
       this.handleExpansionChanged('betterMars', value);
+    },
+    'expansions.rebalanced': function(value: boolean) {
+      this.handleExpansionChanged('rebalanced', value);
     },
     'expansions.customCards': function(value: boolean) {
       this.handleExpansionChanged('customCards', value);

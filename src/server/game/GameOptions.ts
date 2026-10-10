@@ -62,6 +62,7 @@ export type GameOptions = {
   deltaProjectExpansion: boolean;
   sillyficationExpansion: boolean;
   betterMarsExpansion: boolean;
+  rebalancedExpansion: boolean;
   customCardsExpansion: boolean;
   conglomeratesExpansion: boolean;
   corporateBettermentsExpansion: boolean;
@@ -153,6 +154,7 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
     deltaProject: false,
     sillyfication: false,
     betterMars: false,
+    rebalanced: false,
     customCards: false,
     conglomerates: false,
     corporateBetterments: false,
@@ -200,6 +202,7 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
   deltaProjectExpansion: false,
   sillyficationExpansion: false,
   betterMarsExpansion: false,
+  rebalancedExpansion: false,
   customCardsExpansion: false,
   conglomeratesExpansion: false,
   corporateBettermentsExpansion: false,

@@ -2,6 +2,7 @@ const COUNTABLE_REQUIREMENTS = [
   'oxygen',
   'temperature',
   'oceans',
+  'generation',
   'habitatRate',
   'miningRate',
   'logisticRate',

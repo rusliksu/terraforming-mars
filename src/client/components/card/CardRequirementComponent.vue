@@ -2,6 +2,7 @@
   <div class="card-requirement">
       <div class="card-item-container" :class="nextTo">
         <template v-if="requirement.max">max&nbsp;</template>
+        <template v-if="type === RequirementType.GENERATION">Gen&nbsp;</template>
         <span v-if="!isRepeated">{{amount}}</span>{{suffix}}
         <template v-if="type === RequirementType.REMOVED_PLANTS">
           <div class="card-special card-minus"></div>
@@ -74,6 +75,7 @@ export default defineComponent({
       case RequirementType.HABITAT_RATE:
       case RequirementType.MINING_RATE:
       case RequirementType.LOGISTIC_RATE:
+      case RequirementType.GENERATION:
         return this.count;
       }
       if (this.requirement.max) {
@@ -189,6 +191,7 @@ export default defineComponent({
       case RequirementType.REMOVED_PLANTS:
       case RequirementType.UNDERGROUND_TOKENS:
       case RequirementType.GREENERY_LAST_ACTION:
+      case RequirementType.GENERATION:
         return false;
       }
       return this.count > 0 && this.count < 4;

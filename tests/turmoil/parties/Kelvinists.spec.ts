@@ -13,8 +13,26 @@ import {testGame} from '../../TestGame';
 import {PartyName} from '../../../src/common/turmoil/PartyName';
 import {MAX_TEMPERATURE} from '../../../src/common/constants';
 import {cast} from '@/common/utils/utils';
+import {ThorgateRebalanced} from '@/server/cards/rebalanced/ThorgateRebalanced';
+import {HighTempSuperconductors} from '@/server/cards/pathfinders/HighTempSuperconductors';
+import {runAllActions} from '../../TestingUtils';
 
 describe('Kelvinists', () => {
+  it('uses the same stacked discount for the policy label, availability and real payment', () => {
+    const [game, player] = testGame(2, {turmoilExtension: true});
+    player.playedCards.push(new ThorgateRebalanced(), new HighTempSuperconductors());
+    expect(KELVINISTS_POLICY_1.description(player)).eq('Pay 4 M€ to increase your energy and heat production 1 step');
+    player.megaCredits = 3;
+    expect(KELVINISTS_POLICY_1.canAct(player)).is.false;
+    player.megaCredits = 4;
+    expect(KELVINISTS_POLICY_1.canAct(player)).is.true;
+    KELVINISTS_POLICY_1.action(player);
+    runAllActions(game);
+    expect(player.megaCredits).eq(0);
+    expect(player.production.energy).eq(1);
+    expect(player.production.heat).eq(1);
+    expect(new ThorgateRebalanced().getPartyActionDiscount(player, PartyName.REDS)).eq(0);
+  });
   let player: TestPlayer;
   let game: IGame;
 

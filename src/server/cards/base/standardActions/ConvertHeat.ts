@@ -21,7 +21,7 @@ export class ConvertHeat extends StandardActionCard {
   }
 
   public canAct(player: IPlayer): boolean {
-    const heatForTemperature = player.game.parameters.heatForTemperature;
+    const heatForTemperature = this.getHeatCost(player);
     if (player.game.getTemperature() === player.game.parameters.temperature.max) {
       this.addWarning('maxtemp');
     }
@@ -39,10 +39,18 @@ export class ConvertHeat extends StandardActionCard {
   }
 
   public action(player: IPlayer) {
-    return player.spendHeat(player.game.parameters.heatForTemperature, () => {
+    return player.spendHeat(this.getHeatCost(player), () => {
       this.actionUsed(player);
       player.game.increaseTemperature(player, 1);
       return undefined;
     });
+  }
+
+  public getHeatCost(player: IPlayer): number {
+    let cost = player.game.parameters.heatForTemperature;
+    for (const card of player.tableau) {
+      cost = Math.min(cost, card.getHeatConversionCost?.(player) ?? cost);
+    }
+    return cost;
   }
 }

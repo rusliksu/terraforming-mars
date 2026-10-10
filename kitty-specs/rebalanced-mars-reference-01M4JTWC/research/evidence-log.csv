@@ -1,0 +1,5 @@
+id,finding,evidence
+R01,Активны 113 замен а не все 125 объявлений enum,reference-inventory.json
+R02,Все 109 фабрик pe5ha входят в референс,reference-comparison.json в локальном evidence
+R01,В референсе дополнительно активны четыре проекта,Asteroid Mining Consortium; Energy Tapping; Hackers; Sabotage
+USER01,Для двух спорных проектов используется Better Mars целиком,Решение Руслана от 2026-10-10

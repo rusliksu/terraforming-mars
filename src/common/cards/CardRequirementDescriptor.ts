@@ -44,6 +44,7 @@ export type CardRequirementDescriptor = {
   plantsRemoved?: boolean,
   resourceTypes?: number,
   tr?: number,
+  generation?: number,
 
   // Venus
   venus?: number,
@@ -92,6 +93,8 @@ export function requirementType(descriptor: CardRequirementDescriptor): Requirem
     return RequirementType.VENUS;
   } else if (descriptor.tr !== undefined) {
     return RequirementType.TR;
+  } else if (descriptor.generation !== undefined) {
+    return RequirementType.GENERATION;
   } else if (descriptor.chairman !== undefined) {
     return RequirementType.CHAIRMAN;
   } else if (descriptor.resourceTypes !== undefined) {

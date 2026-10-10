@@ -42,6 +42,9 @@ import {cast} from '@/common/utils/utils';
 import {AsteroidMining} from '../../src/server/turmoil/globalEvents/AsteroidMining';
 import {MAX_OXYGEN_LEVEL, MAX_VENUS_SCALE} from '../../src/common/constants';
 import {TileType} from '../../src/common/TileType';
+import {LunarSecurityStations} from '@/server/cards/moon/LunarSecurityStations';
+import {PrivateSecurity} from '@/server/cards/pathfinders/PrivateSecurity';
+import {Research} from '@/server/cards/base/Research';
 
 function asUnits(player: IPlayer): Units {
   return {
@@ -67,6 +70,81 @@ describe('Executor', () => {
 
     fake = fakeCard({name: 'Fake Card' as CardName});
     executor = new Executor();
+  });
+
+  it('decreaseAnyProduction accepts the same-resource production gained before the choice without mutating state', () => {
+    const behavior: Behavior = {production: {titanium: 1}, decreaseAnyProduction: {type: Resource.TITANIUM, count: 1}};
+    expect(executor.canExecute(behavior, player, fake)).is.true;
+    expect(player.production.titanium).eq(0);
+    executor.execute(behavior, player, fake);
+    runAllActions(game);
+    expect(player.production.titanium).eq(1);
+    cast(player.popWaitingFor(), SelectPlayer).cb(player);
+    runAllActions(game);
+    expect(player.production.titanium).eq(0);
+  });
+
+  it('decreaseAnyProduction keeps resource, amount and protection boundaries for prospective self targets', () => {
+    expect(executor.canExecute({production: {titanium: 2}, decreaseAnyProduction: {type: Resource.TITANIUM, count: 1}}, player, fake)).is.true;
+    expect(executor.canExecute({production: {steel: 1}, decreaseAnyProduction: {type: Resource.TITANIUM, count: 1}}, player, fake)).is.false;
+    expect(executor.canExecute({production: {titanium: 1}, decreaseAnyProduction: {type: Resource.TITANIUM, count: 2}}, player, fake)).is.false;
+    player.playedCards.push(new LunarSecurityStations());
+    expect(executor.canExecute({production: {titanium: 2}, decreaseAnyProduction: {type: Resource.TITANIUM, count: 1}}, player, fake)).is.false;
+    expect(executor.canExecute({production: {titanium: 1}, decreaseAnyProduction: {type: Resource.TITANIUM, count: 1}}, player, fake)).is.false;
+    player2.playedCards.push(new LunarSecurityStations());
+    player2.production.add(Resource.TITANIUM, 1);
+    expect(executor.canExecute({production: {steel: 1}, decreaseAnyProduction: {type: Resource.TITANIUM, count: 1}}, player, fake)).is.false;
+  });
+
+  it('decreaseAnyProduction subtracts an earlier clamped production loss before forecasting a gain', () => {
+    player.production.add(Resource.ENERGY, 1);
+    const behavior: Behavior = {lose: {production: {energy: 3}}, production: {energy: 1}, decreaseAnyProduction: {type: Resource.ENERGY, count: 2}};
+    expect(executor.canExecute(behavior, player, fake)).is.false;
+    expect(player.production.energy).eq(1);
+    behavior.decreaseAnyProduction = {type: Resource.ENERGY, count: 1};
+    expect(executor.canExecute(behavior, player, fake)).is.true;
+    executor.execute(behavior, player, fake);
+    runAllActions(game);
+    cast(player.popWaitingFor(), SelectPlayer).cb(player);
+    runAllActions(game);
+    expect(player.production.energy).eq(0);
+  });
+
+  it('decreaseAnyProduction does not lend the self gain to a protected opponent', () => {
+    player2.playedCards.push(new PrivateSecurity());
+    player2.production.add(Resource.ENERGY, 1);
+    const behavior: Behavior = {production: {steel: 1}, decreaseAnyProduction: {type: Resource.ENERGY, count: 1}};
+    expect(executor.canExecute(behavior, player, fake)).is.false;
+    behavior.production = {energy: 1};
+    expect(executor.canExecute(behavior, player, fake)).is.true;
+    executor.execute(behavior, player, fake);
+    runAllActions(game);
+    const choice = cast(player.popWaitingFor(), SelectPlayer);
+    expect(choice.players).deep.eq([player]);
+  });
+
+  it('decreaseAnyProduction does not borrow a dynamic gain across an earlier production loss', () => {
+    player.production.add(Resource.ENERGY, 1);
+    player.playedCards.push(new Research());
+    const behavior: Behavior = {
+      lose: {production: {energy: 1}},
+      production: {energy: {tag: Tag.SCIENCE}},
+      decreaseAnyProduction: {type: Resource.ENERGY, count: 1},
+    };
+    expect(executor.canExecute(behavior, player, fake)).is.false;
+    expect(player.production.energy).eq(1);
+  });
+
+  it('decreaseAnyProduction does not borrow resources spent before a dynamic production gain', () => {
+    fake.resourceCount = 1;
+    const behavior: Behavior = {
+      spend: {resourcesHere: 1},
+      production: {energy: {resourcesHere: {}}},
+      decreaseAnyProduction: {type: Resource.ENERGY, count: 1},
+    };
+    expect(executor.canExecute(behavior, player, fake)).is.false;
+    expect(fake.resourceCount).eq(1);
+    expect(player.production.energy).eq(0);
   });
 
   it('production - simple', () => {

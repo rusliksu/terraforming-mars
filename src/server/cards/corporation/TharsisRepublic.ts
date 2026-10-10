@@ -44,14 +44,19 @@ export class TharsisRepublic extends CorporationCard implements ICorporationCard
     });
   }
 
+  public getCityPlacementMegaCreditProduction(_cardOwner: IPlayer, _activePlayer: IPlayer, space: Space): number {
+    return space.spaceType === SpaceType.COLONY ? 0 : 1;
+  }
+
   public onTilePlaced(cardOwner: IPlayer, activePlayer: IPlayer, space: Space) {
     if (Board.isCitySpace(space)) {
       if (cardOwner.id === activePlayer.id) {
         cardOwner.game.defer(new GainResourcesDeferred(cardOwner, Resource.MEGACREDITS, {count: 3, log: true, from: {card: this}}));
       }
-      if (space.spaceType !== SpaceType.COLONY) {
+      const production = this.getCityPlacementMegaCreditProduction(cardOwner, activePlayer, space);
+      if (production > 0) {
         cardOwner.game.defer(
-          new GainProduction(cardOwner, Resource.MEGACREDITS, {log: true, from: {card: this}}),
+          new GainProduction(cardOwner, Resource.MEGACREDITS, {count: production, log: true, from: {card: this}}),
           cardOwner.id !== activePlayer.id ? Priority.OPPONENT_TRIGGER : undefined,
         );
       }

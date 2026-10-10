@@ -140,8 +140,8 @@
     "WP05": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "generic-agent",
-      "agent_profile_version": "1.0",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "lane": "for_review",
       "last_event_id": "01M4K6NWBK4P3YR27F5TGV4Q9P",
@@ -149,7 +149,8 @@
       "model": "__resolved_model_absent__",
       "notes": [
         "20 проектов и общий generation/positive-production precheck; 1679 регрессий,10 клиентских проверок и3 мутации. Родитель повторил167 server+10 client;35 назначенных файлов, карта связей согласована. Общие поверхности изменяются последовательно; registration и traits — WP08.",
-        "Независимое ревью FAIL: dynamic self-credit не гарантирован после spend. Узкое исправление до numeric-only; источник и прежние правила сохраняются."
+        "Независимое ревью FAIL: dynamic self-credit не гарантирован после spend. Узкое исправление до numeric-only; источник и прежние правила сохраняются.",
+        "Исправление eb30ff7c2: numeric-only credit, dynamic regression и сохранённые защиты;1680 проверок исполнителя и168 повторённых родителем, types/lint/mutation зелёные;5 назначенных файлов и узкие fingerprints. Общие поверхности WP03/05 объединяются позже последовательно в WP08."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,

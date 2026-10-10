@@ -1,7 +1,7 @@
 {
-  "event_count": 41,
-  "last_event_id": "01M4K5MP3B6G3DMPAW3SEF0M37",
-  "materialized_at": "2026-10-10T15:06:57.515306+00:00",
+  "event_count": 43,
+  "last_event_id": "01M4K5SFTS51BQ23CC6JSAX5KP",
+  "materialized_at": "2026-10-10T15:09:34.934431+00:00",
   "mission_number": "",
   "mission_slug": "rebalanced-mars-reference-01M4JTWC",
   "mission_type": "software-dev",
@@ -12,9 +12,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 1,
-    "in_progress": 2,
+    "in_progress": 3,
     "in_review": 0,
-    "planned": 3
+    "planned": 2
   },
   "work_packages": {
     "WP01": {
@@ -140,12 +140,12 @@
     "WP05": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent_profile": "generic-agent",
+      "agent_profile_version": "1.0",
       "force_count": 1,
-      "lane": "planned",
-      "last_event_id": "01M4K5MP3B6G3DMPAW3SEF0M37",
-      "last_transition_at": "2026-10-10T15:06:57.515306+00:00",
+      "lane": "in_progress",
+      "last_event_id": "01M4K5SFTS51BQ23CC6JSAX5KP",
+      "last_transition_at": "2026-10-10T15:09:34.934431+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "20 проектов и общий generation/positive-production precheck; 1679 регрессий,10 клиентских проверок и3 мутации. Родитель повторил167 server+10 client;35 назначенных файлов, карта связей согласована. Общие поверхности изменяются последовательно; registration и traits — WP08.",

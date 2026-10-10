@@ -286,6 +286,9 @@
       "last_event_id": "01M4KG7CV6PQ2TEW7N183QS17Q",
       "last_transition_at": "2026-10-10T18:11:56.390857+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Кандидат 675e073f8: все локальные проверки завершены; 11608 серверных, 1049 клиентских и полная матрица дополнений прошли. 18 owned paths; независимое ревью ожидается. Выпуск после объединения остаётся обязательным."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 43224,

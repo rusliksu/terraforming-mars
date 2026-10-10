@@ -6,63 +6,63 @@
   "criteria": [
     {
       "criterion_id": "FR-001",
-      "description": "Verify FR-001 is satisfied",
+      "description": "Rebalanced доступен при создании партии и по умолчанию выключен.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Настройка проверяется в форме, API создания и модели партии."
     },
     {
       "criterion_id": "FR-002",
-      "description": "Verify FR-002 is satisfied",
+      "description": "113 активных замен воспроизводят согласованные правила опубликованного референса.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Независимые исходные значения и наблюдаемое игровое поведение проверяются отдельно."
     },
     {
       "criterion_id": "FR-003",
-      "description": "Verify FR-003 is satisfied",
+      "description": "В списке и раздаче доступна одна совместимая итоговая версия карты.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Несовместимая замена сохраняет доступный оригинал; старые ручные списки нормализуются."
     },
     {
       "criterion_id": "FR-004",
-      "description": "Verify FR-004 is satisfied",
+      "description": "Пять пересечений совмещают правила, а Mars University и Meat Industry используют Better Mars целиком.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Приоритет проверяется для всех семи пересечений и четырёх комбинаций модулей."
     },
     {
       "criterion_id": "FR-005",
-      "description": "Verify FR-005 is satisfied",
+      "description": "Prelude 2 работает одновременно с Rebalanced и сохраняет прежние правила.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Проверяется реальная начальная раздача и сохранение выбранных дополнений."
     },
     {
       "criterion_id": "FR-006",
-      "description": "Verify FR-006 is satisfied",
+      "description": "Сохранение и загрузка воспроизводят выбранные правила, а старые партии сохраняют прежнее поведение.",
       "proof_type": "automated_test",
       "evidence": null,
       "pass_fail": "pending",
       "verified_by": null,
       "verified_at": null,
-      "notes": "TODO: replace with a real acceptance criterion"
+      "notes": "Проверяются новые идентификаторы, игровые эффекты, старые шаблоны и сохранение до переноса."
     }
   ],
   "negative_invariants": []

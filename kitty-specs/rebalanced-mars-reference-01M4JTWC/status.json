@@ -159,7 +159,8 @@
       "notes": [
         "20 проектов и общий generation/positive-production precheck; 1679 регрессий,10 клиентских проверок и3 мутации. Родитель повторил167 server+10 client;35 назначенных файлов, карта связей согласована. Общие поверхности изменяются последовательно; registration и traits — WP08.",
         "Независимое ревью FAIL: dynamic self-credit не гарантирован после spend. Узкое исправление до numeric-only; источник и прежние правила сохраняются.",
-        "Исправление eb30ff7c2: numeric-only credit, dynamic regression и сохранённые защиты;1680 проверок исполнителя и168 повторённых родителем, types/lint/mutation зелёные;5 назначенных файлов и узкие fingerprints. Общие поверхности WP03/05 объединяются позже последовательно в WP08."
+        "Исправление eb30ff7c2: numeric-only credit, dynamic regression и сохранённые защиты;1680 проверок исполнителя и168 повторённых родителем, types/lint/mutation зелёные;5 назначенных файлов и узкие fingerprints. Общие поверхности WP03/05 объединяются позже последовательно в WP08.",
+        "Независимое ревью цикла2 PASS для eb30ff7c29c58dde96db856e1e8a9aa012b59eb4: numeric-only credit и реальный dynamic regression; все6 hunks5 файлов,2 fingerprints и HTML/JSON сверены. Checklist1N/A,2–8PASS. Родитель168 тестов;1680/types/lint/mutation зелёные. Фабрики/oracle сохранены; registration и Community consumer — WP08, общие surfaces объединяются последовательно."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,

@@ -1,7 +1,7 @@
 {
-  "event_count": 26,
-  "last_event_id": "01M4K1E3CKG1622W0P4JT9PG8E",
-  "materialized_at": "2026-10-10T13:53:27.443086+00:00",
+  "event_count": 27,
+  "last_event_id": "01M4K1WDFFJ4GX2BMHKGVKT442",
+  "materialized_at": "2026-10-10T14:01:16.527810+00:00",
   "mission_number": "",
   "mission_slug": "rebalanced-mars-reference-01M4JTWC",
   "mission_type": "software-dev",
@@ -11,8 +11,8 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 0,
-    "in_progress": 1,
+    "for_review": 1,
+    "in_progress": 0,
     "in_review": 0,
     "planned": 6
   },
@@ -61,7 +61,8 @@
       "last_transition_at": "2026-10-10T13:53:27.443086+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "21 пролог и проект колонии; 29 игровых проверок, типы, lint, две пойманные мутации; родитель повторил 29 тестов. Gap скидки Adhai закреплён для WP08."
+        "21 пролог и проект колонии; 29 игровых проверок, типы, lint, две пойманные мутации; родитель повторил 29 тестов. Gap скидки Adhai закреплён для WP08.",
+        "Независимое ревью PASS: все22 публичные реализации, 23 новые файла, 29 игровых тестов и мутации; родитель повторил29 тестов. Общие интеграционные проверки остаются WP08/09."
       ],
       "provider": "__resolved_provider_absent__",
       "review_result": {
@@ -87,14 +88,20 @@
       "agent_profile": "generic-agent",
       "agent_profile_version": "1.0",
       "force_count": 0,
-      "lane": "in_progress",
-      "last_event_id": "01M4JZ29VNNJ1ZN7RTA0H7H00Z",
-      "last_transition_at": "2026-10-10T13:12:03.697959+00:00",
+      "lane": "for_review",
+      "last_event_id": "01M4K1WDFFJ4GX2BMHKGVKT442",
+      "last_transition_at": "2026-10-10T14:01:16.527810+00:00",
       "model": "__resolved_model_absent__",
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 11296,
-      "shell_pid_created_at": "1791637913.2099817"
+      "shell_pid_created_at": "1791637913.2099817",
+      "subtasks": {
+        "T010": "done",
+        "T011": "done",
+        "T012": "done",
+        "T013": "done"
+      }
     },
     "WP04": {
       "actor": "finalize-tasks",

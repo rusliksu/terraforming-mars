@@ -1,0 +1,14 @@
+{
+  "created_at": "2026-10-10T11:58:55.501272+00:00",
+  "flattened": false,
+  "friendly_name": "Rebalanced по правилам rebalakefak",
+  "mission_id": "01M4JTWCBV7BE608GF6RBAQ6TT",
+  "mission_number": null,
+  "mission_slug": "rebalanced-mars-reference-01M4JTWC",
+  "mission_type": "software-dev",
+  "purpose_context": "Новые партии получают проверенный ребаланс. Пять пересечений совмещаются, Mars University и Meat Industry используют Better Mars. Существующие партии сохраняют свои правила.",
+  "purpose_tldr": "Перенести 113 замен Rebalanced с поддержкой Prelude 2 и совместной работы Better Mars.",
+  "slug": "rebalanced-mars-reference-01M4JTWC",
+  "target_branch": "codex/rebalanced-mars-reference",
+  "topology": "single_branch"
+}

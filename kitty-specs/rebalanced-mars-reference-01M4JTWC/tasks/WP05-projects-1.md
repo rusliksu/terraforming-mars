@@ -41,6 +41,18 @@ create_intent:
 execution_mode: code_change
 lane: planned
 owned_files:
+- src/common/cards/RequirementType.ts
+- src/common/cards/CardRequirementDescriptor.ts
+- src/server/cards/CardRequirementDescriptor.ts
+- src/server/cards/requirements/GenerationRequirement.ts
+- src/server/cards/requirements/CardRequirements.ts
+- src/server/cards/Card.ts
+- src/client/components/card/CardRequirementComponent.vue
+- tests/cards/requirements/CardRequirements.spec.ts
+- tests/client/components/card/CardRequirementComponent.spec.ts
+- docs/codemap/codemap.html
+- docs/codemap/codemap.json
+- docs/codemap/codemap.lock
 - src/server/cards/rebalanced/AdaptedLichenRebalanced.ts
 - src/server/cards/rebalanced/AdvancedAlloysRebalanced.ts
 - src/server/cards/rebalanced/AerobrakedAmmoniaAsteroidRebalanced.ts
@@ -86,6 +98,8 @@ tracker_refs: []
 Основа и результат работы — codex/rebalanced-mars-reference в собственном checkout. Публичная доставка — PR в main; прямые main-коммиты запрещены. Пользоваться каталогом, который вернул runtime для single_branch.
 
 ## Проверки
+
+Для опубликованных требований Asteroid Mining Consortium и Energy Tapping нужен общий минимум поколения: descriptor → compilation → evaluation → rendering. WP05 владеет перечисленными общими файлами; другие пакеты используют готовый контракт при интеграции. Проверить границы N−1/N/N+1 и отсутствие влияния бонусов глобальных требований. Обновить карту связей вместе с кодом. Общие файлы изменять последовательно; независимые фабрики других пакетов остаются в своих каталогах.
 
 Проверить наблюдаемые ресурсы, производство, требования, действия и очки по изменённому поведению. Для новых правил сначала получить осмысленное падение, затем зелёный результат. Проверить type-check, targeted lint и git diff --check. Не запускать SmartBot benchmark и не создавать игры на стороннем или production сервере.
 

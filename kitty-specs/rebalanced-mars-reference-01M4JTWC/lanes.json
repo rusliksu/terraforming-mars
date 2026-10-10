@@ -151,6 +151,18 @@
         "WP05"
       ],
       "write_scope": [
+        "src/common/cards/RequirementType.ts",
+        "src/common/cards/CardRequirementDescriptor.ts",
+        "src/server/cards/CardRequirementDescriptor.ts",
+        "src/server/cards/requirements/GenerationRequirement.ts",
+        "src/server/cards/requirements/CardRequirements.ts",
+        "src/server/cards/Card.ts",
+        "src/client/components/card/CardRequirementComponent.vue",
+        "tests/cards/requirements/CardRequirements.spec.ts",
+        "tests/client/components/card/CardRequirementComponent.spec.ts",
+        "docs/codemap/codemap.html",
+        "docs/codemap/codemap.json",
+        "docs/codemap/codemap.lock",
         "src/server/cards/rebalanced/AdaptedLichenRebalanced.ts",
         "src/server/cards/rebalanced/AdvancedAlloysRebalanced.ts",
         "src/server/cards/rebalanced/AerobrakedAmmoniaAsteroidRebalanced.ts",

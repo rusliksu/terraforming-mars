@@ -33,8 +33,6 @@ authoritative_surface: src/client/components/create/CreateGameForm.vue
 create_intent:
 - tests/client/components/create/Rebalanced.spec.ts
 - tests/fanmade-compat/RebalancedLifecycle.spec.ts
-- src/server/bot/AutomationCompatibility.ts
-- tests/server/bot/AutomationCompatibility.spec.ts
 execution_mode: code_change
 lane: planned
 owned_files:
@@ -45,6 +43,8 @@ owned_files:
 - src/styles/cards.less
 - tests/client/components/create/Rebalanced.spec.ts
 - tests/fanmade-compat/RebalancedLifecycle.spec.ts
+- src/server/bot/AutomationCompatibility.ts
+- tests/server/bot/AutomationCompatibility.spec.ts
 - tools/fanmade-port/fanmade-catalog-source-manifest.json
 - docs/codemap/codemap.json
 - docs/codemap/codemap.html

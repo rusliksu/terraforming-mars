@@ -23,6 +23,7 @@ export const UNDERWORLDEXPANSION = 'underworldExpansion';
 export const DELTA_PROJECT_EXPANSION = 'deltaProjectExpansion';
 export const SILLYFICATION_EXPANSION = 'sillyficationExpansion';
 export const BETTER_MARS_EXPANSION = 'betterMarsExpansion';
+export const REBALANCED_EXPANSION = 'rebalancedExpansion';
 export const CUSTOM_CARDS_EXPANSION = 'customCardsExpansion';
 export const CONGLOMERATES_EXPANSION = 'conglomeratesExpansion';
 export const CORPORATE_BETTERMENTS_EXPANSION = 'corporateBettermentsExpansion';

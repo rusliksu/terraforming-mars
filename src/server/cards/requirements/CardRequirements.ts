@@ -30,6 +30,7 @@ import {CardRequirementDescriptor} from '../../../common/cards/CardRequirementDe
 import {CorruptionRequirement} from './CorruptionRequirement';
 import {IProjectCard} from '../IProjectCard';
 import {UndergroundTokenRequirement} from './UndergroundTokenRequirement';
+import {GenerationRequirement} from '@/server/cards/requirements/GenerationRequirement';
 
 export class CardRequirements {
   constructor(public requirements: Array<CardRequirement>) {}
@@ -81,6 +82,8 @@ export class CardRequirements {
       return new VenusRequirement({...descriptor, count: descriptor.venus});
     } else if (descriptor.tr !== undefined) {
       return new TRRequirement({...descriptor, count: descriptor.tr});
+    } else if (descriptor.generation !== undefined) {
+      return new GenerationRequirement({...descriptor, count: descriptor.generation});
     } else if (descriptor.chairman !== undefined) {
       return new ChairmanRequirement();
     } else if (descriptor.resourceTypes !== undefined) {

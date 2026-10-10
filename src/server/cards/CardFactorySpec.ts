@@ -55,6 +55,10 @@ export function isCompatibleWith(cf: CardFactorySpec<any>, gameOptions: GameOpti
       return gameOptions.industriesExpansion;
     case 'highOrbit':
       return gameOptions.highOrbitExpansion;
+    case 'betterMars':
+      return gameOptions.betterMarsExpansion;
+    case 'rebalanced':
+      return gameOptions.rebalancedExpansion;
     }
     throw new Error(`Unhandled expansion type ${expansion}`);
   });

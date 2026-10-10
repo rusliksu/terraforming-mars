@@ -23,7 +23,6 @@
   "purpose_context": "Новые партии получают проверенный ребаланс. Пять пересечений совмещаются, Mars University и Meat Industry используют Better Mars. Существующие партии сохраняют свои правила.",
   "purpose_tldr": "Перенести 113 замен Rebalanced с поддержкой Prelude 2 и совместной работы Better Mars.",
   "slug": "rebalanced-mars-reference-01M4JTWC",
-  "status_phase": "1",
   "target_branch": "codex/rebalanced-mars-reference",
   "topology": "single_branch",
   "vcs": "git",

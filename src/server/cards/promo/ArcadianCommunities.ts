@@ -9,6 +9,8 @@ import {Size} from '../../../common/cards/render/Size';
 import {digit, uppercase} from '../Options';
 import {ICorporationCard} from '../corporation/ICorporationCard';
 import {ConglomeratesExpansion} from '../../conglomerates/ConglomeratesExpansion';
+import {GainResourcesDeferred} from '@/server/deferredActions/GainResourcesDeferred';
+import {Resource} from '@/common/Resource';
 
 export class ArcadianCommunities extends CorporationCard implements ICorporationCard, IActionCard {
   constructor() {
@@ -73,5 +75,9 @@ export class ArcadianCommunities extends CorporationCard implements ICorporation
 
   public action(player: IPlayer) {
     return this.askToClaimSpace(player, this.getAvailableSpacesForMarker(player));
+  }
+
+  public onReservedSpacePlaced(player: IPlayer) {
+    player.game.defer(new GainResourcesDeferred(player, Resource.MEGACREDITS, {count: 3}));
   }
 }

@@ -272,6 +272,7 @@ export class ApiQuickGame extends Handler {
         globalParameters: customBoard?.globalParameters,
         sillyficationExpansion: gameReq.expansions.sillyfication,
         betterMarsExpansion: gameReq.expansions.betterMars,
+        rebalancedExpansion: gameReq.expansions.rebalanced,
         customCardsExpansion: gameReq.expansions.customCards,
         conglomeratesExpansion: gameReq.expansions.conglomerates,
         corporateBettermentsExpansion: gameReq.expansions.corporateBetterments,

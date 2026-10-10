@@ -198,7 +198,13 @@ export class Executor implements BehaviorExecutor {
     if (behavior.decreaseAnyProduction !== undefined) {
       if (!game.isSoloMode()) {
         const dap = behavior.decreaseAnyProduction;
-        const targets = game.players.filter((p) => p.canHaveProductionReduced(dap.type, dap.count, player));
+        const change = behavior.production?.[dap.type];
+        const productionLoss = behavior.lose?.production;
+        // Dynamic production depends on earlier effects and cannot support a future self target.
+        const gain = typeof change === 'number' ? change : 0;
+        const loss = productionLoss ? loseable(ctx.countUnits(productionLoss), player.production, PRODUCTION_MINIMUMS)[dap.type] : 0;
+        const selfChange = Math.max(0, gain) - loss;
+        const targets = game.players.filter((p) => p.canHaveProductionReduced(dap.type, Math.max(0, dap.count - (p === player ? selfChange : 0)), player));
 
         if (targets.length === 0) {
           return false;

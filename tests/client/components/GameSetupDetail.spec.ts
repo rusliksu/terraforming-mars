@@ -26,6 +26,7 @@ const EXPANSION_ICON_CLASSES: Record<Expansion, string> = {
   deltaProject: 'deltaProject',
   sillyfication: 'sillyfication',
   betterMars: 'betterMars',
+  rebalanced: 'rebalanced',
   customCards: 'customCards',
   conglomerates: 'conglomerates',
   corporateBetterments: 'corporateBetterments',

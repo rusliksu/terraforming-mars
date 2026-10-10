@@ -42,6 +42,10 @@ export class Vitor extends CorporationCard implements ICorporationCard {
     });
   }
 
+  public canTakeInitialAction(player: IPlayer): boolean {
+    return !player.game.isSoloMode() && !player.game.allAwardsFunded();
+  }
+
   public override initialAction(player: IPlayer) {
     const game = player.game;
 

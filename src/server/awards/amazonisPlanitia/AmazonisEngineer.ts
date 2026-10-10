@@ -69,6 +69,9 @@ export class AmazonisEngineer implements IAward {
    * this award.
    */
   public static autoInclude(card: ICard) {
+    if (card.changesOwnProduction === true) {
+      return true;
+    }
     if (card.productionBox !== undefined) {
       return true;
     }

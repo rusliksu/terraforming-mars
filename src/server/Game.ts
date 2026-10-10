@@ -316,7 +316,7 @@ export class Game implements IGame, Logger {
 
     this.players.forEach((player) => {
       player.setup(this);
-      if (player.tableau.has(CardName.MONS_INSURANCE)) {
+      if (player.tableau.some((card) => card.onInsuranceClaim !== undefined)) {
         this.monsInsuranceOwner = player;
       }
     });
@@ -360,6 +360,7 @@ export class Game implements IGame, Logger {
         deltaProject: partialOptions.deltaProjectExpansion ?? false,
         sillyfication: partialOptions.sillyficationExpansion ?? false,
         betterMars: partialOptions.betterMarsExpansion ?? false,
+        rebalanced: partialOptions.rebalancedExpansion ?? false,
         customCards: partialOptions.customCardsExpansion ?? false,
         conglomerates: partialOptions.conglomeratesExpansion ?? false,
         corporateBetterments: partialOptions.corporateBettermentsExpansion ?? false,
@@ -1567,6 +1568,7 @@ export class Game implements IGame, Logger {
 
     // Literal typing makes |increments| a const
     const steps = Math.min(increments, oxygen.max - this.oxygenLevel);
+    this.triggerForAllCards((owner, card) => card.onGlobalParameterIncreaseByAnyPlayer?.(owner, player, GlobalParameter.OXYGEN, steps));
 
     if (this.phase !== Phase.SOLAR) {
       TurmoilHandler.onGlobalParameterIncrease(player, GlobalParameter.OXYGEN, steps);
@@ -1603,6 +1605,7 @@ export class Game implements IGame, Logger {
 
     // Literal typing makes |increments| a const
     const steps = Math.min(increments, (venus.max - this.venusScaleLevel) / venus.step);
+    this.triggerForAllCards((owner, card) => card.onGlobalParameterIncreaseByAnyPlayer?.(owner, player, GlobalParameter.VENUS, steps));
 
     if (this.phase !== Phase.SOLAR) {
       this.applyParameterBonuses(player, venus.bonuses, this.venusScaleLevel, this.venusScaleLevel + steps * venus.step);
@@ -1668,6 +1671,7 @@ export class Game implements IGame, Logger {
 
     // Literal typing makes |increments| a const
     const steps = Math.min(increments, (temperatureTrack.max - this.temperature) / 2);
+    this.triggerForAllCards((owner, card) => card.onGlobalParameterIncreaseByAnyPlayer?.(owner, player, GlobalParameter.TEMPERATURE, steps));
 
     if (this.phase !== Phase.SOLAR) {
       for (const card of player.playedCards) {
@@ -1740,14 +1744,14 @@ export class Game implements IGame, Logger {
     // Part 3. Setup for bonuses
     const initialTileType = space.tile?.tileType;
     const coveringExistingTile = space.tile !== undefined;
-    const arcadianCommunityBonus = space.player === player && player.tableau.has(CardName.ARCADIAN_COMMUNITIES);
+    const reservedForPlayer = space.player === player;
 
     // Part 4. Place the tile
     this.simpleAddTile(player, space, tile);
 
     // Part 5. Collect the bonuses
     if (this.phase !== Phase.SOLAR) {
-      this.grantPlacementBonuses(player, space, coveringExistingTile, arcadianCommunityBonus);
+      this.grantPlacementBonuses(player, space, coveringExistingTile, reservedForPlayer);
 
       AresHandler.ifAres(this, (aresData) => {
         AresHandler.maybeIncrementMilestones(aresData, player, space, hazardSeverity(initialTileType));
@@ -1796,7 +1800,7 @@ export class Game implements IGame, Logger {
     }
   }
 
-  public grantPlacementBonuses(player: IPlayer, space: Space, coveringExistingTile: boolean = false, arcadianCommunityBonus: boolean = false) {
+  public grantPlacementBonuses(player: IPlayer, space: Space, coveringExistingTile: boolean = false, reservedForPlayer: boolean = false) {
     if (!coveringExistingTile) {
       this.grantSpaceBonuses(player, space);
     }
@@ -1817,8 +1821,10 @@ export class Game implements IGame, Logger {
 
       TurmoilHandler.resolveTilePlacementBonuses(player, space.spaceType);
 
-      if (arcadianCommunityBonus) {
-        this.defer(new GainResourcesDeferred(player, Resource.MEGACREDITS, {count: 3}));
+      if (reservedForPlayer) {
+        for (const card of player.tableau) {
+          card.onReservedSpacePlaced?.(player, space);
+        }
       }
 
       if (space.undergroundResources === 'place6mc') {
@@ -1969,6 +1975,7 @@ export class Game implements IGame, Logger {
     }
 
     this.addTile(player, space, {tileType: TileType.OCEAN});
+    this.triggerForAllCards((owner, card) => card.onGlobalParameterIncreaseByAnyPlayer?.(owner, player, GlobalParameter.OCEANS, 1));
 
     if (this.phase !== Phase.SOLAR) {
       TurmoilHandler.onGlobalParameterIncrease(player, GlobalParameter.OCEANS);

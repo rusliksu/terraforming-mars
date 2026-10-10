@@ -8,6 +8,7 @@ import {all, uppercase} from '../Options';
 import {ICorporationCard} from '../corporation/ICorporationCard';
 
 export class MonsInsurance extends CorporationCard implements ICorporationCard {
+  protected insurancePayout = 3;
   constructor() {
     super({
       name: CardName.MONS_INSURANCE,
@@ -48,7 +49,7 @@ export class MonsInsurance extends CorporationCard implements ICorporationCard {
   // When `claimant` is undefined, it's the neutral player.
   public payDebt(player: IPlayer, claimant : IPlayer | undefined) {
     if (player !== claimant) {
-      const retribution = Math.min(player.megaCredits, 3);
+      const retribution = Math.min(player.megaCredits, this.insurancePayout);
       if (claimant) {
         claimant.megaCredits += retribution;
       }
@@ -58,15 +59,19 @@ export class MonsInsurance extends CorporationCard implements ICorporationCard {
           player.game.log('${0} received ${1} M€ from ${2} owner (${3})', (b) =>
             b.player(claimant)
               .number(retribution)
-              .cardName(CardName.MONS_INSURANCE)
+              .card(this)
               .player(player));
         } else {
           player.game.log('Neutral player received ${0} M€ from ${1} owner (${2})', (b) =>
             b.number(retribution)
-              .cardName(CardName.MONS_INSURANCE)
+              .card(this)
               .player(player));
         }
       }
     }
+  }
+
+  public onInsuranceClaim(owner: IPlayer, claimant: IPlayer | undefined) {
+    this.payDebt(owner, claimant);
   }
 }

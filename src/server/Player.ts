@@ -54,7 +54,6 @@ import {UndoActionOption} from './inputs/UndoActionOption';
 import {Turmoil} from './turmoil/Turmoil';
 import {PathfindersExpansion} from './pathfinders/PathfindersExpansion';
 import {ColoniesHandler} from './colonies/ColoniesHandler';
-import {MonsInsurance} from './cards/promo/MonsInsurance';
 import {InputResponse} from '../common/inputs/InputResponse';
 import {Tags} from './player/Tags';
 import {Colonies} from './player/Colonies';
@@ -553,14 +552,14 @@ export class Player implements IPlayer {
   public resolveInsurance() {
     const monsInsuranceOwner = this.game.monsInsuranceOwner;
     if (monsInsuranceOwner !== undefined && monsInsuranceOwner !== this) {
-      const monsInsurance = <MonsInsurance>monsInsuranceOwner.tableau.get(CardName.MONS_INSURANCE);
-      monsInsurance.payDebt(monsInsuranceOwner, this);
+      const provider = monsInsuranceOwner.tableau.asArray().find((card) => card.onInsuranceClaim !== undefined);
+      provider?.onInsuranceClaim?.(monsInsuranceOwner, this);
     }
   }
 
   public resolveInsuranceInSoloGame() {
-    const monsInsurance = <MonsInsurance> this.tableau.get(CardName.MONS_INSURANCE);
-    monsInsurance?.payDebt(this, undefined);
+    const provider = this.tableau.asArray().find((card) => card.onInsuranceClaim !== undefined);
+    provider?.onInsuranceClaim?.(this, undefined);
   }
 
   public getColoniesCount() {
@@ -1792,9 +1791,20 @@ export class Player implements IPlayer {
       maxPayable.heat = 0;
     }
     const redsCost = TurmoilHandler.computeTerraformRatingBump(this, options.tr) * REDS_RULING_POLICY_COST;
+    let predictedIncome = 0;
+    if (redsCost > 0 && options.tr?.venus !== undefined) {
+      const venus = this.game.parameters.venus;
+      const steps = Math.max(0, Math.min(options.tr.venus, (venus.max - this.game.getVenusScaleLevel()) / venus.step));
+      for (const owner of this.game.players) {
+        for (const card of owner.tableau) {
+          predictedIncome += card.getGlobalParameterIncreaseMegaCredits?.(owner, this, GlobalParameter.VENUS, steps) ?? 0;
+        }
+      }
+    }
+    const payableRedsCost = Math.max(0, redsCost - predictedIncome);
     if (redsCost > 0) {
       const usableForRedsCost = this.payingAmount(maxPayable, {});
-      if (usableForRedsCost < redsCost) {
+      if (usableForRedsCost < payableRedsCost) {
         return Player.CANNOT_AFFORD;
       }
     }
@@ -1812,7 +1822,7 @@ export class Player implements IPlayer {
       }
     }
 
-    const canAfford = options.cost + redsCost <= usable;
+    const canAfford = options.cost + payableRedsCost <= usable;
     return {canAfford, redsCost};
   }
 
@@ -2018,10 +2028,7 @@ export class Player implements IPlayer {
     //   all 3 Awards are claimed before starting your turn as Vitor), you can skip this and
     //   proceed with other actions instead.
     // This code just uses "must skip" instead of "can skip".
-    const vitor = this.tableau.get(CardName.VITOR);
-    if (vitor !== undefined && this.game.allAwardsFunded()) {
-      this.pendingInitialActions = this.pendingInitialActions.filter((card) => card !== vitor);
-    }
+    this.pendingInitialActions = this.pendingInitialActions.filter((card) => card.canTakeInitialAction?.(this) !== false);
 
     if (this.pendingInitialActions.length > 0) {
       const orOptions = new OrOptions();
@@ -2108,7 +2115,7 @@ export class Player implements IPlayer {
     } else {
       const convertHeat = new ConvertHeat();
       if (convertHeat.canAct(this)) {
-        const option = new SelectOption('Convert 8 heat into temperature', 'Convert heat').andThen(() => {
+        const option = new SelectOption(`Convert ${convertHeat.getHeatCost(this)} heat into temperature`, 'Convert heat').andThen(() => {
           return convertHeat.action(this);
         });
         if (convertHeat.warnings.size > 0) {

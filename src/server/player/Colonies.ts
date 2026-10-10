@@ -1,4 +1,4 @@
-import {MAX_FLEET_SIZE} from '../../common/constants';
+import {MAX_FLEET_SIZE, PRODUCTION_MINIMUMS} from '../../common/constants';
 import {CardName} from '../../common/cards/CardName';
 import {ColoniesHandler} from '../colonies/ColoniesHandler';
 import {AndOptions} from '../inputs/AndOptions';
@@ -180,8 +180,14 @@ export class Colonies {
       .setButtonLabel('Trade');
   }
 
-  public getPlayableColonies(allowDuplicate: boolean = false, canAffordOptions: number | CanAffordOptions = 0) {
+  public getPlayableColonies(
+    allowDuplicate: boolean = false,
+    canAffordOptions: number | CanAffordOptions = 0,
+    megacreditProductionCost: number = 0,
+  ) {
     const options: CanAffordOptions = typeof canAffordOptions === 'number' ? {cost: canAffordOptions} : canAffordOptions;
+    const personalProductionBonus = megacreditProductionCost === 0 ? 0 : this.player.tableau.asArray()
+      .reduce((total, card) => total + (card.getColonyPlacementMegaCreditProduction?.(this.player, this.player) ?? 0), 0);
 
     return this.player.game.colonies
       .filter((colony) => {
@@ -193,6 +199,14 @@ export class Colonies {
         }
         if (!allowDuplicate && colony.colonies.includes(this.player.id)) {
           return false;
+        }
+        if (megacreditProductionCost > 0) {
+          const build = colony.metadata.build;
+          const buildProduction = build.type === ColonyBenefit.GAIN_PRODUCTION && build.resource === Resource.MEGACREDITS ?
+            build.quantity[colony.colonies.length] : 0;
+          if (this.player.production.megacredits + personalProductionBonus + buildProduction - megacreditProductionCost < PRODUCTION_MINIMUMS.megacredits) {
+            return false;
+          }
         }
         if (colony.name === ColonyName.VENUS && !this.player.canAfford({...options, tr: {venus: 1}})) {
           return false;

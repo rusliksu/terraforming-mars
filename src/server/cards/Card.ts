@@ -504,6 +504,7 @@ function populateCount(requirement: CardRequirementDescriptor): CardRequirementD
     requirement.temperature ??
     requirement.venus ??
     requirement.tr ??
+    requirement.generation ??
     requirement.resourceTypes ??
     requirement.greeneries ??
     requirement.cities ??

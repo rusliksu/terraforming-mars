@@ -18,6 +18,13 @@ import {ALL_MODULE_MANIFESTS} from '../../../src/server/cards/AllManifests';
 import {CardManifest} from '../../../src/server/cards/ModuleManifest';
 
 describe('Warmonger', () => {
+  it('scores real Rebalanced bespoke attack cards and excludes peaceful cards', () => {
+    const [, player] = testGame(2);
+    player.playedCards.push(newCard(CardName.HACKERS_REBALANCED), newCard(CardName.SABOTAGE_REBALANCED), newCard(CardName.MONS_INSURANCE_REBALANCED));
+    expect(new Warmonger().getScore(player)).eq(3);
+    player.playedCards.push(newCard(CardName.ADAPTED_LICHEN_REBALANCED));
+    expect(new Warmonger().getScore(player)).eq(3);
+  });
   let award: Warmonger;
   let player: TestPlayer;
   let player2: TestPlayer;
@@ -105,7 +112,7 @@ describe('Warmonger', () => {
     CardName.METALLIC_ASTEROID, CardName.MINING_EXPEDITION, CardName.MONOPOLY, CardName.PUBLIC_SPONSORED_GRANT, CardName.PLANT_TAX,
     CardName.RECKLESS_DETONATION, CardName.REVOLTING_COLONISTS, CardName.ROAD_PIRACY, CardName.SABOTAGE,
     CardName.SMALL_ASTEROID, CardName.SMALL_COMET, CardName.SOLAR_STORM, CardName.SPECIAL_PERMIT,
-    CardName.VIRUS, CardName.PRECIOUS_METAL_ASTEROID, CardName.SUPERNOVA_EXPLOSION,
+    CardName.VIRUS, CardName.PRECIOUS_METAL_ASTEROID, CardName.SUPERNOVA_EXPLOSION, CardName.DEIMOS_DOWN_PROMO_REBALANCED, CardName.SABOTAGE_REBALANCED,
   ] as const;
   for (const manifest of ALL_MODULE_MANIFESTS) {
     for (const projectCard of CardManifest.values(manifest.projectCards)) {

@@ -8,8 +8,16 @@ import {MicroMills} from '../../../src/server/cards/base/MicroMills';
 import {Cartel} from '../../../src/server/cards/base/Cartel';
 import {DarksideMiningSyndicate} from '../../../src/server/cards/moon/DarksideMiningSyndicate';
 import {SpecializedSettlement} from '../../../src/server/cards/pathfinders/SpecializedSettlement';
+import {CardName} from '@/common/cards/CardName';
 
 describe('AmazonisEngineer', () => {
+  it('scores Rebalanced bespoke production through its actual trait', () => {
+    const [, player] = testGame(2);
+    player.playedCards.push(newCard(CardName.COMMUNITY_SERVICES_REBALANCED), newCard(CardName.ADAPTED_LICHEN_REBALANCED));
+    expect(new AmazonisEngineer().getScore(player)).eq(2);
+    player.playedCards.push(newCard(CardName.ADVANCED_ALLOYS_REBALANCED));
+    expect(new AmazonisEngineer().getScore(player)).eq(2);
+  });
   let award: AmazonisEngineer;
   let player: TestPlayer;
 

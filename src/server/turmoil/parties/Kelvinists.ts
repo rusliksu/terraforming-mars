@@ -53,7 +53,8 @@ class KelvinistsPolicy01 implements IPolicy {
   }
 
   cost(player: IPlayer): number {
-    return player.tableau.has(CardName.HIGH_TEMP_SUPERCONDUCTORS) ? 7: 10;
+    const discount = player.tableau.asArray().reduce((total, card) => total + (card.getPartyActionDiscount?.(player, PartyName.KELVINISTS) ?? 0), 0);
+    return Math.max(0, (player.tableau.has(CardName.HIGH_TEMP_SUPERCONDUCTORS) ? 7 : 10) - discount);
   }
   canAct(player: IPlayer) {
     return player.canAfford(this.cost(player));

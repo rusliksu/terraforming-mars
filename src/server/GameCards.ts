@@ -39,6 +39,7 @@ import {getAllCustomCardDefinitions} from './cards/CustomCardRegistry';
 import {GameModule} from '../common/cards/GameModule';
 import {ALL_MODULE_MANIFESTS} from './cards/AllManifests';
 import {filterReplacedCards} from '@/common/cards/CardReplacementRules';
+import {REBALANCED_CARD_MANIFEST} from './cards/rebalanced/RebalancedCardManifest';
 
 const CUSTOM_CARD_MODULE_EXCEPTIONS = new Set<CardName>([
   CardName.LAKEFRONT_RESORTS,
@@ -91,6 +92,7 @@ export class GameCards {
       [gameOptions.underworldExpansion, UNDERWORLD_CARD_MANIFEST],
       [gameOptions.sillyficationExpansion, SILLYFICATION_CARD_MANIFEST],
       [gameOptions.betterMarsExpansion, BETTER_MARS_CARD_MANIFEST],
+      [gameOptions.rebalancedExpansion, REBALANCED_CARD_MANIFEST],
       [gameOptions.conglomeratesExpansion, CONGLOMERATES_CARD_MANIFEST],
       [gameOptions.corporateBettermentsExpansion, CORPORATE_BETTERMENTS_CARD_MANIFEST],
       [gameOptions.idesOfMarsExpansion, IDES_OF_MARS_CARD_MANIFEST],
@@ -122,9 +124,12 @@ export class GameCards {
   }
 
   public getProjectCards() {
-    const cards = this.getCards<IProjectCard>('projectCards');
+    let cards = this.getCards<IProjectCard>('projectCards');
     this.addCustomCards(cards, this.gameOptions.includedCards);
     this.addCustomCardLibrary(cards);
+    if (this.gameOptions.rebalancedExpansion) {
+      cards = filterReplacedCards(cards, this.moduleManifests);
+    }
     const highOrbitCardNames = new Set<CardName>(CardManifest.keys(HIGH_ORBIT_CARD_MANIFEST.projectCards));
     const replacesMineralDeposit = this.gameOptions.includedCards.includes(CardName.MINERAL_DEPOSIT_REBALANCED);
     return cards.filter(isIProjectCard).filter((card) =>
@@ -156,6 +161,10 @@ export class GameCards {
       // by preparing a deck of preludes.
       if (preludes.length === 0) {
         preludes = this.instantiate(PRELUDE_CARD_MANIFEST.preludeCards);
+      } else if (this.gameOptions.rebalancedExpansion && !this.gameOptions.preludeExtension &&
+          preludes.every((card) => REBALANCED_CARD_MANIFEST.preludeCards[card.name] !== undefined)) {
+        // Valley Trust needs the complete fallback deck even when only replacement preludes were selected.
+        preludes.push(...this.filterBannedCards(this.instantiate(PRELUDE_CARD_MANIFEST.preludeCards)));
       }
     }
     if (this.gameOptions.twoCorpsVariant) {
@@ -195,6 +204,10 @@ export class GameCards {
       }
 
       if (options.respectModuleSelection === true && !this.isCustomCardCompatible(canonicalName, entry)) {
+        continue;
+      }
+      // Preserve legacy force-adds when Rebalanced is off; replacement priority needs actual compatibility.
+      if ((entry.module === 'rebalanced' || this.gameOptions.rebalancedExpansion) && !this.isCustomCardCompatible(canonicalName, entry)) {
         continue;
       }
 
@@ -263,6 +276,8 @@ export class GameCards {
       return this.gameOptions.sillyficationExpansion;
     case 'betterMars':
       return this.gameOptions.betterMarsExpansion;
+    case 'rebalanced':
+      return this.gameOptions.rebalancedExpansion;
     case 'customCards':
       return this.gameOptions.customCardsExpansion;
     case 'conglomerates':

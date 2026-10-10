@@ -32,48 +32,25 @@ export class PioneerSettlement extends Card implements IProjectCard {
   }
 
   public override bespokeCanPlay(player: IPlayer): boolean {
-    if (player.colonies.getPlayableColonies().length === 0) {
+    const colonies = player.colonies.getPlayableColonies(false, 0, 2);
+    if (colonies.length === 0) {
       return false;
     }
-
-    let lunaIsAvailable = false;
-    let coloniesCount = 0;
-    const hasOneColonyMax = player.game.colonies.every((colony) => {
-      if (colony.name === ColonyName.LUNA &&
-          colony.isFull() === false &&
-          colony.colonies.includes(player.id) === false) {
-        lunaIsAvailable = true;
-      }
-      coloniesCount += colony.colonies.filter((owner) => owner === player.id).length;
-      if (coloniesCount > 1) {
-        return false;
-      }
-      return true;
-    });
-
-    if (hasOneColonyMax === false) {
+    const colonyCount = player.game.colonies.reduce((total, colony) => total + colony.colonies.filter((owner) => owner === player.id).length, 0);
+    if (colonyCount > 1) {
       return false;
     }
-
-    const megaCreditsProduction = player.production.megacredits;
-    if (megaCreditsProduction === -4 && player.tableau.has(CardName.POSEIDON)) {
-      return true;
-    } else if (megaCreditsProduction <= -4) {
-      if (lunaIsAvailable === false) {
-        return false;
-      }
+    if (player.production.megacredits <= -4 && colonies.every((colony) => colony.name === ColonyName.LUNA)) {
       this.addWarning('buildOnLuna');
     }
-
     return true;
   }
 
   public override bespokePlay(player: IPlayer) {
-    const openColonies = player.production.megacredits <= -4 ?
-      player.game.colonies.filter((colony) => colony.name === ColonyName.LUNA) :
-      undefined;
-    player.game.defer(new BuildColony(player, {title: 'Select colony for Pioneer Settlement', colonies: openColonies}));
-    player.production.add(Resource.MEGACREDITS, -2);
+    player.game.defer(new BuildColony(player, {
+      title: 'Select colony for Pioneer Settlement',
+      colonies: player.colonies.getPlayableColonies(false, 0, 2),
+    })).andThen(() => player.production.add(Resource.MEGACREDITS, -2));
     return undefined;
   }
 }

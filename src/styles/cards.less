@@ -433,6 +433,15 @@ input[type="radio"]:checked+.filterDiv::after {
   content: "";
 }
 
+.rebalanced-icon:after {
+  .expansion-icon-base();
+  background: white;
+  color: @grey_900;
+  font-size: 14px;
+  line-height: 16px;
+  content: "⚖";
+}
+
 // Corporate Betterments: same office-building emoji badge as the game-setup icon above.
 .corporateBetterments-icon:after {
   .expansion-icon-base();
@@ -1246,6 +1255,17 @@ input[type="radio"]:checked+.filterDiv::after {
 // BetterMars uses the Mars tag sprite as its expansion icon.
 .expansion-icon-betterMars {
   background-image: url(./assets/tags/mars.png);
+}
+
+.expansion-icon-rebalanced {
+  background-image: none;
+  text-align: center;
+
+  &::before {
+    content: "⚖";
+    font-size: 20px;
+    line-height: 1.35;
+  }
 }
 
 // Custom Cards: a pencil glyph, same trick as Sillyfication above.

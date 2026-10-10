@@ -11,6 +11,7 @@ import {AltSecondaryTag} from '../../../common/cards/render/AltSecondaryTag';
 import {IStandardProjectCard} from '../IStandardProjectCard';
 import {ICorporationCard} from '../corporation/ICorporationCard';
 import {ICard} from '../ICard';
+import {BuildColonyStandardProject} from '../colonies/BuildColonyStandardProject';
 
 export class AdhaiHighOrbitConstructions extends CorporationCard implements ICorporationCard {
   constructor() {
@@ -66,7 +67,7 @@ export class AdhaiHighOrbitConstructions extends CorporationCard implements ICor
   }
 
   public getStandardProjectDiscount(_player: IPlayer, card: IStandardProjectCard): number {
-    if (card.name === CardName.BUILD_COLONY_STANDARD_PROJECT) {
+    if (card instanceof BuildColonyStandardProject) {
       return Math.floor(this.resourceCount / 2);
     }
     return 0;

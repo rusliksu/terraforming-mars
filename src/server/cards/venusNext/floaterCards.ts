@@ -1,4 +1,10 @@
 import {CardName} from '../../../common/cards/CardName';
+import {CardResource} from '../../../common/CardResource';
+import {ICard} from '../ICard';
+
+export function hasFloaterIcon(card: ICard): boolean {
+  return card.hasFloaterIcon === true || card.resourceType === CardResource.FLOATER || floaterCards.has(card.name);
+}
 
 export const floaterCards: ReadonlySet<CardName> = new Set([
   // Venus

@@ -26,6 +26,7 @@ export const RULEBOOK_URLS: Record<GameModule, string> = {
   deltaProject: `${WIKI}/Delta-Project`,
   sillyfication: `${FORK_WIKI}/Sillyfication`,
   betterMars: `${FORK_WIKI}/BetterMars`,
+  rebalanced: `${CUSTOM_DOCS}/rebalanced.md`,
   customCards: `${WIKI}/Community`,
   conglomerates: `${FORK_WIKI}/Conglomerates`,
   corporateBetterments: `${FORK_WIKI}/Corporate-Betterments`,

@@ -6,6 +6,17 @@ import {Tag} from '@/common/cards/Tag';
 import {Resource} from '@/common/Resource';
 
 describe('CardRequirementComponent', () => {
+  for (const [generation, max, expected] of [[1, false, 'Gen 1'], [4, false, 'Gen 4'], [6, true, 'max Gen 6']] as const) {
+    it(`renders ${expected} once with its numeric boundary`, () => {
+      const wrapper = shallowMount(CardRequirementComponent, {
+        ...globalConfig,
+        props: {requirement: {generation, count: generation, max}},
+      });
+      expect(wrapper.text().replace(/\s+/g, ' ').trim()).eq(expected);
+      expect(wrapper.findAll('.card-item-container')).has.length(1);
+    });
+  }
+
   it('renders temperature requirement', () => {
     const wrapper = shallowMount(CardRequirementComponent, {
       ...globalConfig,

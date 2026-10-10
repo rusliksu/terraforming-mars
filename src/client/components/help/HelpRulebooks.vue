@@ -53,6 +53,7 @@ const fanExpansions: ReadonlyArray<RulebookEntry> = [
   {module: 'deltaProject', name: 'Delta Project', iconClass: 'deltaProject', url: RULEBOOK_URLS.deltaProject},
   {module: 'sillyfication', name: 'Sillyfication', iconClass: 'sillyfication', url: RULEBOOK_URLS.sillyfication},
   {module: 'betterMars', name: 'BetterMars', iconClass: 'betterMars', url: RULEBOOK_URLS.betterMars},
+  {module: 'rebalanced', name: 'Rebalanced', iconClass: 'rebalanced', url: RULEBOOK_URLS.rebalanced},
   {module: 'customCards', name: 'Custom Cards', iconClass: 'customCards', url: RULEBOOK_URLS.customCards},
   {module: 'conglomerates', name: 'Conglomerates', iconClass: 'conglomerates', url: RULEBOOK_URLS.conglomerates},
   {module: 'corporateBetterments', name: 'Corporate Betterments', iconClass: 'corporateBetterments', url: RULEBOOK_URLS.corporateBetterments},

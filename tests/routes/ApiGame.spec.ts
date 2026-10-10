@@ -91,6 +91,7 @@ describe('ApiGame', () => {
             'prelude': false,
             'prelude2': false,
             'promo': false,
+            'rebalanced': false,
             'robAntilles': false,
             'sillyfication': false,
             'solaris': false,

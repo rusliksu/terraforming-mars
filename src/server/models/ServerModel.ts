@@ -533,6 +533,7 @@ export class Server {
         deltaProject: options.deltaProjectExpansion,
         sillyfication: options.sillyficationExpansion,
         betterMars: options.betterMarsExpansion,
+        rebalanced: options.rebalancedExpansion,
         customCards: options.customCardsExpansion,
         conglomerates: options.conglomeratesExpansion,
         corporateBetterments: options.corporateBettermentsExpansion,

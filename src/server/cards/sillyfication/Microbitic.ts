@@ -5,6 +5,7 @@ import {CardType} from '../../../common/cards/CardType';
 import {IPlayer} from '../../IPlayer';
 import {CardName} from '../../../common/cards/CardName';
 import {CardRenderer} from '../render/CardRenderer';
+import {getPlantsOnCardPlayed} from '../ICard';
 
 export class Microbitic extends Card implements IProjectCard {
   constructor() {
@@ -35,9 +36,7 @@ export class Microbitic extends Card implements IProjectCard {
   // Manutech (grants the produced plants immediately) or Viral Enhancers (grants 1 plant
   // for this card's single Microbe tag) let you play with fewer plants than the sticker cost.
   public override bespokeCanPlay(player: IPlayer): boolean {
-    const viralEnhancers = player.tableau.get(CardName.VIRAL_ENHANCERS);
-    const hasEnoughPlants = player.plants >= 2 || player.tableau.has(CardName.MANUTECH) ||
-      (player.plants >= 1 && viralEnhancers !== undefined);
+    const hasEnoughPlants = player.plants + getPlantsOnCardPlayed(player, this) >= 2 || player.tableau.has(CardName.MANUTECH);
 
     return hasEnoughPlants;
   }

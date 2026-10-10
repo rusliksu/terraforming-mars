@@ -7,7 +7,7 @@ import {ALL_MODULE_MANIFESTS} from '../cards/AllManifests';
 import {isCustomCardName} from '../cards/CustomCardRegistry';
 
 export const FANMADE_MODULES = [
-  'sillyfication', 'betterMars', 'customCards', 'conglomerates', 'corporateBetterments',
+  'sillyfication', 'betterMars', 'rebalanced', 'customCards', 'conglomerates', 'corporateBetterments',
   'idesOfMars', 'robAntilles', 'moreParties', 'venusPhase2', 'industries', 'highOrbit', 'solaris',
 ] as const;
 

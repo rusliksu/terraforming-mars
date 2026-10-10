@@ -1,7 +1,7 @@
 {
-  "event_count": 3,
-  "last_event_id": "01M4JVSM78Q5CEY8Y07RHRT9S5",
-  "materialized_at": "2026-10-10T12:14:53.672949+00:00",
+  "event_count": 4,
+  "last_event_id": "01M4JVSN1367RP9XW9A8QCDJRR",
+  "materialized_at": "2026-10-10T12:14:54.499636+00:00",
   "mission_number": "",
   "mission_slug": "rebalanced-mars-reference-01M4JTWC",
   "mission_type": "software-dev",
@@ -14,7 +14,7 @@
     "for_review": 0,
     "in_progress": 0,
     "in_review": 0,
-    "planned": 3
+    "planned": 4
   },
   "work_packages": {
     "WP01": {
@@ -37,6 +37,13 @@
       "lane": "planned",
       "last_event_id": "01M4JVSM78Q5CEY8Y07RHRT9S5",
       "last_transition_at": "2026-10-10T12:14:53.672949+00:00"
+    },
+    "WP04": {
+      "actor": "finalize-tasks",
+      "force_count": 0,
+      "lane": "planned",
+      "last_event_id": "01M4JVSN1367RP9XW9A8QCDJRR",
+      "last_transition_at": "2026-10-10T12:14:54.499636+00:00"
     }
   }
 }

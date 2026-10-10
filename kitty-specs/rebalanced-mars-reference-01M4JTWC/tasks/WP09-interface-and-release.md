@@ -44,6 +44,7 @@ owned_files:
 - tests/client/components/create/Rebalanced.spec.ts
 - tests/fanmade-compat/RebalancedLifecycle.spec.ts
 - src/server/bot/AutomationCompatibility.ts
+- src/server/cards/rebalanced/AstrodrillRebalanced.ts
 - tests/server/bot/AutomationCompatibility.spec.ts
 - tools/fanmade-port/fanmade-catalog-source-manifest.json
 - docs/codemap/codemap.json
@@ -77,6 +78,8 @@ tracker_refs: []
 Публичная ссылка правил Rebalanced ведёт на docs/variants/rebalanced.md в этом репозитории. Документ описывает согласованный набор и семь пересечений, ссылки на закреплённые источники и поддержку Prelude 2; не оставлять ссылку на отсутствующий файл и не публиковать внутренние служебные артефакты или данные партий.
 
 Новый модуль входит в существующий список FANMADE_MODULES для метаданных совместимости автоматической игры. Проверить оба формата настроек, ручной выбор новой карты и фактический отказ запуска бота до побочных действий. Поддержка или изменение поведения бота не входят в перенос; существующие ограничения пользовательских дополнений сохраняются.
+
+Полная проверка рендеринга выявила в AstrodrillRebalanced два startAction в одной ce.action. Исправить только структуру metadata.renderData по существующему DSL, разделив альтернативы как в оригинальной Astrodrill. Стартовые 40 M€, четыре астероида и все игровые действия сохраняются; проверить нормальный экспорт всех 118 зарегистрированных вариантов. Этот shared path согласован для WP09 после утверждения WP03/WP08.
 
 Проверить наблюдаемые ресурсы, производство, требования, действия и очки по изменённому поведению. Для новых правил сначала получить осмысленное падение, затем зелёный результат. Проверить type-check, targeted lint и git diff --check. Не запускать SmartBot benchmark и не создавать игры на стороннем или production сервере.
 

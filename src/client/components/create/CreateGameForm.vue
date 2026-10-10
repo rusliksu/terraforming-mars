@@ -854,7 +854,8 @@ import {RandomMAOptionType} from '@/common/ma/RandomMAOptionType';
 import {GameId, JSONObject} from '@/common/Types';
 import {AgendaStyle} from '@/common/turmoil/Types';
 import PreferencesIcon from '@/client/components/PreferencesIcon.vue';
-import {byType, getCard, getCards} from '@/client/cards/ClientCardManifest';
+import {byType, getCard, getCards, getCardReplacementRules} from '@/client/cards/ClientCardManifest';
+import {filterReplacedCards} from '@/common/cards/CardReplacementRules';
 import type {ClientCard} from '@/common/cards/ClientCard';
 import {BoardNameType, NewGameConfig, NewPlayerModel, normalizePreludeHandicap} from '@/common/game/NewGameConfig';
 import {vueRoot} from '@/client/components/vueRoot';
@@ -1800,16 +1801,18 @@ export default defineComponent({
         this.isCardCompatibilityAllowedForCustomSelection(card);
     },
     getSelectableCustomCorporations(): Array<CardName> {
-      return getCards(byType(CardType.CORPORATION))
+      const cards = getCards(byType(CardType.CORPORATION))
         .filter((card) => card.name !== CardName.BEGINNER_CORPORATION)
-        .filter((card) => this.isCardAllowedForCustomSelection(card))
+        .filter((card) => this.isCardAllowedForCustomSelection(card));
+      return filterReplacedCards(cards, getCardReplacementRules((module) => this.isModuleEnabled(module)))
         .map((card) => card.name)
         .sort();
     },
     getSelectableCustomPreludes(): Array<CardName> {
-      return getCards(byType(CardType.PRELUDE))
+      const cards = getCards(byType(CardType.PRELUDE))
         .filter((card) => card.name !== CardName.DELTA_PROJECT)
-        .filter((card) => this.isCardAllowedForCustomSelection(card))
+        .filter((card) => this.isCardAllowedForCustomSelection(card));
+      return filterReplacedCards(cards, getCardReplacementRules((module) => this.isModuleEnabled(module)))
         .map((card) => card.name)
         .sort();
     },

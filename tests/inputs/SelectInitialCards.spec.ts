@@ -5,8 +5,9 @@ import {TestPlayer} from '../TestPlayer';
 import {CardName} from '../../src/common/cards/CardName';
 import {ICorporationCard} from '../../src/server/cards/corporation/ICorporationCard';
 import {cardsFromJSON, ceosFromJSON, corporationCardsFromJSON, preludesFromJSON} from '../../src/server/createCard';
-import {toName} from '../../src/common/utils/utils';
+import {cast, toName} from '../../src/common/utils/utils';
 import {EarthCatapult} from '../../src/server/cards/base/EarthCatapult';
+import {SelectCard} from '@/server/inputs/SelectCard';
 
 describe('SelectInitialCards', () => {
   let player: TestPlayer;
@@ -103,6 +104,31 @@ describe('SelectInitialCards', () => {
     expect(player.game.corporationDeck.discardPile.map(toName)).to.have.members([CardName.HELION]);
     expect(player.game.ceoDeck.discardPile.map(toName)).to.have.members([CardName.MUSK]);
     expect(player.game.preludeDeck.discardPile.map(toName)).to.have.members([CardName.DONATION, CardName.SUPPLIER]);
+  });
+
+  it('offers only the replacement when creating a game from a legacy custom Prelude list', () => {
+    const [/* game */, initialPlayer] = testGame(1, {
+      skipInitialCardSelection: false,
+      skipInitialShuffling: true,
+      preludeExtension: true,
+      pathfindersExpansion: true,
+      betterMarsExpansion: true,
+      customPreludes: [
+        CardName.BIOFUELS,
+        CardName.ALLIED_BANK,
+        CardName.AQUIFER_TURBINES,
+        CardName.EARLY_SETTLEMENT,
+        CardName.EARLY_SETTLEMENT_BETTER_MARS,
+      ],
+    });
+    const input = cast(initialPlayer.getWaitingFor(), SelectInitialCards);
+    const preludes = cast(input.options[1], SelectCard);
+    expect(preludes.cards.map(toName)).to.have.members([
+      CardName.BIOFUELS,
+      CardName.ALLIED_BANK,
+      CardName.AQUIFER_TURBINES,
+      CardName.EARLY_SETTLEMENT_BETTER_MARS,
+    ]);
   });
 
   it('selects one prelude when prelude handicap is 1', () => {

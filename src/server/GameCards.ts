@@ -38,6 +38,7 @@ import {DataDrivenCard} from './cards/DataDrivenCard';
 import {getAllCustomCardDefinitions} from './cards/CustomCardRegistry';
 import {GameModule} from '../common/cards/GameModule';
 import {ALL_MODULE_MANIFESTS} from './cards/AllManifests';
+import {filterReplacedCards} from '@/common/cards/CardReplacementRules';
 
 const CUSTOM_CARD_MODULE_EXCEPTIONS = new Set<CardName>([
   CardName.LAKEFRONT_RESORTS,
@@ -136,7 +137,8 @@ export class GameCards {
     if (this.gameOptions.customCorporationsList.length > 0) {
       const selected: Array<ICorporationCard> = [];
       this.addCustomCards(selected, this.gameOptions.customCorporationsList, {respectModuleSelection: true});
-      return selected.filter((card) => card.name !== CardName.BEGINNER_CORPORATION);
+      return filterReplacedCards(selected, this.moduleManifests)
+        .filter((card) => card.name !== CardName.BEGINNER_CORPORATION);
     }
     const cards = this.getCards<ICorporationCard>('corporationCards')
       .filter((card) => card.name !== CardName.BEGINNER_CORPORATION);
@@ -161,14 +163,14 @@ export class GameCards {
       // remove it from the deck to avoid possible conflicts (e.g. Valley Trust / New Partner)
       preludes = preludes.filter((c) => c.name !== CardName.MERGER);
     }
-    return preludes;
+    return filterReplacedCards(preludes, this.moduleManifests);
   }
 
   public getCeoCards() {
     if (this.gameOptions.customCeos.length > 0) {
       const selected: Array<ICeoCard> = [];
       this.addCustomCards(selected, this.gameOptions.customCeos, {respectModuleSelection: true});
-      return selected;
+      return filterReplacedCards(selected, this.moduleManifests);
     }
     return this.getCards<ICeoCard>('ceoCards');
   }
@@ -318,7 +320,7 @@ export class GameCards {
     }
 
     cards = this.filterBannedCards(cards);
-    cards = this.filterReplacedCards(cards);
+    cards = filterReplacedCards(cards, this.moduleManifests);
     return cards;
   }
 
@@ -326,23 +328,6 @@ export class GameCards {
   private filterBannedCards<T extends ICard>(cards: Array<T>): Array<T> {
     return cards.filter((card) => {
       return this.gameOptions.bannedCards.includes(card.name) !== true;
-    });
-  }
-
-  /* Remove cards that are replaced by new versions in other manifests */
-  private filterReplacedCards<T extends ICard>(cards: Array<T>): Array<T> {
-    const presentNames = new Set(cards.map((card) => card.name));
-    return cards.filter((card) => {
-      for (const manifest of this.moduleManifests) {
-        if (manifest.cardsToRemove.has(card.name)) {
-          return false;
-        }
-        const replacement = manifest.conditionalCardsToRemove.get(card.name);
-        if (replacement !== undefined && presentNames.has(replacement)) {
-          return false;
-        }
-      }
-      return true;
     });
   }
 }

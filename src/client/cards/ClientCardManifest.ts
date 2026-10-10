@@ -2,8 +2,11 @@ import {CardName} from '@/common/cards/CardName';
 import {CardType} from '@/common/cards/CardType';
 import {GameModule} from '@/common/cards/GameModule';
 import {ClientCard} from '@/common/cards/ClientCard';
+import {CardReplacementRules} from '@/common/cards/CardReplacementRules';
 // @ts-ignore cards.json doesn't exist during npm run build
 import cardJson from '@/genfiles/cards.json' assert {type: 'json'};
+// @ts-ignore Generated during npm run make:cards.
+import replacementJson from '@/genfiles/card-replacement-rules.json' assert {type: 'json'};
 
 const cards: Map<CardName, ClientCard> = new Map();
 const cardArray: Array<ClientCard> = [];
@@ -22,6 +25,10 @@ export function getCardOrThrow(cardName: CardName): ClientCard {
 
 export function getCards(filter: (card: ClientCard) => boolean): Array<ClientCard> {
   return cardArray.filter(filter);
+}
+
+export function getCardReplacementRules(enabled: (module: GameModule) => boolean): Array<CardReplacementRules> {
+  return (replacementJson as Array<CardReplacementRules>).filter((manifest) => enabled(manifest.module));
 }
 
 export function byType(cardType: CardType): (card: ClientCard) => boolean {

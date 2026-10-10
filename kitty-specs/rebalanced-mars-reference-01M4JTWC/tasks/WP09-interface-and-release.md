@@ -33,6 +33,7 @@ create_intent:
 execution_mode: code_change
 lane: planned
 owned_files:
+- docs/variants/rebalanced.md
 - src/client/components/create/CreateGameForm.vue
 - src/client/components/GameSetupDetail.vue
 - src/client/components/help/HelpRulebooks.vue
@@ -67,6 +68,8 @@ tracker_refs: []
 Основа и результат работы — codex/rebalanced-mars-reference в собственном checkout. Публичная доставка — PR в main; прямые main-коммиты запрещены. Пользоваться каталогом, который вернул runtime для single_branch.
 
 ## Проверки
+
+Публичная ссылка правил Rebalanced ведёт на docs/variants/rebalanced.md в этом репозитории. Документ описывает согласованный набор и семь пересечений, ссылки на закреплённые источники и поддержку Prelude 2; не оставлять ссылку на отсутствующий файл и не публиковать внутренние служебные артефакты или данные партий.
 
 Проверить наблюдаемые ресурсы, производство, требования, действия и очки по изменённому поведению. Для новых правил сначала получить осмысленное падение, затем зелёный результат. Проверить type-check, targeted lint и git diff --check. Не запускать SmartBot benchmark и не создавать игры на стороннем или production сервере.
 

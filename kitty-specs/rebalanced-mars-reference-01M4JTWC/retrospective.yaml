@@ -49,102 +49,95 @@ findings_status: has_findings
 helped:
 - id: h-001
   category: implementation
-  summary: WP02 completed without rejection cycles
+  summary: WP02 завершён без возвратов после ревью
   evidence_refs:
   - e-014
 - id: h-002
   category: implementation
-  summary: WP03 completed without rejection cycles
+  summary: WP03 завершён без возвратов после ревью
   evidence_refs:
   - e-014
 - id: h-003
   category: implementation
-  summary: WP06 completed without rejection cycles
+  summary: WP06 завершён без возвратов после ревью
   evidence_refs:
   - e-014
 - id: h-004
   category: implementation
-  summary: WP07 completed without rejection cycles
+  summary: WP07 завершён без возвратов после ревью
   evidence_refs:
   - e-014
 - id: h-005
   category: implementation
-  summary: WP08 completed without rejection cycles
+  summary: WP08 завершён без возвратов после ревью
   evidence_refs:
   - e-014
 - id: h-006
   category: implementation
-  summary: WP09 completed without rejection cycles
+  summary: WP09 завершён без возвратов после ревью
   evidence_refs:
   - e-014
 not_helpful:
 - id: n-010
   category: doc
-  summary: analysis-report.md present with findings
+  summary: Генератор ошибочно считает само наличие analysis-report.md замечанием
   evidence_refs:
   - e-024
-  details: An analysis-report.md artifact is present for this mission. Review its findings to understand documented
-    issues and decisions.
+  details: Фактический analysis-report.md имеет verdict ready, пустой findings и нулевые counts. Наличие отчёта не означает замечания.
 - id: n-007
   category: implementation
-  summary: WP01 needed 2 implementation cycles
+  summary: WP01 прошёл два цикла исправления
   evidence_refs:
   - e-021
-  details: WP WP01 entered in_progress 2 times. Multiple implementation cycles suggest rework not captured as a
-    documented review rejection; the WP scope or contract may need refinement.
+  details: Повторный цикл соответствует зафиксированному возврату после ревью. Исходный oracle уточнён и принят независимым повторным ревью.
 - id: n-008
   category: implementation
-  summary: WP04 needed 2 implementation cycles
+  summary: WP04 прошёл два цикла исправления
   evidence_refs:
   - e-022
-  details: WP WP04 entered in_progress 2 times. Multiple implementation cycles suggest rework not captured as a
-    documented review rejection; the WP scope or contract may need refinement.
+  details: Повторный цикл соответствует зафиксированному возврату после ревью. Скидка Thorgate исправлена до одного применения за карту и принята повторно.
 - id: n-009
   category: implementation
-  summary: WP05 needed 2 implementation cycles
+  summary: WP05 прошёл два цикла исправления
   evidence_refs:
   - e-023
-  details: WP WP05 entered in_progress 2 times. Multiple implementation cycles suggest rework not captured as a
-    documented review rejection; the WP scope or contract may need refinement.
+  details: Повторный цикл соответствует зафиксированному возврату после ревью. Numeric-only self-credit исправлен и принят повторно.
 - id: n-004
   category: process
-  summary: WP01 required 1 --force override(s) during workflow
+  summary: В служебном событии возврата WP01 присутствует force true
   evidence_refs:
   - e-018
-  details: WP WP01 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
-    guard failed or the operator routed around it; investigate the underlying cause.
+  details: Событие описывает возврат changes_requested, а не принудительное принятие. Последнее независимое принятие имеет force false.
 - id: n-005
   category: process
-  summary: WP04 required 1 --force override(s) during workflow
+  summary: В служебном событии возврата WP04 присутствует force true
   evidence_refs:
   - e-019
-  details: WP WP04 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
-    guard failed or the operator routed around it; investigate the underlying cause.
+  details: Событие описывает возврат changes_requested, а не принудительное принятие. Последнее независимое принятие имеет force false.
 - id: n-006
   category: process
-  summary: WP05 required 1 --force override(s) during workflow
+  summary: В служебном событии возврата WP05 присутствует force true
   evidence_refs:
   - e-020
-  details: WP WP05 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
-    guard failed or the operator routed around it; investigate the underlying cause.
+  details: Событие описывает возврат changes_requested, а не принудительное принятие. Последнее независимое принятие имеет force false.
 - id: n-001
   category: review_loop
-  summary: WP01 required 1 rejection cycle(s) before approval
+  summary: WP01 возвращён один раз до принятия
   evidence_refs:
   - e-015
-  details: WP WP01 was sent back from review to planning 1 time(s).
+  details: Уточнение исходного oracle проверено независимым повторным ревью.
 - id: n-002
   category: review_loop
-  summary: WP04 required 1 rejection cycle(s) before approval
+  summary: WP04 возвращён один раз до принятия
   evidence_refs:
   - e-016
-  details: WP WP04 was sent back from review to planning 1 time(s).
+  details: Исправление Thorgate проверено реальной HE3 Fusion Plant и мутацией.
 - id: n-003
   category: review_loop
-  summary: WP05 required 1 rejection cycle(s) before approval
+  summary: WP05 возвращён один раз до принятия
   evidence_refs:
   - e-017
-  details: WP WP05 was sent back from review to planning 1 time(s).
+  details: Dynamic resource regression и numeric-only self-credit проверены повторным ревью.
 gaps: []
 proposals: []
 evidence_refs:

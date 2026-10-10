@@ -140,31 +140,33 @@
     "WP05": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "reviewer-renata",
-      "agent_profile_version": "1.0",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
       "lane": "planned",
       "last_event_id": "01M4K5MP3B6G3DMPAW3SEF0M37",
       "last_transition_at": "2026-10-10T15:06:57.515306+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "20 проектов и общий generation/positive-production precheck; 1679 регрессий,10 клиентских проверок и3 мутации. Родитель повторил167 server+10 client;35 назначенных файлов, карта связей согласована. Общие поверхности изменяются последовательно; registration и traits — WP08."
+        "20 проектов и общий generation/positive-production precheck; 1679 регрессий,10 клиентских проверок и3 мутации. Родитель повторил167 server+10 client;35 назначенных файлов, карта связей согласована. Общие поверхности изменяются последовательно; registration и traits — WP08.",
+        "Независимое ревью FAIL: dynamic self-credit не гарантирован после spend. Узкое исправление до numeric-only; источник и прежние правила сохраняются."
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "C:\\Users\\Ruslan\\.codex-worktrees\\rebalanced-mars-reference-owned\\kitty-specs\\rebalanced-mars-reference-01M4JTWC\\tasks\\WP05-projects-1\\review-cycle-1.md",
         "reference": "review-cycle://rebalanced-mars-reference-01M4JTWC/WP05-projects-1/review-cycle-1.md",
         "reviewer": "rebalanced_review",
         "verdict": "changes_requested"
       },
-      "role": "reviewer",
-      "shell_pid": 35236,
-      "shell_pid_created_at": "1791644258.3071845",
+      "role": "implementer",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T018": "done",
-        "T019": "done",
-        "T020": "done",
-        "T021": "done"
+        "T018": "planned",
+        "T019": "planned",
+        "T020": "planned",
+        "T021": "planned"
       }
     },
     "WP06": {

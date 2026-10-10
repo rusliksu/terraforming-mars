@@ -1,7 +1,7 @@
 {
-  "event_count": 67,
-  "last_event_id": "01M4KG7CV6PQ2TEW7N183QS17Q",
-  "materialized_at": "2026-10-10T18:11:56.390857+00:00",
+  "event_count": 68,
+  "last_event_id": "01M4KG8A9GD2XZNFJPGE9B7689",
+  "materialized_at": "2026-10-10T18:12:26.544469+00:00",
   "mission_number": "",
   "mission_slug": "rebalanced-mars-reference-01M4JTWC",
   "mission_type": "software-dev",
@@ -11,9 +11,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
+    "for_review": 0,
     "in_progress": 0,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 0
   },
   "work_packages": {
@@ -277,22 +277,22 @@
       }
     },
     "WP09": {
-      "actor": "codex",
-      "agent": "codex",
+      "actor": "rebalanced_review",
+      "agent": "rebalanced_review",
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 0,
-      "lane": "for_review",
-      "last_event_id": "01M4KG7CV6PQ2TEW7N183QS17Q",
-      "last_transition_at": "2026-10-10T18:11:56.390857+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M4KG8A9GD2XZNFJPGE9B7689",
+      "last_transition_at": "2026-10-10T18:12:26.544469+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "Кандидат 675e073f8: все локальные проверки завершены; 11608 серверных, 1049 клиентских и полная матрица дополнений прошли. 18 owned paths; независимое ревью ожидается. Выпуск после объединения остаётся обязательным."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
-      "shell_pid": 43224,
-      "shell_pid_created_at": "1791652629.2912304",
+      "role": "reviewer",
+      "shell_pid": 4728,
+      "shell_pid_created_at": "1791655942.2377572",
       "subtasks": {
         "T035": "done",
         "T036": "done",

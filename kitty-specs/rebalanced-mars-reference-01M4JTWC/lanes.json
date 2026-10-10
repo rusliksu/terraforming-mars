@@ -312,6 +312,7 @@
         "src/server/cards/rebalanced/SabotageRebalanced.ts",
         "src/server/cards/rebalanced/StormCraftIncorporatedRebalanced.ts",
         "src/server/cards/rebalanced/TharsisRepublicRebalanced.ts",
+        "src/server/cards/rebalanced/ThorgateRebalanced.ts",
         "src/server/cards/rebalanced/ViralEnhancersRebalanced.ts",
         "src/server/cards/rebalanced/VitorRebalanced.ts",
         "src/server/cards/sillyfication/Microbitic.ts",
@@ -320,11 +321,13 @@
         "src/server/cards/venusNext/floaterCards.ts",
         "src/server/GameCards.ts",
         "src/server/Player.ts",
+        "src/server/turmoil/parties/Kelvinists.ts",
         "tests/awards/amazonisPlanitia/AmazonisEngineer.spec.ts",
         "tests/awards/terraCimmeria/Warmonger.spec.ts",
         "tests/cards/rebalanced/Combinations.spec.ts",
         "tests/cards/rebalanced/Compatibility.spec.ts",
-        "tests/cards/rebalanced/Replacements.spec.ts"
+        "tests/cards/rebalanced/Replacements.spec.ts",
+        "tests/turmoil/parties/Kelvinists.spec.ts"
       ],
       "predicted_surfaces": [
         "api"

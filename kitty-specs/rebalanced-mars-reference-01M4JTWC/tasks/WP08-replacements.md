@@ -32,6 +32,9 @@ create_intent:
 execution_mode: code_change
 lane: planned
 owned_files:
+- src/server/turmoil/parties/Kelvinists.ts
+- src/server/cards/rebalanced/ThorgateRebalanced.ts
+- tests/turmoil/parties/Kelvinists.spec.ts
 - src/common/cards/CardReplacementRules.ts
 - src/server/cards/CardFactorySpec.ts
 - src/server/cards/ICard.ts
@@ -117,6 +120,8 @@ tracker_refs: []
 Обязательства интеграции по завершённому аудиту 113 оригинальных identities: общая фильтрация должна учитывать цепочку замен, включая ручной список только из оригинала и итоговой комбинации. Совместимость Better Mars и Rebalanced определяется действующими флагами GameOptions.
 
 Vitor, Poseidon, Tharsis, Viral Enhancers, Mining Guild, Colony SP, floater classifier и awards используют реальные способности карт. Добавление новых имён в старые списки или blanket aliases не заменяет общий контракт. Проверить первоначальное действие, прогноз и фактическую оплату/производство, получение placement bonuses при claim, доступность floater-карт и учёт production/attack-карт. Старые значения и защиты сохраняются. Изменять перечисленные shared и карточные пути только после завершения соответствующих пакетов; runtime history и статусы не редактировать вручную. Карта связей обновляется вместе с кодом.
+
+Опубликованная Thorgate также даёт скидку 3 M€ на действие Kelvinists. Стоимость kp01 должна читать общую способность скидки; одно вычисление используется подписью, проверкой оплаты и фактическим платёжным выбором. Существующая скидка High Temp Superconductors сохраняется; проверить их совместную оплату. Community Services с bespoke подсчётом no-tag карт учитывается в A. Engineer через классификацию способности менять производство, без фиктивного productionBox.
 
 ### T030 — Зарегистрировать ровно 113 активных фабрик и условные замены с корректными зависимостями.
 

@@ -1,7 +1,7 @@
 {
-  "event_count": 51,
-  "last_event_id": "01M4K722C5SQ44S5D1170EQA9X",
-  "materialized_at": "2026-10-10T15:31:44.645820+00:00",
+  "event_count": 52,
+  "last_event_id": "01M4K746QZNBV5C7T9QMCT3P9D",
+  "materialized_at": "2026-10-10T15:32:54.655655+00:00",
   "mission_number": "",
   "mission_slug": "rebalanced-mars-reference-01M4JTWC",
   "mission_type": "software-dev",
@@ -11,9 +11,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 2,
+    "for_review": 1,
     "in_progress": 1,
-    "in_review": 1,
+    "in_review": 2,
     "planned": 2
   },
   "work_packages": {
@@ -205,20 +205,20 @@
     "WP07": {
       "actor": "codex",
       "agent": "codex",
-      "agent_profile": "__resolved_profile_absent__",
-      "agent_profile_version": "__resolved_profile_version_absent__",
+      "agent_profile": "generic-agent",
+      "agent_profile_version": "1.0",
       "force_count": 0,
-      "lane": "for_review",
-      "last_event_id": "01M4K6QC17YRG13EXVDJ1ZT492",
-      "last_transition_at": "2026-10-10T15:25:54.087431+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M4K746QZNBV5C7T9QMCT3P9D",
+      "last_transition_at": "2026-10-10T15:32:54.655655+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
         "19 проектов, product05ed8e9fe:58 тестов повторены родителем,49 прежних регрессий; types/lint и2 мутации зелёные.20 назначенных файлов с проверенными SHA. Регистрация, descriptor Sabotage, callbacks и consumers — WP08 после завершения зависимостей."
       ],
       "provider": "__resolved_provider_absent__",
-      "role": "implementer",
-      "shell_pid": 38500,
-      "shell_pid_created_at": "1791644368.4509869",
+      "role": "reviewer",
+      "shell_pid": 24908,
+      "shell_pid_created_at": "1791646367.0395",
       "subtasks": {
         "T026": "done",
         "T027": "done",

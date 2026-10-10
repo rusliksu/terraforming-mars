@@ -259,7 +259,7 @@
     "docs/game-history-archive.md": "8ae31cecbb10cae0ded53c02a3bf779af193fc6707f9eaa8ff2e52f195c88f62",
     "docs/game-replay.md": "cbbbd1b08e27a7b87ab57be7d16b68d8e62250fb266d4960568a691a7bb0e006",
     "docs/sqlite-history-retention.md": "4c641644ee6222da55bcaebc37fff29bcefd90227d6004ba230450d9e414dbe2",
-    "docs/variants/rebalanced.md": "566febe873385e2fb2023ae0f6ec07583d297a2228dc372ff3cd4a355b98cbe2",
+    "docs/variants/rebalanced.md": "cb4afd3e7f6800dae2191187f8395e0c147ce6216b73a6b70fe233a59a48489c",
     "package-lock.json": "54e14cb6411b838c8aa5020ee0a1993168dfcaaca45753585321c8974f179faa",
     "package.json": "27e4210cd9cfa8d4895ce8fd56ac1c73c6229ce8bf6911e2c7e2f4993a6e8f6f",
     "scripts/README-staging.md": "7c6faf5c7df4179cc0677052082ec1dfcc149451dc8f519687259c0bef061334",
@@ -494,9 +494,9 @@
     "tests/server/server/SentryReporter.spec.ts": "a78d464170f713bcfa26f5e559762b68996adb788e966757f33e9d2f560e53d4",
     "tests/turmoil/parties/Kelvinists.spec.ts": "3dd36a74638753873cd710335db734e8c9f903b34b39b5097f89f71f36c2bbef",
     "tools/fanmade-port/check-catalog-source.js": "ef6c6d4fe034de10e230836ae65feae8ffe0f7494c7ef36a63764e22665eeb83",
-    "tools/fanmade-port/fanmade-catalog-source-manifest.json": "9ae58e734f462a33f8dc9796b513762ecd5d1c99ea8a5d33691135e53964ce20"
+    "tools/fanmade-port/fanmade-catalog-source-manifest.json": "556fda79cd8e96159cb1659718dfa486125819acc4b43de7dcafe7c1ecf0f272"
   },
-  "scope_fingerprint": "99616ae754991ac6abd03aac8fdb1c3841b241fba5de927de99915ec30827660",
+  "scope_fingerprint": "969e1f90c157d84fd68885307806095e518d06e6194adb356d4a38e62e1d320e",
   "changed_modules": [
     "src/common/Timer.ts",
     "src/server/Game.ts",

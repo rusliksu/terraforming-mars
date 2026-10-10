@@ -45,6 +45,8 @@ owned_files:
 - tests/client/components/create/Rebalanced.spec.ts
 - tests/fanmade-compat/RebalancedLifecycle.spec.ts
 - tests/client/components/create/JSONProcessor.spec.ts
+- tests/routes/ApiGame.spec.ts
+- tests/cards/venusNext/floaterCards.spec.ts
 - src/server/bot/AutomationCompatibility.ts
 - src/server/cards/rebalanced/AstrodrillRebalanced.ts
 - tests/server/bot/AutomationCompatibility.spec.ts
@@ -84,6 +86,8 @@ tracker_refs: []
 Полная проверка рендеринга выявила в AstrodrillRebalanced два startAction в одной ce.action. Исправить только структуру metadata.renderData по существующему DSL, разделив альтернативы как в оригинальной Astrodrill. Стартовые 40 M€, четыре астероида и все игровые действия сохраняются; проверить нормальный экспорт всех 118 зарегистрированных вариантов. Этот shared path согласован для WP09 после утверждения WP03/WP08.
 
 Импорт старых настроек проверяется в общем JSONProcessor: переданная неполная expansions нормализуется поверх DEFAULT_EXPANSIONS. Если в старом JSON нет Rebalanced ни во вложенном, ни в плоском формате, выбор сбрасывается в false, включая ранее включённый модуль в форме. Для нового флага явное вложенное значение приоритетнее плоского, затем используется false; существующая обработка других плоских настроек сохраняется. Исправление и focused regression в JSONProcessor.spec.ts согласованы как общий producer/contract для WP09 после WP01.
+
+Полный серверный прогон выявил два устаревших ожидания в существующих тестах. ApiGame.spec.ts учитывает новый выключенный по умолчанию флаг. floaterCards.spec.ts сверяет независимый oracle метаданных и требований с объединением статического списка и явных hasFloaterIcon declarations, сохраняя проверку прежних карточек. Игровой classifier и фабрики при этой поправке не меняются; обе тестовые поверхности включены в owned_files WP09.
 
 Проверить наблюдаемые ресурсы, производство, требования, действия и очки по изменённому поведению. Для новых правил сначала получить осмысленное падение, затем зелёный результат. Проверить type-check, targeted lint и git diff --check. Не запускать SmartBot benchmark и не создавать игры на стороннем или production сервере.
 

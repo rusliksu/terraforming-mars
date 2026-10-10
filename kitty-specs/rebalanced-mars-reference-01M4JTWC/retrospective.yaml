@@ -1,0 +1,233 @@
+schema_version: 1
+mission_id: 01M4JTWCBV7BE608GF6RBAQ6TT
+mission_slug: rebalanced-mars-reference-01M4JTWC
+mission_number:
+friendly_name: Rebalanced по правилам rebalakefak
+mission_type: software-dev
+target_branch: codex/rebalanced-mars-reference
+created_at: '2026-10-10T18:32:58.770065+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-10-10T18:32:58.770065+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-001
+  category: implementation
+  summary: WP02 completed without rejection cycles
+  evidence_refs:
+  - e-014
+- id: h-002
+  category: implementation
+  summary: WP03 completed without rejection cycles
+  evidence_refs:
+  - e-014
+- id: h-003
+  category: implementation
+  summary: WP06 completed without rejection cycles
+  evidence_refs:
+  - e-014
+- id: h-004
+  category: implementation
+  summary: WP07 completed without rejection cycles
+  evidence_refs:
+  - e-014
+- id: h-005
+  category: implementation
+  summary: WP08 completed without rejection cycles
+  evidence_refs:
+  - e-014
+- id: h-006
+  category: implementation
+  summary: WP09 completed without rejection cycles
+  evidence_refs:
+  - e-014
+not_helpful:
+- id: n-010
+  category: doc
+  summary: analysis-report.md present with findings
+  evidence_refs:
+  - e-024
+  details: An analysis-report.md artifact is present for this mission. Review its findings to understand documented
+    issues and decisions.
+- id: n-007
+  category: implementation
+  summary: WP01 needed 2 implementation cycles
+  evidence_refs:
+  - e-021
+  details: WP WP01 entered in_progress 2 times. Multiple implementation cycles suggest rework not captured as a
+    documented review rejection; the WP scope or contract may need refinement.
+- id: n-008
+  category: implementation
+  summary: WP04 needed 2 implementation cycles
+  evidence_refs:
+  - e-022
+  details: WP WP04 entered in_progress 2 times. Multiple implementation cycles suggest rework not captured as a
+    documented review rejection; the WP scope or contract may need refinement.
+- id: n-009
+  category: implementation
+  summary: WP05 needed 2 implementation cycles
+  evidence_refs:
+  - e-023
+  details: WP WP05 entered in_progress 2 times. Multiple implementation cycles suggest rework not captured as a
+    documented review rejection; the WP scope or contract may need refinement.
+- id: n-004
+  category: process
+  summary: WP01 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-018
+  details: WP WP01 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-005
+  category: process
+  summary: WP04 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-019
+  details: WP WP04 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-006
+  category: process
+  summary: WP05 required 1 --force override(s) during workflow
+  evidence_refs:
+  - e-020
+  details: WP WP05 required 1 operator-driven --force lane transition(s). Force overrides typically indicate the runtime
+    guard failed or the operator routed around it; investigate the underlying cause.
+- id: n-001
+  category: review_loop
+  summary: WP01 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-015
+  details: WP WP01 was sent back from review to planning 1 time(s).
+- id: n-002
+  category: review_loop
+  summary: WP04 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-016
+  details: WP WP04 was sent back from review to planning 1 time(s).
+- id: n-003
+  category: review_loop
+  summary: WP05 required 1 rejection cycle(s) before approval
+  evidence_refs:
+  - e-017
+  details: WP WP05 was sent back from review to planning 1 time(s).
+gaps: []
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/tasks/WP01-configuration.md
+- id: e-006
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/tasks/WP02-preludes.md
+- id: e-007
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/tasks/WP03-corporations-1.md
+- id: e-008
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/tasks/WP04-corporations-2.md
+- id: e-009
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/tasks/WP05-projects-1.md
+- id: e-010
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/tasks/WP06-projects-2.md
+- id: e-011
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/tasks/WP07-projects-3.md
+- id: e-012
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/tasks/WP08-replacements.md
+- id: e-013
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/tasks/WP09-interface-and-release.md
+- id: e-014
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/status.events.jsonl
+- id: e-015
+  kind: event_range
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/status.events.jsonl
+  range: 01M4JY52DNA6VRG8B1VBS5EW7W
+- id: e-016
+  kind: event_range
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/status.events.jsonl
+  range: 01M4K6VQYD0798VW9S5ENEHWT8
+- id: e-017
+  kind: event_range
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/status.events.jsonl
+  range: 01M4K5MP3B6G3DMPAW3SEF0M37
+- id: e-018
+  kind: event_range
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/status.events.jsonl
+  range: 01M4JY52DNA6VRG8B1VBS5EW7W
+- id: e-019
+  kind: event_range
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/status.events.jsonl
+  range: 01M4K6VQYD0798VW9S5ENEHWT8
+- id: e-020
+  kind: event_range
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/status.events.jsonl
+  range: 01M4K5MP3B6G3DMPAW3SEF0M37
+- id: e-021
+  kind: event_range
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/status.events.jsonl
+  range: implementation_cycles
+- id: e-022
+  kind: event_range
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/status.events.jsonl
+  range: implementation_cycles
+- id: e-023
+  kind: event_range
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/status.events.jsonl
+  range: implementation_cycles
+- id: e-024
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/analysis-report.md
+generator_version: '1.0'
+provenance_history: []

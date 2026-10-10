@@ -32,6 +32,49 @@ create_intent:
 execution_mode: code_change
 lane: planned
 owned_files:
+- src/common/cards/CardReplacementRules.ts
+- src/server/cards/CardFactorySpec.ts
+- src/server/cards/ICard.ts
+- src/server/cards/corporation/ICorporationCard.ts
+- src/server/Player.ts
+- src/server/cards/prelude/Vitor.ts
+- src/server/cards/colonies/Poseidon.ts
+- src/server/cards/corporation/TharsisRepublic.ts
+- src/server/cards/corporation/MiningGuild.ts
+- src/server/cards/base/ViralEnhancers.ts
+- src/server/cards/colonies/PioneerSettlement.ts
+- src/server/cards/colonies/MinorityRefuge.ts
+- src/server/cards/base/ImmigrantCity.ts
+- src/server/cards/base/Moss.ts
+- src/server/cards/base/NitrophilicMoss.ts
+- src/server/cards/promo/Potatoes.ts
+- src/server/cards/underworld/GuerillaEcologists.ts
+- src/server/cards/sillyfication/Microbitic.ts
+- src/server/cards/pathfinders/SurveyMission.ts
+- src/server/cards/pathfinders/AdhaiHighOrbitConstructions.ts
+- src/server/cards/venusNext/floaterCards.ts
+- src/server/cards/venusNext/Celestic.ts
+- src/server/cards/prelude2/AtmosphericEnhancers.ts
+- src/server/awards/terraCimmeria/Warmonger.ts
+- src/server/awards/amazonisPlanitia/AmazonisEngineer.ts
+- src/server/cards/rebalanced/VitorRebalanced.ts
+- src/server/cards/rebalanced/PoseidonRebalanced.ts
+- src/server/cards/rebalanced/TharsisRepublicRebalanced.ts
+- src/server/cards/rebalanced/MiningGuildRebalanced.ts
+- src/server/cards/rebalanced/ViralEnhancersRebalanced.ts
+- src/server/cards/rebalanced/MonsInsuranceRebalanced.ts
+- src/server/cards/rebalanced/CelesticRebalanced.ts
+- src/server/cards/rebalanced/StormCraftIncorporatedRebalanced.ts
+- src/server/cards/rebalanced/FloaterLeasingRebalanced.ts
+- src/server/cards/rebalanced/HackersRebalanced.ts
+- src/server/cards/rebalanced/SabotageRebalanced.ts
+- src/server/cards/rebalanced/CommunityServicesRebalanced.ts
+- tests/cards/rebalanced/Compatibility.spec.ts
+- tests/awards/terraCimmeria/Warmonger.spec.ts
+- tests/awards/amazonisPlanitia/AmazonisEngineer.spec.ts
+- docs/codemap/codemap.html
+- docs/codemap/codemap.json
+- docs/codemap/codemap.lock
 - src/server/cards/rebalanced/RebalancedCardManifest.ts
 - src/server/cards/rebalanced/CombinedVariants.ts
 - src/server/cards/AllManifests.ts
@@ -70,6 +113,10 @@ tracker_refs: []
 Все subtasks выполнены и подтверждены проверками. Не считать проверенные статические метаданные доказательством игровых effects. Проверить сохранение состояния для изменённых hooks. Проверить, что импорт старого source не тянет устаревшие APIs и чужие дополнения. Записать реальные команды и результаты. Перед завершением WP сверить разрешённые файлы и требования.
 
 ## Подзадачи
+
+Обязательства интеграции по завершённому аудиту 113 оригинальных identities: общая фильтрация должна учитывать цепочку замен, включая ручной список только из оригинала и итоговой комбинации. Совместимость Better Mars и Rebalanced определяется действующими флагами GameOptions.
+
+Vitor, Poseidon, Tharsis, Viral Enhancers, Mining Guild, Colony SP, floater classifier и awards используют реальные способности карт. Добавление новых имён в старые списки или blanket aliases не заменяет общий контракт. Проверить первоначальное действие, прогноз и фактическую оплату/производство, получение placement bonuses при claim, доступность floater-карт и учёт production/attack-карт. Старые значения и защиты сохраняются. Изменять перечисленные shared и карточные пути только после завершения соответствующих пакетов; runtime history и статусы не редактировать вручную. Карта связей обновляется вместе с кодом.
 
 ### T030 — Зарегистрировать ровно 113 активных фабрик и условные замены с корректными зависимостями.
 

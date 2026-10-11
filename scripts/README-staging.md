@@ -422,6 +422,10 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\verify_tm_s
   window: stop primary, re-check games, create and restore-probe a consistent
   backup, switch the release, and start primary. Failed startup restores both
   the previous release and database backup.
+- After codec and restore checks pass, promotion removes its two temporary
+  rehearsal copies before stopping primary. Retained backups are untouched.
+  Allow disk space for two additional DB copies plus release files and headroom:
+  either the rehearsal pair, or the new backup and a possible rollback copy.
 - `release.json` is generated during deploy and is used to prove that staging and prod serve the same artifact hash after promote.
 - Rollout syncs `build/`, `assets/`, and the source-managed subset of `elo/` (`index.html`, `elo-api.js`, aliases, and maintenance scripts). It deliberately preserves live Elo data files on the VPS.
 - Rollout also carries `package.json` and `package-lock.json`; runtime dependencies are resolved into a managed cache under `/home/openclaw/tm-runtime/<env>/shared/deps/<package-lock-sha256>` instead of linking back to legacy checkout `node_modules`.

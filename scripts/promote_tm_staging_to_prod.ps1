@@ -1100,6 +1100,9 @@ if [ -z "$restore_probe_sha" ] || [ "$rehearsal_before_sha" != "$restore_probe_s
   rollback_before_cutover "Static database restore rehearsal differs from its verified source."
 fi
 
+# Completed rehearsal copies are no longer needed during backup or rollback.
+rm -f -- "$rehearsal_db" "$database_restore_probe"
+
 primary_stopped=1
 cutover_in_progress=1
 if ! systemctl --user stop "$service"; then

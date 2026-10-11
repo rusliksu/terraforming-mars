@@ -7,12 +7,8 @@ param(
     [string]$IgnoredRealtimeGameIdFile,
     [ValidateRange(1, 365)]
     [int]$RealtimeGameStaleDays = 10,
-    [ValidateRange(120, 1800)]
-    [int]$SqliteCopyTimeoutSeconds = 600,
     [ValidateRange(30, 900)]
-    [int]$StaticCopyTimeoutSeconds = 120,
-    [ValidateRange(120, 3600)]
-    [int]$MaintenanceWindowSeconds = 600,
+    [int]$ValidationTimeoutSeconds = 120,
     [switch]$SkipStagingVerify,
     [switch]$SkipProdVerify,
     [switch]$DryRun
@@ -56,7 +52,7 @@ if (-not (Test-Path $promoteScript)) {
 }
 
 if (-not (Test-Path $rehearseScript)) {
-    throw "Missing prod rehearsal script: $rehearseScript"
+    throw "Missing read-only production validation script: $rehearseScript"
 }
 
 if (-not (Test-Path $snapshotScript)) {
@@ -106,8 +102,8 @@ if ($DryRun) {
     if (-not $SkipStagingVerify) {
         Write-Host "1. Verify staging with a real create-game smoke and release manifest."
     }
-    Write-Host "2. Rehearse DB copy, codec validation, and restore probe within the maintenance budget."
-    Write-Host "3. Promote the tested staging build to prod with writes closed until commit."
+    Write-Host "2. Validate existing production saves read-only; create no database copies."
+    Write-Host "3. Promote the tested staging build to prod with HTTP mutations blocked until commit."
     if (-not $SkipProdVerify) {
         Write-Host "4. Verify prod homepage, /elo/, and release manifest without creating a test game."
     }
@@ -123,8 +119,7 @@ if ($DryRun) {
         $promoteDryRunArgs += @("-IgnoredRealtimeGameId", ($ignoredRealtimeGameIds -join ","))
     }
     $promoteDryRunArgs += @("-RealtimeGameStaleDays", $RealtimeGameStaleDays)
-    $promoteDryRunArgs += @("-SqliteCopyTimeoutSeconds", $SqliteCopyTimeoutSeconds)
-    $promoteDryRunArgs += @("-StaticCopyTimeoutSeconds", $StaticCopyTimeoutSeconds)
+    $promoteDryRunArgs += @("-ValidationTimeoutSeconds", $ValidationTimeoutSeconds)
     & pwsh @promoteDryRunArgs
     if ($LASTEXITCODE -ne 0) {
         throw "Promote dry run failed."
@@ -154,9 +149,9 @@ if ($SkipStagingVerify) {
 
 Assert-ReleasePins -ExpectedGitSha $ExpectedGitSha -ExpectedArtifactSha $ExpectedArtifactSha -StagingGitSha $stagingGitSha -ArtifactSha $stagingArtifactSha
 
-& pwsh -File $rehearseScript -HostAlias $HostAlias -ExpectedGitSha $ExpectedGitSha -ExpectedArtifactSha $ExpectedArtifactSha -SqliteCopyTimeoutSeconds $SqliteCopyTimeoutSeconds -StaticCopyTimeoutSeconds $StaticCopyTimeoutSeconds -MaintenanceWindowSeconds $MaintenanceWindowSeconds
+& pwsh -File $rehearseScript -HostAlias $HostAlias -ExpectedGitSha $ExpectedGitSha -ExpectedArtifactSha $ExpectedArtifactSha -ValidationTimeoutSeconds $ValidationTimeoutSeconds
 if ($LASTEXITCODE -ne 0) {
-    throw "Production rehearsal failed. Promote aborted before any service mutation."
+    throw "Read-only production save validation failed. Promote aborted before any service mutation."
 }
 
 if ([string]::IsNullOrWhiteSpace($SnapshotRoot)) {
@@ -197,8 +192,7 @@ if ($ignoredRealtimeGameIds.Count -gt 0) {
     $promoteArgs += @("-IgnoredRealtimeGameId", ($ignoredRealtimeGameIds -join ","))
 }
 $promoteArgs += @("-RealtimeGameStaleDays", $RealtimeGameStaleDays)
-$promoteArgs += @("-SqliteCopyTimeoutSeconds", $SqliteCopyTimeoutSeconds)
-$promoteArgs += @("-StaticCopyTimeoutSeconds", $StaticCopyTimeoutSeconds)
+$promoteArgs += @("-ValidationTimeoutSeconds", $ValidationTimeoutSeconds)
 
 try {
     & pwsh @promoteArgs

@@ -687,11 +687,11 @@ if [ "$environment" = "staging" ] && [ "$force_redeploy" != "1" ] && [ "$candida
   fi
 fi
 
-mkdir -p "$runtime_root" "$releases_root" "$shared_root/db" "$shared_root/logs" "$shared_root/elo" "$deps_root"
-
-if [ -d "$legacy_root/db" ] && [ ! -e "$shared_root/db/game.db" ]; then
-  rsync -a "$legacy_root/db/" "$shared_root/db/"
+if [ ! -f "$shared_root/db/game.db" ]; then
+  echo "Code-only deploy requires an existing shared database; initialize it separately." >&2
+  exit 49
 fi
+mkdir -p "$runtime_root" "$releases_root" "$shared_root/logs" "$shared_root/elo" "$deps_root"
 if [ -d "$legacy_root/logs" ] && [ -z "$(ls -A "$shared_root/logs" 2>/dev/null || true)" ]; then
   rsync -a "$legacy_root/logs/" "$shared_root/logs/"
 fi

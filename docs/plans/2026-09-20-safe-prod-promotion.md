@@ -1,5 +1,10 @@
 # Safe production promotion
 
+This historical plan was superseded on 2026-10-11 by code-only releases.
+Release scripts no longer copy or restore databases. See
+[`scripts/README-staging.md`](../../scripts/README-staging.md) for the current
+read-only validation and code rollback contract.
+
 ## Problem
 
 The current production promotion starts `tm-server-next` against the shared live

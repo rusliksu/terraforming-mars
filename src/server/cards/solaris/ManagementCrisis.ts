@@ -40,7 +40,7 @@ export class ManagementCrisis extends Card implements IProjectCard {
         renderData: CardRenderer.builder((b) => {
           b.text('for the rest of this generation, all opponents may take only 1 action per turn', {size: Size.SMALL, uppercase});
           b.br;
-          b.tr(-1);
+          b.minus().tr(1, {digit: true});
         }),
         description: 'Requires that Bureaucrats are ruling or that you have 2 delegates there. Decrease your TR 1 step.',
       },

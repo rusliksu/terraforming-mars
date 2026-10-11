@@ -263,8 +263,8 @@ migrates a production database.
 
 The promotion payload runs on the VPS in a detached Linux session. Closing
 Codex, cancelling the local observer, or losing SSH does **not** cancel that
-operation. Its existing deploy lock, pinned artifact, game gates, backup, and
-rollback checks remain in force. Do not start a new release to find its status.
+operation. Its deploy lock, pinned artifact, game gates, and code rollback
+checks remain in force. Do not start a new release to find its status.
 
 Before launch, the script prints a run token and a reconnect command. Reconnect
 to that exact operation without uploading or re-running any payload:
@@ -417,15 +417,21 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\verify_tm_s
 - Prod and staging are split by host on `443` via SNI.
 - The `STAGING` badge is host-gated and appears only on `staging.tm.knightbyte.win`.
 - `release_tm_prod.ps1` replaces the old manual "check staging, then promote, then open prod" step with scripted gates.
-- Promotion validates every latest save with the candidate codec on an
-  integrity-checked SQLite copy. It then uses a short single-writer maintenance
-  window: stop primary, re-check games, create and restore-probe a consistent
-  backup, switch the release, and start primary. Failed startup restores both
-  the previous release and database backup.
-- After codec and restore checks pass, promotion removes its two temporary
-  rehearsal copies before stopping primary. Retained backups are untouched.
-  Allow disk space for two additional DB copies plus release files and headroom:
-  either the rehearsal pair, or the new backup and a possible rollback copy.
+- Release scripts own code, not database contents. They never copy, create,
+  replace, restore, or migrate the shared database. An existing database is
+  required; initialization and recovery are separate operator actions.
+- Promotion validates the existing saves read-only with a bounded timeout.
+  It then stops primary, repeats the live-game gate and read-only validation,
+  switches the release, and starts primary. Failed startup restores only the
+  previous code; current player data is preserved. No DB-sized free space is
+  required by deployment.
+- `rehearse_tm_prod.ps1` is retained as the read-only validation entrypoint.
+  `-ValidationTimeoutSeconds` replaces the former copy and maintenance budgets.
+  There is no flag to enable database copying in the release path.
+- Server startup still performs its normal database writes. Code-only rollback
+  cannot undo those writes, so releases must preserve schema/save compatibility.
+  A data migration or restore requires a separate reviewed operation. Keep
+  independently managed backups; deployment does not manage their retention.
 - `release.json` is generated during deploy and is used to prove that staging and prod serve the same artifact hash after promote.
 - Rollout syncs `build/`, `assets/`, and the source-managed subset of `elo/` (`index.html`, `elo-api.js`, aliases, and maintenance scripts). It deliberately preserves live Elo data files on the VPS.
 - Rollout also carries `package.json` and `package-lock.json`; runtime dependencies are resolved into a managed cache under `/home/openclaw/tm-runtime/<env>/shared/deps/<package-lock-sha256>` instead of linking back to legacy checkout `node_modules`.

@@ -72,7 +72,9 @@ describe('Rebalanced setup', () => {
       const selectedPreludes: Array<CardName> = wrapper.getComponent(PreludesFilter).props('selected');
       const selectedCorporations: Array<CardName> = wrapper.getComponent(CorporationsFilter).props('selected');
       expect(selectedPreludes.filter((name) => preludeFamily.includes(name))).deep.eq([preludeFamily[expected]]);
-      expect(selectedCorporations.filter((name) => corporationFamily.includes(name))).deep.eq([corporationFamily[expected]]);
+      expect(selectedCorporations.filter((name) => corporationFamily.includes(name))).deep.eq([
+        corporationFamily[expected === 3 ? 1 : expected],
+      ]);
     });
   }
 
@@ -85,6 +87,49 @@ describe('Rebalanced setup', () => {
     const enabled = new Set(['base', 'prelude', 'pathfinders', 'rebalanced', 'betterMars']);
     const filtered = filterReplacedCards([original, combined], getCardReplacementRules((module) => enabled.has(module)));
     expect(filtered.map((card) => card.name)).deep.eq([CardName.EARLY_SETTLEMENT_REBALANCED_BETTER_MARS]);
+  });
+
+  it('restores original selections as enabled replacements without warnings', async () => {
+    const wrapper = shallowMount(CreateGameForm, globalConfig);
+    const settings = TemplateManager.serializeFormState(defaultCreateGameModel());
+    settings.expansions = {...DEFAULT_EXPANSIONS, prelude: true, turmoil: true, rebalanced: true};
+    settings.customCorporationsList = [CardName.PRISTAR];
+    settings.customPreludes = [CardName.EARLY_SETTLEMENT, CardName.SELF_SUFFICIENT_SETTLEMENT];
+    delete settings.customCorporationExclusions;
+    delete settings.customPreludesExclusions;
+    wrapper.vm.showCorporationList = true;
+    wrapper.vm.showPreludesList = true;
+    const processor = wrapper.vm.applySettings(settings);
+    await wrapper.vm.$nextTick();
+    expect(processor.warnings).deep.eq([]);
+    expect(wrapper.vm.customCorporations).deep.eq([CardName.PRISTAR_REBALANCED]);
+    expect(wrapper.vm.customPreludes).have.members([
+      CardName.EARLY_SETTLEMENT_REBALANCED, CardName.SELF_SUFFICIENT_SETTLEMENT_REBALANCED,
+    ]);
+  });
+
+  it('selects Better Mars Pristar when both modules are enabled', async () => {
+    const wrapper = shallowMount(CreateGameForm, globalConfig);
+    wrapper.vm.showCorporationList = true;
+    wrapper.vm.expansions.turmoil = true;
+    wrapper.vm.expansions.pathfinders = true;
+    await wrapper.get('#rebalanced-checkbox').setValue(true);
+    await wrapper.get('#betterMars-checkbox').setValue(true);
+    expect(wrapper.vm.getSelectableCustomCorporations()).includes(CardName.PRISTAR_BETTER_MARS);
+    expect(wrapper.vm.customCorporations).includes(CardName.PRISTAR_BETTER_MARS);
+    expect(wrapper.vm.getSelectableCustomCorporations()).not.includes(CardName.PRISTAR_REBALANCED_BETTER_MARS);
+  });
+
+  it('restores a replaced card as its original when the replacement module is off', async () => {
+    const wrapper = shallowMount(CreateGameForm, globalConfig);
+    const settings = TemplateManager.serializeFormState(defaultCreateGameModel());
+    settings.expansions = {...DEFAULT_EXPANSIONS, turmoil: true};
+    settings.customCorporationsList = [CardName.PRISTAR_REBALANCED];
+    delete settings.customCorporationExclusions;
+    const processor = wrapper.vm.applySettings(settings);
+    await wrapper.vm.$nextTick();
+    expect(processor.warnings).deep.eq([]);
+    expect(wrapper.vm.customCorporations).deep.eq([CardName.PRISTAR]);
   });
 
   it('serializes Prelude 2 with Rebalanced and restores both through saved settings', async () => {

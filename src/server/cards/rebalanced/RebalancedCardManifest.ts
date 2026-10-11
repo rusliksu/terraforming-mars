@@ -116,7 +116,6 @@ import {BuildColonyStandardProjectRebalanced} from './BuildColonyStandardProject
 import {
   EarlySettlementRebalancedBetterMars,
   SelfSufficientSettlementRebalancedBetterMars,
-  PristarRebalancedBetterMars,
   MartianRailsRebalancedBetterMars,
   TropicalResortRebalancedBetterMars,
 } from './CombinedVariants';
@@ -220,7 +219,6 @@ export const REBALANCED_CARD_MANIFEST = new ModuleManifest({
     [CardName.UTOPIA_INVEST_REBALANCED]: {Factory: UtopiaInvestRebalanced},
     [CardName.VIRON_REBALANCED]: {Factory: VironRebalanced},
     [CardName.VITOR_REBALANCED]: {Factory: VitorRebalanced},
-    [CardName.PRISTAR_REBALANCED_BETTER_MARS]: {Factory: PristarRebalancedBetterMars, compatibility: ['betterMars', 'turmoil', 'pathfinders']},
   },
   preludeCards: {
     [CardName.BIOFUELS_REBALANCED]: {Factory: BiofuelsRebalanced},
@@ -369,8 +367,7 @@ export const REBALANCED_CARD_MANIFEST = new ModuleManifest({
     [CardName.EARLY_SETTLEMENT_BETTER_MARS, CardName.EARLY_SETTLEMENT_REBALANCED_BETTER_MARS],
     [CardName.SELF_SUFFICIENT_SETTLEMENT_REBALANCED, CardName.SELF_SUFFICIENT_SETTLEMENT_REBALANCED_BETTER_MARS],
     [CardName.SELF_SUFFICIENT_SETTLEMENT_BETTER_MARS, CardName.SELF_SUFFICIENT_SETTLEMENT_REBALANCED_BETTER_MARS],
-    [CardName.PRISTAR_REBALANCED, CardName.PRISTAR_REBALANCED_BETTER_MARS],
-    [CardName.PRISTAR_BETTER_MARS, CardName.PRISTAR_REBALANCED_BETTER_MARS],
+    [CardName.PRISTAR_REBALANCED, CardName.PRISTAR_BETTER_MARS],
     [CardName.MARTIAN_RAILS_REBALANCED, CardName.MARTIAN_RAILS_REBALANCED_BETTER_MARS],
     [CardName.MARTIAN_RAILS_BETTER_MARS, CardName.MARTIAN_RAILS_REBALANCED_BETTER_MARS],
     [CardName.TROPICAL_RESORT_REBALANCED, CardName.TROPICAL_RESORT_REBALANCED_BETTER_MARS],

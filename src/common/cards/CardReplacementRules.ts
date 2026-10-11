@@ -7,6 +7,41 @@ export type CardReplacementRules = Readonly<{
   conditionalCardsToRemove: Iterable<readonly [CardName, CardName]>;
 }>;
 
+/* Maps unavailable family members to their available version. */
+export function getCardReplacementNames(
+  available: ReadonlyArray<CardName>,
+  manifests: ReadonlyArray<CardReplacementRules>,
+): ReadonlyMap<CardName, CardName> {
+  const availableNames = new Set(available);
+  const neighbors = new Map<CardName, Set<CardName>>();
+  for (const manifest of manifests) {
+    for (const [original, replacement] of manifest.conditionalCardsToRemove) {
+      for (const [from, to] of [[original, replacement], [replacement, original]] as const) {
+        const names = neighbors.get(from) ?? new Set<CardName>();
+        names.add(to);
+        neighbors.set(from, names);
+      }
+    }
+  }
+  const replacements = new Map<CardName, CardName>();
+  for (const name of neighbors.keys()) {
+    if (availableNames.has(name)) {
+      continue;
+    }
+    const visited = new Set([name]);
+    for (const candidate of visited) {
+      if (availableNames.has(candidate)) {
+        replacements.set(name, candidate);
+        break;
+      }
+      for (const neighbor of neighbors.get(candidate) ?? []) {
+        visited.add(neighbor);
+      }
+    }
+  }
+  return replacements;
+}
+
 /* Removes originals when enabled modules replace them in the available pool. */
 export function filterReplacedCards<T extends {name: CardName}>(
   cards: ReadonlyArray<T>,

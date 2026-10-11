@@ -64,11 +64,11 @@ class CardProcessor {
 
   private static processDeck(module: GameModule, cardManifest: CardManifest<ICard>) {
     for (const factory of CardManifest.values(cardManifest)) {
-      CardProcessor.processCard(module, new factory.Factory(), factory.compatibility);
+      CardProcessor.processCard(module, new factory.Factory(), factory.compatibility, factory.instantiate);
     }
   }
 
-  private static processCard(module: GameModule, card: ICard, compatibility: undefined | OneOrArray<Expansion>) {
+  private static processCard(module: GameModule, card: ICard, compatibility: undefined | OneOrArray<Expansion>, instantiate?: boolean) {
     if (card.type === CardType.PROXY) {
       return;
     }
@@ -100,6 +100,7 @@ class CardProcessor {
     const production = card.behavior?.production;
     const clientCard: Mutable<ClientCard> = {
       module: module,
+      instantiate: instantiate === false ? false : undefined,
       name: card.name,
       tags: card.tags,
       cardDiscount: card.cardDiscount,

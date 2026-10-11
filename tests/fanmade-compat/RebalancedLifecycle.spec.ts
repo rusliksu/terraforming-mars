@@ -44,11 +44,20 @@ function setup(): NewGameConfig {
 }
 
 describe('Rebalanced lifecycle', () => {
-  it('builds actual rendering metadata for all 113 replacements and five combinations', () => {
+  it('prioritizes Better Mars Pristar in new games with both modules', () => {
+    const [game] = testGame(2, {rebalancedExpansion: true, betterMarsExpansion: true,
+      turmoilExtension: true, pathfindersExpansion: true});
+    const names = new GameCards(game.gameOptions).getCorporationCards().map((card) => card.name);
+    expect(names).includes(CardName.PRISTAR_BETTER_MARS);
+    expect(names).not.includes(CardName.PRISTAR_REBALANCED);
+    expect(names).not.includes(CardName.PRISTAR_REBALANCED_BETTER_MARS);
+  });
+
+  it('builds actual rendering metadata for all 113 replacements and four combinations', () => {
     const manifest = REBALANCED_CARD_MANIFEST;
     const specs = [...Object.values(manifest.projectCards), ...Object.values(manifest.corporationCards),
       ...Object.values(manifest.preludeCards), ...Object.values(manifest.standardProjects)];
-    expect(specs).length(118);
+    expect(specs).length(117);
     for (const spec of specs) {
       const card = new spec.Factory();
       expect(card.metadata.renderData, card.name).not.eq(undefined);
@@ -72,7 +81,7 @@ describe('Rebalanced lifecycle', () => {
       throw new Error('The API did not retain its created game');
     }
     const player = game.players[0];
-    expect(player.dealtCorporationCards.map((card) => card.name)).deep.eq([CardName.PRISTAR_REBALANCED_BETTER_MARS]);
+    expect(player.dealtCorporationCards.map((card) => card.name)).deep.eq([CardName.PRISTAR_BETTER_MARS]);
     expect(player.dealtPreludeCards.map((card) => card.name).sort()).deep.eq([
       CardName.EARLY_SETTLEMENT_REBALANCED_BETTER_MARS,
       CardName.SELF_SUFFICIENT_SETTLEMENT_REBALANCED_BETTER_MARS,

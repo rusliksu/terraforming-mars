@@ -4,6 +4,7 @@ import {LunarBeamBetterMars} from './LunarBeamBetterMars';
 import {LunaMetropolisBetterMars} from './LunaMetropolisBetterMars';
 import {LunarExportsBetterMars} from './LunarExportsBetterMars';
 import {PristarBetterMars} from './PristarBetterMars';
+import {PristarRebalancedBetterMars} from '../rebalanced/CombinedVariants';
 import {EarlySettlementBetterMars} from './EarlySettlementBetterMars';
 import {SelfSufficientSettlementBetterMars} from './SelfSufficientSettlementBetterMars';
 import {EosChasmaNationalParkBetterMars} from './EosChasmaNationalParkBetterMars';
@@ -34,6 +35,8 @@ export const BETTER_MARS_CARD_MANIFEST = new ModuleManifest({
   module: 'betterMars',
   corporationCards: {
     [CardName.PRISTAR_BETTER_MARS]: {Factory: PristarBetterMars, compatibility: ['turmoil', 'pathfinders']},
+    // Retains the old card for saved games, without offering it in new games.
+    [CardName.PRISTAR_REBALANCED_BETTER_MARS]: {Factory: PristarRebalancedBetterMars, instantiate: false, compatibility: ['rebalanced', 'turmoil', 'pathfinders']},
     [CardName.PLANET_PR]: {Factory: PlanetPr, compatibility: 'pathfinders'},
   },
   preludeCards: {
@@ -75,6 +78,7 @@ export const BETTER_MARS_CARD_MANIFEST = new ModuleManifest({
     [CardName.LUNA_METROPOLIS, CardName.LUNA_METROPOLIS_BETTER_MARS],
     [CardName.LUNAR_EXPORTS, CardName.LUNAR_EXPORTS_BETTER_MARS],
     [CardName.PRISTAR, CardName.PRISTAR_BETTER_MARS],
+    [CardName.PRISTAR_REBALANCED_BETTER_MARS, CardName.PRISTAR_BETTER_MARS],
     [CardName.EARLY_SETTLEMENT, CardName.EARLY_SETTLEMENT_BETTER_MARS],
     [CardName.SELF_SUFFICIENT_SETTLEMENT, CardName.SELF_SUFFICIENT_SETTLEMENT_BETTER_MARS],
     [CardName.EOS_CHASMA_NATIONAL_PARK, CardName.EOS_CHASMA_NATIONAL_PARK_BETTER_MARS],

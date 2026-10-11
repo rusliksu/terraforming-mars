@@ -21,7 +21,7 @@ const ITEMS_BY_GROUP: Record<string, Array<string>> = {
   beta: ['item-b1'],
 };
 
-function mountFilter(overrides: {selected?: Array<string>, selectable?: Array<string>} = {}) {
+function mountFilter(overrides: {selected?: Array<string>, selectable?: Array<string>, replacements?: ReadonlyMap<string, string>} = {}) {
   return shallowMount(ModuleItemFilter, {
     ...globalConfig,
     global: {
@@ -34,6 +34,7 @@ function mountFilter(overrides: {selected?: Array<string>, selectable?: Array<st
       itemsByGroup: ITEMS_BY_GROUP,
       selected: overrides.selected ?? [],
       selectable: overrides.selectable,
+      replacements: overrides.replacements,
     },
     slots: {
       item: ({itemName}: {itemName: string}) => h('span', {class: 'item-label'}, itemName),
@@ -112,6 +113,13 @@ describe('ModuleItemFilter', () => {
   });
 
   // --- selectNone ---
+
+  it('explains an unavailable item that has a selected-module replacement', () => {
+    const wrapper = mountFilter({selectable: ['item-a1'], replacements: new Map([['item-a2', 'item-a1']])});
+    const labels = wrapper.findAll('label.form-checkbox');
+    expect(labels.find((label) => label.text().includes('item-a2'))?.attributes('title')).eq('Replaced by item-a1');
+    expect(labels.find((label) => label.text().includes('item-b1'))?.attributes('title')).eq('Enable required expansions to select this card');
+  });
 
   it('selectNone("All") removes every item', () => {
     const wrapper = mountFilter({selected: ['item-a1', 'item-a2', 'item-b1']});

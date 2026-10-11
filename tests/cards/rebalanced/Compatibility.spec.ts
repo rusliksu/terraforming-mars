@@ -303,14 +303,14 @@ describe('Rebalanced catalogue and saved games', () => {
     expect(new GameCards(options).getPreludeCards().map((card) => card.name)).deep.eq([CardName.DONATION_REBALANCED]);
   });
 
-  it('registers exactly the 113 active published IDs and five combined IDs', () => {
+  it('registers exactly the 113 active published IDs and four combined IDs', () => {
     const manifest = REBALANCED_CARD_MANIFEST;
     const manifests: Array<CardManifest<ICard>> = [manifest.projectCards, manifest.corporationCards, manifest.preludeCards, manifest.standardProjects];
     const names = manifests.flatMap(CardManifest.keys);
     const combined = [CardName.EARLY_SETTLEMENT_REBALANCED_BETTER_MARS, CardName.SELF_SUFFICIENT_SETTLEMENT_REBALANCED_BETTER_MARS,
-      CardName.PRISTAR_REBALANCED_BETTER_MARS, CardName.MARTIAN_RAILS_REBALANCED_BETTER_MARS, CardName.TROPICAL_RESORT_REBALANCED_BETTER_MARS];
-    expect(names).has.length(118);
-    expect(new Set(names).size).eq(118);
+      CardName.MARTIAN_RAILS_REBALANCED_BETTER_MARS, CardName.TROPICAL_RESORT_REBALANCED_BETTER_MARS];
+    expect(names).has.length(117);
+    expect(new Set(names).size).eq(117);
     expect(names).has.members([...reference.cards.map((card) => card.name), ...combined]);
   });
 

@@ -25,6 +25,7 @@ import {Warning} from '../src/common/cards/Warning';
 import {testGame as testGameProxy} from './TestGame';
 import {LogMessage} from '../src/common/logs/LogMessage';
 import {cast} from '@/common/utils/utils';
+import {GlobalEventDealer} from '@/server/turmoil/globalEvents/GlobalEventDealer';
 
 /**
  * Creates a new game for testing. Has some hidden behavior for testing:
@@ -104,9 +105,29 @@ export function setRulingParty(game: IGame, partyName: PartyName, policyId?: Pol
 // in beforeEach and call the returned function in afterEach to restore real shuffling.
 export function forcePartiesInPlay(...names: ReadonlyArray<PartyName>): () => void {
   const original = Turmoil.shufflePartyNames;
-  Turmoil.shufflePartyNames = (allNames) => [...names, ...allNames.filter((name) => !names.includes(name))];
+  const originalDraw = GlobalEventDealer.prototype.draw;
+  const draws = new WeakMap<GlobalEventDealer, number>();
+  let initialParties: ReadonlyArray<PartyName> = [];
+  Turmoil.shufflePartyNames = (allNames) => {
+    const ordered = [...names, ...allNames.filter((name) => !names.includes(name))];
+    initialParties = ordered.slice(0, 6);
+    return ordered;
+  };
+  // Keeps forced parties from being replaced by starting events.
+  GlobalEventDealer.prototype.draw = function() {
+    const count = draws.get(this) ?? 0;
+    draws.set(this, count + 1);
+    if (count < 2) {
+      const index = this.deck.findIndex((event) => initialParties.includes(event.revealedDelegate));
+      if (index >= 0) {
+        return this.deck.splice(index, 1)[0];
+      }
+    }
+    return originalDraw.call(this);
+  };
   return () => {
     Turmoil.shufflePartyNames = original;
+    GlobalEventDealer.prototype.draw = originalDraw;
   };
 }
 

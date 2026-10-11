@@ -201,14 +201,20 @@ export class Turmoil {
   }
 
   public initGlobalEvent(game: IGame) {
-    // Draw the first global event to setup the game. allowSwap is false here: the 6 parties
-    // chosen for this game shouldn't be able to lose a member to More Parties' swap-in rule
-    // before the game has even started -- that rule is about the event track evolving as the
-    // game progresses, not about second-guessing the initial roster at t=0.
-    this.comingGlobalEvent = this.globalEventDealer.draw();
-    this.addNeutralDelegate(this.comingGlobalEvent?.revealedDelegate, game, false);
-    this.distantGlobalEvent = this.globalEventDealer.draw();
-    this.addNeutralDelegate(this.distantGlobalEvent?.revealedDelegate, game, false);
+    this.comingGlobalEvent = this.drawStartingEvent(game);
+    this.addNeutralDelegate(this.comingGlobalEvent?.revealedDelegate, game);
+    this.distantGlobalEvent = this.drawStartingEvent(game);
+    this.addNeutralDelegate(this.distantGlobalEvent?.revealedDelegate, game);
+  }
+
+  private drawStartingEvent(game: IGame): IGlobalEvent | undefined {
+    let event = this.globalEventDealer.draw();
+    while (game.gameOptions.morePartiesExpansion && event !== undefined &&
+        !isPartyCompatible(event.revealedDelegate, game.gameOptions)) {
+      this.globalEventDealer.discard(event);
+      event = this.globalEventDealer.draw();
+    }
+    return event;
   }
 
   public getPartyByName(name: PartyName): IParty {
@@ -385,18 +391,13 @@ export class Turmoil {
     this.addNeutralDelegate(this.distantGlobalEvent?.revealedDelegate, game);
   }
 
-  private addNeutralDelegate(partyName: PartyName | undefined, game: IGame, allowSwap: boolean = true) {
+  private addNeutralDelegate(partyName: PartyName | undefined, game: IGame) {
     if (partyName === undefined) {
       return;
     }
     if (!this.parties.some((party) => party.name === partyName)) {
-      // More Parties: a global event may be printed with a party that isn't one of the 6
-      // currently in play (only 6 of the 12 available parties are chosen per game). Rather than
-      // silently skipping the delegate, swap the referenced party into play -- see
-      // swapInParty(). Outside moreParties (or during the initial setup reveal, see
-      // initGlobalEvent) there's no swap to perform, so fall back to the old silent-skip
-      // behavior.
-      if (!allowSwap || !game.gameOptions.morePartiesExpansion || !isPartyCompatible(partyName, game.gameOptions)) {
+      // More Parties events can introduce parties outside the six currently in play.
+      if (!game.gameOptions.morePartiesExpansion || !isPartyCompatible(partyName, game.gameOptions)) {
         return;
       }
       this.swapInParty(partyName, game);

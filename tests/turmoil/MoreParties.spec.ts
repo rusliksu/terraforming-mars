@@ -7,6 +7,11 @@ import {DEFAULT_GAME_OPTIONS, GameOptions} from '../../src/server/game/GameOptio
 import {toName} from '../../src/common/utils/utils';
 import {testGame} from '../TestGame';
 import {forcePartiesInPlay} from '../TestingUtils';
+import {GlobalEventDealer} from '@/server/turmoil/globalEvents/GlobalEventDealer';
+import {EnergyEconomics} from '@/server/turmoil/globalEvents/moreParties/EnergyEconomics';
+import {Revolution} from '@/server/turmoil/globalEvents/Revolution';
+import {LonelinessInACrowd} from '@/server/turmoil/globalEvents/moreParties/LonelinessInACrowd';
+import {GlobalEventName} from '@/common/turmoil/globalEvents/GlobalEventName';
 
 // Populists, Spome, Empower, Bureaucrats, Centrists and Transhumanists are placeholder Turmoil
 // parties added for idesOfMars/robAntilles cards that reference them. They're gated behind
@@ -14,6 +19,56 @@ import {forcePartiesInPlay} from '../TestingUtils';
 // card that requires one of them is registered as needing moreParties too, so a game can't end
 // up with a card whose required party doesn't exist.
 describe('More Parties expansion', () => {
+  it('places both starting event delegates when their parties are outside the random selection', () => {
+    const restoreParties = forcePartiesInPlay(
+      PartyName.BUREAUCRATS, PartyName.KELVINISTS, PartyName.GREENS,
+      PartyName.MARS, PartyName.REDS, PartyName.SCIENTISTS,
+    );
+    const originalDraw = GlobalEventDealer.prototype.draw;
+    const events = [new EnergyEconomics(), new Revolution()];
+    GlobalEventDealer.prototype.draw = () => events.shift();
+    try {
+      const [game] = testGame(2, {turmoilExtension: true, morePartiesExpansion: true});
+      const turmoil = Turmoil.getTurmoil(game);
+      expect(turmoil.parties.map(toName)).to.have.members([
+        PartyName.EMPOWER, PartyName.UNITY, PartyName.GREENS,
+        PartyName.MARS, PartyName.REDS, PartyName.SCIENTISTS,
+      ]);
+      expect(turmoil.getPartyByName(PartyName.EMPOWER).delegates.multiplicity('NEUTRAL')).to.eq(1);
+      expect(turmoil.getPartyByName(PartyName.UNITY).delegates.multiplicity('NEUTRAL')).to.eq(1);
+      expect(turmoil.delegateReserve.multiplicity('NEUTRAL')).to.eq(11);
+      expect(turmoil.chairman).to.eq('NEUTRAL');
+      expect(turmoil.rulingParty.name).to.eq(PartyName.GREENS);
+    } finally {
+      GlobalEventDealer.prototype.draw = originalDraw;
+      restoreParties();
+    }
+  });
+
+  it('draws two compatible starting events when the Moon is disabled', () => {
+    const restoreParties = forcePartiesInPlay(
+      PartyName.BUREAUCRATS, PartyName.KELVINISTS, PartyName.GREENS,
+      PartyName.MARS, PartyName.REDS, PartyName.SCIENTISTS,
+    );
+    const originalDraw = GlobalEventDealer.prototype.draw;
+    const events = [new LonelinessInACrowd(), new EnergyEconomics(), new Revolution()];
+    GlobalEventDealer.prototype.draw = () => events.shift();
+    try {
+      const [game] = testGame(2, {turmoilExtension: true, morePartiesExpansion: true});
+      const turmoil = Turmoil.getTurmoil(game);
+      expect(turmoil.comingGlobalEvent?.name).to.eq(GlobalEventName.ENERGY_ECONOMICS);
+      expect(turmoil.distantGlobalEvent?.name).to.eq(GlobalEventName.REVOLUTION);
+      expect(turmoil.globalEventDealer.discards.map(toName)).to.include(GlobalEventName.LONELINESS_IN_A_CROWD);
+      expect(turmoil.parties).to.have.length(6);
+      expect(turmoil.getPartyByName(PartyName.EMPOWER).delegates.multiplicity('NEUTRAL')).to.eq(1);
+      expect(turmoil.getPartyByName(PartyName.UNITY).delegates.multiplicity('NEUTRAL')).to.eq(1);
+      expect(turmoil.delegateReserve.multiplicity('NEUTRAL')).to.eq(11);
+    } finally {
+      GlobalEventDealer.prototype.draw = originalDraw;
+      restoreParties();
+    }
+  });
+
   for (const moonExpansion of [false, true]) {
     it(`selects Spome only with the Moon enabled (moon=${moonExpansion})`, () => {
       const restore = forcePartiesInPlay(PartyName.SPOME);

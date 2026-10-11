@@ -62,7 +62,9 @@
                                 <template v-if="expansions.venusPhase2">
                                   <div id="venus-phase-2-help" class="create-game-expansion-help">
                                     <p v-i18n>Adds a Venus surface board and standard projects. Extends the Venus track to 60%, in 2% steps.</p>
-                                    <p v-if="requiresVenusTrackCompletion" v-i18n>With the current settings, Venus must reach 60% to end the game.</p>
+                                    <p v-if="playersCount === 1 && soloTR" v-i18n>In Solo TR, reach 63 TR to win; completing Venus is not required.</p>
+                                    <p v-else-if="playersCount === 1" v-i18n>In solo terraforming, Venus must reach 60% to win.</p>
+                                    <p v-else-if="requiresVenusTrackCompletion" v-i18n>With the current settings, Venus must reach 60% to end the game.</p>
                                     <p v-else v-i18n>With the current settings, Venus does not need to be completed to end the game.</p>
                                   </div>
                                   <div class="create-game-subsection-label" style="margin-top: 4px;">

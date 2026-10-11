@@ -1,6 +1,8 @@
 {
     "Adds a Venus surface board and standard projects. Extends the Venus track to 60%, in 2% steps.": "Добавляет поле Венеры и стандартные проекты. Продлевает шкалу Венеры до 60% с шагом 2%.",
     "With the current settings, Venus must reach 60% to end the game.": "При текущих настройках для завершения игры Венеру нужно поднять до 60%.",
+    "In Solo TR, reach 63 TR to win; completing Venus is not required.": "В соло на рейтинг для победы нужно набрать 63 TR; закрывать Венеру необязательно.",
+    "In solo terraforming, Venus must reach 60% to win.": "В соло на терраформирование для победы Венеру нужно поднять до 60%.",
     "With the current settings, Venus does not need to be completed to end the game.": "При текущих настройках для завершения игры Венеру закрывать необязательно.",
     "Randomly selects 6 parties from an expanded pool of 12. Spome requires The Moon. Events can bring other parties into play.": "Случайно выбирает 6 партий из расширенного набора в 12. Spome доступна только с Луной. События могут вводить другие партии в игру.",
     "The two starting events each place a neutral delegate. Party leaders choose bonuses and policies; the ruling policy remains locked until the next election.": "Каждое из двух стартовых событий ставит нейтрального делегата. Лидеры партий выбирают бонусы и политики; политика правящей партии закреплена до следующих выборов.",

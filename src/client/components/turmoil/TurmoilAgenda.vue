@@ -340,6 +340,11 @@
       <span class="red-arrow"></span>
       <div class="resource-tag tag-colony-count party-resource-tag"></div>
     </template>
+    <template v-else-if="id === 'spop04'">
+      <span class="money resource">4</span>
+      <span class="red-arrow"></span>
+      <div class="resource card card-with-border policy-card-with-tag"><div class="card-icon tag-city"></div></div>
+    </template>
     <template v-else-if="id === 'empb01'">
       <div class="resource money party-resource">1</div> /
       <div class="resource-tag tag-power party-resource-tag"></div>
@@ -445,9 +450,6 @@
       <span v-i18n style="font-size: 11px;">Milestone/Award</span>
       </div>
     </template>
-    <template v-else-if="isNotImplementedId">
-      <div v-i18n>Not implemented</div>
-    </template>
     <template v-else>
       <div>Unknown agenda ID {{id}}</div>
     </template>
@@ -507,13 +509,6 @@ export default defineComponent({
         g: 'greens',
       };
       return 'party-badge party-badge--' + partyBadgeSlugs[this.id[0]];
-    },
-    // These ids reference EPIC-campaign or otherwise-unmodeled game concepts (see
-    // MORE_PARTIES_AGENDA_DESCRIPTIONS / the More Parties party files) and have no real
-    // behavior in this codebase -- they share this generic display instead of a bespoke icon.
-    isNotImplementedId(): boolean {
-      const notImplementedIds = ['spop04'];
-      return notImplementedIds.includes(this.id);
     },
     resolvedDescription(): string {
       return getAgendaOrThrow(this.id, this.morePartiesExpansion).description;

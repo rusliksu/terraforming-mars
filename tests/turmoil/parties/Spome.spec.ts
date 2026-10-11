@@ -7,12 +7,16 @@ import {
 import {IGame} from '../../../src/server/IGame';
 import {TestPlayer} from '../../TestPlayer';
 import {testGame} from '../../TestGame';
-import {forcePartiesInPlay, setRulingParty} from '../../TestingUtils';
+import {forcePartiesInPlay, runAllActions, setRulingParty} from '../../TestingUtils';
 import {PartyName} from '../../../src/common/turmoil/PartyName';
 import {TileType} from '../../../src/common/TileType';
 import {MoonExpansion} from '../../../src/server/moon/MoonExpansion';
 import {SelectColony} from '../../../src/server/inputs/SelectColony';
 import {cast} from '../../../src/common/utils/utils';
+import {TurmoilHandler} from '@/server/turmoil/TurmoilHandler';
+import {SelectOption} from '@/server/inputs/SelectOption';
+import {UrbanizedArea} from '@/server/cards/base/UrbanizedArea';
+import {PowerPlant} from '@/server/cards/base/PowerPlant';
 
 describe('Spome', () => {
   let game: IGame;
@@ -90,5 +94,27 @@ describe('Spome', () => {
   it('policy 3 cannot act without enough M€', () => {
     player.megaCredits = 0;
     expect(SPOME_POLICY_3.canAct(player)).is.false;
+  });
+
+  it('policy 4 buys the first city-tagged card for 4 M€ and respects the generation limit', () => {
+    const [game, player] = testGame(2, {turmoilExtension: true, morePartiesExpansion: true, moonExpansion: true});
+    setRulingParty(game, PartyName.SPOME, 'spop04');
+    player.megaCredits = 3;
+    expect(TurmoilHandler.partyAction(player)).is.undefined;
+
+    player.megaCredits = 8;
+    player.politicalAgendasActionUsedCount = 2;
+    const city = new UrbanizedArea();
+    const skipped = new PowerPlant();
+    game.projectDeck.drawPile.push(city, skipped);
+
+    cast(TurmoilHandler.partyAction(player), SelectOption).cb(undefined);
+    runAllActions(game);
+
+    expect(player.megaCredits).to.eq(4);
+    expect(player.cardsInHand).deep.eq([city]);
+    expect(game.projectDeck.discardPile).includes(skipped);
+    expect(player.politicalAgendasActionUsedCount).to.eq(3);
+    expect(TurmoilHandler.partyAction(player)).is.undefined;
   });
 });

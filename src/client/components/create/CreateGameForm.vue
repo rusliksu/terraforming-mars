@@ -15,7 +15,7 @@
                             </div>
                         </div>
 
-                        <div class="create-game-page-column">
+                        <div class="create-game-page-column create-game-expansions">
                             <h4 v-i18n>Expansions</h4>
 
                             <input type="checkbox" name="allOfficialExpansions" id="allOfficialExpansions-checkbox" v-model="allOfficialExpansions">

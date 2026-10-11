@@ -33,6 +33,17 @@ describe('Card', () => {
     expect(wrapper.exists()).to.be.true;
   });
 
+  it('shows Management Crisis as a loss of one TR', () => {
+    const wrapper = mount(Card, {...globalConfig, props: {card: {name: CardName.MANAGEMENT_CRISIS}}});
+    const icons = wrapper.get('.card-content');
+    expect(icons.findAll('.card-minus')).to.have.length(1);
+    expect(icons.get('.card-res-amount').text()).to.equal('1');
+    expect(icons.findAll('.card-tr')).to.have.length(1);
+    expect(icons.get('.card-minus').element.compareDocumentPosition(icons.get('.card-tr').element) & Node.DOCUMENT_POSITION_FOLLOWING)
+      .to.not.equal(0);
+    wrapper.unmount();
+  });
+
   it('dims used action cards instead of showing a player cube in experimental UI', () => {
     PreferencesManager.INSTANCE.set('experimental_ui', true);
 

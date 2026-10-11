@@ -53,20 +53,22 @@
                                     <span v-i18n>Alt. Venus Board</span> &nbsp;<a :href="wikiUrls.alternativeVenusBoard" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                                 </label>
 
-                                <input type="checkbox" name="venusPhase2" id="venusPhase2-checkbox" v-model="expansions.venusPhase2" :aria-describedby="expansions.venusPhase2 ? 'venus-phase-2-help' : undefined">
+                                <input type="checkbox" name="venusPhase2" id="venusPhase2-checkbox" v-model="expansions.venusPhase2">
                                 <label for="venusPhase2-checkbox" class="expansion-button">
                                     <div class="create-game-expansion-icon expansion-icon-venusPhase2"></div>
-                                    <span v-i18n>Venus: Phase 2</span>&nbsp;<span :title="$t('Adds a Venus surface board and standard projects. Extends the Venus track to 60%, in 2% steps.')">(&#945;)</span>&nbsp;<a :href="wikiUrls.venusPhase2" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+                                    <span v-i18n>Venus: Phase 2</span>&nbsp;<span :title="$t('Adds a Venus surface board and standard projects. Extends the Venus track to 60%, in 2% steps.')">(&#945;)</span>&nbsp;
+                                    <ExpansionHelp helpId="venus-phase-2-help" title="Venus: Phase 2" :wikiUrl="wikiUrls.venusPhase2">
+                                      <p v-i18n>Adds a Venus surface board and standard projects. Extends the Venus track to 60%, in 2% steps.</p>
+                                      <template v-if="expansions.venusPhase2">
+                                        <p v-if="playersCount === 1 && soloTR" v-i18n>In Solo TR, reach 63 TR to win; completing Venus is not required.</p>
+                                        <p v-else-if="playersCount === 1" v-i18n>In solo terraforming, Venus must reach 60% to win.</p>
+                                        <p v-else-if="requiresVenusTrackCompletion" v-i18n>With the current settings, Venus must reach 60% to end the game.</p>
+                                        <p v-else v-i18n>With the current settings, Venus does not need to be completed to end the game.</p>
+                                      </template>
+                                    </ExpansionHelp>
                                 </label>
 
                                 <template v-if="expansions.venusPhase2">
-                                  <div id="venus-phase-2-help" class="create-game-expansion-help">
-                                    <p v-i18n>Adds a Venus surface board and standard projects. Extends the Venus track to 60%, in 2% steps.</p>
-                                    <p v-if="playersCount === 1 && soloTR" v-i18n>In Solo TR, reach 63 TR to win; completing Venus is not required.</p>
-                                    <p v-else-if="playersCount === 1" v-i18n>In solo terraforming, Venus must reach 60% to win.</p>
-                                    <p v-else-if="requiresVenusTrackCompletion" v-i18n>With the current settings, Venus must reach 60% to end the game.</p>
-                                    <p v-else v-i18n>With the current settings, Venus does not need to be completed to end the game.</p>
-                                  </div>
                                   <div class="create-game-subsection-label" style="margin-top: 4px;">
                                     <label for="custom-venus-board-code" v-i18n>Custom Venus Phase 2 board code (optional)</label>
                                     <textarea
@@ -117,15 +119,15 @@
                                     </div>
                                 </div>
 
-                                <input type="checkbox" name="moreParties" id="moreParties-checkbox" v-model="expansions.moreParties" :aria-describedby="expansions.moreParties ? 'more-parties-help' : undefined">
+                                <input type="checkbox" name="moreParties" id="moreParties-checkbox" v-model="expansions.moreParties">
                                 <label for="moreParties-checkbox" class="expansion-button">
                                     <div class="create-game-expansion-icon expansion-icon-moreParties"></div>
-                                    <span v-i18n>More Parties</span>&nbsp;<span title="A fan expansion: adds 6 new Turmoil parties (Populists, Spome, Empower, Bureaucrats, Centrists, Transhumanists), required by cards from other fan expansions that reference them">(&#945;)</span>&nbsp;<a :href="wikiUrls.moreParties" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+                                    <span v-i18n>More Parties</span>&nbsp;<span title="A fan expansion: adds 6 new Turmoil parties (Populists, Spome, Empower, Bureaucrats, Centrists, Transhumanists), required by cards from other fan expansions that reference them">(&#945;)</span>&nbsp;
+                                    <ExpansionHelp helpId="more-parties-help" title="More Parties" :wikiUrl="wikiUrls.moreParties">
+                                      <p v-i18n>Randomly selects 6 parties from an expanded pool of 12. Spome requires The Moon. Events can bring other parties into play.</p>
+                                      <p v-i18n>The two starting events each place a neutral delegate. Party leaders choose bonuses and policies; the ruling policy remains locked until the next election.</p>
+                                    </ExpansionHelp>
                                 </label>
-                                <div v-if="expansions.moreParties" id="more-parties-help" class="create-game-expansion-help">
-                                  <p v-i18n>Randomly selects 6 parties from an expanded pool of 12. Spome requires The Moon. Events can bring other parties into play.</p>
-                                  <p v-i18n>The two starting events each place a neutral delegate. Party leaders choose bonuses and policies; the ruling policy remains locked until the next election.</p>
-                                </div>
                             </template>
 
                             <input type="checkbox" name="promo" id="promo-checkbox" v-model="expansions.promo">
@@ -859,6 +861,7 @@ import {CardType} from '@/common/cards/CardType';
 import {Expansion, GameModule} from '@/common/cards/GameModule';
 import CeosFilter from '@/client/components/create/CeosFilter.vue';
 import CorporationsFilter from '@/client/components/create/CorporationsFilter.vue';
+import ExpansionHelp from '@/client/components/create/ExpansionHelp.vue';
 import PreludesFilter from '@/client/components/create/PreludesFilter.vue';
 import {translateText, translateTextWithParams} from '@/client/directives/i18n';
 import ColoniesFilter from '@/client/components/create/ColoniesFilter.vue';
@@ -1021,6 +1024,7 @@ export default defineComponent({
     CeosFilter,
     ColoniesFilter,
     CorporationsFilter,
+    ExpansionHelp,
     PreludesFilter,
     PreferencesIcon,
     ValidationErrorsPopup,
@@ -2789,18 +2793,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.create-game-expansion-help {
-  margin: 6px 0 12px;
-  padding: 8px 12px;
-  border-left: 3px solid #b6ad80;
-  font-size: 13px;
-  line-height: 1.45;
-}
-
-.create-game-expansion-help p {
-  margin: 0 0 4px;
-}
-
 .create-game-telegram-banner {
   margin: 8px 0 14px;
   font-size: 14px;

@@ -19,8 +19,12 @@ describe('Fanmade setup in the custom form', () => {
   });
   afterEach(() => localStorage.clear());
 
-  it('explains the selected expansions and follows the Venus completion option', async () => {
-    const wrapper = shallowMount(CreateGameForm, globalConfig);
+  it('opens expansion explanations without toggling them and follows the Venus completion option', async () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+      attachTo: document.body,
+      global: {...globalConfig.global, stubs: {ExpansionHelp: false, PopupPanel: false, Teleport: false}},
+    });
     const vm = wrapper.vm as any;
     vm.playersCount = 3;
     vm.expansions.venus = true;
@@ -29,26 +33,35 @@ describe('Fanmade setup in the custom form', () => {
     vm.expansions.moreParties = true;
     vm.requiresVenusTrackCompletion = false;
     await wrapper.vm.$nextTick();
-    expect(wrapper.find('#venus-phase-2-help').text()).includes('60%');
-    expect(wrapper.find('#venus-phase-2-help').text()).includes('does not need');
-    expect(wrapper.find('#more-parties-help').text()).includes('6 parties');
+    const explanation = (id: string) => document.getElementById(id)?.textContent ?? '';
+    expect(explanation('venus-phase-2-help')).eq('');
+    expect(explanation('more-parties-help')).eq('');
+    await wrapper.get('button[aria-controls="more-parties-help"]').trigger('click');
+    expect(explanation('more-parties-help')).includes('6 parties');
+    expect(vm.expansions.moreParties).eq(true);
+    window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape'}));
+    await wrapper.vm.$nextTick();
+    expect(explanation('more-parties-help')).eq('');
+    await wrapper.get('button[aria-controls="venus-phase-2-help"]').trigger('click');
+    expect(explanation('venus-phase-2-help')).includes('60%');
+    expect(explanation('venus-phase-2-help')).includes('does not need');
+    expect(vm.expansions.venusPhase2).eq(true);
     vm.requiresVenusTrackCompletion = true;
     await wrapper.vm.$nextTick();
-    expect(wrapper.find('#venus-phase-2-help').text()).includes('must reach 60%');
-    expect(wrapper.find('#venus-phase-2-help').text()).not.includes('does not need');
+    expect(explanation('venus-phase-2-help')).includes('must reach 60%');
+    expect(explanation('venus-phase-2-help')).not.includes('does not need');
     vm.playersCount = 1;
     vm.requiresVenusTrackCompletion = false;
     await wrapper.vm.$nextTick();
-    expect(wrapper.find('#venus-phase-2-help').text()).includes('must reach 60% to win');
+    expect(explanation('venus-phase-2-help')).includes('must reach 60% to win');
     vm.soloTR = true;
     await wrapper.vm.$nextTick();
-    expect(wrapper.find('#venus-phase-2-help').text()).includes('63 TR');
-    expect(wrapper.find('#venus-phase-2-help').text()).not.includes('must reach');
-    vm.expansions.venusPhase2 = false;
-    vm.expansions.moreParties = false;
+    expect(explanation('venus-phase-2-help')).includes('63 TR');
+    expect(explanation('venus-phase-2-help')).not.includes('must reach');
+    window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape'}));
     await wrapper.vm.$nextTick();
-    expect(wrapper.find('#venus-phase-2-help').exists()).eq(false);
-    expect(wrapper.find('#more-parties-help').exists()).eq(false);
+    expect(explanation('venus-phase-2-help')).eq('');
+    expect(explanation('more-parties-help')).eq('');
     wrapper.unmount();
   });
 

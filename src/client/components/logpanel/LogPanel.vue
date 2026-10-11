@@ -16,8 +16,14 @@
         </div>
       </template>
     </LogGenerationList>
+    <div class="log-search">
+      <label for="log-search" v-i18n>Search displayed logs</label>
+      <input id="log-search" class="form-input" type="search" v-model="searchQuery" @keydown.esc.prevent="searchQuery = ''">
+      <button v-if="searchQuery" type="button" class="btn" @click="searchQuery = ''" v-i18n>Clear search</button>
+    </div>
     <div class="panel log-panel">
       <div id="logpanel-scrollable" class="panel-body" @scroll="handleScroll">
+        <p v-if="searchQuery.trim() && filteredMessages.length === 0" role="status" v-i18n>No matching logs in this view.</p>
         <ul v-if="messages">
           <LogMessageComponent v-for="(message, index) in filteredMessages" :key="message.timestamp + '-' + index" :message="message" :viewModel="viewModel" @click="messageClicked(message)" @spaceClicked="$emit('spaceClicked', $event)"/>
         </ul>
@@ -80,10 +86,12 @@ import LogMessageInspector from '@/client/components/logpanel/LogMessageInspecto
 import LogGenerationList from '@/client/components/logpanel/LogGenerationList.vue';
 import {SoundManager} from '@/client/utils/SoundManager';
 import {getPreferences} from '@/client/utils/PreferencesManager';
+import {logSearchText} from '@/client/components/logpanel/logSearchText';
 
 let logAbortController: AbortController | undefined;
 
 type LogPanelViewState = {
+  searchQuery: string,
   selectedGeneration: number,
   selectedRecentLimit: number | undefined,
   selectedPlayerColor: Color | undefined,
@@ -94,6 +102,7 @@ type LogPanelViewState = {
 const logPanelViewStates = new Map<ParticipantId, LogPanelViewState>();
 
 type LogPanelModel = {
+  searchQuery: string,
   messages: Array<LogMessage>,
   selectedGeneration: number,
   selectedRecentLimit: number | undefined,
@@ -123,6 +132,7 @@ export default defineComponent({
   },
   data(): LogPanelModel {
     return {
+      searchQuery: '',
       messages: [],
       selectedGeneration: -1,
       selectedRecentLimit: undefined,
@@ -162,6 +172,7 @@ export default defineComponent({
       }
     },
     showLatestLogs(): void {
+      this.searchQuery = '';
       this.selectedGeneration = -1;
       this.selectedRecentLimit = 100;
       this.selectedPlayerColor = undefined;
@@ -353,11 +364,16 @@ export default defineComponent({
       return this.viewModel.id;
     },
     filteredMessages(): Array<LogMessage> {
-      if (this.selectedPlayerColor === undefined) {
-        return this.messages;
-      }
+      const query = this.searchQuery.trim().toLowerCase().replace(/\s+/g, ' ');
       const player = this.players.find((player) => player.color === this.selectedPlayerColor);
       return this.messages.filter((message) => {
+        if (query && !logSearchText(message, this.players, (text) => this.$t(text)).includes(query) &&
+          !logSearchText(message, this.players, (text) => text).includes(query)) {
+          return false;
+        }
+        if (this.selectedPlayerColor === undefined) {
+          return true;
+        }
         if (message.type === LogMessageType.NEW_GENERATION) {
           return true;
         }
@@ -382,6 +398,7 @@ export default defineComponent({
     if (restoredState === undefined) {
       this.selectedRecentLimit = 100;
     } else {
+      this.searchQuery = restoredState.searchQuery;
       this.selectedGeneration = restoredState.selectedGeneration;
       this.selectedRecentLimit = restoredState.selectedRecentLimit;
       this.selectedPlayerColor = restoredState.selectedPlayerColor;
@@ -397,6 +414,7 @@ export default defineComponent({
     const scrollablePanel = this.getScrollablePanel();
     if (this.id !== undefined) {
       logPanelViewStates.set(this.id, {
+        searchQuery: this.searchQuery,
         selectedGeneration: this.selectedGeneration,
         selectedRecentLimit: this.selectedRecentLimit,
         selectedPlayerColor: this.selectedPlayerColor,

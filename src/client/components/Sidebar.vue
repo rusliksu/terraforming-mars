@@ -8,10 +8,10 @@
     <div :class="'party-name party-name-indicator party-name--'+rulingPartyToCss()"> <span v-i18n>{{ getRulingParty() }}</span></div>
   </div>
   <div class="global_params">
-    <GlobalParameterValue :param="globalParameter.TEMPERATURE" :value="temperature"/>
-    <GlobalParameterValue :param="globalParameter.OXYGEN" :value="oxygen"/>
-    <GlobalParameterValue :param="globalParameter.OCEANS" :value="oceans"/>
-    <GlobalParameterValue v-if="gameOptions.expansions.venus" :param="globalParameter.VENUS" :value="venus"/>
+    <GlobalParameterValue :param="globalParameter.TEMPERATURE" :value="temperature" :max="parameters.temperature.max"/>
+    <GlobalParameterValue :param="globalParameter.OXYGEN" :value="oxygen" :max="parameters.oxygen.max"/>
+    <GlobalParameterValue :param="globalParameter.OCEANS" :value="oceans" :max="parameters.oceans.max"/>
+    <GlobalParameterValue v-if="gameOptions.expansions.venus" :param="globalParameter.VENUS" :value="venus" :max="parameters.venus.max"/>
     <MoonGlobalParameterValue v-if="moonData" :moonData="moonData"/>
   </div>
   <div class="sidebar_item preferences_player" :title="$t('Player Color Cube')">
@@ -74,6 +74,7 @@ import {OtherDeckSizesModel} from '@/common/models/GameModel';
 import GlobalParameterValue from '@/client/components/GlobalParameterValue.vue';
 import MoonGlobalParameterValue from '@/client/components/moon/MoonGlobalParameterValue.vue';
 import {GlobalParameter} from '@/common/GlobalParameter';
+import {GlobalParametersConfig, resolveGlobalParameters} from '@/common/GlobalParameterConfig';
 import {MoonModel} from '@/common/models/MoonModel';
 import PreferencesIcon from '@/client/components/PreferencesIcon.vue';
 import LanguageIcon from '@/client/components/LanguageIcon.vue';
@@ -192,6 +193,9 @@ export default defineComponent({
     },
   },
   computed: {
+    parameters(): GlobalParametersConfig {
+      return resolveGlobalParameters(this.gameOptions.globalParameters, this.gameOptions.expansions.venusPhase2);
+    },
     preferencesManager(): PreferencesManager {
       return PreferencesManager.INSTANCE;
     },

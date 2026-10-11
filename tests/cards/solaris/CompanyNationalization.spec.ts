@@ -8,6 +8,8 @@ import {PartyName} from '../../../src/common/turmoil/PartyName';
 import {OrOptions} from '../../../src/server/inputs/OrOptions';
 import {cast} from '../../../src/common/utils/utils';
 import {BeginnerCorporation} from '../../../src/server/cards/corporation/BeginnerCorporation';
+import {Game} from '@/server/Game';
+import {Server} from '@/server/models/ServerModel';
 
 describe('CompanyNationalization', () => {
   let card: CompanyNationalization;
@@ -62,5 +64,19 @@ describe('CompanyNationalization', () => {
     expect(player.production.titanium).to.eq(2);
     expect(player.titanium).to.eq(titaniumBefore + 3);
     expect(player.playedCards.has(player.pickedCorporationCard!.name)).is.false;
+  });
+
+  it('removes the corporation from player and spectator views after loading a saved game', () => {
+    setRulingParty(game, PartyName.REDS);
+    const restored = Game.deserialize(game.serialize(), {simulation: true});
+    const restoredPlayer = restored.players[0];
+
+    const orOptions = cast(card.play(restoredPlayer), OrOptions);
+    orOptions.options[0].cb(undefined);
+
+    expect(Server.getPlayerModel(restoredPlayer).thisPlayer.tableau).deep.eq([]);
+    expect(Server.getSpectatorModel(restored).players[0].tableau).deep.eq([]);
+    const reloaded = Game.deserialize(restored.serialize(), {simulation: true});
+    expect(reloaded.players[0].playedCards.corporations()).is.empty;
   });
 });

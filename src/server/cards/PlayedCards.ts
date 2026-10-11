@@ -163,21 +163,23 @@ export class PlayedCards {
   }
 
   /**
-   * Remove card from play. Updates indexes. It is up to the caller
+   * Removes the card with this name from play and updates indexes. It is up to the caller
    * to put the card wherever it eventually belongs.
    */
   remove(card: ICard) {
-    const found = this.byName.delete(card.name);
-    if (found) {
-      inplaceRemove(this.array, card);
-      if (card.type === CardType.EVENT) {
-        this._eventCount--;
-        this.removeTags(card, this._eventTags);
-      } else {
-        this.removeTags(card, this._tags);
-      }
+    const storedCard = this.byName.get(card.name);
+    if (storedCard === undefined) {
+      return false;
     }
-    return found;
+    this.byName.delete(storedCard.name);
+    inplaceRemove(this.array, storedCard);
+    if (storedCard.type === CardType.EVENT) {
+      this._eventCount--;
+      this.removeTags(storedCard, this._eventTags);
+    } else {
+      this.removeTags(storedCard, this._tags);
+    }
+    return true;
   }
 
   /**

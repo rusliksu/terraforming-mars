@@ -78,7 +78,11 @@ class BureaucratsPolicy01 implements IPolicy {
     player.politicalAgendasActionUsedCount += 1;
     game.log('${0} used Turmoil ${1} action', (b) => b.player(player).partyName(PartyName.BUREAUCRATS));
     game.defer(new SelectPaymentDeferred(player, 5, {title: TITLES.payForPartyAction(PartyName.BUREAUCRATS)}))
-      .andThen(() => player.drawCard(1, {cardType: CardType.ACTIVE}));
+      .andThen((payment) => {
+        game.log('${0} paid ${1} M€ for Turmoil ${2} policy', (b) =>
+          b.player(player).number(paymentTotal(payment)).partyName(PartyName.BUREAUCRATS));
+        player.drawCard(1, {cardType: CardType.ACTIVE});
+      });
     return undefined;
   }
 }

@@ -2666,7 +2666,7 @@
     "src/server/turmoil/globalEvents/moreParties/SpeciationOfHumanity.ts": "3851b3f78a2e0d89e4266eef233332ab4ca31f6c5fee21dbd00f7b64006a8961",
     "src/server/turmoil/globalEvents/moreParties/UniversalUprising.ts": "44f6bec989c7941814746eab03691344d1eb224130b11e6c62cb5022f1b1236c",
     "src/server/turmoil/globalEvents/moreParties/VenusVolcanism.ts": "2c7ef301c32ea72093aded7d244098ffe53d0ff85d5af617d00fdc3c5bc09048",
-    "src/server/turmoil/parties/Bureaucrats.ts": "79e0967b158cd28730482085923cb484befeec00544f5e9d80eff87cb55caf7e",
+    "src/server/turmoil/parties/Bureaucrats.ts": "aa7f07d3b6d230d9e43555717ec5ea524ebb088779e1a33a96e0ce40127efede",
     "src/server/turmoil/parties/Centrists.ts": "2fe32c003c99f96187eb2b548e242e3afc04e8911197944cf7d899bb19f02291",
     "src/server/turmoil/parties/ChooseTagPolicy.ts": "70ca29ba7fa66f62bb3a32162580b01438f0885c0cf55e9b2201d7181f9ae982",
     "src/server/turmoil/parties/Empower.ts": "38e946388e441241b5602a0d6ea55895a3275155b946d5d891d362d80d075105",

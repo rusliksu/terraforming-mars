@@ -1,15 +1,18 @@
 <template>
   <div v-if="activeParty" class="agenda-reference">
-    <div v-if="agendaStyle === 'Chairman'" class="agenda-reference-body">
+    <div v-if="agendaStyle === 'Chairman' || morePartiesExpansion" class="agenda-reference-body">
       <div class="agenda-reference-parties">
-        <button v-for="party in parties" :key="party.name" type="button"
+        <button v-for="party in referenceParties" :key="party.name" type="button"
           :aria-pressed="party.name === activeParty.name"
           @click="selectedParty = party.name">
           <span :class="'party-name party-name--' + party.name.toLowerCase().replaceAll(' ', '_')" v-i18n>{{ party.name }}</span>
+          <span v-if="morePartiesExpansion && party.agenda" class="agenda-reference-in-play" v-i18n>In play</span>
         </button>
       </div>
       <p v-if="agendaStyle === 'Chairman' && !morePartiesExpansion" class="agenda-reference-hint" v-i18n>When you become chairman, choose either a bonus or a policy.</p>
-      <p class="agenda-reference-hint" v-i18n>Current selections are marked. Change them through the game prompt.</p>
+      <p v-if="activeParty.agenda && (agendaStyle === 'Chairman' || agendaStyle === 'PartyLeaders')" class="agenda-reference-hint" v-i18n>Current selections are marked. Change them through the game prompt.</p>
+      <p v-else-if="activeParty.agenda" class="agenda-reference-hint" v-i18n>Current bonuses and policies are marked.</p>
+      <p v-else class="agenda-reference-hint" v-i18n>This party is not in play. All possible bonuses and policies are shown.</p>
       <div class="agenda-reference-sections">
         <section v-for="section in sections" :key="section.title">
           <h3 v-i18n>{{ section.title }}</h3>
@@ -52,8 +55,11 @@ const props = defineProps<{
 }>();
 
 const selectedParty = ref<PartyName>();
-const activeParty = computed(() => props.parties.find((party) => party.name === selectedParty.value) ??
-  props.parties.find((party) => party.name === props.rulingParty) ?? props.parties[0]);
+const referenceParties = computed(() => props.morePartiesExpansion ?
+  Object.values(PartyName).map((name) => props.parties.find((party) => party.name === name) ?? {name, agenda: undefined}) :
+  props.parties);
+const activeParty = computed(() => referenceParties.value.find((party) => party.name === selectedParty.value) ??
+  props.parties.find((party) => party.name === props.rulingParty) ?? props.parties[0] ?? referenceParties.value[0]);
 const sections = computed(() => {
   const party = activeParty.value;
   if (party === undefined) {
@@ -61,8 +67,8 @@ const sections = computed(() => {
   }
   const ids = getPartyAgendaIds(party.name, props.morePartiesExpansion);
   return [
-    {title: 'Available bonuses', ids: ids.bonuses, current: party.agenda.bonusId, policies: false},
-    {title: 'Available policies', ids: ids.policies, current: party.agenda.policyId, policies: true},
+    {title: 'Available bonuses', ids: ids.bonuses, current: party.agenda?.bonusId, policies: false},
+    {title: 'Available policies', ids: ids.policies, current: party.agenda?.policyId, policies: true},
   ];
 });
 </script>
@@ -96,6 +102,8 @@ const sections = computed(() => {
 }
 
 button {
+  display: flex;
+  flex-direction: column;
   padding: 3px;
   background: transparent;
   border: 2px solid transparent;
@@ -126,6 +134,12 @@ button:focus-visible {
   color: #c9d1d9;
   font-size: 14px;
   line-height: 1.4;
+}
+
+.agenda-reference-in-play {
+  display: block;
+  color: #c9d1d9;
+  font-size: 12px;
 }
 
 .agenda-reference-sections {

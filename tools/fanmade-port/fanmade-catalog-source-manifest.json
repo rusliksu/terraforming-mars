@@ -995,7 +995,7 @@
     "src/server/cards/conglomerates/teamActions/DonationAction.ts": "1e39df8d344d6cf2dbc35b5f6109f3ebf236a4c66dfad798641a9f30a112c6f8",
     "src/server/cards/conglomerates/teamActions/FacilitySharing.ts": "03c8802be5ec1b5770ad86dc09f11a90e703cb929278aa2f244b715194396dc0",
     "src/server/cards/conglomerates/teamActions/GivePatent.ts": "582c105c521d7d4ead63162fb3b3fcc05e2c7f73a38fee977de260223337b35b",
-    "src/server/cards/corporatebetterments/AdvancedSchools.ts": "568467d7b9eb56eaf67af0412900d300bb901715d5b4d87a482371af26b66521",
+    "src/server/cards/corporatebetterments/AdvancedSchools.ts": "7840ca17681e5d753d88c390e97394ed1ace814e17ead41184d37d297c94bba8",
     "src/server/cards/corporatebetterments/AitkenDrillingOperations.ts": "3b04866eb52ad3746d3afe592a438f787a8eadad48061b2641bbc097b1d3ce52",
     "src/server/cards/corporatebetterments/ArchitecturalContracts.ts": "99580a1e5ef225568599b87031c4de08fde81b98e40fa56921fb3bc04c5b3b11",
     "src/server/cards/corporatebetterments/AssistedGrowthPlants.ts": "9bcef7a7dab4c71f2fdc52a8f5dd25061402ab67b4517b2b7f51a1c546632e17",

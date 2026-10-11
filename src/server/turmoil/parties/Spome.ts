@@ -9,17 +9,12 @@ import {TileType, CITY_TILES} from '../../../common/TileType';
 import {SelectPaymentDeferred} from '../../deferredActions/SelectPaymentDeferred';
 import {BuildColony} from '../../deferredActions/BuildColony';
 import {TITLES} from '../../inputs/titles';
+import {ChooseTagPolicy} from './ChooseTagPolicy';
+import {Tag} from '@/common/cards/Tag';
 
 const COLONY_COST = 15;
 
-/**
- * More Parties: Spome, one of the 6 new "Political Agendas" parties. The source material
- * references "individual city track," "town tile," and "cloud city" -- concepts from the EPIC
- * campaign expansion this codebase doesn't model -- so bonus A drops the city-track/cloud-city
- * clauses (keeping only lunar habitats), policy 2 drops cloud city (keeping only lunar habitat
- * placement), and policy 4 (town tile) is left unimplemented, per the source document's own
- * guidance to ignore such references.
- */
+/** Spome's supported city, lunar habitat, and colony agendas. */
 export class Spome extends Party implements IParty {
   readonly name = PartyName.SPOME;
   readonly bonuses = [SPOME_BONUS_1, SPOME_BONUS_2];
@@ -96,17 +91,10 @@ class SpomePolicy03 implements IPolicy {
   }
 }
 
-// Not implemented: references "town tile" and the "individual city track," concepts from the
-// EPIC campaign expansion that this codebase doesn't model.
-class SpomePolicy04 implements IPolicy {
-  readonly id = 'spop04' as const;
-  readonly description = 'Not implemented in this codebase: pay 5 M€ to place a town tile on Mars; ' +
-    'it advances your individual city track and is worth 1 VP (EPIC campaign concepts)';
-}
-
 export const SPOME_BONUS_1 = new SpomeBonus01();
 export const SPOME_BONUS_2 = new SpomeBonus02();
 export const SPOME_POLICY_1 = new SpomePolicy01();
 export const SPOME_POLICY_2 = new SpomePolicy02();
 export const SPOME_POLICY_3 = new SpomePolicy03();
-export const SPOME_POLICY_4 = new SpomePolicy04();
+// Replaces the unsupported EPIC town action with the shared tag-card purchase policy.
+export const SPOME_POLICY_4 = new ChooseTagPolicy('spop04', PartyName.SPOME, 'city tag', () => [Tag.CITY]);

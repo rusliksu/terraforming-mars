@@ -6,13 +6,16 @@
           :aria-pressed="party.name === activeParty.name"
           @click="selectedParty = party.name">
           <span :class="'party-name party-name--' + party.name.toLowerCase().replaceAll(' ', '_')" v-i18n>{{ party.name }}</span>
-          <span v-if="morePartiesExpansion && party.agenda" class="agenda-reference-in-play" v-i18n>In play</span>
+          <span v-if="(morePartiesExpansion && party.agenda) || party.name === rulingParty"
+            class="agenda-reference-in-play" :class="{'agenda-reference-ruling': party.name === rulingParty}"
+            v-i18n>{{ party.name === rulingParty ? 'In power' : 'In play' }}</span>
         </button>
       </div>
       <p v-if="agendaStyle === 'Chairman' && !morePartiesExpansion" class="agenda-reference-hint" v-i18n>When you become chairman, choose either a bonus or a policy.</p>
       <p v-if="activeParty.agenda && (agendaStyle === 'Chairman' || agendaStyle === 'PartyLeaders')" class="agenda-reference-hint" v-i18n>Current selections are marked. Change them through the game prompt.</p>
       <p v-else-if="activeParty.agenda" class="agenda-reference-hint" v-i18n>Current bonuses and policies are marked.</p>
       <p v-else class="agenda-reference-hint" v-i18n>This party is not in play. All possible bonuses and policies are shown.</p>
+      <p class="agenda-reference-hint" v-i18n>The ruling party's policy is active. Bonuses are granted when a party comes to power.</p>
       <div class="agenda-reference-sections">
         <section v-for="section in sections" :key="section.title">
           <h3 v-i18n>{{ section.title }}</h3>
@@ -21,7 +24,8 @@
               class="agenda-reference-option" :class="{'agenda-reference-current': id === section.current}">
               <div class="agenda-reference-label">
                 <span><span v-i18n>{{ agendaInfoById(id).type }}</span> {{ Number(agendaInfoById(id).num) }}</span>
-                <span v-if="id === section.current" class="agenda-reference-badge" v-i18n>Current selection</span>
+                <span v-if="id === section.current" class="agenda-reference-badge"
+                  v-i18n>{{ section.policies && activeParty.name === rulingParty ? 'Active policy' : 'Current selection' }}</span>
               </div>
               <div class="agenda-reference-icon"><TurmoilAgenda :id="id" :morePartiesExpansion="morePartiesExpansion" /></div>
               <p v-i18n>{{ getAgendaOrThrow(id, morePartiesExpansion).description }}</p>
@@ -33,6 +37,7 @@
     <div v-else class="agenda-reference-body agenda-reference-current-policies">
       <article v-for="party in parties" :key="party.name" :data-agenda-id="party.agenda.policyId" class="agenda-reference-option">
         <div :class="'party-name party-name--' + party.name.toLowerCase().replaceAll(' ', '_')" v-i18n>{{ party.name }}</div>
+        <div v-if="party.name === rulingParty" class="agenda-reference-badge" v-i18n>Active policy</div>
         <div class="agenda-reference-icon"><TurmoilAgenda :id="party.agenda.policyId" :morePartiesExpansion="morePartiesExpansion" /></div>
         <p v-i18n>{{ getAgendaOrThrow(party.agenda.policyId, morePartiesExpansion).description }}</p>
       </article>
@@ -184,6 +189,11 @@ h3 {
 }
 
 .agenda-reference-badge {
+  color: #ffdc85;
+  font-weight: bold;
+}
+
+.agenda-reference-ruling {
   color: #ffdc85;
   font-weight: bold;
 }

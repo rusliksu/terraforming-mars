@@ -64,7 +64,7 @@ import {ColonyDeserializer} from './colonies/ColonyDeserializer';
 import {GameLoader} from './database/GameLoader';
 import {DEFAULT_GAME_OPTIONS, GameOptions} from './game/GameOptions';
 import {normalizeEscapeVelocityOptions} from '../common/game/EscapeVelocityOptions';
-import {DEFAULT_GLOBAL_PARAMETERS, GlobalParametersConfig, ParameterBonus} from '../common/GlobalParameterConfig';
+import {GlobalParametersConfig, ParameterBonus, resolveGlobalParameters} from '../common/GlobalParameterConfig';
 import {CorporationDeck, PreludeDeck, ProjectDeck, CeoDeck} from './cards/Deck';
 import {Logger} from './logs/Logger';
 import {addDays, stringToNumber} from './database/utils';
@@ -269,14 +269,7 @@ export class Game implements IGame, Logger {
     this.id = id;
     this.name = name;
     this.gameOptions = {...gameOptions};
-    const baseParameters = this.gameOptions.globalParameters ?? DEFAULT_GLOBAL_PARAMETERS;
-    // Venus Phase 2 doubles the Venus track's length (0-30 -> 0-60), continuing at the same
-    // official 2-unit step throughout -- 0-30 behaves exactly like the official game (same
-    // bonuses at the same absolute values, 8/16), then the track just keeps going to 60. This
-    // wins over a simultaneously-selected custom board's own venus.max, if any.
-    this.parameters = this.gameOptions.venusPhase2Expansion ?
-      {...baseParameters, venus: {...baseParameters.venus, max: 60}} :
-      baseParameters;
+    this.parameters = resolveGlobalParameters(this.gameOptions.globalParameters, this.gameOptions.venusPhase2Expansion);
     this.oxygenLevel = this.parameters.oxygen.min;
     this.temperature = this.parameters.temperature.min;
     this.venusScaleLevel = this.parameters.venus.min;

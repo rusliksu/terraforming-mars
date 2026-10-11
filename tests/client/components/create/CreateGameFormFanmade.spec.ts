@@ -19,6 +19,39 @@ describe('Fanmade setup in the custom form', () => {
   });
   afterEach(() => localStorage.clear());
 
+  it('explains the selected expansions and follows the Venus completion option', async () => {
+    const wrapper = shallowMount(CreateGameForm, globalConfig);
+    const vm = wrapper.vm as any;
+    vm.playersCount = 3;
+    vm.expansions.venus = true;
+    vm.expansions.venusPhase2 = true;
+    vm.expansions.turmoil = true;
+    vm.expansions.moreParties = true;
+    vm.requiresVenusTrackCompletion = false;
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('#venus-phase-2-help').text()).includes('60%');
+    expect(wrapper.find('#venus-phase-2-help').text()).includes('does not need');
+    expect(wrapper.find('#more-parties-help').text()).includes('6 parties');
+    vm.requiresVenusTrackCompletion = true;
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('#venus-phase-2-help').text()).includes('must reach 60%');
+    expect(wrapper.find('#venus-phase-2-help').text()).not.includes('does not need');
+    vm.playersCount = 1;
+    vm.requiresVenusTrackCompletion = false;
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('#venus-phase-2-help').text()).includes('must reach 60% to win');
+    vm.soloTR = true;
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('#venus-phase-2-help').text()).includes('63 TR');
+    expect(wrapper.find('#venus-phase-2-help').text()).not.includes('must reach');
+    vm.expansions.venusPhase2 = false;
+    vm.expansions.moreParties = false;
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('#venus-phase-2-help').exists()).eq(false);
+    expect(wrapper.find('#more-parties-help').exists()).eq(false);
+    wrapper.unmount();
+  });
+
   it('removes disabled fan corporations from the custom list', async () => {
     const wrapper = shallowMount(CreateGameForm, globalConfig);
     const vm = wrapper.vm as any;

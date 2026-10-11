@@ -11,6 +11,7 @@ import {DiscardCards} from '../../deferredActions/DiscardCards';
 import {SelectPaymentDeferred} from '../../deferredActions/SelectPaymentDeferred';
 import {TITLES} from '../../inputs/titles';
 import {POLITICAL_AGENDAS_MAX_ACTION_USES} from '../../../common/constants';
+import {paymentTotal} from '../../../common/inputs/Payment';
 
 /**
  * More Parties: Bureaucrats, one of the 6 new "Political Agendas" parties. Policy 1 originally
@@ -98,7 +99,11 @@ class BureaucratsPolicy02 implements IPolicy {
     }
     const amountToPay = Math.min(required, player.megaCredits);
     if (amountToPay > 0) {
-      player.game.defer(new SelectPaymentDeferred(player, amountToPay, {title: 'Pay for Turmoil Bureaucrats (start of turn)'}));
+      player.game.defer(new SelectPaymentDeferred(player, amountToPay, {title: 'Pay for Turmoil Bureaucrats (start of turn)'}))
+        .andThen((payment) => {
+          player.game.log('${0} paid ${1} M€ for Turmoil ${2} policy', (b) =>
+            b.player(player).number(paymentTotal(payment)).partyName(PartyName.BUREAUCRATS));
+        });
     }
   }
 }

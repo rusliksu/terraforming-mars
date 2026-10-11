@@ -83,6 +83,7 @@ import {SpectatorModel} from '@/common/models/SpectatorModel';
 import {isPlayerId, isSpectatorId} from '@/common/Types';
 import {hasShowModal, showModal, windowHasHTMLDialogElement} from './HTMLDialogElementCompatibility';
 import {getLoadErrorMessage} from '@/client/utils/loadErrorMessage';
+import {getPreferences} from '@/client/utils/PreferencesManager';
 
 import dialogPolyfill from 'dialog-polyfill';
 import {setDocumentTitle} from '../utils/documentTitle';
@@ -201,6 +202,18 @@ export default defineComponent({
   computed: {
     participant(): ViewModel | undefined {
       return this.playerView ?? this.spectator;
+    },
+  },
+  watch: {
+    playerkey() {
+      if (this.screen !== 'spectator-home' &&
+          (this.screen !== 'player-home' || getPreferences().experimental_layout)) {
+        return;
+      }
+      const {scrollX, scrollY} = window;
+      if (scrollX !== 0 || scrollY !== 0) {
+        this.$nextTick(() => window.scrollTo(scrollX, scrollY));
+      }
     },
   },
   methods: {

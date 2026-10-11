@@ -105,6 +105,43 @@ describe('App', () => {
     wrapper.unmount();
   });
 
+  it('keeps the classic player page position when the view refreshes', async () => {
+    let scrollY = 0;
+    const originalScrollY = Object.getOwnPropertyDescriptor(window, 'scrollY');
+    Object.defineProperty(window, 'scrollY', {configurable: true, get: () => scrollY});
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation((_x, y) => {
+      scrollY = Number(y);
+    });
+    const PlayerHomeStub = defineComponent({
+      setup() {
+        onUnmounted(() => {
+          scrollY = 0;
+        });
+      },
+      template: '<div data-test="player-home-stub"></div>',
+    });
+    window.history.replaceState({}, '', '/player?id=p-blue-id');
+    global.fetch = (async () => ({ok: true, json: async () => fakePlayerViewModel()})) as unknown as typeof fetch;
+    const wrapper = shallowMount(App, {global: {...globalConfig.global, stubs: {PlayerHome: PlayerHomeStub}}});
+    try {
+      await flushPromises();
+      scrollY = 400;
+      wrapper.vm.updatePlayer();
+      await flushPromises();
+      await nextTick();
+      expect(scrollY).eq(400);
+      expect(scrollTo.mock.calls).deep.eq([[0, 400]]);
+    } finally {
+      wrapper.unmount();
+      scrollTo.mockRestore();
+      if (originalScrollY === undefined) {
+        delete (window as any).scrollY;
+      } else {
+        Object.defineProperty(window, 'scrollY', originalScrollY);
+      }
+    }
+  });
+
   it('opens a direct replay link without loading a live player or spectator model', () => {
     window.history.replaceState({}, '', '/replay?id=sreplay');
     const requests: Array<string> = [];

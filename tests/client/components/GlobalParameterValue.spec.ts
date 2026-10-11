@@ -11,6 +11,7 @@ describe('GlobalParameterValue', () => {
       props: {
         param: GlobalParameter.TEMPERATURE,
         value: -30,
+        max: 8,
       },
     });
     expect(wrapper.exists()).to.be.true;

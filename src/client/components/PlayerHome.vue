@@ -6,10 +6,6 @@
       <button type="button" class="btn" data-test="classic-layout" @click="useClassicLayout" v-i18n>Classic layout</button>
     </div>
     <TopBar :playerView="playerView" />
-    <p v-if="game.automationCompatibility?.unsupportedFeatures.length" class="player_home_block" v-i18n>
-      SmartBot and advisor do not support these game options.
-    </p>
-
     <div v-if="game.phase === 'end'">
       <div class="player_home_block">
         <DynamicTitle title="This game is over!" :color="thisPlayer.color"/>

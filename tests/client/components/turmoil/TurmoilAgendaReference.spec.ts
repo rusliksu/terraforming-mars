@@ -11,6 +11,44 @@ const parties: Array<{name: PartyName; agenda: Agenda}> = [
 ];
 
 describe('TurmoilAgendaReference', () => {
+  it('lists every More Parties party and marks only the agendas currently in play', async () => {
+    const currentParties: Array<{name: PartyName; agenda: Agenda}> = [
+      {name: PartyName.BUREAUCRATS, agenda: {bonusId: 'burb01', policyId: 'burp02'}},
+      {name: PartyName.KELVINISTS, agenda: {bonusId: 'kb02', policyId: 'kp03'}},
+      {name: PartyName.GREENS, agenda: {bonusId: 'gb02', policyId: 'gp03'}},
+      {name: PartyName.MARS, agenda: {bonusId: 'mb01', policyId: 'mp02'}},
+      {name: PartyName.REDS, agenda: {bonusId: 'rb02', policyId: 'rp03'}},
+      {name: PartyName.UNITY, agenda: {bonusId: 'ub01', policyId: 'up02'}},
+    ];
+    const wrapper = mount(TurmoilAgendaReference, {
+      ...globalConfig,
+      props: {parties: currentParties, rulingParty: PartyName.GREENS, agendaStyle: 'PartyLeaders', morePartiesExpansion: true},
+    });
+    expect(wrapper.findAll('button .party-name').map((party) => party.text())).to.deep.eq([
+      'Mars First', 'Scientists', 'Unity', 'Kelvinists', 'Reds', 'Greens',
+      'Populists', 'Spome', 'Empower', 'Bureaucrats', 'Centrists', 'Transhumanists',
+    ]);
+    expect(wrapper.findAll('.agenda-reference-in-play')).to.have.length(6);
+    expect(wrapper.findAll('.agenda-reference-current').map((option) => option.attributes('data-agenda-id')))
+      .to.deep.eq(['gb02', 'gp03']);
+
+    await wrapper.findAll('button')[8].trigger('click');
+    expect(wrapper.findAll('[data-agenda-id]').map((option) => option.attributes('data-agenda-id')))
+      .to.deep.eq(['empb01', 'empb02', 'empp01', 'empp02', 'empp03', 'empp04']);
+    expect(wrapper.text()).to.contain('Gain 1 M€ for every energy production level you have');
+    expect(wrapper.text()).to.contain('You may use energy as M€ (2 M€ per energy)');
+    expect(wrapper.findAll('.agenda-reference-current')).to.have.length(0);
+    expect(wrapper.text()).to.contain('This party is not in play');
+
+    await wrapper.setProps({parties: currentParties.slice(1).concat([
+      {name: PartyName.EMPOWER, agenda: {bonusId: 'empb02', policyId: 'empp04'}},
+    ])});
+    expect(wrapper.findAll('.agenda-reference-in-play')).to.have.length(6);
+    expect(wrapper.findAll('.agenda-reference-current').map((option) => option.attributes('data-agenda-id')))
+      .to.deep.eq(['empb02', 'empp04']);
+    expect(wrapper.text()).not.to.contain('This party is not in play');
+  });
+
   it('shows the ruling party options and switches only between parties in play', async () => {
     const wrapper = mount(TurmoilAgendaReference, {
       ...globalConfig,
@@ -42,7 +80,8 @@ describe('TurmoilAgendaReference', () => {
     expect(wrapper.text()).not.to.contain('choose either a bonus or a policy');
 
     await wrapper.setProps({parties: [{name: PartyName.SPOME, agenda: {bonusId: 'spob02', policyId: 'spop03'}}]});
-    expect(wrapper.findAll('button').map((button) => button.text())).to.deep.eq(['Spome']);
+    expect(wrapper.findAll('button')).to.have.length(12);
+    expect(wrapper.find('button[aria-pressed="true"] .party-name').text()).to.eq('Spome');
     expect(wrapper.findAll('[data-agenda-id]').map((option) => option.attributes('data-agenda-id')))
       .to.deep.eq(['spob01', 'spob02', 'spop01', 'spop02', 'spop03', 'spop04']);
     expect(wrapper.findAll('.agenda-reference-current').map((option) => option.attributes('data-agenda-id')))
@@ -53,7 +92,7 @@ describe('TurmoilAgendaReference', () => {
       .to.deep.eq(['spob01', 'spop02']);
   });
 
-  it('shows only the current policy of each party without Chairman', async () => {
+  it('keeps the current policy overview for ordinary Turmoil and opens the full More Parties reference', async () => {
     const wrapper = mount(TurmoilAgendaReference, {
       ...globalConfig,
       props: {parties, agendaStyle: 'Random', morePartiesExpansion: false},
@@ -67,7 +106,9 @@ describe('TurmoilAgendaReference', () => {
     await wrapper.setProps({agendaStyle: 'PartyLeaders', morePartiesExpansion: true,
       parties: [{name: PartyName.SPOME, agenda: {bonusId: 'spob01', policyId: 'spop02'}}]});
     expect(wrapper.findAll('[data-agenda-id]').map((option) => option.attributes('data-agenda-id')))
-      .to.deep.eq(['spop02']);
+      .to.deep.eq(['spob01', 'spob02', 'spop01', 'spop02', 'spop03', 'spop04']);
+    expect(wrapper.findAll('.agenda-reference-current').map((option) => option.attributes('data-agenda-id')))
+      .to.deep.eq(['spob01', 'spop02']);
     expect(wrapper.text()).to.contain('Every time you place a lunar habitat tile, gain 4 M€');
   });
 

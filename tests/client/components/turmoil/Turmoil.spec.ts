@@ -214,6 +214,7 @@ describe('Turmoil', () => {
     await wrapper.setProps({agendaStyle: 'PartyLeaders', morePartiesExpansion: true});
     await wrapper.find('.policies-clickable').trigger('click');
     expect(wrapper.findComponent(TurmoilAgendaReference).props('morePartiesExpansion')).is.true;
-    expect(wrapper.findComponent(TurmoilAgendaReference).findAll('[data-agenda-id]')).to.have.length(1);
+    expect(wrapper.findComponent(TurmoilAgendaReference).findAll('button')).to.have.length(12);
+    expect(wrapper.findComponent(TurmoilAgendaReference).findAll('[data-agenda-id]')).to.have.length(6);
   });
 });

@@ -126,7 +126,7 @@ export const IDES_OF_MARS_CARD_MANIFEST = new ModuleManifest({
     [CardName.TAKEOVER]: {Factory: Takeover},
     [CardName.INFRASTRUCTURES]: {Factory: Infrastructures},
     [CardName.NATURAL_GROWTH_CATALYST]: {Factory: NaturalGrowthCatalyst},
-    [CardName.GALAXY_EXPRESS]: {Factory: GalaxyExpress, compatibility: 'colonies'},
+    [CardName.GALAXY_EXPRESS]: {Factory: GalaxyExpress, compatibility: ['colonies', 'turmoil']},
     [CardName.PLEISTOCENE_MEGAFAUNA]: {Factory: PleistoceneMegafauna},
     [CardName.REPTILES]: {Factory: Reptiles},
     [CardName.OBJECTIVE_MARS]: {Factory: ObjectiveMars},

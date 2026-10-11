@@ -12,6 +12,15 @@ import {InMemoryDatabase} from './testing/InMemoryDatabase';
 import {restoreTestDatabase, setTestDatabase} from './testing/setup';
 
 describe('GameCards', () => {
+  it('requires both Colonies and Turmoil for Galaxy Express', () => {
+    const options = {...DEFAULT_GAME_OPTIONS, idesOfMarsExpansion: true, coloniesExtension: true};
+    expect(new GameCards(options).getProjectCards().map(toName)).not.to.contain(CardName.GALAXY_EXPRESS);
+    options.turmoilExtension = true;
+    expect(new GameCards(options).getProjectCards().map(toName)).to.contain(CardName.GALAXY_EXPRESS);
+    options.coloniesExtension = false;
+    expect(new GameCards(options).getProjectCards().map(toName)).not.to.contain(CardName.GALAXY_EXPRESS);
+  });
+
   it('correctly removes projectCardsToRemove', () => {
     // include corporate era
     const gameOptions: GameOptions = {

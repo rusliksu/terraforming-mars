@@ -5,6 +5,11 @@ import {forcePartiesInPlay} from '../../TestingUtils';
 import {PartyName} from '../../../src/common/turmoil/PartyName';
 
 describe('PartyRequirement', () => {
+  it('is not satisfied when Turmoil is disabled', () => {
+    const [, player] = testGame(1);
+    expect(new PartyRequirement(PartyName.UNITY).satisfies(player)).is.false;
+  });
+
   it('is not satisfied (and does not throw) when the required party was not selected into play', () => {
     // Force only these 6 into play, leaving Transhumanists out.
     const restoreShuffle = forcePartiesInPlay(

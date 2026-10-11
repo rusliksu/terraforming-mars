@@ -38,6 +38,8 @@ export class MicrobeColtures extends ActionCard implements IProjectCard {
       metadata: {
         cardNumber: 'CB25',
         renderData: CardRenderer.builder((b) => {
+          b.heat(1).arrow().resource(CardResource.MICROBE).asterix().nbsp.or().br;
+          b.heat(5, {digit: true}).arrow().resource(CardResource.MICROBE, 2).asterix().br;
           b.plainText(
             'Action: Spend 1 heat to add 1 microbe to ANY card, ' +
             'or spend 5 heat to add 2 microbes to ANY card.', true).br;

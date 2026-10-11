@@ -376,7 +376,7 @@
       <div class="resource card card-with-border policy-card-with-tag"><div class="card-icon tag-power"></div></div>
     </template>
     <template v-else-if="id === 'burb01'">
-      <div class="policy-top-margin"><span class="money resource">2</span> / delegate</div>
+      <div class="policy-top-margin"><span class="money resource">2</span> / <span class="delegate" role="img" :aria-label="$t('Delegate')"></span></div>
     </template>
     <template v-else-if="id === 'burb02'">
       <div class="policy-top-margin"><span class="money resource">2</span> / <div class="influence" style="width: 24px; height: 24px; background-size: 24px 24px;"></div></div>
@@ -392,7 +392,7 @@
       </div>
     </template>
     <template v-else-if="id === 'burp03'">
-      <div class="policy-top-margin">delegate : <span class="money resource">3</span></div>
+      <div class="policy-top-margin"><span class="delegate" role="img" :aria-label="$t('Delegate')"></span> : <span class="money resource">3</span></div>
     </template>
     <template v-else-if="id === 'burp04'">
       <div class="policy-top-margin"><div class="resource card card-with-border"></div> : <div class="resource card card-with-border red-outline"></div></div>

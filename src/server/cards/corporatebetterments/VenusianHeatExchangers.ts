@@ -38,6 +38,8 @@ export class VenusianHeatExchangers extends ActionCard implements IProjectCard, 
       metadata: {
         cardNumber: 'B40',
         renderData: CardRenderer.builder((b) => {
+          b.production((pb) => pb.minus().heat(2, {digit: true})).arrow().tr(1).nbsp.or().br;
+          b.resource(CardResource.FLOATER, 2).asterix().arrow().production((pb) => pb.heat(2)).br;
           b.plainText(
             'Action: Decrease your heat production 2 steps to raise your TR 1 step, ' +
             'or remove 2 floaters from any card to increase your heat production 2 steps.', true);

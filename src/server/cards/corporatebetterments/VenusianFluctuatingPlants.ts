@@ -39,6 +39,8 @@ export class VenusianFluctuatingPlants extends ActionCard implements IProjectCar
       metadata: {
         cardNumber: 'B43',
         renderData: CardRenderer.builder((b) => {
+          b.arrow().resource(CardResource.FLOATER).asterix().nbsp.or().br;
+          b.plants(3, {digit: true}).arrow().resource(CardResource.FLOATER, 2).asterix().br;
           b.plainText(
             'Action: Add 1 floater to any card, or spend 3 plants to add 2 floaters to any card.', true).br;
           b.vpText('1 VP for every 2 floaters on this card.');

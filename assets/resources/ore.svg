@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="ore" x2="0.7" y2="1">
+      <stop stop-color="#b18b62"/>
+      <stop offset="1" stop-color="#463428"/>
+    </linearGradient>
+  </defs>
+  <path d="M5 29 11 12 25 5 39 15 44 33 33 43 14 42Z" fill="url(#ore)" stroke="#241d18" stroke-width="2"/>
+  <path d="M11 12 24 18 25 5M24 18 39 15M24 18 20 33 5 29M20 33 33 43M20 33 44 33" fill="none" stroke="#d2ac7b" stroke-width="2" stroke-linejoin="round"/>
+  <path d="m15 21 5-2 2 5-5 3Zm14 4 5-3 3 5-5 4Zm-5 10 4-2 3 4-5 2Z" fill="#ebba58" stroke="#754e28" stroke-width="1"/>
+</svg>

@@ -34,6 +34,8 @@ export class SolarWindTrap extends ActionCard implements IProjectCard, IActionCa
       metadata: {
         cardNumber: 'V52',
         renderData: CardRenderer.builder((b) => {
+          b.arrow().resource(CardResource.ORE, 2).nbsp.or().br;
+          b.resource(CardResource.ORE, {amount: 3, digit: true}).arrow().venus(1).br;
           b.plainText('Action: add 2 ore to this card, OR remove 3 ore from this card to raise Venus 1 step.', true);
         }),
       },

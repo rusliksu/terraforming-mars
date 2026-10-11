@@ -1,3 +1,5 @@
+import {shallowReactive} from 'vue';
+
 export type Preferences = {
   learner_mode: boolean,
   enable_sounds: boolean,
@@ -19,6 +21,7 @@ export type Preferences = {
   symbol_overlay: boolean,
   animated_title: boolean,
   experimental_ui: boolean,
+  experimental_layout: boolean,
   lang: string,
 }
 
@@ -48,6 +51,7 @@ const defaults: Preferences = {
   animated_title: true,
 
   experimental_ui: false,
+  experimental_layout: false,
   debug_view: false,
 };
 
@@ -64,7 +68,7 @@ export class PreferencesManager {
   }
 
   private constructor() {
-    this._values = {...defaults};
+    this._values = shallowReactive({...defaults});
     for (const key of Object.keys(defaults) as Array<Preference>) {
       const value = this.localStorageSupported() ? localStorage.getItem(key) : undefined;
       if (value) {

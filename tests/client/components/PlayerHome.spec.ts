@@ -12,22 +12,32 @@ import {Phase} from '@/common/Phase';
 import StackedCards from '@/client/components/StackedCards.vue';
 import {CardType} from '@/common/cards/CardType';
 import {CardModel} from '@/common/models/CardModel';
+import {PreferencesManager} from '@/client/utils/PreferencesManager';
+import WaitingFor from '@/client/components/WaitingFor.vue';
+import {PlayerViewModel} from '@/common/models/PlayerModel';
+import {RecursivePartial} from '@/common/utils/utils';
+import {vi} from 'vitest';
 
 describe('PlayerHome', () => {
   let localStorage: FakeLocalStorage;
+  const originalScrollIntoView = Element.prototype.scrollIntoView;
 
   beforeEach(() => {
     localStorage = new FakeLocalStorage();
     FakeLocalStorage.register(localStorage);
+    PreferencesManager.resetForTest();
+    Element.prototype.scrollIntoView = vi.fn();
     window.history.replaceState({}, '', '/player?id=p-blue-id');
   });
 
   afterEach(() => {
     FakeLocalStorage.deregister(localStorage);
+    PreferencesManager.resetForTest();
+    Element.prototype.scrollIntoView = originalScrollIntoView;
     window.history.replaceState({}, '', '/player?id=p-blue-id');
   });
 
-  function mountPlayerHome(phase: Phase = Phase.ACTION, playerOverrides = {}, multiplayer = true) {
+  function mountPlayerHome(phase: Phase = Phase.ACTION, playerOverrides = {}, multiplayer = true, viewOverrides: RecursivePartial<PlayerViewModel> = {}) {
     const thisPlayer = fakePublicPlayerModel({
       tableau: [{name: 'Copper'}] as any,
       ...playerOverrides,
@@ -46,6 +56,7 @@ describe('PlayerHome', () => {
           game: fakeGameModel({gameId: 'game-id-123', phase}),
           players,
           thisPlayer,
+          ...viewOverrides,
         }),
         settings: raw_settings,
       },
@@ -56,10 +67,77 @@ describe('PlayerHome', () => {
     expect(mountPlayerHome().exists()).to.be.true;
   });
 
+  it('switches layout without remounting the pending input and restores the viewport', async () => {
+    const viewport = document.createElement('meta');
+    viewport.name = 'viewport';
+    viewport.content = 'width=1260, user-scalable=1';
+    document.head.append(viewport);
+    const wrapper = mountPlayerHome(Phase.ACTION, {}, true, {waitingFor: {type: 'amount', title: 'Select amount', buttonLabel: 'Save', min: 0, max: 4, maxByDefault: false}});
+    const input = wrapper.getComponent(WaitingFor).vm;
+    try {
+      expect(wrapper.classes()).not.include('player-home--experimental');
+      PreferencesManager.INSTANCE.set('experimental_layout', true);
+      await wrapper.vm.$nextTick();
+      expect(wrapper.classes()).include('player-home--experimental');
+      expect(viewport.content).eq('width=device-width, initial-scale=1, viewport-fit=cover');
+      wrapper.getComponent({name: 'ExperimentalPlayerNavigation'}).vm.$emit('navigate', 'cards');
+      await wrapper.vm.$nextTick();
+      expect(wrapper.attributes('data-active-panel')).eq('cards');
+      expect(wrapper.getComponent(WaitingFor).vm).eq(input);
+      wrapper.get('[data-test="classic-layout"]').trigger('click');
+      await wrapper.vm.$nextTick();
+      expect(wrapper.classes()).not.include('player-home--experimental');
+      expect(PreferencesManager.INSTANCE.values().experimental_layout).is.false;
+      expect(viewport.content).eq('width=1260, user-scalable=1');
+      expect(wrapper.getComponent(WaitingFor).vm).eq(input);
+    } finally {
+      wrapper.unmount();
+      viewport.remove();
+    }
+  });
+
   it('does not render standalone surrender or bot takeover controls', () => {
     const wrapper = mountPlayerHome();
     expect(wrapper.find('[data-test="bot-takeover-control"]').exists()).is.false;
     expect(wrapper.find('[data-test="surrender-control"]').exists()).is.false;
+  });
+
+  it('keeps the players keyboard shortcut reachable in the optional layout', async () => {
+    PreferencesManager.INSTANCE.set('experimental_layout', true);
+    const wrapper = mountPlayerHome();
+    document.body.append(wrapper.element);
+    try {
+      document.body.dispatchEvent(new KeyboardEvent('keydown', {code: 'KeyS', bubbles: true}));
+      await wrapper.vm.$nextTick();
+      expect(wrapper.attributes('data-active-panel')).eq('players');
+      expect(vi.mocked(Element.prototype.scrollIntoView).mock.calls.length).greaterThan(0);
+    } finally {
+      wrapper.unmount();
+      wrapper.element.remove();
+    }
+  });
+
+  it('opens the board for nested placement prompts and restores the viewport on unmount', async () => {
+    const viewport = document.createElement('meta');
+    viewport.name = 'viewport';
+    viewport.content = 'width=1260, user-scalable=1';
+    document.head.append(viewport);
+    PreferencesManager.INSTANCE.set('experimental_layout', true);
+    const wrapper = mountPlayerHome();
+    try {
+      wrapper.getComponent({name: 'ExperimentalPlayerNavigation'}).vm.$emit('navigate', 'cards');
+      await wrapper.setProps({playerView: fakePlayerViewModel({thisPlayer: fakePublicPlayerModel({tableau: [{name: 'Copper'}] as any}), waitingFor: {
+        type: 'and', title: 'Place a tile', buttonLabel: 'Save', options: [
+          {type: 'space', title: 'Select space', buttonLabel: 'Save', spaces: []},
+        ],
+      }})});
+      expect(wrapper.attributes('data-active-panel')).eq('board');
+      expect(wrapper.classes()).include('player-home--placing');
+    } finally {
+      wrapper.unmount();
+      expect(viewport.content).eq('width=1260, user-scalable=1');
+      viewport.remove();
+    }
   });
 
   it('files effect and action cards under the active filter and counts what the filters show', () => {

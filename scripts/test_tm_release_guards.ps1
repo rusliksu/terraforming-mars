@@ -907,6 +907,62 @@ create_verified_sqlite_backup
     Assert-True ((Test-Path -LiteralPath $backupPath) -and -not (Test-Path -LiteralPath $restoreProbePath)) "Cutover backup unexpectedly performed a second full copy during downtime."
     Assert-True ((Get-FileHash -LiteralPath $sqliteSource -Algorithm SHA256).Hash -eq (Get-FileHash -LiteralPath $backupPath -Algorithm SHA256).Hash) "Verified quiescent SQLite backup differs from its source."
 
+    # Completed rehearsal copies must not consume backup and rollback space.
+    $rehearsalSection = [regex]::Match($promoteRemote, '(?ms)^mkdir -p "\$rehearsal_root"\n.*?(?=^if ! printf )').Value
+    Assert-True (-not [string]::IsNullOrEmpty($rehearsalSection)) "Missing pre-cutover rehearsal and backup flow."
+    $diskFixture = Join-Path $advancedTempRoot "promotion-disk"
+    $diskHarness = @'
+set -euo pipefail
+python3() { __PYTHON__ "$@"; }
+game_db_path="$1"
+work_root="$2"
+rehearsal_root="$work_root/rehearsal"
+rehearsal_db="$rehearsal_root/game.db"
+database_restore_probe="$work_root/restore-probe.db"
+backup_root="$work_root/backups"
+database_backup="$backup_root/rollback.db"
+shared_root="$work_root/shared"
+new_release_dir="$work_root"
+service=fixture-server
+run_token=fixture
+mkdir -p "$work_root" "$shared_root/db"
+node() { test -f "$rehearsal_db"; }
+assert_no_realtime_games_sqlite() { return 0; }
+rollback_before_cutover() { echo "$1" >&2; exit 82; }
+systemctl() {
+  if [ -e "$rehearsal_db" ] || [ -e "$database_restore_probe" ]; then
+    echo 'Rehearsal copies still occupy space when the writer stops.' >&2
+    return 73
+  fi
+}
+__COPY_FUNCTION__
+__STATIC_COPY_FUNCTION__
+__BACKUP_FUNCTION__
+__RESTORE_FUNCTION__
+__REHEARSAL_SECTION__
+python3 - "$game_db_path" <<'PY'
+import sqlite3
+import sys
+with sqlite3.connect(sys.argv[1]) as database:
+    database.execute("UPDATE proof SET value='after-cutover'")
+PY
+test "$(sha256sum "$game_db_path" | awk '{print $1}')" != "$backup_sha"
+restore_database_backup
+test "$(sha256sum "$game_db_path" | awk '{print $1}')" = "$backup_sha"
+test -f "$database_backup"
+'@
+    $diskHarness = $diskHarness.Replace('__PYTHON__', $pythonPathBash).
+        Replace('__COPY_FUNCTION__', $sqliteCopyHelper).
+        Replace('__STATIC_COPY_FUNCTION__', $staticCopyHelper).
+        Replace('__BACKUP_FUNCTION__', $sqliteBackupHelper).
+        Replace('__RESTORE_FUNCTION__', (Get-BashFunction -ScriptText $promoteRemote -Name "restore_database_backup")).
+        Replace('__REHEARSAL_SECTION__', $rehearsalSection)
+    $diskResult = Invoke-Bash -ScriptText $diskHarness -Arguments @(
+        (ConvertTo-TmGitBashPath $sqliteSource),
+        (ConvertTo-TmGitBashPath $diskFixture)
+    )
+    Assert-True ($diskResult.ExitCode -eq 0) "Promotion retained rehearsal copies or lost its rollback backup. stderr=$($diskResult.StdErr)"
+
     # Fixed-path ELO mirrors publish atomically per file and repair a partial prior attempt.
     $publishHelper = Get-BashFunction -ScriptText $promoteRemote -Name "publish_elo_helpers"
     $helperSourceRelease = Join-Path $advancedTempRoot "helper-source"

@@ -1,6 +1,5 @@
 import {PartyName} from '../../../common/turmoil/PartyName';
 import {IPlayer} from '../../IPlayer';
-import {Turmoil} from '../../turmoil/Turmoil';
 import {CardRequirement} from './CardRequirement';
 import {RequirementType} from '../../../common/cards/RequirementType';
 import {sum} from '../../../common/utils/utils';
@@ -23,7 +22,10 @@ export class PartyRequirement extends CardRequirement {
   }
 
   public satisfies(player: IPlayer): boolean {
-    const turmoil = Turmoil.getTurmoil(player.game);
+    const turmoil = player.game.turmoil;
+    if (turmoil === undefined) {
+      return false;
+    }
     if (turmoil.rulingParty.name === this.party || player.alliedParty?.partyName === this.party ) {
       return true;
     }

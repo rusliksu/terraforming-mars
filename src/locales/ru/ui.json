@@ -276,6 +276,9 @@
 
     "Game log": "Лог игры",
     "Last 100": "Последние 100",
+    "Search displayed logs": "Поиск в показанных записях",
+    "Clear search": "Сбросить поиск",
+    "No matching logs in this view.": "В выбранных записях совпадений нет.",
     "Show details": "Показать подробности",
     "Hide details": "Скрыть подробности",
     "Action continues": "Действие продолжается",

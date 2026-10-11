@@ -21,6 +21,7 @@ export class InSituResourceUtilization extends ActionCard implements IProjectCar
       metadata: {
         cardNumber: 'V56',
         renderData: CardRenderer.builder((b) => {
+          b.resource(CardResource.ORE, {amount: 3, digit: true}).asterix().arrow().trade().br;
           b.plainText('Action: spend 3 ore resources from anywhere to trade with a colony.', true);
         }),
       },

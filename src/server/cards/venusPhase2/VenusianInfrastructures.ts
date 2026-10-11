@@ -26,6 +26,7 @@ export class VenusianInfrastructures extends ActionCard implements IProjectCard,
       metadata: {
         cardNumber: 'V53',
         renderData: CardRenderer.builder((b) => {
+          b.resource(CardResource.ORE).asterix().arrow().resource(CardResource.FLOATER, 2).br;
           b.plainText('Requires Venus 12% or more. Action: spend 1 ore resource from anywhere to add 2 floaters to this card.', true);
           b.br;
           b.vpText('1 VP per 2 floaters on this card.');

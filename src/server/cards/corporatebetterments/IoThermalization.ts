@@ -35,6 +35,8 @@ export class IoThermalization extends ActionCard implements IProjectCard {
       metadata: {
         cardNumber: 'CB31',
         renderData: CardRenderer.builder((b) => {
+          b.titanium(1).arrow().production((pb) => pb.heat(1)).nbsp.or().br;
+          b.production((pb) => pb.minus().heat(2, {digit: true})).arrow().tr(1).br;
           b.plainText(
             'Action: Spend 1 titanium to increase your heat production 1 step, ' +
             'or decrease your heat production 2 steps to raise your TR 1 step.', true);

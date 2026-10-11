@@ -1,4 +1,4 @@
-import {shallowReactive} from 'vue';
+import {ref} from 'vue';
 
 export type Preferences = {
   learner_mode: boolean,
@@ -68,7 +68,17 @@ export class PreferencesManager {
   }
 
   private constructor() {
-    this._values = shallowReactive({...defaults});
+    // The layout switches immediately; other preferences retain their existing update behavior.
+    const layout = ref(defaults.experimental_layout);
+    this._values = {
+      ...defaults,
+      get experimental_layout() {
+        return layout.value;
+      },
+      set experimental_layout(enabled: boolean) {
+        layout.value = enabled;
+      },
+    };
     for (const key of Object.keys(defaults) as Array<Preference>) {
       const value = this.localStorageSupported() ? localStorage.getItem(key) : undefined;
       if (value) {

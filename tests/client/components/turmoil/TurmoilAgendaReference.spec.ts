@@ -29,8 +29,17 @@ describe('TurmoilAgendaReference', () => {
       'Populists', 'Spome', 'Empower', 'Bureaucrats', 'Centrists', 'Transhumanists',
     ]);
     expect(wrapper.findAll('.agenda-reference-in-play')).to.have.length(6);
+    expect(wrapper.find('.agenda-reference-ruling').text()).eq('In power');
+    expect(wrapper.find('[data-agenda-id="gp03"] .agenda-reference-badge').text()).eq('Active policy');
+    expect(wrapper.find('[data-agenda-id="gb02"] .agenda-reference-badge').text()).eq('Current selection');
     expect(wrapper.findAll('.agenda-reference-current').map((option) => option.attributes('data-agenda-id')))
       .to.deep.eq(['gb02', 'gp03']);
+
+    await wrapper.findAll('button')[3].trigger('click');
+    expect(wrapper.find('[data-agenda-id="kp03"] .agenda-reference-badge').text()).eq('Current selection');
+    expect(wrapper.text()).not.to.contain('Active policy');
+    await wrapper.setProps({rulingParty: PartyName.KELVINISTS});
+    expect(wrapper.find('[data-agenda-id="kp03"] .agenda-reference-badge').text()).eq('Active policy');
 
     await wrapper.findAll('button')[8].trigger('click');
     expect(wrapper.findAll('[data-agenda-id]').map((option) => option.attributes('data-agenda-id')))
@@ -54,7 +63,7 @@ describe('TurmoilAgendaReference', () => {
       ...globalConfig,
       props: {parties, rulingParty: PartyName.SCIENTISTS, agendaStyle: 'Chairman', morePartiesExpansion: false},
     });
-    expect(wrapper.findAll('button').map((button) => button.text())).to.deep.eq(['Scientists', 'Greens']);
+    expect(wrapper.findAll('button .party-name').map((button) => button.text())).to.deep.eq(['Scientists', 'Greens']);
     expect(wrapper.findAll('[data-agenda-id]').map((option) => option.attributes('data-agenda-id')))
       .to.deep.eq(['sb01', 'sb02', 'sp01', 'sp02', 'sp03', 'sp04']);
     expect(wrapper.findAll('.agenda-reference-current').map((option) => option.attributes('data-agenda-id')))
@@ -95,12 +104,14 @@ describe('TurmoilAgendaReference', () => {
   it('keeps the current policy overview for ordinary Turmoil and opens the full More Parties reference', async () => {
     const wrapper = mount(TurmoilAgendaReference, {
       ...globalConfig,
-      props: {parties, agendaStyle: 'Random', morePartiesExpansion: false},
+      props: {parties, rulingParty: PartyName.GREENS, agendaStyle: 'Random', morePartiesExpansion: false},
     });
     expect(wrapper.findAll('[data-agenda-id]').map((option) => option.attributes('data-agenda-id')))
       .to.deep.eq(['sp01', 'gp04']);
     expect(wrapper.findAll('.party-name').map((party) => party.text())).to.deep.eq(['Scientists', 'Greens']);
     expect(wrapper.findAll('button')).to.have.length(0);
+    expect(wrapper.find('[data-agenda-id="gp04"] .agenda-reference-badge').text()).eq('Active policy');
+    expect(wrapper.find('[data-agenda-id="sp01"] .agenda-reference-badge').exists()).eq(false);
     expect(wrapper.text()).not.to.contain('Available bonuses');
     expect(wrapper.text()).not.to.contain('Available policies');
     await wrapper.setProps({agendaStyle: 'PartyLeaders', morePartiesExpansion: true,

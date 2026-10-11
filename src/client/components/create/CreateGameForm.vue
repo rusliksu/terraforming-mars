@@ -872,7 +872,7 @@ import {GameId, JSONObject} from '@/common/Types';
 import {AgendaStyle} from '@/common/turmoil/Types';
 import PreferencesIcon from '@/client/components/PreferencesIcon.vue';
 import {byType, getCard, getCards, getCardReplacementRules} from '@/client/cards/ClientCardManifest';
-import {filterReplacedCards} from '@/common/cards/CardReplacementRules';
+import {filterReplacedCards, getCardReplacementNames} from '@/common/cards/CardReplacementRules';
 import type {ClientCard} from '@/common/cards/ClientCard';
 import {BoardNameType, NewGameConfig, NewPlayerModel, normalizePreludeHandicap} from '@/common/game/NewGameConfig';
 import {vueRoot} from '@/client/components/vueRoot';
@@ -1130,12 +1130,12 @@ export default defineComponent({
       }
     },
     showCorporationList(value: boolean) {
-      if (value === true) {
+      if (value === true && !this.uploading) {
         this.customCorporations = this.getDefaultCustomCorporations();
       }
     },
     showPreludesList(value: boolean) {
-      if (value === true) {
+      if (value === true && !this.uploading) {
         this.customPreludes = this.getDefaultCustomPreludes();
       }
     },
@@ -1477,6 +1477,8 @@ export default defineComponent({
         this.applyCustomVenusSurfaceBoardCode();
         const selectableCorporations = new Set(this.getSelectableCustomCorporations());
         const selectablePreludes = new Set(this.getSelectableCustomPreludes());
+        component.customCorporations = this.normalizeCustomCardSelection(component.customCorporations, [...selectableCorporations]);
+        component.customPreludes = this.normalizeCustomCardSelection(component.customPreludes, [...selectablePreludes]);
         const unavailableCards = [
           ...component.customCorporations.filter((name) => getCard(name) !== undefined && !selectableCorporations.has(name)),
           ...component.customPreludes.filter((name) => getCard(name) !== undefined && !selectablePreludes.has(name)),
@@ -1817,8 +1819,12 @@ export default defineComponent({
       });
     },
     isCardAllowedForCustomSelection(card: ClientCard): boolean {
-      return this.isCardModuleAllowedForCustomSelection(card) &&
+      return card.instantiate !== false && this.isCardModuleAllowedForCustomSelection(card) &&
         this.isCardCompatibilityAllowedForCustomSelection(card);
+    },
+    normalizeCustomCardSelection(selected: ReadonlyArray<CardName>, available: ReadonlyArray<CardName>): Array<CardName> {
+      const replacements = getCardReplacementNames(available, getCardReplacementRules(() => true));
+      return unique(selected.map((name) => replacements.get(name) ?? name));
     },
     getSelectableCustomCorporations(): Array<CardName> {
       const cards = getCards(byType(CardType.CORPORATION))
@@ -1864,10 +1870,11 @@ export default defineComponent({
         });
     },
     getDefaultCustomCorporations(): Array<CardName> {
+      const available = this.getSelectableCustomCorporations();
       return mergeCustomSelectionWithExclusions(
-        this.customCorporations,
-        this.getSelectableCustomCorporations(),
-        this.customCorporationExclusions,
+        this.normalizeCustomCardSelection(this.customCorporations, available),
+        available,
+        this.normalizeCustomCardSelection(this.customCorporationExclusions, available),
       );
     },
     getActiveDefaultCustomPreludeExclusions(): Array<CardName> {
@@ -1887,10 +1894,11 @@ export default defineComponent({
       this.customPreludes = this.customPreludes.filter((cardName) => !exclusions.has(cardName));
     },
     getDefaultCustomPreludes(): Array<CardName> {
+      const available = this.getSelectableCustomPreludes();
       return mergeCustomSelectionWithExclusions(
-        this.customPreludes,
-        this.getSelectableCustomPreludes(),
-        this.getActiveCustomPreludeExclusions(),
+        this.normalizeCustomCardSelection(this.customPreludes, available),
+        available,
+        this.normalizeCustomCardSelection(this.getActiveCustomPreludeExclusions(), available),
       );
     },
     getDefaultCustomColonies(options: SyncCustomSelectionOptions = {}): Array<ColonyName> {
@@ -1922,8 +1930,10 @@ export default defineComponent({
           unique([...DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS, ...exclusions]) :
           exclusions;
         if (options.preserveDefaultCorporationExclusions === true) {
+          const defaultExclusions = new Set(this.normalizeCustomCardSelection(
+            [...DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS], this.getSelectableCustomCorporations()));
           this.customCorporations = this.customCorporations
-            .filter((cardName) => !DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS.has(cardName));
+            .filter((cardName) => !defaultExclusions.has(cardName));
         }
       }
       if (this.showPreludesList || this.customPreludes.length > 0) {

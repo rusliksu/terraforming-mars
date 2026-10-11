@@ -38,7 +38,7 @@ import {DataDrivenCard} from './cards/DataDrivenCard';
 import {getAllCustomCardDefinitions} from './cards/CustomCardRegistry';
 import {GameModule} from '../common/cards/GameModule';
 import {ALL_MODULE_MANIFESTS} from './cards/AllManifests';
-import {filterReplacedCards} from '@/common/cards/CardReplacementRules';
+import {filterReplacedCards, getCardReplacementNames} from '@/common/cards/CardReplacementRules';
 import {REBALANCED_CARD_MANIFEST} from './cards/rebalanced/RebalancedCardManifest';
 
 const CUSTOM_CARD_MODULE_EXCEPTIONS = new Set<CardName>([
@@ -141,7 +141,8 @@ export class GameCards {
   public getCorporationCards(): Array<ICorporationCard> {
     if (this.gameOptions.customCorporationsList.length > 0) {
       const selected: Array<ICorporationCard> = [];
-      this.addCustomCards(selected, this.gameOptions.customCorporationsList, {respectModuleSelection: true});
+      const available = this.getCards<ICorporationCard>('corporationCards').map((card) => card.name);
+      this.addCustomCards(selected, this.normalizeCustomCardSelection(this.gameOptions.customCorporationsList, available), {respectModuleSelection: true});
       return filterReplacedCards(selected, this.moduleManifests)
         .filter((card) => card.name !== CardName.BEGINNER_CORPORATION);
     }
@@ -153,7 +154,8 @@ export class GameCards {
     let preludes: Array<IPreludeCard>;
     if (this.gameOptions.customPreludes.length > 0) {
       preludes = [];
-      this.addCustomCards(preludes, this.gameOptions.customPreludes, {respectModuleSelection: true});
+      const available = this.getCards<IPreludeCard>('preludeCards').map((card) => card.name);
+      this.addCustomCards(preludes, this.normalizeCustomCardSelection(this.gameOptions.customPreludes, available), {respectModuleSelection: true});
     } else {
       preludes = this.getCards<IPreludeCard>('preludeCards');
       // https://github.com/terraforming-mars/terraforming-mars/issues/2833
@@ -217,12 +219,20 @@ export class GameCards {
   }
 
   private isCustomCardCompatible(cardName: CardName, entry: {module: GameModule, factory: CardFactorySpec<ICard>}): boolean {
+    if (entry.factory.instantiate === false) {
+      return false;
+    }
     const ignoresModule = CUSTOM_CARD_MODULE_EXCEPTIONS.has(cardName);
     if (ignoresModule === false && this.isModuleEnabled(entry.module) === false) {
       return false;
     }
 
     return isCompatibleWith(entry.factory, this.gameOptions);
+  }
+
+  private normalizeCustomCardSelection(selected: ReadonlyArray<CardName>, available: ReadonlyArray<CardName>): Array<CardName> {
+    const replacements = getCardReplacementNames(available, ALL_MODULE_MANIFESTS);
+    return selected.map((name) => replacements.get(name) ?? name);
   }
 
   private findCustomCardFactory(cardName: CardName): {module: GameModule, factory: CardFactorySpec<ICard>} | undefined {

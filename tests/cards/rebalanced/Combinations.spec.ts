@@ -31,7 +31,8 @@ describe('Rebalanced and Better Mars combinations', () => {
         const names = [...cards.getProjectCards(), ...cards.getCorporationCards(), ...cards.getPreludeCards()].map((card) => card.name);
         const expectedIndex = Number(betterMarsExpansion) + 2 * Number(rebalancedExpansion);
         for (const family of families) {
-          expect(names.filter((name) => family.includes(name))).deep.eq([family[expectedIndex]]);
+          const index = family[0] === CardName.PRISTAR && expectedIndex === 3 ? 1 : expectedIndex;
+          expect(names.filter((name) => family.includes(name))).deep.eq([family[index]]);
         }
       });
     }
@@ -41,7 +42,7 @@ describe('Rebalanced and Better Mars combinations', () => {
     const options = {...both,
       customCorporationsList: [CardName.PRISTAR, CardName.PRISTAR_REBALANCED_BETTER_MARS],
       customPreludes: [CardName.EARLY_SETTLEMENT, CardName.EARLY_SETTLEMENT_REBALANCED_BETTER_MARS]};
-    expect(new GameCards(options).getCorporationCards().map((card) => card.name)).deep.eq([CardName.PRISTAR_REBALANCED_BETTER_MARS]);
+    expect(new GameCards(options).getCorporationCards().map((card) => card.name)).deep.eq([CardName.PRISTAR_BETTER_MARS]);
     expect(new GameCards(options).getPreludeCards().map((card) => card.name)).deep.eq([CardName.EARLY_SETTLEMENT_REBALANCED_BETTER_MARS]);
   });
 

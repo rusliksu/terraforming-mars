@@ -24,19 +24,41 @@ if (branch.status !== 0 || ['main', 'master'].includes(branch.stdout.trim())) {
   throw new Error('Review tests require an owned checkout or detached baseline.');
 }
 
-const commands = [
+const preparation = [
   ['ci'],
   ['run', 'make:json'],
   ['run', 'make:cards'],
   ['run', 'build:tests'],
-  ['run', 'test:server'],
-  ['run', 'test:client', '--', '--reporter=junit', '--outputFile=' + outputFile],
 ];
-for (const args of commands) {
+const logFile = outputFile + '.log';
+const log = fs.openSync(logFile, 'a');
+function run(args) {
+  fs.writeSync(log, '\n' + args.join(' ') + '\n');
   const result = spawnSync(process.execPath, [npmCli, ...args], {
-    stdio: 'inherit',
+    stdio: ['ignore', log, log],
     env: {...process.env, NODE_ENV: 'test'},
   });
   if (result.error) throw result.error;
-  if (result.status !== 0) process.exit(result.status ?? 1);
+  return result.status ?? 1;
 }
+function fail(status) {
+  fs.closeSync(log);
+  if (status !== 0) {
+    const details = fs.readFileSync(logFile, 'utf8').split('\n').slice(-120).join('\n');
+    console.error(details);
+    process.exit(status);
+  }
+}
+for (const args of preparation) {
+  const status = run(args);
+  if (status !== 0) fail(status);
+}
+
+const serverFile = outputFile + '.server.xml';
+const clientFile = outputFile + '.client.xml';
+const serverStatus = run(['run', 'test:server', '--', '--reporter=xunit', '--reporter-options=output=' + serverFile]);
+const clientStatus = run(['run', 'test:client', '--', '--reporter=junit', '--outputFile=' + clientFile]);
+// Preserve both reporters' complete suites, including failures and skipped tests.
+const reports = [serverFile, clientFile].map((file) => fs.readFileSync(file, 'utf8').replace(/^\s*<\?xml[^?]*\?>/, ''));
+fs.writeFileSync(outputFile, '<testsuites>\n' + reports.join('\n') + '\n</testsuites>\n');
+fail(serverStatus || clientStatus);

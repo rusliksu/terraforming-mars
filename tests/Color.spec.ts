@@ -6,6 +6,7 @@ import {
   GYDRO_COLOR,
   GYDRO_NAME,
   getPlayerIdentityByName,
+  normalizePlayerNameForColor,
   RIGATONE_COLOR,
   RIGATONE_CUSTOMTWO_COLOR,
   RIGATONE_NAME,
@@ -23,6 +24,14 @@ import {
 } from '@/common/Color';
 
 describe('Locked player identities', () => {
+  it('reserves the Credicor persona without changing Vladlen rating identity', () => {
+    const identity = getPlayerIdentityByName('Vladlen Grishaev');
+    expect(identity?.color).to.eq('credicor');
+    expect(identity?.label).to.eq('Владлен · Магистр Кредикора');
+    expect(normalizePlayerNameForColor('credicor', 'Магистр Кредикора')).to.eq('Владлен');
+    expect(getPlayerIdentityByName('Владлен')?.color).to.eq('credicor');
+  });
+
   it('maps the generic Toma identity to the coral pink option', () => {
     expect(SONYA_EMKO_NAME).to.eq(TOMA_NAME);
     expect(getPlayerIdentityByName(TOMA_NAME)?.color).to.eq(SONYA_HYDRO_COLOR);

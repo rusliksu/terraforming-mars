@@ -17,6 +17,8 @@ export const VANGER_COLOR = 'vanger' as const;
 export const VANGER_NAME = 'Вангер';
 export const SERGE_COLOR = 'serge' as const;
 export const SERGE_NAME = 'Serge';
+export const CREDICOR_COLOR = 'credicor' as const;
+export const VLADLEN_NAME = 'Владлен';
 export const RIGATONE_COLOR = 'rigatone' as const;
 export const RIGATONE_CUSTOMTWO_COLOR = 'rigatone2' as const;
 export const RIGATONE_NAME = 'Тагир';
@@ -38,6 +40,7 @@ export const RESERVED_PLAYER_COLORS = [
   PAVEL_TURQUOISE_COLOR,
   VANGER_COLOR,
   SERGE_COLOR,
+  CREDICOR_COLOR,
   RIGATONE_COLOR,
   RIGATONE_CUSTOMTWO_COLOR,
   SONYA_HYDRO_COLOR,
@@ -65,6 +68,15 @@ export type LockedPlayerIdentity = {
 };
 
 export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
+  {
+    color: CREDICOR_COLOR,
+    name: VLADLEN_NAME,
+    label: 'Владлен · Магистр Кредикора',
+    colorLabel: 'сливовый с серебром',
+    shortLabel: 'Владлен',
+    title: 'Магистр Кредикора — персональный цвет Владлена',
+    aliases: ['владлен', 'vladlen', 'владлен гришаев', 'vladlen grishaev', 'магистр кредикора'],
+  },
   {
     color: GENUINE_GOLD_COLOR,
     name: GENUINE_GOLD_NAME,

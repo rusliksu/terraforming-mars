@@ -21,6 +21,7 @@ describe('Player profiles', () => {
     expect(getPlayerProfileByName('Никита_Кусков')?.name).eq('Никита');
     expect(getPlayerProfileByName('Nuke')?.name).eq('Nuke');
     expect(getPlayerProfileByName('Никитос')).eq(undefined);
+    expect(getPlayerProfileByName('Владлен Гришаев')?.preferredColor).eq('credicor');
     expect(getPlayerProfileByName('Александр')?.name).eq('Quattrowow');
     expect(getPlayerProfileByName('Саша')?.name).eq('Quattrowow');
   });
@@ -77,7 +78,7 @@ describe('Player profiles', () => {
     });
 
     expect(getPlayerProfileByName('Qiksa', profiles)?.preferredColor).eq('black');
-    expect(getPlayerProfileByName('Владлен', profiles)?.preferredColor).eq('red');
+    expect(getPlayerProfileByName('Владлен', profiles)?.preferredColor).eq('credicor');
     expect(getPlayerProfileByName('Тимур', profiles)?.preferredColor).eq('red');
     expect(getPlayerProfileByName('vvbMinsk', profiles)?.preferredColor).eq('purple');
     expect(getPlayerProfileByName('Nuke', profiles)?.preferredColor).eq('black');

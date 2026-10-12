@@ -31,7 +31,7 @@
                 <div class="global-numbers-oxygen-extra" v-if="extraStepsBeyondOfficial('oxygen') > 0">+{{ extraStepsBeyondOfficial('oxygen') }}</div>
             </div>
 
-            <div class="global-numbers-venus" v-if="expansions.venus">
+            <div class="global-numbers-venus" v-if="expansions.venus && !expansions.venusPhase2">
                 <div :class="getScaleCSS(lvl)" v-for="(lvl, idx) in getValuesForParameter('venus')" :key="idx">{{ lvl.strValue }}</div>
             </div>
 
@@ -63,7 +63,7 @@
                 </div>
             </div>
 
-            <div v-if="altVenusBoard" class="global-alt-venus">
+            <div v-if="altVenusBoard && !expansions.venusPhase2" class="global-alt-venus">
               <div class="std-wild-resource p18"></div>
               <div class="std-wild-resource p20"></div>
               <div class="std-wild-resource p22"></div>
@@ -539,10 +539,11 @@ export default defineComponent({
       }
     },
     getGameBoardClassName(): string {
+      const relocated = this.expansions.venusPhase2 ? ' board-cont--venus-relocated' : '';
       if (this.isCustomBoard && !this.useStandardTrackLayout) {
-        return 'board-cont board-cont--custom';
+        return 'board-cont board-cont--custom' + relocated;
       }
-      return this.expansions.venus ? 'board-cont board-with-venus' : 'board-cont board-without-venus';
+      return (this.expansions.venus ? 'board-cont board-with-venus' : 'board-cont board-without-venus') + relocated;
     },
     pixelFor(space: SpaceModel): {left: number, top: number} {
       return customSpacePixel(space.x, space.y, this.customExtent.maxY);
@@ -579,7 +580,7 @@ export default defineComponent({
         track.min === defaultTrack.min && track.step === defaultTrack.step && track.max >= defaultTrack.max;
       return matchesOrExtendedMax(this.globalParameters.temperature, DEFAULT_GLOBAL_PARAMETERS.temperature) &&
         matchesOrExtendedMax(this.globalParameters.oxygen, DEFAULT_GLOBAL_PARAMETERS.oxygen) &&
-        matchesDefault(this.globalParameters.venus, DEFAULT_GLOBAL_PARAMETERS.venus);
+        (this.expansions.venusPhase2 || matchesDefault(this.globalParameters.venus, DEFAULT_GLOBAL_PARAMETERS.venus));
     },
     oceanMax(): number {
       return this.globalParameters?.oceans.max ?? constants.MAX_OCEAN_TILES;

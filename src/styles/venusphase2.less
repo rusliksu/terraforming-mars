@@ -63,24 +63,16 @@
 }
 
 .venus-scale-track {
-  width: 400px;
+  width: 440px;
   max-width: 100%;
   margin: 12px 0 0;
-  padding: 10px 12px 0;
-  box-sizing: border-box;
-  color: #f5ddb8;
-  border: 1px solid #aa7e44;
-  border-radius: 8px;
-  background: #29241e;
-
-  &__heading {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-  }
   svg { display: block; width: 100%; }
-  &__line { stroke: #aa7e44; stroke-width: 5px; }
-  &__tick { stroke: #f5ddb8; stroke-width: 2px; }
-  &__number { fill: #f5ddb8; font-size: 17px; }
-  &__marker { fill: white; stroke: black; stroke-width: 2px; }
+  &__art {
+    // Reuse the printed Mars track; leave the planet and other tracks outside the crop.
+    clip-path: path("M98 0H530V101L494 134A252 252 0 0 0 137 134L102 100Z");
+  }
+  &__art--extension {
+    // The legacy extension has no second set of 8/16 bonuses.
+    clip-path: path("M105 103A344 344 0 0 1 526 103L494 134A252 252 0 0 0 137 134Z");
+  }
 }

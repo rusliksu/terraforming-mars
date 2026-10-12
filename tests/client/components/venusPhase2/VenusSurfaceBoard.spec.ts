@@ -86,20 +86,28 @@ describe('VenusSurfaceBoard', () => {
   it('shows 0–30 and moves the marker with the current Venus value', async () => {
     const model: VenusPhase2Model = {spaces: [space('100', 0, 0)]};
     const wrapper = mount(VenusSurfaceBoard, {...globalConfig, props: {model}});
-    expect(wrapper.findAll('.venus-scale-track__number').map((n) => n.text())).deep.eq(
+    expect(wrapper.findAll('.global-numbers-venus .global-numbers-value').map((n) => n.text())).deep.eq(
       ['0', '2', '4', '6', '8', '10', '12', '14', '16', '18', '20', '22', '24', '26', '28', '30']);
-    expect(wrapper.find('.venus-scale-track__marker').attributes('cx')).eq('16');
+    expect(wrapper.find('.val-is-active').text()).eq('0');
     await wrapper.setProps({venusScaleLevel: 28});
-    expect(Number(wrapper.find('.venus-scale-track__marker').attributes('cx'))).within(430, 440);
+    expect(wrapper.find('.val-is-active').text()).eq('28');
     await wrapper.setProps({venusScaleLevel: 30});
-    expect(wrapper.find('.venus-scale-track__marker').attributes('cx')).eq('464');
+    expect(wrapper.find('.val-is-active').text()).eq('30');
     expect(wrapper.find('.venus-scale-track svg').attributes('aria-label')).contains('30 / 30%');
   });
 
   it('uses the saved limit when displaying a legacy game', () => {
     const model: VenusPhase2Model = {spaces: [space('100', 0, 0)]};
     const wrapper = mount(VenusSurfaceBoard, {...globalConfig, props: {model, venusScaleMax: 60, venusScaleLevel: 58}});
-    expect(wrapper.findAll('.venus-scale-track__number').at(-1)?.text()).eq('60');
+    expect(wrapper.findAll('.global-numbers-value').at(-1)?.text()).eq('60');
+    expect(wrapper.findAll('.val-is-active').map((n) => n.text())).deep.eq(['58']);
     expect(wrapper.find('.venus-scale-track svg').attributes('aria-label')).contains('58 / 60%');
+  });
+
+  it('keeps the alternative Venus bonuses only on the original 0–30 track', () => {
+    const model: VenusPhase2Model = {spaces: [space('100', 0, 0)]};
+    const wrapper = mount(VenusSurfaceBoard, {...globalConfig, props: {model, venusScaleMax: 60, altVenusBoard: true}});
+    expect(wrapper.findAll('.std-wild-resource')).to.have.lengthOf(7);
+    expect(wrapper.findAll('.wild-resource')).to.have.lengthOf(1);
   });
 });

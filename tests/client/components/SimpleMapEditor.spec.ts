@@ -151,7 +151,7 @@ describe('SimpleMapEditor', () => {
   it('previews the 0–30 track without manual calibration', () => {
     const wrapper = mount(SimpleMapEditor, {...globalConfig, props: {boardType: 'venusPhase2'}});
     expect(wrapper.findAll('.venus-scale-track')).to.have.lengthOf(1);
-    expect(wrapper.findAll('.venus-scale-track__number').at(-1)?.text()).eq('30');
+    expect(wrapper.findAll('.global-numbers-venus .global-numbers-value').at(-1)?.text()).eq('30');
   });
 
   it('does not offer reservation tools for Moon (only Venus has Stratopolis/Maxwell Base)', () => {

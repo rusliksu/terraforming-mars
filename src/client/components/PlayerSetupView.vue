@@ -98,6 +98,7 @@
         <a name="moonBoard" class="player_home_anchor"></a>
         <MoonBoard v-if="game.moon !== undefined" :model="game.moon" :tileView="tileView"/>
         <VenusSurfaceBoard v-if="game.venusPhase2" :model="game.venusPhase2" :tileView="tileView" :venusScaleLevel="game.venusScaleLevel"
+          :altVenusBoard="game.gameOptions.altVenusBoard"
           :venusScaleMax="game.gameOptions.globalParameters?.venus.max"/>
         <HighOrbitMarket v-if="game.highOrbitMarket" :market="game.highOrbitMarket"/>
         <ConglomeratesTeams v-if="game.conglomerates" :model="game.conglomerates"/>

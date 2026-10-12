@@ -25,11 +25,9 @@ export class AwardCelebration extends Card implements IProjectCard {
         cardNumber: 'SL37',
         renderData: CardRenderer.builder((b) => {
           b.milestone().asterix().br;
-          b.tr(2, {size: Size.SMALL, digit: true}).nbsp.text('OPPONENTS', {size: Size.SMALL}).tr(1, {all: true, size: Size.SMALL}).br;
-          b.text(
-            'choose an unclaimed milestone. If you meet its requirement, raise your TR 2 steps. Each ' +
-            'opponent who also meets it raises their TR 1 step.',
-            {size: Size.SMALL, isBold: false});
+          b.tr(2, {size: Size.SMALL, digit: true}).nbsp.tr(1, {all: true, size: Size.SMALL}).asterix().br;
+          b.description('Choose an unclaimed milestone. If you meet its requirement, raise your TR 2 steps. Each ' +
+            'opponent who also meets it raises their TR 1 step.');
         }),
         description: 'Requires that Centrists are ruling or that you have 2 delegates there.',
       },

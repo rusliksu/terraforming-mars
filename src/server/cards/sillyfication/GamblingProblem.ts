@@ -21,9 +21,9 @@ export class GamblingProblem extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'T25',
         renderData: CardRenderer.builder((b) => {
-          b.text('REVEAL / DISCARD', {size: Size.SMALL}).cards(2).br;
-          b.text('GAIN TAGS', {size: Size.SMALL}).emptyTag().asterix().br;
-          b.plainText('Reveal and discard the top 2 cards of the deck. This card gains every tag of those 2 cards, combined.', true);
+          b.text('Reveal / discard', {size: Size.SMALL}).cards(2).br;
+          b.text('Copy tags', {size: Size.SMALL}).emptyTag().asterix().br;
+          b.description('Reveal and discard the top 2 cards of the deck. This card gains every tag of those 2 cards, combined.');
         }),
       },
     });

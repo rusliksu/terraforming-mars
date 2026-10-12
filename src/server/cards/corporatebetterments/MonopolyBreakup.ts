@@ -8,7 +8,6 @@ import {OrOptions} from '../../inputs/OrOptions';
 import {SelectOption} from '../../inputs/SelectOption';
 import {SelectPaymentDeferred} from '../../deferredActions/SelectPaymentDeferred';
 import {CardRenderer} from '../render/CardRenderer';
-import {Size} from '../../../common/cards/render/Size';
 
 /** How far ahead in TR another player must be for this card to be playable. */
 const REQUIRED_TR_LEAD = 10;
@@ -25,9 +24,7 @@ export class MonopolyBreakup extends Card implements IProjectCard {
         cardNumber: 'CB30',
         renderData: CardRenderer.builder((b) => {
           b.milestone().asterix().br;
-          b.text(
-            'Claim an available milestone, even if the limit has been surpassed.',
-            {size: Size.SMALL, uppercase: true, isBold: false});
+          b.description('Claim an available milestone, even if the limit has been surpassed.');
         }),
         description: `Requires that another player's TR is ${REQUIRED_TR_LEAD} or more steps ahead of yours.`,
       },

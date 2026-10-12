@@ -1,3 +1,4 @@
+import {AltSecondaryTag} from '../../../common/cards/render/AltSecondaryTag';
 import {IProjectCard} from '../IProjectCard';
 import {Card} from '../Card';
 import {CardType} from '../../../common/cards/CardType';
@@ -10,7 +11,6 @@ import {SimpleDeferredAction} from '../../deferredActions/DeferredAction';
 import {message} from '../../logs/MessageBuilder';
 import {CardRenderer} from '../render/CardRenderer';
 import {Size} from '../../../common/cards/render/Size';
-import {uppercase} from '../Options';
 
 export class TerraformingBureauRestructuring extends Card implements IProjectCard {
   constructor() {
@@ -26,8 +26,8 @@ export class TerraformingBureauRestructuring extends Card implements IProjectCar
       metadata: {
         cardNumber: 'H21',
         renderData: CardRenderer.builder((b) => {
-          b.cards(2, {all: true, played: true}).nbsp.text('USED', {size: Size.SMALL}).br;
-          b.text('every opponent marks 2 active cards of your choice as used', {size: Size.SMALL, uppercase, isBold: false});
+          b.cards(2, {all: true, secondaryTag: AltSecondaryTag.BLUE}).nbsp.text('Used', {size: Size.SMALL}).br;
+          b.description('Every opponent marks 2 active cards of your choice as used.');
         }),
         // Printed card text has a typo, "Bureacrats"; the requirement itself is Bureaucrats.
         description: 'Requires that the Bureaucrats are ruling or that you have 2 delegates there.',

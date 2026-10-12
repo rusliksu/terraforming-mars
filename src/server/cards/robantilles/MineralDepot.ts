@@ -9,7 +9,6 @@ import {SelectOption} from '../../inputs/SelectOption';
 import {SelectAmount} from '../../inputs/SelectAmount';
 import {Resource} from '../../../common/Resource';
 import {CardRenderer} from '../render/CardRenderer';
-import {Size} from '../../../common/cards/render/Size';
 
 const STEEL_RATE = 2;
 const TITANIUM_RATE = 3;
@@ -35,10 +34,8 @@ export class MineralDepot extends Card implements IProjectCard {
         renderData: CardRenderer.builder((b) => {
           b.steel(1).equals().megacredits(STEEL_RATE).br;
           b.titanium(1).equals().megacredits(TITANIUM_RATE).br;
-          b.text(
-            `Exchange any number of steel and titanium resources for ${STEEL_RATE} M€ and ${TITANIUM_RATE} M€ ` +
-            'each, and vice versa.',
-            {size: Size.SMALL, uppercase: true, isBold: false});
+          b.description('Exchange any number of steel and titanium resources for ' + STEEL_RATE + ' M€ and ' + TITANIUM_RATE + ' M€ ' +
+            'each, and vice versa.');
         }),
       },
     });

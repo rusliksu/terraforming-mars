@@ -1,3 +1,4 @@
+import {Size} from '../../../common/cards/render/Size';
 import {IActionCard} from '../ICard';
 import {IProjectCard} from '../IProjectCard';
 import {Tag} from '../../../common/cards/Tag';
@@ -20,8 +21,12 @@ export class SurveyorsTeam extends Card implements IActionCard, IProjectCard {
         cardNumber: 'V76',
         renderData: CardRenderer.builder((b) => {
           b.action('reveal the top card of the draw deck. Add it to your hand if it has a Planetary tag. Otherwise, discard it.', (eb) => {
-            eb.empty().startAction.cards(1, {text: '?'}).asterix();
+            eb.empty().startAction.cards(1).asterix();
           });
+          b.br;
+          for (const tag of PLANETARY_TAGS) {
+            b.tag(tag, {size: Size.SMALL});
+          }
         }),
       },
     });

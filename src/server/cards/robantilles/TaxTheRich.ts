@@ -1,3 +1,4 @@
+import {Tag} from '../../../common/cards/Tag';
 import {IPlayer} from '../../IPlayer';
 import {IProjectCard} from '../IProjectCard';
 import {Card} from '../Card';
@@ -7,7 +8,6 @@ import {PartyName} from '../../../common/turmoil/PartyName';
 import {SelectPlayer} from '../../inputs/SelectPlayer';
 import {CardRenderer} from '../render/CardRenderer';
 import {Size} from '../../../common/cards/render/Size';
-import {uppercase} from '../Options';
 import {any} from '../render/DynamicVictoryPoints';
 
 export class TaxTheRich extends Card implements IProjectCard {
@@ -24,8 +24,7 @@ export class TaxTheRich extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'H69',
         renderData: CardRenderer.builder((b) => {
-          b.cards(1, {all: true}).asterix().br;
-          b.text('place in an opponent\'s event pile', {size: Size.SMALL, uppercase, isBold: false});
+          b.text('Give', {size: Size.SMALL}).cards(1, {all: true, secondaryTag: Tag.EVENT}).asterix();
         }),
         description: 'Requires that the Populists are ruling or that you have 2 delegates there. ' +
           'Place this card in an opponent\'s event pile.',

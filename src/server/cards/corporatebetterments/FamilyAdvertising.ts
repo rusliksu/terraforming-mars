@@ -1,3 +1,4 @@
+import {AltSecondaryTag} from '../../../common/cards/render/AltSecondaryTag';
 import {Size} from '../../../common/cards/render/Size';
 import {IProjectCard} from '../IProjectCard';
 import {Card} from '../Card';
@@ -18,8 +19,8 @@ export class FamilyAdvertising extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'B37',
         renderData: CardRenderer.builder((b) => {
-          b.cards(2, {played: true}).nbsp.text('REUSE ACTIONS', {size: Size.SMALL}).br;
-          b.plainText('Redo 2 used actions on 2 of your active cards.');
+          b.text('Reuse', {size: Size.SMALL}).cards(2, {secondaryTag: AltSecondaryTag.BLUE}).asterix().br;
+          b.description('Redo 2 used actions on 2 of your active cards.');
         }),
       },
     });

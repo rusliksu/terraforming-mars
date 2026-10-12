@@ -141,6 +141,10 @@
 .player_shadow_color_serge {
   text-shadow: -1px -1px 6px @player_serge, 1px 1px 1px #333a;
 }
+
+.player_shadow_color_credicor {
+  text-shadow: -1px -1px 6px @player_credicor, 1px 1px 1px #333a;
+}
 .player_shadow_color_saturn {
   text-shadow: -1px -1px 6px @player_saturn, 1px 1px 1px #333a;
 }
@@ -280,6 +284,10 @@
 
   .grid-item.player_tag_bg_color_serge {
     background-color: rgba(76, 12, 31, 0.26);
+  }
+
+  .grid-item.player_tag_bg_color_credicor {
+    background-color: fade(@player_credicor, 26%);
   }
 
   .grid-item.player_tag_bg_color_saturn {
@@ -685,6 +693,7 @@
     .ma-score.player_bg_color_antistress,
     .ma-score.player_bg_color_turquoise,
     .ma-score.player_bg_color_serge,
+    .ma-score.player_bg_color_credicor,
     .ma-score.player_bg_color_saturnstorm,
     .ma-score.player_bg_color_rigatone,
     .ma-score.player_bg_color_rigatone2 {
@@ -1185,6 +1194,11 @@
   &.colonies-fleet-serge {
     background-position: -207px 0;
     filter: @player_serge_fleet_filter;
+  }
+
+  &.colonies-fleet-credicor {
+    background-position: -207px 0;
+    filter: @player_credicor_fleet_filter;
   }
 
   &.colonies-fleet-saturn {

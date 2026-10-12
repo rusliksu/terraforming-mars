@@ -62,7 +62,7 @@ export const PLAYER_PROFILES: ReadonlyArray<PlayerProfile> = [
   {
     id: 'vladlen',
     name: 'Владлен',
-    preferredColor: 'red',
+    preferredColor: 'credicor',
     aliases: ['владлен', 'vladlen', 'владлен гришаев', 'vladlen grishaev'],
   },
   {

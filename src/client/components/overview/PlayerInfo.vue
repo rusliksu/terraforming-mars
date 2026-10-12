@@ -13,6 +13,7 @@
                 role="status">BOT</span>
               <PlayerEloBadge v-if="!readOnly" :playerName="player.name" :tooltipCss="tooltipCss" :compact="true" :eloDelta="eloDelta" />
             </div>
+            <span v-if="player.color === 'credicor'" class="player-persona-title">Магистр Кредикора</span>
             <span @click="togglePlayerDetails" v-for="(corporationName, index) in getCorporationName()" :key="index" v-i18n>
               <div class="player-info-corp" :title="$t(corporationName)">
                 {{ corporationName }}

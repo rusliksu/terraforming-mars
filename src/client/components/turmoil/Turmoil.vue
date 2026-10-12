@@ -22,7 +22,9 @@
           <div class="policy-user-cubes">
             <template v-for="n in turmoil.policyActionUsers" :key="n.color">
               <div v-if="n.turmoilPolicyActionUsed" :class="policyMarkerClasses(n.color)"></div>
-              <div v-if="n.politicalAgendasActionUsedCount > 0" :class="policyMarkerClasses(n.color)">{{n.politicalAgendasActionUsedCount}}</div>
+              <div v-if="n.politicalAgendasActionUsedCount > 0" class="policy-use-marker--count" :class="policyMarkerClasses(n.color)">
+                <span class="policy-use-count">{{n.politicalAgendasActionUsedCount}}</span>
+              </div>
             </template>
           </div>
           <div class="chairman-spot"><div v-if="turmoil.chairman" :class="'player-token '+turmoil.chairman"></div></div>

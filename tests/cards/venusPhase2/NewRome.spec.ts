@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import {NewRome} from '../../../src/server/cards/venusPhase2/NewRome';
 import {TestPlayer} from '../../TestPlayer';
 import {testGame} from '../../TestGame';
-import {runAllActions} from '../../TestingUtils';
+import {runAllActions, setVenusScaleLevel} from '../../TestingUtils';
 import {IGame} from '../../../src/server/IGame';
 import {VenusPhase2Expansion} from '../../../src/server/venusPhase2/VenusPhase2Expansion';
 import {TileType} from '../../../src/common/TileType';
@@ -25,21 +25,17 @@ describe('NewRome', () => {
   });
 
   it('requires Venus 16%', () => {
+    setVenusScaleLevel(game, 14);
     expect(card.canPlay(player)).is.false;
-    for (let i = 0; i < 6; i++) {
-      game.increaseVenusScaleLevel(player, 3);
-    }
+    setVenusScaleLevel(game, 16);
     expect(card.canPlay(player)).is.true;
   });
 
   it('raises Venus and places a Venus Habitat tile on Venus', () => {
-    for (let i = 0; i < 6; i++) {
-      game.increaseVenusScaleLevel(player, 3);
-    }
-    const venusBefore = game.getVenusScaleLevel();
+    setVenusScaleLevel(game, 16);
     card.play(player);
     runAllActions(game);
-    expect(game.getVenusScaleLevel()).to.eq(venusBefore + 2);
+    expect(game.getVenusScaleLevel()).to.eq(18);
 
     const selectSpace = cast(player.popWaitingFor(), SelectSpace);
     const target = selectSpace.spaces[0];

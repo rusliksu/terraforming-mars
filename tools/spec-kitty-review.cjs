@@ -26,6 +26,8 @@ if (branch.status !== 0 || ['main', 'master'].includes(branch.stdout.trim())) {
 
 const commands = [
   ['ci'],
+  ['run', 'make:json'],
+  ['run', 'make:cards'],
   ['run', 'build:tests'],
   ['run', 'test:server'],
   ['run', 'test:client', '--', '--reporter=junit', '--outputFile=' + outputFile],

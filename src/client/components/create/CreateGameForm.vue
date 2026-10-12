@@ -205,7 +205,7 @@
                                 <div class="create-game-expansion-icon expansion-icon-pathfinders"></div>
                                 <span v-i18n>Pathfinders</span>&nbsp;<a :href="wikiUrls.pathfinders" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                             </label>
-                            <div v-if="expansions.pathfinders" class="expansion-option">
+                            <div v-if="expansions.pathfinders" class="pathfinders-options">
                                 <input type="checkbox" name="betterMars" id="betterMars-checkbox" v-model="expansions.betterMars" :disabled="!expansions.pathfinders">
                                 <label for="betterMars-checkbox" class="expansion-button">
                                     <div class="create-game-expansion-icon expansion-icon-betterMars"></div>
@@ -2842,5 +2842,13 @@ export default defineComponent({
 
 .create-game-telegram-error {
   color: #ffb0b0;
+}
+.pathfinders-options {
+  margin-left: 16px;
+}
+
+.pathfinders-options .expansion-button {
+  padding: 8px 12px;
+  font-size: 16px;
 }
 </style>

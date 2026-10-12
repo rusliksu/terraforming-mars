@@ -7,6 +7,7 @@ import {PlaceCloudCityTile} from '../../venusPhase2/PlaceCloudCityTile';
 import {Resource} from '../../../common/Resource';
 import {StandardProjectCanPayWith} from '../../../common/cards/Types';
 import {TileType} from '../../../common/TileType';
+import {Size} from '../../../common/cards/render/Size';
 import {LogHelper} from '../../LogHelper';
 
 export class CloudCityStandardProject extends StandardProjectCard {
@@ -16,9 +17,10 @@ export class CloudCityStandardProject extends StandardProjectCard {
 
     metadata: {
       cardNumber: '',
+      description: 'You may pay with floaters from any card. Base value: 3 M€ each.',
       renderData: CardRenderer.builder((b) =>
         b.standardProject('Spend 25 M€ (3 M€ off per floater spent) to place a Cloud City on Venus, raise your M€ production 1 step, and raise Venus 1 step.', (eb) => {
-          eb.megacredits(25).startAction.tile(TileType.VENUS_CLOUD_CITY).production((pb) => pb.megacredits(1)).venus(1);
+          eb.megacredits(25, {size: Size.SMALL}).startAction.tile(TileType.VENUS_CLOUD_CITY).production((pb) => pb.megacredits(1)).venus(1, {size: Size.SMALL});
         }),
       ),
     },

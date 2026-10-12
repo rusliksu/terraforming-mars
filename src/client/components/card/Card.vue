@@ -166,6 +166,9 @@ export default defineComponent({
 
       if (this.isStandardProject) {
         classes.push('card-standard-project');
+        if (this.cardMetadata.description !== undefined) {
+          classes.push('card-standard-project--description');
+        }
       }
       if (this.autoTall) {
         classes.push('card-auto-tall');

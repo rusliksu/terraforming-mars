@@ -83,41 +83,23 @@ describe('VenusSurfaceBoard', () => {
     expect(wrapper.find('.venus-board-legend').exists()).to.be.false;
   });
 
-  it('shows no marker on the 30-60 extension curve below 30', () => {
+  it('shows 0–30 and moves the marker with the current Venus value', async () => {
     const model: VenusPhase2Model = {spaces: [space('100', 0, 0)]};
-    const wrapper = mount(VenusSurfaceBoard, {
-      ...globalConfig,
-      props: {model, venusScaleLevel: 28},
-    });
-
-    expect(wrapper.find('.venus-scale-track-2').exists()).to.be.true;
-    expect(wrapper.find('.venus-scale-track-2__marker').exists()).to.be.false;
+    const wrapper = mount(VenusSurfaceBoard, {...globalConfig, props: {model}});
+    expect(wrapper.findAll('.venus-scale-track__number').map((n) => n.text())).deep.eq(
+      ['0', '2', '4', '6', '8', '10', '12', '14', '16', '18', '20', '22', '24', '26', '28', '30']);
+    expect(wrapper.find('.venus-scale-track__marker').attributes('cx')).eq('16');
+    await wrapper.setProps({venusScaleLevel: 28});
+    expect(Number(wrapper.find('.venus-scale-track__marker').attributes('cx'))).within(430, 440);
+    await wrapper.setProps({venusScaleLevel: 30});
+    expect(wrapper.find('.venus-scale-track__marker').attributes('cx')).eq('464');
+    expect(wrapper.find('.venus-scale-track svg').attributes('aria-label')).contains('30 / 30%');
   });
 
-  it('shows the marker on the 30-60 extension curve once Venus reaches 30 or beyond', () => {
+  it('uses the saved limit when displaying a legacy game', () => {
     const model: VenusPhase2Model = {spaces: [space('100', 0, 0)]};
-    const wrapper = mount(VenusSurfaceBoard, {
-      ...globalConfig,
-      props: {model, venusScaleLevel: 44},
-    });
-
-    const marker = wrapper.find('.venus-scale-track-2__marker');
-    expect(marker.exists()).to.be.true;
-    // Just a smoke check that it's positioned somewhere sane -- the exact pixel fit is a visual
-    // approximation, not something worth pinning down to a specific percentage here.
-    expect((marker.attributes('style') ?? '')).to.include('%');
-  });
-
-  it('omits the 30-60 track entirely when showScaleTrack is false', () => {
-    const model: VenusPhase2Model = {spaces: [space('100', 0, 0)]};
-    const wrapper = mount(VenusSurfaceBoard, {
-      ...globalConfig,
-      props: {model, venusScaleLevel: 44, showScaleTrack: false},
-    });
-
-    // SimpleMapEditor.vue's hex-layout preview sets this false -- that page already has its own
-    // separate track-calibration tool, so this component's own copy would otherwise show twice.
-    expect(wrapper.find('.venus-scale-track-2').exists()).to.be.false;
-    expect(wrapper.find('.venus-board-cont').exists()).to.be.true;
+    const wrapper = mount(VenusSurfaceBoard, {...globalConfig, props: {model, venusScaleMax: 60, venusScaleLevel: 58}});
+    expect(wrapper.findAll('.venus-scale-track__number').at(-1)?.text()).eq('60');
+    expect(wrapper.find('.venus-scale-track svg').attributes('aria-label')).contains('58 / 60%');
   });
 });

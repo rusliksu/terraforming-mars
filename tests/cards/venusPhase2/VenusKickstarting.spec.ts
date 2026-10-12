@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import {VenusKickstarting} from '../../../src/server/cards/venusPhase2/VenusKickstarting';
 import {TestPlayer} from '../../TestPlayer';
 import {testGame} from '../../TestGame';
-import {runAllActions} from '../../TestingUtils';
+import {runAllActions, setVenusScaleLevel} from '../../TestingUtils';
 import {IGame} from '../../../src/server/IGame';
 import {VenusPhase2Expansion} from '../../../src/server/venusPhase2/VenusPhase2Expansion';
 import {TileType} from '../../../src/common/TileType';
@@ -20,14 +20,9 @@ describe('VenusKickstarting', () => {
   });
 
   it('requires Venus 16% or less', () => {
+    setVenusScaleLevel(game, 16);
     expect(card.canPlay(player)).is.true;
-    game.increaseVenusScaleLevel(player, 3);
-    game.increaseVenusScaleLevel(player, 3);
-    game.increaseVenusScaleLevel(player, 3);
-    game.increaseVenusScaleLevel(player, 3);
-    game.increaseVenusScaleLevel(player, 3);
-    game.increaseVenusScaleLevel(player, 2);
-    expect(game.getVenusScaleLevel()).to.eq(34);
+    setVenusScaleLevel(game, 18);
     expect(card.canPlay(player)).is.false;
   });
 

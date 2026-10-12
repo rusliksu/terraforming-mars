@@ -150,39 +150,6 @@
         </label>
       </fieldset>
 
-      <fieldset v-if="boardType === 'venusPhase2'" class="simple-map-editor-tools simple-map-editor-backdrop-tools simple-map-editor-track-tools">
-        <legend v-i18n>30-60 track calibration</legend>
-        <p class="simple-map-editor-tools-note" v-i18n>
-          Click each tick mark on the track below, in order from 30 to 60. One-time calibration --
-          copy the resulting positions and they become the new fixed defaults.
-        </p>
-        <p class="simple-map-editor-track-next">
-          <template v-if="nextTrackValue !== undefined">
-            <span v-i18n>Next:</span> <strong>{{ nextTrackValue }}</strong>
-          </template>
-          <template v-else>
-            <span v-i18n>All 16 placed.</span>
-          </template>
-        </p>
-        <div class="venus-scale-track-2 simple-map-editor-track-calibrate" @click="placeTrackMarker">
-          <div
-            v-for="entry in trackMarkerEntries"
-            :key="entry.value"
-            class="simple-map-editor-track-marker"
-            :style="{left: (entry.left * 100) + '%', top: (entry.top * 100) + '%'}"
-          >{{ entry.value }}</div>
-        </div>
-        <div class="simple-map-editor-actions">
-          <button type="button" @click="undoTrackMarker" :disabled="trackValuesPlaced.length === 0" v-i18n>Undo last</button>
-          <button type="button" @click="resetTrackMarkers" v-i18n>Reset</button>
-          <button type="button" @click="copyTrackPositions" v-i18n>Copy positions</button>
-        </div>
-        <label class="simple-map-editor-code">
-          <span v-i18n>Track positions</span>
-          <textarea readonly rows="6" :value="trackPositionsCode" @focus="($event.target as HTMLTextAreaElement).select()"></textarea>
-        </label>
-      </fieldset>
-
       <div class="simple-map-editor-preview-zoom">
         <div
           v-if="boardType === 'venusPhase2'"
@@ -193,7 +160,7 @@
           @mousedown="startBackdropDrag"
           @wheel.prevent="onBackdropWheel"
         >
-          <VenusSurfaceBoard :model="previewModel" tileView="show" :showScaleTrack="false"/>
+          <VenusSurfaceBoard :model="previewModel" tileView="show"/>
         </div>
         <MoonBoard v-else :model="previewMoonModel" tileView="show"/>
       </div>
@@ -323,11 +290,6 @@ export default defineComponent({
       backdropY: 0,
       backdropScale: 92,
       draggingBackdrop: false,
-      // Venus-only 30-60 track calibration tool -- see trackMarkers/nextTrackValue/
-      // trackPositionsCode below. Empty to start: unlike the backdrop tool (which has a real
-      // shipped default to show), VenusSurfaceBoard.vue's own VENUS_2_TRACK_POSITIONS is already
-      // just an eyeballed guess, so there's no "current calibration" worth pre-loading here.
-      trackMarkers: {} as Partial<Record<number, {left: number, top: number}>>,
     };
   },
   computed: {
@@ -452,36 +414,6 @@ export default defineComponent({
     },
     backdropCss(): string {
       return `background-position: ${this.backdropX}% ${this.backdropY}%;\nbackground-size: ${this.backdropScale}%;`;
-    },
-    // Ascending, since trackMarkers' numeric keys already iterate that way, but Object.keys
-    // returns strings -- convert back to number so nextTrackValue/copy output stay numeric.
-    trackValuesPlaced(): Array<number> {
-      return Object.keys(this.trackMarkers).map(Number).sort((a, b) => a - b);
-    },
-    trackMarkerEntries(): Array<{value: number, left: number, top: number}> {
-      return this.trackValuesPlaced.flatMap((v) => {
-        const pos = this.trackMarkers[v];
-        return pos === undefined ? [] : [{value: v, left: pos.left, top: pos.top}];
-      });
-    },
-    // First even value 30-60 not yet placed, in order -- undefined once all 16 are down.
-    nextTrackValue(): number | undefined {
-      for (let v = 30; v <= 60; v += 2) {
-        if (this.trackMarkers[v] === undefined) {
-          return v;
-        }
-      }
-      return undefined;
-    },
-    // Same literal shape VenusSurfaceBoard.vue's own VENUS_2_TRACK_POSITIONS uses, ready to paste
-    // over it directly -- keys sorted ascending regardless of click order (undo/redo can leave
-    // them out of order in the underlying object).
-    trackPositionsCode(): string {
-      const lines = this.trackValuesPlaced.map((v) => {
-        const pos = this.trackMarkers[v];
-        return pos === undefined ? '' : `  ${v}: {left: ${pos.left.toFixed(3)}, top: ${pos.top.toFixed(3)}},`;
-      });
-      return lines.join('\n');
     },
   },
   methods: {
@@ -620,35 +552,6 @@ export default defineComponent({
     },
     copyBackdropCss(): void {
       navigator.clipboard?.writeText(this.backdropCss);
-    },
-    // Records where the next value's tick mark actually is, as a fraction of the clicked box's
-    // own size -- matches exactly how VenusSurfaceBoard.vue's venus2MarkerStyle positions the
-    // marker (left/top as a % of .venus-scale-track-2's own box), so these numbers are directly
-    // reusable there with no conversion. Ignores clicks once all 16 are placed.
-    placeTrackMarker(event: MouseEvent): void {
-      if (this.nextTrackValue === undefined) {
-        return;
-      }
-      const el = event.currentTarget as HTMLElement;
-      const rect = el.getBoundingClientRect();
-      const left = (event.clientX - rect.left) / rect.width;
-      const top = (event.clientY - rect.top) / rect.height;
-      this.trackMarkers = {...this.trackMarkers, [this.nextTrackValue]: {left, top}};
-    },
-    undoTrackMarker(): void {
-      const values = this.trackValuesPlaced;
-      if (values.length === 0) {
-        return;
-      }
-      const rest = {...this.trackMarkers};
-      delete rest[values[values.length - 1]];
-      this.trackMarkers = rest;
-    },
-    resetTrackMarkers(): void {
-      this.trackMarkers = {};
-    },
-    copyTrackPositions(): void {
-      navigator.clipboard?.writeText(this.trackPositionsCode);
     },
   },
 });
@@ -870,29 +773,7 @@ export default defineComponent({
     &--active { cursor: grabbing; }
   }
 
-  .simple-map-editor-track-next {
-    margin: 0 0 8px;
-    font-size: 13px;
-    strong { color: #fff; }
-  }
-  .simple-map-editor-track-calibrate {
-    cursor: crosshair;
-    user-select: none;
-  }
-  .simple-map-editor-track-marker {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    min-width: 14px;
-    padding: 0 3px;
-    line-height: 14px;
-    font-size: 10px;
-    text-align: center;
-    color: #000;
-    background: #fff;
-    border: 1px solid #000;
-    border-radius: 3px;
-    pointer-events: none;
-  }
+
 }
 @media (max-width: 700px) {
   .simple-map-editor {

@@ -74,7 +74,7 @@ import {OtherDeckSizesModel} from '@/common/models/GameModel';
 import GlobalParameterValue from '@/client/components/GlobalParameterValue.vue';
 import MoonGlobalParameterValue from '@/client/components/moon/MoonGlobalParameterValue.vue';
 import {GlobalParameter} from '@/common/GlobalParameter';
-import {GlobalParametersConfig, resolveGlobalParameters} from '@/common/GlobalParameterConfig';
+import {DEFAULT_GLOBAL_PARAMETERS, GlobalParametersConfig} from '@/common/GlobalParameterConfig';
 import {MoonModel} from '@/common/models/MoonModel';
 import PreferencesIcon from '@/client/components/PreferencesIcon.vue';
 import LanguageIcon from '@/client/components/LanguageIcon.vue';
@@ -194,7 +194,7 @@ export default defineComponent({
   },
   computed: {
     parameters(): GlobalParametersConfig {
-      return resolveGlobalParameters(this.gameOptions.globalParameters, this.gameOptions.expansions.venusPhase2);
+      return this.gameOptions.globalParameters ?? DEFAULT_GLOBAL_PARAMETERS;
     },
     preferencesManager(): PreferencesManager {
       return PreferencesManager.INSTANCE;

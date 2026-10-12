@@ -57,7 +57,7 @@ describe('Sidebar', () => {
     expect(oxygen.text()).eq('14%');
     expect(venus.text()).eq('30%');
     expect(venus.find('.checkmark').exists()).eq(false);
-    await wrapper.setProps({oxygen: 18, venus: 60});
+    await wrapper.setProps({oxygen: 18, venus: 40});
     expect(oxygen.find('.checkmark').exists()).eq(true);
     expect(venus.find('.checkmark').exists()).eq(true);
     await wrapper.setProps({gameOptions: {...gameOptions, expansions: {...gameOptions.expansions, venusPhase2: false}}, venus: 40});

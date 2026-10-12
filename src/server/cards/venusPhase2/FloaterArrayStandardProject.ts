@@ -6,6 +6,7 @@ import {VenusPhase2Expansion} from '../../venusPhase2/VenusPhase2Expansion';
 import {PlaceFloaterArrayTile} from '../../venusPhase2/PlaceFloaterArrayTile';
 import {StandardProjectCanPayWith} from '../../../common/cards/Types';
 import {TileType} from '../../../common/TileType';
+import {Size} from '../../../common/cards/render/Size';
 import {LogHelper} from '../../LogHelper';
 
 export class FloaterArrayStandardProject extends StandardProjectCard {
@@ -15,9 +16,10 @@ export class FloaterArrayStandardProject extends StandardProjectCard {
 
     metadata: {
       cardNumber: '',
+      description: 'You may pay with floaters from any card. Base value: 3 M€ each.',
       renderData: CardRenderer.builder((b) =>
         b.standardProject('Spend 19 M€ (3 M€ off per floater spent) to place a Floater Array on Venus and raise Venus 1 step. Adjacent Gas Mines/Cloud Cities score 1 VP each at game end.', (eb) => {
-          eb.megacredits(19).startAction.tile(TileType.VENUS_FLOATER_ARRAY).venus(1);
+          eb.megacredits(19, {size: Size.SMALL}).startAction.tile(TileType.VENUS_FLOATER_ARRAY).venus(1, {size: Size.SMALL});
         }),
       ),
     },

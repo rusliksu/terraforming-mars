@@ -1,56 +1,62 @@
 <template>
-  <div v-if="showScaleTrack" class="venus-scale-track">
-    <svg v-for="offset in scaleOffsets" :key="offset" viewBox="96 0 440 145" role="img"
-      :aria-label="$t('Venus Scale') + ': ' + venusScaleLevel + ' / ' + venusScaleMax + '%'">
-      <image href="assets/board/mars.png" width="620" height="600" class="venus-scale-track__art" :class="{'venus-scale-track__art--extension': offset > 0}"/>
-      <foreignObject width="620" height="145">
-        <div class="global-numbers">
-          <div class="global-numbers-venus">
-            <div v-for="value in scaleValues" :key="value" class="global-numbers-value" :class="[
-              'val-' + value,
-              {'val-is-active': value + offset === venusScaleLevel && (offset === 0 || venusScaleLevel > 30)},
-            ]">{{ value + offset }}</div>
+  <svg class="venus-surface-board" :width="layoutWidth" :viewBox="`0 0 ${layoutWidth} ${layoutHeight}`" v-bind="$attrs">
+    <foreignObject :width="layoutWidth" :height="layoutHeight">
+      <div class="venus-surface-layout">
+        <div v-if="showScaleTrack" class="venus-scale-track">
+          <svg v-for="offset in scaleOffsets" :key="offset" viewBox="96 0 440 145" role="img"
+            :aria-label="$t('Venus Scale') + ': ' + venusScaleLevel + ' / ' + venusScaleMax + '%'">
+            <image href="assets/board/mars.png" width="620" height="600" class="venus-scale-track__art" :class="{'venus-scale-track__art--extension': offset > 0}"/>
+            <foreignObject width="620" height="145">
+              <div class="global-numbers">
+                <div class="global-numbers-venus">
+                  <div v-for="value in scaleValues" :key="value" class="global-numbers-value" :class="[
+                    'val-' + value,
+                    {'val-is-active': value + offset === venusScaleLevel && (offset === 0 || venusScaleLevel > 30)},
+                  ]">{{ value + offset }}</div>
+                </div>
+                <div v-if="altVenusBoard && offset === 0" class="global-alt-venus">
+                  <div v-for="value in [18, 20, 22, 24, 26, 28, 30]" :key="value" class="std-wild-resource" :class="'p' + value"></div>
+                  <div class="wild-resource p30b"></div>
+                </div>
+              </div>
+            </foreignObject>
+          </svg>
+        </div>
+        <div class="venus-board-cont">
+          <div class="board board--venus" :style="boardStyle" id="venus_board">
+            <BoardSpace
+              v-for="curSpace in gridSpaces"
+              :key="curSpace.id"
+              :space="curSpace"
+              :aresExtension="false"
+              :tileView="tileView"
+              :pixel="pixelFor(curSpace)"
+              data-test="venus-board-space"
+            />
+            <svg v-if="reservedLegendEntries.length > 0" :width="boardPixelSize.width" :height="boardPixelSize.height" class="venus-board-legend">
+              <g v-for="entry in reservedLegendEntries" :key="entry.id">
+                <line :x1="entry.labelX" :y1="entry.lineY" :x2="entry.dotX" :y2="entry.dotY" class="board-line"/>
+                <circle :cx="entry.dotX" :cy="entry.dotY" r="2" class="board-caption board_caption--black"/>
+                <text class="board-caption" :x="entry.labelX" :y="entry.labelY" :text-anchor="entry.textAnchor">
+                  <tspan v-for="(line, idx) in entry.lines" :key="idx" :x="entry.labelX" :dy="idx === 0 ? 0 : 12">{{ line }}</tspan>
+                </text>
+              </g>
+            </svg>
           </div>
-          <div v-if="altVenusBoard && offset === 0" class="global-alt-venus">
-            <div v-for="value in [18, 20, 22, 24, 26, 28, 30]" :key="value" class="std-wild-resource" :class="'p' + value"></div>
-            <div class="wild-resource p30b"></div>
+          <div v-if="outerSpaces.length > 0" id="venus_board_outer_spaces" class="venus-board-outer-spaces">
+            <BoardSpace
+              v-for="curSpace in outerSpaces"
+              :key="curSpace.id"
+              :space="curSpace"
+              :aresExtension="false"
+              :tileView="tileView"
+              :text="reservedSpaceText(curSpace.id)"
+            />
           </div>
         </div>
-      </foreignObject>
-    </svg>
-  </div>
-  <div class="venus-board-cont" v-bind="$attrs">
-    <div class="board board--venus" :style="boardStyle" id="venus_board">
-      <BoardSpace
-        v-for="curSpace in gridSpaces"
-        :key="curSpace.id"
-        :space="curSpace"
-        :aresExtension="false"
-        :tileView="tileView"
-        :pixel="pixelFor(curSpace)"
-        data-test="venus-board-space"
-      />
-      <svg v-if="reservedLegendEntries.length > 0" :width="boardPixelSize.width" :height="boardPixelSize.height" class="venus-board-legend">
-        <g v-for="entry in reservedLegendEntries" :key="entry.id">
-          <line :x1="entry.labelX" :y1="entry.lineY" :x2="entry.dotX" :y2="entry.dotY" class="board-line"/>
-          <circle :cx="entry.dotX" :cy="entry.dotY" r="2" class="board-caption board_caption--black"/>
-          <text class="board-caption" :x="entry.labelX" :y="entry.labelY" :text-anchor="entry.textAnchor">
-            <tspan v-for="(line, idx) in entry.lines" :key="idx" :x="entry.labelX" :dy="idx === 0 ? 0 : 12">{{ line }}</tspan>
-          </text>
-        </g>
-      </svg>
-    </div>
-    <div v-if="outerSpaces.length > 0" id="venus_board_outer_spaces" class="venus-board-outer-spaces">
-      <BoardSpace
-        v-for="curSpace in outerSpaces"
-        :key="curSpace.id"
-        :space="curSpace"
-        :aresExtension="false"
-        :tileView="tileView"
-        :text="reservedSpaceText(curSpace.id)"
-      />
-    </div>
-  </div>
+      </div>
+    </foreignObject>
+  </svg>
 </template>
 
 <script lang="ts">
@@ -78,7 +84,7 @@ const RESERVED_SPACE_TEXT: Partial<Record<SpaceId, Array<string>>> = {
 
 export default defineComponent({
   name: 'VenusSurfaceBoard',
-  // The board owns fallthrough attributes; the track has a separate layout.
+  // The frame scales the track, planet and tile grid together.
   inheritAttrs: false,
   props: {
     model: {
@@ -133,6 +139,14 @@ export default defineComponent({
     boardStyle(): Record<string, string> {
       const {width, height} = this.boardPixelSize;
       return {width: `${width}px`, height: `${height}px`};
+    },
+    layoutWidth(): number {
+      return this.boardPixelSize.width + 40;
+    },
+    layoutHeight(): number {
+      // Matches the arc width and overlap in venusphase2.less.
+      const trackHeight = this.showScaleTrack ? 12 + this.layoutWidth * (this.scaleOffsets.length * 145 / 440 * 0.81 - 0.16) : 0;
+      return this.boardPixelSize.height + 40 + trackHeight;
     },
     // Noctis-City-style callout labels (a small dot on the space, a leader line, and the name off
     // to the side) for Stratopolis/Maxwell Base whenever their reservation landed on the main grid

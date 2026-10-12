@@ -1,0 +1,6 @@
+id,source,path,finding
+E01,S01,src/client/components/App.vue,Все оболочки перечислены в матрице
+E02,S01,src/client/components/stats/StatsPage.vue,Отсутствующий у нас public stats endpoint требует read-only проекции
+E03,S02,src/server/routes/ApiStats.ts,Административный endpoint нельзя раскрывать
+E04,S01,src/client/utils/PreferencesManager.ts,Defaults форка отличаются и не импортируются
+E05,S02,src/client/components/PlayerInputFactory.vue,Наш типизированный union и обработчики сохраняются

@@ -1,0 +1,4 @@
+id,kind,reference,revision
+S01,repository,https://github.com/wrybit/terraforming-mars,988235122ffd61d8d1190e90beb2247afd252c00
+S02,repository,https://github.com/rusliksu/terraforming-mars,4b061aee97594a6ebd637e0ce267bfb612c4c114
+S03,user_approval,approval.md,a9c6f6f9ad

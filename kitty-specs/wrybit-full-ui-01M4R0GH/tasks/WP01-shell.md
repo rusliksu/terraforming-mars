@@ -23,6 +23,7 @@ create_intent:
 - src/client/wrybit/import-manifest.json
 execution_mode: code_change
 owned_files:
+- .kittify/config.yaml
 - src/client/wrybit/shell/**
 - src/client/wrybit/import-manifest.json
 - src/client/components/App.vue
@@ -48,6 +49,8 @@ tracker_refs: []
 ## Ответственность
 
 Пути перечислены в owned_files. При необходимом изменении вне них сначала проверить отсутствие пересечения и зафиксировать точный перенос ответственности. Не отменять чужие изменения. Изменение правил, Game/Player, AI/SmartBot, карточных эффектов и сохранения запрещено.
+
+Подготовка native SDK baseline/review включает `.kittify/config.yaml`: проект явно объявляет существующие npm-проверки server/client с настоящим JUnit-файлом. Этот путь не принадлежит другим WP. Команды запускаются с Node 22 и временными каталогами на D:; настройки модели/агентов не меняются. Полная проверка UI и staging остаётся обязанностью WP07.
 
 ## Подзадачи
 

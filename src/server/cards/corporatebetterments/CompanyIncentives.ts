@@ -8,7 +8,6 @@ import {SpaceBonus} from '../../../common/boards/SpaceBonus';
 import {CardName} from '../../../common/cards/CardName';
 import {SelectSpace} from '../../inputs/SelectSpace';
 import {CardRenderer} from '../render/CardRenderer';
-import {Size} from '../../../common/cards/render/Size';
 
 /** How many empty areas receive a silver-cube bonus marker. */
 const AREA_COUNT = 3;
@@ -26,11 +25,9 @@ export class CompanyIncentives extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'CB34',
         renderData: CardRenderer.builder((b) => {
-          b.emptyTile('normal', {amount: AREA_COUNT, digit: true}).nbsp.text('BONUS', {size: Size.SMALL}).megacredits(BONUS_PER_AREA, {all: true}).br;
-          b.text(
-            `Place silver cubes on ${AREA_COUNT} empty areas on Mars. Players placing tiles on these areas ` +
-            `collect an additional bonus of ${BONUS_PER_AREA} M€.`,
-            {size: Size.SMALL, uppercase: true, isBold: false});
+          b.emptyTile('normal', {amount: AREA_COUNT, digit: true}).colon().megacredits(BONUS_PER_AREA, {all: true}).asterix().br;
+          b.description('Place silver cubes on ' + AREA_COUNT + ' empty areas on Mars. Players placing tiles on these areas ' +
+            'collect an additional bonus of ' + BONUS_PER_AREA + ' M€.');
         }),
       },
     });

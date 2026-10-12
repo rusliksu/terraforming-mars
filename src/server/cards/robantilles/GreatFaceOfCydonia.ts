@@ -26,11 +26,10 @@ export class GreatFaceOfCydonia extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'H27',
         renderData: CardRenderer.builder((b) => {
-          b.text('RESEARCH', {size: Size.SMALL}).colon().plus().cards(1).br;
-          b.text('FIRST DRAFT', {size: Size.SMALL}).colon().cards(2).asterix().br;
-          b.plainText(
-            'Effect: During the research phase, draw 1 additional card. During the first round ' +
-            'of the draft variant, you may keep up to 2 cards.', true);
+          b.text('Research', {size: Size.SMALL}).colon().plus().cards(1).br;
+          b.text('First draft', {size: Size.SMALL}).colon().cards(2).asterix().br;
+          b.description('Effect: During the research phase, draw 1 additional card. During the first round ' +
+            'of the draft variant, you may keep up to 2 cards.');
         }),
         description: 'Requires 3 Science tags.',
       },

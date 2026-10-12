@@ -44,6 +44,16 @@ describe('Card', () => {
     wrapper.unmount();
   });
 
+  it('shows the printed fan card title without changing its identity or tags', async () => {
+    const wrapper = mount(Card, {...globalConfig, props: {card: {name: CardName.MARKET_MANIPULATION_CB}}});
+    expect(wrapper.get('.card-title .card-title').text()).to.equal('Market Manipulation');
+    expect(wrapper.getComponent({name: 'CardTitle'}).props('title')).to.equal(CardName.MARKET_MANIPULATION_CB);
+    expect(wrapper.findAll('.card-tags .tag-earth')).to.have.length(1);
+    await wrapper.setProps({card: {name: CardName.MARKET_MANIPULATION_CB, combinedDisplayName: 'Market Manipulation Copy'}});
+    expect(wrapper.get('.card-title .card-title').text()).to.equal('Market Manipulation Copy');
+    wrapper.unmount();
+  });
+
   it('dims used action cards instead of showing a player cube in experimental UI', () => {
     PreferencesManager.INSTANCE.set('experimental_ui', true);
 

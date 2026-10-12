@@ -6,7 +6,6 @@ import {IPlayer} from '../../IPlayer';
 import {SelectCard} from '../../inputs/SelectCard';
 import {LogHelper} from '../../LogHelper';
 import {CardRenderer} from '../render/CardRenderer';
-import {Size} from '../../../common/cards/render/Size';
 
 export class CompanyCartel extends Card implements IProjectCard {
   constructor() {
@@ -18,11 +17,9 @@ export class CompanyCartel extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'CB50',
         renderData: CardRenderer.builder((b) => {
-          b.text('REVEAL', {size: Size.SMALL}).text('2 × players', {size: Size.SMALL}).cards(1).br;
-          b.text(
-            'Draw cards equal to twice the number of players. Choose 2 to add to your hand. ' +
-            'Each other player, in turn, chooses one of the remaining cards to add to their hand. Discard the rest.',
-            {size: Size.SMALL, isBold: false});
+          b.cards(2).asterix().br;
+          b.description('Draw cards equal to twice the number of players. Choose 2 to add to your hand. ' +
+            'Each other player, in turn, chooses one of the remaining cards to add to their hand. Discard the rest.');
         }),
       },
     });

@@ -1,3 +1,8 @@
+import {LunaGovernorRebalanced} from './LunaGovernorRebalanced';
+import {LunarMiningRebalanced} from './LunarMiningRebalanced';
+import {LunarExportsRebalanced} from './LunarExportsRebalanced';
+import {LunaMetropolisRebalanced} from './LunaMetropolisRebalanced';
+import {LunarBeamRebalanced} from './LunarBeamRebalanced';
 import {CardName} from '@/common/cards/CardName';
 import {ModuleManifest} from '@/server/cards/ModuleManifest';
 import {AdaptedLichenRebalanced} from './AdaptedLichenRebalanced';
@@ -124,6 +129,11 @@ import {
 export const REBALANCED_CARD_MANIFEST = new ModuleManifest({
   module: 'rebalanced',
   projectCards: {
+    [CardName.LUNAR_BEAM_REBALANCED]: {Factory: LunarBeamRebalanced, compatibility: ['moon']},
+    [CardName.LUNA_METROPOLIS_REBALANCED]: {Factory: LunaMetropolisRebalanced, compatibility: ['venus', 'moon']},
+    [CardName.LUNAR_EXPORTS_REBALANCED]: {Factory: LunarExportsRebalanced, compatibility: ['colonies', 'moon']},
+    [CardName.LUNAR_MINING_REBALANCED]: {Factory: LunarMiningRebalanced, compatibility: ['colonies', 'moon']},
+    [CardName.LUNA_GOVERNOR_REBALANCED]: {Factory: LunaGovernorRebalanced, compatibility: ['colonies', 'moon']},
     [CardName.ADAPTED_LICHEN_REBALANCED]: {Factory: AdaptedLichenRebalanced},
     [CardName.ADVANCED_ALLOYS_REBALANCED]: {Factory: AdvancedAlloysRebalanced},
     [CardName.AEROBRAKED_AMMONIA_ASTEROID_REBALANCED]: {Factory: AerobrakedAmmoniaAsteroidRebalanced},
@@ -249,6 +259,16 @@ export const REBALANCED_CARD_MANIFEST = new ModuleManifest({
     [CardName.BUILD_COLONY_STANDARD_PROJECT_REBALANCED]: {Factory: BuildColonyStandardProjectRebalanced, compatibility: ['colonies']},
   },
   conditionalCardsToRemove: new Map([
+    [CardName.LUNAR_BEAM, CardName.LUNAR_BEAM_REBALANCED],
+    [CardName.LUNAR_BEAM_BETTER_MARS, CardName.LUNAR_BEAM_REBALANCED],
+    [CardName.LUNA_METROPOLIS, CardName.LUNA_METROPOLIS_REBALANCED],
+    [CardName.LUNA_METROPOLIS_BETTER_MARS, CardName.LUNA_METROPOLIS_REBALANCED],
+    [CardName.LUNAR_EXPORTS, CardName.LUNAR_EXPORTS_REBALANCED],
+    [CardName.LUNAR_EXPORTS_BETTER_MARS, CardName.LUNAR_EXPORTS_REBALANCED],
+    [CardName.LUNAR_MINING, CardName.LUNAR_MINING_REBALANCED],
+    [CardName.LUNAR_MINING_BETTER_MARS, CardName.LUNAR_MINING_REBALANCED],
+    [CardName.LUNA_GOVERNOR, CardName.LUNA_GOVERNOR_REBALANCED],
+    [CardName.LUNA_GOVERNOR_BETTER_MARS, CardName.LUNA_GOVERNOR_REBALANCED],
     [CardName.ADAPTED_LICHEN, CardName.ADAPTED_LICHEN_REBALANCED],
     [CardName.ADVANCED_ALLOYS, CardName.ADVANCED_ALLOYS_REBALANCED],
     [CardName.AEROBRAKED_AMMONIA_ASTEROID, CardName.AEROBRAKED_AMMONIA_ASTEROID_REBALANCED],
@@ -372,8 +392,8 @@ export const REBALANCED_CARD_MANIFEST = new ModuleManifest({
     [CardName.MARTIAN_RAILS_BETTER_MARS, CardName.MARTIAN_RAILS_REBALANCED_BETTER_MARS],
     [CardName.TROPICAL_RESORT_REBALANCED, CardName.TROPICAL_RESORT_REBALANCED_BETTER_MARS],
     [CardName.TROPICAL_RESORT_BETTER_MARS, CardName.TROPICAL_RESORT_REBALANCED_BETTER_MARS],
-    // These two complete Better Mars reworks take priority only when available.
+    // The Mars University rework takes priority only when available.
     [CardName.MARS_UNIVERSITY_REBALANCED, CardName.MARS_UNIVERSITY_BETTER_MARS],
-    [CardName.MEAT_INDUSTRY_REBALANCED, CardName.MEAT_INDUSTRY_BETTER_MARS],
+    [CardName.MEAT_INDUSTRY_BETTER_MARS, CardName.MEAT_INDUSTRY_REBALANCED],
   ]),
 });

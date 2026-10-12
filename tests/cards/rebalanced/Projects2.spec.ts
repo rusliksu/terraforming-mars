@@ -59,7 +59,7 @@ describe('Rebalanced projects, group 2', () => {
     [MarsUniversityRebalanced, 12, [Tag.SCIENCE, Tag.BUILDING], 0, CardType.ACTIVE],
     [MartianRailsRebalanced, 12, [Tag.BUILDING], 0, CardType.ACTIVE],
     [MassConverterRebalanced, 8, [Tag.SCIENCE, Tag.POWER], 0, CardType.ACTIVE],
-    [MeatIndustryRebalanced, 10, [Tag.BUILDING], 0, CardType.ACTIVE],
+    [MeatIndustryRebalanced, 2, [Tag.BUILDING, Tag.ANIMAL], 0, CardType.ACTIVE],
     [MicroMillsRebalanced, 2, [], 0, CardType.AUTOMATED],
     [OrbitalCleanupRebalanced, 14, [Tag.EARTH, Tag.SPACE], 2, CardType.ACTIVE],
     [OutdoorSportsRebalanced, 8, [], 1, CardType.AUTOMATED],
@@ -328,10 +328,10 @@ describe('Rebalanced projects, group 2', () => {
     other.playedCards.push(otherFish);
     player.addResourceTo(fish, 3);
     expect(fish.resourceCount).eq(3);
-    expect(player.megaCredits).eq(6);
+    expect(player.megaCredits).eq(3);
     player.addResourceTo(microbes, 2);
     other.addResourceTo(otherFish, 1);
-    expect(player.megaCredits).eq(6);
+    expect(player.megaCredits).eq(3);
   });
 
   it('Fuel Factory exchanges energy production while Micro-Mills adds heat production', () => {

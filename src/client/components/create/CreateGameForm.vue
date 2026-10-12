@@ -29,6 +29,12 @@
                                 <span v-i18n>Corporate Era</span>
                             </label>
 
+                            <input type="checkbox" name="rebalanced" id="rebalanced-checkbox" v-model="expansions.rebalanced">
+                            <label for="rebalanced-checkbox" class="expansion-button">
+                                <div class="create-game-expansion-icon expansion-icon-rebalanced"></div>
+                                <span v-i18n>Rebalanced</span>&nbsp;<a :href="wikiUrls.rebalanced" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+                            </label>
+
                             <input type="checkbox" name="prelude" id="prelude-checkbox" v-model="expansions.prelude">
                             <label for="prelude-checkbox" class="expansion-button">
                                 <div class="create-game-expansion-icon expansion-icon-prelude"></div>
@@ -199,6 +205,13 @@
                                 <div class="create-game-expansion-icon expansion-icon-pathfinders"></div>
                                 <span v-i18n>Pathfinders</span>&nbsp;<a :href="wikiUrls.pathfinders" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                             </label>
+                            <div v-if="expansions.pathfinders" class="pathfinders-options">
+                                <input type="checkbox" name="betterMars" id="betterMars-checkbox" v-model="expansions.betterMars" :disabled="!expansions.pathfinders">
+                                <label for="betterMars-checkbox" class="expansion-button">
+                                    <div class="create-game-expansion-icon expansion-icon-betterMars"></div>
+                                    <span v-i18n>BetterMars</span>&nbsp;<span title="A fan expansion: Mars-flavoured card variants">(&#945;)</span>&nbsp;<a :href="wikiUrls.betterMars" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
+                                </label>
+                            </div>
 
                             <input type="checkbox" name="ceo" id="ceo-checkbox" v-model="expansions.ceo">
                             <label for="ceo-checkbox" class="expansion-button">
@@ -230,17 +243,6 @@
                                 <span v-i18n>Sillyfication</span>&nbsp;<span title="A silly fan expansion">(&#945;)</span>&nbsp;<a :href="wikiUrls.sillyfication" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                             </label>
 
-                            <input type="checkbox" name="betterMars" id="betterMars-checkbox" v-model="expansions.betterMars">
-                            <label for="betterMars-checkbox" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-betterMars"></div>
-                                <span v-i18n>BetterMars</span>&nbsp;<span title="A fan expansion: Mars-flavoured card variants">(&#945;)</span>&nbsp;<a :href="wikiUrls.betterMars" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
-
-                            <input type="checkbox" name="rebalanced" id="rebalanced-checkbox" v-model="expansions.rebalanced">
-                            <label for="rebalanced-checkbox" class="expansion-button">
-                                <div class="create-game-expansion-icon expansion-icon-rebalanced"></div>
-                                <span v-i18n>Rebalanced</span>&nbsp;<a :href="wikiUrls.rebalanced" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
-                            </label>
 
                             <input type="checkbox" name="customCards" id="customCards-checkbox" v-model="expansions.customCards">
                             <label for="customCards-checkbox" class="expansion-button">
@@ -1069,6 +1071,9 @@ export default defineComponent({
       this.handleExpansionChanged('moon', value);
     },
     'expansions.pathfinders': function(value: boolean) {
+      if (!value) {
+        this.expansions.betterMars = false;
+      }
       this.handleExpansionChanged('pathfinders', value);
     },
     'expansions.ceo': function(value: boolean) {
@@ -1808,7 +1813,7 @@ export default defineComponent({
       this.syncCustomSelectionsWithExpansions();
     },
     isModuleEnabled(module: GameModule): boolean {
-      return module === 'base' || this.expansions[module];
+      return module === 'base' || (this.expansions[module] && (module !== 'betterMars' || this.expansions.pathfinders));
     },
     isCardModuleAllowedForCustomSelection(card: ClientCard): boolean {
       return this.isModuleEnabled(card.module) || CUSTOM_CARD_MODULE_EXCEPTIONS.has(card.name);
@@ -2837,5 +2842,13 @@ export default defineComponent({
 
 .create-game-telegram-error {
   color: #ffb0b0;
+}
+.pathfinders-options {
+  margin-left: 16px;
+}
+
+.pathfinders-options .expansion-button {
+  padding: 8px 12px;
+  font-size: 16px;
 }
 </style>

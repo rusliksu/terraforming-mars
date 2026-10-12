@@ -38,7 +38,7 @@ import {MAX_AWARDS, MAX_MILESTONES} from '../../common/constants';
 import {AstraMechanica} from '../cards/promo/AstraMechanica';
 
 export class Server {
-  private static readonly FANMADE_CATALOG_REVISION = 'fanmade:custom-reviewed';
+  private static readonly FANMADE_CATALOG_REVISION = 'fanmade:rebalanced-v1';
 
   public static getSimpleGameModel(game: IGame, options?: {
     botPlayers?: Array<PlayerId>;

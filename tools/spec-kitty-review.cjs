@@ -26,7 +26,7 @@ if (branch.status !== 0 || ['main', 'master'].includes(branch.stdout.trim())) {
 
 const preparation = [
   ['ci'],
-  ['run', 'make:json'],
+  ['run', 'make:static'],
   ['run', 'make:cards'],
   ['run', 'build:tests'],
 ];
@@ -56,7 +56,8 @@ for (const args of preparation) {
 
 const serverFile = outputFile + '.server.xml';
 const clientFile = outputFile + '.client.xml';
-const serverStatus = run(['run', 'test:server', '--', '--reporter=xunit', '--reporter-options=output=' + serverFile]);
+// Archive process tests need a bounded allowance beyond Mocha's two-second default.
+const serverStatus = run(['run', 'test:server', '--', '--jobs=4', '--timeout=30000', '--reporter=xunit', '--reporter-options=output=' + serverFile]);
 const clientStatus = run(['run', 'test:client', '--', '--reporter=junit', '--outputFile=' + clientFile]);
 // Preserve both reporters' complete suites, including failures and skipped tests.
 const reports = [serverFile, clientFile].map((file) => fs.readFileSync(file, 'utf8').replace(/^\s*<\?xml[^?]*\?>/, ''));

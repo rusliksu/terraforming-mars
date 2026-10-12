@@ -114,6 +114,9 @@ function deserializeGameOptions(d: SerializedGame): GameOptions {
     expansions: {...DEFAULT_GAME_OPTIONS.expansions, ...serializedOptions.expansions},
   };
   gameOptions.boardName = normalizeBoardName(gameOptions.boardName);
+  if (gameOptions.venusPhase2Expansion) {
+    gameOptions.venusPhase2Max = serializedOptions.venusPhase2Max ?? 60;
+  }
   gameOptions.escapeVelocity = normalizeEscapeVelocityOptions(gameOptions.escapeVelocity);
   if (gameOptions.undoStepOption) {
     gameOptions.undoOption = true;
@@ -269,7 +272,7 @@ export class Game implements IGame, Logger {
     this.id = id;
     this.name = name;
     this.gameOptions = {...gameOptions};
-    this.parameters = resolveGlobalParameters(this.gameOptions.globalParameters, this.gameOptions.venusPhase2Expansion);
+    this.parameters = resolveGlobalParameters(this.gameOptions.globalParameters, this.gameOptions.venusPhase2Expansion, this.gameOptions.venusPhase2Max);
     this.oxygenLevel = this.parameters.oxygen.min;
     this.temperature = this.parameters.temperature.min;
     this.venusScaleLevel = this.parameters.venus.min;

@@ -70,7 +70,7 @@ export const DEFAULT_GLOBAL_PARAMETERS: GlobalParametersConfig = {
 };
 
 /** Resolves board tracks with Venus Phase 2 taking precedence over a custom Venus maximum. */
-export function resolveGlobalParameters(config: GlobalParametersConfig | undefined, venusPhase2: boolean): GlobalParametersConfig {
+export function resolveGlobalParameters(config: GlobalParametersConfig | undefined, venusPhase2: boolean, venusPhase2Max: 30 | 60 = 30): GlobalParametersConfig {
   const base = config ?? DEFAULT_GLOBAL_PARAMETERS;
-  return venusPhase2 ? {...base, venus: {...base.venus, max: 60}} : base;
+  return venusPhase2 ? {...base, venus: {...base.venus, max: venusPhase2Max}} : base;
 }

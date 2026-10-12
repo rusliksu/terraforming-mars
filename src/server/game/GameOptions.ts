@@ -70,6 +70,8 @@ export type GameOptions = {
   robAntillesExpansion: boolean;
   morePartiesExpansion: boolean;
   venusPhase2Expansion: boolean;
+  /** Track limit frozen per game; older saves used 60. */
+  venusPhase2Max?: 30 | 60;
   industriesExpansion: boolean;
   highOrbitExpansion: boolean;
   solarisExpansion: boolean;
@@ -210,6 +212,7 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
   robAntillesExpansion: false,
   morePartiesExpansion: false,
   venusPhase2Expansion: false,
+  venusPhase2Max: 30,
   industriesExpansion: false,
   highOrbitExpansion: false,
   solarisExpansion: false,

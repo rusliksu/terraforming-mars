@@ -1,4 +1,5 @@
 import {getAutomationCompatibility} from '../bot/AutomationCompatibility';
+import {resolveGlobalParameters} from '@/common/GlobalParameterConfig';
 import {CardModel} from '../../common/models/CardModel';
 import {Color} from '../../common/Color';
 import {IGame} from '../IGame';
@@ -510,7 +511,8 @@ export class Server {
       altVenusBoard: options.altVenusBoard,
       aresExtremeVariant: options.aresExtremeVariant,
       boardName: options.boardName,
-      globalParameters: options.globalParameters,
+      globalParameters: options.venusPhase2Expansion ?
+        resolveGlobalParameters(options.globalParameters, true, options.venusPhase2Max) : options.globalParameters,
       customBoardRows: options.customBoard?.rows,
       bannedCards: options.bannedCards,
       draftVariant: options.draftVariant,

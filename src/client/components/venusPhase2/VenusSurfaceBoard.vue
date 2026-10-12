@@ -1,18 +1,14 @@
 <template>
-  <!-- The official Mars-board Venus curve only has room painted for 0-30 -- Venus Phase 2's
-       extended 30-60 range gets its own standalone curve here, shown above the Venus board itself.
-       Deliberately a separate top-level element, not a child of .venus-board-cont: that container's
-       backdrop is sized as a percentage of its own box, so a normal-flow child inside it would both
-       push the hex grid down AND distort the backdrop's sizing relative to the grid (see
-       feedback_venus-track-layout for the earlier attempt that did exactly this and had to be
-       reverted). Living outside .venus-board-cont means neither the grid nor the backdrop is
-       touched -- this just adds its own row above the whole board block. Always shown once
-       showScaleTrack is true (not just once the scale passes 30) so it doesn't pop in
-       mid-generation. -->
-  <div v-if="showScaleTrack" class="venus-scale-track-2-row">
-    <div class="venus-scale-track-2">
-      <div v-if="venus2MarkerStyle !== undefined" class="venus-scale-track-2__marker" :style="venus2MarkerStyle"></div>
-    </div>
+  <div v-if="showScaleTrack" class="venus-scale-track">
+    <div class="venus-scale-track__heading"><span v-i18n>Venus Scale</span><strong>{{ venusScaleLevel }} / {{ venusScaleMax }}%</strong></div>
+    <svg viewBox="0 0 480 80" role="img" :aria-label="$t('Venus Scale') + ': ' + venusScaleLevel + ' / ' + venusScaleMax + '%'">
+      <line x1="16" y1="28" x2="464" y2="28" class="venus-scale-track__line"/>
+      <g v-for="value in scaleValues" :key="value" :transform="'translate(' + scaleX(value) + ', 0)'">
+        <line y1="21" y2="35" class="venus-scale-track__tick"/>
+        <text y="59" text-anchor="middle" class="venus-scale-track__number">{{ value }}</text>
+      </g>
+      <circle :cx="scaleX(venusScaleLevel)" cy="28" r="8" class="venus-scale-track__marker"/>
+    </svg>
   </div>
   <div class="venus-board-cont" v-bind="$attrs">
     <div class="board board--venus" :style="boardStyle" id="venus_board">
@@ -73,10 +69,7 @@ const RESERVED_SPACE_TEXT: Partial<Record<SpaceId, Array<string>>> = {
 
 export default defineComponent({
   name: 'VenusSurfaceBoard',
-  // Two root nodes now (the 30-60 track row plus the board itself) -- Vue can't guess which one
-  // GameBoardView.vue's id="shortkey-venusBoard" (or any other fallthrough attr) belongs on, so it
-  // drops them silently without this. Bind explicitly to .venus-board-cont, matching where it used
-  // to land back when this component had a single root.
+  // The board owns fallthrough attributes; the track has a separate layout.
   inheritAttrs: false,
   props: {
     model: {
@@ -87,17 +80,14 @@ export default defineComponent({
       type: String as () => TileView,
       default: 'show',
     },
-    // Only used to position the marker on the 30-60 extension curve below -- omitted entirely
-    // (SimpleMapEditor.vue's preview call site, which has no live game) just means no marker.
     venusScaleLevel: {
       type: Number,
       default: 0,
     },
-    // False for SimpleMapEditor.vue's hex-layout preview -- that page already has its own,
-    // separate 30-60 track calibration tool right above this preview, so this component's own
-    // copy of the track would otherwise show twice on the same page (once for calibrating,
-    // once floating uselessly above the tiny preview planet with no marker on it, since that
-    // call site has no real venusScaleLevel to show).
+    venusScaleMax: {
+      type: Number,
+      default: 30,
+    },
     showScaleTrack: {
       type: Boolean,
       default: true,
@@ -185,20 +175,15 @@ export default defineComponent({
       }
       return entries;
     },
-    // Percent-based (not px) so it stays correct regardless of how large venus-track-30-60.png
-    // is actually displayed -- see VENUS_2_TRACK_POSITIONS below for where these numbers come
-    // from. undefined below 30 (nothing on this curve to point at yet) or for an odd value (never
-    // happens in a real game -- Venus's step is always 2 -- but SimpleMapEditor.vue's calibration
-    // tool can be mid-calibration with gaps).
-    venus2MarkerStyle(): Record<string, string> | undefined {
-      const point = VENUS_2_TRACK_POSITIONS[this.venusScaleLevel];
-      if (point === undefined) {
-        return undefined;
-      }
-      return {left: `${point.left * 100}%`, top: `${point.top * 100}%`};
+    scaleValues(): Array<number> {
+      const step = this.venusScaleMax > 30 ? 4 : 2;
+      return Array.from({length: this.venusScaleMax / step + 1}, (_, index) => index * step);
     },
   },
   methods: {
+    scaleX(value: number): number {
+      return 16 + Math.min(this.venusScaleMax, Math.max(0, value)) / this.venusScaleMax * 448;
+    },
     pixelFor(space: SpaceModel): {left: number, top: number} {
       return customSpacePixel(space.x, space.y, this.maxY);
     },
@@ -208,30 +193,4 @@ export default defineComponent({
   },
 });
 
-// Fractional (0-1) position of each tick mark on venus-track-30-60.png's own painted arc, keyed
-// by the Venus scale value it represents. Venus's step is always 2, so this only ever needs an
-// exact lookup (unlike @venus-vals's interpolated-odd-value approach from an earlier, abandoned
-// 1-unit-step design) -- no in-between value is ever actually reached.
-//
-// Calibrated in-browser via SimpleMapEditor.vue's Venus Phase 2 track-calibration tool (click
-// each tick mark in order, then "Copy positions") -- not an eyeballed guess like the values this
-// replaced.
-const VENUS_2_TRACK_POSITIONS: Record<number, {left: number, top: number}> = {
-  30: {left: 0.069, top: 0.731},
-  32: {left: 0.121, top: 0.618},
-  34: {left: 0.179, top: 0.504},
-  36: {left: 0.234, top: 0.391},
-  38: {left: 0.290, top: 0.342},
-  40: {left: 0.348, top: 0.253},
-  42: {left: 0.411, top: 0.229},
-  44: {left: 0.474, top: 0.205},
-  46: {left: 0.529, top: 0.205},
-  48: {left: 0.590, top: 0.237},
-  50: {left: 0.653, top: 0.269},
-  52: {left: 0.711, top: 0.342},
-  54: {left: 0.766, top: 0.415},
-  56: {left: 0.819, top: 0.496},
-  58: {left: 0.874, top: 0.609},
-  60: {left: 0.924, top: 0.739},
-};
 </script>

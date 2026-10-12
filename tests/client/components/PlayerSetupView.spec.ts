@@ -53,13 +53,14 @@ describe('PlayerSetupView', () => {
   });
   it('shows fan boards, market and teams while selecting initial cards', () => {
     const playerView = fakePlayerViewModel({game: fakeGameModel({
-      gameOptions: fakeGameOptionsModel({globalParameters: DEFAULT_GLOBAL_PARAMETERS, customBoardRows: 7}),
+      gameOptions: fakeGameOptionsModel({globalParameters: DEFAULT_GLOBAL_PARAMETERS, customBoardRows: 7, altVenusBoard: true}),
       venusPhase2: {spaces: []}, highOrbitMarket: [], conglomerates: {teams: []},
     })});
     const wrapper = shallowMount(PlayerSetupView, {...globalConfig, props: {playerView, tileView: 'show'}});
     expect(wrapper.getComponent(Board).props('customBoardRows')).eq(7);
     expect(wrapper.getComponent(Board).props('globalParameters')).deep.eq(DEFAULT_GLOBAL_PARAMETERS);
     expect(wrapper.findComponent(VenusSurfaceBoard).exists()).is.true;
+    expect(wrapper.getComponent(VenusSurfaceBoard).props('altVenusBoard')).is.true;
     expect(wrapper.findComponent(HighOrbitMarket).exists()).is.true;
     expect(wrapper.findComponent(ConglomeratesTeams).exists()).is.true;
   });

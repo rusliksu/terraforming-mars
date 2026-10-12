@@ -62,47 +62,17 @@
   margin: 8px;
 }
 
-// The 0-30 range still renders on the official Mars-board Venus curve, same as always --
-// this is only the 30-60 extension, since the official curve has no room painted past 30.
-// A plain normal-flow row, deliberately OUTSIDE .venus-board-cont (see the comment in
-// VenusSurfaceBoard.vue's template for why: that container's backdrop sizing is a percentage of
-// its own box, so a normal-flow child inside it would distort the backdrop as well as push the
-// grid down -- living entirely outside it means this can safely sit in normal flow without
-// touching the board's own layout at all).
-//
-// Deliberately NOT centered: .venus-board-cont below is display:inline-block with an ineffective
-// `margin: auto` (auto margins don't center inline-block boxes), so it actually renders flush left
-// against the page's own left padding, not centered in the page. Centering this row instead would
-// float it off to the right of where the board itself actually sits -- left-aligned here matches
-// the board's real position.
-// The negative bottom margin pulls .venus-board-cont's own 20px top margin (plus this row's
-// height) in closer -- venus-track-30-60.png has a lot of transparent padding baked in below the
-// painted arc itself (real space between the numbers and the image's own bottom edge), which
-// otherwise reads as extra empty space above the planet on top of the two elements' own margins.
-.venus-scale-track-2-row {
-  margin: 4px 0 -85px;
-}
-
-// Same transparent-padding note as the row above -- kept on the smaller side so that dead space
-// stays modest in absolute pixels too, pending the calibration tool below possibly wanting a
-// cropped version of the source image instead.
-.venus-scale-track-2 {
-  position: relative;
-  width: 380px;
-  max-width: 85vw;
-  aspect-ratio: 2200 / 715;
-  background: url("./assets/venusPhase2/venus-track-30-60.png") no-repeat center / contain;
-
-  &__marker {
-    position: absolute;
-    // left/top set inline per-instance as percentages by VenusSurfaceBoard.vue's
-    // VENUS_2_TRACK_POSITIONS -- see that component for where these numbers come from.
-    transform: translate(-50%, -50%);
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #fff;
-    border: 2px solid #000;
-    box-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+.venus-scale-track {
+  width: 440px;
+  max-width: 100%;
+  margin: 12px 0 0;
+  svg { display: block; width: 100%; }
+  &__art {
+    // Reuse the printed Mars track; leave the planet and other tracks outside the crop.
+    clip-path: path("M98 0H530V101L494 134A252 252 0 0 0 137 134L102 100Z");
+  }
+  &__art--extension {
+    // The legacy extension has no second set of 8/16 bonuses.
+    clip-path: path("M105 103A344 344 0 0 1 526 103L494 134A252 252 0 0 0 137 134Z");
   }
 }

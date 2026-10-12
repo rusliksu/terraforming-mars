@@ -30,7 +30,9 @@
 
   <template v-if="game.venusPhase2">
     <a class="hotkey-target"></a>
-    <VenusSurfaceBoard :model="game.venusPhase2" :tileView="tileView" :venusScaleLevel="game.venusScaleLevel" id="shortkey-venusBoard"/>
+    <VenusSurfaceBoard :model="game.venusPhase2" :tileView="tileView" :venusScaleLevel="game.venusScaleLevel"
+      :altVenusBoard="game.gameOptions.altVenusBoard"
+      :venusScaleMax="game.gameOptions.globalParameters?.venus.max" id="shortkey-venusBoard"/>
   </template>
 
   <template v-if="game.gameOptions.expansions.pathfinders">

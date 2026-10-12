@@ -19,7 +19,8 @@ export class CorporateEspionage extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'DP12',
         renderData: CardRenderer.builder((b) => {
-          b.minus(Size.SMALL).plate('Delta track').nbsp.plus(Size.SMALL).plate('Delta track').asterix();
+          b.text('Opponent', {size: Size.SMALL}).minus(Size.SMALL).plate('Delta track').br;
+          b.text('You', {size: Size.SMALL}).plus(Size.SMALL).plate('Delta track').asterix();
         }),
         description: 'Reduce another player\'s Delta Project track by 1 step (unless they are already at the VP level). ' +
           'Increase your Delta Project track by 1 step - you may ignore 1 required tag. Both players receive the bonus ' +

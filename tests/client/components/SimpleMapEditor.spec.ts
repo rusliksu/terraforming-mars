@@ -148,11 +148,10 @@ describe('SimpleMapEditor', () => {
     expect(moon.findComponent({name: 'MoonBoard'}).exists()).is.true;
   });
 
-  it('shows the 30-60 track only once (the calibration tool\'s own copy, not a second one inside the hex-grid preview)', () => {
+  it('previews the 0–30 track without manual calibration', () => {
     const wrapper = mount(SimpleMapEditor, {...globalConfig, props: {boardType: 'venusPhase2'}});
-    // The preview's own VenusSurfaceBoard is told not to render its copy -- see showScaleTrack.
-    expect(wrapper.findAllComponents({name: 'VenusSurfaceBoard'})[0].props('showScaleTrack')).is.false;
-    expect(wrapper.findAll('.venus-scale-track-2')).to.have.lengthOf(1);
+    expect(wrapper.findAll('.venus-scale-track')).to.have.lengthOf(1);
+    expect(wrapper.findAll('.global-numbers-venus .global-numbers-value').at(-1)?.text()).eq('30');
   });
 
   it('does not offer reservation tools for Moon (only Venus has Stratopolis/Maxwell Base)', () => {
@@ -421,99 +420,6 @@ describe('SimpleMapEditor', () => {
       await copyButton?.trigger('click');
 
       expect(written).to.eq('background-position: 33% 0%;\nbackground-size: 150%;');
-      Object.defineProperty(navigator, 'clipboard', {value: originalClipboard, configurable: true});
-    });
-  });
-
-  describe('30-60 track calibration tool (Venus only)', () => {
-    it('does not offer the track tool for Moon', () => {
-      const wrapper = mount(SimpleMapEditor, {...globalConfig, props: {boardType: 'moon'}});
-      expect(wrapper.find('.simple-map-editor-track-calibrate').exists()).is.false;
-    });
-
-    it('starts empty, prompting for 30 first', () => {
-      const wrapper = mount(SimpleMapEditor, {...globalConfig, props: {boardType: 'venusPhase2'}});
-      const vm = wrapper.vm as any;
-      expect(vm.nextTrackValue).to.eq(30);
-      expect(vm.trackValuesPlaced).to.deep.eq([]);
-      expect(wrapper.text()).to.include('Next:');
-      expect(wrapper.text()).to.include('30');
-    });
-
-    it('clicking the track records the next value at the clicked fraction, then advances', async () => {
-      const wrapper = mount(SimpleMapEditor, {...globalConfig, props: {boardType: 'venusPhase2'}});
-      const vm = wrapper.vm as any;
-      const el = wrapper.find('.simple-map-editor-track-calibrate').element as HTMLElement;
-      // jsdom's getBoundingClientRect is all-zero by default -- stub a real size so the
-      // pixel-to-fraction math has something to divide by.
-      el.getBoundingClientRect = () => ({width: 200, height: 100, x: 0, y: 0, top: 0, left: 0, right: 200, bottom: 100, toJSON: () => ({})});
-
-      el.dispatchEvent(new MouseEvent('click', {clientX: 20, clientY: 80, bubbles: true}));
-      await wrapper.vm.$nextTick();
-
-      expect(vm.trackMarkers[30]).to.deep.eq({left: 0.1, top: 0.8});
-      expect(vm.nextTrackValue).to.eq(32);
-
-      el.dispatchEvent(new MouseEvent('click', {clientX: 100, clientY: 20, bubbles: true}));
-      await wrapper.vm.$nextTick();
-
-      expect(vm.trackMarkers[32]).to.deep.eq({left: 0.5, top: 0.2});
-      expect(vm.nextTrackValue).to.eq(34);
-    });
-
-    it('Undo last removes only the most recently placed value', async () => {
-      const wrapper = mount(SimpleMapEditor, {...globalConfig, props: {boardType: 'venusPhase2'}});
-      const vm = wrapper.vm as any;
-      vm.trackMarkers = {30: {left: 0.1, top: 0.8}, 32: {left: 0.2, top: 0.6}};
-      await wrapper.vm.$nextTick();
-
-      const buttons = wrapper.findAll('.simple-map-editor-track-tools button');
-      const undoButton = buttons.find((b) => b.text() === 'Undo last');
-      await undoButton?.trigger('click');
-
-      expect(vm.trackMarkers[30]).to.deep.eq({left: 0.1, top: 0.8});
-      expect(vm.trackMarkers[32]).to.be.undefined;
-      expect(vm.nextTrackValue).to.eq(32);
-    });
-
-    it('Reset clears every placed marker', async () => {
-      const wrapper = mount(SimpleMapEditor, {...globalConfig, props: {boardType: 'venusPhase2'}});
-      const vm = wrapper.vm as any;
-      vm.trackMarkers = {30: {left: 0.1, top: 0.8}, 32: {left: 0.2, top: 0.6}};
-      await wrapper.vm.$nextTick();
-
-      const buttons = wrapper.findAll('.simple-map-editor-track-tools button');
-      const resetButton = buttons.find((b) => b.text() === 'Reset');
-      await resetButton?.trigger('click');
-
-      expect(vm.trackMarkers).to.deep.eq({});
-      expect(vm.nextTrackValue).to.eq(30);
-    });
-
-    it('Copy positions writes VenusSurfaceBoard.vue-shaped code to the clipboard', async () => {
-      let written = '';
-      const originalClipboard = navigator.clipboard;
-      Object.defineProperty(navigator, 'clipboard', {
-        value: {
-          writeText: (text: string) => {
-            written = text;
-            return Promise.resolve();
-          },
-        },
-        configurable: true,
-      });
-
-      const wrapper = mount(SimpleMapEditor, {...globalConfig, props: {boardType: 'venusPhase2'}});
-      const vm = wrapper.vm as any;
-      vm.trackMarkers = {32: {left: 0.234, top: 0.567}, 30: {left: 0.1, top: 0.8}};
-      await wrapper.vm.$nextTick();
-
-      const buttons = wrapper.findAll('.simple-map-editor-track-tools button');
-      const copyButton = buttons.find((b) => b.text() === 'Copy positions');
-      await copyButton?.trigger('click');
-
-      // Sorted ascending regardless of the (out-of-order, here) insertion order above.
-      expect(written).to.eq('  30: {left: 0.100, top: 0.800},\n  32: {left: 0.234, top: 0.567},');
       Object.defineProperty(navigator, 'clipboard', {value: originalClipboard, configurable: true});
     });
   });

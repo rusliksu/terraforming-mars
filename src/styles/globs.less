@@ -203,10 +203,8 @@
     }
   }
 
-  // Each entry: <val> <margin-top> <margin-left> <rotation>. Venus uses the official 2-unit step
-  // throughout, even with Venus Phase 2 on -- it extends the track's length to 60 rather than
-  // shrinking the step, so only even values ever need a position here (see venusphase2.less's
-  // .venus-scale-track-2 for the 30-60 half, rendered as its own separate curve).
+  // Each entry: <val> <margin-top> <margin-left> <rotation>.
+  // Shared by the printed Mars track and the same track relocated to the Venus board.
   @venus-vals:
     0 88px 107px -45deg,
     2 72px 129px -36deg,

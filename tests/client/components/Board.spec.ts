@@ -53,6 +53,22 @@ const spaces: SpaceModel[] = [
 
 
 describe('Board', () => {
+  it('moves the Venus track and its bonuses off Mars only when the Venus surface is enabled', async () => {
+    const expansions = {...DEFAULT_EXPANSIONS, venus: true};
+    const wrapper = shallowMount(Board, {
+      ...globalConfig,
+      props: {spaces, expansions, venusScaleLevel: 8, altVenusBoard: true, boardName: BoardName.THARSIS},
+    });
+    expect(wrapper.find('.global-numbers-venus .val-is-active').text()).eq('8');
+    expect(wrapper.find('.global-alt-venus').exists()).is.true;
+    await wrapper.setProps({expansions: {...expansions, venusPhase2: true}});
+    expect(wrapper.find('.global-numbers-venus').exists()).is.false;
+    expect(wrapper.find('.global-alt-venus').exists()).is.false;
+    expect(wrapper.classes()).includes('board-cont--venus-relocated');
+    expect(wrapper.findAll('.global-numbers-oxygen .global-numbers-value')).to.have.lengthOf(15);
+    expect(wrapper.findAll('.global-numbers-temperature .global-numbers-value')).to.have.lengthOf(20);
+  });
+
   it('has visible tiles on the board', () => {
     const wrapper = shallowMount(Board, {
       ...globalConfig,

@@ -26,6 +26,24 @@ describe('Rebalanced replacements', () => {
     }])).deep.eq(cards);
   });
 
+  it('uses independent reworks in Rebalanced without Better Mars or Pathfinders', () => {
+    const options = {...DEFAULT_GAME_OPTIONS, rebalancedExpansion: true, moonExpansion: true,
+      venusNextExtension: true, coloniesExtension: true, promoCardsOption: true};
+    const names = new GameCards(options).getProjectCards().map((card) => card.name);
+    const pairs = [[CardName.LUNAR_BEAM, CardName.LUNAR_BEAM_REBALANCED],
+      [CardName.LUNA_METROPOLIS, CardName.LUNA_METROPOLIS_REBALANCED],
+      [CardName.LUNAR_EXPORTS, CardName.LUNAR_EXPORTS_REBALANCED],
+      [CardName.LUNAR_MINING, CardName.LUNAR_MINING_REBALANCED],
+      [CardName.LUNA_GOVERNOR, CardName.LUNA_GOVERNOR_REBALANCED],
+      [CardName.MEAT_INDUSTRY, CardName.MEAT_INDUSTRY_REBALANCED]];
+    for (const [original, replacement] of pairs) {
+      expect(names).includes(replacement).and.not.includes(original);
+    }
+    expect(names.filter((name) => name.endsWith(':bm'))).is.empty;
+    const withoutMoon = new GameCards({...options, moonExpansion: false}).getProjectCards().map((card) => card.name);
+    expect(withoutMoon).includes(CardName.LUNAR_BEAM).and.not.includes(CardName.LUNAR_BEAM_REBALANCED);
+  });
+
   it('registers replacements across projects, corporations, preludes and standard projects', () => {
     const cards = new GameCards({...DEFAULT_GAME_OPTIONS, rebalancedExpansion: true, coloniesExtension: true, preludeExtension: true});
     for (const [pool, original, replacement] of [

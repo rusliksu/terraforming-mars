@@ -114,21 +114,21 @@ describe('Rebalanced and Better Mars combinations', () => {
     expect(card.getVictoryPoints(player)).eq(2);
   });
 
-  it('gives only the two available full Better Mars reworks priority', () => {
+  it('keeps independent Meat Industry in Rebalanced and the Mars University rework in Better Mars', () => {
     const cards = new GameCards(both).getProjectCards();
     const university = cards.find((card) => card.name === CardName.MARS_UNIVERSITY_BETTER_MARS)!;
-    const meat = cards.find((card) => card.name === CardName.MEAT_INDUSTRY_BETTER_MARS)!;
+    const meat = cards.find((card) => card.name === CardName.MEAT_INDUSTRY_REBALANCED)!;
     expect(university.cost).eq(10);
     expect(meat.cost).eq(2);
     const [, player] = testGame(2);
     const animals = newCard(CardName.BIRDS);
     meat.onResourceAdded?.(player, animals, 2);
     expect(player.megaCredits).eq(2);
-    expect(cards.some((card) => card.name === CardName.MARS_UNIVERSITY_REBALANCED || card.name === CardName.MEAT_INDUSTRY_REBALANCED)).is.false;
+    expect(cards.some((card) => card.name === CardName.MARS_UNIVERSITY_REBALANCED)).is.false;
     const fallback = new GameCards({...both, pathfindersExpansion: false}).getProjectCards();
     const rb = fallback.find((card) => card.name === CardName.MARS_UNIVERSITY_REBALANCED)!;
     expect(rb.cost).eq(reference.cards.find((card) => card.symbol === 'MARS_UNIVERSITY_REBALANCED')!.cost);
-    expect(fallback.some((card) => card.name === CardName.MEAT_INDUSTRY_BETTER_MARS)).is.true;
+    expect(fallback.some((card) => card.name === CardName.MEAT_INDUSTRY_REBALANCED)).is.true;
     const onlyRb = new GameCards({...both, betterMarsExpansion: false}).getProjectCards();
     expect(onlyRb.some((card) => card.name === CardName.MEAT_INDUSTRY_REBALANCED)).is.true;
   });

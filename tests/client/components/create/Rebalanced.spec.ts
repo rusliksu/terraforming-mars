@@ -40,6 +40,20 @@ describe('Rebalanced setup', () => {
     expect(label.get('a').attributes('href')).eq(rulesUrl);
   });
 
+  it('places Rebalanced near the top and nests Better Mars under Pathfinders', async () => {
+    const wrapper = shallowMount(CreateGameForm, globalConfig);
+    const rebalanced = wrapper.get('#rebalanced-checkbox').element;
+    const prelude = wrapper.get('#prelude-checkbox').element;
+    expect(rebalanced.compareDocumentPosition(prelude) & Node.DOCUMENT_POSITION_FOLLOWING).not.eq(0);
+    expect(wrapper.find('#betterMars-checkbox').exists()).is.false;
+    await wrapper.get('#pathfinders-checkbox').setValue(true);
+    await wrapper.get('#betterMars-checkbox').setValue(true);
+    expect(wrapper.vm.expansions.betterMars).is.true;
+    await wrapper.get('#pathfinders-checkbox').setValue(false);
+    expect(wrapper.vm.expansions.betterMars).is.false;
+    expect(wrapper.find('#betterMars-checkbox').exists()).is.false;
+  });
+
   it('updates the chosen preludes when the checkbox is switched on and off', async () => {
     const wrapper = shallowMount(CreateGameForm, globalConfig);
     wrapper.vm.expansions.prelude = true;

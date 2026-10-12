@@ -137,6 +137,7 @@ export class JSONProcessor {
     if (expansions !== undefined) {
       this.model.expansions = {...this.model.expansions, ...expansions};
     }
+    this.model.expansions.betterMars &&= this.model.expansions.pathfinders;
     const legacyRebalanced = json[json_constants.REBALANCED_EXPANSION];
     this.model.expansions.rebalanced = expansions?.rebalanced ??
       (typeof legacyRebalanced === 'boolean' ? legacyRebalanced : false);

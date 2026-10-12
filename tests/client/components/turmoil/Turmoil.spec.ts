@@ -82,6 +82,44 @@ describe('Turmoil', () => {
     expect(pearlMarker.classes()).to.include('board-cube--persona');
   });
 
+  it('renders repeatable policy counts separately from persona decoration', () => {
+    const wrapper = shallowMount(Turmoil, {
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        mixins: [{methods: {
+          getVisibilityState: () => true,
+          setVisibilityState: () => {},
+        }}],
+      },
+      props: {
+        agendaStyle: 'Random',
+        morePartiesExpansion: true,
+        turmoil: {
+          dominant: PartyName.UNITY,
+          ruling: PartyName.UNITY,
+          chairman: undefined,
+          parties: [],
+          lobby: [],
+          reserve: [],
+          distant: undefined,
+          coming: undefined,
+          current: undefined,
+          politicalAgendas: fakePoliticalAgendasModel(),
+          policyActionUsers: [
+            {color: 'red', turmoilPolicyActionUsed: false, politicalAgendasActionUsedCount: 1},
+            {color: 'pearl', turmoilPolicyActionUsed: false, politicalAgendasActionUsedCount: 2},
+            {color: 'credicor', turmoilPolicyActionUsed: false, politicalAgendasActionUsedCount: 3},
+          ],
+        },
+      },
+    });
+
+    expect(wrapper.findAll('.policy-use-count').map((count) => count.text())).deep.eq(['1', '2', '3']);
+    expect(wrapper.find('.policy-use-marker--count.board-cube--credicor .policy-use-count').text()).eq('3');
+    expect(wrapper.findAll('.policy-use-marker--count.overlay')).to.have.length(0);
+  });
+
   it('renders delegate counts above player token sprites', () => {
     const wrapper = shallowMount(Turmoil, {
       ...globalConfig,

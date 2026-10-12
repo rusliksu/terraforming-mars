@@ -27,7 +27,7 @@ if (branch.status !== 0 || ['main', 'master'].includes(branch.stdout.trim())) {
 const preparation = [
   ['ci'],
   ['run', 'make:static'],
-  ['run', 'make:cards'],
+  ['run', 'build:client'],
 ];
 const logFile = outputFile + '.log';
 const log = fs.openSync(logFile, 'a');

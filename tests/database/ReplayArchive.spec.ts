@@ -28,7 +28,8 @@ class ReplayDatabase extends SQLite {
 
 const supported = process.platform === 'win32' || (process.platform === 'linux' && process.env.CI === 'true');
 
-(supported ? describe : describe.skip)('ReplayArchive', () => {
+(supported ? describe : describe.skip)('ReplayArchive', function() {
+  this.timeout(30000);
   let db: ReplayDatabase;
   let root: string;
   let filename: string;

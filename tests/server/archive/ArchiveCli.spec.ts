@@ -18,7 +18,8 @@ async function run(args: Array<string>) {
   }
 }
 
-(process.platform === 'win32' ? describe : describe.skip)('ArchiveCli', () => {
+(process.platform === 'win32' ? describe : describe.skip)('ArchiveCli', function() {
+  this.timeout(30000);
   let root: string;
   let output: string;
   let input: string;
@@ -46,7 +47,7 @@ async function run(args: Array<string>) {
     expect(await readSave(join(output, receipt.revision), 4)).deep.eq(state);
     const second = await run(args());
     expect(second.code).eq(0); expect(JSON.parse(second.stdout).status).eq('ALREADY_VERIFIED');
-  }).timeout(30000);
+  });
 
   it('exports a real SQLite copy without changing its bytes', async () => {
     const file = join(root, 'copy.sqlite');
@@ -59,7 +60,7 @@ async function run(args: Array<string>) {
     expect(result.code).eq(0); expect(result.stderr).eq('');
     expect(await readSave(join(output, JSON.parse(result.stdout).revision), 4)).deep.eq(state);
     expect(await fs.readFile(file)).deep.eq(before);
-  }).timeout(30000);
+  });
 
   it('refuses missing consent, unknown or duplicate flags without exposing supplied values or writing output', async () => {
     for (const invalid of [args().slice(1), [...args(), '--force', 'private-value'], [...args(), '--game', 'private-value']]) {
@@ -68,7 +69,7 @@ async function run(args: Array<string>) {
       expect(JSON.parse(result.stderr)).deep.eq({status: 'ERROR', code: 'INVALID_ARGUMENTS'});
     }
     expect(await fs.readdir(output)).deep.eq([]);
-  }).timeout(30000);
+  });
 
   it('refuses unsafe roots and unfinished input with code-only errors', async () => {
     const linked = output + '-link';
@@ -87,5 +88,5 @@ async function run(args: Array<string>) {
     const result = await run(args());
     expect(result.code).eq(1); expect(JSON.parse(result.stderr).code).eq('SOURCE_NOT_COMPLETED');
     expect(await fs.readdir(output)).deep.eq([]);
-  }).timeout(30000);
+  });
 });

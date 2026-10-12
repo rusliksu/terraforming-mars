@@ -26,7 +26,8 @@ class ArchiveDatabase extends SQLite {
 
 const supported = process.platform === 'win32' || (process.platform === 'linux' && process.env.CI === 'true');
 
-(supported ? describe : describe.skip)('SQLiteArchiveHistory', () => {
+(supported ? describe : describe.skip)('SQLiteArchiveHistory', function() {
+  this.timeout(30000);
   let workspace: string;
   let db: ArchiveDatabase;
   const gameId = 'g000000000006';

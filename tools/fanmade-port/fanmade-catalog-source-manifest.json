@@ -3,7 +3,7 @@
   "catalogId": "fanmade:rebalanced-v1",
   "oracleRevision": "8d5a68deb229b6e77c990e2ae0a6764ceb0a44bd",
   "reviewedBaseRevision": "2408687acfb4393da4b7fd06d9de64701ea1c676",
-  "bundleDigest": "dc719d6f4b62e8ff203d4e93a8474b97f925ddae121f4a375fa6953f6a9553f4",
+  "bundleDigest": "e77278aee4e7ea4a786c4c5d10f221091e1999224778c51de89f635602df7718",
   "identities": [
     "Ace Veteran Squad",
     "Adapted Lichen(⚖)",
@@ -2907,5 +2907,5 @@
     "src/server/venusPhase2/VenusPhase2Expansion.ts": "fcd3460a2cc6b89fe04c18ad7d762b688ac4c10cab5313dca43b72788ed12961",
     "src/server/venusPhase2/VenusSurfaceBoard.ts": "6f631df3736b951370887ea0d89e74b80694871b16fd6f7a25e8fdc56275f791"
   },
-  "variantSourceRevision": "8e9e175c2d6895bfa6a03663b4f2d6e07280f416"
+  "variantSourceRevision": "514f4a7f73cc9386bc6f715650e0223e5b72ed73"
 }

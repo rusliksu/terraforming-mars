@@ -17,5 +17,5 @@ mission_type_activations:
 - plan
 charter: .kittify/charter/charter.yaml
 review:
-  test_command: npm ci && npm run build:tests && npm run test:server && npm run test:client -- --reporter=junit --outputFile={output_file}
+  test_command: node tools/spec-kitty-review.cjs "{output_file}"
   test_output_format: junit_xml

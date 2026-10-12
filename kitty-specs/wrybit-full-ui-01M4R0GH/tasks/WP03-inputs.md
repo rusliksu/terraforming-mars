@@ -18,7 +18,7 @@ subtasks:
 - T012
 phase: Полный перенос интерфейса
 history: []
-agent_profile: implementer
+agent_profile: implementer-ivan
 authoritative_surface: src/client/wrybit/inputs/
 create_intent: []
 execution_mode: code_change
@@ -36,7 +36,7 @@ tracker_refs: []
 
 ## ⚡ Сначала загрузить профиль
 
-Перед исполнением загрузить профиль implementer через resolver-backed `spk-doctrine-profile-load`; сохранить текущие модель и настройки задачи. Вспомогательные агенты не запланированы. Перечитать применимые правила и подтверждённые spec/plan; пока план не одобрен человеком, реализация запрещена.
+Перед исполнением загрузить профиль implementer-ivan через resolver-backed `spk-doctrine-profile-load`; сохранить текущие модель и настройки задачи. Вспомогательные агенты не запланированы. Перечитать применимые правила и подтверждённые spec/plan; пока план не одобрен человеком, реализация запрещена.
 
 ## Цель и входы
 

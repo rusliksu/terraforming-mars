@@ -1197,8 +1197,21 @@
   }
 
   &.colonies-fleet-credicor {
+    position: relative;
     background-position: -207px 0;
     filter: @player_credicor_fleet_filter;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 43px;
+      top: 1px;
+      width: 18px;
+      height: 16px;
+      background: url(./assets/credicor-crown.svg) center / contain no-repeat;
+      transform: rotate(35deg);
+      pointer-events: none;
+    }
   }
 
   &.colonies-fleet-saturn {

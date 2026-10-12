@@ -1,0 +1,15 @@
+{
+  "created_at": "2026-10-12T12:13:31.196825+00:00",
+  "flattened": false,
+  "friendly_name": "Полный опциональный интерфейс Wrybit",
+  "mission_id": "01M4R0GHH1EAEWZRBK041RJZAD",
+  "mission_number": null,
+  "mission_slug": "wrybit-full-ui-01M4R0GH",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_context": "Руслан подтвердил полный перенос после уточнения, что ранее доставлены только две колонки и мобильные вкладки. Нужны все экраны и формы Wrybit, совместимые с текущими контрактами нашего сервера; копирование серверного кода, AI, игровых правил и рабочей БД запрещено.",
+  "purpose_tldr": "Перенести весь интерфейс Wrybit в выключенный по умолчанию режим с нашей игровой логикой и AI",
+  "slug": "wrybit-full-ui-01M4R0GH",
+  "target_branch": "codex/wrybit-full-ui",
+  "topology": "single_branch"
+}

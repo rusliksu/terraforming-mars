@@ -24,6 +24,29 @@
   background: url(./assets/board/mars-without-venus.png) no-repeat;
 }
 
+.board-cont.board-cont--venus-relocated {
+  position: relative;
+  isolation: isolate;
+  background: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: url(./assets/board/mars.png) no-repeat;
+    mask: url(./assets/board/mars-without-venus-track-mask.svg) no-repeat;
+  }
+
+  &.board-cont--custom::before {
+    background-position: center;
+    background-size: cover;
+    mask-position: center;
+    mask-size: cover;
+  }
+}
+
 // Custom boards can be larger than the viewport and don't line up with the painted
 // hexes, so the Mars artwork sits behind them only as a scaled backdrop for atmosphere.
 .board-cont--custom {

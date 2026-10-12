@@ -1,13 +1,22 @@
 <template>
   <div v-if="showScaleTrack" class="venus-scale-track">
-    <div class="venus-scale-track__heading"><span v-i18n>Venus Scale</span><strong>{{ venusScaleLevel }} / {{ venusScaleMax }}%</strong></div>
-    <svg viewBox="0 0 480 80" role="img" :aria-label="$t('Venus Scale') + ': ' + venusScaleLevel + ' / ' + venusScaleMax + '%'">
-      <line x1="16" y1="28" x2="464" y2="28" class="venus-scale-track__line"/>
-      <g v-for="value in scaleValues" :key="value" :transform="'translate(' + scaleX(value) + ', 0)'">
-        <line y1="21" y2="35" class="venus-scale-track__tick"/>
-        <text y="59" text-anchor="middle" class="venus-scale-track__number">{{ value }}</text>
-      </g>
-      <circle :cx="scaleX(venusScaleLevel)" cy="28" r="8" class="venus-scale-track__marker"/>
+    <svg v-for="offset in scaleOffsets" :key="offset" viewBox="96 0 440 145" role="img"
+      :aria-label="$t('Venus Scale') + ': ' + venusScaleLevel + ' / ' + venusScaleMax + '%'">
+      <image href="assets/board/mars.png" width="620" height="600" class="venus-scale-track__art" :class="{'venus-scale-track__art--extension': offset > 0}"/>
+      <foreignObject width="620" height="145">
+        <div class="global-numbers">
+          <div class="global-numbers-venus">
+            <div v-for="value in scaleValues" :key="value" class="global-numbers-value" :class="[
+              'val-' + value,
+              {'val-is-active': value + offset === venusScaleLevel && (offset === 0 || venusScaleLevel > 30)},
+            ]">{{ value + offset }}</div>
+          </div>
+          <div v-if="altVenusBoard && offset === 0" class="global-alt-venus">
+            <div v-for="value in [18, 20, 22, 24, 26, 28, 30]" :key="value" class="std-wild-resource" :class="'p' + value"></div>
+            <div class="wild-resource p30b"></div>
+          </div>
+        </div>
+      </foreignObject>
     </svg>
   </div>
   <div class="venus-board-cont" v-bind="$attrs">
@@ -87,6 +96,10 @@ export default defineComponent({
     venusScaleMax: {
       type: Number,
       default: 30,
+    },
+    altVenusBoard: {
+      type: Boolean,
+      default: false,
     },
     showScaleTrack: {
       type: Boolean,
@@ -176,14 +189,13 @@ export default defineComponent({
       return entries;
     },
     scaleValues(): Array<number> {
-      const step = this.venusScaleMax > 30 ? 4 : 2;
-      return Array.from({length: this.venusScaleMax / step + 1}, (_, index) => index * step);
+      return Array.from({length: 16}, (_, index) => index * 2);
+    },
+    scaleOffsets(): Array<number> {
+      return this.venusScaleMax > 30 ? [0, 30] : [0];
     },
   },
   methods: {
-    scaleX(value: number): number {
-      return 16 + Math.min(this.venusScaleMax, Math.max(0, value)) / this.venusScaleMax * 448;
-    },
     pixelFor(space: SpaceModel): {left: number, top: number} {
       return customSpacePixel(space.x, space.y, this.maxY);
     },

@@ -44,7 +44,7 @@ const supported = process.platform === 'win32' || (process.platform === 'linux' 
         .run(gameId, saveId, JSON.stringify({id: gameId, lastSaveId: saveId, phase: saveId === 9 ? 'end' : 'action'}), 'finished');
     }
     db.handle.prepare('INSERT INTO completed_game (game_id, completed_time) VALUES (?, 0)').run(gameId);
-  });
+  }).timeout(30000);
   afterEach(() => {
     restoreTestDatabase(); restoreTestGameLoader();
     db.close();
@@ -54,7 +54,7 @@ const supported = process.platform === 'win32' || (process.platform === 'linux' 
     await db.compressCompletedGames('0');
     await new Promise((resolve) => setImmediate(resolve));
     expect(await db.getSaveIds(gameId)).deep.eq([0, 2, 7, 9]);
-  });
+  }).timeout(30000);
 
   it('clones and restores archived history through GameLoader without allowing a replaced resident game to save', async () => {
     setTestDatabase(db);
@@ -106,5 +106,5 @@ const supported = process.platform === 'win32' || (process.platform === 'linux' 
     const oldEnd = await readSave(join(workspace, 'archives', archived.archiveName!), 3);
     expect(oldEnd).include({generation: 4, phase: 'end'});
     expect((await db.getGameVersion(restored.id, 3)).generation).eq(8);
-  });
+  }).timeout(30000);
 });

@@ -28,8 +28,7 @@ class ReplayDatabase extends SQLite {
 
 const supported = process.platform === 'win32' || (process.platform === 'linux' && process.env.CI === 'true');
 
-(supported ? describe : describe.skip)('ReplayArchive', function() {
-  this.timeout(30000);
+(supported ? describe : describe.skip)('ReplayArchive', () => {
   let db: ReplayDatabase;
   let root: string;
   let filename: string;
@@ -61,7 +60,7 @@ const supported = process.platform === 'win32' || (process.platform === 'linux' 
     await db.markFinished(game.id);
     gameId = game.id;
     spectatorId = game.spectatorId;
-  });
+  }).timeout(30000);
   afterEach(() => {
     restoreTestDatabase();
     db.close();
@@ -121,7 +120,7 @@ const supported = process.platform === 'win32' || (process.platform === 'linux' 
     }
     expect(db.handle.prepare('SELECT save_id FROM games WHERE game_id = ? ORDER BY save_id').all(gameId))
       .deep.eq([{save_id: 0}, {save_id: 9}]);
-  });
+  }).timeout(30000);
 
   it('prefers a live historical row and returns a sanitized failure for corrupt archived data', async () => {
     const live = await db.getGameVersion(gameId, 2);
@@ -139,5 +138,5 @@ const supported = process.platform === 'win32' || (process.platform === 'linux' 
     expect(corrupt.content).not.include(directory);
     expect(corrupt.content).not.include('private');
     expect(await fs.readFile(filename)).deep.eq(before);
-  });
+  }).timeout(30000);
 });

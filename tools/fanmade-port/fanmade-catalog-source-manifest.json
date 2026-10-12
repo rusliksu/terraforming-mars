@@ -1948,7 +1948,7 @@
     "src/server/cards/solaris/AntiFraudInvestigation.ts": "ba0535b6d29c920a4aa8311a27b6c2e772702eed0a107b672e7a47cfdd809d2c",
     "src/server/cards/solaris/ArtificialMoon.ts": "58b68cfba38eb5d867e39a384e270f8d7ea74ef6e9f684b4225464f5d4a685bb",
     "src/server/cards/solaris/AtmosphericCompressor.ts": "91decd8c534c4adead5f7417c5bb853301d74abf58e1ae95f08ebb5a8df2c1a8",
-    "src/server/cards/solaris/AwardCelebration.ts": "9c0f469d11cba6e70f015e4c675c202fa3069acc6c7f1c44c90916a75009d598",
+    "src/server/cards/solaris/AwardCelebration.ts": "3b0becfc7a14ccfaeed2ea385b60f19679ea23b65b02fa01ce9d63e1562f8bc4",
     "src/server/cards/solaris/BionicAugmentations.ts": "53593692e782594bbd6ac48c44e0ffad0139afa2f48cb645e3640e7c170d2c1e",
     "src/server/cards/solaris/Bribery.ts": "2f14567ce1c9dcfc877efa68ae591ef4b5d09fa968f376c66fc633b62107fd4f",
     "src/server/cards/solaris/BuildingDeregulation.ts": "817fbbdb56f4e1b480e668961d648cfbcdb4a31891ae1f2569fdad4004c03272",

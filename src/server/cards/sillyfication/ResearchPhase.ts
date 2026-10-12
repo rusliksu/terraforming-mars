@@ -1,3 +1,4 @@
+import {Size} from '../../../common/cards/render/Size';
 import {IProjectCard} from '../IProjectCard';
 import {Tag} from '../../../common/cards/Tag';
 import {Card} from '../Card';
@@ -18,6 +19,7 @@ export class ResearchPhase extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'T33',
         renderData: CardRenderer.builder((b) => {
+          b.text('RESEARCH', {size: Size.SMALL}).cards(4, {all: true}).asterix().br;
           b.plainText('Immediately hold a research phase: every player draws 4 cards and may buy any of them, just like at the start of a generation.', true);
         }),
         description: 'Requires that each player has at least 6 M€.',

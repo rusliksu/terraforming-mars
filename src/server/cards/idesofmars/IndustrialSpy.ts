@@ -21,7 +21,8 @@ export class IndustrialSpy extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'I07',
         renderData: CardRenderer.builder((b) => {
-          b.text('Look at a player\'s hand.', {size: Size.SMALL, uppercase: true});
+          b.text('LOOK', {size: Size.SMALL}).cards(1, {all: true, text: 'HAND'}).br;
+          b.text('Look at a player\'s hand.', {size: Size.SMALL, uppercase: true, isBold: false});
         }),
       },
     });

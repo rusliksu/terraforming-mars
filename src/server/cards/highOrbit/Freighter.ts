@@ -13,7 +13,6 @@ import {SelectColony} from '../../inputs/SelectColony';
 import {LogHelper} from '../../LogHelper';
 import {MAX_COLONY_TRACK_POSITION} from '../../../common/constants';
 import {SilverCard} from './SilverCard';
-import {Size} from '../../../common/cards/render/Size';
 
 export class Freighter extends SilverCard implements IProjectCard, IActionCard {
   constructor() {
@@ -27,12 +26,15 @@ export class Freighter extends SilverCard implements IProjectCard, IActionCard {
       metadata: {
         cardNumber: 'HO07',
         renderData: CardRenderer.builder((b) => {
-          b.text(
-            'ACTION: Lower any colony tile track 1 step. If this card has no ore on it, add 1 ore to it.',
-            {size: Size.SMALL}).br;
-          b.text(
-            'OR: Remove 1 ore from this card to raise any colony tile track 1 step.',
-            {size: Size.SMALL});
+          b.action('Lower any colony tile track 1 step. If this card has no ore on it, add 1 ore to it.', (eb) => {
+            eb.empty().startAction.colonyTile().text('−1').plus().resource(CardResource.ORE).asterix();
+          });
+          b.br;
+          b.or();
+          b.br;
+          b.action('Remove 1 ore from this card to raise any colony tile track 1 step.', (eb) => {
+            eb.resource(CardResource.ORE).startAction.colonyTile().text('+1');
+          });
         }),
       },
     });

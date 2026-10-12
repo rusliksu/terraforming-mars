@@ -23,7 +23,8 @@ export class SandClaim extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'X83',
         renderData: CardRenderer.builder((b) => {
-          b.text('Place your markers on 3 non-reserved areas. Only you may place a tile there.', {size: Size.SMALL, uppercase});
+          b.emptyTile('normal', {amount: 3, digit: true}).nbsp.text('RESERVE', {size: Size.SMALL}).br;
+          b.text('Place your markers on 3 non-reserved areas. Only you may place a tile there.', {size: Size.SMALL, uppercase, isBold: false});
         }),
       },
     });

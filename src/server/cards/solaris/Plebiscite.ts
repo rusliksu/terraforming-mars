@@ -1,3 +1,4 @@
+import {Size} from '../../../common/cards/render/Size';
 import {Card} from '../Card';
 import {CardType} from '../../../common/cards/CardType';
 import {Tag} from '../../../common/cards/Tag';
@@ -32,6 +33,7 @@ export class Plebiscite extends Card {
       metadata: {
         cardNumber: 'SOL19',
         renderData: CardRenderer.builder((b) => {
+          b.partyLeaders(1).nbsp.text('REPLACE', {size: Size.SMALL}).asterix().br;
           b.plainText('Remove the leader of any Turmoil party. You become that party\'s new leader.');
         }),
         description: 'Requires that Populists are ruling or that you have 2 delegates there.',

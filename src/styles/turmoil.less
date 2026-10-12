@@ -506,6 +506,23 @@ each(@party-palette, {
     .player-token-sprite(-699px, -105px, @player_serge_delegate_filter);
   }
 
+  &.credicor {
+    .player-token-sprite(-699px, -105px, @player_credicor_delegate_filter);
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 14px;
+      top: -10px;
+      width: 22px;
+      height: 18px;
+      background: url(./assets/credicor-crown.svg) center / contain no-repeat;
+      filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.85));
+      pointer-events: none;
+      z-index: 1;
+    }
+  }
+
   &.saturn {
     .player-token-sprite(-644px, -35px, @player_saturn_delegate_filter);
   }
@@ -614,6 +631,17 @@ each(@party-palette, {
 
   .policy-use-marker.board-cube--persona {
     position: relative;
+  }
+
+  .policy-use-marker--count::after {
+    content: none;
+  }
+
+  .policy-use-count {
+    display: block;
+    position: relative;
+    z-index: 1;
+    text-align: center;
   }
 }
 

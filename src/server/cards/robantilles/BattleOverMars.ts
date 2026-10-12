@@ -30,6 +30,7 @@ export class BattleOverMars extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'H32',
         renderData: CardRenderer.builder((b) => {
+          b.minus().award().or().milestone().asterix().br;
           b.plainText(
             'Remove an unclaimed award or milestone from the game. If you play with random ' +
             'awards/milestones, put a new one of your choice.', true);

@@ -22,6 +22,7 @@ export class VenusTradeship extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'V92',
         renderData: CardRenderer.builder((b) => {
+          b.text('X ×').megacredits(2).arrow().text('X ×').resource(CardResource.FLOATER).asterix().br;
           b.plainText('Costs 2 M€ per X. Choose X cards that collect floaters and add 1 floater to each.', true);
         }),
       },

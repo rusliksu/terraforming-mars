@@ -1,3 +1,4 @@
+import {Size} from '../../../common/cards/render/Size';
 import {IProjectCard} from '../IProjectCard';
 import {Card} from '../Card';
 import {CardType} from '../../../common/cards/CardType';
@@ -17,6 +18,7 @@ export class FamilyAdvertising extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'B37',
         renderData: CardRenderer.builder((b) => {
+          b.cards(2, {played: true}).nbsp.text('REUSE ACTIONS', {size: Size.SMALL}).br;
           b.plainText('Redo 2 used actions on 2 of your active cards.');
         }),
       },

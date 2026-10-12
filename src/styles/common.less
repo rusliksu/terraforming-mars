@@ -204,6 +204,13 @@ each(@players, {
   color: #fff2f5;
 }
 
+.player_bg_color_credicor {
+  background-color: @player_credicor;
+  background-image: url(./assets/credicor-pattern.svg);
+  background-size: 96px 96px;
+  color: #f1edf7;
+}
+
 .player_bg_color_saturn {
   background-color: @player_saturn;
   color: #201607;
@@ -287,6 +294,10 @@ each(@players, {
 
 .player_translucent_bg_color_serge {
   .player_serge_bg_translucent();
+}
+
+.player_translucent_bg_color_credicor {
+  .player_credicor_bg_translucent();
 }
 
 .player_translucent_bg_color_saturn {
@@ -452,6 +463,44 @@ each(@players, {
 .player_translucent_bg_color_serge .game-end-name-and-elo a,
 .player_translucent_bg_color_serge .player-name {
   color: #fff2f5;
+}
+
+.player_bg_color_credicor.log-player,
+.player_translucent_bg_color_credicor .player-info-name,
+.player_translucent_bg_color_credicor .player_name,
+.player_translucent_bg_color_credicor .game-end-name-and-elo,
+.player_translucent_bg_color_credicor .game-end-name-and-elo a,
+.player_translucent_bg_color_credicor .player-name {
+  color: #f1edf7;
+}
+
+.player_translucent_bg_color_credicor .player-info-name::before,
+.player_translucent_bg_color_credicor .player_name::before,
+.player_translucent_bg_color_credicor .game-end-name-and-elo a::before,
+.player_translucent_bg_color_credicor .player-name::before {
+  content: "";
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  margin-right: 0.3em;
+  vertical-align: -0.1em;
+  background: url(./assets/credicor-crown.svg) center / contain no-repeat;
+}
+
+.player-persona-title {
+  display: block;
+  color: #d7dce9;
+  font-size: 10px;
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+}
+
+.player_translucent_bg_color_credicor .player-info-details {
+  width: 160px;
+}
+
+.player_translucent_bg_color_credicor .player-info-details .player-info-name-row {
+  width: 160px;
 }
 
 .player_bg_color_saturn.log-player,

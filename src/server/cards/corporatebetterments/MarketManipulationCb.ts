@@ -13,7 +13,6 @@ import {SelectColony} from '../../inputs/SelectColony';
 import {LogHelper} from '../../LogHelper';
 import {MAX_COLONY_TRACK_POSITION} from '../../../common/constants';
 import {CardRenderer} from '../render/CardRenderer';
-import {Size} from '../../../common/cards/render/Size';
 
 export class MarketManipulationCb extends Card implements IProjectCard, IActionCard {
   constructor() {
@@ -30,7 +29,8 @@ export class MarketManipulationCb extends Card implements IProjectCard, IActionC
       metadata: {
         cardNumber: 'CB28',
         renderData: CardRenderer.builder((b) => {
-          b.text('Action: Increase or decrease a colony tile track 1 step.', {size: Size.SMALL}).br;
+          b.action('Increase or decrease a colony tile track 1 step.', (eb) => eb.empty().startAction.colonyTile().text('±1'));
+          b.br;
           b.production((pb) => pb.megacredits(2));
         }),
         description: 'Increase your M€ production 2 steps.',

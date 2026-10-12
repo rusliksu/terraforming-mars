@@ -117,11 +117,12 @@ describe('CreateGameForm', () => {
     expect(wrapper.text()).not.to.contain('/start');
   });
 
-  it('links each fan expansion checkbox to its own rules page on this fork\'s own wiki', () => {
+  it('links each fan expansion checkbox to its own rules page on this fork\'s own wiki', async () => {
     // None of these are part of the upstream project, so unlike the official expansions'
     // (whose info icons link to the shared upstream wiki), their links must point at this
     // fork's own wiki instead.
     const wrapper = mount(CreateGameForm, {...globalConfig});
+    await wrapper.get('#pathfinders-checkbox').setValue(true);
     const expected: Record<string, string> = {
       'conglomerates-checkbox': 'Conglomerates',
       'sillyfication-checkbox': 'Sillyfication',

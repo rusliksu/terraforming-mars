@@ -32,11 +32,13 @@ const preparation = [
 const logFile = outputFile + '.log';
 const log = fs.openSync(logFile, 'a');
 function run(args) {
-  fs.writeSync(log, '\n' + args.join(' ') + '\n');
+  const started = Date.now();
+  fs.writeSync(log, '\n' + new Date(started).toISOString() + ' ' + args.join(' ') + '\n');
   const result = spawnSync(process.execPath, [npmCli, ...args], {
     stdio: ['ignore', log, log],
     env: {...process.env, NODE_ENV: 'test'},
   });
+  fs.writeSync(log, '\nCompleted in ' + ((Date.now() - started) / 1000).toFixed(1) + 's\n');
   if (result.error) throw result.error;
   return result.status ?? 1;
 }
@@ -56,7 +58,7 @@ for (const args of preparation) {
 const serverFile = outputFile + '.server.xml';
 const clientFile = outputFile + '.client.xml';
 // Archive process tests need a bounded allowance beyond Mocha's two-second default.
-const serverStatus = run(['run', 'test:server', '--', '--jobs=4', '--timeout=30000', '--reporter=xunit', '--reporter-options=output=' + serverFile]);
+const serverStatus = run(['run', 'test:server', '--', '--jobs=8', '--timeout=30000', '--reporter=xunit', '--reporter-options=output=' + serverFile]);
 const clientStatus = run(['run', 'test:client', '--', '--reporter=junit', '--outputFile=' + clientFile]);
 // Preserve both reporters' complete suites, including failures and skipped tests.
 const reports = [serverFile, clientFile].map((file) => fs.readFileSync(file, 'utf8').replace(/^\s*<\?xml[^?]*\?>/, ''));

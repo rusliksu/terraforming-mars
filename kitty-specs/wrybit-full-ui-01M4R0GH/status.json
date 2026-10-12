@@ -29,8 +29,8 @@
       "model": "__resolved_model_absent__",
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
-      "shell_pid": 50552,
-      "shell_pid_created_at": "1791840231.8096142"
+      "shell_pid": 38440,
+      "shell_pid_created_at": "1791840524.905442"
     },
     "WP02": {
       "actor": "finalize-tasks",

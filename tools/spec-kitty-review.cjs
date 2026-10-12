@@ -28,7 +28,6 @@ const preparation = [
   ['ci'],
   ['run', 'make:static'],
   ['run', 'make:cards'],
-  ['run', 'build:tests'],
 ];
 const logFile = outputFile + '.log';
 const log = fs.openSync(logFile, 'a');

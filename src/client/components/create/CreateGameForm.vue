@@ -48,12 +48,12 @@
                             </label>
 
                             <input type="checkbox" name="venusNext" id="venusNext-checkbox" v-model="expansions.venus">
-                            <label for="venusNext-checkbox" class="expansion-button">
+                            <label for="venusNext-checkbox" id="venusNext-label" class="expansion-button">
                             <div class="create-game-expansion-icon expansion-icon-venus"></div>
                                 <span v-i18n>Venus Next</span>
                             </label>
 
-                            <template v-if="expansions.venus">
+                            <div v-if="expansions.venus" class="create-game-suboptions" role="group" aria-labelledby="venusNext-label">
                                 <input type="checkbox" v-model="altVenusBoard" id="altVenusBoard-checkbox">
                                 <label for="altVenusBoard-checkbox">
                                     <span v-i18n>Alt. Venus Board</span> &nbsp;<a :href="wikiUrls.alternativeVenusBoard" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
@@ -88,7 +88,7 @@
                                     <div v-else-if="customVenusSurfaceBoardName !== ''" style="color: #6c6; font-size: 11px;" v-i18n>Loaded custom Venus board: {{ customVenusSurfaceBoardName }}</div>
                                   </div>
                                 </template>
-                            </template>
+                            </div>
 
                             <input type="checkbox" name="colonies" id="colonies-checkbox" v-model="expansions.colonies">
                             <label for="colonies-checkbox" class="expansion-button">
@@ -97,12 +97,12 @@
                             </label>
 
                             <input type="checkbox" name="turmoil" id="turmoil-checkbox" v-model="expansions.turmoil">
-                            <label for="turmoil-checkbox" class="expansion-button">
+                            <label for="turmoil-checkbox" id="turmoil-label" class="expansion-button">
                                 <div class="create-game-expansion-icon expansion-icon-turmoil"></div>
                                 <span v-i18n>Turmoil</span>
                             </label>
 
-                            <template v-if="expansions.turmoil">
+                            <div v-if="expansions.turmoil" class="create-game-suboptions" role="group" aria-labelledby="turmoil-label">
                                 <input type="checkbox" name="politicalAgendas" id="politicalAgendas-checkbox" :checked="isPoliticalAgendasExtensionEnabled()" @change="politicalAgendasExtensionToggle()">
                                 <label for="politicalAgendas-checkbox" class="expansion-button">
                                     <div class="create-game-expansion-icon expansion-icon-agendas"></div>
@@ -134,7 +134,7 @@
                                       <p v-i18n>The two starting events each place a neutral delegate. Party leaders choose bonuses and policies; the ruling policy remains locked until the next election.</p>
                                     </ExpansionHelp>
                                 </label>
-                            </template>
+                            </div>
 
                             <input type="checkbox" name="promo" id="promo-checkbox" v-model="expansions.promo">
                             <label for="promo-checkbox" class="expansion-button">
@@ -145,18 +145,18 @@
                             <div class="create-game-subsection-label" v-i18n>Fan-made</div>
 
                             <input type="checkbox" name="ares" id="ares-checkbox" v-model="expansions.ares">
-                            <label for="ares-checkbox" class="expansion-button">
+                            <label for="ares-checkbox" id="ares-label" class="expansion-button">
                                 <div class="create-game-expansion-icon expansion-icon-ares"></div>
                                 <span v-i18n>Ares</span>&nbsp;<a :href="wikiUrls.ares" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                             </label>
 
-                            <template v-if="expansions.ares">
+                            <div v-if="expansions.ares" class="create-game-suboptions" role="group" aria-labelledby="ares-label">
                                 <input type="checkbox" v-model="aresExtremeVariant" id="aresExtremeVariantVariant-checkbox">
                                 <label for="aresExtremeVariantVariant-checkbox">
                                     <div class="create-game-expansion-icon expansion-icon-ares"></div>
                                     <span v-i18n>Extreme</span> &nbsp;<a :href="wikiUrls.aresExtreme" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                                 </label>
-                            </template>
+                            </div>
 
                             <input type="checkbox" name="community" id="communityCards-checkbox" v-model="expansions.community">
                             <label for="communityCards-checkbox" class="expansion-button">
@@ -165,12 +165,12 @@
                             </label>
 
                             <input type="checkbox" name="themoon" id="themoon-checkbox" v-model="expansions.moon">
-                            <label for="themoon-checkbox" class="expansion-button">
+                            <label for="themoon-checkbox" id="themoon-label" class="expansion-button">
                                 <div class="create-game-expansion-icon expansion-icon-themoon"></div>
                                 <span v-i18n>The Moon</span>&nbsp;<a :href="wikiUrls.moon" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                             </label>
 
-                            <template v-if="expansions.moon">
+                            <div v-if="expansions.moon" class="create-game-suboptions" role="group" aria-labelledby="themoon-label">
                               <input type="checkbox" v-model="requiresMoonTrackCompletion" id="requiresMoonTrackCompletion-checkbox">
                               <label for="requiresMoonTrackCompletion-checkbox">
                                   <span v-i18n>Mandatory Moon Terraforming</span>
@@ -198,19 +198,19 @@
                                 <div v-if="customMoonBoardCodeError" style="color: #e74c3c; font-size: 11px;">{{ customMoonBoardCodeError }}</div>
                                 <div v-else-if="customMoonBoardName !== ''" style="color: #6c6; font-size: 11px;" v-i18n>Loaded custom Moon board: {{ customMoonBoardName }}</div>
                               </div>
-                            </template>
+                            </div>
 
                             <input type="checkbox" name="pathfinders" id="pathfinders-checkbox" v-model="expansions.pathfinders">
-                            <label for="pathfinders-checkbox" class="expansion-button">
+                            <label for="pathfinders-checkbox" id="pathfinders-label" class="expansion-button">
                                 <div class="create-game-expansion-icon expansion-icon-pathfinders"></div>
                                 <span v-i18n>Pathfinders</span>&nbsp;<a :href="wikiUrls.pathfinders" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                             </label>
-                            <template v-if="expansions.pathfinders">
+                            <div v-if="expansions.pathfinders" class="create-game-suboptions" role="group" aria-labelledby="pathfinders-label">
                                 <input type="checkbox" name="betterMars" id="betterMars-checkbox" v-model="expansions.betterMars">
                                 <label for="betterMars-checkbox">
                                     <span v-i18n>BetterMars</span>&nbsp;<span title="A fan expansion: Mars-flavoured card variants">(&#945;)</span>&nbsp;<a :href="wikiUrls.betterMars" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                                 </label>
-                            </template>
+                            </div>
 
                             <input type="checkbox" name="ceo" id="ceo-checkbox" v-model="expansions.ceo">
                             <label for="ceo-checkbox" class="expansion-button">

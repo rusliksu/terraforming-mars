@@ -26,10 +26,11 @@ export class CompanyIncentives extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'CB34',
         renderData: CardRenderer.builder((b) => {
+          b.emptyTile('normal', {amount: AREA_COUNT, digit: true}).nbsp.text('BONUS', {size: Size.SMALL}).megacredits(BONUS_PER_AREA, {all: true}).br;
           b.text(
             `Place silver cubes on ${AREA_COUNT} empty areas on Mars. Players placing tiles on these areas ` +
             `collect an additional bonus of ${BONUS_PER_AREA} M€.`,
-            {size: Size.SMALL, uppercase: true});
+            {size: Size.SMALL, uppercase: true, isBold: false});
         }),
       },
     });

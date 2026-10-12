@@ -19,7 +19,9 @@ export class SurveyorsTeam extends Card implements IActionCard, IProjectCard {
       metadata: {
         cardNumber: 'V76',
         renderData: CardRenderer.builder((b) => {
-          b.plainText('Action: reveal the top card of the draw deck. Add it to your hand if it has a Planetary tag. Otherwise, discard it.', true);
+          b.action('reveal the top card of the draw deck. Add it to your hand if it has a Planetary tag. Otherwise, discard it.', (eb) => {
+            eb.empty().startAction.cards(1, {text: '?'}).asterix();
+          });
         }),
       },
     });

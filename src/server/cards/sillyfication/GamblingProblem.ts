@@ -1,3 +1,4 @@
+import {Size} from '../../../common/cards/render/Size';
 import {IProjectCard} from '../IProjectCard';
 import {Tag} from '../../../common/cards/Tag';
 import {Card} from '../Card';
@@ -20,6 +21,8 @@ export class GamblingProblem extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'T25',
         renderData: CardRenderer.builder((b) => {
+          b.text('REVEAL / DISCARD', {size: Size.SMALL}).cards(2).br;
+          b.text('GAIN TAGS', {size: Size.SMALL}).emptyTag().asterix().br;
           b.plainText('Reveal and discard the top 2 cards of the deck. This card gains every tag of those 2 cards, combined.', true);
         }),
       },

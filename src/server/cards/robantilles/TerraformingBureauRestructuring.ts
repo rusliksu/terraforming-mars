@@ -26,7 +26,8 @@ export class TerraformingBureauRestructuring extends Card implements IProjectCar
       metadata: {
         cardNumber: 'H21',
         renderData: CardRenderer.builder((b) => {
-          b.text('every opponent marks 2 active cards of your choice as used', {size: Size.SMALL, uppercase});
+          b.cards(2, {all: true, played: true}).nbsp.text('USED', {size: Size.SMALL}).br;
+          b.text('every opponent marks 2 active cards of your choice as used', {size: Size.SMALL, uppercase, isBold: false});
         }),
         // Printed card text has a typo, "Bureacrats"; the requirement itself is Bureaucrats.
         description: 'Requires that the Bureaucrats are ruling or that you have 2 delegates there.',

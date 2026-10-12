@@ -24,10 +24,12 @@ export class IngegneriSpaziali extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'B17',
         renderData: CardRenderer.builder((b) => {
+          b.text('REVEAL', {size: Size.SMALL}).cards(10, {digit: true}).br;
+          b.tag(Tag.SPACE).colon().text('ALL', {size: Size.SMALL}).cards(1).br;
           b.text(
             'Draw and reveal the top 10 cards of the deck. Put all cards with a Space tag into your hand. ' +
             'Each opponent, in turn, chooses one of the remaining cards to add to their hand. Discard the rest.',
-            {size: Size.SMALL});
+            {size: Size.SMALL, isBold: false});
         }),
       },
     });

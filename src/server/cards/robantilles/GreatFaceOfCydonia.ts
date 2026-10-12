@@ -1,3 +1,4 @@
+import {Size} from '../../../common/cards/render/Size';
 import {IProjectCard} from '../IProjectCard';
 import {Tag} from '../../../common/cards/Tag';
 import {Card} from '../Card';
@@ -25,6 +26,8 @@ export class GreatFaceOfCydonia extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'H27',
         renderData: CardRenderer.builder((b) => {
+          b.text('RESEARCH', {size: Size.SMALL}).colon().plus().cards(1).br;
+          b.text('FIRST DRAFT', {size: Size.SMALL}).colon().cards(2).asterix().br;
           b.plainText(
             'Effect: During the research phase, draw 1 additional card. During the first round ' +
             'of the draft variant, you may keep up to 2 cards.', true);

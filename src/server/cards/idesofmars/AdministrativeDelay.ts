@@ -1,3 +1,4 @@
+import {Size} from '../../../common/cards/render/Size';
 import {IProjectCard} from '../IProjectCard';
 import {Card} from '../Card';
 import {CardType} from '../../../common/cards/CardType';
@@ -17,7 +18,8 @@ export class AdministrativeDelay extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'Im116',
         renderData: CardRenderer.builder((b) => {
-          b.text('This generation, you can choose to take 0 actions per turn and keep playing.', {uppercase});
+          b.text('0 ACTIONS', {size: Size.SMALL}).arrow().text('CONTINUE', {size: Size.SMALL}).br;
+          b.text('This generation, you can choose to take 0 actions per turn and keep playing.', {uppercase, size: Size.SMALL, isBold: false});
         }),
       },
     });

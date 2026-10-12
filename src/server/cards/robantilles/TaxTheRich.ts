@@ -24,7 +24,8 @@ export class TaxTheRich extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'H69',
         renderData: CardRenderer.builder((b) => {
-          b.text('place in an opponent\'s event pile', {size: Size.SMALL, uppercase});
+          b.cards(1, {all: true}).asterix().br;
+          b.text('place in an opponent\'s event pile', {size: Size.SMALL, uppercase, isBold: false});
         }),
         description: 'Requires that the Populists are ruling or that you have 2 delegates there. ' +
           'Place this card in an opponent\'s event pile.',

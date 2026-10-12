@@ -1,3 +1,4 @@
+import {Size} from '../../../common/cards/render/Size';
 import {IProjectCard} from '../IProjectCard';
 import {Card} from '../Card';
 import {CardType} from '../../../common/cards/CardType';
@@ -20,6 +21,7 @@ export class Mulligens extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'T36',
         renderData: CardRenderer.builder((b) => {
+          b.text('DISCARD', {size: Size.SMALL}).cards(1, {all: true, text: 'X'}).arrow().cards(1, {all: true, text: 'X'}).br;
           b.plainText('Each player may discard any number of cards, up to the generation number, and draw that many cards.', true);
         }),
       },

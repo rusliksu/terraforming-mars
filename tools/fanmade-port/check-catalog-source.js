@@ -28,17 +28,17 @@ function fingerprint(root, filename) {
 }
 
 function checkCatalogSource(root, manifest) {
-  if (manifest.schemaVersion !== 1 || manifest.catalogId !== 'fanmade:custom-reviewed' ||
+  if (manifest.schemaVersion !== 1 || manifest.catalogId !== 'fanmade:rebalanced-v1' ||
       !/^[a-f0-9]{64}$/.test(manifest.bundleDigest || '') ||
-      !Array.isArray(manifest.identities) || new Set(manifest.identities).size !== 297 ||
-      manifest.identities.length !== 297) throw Error('Invalid factual source manifest');
+      !Array.isArray(manifest.identities) || new Set(manifest.identities).size !== 488 ||
+      manifest.identities.length !== 488) throw Error('Invalid factual source manifest');
   const actual = sourceFiles(root);
   const expected = Object.keys(manifest.files).sort();
   if (JSON.stringify(actual) !== JSON.stringify(expected)) throw Error('Reviewed source file set differs');
   for (const filename of actual) {
     if (fingerprint(root, filename) !== manifest.files[filename]) throw Error('Reviewed source changed: ' + filename);
   }
-  return {catalogId: manifest.catalogId, identities: 297, files: actual.length};
+  return {catalogId: manifest.catalogId, identities: 488, files: actual.length};
 }
 
 function main() {

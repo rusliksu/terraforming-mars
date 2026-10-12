@@ -22,15 +22,7 @@ import {LunarMiningBetterMars} from './LunarMiningBetterMars';
 import {LunaGovernorBetterMars} from './LunaGovernorBetterMars';
 import {PlanetPr} from '../pathfinders/PlanetPr';
 
-/**
- * BetterMars: replaces a handful of official cards with tag-variant reworks
- * (an extra Mars tag, an Earth tag turned into a Moon tag, an Animal tag added
- * to a meat-industry card, etc). The base cards are
- * swapped out via `cardsToRemove` whenever this module is enabled.
- *
- * Planet PR is the one exception - it's not a rework of an existing card, just bundled
- * into this module's corporationCards (still requiring Pathfinders, via `compatibility`).
- */
+/** Pathfinders card variants, with legacy independent variants retained for saved games. */
 export const BETTER_MARS_CARD_MANIFEST = new ModuleManifest({
   module: 'betterMars',
   corporationCards: {
@@ -44,9 +36,9 @@ export const BETTER_MARS_CARD_MANIFEST = new ModuleManifest({
     [CardName.SELF_SUFFICIENT_SETTLEMENT_BETTER_MARS]: {Factory: SelfSufficientSettlementBetterMars, compatibility: ['prelude', 'pathfinders']},
   },
   projectCards: {
-    [CardName.LUNAR_BEAM_BETTER_MARS]: {Factory: LunarBeamBetterMars, compatibility: 'moon'},
-    [CardName.LUNA_METROPOLIS_BETTER_MARS]: {Factory: LunaMetropolisBetterMars, compatibility: ['venus', 'moon']},
-    [CardName.LUNAR_EXPORTS_BETTER_MARS]: {Factory: LunarExportsBetterMars, compatibility: ['colonies', 'moon']},
+    [CardName.LUNAR_BEAM_BETTER_MARS]: {Factory: LunarBeamBetterMars, instantiate: false, compatibility: 'moon'},
+    [CardName.LUNA_METROPOLIS_BETTER_MARS]: {Factory: LunaMetropolisBetterMars, instantiate: false, compatibility: ['venus', 'moon']},
+    [CardName.LUNAR_EXPORTS_BETTER_MARS]: {Factory: LunarExportsBetterMars, instantiate: false, compatibility: ['colonies', 'moon']},
     // The rest of this row (through Tropical Resort) all add a Mars tag - a Pathfinders
     // concept (planetary tracks, and dozens of Pathfinders cards that count Mars tags) -
     // so they also require Pathfinders, on top of BetterMars itself.
@@ -60,23 +52,18 @@ export const BETTER_MARS_CARD_MANIFEST = new ModuleManifest({
     [CardName.PROTECTED_HABITATS_BETTER_MARS]: {Factory: ProtectedHabitatsBetterMars, compatibility: 'pathfinders'},
     [CardName.TROPICAL_RESORT_BETTER_MARS]: {Factory: TropicalResortBetterMars, compatibility: 'pathfinders'},
     [CardName.MARTIAN_MEDIA_CENTER_BETTER_MARS]: {Factory: MartianMediaCenterBetterMars, compatibility: ['turmoil', 'pathfinders']},
-    // Meat Industry only adds an Animal tag, not a Mars tag - no Pathfinders requirement.
-    [CardName.MEAT_INDUSTRY_BETTER_MARS]: {Factory: MeatIndustryBetterMars},
-    [CardName.LUNAR_MINING_BETTER_MARS]: {Factory: LunarMiningBetterMars, compatibility: ['colonies', 'moon']},
-    [CardName.LUNA_GOVERNOR_BETTER_MARS]: {Factory: LunaGovernorBetterMars, compatibility: ['colonies', 'moon']},
+    // Independent variants remain loadable for legacy games; Rebalanced owns new copies.
+    [CardName.MEAT_INDUSTRY_BETTER_MARS]: {Factory: MeatIndustryBetterMars, instantiate: false},
+    [CardName.LUNAR_MINING_BETTER_MARS]: {Factory: LunarMiningBetterMars, instantiate: false, compatibility: ['colonies', 'moon']},
+    [CardName.LUNA_GOVERNOR_BETTER_MARS]: {Factory: LunaGovernorBetterMars, instantiate: false, compatibility: ['colonies', 'moon']},
   },
-  cardsToRemove: [
-    CardName.MEAT_INDUSTRY,
-  ],
+  cardsToRemove: [],
   // These replacements each need an extra expansion on top of BetterMars itself (Moon,
   // Venus, Colonies, Turmoil, Prelude, or Pathfinders - see the Mars-tag comment above).
   // The base card only actually gets swapped out once its replacement clears that extra
   // requirement too - otherwise the base card stays, so a game without (say) the Moon
   // expansion still has a normal Earth-tag Lunar Beam instead of neither version.
   conditionalCardsToRemove: new Map([
-    [CardName.LUNAR_BEAM, CardName.LUNAR_BEAM_BETTER_MARS],
-    [CardName.LUNA_METROPOLIS, CardName.LUNA_METROPOLIS_BETTER_MARS],
-    [CardName.LUNAR_EXPORTS, CardName.LUNAR_EXPORTS_BETTER_MARS],
     [CardName.PRISTAR, CardName.PRISTAR_BETTER_MARS],
     [CardName.PRISTAR_REBALANCED_BETTER_MARS, CardName.PRISTAR_BETTER_MARS],
     [CardName.EARLY_SETTLEMENT, CardName.EARLY_SETTLEMENT_BETTER_MARS],
@@ -91,7 +78,5 @@ export const BETTER_MARS_CARD_MANIFEST = new ModuleManifest({
     [CardName.PROTECTED_HABITATS, CardName.PROTECTED_HABITATS_BETTER_MARS],
     [CardName.TROPICAL_RESORT, CardName.TROPICAL_RESORT_BETTER_MARS],
     [CardName.MARTIAN_MEDIA_CENTER, CardName.MARTIAN_MEDIA_CENTER_BETTER_MARS],
-    [CardName.LUNAR_MINING, CardName.LUNAR_MINING_BETTER_MARS],
-    [CardName.LUNA_GOVERNOR, CardName.LUNA_GOVERNOR_BETTER_MARS],
   ]),
 });

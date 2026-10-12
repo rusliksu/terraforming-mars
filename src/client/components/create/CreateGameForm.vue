@@ -205,13 +205,12 @@
                                 <div class="create-game-expansion-icon expansion-icon-pathfinders"></div>
                                 <span v-i18n>Pathfinders</span>&nbsp;<a :href="wikiUrls.pathfinders" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                             </label>
-                            <div v-if="expansions.pathfinders" class="pathfinders-options">
-                                <input type="checkbox" name="betterMars" id="betterMars-checkbox" v-model="expansions.betterMars" :disabled="!expansions.pathfinders">
-                                <label for="betterMars-checkbox" class="expansion-button">
-                                    <div class="create-game-expansion-icon expansion-icon-betterMars"></div>
+                            <template v-if="expansions.pathfinders">
+                                <input type="checkbox" name="betterMars" id="betterMars-checkbox" v-model="expansions.betterMars">
+                                <label for="betterMars-checkbox">
                                     <span v-i18n>BetterMars</span>&nbsp;<span title="A fan expansion: Mars-flavoured card variants">(&#945;)</span>&nbsp;<a :href="wikiUrls.betterMars" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                                 </label>
-                            </div>
+                            </template>
 
                             <input type="checkbox" name="ceo" id="ceo-checkbox" v-model="expansions.ceo">
                             <label for="ceo-checkbox" class="expansion-button">
@@ -2842,13 +2841,5 @@ export default defineComponent({
 
 .create-game-telegram-error {
   color: #ffb0b0;
-}
-.pathfinders-options {
-  margin-left: 16px;
-}
-
-.pathfinders-options .expansion-button {
-  padding: 8px 12px;
-  font-size: 16px;
 }
 </style>

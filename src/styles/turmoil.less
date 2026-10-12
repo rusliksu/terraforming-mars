@@ -161,6 +161,11 @@
   width: 160px;
   height: 160px;
 
+  > .party-name {
+    width: calc(100% - 8px);
+    margin-left: 4px;
+  }
+
   &::before {
     content: '';
     position: absolute;
@@ -292,7 +297,7 @@ each(@party-palette, {
   display: grid;
   grid-template-columns: auto auto auto auto auto auto;
   gap:10px;
-  margin: 11px 0 0 2px;
+  margin: 11px 0 0 0;
 }
 
 .party-bonus {
@@ -302,12 +307,13 @@ each(@party-palette, {
 
 .leader-spot {
   position: relative;
-  width: 40px;
+  width: 50px;
   padding: 7px 55px 0 55px;
   height:72px;
   z-index: 2;
 
   .delegate-spot {
+    width: 50px;
     transform: scale(0.70);
     margin-top: 5px;
   }
@@ -326,7 +332,7 @@ each(@party-palette, {
 }
 
 .leader-spot::before {
-  left: 40px;
+  left: 44px;
   top: 0;
 }
 
@@ -584,6 +590,17 @@ each(@party-palette, {
 .player-token-new-leader {
   background: url(./assets/turmoil_ui.png);
   background-position: -486px 861px;
+}
+
+.leader-spot.player-token-new-leader {
+  background: none;
+
+  &::before {
+    left: 38px;
+    width: 84px;
+    background-position: -523px -24px;
+    clip-path: none;
+  }
 }
 
 .select-party-leader-spot {

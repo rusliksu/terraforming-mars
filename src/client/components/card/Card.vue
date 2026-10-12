@@ -7,7 +7,7 @@
               <CardHelp v-if="hasHelpText" :name="card.name" :hovering="hovering" />
               <CardTags :tags="tags" />
           </div>
-          <CardTitle :title="card.name" :type="cardType" :displayTitle="card.combinedDisplayName" :tags="tags"/>
+          <CardTitle :title="card.name" :type="cardType" :displayTitle="card.combinedDisplayName ?? cardMetadata.displayName" :tags="tags"/>
           <CardContent
               :metadata="cardMetadata"
               :requirements="cardRequirements"

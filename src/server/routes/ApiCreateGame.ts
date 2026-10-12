@@ -122,6 +122,7 @@ export class ApiCreateGame extends Handler {
     try {
       const gameReq = JSON.parse(body) as NewGameConfig;
       gameReq.expansions = {...DEFAULT_EXPANSIONS, ...gameReq.expansions};
+      gameReq.expansions.betterMars &&= gameReq.expansions.pathfinders;
       this.validateCustomLists(gameReq);
       const turnBasedGame = gameReq.turnBasedGame === true;
       const botGame = gameReq.botGame === true;

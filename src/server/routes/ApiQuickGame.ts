@@ -82,6 +82,7 @@ export class ApiQuickGame extends Handler {
         expansions[expansion] = settings[oldField];
       }
     }
+    expansions.betterMars &&= expansions.pathfinders;
     return expansions;
   }
 

@@ -27,6 +27,7 @@ export class MarketManipulationCb extends Card implements IProjectCard, IActionC
       },
 
       metadata: {
+        displayName: 'Market Manipulation',
         cardNumber: 'CB28',
         renderData: CardRenderer.builder((b) => {
           b.action('Increase or decrease a colony tile track 1 step.', (eb) => eb.empty().startAction.colonyTile().text('±1'));

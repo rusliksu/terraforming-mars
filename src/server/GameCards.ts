@@ -91,7 +91,7 @@ export class GameCards {
       [gameOptions.starWarsExpansion, STAR_WARS_CARD_MANIFEST],
       [gameOptions.underworldExpansion, UNDERWORLD_CARD_MANIFEST],
       [gameOptions.sillyficationExpansion, SILLYFICATION_CARD_MANIFEST],
-      [gameOptions.betterMarsExpansion, BETTER_MARS_CARD_MANIFEST],
+      [gameOptions.betterMarsExpansion && gameOptions.pathfindersExpansion, BETTER_MARS_CARD_MANIFEST],
       [gameOptions.rebalancedExpansion, REBALANCED_CARD_MANIFEST],
       [gameOptions.conglomeratesExpansion, CONGLOMERATES_CARD_MANIFEST],
       [gameOptions.corporateBettermentsExpansion, CORPORATE_BETTERMENTS_CARD_MANIFEST],

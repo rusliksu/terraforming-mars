@@ -97,7 +97,7 @@ describe('BetterMars replacement cards', () => {
     expect(JSON.stringify(new LunaMetropolisBetterMars().behavior)).to.not.contain(Tag.EARTH);
   });
 
-  it('with BetterMars on, base cards are swapped out for the replacements', () => {
+  it('Better Mars swaps only Pathfinders variants; independent reworks stay in Rebalanced', () => {
     const gameOptions: GameOptions = {
       ...DEFAULT_GAME_OPTIONS,
       corporateEra: true,
@@ -116,7 +116,7 @@ describe('BetterMars replacement cards', () => {
       ...cards.getPreludeCards().map(toName),
       ...cards.getCorporationCards().map(toName),
     ];
-    for (const [replacement, base] of ALL_REPLACEMENTS) {
+    for (const [replacement, base] of ALL_REPLACEMENTS.filter(([name]) => MARS_ADDS.includes(name))) {
       expect(pool, `${base} removed`).to.not.contain(base);
       expect(pool, `${replacement} present`).to.contain(replacement);
     }
@@ -145,9 +145,7 @@ describe('BetterMars replacement cards', () => {
     expect(pool).to.contain(CardName.MARS_UNIVERSITY);
     expect(pool).to.contain(CardName.PRISTAR); // still gated on Turmoil, which is on here
     expect(pool).to.contain(CardName.EARLY_SETTLEMENT);
-    // Meat Industry only adds an Animal tag - it doesn't need Pathfinders, so it's still
-    // swapped in.
-    expect(pool).to.contain(CardName.MEAT_INDUSTRY_BETTER_MARS);
+    expect(pool).to.not.contain(CardName.MEAT_INDUSTRY_BETTER_MARS);
     expect(pool).to.not.contain(CardName.MEAT_INDUSTRY);
   });
 
@@ -195,16 +193,16 @@ describe('BetterMars replacement cards', () => {
     expect(pool).to.contain(CardName.LUNAR_BEAM);
   });
 
-  it('Lunar Beam:bm replaces the base card once the Moon expansion is also on', () => {
+  it('Lunar Beam(⚖) replaces the base card once the Moon expansion is also on', () => {
     const gameOptions: GameOptions = {
       ...DEFAULT_GAME_OPTIONS,
       corporateEra: true,
-      betterMarsExpansion: true,
+      rebalancedExpansion: true,
       moonExpansion: true,
     };
     const cards = new GameCards(gameOptions);
     const pool = cards.getProjectCards().map(toName);
-    expect(pool).to.contain(CardName.LUNAR_BEAM_BETTER_MARS);
+    expect(pool).to.contain(CardName.LUNAR_BEAM_REBALANCED);
     expect(pool).to.not.contain(CardName.LUNAR_BEAM);
   });
 
@@ -222,17 +220,17 @@ describe('BetterMars replacement cards', () => {
     expect(pool).to.contain(CardName.LUNAR_EXPORTS);
   });
 
-  it('Lunar Exports:bm replaces the base card once the Moon expansion is also on', () => {
+  it('Lunar Exports(⚖) replaces the base card once the Moon expansion is also on', () => {
     const gameOptions: GameOptions = {
       ...DEFAULT_GAME_OPTIONS,
       corporateEra: true,
       coloniesExtension: true,
-      betterMarsExpansion: true,
+      rebalancedExpansion: true,
       moonExpansion: true,
     };
     const cards = new GameCards(gameOptions);
     const pool = cards.getProjectCards().map(toName);
-    expect(pool).to.contain(CardName.LUNAR_EXPORTS_BETTER_MARS);
+    expect(pool).to.contain(CardName.LUNAR_EXPORTS_REBALANCED);
     expect(pool).to.not.contain(CardName.LUNAR_EXPORTS);
   });
 
@@ -250,17 +248,17 @@ describe('BetterMars replacement cards', () => {
     expect(pool).to.contain(CardName.LUNAR_MINING);
   });
 
-  it('Lunar Mining:bm replaces the base card once the Moon expansion is also on', () => {
+  it('Lunar Mining(⚖) replaces the base card once the Moon expansion is also on', () => {
     const gameOptions: GameOptions = {
       ...DEFAULT_GAME_OPTIONS,
       corporateEra: true,
       coloniesExtension: true,
-      betterMarsExpansion: true,
+      rebalancedExpansion: true,
       moonExpansion: true,
     };
     const cards = new GameCards(gameOptions);
     const pool = cards.getProjectCards().map(toName);
-    expect(pool).to.contain(CardName.LUNAR_MINING_BETTER_MARS);
+    expect(pool).to.contain(CardName.LUNAR_MINING_REBALANCED);
     expect(pool).to.not.contain(CardName.LUNAR_MINING);
   });
 
@@ -278,17 +276,17 @@ describe('BetterMars replacement cards', () => {
     expect(pool).to.contain(CardName.LUNA_GOVERNOR);
   });
 
-  it('Luna Governor:bm replaces the base card once the Moon expansion is also on', () => {
+  it('Luna Governor(⚖) replaces the base card once the Moon expansion is also on', () => {
     const gameOptions: GameOptions = {
       ...DEFAULT_GAME_OPTIONS,
       corporateEra: true,
       coloniesExtension: true,
-      betterMarsExpansion: true,
+      rebalancedExpansion: true,
       moonExpansion: true,
     };
     const cards = new GameCards(gameOptions);
     const pool = cards.getProjectCards().map(toName);
-    expect(pool).to.contain(CardName.LUNA_GOVERNOR_BETTER_MARS);
+    expect(pool).to.contain(CardName.LUNA_GOVERNOR_REBALANCED);
     expect(pool).to.not.contain(CardName.LUNA_GOVERNOR);
   });
 

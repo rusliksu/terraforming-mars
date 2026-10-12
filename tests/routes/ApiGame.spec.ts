@@ -50,7 +50,7 @@ describe('ApiGame', () => {
         'activePlayer': 'black',
         'createdTimeMs': -1,
         'expectedPurgeTimeMs': -1,
-        'fanmadeCatalogRevision': 'fanmade:custom-reviewed',
+        'fanmadeCatalogRevision': 'fanmade:rebalanced-v1',
         'id': 'game-valid-id',
         'lastSoloGeneration': 14,
         'name': 'game-name',

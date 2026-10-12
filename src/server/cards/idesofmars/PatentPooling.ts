@@ -1,3 +1,4 @@
+import {Size} from '../../../common/cards/render/Size';
 import {IProjectCard} from '../IProjectCard';
 import {Tag} from '../../../common/cards/Tag';
 import {ActionCard} from '../ActionCard';
@@ -20,7 +21,7 @@ export class PatentPooling extends ActionCard implements IProjectCard {
       metadata: {
         cardNumber: 'Im123',
         renderData: CardRenderer.builder((b) => {
-          b.action('Look at the top card and either buy it or discard it', (eb) => eb.empty().startAction.cards(1, {text: '?'}));
+          b.action('Look at the top card and either buy it or discard it', (eb) => eb.empty().startAction.text('?', {size: Size.SMALL}).cards(1));
         }),
       },
     });

@@ -53,11 +53,11 @@ describe('Rebalanced lifecycle', () => {
     expect(names).not.includes(CardName.PRISTAR_REBALANCED_BETTER_MARS);
   });
 
-  it('builds actual rendering metadata for all 113 replacements and four combinations', () => {
+  it('builds actual rendering metadata for the reference replacements, five Moon variants and four combinations', () => {
     const manifest = REBALANCED_CARD_MANIFEST;
     const specs = [...Object.values(manifest.projectCards), ...Object.values(manifest.corporationCards),
       ...Object.values(manifest.preludeCards), ...Object.values(manifest.standardProjects)];
-    expect(specs).length(117);
+    expect(specs).length(122);
     for (const spec of specs) {
       const card = new spec.Factory();
       expect(card.metadata.renderData, card.name).not.eq(undefined);

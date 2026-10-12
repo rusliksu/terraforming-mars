@@ -46,7 +46,7 @@ describe('FanmadeCatalogRevision', () => {
       Server.getPlayerModel(player).game, Server.getSpectatorModel(game).game];
     for (const model of models) {
       const wire = JSON.parse(JSON.stringify(model));
-      expect(wire).to.have.property('fanmadeCatalogRevision', 'fanmade:custom-reviewed');
+      expect(wire).to.have.property('fanmadeCatalogRevision', 'fanmade:rebalanced-v1');
       expect(wire.automationCompatibility.unsupportedFeatures).to.include('idesOfMars');
     }
   });

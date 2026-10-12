@@ -7,7 +7,6 @@ import {CardName} from '../../../common/cards/CardName';
 import {LogHelper} from '../../LogHelper';
 import {CardRenderer} from '../render/CardRenderer';
 import {Size} from '../../../common/cards/render/Size';
-import {uppercase} from '../Options';
 
 const MESSAGES = ['Select first space to claim', 'Select second space to claim', 'Select third space to claim'];
 
@@ -23,8 +22,8 @@ export class SandClaim extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'X83',
         renderData: CardRenderer.builder((b) => {
-          b.emptyTile('normal', {amount: 3, digit: true}).nbsp.text('RESERVE', {size: Size.SMALL}).br;
-          b.text('Place your markers on 3 non-reserved areas. Only you may place a tile there.', {size: Size.SMALL, uppercase, isBold: false});
+          b.text('Reserve', {size: Size.SMALL}).emptyTile('normal', {amount: 3, digit: true}).br;
+          b.description('Place your markers on 3 non-reserved areas. Only you may place a tile there.');
         }),
       },
     });

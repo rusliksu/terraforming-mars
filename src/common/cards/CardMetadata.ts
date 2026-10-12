@@ -3,6 +3,8 @@ import {CardRenderDescription} from './render/CardRenderDescription';
 import {CardComponent} from './render/CardComponent';
 
 export type CardMetadata = {
+  /** Printed title when the canonical name includes an expansion qualifier. */
+  displayName?: string;
   /**
    * The card's number. It's not used. it used to be shown, but now it isn't.
    *

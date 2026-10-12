@@ -25,7 +25,8 @@ export class KryptonMine extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'V88',
         renderData: CardRenderer.builder((b) => {
-          b.tile(TileType.VENUS_GAS_MINE, true).venus(1).nbsp.production((pb) => pb.heat(2).energy(1).megacredits(2));
+          b.tile(TileType.VENUS_GAS_MINE, true).venus(1).br;
+          b.production((pb) => pb.heat(2).energy(1).megacredits(2));
         }),
         description: 'Place a Gas Mine on Venus and raise Venus 1 step. Increase your heat production 2 steps, your energy production 1 step, and your M€ production 2 steps.',
       },

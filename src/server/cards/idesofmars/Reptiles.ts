@@ -28,7 +28,7 @@ export class Reptiles extends ActionCard implements IProjectCard, IActionCard {
         cardNumber: 'Im65',
         renderData: CardRenderer.builder((b) => {
           b.action('Spend 5 heat to add an animal to this card.', (eb) => {
-            eb.heat(5).startAction.resource(CardResource.ANIMAL);
+            eb.heat(5, {digit: true}).startAction.resource(CardResource.ANIMAL);
           }).br;
           b.vpText('1 VP for every animal on this card.');
         }),

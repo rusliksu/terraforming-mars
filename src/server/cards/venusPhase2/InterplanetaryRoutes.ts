@@ -18,6 +18,7 @@ export class InterplanetaryRoutes extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'V70',
         renderData: CardRenderer.builder((b) => {
+          b.colonies().colon().colonyTile().text('+1').asterix().br;
           b.plainText('Increase the colony marker on every colony tile where you have at least 1 colony.', true);
         }),
       },

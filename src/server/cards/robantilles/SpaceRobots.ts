@@ -30,7 +30,8 @@ export class SpaceRobots extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'H60',
         renderData: CardRenderer.builder((b) => {
-          b.text('Copy a production box on a card with a Space tag.', {size: Size.SMALL, uppercase: true});
+          b.cards(1, {played: true, secondaryTag: Tag.SPACE}).nbsp.text('COPY 1', {size: Size.SMALL}).production((pb) => pb.wild(1)).br;
+          b.text('Copy a production box on a card with a Space tag.', {size: Size.SMALL, uppercase: true, isBold: false});
         }),
         description: 'Increase one of your production values 1 step, matching a production value printed on ' +
           'one of your cards with a Space tag.',

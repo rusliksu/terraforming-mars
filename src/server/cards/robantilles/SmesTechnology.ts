@@ -19,7 +19,8 @@ export class SmesTechnology extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'H45',
         renderData: CardRenderer.builder((b) => {
-          b.text('EFFECT: DURING PRODUCTION, YOU MAY KEEP UP TO 3 ENERGY RESOURCES INSTEAD OF CONVERTING THEM TO HEAT.', {size: Size.SMALL});
+          b.text('KEEP', {size: Size.SMALL}).energy(3).asterix().br;
+          b.text('EFFECT: DURING PRODUCTION, YOU MAY KEEP UP TO 3 ENERGY RESOURCES INSTEAD OF CONVERTING THEM TO HEAT.', {size: Size.SMALL, isBold: false});
         }),
         description: 'Requires 1 Science tag.',
       },

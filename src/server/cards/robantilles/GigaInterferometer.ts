@@ -1,3 +1,4 @@
+import {Size} from '../../../common/cards/render/Size';
 import {IProjectCard} from '../IProjectCard';
 import {Tag} from '../../../common/cards/Tag';
 import {Card} from '../Card';
@@ -17,6 +18,7 @@ export class GigaInterferometer extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'H52',
         renderData: CardRenderer.builder((b) => {
+          b.text('RESEARCH', {size: Size.SMALL}).cards(4, {all: true}).asterix().br;
           b.plainText('A RESEARCH PHASE BEGINS IMMEDIATELY.', true);
         }),
         description: 'Requires that each player has at least 6 M€. Immediately hold a research phase: every ' +

@@ -21,7 +21,8 @@ export class CorruptedDelegate extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'H10',
         renderData: CardRenderer.builder((b) => {
-          b.text('carry out 3 more actions immediately', {size: Size.SMALL, uppercase});
+          b.arrow().nbsp.arrow().nbsp.arrow().br;
+          b.text('carry out 3 more actions immediately', {size: Size.SMALL, uppercase, isBold: false});
         }),
         // Printed card text has a typo, "Bureacrats"; the requirement itself is Bureaucrats.
         description: 'Requires that the Bureaucrats are ruling or that you have 2 delegates there. ' +

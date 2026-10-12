@@ -24,10 +24,12 @@ export class AwardCelebration extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'SL37',
         renderData: CardRenderer.builder((b) => {
+          b.milestone().asterix().br;
+          b.tr(2, {size: Size.SMALL}).nbsp.text('OPPONENTS', {size: Size.SMALL}).tr(1, {all: true, size: Size.SMALL}).br;
           b.text(
             'choose an unclaimed milestone. If you meet its requirement, raise your TR 2 steps. Each ' +
             'opponent who also meets it raises their TR 1 step.',
-            {size: Size.SMALL});
+            {size: Size.SMALL, isBold: false});
         }),
         description: 'Requires that Centrists are ruling or that you have 2 delegates there.',
       },

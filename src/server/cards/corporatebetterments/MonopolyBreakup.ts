@@ -24,9 +24,10 @@ export class MonopolyBreakup extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'CB30',
         renderData: CardRenderer.builder((b) => {
+          b.milestone().asterix().br;
           b.text(
             'Claim an available milestone, even if the limit has been surpassed.',
-            {size: Size.SMALL, uppercase: true});
+            {size: Size.SMALL, uppercase: true, isBold: false});
         }),
         description: `Requires that another player's TR is ${REQUIRED_TR_LEAD} or more steps ahead of yours.`,
       },

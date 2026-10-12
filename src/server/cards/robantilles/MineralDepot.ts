@@ -33,10 +33,12 @@ export class MineralDepot extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'H55',
         renderData: CardRenderer.builder((b) => {
+          b.steel(1).equals().megacredits(STEEL_RATE).br;
+          b.titanium(1).equals().megacredits(TITANIUM_RATE).br;
           b.text(
             `Exchange any number of steel and titanium resources for ${STEEL_RATE} M€ and ${TITANIUM_RATE} M€ ` +
             'each, and vice versa.',
-            {size: Size.SMALL, uppercase: true});
+            {size: Size.SMALL, uppercase: true, isBold: false});
         }),
       },
     });

@@ -1,3 +1,4 @@
+import {Size} from '../../../common/cards/render/Size';
 import {IProjectCard} from '../IProjectCard';
 import {Card} from '../Card';
 import {CardType} from '../../../common/cards/CardType';
@@ -38,7 +39,8 @@ export class AntiFraudInvestigation extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'So41',
         renderData: CardRenderer.builder((b) => {
-          b.text('For the rest of this generation, no player may remove resources from any card.');
+          b.cards(1, {all: true}).nbsp.text('NO REMOVAL', {size: Size.SMALL}).asterix().br;
+          b.plainText('For the rest of this generation, no player may remove resources from any card.');
         }),
         description: 'Requires that the Centrists are ruling or that you have 2 delegates there.',
       },

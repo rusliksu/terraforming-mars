@@ -1,0 +1,67 @@
+/* fixes */
+.card-nirgal-enterprises .card-title {
+  height: 60px !important;
+}
+
+.card-party {
+  display: flex;
+}
+
+.card-party--revealed {
+  margin: 147px 0 0 12px;
+  position: absolute;
+  transform: scale(1.35);
+}
+
+.card-party--current {
+  margin: 147px 0 0 279px;
+  position: absolute;
+  transform: scale(1.35);
+}
+
+@parties: greens, kelvinists, mars-first, reds, scientists, unity;
+each(@parties, {
+.card-party--@{value} {
+  background-image: url("../assets/parties/@{value}.png");
+  background-size: 41px 30px;
+  width: 41px;
+  height: 30px;
+}
+})
+each(@parties, {
+.card-party--@{value}-req {
+  background-image: url("../assets/parties/@{value}.png");
+  background-size: 48px 34px;
+  width: 48px;
+  height: 34px;
+}
+})
+.card-over {
+  margin: 0px 0 -59px -59px;
+}
+
+.card-resources-counter {
+  .card-resource {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 4px;
+    width: 22px;
+    height: 22px;
+    background-size: 22px;
+    vertical-align: middle;
+  }
+}
+
+// resources.less also has a variable called resource_types.
+@card_resource_types: microbe, animal, science, floater, fighter, camp,
+  asteroid, disease, preservation, data, syndicate-fleet, cube,
+  venusian-habitat, specialized-robot, seed, orbital, agenda, graphene, hydroelectric-resource,
+  clone-trooper, director, tool, ware, activist, journalism, supply-chain;
+each(@card_resource_types, {
+.card-resource-@{value} {
+  background-image: url("../assets/resources/@{value}.png");
+}
+})
+.card-resource-cube {
+  background-image: url("../assets/cube.png");
+}

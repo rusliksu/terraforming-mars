@@ -4,12 +4,12 @@ import {resolve} from 'node:path';
 import {parse} from 'postcss';
 import {expect} from 'chai';
 
-const less: {render: (text: string, options: {filename: string}) => Promise<{css: string}>} = createRequire(resolve('package.json'))('less');
+const less: {render: (text: string, options: {filename: string, rewriteUrls: 'all'}) => Promise<{css: string}>} = createRequire(resolve('package.json'))('less');
 
 describe('Wrybit compiled visual styles', () => {
   it('styles the rendered state classes inside the optional root and retains the outer mobile context', async () => {
     const filename = resolve('src/styles/wrybit/visuals.less');
-    const {css} = await less.render(readFileSync(filename, 'utf8'), {filename});
+    const {css} = await less.render(readFileSync(filename, 'utf8'), {filename, rewriteUrls: 'all'});
     const stylesheet = parse(css);
     function declaration(selector: string, property: string): string | undefined {
       let value: string | undefined;
@@ -27,6 +27,11 @@ describe('Wrybit compiled visual styles', () => {
     expect(declaration('.wrybit-ui .player-cube--top', '--wrybit-lie')).eq('1');
     expect(declaration('.wrybit-ui .board-outer-spaces--corners', 'pointer-events')).eq('none');
     expect(declaration('.wrybit-ui .board-outer-spaces--corners .board-outer-group', 'pointer-events')).eq('auto');
+    stylesheet.walkDecls((decl) => {
+      for (const match of decl.value.matchAll(/url\(['"]?([^'")]+)['"]?\)/g)) {
+        expect(match[1].replace(/^\.\//, '')).matches(/^assets\//);
+      }
+    });
     stylesheet.walkRules((rule) => {
       if (rule.parent?.type === 'atrule' && rule.parent.name === 'keyframes') {
         expect(rule.parent.params).matches(/^wrybit-/);

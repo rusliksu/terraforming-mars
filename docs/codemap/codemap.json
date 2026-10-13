@@ -4,8 +4,8 @@
   "ocean_placement_pair_update": {"date":"2026-10-14","base":"923ba2f3a0e811975c0e1049d1be30e000a16782","contract":"oceanPlacementContext/version1/pairs","flows":["Own PlayerModel -> optional ordered pairs of distinct structural candidates","Board adjacency and player coefficient -> quoted second adjacency after the first ocean","Stable board/cost facts -> shared cash-budget consumer; no virtual moves or persisted state"],"scope":"Two intrinsic standard placements; at most 64 candidates; pending Ares board transitions and unsupported political costs are not certified","fingerprint_algorithm":"sha256_normalized_lf","historical_fingerprints_refreshed":false,"source_files":[{"path":"src/common/models/OceanPlacementContextModel.ts","sha256":"b8cdd6bb2abda7956cb7b2aafed1727f9458ec55e83602c16cccb0cff77a6035"},{"path":"src/server/models/OceanPlacementContext.ts","sha256":"4ab4ccec44ffc93e1fc8121a95435ababed5a49ffccde1d2d38738d9b44eeed0"}]},
   "ocean_placement_context_update": {"date":"2026-10-14","base":"fbe68f10c0ceb9f2d72c19665cb9c1b00c7d6926","contract":"oceanPlacementContext/version1","flows":["Own PlayerModel -> phase-scoped oceanPlacementContext/version1","MarsBoard and Board -> structural candidates, actual adjacency and additional costs","Shared political cost-policy query -> explicit unsupported-payment status","Read-only numeric facts -> external advisor JSON transport; no persistence or moves"],"scope":"Single standard ocean; intrinsic resource/draw/adjacency facts and funded MC costs; unsupported bonuses, fees, limits and later triggers remain unproven","fingerprint_algorithm":"sha256_normalized_lf","historical_fingerprints_refreshed":false,"source_files":[{"path":"src/common/models/OceanPlacementContextModel.ts","sha256":"c791998326bb11da0c5d3d8741b681dafeccda141f855188f46d5171c8460299"},{"path":"src/server/models/OceanPlacementContext.ts","sha256":"955ad709e772021d864054b2d7c47f2de5b5051481e50116872bd729953d9946"},{"path":"src/server/models/ServerModel.ts","sha256":"c4f061bea6d576bb1a91ec142b7d4505cd0e854d9637eac371f7a1311ad7c8f8"},{"path":"src/server/boards/Board.ts","sha256":"7ad424247f6623793c22a2ef755bf1d94e85aead5e22df16903e1a30db812fb6"},{"path":"src/server/turmoil/TurmoilHandler.ts","sha256":"4bf865bd6c7dd74d3bb8c5aaf1e3bf84141ef3b05c17bbde9f1bac8411477268"}]},
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-13T17:45:48.898Z",
-  "generated_from_commit": "98ba76c2d4459be69820f1cb8a95fadbf5571f42",
+  "generated_at": "2026-10-13T18:12:44.062Z",
+  "generated_from_commit": "fb1a6f22eb5a456657e14a605c570586b2d2c0a5",
   "scope": [
     ".",
     ".github",
@@ -2012,6 +2012,36 @@
       ]
     },
     {
+      "id": "wrybit-track-view",
+      "label": "Представление треков Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/trackBonus/BoardTrackRow.vue",
+      "role": "Клетки, состояния и бонусы из входных props; игровые пороги и награды здесь не определяются.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/trackBonus/BoardTrackRow.vue",
+          "symbol": "cellClasses(cell",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/BoardTrackRow.spec.ts",
+          "symbol": "supplied track states"
+        }
+      ],
+      "constraints": [
+        "Готовность полного поля и его data adapter пока не подтверждена."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/trackBonus/TrackLane.vue",
+          "symbol": "bonuses[index - 1]",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
       "id": "canonical-card-view",
       "label": "Наши данные и свойства карты",
       "type": "ui",
@@ -3836,7 +3866,14 @@
     "tests/client/wrybit/visuals/PlayerCube.spec.ts",
     "src/styles/wrybit/visuals.less",
     "src/styles/wrybit/variables.less",
-    "src/styles/wrybit/player_cube.less"
+    "src/styles/wrybit/player_cube.less",
+    "src/client/wrybit/visuals/trackBonus/BoardTrackRow.vue",
+    "src/client/wrybit/visuals/trackBonus/TrackLane.vue",
+    "src/client/wrybit/visuals/trackBonus/TrackBonusChip.vue",
+    "src/client/wrybit/visuals/trackBonus/trackBonus.ts",
+    "src/client/wrybit/visuals/trackBonus/trackCell.ts",
+    "src/styles/wrybit/track_bonus.less",
+    "tests/client/wrybit/visuals/BoardTrackRow.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -3898,6 +3935,11 @@
       "src/client/wrybit/visuals/card/CardCost.vue",
       "src/client/wrybit/visuals/card/CardTitle.vue",
       "src/client/wrybit/visuals/common/PlayerCube.vue",
+      "src/client/wrybit/visuals/trackBonus/BoardTrackRow.vue",
+      "src/client/wrybit/visuals/trackBonus/TrackBonusChip.vue",
+      "src/client/wrybit/visuals/trackBonus/TrackLane.vue",
+      "src/client/wrybit/visuals/trackBonus/trackBonus.ts",
+      "src/client/wrybit/visuals/trackBonus/trackCell.ts",
       "src/common/Timer.ts",
       "src/common/app/paths.ts",
       "src/common/cards/CardReplacementRules.ts",
@@ -4074,6 +4116,7 @@
       "src/server/turmoil/parties/Reds.ts",
       "src/styles/cards.less",
       "src/styles/wrybit/player_cube.less",
+      "src/styles/wrybit/track_bonus.less",
       "src/styles/wrybit/variables.less",
       "src/styles/wrybit/visuals.less",
       "tests/awards/amazonisPlanitia/AmazonisEngineer.spec.ts",
@@ -4104,6 +4147,7 @@
       "tests/client/wrybit/shell/WrybitBoundary.spec.ts",
       "tests/client/wrybit/shell/WrybitShell.spec.ts",
       "tests/client/wrybit/shell/inputContext.spec.ts",
+      "tests/client/wrybit/visuals/BoardTrackRow.spec.ts",
       "tests/client/wrybit/visuals/Card.spec.ts",
       "tests/client/wrybit/visuals/PlayerCube.spec.ts",
       "tests/database/ReplayArchive.spec.ts",

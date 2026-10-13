@@ -116,7 +116,26 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/Board.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "targeted-tests",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/Board.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Наши модели, параметры и дополнения сохранены. Production caller и browser proof полного интерфейса ещё не интегрированы."
+        },
+        {
+          "kind": "synthetic-browser-proof",
+          "status": "passed-in-isolation",
+          "paths": [
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/board-resources-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/board-resources-phone.png"
+          ],
+          "note": "Штатные Webpack loaders с отдельным D:-entry; 0 console errors/warnings, обычный toggle click и resize. Это component fixture, не полный App или mobile flow."
+        }
+      ]
     },
     {
       "source": "src/client/components/BoardSpace.vue",
@@ -128,7 +147,16 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/BoardSpace.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "targeted-tests",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/Board.spec.ts"
+          ],
+          "note": "Наши модели, параметры и дополнения сохранены. Production caller и browser proof полного интерфейса ещё не интегрированы."
+        }
+      ]
     },
     {
       "source": "src/client/components/Bonus.vue",
@@ -1376,7 +1404,24 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/board/MarsScaleBonuses.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "targeted-tests",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/Board.spec.ts"
+          ],
+          "note": "Наши модели, параметры и дополнения сохранены. Production caller и browser proof полного интерфейса ещё не интегрированы."
+        },
+        {
+          "kind": "resize-regression",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/MarsScaleBonuses.spec.ts"
+          ],
+          "note": "Красный focused test до исправления; browser resize 670->335 даёт counter-scale 2. Listener снимается при unmount."
+        }
+      ]
     },
     {
       "source": "src/client/components/board/OuterSpaceCorners.vue",
@@ -2087,7 +2132,17 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/common/BoardCube.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "targeted-tests",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/Board.spec.ts",
+            "tests/client/wrybit/visuals/PlayerCube.spec.ts"
+          ],
+          "note": "Наши модели, параметры и дополнения сохранены. Production caller и browser proof полного интерфейса ещё не интегрированы."
+        }
+      ]
     },
     {
       "source": "src/client/components/common/ConfirmDialog.vue",
@@ -3120,7 +3175,16 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/overview/PlayerResource.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "targeted-tests",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayerResources.spec.ts"
+          ],
+          "note": "Наши модели, параметры и дополнения сохранены. Production caller и browser proof полного интерфейса ещё не интегрированы."
+        }
+      ]
     },
     {
       "source": "src/client/components/overview/PlayerResources.vue",
@@ -3132,7 +3196,25 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/overview/PlayerResources.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "targeted-tests",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayerResources.spec.ts"
+          ],
+          "note": "Наши модели, параметры и дополнения сохранены. Production caller и browser proof полного интерфейса ещё не интегрированы."
+        },
+        {
+          "kind": "synthetic-browser-proof",
+          "status": "passed-in-isolation",
+          "paths": [
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/board-resources-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/board-resources-phone.png"
+          ],
+          "note": "Штатные Webpack loaders с отдельным D:-entry; 0 console errors/warnings, обычный toggle click и resize. Это component fixture, не полный App или mobile flow."
+        }
+      ]
     },
     {
       "source": "src/client/components/overview/PlayerStatus.vue",
@@ -3620,6 +3702,14 @@
             "tests/client/wrybit/visuals/BoardTrackRow.spec.ts"
           ],
           "note": "Проверены переданные состояния, ownership и обновление бонусов. Готовность полного поля пока не подтверждена."
+        },
+        {
+          "kind": "compiled-css",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Скомпилированные состояния и mobile context совпадают с реальными классами представления."
         }
       ]
     },
@@ -3641,6 +3731,14 @@
             "tests/client/wrybit/visuals/BoardTrackRow.spec.ts"
           ],
           "note": "Проверены переданные состояния, ownership и обновление бонусов. Готовность полного поля пока не подтверждена."
+        },
+        {
+          "kind": "compiled-css",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Скомпилированные состояния и mobile context совпадают с реальными классами представления."
         }
       ]
     },
@@ -3662,6 +3760,14 @@
             "tests/client/wrybit/visuals/BoardTrackRow.spec.ts"
           ],
           "note": "Проверены переданные состояния, ownership и обновление бонусов. Готовность полного поля пока не подтверждена."
+        },
+        {
+          "kind": "compiled-css",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Скомпилированные состояния и mobile context совпадают с реальными классами представления."
         }
       ]
     },
@@ -3807,6 +3913,99 @@
       "target": "src/client/wrybit/shell/background.less",
       "license": "GPL-3.0",
       "status": "implemented"
+    },
+    {
+      "source": "src/client/components/board/outerSpaces.ts",
+      "sourceSha256": "4a28736cd52c685f0f1002000644abcb0e3c1dec53b8c2c80d785fce0e194723",
+      "target": "src/client/wrybit/visuals/board/outerSpaces.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "targeted-tests",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/Board.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/board/marsScaleBonuses.ts",
+      "sourceSha256": "81909067196f83c33ed6d31eccffd8263e9a5b53b401e1bfd3a157dc59ce4b7f",
+      "target": "src/client/wrybit/visuals/board/marsScaleBonuses.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "targeted-tests",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/Board.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "src/styles/board.less",
+      "sourceSha256": "a232dce8f8efe3d0d83ed156afc942e24291654fb29c3b15ce7052e2ee8309b4",
+      "target": "src/styles/wrybit/board.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "targeted-tests",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/Board.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "src/styles/globs.less",
+      "sourceSha256": "13878ba321dc7a9131659924fd1a0571f155ed9da9525012b552ad77989ae0c6",
+      "target": "src/styles/wrybit/globs.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "targeted-tests",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/Board.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "src/styles/track_bonus.less",
+      "sourceSha256": "e5f8057cbe227db1302cf7f5e7520d2c05ecb48662f6490c576bb3990c4e894e",
+      "target": "src/styles/wrybit/track_bonus.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "targeted-tests",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/Board.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "src/styles/board_tabs.less",
+      "sourceSha256": "3034f7847e2e6e3d64aa2c20217a7b97cdd09af587f85840f0854cd0f7ce1325",
+      "target": "src/styles/wrybit/outer_spaces.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "note": "Перенесён только общий corner layout. Остальные tabs ещё не интегрированы."
     }
   ],
   "assets": [
@@ -4078,6 +4277,24 @@
       "license": "CC-BY-4.0",
       "attribution": "ESO / S. Brunier",
       "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/board/mars-clean.png",
+      "sourceSha256": "01b803c13e170acb78298c86a0955caafc0d009b17969a92511b0e5b428f277a",
+      "target": "assets/wrybit/board/mars-clean.png",
+      "bytes": 457255,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit UI fork",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/board/mars-without-venus-clean.png",
+      "sourceSha256": "c6382e088fcd51cfb34173d3efaac1d547afe71030b74c6e93ed75180c67c330",
+      "target": "assets/wrybit/board/mars-without-venus-clean.png",
+      "bytes": 472568,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit UI fork",
       "status": "copied-unchanged"
     }
   ]

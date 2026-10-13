@@ -86,6 +86,7 @@ import {hasShowModal, showModal, windowHasHTMLDialogElement} from './HTMLDialogE
 import {getLoadErrorMessage} from '@/client/utils/loadErrorMessage';
 import {getPreferences, PreferencesManager} from '@/client/utils/PreferencesManager';
 import WrybitBoundary from '@/client/wrybit/shell/WrybitBoundary.vue';
+import {inputContext} from '@/client/wrybit/shell/inputContext';
 
 import dialogPolyfill from 'dialog-polyfill';
 import {setDocumentTitle} from '../utils/documentTitle';
@@ -267,13 +268,19 @@ export default defineComponent({
           return resp.json();
         })
         .then((model: ViewModel) => {
+          let preserveInput = false;
           if (path === paths.PLAYER) {
-            app.playerView = model as PlayerViewModel;
+            const next = model as PlayerViewModel;
+            const previousContext = this.wrybitMode ? inputContext(app.playerView) : undefined;
+            preserveInput = this.wrybitMode && previousContext !== undefined && previousContext === inputContext(next);
+            app.playerView = next;
             setTranslationContext(app.playerView);
           } else if (path === paths.SPECTATOR) {
             app.spectator = model as SpectatorModel;
           }
-          app.playerkey++;
+          if (!preserveInput) {
+            app.playerkey++;
+          }
           if (
             model.game.phase === 'end' &&
               window.location.search.includes('&noredirect') === false

@@ -4,8 +4,8 @@
   "ocean_placement_pair_update": {"date":"2026-10-14","base":"923ba2f3a0e811975c0e1049d1be30e000a16782","contract":"oceanPlacementContext/version1/pairs","flows":["Own PlayerModel -> optional ordered pairs of distinct structural candidates","Board adjacency and player coefficient -> quoted second adjacency after the first ocean","Stable board/cost facts -> shared cash-budget consumer; no virtual moves or persisted state"],"scope":"Two intrinsic standard placements; at most 64 candidates; pending Ares board transitions and unsupported political costs are not certified","fingerprint_algorithm":"sha256_normalized_lf","historical_fingerprints_refreshed":false,"source_files":[{"path":"src/common/models/OceanPlacementContextModel.ts","sha256":"b8cdd6bb2abda7956cb7b2aafed1727f9458ec55e83602c16cccb0cff77a6035"},{"path":"src/server/models/OceanPlacementContext.ts","sha256":"4ab4ccec44ffc93e1fc8121a95435ababed5a49ffccde1d2d38738d9b44eeed0"}]},
   "ocean_placement_context_update": {"date":"2026-10-14","base":"fbe68f10c0ceb9f2d72c19665cb9c1b00c7d6926","contract":"oceanPlacementContext/version1","flows":["Own PlayerModel -> phase-scoped oceanPlacementContext/version1","MarsBoard and Board -> structural candidates, actual adjacency and additional costs","Shared political cost-policy query -> explicit unsupported-payment status","Read-only numeric facts -> external advisor JSON transport; no persistence or moves"],"scope":"Single standard ocean; intrinsic resource/draw/adjacency facts and funded MC costs; unsupported bonuses, fees, limits and later triggers remain unproven","fingerprint_algorithm":"sha256_normalized_lf","historical_fingerprints_refreshed":false,"source_files":[{"path":"src/common/models/OceanPlacementContextModel.ts","sha256":"c791998326bb11da0c5d3d8741b681dafeccda141f855188f46d5171c8460299"},{"path":"src/server/models/OceanPlacementContext.ts","sha256":"955ad709e772021d864054b2d7c47f2de5b5051481e50116872bd729953d9946"},{"path":"src/server/models/ServerModel.ts","sha256":"c4f061bea6d576bb1a91ec142b7d4505cd0e854d9637eac371f7a1311ad7c8f8"},{"path":"src/server/boards/Board.ts","sha256":"7ad424247f6623793c22a2ef755bf1d94e85aead5e22df16903e1a30db812fb6"},{"path":"src/server/turmoil/TurmoilHandler.ts","sha256":"4bf865bd6c7dd74d3bb8c5aaf1e3bf84141ef3b05c17bbde9f1bac8411477268"}]},
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-13T08:35:53.507Z",
-  "generated_from_commit": "7e90c63b408a99228d1dfa1836eb0756f6625696",
+  "generated_at": "2026-10-13T09:06:21.853Z",
+  "generated_from_commit": "8dc5ac9572d72007d92ed4e2fe89d117750be607",
   "scope": [
     ".",
     ".github",
@@ -2036,6 +2036,10 @@
         {
           "path": "tests/client/wrybit/shell/WrybitShell.spec.ts",
           "symbol": "renders responsive isolated backgrounds"
+        },
+        {
+          "path": "tests/client/wrybit/shell/AppInputRefresh.spec.ts",
+          "symbol": "retains the real card/payment form"
         }
       ],
       "constraints": [
@@ -2075,6 +2079,10 @@
         {
           "path": "tests/client/wrybit/shell/WrybitShell.spec.ts",
           "symbol": "renders responsive isolated backgrounds"
+        },
+        {
+          "path": "tests/client/wrybit/shell/AppInputRefresh.spec.ts",
+          "symbol": "retains the real card/payment form"
         }
       ],
       "constraints": [
@@ -2115,6 +2123,73 @@
         {
           "path": "src/client/wrybit/shell/appBackgroundVariants.ts",
           "symbol": "assets/wrybit/shell/milky-way",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "wrybit-input-context",
+      "label": "Контекст текущего ввода",
+      "type": "library",
+      "path": "src/client/wrybit/shell/inputContext.ts",
+      "role": "Сохранение формы при чтении того же запроса; новый запрос, ограничения или собственное состояние инвалидируют форму.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/shell/inputContext.ts",
+          "symbol": "function inputContext",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/shell/AppInputRefresh.spec.ts",
+          "symbol": "retains the real card/payment form"
+        },
+        {
+          "path": "tests/client/wrybit/shell/inputContext.spec.ts",
+          "symbol": "invalidates changed requests"
+        }
+      ],
+      "constraints": [
+        "Часы не инвалидируют форму.",
+        "Обычный режим сохраняет прежнее перемонтирование."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/wrybit/shell/inputContext.ts",
+          "symbol": "view.waitingForId",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "player-input-identity",
+      "label": "Проекция идентификатора запроса",
+      "type": "library",
+      "path": "src/server/models/ServerModel.ts",
+      "role": "Read-only идентичность текущего PlayerInput в приватной модели игрока.",
+      "entrypoints": [
+        {
+          "path": "src/server/models/ServerModel.ts",
+          "symbol": "getWaitingForId",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/models/ServerModel.spec.ts",
+          "symbol": "identifies the pending input across reads"
+        }
+      ],
+      "constraints": [
+        "Не сериализуется в сохранения.",
+        "Зритель не получает waitingForId.",
+        "Правила и AI не изменяются."
+      ],
+      "evidence": [
+        {
+          "path": "src/common/models/PlayerModel.ts",
+          "symbol": "waitingForId?: string",
           "status": "confirmed"
         }
       ]
@@ -3066,6 +3141,45 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "client-ui",
+      "to": "wrybit-input-context",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/App.vue",
+          "symbol": "inputContext(app.playerView)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "api-handlers",
+      "to": "player-input-identity",
+      "type": "projects",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/models/ServerModel.ts",
+          "symbol": "waitingForId: this.getWaitingForId(waitingFor)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-input-context",
+      "to": "player-input-identity",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/shell/inputContext.ts",
+          "symbol": "view.waitingForId",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -3470,7 +3584,14 @@
     "src/server/routes/ContentType.ts",
     "tests/routes/ServeAsset.spec.ts",
     "assets/wrybit/shell/ATTRIBUTION.md",
-    "tests/client/wrybit/shell/WrybitShell.spec.ts"
+    "tests/client/wrybit/shell/WrybitShell.spec.ts",
+    "src/client/wrybit/shell/inputContext.ts",
+    "src/server/models/ServerModel.ts",
+    "src/common/models/PlayerModel.ts",
+    "src/client/components/WaitingFor.vue",
+    "tests/models/ServerModel.spec.ts",
+    "tests/client/wrybit/shell/inputContext.spec.ts",
+    "tests/client/wrybit/shell/AppInputRefresh.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -3501,6 +3622,7 @@
       "src/client/components/GameEnd.vue",
       "src/client/components/GameSetupDetail.vue",
       "src/client/components/SpectatorHome.vue",
+      "src/client/components/WaitingFor.vue",
       "src/client/components/card/CardRequirementComponent.vue",
       "src/client/components/create/CreateGameForm.vue",
       "src/client/components/create/JSONProcessor.ts",
@@ -3518,11 +3640,13 @@
       "src/client/wrybit/shell/appBackground.ts",
       "src/client/wrybit/shell/appBackgroundVariants.ts",
       "src/client/wrybit/shell/background.less",
+      "src/client/wrybit/shell/inputContext.ts",
       "src/common/Timer.ts",
       "src/common/app/paths.ts",
       "src/common/cards/CardReplacementRules.ts",
       "src/common/cards/CardRequirementDescriptor.ts",
       "src/common/cards/RequirementType.ts",
+      "src/common/models/PlayerModel.ts",
       "src/common/models/ReplayModel.ts",
       "src/locales/ru/replay.json",
       "src/server/Game.ts",
@@ -3710,11 +3834,14 @@
       "tests/client/components/overview/PlayersOverview.spec.ts",
       "tests/client/components/replay/ReplayHome.spec.ts",
       "tests/client/components/replay/useReplay.spec.ts",
+      "tests/client/wrybit/shell/AppInputRefresh.spec.ts",
       "tests/client/wrybit/shell/AppMode.spec.ts",
       "tests/client/wrybit/shell/WrybitBoundary.spec.ts",
       "tests/client/wrybit/shell/WrybitShell.spec.ts",
+      "tests/client/wrybit/shell/inputContext.spec.ts",
       "tests/database/ReplayArchive.spec.ts",
       "tests/fanmade-compat/RebalancedLifecycle.spec.ts",
+      "tests/models/ServerModel.spec.ts",
       "tests/replay/ReplayFrame.spec.ts",
       "tests/replay/ReplayView.spec.ts",
       "tests/routes/ApiReplay.spec.ts",

@@ -118,6 +118,8 @@ export type PublicPlayerModel = {
 
 /** A player's view of the game, including their secret information. */
 export interface PlayerViewModel extends ViewModel {
+  /** The identity of this player's pending input within the current server run. */
+  waitingForId?: string;
   autopass: boolean;
   cardsInHand: ReadonlyArray<CardModel>;
   dealtCorporationCards: ReadonlyArray<CardModel>;

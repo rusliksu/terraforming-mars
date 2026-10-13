@@ -21,7 +21,7 @@ describe('ServerModel', () => {
     player.setWaitingFor(new SelectOption('Confirm selection'));
     const first = Server.getPlayerModel(player);
     expect(first.waitingForId).to.be.a('string');
-    other.megacredits++;
+    other.megaCredits++;
     expect(Server.getPlayerModel(player).waitingForId).eq(first.waitingForId);
     expect(player.getWaitingFor()).to.not.eq(undefined);
 

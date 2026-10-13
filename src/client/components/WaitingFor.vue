@@ -133,12 +133,18 @@ export default defineComponent({
   },
   watch: {
     waitingfor() {
-      this.undoChoice = '';
+      if (!getPreferences().experimental_layout) {
+        this.undoChoice = '';
+      }
     },
     playerView() {
-      this.inputKey++;
-      this.stop();
-      this.start();
+      if (getPreferences().experimental_layout) {
+        this.startWaiting();
+      } else {
+        this.inputKey++;
+        this.stop();
+        this.start();
+      }
     },
   },
   methods: {
@@ -164,6 +170,19 @@ export default defineComponent({
       otherPlayersTimer = undefined;
       window.clearInterval(documentTitleTimer);
       documentTitleTimer = undefined;
+    },
+    startWaiting() {
+      window.clearTimeout(ui_update_timeout_id);
+      window.clearTimeout(otherPlayersTimer);
+      window.clearInterval(documentTitleTimer);
+      if (this.waitingfor === undefined || this.waitingfor.optional) {
+        this.waitForUpdate();
+      } else if (this.playerView.players.length > 1 && SIMULTANEOUS_PHASES.includes(this.playerView.game.phase)) {
+        this.watchOtherPlayers();
+      }
+      if (this.playerView.players.length > 1 && this.waitingfor !== undefined && !this.waitingfor.optional) {
+        documentTitleTimer = window.setInterval(() => this.animateTitle(), 1000);
+      }
     },
     getPlayerName(color: Color): string {
       const player = this.playerView.players.find((p) => p.color === color);

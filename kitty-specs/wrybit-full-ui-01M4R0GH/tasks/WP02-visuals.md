@@ -26,6 +26,10 @@ owned_files:
 - src/styles/wrybit/**
 - assets/wrybit/**
 - tests/client/wrybit/visuals/**
+- src/client/wrybit/import-manifest.json
+- docs/codemap/codemap.json
+- docs/codemap/codemap.html
+- docs/codemap/codemap.lock
 priority: P1
 role: implementer
 tags: []
@@ -45,6 +49,8 @@ tracker_refs: []
 ## Ответственность
 
 Пути перечислены в owned_files. При необходимом изменении вне них сначала проверить отсутствие пересечения и зафиксировать точный перенос ответственности. Не отменять чужие изменения. Изменение правил, Game/Player, AI/SmartBot, карточных эффектов и сохранения запрещено.
+
+После одобрения WP01 ответственность за последовательное дополнение import-manifest и трёх codemap artifacts переходит WP02. Параллельной записи нет; итоговая сверка всего UI остаётся в WP07. Карточные представления наследуют наш канонический компонент: metadata, custom wire fallback, стоимость, инфраструктурная оплата и название копии не дублируются из форка. Персональные цвета используют нашу существующую графику; их перечень и привязки не меняются. Стили ограничены корнем wrybit-ui, а глобально регистрируемые CSS properties получают собственный префикс.
 
 ## Подзадачи
 

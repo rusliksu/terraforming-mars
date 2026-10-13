@@ -1460,7 +1460,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/card/Card.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "targeted-tests",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/Card.spec.ts",
+            "tests/client/wrybit/visuals/PlayerCube.spec.ts"
+          ],
+          "note": "Наши стоимость/название копии/custom wire fallback/персональный цвет. Подключение к полному экрану пока не принято."
+        }
+      ],
+      "adaptations": [
+        "Канонические данные и дополнительные возможности нашего клиента сохранены; стили изолированы."
+      ]
     },
     {
       "source": "src/client/components/card/CardContent.vue",
@@ -1496,7 +1509,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/card/CardCost.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "targeted-tests",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/Card.spec.ts",
+            "tests/client/wrybit/visuals/PlayerCube.spec.ts"
+          ],
+          "note": "Наши стоимость/название копии/custom wire fallback/персональный цвет. Подключение к полному экрану пока не принято."
+        }
+      ],
+      "adaptations": [
+        "Канонические данные и дополнительные возможности нашего клиента сохранены; стили изолированы."
+      ]
     },
     {
       "source": "src/client/components/card/CardDescription.vue",
@@ -1736,7 +1762,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/card/CardTitle.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "targeted-tests",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/Card.spec.ts",
+            "tests/client/wrybit/visuals/PlayerCube.spec.ts"
+          ],
+          "note": "Наши стоимость/название копии/custom wire fallback/персональный цвет. Подключение к полному экрану пока не принято."
+        }
+      ],
+      "adaptations": [
+        "Канонические данные и дополнительные возможности нашего клиента сохранены; стили изолированы."
+      ]
     },
     {
       "source": "src/client/components/card/CardVictoryPoints.vue",
@@ -2180,7 +2219,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/common/PlayerCube.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "targeted-tests",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/Card.spec.ts",
+            "tests/client/wrybit/visuals/PlayerCube.spec.ts"
+          ],
+          "note": "Наши стоимость/название копии/custom wire fallback/персональный цвет. Подключение к полному экрану пока не принято."
+        }
+      ],
+      "adaptations": [
+        "Канонические данные и дополнительные возможности нашего клиента сохранены; стили изолированы."
+      ]
     },
     {
       "source": "src/client/components/common/PopupPanel.vue",

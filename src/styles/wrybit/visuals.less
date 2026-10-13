@@ -1,0 +1,9 @@
+.wrybit-ui {
+  @import "./variables.less";
+  @import "./player_cube.less";
+
+  .wrybit-card.card-unavailable:has(.card-player-cube) {
+    filter: none;
+    opacity: 1;
+  }
+}

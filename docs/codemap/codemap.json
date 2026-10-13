@@ -1,7 +1,7 @@
 {
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-13T16:29:39.173Z",
-  "generated_from_commit": "44ab0e91c8fcd5077edc894307e587f944648a9d",
+  "generated_at": "2026-10-13T17:45:48.898Z",
+  "generated_from_commit": "98ba76c2d4459be69820f1cb8a95fadbf5571f42",
   "scope": [
     ".",
     ".github",
@@ -2008,6 +2008,71 @@
       ]
     },
     {
+      "id": "canonical-card-view",
+      "label": "Наши данные и свойства карты",
+      "type": "ui",
+      "path": "src/client/components/card/Card.vue",
+      "role": "Каноническая карточная модель, wire fallback custom card, стоимость, теги, ресурсы и названия.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/card/Card.vue",
+          "symbol": "cardInstance: card",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/components/card/Card.spec.ts",
+          "symbol": "Custom Card Maker"
+        }
+      ],
+      "constraints": [
+        "Wrybit не заменяет карточные данные или цены."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/components/card/Card.vue",
+          "symbol": "this.card.calculatedCost",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "wrybit-card-view",
+      "label": "Карточное представление Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/card/Card.vue",
+      "role": "Адаптированное представление наследует наш канонический компонент; интеграция каталога ещё выполняется.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/card/Card.vue",
+          "symbol": "extends: CanonicalCard",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/Card.spec.ts",
+          "symbol": "server cost and copy title"
+        },
+        {
+          "path": "tests/client/wrybit/visuals/PlayerCube.spec.ts",
+          "symbol": "reserved artwork"
+        }
+      ],
+      "constraints": [
+        "Правила, AI и сетевые контроллеры не импортированы.",
+        "Полный UI ещё не готов."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/card/Card.vue",
+          "symbol": "card.combinedDisplayName ?? cardMetadata.displayName",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
       "id": "wrybit-mode-boundary",
       "label": "Опциональный режим Wrybit",
       "type": "ui",
@@ -3206,6 +3271,19 @@
       ]
     },
     {
+      "from": "wrybit-card-view",
+      "to": "canonical-card-view",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/card/Card.vue",
+          "symbol": "extends: CanonicalCard",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
       "from": "client-ui",
       "to": "wrybit-mode-boundary",
       "type": "calls",
@@ -3743,7 +3821,18 @@
     "tests/client/components/PlayerHome.spec.ts",
     "tests/client/wrybit/shell/InputPortal.spec.ts",
     "tests/client/wrybit/shell/BoardInputPortal.spec.ts",
-    "tests/client/wrybit/shell/DraftInputPortal.spec.ts"
+    "tests/client/wrybit/shell/DraftInputPortal.spec.ts",
+    "src/client/components/card/Card.vue",
+    "tests/client/components/card/Card.spec.ts",
+    "src/client/wrybit/visuals/card/Card.vue",
+    "src/client/wrybit/visuals/card/CardTitle.vue",
+    "src/client/wrybit/visuals/card/CardCost.vue",
+    "src/client/wrybit/visuals/common/PlayerCube.vue",
+    "tests/client/wrybit/visuals/Card.spec.ts",
+    "tests/client/wrybit/visuals/PlayerCube.spec.ts",
+    "src/styles/wrybit/visuals.less",
+    "src/styles/wrybit/variables.less",
+    "src/styles/wrybit/player_cube.less"
   ],
   "verification_scope": {
     "paths": [
@@ -3779,6 +3868,7 @@
       "src/client/components/SelectSpace.vue",
       "src/client/components/SpectatorHome.vue",
       "src/client/components/WaitingFor.vue",
+      "src/client/components/card/Card.vue",
       "src/client/components/card/CardRequirementComponent.vue",
       "src/client/components/create/CreateGameForm.vue",
       "src/client/components/create/JSONProcessor.ts",
@@ -3800,6 +3890,10 @@
       "src/client/wrybit/shell/background.less",
       "src/client/wrybit/shell/inputContext.ts",
       "src/client/wrybit/shell/inputHosts.ts",
+      "src/client/wrybit/visuals/card/Card.vue",
+      "src/client/wrybit/visuals/card/CardCost.vue",
+      "src/client/wrybit/visuals/card/CardTitle.vue",
+      "src/client/wrybit/visuals/common/PlayerCube.vue",
       "src/common/Timer.ts",
       "src/common/app/paths.ts",
       "src/common/cards/CardReplacementRules.ts",
@@ -3975,6 +4069,9 @@
       "src/server/turmoil/parties/Kelvinists.ts",
       "src/server/turmoil/parties/Reds.ts",
       "src/styles/cards.less",
+      "src/styles/wrybit/player_cube.less",
+      "src/styles/wrybit/variables.less",
+      "src/styles/wrybit/visuals.less",
       "tests/awards/amazonisPlanitia/AmazonisEngineer.spec.ts",
       "tests/awards/terraCimmeria/Warmonger.spec.ts",
       "tests/behavior/Executor.spec.ts",
@@ -3988,6 +4085,7 @@
       "tests/client/components/GameEnd.spec.ts",
       "tests/client/components/PlayerHome.spec.ts",
       "tests/client/components/SpectatorHome.spec.ts",
+      "tests/client/components/card/Card.spec.ts",
       "tests/client/components/card/CardRequirementComponent.spec.ts",
       "tests/client/components/create/JSONProcessor.spec.ts",
       "tests/client/components/create/Rebalanced.spec.ts",
@@ -4002,6 +4100,8 @@
       "tests/client/wrybit/shell/WrybitBoundary.spec.ts",
       "tests/client/wrybit/shell/WrybitShell.spec.ts",
       "tests/client/wrybit/shell/inputContext.spec.ts",
+      "tests/client/wrybit/visuals/Card.spec.ts",
+      "tests/client/wrybit/visuals/PlayerCube.spec.ts",
       "tests/database/ReplayArchive.spec.ts",
       "tests/fanmade-compat/RebalancedLifecycle.spec.ts",
       "tests/models/ServerModel.spec.ts",

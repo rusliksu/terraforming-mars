@@ -1514,6 +1514,15 @@
             "tests/client/wrybit/visuals/PlayerCube.spec.ts"
           ],
           "note": "Наши стоимость/название копии/custom wire fallback/персональный цвет. Подключение к полному экрану пока не принято."
+        },
+        {
+          "kind": "synthetic-browser-styles",
+          "status": "passed-in-isolation",
+          "paths": [
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/cards-styles-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/cards-styles-phone.png"
+          ],
+          "note": "Штатный Webpack fixture, 1440x1000 и 390x844, 0 console errors/warnings после URL repair. Каталог, все карты и полный App ещё не проверены."
         }
       ],
       "adaptations": [
@@ -1563,6 +1572,15 @@
             "tests/client/wrybit/visuals/PlayerCube.spec.ts"
           ],
           "note": "Наши стоимость/название копии/custom wire fallback/персональный цвет. Подключение к полному экрану пока не принято."
+        },
+        {
+          "kind": "synthetic-browser-styles",
+          "status": "passed-in-isolation",
+          "paths": [
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/cards-styles-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/cards-styles-phone.png"
+          ],
+          "note": "Штатный Webpack fixture, 1440x1000 и 390x844, 0 console errors/warnings после URL repair. Каталог, все карты и полный App ещё не проверены."
         }
       ],
       "adaptations": [
@@ -1816,6 +1834,15 @@
             "tests/client/wrybit/visuals/PlayerCube.spec.ts"
           ],
           "note": "Наши стоимость/название копии/custom wire fallback/персональный цвет. Подключение к полному экрану пока не принято."
+        },
+        {
+          "kind": "synthetic-browser-styles",
+          "status": "passed-in-isolation",
+          "paths": [
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/cards-styles-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/cards-styles-phone.png"
+          ],
+          "note": "Штатный Webpack fixture, 1440x1000 и 390x844, 0 console errors/warnings после URL repair. Каталог, все карты и полный App ещё не проверены."
         }
       ],
       "adaptations": [
@@ -4006,6 +4033,34 @@
       "license": "GPL-3.0",
       "status": "planned",
       "note": "Перенесён только общий corner layout. Остальные tabs ещё не интегрированы."
+    },
+    {
+      "source": "src/styles/cards_v2.less",
+      "sourceSha256": "7b49e5b5fbbd57795c0c67f09c3433bb03998b2fe2c91b9b1897b4c7fb32da16",
+      "target": "src/styles/wrybit/cards.less",
+      "splitTargets": [
+        "src/styles/wrybit/cards/content-and-requirements.less",
+        "src/styles/wrybit/cards/corporation-logos-additional.less",
+        "src/styles/wrybit/cards/corporation-logos-core.less",
+        "src/styles/wrybit/cards/counters.less",
+        "src/styles/wrybit/cards/expansion.less",
+        "src/styles/wrybit/cards/header.less",
+        "src/styles/wrybit/cards/render-and-tiles.less",
+        "src/styles/wrybit/cards/resources-and-symbols.less",
+        "src/styles/wrybit/cards/title-and-tags.less"
+      ],
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "full-css-parity",
+          "status": "passed-in-isolation",
+          "paths": [
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/card-css-parity.json"
+          ],
+          "note": "417 значащих rules, declarations, important и порядок совпадают. URL rewrite включён; ./assets и assets нормализуются как один путь. Пустые comment-only rules не влияют на результат."
+        }
+      ]
     }
   ],
   "assets": [

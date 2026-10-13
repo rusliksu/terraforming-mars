@@ -1,7 +1,7 @@
 {
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-13T19:22:53.294Z",
-  "generated_from_commit": "567ec1e8b8477f07194cefd201206c8643a0b440",
+  "generated_at": "2026-10-13T19:58:18.545Z",
+  "generated_from_commit": "6c2971dc8b5eca9cffe0ab5e2059878ed4688fc2",
   "scope": [
     ".",
     ".github",
@@ -2008,6 +2008,32 @@
       ]
     },
     {
+      "id": "wrybit-card-style",
+      "label": "Изолированные карточные стили Wrybit",
+      "type": "ui",
+      "path": "src/styles/wrybit/cards.less",
+      "role": "Стили разбиты по визуальной ответственности с сохранением значащих CSS rules, declarations и precedence.",
+      "entrypoints": [
+        {
+          "path": "src/styles/wrybit/cards.less",
+          "symbol": "@import \"./cards/header.less\"",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/visualStyles.spec.ts",
+          "symbol": "compiled visual styles"
+        }
+      ],
+      "constraints": [
+        "Файлы короче 1000 строк.",
+        "Parity к frozen cards_v2.less проверена отдельно.",
+        "Full App integration pending."
+      ],
+      "evidence": []
+    },
+    {
       "id": "canonical-board-view",
       "label": "Наши параметры и геометрия поля",
       "type": "ui",
@@ -3417,6 +3443,24 @@
       ]
     },
     {
+      "from": "wrybit-card-view",
+      "to": "wrybit-card-style",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/card/Card.vue",
+          "symbol": "styles/wrybit/visuals.less",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/styles/wrybit/visuals.less",
+          "symbol": "@import \"./cards.less\"",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
       "from": "wrybit-board-view",
       "to": "canonical-board-view",
       "type": "reads",
@@ -4051,7 +4095,17 @@
     "tests/client/wrybit/visuals/visualStyles.spec.ts",
     "assets/wrybit/board/ATTRIBUTION.md",
     "tests/client/wrybit/visuals/MarsScaleBonuses.spec.ts",
-    "src/styles/wrybit/outer_spaces.less"
+    "src/styles/wrybit/outer_spaces.less",
+    "src/styles/wrybit/cards.less",
+    "src/styles/wrybit/cards/expansion.less",
+    "src/styles/wrybit/cards/header.less",
+    "src/styles/wrybit/cards/corporation-logos-core.less",
+    "src/styles/wrybit/cards/corporation-logos-additional.less",
+    "src/styles/wrybit/cards/content-and-requirements.less",
+    "src/styles/wrybit/cards/resources-and-symbols.less",
+    "src/styles/wrybit/cards/render-and-tiles.less",
+    "src/styles/wrybit/cards/title-and-tags.less",
+    "src/styles/wrybit/cards/counters.less"
   ],
   "verification_scope": {
     "paths": [
@@ -4312,6 +4366,16 @@
       "src/server/turmoil/parties/Reds.ts",
       "src/styles/cards.less",
       "src/styles/wrybit/board.less",
+      "src/styles/wrybit/cards.less",
+      "src/styles/wrybit/cards/content-and-requirements.less",
+      "src/styles/wrybit/cards/corporation-logos-additional.less",
+      "src/styles/wrybit/cards/corporation-logos-core.less",
+      "src/styles/wrybit/cards/counters.less",
+      "src/styles/wrybit/cards/expansion.less",
+      "src/styles/wrybit/cards/header.less",
+      "src/styles/wrybit/cards/render-and-tiles.less",
+      "src/styles/wrybit/cards/resources-and-symbols.less",
+      "src/styles/wrybit/cards/title-and-tags.less",
       "src/styles/wrybit/globs.less",
       "src/styles/wrybit/outer_spaces.less",
       "src/styles/wrybit/player_cube.less",

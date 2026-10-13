@@ -27,6 +27,9 @@
       "last_event_id": "01M4V2CSEWM93P5CNC57RZDYWP",
       "last_transition_at": "2026-10-13T16:44:08.540280+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Независимая сессия reviewer-renata /root/wrybit_wp_review одобрила code7deb7daa69; 12709passed,3skipped,0failures. Только оболочка T001–T004; полный UI ещё не принят."
+      ],
       "provider": "__resolved_provider_absent__",
       "review": null,
       "review_result": {

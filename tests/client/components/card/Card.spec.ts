@@ -44,6 +44,14 @@ describe('Card', () => {
     wrapper.unmount();
   });
 
+  it('keeps the Cheung Shing logo with its rebalanced effect and identity', () => {
+    const wrapper = mount(Card, {...globalConfig, props: {card: {name: CardName.CHEUNG_SHING_MARS_REBALANCED}}});
+    expect(wrapper.get('.card-cheung-shing-logo').text()).to.equal('㨐');
+    expect(wrapper.getComponent({name: 'CardTitle'}).props('title')).to.equal(CardName.CHEUNG_SHING_MARS_REBALANCED);
+    expect(wrapper.get('.card-content').text()).to.contain('When you play a building tag, including this, you gain 3 M€.');
+    wrapper.unmount();
+  });
+
   it('shows the printed fan card title without changing its identity or tags', async () => {
     const wrapper = mount(Card, {...globalConfig, props: {card: {name: CardName.MARKET_MANIPULATION_CB}}});
     expect(wrapper.get('.card-title .card-title').text()).to.equal('Market Manipulation');

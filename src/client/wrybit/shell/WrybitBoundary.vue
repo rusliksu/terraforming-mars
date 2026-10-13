@@ -12,10 +12,11 @@ const props = defineProps<{
   screen: string;
   loadShell?: () => Promise<Component>;
 }>();
-const emit = defineEmits<{classic: []}>();
+const emit = defineEmits<{classic: []; active: [value: boolean]}>();
 const shell = shallowRef<Component>();
 const failed = ref(false);
 let pending: Promise<Component> | undefined;
+watch(() => props.enabled && shell.value !== undefined, (active) => emit('active', active), {immediate: true});
 
 function loadDefaultShell(): Promise<Component> {
   return import(/* webpackChunkName: "wrybit-ui" */ '@/client/wrybit/shell/WrybitShell.vue').then((module) => module.default);

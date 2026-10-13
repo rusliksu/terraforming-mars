@@ -50,7 +50,7 @@
 <script lang="ts">
 /* global RequestInit */
 
-import {defineComponent} from 'vue';
+import {defineComponent, markRaw} from 'vue';
 import * as constants from '@/common/constants';
 import raw_settings from '@/genfiles/settings.json';
 import {vueRoot} from '@/client/components/vueRoot';
@@ -71,10 +71,6 @@ import {gameDocumentTitle} from '../utils/documentTitle';
 import {setFaviconStatus, setFaviconTurnFrame} from '@/client/utils/favicon';
 import AppButton from '@/client/components/common/AppButton.vue';
 
-let ui_update_timeout_id: number | undefined;
-let otherPlayersTimer: number | undefined;
-let documentTitleTimer: number | undefined;
-let animationFrame = 0;
 let undoChoiceSequence = 0;
 
 // How often to refresh other players' status during simultaneous phases.
@@ -98,6 +94,14 @@ type DataModel = {
   savedPlayerView: PlayerViewModel | undefined;
   undoChoice: '' | 'action' | 'step';
   undoRadioElementName: string;
+  timers: {
+    update: number | undefined;
+    otherPlayers: number | undefined;
+    title: number | undefined;
+  };
+  animationFrame: number;
+  pollingRevision: number;
+  active: boolean;
 }
 
 const CANNOT_CONTACT_SERVER = 'Unable to reach the server. It may be restarting or down for maintenance.';
@@ -122,6 +126,10 @@ export default defineComponent({
       savedPlayerView: undefined,
       undoChoice: '',
       undoRadioElementName: 'undo-choice-' + undoChoiceSequence++,
+      timers: markRaw({update: undefined, otherPlayers: undefined, title: undefined}),
+      animationFrame: 0,
+      pollingRevision: 0,
+      active: true,
     };
   },
   components: {
@@ -134,23 +142,22 @@ export default defineComponent({
       }
     },
     playerView() {
-      if (getPreferences().experimental_layout) {
-        this.startWaiting();
-      }
+      this.startWaiting();
     },
   },
   methods: {
     startWaiting() {
-      window.clearTimeout(ui_update_timeout_id);
-      window.clearTimeout(otherPlayersTimer);
-      window.clearInterval(documentTitleTimer);
+      this.pollingRevision++;
+      window.clearTimeout(this.timers.update);
+      window.clearTimeout(this.timers.otherPlayers);
+      window.clearInterval(this.timers.title);
       if (this.waitingfor === undefined || this.waitingfor.optional) {
         this.waitForUpdate();
       } else if (this.playerView.players.length > 1 && SIMULTANEOUS_PHASES.includes(this.playerView.game.phase)) {
         this.watchOtherPlayers();
       }
       if (this.playerView.players.length > 1 && this.waitingfor !== undefined && !this.waitingfor.optional) {
-        documentTitleTimer = window.setInterval(() => this.animateTitle(), 1000);
+        this.timers.title = window.setInterval(() => this.animateTitle(), 1000);
       }
     },
     getPlayerName(color: Color): string {
@@ -162,17 +169,17 @@ export default defineComponent({
         return;
       }
 
-      animationFrame = (animationFrame + 1) % TURN_SEQUENCE.length;
+      this.animationFrame = (this.animationFrame + 1) % TURN_SEQUENCE.length;
       const experimental = getPreferences().experimental_ui;
       // The favicon annotation is an experimental feature.
       if (experimental) {
-        setFaviconTurnFrame(animationFrame);
+        setFaviconTurnFrame(this.animationFrame);
       }
       // Existing behavior spins the symbol in the document title. With
       // experimental UI on a desktop browser we show it only in the tab favicon
       // instead; otherwise keep animating the title.
       if (!(experimental && isDesktopBrowser())) {
-        document.title = TURN_SEQUENCE[animationFrame] + ' ' + gameDocumentTitle(this.playerView.game);
+        document.title = TURN_SEQUENCE[this.animationFrame] + ' ' + gameDocumentTitle(this.playerView.game);
       }
     },
     onsave(out: InputResponse) {
@@ -214,6 +221,9 @@ export default defineComponent({
       this.onsave(out);
     },
     fetchPlayerInput(url: string, options: RequestInit) {
+      if (!this.active) {
+        return;
+      }
       const root = vueRoot(this);
       if (root.isServerSideRequestInProgress) {
         console.warn('Server request in progress');
@@ -223,8 +233,14 @@ export default defineComponent({
       root.isServerSideRequestInProgress = true;
       fetch(url, options)
         .then(async (response) => {
+          if (!this.active) {
+            return;
+          }
           if (response.ok) {
-            this.updatePlayerView(await response.json());
+            const model = await response.json();
+            if (this.active) {
+              this.updatePlayerView(model);
+            }
             return;
           }
 
@@ -252,6 +268,9 @@ export default defineComponent({
           }
         })
         .catch((e) => {
+          if (!this.active) {
+            return;
+          }
           root.showAlert('Error sending input,', CANNOT_CONTACT_SERVER);
           console.error(e);
         })
@@ -270,13 +289,19 @@ export default defineComponent({
       }
     },
     updatePlayerView(playerView: PlayerViewModel | undefined) {
+      if (!this.active) {
+        return;
+      }
       if (this.suspend === false) {
         const root = vueRoot(this);
-        root.screen = 'empty';
-        root.playerView = playerView;
-        root.playerkey++;
+        if (typeof root.applyPlayerView === 'function') {
+          root.applyPlayerView(playerView, true);
+        } else {
+          root.playerView = playerView;
+          root.playerkey++;
+        }
         root.screen = 'player-home';
-        if (this.playerView.game.phase === 'end' && window.location.pathname !== paths.THE_END) {
+        if (playerView?.game.phase === 'end' && window.location.pathname !== paths.THE_END) {
           window.location = window.location as any as (string & Location);
         }
         this.savedPlayerView = undefined;
@@ -287,18 +312,29 @@ export default defineComponent({
     waitForUpdate() {
       const vueApp = this;
       const root = vueRoot(this);
-      clearTimeout(ui_update_timeout_id);
+      const revision = this.pollingRevision;
+      const current = () => this.active && revision === this.pollingRevision;
+      clearTimeout(this.timers.update);
       const retryAfterWaitingForPollError = (reason: string) => {
+        if (!current()) {
+          return;
+        }
         console.warn(`${WAITING_FOR_POLL_RETRY_MESSAGE} ${reason}`);
         vueApp.waitForUpdate();
       };
       const askForUpdate = () => {
+        if (!current()) {
+          return;
+        }
         const xhr = new XMLHttpRequest();
         xhr.open('GET', paths.API_WAITING_FOR + window.location.search + '&gameAge=' + this.playerView.game.gameAge + '&undoCount=' + this.playerView.game.undoCount);
         xhr.onerror = function() {
           retryAfterWaitingForPollError(CANNOT_CONTACT_SERVER);
         };
         xhr.onload = () => {
+          if (!current()) {
+            return;
+          }
           if (xhr.status === statusCode.ok) {
             const result = xhr.response as WaitingForModel;
             this.playersWaitingFor = result.waitingFor;
@@ -326,7 +362,7 @@ export default defineComponent({
         xhr.responseType = 'json';
         xhr.send();
       };
-      ui_update_timeout_id = window.setTimeout(askForUpdate, raw_settings.waitingForTimeout);
+      this.timers.update = window.setTimeout(askForUpdate, raw_settings.waitingForTimeout);
     },
     /**
      * While this player makes a simultaneous choice (e.g. drafting), keep the other
@@ -334,13 +370,16 @@ export default defineComponent({
      */
     watchOtherPlayers() {
       const playerView = this.playerView;
-      window.clearTimeout(otherPlayersTimer);
+      window.clearTimeout(this.timers.otherPlayers);
       // Schedule the next poll only after this one finishes, so responses can't arrive out of order.
       const timer = window.setTimeout(async () => {
         try {
           const response = await fetch(paths.API_PLAYER + window.location.search);
           if (response.ok) {
             const latest: PlayerViewModel = await response.json();
+            if (!this.active || this.timers.otherPlayers !== timer) {
+              return;
+            }
             playerView.players = latest.players;
           } else {
             console.warn('Unable to update other players', response.status, response.statusText);
@@ -353,11 +392,11 @@ export default defineComponent({
           console.warn('Unable to update other players', e);
         }
         // Stop if the component unmounted or another poll started while this one was in flight.
-        if (otherPlayersTimer === timer) {
+        if (this.active && this.timers.otherPlayers === timer) {
           this.watchOtherPlayers();
         }
       }, OTHER_PLAYERS_INTERVAL);
-      otherPlayersTimer = timer;
+      this.timers.otherPlayers = timer;
     },
     async notify() {
       if (getPreferences().enable_sounds) {
@@ -468,12 +507,11 @@ export default defineComponent({
     }
     this.startWaiting();
   },
-  unmounted() {
-    window.clearTimeout(ui_update_timeout_id);
-    ui_update_timeout_id = undefined;
-    window.clearTimeout(otherPlayersTimer);
-    otherPlayersTimer = undefined;
-    window.clearInterval(documentTitleTimer);
+  beforeUnmount() {
+    this.active = false;
+    window.clearTimeout(this.timers.update);
+    window.clearTimeout(this.timers.otherPlayers);
+    window.clearInterval(this.timers.title);
   },
   computed: {
     Phase(): typeof Phase {

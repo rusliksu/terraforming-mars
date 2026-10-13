@@ -26,6 +26,7 @@ describe('Wrybit boundary', () => {
     try {
       await flushPromises();
       expect(loadShell.mock.calls.length).eq(0);
+      expect(wrapper.emitted('active')).deep.eq([[false]]);
       expect(wrapper.find('[data-test="shell"]').exists()).is.false;
       const input = wrapper.get<HTMLInputElement>('[data-test="payment"]');
       await input.setValue(19);
@@ -34,10 +35,12 @@ describe('Wrybit boundary', () => {
       await flushPromises();
       expect(loadShell.mock.calls.length).eq(1);
       expect(wrapper.find('[data-test="shell"]').exists()).is.true;
+      expect(wrapper.emitted('active')).deep.eq([[false], [true]]);
       await wrapper.get('[data-test="classic"]').trigger('click');
       expect(wrapper.emitted('classic')).deep.eq([[]]);
       await wrapper.setProps({enabled: false});
       expect(wrapper.find('[data-test="shell"]').exists()).is.false;
+      expect(wrapper.emitted('active')).deep.eq([[false], [true], [false]]);
       expect(wrapper.get<HTMLInputElement>('[data-test="payment"]').element).eq(input.element);
       expect(input.element.value).eq('19');
 
@@ -89,6 +92,7 @@ describe('Wrybit boundary', () => {
       await flushPromises();
       expect(wrapper.find('[data-test="shell"]').exists()).is.false;
       expect(wrapper.get('[data-test="payment"]').element).eq(input.element);
+      expect(wrapper.emitted('active')).deep.eq([[false]]);
       expect(loadShell.mock.calls.length).eq(1);
     } finally {
       wrapper.unmount();

@@ -30,7 +30,8 @@
 
 <script lang="ts">
 
-import {defineComponent} from 'vue';
+import {defineComponent, inject} from 'vue';
+import {INPUT_HOSTS} from '@/client/wrybit/shell/inputHosts';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {isHTMLElement} from '@/client/utils/vueUtils';
 import {PlayerViewModel} from '@/common/models/PlayerModel';
@@ -45,6 +46,9 @@ type QuickGreeneryHandler = {tile: HTMLElement, handler: (event: Event) => void}
 
 export default defineComponent({
   name: 'OrOptions',
+  setup() {
+    return {inputHost: inject(INPUT_HOSTS, undefined)?.target};
+  },
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
@@ -96,6 +100,9 @@ export default defineComponent({
     };
   },
   watch: {
+    inputHost() {
+      this.$nextTick(() => this.setupQuickGreeneryPlacement());
+    },
     selectedOption(newOption: PlayerInputModel) {
       this.selectedIdx = this.displayedOptions.indexOf(newOption);
       // Clicking the option can shift elements on the page.

@@ -30,7 +30,7 @@ describe('Wrybit App mode', () => {
     });
     const Boundary = defineComponent({
       props: {enabled: Boolean, screen: String},
-      emits: ['classic'],
+      emits: ['classic', 'active'],
       template: '<section data-test="boundary" :data-enabled="enabled"><button @click="$emit(\'classic\')" data-test="classic">Classic</button><slot /></section>',
     });
     const wrapper = shallowMount(App, {
@@ -48,11 +48,16 @@ describe('Wrybit App mode', () => {
       PreferencesManager.INSTANCE.set('experimental_layout', true);
       await nextTick();
       expect(wrapper.get('[data-test="boundary"]').attributes('data-enabled')).eq('true');
+      expect(wrapper.classes()).not.include('wrybit-ui');
+      wrapper.getComponent(Boundary).vm.$emit('active', true);
+      await nextTick();
+      expect(wrapper.classes()).include('wrybit-ui');
       expect(wrapper.get('[data-test="card"]').element).eq(cardInput.element);
       expect(wrapper.get('[data-test="payment"]').element).eq(paymentInput.element);
 
       await wrapper.get('[data-test="classic"]').trigger('click');
       expect(PreferencesManager.INSTANCE.values().experimental_layout).is.false;
+      expect(wrapper.classes()).not.include('wrybit-ui');
       expect(storage.getItem('experimental_layout')).eq('0');
       expect(wrapper.get<HTMLInputElement>('[data-test="card"]').element.value).eq('fixture-card-b');
       expect(wrapper.get<HTMLInputElement>('[data-test="payment"]').element.value).eq('19');

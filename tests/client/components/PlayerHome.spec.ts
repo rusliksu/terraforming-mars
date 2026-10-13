@@ -45,6 +45,7 @@ describe('PlayerHome', () => {
     const players = multiplayer ? [thisPlayer, fakePublicPlayerModel({id: 'p-red-id' as any, color: 'red', name: 'red'})] : [thisPlayer];
     return shallowMount(PlayerHome, {
       ...globalConfig,
+      global: {...globalConfig.global, stubs: {InputHost: false}},
       parentComponent: {
         methods: {
           getVisibilityState: () => true,

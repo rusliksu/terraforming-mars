@@ -2,6 +2,34 @@
   @import "./variables.less";
   @import "./player_cube.less";
   @import "./track_bonus.less";
+  @import "./outer_spaces.less";
+  @import "./board.less";
+  @import "./globs.less";
+
+  .board-cont--custom {
+    background-image: none;
+  }
+
+  .board-cube-acrylic {
+    background-image: none;
+  }
+
+  .mars-scale-bonus-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    > span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+  }
+
+  .resource_items_cont:hover {
+    position: relative;
+    z-index: 10;
+  }
 
   .wrybit-card.card-unavailable:has(.card-player-cube) {
     filter: none;

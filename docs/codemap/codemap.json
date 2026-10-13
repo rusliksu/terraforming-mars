@@ -1,7 +1,7 @@
 {
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-13T18:12:44.062Z",
-  "generated_from_commit": "fb1a6f22eb5a456657e14a605c570586b2d2c0a5",
+  "generated_at": "2026-10-13T19:22:53.294Z",
+  "generated_from_commit": "567ec1e8b8477f07194cefd201206c8643a0b440",
   "scope": [
     ".",
     ".github",
@@ -2008,6 +2008,122 @@
       ]
     },
     {
+      "id": "canonical-board-view",
+      "label": "Наши параметры и геометрия поля",
+      "type": "ui",
+      "path": "src/client/components/Board.vue",
+      "role": "Канонические шкалы, максимумы, позиции custom spaces и разделение Venus Phase 2.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/Board.vue",
+          "symbol": "getValuesForParameter",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/components/Board.spec.ts",
+          "symbol": "moves the Venus track"
+        }
+      ],
+      "constraints": [],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-board-view",
+      "label": "Поле Wrybit с нашими моделями",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/Board.vue",
+      "role": "Наследует канонические параметры и геометрию; добавляет представление кубов, внешних клеток и бонусов.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/Board.vue",
+          "symbol": "extends: CanonicalBoard",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/Board.spec.ts",
+          "symbol": "uses configured rewards"
+        }
+      ],
+      "constraints": [
+        "Пока проверено в изоляции; production caller ещё не интегрирован."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-scale-bonus-view",
+      "label": "Проекция бонусов наших шкал",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/board/marsScaleBonuses.ts",
+      "role": "Отображает supplied GlobalParametersConfig.bonuses; не определяет пороги и награды.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/board/marsScaleBonuses.ts",
+          "symbol": "export function scaleBonusPins",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/Board.spec.ts",
+          "symbol": "unpainted custom rewards visible"
+        }
+      ],
+      "constraints": [
+        "Координаты Wrybit описывают геометрию, а не правила."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "canonical-resources-view",
+      "label": "Наши ресурсы игроков",
+      "type": "ui",
+      "path": "src/client/components/overview/PlayerResources.vue",
+      "role": "Канонические ресурсы, материал, Helion, защиты, Coordination и командные цвета.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/overview/PlayerResources.vue",
+          "symbol": "conglomeratesExpansion",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/components/overview/PlayerResources.spec.ts",
+          "symbol": "Coordination"
+        }
+      ],
+      "constraints": [],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-resources-view",
+      "label": "Ресурсы в Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/overview/PlayerResources.vue",
+      "role": "Наследует наш ресурсный контракт и сохраняет дополнения сервера; отдельный компонент ячейки Wrybit.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/overview/PlayerResources.vue",
+          "symbol": "extends: CanonicalPlayerResources",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/PlayerResources.spec.ts",
+          "symbol": "preserves our Coordination"
+        }
+      ],
+      "constraints": [
+        "Пока проверено в изоляции."
+      ],
+      "evidence": []
+    },
+    {
       "id": "wrybit-track-view",
       "label": "Представление треков Wrybit",
       "type": "ui",
@@ -3301,6 +3417,45 @@
       ]
     },
     {
+      "from": "wrybit-board-view",
+      "to": "canonical-board-view",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/Board.vue",
+          "symbol": "extends: CanonicalBoard",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-board-view",
+      "to": "wrybit-scale-bonus-view",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/Board.vue",
+          "symbol": "return scaleBonusPins(",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-resources-view",
+      "to": "canonical-resources-view",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/overview/PlayerResources.vue",
+          "symbol": "extends: CanonicalPlayerResources",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
       "from": "wrybit-card-view",
       "to": "canonical-card-view",
       "type": "reads",
@@ -3869,10 +4024,40 @@
     "src/client/wrybit/visuals/trackBonus/trackBonus.ts",
     "src/client/wrybit/visuals/trackBonus/trackCell.ts",
     "src/styles/wrybit/track_bonus.less",
-    "tests/client/wrybit/visuals/BoardTrackRow.spec.ts"
+    "tests/client/wrybit/visuals/BoardTrackRow.spec.ts",
+    "src/client/components/Board.vue",
+    "src/client/components/BoardSpace.vue",
+    "tests/client/components/Board.spec.ts",
+    "src/client/wrybit/visuals/Board.vue",
+    "src/client/wrybit/visuals/BoardSpace.vue",
+    "src/client/wrybit/visuals/common/BoardCube.vue",
+    "src/client/wrybit/visuals/board/outerSpaces.ts",
+    "src/client/wrybit/visuals/board/marsScaleCells.ts",
+    "src/client/wrybit/visuals/board/marsScaleBonuses.ts",
+    "src/client/wrybit/visuals/board/MarsScaleBonuses.vue",
+    "src/client/components/overview/PlayerResources.vue",
+    "src/client/components/overview/PlayerResource.vue",
+    "src/client/wrybit/visuals/overview/PlayerResources.vue",
+    "src/client/wrybit/visuals/overview/PlayerResource.vue",
+    "tests/client/wrybit/visuals/Board.spec.ts",
+    "tests/client/wrybit/visuals/PlayerResources.spec.ts",
+    "tests/client/components/overview/PlayerResources.spec.ts",
+    "src/client/utils/playerSymbol.ts",
+    "src/common/GlobalParameterConfig.ts",
+    "src/styles/wrybit/board.less",
+    "src/styles/wrybit/globs.less",
+    "assets/wrybit/board/mars-clean.png",
+    "assets/wrybit/board/mars-without-venus-clean.png",
+    "tests/client/wrybit/visuals/visualStyles.spec.ts",
+    "assets/wrybit/board/ATTRIBUTION.md",
+    "tests/client/wrybit/visuals/MarsScaleBonuses.spec.ts",
+    "src/styles/wrybit/outer_spaces.less"
   ],
   "verification_scope": {
     "paths": [
+      "assets/wrybit/board/ATTRIBUTION.md",
+      "assets/wrybit/board/mars-clean.png",
+      "assets/wrybit/board/mars-without-venus-clean.png",
       "assets/wrybit/shell/ATTRIBUTION.md",
       "docs/game-history-archive.md",
       "docs/game-replay.md",
@@ -3897,6 +4082,8 @@
       "scripts/tests/test_tm_sentry_release_remote.py",
       "src/client/cards/ClientCardManifest.ts",
       "src/client/components/App.vue",
+      "src/client/components/Board.vue",
+      "src/client/components/BoardSpace.vue",
       "src/client/components/GameEnd.vue",
       "src/client/components/GameSetupDetail.vue",
       "src/client/components/OrOptions.vue",
@@ -3912,10 +4099,13 @@
       "src/client/components/create/TemplateManager.ts",
       "src/client/components/help/HelpRulebooks.vue",
       "src/client/components/overview/PlayerInfo.vue",
+      "src/client/components/overview/PlayerResource.vue",
+      "src/client/components/overview/PlayerResources.vue",
       "src/client/components/overview/PlayersOverview.vue",
       "src/client/components/replay/ReplayHome.vue",
       "src/client/components/replay/useReplay.ts",
       "src/client/utils/WikiLinks.ts",
+      "src/client/utils/playerSymbol.ts",
       "src/client/wrybit/import-manifest.json",
       "src/client/wrybit/shell/AppBackground.vue",
       "src/client/wrybit/shell/InputHost.vue",
@@ -3927,15 +4117,25 @@
       "src/client/wrybit/shell/background.less",
       "src/client/wrybit/shell/inputContext.ts",
       "src/client/wrybit/shell/inputHosts.ts",
+      "src/client/wrybit/visuals/Board.vue",
+      "src/client/wrybit/visuals/BoardSpace.vue",
+      "src/client/wrybit/visuals/board/MarsScaleBonuses.vue",
+      "src/client/wrybit/visuals/board/marsScaleBonuses.ts",
+      "src/client/wrybit/visuals/board/marsScaleCells.ts",
+      "src/client/wrybit/visuals/board/outerSpaces.ts",
       "src/client/wrybit/visuals/card/Card.vue",
       "src/client/wrybit/visuals/card/CardCost.vue",
       "src/client/wrybit/visuals/card/CardTitle.vue",
+      "src/client/wrybit/visuals/common/BoardCube.vue",
       "src/client/wrybit/visuals/common/PlayerCube.vue",
+      "src/client/wrybit/visuals/overview/PlayerResource.vue",
+      "src/client/wrybit/visuals/overview/PlayerResources.vue",
       "src/client/wrybit/visuals/trackBonus/BoardTrackRow.vue",
       "src/client/wrybit/visuals/trackBonus/TrackBonusChip.vue",
       "src/client/wrybit/visuals/trackBonus/TrackLane.vue",
       "src/client/wrybit/visuals/trackBonus/trackBonus.ts",
       "src/client/wrybit/visuals/trackBonus/trackCell.ts",
+      "src/common/GlobalParameterConfig.ts",
       "src/common/Timer.ts",
       "src/common/app/paths.ts",
       "src/common/cards/CardReplacementRules.ts",
@@ -4111,6 +4311,9 @@
       "src/server/turmoil/parties/Kelvinists.ts",
       "src/server/turmoil/parties/Reds.ts",
       "src/styles/cards.less",
+      "src/styles/wrybit/board.less",
+      "src/styles/wrybit/globs.less",
+      "src/styles/wrybit/outer_spaces.less",
       "src/styles/wrybit/player_cube.less",
       "src/styles/wrybit/track_bonus.less",
       "src/styles/wrybit/variables.less",
@@ -4125,6 +4328,7 @@
       "tests/cards/rebalanced/Replacements.spec.ts",
       "tests/cards/requirements/CardRequirements.spec.ts",
       "tests/client/components/App.spec.ts",
+      "tests/client/components/Board.spec.ts",
       "tests/client/components/GameEnd.spec.ts",
       "tests/client/components/PlayerHome.spec.ts",
       "tests/client/components/SpectatorHome.spec.ts",
@@ -4132,6 +4336,7 @@
       "tests/client/components/card/CardRequirementComponent.spec.ts",
       "tests/client/components/create/JSONProcessor.spec.ts",
       "tests/client/components/create/Rebalanced.spec.ts",
+      "tests/client/components/overview/PlayerResources.spec.ts",
       "tests/client/components/overview/PlayersOverview.spec.ts",
       "tests/client/components/replay/ReplayHome.spec.ts",
       "tests/client/components/replay/useReplay.spec.ts",
@@ -4143,9 +4348,13 @@
       "tests/client/wrybit/shell/WrybitBoundary.spec.ts",
       "tests/client/wrybit/shell/WrybitShell.spec.ts",
       "tests/client/wrybit/shell/inputContext.spec.ts",
+      "tests/client/wrybit/visuals/Board.spec.ts",
       "tests/client/wrybit/visuals/BoardTrackRow.spec.ts",
       "tests/client/wrybit/visuals/Card.spec.ts",
+      "tests/client/wrybit/visuals/MarsScaleBonuses.spec.ts",
       "tests/client/wrybit/visuals/PlayerCube.spec.ts",
+      "tests/client/wrybit/visuals/PlayerResources.spec.ts",
+      "tests/client/wrybit/visuals/visualStyles.spec.ts",
       "tests/database/ReplayArchive.spec.ts",
       "tests/fanmade-compat/RebalancedLifecycle.spec.ts",
       "tests/models/ServerModel.spec.ts",

@@ -351,6 +351,8 @@
 
 import {defineComponent} from 'vue';
 import {CardName} from '@/common/cards/CardName';
+import {getCardReplacementNames} from '@/common/cards/CardReplacementRules';
+import {getCardReplacementRules} from '@/client/cards/ClientCardManifest';
 
 
 const logos: Partial<Record<CardName, 'image' | 'css' | 'bespoke'>> = {
@@ -429,7 +431,6 @@ const logos: Partial<Record<CardName, 'image' | 'css' | 'bespoke'>> = {
   [CardName.POLYPHEMOS]: 'css',
   [CardName.POSEIDON]: 'css',
   [CardName.PRISTAR]: 'css',
-  [CardName.PRISTAR_BETTER_MARS]: 'css',
   [CardName.PROJECT_WORKSHOP]: 'bespoke',
   [CardName.RECYCLON]: 'bespoke',
   [CardName.RINGCOM]: 'image',
@@ -467,15 +468,23 @@ const logos: Partial<Record<CardName, 'image' | 'css' | 'bespoke'>> = {
   [CardName.ZETA_TOLLKEEPER]: 'bespoke',
 };
 
+const logoNames = getCardReplacementNames(
+  Object.values(CardName).filter((name) => logos[name] !== undefined),
+  getCardReplacementRules(() => true),
+);
+
 export default defineComponent({
   name: 'CardCorporationLogo',
   props: {
-    title: {
+    cardName: {
       type: String as () => CardName,
       required: true,
     },
   },
   computed: {
+    title(): CardName {
+      return logoNames.get(this.cardName) ?? this.cardName;
+    },
     logos(): typeof logos {
       return logos;
     },
@@ -487,9 +496,7 @@ export default defineComponent({
       switch (type) {
       case 'image':
       case 'css':
-        // Strip a display suffix like ":bm"/":s" (BetterMars/Sillyfication replacement
-        // cards) so the variant reuses its base card's logo instead of a broken one.
-        const local = this.title.split(':')[0].toLowerCase()
+        const local = this.title.toLowerCase()
           .replaceAll(' ', '-')
           .replaceAll('&', '')
           .replaceAll('--', '-');

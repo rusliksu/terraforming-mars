@@ -19,7 +19,7 @@
   "work_packages": {
     "WP01": {
       "actor": "user",
-      "agent": "codex",
+      "agent": null,
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -28,6 +28,7 @@
       "last_transition_at": "2026-10-13T13:09:44.789227+00:00",
       "model": "__resolved_model_absent__",
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "C:\\Users\\Ruslan\\.codex-worktrees\\terraforming-mars-release-main-wrybit-full-ui\\kitty-specs\\wrybit-full-ui-01M4R0GH\\tasks\\WP01-shell\\review-cycle-1.md",
         "reference": "review-cycle://wrybit-full-ui-01M4R0GH/WP01-shell/review-cycle-1.md",
@@ -35,13 +36,13 @@
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 23788,
-      "shell_pid_created_at": "1791896576.8119469",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T001": "done",
-        "T002": "done",
-        "T003": "done",
-        "T004": "done"
+        "T001": "planned",
+        "T002": "planned",
+        "T003": "planned",
+        "T004": "planned"
       }
     },
     "WP02": {

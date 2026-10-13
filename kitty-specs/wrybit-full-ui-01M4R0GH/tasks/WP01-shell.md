@@ -49,7 +49,7 @@ owned_files:
 - docs/codemap/codemap.html
 - docs/codemap/codemap.lock
 priority: P1
-role: implementer
+role: reviewer
 tags: []
 tracker_refs: []
 ---

@@ -236,4 +236,141 @@ describe('Wrybit current input refresh', () => {
       wrapper.unmount();
     }
   });
+
+  for (const returnFromWrybit of [false, true]) {
+    it(`keeps an in-flight POST while earlier and intermediate GETs finish (${returnFromWrybit ? 'return from Wrybit' : 'classic'})`, async () => {
+      const view = (waitingForId: string) => Object.assign(fakePlayerViewModel({
+        waitingFor: {type: 'option', title: 'Confirm', buttonLabel: 'Confirm'},
+        game: fakeGameModel({gameId: 'g-fixture'}),
+      }), {waitingForId});
+      const reads: Array<(response: Response) => void> = [];
+      let finishPost = (_response: Response) => {};
+      global.fetch = vi.fn((_url, options) => new Promise<Response>((resolve) => {
+        if (options?.method === 'POST') {
+          finishPost = resolve;
+        } else {
+          reads.push(resolve);
+        }
+      }));
+      PreferencesManager.INSTANCE.set('experimental_layout', returnFromWrybit);
+      const wrapper = mount(App, {
+        global: {...globalConfig.global, components: {PlayerInputFactory}, stubs: {StartScreen: true, PlayerHome: Home, WrybitBoundary: true}},
+      });
+      try {
+        const root = wrapper.vm.$root;
+        if (root === null) {
+          throw new Error('Missing VTU root');
+        }
+        Object.assign(root, {applyPlayerView: wrapper.vm.applyPlayerView.bind(wrapper.vm)});
+        // Forward App-owned fields through VTU's extra root wrapper.
+        for (const key of ['refreshRevision', 'isServerSideRequestInProgress'] as const) {
+          Object.defineProperty(root, key, {
+            configurable: true,
+            get: () => wrapper.vm[key],
+            set: (value) => {
+              Object.assign(wrapper.vm, {[key]: value});
+            },
+          });
+        }
+        wrapper.vm.applyPlayerView(view('pending-a'));
+        wrapper.vm.screen = 'player-home';
+        await nextTick();
+        window.history.replaceState({}, '', '/player?id=p-blue-id&noredirect');
+        wrapper.vm.updatePlayer();
+        PreferencesManager.INSTANCE.set('experimental_layout', false);
+        await nextTick();
+        const input = wrapper.getComponent(WaitingFor);
+        input.vm.onsavePlayerInput({type: 'option'});
+        wrapper.vm.updatePlayer();
+        expect(reads).has.length(2);
+        for (const finish of reads) {
+          finish(new Response(JSON.stringify(view('pending-a')), {status: 200}));
+        }
+        await flushPromises();
+        const sameForm = wrapper.getComponent(WaitingFor).element === input.element;
+        finishPost(new Response(JSON.stringify(view('pending-b')), {status: 200}));
+        await flushPromises();
+        expect(wrapper.vm.playerView?.waitingForId).eq('pending-b');
+        expect(sameForm).is.true;
+        expect(wrapper.vm.isServerSideRequestInProgress).is.false;
+        const posts = vi.mocked(global.fetch).mock.calls.filter((call) => call[1]?.method === 'POST');
+        expect(posts).has.length(1);
+        expect(JSON.parse(String(posts[0][1]?.body))).deep.eq({runId: view('pending-a').runId, type: 'option'});
+      } finally {
+        wrapper.unmount();
+      }
+    });
+  }
+
+  it('resumes optional-input polling after a rejected POST and an ignored refresh', async () => {
+    vi.useFakeTimers();
+    class PollRequest {
+      public static requests: Array<PollRequest> = [];
+      public status = 200;
+      public response = {result: 'REFRESH', waitingFor: []};
+      public onload: () => void = () => {};
+      public open() {}
+      public send() {
+        PollRequest.requests.push(this);
+      }
+    }
+    vi.stubGlobal('XMLHttpRequest', PollRequest);
+    const view = Object.assign(fakePlayerViewModel({
+      waitingFor: {type: 'option', title: 'Confirm', buttonLabel: 'Confirm', optional: true},
+      game: fakeGameModel({gameId: 'g-fixture'}),
+    }), {waitingForId: 'pending-a'});
+    let finishPost = (_response: Response) => {};
+    global.fetch = vi.fn((_url, options) => options?.method === 'POST' ?
+      new Promise<Response>((resolve) => {
+        finishPost = resolve;
+      }) :
+      Promise.resolve(new Response(JSON.stringify(view), {status: 200})));
+    const wrapper = mount(App, {
+      global: {...globalConfig.global, components: {PlayerInputFactory}, stubs: {StartScreen: true, PlayerHome: Home, WrybitBoundary: true}},
+    });
+    const showAlert = vi.spyOn(wrapper.vm, 'showAlert').mockImplementation(() => {});
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const root = wrapper.vm.$root;
+      if (root === null) {
+        throw new Error('Missing VTU root');
+      }
+      Object.assign(root, {
+        applyPlayerView: wrapper.vm.applyPlayerView.bind(wrapper.vm),
+        updatePlayer: wrapper.vm.updatePlayer.bind(wrapper.vm),
+        showAlert,
+      });
+      for (const key of ['refreshRevision', 'isServerSideRequestInProgress'] as const) {
+        Object.defineProperty(root, key, {
+          configurable: true,
+          get: () => wrapper.vm[key],
+          set: (value) => {
+            Object.assign(wrapper.vm, {[key]: value});
+          },
+        });
+      }
+      wrapper.vm.applyPlayerView(view);
+      wrapper.vm.screen = 'player-home';
+      await nextTick();
+      window.history.replaceState({}, '', '/player?id=p-blue-id&noredirect');
+      const form = wrapper.getComponent(WaitingFor).element;
+      wrapper.getComponent(WaitingFor).vm.onsavePlayerInput({type: 'option'});
+      await vi.advanceTimersByTimeAsync(settings.waitingForTimeout);
+      expect(PollRequest.requests).has.length(1);
+      PollRequest.requests[0].onload();
+      await flushPromises();
+      finishPost(new Response('', {status: 503, statusText: 'Unavailable'}));
+      await flushPromises();
+      expect(wrapper.vm.isServerSideRequestInProgress).is.false;
+      expect(wrapper.getComponent(WaitingFor).element).eq(form);
+      expect(showAlert.mock.calls).deep.eq([['Error processing response', 'Unexpected response from server. Please try again.']]);
+      expect(consoleError.mock.calls).deep.eq([['Unavailable']]);
+      await vi.advanceTimersByTimeAsync(settings.waitingForTimeout);
+      expect(PollRequest.requests).has.length(2);
+    } finally {
+      wrapper.unmount();
+      showAlert.mockRestore();
+      consoleError.mockRestore();
+    }
+  });
 });

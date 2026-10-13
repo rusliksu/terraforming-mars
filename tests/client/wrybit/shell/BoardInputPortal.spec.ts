@@ -35,7 +35,7 @@ describe('Board input across presentation replacement', () => {
       setup() {
         const hosts = createInputHosts();
         provide(INPUT_HOSTS, hosts);
-        return {hosts, wrybit: ref(false), input, view: fakePlayerViewModel(), save: (out: InputResponse) => responses.push(out)};
+        return {hosts, wrybit: ref(false), input: ref(input), view: fakePlayerViewModel(), save: (out: InputResponse) => responses.push(out)};
       },
       template: '<Wrybit v-if="wrybit" /><Classic v-else /><InputPortal :target="hosts.target.value"><PlayerInputFactory :player-view="view" :playerinput="input" :onsave="save" :showsave="true" :showtitle="true" /></InputPortal>',
     });
@@ -72,6 +72,39 @@ describe('Board input across presentation replacement', () => {
       newTile.click();
       oldTile.click();
       expect(responses).has.length(1);
+    } finally {
+      wrapper.unmount();
+      container.remove();
+    }
+  });
+
+  it('keeps confirmation for the selected greenery option after a cloned refresh and board replacement', async () => {
+    const input: PlayerInputModel = {
+      type: 'or', title: 'Choose action', buttonLabel: 'Take action', options: [
+        {type: 'option', title: 'Pass', buttonLabel: 'Pass'},
+        {type: 'space', title: 'Convert 8 plants into greenery', buttonLabel: 'Place', spaces: ['03']},
+      ],
+    };
+    const {wrapper, container, responses} = fixture(input);
+    try {
+      await nextTick();
+      await wrapper.findAll('input[type="radio"]')[1].setValue(true);
+      await nextTick();
+      const oldTile = wrapper.get<HTMLButtonElement>('[data_space_id="03"]').element;
+      wrapper.vm.input = JSON.parse(JSON.stringify(input));
+      wrapper.vm.wrybit = true;
+      await nextTick();
+      await nextTick();
+      oldTile.click();
+      const newTile = wrapper.get<HTMLButtonElement>('article [data_space_id="03"]').element;
+      newTile.click();
+      await nextTick();
+      expect(responses).is.empty;
+      expect(wrapper.getComponent(ConfirmDialog).vm.shown).is.true;
+      const button = wrapper.getComponent(ConfirmDialog).get<HTMLButtonElement>('button');
+      button.element.addEventListener('click', (event) => event.preventDefault(), {once: true});
+      await button.trigger('click');
+      expect(responses).deep.eq([{type: 'or', index: 1, response: {type: 'space', spaceId: '03'}}]);
     } finally {
       wrapper.unmount();
       container.remove();

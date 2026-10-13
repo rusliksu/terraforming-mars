@@ -231,6 +231,7 @@ export default defineComponent({
       }
 
       root.isServerSideRequestInProgress = true;
+      root.refreshRevision++;
       fetch(url, options)
         .then(async (response) => {
           if (!this.active) {
@@ -276,6 +277,9 @@ export default defineComponent({
         })
         .finally(() => {
           root.isServerSideRequestInProgress = false;
+          if (this.active) {
+            this.startWaiting();
+          }
         });
     },
     async readAppError(response: Response): Promise<AppErrorResponse> {

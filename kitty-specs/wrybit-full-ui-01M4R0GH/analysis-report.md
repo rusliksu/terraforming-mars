@@ -4,7 +4,7 @@ artifact_type: spec-kitty.analysis-report
 command: /spec-kitty.analyze
 mission_slug: wrybit-full-ui-01M4R0GH
 mission_id: 01M4R0GHH1EAEWZRBK041RJZAD
-generated_at: '2026-10-12T21:12:45.886519+00:00'
+generated_at: '2026-10-13T06:42:51.723816+00:00'
 analyzer_agent: codex
 input_artifacts:
   spec.md:
@@ -21,10 +21,10 @@ input_artifacts:
     sha256: da2bb3f583c76245a621b994d1d4ae0402c732dc35f569dd53c4f977f46a77ee
 verdict: ready
 issue_counts:
-  high: 0
+  medium: 0
   critical: 0
   low: 0
-  medium: 0
+  high: 0
   info: 0
 findings: []
 ---
@@ -35,7 +35,7 @@ findings: []
 
 ## Согласованность
 
-- FR-001…FR-010 и NFR-001…NFR-005 покрывают всю матрицу UI-01…UI-21; «полнота» означает закрытие каждой строки реальным сценарием, а не наличие оболочки. WP01 штатно claimed и находится in_progress; остальные шесть пакетов planned. Ни одной UI-подзадачи ещё не выполнено.
+- FR-001…FR-010 и NFR-001…NFR-005 покрывают всю матрицу UI-01…UI-21; «полнота» означает закрытие каждой строки реальным сценарием, а не наличие оболочки. WP01 штатно claimed и находится in_progress; остальные шесть пакетов planned. T001 выполнена: manifest классифицирует все 307 исходных Vue-компонентов без пропусков. Перенос экранов остаётся planned; все 21 строки приёмки открыты.
 - WP01 включает выключенный по умолчанию experimental_layout, отдельную оболочку/ресурсы, manifest всех исходных компонентов и сохранение актуального ввода. WP02…WP06 последовательно добавляют представления; WP07 требует полной проверки и staging. Этот порядок не допускает выдавать промежуточную оболочку за полный интерфейс.
 - App остаётся владельцем сети и отправки InputResponse. UI получает наши модели и канонические значения. Read-only проекции разрешены; правила, AI, карточные эффекты и сохранения Wrybit не импортируются.
 - Матрица требует все наши виды ввода, custom/rebalanced/fanmade параметры, приватность зрителя и публичной статистики. Дополнительные replay/card-maker/map-library страницы сохраняются.
@@ -48,7 +48,10 @@ findings: []
 
 Нативный исправленный SDK выдаёт WP01 в зарегистрированном checkout codex/wrybit-full-ui, а не в primary. Анализ записывается штатной record-analysis с тем же явным --owned-checkout. Нет нерешённых противоречий планирования, которые требуют нового решения пользователя до WP01.
 
-Для native baseline/review объявлены существующие npm-проверки server/client и настоящий JUnit-вывод через tools/spec-kitty-review.cjs. Подготовка требует Node 22, установленный npm CLI через TM_NPM_CLI и временные каталоги на D:. Эти проверки ещё не объявлены пройденными.
+Для native baseline/review объявлены существующие npm-проверки server/client и настоящий JUnit-вывод через tools/spec-kitty-review.cjs. Подготовка требует Node 22, установленный npm CLI через TM_NPM_CLI и временные каталоги на D:. Нативный baseline завершён с настоящим JUnit: 12688 passed, 3 skipped, 0 failed. Начальная граница App проверена 22 соседними UI-тестами; client type-check, targeted ESLint/stylelint и build:tests зелёные. Это не проверка полного интерфейса.
 
 
-Общий Git-config восстановлен по отдельно выданному разрешению Руслана; исходный нулевой файл сохранён, 203 HEAD/index/ref записи не изменились. Basic commit/merge/status снова работают. Native SDK source содержит проверенное завершение Windows console tree при таймауте/отмене; глобальная установка не заменялась. Baseline повторяется с полными runtime server/client suites и настоящими XML-отчётами, без компиляции типов внутри ограниченного capture. Полные type-check/lint/build и staging остаются обязательными. Последние совпадающие rule/style guides не менялись в свежем base diff.
+Общий Git-config восстановлен по отдельно выданному разрешению Руслана; исходный нулевой файл сохранён, 203 HEAD/index/ref записи не изменились. Basic commit/merge/status снова работают. Native SDK source содержит проверенное завершение Windows console tree при таймауте/отмене; глобальная установка не заменялась. Baseline использует полные runtime server/client suites, штатную static/client подготовку и настоящие XML-отчёты; компиляция server/test типов проверяется отдельно. Полные type-check/lint/build и staging остаются обязательными. Последние совпадающие rule/style guides не менялись в свежем base diff.
+
+
+Начальная опциональная граница App сохраняет текущий DOM при переключении и обрабатывает отказ загрузки. Полный игровой ввод при polling и все реальные представления Wrybit ещё требуют реализации. Первый code commit обновляет три codemap artifacts по CODING_STANDARDS.md; итоговое расширение карты остаётся в WP07. SDK PR31 находится в ready, свежий CI проверяет head 5a8b174a3114211ff91cec1964bea660c429bc29. Глобальная установка и protected main SDK не изменялись.

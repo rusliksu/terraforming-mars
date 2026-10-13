@@ -1,0 +1,19 @@
+{
+  "wp_id": "WP02",
+  "captured_at": "2026-10-13T16:47:13Z",
+  "base_branch": "codex/wrybit-full-ui",
+  "base_commit": "88a97a5cf1cc7efffedc21a8ee789566474fa6e1",
+  "test_runner": "custom",
+  "total": 1,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "failures": [
+    {
+      "test": "<declared-command>",
+      "error": "Node.js v24.19.0",
+      "file": "unknown"
+    }
+  ],
+  "source_identity": "DeclaredCommandScopeSource/text"
+}

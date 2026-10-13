@@ -1,7 +1,7 @@
 {
-  "event_count": 15,
-  "last_event_id": "01M4V1RG8RYJ31Y761EHJYCPB8",
-  "materialized_at": "2026-10-13T16:33:03.768889+00:00",
+  "event_count": 16,
+  "last_event_id": "01M4V1W9ZWQXC325FEAKYTRJWN",
+  "materialized_at": "2026-10-13T16:35:08.412203+00:00",
   "mission_number": "",
   "mission_slug": "wrybit-full-ui-01M4R0GH",
   "mission_type": "software-dev",
@@ -11,9 +11,9 @@
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 1,
+    "for_review": 0,
     "in_progress": 0,
-    "in_review": 0,
+    "in_review": 1,
     "planned": 6
   },
   "work_packages": {
@@ -23,9 +23,9 @@
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
-      "lane": "for_review",
-      "last_event_id": "01M4V1RG8RYJ31Y761EHJYCPB8",
-      "last_transition_at": "2026-10-13T16:33:03.768889+00:00",
+      "lane": "in_review",
+      "last_event_id": "01M4V1W9ZWQXC325FEAKYTRJWN",
+      "last_transition_at": "2026-10-13T16:35:08.412203+00:00",
       "model": "__resolved_model_absent__",
       "provider": "__resolved_provider_absent__",
       "review": null,
@@ -35,9 +35,9 @@
         "reviewer": "user",
         "verdict": "changes_requested"
       },
-      "role": "implementer",
-      "shell_pid": null,
-      "shell_pid_created_at": null,
+      "role": "reviewer",
+      "shell_pid": 5940,
+      "shell_pid_created_at": "1791909303.19101",
       "subtasks": {
         "T001": "done",
         "T002": "done",

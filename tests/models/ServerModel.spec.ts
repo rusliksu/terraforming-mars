@@ -16,6 +16,24 @@ import {OrOptions} from '../../src/server/inputs/OrOptions';
 import {SelectOption} from '../../src/server/inputs/SelectOption';
 
 describe('ServerModel', () => {
+  it('identifies the pending input across reads and replaces its identity for an identical new prompt', () => {
+    const [game, player, other] = testGame(2);
+    player.setWaitingFor(new SelectOption('Confirm selection'));
+    const first = Server.getPlayerModel(player);
+    expect(first.waitingForId).to.be.a('string');
+    other.megacredits++;
+    expect(Server.getPlayerModel(player).waitingForId).eq(first.waitingForId);
+    expect(player.getWaitingFor()).to.not.eq(undefined);
+
+    player.popWaitingFor();
+    expect(Server.getPlayerModel(player).waitingForId).eq(undefined);
+    player.setWaitingFor(new SelectOption('Confirm selection'));
+    const next = Server.getPlayerModel(player);
+    expect(next.waitingFor).deep.eq(first.waitingFor);
+    expect(next.waitingForId).not.eq(first.waitingForId);
+    expect(Server.getSpectatorModel(game)).not.to.have.property('waitingForId');
+  });
+
   it('advertises the current Astra replay exclusions in both public models', () => {
     const [game, player] = testGame(2);
     const exclusions = ['Patent Manipulation', 'Hostile Takeover'];

@@ -1,0 +1,523 @@
+// Track bonuses (TrackBonusChip.vue): the same chip and connector on every board – Moon rates, planet tracks, Delta.
+// One measure for everything: chip size, connector length and thickness, gap from the connector to the space.
+@track-bonus-gold: #f2c14e;
+// Chip size and connector length as custom properties: compact boards (track rows, phone) set smaller values
+@track-bonus-chip: var(--wrybit-track-bonus-chip, 24px);
+@track-bonus-link: var(--wrybit-track-bonus-link, 12px);
+@track-bonus-line: 2px;
+@track-bonus-gap: 3px;
+@track-bonus-space: 3px;
+
+.track-bonus-chip {
+  position: relative;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  flex: none;
+  min-width: @track-bonus-chip;
+  height: @track-bonus-chip;
+  padding: 0 2px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, #5a6474, #2a313c);
+  border: 2px solid @track-bonus-gold;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  line-height: 1;
+
+  img {
+    width: calc(@track-bonus-chip * 0.6);
+    height: calc(@track-bonus-chip * 0.6);
+    object-fit: contain;
+  }
+
+  b {
+    font: calc((@track-bonus-chip * 0.45)) / 1 Prototype, sans-serif;
+    color: #fff;
+  }
+
+  &--wrybit-wide {
+    padding: 0 calc((@track-bonus-chip * 0.2));
+  }
+
+  // For everyone: dashed outline
+  &--wrybit-everyone {
+    border-style: dashed;
+    background: radial-gradient(circle at 35% 30%, #4a5260, #262b34);
+  }
+
+  // Already handed out: grey and half transparent, like all used things in the app
+  &--wrybit-done {
+    opacity: 0.5;
+    filter: grayscale(1);
+    border-color: #8a8f99;
+  }
+
+  // Choice "A / B": upright capsule so it never gets wider than a space
+  &--wrybit-choice {
+    flex-direction: column;
+    height: auto;
+    min-height: @track-bonus-chip;
+    width: @track-bonus-chip;
+    padding: 3px 0;
+    gap: 0;
+    border-radius: calc(@track-bonus-chip / 2);
+
+    img {
+      width: calc(@track-bonus-chip * 0.55);
+      height: calc(@track-bonus-chip * 0.55);
+    }
+  }
+}
+
+.track-bonus-chip__or {
+  font: 700 calc((@track-bonus-chip * 0.4)) / 0.8 system-ui, sans-serif;
+  font-style: normal;
+  color: @track-bonus-gold;
+}
+
+.track-bonus-chip__production {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px;
+  border-radius: 3px;
+  background: #8a5a2b;
+
+  img {
+    width: calc(@track-bonus-chip * 0.5);
+    height: calc(@track-bonus-chip * 0.5);
+  }
+}
+
+.track-bonus-chip__vp {
+  display: grid;
+  place-items: center;
+  width: calc(@track-bonus-chip * 0.66);
+  height: calc(@track-bonus-chip * 0.66);
+  border-radius: 3px;
+  background: linear-gradient(#b17a3a, #7c4f20);
+  color: #fff;
+  font: calc((@track-bonus-chip * 0.45)) / 1 Prototype, sans-serif;
+}
+
+.track-bonus-chip__text {
+  font: 700 calc((@track-bonus-chip * 0.5)) / 1 system-ui, sans-serif;
+  color: #fff;
+}
+
+// Connector: only a line, always the same length and thickness. Base form horizontal (chip on the left, space on the right)
+.track-bonus-link {
+  position: relative;
+  display: block;
+  flex: none;
+  width: @track-bonus-link;
+  height: @track-bonus-line;
+  background: @track-bonus-gold;
+}
+
+// Pin = chips + connector
+.track-bonus-pin {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+
+  // Connector on top, chips below it (horizontal tracks)
+  &--wrybit-up {
+    flex-direction: column;
+
+    > .track-bonus-link {
+      width: @track-bonus-line;
+      height: @track-bonus-link;
+    }
+  }
+
+  // All chips handed out: connector greyed out as well
+  &--wrybit-done > .track-bonus-link {
+    opacity: 0.5;
+    filter: grayscale(1);
+  }
+}
+
+.track-bonus-pin__chips {
+  display: inline-flex;
+  gap: @track-bonus-space;
+}
+
+.track-bonus-pin__row {
+  display: flex;
+  gap: @track-bonus-space;
+  justify-content: center;
+
+  + .track-bonus-pin__row {
+    margin-top: @track-bonus-space;
+  }
+}
+
+// Bonus lane below a horizontal track (TrackLane.vue): same columns as the track, connector from the space down
+.track-lane {
+  display: flex;
+  gap: 2px;
+  margin-top: @track-bonus-gap;
+}
+
+.track-lane__cell {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  overflow: visible;
+}
+
+// ---------- Track rows (BoardTrackRow.vue): planet tracks, Delta Project ----------
+.board-track-row {
+  // Compact chips: five planet tracks have to fit into the Mars-sized box
+  --wrybit-track-bonus-chip: 17px;
+  --wrybit-track-bonus-link: 7px;
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 5px 10px 5px 6px;
+  border: 1px solid #3a3f5c;
+  border-radius: 8px;
+}
+
+// Without specificity, so a player colour class (Delta rows) wins over the neutral surface
+:where(.board-track-row) {
+  background: rgba(10, 12, 18, 0.6);
+}
+
+.board-track-row__head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.board-track-row__picture {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+
+  img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+  }
+}
+
+.board-track-row__name {
+  max-width: 70px;
+  font: 12px/1.3 Prototype, sans-serif;
+  letter-spacing: 0.03em;
+  text-align: center;
+  color: #ece9e2;
+}
+
+.board-track-row__body {
+  min-width: 0;
+}
+
+.board-track-row__track {
+  display: flex;
+  gap: 2px;
+}
+
+.board-track-row__cell {
+  flex: 1 1 0;
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  height: 20px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #a4a9b6;
+  font-size: 12.5px;
+  letter-spacing: -0.02em;
+  opacity: 0.35;
+
+  img {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+  }
+
+  // Reward spaces stay readable, the plain steps in between recede
+  &--wrybit-reward {
+    color: #ece9e2;
+    opacity: 1;
+  }
+
+  &--wrybit-at {
+    background: #2fb0a8;
+    color: #06201e;
+    font-weight: 700;
+    opacity: 1;
+  }
+
+  &--wrybit-reachable {
+    box-shadow: inset 0 0 0 1px #8be28f;
+    opacity: 1;
+  }
+
+  &--wrybit-blocked {
+    box-shadow: inset 0 0 0 1px #ff8a80;
+  }
+}
+
+.board-track-row__value {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  min-width: 70px;
+  text-align: right;
+}
+
+.board-track-row__big {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 22px;
+  font-weight: 700;
+
+  img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+  }
+}
+
+.board-track-row__sub {
+  max-width: 130px;
+  font-size: 11px;
+  color: #a4a9b6;
+}
+
+// Planets and Delta use the free room: rows share the height, content centred (more air instead of squeezed)
+.planets-board,
+.delta-board {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+}
+
+// Narrow (phone): numbers only on the marker, smaller chips, the value below the name
+.board-tabs-view--paths,
+.board-tabs-view--delta {
+  container-type: inline-size;
+}
+
+@container (max-width: 440px) {
+  .board-track-row {
+    --wrybit-track-bonus-chip: 13px;
+    --wrybit-track-bonus-link: 5px;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .board-track-row__track--long .board-track-row__cell:not(.board-track-row__cell--at) {
+    font-size: 0;
+  }
+
+  .board-track-row__value {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  .board-track-row__big {
+    font-size: 15px;
+
+    img {
+      width: 15px;
+      height: 15px;
+    }
+  }
+}
+
+// Delta: rows in the player colour, the own row outlined white (like milestones & awards)
+.board-track-row.delta-board__row {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.board-track-row.delta-board__row--self {
+  border-color: #fff;
+  box-shadow: 0 0 0 1px #fff;
+}
+
+.delta-board__row .board-track-row__cell {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.delta-board__row .board-track-row__cell--past {
+  opacity: 0.45;
+}
+
+// On the coloured player rows the state sits on a dark pill so red and green stay readable
+.delta-board__ok,
+.delta-board__blocked {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  font-weight: 600;
+}
+
+.delta-board__ok {
+  color: #8be28f;
+}
+
+.delta-board__blocked {
+  color: #ffb4ab;
+}
+
+.delta-board__energy {
+  width: 12px;
+  height: 12px;
+  vertical-align: -2px;
+}
+
+.delta-board__hint {
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: #a4a9b6;
+}
+
+.delta-board__row .board-track-row__cell--at {
+  background: #2fb0a8;
+}
+
+// Delta: the player rows always fill the whole box – they share its height (--wrybit-delta-rows from DeltaBoard.vue),
+// so with more players every row gets thinner. One unit derived from the box size (container units) and the row
+// count drives cube, spaces, chips and texts: as large as the width allows and as the row height (~4.8 units) fits
+.board-tabs-view--delta {
+  container: delta-tab / size;
+}
+
+@delta-hint-reserve: 72px; // hint text below the rows plus the gaps
+
+html:not(.tm-mobile) .delta-board {
+  --wrybit-delta-unit: ~"clamp(12px, min(4.2cqw, calc((100cqh - @{delta-hint-reserve}) / (var(--wrybit-delta-rows, 2) * 4.8))), 60px)";
+  justify-content: flex-start;
+  height: 100%;
+  gap: calc(var(--wrybit-delta-unit) * 0.45);
+
+  .board-track-row {
+    --wrybit-track-bonus-chip: calc(var(--wrybit-delta-unit) * 0.85);
+    --wrybit-track-bonus-link: calc(var(--wrybit-delta-unit) * 0.4);
+    flex: 1 1 0;
+    min-height: 0;
+    // Value column only as wide as its text needs (max 5.5 units), so the track gets the rest of the row
+    grid-template-columns: calc(var(--wrybit-delta-unit) * 2.2) minmax(0, 1fr) minmax(0, max-content);
+    gap: calc(var(--wrybit-delta-unit) * 0.5);
+    padding: calc(var(--wrybit-delta-unit) * 0.45) calc(var(--wrybit-delta-unit) * 0.5);
+  }
+
+  .board-track-row__picture {
+    .player-cube {
+      --wrybit-cube-size: calc(var(--wrybit-delta-unit) * 0.95) !important;
+    }
+  }
+
+  .board-track-row__name {
+    font-size: calc(var(--wrybit-delta-unit) * 0.5);
+  }
+
+  .board-track-row__cell {
+    height: var(--wrybit-delta-unit);
+    font-size: calc(var(--wrybit-delta-unit) * 0.55);
+
+    img {
+      width: calc(var(--wrybit-delta-unit) * 0.8);
+      height: calc(var(--wrybit-delta-unit) * 0.8);
+    }
+  }
+
+  .board-track-row__big {
+    font-size: calc(var(--wrybit-delta-unit) * 1.05);
+
+    img {
+      width: calc(var(--wrybit-delta-unit) * 1.05);
+      height: calc(var(--wrybit-delta-unit) * 1.05);
+    }
+  }
+
+  .board-track-row__value {
+    min-width: 0;
+    max-width: calc(var(--wrybit-delta-unit) * 5.5);
+  }
+
+  // Balanced line breaks: "Next reward:" on its own line, the reward and the state as even blocks
+  .board-track-row__sub {
+    max-width: none;
+    display: grid;
+    text-wrap: balance;
+    gap: 2px;
+    font-size: calc(var(--wrybit-delta-unit) * 0.5);
+    line-height: 1.25;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .delta-board__next b {
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .delta-board__next-label {
+    display: block;
+  }
+
+  .delta-board__state {
+    white-space: nowrap;
+  }
+
+  .delta-board__energy {
+    width: calc(var(--wrybit-delta-unit) * 0.5);
+    height: calc(var(--wrybit-delta-unit) * 0.5);
+  }
+
+  .delta-board__hint {
+    flex: none;
+    font-size: clamp(11px, calc(var(--wrybit-delta-unit) * 0.45), 15px);
+  }
+}
+
+// Delta: player cube without the round frame of the planet pictures (all devices)
+.delta-board .board-track-row__picture {
+  width: auto;
+  height: auto;
+  overflow: visible;
+  background: none;
+  box-shadow: none;
+}
+
+// Phone: no room for the reward text, the state is enough
+html.tm-mobile .delta-board__next {
+  display: none;
+}
+
+// Mars scale bonuses (MarsScaleBonuses.vue): placed like the scale cells, turned around the connector tip
+.mars-scale-bonuses {
+  display: contents;
+}
+
+.mars-scale-bonus {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  transform-origin: 100% 50%;
+  pointer-events: none;
+}
+

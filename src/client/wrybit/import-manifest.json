@@ -3612,7 +3612,16 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/trackBonus/BoardTrackRow.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "targeted-tests",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/BoardTrackRow.spec.ts"
+          ],
+          "note": "Проверены переданные состояния, ownership и обновление бонусов. Готовность полного поля пока не подтверждена."
+        }
+      ]
     },
     {
       "source": "src/client/components/trackBonus/TrackBonusChip.vue",
@@ -3624,7 +3633,16 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/trackBonus/TrackBonusChip.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "targeted-tests",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/BoardTrackRow.spec.ts"
+          ],
+          "note": "Проверены переданные состояния, ownership и обновление бонусов. Готовность полного поля пока не подтверждена."
+        }
+      ]
     },
     {
       "source": "src/client/components/trackBonus/TrackLane.vue",
@@ -3636,7 +3654,16 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/trackBonus/TrackLane.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "targeted-tests",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/BoardTrackRow.spec.ts"
+          ],
+          "note": "Проверены переданные состояния, ownership и обновление бонусов. Готовность полного поля пока не подтверждена."
+        }
+      ]
     },
     {
       "source": "src/client/components/turmoil/GlobalEvent.vue",

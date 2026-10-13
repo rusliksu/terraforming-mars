@@ -5,8 +5,8 @@
   "ocean_placement_context_update": {"date":"2026-10-14","base":"fbe68f10c0ceb9f2d72c19665cb9c1b00c7d6926","contract":"oceanPlacementContext/version1","flows":["Own PlayerModel -> phase-scoped oceanPlacementContext/version1","MarsBoard and Board -> structural candidates, actual adjacency and additional costs","Shared political cost-policy query -> explicit unsupported-payment status","Read-only numeric facts -> external advisor JSON transport; no persistence or moves"],"scope":"Single standard ocean; intrinsic resource/draw/adjacency facts and funded MC costs; unsupported bonuses, fees, limits and later triggers remain unproven","fingerprint_algorithm":"sha256_normalized_lf","historical_fingerprints_refreshed":false,"source_files":[{"path":"src/common/models/OceanPlacementContextModel.ts","sha256":"c791998326bb11da0c5d3d8741b681dafeccda141f855188f46d5171c8460299"},{"path":"src/server/models/OceanPlacementContext.ts","sha256":"955ad709e772021d864054b2d7c47f2de5b5051481e50116872bd729953d9946"},{"path":"src/server/models/ServerModel.ts","sha256":"c4f061bea6d576bb1a91ec142b7d4505cd0e854d9637eac371f7a1311ad7c8f8"},{"path":"src/server/boards/Board.ts","sha256":"7ad424247f6623793c22a2ef755bf1d94e85aead5e22df16903e1a30db812fb6"},{"path":"src/server/turmoil/TurmoilHandler.ts","sha256":"4bf865bd6c7dd74d3bb8c5aaf1e3bf84141ef3b05c17bbde9f1bac8411477268"}]},
   "schema_version": 1,
   "map_kind": "scoped-dependency-union",
-  "source_commit": "8dc5ac9572d72007d92ed4e2fe89d117750be607",
-  "generated_at": "2026-10-13T09:06:21.853Z",
+  "source_commit": "76ffa1543d569db6b002ab291a8a197af4622b73",
+  "generated_at": "2026-10-13T10:35:20.632Z",
   "source_tree_was_clean": false,
   "scope": [
     "assets/wrybit/shell/ATTRIBUTION.md",
@@ -538,9 +538,9 @@
     "tests/server/server/SentryReporter.spec.ts": "a78d464170f713bcfa26f5e559762b68996adb788e966757f33e9d2f560e53d4",
     "tests/turmoil/parties/Kelvinists.spec.ts": "3dd36a74638753873cd710335db734e8c9f903b34b39b5097f89f71f36c2bbef",
     "tools/fanmade-port/check-catalog-source.js": "7cb76a3358482c383a6c2fbc79cac51cff4b0f859e6a348431548da161e0e9f3",
-    "tools/fanmade-port/fanmade-catalog-source-manifest.json": "8862941bc6d8476b3a6d9987298291af7bdde7fca94f903cd2eb7a59bc40934e"
+    "tools/fanmade-port/fanmade-catalog-source-manifest.json": "e67b8be418ad9b5e39fa655215166704dded091917c9fdab4267fc8d2856c87e"
   },
-  "scope_fingerprint": "e072964a6295c4a19e9b27df141006c108a82524edb2d73d864a345742e1d110",
+  "scope_fingerprint": "1d7cb2d6d84e13c2c67c2c3b7108e2670da88fac84e785dfe9273d8dc1e34301",
   "changed_modules": [
     "src/common/Timer.ts",
     "src/server/Game.ts",

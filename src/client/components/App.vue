@@ -303,7 +303,7 @@ export default defineComponent({
           return resp.json();
         })
         .then((model: ViewModel) => {
-          if (revision !== app.refreshRevision) {
+          if (revision !== app.refreshRevision || (path === paths.PLAYER && app.isServerSideRequestInProgress)) {
             return;
           }
           if (path === paths.PLAYER) {
@@ -340,7 +340,7 @@ export default defineComponent({
           }
         })
         .catch((err) => {
-          if (revision !== app.refreshRevision) {
+          if (revision !== app.refreshRevision || (path === paths.PLAYER && app.isServerSideRequestInProgress)) {
             return;
           }
           alert(getLoadErrorMessage(path, err instanceof AppFetchError ? err.status : 0));

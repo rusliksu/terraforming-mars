@@ -19,7 +19,8 @@
 </template>
 
 <script lang="ts">
-import {defineComponent} from 'vue';
+import {defineComponent, inject} from 'vue';
+import {INPUT_HOSTS} from '@/client/wrybit/shell/inputHosts';
 import {SelectSpaceModel} from '@/common/models/PlayerInputModel';
 import {PlayerViewModel} from '@/common/models/PlayerModel';
 import {getPreferences, PreferencesManager} from '@/client/utils/PreferencesManager';
@@ -36,12 +37,18 @@ type Refs = {
 type DataModel = {
   spaces: Set<SpaceId>;
   selectedTile: HTMLElement | undefined,
+  selectedSpaceId: SpaceId | undefined;
+  boundTiles: Array<{tile: HTMLElement, handler: () => void}>;
+  submitted: boolean;
   spaceId: SpaceId | undefined;
   warning: string | undefined;
 };
 
 export default defineComponent({
   name: 'SelectSpace',
+  setup() {
+    return {inputHost: inject(INPUT_HOSTS, undefined)?.target};
+  },
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
@@ -68,6 +75,9 @@ export default defineComponent({
     return {
       spaces: new Set(this.playerinput.spaces),
       selectedTile: undefined,
+      selectedSpaceId: undefined,
+      boundTiles: [],
+      submitted: false,
       spaceId: undefined,
       warning: undefined,
     };
@@ -81,7 +91,43 @@ export default defineComponent({
       return this.$refs as unknown as Refs;
     },
   },
+  watch: {
+    inputHost() {
+      this.$nextTick(() => this.bindBoard());
+    },
+  },
   methods: {
+    clearBoardHandlers() {
+      for (const {tile, handler} of this.boundTiles) {
+        if (tile.onclick === handler) {
+          tile.onclick = null;
+        }
+        tile.classList.remove('board-space--available', 'board-space--selected');
+      }
+      this.boundTiles = [];
+    },
+    bindBoard() {
+      this.clearBoardHandlers();
+      const tiles = this.getSelectableSpaces();
+      this.selectedTile = tiles.find((tile) => tile.getAttribute('data_space_id') === this.selectedSpaceId);
+      if (this.submitted) {
+        this.selectedTile?.classList.add('board-space--selected');
+        return;
+      }
+      this.disableAnimation();
+      if (this.selectedTile === undefined) {
+        this.animateSpaces(tiles);
+      }
+      for (const tile of tiles) {
+        const spaceId = tile.getAttribute('data_space_id') as SpaceId | null;
+        if (spaceId === null || !this.spaces.has(spaceId)) {
+          continue;
+        }
+        const handler = () => this.onTileSelected(tile);
+        tile.onclick = handler;
+        this.boundTiles.push({tile, handler});
+      }
+    },
     animateSpace(tile: Element, activate: boolean) {
       if (activate) {
         tile.classList.add('board-space--available');
@@ -102,13 +148,12 @@ export default defineComponent({
         throw new Error('unexpected, no tile selected!');
       }
       this.animateSpace(this.selectedTile, false);
+      this.selectedTile = undefined;
+      this.selectedSpaceId = undefined;
       this.animateSpaces(this.getSelectableSpaces());
     },
     confirmPlacement() {
-      const tiles = this.getSelectableSpaces();
-      tiles.forEach((tile) => {
-        tile.onclick = null;
-      });
+      this.clearBoardHandlers();
 
       if (this.selectedTile === undefined) {
         throw new Error('unexpected, no tile selected!');
@@ -118,6 +163,7 @@ export default defineComponent({
         throw new Error('unexpected, space has no id');
       }
       this.spaceId = spaceId;
+      this.submitted = true;
       this.selectedTile.classList.add('board-space--selected');
       this.saveData();
     },
@@ -148,6 +194,7 @@ export default defineComponent({
     },
     onTileSelected(tile: HTMLElement) {
       this.selectedTile = tile;
+      this.selectedSpaceId = tile.getAttribute('data_space_id') as SpaceId;
       this.disableAnimation();
       this.animateSpace(tile, true);
       tile.classList.remove('board-space--available');
@@ -167,19 +214,10 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.disableAnimation();
-    const tiles = this.getSelectableSpaces();
-    this.animateSpaces(tiles);
-    for (let i = 0, length = tiles.length; i < length; i++) {
-      const tile = tiles[i];
-      const spaceId = tile.getAttribute('data_space_id') as SpaceId;
-
-      if (spaceId === null || this.spaces.has(spaceId) === false) {
-        continue;
-      }
-
-      tile.onclick = () => this.onTileSelected(tile);
-    }
+    this.bindBoard();
+  },
+  beforeUnmount() {
+    this.clearBoardHandlers();
   },
   beforeUnmount() {
     this.disableAnimation();

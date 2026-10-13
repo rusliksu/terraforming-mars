@@ -49,7 +49,9 @@
     </template>
 
     <DynamicTitle v-if="playerView.pickedCorporationCard.length === 0" title="Select initial cards:" :color="thisPlayer.color"/>
-    <WaitingFor v-if="game.phase !== 'end'" :playerView="playerView" :waitingfor="playerView.waitingFor"/>
+    <InputHost v-if="game.phase !== 'end'">
+      <WaitingFor :playerView="playerView" :waitingfor="playerView.waitingFor"/>
+    </InputHost>
     <div class="player_home_block nofloat" v-if="isInitialDraftingPhase">
       <LogPanel :viewModel="playerView" :color="thisPlayer.color" :step="game.step"/>
     </div>
@@ -121,6 +123,7 @@ import DynamicTitle from '@/client/components/common/DynamicTitle.vue';
 import Milestones from '@/client/components/Milestones.vue';
 import Awards from '@/client/components/Awards.vue';
 import WaitingFor from '@/client/components/WaitingFor.vue';
+import InputHost from '@/client/wrybit/shell/InputHost.vue';
 import Turmoil from '@/client/components/turmoil/Turmoil.vue';
 import MoonBoard from '@/client/components/moon/MoonBoard.vue';
 import LogPanel from '@/client/components/logpanel/LogPanel.vue';
@@ -163,6 +166,7 @@ export default defineComponent({
     Card,
     DynamicTitle,
     WaitingFor,
+    InputHost,
     Milestones,
     Awards,
     Turmoil,

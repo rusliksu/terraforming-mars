@@ -4,8 +4,8 @@
   "ocean_placement_pair_update": {"date":"2026-10-14","base":"923ba2f3a0e811975c0e1049d1be30e000a16782","contract":"oceanPlacementContext/version1/pairs","flows":["Own PlayerModel -> optional ordered pairs of distinct structural candidates","Board adjacency and player coefficient -> quoted second adjacency after the first ocean","Stable board/cost facts -> shared cash-budget consumer; no virtual moves or persisted state"],"scope":"Two intrinsic standard placements; at most 64 candidates; pending Ares board transitions and unsupported political costs are not certified","fingerprint_algorithm":"sha256_normalized_lf","historical_fingerprints_refreshed":false,"source_files":[{"path":"src/common/models/OceanPlacementContextModel.ts","sha256":"b8cdd6bb2abda7956cb7b2aafed1727f9458ec55e83602c16cccb0cff77a6035"},{"path":"src/server/models/OceanPlacementContext.ts","sha256":"4ab4ccec44ffc93e1fc8121a95435ababed5a49ffccde1d2d38738d9b44eeed0"}]},
   "ocean_placement_context_update": {"date":"2026-10-14","base":"fbe68f10c0ceb9f2d72c19665cb9c1b00c7d6926","contract":"oceanPlacementContext/version1","flows":["Own PlayerModel -> phase-scoped oceanPlacementContext/version1","MarsBoard and Board -> structural candidates, actual adjacency and additional costs","Shared political cost-policy query -> explicit unsupported-payment status","Read-only numeric facts -> external advisor JSON transport; no persistence or moves"],"scope":"Single standard ocean; intrinsic resource/draw/adjacency facts and funded MC costs; unsupported bonuses, fees, limits and later triggers remain unproven","fingerprint_algorithm":"sha256_normalized_lf","historical_fingerprints_refreshed":false,"source_files":[{"path":"src/common/models/OceanPlacementContextModel.ts","sha256":"c791998326bb11da0c5d3d8741b681dafeccda141f855188f46d5171c8460299"},{"path":"src/server/models/OceanPlacementContext.ts","sha256":"955ad709e772021d864054b2d7c47f2de5b5051481e50116872bd729953d9946"},{"path":"src/server/models/ServerModel.ts","sha256":"c4f061bea6d576bb1a91ec142b7d4505cd0e854d9637eac371f7a1311ad7c8f8"},{"path":"src/server/boards/Board.ts","sha256":"7ad424247f6623793c22a2ef755bf1d94e85aead5e22df16903e1a30db812fb6"},{"path":"src/server/turmoil/TurmoilHandler.ts","sha256":"4bf865bd6c7dd74d3bb8c5aaf1e3bf84141ef3b05c17bbde9f1bac8411477268"}]},
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-13T10:35:20.632Z",
-  "generated_from_commit": "76ffa1543d569db6b002ab291a8a197af4622b73",
+  "generated_at": "2026-10-13T11:34:42.934Z",
+  "generated_from_commit": "50bc965209f728b12bf1f3a7f13ce27061b95ae3",
   "scope": [
     ".",
     ".github",
@@ -2193,6 +2193,112 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "id": "persistent-player-input",
+      "label": "Наш постоянный контроллер ввода",
+      "type": "ui",
+      "path": "src/client/components/WaitingFor.vue",
+      "role": "App владеет единственным WaitingFor и обновляет его ревизию отдельно от представления.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/App.vue",
+          "symbol": "applyPlayerView(next:",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/shell/AppInputRefresh.spec.ts",
+          "symbol": "ignores a late response"
+        },
+        {
+          "path": "tests/client/wrybit/shell/InputPortal.spec.ts",
+          "symbol": "moves one live form"
+        }
+      ],
+      "constraints": [
+        "POST использует наш протокол.",
+        "Смена представления не отправляет ход.",
+        "Поздние ответы старого ввода игнорируются."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/components/App.vue",
+          "symbol": ":key=\"inputRevision\"",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/client/wrybit/shell/InputPortal.vue",
+          "symbol": ":disabled=\"target === undefined\"",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "player-input-hosts",
+      "label": "Контейнеры формы",
+      "type": "library",
+      "path": "src/client/wrybit/shell/inputHosts.ts",
+      "role": "Перемещение постоянной формы в контейнер текущего экрана; скрытый fallback сохраняет экземпляр между экранами.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/shell/inputHosts.ts",
+          "symbol": "createInputHosts",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/shell/InputPortal.spec.ts",
+          "symbol": "hosts.unregister(oldHost)"
+        }
+      ],
+      "constraints": [
+        "Позднее удаление старого host не удаляет новый."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/wrybit/shell/InputHost.vue",
+          "symbol": "hosts?.register(host.value)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "board-input-bindings",
+      "label": "Привязки ввода к полю",
+      "type": "ui",
+      "path": "src/client/components/SelectSpace.vue",
+      "role": "Новый контейнер экрана перепривязывает выбор клетки и quick greenery к новому DOM.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/SelectSpace.vue",
+          "symbol": "bindBoard()",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/shell/BoardInputPortal.spec.ts",
+          "symbol": "keeps a pending confirmation"
+        },
+        {
+          "path": "tests/client/wrybit/shell/BoardInputPortal.spec.ts",
+          "symbol": "original option index"
+        }
+      ],
+      "constraints": [
+        "Выбранная клетка сохраняется по SpaceId.",
+        "Отсоединённое поле не отправляет ход."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/components/OrOptions.vue",
+          "symbol": "inputHost()",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "edges": [
@@ -3150,7 +3256,7 @@
       "evidence": [
         {
           "path": "src/client/components/App.vue",
-          "symbol": "inputContext(app.playerView)",
+          "symbol": "inputContext(this.playerView)",
           "status": "confirmed"
         }
       ]
@@ -3177,6 +3283,45 @@
         {
           "path": "src/client/wrybit/shell/inputContext.ts",
           "symbol": "view.waitingForId",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "client-ui",
+      "to": "persistent-player-input",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/App.vue",
+          "symbol": "<WaitingFor :key=\"inputRevision\"",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "persistent-player-input",
+      "to": "player-input-hosts",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/App.vue",
+          "symbol": ":target=\"inputHosts.target.value\"",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "player-input-hosts",
+      "to": "board-input-bindings",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/SelectSpace.vue",
+          "symbol": "inputHost()",
           "status": "confirmed"
         }
       ]
@@ -3591,7 +3736,18 @@
     "src/client/components/WaitingFor.vue",
     "tests/models/ServerModel.spec.ts",
     "tests/client/wrybit/shell/inputContext.spec.ts",
-    "tests/client/wrybit/shell/AppInputRefresh.spec.ts"
+    "tests/client/wrybit/shell/AppInputRefresh.spec.ts",
+    "src/client/wrybit/shell/InputPortal.vue",
+    "src/client/wrybit/shell/inputHosts.ts",
+    "src/client/wrybit/shell/InputHost.vue",
+    "src/client/components/PlayerHome.vue",
+    "src/client/components/PlayerSetupView.vue",
+    "src/client/components/SelectSpace.vue",
+    "src/client/components/OrOptions.vue",
+    "tests/client/components/PlayerHome.spec.ts",
+    "tests/client/wrybit/shell/InputPortal.spec.ts",
+    "tests/client/wrybit/shell/BoardInputPortal.spec.ts",
+    "tests/client/wrybit/shell/DraftInputPortal.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -3621,6 +3777,10 @@
       "src/client/components/App.vue",
       "src/client/components/GameEnd.vue",
       "src/client/components/GameSetupDetail.vue",
+      "src/client/components/OrOptions.vue",
+      "src/client/components/PlayerHome.vue",
+      "src/client/components/PlayerSetupView.vue",
+      "src/client/components/SelectSpace.vue",
       "src/client/components/SpectatorHome.vue",
       "src/client/components/WaitingFor.vue",
       "src/client/components/card/CardRequirementComponent.vue",
@@ -3635,12 +3795,15 @@
       "src/client/utils/WikiLinks.ts",
       "src/client/wrybit/import-manifest.json",
       "src/client/wrybit/shell/AppBackground.vue",
+      "src/client/wrybit/shell/InputHost.vue",
+      "src/client/wrybit/shell/InputPortal.vue",
       "src/client/wrybit/shell/WrybitBoundary.vue",
       "src/client/wrybit/shell/WrybitShell.vue",
       "src/client/wrybit/shell/appBackground.ts",
       "src/client/wrybit/shell/appBackgroundVariants.ts",
       "src/client/wrybit/shell/background.less",
       "src/client/wrybit/shell/inputContext.ts",
+      "src/client/wrybit/shell/inputHosts.ts",
       "src/common/Timer.ts",
       "src/common/app/paths.ts",
       "src/common/cards/CardReplacementRules.ts",
@@ -3827,6 +3990,7 @@
       "tests/cards/requirements/CardRequirements.spec.ts",
       "tests/client/components/App.spec.ts",
       "tests/client/components/GameEnd.spec.ts",
+      "tests/client/components/PlayerHome.spec.ts",
       "tests/client/components/SpectatorHome.spec.ts",
       "tests/client/components/card/CardRequirementComponent.spec.ts",
       "tests/client/components/create/JSONProcessor.spec.ts",
@@ -3836,6 +4000,9 @@
       "tests/client/components/replay/useReplay.spec.ts",
       "tests/client/wrybit/shell/AppInputRefresh.spec.ts",
       "tests/client/wrybit/shell/AppMode.spec.ts",
+      "tests/client/wrybit/shell/BoardInputPortal.spec.ts",
+      "tests/client/wrybit/shell/DraftInputPortal.spec.ts",
+      "tests/client/wrybit/shell/InputPortal.spec.ts",
       "tests/client/wrybit/shell/WrybitBoundary.spec.ts",
       "tests/client/wrybit/shell/WrybitShell.spec.ts",
       "tests/client/wrybit/shell/inputContext.spec.ts",

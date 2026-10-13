@@ -10,29 +10,36 @@ describe('Persistent input portal', () => {
   it('moves one live form between different views and a hidden gap without resetting it', async () => {
     let mounts = 0;
     let saves = 0;
-    const Form = defineComponent({
+    const DraftForm = defineComponent({
       data: () => ({card: 'selected-card', payment: 19}),
-      mounted: () => {mounts++;},
-      methods: {save: () => {saves++;}},
+      mounted: () => {
+        mounts++;
+      },
+      methods: {save: () => {
+        saves++;
+      }},
       template: '<div><input data-test="card" v-model="card"><input data-test="payment" type="number" v-model="payment"><button @click="save">Save</button></div>',
     });
     const Classic = defineComponent({components: {InputHost}, template: '<section data-view="classic"><InputHost /></section>'});
     const Wrybit = defineComponent({components: {InputHost}, template: '<article data-view="wrybit"><header>Other layout</header><InputHost /></article>'});
     const hosts = createInputHosts();
     const Root = defineComponent({
-      components: {Classic, Wrybit, Form, InputPortal},
+      components: {Classic, Wrybit, DraftForm, InputPortal},
       setup() {
         provide(INPUT_HOSTS, hosts);
         return {hosts, screen: ref('classic')};
       },
-      template: '<Classic v-if="screen === \'classic\'" /><Wrybit v-else-if="screen === \'wrybit\'" /><InputPortal :target="hosts.target.value"><Form /></InputPortal>',
+      template: '<Classic v-if="screen === \'classic\'" /><Wrybit v-else-if="screen === \'wrybit\'" /><InputPortal :target="hosts.target.value"><DraftForm /></InputPortal>',
     });
-    const wrapper = mount(Root, {...globalConfig, attachTo: document.body});
+    const container = document.createElement('div');
+    document.body.append(container);
+    const wrapper = mount(Root, {...globalConfig, attachTo: container});
     try {
       await nextTick();
       const classic = document.querySelector('[data-view="classic"]');
       const input = classic?.querySelector<HTMLInputElement>('[data-test="payment"]');
-      expect(input).not.eq(undefined);
+      expect(input).to.be.instanceOf(HTMLInputElement);
+      const oldHost = hosts.target.value;
       const original = document.querySelector('[data-test="payment"]');
       await wrapper.get('[data-test="payment"]').setValue(23);
       wrapper.vm.screen = 'gap';
@@ -48,7 +55,10 @@ describe('Persistent input portal', () => {
       expect(saves).eq(0);
 
       const current = hosts.target.value;
-      hosts.unregister(document.createElement('div'));
+      if (oldHost === undefined) {
+        throw new Error('Missing classic input host');
+      }
+      hosts.unregister(oldHost);
       expect(hosts.target.value).eq(current);
       wrapper.vm.screen = 'classic';
       await nextTick();
@@ -56,7 +66,7 @@ describe('Persistent input portal', () => {
       expect(saves).eq(0);
     } finally {
       wrapper.unmount();
-      wrapper.element.remove();
+      container.remove();
     }
   });
 });

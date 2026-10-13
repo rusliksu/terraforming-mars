@@ -38,6 +38,11 @@ owned_files:
 - src/common/models/PlayerModel.ts
 - src/server/models/ServerModel.ts
 - src/client/components/WaitingFor.vue
+- src/client/components/PlayerHome.vue
+- src/client/components/PlayerSetupView.vue
+- src/client/components/SelectSpace.vue
+- src/client/components/OrOptions.vue
+- tests/client/components/PlayerHome.spec.ts
 - tests/models/ServerModel.spec.ts
 - tools/fanmade-port/fanmade-catalog-source-manifest.json
 - docs/codemap/codemap.json
@@ -74,6 +79,10 @@ Baseline фиксирует все runtime-тесты server/client после �
 Контекст незавершённого ввода использует узкую проекцию `waitingForId` в приватной модели игрока. Идентификатор принадлежит текущему объекту запроса сервера, стабилен при чтении и меняется для нового запроса с тем же текстом. Он не сериализуется в сохранения и не используется для принятия игровых решений. Ответственность за эту проекцию, общий тип, перезапуск существующего polling в `WaitingFor.vue` и соответствующие тесты передана WP01 последовательно. Обычный режим сохраняет прежнее перемонтирование; Wrybit может сохранить форму только при совпадении запроса, ограничений и собственного состояния игрока, за исключением часов.
 
 Полный runtime-прогон обнаружил действующий guard каталога: он отслеживает все common/server-исходники, включая read-only модели и MIME-типы. Сверены ровно четыре изменения — `PlayerModel.ts`, `ServerModel.ts`, `ContentType.ts`, `ServeAsset.ts`; отсутствующие и новые отслеживаемые файлы не обнаружены. WP01 обновляет только их нормализованные SHA-256 в `fanmade-catalog-source-manifest.json`. Проверяющий код, набор файлов, catalogId, identities, oracleRevision и bundleDigest сохраняются; сценарии отклонения изменённого, отсутствующего и нового source остаются обязательными.
+
+Постоянный ввод и его hosts размещаются в `src/client/wrybit/shell/**`. В рамках сохранения ввода WP01 последовательно меняет только места подключения в наших PlayerHome/PlayerSetupView и перепривязку DOM поля в SelectSpace/OrOptions. Представления и оформление этих форм по-прежнему переносятся в WP03; общих игровых решений и AI эти изменения не касаются. Бounded read-only архитектурное review завершено; его значимые факты независимо сверены родителем по местам хранения состояния, обработчикам поля и 20 входным типам.
+
+Существующий shallow-тест PlayerHome использует настоящий InputHost, чтобы продолжать проверять вложенный WaitingFor без подмены контейнера. Этот точный test path передан WP01 последовательно; assertions сохранения формы и viewport остаются.
 
 ## Подзадачи
 

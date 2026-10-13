@@ -1,5 +1,5 @@
 <template>
-  <div :class="['topmost-'+screen, {'wrybit-ui': wrybitMode}]">
+  <div :class="['topmost-'+screen, {'wrybit-ui': wrybitMode && wrybitReady}]">
     <section>
       <dialog id="alert-dialog" class="alert-dialog">
         <form method="dialog">
@@ -11,7 +11,7 @@
         </form>
       </dialog>
     </section>
-    <WrybitBoundary :enabled="wrybitMode" :screen="screen" @classic="useClassicInterface" />
+    <WrybitBoundary :enabled="wrybitMode" :screen="screen" @classic="useClassicInterface" @active="wrybitReady = $event" />
     <div class="main-container">
       <StartScreen v-if="screen === 'start-screen'"/>
       <CreateGameForm
@@ -49,6 +49,10 @@
       <LoginHome v-else-if="screen === 'login-home'"/>
       <Help v-else-if="screen === 'help'"/>
     </div>
+    <InputPortal v-if="screen === 'player-home' && playerView !== undefined && playerView.game.phase !== 'end'"
+      :target="inputHosts.target.value">
+      <WaitingFor :key="inputRevision" :player-view="playerView" :waitingfor="playerView.waitingFor" />
+    </InputPortal>
     <div class="notice" v-i18n>
       Not affiliated with FryxGames, Asmodee Digital or Steam in any way.
     </div>
@@ -56,7 +60,7 @@
 </template>
 
 <script lang="ts">
-import {defineAsyncComponent, defineComponent} from 'vue';
+import {defineAsyncComponent, defineComponent, provide} from 'vue';
 import * as constants from '@/common/constants';
 
 const AdminHome = defineAsyncComponent(() => import(/* webpackChunkName: "admin" */ '@/client/components/admin/AdminHome.vue'));
@@ -87,6 +91,9 @@ import {getLoadErrorMessage} from '@/client/utils/loadErrorMessage';
 import {getPreferences, PreferencesManager} from '@/client/utils/PreferencesManager';
 import WrybitBoundary from '@/client/wrybit/shell/WrybitBoundary.vue';
 import {inputContext} from '@/client/wrybit/shell/inputContext';
+import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
+import WaitingFor from '@/client/components/WaitingFor.vue';
+import {createInputHosts, INPUT_HOSTS} from '@/client/wrybit/shell/inputHosts';
 
 import dialogPolyfill from 'dialog-polyfill';
 import {setDocumentTitle} from '../utils/documentTitle';
@@ -122,6 +129,9 @@ export type MainAppData = {
     // playerKey might seem to serve no function, but it is an arbitrary value used
     // to force a rerender / refresh.
     playerkey: number;
+    inputRevision: number;
+    refreshRevision: number;
+    wrybitReady: boolean;
     isServerSideRequestInProgress: boolean;
     componentsVisibility: {[x: string]: boolean};
     game: SimpleGameModel | undefined;
@@ -160,10 +170,18 @@ class AppFetchError extends Error {
 
 export default defineComponent({
   name: 'App',
+  setup() {
+    const inputHosts = createInputHosts();
+    provide(INPUT_HOSTS, inputHosts);
+    return {inputHosts};
+  },
   data(): MainAppData {
     return {
       screen: 'empty',
       playerkey: 0,
+      inputRevision: 0,
+      refreshRevision: 0,
+      wrybitReady: false,
       isServerSideRequestInProgress: false,
       componentsVisibility: {
         'milestones': true,
@@ -184,6 +202,8 @@ export default defineComponent({
   },
   components: {
     WrybitBoundary,
+    InputPortal,
+    WaitingFor,
     StartScreen,
     MapEditor,
     MapLibrary,
@@ -223,6 +243,20 @@ export default defineComponent({
     },
   },
   methods: {
+    applyPlayerView(next: PlayerViewModel | undefined, acceptedInput = false): void {
+      if (acceptedInput) {
+        this.refreshRevision++;
+      }
+      const previousContext = inputContext(this.playerView);
+      if (!this.wrybitMode || acceptedInput || previousContext === undefined || previousContext !== inputContext(next)) {
+        this.inputRevision++;
+      }
+      this.playerView = next;
+      this.playerkey++;
+      if (next !== undefined) {
+        setTranslationContext(next);
+      }
+    },
     useClassicInterface(): void {
       PreferencesManager.INSTANCE.set('experimental_layout', false);
     },
@@ -257,6 +291,7 @@ export default defineComponent({
     update(path: typeof paths.PLAYER | typeof paths.SPECTATOR): void {
       const currentPathname = getLastPathSegment();
       const app = this as unknown as MainAppData;
+      const revision = ++app.refreshRevision;
 
       const url = 'api/' + path + window.location.search.replace('&noredirect', '');
 
@@ -268,17 +303,13 @@ export default defineComponent({
           return resp.json();
         })
         .then((model: ViewModel) => {
-          let preserveInput = false;
+          if (revision !== app.refreshRevision) {
+            return;
+          }
           if (path === paths.PLAYER) {
-            const next = model as PlayerViewModel;
-            const previousContext = this.wrybitMode ? inputContext(app.playerView) : undefined;
-            preserveInput = this.wrybitMode && previousContext !== undefined && previousContext === inputContext(next);
-            app.playerView = next;
-            setTranslationContext(app.playerView);
+            this.applyPlayerView(model as PlayerViewModel);
           } else if (path === paths.SPECTATOR) {
             app.spectator = model as SpectatorModel;
-          }
-          if (!preserveInput) {
             app.playerkey++;
           }
           if (
@@ -309,6 +340,9 @@ export default defineComponent({
           }
         })
         .catch((err) => {
+          if (revision !== app.refreshRevision) {
+            return;
+          }
           alert(getLoadErrorMessage(path, err instanceof AppFetchError ? err.status : 0));
           console.error(err);
         });

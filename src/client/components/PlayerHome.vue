@@ -54,7 +54,9 @@
       <div class="player_home_block player_home_block--actions nofloat" data-layout-panel="actions">
         <a name="actions" class="player_home_anchor"></a>
         <DynamicTitle title="Actions" :color="thisPlayer.color"/>
-        <WaitingFor v-if="game.phase !== 'end'" :playerView="playerView" :waitingfor="playerView.waitingFor"/>
+        <InputHost v-if="game.phase !== 'end'">
+          <WaitingFor :playerView="playerView" :waitingfor="playerView.waitingFor"/>
+        </InputHost>
       </div>
 
       <div class="player_home_block player_home_block--hand" data-layout-panel="cards" v-if="playerView.draftedCards.length > 0">
@@ -166,6 +168,7 @@ import {defineComponent} from 'vue';
 import Card from '@/client/components/card/Card.vue';
 import PlayersOverview from '@/client/components/overview/PlayersOverview.vue';
 import WaitingFor from '@/client/components/WaitingFor.vue';
+import InputHost from '@/client/wrybit/shell/InputHost.vue';
 import Sidebar from '@/client/components/Sidebar.vue';
 import Colony from '@/client/components/colonies/Colony.vue';
 import LogPanel from '@/client/components/logpanel/LogPanel.vue';
@@ -317,6 +320,7 @@ export default defineComponent({
     Card,
     PlayersOverview,
     WaitingFor,
+    InputHost,
     Sidebar,
     Colony,
     LogPanel,

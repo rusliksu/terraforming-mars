@@ -129,10 +129,30 @@ export default defineComponent({
   },
   watch: {
     waitingfor() {
-      this.undoChoice = '';
+      if (!getPreferences().experimental_layout) {
+        this.undoChoice = '';
+      }
+    },
+    playerView() {
+      if (getPreferences().experimental_layout) {
+        this.startWaiting();
+      }
     },
   },
   methods: {
+    startWaiting() {
+      window.clearTimeout(ui_update_timeout_id);
+      window.clearTimeout(otherPlayersTimer);
+      window.clearInterval(documentTitleTimer);
+      if (this.waitingfor === undefined || this.waitingfor.optional) {
+        this.waitForUpdate();
+      } else if (this.playerView.players.length > 1 && SIMULTANEOUS_PHASES.includes(this.playerView.game.phase)) {
+        this.watchOtherPlayers();
+      }
+      if (this.playerView.players.length > 1 && this.waitingfor !== undefined && !this.waitingfor.optional) {
+        documentTitleTimer = window.setInterval(() => this.animateTitle(), 1000);
+      }
+    },
     getPlayerName(color: Color): string {
       const player = this.playerView.players.find((p) => p.color === color);
       return player ? player.name : color;
@@ -446,15 +466,7 @@ export default defineComponent({
     if (getPreferences().experimental_ui) {
       setFaviconStatus(this.waitingfor !== undefined ? 'turn' : 'idle');
     }
-    window.clearInterval(documentTitleTimer);
-    if (this.waitingfor === undefined || this.waitingfor.optional) {
-      this.waitForUpdate();
-    } else if (this.playerView.players.length > 1 && SIMULTANEOUS_PHASES.includes(this.playerView.game.phase)) {
-      this.watchOtherPlayers();
-    }
-    if (this.playerView.players.length > 1 && this.waitingfor !== undefined && !this.waitingfor.optional) {
-      documentTitleTimer = window.setInterval(() => this.animateTitle(), 1000);
-    }
+    this.startWaiting();
   },
   unmounted() {
     window.clearTimeout(ui_update_timeout_id);

@@ -1,3 +1,4 @@
+import {randomUUID} from 'node:crypto';
 import {getAutomationCompatibility} from '../bot/AutomationCompatibility';
 import {resolveGlobalParameters} from '@/common/GlobalParameterConfig';
 import {CardModel} from '../../common/models/CardModel';
@@ -40,6 +41,19 @@ import {AstraMechanica} from '../cards/promo/AstraMechanica';
 
 export class Server {
   private static readonly FANMADE_CATALOG_REVISION = 'fanmade:rebalanced-v1';
+  private static readonly inputIds = new WeakMap<PlayerInput, string>();
+
+  private static getWaitingForId(input: PlayerInput | undefined): string | undefined {
+    if (input === undefined) {
+      return undefined;
+    }
+    let id = this.inputIds.get(input);
+    if (id === undefined) {
+      id = randomUUID();
+      this.inputIds.set(input, id);
+    }
+    return id;
+  }
 
   public static getSimpleGameModel(game: IGame, options?: {
     botPlayers?: Array<PlayerId>;
@@ -131,6 +145,7 @@ export class Server {
 
   public static getPlayerModel(player: IPlayer): PlayerViewModel {
     const game = player.game;
+    const waitingFor = player.getWaitingFor();
 
     const players: Array<PublicPlayerModel> = game.playersInGenerationOrder.map((p) => this.getPlayer(p, p.color === player.color));
 
@@ -158,7 +173,8 @@ export class Server {
       pickedCorporationCard: player.pickedCorporationCard ? cardsToModel(player, [player.pickedCorporationCard]) : [],
       preludeCardsInHand: cardsToModel(player, player.preludeCardsInHand),
       thisPlayer: thisPlayer,
-      waitingFor: this.getWaitingFor(player, player.getWaitingFor()),
+      waitingFor: this.getWaitingFor(player, waitingFor),
+      waitingForId: this.getWaitingForId(waitingFor),
       players: players,
       autopass: player.autopass,
     };

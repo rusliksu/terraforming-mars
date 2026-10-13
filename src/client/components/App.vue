@@ -1,5 +1,5 @@
 <template>
-  <div :class="'topmost-'+screen">
+  <div :class="['topmost-'+screen, {'wrybit-ui': wrybitMode}]">
     <section>
       <dialog id="alert-dialog" class="alert-dialog">
         <form method="dialog">
@@ -11,6 +11,7 @@
         </form>
       </dialog>
     </section>
+    <WrybitBoundary :enabled="wrybitMode" :screen="screen" @classic="useClassicInterface" />
     <div class="main-container">
       <StartScreen v-if="screen === 'start-screen'"/>
       <CreateGameForm
@@ -83,7 +84,8 @@ import {SpectatorModel} from '@/common/models/SpectatorModel';
 import {isPlayerId, isSpectatorId} from '@/common/Types';
 import {hasShowModal, showModal, windowHasHTMLDialogElement} from './HTMLDialogElementCompatibility';
 import {getLoadErrorMessage} from '@/client/utils/loadErrorMessage';
-import {getPreferences} from '@/client/utils/PreferencesManager';
+import {getPreferences, PreferencesManager} from '@/client/utils/PreferencesManager';
+import WrybitBoundary from '@/client/wrybit/shell/WrybitBoundary.vue';
 
 import dialogPolyfill from 'dialog-polyfill';
 import {setDocumentTitle} from '../utils/documentTitle';
@@ -181,6 +183,7 @@ export default defineComponent({
     };
   },
   components: {
+    WrybitBoundary,
     StartScreen,
     MapEditor,
     MapLibrary,
@@ -200,6 +203,9 @@ export default defineComponent({
     LoginHome,
   },
   computed: {
+    wrybitMode(): boolean {
+      return getPreferences().experimental_layout;
+    },
     participant(): ViewModel | undefined {
       return this.playerView ?? this.spectator;
     },
@@ -217,6 +223,9 @@ export default defineComponent({
     },
   },
   methods: {
+    useClassicInterface(): void {
+      PreferencesManager.INSTANCE.set('experimental_layout', false);
+    },
     showAlert(title: string, message: string, cb: () => void = () => {}): void {
       const dialogElement: HTMLElement | null = document.getElementById('alert-dialog');
       const buttonElement: HTMLElement | null = document.getElementById('alert-dialog-button');

@@ -25,7 +25,7 @@ describe('Wrybit boundary', () => {
     });
     try {
       await flushPromises();
-      expect(loadShell).not.toHaveBeenCalled;
+      expect(loadShell.mock.calls.length).eq(0);
       expect(wrapper.find('[data-test="shell"]').exists()).is.false;
       const input = wrapper.get<HTMLInputElement>('[data-test="payment"]');
       await input.setValue(19);
@@ -51,7 +51,9 @@ describe('Wrybit boundary', () => {
   });
 
   it('returns to classic when the bundle fails and keeps the form usable', async () => {
-    const loadShell = async () => { throw new Error('unavailable fixture bundle'); };
+    const loadShell = async () => {
+      throw new Error('unavailable fixture bundle');
+    };
     const wrapper = mount(WrybitBoundary, {
       ...globalConfig,
       props: {enabled: true, screen: 'player-home', loadShell},
@@ -72,7 +74,9 @@ describe('Wrybit boundary', () => {
 
   it('does not mount a late bundle after the mode has been disabled', async () => {
     let finish: (component: Component) => void = () => {};
-    const loadShell = vi.fn(() => new Promise<Component>((resolve) => { finish = resolve; }));
+    const loadShell = vi.fn(() => new Promise<Component>((resolve) => {
+      finish = resolve;
+    }));
     const wrapper = mount(WrybitBoundary, {
       ...globalConfig,
       props: {enabled: true, screen: 'player-home', loadShell},

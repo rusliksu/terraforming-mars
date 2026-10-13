@@ -1,7 +1,7 @@
 {
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-10T17:46:37.500Z",
-  "generated_from_commit": "d42049d985dacabf6261e97fb3969a0e42ccb805",
+  "generated_at": "2026-10-13T05:55:24.395Z",
+  "generated_from_commit": "cda32a564ded24a75902b30b276b63379a30003e",
   "scope": [
     ".",
     ".github",
@@ -2006,6 +2006,75 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "id": "wrybit-mode-boundary",
+      "label": "Опциональный режим Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/shell/WrybitBoundary.vue",
+      "role": "Загрузка отдельного клиентского chunk после включения; сохранение текущего представления при возврате или ошибке.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/shell/WrybitBoundary.vue",
+          "symbol": "watch(() => props.enabled",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/shell/AppMode.spec.ts",
+          "symbol": "opts in at the App boundary"
+        },
+        {
+          "path": "tests/client/wrybit/shell/WrybitBoundary.spec.ts",
+          "symbol": "loads only after opt in"
+        }
+      ],
+      "constraints": [
+        "По умолчанию выключен.",
+        "Не владеет запросами, правилами или AI."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/wrybit/shell/WrybitBoundary.vue",
+          "symbol": "webpackChunkName: \"wrybit-ui\"",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "wrybit-ui-view",
+      "label": "Начальная оболочка Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/shell/WrybitShell.vue",
+      "role": "Клиентское управление возвратом в обычный интерфейс.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/shell/WrybitShell.vue",
+          "symbol": "defineEmits<{classic: []}>",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/shell/AppMode.spec.ts",
+          "symbol": "opts in at the App boundary"
+        },
+        {
+          "path": "tests/client/wrybit/shell/WrybitBoundary.spec.ts",
+          "symbol": "loads only after opt in"
+        }
+      ],
+      "constraints": [
+        "Полный перенос экранов ещё не завершён."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/wrybit/shell/WrybitShell.vue",
+          "symbol": "wrybit-mode-switch",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "edges": [
@@ -2915,6 +2984,32 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "client-ui",
+      "to": "wrybit-mode-boundary",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/App.vue",
+          "symbol": "WrybitBoundary :enabled=\"wrybitMode\"",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-mode-boundary",
+      "to": "wrybit-ui-view",
+      "type": "loads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/shell/WrybitBoundary.vue",
+          "symbol": "@/client/wrybit/shell/WrybitShell.vue",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -3135,6 +3230,17 @@
         "bot-takeover"
       ],
       "outcome": "Unsupported reason отклоняет запрос до файловых и процессных побочных действий."
+    },
+    {
+      "id": "flow-wrybit-mode",
+      "name": "Включение опциональной оболочки",
+      "trigger": "Настройка experimental_layout",
+      "steps": [
+        "client-ui",
+        "wrybit-mode-boundary",
+        "wrybit-ui-view"
+      ],
+      "outcome": "Отдельный chunk загружается после включения; возврат сохраняется при ошибке. Полные экраны пока не перенесены."
     }
   ],
   "unknowns": [
@@ -3294,24 +3400,54 @@
     "tests/fanmade-compat/RebalancedLifecycle.spec.ts",
     "src/server/bot/AutomationCompatibility.ts",
     "tests/server/bot/AutomationCompatibility.spec.ts",
-    "tools/fanmade-port/fanmade-catalog-source-manifest.json"
+    "tools/fanmade-port/fanmade-catalog-source-manifest.json",
+    "src/client/wrybit/shell/WrybitBoundary.vue",
+    "src/client/wrybit/shell/WrybitShell.vue",
+    "src/client/wrybit/import-manifest.json",
+    "tests/client/wrybit/shell/AppMode.spec.ts",
+    "tests/client/wrybit/shell/WrybitBoundary.spec.ts"
   ],
   "verification_scope": {
     "paths": [
       "docs/game-history-archive.md",
       "docs/game-replay.md",
       "docs/sqlite-history-retention.md",
+      "docs/variants/rebalanced.md",
+      "package-lock.json",
+      "package.json",
+      "scripts/README-staging.md",
+      "scripts/capture_tm_release_state.ps1",
+      "scripts/deploy_tm_server.ps1",
+      "scripts/deploy_tm_staging.ps1",
+      "scripts/lib/TmSentryRelease.ps1",
+      "scripts/lib/tm_sentry_release_remote.py",
       "scripts/replay/browser-performance.js",
       "scripts/replay/browser-smoke.js",
       "scripts/replay/create-fixture.ts",
+      "scripts/report_tm_sentry_release.ps1",
+      "scripts/rollout_tm_server.ps1",
+      "scripts/smoke_tm_staging.ps1",
+      "scripts/test_tm_release_guards.ps1",
+      "scripts/test_tm_sentry_release.ps1",
+      "scripts/tests/test_tm_sentry_release_remote.py",
+      "src/client/cards/ClientCardManifest.ts",
       "src/client/components/App.vue",
       "src/client/components/GameEnd.vue",
+      "src/client/components/GameSetupDetail.vue",
       "src/client/components/SpectatorHome.vue",
       "src/client/components/card/CardRequirementComponent.vue",
+      "src/client/components/create/CreateGameForm.vue",
+      "src/client/components/create/JSONProcessor.ts",
+      "src/client/components/create/TemplateManager.ts",
+      "src/client/components/help/HelpRulebooks.vue",
       "src/client/components/overview/PlayerInfo.vue",
       "src/client/components/overview/PlayersOverview.vue",
       "src/client/components/replay/ReplayHome.vue",
       "src/client/components/replay/useReplay.ts",
+      "src/client/utils/WikiLinks.ts",
+      "src/client/wrybit/import-manifest.json",
+      "src/client/wrybit/shell/WrybitBoundary.vue",
+      "src/client/wrybit/shell/WrybitShell.vue",
       "src/common/Timer.ts",
       "src/common/app/paths.ts",
       "src/common/cards/CardReplacementRules.ts",
@@ -3325,6 +3461,8 @@
       "src/server/awards/amazonisPlanitia/AmazonisEngineer.ts",
       "src/server/awards/terraCimmeria/Warmonger.ts",
       "src/server/behavior/Executor.ts",
+      "src/server/bot/AutomationCompatibility.ts",
+      "src/server/bot/BotTakeoverManager.ts",
       "src/server/cards/AllManifests.ts",
       "src/server/cards/Card.ts",
       "src/server/cards/CardFactorySpec.ts",
@@ -3469,12 +3607,19 @@
       "src/server/cards/underworld/GuerillaEcologists.ts",
       "src/server/cards/venusNext/Celestic.ts",
       "src/server/cards/venusNext/floaterCards.ts",
+      "src/server/models/ServerModel.ts",
       "src/server/player/Colonies.ts",
       "src/server/replay/ReplayFrame.ts",
       "src/server/routes/ApiReplay.ts",
+      "src/server/routes/PlayerInput.ts",
+      "src/server/server.ts",
+      "src/server/server/SentryProcessBoundary.ts",
+      "src/server/server/SentryReporter.ts",
       "src/server/server/requestProcessor.ts",
+      "src/server/tools/export_card_rendering.ts",
       "src/server/turmoil/parties/Kelvinists.ts",
       "src/server/turmoil/parties/Reds.ts",
+      "src/styles/cards.less",
       "tests/awards/amazonisPlanitia/AmazonisEngineer.spec.ts",
       "tests/awards/terraCimmeria/Warmonger.spec.ts",
       "tests/behavior/Executor.spec.ts",
@@ -3488,33 +3633,27 @@
       "tests/client/components/GameEnd.spec.ts",
       "tests/client/components/SpectatorHome.spec.ts",
       "tests/client/components/card/CardRequirementComponent.spec.ts",
+      "tests/client/components/create/JSONProcessor.spec.ts",
+      "tests/client/components/create/Rebalanced.spec.ts",
       "tests/client/components/overview/PlayersOverview.spec.ts",
       "tests/client/components/replay/ReplayHome.spec.ts",
       "tests/client/components/replay/useReplay.spec.ts",
+      "tests/client/wrybit/shell/AppMode.spec.ts",
+      "tests/client/wrybit/shell/WrybitBoundary.spec.ts",
       "tests/database/ReplayArchive.spec.ts",
+      "tests/fanmade-compat/RebalancedLifecycle.spec.ts",
       "tests/replay/ReplayFrame.spec.ts",
       "tests/replay/ReplayView.spec.ts",
       "tests/routes/ApiReplay.spec.ts",
-      "tests/turmoil/parties/Kelvinists.spec.ts",
-      "docs/variants/rebalanced.md",
-      "src/client/components/create/CreateGameForm.vue",
-      "src/client/components/create/JSONProcessor.ts",
-      "src/client/components/GameSetupDetail.vue",
-      "src/client/components/help/HelpRulebooks.vue",
-      "src/styles/cards.less",
-      "tests/client/components/create/Rebalanced.spec.ts",
-      "tests/client/components/create/JSONProcessor.spec.ts",
-      "tests/fanmade-compat/RebalancedLifecycle.spec.ts",
-      "src/server/bot/AutomationCompatibility.ts",
+      "tests/routes/PlayerInput.spec.ts",
       "tests/server/bot/AutomationCompatibility.spec.ts",
-      "tools/fanmade-port/fanmade-catalog-source-manifest.json",
-      "src/client/components/create/TemplateManager.ts",
-      "src/client/cards/ClientCardManifest.ts",
-      "src/client/utils/WikiLinks.ts",
-      "src/server/bot/BotTakeoverManager.ts",
-      "src/server/tools/export_card_rendering.ts",
-      "tools/fanmade-port/check-catalog-source.js"
+      "tests/server/requestProcessor.spec.ts",
+      "tests/server/server/SentryProcessBoundary.spec.ts",
+      "tests/server/server/SentryReporter.spec.ts",
+      "tests/turmoil/parties/Kelvinists.spec.ts",
+      "tools/fanmade-port/check-catalog-source.js",
+      "tools/fanmade-port/fanmade-catalog-source-manifest.json"
     ],
-    "note": "Объединены ранее проверенные области реплея, корпораций, callback contracts и требования по поколению; текущая dependency union проверена по completeness и fingerprints. Игровые проверки принадлежат утверждённым пакетам. WP08: подтверждены registry, dependency graph, combined variants и consumer capabilities. WP09: локальные UI/lifecycle/automation и renderer checks подтверждены; общий quality pipeline и PR/CI/staging остаются обязательствами родителя."
+    "note": "Объединены ранее проверенные области реплея, корпораций, callback contracts и требования по поколению; текущая dependency union проверена по completeness и fingerprints. Игровые проверки принадлежат утверждённым пакетам. WP08: подтверждены registry, dependency graph, combined variants и consumer capabilities. WP09: локальные UI/lifecycle/automation и renderer checks подтверждены; общий quality pipeline и PR/CI/staging остаются обязательствами родителя. Добавлена только начальная граница App → опциональная оболочка. Сеть, правила и AI сохраняют прежних владельцев; полный UI и staging ещё не готовы."
   }
 }

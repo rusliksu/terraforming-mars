@@ -31,6 +31,10 @@ owned_files:
 - src/client/utils/PreferencesManager.ts
 - src/client/components/PreferencesDialog.vue
 - tests/client/wrybit/shell/**
+- assets/wrybit/shell/**
+- src/server/routes/ServeAsset.ts
+- src/server/routes/ContentType.ts
+- tests/routes/ServeAsset.spec.ts
 - docs/codemap/codemap.json
 - docs/codemap/codemap.html
 - docs/codemap/codemap.lock
@@ -59,6 +63,8 @@ tracker_refs: []
 Первое изменение границы App → оболочка обновляет три codemap artifacts в том же code commit по CODING_STANDARDS.md. На этом последовательном шаге ответственность принадлежит WP01; итоговое расширение карты после полного переноса остаётся в WP07. Параллельной записи в эти файлы нет.
 
 Baseline фиксирует все runtime-тесты server/client после штатной генерации static assets и клиентской сборки. `build:client` сам генерирует наши карточные данные и настоящий `sw.js`, который проверяет существующий HTTP-тест. Компиляция серверных/test типов, lint и полный build проверяются отдельно по критериям WP и WP07. Server runner ограничивает workers до восьми на машине с 16 логическими процессорами и использует конечный timeout 30 секунд на тест, сохраняя весь набор и assertions. Длительность каждой команды записывается в журнал: прежний запуск с четырьмя workers прерван штатным пределом capture в 300 секунд и сохранён отдельно. При восьми workers все 12691 runtime-тестов завершились; единственная ошибка отсутствующего `sw.js` сохранена до добавления штатной подготовки клиентской сборки.
+
+Изоляция фона включает `assets/wrybit/shell/**` и поддержку его AVIF/WebP в `ServeAsset.ts`/`ContentType.ts`, с проверкой в `tests/routes/ServeAsset.spec.ts`. Эти пути переданы WP01 последовательно; другие пакеты их не изменяют. Это выдача статических изображений внутри существующего assets-маршрута: запросы игры, правила, AI, сохранения и доступы не меняются. Атрибуция фотографии и контрольные суммы закреплённого источника сохраняются в manifest и рядом с ресурсами.
 
 ## Подзадачи
 

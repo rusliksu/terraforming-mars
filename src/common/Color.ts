@@ -72,7 +72,7 @@ export const LOCKED_PLAYER_IDENTITIES: ReadonlyArray<LockedPlayerIdentity> = [
     color: CREDICOR_COLOR,
     name: VLADLEN_NAME,
     label: 'Владлен · Магистр Кредикора',
-    colorLabel: 'сливовый с серебром',
+    colorLabel: 'красный с серебром',
     shortLabel: 'Владлен',
     title: 'Магистр Кредикора — персональный цвет Владлена',
     aliases: ['владлен', 'vladlen', 'владлен гришаев', 'vladlen grishaev', 'магистр кредикора'],

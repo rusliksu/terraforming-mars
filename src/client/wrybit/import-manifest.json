@@ -71,8 +71,16 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP01",
       "target": "src/client/wrybit/shell/AppBackground.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "implemented",
+      "evidence": [
+        "tests/client/wrybit/shell/WrybitShell.spec.ts",
+        "assets/wrybit/shell/ATTRIBUTION.md"
+      ],
+      "adaptations": [
+        "Изолированные пути ресурсов.",
+        "Стили ограничены .wrybit-ui.",
+        "Кредит виден на всех экранах с фотографией."
+      ]
     },
     {
       "source": "src/client/components/Award.vue",
@@ -3697,6 +3705,301 @@
       "target": "src/client/components/waitingFor/GoToMap.vue",
       "status": "planned",
       "evidence": []
+    }
+  ],
+  "supportingFiles": [
+    {
+      "source": "src/client/components/appBackground.ts",
+      "sourceSha256": "a9e6c0ab79649a18fdd09bab61728be2804e187877668f9d8197f6544060eb99",
+      "target": "src/client/wrybit/shell/appBackground.ts",
+      "license": "GPL-3.0",
+      "status": "implemented"
+    },
+    {
+      "source": "src/client/components/appBackgroundVariants.ts",
+      "sourceSha256": "f53c3508ad729e267e82f4b585509b56d32f767c82984f16443c1607aec69060",
+      "target": "src/client/wrybit/shell/appBackgroundVariants.ts",
+      "license": "GPL-3.0",
+      "status": "implemented"
+    },
+    {
+      "source": "src/styles/app_background.less",
+      "sourceSha256": "3be6693d132b04da690fa52efc2e869b24fe37176c228f9ab5a12964c24ea21e",
+      "target": "src/client/wrybit/shell/background.less",
+      "license": "GPL-3.0",
+      "status": "implemented"
+    }
+  ],
+  "assets": [
+    {
+      "source": "assets/background/milky-way-landscape-1280.avif",
+      "sourceSha256": "b52c720ff7d408f8cdf517dba96bf6580c7b24f453e91087ae283259c70e52d4",
+      "target": "assets/wrybit/shell/milky-way-landscape-1280.avif",
+      "bytes": 127524,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-landscape-1280.jpg",
+      "sourceSha256": "e2c9ad2332983f9b05a80fe94e8c9ecaeddbd3dd3172b75812589b54df74349e",
+      "target": "assets/wrybit/shell/milky-way-landscape-1280.jpg",
+      "bytes": 146018,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-landscape-1280.webp",
+      "sourceSha256": "256e3dc09ec1f52109c214625bc95464a3cc41f1217b72d3ac81fba89733a302",
+      "target": "assets/wrybit/shell/milky-way-landscape-1280.webp",
+      "bytes": 138158,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-landscape-1920.avif",
+      "sourceSha256": "379a64f4a21051bd3a9a72bf18aca04e65f2d8d8840bc6bb4467e8823bb2b063",
+      "target": "assets/wrybit/shell/milky-way-landscape-1920.avif",
+      "bytes": 306213,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-landscape-1920.jpg",
+      "sourceSha256": "7f49d3295fe016241b4ce02351994fa0a2b8d2c95cfc1a430e9aea94b0d13d89",
+      "target": "assets/wrybit/shell/milky-way-landscape-1920.jpg",
+      "bytes": 397877,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-landscape-1920.webp",
+      "sourceSha256": "1df20f1ddf369cf2c5714244764e2ba5af4c752378bb56f3468965dfcaa18bcd",
+      "target": "assets/wrybit/shell/milky-way-landscape-1920.webp",
+      "bytes": 374394,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-landscape-2560.avif",
+      "sourceSha256": "b87f3c5fbea2f80f869397835a5e31d90e5b973a0deecf439e677c42b98040da",
+      "target": "assets/wrybit/shell/milky-way-landscape-2560.avif",
+      "bytes": 555864,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-landscape-2560.jpg",
+      "sourceSha256": "5c8ca7dabcc5c18a50f36284494937a008062a5a8e4d9ce2f952dfeb2c27ce09",
+      "target": "assets/wrybit/shell/milky-way-landscape-2560.jpg",
+      "bytes": 784244,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-landscape-2560.webp",
+      "sourceSha256": "5482c03b8ed5962591ca05770bbf02f9750291497bb6fc83b66b0e45c80ef70c",
+      "target": "assets/wrybit/shell/milky-way-landscape-2560.webp",
+      "bytes": 720454,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-landscape-3840.avif",
+      "sourceSha256": "ab18552346faac306d9f7e1f431390263f0e79d10bd22bf6df35cea123ad2818",
+      "target": "assets/wrybit/shell/milky-way-landscape-3840.avif",
+      "bytes": 1200071,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-landscape-3840.jpg",
+      "sourceSha256": "10cfdb6227d0db1e860e5e0a2c29f5b07e3d73cd16ef05ca1b05948e155cfdeb",
+      "target": "assets/wrybit/shell/milky-way-landscape-3840.jpg",
+      "bytes": 1899358,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-landscape-3840.webp",
+      "sourceSha256": "1f3163736df713f7346d2160734248af9002a836fbce5ec9c9b3955c5c918330",
+      "target": "assets/wrybit/shell/milky-way-landscape-3840.webp",
+      "bytes": 1660770,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-landscape-960.avif",
+      "sourceSha256": "cf4986994aeb7fb2be844efde6aa7aaa253c27ee583c2d728c4acc41968be7f0",
+      "target": "assets/wrybit/shell/milky-way-landscape-960.avif",
+      "bytes": 60551,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-landscape-960.jpg",
+      "sourceSha256": "d4c38970d8c8f5a37db7393298d84b9ee6c064ccc0c797e1d346e698ab591750",
+      "target": "assets/wrybit/shell/milky-way-landscape-960.jpg",
+      "bytes": 70304,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-landscape-960.webp",
+      "sourceSha256": "49f28c473e2fe88f28382c36aed3e0c4f9e3beade1859809ccde96ac70e2ec0f",
+      "target": "assets/wrybit/shell/milky-way-landscape-960.webp",
+      "bytes": 64112,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-portrait-1080.avif",
+      "sourceSha256": "f0afb46c8ff01836c2a8d0fd833dd27bd6b8e01bb830d2c879f2c53bb947e25b",
+      "target": "assets/wrybit/shell/milky-way-portrait-1080.avif",
+      "bytes": 383622,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-portrait-1080.jpg",
+      "sourceSha256": "5c7cdf007af467889ba92b45e61a306eb5f1c07c406fe8d9864c203099fb4bf5",
+      "target": "assets/wrybit/shell/milky-way-portrait-1080.jpg",
+      "bytes": 611125,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-portrait-1080.webp",
+      "sourceSha256": "28c895e658b02c40f4d6f0477573cf27d599075862ccdebe5cd1726b0be36814",
+      "target": "assets/wrybit/shell/milky-way-portrait-1080.webp",
+      "bytes": 533182,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-portrait-1500.avif",
+      "sourceSha256": "6cdbc090dfdffe1d39af7d1c0a85e2478688d202cd2151163a4ec274c652d867",
+      "target": "assets/wrybit/shell/milky-way-portrait-1500.avif",
+      "bytes": 661165,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-portrait-1500.jpg",
+      "sourceSha256": "e0dd823686dd1c5f716296e6755a561d6642c13f6a1fcb3c355587dd027cc0cd",
+      "target": "assets/wrybit/shell/milky-way-portrait-1500.jpg",
+      "bytes": 1158955,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-portrait-1500.webp",
+      "sourceSha256": "1666d29f02780ddcbe14c71f943eb91f0dac64966e1f4730957d4ba6d97326c6",
+      "target": "assets/wrybit/shell/milky-way-portrait-1500.webp",
+      "bytes": 968982,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-portrait-540.avif",
+      "sourceSha256": "467fb306112a80210926b7ddbf00062e7ac4049ee0712822c4ded4fc5d6f82b7",
+      "target": "assets/wrybit/shell/milky-way-portrait-540.avif",
+      "bytes": 100653,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-portrait-540.jpg",
+      "sourceSha256": "e7176a6f6ab418f6477e4742e6df8bf3e848be3c2b22e79ad5b074ae1b44d879",
+      "target": "assets/wrybit/shell/milky-way-portrait-540.jpg",
+      "bytes": 136269,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-portrait-540.webp",
+      "sourceSha256": "ed00b2900d735451f427be43c48e66abd73136897af4977a7ee46de7955f1832",
+      "target": "assets/wrybit/shell/milky-way-portrait-540.webp",
+      "bytes": 127398,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-portrait-810.avif",
+      "sourceSha256": "1c418d861efcde68efbd505b0a0e2f5ed5fcf317a0546f6d0d022ec0e48cd42b",
+      "target": "assets/wrybit/shell/milky-way-portrait-810.avif",
+      "bytes": 223571,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-portrait-810.jpg",
+      "sourceSha256": "dac6e774cfff8ac6f32aaab56d3f52d14649a369a0f4fbac38997e25f130bc1e",
+      "target": "assets/wrybit/shell/milky-way-portrait-810.jpg",
+      "bytes": 339141,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/background/milky-way-portrait-810.webp",
+      "sourceSha256": "9bada5c50fda5060256d1518bf22112c300befa285ca6348a3d840942b16ccc6",
+      "target": "assets/wrybit/shell/milky-way-portrait-810.webp",
+      "bytes": 297660,
+      "license": "CC-BY-4.0",
+      "attribution": "ESO / S. Brunier",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "status": "copied-unchanged"
     }
   ]
 }

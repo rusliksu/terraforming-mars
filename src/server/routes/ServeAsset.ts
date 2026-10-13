@@ -254,7 +254,8 @@ export class ServeAsset extends Handler {
         }
       }
 
-      if (urlPath.endsWith('.png') || urlPath.endsWith('.jpg') || urlPath.endsWith('.json') || urlPath.endsWith('.svg')) {
+      if (urlPath.endsWith('.png') || urlPath.endsWith('.jpg') || urlPath.endsWith('.json') || urlPath.endsWith('.svg') ||
+          urlPath.endsWith('.avif') || urlPath.endsWith('.webp')) {
         const assetsRoot = path.resolve('./assets');
         const resolvedFile = path.resolve(path.normalize(urlPath));
 

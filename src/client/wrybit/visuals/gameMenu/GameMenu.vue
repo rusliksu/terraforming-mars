@@ -111,7 +111,7 @@ import FanProjectNotice from '@/client/wrybit/visuals/common/FanProjectNotice.vu
 import MobileGlyph from '@/client/wrybit/visuals/common/MobileGlyph.vue';
 import LanguageFlag from '@/client/wrybit/visuals/common/LanguageFlag.vue';
 import LanguageSelectionDialog from '@/client/wrybit/visuals/gameMenu/LanguageSelectionDialog.vue';
-import InfoPanel from '@/client/components/InfoPanel.vue';
+import InfoPanel from '@/client/wrybit/visuals/InfoPanel.vue';
 import PreferencesDialog from '@/client/wrybit/visuals/gameMenu/PreferencesDialog.vue';
 import {PreferencesManager} from '@/client/utils/PreferencesManager';
 import type {LANGUAGE} from '@/common/constants';

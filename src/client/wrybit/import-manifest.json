@@ -1728,7 +1728,18 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/board/BoardZoomModal.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-board-zoom-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/BoardZoom.spec.ts",
+            "tests/client/wrybit/visuals/BoardPinchZoom.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source scaled board/zoom and mobile controls, optional body root, canonical Board geometry/config/custom rows. Unmount/revision guards and animation abort prevent stale DOM callbacks; mutation removed a guard and produced a detached DOM error, then was restored. Pointercancel/pinch-tail regression was red on source and green after the local UI fix. 201 tests/71 files before gesture fix plus six focused tests after; types/lint/style and final actual Webpack zero warnings. Normal desktop/phone open-close, + 200 to 225 percent, fit 100 percent, Escape and console zero errors/warnings. Full game/placement/viewport-owner integration remains pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/board/MarsScaleBonuses.vue",
@@ -1793,7 +1804,18 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/board/ScaledBoard.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-board-zoom-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/BoardZoom.spec.ts",
+            "tests/client/wrybit/visuals/BoardPinchZoom.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source scaled board/zoom and mobile controls, optional body root, canonical Board geometry/config/custom rows. Unmount/revision guards and animation abort prevent stale DOM callbacks; mutation removed a guard and produced a detached DOM error, then was restored. Pointercancel/pinch-tail regression was red on source and green after the local UI fix. 201 tests/71 files before gesture fix plus six focused tests after; types/lint/style and final actual Webpack zero warnings. Normal desktop/phone open-close, + 200 to 225 percent, fit 100 percent, Escape and console zero errors/warnings. Full game/placement/viewport-owner integration remains pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/boardTabs/BoardTabLines.vue",
@@ -3994,10 +4016,21 @@
       "sourceLines": 27,
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
-      "package": "WP05",
-      "target": "src/client/wrybit/mobile/MobileZoomControls.vue",
+      "package": "WP02",
+      "target": "src/client/wrybit/visuals/board/MobileZoomControls.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-board-zoom-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/BoardZoom.spec.ts",
+            "tests/client/wrybit/visuals/BoardPinchZoom.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source scaled board/zoom and mobile controls, optional body root, canonical Board geometry/config/custom rows. Unmount/revision guards and animation abort prevent stale DOM callbacks; mutation removed a guard and produced a detached DOM error, then was restored. Pointercancel/pinch-tail regression was red on source and green after the local UI fix. 201 tests/71 files before gesture fix plus six focused tests after; types/lint/style and final actual Webpack zero warnings. Normal desktop/phone open-close, + 200 to 225 percent, fit 100 percent, Escape and console zero errors/warnings. Full game/placement/viewport-owner integration remains pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/moon/MoonBoard.vue",
@@ -6365,6 +6398,139 @@
           "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
         }
       ]
+    },
+    {
+      "source": "src/client/components/board/boardZoomAnimation.ts",
+      "sourceSha256": "7096ed1fe4a39d1070519606145576c4046c4a15d8103a25630bf41a139570bc",
+      "target": "src/client/wrybit/visuals/board/boardZoomAnimation.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-board-zoom-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/BoardZoom.spec.ts",
+            "tests/client/wrybit/visuals/BoardPinchZoom.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source scaled board/zoom and mobile controls, optional body root, canonical Board geometry/config/custom rows. Unmount/revision guards and animation abort prevent stale DOM callbacks; mutation removed a guard and produced a detached DOM error, then was restored. Pointercancel/pinch-tail regression was red on source and green after the local UI fix. 201 tests/71 files before gesture fix plus six focused tests after; types/lint/style and final actual Webpack zero warnings. Normal desktop/phone open-close, + 200 to 225 percent, fit 100 percent, Escape and console zero errors/warnings. Full game/placement/viewport-owner integration remains pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/board/boardPinchZoom.ts",
+      "sourceSha256": "8f32848ff94194d61b25133b27987a68382f68ad93d5d412d17bc59c1853dd34",
+      "target": "src/client/wrybit/visuals/board/boardPinchZoom.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-board-zoom-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/BoardZoom.spec.ts",
+            "tests/client/wrybit/visuals/BoardPinchZoom.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source scaled board/zoom and mobile controls, optional body root, canonical Board geometry/config/custom rows. Unmount/revision guards and animation abort prevent stale DOM callbacks; mutation removed a guard and produced a detached DOM error, then was restored. Pointercancel/pinch-tail regression was red on source and green after the local UI fix. 201 tests/71 files before gesture fix plus six focused tests after; types/lint/style and final actual Webpack zero warnings. Normal desktop/phone open-close, + 200 to 225 percent, fit 100 percent, Escape and console zero errors/warnings. Full game/placement/viewport-owner integration remains pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/board/boardPlacementActive.ts",
+      "sourceSha256": "fda6929277500a7243913381cb8b21f33037bf633a1b5e7652bf6f1e72aeec9a",
+      "target": "src/client/wrybit/visuals/board/boardPlacementActive.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-board-zoom-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/BoardZoom.spec.ts",
+            "tests/client/wrybit/visuals/BoardPinchZoom.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source scaled board/zoom and mobile controls, optional body root, canonical Board geometry/config/custom rows. Unmount/revision guards and animation abort prevent stale DOM callbacks; mutation removed a guard and produced a detached DOM error, then was restored. Pointercancel/pinch-tail regression was red on source and green after the local UI fix. 201 tests/71 files before gesture fix plus six focused tests after; types/lint/style and final actual Webpack zero warnings. Normal desktop/phone open-close, + 200 to 225 percent, fit 100 percent, Escape and console zero errors/warnings. Full game/placement/viewport-owner integration remains pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/mobile/mobileBoardZoom.ts",
+      "sourceSha256": "121f2a4eabc69ec1fc76775be600f47e59e2b194ef0a1463689b97ba882a9e7f",
+      "target": "src/client/wrybit/visuals/board/mobileBoardZoom.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-board-zoom-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/BoardZoom.spec.ts",
+            "tests/client/wrybit/visuals/BoardPinchZoom.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source scaled board/zoom and mobile controls, optional body root, canonical Board geometry/config/custom rows. Unmount/revision guards and animation abort prevent stale DOM callbacks; mutation removed a guard and produced a detached DOM error, then was restored. Pointercancel/pinch-tail regression was red on source and green after the local UI fix. 201 tests/71 files before gesture fix plus six focused tests after; types/lint/style and final actual Webpack zero warnings. Normal desktop/phone open-close, + 200 to 225 percent, fit 100 percent, Escape and console zero errors/warnings. Full game/placement/viewport-owner integration remains pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/board/ScaledBoard.vue",
+      "sourceSha256": "4e101684be9fec60f4fada73c5a45a71d8dc7bf98f7c47a688bda9a3fcb11bda",
+      "target": "src/styles/wrybit/scaled_board.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-board-zoom-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/BoardZoom.spec.ts",
+            "tests/client/wrybit/visuals/BoardPinchZoom.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source scaled board/zoom and mobile controls, optional body root, canonical Board geometry/config/custom rows. Unmount/revision guards and animation abort prevent stale DOM callbacks; mutation removed a guard and produced a detached DOM error, then was restored. Pointercancel/pinch-tail regression was red on source and green after the local UI fix. 201 tests/71 files before gesture fix plus six focused tests after; types/lint/style and final actual Webpack zero warnings. Normal desktop/phone open-close, + 200 to 225 percent, fit 100 percent, Escape and console zero errors/warnings. Full game/placement/viewport-owner integration remains pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/board_zoom_modal.less",
+      "sourceSha256": "27e4ab4dd1a7d516697323bb6adc9bd9f8e471eb15a30c52ddd769abff2ce4b8",
+      "target": "src/styles/wrybit/board_zoom_modal.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-board-zoom-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/BoardZoom.spec.ts",
+            "tests/client/wrybit/visuals/BoardPinchZoom.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source scaled board/zoom and mobile controls, optional body root, canonical Board geometry/config/custom rows. Unmount/revision guards and animation abort prevent stale DOM callbacks; mutation removed a guard and produced a detached DOM error, then was restored. Pointercancel/pinch-tail regression was red on source and green after the local UI fix. 201 tests/71 files before gesture fix plus six focused tests after; types/lint/style and final actual Webpack zero warnings. Normal desktop/phone open-close, + 200 to 225 percent, fit 100 percent, Escape and console zero errors/warnings. Full game/placement/viewport-owner integration remains pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/mobile.less",
+      "sourceSha256": "ebb8a106fb55f90283f545ff6fcdcaea4774239cb81498788c6ce255602c072f",
+      "target": "src/styles/wrybit/board_zoom_mobile.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-board-zoom-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/BoardZoom.spec.ts",
+            "tests/client/wrybit/visuals/BoardPinchZoom.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source scaled board/zoom and mobile controls, optional body root, canonical Board geometry/config/custom rows. Unmount/revision guards and animation abort prevent stale DOM callbacks; mutation removed a guard and produced a detached DOM error, then was restored. Pointercancel/pinch-tail regression was red on source and green after the local UI fix. 201 tests/71 files before gesture fix plus six focused tests after; types/lint/style and final actual Webpack zero warnings. Normal desktop/phone open-close, + 200 to 225 percent, fit 100 percent, Escape and console zero errors/warnings. Full game/placement/viewport-owner integration remains pending."
+        }
+      ]
     }
   ],
   "assets": [
@@ -6817,6 +6983,25 @@
       "license": "GPL-3.0",
       "attribution": "Wrybit UI fork",
       "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/board/mars-planet.png",
+      "sourceSha256": "7d0b4a1473ddbd1be11eeddbe504c4e58fc3a6b8a8f574c00d23f8b4f0c66691",
+      "target": "assets/wrybit/board/mars-planet.png",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-board-zoom-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/BoardZoom.spec.ts",
+            "tests/client/wrybit/visuals/BoardPinchZoom.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source scaled board/zoom and mobile controls, optional body root, canonical Board geometry/config/custom rows. Unmount/revision guards and animation abort prevent stale DOM callbacks; mutation removed a guard and produced a detached DOM error, then was restored. Pointercancel/pinch-tail regression was red on source and green after the local UI fix. 201 tests/71 files before gesture fix plus six focused tests after; types/lint/style and final actual Webpack zero warnings. Normal desktop/phone open-close, + 200 to 225 percent, fit 100 percent, Escape and console zero errors/warnings. Full game/placement/viewport-owner integration remains pending."
+        }
+      ]
     }
   ],
   "readOnlyProjections": [

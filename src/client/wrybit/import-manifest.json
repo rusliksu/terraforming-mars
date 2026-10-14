@@ -424,7 +424,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/HandCardsPanel.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-filter-hand-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardFilter.spec.ts",
+            "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+            "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+            "tests/client/components/card/Card.spec.ts",
+            "tests/client/components/PlayerHome.spec.ts"
+          ],
+          "note": "Our static/custom metadata, clone/Galactic/Infrastructure and supplied prices/playable input. Whole-hand sort uses canonical SortOrder/CardOrderStorage, independent viewer state, Manual restoration and new cards. Source controls, scoped zoom and private body sheet; no gameplay/AI changes. 90 tests/38 files plus new active-prelude test; types/lint/style, actual Webpack zero warnings. Normal desktop/mobile filter and Cost/Manual clicks, console zero errors/warnings. 137 ordered CSS rules match the frozen source after recorded isolation/selector corrections. Full input/carousel/home/mobile-owner integration is pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/HandCardsTab.vue",
@@ -461,7 +474,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/HandSortControl.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-filter-hand-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardFilter.spec.ts",
+            "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+            "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+            "tests/client/components/card/Card.spec.ts",
+            "tests/client/components/PlayerHome.spec.ts"
+          ],
+          "note": "Our static/custom metadata, clone/Galactic/Infrastructure and supplied prices/playable input. Whole-hand sort uses canonical SortOrder/CardOrderStorage, independent viewer state, Manual restoration and new cards. Source controls, scoped zoom and private body sheet; no gameplay/AI changes. 90 tests/38 files plus new active-prelude test; types/lint/style, actual Webpack zero warnings. Normal desktop/mobile filter and Cost/Manual clicks, console zero errors/warnings. 137 ordered CSS rules match the frozen source after recorded isolation/selector corrections. Full input/carousel/home/mobile-owner integration is pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/HomeColumns.vue",
@@ -2163,7 +2189,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/cardfilter/CardFilterBar.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-filter-hand-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardFilter.spec.ts",
+            "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+            "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+            "tests/client/components/card/Card.spec.ts",
+            "tests/client/components/PlayerHome.spec.ts"
+          ],
+          "note": "Our static/custom metadata, clone/Galactic/Infrastructure and supplied prices/playable input. Whole-hand sort uses canonical SortOrder/CardOrderStorage, independent viewer state, Manual restoration and new cards. Source controls, scoped zoom and private body sheet; no gameplay/AI changes. 90 tests/38 files plus new active-prelude test; types/lint/style, actual Webpack zero warnings. Normal desktop/mobile filter and Cost/Manual clicks, console zero errors/warnings. 137 ordered CSS rules match the frozen source after recorded isolation/selector corrections. Full input/carousel/home/mobile-owner integration is pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/cardfilter/CardFilterEmptyHint.vue",
@@ -2175,7 +2214,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/cardfilter/CardFilterEmptyHint.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-filter-hand-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardFilter.spec.ts",
+            "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+            "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+            "tests/client/components/card/Card.spec.ts",
+            "tests/client/components/PlayerHome.spec.ts"
+          ],
+          "note": "Our static/custom metadata, clone/Galactic/Infrastructure and supplied prices/playable input. Whole-hand sort uses canonical SortOrder/CardOrderStorage, independent viewer state, Manual restoration and new cards. Source controls, scoped zoom and private body sheet; no gameplay/AI changes. 90 tests/38 files plus new active-prelude test; types/lint/style, actual Webpack zero warnings. Normal desktop/mobile filter and Cost/Manual clicks, console zero errors/warnings. 137 ordered CSS rules match the frozen source after recorded isolation/selector corrections. Full input/carousel/home/mobile-owner integration is pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/cardfilter/CardFilterOptions.vue",
@@ -2187,7 +2239,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/cardfilter/CardFilterOptions.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-filter-hand-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardFilter.spec.ts",
+            "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+            "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+            "tests/client/components/card/Card.spec.ts",
+            "tests/client/components/PlayerHome.spec.ts"
+          ],
+          "note": "Our static/custom metadata, clone/Galactic/Infrastructure and supplied prices/playable input. Whole-hand sort uses canonical SortOrder/CardOrderStorage, independent viewer state, Manual restoration and new cards. Source controls, scoped zoom and private body sheet; no gameplay/AI changes. 90 tests/38 files plus new active-prelude test; types/lint/style, actual Webpack zero warnings. Normal desktop/mobile filter and Cost/Manual clicks, console zero errors/warnings. 137 ordered CSS rules match the frozen source after recorded isolation/selector corrections. Full input/carousel/home/mobile-owner integration is pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/cardfilter/CardSortIcon.vue",
@@ -2199,7 +2264,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/cardfilter/CardSortIcon.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-filter-hand-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardFilter.spec.ts",
+            "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+            "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+            "tests/client/components/card/Card.spec.ts",
+            "tests/client/components/PlayerHome.spec.ts"
+          ],
+          "note": "Our static/custom metadata, clone/Galactic/Infrastructure and supplied prices/playable input. Whole-hand sort uses canonical SortOrder/CardOrderStorage, independent viewer state, Manual restoration and new cards. Source controls, scoped zoom and private body sheet; no gameplay/AI changes. 90 tests/38 files plus new active-prelude test; types/lint/style, actual Webpack zero warnings. Normal desktop/mobile filter and Cost/Manual clicks, console zero errors/warnings. 137 ordered CSS rules match the frozen source after recorded isolation/selector corrections. Full input/carousel/home/mobile-owner integration is pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/cardfilter/CardSortMenu.vue",
@@ -2211,7 +2289,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/cardfilter/CardSortMenu.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-filter-hand-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardFilter.spec.ts",
+            "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+            "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+            "tests/client/components/card/Card.spec.ts",
+            "tests/client/components/PlayerHome.spec.ts"
+          ],
+          "note": "Our static/custom metadata, clone/Galactic/Infrastructure and supplied prices/playable input. Whole-hand sort uses canonical SortOrder/CardOrderStorage, independent viewer state, Manual restoration and new cards. Source controls, scoped zoom and private body sheet; no gameplay/AI changes. 90 tests/38 files plus new active-prelude test; types/lint/style, actual Webpack zero warnings. Normal desktop/mobile filter and Cost/Manual clicks, console zero errors/warnings. 137 ordered CSS rules match the frozen source after recorded isolation/selector corrections. Full input/carousel/home/mobile-owner integration is pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/cardfilter/CardZoomBar.vue",
@@ -2235,7 +2326,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/cardfilter/CardZoomSlider.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-filter-hand-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardFilter.spec.ts",
+            "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+            "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+            "tests/client/components/card/Card.spec.ts",
+            "tests/client/components/PlayerHome.spec.ts"
+          ],
+          "note": "Our static/custom metadata, clone/Galactic/Infrastructure and supplied prices/playable input. Whole-hand sort uses canonical SortOrder/CardOrderStorage, independent viewer state, Manual restoration and new cards. Source controls, scoped zoom and private body sheet; no gameplay/AI changes. 90 tests/38 files plus new active-prelude test; types/lint/style, actual Webpack zero warnings. Normal desktop/mobile filter and Cost/Manual clicks, console zero errors/warnings. 137 ordered CSS rules match the frozen source after recorded isolation/selector corrections. Full input/carousel/home/mobile-owner integration is pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/cardlist/CardList.vue",
@@ -5698,6 +5802,195 @@
             "tests/models/ServerModel.spec.ts"
           ],
           "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/cardfilter/cardFilterLabels.ts",
+      "sourceSha256": "75c1ab007e0985f2c2fd86ce918083cd7fa8c1c30cdfa6467c1fc8d40c7aebe8",
+      "target": "src/client/wrybit/visuals/cardfilter/cardFilterLabels.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-card-filter-hand-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardFilter.spec.ts",
+            "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+            "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+            "tests/client/components/card/Card.spec.ts",
+            "tests/client/components/PlayerHome.spec.ts"
+          ],
+          "note": "Our static/custom metadata, clone/Galactic/Infrastructure and supplied prices/playable input. Whole-hand sort uses canonical SortOrder/CardOrderStorage, independent viewer state, Manual restoration and new cards. Source controls, scoped zoom and private body sheet; no gameplay/AI changes. 90 tests/38 files plus new active-prelude test; types/lint/style, actual Webpack zero warnings. Normal desktop/mobile filter and Cost/Manual clicks, console zero errors/warnings. 137 ordered CSS rules match the frozen source after recorded isolation/selector corrections. Full input/carousel/home/mobile-owner integration is pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/utils/cardFilter.ts",
+      "sourceSha256": "11012436426c361692a4699156cf3409405f0de5edbc8e93703c2db3c38be623",
+      "target": "src/client/wrybit/visuals/cardfilter/cardFilter.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-card-filter-hand-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardFilter.spec.ts",
+            "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+            "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+            "tests/client/components/card/Card.spec.ts",
+            "tests/client/components/PlayerHome.spec.ts"
+          ],
+          "note": "Our static/custom metadata, clone/Galactic/Infrastructure and supplied prices/playable input. Whole-hand sort uses canonical SortOrder/CardOrderStorage, independent viewer state, Manual restoration and new cards. Source controls, scoped zoom and private body sheet; no gameplay/AI changes. 90 tests/38 files plus new active-prelude test; types/lint/style, actual Webpack zero warnings. Normal desktop/mobile filter and Cost/Manual clicks, console zero errors/warnings. 137 ordered CSS rules match the frozen source after recorded isolation/selector corrections. Full input/carousel/home/mobile-owner integration is pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/utils/cardFilterState.ts",
+      "sourceSha256": "0e29701df2b67aee8e4ff2d3ae4a7404427cbbe0b7abcf2bd9f08cb23cb98955",
+      "target": "src/client/wrybit/visuals/cardfilter/cardFilterState.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-card-filter-hand-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardFilter.spec.ts",
+            "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+            "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+            "tests/client/components/card/Card.spec.ts",
+            "tests/client/components/PlayerHome.spec.ts"
+          ],
+          "note": "Our static/custom metadata, clone/Galactic/Infrastructure and supplied prices/playable input. Whole-hand sort uses canonical SortOrder/CardOrderStorage, independent viewer state, Manual restoration and new cards. Source controls, scoped zoom and private body sheet; no gameplay/AI changes. 90 tests/38 files plus new active-prelude test; types/lint/style, actual Webpack zero warnings. Normal desktop/mobile filter and Cost/Manual clicks, console zero errors/warnings. 137 ordered CSS rules match the frozen source after recorded isolation/selector corrections. Full input/carousel/home/mobile-owner integration is pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/utils/cardZoom.ts",
+      "sourceSha256": "d40915d0f6e98c7f1445da3369ae3ab3fa7dad992e9c96edf96fd26bd16207fc",
+      "target": "src/client/wrybit/visuals/cardfilter/cardZoom.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-card-filter-hand-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardFilter.spec.ts",
+            "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+            "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+            "tests/client/components/card/Card.spec.ts",
+            "tests/client/components/PlayerHome.spec.ts"
+          ],
+          "note": "Our static/custom metadata, clone/Galactic/Infrastructure and supplied prices/playable input. Whole-hand sort uses canonical SortOrder/CardOrderStorage, independent viewer state, Manual restoration and new cards. Source controls, scoped zoom and private body sheet; no gameplay/AI changes. 90 tests/38 files plus new active-prelude test; types/lint/style, actual Webpack zero warnings. Normal desktop/mobile filter and Cost/Manual clicks, console zero errors/warnings. 137 ordered CSS rules match the frozen source after recorded isolation/selector corrections. Full input/carousel/home/mobile-owner integration is pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/utils/handSort.ts",
+      "sourceSha256": "fab2c6fe44ba41ea18963c44d5a9c9de87f4880a67c7e19841ee9aefe14dec11",
+      "target": "src/client/wrybit/visuals/cardfilter/handSort.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-card-filter-hand-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardFilter.spec.ts",
+            "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+            "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+            "tests/client/components/card/Card.spec.ts",
+            "tests/client/components/PlayerHome.spec.ts"
+          ],
+          "note": "Our static/custom metadata, clone/Galactic/Infrastructure and supplied prices/playable input. Whole-hand sort uses canonical SortOrder/CardOrderStorage, independent viewer state, Manual restoration and new cards. Source controls, scoped zoom and private body sheet; no gameplay/AI changes. 90 tests/38 files plus new active-prelude test; types/lint/style, actual Webpack zero warnings. Normal desktop/mobile filter and Cost/Manual clicks, console zero errors/warnings. 137 ordered CSS rules match the frozen source after recorded isolation/selector corrections. Full input/carousel/home/mobile-owner integration is pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/utils/handCards.ts",
+      "sourceSha256": "2f9579eac962be0fae3ce33da62d9e35c5d0bae57f0cdff2e566807951d25d5a",
+      "target": "src/client/wrybit/visuals/cardfilter/handCards.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-card-filter-hand-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardFilter.spec.ts",
+            "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+            "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+            "tests/client/components/card/Card.spec.ts",
+            "tests/client/components/PlayerHome.spec.ts"
+          ],
+          "note": "Our static/custom metadata, clone/Galactic/Infrastructure and supplied prices/playable input. Whole-hand sort uses canonical SortOrder/CardOrderStorage, independent viewer state, Manual restoration and new cards. Source controls, scoped zoom and private body sheet; no gameplay/AI changes. 90 tests/38 files plus new active-prelude test; types/lint/style, actual Webpack zero warnings. Normal desktop/mobile filter and Cost/Manual clicks, console zero errors/warnings. 137 ordered CSS rules match the frozen source after recorded isolation/selector corrections. Full input/carousel/home/mobile-owner integration is pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/card_filter_bar.less",
+      "sourceSha256": "79e7e8e498d44df98768865e092b5101f4732e16e72deec755229a03604d2c8f",
+      "target": "src/styles/wrybit/card_filter_bar.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-card-filter-hand-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardFilter.spec.ts",
+            "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+            "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+            "tests/client/components/card/Card.spec.ts",
+            "tests/client/components/PlayerHome.spec.ts"
+          ],
+          "note": "Our static/custom metadata, clone/Galactic/Infrastructure and supplied prices/playable input. Whole-hand sort uses canonical SortOrder/CardOrderStorage, independent viewer state, Manual restoration and new cards. Source controls, scoped zoom and private body sheet; no gameplay/AI changes. 90 tests/38 files plus new active-prelude test; types/lint/style, actual Webpack zero warnings. Normal desktop/mobile filter and Cost/Manual clicks, console zero errors/warnings. 137 ordered CSS rules match the frozen source after recorded isolation/selector corrections. Full input/carousel/home/mobile-owner integration is pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/card_zoom_slider.less",
+      "sourceSha256": "5c12f02dc7f7b050b37c7fd5a26d457e90815df53f57afb07ec7ac80fa5d3f2e",
+      "target": "src/styles/wrybit/card_zoom_slider.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-card-filter-hand-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardFilter.spec.ts",
+            "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+            "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+            "tests/client/components/card/Card.spec.ts",
+            "tests/client/components/PlayerHome.spec.ts"
+          ],
+          "note": "Our static/custom metadata, clone/Galactic/Infrastructure and supplied prices/playable input. Whole-hand sort uses canonical SortOrder/CardOrderStorage, independent viewer state, Manual restoration and new cards. Source controls, scoped zoom and private body sheet; no gameplay/AI changes. 90 tests/38 files plus new active-prelude test; types/lint/style, actual Webpack zero warnings. Normal desktop/mobile filter and Cost/Manual clicks, console zero errors/warnings. 137 ordered CSS rules match the frozen source after recorded isolation/selector corrections. Full input/carousel/home/mobile-owner integration is pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/hand_cards_panel.less",
+      "sourceSha256": "ad50324eb2859c77ea70eb3827e6d65d3a452e77dc4bcb9b00a998b40cfcdf18",
+      "target": "src/styles/wrybit/hand_cards_panel.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-card-filter-hand-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardFilter.spec.ts",
+            "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+            "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+            "tests/client/components/card/Card.spec.ts",
+            "tests/client/components/PlayerHome.spec.ts"
+          ],
+          "note": "Our static/custom metadata, clone/Galactic/Infrastructure and supplied prices/playable input. Whole-hand sort uses canonical SortOrder/CardOrderStorage, independent viewer state, Manual restoration and new cards. Source controls, scoped zoom and private body sheet; no gameplay/AI changes. 90 tests/38 files plus new active-prelude test; types/lint/style, actual Webpack zero warnings. Normal desktop/mobile filter and Cost/Manual clicks, console zero errors/warnings. 137 ordered CSS rules match the frozen source after recorded isolation/selector corrections. Full input/carousel/home/mobile-owner integration is pending."
         }
       ]
     }

@@ -22,6 +22,7 @@ authoritative_surface: src/client/wrybit/visuals/
 create_intent: []
 execution_mode: code_change
 owned_files:
+- src/client/components/PlayerHome.vue
 - src/client/wrybit/visuals/**
 - src/styles/wrybit/**
 - assets/wrybit/**
@@ -49,6 +50,8 @@ owned_files:
 - src/common/models/PlayerModel.ts
 - src/common/models/ConditionalDiscountModel.ts
 - src/server/models/publicConditionalDiscounts.ts
+- src/client/components/card/Card.vue
+- src/client/cards/CardModelMetadata.ts
 - src/client/wrybit/import-manifest.json
 - docs/codemap/codemap.json
 - docs/codemap/codemap.html
@@ -109,6 +112,8 @@ Planning/base и внутренний merge target: codex/wrybit-full-ui. Ито
 
 Все 4 подзадачи выполнены, mapped требования имеют проверку, relevant matrix строки закрыты доказательствами, нет доменного/AI diff, проверено актуальное состояние формы и отсутствие влияния на выключенный режим. Журнал lifecycle обновлён штатными командами. Никакой шаг этого пакета сам по себе не означает завершения всего интерфейса.
 
+Промежуточная проверка filter/hand views: наши static/custom metadata, clone tags, Galactic/Infrastructure, server calculatedCost и offered project input. Общий producer active predicate сохраняет активные/effect preludes; сортировка всей руки использует наши SortOrder/CardOrderStorage, отдельное viewer state, восстанавливает Manual и добавляет новые карты в конец. Source filter/sort/zoom controls перенесены с private overlay root; zoom не пишет в html. 90 client tests/38 files плюс focused active-prelude test, Vue types, scoped lint/style и actual Webpack без warnings. Browser component fixture на D: подтвердил Playable now, phone sheet/open-close и Cost/Manual обычными кликами; console 0/0. 137 упорядоченных CSS rules совпадают после documented isolation и исправления двух combined modifier selectors. Полные home/input/carousel/viewport flows ещё открыты.
+
 ## Риски и ориентиры review
 
 Последовательный handoff внутри WP02: CardRowComponent и его focused test. Browser catalog обнаружил, что канонический ItemType допускает строковое описание, но runtime Vue prop принимал только Object. Исправляется только декларация типа prop; renderer, метаданные карт, эффекты и правила не меняются.
@@ -124,6 +129,10 @@ Planning/base и внутренний merge target: codex/wrybit-full-ui. Ито
 Общие цены информационных панелей извлекаются из существующих Milestones/Awards в milestoneAwardPrices и используются таблицей. Это прежний producer display prices; личные льготы/оплаты и серверные цены не рассчитываются заново.
 
 Последовательный handoff общего read-only producer тегов: канонический PlayerTags и новый playerTagDetails. Для таблицы Wrybit выделяется существующий расчёт из нашей панели, без импорта чужого подсчёта скидок/VP. Оба представления должны реагировать на обновление публичных моделей; игровой расчёт стоимости, VP и AI не меняется. Focused refresh test находится в owned tests/client/wrybit/visuals.
+
+Read-only metadata handoff для фильтров: из канонического Card выделяются static/custom wire resolution и отображаемые теги (включая cloneTag) в CardModelMetadata. Filter и renderer читают один источник; custom cards, Galactic/Infrastructure и server calculatedCost сохраняются. SortOrder, правила и данные карт не изменяются этим выделением.
+
+Последовательный handoff PlayerHome: его существующий isActiveCard переносится в CardModelMetadata без изменения predicate/custom priority. Wrybit hand/group views используют этот же producer, сохраняя активные preludes/effects наших карточек. Shared hand sort использует наш SortOrder и CardOrderStorage, отдельное transient состояние по viewer ID и revision для связанных представлений; foreign storage/controller не импортируются.
 
 Ближайший native PlayerTags test входит в этот handoff: его существующий conciseTagsViewDefaultValue=false уже задаёт режим. Удаляется только запись в несуществующий $data.conciseView, которая ломается при переходе producer на computed; все проверки скидок, замены тегов и Galactic сохраняются.
 

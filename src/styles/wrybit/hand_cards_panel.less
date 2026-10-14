@@ -1,0 +1,96 @@
+.wrybit-hand-panel-styles() {
+  // Hand cards tab (HandCardsPanel.vue): active cards on top, hand cards below.
+  // Law of proximity: the heading sits close to its cards, between the sections there is clearly more space
+  // (about half a card, scaled with the card zoom). The fine separator line always sits directly below a
+  // section heading, so it belongs to its section instead of floating between two.
+  @hand-cards-panel-title-gap: 4px;
+  @hand-cards-panel-section-gap: calc(138px * var(--wrybit-card-zoom, 1)); // half a card (275px)
+  @hand-cards-panel-first-title-gap: 16px; // first heading: off the header row above
+  @section-title-line: 1px solid rgba(255, 255, 255, 0.18);
+
+  // Heading with the separator line below it, spanning the full width
+  .section-title-with-line() {
+    padding-bottom: 6px;
+    border-bottom: @section-title-line;
+  }
+
+  .hand-cards-panel__section + .hand-cards-panel__section {
+    margin-top: @hand-cards-panel-section-gap;
+  }
+
+  .hand-cards-panel__section > .hand-cards-panel__title,
+  .hand-cards-panel__section > .hand-cards-panel__header {
+    .section-title-with-line();
+    margin-bottom: 10px;
+  }
+
+  .hand-cards-panel__section:first-of-type > .hand-cards-panel__title,
+  .hand-cards-panel__section:first-of-type > .hand-cards-panel__header {
+    margin-top: @hand-cards-panel-first-title-gap;
+  }
+
+  .hand-cards-panel__title {
+    .section-caption(16px);
+    margin: 0 0 @hand-cards-panel-title-gap;
+    padding-left: 8px;
+  }
+
+  // Hand cards header row without filter (a single hand card below active cards): heading close above the card.
+  // With several cards the filter row (card_filter_bar.less) takes its place.
+  .hand-cards-panel__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    // A bit more space than to the heading: the cards' price badges stick out at the top.
+    margin: 0 0 10px;
+    padding-left: 8px;
+
+    .hand-cards-panel__title {
+      margin: 0;
+      padding-left: 0;
+    }
+  }
+
+  // Section below a tab's selection (CardListSection.vue: kept draft cards, cards not playable, actions used or not
+  // usable) – same separator and spacing as between the hand cards sections; does not grow, so the selection keeps the space
+  .card-list-section {
+    flex: none;
+    margin-top: @hand-cards-panel-section-gap;
+  }
+
+  // Opening a tab without a selection above it (initial draft: dealt cards in "All cards", WaitingForTabs.vue)
+  .or-tab-panel > .card-list-section:first-child {
+    margin-top: 0;
+  }
+
+  // Section headings inside a card grid (SelectProjectCardToPlay.vue: "Playable now" / "Not playable"): the grid spans
+  // them across all columns (choice_block.less); every one carries the separator below, the first keeps a gap
+  // to the header row, the following ones half a card to the section above
+  .choice-section-title {
+    .section-title-with-line();
+    margin-top: @hand-cards-panel-first-title-gap;
+  }
+
+  .choice-section-title--separated {
+    margin-top: @hand-cards-panel-section-gap;
+  }
+
+  // Inside a section below a selection the section itself already keeps the gap
+  .card-list-section > .choice-section-title {
+    margin-top: 0;
+  }
+
+  // "All cards" tab: the cards of every section sit centered in the box (like the choice blocks), the headings
+  // stay at the left edge. Inline cards: center the rows, the cards themselves keep their own alignment
+  html:not(.tm-mobile) & .hand-cards-panel {
+    .hand-cards-panel__cards,
+    .sortable-cards {
+      text-align: center;
+
+      > * {
+        text-align: left;
+      }
+    }
+  }
+}

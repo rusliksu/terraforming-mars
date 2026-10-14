@@ -190,8 +190,7 @@ import {CardType} from '@/common/cards/CardType';
 import {getCardsByType, isCardActivated} from '@/client/utils/CardUtils';
 import {sortActiveCards} from '@/client/utils/ActiveCardsSortingOrder';
 import {CardModel} from '@/common/models/CardModel';
-import {buildClientCardFromCustom} from '@/client/cards/CustomCardAdapter';
-import {getCardOrThrow} from '../cards/ClientCardManifest';
+import {isActiveCard} from '@/client/cards/CardModelMetadata';
 import {Phase} from '@/common/Phase';
 import {HomeMixin} from '@/client/mixins/HomeMixin';
 import ExperimentalPlayerNavigation, {PlayerLayoutPanel} from '@/client/components/ExperimentalPlayerNavigation.vue';
@@ -223,17 +222,6 @@ const typeToDataModel: Record<ToggleableCardType, {key: 'showHand' | 'showActive
 function hasSpaceInput(input: PlayerInputModel | undefined): boolean {
   return input !== undefined && (input.type === 'space' ||
     ((input.type === 'and' || input.type === 'or') && input.options.some(hasSpaceInput)));
-}
-
-/**
- * A tableau card counts as active when it keeps doing something: it is a blue card, it has an
- * action, or it has an ongoing effect (a trigger). Effect-only cards used to fall through to the
- * automated stack, which is why e.g. Albedo Plants was missing from the active filter.
- */
-function isActiveCard(cardModel: CardModel): boolean {
-  const card = cardModel.customCard === undefined ? getCardOrThrow(cardModel.name) :
-    buildClientCardFromCustom(cardModel.name, cardModel.customCard);
-  return card.type === CardType.ACTIVE || card.hasAction || card.hasEffect;
 }
 
 export default defineComponent({

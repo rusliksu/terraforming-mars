@@ -2,6 +2,7 @@ import {CardModel} from '@/common/models/CardModel';
 import {ClientCard} from '@/common/cards/ClientCard';
 import {CardType} from '@/common/cards/CardType';
 import {Tag} from '@/common/cards/Tag';
+import {CardName} from '@/common/cards/CardName';
 import {getCard, getCardOrThrow} from './ClientCardManifest';
 import {buildClientCardFromCustom} from './CustomCardAdapter';
 
@@ -27,4 +28,9 @@ export function isActiveCard(cardModel: CardModel): boolean {
   const card = cardModel.customCard === undefined ? getCardOrThrow(cardModel.name) :
     buildClientCardFromCustom(cardModel.name, cardModel.customCard);
   return card.type === CardType.ACTIVE || card.hasAction || card.hasEffect;
+}
+
+/** Existing canonical extra-content display flag; no foreign variant or VP calculation. */
+export function hasFoundLife(card: CardModel): boolean {
+  return card.name === CardName.SEARCH_FOR_LIFE && card.resources !== undefined && card.resources > 0;
 }

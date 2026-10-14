@@ -11,7 +11,7 @@ describe('Wrybit player bar', () => {
     const playerView = fakeViewModel({thisPlayer: undefined, players: [player], game: {gameOptions: {expansions: {conglomerates: true, moreParties: true}}}});
     const setVisibilityState = vi.fn();
     const wrapper = shallowMount(PlayerInfo, {...globalConfig, props: {player, playerView, playerIndex: 0, actionLabel: 'active', readOnly: true},
-      global: {...globalConfig.global, stubs: {PlayerResources: false}, mocks: {getVisibilityState: () => false, setVisibilityState}}});
+      global: {...globalConfig.global, stubs: {PlayerResources: false, PlayerStatus: false}, mocks: {getVisibilityState: () => false, setVisibilityState}}});
     try {
       expect(wrapper.get('[role="status"]').text()).eq('BOT');
       expect(wrapper.get('.player-persona-title').text()).eq('Магистр Кредикора');

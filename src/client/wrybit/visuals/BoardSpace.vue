@@ -35,11 +35,12 @@
 import {defineComponent} from 'vue';
 import CanonicalBoardSpace from '@/client/components/BoardSpace.vue';
 import BoardCube from '@/client/wrybit/visuals/common/BoardCube.vue';
+import BoardSpaceTile from './board/BoardSpaceTile.vue';
 
 export default defineComponent({
   name: 'BoardSpace',
   extends: CanonicalBoardSpace,
-  components: {BoardCube},
+  components: {BoardCube, BoardSpaceTile},
   computed: {
     showBonus(): boolean {
       return this.tileView !== 'coords' && (this.tileView === 'hide' || (this.space.tileType === undefined && this.space.cube === undefined));

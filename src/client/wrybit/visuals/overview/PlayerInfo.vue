@@ -47,13 +47,14 @@ import {defineComponent} from 'vue';
 import CanonicalPlayerInfo from '@/client/components/overview/PlayerInfo.vue';
 import PlayerResources from '@/client/wrybit/visuals/overview/PlayerResources.vue';
 import PlayerTags from '@/client/wrybit/visuals/overview/PlayerTags.vue';
+import PlayerStatus from './PlayerStatus.vue';
 import {togglePlayerCards} from '@/client/wrybit/visuals/common/playerCardsToggle';
 import {vueRoot} from '@/client/components/vueRoot';
 
 export default defineComponent({
   name: 'PlayerInfo',
   extends: CanonicalPlayerInfo,
-  components: {PlayerResources, PlayerTags},
+  components: {PlayerResources, PlayerTags, PlayerStatus},
   methods: {
     buttonLabel(): string {
       return this.isPinned(this.playerIndex) ? 'hide' : 'show';

@@ -22,6 +22,7 @@ authoritative_surface: src/client/wrybit/visuals/
 create_intent: []
 execution_mode: code_change
 owned_files:
+- src/client/components/card/CardExtraContent.vue
 - src/client/components/PlayerHome.vue
 - src/client/wrybit/visuals/**
 - src/styles/wrybit/**
@@ -115,6 +116,10 @@ Planning/base и внутренний merge target: codex/wrybit-full-ui. Ито
 Промежуточная проверка filter/hand views: наши static/custom metadata, clone tags, Galactic/Infrastructure, server calculatedCost и offered project input. Общий producer active predicate сохраняет активные/effect preludes; сортировка всей руки использует наши SortOrder/CardOrderStorage, отдельное viewer state, восстанавливает Manual и добавляет новые карты в конец. Source filter/sort/zoom controls перенесены с private overlay root; zoom не пишет в html. 90 client tests/38 files плюс focused active-prelude test, Vue types, scoped lint/style и actual Webpack без warnings. Browser component fixture на D: подтвердил Playable now, phone sheet/open-close и Cost/Manual обычными кликами; console 0/0. 137 упорядоченных CSS rules совпадают после documented isolation и исправления двух combined modifier selectors. Полные home/input/carousel/viewport flows ещё открыты.
 
 ## Риски и ориентиры review
+
+Промежуточная проверка card/detail/timer views: 197 client tests/70 files, Vue types, scoped ESLint/Stylelint и actual Webpack без warnings. Normal browser hover/help click, desktop/phone popup и Escape — console 0/0. Таймер использует наш Timer.toString, public snapshot и live flag; readOnly не получает wall-clock elapsed, interval очищается. Mutation тест убивает возврат wall-clock в recorded mode и восстановлен. Требования поколения/max и readonly card resources проверены. Renderer reuses записаны по фактическому source diff; наши corporation rows, custom icons, teammate/Coordination, extra data и конфиг максимумов сохраняются. Полный Game/App caller, owner layouts и остальные строки matrix остаются открытыми.
+
+Последовательный CardExtraContent handoff: существующий lifeFound predicate извлекается в CardModelMetadata без изменения условия. Source found-life overlay использует наш public resource state и имеющееся изображение martian.png; foreign foundLifeVariant/сервер не импортируются. InSpire resources и mining markers сохраняются. Native predicate и игровой SearchForLife/VP не меняются.
 
 Последовательный handoff внутри WP02: CardRowComponent и его focused test. Browser catalog обнаружил, что канонический ItemType допускает строковое описание, но runtime Vue prop принимал только Object. Исправляется только декларация типа prop; renderer, метаданные карт, эффекты и правила не меняются.
 

@@ -25,7 +25,7 @@ import {defineComponent} from 'vue';
 import {ViewModel, PublicPlayerModel} from '@/common/models/PlayerModel';
 import {Phase} from '@/common/Phase';
 import {ActionLabel} from '@/client/components/overview/ActionLabel';
-import PlayerStatus from '@/client/components/overview/PlayerStatus.vue';
+import PlayerStatus from '@/client/wrybit/visuals/overview/PlayerStatus.vue';
 import EscapeVelocityClock from '@/client/wrybit/visuals/overview/EscapeVelocityClock.vue';
 import {EscapeVelocityOptions} from '@/common/game/NewGameConfig';
 import {corporationNames} from '@/client/wrybit/visuals/overview/playerCorporations';

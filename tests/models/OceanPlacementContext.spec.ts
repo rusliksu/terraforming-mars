@@ -6,11 +6,52 @@ import {SpaceType} from '@/common/boards/SpaceType';
 import {MarsBoard} from '@/server/boards/MarsBoard';
 import {Server} from '@/server/models/ServerModel';
 import {testGame} from '../TestGame';
-import {forcePartiesInPlay, runAllActions, setRulingParty} from '../TestingUtils';
+import {forcePartiesInPlay, runAllActions, setRulingParty, setTemperature} from '../TestingUtils';
 import {PartyName} from '@/common/turmoil/PartyName';
 import {isSpaceId} from '@/common/Types';
+import {DEFAULT_GLOBAL_PARAMETERS} from '@/common/GlobalParameterConfig';
+import {cast} from '@/common/utils/utils';
+import {SelectSpace} from '@/server/inputs/SelectSpace';
 
 describe('OceanPlacementContext', () => {
+  it('quotes temperature ocean bonuses without changing the game and matches actual placement', () => {
+    const [game, player] = testGame(2);
+    game.phase = Phase.ACTION;
+    setTemperature(game, -4);
+    const before = JSON.stringify(game.serialize());
+    expect(Server.getPlayerModel(player).thisPlayer.oceanPlacementContext!.temperatureBonus).deep.eq({
+      temperature: -4, maxTemperature: 8,
+      rises: [{steps: 1, oceans: 0}, {steps: 2, oceans: 1}, {steps: 3, oceans: 1}],
+    });
+    expect(JSON.stringify(game.serialize())).eq(before);
+    const tr = player.terraformRating;
+    game.increaseTemperature(player, 2);
+    runAllActions(game);
+    const input = cast(player.popWaitingFor(), SelectSpace);
+    input.process({type: 'space', spaceId: input.spaces[0].id});
+    runAllActions(game);
+    expect(player.terraformRating - tr).eq(3);
+    expect(Server.getPlayerModel(player).thisPlayer.oceanPlacementContext!.temperatureBonus!.rises)
+      .deep.eq([{steps: 1, oceans: 0}, {steps: 2, oceans: 0}, {steps: 3, oceans: 0}]);
+  });
+
+  it('uses configured bonus thresholds and caps their oceans at the remaining track', () => {
+    const [game, player] = testGame(2, {globalParameters: {...DEFAULT_GLOBAL_PARAMETERS,
+      temperature: {...DEFAULT_GLOBAL_PARAMETERS.temperature,
+        bonuses: [{value: -4, kind: 'ocean'}, {value: -2, kind: 'ocean'}]},
+    }});
+    game.phase = Phase.ACTION;
+    setTemperature(game, -6);
+    const counts = () => Server.getPlayerModel(player).thisPlayer.oceanPlacementContext!.temperatureBonus!.rises.map((row) => row.oceans);
+    expect(counts()).deep.eq([1, 2, 2]);
+    for (const space of game.board.getSpaces(SpaceType.OCEAN).slice(0, 8)) {
+      space.tile = {tileType: TileType.OCEAN};
+    }
+    expect(counts()).deep.eq([1, 1, 1]);
+    game.board.getSpaces(SpaceType.OCEAN)[8].tile = {tileType: TileType.OCEAN};
+    expect(counts()).deep.eq([0, 0, 0]);
+  });
+
   it('quotes the changed adjacency of a funded two-ocean order without changing the game', () => {
     const [game, player] = testGame(2, {aresExtension: true});
     game.phase = Phase.ACTION;

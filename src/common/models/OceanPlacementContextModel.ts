@@ -11,6 +11,12 @@ export type OceanPlacementContextModel = {
   step: number;
   oceans: number;
   maxOceans: number;
+  /** Intrinsic ocean counts from isolated temperature rises, excluding placement rewards. */
+  temperatureBonus?: {
+    temperature: number;
+    maxTemperature: number;
+    rises: ReadonlyArray<{steps: 1 | 2 | 3; oceans: number}>;
+  };
   /** Structurally available cells, not proof of post-card affordability. */
   spaces: ReadonlyArray<{
     id: SpaceId;

@@ -45,8 +45,7 @@ import {CardMetadata} from '@/common/cards/CardMetadata';
 import {Tag} from '@/common/cards/Tag';
 import {getPreferences} from '@/client/utils/PreferencesManager';
 import {CardResource} from '@/common/CardResource';
-import {getCard} from '@/client/cards/ClientCardManifest';
-import {buildClientCardFromCustom} from '@/client/cards/CustomCardAdapter';
+import {resolveCardModel, displayCardTags} from '@/client/cards/CardModelMetadata';
 import {Color} from '@/common/Color';
 import {CardRequirementDescriptor} from '@/common/cards/CardRequirementDescriptor';
 import {GameModule} from '@/common/cards/GameModule';
@@ -93,16 +92,7 @@ export default defineComponent({
     },
   },
   data() {
-    const cardName = this.card.name;
-    // A card not in the compiled static manifest is always a Custom Card Maker card -- its
-    // face-of-card data instead came over the wire in `card.customCard` (see CustomCardModel's
-    // doc comment). Fail loudly (matching getCardOrThrow's old behavior) if somehow neither
-    // resolves -- that's a server-side bug, not something to silently paper over here.
-    const staticCard = getCard(cardName);
-    const card = staticCard ?? (this.card.customCard && buildClientCardFromCustom(cardName, this.card.customCard));
-    if (card === undefined || card === null) {
-      throw new Error(`card not found ${cardName}`);
-    }
+    const card = resolveCardModel(this.card);
 
     return {
       cardInstance: card,
@@ -124,19 +114,7 @@ export default defineComponent({
       }
     },
     tags(): Array<Tag> {
-      const type = this.cardType;
-      const tags = [...this.cardInstance.tags || []];
-      tags.forEach((tag, idx) => {
-        // Clone are changed on card implementations but that's not passed down directly through the
-        // model, however, it sends down the `cloneTag` field. So this function does the substitution.
-        if (tag === Tag.CLONE && this.card.cloneTag !== undefined) {
-          tags[idx] = this.card.cloneTag;
-        }
-      });
-      if (type === CardType.EVENT) {
-        tags.push(Tag.EVENT);
-      }
-      return tags;
+      return displayCardTags(this.card, this.cardInstance);
     },
     // High Orbit (fan): Infrastructure-tagged "Silver" cards render with a distinct silver
     // header and a Titanium (not M€) cost badge, regardless of CardType. Planetary Outpost is

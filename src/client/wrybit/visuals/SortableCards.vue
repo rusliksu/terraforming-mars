@@ -86,6 +86,10 @@ export default defineComponent({
       type: String,
       required: true,
     },
+    orderRevision: {
+      type: Number,
+      required: false,
+    },
     // Card filter: hidden cards stay in the list (their place in the manual order is kept), only not shown
     visibility: {
       type: Function as unknown as () => (card: CardModel) => CardVisibility,
@@ -111,6 +115,9 @@ export default defineComponent({
     this.finishDrag();
   },
   watch: {
+    orderRevision() {
+      this.cardOrder = {...CardOrderStorage.getCardOrder(this.playerId)};
+    },
     cards() {
       if (this.internals().pending !== undefined) {
         this.finishDrag();

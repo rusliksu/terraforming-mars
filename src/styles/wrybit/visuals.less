@@ -23,6 +23,12 @@
   @import "./sortable_cards.less";
   @import "./discount_badges.less";
   @import "./players_table.less";
+  @import "./card_filter_bar.less";
+  .wrybit-card-filter-styles();
+  @import "./card_zoom_slider.less";
+  .wrybit-card-zoom-styles();
+  @import "./hand_cards_panel.less";
+  .wrybit-hand-panel-styles();
 
   // The outer mobile context belongs to html; the imported rules stay under our root.
   html.tm-mobile & .mb-screen--turn:has(> .mb-task-head) .or-tab-panel-title {

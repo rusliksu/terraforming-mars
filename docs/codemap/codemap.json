@@ -1,7 +1,7 @@
 {
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-14T16:15:01.650Z",
-  "generated_from_commit": "a390bb8902899a4d91089ec98fa127464078c780",
+  "generated_at": "2026-10-14T16:53:05.273Z",
+  "generated_from_commit": "2107a98de1cc6c04806df804420df1f9bf2a81d6",
   "scope": [
     ".",
     ".github",
@@ -2861,6 +2861,62 @@
         "Полный App/home caller, viewport, filters и change-flash ещё открыты."
       ],
       "evidence": []
+    },
+    {
+      "id": "canonical-card-metadata",
+      "label": "Наш общий producer данных карты",
+      "type": "model",
+      "path": "src/client/cards/CardModelMetadata.ts",
+      "role": "Прежние static/custom resolution, clone tags и active predicate нашего renderer/home.",
+      "entrypoints": [
+        {
+          "path": "src/client/cards/CardModelMetadata.ts",
+          "symbol": "export function resolveCardModel",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/CardFilter.spec.ts",
+          "symbol": "custom wire metadata"
+        },
+        {
+          "path": "tests/client/components/PlayerHome.spec.ts",
+          "symbol": "dynamic custom cards"
+        }
+      ],
+      "constraints": [
+        "Не определяет canPlay, цены оплаты, эффекты или AI."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-card-filters",
+      "label": "Фильтры и рука Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/HandCardsPanel.vue",
+      "role": "Source presentation читает наши модели/availability, canonical storage/sorting; transient состояние по viewer ID.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/HandCardsPanel.vue",
+          "symbol": "playableProjectCards",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+          "symbol": "restores manual order"
+        },
+        {
+          "path": "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+          "symbol": "optional overlay root"
+        }
+      ],
+      "constraints": [
+        "Full input/carousel/home integration и viewport owner ещё открыты."
+      ],
+      "evidence": []
     }
   ],
   "edges": [
@@ -3767,6 +3823,32 @@
         {
           "path": "src/server/bot/AutomationCompatibility.ts",
           "symbol": "included manual IDs via ALL_MODULE_MANIFESTS",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-card-filters",
+      "to": "canonical-card-metadata",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/cardfilter/cardFilter.ts",
+          "symbol": "resolveCardModel, displayCardTags",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "canonical-card-view",
+      "to": "canonical-card-metadata",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/card/Card.vue",
+          "symbol": "resolveCardModel(this.card)",
           "status": "confirmed"
         }
       ]
@@ -4739,7 +4821,28 @@
     "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
     "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
     "tests/client/wrybit/visuals/PlayersTable.spec.ts",
-    "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts"
+    "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+    "src/client/cards/CardModelMetadata.ts",
+    "src/client/wrybit/visuals/HandCardsPanel.vue",
+    "src/client/wrybit/visuals/HandSortControl.vue",
+    "src/client/wrybit/visuals/cardfilter/cardFilter.ts",
+    "src/client/wrybit/visuals/cardfilter/CardFilterBar.vue",
+    "src/client/wrybit/visuals/cardfilter/CardFilterEmptyHint.vue",
+    "src/client/wrybit/visuals/cardfilter/cardFilterLabels.ts",
+    "src/client/wrybit/visuals/cardfilter/CardFilterOptions.vue",
+    "src/client/wrybit/visuals/cardfilter/cardFilterState.ts",
+    "src/client/wrybit/visuals/cardfilter/CardSortIcon.vue",
+    "src/client/wrybit/visuals/cardfilter/CardSortMenu.vue",
+    "src/client/wrybit/visuals/cardfilter/cardZoom.ts",
+    "src/client/wrybit/visuals/cardfilter/CardZoomSlider.vue",
+    "src/client/wrybit/visuals/cardfilter/handCards.ts",
+    "src/client/wrybit/visuals/cardfilter/handSort.ts",
+    "src/styles/wrybit/card_filter_bar.less",
+    "src/styles/wrybit/card_zoom_slider.less",
+    "src/styles/wrybit/hand_cards_panel.less",
+    "tests/client/wrybit/visuals/CardFilter.spec.ts",
+    "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+    "tests/client/wrybit/visuals/HandCardsPanel.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -4788,6 +4891,7 @@
       "scripts/test_tm_release_guards.ps1",
       "scripts/test_tm_sentry_release.ps1",
       "scripts/tests/test_tm_sentry_release_remote.py",
+      "src/client/cards/CardModelMetadata.ts",
       "src/client/cards/ClientCardManifest.ts",
       "src/client/components/App.vue",
       "src/client/components/Awards.vue",
@@ -4840,7 +4944,9 @@
       "src/client/wrybit/visuals/BoardSpace.vue",
       "src/client/wrybit/visuals/DialogFrame.vue",
       "src/client/wrybit/visuals/GameBoardView.vue",
+      "src/client/wrybit/visuals/HandCardsPanel.vue",
       "src/client/wrybit/visuals/HandCardsTab.vue",
+      "src/client/wrybit/visuals/HandSortControl.vue",
       "src/client/wrybit/visuals/Milestone.vue",
       "src/client/wrybit/visuals/Milestones.vue",
       "src/client/wrybit/visuals/OtherPlayer.vue",
@@ -4862,6 +4968,18 @@
       "src/client/wrybit/visuals/card/Card.vue",
       "src/client/wrybit/visuals/card/CardCost.vue",
       "src/client/wrybit/visuals/card/CardTitle.vue",
+      "src/client/wrybit/visuals/cardfilter/CardFilterBar.vue",
+      "src/client/wrybit/visuals/cardfilter/CardFilterEmptyHint.vue",
+      "src/client/wrybit/visuals/cardfilter/CardFilterOptions.vue",
+      "src/client/wrybit/visuals/cardfilter/CardSortIcon.vue",
+      "src/client/wrybit/visuals/cardfilter/CardSortMenu.vue",
+      "src/client/wrybit/visuals/cardfilter/CardZoomSlider.vue",
+      "src/client/wrybit/visuals/cardfilter/cardFilter.ts",
+      "src/client/wrybit/visuals/cardfilter/cardFilterLabels.ts",
+      "src/client/wrybit/visuals/cardfilter/cardFilterState.ts",
+      "src/client/wrybit/visuals/cardfilter/cardZoom.ts",
+      "src/client/wrybit/visuals/cardfilter/handCards.ts",
+      "src/client/wrybit/visuals/cardfilter/handSort.ts",
       "src/client/wrybit/visuals/cardlist/CardList.vue",
       "src/client/wrybit/visuals/cardlist/CardListCardGrid.vue",
       "src/client/wrybit/visuals/cardlist/CardListCostRange.vue",
@@ -5119,6 +5237,8 @@
       "src/styles/wrybit/board.less",
       "src/styles/wrybit/board_tabs.less",
       "src/styles/wrybit/button_tones.less",
+      "src/styles/wrybit/card_filter_bar.less",
+      "src/styles/wrybit/card_zoom_slider.less",
       "src/styles/wrybit/cards.less",
       "src/styles/wrybit/cards/content-and-requirements.less",
       "src/styles/wrybit/cards/corporation-logos-additional.less",
@@ -5143,6 +5263,7 @@
       "src/styles/wrybit/game_menu.less",
       "src/styles/wrybit/glass_tooltip.less",
       "src/styles/wrybit/globs.less",
+      "src/styles/wrybit/hand_cards_panel.less",
       "src/styles/wrybit/loading.less",
       "src/styles/wrybit/milestone_award_table.less",
       "src/styles/wrybit/modal_surface.less",
@@ -5193,6 +5314,8 @@
       "tests/client/wrybit/visuals/BoardTabs.spec.ts",
       "tests/client/wrybit/visuals/BoardTrackRow.spec.ts",
       "tests/client/wrybit/visuals/Card.spec.ts",
+      "tests/client/wrybit/visuals/CardFilter.spec.ts",
+      "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
       "tests/client/wrybit/visuals/CardReveal.spec.ts",
       "tests/client/wrybit/visuals/CatalogControls.spec.ts",
       "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
@@ -5202,6 +5325,7 @@
       "tests/client/wrybit/visuals/GameBoardView.spec.ts",
       "tests/client/wrybit/visuals/GameMenu.spec.ts",
       "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+      "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
       "tests/client/wrybit/visuals/MarsScaleBonuses.spec.ts",
       "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
       "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",

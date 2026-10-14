@@ -29,6 +29,7 @@ import {CardModel} from '@/common/models/CardModel';
 import {CardType} from '@/common/cards/CardType';
 import {getCardsByType, isCardActivated} from '@/client/utils/CardUtils';
 import {sortActiveCards} from '@/client/utils/ActiveCardsSortingOrder';
+import {isActiveCard, resolveCardModel} from '@/client/cards/CardModelMetadata';
 import {CardVisibility} from '@/client/wrybit/visuals/common/cardVisibility';
 import {SortOrder, sortCards} from '@/client/utils/SortOrder';
 
@@ -49,7 +50,8 @@ const props = withDefaults(defineProps<{
 // Cards of the given types in their group: sorted when a sorting is chosen, otherwise as before
 // (active cards in action order, the rest in playing order)
 function cardsOf(types: Array<CardType>): ReadonlyArray<CardModel> {
-  const cards = getCardsByType(props.player.tableau, types);
+  const cards = getCardsByType(props.player.tableau, types)
+    .filter((card) => !props.withoutActiveCards || ![CardType.ACTIVE, CardType.PRELUDE].includes(resolveCardModel(card).type) || !isActiveCard(card));
   if (props.sortOrder !== undefined) {
     return sortCards(cards, props.sortOrder);
   }

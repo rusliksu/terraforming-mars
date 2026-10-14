@@ -32,6 +32,11 @@
   @import "./popup.less";
   @import "./adjacency_bonus.less";
   @import "./card_renderer_adapters.less";
+  @import "./scaled_board.less";
+  @import "./board_zoom_modal.less";
+  .wrybit-board-zoom-styles();
+  @import "./board_zoom_mobile.less";
+  .wrybit-board-zoom-mobile-styles();
 
   // The outer mobile context belongs to html; the imported rules stay under our root.
   html.tm-mobile & .mb-screen--turn:has(> .mb-task-head) .or-tab-panel-title {

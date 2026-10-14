@@ -1,0 +1,197 @@
+@create-game-gap-inner: 6px;
+// Between the groups inside a card (subheads, board preview)
+@create-game-gap-group: 20px;
+@create-game-gap-card: 16px;
+@create-game-gap-column: 24px;
+@create-game-page-padding: @page-content-edge; // spacing of the sticky column at top/bottom
+@create-game-players-width: 380px;
+// Symbols of seats the other kind of player takes (and the "no AI" sign)
+@create-game-seat-faint: rgba(255, 255, 255, 0.14);
+@create-game-radius: 10px;
+@create-game-radius-small: 8px;
+@create-game-line: rgba(255, 255, 255, 0.14);
+@create-game-dim: rgba(238, 238, 238, 0.62);
+@create-game-surface: @or-tabs-view-panel-background; // same surface as the tab boxes in the game
+@create-game-surface-strong: fade(#22252f, 85%);
+@create-game-chip-background: rgba(255, 255, 255, 0.05);
+@create-game-chip-hover: rgba(255, 255, 255, 0.1);
+@create-game-control-height: 36px;
+// Below this width one column: players on top, Create card sticks to the bottom edge
+@create-game-narrow: 820px;
+// Below this width the settings cards in a single column
+
+
+@or-tabs-view-panel-background: fade(#2a2b30, @frosted-surface-opacity);
+@selection-color: @bg_action;
+@selection-tint-opacity: 20%;
+@create-game-control-padding: 3px;
+// Frosted glass for surfaces on the app background: player bars, tabs, tab boxes.
+// The surfaces are slightly translucent (@frosted-surface-opacity), the background behind them is blurred.
+// The blur sits on its own layer (::before) instead of directly on the surface: backdrop-filter on the
+// surface itself would bind fixed-position children (e.g. the log card overlay) to the surface.
+
+// Subtle: the galaxy should only shine through softly and be slightly recognisable
+@frosted-surface-opacity: 65%;
+@frosted-player-opacity: 60%; // Player bars (base value of the player colours: 70 %, common.less)
+@frosted-surface-blur: 6px;
+
+.frosted-surface() {
+  isolation: isolate; // own stacking context: the blur layer sits behind the content
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    backdrop-filter: blur(@frosted-surface-blur) saturate(1.15);
+    pointer-events: none;
+  }
+}
+
+@toolbar-button-size: 40px;
+@toolbar-icon-size: 26px;
+@toolbar-gap: 6px;
+@toolbar-glass-background: rgba(40, 42, 54, 0.45);
+@toolbar-glass-hover-background: rgba(60, 63, 80, 0.6);
+@toolbar-edge-offset: 10px; // Distance to the window edge at top and right
+// Width occupied at the right edge – content reaching that far keeps this much free (player_home_columns.less)
+@toolbar-occupied-width: @toolbar-edge-offset + 2 * @toolbar-button-size + @toolbar-gap;
+
+// Frosted-glass button of the icon group; also used for the gear on "Create game" (create_game_form.less)
+.toolbar-glass-button() {
+  box-sizing: border-box;
+  width: @toolbar-button-size;
+  height: @toolbar-button-size;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: @toolbar-glass-background;
+  backdrop-filter: blur(8px) saturate(1.15);
+  cursor: pointer;
+
+  &:hover {
+    background: @toolbar-glass-hover-background;
+  }
+}
+
+.toolbar-glass-icon() {
+  width: @toolbar-icon-size;
+  height: @toolbar-icon-size;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.toolbar-glass-icon-buttons() {
+  .sidebar_item--settings,
+  .sidebar_item--language {
+    .toolbar-glass-button();
+    position: relative;
+    inset: auto;
+
+    .sidebar_icon {
+      .toolbar-glass-icon();
+    }
+  }
+
+  .toolbar-language-flag();
+}
+.toolbar-language-flag() {
+  .language-flag {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+@page-content-edge: 20px;
+@page-content-edge-narrow: 16px;
+@page-content-narrow: 820px;
+
+.create-game-card,
+.create-game--block {
+  .frosted-surface();
+  position: relative;
+  padding: 12px 14px 14px;
+  border: 1px solid @create-game-line;
+  border-radius: @create-game-radius;
+  background: @create-game-surface;
+}
+.create-game-card {
+  break-inside: avoid;
+  margin-bottom: @create-game-gap-card;
+}
+.create-game-chip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: @create-game-control-height;
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: @create-game-radius-small;
+  background: @create-game-chip-background;
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    background: @create-game-chip-hover;
+  }
+
+  &:focus-visible {
+    outline: 2px solid @highlight-gold;
+    outline-offset: 2px;
+  }
+
+  .create-game-expansion-icon {
+    .create-game-icon-size(20px);
+  }
+
+  // Base game: always on, so no hover and no pointer – it only states what every game contains
+  &--locked {
+    cursor: default;
+
+    &:hover {
+      background: fade(@selection-color, @selection-tint-opacity);
+    }
+  }
+
+  &--selected {
+    border-color: lighten(@selection-color, 12%);
+    background: fade(@selection-color, @selection-tint-opacity);
+    box-shadow: 0 0 5px fade(@selection-color, 55%);
+
+    &::after {
+      content: "✓";
+      position: absolute;
+      top: -1px;
+      right: -1px;
+      display: grid;
+      place-items: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 0 @create-game-radius-small 0 6px;
+      background: lighten(@selection-color, 12%);
+      color: #fff;
+      font-size: 11px;
+      font-weight: bold;
+    }
+  }
+}
+.create-game-count {
+  padding: 1px 7px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 12px;
+}
+.create-game-icon-size(@size) {
+  width: @size;
+  height: @size;
+  margin: 0;
+  background-size: @size @size;
+}

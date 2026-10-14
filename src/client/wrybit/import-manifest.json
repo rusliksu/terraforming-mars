@@ -372,7 +372,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/HandCardsTab.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
     },
     {
       "source": "src/client/components/HandSortControl.vue",
@@ -1955,7 +1968,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/cardlist/CardList.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
     },
     {
       "source": "src/client/components/cardlist/CardListCardGrid.vue",
@@ -1967,7 +1993,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/cardlist/CardListCardGrid.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
     },
     {
       "source": "src/client/components/cardlist/CardListCostRange.vue",
@@ -1979,7 +2018,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/cardlist/CardListCostRange.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
     },
     {
       "source": "src/client/components/cardlist/CardListFilterGroup.vue",
@@ -1991,7 +2043,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/cardlist/CardListFilterGroup.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
     },
     {
       "source": "src/client/components/cardlist/CardListSection.vue",
@@ -2003,7 +2068,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/cardlist/CardListSection.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
     },
     {
       "source": "src/client/components/cardlist/CardListSectionRail.vue",
@@ -2015,7 +2093,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/cardlist/CardListSectionRail.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
     },
     {
       "source": "src/client/components/cardlist/TurmoilAgendaContainer.vue",
@@ -2241,7 +2332,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/common/LazyMount.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
     },
     {
       "source": "src/client/components/common/LoadingBar.vue",
@@ -2253,7 +2357,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/common/LoadingBar.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
     },
     {
       "source": "src/client/components/common/LoadingPlate.vue",
@@ -2265,7 +2382,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/common/LoadingPlate.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
     },
     {
       "source": "src/client/components/common/MarsHomeLink.vue",
@@ -2277,7 +2407,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/common/MarsHomeLink.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
     },
     {
       "source": "src/client/components/common/PageTitle.vue",
@@ -2289,7 +2432,20 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/common/PageTitle.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
     },
     {
       "source": "src/client/components/common/PlayerCube.vue",
@@ -4061,6 +4217,258 @@
           "note": "417 значащих rules, declarations, important и порядок совпадают. URL rewrite включён; ./assets и assets нормализуются как один путь. Пустые comment-only rules не влияют на результат."
         }
       ]
+    },
+    {
+      "source": "src/styles/card_list.less",
+      "sourceSha256": "8c35b97302611b6a1d9dac75d51be6113e6eac203ee2e5fa3070542c4d895ca1",
+      "target": "src/styles/wrybit/catalog.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/start_preloader.less",
+      "sourceSha256": "8db19bd51eb75b0d491797304bb978f8360a9cdf6c9f3a07fac484b3839d99af",
+      "target": "src/styles/wrybit/loading.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/button_tones.less",
+      "sourceSha256": "416f03a38ee28e65b5a06a010f72e99c397b7f89618f393edc10d5e64c52a415",
+      "target": "src/styles/wrybit/button_tones.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/create_game_form.less",
+      "sourceSha256": "24109ef4f054dda64fdddd8b2bf11596772186e04ecaf51697f3e27459be3478",
+      "target": "src/styles/wrybit/catalog-presentation.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/sidebar_toolbar.less",
+      "sourceSha256": "66e078592c383d05c8b4d0f27b35241bf3275ed3f9ecacb186db42d865d99efc",
+      "target": "src/styles/wrybit/catalog-presentation.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/cardlist/cardListEntries.ts",
+      "sourceSha256": "974e53a29c5b3f0f9135aebac841268675173fee2a02b395f6abdcc539efef9c",
+      "target": "src/client/wrybit/visuals/cardlist/cardListEntries.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/cardlist/cardReveal.ts",
+      "sourceSha256": "aa23eb47b55eca6d379c7fa31802b577719b22e535e1a5376e745cbdb3d37ae9",
+      "target": "src/client/wrybit/visuals/cardlist/cardReveal.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/cardlist/filterSelection.ts",
+      "sourceSha256": "975b926105f4b900dc9dee53fc2b32c3019581e2a3a6ec77dff6fa63bd12fd6f",
+      "target": "src/client/wrybit/visuals/cardlist/filterSelection.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/cardlist/sectionRail.ts",
+      "sourceSha256": "11766330d0be4db8b9849b17ac725ecfc90ba8b3892953c2d60460e1306437c4",
+      "target": "src/client/wrybit/visuals/cardlist/sectionRail.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/cardlist/searchHighlight.ts",
+      "sourceSha256": "55f43072246ba3b8c62bd154ad29322628e10fced33075c724e2c52f7cafb8d1",
+      "target": "src/client/wrybit/visuals/cardlist/searchHighlight.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
+    },
+    {
+      "source": "src/client/utils/nearViewport.ts",
+      "sourceSha256": "ef48bc869241c6677fe61c75b3abb7e67f031c2c56b1b4c26958e30318ccf497",
+      "target": "src/client/wrybit/visuals/common/nearViewport.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
+    },
+    {
+      "source": "src/client/utils/motion.ts",
+      "sourceSha256": "87aa974708b5dbce5b6547d0758e1d173c4372baf373473e327a79117dee9d79",
+      "target": "src/client/wrybit/visuals/common/motion.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "canonical-catalogue-fixture",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-css-parity.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
+          ],
+          "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        }
+      ]
     }
   ],
   "assets": [
@@ -4348,6 +4756,15 @@
       "sourceSha256": "c6382e088fcd51cfb34173d3efaac1d547afe71030b74c6e93ed75180c67c330",
       "target": "assets/wrybit/board/mars-without-venus-clean.png",
       "bytes": 472568,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit UI fork",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/stats/mars.png",
+      "sourceSha256": "3c9c2bc34d4029a0d6afb0b1135d1789ccb64b85d6ff8f1ae302bc0801b09d12",
+      "target": "assets/wrybit/common/mars.png",
+      "bytes": 32672,
       "license": "GPL-3.0",
       "attribution": "Wrybit UI fork",
       "status": "copied-unchanged"

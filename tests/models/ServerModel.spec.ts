@@ -17,8 +17,58 @@ import {SelectOption} from '../../src/server/inputs/SelectOption';
 import {Builder} from '../../src/server/milestones/Builder';
 import {GeneralistConglomerates} from '../../src/server/milestones/conglomerates/GeneralistConglomerates';
 import {conglomeratesVariant} from '../../src/server/milestones/conglomerates/ConglomeratesMilestoneVariant';
+import {CuttingEdgeTechnology} from '../../src/server/cards/promo/CuttingEdgeTechnology';
+import {CuttingEdgeTechnologyRebalanced} from '../../src/server/cards/rebalanced/CuttingEdgeTechnologyRebalanced';
+import {Xavier} from '../../src/server/cards/ceos/Xavier';
+import {AdhaiHighOrbitConstructions} from '../../src/server/cards/pathfinders/AdhaiHighOrbitConstructions';
+import {Birds} from '../../src/server/cards/base/Birds';
+import {Asteroid} from '../../src/server/cards/base/Asteroid';
 
 describe('ServerModel', () => {
+  it('projects conditional discounts from canonical methods without changing payable prices or pending input', () => {
+    const [, player] = testGame(2);
+    const technology = new CuttingEdgeTechnology();
+    const rebalanced = new CuttingEdgeTechnologyRebalanced();
+    const xavier = new Xavier();
+    const adhai = new AdhaiHighOrbitConstructions();
+    player.playedCards.push(technology, rebalanced, xavier, adhai);
+    const birds = new Birds();
+    const asteroid = new Asteroid();
+    const prompt = new SelectOption('Confirm selection');
+    player.setWaitingFor(prompt);
+    const fixedSources = [{source: technology.name, amount: 2, condition: 'requirements'},
+      {source: rebalanced.name, amount: 2, condition: 'requirements'}];
+    for (const resources of [0, 1, 2, 5]) {
+      adhai.resourceCount = resources;
+      const prices = [player.getCardCost(birds), player.getCardCost(asteroid)];
+      const expected = resources < 2 ? fixedSources :
+        [...fixedSources, {source: adhai.name, amount: resources === 2 ? 1 : 2, condition: 'spaceWithoutPlanetaryTags'}];
+      expect(Server.getPlayer(player, true).conditionalDiscounts).deep.eq(expected);
+      expect([player.getCardCost(birds), player.getCardCost(asteroid)]).deep.eq(prices);
+      expect(player.getWaitingFor()).eq(prompt);
+      expect(adhai.resourceCount).eq(resources);
+      expect(xavier.isDisabled).is.false;
+    }
+    xavier.isDisabled = true;
+    expect(Server.getPlayer(player, true).conditionalDiscounts).deep.eq([
+      ...fixedSources, {source: xavier.name, amount: 1, condition: 'requirements'},
+      {source: adhai.name, amount: 2, condition: 'spaceWithoutPlanetaryTags'},
+    ]);
+    technology.getCardDiscount = () => 7;
+    expect(Server.getPlayer(player, true).conditionalDiscounts?.find((discount) => discount.source === technology.name)?.amount).eq(7);
+  });
+
+  it('keeps conditional badges independent of private hands and identical for player and spectator projections', () => {
+    const [game, player] = testGame(2);
+    player.playedCards.push(new CuttingEdgeTechnology());
+    const expected = Server.getPlayer(player, true).conditionalDiscounts;
+    player.cardsInHand.push(new Asteroid());
+    expect(Server.getPlayer(player, false).conditionalDiscounts).deep.eq(expected);
+    player.cardsInHand.push(new Birds());
+    expect(Server.getPlayer(player, true).conditionalDiscounts).deep.eq(expected);
+    expect(Server.getSpectatorModel(game).players.find((publicPlayer) => publicPlayer.color === player.color)?.conditionalDiscounts).deep.eq(expected);
+  });
+
   it('projects existing milestone display thresholds without changing scores or claimability', () => {
     const [game] = testGame(2);
     const Builder12 = conglomeratesVariant('Builder12', 'Have 12 building tags in play', () => new Builder());

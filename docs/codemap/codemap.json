@@ -4,8 +4,8 @@
   "ocean_placement_pair_update": {"date":"2026-10-14","base":"923ba2f3a0e811975c0e1049d1be30e000a16782","contract":"oceanPlacementContext/version1/pairs","flows":["Own PlayerModel -> optional ordered pairs of distinct structural candidates","Board adjacency and player coefficient -> quoted second adjacency after the first ocean","Stable board/cost facts -> shared cash-budget consumer; no virtual moves or persisted state"],"scope":"Two intrinsic standard placements; at most 64 candidates; pending Ares board transitions and unsupported political costs are not certified","fingerprint_algorithm":"sha256_normalized_lf","historical_fingerprints_refreshed":false,"source_files":[{"path":"src/common/models/OceanPlacementContextModel.ts","sha256":"b8cdd6bb2abda7956cb7b2aafed1727f9458ec55e83602c16cccb0cff77a6035"},{"path":"src/server/models/OceanPlacementContext.ts","sha256":"4ab4ccec44ffc93e1fc8121a95435ababed5a49ffccde1d2d38738d9b44eeed0"}]},
   "ocean_placement_context_update": {"date":"2026-10-14","base":"fbe68f10c0ceb9f2d72c19665cb9c1b00c7d6926","contract":"oceanPlacementContext/version1","flows":["Own PlayerModel -> phase-scoped oceanPlacementContext/version1","MarsBoard and Board -> structural candidates, actual adjacency and additional costs","Shared political cost-policy query -> explicit unsupported-payment status","Read-only numeric facts -> external advisor JSON transport; no persistence or moves"],"scope":"Single standard ocean; intrinsic resource/draw/adjacency facts and funded MC costs; unsupported bonuses, fees, limits and later triggers remain unproven","fingerprint_algorithm":"sha256_normalized_lf","historical_fingerprints_refreshed":false,"source_files":[{"path":"src/common/models/OceanPlacementContextModel.ts","sha256":"c791998326bb11da0c5d3d8741b681dafeccda141f855188f46d5171c8460299"},{"path":"src/server/models/OceanPlacementContext.ts","sha256":"955ad709e772021d864054b2d7c47f2de5b5051481e50116872bd729953d9946"},{"path":"src/server/models/ServerModel.ts","sha256":"c4f061bea6d576bb1a91ec142b7d4505cd0e854d9637eac371f7a1311ad7c8f8"},{"path":"src/server/boards/Board.ts","sha256":"7ad424247f6623793c22a2ef755bf1d94e85aead5e22df16903e1a30db812fb6"},{"path":"src/server/turmoil/TurmoilHandler.ts","sha256":"4bf865bd6c7dd74d3bb8c5aaf1e3bf84141ef3b05c17bbde9f1bac8411477268"}]},
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-14T14:39:29.334Z",
-  "generated_from_commit": "60a02b09d44b1af0c8db603500f955ef3ae3948a",
+  "generated_at": "2026-10-14T16:15:01.650Z",
+  "generated_from_commit": "a390bb8902899a4d91089ec98fa127464078c780",
   "scope": [
     ".",
     ".github",
@@ -2790,6 +2790,81 @@
         "Общие фильтры и selection/mobile carousel будут интегрированы в следующих пакетах."
       ],
       "evidence": []
+    },
+    {
+      "id": "canonical-tag-display",
+      "label": "Наш общий producer тегов",
+      "type": "model",
+      "path": "src/client/components/overview/playerTagDetails.ts",
+      "role": "Выделенный прежний display calculation; native и Wrybit читают обновляемые публичные props.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/overview/playerTagDetails.ts",
+          "symbol": "export function buildTagDetails",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+          "symbol": "without remounting"
+        }
+      ],
+      "constraints": [],
+      "evidence": []
+    },
+    {
+      "id": "public-conditional-discounts",
+      "label": "Публичная проекция условных скидок",
+      "type": "model",
+      "path": "src/server/models/publicConditionalDiscounts.ts",
+      "role": "Читает existing getCardDiscount проверенных sources на фиксированных настоящих Birds/Asteroid; не зависит от приватной руки.",
+      "entrypoints": [
+        {
+          "path": "src/server/models/publicConditionalDiscounts.ts",
+          "symbol": "source.getCardDiscount?.(player, target)",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/models/ServerModel.spec.ts",
+          "symbol": "without changing payable prices or pending input"
+        }
+      ],
+      "constraints": [
+        "Только CET/Rebalanced, Xavier, Adhai; не универсальный расчёт скидок.",
+        "Правила, цены оплаты и сохранения неизменны."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-players-table",
+      "label": "Игроки и ресурсы в таблице Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/overview/PlayersTable.vue",
+      "role": "Shared canonical tag data, публичные badges, Coordination, скрытые VP, recorded clocks и наша visibility state.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/overview/PlayersTable.vue",
+          "symbol": "tagDetailsByColor()",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+          "symbol": "hidden VP"
+        },
+        {
+          "path": "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+          "symbol": "recorded views read-only"
+        }
+      ],
+      "constraints": [
+        "Полный App/home caller, viewport, filters и change-flash ещё открыты."
+      ],
+      "evidence": []
     }
   ],
   "edges": [
@@ -4000,6 +4075,37 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "wrybit-players-table",
+      "to": "canonical-tag-display",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/overview/playerTagDetails.ts",
+          "symbol": "canonicalTagDetails(player, view)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-players-table",
+      "to": "public-conditional-discounts",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/overview/discounts.ts",
+          "symbol": "player.conditionalDiscounts ?? []",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/models/ServerModel.ts",
+          "symbol": "conditionalDiscounts: publicConditionalDiscounts(player)",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -4597,7 +4703,47 @@
     "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
     "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
     "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
-    "tests/client/wrybit/visuals/SortableCards.spec.ts"
+    "tests/client/wrybit/visuals/SortableCards.spec.ts",
+    "src/client/components/overview/PlayerTags.vue",
+    "src/client/components/overview/playerTagDetails.ts",
+    "tests/client/components/overview/PlayerTags.spec.ts",
+    "src/common/models/ConditionalDiscountModel.ts",
+    "src/server/models/publicConditionalDiscounts.ts",
+    "src/client/wrybit/visuals/GameBoardView.vue",
+    "src/client/wrybit/visuals/OtherPlayer.vue",
+    "src/client/wrybit/visuals/PlayedCardsGroups.vue",
+    "src/client/wrybit/visuals/StackedCards.vue",
+    "src/client/wrybit/visuals/common/cardVisibility.ts",
+    "src/client/wrybit/visuals/common/mobileLayout.ts",
+    "src/client/wrybit/visuals/common/playerCardsToggle.ts",
+    "src/client/wrybit/visuals/common/playersCardFit.ts",
+    "src/client/wrybit/visuals/overview/DiscountList.vue",
+    "src/client/wrybit/visuals/overview/discounts.ts",
+    "src/client/wrybit/visuals/overview/escapeVelocityClock.ts",
+    "src/client/wrybit/visuals/overview/EscapeVelocityClock.vue",
+    "src/client/wrybit/visuals/overview/goodsBoxWidths.ts",
+    "src/client/wrybit/visuals/overview/HandDiscount.vue",
+    "src/client/wrybit/visuals/overview/playerCorporations.ts",
+    "src/client/wrybit/visuals/overview/playerGoods.ts",
+    "src/client/wrybit/visuals/overview/PlayerIdentity.vue",
+    "src/client/wrybit/visuals/overview/PlayerInfo.vue",
+    "src/client/wrybit/visuals/overview/PlayersOverview.vue",
+    "src/client/wrybit/visuals/overview/PlayersTable.vue",
+    "src/client/wrybit/visuals/overview/PlayersTableGoods.vue",
+    "src/client/wrybit/visuals/overview/PlayersTableHeader.vue",
+    "src/client/wrybit/visuals/overview/playersTableLayout.ts",
+    "src/client/wrybit/visuals/overview/PlayersTableRow.vue",
+    "src/client/wrybit/visuals/overview/playerTagDetails.ts",
+    "src/client/wrybit/visuals/overview/PlayerTags.vue",
+    "src/client/wrybit/visuals/overview/protectedTags.ts",
+    "src/styles/wrybit/discount_badges.less",
+    "src/styles/wrybit/players_table.less",
+    "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+    "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+    "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+    "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+    "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+    "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -4673,7 +4819,9 @@
       "src/client/components/overview/PlayerInfo.vue",
       "src/client/components/overview/PlayerResource.vue",
       "src/client/components/overview/PlayerResources.vue",
+      "src/client/components/overview/PlayerTags.vue",
       "src/client/components/overview/PlayersOverview.vue",
+      "src/client/components/overview/playerTagDetails.ts",
       "src/client/components/replay/ReplayHome.vue",
       "src/client/components/replay/useReplay.ts",
       "src/client/utils/WikiLinks.ts",
@@ -4695,12 +4843,16 @@
       "src/client/wrybit/visuals/Board.vue",
       "src/client/wrybit/visuals/BoardSpace.vue",
       "src/client/wrybit/visuals/DialogFrame.vue",
+      "src/client/wrybit/visuals/GameBoardView.vue",
       "src/client/wrybit/visuals/HandCardsTab.vue",
       "src/client/wrybit/visuals/Milestone.vue",
       "src/client/wrybit/visuals/Milestones.vue",
+      "src/client/wrybit/visuals/OtherPlayer.vue",
       "src/client/wrybit/visuals/PageToolbar.vue",
+      "src/client/wrybit/visuals/PlayedCardsGroups.vue",
       "src/client/wrybit/visuals/SidebarModal.vue",
       "src/client/wrybit/visuals/SortableCards.vue",
+      "src/client/wrybit/visuals/StackedCards.vue",
       "src/client/wrybit/visuals/board/MarsScaleBonuses.vue",
       "src/client/wrybit/visuals/board/marsScaleBonuses.ts",
       "src/client/wrybit/visuals/board/marsScaleCells.ts",
@@ -4741,12 +4893,16 @@
       "src/client/wrybit/visuals/common/MobileGlyph.vue",
       "src/client/wrybit/visuals/common/PageTitle.vue",
       "src/client/wrybit/visuals/common/PlayerCube.vue",
+      "src/client/wrybit/visuals/common/cardVisibility.ts",
       "src/client/wrybit/visuals/common/dialogZoomAnimation.ts",
       "src/client/wrybit/visuals/common/horizontalScroll.ts",
       "src/client/wrybit/visuals/common/mobileGlyphs.ts",
+      "src/client/wrybit/visuals/common/mobileLayout.ts",
       "src/client/wrybit/visuals/common/motion.ts",
       "src/client/wrybit/visuals/common/nearViewport.ts",
       "src/client/wrybit/visuals/common/overlayCoordinator.ts",
+      "src/client/wrybit/visuals/common/playerCardsToggle.ts",
+      "src/client/wrybit/visuals/common/playersCardFit.ts",
       "src/client/wrybit/visuals/common/playersInTurnOrder.ts",
       "src/client/wrybit/visuals/gameMenu/GameMenu.vue",
       "src/client/wrybit/visuals/gameMenu/LanguageSelectionDialog.vue",
@@ -4759,8 +4915,27 @@
       "src/client/wrybit/visuals/milestoneAwardTable/milestoneAwardIcons.ts",
       "src/client/wrybit/visuals/milestoneAwardTable/scoreRanks.ts",
       "src/client/wrybit/visuals/milestoneAwardTable/tableOrientation.ts",
+      "src/client/wrybit/visuals/overview/DiscountList.vue",
+      "src/client/wrybit/visuals/overview/EscapeVelocityClock.vue",
+      "src/client/wrybit/visuals/overview/HandDiscount.vue",
+      "src/client/wrybit/visuals/overview/PlayerIdentity.vue",
+      "src/client/wrybit/visuals/overview/PlayerInfo.vue",
       "src/client/wrybit/visuals/overview/PlayerResource.vue",
       "src/client/wrybit/visuals/overview/PlayerResources.vue",
+      "src/client/wrybit/visuals/overview/PlayerTags.vue",
+      "src/client/wrybit/visuals/overview/PlayersOverview.vue",
+      "src/client/wrybit/visuals/overview/PlayersTable.vue",
+      "src/client/wrybit/visuals/overview/PlayersTableGoods.vue",
+      "src/client/wrybit/visuals/overview/PlayersTableHeader.vue",
+      "src/client/wrybit/visuals/overview/PlayersTableRow.vue",
+      "src/client/wrybit/visuals/overview/discounts.ts",
+      "src/client/wrybit/visuals/overview/escapeVelocityClock.ts",
+      "src/client/wrybit/visuals/overview/goodsBoxWidths.ts",
+      "src/client/wrybit/visuals/overview/playerCorporations.ts",
+      "src/client/wrybit/visuals/overview/playerGoods.ts",
+      "src/client/wrybit/visuals/overview/playerTagDetails.ts",
+      "src/client/wrybit/visuals/overview/playersTableLayout.ts",
+      "src/client/wrybit/visuals/overview/protectedTags.ts",
       "src/client/wrybit/visuals/trackBonus/BoardTrackRow.vue",
       "src/client/wrybit/visuals/trackBonus/TrackBonusChip.vue",
       "src/client/wrybit/visuals/trackBonus/TrackLane.vue",
@@ -4773,6 +4948,7 @@
       "src/common/cards/CardRequirementDescriptor.ts",
       "src/common/cards/RequirementType.ts",
       "src/common/models/ClaimedMilestoneModel.ts",
+      "src/common/models/ConditionalDiscountModel.ts",
       "src/common/models/PlayerModel.ts",
       "src/common/models/ReplayModel.ts",
       "src/locales/ru/replay.json",
@@ -4929,6 +5105,7 @@
       "src/server/cards/venusNext/Celestic.ts",
       "src/server/cards/venusNext/floaterCards.ts",
       "src/server/models/ServerModel.ts",
+      "src/server/models/publicConditionalDiscounts.ts",
       "src/server/player/Colonies.ts",
       "src/server/replay/ReplayFrame.ts",
       "src/server/routes/ApiReplay.ts",
@@ -4964,6 +5141,7 @@
       "src/styles/wrybit/catalog/responsive.less",
       "src/styles/wrybit/catalog/results.less",
       "src/styles/wrybit/dialog_frame.less",
+      "src/styles/wrybit/discount_badges.less",
       "src/styles/wrybit/fan_project_notice.less",
       "src/styles/wrybit/frosted_surface.less",
       "src/styles/wrybit/game_menu.less",
@@ -4976,6 +5154,7 @@
       "src/styles/wrybit/or_tab_tones.less",
       "src/styles/wrybit/outer_spaces.less",
       "src/styles/wrybit/player_cube.less",
+      "src/styles/wrybit/players_table.less",
       "src/styles/wrybit/sidebar_modal.less",
       "src/styles/wrybit/sortable_cards.less",
       "src/styles/wrybit/source_mixins.less",
@@ -5002,6 +5181,7 @@
       "tests/client/components/create/JSONProcessor.spec.ts",
       "tests/client/components/create/Rebalanced.spec.ts",
       "tests/client/components/overview/PlayerResources.spec.ts",
+      "tests/client/components/overview/PlayerTags.spec.ts",
       "tests/client/components/overview/PlayersOverview.spec.ts",
       "tests/client/components/replay/ReplayHome.spec.ts",
       "tests/client/components/replay/useReplay.spec.ts",
@@ -5022,13 +5202,19 @@
       "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
       "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
       "tests/client/wrybit/visuals/CatalogModel.spec.ts",
+      "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+      "tests/client/wrybit/visuals/GameBoardView.spec.ts",
       "tests/client/wrybit/visuals/GameMenu.spec.ts",
       "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
       "tests/client/wrybit/visuals/MarsScaleBonuses.spec.ts",
       "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
       "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
       "tests/client/wrybit/visuals/PlayerCube.spec.ts",
+      "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
       "tests/client/wrybit/visuals/PlayerResources.spec.ts",
+      "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+      "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+      "tests/client/wrybit/visuals/PlayersTable.spec.ts",
       "tests/client/wrybit/visuals/SortableCards.spec.ts",
       "tests/client/wrybit/visuals/visualStyles.spec.ts",
       "tests/database/ReplayArchive.spec.ts",

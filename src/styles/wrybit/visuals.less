@@ -39,6 +39,9 @@
   .wrybit-board-zoom-mobile-styles();
   @import "./setup_tiles.less";
   @import "./info_panel.less";
+  @import (reference) "./column_overlay.less";
+  @import "./log.less";
+  @import "./card_zoom.less";
 
   // The outer mobile context belongs to html; the imported rules stay under our root.
   html.tm-mobile & .mb-screen--turn:has(> .mb-task-head) .or-tab-panel-title {

@@ -1,7 +1,7 @@
 {
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-14T18:13:50.273Z",
-  "generated_from_commit": "c9b79058b6c802cb140602a556aba3b1df3296bf",
+  "generated_at": "2026-10-14T19:01:09.120Z",
+  "generated_from_commit": "e7db7b0269390b2b5c7ae4eb42342df1b821c948",
   "scope": [
     ".",
     ".github",
@@ -2917,6 +2917,74 @@
         "Full input/carousel/home integration и viewport owner ещё открыты."
       ],
       "evidence": []
+    },
+    {
+      "id": "wrybit-log-view",
+      "label": "Журнал Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/logpanel/LogPanel.vue",
+      "role": "Непрерывные поколения, наш поиск и фильтры, карточные превью; обновление и отмена запросов принадлежат экземпляру.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/logpanel/LogPanel.vue",
+          "symbol": "async loadStream",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/LogPanel.spec.ts",
+          "symbol": "ignores late responses"
+        }
+      ],
+      "constraints": [
+        "Full game consumer пока не интегрирован.",
+        "Нет кеша неизменяемых прошлых поколений."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "canonical-log-preview",
+      "label": "Публичная модель карточного превью",
+      "type": "library",
+      "path": "src/client/components/logpanel/logCardModel.ts",
+      "role": "Общая read-only проекция нашей tableau и Self-Replicating Robots для обоих представлений.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/logpanel/logCardModel.ts",
+          "symbol": "export function logCardModel",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/LogPreviews.spec.ts",
+          "symbol": "both presentations retain tableau resources"
+        }
+      ],
+      "constraints": [
+        "Не обращается к приватной руке или новым правилам."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "game-log-access",
+      "label": "Наш доступ к журналу",
+      "type": "api",
+      "path": "src/server/routes/ApiGameLogs.ts",
+      "role": "Canonical participant access; GameLogs фильтрует hiddenFor и private playerId перед ответом.",
+      "entrypoints": [
+        {
+          "path": "src/server/routes/ApiGameLogs.ts",
+          "symbol": "getLogsForGameView",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [],
+      "constraints": [
+        "Сервер не изменён этим переносом."
+      ],
+      "evidence": []
     }
   ],
   "edges": [
@@ -4184,6 +4252,32 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "wrybit-log-view",
+      "to": "game-log-access",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/logpanel/logStream.ts",
+          "symbol": "paths.API_GAME_LOGS",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-log-view",
+      "to": "canonical-log-preview",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/logpanel/LogCardsContent.vue",
+          "symbol": "logCardModel(name, players)",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -4885,7 +4979,33 @@
     "src/styles/wrybit/info_panel.less",
     "src/styles/wrybit/setup_tiles.less",
     "tests/client/wrybit/visuals/InfoPanel.spec.ts",
-    "tests/client/wrybit/visuals/SharedWidgets.spec.ts"
+    "tests/client/wrybit/visuals/SharedWidgets.spec.ts",
+    "src/client/components/logpanel/CardPanel.vue",
+    "src/client/components/logpanel/logCardModel.ts",
+    "src/client/components/logpanel/LogMessageComponent.vue",
+    "src/client/components/logpanel/logSearchText.ts",
+    "src/server/routes/GameLogs.ts",
+    "src/server/routes/ApiGameLogs.ts",
+    "src/client/wrybit/visuals/logpanel/CardPanel.vue",
+    "src/client/wrybit/visuals/logpanel/drawnCards.ts",
+    "src/client/wrybit/visuals/logpanel/LogCardsContent.vue",
+    "src/client/wrybit/visuals/logpanel/LogCardsZoom.vue",
+    "src/client/wrybit/visuals/logpanel/LogGenerationList.vue",
+    "src/client/wrybit/visuals/logpanel/LogMessageComponent.vue",
+    "src/client/wrybit/visuals/logpanel/logMessageContent.ts",
+    "src/client/wrybit/visuals/logpanel/LogMessageInspector.vue",
+    "src/client/wrybit/visuals/logpanel/LogPanel.vue",
+    "src/client/wrybit/visuals/logpanel/logScroll.ts",
+    "src/client/wrybit/visuals/logpanel/logStream.ts",
+    "src/client/wrybit/visuals/logpanel/milestonesAwardsFocus.ts",
+    "src/client/wrybit/visuals/milestoneAwardTable/milestonesAwardsLabel.ts",
+    "src/client/wrybit/visuals/mobile/MobileCardZoom.vue",
+    "src/styles/wrybit/card_zoom.less",
+    "src/styles/wrybit/column_overlay.less",
+    "src/styles/wrybit/log.less",
+    "tests/client/wrybit/visuals/LogPanel.spec.ts",
+    "tests/client/wrybit/visuals/LogPreviews.spec.ts",
+    "tests/client/wrybit/visuals/MobileCardZoom.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -4960,6 +5080,10 @@
       "src/client/components/create/JSONProcessor.ts",
       "src/client/components/create/TemplateManager.ts",
       "src/client/components/help/HelpRulebooks.vue",
+      "src/client/components/logpanel/CardPanel.vue",
+      "src/client/components/logpanel/LogMessageComponent.vue",
+      "src/client/components/logpanel/logCardModel.ts",
+      "src/client/components/logpanel/logSearchText.ts",
       "src/client/components/milestoneAwardPrices.ts",
       "src/client/components/overview/PlayerInfo.vue",
       "src/client/components/overview/PlayerResource.vue",
@@ -5093,12 +5217,26 @@
       "src/client/wrybit/visuals/gameMenu/PreferencesDialog.vue",
       "src/client/wrybit/visuals/gameMenu/gameMenuContext.ts",
       "src/client/wrybit/visuals/gameMenu/siteLinks.ts",
+      "src/client/wrybit/visuals/logpanel/CardPanel.vue",
+      "src/client/wrybit/visuals/logpanel/LogCardsContent.vue",
+      "src/client/wrybit/visuals/logpanel/LogCardsZoom.vue",
+      "src/client/wrybit/visuals/logpanel/LogGenerationList.vue",
+      "src/client/wrybit/visuals/logpanel/LogMessageComponent.vue",
+      "src/client/wrybit/visuals/logpanel/LogMessageInspector.vue",
+      "src/client/wrybit/visuals/logpanel/LogPanel.vue",
+      "src/client/wrybit/visuals/logpanel/drawnCards.ts",
+      "src/client/wrybit/visuals/logpanel/logMessageContent.ts",
+      "src/client/wrybit/visuals/logpanel/logScroll.ts",
+      "src/client/wrybit/visuals/logpanel/logStream.ts",
+      "src/client/wrybit/visuals/logpanel/milestonesAwardsFocus.ts",
       "src/client/wrybit/visuals/milestoneAwardTable/MilestoneAwardIcon.vue",
       "src/client/wrybit/visuals/milestoneAwardTable/MilestoneAwardTable.vue",
       "src/client/wrybit/visuals/milestoneAwardTable/headerFit.ts",
       "src/client/wrybit/visuals/milestoneAwardTable/milestoneAwardIcons.ts",
+      "src/client/wrybit/visuals/milestoneAwardTable/milestonesAwardsLabel.ts",
       "src/client/wrybit/visuals/milestoneAwardTable/scoreRanks.ts",
       "src/client/wrybit/visuals/milestoneAwardTable/tableOrientation.ts",
+      "src/client/wrybit/visuals/mobile/MobileCardZoom.vue",
       "src/client/wrybit/visuals/overview/DiscountList.vue",
       "src/client/wrybit/visuals/overview/EscapeVelocityClock.vue",
       "src/client/wrybit/visuals/overview/HandDiscount.vue",
@@ -5294,8 +5432,10 @@
       "src/server/models/publicConditionalDiscounts.ts",
       "src/server/player/Colonies.ts",
       "src/server/replay/ReplayFrame.ts",
+      "src/server/routes/ApiGameLogs.ts",
       "src/server/routes/ApiReplay.ts",
       "src/server/routes/ContentType.ts",
+      "src/server/routes/GameLogs.ts",
       "src/server/routes/PlayerInput.ts",
       "src/server/routes/ServeAsset.ts",
       "src/server/server.ts",
@@ -5314,6 +5454,7 @@
       "src/styles/wrybit/button_tones.less",
       "src/styles/wrybit/card_filter_bar.less",
       "src/styles/wrybit/card_renderer_adapters.less",
+      "src/styles/wrybit/card_zoom.less",
       "src/styles/wrybit/card_zoom_slider.less",
       "src/styles/wrybit/cards.less",
       "src/styles/wrybit/cards/content-and-requirements.less",
@@ -5332,6 +5473,7 @@
       "src/styles/wrybit/catalog/header.less",
       "src/styles/wrybit/catalog/responsive.less",
       "src/styles/wrybit/catalog/results.less",
+      "src/styles/wrybit/column_overlay.less",
       "src/styles/wrybit/dialog_frame.less",
       "src/styles/wrybit/discount_badges.less",
       "src/styles/wrybit/fan_project_notice.less",
@@ -5342,6 +5484,7 @@
       "src/styles/wrybit/hand_cards_panel.less",
       "src/styles/wrybit/info_panel.less",
       "src/styles/wrybit/loading.less",
+      "src/styles/wrybit/log.less",
       "src/styles/wrybit/milestone_award_table.less",
       "src/styles/wrybit/modal_surface.less",
       "src/styles/wrybit/or_options_tabs.less",
@@ -5411,9 +5554,12 @@
       "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
       "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
       "tests/client/wrybit/visuals/InfoPanel.spec.ts",
+      "tests/client/wrybit/visuals/LogPanel.spec.ts",
+      "tests/client/wrybit/visuals/LogPreviews.spec.ts",
       "tests/client/wrybit/visuals/MarsScaleBonuses.spec.ts",
       "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
       "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+      "tests/client/wrybit/visuals/MobileCardZoom.spec.ts",
       "tests/client/wrybit/visuals/PlayerCube.spec.ts",
       "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
       "tests/client/wrybit/visuals/PlayerResources.spec.ts",

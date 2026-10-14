@@ -43,6 +43,12 @@ owned_files:
 - src/client/components/milestoneAwardPrices.ts
 - src/client/components/Milestones.vue
 - src/client/components/Awards.vue
+- src/client/components/overview/PlayerTags.vue
+- src/client/components/overview/playerTagDetails.ts
+- tests/client/components/overview/PlayerTags.spec.ts
+- src/common/models/PlayerModel.ts
+- src/common/models/ConditionalDiscountModel.ts
+- src/server/models/publicConditionalDiscounts.ts
 - src/client/wrybit/import-manifest.json
 - docs/codemap/codemap.json
 - docs/codemap/codemap.html
@@ -116,6 +122,14 @@ Planning/base и внутренний merge target: codex/wrybit-full-ui. Ито
 Необходимая read-only проекция для таблицы достижений: optional threshold в публичном ClaimedMilestoneModel из уже имеющегося BaseMilestone.threshold либо существующей карты отображения Conglomerates. Для составных условий число не выдумывается. canClaim/getScore, класс milestone, действия и сохранения остаются неизменными. Handoff ServerModel/model/test записан до правки.
 
 Общие цены информационных панелей извлекаются из существующих Milestones/Awards в milestoneAwardPrices и используются таблицей. Это прежний producer display prices; личные льготы/оплаты и серверные цены не рассчитываются заново.
+
+Последовательный handoff общего read-only producer тегов: канонический PlayerTags и новый playerTagDetails. Для таблицы Wrybit выделяется существующий расчёт из нашей панели, без импорта чужого подсчёта скидок/VP. Оба представления должны реагировать на обновление публичных моделей; игровой расчёт стоимости, VP и AI не меняется. Focused refresh test находится в owned tests/client/wrybit/visuals.
+
+Ближайший native PlayerTags test входит в этот handoff: его существующий conciseTagsViewDefaultValue=false уже задаёт режим. Удаляется только запись в несуществующий $data.conciseView, которая ломается при переходе producer на computed; все проверки скидок, замены тегов и Galactic сохраняются.
+
+Read-only conditional discount DTO для source badges: PlayerModel/ConditionalDiscountModel и publicConditionalDiscounts входят в последовательный handoff WP02. Только проверенные CET (включая Rebalanced), Xavier и Adhai из публичного tableau; helper вызывает их существующий getCardDiscount на фиксированных настоящих Birds (requirements) и Asteroid (SPACE без planetary tags). Рука игрока, canPlay/play, оплата, эффекты, Game/Player/AI не затрагиваются. Undefined означает отсутствие проекции, [] — нет активных скидок этого ограниченного списка. Клиент не прибавляет их к общей скидке и не вычисляет числа самостоятельно.
+
+Промежуточная проверка player panels: 122 client tests/31 files, 22 ServerModel tests, Vue types/scoped ESLint/Stylelint, actual Webpack без warnings. Red/green проверки: реактивные теги и отдельная защита stock/production. Method substitution проверяет делегирование badge суммы; prices/pending input и независимость от приватной руки проверены. Browser на синтетическом component fixture подтвердил показ таблицы, открытие/закрытие played-card панели и toggle goods, console 0 errors/warnings. Escape Velocity badge читает публичный penalty, не вычисляет VP; recorded clock не продолжает ход времени. Полное App/home подключение, viewport/column resizing, change-flash, filters/carousel и expansion presentation остаются открытыми.
 
 Промежуточная проверка milestone/award/table, board tabs и pointer sorting: 95 client tests (22 files), 20 ServerModel tests, Vue type-check, scoped ESLint/Stylelint и actual Webpack зелёные. Browser component proof на D: подтвердил desktop/phone table, обычную сортировку и drag, переход Mars/Colonies/обратно и tile-view switch; console 0 errors/warnings. Source общий stopFit заменён per-instance cleanup после red regression; empty tooltip и pending touch при refresh также получили red/green проверки. Public team totals/ranks, наш custom global config и второй Epsilon marker сохраняются. Full game callers, change-flash, player table, mobile carousel и полные expansion screens ещё не проверены; matrix и подзадачи остаются открытыми.
 

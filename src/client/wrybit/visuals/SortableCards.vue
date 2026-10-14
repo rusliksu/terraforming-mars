@@ -25,7 +25,7 @@ import {CardName} from '@/common/cards/CardName';
 import {CardModel} from '@/common/models/CardModel';
 import {CardOrderStorage} from '@/client/utils/CardOrderStorage';
 
-type CardVisibility = 'shown' | 'hidden' | 'dimmed';
+import {CardVisibility} from '@/client/wrybit/visuals/common/cardVisibility';
 
 // From this mouse movement (px) a click becomes a drag – otherwise clicks on cards would turn into mini drags.
 const DRAG_THRESHOLD_PX = 6;

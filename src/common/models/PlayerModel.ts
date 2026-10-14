@@ -1,4 +1,5 @@
 import {CardModel} from './CardModel';
+import {ConditionalDiscountModel} from './ConditionalDiscountModel';
 import {Color} from '../Color';
 import {VictoryPointsBreakdown} from '../game/VictoryPointsBreakdown';
 import {PlayerInputModel} from './PlayerInputModel';
@@ -52,6 +53,7 @@ export type PublicPlayerModel = {
   availableBlueCardActionCount: number;
   cardCost: number;
   cardDiscount: number;
+  conditionalDiscounts?: ReadonlyArray<ConditionalDiscountModel>;
   cardsInHandNbr: number;
   citiesCount: number;
   coloniesCount: number;

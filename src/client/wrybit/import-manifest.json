@@ -325,7 +325,22 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/GameBoardView.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/GameEnd.vue",
@@ -663,7 +678,33 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/OtherPlayer.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        },
+        {
+          "kind": "local-player-table-browser",
+          "status": "passed",
+          "paths": [
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/players-table-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/players-table-open-cards.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/players-table-goods-hidden.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/players-table-console.txt"
+          ],
+          "note": "Actual Webpack synthetic component fixture. Open/close played cards and toggle goods through ordinary CLI clicks; 0 errors/warnings. Full game and mobile integration remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/OverpaymentDialog.vue",
@@ -756,7 +797,22 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/PlayedCardsGroups.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/PlayerHome.vue",
@@ -1235,7 +1291,22 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/StackedCards.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/StartScreen.vue",
@@ -3594,7 +3665,22 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/overview/DiscountList.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/overview/EscapeVelocityClock.vue",
@@ -3606,7 +3692,22 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/overview/EscapeVelocityClock.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/overview/HandDiscount.vue",
@@ -3618,7 +3719,22 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/overview/HandDiscount.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/overview/PlayerAlliedParty.vue",
@@ -3642,7 +3758,22 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/overview/PlayerIdentity.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/overview/PlayerInfo.vue",
@@ -3654,7 +3785,22 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/overview/PlayerInfo.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/overview/PlayerResource.vue",
@@ -3753,7 +3899,22 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/overview/PlayerTags.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/overview/PlayerTimer.vue",
@@ -3777,7 +3938,33 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/overview/PlayersOverview.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        },
+        {
+          "kind": "local-player-table-browser",
+          "status": "passed",
+          "paths": [
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/players-table-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/players-table-open-cards.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/players-table-goods-hidden.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/players-table-console.txt"
+          ],
+          "note": "Actual Webpack synthetic component fixture. Open/close played cards and toggle goods through ordinary CLI clicks; 0 errors/warnings. Full game and mobile integration remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/overview/PlayersTable.vue",
@@ -3789,7 +3976,33 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/overview/PlayersTable.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        },
+        {
+          "kind": "local-player-table-browser",
+          "status": "passed",
+          "paths": [
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/players-table-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/players-table-open-cards.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/players-table-goods-hidden.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/players-table-console.txt"
+          ],
+          "note": "Actual Webpack synthetic component fixture. Open/close played cards and toggle goods through ordinary CLI clicks; 0 errors/warnings. Full game and mobile integration remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/overview/PlayersTableGoods.vue",
@@ -3801,7 +4014,22 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/overview/PlayersTableGoods.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/overview/PlayersTableHeader.vue",
@@ -3813,7 +4041,22 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/overview/PlayersTableHeader.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/overview/PlayersTableRow.vue",
@@ -3825,7 +4068,22 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/overview/PlayersTableRow.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/overview/PointsPerTag.vue",
@@ -5235,6 +5493,213 @@
           "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
         }
       ]
+    },
+    {
+      "source": "src/client/components/overview/playersTableLayout.ts",
+      "sourceSha256": "0ddaa969329a469516ee30e11732304ed12c948b38c4042bde9473a3372d66e6",
+      "target": "src/client/wrybit/visuals/overview/playersTableLayout.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/overview/goodsBoxWidths.ts",
+      "sourceSha256": "ed6b05abab58f8ebbe3649c935fc55c2701a0eea05682b5b86b168dcf3b908bb",
+      "target": "src/client/wrybit/visuals/overview/goodsBoxWidths.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/overview/playerGoods.ts",
+      "sourceSha256": "b1f86d0d39c382c5b2ad646e563fddd5ea58d444b344843918029c762f0b4491",
+      "target": "src/client/wrybit/visuals/overview/playerGoods.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/overview/protectedTags.ts",
+      "sourceSha256": "d9dea8578ca7e08b11c5ee920e780065f223d1a8421f990519127acc49c50b25",
+      "target": "src/client/wrybit/visuals/overview/protectedTags.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/overview/playerCorporations.ts",
+      "sourceSha256": "ff057ddbe8c8d3ce1d0b9fc63c246252884e6f86832fd68674ce1e4fb52fdd00",
+      "target": "src/client/wrybit/visuals/overview/playerCorporations.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/overview/escapeVelocityClock.ts",
+      "sourceSha256": "1cb8ed65ab56d46f5c2c7356d8b6ea63e17c67a48638fe637a3c400e0646f26a",
+      "target": "src/client/wrybit/visuals/overview/escapeVelocityClock.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/overview/discounts.ts",
+      "sourceSha256": "3071504cfa96153e40614a9752fc4be86c62d660ea972f05bd51a4e41edebd0b",
+      "target": "src/client/wrybit/visuals/overview/discounts.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/overview/playerTagDetails.ts",
+      "sourceSha256": "33b8a2c5fbec01d4282b25e38b38d78ba371df32127a50e1ff99baa022f2a38c",
+      "target": "src/client/wrybit/visuals/overview/playerTagDetails.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/players_table.less",
+      "sourceSha256": "0f25c850de494c2c2f979ec7d5b242f08dbb546584f342087a6ac7d61850a2e3",
+      "target": "src/styles/wrybit/players_table.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "our-public-player-panels",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+            "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+            "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+            "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        }
+      ]
     }
   ],
   "assets": [
@@ -5698,6 +6163,16 @@
       "test": "tests/models/ServerModel.spec.ts",
       "changesRules": false,
       "changesSaves": false
+    },
+    {
+      "target": "src/common/models/PlayerModel.ts",
+      "field": "conditionalDiscounts",
+      "producer": "src/server/models/publicConditionalDiscounts.ts",
+      "source": "Existing pure getCardDiscount methods for CET/Rebalanced, Xavier, Adhai on fixed real Birds/Asteroid; public tableau only.",
+      "test": "tests/models/ServerModel.spec.ts",
+      "changesRules": false,
+      "changesSaves": false,
+      "note": "Limited informational projection; [] means no active entries, undefined means absent projection. Never used to calculate payable prices or playability."
     }
   ]
 }

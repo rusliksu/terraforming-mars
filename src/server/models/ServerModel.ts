@@ -19,6 +19,7 @@ import {Phase} from '../../common/Phase';
 import {Resource} from '../../common/Resource';
 import {ClaimedMilestoneModel, MilestoneScore} from '../../common/models/ClaimedMilestoneModel';
 import {CONGLOMERATES_MILESTONE_NUMBERS} from '../../common/ma/ConglomeratesMilestoneNumbers';
+import {publicConditionalDiscounts} from './publicConditionalDiscounts';
 import {BaseMilestone} from '../milestones/IMilestone';
 import {FundedAwardModel, AwardScore} from '../../common/models/FundedAwardModel';
 import {getTurmoilModel} from '../models/TurmoilModel';
@@ -305,6 +306,7 @@ export class Server {
       availableBlueCardActionCount: player.getPlayableActionCards().length,
       cardCost: player.cardCost,
       cardDiscount: player.colonies.cardDiscount,
+      conditionalDiscounts: publicConditionalDiscounts(player),
       cardsInHandNbr: player.cardsInHand.length,
       citiesCount: game.board.getCities(player).length + VenusPhase2Expansion.getCitiesCount(game, player),
       coloniesCount: player.getColoniesCount(),

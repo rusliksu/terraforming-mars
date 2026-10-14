@@ -256,7 +256,18 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/CardIntroBlock.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-input-visual-leaf-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/visuals/InputVisualLeaves.spec.ts",
+            "tests/client/components/ShiftAresGlobalParameters.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Pure source thumbnail/intro/footer/placement/confirmation/update views. Our static/custom wire descriptions and combined title; canonical Ares controller/input response and supplied thresholds; supplied placement description only, no copied foreign gain/rule inference. Initial anchor positioning/Escape/portal cleanup; scoped CSS with private animation/tone/footer identifiers. ServerUpdateOverlay takes supplied phase/savedMessage and emits reload request; no foreign serverStatus/poller or window reload. Future input/mobile/root consumers remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/CardListSection.vue",
@@ -1282,7 +1293,18 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/ShiftAresGlobalParameters.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-input-visual-leaf-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/visuals/InputVisualLeaves.spec.ts",
+            "tests/client/components/ShiftAresGlobalParameters.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Pure source thumbnail/intro/footer/placement/confirmation/update views. Our static/custom wire descriptions and combined title; canonical Ares controller/input response and supplied thresholds; supplied placement description only, no copied foreign gain/rule inference. Initial anchor positioning/Escape/portal cleanup; scoped CSS with private animation/tone/footer identifiers. ServerUpdateOverlay takes supplied phase/savedMessage and emits reload request; no foreign serverStatus/poller or window reload. Future input/mobile/root consumers remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/Sidebar.vue",
@@ -1375,9 +1397,20 @@
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP03",
-      "target": "src/client/wrybit/inputs/SourceCardThumbnail.vue",
+      "target": "src/client/wrybit/visuals/SourceCardThumbnail.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-input-visual-leaf-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/visuals/InputVisualLeaves.spec.ts",
+            "tests/client/components/ShiftAresGlobalParameters.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Pure source thumbnail/intro/footer/placement/confirmation/update views. Our static/custom wire descriptions and combined title; canonical Ares controller/input response and supplied thresholds; supplied placement description only, no copied foreign gain/rule inference. Initial anchor positioning/Escape/portal cleanup; scoped CSS with private animation/tone/footer identifiers. ServerUpdateOverlay takes supplied phase/savedMessage and emits reload request; no foreign serverStatus/poller or window reload. Future input/mobile/root consumers remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/SpaceConfirmPopover.vue",
@@ -1389,7 +1422,18 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/SpaceConfirmPopover.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-input-visual-leaf-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/visuals/InputVisualLeaves.spec.ts",
+            "tests/client/components/ShiftAresGlobalParameters.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Pure source thumbnail/intro/footer/placement/confirmation/update views. Our static/custom wire descriptions and combined title; canonical Ares controller/input response and supplied thresholds; supplied placement description only, no copied foreign gain/rule inference. Initial anchor positioning/Escape/portal cleanup; scoped CSS with private animation/tone/footer identifiers. ServerUpdateOverlay takes supplied phase/savedMessage and emits reload request; no foreign serverStatus/poller or window reload. Future input/mobile/root consumers remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/SpectatorHome.vue",
@@ -1474,9 +1518,20 @@
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP03",
-      "target": "src/client/wrybit/inputs/TabPanelFooterSlot.vue",
+      "target": "src/client/wrybit/visuals/TabPanelFooterSlot.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-input-visual-leaf-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/visuals/InputVisualLeaves.spec.ts",
+            "tests/client/components/ShiftAresGlobalParameters.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Pure source thumbnail/intro/footer/placement/confirmation/update views. Our static/custom wire descriptions and combined title; canonical Ares controller/input response and supplied thresholds; supplied placement description only, no copied foreign gain/rule inference. Initial anchor positioning/Escape/portal cleanup; scoped CSS with private animation/tone/footer identifiers. ServerUpdateOverlay takes supplied phase/savedMessage and emits reload request; no foreign serverStatus/poller or window reload. Future input/mobile/root consumers remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/TabPanelIntroSlot.vue",
@@ -1864,7 +1919,18 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/board/PlacementBanner.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-input-visual-leaf-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/visuals/InputVisualLeaves.spec.ts",
+            "tests/client/components/ShiftAresGlobalParameters.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Pure source thumbnail/intro/footer/placement/confirmation/update views. Our static/custom wire descriptions and combined title; canonical Ares controller/input response and supplied thresholds; supplied placement description only, no copied foreign gain/rule inference. Initial anchor positioning/Escape/portal cleanup; scoped CSS with private animation/tone/footer identifiers. ServerUpdateOverlay takes supplied phase/savedMessage and emits reload request; no foreign serverStatus/poller or window reload. Future input/mobile/root consumers remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/board/ScaledBoard.vue",
@@ -3337,7 +3403,18 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/common/ServerUpdateOverlay.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-input-visual-leaf-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/visuals/InputVisualLeaves.spec.ts",
+            "tests/client/components/ShiftAresGlobalParameters.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Pure source thumbnail/intro/footer/placement/confirmation/update views. Our static/custom wire descriptions and combined title; canonical Ares controller/input response and supplied thresholds; supplied placement description only, no copied foreign gain/rule inference. Initial anchor positioning/Escape/portal cleanup; scoped CSS with private animation/tone/footer identifiers. ServerUpdateOverlay takes supplied phase/savedMessage and emits reload request; no foreign serverStatus/poller or window reload. Future input/mobile/root consumers remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/create/CardPreviewGrid.vue",
@@ -7001,6 +7078,158 @@
             "tests/client/wrybit/visuals/visualStyles.spec.ts"
           ],
           "note": "Continuous source generations use our participant-scoped GET URL/gameAge/no-store protocol and server access gate. Past generations reload on log revision because our undo rewrites history; no frozen-generation cache or foreign global request controller. Native search/player filters, canceled/undo/BOT classes and Infrastructure pills remain. Per-instance abort/revision rejects late previous-actor responses. Source hover/modal/mobile carousel uses public canonical tableau/Self-Replicating Robots preview state and isolated portals. 286 client tests/95 files plus focused shared-preview check; type/lint/style and actual Webpack passed without warnings. Real ordinary browser hover/multi-card click/Escape/search/canceled-history/phone Next-close; console zero errors/warnings. Request-guard mutation is killed by loss of current-actor Ants after late old-actor Birds; exact bytes restored and focused tests pass. Full game/mobile/input consumers and change-flash owner remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/inputSourceCard.ts",
+      "sourceSha256": "aebca9fd17859c236abcc42b10a515e8e3f0a102752cacf8bc122fdf5771c297",
+      "target": "src/client/wrybit/visuals/cardIntroText.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-input-visual-leaf-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/visuals/InputVisualLeaves.spec.ts",
+            "tests/client/components/ShiftAresGlobalParameters.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Pure source thumbnail/intro/footer/placement/confirmation/update views. Our static/custom wire descriptions and combined title; canonical Ares controller/input response and supplied thresholds; supplied placement description only, no copied foreign gain/rule inference. Initial anchor positioning/Escape/portal cleanup; scoped CSS with private animation/tone/footer identifiers. ServerUpdateOverlay takes supplied phase/savedMessage and emits reload request; no foreign serverStatus/poller or window reload. Future input/mobile/root consumers remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/spaceConfirmPosition.ts",
+      "sourceSha256": "b30dd7f39d5ab206aacca36c389c89308364e8dac8b536b4d66559da0bd0901b",
+      "target": "src/client/wrybit/visuals/spaceConfirmPosition.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-input-visual-leaf-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/visuals/InputVisualLeaves.spec.ts",
+            "tests/client/components/ShiftAresGlobalParameters.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Pure source thumbnail/intro/footer/placement/confirmation/update views. Our static/custom wire descriptions and combined title; canonical Ares controller/input response and supplied thresholds; supplied placement description only, no copied foreign gain/rule inference. Initial anchor positioning/Escape/portal cleanup; scoped CSS with private animation/tone/footer identifiers. ServerUpdateOverlay takes supplied phase/savedMessage and emits reload request; no foreign serverStatus/poller or window reload. Future input/mobile/root consumers remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/tabPanelFooter.ts",
+      "sourceSha256": "7f5e1747507c874a06663f767ccac7e7221e4722f57d2aac5fb081b0437b90fc",
+      "target": "src/client/wrybit/visuals/tabPanelFooter.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-input-visual-leaf-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/visuals/InputVisualLeaves.spec.ts",
+            "tests/client/components/ShiftAresGlobalParameters.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Pure source thumbnail/intro/footer/placement/confirmation/update views. Our static/custom wire descriptions and combined title; canonical Ares controller/input response and supplied thresholds; supplied placement description only, no copied foreign gain/rule inference. Initial anchor positioning/Escape/portal cleanup; scoped CSS with private animation/tone/footer identifiers. ServerUpdateOverlay takes supplied phase/savedMessage and emits reload request; no foreign serverStatus/poller or window reload. Future input/mobile/root consumers remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/board/placementDescription.ts",
+      "sourceSha256": "9003395e733421e49b9d40c6c29d82517c62ad4c06a6af9f1dbce938a4e92b42",
+      "target": "src/client/wrybit/visuals/board/placementDescription.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-input-visual-leaf-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/visuals/InputVisualLeaves.spec.ts",
+            "tests/client/components/ShiftAresGlobalParameters.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Pure source thumbnail/intro/footer/placement/confirmation/update views. Our static/custom wire descriptions and combined title; canonical Ares controller/input response and supplied thresholds; supplied placement description only, no copied foreign gain/rule inference. Initial anchor positioning/Escape/portal cleanup; scoped CSS with private animation/tone/footer identifiers. ServerUpdateOverlay takes supplied phase/savedMessage and emits reload request; no foreign serverStatus/poller or window reload. Future input/mobile/root consumers remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/space_confirm.less",
+      "sourceSha256": "dda229737bde010443bb60f6d94f3f3d103f36963e6479bd9302ada0a8719801",
+      "target": "src/styles/wrybit/space_confirm.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-input-visual-leaf-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/visuals/InputVisualLeaves.spec.ts",
+            "tests/client/components/ShiftAresGlobalParameters.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Pure source thumbnail/intro/footer/placement/confirmation/update views. Our static/custom wire descriptions and combined title; canonical Ares controller/input response and supplied thresholds; supplied placement description only, no copied foreign gain/rule inference. Initial anchor positioning/Escape/portal cleanup; scoped CSS with private animation/tone/footer identifiers. ServerUpdateOverlay takes supplied phase/savedMessage and emits reload request; no foreign serverStatus/poller or window reload. Future input/mobile/root consumers remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/placement_banner.less",
+      "sourceSha256": "ce678198d9337db7a04e9498417ce54766c4cf1629d87fed151a01b949e44d92",
+      "target": "src/styles/wrybit/placement_banner.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-input-visual-leaf-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/visuals/InputVisualLeaves.spec.ts",
+            "tests/client/components/ShiftAresGlobalParameters.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Pure source thumbnail/intro/footer/placement/confirmation/update views. Our static/custom wire descriptions and combined title; canonical Ares controller/input response and supplied thresholds; supplied placement description only, no copied foreign gain/rule inference. Initial anchor positioning/Escape/portal cleanup; scoped CSS with private animation/tone/footer identifiers. ServerUpdateOverlay takes supplied phase/savedMessage and emits reload request; no foreign serverStatus/poller or window reload. Future input/mobile/root consumers remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/tab_panel_footer.less",
+      "sourceSha256": "7ba47d8d3f0890c16b1bac56ebb2634f7cdcf6c82522cec4854ea5b2fa97642e",
+      "target": "src/styles/wrybit/tab_panel_footer.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-input-visual-leaf-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/visuals/InputVisualLeaves.spec.ts",
+            "tests/client/components/ShiftAresGlobalParameters.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Pure source thumbnail/intro/footer/placement/confirmation/update views. Our static/custom wire descriptions and combined title; canonical Ares controller/input response and supplied thresholds; supplied placement description only, no copied foreign gain/rule inference. Initial anchor positioning/Escape/portal cleanup; scoped CSS with private animation/tone/footer identifiers. ServerUpdateOverlay takes supplied phase/savedMessage and emits reload request; no foreign serverStatus/poller or window reload. Future input/mobile/root consumers remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/server_update_overlay.less",
+      "sourceSha256": "0e64c03f8532f993f306a66cd80be6d0fae2c0eb3f33242b955bb14790c909a4",
+      "target": "src/styles/wrybit/server_update_overlay.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-input-visual-leaf-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/visuals/InputVisualLeaves.spec.ts",
+            "tests/client/components/ShiftAresGlobalParameters.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Pure source thumbnail/intro/footer/placement/confirmation/update views. Our static/custom wire descriptions and combined title; canonical Ares controller/input response and supplied thresholds; supplied placement description only, no copied foreign gain/rule inference. Initial anchor positioning/Escape/portal cleanup; scoped CSS with private animation/tone/footer identifiers. ServerUpdateOverlay takes supplied phase/savedMessage and emits reload request; no foreign serverStatus/poller or window reload. Future input/mobile/root consumers remain pending."
         }
       ]
     }

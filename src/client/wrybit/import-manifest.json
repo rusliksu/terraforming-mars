@@ -424,7 +424,19 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/GameSetupDetail.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-info-widget-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/InfoPanel.spec.ts",
+            "tests/client/wrybit/visuals/SharedWidgets.spec.ts",
+            "tests/client/wrybit/visuals/GameMenu.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source info/setup/chips use all our EXPANSIONS/MODULE_NAMES, canonical icon/rulebook sources and privacy/ELO/undo/one-way draft flags. Supplied deck counts/spectator link and cleanup after clipboard completion; no foreign creation defaults or AI setup. 204 client tests/73 files plus six focused widget tests, type/lint/style and actual Webpack zero warnings. Browser revealed native absolute info_panel conflict; scoped reset restored the real framed dialog. Final verified desktop/phone screenshots show the source frame, normal Escape closes it, console zero errors/warnings. Empty pre-fix framed screenshots are retained as failure evidence. Full game providers/remaining screens still pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/GamesOverview.vue",
@@ -559,7 +571,19 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/InfoPanel.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-info-widget-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/InfoPanel.spec.ts",
+            "tests/client/wrybit/visuals/SharedWidgets.spec.ts",
+            "tests/client/wrybit/visuals/GameMenu.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source info/setup/chips use all our EXPANSIONS/MODULE_NAMES, canonical icon/rulebook sources and privacy/ELO/undo/one-way draft flags. Supplied deck counts/spectator link and cleanup after clipboard completion; no foreign creation defaults or AI setup. 204 client tests/73 files plus six focused widget tests, type/lint/style and actual Webpack zero warnings. Browser revealed native absolute info_panel conflict; scoped reset restored the real framed dialog. Final verified desktop/phone screenshots show the source frame, normal Escape closes it, console zero errors/warnings. Empty pre-fix framed screenshots are retained as failure evidence. Full game providers/remaining screens still pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/InputIntro.vue",
@@ -583,7 +607,19 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/KeyboardShortcuts.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-info-widget-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/InfoPanel.spec.ts",
+            "tests/client/wrybit/visuals/SharedWidgets.spec.ts",
+            "tests/client/wrybit/visuals/GameMenu.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source info/setup/chips use all our EXPANSIONS/MODULE_NAMES, canonical icon/rulebook sources and privacy/ELO/undo/one-way draft flags. Supplied deck counts/spectator link and cleanup after clipboard completion; no foreign creation defaults or AI setup. 204 client tests/73 files plus six focused widget tests, type/lint/style and actual Webpack zero warnings. Browser revealed native absolute info_panel conflict; scoped reset restored the real framed dialog. Final verified desktop/phone screenshots show the source frame, normal Escape closes it, console zero errors/warnings. Empty pre-fix framed screenshots are retained as failure evidence. Full game providers/remaining screens still pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/LanguageFlag.vue",
@@ -835,7 +871,19 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/Party.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-info-widget-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/InfoPanel.spec.ts",
+            "tests/client/wrybit/visuals/SharedWidgets.spec.ts",
+            "tests/client/wrybit/visuals/GameMenu.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source info/setup/chips use all our EXPANSIONS/MODULE_NAMES, canonical icon/rulebook sources and privacy/ELO/undo/one-way draft flags. Supplied deck counts/spectator link and cleanup after clipboard completion; no foreign creation defaults or AI setup. 204 client tests/73 files plus six focused widget tests, type/lint/style and actual Webpack zero warnings. Browser revealed native absolute info_panel conflict; scoped reset restored the real framed dialog. Final verified desktop/phone screenshots show the source frame, normal Escape closes it, console zero errors/warnings. Empty pre-fix framed screenshots are retained as failure evidence. Full game providers/remaining screens still pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/PaymentForm.vue",
@@ -1543,12 +1591,24 @@
       "sourceBlob": "d3bbbf9c54e52c734cdcd1d8d505d1805edadbf3",
       "sourceSha256": "b50ce3a76bb91e93e2e628358b1c740bcc0c69565490eb003d876e4f07a1a0d1",
       "sourceLines": 30,
-      "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "decision": "reuse-existing",
+      "reason": "Equivalent translated warning DOM; retain our complete canonical descriptions and warning enum.",
       "package": "WP02",
-      "target": "src/client/wrybit/visuals/WarningsComponent.vue",
+      "target": "src/client/components/WarningsComponent.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-info-widget-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/InfoPanel.spec.ts",
+            "tests/client/wrybit/visuals/SharedWidgets.spec.ts",
+            "tests/client/wrybit/visuals/GameMenu.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source info/setup/chips use all our EXPANSIONS/MODULE_NAMES, canonical icon/rulebook sources and privacy/ELO/undo/one-way draft flags. Supplied deck counts/spectator link and cleanup after clipboard completion; no foreign creation defaults or AI setup. 204 client tests/73 files plus six focused widget tests, type/lint/style and actual Webpack zero warnings. Browser revealed native absolute info_panel conflict; scoped reset restored the real framed dialog. Final verified desktop/phone screenshots show the source frame, normal Escape closes it, console zero errors/warnings. Empty pre-fix framed screenshots are retained as failure evidence. Full game providers/remaining screens still pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/admin/AdminHome.vue",
@@ -1780,7 +1840,19 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/board/OuterSpaceCorners.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-info-widget-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/InfoPanel.spec.ts",
+            "tests/client/wrybit/visuals/SharedWidgets.spec.ts",
+            "tests/client/wrybit/visuals/GameMenu.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source info/setup/chips use all our EXPANSIONS/MODULE_NAMES, canonical icon/rulebook sources and privacy/ELO/undo/one-way draft flags. Supplied deck counts/spectator link and cleanup after clipboard completion; no foreign creation defaults or AI setup. 204 client tests/73 files plus six focused widget tests, type/lint/style and actual Webpack zero warnings. Browser revealed native absolute info_panel conflict; scoped reset restored the real framed dialog. Final verified desktop/phone screenshots show the source frame, normal Escape closes it, console zero errors/warnings. Empty pre-fix framed screenshots are retained as failure evidence. Full game providers/remaining screens still pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/board/PlacementBanner.vue",
@@ -2803,12 +2875,24 @@
       "sourceBlob": "fd4aea28fd11e723831c6a6ddf5bd5bad1155c69",
       "sourceSha256": "a9e4f26aebbff2f378a6b53c5fb86bd4310c69d6762f4fdfc349f4b48c729c5f",
       "sourceLines": 77,
-      "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "decision": "reuse-existing",
+      "reason": "Source agenda/description presentation with our More Parties lookup and canonical agenda data.",
       "package": "WP02",
-      "target": "src/client/wrybit/visuals/cardlist/TurmoilAgendaContainer.vue",
+      "target": "src/client/components/cardlist/TurmoilAgendaContainer.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-info-widget-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/InfoPanel.spec.ts",
+            "tests/client/wrybit/visuals/SharedWidgets.spec.ts",
+            "tests/client/wrybit/visuals/GameMenu.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source info/setup/chips use all our EXPANSIONS/MODULE_NAMES, canonical icon/rulebook sources and privacy/ELO/undo/one-way draft flags. Supplied deck counts/spectator link and cleanup after clipboard completion; no foreign creation defaults or AI setup. 204 client tests/73 files plus six focused widget tests, type/lint/style and actual Webpack zero warnings. Browser revealed native absolute info_panel conflict; scoped reset restored the real framed dialog. Final verified desktop/phone screenshots show the source frame, normal Escape closes it, console zero errors/warnings. Empty pre-fix framed screenshots are retained as failure evidence. Full game providers/remaining screens still pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/colonies/BuildBenefit.vue",
@@ -2969,12 +3053,24 @@
       "sourceBlob": "71d276d0a7bee94d617b1300878f0a614889f94d",
       "sourceSha256": "2b26d901732e04870e143a47323b026a8793d0856bff76e096d9898044c43748",
       "sourceLines": 36,
-      "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "decision": "reuse-existing",
+      "reason": "Equivalent dynamic-title/color/additional DOM from our canonical color helper.",
       "package": "WP02",
-      "target": "src/client/wrybit/visuals/common/DynamicTitle.vue",
+      "target": "src/client/components/common/DynamicTitle.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-info-widget-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/InfoPanel.spec.ts",
+            "tests/client/wrybit/visuals/SharedWidgets.spec.ts",
+            "tests/client/wrybit/visuals/GameMenu.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source info/setup/chips use all our EXPANSIONS/MODULE_NAMES, canonical icon/rulebook sources and privacy/ELO/undo/one-way draft flags. Supplied deck counts/spectator link and cleanup after clipboard completion; no foreign creation defaults or AI setup. 204 client tests/73 files plus six focused widget tests, type/lint/style and actual Webpack zero warnings. Browser revealed native absolute info_panel conflict; scoped reset restored the real framed dialog. Final verified desktop/phone screenshots show the source frame, normal Escape closes it, console zero errors/warnings. Empty pre-fix framed screenshots are retained as failure evidence. Full game providers/remaining screens still pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/common/FanProjectNotice.vue",
@@ -3007,7 +3103,19 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/common/GameSetupChips.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-info-widget-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/InfoPanel.spec.ts",
+            "tests/client/wrybit/visuals/SharedWidgets.spec.ts",
+            "tests/client/wrybit/visuals/GameMenu.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source info/setup/chips use all our EXPANSIONS/MODULE_NAMES, canonical icon/rulebook sources and privacy/ELO/undo/one-way draft flags. Supplied deck counts/spectator link and cleanup after clipboard completion; no foreign creation defaults or AI setup. 204 client tests/73 files plus six focused widget tests, type/lint/style and actual Webpack zero warnings. Browser revealed native absolute info_panel conflict; scoped reset restored the real framed dialog. Final verified desktop/phone screenshots show the source frame, normal Escape closes it, console zero errors/warnings. Empty pre-fix framed screenshots are retained as failure evidence. Full game providers/remaining screens still pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/common/HomeLink.vue",
@@ -3200,12 +3308,24 @@
       "sourceBlob": "ecb84009f48561d562ffa456393eea809f7236c7",
       "sourceSha256": "844a9f81a7480f7c487bbc8c2c036921ae1035824cb224a7f10ad7dde88517ef",
       "sourceLines": 35,
-      "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "decision": "reuse-existing",
+      "reason": "Source expiry display with our improved past-due handling; no purge scheduling changes.",
       "package": "WP02",
-      "target": "src/client/wrybit/visuals/common/PurgeWarning.vue",
+      "target": "src/client/components/common/PurgeWarning.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-info-widget-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/InfoPanel.spec.ts",
+            "tests/client/wrybit/visuals/SharedWidgets.spec.ts",
+            "tests/client/wrybit/visuals/GameMenu.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source info/setup/chips use all our EXPANSIONS/MODULE_NAMES, canonical icon/rulebook sources and privacy/ELO/undo/one-way draft flags. Supplied deck counts/spectator link and cleanup after clipboard completion; no foreign creation defaults or AI setup. 204 client tests/73 files plus six focused widget tests, type/lint/style and actual Webpack zero warnings. Browser revealed native absolute info_panel conflict; scoped reset restored the real framed dialog. Final verified desktop/phone screenshots show the source frame, normal Escape closes it, console zero errors/warnings. Empty pre-fix framed screenshots are retained as failure evidence. Full game providers/remaining screens still pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/common/ServerUpdateOverlay.vue",
@@ -3430,10 +3550,22 @@
       "sourceLines": 29,
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
-      "package": "WP03",
-      "target": "src/client/wrybit/create/SeatIcon.vue",
+      "package": "WP02",
+      "target": "src/client/wrybit/visuals/common/SeatIcon.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-info-widget-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/InfoPanel.spec.ts",
+            "tests/client/wrybit/visuals/SharedWidgets.spec.ts",
+            "tests/client/wrybit/visuals/GameMenu.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source info/setup/chips use all our EXPANSIONS/MODULE_NAMES, canonical icon/rulebook sources and privacy/ELO/undo/one-way draft flags. Supplied deck counts/spectator link and cleanup after clipboard completion; no foreign creation defaults or AI setup. 204 client tests/73 files plus six focused widget tests, type/lint/style and actual Webpack zero warnings. Browser revealed native absolute info_panel conflict; scoped reset restored the real framed dialog. Final verified desktop/phone screenshots show the source frame, normal Escape closes it, console zero errors/warnings. Empty pre-fix framed screenshots are retained as failure evidence. Full game providers/remaining screens still pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/create/SegmentedControl.vue",
@@ -6529,6 +6661,66 @@
             "tests/client/wrybit/visuals/visualStyles.spec.ts"
           ],
           "note": "Source scaled board/zoom and mobile controls, optional body root, canonical Board geometry/config/custom rows. Unmount/revision guards and animation abort prevent stale DOM callbacks; mutation removed a guard and produced a detached DOM error, then was restored. Pointercancel/pinch-tail regression was red on source and green after the local UI fix. 201 tests/71 files before gesture fix plus six focused tests after; types/lint/style and final actual Webpack zero warnings. Normal desktop/phone open-close, + 200 to 225 percent, fit 100 percent, Escape and console zero errors/warnings. Full game/placement/viewport-owner integration remains pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/setup_tiles.less",
+      "sourceSha256": "5c1cc3f16d29c28510263d867ef592bce6622def355f85a5f1440e75ce4a6f46",
+      "target": "src/styles/wrybit/setup_tiles.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-info-widget-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/InfoPanel.spec.ts",
+            "tests/client/wrybit/visuals/SharedWidgets.spec.ts",
+            "tests/client/wrybit/visuals/GameMenu.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source info/setup/chips use all our EXPANSIONS/MODULE_NAMES, canonical icon/rulebook sources and privacy/ELO/undo/one-way draft flags. Supplied deck counts/spectator link and cleanup after clipboard completion; no foreign creation defaults or AI setup. 204 client tests/73 files plus six focused widget tests, type/lint/style and actual Webpack zero warnings. Browser revealed native absolute info_panel conflict; scoped reset restored the real framed dialog. Final verified desktop/phone screenshots show the source frame, normal Escape closes it, console zero errors/warnings. Empty pre-fix framed screenshots are retained as failure evidence. Full game providers/remaining screens still pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/info_panel.less",
+      "sourceSha256": "dc2f4c979a395d77d11a9bc075ed85474220d41dd3b1181262363075fd49f10d",
+      "target": "src/styles/wrybit/info_panel.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-info-widget-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/InfoPanel.spec.ts",
+            "tests/client/wrybit/visuals/SharedWidgets.spec.ts",
+            "tests/client/wrybit/visuals/GameMenu.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source info/setup/chips use all our EXPANSIONS/MODULE_NAMES, canonical icon/rulebook sources and privacy/ELO/undo/one-way draft flags. Supplied deck counts/spectator link and cleanup after clipboard completion; no foreign creation defaults or AI setup. 204 client tests/73 files plus six focused widget tests, type/lint/style and actual Webpack zero warnings. Browser revealed native absolute info_panel conflict; scoped reset restored the real framed dialog. Final verified desktop/phone screenshots show the source frame, normal Escape closes it, console zero errors/warnings. Empty pre-fix framed screenshots are retained as failure evidence. Full game providers/remaining screens still pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/common/gameSetupChips.ts",
+      "sourceSha256": "2325c78280688d60ec1ac949aec66ad402779adf503cfb63fb9dc3ed43ae5296",
+      "target": "src/client/wrybit/visuals/common/gameSetupChipTypes.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-info-widget-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/InfoPanel.spec.ts",
+            "tests/client/wrybit/visuals/SharedWidgets.spec.ts",
+            "tests/client/wrybit/visuals/GameMenu.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source info/setup/chips use all our EXPANSIONS/MODULE_NAMES, canonical icon/rulebook sources and privacy/ELO/undo/one-way draft flags. Supplied deck counts/spectator link and cleanup after clipboard completion; no foreign creation defaults or AI setup. 204 client tests/73 files plus six focused widget tests, type/lint/style and actual Webpack zero warnings. Browser revealed native absolute info_panel conflict; scoped reset restored the real framed dialog. Final verified desktop/phone screenshots show the source frame, normal Escape closes it, console zero errors/warnings. Empty pre-fix framed screenshots are retained as failure evidence. Full game providers/remaining screens still pending."
         }
       ]
     }

@@ -42,6 +42,15 @@
   @import (reference) "./column_overlay.less";
   @import "./log.less";
   @import "./card_zoom.less";
+  @import "./space_confirm.less";
+  @import "./placement_banner.less";
+  @import "./tab_panel_footer.less";
+  @import "./server_update_overlay.less";
+
+  html.tm-mobile & .action-step-chips,
+  html.tm-mobile & .or-tab-footer > .or-tab-footer-hint {
+    display: none;
+  }
 
   // The outer mobile context belongs to html; the imported rules stay under our root.
   html.tm-mobile & .mb-screen--turn:has(> .mb-task-head) .or-tab-panel-title {

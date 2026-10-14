@@ -37,7 +37,8 @@
 <script lang="ts">
 
 import {defineComponent} from 'vue';
-import {MAX_MILESTONES, MILESTONE_COST} from '@/common/constants';
+import {MAX_MILESTONES} from '@/common/constants';
+import {availableMilestonePrices} from '@/client/components/milestoneAwardPrices';
 import Milestone from '@/client/components/Milestone.vue';
 import {ClaimedMilestoneModel} from '@/common/models/ClaimedMilestoneModel';
 import {Preferences, PreferencesManager} from '@/client/utils/PreferencesManager';
@@ -78,8 +79,7 @@ export default defineComponent({
   computed: {
     availableMilestoneSpots(): Array<number> {
       const count = this.milestones.filter((milestone) => milestone.playerName).length;
-      const cost = this.conglomeratesExpansion ? Math.ceil(MILESTONE_COST * 1.5) : MILESTONE_COST;
-      return Array(Math.max(0, MAX_MILESTONES - count)).fill(cost);
+      return availableMilestonePrices(count, this.conglomeratesExpansion);
     },
   },
   methods: {

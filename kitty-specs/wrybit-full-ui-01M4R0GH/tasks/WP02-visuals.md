@@ -37,6 +37,12 @@ owned_files:
 - tests/client/wrybit/shell/AppMode.spec.ts
 - tests/client/wrybit/shell/WrybitBoundary.spec.ts
 - tests/client/wrybit/shell/WrybitShell.spec.ts
+- src/common/models/ClaimedMilestoneModel.ts
+- src/server/models/ServerModel.ts
+- tests/models/ServerModel.spec.ts
+- src/client/components/milestoneAwardPrices.ts
+- src/client/components/Milestones.vue
+- src/client/components/Awards.vue
 - src/client/wrybit/import-manifest.json
 - docs/codemap/codemap.json
 - docs/codemap/codemap.html
@@ -106,5 +112,11 @@ Planning/base и внутренний merge target: codex/wrybit-full-ui. Ито
 Переключение каталогов требует прекращать URL writes обоих экземпляров. Red regression подтвердил прежнюю утечку hash timer в classic CardList; добавлена очистка timer при unmount без изменения фильтров или формата hash.
 
 Общий toolbar, GameMenu, SidebarModal, DialogFrame, glyph и overlay helpers переносятся последовательно в visuals внутри WP02 как необходимая зависимость каталога. Внешние extensions источника не импортируются; settings/language/help/info остаются нашими. Полное оформление содержимого этих диалогов и игровые providers будут проверены соответствующими WP. Teleport сохраняет изолированный Wrybit root без высоты обычной страницы.
+
+Необходимая read-only проекция для таблицы достижений: optional threshold в публичном ClaimedMilestoneModel из уже имеющегося BaseMilestone.threshold либо существующей карты отображения Conglomerates. Для составных условий число не выдумывается. canClaim/getScore, класс milestone, действия и сохранения остаются неизменными. Handoff ServerModel/model/test записан до правки.
+
+Общие цены информационных панелей извлекаются из существующих Milestones/Awards в milestoneAwardPrices и используются таблицей. Это прежний producer display prices; личные льготы/оплаты и серверные цены не рассчитываются заново.
+
+Промежуточная проверка milestone/award/table, board tabs и pointer sorting: 95 client tests (22 files), 20 ServerModel tests, Vue type-check, scoped ESLint/Stylelint и actual Webpack зелёные. Browser component proof на D: подтвердил desktop/phone table, обычную сортировку и drag, переход Mars/Colonies/обратно и tile-view switch; console 0 errors/warnings. Source общий stopFit заменён per-instance cleanup после red regression; empty tooltip и pending touch при refresh также получили red/green проверки. Public team totals/ranks, наш custom global config и второй Epsilon marker сохраняются. Full game callers, change-flash, player table, mobile carousel и полные expansion screens ещё не проверены; matrix и подзадачи остаются открытыми.
 
 Не копировать чужой контроллер сети/AI; не рассчитывать цены и доступность независимыми правилами; не маскировать отсутствующие поля приведением типов или выдуманными значениями; не смешивать стили двух режимов; не раскрывать административную статистику; не терять контекст формы при polling/переключении. Любая необходимость изменить игровую логику возвращается на отдельное решение.

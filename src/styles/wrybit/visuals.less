@@ -13,6 +13,19 @@
   @import "./sidebar_modal.less";
   @import "./dialog_frame.less";
   @import "./fan_project_notice.less";
+  @import (reference) "./source_mixins.less";
+  @import "./milestone_award_table.less";
+  @import "./glass_tooltip.less";
+  @import "./frosted_surface.less";
+  @import "./or_options_tabs.less";
+  @import "./or_tab_tones.less";
+  @import "./board_tabs.less";
+  @import "./sortable_cards.less";
+
+  // The outer mobile context belongs to html; the imported rules stay under our root.
+  html.tm-mobile & .mb-screen--turn:has(> .mb-task-head) .or-tab-panel-title {
+    display: none;
+  }
 
   .sidebar-modal .preferences_panel {
     position: static;

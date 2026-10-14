@@ -18,6 +18,8 @@ import {TileType} from '../../common/TileType';
 import {Phase} from '../../common/Phase';
 import {Resource} from '../../common/Resource';
 import {ClaimedMilestoneModel, MilestoneScore} from '../../common/models/ClaimedMilestoneModel';
+import {CONGLOMERATES_MILESTONE_NUMBERS} from '../../common/ma/ConglomeratesMilestoneNumbers';
+import {BaseMilestone} from '../milestones/IMilestone';
 import {FundedAwardModel, AwardScore} from '../../common/models/FundedAwardModel';
 import {getTurmoilModel} from '../models/TurmoilModel';
 import {getConglomeratesModel} from '../models/ConglomeratesModel';
@@ -235,6 +237,7 @@ export class Server {
         playerName: claimed?.player.name,
         color: claimed?.player.color,
         name: milestone.name,
+        threshold: CONGLOMERATES_MILESTONE_NUMBERS[milestone.name] ?? (milestone instanceof BaseMilestone ? milestone.threshold : undefined),
         scores,
         teamScores,
       });

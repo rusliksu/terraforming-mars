@@ -4,8 +4,8 @@
   "ocean_placement_pair_update": {"date":"2026-10-14","base":"923ba2f3a0e811975c0e1049d1be30e000a16782","contract":"oceanPlacementContext/version1/pairs","flows":["Own PlayerModel -> optional ordered pairs of distinct structural candidates","Board adjacency and player coefficient -> quoted second adjacency after the first ocean","Stable board/cost facts -> shared cash-budget consumer; no virtual moves or persisted state"],"scope":"Two intrinsic standard placements; at most 64 candidates; pending Ares board transitions and unsupported political costs are not certified","fingerprint_algorithm":"sha256_normalized_lf","historical_fingerprints_refreshed":false,"source_files":[{"path":"src/common/models/OceanPlacementContextModel.ts","sha256":"b8cdd6bb2abda7956cb7b2aafed1727f9458ec55e83602c16cccb0cff77a6035"},{"path":"src/server/models/OceanPlacementContext.ts","sha256":"4ab4ccec44ffc93e1fc8121a95435ababed5a49ffccde1d2d38738d9b44eeed0"}]},
   "ocean_placement_context_update": {"date":"2026-10-14","base":"fbe68f10c0ceb9f2d72c19665cb9c1b00c7d6926","contract":"oceanPlacementContext/version1","flows":["Own PlayerModel -> phase-scoped oceanPlacementContext/version1","MarsBoard and Board -> structural candidates, actual adjacency and additional costs","Shared political cost-policy query -> explicit unsupported-payment status","Read-only numeric facts -> external advisor JSON transport; no persistence or moves"],"scope":"Single standard ocean; intrinsic resource/draw/adjacency facts and funded MC costs; unsupported bonuses, fees, limits and later triggers remain unproven","fingerprint_algorithm":"sha256_normalized_lf","historical_fingerprints_refreshed":false,"source_files":[{"path":"src/common/models/OceanPlacementContextModel.ts","sha256":"c791998326bb11da0c5d3d8741b681dafeccda141f855188f46d5171c8460299"},{"path":"src/server/models/OceanPlacementContext.ts","sha256":"955ad709e772021d864054b2d7c47f2de5b5051481e50116872bd729953d9946"},{"path":"src/server/models/ServerModel.ts","sha256":"c4f061bea6d576bb1a91ec142b7d4505cd0e854d9637eac371f7a1311ad7c8f8"},{"path":"src/server/boards/Board.ts","sha256":"7ad424247f6623793c22a2ef755bf1d94e85aead5e22df16903e1a30db812fb6"},{"path":"src/server/turmoil/TurmoilHandler.ts","sha256":"4bf865bd6c7dd74d3bb8c5aaf1e3bf84141ef3b05c17bbde9f1bac8411477268"}]},
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-14T10:50:01.419Z",
-  "generated_from_commit": "b2adbc99c61bbb075fa9bb162d34ac637c95f623",
+  "generated_at": "2026-10-14T14:39:29.334Z",
+  "generated_from_commit": "60a02b09d44b1af0c8db603500f955ef3ae3948a",
   "scope": [
     ".",
     ".github",
@@ -2672,6 +2672,124 @@
       ],
       "constraints": [],
       "evidence": []
+    },
+    {
+      "id": "canonical-global-config",
+      "label": "Наши параметры шкал",
+      "type": "model",
+      "path": "src/common/GlobalParameterConfig.ts",
+      "role": "Общий producer min/max/step/bonuses с precedence Venus Phase 2.",
+      "entrypoints": [
+        {
+          "path": "src/common/GlobalParameterConfig.ts",
+          "symbol": "export function resolveGlobalParameters",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+          "symbol": "Phase 2 Venus override"
+        }
+      ],
+      "constraints": [],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-ma-table",
+      "label": "Таблица достижений и наград Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/milestoneAwardTable/MilestoneAwardTable.vue",
+      "role": "Публичные threshold/claimable/teamScores, наши общие display prices и источник icons с fallback label.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/milestoneAwardTable/MilestoneAwardTable.vue",
+          "symbol": "teamScoreOf(",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+          "symbol": "server claimability and team ranks"
+        }
+      ],
+      "constraints": [
+        "Полный игровой caller и change-flash пока не интегрированы."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "public-ma-threshold",
+      "label": "Существующие публичные пороги достижений",
+      "type": "model",
+      "path": "src/common/models/ClaimedMilestoneModel.ts",
+      "role": "Optional display projection из нашего BaseMilestone и карты Conglomerates без изменения canClaim/getScore.",
+      "entrypoints": [
+        {
+          "path": "src/common/models/ClaimedMilestoneModel.ts",
+          "symbol": "threshold?: number",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/models/ServerModel.spec.ts",
+          "symbol": "projects existing milestone display thresholds"
+        }
+      ],
+      "constraints": [
+        "Составные условия не получают выдуманный числовой порог."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-board-tabs",
+      "label": "Вкладки поля Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/boardTabs/BoardTabs.vue",
+      "role": "Сохраняет mounted boards, per-instance fit cleanup; мини-треки используют нашу конфигурацию и публичные модели.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/boardTabs/BoardTabs.vue",
+          "symbol": "const stopFit = new WeakMap",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+          "symbol": "uses custom track minima"
+        }
+      ],
+      "constraints": [
+        "Полные expansion views и игровой caller остаются открытыми."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-hand-sort",
+      "label": "Жесты сортировки руки Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/SortableCards.vue",
+      "role": "Source pointer gestures поверх canonical sorting/storage; очищает hold/ghost/listeners при refresh и unmount.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/SortableCards.vue",
+          "symbol": "extends: CanonicalSortableCards",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/SortableCards.spec.ts",
+          "symbol": "cancels a pending touch drag"
+        }
+      ],
+      "constraints": [
+        "Общие фильтры и selection/mobile carousel будут интегрированы в следующих пакетах."
+      ],
+      "evidence": []
     }
   ],
   "edges": [
@@ -3856,6 +3974,32 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "wrybit-ma-table",
+      "to": "public-ma-threshold",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/milestoneAwardTable/MilestoneAwardTable.vue",
+          "symbol": ":requirement=\"milestone.threshold\"",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-board-tabs",
+      "to": "canonical-global-config",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/boardTabs/boardTabs.ts",
+          "symbol": "resolveGlobalParameters(game.gameOptions.globalParameters",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -4415,7 +4559,45 @@
     "assets/wrybit/flags/nl.svg",
     "assets/wrybit/flags/pl.svg",
     "assets/wrybit/flags/ru.svg",
-    "assets/wrybit/flags/ua.svg"
+    "assets/wrybit/flags/ua.svg",
+    "src/common/models/ClaimedMilestoneModel.ts",
+    "src/client/components/milestoneAwardPrices.ts",
+    "src/client/components/Milestones.vue",
+    "src/client/components/Awards.vue",
+    "src/client/wrybit/visuals/Award.vue",
+    "src/client/wrybit/visuals/Awards.vue",
+    "src/client/wrybit/visuals/Milestone.vue",
+    "src/client/wrybit/visuals/Milestones.vue",
+    "src/client/wrybit/visuals/SortableCards.vue",
+    "src/client/wrybit/visuals/boardTabs/boardTabFit.ts",
+    "src/client/wrybit/visuals/boardTabs/BoardTabLines.vue",
+    "src/client/wrybit/visuals/boardTabs/boardTabs.ts",
+    "src/client/wrybit/visuals/boardTabs/BoardTabs.vue",
+    "src/client/wrybit/visuals/boardTabs/boardTabState.ts",
+    "src/client/wrybit/visuals/boardTabs/TileViewToggle.vue",
+    "src/client/wrybit/visuals/common/DockedTab.ts",
+    "src/client/wrybit/visuals/common/GlassTooltip.ts",
+    "src/client/wrybit/visuals/common/horizontalScroll.ts",
+    "src/client/wrybit/visuals/common/playersInTurnOrder.ts",
+    "src/client/wrybit/visuals/milestoneAwardTable/headerFit.ts",
+    "src/client/wrybit/visuals/milestoneAwardTable/MilestoneAwardIcon.vue",
+    "src/client/wrybit/visuals/milestoneAwardTable/milestoneAwardIcons.ts",
+    "src/client/wrybit/visuals/milestoneAwardTable/MilestoneAwardTable.vue",
+    "src/client/wrybit/visuals/milestoneAwardTable/scoreRanks.ts",
+    "src/client/wrybit/visuals/milestoneAwardTable/tableOrientation.ts",
+    "src/styles/wrybit/board_tabs.less",
+    "src/styles/wrybit/frosted_surface.less",
+    "src/styles/wrybit/glass_tooltip.less",
+    "src/styles/wrybit/milestone_award_table.less",
+    "src/styles/wrybit/or_options_tabs.less",
+    "src/styles/wrybit/or_tab_tones.less",
+    "src/styles/wrybit/sortable_cards.less",
+    "src/styles/wrybit/source_mixins.less",
+    "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+    "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+    "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+    "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+    "tests/client/wrybit/visuals/SortableCards.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -4466,10 +4648,12 @@
       "scripts/tests/test_tm_sentry_release_remote.py",
       "src/client/cards/ClientCardManifest.ts",
       "src/client/components/App.vue",
+      "src/client/components/Awards.vue",
       "src/client/components/Board.vue",
       "src/client/components/BoardSpace.vue",
       "src/client/components/GameEnd.vue",
       "src/client/components/GameSetupDetail.vue",
+      "src/client/components/Milestones.vue",
       "src/client/components/OrOptions.vue",
       "src/client/components/PlayerHome.vue",
       "src/client/components/PlayerSetupView.vue",
@@ -4485,6 +4669,7 @@
       "src/client/components/create/JSONProcessor.ts",
       "src/client/components/create/TemplateManager.ts",
       "src/client/components/help/HelpRulebooks.vue",
+      "src/client/components/milestoneAwardPrices.ts",
       "src/client/components/overview/PlayerInfo.vue",
       "src/client/components/overview/PlayerResource.vue",
       "src/client/components/overview/PlayerResources.vue",
@@ -4505,16 +4690,27 @@
       "src/client/wrybit/shell/inputContext.ts",
       "src/client/wrybit/shell/inputHosts.ts",
       "src/client/wrybit/shell/presentationViews.ts",
+      "src/client/wrybit/visuals/Award.vue",
+      "src/client/wrybit/visuals/Awards.vue",
       "src/client/wrybit/visuals/Board.vue",
       "src/client/wrybit/visuals/BoardSpace.vue",
       "src/client/wrybit/visuals/DialogFrame.vue",
       "src/client/wrybit/visuals/HandCardsTab.vue",
+      "src/client/wrybit/visuals/Milestone.vue",
+      "src/client/wrybit/visuals/Milestones.vue",
       "src/client/wrybit/visuals/PageToolbar.vue",
       "src/client/wrybit/visuals/SidebarModal.vue",
+      "src/client/wrybit/visuals/SortableCards.vue",
       "src/client/wrybit/visuals/board/MarsScaleBonuses.vue",
       "src/client/wrybit/visuals/board/marsScaleBonuses.ts",
       "src/client/wrybit/visuals/board/marsScaleCells.ts",
       "src/client/wrybit/visuals/board/outerSpaces.ts",
+      "src/client/wrybit/visuals/boardTabs/BoardTabLines.vue",
+      "src/client/wrybit/visuals/boardTabs/BoardTabs.vue",
+      "src/client/wrybit/visuals/boardTabs/TileViewToggle.vue",
+      "src/client/wrybit/visuals/boardTabs/boardTabFit.ts",
+      "src/client/wrybit/visuals/boardTabs/boardTabState.ts",
+      "src/client/wrybit/visuals/boardTabs/boardTabs.ts",
       "src/client/wrybit/visuals/card/Card.vue",
       "src/client/wrybit/visuals/card/CardCost.vue",
       "src/client/wrybit/visuals/card/CardTitle.vue",
@@ -4534,7 +4730,9 @@
       "src/client/wrybit/visuals/cardlist/sectionRail.ts",
       "src/client/wrybit/visuals/common/BoardCube.vue",
       "src/client/wrybit/visuals/common/CatalogSegments.vue",
+      "src/client/wrybit/visuals/common/DockedTab.ts",
       "src/client/wrybit/visuals/common/FanProjectNotice.vue",
+      "src/client/wrybit/visuals/common/GlassTooltip.ts",
       "src/client/wrybit/visuals/common/LanguageFlag.vue",
       "src/client/wrybit/visuals/common/LazyMount.vue",
       "src/client/wrybit/visuals/common/LoadingBar.vue",
@@ -4544,15 +4742,23 @@
       "src/client/wrybit/visuals/common/PageTitle.vue",
       "src/client/wrybit/visuals/common/PlayerCube.vue",
       "src/client/wrybit/visuals/common/dialogZoomAnimation.ts",
+      "src/client/wrybit/visuals/common/horizontalScroll.ts",
       "src/client/wrybit/visuals/common/mobileGlyphs.ts",
       "src/client/wrybit/visuals/common/motion.ts",
       "src/client/wrybit/visuals/common/nearViewport.ts",
       "src/client/wrybit/visuals/common/overlayCoordinator.ts",
+      "src/client/wrybit/visuals/common/playersInTurnOrder.ts",
       "src/client/wrybit/visuals/gameMenu/GameMenu.vue",
       "src/client/wrybit/visuals/gameMenu/LanguageSelectionDialog.vue",
       "src/client/wrybit/visuals/gameMenu/PreferencesDialog.vue",
       "src/client/wrybit/visuals/gameMenu/gameMenuContext.ts",
       "src/client/wrybit/visuals/gameMenu/siteLinks.ts",
+      "src/client/wrybit/visuals/milestoneAwardTable/MilestoneAwardIcon.vue",
+      "src/client/wrybit/visuals/milestoneAwardTable/MilestoneAwardTable.vue",
+      "src/client/wrybit/visuals/milestoneAwardTable/headerFit.ts",
+      "src/client/wrybit/visuals/milestoneAwardTable/milestoneAwardIcons.ts",
+      "src/client/wrybit/visuals/milestoneAwardTable/scoreRanks.ts",
+      "src/client/wrybit/visuals/milestoneAwardTable/tableOrientation.ts",
       "src/client/wrybit/visuals/overview/PlayerResource.vue",
       "src/client/wrybit/visuals/overview/PlayerResources.vue",
       "src/client/wrybit/visuals/trackBonus/BoardTrackRow.vue",
@@ -4566,6 +4772,7 @@
       "src/common/cards/CardReplacementRules.ts",
       "src/common/cards/CardRequirementDescriptor.ts",
       "src/common/cards/RequirementType.ts",
+      "src/common/models/ClaimedMilestoneModel.ts",
       "src/common/models/PlayerModel.ts",
       "src/common/models/ReplayModel.ts",
       "src/locales/ru/replay.json",
@@ -4737,6 +4944,7 @@
       "src/server/turmoil/parties/Reds.ts",
       "src/styles/cards.less",
       "src/styles/wrybit/board.less",
+      "src/styles/wrybit/board_tabs.less",
       "src/styles/wrybit/button_tones.less",
       "src/styles/wrybit/cards.less",
       "src/styles/wrybit/cards/content-and-requirements.less",
@@ -4757,13 +4965,20 @@
       "src/styles/wrybit/catalog/results.less",
       "src/styles/wrybit/dialog_frame.less",
       "src/styles/wrybit/fan_project_notice.less",
+      "src/styles/wrybit/frosted_surface.less",
       "src/styles/wrybit/game_menu.less",
+      "src/styles/wrybit/glass_tooltip.less",
       "src/styles/wrybit/globs.less",
       "src/styles/wrybit/loading.less",
+      "src/styles/wrybit/milestone_award_table.less",
       "src/styles/wrybit/modal_surface.less",
+      "src/styles/wrybit/or_options_tabs.less",
+      "src/styles/wrybit/or_tab_tones.less",
       "src/styles/wrybit/outer_spaces.less",
       "src/styles/wrybit/player_cube.less",
       "src/styles/wrybit/sidebar_modal.less",
+      "src/styles/wrybit/sortable_cards.less",
+      "src/styles/wrybit/source_mixins.less",
       "src/styles/wrybit/track_bonus.less",
       "src/styles/wrybit/variables.less",
       "src/styles/wrybit/visuals.less",
@@ -4799,6 +5014,7 @@
       "tests/client/wrybit/shell/WrybitShell.spec.ts",
       "tests/client/wrybit/shell/inputContext.spec.ts",
       "tests/client/wrybit/visuals/Board.spec.ts",
+      "tests/client/wrybit/visuals/BoardTabs.spec.ts",
       "tests/client/wrybit/visuals/BoardTrackRow.spec.ts",
       "tests/client/wrybit/visuals/Card.spec.ts",
       "tests/client/wrybit/visuals/CardReveal.spec.ts",
@@ -4807,9 +5023,13 @@
       "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
       "tests/client/wrybit/visuals/CatalogModel.spec.ts",
       "tests/client/wrybit/visuals/GameMenu.spec.ts",
+      "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
       "tests/client/wrybit/visuals/MarsScaleBonuses.spec.ts",
+      "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+      "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
       "tests/client/wrybit/visuals/PlayerCube.spec.ts",
       "tests/client/wrybit/visuals/PlayerResources.spec.ts",
+      "tests/client/wrybit/visuals/SortableCards.spec.ts",
       "tests/client/wrybit/visuals/visualStyles.spec.ts",
       "tests/database/ReplayArchive.spec.ts",
       "tests/fanmade-compat/RebalancedLifecycle.spec.ts",

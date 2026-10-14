@@ -1,0 +1,528 @@
+// Milestones & awards as a table (MilestoneAwardTable.vue) – only visible in the two-column layout
+// (player_home_columns.less), there instead of the card rows. Same visual language as the player list (players_table.less).
+
+@ma-table-icon-height: 36px;
+@ma-table-row-height: 28px;
+@ma-table-own-row-height: 32px;
+@ma-table-row-gap: 4px;
+@ma-table-radius: 6px;
+@ma-table-color-bar-width: 6px;
+@ma-table-gold: @section-caption-gold;
+@ma-table-dim: rgba(255, 255, 255, 0.28);
+@ma-table-divider-color: rgba(255, 255, 255, 0.35);
+@ma-table-blur: 10px;
+
+// Outside the two-column layout the card rows stay
+.ma-table {
+  display: none;
+  row-gap: @ma-table-row-gap;
+  font-family: Prototype, sans-serif;
+  color: #f2f2f2;
+}
+
+.ma-table-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--wrybit-ma-table-columns);
+  align-items: center;
+  border-radius: @ma-table-radius;
+}
+
+.ma-table-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+// Dividers between names, milestones and awards, drawn through across the row gaps
+.ma-table-divider {
+  position: relative;
+  align-self: stretch;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    width: 1px;
+    top: -(@ma-table-row-gap / 2);
+    bottom: -(@ma-table-row-gap / 2);
+    background: @ma-table-divider-color;
+  }
+}
+
+// Heading on one line: if the score no longer fits next to it, it wraps into the clipped second line
+@ma-table-section-line-height: 16px;
+
+.ma-table-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 8px;
+  align-items: baseline;
+  height: @ma-table-section-line-height;
+  overflow: hidden;
+  white-space: nowrap;
+  margin-bottom: 2px;
+  padding: 0 0 0 8px;
+  .section-caption(@ma-table-section-line-height);
+}
+
+.ma-table-head,
+.ma-table-status {
+  backdrop-filter: blur(@ma-table-blur);
+}
+
+.ma-table-head {
+  padding: 5px 0 4px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.ma-table-status {
+  height: 26px;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+// Icon: all images equally tall, width by aspect ratio; requirement centered on top
+.ma-table-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: @ma-table-icon-height;
+  // Only shrink if the column gets too narrow (headerFit.ts)
+  zoom: var(--wrybit-ma-table-icon-zoom, 1);
+
+  img {
+    display: block;
+    height: @ma-table-icon-height;
+    width: auto;
+  }
+}
+
+// Two images as one icon: left half of the first, right half of the second
+.ma-table-icon-split {
+  position: relative;
+  display: inline-block;
+
+  img + img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    clip-path: inset(0 0 0 50%);
+  }
+
+  img:first-child {
+    clip-path: inset(0 50% 0 0);
+  }
+}
+
+// White outline for dark images (card), otherwise not recognizable on the dark background
+.ma-table-icon .ma-table-icon-outline {
+  outline: 1px solid rgba(255, 255, 255, 0.85);
+  outline-offset: -1px;
+  border-radius: 2px;
+}
+
+// Production like on the cards: icon in the brown box
+.ma-table-icon-production {
+  display: inline-flex;
+  padding: 4px;
+  border-radius: 5px;
+  background: #6b4a2e;
+  box-shadow: inset 0 0 0 1px #a8773f;
+
+  img {
+    height: @ma-table-icon-height - 8px;
+  }
+}
+
+.ma-table-icon-requirement {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font: 17px Prototype, sans-serif;
+  line-height: 1;
+  color: #fff;
+  // Dark outline keeps the number readable on every icon
+  -webkit-text-stroke: 3px #000;
+  paint-order: stroke fill;
+  pointer-events: none;
+}
+
+// Status: cost as an M€ coin, or who claimed/funded
+.ma-table-coin {
+  width: 20px;
+  height: 20px;
+  line-height: 21px;
+  text-align: center;
+  font-size: 12px;
+  color: #000;
+  background: url(./assets/resources/megacredit.png) center / contain no-repeat;
+}
+
+.ma-table-cell--closed {
+  opacity: 0.5;
+  filter: grayscale(1);
+}
+
+// Owner: cube + name. If the name doesn't fully fit next to it, headerFit.ts shows only the cube
+// (name then in the tooltip). Measured on the truncated name (ellipsis).
+.ma-table-owner {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  // no overflow: hidden – it would clip the 3D cube; the name truncates by itself (.ma-table-owner-name)
+  padding: 2px 6px 1px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.ma-table-owner--cube-only .ma-table-owner-name {
+  display: none;
+}
+
+// Only the cube left: no name tag around it – the cube stands alone like a claimed milestone's
+.ma-table .ma-table-owner--cube-only {
+  padding: 0;
+  background: none;
+}
+
+.ma-table-owner-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Acrylic 3D player cube (PlayerCube.vue, player_cube.less) like everywhere else; its box is 1.5 × the edge
+// length (room for the shadow), so the owner tag pulls it a little closer to the name
+// Drop shadow below the cube: more contrast against the player-colored rows
+.ma-table .ma-table-cube {
+  margin: -3px -2px -3px -3px;
+  filter: drop-shadow(0 2px 1.5px rgba(0, 0, 0, 0.75));
+}
+
+// Player rows like in the player list: muted color surface, bar in the original color, blur
+.ma-table-player {
+  height: @ma-table-row-height;
+  backdrop-filter: blur(@ma-table-blur);
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: @ma-table-color-bar-width;
+    border-radius: @ma-table-radius 0 0 @ma-table-radius;
+  }
+}
+
+@ma-table-me-outline: rgba(255, 255, 255, 0.55);
+
+.ma-table-player--me {
+  height: @ma-table-own-row-height;
+  box-shadow: inset 0 0 0 2px @ma-table-me-outline;
+}
+
+each(@players, {
+  @c: ~"player_@{value}";
+  .ma-table-player--@{value} {
+    background: fade(@@c, 28%);
+
+    &::before {
+      background: @@c;
+    }
+
+    &.ma-table-player--me {
+      background: fade(@@c, 50%);
+    }
+  }
+
+  .ma-table-owner--@{value} {
+    background: fade(@@c, 55%);
+  }
+});
+
+.ma-table-name {
+  padding-left: 14px;
+  font-size: 16px;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ma-table-player--me .ma-table-name {
+  font-size: 18px;
+}
+
+// Ranking per column: 1st place in front, 2nd place normal, 3rd place and zeros toned down
+.ma-table-value {
+  font-size: 15px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+// 1st place subtle: golden bold number without a surface – stands out without dominating the row
+.ma-table-cell--rank-1 .ma-table-value {
+  font-size: 18px;
+  font-weight: bold;
+  color: @ma-table-gold;
+}
+
+.ma-table-cell--rank-2 .ma-table-value {
+  font-size: 16px;
+  color: #fff;
+}
+
+.ma-table-cell--rank-3 .ma-table-value,
+.ma-table-cell--zero .ma-table-value {
+  font-size: 13px;
+  color: @ma-table-dim;
+}
+
+// Threshold reached, milestone still free: golden number in a green box, shaped like the M€ coin.
+// Dark green keeps the gold readable; light inner line + dark outer edge set it apart on every player color (green too)
+@ma-table-claimable-size: 22px;
+@ma-table-check-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1.5 5.2 4 7.6 8.6 2.4' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+
+// A golden check mark in front of the number says "reached" without having to compare with the threshold.
+// Number centered exactly: line-height = box height, no padding – the digits sit on the box's middle
+.ma-table .ma-table-cell--claimable .ma-table-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  box-sizing: border-box;
+  min-width: @ma-table-claimable-size;
+  height: @ma-table-claimable-size;
+  padding: 0 5px 0 4px;
+  border-radius: 5px;
+  font-size: 15px;
+  line-height: @ma-table-claimable-size;
+  color: @ma-table-gold;
+  background: rgba(14, 64, 32, 0.9);
+  box-shadow: inset 0 0 0 1px #6fd28a, 0 0 0 1px rgba(0, 0, 0, 0.6);
+
+  &::before {
+    content: "";
+    flex: none;
+    width: 10px;
+    height: 10px;
+    background: @ma-table-gold;
+    -webkit-mask: @ma-table-check-mark center / contain no-repeat;
+    mask: @ma-table-check-mark center / contain no-repeat;
+  }
+}
+
+// One part (default): the part has no box of its own, its rows are the table's grid items
+.ma-table-part {
+  display: contents;
+}
+
+// ---------- Split: names fixed, values scroll (MilestoneAwardTable.vue, prop scrollable) ----------
+// The columns shrink down to a minimum width; below that only the values scroll horizontally – scroll box,
+// scrollbar and headings all end exactly at the divider line after the names.
+@ma-table-min-column: 32px;
+@ma-table-labels-height: @ma-table-section-line-height + 2px; // heading line + its margin
+@ma-table-head-height: @ma-table-icon-height + 9px; // icon + padding of .ma-table-head
+@ma-table-values-inset: 6px; // gap between the divider line and the first value column
+
+.ma-table.ma-table--split {
+  --wrybit-ma-table-min-column: @ma-table-min-column;
+  display: flex;
+  align-items: flex-start;
+
+  .ma-table-part {
+    display: grid;
+    row-gap: @ma-table-row-gap;
+  }
+
+  .ma-table-part--names {
+    flex: none;
+  }
+
+  .ma-table-part--values {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: auto hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+  }
+
+  // Both parts render the same rows: fixed heights keep them level
+  .ma-table-labels {
+    height: @ma-table-labels-height;
+  }
+
+  .ma-table-head {
+    box-sizing: border-box;
+    height: @ma-table-head-height;
+  }
+
+  // Above the names there is nothing to show: no dark surface there, the box background stays visible
+  .ma-table-part--names .ma-table-head,
+  .ma-table-part--names .ma-table-status {
+    background: none;
+    backdrop-filter: none;
+  }
+
+  // Divider line on the edge of the name part, so the values scroll away exactly there
+  .ma-table-part--names .ma-table-divider::after {
+    left: auto;
+    right: 0;
+  }
+
+  // Each half of a row rounds only its outer corners; the color bar belongs to the names
+  .ma-table-part--names .ma-table-row {
+    border-radius: @ma-table-radius 0 0 @ma-table-radius;
+  }
+
+  .ma-table-part--values .ma-table-row {
+    padding-left: @ma-table-values-inset;
+    border-radius: 0 @ma-table-radius @ma-table-radius 0;
+  }
+
+  .ma-table-part--values .ma-table-player::before {
+    display: none;
+  }
+
+  // Own row: the white outline continues across both halves, without an edge in between
+  .ma-table-part--names .ma-table-player--me {
+    box-shadow: inset 2px 0 0 @ma-table-me-outline, inset 0 2px 0 @ma-table-me-outline, inset 0 -2px 0 @ma-table-me-outline;
+  }
+
+  .ma-table-part--values .ma-table-player--me {
+    box-shadow: inset -2px 0 0 @ma-table-me-outline, inset 0 2px 0 @ma-table-me-outline, inset 0 -2px 0 @ma-table-me-outline;
+  }
+}
+
+// ---------- Transposed: players as columns, milestones and awards as rows ----------
+// Shared by the mobile view (phone, tablet portrait: mobile.less) and the narrow log box (tableOrientation.ts).
+// The rows dissolve (display: contents); the grid flows column by column, one column per former row.
+// Row count: --wrybit-ma-table-cell-count from MilestoneAwardTable.vue. Headings and dividers are dropped.
+.ma-table-transposed(@icon-column; @cost-column; @column-gap; @cell-min-height; @radius) {
+  display: grid !important; // otherwise only visible in the two-column layout (see .ma-table)
+  grid-template-rows: repeat(var(--wrybit-ma-table-cell-count), auto);
+  grid-template-columns: @icon-column @cost-column;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 0 @column-gap;
+
+  .ma-table-row {
+    display: contents;
+  }
+
+  .ma-table-row > * {
+    min-height: @cell-min-height;
+    padding: 4px 2px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  // After the cell rule so it wins
+  .ma-table-labels,
+  .ma-table-row > .ma-table-divider,
+  .ma-table-player::before {
+    display: none;
+  }
+
+  // The empty top-left corner (name column of header and status row)
+  .ma-table-head > :first-child,
+  .ma-table-status > :first-child {
+    min-height: 0;
+    height: 100%;
+  }
+
+  .ma-table-name {
+    border-radius: @radius @radius 0 0;
+  }
+
+  .ma-table-player > :last-child {
+    border-radius: 0 0 @radius @radius;
+  }
+
+  // Separation milestones | awards: line above the first award (proximity instead of a heading)
+  .ma-table-divider ~ .ma-table-divider + * {
+    border-top: 2px solid rgba(255, 255, 255, 0.3);
+  }
+
+  // Player color per column (the dissolved rows no longer carry a background)
+  each(@players, {
+    @c: ~"player_@{value}";
+    .ma-table-player--@{value} > * {
+      background: fade(@@c, 28%);
+    }
+
+    .ma-table-player--@{value}.ma-table-player--me > * {
+      background: fade(@@c, 50%);
+    }
+  });
+}
+
+// Narrow log box (desktop): compact cells; name on top with the color bar as its upper edge
+.ma-table.ma-table--transposed {
+  .ma-table-transposed(52px; 30px; 4px; 30px; @ma-table-radius);
+
+  .ma-table-player > .ma-table-name {
+    display: block;
+    padding: 6px 4px 4px;
+    font-size: 14px;
+    line-height: 18px;
+    text-align: center;
+  }
+
+  each(@players, {
+    @c: ~"player_@{value}";
+    .ma-table-player--@{value} > .ma-table-name {
+      border-top: 4px solid @@c;
+    }
+  });
+
+  // Own column: the white outline of the own row, now running down the column
+  .ma-table-player--me > * {
+    box-shadow: inset 2px 0 0 @ma-table-me-outline, inset -2px 0 0 @ma-table-me-outline;
+  }
+
+  .ma-table-player--me > .ma-table-name {
+    font-size: 15px;
+    box-shadow: inset 2px 0 0 @ma-table-me-outline, inset -2px 0 0 @ma-table-me-outline, inset 0 2px 0 @ma-table-me-outline;
+  }
+
+  .ma-table-player--me > :last-child {
+    box-shadow: inset 2px 0 0 @ma-table-me-outline, inset -2px 0 0 @ma-table-me-outline, inset 0 -2px 0 @ma-table-me-outline;
+  }
+}
+
+// ---------- In the log box (LogPanel.vue, desktop: tab "Milestones & Awards") ----------
+.log-panel--milestones.or-tab-panel {
+  padding: 12px 14px;
+}
+
+.log-milestones {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden auto;
+}
+
+.ma-table-team-score {
+  margin-left: 5px;
+  padding: 0 3px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  font: 10px system-ui, sans-serif;
+}
+
+.ma-table-custom-name {
+  padding: 0 4px;
+  font: 11px/1.2 system-ui, sans-serif;
+  overflow-wrap: anywhere;
+  text-align: center;
+}

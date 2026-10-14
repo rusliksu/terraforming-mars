@@ -30,6 +30,13 @@ owned_files:
 - src/client/components/cardlist/CardList.vue
 - src/client/components/card/CardRowComponent.vue
 - tests/client/components/card/CardRowComponent.spec.ts
+- src/client/components/App.vue
+- src/client/wrybit/shell/WrybitBoundary.vue
+- src/client/wrybit/shell/WrybitShell.vue
+- src/client/wrybit/shell/presentationViews.ts
+- tests/client/wrybit/shell/AppMode.spec.ts
+- tests/client/wrybit/shell/WrybitBoundary.spec.ts
+- tests/client/wrybit/shell/WrybitShell.spec.ts
 - src/client/wrybit/import-manifest.json
 - docs/codemap/codemap.json
 - docs/codemap/codemap.html
@@ -93,5 +100,11 @@ Planning/base и внутренний merge target: codex/wrybit-full-ui. Ито
 ## Риски и ориентиры review
 
 Последовательный handoff внутри WP02: CardRowComponent и его focused test. Browser catalog обнаружил, что канонический ItemType допускает строковое описание, но runtime Vue prop принимал только Object. Исправляется только декларация типа prop; renderer, метаданные карт, эффекты и правила не меняются.
+
+Последовательный handoff из завершённой WP01: App, WrybitBoundary/Shell, presentationViews и ближайшие shell tests. Wrybit chunk передаёт только presentation components для уже существующего маршрута cards. App сохраняет сеть, routing и actions; loader fallback остаётся канонической границей. Обычный маршрут до opt-in использует прежний CardList.
+
+Переключение каталогов требует прекращать URL writes обоих экземпляров. Red regression подтвердил прежнюю утечку hash timer в classic CardList; добавлена очистка timer при unmount без изменения фильтров или формата hash.
+
+Общий toolbar, GameMenu, SidebarModal, DialogFrame, glyph и overlay helpers переносятся последовательно в visuals внутри WP02 как необходимая зависимость каталога. Внешние extensions источника не импортируются; settings/language/help/info остаются нашими. Полное оформление содержимого этих диалогов и игровые providers будут проверены соответствующими WP. Teleport сохраняет изолированный Wrybit root без высоты обычной страницы.
 
 Не копировать чужой контроллер сети/AI; не рассчитывать цены и доступность независимыми правилами; не маскировать отсутствующие поля приведением типов или выдуманными значениями; не смешивать стили двух режимов; не раскрывать административную статистику; не терять контекст формы при polling/переключении. Любая необходимость изменить игровую логику возвращается на отдельное решение.

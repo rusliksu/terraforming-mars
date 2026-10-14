@@ -263,6 +263,7 @@ export default defineComponent({
       ...hashToModel(window.location.hash),
       // Whether the page has been scrolled down at all; gates the "scroll to top" widget.
       scrolled: false,
+      hashTimer: undefined as ReturnType<typeof setTimeout> | undefined,
     };
   },
   mounted() {
@@ -273,6 +274,7 @@ export default defineComponent({
     window.addEventListener('scroll', this.handleScroll, {passive: true});
   },
   beforeUnmount() {
+    clearTimeout(this.hashTimer);
     window.removeEventListener('scroll', this.handleScroll);
   },
   computed: {
@@ -377,7 +379,7 @@ export default defineComponent({
   },
   methods: {
     delayedSetLocationHash(delayms: number = 200) {
-      setTimeout(() => {
+      this.hashTimer = setTimeout(() => {
         const changed = this.setLocationHash();
         this.delayedSetLocationHash(changed ? 10 : 100);
       }, delayms);

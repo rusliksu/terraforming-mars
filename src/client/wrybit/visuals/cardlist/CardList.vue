@@ -2,7 +2,7 @@
   <div id="card-list" class="card-list" :class="getLanguageCssClass()" @keydown.esc="filtersOpen = false">
     <header class="card-list-header">
       <!-- Menu at the top left, as in the game and on the other pages -->
-      <slot name="toolbar"><div class="page-toolbar"><LanguageIcon/><PreferencesIcon/></div></slot>
+      <PageToolbar/>
       <PageTitle title="Cards List"/>
       <div class="card-list-search">
         <span class="card-list-search-icon" aria-hidden="true"></span>
@@ -184,8 +184,7 @@ import {clearSearchHighlight, highlightSearch} from '@/client/wrybit/visuals/car
 import {SegmentOption} from '@/client/wrybit/visuals/common/CatalogSegments.vue';
 import Colony from '@/client/components/colonies/Colony.vue';
 import GlobalEvent from '@/client/components/turmoil/GlobalEvent.vue';
-import LanguageIcon from '@/client/components/LanguageIcon.vue';
-import PreferencesIcon from '@/client/components/PreferencesIcon.vue';
+import PageToolbar from '@/client/wrybit/visuals/PageToolbar.vue';
 import PageTitle from '@/client/wrybit/visuals/common/PageTitle.vue';
 import Milestone from '@/client/components/Milestone.vue';
 import Award from '@/client/components/Award.vue';
@@ -252,8 +251,7 @@ export default defineComponent({
     Milestone,
     Award,
     TurmoilAgendaContainer,
-    LanguageIcon,
-    PreferencesIcon,
+    PageToolbar,
     SegmentedControl,
     CardListFilterGroup,
     CardListSection,

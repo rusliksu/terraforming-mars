@@ -1,5 +1,5 @@
 import {shallowMount} from '@vue/test-utils';
-import {defineComponent, nextTick} from 'vue';
+import {defineComponent, markRaw, nextTick} from 'vue';
 import {expect} from 'chai';
 import {vi} from 'vitest';
 import App from '@/client/components/App.vue';
@@ -62,6 +62,37 @@ describe('Wrybit App mode', () => {
       expect(wrapper.get<HTMLInputElement>('[data-test="card"]').element.value).eq('fixture-card-b');
       expect(wrapper.get<HTMLInputElement>('[data-test="payment"]').element.value).eq('19');
       expect(wrapper.get('[data-test="card"]').element).eq(cardInput.element);
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
+  it('uses the supplied catalogue only after opt in and shell readiness, then returns to classic', async () => {
+    window.history.replaceState({}, '', '/cards');
+    const Classic = defineComponent({template: '<div data-test="classic-catalog"/>'});
+    const Wrybit = markRaw(defineComponent({template: '<div data-test="wrybit-catalog"/>'}));
+    const Boundary = defineComponent({props: ['enabled', 'screen'], emits: ['classic', 'active', 'views'], template: '<div/>'});
+    const wrapper = shallowMount(App, {global: {...globalConfig.global, stubs: {
+      CardList: Classic, WrybitBoundary: Boundary,
+    }}});
+    try {
+      await nextTick();
+      expect(wrapper.find('[data-test="classic-catalog"]').exists()).is.true;
+      wrapper.getComponent(Boundary).vm.$emit('views', {cards: Wrybit});
+      await nextTick();
+      expect(wrapper.findComponent(Wrybit).exists()).is.false;
+      PreferencesManager.INSTANCE.set('experimental_layout', true);
+      await nextTick();
+      expect(wrapper.find('[data-test="classic-catalog"]').exists()).is.true;
+      wrapper.getComponent(Boundary).vm.$emit('active', true);
+      await nextTick();
+      expect(wrapper.findComponent(Wrybit).exists()).is.true;
+      expect(wrapper.find('[data-test="classic-catalog"]').exists()).is.false;
+      wrapper.getComponent(Boundary).vm.$emit('classic');
+      await nextTick();
+      expect(wrapper.find('[data-test="classic-catalog"]').exists()).is.true;
+      expect(wrapper.findComponent(Wrybit).exists()).is.false;
+      expect(PreferencesManager.INSTANCE.values().experimental_layout).is.false;
     } finally {
       wrapper.unmount();
     }

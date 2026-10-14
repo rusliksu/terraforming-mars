@@ -1,12 +1,14 @@
 import {mount} from '@vue/test-utils';
 import {expect} from 'chai';
 import WrybitShell from '@/client/wrybit/shell/WrybitShell.vue';
+import Catalog from '@/client/wrybit/visuals/cardlist/CardList.vue';
 import {globalConfig} from '@tests/client/components/getLocalVue';
 
 describe('Wrybit shell', () => {
   it('renders responsive isolated backgrounds with attribution and a classic return', async () => {
     const wrapper = mount(WrybitShell, {...globalConfig, props: {screen: 'start-screen'}});
     try {
+      expect(wrapper.emitted('views')?.[0]).deep.eq([{cards: Catalog}]);
       const sources = wrapper.findAll('picture source');
       expect(sources.map((source) => source.attributes('type'))).deep.eq([
         'image/avif', 'image/webp', 'image/jpeg', 'image/avif', 'image/webp', 'image/jpeg',
@@ -25,6 +27,10 @@ describe('Wrybit shell', () => {
       await wrapper.setProps({screen: 'player-home'});
       expect(wrapper.find('picture').exists()).is.true;
       expect(wrapper.find('.app-background--always').exists()).is.false;
+      await wrapper.setProps({screen: 'cards'});
+      expect(wrapper.find('picture').exists()).is.true;
+      expect(wrapper.find('.app-background-credit').exists()).is.false;
+      expect(wrapper.find('[data-wrybit-shell]').exists()).is.false;
       await wrapper.setProps({screen: 'help'});
       expect(wrapper.find('picture').exists()).is.false;
     } finally {

@@ -154,7 +154,8 @@ export abstract class Board {
     return {megacredits: 0, production: {...EMPTY_ARES_PRODUCTION_COST}, tr: {}};
   }
 
-  private computeAdditionalCosts(player: IPlayer, space: Space, multiplier: number | undefined, subjectToHazardAdjacency: boolean): SpaceCosts {
+  /** Computes the board and Ares costs, excluding political payments and later effects. */
+  public getAdditionalCosts(player: IPlayer, space: Space, multiplier: number | undefined, subjectToHazardAdjacency: boolean): SpaceCosts {
     const costs: SpaceCosts = this.spaceCosts(space);
     if (multiplier !== undefined) {
       costs.megacredits *= multiplier;
@@ -185,7 +186,7 @@ export abstract class Board {
    * `subjectToHazardAdjacency` is false for ocean tiles, which don't pay Ares hazard production costs.
    */
   public canAfford(player: IPlayer, space: Space, canAffordOptions?: CanAffordOptions, subjectToHazardAdjacency: boolean = true) {
-    const additionalCosts = this.computeAdditionalCosts(player, space, canAffordOptions?.bonusMultiplier, subjectToHazardAdjacency);
+    const additionalCosts = this.getAdditionalCosts(player, space, canAffordOptions?.bonusMultiplier, subjectToHazardAdjacency);
     if (additionalCosts.megacredits > 0) {
       const plan: CanAffordOptions = canAffordOptions !== undefined ? {...canAffordOptions} : {cost: 0, tr: {}};
       plan.cost += additionalCosts.megacredits;

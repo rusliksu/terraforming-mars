@@ -92,7 +92,21 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/Award.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/Awards.vue",
@@ -104,7 +118,21 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/Awards.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/Board.vue",
@@ -535,7 +563,21 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/Milestone.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/MilestoneAwardOptions.vue",
@@ -559,7 +601,21 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/Milestones.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/OnlinePlayers.vue",
@@ -1105,7 +1161,33 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/SortableCards.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        },
+        {
+          "kind": "local-component-browser",
+          "status": "passed",
+          "paths": [
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/ma-table-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/ma-table-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/tabs-sort-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/tabs-sort-drag.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/tabs-colonies.txt"
+          ],
+          "note": "Actual Webpack, ordinary CLI clicks/drag; costs/manual sorting, Mars/colonies return, coordinates toggle, 0 errors/warnings. Synthetic component page; complete game/mobile pages not yet verified."
+        }
+      ]
     },
     {
       "source": "src/client/components/SourceCardThumbnail.vue",
@@ -1554,7 +1636,21 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/boardTabs/BoardTabLines.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/boardTabs/BoardTabs.vue",
@@ -1566,7 +1662,33 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/boardTabs/BoardTabs.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        },
+        {
+          "kind": "local-component-browser",
+          "status": "passed",
+          "paths": [
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/ma-table-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/ma-table-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/tabs-sort-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/tabs-sort-drag.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/tabs-colonies.txt"
+          ],
+          "note": "Actual Webpack, ordinary CLI clicks/drag; costs/manual sorting, Mars/colonies return, coordinates toggle, 0 errors/warnings. Synthetic component page; complete game/mobile pages not yet verified."
+        }
+      ]
     },
     {
       "source": "src/client/components/boardTabs/TileViewToggle.vue",
@@ -1578,7 +1700,21 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/boardTabs/TileViewToggle.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/card/Card.vue",
@@ -3193,7 +3329,21 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/milestoneAwardTable/MilestoneAwardIcon.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/milestoneAwardTable/MilestoneAwardTable.vue",
@@ -3205,7 +3355,33 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/milestoneAwardTable/MilestoneAwardTable.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        },
+        {
+          "kind": "local-component-browser",
+          "status": "passed",
+          "paths": [
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/ma-table-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/ma-table-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/tabs-sort-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/tabs-sort-drag.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/tabs-colonies.txt"
+          ],
+          "note": "Actual Webpack, ordinary CLI clicks/drag; costs/manual sorting, Mars/colonies return, coordinates toggle, 0 errors/warnings. Synthetic component page; complete game/mobile pages not yet verified."
+        }
+      ]
     },
     {
       "source": "src/client/components/mobile/MobileCardZoom.vue",
@@ -4641,6 +4817,424 @@
       "license": "GPL-3.0",
       "status": "planned",
       "evidence": []
+    },
+    {
+      "source": "src/client/directives/DockedTab.ts",
+      "sourceSha256": "17d337cf96c035a759c3527750215c7a9ddc1bf2b2b46ad63d8060cf38b51682",
+      "target": "src/client/wrybit/visuals/common/DockedTab.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/directives/GlassTooltip.ts",
+      "sourceSha256": "ea4b4c689a2aa12fe9757cf112ff71b0fdcd303985d0b9d76121bd12863fbb13",
+      "target": "src/client/wrybit/visuals/common/GlassTooltip.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/mobile/horizontalScroll.ts",
+      "sourceSha256": "6d7b53e69eb36dd361271ed696691dc4c3d6a79a28de7820421bb18f1c8bd304",
+      "target": "src/client/wrybit/visuals/common/horizontalScroll.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/utils/playersInTurnOrder.ts",
+      "sourceSha256": "6ffb71e4e6d69d3729868ec789d2585f8b02b9e384e1bd36d9f8c0ed4ade43f7",
+      "target": "src/client/wrybit/visuals/common/playersInTurnOrder.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/mixins.less",
+      "sourceSha256": "919a1b3d9a4c2381d2874a3445c484b3435a64ccf07ca6d1547b00911eaf0300",
+      "target": "src/styles/wrybit/source_mixins.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/boardTabs/boardTabFit.ts",
+      "sourceSha256": "c95ec2026e5e525fce88f075696a692bcf7bbde846af319ac0ee68ecf206c505",
+      "target": "src/client/wrybit/visuals/boardTabs/boardTabFit.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/boardTabs/boardTabs.ts",
+      "sourceSha256": "a21836f38211dd804d9e2cd3b4aa3f8238ff1173b73a66ac6367afebc88aaad1",
+      "target": "src/client/wrybit/visuals/boardTabs/boardTabs.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/boardTabs/boardTabState.ts",
+      "sourceSha256": "e3a41a29b2fba7347718a8483c8aa45fcaf792b9805503f12095fae4232d48d6",
+      "target": "src/client/wrybit/visuals/boardTabs/boardTabState.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/milestoneAwardTable/headerFit.ts",
+      "sourceSha256": "7af09e1127efab9f8628d56bd311bf5e48666ed2e27ce85c53d7ed44c4539faa",
+      "target": "src/client/wrybit/visuals/milestoneAwardTable/headerFit.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/milestoneAwardTable/milestoneAwardIcons.ts",
+      "sourceSha256": "fd4f5d0e52bb9d24bd8f0dabf038dedbbc1beddbc7699758c4ed9f985181e1c6",
+      "target": "src/client/wrybit/visuals/milestoneAwardTable/milestoneAwardIcons.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/milestoneAwardTable/scoreRanks.ts",
+      "sourceSha256": "bc869fd74bc13b5e79074241b7d1a92b5f2a63b88301d4c679dc56a5b5f814c3",
+      "target": "src/client/wrybit/visuals/milestoneAwardTable/scoreRanks.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/milestoneAwardTable/tableOrientation.ts",
+      "sourceSha256": "5a99056fe27766577dd30f0b4bde4bece5909aa5f7531df33b54f365ab0a1310",
+      "target": "src/client/wrybit/visuals/milestoneAwardTable/tableOrientation.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/milestone_award_table.less",
+      "sourceSha256": "033b5385186fa06d9fd9d06bc11cfb23c1ad1c93b0c2a4671b7c64650ad7e857",
+      "target": "src/styles/wrybit/milestone_award_table.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/glass_tooltip.less",
+      "sourceSha256": "fa9cb17969091e6f23dddf572006a30b44766f72ede0af27202abf2fa0ca84a3",
+      "target": "src/styles/wrybit/glass_tooltip.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/board_tabs.less",
+      "sourceSha256": "3034f7847e2e6e3d64aa2c20217a7b97cdd09af587f85840f0854cd0f7ce1325",
+      "target": "src/styles/wrybit/board_tabs.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/or_options_tabs.less",
+      "sourceSha256": "e4bb24e391136fe2d57bfc2868b2de33a6655ba83500bef675988a706c1f47bf",
+      "target": "src/styles/wrybit/or_options_tabs.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/or_tab_tones.less",
+      "sourceSha256": "a768669ef3cb76ad73a47124be7e946a8d70cfde582f807d7de85dafe40bd293",
+      "target": "src/styles/wrybit/or_tab_tones.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/frosted_surface.less",
+      "sourceSha256": "46cd53764d93b0c612d188baaf7c34a7a473cd8275c2b8eef775607b64342dd1",
+      "target": "src/styles/wrybit/frosted_surface.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/cards.less",
+      "sourceSha256": "15247a6f098808d839025c26bdda51938b29fc4ff7d590133508d8ddd566790b",
+      "target": "src/styles/wrybit/sortable_cards.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "ma-tabs-sort-adapters",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+            "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+            "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+            "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+            "tests/client/wrybit/visuals/SortableCards.spec.ts",
+            "tests/models/ServerModel.spec.ts"
+          ],
+          "note": "95 targeted client tests and 20 ServerModel tests. Public existing thresholds, authoritative claimability, team totals/ranks, canonical display prices, custom tracks, Epsilon second marker, touch/mouse lifecycle. Catalogue uses the adapted milestone/award cards. Full game callers, change-flash integration and complete expansion/mobile screens remain pending."
+        }
+      ]
     }
   ],
   "assets": [
@@ -5093,6 +5687,17 @@
       "license": "GPL-3.0",
       "attribution": "Wrybit UI fork",
       "status": "copied-unchanged"
+    }
+  ],
+  "readOnlyProjections": [
+    {
+      "target": "src/common/models/ClaimedMilestoneModel.ts",
+      "field": "threshold",
+      "producer": "src/server/models/ServerModel.ts",
+      "source": "Existing BaseMilestone.threshold or CONGLOMERATES_MILESTONE_NUMBERS; undefined for compound requirements",
+      "test": "tests/models/ServerModel.spec.ts",
+      "changesRules": false,
+      "changesSaves": false
     }
   ]
 }

@@ -14,8 +14,27 @@ import {EarthCatapult} from '../../src/server/cards/base/EarthCatapult';
 import {Rogers} from '../../src/server/cards/ceos/Rogers';
 import {OrOptions} from '../../src/server/inputs/OrOptions';
 import {SelectOption} from '../../src/server/inputs/SelectOption';
+import {Builder} from '../../src/server/milestones/Builder';
+import {GeneralistConglomerates} from '../../src/server/milestones/conglomerates/GeneralistConglomerates';
+import {conglomeratesVariant} from '../../src/server/milestones/conglomerates/ConglomeratesMilestoneVariant';
 
 describe('ServerModel', () => {
+  it('projects existing milestone display thresholds without changing scores or claimability', () => {
+    const [game] = testGame(2);
+    const Builder12 = conglomeratesVariant('Builder12', 'Have 12 building tags in play', () => new Builder());
+    game.milestones = [new Builder(), new Builder12(), new GeneralistConglomerates()];
+    const expected = game.milestones.map((milestone) => game.players.map((player) => ({
+      color: player.color, score: milestone.getScore(player), claimable: milestone.canClaim(player),
+    })));
+    const names = game.milestones.map((milestone) => milestone.name);
+    const models = Server.getMilestones(game);
+    expect(models[0]).to.have.property('threshold', 8);
+    expect(models[1]).to.have.property('threshold', 12);
+    expect(models[2]).to.have.property('threshold', undefined);
+    expect(models.map((model) => model.scores)).deep.eq(expected);
+    expect(game.milestones.map((milestone) => milestone.name)).deep.eq(names);
+  });
+
   it('identifies the pending input across reads and replaces its identity for an identical new prompt', () => {
     const [game, player, other] = testGame(2);
     player.setWaitingFor(new SelectOption('Confirm selection'));

@@ -16,6 +16,7 @@ import {defineComponent} from 'vue';
 import {CardModel} from '@/common/models/CardModel';
 import {CardName} from '@/common/cards/CardName';
 import {Resource} from '@/common/Resource';
+import {hasFoundLife} from '@/client/cards/CardModelMetadata';
 import CardRenderItemComponent from './CardRenderItemComponent.vue';
 
 export default defineComponent({
@@ -42,7 +43,7 @@ export default defineComponent({
       return this.card.name !== CardName.SPECIALIZED_SETTLEMENT && this.card.bonusResource?.includes(Resource.TITANIUM);
     },
     lifeFound() {
-      return this.card.name === CardName.SEARCH_FOR_LIFE && this.card.resources !== undefined && this.card.resources > 0;
+      return hasFoundLife(this.card);
     },
   },
 });

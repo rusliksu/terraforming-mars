@@ -36,7 +36,19 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/AdjacencyBonus.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/AndOptions.vue",
@@ -191,12 +203,24 @@
       "sourceBlob": "db6c555ea698ecdba65ca2edf9771559b5446d02",
       "sourceSha256": "cbfd7e3988cd07e39c582c7770d967fd8d417d2c25772af80d44c551a94ebf0f",
       "sourceLines": 62,
-      "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "decision": "reuse-existing",
+      "reason": "Our supplied bonus grouping/counts and custom bonus palette retained under source board styles.",
       "package": "WP02",
-      "target": "src/client/wrybit/visuals/Bonus.vue",
+      "target": "src/client/components/Bonus.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/BugReportDialog.vue",
@@ -244,7 +268,19 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/CardListSection.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/CardSortButtons.vue",
@@ -407,12 +443,24 @@
       "sourceBlob": "ea46827784449d89f43007b7698d86f26e1a59d5",
       "sourceSha256": "5679804141b6c0f4677c845750f18202b5f193b4661395eea97e0809f64d4e25",
       "sourceLines": 58,
-      "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "decision": "reuse-existing",
+      "reason": "Same source value/checkmark UI but max/suffix comes from our config-aware props.",
       "package": "WP02",
-      "target": "src/client/wrybit/visuals/GlobalParameterValue.vue",
+      "target": "src/client/components/GlobalParameterValue.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/HandCardsPanel.vue",
@@ -1399,12 +1447,24 @@
       "sourceBlob": "769a7d09c42b31c4263fbfdc998aaa5b8cbb1cc0",
       "sourceSha256": "de2d7c838ab791ca1d70a9836ac13985c6fb7b4ec7c12418984ebadedc6349c2",
       "sourceLines": 38,
-      "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "decision": "reuse-existing",
+      "reason": "Equivalent class/tooltip DOM generated by our canonical helper.",
       "package": "WP02",
-      "target": "src/client/wrybit/visuals/Tag.vue",
+      "target": "src/client/components/Tag.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/TagCount.vue",
@@ -1644,7 +1704,19 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/board/BoardSpaceTile.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/board/BoardZoomModal.vue",
@@ -1855,21 +1927,45 @@
       "decision": "reuse-current",
       "reason": "Исходный компонент совпадает с нашей базой; оформление проверяется в режиме Wrybit.",
       "package": "WP02",
-      "target": "src/client/components/card/CardContent.vue",
+      "target": "src/client/wrybit/visuals/card/CardContent.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/card/CardCorporationLogo.vue",
       "sourceBlob": "877948372890785a8f72074704bd867d1e955e45",
       "sourceSha256": "3fdaf7894cbb62a4f4c5938c34b5602e810362c3f17a3058ddf1bcb7ca15ea2c",
       "sourceLines": 441,
-      "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "decision": "reuse-existing",
+      "reason": "Same source logo markup plus our replacement suffix handling and custom corporation logos.",
       "package": "WP02",
-      "target": "src/client/wrybit/visuals/card/CardCorporationLogo.vue",
+      "target": "src/client/components/card/CardCorporationLogo.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/card/CardCost.vue",
@@ -1910,12 +2006,24 @@
       "sourceBlob": "0e6cc5cd8e43ea93d1ff2bc150d40ad3d598dd1b",
       "sourceSha256": "da45df25c9b92b1af99d20196ccfae47840a746e4abcd6b8a884253705697488",
       "sourceLines": 37,
-      "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "decision": "reuse-existing",
+      "reason": "Equivalent classes/description DOM with our typed canonical producer.",
       "package": "WP02",
-      "target": "src/client/wrybit/visuals/card/CardDescription.vue",
+      "target": "src/client/components/card/CardDescription.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/card/CardExpansion.vue",
@@ -1939,7 +2047,19 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/card/CardExtraContent.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/card/CardHelp.vue",
@@ -1951,7 +2071,19 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/card/CardHelp.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/card/CardParty.vue",
@@ -1982,12 +2114,24 @@
       "sourceBlob": "aa962bbb467f3de74892ee425837073b518090be",
       "sourceSha256": "9bf32c75e9e618f2ce81aa2c0876d4597c15efe37e0360134c3ff634b8e56a2d",
       "sourceLines": 45,
-      "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "decision": "reuse-existing",
+      "reason": "Our canonical producer renders every supplied corporation row instead of only the source first row.",
       "package": "WP02",
-      "target": "src/client/wrybit/visuals/card/CardRenderCorpBoxComponent.vue",
+      "target": "src/client/components/card/CardRenderCorpBoxComponent.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/card/CardRenderData.vue",
@@ -2006,48 +2150,96 @@
       "sourceBlob": "3437166cfc1108f122a3f76c77da48d08ecce787",
       "sourceSha256": "dae1aac9e46a64b6bcefaa39abafc3bbb4d90e8e9c86520e47fea4a17a6a96c2",
       "sourceLines": 78,
-      "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "decision": "reuse-existing",
+      "reason": "Equivalent source effect box classes; canonical typed item handling retained.",
       "package": "WP02",
-      "target": "src/client/wrybit/visuals/card/CardRenderEffectBoxComponent.vue",
+      "target": "src/client/components/card/CardRenderEffectBoxComponent.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/card/CardRenderItemComponent.vue",
       "sourceBlob": "2fc601a53d6d6b74faf64539feb7e50e83c6c710",
       "sourceSha256": "bff231c1bbdcf8f45c8a7998eb364b9706efe0b89e0fe6ad71195d17fac5f889",
       "sourceLines": 382,
-      "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "decision": "reuse-existing",
+      "reason": "Our generated typed items, teammate/Coordination data retained; source secondary-resource icons applied through isolated CSS aliases.",
       "package": "WP02",
-      "target": "src/client/wrybit/visuals/card/CardRenderItemComponent.vue",
+      "target": "src/client/components/card/CardRenderItemComponent.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/card/CardRenderSymbolComponent.vue",
       "sourceBlob": "7fcbc9d8843f9b0ceffee4872f951ae518871a67",
       "sourceSha256": "896e1fa10e6d7709ddb819f2e81fcdb4ce457886ed61f769f4cdf72bade0f549",
       "sourceLines": 76,
-      "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "decision": "reuse-existing",
+      "reason": "Same source symbol UI plus our teammate arrows.",
       "package": "WP02",
-      "target": "src/client/wrybit/visuals/card/CardRenderSymbolComponent.vue",
+      "target": "src/client/components/card/CardRenderSymbolComponent.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/card/CardRenderTileComponent.vue",
       "sourceBlob": "5ae777dd1f1fb3ba8c2b233029912bdeefbab2b5",
       "sourceSha256": "63e4669c9c19077dd213d42f31eb4ec1e269ada9de0e30f1c2e36cfcfc24c318",
       "sourceLines": 194,
-      "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "decision": "reuse-existing",
+      "reason": "Same source tile classes plus our custom/Venus/industry tiles.",
       "package": "WP02",
-      "target": "src/client/wrybit/visuals/card/CardRenderTileComponent.vue",
+      "target": "src/client/components/card/CardRenderTileComponent.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/card/CardRequirementComponent.vue",
@@ -2059,7 +2251,19 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/card/CardRequirementComponent.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/card/CardRequirementsComponent.vue",
@@ -2071,7 +2275,19 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/card/CardRequirementsComponent.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/card/CardResourceCounter.vue",
@@ -2090,12 +2306,24 @@
       "sourceBlob": "f66a575f91e342cf09cd12f061510b20f5b82e52",
       "sourceSha256": "d89041e7176ffc96043b2af458c49140ab3852247e003cec7840e84d6b890eb3",
       "sourceLines": 86,
-      "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "decision": "reuse-existing",
+      "reason": "Same source dispatch; our String/Object runtime contract and typed render data preserved.",
       "package": "WP02",
-      "target": "src/client/wrybit/visuals/card/CardRowComponent.vue",
+      "target": "src/client/components/card/CardRowComponent.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/card/CardRowData.vue",
@@ -2114,12 +2342,24 @@
       "sourceBlob": "94d740d31ad8f59958c7b269dbc46e32105c7011",
       "sourceSha256": "e6cc6fefe08057bc8134c0d1811a5f33cbd70f83f4f88dff81ad6a3b6bb70956",
       "sourceLines": 26,
-      "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "decision": "reuse-existing",
+      "reason": "Same classes from our canonical lowercased tag contract, including Galactic/Infrastructure.",
       "package": "WP02",
-      "target": "src/client/wrybit/visuals/card/CardTag.vue",
+      "target": "src/client/components/card/CardTag.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/card/CardTags.vue",
@@ -2172,12 +2412,24 @@
       "sourceBlob": "9246ecd4dc86e3357a4731cc24a30e3b6e9e91d2",
       "sourceSha256": "88b1b218c6f6510ade2dd09cea819726b80acb7729ac23d95e6781eb3fe5137d",
       "sourceLines": 97,
-      "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "decision": "reuse-existing",
+      "reason": "Same public render metadata/VP appearance; canonical undefined guards retained; no VP calculation imported.",
       "package": "WP02",
-      "target": "src/client/wrybit/visuals/card/CardVictoryPoints.vue",
+      "target": "src/client/components/card/CardVictoryPoints.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/cardfilter/CardFilterBar.vue",
@@ -2314,7 +2566,19 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/cardfilter/CardZoomBar.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/cardfilter/CardZoomSlider.vue",
@@ -2895,7 +3159,19 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/common/PopupPanel.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/common/PurgeWarning.vue",
@@ -3845,12 +4121,24 @@
       "sourceBlob": "845b5367e6714cd9f23b3a13196c3dfe53f8e429",
       "sourceSha256": "91779c41344acc4ddeb0dfe4d52c292faa89914464a5679da72f693d7c4c2c83",
       "sourceLines": 28,
-      "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "decision": "reuse-existing",
+      "reason": "Same source agenda panel plus our More Parties contract.",
       "package": "WP02",
-      "target": "src/client/wrybit/visuals/overview/PlayerAlliedParty.vue",
+      "target": "src/client/components/overview/PlayerAlliedParty.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/overview/PlayerIdentity.vue",
@@ -3967,7 +4255,19 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/overview/PlayerStatus.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/overview/PlayerTagDiscount.vue",
@@ -4030,7 +4330,19 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/overview/PlayerTimer.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/overview/PlayersOverview.vue",
@@ -5991,6 +6303,66 @@
             "tests/client/components/PlayerHome.spec.ts"
           ],
           "note": "Our static/custom metadata, clone/Galactic/Infrastructure and supplied prices/playable input. Whole-hand sort uses canonical SortOrder/CardOrderStorage, independent viewer state, Manual restoration and new cards. Source controls, scoped zoom and private body sheet; no gameplay/AI changes. 90 tests/38 files plus new active-prelude test; types/lint/style, actual Webpack zero warnings. Normal desktop/mobile filter and Cost/Manual clicks, console zero errors/warnings. 137 ordered CSS rules match the frozen source after recorded isolation/selector corrections. Full input/carousel/home/mobile-owner integration is pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/popup.less",
+      "sourceSha256": "98bd07b9d382adc6602988b85fc43ae035d89c42ffd7894bcebe5a2df1309656",
+      "target": "src/styles/wrybit/popup.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/AdjacencyBonus.vue",
+      "sourceSha256": "3da6fecb33a4fb6f82c62015c936febc09eb33b2dea659dc575f4076195adfe3",
+      "target": "src/styles/wrybit/adjacency_bonus.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/cards.less",
+      "sourceSha256": "15247a6f098808d839025c26bdda51938b29fc4ff7d590133508d8ddd566790b",
+      "target": "src/styles/wrybit/card_renderer_adapters.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-card-detail-timer-proof",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+            "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+            "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+            "tests/client/components/card"
+          ],
+          "note": "197 client tests/70 files, types/lint/style and actual Webpack zero warnings. Source card help/requirements/extra content, popup, adjacency and timer views use our metadata/methods. Existing found-life predicate and martian image retained; foreign foundLifeVariant and rules are absent. Recorded clock snapshot/static behavior, public refresh, live ticker cleanup; mutation killed the wall-clock leak and was restored. Desktop/phone help normal click and Escape, console zero errors/warnings; found-life synthetic preview checked. Standalone timer fixture shows numeric value only; full consumer layout and App/game integration remain pending."
         }
       ]
     }

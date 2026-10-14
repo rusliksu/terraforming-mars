@@ -12,7 +12,7 @@ export function getOceanPlacementContext(player: IPlayer): OceanPlacementContext
   }
   const board = game.board;
   const costsKnown = TurmoilHandler.getTilePlacementCostPolicy(player) === undefined;
-  return {
+  const context: OceanPlacementContextModel = {
     version: 1,
     color: player.color,
     generation: game.generation,
@@ -27,4 +27,18 @@ export function getOceanPlacementContext(player: IPlayer): OceanPlacementContext
       additionalCosts: board.getAdditionalCosts(player, space, undefined, false),
     })),
   };
+  const hazards = game.aresData?.hazardData;
+  // Pending Ares transitions can change the second cell's costs and availability.
+  if (context.maxOceans - context.oceans >= 2 && context.spaces.length <= 64 && costsKnown &&
+      !hazards?.erosionOceanCount.available && !hazards?.removeDustStormsOceanCount.available) {
+    context.pairs = context.spaces.flatMap((first) => context.spaces
+      .filter((second) => second.id !== first.id)
+      .map((second) => ({
+        firstSpaceId: first.id,
+        secondSpaceId: second.id,
+        secondOceanAdjacencyBonus: second.oceanAdjacencyBonus +
+          (board.getAdjacentSpaces(board.getSpaceOrThrow(second.id)).some((adjacent) => adjacent.id === first.id) ? player.oceanBonus : 0),
+      })));
+  }
+  return context;
 }

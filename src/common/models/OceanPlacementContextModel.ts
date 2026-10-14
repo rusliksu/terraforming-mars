@@ -3,7 +3,7 @@ import {SpaceBonus} from '@/common/boards/SpaceBonus';
 import {TRSource} from '@/common/cards/TRSource';
 import {SpaceId} from '@/common/Types';
 
-/** Own-player facts for one standard ocean placement on the current board. */
+/** Own-player intrinsic facts for standard ocean placements on the current board. */
 export type OceanPlacementContextModel = {
   version: 1;
   color: Color;
@@ -23,5 +23,11 @@ export type OceanPlacementContextModel = {
       production: {mild: number; severe: number};
       tr: TRSource;
     };
+  }>;
+  /** Ordered pairs with unchanged printed bonuses/costs and the second adjacency payout. */
+  pairs?: ReadonlyArray<{
+    firstSpaceId: SpaceId;
+    secondSpaceId: SpaceId;
+    secondOceanAdjacencyBonus: number;
   }>;
 };

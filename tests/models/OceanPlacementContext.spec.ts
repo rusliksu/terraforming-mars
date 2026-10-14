@@ -8,8 +8,77 @@ import {Server} from '@/server/models/ServerModel';
 import {testGame} from '../TestGame';
 import {forcePartiesInPlay, runAllActions, setRulingParty} from '../TestingUtils';
 import {PartyName} from '@/common/turmoil/PartyName';
+import {isSpaceId} from '@/common/Types';
 
 describe('OceanPlacementContext', () => {
+  it('quotes the changed adjacency of a funded two-ocean order without changing the game', () => {
+    const [game, player] = testGame(2, {aresExtension: true});
+    game.phase = Phase.ACTION;
+    game.aresData!.hazardData.erosionOceanCount.available = false;
+    game.aresData!.hazardData.removeDustStormsOceanCount.available = false;
+    player.oceanBonus = 3;
+    player.megaCredits = 6;
+    game.board = new MarsBoard([
+      {id: '10', x: 0, y: 1, spaceType: SpaceType.OCEAN, bonus: [SpaceBonus.STEEL]},
+      {id: '11', x: 1, y: 1, spaceType: SpaceType.OCEAN, bonus: [SpaceBonus.DRAW_CARD]},
+      {id: '12', x: 0, y: 0, spaceType: SpaceType.OCEAN, bonus: [], tile: {tileType: TileType.OCEAN}},
+      {id: '13', x: 0, y: 2, spaceType: SpaceType.LAND, bonus: [], adjacency: {cost: 4, bonus: []}},
+      {id: '14', x: 2, y: 1, spaceType: SpaceType.LAND, bonus: [], adjacency: {cost: 5, bonus: []}},
+      {id: '15', x: 2, y: 2, spaceType: SpaceType.LAND, bonus: []},
+    ]);
+    const before = JSON.stringify(game.serialize());
+    const context = Server.getPlayerModel(player).thisPlayer.oceanPlacementContext!;
+    expect(context.pairs).deep.eq([
+      {firstSpaceId: '10', secondSpaceId: '11', secondOceanAdjacencyBonus: 3},
+      {firstSpaceId: '11', secondSpaceId: '10', secondOceanAdjacencyBonus: 6},
+    ]);
+    expect(context.spaces.map((row) => row.additionalCosts.megacredits)).deep.eq([4, 5]);
+    expect(JSON.stringify(game.serialize())).eq(before);
+
+    const steel = player.steel;
+    const cards = player.cardsInHand.length;
+    game.addOcean(player, game.board.getSpaceOrThrow('10'));
+    runAllActions(game);
+    expect(player.megaCredits).eq(5);
+    expect(Server.getPlayerModel(player).thisPlayer.oceanPlacementContext!.spaces[0].oceanAdjacencyBonus).eq(3);
+    game.addOcean(player, game.board.getSpaceOrThrow('11'));
+    runAllActions(game);
+    expect(player.megaCredits).eq(3);
+    expect(player.steel - steel).eq(1);
+    expect(player.cardsInHand.length - cards).eq(1);
+  });
+
+  it('does not certify pairs with pending Ares board changes or only one ocean left', () => {
+    const [game, player] = testGame(2, {aresExtension: true});
+    game.phase = Phase.ACTION;
+    expect(Server.getPlayerModel(player).thisPlayer.oceanPlacementContext!.pairs).eq(undefined);
+    game.aresData!.hazardData.erosionOceanCount.available = false;
+    game.aresData!.hazardData.removeDustStormsOceanCount.available = false;
+    expect(Server.getPlayerModel(player).thisPlayer.oceanPlacementContext!.pairs!.length).greaterThan(0);
+    for (const space of game.board.getSpaces(SpaceType.OCEAN).slice(0, 8)) {
+      space.tile = {tileType: TileType.OCEAN};
+    }
+    expect(Server.getPlayerModel(player).thisPlayer.oceanPlacementContext!.pairs).eq(undefined);
+  });
+
+  it('bounds pair enumeration without dropping single-placement candidates', () => {
+    const [game, player] = testGame(2);
+    game.phase = Phase.ACTION;
+    const spaces = Array.from({length: 65}, (_, index) => {
+      const id = String(index + 10);
+      if (!isSpaceId(id)) {
+        throw new Error('Invalid fixture ID');
+      }
+      return {id, x: index, y: 0, spaceType: SpaceType.OCEAN, bonus: []};
+    });
+    game.board = new MarsBoard(spaces);
+    const context = Server.getPlayerModel(player).thisPlayer.oceanPlacementContext!;
+    expect(context.spaces.length).eq(65);
+    expect(context.pairs).eq(undefined);
+    game.board = new MarsBoard(spaces.slice(0, 64));
+    expect(Server.getPlayerModel(player).thisPlayer.oceanPlacementContext!.pairs!.length).eq(4032);
+  });
+
   it('quotes own available cells without changing the game or exposing another player context', () => {
     const [game, player, other] = testGame(2);
     game.phase = Phase.ACTION;
@@ -92,6 +161,7 @@ describe('OceanPlacementContext', () => {
         const [game, player] = testGame(2, {turmoilExtension: true, morePartiesExpansion});
         setRulingParty(game, PartyName.REDS, morePartiesExpansion ? 'rp03' : 'rp02');
         expect(Server.getPlayerModel(player).thisPlayer.oceanPlacementContext!.spaces.every((row) => !row.costsKnown)).is.true;
+        expect(Server.getPlayerModel(player).thisPlayer.oceanPlacementContext!.pairs).eq(undefined);
       }
     } finally {
       restore();

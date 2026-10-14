@@ -264,7 +264,28 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/DialogFrame.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "catalogue-menu-adapter",
+          "status": "passed-client-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/GameMenu.spec.ts"
+          ],
+          "note": "Shared dependency перенесена в WP02. Source menu/modal/frame/animations, наши preferences/languages/info/help/routes. Full dialog content and game context providers remain pending."
+        },
+        {
+          "kind": "canonical-app-browser",
+          "status": "passed-app-browser",
+          "paths": [
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-catalog-wrybit-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-catalog-menu.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-catalog-settings-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-menu-return-click.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-final-classic.txt"
+          ],
+          "note": "App-only Webpack entry. Default off/no Wrybit requests, actual preference opt-in, source dropdown/modal, phone switch off preserves Birds. 0 console errors/warnings. Full game providers and source dialog contents pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/GameBoardView.vue",
@@ -454,10 +475,19 @@
       "sourceLines": 13,
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
-      "package": "WP01",
-      "target": "src/client/wrybit/shell/LanguageFlag.vue",
+      "package": "WP02",
+      "target": "src/client/wrybit/visuals/common/LanguageFlag.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "catalogue-menu-adapter",
+          "status": "passed-client-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/GameMenu.spec.ts"
+          ],
+          "note": "Shared dependency перенесена в WP02. Source menu/modal/frame/animations, наши preferences/languages/info/help/routes. Full dialog content and game context providers remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/LanguageIcon.vue",
@@ -598,10 +628,31 @@
       "sourceLines": 18,
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
-      "package": "WP01",
-      "target": "src/client/wrybit/shell/PageToolbar.vue",
+      "package": "WP02",
+      "target": "src/client/wrybit/visuals/PageToolbar.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "catalogue-menu-adapter",
+          "status": "passed-client-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/GameMenu.spec.ts"
+          ],
+          "note": "Shared dependency перенесена в WP02. Source menu/modal/frame/animations, наши preferences/languages/info/help/routes. Full dialog content and game context providers remain pending."
+        },
+        {
+          "kind": "canonical-app-browser",
+          "status": "passed-app-browser",
+          "paths": [
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-catalog-wrybit-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-catalog-menu.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-catalog-settings-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-menu-return-click.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-final-classic.txt"
+          ],
+          "note": "App-only Webpack entry. Default off/no Wrybit requests, actual preference opt-in, source dropdown/modal, phone switch off preserves Birds. 0 console errors/warnings. Full game providers and source dialog contents pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/Party.vue",
@@ -1018,10 +1069,31 @@
       "sourceLines": 89,
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
-      "package": "WP01",
-      "target": "src/client/wrybit/shell/SidebarModal.vue",
+      "package": "WP02",
+      "target": "src/client/wrybit/visuals/SidebarModal.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "catalogue-menu-adapter",
+          "status": "passed-client-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/GameMenu.spec.ts"
+          ],
+          "note": "Shared dependency перенесена в WP02. Source menu/modal/frame/animations, наши preferences/languages/info/help/routes. Full dialog content and game context providers remain pending."
+        },
+        {
+          "kind": "canonical-app-browser",
+          "status": "passed-app-browser",
+          "paths": [
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-catalog-wrybit-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-catalog-menu.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-catalog-settings-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-menu-return-click.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-final-classic.txt"
+          ],
+          "note": "App-only Webpack entry. Default off/no Wrybit requests, actual preference opt-in, source dropdown/modal, phone switch off preserves Birds. 0 console errors/warnings. Full game providers and source dialog contents pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/SortableCards.vue",
@@ -1980,6 +2052,27 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/catalog-phone.png"
           ],
           "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
+        },
+        {
+          "kind": "canonical-app-catalogue",
+          "status": "passed-client-checks",
+          "paths": [
+            "tests/client/wrybit/shell/AppMode.spec.ts",
+            "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts"
+          ],
+          "note": "App владеет routing/actions. 78 targeted tests passed; App-only Webpack entry и actual menu switch проверены. Полный игровой flow остаётся открытым."
+        },
+        {
+          "kind": "canonical-app-browser",
+          "status": "passed-app-browser",
+          "paths": [
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-catalog-wrybit-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-catalog-menu.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-catalog-settings-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-menu-return-click.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-final-classic.txt"
+          ],
+          "note": "App-only Webpack entry. Default off/no Wrybit requests, actual preference opt-in, source dropdown/modal, phone switch off preserves Birds. 0 console errors/warnings. Full game providers and source dialog contents pending."
         }
       ]
     },
@@ -2296,7 +2389,16 @@
       "package": "WP02",
       "target": "src/client/wrybit/visuals/common/FanProjectNotice.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "catalogue-menu-adapter",
+          "status": "passed-client-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/GameMenu.spec.ts"
+          ],
+          "note": "Shared dependency перенесена в WP02. Source menu/modal/frame/animations, наши preferences/languages/info/help/routes. Full dialog content and game context providers remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/common/GameSetupChips.vue",
@@ -2815,10 +2917,31 @@
       "sourceLines": 251,
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
-      "package": "WP06",
-      "target": "src/client/wrybit/pages/gameMenu/GameMenu.vue",
+      "package": "WP02",
+      "target": "src/client/wrybit/visuals/gameMenu/GameMenu.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "catalogue-menu-adapter",
+          "status": "passed-client-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/GameMenu.spec.ts"
+          ],
+          "note": "Shared dependency перенесена в WP02. Source menu/modal/frame/animations, наши preferences/languages/info/help/routes. Full dialog content and game context providers remain pending."
+        },
+        {
+          "kind": "canonical-app-browser",
+          "status": "passed-app-browser",
+          "paths": [
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-catalog-wrybit-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-catalog-menu.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-catalog-settings-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-menu-return-click.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/app-final-classic.txt"
+          ],
+          "note": "App-only Webpack entry. Default off/no Wrybit requests, actual preference opt-in, source dropdown/modal, phone switch off preserves Birds. 0 console errors/warnings. Full game providers and source dialog contents pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/gameend/GameEndChartTabs.vue",
@@ -3103,10 +3226,19 @@
       "sourceLines": 54,
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
-      "package": "WP05",
-      "target": "src/client/wrybit/mobile/MobileGlyph.vue",
+      "package": "WP02",
+      "target": "src/client/wrybit/visuals/common/MobileGlyph.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "catalogue-menu-adapter",
+          "status": "passed-client-checks",
+          "paths": [
+            "tests/client/wrybit/visuals/GameMenu.spec.ts"
+          ],
+          "note": "Shared dependency перенесена в WP02. Source menu/modal/frame/animations, наши preferences/languages/info/help/routes. Full dialog content and game context providers remain pending."
+        }
+      ]
     },
     {
       "source": "src/client/components/mobile/MobileHeader.vue",
@@ -4469,6 +4601,46 @@
           "note": "Наши cards/modules и More Parties, price/search controls; 147 CSS rules. Отдельный Webpack fixture: не полный App. Полное меню PageToolbar ещё не перенесено."
         }
       ]
+    },
+    {
+      "source": "src/styles/modal_surface.less",
+      "sourceSha256": "58c7df998040a26e6e2738d0c76303a983ccb08a6dcbf34f59ac67a3fb9ba10f",
+      "target": "src/styles/wrybit/modal_surface.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "source": "src/styles/sidebar_modal.less",
+      "sourceSha256": "5e5782a4d2d0aac60eaf368494eb5a19a876b0cacd0eadaef3997ea31d21b758",
+      "target": "src/styles/wrybit/sidebar_modal.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "source": "src/styles/dialog_frame.less",
+      "sourceSha256": "529f99eb42ac59587cc74bec5e2e8dab53512fd78b929a103d8e82d5c20e97d8",
+      "target": "src/styles/wrybit/dialog_frame.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "source": "src/styles/game_menu.less",
+      "sourceSha256": "d55ff67d1000c8120761ca20c8f60326a51109abaf96ce105a7b79f2ddb1e662",
+      "target": "src/styles/wrybit/game_menu.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "source": "src/styles/fan_project_notice.less",
+      "sourceSha256": "5c3bf464a3479fa3cafdc480c43346271b6105f8d578ac67fb9920ab81085d8a",
+      "target": "src/styles/wrybit/fan_project_notice.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": []
     }
   ],
   "assets": [
@@ -4765,6 +4937,159 @@
       "sourceSha256": "3c9c2bc34d4029a0d6afb0b1135d1789ccb64b85d6ff8f1ae302bc0801b09d12",
       "target": "assets/wrybit/common/mars.png",
       "bytes": 32672,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit UI fork",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/flags/bg.svg",
+      "sourceSha256": "d2e05789e8b490e2dbf74184d9d1d25872ff4d7c091c639907c7ae9a01936c10",
+      "target": "assets/wrybit/flags/bg.svg",
+      "bytes": 281,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit UI fork",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/flags/br.svg",
+      "sourceSha256": "acd2c1314ef088924d7ddbc8da9479c9a8860e28ae37bd0c4148c5814b274d71",
+      "target": "assets/wrybit/flags/br.svg",
+      "bytes": 264,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit UI fork",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/flags/cn.svg",
+      "sourceSha256": "d85913d619a748668e36562230e5065773c7c2f7874f29fcd7748a552ed9a4f1",
+      "target": "assets/wrybit/flags/cn.svg",
+      "bytes": 852,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit UI fork",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/flags/de.svg",
+      "sourceSha256": "448aaacb6fe3c9374a1faf923072a766b30d50778ee79469f5f719c2c0a5be40",
+      "target": "assets/wrybit/flags/de.svg",
+      "bytes": 281,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit UI fork",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/flags/en.svg",
+      "sourceSha256": "99783a7df3762979ea4912995404606008643f60d533745cfd9b14158cdf3631",
+      "target": "assets/wrybit/flags/en.svg",
+      "bytes": 489,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit UI fork",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/flags/es.svg",
+      "sourceSha256": "4e9732d57cce19d05731ab01ecd41fc0c171cd19999be1d42afda0967004628b",
+      "target": "assets/wrybit/flags/es.svg",
+      "bytes": 209,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit UI fork",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/flags/fi.svg",
+      "sourceSha256": "87c7c56b0efb023f614035643632be71acb42db5c9f3ac8918ae66f3226dd82e",
+      "target": "assets/wrybit/flags/fi.svg",
+      "bytes": 270,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit UI fork",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/flags/fr.svg",
+      "sourceSha256": "bb5c361bc9feb70f19994ddf955c6944876137200eeccc3f08bbe6090836d57d",
+      "target": "assets/wrybit/flags/fr.svg",
+      "bytes": 265,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit UI fork",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/flags/hu.svg",
+      "sourceSha256": "298726be80b0f81a168eb68141a0fc2173621c017a874ae6214dcb53734eed45",
+      "target": "assets/wrybit/flags/hu.svg",
+      "bytes": 281,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit UI fork",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/flags/it.svg",
+      "sourceSha256": "60c08e5061f4ea7806508912a4d0b924f3357146a656b49f8609b0e6a2521a53",
+      "target": "assets/wrybit/flags/it.svg",
+      "bytes": 265,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit UI fork",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/flags/jp.svg",
+      "sourceSha256": "c0a4e0bd3e17acf8bb9e804b30fcaa7bf52930264f9f7a7f753701ae9a5c467c",
+      "target": "assets/wrybit/flags/jp.svg",
+      "bytes": 195,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit UI fork",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/flags/ko.svg",
+      "sourceSha256": "2fe272f3f6692278792a92e83ad2112c3ecbc9b95c3444e1b3c6c3b15c075a62",
+      "target": "assets/wrybit/flags/ko.svg",
+      "bytes": 1235,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit UI fork",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/flags/nb.svg",
+      "sourceSha256": "6d529f3cf05bbc9860cf391aa20fb726b1f2488baa01f23a0c71462d0b077b86",
+      "target": "assets/wrybit/flags/nb.svg",
+      "bytes": 389,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit UI fork",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/flags/nl.svg",
+      "sourceSha256": "746fce98c9d580119966cfb92a15f95808dee37de1d301066d610894fd58f769",
+      "target": "assets/wrybit/flags/nl.svg",
+      "bytes": 281,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit UI fork",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/flags/pl.svg",
+      "sourceSha256": "f0103be0af2a91eaa06eca7eabec0a3613c7830e907387809bc094bee16257c1",
+      "target": "assets/wrybit/flags/pl.svg",
+      "bytes": 207,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit UI fork",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/flags/ru.svg",
+      "sourceSha256": "b368db106a11eb7cf243c99fd61a6c5b0a3adfc955c2db98cb35bda25584ff83",
+      "target": "assets/wrybit/flags/ru.svg",
+      "bytes": 281,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit UI fork",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/flags/ua.svg",
+      "sourceSha256": "05b76582d81465dc6a2c67b2e208d4fc88919f943333aa14c70d96b492ef0351",
+      "target": "assets/wrybit/flags/ua.svg",
+      "bytes": 210,
       "license": "GPL-3.0",
       "attribution": "Wrybit UI fork",
       "status": "copied-unchanged"

@@ -7,7 +7,10 @@ import {globalConfig} from '@tests/client/components/getLocalVue';
 
 const Shell = defineComponent({
   props: {screen: String},
-  emits: ['classic'],
+  emits: ['classic', 'views'],
+  mounted() {
+    this.$emit('views', {cards: Form});
+  },
   template: '<aside data-test="shell"><button @click="$emit(\'classic\')" data-test="classic">Classic</button></aside>',
 });
 const Form = defineComponent({
@@ -36,6 +39,7 @@ describe('Wrybit boundary', () => {
       expect(loadShell.mock.calls.length).eq(1);
       expect(wrapper.find('[data-test="shell"]').exists()).is.true;
       expect(wrapper.emitted('active')).deep.eq([[false], [true]]);
+      expect(wrapper.emitted('views')?.[0]).deep.eq([{cards: Form}]);
       await wrapper.get('[data-test="classic"]').trigger('click');
       expect(wrapper.emitted('classic')).deep.eq([[]]);
       await wrapper.setProps({enabled: false});

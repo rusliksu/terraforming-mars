@@ -1,18 +1,20 @@
 <template>
-  <component v-if="enabled && shell !== undefined" :is="shell" :screen="screen" @classic="$emit('classic')" />
+  <component v-if="enabled && shell !== undefined" :is="shell" :screen="screen" @classic="$emit('classic')" @views="$emit('views', $event)" />
   <p v-if="failed" class="wrybit-load-error" role="alert" v-i18n>Wrybit could not be loaded. The classic interface is available.</p>
   <slot></slot>
 </template>
 
 <script setup lang="ts">
-import {Component, markRaw, ref, shallowRef, watch} from 'vue';
+import {markRaw, ref, shallowRef, watch} from 'vue';
+import type {Component} from 'vue';
+import type {WrybitViews} from './presentationViews';
 
 const props = defineProps<{
   enabled: boolean;
   screen: string;
   loadShell?: () => Promise<Component>;
 }>();
-const emit = defineEmits<{classic: []; active: [value: boolean]}>();
+const emit = defineEmits<{classic: []; active: [value: boolean]; views: [views: WrybitViews]}>();
 const shell = shallowRef<Component>();
 const failed = ref(false);
 let pending: Promise<Component> | undefined;

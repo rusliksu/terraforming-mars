@@ -11,7 +11,7 @@
         </form>
       </dialog>
     </section>
-    <WrybitBoundary :enabled="wrybitMode" :screen="screen" @classic="useClassicInterface" @active="wrybitReady = $event" />
+    <WrybitBoundary :enabled="wrybitMode" :screen="screen" @classic="useClassicInterface" @active="wrybitReady = $event" @views="wrybitViews = $event" />
     <div class="main-container">
       <StartScreen v-if="screen === 'start-screen'"/>
       <CreateGameForm
@@ -40,7 +40,7 @@
       <GamesOverview
         v-else-if="screen === 'games-overview'"
       />
-      <CardList v-else-if="screen === 'cards'"/>
+      <component v-else-if="screen === 'cards'" :is="wrybitMode && wrybitReady && wrybitViews.cards ? wrybitViews.cards : 'CardList'"/>
       <CardMaker v-else-if="screen === 'card-maker'"/>
       <CardLibrary v-else-if="screen === 'card-library'"/>
       <MapEditor v-else-if="screen === 'map-editor'"/>
@@ -90,6 +90,7 @@ import {hasShowModal, showModal, windowHasHTMLDialogElement} from './HTMLDialogE
 import {getLoadErrorMessage} from '@/client/utils/loadErrorMessage';
 import {getPreferences, PreferencesManager} from '@/client/utils/PreferencesManager';
 import WrybitBoundary from '@/client/wrybit/shell/WrybitBoundary.vue';
+import type {WrybitViews} from '@/client/wrybit/shell/presentationViews';
 import {inputContext} from '@/client/wrybit/shell/inputContext';
 import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
 import WaitingFor from '@/client/components/WaitingFor.vue';
@@ -133,6 +134,7 @@ export type MainAppData = {
     inputRevision: number;
     refreshRevision: number;
     wrybitReady: boolean;
+    wrybitViews: WrybitViews;
     isServerSideRequestInProgress: boolean;
     componentsVisibility: {[x: string]: boolean};
     game: SimpleGameModel | undefined;
@@ -183,6 +185,7 @@ export default defineComponent({
       inputRevision: 0,
       refreshRevision: 0,
       wrybitReady: false,
+      wrybitViews: {},
       isServerSideRequestInProgress: false,
       componentsVisibility: {
         'milestones': true,

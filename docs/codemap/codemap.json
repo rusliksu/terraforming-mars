@@ -1,7 +1,7 @@
 {
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-14T10:04:19.154Z",
-  "generated_from_commit": "da9ededa694985c5a7b072dc4d6d868e9f338d0a",
+  "generated_at": "2026-10-14T10:50:01.419Z",
+  "generated_from_commit": "b2adbc99c61bbb075fa9bb162d34ac637c95f623",
   "scope": [
     ".",
     ".github",
@@ -2296,7 +2296,7 @@
       "entrypoints": [
         {
           "path": "src/client/wrybit/shell/WrybitShell.vue",
-          "symbol": "defineEmits<{classic: []}>",
+          "symbol": "const emit = defineEmits",
           "status": "confirmed"
         }
       ],
@@ -2549,11 +2549,11 @@
       "tests": [
         {
           "path": "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
-          "symbol": "stops URL writes"
+          "symbol": "URL writes, card loading and timers"
         }
       ],
       "constraints": [
-        "Отдельный fixture проверен; production caller и полное меню ещё не интегрированы."
+        "Production caller и standalone menu проверены; полный игровой flow и содержимое диалогов ещё не перенесены."
       ],
       "evidence": []
     },
@@ -2596,6 +2596,74 @@
         {
           "path": "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
           "symbol": "our card metadata"
+        }
+      ],
+      "constraints": [],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-menu-view",
+      "label": "Общий menu Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/gameMenu/GameMenu.vue",
+      "role": "Source menu с нашими preferences, languages, routes и read-only game context.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/gameMenu/GameMenu.vue",
+          "symbol": "function openDialog",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/GameMenu.spec.ts",
+          "symbol": "opens our settings"
+        }
+      ],
+      "constraints": [
+        "Game provider, source HelpOverlay и полное оформление содержимого диалогов ещё не готовы."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-modal-view",
+      "label": "Изолированная modal оболочка",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/SidebarModal.vue",
+      "role": "Teleport вне containing block кнопки, native preferences в source frame, overlay coordination.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/SidebarModal.vue",
+          "symbol": "wrybit-overlay-root",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/GameMenu.spec.ts",
+          "symbol": "isolated portal"
+        }
+      ],
+      "constraints": [],
+      "evidence": []
+    },
+    {
+      "id": "canonical-preferences-owner",
+      "label": "Наш менеджер настроек",
+      "type": "ui",
+      "path": "src/client/utils/PreferencesManager.ts",
+      "role": "Единый владелец values и persisted settings; experimental_layout default false.",
+      "entrypoints": [
+        {
+          "path": "src/client/utils/PreferencesManager.ts",
+          "symbol": "experimental_layout: false",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/GameMenu.spec.ts",
+          "symbol": "experimental_layout"
         }
       ],
       "constraints": [],
@@ -3698,6 +3766,24 @@
       ]
     },
     {
+      "from": "client-ui",
+      "to": "wrybit-catalog-view",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/App.vue",
+          "symbol": "wrybitViews.cards",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/client/wrybit/shell/WrybitShell.vue",
+          "symbol": "cards: markRaw(Catalog)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
       "from": "wrybit-catalog-view",
       "to": "wrybit-catalog-data",
       "type": "reads",
@@ -3719,6 +3805,50 @@
         {
           "path": "src/client/wrybit/visuals/cardlist/cardListEntries.ts",
           "symbol": "module: agendaModule(id)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-catalog-view",
+      "to": "wrybit-menu-view",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/cardlist/CardList.vue",
+          "symbol": "<PageToolbar/>",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/client/wrybit/visuals/PageToolbar.vue",
+          "symbol": "<GameMenu",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-menu-view",
+      "to": "wrybit-modal-view",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/gameMenu/GameMenu.vue",
+          "symbol": "<SidebarModal",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-menu-view",
+      "to": "canonical-preferences-owner",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/gameMenu/GameMenu.vue",
+          "symbol": ":preferencesManager=\"PreferencesManager.INSTANCE\"",
           "status": "confirmed"
         }
       ]
@@ -4242,7 +4372,46 @@
     "tests/client/wrybit/visuals/CatalogControls.spec.ts",
     "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
     "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
-    "tests/client/wrybit/visuals/CatalogModel.spec.ts"
+    "tests/client/wrybit/visuals/CatalogModel.spec.ts",
+    "src/client/wrybit/shell/presentationViews.ts",
+    "src/client/wrybit/visuals/DialogFrame.vue",
+    "src/client/wrybit/visuals/PageToolbar.vue",
+    "src/client/wrybit/visuals/SidebarModal.vue",
+    "src/client/wrybit/visuals/common/dialogZoomAnimation.ts",
+    "src/client/wrybit/visuals/common/FanProjectNotice.vue",
+    "src/client/wrybit/visuals/common/LanguageFlag.vue",
+    "src/client/wrybit/visuals/common/MobileGlyph.vue",
+    "src/client/wrybit/visuals/common/mobileGlyphs.ts",
+    "src/client/wrybit/visuals/common/overlayCoordinator.ts",
+    "src/client/wrybit/visuals/gameMenu/GameMenu.vue",
+    "src/client/wrybit/visuals/gameMenu/gameMenuContext.ts",
+    "src/client/wrybit/visuals/gameMenu/LanguageSelectionDialog.vue",
+    "src/client/wrybit/visuals/gameMenu/PreferencesDialog.vue",
+    "src/client/wrybit/visuals/gameMenu/siteLinks.ts",
+    "src/styles/wrybit/dialog_frame.less",
+    "src/styles/wrybit/fan_project_notice.less",
+    "src/styles/wrybit/game_menu.less",
+    "src/styles/wrybit/modal_surface.less",
+    "src/styles/wrybit/sidebar_modal.less",
+    "tests/client/wrybit/visuals/GameMenu.spec.ts",
+    "assets/wrybit/flags/ATTRIBUTION.md",
+    "assets/wrybit/flags/bg.svg",
+    "assets/wrybit/flags/br.svg",
+    "assets/wrybit/flags/cn.svg",
+    "assets/wrybit/flags/de.svg",
+    "assets/wrybit/flags/en.svg",
+    "assets/wrybit/flags/es.svg",
+    "assets/wrybit/flags/fi.svg",
+    "assets/wrybit/flags/fr.svg",
+    "assets/wrybit/flags/hu.svg",
+    "assets/wrybit/flags/it.svg",
+    "assets/wrybit/flags/jp.svg",
+    "assets/wrybit/flags/ko.svg",
+    "assets/wrybit/flags/nb.svg",
+    "assets/wrybit/flags/nl.svg",
+    "assets/wrybit/flags/pl.svg",
+    "assets/wrybit/flags/ru.svg",
+    "assets/wrybit/flags/ua.svg"
   ],
   "verification_scope": {
     "paths": [
@@ -4251,6 +4420,24 @@
       "assets/wrybit/board/mars-without-venus-clean.png",
       "assets/wrybit/common/ATTRIBUTION.md",
       "assets/wrybit/common/mars.png",
+      "assets/wrybit/flags/ATTRIBUTION.md",
+      "assets/wrybit/flags/bg.svg",
+      "assets/wrybit/flags/br.svg",
+      "assets/wrybit/flags/cn.svg",
+      "assets/wrybit/flags/de.svg",
+      "assets/wrybit/flags/en.svg",
+      "assets/wrybit/flags/es.svg",
+      "assets/wrybit/flags/fi.svg",
+      "assets/wrybit/flags/fr.svg",
+      "assets/wrybit/flags/hu.svg",
+      "assets/wrybit/flags/it.svg",
+      "assets/wrybit/flags/jp.svg",
+      "assets/wrybit/flags/ko.svg",
+      "assets/wrybit/flags/nb.svg",
+      "assets/wrybit/flags/nl.svg",
+      "assets/wrybit/flags/pl.svg",
+      "assets/wrybit/flags/ru.svg",
+      "assets/wrybit/flags/ua.svg",
       "assets/wrybit/shell/ATTRIBUTION.md",
       "docs/game-history-archive.md",
       "docs/game-replay.md",
@@ -4313,9 +4500,13 @@
       "src/client/wrybit/shell/background.less",
       "src/client/wrybit/shell/inputContext.ts",
       "src/client/wrybit/shell/inputHosts.ts",
+      "src/client/wrybit/shell/presentationViews.ts",
       "src/client/wrybit/visuals/Board.vue",
       "src/client/wrybit/visuals/BoardSpace.vue",
+      "src/client/wrybit/visuals/DialogFrame.vue",
       "src/client/wrybit/visuals/HandCardsTab.vue",
+      "src/client/wrybit/visuals/PageToolbar.vue",
+      "src/client/wrybit/visuals/SidebarModal.vue",
       "src/client/wrybit/visuals/board/MarsScaleBonuses.vue",
       "src/client/wrybit/visuals/board/marsScaleBonuses.ts",
       "src/client/wrybit/visuals/board/marsScaleCells.ts",
@@ -4339,14 +4530,25 @@
       "src/client/wrybit/visuals/cardlist/sectionRail.ts",
       "src/client/wrybit/visuals/common/BoardCube.vue",
       "src/client/wrybit/visuals/common/CatalogSegments.vue",
+      "src/client/wrybit/visuals/common/FanProjectNotice.vue",
+      "src/client/wrybit/visuals/common/LanguageFlag.vue",
       "src/client/wrybit/visuals/common/LazyMount.vue",
       "src/client/wrybit/visuals/common/LoadingBar.vue",
       "src/client/wrybit/visuals/common/LoadingPlate.vue",
       "src/client/wrybit/visuals/common/MarsHomeLink.vue",
+      "src/client/wrybit/visuals/common/MobileGlyph.vue",
       "src/client/wrybit/visuals/common/PageTitle.vue",
       "src/client/wrybit/visuals/common/PlayerCube.vue",
+      "src/client/wrybit/visuals/common/dialogZoomAnimation.ts",
+      "src/client/wrybit/visuals/common/mobileGlyphs.ts",
       "src/client/wrybit/visuals/common/motion.ts",
       "src/client/wrybit/visuals/common/nearViewport.ts",
+      "src/client/wrybit/visuals/common/overlayCoordinator.ts",
+      "src/client/wrybit/visuals/gameMenu/GameMenu.vue",
+      "src/client/wrybit/visuals/gameMenu/LanguageSelectionDialog.vue",
+      "src/client/wrybit/visuals/gameMenu/PreferencesDialog.vue",
+      "src/client/wrybit/visuals/gameMenu/gameMenuContext.ts",
+      "src/client/wrybit/visuals/gameMenu/siteLinks.ts",
       "src/client/wrybit/visuals/overview/PlayerResource.vue",
       "src/client/wrybit/visuals/overview/PlayerResources.vue",
       "src/client/wrybit/visuals/trackBonus/BoardTrackRow.vue",
@@ -4549,10 +4751,15 @@
       "src/styles/wrybit/catalog/header.less",
       "src/styles/wrybit/catalog/responsive.less",
       "src/styles/wrybit/catalog/results.less",
+      "src/styles/wrybit/dialog_frame.less",
+      "src/styles/wrybit/fan_project_notice.less",
+      "src/styles/wrybit/game_menu.less",
       "src/styles/wrybit/globs.less",
       "src/styles/wrybit/loading.less",
+      "src/styles/wrybit/modal_surface.less",
       "src/styles/wrybit/outer_spaces.less",
       "src/styles/wrybit/player_cube.less",
+      "src/styles/wrybit/sidebar_modal.less",
       "src/styles/wrybit/track_bonus.less",
       "src/styles/wrybit/variables.less",
       "src/styles/wrybit/visuals.less",
@@ -4595,6 +4802,7 @@
       "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
       "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
       "tests/client/wrybit/visuals/CatalogModel.spec.ts",
+      "tests/client/wrybit/visuals/GameMenu.spec.ts",
       "tests/client/wrybit/visuals/MarsScaleBonuses.spec.ts",
       "tests/client/wrybit/visuals/PlayerCube.spec.ts",
       "tests/client/wrybit/visuals/PlayerResources.spec.ts",

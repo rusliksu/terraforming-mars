@@ -9,6 +9,22 @@
   @import "./board.less";
   @import "./globs.less";
   @import "./catalog.less";
+  @import "./game_menu.less";
+  @import "./sidebar_modal.less";
+  @import "./dialog_frame.less";
+  @import "./fan_project_notice.less";
+
+  .sidebar-modal .preferences_panel {
+    position: static;
+    inset: auto;
+    width: auto;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+  }
 
   .board-cont--custom {
     background-image: none;
@@ -39,4 +55,10 @@
     filter: none;
     opacity: 1;
   }
+}
+
+.wrybit-ui.wrybit-overlay-root {
+  position: static;
+  min-height: 0;
+  isolation: auto;
 }

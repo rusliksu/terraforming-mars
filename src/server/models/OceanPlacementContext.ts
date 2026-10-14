@@ -27,6 +27,17 @@ export function getOceanPlacementContext(player: IPlayer): OceanPlacementContext
       additionalCosts: board.getAdditionalCosts(player, space, undefined, false),
     })),
   };
+  const temperature = game.getTemperature();
+  const track = game.parameters.temperature;
+  context.temperatureBonus = {
+    temperature,
+    maxTemperature: track.max,
+    rises: ([1, 2, 3] as const).map((steps) => ({
+      steps,
+      oceans: Math.min(Math.max(0, context.maxOceans - context.oceans), track.bonuses.filter((bonus) =>
+        bonus.kind === 'ocean' && temperature < bonus.value && bonus.value <= Math.min(track.max, temperature + steps * 2)).length),
+    })),
+  };
   const hazards = game.aresData?.hazardData;
   // Pending Ares transitions can change the second cell's costs and availability.
   if (context.maxOceans - context.oceans >= 2 && context.spaces.length <= 64 && costsKnown &&

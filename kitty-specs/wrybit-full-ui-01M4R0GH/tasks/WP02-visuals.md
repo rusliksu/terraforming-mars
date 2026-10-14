@@ -22,6 +22,8 @@ authoritative_surface: src/client/wrybit/visuals/
 create_intent: []
 execution_mode: code_change
 owned_files:
+- src/client/components/logpanel/CardPanel.vue
+- src/client/components/logpanel/logCardModel.ts
 - src/client/components/card/CardExtraContent.vue
 - src/client/components/PlayerHome.vue
 - src/client/wrybit/visuals/**
@@ -81,6 +83,8 @@ tracker_refs: []
 
 Для каталога WP02 последовательно владеет выделением общей read-only классификации agenda → expansion в catalogMetadata.ts и заменой её прежнего локального определения в обычном CardList. Это сохраняет существующее поведение и даёт обоим представлениям один источник; игровые правила и сервер не затрагиваются.
 
+Журнал WP02 последовательно владеет выделением канонической read-only модели превью logCardModel из обычного CardPanel. Оба режима читают одну публичную tableau/Self-Replicating Robots модель; форматирование, отменённые действия, серверные privacy gates и GET protocol сохраняются. Карусель MobileCardZoom переносится здесь как чистый визуальный лист; viewport/mobile-page owner остаётся WP05. Flash-tab owner остаётся WP05 и подключается в общих consumers.
+
 ## Подзадачи
 
 - [ ] T005 Перенести ресурсы и их атрибуцию.
@@ -116,6 +120,8 @@ Planning/base и внутренний merge target: codex/wrybit-full-ui. Ито
 Промежуточная проверка filter/hand views: наши static/custom metadata, clone tags, Galactic/Infrastructure, server calculatedCost и offered project input. Общий producer active predicate сохраняет активные/effect preludes; сортировка всей руки использует наши SortOrder/CardOrderStorage, отдельное viewer state, восстанавливает Manual и добавляет новые карты в конец. Source filter/sort/zoom controls перенесены с private overlay root; zoom не пишет в html. 90 client tests/38 files плюс focused active-prelude test, Vue types, scoped lint/style и actual Webpack без warnings. Browser component fixture на D: подтвердил Playable now, phone sheet/open-close и Cost/Manual обычными кликами; console 0/0. 137 упорядоченных CSS rules совпадают после documented isolation и исправления двух combined modifier selectors. Полные home/input/carousel/viewport flows ещё открыты.
 
 ## Риски и ориентиры review
+
+Журнал: непрерывные поколения Wrybit читают наш participant-scoped GET/gameAge/no-store и существующий серверный privacy gate. Прошлые поколения обновляются при смене ревизии из-за нашего undo. Поиск, фильтры, отменённые действия и Infrastructure pills сохраняются; поздний ответ прежнего игрока отвергается. 286 client tests/95 files и итоговые 48 focused tests/11 files, Vue types/lint/style/actual Webpack зелёные. Mutation отключения revision/lifetime guard ловит потерю текущего Ants после старого Birds; exact bytes восстановлены. Desktop hover/modal/Escape, поиск отменённого хода, phone carousel Next/Escape прошли обычными действиями, console 0/0. Private body roots и animation/listener cleanup проверены. Полный game/mobile consumer и change-flash owner остаются открытыми.
 
 Info/shared widgets proof: 204 tests/73 files плюс шесть focused widget tests, Vue types, ESLint/Stylelint и actual Webpack зелёные. Source tiles читают все наши EXPANSIONS/MODULE_NAMES, privacy/ELO/undo/one-way draft, supplied decks и spectator link; foreign defaults/AI setup не импортируются. Keyboard help сохраняет наш F shortcut; Party использует canonical availability/counts. Browser обнаружил native info_panel absolute layout (2×2 px), исправлен только scoped CSS. Итоговые info-verified-desktop/phone показывают framed dialog, Escape закрывает, console 0/0. Ранние пустые info-framed screenshots — failure evidence. Full game providers, log panels, inputs и оставшиеся matrix строки открыты.
 

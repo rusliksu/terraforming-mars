@@ -4,8 +4,8 @@
   "ocean_placement_pair_update": {"date":"2026-10-14","base":"923ba2f3a0e811975c0e1049d1be30e000a16782","contract":"oceanPlacementContext/version1/pairs","flows":["Own PlayerModel -> optional ordered pairs of distinct structural candidates","Board adjacency and player coefficient -> quoted second adjacency after the first ocean","Stable board/cost facts -> shared cash-budget consumer; no virtual moves or persisted state"],"scope":"Two intrinsic standard placements; at most 64 candidates; pending Ares board transitions and unsupported political costs are not certified","fingerprint_algorithm":"sha256_normalized_lf","historical_fingerprints_refreshed":false,"source_files":[{"path":"src/common/models/OceanPlacementContextModel.ts","sha256":"b8cdd6bb2abda7956cb7b2aafed1727f9458ec55e83602c16cccb0cff77a6035"},{"path":"src/server/models/OceanPlacementContext.ts","sha256":"4ab4ccec44ffc93e1fc8121a95435ababed5a49ffccde1d2d38738d9b44eeed0"}]},
   "ocean_placement_context_update": {"date":"2026-10-14","base":"fbe68f10c0ceb9f2d72c19665cb9c1b00c7d6926","contract":"oceanPlacementContext/version1","flows":["Own PlayerModel -> phase-scoped oceanPlacementContext/version1","MarsBoard and Board -> structural candidates, actual adjacency and additional costs","Shared political cost-policy query -> explicit unsupported-payment status","Read-only numeric facts -> external advisor JSON transport; no persistence or moves"],"scope":"Single standard ocean; intrinsic resource/draw/adjacency facts and funded MC costs; unsupported bonuses, fees, limits and later triggers remain unproven","fingerprint_algorithm":"sha256_normalized_lf","historical_fingerprints_refreshed":false,"source_files":[{"path":"src/common/models/OceanPlacementContextModel.ts","sha256":"c791998326bb11da0c5d3d8741b681dafeccda141f855188f46d5171c8460299"},{"path":"src/server/models/OceanPlacementContext.ts","sha256":"955ad709e772021d864054b2d7c47f2de5b5051481e50116872bd729953d9946"},{"path":"src/server/models/ServerModel.ts","sha256":"c4f061bea6d576bb1a91ec142b7d4505cd0e854d9637eac371f7a1311ad7c8f8"},{"path":"src/server/boards/Board.ts","sha256":"7ad424247f6623793c22a2ef755bf1d94e85aead5e22df16903e1a30db812fb6"},{"path":"src/server/turmoil/TurmoilHandler.ts","sha256":"4bf865bd6c7dd74d3bb8c5aaf1e3bf84141ef3b05c17bbde9f1bac8411477268"}]},
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-13T19:58:18.545Z",
-  "generated_from_commit": "6c2971dc8b5eca9cffe0ab5e2059878ed4688fc2",
+  "generated_at": "2026-10-14T10:04:19.154Z",
+  "generated_from_commit": "da9ededa694985c5a7b072dc4d6d868e9f338d0a",
   "scope": [
     ".",
     ".github",
@@ -2536,6 +2536,74 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "id": "wrybit-catalog-view",
+      "label": "Каталог Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/cardlist/CardList.vue",
+      "role": "Каталог, controls и отложенное отображение с нашими картами и модулями.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/cardlist/CardList.vue",
+          "symbol": "entries: markRaw(buildEntries())",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+          "symbol": "stops URL writes"
+        }
+      ],
+      "constraints": [
+        "Отдельный fixture проверен; production caller и полное меню ещё не интегрированы."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "canonical-catalog-metadata",
+      "label": "Наши публичные данные каталога",
+      "type": "ui",
+      "path": "src/client/components/cardlist/catalogMetadata.ts",
+      "role": "Общая классификация наших agendas и имена иконок без игровых эффектов.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/cardlist/catalogMetadata.ts",
+          "symbol": "export function agendaModule",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+          "symbol": "More Parties agendas"
+        }
+      ],
+      "constraints": [],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-catalog-data",
+      "label": "Адаптер публичного каталога Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/cardlist/cardListEntries.ts",
+      "role": "Метаданные из canonical manifests; filters и counts описывают отображение, не игровые цены.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/cardlist/cardListEntries.ts",
+          "symbol": "export function buildEntries()",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+          "symbol": "our card metadata"
+        }
+      ],
+      "constraints": [],
+      "evidence": []
     }
   ],
   "edges": [
@@ -3632,6 +3700,32 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "wrybit-catalog-view",
+      "to": "wrybit-catalog-data",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/cardlist/CardList.vue",
+          "symbol": "entries: markRaw(buildEntries())",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-catalog-data",
+      "to": "canonical-catalog-metadata",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/cardlist/cardListEntries.ts",
+          "symbol": "module: agendaModule(id)",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -4109,13 +4203,58 @@
     "src/styles/wrybit/cards/resources-and-symbols.less",
     "src/styles/wrybit/cards/render-and-tiles.less",
     "src/styles/wrybit/cards/title-and-tags.less",
-    "src/styles/wrybit/cards/counters.less"
+    "src/styles/wrybit/cards/counters.less",
+    "src/client/components/cardlist/CardList.vue",
+    "src/client/components/cardlist/catalogMetadata.ts",
+    "src/client/components/card/CardRowComponent.vue",
+    "tests/client/components/card/CardRowComponent.spec.ts",
+    "assets/wrybit/common/ATTRIBUTION.md",
+    "assets/wrybit/common/mars.png",
+    "src/client/wrybit/visuals/HandCardsTab.vue",
+    "src/client/wrybit/visuals/cardlist/CardList.vue",
+    "src/client/wrybit/visuals/cardlist/CardListCardGrid.vue",
+    "src/client/wrybit/visuals/cardlist/CardListCostRange.vue",
+    "src/client/wrybit/visuals/cardlist/cardListEntries.ts",
+    "src/client/wrybit/visuals/cardlist/CardListFilterGroup.vue",
+    "src/client/wrybit/visuals/cardlist/CardListModel.ts",
+    "src/client/wrybit/visuals/cardlist/cardListOptions.ts",
+    "src/client/wrybit/visuals/cardlist/CardListSection.vue",
+    "src/client/wrybit/visuals/cardlist/CardListSectionRail.vue",
+    "src/client/wrybit/visuals/cardlist/cardReveal.ts",
+    "src/client/wrybit/visuals/cardlist/catalogTypes.ts",
+    "src/client/wrybit/visuals/cardlist/filterSelection.ts",
+    "src/client/wrybit/visuals/cardlist/searchHighlight.ts",
+    "src/client/wrybit/visuals/cardlist/sectionRail.ts",
+    "src/client/wrybit/visuals/common/CatalogSegments.vue",
+    "src/client/wrybit/visuals/common/LazyMount.vue",
+    "src/client/wrybit/visuals/common/LoadingBar.vue",
+    "src/client/wrybit/visuals/common/LoadingPlate.vue",
+    "src/client/wrybit/visuals/common/MarsHomeLink.vue",
+    "src/client/wrybit/visuals/common/motion.ts",
+    "src/client/wrybit/visuals/common/nearViewport.ts",
+    "src/client/wrybit/visuals/common/PageTitle.vue",
+    "src/styles/wrybit/button_tones.less",
+    "src/styles/wrybit/catalog-controls.less",
+    "src/styles/wrybit/catalog-presentation.less",
+    "src/styles/wrybit/catalog.less",
+    "src/styles/wrybit/loading.less",
+    "src/styles/wrybit/catalog/filters.less",
+    "src/styles/wrybit/catalog/header.less",
+    "src/styles/wrybit/catalog/responsive.less",
+    "src/styles/wrybit/catalog/results.less",
+    "tests/client/wrybit/visuals/CardReveal.spec.ts",
+    "tests/client/wrybit/visuals/CatalogControls.spec.ts",
+    "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+    "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+    "tests/client/wrybit/visuals/CatalogModel.spec.ts"
   ],
   "verification_scope": {
     "paths": [
       "assets/wrybit/board/ATTRIBUTION.md",
       "assets/wrybit/board/mars-clean.png",
       "assets/wrybit/board/mars-without-venus-clean.png",
+      "assets/wrybit/common/ATTRIBUTION.md",
+      "assets/wrybit/common/mars.png",
       "assets/wrybit/shell/ATTRIBUTION.md",
       "docs/game-history-archive.md",
       "docs/game-replay.md",
@@ -4152,6 +4291,9 @@
       "src/client/components/WaitingFor.vue",
       "src/client/components/card/Card.vue",
       "src/client/components/card/CardRequirementComponent.vue",
+      "src/client/components/card/CardRowComponent.vue",
+      "src/client/components/cardlist/CardList.vue",
+      "src/client/components/cardlist/catalogMetadata.ts",
       "src/client/components/create/CreateGameForm.vue",
       "src/client/components/create/JSONProcessor.ts",
       "src/client/components/create/TemplateManager.ts",
@@ -4177,6 +4319,7 @@
       "src/client/wrybit/shell/inputHosts.ts",
       "src/client/wrybit/visuals/Board.vue",
       "src/client/wrybit/visuals/BoardSpace.vue",
+      "src/client/wrybit/visuals/HandCardsTab.vue",
       "src/client/wrybit/visuals/board/MarsScaleBonuses.vue",
       "src/client/wrybit/visuals/board/marsScaleBonuses.ts",
       "src/client/wrybit/visuals/board/marsScaleCells.ts",
@@ -4184,8 +4327,30 @@
       "src/client/wrybit/visuals/card/Card.vue",
       "src/client/wrybit/visuals/card/CardCost.vue",
       "src/client/wrybit/visuals/card/CardTitle.vue",
+      "src/client/wrybit/visuals/cardlist/CardList.vue",
+      "src/client/wrybit/visuals/cardlist/CardListCardGrid.vue",
+      "src/client/wrybit/visuals/cardlist/CardListCostRange.vue",
+      "src/client/wrybit/visuals/cardlist/CardListFilterGroup.vue",
+      "src/client/wrybit/visuals/cardlist/CardListModel.ts",
+      "src/client/wrybit/visuals/cardlist/CardListSection.vue",
+      "src/client/wrybit/visuals/cardlist/CardListSectionRail.vue",
+      "src/client/wrybit/visuals/cardlist/cardListEntries.ts",
+      "src/client/wrybit/visuals/cardlist/cardListOptions.ts",
+      "src/client/wrybit/visuals/cardlist/cardReveal.ts",
+      "src/client/wrybit/visuals/cardlist/catalogTypes.ts",
+      "src/client/wrybit/visuals/cardlist/filterSelection.ts",
+      "src/client/wrybit/visuals/cardlist/searchHighlight.ts",
+      "src/client/wrybit/visuals/cardlist/sectionRail.ts",
       "src/client/wrybit/visuals/common/BoardCube.vue",
+      "src/client/wrybit/visuals/common/CatalogSegments.vue",
+      "src/client/wrybit/visuals/common/LazyMount.vue",
+      "src/client/wrybit/visuals/common/LoadingBar.vue",
+      "src/client/wrybit/visuals/common/LoadingPlate.vue",
+      "src/client/wrybit/visuals/common/MarsHomeLink.vue",
+      "src/client/wrybit/visuals/common/PageTitle.vue",
       "src/client/wrybit/visuals/common/PlayerCube.vue",
+      "src/client/wrybit/visuals/common/motion.ts",
+      "src/client/wrybit/visuals/common/nearViewport.ts",
       "src/client/wrybit/visuals/overview/PlayerResource.vue",
       "src/client/wrybit/visuals/overview/PlayerResources.vue",
       "src/client/wrybit/visuals/trackBonus/BoardTrackRow.vue",
@@ -4370,6 +4535,7 @@
       "src/server/turmoil/parties/Reds.ts",
       "src/styles/cards.less",
       "src/styles/wrybit/board.less",
+      "src/styles/wrybit/button_tones.less",
       "src/styles/wrybit/cards.less",
       "src/styles/wrybit/cards/content-and-requirements.less",
       "src/styles/wrybit/cards/corporation-logos-additional.less",
@@ -4380,7 +4546,15 @@
       "src/styles/wrybit/cards/render-and-tiles.less",
       "src/styles/wrybit/cards/resources-and-symbols.less",
       "src/styles/wrybit/cards/title-and-tags.less",
+      "src/styles/wrybit/catalog-controls.less",
+      "src/styles/wrybit/catalog-presentation.less",
+      "src/styles/wrybit/catalog.less",
+      "src/styles/wrybit/catalog/filters.less",
+      "src/styles/wrybit/catalog/header.less",
+      "src/styles/wrybit/catalog/responsive.less",
+      "src/styles/wrybit/catalog/results.less",
       "src/styles/wrybit/globs.less",
+      "src/styles/wrybit/loading.less",
       "src/styles/wrybit/outer_spaces.less",
       "src/styles/wrybit/player_cube.less",
       "src/styles/wrybit/track_bonus.less",
@@ -4402,6 +4576,7 @@
       "tests/client/components/SpectatorHome.spec.ts",
       "tests/client/components/card/Card.spec.ts",
       "tests/client/components/card/CardRequirementComponent.spec.ts",
+      "tests/client/components/card/CardRowComponent.spec.ts",
       "tests/client/components/create/JSONProcessor.spec.ts",
       "tests/client/components/create/Rebalanced.spec.ts",
       "tests/client/components/overview/PlayerResources.spec.ts",
@@ -4419,6 +4594,11 @@
       "tests/client/wrybit/visuals/Board.spec.ts",
       "tests/client/wrybit/visuals/BoardTrackRow.spec.ts",
       "tests/client/wrybit/visuals/Card.spec.ts",
+      "tests/client/wrybit/visuals/CardReveal.spec.ts",
+      "tests/client/wrybit/visuals/CatalogControls.spec.ts",
+      "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+      "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+      "tests/client/wrybit/visuals/CatalogModel.spec.ts",
       "tests/client/wrybit/visuals/MarsScaleBonuses.spec.ts",
       "tests/client/wrybit/visuals/PlayerCube.spec.ts",
       "tests/client/wrybit/visuals/PlayerResources.spec.ts",

@@ -75,7 +75,10 @@
   <div v-if="binding.showsave" class="payments_save">
     <AppButton size="big" @click="binding.save()" :title="$t(binding.buttonLabel)" data-test="save"/>
   </div>
-
+  <SidebarModal :open="binding.confirmation !== undefined" :framed="true" @close="binding.dismissOverpayment()">
+    <OverpaymentDialog v-if="binding.confirmation !== undefined" v-bind="binding.confirmation" :descriptions="binding.descriptions"
+      @accept="binding.acceptOverpayment()" @dismiss="binding.dismissOverpayment()"/>
+  </SidebarModal>
 </section>
 </TabPanelFooterSlot>
 </template>
@@ -89,6 +92,8 @@ import {paymentIconClass as iconClass} from '@/client/components/paymentIcon';
 import TabPanelFooterSlot from '@/client/wrybit/visuals/TabPanelFooterSlot.vue';
 import PaymentUnitComponent from '@/client/wrybit/visuals/PaymentUnit.vue';
 import AppButton from '@/client/components/common/AppButton.vue';
+import SidebarModal from '@/client/wrybit/visuals/SidebarModal.vue';
+import OverpaymentDialog from '@/client/wrybit/visuals/OverpaymentDialog.vue';
 
 const props = defineProps<{binding: PaymentFormBinding}>();
 const values = new Map<SpendableResource, WritableComputedRef<number>>();
@@ -102,7 +107,7 @@ function valueFor(unit: SpendableResource): WritableComputedRef<number> {
   return value;
 }
 const availableUnits = computed(() => props.binding.order.filter((unit) => props.binding.ledger[unit].available > 0));
-const hasCurrencyChoice = computed(() => availableUnits.value.length > 1);
+const hasCurrencyChoice = computed(() => availableUnits.value.length > 1 || availableUnits.value.some((unit) => unit !== 'megacredits'));
 // Keep our actual offered resource even when it is the only currency.
 const visibleUnits = computed(() => availableUnits.value);
 function restOf(unit: SpendableResource): number {

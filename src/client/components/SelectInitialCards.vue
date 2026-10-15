@@ -29,6 +29,8 @@
 </template>
 
 <script lang="ts">
+import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+
 
 import {defineComponent} from 'vue';
 
@@ -297,7 +299,8 @@ export default defineComponent({
         this.saveData();
       }
     },
-    saveData() {
+    saveData(_attempt?: SaveAttempt, respond?: (response: SelectInitialCardsResponse) => void) {
+      const reply = respond ?? this.onsave;
       const result: SelectInitialCardsResponse = {
         type: 'initialCards',
         responses: [],
@@ -325,7 +328,7 @@ export default defineComponent({
         type: 'card',
         cards: this.selectedCards,
       });
-      this.onsave(result);
+      reply(result);
     },
 
     cardsChanged(cards: Array<CardName>) {

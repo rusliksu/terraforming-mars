@@ -12,11 +12,13 @@
         <!-- @max="onMaxClicked(unit)" -->
     </template>
     <div v-if="showsave === true" class="nofloat">
-        <AppButton @click="saveData" :title="playerinput.buttonLabel" />
+        <AppButton @click="saveData()" :title="playerinput.buttonLabel" />
     </div>
   </div>
 </template>
 <script lang="ts">
+import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+
 import {defineComponent} from 'vue';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {SelectResourcesModel} from '@/common/models/PlayerInputModel';
@@ -59,8 +61,9 @@ export default defineComponent({
     PaymentUnitComponent,
   },
   methods: {
-    saveData() {
-      this.onsave({type: 'resources', units: this.units});
+    saveData(_attempt?: SaveAttempt, respond?: (response: SelectResourcesResponse) => void) {
+      const reply = respond ?? this.onsave;
+      reply({type: 'resources', units: this.units});
     },
     /**
      * Reduce `unit` by one.

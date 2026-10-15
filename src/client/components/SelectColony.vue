@@ -6,11 +6,13 @@
       <Colony :colony="colony" :fadeMarker="playerinput.buttonLabel === 'Build'"/>
     </label>
     <div v-if="showsave === true" class="nofloat">
-      <AppButton @click="saveData" :title="playerinput.buttonLabel" :disabled="!canSave()"/>
+      <AppButton @click="saveData()" :title="playerinput.buttonLabel" :disabled="!canSave()"/>
     </div>
   </div>
 </template>
 <script lang="ts">
+import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+
 import {defineComponent} from 'vue';
 import Colony from '@/client/components/colonies/Colony.vue';
 import AppButton from '@/client/components/common/AppButton.vue';
@@ -58,9 +60,10 @@ export default defineComponent({
     canSave() {
       return this.selectedColony !== undefined;
     },
-    saveData() {
+    saveData(_attempt?: SaveAttempt, respond?: (response: SelectColonyResponse) => void) {
+      const reply = respond ?? this.onsave;
       if (this.selectedColony !== undefined) {
-        this.onsave({type: 'colony', colonyName: this.selectedColony});
+        reply({type: 'colony', colonyName: this.selectedColony});
       }
     },
   },

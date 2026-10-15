@@ -14,11 +14,13 @@
       </label>
     </div>
     <div v-if="showsave === true" class="nofloat">
-      <AppButton @click="saveData" :title="playerinput.buttonLabel" />
+      <AppButton @click="saveData()" :title="playerinput.buttonLabel" />
     </div>
   </div>
 </template>
 <script lang="ts">
+import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+
 import {defineComponent} from 'vue';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {SelectClaimedUndergroundTokenModel} from '@/common/models/PlayerInputModel';
@@ -71,8 +73,9 @@ export default defineComponent({
       }
       return true;
     },
-    saveData() {
-      this.onsave({type: 'claimedUndergroundToken', selected: this.selected});
+    saveData(_attempt?: SaveAttempt, respond?: (response: SelectClaimedUndergroundTokenResponse) => void) {
+      const reply = respond ?? this.onsave;
+      reply({type: 'claimedUndergroundToken', selected: this.selected});
     },
   },
 });

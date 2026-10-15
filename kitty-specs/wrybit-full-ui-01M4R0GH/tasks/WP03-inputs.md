@@ -31,8 +31,24 @@ owned_files:
 - src/client/components/OrOptions.vue
 - src/client/components/AndOptions.vue
 - src/client/components/SelectCard.vue
+- src/client/components/SelectAmount.vue
+- src/client/components/SelectPayment.vue
+- src/client/components/SelectInitialCards.vue
+- src/client/components/SelectOption.vue
+- src/client/components/SelectPlayer.vue
+- src/client/components/SelectDelegate.vue
+- src/client/components/SelectParty.vue
+- src/client/components/SelectColony.vue
+- src/client/components/SelectProductionToLose.vue
+- src/client/components/ShiftAresGlobalParameters.vue
+- src/client/components/SelectGlobalEvent.vue
+- src/client/components/SelectResource.vue
+- src/client/components/SelectResources.vue
+- src/client/components/SelectClaimedUndergroundToken.vue
+- src/client/components/delta/DeltaProjectInput.vue
 - src/client/components/PlayerInputFactory.vue
 - src/client/wrybit/visuals/TabPanelFooterSlot.vue
+- src/client/wrybit/visuals/ShiftAresGlobalParameters.vue
 - src/client/wrybit/visuals/PlayerHome.vue
 - src/client/components/App.vue
 - src/client/wrybit/shell/presentationViews.ts
@@ -109,3 +125,7 @@ Planning/base и внутренний merge target: codex/wrybit-full-ui. Ито
 Initial input vertical proof: 103 focused client tests/16files, types/scoped lint/style and actual App-only Webpack; source payment/actions screenshot and console0/0 on D:. Permanent nested controllers and exact native response retained; hand-tab and classic-return values verified. Mode-key mutation killed and exact bytes restored. All T009-T012 and full UI matrix rows stay open; remaining forms/creation/placement and full source interactions are not accepted by this partial proof.
 
 SelectCard добавляет typed presentation к постоянному нашему controller: single/multiple state shape, max, disabled offered cards, robots и owner grouping, source filters/sort/zoom и скрытый фильтром выбор. Его методы getData/canSave/saveData/toggleSelectAll и native cardschanged не меняются. Full client regression: 1176 tests/243files, zero failures; Vue types и scoped ESLint/Stylelint зелёные. Source draft/current-pick и дополнительные card sections ещё в работе; никакой T009-T012 или полный matrix row не закрывается этим промежуточным результатом.
+
+Последовательный handoff всех двадцати native input controllers нужен для завершения ввода: optional per-call responder сохраняет нынешний this.onsave по умолчанию, но позволяет Factory собрать ровно ответ текущего вызова. Возвращаемое завершение остаётся синхронным в classic; только допустимая подтверждаемая переплата Wrybit асинхронна. Общая SaveAttempt отменяется при изменении draft/ограничений/режима или уничтожении input. And собирает новый массив в исходном порядке и не отправляет stale/неполный responded[]. Это исполнение согласованных nested/payment UI, без изменения типов InputResponse, игровых правил/defaults/AI или серверного протокола. Дополнительные формы по-прежнему требуют полного source presentation и проверки.
+
+Save completion scoped proof: 1182 client tests/246files,108 focused checks including all8 completion cases, Vue types/scoped lint and App-only Webpack passed. Real source overpayment dialog in App: +1, cancel retains titanium2, console0/0 and only GET/no move. Async completion cancels changed draft/ledger/unmount and ignores old/double accepts; And response stays complete and ordered. Source header intercepted the global classic button; layer fix awaits next browser pass. All T009-T012/full UI rows remain OPEN.

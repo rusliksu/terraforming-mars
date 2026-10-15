@@ -37,11 +37,13 @@
     </div>
 
     <div v-if="showsave === true" class="nofloat">
-        <button class="btn btn-primary btn-submit" @click="saveData">{{playerinput.buttonLabel}}</button>
+        <button class="btn btn-primary btn-submit" @click="saveData()">{{playerinput.buttonLabel}}</button>
     </div>
 </div>
 </template>
 <script lang="ts">
+import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+
 import {defineComponent} from 'vue';
 import {AresGlobalParametersResponse} from '@/common/inputs/AresGlobalParametersResponse';
 import {ShiftAresGlobalParametersModel} from '@/common/models/PlayerInputModel';
@@ -86,7 +88,8 @@ export default defineComponent({
     };
   },
   methods: {
-    saveData() {
+    saveData(_attempt?: SaveAttempt, respond?: (response: ShiftAresGlobalParametersResponse) => void) {
+      const reply = respond ?? this.onsave;
       const response: AresGlobalParametersResponse = {
         lowOceanDelta: this.lowOceanDelta,
         highOceanDelta: this.highOceanDelta,
@@ -94,7 +97,7 @@ export default defineComponent({
         oxygenDelta: this.oxygenDelta,
       };
 
-      this.onsave({type: 'aresGlobalParameters', response});
+      reply({type: 'aresGlobalParameters', response});
     },
   },
   computed: {

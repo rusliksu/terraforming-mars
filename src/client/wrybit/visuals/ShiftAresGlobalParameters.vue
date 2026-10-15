@@ -38,7 +38,7 @@
 
     <TabPanelFooterSlot>
     <div v-if="showsave === true" class="nofloat">
-        <button class="btn btn-primary btn-submit" @click="saveData">{{playerinput.buttonLabel}}</button>
+        <button class="btn btn-primary btn-submit" @click="saveData()">{{playerinput.buttonLabel}}</button>
     </div>
     </TabPanelFooterSlot>
 </div>

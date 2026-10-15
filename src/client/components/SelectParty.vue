@@ -1,5 +1,6 @@
 <template>
-    <div class="wf-component wf-component--select-party">
+    <component v-if="partyPresentation !== undefined" :is="partyPresentation" :binding="presentationBinding" />
+    <div v-else class="wf-component wf-component--select-party">
         <div v-if="showtitle === true" class="nofloat wf-component-title">{{ $t(playerinput.title) }}</div>
         <div class="wf-component--list-party" v-if="turmoil !== undefined">
           <label v-for="party in turmoil.parties" :key="party.name">
@@ -8,12 +9,16 @@
           </label>
         </div>
         <div v-if="showsave === true" class="nofloat">
-            <AppButton :disabled="selectedParty === undefined" @click="saveData" :title="playerinput.buttonLabel" />
+            <AppButton @click="saveData()" :title="playerinput.buttonLabel" />
         </div>
     </div>
 </template>
 <script lang="ts">
+import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+
 import {defineComponent} from 'vue';
+import {PartyChoiceBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
+import {partyCardDetails} from '@/client/components/turmoil/partyCardDetails';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {SelectPartyModel} from '@/common/models/PlayerInputModel';
 import Party from '@/client/components/Party.vue';
@@ -24,6 +29,9 @@ import {TurmoilModel} from '@/common/models/TurmoilModel';
 
 export default defineComponent({
   name: 'SelectParty',
+  setup() {
+    return {partyPresentation: useInputPresentation('party')};
+  },
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
@@ -54,11 +62,12 @@ export default defineComponent({
     Party,
   },
   methods: {
-    saveData() {
+    saveData(_attempt?: SaveAttempt, respond?: (response: SelectPartyResponse) => void) {
+      const reply = respond ?? this.onsave;
       if (this.selectedParty === undefined) {
         return;
       }
-      this.onsave({type: 'party', partyName: this.selectedParty});
+      reply({type: 'party', partyName: this.selectedParty});
     },
     isDominant(partyName: PartyName): boolean {
       return partyName === this.turmoil?.dominant;
@@ -72,6 +81,19 @@ export default defineComponent({
     },
   },
   computed: {
+    presentationBinding(): PartyChoiceBinding {
+      const turmoil = this.turmoil;
+      const moreParties = this.playerView.game.gameOptions.expansions.moreParties;
+      return {playerView: this.playerView, playerinput: this.playerinput, showtitle: this.showtitle, showsave: this.showsave,
+        turmoil, selected: this.selectedParty,
+        cards: turmoil === undefined ? [] : turmoil.parties.map((party) => ({...partyCardDetails(turmoil, party, moreParties),
+          selected: this.selectedParty === party.name, disabled: !this.partyAvailableToSelect(party.name)})),
+        select: (party) => {
+          if (this.partyAvailableToSelect(party)) {
+            this.selectedParty = party;
+          }
+        }, save: () => this.saveData()};
+    },
     turmoil(): TurmoilModel | undefined {
       return this.playerView.game.turmoil;
     },

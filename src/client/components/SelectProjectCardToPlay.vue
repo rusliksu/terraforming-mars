@@ -40,6 +40,7 @@
     :ledger="ledger"
     :showsave="showsave"
     :buttonLabel="playerinput.buttonLabel"
+    :itemName="cardName"
     @change="(p) => payment = p"
     @save="doSave"/>
 </InputPortal>
@@ -66,12 +67,15 @@ import {createInputHosts} from '@/client/wrybit/shell/inputHosts';
 import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
 import PresentationHost from '@/client/wrybit/inputs/PresentationHost.vue';
 import {ProjectCardBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
+import {Payment} from '@/common/inputs/Payment';
+import {useSaveSession, withSaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+import type {MaybePromise, SaveAttempt, SaveOutcome} from '@/client/wrybit/inputs/saveAttempt';
 
 export default defineComponent({
   name: 'SelectProjectCardToPlay',
   inheritAttrs: false,
   setup() {
-    return {projectPresentation: useInputPresentation('projectCard'), paymentHost: createInputHosts()};
+    return {projectPresentation: useInputPresentation('projectCard'), paymentHost: createInputHosts(), saveSession: useSaveSession()};
   },
   mixins: [PaymentWidgetMixin],
   props: {
@@ -291,22 +295,31 @@ export default defineComponent({
       }
       return titaniumValue - 1;
     },
-    saveData() {
-      if (this.card === undefined) {
-        return;
-      }
-      const paymentForm = this.$refs.paymentForm as {handleSave: () => void} | undefined;
-      if (paymentForm !== undefined) {
-        paymentForm.handleSave();
-      } else {
-        this.doSave();
-      }
+    saveData(attempt?: SaveAttempt, respond?: (response: SelectProjectCardToPlayResponse) => void): MaybePromise<SaveOutcome> {
+      const reply = respond ?? this.onsave;
+      return withSaveAttempt(this.saveSession, attempt, (current) => {
+        const card = this.card;
+        if (card === undefined) {
+          return 'invalid';
+        }
+        const publish = (payment: Payment) => {
+          if (current.isCurrent() && this.card?.name === card.name) {
+            reply({type: 'projectCard', card: card.name, payment});
+          }
+        };
+        const paymentForm = this.$refs.paymentForm as InstanceType<typeof PaymentForm> | undefined;
+        if (paymentForm !== undefined) {
+          return paymentForm.handleSave(current, publish);
+        }
+        publish(this.payment);
+        return 'saved';
+      });
     },
-    doSave() {
+    doSave(payment?: Payment) {
       if (this.card === undefined) {
         return;
       }
-      this.onsave({type: 'projectCard', card: this.card.name, payment: this.payment});
+      this.onsave({type: 'projectCard', card: this.card.name, payment: payment ?? this.payment});
     },
   },
 });

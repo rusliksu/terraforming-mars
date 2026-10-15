@@ -7,11 +7,13 @@
       <span v-if="player === 'NEUTRAL'" >Neutral</span>
       <SelectPlayerRow v-else :player="playerView.players.find((otherPlayer) => otherPlayer.color === player)"/>
     </label>
-    <AppButton v-if="showsave === true" size="big" @click="saveData" :title="$t(playerinput.buttonLabel)" />
+    <AppButton v-if="showsave === true" size="big" @click="saveData()" :title="$t(playerinput.buttonLabel)" />
   </div>
 </template>
 
 <script lang="ts">
+import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+
 import {defineComponent} from 'vue';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {ColorWithNeutral} from '@/common/Color';
@@ -56,9 +58,10 @@ export default defineComponent({
     SelectPlayerRow,
   },
   methods: {
-    saveData() {
+    saveData(_attempt?: SaveAttempt, respond?: (response: SelectDelegateResponse) => void) {
+      const reply = respond ?? this.onsave;
       if (this.selectedPlayer !== undefined) {
-        this.onsave({type: 'delegate', player: this.selectedPlayer});
+        reply({type: 'delegate', player: this.selectedPlayer});
       }
     },
   },

@@ -2,11 +2,13 @@
   <div class="wf-component wf-component--select-option">
     <div v-if="showtitle === true" class="wf-component-title">{{ $t(playerinput.title) }}</div>
     <WarningsComponent :warnings="playerinput.warnings"/>
-    <AppButton v-if="showsave === true" size="big" @click="saveData" :title="$t(playerinput.buttonLabel)" />
+    <AppButton v-if="showsave === true" size="big" @click="saveData()" :title="$t(playerinput.buttonLabel)" />
   </div>
 </template>
 
 <script lang="ts">
+import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+
 
 import {defineComponent} from 'vue';
 import AppButton from '@/client/components/common/AppButton.vue';
@@ -42,8 +44,9 @@ export default defineComponent({
     WarningsComponent,
   },
   methods: {
-    saveData() {
-      this.onsave({type: 'option'});
+    saveData(_attempt?: SaveAttempt, respond?: (response: SelectOptionResponse) => void) {
+      const reply = respond ?? this.onsave;
+      reply({type: 'option'});
     },
   },
 });

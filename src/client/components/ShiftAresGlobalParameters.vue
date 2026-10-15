@@ -1,5 +1,6 @@
 <template>
-  <div class="wf-component">
+  <component v-if="aresPresentation !== undefined" :is="aresPresentation" :binding="presentationBinding" />
+  <div v-else class="wf-component">
     <div v-if="hazardData.erosionOceanCount.available">
         <span v-i18n>Reveal erosions at:</span>&nbsp;
         <label class="form-radio form-inline ares-global-parameter-label" v-for="value in ADJUSTMENT_RANGE" :key='value'>
@@ -45,6 +46,7 @@
 import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
 
 import {defineComponent} from 'vue';
+import {AresBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
 import {AresGlobalParametersResponse} from '@/common/inputs/AresGlobalParametersResponse';
 import {ShiftAresGlobalParametersModel} from '@/common/models/PlayerInputModel';
 import {PlayerViewModel} from '@/common/models/PlayerModel';
@@ -57,6 +59,9 @@ type DataModel = AresGlobalParametersResponse & {
 
 export default defineComponent({
   name: 'ShiftAresGlobalParameters',
+  setup() {
+    return {aresPresentation: useInputPresentation('aresGlobalParameters')};
+  },
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
@@ -101,6 +106,14 @@ export default defineComponent({
     },
   },
   computed: {
+    presentationBinding(): AresBinding {
+      return {playerView: this.playerView, playerinput: this.playerinput, showsave: this.showsave, showtitle: this.showtitle,
+        hazardData: this.hazardData, range: this.ADJUSTMENT_RANGE,
+        response: {lowOceanDelta: this.lowOceanDelta, highOceanDelta: this.highOceanDelta, temperatureDelta: this.temperatureDelta, oxygenDelta: this.oxygenDelta},
+        select: (field, delta) => {
+          this[field] = delta;
+        }, save: () => this.saveData()};
+    },
     ADJUSTMENT_RANGE(): [-1, 0, 1] {
       return [-1, 0, 1];
     },

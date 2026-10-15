@@ -9,8 +9,12 @@ import type {CardModel} from '@/common/models/CardModel';
 import type {CardName} from '@/common/cards/CardName';
 import type {AndOptionsModel, OrOptionsModel, SelectCardModel, SelectProjectCardToPlayModel, PlayerInputModel} from '@/common/models/PlayerInputModel';
 import type {InputHosts} from '@/client/wrybit/shell/inputHosts';
-import type {Color} from '@/common/Color';
+import type {Color, ColorWithNeutral} from '@/common/Color';
 import type {Warning} from '@/common/cards/Warning';
+import type {Units} from '@/common/Units';
+import type {GlobalEventName} from '@/common/turmoil/globalEvents/GlobalEventName';
+import type {HazardData} from '@/common/ares/AresData';
+import type {AresGlobalParametersResponse} from '@/common/inputs/AresGlobalParametersResponse';
 
 export type CardSelectionBinding = {
   playerView: PlayerViewModel;
@@ -98,12 +102,84 @@ export type PaymentFormBinding = {
   save(): void;
 };
 
+export type InputViewBinding<K extends PlayerInputModel['type']> = {
+  playerView: PlayerViewModel;
+  playerinput: Extract<PlayerInputModel, {type: K}>;
+  showtitle: boolean;
+  showsave: boolean;
+  save(): void;
+};
+export type AmountBinding = InputViewBinding<'amount'> & {
+  amount: number;
+  select(amount: number): void;
+};
+export type DelegateBinding = InputViewBinding<'delegate'> & {
+  selected: ColorWithNeutral | undefined;
+  select(color: ColorWithNeutral): void;
+};
+export type ResourceBinding = InputViewBinding<'resource'> & {
+  selected: Extract<PlayerInputModel, {type: 'resource'}>['include'][number] | undefined;
+  canSave: boolean;
+  select(unit: Extract<PlayerInputModel, {type: 'resource'}>['include'][number]): void;
+};
+export type UnitAmountsBinding<K extends 'resources' | 'productionToLose'> = InputViewBinding<K> & {
+  units: Readonly<Units>;
+  keys: ReadonlyArray<keyof Units>;
+  warning?: string;
+  select(unit: keyof Units, value: number): void;
+  plus(unit: keyof Units): void;
+  minus(unit: keyof Units): void;
+};
+export type PlayerChoiceBinding = InputViewBinding<'player'> & {
+  selected: ColorWithNeutral | undefined;
+  select(color: ColorWithNeutral): void;
+};
+export type GlobalEventBinding = InputViewBinding<'globalEvent'> & {
+  selected: GlobalEventName | undefined;
+  select(name: GlobalEventName): void;
+};
+export type UndergroundChoiceBinding = InputViewBinding<'claimedUndergroundToken'> & {
+  selected: ReadonlyArray<number>;
+  select(indices: Array<number>): void;
+};
+export type DeltaChoiceBinding = InputViewBinding<'deltaProject'> & {
+  amount: number;
+  select(amount: number): void;
+  max(): void;
+};
+export type AresDelta = AresGlobalParametersResponse[keyof AresGlobalParametersResponse];
+export type AresBinding = InputViewBinding<'aresGlobalParameters'> & {
+  hazardData: HazardData;
+  range: ReadonlyArray<AresDelta>;
+  response: Readonly<AresGlobalParametersResponse>;
+  select(field: keyof AresGlobalParametersResponse, delta: AresDelta): void;
+};
+export type SpaceBinding = InputViewBinding<'space'> & {
+  anchor: HTMLElement | undefined;
+  warning: string | undefined;
+  accept(): void;
+  dismiss(): void;
+  hide(hide: boolean): void;
+};
+
 export type InputPresentationBindings = {
   paymentForm: PaymentFormBinding;
   projectCard: ProjectCardBinding;
   or: OrOptionsBinding;
   and: AndOptionsBinding;
   card: CardSelectionBinding;
+  amount: AmountBinding;
+  option: InputViewBinding<'option'>;
+  delegate: DelegateBinding;
+  resource: ResourceBinding;
+  resources: UnitAmountsBinding<'resources'>;
+  productionToLose: UnitAmountsBinding<'productionToLose'>;
+  player: PlayerChoiceBinding;
+  globalEvent: GlobalEventBinding;
+  claimedUndergroundToken: UndergroundChoiceBinding;
+  deltaProject: DeltaChoiceBinding;
+  aresGlobalParameters: AresBinding;
+  space: SpaceBinding;
 };
 
 export type InputPresentationRegistry = {

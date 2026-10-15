@@ -1,12 +1,6 @@
 <template>
-  <div class="select_space_cont">
-    <ConfirmDialog
-        message="Place your tile here?"
-        :enableDontShowAgainCheckbox="true"
-        ref="confirmation"
-        @accept="confirmPlacement"
-        @dismiss="cancelPlacement"
-        @hide="hideDialog" />
+  <component v-if="spacePresentation !== undefined" :is="spacePresentation" :binding="presentationBinding" v-bind="$attrs"/>
+  <div v-else class="select_space_cont" v-bind="$attrs">
     <div v-if="showtitle" class="wf-select-space">
       {{ $t(playerinput.title) }}
       <GoToMap :playerinput="playerinput"/>
@@ -16,12 +10,20 @@
       <GoToMap :playerinput="playerinput"/>
     </div>
   </div>
+    <ConfirmDialog
+        message="Place your tile here?"
+        :enableDontShowAgainCheckbox="true"
+        ref="confirmation"
+        @accept="confirmPlacement"
+        @dismiss="cancelPlacement"
+        @hide="hideDialog" />
 </template>
 
 <script lang="ts">
 import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
 
 import {defineComponent, inject} from 'vue';
+import {SpaceBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
 import {INPUT_HOSTS} from '@/client/wrybit/shell/inputHosts';
 import {SelectSpaceModel} from '@/common/models/PlayerInputModel';
 import {PlayerViewModel} from '@/common/models/PlayerModel';
@@ -44,12 +46,14 @@ type DataModel = {
   submitted: boolean;
   spaceId: SpaceId | undefined;
   warning: string | undefined;
+  confirmationPending: boolean;
 };
 
 export default defineComponent({
   name: 'SelectSpace',
+  inheritAttrs: false,
   setup() {
-    return {inputHost: inject(INPUT_HOSTS, undefined)?.target};
+    return {inputHost: inject(INPUT_HOSTS, undefined)?.target, spacePresentation: useInputPresentation('space')};
   },
   props: {
     playerView: {
@@ -82,6 +86,7 @@ export default defineComponent({
       submitted: false,
       spaceId: undefined,
       warning: undefined,
+      confirmationPending: false,
     };
   },
   components: {
@@ -89,11 +94,35 @@ export default defineComponent({
     GoToMap,
   },
   computed: {
+    presentationBinding(): SpaceBinding {
+      const anchor = this.selectedTile;
+      const current = () => this.confirmationPending && anchor === this.selectedTile && !this.submitted;
+      return {playerView: this.playerView, playerinput: this.playerinput, showsave: this.showsave, showtitle: this.showtitle,
+        anchor: this.confirmationPending && !this.submitted ? anchor : undefined, warning: this.warning,
+        accept: () => {
+          if (current()) {
+            this.confirmPlacement();
+          }
+        }, dismiss: () => {
+          if (current()) {
+            this.cancelPlacement();
+          }
+        },
+        hide: (hide) => this.hideDialog(hide), save: () => this.saveData()};
+    },
     typedRefs(): Refs {
       return this.$refs as unknown as Refs;
     },
   },
   watch: {
+    spacePresentation(presentation) {
+      if (presentation !== undefined) {
+        this.typedRefs.confirmation.close();
+      } else if (this.confirmationPending) {
+        this.typedRefs.confirmation.show();
+      }
+      this.$nextTick(() => this.bindBoard());
+    },
     inputHost() {
       this.$nextTick(() => this.bindBoard());
     },
@@ -146,6 +175,7 @@ export default defineComponent({
       });
     },
     cancelPlacement() {
+      this.confirmationPending = false;
       if (this.selectedTile === undefined) {
         throw new Error('unexpected, no tile selected!');
       }
@@ -155,6 +185,7 @@ export default defineComponent({
       this.animateSpaces(this.getSelectableSpaces());
     },
     confirmPlacement() {
+      this.confirmationPending = false;
       this.clearBoardHandlers();
 
       if (this.selectedTile === undefined) {
@@ -204,7 +235,10 @@ export default defineComponent({
       if (hideTileConfirmation) {
         this.confirmPlacement();
       } else {
-        this.typedRefs.confirmation.show();
+        this.confirmationPending = true;
+        if (this.spacePresentation === undefined) {
+          this.typedRefs.confirmation.show();
+        }
       }
     },
     saveData(_attempt?: SaveAttempt, respond?: (response: SelectSpaceResponse) => void) {

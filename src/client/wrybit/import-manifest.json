@@ -1167,7 +1167,23 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/PlayerOptionTile.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-input-view-cohort",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-input-choices-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-default-off.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-console.txt"
+          ],
+          "note": "Source views bind to permanent native amount/option/delegate/player/resource/resources/production/globalEvent/token/Delta/Ares/space controllers. Native defaults, offered choices, caps, minima, sparse Delta steps, indices and responses retained across modes. Space popover rebinds to current board, rejects stale anchors and duplicate accept; classic ConfirmDialog stays owned and can close on a view change. Full client1191/250 passed after fixing native SelectSpace attribute fallthrough; Vue types/scoped lint/style and actual App-only Webpack zero warnings. Browser ordinary slider/tile selection, classic return retains amount3 and titanium; default off has no Wrybit chunk/assets; console0/0. Browser found source slider focus loss: explicit focus fix passed a real RED/GREEN and4 targeted checks, browser keyboard follow-up is pending. Source player/amount effect forecasts are not guessed from text; projection/converter, placement zoom, colony/party, creation/initial, remaining Or choices and mobile remain pending. Full WP03/all21 full rows remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/PlayerSetupView.vue",
@@ -1259,7 +1275,23 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/SelectAmount.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-input-view-cohort",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-input-choices-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-default-off.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-console.txt"
+          ],
+          "note": "Source views bind to permanent native amount/option/delegate/player/resource/resources/production/globalEvent/token/Delta/Ares/space controllers. Native defaults, offered choices, caps, minima, sparse Delta steps, indices and responses retained across modes. Space popover rebinds to current board, rejects stale anchors and duplicate accept; classic ConfirmDialog stays owned and can close on a view change. Full client1191/250 passed after fixing native SelectSpace attribute fallthrough; Vue types/scoped lint/style and actual App-only Webpack zero warnings. Browser ordinary slider/tile selection, classic return retains amount3 and titanium; default off has no Wrybit chunk/assets; console0/0. Browser found source slider focus loss: explicit focus fix passed a real RED/GREEN and4 targeted checks, browser keyboard follow-up is pending. Source player/amount effect forecasts are not guessed from text; projection/converter, placement zoom, colony/party, creation/initial, remaining Or choices and mobile remain pending. Full WP03/all21 full rows remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/SelectCard.vue",
@@ -1296,7 +1328,23 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/SelectClaimedUndergroundToken.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-input-view-cohort",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-input-choices-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-default-off.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-console.txt"
+          ],
+          "note": "Source views bind to permanent native amount/option/delegate/player/resource/resources/production/globalEvent/token/Delta/Ares/space controllers. Native defaults, offered choices, caps, minima, sparse Delta steps, indices and responses retained across modes. Space popover rebinds to current board, rejects stale anchors and duplicate accept; classic ConfirmDialog stays owned and can close on a view change. Full client1191/250 passed after fixing native SelectSpace attribute fallthrough; Vue types/scoped lint/style and actual App-only Webpack zero warnings. Browser ordinary slider/tile selection, classic return retains amount3 and titanium; default off has no Wrybit chunk/assets; console0/0. Browser found source slider focus loss: explicit focus fix passed a real RED/GREEN and4 targeted checks, browser keyboard follow-up is pending. Source player/amount effect forecasts are not guessed from text; projection/converter, placement zoom, colony/party, creation/initial, remaining Or choices and mobile remain pending. Full WP03/all21 full rows remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/SelectColony.vue",
@@ -1320,7 +1368,23 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/SelectDelegate.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-input-view-cohort",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-input-choices-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-default-off.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-console.txt"
+          ],
+          "note": "Source views bind to permanent native amount/option/delegate/player/resource/resources/production/globalEvent/token/Delta/Ares/space controllers. Native defaults, offered choices, caps, minima, sparse Delta steps, indices and responses retained across modes. Space popover rebinds to current board, rejects stale anchors and duplicate accept; classic ConfirmDialog stays owned and can close on a view change. Full client1191/250 passed after fixing native SelectSpace attribute fallthrough; Vue types/scoped lint/style and actual App-only Webpack zero warnings. Browser ordinary slider/tile selection, classic return retains amount3 and titanium; default off has no Wrybit chunk/assets; console0/0. Browser found source slider focus loss: explicit focus fix passed a real RED/GREEN and4 targeted checks, browser keyboard follow-up is pending. Source player/amount effect forecasts are not guessed from text; projection/converter, placement zoom, colony/party, creation/initial, remaining Or choices and mobile remain pending. Full WP03/all21 full rows remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/SelectGlobalEvent.vue",
@@ -1332,7 +1396,23 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/SelectGlobalEvent.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-input-view-cohort",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-input-choices-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-default-off.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-console.txt"
+          ],
+          "note": "Source views bind to permanent native amount/option/delegate/player/resource/resources/production/globalEvent/token/Delta/Ares/space controllers. Native defaults, offered choices, caps, minima, sparse Delta steps, indices and responses retained across modes. Space popover rebinds to current board, rejects stale anchors and duplicate accept; classic ConfirmDialog stays owned and can close on a view change. Full client1191/250 passed after fixing native SelectSpace attribute fallthrough; Vue types/scoped lint/style and actual App-only Webpack zero warnings. Browser ordinary slider/tile selection, classic return retains amount3 and titanium; default off has no Wrybit chunk/assets; console0/0. Browser found source slider focus loss: explicit focus fix passed a real RED/GREEN and4 targeted checks, browser keyboard follow-up is pending. Source player/amount effect forecasts are not guessed from text; projection/converter, placement zoom, colony/party, creation/initial, remaining Or choices and mobile remain pending. Full WP03/all21 full rows remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/SelectInitialCards.vue",
@@ -1356,7 +1436,23 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/SelectOption.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-input-view-cohort",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-input-choices-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-default-off.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-console.txt"
+          ],
+          "note": "Source views bind to permanent native amount/option/delegate/player/resource/resources/production/globalEvent/token/Delta/Ares/space controllers. Native defaults, offered choices, caps, minima, sparse Delta steps, indices and responses retained across modes. Space popover rebinds to current board, rejects stale anchors and duplicate accept; classic ConfirmDialog stays owned and can close on a view change. Full client1191/250 passed after fixing native SelectSpace attribute fallthrough; Vue types/scoped lint/style and actual App-only Webpack zero warnings. Browser ordinary slider/tile selection, classic return retains amount3 and titanium; default off has no Wrybit chunk/assets; console0/0. Browser found source slider focus loss: explicit focus fix passed a real RED/GREEN and4 targeted checks, browser keyboard follow-up is pending. Source player/amount effect forecasts are not guessed from text; projection/converter, placement zoom, colony/party, creation/initial, remaining Or choices and mobile remain pending. Full WP03/all21 full rows remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/SelectParty.vue",
@@ -1392,7 +1488,23 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/SelectPlayer.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-input-view-cohort",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-input-choices-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-default-off.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-console.txt"
+          ],
+          "note": "Source views bind to permanent native amount/option/delegate/player/resource/resources/production/globalEvent/token/Delta/Ares/space controllers. Native defaults, offered choices, caps, minima, sparse Delta steps, indices and responses retained across modes. Space popover rebinds to current board, rejects stale anchors and duplicate accept; classic ConfirmDialog stays owned and can close on a view change. Full client1191/250 passed after fixing native SelectSpace attribute fallthrough; Vue types/scoped lint/style and actual App-only Webpack zero warnings. Browser ordinary slider/tile selection, classic return retains amount3 and titanium; default off has no Wrybit chunk/assets; console0/0. Browser found source slider focus loss: explicit focus fix passed a real RED/GREEN and4 targeted checks, browser keyboard follow-up is pending. Source player/amount effect forecasts are not guessed from text; projection/converter, placement zoom, colony/party, creation/initial, remaining Or choices and mobile remain pending. Full WP03/all21 full rows remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/SelectPlayerRow.vue",
@@ -1416,7 +1528,23 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/SelectProductionToLose.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-input-view-cohort",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-input-choices-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-default-off.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-console.txt"
+          ],
+          "note": "Source views bind to permanent native amount/option/delegate/player/resource/resources/production/globalEvent/token/Delta/Ares/space controllers. Native defaults, offered choices, caps, minima, sparse Delta steps, indices and responses retained across modes. Space popover rebinds to current board, rejects stale anchors and duplicate accept; classic ConfirmDialog stays owned and can close on a view change. Full client1191/250 passed after fixing native SelectSpace attribute fallthrough; Vue types/scoped lint/style and actual App-only Webpack zero warnings. Browser ordinary slider/tile selection, classic return retains amount3 and titanium; default off has no Wrybit chunk/assets; console0/0. Browser found source slider focus loss: explicit focus fix passed a real RED/GREEN and4 targeted checks, browser keyboard follow-up is pending. Source player/amount effect forecasts are not guessed from text; projection/converter, placement zoom, colony/party, creation/initial, remaining Or choices and mobile remain pending. Full WP03/all21 full rows remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/SelectProjectCardToPlay.vue",
@@ -1466,7 +1594,23 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/SelectResource.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-input-view-cohort",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-input-choices-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-default-off.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-console.txt"
+          ],
+          "note": "Source views bind to permanent native amount/option/delegate/player/resource/resources/production/globalEvent/token/Delta/Ares/space controllers. Native defaults, offered choices, caps, minima, sparse Delta steps, indices and responses retained across modes. Space popover rebinds to current board, rejects stale anchors and duplicate accept; classic ConfirmDialog stays owned and can close on a view change. Full client1191/250 passed after fixing native SelectSpace attribute fallthrough; Vue types/scoped lint/style and actual App-only Webpack zero warnings. Browser ordinary slider/tile selection, classic return retains amount3 and titanium; default off has no Wrybit chunk/assets; console0/0. Browser found source slider focus loss: explicit focus fix passed a real RED/GREEN and4 targeted checks, browser keyboard follow-up is pending. Source player/amount effect forecasts are not guessed from text; projection/converter, placement zoom, colony/party, creation/initial, remaining Or choices and mobile remain pending. Full WP03/all21 full rows remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/SelectResources.vue",
@@ -1478,7 +1622,23 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/SelectResources.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-input-view-cohort",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-input-choices-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-default-off.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-console.txt"
+          ],
+          "note": "Source views bind to permanent native amount/option/delegate/player/resource/resources/production/globalEvent/token/Delta/Ares/space controllers. Native defaults, offered choices, caps, minima, sparse Delta steps, indices and responses retained across modes. Space popover rebinds to current board, rejects stale anchors and duplicate accept; classic ConfirmDialog stays owned and can close on a view change. Full client1191/250 passed after fixing native SelectSpace attribute fallthrough; Vue types/scoped lint/style and actual App-only Webpack zero warnings. Browser ordinary slider/tile selection, classic return retains amount3 and titanium; default off has no Wrybit chunk/assets; console0/0. Browser found source slider focus loss: explicit focus fix passed a real RED/GREEN and4 targeted checks, browser keyboard follow-up is pending. Source player/amount effect forecasts are not guessed from text; projection/converter, placement zoom, colony/party, creation/initial, remaining Or choices and mobile remain pending. Full WP03/all21 full rows remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/SelectSpace.vue",
@@ -1490,7 +1650,23 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/SelectSpace.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-input-view-cohort",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-input-choices-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-default-off.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-console.txt"
+          ],
+          "note": "Source views bind to permanent native amount/option/delegate/player/resource/resources/production/globalEvent/token/Delta/Ares/space controllers. Native defaults, offered choices, caps, minima, sparse Delta steps, indices and responses retained across modes. Space popover rebinds to current board, rejects stale anchors and duplicate accept; classic ConfirmDialog stays owned and can close on a view change. Full client1191/250 passed after fixing native SelectSpace attribute fallthrough; Vue types/scoped lint/style and actual App-only Webpack zero warnings. Browser ordinary slider/tile selection, classic return retains amount3 and titanium; default off has no Wrybit chunk/assets; console0/0. Browser found source slider focus loss: explicit focus fix passed a real RED/GREEN and4 targeted checks, browser keyboard follow-up is pending. Source player/amount effect forecasts are not guessed from text; projection/converter, placement zoom, colony/party, creation/initial, remaining Or choices and mobile remain pending. Full WP03/all21 full rows remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/SetupBoardToggle.vue",
@@ -1545,8 +1721,8 @@
       "sourceLines": 112,
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
-      "package": "WP02",
-      "target": "src/client/wrybit/visuals/ShiftAresGlobalParameters.vue",
+      "package": "WP03",
+      "target": "src/client/wrybit/inputs/ShiftAresGlobalParameters.vue",
       "status": "planned",
       "evidence": [
         {
@@ -1558,6 +1734,21 @@
             "tests/client/wrybit/visuals/visualStyles.spec.ts"
           ],
           "note": "Pure source thumbnail/intro/footer/placement/confirmation/update views. Our static/custom wire descriptions and combined title; canonical Ares controller/input response and supplied thresholds; supplied placement description only, no copied foreign gain/rule inference. Initial anchor positioning/Escape/portal cleanup; scoped CSS with private animation/tone/footer identifiers. ServerUpdateOverlay takes supplied phase/savedMessage and emits reload request; no foreign serverStatus/poller or window reload. Future input/mobile/root consumers remain pending."
+        },
+        {
+          "kind": "native-input-view-cohort",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-input-choices-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-default-off.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-console.txt"
+          ],
+          "note": "Source views bind to permanent native amount/option/delegate/player/resource/resources/production/globalEvent/token/Delta/Ares/space controllers. Native defaults, offered choices, caps, minima, sparse Delta steps, indices and responses retained across modes. Space popover rebinds to current board, rejects stale anchors and duplicate accept; classic ConfirmDialog stays owned and can close on a view change. Full client1191/250 passed after fixing native SelectSpace attribute fallthrough; Vue types/scoped lint/style and actual App-only Webpack zero warnings. Browser ordinary slider/tile selection, classic return retains amount3 and titanium; default off has no Wrybit chunk/assets; console0/0. Browser found source slider focus loss: explicit focus fix passed a real RED/GREEN and4 targeted checks, browser keyboard follow-up is pending. Source player/amount effect forecasts are not guessed from text; projection/converter, placement zoom, colony/party, creation/initial, remaining Or choices and mobile remain pending. Full WP03/all21 full rows remain open."
         }
       ]
     },
@@ -2038,7 +2229,23 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/amount/AmountSlider.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-input-view-cohort",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-input-choices-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-default-off.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-console.txt"
+          ],
+          "note": "Source views bind to permanent native amount/option/delegate/player/resource/resources/production/globalEvent/token/Delta/Ares/space controllers. Native defaults, offered choices, caps, minima, sparse Delta steps, indices and responses retained across modes. Space popover rebinds to current board, rejects stale anchors and duplicate accept; classic ConfirmDialog stays owned and can close on a view change. Full client1191/250 passed after fixing native SelectSpace attribute fallthrough; Vue types/scoped lint/style and actual App-only Webpack zero warnings. Browser ordinary slider/tile selection, classic return retains amount3 and titanium; default off has no Wrybit chunk/assets; console0/0. Browser found source slider focus loss: explicit focus fix passed a real RED/GREEN and4 targeted checks, browser keyboard follow-up is pending. Source player/amount effect forecasts are not guessed from text; projection/converter, placement zoom, colony/party, creation/initial, remaining Or choices and mobile remain pending. Full WP03/all21 full rows remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/auth/LoginHome.vue",
@@ -3987,10 +4194,26 @@
       "sourceLines": 69,
       "decision": "reuse-current",
       "reason": "Исходный компонент совпадает с нашей базой; оформление проверяется в режиме Wrybit.",
-      "package": "WP04",
-      "target": "src/client/components/delta/DeltaProjectInput.vue",
+      "package": "WP03",
+      "target": "src/client/wrybit/inputs/DeltaProjectInput.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-input-view-cohort",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-input-choices-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-default-off.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-console.txt"
+          ],
+          "note": "Source views bind to permanent native amount/option/delegate/player/resource/resources/production/globalEvent/token/Delta/Ares/space controllers. Native defaults, offered choices, caps, minima, sparse Delta steps, indices and responses retained across modes. Space popover rebinds to current board, rejects stale anchors and duplicate accept; classic ConfirmDialog stays owned and can close on a view change. Full client1191/250 passed after fixing native SelectSpace attribute fallthrough; Vue types/scoped lint/style and actual App-only Webpack zero warnings. Browser ordinary slider/tile selection, classic return retains amount3 and titanium; default off has no Wrybit chunk/assets; console0/0. Browser found source slider focus loss: explicit focus fix passed a real RED/GREEN and4 targeted checks, browser keyboard follow-up is pending. Source player/amount effect forecasts are not guessed from text; projection/converter, placement zoom, colony/party, creation/initial, remaining Or choices and mobile remain pending. Full WP03/all21 full rows remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/gameMenu/GameMenu.vue",
@@ -7880,6 +8103,102 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-final-console.txt"
           ],
           "note": "Our permanent and/or/project/payment/card controllers receive lazy typed views and local per-owner child hosts. All child identities, Birds/heat4/MC6, exact nested original-index response, native Energy/Nereid defaults and validation retained. Source balance/tab/hand layout in actual App synthetic fixture: normal clicks, hand-tab round trip and classic return retain values, console0/0. Single/multiple card picks retain native state shape, maximum, filter-hidden selection and exact response. Full client1176tests/243files and types/lint/style passed. Mode-key mutation rejected; exact bytes restored. Source OrOptions choices/grouping/CEO, other input types, source overpayment modal, creation/initial cards, full mobile and all final UI rows remain pending; this evidence is not full WP03 acceptance."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/amount_slider.less",
+      "sourceSha256": "8b2a67e0ba4fc71025fa12648623931520a4e95875635dd88433ebfafc0705fd",
+      "target": "src/styles/wrybit/amount_slider.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "native-input-view-cohort",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-input-choices-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-default-off.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-console.txt"
+          ],
+          "note": "Source views bind to permanent native amount/option/delegate/player/resource/resources/production/globalEvent/token/Delta/Ares/space controllers. Native defaults, offered choices, caps, minima, sparse Delta steps, indices and responses retained across modes. Space popover rebinds to current board, rejects stale anchors and duplicate accept; classic ConfirmDialog stays owned and can close on a view change. Full client1191/250 passed after fixing native SelectSpace attribute fallthrough; Vue types/scoped lint/style and actual App-only Webpack zero warnings. Browser ordinary slider/tile selection, classic return retains amount3 and titanium; default off has no Wrybit chunk/assets; console0/0. Browser found source slider focus loss: explicit focus fix passed a real RED/GREEN and4 targeted checks, browser keyboard follow-up is pending. Source player/amount effect forecasts are not guessed from text; projection/converter, placement zoom, colony/party, creation/initial, remaining Or choices and mobile remain pending. Full WP03/all21 full rows remain open."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/selection_highlight.less",
+      "sourceSha256": "e96ee72f62854c530e68858da0406293cd50dee71e47cbcb38fb0281bb095911",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "native-input-view-cohort",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-input-choices-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-default-off.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-console.txt"
+          ],
+          "note": "Source views bind to permanent native amount/option/delegate/player/resource/resources/production/globalEvent/token/Delta/Ares/space controllers. Native defaults, offered choices, caps, minima, sparse Delta steps, indices and responses retained across modes. Space popover rebinds to current board, rejects stale anchors and duplicate accept; classic ConfirmDialog stays owned and can close on a view change. Full client1191/250 passed after fixing native SelectSpace attribute fallthrough; Vue types/scoped lint/style and actual App-only Webpack zero warnings. Browser ordinary slider/tile selection, classic return retains amount3 and titanium; default off has no Wrybit chunk/assets; console0/0. Browser found source slider focus loss: explicit focus fix passed a real RED/GREEN and4 targeted checks, browser keyboard follow-up is pending. Source player/amount effect forecasts are not guessed from text; projection/converter, placement zoom, colony/party, creation/initial, remaining Or choices and mobile remain pending. Full WP03/all21 full rows remain open."
+        }
+      ],
+      "target": "src/styles/wrybit/selection_highlight.less"
+    },
+    {
+      "source": "src/styles/resource_options.less",
+      "sourceSha256": "d17a460e1f50acdce79d43f11ac3ed629910cfbb11a611cc92f4e33f546b9daf",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "native-input-view-cohort",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-input-choices-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-default-off.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-console.txt"
+          ],
+          "note": "Source views bind to permanent native amount/option/delegate/player/resource/resources/production/globalEvent/token/Delta/Ares/space controllers. Native defaults, offered choices, caps, minima, sparse Delta steps, indices and responses retained across modes. Space popover rebinds to current board, rejects stale anchors and duplicate accept; classic ConfirmDialog stays owned and can close on a view change. Full client1191/250 passed after fixing native SelectSpace attribute fallthrough; Vue types/scoped lint/style and actual App-only Webpack zero warnings. Browser ordinary slider/tile selection, classic return retains amount3 and titanium; default off has no Wrybit chunk/assets; console0/0. Browser found source slider focus loss: explicit focus fix passed a real RED/GREEN and4 targeted checks, browser keyboard follow-up is pending. Source player/amount effect forecasts are not guessed from text; projection/converter, placement zoom, colony/party, creation/initial, remaining Or choices and mobile remain pending. Full WP03/all21 full rows remain open."
+        }
+      ],
+      "target": "src/styles/wrybit/resource_options.less"
+    },
+    {
+      "source": "src/styles/player_options.less",
+      "sourceSha256": "0dc718a84ec54065a2d6b58f6b092c3a4ee10db9f8f57db5750115a798bd887a",
+      "target": "src/styles/wrybit/player_options.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "native-input-view-cohort",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
+            "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-input-choices-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-default-off.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-console.txt"
+          ],
+          "note": "Source views bind to permanent native amount/option/delegate/player/resource/resources/production/globalEvent/token/Delta/Ares/space controllers. Native defaults, offered choices, caps, minima, sparse Delta steps, indices and responses retained across modes. Space popover rebinds to current board, rejects stale anchors and duplicate accept; classic ConfirmDialog stays owned and can close on a view change. Full client1191/250 passed after fixing native SelectSpace attribute fallthrough; Vue types/scoped lint/style and actual App-only Webpack zero warnings. Browser ordinary slider/tile selection, classic return retains amount3 and titanium; default off has no Wrybit chunk/assets; console0/0. Browser found source slider focus loss: explicit focus fix passed a real RED/GREEN and4 targeted checks, browser keyboard follow-up is pending. Source player/amount effect forecasts are not guessed from text; projection/converter, placement zoom, colony/party, creation/initial, remaining Or choices and mobile remain pending. Full WP03/all21 full rows remain open."
         }
       ]
     }

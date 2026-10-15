@@ -36,6 +36,7 @@ owned_files:
 - src/client/components/SelectInitialCards.vue
 - src/client/components/SelectOption.vue
 - src/client/components/SelectPlayer.vue
+- src/client/components/SelectSpace.vue
 - src/client/components/SelectDelegate.vue
 - src/client/components/SelectParty.vue
 - src/client/components/SelectColony.vue
@@ -47,6 +48,7 @@ owned_files:
 - src/client/components/SelectClaimedUndergroundToken.vue
 - src/client/components/delta/DeltaProjectInput.vue
 - src/client/components/PlayerInputFactory.vue
+- src/client/components/common/ConfirmDialog.vue
 - src/client/wrybit/visuals/TabPanelFooterSlot.vue
 - src/client/wrybit/visuals/ShiftAresGlobalParameters.vue
 - src/client/wrybit/visuals/PlayerHome.vue
@@ -55,6 +57,10 @@ owned_files:
 - src/client/wrybit/shell/WrybitShell.vue
 - tests/client/wrybit/shell/WrybitShell.spec.ts
 - src/styles/wrybit/choice_block.less
+- src/styles/wrybit/amount_slider.less
+- src/styles/wrybit/selection_highlight.less
+- src/styles/wrybit/resource_options.less
+- src/styles/wrybit/player_options.less
 - src/styles/wrybit/visuals.less
 - src/client/wrybit/import-manifest.json
 - docs/codemap/codemap.json
@@ -129,3 +135,5 @@ SelectCard добавляет typed presentation к постоянному на�
 Последовательный handoff всех двадцати native input controllers нужен для завершения ввода: optional per-call responder сохраняет нынешний this.onsave по умолчанию, но позволяет Factory собрать ровно ответ текущего вызова. Возвращаемое завершение остаётся синхронным в classic; только допустимая подтверждаемая переплата Wrybit асинхронна. Общая SaveAttempt отменяется при изменении draft/ограничений/режима или уничтожении input. And собирает новый массив в исходном порядке и не отправляет stale/неполный responded[]. Это исполнение согласованных nested/payment UI, без изменения типов InputResponse, игровых правил/defaults/AI или серверного протокола. Дополнительные формы по-прежнему требуют полного source presentation и проверки.
 
 Save completion scoped proof: 1182 client tests/246files,108 focused checks including all8 completion cases, Vue types/scoped lint and App-only Webpack passed. Real source overpayment dialog in App: +1, cancel retains titanium2, console0/0 and only GET/no move. Async completion cancels changed draft/ledger/unmount and ignores old/double accepts; And response stays complete and ordered. Source header intercepted the global classic button; layer fix awaits next browser pass. All T009-T012/full UI rows remain OPEN.
+
+Input view cohort proof: native amount/option/delegate/player/resource/resources/production/event/token/Delta/Ares/space controllers now consume source bindings. Full1191client/250files, Vue types/scoped lint/style and App Webpack0warnings; browser source choices/default-off/classic-return3+Ti/console0/0 verified. Pointer focus bug found in browser, real RED/GREEN and4 scoped checks fix it; browser keyboard follow-up pending. Source forecasts/converter, placement zoom, colony/party, creation/initial, Or grouping, undo and mobile remain open. ConfirmDialog sequentially hands off only an explicit close method for classic/source placement transitions; no change to other callers. All T009-T012/full UI rows stay OPEN.

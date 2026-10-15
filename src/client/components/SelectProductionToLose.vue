@@ -1,6 +1,7 @@
 <template>
+  <component v-if="productionPresentation !== undefined" :is="productionPresentation" :binding="presentationBinding" />
   <!-- TODO(chosta): consolidate repetition into a reusable component. -->
-  <div class="wf-component wf-component--select-production-to-lose">
+  <div v-else class="wf-component wf-component--select-production-to-lose">
     <div v-if="showtitle === true" class="nofloat wf-component-title">{{ $t(playerinput.title) }}</div>
 
     <h3 v-if="playerinput.warning !== undefined" class="payments_title">{{ $t(playerinput.warning) }}</h3>
@@ -55,6 +56,7 @@
 import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
 
 import {defineComponent} from 'vue';
+import {UnitAmountsBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
 
 import {SelectProductionToLoseModel} from '@/common/models/PlayerInputModel';
 import {PlayerViewModel} from '@/common/models/PlayerModel';
@@ -71,6 +73,9 @@ type DataModel = {
 
 export default defineComponent({
   name: 'SelectProductionToLose',
+  setup() {
+    return {productionPresentation: useInputPresentation('productionToLose')};
+  },
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
@@ -96,6 +101,18 @@ export default defineComponent({
       units: {...Units.EMPTY},
       warning: undefined,
     };
+  },
+  computed: {
+    presentationBinding(): UnitAmountsBinding<'productionToLose'> {
+      const offered: Record<keyof Units, boolean> = {megacredits: this.canDeductMegaCredits(), steel: this.canDeductSteel(),
+        titanium: this.canDeductTitanium(), plants: this.canDeductPlants(), energy: this.canDeductEnergy(), heat: this.canDeductHeat()};
+      return {playerView: this.playerView, playerinput: this.playerinput, showsave: this.showsave, showtitle: this.showtitle,
+        units: this.units, keys: Units.keys.filter((unit) => offered[unit]), warning: this.warning,
+        select: (unit, value) => {
+          this.units[unit] = value;
+        },
+        plus: (unit) => this.delta(unit, 1), minus: (unit) => this.delta(unit, -1), save: () => this.saveData()};
+    },
   },
   methods: {
     canDeductMegaCredits() {

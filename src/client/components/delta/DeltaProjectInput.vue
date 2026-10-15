@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <component v-if="deltaPresentation !== undefined" :is="deltaPresentation" :binding="presentationBinding" />
+  <div v-else>
     <div v-if="showtitle === true">{{ $t(playerinput.title) }}</div>
     <DeltaProjectBoard
       v-if="playerView.game.gameOptions.expansions.deltaProject"
@@ -21,6 +22,7 @@
 import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
 
 import {defineComponent} from 'vue';
+import {DeltaChoiceBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
 import AppButton from '@/client/components/common/AppButton.vue';
 import DeltaProjectBoard from '@/client/components/delta/DeltaProjectBoard.vue';
 import {DeltaProjectInputModel} from '@/common/models/PlayerInputModel';
@@ -29,6 +31,9 @@ import {PlayerViewModel} from '@/common/models/PlayerModel';
 
 export default defineComponent({
   name: 'DeltaProjectInput',
+  setup() {
+    return {deltaPresentation: useInputPresentation('deltaProject')};
+  },
   components: {
     AppButton,
     DeltaProjectBoard,
@@ -57,6 +62,14 @@ export default defineComponent({
     return {
       amount: this.playerinput.validSteps[0],
     };
+  },
+  computed: {
+    presentationBinding(): DeltaChoiceBinding {
+      return {playerView: this.playerView, playerinput: this.playerinput, showsave: this.showsave, showtitle: this.showtitle,
+        amount: this.amount, select: (amount) => {
+          this.amount = amount;
+        }, max: () => this.setMaxValue(), save: () => this.saveData()};
+    },
   },
   methods: {
     saveData(_attempt?: SaveAttempt, respond?: (response: DeltaProjectInputResponse) => void) {

@@ -60,7 +60,7 @@
 </template>
 
 <script lang="ts">
-import {defineAsyncComponent, defineComponent, provide} from 'vue';
+import {computed, defineAsyncComponent, defineComponent, provide, ref, shallowRef} from 'vue';
 import * as constants from '@/common/constants';
 
 const AdminHome = defineAsyncComponent(() => import(/* webpackChunkName: "admin" */ '@/client/components/admin/AdminHome.vue'));
@@ -95,6 +95,7 @@ import {inputContext} from '@/client/wrybit/shell/inputContext';
 import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
 import WaitingFor from '@/client/components/WaitingFor.vue';
 import {createInputHosts, INPUT_HOSTS} from '@/client/wrybit/shell/inputHosts';
+import {INPUT_PRESENTATIONS} from '@/client/wrybit/inputs/presentation';
 
 import dialogPolyfill from 'dialog-polyfill';
 import {setDocumentTitle} from '../utils/documentTitle';
@@ -133,8 +134,6 @@ export type MainAppData = {
     playerkey: number;
     inputRevision: number;
     refreshRevision: number;
-    wrybitReady: boolean;
-    wrybitViews: WrybitViews;
     isServerSideRequestInProgress: boolean;
     componentsVisibility: {[x: string]: boolean};
     game: SimpleGameModel | undefined;
@@ -176,7 +175,10 @@ export default defineComponent({
   setup() {
     const inputHosts = createInputHosts();
     provide(INPUT_HOSTS, inputHosts);
-    return {inputHosts};
+    const wrybitReady = ref(false);
+    const wrybitViews = shallowRef<WrybitViews>({});
+    provide(INPUT_PRESENTATIONS, computed(() => getPreferences().experimental_layout && wrybitReady.value ? wrybitViews.value.inputs : undefined));
+    return {inputHosts, wrybitReady, wrybitViews};
   },
   data(): MainAppData {
     return {
@@ -184,8 +186,6 @@ export default defineComponent({
       playerkey: 0,
       inputRevision: 0,
       refreshRevision: 0,
-      wrybitReady: false,
-      wrybitViews: {},
       isServerSideRequestInProgress: false,
       componentsVisibility: {
         'milestones': true,

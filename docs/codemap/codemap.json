@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-15T18:11:38.920Z",
-  "generated_from_commit": "d77838e417c3b3cc16bca3caf1927113150ef890",
+  "generated_at": "2026-10-15T18:55:30.879Z",
+  "generated_from_commit": "6b009ec26ff577fe5d403b013557786a95d57c51",
   "scope": [
     ".",
     ".github",
@@ -3116,6 +3116,62 @@
         "No foreign model/controller or native preference mutation."
       ],
       "evidence": []
+    },
+    {
+      "id": "wrybit-input-presentations",
+      "label": "Типизированные представления форм",
+      "type": "ui",
+      "path": "src/client/wrybit/inputs/presentation.ts",
+      "role": "Lazy registry передаёт explicit data/commands постоянных наших controllers. Сейчас подключены and/or/projectCard/paymentForm/card; полный реестр ещё в работе WP03.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/inputs/presentation.ts",
+          "symbol": "useInputPresentation",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/inputs/NestedPresentation.spec.ts",
+          "symbol": "preserves and/or/project/payment instances"
+        },
+        {
+          "path": "tests/client/wrybit/inputs/PaymentPresentation.spec.ts",
+          "symbol": "delegates commands and validation"
+        }
+      ],
+      "constraints": [
+        "Registry не заменяет PlayerInputFactory controllers.",
+        "Defaults/ledger/validation остаются нашими.",
+        "Полный WP03 ещё не готов."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "canonical-input-controllers",
+      "label": "Постоянные вложенные controllers",
+      "type": "ui",
+      "path": "src/client/components/PlayerInputFactory.vue",
+      "role": "Наш неизменный реестр выбирает controllers; они передают typed presentation bindings и перемещают stateful children локальными порталами.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/PlayerInputFactory.vue",
+          "symbol": "const inputComponents =",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/inputs/NestedPresentation.spec.ts",
+          "symbol": "exact response through view changes"
+        }
+      ],
+      "constraints": [
+        "Original response indices сохраняются.",
+        "Смена режима не отправляет ход.",
+        "Новый inputRevision остаётся владельцем сброса."
+      ],
+      "evidence": []
     }
   ],
   "edges": [
@@ -4461,6 +4517,58 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "wrybit-ui-view",
+      "to": "wrybit-input-presentations",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/shell/WrybitShell.vue",
+          "symbol": "paymentForm: markRaw(PaymentForm)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "persistent-player-input",
+      "to": "canonical-input-controllers",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/WaitingFor.vue",
+          "symbol": "<PlayerInputFactory",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "canonical-input-controllers",
+      "to": "wrybit-input-presentations",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/SelectProjectCardToPlay.vue",
+          "symbol": "useInputPresentation",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "canonical-input-controllers",
+      "to": "player-input-hosts",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/AndOptions.vue",
+          "symbol": "createInputHosts()",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -5235,7 +5343,33 @@
     "src/common/models/OceanPlacementContextModel.ts",
     "src/server/models/OceanPlacementContext.ts",
     "src/server/boards/Board.ts",
-    "src/server/turmoil/TurmoilHandler.ts"
+    "src/server/turmoil/TurmoilHandler.ts",
+    "src/client/components/PaymentForm.vue",
+    "src/client/components/SelectProjectCardToPlay.vue",
+    "src/client/components/AndOptions.vue",
+    "src/client/components/PlayerInputFactory.vue",
+    "tests/client/components/PaymentForm.spec.ts",
+    "tests/client/components/SelectProjectCardToPlay.spec.ts",
+    "tests/client/components/AndOptions.spec.ts",
+    "tests/client/components/OrOptions.spec.ts",
+    "src/styles/wrybit/choice_block.less",
+    "src/client/wrybit/inputs/actionStep.ts",
+    "src/client/wrybit/inputs/ActionStepChips.vue",
+    "src/client/wrybit/inputs/AndOptions.vue",
+    "src/client/wrybit/inputs/choiceBlock.ts",
+    "src/client/wrybit/inputs/OrOptions.vue",
+    "src/client/wrybit/inputs/orOptionsShortLabels.ts",
+    "src/client/wrybit/inputs/OrOptionsTabIcon.vue",
+    "src/client/wrybit/inputs/PaymentForm.vue",
+    "src/client/wrybit/inputs/presentation.ts",
+    "src/client/wrybit/inputs/PresentationHost.vue",
+    "src/client/wrybit/inputs/SelectProjectCardToPlay.vue",
+    "tests/client/wrybit/inputs/NestedPresentation.spec.ts",
+    "tests/client/wrybit/inputs/PaymentPresentation.spec.ts",
+    "src/client/components/SelectCard.vue",
+    "tests/client/components/SelectCard.spec.ts",
+    "src/client/wrybit/inputs/SelectCard.vue",
+    "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -5287,6 +5421,7 @@
       "scripts/tests/test_tm_sentry_release_remote.py",
       "src/client/cards/CardModelMetadata.ts",
       "src/client/cards/ClientCardManifest.ts",
+      "src/client/components/AndOptions.vue",
       "src/client/components/App.vue",
       "src/client/components/Awards.vue",
       "src/client/components/Board.vue",
@@ -5295,9 +5430,13 @@
       "src/client/components/GameSetupDetail.vue",
       "src/client/components/Milestones.vue",
       "src/client/components/OrOptions.vue",
+      "src/client/components/PaymentForm.vue",
       "src/client/components/PaymentUnit.vue",
       "src/client/components/PlayerHome.vue",
+      "src/client/components/PlayerInputFactory.vue",
       "src/client/components/PlayerSetupView.vue",
+      "src/client/components/SelectCard.vue",
+      "src/client/components/SelectProjectCardToPlay.vue",
       "src/client/components/SelectSpace.vue",
       "src/client/components/SpectatorHome.vue",
       "src/client/components/WaitingFor.vue",
@@ -5328,6 +5467,18 @@
       "src/client/utils/WikiLinks.ts",
       "src/client/utils/playerSymbol.ts",
       "src/client/wrybit/import-manifest.json",
+      "src/client/wrybit/inputs/ActionStepChips.vue",
+      "src/client/wrybit/inputs/AndOptions.vue",
+      "src/client/wrybit/inputs/OrOptions.vue",
+      "src/client/wrybit/inputs/OrOptionsTabIcon.vue",
+      "src/client/wrybit/inputs/PaymentForm.vue",
+      "src/client/wrybit/inputs/PresentationHost.vue",
+      "src/client/wrybit/inputs/SelectCard.vue",
+      "src/client/wrybit/inputs/SelectProjectCardToPlay.vue",
+      "src/client/wrybit/inputs/actionStep.ts",
+      "src/client/wrybit/inputs/choiceBlock.ts",
+      "src/client/wrybit/inputs/orOptionsShortLabels.ts",
+      "src/client/wrybit/inputs/presentation.ts",
       "src/client/wrybit/shell/AppBackground.vue",
       "src/client/wrybit/shell/InputHost.vue",
       "src/client/wrybit/shell/InputPortal.vue",
@@ -5735,6 +5886,7 @@
       "src/styles/wrybit/catalog/header.less",
       "src/styles/wrybit/catalog/responsive.less",
       "src/styles/wrybit/catalog/results.less",
+      "src/styles/wrybit/choice_block.less",
       "src/styles/wrybit/column_overlay.less",
       "src/styles/wrybit/dialog_frame.less",
       "src/styles/wrybit/discount_badges.less",
@@ -5783,10 +5935,15 @@
       "tests/cards/rebalanced/Projects1.spec.ts",
       "tests/cards/rebalanced/Replacements.spec.ts",
       "tests/cards/requirements/CardRequirements.spec.ts",
+      "tests/client/components/AndOptions.spec.ts",
       "tests/client/components/App.spec.ts",
       "tests/client/components/Board.spec.ts",
       "tests/client/components/GameEnd.spec.ts",
+      "tests/client/components/OrOptions.spec.ts",
+      "tests/client/components/PaymentForm.spec.ts",
       "tests/client/components/PlayerHome.spec.ts",
+      "tests/client/components/SelectCard.spec.ts",
+      "tests/client/components/SelectProjectCardToPlay.spec.ts",
       "tests/client/components/SpectatorHome.spec.ts",
       "tests/client/components/card/Card.spec.ts",
       "tests/client/components/card/CardRequirementComponent.spec.ts",
@@ -5798,6 +5955,9 @@
       "tests/client/components/overview/PlayersOverview.spec.ts",
       "tests/client/components/replay/ReplayHome.spec.ts",
       "tests/client/components/replay/useReplay.spec.ts",
+      "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts",
+      "tests/client/wrybit/inputs/NestedPresentation.spec.ts",
+      "tests/client/wrybit/inputs/PaymentPresentation.spec.ts",
       "tests/client/wrybit/shell/AppInputRefresh.spec.ts",
       "tests/client/wrybit/shell/AppMode.spec.ts",
       "tests/client/wrybit/shell/BoardInputPortal.spec.ts",

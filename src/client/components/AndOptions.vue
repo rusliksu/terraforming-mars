@@ -1,23 +1,25 @@
 <template>
-  <div class='wf-options'>
+  <component v-if="andPresentation !== undefined" :is="andPresentation" :binding="presentationBinding" v-bind="$attrs"/>
+  <div v-else class='wf-options' v-bind="$attrs">
     <div v-if="showtitle" class="wf-title">{{ $t(playerinput.title) }}</div>
-    <PlayerInputFactory v-for="(option, idx) in (playerinput.options || [])"
-      :key="idx"
-      ref="childInputs"
-      :playerView="playerView"
-      :playerinput="option"
-      :onsave="playerFactorySaved(idx)"
-      :showsave="false"
-      :showtitle="true" />
+    <PresentationHost v-for="(host, idx) in childHosts" :key="idx" :hosts="host"/>
     <div v-if="showsave" class="wf-action">
       <AppButton :title="playerinput.buttonLabel" type="submit" size="normal" @click="saveData" :disabled="!canSave()"/>
     </div>
   </div>
+  <InputPortal v-for="(option, idx) in playerinput.options" :key="idx" :target="childHosts[idx].target.value">
+    <PlayerInputFactory ref="childInputs" :playerView="playerView" :playerinput="option"
+      :onsave="playerFactorySaved(idx)" :showsave="false" :showtitle="true"/>
+  </InputPortal>
 </template>
 
 <script lang="ts">
 
 import {defineComponent} from 'vue';
+import {createInputHosts} from '@/client/wrybit/shell/inputHosts';
+import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
+import PresentationHost from '@/client/wrybit/inputs/PresentationHost.vue';
+import {AndOptionsBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
 import {PlayerViewModel} from '@/common/models/PlayerModel';
 import {AndOptionsModel} from '@/common/models/PlayerInputModel';
 import AppButton from '@/client/components/common/AppButton.vue';
@@ -29,6 +31,10 @@ interface DataModel {
 
 export default defineComponent({
   name: 'AndOptions',
+  inheritAttrs: false,
+  setup(props) {
+    return {andPresentation: useInputPresentation('and'), childHosts: props.playerinput.options.map(() => createInputHosts())};
+  },
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
@@ -51,6 +57,14 @@ export default defineComponent({
   },
   components: {
     AppButton,
+    InputPortal,
+    PresentationHost,
+  },
+  computed: {
+    presentationBinding(): AndOptionsBinding {
+      return {playerView: this.playerView, playerinput: this.playerinput, showtitle: this.showtitle, showsave: this.showsave,
+        childHosts: this.childHosts, canSave: this.canSave(), save: () => this.saveData()};
+    },
   },
   data(): DataModel {
     return {

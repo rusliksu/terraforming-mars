@@ -9,7 +9,7 @@ describe('Wrybit shell', () => {
   it('renders responsive isolated backgrounds with attribution and a classic return', async () => {
     const wrapper = mount(WrybitShell, {...globalConfig, props: {screen: 'start-screen'}});
     try {
-      expect(wrapper.emitted('views')?.[0]).deep.eq([{cards: Catalog, playerHome: PlayerHome}]);
+      expect(wrapper.emitted('views')?.[0][0]).deep.include({cards: Catalog, playerHome: PlayerHome});
       const sources = wrapper.findAll('picture source');
       expect(sources.map((source) => source.attributes('type'))).deep.eq([
         'image/avif', 'image/webp', 'image/jpeg', 'image/avif', 'image/webp', 'image/jpeg',

@@ -26,6 +26,24 @@ owned_files:
 - src/client/wrybit/inputs/**
 - src/client/wrybit/create/**
 - tests/client/wrybit/inputs/**
+- src/client/components/PaymentForm.vue
+- src/client/components/SelectProjectCardToPlay.vue
+- src/client/components/OrOptions.vue
+- src/client/components/AndOptions.vue
+- src/client/components/SelectCard.vue
+- src/client/components/PlayerInputFactory.vue
+- src/client/wrybit/visuals/TabPanelFooterSlot.vue
+- src/client/wrybit/visuals/PlayerHome.vue
+- src/client/components/App.vue
+- src/client/wrybit/shell/presentationViews.ts
+- src/client/wrybit/shell/WrybitShell.vue
+- tests/client/wrybit/shell/WrybitShell.spec.ts
+- src/styles/wrybit/choice_block.less
+- src/styles/wrybit/visuals.less
+- src/client/wrybit/import-manifest.json
+- docs/codemap/codemap.json
+- docs/codemap/codemap.html
+- docs/codemap/codemap.lock
 priority: P1
 role: implementer
 tags: []
@@ -47,6 +65,12 @@ tracker_refs: []
 Пути перечислены в owned_files. При необходимом изменении вне них сначала проверить отсутствие пересечения и зафиксировать точный перенос ответственности. Не отменять чужие изменения. Изменение правил, Game/Player, AI/SmartBot, карточных эффектов и сохранения запрещено.
 
 ## Подзадачи
+
+Последовательный handoff после approved WP02: App/Shell передают только lazy typed input presentations. Наши PaymentForm, project/card/and/or controllers сохраняют экземпляры, ledger/defaults/валидацию и ответы; меняются только шаблоны через явные bindings. Stateful descendants переносятся локальными hosts своего owner, не глобальным INPUT_HOSTS. Исходные индексы и refs остаются у наших controllers. Общие manifest/codemap/style entry последовательно дополняет WP03; параллельной записи нет. Подготовленные payment visual leaves из WP02 получают реального потребителя здесь.
+
+WrybitShell.spec.ts последовательно передаётся для расширенного presentation payload: существующие cards/playerHome по-прежнему проверяются, дополнительные typed inputs не считаются ошибкой теста. Source choice geometry изолируется под wrybit-ui; только две константы mobile geometry взяты из закреплённого source, полный viewport owner остаётся WP05.
+
+PlayerHome последовательно передаёт hand-panel handoff WP03: после подключения root OrOptions руки внутри вкладок отдельный дубликат руки скрывается. До готовности typed view и для остальных типов сохраняется отдельная панель. Полная WaitingForTabs/initial/mobile интеграция остаётся открытой внутри своих пакетов.
 
 - [ ] T009 Перенести создание и стартовую покупку с нашими параметрами.
 - [ ] T010 Покрыть все наши варианты PlayerInputModel/InputResponse.
@@ -81,3 +105,7 @@ Planning/base и внутренний merge target: codex/wrybit-full-ui. Ито
 ## Риски и ориентиры review
 
 Не копировать чужой контроллер сети/AI; не рассчитывать цены и доступность независимыми правилами; не маскировать отсутствующие поля приведением типов или выдуманными значениями; не смешивать стили двух режимов; не раскрывать административную статистику; не терять контекст формы при polling/переключении. Любая необходимость изменить игровую логику возвращается на отдельное решение.
+
+Initial input vertical proof: 103 focused client tests/16files, types/scoped lint/style and actual App-only Webpack; source payment/actions screenshot and console0/0 on D:. Permanent nested controllers and exact native response retained; hand-tab and classic-return values verified. Mode-key mutation killed and exact bytes restored. All T009-T012 and full UI matrix rows stay open; remaining forms/creation/placement and full source interactions are not accepted by this partial proof.
+
+SelectCard добавляет typed presentation к постоянному нашему controller: single/multiple state shape, max, disabled offered cards, robots и owner grouping, source filters/sort/zoom и скрытый фильтром выбор. Его методы getData/canSave/saveData/toggleSelectAll и native cardschanged не меняются. Full client regression: 1176 tests/243files, zero failures; Vue types и scoped ESLint/Stylelint зелёные. Source draft/current-pick и дополнительные card sections ещё в работе; никакой T009-T012 или полный matrix row не закрывается этим промежуточным результатом.

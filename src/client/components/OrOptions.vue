@@ -1,5 +1,6 @@
 <template>
-  <div class='wf-options'>
+  <component v-if="orPresentation !== undefined" :is="orPresentation" :binding="presentationBinding" v-bind="$attrs"/>
+  <div v-else class='wf-options' v-bind="$attrs">
     <label v-if="showtitle"><div>{{ $t(playerinput.title) }}</div></label>
     <label v-if="playerinput.warning !== undefined" class="card-warning"><div>({{ $t(playerinput.warning) }})</div></label>
     <div v-for="(option, idx) in displayedOptions"
@@ -12,12 +13,7 @@
         <span>{{ $t(option.title) }}</span>
       </label>
       <div v-if="selectedIdx === idx" style="margin-left: 30px">
-        <PlayerInputFactory ref="inputfactory"
-                              :playerView="playerView"
-                              :playerinput="option"
-                              :onsave="playerFactorySaved(idx)"
-                              :showsave="showsave && showChildSaveButton(option)"
-                              :showtitle="false" />
+        <PresentationHost :hosts="childHost"/>
       </div>
     </div>
     <div v-if="showsave && selectedOption && !showChildSaveButton(selectedOption)">
@@ -26,12 +22,20 @@
       </div>
     </div>
   </div>
+  <InputPortal :target="childHost.target.value">
+    <PlayerInputFactory v-if="selectedOption !== undefined" ref="inputfactory" :key="selectedIdx"
+      :playerView="playerView" :playerinput="selectedOption" :onsave="playerFactorySaved(selectedIdx)"
+      :showsave="showsave && showChildSaveButton(selectedOption)" :showtitle="false"/>
+  </InputPortal>
 </template>
 
 <script lang="ts">
 
-import {defineComponent, inject} from 'vue';
-import {INPUT_HOSTS} from '@/client/wrybit/shell/inputHosts';
+import {defineComponent, inject, provide} from 'vue';
+import {createInputHosts, INPUT_HOSTS} from '@/client/wrybit/shell/inputHosts';
+import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
+import PresentationHost from '@/client/wrybit/inputs/PresentationHost.vue';
+import {INPUT_DEPTH, INPUT_FOOTER, OrOptionsBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {isHTMLElement} from '@/client/utils/vueUtils';
 import {PlayerViewModel} from '@/common/models/PlayerModel';
@@ -46,8 +50,15 @@ type QuickGreeneryHandler = {tile: HTMLElement, handler: (event: Event) => void}
 
 export default defineComponent({
   name: 'OrOptions',
+  inheritAttrs: false,
   setup() {
-    return {inputHost: inject(INPUT_HOSTS, undefined)?.target};
+    const asTabs = inject(INPUT_DEPTH, 1) === 1;
+    const footerHost = createInputHosts();
+    if (asTabs) {
+      provide(INPUT_FOOTER, footerHost.target);
+    }
+    return {inputHost: inject(INPUT_HOSTS, undefined)?.target, asTabs, footerHost,
+      childHost: createInputHosts(), orPresentation: useInputPresentation('or')};
   },
   props: {
     playerView: {
@@ -71,6 +82,28 @@ export default defineComponent({
   },
   components: {
     AppButton,
+    InputPortal,
+    PresentationHost,
+  },
+  computed: {
+    presentationBinding(): OrOptionsBinding {
+      return {
+        asTabs: this.asTabs, playerView: this.playerView, playerinput: this.playerinput, showsave: this.showsave, showtitle: this.showtitle,
+        displayedOptions: this.displayedOptions, selectedOption: this.selectedOption, selectedIdx: this.selectedIdx,
+        radioElementName: this.radioElementName, childHost: this.childHost, footerHost: this.footerHost,
+        select: (option) => {
+          this.selectedOption = option;
+        }, showChildSaveButton: (option) => this.showChildSaveButton(option),
+        registerLabel: (index, element) => {
+          if (element === null) {
+            this.presentationLabels.delete(index);
+          } else {
+            this.presentationLabels.set(index, element);
+          }
+        },
+        save: () => this.saveData(),
+      };
+    },
   },
   data() {
     const displayedOptions: Array<PlayerInputModel> = [];
@@ -97,6 +130,7 @@ export default defineComponent({
       selectedOption: displayedOptions[selectedIdx],
       selectedIdx,
       quickGreeneryHandlers: [] as Array<QuickGreeneryHandler>,
+      presentationLabels: new Map<number, HTMLElement>(),
     };
   },
   watch: {
@@ -203,6 +237,9 @@ export default defineComponent({
     },
     getSelectedOptionLabelElement(): HTMLElement | undefined {
       const idx = this.selectedIdx;
+      if (this.orPresentation !== undefined) {
+        return this.presentationLabels.get(idx);
+      }
       const optionLabels = this.$refs.optionLabels as HTMLElement | HTMLElement[] | undefined;
       if (idx === -1 || !optionLabels) {
         return undefined;

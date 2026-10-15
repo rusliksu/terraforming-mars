@@ -22,6 +22,8 @@ authoritative_surface: src/client/wrybit/visuals/
 create_intent: []
 execution_mode: code_change
 owned_files:
+- src/client/components/PaymentUnit.vue
+- src/client/components/paymentIcon.ts
 - src/client/components/logpanel/CardPanel.vue
 - src/client/components/logpanel/logCardModel.ts
 - src/client/components/card/CardExtraContent.vue
@@ -88,10 +90,12 @@ tracker_refs: []
 
 ## Подзадачи
 
-- [ ] T005 Перенести ресурсы и их атрибуцию.
-- [ ] T006 Перенести поле, треки, награды и ресурсы игроков.
-- [ ] T007 Перенести карточные представления, сортировку и каталог.
-- [ ] T008 Разделить большие исходники и проверить визуальную эквивалентность.
+Последовательный handoff чистых платёжных листов: PaymentUnit/paymentIcon используют общий текущий mapping наших ресурсов, без изменения defaults/ledger/validation. Source PaymentUnit и OverpaymentDialog остаются визуальными зависимостями WP02; подключение к постоянным controllers и готовность платежей принадлежат WP03. Диалог получает наш payment/ledger и supplied reason, не утверждает иностранные правила подбора оплаты.
+
+- [x] T005 Перенести ресурсы и их атрибуцию.
+- [x] T006 Перенести поле, треки, награды и ресурсы игроков.
+- [x] T007 Перенести карточные представления, сортировку и каталог.
+- [x] T008 Разделить большие исходники и проверить визуальную эквивалентность.
 
 ## Порядок выполнения
 
@@ -116,7 +120,7 @@ Planning/base и внутренний merge target: codex/wrybit-full-ui. Ито
 
 ## Критерий готовности
 
-Все 4 подзадачи выполнены, mapped требования имеют проверку, relevant matrix строки закрыты доказательствами, нет доменного/AI diff, проверено актуальное состояние формы и отсутствие влияния на выключенный режим. Журнал lifecycle обновлён штатными командами. Никакой шаг этого пакета сам по себе не означает завершения всего интерфейса.
+Все 4 подзадачи выполнены, mapped требования имеют проверку, проверки собственного scope закрыты в contracts/stage-coverage.md; незавершённые сквозные строки полной матрицы остаются открытыми с явным WP-владельцем; никакой полный сценарий не считается выполненным по одному компонентному proof, нет доменного/AI diff, проверено актуальное состояние формы и отсутствие влияния на выключенный режим. Журнал lifecycle обновлён штатными командами. Никакой шаг этого пакета сам по себе не означает завершения всего интерфейса.
 
 Промежуточная проверка filter/hand views: наши static/custom metadata, clone tags, Galactic/Infrastructure, server calculatedCost и offered project input. Общий producer active predicate сохраняет активные/effect preludes; сортировка всей руки использует наши SortOrder/CardOrderStorage, отдельное viewer state, восстанавливает Manual и добавляет новые карты в конец. Source filter/sort/zoom controls перенесены с private overlay root; zoom не пишет в html. 90 client tests/38 files плюс focused active-prelude test, Vue types, scoped lint/style и actual Webpack без warnings. Browser component fixture на D: подтвердил Playable now, phone sheet/open-close и Cost/Manual обычными кликами; console 0/0. 137 упорядоченных CSS rules совпадают после documented isolation и исправления двух combined modifier selectors. Полные home/input/carousel/viewport flows ещё открыты.
 
@@ -167,3 +171,5 @@ Read-only conditional discount DTO для source badges: PlayerModel/Conditional
 Последовательный root handoff внутри WP02: shell передаёт также typed playerHome с нашим PlayerViewModel. App выбирает только presentation component и сохраняет playerkey, InputPortal, WaitingFor и inputRevision; native PlayerHome controller не наследуется. HomeColumns/RowResizeHandle используют source layout, private storage/vars и per-instance cleanup. PlayerSetupView сохраняет наши dealt/project/drafted/selected cards; пока формы не объединены с рукой, action InputHost виден и fixed-height класс не включён. PlayerHomeBoundary.spec.ts переходит WP02 последовательно; параллельной записи нет. Полные UI-05/06/07 и остальные WP не закрываются этой начальной интеграцией.
 
 Root proof: 1163 client tests/239 files, 25 focused shell/11 files +4 restored mutation tests/2 files, Vue types/ESLint/Stylelint и actual App-only Webpack зелёные. Ordinary browser opt-in сохраняет Birds и heat4/MC6; separator ArrowLeft меняет60/40→59/41, dblclick сбрасывает60/40. Меню/Escape/возврат и console0/0 проверены. Snapshot root-final-desktop.png и text evidence лежат в D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof. Отдельный fresh browser root-off-static-requests.txt не загружает Wrybit chunk/assets. Первый fixture не содержал waitingForId; исправлен fixture по нашему wire contract, production fallback не ослаблен. Pointer focus mutation падает на document.activeElement; исходник побайтово восстановлен. Source resize styles требуют block-gap20px; scope private. Полные fixed-height/input tabs/mobile и acceptance rows ещё открыты.
+
+Payment visual leaves: 24 tests/3 files + Vue types/ESLint/Stylelint; our custom payment icons and supplied targets/limits, source overpayment graphic with our rates and supplied reason, no controller/default/validation change. Full payments stay WP03. Readiness review findings corrected: base→HEAD diff-check EOFs, manifest package owners, all48 source asset hashes and copied-unchanged statuses. All full UI rows stay open; stage-coverage.md records the user-approved scope gates. Independent final package review still required; this checklist is implementation evidence, not a verdict.

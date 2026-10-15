@@ -61,6 +61,9 @@ owned_files:
 - src/styles/wrybit/selection_highlight.less
 - src/styles/wrybit/resource_options.less
 - src/styles/wrybit/player_options.less
+- src/styles/wrybit/setup_columns.less
+- src/styles/wrybit/setup_summary.less
+- src/styles/wrybit/setup_start.less
 - src/styles/wrybit/visuals.less
 - src/client/wrybit/import-manifest.json
 - docs/codemap/codemap.json
@@ -137,3 +140,5 @@ SelectCard добавляет typed presentation к постоянному на�
 Save completion scoped proof: 1182 client tests/246files,108 focused checks including all8 completion cases, Vue types/scoped lint and App-only Webpack passed. Real source overpayment dialog in App: +1, cancel retains titanium2, console0/0 and only GET/no move. Async completion cancels changed draft/ledger/unmount and ignores old/double accepts; And response stays complete and ordered. Source header intercepted the global classic button; layer fix awaits next browser pass. All T009-T012/full UI rows remain OPEN.
 
 Input view cohort proof: native amount/option/delegate/player/resource/resources/production/event/token/Delta/Ares/space controllers now consume source bindings. Full1191client/250files, Vue types/scoped lint/style and App Webpack0warnings; browser source choices/default-off/classic-return3+Ti/console0/0 verified. Pointer focus bug found in browser, real RED/GREEN and4 scoped checks fix it; browser keyboard follow-up pending. Source forecasts/converter, placement zoom, colony/party, creation/initial, Or grouping, undo and mobile remain open. ConfirmDialog sequentially hands off only an explicit close method for classic/source placement transitions; no change to other callers. All T009-T012/full UI rows stay OPEN.
+
+Initial selection scoped proof: source four columns/summary use our permanent selectors and existing calculations/validation/response. Twelve setup checks, full1194client/251files, types/scoped lint/style and App Webpack0warnings. Actual App1920x1080 ordinary picks show50,+3,-5,48; classic45/48 retained, console0/0. Source pointer+keyboard focus follow-up now passes in browser5->classic5. Local fixture GET only, no Start/move/DB. T009-T012/full rows remain OPEN: creation, colony/party, grouping/forecast/zoom/undo and remaining packages required.

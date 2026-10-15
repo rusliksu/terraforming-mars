@@ -1,0 +1,16 @@
+// Setup phase (choosing initial cards): "Start" button on the right in the balance card below the selection columns
+// (SelectInitialCards.vue, SetupSummary.vue)
+
+@setup-start-font-size: 20px;
+
+// Start button, prominent but not taller than the figures next to it; label centered (min-width of btn-submit
+// is wider than the text, mobile stretches it to full width)
+.btn.select-initial-cards-start {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  margin: 0; // the button base rule's margins would shift it within the card
+  padding: 10px 24px;
+  font-size: @setup-start-font-size;
+}

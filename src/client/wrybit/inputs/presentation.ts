@@ -15,6 +15,7 @@ import type {Units} from '@/common/Units';
 import type {GlobalEventName} from '@/common/turmoil/globalEvents/GlobalEventName';
 import type {HazardData} from '@/common/ares/AresData';
 import type {AresGlobalParametersResponse} from '@/common/inputs/AresGlobalParametersResponse';
+import type {ColonyModel} from '@/common/models/ColonyModel';
 
 export type CardSelectionBinding = {
   playerView: PlayerViewModel;
@@ -161,6 +162,19 @@ export type SpaceBinding = InputViewBinding<'space'> & {
   dismiss(): void;
   hide(hide: boolean): void;
 };
+export type InitialSectionKey = 'corporation' | 'prelude' | 'ceo' | 'projects';
+export type InitialCardsBinding = InputViewBinding<'initialCards'> & {
+  sections: ReadonlyArray<{key: InitialSectionKey, title: string | Message, badge: string, done: boolean, host: InputHosts}>;
+  aridorColonies: ReadonlyArray<ColonyModel> | undefined;
+  starting: number | undefined;
+  preludes: number | undefined;
+  purchase: number | undefined;
+  remaining: number | undefined;
+  cardCost: number | undefined;
+  purchasedCount: number;
+  valid: boolean;
+  warning: string | undefined;
+};
 
 export type InputPresentationBindings = {
   paymentForm: PaymentFormBinding;
@@ -180,6 +194,7 @@ export type InputPresentationBindings = {
   deltaProject: DeltaChoiceBinding;
   aresGlobalParameters: AresBinding;
   space: SpaceBinding;
+  initialCards: InitialCardsBinding;
 };
 
 export type InputPresentationRegistry = {

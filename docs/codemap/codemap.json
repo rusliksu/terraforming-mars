@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-15T20:09:36.076Z",
-  "generated_from_commit": "63a61e9d527d4c1f7e9e78916690a4820bb5bae9",
+  "generated_at": "2026-10-15T20:27:02.488Z",
+  "generated_from_commit": "c86468af380f2324f222cc13d79a9f3bba7ccc60",
   "scope": [
     ".",
     ".github",
@@ -3202,6 +3202,35 @@
         "InputResponse и правила не меняются."
       ],
       "evidence": []
+    },
+    {
+      "id": "initial-card-selection",
+      "label": "Стартовый выбор и представление колонок",
+      "type": "ui",
+      "path": "src/client/components/SelectInitialCards.vue",
+      "role": "Наш setup owner сохраняет четыре SelectCard через локальные portals; source columns/summary получают наши лимиты, предупреждения и денежные значения.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/SelectInitialCards.vue",
+          "symbol": "presentationBinding(): InitialCardsBinding",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/inputs/InitialCardsPresentation.spec.ts",
+          "symbol": "special purchase price"
+        },
+        {
+          "path": "tests/client/components/SelectInitialCards.spec.ts",
+          "symbol": "one prelude when the option requires one"
+        }
+      ],
+      "constraints": [
+        "Старые методы расчёта/валидации/ответа сохранены.",
+        "Создание игры и полная UI-02 ещё не приняты."
+      ],
+      "evidence": []
     }
   ],
   "edges": [
@@ -4622,6 +4651,19 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "canonical-input-controllers",
+      "to": "initial-card-selection",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/PlayerInputFactory.vue",
+          "symbol": "'initialCards': SelectInitialCards",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -5465,7 +5507,13 @@
     "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
     "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
     "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
-    "src/client/components/common/ConfirmDialog.vue"
+    "src/client/components/common/ConfirmDialog.vue",
+    "src/styles/wrybit/setup_columns.less",
+    "src/styles/wrybit/setup_start.less",
+    "src/styles/wrybit/setup_summary.less",
+    "src/client/wrybit/inputs/SelectInitialCards.vue",
+    "src/client/wrybit/inputs/SetupSummary.vue",
+    "tests/client/wrybit/inputs/InitialCardsPresentation.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -5592,6 +5640,7 @@
       "src/client/wrybit/inputs/SelectClaimedUndergroundToken.vue",
       "src/client/wrybit/inputs/SelectDelegate.vue",
       "src/client/wrybit/inputs/SelectGlobalEvent.vue",
+      "src/client/wrybit/inputs/SelectInitialCards.vue",
       "src/client/wrybit/inputs/SelectOption.vue",
       "src/client/wrybit/inputs/SelectPlayer.vue",
       "src/client/wrybit/inputs/SelectProductionToLose.vue",
@@ -5599,6 +5648,7 @@
       "src/client/wrybit/inputs/SelectResource.vue",
       "src/client/wrybit/inputs/SelectResources.vue",
       "src/client/wrybit/inputs/SelectSpace.vue",
+      "src/client/wrybit/inputs/SetupSummary.vue",
       "src/client/wrybit/inputs/ShiftAresGlobalParameters.vue",
       "src/client/wrybit/inputs/actionStep.ts",
       "src/client/wrybit/inputs/amount/AmountSlider.vue",
@@ -6048,6 +6098,9 @@
       "src/styles/wrybit/scaled_board.less",
       "src/styles/wrybit/selection_highlight.less",
       "src/styles/wrybit/server_update_overlay.less",
+      "src/styles/wrybit/setup_columns.less",
+      "src/styles/wrybit/setup_start.less",
+      "src/styles/wrybit/setup_summary.less",
       "src/styles/wrybit/setup_tiles.less",
       "src/styles/wrybit/setup_turn_order.less",
       "src/styles/wrybit/sidebar_modal.less",
@@ -6089,6 +6142,7 @@
       "tests/client/components/replay/useReplay.spec.ts",
       "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts",
       "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
+      "tests/client/wrybit/inputs/InitialCardsPresentation.spec.ts",
       "tests/client/wrybit/inputs/NestedPresentation.spec.ts",
       "tests/client/wrybit/inputs/NestedSaveCompletion.spec.ts",
       "tests/client/wrybit/inputs/OverpaymentCompletion.spec.ts",

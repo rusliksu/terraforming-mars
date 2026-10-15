@@ -22,6 +22,15 @@ describe('Wrybit card with our canonical card data', () => {
     FakeLocalStorage.deregister(storage);
   });
 
+  it('passes our variant card identity to the shared corporation logo', () => {
+    const wrapper = mount(Card, {...globalConfig, props: {card: {name: CardName.ECOLINE_REBALANCED}}});
+    try {
+      expect(wrapper.get('.card-ecoline-logo').text()).eq('ECOLINE');
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
   it('renders the server cost and copy title without changing the card identity', () => {
     const card: CardModel = {name: CardName.BIRDS, calculatedCost: 7, combinedDisplayName: 'Birds Copy'};
     const wrapper = mount(Card, {...globalConfig, props: {card}});

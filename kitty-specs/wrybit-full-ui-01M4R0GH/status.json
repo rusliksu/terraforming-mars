@@ -58,6 +58,9 @@
       "last_event_id": "01M50CCBETK1J1650QXSNYCKKR",
       "last_transition_at": "2026-10-15T18:14:52.122318+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Scoped acceptance under approved2026-10-15 gates; all subtask events committed, current logo contract fixed, full downstream UI rows open."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 25092,

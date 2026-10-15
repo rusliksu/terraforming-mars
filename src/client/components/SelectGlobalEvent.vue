@@ -6,12 +6,14 @@
           <GlobalEvent :globalEventName="globalEventName" type="distant"/>
         </label>
         <div v-if="showsave === true" class="nofloat">
-          <AppButton :disabled="selected === undefined" type="submit" @click="saveData" title="OK" />
+          <AppButton :disabled="selected === undefined" type="submit" @click="saveData()" title="OK" />
         </div>
     </div>
 </template>
 
 <script lang="ts">
+import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+
 
 import {defineComponent} from 'vue';
 import AppButton from '@/client/components/common/AppButton.vue';
@@ -59,11 +61,12 @@ export default defineComponent({
     AppButton,
   },
   methods: {
-    saveData() {
+    saveData(_attempt?: SaveAttempt, respond?: (response: SelectGlobalEventResponse) => void) {
+      const reply = respond ?? this.onsave;
       if (this.selected === undefined) {
         throw new Error('Select a global event');
       }
-      this.onsave({type: 'globalEvent', globalEventName: this.selected});
+      reply({type: 'globalEvent', globalEventName: this.selected});
     },
   },
 });

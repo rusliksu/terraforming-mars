@@ -47,11 +47,13 @@
     </div>
 
     <div v-if="showsave === true" class="nofloat">
-        <button class="btn btn-primary btn-submit" @click="saveData">{{ $t(playerinput.buttonLabel) }}</button>
+        <button class="btn btn-primary btn-submit" @click="saveData()">{{ $t(playerinput.buttonLabel) }}</button>
     </div>
   </div>
 </template>
 <script lang="ts">
+import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+
 import {defineComponent} from 'vue';
 
 import {SelectProductionToLoseModel} from '@/common/models/PlayerInputModel';
@@ -142,7 +144,8 @@ export default defineComponent({
       newValue = Math.min(Math.max(newValue, 0), expendableQuantity);
       this.units[type] = newValue;
     },
-    saveData() {
+    saveData(_attempt?: SaveAttempt, respond?: (response: SelectProductionToLoseResponse) => void) {
+      const reply = respond ?? this.onsave;
       const total = sum(Units.values(this.units));
 
       if (total !== this.playerinput.payProduction.cost) {
@@ -150,7 +153,7 @@ export default defineComponent({
         return;
       }
 
-      this.onsave({type: 'productionToLose', units: this.units});
+      reply({type: 'productionToLose', units: this.units});
     },
   },
 });

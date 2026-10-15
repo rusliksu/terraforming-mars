@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-15T18:55:30.879Z",
-  "generated_from_commit": "6b009ec26ff577fe5d403b013557786a95d57c51",
+  "generated_at": "2026-10-15T19:44:16.403Z",
+  "generated_from_commit": "a3d9eaf6f1b38b48fa52a7cc0150ad455ebca223",
   "scope": [
     ".",
     ".github",
@@ -3172,6 +3172,36 @@
         "Новый inputRevision остаётся владельцем сброса."
       ],
       "evidence": []
+    },
+    {
+      "id": "input-save-completion",
+      "label": "Завершение и отмена ввода",
+      "type": "library",
+      "path": "src/client/wrybit/inputs/saveAttempt.ts",
+      "role": "Factory собирает один ответ текущего вызова; And ждёт последовательные подтверждения. Изменение draft/ограничений/режима или unmount отменяет попытку.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/inputs/saveAttempt.ts",
+          "symbol": "export function withSaveAttempt",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/inputs/NestedSaveCompletion.spec.ts",
+          "symbol": "describe("
+        },
+        {
+          "path": "tests/client/wrybit/inputs/OverpaymentCompletion.spec.ts",
+          "symbol": "cancels a changed draft"
+        }
+      ],
+      "constraints": [
+        "Classic sync callbacks сохранены.",
+        "Асинхронен только фактический диалог подтверждения.",
+        "InputResponse и правила не меняются."
+      ],
+      "evidence": []
     }
   ],
   "edges": [
@@ -4569,6 +4599,29 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "canonical-input-controllers",
+      "to": "input-save-completion",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/PlayerInputFactory.vue",
+          "symbol": "collectResponse(attempt: SaveAttempt)",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/client/components/AndOptions.vue",
+          "symbol": "child.collectResponse(current)",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/client/components/PaymentForm.vue",
+          "symbol": "requestOverpayment",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -5369,7 +5422,26 @@
     "src/client/components/SelectCard.vue",
     "tests/client/components/SelectCard.spec.ts",
     "src/client/wrybit/inputs/SelectCard.vue",
-    "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts"
+    "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts",
+    "src/client/wrybit/inputs/saveAttempt.ts",
+    "tests/client/wrybit/inputs/NestedSaveCompletion.spec.ts",
+    "tests/client/wrybit/inputs/OverpaymentCompletion.spec.ts",
+    "tests/client/wrybit/inputs/saveAttempt.spec.ts",
+    "src/client/components/SelectAmount.vue",
+    "src/client/components/SelectClaimedUndergroundToken.vue",
+    "src/client/components/SelectColony.vue",
+    "src/client/components/SelectDelegate.vue",
+    "src/client/components/SelectGlobalEvent.vue",
+    "src/client/components/SelectInitialCards.vue",
+    "src/client/components/SelectOption.vue",
+    "src/client/components/SelectParty.vue",
+    "src/client/components/SelectPayment.vue",
+    "src/client/components/SelectPlayer.vue",
+    "src/client/components/SelectProductionToLose.vue",
+    "src/client/components/SelectResource.vue",
+    "src/client/components/SelectResources.vue",
+    "src/client/components/ShiftAresGlobalParameters.vue",
+    "src/client/components/delta/DeltaProjectInput.vue"
   ],
   "verification_scope": {
     "paths": [
@@ -5435,9 +5507,23 @@
       "src/client/components/PlayerHome.vue",
       "src/client/components/PlayerInputFactory.vue",
       "src/client/components/PlayerSetupView.vue",
+      "src/client/components/SelectAmount.vue",
       "src/client/components/SelectCard.vue",
+      "src/client/components/SelectClaimedUndergroundToken.vue",
+      "src/client/components/SelectColony.vue",
+      "src/client/components/SelectDelegate.vue",
+      "src/client/components/SelectGlobalEvent.vue",
+      "src/client/components/SelectInitialCards.vue",
+      "src/client/components/SelectOption.vue",
+      "src/client/components/SelectParty.vue",
+      "src/client/components/SelectPayment.vue",
+      "src/client/components/SelectPlayer.vue",
+      "src/client/components/SelectProductionToLose.vue",
       "src/client/components/SelectProjectCardToPlay.vue",
+      "src/client/components/SelectResource.vue",
+      "src/client/components/SelectResources.vue",
       "src/client/components/SelectSpace.vue",
+      "src/client/components/ShiftAresGlobalParameters.vue",
       "src/client/components/SpectatorHome.vue",
       "src/client/components/WaitingFor.vue",
       "src/client/components/card/Card.vue",
@@ -5449,6 +5535,7 @@
       "src/client/components/create/CreateGameForm.vue",
       "src/client/components/create/JSONProcessor.ts",
       "src/client/components/create/TemplateManager.ts",
+      "src/client/components/delta/DeltaProjectInput.vue",
       "src/client/components/help/HelpRulebooks.vue",
       "src/client/components/logpanel/CardPanel.vue",
       "src/client/components/logpanel/LogMessageComponent.vue",
@@ -5479,6 +5566,7 @@
       "src/client/wrybit/inputs/choiceBlock.ts",
       "src/client/wrybit/inputs/orOptionsShortLabels.ts",
       "src/client/wrybit/inputs/presentation.ts",
+      "src/client/wrybit/inputs/saveAttempt.ts",
       "src/client/wrybit/shell/AppBackground.vue",
       "src/client/wrybit/shell/InputHost.vue",
       "src/client/wrybit/shell/InputPortal.vue",
@@ -5957,7 +6045,10 @@
       "tests/client/components/replay/useReplay.spec.ts",
       "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts",
       "tests/client/wrybit/inputs/NestedPresentation.spec.ts",
+      "tests/client/wrybit/inputs/NestedSaveCompletion.spec.ts",
+      "tests/client/wrybit/inputs/OverpaymentCompletion.spec.ts",
       "tests/client/wrybit/inputs/PaymentPresentation.spec.ts",
+      "tests/client/wrybit/inputs/saveAttempt.spec.ts",
       "tests/client/wrybit/shell/AppInputRefresh.spec.ts",
       "tests/client/wrybit/shell/AppMode.spec.ts",
       "tests/client/wrybit/shell/BoardInputPortal.spec.ts",

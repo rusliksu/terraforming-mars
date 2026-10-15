@@ -6,12 +6,14 @@
       &nbsp;
       <AppButton size="big" type="max" @click="setMaxValue" title="MAX" />
       &nbsp;
-      <AppButton v-if="showsave === true" size="big" @click="saveData" :title="playerinput.buttonLabel" />
+      <AppButton v-if="showsave === true" size="big" @click="saveData()" :title="playerinput.buttonLabel" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+
 import {defineComponent} from 'vue';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {SelectAmountModel} from '@/common/models/PlayerInputModel';
@@ -54,8 +56,9 @@ export default defineComponent({
     };
   },
   methods: {
-    saveData() {
-      this.onsave({type: 'amount', amount: parseInt(this.amount)});
+    saveData(_attempt?: SaveAttempt, respond?: (response: SelectAmountResponse) => void) {
+      const reply = respond ?? this.onsave;
+      reply({type: 'amount', amount: parseInt(this.amount)});
     },
     setMaxValue() {
       this.amount = String(this.playerinput.max);

@@ -6,11 +6,13 @@
       <i class="form-icon"></i>
       <SelectPlayerRow :player="playerView.players.find((otherPlayer) => otherPlayer.color === player)"/>
     </label>
-    <AppButton v-if="showsave === true" size="big" @click="saveData" :title="$t(playerinput.buttonLabel)" />
+    <AppButton v-if="showsave === true" size="big" @click="saveData()" :title="$t(playerinput.buttonLabel)" />
   </div>
 </template>
 
 <script lang="ts">
+import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+
 
 import {defineComponent} from 'vue';
 import AppButton from '@/client/components/common/AppButton.vue';
@@ -56,11 +58,12 @@ export default defineComponent({
     AppButton,
   },
   methods: {
-    saveData() {
+    saveData(_attempt?: SaveAttempt, respond?: (response: SelectPlayerResponse) => void) {
+      const reply = respond ?? this.onsave;
       if (this.selectedPlayer === undefined) {
         return;
       }
-      this.onsave({type: 'player', player: this.selectedPlayer});
+      reply({type: 'player', player: this.selectedPlayer});
     },
   },
 });

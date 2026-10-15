@@ -8,11 +8,13 @@
           </label>
         </div>
         <div v-if="showsave === true" class="nofloat">
-            <AppButton @click="saveData" :title="playerinput.buttonLabel" />
+            <AppButton @click="saveData()" :title="playerinput.buttonLabel" />
         </div>
     </div>
 </template>
 <script lang="ts">
+import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+
 import {defineComponent} from 'vue';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {SelectPartyModel} from '@/common/models/PlayerInputModel';
@@ -54,11 +56,12 @@ export default defineComponent({
     Party,
   },
   methods: {
-    saveData() {
+    saveData(_attempt?: SaveAttempt, respond?: (response: SelectPartyResponse) => void) {
+      const reply = respond ?? this.onsave;
       if (this.selectedParty === undefined) {
         return;
       }
-      this.onsave({type: 'party', partyName: this.selectedParty});
+      reply({type: 'party', partyName: this.selectedParty});
     },
     isDominant(partyName: PartyName): boolean {
       return partyName === this.turmoil?.dominant;

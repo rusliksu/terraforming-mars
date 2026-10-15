@@ -9,11 +9,13 @@
       </label>
     </div>
     <div v-if="showsave === true" class="nofloat">
-        <AppButton @click="saveData" :title="playerinput.buttonLabel" />
+        <AppButton @click="saveData()" :title="playerinput.buttonLabel" />
     </div>
   </div>
 </template>
 <script lang="ts">
+import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+
 import {defineComponent} from 'vue';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {SelectResourceModel} from '@/common/models/PlayerInputModel';
@@ -54,11 +56,12 @@ export default defineComponent({
     canSave() {
       return this.unit !== undefined;
     },
-    saveData() {
+    saveData(_attempt?: SaveAttempt, respond?: (response: SelectResourceResponse) => void) {
+      const reply = respond ?? this.onsave;
       if (this.unit === undefined) {
         return;
       }
-      this.onsave({type: 'resource', resource: this.unit});
+      reply({type: 'resource', resource: this.unit});
     },
   },
 });

@@ -19,6 +19,8 @@
 </template>
 
 <script lang="ts">
+import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+
 import {defineComponent, inject} from 'vue';
 import {INPUT_HOSTS} from '@/client/wrybit/shell/inputHosts';
 import {SelectSpaceModel} from '@/common/models/PlayerInputModel';
@@ -205,12 +207,13 @@ export default defineComponent({
         this.typedRefs.confirmation.show();
       }
     },
-    saveData() {
+    saveData(_attempt?: SaveAttempt, respond?: (response: SelectSpaceResponse) => void) {
+      const reply = respond ?? this.onsave;
       if (this.spaceId === undefined) {
         this.warning = 'Must select a space';
         return;
       }
-      this.onsave({type: 'space', spaceId: this.spaceId});
+      reply({type: 'space', spaceId: this.spaceId});
     },
   },
   mounted() {

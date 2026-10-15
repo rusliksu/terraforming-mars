@@ -18,7 +18,7 @@
     </div>
     <div v-if="showsave && selectedOption && !showChildSaveButton(selectedOption)">
       <div style="margin: 5px 30px 10px" class="wf-action">
-        <AppButton :title="$t(selectedOption.buttonLabel)" type="submit" size="normal" @click="saveData" />
+        <AppButton :title="$t(selectedOption.buttonLabel)" type="submit" size="normal" @click="saveData()" />
       </div>
     </div>
   </div>
@@ -36,6 +36,8 @@ import {createInputHosts, INPUT_HOSTS} from '@/client/wrybit/shell/inputHosts';
 import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
 import PresentationHost from '@/client/wrybit/inputs/PresentationHost.vue';
 import {INPUT_DEPTH, INPUT_FOOTER, OrOptionsBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
+import {afterSave, useSaveSession, withSaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+import type {InputCollector, MaybePromise, SaveAttempt, SaveOutcome} from '@/client/wrybit/inputs/saveAttempt';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {isHTMLElement} from '@/client/utils/vueUtils';
 import {PlayerViewModel} from '@/common/models/PlayerModel';
@@ -58,7 +60,7 @@ export default defineComponent({
       provide(INPUT_FOOTER, footerHost.target);
     }
     return {inputHost: inject(INPUT_HOSTS, undefined)?.target, asTabs, footerHost,
-      childHost: createInputHosts(), orPresentation: useInputPresentation('or')};
+      childHost: createInputHosts(), orPresentation: useInputPresentation('or'), saveSession: useSaveSession()};
   },
   props: {
     playerView: {
@@ -263,12 +265,26 @@ export default defineComponent({
     showChildSaveButton(option: PlayerInputModel): boolean {
       return option.type === 'card' && !(option.max === 1 && option.min === 1);
     },
-    saveData() {
-      let ref = this.$refs['inputfactory'] as {saveData: () => void} | Array<{saveData: () => void}>;
-      if (Array.isArray(ref)) {
-        ref = ref[0];
-      }
-      ref.saveData();
+    saveData(attempt?: SaveAttempt, respond?: (response: OrOptionsResponse) => void): MaybePromise<SaveOutcome> {
+      const reply = respond ?? this.onsave;
+      return withSaveAttempt(this.saveSession, attempt, (current) => {
+        const reference = this.$refs.inputfactory as InputCollector | Array<InputCollector> | undefined;
+        const child = Array.isArray(reference) ? reference[0] : reference;
+        const index = this.originalIndices[this.selectedIdx];
+        if (child === undefined || index === undefined) {
+          return 'invalid';
+        }
+        return afterSave(child.collectResponse(current), (collected) => {
+          if (collected.outcome !== 'saved') {
+            return collected.outcome;
+          }
+          if (!current.isCurrent()) {
+            return 'cancelled';
+          }
+          reply({type: 'or', index, response: collected.response});
+          return 'saved';
+        });
+      });
     },
   },
   mounted() {

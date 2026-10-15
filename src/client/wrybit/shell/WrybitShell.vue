@@ -36,7 +36,7 @@ const hasBackground = computed(() => [
   position: fixed;
   top: 8px;
   right: 8px;
-  z-index: 30;
+  z-index: 201;
 }
 </style>
 

@@ -12,12 +12,14 @@
       &nbsp;
       <AppButton size="big" type="max" @click="setMaxValue" title="MAX" />
       &nbsp;
-      <AppButton size="big" @click="saveData" :title="playerinput.buttonLabel" />
+      <AppButton size="big" @click="saveData()" :title="playerinput.buttonLabel" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+
 import {defineComponent} from 'vue';
 import AppButton from '@/client/components/common/AppButton.vue';
 import DeltaProjectBoard from '@/client/components/delta/DeltaProjectBoard.vue';
@@ -57,8 +59,9 @@ export default defineComponent({
     };
   },
   methods: {
-    saveData() {
-      this.onsave({type: 'deltaProject', amount: this.amount});
+    saveData(_attempt?: SaveAttempt, respond?: (response: DeltaProjectInputResponse) => void) {
+      const reply = respond ?? this.onsave;
+      reply({type: 'deltaProject', amount: this.amount});
     },
     setMaxValue() {
       const steps = this.playerinput.validSteps;

@@ -75,6 +75,9 @@ export type AndOptionsBinding = {
 
 /** Data and commands of our permanent controller, never a component-instance proxy. */
 export type PaymentFormBinding = {
+  confirmation: {cost: number, order: ReadonlyArray<SpendableResource>, ledger: Ledger, payment: Payment, itemName?: string} | undefined;
+  acceptOverpayment(): void;
+  dismissOverpayment(): void;
   cost: number;
   order: ReadonlyArray<SpendableResource>;
   ledger: Ledger;

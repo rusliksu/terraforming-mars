@@ -19,13 +19,15 @@
         <WarningsComponent :warnings="warnings"/>
         <div v-if="showsave === true" class="nofloat">
             <AppButton v-if="showSelectAll" @click="toggleSelectAll" type="submit" :title="allSelected ? $t('Deselect All') : $t('Select All')" />
-            <AppButton :disabled="isOptionalToManyCards && cardsSelected() === 0" type="submit" @click="saveData" :title="buttonLabel()" />
-            <AppButton :disabled="isOptionalToManyCards && cardsSelected() > 0" v-if="isOptionalToManyCards" @click="saveData" type="submit" :title="$t('Skip this action')" />
+            <AppButton :disabled="isOptionalToManyCards && cardsSelected() === 0" type="submit" @click="saveData()" :title="buttonLabel()" />
+            <AppButton :disabled="isOptionalToManyCards && cardsSelected() > 0" v-if="isOptionalToManyCards" @click="saveData()" type="submit" :title="$t('Skip this action')" />
         </div>
     </div>
 </template>
 
 <script lang="ts">
+import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+
 
 import {defineComponent} from 'vue';
 import AppButton from '@/client/components/common/AppButton.vue';
@@ -162,8 +164,9 @@ export default defineComponent({
       }
       return true;
     },
-    saveData() {
-      this.onsave({type: 'card', cards: this.getData()});
+    saveData(_attempt?: SaveAttempt, respond?: (response: SelectCardResponse) => void) {
+      const reply = respond ?? this.onsave;
+      reply({type: 'card', cards: this.getData()});
     },
     getCardBoxClass(card: CardModel): string {
       if (this.playerinput.showOwner && this.getOwner(card) !== undefined) {

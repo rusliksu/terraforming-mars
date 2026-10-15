@@ -16,6 +16,7 @@ import {ConglomeratesPlayerData} from '../conglomerates/ConglomeratesPlayerData'
 import {GlobalParameter} from '../GlobalParameter';
 import {DeltaProjectPlayerModel} from './DeltaProjectPlayerModel';
 import {ColonyTradeContextModel} from './ColonyTradeContextModel';
+import {OceanPlacementContextModel} from './OceanPlacementContextModel';
 
 export interface ViewModel {
   canStepBack?: boolean;
@@ -58,6 +59,7 @@ export type PublicPlayerModel = {
   citiesCount: number;
   coloniesCount: number;
   colonyTradeContext?: ColonyTradeContextModel;
+  oceanPlacementContext?: OceanPlacementContextModel;
   color: Color;
   deltaProject?: DeltaProjectPlayerModel;
   epsilonDample?: DeltaProjectPlayerModel;

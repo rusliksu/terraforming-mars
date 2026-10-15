@@ -3,7 +3,7 @@
     <div v-if="isPrelude()" class="prelude-label">prelude</div>
     <div v-if="isCorporation()" class="corporation-label">corporation</div>
     <div v-if="isCeo()" class="ceo-label">CEO</div>
-    <CardCorporationLogo v-if="isCorporation()" :title="title"/>
+    <CardCorporationLogo v-if="isCorporation()" :cardName="title"/>
     <div v-else ref="title" :class="getClasses()">{{ displayTitleWithoutSuffix }}</div>
   </div>
 </template>

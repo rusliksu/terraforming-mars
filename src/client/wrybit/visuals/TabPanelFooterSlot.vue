@@ -1,7 +1,7 @@
 <template>
   <!-- In a tab box the content (confirm buttons, payment area) moves into its sticky footer
        (tabPanelFooter.ts, tab_panel_footer.less); outside one it stays in place -->
-  <Teleport :to="target" :disabled="target === undefined" defer>
+  <Teleport :to="target" :disabled="target === undefined" :defer="true">
     <slot></slot>
   </Teleport>
 </template>

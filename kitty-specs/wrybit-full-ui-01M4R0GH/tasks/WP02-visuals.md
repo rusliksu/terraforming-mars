@@ -22,6 +22,7 @@ authoritative_surface: src/client/wrybit/visuals/
 create_intent: []
 execution_mode: code_change
 owned_files:
+- tools/fanmade-port/fanmade-catalog-source-manifest.json
 - src/client/components/PaymentUnit.vue
 - src/client/components/paymentIcon.ts
 - src/client/components/logpanel/CardPanel.vue
@@ -79,6 +80,8 @@ tracker_refs: []
 Доставить поле, карты и визуальная система в полном опциональном режиме Wrybit. Источник закреплён в spec.md: 988235122ffd61d8d1190e90beb2247afd252c00. Использовать наши текущие модели, протоколы, данные и обработчики. Контекст: spec.md, plan.md, contracts/ui-coverage.md и результат предшествующего пакета.
 
 ## Ответственность
+
+Source-integrity manifest handoff при интеграции свежего origin/main: сохранить upstream catalogId/oracleRevision/reviewedBaseRevision/bundleDigest/488 identities и набор его файлов; добавить только два наших read-only projection файла и текущий fingerprint ClaimedMilestoneModel, а два конфликтующих fingerprint PlayerModel/ServerModel вычислить по объединённым исходникам с нормализацией LF. Это регистрация текущего source, без изменения catalog data или ослабления guard. После merge проверять собственный запрещённый diff относительно новой authoritative base5e0a763127.
 
 Пути перечислены в owned_files. При необходимом изменении вне них сначала проверить отсутствие пересечения и зафиксировать точный перенос ответственности. Не отменять чужие изменения. Изменение правил, Game/Player, AI/SmartBot, карточных эффектов и сохранения запрещено.
 

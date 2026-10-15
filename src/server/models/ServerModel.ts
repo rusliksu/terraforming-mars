@@ -40,6 +40,7 @@ import {cardsToModel, coloniesToModel} from './ModelUtils';
 import {runId} from '../utils/server-ids';
 import {toName} from '../../common/utils/utils';
 import {MAX_AWARDS, MAX_MILESTONES} from '../../common/constants';
+import {getOceanPlacementContext} from './OceanPlacementContext';
 import {AstraMechanica} from '../cards/promo/AstraMechanica';
 
 export class Server {
@@ -393,6 +394,10 @@ export class Server {
 
     if (modelIsForThisPlayer && game.gameOptions.coloniesExtension) {
       model.colonyTradeContext = player.colonies.getTradeContext();
+    }
+
+    if (modelIsForThisPlayer) {
+      model.oceanPlacementContext = getOceanPlacementContext(player);
     }
 
     return model;

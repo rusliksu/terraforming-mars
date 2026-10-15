@@ -9,7 +9,7 @@ describe('CardCorporationLogo', () => {
     const wrapper = shallowMount(CardCorporationLogo, {
       ...globalConfig,
       props: {
-        title: CardName.ECOLINE,
+        cardName: CardName.ECOLINE,
       },
     });
     expect(wrapper.exists()).to.be.true;
@@ -19,7 +19,7 @@ describe('CardCorporationLogo', () => {
     const wrapper = shallowMount(CardCorporationLogo, {
       ...globalConfig,
       props: {
-        title: CardName.NEREID_BIOSYSTEMS,
+        cardName: CardName.NEREID_BIOSYSTEMS,
       },
     });
     expect(wrapper.find('.card-nereid-biosystems-logo').exists()).to.be.true;
@@ -33,18 +33,30 @@ describe('CardCorporationLogo', () => {
     const wrapper = shallowMount(CardCorporationLogo, {
       ...globalConfig,
       props: {
-        title: CardName.PRISTAR_BETTER_MARS,
+        cardName: CardName.PRISTAR_BETTER_MARS,
       },
     });
     expect(wrapper.find('.card-pristar-logo').exists()).to.be.true;
     expect(wrapper.text()).to.eq('PRISTAR');
   });
 
+  for (const [cardName, selector, text] of [
+    [CardName.CHEUNG_SHING_MARS_REBALANCED, '.card-cheung-shing-logo', '㨐'],
+    [CardName.ECOLINE_REBALANCED, '.card-ecoline-logo', 'ECOLINE'],
+    [CardName.PRISTAR_REBALANCED_BETTER_MARS, '.card-pristar-logo', 'PRISTAR'],
+  ] as const) {
+    it(`renders the original corporation logo for ${cardName}`, () => {
+      const wrapper = shallowMount(CardCorporationLogo, {...globalConfig, props: {cardName}});
+      expect(wrapper.get(selector).text()).to.eq(text);
+      wrapper.unmount();
+    });
+  }
+
   it('renders The Syndicate bespoke logo, with THE/SYN/DICATE stacked horizontally', () => {
     const wrapper = shallowMount(CardCorporationLogo, {
       ...globalConfig,
       props: {
-        title: CardName.THE_SYNDICATE,
+        cardName: CardName.THE_SYNDICATE,
       },
     });
     expect(wrapper.find('.card-the-syndicate-logo').exists()).to.be.true;
@@ -57,7 +69,7 @@ describe('CardCorporationLogo', () => {
     const wrapper = shallowMount(CardCorporationLogo, {
       ...globalConfig,
       props: {
-        title: CardName.EPSILON_DAMPLE,
+        cardName: CardName.EPSILON_DAMPLE,
       },
     });
     expect(wrapper.find('.card-epsilon-dample-logo').exists()).to.be.true;

@@ -1,7 +1,89 @@
 {
+  "temperature_ocean_bonus_update": {
+    "date": "2026-10-14",
+    "base": "df0f3825cc19744493ad95d6249eec0e429e6f7f",
+    "contract": "oceanPlacementContext/version1/temperatureBonus",
+    "flows": [
+      "Configured temperature bonuses and current track -> isolated rises of one, two or three steps",
+      "Remaining ocean capacity -> capped ocean counts in the own action PlayerModel",
+      "Read-only JSON facts -> advisor current-generation TR; no tile rewards or execution"
+    ],
+    "scope": "Temperature-triggered ocean counts only; no card interpretation, game mutation, persistence or deployment",
+    "fingerprint_algorithm": "sha256_normalized_lf",
+    "historical_fingerprints_refreshed": false,
+    "source_files": [
+      {
+        "path": "src/common/models/OceanPlacementContextModel.ts",
+        "sha256": "d60f8748837fbd93ca510301b65a6da686f6db55c975ee47b8164a7b3578d38a"
+      },
+      {
+        "path": "src/server/models/OceanPlacementContext.ts",
+        "sha256": "52e2513c17db833bc4d714f2318e83d4f816b382b90cfd3f1e14c4c590eb0a37"
+      }
+    ]
+  },
+  "ocean_placement_pair_update": {
+    "date": "2026-10-14",
+    "base": "923ba2f3a0e811975c0e1049d1be30e000a16782",
+    "contract": "oceanPlacementContext/version1/pairs",
+    "flows": [
+      "Own PlayerModel -> optional ordered pairs of distinct structural candidates",
+      "Board adjacency and player coefficient -> quoted second adjacency after the first ocean",
+      "Stable board/cost facts -> shared cash-budget consumer; no virtual moves or persisted state"
+    ],
+    "scope": "Two intrinsic standard placements; at most 64 candidates; pending Ares board transitions and unsupported political costs are not certified",
+    "fingerprint_algorithm": "sha256_normalized_lf",
+    "historical_fingerprints_refreshed": false,
+    "source_files": [
+      {
+        "path": "src/common/models/OceanPlacementContextModel.ts",
+        "sha256": "b8cdd6bb2abda7956cb7b2aafed1727f9458ec55e83602c16cccb0cff77a6035"
+      },
+      {
+        "path": "src/server/models/OceanPlacementContext.ts",
+        "sha256": "4ab4ccec44ffc93e1fc8121a95435ababed5a49ffccde1d2d38738d9b44eeed0"
+      }
+    ]
+  },
+  "ocean_placement_context_update": {
+    "date": "2026-10-14",
+    "base": "fbe68f10c0ceb9f2d72c19665cb9c1b00c7d6926",
+    "contract": "oceanPlacementContext/version1",
+    "flows": [
+      "Own PlayerModel -> phase-scoped oceanPlacementContext/version1",
+      "MarsBoard and Board -> structural candidates, actual adjacency and additional costs",
+      "Shared political cost-policy query -> explicit unsupported-payment status",
+      "Read-only numeric facts -> external advisor JSON transport; no persistence or moves"
+    ],
+    "scope": "Single standard ocean; intrinsic resource/draw/adjacency facts and funded MC costs; unsupported bonuses, fees, limits and later triggers remain unproven",
+    "fingerprint_algorithm": "sha256_normalized_lf",
+    "historical_fingerprints_refreshed": false,
+    "source_files": [
+      {
+        "path": "src/common/models/OceanPlacementContextModel.ts",
+        "sha256": "c791998326bb11da0c5d3d8741b681dafeccda141f855188f46d5171c8460299"
+      },
+      {
+        "path": "src/server/models/OceanPlacementContext.ts",
+        "sha256": "955ad709e772021d864054b2d7c47f2de5b5051481e50116872bd729953d9946"
+      },
+      {
+        "path": "src/server/models/ServerModel.ts",
+        "sha256": "c4f061bea6d576bb1a91ec142b7d4505cd0e854d9637eac371f7a1311ad7c8f8"
+      },
+      {
+        "path": "src/server/boards/Board.ts",
+        "sha256": "7ad424247f6623793c22a2ef755bf1d94e85aead5e22df16903e1a30db812fb6"
+      },
+      {
+        "path": "src/server/turmoil/TurmoilHandler.ts",
+        "sha256": "4bf865bd6c7dd74d3bb8c5aaf1e3bf84141ef3b05c17bbde9f1bac8411477268"
+      }
+    ]
+  },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-15T17:54:46.751Z",
-  "generated_from_commit": "9e042bb05038de91168ae5168a1a1cb1c824e3c3",
+  "generated_at": "2026-10-15T18:03:08.741Z",
+  "generated_from_commit": "d1b750c64fafcde84ef20a2a4e6253a805cd8c5b",
   "scope": [
     ".",
     ".github",
@@ -5149,7 +5231,11 @@
     "src/client/wrybit/visuals/PaymentUnit.vue",
     "src/styles/wrybit/overpayment_dialog.less",
     "src/styles/wrybit/payments.less",
-    "tests/client/wrybit/visuals/PaymentLeaves.spec.ts"
+    "tests/client/wrybit/visuals/PaymentLeaves.spec.ts",
+    "src/common/models/OceanPlacementContextModel.ts",
+    "src/server/models/OceanPlacementContext.ts",
+    "src/server/boards/Board.ts",
+    "src/server/turmoil/TurmoilHandler.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -5445,6 +5531,7 @@
       "src/common/cards/RequirementType.ts",
       "src/common/models/ClaimedMilestoneModel.ts",
       "src/common/models/ConditionalDiscountModel.ts",
+      "src/common/models/OceanPlacementContextModel.ts",
       "src/common/models/PlayerModel.ts",
       "src/common/models/ReplayModel.ts",
       "src/locales/ru/replay.json",
@@ -5454,6 +5541,7 @@
       "src/server/awards/amazonisPlanitia/AmazonisEngineer.ts",
       "src/server/awards/terraCimmeria/Warmonger.ts",
       "src/server/behavior/Executor.ts",
+      "src/server/boards/Board.ts",
       "src/server/bot/AutomationCompatibility.ts",
       "src/server/bot/BotTakeoverManager.ts",
       "src/server/cards/AllManifests.ts",
@@ -5600,6 +5688,7 @@
       "src/server/cards/underworld/GuerillaEcologists.ts",
       "src/server/cards/venusNext/Celestic.ts",
       "src/server/cards/venusNext/floaterCards.ts",
+      "src/server/models/OceanPlacementContext.ts",
       "src/server/models/ServerModel.ts",
       "src/server/models/publicConditionalDiscounts.ts",
       "src/server/player/Colonies.ts",
@@ -5615,6 +5704,7 @@
       "src/server/server/SentryReporter.ts",
       "src/server/server/requestProcessor.ts",
       "src/server/tools/export_card_rendering.ts",
+      "src/server/turmoil/TurmoilHandler.ts",
       "src/server/turmoil/parties/Kelvinists.ts",
       "src/server/turmoil/parties/Reds.ts",
       "src/styles/cards.less",

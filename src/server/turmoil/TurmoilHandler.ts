@@ -149,18 +149,24 @@ export class TurmoilHandler {
     }
   }
 
-  public static resolveTilePlacementCosts(player: IPlayer): void {
+  /** Finds the effective policy that charges a tile-placement payment. */
+  public static getTilePlacementCostPolicy(player: IPlayer) {
     // PoliticalAgendas Reds P2 hook (vanilla only -- More Parties reuses 'rp02' for an
     // unrelated standard-project effect, see RedsMoreParties/applyOnStandardProjectEffect)
     if (!player.game.gameOptions.morePartiesExpansion && PartyHooks.shouldApplyPolicy(player, PartyName.REDS, 'rp02')) {
-      REDS_POLICY_2.onTilePlaced(player);
+      return REDS_POLICY_2;
     }
 
     // More Parties Reds P3 hook (vanilla rp03 is an unrelated action, no onTilePlaced of its own,
     // but gate explicitly anyway for clarity/safety)
     if (player.game.gameOptions.morePartiesExpansion && PartyHooks.shouldApplyPolicy(player, PartyName.REDS, 'rp03')) {
-      REDS_MORE_PARTIES_POLICY_3.onTilePlaced(player);
+      return REDS_MORE_PARTIES_POLICY_3;
     }
+    return undefined;
+  }
+
+  public static resolveTilePlacementCosts(player: IPlayer): void {
+    this.getTilePlacementCostPolicy(player)?.onTilePlaced(player);
   }
 
   public static resolveTilePlacementBonuses(player: IPlayer, spaceType: SpaceType): void {

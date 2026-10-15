@@ -26,7 +26,7 @@ const COLOR_LABELS: Record<string, string> = {
   turquoise: 'коралловый',
   vanger: 'чисто-зеленый',
   serge: 'бордовый',
-  credicor: 'сливовый с серебром',
+  credicor: 'красный с серебром',
   saturnstorm: 'красно-розовый',
   neutral: 'нейтральный',
   bronze: 'бронзовый',

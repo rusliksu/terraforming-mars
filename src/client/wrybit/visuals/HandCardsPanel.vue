@@ -33,7 +33,7 @@
       <div v-if="hasSeveralSections" class="hand-cards-panel__header">
         <h3 class="hand-cards-panel__title">{{ $t('Played Cards') }} <small>{{ shownPlayedCount }}</small></h3>
       </div>
-      <PlayedCardsGroups class="hand-cards-panel__cards" :player="thisPlayer" :visibility="visibility" :sortOrder="sortState.sortOrder" withoutActiveCards/>
+      <PlayedCardsGroups class="hand-cards-panel__cards" :player="thisPlayer" :visibility="visibility" :sortOrder="sortState.sortOrder" :withoutActiveCards="true"/>
     </section>
   </div>
 </template>

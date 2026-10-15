@@ -1,8 +1,90 @@
 {
+  "temperature_ocean_bonus_update": {
+    "date": "2026-10-14",
+    "base": "df0f3825cc19744493ad95d6249eec0e429e6f7f",
+    "contract": "oceanPlacementContext/version1/temperatureBonus",
+    "flows": [
+      "Configured temperature bonuses and current track -> isolated rises of one, two or three steps",
+      "Remaining ocean capacity -> capped ocean counts in the own action PlayerModel",
+      "Read-only JSON facts -> advisor current-generation TR; no tile rewards or execution"
+    ],
+    "scope": "Temperature-triggered ocean counts only; no card interpretation, game mutation, persistence or deployment",
+    "fingerprint_algorithm": "sha256_normalized_lf",
+    "historical_fingerprints_refreshed": false,
+    "source_files": [
+      {
+        "path": "src/common/models/OceanPlacementContextModel.ts",
+        "sha256": "d60f8748837fbd93ca510301b65a6da686f6db55c975ee47b8164a7b3578d38a"
+      },
+      {
+        "path": "src/server/models/OceanPlacementContext.ts",
+        "sha256": "52e2513c17db833bc4d714f2318e83d4f816b382b90cfd3f1e14c4c590eb0a37"
+      }
+    ]
+  },
+  "ocean_placement_pair_update": {
+    "date": "2026-10-14",
+    "base": "923ba2f3a0e811975c0e1049d1be30e000a16782",
+    "contract": "oceanPlacementContext/version1/pairs",
+    "flows": [
+      "Own PlayerModel -> optional ordered pairs of distinct structural candidates",
+      "Board adjacency and player coefficient -> quoted second adjacency after the first ocean",
+      "Stable board/cost facts -> shared cash-budget consumer; no virtual moves or persisted state"
+    ],
+    "scope": "Two intrinsic standard placements; at most 64 candidates; pending Ares board transitions and unsupported political costs are not certified",
+    "fingerprint_algorithm": "sha256_normalized_lf",
+    "historical_fingerprints_refreshed": false,
+    "source_files": [
+      {
+        "path": "src/common/models/OceanPlacementContextModel.ts",
+        "sha256": "b8cdd6bb2abda7956cb7b2aafed1727f9458ec55e83602c16cccb0cff77a6035"
+      },
+      {
+        "path": "src/server/models/OceanPlacementContext.ts",
+        "sha256": "4ab4ccec44ffc93e1fc8121a95435ababed5a49ffccde1d2d38738d9b44eeed0"
+      }
+    ]
+  },
+  "ocean_placement_context_update": {
+    "date": "2026-10-14",
+    "base": "fbe68f10c0ceb9f2d72c19665cb9c1b00c7d6926",
+    "contract": "oceanPlacementContext/version1",
+    "flows": [
+      "Own PlayerModel -> phase-scoped oceanPlacementContext/version1",
+      "MarsBoard and Board -> structural candidates, actual adjacency and additional costs",
+      "Shared political cost-policy query -> explicit unsupported-payment status",
+      "Read-only numeric facts -> external advisor JSON transport; no persistence or moves"
+    ],
+    "scope": "Single standard ocean; intrinsic resource/draw/adjacency facts and funded MC costs; unsupported bonuses, fees, limits and later triggers remain unproven",
+    "fingerprint_algorithm": "sha256_normalized_lf",
+    "historical_fingerprints_refreshed": false,
+    "source_files": [
+      {
+        "path": "src/common/models/OceanPlacementContextModel.ts",
+        "sha256": "c791998326bb11da0c5d3d8741b681dafeccda141f855188f46d5171c8460299"
+      },
+      {
+        "path": "src/server/models/OceanPlacementContext.ts",
+        "sha256": "955ad709e772021d864054b2d7c47f2de5b5051481e50116872bd729953d9946"
+      },
+      {
+        "path": "src/server/models/ServerModel.ts",
+        "sha256": "c4f061bea6d576bb1a91ec142b7d4505cd0e854d9637eac371f7a1311ad7c8f8"
+      },
+      {
+        "path": "src/server/boards/Board.ts",
+        "sha256": "7ad424247f6623793c22a2ef755bf1d94e85aead5e22df16903e1a30db812fb6"
+      },
+      {
+        "path": "src/server/turmoil/TurmoilHandler.ts",
+        "sha256": "4bf865bd6c7dd74d3bb8c5aaf1e3bf84141ef3b05c17bbde9f1bac8411477268"
+      }
+    ]
+  },
   "schema_version": 1,
   "map_kind": "scoped-dependency-union",
-  "source_commit": "9e042bb05038de91168ae5168a1a1cb1c824e3c3",
-  "generated_at": "2026-10-15T17:54:46.751Z",
+  "source_commit": "d1b750c64fafcde84ef20a2a4e6253a805cd8c5b",
+  "generated_at": "2026-10-15T18:03:08.741Z",
   "source_tree_was_clean": false,
   "scope": [
     "assets/wrybit/board/ATTRIBUTION.md",
@@ -297,6 +379,7 @@
     "src/common/cards/RequirementType.ts",
     "src/common/models/ClaimedMilestoneModel.ts",
     "src/common/models/ConditionalDiscountModel.ts",
+    "src/common/models/OceanPlacementContextModel.ts",
     "src/common/models/PlayerModel.ts",
     "src/common/models/ReplayModel.ts",
     "src/locales/ru/replay.json",
@@ -306,6 +389,7 @@
     "src/server/awards/amazonisPlanitia/AmazonisEngineer.ts",
     "src/server/awards/terraCimmeria/Warmonger.ts",
     "src/server/behavior/Executor.ts",
+    "src/server/boards/Board.ts",
     "src/server/bot/AutomationCompatibility.ts",
     "src/server/bot/BotTakeoverManager.ts",
     "src/server/cards/AllManifests.ts",
@@ -452,6 +536,7 @@
     "src/server/cards/underworld/GuerillaEcologists.ts",
     "src/server/cards/venusNext/Celestic.ts",
     "src/server/cards/venusNext/floaterCards.ts",
+    "src/server/models/OceanPlacementContext.ts",
     "src/server/models/ServerModel.ts",
     "src/server/models/publicConditionalDiscounts.ts",
     "src/server/player/Colonies.ts",
@@ -467,6 +552,7 @@
     "src/server/server/SentryReporter.ts",
     "src/server/server/requestProcessor.ts",
     "src/server/tools/export_card_rendering.ts",
+    "src/server/turmoil/TurmoilHandler.ts",
     "src/server/turmoil/parties/Kelvinists.ts",
     "src/server/turmoil/parties/Reds.ts",
     "src/styles/cards.less",
@@ -745,7 +831,7 @@
     "src/client/wrybit/visuals/DialogFrame.vue": "c71c3abc6a04dd6895e003f05ddd32f7801b2809a5bb2cc33d8fb5475ba50cf8",
     "src/client/wrybit/visuals/GameBoardView.vue": "7bf0a65eca5217d749dbdb028eb80ac81f2114414997e3d05f041734fb95355b",
     "src/client/wrybit/visuals/GameSetupDetail.vue": "8e7601b5850f55b87d81b46a3787ea075ccce9b679918102c323c67e881557a6",
-    "src/client/wrybit/visuals/HandCardsPanel.vue": "e22fd1c576b43b0969d29054f37bf964400f42c49034db893f75c1e2bfed9abb",
+    "src/client/wrybit/visuals/HandCardsPanel.vue": "29915aa2249195566e27f99634f51711837e3ba633b3ef6aa3a19af7c71d79bd",
     "src/client/wrybit/visuals/HandCardsTab.vue": "6340b7ad566055e3ce17dd590a98b5ab2ed70edee73a0e68665dd069989f71f9",
     "src/client/wrybit/visuals/HandSortControl.vue": "3ffdf82c4f43dffeb44e5eff6f06e7887c2260481a66e6b5b2d9c26c687155a2",
     "src/client/wrybit/visuals/HomeColumns.vue": "2733e9d0248d6a39a05087e0a11951593caa1a66c1892b383719a83d3d5c1983",
@@ -759,7 +845,7 @@
     "src/client/wrybit/visuals/Party.vue": "3ad29f99cd68a2adf4c002a595430b46ad6892c0393934551cb19f6989d4a729",
     "src/client/wrybit/visuals/PaymentUnit.vue": "219104ef438593751aff2052bdb3b2920496dda15276a28c59bc9afea616efba",
     "src/client/wrybit/visuals/PlayedCardsGroups.vue": "f5240fa190bfc269bcfc17f70a427b100446bcc73beba284cd447d9ddfe34113",
-    "src/client/wrybit/visuals/PlayerHome.vue": "6b669bfe25ac5ea081ec285e2db32274f6e807f28f1472b2ef238ccfcee45dde",
+    "src/client/wrybit/visuals/PlayerHome.vue": "a5bb259f12f74dabfe350a855c44cd8b0968f7e80951677e2ce0e479c671827d",
     "src/client/wrybit/visuals/PlayerSetupView.vue": "d74afb554d048906a75647226954d16ee03d9dd24bee95fb90000539c630f6db",
     "src/client/wrybit/visuals/RowResizeHandle.vue": "0fb12fd3fe4a752e43f317aba0c75ae49ae3f09233c8d009b46ae151d93456fc",
     "src/client/wrybit/visuals/SetupTurnOrder.vue": "ab12a6946d6779f4b3a5a3e3a6fc7534beabf778367ddcc8b8e913af75f273af",
@@ -769,7 +855,7 @@
     "src/client/wrybit/visuals/SourceCardThumbnail.vue": "ddb0c04f85c2028fdcb0d1cc19fb2c30e6d7715f0a725a8ae3ec666edd56573e",
     "src/client/wrybit/visuals/SpaceConfirmPopover.vue": "7b21715117899211f16318df89916d583cd64a01dcd4bf1e65bebe6771148621",
     "src/client/wrybit/visuals/StackedCards.vue": "2eb6544bcc4529fd4b4a3a02e22c51a6b36d8c6031ec462b296d318d5a99d909",
-    "src/client/wrybit/visuals/TabPanelFooterSlot.vue": "7cfc4e39624b532df8653c3a15db2e9ce34a94d9d513191a4c467e47fc62587d",
+    "src/client/wrybit/visuals/TabPanelFooterSlot.vue": "84ce0e3bc8dd23528766c419be6a98f08a4d012eaadf11272ae71a612dcfcaf0",
     "src/client/wrybit/visuals/board/BoardSpaceTile.vue": "c003ea9af28a2f9ac906ff750d8a835b1361d1ebd64a8278f69035c365b1ea3a",
     "src/client/wrybit/visuals/board/BoardZoomModal.vue": "b6886f24d68e68b51610833faedc4c7f5d05d06788e054b3a9aab1fdc95b0fa9",
     "src/client/wrybit/visuals/board/MarsScaleBonuses.vue": "9b1be8a5ee10a27c556bc0cc41310f88d8e858f291d742d3b8ea81b841c14dde",
@@ -875,7 +961,7 @@
     "src/client/wrybit/visuals/logpanel/LogGenerationList.vue": "87be1e68f32bacd4bad7fa51ecef3af6f8d9c439ff3785a6700151475caeb3be",
     "src/client/wrybit/visuals/logpanel/LogMessageComponent.vue": "d4811135b909c831fb2aa45edb8238912326c568d5734a5ce97f8ca02e2957a5",
     "src/client/wrybit/visuals/logpanel/LogMessageInspector.vue": "00e9ff6185f0716136a066b15dff5e9175fe71bfa39e4e00b21ea16753fae38b",
-    "src/client/wrybit/visuals/logpanel/LogPanel.vue": "43144071ddab8cff64eb09fb735117ff431141b2149e5c5789bf10041b56ab94",
+    "src/client/wrybit/visuals/logpanel/LogPanel.vue": "b509c99d32f1af8130b764765e215b0b3146d417d1bd532f508a57cdc54bae28",
     "src/client/wrybit/visuals/logpanel/drawnCards.ts": "c837a96ac0f7690243df1af6b83afdb8b997b1371cdde61a144cdbf9d028d46f",
     "src/client/wrybit/visuals/logpanel/logMessageContent.ts": "734171d4ed42439aec743f2d077dc214eef963df083af0c0b7cc15ade1357a60",
     "src/client/wrybit/visuals/logpanel/logScroll.ts": "1d23439e49b24f611e509260e3af64f3ce781a4a1106239ae2ca9b92a6c14345",
@@ -927,7 +1013,8 @@
     "src/common/cards/RequirementType.ts": "4dfbc8dd92c557e311a10f09dc285e9da377f52b3ec4893863291df1875035ca",
     "src/common/models/ClaimedMilestoneModel.ts": "a2bbe2acc5ab269163181601ef73b0b1b880d806de4c36561d5ea471f05cb308",
     "src/common/models/ConditionalDiscountModel.ts": "25f0046f1d585b172a13d1b11a750edf1b87cd241b03d9cd00018cbea2551bdf",
-    "src/common/models/PlayerModel.ts": "db9684be5140ffa876f4c24b0698883ef3e38b19773dbf78283c224e22b17e67",
+    "src/common/models/OceanPlacementContextModel.ts": "d60f8748837fbd93ca510301b65a6da686f6db55c975ee47b8164a7b3578d38a",
+    "src/common/models/PlayerModel.ts": "f26c6bcd38c41c415437a8c8c6b34c660b18222dca59fa0a3181dbe9275f980c",
     "src/common/models/ReplayModel.ts": "a24dff6d6756d34f6b0d9fd855f41c11c58d1d3f3daebcad8a01dc29b5e5025a",
     "src/locales/ru/replay.json": "1155412032a10cb2234191e55f91bf7e6532519f287be38d4ad52715c6ce6503",
     "src/server/Game.ts": "db819c10015a1df202f6046032bd09a1d7cda4dbbfb84ab1643487944efff20d",
@@ -936,6 +1023,7 @@
     "src/server/awards/amazonisPlanitia/AmazonisEngineer.ts": "86ff116ee582fb5725d83202fad584fe49a75e54690a535507233f5bc6286317",
     "src/server/awards/terraCimmeria/Warmonger.ts": "734569d869980a7ae215706865e235cc3ca329a577ee70c9c29e54b642d9636c",
     "src/server/behavior/Executor.ts": "03e9de92b49eee5832b20455e99cba67e41506124bf17e51f74beeb6322907fe",
+    "src/server/boards/Board.ts": "7ad424247f6623793c22a2ef755bf1d94e85aead5e22df16903e1a30db812fb6",
     "src/server/bot/AutomationCompatibility.ts": "7bf788eb830feb6de8ca7e56222a9ea0f30f969ab2a3d3506109e37d20d2bf73",
     "src/server/bot/BotTakeoverManager.ts": "c8a4f143e5752050ce117a15c0dfa3535716c53513434b8030e41b684fbaaf94",
     "src/server/cards/AllManifests.ts": "871ecfdd0b19be31e38a4675cb42ea30e8fefc000663e6457caae9563beacc57",
@@ -1082,7 +1170,8 @@
     "src/server/cards/underworld/GuerillaEcologists.ts": "01097277fb6b3793497ee784d7cdda4bf640aeff675b12eb325f369e352e0c10",
     "src/server/cards/venusNext/Celestic.ts": "9c274e68d0d80476f07469a6fd36d0aced92d340b5ef19195525519140700287",
     "src/server/cards/venusNext/floaterCards.ts": "4c94ffe9421c76238c8ae6208b5a3bebe4f8f41cd29091b7c96af2071607645d",
-    "src/server/models/ServerModel.ts": "0d05a13f930d9edb77f31dacd7b7e5e0be9fd0ffd284e304f147ac0fb157d49e",
+    "src/server/models/OceanPlacementContext.ts": "52e2513c17db833bc4d714f2318e83d4f816b382b90cfd3f1e14c4c590eb0a37",
+    "src/server/models/ServerModel.ts": "48193de5a34505bbf6728213f5ee66bccd6b2b5e53c15f10d5b96a36455496ee",
     "src/server/models/publicConditionalDiscounts.ts": "8e3ea14458c9499453ddbb69fe8f9c6de2302ffe8c4dcdcc033a2d3bb39157d5",
     "src/server/player/Colonies.ts": "fdb6772e33d03bf7a99f13f89689e4468eacdbef538ef5d97d7a1a3b8147dd02",
     "src/server/replay/ReplayFrame.ts": "2a40dbd69a023d72091fbf5190e82ccdc37aa7cd5753a468993825ac24ab0390",
@@ -1097,6 +1186,7 @@
     "src/server/server/SentryReporter.ts": "96c63a2feb82924d6b9c87d89f0b59d05f683e48076457e28440977f6f827208",
     "src/server/server/requestProcessor.ts": "884c6d9ef3ed1f0001bd2a7c5ce3616e45d3288436a81d6b04c329f0caff9e50",
     "src/server/tools/export_card_rendering.ts": "e9859b239736fc49a973acca6ef88a990b7acf56b3cc0a2e0b644afd21fb71a8",
+    "src/server/turmoil/TurmoilHandler.ts": "4bf865bd6c7dd74d3bb8c5aaf1e3bf84141ef3b05c17bbde9f1bac8411477268",
     "src/server/turmoil/parties/Kelvinists.ts": "8b173e6cd67058f35692ae044b1e506e11336847c156d2817d87397bf746143a",
     "src/server/turmoil/parties/Reds.ts": "c5d256a1e270015c58cbedadd61eecec6b0a76b6fa41505c11603df3cde96a87",
     "src/styles/cards.less": "a665a40cad40562321ae2dc7283813821abcd1f12d6d519c4bc9611bc9aea165",
@@ -1180,7 +1270,7 @@
     "tests/client/components/GameEnd.spec.ts": "53b930fe20e1b89e1130c1c3d06c74b0e94bcc3e8f84bd363e3cb0f65c26c6e5",
     "tests/client/components/PlayerHome.spec.ts": "435f0cbff3de47f41a28b7a9ea1452e17269c12b57a0f745329706575015e6d0",
     "tests/client/components/SpectatorHome.spec.ts": "76877a3c3aba00e60d14ca18cb3361f2741044b45e4fefd92b85c96b5cde4517",
-    "tests/client/components/card/Card.spec.ts": "cdad22c92c7badc1206075e2817bb888a225455ce76589b9a91ae5d46d43a3df",
+    "tests/client/components/card/Card.spec.ts": "d5165091971a78b3f31c1ca24a7260018cb0bbcb0187301b11042616c5b39d0c",
     "tests/client/components/card/CardRequirementComponent.spec.ts": "b41362fe2469c84edb221b1a79ca568db72a10dae092967c6cf85ed5d4d7f035",
     "tests/client/components/card/CardRowComponent.spec.ts": "091b4354219a66b03a48ff31b47bec817407a10dcc525bbb6c1c68512f373a6a",
     "tests/client/components/create/JSONProcessor.spec.ts": "ed2cf069fa4c509813fc816e72ecd6a214df4c93f5da37cd7e471d19540d0178",
@@ -1252,9 +1342,9 @@
     "tests/server/server/SentryReporter.spec.ts": "a78d464170f713bcfa26f5e559762b68996adb788e966757f33e9d2f560e53d4",
     "tests/turmoil/parties/Kelvinists.spec.ts": "3dd36a74638753873cd710335db734e8c9f903b34b39b5097f89f71f36c2bbef",
     "tools/fanmade-port/check-catalog-source.js": "7cb76a3358482c383a6c2fbc79cac51cff4b0f859e6a348431548da161e0e9f3",
-    "tools/fanmade-port/fanmade-catalog-source-manifest.json": "e67b8be418ad9b5e39fa655215166704dded091917c9fdab4267fc8d2856c87e"
+    "tools/fanmade-port/fanmade-catalog-source-manifest.json": "bab16584bacaace8a2cd4e733f11bd1d1f21e0e84ba684bbeacce5f01d07a40e"
   },
-  "scope_fingerprint": "0217f75b9bf6c9a78c395a7fb4bf9819368508c992d046a1c05ba2ccd760776f",
+  "scope_fingerprint": "0c061b336cdac1238c05c8897c84bc220e3683b6220f883fc353dbb36214dd2c",
   "changed_modules": [
     "src/common/Timer.ts",
     "src/server/Game.ts",
@@ -1825,7 +1915,11 @@
     "src/client/wrybit/visuals/PaymentUnit.vue",
     "src/styles/wrybit/overpayment_dialog.less",
     "src/styles/wrybit/payments.less",
-    "tests/client/wrybit/visuals/PaymentLeaves.spec.ts"
+    "tests/client/wrybit/visuals/PaymentLeaves.spec.ts",
+    "src/common/models/OceanPlacementContextModel.ts",
+    "src/server/models/OceanPlacementContext.ts",
+    "src/server/boards/Board.ts",
+    "src/server/turmoil/TurmoilHandler.ts"
   ],
   "removed_modules": [],
   "comparison": "WP09 extends the approved 40-node/63-edge/15-flow/2-unknown/221-source map at d42049d985dacabf6261e97fb3969a0e42ccb805; all historical graph entries and the HTML renderer are retained. Only the owned Astrodrill render fingerprint is refreshed within prior scope; UI/JSON/template/rules/automation/sourceguard evidence adds bounded source paths. Source tree includes uncommitted WP09 changes; final delivery is not asserted. Добавлена только начальная граница App → опциональная оболочка. Сеть, правила и AI сохраняют прежних владельцев; полный UI и staging ещё не готовы."

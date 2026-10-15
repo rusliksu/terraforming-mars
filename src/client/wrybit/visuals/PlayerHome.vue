@@ -13,7 +13,7 @@
         <RowResizeHandle v-if="!isSetupPhase" kind="mars"/>
         <a class="hotkey-target"></a>
         <div class="player_home_block nofloat player-home-columns__log">
-          <LogPanel :viewModel="playerView" milestonesAwards :acting="isPlayerActing" @spaceClicked="onSpaceClicked"/>
+          <LogPanel :viewModel="playerView" :milestonesAwards="true" :acting="isPlayerActing" @spaceClicked="onSpaceClicked"/>
         </div>
       </template>
       <template #main>

@@ -1424,7 +1424,21 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/SelectInitialCards.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "initial-card-columns",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/InitialCardsPresentation.spec.ts",
+            "tests/client/components/SelectInitialCards.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-initial-selection-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-initial-picked.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-initial-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-initial-console.txt"
+          ],
+          "note": "Source startup columns and summary bind to our unchanged setup methods and permanent four native SelectCard owners through local portals. Our special Polyphemos price5, required one prelude, CEO and original response order verified using actual choices; all selector ids and our empty-purchase confirmation survive mode changes. Summary receives all monetary values from our owner, no foreign setupBalance. Full1194client/251files, Vue types/scoped ESLint/Stylelint and App-only Webpack zero warnings. Actual App1920x1080 ordinary selections show50,+3,-5,48; classic return45/48 retained, console0/0; no Start/move/DB action. Source keyboard slider follow-up also verified: pointer focus, arrows reach5, classic return5, console0/0. Full creation, colony/party, input grouping/forecast/zoom/undo and remaining WP04-07 still pending; no T009-T012 or full UI row is accepted here."
+        }
+      ]
     },
     {
       "source": "src/client/components/SelectOption.vue",
@@ -1690,7 +1704,21 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/SetupSummary.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "initial-card-columns",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/InitialCardsPresentation.spec.ts",
+            "tests/client/components/SelectInitialCards.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-initial-selection-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-initial-picked.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-initial-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-initial-console.txt"
+          ],
+          "note": "Source startup columns and summary bind to our unchanged setup methods and permanent four native SelectCard owners through local portals. Our special Polyphemos price5, required one prelude, CEO and original response order verified using actual choices; all selector ids and our empty-purchase confirmation survive mode changes. Summary receives all monetary values from our owner, no foreign setupBalance. Full1194client/251files, Vue types/scoped ESLint/Stylelint and App-only Webpack zero warnings. Actual App1920x1080 ordinary selections show50,+3,-5,48; classic return45/48 retained, console0/0; no Start/move/DB action. Source keyboard slider follow-up also verified: pointer focus, arrows reach5, classic return5, console0/0. Full creation, colony/party, input grouping/forecast/zoom/undo and remaining WP04-07 still pending; no T009-T012 or full UI row is accepted here."
+        }
+      ]
     },
     {
       "source": "src/client/components/SetupTurnOrder.vue",
@@ -2244,6 +2272,17 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-console.txt"
           ],
           "note": "Source views bind to permanent native amount/option/delegate/player/resource/resources/production/globalEvent/token/Delta/Ares/space controllers. Native defaults, offered choices, caps, minima, sparse Delta steps, indices and responses retained across modes. Space popover rebinds to current board, rejects stale anchors and duplicate accept; classic ConfirmDialog stays owned and can close on a view change. Full client1191/250 passed after fixing native SelectSpace attribute fallthrough; Vue types/scoped lint/style and actual App-only Webpack zero warnings. Browser ordinary slider/tile selection, classic return retains amount3 and titanium; default off has no Wrybit chunk/assets; console0/0. Browser found source slider focus loss: explicit focus fix passed a real RED/GREEN and4 targeted checks, browser keyboard follow-up is pending. Source player/amount effect forecasts are not guessed from text; projection/converter, placement zoom, colony/party, creation/initial, remaining Or choices and mobile remain pending. Full WP03/all21 full rows remain open."
+        },
+        {
+          "kind": "pointer-keyboard-followup",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-slider-keyboard.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-slider-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-slider-console.txt"
+          ],
+          "note": "Real pointer-focus RED/GREEN, drag state cleanup; real App click+ArrowRight twice reaches5 and returns5 in classic, console0/0. Earlier pending browser follow-up is now complete."
         }
       ]
     },
@@ -8201,6 +8240,72 @@
           "note": "Source views bind to permanent native amount/option/delegate/player/resource/resources/production/globalEvent/token/Delta/Ares/space controllers. Native defaults, offered choices, caps, minima, sparse Delta steps, indices and responses retained across modes. Space popover rebinds to current board, rejects stale anchors and duplicate accept; classic ConfirmDialog stays owned and can close on a view change. Full client1191/250 passed after fixing native SelectSpace attribute fallthrough; Vue types/scoped lint/style and actual App-only Webpack zero warnings. Browser ordinary slider/tile selection, classic return retains amount3 and titanium; default off has no Wrybit chunk/assets; console0/0. Browser found source slider focus loss: explicit focus fix passed a real RED/GREEN and4 targeted checks, browser keyboard follow-up is pending. Source player/amount effect forecasts are not guessed from text; projection/converter, placement zoom, colony/party, creation/initial, remaining Or choices and mobile remain pending. Full WP03/all21 full rows remain open."
         }
       ]
+    },
+    {
+      "source": "src/styles/setup_columns.less",
+      "sourceSha256": "740d846890c38d2e2393e58806b0a15edc1bdb48133de761e43a45cae0c40483",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "initial-card-columns",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/InitialCardsPresentation.spec.ts",
+            "tests/client/components/SelectInitialCards.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-initial-selection-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-initial-picked.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-initial-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-initial-console.txt"
+          ],
+          "note": "Source startup columns and summary bind to our unchanged setup methods and permanent four native SelectCard owners through local portals. Our special Polyphemos price5, required one prelude, CEO and original response order verified using actual choices; all selector ids and our empty-purchase confirmation survive mode changes. Summary receives all monetary values from our owner, no foreign setupBalance. Full1194client/251files, Vue types/scoped ESLint/Stylelint and App-only Webpack zero warnings. Actual App1920x1080 ordinary selections show50,+3,-5,48; classic return45/48 retained, console0/0; no Start/move/DB action. Source keyboard slider follow-up also verified: pointer focus, arrows reach5, classic return5, console0/0. Full creation, colony/party, input grouping/forecast/zoom/undo and remaining WP04-07 still pending; no T009-T012 or full UI row is accepted here."
+        }
+      ],
+      "target": "src/styles/wrybit/setup_columns.less"
+    },
+    {
+      "source": "src/styles/setup_summary.less",
+      "sourceSha256": "a258d62b54825f0d1a4b54fb5248ce4284cb51bf735d73f44e9a5cb0913edb1f",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "initial-card-columns",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/InitialCardsPresentation.spec.ts",
+            "tests/client/components/SelectInitialCards.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-initial-selection-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-initial-picked.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-initial-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-initial-console.txt"
+          ],
+          "note": "Source startup columns and summary bind to our unchanged setup methods and permanent four native SelectCard owners through local portals. Our special Polyphemos price5, required one prelude, CEO and original response order verified using actual choices; all selector ids and our empty-purchase confirmation survive mode changes. Summary receives all monetary values from our owner, no foreign setupBalance. Full1194client/251files, Vue types/scoped ESLint/Stylelint and App-only Webpack zero warnings. Actual App1920x1080 ordinary selections show50,+3,-5,48; classic return45/48 retained, console0/0; no Start/move/DB action. Source keyboard slider follow-up also verified: pointer focus, arrows reach5, classic return5, console0/0. Full creation, colony/party, input grouping/forecast/zoom/undo and remaining WP04-07 still pending; no T009-T012 or full UI row is accepted here."
+        }
+      ],
+      "target": "src/styles/wrybit/setup_summary.less"
+    },
+    {
+      "source": "src/styles/setup_start.less",
+      "sourceSha256": "2dd7ed814380eff9fe3b180d2ef90936aa04e95de00f6b625a30fcb2590b653a",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "initial-card-columns",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/InitialCardsPresentation.spec.ts",
+            "tests/client/components/SelectInitialCards.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-initial-selection-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-initial-picked.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-initial-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-initial-console.txt"
+          ],
+          "note": "Source startup columns and summary bind to our unchanged setup methods and permanent four native SelectCard owners through local portals. Our special Polyphemos price5, required one prelude, CEO and original response order verified using actual choices; all selector ids and our empty-purchase confirmation survive mode changes. Summary receives all monetary values from our owner, no foreign setupBalance. Full1194client/251files, Vue types/scoped ESLint/Stylelint and App-only Webpack zero warnings. Actual App1920x1080 ordinary selections show50,+3,-5,48; classic return45/48 retained, console0/0; no Start/move/DB action. Source keyboard slider follow-up also verified: pointer focus, arrows reach5, classic return5, console0/0. Full creation, colony/party, input grouping/forecast/zoom/undo and remaining WP04-07 still pending; no T009-T012 or full UI row is accepted here."
+        }
+      ],
+      "target": "src/styles/wrybit/setup_start.less"
     }
   ],
   "assets": [

@@ -27,6 +27,7 @@ import SelectClaimedUndergroundToken from '@/client/wrybit/inputs/SelectClaimedU
 import DeltaProjectInput from '@/client/wrybit/inputs/DeltaProjectInput.vue';
 import SelectSpace from '@/client/wrybit/inputs/SelectSpace.vue';
 import ShiftAresGlobalParameters from '@/client/wrybit/inputs/ShiftAresGlobalParameters.vue';
+import SelectInitialCards from '@/client/wrybit/inputs/SelectInitialCards.vue';
 import type {WrybitViews} from './presentationViews';
 
 const props = defineProps<{screen: string}>();
@@ -40,6 +41,7 @@ onMounted(() => emit('views', {cards: markRaw(Catalog), playerHome: markRaw(Play
   player: markRaw(SelectPlayer), globalEvent: markRaw(SelectGlobalEvent), claimedUndergroundToken: markRaw(SelectClaimedUndergroundToken),
   deltaProject: markRaw(DeltaProjectInput),
   space: markRaw(SelectSpace), aresGlobalParameters: markRaw(ShiftAresGlobalParameters),
+  initialCards: markRaw(SelectInitialCards),
 }}));
 
 const hasBackground = computed(() => [

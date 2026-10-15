@@ -24,7 +24,20 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/ActionStepChips.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "input-controller-vertical",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/NestedPresentation.spec.ts",
+            "tests/client/wrybit/inputs/PaymentPresentation.spec.ts",
+            "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-action-tabs-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-final-console.txt"
+          ],
+          "note": "Our permanent and/or/project/payment/card controllers receive lazy typed views and local per-owner child hosts. All child identities, Birds/heat4/MC6, exact nested original-index response, native Energy/Nereid defaults and validation retained. Source balance/tab/hand layout in actual App synthetic fixture: normal clicks, hand-tab round trip and classic return retain values, console0/0. Single/multiple card picks retain native state shape, maximum, filter-hidden selection and exact response. Full client1176tests/243files and types/lint/style passed. Mode-key mutation rejected; exact bytes restored. Source OrOptions choices/grouping/CEO, other input types, source overpayment modal, creation/initial cards, full mobile and all final UI rows remain pending; this evidence is not full WP03 acceptance."
+        }
+      ]
     },
     {
       "source": "src/client/components/AdjacencyBonus.vue",
@@ -60,7 +73,20 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/AndOptions.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "input-controller-vertical",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/NestedPresentation.spec.ts",
+            "tests/client/wrybit/inputs/PaymentPresentation.spec.ts",
+            "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-action-tabs-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-final-console.txt"
+          ],
+          "note": "Our permanent and/or/project/payment/card controllers receive lazy typed views and local per-owner child hosts. All child identities, Birds/heat4/MC6, exact nested original-index response, native Energy/Nereid defaults and validation retained. Source balance/tab/hand layout in actual App synthetic fixture: normal clicks, hand-tab round trip and classic return retain values, console0/0. Single/multiple card picks retain native state shape, maximum, filter-hidden selection and exact response. Full client1176tests/243files and types/lint/style passed. Mode-key mutation rejected; exact bytes restored. Source OrOptions choices/grouping/CEO, other input types, source overpayment modal, creation/initial cards, full mobile and all final UI rows remain pending; this evidence is not full WP03 acceptance."
+        }
+      ]
     },
     {
       "source": "src/client/components/App.vue",
@@ -812,7 +838,20 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/OrOptions.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "input-controller-vertical",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/NestedPresentation.spec.ts",
+            "tests/client/wrybit/inputs/PaymentPresentation.spec.ts",
+            "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-action-tabs-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-final-console.txt"
+          ],
+          "note": "Our permanent and/or/project/payment/card controllers receive lazy typed views and local per-owner child hosts. All child identities, Birds/heat4/MC6, exact nested original-index response, native Energy/Nereid defaults and validation retained. Source balance/tab/hand layout in actual App synthetic fixture: normal clicks, hand-tab round trip and classic return retain values, console0/0. Single/multiple card picks retain native state shape, maximum, filter-hidden selection and exact response. Full client1176tests/243files and types/lint/style passed. Mode-key mutation rejected; exact bytes restored. Source OrOptions choices/grouping/CEO, other input types, source overpayment modal, creation/initial cards, full mobile and all final UI rows remain pending; this evidence is not full WP03 acceptance."
+        }
+      ]
     },
     {
       "source": "src/client/components/OrOptionsTabIcon.vue",
@@ -824,7 +863,20 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/OrOptionsTabIcon.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "input-controller-vertical",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/NestedPresentation.spec.ts",
+            "tests/client/wrybit/inputs/PaymentPresentation.spec.ts",
+            "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-action-tabs-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-final-console.txt"
+          ],
+          "note": "Our permanent and/or/project/payment/card controllers receive lazy typed views and local per-owner child hosts. All child identities, Birds/heat4/MC6, exact nested original-index response, native Energy/Nereid defaults and validation retained. Source balance/tab/hand layout in actual App synthetic fixture: normal clicks, hand-tab round trip and classic return retain values, console0/0. Single/multiple card picks retain native state shape, maximum, filter-hidden selection and exact response. Full client1176tests/243files and types/lint/style passed. Mode-key mutation rejected; exact bytes restored. Source OrOptions choices/grouping/CEO, other input types, source overpayment modal, creation/initial cards, full mobile and all final UI rows remain pending; this evidence is not full WP03 acceptance."
+        }
+      ]
     },
     {
       "source": "src/client/components/OtherPlayer.vue",
@@ -954,7 +1006,20 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/PaymentForm.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "input-controller-vertical",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/NestedPresentation.spec.ts",
+            "tests/client/wrybit/inputs/PaymentPresentation.spec.ts",
+            "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-action-tabs-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-final-console.txt"
+          ],
+          "note": "Our permanent and/or/project/payment/card controllers receive lazy typed views and local per-owner child hosts. All child identities, Birds/heat4/MC6, exact nested original-index response, native Energy/Nereid defaults and validation retained. Source balance/tab/hand layout in actual App synthetic fixture: normal clicks, hand-tab round trip and classic return retain values, console0/0. Single/multiple card picks retain native state shape, maximum, filter-hidden selection and exact response. Full client1176tests/243files and types/lint/style passed. Mode-key mutation rejected; exact bytes restored. Source OrOptions choices/grouping/CEO, other input types, source overpayment modal, creation/initial cards, full mobile and all final UI rows remain pending; this evidence is not full WP03 acceptance."
+        }
+      ]
     },
     {
       "source": "src/client/components/PaymentUnit.vue",
@@ -1154,7 +1219,20 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/SelectCard.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "input-controller-vertical",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/NestedPresentation.spec.ts",
+            "tests/client/wrybit/inputs/PaymentPresentation.spec.ts",
+            "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-action-tabs-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-final-console.txt"
+          ],
+          "note": "Our permanent and/or/project/payment/card controllers receive lazy typed views and local per-owner child hosts. All child identities, Birds/heat4/MC6, exact nested original-index response, native Energy/Nereid defaults and validation retained. Source balance/tab/hand layout in actual App synthetic fixture: normal clicks, hand-tab round trip and classic return retain values, console0/0. Single/multiple card picks retain native state shape, maximum, filter-hidden selection and exact response. Full client1176tests/243files and types/lint/style passed. Mode-key mutation rejected; exact bytes restored. Source OrOptions choices/grouping/CEO, other input types, source overpayment modal, creation/initial cards, full mobile and all final UI rows remain pending; this evidence is not full WP03 acceptance."
+        }
+      ]
     },
     {
       "source": "src/client/components/SelectClaimedUndergroundToken.vue",
@@ -1298,7 +1376,20 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/SelectProjectCardToPlay.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "input-controller-vertical",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/NestedPresentation.spec.ts",
+            "tests/client/wrybit/inputs/PaymentPresentation.spec.ts",
+            "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-action-tabs-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-final-console.txt"
+          ],
+          "note": "Our permanent and/or/project/payment/card controllers receive lazy typed views and local per-owner child hosts. All child identities, Birds/heat4/MC6, exact nested original-index response, native Energy/Nereid defaults and validation retained. Source balance/tab/hand layout in actual App synthetic fixture: normal clicks, hand-tab round trip and classic return retain values, console0/0. Single/multiple card picks retain native state shape, maximum, filter-hidden selection and exact response. Full client1176tests/243files and types/lint/style passed. Mode-key mutation rejected; exact bytes restored. Source OrOptions choices/grouping/CEO, other input types, source overpayment modal, creation/initial cards, full mobile and all final UI rows remain pending; this evidence is not full WP03 acceptance."
+        }
+      ]
     },
     {
       "source": "src/client/components/SelectResource.vue",
@@ -7609,6 +7700,18 @@
             "tests/client/wrybit/visuals/visualStyles.spec.ts"
           ],
           "note": "Source PaymentUnit template emits canonical modelValue/plus/minus/max commands and takes explicit controller-supplied limits/target. Shared native icon mapping preserves custom resources. Source overpayment graphic reads our supplied payment/rates/cost/item/reason and only emits accept/dismiss; foreign validation/defaults/inference not imported. 24 tests/3 files, Vue types, ESLint/Stylelint passed. payments.less staged without import until full payment presentation consumer; full UI-09/controller switching/real server acceptance remain WP03."
+        },
+        {
+          "kind": "input-controller-vertical",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/NestedPresentation.spec.ts",
+            "tests/client/wrybit/inputs/PaymentPresentation.spec.ts",
+            "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-action-tabs-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-final-console.txt"
+          ],
+          "note": "Our permanent and/or/project/payment/card controllers receive lazy typed views and local per-owner child hosts. All child identities, Birds/heat4/MC6, exact nested original-index response, native Energy/Nereid defaults and validation retained. Source balance/tab/hand layout in actual App synthetic fixture: normal clicks, hand-tab round trip and classic return retain values, console0/0. Single/multiple card picks retain native state shape, maximum, filter-hidden selection and exact response. Full client1176tests/243files and types/lint/style passed. Mode-key mutation rejected; exact bytes restored. Source OrOptions choices/grouping/CEO, other input types, source overpayment modal, creation/initial cards, full mobile and all final UI rows remain pending; this evidence is not full WP03 acceptance."
         }
       ]
     },
@@ -7628,6 +7731,90 @@
             "tests/client/wrybit/visuals/visualStyles.spec.ts"
           ],
           "note": "Source PaymentUnit template emits canonical modelValue/plus/minus/max commands and takes explicit controller-supplied limits/target. Shared native icon mapping preserves custom resources. Source overpayment graphic reads our supplied payment/rates/cost/item/reason and only emits accept/dismiss; foreign validation/defaults/inference not imported. 24 tests/3 files, Vue types, ESLint/Stylelint passed. payments.less staged without import until full payment presentation consumer; full UI-09/controller switching/real server acceptance remain WP03."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/choiceBlock.ts",
+      "sourceSha256": "58a5c1c75ed58dd979b8414e2484355e3553dc6eeea452fb6d6ef0f73146c5c9",
+      "target": "src/client/wrybit/inputs/choiceBlock.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "input-controller-vertical",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/NestedPresentation.spec.ts",
+            "tests/client/wrybit/inputs/PaymentPresentation.spec.ts",
+            "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-action-tabs-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-final-console.txt"
+          ],
+          "note": "Our permanent and/or/project/payment/card controllers receive lazy typed views and local per-owner child hosts. All child identities, Birds/heat4/MC6, exact nested original-index response, native Energy/Nereid defaults and validation retained. Source balance/tab/hand layout in actual App synthetic fixture: normal clicks, hand-tab round trip and classic return retain values, console0/0. Single/multiple card picks retain native state shape, maximum, filter-hidden selection and exact response. Full client1176tests/243files and types/lint/style passed. Mode-key mutation rejected; exact bytes restored. Source OrOptions choices/grouping/CEO, other input types, source overpayment modal, creation/initial cards, full mobile and all final UI rows remain pending; this evidence is not full WP03 acceptance."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/orOptionsShortLabels.ts",
+      "sourceSha256": "1d6f660693f0d72b412fa3b517bed1fbf3be7c0151d2b02e8687580a6e221a81",
+      "target": "src/client/wrybit/inputs/orOptionsShortLabels.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "input-controller-vertical",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/NestedPresentation.spec.ts",
+            "tests/client/wrybit/inputs/PaymentPresentation.spec.ts",
+            "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-action-tabs-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-final-console.txt"
+          ],
+          "note": "Our permanent and/or/project/payment/card controllers receive lazy typed views and local per-owner child hosts. All child identities, Birds/heat4/MC6, exact nested original-index response, native Energy/Nereid defaults and validation retained. Source balance/tab/hand layout in actual App synthetic fixture: normal clicks, hand-tab round trip and classic return retain values, console0/0. Single/multiple card picks retain native state shape, maximum, filter-hidden selection and exact response. Full client1176tests/243files and types/lint/style passed. Mode-key mutation rejected; exact bytes restored. Source OrOptions choices/grouping/CEO, other input types, source overpayment modal, creation/initial cards, full mobile and all final UI rows remain pending; this evidence is not full WP03 acceptance."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/actionStep.ts",
+      "sourceSha256": "bac53f6f1febddc2399e98f8b5b06025d4d7eececc047477c84c96466ac7f1d6",
+      "target": "src/client/wrybit/inputs/actionStep.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "input-controller-vertical",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/NestedPresentation.spec.ts",
+            "tests/client/wrybit/inputs/PaymentPresentation.spec.ts",
+            "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-action-tabs-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-final-console.txt"
+          ],
+          "note": "Our permanent and/or/project/payment/card controllers receive lazy typed views and local per-owner child hosts. All child identities, Birds/heat4/MC6, exact nested original-index response, native Energy/Nereid defaults and validation retained. Source balance/tab/hand layout in actual App synthetic fixture: normal clicks, hand-tab round trip and classic return retain values, console0/0. Single/multiple card picks retain native state shape, maximum, filter-hidden selection and exact response. Full client1176tests/243files and types/lint/style passed. Mode-key mutation rejected; exact bytes restored. Source OrOptions choices/grouping/CEO, other input types, source overpayment modal, creation/initial cards, full mobile and all final UI rows remain pending; this evidence is not full WP03 acceptance."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/choice_block.less",
+      "sourceSha256": "a42e301d814dea8383925a0f9e29bf47aff188d52939c93de427405607cbc582",
+      "target": "src/styles/wrybit/choice_block.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "input-controller-vertical",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/NestedPresentation.spec.ts",
+            "tests/client/wrybit/inputs/PaymentPresentation.spec.ts",
+            "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-action-tabs-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-final-console.txt"
+          ],
+          "note": "Our permanent and/or/project/payment/card controllers receive lazy typed views and local per-owner child hosts. All child identities, Birds/heat4/MC6, exact nested original-index response, native Energy/Nereid defaults and validation retained. Source balance/tab/hand layout in actual App synthetic fixture: normal clicks, hand-tab round trip and classic return retain values, console0/0. Single/multiple card picks retain native state shape, maximum, filter-hidden selection and exact response. Full client1176tests/243files and types/lint/style passed. Mode-key mutation rejected; exact bytes restored. Source OrOptions choices/grouping/CEO, other input types, source overpayment modal, creation/initial cards, full mobile and all final UI rows remain pending; this evidence is not full WP03 acceptance."
         }
       ]
     }

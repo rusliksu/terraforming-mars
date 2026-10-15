@@ -7,8 +7,11 @@
 </template>
 
 <script setup lang="ts">
-import {inject} from 'vue';
+import {computed, inject} from 'vue';
 import {TAB_PANEL_FOOTER} from './tabPanelFooter';
+import {INPUT_FOOTER} from '@/client/wrybit/inputs/presentation';
 
-const target = inject(TAB_PANEL_FOOTER, undefined);
+const legacyTarget = inject(TAB_PANEL_FOOTER, undefined);
+const footer = inject(INPUT_FOOTER, undefined);
+const target = computed(() => footer?.value ?? legacyTarget);
 </script>

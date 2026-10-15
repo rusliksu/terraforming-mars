@@ -35,7 +35,7 @@
             <div v-for="card in playerView.draftedCards" :key="card.name" class="cardbox"><Card :card="card"/></div>
           </div>
           <a name="cards" class="player_home_anchor"></a>
-          <div class="player_home_block player_home_block--hand" id="shortkey-hand">
+          <div v-if="!hasHandInInputTabs" class="player_home_block player_home_block--hand" id="shortkey-hand">
             <div class="or-tabs" role="tablist"><HandCardsTab :count="cardsInHandCount" :active="true"/></div>
             <div v-docked-tab class="or-tab-panel or-tab-panel--view" role="tabpanel"><HandCardsPanel :playerView="playerView"/></div>
           </div>
@@ -70,9 +70,13 @@ import HandCardsPanel from './HandCardsPanel.vue';
 import KeyboardShortcuts from './KeyboardShortcuts.vue';
 import {vDockedTab} from './common/DockedTab';
 import {GAME_MENU_CONTEXT, GameMenuContext} from './gameMenu/gameMenuContext';
+import {useInputPresentation} from '@/client/wrybit/inputs/presentation';
 
 export default defineComponent({
   name: 'WrybitPlayerHome',
+  setup() {
+    return {orPresentation: useInputPresentation('or')};
+  },
   mixins: [HomeMixin],
   props: {playerView: {type: Object as () => PlayerViewModel, required: true}},
   components: {InputHost, WaitingFor, TopBar, PurgeWarning, DynamicTitle, HomeColumns, RowResizeHandle, PlayerSetupView,
@@ -87,6 +91,9 @@ export default defineComponent({
     }))};
   },
   computed: {
+    hasHandInInputTabs(): boolean {
+      return this.orPresentation !== undefined && this.playerView.waitingFor?.type === 'or';
+    },
     game(): GameModel {
       return this.playerView.game;
     },

@@ -1,5 +1,6 @@
 <template>
-    <div class="wf-component wf-component--select-card">
+    <component v-if="cardPresentation !== undefined" :is="cardPresentation" :binding="presentationBinding"/>
+    <div v-else class="wf-component wf-component--select-card">
         <div v-if="showtitle === true" class="nofloat wf-component-title">{{ $t(playerinput.title) }}</div>
         <label v-for="card in getOrderedCards()" :key="card.name" :class="getCardBoxClass(card)">
             <template v-if="!card.isDisabled">
@@ -41,6 +42,7 @@ import {SelectCardModel} from '@/common/models/PlayerInputModel';
 import {sortActiveCards} from '@/client/utils/ActiveCardsSortingOrder';
 import {SelectCardResponse} from '@/common/inputs/InputResponse';
 import {Warning} from '@/common/cards/Warning';
+import {CardSelectionBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
 
 type Owner = {
   name: string;
@@ -57,6 +59,9 @@ type WidgetDataModel = {
 
 export default defineComponent({
   name: 'SelectCard',
+  setup() {
+    return {cardPresentation: useInputPresentation('card')};
+  },
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
@@ -182,6 +187,21 @@ export default defineComponent({
     },
   },
   computed: {
+    presentationBinding(): CardSelectionBinding {
+      const orderedCards = this.getOrderedCards();
+      this.hasCardWarning();
+      return {
+        playerView: this.playerView, playerinput: this.playerinput, showtitle: this.showtitle, showsave: this.showsave,
+        orderedCards, selected: this.cards, count: this.cardsSelected(), single: this.selectOnlyOneCard,
+        optionalMany: this.isOptionalToManyCards, showSelectAll: this.showSelectAll, allSelected: this.allSelected,
+        buttonLabel: this.buttonLabel(), warning: this.warning, warnings: this.warnings,
+        owner: (card) => this.getOwner(card), robotCard: (card) => this.robotCard(card),
+        select: (cards) => {
+          this.cards = cards;
+        },
+        toggleAll: () => this.toggleSelectAll(), save: () => this.saveData(),
+      };
+    },
     selectOnlyOneCard() : boolean {
       return this.playerinput.max === 1 && this.playerinput.min === 1;
     },

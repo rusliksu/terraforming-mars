@@ -1,5 +1,6 @@
 <template>
-<div class="payments_cont">
+<component v-if="projectPresentation !== undefined" :is="projectPresentation" :binding="presentationBinding" v-bind="$attrs"/>
+<div v-else class="payments_cont" v-bind="$attrs">
   <div v-if="showtitle === true">{{ $t(playerinput.title) }}</div>
   <label v-for="availableCard in cards" class="payments_cards" :key="availableCard.name">
     <input v-if="!availableCard.isDisabled" class="hidden" type="radio" v-model="cardName" :value="availableCard.name" >
@@ -27,6 +28,9 @@
   </template>
   <WarningsComponent v-if="card !== undefined" :warnings="card.warnings"/>
 
+  <PresentationHost :hosts="paymentHost"/>
+</div>
+<InputPortal :target="paymentHost.target.value">
   <PaymentForm
     v-if="showPaymentSection"
     ref="paymentForm"
@@ -38,7 +42,7 @@
     :buttonLabel="playerinput.buttonLabel"
     @change="(p) => payment = p"
     @save="doSave"/>
-</div>
+</InputPortal>
 </template>
 
 <script lang="ts">
@@ -58,9 +62,17 @@ import {SelectProjectCardToPlayResponse} from '@/common/inputs/InputResponse';
 import WarningsComponent from '@/client/components/WarningsComponent.vue';
 import PaymentForm from '@/client/components/PaymentForm.vue';
 import {Ledger} from '@/client/components/PaymentLedger';
+import {createInputHosts} from '@/client/wrybit/shell/inputHosts';
+import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
+import PresentationHost from '@/client/wrybit/inputs/PresentationHost.vue';
+import {ProjectCardBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
 
 export default defineComponent({
   name: 'SelectProjectCardToPlay',
+  inheritAttrs: false,
+  setup() {
+    return {projectPresentation: useInputPresentation('projectCard'), paymentHost: createInputHosts()};
+  },
   mixins: [PaymentWidgetMixin],
   props: {
     playerView: {
@@ -83,6 +95,15 @@ export default defineComponent({
     },
   },
   computed: {
+    presentationBinding(): ProjectCardBinding {
+      return {
+        playerView: this.playerView, playerinput: this.playerinput, showtitle: this.showtitle,
+        cards: this.cards, card: this.card, cardName: this.cardName, paymentHost: this.paymentHost,
+        select: (name) => {
+          this.cardName = name;
+        },
+      };
+    },
     order(): ReadonlyArray<SpendableResource> {
       return ([
         'steel',
@@ -154,6 +175,8 @@ export default defineComponent({
     };
   },
   components: {
+    PresentationHost,
+    InputPortal,
     Card,
     PaymentForm,
     WarningsComponent,

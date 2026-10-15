@@ -10,7 +10,8 @@
 
 <script lang="ts">
 
-import {Component, defineComponent} from 'vue';
+import {Component, defineComponent, inject, provide} from 'vue';
+import {INPUT_DEPTH} from '@/client/wrybit/inputs/presentation';
 import {PlayerViewModel} from '@/common/models/PlayerModel';
 import {PlayerInputModel} from '@/common/models/PlayerInputModel';
 import {InputResponse} from '@/common/inputs/InputResponse';
@@ -77,6 +78,9 @@ const inputComponents = {
 
 export default defineComponent({
   name: 'PlayerInputFactory',
+  setup() {
+    provide(INPUT_DEPTH, inject(INPUT_DEPTH, 0) + 1);
+  },
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,

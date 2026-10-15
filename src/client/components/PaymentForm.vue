@@ -1,5 +1,6 @@
 <template>
-<section v-trim-whitespace>
+<component v-if="paymentPresentation !== undefined" :is="paymentPresentation" :binding="presentationBinding" />
+<section v-else v-trim-whitespace>
   <table class="payments_table">
     <tbody>
       <tr>
@@ -58,6 +59,7 @@ import {computeDefaultPayment} from '@/client/components/PaymentDefaults';
 import {sum} from '@/common/utils/utils';
 import {Message} from '@/common/logs/Message';
 import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
+import {PaymentFormBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
 
 const DESCRIPTIONS: Record<SpendableResource, string> = {
   steel: 'Steel',
@@ -96,6 +98,9 @@ type DataModel = {
 
 export default defineComponent({
   name: 'PaymentForm',
+  setup() {
+    return {paymentPresentation: useInputPresentation('paymentForm')};
+  },
   components: {
     AppButton,
     PaymentUnitComponent,
@@ -132,6 +137,20 @@ export default defineComponent({
     };
   },
   computed: {
+    presentationBinding(): PaymentFormBinding {
+      return {
+        cost: this.cost, order: this.order, ledger: this.ledger, payment: this.payment,
+        descriptions: this.descriptions, warning: this.warning, showsave: this.showsave, buttonLabel: this.buttonLabel,
+        total: this.totalSpent(), totalClass: this.totalSpentClass(), totalTitle: this.totalSpentTitle(),
+        target: (unit) => this.maxTarget(unit),
+        plusLimit: (unit) => unit === 'megacredits' ? this.getMegaCreditsMax() : this.ledger[unit].available,
+        setValue: (unit, value) => {
+          this.payment[unit] = value;
+        },
+        plus: (unit) => this.addValue(unit), minus: (unit) => this.reduceValue(unit), max: (unit) => this.maxValue(unit),
+        save: () => this.handleSave(),
+      };
+    },
     descriptions(): Record<SpendableResource, string> {
       return DESCRIPTIONS;
     },
@@ -206,8 +225,11 @@ export default defineComponent({
       const megacredits = Math.min(this.ledger.megacredits.available, remainingMC);
       this.payment.megacredits = megacredits;
     },
+    maxTarget(unit: SpendableResource): number {
+      return Math.min(this.ledger[unit].available, Math.floor(this.cost / this.ledger[unit].rate));
+    },
     maxValue(unit: SpendableResource): void {
-      const target = Math.min(this.ledger[unit].available, Math.floor(this.cost / this.ledger[unit].rate));
+      const target = this.maxTarget(unit);
 
       if (this.payment[unit] < target) {
         this.payment[unit] = target;

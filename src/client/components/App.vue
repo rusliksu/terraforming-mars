@@ -22,7 +22,7 @@
         v-else-if="screen === 'game-home' && game !== undefined"
         :game="game"
       />
-      <PlayerHome
+      <component :is="wrybitMode && wrybitReady && wrybitViews.playerHome ? wrybitViews.playerHome : 'PlayerHome'"
         v-else-if="screen === 'player-home' && playerView !== undefined"
         :player-view="playerView"
         :key="playerkey"

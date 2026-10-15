@@ -9,11 +9,12 @@
 import {computed, markRaw, onMounted} from 'vue';
 import AppBackground from '@/client/wrybit/shell/AppBackground.vue';
 import Catalog from '@/client/wrybit/visuals/cardlist/CardList.vue';
+import PlayerHome from '@/client/wrybit/visuals/PlayerHome.vue';
 import type {WrybitViews} from './presentationViews';
 
 const props = defineProps<{screen: string}>();
 const emit = defineEmits<{classic: []; views: [views: WrybitViews]}>();
-onMounted(() => emit('views', {cards: markRaw(Catalog)}));
+onMounted(() => emit('views', {cards: markRaw(Catalog), playerHome: markRaw(PlayerHome)}));
 
 const hasBackground = computed(() => [
   'start-screen', 'create-game-form', 'game-home', 'player-home', 'spectator-home',

@@ -14,4 +14,3 @@ import CanonicalCardCost from '@/client/components/card/CardCost.vue';
 
 export default defineComponent({name: 'CardCost', extends: CanonicalCardCost});
 </script>
-

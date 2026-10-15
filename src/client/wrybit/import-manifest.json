@@ -174,6 +174,15 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/board-resources-phone.png"
           ],
           "note": "Штатные Webpack loaders с отдельным D:-entry; 0 console errors/warnings, обычный toggle click и resize. Это component fixture, не полный App или mobile flow."
+        },
+        {
+          "kind": "app-root-consumer-update",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/wrybit/visuals/PlayerHome.vue",
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts"
+          ],
+          "note": "Supersedes historical missing-caller notes: App now selects the standalone root through the lazy shell; source board/overview/hand/log are real consumers. Actual App desktop tested in9e042; full input/fixed-height/mobile flows remain open and belong to following WPs."
         }
       ]
     },
@@ -386,6 +395,15 @@
             "tests/models/ServerModel.spec.ts"
           ],
           "note": "122 client tests/31 files, 22 ServerModel tests, type/lint/style checks. Canonical reactive tag producer, public discount projection from existing methods on fixed Birds/Asteroid, no private-hand dependency; stock/production protection kept distinct. Our states, Galactic, Coordination, bot/persona markers, recorded timers and hidden VP. Full App/home callers, viewport/change-flash/filter/carousel integration and expansion presentation remain pending."
+        },
+        {
+          "kind": "app-root-consumer-update",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/wrybit/visuals/PlayerHome.vue",
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts"
+          ],
+          "note": "Supersedes historical missing-caller notes: App now selects the standalone root through the lazy shell; source board/overview/hand/log are real consumers. Actual App desktop tested in9e042; full input/fixed-height/mobile flows remain open and belong to following WPs."
         }
       ]
     },
@@ -507,6 +525,15 @@
             "tests/client/components/PlayerHome.spec.ts"
           ],
           "note": "Our static/custom metadata, clone/Galactic/Infrastructure and supplied prices/playable input. Whole-hand sort uses canonical SortOrder/CardOrderStorage, independent viewer state, Manual restoration and new cards. Source controls, scoped zoom and private body sheet; no gameplay/AI changes. 90 tests/38 files plus new active-prelude test; types/lint/style, actual Webpack zero warnings. Normal desktop/mobile filter and Cost/Manual clicks, console zero errors/warnings. 137 ordered CSS rules match the frozen source after recorded isolation/selector corrections. Full input/carousel/home/mobile-owner integration is pending."
+        },
+        {
+          "kind": "app-root-consumer-update",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/wrybit/visuals/PlayerHome.vue",
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts"
+          ],
+          "note": "Supersedes historical missing-caller notes: App now selects the standalone root through the lazy shell; source board/overview/hand/log are real consumers. Actual App desktop tested in9e042; full input/fixed-height/mobile flows remain open and belong to following WPs."
         }
       ]
     },
@@ -567,7 +594,7 @@
       "sourceLines": 119,
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
-      "package": "WP01",
+      "package": "WP02",
       "target": "src/client/wrybit/visuals/HomeColumns.vue",
       "status": "planned",
       "evidence": [
@@ -844,10 +871,21 @@
       "sourceLines": 122,
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
-      "package": "WP03",
-      "target": "src/client/wrybit/inputs/OverpaymentDialog.vue",
+      "package": "WP02",
+      "target": "src/client/wrybit/visuals/OverpaymentDialog.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-payment-leaf-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/visuals/PaymentLeaves.spec.ts",
+            "tests/client/components/PaymentForm.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source PaymentUnit template emits canonical modelValue/plus/minus/max commands and takes explicit controller-supplied limits/target. Shared native icon mapping preserves custom resources. Source overpayment graphic reads our supplied payment/rates/cost/item/reason and only emits accept/dismiss; foreign validation/defaults/inference not imported. 24 tests/3 files, Vue types, ESLint/Stylelint passed. payments.less staged without import until full payment presentation consumer; full UI-09/controller switching/real server acceptance remain WP03."
+        }
+      ]
     },
     {
       "source": "src/client/components/PageToolbar.vue",
@@ -925,10 +963,21 @@
       "sourceLines": 97,
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
-      "package": "WP03",
-      "target": "src/client/wrybit/inputs/PaymentUnit.vue",
+      "package": "WP02",
+      "target": "src/client/wrybit/visuals/PaymentUnit.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-payment-leaf-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/visuals/PaymentLeaves.spec.ts",
+            "tests/client/components/PaymentForm.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source PaymentUnit template emits canonical modelValue/plus/minus/max commands and takes explicit controller-supplied limits/target. Shared native icon mapping preserves custom resources. Source overpayment graphic reads our supplied payment/rates/cost/item/reason and only emits accept/dismiss; foreign validation/defaults/inference not imported. 24 tests/3 files, Vue types, ESLint/Stylelint passed. payments.less staged without import until full payment presentation consumer; full UI-09/controller switching/real server acceptance remain WP03."
+        }
+      ]
     },
     {
       "source": "src/client/components/PlayedCardsGroups.vue",
@@ -964,7 +1013,7 @@
       "sourceLines": 229,
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
-      "package": "WP01",
+      "package": "WP02",
       "target": "src/client/wrybit/visuals/PlayerHome.vue",
       "status": "planned",
       "evidence": [
@@ -1010,7 +1059,7 @@
       "sourceLines": 93,
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
-      "package": "WP03",
+      "package": "WP02",
       "target": "src/client/wrybit/visuals/PlayerSetupView.vue",
       "status": "planned",
       "evidence": [
@@ -1068,7 +1117,7 @@
       "sourceLines": 88,
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
-      "package": "WP01",
+      "package": "WP02",
       "target": "src/client/wrybit/visuals/RowResizeHandle.vue",
       "status": "planned",
       "evidence": [
@@ -1318,7 +1367,7 @@
       "sourceLines": 33,
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
-      "package": "WP03",
+      "package": "WP02",
       "target": "src/client/wrybit/visuals/SetupTurnOrder.vue",
       "status": "planned",
       "evidence": [
@@ -1446,7 +1495,7 @@
       "sourceLines": 16,
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
-      "package": "WP03",
+      "package": "WP02",
       "target": "src/client/wrybit/visuals/SourceCardThumbnail.vue",
       "status": "planned",
       "evidence": [
@@ -1567,7 +1616,7 @@
       "sourceLines": 14,
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
-      "package": "WP03",
+      "package": "WP02",
       "target": "src/client/wrybit/visuals/TabPanelFooterSlot.vue",
       "status": "planned",
       "evidence": [
@@ -2123,6 +2172,15 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/cards-styles-phone.png"
           ],
           "note": "Штатный Webpack fixture, 1440x1000 и 390x844, 0 console errors/warnings после URL repair. Каталог, все карты и полный App ещё не проверены."
+        },
+        {
+          "kind": "app-root-consumer-update",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/wrybit/visuals/PlayerHome.vue",
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts"
+          ],
+          "note": "Supersedes historical missing-caller notes: App now selects the standalone root through the lazy shell; source board/overview/hand/log are real consumers. Actual App desktop tested in9e042; full input/fixed-height/mobile flows remain open and belong to following WPs."
         }
       ],
       "adaptations": [
@@ -4126,6 +4184,15 @@
             "tests/client/wrybit/visuals/visualStyles.spec.ts"
           ],
           "note": "Continuous source generations use our participant-scoped GET URL/gameAge/no-store protocol and server access gate. Past generations reload on log revision because our undo rewrites history; no frozen-generation cache or foreign global request controller. Native search/player filters, canceled/undo/BOT classes and Infrastructure pills remain. Per-instance abort/revision rejects late previous-actor responses. Source hover/modal/mobile carousel uses public canonical tableau/Self-Replicating Robots preview state and isolated portals. 286 client tests/95 files plus focused shared-preview check; type/lint/style and actual Webpack passed without warnings. Real ordinary browser hover/multi-card click/Escape/search/canceled-history/phone Next-close; console zero errors/warnings. Request-guard mutation is killed by loss of current-actor Ants after late old-actor Birds; exact bytes restored and focused tests pass. Full game/mobile/input consumers and change-flash owner remain pending."
+        },
+        {
+          "kind": "app-root-consumer-update",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/wrybit/visuals/PlayerHome.vue",
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts"
+          ],
+          "note": "Supersedes historical missing-caller notes: App now selects the standalone root through the lazy shell; source board/overview/hand/log are real consumers. Actual App desktop tested in9e042; full input/fixed-height/mobile flows remain open and belong to following WPs."
         }
       ]
     },
@@ -4200,7 +4267,7 @@
       "sourceLines": 203,
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
-      "package": "WP05",
+      "package": "WP02",
       "target": "src/client/wrybit/visuals/mobile/MobileCardZoom.vue",
       "status": "planned",
       "evidence": [
@@ -4762,6 +4829,15 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/players-table-console.txt"
           ],
           "note": "Actual Webpack synthetic component fixture. Open/close played cards and toggle goods through ordinary CLI clicks; 0 errors/warnings. Full game and mobile integration remain open."
+        },
+        {
+          "kind": "app-root-consumer-update",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/wrybit/visuals/PlayerHome.vue",
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts"
+          ],
+          "note": "Supersedes historical missing-caller notes: App now selects the standalone root through the lazy shell; source board/overview/hand/log are real consumers. Actual App desktop tested in9e042; full input/fixed-height/mobile flows remain open and belong to following WPs."
         }
       ]
     },
@@ -7516,6 +7592,44 @@
           "note": "Source desktop columns/table/board/log/standalone hand over our PlayerViewModel, HomeMixin and App-owned persistent WaitingFor. No foreign network/actions/controller. Source setup presentation retains our dealt/drafted cards and keeps its InputHost visible while waiting. Per-instance DOM/drag ownership, private storage/CSS variables, pointer capture/listener/observer/RAF cleanup. Fixed-height layout and full input tabs/mobile/remaining screens are pending; this does not close full UI-05/06/07 rows. Full client suite 1163 tests/239 files, focused shell 25/11, restored focus mutation +4/2, Vue types/ESLint/Stylelint and actual App-only Webpack passed. Real App desktop opt-in, Birds heat4/MC6, column keyboard59/41/reset60/40, GameMenu/Escape/classic return passed; console0/0. Fresh default-off static requests contain no wrybit-ui.js or assets/wrybit requests. No proof-only players-table CSS override. Browser synthetic fixture only; no DB."
         }
       ]
+    },
+    {
+      "source": "src/styles/payments.less",
+      "sourceSha256": "c7a33e08581c27fe42ae382dfdaa8ae15e58e2514e93f3a34b6555fe7da2032d",
+      "target": "src/styles/wrybit/payments.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-payment-leaf-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/visuals/PaymentLeaves.spec.ts",
+            "tests/client/components/PaymentForm.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source PaymentUnit template emits canonical modelValue/plus/minus/max commands and takes explicit controller-supplied limits/target. Shared native icon mapping preserves custom resources. Source overpayment graphic reads our supplied payment/rates/cost/item/reason and only emits accept/dismiss; foreign validation/defaults/inference not imported. 24 tests/3 files, Vue types, ESLint/Stylelint passed. payments.less staged without import until full payment presentation consumer; full UI-09/controller switching/real server acceptance remain WP03."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/overpayment_dialog.less",
+      "sourceSha256": "2c5c923a3e847cf1ff761d1793ab9399cf39342247a694cd4df778c76f00b2e5",
+      "target": "src/styles/wrybit/overpayment_dialog.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-payment-leaf-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/visuals/PaymentLeaves.spec.ts",
+            "tests/client/components/PaymentForm.spec.ts",
+            "tests/client/wrybit/visuals/visualStyles.spec.ts"
+          ],
+          "note": "Source PaymentUnit template emits canonical modelValue/plus/minus/max commands and takes explicit controller-supplied limits/target. Shared native icon mapping preserves custom resources. Source overpayment graphic reads our supplied payment/rates/cost/item/reason and only emits accept/dismiss; foreign validation/defaults/inference not imported. 24 tests/3 files, Vue types, ESLint/Stylelint passed. payments.less staged without import until full payment presentation consumer; full UI-09/controller switching/real server acceptance remain WP03."
+        }
+      ]
     }
   ],
   "assets": [
@@ -7974,7 +8088,7 @@
       "sourceSha256": "7d0b4a1473ddbd1be11eeddbe504c4e58fc3a6b8a8f574c00d23f8b4f0c66691",
       "target": "assets/wrybit/board/mars-planet.png",
       "license": "GPL-3.0",
-      "status": "planned",
+      "status": "copied-unchanged",
       "evidence": [
         {
           "kind": "scoped-board-zoom-proof",

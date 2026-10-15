@@ -1,7 +1,7 @@
 {
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-15T17:43:13.882Z",
-  "generated_from_commit": "7b18309628f8075b4452b98404e21b812e424db8",
+  "generated_at": "2026-10-15T17:54:46.751Z",
+  "generated_from_commit": "9e042bb05038de91168ae5168a1a1cb1c824e3c3",
   "scope": [
     ".",
     ".github",
@@ -2938,7 +2938,7 @@
         }
       ],
       "constraints": [
-        "Full game consumer пока не интегрирован.",
+        "App root consumer подключён; full input/mobile proof ещё открыт.",
         "Нет кеша неизменяемых прошлых поколений."
       ],
       "evidence": []
@@ -5142,7 +5142,14 @@
     "src/styles/wrybit/player_home_fixed.less",
     "src/styles/wrybit/resize_handle.less",
     "src/styles/wrybit/setup_turn_order.less",
-    "tests/client/wrybit/visuals/HomeColumns.spec.ts"
+    "tests/client/wrybit/visuals/HomeColumns.spec.ts",
+    "src/client/components/paymentIcon.ts",
+    "src/client/components/PaymentUnit.vue",
+    "src/client/wrybit/visuals/OverpaymentDialog.vue",
+    "src/client/wrybit/visuals/PaymentUnit.vue",
+    "src/styles/wrybit/overpayment_dialog.less",
+    "src/styles/wrybit/payments.less",
+    "tests/client/wrybit/visuals/PaymentLeaves.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -5202,6 +5209,7 @@
       "src/client/components/GameSetupDetail.vue",
       "src/client/components/Milestones.vue",
       "src/client/components/OrOptions.vue",
+      "src/client/components/PaymentUnit.vue",
       "src/client/components/PlayerHome.vue",
       "src/client/components/PlayerSetupView.vue",
       "src/client/components/SelectSpace.vue",
@@ -5228,6 +5236,7 @@
       "src/client/components/overview/PlayerTags.vue",
       "src/client/components/overview/PlayersOverview.vue",
       "src/client/components/overview/playerTagDetails.ts",
+      "src/client/components/paymentIcon.ts",
       "src/client/components/replay/ReplayHome.vue",
       "src/client/components/replay/useReplay.ts",
       "src/client/utils/WikiLinks.ts",
@@ -5263,8 +5272,10 @@
       "src/client/wrybit/visuals/Milestone.vue",
       "src/client/wrybit/visuals/Milestones.vue",
       "src/client/wrybit/visuals/OtherPlayer.vue",
+      "src/client/wrybit/visuals/OverpaymentDialog.vue",
       "src/client/wrybit/visuals/PageToolbar.vue",
       "src/client/wrybit/visuals/Party.vue",
+      "src/client/wrybit/visuals/PaymentUnit.vue",
       "src/client/wrybit/visuals/PlayedCardsGroups.vue",
       "src/client/wrybit/visuals/PlayerHome.vue",
       "src/client/wrybit/visuals/PlayerSetupView.vue",
@@ -5652,6 +5663,8 @@
       "src/styles/wrybit/or_options_tabs.less",
       "src/styles/wrybit/or_tab_tones.less",
       "src/styles/wrybit/outer_spaces.less",
+      "src/styles/wrybit/overpayment_dialog.less",
+      "src/styles/wrybit/payments.less",
       "src/styles/wrybit/placement_banner.less",
       "src/styles/wrybit/player_cube.less",
       "src/styles/wrybit/player_home_columns.less",
@@ -5733,6 +5746,7 @@
       "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
       "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
       "tests/client/wrybit/visuals/MobileCardZoom.spec.ts",
+      "tests/client/wrybit/visuals/PaymentLeaves.spec.ts",
       "tests/client/wrybit/visuals/PlayerCube.spec.ts",
       "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
       "tests/client/wrybit/visuals/PlayerResources.spec.ts",

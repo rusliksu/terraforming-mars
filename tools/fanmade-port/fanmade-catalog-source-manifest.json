@@ -2744,7 +2744,7 @@
     "src/server/routes/LoadGame.ts": "3d059dafbc1c3a182be6944d7d9db2410aca38120ded77c5dadbfbea48508fdb",
     "src/server/routes/Login.ts": "5d54284dc0d6406438eb0be2fdf9e4c49ca75a69058ab426ce7b53ccc171b900",
     "src/server/routes/PlayerInput.js": "1d2db563b3891371d8fbb7483f5354a68257689ee70b62afa3a433bd35aeef32",
-    "src/server/routes/PlayerInput.ts": "50cd739f8753dc5d77b1bf682f8a5ca4de157da82ac42a80123cdf65e6e755d4",
+    "src/server/routes/PlayerInput.ts": "a82c015bbd71e4dafdd2382ae2dda3f7907ea94586627dfb3c8c831ea589fd91",
     "src/server/routes/Reset.ts": "a33c0f7bd0ae85372a0d2feca13824a3221ca3b9ae5fa311c2ebbe9d60936272",
     "src/server/routes/RouteError.ts": "386592e527d2fdefb24b4c9064eb6047bc237d295350eb125b8dbf620a8cc74a",
     "src/server/routes/ServeApp.ts": "d4fad7ec7bfd199cbe402963caeaeb1c7d8a7ca3b8a0118c0592fc58f02c5c31",

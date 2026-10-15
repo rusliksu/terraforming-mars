@@ -568,9 +568,19 @@
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP01",
-      "target": "src/client/wrybit/shell/HomeColumns.vue",
+      "target": "src/client/wrybit/visuals/HomeColumns.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-app-player-root-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "tests/client/wrybit/visuals/HomeColumns.spec.ts"
+          ],
+          "note": "Source desktop columns/table/board/log/standalone hand over our PlayerViewModel, HomeMixin and App-owned persistent WaitingFor. No foreign network/actions/controller. Source setup presentation retains our dealt/drafted cards and keeps its InputHost visible while waiting. Per-instance DOM/drag ownership, private storage/CSS variables, pointer capture/listener/observer/RAF cleanup. Fixed-height layout and full input tabs/mobile/remaining screens are pending; this does not close full UI-05/06/07 rows. Full client suite 1163 tests/239 files, focused shell 25/11, restored focus mutation +4/2, Vue types/ESLint/Stylelint and actual App-only Webpack passed. Real App desktop opt-in, Birds heat4/MC6, column keyboard59/41/reset60/40, GameMenu/Escape/classic return passed; console0/0. Fresh default-off static requests contain no wrybit-ui.js or assets/wrybit requests. No proof-only players-table CSS override. Browser synthetic fixture only; no DB."
+        }
+      ]
     },
     {
       "source": "src/client/components/InfoPanel.vue",
@@ -955,9 +965,19 @@
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP01",
-      "target": "src/client/wrybit/shell/PlayerHome.vue",
+      "target": "src/client/wrybit/visuals/PlayerHome.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-app-player-root-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "tests/client/wrybit/visuals/HomeColumns.spec.ts"
+          ],
+          "note": "Source desktop columns/table/board/log/standalone hand over our PlayerViewModel, HomeMixin and App-owned persistent WaitingFor. No foreign network/actions/controller. Source setup presentation retains our dealt/drafted cards and keeps its InputHost visible while waiting. Per-instance DOM/drag ownership, private storage/CSS variables, pointer capture/listener/observer/RAF cleanup. Fixed-height layout and full input tabs/mobile/remaining screens are pending; this does not close full UI-05/06/07 rows. Full client suite 1163 tests/239 files, focused shell 25/11, restored focus mutation +4/2, Vue types/ESLint/Stylelint and actual App-only Webpack passed. Real App desktop opt-in, Birds heat4/MC6, column keyboard59/41/reset60/40, GameMenu/Escape/classic return passed; console0/0. Fresh default-off static requests contain no wrybit-ui.js or assets/wrybit requests. No proof-only players-table CSS override. Browser synthetic fixture only; no DB."
+        }
+      ]
     },
     {
       "source": "src/client/components/PlayerInputFactory.vue",
@@ -991,9 +1011,19 @@
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP03",
-      "target": "src/client/wrybit/inputs/PlayerSetupView.vue",
+      "target": "src/client/wrybit/visuals/PlayerSetupView.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-app-player-root-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "tests/client/wrybit/visuals/HomeColumns.spec.ts"
+          ],
+          "note": "Source desktop columns/table/board/log/standalone hand over our PlayerViewModel, HomeMixin and App-owned persistent WaitingFor. No foreign network/actions/controller. Source setup presentation retains our dealt/drafted cards and keeps its InputHost visible while waiting. Per-instance DOM/drag ownership, private storage/CSS variables, pointer capture/listener/observer/RAF cleanup. Fixed-height layout and full input tabs/mobile/remaining screens are pending; this does not close full UI-05/06/07 rows. Full client suite 1163 tests/239 files, focused shell 25/11, restored focus mutation +4/2, Vue types/ESLint/Stylelint and actual App-only Webpack passed. Real App desktop opt-in, Birds heat4/MC6, column keyboard59/41/reset60/40, GameMenu/Escape/classic return passed; console0/0. Fresh default-off static requests contain no wrybit-ui.js or assets/wrybit requests. No proof-only players-table CSS override. Browser synthetic fixture only; no DB."
+        }
+      ]
     },
     {
       "source": "src/client/components/PreferencesDialog.vue",
@@ -1039,9 +1069,19 @@
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP01",
-      "target": "src/client/wrybit/shell/RowResizeHandle.vue",
+      "target": "src/client/wrybit/visuals/RowResizeHandle.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-app-player-root-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "tests/client/wrybit/visuals/HomeColumns.spec.ts"
+          ],
+          "note": "Source desktop columns/table/board/log/standalone hand over our PlayerViewModel, HomeMixin and App-owned persistent WaitingFor. No foreign network/actions/controller. Source setup presentation retains our dealt/drafted cards and keeps its InputHost visible while waiting. Per-instance DOM/drag ownership, private storage/CSS variables, pointer capture/listener/observer/RAF cleanup. Fixed-height layout and full input tabs/mobile/remaining screens are pending; this does not close full UI-05/06/07 rows. Full client suite 1163 tests/239 files, focused shell 25/11, restored focus mutation +4/2, Vue types/ESLint/Stylelint and actual App-only Webpack passed. Real App desktop opt-in, Birds heat4/MC6, column keyboard59/41/reset60/40, GameMenu/Escape/classic return passed; console0/0. Fresh default-off static requests contain no wrybit-ui.js or assets/wrybit requests. No proof-only players-table CSS override. Browser synthetic fixture only; no DB."
+        }
+      ]
     },
     {
       "source": "src/client/components/SelectAmount.vue",
@@ -1279,9 +1319,19 @@
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP03",
-      "target": "src/client/wrybit/inputs/SetupTurnOrder.vue",
+      "target": "src/client/wrybit/visuals/SetupTurnOrder.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "scoped-app-player-root-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "tests/client/wrybit/visuals/HomeColumns.spec.ts"
+          ],
+          "note": "Source desktop columns/table/board/log/standalone hand over our PlayerViewModel, HomeMixin and App-owned persistent WaitingFor. No foreign network/actions/controller. Source setup presentation retains our dealt/drafted cards and keeps its InputHost visible while waiting. Per-instance DOM/drag ownership, private storage/CSS variables, pointer capture/listener/observer/RAF cleanup. Fixed-height layout and full input tabs/mobile/remaining screens are pending; this does not close full UI-05/06/07 rows. Full client suite 1163 tests/239 files, focused shell 25/11, restored focus mutation +4/2, Vue types/ESLint/Stylelint and actual App-only Webpack passed. Real App desktop opt-in, Birds heat4/MC6, column keyboard59/41/reset60/40, GameMenu/Escape/classic return passed; console0/0. Fresh default-off static requests contain no wrybit-ui.js or assets/wrybit requests. No proof-only players-table CSS override. Browser synthetic fixture only; no DB."
+        }
+      ]
     },
     {
       "source": "src/client/components/ShiftAresGlobalParameters.vue",
@@ -7230,6 +7280,240 @@
             "tests/client/wrybit/visuals/visualStyles.spec.ts"
           ],
           "note": "Pure source thumbnail/intro/footer/placement/confirmation/update views. Our static/custom wire descriptions and combined title; canonical Ares controller/input response and supplied thresholds; supplied placement description only, no copied foreign gain/rule inference. Initial anchor positioning/Escape/portal cleanup; scoped CSS with private animation/tone/footer identifiers. ServerUpdateOverlay takes supplied phase/savedMessage and emits reload request; no foreign serverStatus/poller or window reload. Future input/mobile/root consumers remain pending."
+        }
+      ]
+    },
+    {
+      "source": "src/client/utils/columnResize.ts",
+      "sourceSha256": "a5e2f86021dbfbe0434f8717c21e6b8e825178618dad7c37c1864801bb6386c6",
+      "target": "src/client/wrybit/visuals/layout/columnResize.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-app-player-root-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "tests/client/wrybit/visuals/HomeColumns.spec.ts"
+          ],
+          "note": "Source desktop columns/table/board/log/standalone hand over our PlayerViewModel, HomeMixin and App-owned persistent WaitingFor. No foreign network/actions/controller. Source setup presentation retains our dealt/drafted cards and keeps its InputHost visible while waiting. Per-instance DOM/drag ownership, private storage/CSS variables, pointer capture/listener/observer/RAF cleanup. Fixed-height layout and full input tabs/mobile/remaining screens are pending; this does not close full UI-05/06/07 rows. Full client suite 1163 tests/239 files, focused shell 25/11, restored focus mutation +4/2, Vue types/ESLint/Stylelint and actual App-only Webpack passed. Real App desktop opt-in, Birds heat4/MC6, column keyboard59/41/reset60/40, GameMenu/Escape/classic return passed; console0/0. Fresh default-off static requests contain no wrybit-ui.js or assets/wrybit requests. No proof-only players-table CSS override. Browser synthetic fixture only; no DB."
+        }
+      ]
+    },
+    {
+      "source": "src/client/utils/rowResize.ts",
+      "sourceSha256": "b7f161ab989c0adf3d33bf919cf8c6f432c288e023f1365c272bcdb25caf17e7",
+      "target": "src/client/wrybit/visuals/layout/rowResize.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-app-player-root-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "tests/client/wrybit/visuals/HomeColumns.spec.ts"
+          ],
+          "note": "Source desktop columns/table/board/log/standalone hand over our PlayerViewModel, HomeMixin and App-owned persistent WaitingFor. No foreign network/actions/controller. Source setup presentation retains our dealt/drafted cards and keeps its InputHost visible while waiting. Per-instance DOM/drag ownership, private storage/CSS variables, pointer capture/listener/observer/RAF cleanup. Fixed-height layout and full input tabs/mobile/remaining screens are pending; this does not close full UI-05/06/07 rows. Full client suite 1163 tests/239 files, focused shell 25/11, restored focus mutation +4/2, Vue types/ESLint/Stylelint and actual App-only Webpack passed. Real App desktop opt-in, Birds heat4/MC6, column keyboard59/41/reset60/40, GameMenu/Escape/classic return passed; console0/0. Fresh default-off static requests contain no wrybit-ui.js or assets/wrybit requests. No proof-only players-table CSS override. Browser synthetic fixture only; no DB."
+        }
+      ]
+    },
+    {
+      "source": "src/client/utils/layoutStorage.ts",
+      "sourceSha256": "c6cf5a2705ad2723add2d6f16c3a0048428a2de52f229314800fbcb51f23dea1",
+      "target": "src/client/wrybit/visuals/layout/layoutStorage.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-app-player-root-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "tests/client/wrybit/visuals/HomeColumns.spec.ts"
+          ],
+          "note": "Source desktop columns/table/board/log/standalone hand over our PlayerViewModel, HomeMixin and App-owned persistent WaitingFor. No foreign network/actions/controller. Source setup presentation retains our dealt/drafted cards and keeps its InputHost visible while waiting. Per-instance DOM/drag ownership, private storage/CSS variables, pointer capture/listener/observer/RAF cleanup. Fixed-height layout and full input tabs/mobile/remaining screens are pending; this does not close full UI-05/06/07 rows. Full client suite 1163 tests/239 files, focused shell 25/11, restored focus mutation +4/2, Vue types/ESLint/Stylelint and actual App-only Webpack passed. Real App desktop opt-in, Birds heat4/MC6, column keyboard59/41/reset60/40, GameMenu/Escape/classic return passed; console0/0. Fresh default-off static requests contain no wrybit-ui.js or assets/wrybit requests. No proof-only players-table CSS override. Browser synthetic fixture only; no DB."
+        }
+      ]
+    },
+    {
+      "source": "src/client/utils/rightColumnFit.ts",
+      "sourceSha256": "9fa1479d3dbd031bbf4c3e3a53852921a6b3a47a7fb28f1f770622021c0b8418",
+      "target": "src/client/wrybit/visuals/layout/rightColumnFit.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-app-player-root-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "tests/client/wrybit/visuals/HomeColumns.spec.ts"
+          ],
+          "note": "Source desktop columns/table/board/log/standalone hand over our PlayerViewModel, HomeMixin and App-owned persistent WaitingFor. No foreign network/actions/controller. Source setup presentation retains our dealt/drafted cards and keeps its InputHost visible while waiting. Per-instance DOM/drag ownership, private storage/CSS variables, pointer capture/listener/observer/RAF cleanup. Fixed-height layout and full input tabs/mobile/remaining screens are pending; this does not close full UI-05/06/07 rows. Full client suite 1163 tests/239 files, focused shell 25/11, restored focus mutation +4/2, Vue types/ESLint/Stylelint and actual App-only Webpack passed. Real App desktop opt-in, Birds heat4/MC6, column keyboard59/41/reset60/40, GameMenu/Escape/classic return passed; console0/0. Fresh default-off static requests contain no wrybit-ui.js or assets/wrybit requests. No proof-only players-table CSS override. Browser synthetic fixture only; no DB."
+        }
+      ]
+    },
+    {
+      "source": "src/client/utils/boardColumnPosition.ts",
+      "sourceSha256": "e8efea8c11afabb500e089fa516404ed1986c46d444948ee8eec0b79ce90e48b",
+      "target": "src/client/wrybit/visuals/layout/boardColumnPosition.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-app-player-root-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "tests/client/wrybit/visuals/HomeColumns.spec.ts"
+          ],
+          "note": "Source desktop columns/table/board/log/standalone hand over our PlayerViewModel, HomeMixin and App-owned persistent WaitingFor. No foreign network/actions/controller. Source setup presentation retains our dealt/drafted cards and keeps its InputHost visible while waiting. Per-instance DOM/drag ownership, private storage/CSS variables, pointer capture/listener/observer/RAF cleanup. Fixed-height layout and full input tabs/mobile/remaining screens are pending; this does not close full UI-05/06/07 rows. Full client suite 1163 tests/239 files, focused shell 25/11, restored focus mutation +4/2, Vue types/ESLint/Stylelint and actual App-only Webpack passed. Real App desktop opt-in, Birds heat4/MC6, column keyboard59/41/reset60/40, GameMenu/Escape/classic return passed; console0/0. Fresh default-off static requests contain no wrybit-ui.js or assets/wrybit requests. No proof-only players-table CSS override. Browser synthetic fixture only; no DB."
+        }
+      ]
+    },
+    {
+      "source": "src/client/utils/playersCardFit.ts",
+      "sourceSha256": "877039b3c1bca1b97fe6d242442c8f669e4cdf4540cb815d22be335f40a4fa36",
+      "target": "src/client/wrybit/visuals/layout/playersCardFit.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-app-player-root-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "tests/client/wrybit/visuals/HomeColumns.spec.ts"
+          ],
+          "note": "Source desktop columns/table/board/log/standalone hand over our PlayerViewModel, HomeMixin and App-owned persistent WaitingFor. No foreign network/actions/controller. Source setup presentation retains our dealt/drafted cards and keeps its InputHost visible while waiting. Per-instance DOM/drag ownership, private storage/CSS variables, pointer capture/listener/observer/RAF cleanup. Fixed-height layout and full input tabs/mobile/remaining screens are pending; this does not close full UI-05/06/07 rows. Full client suite 1163 tests/239 files, focused shell 25/11, restored focus mutation +4/2, Vue types/ESLint/Stylelint and actual App-only Webpack passed. Real App desktop opt-in, Birds heat4/MC6, column keyboard59/41/reset60/40, GameMenu/Escape/classic return passed; console0/0. Fresh default-off static requests contain no wrybit-ui.js or assets/wrybit requests. No proof-only players-table CSS override. Browser synthetic fixture only; no DB."
+        }
+      ]
+    },
+    {
+      "source": "src/client/utils/handleProximity.ts",
+      "sourceSha256": "b92b95caf64658bb3b74fbd8abd71c1cca9e676613fae1190a3a5adc02639bd9",
+      "target": "src/client/wrybit/visuals/layout/handleProximity.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-app-player-root-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "tests/client/wrybit/visuals/HomeColumns.spec.ts"
+          ],
+          "note": "Source desktop columns/table/board/log/standalone hand over our PlayerViewModel, HomeMixin and App-owned persistent WaitingFor. No foreign network/actions/controller. Source setup presentation retains our dealt/drafted cards and keeps its InputHost visible while waiting. Per-instance DOM/drag ownership, private storage/CSS variables, pointer capture/listener/observer/RAF cleanup. Fixed-height layout and full input tabs/mobile/remaining screens are pending; this does not close full UI-05/06/07 rows. Full client suite 1163 tests/239 files, focused shell 25/11, restored focus mutation +4/2, Vue types/ESLint/Stylelint and actual App-only Webpack passed. Real App desktop opt-in, Birds heat4/MC6, column keyboard59/41/reset60/40, GameMenu/Escape/classic return passed; console0/0. Fresh default-off static requests contain no wrybit-ui.js or assets/wrybit requests. No proof-only players-table CSS override. Browser synthetic fixture only; no DB."
+        }
+      ]
+    },
+    {
+      "source": "src/client/directives/ProximityHandle.ts",
+      "sourceSha256": "774b17d3af6f3922cc5eb062a064ff9e06e31dcf2b6d2b40eec0b5fded698b83",
+      "target": "src/client/wrybit/visuals/layout/ProximityHandle.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-app-player-root-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "tests/client/wrybit/visuals/HomeColumns.spec.ts"
+          ],
+          "note": "Source desktop columns/table/board/log/standalone hand over our PlayerViewModel, HomeMixin and App-owned persistent WaitingFor. No foreign network/actions/controller. Source setup presentation retains our dealt/drafted cards and keeps its InputHost visible while waiting. Per-instance DOM/drag ownership, private storage/CSS variables, pointer capture/listener/observer/RAF cleanup. Fixed-height layout and full input tabs/mobile/remaining screens are pending; this does not close full UI-05/06/07 rows. Full client suite 1163 tests/239 files, focused shell 25/11, restored focus mutation +4/2, Vue types/ESLint/Stylelint and actual App-only Webpack passed. Real App desktop opt-in, Birds heat4/MC6, column keyboard59/41/reset60/40, GameMenu/Escape/classic return passed; console0/0. Fresh default-off static requests contain no wrybit-ui.js or assets/wrybit requests. No proof-only players-table CSS override. Browser synthetic fixture only; no DB."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/resize_handle.less",
+      "sourceSha256": "2ebe3208baa7e21b7fc55fdab085c1214f33934c6f9a58df85cddfa32ab22b5b",
+      "target": "src/styles/wrybit/resize_handle.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-app-player-root-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "tests/client/wrybit/visuals/HomeColumns.spec.ts"
+          ],
+          "note": "Source desktop columns/table/board/log/standalone hand over our PlayerViewModel, HomeMixin and App-owned persistent WaitingFor. No foreign network/actions/controller. Source setup presentation retains our dealt/drafted cards and keeps its InputHost visible while waiting. Per-instance DOM/drag ownership, private storage/CSS variables, pointer capture/listener/observer/RAF cleanup. Fixed-height layout and full input tabs/mobile/remaining screens are pending; this does not close full UI-05/06/07 rows. Full client suite 1163 tests/239 files, focused shell 25/11, restored focus mutation +4/2, Vue types/ESLint/Stylelint and actual App-only Webpack passed. Real App desktop opt-in, Birds heat4/MC6, column keyboard59/41/reset60/40, GameMenu/Escape/classic return passed; console0/0. Fresh default-off static requests contain no wrybit-ui.js or assets/wrybit requests. No proof-only players-table CSS override. Browser synthetic fixture only; no DB."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/player_home_columns.less",
+      "sourceSha256": "f196d86376992cba44c586a420d675e8f12a27d2ff1a0cfb9d1bee6075d7dd68",
+      "target": "src/styles/wrybit/player_home_columns.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-app-player-root-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "tests/client/wrybit/visuals/HomeColumns.spec.ts"
+          ],
+          "note": "Source desktop columns/table/board/log/standalone hand over our PlayerViewModel, HomeMixin and App-owned persistent WaitingFor. No foreign network/actions/controller. Source setup presentation retains our dealt/drafted cards and keeps its InputHost visible while waiting. Per-instance DOM/drag ownership, private storage/CSS variables, pointer capture/listener/observer/RAF cleanup. Fixed-height layout and full input tabs/mobile/remaining screens are pending; this does not close full UI-05/06/07 rows. Full client suite 1163 tests/239 files, focused shell 25/11, restored focus mutation +4/2, Vue types/ESLint/Stylelint and actual App-only Webpack passed. Real App desktop opt-in, Birds heat4/MC6, column keyboard59/41/reset60/40, GameMenu/Escape/classic return passed; console0/0. Fresh default-off static requests contain no wrybit-ui.js or assets/wrybit requests. No proof-only players-table CSS override. Browser synthetic fixture only; no DB."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/player_home_fixed.less",
+      "sourceSha256": "cb7fff6c8bf102a7008121463dfb54ad67f3b58370813837333728c50eb1002c",
+      "target": "src/styles/wrybit/player_home_fixed.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-app-player-root-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "tests/client/wrybit/visuals/HomeColumns.spec.ts"
+          ],
+          "note": "Source desktop columns/table/board/log/standalone hand over our PlayerViewModel, HomeMixin and App-owned persistent WaitingFor. No foreign network/actions/controller. Source setup presentation retains our dealt/drafted cards and keeps its InputHost visible while waiting. Per-instance DOM/drag ownership, private storage/CSS variables, pointer capture/listener/observer/RAF cleanup. Fixed-height layout and full input tabs/mobile/remaining screens are pending; this does not close full UI-05/06/07 rows. Full client suite 1163 tests/239 files, focused shell 25/11, restored focus mutation +4/2, Vue types/ESLint/Stylelint and actual App-only Webpack passed. Real App desktop opt-in, Birds heat4/MC6, column keyboard59/41/reset60/40, GameMenu/Escape/classic return passed; console0/0. Fresh default-off static requests contain no wrybit-ui.js or assets/wrybit requests. No proof-only players-table CSS override. Browser synthetic fixture only; no DB."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/home_cards.less",
+      "sourceSha256": "64235ad1720da7b60cadf018ce389fb1b943e82a25f53734a0925e586da1209c",
+      "target": "src/styles/wrybit/home_cards.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-app-player-root-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "tests/client/wrybit/visuals/HomeColumns.spec.ts"
+          ],
+          "note": "Source desktop columns/table/board/log/standalone hand over our PlayerViewModel, HomeMixin and App-owned persistent WaitingFor. No foreign network/actions/controller. Source setup presentation retains our dealt/drafted cards and keeps its InputHost visible while waiting. Per-instance DOM/drag ownership, private storage/CSS variables, pointer capture/listener/observer/RAF cleanup. Fixed-height layout and full input tabs/mobile/remaining screens are pending; this does not close full UI-05/06/07 rows. Full client suite 1163 tests/239 files, focused shell 25/11, restored focus mutation +4/2, Vue types/ESLint/Stylelint and actual App-only Webpack passed. Real App desktop opt-in, Birds heat4/MC6, column keyboard59/41/reset60/40, GameMenu/Escape/classic return passed; console0/0. Fresh default-off static requests contain no wrybit-ui.js or assets/wrybit requests. No proof-only players-table CSS override. Browser synthetic fixture only; no DB."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/setup_turn_order.less",
+      "sourceSha256": "b26d6d0746b86a8f01828f0e1ce2b0a0d4e2848fa4ccc032553074c8789b50df",
+      "target": "src/styles/wrybit/setup_turn_order.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "scoped-app-player-root-proof",
+          "status": "passed-targeted-tests",
+          "paths": [
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "tests/client/wrybit/visuals/HomeColumns.spec.ts"
+          ],
+          "note": "Source desktop columns/table/board/log/standalone hand over our PlayerViewModel, HomeMixin and App-owned persistent WaitingFor. No foreign network/actions/controller. Source setup presentation retains our dealt/drafted cards and keeps its InputHost visible while waiting. Per-instance DOM/drag ownership, private storage/CSS variables, pointer capture/listener/observer/RAF cleanup. Fixed-height layout and full input tabs/mobile/remaining screens are pending; this does not close full UI-05/06/07 rows. Full client suite 1163 tests/239 files, focused shell 25/11, restored focus mutation +4/2, Vue types/ESLint/Stylelint and actual App-only Webpack passed. Real App desktop opt-in, Birds heat4/MC6, column keyboard59/41/reset60/40, GameMenu/Escape/classic return passed; console0/0. Fresh default-off static requests contain no wrybit-ui.js or assets/wrybit requests. No proof-only players-table CSS override. Browser synthetic fixture only; no DB."
         }
       ]
     }

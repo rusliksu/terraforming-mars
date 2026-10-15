@@ -38,6 +38,7 @@ owned_files:
 - src/client/wrybit/shell/WrybitBoundary.vue
 - src/client/wrybit/shell/WrybitShell.vue
 - src/client/wrybit/shell/presentationViews.ts
+- tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts
 - tests/client/wrybit/shell/AppMode.spec.ts
 - tests/client/wrybit/shell/WrybitBoundary.spec.ts
 - tests/client/wrybit/shell/WrybitShell.spec.ts
@@ -162,3 +163,7 @@ Read-only conditional discount DTO для source badges: PlayerModel/Conditional
 Промежуточная проверка milestone/award/table, board tabs и pointer sorting: 95 client tests (22 files), 20 ServerModel tests, Vue type-check, scoped ESLint/Stylelint и actual Webpack зелёные. Browser component proof на D: подтвердил desktop/phone table, обычную сортировку и drag, переход Mars/Colonies/обратно и tile-view switch; console 0 errors/warnings. Source общий stopFit заменён per-instance cleanup после red regression; empty tooltip и pending touch при refresh также получили red/green проверки. Public team totals/ranks, наш custom global config и второй Epsilon marker сохраняются. Full game callers, change-flash, player table, mobile carousel и полные expansion screens ещё не проверены; matrix и подзадачи остаются открытыми.
 
 Не копировать чужой контроллер сети/AI; не рассчитывать цены и доступность независимыми правилами; не маскировать отсутствующие поля приведением типов или выдуманными значениями; не смешивать стили двух режимов; не раскрывать административную статистику; не терять контекст формы при polling/переключении. Любая необходимость изменить игровую логику возвращается на отдельное решение.
+
+Последовательный root handoff внутри WP02: shell передаёт также typed playerHome с нашим PlayerViewModel. App выбирает только presentation component и сохраняет playerkey, InputPortal, WaitingFor и inputRevision; native PlayerHome controller не наследуется. HomeColumns/RowResizeHandle используют source layout, private storage/vars и per-instance cleanup. PlayerSetupView сохраняет наши dealt/project/drafted/selected cards; пока формы не объединены с рукой, action InputHost виден и fixed-height класс не включён. PlayerHomeBoundary.spec.ts переходит WP02 последовательно; параллельной записи нет. Полные UI-05/06/07 и остальные WP не закрываются этой начальной интеграцией.
+
+Root proof: 1163 client tests/239 files, 25 focused shell/11 files +4 restored mutation tests/2 files, Vue types/ESLint/Stylelint и actual App-only Webpack зелёные. Ordinary browser opt-in сохраняет Birds и heat4/MC6; separator ArrowLeft меняет60/40→59/41, dblclick сбрасывает60/40. Меню/Escape/возврат и console0/0 проверены. Snapshot root-final-desktop.png и text evidence лежат в D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof. Отдельный fresh browser root-off-static-requests.txt не загружает Wrybit chunk/assets. Первый fixture не содержал waitingForId; исправлен fixture по нашему wire contract, production fallback не ослаблен. Pointer focus mutation падает на document.activeElement; исходник побайтово восстановлен. Source resize styles требуют block-gap20px; scope private. Полные fixed-height/input tabs/mobile и acceptance rows ещё открыты.

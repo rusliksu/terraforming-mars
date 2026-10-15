@@ -4,8 +4,8 @@
   "ocean_placement_pair_update": {"date":"2026-10-14","base":"923ba2f3a0e811975c0e1049d1be30e000a16782","contract":"oceanPlacementContext/version1/pairs","flows":["Own PlayerModel -> optional ordered pairs of distinct structural candidates","Board adjacency and player coefficient -> quoted second adjacency after the first ocean","Stable board/cost facts -> shared cash-budget consumer; no virtual moves or persisted state"],"scope":"Two intrinsic standard placements; at most 64 candidates; pending Ares board transitions and unsupported political costs are not certified","fingerprint_algorithm":"sha256_normalized_lf","historical_fingerprints_refreshed":false,"source_files":[{"path":"src/common/models/OceanPlacementContextModel.ts","sha256":"b8cdd6bb2abda7956cb7b2aafed1727f9458ec55e83602c16cccb0cff77a6035"},{"path":"src/server/models/OceanPlacementContext.ts","sha256":"4ab4ccec44ffc93e1fc8121a95435ababed5a49ffccde1d2d38738d9b44eeed0"}]},
   "ocean_placement_context_update": {"date":"2026-10-14","base":"fbe68f10c0ceb9f2d72c19665cb9c1b00c7d6926","contract":"oceanPlacementContext/version1","flows":["Own PlayerModel -> phase-scoped oceanPlacementContext/version1","MarsBoard and Board -> structural candidates, actual adjacency and additional costs","Shared political cost-policy query -> explicit unsupported-payment status","Read-only numeric facts -> external advisor JSON transport; no persistence or moves"],"scope":"Single standard ocean; intrinsic resource/draw/adjacency facts and funded MC costs; unsupported bonuses, fees, limits and later triggers remain unproven","fingerprint_algorithm":"sha256_normalized_lf","historical_fingerprints_refreshed":false,"source_files":[{"path":"src/common/models/OceanPlacementContextModel.ts","sha256":"c791998326bb11da0c5d3d8741b681dafeccda141f855188f46d5171c8460299"},{"path":"src/server/models/OceanPlacementContext.ts","sha256":"955ad709e772021d864054b2d7c47f2de5b5051481e50116872bd729953d9946"},{"path":"src/server/models/ServerModel.ts","sha256":"c4f061bea6d576bb1a91ec142b7d4505cd0e854d9637eac371f7a1311ad7c8f8"},{"path":"src/server/boards/Board.ts","sha256":"7ad424247f6623793c22a2ef755bf1d94e85aead5e22df16903e1a30db812fb6"},{"path":"src/server/turmoil/TurmoilHandler.ts","sha256":"4bf865bd6c7dd74d3bb8c5aaf1e3bf84141ef3b05c17bbde9f1bac8411477268"}]},
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-14T19:44:06.483Z",
-  "generated_from_commit": "822bf985a34738d3195e73e025f903dac40c2858",
+  "generated_at": "2026-10-15T17:43:13.882Z",
+  "generated_from_commit": "7b18309628f8075b4452b98404e21b812e424db8",
   "scope": [
     ".",
     ".github",
@@ -2989,6 +2989,55 @@
         "Сервер не изменён этим переносом."
       ],
       "evidence": []
+    },
+    {
+      "id": "wrybit-player-root",
+      "label": "Игровой экран Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/PlayerHome.vue",
+      "role": "Source columns/table/board/log/hand over our models and HomeMixin; InputHost receives the permanent App form.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/PlayerHome.vue",
+          "symbol": "mixins: [HomeMixin]",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+          "symbol": "moves our card and payment form"
+        }
+      ],
+      "constraints": [
+        "Native actions and payment controller retained.",
+        "Full input tabs/fixed-height/mobile screens pending."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-layout-owner",
+      "label": "Размеры и lifetime колонок",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/HomeColumns.vue",
+      "role": "Per-instance drag and observer cleanup; private storage and document overlay position ownership.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/HomeColumns.vue",
+          "symbol": "this.layout.stopDrag?.()",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/HomeColumns.spec.ts",
+          "symbol": "ignores queued observer callbacks after unmount"
+        }
+      ],
+      "constraints": [
+        "No foreign model/controller or native preference mutation."
+      ],
+      "evidence": []
     }
   ],
   "edges": [
@@ -4282,6 +4331,58 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "wrybit-ui-view",
+      "to": "wrybit-player-root",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/shell/WrybitShell.vue",
+          "symbol": "playerHome: markRaw(PlayerHome)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-player-root",
+      "to": "player-input-hosts",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/PlayerHome.vue",
+          "symbol": "<InputHost",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-player-root",
+      "to": "wrybit-layout-owner",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/PlayerHome.vue",
+          "symbol": "<HomeColumns>",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-player-root",
+      "to": "wrybit-log-view",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/PlayerHome.vue",
+          "symbol": "<LogPanel",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -5025,7 +5126,27 @@
     "src/styles/wrybit/server_update_overlay.less",
     "src/styles/wrybit/space_confirm.less",
     "src/styles/wrybit/tab_panel_footer.less",
-    "tests/client/wrybit/visuals/InputVisualLeaves.spec.ts"
+    "tests/client/wrybit/visuals/InputVisualLeaves.spec.ts",
+    "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+    "src/client/wrybit/visuals/HomeColumns.vue",
+    "src/client/wrybit/visuals/PlayerHome.vue",
+    "src/client/wrybit/visuals/PlayerSetupView.vue",
+    "src/client/wrybit/visuals/RowResizeHandle.vue",
+    "src/client/wrybit/visuals/SetupTurnOrder.vue",
+    "src/client/wrybit/visuals/layout/boardColumnPosition.ts",
+    "src/client/wrybit/visuals/layout/columnResize.ts",
+    "src/client/wrybit/visuals/layout/handleProximity.ts",
+    "src/client/wrybit/visuals/layout/layoutStorage.ts",
+    "src/client/wrybit/visuals/layout/playersCardFit.ts",
+    "src/client/wrybit/visuals/layout/ProximityHandle.ts",
+    "src/client/wrybit/visuals/layout/rightColumnFit.ts",
+    "src/client/wrybit/visuals/layout/rowResize.ts",
+    "src/styles/wrybit/home_cards.less",
+    "src/styles/wrybit/player_home_columns.less",
+    "src/styles/wrybit/player_home_fixed.less",
+    "src/styles/wrybit/resize_handle.less",
+    "src/styles/wrybit/setup_turn_order.less",
+    "tests/client/wrybit/visuals/HomeColumns.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -5140,6 +5261,7 @@
       "src/client/wrybit/visuals/HandCardsPanel.vue",
       "src/client/wrybit/visuals/HandCardsTab.vue",
       "src/client/wrybit/visuals/HandSortControl.vue",
+      "src/client/wrybit/visuals/HomeColumns.vue",
       "src/client/wrybit/visuals/InfoPanel.vue",
       "src/client/wrybit/visuals/KeyboardShortcuts.vue",
       "src/client/wrybit/visuals/Milestone.vue",
@@ -5148,6 +5270,10 @@
       "src/client/wrybit/visuals/PageToolbar.vue",
       "src/client/wrybit/visuals/Party.vue",
       "src/client/wrybit/visuals/PlayedCardsGroups.vue",
+      "src/client/wrybit/visuals/PlayerHome.vue",
+      "src/client/wrybit/visuals/PlayerSetupView.vue",
+      "src/client/wrybit/visuals/RowResizeHandle.vue",
+      "src/client/wrybit/visuals/SetupTurnOrder.vue",
       "src/client/wrybit/visuals/ShiftAresGlobalParameters.vue",
       "src/client/wrybit/visuals/SidebarModal.vue",
       "src/client/wrybit/visuals/SortableCards.vue",
@@ -5246,6 +5372,14 @@
       "src/client/wrybit/visuals/gameMenu/PreferencesDialog.vue",
       "src/client/wrybit/visuals/gameMenu/gameMenuContext.ts",
       "src/client/wrybit/visuals/gameMenu/siteLinks.ts",
+      "src/client/wrybit/visuals/layout/ProximityHandle.ts",
+      "src/client/wrybit/visuals/layout/boardColumnPosition.ts",
+      "src/client/wrybit/visuals/layout/columnResize.ts",
+      "src/client/wrybit/visuals/layout/handleProximity.ts",
+      "src/client/wrybit/visuals/layout/layoutStorage.ts",
+      "src/client/wrybit/visuals/layout/playersCardFit.ts",
+      "src/client/wrybit/visuals/layout/rightColumnFit.ts",
+      "src/client/wrybit/visuals/layout/rowResize.ts",
       "src/client/wrybit/visuals/logpanel/CardPanel.vue",
       "src/client/wrybit/visuals/logpanel/LogCardsContent.vue",
       "src/client/wrybit/visuals/logpanel/LogCardsZoom.vue",
@@ -5513,6 +5647,7 @@
       "src/styles/wrybit/glass_tooltip.less",
       "src/styles/wrybit/globs.less",
       "src/styles/wrybit/hand_cards_panel.less",
+      "src/styles/wrybit/home_cards.less",
       "src/styles/wrybit/info_panel.less",
       "src/styles/wrybit/loading.less",
       "src/styles/wrybit/log.less",
@@ -5523,11 +5658,15 @@
       "src/styles/wrybit/outer_spaces.less",
       "src/styles/wrybit/placement_banner.less",
       "src/styles/wrybit/player_cube.less",
+      "src/styles/wrybit/player_home_columns.less",
+      "src/styles/wrybit/player_home_fixed.less",
       "src/styles/wrybit/players_table.less",
       "src/styles/wrybit/popup.less",
+      "src/styles/wrybit/resize_handle.less",
       "src/styles/wrybit/scaled_board.less",
       "src/styles/wrybit/server_update_overlay.less",
       "src/styles/wrybit/setup_tiles.less",
+      "src/styles/wrybit/setup_turn_order.less",
       "src/styles/wrybit/sidebar_modal.less",
       "src/styles/wrybit/sortable_cards.less",
       "src/styles/wrybit/source_mixins.less",
@@ -5565,6 +5704,7 @@
       "tests/client/wrybit/shell/BoardInputPortal.spec.ts",
       "tests/client/wrybit/shell/DraftInputPortal.spec.ts",
       "tests/client/wrybit/shell/InputPortal.spec.ts",
+      "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
       "tests/client/wrybit/shell/WrybitBoundary.spec.ts",
       "tests/client/wrybit/shell/WrybitShell.spec.ts",
       "tests/client/wrybit/shell/inputContext.spec.ts",
@@ -5588,6 +5728,7 @@
       "tests/client/wrybit/visuals/GameMenu.spec.ts",
       "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
       "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+      "tests/client/wrybit/visuals/HomeColumns.spec.ts",
       "tests/client/wrybit/visuals/InfoPanel.spec.ts",
       "tests/client/wrybit/visuals/InputVisualLeaves.spec.ts",
       "tests/client/wrybit/visuals/LogPanel.spec.ts",

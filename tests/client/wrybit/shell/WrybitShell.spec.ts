@@ -2,13 +2,14 @@ import {mount} from '@vue/test-utils';
 import {expect} from 'chai';
 import WrybitShell from '@/client/wrybit/shell/WrybitShell.vue';
 import Catalog from '@/client/wrybit/visuals/cardlist/CardList.vue';
+import PlayerHome from '@/client/wrybit/visuals/PlayerHome.vue';
 import {globalConfig} from '@tests/client/components/getLocalVue';
 
 describe('Wrybit shell', () => {
   it('renders responsive isolated backgrounds with attribution and a classic return', async () => {
     const wrapper = mount(WrybitShell, {...globalConfig, props: {screen: 'start-screen'}});
     try {
-      expect(wrapper.emitted('views')?.[0]).deep.eq([{cards: Catalog}]);
+      expect(wrapper.emitted('views')?.[0]).deep.eq([{cards: Catalog, playerHome: PlayerHome}]);
       const sources = wrapper.findAll('picture source');
       expect(sources.map((source) => source.attributes('type'))).deep.eq([
         'image/avif', 'image/webp', 'image/jpeg', 'image/avif', 'image/webp', 'image/jpeg',

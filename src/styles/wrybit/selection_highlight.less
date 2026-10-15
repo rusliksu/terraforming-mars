@@ -1,0 +1,127 @@
+// Shared highlight of a made selection (cards in cards.less, milestones/awards
+// in milestone_award_options.less, tiles in resource_options.less/player_options.less):
+// border, pulsing glow and 20 % purple tint in the CTA color – the same everywhere, desktop and mobile
+
+@selection-color: @bg_action;
+@wrybit-selection-pulse-period: 1.6s;
+
+// Clear 5px border (static), with a pulsing glow over it
+@selection-outline-width: 5px;
+
+// Glow deliberately tight: it should mark the selection, not outshine the neighbors
+@selection-glow-rest: 0 0 10px 4px fade(@selection-color, 70%);
+
+@keyframes wrybit-selection-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 @selection-outline-width @selection-color, 0 0 6px 2px fade(@selection-color, 55%);
+  }
+
+  50% {
+    box-shadow: 0 0 0 @selection-outline-width @selection-color, 0 0 14px 6px fade(@selection-color, 85%);
+  }
+}
+
+// Tab with checkmark above the selected tile (as ::after; the element needs position: relative)
+@selection-tab-width: 90px;
+@selection-tab-height: 21px;
+// Distance of the tab's top edge above the tile: this much room is needed by a row above
+@selection-tab-offset: 30px;
+
+.selection-tab() {
+  content: "✓";
+  position: absolute;
+  width: @selection-tab-width;
+  height: @selection-tab-height;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  top: -@selection-tab-offset;
+  left: calc(50% - @selection-tab-width / 2);
+  text-align: center;
+  font-weight: bold;
+  font-size: 13px;
+  background: @selection-color;
+  color: #fff;
+  z-index: 1;
+}
+
+// The element needs position: relative (for the tint as ::before)
+.selection-highlight() {
+  box-shadow: 0 0 0 @selection-outline-width @selection-color, @selection-glow-rest;
+  animation: wrybit-selection-pulse @wrybit-selection-pulse-period ease-in-out infinite;
+
+  &::before {
+    .selection-tint();
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+// Additionally tint the selected element slightly purple so the selection stands out immediately
+// even without the glow at the edge. As an overlay over the content, because cards and tiles have their own
+// background images that would hide a background color.
+@selection-tint-opacity: 20%;
+
+.selection-tint() {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: fade(@selection-color, @selection-tint-opacity);
+  // Clicks pass through to the card (deselect, tooltips)
+  pointer-events: none;
+  // Above the card contents (which go up to z-index 4)
+  z-index: 5;
+}
+
+// Tile without a border of its own (milestones/awards, trade, delegate): highlight plus the checkmark tab
+// sitting directly on the selection frame. The element needs position: relative.
+.selection-tile() {
+  .selection-highlight();
+
+  &::after {
+    .selection-tab();
+    top: -(@selection-tab-height + @selection-outline-width);
+  }
+}
+
+// Corner-flag selection for choice tiles (trade, delegate, colonies board – same in the mockup with-extensions):
+// 3px frame, glow and a check flag in the bottom right corner, flush with the frame.
+// @own-border: border width of the tile itself – the rest of the frame is drawn outside as a shadow, so selecting
+// never moves the content. @radius: border radius of the tile.
+@selection-corner-frame: 3px;
+@selection-corner-flag: 24px;
+
+.selection-corner-frame(@own-border: 1px) {
+  border-color: @selection-color;
+  box-shadow: 0 0 0 (@selection-corner-frame - @own-border) @selection-color;
+  filter: drop-shadow(0 0 6px fade(@selection-color, 85%));
+}
+
+// The flag itself; its outer corner follows the rounding of the frame
+.selection-corner-flag(@outer-radius: 10px) {
+  content: "✓";
+  position: absolute;
+  z-index: 6;
+  width: @selection-corner-flag;
+  height: @selection-corner-flag;
+  display: grid;
+  place-items: center;
+  border-radius: 8px 0 @outer-radius 0;
+  background: @selection-color;
+  color: #fff;
+  font: 700 14px/1 system-ui, sans-serif;
+}
+
+.selection-corner(@own-border: 1px; @radius: 8px) {
+  .selection-corner-frame(@own-border);
+
+  &::after {
+    .selection-corner-flag(@radius + @selection-corner-frame - @own-border);
+    // Offsets count from inside the own border: -3px puts the flag on the outer edge of the frame
+    right: -@selection-corner-frame;
+    bottom: -@selection-corner-frame;
+  }
+}

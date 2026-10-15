@@ -1,15 +1,47 @@
 <template>
-  <div class="wf-component wf-component--select-production-to-lose">
+  <component v-if="productionPresentation !== undefined" :is="productionPresentation" :binding="presentationBinding" />
+  <!-- TODO(chosta): consolidate repetition into a reusable component. -->
+  <div v-else class="wf-component wf-component--select-production-to-lose">
     <div v-if="showtitle === true" class="nofloat wf-component-title">{{ $t(playerinput.title) }}</div>
 
     <h3 v-if="playerinput.warning !== undefined" class="payments_title">{{ $t(playerinput.warning) }}</h3>
 
-    <div class="payments_type input-group" v-for="type in deductibleTypes" :key="type">
-      <div class="production-box"><div :class="['production', iconClass(type)]" :style="type === 'megacredits' ? 'background-size:contain;' : ''"></div></div>
-      <button class="btn btn-primary" @click="delta(type, -1)"><i class="icon icon-minus" ></i></button>
-      <input class="form-input form-inline payments_input" v-model.number="units[type]" >
-      <button class="btn btn-primary" @click="delta(type, 1)"><i class="icon icon-plus" ></i></button>
+    <div class="payments_type input-group" v-if="canDeductMegaCredits()">
+      <div class="production-box"><div class="production resource_icon--megacredits" style="background-size:contain;"></div></div>
+      <button class="btn btn-primary" @click="delta('megacredits', -1)"><i class="icon icon-minus" ></i></button>
+      <input class="form-input form-inline payments_input" v-model.number="units.megacredits" >
+      <button class="btn btn-primary" @click="delta('megacredits', 1)"><i class="icon icon-plus" ></i></button>
     </div>
+    <div class="payments_type input-group" v-if="canDeductSteel()">
+      <div class="production-box"><div class="production steel"></div></div>
+      <button class="btn btn-primary" @click="delta('steel', -1)"><i class="icon icon-minus" ></i></button>
+      <input class="form-input form-inline payments_input" v-model.number="units.steel" >
+      <button class="btn btn-primary" @click="delta('steel', 1)"><i class="icon icon-plus" ></i></button>
+    </div >
+    <div class="payments_type input-group" v-if="canDeductTitanium()" >
+      <div class="production-box"><div class="production titanium"></div></div>
+      <button class="btn btn-primary" @click="delta('titanium', -1)"><i class="icon icon-minus" ></i></button>
+      <input class="form-input form-inline payments_input" v-model.number="units.titanium" >
+      <button class="btn btn-primary" @click="delta('titanium', 1)"><i class="icon icon-plus" ></i></button>
+    </div >
+    <div class="payments_type input-group" v-if="canDeductPlants()" >
+      <div class="production-box"><div class="production plant"></div></div>
+      <button class="btn btn-primary" @click="delta('plants', -1)"><i class="icon icon-minus" ></i></button>
+      <input class="form-input form-inline payments_input" v-model.number="units.plants" >
+      <button class="btn btn-primary" @click="delta('plants', 1)"><i class="icon icon-plus" ></i></button>
+    </div >
+    <div class="payments_type input-group" v-if="canDeductEnergy()" >
+      <div class="production-box"><div class="production energy"></div></div>
+      <button class="btn btn-primary" @click="delta('energy', -1)"><i class="icon icon-minus" ></i></button>
+      <input class="form-input form-inline payments_input" v-model.number="units.energy" >
+      <button class="btn btn-primary" @click="delta('energy', 1)"><i class="icon icon-plus" ></i></button>
+    </div >
+    <div class="payments_type input-group" v-if="canDeductHeat()" >
+      <div class="production-box"><div class="production heat"></div></div>
+      <button class="btn btn-primary" @click="delta('heat', -1)"><i class="icon icon-minus" ></i></button>
+      <input class="form-input form-inline payments_input" v-model.number="units.heat" >
+      <button class="btn btn-primary" @click="delta('heat', 1)"><i class="icon icon-plus" ></i></button>
+    </div >
 
     <div v-if="hasWarning()" class="tm-warning">
       <label class="label label-error">{{ $t(warning) }}</label>
@@ -24,22 +56,15 @@
 import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
 
 import {defineComponent} from 'vue';
+import {UnitAmountsBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
 
 import {SelectProductionToLoseModel} from '@/common/models/PlayerInputModel';
 import {PlayerViewModel} from '@/common/models/PlayerModel';
+import {PayProductionModel} from '@/common/models/PayProductionUnitsModel';
 import {Units} from '@/common/Units';
 import {SelectProductionToLoseResponse} from '@/common/inputs/InputResponse';
 import {sum} from '@/common/utils/utils';
 import {PRODUCTION_MINIMUMS} from '@/common/constants';
-
-const iconClasses: Record<keyof Units, string> = {
-  megacredits: 'resource_icon--megacredits',
-  steel: 'steel',
-  titanium: 'titanium',
-  plants: 'plants',
-  energy: 'energy',
-  heat: 'heat',
-};
 
 type DataModel = {
   units: Units,
@@ -48,6 +73,9 @@ type DataModel = {
 
 export default defineComponent({
   name: 'SelectProductionToLose',
+  setup() {
+    return {productionPresentation: useInputPresentation('productionToLose')};
+  },
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
@@ -75,25 +103,63 @@ export default defineComponent({
     };
   },
   computed: {
-    deductibleTypes(): ReadonlyArray<keyof Units> {
-      return Units.keys.filter((type) => this.maxLoss(type) > 0);
+    presentationBinding(): UnitAmountsBinding<'productionToLose'> {
+      const offered: Record<keyof Units, boolean> = {megacredits: this.canDeductMegaCredits(), steel: this.canDeductSteel(),
+        titanium: this.canDeductTitanium(), plants: this.canDeductPlants(), energy: this.canDeductEnergy(), heat: this.canDeductHeat()};
+      return {playerView: this.playerView, playerinput: this.playerinput, showsave: this.showsave, showtitle: this.showtitle,
+        units: this.units, keys: Units.keys.filter((unit) => offered[unit]), warning: this.warning,
+        select: (unit, value) => {
+          this.units[unit] = value;
+        },
+        plus: (unit) => this.delta(unit, 1), minus: (unit) => this.delta(unit, -1), save: () => this.saveData()};
     },
   },
   methods: {
-    iconClass(type: keyof Units): string {
-      return iconClasses[type];
+    canDeductMegaCredits() {
+      return this.playerinput.payProduction.units.megacredits > PRODUCTION_MINIMUMS.megacredits;
+    },
+    canDeductSteel() {
+      return this.playerinput.payProduction.units.steel > 0;
+    },
+    canDeductTitanium() {
+      return this.playerinput.payProduction.units.titanium > 0;
+    },
+    canDeductPlants() {
+      return this.playerinput.payProduction.units.plants > 0;
+    },
+    canDeductEnergy() {
+      return this.playerinput.payProduction.units.energy > 0;
+    },
+    canDeductHeat() {
+      return this.playerinput.payProduction.units.heat > 0;
     },
     hasWarning() {
       return this.warning !== undefined;
     },
-    /** Returns the number of production steps this unit can decrease */
-    maxLoss(type: keyof Units): number {
-      return this.playerinput.payProduction.units[type] - PRODUCTION_MINIMUMS[type];
-    },
-    /** Click handler for the - and + buttons */
     delta(type: keyof Units, direction: number) {
-      const newValue = this.units[type] + direction;
-      this.units[type] = Math.min(Math.max(newValue, 0), this.maxLoss(type));
+      const expendableProductionQuantity = function(type: keyof Units, model: PayProductionModel): number {
+        switch (type) {
+        case 'megacredits':
+          return model.units.megacredits - PRODUCTION_MINIMUMS.megacredits;
+        case 'steel':
+          return model.units.steel;
+        case 'titanium':
+          return model.units.titanium;
+        case 'plants':
+          return model.units.plants;
+        case 'energy':
+          return model.units.energy;
+        case 'heat':
+          return model.units.heat;
+        default:
+          return -1;
+        }
+      };
+      const current = this.units[type];
+      let newValue = current + direction;
+      const expendableQuantity = expendableProductionQuantity(type, this.playerinput.payProduction);
+      newValue = Math.min(Math.max(newValue, 0), expendableQuantity);
+      this.units[type] = newValue;
     },
     saveData(_attempt?: SaveAttempt, respond?: (response: SelectProductionToLoseResponse) => void) {
       const reply = respond ?? this.onsave;

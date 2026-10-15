@@ -1,0 +1,23 @@
+<template>
+  <div class="wf-component wf-component--select-global-event">
+    <div v-if="binding.showtitle" class="nofloat wf-component-title">{{ $t(binding.playerinput.title) }}</div>
+    <label v-for="name in binding.playerinput.globalEventNames" :key="name" class="cardBox">
+      <input type="radio" :checked="binding.selected === name" :value="name" @change="binding.select(name)">
+      <GlobalEvent :globalEventName="name" type="distant"/>
+    </label>
+    <TabPanelFooterSlot>
+      <div v-if="binding.showsave" class="nofloat">
+        <AppButton :disabled="binding.selected === undefined" type="submit" @click="binding.save()" title="OK"/>
+      </div>
+    </TabPanelFooterSlot>
+  </div>
+</template>
+
+<script setup lang="ts">
+import type {GlobalEventBinding} from './presentation';
+import GlobalEvent from '@/client/components/turmoil/GlobalEvent.vue';
+import AppButton from '@/client/components/common/AppButton.vue';
+import TabPanelFooterSlot from '@/client/wrybit/visuals/TabPanelFooterSlot.vue';
+
+defineProps<{binding: GlobalEventBinding}>();
+</script>

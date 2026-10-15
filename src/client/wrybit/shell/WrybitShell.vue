@@ -15,6 +15,18 @@ import SelectProjectCardToPlay from '@/client/wrybit/inputs/SelectProjectCardToP
 import OrOptions from '@/client/wrybit/inputs/OrOptions.vue';
 import AndOptions from '@/client/wrybit/inputs/AndOptions.vue';
 import SelectCard from '@/client/wrybit/inputs/SelectCard.vue';
+import SelectAmount from '@/client/wrybit/inputs/SelectAmount.vue';
+import SelectOption from '@/client/wrybit/inputs/SelectOption.vue';
+import SelectDelegate from '@/client/wrybit/inputs/SelectDelegate.vue';
+import SelectResource from '@/client/wrybit/inputs/SelectResource.vue';
+import SelectResources from '@/client/wrybit/inputs/SelectResources.vue';
+import SelectProductionToLose from '@/client/wrybit/inputs/SelectProductionToLose.vue';
+import SelectPlayer from '@/client/wrybit/inputs/SelectPlayer.vue';
+import SelectGlobalEvent from '@/client/wrybit/inputs/SelectGlobalEvent.vue';
+import SelectClaimedUndergroundToken from '@/client/wrybit/inputs/SelectClaimedUndergroundToken.vue';
+import DeltaProjectInput from '@/client/wrybit/inputs/DeltaProjectInput.vue';
+import SelectSpace from '@/client/wrybit/inputs/SelectSpace.vue';
+import ShiftAresGlobalParameters from '@/client/wrybit/inputs/ShiftAresGlobalParameters.vue';
 import type {WrybitViews} from './presentationViews';
 
 const props = defineProps<{screen: string}>();
@@ -23,6 +35,11 @@ onMounted(() => emit('views', {cards: markRaw(Catalog), playerHome: markRaw(Play
   paymentForm: markRaw(PaymentForm), projectCard: markRaw(SelectProjectCardToPlay),
   or: markRaw(OrOptions), and: markRaw(AndOptions),
   card: markRaw(SelectCard),
+  amount: markRaw(SelectAmount), option: markRaw(SelectOption), delegate: markRaw(SelectDelegate),
+  resource: markRaw(SelectResource), resources: markRaw(SelectResources), productionToLose: markRaw(SelectProductionToLose),
+  player: markRaw(SelectPlayer), globalEvent: markRaw(SelectGlobalEvent), claimedUndergroundToken: markRaw(SelectClaimedUndergroundToken),
+  deltaProject: markRaw(DeltaProjectInput),
+  space: markRaw(SelectSpace), aresGlobalParameters: markRaw(ShiftAresGlobalParameters),
 }}));
 
 const hasBackground = computed(() => [

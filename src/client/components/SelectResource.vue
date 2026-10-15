@@ -1,5 +1,6 @@
 <template>
-  <div class="wf-component wf-options">
+  <component v-if="resourcePresentation !== undefined" :is="resourcePresentation" :binding="presentationBinding" />
+  <div v-else class="wf-component wf-options">
     <div v-if="showtitle === true" class="nofloat wf-component-title">{{ $t(playerinput.title) }}</div>
     <div class="form-group">
       <label v-for="included in playerinput.include" :key="included" v-trim-whitespace class="form-inline d-flex align-items-center mb-2">
@@ -17,6 +18,7 @@
 import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
 
 import {defineComponent} from 'vue';
+import {ResourceBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {SelectResourceModel} from '@/common/models/PlayerInputModel';
 import {SelectResourceResponse} from '@/common/inputs/InputResponse';
@@ -24,6 +26,9 @@ import {PlayerViewModel} from '@/common/models/PlayerModel';
 
 export default defineComponent({
   name: 'SelectResource',
+  setup() {
+    return {resourcePresentation: useInputPresentation('resource')};
+  },
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
@@ -44,13 +49,21 @@ export default defineComponent({
       type: Boolean,
     },
   },
-  data() {
+  data(): {unit: SelectResourceModel['include'][number] | undefined} {
     return {
       unit: undefined,
     };
   },
   components: {
     AppButton,
+  },
+  computed: {
+    presentationBinding(): ResourceBinding {
+      return {playerView: this.playerView, playerinput: this.playerinput, showsave: this.showsave, showtitle: this.showtitle,
+        selected: this.unit, canSave: this.canSave(), select: (unit) => {
+          this.unit = unit;
+        }, save: () => this.saveData()};
+    },
   },
   methods: {
     canSave() {

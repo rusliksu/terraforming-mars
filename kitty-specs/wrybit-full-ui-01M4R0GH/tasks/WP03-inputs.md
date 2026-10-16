@@ -25,7 +25,10 @@ execution_mode: code_change
 owned_files:
 - src/client/wrybit/inputs/**
 - src/client/wrybit/create/**
+- src/client/wrybit/visuals/common/PlayerCube.vue
+- tests/client/wrybit/visuals/PlayerCube.spec.ts
 - tests/client/wrybit/inputs/**
+- tests/client/wrybit/create/**
 - src/client/components/PaymentForm.vue
 - src/client/components/SelectProjectCardToPlay.vue
 - src/client/components/OrOptions.vue
@@ -39,6 +42,9 @@ owned_files:
 - src/client/components/SelectSpace.vue
 - src/client/components/SelectDelegate.vue
 - src/client/components/SelectParty.vue
+- src/client/components/turmoil/Turmoil.vue
+- src/client/components/turmoil/partyAgenda.ts
+- tests/client/components/turmoil/Turmoil.spec.ts
 - src/client/components/SelectColony.vue
 - src/client/components/SelectProductionToLose.vue
 - src/client/components/ShiftAresGlobalParameters.vue
@@ -64,6 +70,10 @@ owned_files:
 - src/styles/wrybit/setup_columns.less
 - src/styles/wrybit/setup_summary.less
 - src/styles/wrybit/setup_start.less
+- src/styles/wrybit/party_choice.less
+- assets/wrybit/figures/**
+- assets/wrybit/colony-planets/**
+- src/styles/wrybit/colony_choice.less
 - src/styles/wrybit/visuals.less
 - src/client/wrybit/import-manifest.json
 - docs/codemap/codemap.json
@@ -142,3 +152,5 @@ Save completion scoped proof: 1182 client tests/246files,108 focused checks incl
 Input view cohort proof: native amount/option/delegate/player/resource/resources/production/event/token/Delta/Ares/space controllers now consume source bindings. Full1191client/250files, Vue types/scoped lint/style and App Webpack0warnings; browser source choices/default-off/classic-return3+Ti/console0/0 verified. Pointer focus bug found in browser, real RED/GREEN and4 scoped checks fix it; browser keyboard follow-up pending. Source forecasts/converter, placement zoom, colony/party, creation/initial, Or grouping, undo and mobile remain open. ConfirmDialog sequentially hands off only an explicit close method for classic/source placement transitions; no change to other callers. All T009-T012/full UI rows stay OPEN.
 
 Initial selection scoped proof: source four columns/summary use our permanent selectors and existing calculations/validation/response. Twelve setup checks, full1194client/251files, types/scoped lint/style and App Webpack0warnings. Actual App1920x1080 ordinary picks show50,+3,-5,48; classic45/48 retained, console0/0. Source pointer+keyboard focus follow-up now passes in browser5->classic5. Local fixture GET only, no Start/move/DB. T009-T012/full rows remain OPEN: creation, colony/party, grouping/forecast/zoom/undo and remaining packages required.
+
+Party/colony scoped proof: source cards/figures/planet assets use our agendas and colony metadata, retain native owners/responses and refresh. Actual App ordinary choices survive classic; console0/0. Full1197client/254files and types/lint/style/build passed; persona follow-up has RED/GREEN, affected3tests and rebuilt App. No foreign forecasts or trade rules. T009-T012 and full UI rows remain OPEN.

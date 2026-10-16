@@ -1,5 +1,6 @@
 <template>
-    <div class="wf-component wf-component--select-party">
+    <component v-if="partyPresentation !== undefined" :is="partyPresentation" :binding="presentationBinding" />
+    <div v-else class="wf-component wf-component--select-party">
         <div v-if="showtitle === true" class="nofloat wf-component-title">{{ $t(playerinput.title) }}</div>
         <div class="wf-component--list-party" v-if="turmoil !== undefined">
           <label v-for="party in turmoil.parties" :key="party.name">
@@ -16,6 +17,9 @@
 import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
 
 import {defineComponent} from 'vue';
+import {PartyChoiceBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
+import {partyAgenda} from '@/client/components/turmoil/partyAgenda';
+import {getAgenda} from '@/client/turmoil/ClientAgendaManifest';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {SelectPartyModel} from '@/common/models/PlayerInputModel';
 import Party from '@/client/components/Party.vue';
@@ -26,6 +30,9 @@ import {TurmoilModel} from '@/common/models/TurmoilModel';
 
 export default defineComponent({
   name: 'SelectParty',
+  setup() {
+    return {partyPresentation: useInputPresentation('party')};
+  },
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
@@ -75,6 +82,23 @@ export default defineComponent({
     },
   },
   computed: {
+    presentationBinding(): PartyChoiceBinding {
+      const turmoil = this.turmoil;
+      const moreParties = this.playerView.game.gameOptions.expansions.moreParties;
+      return {playerView: this.playerView, playerinput: this.playerinput, showtitle: this.showtitle, showsave: this.showsave,
+        turmoil, selected: this.selectedParty,
+        cards: (turmoil?.parties ?? []).map((party) => {
+          const agenda = turmoil?.politicalAgendas === undefined ? undefined : partyAgenda(turmoil, party.name);
+          return {party, policyText: agenda === undefined ? undefined : getAgenda(agenda.policyId, moreParties)?.description,
+            bonusText: agenda === undefined ? undefined : getAgenda(agenda.bonusId, moreParties)?.description,
+            selected: this.selectedParty === party.name, disabled: !this.partyAvailableToSelect(party.name)};
+        }),
+        select: (party) => {
+          if (this.partyAvailableToSelect(party)) {
+            this.selectedParty = party;
+          }
+        }, save: () => this.saveData()};
+    },
     turmoil(): TurmoilModel | undefined {
       return this.playerView.game.turmoil;
     },

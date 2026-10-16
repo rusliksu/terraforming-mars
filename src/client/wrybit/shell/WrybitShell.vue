@@ -28,6 +28,8 @@ import DeltaProjectInput from '@/client/wrybit/inputs/DeltaProjectInput.vue';
 import SelectSpace from '@/client/wrybit/inputs/SelectSpace.vue';
 import ShiftAresGlobalParameters from '@/client/wrybit/inputs/ShiftAresGlobalParameters.vue';
 import SelectInitialCards from '@/client/wrybit/inputs/SelectInitialCards.vue';
+import SelectParty from '@/client/wrybit/inputs/SelectParty.vue';
+import SelectColony from '@/client/wrybit/inputs/SelectColony.vue';
 import type {WrybitViews} from './presentationViews';
 
 const props = defineProps<{screen: string}>();
@@ -42,6 +44,8 @@ onMounted(() => emit('views', {cards: markRaw(Catalog), playerHome: markRaw(Play
   deltaProject: markRaw(DeltaProjectInput),
   space: markRaw(SelectSpace), aresGlobalParameters: markRaw(ShiftAresGlobalParameters),
   initialCards: markRaw(SelectInitialCards),
+  party: markRaw(SelectParty),
+  colony: markRaw(SelectColony),
 }}));
 
 const hasBackground = computed(() => [

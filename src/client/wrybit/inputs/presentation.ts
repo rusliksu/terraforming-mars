@@ -16,6 +16,10 @@ import type {GlobalEventName} from '@/common/turmoil/globalEvents/GlobalEventNam
 import type {HazardData} from '@/common/ares/AresData';
 import type {AresGlobalParametersResponse} from '@/common/inputs/AresGlobalParametersResponse';
 import type {ColonyModel} from '@/common/models/ColonyModel';
+import type {PartyModel, TurmoilModel} from '@/common/models/TurmoilModel';
+import type {PartyName} from '@/common/turmoil/PartyName';
+import type {ColonyName} from '@/common/colonies/ColonyName';
+import type {ColonyMetadata} from '@/common/colonies/ColonyMetadata';
 
 export type CardSelectionBinding = {
   playerView: PlayerViewModel;
@@ -163,6 +167,25 @@ export type SpaceBinding = InputViewBinding<'space'> & {
   hide(hide: boolean): void;
 };
 export type InitialSectionKey = 'corporation' | 'prelude' | 'ceo' | 'projects';
+export type PartyCardBinding = {
+  party: PartyModel;
+  policyText: string | undefined;
+  bonusText: string | undefined;
+  selected: boolean;
+  disabled: boolean;
+};
+export type PartyChoiceBinding = InputViewBinding<'party'> & {
+  turmoil: TurmoilModel | undefined;
+  cards: ReadonlyArray<PartyCardBinding>;
+  selected: PartyName | undefined;
+  select(party: PartyName): void;
+};
+export type ColonyChoiceBinding = InputViewBinding<'colony'> & {
+  colonies: ReadonlyArray<{model: ColonyModel, metadata: ColonyMetadata}>;
+  selected: ColonyName | undefined;
+  canSave: boolean;
+  select(name: ColonyName): void;
+};
 export type InitialCardsBinding = InputViewBinding<'initialCards'> & {
   sections: ReadonlyArray<{key: InitialSectionKey, title: string | Message, badge: string, done: boolean, host: InputHosts}>;
   aridorColonies: ReadonlyArray<ColonyModel> | undefined;
@@ -195,6 +218,8 @@ export type InputPresentationBindings = {
   aresGlobalParameters: AresBinding;
   space: SpaceBinding;
   initialCards: InitialCardsBinding;
+  party: PartyChoiceBinding;
+  colony: ColonyChoiceBinding;
 };
 
 export type InputPresentationRegistry = {

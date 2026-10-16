@@ -1,5 +1,6 @@
 <template>
-  <div class="wf-component wf-component--select-card">
+  <component v-if="colonyPresentation !== undefined" :is="colonyPresentation" :binding="presentationBinding" />
+  <div v-else class="wf-component wf-component--select-card">
     <div v-if="showtitle === true" class="nofloat wf-component-title">{{ $t(playerinput.title) }}</div>
     <label v-for="colony in (playerinput.coloniesModel || [])" class="cardbox" :key="colony.name">
       <input type="radio" v-model="selectedColony" :value="colony.name" >
@@ -14,6 +15,8 @@
 import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
 
 import {defineComponent} from 'vue';
+import {ColonyChoiceBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
+import {getColonyOrThrow} from '@/client/colonies/ClientColonyManifest';
 import Colony from '@/client/components/colonies/Colony.vue';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {SelectColonyModel} from '@/common/models/PlayerInputModel';
@@ -27,6 +30,9 @@ type DataModel = {
 
 export default defineComponent({
   name: 'SelectColony',
+  setup() {
+    return {colonyPresentation: useInputPresentation('colony')};
+  },
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
@@ -55,6 +61,15 @@ export default defineComponent({
   components: {
     Colony,
     AppButton,
+  },
+  computed: {
+    presentationBinding(): ColonyChoiceBinding {
+      return {playerView: this.playerView, playerinput: this.playerinput, showsave: this.showsave, showtitle: this.showtitle,
+        colonies: (this.playerinput.coloniesModel ?? []).map((model) => ({model, metadata: getColonyOrThrow(model.name)})),
+        selected: this.selectedColony, canSave: this.canSave(), select: (name) => {
+          this.selectedColony = name;
+        }, save: () => this.saveData()};
+    },
   },
   methods: {
     canSave() {

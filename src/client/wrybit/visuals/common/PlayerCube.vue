@@ -2,7 +2,7 @@
   <!-- Player cube in CSS 3D (player_cube.less): translucent acrylic, light from the top left.
        All six faces are rendered: depending on the rotation others become visible, and the back ones shine through. -->
   <span :class="['player-cube', 'player-cube--' + view, 'player-cube--' + color, {'player-cube--animated': animated}]" :style="cubeStyle" aria-hidden="true">
-    <span v-if="isReserved" :class="['board-cube', 'board-cube--' + color, 'wrybit-player-persona']"></span>
+    <span v-if="isReserved" :class="['board-cube', 'board-cube--' + color, 'board-cube--persona', 'wrybit-player-persona']"></span>
     <span v-else class="player-cube-body">
       <!-- Shadows on the ground plane, inside the 3D scene so they share the cube's perspective and rotation
            (only shown in the top view, player_cube.less) -->
@@ -69,6 +69,14 @@ const cubeStyle = computed(() => {
   display: block;
   width: var(--wrybit-cube-size);
   height: var(--wrybit-cube-size);
+  margin: 0;
   background-size: 100% 100%;
+}
+
+.wrybit-player-persona::before {
+  left: 15%;
+  top: 15%;
+  width: 70%;
+  height: 70%;
 }
 </style>

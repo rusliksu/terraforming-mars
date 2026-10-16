@@ -1356,7 +1356,21 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/SelectColony.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "party-colony-choice",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/PartyPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ColonyPresentation.spec.ts",
+            "tests/client/wrybit/visuals/PlayerCube.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-party-colony-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-party-colony-classic.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-party-colony-console.txt"
+          ],
+          "note": "Source choice cards use our current agendas with the More Parties variant and our canonical colony descriptions. Own controllers, offered party constraints, persona colours, live model refresh, mode retention and exact responses verified. Pure artwork/style helpers only; foreign forecasts/trade rules excluded. All1197client/254files, Vue types, scoped lint/style and App-only Webpack passed before the persona follow-up. Actual App AND fixture ordinary picks survive classic return; console0/0, no submit/move/DB. Browser found missing persona style activation; existing PlayerCube regression RED/GREEN then three affected tests and rebuilt App passed; native persona token class and margin reset fix the shared component. Creation widgets separately have one controlled-owner replacement/collapse test; full creation and remaining UI flows still open. This evidence is not full WP03 acceptance."
+        }
+      ]
     },
     {
       "source": "src/client/components/SelectDelegate.vue",
@@ -1478,7 +1492,21 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/SelectParty.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "party-colony-choice",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/PartyPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ColonyPresentation.spec.ts",
+            "tests/client/wrybit/visuals/PlayerCube.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-party-colony-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-party-colony-classic.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-party-colony-console.txt"
+          ],
+          "note": "Source choice cards use our current agendas with the More Parties variant and our canonical colony descriptions. Own controllers, offered party constraints, persona colours, live model refresh, mode retention and exact responses verified. Pure artwork/style helpers only; foreign forecasts/trade rules excluded. All1197client/254files, Vue types, scoped lint/style and App-only Webpack passed before the persona follow-up. Actual App AND fixture ordinary picks survive classic return; console0/0, no submit/move/DB. Browser found missing persona style activation; existing PlayerCube regression RED/GREEN then three affected tests and rebuilt App passed; native persona token class and margin reset fix the shared component. Creation widgets separately have one controlled-owner replacement/collapse test; full creation and remaining UI flows still open. This evidence is not full WP03 acceptance."
+        }
+      ]
     },
     {
       "source": "src/client/components/SelectPayment.vue",
@@ -3513,10 +3541,24 @@
       "sourceLines": 25,
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
-      "package": "WP04",
-      "target": "src/client/wrybit/expansions/colonies/ColonyPlanet.vue",
+      "package": "WP03",
+      "target": "src/client/wrybit/inputs/colony/ColonyPlanet.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "party-colony-choice",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/PartyPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ColonyPresentation.spec.ts",
+            "tests/client/wrybit/visuals/PlayerCube.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-party-colony-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-party-colony-classic.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-party-colony-console.txt"
+          ],
+          "note": "Source choice cards use our current agendas with the More Parties variant and our canonical colony descriptions. Own controllers, offered party constraints, persona colours, live model refresh, mode retention and exact responses verified. Pure artwork/style helpers only; foreign forecasts/trade rules excluded. All1197client/254files, Vue types, scoped lint/style and App-only Webpack passed before the persona follow-up. Actual App AND fixture ordinary picks survive classic return; console0/0, no submit/move/DB. Browser found missing persona style activation; existing PlayerCube regression RED/GREEN then three affected tests and rebuilt App passed; native persona token class and margin reset fix the shared component. Creation widgets separately have one controlled-owner replacement/collapse test; full creation and remaining UI flows still open. This evidence is not full WP03 acceptance."
+        }
+      ]
     },
     {
       "source": "src/client/components/colonies/ColonyRow.vue",
@@ -5832,10 +5874,24 @@
       "sourceLines": 52,
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
-      "package": "WP04",
-      "target": "src/client/wrybit/expansions/turmoil/PartyCard.vue",
+      "package": "WP03",
+      "target": "src/client/wrybit/inputs/PartyCard.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "party-colony-choice",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/PartyPresentation.spec.ts",
+            "tests/client/wrybit/inputs/ColonyPresentation.spec.ts",
+            "tests/client/wrybit/visuals/PlayerCube.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-party-colony-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-party-colony-classic.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-party-colony-console.txt"
+          ],
+          "note": "Source choice cards use our current agendas with the More Parties variant and our canonical colony descriptions. Own controllers, offered party constraints, persona colours, live model refresh, mode retention and exact responses verified. Pure artwork/style helpers only; foreign forecasts/trade rules excluded. All1197client/254files, Vue types, scoped lint/style and App-only Webpack passed before the persona follow-up. Actual App AND fixture ordinary picks survive classic return; console0/0, no submit/move/DB. Browser found missing persona style activation; existing PlayerCube regression RED/GREEN then three affected tests and rebuilt App passed; native persona token class and margin reset fix the shared component. Creation widgets separately have one controlled-owner replacement/collapse test; full creation and remaining UI flows still open. This evidence is not full WP03 acceptance."
+        }
+      ]
     },
     {
       "source": "src/client/components/turmoil/PartyOptions.vue",
@@ -8306,6 +8362,62 @@
         }
       ],
       "target": "src/styles/wrybit/setup_start.less"
+    },
+    {
+      "source": "src/client/utils/collapseAnimation.ts",
+      "sourceSha256": "df4f48417256a7bdd77f75f34fe17831b644e63c285ada2f30110168e1ec4b50",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [],
+      "target": "src/client/wrybit/create/collapseAnimation.ts"
+    },
+    {
+      "source": "src/client/components/create/createGameColumns.ts",
+      "sourceSha256": "5a77ca1c56e8c6068abc9fc0e3ca6df70f461a43288c4914e4389f36a03ec299",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [],
+      "target": "src/client/wrybit/create/createGameColumns.ts"
+    },
+    {
+      "source": "src/client/components/create/stickyBottomObserver.ts",
+      "sourceSha256": "51badcb5b3299a4cb4ec638029c7dfcd5ae22e0b0e32c4980f6bda46f2ef11a4",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [],
+      "target": "src/client/wrybit/create/stickyBottomObserver.ts"
+    },
+    {
+      "source": "src/client/components/turmoil/turmoilView.ts",
+      "sourceSha256": "1ccd3fb63fb8ad904b3939a38bf5dc6934b17d01fee5240fef3ce102e2c53ce2",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [],
+      "target": "src/client/wrybit/inputs/partyAppearance.ts"
+    },
+    {
+      "source": "src/styles/turmoil_board_tab.less",
+      "sourceSha256": "340890fa953878c7aaf05c24f084642d9a3d0299ac7e848c53a540864a0214d2",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [],
+      "target": "src/styles/wrybit/party_choice.less"
+    },
+    {
+      "source": "src/client/components/colonies/colonyView.ts",
+      "sourceSha256": "0ca1d474696826989e09c73b5192b034a1f1640979ff1c2e2d681c387c76fe35",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [],
+      "target": "src/client/wrybit/inputs/colony/planetAppearance.ts"
+    },
+    {
+      "source": "src/styles/colonies_board.less",
+      "sourceSha256": "37d4676d8cf11429439d0fc08aa7eb5db5d0bcb4a0c400d8f28db6acf0a3f877",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [],
+      "target": "src/styles/wrybit/colony_choice.less"
     }
   ],
   "assets": [
@@ -8777,6 +8889,306 @@
           "note": "Source scaled board/zoom and mobile controls, optional body root, canonical Board geometry/config/custom rows. Unmount/revision guards and animation abort prevent stale DOM callbacks; mutation removed a guard and produced a detached DOM error, then was restored. Pointercancel/pinch-tail regression was red on source and green after the local UI fix. 201 tests/71 files before gesture fix plus six focused tests after; types/lint/style and final actual Webpack zero warnings. Normal desktop/phone open-close, + 200 to 225 percent, fit 100 percent, Escape and console zero errors/warnings. Full game/placement/viewport-owner integration remains pending."
         }
       ]
+    },
+    {
+      "source": "assets/acrylic/astronaut-black.png",
+      "sourceSha256": "8923dbbd0bbfa710bf7e5b7eb4298de917aec3aa940e542b832ab2d473fec2d3",
+      "target": "assets/wrybit/figures/astronaut-black.png",
+      "bytes": 33959,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/acrylic/astronaut-black.png",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/acrylic/astronaut-blue.png",
+      "sourceSha256": "a3962e7bb9568cd3d535dcfcec239bc7b9311bb641b57452ad630bc0d5fbcea6",
+      "target": "assets/wrybit/figures/astronaut-blue.png",
+      "bytes": 38671,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/acrylic/astronaut-blue.png",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/acrylic/astronaut-green.png",
+      "sourceSha256": "899b4f90481d4b37d31c3a4a3a5f7626328a4bcd63e41f2f4c24618f4750fc27",
+      "target": "assets/wrybit/figures/astronaut-green.png",
+      "bytes": 41323,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/acrylic/astronaut-green.png",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/acrylic/astronaut-neutral.png",
+      "sourceSha256": "ecf2f3961466dce06f3e3e48e42707823749a4343dc55003df085e541317fe7c",
+      "target": "assets/wrybit/figures/astronaut-neutral.png",
+      "bytes": 31934,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/acrylic/astronaut-neutral.png",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/acrylic/astronaut-orange.png",
+      "sourceSha256": "fb6b674a3e9ecaae18b928acf1d5e4a4a85e6e799e23c6204e2f7993cb91150c",
+      "target": "assets/wrybit/figures/astronaut-orange.png",
+      "bytes": 38996,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/acrylic/astronaut-orange.png",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/acrylic/astronaut-pink.png",
+      "sourceSha256": "b7b01093e69b9ee3bef47b607dd98acaed543a2f3efeeb53b9d27b62b8cfe2ee",
+      "target": "assets/wrybit/figures/astronaut-pink.png",
+      "bytes": 34999,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/acrylic/astronaut-pink.png",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/acrylic/astronaut-purple.png",
+      "sourceSha256": "3a7b1ecc0b26542e2d257e62efafe53ee1f658a2d66fcebdf05285f6e926c0dd",
+      "target": "assets/wrybit/figures/astronaut-purple.png",
+      "bytes": 39468,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/acrylic/astronaut-purple.png",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/acrylic/astronaut-red.png",
+      "sourceSha256": "e4ef51566c617dc1bf497981c444684a08fd060d37c55e925f1d8d17d85b60fe",
+      "target": "assets/wrybit/figures/astronaut-red.png",
+      "bytes": 42292,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/acrylic/astronaut-red.png",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/acrylic/astronaut-yellow.png",
+      "sourceSha256": "5a6c896b30ef8d8ad8d5f880ae7a2731bf9d3a823bfc971fe7f5503d65639d6f",
+      "target": "assets/wrybit/figures/astronaut-yellow.png",
+      "bytes": 38699,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/acrylic/astronaut-yellow.png",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/colonies-planets-round/callisto.webp",
+      "sourceSha256": "a744a5efe87c0a59c3deef2fd736a41b87802692bec9ec75eb366c04d4e15de4",
+      "target": "assets/wrybit/colony-planets/callisto.webp",
+      "bytes": 17140,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/colonies-planets-round/callisto.webp",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/colonies-planets-round/ceres.webp",
+      "sourceSha256": "77f966aec513dcd96bec48c8fb650de61073d2dffba5aecd84012fbff04a283b",
+      "target": "assets/wrybit/colony-planets/ceres.webp",
+      "bytes": 14954,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/colonies-planets-round/ceres.webp",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/colonies-planets-round/deimos.webp",
+      "sourceSha256": "b4423fdcebe720b65b99d03d6be41ee66d8f1ce6701bc9c9b7b09356feb8cd2c",
+      "target": "assets/wrybit/colony-planets/deimos.webp",
+      "bytes": 5548,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/colonies-planets-round/deimos.webp",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/colonies-planets-round/enceladus.webp",
+      "sourceSha256": "4d5e17eef85077d24a768117a00f0edaaaa1fe9270c5b42fb64d0442f50d7a20",
+      "target": "assets/wrybit/colony-planets/enceladus.webp",
+      "bytes": 2388,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/colonies-planets-round/enceladus.webp",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/colonies-planets-round/europa.webp",
+      "sourceSha256": "9d290736f1476435f9ef4846b2702530332808d846ee2f737637566ac0d1e4f6",
+      "target": "assets/wrybit/colony-planets/europa.webp",
+      "bytes": 5270,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/colonies-planets-round/europa.webp",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/colonies-planets-round/ganymede.webp",
+      "sourceSha256": "8014719775f45d4c9a8dc7e683d823aaf0d777e852675076e3dd1e4f065d1c35",
+      "target": "assets/wrybit/colony-planets/ganymede.webp",
+      "bytes": 9762,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/colonies-planets-round/ganymede.webp",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/colonies-planets-round/hygiea.webp",
+      "sourceSha256": "a6bc896673404959bb832788a7621b00120a33ab46825590cc4852fd1b054b8c",
+      "target": "assets/wrybit/colony-planets/hygiea.webp",
+      "bytes": 5526,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/colonies-planets-round/hygiea.webp",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/colonies-planets-round/iapetus.webp",
+      "sourceSha256": "5fe077524aee92ef33d3285f15ef2d32e6fed451555d83bc67181dce7ac19263",
+      "target": "assets/wrybit/colony-planets/iapetus.webp",
+      "bytes": 8478,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/colonies-planets-round/iapetus.webp",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/colonies-planets-round/io.webp",
+      "sourceSha256": "25892e1737401fdb5619dc07c8af5627e4ba50eb79268c687bb4181f956a24a3",
+      "target": "assets/wrybit/colony-planets/io.webp",
+      "bytes": 7842,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/colonies-planets-round/io.webp",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/colonies-planets-round/kuiper.webp",
+      "sourceSha256": "b95e65090168646902bf5ff2e74924abb2f81d0b655245345cba0e616d5009f2",
+      "target": "assets/wrybit/colony-planets/kuiper.webp",
+      "bytes": 6876,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/colonies-planets-round/kuiper.webp",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/colonies-planets-round/leavitt.webp",
+      "sourceSha256": "59ac683acbdf0a2b62810fecc8cdbce1a7b418dd777e68e8cd3353d6dc32774a",
+      "target": "assets/wrybit/colony-planets/leavitt.webp",
+      "bytes": 2604,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/colonies-planets-round/leavitt.webp",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/colonies-planets-round/luna.webp",
+      "sourceSha256": "bdf9f90f12e3e84c0ceb4bb4ef38d7dccc324b76f3c96508ba775c1c01995293",
+      "target": "assets/wrybit/colony-planets/luna.webp",
+      "bytes": 6830,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/colonies-planets-round/luna.webp",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/colonies-planets-round/mercury.webp",
+      "sourceSha256": "403d2545710ecb2108f22bdf99acb503dfd14d749d25ef6d450975e9a5f0c65c",
+      "target": "assets/wrybit/colony-planets/mercury.webp",
+      "bytes": 14850,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/colonies-planets-round/mercury.webp",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/colonies-planets-round/miranda.webp",
+      "sourceSha256": "e78ecd3e2b5473570d8d5df84fd57525843b9b02f27dd421c166a11b19525080",
+      "target": "assets/wrybit/colony-planets/miranda.webp",
+      "bytes": 10032,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/colonies-planets-round/miranda.webp",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/colonies-planets-round/pallas.webp",
+      "sourceSha256": "b94000268a780cad661e11e4635fd2fa9f1e779e09faffaee528ebab0a7d70ba",
+      "target": "assets/wrybit/colony-planets/pallas.webp",
+      "bytes": 5276,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/colonies-planets-round/pallas.webp",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/colonies-planets-round/pluto.webp",
+      "sourceSha256": "899eb5aec65862da2c7cd204a8c7bf2edf52c84543f5c6a00ee8ef9744526277",
+      "target": "assets/wrybit/colony-planets/pluto.webp",
+      "bytes": 5964,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/colonies-planets-round/pluto.webp",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/colonies-planets-round/terra.webp",
+      "sourceSha256": "807a950afe5e87bd0f1f4e4542ef7c88c921779835e15ef914dfcf83c49e5d79",
+      "target": "assets/wrybit/colony-planets/terra.webp",
+      "bytes": 15016,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/colonies-planets-round/terra.webp",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/colonies-planets-round/titan.webp",
+      "sourceSha256": "1a74f97c77d17277270dcdf7806a0aa63d781bac9e65f827e1f8c9c13e0b2267",
+      "target": "assets/wrybit/colony-planets/titan.webp",
+      "bytes": 1870,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/colonies-planets-round/titan.webp",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/colonies-planets-round/titania.webp",
+      "sourceSha256": "c93ac062bb738a7edce9d61ace7ccd95ec1fa950e452d3522cb8a9bf673390a1",
+      "target": "assets/wrybit/colony-planets/titania.webp",
+      "bytes": 3788,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/colonies-planets-round/titania.webp",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/colonies-planets-round/triton.webp",
+      "sourceSha256": "e53c56d23f84811668acc3ae50bef72479ad4470dcee85d24f479ece23e9e1e5",
+      "target": "assets/wrybit/colony-planets/triton.webp",
+      "bytes": 6758,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/colonies-planets-round/triton.webp",
+      "status": "copied-unchanged"
+    },
+    {
+      "source": "assets/colonies-planets-round/venus.webp",
+      "sourceSha256": "0b405eba7a57a338f2497b15cb9efee3d7feeef3ab96592a0126786a60c67078",
+      "target": "assets/wrybit/colony-planets/venus.webp",
+      "bytes": 2596,
+      "license": "GPL-3.0",
+      "attribution": "Wrybit source repository, pinned commit 988235122ffd61d8d1190e90beb2247afd252c00",
+      "sourceUrl": "https://github.com/wrybit/terraforming-mars/blob/988235122ffd61d8d1190e90beb2247afd252c00/assets/colonies-planets-round/venus.webp",
+      "status": "copied-unchanged"
     }
   ],
   "readOnlyProjections": [

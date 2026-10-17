@@ -1,6 +1,6 @@
 <template>
   <div class="wf-component wf-component--select-option">
-    <div v-if="binding.showtitle" class="wf-component-title">{{ $t(binding.playerinput.title) }}</div>
+    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
     <WarningsComponent :warnings="binding.playerinput.warnings"/>
     <TabPanelFooterSlot>
       <AppButton v-if="binding.showsave" size="big" @click="binding.save()" :title="$t(binding.playerinput.buttonLabel)"/>
@@ -9,6 +9,7 @@
 </template>
 
 <script setup lang="ts">
+import InputIntro from './InputIntro.vue';
 import type {InputViewBinding} from './presentation';
 import AppButton from '@/client/components/common/AppButton.vue';
 import WarningsComponent from '@/client/components/WarningsComponent.vue';

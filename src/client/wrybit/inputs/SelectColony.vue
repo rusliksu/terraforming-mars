@@ -1,6 +1,6 @@
 <template>
   <div class="wf-component wf-component--select-card choice-block" :style="choiceBlockStyle(binding.colonies.length)">
-    <div v-if="binding.showtitle" class="nofloat wf-component-title">{{ $t(binding.playerinput.title) }}</div>
+    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
     <label v-for="colony in binding.colonies" :key="colony.model.name"
       :class="['choice-option', 'colony-choice', {'choice-option--selected': binding.selected === colony.model.name}]"
       :data-test="'colony-choice-' + colony.model.name">
@@ -26,6 +26,7 @@
 </template>
 
 <script setup lang="ts">
+import InputIntro from './InputIntro.vue';
 import {onBeforeUnmount, onMounted} from 'vue';
 import type {ColonyChoiceBinding} from './presentation';
 import {choiceBlockStyle} from './choiceBlock';

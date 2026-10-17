@@ -292,7 +292,28 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/CancelActionButton.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-undo-source-footer",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/UndoPresentation.spec.ts",
+            "tests/client/components/WaitingFor.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-focused.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-styles.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-requests.txt"
+          ],
+          "note": "Source quiet footer-button styling delegates through an explicit typed UI binding to permanent native WaitingFor reset/stepBack/undoResearchPurchase. Our own eligibility and exact action/step/research labels remain; foreign actionStart/cancel semantics not imported. Classic radio DOM and undoChoice retained, hidden only while source view owns the footer. Native request/hidden-information confirmation logic unchanged. RED2missing-controls, GREEN27focused/4files and full1245client/275files; types/lint/style/App0warnings. ActualApp1440 desktop viewed, console0/0, no undo/save requests. Phone screenshot exposes existing full-page overflow reserved for WP05; it is not mobile acceptance proof. Synthetic fixture restored/hash verified. Complete input/21flow acceptance remains open."
+        }
+      ]
     },
     {
       "source": "src/client/components/CardIntroBlock.vue",
@@ -560,6 +581,34 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-requests.txt"
           ],
           "note": "Strict one-space plus native skip-option shape uses source single placement tab/footer and exact own skip captions/indices. Classic pending skip is retained on opt-in until explicit selection. Native chooseAndSave delegates to existing controller/save session, guards mode/disposal across nextTick. Owner-token zoom closes before skip/native response and on placement view disposal, without closing another input zoom. No source InputResponse/rules or auto-submit from a mode switch. Full1243client/274files,12focused/4files, types/lint/style/App0warnings passed; mode-change mutant killed/exact restored. Actual App1440 placement controls visually inspected, zero console warnings/errors, no accepted moves. Synthetic response restored with SHA256 9d4fb6b37bce785b9a6feebf645cb75a08957e391fabc53a75341a151acaa066. Complete placement forecasts/undo/mobile/custom/Moon/Venus and full rows remain open."
+        },
+        {
+          "kind": "native-tile-input-intros",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/models/PlacementPreview.spec.ts",
+            "tests/client/wrybit/inputs/InputIntro.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-boundary.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-restored.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-focused.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-server-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-lint-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-styles-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-desktop-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-zoom-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-console-final.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-requests-final.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-post-visual.log"
+          ],
+          "note": "Source InputIntro/TabIntroBlock view hierarchy now serves14 input headers and selected root Or choices. Optional native SelectSpace.tileType display projection comes from15 existing shared Mars/Moon/Venus placement producers including ConvertPlants, generic special tiles and hazards. Native original first2SelectSpace arguments, all producer methods/callbacks and process AST-equal to pinned2673f6cf77 after removing only the new display argument; Game/Player/InputResponse/AI untouched. Canonical BoardSpaceTile supplies all own custom tile CSS/art, no title-to-tile or first-rendered-card inference. Unknown/unannotated space choices retain plain caption. Current ocean count uses own configured maximum; plant count/current isTerraformed are read-only facts, no invented gains/legality/effect forecasts. Full1247client/276files before final native ConvertPlants/tone/style follow-up; final6focused/2files,32native tests, Vue/server types/lint/style/App0warnings green. Wrong ocean-as-city display mutation rejected/exact restored. ActualApp1440 own-native producer UI fixture2of15 and one ocean icon in input/zoom banner visually verified; console0/0 and no move/DB requests, original fixture restored. Earlier non-final screenshots show red inherited debug border and mis-scaled sprite; both fixed in final images. Root tsc command without project was invalid due missing test framework types, not green evidence; final server check uses src/tsconfig.json. General authoritative effect quotes, direct/unannotated producers, input intro docking, viewport/mobile and full21flows remain open."
         }
       ]
     },
@@ -799,7 +848,36 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/InputIntro.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-tile-input-intros",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/models/PlacementPreview.spec.ts",
+            "tests/client/wrybit/inputs/InputIntro.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-boundary.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-restored.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-focused.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-server-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-lint-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-styles-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-desktop-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-zoom-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-console-final.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-requests-final.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-post-visual.log"
+          ],
+          "note": "Source InputIntro/TabIntroBlock view hierarchy now serves14 input headers and selected root Or choices. Optional native SelectSpace.tileType display projection comes from15 existing shared Mars/Moon/Venus placement producers including ConvertPlants, generic special tiles and hazards. Native original first2SelectSpace arguments, all producer methods/callbacks and process AST-equal to pinned2673f6cf77 after removing only the new display argument; Game/Player/InputResponse/AI untouched. Canonical BoardSpaceTile supplies all own custom tile CSS/art, no title-to-tile or first-rendered-card inference. Unknown/unannotated space choices retain plain caption. Current ocean count uses own configured maximum; plant count/current isTerraformed are read-only facts, no invented gains/legality/effect forecasts. Full1247client/276files before final native ConvertPlants/tone/style follow-up; final6focused/2files,32native tests, Vue/server types/lint/style/App0warnings green. Wrong ocean-as-city display mutation rejected/exact restored. ActualApp1440 own-native producer UI fixture2of15 and one ocean icon in input/zoom banner visually verified; console0/0 and no move/DB requests, original fixture restored. Earlier non-final screenshots show red inherited debug border and mis-scaled sprite; both fixed in final images. Root tsc command without project was invalid due missing test framework types, not green evidence; final server check uses src/tsconfig.json. General authoritative effect quotes, direct/unannotated producers, input intro docking, viewport/mobile and full21flows remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/KeyboardShortcuts.vue",
@@ -1149,6 +1227,34 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-requests.txt"
           ],
           "note": "Source quiet footer-button styling delegates through an explicit typed UI binding to permanent native WaitingFor reset/stepBack/undoResearchPurchase. Our own eligibility and exact action/step/research labels remain; foreign actionStart/cancel semantics not imported. Classic radio DOM and undoChoice retained, hidden only while source view owns the footer. Native request/hidden-information confirmation logic unchanged. RED2missing-controls, GREEN27focused/4files and full1245client/275files; types/lint/style/App0warnings. ActualApp1440 desktop viewed, console0/0, no undo/save requests. Phone screenshot exposes existing full-page overflow reserved for WP05; it is not mobile acceptance proof. Synthetic fixture restored/hash verified. Complete input/21flow acceptance remains open."
+        },
+        {
+          "kind": "native-tile-input-intros",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/models/PlacementPreview.spec.ts",
+            "tests/client/wrybit/inputs/InputIntro.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-boundary.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-restored.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-focused.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-server-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-lint-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-styles-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-desktop-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-zoom-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-console-final.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-requests-final.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-post-visual.log"
+          ],
+          "note": "Source InputIntro/TabIntroBlock view hierarchy now serves14 input headers and selected root Or choices. Optional native SelectSpace.tileType display projection comes from15 existing shared Mars/Moon/Venus placement producers including ConvertPlants, generic special tiles and hazards. Native original first2SelectSpace arguments, all producer methods/callbacks and process AST-equal to pinned2673f6cf77 after removing only the new display argument; Game/Player/InputResponse/AI untouched. Canonical BoardSpaceTile supplies all own custom tile CSS/art, no title-to-tile or first-rendered-card inference. Unknown/unannotated space choices retain plain caption. Current ocean count uses own configured maximum; plant count/current isTerraformed are read-only facts, no invented gains/legality/effect forecasts. Full1247client/276files before final native ConvertPlants/tone/style follow-up; final6focused/2files,32native tests, Vue/server types/lint/style/App0warnings green. Wrong ocean-as-city display mutation rejected/exact restored. ActualApp1440 own-native producer UI fixture2of15 and one ocean icon in input/zoom banner visually verified; console0/0 and no move/DB requests, original fixture restored. Earlier non-final screenshots show red inherited debug border and mis-scaled sprite; both fixed in final images. Root tsc command without project was invalid due missing test framework types, not green evidence; final server check uses src/tsconfig.json. General authoritative effect quotes, direct/unannotated producers, input intro docking, viewport/mobile and full21flows remain open."
         }
       ]
     },
@@ -2173,6 +2279,34 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-requests.txt"
           ],
           "note": "Strict one-space plus native skip-option shape uses source single placement tab/footer and exact own skip captions/indices. Classic pending skip is retained on opt-in until explicit selection. Native chooseAndSave delegates to existing controller/save session, guards mode/disposal across nextTick. Owner-token zoom closes before skip/native response and on placement view disposal, without closing another input zoom. No source InputResponse/rules or auto-submit from a mode switch. Full1243client/274files,12focused/4files, types/lint/style/App0warnings passed; mode-change mutant killed/exact restored. Actual App1440 placement controls visually inspected, zero console warnings/errors, no accepted moves. Synthetic response restored with SHA256 9d4fb6b37bce785b9a6feebf645cb75a08957e391fabc53a75341a151acaa066. Complete placement forecasts/undo/mobile/custom/Moon/Venus and full rows remain open."
+        },
+        {
+          "kind": "native-tile-input-intros",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/models/PlacementPreview.spec.ts",
+            "tests/client/wrybit/inputs/InputIntro.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-boundary.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-restored.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-focused.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-server-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-lint-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-styles-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-desktop-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-zoom-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-console-final.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-requests-final.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-post-visual.log"
+          ],
+          "note": "Source InputIntro/TabIntroBlock view hierarchy now serves14 input headers and selected root Or choices. Optional native SelectSpace.tileType display projection comes from15 existing shared Mars/Moon/Venus placement producers including ConvertPlants, generic special tiles and hazards. Native original first2SelectSpace arguments, all producer methods/callbacks and process AST-equal to pinned2673f6cf77 after removing only the new display argument; Game/Player/InputResponse/AI untouched. Canonical BoardSpaceTile supplies all own custom tile CSS/art, no title-to-tile or first-rendered-card inference. Unknown/unannotated space choices retain plain caption. Current ocean count uses own configured maximum; plant count/current isTerraformed are read-only facts, no invented gains/legality/effect forecasts. Full1247client/276files before final native ConvertPlants/tone/style follow-up; final6focused/2files,32native tests, Vue/server types/lint/style/App0warnings green. Wrong ocean-as-city display mutation rejected/exact restored. ActualApp1440 own-native producer UI fixture2of15 and one ocean icon in input/zoom banner visually verified; console0/0 and no move/DB requests, original fixture restored. Earlier non-final screenshots show red inherited debug border and mis-scaled sprite; both fixed in final images. Root tsc command without project was invalid due missing test framework types, not green evidence; final server check uses src/tsconfig.json. General authoritative effect quotes, direct/unannotated producers, input intro docking, viewport/mobile and full21flows remain open."
         }
       ]
     },
@@ -2523,7 +2657,36 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/TabIntroBlock.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-tile-input-intros",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/models/PlacementPreview.spec.ts",
+            "tests/client/wrybit/inputs/InputIntro.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-boundary.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-restored.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-focused.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-server-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-lint-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-styles-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-desktop-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-zoom-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-console-final.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-requests-final.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-post-visual.log"
+          ],
+          "note": "Source InputIntro/TabIntroBlock view hierarchy now serves14 input headers and selected root Or choices. Optional native SelectSpace.tileType display projection comes from15 existing shared Mars/Moon/Venus placement producers including ConvertPlants, generic special tiles and hazards. Native original first2SelectSpace arguments, all producer methods/callbacks and process AST-equal to pinned2673f6cf77 after removing only the new display argument; Game/Player/InputResponse/AI untouched. Canonical BoardSpaceTile supplies all own custom tile CSS/art, no title-to-tile or first-rendered-card inference. Unknown/unannotated space choices retain plain caption. Current ocean count uses own configured maximum; plant count/current isTerraformed are read-only facts, no invented gains/legality/effect forecasts. Full1247client/276files before final native ConvertPlants/tone/style follow-up; final6focused/2files,32native tests, Vue/server types/lint/style/App0warnings green. Wrong ocean-as-city display mutation rejected/exact restored. ActualApp1440 own-native producer UI fixture2of15 and one ocean icon in input/zoom banner visually verified; console0/0 and no move/DB requests, original fixture restored. Earlier non-final screenshots show red inherited debug border and mis-scaled sprite; both fixed in final images. Root tsc command without project was invalid due missing test framework types, not green evidence; final server check uses src/tsconfig.json. General authoritative effect quotes, direct/unannotated producers, input intro docking, viewport/mobile and full21flows remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/TabPanelFooterSlot.vue",
@@ -3173,6 +3336,34 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-zoom-requests.txt"
           ],
           "note": "Source zoom/modal/banner geometry use our current single board instance. Vue Teleport moves the existing board into the real modal content target and returns it before submission; no cloned board IDs, native offered-cell node/handlers and controller UID survive. Game-scoped typed UI surface registry has owner-safe unregister, bounded close wait and revision for popup geometry. No App/global input-owner expansion. Custom Mars is uncropped; current native Moon/Venus panels remain owned for WP04, SVG root supported with native298fixture. Native SelectSpace retains getSelectableSpaces/onTileSelected/validation/save pipeline; only selection-time automatic-confirmation UI flag hands silent source confirmation to close-before-accept. Checkbox opt-out alone never submits the current choice. Save/No/automatic paths use existing current-anchor guard; no source rule parser, tile identity/gain forecasts are not guessed. Full1239client/273files passed before SVG follow-up; final9focused/4files, types/lint/App0warnings green; non-moving-board mutant rejected and exact bytes restored. Actual App1440 one main_board/sameNode, normal offered-cell click/No/zoom close/classic native confirmation return and dismissal pass, console0/0/no move or DB requests. Original synthetic fixture restored. Browser did not accept a move; response and silent-confirmation assertions run with mocked native onsave. Full Moon/Venus/custom/mobile zoom rendering and general placement/skip/intro/undo/full21rows remain open."
+        },
+        {
+          "kind": "native-tile-input-intros",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/models/PlacementPreview.spec.ts",
+            "tests/client/wrybit/inputs/InputIntro.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-boundary.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-metadata-restored.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-focused.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-server-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-lint-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-styles-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-desktop-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-zoom-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-console-final.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-requests-final.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-intro-post-visual.log"
+          ],
+          "note": "Source InputIntro/TabIntroBlock view hierarchy now serves14 input headers and selected root Or choices. Optional native SelectSpace.tileType display projection comes from15 existing shared Mars/Moon/Venus placement producers including ConvertPlants, generic special tiles and hazards. Native original first2SelectSpace arguments, all producer methods/callbacks and process AST-equal to pinned2673f6cf77 after removing only the new display argument; Game/Player/InputResponse/AI untouched. Canonical BoardSpaceTile supplies all own custom tile CSS/art, no title-to-tile or first-rendered-card inference. Unknown/unannotated space choices retain plain caption. Current ocean count uses own configured maximum; plant count/current isTerraformed are read-only facts, no invented gains/legality/effect forecasts. Full1247client/276files before final native ConvertPlants/tone/style follow-up; final6focused/2files,32native tests, Vue/server types/lint/style/App0warnings green. Wrong ocean-as-city display mutation rejected/exact restored. ActualApp1440 own-native producer UI fixture2of15 and one ocean icon in input/zoom banner visually verified; console0/0 and no move/DB requests, original fixture restored. Earlier non-final screenshots show red inherited debug border and mis-scaled sprite; both fixed in final images. Root tsc command without project was invalid due missing test framework types, not green evidence; final server check uses src/tsconfig.json. General authoritative effect quotes, direct/unannotated producers, input intro docking, viewport/mobile and full21flows remain open."
         }
       ]
     },

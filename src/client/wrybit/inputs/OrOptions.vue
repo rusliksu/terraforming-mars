@@ -28,7 +28,9 @@
       </template>
       <CardIntroBlock v-if="tileMenu && sourceCard !== undefined" :card="sourceCard" :title="binding.playerinput.title"/>
       <div v-else-if="tileMenu" class="or-tab-intro or-tab-question"><div class="or-tab-intro-title">{{ $t(binding.playerinput.title) }}</div></div>
-      <div v-else-if="spaceChoice !== undefined" class="or-tab-intro"><div class="or-tab-intro-title">{{ $t(binding.playerinput.title) }}</div></div>
+      <InputIntro v-else-if="spaceChoice !== undefined" :input="spaceChoice.space" :title="binding.playerinput.title" :playerView="binding.playerView"/>
+      <InputIntro v-else-if="binding.asTabs && binding.selectedOption !== undefined && !handTabActive && !inActionsGroup"
+        :input="binding.selectedOption" :playerView="binding.playerView"/>
       <AppButton v-if="spaceChoice !== undefined && binding.selectedOption !== spaceChoice.space" class="space-choose-option"
         :title="$t(fullTabTitle(spaceChoice.space.title))" @click="binding.select(spaceChoice.space)"/>
       <MilestoneAwardOptions v-if="maChoices !== undefined" :choices="maChoices" :selected="binding.selectedIdx" :groupName="binding.radioElementName" @select="selectIndex"/>
@@ -97,6 +99,7 @@ import {inputSourceCard} from './inputSourceCard';
 import {spaceWithSkip} from './spaceWithSkip';
 import {boardZoomSurface} from '@/client/wrybit/visuals/board/boardZoomSurface';
 import CancelActionButton from './CancelActionButton.vue';
+import InputIntro from './InputIntro.vue';
 
 const props = defineProps<{binding: OrOptionsBinding}>();
 const sourceCard = computed(() => inputSourceCard(props.binding.playerinput));

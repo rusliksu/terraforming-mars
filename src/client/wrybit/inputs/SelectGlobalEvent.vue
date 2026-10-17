@@ -1,6 +1,6 @@
 <template>
   <div class="wf-component wf-component--select-global-event">
-    <div v-if="binding.showtitle" class="nofloat wf-component-title">{{ $t(binding.playerinput.title) }}</div>
+    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
     <label v-for="name in binding.playerinput.globalEventNames" :key="name" class="cardBox">
       <input type="radio" :checked="binding.selected === name" :value="name" @change="binding.select(name)">
       <GlobalEvent :globalEventName="name" type="distant"/>
@@ -14,6 +14,7 @@
 </template>
 
 <script setup lang="ts">
+import InputIntro from './InputIntro.vue';
 import type {GlobalEventBinding} from './presentation';
 import GlobalEvent from '@/client/components/turmoil/GlobalEvent.vue';
 import AppButton from '@/client/components/common/AppButton.vue';

@@ -2,7 +2,8 @@
   <div :class="['placement-banner', 'placement-banner--tone-' + tone, {'placement-banner--generic': description.tile === undefined}]">
     <!-- What is being placed, what the tile brings and where it may go – above the enlarged Mars/Moon -->
     <!-- Special tile: brown hexagon with the card's symbol, layered like on the cards -->
-    <div v-if="description.specialTile !== undefined" class="placement-banner-icon" :style="specialTileStyle"></div>
+    <PlacementTile v-if="description.nativeTileType !== undefined" :tileType="description.nativeTileType"/>
+    <div v-else-if="description.specialTile !== undefined" class="placement-banner-icon" :style="specialTileStyle"></div>
     <div v-else-if="description.tile !== undefined" :class="['placement-banner-icon', 'placement-banner-icon--' + description.tile]"></div>
     <div class="placement-banner-main">
       <div class="placement-banner-title">{{ $t(description.title) }}</div>
@@ -27,6 +28,7 @@
 import {computed} from 'vue';
 import {PlacementDescription, PlacementGain, PlacementRuleKind} from './placementDescription';
 import {translateText, translateTextWithParams} from '@/client/directives/i18n';
+import PlacementTile from '@/client/wrybit/inputs/PlacementTile.vue';
 
 const props = defineProps<{
   description: PlacementDescription;

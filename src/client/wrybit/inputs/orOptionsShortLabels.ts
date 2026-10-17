@@ -1,5 +1,6 @@
 import {Message} from '@/common/logs/Message';
 import {PlayerInputModel} from '@/common/models/PlayerInputModel';
+import {TileType} from '@/common/TileType';
 type PreviewTile = 'greenery' | 'city' | 'ocean';
 
 // Short tab labels, icons and order for the action menu, so the tab bar stays on one line.
@@ -16,6 +17,7 @@ const SHORT_LABELS: Readonly<Record<string, string>> = {
   'Fund an award (${0} M€)': 'Award (${0} M€)',
   'Take first action of ${0} corporation': 'Corporation action',
   'Convert ${0} plants into greenery': 'Place greenery',
+  'Convert plants into a greenery': 'Place greenery',
   'Convert 8 heat into temperature': 'Increase the temperature',
   'Convert 6 heat into temperature': 'Increase the temperature',
   'Trade with a colony tile': 'Trade',
@@ -175,6 +177,17 @@ const GOLD_TAB_TONES: Readonly<Record<string, OptionTone>> = {
 };
 
 export function optionTone(option: PlayerInputModel): OptionTone | undefined {
+  if (option.type === 'space') {
+    if (option.tileType === TileType.GREENERY) {
+      return 'greenery';
+    }
+    if (option.tileType === TileType.OCEAN) {
+      return 'ocean';
+    }
+    if (option.tileType === TileType.CITY) {
+      return 'city';
+    }
+  }
   const key = titleKey(option.title);
   const tone = tabButtonTone(option.title) ?? EXPANSION_TAB_TONES[key] ?? GOLD_TAB_TONES[key];
   if (tone !== undefined || option.type !== 'option') {

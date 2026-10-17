@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="binding.showtitle">{{ $t(binding.playerinput.title) }}</div>
+    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
     <DeltaProjectBoard v-if="binding.playerView.game.gameOptions.expansions.deltaProject" :players="binding.playerView.players"/>
     <div class="flex">
       <select class="nes-input" v-model.number="amount">
@@ -15,6 +15,7 @@
 </template>
 
 <script setup lang="ts">
+import InputIntro from './InputIntro.vue';
 import {computed} from 'vue';
 import type {DeltaChoiceBinding} from './presentation';
 import DeltaProjectBoard from '@/client/components/delta/DeltaProjectBoard.vue';

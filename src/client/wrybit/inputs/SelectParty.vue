@@ -1,6 +1,6 @@
 <template>
   <div class="wf-component wf-component--select-party select-party">
-    <div v-if="binding.showtitle" class="nofloat wf-component-title">{{ $t(binding.playerinput.title) }}</div>
+    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
     <div v-if="binding.turmoil !== undefined" class="select-party__layout">
       <div class="select-party__step">
         <div class="deal-step__label">{{ $t('To which party?') }}</div>
@@ -19,6 +19,7 @@
 </template>
 
 <script setup lang="ts">
+import InputIntro from './InputIntro.vue';
 import {onBeforeUnmount, onMounted, useId} from 'vue';
 import type {PartyChoiceBinding} from './presentation';
 import PartyCard from './PartyCard.vue';

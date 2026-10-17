@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-17T17:44:08.570Z",
-  "generated_from_commit": "cef02b9ca86ba02dee1f8c342cdac1afe2791487",
+  "generated_at": "2026-10-17T18:13:35.281Z",
+  "generated_from_commit": "2673f6cf774907f5e21c356dbb950d5f329572d9",
   "scope": [
     ".",
     ".github",
@@ -2088,6 +2088,36 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "id": "native-placement-preview",
+      "label": "Тип тайла от нашего производителя размещения",
+      "type": "api",
+      "path": "src/server/inputs/SelectSpace.ts",
+      "role": "Необязательные read-only метаданные от 15 общих производителей; native доступные клетки, callbacks и process сохранены.",
+      "entrypoints": [
+        {
+          "path": "src/server/inputs/SelectSpace.ts",
+          "symbol": "private readonly tileType?: TileType",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/models/PlacementPreview.spec.ts",
+          "symbol": "independently of its title"
+        },
+        {
+          "path": "tests/client/wrybit/inputs/InputIntro.spec.ts",
+          "symbol": "our custom ocean maximum"
+        }
+      ],
+      "constraints": [
+        "Неизвестные типы не выводятся из текста.",
+        "Game/Player/AI не меняются.",
+        "Прогнозы эффектов не вычисляются этим контрактом."
+      ],
+      "evidence": []
     },
     {
       "id": "wrybit-card-style",
@@ -4485,6 +4515,19 @@
       ]
     },
     {
+      "from": "wrybit-input-presentations",
+      "to": "native-placement-preview",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/inputs/InputIntro.vue",
+          "symbol": "input.tileType",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
       "from": "wrybit-card-filters",
       "to": "canonical-card-metadata",
       "type": "reads",
@@ -6238,7 +6281,29 @@
     "tests/client/wrybit/inputs/SpaceSkip.spec.ts",
     "src/client/wrybit/inputs/CancelActionButton.vue",
     "src/client/wrybit/inputs/undoPresentation.ts",
-    "tests/client/wrybit/inputs/UndoPresentation.spec.ts"
+    "tests/client/wrybit/inputs/UndoPresentation.spec.ts",
+    "src/styles/wrybit/placement_tile.less",
+    "src/client/wrybit/inputs/InputIntro.vue",
+    "src/client/wrybit/inputs/PlacementTile.vue",
+    "src/client/wrybit/inputs/TabIntroBlock.vue",
+    "tests/client/wrybit/inputs/InputIntro.spec.ts",
+    "src/server/inputs/SelectSpace.ts",
+    "tests/models/PlacementPreview.spec.ts",
+    "src/server/cards/base/standardActions/ConvertPlants.ts",
+    "src/server/deferredActions/PlaceCityTile.ts",
+    "src/server/deferredActions/PlaceGreeneryTile.ts",
+    "src/server/deferredActions/PlaceOceanTile.ts",
+    "src/server/deferredActions/PlaceTile.ts",
+    "src/server/deferredActions/PlaceHazardTile.ts",
+    "src/server/moon/BasePlaceMoonTile.ts",
+    "src/server/moon/PlaceMoonMineTile.ts",
+    "src/server/moon/PlaceMoonHabitatTile.ts",
+    "src/server/moon/PlaceMoonRoadTile.ts",
+    "src/server/moon/PlaceSpecialMoonTile.ts",
+    "src/server/venusPhase2/BasePlaceVenusPhase2Tile.ts",
+    "src/server/venusPhase2/PlaceCloudCityTile.ts",
+    "src/server/venusPhase2/PlaceGasMineTile.ts",
+    "src/server/venusPhase2/PlaceFloaterArrayTile.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -6437,12 +6502,14 @@
       "src/client/wrybit/inputs/ChoiceOptionTile.vue",
       "src/client/wrybit/inputs/DelegateFigure.vue",
       "src/client/wrybit/inputs/DeltaProjectInput.vue",
+      "src/client/wrybit/inputs/InputIntro.vue",
       "src/client/wrybit/inputs/MilestoneAwardOptions.vue",
       "src/client/wrybit/inputs/OrOptions.vue",
       "src/client/wrybit/inputs/OrOptionsTabIcon.vue",
       "src/client/wrybit/inputs/PartyCard.vue",
       "src/client/wrybit/inputs/PartyOptions.vue",
       "src/client/wrybit/inputs/PaymentForm.vue",
+      "src/client/wrybit/inputs/PlacementTile.vue",
       "src/client/wrybit/inputs/PlayerOptionTile.vue",
       "src/client/wrybit/inputs/PresentationHost.vue",
       "src/client/wrybit/inputs/SelectAmount.vue",
@@ -6463,6 +6530,7 @@
       "src/client/wrybit/inputs/SetupSummary.vue",
       "src/client/wrybit/inputs/ShiftAresGlobalParameters.vue",
       "src/client/wrybit/inputs/SourceCardThumbnail.vue",
+      "src/client/wrybit/inputs/TabIntroBlock.vue",
       "src/client/wrybit/inputs/WaitingForPlayersTab.vue",
       "src/client/wrybit/inputs/WaitingForTabs.vue",
       "src/client/wrybit/inputs/actionCards.ts",
@@ -6721,6 +6789,7 @@
       "src/server/cards/base/PowerInfrastructure.ts",
       "src/server/cards/base/ViralEnhancers.ts",
       "src/server/cards/base/standardActions/ConvertHeat.ts",
+      "src/server/cards/base/standardActions/ConvertPlants.ts",
       "src/server/cards/colonies/MinorityRefuge.ts",
       "src/server/cards/colonies/PioneerSettlement.ts",
       "src/server/cards/colonies/Poseidon.ts",
@@ -6860,11 +6929,22 @@
       "src/server/cards/venusNext/Celestic.ts",
       "src/server/cards/venusNext/SulphurEatingBacteria.ts",
       "src/server/cards/venusNext/floaterCards.ts",
+      "src/server/deferredActions/PlaceCityTile.ts",
+      "src/server/deferredActions/PlaceGreeneryTile.ts",
+      "src/server/deferredActions/PlaceHazardTile.ts",
+      "src/server/deferredActions/PlaceOceanTile.ts",
+      "src/server/deferredActions/PlaceTile.ts",
       "src/server/inputs/SelectAmount.ts",
+      "src/server/inputs/SelectSpace.ts",
       "src/server/models/BoardPreview.ts",
       "src/server/models/OceanPlacementContext.ts",
       "src/server/models/ServerModel.ts",
       "src/server/models/publicConditionalDiscounts.ts",
+      "src/server/moon/BasePlaceMoonTile.ts",
+      "src/server/moon/PlaceMoonHabitatTile.ts",
+      "src/server/moon/PlaceMoonMineTile.ts",
+      "src/server/moon/PlaceMoonRoadTile.ts",
+      "src/server/moon/PlaceSpecialMoonTile.ts",
       "src/server/player/Colonies.ts",
       "src/server/replay/ReplayFrame.ts",
       "src/server/routes/ApiBoardPreview.ts",
@@ -6883,6 +6963,10 @@
       "src/server/turmoil/TurmoilHandler.ts",
       "src/server/turmoil/parties/Kelvinists.ts",
       "src/server/turmoil/parties/Reds.ts",
+      "src/server/venusPhase2/BasePlaceVenusPhase2Tile.ts",
+      "src/server/venusPhase2/PlaceCloudCityTile.ts",
+      "src/server/venusPhase2/PlaceFloaterArrayTile.ts",
+      "src/server/venusPhase2/PlaceGasMineTile.ts",
       "src/styles/cards.less",
       "src/styles/wrybit/adjacency_bonus.less",
       "src/styles/wrybit/amount_slider.less",
@@ -6947,6 +7031,7 @@
       "src/styles/wrybit/payments.less",
       "src/styles/wrybit/placement_banner.less",
       "src/styles/wrybit/placement_controls.less",
+      "src/styles/wrybit/placement_tile.less",
       "src/styles/wrybit/player_cube.less",
       "src/styles/wrybit/player_home_columns.less",
       "src/styles/wrybit/player_home_fixed.less",
@@ -7029,6 +7114,7 @@
       "tests/client/wrybit/inputs/DraftPresentation.spec.ts",
       "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
       "tests/client/wrybit/inputs/InitialCardsPresentation.spec.ts",
+      "tests/client/wrybit/inputs/InputIntro.spec.ts",
       "tests/client/wrybit/inputs/InputSourceCard.spec.ts",
       "tests/client/wrybit/inputs/MetadataChoiceMatchers.spec.ts",
       "tests/client/wrybit/inputs/MetadataChoices.spec.ts",
@@ -7099,6 +7185,7 @@
       "tests/fanmade-compat/RebalancedLifecycle.spec.ts",
       "tests/models/AmountPreview.spec.ts",
       "tests/models/BoardPreview.spec.ts",
+      "tests/models/PlacementPreview.spec.ts",
       "tests/models/ServerModel.spec.ts",
       "tests/replay/ReplayFrame.spec.ts",
       "tests/replay/ReplayView.spec.ts",

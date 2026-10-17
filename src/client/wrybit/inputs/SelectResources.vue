@@ -1,6 +1,6 @@
 <template>
   <div class="wf-component wf-options">
-    <div v-if="binding.showtitle" class="nofloat wf-component-title">{{ $t(binding.playerinput.title) }}</div>
+    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
     <PaymentUnit v-for="unit in binding.keys" :key="unit" v-model.number="valueFor(unit).value" :unit="unit" :showMax="false" description=""
       @plus="binding.plus(unit)" @minus="binding.minus(unit)"/>
     <TabPanelFooterSlot>
@@ -12,6 +12,7 @@
 </template>
 
 <script setup lang="ts">
+import InputIntro from './InputIntro.vue';
 import type {UnitAmountsBinding} from './presentation';
 import {useUnitValues} from './unitValues';
 import PaymentUnit from '@/client/wrybit/visuals/PaymentUnit.vue';

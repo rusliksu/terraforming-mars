@@ -37,7 +37,7 @@
   </BoardTabs>
   <BoardZoomModal :open="boardZoomOpen" :origin="zoomOrigin" :frame="zoomBoard === 'mars' && game.gameOptions.boardName !== BoardName.CUSTOM ? marsFrame : undefined"
     @target="boardZoomTarget = $event" @rendered="zoomGeometry.revision.value++" @hidden="onZoomHidden" @close="closeBoardZoom">
-    <template #banner><PlacementBanner v-if="placementInput !== undefined" :description="{tile: undefined, title: placementInput.title, gains: [], rules: []}"/></template>
+    <template #banner><PlacementBanner v-if="placementInput !== undefined" :description="nativePlacementDescription(placementInput)"/></template>
   </BoardZoomModal>
   <div v-if="players.length > 1" class="player_home_block--milestones-and-awards">
     <a class="hotkey-target"></a>
@@ -59,6 +59,7 @@ import {SpaceId} from '@/common/Types';
 import {selectBoardTab} from '@/client/wrybit/visuals/boardTabs/boardTabState';
 import BoardZoomModal from './board/BoardZoomModal.vue';
 import PlacementBanner from './board/PlacementBanner.vue';
+import {nativePlacementDescription} from './board/placementDescription';
 import {RING_FRAME} from './board/mobileBoardZoom';
 import {registerBoardZoomSurface, ZoomBoard} from './board/boardZoomSurface';
 import {isBoardPlacementActive} from './board/boardPlacementActive';
@@ -93,6 +94,7 @@ export default defineComponent({
     },
   },
   methods: {
+    nativePlacementDescription,
     registerZoomSurface() {
       this.unregisterZoom?.();
       const view = this;

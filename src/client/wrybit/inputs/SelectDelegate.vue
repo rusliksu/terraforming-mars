@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="binding.showtitle">{{ $t(binding.playerinput.title) }}</div>
+    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
     <label v-for="player in binding.playerinput.players" :key="player" class="form-radio form-inline">
       <input type="radio" :checked="binding.selected === player" :value="player" @change="binding.select(player)">
       <i class="form-icon"></i>
@@ -14,6 +14,7 @@
 </template>
 
 <script setup lang="ts">
+import InputIntro from './InputIntro.vue';
 import type {DelegateBinding} from './presentation';
 import AppButton from '@/client/components/common/AppButton.vue';
 import SelectPlayerRow from '@/client/components/SelectPlayerRow.vue';

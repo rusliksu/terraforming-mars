@@ -7,8 +7,8 @@ export type ZoomBoard = 'mars' | 'moon' | 'venus';
 export type BoardZoomSurface = {
   boards: ReadonlyArray<ZoomBoard>;
   revision: Ref<number>;
-  open(board: ZoomBoard, input?: SelectSpaceModel): void;
-  close(): Promise<void>;
+  open(board: ZoomBoard, input?: SelectSpaceModel, owner?: symbol): void;
+  close(owner?: symbol): Promise<void>;
 };
 
 const surfaces = shallowReactive(new Map<GameId, BoardZoomSurface>());

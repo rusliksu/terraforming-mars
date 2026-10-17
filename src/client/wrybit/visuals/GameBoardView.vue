@@ -76,6 +76,7 @@ export default defineComponent({
     return {boardZoomOpen: false, boardZoomTarget: undefined as HTMLElement | undefined, zoomOrigin: undefined as HTMLElement | undefined,
       zoomBoard: 'mars' as ZoomBoard, reservedMarsHeight: undefined as number | undefined,
       placementInput: undefined as SelectSpaceModel | undefined, unregisterZoom: undefined as (() => void) | undefined,
+      zoomOwner: undefined as symbol | undefined,
       zoomWaiters: markRaw(new Set<() => void>())};
   },
   mounted() {
@@ -107,10 +108,11 @@ export default defineComponent({
           return boards;
         },
         revision: this.zoomGeometry.revision,
-        open: (board, input) => this.openBoardZoom(board, input), close: () => this.closeBoardZoom(),
+        open: (board, input, owner) => this.openBoardZoom(board, input, owner),
+        close: (owner) => owner !== undefined && this.zoomOwner !== undefined && owner !== this.zoomOwner ? Promise.resolve() : this.closeBoardZoom(),
       });
     },
-    openBoardZoom(board: ZoomBoard, input?: SelectSpaceModel) {
+    openBoardZoom(board: ZoomBoard, input?: SelectSpaceModel, owner?: symbol) {
       if (this.boardZoomOpen) {
         return;
       }
@@ -123,6 +125,7 @@ export default defineComponent({
       this.zoomOrigin = origin;
       this.zoomBoard = board;
       this.placementInput = input;
+      this.zoomOwner = owner;
       this.reservedMarsHeight = board === 'mars' ? origin.offsetHeight : undefined;
       this.boardZoomOpen = true;
     },
@@ -151,6 +154,7 @@ export default defineComponent({
     onZoomHidden() {
       this.reservedMarsHeight = undefined;
       this.placementInput = undefined;
+      this.zoomOwner = undefined;
       this.zoomGeometry.revision.value++;
       this.zoomWaiters.forEach((finish) => finish());
     },

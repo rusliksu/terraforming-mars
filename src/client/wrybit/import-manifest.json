@@ -540,6 +540,26 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-zoom-requests.txt"
           ],
           "note": "Source zoom/modal/banner geometry use our current single board instance. Vue Teleport moves the existing board into the real modal content target and returns it before submission; no cloned board IDs, native offered-cell node/handlers and controller UID survive. Game-scoped typed UI surface registry has owner-safe unregister, bounded close wait and revision for popup geometry. No App/global input-owner expansion. Custom Mars is uncropped; current native Moon/Venus panels remain owned for WP04, SVG root supported with native298fixture. Native SelectSpace retains getSelectableSpaces/onTileSelected/validation/save pipeline; only selection-time automatic-confirmation UI flag hands silent source confirmation to close-before-accept. Checkbox opt-out alone never submits the current choice. Save/No/automatic paths use existing current-anchor guard; no source rule parser, tile identity/gain forecasts are not guessed. Full1239client/273files passed before SVG follow-up; final9focused/4files, types/lint/App0warnings green; non-moving-board mutant rejected and exact bytes restored. Actual App1440 one main_board/sameNode, normal offered-cell click/No/zoom close/classic native confirmation return and dismissal pass, console0/0/no move or DB requests. Original synthetic fixture restored. Browser did not accept a move; response and silent-confirmation assertions run with mocked native onsave. Full Moon/Venus/custom/mobile zoom rendering and general placement/skip/intro/undo/full21rows remain open."
+        },
+        {
+          "kind": "native-space-skip-footer",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SpaceSkip.spec.ts",
+            "tests/client/wrybit/inputs/PlacementZoom.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-zoom.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-styles.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-restored.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-requests.txt"
+          ],
+          "note": "Strict one-space plus native skip-option shape uses source single placement tab/footer and exact own skip captions/indices. Classic pending skip is retained on opt-in until explicit selection. Native chooseAndSave delegates to existing controller/save session, guards mode/disposal across nextTick. Owner-token zoom closes before skip/native response and on placement view disposal, without closing another input zoom. No source InputResponse/rules or auto-submit from a mode switch. Full1243client/274files,12focused/4files, types/lint/style/App0warnings passed; mode-change mutant killed/exact restored. Actual App1440 placement controls visually inspected, zero console warnings/errors, no accepted moves. Synthetic response restored with SHA256 9d4fb6b37bce785b9a6feebf645cb75a08957e391fabc53a75341a151acaa066. Complete placement forecasts/undo/mobile/custom/Moon/Venus and full rows remain open."
         }
       ]
     },
@@ -1089,6 +1109,26 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-market-console.txt"
           ],
           "note": "Source AmountConverter/AmountSideTile/CardIntroBlock/SourceCardThumbnail are pure views of our typed SelectAmountModel.preview. The foreign English-title conversion rule table is not imported: our same title has several producers with different effects. Seven native producers add display-only sixth constructor metadata; existing first5arguments, all effect arrows and native SelectAmount.process independently AST-compared unchanged. toModel projects current own stock/production/card counters without executing any effect. PowerInfrastructure with Sistemas Seebeck shows an energy price without claiming a stock remainder; EnergyMarket shows deferred payment price, retaining native currency/payment choices. Native min/max/maxByDefault, selected amount, InputResponse and AI code remain owned. Known native named-card title uses own catalogue; unknown titles/names fall back, no invented source context. Full1237client/272files,36native tests across7card suites/amount/projection, Vue+server types/lint/App0warnings pass. Wrong display rate mutant rejected, exact bytes restored. Actual App1440 native Insulation/EnergyMarket projections show production4->2 and0->2, price4/energy3->5 atamount2; real keyboard/hand/classic retains2, consoles0/0/no move/DB requests, original synthetic fixture restored. Remaining general forecasts/intro/placement/undo/viewport and all21full flows remain open."
+        },
+        {
+          "kind": "native-space-skip-footer",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SpaceSkip.spec.ts",
+            "tests/client/wrybit/inputs/PlacementZoom.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-zoom.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-styles.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-restored.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-requests.txt"
+          ],
+          "note": "Strict one-space plus native skip-option shape uses source single placement tab/footer and exact own skip captions/indices. Classic pending skip is retained on opt-in until explicit selection. Native chooseAndSave delegates to existing controller/save session, guards mode/disposal across nextTick. Owner-token zoom closes before skip/native response and on placement view disposal, without closing another input zoom. No source InputResponse/rules or auto-submit from a mode switch. Full1243client/274files,12focused/4files, types/lint/style/App0warnings passed; mode-change mutant killed/exact restored. Actual App1440 placement controls visually inspected, zero console warnings/errors, no accepted moves. Synthetic response restored with SHA256 9d4fb6b37bce785b9a6feebf645cb75a08957e391fabc53a75341a151acaa066. Complete placement forecasts/undo/mobile/custom/Moon/Venus and full rows remain open."
         }
       ]
     },
@@ -2093,6 +2133,26 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-zoom-requests.txt"
           ],
           "note": "Source zoom/modal/banner geometry use our current single board instance. Vue Teleport moves the existing board into the real modal content target and returns it before submission; no cloned board IDs, native offered-cell node/handlers and controller UID survive. Game-scoped typed UI surface registry has owner-safe unregister, bounded close wait and revision for popup geometry. No App/global input-owner expansion. Custom Mars is uncropped; current native Moon/Venus panels remain owned for WP04, SVG root supported with native298fixture. Native SelectSpace retains getSelectableSpaces/onTileSelected/validation/save pipeline; only selection-time automatic-confirmation UI flag hands silent source confirmation to close-before-accept. Checkbox opt-out alone never submits the current choice. Save/No/automatic paths use existing current-anchor guard; no source rule parser, tile identity/gain forecasts are not guessed. Full1239client/273files passed before SVG follow-up; final9focused/4files, types/lint/App0warnings green; non-moving-board mutant rejected and exact bytes restored. Actual App1440 one main_board/sameNode, normal offered-cell click/No/zoom close/classic native confirmation return and dismissal pass, console0/0/no move or DB requests. Original synthetic fixture restored. Browser did not accept a move; response and silent-confirmation assertions run with mocked native onsave. Full Moon/Venus/custom/mobile zoom rendering and general placement/skip/intro/undo/full21rows remain open."
+        },
+        {
+          "kind": "native-space-skip-footer",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SpaceSkip.spec.ts",
+            "tests/client/wrybit/inputs/PlacementZoom.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-zoom.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-styles.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-restored.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-requests.txt"
+          ],
+          "note": "Strict one-space plus native skip-option shape uses source single placement tab/footer and exact own skip captions/indices. Classic pending skip is retained on opt-in until explicit selection. Native chooseAndSave delegates to existing controller/save session, guards mode/disposal across nextTick. Owner-token zoom closes before skip/native response and on placement view disposal, without closing another input zoom. No source InputResponse/rules or auto-submit from a mode switch. Full1243client/274files,12focused/4files, types/lint/style/App0warnings passed; mode-change mutant killed/exact restored. Actual App1440 placement controls visually inspected, zero console warnings/errors, no accepted moves. Synthetic response restored with SHA256 9d4fb6b37bce785b9a6feebf645cb75a08957e391fabc53a75341a151acaa066. Complete placement forecasts/undo/mobile/custom/Moon/Venus and full rows remain open."
         }
       ]
     },
@@ -2571,6 +2631,26 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-requests.txt"
           ],
           "note": "Source single-input and plain-choice tabs adapt our permanent WaitingFor RPC/poll/undo owner through typed local body/footer hosts. All-cards uses v-show for the native body; source action Or and initialCards retain own tabs. Source initial-draft dealt sections move into All cards with fallback when tabs unavailable. Source pending-player status uses our canonical public flags. Or native response indices and NativeFactory child ownership retained. PresentationHost can bind an existing owner footer and teleport view-only commands without an extra element; native payment/button DOM remains directly in the source footer for original layout selectors. Initial external target, local return and ownership-safe unregister covered. Native card/option/exact response/payment ledger/UID survive hand and repeated classic/source changes. Native polling/undo tests preserved, remount mutant rejected/exact restored. Actual App1440 normal card click, hand tab, classic checked selection and opt-in return pass; no move/DB requests, console0/0, synthetic fixture restored. Full intro/forecasts/placement/viewport and all21full flow rows remain OPEN."
+        },
+        {
+          "kind": "native-space-skip-footer",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SpaceSkip.spec.ts",
+            "tests/client/wrybit/inputs/PlacementZoom.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-zoom.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-styles.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-restored.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-requests.txt"
+          ],
+          "note": "Strict one-space plus native skip-option shape uses source single placement tab/footer and exact own skip captions/indices. Classic pending skip is retained on opt-in until explicit selection. Native chooseAndSave delegates to existing controller/save session, guards mode/disposal across nextTick. Owner-token zoom closes before skip/native response and on placement view disposal, without closing another input zoom. No source InputResponse/rules or auto-submit from a mode switch. Full1243client/274files,12focused/4files, types/lint/style/App0warnings passed; mode-change mutant killed/exact restored. Actual App1440 placement controls visually inspected, zero console warnings/errors, no accepted moves. Synthetic response restored with SHA256 9d4fb6b37bce785b9a6feebf645cb75a08957e391fabc53a75341a151acaa066. Complete placement forecasts/undo/mobile/custom/Moon/Venus and full rows remain open."
         }
       ]
     },
@@ -10286,6 +10366,68 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-placement-zoom-requests.txt"
           ],
           "note": "Source zoom/modal/banner geometry use our current single board instance. Vue Teleport moves the existing board into the real modal content target and returns it before submission; no cloned board IDs, native offered-cell node/handlers and controller UID survive. Game-scoped typed UI surface registry has owner-safe unregister, bounded close wait and revision for popup geometry. No App/global input-owner expansion. Custom Mars is uncropped; current native Moon/Venus panels remain owned for WP04, SVG root supported with native298fixture. Native SelectSpace retains getSelectableSpaces/onTileSelected/validation/save pipeline; only selection-time automatic-confirmation UI flag hands silent source confirmation to close-before-accept. Checkbox opt-out alone never submits the current choice. Save/No/automatic paths use existing current-anchor guard; no source rule parser, tile identity/gain forecasts are not guessed. Full1239client/273files passed before SVG follow-up; final9focused/4files, types/lint/App0warnings green; non-moving-board mutant rejected and exact bytes restored. Actual App1440 one main_board/sameNode, normal offered-cell click/No/zoom close/classic native confirmation return and dismissal pass, console0/0/no move or DB requests. Original synthetic fixture restored. Browser did not accept a move; response and silent-confirmation assertions run with mocked native onsave. Full Moon/Venus/custom/mobile zoom rendering and general placement/skip/intro/undo/full21rows remain open."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/spaceWithSkip.ts",
+      "sourceSha256": "11ed48da66be8fc41269870db76eec30f93eefb94671d2706bee5ce039a21ef4",
+      "target": "src/client/wrybit/inputs/spaceWithSkip.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "package": "WP03",
+      "scope": "Strict source space-with-skip presentation classification; native option/controller/response retained.",
+      "evidence": [
+        {
+          "kind": "native-space-skip-footer",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SpaceSkip.spec.ts",
+            "tests/client/wrybit/inputs/PlacementZoom.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-zoom.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-styles.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-restored.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-requests.txt"
+          ],
+          "note": "Strict one-space plus native skip-option shape uses source single placement tab/footer and exact own skip captions/indices. Classic pending skip is retained on opt-in until explicit selection. Native chooseAndSave delegates to existing controller/save session, guards mode/disposal across nextTick. Owner-token zoom closes before skip/native response and on placement view disposal, without closing another input zoom. No source InputResponse/rules or auto-submit from a mode switch. Full1243client/274files,12focused/4files, types/lint/style/App0warnings passed; mode-change mutant killed/exact restored. Actual App1440 placement controls visually inspected, zero console warnings/errors, no accepted moves. Synthetic response restored with SHA256 9d4fb6b37bce785b9a6feebf645cb75a08957e391fabc53a75341a151acaa066. Complete placement forecasts/undo/mobile/custom/Moon/Venus and full rows remain open."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/waiting_for.less",
+      "sourceSha256": "c5482d541c1446478a7ffc00ed1acf50b884d31be5543e8ad773147fe55e87d7",
+      "target": "src/styles/wrybit/placement_controls.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "package": "WP03",
+      "scope": "Only placement enlarge-control styling; fixed overlay scoped to future fixed player layout, fluid layout uses normal flow.",
+      "evidence": [
+        {
+          "kind": "native-space-skip-footer",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/SpaceSkip.spec.ts",
+            "tests/client/wrybit/inputs/PlacementZoom.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-zoom.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-styles.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-restored.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-requests.txt"
+          ],
+          "note": "Strict one-space plus native skip-option shape uses source single placement tab/footer and exact own skip captions/indices. Classic pending skip is retained on opt-in until explicit selection. Native chooseAndSave delegates to existing controller/save session, guards mode/disposal across nextTick. Owner-token zoom closes before skip/native response and on placement view disposal, without closing another input zoom. No source InputResponse/rules or auto-submit from a mode switch. Full1243client/274files,12focused/4files, types/lint/style/App0warnings passed; mode-change mutant killed/exact restored. Actual App1440 placement controls visually inspected, zero console warnings/errors, no accepted moves. Synthetic response restored with SHA256 9d4fb6b37bce785b9a6feebf645cb75a08957e391fabc53a75341a151acaa066. Complete placement forecasts/undo/mobile/custom/Moon/Venus and full rows remain open."
         }
       ]
     }

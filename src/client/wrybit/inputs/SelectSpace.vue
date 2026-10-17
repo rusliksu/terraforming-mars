@@ -43,6 +43,7 @@ const zoomBoard = computed((): ZoomBoard | undefined => {
   return undefined;
 });
 const accepting = ref(false);
+const zoomOwner = Symbol('placement-zoom-owner');
 let alive = true;
 watch([() => props.binding.anchor, () => props.binding.automatic, accepting], ([anchor, automatic, busy]) => {
   if (alive && anchor !== undefined && automatic && !busy) {
@@ -51,10 +52,11 @@ watch([() => props.binding.anchor, () => props.binding.automatic, accepting], ([
 }, {immediate: true});
 onBeforeUnmount(() => {
   alive = false;
+  void zoomSurface.value?.close(zoomOwner);
 });
 function enlarge() {
   if (zoomBoard.value !== undefined) {
-    zoomSurface.value?.open(zoomBoard.value, props.binding.playerinput);
+    zoomSurface.value?.open(zoomBoard.value, props.binding.playerinput, zoomOwner);
   }
 }
 async function accept() {
@@ -63,7 +65,7 @@ async function accept() {
   }
   accepting.value = true;
   const confirm = props.binding.accept;
-  await zoomSurface.value?.close();
+  await zoomSurface.value?.close(zoomOwner);
   if (alive) {
     confirm();
   }

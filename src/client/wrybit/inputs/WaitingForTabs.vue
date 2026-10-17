@@ -33,6 +33,7 @@ import {allCardsInHand} from '@/client/wrybit/visuals/cardfilter/handCards';
 import {fullTabTitle, inputTabLabel, optionTone} from './orOptionsShortLabels';
 import {hasWaitingForTabs, initialDraftDealtSections} from './waitingForTabs';
 import WaitingForPlayersTab from './WaitingForPlayersTab.vue';
+import {spaceWithSkip} from './spaceWithSkip';
 
 const props = defineProps<{binding: InputPresentationBindings['waitingFor']}>();
 const handTabActive = ref(false);
@@ -49,6 +50,9 @@ const count = computed(() => {
     return input.cards.filter((card) => !card.isDisabled).length;
   }
   if (input.type === 'or') {
+    if (spaceWithSkip(input) !== undefined) {
+      return undefined;
+    }
     return input.options.reduce((sum, option) => sum + (option.type === 'player' ? option.players.length : 1), 0);
   }
   return undefined;

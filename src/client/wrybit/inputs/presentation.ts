@@ -206,6 +206,7 @@ export type InitialCardsBinding = InputViewBinding<'initialCards'> & {
 };
 
 export type InputPresentationBindings = {
+  waitingFor: {playerView: PlayerViewModel, playerinput: PlayerInputModel, bodyHost: InputHosts, footerHost: InputHosts};
   paymentForm: PaymentFormBinding;
   projectCard: ProjectCardBinding;
   or: OrOptionsBinding;
@@ -235,6 +236,7 @@ export type InputPresentationRegistry = {
 export const INPUT_PRESENTATIONS: InjectionKey<ComputedRef<InputPresentationRegistry | undefined>> = Symbol('input-presentations');
 export const INPUT_DEPTH: InjectionKey<number> = Symbol('input-depth');
 export const INPUT_FOOTER: InjectionKey<InputHosts['target']> = Symbol('input-footer');
+export const ROOT_INPUT_FOOTER: InjectionKey<InputHosts['target']> = Symbol('root-input-footer');
 
 export function useInputPresentation<K extends keyof InputPresentationBindings>(kind: K) {
   const presentations = inject(INPUT_PRESENTATIONS, undefined);

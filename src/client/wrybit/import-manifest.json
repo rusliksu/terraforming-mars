@@ -998,6 +998,27 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-award-console.txt"
           ],
           "note": "Source MA tiles reuse our native-backed Milestone/Award views, including our image/name/number patches; Player/Vitor prompt shapes are matched only to current game public models. Unknown prompt/name falls back to ordinary choice text. Source MA focus counter releases on classic return. Source party option cards reuse a read-only agenda projection extracted exactly from native SelectParty and shared with native Or; own MoreParties registry, all12native PartyName values supported. ChooseAlliedParty explicit native descriptions retained. Do-not-move maps only to the unique missing party in current native party models; duplicate/ambiguous cases fall back to text instead of guessing. Native offered option, original indices, SelectOption and save pipeline unchanged. Party note uses source existing ruling badge, board focus restores prior view. Four new flow/matcher tests plus existing native party flow green; full1222client/266files, types/scoped lint/style/App0warnings green. Ambiguous-stay mutant rejected and original bytes restored. Actual App1440 normal Gardener/Miner/Populists selection survives classic, public source agenda cards and MA images checked; all consoles0/0 and no move/DB requests. Original synthetic response exactly restored. Full Turmoil panel/viewport/forecasts/draft/undo and all21full UI rows remain open."
+        },
+        {
+          "kind": "native-root-input-tabs",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/WaitingForPresentation.spec.ts",
+            "tests/client/wrybit/inputs/PresentationHost.spec.ts",
+            "tests/client/components/WaitingFor.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-client-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-footer-host-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-hand.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-classic-selected.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-final-browser.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-draft-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-console-final.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-requests.txt"
+          ],
+          "note": "Source single-input and plain-choice tabs adapt our permanent WaitingFor RPC/poll/undo owner through typed local body/footer hosts. All-cards uses v-show for the native body; source action Or and initialCards retain own tabs. Source initial-draft dealt sections move into All cards with fallback when tabs unavailable. Source pending-player status uses our canonical public flags. Or native response indices and NativeFactory child ownership retained. PresentationHost can bind an existing owner footer and teleport view-only commands without an extra element; native payment/button DOM remains directly in the source footer for original layout selectors. Initial external target, local return and ownership-safe unregister covered. Native card/option/exact response/payment ledger/UID survive hand and repeated classic/source changes. Native polling/undo tests preserved, remount mutant rejected/exact restored. Actual App1440 normal card click, hand tab, classic checked selection and opt-in return pass; no move/DB requests, console0/0, synthetic fixture restored. Full intro/forecasts/placement/viewport and all21full flow rows remain OPEN."
         }
       ]
     },
@@ -1285,6 +1306,27 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-zero-offer-console.txt"
           ],
           "note": "Source current-pick markers, optional replacement clearing, stable session-only packet display order, read-only previous keeps and inactive action sections use native draft flags/cards and native selection. No native packet/response arrays reordered. Malformed/blocked optional storage falls back to authoritative packet. Native two-card repick remains selectable. Native zero-affordability prompt uses own cardCost/MC and native empty discard response. Native client SelectCard canSave corrected reversed min/max comparisons to match existing server range contract; real classic UI intermediate selection regression red/green, reversed-range mutant rejected, exact restoration green. No server/gameplay/AI change. Full1227client/267files passed before one additional cache test, final9focused/4files and restored6/2files passed; types/lint/style/App0warnings and native server SelectCard5tests green. Actual App1440 retained packet order through fresh native repick and normal selection/current-pick clearing; zero-affordability controls checked, console0/0 and no move/DB requests, original synthetic fixture restored. Root input tabs/layout and all full flow rows remain open."
+        },
+        {
+          "kind": "native-root-input-tabs",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/WaitingForPresentation.spec.ts",
+            "tests/client/wrybit/inputs/PresentationHost.spec.ts",
+            "tests/client/components/WaitingFor.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-client-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-footer-host-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-hand.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-classic-selected.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-final-browser.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-draft-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-console-final.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-requests.txt"
+          ],
+          "note": "Source single-input and plain-choice tabs adapt our permanent WaitingFor RPC/poll/undo owner through typed local body/footer hosts. All-cards uses v-show for the native body; source action Or and initialCards retain own tabs. Source initial-draft dealt sections move into All cards with fallback when tabs unavailable. Source pending-player status uses our canonical public flags. Or native response indices and NativeFactory child ownership retained. PresentationHost can bind an existing owner footer and teleport view-only commands without an extra element; native payment/button DOM remains directly in the source footer for original layout selectors. Initial external target, local return and ownership-safe unregister covered. Native card/option/exact response/payment ledger/UID survive hand and repeated classic/source changes. Native polling/undo tests preserved, remount mutant rejected/exact restored. Actual App1440 normal card click, hand tab, classic checked selection and opt-in return pass; no move/DB requests, console0/0, synthetic fixture restored. Full intro/forecasts/placement/viewport and all21full flow rows remain OPEN."
         }
       ]
     },
@@ -1368,6 +1410,27 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-zero-offer-console.txt"
           ],
           "note": "Source current-pick markers, optional replacement clearing, stable session-only packet display order, read-only previous keeps and inactive action sections use native draft flags/cards and native selection. No native packet/response arrays reordered. Malformed/blocked optional storage falls back to authoritative packet. Native two-card repick remains selectable. Native zero-affordability prompt uses own cardCost/MC and native empty discard response. Native client SelectCard canSave corrected reversed min/max comparisons to match existing server range contract; real classic UI intermediate selection regression red/green, reversed-range mutant rejected, exact restoration green. No server/gameplay/AI change. Full1227client/267files passed before one additional cache test, final9focused/4files and restored6/2files passed; types/lint/style/App0warnings and native server SelectCard5tests green. Actual App1440 retained packet order through fresh native repick and normal selection/current-pick clearing; zero-affordability controls checked, console0/0 and no move/DB requests, original synthetic fixture restored. Root input tabs/layout and all full flow rows remain open."
+        },
+        {
+          "kind": "native-root-input-tabs",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/WaitingForPresentation.spec.ts",
+            "tests/client/wrybit/inputs/PresentationHost.spec.ts",
+            "tests/client/components/WaitingFor.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-client-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-footer-host-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-hand.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-classic-selected.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-final-browser.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-draft-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-console-final.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-requests.txt"
+          ],
+          "note": "Source single-input and plain-choice tabs adapt our permanent WaitingFor RPC/poll/undo owner through typed local body/footer hosts. All-cards uses v-show for the native body; source action Or and initialCards retain own tabs. Source initial-draft dealt sections move into All cards with fallback when tabs unavailable. Source pending-player status uses our canonical public flags. Or native response indices and NativeFactory child ownership retained. PresentationHost can bind an existing owner footer and teleport view-only commands without an extra element; native payment/button DOM remains directly in the source footer for original layout selectors. Initial external target, local return and ownership-safe unregister covered. Native card/option/exact response/payment ledger/UID survive hand and repeated classic/source changes. Native polling/undo tests preserved, remount mutant rejected/exact restored. Actual App1440 normal card click, hand tab, classic checked selection and opt-in return pass; no move/DB requests, console0/0, synthetic fixture restored. Full intro/forecasts/placement/viewport and all21full flow rows remain OPEN."
         }
       ]
     },
@@ -2323,7 +2386,29 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/WaitingFor.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-root-input-tabs",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/WaitingForPresentation.spec.ts",
+            "tests/client/wrybit/inputs/PresentationHost.spec.ts",
+            "tests/client/components/WaitingFor.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-client-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-footer-host-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-hand.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-classic-selected.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-final-browser.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-draft-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-console-final.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-requests.txt"
+          ],
+          "note": "Source single-input and plain-choice tabs adapt our permanent WaitingFor RPC/poll/undo owner through typed local body/footer hosts. All-cards uses v-show for the native body; source action Or and initialCards retain own tabs. Source initial-draft dealt sections move into All cards with fallback when tabs unavailable. Source pending-player status uses our canonical public flags. Or native response indices and NativeFactory child ownership retained. PresentationHost can bind an existing owner footer and teleport view-only commands without an extra element; native payment/button DOM remains directly in the source footer for original layout selectors. Initial external target, local return and ownership-safe unregister covered. Native card/option/exact response/payment ledger/UID survive hand and repeated classic/source changes. Native polling/undo tests preserved, remount mutant rejected/exact restored. Actual App1440 normal card click, hand tab, classic checked selection and opt-in return pass; no move/DB requests, console0/0, synthetic fixture restored. Full intro/forecasts/placement/viewport and all21full flow rows remain OPEN."
+        }
+      ]
     },
     {
       "source": "src/client/components/WaitingForPlayersTab.vue",
@@ -2335,7 +2420,29 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/WaitingForPlayersTab.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-root-input-tabs",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/WaitingForPresentation.spec.ts",
+            "tests/client/wrybit/inputs/PresentationHost.spec.ts",
+            "tests/client/components/WaitingFor.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-client-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-footer-host-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-hand.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-classic-selected.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-final-browser.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-draft-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-console-final.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-requests.txt"
+          ],
+          "note": "Source single-input and plain-choice tabs adapt our permanent WaitingFor RPC/poll/undo owner through typed local body/footer hosts. All-cards uses v-show for the native body; source action Or and initialCards retain own tabs. Source initial-draft dealt sections move into All cards with fallback when tabs unavailable. Source pending-player status uses our canonical public flags. Or native response indices and NativeFactory child ownership retained. PresentationHost can bind an existing owner footer and teleport view-only commands without an extra element; native payment/button DOM remains directly in the source footer for original layout selectors. Initial external target, local return and ownership-safe unregister covered. Native card/option/exact response/payment ledger/UID survive hand and repeated classic/source changes. Native polling/undo tests preserved, remount mutant rejected/exact restored. Actual App1440 normal card click, hand tab, classic checked selection and opt-in return pass; no move/DB requests, console0/0, synthetic fixture restored. Full intro/forecasts/placement/viewport and all21full flow rows remain OPEN."
+        }
+      ]
     },
     {
       "source": "src/client/components/WaitingForTabs.vue",
@@ -2347,7 +2454,29 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/WaitingForTabs.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-root-input-tabs",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/WaitingForPresentation.spec.ts",
+            "tests/client/wrybit/inputs/PresentationHost.spec.ts",
+            "tests/client/components/WaitingFor.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-client-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-footer-host-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-hand.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-classic-selected.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-final-browser.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-draft-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-console-final.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-requests.txt"
+          ],
+          "note": "Source single-input and plain-choice tabs adapt our permanent WaitingFor RPC/poll/undo owner through typed local body/footer hosts. All-cards uses v-show for the native body; source action Or and initialCards retain own tabs. Source initial-draft dealt sections move into All cards with fallback when tabs unavailable. Source pending-player status uses our canonical public flags. Or native response indices and NativeFactory child ownership retained. PresentationHost can bind an existing owner footer and teleport view-only commands without an extra element; native payment/button DOM remains directly in the source footer for original layout selectors. Initial external target, local return and ownership-safe unregister covered. Native card/option/exact response/payment ledger/UID survive hand and repeated classic/source changes. Native polling/undo tests preserved, remount mutant rejected/exact restored. Actual App1440 normal card click, hand tab, classic checked selection and opt-in return pass; no move/DB requests, console0/0, synthetic fixture restored. Full intro/forecasts/placement/viewport and all21full flow rows remain OPEN."
+        }
+      ]
     },
     {
       "source": "src/client/components/WarningsComponent.vue",
@@ -9674,6 +9803,102 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-zero-offer-console.txt"
           ],
           "note": "Source current-pick markers, optional replacement clearing, stable session-only packet display order, read-only previous keeps and inactive action sections use native draft flags/cards and native selection. No native packet/response arrays reordered. Malformed/blocked optional storage falls back to authoritative packet. Native two-card repick remains selectable. Native zero-affordability prompt uses own cardCost/MC and native empty discard response. Native client SelectCard canSave corrected reversed min/max comparisons to match existing server range contract; real classic UI intermediate selection regression red/green, reversed-range mutant rejected, exact restoration green. No server/gameplay/AI change. Full1227client/267files passed before one additional cache test, final9focused/4files and restored6/2files passed; types/lint/style/App0warnings and native server SelectCard5tests green. Actual App1440 retained packet order through fresh native repick and normal selection/current-pick clearing; zero-affordability controls checked, console0/0 and no move/DB requests, original synthetic fixture restored. Root input tabs/layout and all full flow rows remain open."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/inputAvailableCount.ts",
+      "sourceSha256": "5c6357a57b8cad94dc2e908eec3218c20cd470f2aed0d607962b2f31772fbe97",
+      "target": "src/client/wrybit/inputs/WaitingForTabs.vue",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "package": "WP03",
+      "scope": "Read-only native models and presentation counts/sections/status; native RPC and response owner retained.",
+      "evidence": [
+        {
+          "kind": "native-root-input-tabs",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/WaitingForPresentation.spec.ts",
+            "tests/client/wrybit/inputs/PresentationHost.spec.ts",
+            "tests/client/components/WaitingFor.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-client-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-footer-host-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-hand.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-classic-selected.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-final-browser.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-draft-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-console-final.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-requests.txt"
+          ],
+          "note": "Source single-input and plain-choice tabs adapt our permanent WaitingFor RPC/poll/undo owner through typed local body/footer hosts. All-cards uses v-show for the native body; source action Or and initialCards retain own tabs. Source initial-draft dealt sections move into All cards with fallback when tabs unavailable. Source pending-player status uses our canonical public flags. Or native response indices and NativeFactory child ownership retained. PresentationHost can bind an existing owner footer and teleport view-only commands without an extra element; native payment/button DOM remains directly in the source footer for original layout selectors. Initial external target, local return and ownership-safe unregister covered. Native card/option/exact response/payment ledger/UID survive hand and repeated classic/source changes. Native polling/undo tests preserved, remount mutant rejected/exact restored. Actual App1440 normal card click, hand tab, classic checked selection and opt-in return pass; no move/DB requests, console0/0, synthetic fixture restored. Full intro/forecasts/placement/viewport and all21full flow rows remain OPEN."
+        }
+      ]
+    },
+    {
+      "source": "src/client/utils/draftedCards.ts",
+      "sourceSha256": "2725502520b5419bc67dbb3495cc2315a695d0c2c0caf8b996fdade2dfb989f1",
+      "target": "src/client/wrybit/inputs/waitingForTabs.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "package": "WP03",
+      "scope": "Read-only native models and presentation counts/sections/status; native RPC and response owner retained.",
+      "evidence": [
+        {
+          "kind": "native-root-input-tabs",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/WaitingForPresentation.spec.ts",
+            "tests/client/wrybit/inputs/PresentationHost.spec.ts",
+            "tests/client/components/WaitingFor.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-client-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-footer-host-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-hand.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-classic-selected.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-final-browser.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-draft-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-console-final.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-requests.txt"
+          ],
+          "note": "Source single-input and plain-choice tabs adapt our permanent WaitingFor RPC/poll/undo owner through typed local body/footer hosts. All-cards uses v-show for the native body; source action Or and initialCards retain own tabs. Source initial-draft dealt sections move into All cards with fallback when tabs unavailable. Source pending-player status uses our canonical public flags. Or native response indices and NativeFactory child ownership retained. PresentationHost can bind an existing owner footer and teleport view-only commands without an extra element; native payment/button DOM remains directly in the source footer for original layout selectors. Initial external target, local return and ownership-safe unregister covered. Native card/option/exact response/payment ledger/UID survive hand and repeated classic/source changes. Native polling/undo tests preserved, remount mutant rejected/exact restored. Actual App1440 normal card click, hand tab, classic checked selection and opt-in return pass; no move/DB requests, console0/0, synthetic fixture restored. Full intro/forecasts/placement/viewport and all21full flow rows remain OPEN."
+        }
+      ]
+    },
+    {
+      "source": "src/client/utils/playersToWaitFor.ts",
+      "sourceSha256": "fcfc9e45ed331f5e2aa6c3e534f6942a63b204f96f619526afa017ecf4f9cf53",
+      "target": "src/client/wrybit/inputs/WaitingForPlayersTab.vue",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "package": "WP03",
+      "scope": "Read-only native models and presentation counts/sections/status; native RPC and response owner retained.",
+      "evidence": [
+        {
+          "kind": "native-root-input-tabs",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/WaitingForPresentation.spec.ts",
+            "tests/client/wrybit/inputs/PresentationHost.spec.ts",
+            "tests/client/components/WaitingFor.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-client-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-waiting-tabs-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-footer-host-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-hand.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-classic-selected.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-final-browser.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-draft-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-console-final.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-requests.txt"
+          ],
+          "note": "Source single-input and plain-choice tabs adapt our permanent WaitingFor RPC/poll/undo owner through typed local body/footer hosts. All-cards uses v-show for the native body; source action Or and initialCards retain own tabs. Source initial-draft dealt sections move into All cards with fallback when tabs unavailable. Source pending-player status uses our canonical public flags. Or native response indices and NativeFactory child ownership retained. PresentationHost can bind an existing owner footer and teleport view-only commands without an extra element; native payment/button DOM remains directly in the source footer for original layout selectors. Initial external target, local return and ownership-safe unregister covered. Native card/option/exact response/payment ledger/UID survive hand and repeated classic/source changes. Native polling/undo tests preserved, remount mutant rejected/exact restored. Actual App1440 normal card click, hand tab, classic checked selection and opt-in return pass; no move/DB requests, console0/0, synthetic fixture restored. Full intro/forecasts/placement/viewport and all21full flow rows remain OPEN."
         }
       ]
     }

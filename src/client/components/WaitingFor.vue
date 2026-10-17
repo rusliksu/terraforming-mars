@@ -1,6 +1,9 @@
 <template>
   <div>
-  <template v-if="waitingfor === undefined || waitingfor.optional">
+  <component v-if="waitingPresentation !== undefined && presentationBinding !== undefined" :is="waitingPresentation" :binding="presentationBinding"/>
+  <PresentationHost v-else :hosts="bodyHost"/>
+  <InputPortal :target="bodyHost.target.value">
+  <div v-if="waitingfor === undefined || waitingfor.optional" class="wf-waiting-status">
     <template v-if="waitingfor === undefined">
       {{ $t('Not your turn to take any actions') }}
     </template>
@@ -10,7 +13,7 @@
     <template v-if="playersWaitingFor.length > 0">
       (⌛ <span v-for="color in playersWaitingFor" class="log-player" :class="playerColorClass(color, 'bg')" :key="color">{{ getPlayerName(color) }}</span>)
     </template>
-  </template>
+  </div>
   <div v-if="showResearchPurchaseUndo()" class="wf-options wf-undo-controls">
     <AppButton title="Undo card purchase (experimental)" type="submit" size="normal" @click="undoResearchPurchase" />
   </div>
@@ -44,13 +47,18 @@
       <AppButton title="Undo" type="submit" size="normal" @click="undoSelected" />
     </div>
   </div>
+  </InputPortal>
   </div>
 </template>
 
 <script lang="ts">
 /* global RequestInit */
 
-import {defineComponent, markRaw} from 'vue';
+import {defineComponent, markRaw, provide} from 'vue';
+import {createInputHosts} from '@/client/wrybit/shell/inputHosts';
+import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
+import PresentationHost from '@/client/wrybit/inputs/PresentationHost.vue';
+import {INPUT_FOOTER, ROOT_INPUT_FOOTER, InputPresentationBindings, useInputPresentation} from '@/client/wrybit/inputs/presentation';
 import * as constants from '@/common/constants';
 import raw_settings from '@/genfiles/settings.json';
 import {vueRoot} from '@/client/components/vueRoot';
@@ -109,6 +117,12 @@ const WAITING_FOR_POLL_RETRY_MESSAGE = 'Waiting-for poll failed; retrying.';
 
 export default defineComponent({
   name: 'WaitingFor',
+  setup() {
+    const footerHost = createInputHosts();
+    provide(INPUT_FOOTER, footerHost.target);
+    provide(ROOT_INPUT_FOOTER, footerHost.target);
+    return {bodyHost: createInputHosts(), footerHost, waitingPresentation: useInputPresentation('waitingFor')};
+  },
   props: {
     playerView: {
       type: Object as () => ViewModel,
@@ -134,6 +148,8 @@ export default defineComponent({
   },
   components: {
     AppButton,
+    InputPortal,
+    PresentationHost,
   },
   watch: {
     waitingfor() {
@@ -518,6 +534,14 @@ export default defineComponent({
     window.clearInterval(this.timers.title);
   },
   computed: {
+    presentationBinding(): InputPresentationBindings['waitingFor'] | undefined {
+      if (this.waitingfor === undefined || this.playerView.thisPlayer === undefined) {
+        return undefined;
+      }
+      // Pending inputs belong to our actor view; spectator views have no input.
+      return {playerView: this.playerView as PlayerViewModel, playerinput: this.waitingfor,
+        bodyHost: this.bodyHost, footerHost: this.footerHost};
+    },
     Phase(): typeof Phase {
       return Phase;
     },

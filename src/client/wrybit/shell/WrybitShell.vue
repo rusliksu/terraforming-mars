@@ -15,6 +15,7 @@ import SelectProjectCardToPlay from '@/client/wrybit/inputs/SelectProjectCardToP
 import OrOptions from '@/client/wrybit/inputs/OrOptions.vue';
 import AndOptions from '@/client/wrybit/inputs/AndOptions.vue';
 import SelectCard from '@/client/wrybit/inputs/SelectCard.vue';
+import WaitingForTabs from '@/client/wrybit/inputs/WaitingForTabs.vue';
 import SelectAmount from '@/client/wrybit/inputs/SelectAmount.vue';
 import SelectOption from '@/client/wrybit/inputs/SelectOption.vue';
 import SelectDelegate from '@/client/wrybit/inputs/SelectDelegate.vue';
@@ -45,7 +46,7 @@ onMounted(() => emit('views', {cards: markRaw(Catalog), playerHome: markRaw(Play
   createControls: {cube: markRaw(PlayerCube), seat: markRaw(SeatIcon), stepper: markRaw(NumberStepper), toggle: markRaw(SwitchInput), moduleFilter: markRaw(ModuleItemFilter), cardsFilter: markRaw(CardsFilter)}, inputs: {
     paymentForm: markRaw(PaymentForm), projectCard: markRaw(SelectProjectCardToPlay),
     or: markRaw(OrOptions), and: markRaw(AndOptions),
-    card: markRaw(SelectCard),
+    card: markRaw(SelectCard), waitingFor: markRaw(WaitingForTabs),
     amount: markRaw(SelectAmount), option: markRaw(SelectOption), delegate: markRaw(SelectDelegate),
     resource: markRaw(SelectResource), resources: markRaw(SelectResources), productionToLose: markRaw(SelectProductionToLose),
     player: markRaw(SelectPlayer), globalEvent: markRaw(SelectGlobalEvent), claimedUndergroundToken: markRaw(SelectClaimedUndergroundToken),

@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-17T11:19:36.753Z",
-  "generated_from_commit": "4142935acb53857bedac42f865fd6299e8eb4ca2",
+  "generated_at": "2026-10-17T11:35:10.340Z",
+  "generated_from_commit": "1243b3c964b5301aa5eef0092f3a29251caa573f",
   "scope": [
     ".",
     ".github",
@@ -3466,6 +3466,42 @@
         "Предложенные варианты и ответы остаются у native controllers."
       ],
       "evidence": []
+    },
+    {
+      "id": "native-waiting-presentation",
+      "label": "Вкладки на постоянном WaitingFor",
+      "type": "ui",
+      "path": "src/client/components/WaitingFor.vue",
+      "role": "Наш RPC/poll/undo owner сохраняет input factory; source WaitingForTabs получает локальные body/footer hosts без сетевых полномочий.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/WaitingFor.vue",
+          "symbol": "waitingPresentation: useInputPresentation('waitingFor')",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/inputs/WaitingForPresentation.spec.ts",
+          "symbol": "preserves the root native payment ledger"
+        },
+        {
+          "path": "tests/client/wrybit/inputs/PresentationHost.spec.ts",
+          "symbol": "uses an existing footer"
+        }
+      ],
+      "constraints": [
+        "Нет пересоздания native factory при смене вида.",
+        "Action Or и initialCards сохраняют свои вкладки.",
+        "Полные flows WP03/WP07 ещё открыты."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/wrybit/inputs/PresentationHost.vue",
+          "symbol": "props.target ?? host.value",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "edges": [
@@ -5041,6 +5077,32 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "persistent-player-input",
+      "to": "native-waiting-presentation",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/WaitingFor.vue",
+          "symbol": "presentationBinding(): InputPresentationBindings",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "native-waiting-presentation",
+      "to": "wrybit-input-presentations",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/shell/WrybitShell.vue",
+          "symbol": "waitingFor: markRaw(WaitingForTabs)",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -6034,7 +6096,12 @@
     "src/client/wrybit/inputs/cardSections.ts",
     "src/client/wrybit/inputs/draftCards.ts",
     "tests/client/wrybit/inputs/DraftOrder.spec.ts",
-    "tests/client/wrybit/inputs/DraftPresentation.spec.ts"
+    "tests/client/wrybit/inputs/DraftPresentation.spec.ts",
+    "src/client/wrybit/inputs/WaitingForPlayersTab.vue",
+    "src/client/wrybit/inputs/waitingForTabs.ts",
+    "src/client/wrybit/inputs/WaitingForTabs.vue",
+    "tests/client/wrybit/inputs/PresentationHost.spec.ts",
+    "tests/client/wrybit/inputs/WaitingForPresentation.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -6256,6 +6323,8 @@
       "src/client/wrybit/inputs/SelectSpace.vue",
       "src/client/wrybit/inputs/SetupSummary.vue",
       "src/client/wrybit/inputs/ShiftAresGlobalParameters.vue",
+      "src/client/wrybit/inputs/WaitingForPlayersTab.vue",
+      "src/client/wrybit/inputs/WaitingForTabs.vue",
       "src/client/wrybit/inputs/actionCards.ts",
       "src/client/wrybit/inputs/actionStep.ts",
       "src/client/wrybit/inputs/amount/AmountSlider.vue",
@@ -6272,6 +6341,7 @@
       "src/client/wrybit/inputs/presentation.ts",
       "src/client/wrybit/inputs/saveAttempt.ts",
       "src/client/wrybit/inputs/unitValues.ts",
+      "src/client/wrybit/inputs/waitingForTabs.ts",
       "src/client/wrybit/shell/AppBackground.vue",
       "src/client/wrybit/shell/InputHost.vue",
       "src/client/wrybit/shell/InputPortal.vue",
@@ -6809,9 +6879,11 @@
       "tests/client/wrybit/inputs/OverpaymentCompletion.spec.ts",
       "tests/client/wrybit/inputs/PartyPresentation.spec.ts",
       "tests/client/wrybit/inputs/PaymentPresentation.spec.ts",
+      "tests/client/wrybit/inputs/PresentationHost.spec.ts",
       "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
       "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
       "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
+      "tests/client/wrybit/inputs/WaitingForPresentation.spec.ts",
       "tests/client/wrybit/inputs/saveAttempt.spec.ts",
       "tests/client/wrybit/shell/AppInputRefresh.spec.ts",
       "tests/client/wrybit/shell/AppMode.spec.ts",

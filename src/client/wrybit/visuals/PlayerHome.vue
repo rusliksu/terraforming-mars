@@ -72,11 +72,12 @@ import {vDockedTab} from './common/DockedTab';
 import {GAME_MENU_CONTEXT, GameMenuContext} from './gameMenu/gameMenuContext';
 import {useInputPresentation} from '@/client/wrybit/inputs/presentation';
 import {showsDraftedCardsBlock} from '@/client/wrybit/inputs/draftCards';
+import {hasWaitingForTabs} from '@/client/wrybit/inputs/waitingForTabs';
 
 export default defineComponent({
   name: 'WrybitPlayerHome',
   setup() {
-    return {orPresentation: useInputPresentation('or'), cardPresentation: useInputPresentation('card'), showsDraftedCardsBlock};
+    return {orPresentation: useInputPresentation('or'), waitingPresentation: useInputPresentation('waitingFor'), cardPresentation: useInputPresentation('card'), showsDraftedCardsBlock};
   },
   mixins: [HomeMixin],
   props: {playerView: {type: Object as () => PlayerViewModel, required: true}},
@@ -93,7 +94,8 @@ export default defineComponent({
   },
   computed: {
     hasHandInInputTabs(): boolean {
-      return this.orPresentation !== undefined && this.playerView.waitingFor?.type === 'or';
+      return (this.orPresentation !== undefined && this.playerView.waitingFor?.type === 'or') ||
+        (this.waitingPresentation !== undefined && hasWaitingForTabs(this.playerView.waitingFor));
     },
     game(): GameModel {
       return this.playerView.game;

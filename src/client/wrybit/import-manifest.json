@@ -4014,7 +4014,26 @@
       "package": "WP03",
       "target": "src/client/wrybit/create/ChoiceChip.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "controlled-creation-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/create/ControlledWidgets.spec.ts",
+            "tests/client/wrybit/create/wikiContent.spec.ts",
+            "tests/client/components/create/creationTestConfig.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-client-green.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-key-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-default-off-requests.txt"
+          ],
+          "note": "Source creation cards/columns/widgets/header icons/wiki boxes bind to all62 explicit own fields and all28 own expansion labels/icons; no foreign model/defaults/AI/serializer. Native methods and style body exactly equal9b36f522cc after LF normalization. Player/profile/custom-map/filter/file fragments remain permanent per-owner portals; source stateless cube/seat/toggle/stepper leaves edit our current player objects. Actual native filter search/identity, player/file/map refs, config/errors and bot/async flags survive both mode changes; source Create sends byte-identical native serialized body at an intercepted HTTP boundary. Mode-key mutation killed by filter identity assertion; exact bytes restored and same test green. Full1200client/256files, Vue types/scoped ESLint/Stylelint and actual App Webpack0warnings. App1920x1080/390x844; normal player2/training/Rebalanced/profile/map-draft edits survive classic return, console0/0 and GET-only fixture. Fresh default-off requests contain no Wrybit chunk/assets. Existing shallow creation tests now use real local transport; assertions unchanged, fan toggles use real inputs. Wiki HTML rejects active markup/disguised script URLs and async dialogs stop late updates. Full grouping/content details, exact board preview/share URL, inline custom-card lists and final UI acceptance remain pending. This is scoped proof, not full T009/WP03 acceptance."
+        }
+      ]
     },
     {
       "source": "src/client/components/create/CollapsibleSection.vue",
@@ -4026,7 +4045,26 @@
       "package": "WP03",
       "target": "src/client/wrybit/create/CollapsibleSection.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "controlled-creation-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/create/ControlledWidgets.spec.ts",
+            "tests/client/wrybit/create/wikiContent.spec.ts",
+            "tests/client/components/create/creationTestConfig.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-client-green.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-key-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-default-off-requests.txt"
+          ],
+          "note": "Source creation cards/columns/widgets/header icons/wiki boxes bind to all62 explicit own fields and all28 own expansion labels/icons; no foreign model/defaults/AI/serializer. Native methods and style body exactly equal9b36f522cc after LF normalization. Player/profile/custom-map/filter/file fragments remain permanent per-owner portals; source stateless cube/seat/toggle/stepper leaves edit our current player objects. Actual native filter search/identity, player/file/map refs, config/errors and bot/async flags survive both mode changes; source Create sends byte-identical native serialized body at an intercepted HTTP boundary. Mode-key mutation killed by filter identity assertion; exact bytes restored and same test green. Full1200client/256files, Vue types/scoped ESLint/Stylelint and actual App Webpack0warnings. App1920x1080/390x844; normal player2/training/Rebalanced/profile/map-draft edits survive classic return, console0/0 and GET-only fixture. Fresh default-off requests contain no Wrybit chunk/assets. Existing shallow creation tests now use real local transport; assertions unchanged, fan toggles use real inputs. Wiki HTML rejects active markup/disguised script URLs and async dialogs stop late updates. Full grouping/content details, exact board preview/share URL, inline custom-card lists and final UI acceptance remain pending. This is scoped proof, not full T009/WP03 acceptance."
+        }
+      ]
     },
     {
       "source": "src/client/components/create/ColoniesFilter.vue",
@@ -4074,7 +4112,26 @@
       "package": "WP03",
       "target": "src/client/wrybit/create/CreateGameForm.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "controlled-creation-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/create/ControlledWidgets.spec.ts",
+            "tests/client/wrybit/create/wikiContent.spec.ts",
+            "tests/client/components/create/creationTestConfig.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-client-green.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-key-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-default-off-requests.txt"
+          ],
+          "note": "Source creation cards/columns/widgets/header icons/wiki boxes bind to all62 explicit own fields and all28 own expansion labels/icons; no foreign model/defaults/AI/serializer. Native methods and style body exactly equal9b36f522cc after LF normalization. Player/profile/custom-map/filter/file fragments remain permanent per-owner portals; source stateless cube/seat/toggle/stepper leaves edit our current player objects. Actual native filter search/identity, player/file/map refs, config/errors and bot/async flags survive both mode changes; source Create sends byte-identical native serialized body at an intercepted HTTP boundary. Mode-key mutation killed by filter identity assertion; exact bytes restored and same test green. Full1200client/256files, Vue types/scoped ESLint/Stylelint and actual App Webpack0warnings. App1920x1080/390x844; normal player2/training/Rebalanced/profile/map-draft edits survive classic return, console0/0 and GET-only fixture. Fresh default-off requests contain no Wrybit chunk/assets. Existing shallow creation tests now use real local transport; assertions unchanged, fan toggles use real inputs. Wiki HTML rejects active markup/disguised script URLs and async dialogs stop late updates. Full grouping/content details, exact board preview/share URL, inline custom-card lists and final UI acceptance remain pending. This is scoped proof, not full T009/WP03 acceptance."
+        }
+      ]
     },
     {
       "source": "src/client/components/create/CustomCardListCard.vue",
@@ -4110,7 +4167,26 @@
       "package": "WP03",
       "target": "src/client/wrybit/create/InfoBox.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "controlled-creation-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/create/ControlledWidgets.spec.ts",
+            "tests/client/wrybit/create/wikiContent.spec.ts",
+            "tests/client/components/create/creationTestConfig.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-client-green.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-key-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-default-off-requests.txt"
+          ],
+          "note": "Source creation cards/columns/widgets/header icons/wiki boxes bind to all62 explicit own fields and all28 own expansion labels/icons; no foreign model/defaults/AI/serializer. Native methods and style body exactly equal9b36f522cc after LF normalization. Player/profile/custom-map/filter/file fragments remain permanent per-owner portals; source stateless cube/seat/toggle/stepper leaves edit our current player objects. Actual native filter search/identity, player/file/map refs, config/errors and bot/async flags survive both mode changes; source Create sends byte-identical native serialized body at an intercepted HTTP boundary. Mode-key mutation killed by filter identity assertion; exact bytes restored and same test green. Full1200client/256files, Vue types/scoped ESLint/Stylelint and actual App Webpack0warnings. App1920x1080/390x844; normal player2/training/Rebalanced/profile/map-draft edits survive classic return, console0/0 and GET-only fixture. Fresh default-off requests contain no Wrybit chunk/assets. Existing shallow creation tests now use real local transport; assertions unchanged, fan toggles use real inputs. Wiki HTML rejects active markup/disguised script URLs and async dialogs stop late updates. Full grouping/content details, exact board preview/share URL, inline custom-card lists and final UI acceptance remain pending. This is scoped proof, not full T009/WP03 acceptance."
+        }
+      ]
     },
     {
       "source": "src/client/components/create/InfoLink.vue",
@@ -4122,7 +4198,26 @@
       "package": "WP03",
       "target": "src/client/wrybit/create/InfoLink.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "controlled-creation-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/create/ControlledWidgets.spec.ts",
+            "tests/client/wrybit/create/wikiContent.spec.ts",
+            "tests/client/components/create/creationTestConfig.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-client-green.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-key-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-default-off-requests.txt"
+          ],
+          "note": "Source creation cards/columns/widgets/header icons/wiki boxes bind to all62 explicit own fields and all28 own expansion labels/icons; no foreign model/defaults/AI/serializer. Native methods and style body exactly equal9b36f522cc after LF normalization. Player/profile/custom-map/filter/file fragments remain permanent per-owner portals; source stateless cube/seat/toggle/stepper leaves edit our current player objects. Actual native filter search/identity, player/file/map refs, config/errors and bot/async flags survive both mode changes; source Create sends byte-identical native serialized body at an intercepted HTTP boundary. Mode-key mutation killed by filter identity assertion; exact bytes restored and same test green. Full1200client/256files, Vue types/scoped ESLint/Stylelint and actual App Webpack0warnings. App1920x1080/390x844; normal player2/training/Rebalanced/profile/map-draft edits survive classic return, console0/0 and GET-only fixture. Fresh default-off requests contain no Wrybit chunk/assets. Existing shallow creation tests now use real local transport; assertions unchanged, fan toggles use real inputs. Wiki HTML rejects active markup/disguised script URLs and async dialogs stop late updates. Full grouping/content details, exact board preview/share URL, inline custom-card lists and final UI acceptance remain pending. This is scoped proof, not full T009/WP03 acceptance."
+        }
+      ]
     },
     {
       "source": "src/client/components/create/ModuleItemFilter.vue",
@@ -4146,7 +4241,26 @@
       "package": "WP03",
       "target": "src/client/wrybit/create/NumberStepper.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "controlled-creation-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/create/ControlledWidgets.spec.ts",
+            "tests/client/wrybit/create/wikiContent.spec.ts",
+            "tests/client/components/create/creationTestConfig.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-client-green.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-key-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-default-off-requests.txt"
+          ],
+          "note": "Source creation cards/columns/widgets/header icons/wiki boxes bind to all62 explicit own fields and all28 own expansion labels/icons; no foreign model/defaults/AI/serializer. Native methods and style body exactly equal9b36f522cc after LF normalization. Player/profile/custom-map/filter/file fragments remain permanent per-owner portals; source stateless cube/seat/toggle/stepper leaves edit our current player objects. Actual native filter search/identity, player/file/map refs, config/errors and bot/async flags survive both mode changes; source Create sends byte-identical native serialized body at an intercepted HTTP boundary. Mode-key mutation killed by filter identity assertion; exact bytes restored and same test green. Full1200client/256files, Vue types/scoped ESLint/Stylelint and actual App Webpack0warnings. App1920x1080/390x844; normal player2/training/Rebalanced/profile/map-draft edits survive classic return, console0/0 and GET-only fixture. Fresh default-off requests contain no Wrybit chunk/assets. Existing shallow creation tests now use real local transport; assertions unchanged, fan toggles use real inputs. Wiki HTML rejects active markup/disguised script URLs and async dialogs stop late updates. Full grouping/content details, exact board preview/share URL, inline custom-card lists and final UI acceptance remain pending. This is scoped proof, not full T009/WP03 acceptance."
+        }
+      ]
     },
     {
       "source": "src/client/components/create/OptionRow.vue",
@@ -4158,7 +4272,26 @@
       "package": "WP03",
       "target": "src/client/wrybit/create/OptionRow.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "controlled-creation-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/create/ControlledWidgets.spec.ts",
+            "tests/client/wrybit/create/wikiContent.spec.ts",
+            "tests/client/components/create/creationTestConfig.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-client-green.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-key-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-default-off-requests.txt"
+          ],
+          "note": "Source creation cards/columns/widgets/header icons/wiki boxes bind to all62 explicit own fields and all28 own expansion labels/icons; no foreign model/defaults/AI/serializer. Native methods and style body exactly equal9b36f522cc after LF normalization. Player/profile/custom-map/filter/file fragments remain permanent per-owner portals; source stateless cube/seat/toggle/stepper leaves edit our current player objects. Actual native filter search/identity, player/file/map refs, config/errors and bot/async flags survive both mode changes; source Create sends byte-identical native serialized body at an intercepted HTTP boundary. Mode-key mutation killed by filter identity assertion; exact bytes restored and same test green. Full1200client/256files, Vue types/scoped ESLint/Stylelint and actual App Webpack0warnings. App1920x1080/390x844; normal player2/training/Rebalanced/profile/map-draft edits survive classic return, console0/0 and GET-only fixture. Fresh default-off requests contain no Wrybit chunk/assets. Existing shallow creation tests now use real local transport; assertions unchanged, fan toggles use real inputs. Wiki HTML rejects active markup/disguised script URLs and async dialogs stop late updates. Full grouping/content details, exact board preview/share URL, inline custom-card lists and final UI acceptance remain pending. This is scoped proof, not full T009/WP03 acceptance."
+        }
+      ]
     },
     {
       "source": "src/client/components/create/PreludesFilter.vue",
@@ -4206,7 +4339,26 @@
       "package": "WP03",
       "target": "src/client/wrybit/create/SegmentedControl.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "controlled-creation-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/create/ControlledWidgets.spec.ts",
+            "tests/client/wrybit/create/wikiContent.spec.ts",
+            "tests/client/components/create/creationTestConfig.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-client-green.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-key-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-default-off-requests.txt"
+          ],
+          "note": "Source creation cards/columns/widgets/header icons/wiki boxes bind to all62 explicit own fields and all28 own expansion labels/icons; no foreign model/defaults/AI/serializer. Native methods and style body exactly equal9b36f522cc after LF normalization. Player/profile/custom-map/filter/file fragments remain permanent per-owner portals; source stateless cube/seat/toggle/stepper leaves edit our current player objects. Actual native filter search/identity, player/file/map refs, config/errors and bot/async flags survive both mode changes; source Create sends byte-identical native serialized body at an intercepted HTTP boundary. Mode-key mutation killed by filter identity assertion; exact bytes restored and same test green. Full1200client/256files, Vue types/scoped ESLint/Stylelint and actual App Webpack0warnings. App1920x1080/390x844; normal player2/training/Rebalanced/profile/map-draft edits survive classic return, console0/0 and GET-only fixture. Fresh default-off requests contain no Wrybit chunk/assets. Existing shallow creation tests now use real local transport; assertions unchanged, fan toggles use real inputs. Wiki HTML rejects active markup/disguised script URLs and async dialogs stop late updates. Full grouping/content details, exact board preview/share URL, inline custom-card lists and final UI acceptance remain pending. This is scoped proof, not full T009/WP03 acceptance."
+        }
+      ]
     },
     {
       "source": "src/client/components/create/SwitchInput.vue",
@@ -4218,7 +4370,26 @@
       "package": "WP03",
       "target": "src/client/wrybit/create/SwitchInput.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "controlled-creation-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/create/ControlledWidgets.spec.ts",
+            "tests/client/wrybit/create/wikiContent.spec.ts",
+            "tests/client/components/create/creationTestConfig.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-client-green.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-key-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-default-off-requests.txt"
+          ],
+          "note": "Source creation cards/columns/widgets/header icons/wiki boxes bind to all62 explicit own fields and all28 own expansion labels/icons; no foreign model/defaults/AI/serializer. Native methods and style body exactly equal9b36f522cc after LF normalization. Player/profile/custom-map/filter/file fragments remain permanent per-owner portals; source stateless cube/seat/toggle/stepper leaves edit our current player objects. Actual native filter search/identity, player/file/map refs, config/errors and bot/async flags survive both mode changes; source Create sends byte-identical native serialized body at an intercepted HTTP boundary. Mode-key mutation killed by filter identity assertion; exact bytes restored and same test green. Full1200client/256files, Vue types/scoped ESLint/Stylelint and actual App Webpack0warnings. App1920x1080/390x844; normal player2/training/Rebalanced/profile/map-draft edits survive classic return, console0/0 and GET-only fixture. Fresh default-off requests contain no Wrybit chunk/assets. Existing shallow creation tests now use real local transport; assertions unchanged, fan toggles use real inputs. Wiki HTML rejects active markup/disguised script URLs and async dialogs stop late updates. Full grouping/content details, exact board preview/share URL, inline custom-card lists and final UI acceptance remain pending. This is scoped proof, not full T009/WP03 acceptance."
+        }
+      ]
     },
     {
       "source": "src/client/components/create/ValidationProblems.vue",
@@ -4242,7 +4413,26 @@
       "package": "WP03",
       "target": "src/client/wrybit/create/WikiOverlay.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "controlled-creation-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/create/ControlledWidgets.spec.ts",
+            "tests/client/wrybit/create/wikiContent.spec.ts",
+            "tests/client/components/create/creationTestConfig.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-client-green.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-key-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-default-off-requests.txt"
+          ],
+          "note": "Source creation cards/columns/widgets/header icons/wiki boxes bind to all62 explicit own fields and all28 own expansion labels/icons; no foreign model/defaults/AI/serializer. Native methods and style body exactly equal9b36f522cc after LF normalization. Player/profile/custom-map/filter/file fragments remain permanent per-owner portals; source stateless cube/seat/toggle/stepper leaves edit our current player objects. Actual native filter search/identity, player/file/map refs, config/errors and bot/async flags survive both mode changes; source Create sends byte-identical native serialized body at an intercepted HTTP boundary. Mode-key mutation killed by filter identity assertion; exact bytes restored and same test green. Full1200client/256files, Vue types/scoped ESLint/Stylelint and actual App Webpack0warnings. App1920x1080/390x844; normal player2/training/Rebalanced/profile/map-draft edits survive classic return, console0/0 and GET-only fixture. Fresh default-off requests contain no Wrybit chunk/assets. Existing shallow creation tests now use real local transport; assertions unchanged, fan toggles use real inputs. Wiki HTML rejects active markup/disguised script URLs and async dialogs stop late updates. Full grouping/content details, exact board preview/share URL, inline custom-card lists and final UI acceptance remain pending. This is scoped proof, not full T009/WP03 acceptance."
+        }
+      ]
     },
     {
       "source": "src/client/components/delta/DeltaBoard.vue",
@@ -8418,6 +8608,90 @@
       "status": "planned",
       "evidence": [],
       "target": "src/styles/wrybit/colony_choice.less"
+    },
+    {
+      "source": "src/client/components/create/infoBoxState.ts",
+      "sourceSha256": "c374f429a1b9f696251a4a125c4d113244afca6fbfc76f8da141e71fed520c96",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "controlled-creation-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/create/ControlledWidgets.spec.ts",
+            "tests/client/wrybit/create/wikiContent.spec.ts",
+            "tests/client/components/create/creationTestConfig.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-client-green.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-key-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-default-off-requests.txt"
+          ],
+          "note": "Source creation cards/columns/widgets/header icons/wiki boxes bind to all62 explicit own fields and all28 own expansion labels/icons; no foreign model/defaults/AI/serializer. Native methods and style body exactly equal9b36f522cc after LF normalization. Player/profile/custom-map/filter/file fragments remain permanent per-owner portals; source stateless cube/seat/toggle/stepper leaves edit our current player objects. Actual native filter search/identity, player/file/map refs, config/errors and bot/async flags survive both mode changes; source Create sends byte-identical native serialized body at an intercepted HTTP boundary. Mode-key mutation killed by filter identity assertion; exact bytes restored and same test green. Full1200client/256files, Vue types/scoped ESLint/Stylelint and actual App Webpack0warnings. App1920x1080/390x844; normal player2/training/Rebalanced/profile/map-draft edits survive classic return, console0/0 and GET-only fixture. Fresh default-off requests contain no Wrybit chunk/assets. Existing shallow creation tests now use real local transport; assertions unchanged, fan toggles use real inputs. Wiki HTML rejects active markup/disguised script URLs and async dialogs stop late updates. Full grouping/content details, exact board preview/share URL, inline custom-card lists and final UI acceptance remain pending. This is scoped proof, not full T009/WP03 acceptance."
+        }
+      ],
+      "target": "src/client/wrybit/create/infoBoxState.ts",
+      "package": "WP03"
+    },
+    {
+      "source": "src/client/components/create/wikiContent.ts",
+      "sourceSha256": "40f87afa0df4171b34b1e96520098acac1d73d6e3abd2fbe4d272e58f63c6017",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "controlled-creation-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/create/ControlledWidgets.spec.ts",
+            "tests/client/wrybit/create/wikiContent.spec.ts",
+            "tests/client/components/create/creationTestConfig.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-client-green.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-key-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-default-off-requests.txt"
+          ],
+          "note": "Source creation cards/columns/widgets/header icons/wiki boxes bind to all62 explicit own fields and all28 own expansion labels/icons; no foreign model/defaults/AI/serializer. Native methods and style body exactly equal9b36f522cc after LF normalization. Player/profile/custom-map/filter/file fragments remain permanent per-owner portals; source stateless cube/seat/toggle/stepper leaves edit our current player objects. Actual native filter search/identity, player/file/map refs, config/errors and bot/async flags survive both mode changes; source Create sends byte-identical native serialized body at an intercepted HTTP boundary. Mode-key mutation killed by filter identity assertion; exact bytes restored and same test green. Full1200client/256files, Vue types/scoped ESLint/Stylelint and actual App Webpack0warnings. App1920x1080/390x844; normal player2/training/Rebalanced/profile/map-draft edits survive classic return, console0/0 and GET-only fixture. Fresh default-off requests contain no Wrybit chunk/assets. Existing shallow creation tests now use real local transport; assertions unchanged, fan toggles use real inputs. Wiki HTML rejects active markup/disguised script URLs and async dialogs stop late updates. Full grouping/content details, exact board preview/share URL, inline custom-card lists and final UI acceptance remain pending. This is scoped proof, not full T009/WP03 acceptance."
+        }
+      ],
+      "target": "src/client/wrybit/create/wikiContent.ts",
+      "package": "WP03"
+    },
+    {
+      "source": "src/styles/create_game_form.less",
+      "sourceSha256": "24109ef4f054dda64fdddd8b2bf11596772186e04ecaf51697f3e27459be3478",
+      "target": "src/styles/wrybit/create_game.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "controlled-creation-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/create/ControlledWidgets.spec.ts",
+            "tests/client/wrybit/create/wikiContent.spec.ts",
+            "tests/client/components/create/creationTestConfig.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-client-green.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-key-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-default-off-requests.txt"
+          ],
+          "note": "Source creation cards/columns/widgets/header icons/wiki boxes bind to all62 explicit own fields and all28 own expansion labels/icons; no foreign model/defaults/AI/serializer. Native methods and style body exactly equal9b36f522cc after LF normalization. Player/profile/custom-map/filter/file fragments remain permanent per-owner portals; source stateless cube/seat/toggle/stepper leaves edit our current player objects. Actual native filter search/identity, player/file/map refs, config/errors and bot/async flags survive both mode changes; source Create sends byte-identical native serialized body at an intercepted HTTP boundary. Mode-key mutation killed by filter identity assertion; exact bytes restored and same test green. Full1200client/256files, Vue types/scoped ESLint/Stylelint and actual App Webpack0warnings. App1920x1080/390x844; normal player2/training/Rebalanced/profile/map-draft edits survive classic return, console0/0 and GET-only fixture. Fresh default-off requests contain no Wrybit chunk/assets. Existing shallow creation tests now use real local transport; assertions unchanged, fan toggles use real inputs. Wiki HTML rejects active markup/disguised script URLs and async dialogs stop late updates. Full grouping/content details, exact board preview/share URL, inline custom-card lists and final UI acceptance remain pending. This is scoped proof, not full T009/WP03 acceptance."
+        }
+      ],
+      "scope": "Full creation styles; earlier catalog-presentation entry covers shared catalogue fragments."
     }
   ],
   "assets": [

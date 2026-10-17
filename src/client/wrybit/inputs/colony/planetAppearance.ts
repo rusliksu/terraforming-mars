@@ -59,4 +59,3 @@ export function planetImage(name: ColonyName): PlanetImage {
 export function planetTone(name: ColonyName): string {
   return PLANET_TONE[name] ?? DEFAULT_TONE;
 }
-

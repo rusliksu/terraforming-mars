@@ -61,6 +61,7 @@
 
 <script lang="ts">
 import {computed, defineAsyncComponent, defineComponent, provide, ref, shallowRef} from 'vue';
+import {CREATE_CONTROLS, CREATE_PRESENTATION} from '@/client/wrybit/create/presentation';
 import * as constants from '@/common/constants';
 
 const AdminHome = defineAsyncComponent(() => import(/* webpackChunkName: "admin" */ '@/client/components/admin/AdminHome.vue'));
@@ -178,6 +179,8 @@ export default defineComponent({
     const wrybitReady = ref(false);
     const wrybitViews = shallowRef<WrybitViews>({});
     provide(INPUT_PRESENTATIONS, computed(() => getPreferences().experimental_layout && wrybitReady.value ? wrybitViews.value.inputs : undefined));
+    provide(CREATE_PRESENTATION, computed(() => getPreferences().experimental_layout && wrybitReady.value ? wrybitViews.value.create : undefined));
+    provide(CREATE_CONTROLS, computed(() => getPreferences().experimental_layout && wrybitReady.value ? wrybitViews.value.createControls : undefined));
     return {inputHosts, wrybitReady, wrybitViews};
   },
   data(): MainAppData {

@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-17T11:35:10.340Z",
-  "generated_from_commit": "1243b3c964b5301aa5eef0092f3a29251caa573f",
+  "generated_at": "2026-10-17T11:49:08.509Z",
+  "generated_from_commit": "e27b8f73be14f8085c29120b8cd4cb3f514ad6f2",
   "scope": [
     ".",
     ".github",
@@ -3502,6 +3502,42 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "id": "native-amount-preview",
+      "label": "Наше описание конвертации для UI",
+      "type": "library",
+      "path": "src/server/inputs/SelectAmount.ts",
+      "role": "Семь native producers добавляют display-only metadata; toModel читает текущие счётчики, не выполняя эффект. Source converter использует этот контракт вместо foreign title map.",
+      "entrypoints": [
+        {
+          "path": "src/server/inputs/SelectAmount.ts",
+          "symbol": "private previewSide",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/models/AmountPreview.spec.ts",
+          "symbol": "without changing its default or effect"
+        },
+        {
+          "path": "tests/client/wrybit/inputs/AmountPreview.spec.ts",
+          "symbol": "without inventing a remaining stock value"
+        }
+      ],
+      "constraints": [
+        "Первые5аргументов, effect callbacks и process не меняются.",
+        "Неизвестный input не получает выдуманный прогноз.",
+        "AI и InputResponse не меняются."
+      ],
+      "evidence": [
+        {
+          "path": "src/common/models/AmountPreviewModel.ts",
+          "symbol": "export type AmountPreviewModel",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "edges": [
@@ -5103,6 +5139,19 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "native-amount-preview",
+      "to": "wrybit-input-presentations",
+      "type": "projects",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/inputs/SelectAmount.vue",
+          "symbol": ":conversion=\"binding.playerinput.preview\"",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -6101,7 +6150,25 @@
     "src/client/wrybit/inputs/waitingForTabs.ts",
     "src/client/wrybit/inputs/WaitingForTabs.vue",
     "tests/client/wrybit/inputs/PresentationHost.spec.ts",
-    "tests/client/wrybit/inputs/WaitingForPresentation.spec.ts"
+    "tests/client/wrybit/inputs/WaitingForPresentation.spec.ts",
+    "src/client/wrybit/inputs/CardIntroBlock.vue",
+    "src/client/wrybit/inputs/inputSourceCard.ts",
+    "src/client/wrybit/inputs/SourceCardThumbnail.vue",
+    "src/client/wrybit/inputs/amount/AmountConverter.vue",
+    "src/client/wrybit/inputs/amount/AmountSideTile.vue",
+    "tests/client/wrybit/inputs/AmountPreview.spec.ts",
+    "tests/client/wrybit/inputs/InputSourceCard.spec.ts",
+    "src/common/models/AmountPreviewModel.ts",
+    "src/common/models/PlayerInputModel.ts",
+    "src/server/inputs/SelectAmount.ts",
+    "tests/models/AmountPreview.spec.ts",
+    "src/server/cards/base/Insulation.ts",
+    "src/server/cards/base/PowerInfrastructure.ts",
+    "src/server/cards/colonies/TitanShuttles.ts",
+    "src/server/cards/venusNext/SulphurEatingBacteria.ts",
+    "src/server/cards/promo/EnergyMarket.ts",
+    "src/server/cards/promo/Supercapacitors.ts",
+    "src/server/cards/underworld/VoltaicMetallurgy.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -6295,6 +6362,7 @@
       "src/client/wrybit/inputs/ActionCardSections.vue",
       "src/client/wrybit/inputs/ActionStepChips.vue",
       "src/client/wrybit/inputs/AndOptions.vue",
+      "src/client/wrybit/inputs/CardIntroBlock.vue",
       "src/client/wrybit/inputs/ChoiceOptionTile.vue",
       "src/client/wrybit/inputs/DelegateFigure.vue",
       "src/client/wrybit/inputs/DeltaProjectInput.vue",
@@ -6323,10 +6391,13 @@
       "src/client/wrybit/inputs/SelectSpace.vue",
       "src/client/wrybit/inputs/SetupSummary.vue",
       "src/client/wrybit/inputs/ShiftAresGlobalParameters.vue",
+      "src/client/wrybit/inputs/SourceCardThumbnail.vue",
       "src/client/wrybit/inputs/WaitingForPlayersTab.vue",
       "src/client/wrybit/inputs/WaitingForTabs.vue",
       "src/client/wrybit/inputs/actionCards.ts",
       "src/client/wrybit/inputs/actionStep.ts",
+      "src/client/wrybit/inputs/amount/AmountConverter.vue",
+      "src/client/wrybit/inputs/amount/AmountSideTile.vue",
       "src/client/wrybit/inputs/amount/AmountSlider.vue",
       "src/client/wrybit/inputs/cardSections.ts",
       "src/client/wrybit/inputs/choiceBlock.ts",
@@ -6334,6 +6405,7 @@
       "src/client/wrybit/inputs/colony/ColonyPlanet.vue",
       "src/client/wrybit/inputs/colony/planetAppearance.ts",
       "src/client/wrybit/inputs/draftCards.ts",
+      "src/client/wrybit/inputs/inputSourceCard.ts",
       "src/client/wrybit/inputs/milestoneAwardChoice.ts",
       "src/client/wrybit/inputs/orOptionsShortLabels.ts",
       "src/client/wrybit/inputs/partyAppearance.ts",
@@ -6544,10 +6616,12 @@
       "src/common/cards/CardReplacementRules.ts",
       "src/common/cards/CardRequirementDescriptor.ts",
       "src/common/cards/RequirementType.ts",
+      "src/common/models/AmountPreviewModel.ts",
       "src/common/models/BoardPreviewModel.ts",
       "src/common/models/ClaimedMilestoneModel.ts",
       "src/common/models/ConditionalDiscountModel.ts",
       "src/common/models/OceanPlacementContextModel.ts",
+      "src/common/models/PlayerInputModel.ts",
       "src/common/models/PlayerModel.ts",
       "src/common/models/ReplayModel.ts",
       "src/locales/ru/replay.json",
@@ -6567,13 +6641,16 @@
       "src/server/cards/CardRequirementDescriptor.ts",
       "src/server/cards/ICard.ts",
       "src/server/cards/base/ImmigrantCity.ts",
+      "src/server/cards/base/Insulation.ts",
       "src/server/cards/base/Moss.ts",
       "src/server/cards/base/NitrophilicMoss.ts",
+      "src/server/cards/base/PowerInfrastructure.ts",
       "src/server/cards/base/ViralEnhancers.ts",
       "src/server/cards/base/standardActions/ConvertHeat.ts",
       "src/server/cards/colonies/MinorityRefuge.ts",
       "src/server/cards/colonies/PioneerSettlement.ts",
       "src/server/cards/colonies/Poseidon.ts",
+      "src/server/cards/colonies/TitanShuttles.ts",
       "src/server/cards/corporation/ICorporationCard.ts",
       "src/server/cards/corporation/MiningGuild.ts",
       "src/server/cards/corporation/TharsisRepublic.ts",
@@ -6582,8 +6659,10 @@
       "src/server/cards/prelude/Vitor.ts",
       "src/server/cards/prelude2/AtmosphericEnhancers.ts",
       "src/server/cards/promo/ArcadianCommunities.ts",
+      "src/server/cards/promo/EnergyMarket.ts",
       "src/server/cards/promo/MonsInsurance.ts",
       "src/server/cards/promo/Potatoes.ts",
+      "src/server/cards/promo/Supercapacitors.ts",
       "src/server/cards/rebalanced/AdaptedLichenRebalanced.ts",
       "src/server/cards/rebalanced/AdvancedAlloysRebalanced.ts",
       "src/server/cards/rebalanced/AerobrakedAmmoniaAsteroidRebalanced.ts",
@@ -6703,8 +6782,11 @@
       "src/server/cards/requirements/GenerationRequirement.ts",
       "src/server/cards/sillyfication/Microbitic.ts",
       "src/server/cards/underworld/GuerillaEcologists.ts",
+      "src/server/cards/underworld/VoltaicMetallurgy.ts",
       "src/server/cards/venusNext/Celestic.ts",
+      "src/server/cards/venusNext/SulphurEatingBacteria.ts",
       "src/server/cards/venusNext/floaterCards.ts",
+      "src/server/inputs/SelectAmount.ts",
       "src/server/models/BoardPreview.ts",
       "src/server/models/OceanPlacementContext.ts",
       "src/server/models/ServerModel.ts",
@@ -6865,12 +6947,14 @@
       "tests/client/wrybit/create/ModuleFilterPresentation.spec.ts",
       "tests/client/wrybit/create/SettingsLinkFlow.spec.ts",
       "tests/client/wrybit/create/wikiContent.spec.ts",
+      "tests/client/wrybit/inputs/AmountPreview.spec.ts",
       "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts",
       "tests/client/wrybit/inputs/ColonyPresentation.spec.ts",
       "tests/client/wrybit/inputs/DraftOrder.spec.ts",
       "tests/client/wrybit/inputs/DraftPresentation.spec.ts",
       "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
       "tests/client/wrybit/inputs/InitialCardsPresentation.spec.ts",
+      "tests/client/wrybit/inputs/InputSourceCard.spec.ts",
       "tests/client/wrybit/inputs/MetadataChoiceMatchers.spec.ts",
       "tests/client/wrybit/inputs/MetadataChoices.spec.ts",
       "tests/client/wrybit/inputs/NestedPresentation.spec.ts",
@@ -6935,6 +7019,7 @@
       "tests/client/wrybit/visuals/visualStyles.spec.ts",
       "tests/database/ReplayArchive.spec.ts",
       "tests/fanmade-compat/RebalancedLifecycle.spec.ts",
+      "tests/models/AmountPreview.spec.ts",
       "tests/models/BoardPreview.spec.ts",
       "tests/models/ServerModel.spec.ts",
       "tests/replay/ReplayFrame.spec.ts",

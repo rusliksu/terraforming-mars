@@ -12,6 +12,7 @@ import {Warning} from '../cards/Warning';
 import {Units} from '../Units';
 import {ClaimedToken} from '../underworld/UnderworldPlayerData';
 import {ColonyTrackChoiceModel} from './ColonyTradeContextModel';
+import {AmountPreviewModel} from './AmountPreviewModel';
 
 export type BaseInputModel = {
   title: string | Message;
@@ -108,6 +109,7 @@ export type SelectAmountModel = BaseInputModel & {
   min: number;
   max: number;
   maxByDefault: boolean;
+  preview?: AmountPreviewModel;
 }
 
 export type DeltaProjectInputModel = BaseInputModel & {

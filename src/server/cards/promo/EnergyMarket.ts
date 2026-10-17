@@ -37,7 +37,11 @@ export class EnergyMarket extends Card implements IProjectCard {
 
   private getEnergyOption(player: IPlayer, availableMC: number): SelectAmount {
     return new SelectAmount(
-      'Select amount of energy to gain', 'Gain energy', 1, Math.floor(availableMC / 2))
+      'Select amount of energy to gain', 'Gain energy', 1, Math.floor(availableMC / 2), undefined, {
+        sourceCard: this.name,
+        from: {kind: 'cost', resource: Resource.MEGACREDITS, perStep: 2},
+        to: {kind: 'stock', resource: Resource.ENERGY, perStep: 1},
+      })
       .andThen((amount) => {
         player.game.defer(new SelectPaymentDeferred(player, amount * 2))
           .andThen(() => player.stock.add(Resource.ENERGY, amount, {log: true}));

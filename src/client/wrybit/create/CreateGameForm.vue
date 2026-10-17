@@ -403,7 +403,7 @@ function toggleGroup(group: ExpansionGroup) {
 function fanNote(group: ExpansionGroup) {
   return group.key === 'fan' ? choicesOf(group).filter((choice) => expansions.value[choice.expansion]).map((choice) => choice.label).join(', ') : undefined;
 }
-const hasExpansionOptions = computed(() => ['venus', 'turmoil', 'moon', 'ares'].some((key) => expansions.value[key as 'venus' | 'turmoil' | 'moon' | 'ares']));
+const hasExpansionOptions = computed(() => (['venus', 'venusPhase2', 'turmoil', 'moon', 'ares'] as const).some((key) => expansions.value[key]));
 const board = field('board');
 const namedBoard = ref<BoardNameType>(BoardName.THARSIS);
 const randomBoard = computed({get: () => board.value === RandomBoardOption.OFFICIAL || board.value === RandomBoardOption.ALL,

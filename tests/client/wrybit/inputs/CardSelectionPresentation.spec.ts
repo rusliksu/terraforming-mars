@@ -15,6 +15,43 @@ import {handCardFilter, resetCardFilterState} from '@/client/wrybit/visuals/card
 describe('card selection presentation', () => {
   afterEach(() => resetCardFilterState());
 
+  it('keeps maximum picks editable after a fresh equal DTO and through classic return', async () => {
+    const cards = [{name: CardName.ANTS}, {name: CardName.BIRDS}, {name: CardName.ASTEROID}];
+    const input: SelectCardModel = {type: 'card', title: 'Sell patents', buttonLabel: 'Sell', cards,
+      min: 0, max: 2, showOnlyInLearnerMode: false, selectBlueCardAction: false, showOwner: false, showSelectAll: false};
+    const registry = shallowRef<InputPresentationRegistry | undefined>({card: markRaw(SourceSelectCard)});
+    const save = vi.fn();
+    const wrapper = mount(SelectCard, {...globalConfig, props: {playerView: fakePlayerViewModel({cardsInHand: cards}), playerinput: input, onsave: save, showsave: true},
+      global: {...globalConfig.global, provide: {[INPUT_PRESENTATIONS as symbol]: computed(() => registry.value)}}});
+    try {
+      await wrapper.findAll('input[type=checkbox]')[0].setValue(true);
+      await wrapper.findAll('input[type=checkbox]')[1].setValue(true);
+      const uid = wrapper.vm.$.uid;
+      const fresh = JSON.parse(JSON.stringify(input)) as SelectCardModel;
+      await wrapper.setProps({playerinput: fresh, playerView: fakePlayerViewModel({cardsInHand: fresh.cards})});
+      const controls = () => wrapper.findAll<HTMLInputElement>('input[type=checkbox]');
+      expect(wrapper.vm.$.uid).eq(uid);
+      expect(controls().map((control) => control.element.checked)).deep.eq([true, true, false]);
+      expect(controls().map((control) => control.element.disabled)).deep.eq([false, false, true]);
+      registry.value = undefined;
+      await flushPromises();
+      expect(wrapper.vm.$.uid).eq(uid);
+      expect(controls().map((control) => control.element.disabled)).deep.eq([false, false, true]);
+      registry.value = {card: markRaw(SourceSelectCard)};
+      await flushPromises();
+      await controls()[0].setValue(false);
+      await controls()[2].setValue(true);
+      expect(wrapper.vm.getData()).deep.eq([CardName.BIRDS, CardName.ASTEROID]);
+      registry.value = undefined;
+      await flushPromises();
+      expect(wrapper.vm.$.uid).eq(uid);
+      wrapper.vm.saveData();
+      expect(save.mock.calls).deep.eq([[{type: 'card', cards: [CardName.BIRDS, CardName.ASTEROID]}]]);
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
   it('preserves the single-card state shape and sends the native card response', async () => {
     const cards = [{name: CardName.ANTS}, {name: CardName.BIRDS, isDisabled: true}];
     const input: SelectCardModel = {type: 'card', title: 'Keep card', buttonLabel: 'Keep', cards,

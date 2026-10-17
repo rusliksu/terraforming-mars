@@ -18,7 +18,7 @@
       <label v-for="card in group.cards" :key="card.name" :data-card-name="card.name" :class="['cardbox', visibilityClass(card), pickClass(card), {'cardbox--unaffordable': cannotAfford}]" @click="keepCurrentPick(card)">
         <template v-if="!card.isDisabled">
           <input v-if="binding.single" type="radio" v-model="selected" :value="card">
-          <input v-else type="checkbox" v-model="selected" :value="card" :disabled="Array.isArray(binding.selected) && binding.selected.length >= binding.playerinput.max && !binding.selected.includes(card)">
+          <input v-else type="checkbox" v-model="selected" :value="card" :disabled="Array.isArray(binding.selected) && binding.selected.length >= binding.playerinput.max && !proposed(card)">
         </template>
         <Card :card="card" :robotCard="binding.robotCard(card)">
           <span v-if="currentPicks.has(card.name) && !proposed(card)" class="current-pick-tab" :role="card.isDisabled ? 'button' : undefined" :tabindex="card.isDisabled ? 0 : undefined"

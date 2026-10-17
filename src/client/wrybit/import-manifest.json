@@ -1925,6 +1925,23 @@
             "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-intro-docking-requests.txt"
           ],
           "note": "Native final-greenery DTO projection recognizes the complete current production-phase prompt; Game/Player/input callbacks unchanged. Solo not-fully-terraformed caption is truthful. Source card/project captions dock below their toolbars via local slot. Permanent parent declares caption placement independently of refreshed DTO identity. Native nested amount and response indices retained through classic return; duplicate source-card intro removed. 16 focused/4files and full1252client/276files passed, Vue/server types, ESLint and App build green. Phase-guard mutant rejected and exact bytes restored. Actual App1440 final greenery, zoom and project caption screenshots viewed; console0/0, no native input/create/reset requests, no DB access. Original synthetic response restored to SHA256 9d4fb6b37bce785b9a6feebf645cb75a08957e391fabc53a75341a151acaa066. Earlier full intro run failed a test expecting numeric state instead of native string; corrected the assertion without changing native amount data. Full UI/WP03 acceptance remains open."
+        },
+        {
+          "kind": "independent-review-cycle1-fixes",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-fixes-red.log",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-fixes-green.log",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-fixes-types-final.log",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-fixes-lint.log",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-fixes-build.log",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-fixes-venus.png",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-fixes-browser-proof.txt",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-fixes-classic.txt",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-fixes-console.txt",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-fixes-requests.txt"
+          ],
+          "note": "Исправлены два P2 и P3 из независимого review: disabled checkbox сравнивает canonical name в source и classic templates; отдельный venusPhase2 монтирует постоянный native editor; Teleport boolean задан явно. Два настоящих RED воспроизвели ошибки. GREEN12tests/4files, Vue types/scoped lint/App build прошли. Тесты сохраняют UID, дают снять/заменить max2 после свежего DTO, проверяют точные native response names и editor DOM/draft/config через classic return. Нативные методы/state/save не менялись. Actual App1440 standalone VenusPhase2: editor visible, остальные четыре expansion options выключены, sameEditor/draft при classic return, screenshot просмотрен, console0/0. Только read-only board-preview POST200; игровых действий/БД нет. До исправлений native full runner дал12901passed/3skips/0fail, production build3performancewarnings; после этих исправлений новый полный runner и повторное независимое review ещё обязательны."
         }
       ]
     },
@@ -5458,6 +5475,23 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-requests.txt"
           ],
           "note": "Source setup-board toggle now controls existing HomeColumns collapse prop; the board and permanent native selector stay mounted, namespaced UI preference only. Source ValidationProblems renders own canonical validationDetails/ValidationErrors under Create without replacing native validation or serializer. Existing native form/errors/invalid values survive classic return. 13focused/4files and full1249client/276files,types/lint/style/App0warnings. Validation RED missing inline box; first setup RED used wrong string value for native object-valued checkbox and was corrected, not behavioural proof. Bounded mode-key remount mutation then failed actual board-node identity and exact bytes restored green. Actual App1920 board displaynone/sameBoard/sameInput/Antschecked and classic checked confirmed; inline negative EscapeVelocity visible with Create disabled. Initial screenshot exposed legacy CSS hiding ranges and a stale source zoom CSS variable; fixed only optional range display and setup variable. Final real keyboard slider1to0.98 shrinks selected Ants198to194.15625px while still checked, screenshot viewed. Console0/0, no create/input/reset requests (readonly board-preview POST200 only); original synthetic fixture restored. Whole viewport/mobile/all21flows and WP03 acceptance remain open."
+        },
+        {
+          "kind": "independent-review-cycle1-fixes",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-fixes-red.log",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-fixes-green.log",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-fixes-types-final.log",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-fixes-lint.log",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-fixes-build.log",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-fixes-venus.png",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-fixes-browser-proof.txt",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-fixes-classic.txt",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-fixes-console.txt",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-fixes-requests.txt"
+          ],
+          "note": "Исправлены два P2 и P3 из независимого review: disabled checkbox сравнивает canonical name в source и classic templates; отдельный venusPhase2 монтирует постоянный native editor; Teleport boolean задан явно. Два настоящих RED воспроизвели ошибки. GREEN12tests/4files, Vue types/scoped lint/App build прошли. Тесты сохраняют UID, дают снять/заменить max2 после свежего DTO, проверяют точные native response names и editor DOM/draft/config через classic return. Нативные методы/state/save не менялись. Actual App1440 standalone VenusPhase2: editor visible, остальные четыре expansion options выключены, sameEditor/draft при classic return, screenshot просмотрен, console0/0. Только read-only board-preview POST200; игровых действий/БД нет. До исправлений native full runner дал12901passed/3skips/0fail, production build3performancewarnings; после этих исправлений новый полный runner и повторное независимое review ещё обязательны."
         }
       ]
     },

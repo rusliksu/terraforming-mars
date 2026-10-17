@@ -1,5 +1,5 @@
 <template>
-  <Teleport v-if="target !== undefined" :to="target" defer><slot></slot></Teleport>
+  <Teleport v-if="target !== undefined" :to="target" :defer="true"><slot></slot></Teleport>
   <div v-else ref="host" v-bind="$attrs" data-input-presentation-host><slot></slot></div>
 </template>
 

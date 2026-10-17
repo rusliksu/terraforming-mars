@@ -33,11 +33,13 @@ import type {
 } from '../server/SentryReporter';
 import {RouteError} from './RouteError';
 import {readBody} from './readBody';
+import type {PlayerViewModel} from '@/common/models/PlayerModel';
 
 type ShadowPromptSnapshot = {
   buttonLabel: string | null;
   title: string | null;
   type: string | null;
+  decisionState?: PlayerViewModel;
 };
 
 type CaptureError = (error: unknown, context: ErrorDiagnosticContext) => void;
@@ -175,7 +177,7 @@ export class PlayerInput extends Handler {
     try {
       const entity = JSON.parse(body);
       entityForLog = cloneEntityForLog(entity);
-      promptSnapshot = capturePromptSnapshot(player.getWaitingFor());
+      promptSnapshot = capturePromptSnapshot(player);
       promptInputSeq = player.game.shadowInputSeq ?? 0;
       validateRunId(entity);
       isUndo = this.isWaitingForUndo(player, entity);
@@ -183,7 +185,6 @@ export class PlayerInput extends Handler {
       if (isUndo) {
         player = await this.performUndo(req, res, ctx, player, entityForLog);
         inputSeq = advanceShadowInputSeq(player, promptInputSeq);
-        responses.writeJson(res, ctx, Server.getPlayerModel(player));
       } else {
         const previousSaveGamePromise = player.game.saveGamePromise;
         const stepUndoEnabled = player.game.gameOptions.undoStepOption === true;
@@ -244,13 +245,13 @@ export class PlayerInput extends Handler {
             player.game.actionReplayState.resetBeforeNextInput = true;
           }
         }
-        responses.writeJson(res, ctx, Server.getPlayerModel(player));
       }
       appendShadowInputLog(player, entityForLog, body, promptSnapshot, promptInputSeq, inputSeq, isUndo, 'accepted');
       recordPlayerInputAudit(req, ctx, player, 'player_input_accepted', {
         inputType: typeof entityForLog?.type === 'string' ? entityForLog.type : null,
         isUndo,
       });
+      responses.writeJson(res, ctx, Server.getPlayerModel(player));
     } catch (e) {
       appendShadowInputLog(player, entityForLog, body, promptSnapshot, promptInputSeq, inputSeq, isUndo, 'rejected', e);
       recordPlayerInputAudit(req, ctx, player, 'player_input_rejected', {
@@ -356,6 +357,9 @@ function appendShadowInputLog(
     fs.mkdirSync(logDir, {recursive: true});
     const logFile = path.join(logDir, `${filePrefix}-${player.game.id}.jsonl`);
     const entry = {
+      schemaVersion: 'server-decision/v2',
+      decisionState: promptSnapshot.decisionState,
+      phaseAfter: player.game.phase,
       ts: new Date().toISOString(),
       source: 'player-input',
       result,
@@ -380,9 +384,16 @@ function appendShadowInputLog(
       errorId: error instanceof AppError ? error.id : undefined,
       errorMessage: error instanceof Error ? error.message : undefined,
     };
-    fs.appendFileSync(logFile, JSON.stringify(entry) + '\n');
-  } catch (_e) {
-    // Logging is best-effort and must never block gameplay.
+    const fd = fs.openSync(logFile, 'a', 0o600);
+    try {
+      fs.writeFileSync(fd, JSON.stringify(entry) + '\n');
+      fs.fsyncSync(fd);
+    } finally {
+      fs.closeSync(fd);
+    }
+  } catch (e) {
+    // Journal failure must be visible without exposing private input.
+    console.error('shadow_input_journal_failed', e instanceof Error ? e.name : 'Error');
   }
 }
 
@@ -393,16 +404,27 @@ function advanceShadowInputSeq(player: IPlayer, promptInputSeq: number | null): 
   return nextSeq;
 }
 
-function capturePromptSnapshot(waitingFor: unknown): ShadowPromptSnapshot {
+function capturePromptSnapshot(player: IPlayer): ShadowPromptSnapshot {
+  const waitingFor = player.getWaitingFor();
   if (waitingFor === undefined || waitingFor === null) {
     return emptyPromptSnapshot();
   }
   const candidate = waitingFor as {buttonLabel?: unknown; title?: unknown; type?: unknown};
-  return {
+  const snapshot: ShadowPromptSnapshot = {
     buttonLabel: typeof candidate.buttonLabel === 'string' ? candidate.buttonLabel : null,
     title: extractPromptTitle(candidate.title),
     type: typeof candidate.type === 'string' ? candidate.type : null,
   };
+  if (process.env.SHADOW_LOG === '1') {
+    try {
+      // Detach the actor's view before processing mutates cards and prompt options.
+      snapshot.decisionState = JSON.parse(JSON.stringify(Server.getPlayerModel(player), (key, value) =>
+        key === 'runId' || key === 'spectatorId' ? undefined : value));
+    } catch (e) {
+      console.error('shadow_input_snapshot_failed', e instanceof Error ? e.name : 'Error');
+    }
+  }
+  return snapshot;
 }
 
 function cloneEntityForLog(entity: InputResponse): InputResponse {

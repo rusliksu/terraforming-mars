@@ -1,8 +1,8 @@
-import {IPlayer} from '../IPlayer';
-import {PlayerInput} from '../PlayerInput';
-import {PlayerInputModel} from '../../common/models/PlayerInputModel';
-import {Phase} from '../../common/Phase';
-import {TileType} from '../../common/TileType';
+import {IPlayer} from '@/server/IPlayer';
+import {PlayerInput} from '@/server/PlayerInput';
+import {PlayerInputModel} from '@/common/models/PlayerInputModel';
+import {Phase} from '@/common/Phase';
+import {TileType} from '@/common/TileType';
 
 /** Recognizes the complete native Player.takeActionForFinalGreenery root, never arbitrary space captions. */
 export function projectFinalGreenery(player: IPlayer, input: PlayerInput, model: PlayerInputModel): PlayerInputModel {

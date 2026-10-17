@@ -4,7 +4,7 @@
       <template #sort="{compact}"><HandSortControl :playerView="binding.playerView" :compact="compact" :allowManual="true"/></template>
     </CardFilterBar>
     <CardZoomBar v-else/>
-    <TabPanelIntroSlot v-if="showIntro"><InputIntro :input="binding.playerinput" :playerView="binding.playerView" belowHeader/></TabPanelIntroSlot>
+    <TabPanelIntroSlot v-if="showIntro"><InputIntro :input="binding.playerinput" :playerView="binding.playerView" :belowHeader="true"/></TabPanelIntroSlot>
     <CardFilterEmptyHint v-if="nothingShown" @reset="resetCardFilter(handCardFilter)"/>
     <label v-for="card in offeredCards" class="payments_cards" :class="visibilityClass(card)" :key="card.name">
       <input v-if="!card.isDisabled" class="hidden" type="radio" :checked="binding.cardName === card.name" :value="card.name" @change="binding.select(card.name)">

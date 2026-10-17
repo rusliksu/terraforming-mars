@@ -8,7 +8,7 @@
       </template>
     </CardFilterBar>
     <CardZoomBar v-else><template v-if="binding.showSelectAll" #lead><AppButton size="small" @click="binding.toggleAll()" :title="$t(binding.allSelected ? 'Deselect All' : 'Select All')"/></template></CardZoomBar>
-    <TabPanelIntroSlot v-if="showIntro"><InputIntro :input="binding.playerinput" :playerView="binding.playerView" :draftRepick="repick" belowHeader/></TabPanelIntroSlot>
+    <TabPanelIntroSlot v-if="showIntro"><InputIntro :input="binding.playerinput" :playerView="binding.playerView" :draftRepick="repick" :belowHeader="true"/></TabPanelIntroSlot>
     <CardFilterEmptyHint v-if="nothingShown" @reset="resetCardFilter(filter)"/>
     <h3 v-if="sections.title !== undefined" class="hand-cards-panel__title choice-section-title">{{ $t(sections.title) }} <small>{{ cards.length }}</small></h3>
     <template v-for="group in groups" :key="group.owner?.color ?? 'none'">

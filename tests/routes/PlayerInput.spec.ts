@@ -31,6 +31,9 @@ import {AppError} from '../../src/server/server/AppError';
 import {INVALID_RUN_ID} from '../../src/common/app/AppErrorId';
 import {runId} from '../../src/server/utils/server-ids';
 import {statusCode} from '@/common/http/statusCode';
+import {SelectCard} from '@/server/inputs/SelectCard';
+import {Sponsors} from '@/server/cards/base/Sponsors';
+import {PowerPlant} from '@/server/cards/base/PowerPlant';
 
 type CapturedError = {
   error: unknown;
@@ -833,6 +836,38 @@ describe('PlayerInput', () => {
 
     const model = JSON.parse(res.content);
     expect(model.game.inputSeq).eq(1);
+  });
+
+  it('journals the offered draft before processing changes the pack', async () => {
+    shadowLogDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tm-shadow-draft-'));
+    process.env.SHADOW_LOG = '1';
+    process.env.SHADOW_LOG_DIR = shadowLogDir;
+    const [game, player] = testGame(3);
+    scaffolding.url = `/player/input?id=${player.id}`;
+    await scaffolding.ctx.gameLoader.add(game);
+    game.phase = Phase.DRAFTING;
+    const pack = [new Sponsors(), new PowerPlant()];
+    player.setWaitingFor(new SelectCard('Select a card to keep', 'Select', pack), () => undefined);
+    player.process = () => {
+      pack.splice(0, pack.length);
+      player.popWaitingFor();
+      game.phase = Phase.ACTION;
+    };
+    const post = scaffolding.post(PlayerInput.INSTANCE, res);
+    const emit = Promise.resolve().then(() => {
+      scaffolding.req.emitString(JSON.stringify({type: 'card', cards: [CardName.SPONSORS]}));
+      scaffolding.req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+    const entry = JSON.parse(fs.readFileSync(path.join(shadowLogDir, `input-${game.id}.jsonl`), 'utf8'));
+    expect(entry.schemaVersion).eq('server-decision/v2');
+    expect(entry.decisionState.game.phase).eq('drafting');
+    expect(entry.decisionState.game.inputSeq).eq(0);
+    expect(entry.decisionState.waitingFor.cards.map((c: {name: string}) => c.name)).deep.eq(['Sponsors', 'Power Plant']);
+    expect(entry.playerAction.cards).deep.eq(['Sponsors']);
+    expect(entry.phaseAfter).eq('action');
+    expect(entry.decisionState.players).has.length(3);
+    expect(entry.decisionState.runId).eq(undefined);
   });
 });
 

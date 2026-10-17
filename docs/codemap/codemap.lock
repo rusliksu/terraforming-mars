@@ -83,8 +83,8 @@
   },
   "schema_version": 1,
   "map_kind": "scoped-dependency-union",
-  "source_commit": "7959b9f4314a45d675a6ca85f66279a2e1b9bde7",
-  "generated_at": "2026-10-17T18:56:49.767Z",
+  "source_commit": "33d4d92963939cd90bcc82bd7bd536fe11ecaf0d",
+  "generated_at": "2026-10-17T19:04:05.456Z",
   "source_tree_was_clean": false,
   "scope": [
     "assets/wrybit/board/ATTRIBUTION.md",
@@ -1206,7 +1206,7 @@
     "src/client/wrybit/inputs/PlayerOptionTile.vue": "d558d459dfb52f7e8b01ff3605277bda6ccd0dffa2330af91a5d7e9fa4003b7c",
     "src/client/wrybit/inputs/PresentationHost.vue": "0a9cceacdc5ae8fb0922baf795bdb760d8d546d5bd95b31100142e9eecc1c861",
     "src/client/wrybit/inputs/SelectAmount.vue": "ac5e65e1e5ea6831d58038b35dd53625af95b6121a9a5c4e4878d5ba6d95c5bd",
-    "src/client/wrybit/inputs/SelectCard.vue": "df0aacd1fdb503d526376a2fa9bf04bd0607a9ce9623042debb5b9fbfcb92035",
+    "src/client/wrybit/inputs/SelectCard.vue": "0cb65ce860d7f8d0b6210def0c27c9438cc96cbe886969e91b83608365e27372",
     "src/client/wrybit/inputs/SelectClaimedUndergroundToken.vue": "cb2f51a1f48be71f83294f2d2df3bb51ec40baf2af3eabb553e48f8e9746e88a",
     "src/client/wrybit/inputs/SelectColony.vue": "8bfdcaad2ccec22f3893a8d18b80eae2cd58a27857cd46e2286c4f3234f45c4f",
     "src/client/wrybit/inputs/SelectDelegate.vue": "976e8755e7e4e179c522208b559ee5543cf5ed603c746eef6c7a472281a8afc9",
@@ -1216,7 +1216,7 @@
     "src/client/wrybit/inputs/SelectParty.vue": "b56c464af92f200548cac5fb8015a91be7aa08564ab485d945481101bc6555c8",
     "src/client/wrybit/inputs/SelectPlayer.vue": "12f416599cd00e358127fd0c82dba1c25d7667b479ad3222537aa08851cf3560",
     "src/client/wrybit/inputs/SelectProductionToLose.vue": "8f84dee4c10f780705c740b2d5d9c372d98b5ff60753f5349c044693c487df8d",
-    "src/client/wrybit/inputs/SelectProjectCardToPlay.vue": "d142ee1a205cb17b6267ae49c2bcb531027017dc7a44ae00ec398167fe9f9ebf",
+    "src/client/wrybit/inputs/SelectProjectCardToPlay.vue": "bbbbeb0e0f1f04232c5160a552a0179b9562e6fe800c2d794278684cadc3b7db",
     "src/client/wrybit/inputs/SelectResource.vue": "20642140cb3d81aadbf2741c62f69a06fb9d0b04dc590532b52f4640a860cc52",
     "src/client/wrybit/inputs/SelectResources.vue": "a9399110c39640ed615ea1aa6503d728942f576a44bcc1df89d4b898644f684d",
     "src/client/wrybit/inputs/SelectSpace.vue": "9b7bf8fe13f6a278fccae39fed665e3a9d7a4fcbe33b780ff09ccd38563cf6c3",
@@ -1636,7 +1636,7 @@
     "src/server/models/BoardPreview.ts": "c0b644fe0b38e93f01910f7719fc8c6a5ce80da7067f40e67b8bf4b587ae0696",
     "src/server/models/OceanPlacementContext.ts": "52e2513c17db833bc4d714f2318e83d4f816b382b90cfd3f1e14c4c590eb0a37",
     "src/server/models/ServerModel.ts": "eeae37b2c1e0f0ef680bdbc2a431d9082e8c13372d2584ea77f344f00698966e",
-    "src/server/models/finalGreeneryPresentation.ts": "1f1b7aa16eb2a0bbe924b2a36a1c1bbde2004dcd2709daa891aec25931da825c",
+    "src/server/models/finalGreeneryPresentation.ts": "21febc23ca09a7aa198cd48bef2b7db161d16afbfc75d3e5ef025d235be87a61",
     "src/server/models/publicConditionalDiscounts.ts": "8e3ea14458c9499453ddbb69fe8f9c6de2302ffe8c4dcdcc033a2d3bb39157d5",
     "src/server/moon/BasePlaceMoonTile.ts": "f9491c519322a6010cee4df14cf427536f2867f3b626b9a9d95557fbd82db21f",
     "src/server/moon/PlaceMoonHabitatTile.ts": "76d7666abc3e6ecb1e21cc75051b7e12da7389c209d1ed54ed06b24089561e18",
@@ -1651,7 +1651,7 @@
     "src/server/routes/ApiReplay.ts": "f361cd59866a5cc8a4390dd0c96f942c1b3830f63f790375bacc5e1d2c5c0646",
     "src/server/routes/ContentType.ts": "7dc4f82a0220499b7ca09db726a9114900cd31fde37a772ba789b3ff57659b68",
     "src/server/routes/GameLogs.ts": "9851574625e08e4a7b16a80a598ec6a0d36efe5d31116069341ad5fff5aa6870",
-    "src/server/routes/PlayerInput.ts": "50cd739f8753dc5d77b1bf682f8a5ca4de157da82ac42a80123cdf65e6e755d4",
+    "src/server/routes/PlayerInput.ts": "a82c015bbd71e4dafdd2382ae2dda3f7907ea94586627dfb3c8c831ea589fd91",
     "src/server/routes/ServeAsset.ts": "a71045bf7158f3b0c044ee8fc2c0cf058cfeb91686a6f6b92e6017739bab0ea4",
     "src/server/server.ts": "a5fd15f7c482f6c00074a66ac4ef8f7a3f88698ecf1d08394fec2b289d0a057e",
     "src/server/server/SentryProcessBoundary.ts": "002a2c736bac792bcc1bc8f774bb163d59aee7aa08135907d1cefe98877b5a01",
@@ -1890,7 +1890,7 @@
     "tests/replay/ReplayView.spec.ts": "44ff7bc895488435063c72065c37618fc21a5213ee6726971d6ef1ce1ffd8da2",
     "tests/routes/ApiBoardPreview.spec.ts": "53ee5d1ed48fe6a7cdd56b5e5796dfc3fdc636a4dd8c6e3f54c8d5794c79668f",
     "tests/routes/ApiReplay.spec.ts": "752c3f4b08874093110803c3657844f594760e922934d2583a86ee2eff06310c",
-    "tests/routes/PlayerInput.spec.ts": "c3e05135a3f59eb587d558bf3105286aa7c58c94059e96060c904002e4e7f351",
+    "tests/routes/PlayerInput.spec.ts": "a69689de858cc916e8f412beb8d396aa71c558f44b5a86fdd62444fc18036bf9",
     "tests/routes/ServeAsset.spec.ts": "904c6ada02a7a9b7255ce000675eb1d819320498ac15b4d8f675924562140ec8",
     "tests/server/bot/AutomationCompatibility.spec.ts": "dd9058597cfe6a622fdbfff48901efa36331c7b971e4ffcd33b66995203a3140",
     "tests/server/requestProcessor.spec.ts": "9942bf0e13dd1cf775dcd74da42b2a353f8adb9e164f35271f5e82c0c7c9634e",
@@ -1898,9 +1898,9 @@
     "tests/server/server/SentryReporter.spec.ts": "a78d464170f713bcfa26f5e559762b68996adb788e966757f33e9d2f560e53d4",
     "tests/turmoil/parties/Kelvinists.spec.ts": "3dd36a74638753873cd710335db734e8c9f903b34b39b5097f89f71f36c2bbef",
     "tools/fanmade-port/check-catalog-source.js": "7cb76a3358482c383a6c2fbc79cac51cff4b0f859e6a348431548da161e0e9f3",
-    "tools/fanmade-port/fanmade-catalog-source-manifest.json": "bab16584bacaace8a2cd4e733f11bd1d1f21e0e84ba684bbeacce5f01d07a40e"
+    "tools/fanmade-port/fanmade-catalog-source-manifest.json": "8e329d036953b41d90811bdb7a76163be06e98890d64fcac7fcb9827b1d52620"
   },
-  "scope_fingerprint": "45cdb85446e91f2c775f0bc975d3004c0017b627948ed88a06a4d626f0e52707",
+  "scope_fingerprint": "bc50c87605cec731445e58b66f72b449a43172e278a706c2e9bc5110960f4ad0",
   "changed_modules": [
     "src/common/Timer.ts",
     "src/server/Game.ts",
@@ -2761,5 +2761,30 @@
     "src/server/models/finalGreeneryPresentation.ts"
   ],
   "removed_modules": [],
-  "comparison": "WP09 extends the approved 40-node/63-edge/15-flow/2-unknown/221-source map at d42049d985dacabf6261e97fb3969a0e42ccb805; all historical graph entries and the HTML renderer are retained. Only the owned Astrodrill render fingerprint is refreshed within prior scope; UI/JSON/template/rules/automation/sourceguard evidence adds bounded source paths. Source tree includes uncommitted WP09 changes; final delivery is not asserted. Добавлена только начальная граница App → опциональная оболочка. Сеть, правила и AI сохраняют прежних владельцев; полный UI и staging ещё не готовы."
+  "comparison": "WP09 extends the approved 40-node/63-edge/15-flow/2-unknown/221-source map at d42049d985dacabf6261e97fb3969a0e42ccb805; all historical graph entries and the HTML renderer are retained. Only the owned Astrodrill render fingerprint is refreshed within prior scope; UI/JSON/template/rules/automation/sourceguard evidence adds bounded source paths. Source tree includes uncommitted WP09 changes; final delivery is not asserted. Добавлена только начальная граница App → опциональная оболочка. Сеть, правила и AI сохраняют прежних владельцев; полный UI и staging ещё не готовы.",
+  "server_decision_journal_update": {
+    "date": "2026-10-15",
+    "source_revision": "23f4d757a66946117b5c8ddb9187eeca6ec93b9c",
+    "owner": "src/server/routes/PlayerInput.ts",
+    "contract": "server-decision/v2",
+    "flows": [
+      "PlayerInput POST -> immutable actor-only PlayerViewModel before processing",
+      "Existing input sequence and accepted/rejected action -> private SHADOW_LOG JSONL",
+      "fsync before response -> read-only external collector with resumable byte cursor",
+      "Snapshot/write failure -> explicit server diagnostic; gameplay continues and coverage stays partial"
+    ],
+    "scope": "Private diagnostic producer only; no new endpoint, game rules, DB schema, service change or deploy",
+    "consumer": "rusliksu/tm-advisor PR 1122, captured-server-decision/v1",
+    "verification": [
+      "tests/routes/PlayerInput.spec.ts",
+      "tests/models/FanmadeCatalogRevision.spec.ts"
+    ],
+    "fingerprint_algorithm": "sha256_normalized_lf",
+    "source_files": [
+      {
+        "path": "src/server/routes/PlayerInput.ts",
+        "sha256": "a82c015bbd71e4dafdd2382ae2dda3f7907ea94586627dfb3c8c831ea589fd91"
+      }
+    ]
+  }
 }

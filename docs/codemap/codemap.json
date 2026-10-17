@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-17T18:56:49.767Z",
-  "generated_from_commit": "7959b9f4314a45d675a6ca85f66279a2e1b9bde7",
+  "generated_at": "2026-10-17T19:04:05.456Z",
+  "generated_from_commit": "33d4d92963939cd90bcc82bd7bd536fe11ecaf0d",
   "scope": [
     ".",
     ".github",
@@ -7253,5 +7253,30 @@
       "tools/fanmade-port/fanmade-catalog-source-manifest.json"
     ],
     "note": "Объединены ранее проверенные области реплея, корпораций, callback contracts и требования по поколению; текущая dependency union проверена по completeness и fingerprints. Игровые проверки принадлежат утверждённым пакетам. WP08: подтверждены registry, dependency graph, combined variants и consumer capabilities. WP09: локальные UI/lifecycle/automation и renderer checks подтверждены; общий quality pipeline и PR/CI/staging остаются обязательствами родителя. Добавлена только начальная граница App → опциональная оболочка. Сеть, правила и AI сохраняют прежних владельцев; полный UI и staging ещё не готовы."
+  },
+  "server_decision_journal_update": {
+    "date": "2026-10-15",
+    "source_revision": "23f4d757a66946117b5c8ddb9187eeca6ec93b9c",
+    "owner": "src/server/routes/PlayerInput.ts",
+    "contract": "server-decision/v2",
+    "flows": [
+      "PlayerInput POST -> immutable actor-only PlayerViewModel before processing",
+      "Existing input sequence and accepted/rejected action -> private SHADOW_LOG JSONL",
+      "fsync before response -> read-only external collector with resumable byte cursor",
+      "Snapshot/write failure -> explicit server diagnostic; gameplay continues and coverage stays partial"
+    ],
+    "scope": "Private diagnostic producer only; no new endpoint, game rules, DB schema, service change or deploy",
+    "consumer": "rusliksu/tm-advisor PR 1122, captured-server-decision/v1",
+    "verification": [
+      "tests/routes/PlayerInput.spec.ts",
+      "tests/models/FanmadeCatalogRevision.spec.ts"
+    ],
+    "fingerprint_algorithm": "sha256_normalized_lf",
+    "source_files": [
+      {
+        "path": "src/server/routes/PlayerInput.ts",
+        "sha256": "a82c015bbd71e4dafdd2382ae2dda3f7907ea94586627dfb3c8c831ea589fd91"
+      }
+    ]
   }
 }

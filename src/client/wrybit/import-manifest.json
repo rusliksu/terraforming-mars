@@ -1129,6 +1129,26 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-requests.txt"
           ],
           "note": "Strict one-space plus native skip-option shape uses source single placement tab/footer and exact own skip captions/indices. Classic pending skip is retained on opt-in until explicit selection. Native chooseAndSave delegates to existing controller/save session, guards mode/disposal across nextTick. Owner-token zoom closes before skip/native response and on placement view disposal, without closing another input zoom. No source InputResponse/rules or auto-submit from a mode switch. Full1243client/274files,12focused/4files, types/lint/style/App0warnings passed; mode-change mutant killed/exact restored. Actual App1440 placement controls visually inspected, zero console warnings/errors, no accepted moves. Synthetic response restored with SHA256 9d4fb6b37bce785b9a6feebf645cb75a08957e391fabc53a75341a151acaa066. Complete placement forecasts/undo/mobile/custom/Moon/Venus and full rows remain open."
+        },
+        {
+          "kind": "native-undo-source-footer",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/UndoPresentation.spec.ts",
+            "tests/client/components/WaitingFor.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-focused.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-styles.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-requests.txt"
+          ],
+          "note": "Source quiet footer-button styling delegates through an explicit typed UI binding to permanent native WaitingFor reset/stepBack/undoResearchPurchase. Our own eligibility and exact action/step/research labels remain; foreign actionStart/cancel semantics not imported. Classic radio DOM and undoChoice retained, hidden only while source view owns the footer. Native request/hidden-information confirmation logic unchanged. RED2missing-controls, GREEN27focused/4files and full1245client/275files; types/lint/style/App0warnings. ActualApp1440 desktop viewed, console0/0, no undo/save requests. Phone screenshot exposes existing full-page overflow reserved for WP05; it is not mobile acceptance proof. Synthetic fixture restored/hash verified. Complete input/21flow acceptance remains open."
         }
       ]
     },
@@ -2651,6 +2671,26 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-requests.txt"
           ],
           "note": "Strict one-space plus native skip-option shape uses source single placement tab/footer and exact own skip captions/indices. Classic pending skip is retained on opt-in until explicit selection. Native chooseAndSave delegates to existing controller/save session, guards mode/disposal across nextTick. Owner-token zoom closes before skip/native response and on placement view disposal, without closing another input zoom. No source InputResponse/rules or auto-submit from a mode switch. Full1243client/274files,12focused/4files, types/lint/style/App0warnings passed; mode-change mutant killed/exact restored. Actual App1440 placement controls visually inspected, zero console warnings/errors, no accepted moves. Synthetic response restored with SHA256 9d4fb6b37bce785b9a6feebf645cb75a08957e391fabc53a75341a151acaa066. Complete placement forecasts/undo/mobile/custom/Moon/Venus and full rows remain open."
+        },
+        {
+          "kind": "native-undo-source-footer",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/UndoPresentation.spec.ts",
+            "tests/client/components/WaitingFor.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-focused.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-styles.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-requests.txt"
+          ],
+          "note": "Source quiet footer-button styling delegates through an explicit typed UI binding to permanent native WaitingFor reset/stepBack/undoResearchPurchase. Our own eligibility and exact action/step/research labels remain; foreign actionStart/cancel semantics not imported. Classic radio DOM and undoChoice retained, hidden only while source view owns the footer. Native request/hidden-information confirmation logic unchanged. RED2missing-controls, GREEN27focused/4files and full1245client/275files; types/lint/style/App0warnings. ActualApp1440 desktop viewed, console0/0, no undo/save requests. Phone screenshot exposes existing full-page overflow reserved for WP05; it is not mobile acceptance proof. Synthetic fixture restored/hash verified. Complete input/21flow acceptance remains open."
         }
       ]
     },
@@ -10428,6 +10468,68 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-space-skip-requests.txt"
           ],
           "note": "Strict one-space plus native skip-option shape uses source single placement tab/footer and exact own skip captions/indices. Classic pending skip is retained on opt-in until explicit selection. Native chooseAndSave delegates to existing controller/save session, guards mode/disposal across nextTick. Owner-token zoom closes before skip/native response and on placement view disposal, without closing another input zoom. No source InputResponse/rules or auto-submit from a mode switch. Full1243client/274files,12focused/4files, types/lint/style/App0warnings passed; mode-change mutant killed/exact restored. Actual App1440 placement controls visually inspected, zero console warnings/errors, no accepted moves. Synthetic response restored with SHA256 9d4fb6b37bce785b9a6feebf645cb75a08957e391fabc53a75341a151acaa066. Complete placement forecasts/undo/mobile/custom/Moon/Venus and full rows remain open."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/CancelActionButton.vue",
+      "sourceSha256": "106da8a50b0595e68918b782ad048dc505b316c87aaeb22356b8c2911b956c7e",
+      "target": "src/client/wrybit/inputs/CancelActionButton.vue",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "package": "WP03",
+      "scope": "Presentation styling/typed local command seam only; own distinct undo meanings and native request owner retained.",
+      "evidence": [
+        {
+          "kind": "native-undo-source-footer",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/UndoPresentation.spec.ts",
+            "tests/client/components/WaitingFor.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-focused.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-styles.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-requests.txt"
+          ],
+          "note": "Source quiet footer-button styling delegates through an explicit typed UI binding to permanent native WaitingFor reset/stepBack/undoResearchPurchase. Our own eligibility and exact action/step/research labels remain; foreign actionStart/cancel semantics not imported. Classic radio DOM and undoChoice retained, hidden only while source view owns the footer. Native request/hidden-information confirmation logic unchanged. RED2missing-controls, GREEN27focused/4files and full1245client/275files; types/lint/style/App0warnings. ActualApp1440 desktop viewed, console0/0, no undo/save requests. Phone screenshot exposes existing full-page overflow reserved for WP05; it is not mobile acceptance proof. Synthetic fixture restored/hash verified. Complete input/21flow acceptance remains open."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/cancelAction.ts",
+      "sourceSha256": "dedd8973f0dcef613376f6bb6157239c29718fd8a2152c66b05567613a92ec1f",
+      "target": "src/client/wrybit/inputs/undoPresentation.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "package": "WP03",
+      "scope": "Presentation styling/typed local command seam only; own distinct undo meanings and native request owner retained.",
+      "evidence": [
+        {
+          "kind": "native-undo-source-footer",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/UndoPresentation.spec.ts",
+            "tests/client/components/WaitingFor.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-focused.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-styles.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-requests.txt"
+          ],
+          "note": "Source quiet footer-button styling delegates through an explicit typed UI binding to permanent native WaitingFor reset/stepBack/undoResearchPurchase. Our own eligibility and exact action/step/research labels remain; foreign actionStart/cancel semantics not imported. Classic radio DOM and undoChoice retained, hidden only while source view owns the footer. Native request/hidden-information confirmation logic unchanged. RED2missing-controls, GREEN27focused/4files and full1245client/275files; types/lint/style/App0warnings. ActualApp1440 desktop viewed, console0/0, no undo/save requests. Phone screenshot exposes existing full-page overflow reserved for WP05; it is not mobile acceptance proof. Synthetic fixture restored/hash verified. Complete input/21flow acceptance remains open."
         }
       ]
     }

@@ -23,6 +23,7 @@ authoritative_surface: src/client/wrybit/inputs/
 create_intent: []
 execution_mode: code_change
 owned_files:
+- src/styles/wrybit/tab_panel_footer.less
 - src/client/wrybit/inputs/**
 - src/client/wrybit/create/**
 - src/client/components/create/CreateGameForm.vue
@@ -240,3 +241,5 @@ Amount conversion and card explanation scoped proof: source converter/sides/card
 Single-board placement zoom scoped proof: source full-screen zoom moves the existing Mars/Moon/Venus view instead of cloning IDs; native offered cell/handler/controller survive. Explicit game-scoped surface, owner-safe cleanup, modal target registration before fit, placeholder size and close-before-native-confirmation. Native selection-time silent-confirmation flag preserves No/current-choice/opt-out semantics and existing save response; checkbox alone never submits. Full1239client/273files before SVG follow-up, final9focused/4files incl actualSVGroot and native298 id, types/lint/App green, mutant rejected/exact restore. Browser1440 sameDOM1board/native No/classic pending dialog/console0/0, no moves/DB. Full custom/Moon/Venus/mobile rendering, skip/intro/undo and T009-T012/all21rows remain OPEN.
 
 Space-with-skip scoped proof: single source placement tab and exact native skip footer, original indices/selection/save owner retained; mode/disposal guards and per-input zoom ownership prevent stale submit/modal. Full1243client/274files,12focused/4files, types/lint/style/App green, mode-guard mutant rejected/exact restore. Actual App1440 visually inspected/console0/0, no accepted moves or DB, fixture restored/hash verified. Full placement forecasts/undo/mobile/custom/Moon/Venus and T009-T012/all21rows remain OPEN.
+
+Native undo footer scoped proof: source quiet buttons use our action/step/research eligibility and exact request paths; native hidden-information confirmation and classic undoChoice/radios retained. RED2/GREEN27focused/full1245client, types/lint/style/App green; desktop1440 visually verified/console0/0, no undo or move request. Phone capture shows remaining WP05 whole-page overflow, not accepted mobile proof. T009-T012/all21rows remain OPEN.

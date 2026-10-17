@@ -21,6 +21,12 @@ export type BaseInputModel = {
   buttonLabel: string;
   /** Stable, non-secret identifier for machine-controlled prompt handling. */
   annotation?: string;
+  /**
+   * Identity of the prompt this model was built from. Clients echo it back with the
+   * answer so a stale screen cannot be applied to a newer prompt that happens to
+   * accept the same response type (e.g. a draft pick becoming a card purchase).
+   */
+  promptId?: string;
   optional?: boolean;
 }
 

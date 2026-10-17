@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-17T20:54:08.194Z",
-  "generated_from_commit": "c530ca00a2bfe3b23f48bbbac5aab63004e0f3ab",
+  "generated_at": "2026-10-17T20:58:23.847Z",
+  "generated_from_commit": "51b6892add5d422161fcc7d9a165f1911a0161c2",
   "scope": [
     ".",
     ".github",
@@ -3630,6 +3630,32 @@
       "evidence": []
     },
     {
+      "id": "native-prompt-identity",
+      "label": "Идентификатор формы из актуальной base",
+      "type": "ui",
+      "path": "src/server/models/promptId.ts",
+      "role": "Изолированное представление закреплённого Wrybit; данные, ответы и правила определяются нашими native владельцами.",
+      "entrypoints": [
+        {
+          "path": "src/server/models/promptId.ts",
+          "symbol": "export function promptIdForModel",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/routes/PlayerInputStalePrompt.spec.ts",
+          "symbol": "rejects a stale draft repick"
+        }
+      ],
+      "evidence": [],
+      "constraints": [
+        "Optional/default off.",
+        "No foreign rules or AI.",
+        "Full UI flows and staging remain open for WP07."
+      ]
+    },
+    {
       "id": "wrybit-colonies-panel",
       "label": "Колонии Wrybit по нашим моделям",
       "type": "ui",
@@ -5543,6 +5569,19 @@
       ]
     },
     {
+      "from": "canonical-input-controllers",
+      "to": "native-prompt-identity",
+      "type": "uses",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/WaitingFor.vue",
+          "symbol": "promptId: this.waitingfor?.promptId",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
       "from": "wrybit-trade-panel",
       "to": "native-composite-presentation",
       "type": "uses",
@@ -6727,7 +6766,12 @@
     "src/common/models/ColonyModel.ts",
     "src/common/models/ColonyTradeContextModel.ts",
     "src/common/models/TurmoilModel.ts",
-    "src/common/constants.ts"
+    "src/common/constants.ts",
+    "src/server/models/promptId.ts",
+    "src/server/game/promptFingerprint.ts",
+    "tests/routes/PlayerInputStalePrompt.spec.ts",
+    "tests/server/game/promptFingerprint.spec.ts",
+    "tests/client/components/WaitingFor.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -7407,12 +7451,14 @@
       "src/server/deferredActions/PlaceHazardTile.ts",
       "src/server/deferredActions/PlaceOceanTile.ts",
       "src/server/deferredActions/PlaceTile.ts",
+      "src/server/game/promptFingerprint.ts",
       "src/server/inputs/SelectAmount.ts",
       "src/server/inputs/SelectSpace.ts",
       "src/server/models/BoardPreview.ts",
       "src/server/models/OceanPlacementContext.ts",
       "src/server/models/ServerModel.ts",
       "src/server/models/finalGreeneryPresentation.ts",
+      "src/server/models/promptId.ts",
       "src/server/models/publicConditionalDiscounts.ts",
       "src/server/moon/BasePlaceMoonTile.ts",
       "src/server/moon/MoonExpansion.ts",
@@ -7556,6 +7602,7 @@
       "tests/client/components/SelectCard.spec.ts",
       "tests/client/components/SelectProjectCardToPlay.spec.ts",
       "tests/client/components/SpectatorHome.spec.ts",
+      "tests/client/components/WaitingFor.spec.ts",
       "tests/client/components/card/Card.spec.ts",
       "tests/client/components/card/CardRequirementComponent.spec.ts",
       "tests/client/components/card/CardRowComponent.spec.ts",
@@ -7678,8 +7725,10 @@
       "tests/routes/ApiBoardPreview.spec.ts",
       "tests/routes/ApiReplay.spec.ts",
       "tests/routes/PlayerInput.spec.ts",
+      "tests/routes/PlayerInputStalePrompt.spec.ts",
       "tests/routes/ServeAsset.spec.ts",
       "tests/server/bot/AutomationCompatibility.spec.ts",
+      "tests/server/game/promptFingerprint.spec.ts",
       "tests/server/requestProcessor.spec.ts",
       "tests/server/server/SentryProcessBoundary.spec.ts",
       "tests/server/server/SentryReporter.spec.ts",

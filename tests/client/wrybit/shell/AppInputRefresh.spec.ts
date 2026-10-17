@@ -50,7 +50,7 @@ describe('Wrybit current input refresh', () => {
 
   it('retains the real card/payment form during the same request and clears an identical new request', async () => {
     const input: SelectProjectCardToPlayModel = {
-      type: 'projectCard', title: 'Select a card to play', buttonLabel: 'Save',
+      type: 'projectCard', title: 'Select a card to play', buttonLabel: 'Save', promptId: 'native-project-prompt-42',
       cards: [{name: CardName.ANTS, calculatedCost: 9}, {name: CardName.BIRDS, calculatedCost: 10}],
       paymentOptions: {heat: true},
       microbes: 0, floaters: 0, lunaArchivesScience: 0, seeds: 0, graphene: 0,
@@ -101,7 +101,7 @@ describe('Wrybit current input refresh', () => {
       await flushPromises();
       expect(requests).deep.eq([{
         url: 'player/input?id=p-blue-id',
-        response: {runId: view('pending-a', 2).runId, type: 'projectCard', card: CardName.BIRDS, payment: Payment.of({heat: 4, megacredits: 6})},
+        response: {runId: view('pending-a', 2).runId, promptId: 'native-project-prompt-42', type: 'projectCard', card: CardName.BIRDS, payment: Payment.of({heat: 4, megacredits: 6})},
       }]);
       tester.expectPayment({heat: 0, megacredits: 9});
 

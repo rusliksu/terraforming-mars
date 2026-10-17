@@ -208,7 +208,7 @@ export default defineComponent({
         {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({runId: this.playerView.runId, ...out}),
+          body: JSON.stringify({runId: this.playerView.runId, promptId: this.waitingfor?.promptId, ...out}),
         });
     },
     stepBack() {

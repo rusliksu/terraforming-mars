@@ -15,7 +15,7 @@ import {AppError} from '../server/AppError';
 import {statusCode} from '../../common/http/statusCode';
 import {InputError} from '../inputs/InputError';
 import {isIProjectCard} from '../cards/IProjectCard';
-import {AppErrorResponse, INVALID_RUN_ID, UNDO_REVEALED_HIDDEN_INFORMATION} from '../../common/app/AppErrorId';
+import {AppErrorResponse, INVALID_RUN_ID, STALE_PROMPT, UNDO_REVEALED_HIDDEN_INFORMATION} from '../../common/app/AppErrorId';
 import {hasRevealedHiddenInformation} from '../game/hasRevealedHiddenInformation';
 import {getUserAgent} from './auditRequest';
 import type {AccessAuditEvent, AccessAuditRecordInput} from '../server/AccessAudit';
@@ -179,7 +179,7 @@ export class PlayerInput extends Handler {
       entityForLog = cloneEntityForLog(entity);
       promptSnapshot = capturePromptSnapshot(player);
       promptInputSeq = player.game.shadowInputSeq ?? 0;
-      validateRunId(entity);
+      validateInputContext(player, entity);
       isUndo = this.isWaitingForUndo(player, entity);
       const isSurrender = this.isSurrenderConfirmation(player, entity);
       if (isUndo) {
@@ -448,12 +448,25 @@ function extractPromptTitle(title: unknown): string | null {
   return null;
 }
 
-function validateRunId(entity: any) {
+function validateInputContext(player: IPlayer, entity: any) {
   if (entity.runId !== undefined && runId !== undefined) {
     if (entity.runId !== runId) {
       throw new AppError(INVALID_RUN_ID, 'The server has restarted. Click OK to refresh this page.');
     }
   }
-  // Clearing this out to be compatible with the input response processors.
+  // Clearing these out to stay compatible with the input response processors.
   delete entity.runId;
+  const submittedPromptId = entity.promptId;
+  delete entity.promptId;
+
+  // External clients (bots) and older pages do not send the prompt identity yet.
+  if (submittedPromptId === undefined) {
+    return;
+  }
+  if (typeof submittedPromptId !== 'string' || submittedPromptId !== Server.getWaitingForPromptId(player)) {
+    throw new AppError(
+      STALE_PROMPT,
+      'This game screen is out of date. Click OK to refresh it before choosing again.',
+    );
+  }
 }

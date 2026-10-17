@@ -2,6 +2,7 @@ import {translateText, translateTextWithParams} from '@/client/directives/i18n';
 import {CONTENT_KEYS, ContentKey} from './expansionContents';
 import {expansionContents} from './expansionContents';
 import {ExpansionTile} from './expansionGrouping';
+import type {TraitKey} from './expansionFeatures';
 
 // Second line of an expansion tile: what the expansion adds, e.g. "Own board · 49 cards · 5 corps".
 
@@ -25,14 +26,28 @@ const UNITS: Readonly<Record<ContentKey, [string, string]>> = {
 };
 
 /** Parts of the content line of `tile`: traits first, then counts by size; the highlighted part leads. */
-export function contentLine(tile: ExpansionTile, highlight: ContentKey | undefined, withSource: boolean): Array<ContentLinePart> {
+export function contentLine(tile: ExpansionTile, highlight: ContentKey | TraitKey | undefined, withSource: boolean): Array<ContentLinePart> {
   const contents = expansionContents(tile.module);
   const parts: Array<ContentLinePart & {weight: number}> = [];
+  if (contents.traits?.has('ownBoard')) {
+    parts.push({text: translateText('Board or panel'), highlighted: highlight === 'ownBoard', weight: Number.MAX_SAFE_INTEGER});
+  }
+  if (contents.traits?.has('newParameters')) {
+    parts.push({text: translateText('New parameters'), highlighted: highlight === 'newParameters', weight: Number.MAX_SAFE_INTEGER});
+  }
+  if (tile.module !== 'base' && contents.tileTypes?.length) {
+    const count = contents.tileTypes.length;
+    parts.push({text: translateTextWithParams(count === 1 ? '${0} tile type' : '${0} tile types', [String(count)]),
+      highlighted: highlight === 'newTiles', weight: Number.MAX_SAFE_INTEGER});
+  }
+  if (tile.module === 'underworld') {
+    parts.push({text: translateText('Excavation tokens'), highlighted: highlight === 'newTiles', weight: Number.MAX_SAFE_INTEGER});
+  }
   for (const key of CONTENT_KEYS) {
     const count = contents.counts[key];
     if (count !== undefined) {
       const unit = UNITS[key][count === 1 ? 0 : 1];
-      const highlighted = highlight === key;
+      const highlighted = highlight === key || (key === 'colonyTile' && highlight === 'newTiles');
       parts.push({text: translateTextWithParams(unit, [String(count)]), highlighted, weight: count});
     }
   }

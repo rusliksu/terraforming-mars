@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-17T09:35:01.150Z",
-  "generated_from_commit": "36ca3a70f4991ef1a2b62c95071c3e9c94123d3f",
+  "generated_at": "2026-10-17T09:49:20.349Z",
+  "generated_from_commit": "334fc6e98d8883c7ae1a21889df638ec3e980db7",
   "scope": [
     ".",
     ".github",
@@ -5861,7 +5861,9 @@
     "src/server/routes/ApiCreateGame.ts",
     "src/server/GameSetup.ts",
     "tests/routes/ApiBoardPreview.spec.ts",
-    "tests/models/BoardPreview.spec.ts"
+    "tests/models/BoardPreview.spec.ts",
+    "src/client/wrybit/create/expansionFeatures.ts",
+    "tests/client/wrybit/create/ExpansionFeatures.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -6041,6 +6043,7 @@
       "src/client/wrybit/create/expansionChoices.ts",
       "src/client/wrybit/create/expansionContentLine.ts",
       "src/client/wrybit/create/expansionContents.ts",
+      "src/client/wrybit/create/expansionFeatures.ts",
       "src/client/wrybit/create/expansionGrouping.ts",
       "src/client/wrybit/create/infoBoxState.ts",
       "src/client/wrybit/create/moduleFilter.ts",
@@ -6599,6 +6602,7 @@
       "tests/client/wrybit/create/BoardPreviewRequest.spec.ts",
       "tests/client/wrybit/create/ControlledWidgets.spec.ts",
       "tests/client/wrybit/create/CreatePresentation.spec.ts",
+      "tests/client/wrybit/create/ExpansionFeatures.spec.ts",
       "tests/client/wrybit/create/ExpansionGrouping.spec.ts",
       "tests/client/wrybit/create/ModuleFilterPresentation.spec.ts",
       "tests/client/wrybit/create/wikiContent.spec.ts",

@@ -1264,6 +1264,27 @@
             "tests/client/wrybit/visuals/HomeColumns.spec.ts"
           ],
           "note": "Source desktop columns/table/board/log/standalone hand over our PlayerViewModel, HomeMixin and App-owned persistent WaitingFor. No foreign network/actions/controller. Source setup presentation retains our dealt/drafted cards and keeps its InputHost visible while waiting. Per-instance DOM/drag ownership, private storage/CSS variables, pointer capture/listener/observer/RAF cleanup. Fixed-height layout and full input tabs/mobile/remaining screens are pending; this does not close full UI-05/06/07 rows. Full client suite 1163 tests/239 files, focused shell 25/11, restored focus mutation +4/2, Vue types/ESLint/Stylelint and actual App-only Webpack passed. Real App desktop opt-in, Birds heat4/MC6, column keyboard59/41/reset60/40, GameMenu/Escape/classic return passed; console0/0. Fresh default-off static requests contain no wrybit-ui.js or assets/wrybit requests. No proof-only players-table CSS override. Browser synthetic fixture only; no DB."
+        },
+        {
+          "kind": "native-draft-and-card-range",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/DraftPresentation.spec.ts",
+            "tests/client/wrybit/inputs/DraftOrder.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-final-targeted.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-native-card-range-server.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-native-card-range-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-repick.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-proposed.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-cleared.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-zero-offer-source.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-zero-offer-console.txt"
+          ],
+          "note": "Source current-pick markers, optional replacement clearing, stable session-only packet display order, read-only previous keeps and inactive action sections use native draft flags/cards and native selection. No native packet/response arrays reordered. Malformed/blocked optional storage falls back to authoritative packet. Native two-card repick remains selectable. Native zero-affordability prompt uses own cardCost/MC and native empty discard response. Native client SelectCard canSave corrected reversed min/max comparisons to match existing server range contract; real classic UI intermediate selection regression red/green, reversed-range mutant rejected, exact restoration green. No server/gameplay/AI change. Full1227client/267files passed before one additional cache test, final9focused/4files and restored6/2files passed; types/lint/style/App0warnings and native server SelectCard5tests green. Actual App1440 retained packet order through fresh native repick and normal selection/current-pick clearing; zero-affordability controls checked, console0/0 and no move/DB requests, original synthetic fixture restored. Root input tabs/layout and all full flow rows remain open."
         }
       ]
     },
@@ -1326,6 +1347,27 @@
             "tests/client/wrybit/visuals/HomeColumns.spec.ts"
           ],
           "note": "Source desktop columns/table/board/log/standalone hand over our PlayerViewModel, HomeMixin and App-owned persistent WaitingFor. No foreign network/actions/controller. Source setup presentation retains our dealt/drafted cards and keeps its InputHost visible while waiting. Per-instance DOM/drag ownership, private storage/CSS variables, pointer capture/listener/observer/RAF cleanup. Fixed-height layout and full input tabs/mobile/remaining screens are pending; this does not close full UI-05/06/07 rows. Full client suite 1163 tests/239 files, focused shell 25/11, restored focus mutation +4/2, Vue types/ESLint/Stylelint and actual App-only Webpack passed. Real App desktop opt-in, Birds heat4/MC6, column keyboard59/41/reset60/40, GameMenu/Escape/classic return passed; console0/0. Fresh default-off static requests contain no wrybit-ui.js or assets/wrybit requests. No proof-only players-table CSS override. Browser synthetic fixture only; no DB."
+        },
+        {
+          "kind": "native-draft-and-card-range",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/DraftPresentation.spec.ts",
+            "tests/client/wrybit/inputs/DraftOrder.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-final-targeted.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-native-card-range-server.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-native-card-range-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-repick.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-proposed.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-cleared.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-zero-offer-source.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-zero-offer-console.txt"
+          ],
+          "note": "Source current-pick markers, optional replacement clearing, stable session-only packet display order, read-only previous keeps and inactive action sections use native draft flags/cards and native selection. No native packet/response arrays reordered. Malformed/blocked optional storage falls back to authoritative packet. Native two-card repick remains selectable. Native zero-affordability prompt uses own cardCost/MC and native empty discard response. Native client SelectCard canSave corrected reversed min/max comparisons to match existing server range contract; real classic UI intermediate selection regression red/green, reversed-range mutant rejected, exact restoration green. No server/gameplay/AI change. Full1227client/267files passed before one additional cache test, final9focused/4files and restored6/2files passed; types/lint/style/App0warnings and native server SelectCard5tests green. Actual App1440 retained packet order through fresh native repick and normal selection/current-pick clearing; zero-affordability controls checked, console0/0 and no move/DB requests, original synthetic fixture restored. Root input tabs/layout and all full flow rows remain open."
         }
       ]
     },
@@ -1437,6 +1479,27 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-final-console.txt"
           ],
           "note": "Our permanent and/or/project/payment/card controllers receive lazy typed views and local per-owner child hosts. All child identities, Birds/heat4/MC6, exact nested original-index response, native Energy/Nereid defaults and validation retained. Source balance/tab/hand layout in actual App synthetic fixture: normal clicks, hand-tab round trip and classic return retain values, console0/0. Single/multiple card picks retain native state shape, maximum, filter-hidden selection and exact response. Full client1176tests/243files and types/lint/style passed. Mode-key mutation rejected; exact bytes restored. Source OrOptions choices/grouping/CEO, other input types, source overpayment modal, creation/initial cards, full mobile and all final UI rows remain pending; this evidence is not full WP03 acceptance."
+        },
+        {
+          "kind": "native-draft-and-card-range",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/DraftPresentation.spec.ts",
+            "tests/client/wrybit/inputs/DraftOrder.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-final-targeted.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-native-card-range-server.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-native-card-range-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-repick.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-proposed.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-cleared.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-zero-offer-source.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-zero-offer-console.txt"
+          ],
+          "note": "Source current-pick markers, optional replacement clearing, stable session-only packet display order, read-only previous keeps and inactive action sections use native draft flags/cards and native selection. No native packet/response arrays reordered. Malformed/blocked optional storage falls back to authoritative packet. Native two-card repick remains selectable. Native zero-affordability prompt uses own cardCost/MC and native empty discard response. Native client SelectCard canSave corrected reversed min/max comparisons to match existing server range contract; real classic UI intermediate selection regression red/green, reversed-range mutant rejected, exact restoration green. No server/gameplay/AI change. Full1227client/267files passed before one additional cache test, final9focused/4files and restored6/2files passed; types/lint/style/App0warnings and native server SelectCard5tests green. Actual App1440 retained packet order through fresh native repick and normal selection/current-pick clearing; zero-affordability controls checked, console0/0 and no move/DB requests, original synthetic fixture restored. Root input tabs/layout and all full flow rows remain open."
         }
       ]
     },
@@ -1745,6 +1808,27 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-confirm-requests.txt"
           ],
           "note": "Our original20-controller registry is unchanged. Optional per-call responder collects exactly one current response; And awaits sequential actual child completion, retaining synchronous classic responses. Our ledger/defaults/validation order/show_alerts retained. Source modal shows copied current payment, cancels on draft/resources/unmount, ignores duplicate/late accept and cancelled aggregate. Eight dedicated completion checks and108 focused checks passed; full client1182/246 passed before the final2 cancellation cases were added. Vue types/scoped ESLint and actual App-only Webpack passed. Real App synthetic browser: +1 overpayment, ordinary dismiss retains titanium2, console0/0, only GET/no move requests. The global classic button was intercepted by source header; layer fix awaits next browser build. Full WP03/remaining inputs/creation/placement/all21 full UI rows remain open."
+        },
+        {
+          "kind": "native-draft-and-card-range",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/DraftPresentation.spec.ts",
+            "tests/client/wrybit/inputs/DraftOrder.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-final-targeted.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-native-card-range-server.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-native-card-range-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-repick.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-proposed.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-cleared.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-zero-offer-source.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-zero-offer-console.txt"
+          ],
+          "note": "Source current-pick markers, optional replacement clearing, stable session-only packet display order, read-only previous keeps and inactive action sections use native draft flags/cards and native selection. No native packet/response arrays reordered. Malformed/blocked optional storage falls back to authoritative packet. Native two-card repick remains selectable. Native zero-affordability prompt uses own cardCost/MC and native empty discard response. Native client SelectCard canSave corrected reversed min/max comparisons to match existing server range contract; real classic UI intermediate selection regression red/green, reversed-range mutant rejected, exact restoration green. No server/gameplay/AI change. Full1227client/267files passed before one additional cache test, final9focused/4files and restored6/2files passed; types/lint/style/App0warnings and native server SelectCard5tests green. Actual App1440 retained packet order through fresh native repick and normal selection/current-pick clearing; zero-affordability controls checked, console0/0 and no move/DB requests, original synthetic fixture restored. Root input tabs/layout and all full flow rows remain open."
         }
       ]
     },
@@ -9494,6 +9578,102 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-award-console.txt"
           ],
           "note": "Source MA tiles reuse our native-backed Milestone/Award views, including our image/name/number patches; Player/Vitor prompt shapes are matched only to current game public models. Unknown prompt/name falls back to ordinary choice text. Source MA focus counter releases on classic return. Source party option cards reuse a read-only agenda projection extracted exactly from native SelectParty and shared with native Or; own MoreParties registry, all12native PartyName values supported. ChooseAlliedParty explicit native descriptions retained. Do-not-move maps only to the unique missing party in current native party models; duplicate/ambiguous cases fall back to text instead of guessing. Native offered option, original indices, SelectOption and save pipeline unchanged. Party note uses source existing ruling badge, board focus restores prior view. Four new flow/matcher tests plus existing native party flow green; full1222client/266files, types/scoped lint/style/App0warnings green. Ambiguous-stay mutant rejected and original bytes restored. Actual App1440 normal Gardener/Miner/Populists selection survives classic, public source agenda cards and MA images checked; all consoles0/0 and no move/DB requests. Original synthetic response exactly restored. Full Turmoil panel/viewport/forecasts/draft/undo and all21full UI rows remain open."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/cardSections.ts",
+      "sourceSha256": "968e882c57adc062d9830a84129de4c519309398c9f89313b9d8dcb44d5b01a7",
+      "target": "src/client/wrybit/inputs/cardSections.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "package": "WP03",
+      "scope": "Presentation only; native offered cards/draft flags/action metadata, native selection/response retained.",
+      "evidence": [
+        {
+          "kind": "native-draft-and-card-range",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/DraftPresentation.spec.ts",
+            "tests/client/wrybit/inputs/DraftOrder.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-final-targeted.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-native-card-range-server.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-native-card-range-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-repick.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-proposed.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-cleared.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-zero-offer-source.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-zero-offer-console.txt"
+          ],
+          "note": "Source current-pick markers, optional replacement clearing, stable session-only packet display order, read-only previous keeps and inactive action sections use native draft flags/cards and native selection. No native packet/response arrays reordered. Malformed/blocked optional storage falls back to authoritative packet. Native two-card repick remains selectable. Native zero-affordability prompt uses own cardCost/MC and native empty discard response. Native client SelectCard canSave corrected reversed min/max comparisons to match existing server range contract; real classic UI intermediate selection regression red/green, reversed-range mutant rejected, exact restoration green. No server/gameplay/AI change. Full1227client/267files passed before one additional cache test, final9focused/4files and restored6/2files passed; types/lint/style/App0warnings and native server SelectCard5tests green. Actual App1440 retained packet order through fresh native repick and normal selection/current-pick clearing; zero-affordability controls checked, console0/0 and no move/DB requests, original synthetic fixture restored. Root input tabs/layout and all full flow rows remain open."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/SelectCard.vue",
+      "sourceSha256": "85c91636347d3aaa7a976f19b2ecae21cc2ec8899924085f014e01a29f980395",
+      "target": "src/styles/wrybit/draft_card_selection.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "package": "WP03",
+      "scope": "Presentation only; native offered cards/draft flags/action metadata, native selection/response retained.",
+      "evidence": [
+        {
+          "kind": "native-draft-and-card-range",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/DraftPresentation.spec.ts",
+            "tests/client/wrybit/inputs/DraftOrder.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-final-targeted.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-native-card-range-server.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-native-card-range-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-repick.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-proposed.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-cleared.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-zero-offer-source.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-zero-offer-console.txt"
+          ],
+          "note": "Source current-pick markers, optional replacement clearing, stable session-only packet display order, read-only previous keeps and inactive action sections use native draft flags/cards and native selection. No native packet/response arrays reordered. Malformed/blocked optional storage falls back to authoritative packet. Native two-card repick remains selectable. Native zero-affordability prompt uses own cardCost/MC and native empty discard response. Native client SelectCard canSave corrected reversed min/max comparisons to match existing server range contract; real classic UI intermediate selection regression red/green, reversed-range mutant rejected, exact restoration green. No server/gameplay/AI change. Full1227client/267files passed before one additional cache test, final9focused/4files and restored6/2files passed; types/lint/style/App0warnings and native server SelectCard5tests green. Actual App1440 retained packet order through fresh native repick and normal selection/current-pick clearing; zero-affordability controls checked, console0/0 and no move/DB requests, original synthetic fixture restored. Root input tabs/layout and all full flow rows remain open."
+        }
+      ]
+    },
+    {
+      "source": "src/client/utils/draftCardOrder.ts",
+      "sourceSha256": "86b371f666403cbf00991cb0fc15fe16b751d494c7c29a0a8214075d4ca09383",
+      "target": "src/client/wrybit/inputs/draftCards.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "package": "WP03",
+      "scope": "Presentation only; native offered cards/draft flags/action metadata, native selection/response retained.",
+      "evidence": [
+        {
+          "kind": "native-draft-and-card-range",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/inputs/DraftPresentation.spec.ts",
+            "tests/client/wrybit/inputs/DraftOrder.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-final-targeted.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-native-card-range-server.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-native-card-range-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-repick.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-proposed.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-cleared.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-draft-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-zero-offer-source.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-zero-offer-console.txt"
+          ],
+          "note": "Source current-pick markers, optional replacement clearing, stable session-only packet display order, read-only previous keeps and inactive action sections use native draft flags/cards and native selection. No native packet/response arrays reordered. Malformed/blocked optional storage falls back to authoritative packet. Native two-card repick remains selectable. Native zero-affordability prompt uses own cardCost/MC and native empty discard response. Native client SelectCard canSave corrected reversed min/max comparisons to match existing server range contract; real classic UI intermediate selection regression red/green, reversed-range mutant rejected, exact restoration green. No server/gameplay/AI change. Full1227client/267files passed before one additional cache test, final9focused/4files and restored6/2files passed; types/lint/style/App0warnings and native server SelectCard5tests green. Actual App1440 retained packet order through fresh native repick and normal selection/current-pick clearing; zero-affordability controls checked, console0/0 and no move/DB requests, original synthetic fixture restored. Root input tabs/layout and all full flow rows remain open."
         }
       ]
     }

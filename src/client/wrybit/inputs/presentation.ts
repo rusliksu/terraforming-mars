@@ -31,6 +31,7 @@ export type CardSelectionBinding = {
   orderedCards: ReadonlyArray<CardModel>;
   selected: CardModel | Array<CardModel>;
   count: number;
+  canSave: boolean;
   single: boolean;
   optionalMany: boolean;
   showSelectAll: boolean;

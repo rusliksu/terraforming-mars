@@ -30,7 +30,7 @@
               <WaitingFor :playerView="playerView" :waitingfor="playerView.waitingFor"/>
             </InputHost>
           </div>
-          <div v-if="playerView.draftedCards.length > 0" class="player_home_block player_home_block--hand">
+          <div v-if="playerView.draftedCards.length > 0 && (cardPresentation === undefined || showsDraftedCardsBlock(playerView))" class="player_home_block player_home_block--hand">
             <DynamicTitle title="Drafted cards" :color="thisPlayer.color"/>
             <div v-for="card in playerView.draftedCards" :key="card.name" class="cardbox"><Card :card="card"/></div>
           </div>
@@ -71,11 +71,12 @@ import KeyboardShortcuts from './KeyboardShortcuts.vue';
 import {vDockedTab} from './common/DockedTab';
 import {GAME_MENU_CONTEXT, GameMenuContext} from './gameMenu/gameMenuContext';
 import {useInputPresentation} from '@/client/wrybit/inputs/presentation';
+import {showsDraftedCardsBlock} from '@/client/wrybit/inputs/draftCards';
 
 export default defineComponent({
   name: 'WrybitPlayerHome',
   setup() {
-    return {orPresentation: useInputPresentation('or')};
+    return {orPresentation: useInputPresentation('or'), cardPresentation: useInputPresentation('card'), showsDraftedCardsBlock};
   },
   mixins: [HomeMixin],
   props: {playerView: {type: Object as () => PlayerViewModel, required: true}},

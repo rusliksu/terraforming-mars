@@ -156,10 +156,10 @@ export default defineComponent({
 
     canSave() {
       const len = this.getData().length;
-      if (len > this.playerinput.min) {
+      if (len < this.playerinput.min) {
         return false;
       }
-      if (len < this.playerinput.max) {
+      if (len > this.playerinput.max) {
         return false;
       }
       return true;
@@ -222,7 +222,7 @@ export default defineComponent({
         optionalMany: this.isOptionalToManyCards, showSelectAll: this.showSelectAll, allSelected: this.allSelected,
         buttonLabel: this.buttonLabel(), warning: this.warning, warnings: this.warnings,
         owner: (card) => this.getOwner(card), robotCard: (card) => this.robotCard(card),
-        select: (cards) => {
+        canSave: this.canSave(), select: (cards) => {
           this.cards = cards;
         },
         toggleAll: () => this.toggleSelectAll(), save: () => this.saveData(),

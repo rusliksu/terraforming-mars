@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-17T10:44:04.528Z",
-  "generated_from_commit": "bfe865a3ae682b6632546ab39e993786d4bea2c4",
+  "generated_at": "2026-10-17T11:19:36.753Z",
+  "generated_from_commit": "4142935acb53857bedac42f865fd6299e8eb4ca2",
   "scope": [
     ".",
     ".github",
@@ -6029,7 +6029,12 @@
     "src/client/wrybit/inputs/PartyOptions.vue",
     "tests/client/wrybit/inputs/MetadataChoiceMatchers.spec.ts",
     "tests/client/wrybit/inputs/MetadataChoices.spec.ts",
-    "src/client/components/turmoil/partyCardDetails.ts"
+    "src/client/components/turmoil/partyCardDetails.ts",
+    "src/styles/wrybit/draft_card_selection.less",
+    "src/client/wrybit/inputs/cardSections.ts",
+    "src/client/wrybit/inputs/draftCards.ts",
+    "tests/client/wrybit/inputs/DraftOrder.spec.ts",
+    "tests/client/wrybit/inputs/DraftPresentation.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -6254,10 +6259,12 @@
       "src/client/wrybit/inputs/actionCards.ts",
       "src/client/wrybit/inputs/actionStep.ts",
       "src/client/wrybit/inputs/amount/AmountSlider.vue",
+      "src/client/wrybit/inputs/cardSections.ts",
       "src/client/wrybit/inputs/choiceBlock.ts",
       "src/client/wrybit/inputs/choiceMenu.ts",
       "src/client/wrybit/inputs/colony/ColonyPlanet.vue",
       "src/client/wrybit/inputs/colony/planetAppearance.ts",
+      "src/client/wrybit/inputs/draftCards.ts",
       "src/client/wrybit/inputs/milestoneAwardChoice.ts",
       "src/client/wrybit/inputs/orOptionsShortLabels.ts",
       "src/client/wrybit/inputs/partyAppearance.ts",
@@ -6692,6 +6699,7 @@
       "src/styles/wrybit/create_game.less",
       "src/styles/wrybit/dialog_frame.less",
       "src/styles/wrybit/discount_badges.less",
+      "src/styles/wrybit/draft_card_selection.less",
       "src/styles/wrybit/fan_project_notice.less",
       "src/styles/wrybit/frosted_surface.less",
       "src/styles/wrybit/game_menu.less",
@@ -6789,6 +6797,8 @@
       "tests/client/wrybit/create/wikiContent.spec.ts",
       "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts",
       "tests/client/wrybit/inputs/ColonyPresentation.spec.ts",
+      "tests/client/wrybit/inputs/DraftOrder.spec.ts",
+      "tests/client/wrybit/inputs/DraftPresentation.spec.ts",
       "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
       "tests/client/wrybit/inputs/InitialCardsPresentation.spec.ts",
       "tests/client/wrybit/inputs/MetadataChoiceMatchers.spec.ts",

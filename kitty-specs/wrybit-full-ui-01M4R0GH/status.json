@@ -125,6 +125,9 @@
       "last_event_id": "01M55TRQSTVXFABW8FDXQB10GF",
       "last_transition_at": "2026-10-17T21:02:30.202133+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Current primary ancestry restored; component checks green, full flows assigned to WP07"
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 52684,

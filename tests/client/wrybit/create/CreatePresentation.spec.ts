@@ -12,13 +12,14 @@ import SeatIcon from '@/client/wrybit/visuals/common/SeatIcon.vue';
 import NumberStepper from '@/client/wrybit/create/NumberStepper.vue';
 import SwitchInput from '@/client/wrybit/create/SwitchInput.vue';
 import SourceModuleFilter from '@/client/wrybit/create/ModuleItemFilter.vue';
+import SourceCardsFilter from '@/client/wrybit/create/CardsFilter.vue';
 import {defaultCreateGameModel} from '@/client/components/create/defaultCreateGameModel';
 import {sharedEloState} from '@/client/utils/elo';
 import {globalConfig} from '@tests/client/components/getLocalVue';
 
 type FetchOptions = NonNullable<Parameters<typeof window.fetch>[1]>;
 const controls = {cube: markRaw(PlayerCube), seat: markRaw(SeatIcon), stepper: markRaw(NumberStepper),
-  toggle: markRaw(SwitchInput), moduleFilter: markRaw(SourceModuleFilter)};
+  toggle: markRaw(SwitchInput), moduleFilter: markRaw(SourceModuleFilter), cardsFilter: markRaw(SourceCardsFilter)};
 
 describe('source creation view with our permanent form owner', () => {
   it('keeps our corporation editor and its selection through Show, Edit and classic mode', async () => {
@@ -188,6 +189,53 @@ describe('source creation view with our permanent form owner', () => {
       expect(owner.players[0]).eq(player);
       expect(owner.noEloGame).is.false;
       expect(fetch.mock.calls.length).eq(callsBeforeMode);
+    } finally {
+      wrapper.unmount();
+      vi.unstubAllGlobals();
+      localStorage.clear();
+      sharedEloState.loaded = false;
+      sharedEloState.players = {};
+      sharedEloState.games = [];
+    }
+  });
+
+  it('uses native search and selection for source card previews and keyboard edits', async () => {
+    localStorage.clear();
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: true, json: async () => ({players: {}, games: []})}));
+    const view = shallowRef<CreatePresentation>();
+    const wrapper = mount(NativeCreate, {attachTo: document.body, global: {...globalConfig.global,
+      stubs: {PreferencesIcon: true, PageToolbar: true},
+      provide: {[CREATE_PRESENTATION as symbol]: computed(() => view.value),
+        [CREATE_CONTROLS as symbol]: computed(() => view.value === undefined ? undefined : controls)}}});
+    try {
+      await flushPromises();
+      await wrapper.get('#bannedCards-checkbox').setValue(true);
+      const filter = wrapper.getComponent(CardsFilter);
+      const input = filter.get('input').element;
+      await filter.get('input').setValue('Asteroid');
+      const matches = [...filter.vm.searchMatches];
+      expect(matches).has.length(5);
+      view.value = markRaw(SourceCreate);
+      await flushPromises();
+      expect(wrapper.getComponent(CardsFilter).get('input').element).eq(input);
+      expect(wrapper.findAll('.cards-filter-suggest .wrybit-card')).has.length(5);
+      await filter.get('input').trigger('keydown', {key: 'ArrowDown'});
+      await filter.get('input').trigger('keydown', {key: 'Enter'});
+      const owner = wrapper.vm.$.proxy as InstanceType<typeof NativeCreate>;
+      expect(owner.bannedCards).deep.eq([matches[1]]);
+      expect(document.activeElement).eq(input);
+      expect(filter.vm.searchTerm).eq('');
+      expect(wrapper.findAll('.cards-filter-selected .wrybit-card')).has.length(1);
+      view.value = undefined;
+      await flushPromises();
+      expect(wrapper.getComponent(CardsFilter).get('input').element).eq(input);
+      expect(filter.vm.selected).deep.eq([matches[1]]);
+      view.value = markRaw(SourceCreate);
+      await flushPromises();
+      await wrapper.get('.cards-filter-selected .create-game-card-grid-remove').trigger('click');
+      expect(owner.bannedCards).deep.eq([]);
+      await filter.get('input').setValue('Acquired Company,Adapted Lichen');
+      expect(owner.bannedCards).deep.eq(['Acquired Company', 'Adapted Lichen']);
     } finally {
       wrapper.unmount();
       vi.unstubAllGlobals();

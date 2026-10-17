@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-17T09:07:11.885Z",
-  "generated_from_commit": "00b68b5534d4bc835b50ccd3a43e7e27e59362c9",
+  "generated_at": "2026-10-17T09:14:35.952Z",
+  "generated_from_commit": "f0e0ade2fef3f8bd0cc64395a0b379d9cd6e5db7",
   "scope": [
     ".",
     ".github",
@@ -5757,7 +5757,11 @@
     "src/client/components/create/PreludesFilter.vue",
     "src/client/components/create/ColoniesFilter.vue",
     "src/client/components/create/CeosFilter.vue",
-    "src/client/components/create/ceoSelection.ts"
+    "src/client/components/create/ceoSelection.ts",
+    "src/styles/wrybit/create/cards_filter.less",
+    "src/client/wrybit/create/cardsFilter.ts",
+    "src/client/wrybit/create/CardsFilter.vue",
+    "src/client/components/create/CardsFilter.vue"
   ],
   "verification_scope": {
     "paths": [
@@ -5881,6 +5885,7 @@
       "src/client/components/cardlist/CardList.vue",
       "src/client/components/cardlist/catalogMetadata.ts",
       "src/client/components/common/ConfirmDialog.vue",
+      "src/client/components/create/CardsFilter.vue",
       "src/client/components/create/CeosFilter.vue",
       "src/client/components/create/ColoniesFilter.vue",
       "src/client/components/create/CorporationsFilter.vue",
@@ -5912,6 +5917,7 @@
       "src/client/utils/WikiLinks.ts",
       "src/client/utils/playerSymbol.ts",
       "src/client/wrybit/create/CardPreviewGrid.vue",
+      "src/client/wrybit/create/CardsFilter.vue",
       "src/client/wrybit/create/ChoiceChip.vue",
       "src/client/wrybit/create/CollapsibleSection.vue",
       "src/client/wrybit/create/CreateGameBoardPreview.vue",
@@ -5926,6 +5932,7 @@
       "src/client/wrybit/create/SegmentedControl.vue",
       "src/client/wrybit/create/SwitchInput.vue",
       "src/client/wrybit/create/WikiOverlay.vue",
+      "src/client/wrybit/create/cardsFilter.ts",
       "src/client/wrybit/create/collapseAnimation.ts",
       "src/client/wrybit/create/controlledFields.ts",
       "src/client/wrybit/create/createGameColumns.ts",
@@ -6388,6 +6395,7 @@
       "src/styles/wrybit/choice_block.less",
       "src/styles/wrybit/colony_choice.less",
       "src/styles/wrybit/column_overlay.less",
+      "src/styles/wrybit/create/cards_filter.less",
       "src/styles/wrybit/create/expansions.less",
       "src/styles/wrybit/create/native_editors.less",
       "src/styles/wrybit/create/part-1.less",

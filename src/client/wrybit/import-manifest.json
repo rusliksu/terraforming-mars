@@ -4005,7 +4005,23 @@
       "package": "WP03",
       "target": "src/client/wrybit/create/CardsFilter.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-card-search-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/components/create/CardsFilter.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-card-search-full-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-card-search-matches.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-card-search-selected-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-card-search-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-card-search-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-card-search-spacing-console.txt"
+          ],
+          "note": "Source card-grid search/selected previews, remove button and arrow/Enter navigation use native CardsFilter owner/catalogue/search/batch names/selection/emits. Native five-match search retained; source eight-match scanner not imported. Permanent native input/ref survives both modes and remains focus target. Test covers actual native owner, input identity, keyboard second match, classic return, remove and comma-separated names. RED0source previews then6focused/2files GREEN, full1205/259 GREEN, types/lint/style/App build green. Actual App1280x900 picks second Asteroid result via keyboard, keeps it on classic return, console0/0; final390x844 adds Acquired Company with Enter, isolated source CSS removes classic250px reserved gap, console0/0. Earlier matches screenshot predates spacing-only correction. Full creation/preview/share/WP03/21rows remain OPEN."
+        }
+      ]
     },
     {
       "source": "src/client/components/create/CeosFilter.vue",
@@ -8922,6 +8938,32 @@
       "target": "src/styles/wrybit/create/expansions.less",
       "package": "WP03",
       "scope": "Count-based groupings and content lines from our public manifests only. Source hardcoded expansionFacts are excluded; board/parameter/tile traits remain pending own projections."
+    },
+    {
+      "source": "src/styles/cards_filter.less",
+      "sourceSha256": "e3e92e4256e0c9ef2489d36dcc8e8e10cdb8f46fea3917be9e756493f8f1bc0c",
+      "license": "GPL-3.0",
+      "evidence": [
+        {
+          "kind": "native-card-search-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/components/create/CardsFilter.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-card-search-full-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-card-search-matches.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-card-search-selected-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-card-search-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-card-search-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-card-search-spacing-console.txt"
+          ],
+          "note": "Source card-grid search/selected previews, remove button and arrow/Enter navigation use native CardsFilter owner/catalogue/search/batch names/selection/emits. Native five-match search retained; source eight-match scanner not imported. Permanent native input/ref survives both modes and remains focus target. Test covers actual native owner, input identity, keyboard second match, classic return, remove and comma-separated names. RED0source previews then6focused/2files GREEN, full1205/259 GREEN, types/lint/style/App build green. Actual App1280x900 picks second Asteroid result via keyboard, keeps it on classic return, console0/0; final390x844 adds Acquired Company with Enter, isolated source CSS removes classic250px reserved gap, console0/0. Earlier matches screenshot predates spacing-only correction. Full creation/preview/share/WP03/21rows remain OPEN."
+        }
+      ],
+      "target": "src/styles/wrybit/create/cards_filter.less",
+      "package": "WP03",
+      "status": "planned",
+      "scope": "Source card-search spacing; isolated classic min-height/background resets."
     }
   ],
   "assets": [

@@ -33,6 +33,7 @@ owned_files:
 - src/client/components/create/ColoniesFilter.vue
 - src/client/components/create/CeosFilter.vue
 - src/client/components/create/ceoSelection.ts
+- src/client/components/create/CardsFilter.vue
 - tests/client/components/create/**
 - src/client/wrybit/visuals/common/PlayerCube.vue
 - tests/client/wrybit/visuals/PlayerCube.spec.ts
@@ -171,3 +172,5 @@ Creation presentation scoped proof: all62 readonly projected fields and28canonic
 Creation grouping/preview scoped proof: source menu/content lines use our canonical public manifests, all28+base complete; six count/source groupings preserve own config and exact intercepted submit body. Actual App Corporations grouping, console0/0; focused5tests/4files, types/lint/style/App build. Pure preview contract separately verified with custom geometry/error/redraw/random-example label; no fake producer and no foreign boardSeed or backend import. Own preview/trait projections remain deferred and OPEN for integration, as do share/inline lists/full creation. No lifecycle transition or full row accepted.
 
 Custom-list presentation scoped proof: source Show/Edit + real card previews + inline grouped filters wired to permanent native editors. All selections/replacements/availability/defaults stay native; exact native CEO default helper extracted. Six filter hosts keep identity/search through Show/Edit/classic. Actual App desktop/phone and classic return, console0/0; full1204client/259files green, types/lint/style/App build. Native Create methods/watchers/style unchanged. Full creation/WP03/21rows remain OPEN.
+
+Card-search presentation scoped proof: source grid/search/remove/keyboard presentation bound to native catalogue/five-match search/batch parser/selection. Native input/ref permanent across modes. Real App1280x900 keyboard selection/classic return and final390x844 Enter selection with corrected isolated source spacing; console0/0. Full1205client/259files green, types/lint/style/App build. No creation/WP/full-row acceptance.

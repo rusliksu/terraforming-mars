@@ -27,14 +27,17 @@
         <template v-if="columnsMounted">
           <Teleport :to="columnTarget('expansions')">
             <section class="create-game-card" :style="cardStyle('expansions')">
-              <div class="create-game-card-head"><h2 v-i18n>Expansions</h2></div>
+              <div class="create-game-card-head create-game-expansions-head"><h2 v-i18n>Expansions</h2><ExpansionGroupMenu v-model="expansionGrouping"/></div>
               <OptionRow label="All official expansions"><SwitchInput v-model="allOfficialExpansions"/></OptionRow>
-              <template v-for="group in expansionGroups" :key="group.title">
-                <CollapsibleSection variant="subhead" :title="group.title" :collapsible="group.fan" storageKey="fanExpansions" :defaultOpen="true">
+              <template v-for="group in expansionGroups" :key="expansionGrouping + group.key">
+                <CollapsibleSection variant="subhead" :title="group.title" :collapsible="group.key === 'fan'" storageKey="fanExpansions" :defaultOpen="true" :changed="fanNote(group)">
+                  <template #actions><button v-if="choicesOf(group).length > 0" type="button" class="create-game-small-button" @click="toggleGroup(group)">{{ $t(allSelected(group) ? 'Deselect all' : 'Select all') }}</button></template>
                   <div class="create-game-chip-grid create-game-expansion-grid">
-                    <ChoiceChip v-if="!group.fan" label="Base game" iconClass="expansion-icon-base" :selected="true" :locked="true"/>
-                    <ChoiceChip v-for="choice in group.choices" :key="choice.expansion" :label="choice.label" :iconClass="choice.iconClass"
-                      :selected="expansions[choice.expansion]" :href="wikiUrls[choice.expansion]" @select="binding.setExpansion(choice.expansion, !expansions[choice.expansion])"/>
+                    <ChoiceChip v-for="tile in group.tiles" :key="tile.module" :label="tile.choice?.label ?? 'Base game'" :iconClass="tile.choice?.iconClass ?? 'expansion-icon-base'"
+                      :selected="tile.choice === undefined || expansions[tile.choice.expansion]" :locked="tile.choice === undefined" :href="tile.choice ? wikiUrls[tile.choice.expansion] : undefined"
+                      @select="tile.choice !== undefined && binding.setExpansion(tile.choice.expansion, !expansions[tile.choice.expansion])">
+                      <template #detail><span v-for="(part, index) in contentLine(tile, group.highlight, expansionGrouping !== 'source')" :key="index" :class="{'create-game-chip-detail--hit': part.highlighted}">{{ part.text }}</span></template>
+                    </ChoiceChip>
                   </div>
                 </CollapsibleSection>
               </template>
@@ -101,6 +104,7 @@
             </template>
 
             <PresentationHost :hosts="binding.hosts.mars"/>
+            <CreateGameBoardPreview v-if="binding.boardPreview !== undefined && !seededGame" :binding="binding.boardPreview" :boardColorClass="binding.boardClass"/>
           </section>
         </Teleport>
 <Teleport :to="columnTarget('setup')">
@@ -252,13 +256,17 @@
 </template>
 
 <script setup lang="ts">
-import {computed, onBeforeUnmount, onMounted, ref} from 'vue';
+import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue';
 import type {CreatePresentationBinding} from './presentation';
 import {useCreateFields} from './controlledFields';
 import {currentColumnCount, placementOf, watchColumnCount} from './createGameColumns';
 import type {SettingsCard} from './createGameColumns';
 import {observeStickyBottom} from './stickyBottomObserver';
-import {expansionChoices} from './expansionChoices';
+import {groupExpansions, loadExpansionGrouping, saveExpansionGrouping} from './expansionGrouping';
+import type {ExpansionGroup} from './expansionGrouping';
+import {contentLine} from './expansionContentLine';
+import ExpansionGroupMenu from './ExpansionGroupMenu.vue';
+import CreateGameBoardPreview from './CreateGameBoardPreview.vue';
 import {BoardName} from '@/common/boards/BoardName';
 import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
 import {RandomMAOptionType} from '@/common/ma/RandomMAOptionType';
@@ -340,8 +348,24 @@ const PLAYER_COUNT_OPTIONS = [1, 2, 3, 4, 5, 6].map((value) => ({value, label: v
 const AGENDA_OPTIONS = [{value: 'Random', label: 'Random'}, {value: 'Chairman', label: 'Chairman'}];
 const MILESTONE_OPTIONS = [{value: RandomMAOptionType.NONE, label: 'Board-defined'}, {value: RandomMAOptionType.LIMITED, label: 'Random limited'}, {value: RandomMAOptionType.UNLIMITED, label: 'Random full'}];
 const RANDOM_BOARD_OPTIONS = [{value: RandomBoardOption.OFFICIAL, label: 'Official'}, {value: RandomBoardOption.ALL, label: 'All'}];
-const expansionGroups = [{title: 'Official', fan: false, choices: expansionChoices.filter((choice) => choice.official)},
-  {title: 'Fan-made', fan: true, choices: expansionChoices.filter((choice) => !choice.official)}];
+const expansionGrouping = ref(loadExpansionGrouping());
+const expansionGroups = computed(() => groupExpansions(expansionGrouping.value));
+watch(expansionGrouping, saveExpansionGrouping);
+function choicesOf(group: ExpansionGroup) {
+  return group.tiles.flatMap((tile) => tile.choice === undefined ? [] : [tile.choice]);
+}
+function allSelected(group: ExpansionGroup) {
+  return choicesOf(group).every((choice) => expansions.value[choice.expansion]);
+}
+function toggleGroup(group: ExpansionGroup) {
+  const enabled = !allSelected(group);
+  for (const choice of choicesOf(group)) {
+    props.binding.setExpansion(choice.expansion, enabled);
+  }
+}
+function fanNote(group: ExpansionGroup) {
+  return group.key === 'fan' ? choicesOf(group).filter((choice) => expansions.value[choice.expansion]).map((choice) => choice.label).join(', ') : undefined;
+}
 const hasExpansionOptions = computed(() => ['venus', 'turmoil', 'moon', 'ares'].some((key) => expansions.value[key as 'venus' | 'turmoil' | 'moon' | 'ares']));
 const board = field('board');
 const namedBoard = ref<BoardNameType>(BoardName.THARSIS);

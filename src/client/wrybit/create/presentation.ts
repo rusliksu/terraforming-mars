@@ -8,6 +8,18 @@ import type PlayerCube from '@/client/wrybit/visuals/common/PlayerCube.vue';
 import type SeatIcon from '@/client/wrybit/visuals/common/SeatIcon.vue';
 import type NumberStepper from './NumberStepper.vue';
 import type SwitchInput from './SwitchInput.vue';
+import type {BoardName} from '@/common/boards/BoardName';
+import type {SpaceModel} from '@/common/models/SpaceModel';
+import type {GlobalParametersConfig} from '@/common/GlobalParameterConfig';
+
+export type CreationBoardPreview = {
+  data?: {boardName: BoardName, spaces: ReadonlyArray<SpaceModel>, customBoardRows?: number, globalParameters?: GlobalParametersConfig, randomExample: boolean};
+  loading: boolean;
+  error?: string;
+  showBoardName: boolean;
+  canRedraw: boolean;
+  redraw(): void;
+};
 
 export type CreateEditor = 'players' | 'mars' | 'moon' | 'venus' | 'filters';
 export type CreatePresentationBinding = ControlledCreateFields & {
@@ -27,6 +39,7 @@ export type CreatePresentationBinding = ControlledCreateFields & {
   reset(): void;
   create(): void;
   clearCustomLists(): void;
+  boardPreview?: CreationBoardPreview;
 };
 
 export type CreatePresentation = Component<{binding: CreatePresentationBinding}>;

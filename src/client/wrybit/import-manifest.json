@@ -4100,7 +4100,17 @@
       "package": "WP03",
       "target": "src/client/wrybit/create/CreateGameBoardPreview.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "own-preview-view-contract",
+          "status": "passed-in-isolation",
+          "paths": [
+            "tests/client/wrybit/create/BoardPreview.spec.ts",
+            "src/client/wrybit/create/presentation.ts"
+          ],
+          "note": "Pure source preview view reads our supplied geometry/custom rows/parameters/loading/error and redraw callback. Random-example text explicitly avoids the foreign exact-draw promise. Our optional binding has no fake producer; full App preview stays hidden until own read-only projection is connected. Source boardSeed/ApiBoardPreview/Game code not imported. Own ApiCreateGame draws random boards with Math.random separately from seed, so exact-random semantics must not be invented. Backend/data wiring and final preview flow remain OPEN."
+        }
+      ]
     },
     {
       "source": "src/client/components/create/CreateGameForm.vue",
@@ -4155,7 +4165,22 @@
       "package": "WP03",
       "target": "src/client/wrybit/create/ExpansionGroupMenu.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "own-content-grouping",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/ExpansionGrouping.spec.ts",
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-grouping-preview.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-counts-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-counts-corporations.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-counts-console.txt"
+          ],
+          "note": "Source grouping menu/content lines/styles use our registered public card/event/colony/MA metadata. All28 expansions plus base appear exactly once; hand-counted fixture tests content classification, base baseline exclusions and standard actions. Source group selection preserves byte-identical native create payload. Six source/count groupings are wired; board/parameter/tile traits remain pending verified own projections, no foreign expansionFacts quantities imported. Real App normal Corporations selection shows both groups and highlighted counts, console0/0. Five focused tests/four files, Vue types/scoped lint/style and App Webpack0warnings. Prior full1200/256 remains the creation baseline; full current WP still open."
+        }
+      ],
+      "scope": "Count-based groupings and content lines from our public manifests only. Source hardcoded expansionFacts are excluded; board/parameter/tile traits remain pending own projections."
     },
     {
       "source": "src/client/components/create/InfoBox.vue",
@@ -8692,6 +8717,102 @@
         }
       ],
       "scope": "Full creation styles; earlier catalog-presentation entry covers shared catalogue fragments."
+    },
+    {
+      "source": "src/client/components/create/expansionContentLine.ts",
+      "sourceSha256": "20f44376b8daf011b7caa6784ab450ec3f1ebd64254a3e249f1f2a1eb5a25193",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "own-content-grouping",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/ExpansionGrouping.spec.ts",
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-grouping-preview.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-counts-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-counts-corporations.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-counts-console.txt"
+          ],
+          "note": "Source grouping menu/content lines/styles use our registered public card/event/colony/MA metadata. All28 expansions plus base appear exactly once; hand-counted fixture tests content classification, base baseline exclusions and standard actions. Source group selection preserves byte-identical native create payload. Six source/count groupings are wired; board/parameter/tile traits remain pending verified own projections, no foreign expansionFacts quantities imported. Real App normal Corporations selection shows both groups and highlighted counts, console0/0. Five focused tests/four files, Vue types/scoped lint/style and App Webpack0warnings. Prior full1200/256 remains the creation baseline; full current WP still open."
+        }
+      ],
+      "target": "src/client/wrybit/create/expansionContentLine.ts",
+      "package": "WP03",
+      "scope": "Count-based groupings and content lines from our public manifests only. Source hardcoded expansionFacts are excluded; board/parameter/tile traits remain pending own projections."
+    },
+    {
+      "source": "src/client/components/create/expansionContents.ts",
+      "sourceSha256": "6bbb8f85b7096a131306a9e32f7b2b243226f6a988419a137eb85a242de8d945",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "own-content-grouping",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/ExpansionGrouping.spec.ts",
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-grouping-preview.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-counts-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-counts-corporations.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-counts-console.txt"
+          ],
+          "note": "Source grouping menu/content lines/styles use our registered public card/event/colony/MA metadata. All28 expansions plus base appear exactly once; hand-counted fixture tests content classification, base baseline exclusions and standard actions. Source group selection preserves byte-identical native create payload. Six source/count groupings are wired; board/parameter/tile traits remain pending verified own projections, no foreign expansionFacts quantities imported. Real App normal Corporations selection shows both groups and highlighted counts, console0/0. Five focused tests/four files, Vue types/scoped lint/style and App Webpack0warnings. Prior full1200/256 remains the creation baseline; full current WP still open."
+        }
+      ],
+      "target": "src/client/wrybit/create/expansionContents.ts",
+      "package": "WP03",
+      "scope": "Count-based groupings and content lines from our public manifests only. Source hardcoded expansionFacts are excluded; board/parameter/tile traits remain pending own projections."
+    },
+    {
+      "source": "src/client/components/create/expansionGrouping.ts",
+      "sourceSha256": "1d9ee9fed555d216c3f07b9148a82b562ff1fef7cdccb85bb8fd01c2a62c1f03",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "own-content-grouping",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/ExpansionGrouping.spec.ts",
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-grouping-preview.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-counts-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-counts-corporations.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-counts-console.txt"
+          ],
+          "note": "Source grouping menu/content lines/styles use our registered public card/event/colony/MA metadata. All28 expansions plus base appear exactly once; hand-counted fixture tests content classification, base baseline exclusions and standard actions. Source group selection preserves byte-identical native create payload. Six source/count groupings are wired; board/parameter/tile traits remain pending verified own projections, no foreign expansionFacts quantities imported. Real App normal Corporations selection shows both groups and highlighted counts, console0/0. Five focused tests/four files, Vue types/scoped lint/style and App Webpack0warnings. Prior full1200/256 remains the creation baseline; full current WP still open."
+        }
+      ],
+      "target": "src/client/wrybit/create/expansionGrouping.ts",
+      "package": "WP03",
+      "scope": "Count-based groupings and content lines from our public manifests only. Source hardcoded expansionFacts are excluded; board/parameter/tile traits remain pending own projections."
+    },
+    {
+      "source": "src/styles/create_game_expansions.less",
+      "sourceSha256": "a1c0c3ebfac1871e41fecf9a95ba84ef884c814f2fa1b208355f0a08e007ffcf",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "evidence": [
+        {
+          "kind": "own-content-grouping",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/ExpansionGrouping.spec.ts",
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-grouping-preview.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-counts-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-counts-corporations.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-counts-console.txt"
+          ],
+          "note": "Source grouping menu/content lines/styles use our registered public card/event/colony/MA metadata. All28 expansions plus base appear exactly once; hand-counted fixture tests content classification, base baseline exclusions and standard actions. Source group selection preserves byte-identical native create payload. Six source/count groupings are wired; board/parameter/tile traits remain pending verified own projections, no foreign expansionFacts quantities imported. Real App normal Corporations selection shows both groups and highlighted counts, console0/0. Five focused tests/four files, Vue types/scoped lint/style and App Webpack0warnings. Prior full1200/256 remains the creation baseline; full current WP still open."
+        }
+      ],
+      "target": "src/styles/wrybit/create/expansions.less",
+      "package": "WP03",
+      "scope": "Count-based groupings and content lines from our public manifests only. Source hardcoded expansionFacts are excluded; board/parameter/tile traits remain pending own projections."
     }
   ],
   "assets": [

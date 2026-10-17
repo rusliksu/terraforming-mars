@@ -47,6 +47,11 @@ describe('source creation view with our permanent form owner', () => {
       view.value = markRaw(SourceCreate);
       await flushPromises();
       expect(requests).has.length(0);
+      await wrapper.get('.expansion-group-menu > button').trigger('click');
+      const grouping = wrapper.findAll('.expansion-group-menu button[role=option]').find((button) => button.text() === 'Corporations')!;
+      await grouping.trigger('click');
+      expect(wrapper.text()).contains('With corporations');
+      expect(requests).has.length(0);
       await wrapper.get('.create-game-create-row .create-game-create').trigger('click');
       await flushPromises();
       expect(requests).has.length(1);

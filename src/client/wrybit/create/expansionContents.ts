@@ -3,10 +3,12 @@ import type {GameModule} from '@/common/cards/GameModule';
 import {getCards} from '@/client/cards/ClientCardManifest';
 import {buildEntries} from '@/client/wrybit/visuals/cardlist/cardListEntries';
 import type {CardListEntry} from '@/client/wrybit/visuals/cardlist/cardListEntries';
+import {classifyTileTypes, expansionFeatures} from './expansionFeatures';
+import type {ExpansionFeatures} from './expansionFeatures';
 
 export const CONTENT_KEYS = ['project', 'corporation', 'prelude', 'ceo', 'globalEvent', 'colonyTile', 'standardProject', 'award', 'milestone'] as const;
 export type ContentKey = typeof CONTENT_KEYS[number];
-export type ExpansionContents = {counts: Partial<Record<ContentKey, number>>};
+export type ExpansionContents = {counts: Partial<Record<ContentKey, number>>} & Partial<ExpansionFeatures>;
 
 const CONTENT_BY_TYPE: Partial<Record<CardListEntry['type'], ContentKey>> = {
   [CardType.AUTOMATED]: 'project', [CardType.ACTIVE]: 'project', [CardType.EVENT]: 'project',
@@ -42,7 +44,10 @@ export function countModuleContents(entries: ReadonlyArray<Pick<CardListEntry, '
 }
 
 let contents: Map<GameModule, ExpansionContents> | undefined;
+let tiles: ReturnType<typeof classifyTileTypes> | undefined;
 export function expansionContents(module: GameModule): ExpansionContents {
   contents ??= countModuleContents(buildEntries(), getCards((card) => card.type === CardType.STANDARD_ACTION));
-  return contents.get(module) ?? {counts: {}};
+  tiles ??= classifyTileTypes(getCards(() => true));
+  const counted = contents.get(module) ?? {counts: {}};
+  return {...counted, ...expansionFeatures(module, counted.counts, tiles.modules.get(module) ?? [])};
 }

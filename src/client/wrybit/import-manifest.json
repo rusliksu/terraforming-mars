@@ -4201,9 +4201,11 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-preview-stale-mutation.json",
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-preview-full-client-green.log",
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-preview-redraw-flow.log",
-            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-preview-test-types-green.log"
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-preview-test-types-green.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-preview-custom-board-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-preview-custom-phone-final.png"
           ],
-          "note": "Pure source preview now consumes our actual read-only route through the native form owner. Own GameSetup factories and existing Server.getSpaces project fresh geometry; no Game/player/storage. Exact native boardOptions body extracted and ApiCreateGame delegates; Game/Player/AI and native game-option construction unchanged. Named/custom/seeded-shuffle/random-example checks, private request fields absent, clone/classic disable requests, debounced cancellation/version guard. User Draw again changes native seed only for a shuffled named board; random board remains an example and does not pin the future draw. Actual App+ApiBoardPreview proof on8100 uses normal globalInitialize and fails closed on all Database/game-loader access; startup without native init hit inherited module-order cycle, not used as proof. Desktop1920x1080/tablet768x1024/phone390x844, Tharsis/Hellas/random/redraw/custom outline, native HTTP200, finalconsole0/0. Planet asset path corrected to already-attributed isolated texture; initial screenshot/error superseded. API custom5rows/18cells/oxygen16 tested; phone custom viewport/element shots are clipped by sticky create bar, so no full custom visual acceptance claimed. Fresh default-off has no optional assets/chunk/preview requests. Full1208client/260files and71targeted server green; source/client types, scoped lint/style/App build green. Broader test compile found7fixture typing errors, now fixed with canonical interfaces without weakening assertions; test TS and Vue TS green,8affected client tests green. Removing stale-data guard fails test; exact bytes restored and green. Full creation/WP03/21rows remain OPEN."
+          "note": "Pure source preview now consumes our actual read-only route through the native form owner. Own GameSetup factories and existing Server.getSpaces project fresh geometry; no Game/player/storage. Exact native boardOptions body extracted and ApiCreateGame delegates; Game/Player/AI and native game-option construction unchanged. Named/custom/seeded-shuffle/random-example checks, private request fields absent, clone/classic disable requests, debounced cancellation/version guard. User Draw again changes native seed only for a shuffled named board; random board remains an example and does not pin the future draw. Actual App+ApiBoardPreview proof on8100 uses normal globalInitialize and fails closed on all Database/game-loader access; startup without native init hit inherited module-order cycle, not used as proof. Desktop1920x1080/tablet768x1024/phone390x844, Tharsis/Hellas/random/redraw/custom outline, native HTTP200, finalconsole0/0. Planet asset path corrected to already-attributed isolated texture; initial screenshot/error superseded. API custom5rows/18cells/oxygen16 tested; phone custom viewport/element shots are clipped by sticky create bar, so no full custom visual acceptance claimed. Fresh default-off has no optional assets/chunk/preview requests. Full1208client/260files and71targeted server green; source/client types, scoped lint/style/App build green. Broader test compile found7fixture typing errors, now fixed with canonical interfaces without weakening assertions; test TS and Vue TS green,8affected client tests green. Removing stale-data guard fails test; exact bytes restored and green. Full creation/WP03/21rows remain OPEN. Later own grouped App proof centers the custom preview to avoid the sticky Create bar; final custom board/phone images show the full18-cell model and tracks, console0/0. Earlier clipped files remain historical only; full creation/play acceptance remains open."
         }
       ]
     },
@@ -4288,9 +4290,29 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-counts-console.txt"
           ],
           "note": "Source grouping menu/content lines/styles use our registered public card/event/colony/MA metadata. All28 expansions plus base appear exactly once; hand-counted fixture tests content classification, base baseline exclusions and standard actions. Source group selection preserves byte-identical native create payload. Six source/count groupings are wired; board/parameter/tile traits remain pending verified own projections, no foreign expansionFacts quantities imported. Real App normal Corporations selection shows both groups and highlighted counts, console0/0. Five focused tests/four files, Vue types/scoped lint/style and App Webpack0warnings. Prior full1200/256 remains the creation baseline; full current WP still open."
+        },
+        {
+          "kind": "own-expansion-features",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/wrybit/create/expansionFeatures.ts",
+            "src/common/GlobalParameter.ts",
+            "src/common/TileType.ts",
+            "src/client/components/GameBoardView.vue",
+            "src/client/components/PlayerHome.vue",
+            "src/client/cards/ClientCardManifest.ts",
+            "tests/client/wrybit/create/ExpansionFeatures.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/own-tile-type-owners.jsonl",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-full-groupings.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-groupings-board.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-groupings-tiles.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-groupings-parameters.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-groupings-console.txt"
+          ],
+          "note": "All9source grouping modes now use our facts, all28expansions+base exactly once. Own boards/panels follow native GameBoardView/PlayerHome including HighOrbit market and Conglomerates teams; new global parameters follow own Venus/Moon GlobalParameter enum and VenusPhase2 model. New tile types resolve own closed TileType catalogue to own card/standard-project module; explicit non-card mappings handle Ares/Moon/Venus tokens, baseline types and unsupported/deprecated values. Actual audit covers all66numeric types, no unmapped live type; Moon Mine label collides with corporate-era Mine, override tested. Industry/RobAntilles/Ides/Silly tiles now included, not foreign hardcoded quantities. Underworld excavation token trait follows own token model; colony tiles follow own existing metadata count. Layout labels Own board or panel / Changes Mars / Cards and variants describe our extended modules accurately. New tile grouping covers special project tile types as well as expansion tiles, a deliberate own-data adaptation of source taxonomy. Source expansionFacts counts are NOT imported. Ninefocused/3files green incl native create payload, Vue types/scoped lint/App Webpack0warnings; real App Board/NewTiles/GlobalParameters normal clicks, console0/0. Last full client1208/260 is prior preview baseline; full current validation remains for WP03 gate. No lifecycle or full-row acceptance."
         }
       ],
-      "scope": "Count-based groupings and content lines from our public manifests only. Source hardcoded expansionFacts are excluded; board/parameter/tile traits remain pending own projections."
+      "scope": "All nine source grouping modes over own public metadata, surfaces, global tracks and tile type ownership. Foreign expansionFacts values excluded."
     },
     {
       "source": "src/client/components/create/InfoBox.vue",
@@ -8877,11 +8899,31 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-counts-console.txt"
           ],
           "note": "Source grouping menu/content lines/styles use our registered public card/event/colony/MA metadata. All28 expansions plus base appear exactly once; hand-counted fixture tests content classification, base baseline exclusions and standard actions. Source group selection preserves byte-identical native create payload. Six source/count groupings are wired; board/parameter/tile traits remain pending verified own projections, no foreign expansionFacts quantities imported. Real App normal Corporations selection shows both groups and highlighted counts, console0/0. Five focused tests/four files, Vue types/scoped lint/style and App Webpack0warnings. Prior full1200/256 remains the creation baseline; full current WP still open."
+        },
+        {
+          "kind": "own-expansion-features",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/wrybit/create/expansionFeatures.ts",
+            "src/common/GlobalParameter.ts",
+            "src/common/TileType.ts",
+            "src/client/components/GameBoardView.vue",
+            "src/client/components/PlayerHome.vue",
+            "src/client/cards/ClientCardManifest.ts",
+            "tests/client/wrybit/create/ExpansionFeatures.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/own-tile-type-owners.jsonl",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-full-groupings.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-groupings-board.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-groupings-tiles.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-groupings-parameters.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-groupings-console.txt"
+          ],
+          "note": "All9source grouping modes now use our facts, all28expansions+base exactly once. Own boards/panels follow native GameBoardView/PlayerHome including HighOrbit market and Conglomerates teams; new global parameters follow own Venus/Moon GlobalParameter enum and VenusPhase2 model. New tile types resolve own closed TileType catalogue to own card/standard-project module; explicit non-card mappings handle Ares/Moon/Venus tokens, baseline types and unsupported/deprecated values. Actual audit covers all66numeric types, no unmapped live type; Moon Mine label collides with corporate-era Mine, override tested. Industry/RobAntilles/Ides/Silly tiles now included, not foreign hardcoded quantities. Underworld excavation token trait follows own token model; colony tiles follow own existing metadata count. Layout labels Own board or panel / Changes Mars / Cards and variants describe our extended modules accurately. New tile grouping covers special project tile types as well as expansion tiles, a deliberate own-data adaptation of source taxonomy. Source expansionFacts counts are NOT imported. Ninefocused/3files green incl native create payload, Vue types/scoped lint/App Webpack0warnings; real App Board/NewTiles/GlobalParameters normal clicks, console0/0. Last full client1208/260 is prior preview baseline; full current validation remains for WP03 gate. No lifecycle or full-row acceptance."
         }
       ],
       "target": "src/client/wrybit/create/expansionContentLine.ts",
       "package": "WP03",
-      "scope": "Count-based groupings and content lines from our public manifests only. Source hardcoded expansionFacts are excluded; board/parameter/tile traits remain pending own projections."
+      "scope": "All nine source grouping modes over own public metadata, surfaces, global tracks and tile type ownership. Foreign expansionFacts values excluded."
     },
     {
       "source": "src/client/components/create/expansionContents.ts",
@@ -8901,11 +8943,31 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-counts-console.txt"
           ],
           "note": "Source grouping menu/content lines/styles use our registered public card/event/colony/MA metadata. All28 expansions plus base appear exactly once; hand-counted fixture tests content classification, base baseline exclusions and standard actions. Source group selection preserves byte-identical native create payload. Six source/count groupings are wired; board/parameter/tile traits remain pending verified own projections, no foreign expansionFacts quantities imported. Real App normal Corporations selection shows both groups and highlighted counts, console0/0. Five focused tests/four files, Vue types/scoped lint/style and App Webpack0warnings. Prior full1200/256 remains the creation baseline; full current WP still open."
+        },
+        {
+          "kind": "own-expansion-features",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/wrybit/create/expansionFeatures.ts",
+            "src/common/GlobalParameter.ts",
+            "src/common/TileType.ts",
+            "src/client/components/GameBoardView.vue",
+            "src/client/components/PlayerHome.vue",
+            "src/client/cards/ClientCardManifest.ts",
+            "tests/client/wrybit/create/ExpansionFeatures.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/own-tile-type-owners.jsonl",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-full-groupings.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-groupings-board.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-groupings-tiles.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-groupings-parameters.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-groupings-console.txt"
+          ],
+          "note": "All9source grouping modes now use our facts, all28expansions+base exactly once. Own boards/panels follow native GameBoardView/PlayerHome including HighOrbit market and Conglomerates teams; new global parameters follow own Venus/Moon GlobalParameter enum and VenusPhase2 model. New tile types resolve own closed TileType catalogue to own card/standard-project module; explicit non-card mappings handle Ares/Moon/Venus tokens, baseline types and unsupported/deprecated values. Actual audit covers all66numeric types, no unmapped live type; Moon Mine label collides with corporate-era Mine, override tested. Industry/RobAntilles/Ides/Silly tiles now included, not foreign hardcoded quantities. Underworld excavation token trait follows own token model; colony tiles follow own existing metadata count. Layout labels Own board or panel / Changes Mars / Cards and variants describe our extended modules accurately. New tile grouping covers special project tile types as well as expansion tiles, a deliberate own-data adaptation of source taxonomy. Source expansionFacts counts are NOT imported. Ninefocused/3files green incl native create payload, Vue types/scoped lint/App Webpack0warnings; real App Board/NewTiles/GlobalParameters normal clicks, console0/0. Last full client1208/260 is prior preview baseline; full current validation remains for WP03 gate. No lifecycle or full-row acceptance."
         }
       ],
       "target": "src/client/wrybit/create/expansionContents.ts",
       "package": "WP03",
-      "scope": "Count-based groupings and content lines from our public manifests only. Source hardcoded expansionFacts are excluded; board/parameter/tile traits remain pending own projections."
+      "scope": "All nine source grouping modes over own public metadata, surfaces, global tracks and tile type ownership. Foreign expansionFacts values excluded."
     },
     {
       "source": "src/client/components/create/expansionGrouping.ts",
@@ -8925,11 +8987,31 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-counts-console.txt"
           ],
           "note": "Source grouping menu/content lines/styles use our registered public card/event/colony/MA metadata. All28 expansions plus base appear exactly once; hand-counted fixture tests content classification, base baseline exclusions and standard actions. Source group selection preserves byte-identical native create payload. Six source/count groupings are wired; board/parameter/tile traits remain pending verified own projections, no foreign expansionFacts quantities imported. Real App normal Corporations selection shows both groups and highlighted counts, console0/0. Five focused tests/four files, Vue types/scoped lint/style and App Webpack0warnings. Prior full1200/256 remains the creation baseline; full current WP still open."
+        },
+        {
+          "kind": "own-expansion-features",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/wrybit/create/expansionFeatures.ts",
+            "src/common/GlobalParameter.ts",
+            "src/common/TileType.ts",
+            "src/client/components/GameBoardView.vue",
+            "src/client/components/PlayerHome.vue",
+            "src/client/cards/ClientCardManifest.ts",
+            "tests/client/wrybit/create/ExpansionFeatures.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/own-tile-type-owners.jsonl",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-full-groupings.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-groupings-board.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-groupings-tiles.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-groupings-parameters.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-groupings-console.txt"
+          ],
+          "note": "All9source grouping modes now use our facts, all28expansions+base exactly once. Own boards/panels follow native GameBoardView/PlayerHome including HighOrbit market and Conglomerates teams; new global parameters follow own Venus/Moon GlobalParameter enum and VenusPhase2 model. New tile types resolve own closed TileType catalogue to own card/standard-project module; explicit non-card mappings handle Ares/Moon/Venus tokens, baseline types and unsupported/deprecated values. Actual audit covers all66numeric types, no unmapped live type; Moon Mine label collides with corporate-era Mine, override tested. Industry/RobAntilles/Ides/Silly tiles now included, not foreign hardcoded quantities. Underworld excavation token trait follows own token model; colony tiles follow own existing metadata count. Layout labels Own board or panel / Changes Mars / Cards and variants describe our extended modules accurately. New tile grouping covers special project tile types as well as expansion tiles, a deliberate own-data adaptation of source taxonomy. Source expansionFacts counts are NOT imported. Ninefocused/3files green incl native create payload, Vue types/scoped lint/App Webpack0warnings; real App Board/NewTiles/GlobalParameters normal clicks, console0/0. Last full client1208/260 is prior preview baseline; full current validation remains for WP03 gate. No lifecycle or full-row acceptance."
         }
       ],
       "target": "src/client/wrybit/create/expansionGrouping.ts",
       "package": "WP03",
-      "scope": "Count-based groupings and content lines from our public manifests only. Source hardcoded expansionFacts are excluded; board/parameter/tile traits remain pending own projections."
+      "scope": "All nine source grouping modes over own public metadata, surfaces, global tracks and tile type ownership. Foreign expansionFacts values excluded."
     },
     {
       "source": "src/styles/create_game_expansions.less",

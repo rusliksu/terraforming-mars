@@ -117,7 +117,7 @@
     },
     "WP04": {
       "actor": "user",
-      "agent": "codex",
+      "agent": null,
       "agent_profile": "__resolved_profile_absent__",
       "agent_profile_version": "__resolved_profile_version_absent__",
       "force_count": 1,
@@ -129,6 +129,7 @@
         "Current primary ancestry restored; component checks green, full flows assigned to WP07"
       ],
       "provider": "__resolved_provider_absent__",
+      "review": null,
       "review_result": {
         "feedback_path": "C:\\Users\\Ruslan\\.codex-worktrees\\terraforming-mars-release-main-wrybit-full-ui\\kitty-specs\\wrybit-full-ui-01M4R0GH\\tasks\\WP04-expansions\\review-cycle-1.md",
         "reference": "review-cycle://wrybit-full-ui-01M4R0GH/WP04-expansions/review-cycle-1.md",
@@ -136,13 +137,13 @@
         "verdict": "changes_requested"
       },
       "role": "reviewer",
-      "shell_pid": 27968,
-      "shell_pid_created_at": "1792271033.6582716",
+      "shell_pid": null,
+      "shell_pid_created_at": null,
       "subtasks": {
-        "T013": "done",
-        "T014": "done",
-        "T015": "done",
-        "T016": "done"
+        "T013": "planned",
+        "T014": "planned",
+        "T015": "planned",
+        "T016": "planned"
       }
     },
     "WP05": {

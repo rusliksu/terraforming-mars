@@ -83,6 +83,8 @@ owned_files:
 - src/client/components/SelectClaimedUndergroundToken.vue
 - src/client/components/delta/DeltaProjectInput.vue
 - src/client/components/PlayerInputFactory.vue
+- src/client/components/WaitingFor.vue
+- tests/client/components/WaitingFor.spec.ts
 - src/client/components/inputChoice.ts
 - src/client/components/common/ConfirmDialog.vue
 - src/client/wrybit/visuals/TabPanelFooterSlot.vue
@@ -211,3 +213,5 @@ Or choice/grouping scoped proof: source plain/inline/player tiles and combined A
 Metadata choice tiles scoped proof: source milestone/award and party option cards reuse own models/native option/save. Exact native party agenda projection shared by SelectParty and Or, MoreParties/all12party values, own Player/Vitor/ChooseAlliedParty/move prompt shapes verified. Ambiguous/missing matches fall back to native text; no guessed stay party. Existing MA counter/party board focus restore on classic return. Full1222client/266files, Vue types/lint/style/App green, ambiguity mutant rejected/exact restoration green. Actual App Gardener/Miner/Populists selections return checked in classic; console0/0, no moves/DB. Full panels/viewport/forecast/draft/undo and T009-T012/full21rows still OPEN.
 
 Draft card presentation scoped proof: native draft/repick identity, stable display packet order, current-pick replacement clearing, native two-card replacement, read-only keeps/actions and zero-affordability controls covered. Native client min/max canSave corrected against existing server contract, red/green and mutation proof. Full1227client/267files, final9focused/4files, native SelectCard5server tests/types/lint/style/App green; browser normal selection/clear/affordability console0/0 and fixture restored. Root input layout/full21rows/T009-T012 remain OPEN.
+
+Root input tabs scoped proof: source WaitingForTabs/WaitingForPlayersTab adapt native permanent RPC/poll/undo owner with local body/footer portals, retain selection/payment through hand/classic/source, native option response indices. PresentationHost supports existing owner footer without DOM wrappers and retains ownership-safe unregister. Native poll/undo and full client/type/lint/App checks, remount mutant and actual browser normal selection/hand/classic return recorded in manifest. Initial dealt cards are in All cards with fallback. Full intro/forecast/placement/viewport and T009-T012/all21full UI rows remain OPEN.

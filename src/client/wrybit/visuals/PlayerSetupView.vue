@@ -16,7 +16,6 @@
 
 <script setup lang="ts">
 import {computed} from 'vue';
-import {Phase} from '@/common/Phase';
 import {PlayerViewModel} from '@/common/models/PlayerModel';
 import InputHost from '@/client/wrybit/shell/InputHost.vue';
 import WaitingFor from '@/client/components/WaitingFor.vue';
@@ -26,20 +25,16 @@ import HandCardsTab from './HandCardsTab.vue';
 import {vDockedTab} from './common/DockedTab';
 import {useInputPresentation} from '@/client/wrybit/inputs/presentation';
 import {showsDraftedCardsBlock} from '@/client/wrybit/inputs/draftCards';
+import {hasWaitingForTabs, initialDraftDealtSections} from '@/client/wrybit/inputs/waitingForTabs';
 
 const props = defineProps<{playerView: PlayerViewModel}>();
 const cardPresentation = useInputPresentation('card');
+const waitingPresentation = useInputPresentation('waitingFor');
 const pickedCards = computed(() => [
   ...props.playerView.pickedCorporationCard,
   ...(props.playerView.game.gameOptions.expansions.prelude ? props.playerView.preludeCardsInHand : []),
   ...(props.playerView.game.gameOptions.expansions.ceo ? props.playerView.ceoCardsInHand : []),
   ...props.playerView.cardsInHand,
 ]);
-// Keep our initial-draft visibility until the input tabs also display these cards.
-const dealtSections = computed(() => props.playerView.game.phase !== Phase.INITIALDRAFTING || !props.playerView.game.gameOptions.initialDraftVariant ? [] : [
-  {title: 'Corporations', cards: props.playerView.dealtCorporationCards},
-  {title: 'Prelude cards', cards: props.playerView.dealtPreludeCards},
-  {title: 'CEOs', cards: props.playerView.dealtCeoCards},
-  {title: 'Project cards', cards: props.playerView.dealtProjectCards},
-]);
+const dealtSections = computed(() => waitingPresentation.value !== undefined && hasWaitingForTabs(props.playerView.waitingFor) ? [] : initialDraftDealtSections(props.playerView));
 </script>

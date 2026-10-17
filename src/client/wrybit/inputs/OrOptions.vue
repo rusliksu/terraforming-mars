@@ -15,7 +15,7 @@
         <span v-if="tabCount(idx) !== undefined" class="or-tab-count">{{ tabCount(idx) }}</span>
       </button>
     </div>
-    <div :class="[{'or-tab-panel': binding.asTabs, 'or-tab-panel--view': binding.asTabs && handTabActive, 'or-tab-panel--end': !handTabActive && binding.selectedOption !== undefined && isEndTab(binding.selectedOption.title)}, !handTabActive && binding.selectedOption ? toneClass('or-tab-panel--tone-', binding.selectedOption) : undefined]" :role="binding.asTabs ? 'tabpanel' : undefined">
+    <div :class="[{'or-tab-panel': binding.asTabs && outerFooter === undefined, 'or-tab-panel--view': binding.asTabs && handTabActive, 'or-tab-panel--end': !handTabActive && binding.selectedOption !== undefined && isEndTab(binding.selectedOption.title)}, !handTabActive && binding.selectedOption ? toneClass('or-tab-panel--tone-', binding.selectedOption) : undefined]" :role="binding.asTabs && outerFooter === undefined ? 'tabpanel' : undefined">
       <HandCardsPanel v-if="binding.asTabs && !tileMenu && handTabActive" :playerView="binding.playerView"/>
       <template v-if="!binding.asTabs && !tileMenu">
         <div v-for="(option, idx) in binding.displayedOptions" :key="idx">
@@ -43,11 +43,11 @@
       <ActionCardSections v-if="inActionsGroup" v-show="!handTabActive" :binding="binding"/>
       <PresentationHost v-if="binding.asTabs || tileMenu" v-show="!handTabActive && !inActionsGroup && (!tileMenu || inlineChoice)" :hosts="binding.childHost"/>
       <p v-if="binding.asTabs && !handTabActive && binding.selectedOption && endTabHint(binding.selectedOption.title) !== undefined" class="or-tab-end-hint">{{ $t(endTabHint(binding.selectedOption.title) ?? '') }}</p>
-      <div v-if="binding.asTabs" v-show="!handTabActive" class="or-tab-footer">
-        <PresentationHost :hosts="binding.footerHost"/>
+      <PresentationHost v-if="binding.asTabs" :hosts="binding.footerHost" :target="outerFooter"
+        :class="{'or-tab-footer': outerFooter === undefined}" :style="{display: handTabActive ? 'none' : undefined}">
         <ActionStepChips v-if="turnStep !== undefined" :step="turnStep"/>
         <div v-if="showSave" :class="['wf-action', 'or-tab-save', binding.selectedOption ? toneClass('or-tab-save--', binding.selectedOption) : undefined]"><AppButton :title="$t(saveLabel)" type="submit" :disabled="saveDisabled" @click="binding.save()"/></div>
-      </div>
+      </PresentationHost>
       <TabPanelFooterSlot v-else-if="showSave">
         <div class="wf-action or-options-save"><AppButton :title="$t(binding.selectedOption?.buttonLabel ?? '')" type="submit" :disabled="saveDisabled" @click="binding.save()"/></div>
       </TabPanelFooterSlot>
@@ -56,7 +56,8 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ref} from 'vue';
+import {computed, inject, ref} from 'vue';
+import {ROOT_INPUT_FOOTER} from './presentation';
 import type {ColorWithNeutral} from '@/common/Color';
 import type {ComponentPublicInstance} from 'vue';
 import type {OrOptionsBinding} from './presentation';
@@ -84,6 +85,8 @@ import MilestoneAwardOptions from './MilestoneAwardOptions.vue';
 import PartyOptions from './PartyOptions.vue';
 
 const props = defineProps<{binding: OrOptionsBinding}>();
+const rootFooter = inject(ROOT_INPUT_FOOTER, undefined);
+const outerFooter = computed(() => props.binding.asTabs ? rootFooter?.value : undefined);
 const handTabActive = ref(false);
 const maChoices = computed(() => milestoneAwardChoices({...props.binding.playerinput, options: [...props.binding.displayedOptions]}, props.binding.playerView.game));
 const parties = computed(() => maChoices.value === undefined ? partyChoices(props.binding.displayedOptions, props.binding.partyCards) : undefined);

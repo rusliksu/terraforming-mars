@@ -20,7 +20,7 @@ describe('WaitingFor', () => {
   const wrappers: Array<{unmount: () => void}> = [];
 
   function mountWaitingFor(options: any) {
-    const wrapper = shallowMount(WaitingFor, options);
+    const wrapper = shallowMount(WaitingFor, {...options, global: {...options.global, renderStubDefaultSlot: true}});
     wrappers.push(wrapper);
     return wrapper;
   }

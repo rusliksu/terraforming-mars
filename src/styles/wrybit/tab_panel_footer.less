@@ -159,6 +159,20 @@
   box-shadow: none;
 }
 
+// Our separate action/step/research undo commands retain their exact meanings.
+.or-tab-footer:has(> [data-undo-mode]) {
+  flex-wrap: wrap;
+
+  > .btn.cancel-action-button {
+    height: auto;
+    min-height: 50px;
+    max-width: 100%;
+    padding: 8px 12px;
+    font-size: 16px;
+    white-space: normal;
+  }
+}
+
 // Box with a single centered button (raise temperature …): Cancel in its own footer bar at the bottom
 // (.or-tab-footer--bar); quiet colours also against the tab tone (or_tab_tones.less)
 .or-tab-panel.or-tab-panel--centered-button .or-tab-footer > .btn.cancel-action-button {

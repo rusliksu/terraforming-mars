@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-17T17:38:06.358Z",
-  "generated_from_commit": "d95f24db7b8d7c4800d7034ef24794c7c47994c3",
+  "generated_at": "2026-10-17T17:44:08.570Z",
+  "generated_from_commit": "cef02b9ca86ba02dee1f8c342cdac1afe2791487",
   "scope": [
     ".",
     ".github",
@@ -6235,7 +6235,10 @@
     "tests/client/wrybit/inputs/PlacementZoom.spec.ts",
     "src/styles/wrybit/placement_controls.less",
     "src/client/wrybit/inputs/spaceWithSkip.ts",
-    "tests/client/wrybit/inputs/SpaceSkip.spec.ts"
+    "tests/client/wrybit/inputs/SpaceSkip.spec.ts",
+    "src/client/wrybit/inputs/CancelActionButton.vue",
+    "src/client/wrybit/inputs/undoPresentation.ts",
+    "tests/client/wrybit/inputs/UndoPresentation.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -6429,6 +6432,7 @@
       "src/client/wrybit/inputs/ActionCardSections.vue",
       "src/client/wrybit/inputs/ActionStepChips.vue",
       "src/client/wrybit/inputs/AndOptions.vue",
+      "src/client/wrybit/inputs/CancelActionButton.vue",
       "src/client/wrybit/inputs/CardIntroBlock.vue",
       "src/client/wrybit/inputs/ChoiceOptionTile.vue",
       "src/client/wrybit/inputs/DelegateFigure.vue",
@@ -6480,6 +6484,7 @@
       "src/client/wrybit/inputs/presentation.ts",
       "src/client/wrybit/inputs/saveAttempt.ts",
       "src/client/wrybit/inputs/spaceWithSkip.ts",
+      "src/client/wrybit/inputs/undoPresentation.ts",
       "src/client/wrybit/inputs/unitValues.ts",
       "src/client/wrybit/inputs/waitingForTabs.ts",
       "src/client/wrybit/shell/AppBackground.vue",
@@ -7039,6 +7044,7 @@
       "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
       "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
       "tests/client/wrybit/inputs/SpaceSkip.spec.ts",
+      "tests/client/wrybit/inputs/UndoPresentation.spec.ts",
       "tests/client/wrybit/inputs/WaitingForPresentation.spec.ts",
       "tests/client/wrybit/inputs/saveAttempt.spec.ts",
       "tests/client/wrybit/shell/AppInputRefresh.spec.ts",

@@ -14,7 +14,7 @@
       (⌛ <span v-for="color in playersWaitingFor" class="log-player" :class="playerColorClass(color, 'bg')" :key="color">{{ getPlayerName(color) }}</span>)
     </template>
   </div>
-  <div v-if="showResearchPurchaseUndo()" class="wf-options wf-undo-controls">
+  <div v-if="showResearchPurchaseUndo()" v-show="waitingPresentation === undefined || presentationBinding === undefined" class="wf-options wf-undo-controls">
     <AppButton title="Undo card purchase (experimental)" type="submit" size="normal" @click="undoResearchPurchase" />
   </div>
   <div v-if="waitingfor !== undefined" class="wf-root">
@@ -32,7 +32,7 @@
                           :showsave="true"
                           :showtitle="true" />
   </div>
-  <div v-if="showUndoFooter()" class="wf-options wf-undo-controls">
+  <div v-if="showUndoFooter()" v-show="waitingPresentation === undefined || presentationBinding === undefined" class="wf-options wf-undo-controls">
     <label v-if="showUndoAction()" class="form-radio">
       <input v-model="undoChoice" type="radio" :name="undoRadioElementName" value="action">
       <i class="form-icon"></i>
@@ -54,7 +54,8 @@
 <script lang="ts">
 /* global RequestInit */
 
-import {defineComponent, markRaw, provide} from 'vue';
+import {computed, defineComponent, markRaw, provide} from 'vue';
+import {WAITING_UNDO, UndoMode, UndoPresentation} from '@/client/wrybit/inputs/undoPresentation';
 import {createInputHosts} from '@/client/wrybit/shell/inputHosts';
 import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
 import PresentationHost from '@/client/wrybit/inputs/PresentationHost.vue';
@@ -122,6 +123,9 @@ export default defineComponent({
     provide(INPUT_FOOTER, footerHost.target);
     provide(ROOT_INPUT_FOOTER, footerHost.target);
     return {bodyHost: createInputHosts(), footerHost, waitingPresentation: useInputPresentation('waitingFor')};
+  },
+  provide() {
+    return {[WAITING_UNDO as symbol]: computed(() => this.undoPresentation)};
   },
   props: {
     playerView: {
@@ -226,6 +230,19 @@ export default defineComponent({
       if (this.undoChoice === 'step') {
         this.stepBack();
       } else if (this.undoChoice === 'action') {
+        this.reset();
+      }
+    },
+    runPresentationUndo(mode: UndoMode) {
+      if (!this.active || this.waitingPresentation === undefined || this.presentationBinding === undefined ||
+          !this.undoPresentation.actions.some((action) => action.mode === mode)) {
+        return;
+      }
+      if (mode === 'research') {
+        this.undoResearchPurchase();
+      } else if (mode === 'step') {
+        this.stepBack();
+      } else {
         this.reset();
       }
     },
@@ -534,6 +551,21 @@ export default defineComponent({
     window.clearInterval(this.timers.title);
   },
   computed: {
+    undoPresentation(): UndoPresentation {
+      const actions: Array<{mode: UndoMode, title: string}> = [];
+      if (this.showResearchPurchaseUndo()) {
+        actions.push({mode: 'research', title: 'Undo card purchase (experimental)'});
+      }
+      if (this.showUndoFooter()) {
+        if (this.showUndoAction()) {
+          actions.push({mode: 'action', title: 'Undo action'});
+        }
+        if (this.showStepBack()) {
+          actions.push({mode: 'step', title: 'Undo one step (experimental)'});
+        }
+      }
+      return {actions, run: this.runPresentationUndo};
+    },
     presentationBinding(): InputPresentationBindings['waitingFor'] | undefined {
       if (this.waitingfor === undefined || this.playerView.thisPlayer === undefined) {
         return undefined;

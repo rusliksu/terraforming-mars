@@ -15,7 +15,7 @@
         <CardListSection v-for="section in dealt" :key="section.title" :title="section.title" :cards="section.cards"/>
       </template>
       <PresentationHost v-show="!handTabActive" :hosts="binding.bodyHost"/>
-      <PresentationHost v-show="!handTabActive" class="or-tab-footer" :hosts="binding.footerHost"/>
+      <PresentationHost v-show="!handTabActive" class="or-tab-footer" :hosts="binding.footerHost"><CancelActionButton/></PresentationHost>
     </div>
   </div>
   <PresentationHost v-else :hosts="binding.bodyHost"/>
@@ -34,6 +34,7 @@ import {fullTabTitle, inputTabLabel, optionTone} from './orOptionsShortLabels';
 import {hasWaitingForTabs, initialDraftDealtSections} from './waitingForTabs';
 import WaitingForPlayersTab from './WaitingForPlayersTab.vue';
 import {spaceWithSkip} from './spaceWithSkip';
+import CancelActionButton from './CancelActionButton.vue';
 
 const props = defineProps<{binding: InputPresentationBindings['waitingFor']}>();
 const handTabActive = ref(false);

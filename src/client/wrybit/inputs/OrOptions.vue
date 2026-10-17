@@ -50,6 +50,7 @@
       <PresentationHost v-if="binding.asTabs" :hosts="binding.footerHost" :target="outerFooter"
         :class="{'or-tab-footer': outerFooter === undefined}" :style="{display: handTabActive ? 'none' : undefined}">
         <ActionStepChips v-if="turnStep !== undefined" :step="turnStep"/>
+        <CancelActionButton v-if="outerFooter === undefined"/>
         <template v-if="spaceChoice !== undefined && binding.showsave">
           <AppButton v-for="(option, index) in spaceChoice.skips" :key="index" class="space-skip-option btn-tone-danger"
             :title="$t(fullTabTitle(option.title))" @click="skip(option)"/>
@@ -95,6 +96,7 @@ import CardIntroBlock from './CardIntroBlock.vue';
 import {inputSourceCard} from './inputSourceCard';
 import {spaceWithSkip} from './spaceWithSkip';
 import {boardZoomSurface} from '@/client/wrybit/visuals/board/boardZoomSurface';
+import CancelActionButton from './CancelActionButton.vue';
 
 const props = defineProps<{binding: OrOptionsBinding}>();
 const sourceCard = computed(() => inputSourceCard(props.binding.playerinput));

@@ -36,6 +36,17 @@ owned_files:
 - src/client/components/create/CardsFilter.vue
 - src/common/boards/boardOptions.ts
 - src/common/models/BoardPreviewModel.ts
+- src/common/models/AmountPreviewModel.ts
+- src/common/models/PlayerInputModel.ts
+- src/server/inputs/SelectAmount.ts
+- src/server/cards/base/Insulation.ts
+- src/server/cards/base/PowerInfrastructure.ts
+- src/server/cards/colonies/TitanShuttles.ts
+- src/server/cards/venusNext/SulphurEatingBacteria.ts
+- src/server/cards/promo/EnergyMarket.ts
+- src/server/cards/promo/Supercapacitors.ts
+- src/server/cards/underworld/VoltaicMetallurgy.ts
+- tests/models/AmountPreview.spec.ts
 - src/common/app/paths.ts
 - src/server/models/BoardPreview.ts
 - src/server/models/ServerModel.ts
@@ -215,3 +226,5 @@ Metadata choice tiles scoped proof: source milestone/award and party option card
 Draft card presentation scoped proof: native draft/repick identity, stable display packet order, current-pick replacement clearing, native two-card replacement, read-only keeps/actions and zero-affordability controls covered. Native client min/max canSave corrected against existing server contract, red/green and mutation proof. Full1227client/267files, final9focused/4files, native SelectCard5server tests/types/lint/style/App green; browser normal selection/clear/affordability console0/0 and fixture restored. Root input layout/full21rows/T009-T012 remain OPEN.
 
 Root input tabs scoped proof: source WaitingForTabs/WaitingForPlayersTab adapt native permanent RPC/poll/undo owner with local body/footer portals, retain selection/payment through hand/classic/source, native option response indices. PresentationHost supports existing owner footer without DOM wrappers and retains ownership-safe unregister. Native poll/undo and full client/type/lint/App checks, remount mutant and actual browser normal selection/hand/classic return recorded in manifest. Initial dealt cards are in All cards with fallback. Full intro/forecast/placement/viewport and T009-T012/all21full UI rows remain OPEN.
+
+Amount conversion and card explanation scoped proof: source converter/sides/card thumbnail/intro use own typed display metadata from7native producers. Foreign title rule map excluded because native titles are ambiguous. Optional SelectAmount.preview is a read-only projection permitted by C-002, refreshed at native toModel without effects; first5constructor args, effect arrows and process unchanged by AST verification. Seebeck alternative energy and deferred EnergyMarket payment show costs without invented stock remainders. Native defaults/selection/response/AI retained. Full1237client/272files,36native tests/types/lint/App/mutation/browser console0/0 pass. General forecasts/intro/placement/undo/viewport/full21rows and T009-T012 remain OPEN.

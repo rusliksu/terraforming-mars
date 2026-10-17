@@ -26,7 +26,8 @@
           <PresentationHost v-if="binding.selectedIdx === idx" :hosts="binding.childHost" style="margin-left: 30px"/>
         </div>
       </template>
-      <div v-if="tileMenu" class="or-tab-intro or-tab-question"><div class="or-tab-intro-title">{{ $t(binding.playerinput.title) }}</div></div>
+      <CardIntroBlock v-if="tileMenu && sourceCard !== undefined" :card="sourceCard" :title="binding.playerinput.title"/>
+      <div v-else-if="tileMenu" class="or-tab-intro or-tab-question"><div class="or-tab-intro-title">{{ $t(binding.playerinput.title) }}</div></div>
       <MilestoneAwardOptions v-if="maChoices !== undefined" :choices="maChoices" :selected="binding.selectedIdx" :groupName="binding.radioElementName" @select="selectIndex"/>
       <PartyOptions v-else-if="parties !== undefined && binding.playerView.game.turmoil !== undefined" :choices="parties" :selected="binding.selectedIdx"
         :groupName="binding.radioElementName" :turmoil="binding.playerView.game.turmoil" @select="selectIndex"/>
@@ -83,8 +84,11 @@ import {milestoneAwardChoices} from './milestoneAwardChoice';
 import {partyChoices} from './partyChoice';
 import MilestoneAwardOptions from './MilestoneAwardOptions.vue';
 import PartyOptions from './PartyOptions.vue';
+import CardIntroBlock from './CardIntroBlock.vue';
+import {inputSourceCard} from './inputSourceCard';
 
 const props = defineProps<{binding: OrOptionsBinding}>();
+const sourceCard = computed(() => inputSourceCard(props.binding.playerinput));
 const rootFooter = inject(ROOT_INPUT_FOOTER, undefined);
 const outerFooter = computed(() => props.binding.asTabs ? rootFooter?.value : undefined);
 const handTabActive = ref(false);

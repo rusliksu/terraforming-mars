@@ -302,7 +302,7 @@
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP02",
-      "target": "src/client/wrybit/visuals/CardIntroBlock.vue",
+      "target": "src/client/wrybit/inputs/CardIntroBlock.vue",
       "status": "planned",
       "evidence": [
         {
@@ -314,6 +314,29 @@
             "tests/client/wrybit/visuals/visualStyles.spec.ts"
           ],
           "note": "Pure source thumbnail/intro/footer/placement/confirmation/update views. Our static/custom wire descriptions and combined title; canonical Ares controller/input response and supplied thresholds; supplied placement description only, no copied foreign gain/rule inference. Initial anchor positioning/Escape/portal cleanup; scoped CSS with private animation/tone/footer identifiers. ServerUpdateOverlay takes supplied phase/savedMessage and emits reload request; no foreign serverStatus/poller or window reload. Future input/mobile/root consumers remain pending."
+        },
+        {
+          "kind": "native-amount-preview-and-card-intro",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/common/models/AmountPreviewModel.ts",
+            "tests/models/AmountPreview.spec.ts",
+            "tests/client/wrybit/inputs/AmountPreview.spec.ts",
+            "tests/client/wrybit/inputs/InputSourceCard.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-client-full.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-server-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-server-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-boundary.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-insulation.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-market.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-insulation-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-market-console.txt"
+          ],
+          "note": "Source AmountConverter/AmountSideTile/CardIntroBlock/SourceCardThumbnail are pure views of our typed SelectAmountModel.preview. The foreign English-title conversion rule table is not imported: our same title has several producers with different effects. Seven native producers add display-only sixth constructor metadata; existing first5arguments, all effect arrows and native SelectAmount.process independently AST-compared unchanged. toModel projects current own stock/production/card counters without executing any effect. PowerInfrastructure with Sistemas Seebeck shows an energy price without claiming a stock remainder; EnergyMarket shows deferred payment price, retaining native currency/payment choices. Native min/max/maxByDefault, selected amount, InputResponse and AI code remain owned. Known native named-card title uses own catalogue; unknown titles/names fall back, no invented source context. Full1237client/272files,36native tests across7card suites/amount/projection, Vue+server types/lint/App0warnings pass. Wrong display rate mutant rejected, exact bytes restored. Actual App1440 native Insulation/EnergyMarket projections show production4->2 and0->2, price4/energy3->5 atamount2; real keyboard/hand/classic retains2, consoles0/0/no move/DB requests, original synthetic fixture restored. Remaining general forecasts/intro/placement/undo/viewport and all21full flows remain open."
         }
       ]
     },
@@ -1019,6 +1042,29 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-requests.txt"
           ],
           "note": "Source single-input and plain-choice tabs adapt our permanent WaitingFor RPC/poll/undo owner through typed local body/footer hosts. All-cards uses v-show for the native body; source action Or and initialCards retain own tabs. Source initial-draft dealt sections move into All cards with fallback when tabs unavailable. Source pending-player status uses our canonical public flags. Or native response indices and NativeFactory child ownership retained. PresentationHost can bind an existing owner footer and teleport view-only commands without an extra element; native payment/button DOM remains directly in the source footer for original layout selectors. Initial external target, local return and ownership-safe unregister covered. Native card/option/exact response/payment ledger/UID survive hand and repeated classic/source changes. Native polling/undo tests preserved, remount mutant rejected/exact restored. Actual App1440 normal card click, hand tab, classic checked selection and opt-in return pass; no move/DB requests, console0/0, synthetic fixture restored. Full intro/forecasts/placement/viewport and all21full flow rows remain OPEN."
+        },
+        {
+          "kind": "native-amount-preview-and-card-intro",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/common/models/AmountPreviewModel.ts",
+            "tests/models/AmountPreview.spec.ts",
+            "tests/client/wrybit/inputs/AmountPreview.spec.ts",
+            "tests/client/wrybit/inputs/InputSourceCard.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-client-full.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-server-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-server-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-boundary.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-insulation.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-market.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-insulation-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-market-console.txt"
+          ],
+          "note": "Source AmountConverter/AmountSideTile/CardIntroBlock/SourceCardThumbnail are pure views of our typed SelectAmountModel.preview. The foreign English-title conversion rule table is not imported: our same title has several producers with different effects. Seven native producers add display-only sixth constructor metadata; existing first5arguments, all effect arrows and native SelectAmount.process independently AST-compared unchanged. toModel projects current own stock/production/card counters without executing any effect. PowerInfrastructure with Sistemas Seebeck shows an energy price without claiming a stock remainder; EnergyMarket shows deferred payment price, retaining native currency/payment choices. Native min/max/maxByDefault, selected amount, InputResponse and AI code remain owned. Known native named-card title uses own catalogue; unknown titles/names fall back, no invented source context. Full1237client/272files,36native tests across7card suites/amount/projection, Vue+server types/lint/App0warnings pass. Wrong display rate mutant rejected, exact bytes restored. Actual App1440 native Insulation/EnergyMarket projections show production4->2 and0->2, price4/energy3->5 atamount2; real keyboard/hand/classic retains2, consoles0/0/no move/DB requests, original synthetic fixture restored. Remaining general forecasts/intro/placement/undo/viewport and all21full flows remain open."
         }
       ]
     },
@@ -1517,6 +1563,29 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-cohort-console.txt"
           ],
           "note": "Source views bind to permanent native amount/option/delegate/player/resource/resources/production/globalEvent/token/Delta/Ares/space controllers. Native defaults, offered choices, caps, minima, sparse Delta steps, indices and responses retained across modes. Space popover rebinds to current board, rejects stale anchors and duplicate accept; classic ConfirmDialog stays owned and can close on a view change. Full client1191/250 passed after fixing native SelectSpace attribute fallthrough; Vue types/scoped lint/style and actual App-only Webpack zero warnings. Browser ordinary slider/tile selection, classic return retains amount3 and titanium; default off has no Wrybit chunk/assets; console0/0. Browser found source slider focus loss: explicit focus fix passed a real RED/GREEN and4 targeted checks, browser keyboard follow-up is pending. Source player/amount effect forecasts are not guessed from text; projection/converter, placement zoom, colony/party, creation/initial, remaining Or choices and mobile remain pending. Full WP03/all21 full rows remain open."
+        },
+        {
+          "kind": "native-amount-preview-and-card-intro",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/common/models/AmountPreviewModel.ts",
+            "tests/models/AmountPreview.spec.ts",
+            "tests/client/wrybit/inputs/AmountPreview.spec.ts",
+            "tests/client/wrybit/inputs/InputSourceCard.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-client-full.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-server-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-server-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-boundary.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-insulation.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-market.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-insulation-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-market-console.txt"
+          ],
+          "note": "Source AmountConverter/AmountSideTile/CardIntroBlock/SourceCardThumbnail are pure views of our typed SelectAmountModel.preview. The foreign English-title conversion rule table is not imported: our same title has several producers with different effects. Seven native producers add display-only sixth constructor metadata; existing first5arguments, all effect arrows and native SelectAmount.process independently AST-compared unchanged. toModel projects current own stock/production/card counters without executing any effect. PowerInfrastructure with Sistemas Seebeck shows an energy price without claiming a stock remainder; EnergyMarket shows deferred payment price, retaining native currency/payment choices. Native min/max/maxByDefault, selected amount, InputResponse and AI code remain owned. Known native named-card title uses own catalogue; unknown titles/names fall back, no invented source context. Full1237client/272files,36native tests across7card suites/amount/projection, Vue+server types/lint/App0warnings pass. Wrong display rate mutant rejected, exact bytes restored. Actual App1440 native Insulation/EnergyMarket projections show production4->2 and0->2, price4/energy3->5 atamount2; real keyboard/hand/classic retains2, consoles0/0/no move/DB requests, original synthetic fixture restored. Remaining general forecasts/intro/placement/undo/viewport and all21full flows remain open."
         }
       ]
     },
@@ -2168,7 +2237,7 @@
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP02",
-      "target": "src/client/wrybit/visuals/SourceCardThumbnail.vue",
+      "target": "src/client/wrybit/inputs/SourceCardThumbnail.vue",
       "status": "planned",
       "evidence": [
         {
@@ -2180,6 +2249,29 @@
             "tests/client/wrybit/visuals/visualStyles.spec.ts"
           ],
           "note": "Pure source thumbnail/intro/footer/placement/confirmation/update views. Our static/custom wire descriptions and combined title; canonical Ares controller/input response and supplied thresholds; supplied placement description only, no copied foreign gain/rule inference. Initial anchor positioning/Escape/portal cleanup; scoped CSS with private animation/tone/footer identifiers. ServerUpdateOverlay takes supplied phase/savedMessage and emits reload request; no foreign serverStatus/poller or window reload. Future input/mobile/root consumers remain pending."
+        },
+        {
+          "kind": "native-amount-preview-and-card-intro",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/common/models/AmountPreviewModel.ts",
+            "tests/models/AmountPreview.spec.ts",
+            "tests/client/wrybit/inputs/AmountPreview.spec.ts",
+            "tests/client/wrybit/inputs/InputSourceCard.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-client-full.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-server-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-server-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-boundary.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-insulation.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-market.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-insulation-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-market-console.txt"
+          ],
+          "note": "Source AmountConverter/AmountSideTile/CardIntroBlock/SourceCardThumbnail are pure views of our typed SelectAmountModel.preview. The foreign English-title conversion rule table is not imported: our same title has several producers with different effects. Seven native producers add display-only sixth constructor metadata; existing first5arguments, all effect arrows and native SelectAmount.process independently AST-compared unchanged. toModel projects current own stock/production/card counters without executing any effect. PowerInfrastructure with Sistemas Seebeck shows an energy price without claiming a stock remainder; EnergyMarket shows deferred payment price, retaining native currency/payment choices. Native min/max/maxByDefault, selected amount, InputResponse and AI code remain owned. Known native named-card title uses own catalogue; unknown titles/names fall back, no invented source context. Full1237client/272files,36native tests across7card suites/amount/projection, Vue+server types/lint/App0warnings pass. Wrong display rate mutant rejected, exact bytes restored. Actual App1440 native Insulation/EnergyMarket projections show production4->2 and0->2, price4/energy3->5 atamount2; real keyboard/hand/classic retains2, consoles0/0/no move/DB requests, original synthetic fixture restored. Remaining general forecasts/intro/placement/undo/viewport and all21full flows remain open."
         }
       ]
     },
@@ -2596,7 +2688,31 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/amount/AmountConverter.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-amount-preview-and-card-intro",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/common/models/AmountPreviewModel.ts",
+            "tests/models/AmountPreview.spec.ts",
+            "tests/client/wrybit/inputs/AmountPreview.spec.ts",
+            "tests/client/wrybit/inputs/InputSourceCard.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-client-full.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-server-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-server-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-boundary.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-insulation.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-market.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-insulation-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-market-console.txt"
+          ],
+          "note": "Source AmountConverter/AmountSideTile/CardIntroBlock/SourceCardThumbnail are pure views of our typed SelectAmountModel.preview. The foreign English-title conversion rule table is not imported: our same title has several producers with different effects. Seven native producers add display-only sixth constructor metadata; existing first5arguments, all effect arrows and native SelectAmount.process independently AST-compared unchanged. toModel projects current own stock/production/card counters without executing any effect. PowerInfrastructure with Sistemas Seebeck shows an energy price without claiming a stock remainder; EnergyMarket shows deferred payment price, retaining native currency/payment choices. Native min/max/maxByDefault, selected amount, InputResponse and AI code remain owned. Known native named-card title uses own catalogue; unknown titles/names fall back, no invented source context. Full1237client/272files,36native tests across7card suites/amount/projection, Vue+server types/lint/App0warnings pass. Wrong display rate mutant rejected, exact bytes restored. Actual App1440 native Insulation/EnergyMarket projections show production4->2 and0->2, price4/energy3->5 atamount2; real keyboard/hand/classic retains2, consoles0/0/no move/DB requests, original synthetic fixture restored. Remaining general forecasts/intro/placement/undo/viewport and all21full flows remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/amount/AmountSideTile.vue",
@@ -2608,7 +2724,31 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/amount/AmountSideTile.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-amount-preview-and-card-intro",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/common/models/AmountPreviewModel.ts",
+            "tests/models/AmountPreview.spec.ts",
+            "tests/client/wrybit/inputs/AmountPreview.spec.ts",
+            "tests/client/wrybit/inputs/InputSourceCard.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-client-full.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-server-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-server-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-boundary.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-insulation.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-market.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-insulation-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-market-console.txt"
+          ],
+          "note": "Source AmountConverter/AmountSideTile/CardIntroBlock/SourceCardThumbnail are pure views of our typed SelectAmountModel.preview. The foreign English-title conversion rule table is not imported: our same title has several producers with different effects. Seven native producers add display-only sixth constructor metadata; existing first5arguments, all effect arrows and native SelectAmount.process independently AST-compared unchanged. toModel projects current own stock/production/card counters without executing any effect. PowerInfrastructure with Sistemas Seebeck shows an energy price without claiming a stock remainder; EnergyMarket shows deferred payment price, retaining native currency/payment choices. Native min/max/maxByDefault, selected amount, InputResponse and AI code remain owned. Known native named-card title uses own catalogue; unknown titles/names fall back, no invented source context. Full1237client/272files,36native tests across7card suites/amount/projection, Vue+server types/lint/App0warnings pass. Wrong display rate mutant rejected, exact bytes restored. Actual App1440 native Insulation/EnergyMarket projections show production4->2 and0->2, price4/energy3->5 atamount2; real keyboard/hand/classic retains2, consoles0/0/no move/DB requests, original synthetic fixture restored. Remaining general forecasts/intro/placement/undo/viewport and all21full flows remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/amount/AmountSlider.vue",
@@ -9899,6 +10039,74 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-requests.txt"
           ],
           "note": "Source single-input and plain-choice tabs adapt our permanent WaitingFor RPC/poll/undo owner through typed local body/footer hosts. All-cards uses v-show for the native body; source action Or and initialCards retain own tabs. Source initial-draft dealt sections move into All cards with fallback when tabs unavailable. Source pending-player status uses our canonical public flags. Or native response indices and NativeFactory child ownership retained. PresentationHost can bind an existing owner footer and teleport view-only commands without an extra element; native payment/button DOM remains directly in the source footer for original layout selectors. Initial external target, local return and ownership-safe unregister covered. Native card/option/exact response/payment ledger/UID survive hand and repeated classic/source changes. Native polling/undo tests preserved, remount mutant rejected/exact restored. Actual App1440 normal card click, hand tab, classic checked selection and opt-in return pass; no move/DB requests, console0/0, synthetic fixture restored. Full intro/forecasts/placement/viewport and all21full flow rows remain OPEN."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/inputSourceCard.ts",
+      "sourceSha256": "aebca9fd17859c236abcc42b10a515e8e3f0a102752cacf8bc122fdf5771c297",
+      "target": "src/client/wrybit/inputs/inputSourceCard.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "package": "WP03",
+      "scope": "Native display context and verified native named-card prompt, own catalogue lookup; unknowns fall back.",
+      "evidence": [
+        {
+          "kind": "native-amount-preview-and-card-intro",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/common/models/AmountPreviewModel.ts",
+            "tests/models/AmountPreview.spec.ts",
+            "tests/client/wrybit/inputs/AmountPreview.spec.ts",
+            "tests/client/wrybit/inputs/InputSourceCard.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-client-full.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-server-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-server-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-boundary.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-insulation.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-market.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-insulation-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-market-console.txt"
+          ],
+          "note": "Source AmountConverter/AmountSideTile/CardIntroBlock/SourceCardThumbnail are pure views of our typed SelectAmountModel.preview. The foreign English-title conversion rule table is not imported: our same title has several producers with different effects. Seven native producers add display-only sixth constructor metadata; existing first5arguments, all effect arrows and native SelectAmount.process independently AST-compared unchanged. toModel projects current own stock/production/card counters without executing any effect. PowerInfrastructure with Sistemas Seebeck shows an energy price without claiming a stock remainder; EnergyMarket shows deferred payment price, retaining native currency/payment choices. Native min/max/maxByDefault, selected amount, InputResponse and AI code remain owned. Known native named-card title uses own catalogue; unknown titles/names fall back, no invented source context. Full1237client/272files,36native tests across7card suites/amount/projection, Vue+server types/lint/App0warnings pass. Wrong display rate mutant rejected, exact bytes restored. Actual App1440 native Insulation/EnergyMarket projections show production4->2 and0->2, price4/energy3->5 atamount2; real keyboard/hand/classic retains2, consoles0/0/no move/DB requests, original synthetic fixture restored. Remaining general forecasts/intro/placement/undo/viewport and all21full flows remain open."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/amount/amountConversion.ts",
+      "sourceSha256": "2cfe9580a736ba4b839dcd0e197dec86c7ce7a18c43e1cb5639aaa3211626908",
+      "target": "src/common/models/AmountPreviewModel.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "package": "WP03",
+      "scope": "Foreign title-to-effect rules are replaced, not imported. Native producers own typed display metadata; existing effects/defaults/process unchanged.",
+      "evidence": [
+        {
+          "kind": "native-amount-preview-and-card-intro",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/common/models/AmountPreviewModel.ts",
+            "tests/models/AmountPreview.spec.ts",
+            "tests/client/wrybit/inputs/AmountPreview.spec.ts",
+            "tests/client/wrybit/inputs/InputSourceCard.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-client-full.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-server-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-types-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-server-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-boundary.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-preview-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-insulation.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-market.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-insulation-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-amount-market-console.txt"
+          ],
+          "note": "Source AmountConverter/AmountSideTile/CardIntroBlock/SourceCardThumbnail are pure views of our typed SelectAmountModel.preview. The foreign English-title conversion rule table is not imported: our same title has several producers with different effects. Seven native producers add display-only sixth constructor metadata; existing first5arguments, all effect arrows and native SelectAmount.process independently AST-compared unchanged. toModel projects current own stock/production/card counters without executing any effect. PowerInfrastructure with Sistemas Seebeck shows an energy price without claiming a stock remainder; EnergyMarket shows deferred payment price, retaining native currency/payment choices. Native min/max/maxByDefault, selected amount, InputResponse and AI code remain owned. Known native named-card title uses own catalogue; unknown titles/names fall back, no invented source context. Full1237client/272files,36native tests across7card suites/amount/projection, Vue+server types/lint/App0warnings pass. Wrong display rate mutant rejected, exact bytes restored. Actual App1440 native Insulation/EnergyMarket projections show production4->2 and0->2, price4/energy3->5 atamount2; real keyboard/hand/classic retains2, consoles0/0/no move/DB requests, original synthetic fixture restored. Remaining general forecasts/intro/placement/undo/viewport and all21full flows remain open."
         }
       ]
     }

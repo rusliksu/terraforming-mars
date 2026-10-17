@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-17T10:11:53.916Z",
-  "generated_from_commit": "256ba4fee4a5e07caf7b4238fb98866762d3308c",
+  "generated_at": "2026-10-17T10:29:25.314Z",
+  "generated_from_commit": "81854e58cab844d815379098b760b221b9e72732",
   "scope": [
     ".",
     ".github",
@@ -3407,6 +3407,36 @@
         "Боты и Telegram-режим выключены по нашим правилам пресетов."
       ],
       "evidence": []
+    },
+    {
+      "id": "input-choice-bridge",
+      "label": "Правка выбора у нашего input owner",
+      "type": "library",
+      "path": "src/client/components/inputChoice.ts",
+      "role": "Передаёт только выбранную предложенную карту или игрока постоянному native selector; не формирует ответ.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/inputChoice.ts",
+          "symbol": "export type InputChoice",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/client/components/PlayerInputFactory.vue",
+          "symbol": "selectChoice(choice: InputChoice)",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/inputs/OrChoicePresentation.spec.ts",
+          "symbol": "original nested response"
+        }
+      ],
+      "constraints": [
+        "Только предложенные цвета и одиночные карты.",
+        "Native Or проверяет актуальный режим и option после nextTick."
+      ],
+      "evidence": []
     }
   ],
   "edges": [
@@ -4946,6 +4976,24 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "canonical-input-controllers",
+      "to": "input-choice-bridge",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/PlayerInputFactory.vue",
+          "symbol": "child.presentationBinding.select(choice.color)",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/client/components/PlayerInputFactory.vue",
+          "symbol": "child.presentationBinding.select(card)",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -5919,7 +5967,14 @@
     "tests/client/wrybit/create/SettingsLinkFlow.spec.ts",
     "src/client/components/create/settingsLink.ts",
     "src/client/components/create/TemplateManager.ts",
-    "tests/client/components/create/SettingsLink.spec.ts"
+    "tests/client/components/create/SettingsLink.spec.ts",
+    "src/styles/wrybit/ceo_action_section.less",
+    "src/client/wrybit/inputs/actionCards.ts",
+    "src/client/wrybit/inputs/ActionCardSections.vue",
+    "src/client/wrybit/inputs/choiceMenu.ts",
+    "src/client/wrybit/inputs/ChoiceOptionTile.vue",
+    "tests/client/wrybit/inputs/OrChoicePresentation.spec.ts",
+    "src/client/components/inputChoice.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -6058,6 +6113,7 @@
       "src/client/components/create/useBoardPreview.ts",
       "src/client/components/delta/DeltaProjectInput.vue",
       "src/client/components/help/HelpRulebooks.vue",
+      "src/client/components/inputChoice.ts",
       "src/client/components/logpanel/CardPanel.vue",
       "src/client/components/logpanel/LogMessageComponent.vue",
       "src/client/components/logpanel/logCardModel.ts",
@@ -6108,8 +6164,10 @@
       "src/client/wrybit/create/stickyBottomObserver.ts",
       "src/client/wrybit/create/wikiContent.ts",
       "src/client/wrybit/import-manifest.json",
+      "src/client/wrybit/inputs/ActionCardSections.vue",
       "src/client/wrybit/inputs/ActionStepChips.vue",
       "src/client/wrybit/inputs/AndOptions.vue",
+      "src/client/wrybit/inputs/ChoiceOptionTile.vue",
       "src/client/wrybit/inputs/DelegateFigure.vue",
       "src/client/wrybit/inputs/DeltaProjectInput.vue",
       "src/client/wrybit/inputs/OrOptions.vue",
@@ -6135,9 +6193,11 @@
       "src/client/wrybit/inputs/SelectSpace.vue",
       "src/client/wrybit/inputs/SetupSummary.vue",
       "src/client/wrybit/inputs/ShiftAresGlobalParameters.vue",
+      "src/client/wrybit/inputs/actionCards.ts",
       "src/client/wrybit/inputs/actionStep.ts",
       "src/client/wrybit/inputs/amount/AmountSlider.vue",
       "src/client/wrybit/inputs/choiceBlock.ts",
+      "src/client/wrybit/inputs/choiceMenu.ts",
       "src/client/wrybit/inputs/colony/ColonyPlanet.vue",
       "src/client/wrybit/inputs/colony/planetAppearance.ts",
       "src/client/wrybit/inputs/orOptionsShortLabels.ts",
@@ -6559,6 +6619,7 @@
       "src/styles/wrybit/catalog/header.less",
       "src/styles/wrybit/catalog/responsive.less",
       "src/styles/wrybit/catalog/results.less",
+      "src/styles/wrybit/ceo_action_section.less",
       "src/styles/wrybit/choice_block.less",
       "src/styles/wrybit/colony_choice.less",
       "src/styles/wrybit/column_overlay.less",
@@ -6671,6 +6732,7 @@
       "tests/client/wrybit/inputs/InitialCardsPresentation.spec.ts",
       "tests/client/wrybit/inputs/NestedPresentation.spec.ts",
       "tests/client/wrybit/inputs/NestedSaveCompletion.spec.ts",
+      "tests/client/wrybit/inputs/OrChoicePresentation.spec.ts",
       "tests/client/wrybit/inputs/OverpaymentCompletion.spec.ts",
       "tests/client/wrybit/inputs/PartyPresentation.spec.ts",
       "tests/client/wrybit/inputs/PaymentPresentation.spec.ts",

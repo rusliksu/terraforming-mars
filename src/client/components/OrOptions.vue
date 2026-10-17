@@ -31,7 +31,7 @@
 
 <script lang="ts">
 
-import {defineComponent, inject, provide} from 'vue';
+import {defineComponent, inject, provide, shallowRef} from 'vue';
 import {createInputHosts, INPUT_HOSTS} from '@/client/wrybit/shell/inputHosts';
 import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
 import PresentationHost from '@/client/wrybit/inputs/PresentationHost.vue';
@@ -46,6 +46,7 @@ import {getPreferences} from '@/client/utils/PreferencesManager';
 import {InputResponse, OrOptionsResponse} from '@/common/inputs/InputResponse';
 import {Message} from '@/common/logs/Message';
 import {SpaceId} from '@/common/Types';
+import type {InputChoice, InputChoiceEditor} from './inputChoice';
 
 let unique = 0;
 type QuickGreeneryHandler = {tile: HTMLElement, handler: (event: Event) => void};
@@ -60,7 +61,8 @@ export default defineComponent({
       provide(INPUT_FOOTER, footerHost.target);
     }
     return {inputHost: inject(INPUT_HOSTS, undefined)?.target, asTabs, footerHost,
-      childHost: createInputHosts(), orPresentation: useInputPresentation('or'), saveSession: useSaveSession()};
+      childHost: createInputHosts(), orPresentation: useInputPresentation('or'), saveSession: useSaveSession(),
+      inputfactory: shallowRef<InputChoiceEditor>()};
   },
   props: {
     playerView: {
@@ -92,10 +94,11 @@ export default defineComponent({
       return {
         asTabs: this.asTabs, playerView: this.playerView, playerinput: this.playerinput, showsave: this.showsave, showtitle: this.showtitle,
         displayedOptions: this.displayedOptions, selectedOption: this.selectedOption, selectedIdx: this.selectedIdx,
+        selectedChoice: this.inputfactory?.getChoice(),
         radioElementName: this.radioElementName, childHost: this.childHost, footerHost: this.footerHost,
         select: (option) => {
           this.selectedOption = option;
-        }, showChildSaveButton: (option) => this.showChildSaveButton(option),
+        }, selectChoice: this.selectChoice, showChildSaveButton: (option) => this.showChildSaveButton(option),
         registerLabel: (index, element) => {
           if (element === null) {
             this.presentationLabels.delete(index);
@@ -161,6 +164,16 @@ export default defineComponent({
     },
   },
   methods: {
+    async selectChoice(option: PlayerInputModel, choice: InputChoice) {
+      if (!this.displayedOptions.includes(option) || this.orPresentation === undefined) {
+        return;
+      }
+      this.selectedOption = option;
+      await this.$nextTick();
+      if (this.selectedOption === option && this.orPresentation !== undefined) {
+        this.inputfactory?.selectChoice(choice);
+      }
+    },
     clearQuickGreeneryHandlers() {
       for (const entry of this.quickGreeneryHandlers) {
         entry.tile.removeEventListener('click', entry.handler);

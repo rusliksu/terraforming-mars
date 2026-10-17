@@ -30,23 +30,29 @@ import ShiftAresGlobalParameters from '@/client/wrybit/inputs/ShiftAresGlobalPar
 import SelectInitialCards from '@/client/wrybit/inputs/SelectInitialCards.vue';
 import SelectParty from '@/client/wrybit/inputs/SelectParty.vue';
 import SelectColony from '@/client/wrybit/inputs/SelectColony.vue';
+import CreateGameForm from '@/client/wrybit/create/CreateGameForm.vue';
+import PlayerCube from '@/client/wrybit/visuals/common/PlayerCube.vue';
+import SeatIcon from '@/client/wrybit/visuals/common/SeatIcon.vue';
+import NumberStepper from '@/client/wrybit/create/NumberStepper.vue';
+import SwitchInput from '@/client/wrybit/create/SwitchInput.vue';
 import type {WrybitViews} from './presentationViews';
 
 const props = defineProps<{screen: string}>();
 const emit = defineEmits<{classic: []; views: [views: WrybitViews]}>();
-onMounted(() => emit('views', {cards: markRaw(Catalog), playerHome: markRaw(PlayerHome), inputs: {
-  paymentForm: markRaw(PaymentForm), projectCard: markRaw(SelectProjectCardToPlay),
-  or: markRaw(OrOptions), and: markRaw(AndOptions),
-  card: markRaw(SelectCard),
-  amount: markRaw(SelectAmount), option: markRaw(SelectOption), delegate: markRaw(SelectDelegate),
-  resource: markRaw(SelectResource), resources: markRaw(SelectResources), productionToLose: markRaw(SelectProductionToLose),
-  player: markRaw(SelectPlayer), globalEvent: markRaw(SelectGlobalEvent), claimedUndergroundToken: markRaw(SelectClaimedUndergroundToken),
-  deltaProject: markRaw(DeltaProjectInput),
-  space: markRaw(SelectSpace), aresGlobalParameters: markRaw(ShiftAresGlobalParameters),
-  initialCards: markRaw(SelectInitialCards),
-  party: markRaw(SelectParty),
-  colony: markRaw(SelectColony),
-}}));
+onMounted(() => emit('views', {cards: markRaw(Catalog), playerHome: markRaw(PlayerHome), create: markRaw(CreateGameForm),
+  createControls: {cube: markRaw(PlayerCube), seat: markRaw(SeatIcon), stepper: markRaw(NumberStepper), toggle: markRaw(SwitchInput)}, inputs: {
+    paymentForm: markRaw(PaymentForm), projectCard: markRaw(SelectProjectCardToPlay),
+    or: markRaw(OrOptions), and: markRaw(AndOptions),
+    card: markRaw(SelectCard),
+    amount: markRaw(SelectAmount), option: markRaw(SelectOption), delegate: markRaw(SelectDelegate),
+    resource: markRaw(SelectResource), resources: markRaw(SelectResources), productionToLose: markRaw(SelectProductionToLose),
+    player: markRaw(SelectPlayer), globalEvent: markRaw(SelectGlobalEvent), claimedUndergroundToken: markRaw(SelectClaimedUndergroundToken),
+    deltaProject: markRaw(DeltaProjectInput),
+    space: markRaw(SelectSpace), aresGlobalParameters: markRaw(ShiftAresGlobalParameters),
+    initialCards: markRaw(SelectInitialCards),
+    party: markRaw(SelectParty),
+    colony: markRaw(SelectColony),
+  }}));
 
 const hasBackground = computed(() => [
   'start-screen', 'create-game-form', 'game-home', 'player-home', 'spectator-home',

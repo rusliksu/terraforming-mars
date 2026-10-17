@@ -1,0 +1,491 @@
+// Invisible copy of the name: pushes the marker exactly behind the text
+.create-game-player-name-ghost {
+  visibility: hidden;
+}
+
+.create-game-player-name {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  font-family: inherit;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  font-size: 17px;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  &:focus {
+    outline: 2px solid @highlight-gold;
+    outline-offset: 0;
+  }
+}
+
+.create-game-first {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  color: @create-game-dim;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &--selected {
+    background: @highlight-gold;
+    color: #222;
+    font-weight: bold;
+  }
+}
+
+.create-game-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px;
+}
+
+// Swatch = player cube (PlayerCube.vue); the chosen one is marked like every selection (selection_highlight.less)
+.create-game-swatch {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+  transition: transform 160ms ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  &--selected {
+    background: fade(@selection-color, 20%);
+    box-shadow: 0 0 0 2px @selection-color, 0 0 8px 2px fade(@selection-color, 55%);
+  }
+
+  &:disabled {
+    opacity: 0.25;
+    filter: saturate(0.4);
+    cursor: not-allowed;
+  }
+}
+
+.create-game-player-extra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  font-size: 14px;
+}
+
+.create-game-player-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+// Sticks to the bottom edge while the page (or the players column) is too short for it.
+// Same distance as CREATE_CARD_BOTTOM_PX in CreateGameForm.vue, which detects the sticking.
+@create-game-create-bottom: 12px;
+
+.create-game-create-card {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: sticky;
+  bottom: @create-game-create-bottom;
+  z-index: 5;
+  margin-bottom: 0;
+  background: @create-game-surface-strong;
+  transition: box-shadow 0.2s;
+
+  // Lies over the content: the shadow shows that it sits in front
+  &--stuck {
+    box-shadow: .create-game-float-shadow(-1)[@shadow], 0 0 0 1px rgba(255, 255, 255, 0.06);
+  }
+}
+
+// Expansion icon in a fixed square size (chips, rows, summary)
+.create-game-icon-size(@size) {
+  width: @size;
+  height: @size;
+  margin: 0;
+  background-size: @size @size;
+}
+
+// Summary of the game as chips (like the selectable tiles, but plain display)
+.create-game-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: @create-game-gap-inner;
+}
+
+.create-game-summary-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: @create-game-chip-background;
+  font-size: 14px;
+  color: #eee;
+
+  .create-game-expansion-icon {
+    .create-game-icon-size(16px);
+  }
+
+  // White like the chip text: the icon is part of the label here, not a hint
+  .seat-icon {
+    color: #fff;
+  }
+}
+
+// Linked chip (board → its statistics page): looks like the others, a little brighter on hover
+a.create-game-summary-chip {
+  text-decoration: none;
+}
+
+// Table rows (game list of the statistics): smaller chips with less space, so a row stays low
+.create-game-summary--compact {
+  gap: 4px;
+
+  .create-game-summary-chip {
+    gap: 4px;
+    padding: 1px 8px;
+    font-size: 12px;
+
+    .create-game-expansion-icon {
+      .create-game-icon-size(13px);
+    }
+  }
+
+  .create-game-board-hexagon {
+    width: 11px;
+    height: 13px;
+  }
+}
+
+a.create-game-summary-chip:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.create-game-create-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .create-game-create {
+    flex: 1;
+    margin: 0;
+  }
+}
+
+// ---------- icons, warnings, popup ----------
+.create-game-expansion-icon {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  background-size: 30px 30px;
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  margin: 5px 10px 5px 0;
+}
+
+.form-input::placeholder {
+  color: #888;
+  opacity: 1;
+}
+
+// Errors and warnings of the settings, under the Create button (ValidationProblems.vue)
+.create-game-validation {
+  display: flex;
+  flex-direction: column;
+  gap: @create-game-gap-inner;
+  // Long lists must not push the button out of the sticky card
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.create-game-validation-box {
+  padding: 8px 12px;
+  border: 1px solid;
+  border-radius: @create-game-radius-small;
+  font-size: 14px;
+  line-height: 1.35;
+
+  // Blocks creating the game
+  &--error {
+    border-color: fade(#e5484d, 60%);
+    background: fade(#e5484d, 14%);
+
+    .create-game-validation-title {
+      color: #ff8a8d;
+    }
+  }
+
+  // Only a hint, the game can still be created
+  &--warning {
+    border-color: fade(@highlight-gold, 50%);
+    background: fade(@highlight-gold, 10%);
+
+    .create-game-validation-title {
+      color: @highlight-gold;
+    }
+  }
+
+  a {
+    color: lighten(@bg_action, 18%);
+  }
+}
+
+.create-game-validation-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.create-game-validation-problems {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  p {
+    margin: 0;
+  }
+}
+
+// Affected items (cards, colonies …) on their own line under the sentence
+.create-game-validation-items {
+  display: block;
+  margin-top: 2px;
+  color: @create-game-dim;
+}
+
+// ---------- narrower ----------
+// One column: the column wrappers dissolve, the cards follow their order (style="order: …")
+@media only screen and (max-width: @create-game-narrow) {
+  .create-game-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  // Right column dissolves: players on top (who plays, then how), Create card at the end
+  .create-game-side {
+    display: contents;
+  }
+
+  .create-game-players {
+    order: -1;
+  }
+
+  // Page scrolls instead of the list: nothing slides under the head, so it stays in place
+  .create-game-players-scroll {
+    overflow: visible;
+  }
+
+  .create-game-players-head {
+    position: relative;
+    background: none; // no own surface needed: it is part of the card again
+  }
+
+  // Create card at the end of the page; until it gets there it sticks to the bottom edge (see above)
+  .create-game-create-card {
+    order: 1;
+  }
+
+  .create-game-segmented button {
+    padding: 6px 4px;
+    font-size: 14px;
+  }
+}
+
+// Phone: title with language/settings on top, file buttons below – the header card grows in height for that
+@media only screen and (max-width: @card-list-phone) {
+  .card-list-header.create-game-head {
+    flex-wrap: wrap;
+    row-gap: 8px;
+    height: auto;
+    min-height: var(--card-list-header);
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .create-game-head-actions {
+    order: 1;
+    flex-basis: 100%;
+    margin-left: 0;
+  }
+}
+
+// ---------- cards as preview (CardPreviewGrid.vue): excluded/included cards, changes of the custom lists ----------
+@create-game-card-zoom: 0.8; // like the buy columns of the start selection
+@create-game-card-zoom-phone: 0.6; // two cards side by side inside the card padding
+
+.create-game-card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+
+  .cardbox {
+    zoom: @create-game-card-zoom;
+  }
+
+  // Space on top for the cost coin and tags sticking out; spacing comes from the gap
+  .card-container {
+    margin: 15px 0 0;
+  }
+}
+
+// Search matches: one row that scrolls sideways
+.create-game-card-grid--row {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  // Room for the cost coin sticking out on the left, the highlight outline and the scrollbar
+  padding: 0 8px 8px;
+  overscroll-behavior-x: contain;
+
+  .cardbox {
+    flex: none;
+  }
+}
+
+.create-game-card-grid-item {
+  position: relative;
+
+  // Pickable card: pointer and, under the pointer or keyboard highlight, an outline in the CTA color
+  &--selectable {
+    cursor: pointer;
+
+    .card-container {
+      transition: box-shadow 0.15s;
+    }
+  }
+
+  &--active .card-container {
+    box-shadow: 0 0 0 3px @selection-color, 0 0 8px 2px fade(@selection-color, 55%);
+  }
+
+  // Removed from the default pool: still recognizable, but clearly out
+  &--removed .card-container {
+    opacity: 0.45;
+    filter: grayscale(0.8);
+  }
+}
+
+// Close button centered on the top edge: the corners belong to the cost coin and the tags
+.create-game-card-grid-remove {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 2;
+  transform: translateX(-50%);
+}
+
+// Phone: two cards side by side
+@media only screen and (max-width: @card-list-phone) {
+  .create-game-card-grid {
+    justify-content: center;
+
+    .cardbox {
+      zoom: @create-game-card-zoom-phone;
+    }
+  }
+}
+
+// ---------- custom lists (CustomCardListCard.vue) ----------
+.create-game-custom-list .create-game-card-head {
+  flex-wrap: wrap;
+}
+
+.create-game-custom-list-mode {
+  margin-left: auto;
+}
+
+// Editor inside the card instead of the popup
+.module-item-filter--embedded {
+  .corporations-filter-toolbox-cont .corporations-filter-toolbox {
+    border-radius: @create-game-radius-small;
+    background: @create-game-chip-background;
+
+    input {
+      background: transparent;
+    }
+  }
+
+  .corporations-filter {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: @create-game-gap-card;
+    margin-top: 10px;
+  }
+
+  .corporations-filter-group {
+    width: auto;
+    margin: 0;
+  }
+
+  // Module icons on the text line, so checkbox rows keep the same height
+  .form-checkbox .create-game-expansion-icon {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    margin: 0 0 0 4px;
+    background-size: 18px 18px;
+    vertical-align: -3px;
+  }
+}
+
+// ---------- board preview (CreateGameBoardPreview.vue) ----------
+.create-game-board-preview {
+  position: relative;
+  margin-top: @create-game-gap-group;
+}
+
+.create-game-board-preview-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: @create-game-control-height;
+  font-weight: 500;
+}
+
+// Real button with the reload icon, bottom right at the height of the board's footer (ocean counter)
+.create-game-board-preview-reroll {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding: 0;
+}
+
+// A new draw is loading: keep the old board, slightly faded, instead of an empty gap
+.create-game-board-preview--loading {
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+// Nothing to hide on an empty board
+.create-game-board-preview .hide-tile-button-container {
+  display: none;
+}

@@ -1,0 +1,16 @@
+.wrybit-create-styles() {
+  @page-content-edge: 20px;
+  @page-content-edge-narrow: 16px;
+  @card-list-phone: 600px;
+  .page-content() {
+    box-sizing: border-box;
+    padding: @page-content-edge;
+    @media only screen and (max-width: 820px) {
+      padding: @page-content-edge-narrow;
+    }
+  }
+  @import "./create/part-1.less";
+  @import "./create/part-2.less";
+  @import "./create/part-3.less";
+  @import "./create/native_editors.less";
+}

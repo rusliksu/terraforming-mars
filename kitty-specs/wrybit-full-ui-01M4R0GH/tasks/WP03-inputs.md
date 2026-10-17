@@ -25,6 +25,9 @@ execution_mode: code_change
 owned_files:
 - src/client/wrybit/inputs/**
 - src/client/wrybit/create/**
+- src/client/components/create/CreateGameForm.vue
+- src/client/components/create/createGamePresentation.ts
+- tests/client/components/create/**
 - src/client/wrybit/visuals/common/PlayerCube.vue
 - tests/client/wrybit/visuals/PlayerCube.spec.ts
 - tests/client/wrybit/inputs/**
@@ -74,6 +77,8 @@ owned_files:
 - assets/wrybit/figures/**
 - assets/wrybit/colony-planets/**
 - src/styles/wrybit/colony_choice.less
+- src/styles/wrybit/create/**
+- src/styles/wrybit/create_game.less
 - src/styles/wrybit/visuals.less
 - src/client/wrybit/import-manifest.json
 - docs/codemap/codemap.json
@@ -154,3 +159,5 @@ Input view cohort proof: native amount/option/delegate/player/resource/resources
 Initial selection scoped proof: source four columns/summary use our permanent selectors and existing calculations/validation/response. Twelve setup checks, full1194client/251files, types/scoped lint/style and App Webpack0warnings. Actual App1920x1080 ordinary picks show50,+3,-5,48; classic45/48 retained, console0/0. Source pointer+keyboard focus follow-up now passes in browser5->classic5. Local fixture GET only, no Start/move/DB. T009-T012/full rows remain OPEN: creation, colony/party, grouping/forecast/zoom/undo and remaining packages required.
 
 Party/colony scoped proof: source cards/figures/planet assets use our agendas and colony metadata, retain native owners/responses and refresh. Actual App ordinary choices survive classic; console0/0. Full1197client/254files and types/lint/style/build passed; persona follow-up has RED/GREEN, affected3tests and rebuilt App. No foreign forecasts or trade rules. T009-T012 and full UI rows remain OPEN.
+
+Creation presentation scoped proof: all62 readonly projected fields and28canonical expansions, source cards/columns/widgets/header icons/wiki; native methods/defaults/watchers/serializer/AI retained. Permanent native editors/ref/filter search/config survive layout changes; source submit body byte-equals native. One mode-key mutation killed then exact restoration green. Full1200client/256files, types/scoped lint/style/App build; real1920desktop/390phone, classic-return edits retained, console0/0, fresh default-off no optional assets, GET-only fixture. New source files below1000lines; existing native legacy owner remains large with unchanged methods. Grouping/content/board preview/share/inline custom lists and full rows/T009-T012 remain OPEN.

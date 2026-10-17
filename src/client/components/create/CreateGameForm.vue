@@ -1,5 +1,7 @@
 <template>
-        <div id="create-game" class="create-game">
+        <div id="create-game" class="create-game" :class="{'create-game--wrybit': creationPresentation !== undefined}">
+<component v-if="creationPresentation !== undefined" :is="creationPresentation" :binding="creationBinding"/>
+<template v-else>
             <h1><span v-i18n>{{ constants.APP_NAME }}</span> — <span v-i18n>Create New Game</span></h1>
             <div class="create-game-form create-game-panel create-game--block">
 
@@ -75,18 +77,7 @@
                                 </label>
 
                                 <template v-if="expansions.venusPhase2">
-                                  <div class="create-game-subsection-label" style="margin-top: 4px;">
-                                    <label for="custom-venus-board-code" v-i18n>Custom Venus Phase 2 board code (optional)</label>
-                                    <textarea
-                                      id="custom-venus-board-code"
-                                      rows="2"
-                                      style="width: 100%; font-family: monospace; font-size: 11px;"
-                                      placeholder="Paste a TMBS1… code from the Venus map editor"
-                                      v-model="customVenusSurfaceBoardCodeInput"
-                                      @input="applyCustomVenusSurfaceBoardCode"></textarea>
-                                    <div v-if="customVenusSurfaceBoardCodeError" style="color: #e74c3c; font-size: 11px;">{{ customVenusSurfaceBoardCodeError }}</div>
-                                    <div v-else-if="customVenusSurfaceBoardName !== ''" style="color: #6c6; font-size: 11px;" v-i18n>Loaded custom Venus board: {{ customVenusSurfaceBoardName }}</div>
-                                  </div>
+                                  <PresentationHost :hosts="creationHosts.venus"/>
                                 </template>
                             </div>
 
@@ -186,18 +177,7 @@
                                   <span v-i18n>Standard Project Variant #1</span>&nbsp;<a :href="wikiUrls.moonStandardProjectVariant" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                               </label>
 
-                              <div class="create-game-subsection-label" style="margin-top: 4px;">
-                                <label for="custom-moon-board-code" v-i18n>Custom Moon board code (optional)</label>
-                                <textarea
-                                  id="custom-moon-board-code"
-                                  rows="2"
-                                  style="width: 100%; font-family: monospace; font-size: 11px;"
-                                  placeholder="Paste a TMBS1… code from the Moon map editor"
-                                  v-model="customMoonBoardCodeInput"
-                                  @input="applyCustomMoonBoardCode"></textarea>
-                                <div v-if="customMoonBoardCodeError" style="color: #e74c3c; font-size: 11px;">{{ customMoonBoardCodeError }}</div>
-                                <div v-else-if="customMoonBoardName !== ''" style="color: #6c6; font-size: 11px;" v-i18n>Loaded custom Moon board: {{ customMoonBoardName }}</div>
-                              </div>
+                              <PresentationHost :hosts="creationHosts.moon"/>
                             </div>
 
                             <input type="checkbox" name="pathfinders" id="pathfinders-checkbox" v-model="expansions.pathfinders">
@@ -303,7 +283,7 @@
                               </label>
                             </div>
 
-                            <div v-for="boardName in boardChoices" :key="boardName">
+                            <div v-for="boardName in boards" :key="boardName">
                               <div v-if="boardName==='utopia planitia'" class="create-game-subsection-label" v-i18n>Fan-made</div>
                               <input type="radio" :value="boardName" name="board" v-model="board" :id="boardName+'-checkbox'">
                               <label :for="boardName+'-checkbox'" class="expansion-button">
@@ -315,18 +295,7 @@
                               </label>
                             </div>
 
-                            <div class="create-game-subsection-label" style="margin-top: 8px;">
-                              <label for="custom-map-code" v-i18n>Custom map code</label>
-                              <textarea
-                                id="custom-map-code"
-                                rows="2"
-                                style="width: 100%; font-family: monospace; font-size: 11px;"
-                                placeholder="Paste a TMB3… code from the map editor"
-                                v-model="customBoardCodeInput"
-                                @input="applyCustomBoardCode"></textarea>
-                              <div v-if="customBoardCodeError" style="color: #e74c3c; font-size: 11px;">{{ customBoardCodeError }}</div>
-                              <div v-else-if="customBoardCode !== undefined" style="color: #6c6; font-size: 11px;" v-i18n>Loaded custom map: {{ customBoardName }}</div>
-                            </div>
+                            <PresentationHost :hosts="creationHosts.mars"/>
                         </div>
 
                         <div class="create-game-page-column">
@@ -374,6 +343,12 @@
                             <label for="undo-checkbox">
                                 <span v-i18n>Undo action</span>&nbsp;<a :href="wikiUrls.allowUndo" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                             </label>
+                            <div v-if="undoOption">
+                              <span v-i18n>Undo is now in best effort support.</span>
+                              <a href="https://github.com/terraforming-mars/terraforming-mars/discussions/7647" target="_blank">&#9432;</a>
+                              <br>
+                              <span v-i18n>No effort will be spent to fix it.</span>
+                            </div>
                             <input type="checkbox" v-model="undoStepOption" id="undo-step-checkbox">
                             <label for="undo-step-checkbox">
                                 <span v-i18n>Undo one step (experimental)</span>&nbsp;<a :href="wikiUrls.undoOneStep" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
@@ -438,15 +413,9 @@
                                 <span v-i18n>Private hands</span>
                             </label>
 
-                            <input type="checkbox" v-model="noEloGame" id="noEloGame-checkbox" :disabled="hasAiPlayers">
+                            <input type="checkbox" v-model="noEloGame" id="noEloGame-checkbox">
                             <label for="noEloGame-checkbox">
                                 <span v-i18n>Training game (no ELO)</span>
-                                <span v-if="hasAiPlayers" class="create-game-elo-ai-hint">- enforced with AI players</span>
-                            </label>
-
-                            <input type="checkbox" v-model="aiAnalysis" id="aiAnalysis-checkbox">
-                            <label for="aiAnalysis-checkbox">
-                                <span v-i18n>Analysis game (rate AI decisions)</span>
                             </label>
 
                             <input type="checkbox" v-model="turnBasedGame" id="turnBasedGame-checkbox">
@@ -622,7 +591,39 @@
                             </label>
                         </div>
 
-                        <div class="create-game-players-cont">
+                        <PresentationHost :hosts="creationHosts.players"/>
+                    </div>
+                </div>
+
+                <div class="create-game-action-row">
+                    <div class="create-game-action">
+                        <label for="settings-file">
+                            <div class="btn btn-primary btn-action btn-lg"><i class="icon icon-upload"></i></div>
+
+                        </label>
+
+                        <label>
+                            <div @click="downloadSettings()" class="btn btn-primary btn-action btn-lg"><i class="icon icon-download"></i></div>
+                        </label>
+
+                        <AppButton class="create-game-action-gap" title="Reset" size="big" @click="resetSettings"/>
+                        <AppButton class="create-game-action-gap" title="Create game" size="big" @click="createGame" :disabled="hasBlockingValidationErrors"/>
+                        <span v-if="hasBlockingValidationErrors" class="create-game-custom-preludes-warning create-game-validation-blocker" @click="showValidationErrors = true">&#9888;&#xFE0E;</span>
+                        <span v-else-if="hasValidationProblems" class="create-game-validation-warning" @click="showValidationErrors = true">&#9888;&#xFE0F;</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="changelog"><a :href="wikiUrls.changelog" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank"><u v-i18n>Read our changelog to get the latest updates.</u></a></div>
+            <div class="discord-invite">
+              (<span v-i18n>Looking for people to play with</span>? <a :href="constants.DISCORD_INVITE" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank"><u v-i18n>Join us on Discord</u></a>.)
+            </div>
+
+            <PresentationHost v-for="kind in filterKinds" :key="kind" :hosts="creationHosts[kind]"/>
+
+
+</template>
+<InputPortal :target="creationHosts.players.target.value"><div class="create-game-players-cont">
                             <div class="create-game-page-column">
                                 <h4 v-i18n>Players</h4>
                             </div>
@@ -630,8 +631,9 @@
                                 <div class="columns">
                                   <template v-for="(newPlayer, index) in getPlayers()" :key="index">
                                     <div>
-                                      <div :class="'form-group col6 create-game-player '+getPlayerContainerColorClass(newPlayer.color)">
-                                          <div class="create-game-profile-picker" @click.stop>
+                                      <div :class="['form-group col6 create-game-player', getPlayerContainerColorClass(newPlayer.color), creationControls ? 'create-game-player--' + newPlayer.color : '', {'create-game-player--ai': creationControls && newPlayer.isBot}]">
+                                          <div class="create-game-profile-picker" :class="{'create-game-player-top': creationControls}" @click.stop>
+                                              <span v-if="creationControls" class="create-game-player-position"><component :is="creationControls.seat" :kind="newPlayer.isBot ? 'ai' : 'human'" :size="20"/>{{ index + 1 }}</span>
                                               <input
                                                 class="form-input form-inline create-game-player-name"
                                                 :class="{'is-open': isPlayerProfilePickerOpen(index)}"
@@ -681,12 +683,13 @@
                                                   </div>
                                               </div>
                                           </div>
-                                          <div class="create-game-page-color-row">
+                                          <div class="create-game-page-color-row" :class="{'create-game-swatches': creationControls}">
                                               <template v-for="(color, colorIndex) in getPlayerPaletteColors(newPlayer)" :key="color">
                                                 <div :class="{'create-game-color-custom-start': colorIndex === DEFAULT_PLAYER_COLORS.length}">
                                                   <input type="radio" :value="color" :name="'playerColor' + (index + 1)" :checked="newPlayer.color === color" :disabled="expansions.conglomerates || isPlayerColorTaken(newPlayer, color)" :id="'radioBox' + color + (index + 1)" @change="applyDefaultPlayerColor(newPlayer, color)">
-                                                  <label :for="'radioBox' + color + (index + 1)" :title="getColorTitle(color)">
-                                                      <div :class="'create-game-colorbox '+getPlayerCubeColorClass(color)"></div>
+                                                  <label :for="'radioBox' + color + (index + 1)" :title="getColorTitle(color)" :class="{'create-game-swatch': creationControls, 'create-game-swatch--selected': creationControls && newPlayer.color === color}">
+                                                      <component v-if="creationControls" :is="creationControls.cube" :color="color" :view="newPlayer.color === color ? 'slight' : 'top'" :size="newPlayer.color === color ? 17 : 16" :animated="true"/>
+                                                      <div v-else :class="'create-game-colorbox '+getPlayerCubeColorClass(color)"></div>
                                                   </label>
                                                 </div>
                                               </template>
@@ -701,32 +704,25 @@
                                           </div>
                                           <div>
                                               <!-- <template v-if="beginnerOption"> -->
-                                                  <label v-if="isBeginnerToggleEnabled()" class="form-switch form-inline create-game-beginner-option-label">
-                                                      <input type="checkbox" v-model="newPlayer.beginner">
+                                                  <label v-if="isBeginnerToggleEnabled()" class="form-switch form-inline create-game-beginner-option-label" :class="{'create-game-player-toggle': creationControls}">
+                                                      <component v-if="creationControls" :is="creationControls.toggle" v-model="newPlayer.beginner" ariaLabel="Beginner?"/>
+                                                      <input v-else type="checkbox" v-model="newPlayer.beginner">
                                                       <i class="form-icon"></i> <span v-i18n>Beginner?</span>&nbsp;<a :href="wikiUrls.beginnerCorporation" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                                                   </label>
-                                                  <label v-if="botGame" class="form-switch form-inline" style="margin-top: 8px;">
-                                                      <input type="checkbox" v-model="newPlayer.isBot">
+                                                  <label v-if="botGame" class="form-switch form-inline" style="margin-top: 8px;" :class="{'create-game-player-toggle': creationControls}">
+                                                      <component v-if="creationControls" :is="creationControls.toggle" :modelValue="newPlayer.isBot ?? false" @update:modelValue="newPlayer.isBot = $event" ariaLabel="Bot"/>
+                                                      <input v-else type="checkbox" v-model="newPlayer.isBot">
                                                       <i class="form-icon"></i> <span>Bot</span>
                                                   </label>
-                                                  <label class="form-switch form-inline create-game-ai-option-label">
-                                                      <input type="checkbox" :checked="newPlayer.aiLevel !== undefined" @change="toggleAiPlayer(newPlayer, index, $event)">
-                                                      <i class="form-icon"></i> <span>AI</span>
-                                                  </label>
-                                                  <label v-if="newPlayer.aiLevel !== undefined" class="form-label create-game-ai-level">
-                                                      <select class="form-select form-inline" v-model="newPlayer.aiLevel">
-                                                          <option value="easy">AI easy</option>
-                                                          <option value="normal">AI normal</option>
-                                                          <option value="hard">AI hard</option>
-                                                      </select>
-                                                  </label>
 
-                                                  <label class="form-label">
-                                                      <input type="number" class="form-input form-inline player-handicap" value="0" min="0" :max="10" v-model.number="newPlayer.handicap" >
+                                                  <label class="form-label" :class="{'create-game-player-toggle': creationControls}">
+                                                      <component v-if="creationControls" :is="creationControls.stepper" v-model="newPlayer.handicap" :min="0" :max="10"/>
+                                                      <input v-else type="number" class="form-input form-inline player-handicap" value="0" min="0" :max="10" v-model.number="newPlayer.handicap" >
                                                       <i class="form-icon"></i><span v-i18n>TR Boost</span>&nbsp;<a :href="wikiUrls.trBoost" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                                                   </label>
-                                                  <label v-if="expansions.prelude" class="form-label">
-                                                      <input type="number" class="form-input form-inline player-handicap" value="2" min="0" :max="2" v-model.number="newPlayer.preludeHandicap" >
+                                                  <label v-if="expansions.prelude" class="form-label" :class="{'create-game-player-toggle': creationControls}">
+                                                      <component v-if="creationControls" :is="creationControls.stepper" :modelValue="newPlayer.preludeHandicap ?? 2" :min="0" :max="2" @update:modelValue="newPlayer.preludeHandicap = $event"/>
+                                                      <input v-else type="number" class="form-input form-inline player-handicap" value="2" min="0" :max="2" v-model.number="newPlayer.preludeHandicap" >
                                                       <i class="form-icon"></i><span v-i18n>Preludes</span>
                                                   </label>
                                               <!-- </template> -->
@@ -757,35 +753,45 @@
                                   </template>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="create-game-action-row">
-                    <div class="create-game-action">
-                        <label>
-                            <div class="btn btn-primary btn-action btn-lg"><i class="icon icon-upload"></i></div>
-                            <input style="display: none" type="file" accept=".json" id="settings-file" ref="file" @change="uploadSettings()">
-                        </label>
-
-                        <label>
-                            <div @click="downloadSettings()" class="btn btn-primary btn-action btn-lg"><i class="icon icon-download"></i></div>
-                        </label>
-
-                        <AppButton class="create-game-action-gap" title="Reset" size="big" @click="resetSettings"/>
-                        <AppButton class="create-game-action-gap" title="Create game" size="big" @click="createGame" :disabled="hasBlockingValidationErrors"/>
-                        <span v-if="hasBlockingValidationErrors" class="create-game-custom-preludes-warning create-game-validation-blocker" @click="showValidationErrors = true">&#9888;&#xFE0E;</span>
-                        <span v-else-if="hasValidationProblems" class="create-game-validation-warning" @click="showValidationErrors = true">&#9888;&#xFE0F;</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="changelog"><a :href="wikiUrls.changelog" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank"><u v-i18n>Read our changelog to get the latest updates.</u></a></div>
-            <div class="discord-invite">
-              (<span v-i18n>Looking for people to play with</span>? <a :href="constants.DISCORD_INVITE" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank"><u v-i18n>Join us on Discord</u></a>.)
-            </div>
-
-            <CorporationsFilter
+                        </div></InputPortal>
+<InputPortal :target="creationHosts.mars.target.value"><div class="create-game-subsection-label" style="margin-top: 8px;">
+                              <label for="custom-map-code" v-i18n>Custom map code</label>
+                              <textarea
+                                id="custom-map-code"
+                                rows="2"
+                                style="width: 100%; font-family: monospace; font-size: 11px;"
+                                placeholder="Paste a TMB3… code from the map editor"
+                                v-model="customBoardCodeInput"
+                                @input="applyCustomBoardCode"></textarea>
+                              <div v-if="customBoardCodeError" style="color: #e74c3c; font-size: 11px;">{{ customBoardCodeError }}</div>
+                              <div v-else-if="customBoardCode !== undefined" style="color: #6c6; font-size: 11px;" v-i18n>Loaded custom map: {{ customBoardName }}</div>
+                            </div></InputPortal>
+<InputPortal :target="creationHosts.moon.target.value"><div class="create-game-subsection-label" style="margin-top: 4px;">
+                                <label for="custom-moon-board-code" v-i18n>Custom Moon board code (optional)</label>
+                                <textarea
+                                  id="custom-moon-board-code"
+                                  rows="2"
+                                  style="width: 100%; font-family: monospace; font-size: 11px;"
+                                  placeholder="Paste a TMBS1… code from the Moon map editor"
+                                  v-model="customMoonBoardCodeInput"
+                                  @input="applyCustomMoonBoardCode"></textarea>
+                                <div v-if="customMoonBoardCodeError" style="color: #e74c3c; font-size: 11px;">{{ customMoonBoardCodeError }}</div>
+                                <div v-else-if="customMoonBoardName !== ''" style="color: #6c6; font-size: 11px;" v-i18n>Loaded custom Moon board: {{ customMoonBoardName }}</div>
+                              </div></InputPortal>
+<InputPortal :target="creationHosts.venus.target.value"><div class="create-game-subsection-label" style="margin-top: 4px;">
+                                    <label for="custom-venus-board-code" v-i18n>Custom Venus Phase 2 board code (optional)</label>
+                                    <textarea
+                                      id="custom-venus-board-code"
+                                      rows="2"
+                                      style="width: 100%; font-family: monospace; font-size: 11px;"
+                                      placeholder="Paste a TMBS1… code from the Venus map editor"
+                                      v-model="customVenusSurfaceBoardCodeInput"
+                                      @input="applyCustomVenusSurfaceBoardCode"></textarea>
+                                    <div v-if="customVenusSurfaceBoardCodeError" style="color: #e74c3c; font-size: 11px;">{{ customVenusSurfaceBoardCodeError }}</div>
+                                    <div v-else-if="customVenusSurfaceBoardName !== ''" style="color: #6c6; font-size: 11px;" v-i18n>Loaded custom Venus board: {{ customVenusSurfaceBoardName }}</div>
+                                  </div></InputPortal>
+<InputPortal :target="creationHosts.corporations.target.value"><CorporationsFilter
+                :embedded="creationPresentation !== undefined"
                 ref="corporationsFilter"
                 v-show="showCorporationList"
                 v-if="showCorporationList"
@@ -794,9 +800,9 @@
                 :selected="customCorporations"
                 :selectable="getSelectableCustomCorporations()"
                 @close="showCorporationList = false"
-            />
-
-            <PreludesFilter
+            /></InputPortal>
+<InputPortal :target="creationHosts.preludes.target.value"><PreludesFilter
+                :embedded="creationPresentation !== undefined"
                 ref="preludesFilter"
                 v-show="showPreludesList"
                 v-if="showPreludesList"
@@ -805,9 +811,9 @@
                 :selected="customPreludes"
                 :selectable="getSelectableCustomPreludes()"
                 @close="showPreludesList = false"
-            />
-
-            <ColoniesFilter
+            /></InputPortal>
+<InputPortal :target="creationHosts.colonies.target.value"><ColoniesFilter
+                :embedded="creationPresentation !== undefined"
                 ref="coloniesFilter"
                 v-show="showColoniesList"
                 v-if="showColoniesList"
@@ -815,9 +821,9 @@
                 :expansions="expansions"
                 :selected="customColonies"
                 @close="showColoniesList = false"
-            />
-
-            <CeosFilter
+            /></InputPortal>
+<InputPortal :target="creationHosts.ceos.target.value"><CeosFilter
+                :embedded="creationPresentation !== undefined"
                 ref="ceosFilter"
                 v-show="showCeosList"
                 v-if="showCeosList"
@@ -825,34 +831,42 @@
                 :expansions="expansions"
                 :selected="customCeos"
                 @close="showCeosList = false"
-            />
-
-            <div class="create-game--block" v-if="showBannedCards">
+            /></InputPortal>
+<InputPortal :target="creationHosts.banned.target.value"><div class="create-game--block" v-if="showBannedCards">
               <CardsFilter
                   ref="cardsFilter"
                   @cards-list-changed="updateBannedCards"
                   :title="'Cards to exclude from the game'"
                   :hint="'Start typing the card name to exclude'"
               />
-            </div>
-
-            <div class="create-game--block" v-if="showIncludedCards">
+            </div></InputPortal>
+<InputPortal :target="creationHosts.included.target.value"><div class="create-game--block" v-if="showIncludedCards">
               <CardsFilter
                   ref="cardsFilter2"
                   @cards-list-changed="updateIncludedCards"
                   :title="'Cards to include in the game'"
                   :hint="'Start typing the card name to include'"
               />
-            </div>
-          <PreferencesIcon/>
-          <ValidationErrorsPopup v-if="showValidationErrors" :errors="validationErrors" @close="showValidationErrors = false"/>
-        </div>
+            </div></InputPortal>
+<input style="display: none" type="file" accept=".json" id="settings-file" ref="file" @change="uploadSettings()">
+<PreferencesIcon/>
+<ValidationErrorsPopup v-if="showValidationErrors" :errors="validationErrors" @close="showValidationErrors = false"/>
+</div>
 </template>
 
 <script lang="ts">
 import * as constants from '@/common/constants';
 
 import {defineComponent, nextTick} from 'vue';
+import {createInputHosts} from '@/client/wrybit/shell/inputHosts';
+import PresentationHost from '@/client/wrybit/inputs/PresentationHost.vue';
+import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
+import {CreateEditor, CreatePresentationBinding, useCreateControls, useCreatePresentation} from '@/client/wrybit/create/presentation';
+import {defaultCeoSelection} from './ceoSelection';
+import {useBoardPreview} from './useBoardPreview';
+import type {BoardPreviewRequest} from '@/common/models/BoardPreviewModel';
+import type {CustomListBinding} from '@/client/wrybit/create/presentation';
+import {projectCreateModel, setCreateField} from './createGamePresentation';
 import {Color, DEFAULT_PLAYER_COLORS, getLockedPlayerName, getPlayerIdentityByName, LOCKED_PLAYER_IDENTITIES} from '@/common/Color';
 import {
   buildPlayerProfilesFromEloPlayers,
@@ -868,7 +882,6 @@ import {BoardName} from '@/common/boards/BoardName';
 import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
 import {decodeCustomBoard} from '@/common/boards/customBoardCodec';
 import {decodeSimpleBoard} from '@/common/boards/simpleBoardCodec';
-import {boardOptions} from '@/common/boards/randomBoardOptions';
 import {CardName} from '@/common/cards/CardName';
 import {CardType} from '@/common/cards/CardType';
 import {Expansion, GameModule} from '@/common/cards/GameModule';
@@ -898,6 +911,7 @@ import {JSONProcessor} from './JSONProcessor';
 import {defaultCreateGameModel} from './defaultCreateGameModel';
 import {CreateGameSettingsStorage} from './CreateGameSettingsStorage';
 import {TemplateManager, GameTemplate} from './TemplateManager';
+import {decodeSettingsHash, encodeSettingsHash} from './settingsLink';
 import {getColony} from '@/client/colonies/ClientColonyManifest';
 import {RULEBOOK_URLS, WIKI, WIKI_URLS} from '@/client/utils/WikiLinks';
 import {setDocumentTitle} from '@/client/utils/documentTitle';
@@ -1005,10 +1019,13 @@ type ApplySettingsOptions = {
 
 export default defineComponent({
   name: 'CreateGameForm',
+  setup() {
+    const creationHosts = {players: createInputHosts(), mars: createInputHosts(), moon: createInputHosts(), venus: createInputHosts(), corporations: createInputHosts(), preludes: createInputHosts(), ceos: createInputHosts(), colonies: createInputHosts(), banned: createInputHosts(), included: createInputHosts()} satisfies Record<CreateEditor, ReturnType<typeof createInputHosts>>;
+    return {...useBoardPreview(), creationHosts, filterKinds: ['corporations', 'preludes', 'colonies', 'ceos', 'banned', 'included'] as const, creationPresentation: useCreatePresentation(), creationControls: useCreateControls()};
+  },
   data(): CreateGameModel & FormModel {
     return {
       ...defaultCreateGameModel(),
-      aiAnalysis: false,
       showValidationErrors: false,
       preludeToggled: false,
       uploading: false,
@@ -1033,6 +1050,8 @@ export default defineComponent({
     };
   },
   components: {
+    PresentationHost,
+    InputPortal,
     AppButton,
     CardsFilter,
     CeosFilter,
@@ -1150,6 +1169,12 @@ export default defineComponent({
         this.initialDraftOneWay = false;
       }
     },
+    'boardPreviewRequest': {
+      immediate: true,
+      handler(value: BoardPreviewRequest | undefined) {
+        this.loadBoardPreview(value);
+      },
+    },
     showCorporationList(value: boolean) {
       if (value === true && !this.uploading) {
         this.customCorporations = this.getDefaultCustomCorporations();
@@ -1221,6 +1246,9 @@ export default defineComponent({
     if (cloneId) {
       void this.loadRematchSetup(cloneId as GameId);
     } else {
+      if (!['board', 'customBoard', 'customMoonBoard', 'customVenusSurfaceBoard'].some((key) => urlParams.has(key))) {
+        void this.restoreSettingsLink();
+      }
       this.adoptCustomBoardFromEditor();
       this.adoptCustomMoonBoardFromEditor();
       this.adoptCustomVenusSurfaceBoardFromEditor();
@@ -1231,9 +1259,45 @@ export default defineComponent({
     document.removeEventListener('click', this.closePlayerProfilePickerFromDocument);
   },
   computed: {
-    /** Any AI seat forces a training game: results against the computer never count for ELO. */
-    hasAiPlayers(): boolean {
-      return this.players.slice(0, this.playersCount).some((player) => player.aiLevel !== undefined);
+    boardPreviewRequest(): BoardPreviewRequest | undefined {
+      if (this.creationPresentation === undefined || this.seededGame) {
+        return undefined;
+      }
+      return {board: this.board, seed: this.seed, shuffleMapOption: this.shuffleMapOption,
+        expansions: {...this.expansions}, includedCards: [...this.includedCards], customBoardCode: this.customBoardCode || undefined};
+    },
+    customListBindings(): Array<CustomListBinding> {
+      const corporationPool = this.getSelectableCustomCorporations();
+      const corporationExclusions = new Set(this.normalizeCustomCardSelection([...DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS], corporationPool));
+      const preludePool = this.getSelectableCustomPreludes();
+      const preludeExclusions = new Set(this.normalizeCustomCardSelection(this.getActiveDefaultCustomPreludeExclusions(), preludePool));
+      return [
+        {kind: 'corporations', title: 'Custom Corporation list', selected: this.customCorporations,
+          baseline: corporationPool.filter((name) => !corporationExclusions.has(name)), host: this.creationHosts.corporations},
+        {kind: 'preludes', title: 'Custom Preludes list', selected: this.customPreludes,
+          baseline: preludePool.filter((name) => !preludeExclusions.has(name)), host: this.creationHosts.preludes},
+        {kind: 'ceos', title: 'Custom CEOs list', selected: this.customCeos,
+          baseline: defaultCeoSelection(this.expansions), host: this.creationHosts.ceos},
+      ];
+    },
+    creationBinding(): CreatePresentationBinding {
+      return {model: projectCreateModel(this), hosts: this.creationHosts, customLists: this.customListBindings,
+        boardPreview: this.boardPreviewRequest === undefined ? undefined : {...this.boardPreviewState,
+          showBoardName: this.board === RandomBoardOption.ALL || this.board === RandomBoardOption.OFFICIAL,
+          canRedraw: this.board === RandomBoardOption.ALL || this.board === RandomBoardOption.OFFICIAL || (this.shuffleMapOption && this.board !== BoardName.CUSTOM),
+          redraw: this.redrawBoardPreview},
+        setField: (key, value) => setCreateField(this, key, value),
+        setExpansion: (key, enabled) => {
+          this.expansions[key] = enabled;
+        },
+        boards: this.boards, wikiUrls: this.wikiUrls, boardClass: this.getBoardColorClass, boardHref: this.boardHref,
+        agendasEnabled: this.isPoliticalAgendasExtensionEnabled(), toggleAgendas: this.politicalAgendasExtensionToggle,
+        hasValidationProblems: this.hasValidationProblems, hasBlockingValidationErrors: this.hasBlockingValidationErrors,
+        validationErrors: this.validationErrors, showValidation: () => {
+          this.showValidationErrors = true;
+        },
+        importSettings: () => this.typedRefs.file.click(), exportSettings: this.downloadSettings, copySettingsLink: this.copySettingsLink,
+        reset: this.resetSettings, create: this.createGame, clearCustomLists: this.clearCustomLists};
     },
     wikiUrls(): typeof RULEBOOK_URLS & typeof WIKI_URLS {
       return {...RULEBOOK_URLS, ...WIKI_URLS};
@@ -1255,7 +1319,7 @@ export default defineComponent({
         customPreludes: this.customPreludes,
         bannedCards: this.bannedCards,
         includedCards: this.includedCards,
-        boards: this.boards,
+        board: this.board,
         seed: this.seed,
         solarPhaseOption: this.solarPhaseOption,
         aresExtremeVariant: this.aresExtremeVariant,
@@ -1263,8 +1327,7 @@ export default defineComponent({
         undoOption: this.undoOption,
         undoStepOption: this.undoStepOption,
         privateHands: this.privateHands,
-        noEloGame: this.noEloGame || this.hasAiPlayers,
-        aiAnalysis: this.aiAnalysis,
+        noEloGame: this.noEloGame,
         turnBasedGame: this.turnBasedGame,
         botGame: this.botGame,
         showTimers: this.showTimers,
@@ -1334,33 +1397,7 @@ export default defineComponent({
     DEFAULT_PLAYER_COLORS(): typeof DEFAULT_PLAYER_COLORS {
       return DEFAULT_PLAYER_COLORS;
     },
-    board: {
-      get(): BoardName | RandomBoardOption {
-        const selected = this.boards;
-        if (selected.length === 1) {
-          return selected[0];
-        }
-        const official = boardOptions(RandomBoardOption.OFFICIAL);
-        if (selected.length === official.length && official.every((board) => selected.includes(board))) {
-          return RandomBoardOption.OFFICIAL;
-        }
-        const all = boardOptions(RandomBoardOption.ALL);
-        if (selected.length === all.length && all.every((board) => selected.includes(board))) {
-          return RandomBoardOption.ALL;
-        }
-        return selected[0];
-      },
-      set(value: BoardName | RandomBoardOption) {
-        if (value === RandomBoardOption.OFFICIAL) {
-          this.boards = boardOptions(RandomBoardOption.OFFICIAL);
-        } else if (value === RandomBoardOption.ALL) {
-          this.boards = boardOptions(RandomBoardOption.ALL);
-        } else {
-          this.boards = [value as BoardName];
-        }
-      },
-    },
-    boardChoices() {
+    boards() {
       return [
         BoardName.THARSIS,
         BoardName.HELLAS,
@@ -1379,25 +1416,17 @@ export default defineComponent({
     },
   },
   methods: {
-    toggleAiPlayer(player: NewPlayerModel, index: number, event: Event): void {
-      const autoName = `AI ${index + 1}`;
-      const enabled = (event.target as HTMLInputElement).checked;
-      if (!enabled) {
-        // Drop the name this switch filled in; keep a name the user typed over it.
-        if (player.name === autoName) {
-          player.name = '';
-        }
-        player.aiLevel = undefined;
+    redrawBoardPreview() {
+      const request = this.boardPreviewRequest;
+      if (request === undefined) {
         return;
       }
-      player.aiLevel = player.aiLevel ?? 'normal';
-      player.isBot = false;
-      player.telegramID = '';
-      if (player.name.trim() === '') {
-        player.name = autoName;
+      const randomBoard = request.board === RandomBoardOption.ALL || request.board === RandomBoardOption.OFFICIAL;
+      if (request.shuffleMapOption && request.board !== BoardName.CUSTOM && !randomBoard) {
+        this.seed = Math.random();
+      } else {
+        this.loadBoardPreview(request);
       }
-      // AI games are always training games.
-      this.noEloGame = true;
     },
     // Deep-link from the Map Library: "Play this map" on an official entry sets ?board=<name>
     // to preselect a real board via the normal radio mechanism -- never through the
@@ -1515,6 +1544,46 @@ export default defineComponent({
       } catch (e) {
         this.customVenusSurfaceBoardName = '';
         this.customVenusSurfaceBoardCodeError = e instanceof Error ? e.message : String(e);
+      }
+    },
+    async copySettingsLink(): Promise<boolean> {
+      try {
+        const url = new URL(window.location.href);
+        url.search = '';
+        url.hash = encodeSettingsHash(this);
+        window.history.replaceState(window.history.state, '', url);
+        try {
+          await navigator.clipboard.writeText(url.href);
+          return true;
+        } catch {
+          vueRoot(this).showAlert('Copy link', 'Copy the settings link from the address bar.');
+          return false;
+        }
+      } catch (e) {
+        vueRoot(this).showAlert('Copy link', e instanceof Error ? e.message : String(e));
+        return false;
+      }
+    },
+    async restoreSettingsLink() {
+      try {
+        const settings = decodeSettingsHash(window.location.hash);
+        if (settings === undefined) {
+          return;
+        }
+        // Let the saved preset finish before applying an explicit shared preset.
+        await nextTick();
+        this.seededGame = false;
+        this.clonedGameId = undefined;
+        this.preludeDraftVariant = undefined;
+        this.ceosDraftVariant = undefined;
+        const processor = this.applySettings(settings);
+        await nextTick();
+        this.seed = settings.seed as number;
+        if (processor.warnings.length > 0) {
+          this.showSettingsLoadResult('Settings link', processor);
+        }
+      } catch (e) {
+        vueRoot(this).showAlert('Settings link', e instanceof Error ? e.message : String(e));
       }
     },
     restoreLastSettings() {
@@ -2538,7 +2607,6 @@ export default defineComponent({
         [BoardName.VASTITAS_BOREALIS_NOVA]: 'vastitas-borealis-nova',
         [BoardName.VASTITAS_BOREALIS]: 'vastitas-borealis',
         [BoardName.AMAZONIS]: 'amazonis-planatia',
-        [BoardName.AMAZONIS_PLANITIA]: 'amazonis-planitia',
         [BoardName.TERRA_CIMMERIA]: 'terra-cimmeria',
         [BoardName.TERRA_CIMMERIA_NOVA]: 'terra-cimmeria-nova',
         [BoardName.HOLLANDIA]: 'hollandia',
@@ -2691,14 +2759,14 @@ export default defineComponent({
       const customPreludes = this.customPreludes;
       const bannedCards = this.bannedCards;
       const includedCards = this.includedCards;
-      const boards = this.boards;
+      const board = this.board;
       const seed = this.seed;
       const politicalAgendasExtension = this.politicalAgendasExtension;
       const undoOption = this.undoOption;
       const undoStepOption = this.undoStepOption;
       const showTimers = this.showTimers;
       const fastModeOption = this.fastModeOption;
-      const noEloGame = this.noEloGame || this.hasAiPlayers;
+      const noEloGame = this.noEloGame;
       const privateHands = this.privateHands;
       const removeNegativeGlobalEventsOption = this.removeNegativeGlobalEventsOption;
       const includeFanMA = this.includeFanMA;
@@ -2753,7 +2821,7 @@ export default defineComponent({
         customPreludes,
         bannedCards,
         includedCards,
-        boards,
+        board,
         customBoardCode: this.board === BoardName.CUSTOM ? this.customBoardCode : undefined,
         customMoonBoardCode: this.customMoonBoardCodeError === '' && this.customMoonBoardCodeInput.trim() !== '' ?
           this.customMoonBoardCodeInput.trim() : undefined,
@@ -2769,7 +2837,6 @@ export default defineComponent({
         fastModeOption,
         privateHands,
         noEloGame,
-        aiAnalysis: this.aiAnalysis,
         turnBasedGame,
         botGame,
         removeNegativeGlobalEventsOption,
@@ -2863,19 +2930,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.create-game-ai-option-label {
-  margin-top: 8px;
-}
-
-.create-game-ai-level {
-  margin-left: 8px;
-}
-
-.create-game-elo-ai-hint {
-  margin-left: 4px;
-  color: #9aa4b2;
-}
-
 .create-game-telegram-banner {
   margin: 8px 0 14px;
   font-size: 14px;

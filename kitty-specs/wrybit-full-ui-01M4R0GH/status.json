@@ -94,7 +94,8 @@
         "Независимый review отклонил два сценария создания/обновления выбранных карт; требуется исправление с регрессиями.",
         "Исправлены review P2/P3; усилен реальный newGameConfig oracle, targeted/types/lint/build/browser green. Повтор полного штатного runner после конечного timeout, без skip/force.",
         "Полный JUnit вручную выявил 2 failures SettingsLinkFlow alert mock при isolate:false; положительный gate transition не считается готовностью. Исправление тестовой границы и повторная проверка.",
-        "Исправления review и полный client1254 зелёные; повтор полного runner с clean npm ci, без сетевого npm audit, без ослабления тестов/build."
+        "Исправления review и полный client1254 зелёные; повтор полного runner с clean npm ci, без сетевого npm audit, без ослабления тестов/build.",
+        "Независимый Reviewer Renata: PASS всех8 пунктов для T009–T012 на e4f2d1ae8c; parent проверил AST7/15 и frozen diff0. Native cycle4 JUnit12903passed/3skipped/0fail/0error, SHA256886c5574bded1e30a48385dd7fdb432b30e004430d4532019cb69971a775a924. Все21 полные UI-строки открыты для WP04–WP07."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,

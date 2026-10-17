@@ -9,6 +9,7 @@ import type SeatIcon from '@/client/wrybit/visuals/common/SeatIcon.vue';
 import type NumberStepper from './NumberStepper.vue';
 import type SwitchInput from './SwitchInput.vue';
 import type ModuleItemFilter from './ModuleItemFilter.vue';
+import type CardsFilter from './CardsFilter.vue';
 import type {CardName} from '@/common/cards/CardName';
 import type {BoardName} from '@/common/boards/BoardName';
 import type {SpaceModel} from '@/common/models/SpaceModel';
@@ -54,7 +55,7 @@ export type CreatePresentationBinding = ControlledCreateFields & {
 };
 
 export type CreatePresentation = Component<{binding: CreatePresentationBinding}>;
-export type CreateControls = {cube: typeof PlayerCube, seat: typeof SeatIcon, stepper: typeof NumberStepper, toggle: typeof SwitchInput, moduleFilter?: typeof ModuleItemFilter};
+export type CreateControls = {cube: typeof PlayerCube, seat: typeof SeatIcon, stepper: typeof NumberStepper, toggle: typeof SwitchInput, moduleFilter?: typeof ModuleItemFilter, cardsFilter?: typeof CardsFilter};
 export const CREATE_PRESENTATION: InjectionKey<ComputedRef<CreatePresentation | undefined>> = Symbol('create-presentation');
 export const CREATE_CONTROLS: InjectionKey<ComputedRef<CreateControls | undefined>> = Symbol('create-controls');
 export function useCreatePresentation() {

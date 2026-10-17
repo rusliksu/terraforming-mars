@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-17T20:58:23.847Z",
-  "generated_from_commit": "51b6892add5d422161fcc7d9a165f1911a0161c2",
+  "generated_at": "2026-10-17T21:13:32.978Z",
+  "generated_from_commit": "7aea335056382cf2e477282c522218cd9d475627",
   "scope": [
     ".",
     ".github",

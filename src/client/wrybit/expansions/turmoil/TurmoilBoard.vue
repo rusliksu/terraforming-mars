@@ -79,6 +79,15 @@
     <div class="turmoil-board-tab__neutral" data-test="neutral-reserve">
       <DelegateFigure color="neutral"/><p>{{ $t('Neutral delegates') }}</p><small>{{ neutralReserve }}</small>
     </div>
+    <div v-if="overflow.length > 0" class="turmoil-board-tab__overflow">
+      <div v-for="entry in overflow" :key="entry.party" :data-test="'overflow-' + entry.party">
+        <b>{{ $t(entry.party) }} · {{ $t('Additional delegates') }}</b>
+        <span v-for="delegate in entry.delegates" :key="delegate.color" :data-color="delegate.color" :title="delegate.color"
+          :aria-label="delegate.color + ': +' + delegate.number">
+          <DelegateFigure :color="delegate.color"/>+{{ delegate.number }}
+        </span>
+      </div>
+    </div>
     <div class="turmoil-board-tab__policy-users">
       <span v-for="user in turmoil.policyActionUsers.filter(item => item.turmoilPolicyActionUsed || item.politicalAgendasActionUsedCount > 0)"
         :key="user.color" :data-test="'policy-user-' + user.color">
@@ -104,7 +113,7 @@
 
 <script setup lang="ts">
 import {computed, useId} from 'vue';
-import type {TurmoilModel, PartyModel} from '@/common/models/TurmoilModel';
+import type {TurmoilModel, PartyModel, DelegatesModel} from '@/common/models/TurmoilModel';
 import type {PublicPlayerModel} from '@/common/models/PlayerModel';
 import type {PartyName} from '@/common/turmoil/PartyName';
 import {partyCardDetails} from '@/client/components/turmoil/partyCardDetails';
@@ -118,6 +127,15 @@ const CHAIR_SEAT_OFFSET = 72;
 const prefix = useId();
 const chairPath = makeChairPath();
 const wedges = computed(() => props.turmoil.parties.map((_, index) => wedge(index, props.turmoil.parties.length)));
+// Native parties can outgrow the source drawing. Account for every figure not shown in a seat.
+const overflow = computed(() => props.turmoil.parties.flatMap((party, index) => {
+  const remaining = seated(party).slice(wedges.value[index].seats.length);
+  const counts = new Map<DelegatesModel['color'], number>();
+  for (const color of remaining) {
+    counts.set(color, (counts.get(color) ?? 0) + 1);
+  }
+  return remaining.length === 0 ? [] : [{party: party.name, delegates: [...counts].map(([color, number]) => ({color, number}))}];
+}));
 const neutralReserve = computed(() => props.turmoil.reserve.find((entry) => entry.color === 'neutral')?.number);
 const eventSlots = computed(() => [
   {type: 'current' as const, name: props.turmoil.current, offset: 0, label: 'This generation'},

@@ -50,6 +50,8 @@ owned_files:
 - tests/client/wrybit/visuals/SortableCards.spec.ts
 - tests/routes/ApiBoardPreview.spec.ts
 - src/client/components/create/useBoardPreview.ts
+- src/client/components/create/TemplateManager.ts
+- src/client/components/create/settingsLink.ts
 - tests/client/components/create/**
 - src/client/wrybit/visuals/common/PlayerCube.vue
 - tests/client/wrybit/visuals/PlayerCube.spec.ts
@@ -195,3 +197,5 @@ Card-search presentation scoped proof: source grid/search/remove/keyboard presen
 Native board preview scoped proof: real read-only route, own GameSetup factory and Server public space projection; exact native boardOptions extraction. Native form sends only public layout fields while source mode active, hides clone preview, cancels stale requests. No Game/Player/AI/DB/save changes. Real App+native handler D proof with Database/gameLoader fail-closed, normal native initialization, all200 and finalconsole0/0 at three viewports. Existing planet texture URL corrected. Full1208client/260files and71targeted server green, current Vue/test TS/scoped lint/style/App build; stale guard mutation killed/exactly restored. Sequential handoff of4prior visual test files and ServerModel test repairs7existing TS errors using canonical types; assertions preserved. Full custom visual/traits/share/create/start/WP03/21rows remain OPEN.
 
 Expansion feature grouping scoped proof: all9source groupings use native surfaces/GlobalParameter/TileType + own card modules. Exact all28+base coverage in each grouping. All66numeric tile types audited, no unmapped live type; explicit Moon Mine vs Mine collision regression. Layout adds our HighOrbit/teams/VenusPhase2 panels; own special tile types included and fallback labelled Cards and variants. No foreign expansionFacts counts. Ninefocused/3files, types/lint/App build; actual App Board/NewTiles/GlobalParameters + final unobscured custom preview, console0/0. Prior full1208/260 remains baseline; full creation/share/input/review still OPEN.
+
+Public settings link scoped proof: source Copy header/feedback uses own versioned public preset codec and native importer. Exact42native scalar fields/order retained; current seed/first seat/all own expansions/lists/custom maps round-trip, private player/profile/contact/clone fields excluded and bot/async off. Malformed links validated before live model; query precedence, clipboard denial and fresh default-off restore tested. Full1216client/263files, types/scoped lint/App build green; whitelist mutation killed/exact restoration green. Actual App1440/390 and fresh classic browser Hellas/HighOrbit/empty names/no optional assets, console0/0. Source serializer/AI levels not imported. All T009-T012/full21rows remain OPEN.

@@ -46,6 +46,7 @@ export type CreatePresentationBinding = ControlledCreateFields & {
   showValidation(): void;
   importSettings(): void;
   exportSettings(): void;
+  copySettingsLink(): Promise<boolean>;
   reset(): void;
   create(): void;
   clearCustomLists(): void;

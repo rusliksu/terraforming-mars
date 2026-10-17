@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-17T11:49:08.509Z",
-  "generated_from_commit": "e27b8f73be14f8085c29120b8cd4cb3f514ad6f2",
+  "generated_at": "2026-10-17T12:15:40.206Z",
+  "generated_from_commit": "f9f649e707a8c312cf0153426976476fd1b81a99",
   "scope": [
     ".",
     ".github",
@@ -3538,6 +3538,42 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "id": "single-board-zoom",
+      "label": "Увеличение единственного поля",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/GameBoardView.vue",
+      "role": "Source fullscreen geometry moves the existing board by Teleport; game-scoped UI surface closes before the native accepted placement.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/GameBoardView.vue",
+          "symbol": "openBoardZoom(board: ZoomBoard",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/inputs/PlacementZoom.spec.ts",
+          "symbol": "moves the same board"
+        },
+        {
+          "path": "tests/client/wrybit/inputs/PlacementZoom.spec.ts",
+          "symbol": "confirmation opt-out"
+        }
+      ],
+      "constraints": [
+        "No cloned board IDs or second native controller.",
+        "Only native offered IDs/response are used.",
+        "Full mobile/custom/expansion rendering remains open."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/board/boardZoomSurface.ts",
+          "symbol": "surfaces.get(gameId) === surface",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "edges": [
@@ -5152,6 +5188,32 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "wrybit-input-presentations",
+      "to": "single-board-zoom",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/inputs/SelectSpace.vue",
+          "symbol": "boardZoomSurface(props.binding.playerView.game.gameId)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "canonical-input-controllers",
+      "to": "single-board-zoom",
+      "type": "projects",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/SelectSpace.vue",
+          "symbol": "automatic: this.confirmationAutomatic",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -6168,7 +6230,9 @@
     "src/server/cards/venusNext/SulphurEatingBacteria.ts",
     "src/server/cards/promo/EnergyMarket.ts",
     "src/server/cards/promo/Supercapacitors.ts",
-    "src/server/cards/underworld/VoltaicMetallurgy.ts"
+    "src/server/cards/underworld/VoltaicMetallurgy.ts",
+    "src/client/wrybit/visuals/board/boardZoomSurface.ts",
+    "tests/client/wrybit/inputs/PlacementZoom.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -6470,6 +6534,7 @@
       "src/client/wrybit/visuals/board/boardPinchZoom.ts",
       "src/client/wrybit/visuals/board/boardPlacementActive.ts",
       "src/client/wrybit/visuals/board/boardZoomAnimation.ts",
+      "src/client/wrybit/visuals/board/boardZoomSurface.ts",
       "src/client/wrybit/visuals/board/marsScaleBonuses.ts",
       "src/client/wrybit/visuals/board/marsScaleCells.ts",
       "src/client/wrybit/visuals/board/mobileBoardZoom.ts",
@@ -6963,6 +7028,7 @@
       "tests/client/wrybit/inputs/OverpaymentCompletion.spec.ts",
       "tests/client/wrybit/inputs/PartyPresentation.spec.ts",
       "tests/client/wrybit/inputs/PaymentPresentation.spec.ts",
+      "tests/client/wrybit/inputs/PlacementZoom.spec.ts",
       "tests/client/wrybit/inputs/PresentationHost.spec.ts",
       "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
       "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",

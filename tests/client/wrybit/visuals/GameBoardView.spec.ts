@@ -11,7 +11,7 @@ describe('Wrybit game board presentation', () => {
       expansions: {conglomerates: true, moreParties: true}}, moon: {spaces: []}, venusPhase2: {spaces: []},
     highOrbitMarket: [], conglomerates: {teams: []}});
     const wrapper = shallowMount(GameBoardView, {...globalConfig, props: {game, players: [fakePublicPlayerModel(), fakePublicPlayerModel({color: 'red'})], tileView: 'coords'},
-      global: {...globalConfig.global, stubs: {Board: false, Milestones: false, Awards: false,
+      global: {...globalConfig.global, stubs: {Teleport: false, Board: false, Milestones: false, Awards: false,
         BoardTabs: {template: '<div><slot name="mars"/><slot name="moon"/><slot name="venus"/><slot name="orbit"/><slot name="teams"/></div>'}}}});
     try {
       const board = wrapper.getComponent({name: 'Board'});

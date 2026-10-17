@@ -9,8 +9,8 @@
       <div class="space-confirm-message" v-i18n>Place your tile here?</div>
       <div class="space-confirm-actions">
         <!-- Yes green, no red (colors from button_tones.less) -->
-        <button type="button" class="space-confirm-button space-confirm-button--yes" @click="$emit('accept')" v-i18n>Yes</button>
-        <button type="button" class="space-confirm-button space-confirm-button--no" @click="$emit('dismiss')" v-i18n>No</button>
+        <button type="button" class="space-confirm-button space-confirm-button--yes" :disabled="busy" @click="$emit('accept')" v-i18n>Yes</button>
+        <button type="button" class="space-confirm-button space-confirm-button--no" :disabled="busy" @click="$emit('dismiss')" v-i18n>No</button>
       </div>
       <label class="space-confirm-skip">
         <input type="checkbox" :checked="false" @change="$emit('hide', ($event.target as HTMLInputElement).checked)">
@@ -28,6 +28,8 @@ import {PopoverPlacement, spaceConfirmPosition} from './spaceConfirmPosition';
 const props = defineProps<{
   // The chosen space; undefined = bubble closed
   anchor: HTMLElement | undefined;
+  geometryRevision?: number;
+  busy?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -82,6 +84,7 @@ watch(() => props.anchor, async (anchor, previous) => {
     }
   }
 }, {immediate: true});
+watch(() => props.geometryRevision, () => nextTick(reposition));
 
 onBeforeUnmount(() => {
   alive = false;

@@ -13,7 +13,7 @@
           <template v-else>{{ cell.label }}</template>
         </span>
       </div>
-      <TrackLane :count="cells.length" :bonuses="bonuses"/>
+      <slot name="bonuses"><TrackLane :count="cells.length" :bonuses="bonuses"/></slot>
     </div>
     <div class="board-track-row__value">
       <span class="board-track-row__big"><slot name="value"></slot></span>

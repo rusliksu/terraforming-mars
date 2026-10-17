@@ -1,5 +1,6 @@
 <template>
-  <div class="wf-component wf-component--select-card choice-block" :style="choiceBlockStyle(binding.colonies.length)">
+  <TradeOffers v-if="trading" :binding="binding"/>
+  <div v-else class="wf-component wf-component--select-card choice-block" :style="choiceBlockStyle(binding.colonies.length)">
     <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
     <label v-for="colony in binding.colonies" :key="colony.model.name"
       :class="['choice-option', 'colony-choice', {'choice-option--selected': binding.selected === colony.model.name}]"
@@ -27,7 +28,10 @@
 
 <script setup lang="ts">
 import InputIntro from './InputIntro.vue';
-import {onBeforeUnmount, onMounted} from 'vue';
+import {computed, onBeforeUnmount, onMounted} from 'vue';
+import {registerCompositeView} from './compositePresentation';
+import TradeOffers from '@/client/wrybit/expansions/colonies/TradeOffers.vue';
+import {isTradeChild} from '@/client/wrybit/expansions/colonies/tradeInput';
 import type {ColonyChoiceBinding} from './presentation';
 import {choiceBlockStyle} from './choiceBlock';
 import ColonyPlanet from './colony/ColonyPlanet.vue';
@@ -37,6 +41,8 @@ import TabPanelFooterSlot from '@/client/wrybit/visuals/TabPanelFooterSlot.vue';
 import {boardTabState, selectBoardTab} from '@/client/wrybit/visuals/boardTabs/boardTabState';
 
 const props = defineProps<{binding: ColonyChoiceBinding}>();
+const composite = registerCompositeView('colony', computed(() => props.binding));
+const trading = computed(() => isTradeChild(composite?.input.value, props.binding.playerinput, 'colony'));
 const previousTab = boardTabState.active;
 onMounted(() => {
   if (props.binding.playerView.game.colonies.some((model) => props.binding.colonies.some((colony) => colony.model.name === model.name))) {

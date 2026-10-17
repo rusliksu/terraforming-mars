@@ -23,6 +23,23 @@ execution_mode: code_change
 owned_files:
 - src/client/wrybit/expansions/**
 - tests/client/wrybit/expansions/**
+- src/client/wrybit/visuals/GameBoardView.vue
+- src/client/wrybit/visuals/PlayerHome.vue
+- src/client/wrybit/visuals/trackBonus/BoardTrackRow.vue
+- src/client/wrybit/inputs/AndOptions.vue
+- src/client/wrybit/inputs/OrOptions.vue
+- src/client/wrybit/inputs/SelectColony.vue
+- src/client/wrybit/inputs/SelectParty.vue
+- src/client/wrybit/inputs/compositePresentation.ts
+- src/client/components/AndOptions.vue
+- src/styles/wrybit/expansions/**
+- src/styles/wrybit/visuals.less
+- assets/wrybit/ships/**
+- assets/wrybit/moon/**
+- src/client/wrybit/import-manifest.json
+- docs/codemap/codemap.json
+- docs/codemap/codemap.html
+- docs/codemap/codemap.lock
 priority: P1
 role: implementer
 tags: []
@@ -45,10 +62,14 @@ tracker_refs: []
 
 ## Подзадачи
 
-- [ ] T013 Перенести колонии и торговлю по нашим данным.
-- [ ] T014 Перенести Turmoil и связанные формы.
-- [ ] T015 Перенести Moon, Venus, Pathfinders, Ares, Underworld и остальные панели.
-- [ ] T016 Проверить наши карты/замены/параметры/новые типы ввода.
+Последовательный handoff после approved WP03: только подключения панелей в GameBoardView/PlayerHome, представления And/Or/Colony/Party, изолированные стили и ресурсы, manifest/codemap переходят WP04. Других writers нет; постоянные native controllers, сеть, цены, ответы и игровой сервер остаются владельцами. Колонии используют наш ColonyModel/ColonyMetadata и существующий own-player ColonyTradeContextModel. Неоднозначные или отсутствующие прогнозы не заменяются расчётами форка. Это уточнение путей реализации FR-006/FR-008, без смены требований, критериев или delivery gates.
+
+Для Delta последовательно передан один визуальный slot BoardTrackRow: при отсутствии slot прежняя TrackLane сохраняется. Delta использует существующие native steps/rewardIcons и оба маркера, включая Epsilon Dample; foreign availability/tag/energy rules не импортируются.
+
+- [x] T013 Перенести колонии и торговлю по нашим данным.
+- [x] T014 Перенести Turmoil и связанные формы.
+- [x] T015 Перенести Moon, Venus, Pathfinders, Ares, Underworld и остальные панели.
+- [x] T016 Проверить наши карты/замены/параметры/новые типы ввода.
 
 ## Порядок выполнения
 
@@ -78,3 +99,5 @@ Planning/base и внутренний merge target: codex/wrybit-full-ui. Ито
 ## Риски и ориентиры review
 
 Не копировать чужой контроллер сети/AI; не рассчитывать цены и доступность независимыми правилами; не маскировать отсутствующие поля приведением типов или выдуманными значениями; не смешивать стили двух режимов; не раскрывать административную статистику; не терять контекст формы при polling/переключении. Любая необходимость изменить игровую логику возвращается на отдельное решение.
+
+WP04 scoped implementation: modern colony/trade, committee/events, lunar ring/native spaces, planets and Delta are connected. Native Venus Phase2, HighOrbit, teams, Ares and Underworld remain available through existing own models/controllers; native custom cards/20 inputs and More Parties/persona/second Delta marker retained. Evidence and limitations: import-manifest wp04-native-expansion-panels. No new server/common/AI/gameplay/DB changes in this WP. Independent review and all full UI rows remain OPEN.

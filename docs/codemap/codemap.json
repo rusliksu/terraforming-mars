@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-17T19:41:56.834Z",
-  "generated_from_commit": "d82d65cec1255efd36c5038ebfa3c468078ab6b1",
+  "generated_at": "2026-10-17T20:54:08.194Z",
+  "generated_from_commit": "c530ca00a2bfe3b23f48bbbac5aab63004e0f3ab",
   "scope": [
     ".",
     ".github",
@@ -3628,6 +3628,188 @@
         "Other phases, stale inputs and unknown prompts fall back unchanged."
       ],
       "evidence": []
+    },
+    {
+      "id": "wrybit-colonies-panel",
+      "label": "Колонии Wrybit по нашим моделям",
+      "type": "ui",
+      "path": "src/client/wrybit/expansions/colonies/ColoniesBoard.vue",
+      "role": "Изолированное представление закреплённого Wrybit; данные, ответы и правила определяются нашими native владельцами.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/expansions/colonies/ColoniesBoard.vue",
+          "symbol": "colonyTradeContext",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/expansions/ColoniesBoard.spec.ts",
+          "symbol": "actual resource"
+        }
+      ],
+      "evidence": [],
+      "constraints": [
+        "Optional/default off.",
+        "No foreign rules or AI.",
+        "Full UI flows and staging remain open for WP07."
+      ]
+    },
+    {
+      "id": "wrybit-trade-panel",
+      "label": "Торговля через постоянные native формы",
+      "type": "ui",
+      "path": "src/client/wrybit/expansions/colonies/TradeColony.vue",
+      "role": "Изолированное представление закреплённого Wrybit; данные, ответы и правила определяются нашими native владельцами.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/expansions/colonies/TradeColony.vue",
+          "symbol": "COMPOSITE_PRESENTATION",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/expansions/TradePresentation.spec.ts",
+          "symbol": "native fee indices"
+        }
+      ],
+      "evidence": [],
+      "constraints": [
+        "Optional/default off.",
+        "No foreign rules or AI.",
+        "Full UI flows and staging remain open for WP07."
+      ]
+    },
+    {
+      "id": "native-composite-presentation",
+      "label": "Read-only представления native дочерних форм",
+      "type": "ui",
+      "path": "src/client/wrybit/inputs/compositePresentation.ts",
+      "role": "Изолированное представление закреплённого Wrybit; данные, ответы и правила определяются нашими native владельцами.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/inputs/compositePresentation.ts",
+          "symbol": "registerCompositeView",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/expansions/TradePresentation.spec.ts",
+          "symbol": "classic return"
+        }
+      ],
+      "evidence": [],
+      "constraints": [
+        "Optional/default off.",
+        "No foreign rules or AI.",
+        "Full UI flows and staging remain open for WP07."
+      ]
+    },
+    {
+      "id": "wrybit-turmoil-panel",
+      "label": "Парламент и события с нашими партиями",
+      "type": "ui",
+      "path": "src/client/wrybit/expansions/turmoil/TurmoilBoard.vue",
+      "role": "Изолированное представление закреплённого Wrybit; данные, ответы и правила определяются нашими native владельцами.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/expansions/turmoil/TurmoilBoard.vue",
+          "symbol": "partyCardDetails",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/expansions/TurmoilBoard.spec.ts",
+          "symbol": "custom parties"
+        }
+      ],
+      "evidence": [],
+      "constraints": [
+        "Optional/default off.",
+        "No foreign rules or AI.",
+        "Full UI flows and staging remain open for WP07."
+      ]
+    },
+    {
+      "id": "wrybit-moon-panel",
+      "label": "Лунное кольцо и native клетки",
+      "type": "ui",
+      "path": "src/client/wrybit/expansions/moon/MoonBoard.vue",
+      "role": "Изолированное представление закреплённого Wrybit; данные, ответы и правила определяются нашими native владельцами.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/expansions/moon/MoonBoard.vue",
+          "symbol": "extends: CanonicalMoonBoard",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/expansions/MoonPlanets.spec.ts",
+          "symbol": "station labels"
+        }
+      ],
+      "evidence": [],
+      "constraints": [
+        "Optional/default off.",
+        "No foreign rules or AI.",
+        "Full UI flows and staging remain open for WP07."
+      ]
+    },
+    {
+      "id": "wrybit-planets-panel",
+      "label": "Планетарные треки и native награды",
+      "type": "ui",
+      "path": "src/client/wrybit/expansions/pathfinders/PlanetsBoard.vue",
+      "role": "Изолированное представление закреплённого Wrybit; данные, ответы и правила определяются нашими native владельцами.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/expansions/pathfinders/PlanetsBoard.vue",
+          "symbol": "PLANETARY_TRACKS",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/expansions/MoonPlanets.spec.ts",
+          "symbol": "most-tags awards"
+        }
+      ],
+      "evidence": [],
+      "constraints": [
+        "Optional/default off.",
+        "No foreign rules or AI.",
+        "Full UI flows and staging remain open for WP07."
+      ]
+    },
+    {
+      "id": "wrybit-delta-panel",
+      "label": "Delta с обоими нашими маркерами",
+      "type": "ui",
+      "path": "src/client/wrybit/expansions/delta/DeltaBoard.vue",
+      "role": "Изолированное представление закреплённого Wrybit; данные, ответы и правила определяются нашими native владельцами.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/expansions/delta/DeltaBoard.vue",
+          "symbol": "extends: CanonicalDeltaBoard",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/expansions/DeltaBoard.spec.ts",
+          "symbol": "Epsilon Dample marker"
+        }
+      ],
+      "evidence": [],
+      "constraints": [
+        "Optional/default off.",
+        "No foreign rules or AI.",
+        "Full UI flows and staging remain open for WP07."
+      ]
     }
   ],
   "edges": [
@@ -5294,6 +5476,149 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "single-board-zoom",
+      "to": "wrybit-colonies-panel",
+      "type": "renders",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/GameBoardView.vue",
+          "symbol": "<ColoniesBoard",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "single-board-zoom",
+      "to": "wrybit-turmoil-panel",
+      "type": "renders",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/GameBoardView.vue",
+          "symbol": "<TurmoilBoard",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "single-board-zoom",
+      "to": "wrybit-moon-panel",
+      "type": "renders",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/GameBoardView.vue",
+          "symbol": "<MoonBoard",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "single-board-zoom",
+      "to": "wrybit-planets-panel",
+      "type": "renders",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/GameBoardView.vue",
+          "symbol": "<PlanetsBoard",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "single-board-zoom",
+      "to": "wrybit-delta-panel",
+      "type": "renders",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/GameBoardView.vue",
+          "symbol": "<DeltaBoard",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-trade-panel",
+      "to": "native-composite-presentation",
+      "type": "uses",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/expansions/colonies/TradeColony.vue",
+          "symbol": "inject(COMPOSITE_PRESENTATION",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "canonical-input-controllers",
+      "to": "native-composite-presentation",
+      "type": "uses",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/AndOptions.vue",
+          "symbol": "provide(COMPOSITE_PRESENTATION",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-colonies-panel",
+      "to": "colony-admission",
+      "type": "uses",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/expansions/colonies/ColoniesBoard.vue",
+          "symbol": "viewer?.colonyTradeContext",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-turmoil-panel",
+      "to": "native-party-card-details",
+      "type": "uses",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/expansions/turmoil/TurmoilBoard.vue",
+          "symbol": "partyCardDetails(props.turmoil",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-planets-panel",
+      "to": "wrybit-track-view",
+      "type": "uses",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/expansions/pathfinders/PlanetsBoard.vue",
+          "symbol": "<BoardTrackRow",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-delta-panel",
+      "to": "wrybit-track-view",
+      "type": "uses",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/expansions/delta/DeltaBoard.vue",
+          "symbol": "<BoardTrackRow",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -6347,7 +6672,62 @@
     "src/client/wrybit/create/ValidationProblems.vue",
     "src/client/wrybit/inputs/cardInputIntro.ts",
     "src/client/wrybit/inputs/TabPanelIntroSlot.vue",
-    "src/server/models/finalGreeneryPresentation.ts"
+    "src/server/models/finalGreeneryPresentation.ts",
+    "src/styles/wrybit/expansions/colonies_board.less",
+    "src/styles/wrybit/expansions/deal_steps.less",
+    "src/styles/wrybit/expansions/delta_rewards.less",
+    "src/styles/wrybit/expansions/moon_ring.less",
+    "src/styles/wrybit/expansions/turmoil_board.less",
+    "src/client/wrybit/inputs/compositePresentation.ts",
+    "src/client/wrybit/expansions/colonies/ColoniesBoard.vue",
+    "src/client/wrybit/expansions/colonies/colonyView.ts",
+    "src/client/wrybit/expansions/colonies/TradeColony.vue",
+    "src/client/wrybit/expansions/colonies/TradeFees.vue",
+    "src/client/wrybit/expansions/colonies/tradeInput.ts",
+    "src/client/wrybit/expansions/colonies/TradeOffers.vue",
+    "src/client/wrybit/expansions/colonies/TradeShip.vue",
+    "src/client/wrybit/expansions/delta/DeltaBoard.vue",
+    "src/client/wrybit/expansions/delta/DeltaRewards.vue",
+    "src/client/wrybit/expansions/moon/MoonBoard.vue",
+    "src/client/wrybit/expansions/moon/moonRing.ts",
+    "src/client/wrybit/expansions/moon/MoonSpace.vue",
+    "src/client/wrybit/expansions/pathfinders/PlanetsBoard.vue",
+    "src/client/wrybit/expansions/pathfinders/planetTrackRewards.ts",
+    "src/client/wrybit/expansions/turmoil/TurmoilBoard.vue",
+    "src/client/wrybit/expansions/turmoil/TurmoilEventCard.vue",
+    "src/client/wrybit/expansions/turmoil/turmoilHemicycle.ts",
+    "tests/client/wrybit/expansions/ColoniesBoard.spec.ts",
+    "tests/client/wrybit/expansions/DeltaBoard.spec.ts",
+    "tests/client/wrybit/expansions/MoonPlanets.spec.ts",
+    "tests/client/wrybit/expansions/TradePresentation.spec.ts",
+    "tests/client/wrybit/expansions/TurmoilBoard.spec.ts",
+    "assets/wrybit/ships/shuttle-black.png",
+    "assets/wrybit/ships/shuttle-blue.png",
+    "assets/wrybit/ships/shuttle-green.png",
+    "assets/wrybit/ships/shuttle-neutral.png",
+    "assets/wrybit/ships/shuttle-orange.png",
+    "assets/wrybit/ships/shuttle-pink.png",
+    "assets/wrybit/ships/shuttle-purple.png",
+    "assets/wrybit/ships/shuttle-red.png",
+    "assets/wrybit/ships/shuttle-yellow.png",
+    "assets/wrybit/moon/moon-disc.png",
+    "assets/wrybit/moon/space-outline.svg",
+    "assets/wrybit/moon/station-m01.png",
+    "assets/wrybit/moon/station-m37.png",
+    "assets/wrybit/ships/ATTRIBUTION.md",
+    "assets/wrybit/moon/ATTRIBUTION.md",
+    "src/client/components/moon/MoonBoard.vue",
+    "src/client/components/moon/MoonSpace.vue",
+    "src/server/moon/MoonExpansion.ts",
+    "src/common/models/MoonModel.ts",
+    "src/client/components/delta/DeltaProjectBoard.vue",
+    "src/client/components/delta/DeltaBoardStep.ts",
+    "src/common/models/DeltaProjectPlayerModel.ts",
+    "src/common/pathfinders/PlanetaryTracks.ts",
+    "src/common/models/ColonyModel.ts",
+    "src/common/models/ColonyTradeContextModel.ts",
+    "src/common/models/TurmoilModel.ts",
+    "src/common/constants.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -6407,7 +6787,22 @@
       "assets/wrybit/flags/pl.svg",
       "assets/wrybit/flags/ru.svg",
       "assets/wrybit/flags/ua.svg",
+      "assets/wrybit/moon/ATTRIBUTION.md",
+      "assets/wrybit/moon/moon-disc.png",
+      "assets/wrybit/moon/space-outline.svg",
+      "assets/wrybit/moon/station-m01.png",
+      "assets/wrybit/moon/station-m37.png",
       "assets/wrybit/shell/ATTRIBUTION.md",
+      "assets/wrybit/ships/ATTRIBUTION.md",
+      "assets/wrybit/ships/shuttle-black.png",
+      "assets/wrybit/ships/shuttle-blue.png",
+      "assets/wrybit/ships/shuttle-green.png",
+      "assets/wrybit/ships/shuttle-neutral.png",
+      "assets/wrybit/ships/shuttle-orange.png",
+      "assets/wrybit/ships/shuttle-pink.png",
+      "assets/wrybit/ships/shuttle-purple.png",
+      "assets/wrybit/ships/shuttle-red.png",
+      "assets/wrybit/ships/shuttle-yellow.png",
       "docs/game-history-archive.md",
       "docs/game-replay.md",
       "docs/sqlite-history-retention.md",
@@ -6484,6 +6879,8 @@
       "src/client/components/create/createGamePresentation.ts",
       "src/client/components/create/settingsLink.ts",
       "src/client/components/create/useBoardPreview.ts",
+      "src/client/components/delta/DeltaBoardStep.ts",
+      "src/client/components/delta/DeltaProjectBoard.vue",
       "src/client/components/delta/DeltaProjectInput.vue",
       "src/client/components/help/HelpRulebooks.vue",
       "src/client/components/inputChoice.ts",
@@ -6492,6 +6889,8 @@
       "src/client/components/logpanel/logCardModel.ts",
       "src/client/components/logpanel/logSearchText.ts",
       "src/client/components/milestoneAwardPrices.ts",
+      "src/client/components/moon/MoonBoard.vue",
+      "src/client/components/moon/MoonSpace.vue",
       "src/client/components/overview/PlayerInfo.vue",
       "src/client/components/overview/PlayerResource.vue",
       "src/client/components/overview/PlayerResources.vue",
@@ -6538,6 +6937,23 @@
       "src/client/wrybit/create/presentation.ts",
       "src/client/wrybit/create/stickyBottomObserver.ts",
       "src/client/wrybit/create/wikiContent.ts",
+      "src/client/wrybit/expansions/colonies/ColoniesBoard.vue",
+      "src/client/wrybit/expansions/colonies/TradeColony.vue",
+      "src/client/wrybit/expansions/colonies/TradeFees.vue",
+      "src/client/wrybit/expansions/colonies/TradeOffers.vue",
+      "src/client/wrybit/expansions/colonies/TradeShip.vue",
+      "src/client/wrybit/expansions/colonies/colonyView.ts",
+      "src/client/wrybit/expansions/colonies/tradeInput.ts",
+      "src/client/wrybit/expansions/delta/DeltaBoard.vue",
+      "src/client/wrybit/expansions/delta/DeltaRewards.vue",
+      "src/client/wrybit/expansions/moon/MoonBoard.vue",
+      "src/client/wrybit/expansions/moon/MoonSpace.vue",
+      "src/client/wrybit/expansions/moon/moonRing.ts",
+      "src/client/wrybit/expansions/pathfinders/PlanetsBoard.vue",
+      "src/client/wrybit/expansions/pathfinders/planetTrackRewards.ts",
+      "src/client/wrybit/expansions/turmoil/TurmoilBoard.vue",
+      "src/client/wrybit/expansions/turmoil/TurmoilEventCard.vue",
+      "src/client/wrybit/expansions/turmoil/turmoilHemicycle.ts",
       "src/client/wrybit/import-manifest.json",
       "src/client/wrybit/inputs/ActionCardSections.vue",
       "src/client/wrybit/inputs/ActionStepChips.vue",
@@ -6591,6 +7007,7 @@
       "src/client/wrybit/inputs/choiceMenu.ts",
       "src/client/wrybit/inputs/colony/ColonyPlanet.vue",
       "src/client/wrybit/inputs/colony/planetAppearance.ts",
+      "src/client/wrybit/inputs/compositePresentation.ts",
       "src/client/wrybit/inputs/draftCards.ts",
       "src/client/wrybit/inputs/inputSourceCard.ts",
       "src/client/wrybit/inputs/milestoneAwardChoice.ts",
@@ -6807,14 +7224,21 @@
       "src/common/cards/CardReplacementRules.ts",
       "src/common/cards/CardRequirementDescriptor.ts",
       "src/common/cards/RequirementType.ts",
+      "src/common/constants.ts",
       "src/common/models/AmountPreviewModel.ts",
       "src/common/models/BoardPreviewModel.ts",
       "src/common/models/ClaimedMilestoneModel.ts",
+      "src/common/models/ColonyModel.ts",
+      "src/common/models/ColonyTradeContextModel.ts",
       "src/common/models/ConditionalDiscountModel.ts",
+      "src/common/models/DeltaProjectPlayerModel.ts",
+      "src/common/models/MoonModel.ts",
       "src/common/models/OceanPlacementContextModel.ts",
       "src/common/models/PlayerInputModel.ts",
       "src/common/models/PlayerModel.ts",
       "src/common/models/ReplayModel.ts",
+      "src/common/models/TurmoilModel.ts",
+      "src/common/pathfinders/PlanetaryTracks.ts",
       "src/locales/ru/replay.json",
       "src/server/Game.ts",
       "src/server/GameCards.ts",
@@ -6991,6 +7415,7 @@
       "src/server/models/finalGreeneryPresentation.ts",
       "src/server/models/publicConditionalDiscounts.ts",
       "src/server/moon/BasePlaceMoonTile.ts",
+      "src/server/moon/MoonExpansion.ts",
       "src/server/moon/PlaceMoonHabitatTile.ts",
       "src/server/moon/PlaceMoonMineTile.ts",
       "src/server/moon/PlaceMoonRoadTile.ts",
@@ -7060,6 +7485,11 @@
       "src/styles/wrybit/dialog_frame.less",
       "src/styles/wrybit/discount_badges.less",
       "src/styles/wrybit/draft_card_selection.less",
+      "src/styles/wrybit/expansions/colonies_board.less",
+      "src/styles/wrybit/expansions/deal_steps.less",
+      "src/styles/wrybit/expansions/delta_rewards.less",
+      "src/styles/wrybit/expansions/moon_ring.less",
+      "src/styles/wrybit/expansions/turmoil_board.less",
       "src/styles/wrybit/fan_project_notice.less",
       "src/styles/wrybit/frosted_surface.less",
       "src/styles/wrybit/game_menu.less",
@@ -7158,6 +7588,11 @@
       "tests/client/wrybit/create/ModuleFilterPresentation.spec.ts",
       "tests/client/wrybit/create/SettingsLinkFlow.spec.ts",
       "tests/client/wrybit/create/wikiContent.spec.ts",
+      "tests/client/wrybit/expansions/ColoniesBoard.spec.ts",
+      "tests/client/wrybit/expansions/DeltaBoard.spec.ts",
+      "tests/client/wrybit/expansions/MoonPlanets.spec.ts",
+      "tests/client/wrybit/expansions/TradePresentation.spec.ts",
+      "tests/client/wrybit/expansions/TurmoilBoard.spec.ts",
       "tests/client/wrybit/inputs/AmountPreview.spec.ts",
       "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts",
       "tests/client/wrybit/inputs/ColonyPresentation.spec.ts",

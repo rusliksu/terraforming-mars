@@ -1,5 +1,6 @@
 <template>
-  <div :class="['wf-options', {'wf-options--tabs': binding.asTabs}]" data-source-or>
+  <TradeFees v-if="tradeFee" :binding="binding"/>
+  <div v-else :class="['wf-options', {'wf-options--tabs': binding.asTabs}]" data-source-or>
     <label v-if="binding.showtitle && !binding.asTabs && !tileMenu"><div>{{ $t(binding.playerinput.title) }}</div></label>
     <label v-if="binding.playerinput.warning !== undefined" class="card-warning"><div>({{ $t(binding.playerinput.warning) }})</div></label>
     <div v-if="binding.asTabs && !tileMenu && outerFooter === undefined && spaceChoice === undefined" class="or-tabs" role="tablist">
@@ -68,6 +69,9 @@
 
 <script setup lang="ts">
 import {computed, inject, onBeforeUnmount, ref} from 'vue';
+import {registerCompositeView} from './compositePresentation';
+import TradeFees from '@/client/wrybit/expansions/colonies/TradeFees.vue';
+import {isTradeChild} from '@/client/wrybit/expansions/colonies/tradeInput';
 import {ROOT_INPUT_FOOTER, useInputPresentation} from './presentation';
 import type {ColorWithNeutral} from '@/common/Color';
 import type {ComponentPublicInstance} from 'vue';
@@ -102,6 +106,8 @@ import CancelActionButton from './CancelActionButton.vue';
 import InputIntro from './InputIntro.vue';
 
 const props = defineProps<{binding: OrOptionsBinding}>();
+const composite = registerCompositeView('or', computed(() => props.binding));
+const tradeFee = computed(() => isTradeChild(composite?.input.value, props.binding.playerinput, 'fee'));
 const sourceCard = computed(() => inputSourceCard(props.binding.playerinput));
 const cardView = useInputPresentation('card');
 const projectView = useInputPresentation('projectCard');

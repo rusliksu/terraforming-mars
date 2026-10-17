@@ -15,18 +15,11 @@
       <MoonBoard v-if="game.moon" ref="columnMoon" class="board-cont--zoomable" @click="onBoardClick($event, 'moon')" :model="game.moon" :tileView="tileView" id="shortkey-moonBoard"/>
     </Teleport></template>
     <template #colonies>
-      <div class="colonies-fleets-cont">
-        <div class="colonies-player-fleets" v-for="player in players" :key="player.color">
-          <div :class="'colonies-fleet colonies-fleet-' + player.color" v-for="idx in Math.max(0, player.fleetSize - player.tradesThisGeneration)" :key="idx"></div>
-        </div>
-      </div>
-      <div class="player_home_colony_cont">
-        <div class="player_home_colony" v-for="colony in game.colonies" :key="colony.name"><Colony :colony="colony" :active="colony.isActive"/></div>
-      </div>
+      <ColoniesBoard :colonies="game.colonies" :players="players" :viewer="viewer"/>
     </template>
-    <template #turmoil><Turmoil v-if="game.turmoil" :turmoil="game.turmoil" :morePartiesExpansion="game.gameOptions.expansions.moreParties" :agendaStyle="game.gameOptions.politicalAgendasExtension"/></template>
-    <template #paths><PlanetaryTracks v-if="game.pathfinders" :tracks="game.pathfinders" :gameOptions="game.gameOptions"/></template>
-    <template #delta><DeltaProjectBoard :players="players"/></template>
+    <template #turmoil><TurmoilBoard v-if="game.turmoil" :turmoil="game.turmoil" :viewer="viewer" :generation="game.generation" :moreParties="game.gameOptions.expansions.moreParties"/></template>
+    <template #paths><PlanetsBoard v-if="game.pathfinders" :model="game.pathfinders" :gameOptions="game.gameOptions"/></template>
+    <template #delta><DeltaBoard :players="players" :viewerColor="viewer?.color"/></template>
     <template #venus><Teleport :to="boardZoomTarget ?? 'body'" :disabled="boardZoomTarget === undefined || zoomBoard !== 'venus'">
       <VenusSurfaceBoard v-if="game.venusPhase2" ref="columnVenus" class="board-cont--zoomable" @click="onBoardClick($event, 'venus')" :model="game.venusPhase2" :tileView="tileView"
       :venusScaleLevel="game.venusScaleLevel" :altVenusBoard="game.gameOptions.altVenusBoard"
@@ -48,11 +41,17 @@
 
 <script lang="ts">
 import {defineComponent, markRaw, ref} from 'vue';
+import type {PropType} from 'vue';
 import type {ComponentPublicInstance} from 'vue';
 import CanonicalGameBoardView from '@/client/components/GameBoardView.vue';
 import BoardTabs from '@/client/wrybit/visuals/boardTabs/BoardTabs.vue';
 import Board from '@/client/wrybit/visuals/Board.vue';
-import Colony from '@/client/components/colonies/Colony.vue';
+import MoonBoard from '@/client/wrybit/expansions/moon/MoonBoard.vue';
+import DeltaBoard from '@/client/wrybit/expansions/delta/DeltaBoard.vue';
+import PlanetsBoard from '@/client/wrybit/expansions/pathfinders/PlanetsBoard.vue';
+import TurmoilBoard from '@/client/wrybit/expansions/turmoil/TurmoilBoard.vue';
+import ColoniesBoard from '@/client/wrybit/expansions/colonies/ColoniesBoard.vue';
+import type {PublicPlayerModel} from '@/common/models/PlayerModel';
 import Milestones from '@/client/wrybit/visuals/Milestones.vue';
 import Awards from '@/client/wrybit/visuals/Awards.vue';
 import {SpaceId} from '@/common/Types';
@@ -69,7 +68,10 @@ import {BoardName} from '@/common/boards/BoardName';
 export default defineComponent({
   name: 'GameBoardView',
   extends: CanonicalGameBoardView,
-  components: {BoardTabs, Board, Colony, Milestones, Awards, BoardZoomModal, PlacementBanner},
+  components: {BoardTabs, Board, ColoniesBoard, TurmoilBoard, MoonBoard, PlanetsBoard, DeltaBoard, Milestones, Awards, BoardZoomModal, PlacementBanner},
+  props: {
+    viewer: {type: Object as PropType<PublicPlayerModel>, default: undefined},
+  },
   setup() {
     return {zoomGeometry: markRaw({revision: ref(0)}), marsFrame: RING_FRAME, BoardName};
   },

@@ -7996,6 +7996,22 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp04-expansions-requests-final.txt"
           ],
           "note": "Modern source colony/trade, committee/events, lunar ring, planet tracks and Delta layouts adapted to our native public models and permanent input owners. NativeAnd provides only a read-only presentation context; native save/process/default/indices unchanged. Unknown special trade fees preserve their native labels/order/callback. Current track metadata is explicitly labelled Current trade track, not predicted proceeds; no foreign offset/reset/trigger/influence or Delta reachability formulas. Native More Parties agenda text, neutral reserve count, policy-action users and persona colours retained. Lunar stations retain native IDs/names, native cell/bonus/co-owner/coordinate semantics; visual bonus pins verified against our MoonExpansion. Planetary lanes use our PLANETARY_TRACKS and distinguish most-tags awards; disabled Venus/Moon rows hidden. Delta inherits our steps/rewardIcons and includes Epsilon Dample second marker; foreign forecast/eligibility excluded. 1262client/281files pass; 11focused/7files after type-only fixture corrections; Vue types/scoped lint/styles pass. App build green; final Delta caption clarified from Next reward to Position afterwards (text-only). Two bounded fee-index/current-resource mutants killed; bytes restored green. Real App1920 screenshots viewed: Mercury clipping and event-effect clipping found and fixed; no missing images, console0/0, only GETs, no moves/DB. Trade and party choices survive classic return. Synthetic fixture restored to original SHA256 9d4fb6b37bce785b9a6feebf645cb75a08957e391fabc53a75341a151acaa066. Full mobile/whole-game/server-accepted flows, independent WP review and staging remain open."
+        },
+        {
+          "kind": "wp04-review1-delegate-overflow",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/expansions/TurmoilBoard.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp04-overflow-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp04-overflow-green.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp04-overflow-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp04-overflow-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp04-turmoil-overflow-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp04-overflow-browser-proof.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp04-overflow-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp04-overflow-requests.txt"
+          ],
+          "note": "Independent cycle1 REJECT found a valid party can exceed the source twelve seats. Visible overflow now groups every remaining native seated color/count after the leader and rendered seats, without game/controller changes. Production component regression RED missing overflow; GREEN red+1 -> pearl+2 -> absent on refreshed models. Existing party and CSS isolation checks green (4/3files), Vue types, scoped lint/style and App build green. Actual App1920 overflow red+1 fully visible, screenshot viewed; console0/0, only GETs, original synthetic fixture restored. Prior full native12919/0fail is pre-fix; final cycle2 gate/review remains pending."
         }
       ],
       "scope": "Modern optional view adapted to native owner/model; full flow deferred to WP07."
@@ -11711,6 +11727,22 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp04-expansions-requests-final.txt"
           ],
           "note": "Modern source colony/trade, committee/events, lunar ring, planet tracks and Delta layouts adapted to our native public models and permanent input owners. NativeAnd provides only a read-only presentation context; native save/process/default/indices unchanged. Unknown special trade fees preserve their native labels/order/callback. Current track metadata is explicitly labelled Current trade track, not predicted proceeds; no foreign offset/reset/trigger/influence or Delta reachability formulas. Native More Parties agenda text, neutral reserve count, policy-action users and persona colours retained. Lunar stations retain native IDs/names, native cell/bonus/co-owner/coordinate semantics; visual bonus pins verified against our MoonExpansion. Planetary lanes use our PLANETARY_TRACKS and distinguish most-tags awards; disabled Venus/Moon rows hidden. Delta inherits our steps/rewardIcons and includes Epsilon Dample second marker; foreign forecast/eligibility excluded. 1262client/281files pass; 11focused/7files after type-only fixture corrections; Vue types/scoped lint/styles pass. App build green; final Delta caption clarified from Next reward to Position afterwards (text-only). Two bounded fee-index/current-resource mutants killed; bytes restored green. Real App1920 screenshots viewed: Mercury clipping and event-effect clipping found and fixed; no missing images, console0/0, only GETs, no moves/DB. Trade and party choices survive classic return. Synthetic fixture restored to original SHA256 9d4fb6b37bce785b9a6feebf645cb75a08957e391fabc53a75341a151acaa066. Full mobile/whole-game/server-accepted flows, independent WP review and staging remain open."
+        },
+        {
+          "kind": "wp04-review1-delegate-overflow",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/expansions/TurmoilBoard.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp04-overflow-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp04-overflow-green.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp04-overflow-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp04-overflow-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp04-turmoil-overflow-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp04-overflow-browser-proof.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp04-overflow-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp04-overflow-requests.txt"
+          ],
+          "note": "Independent cycle1 REJECT found a valid party can exceed the source twelve seats. Visible overflow now groups every remaining native seated color/count after the leader and rendered seats, without game/controller changes. Production component regression RED missing overflow; GREEN red+1 -> pearl+2 -> absent on refreshed models. Existing party and CSS isolation checks green (4/3files), Vue types, scoped lint/style and App build green. Actual App1920 overflow red+1 fully visible, screenshot viewed; console0/0, only GETs, original synthetic fixture restored. Prior full native12919/0fail is pre-fix; final cycle2 gate/review remains pending."
         }
       ]
     },

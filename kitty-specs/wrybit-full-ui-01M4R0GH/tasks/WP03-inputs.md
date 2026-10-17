@@ -27,6 +27,12 @@ owned_files:
 - src/client/wrybit/create/**
 - src/client/components/create/CreateGameForm.vue
 - src/client/components/create/createGamePresentation.ts
+- src/client/components/create/ModuleItemFilter.vue
+- src/client/components/create/CorporationsFilter.vue
+- src/client/components/create/PreludesFilter.vue
+- src/client/components/create/ColoniesFilter.vue
+- src/client/components/create/CeosFilter.vue
+- src/client/components/create/ceoSelection.ts
 - tests/client/components/create/**
 - src/client/wrybit/visuals/common/PlayerCube.vue
 - tests/client/wrybit/visuals/PlayerCube.spec.ts
@@ -163,3 +169,5 @@ Party/colony scoped proof: source cards/figures/planet assets use our agendas an
 Creation presentation scoped proof: all62 readonly projected fields and28canonical expansions, source cards/columns/widgets/header icons/wiki; native methods/defaults/watchers/serializer/AI retained. Permanent native editors/ref/filter search/config survive layout changes; source submit body byte-equals native. One mode-key mutation killed then exact restoration green. Full1200client/256files, types/scoped lint/style/App build; real1920desktop/390phone, classic-return edits retained, console0/0, fresh default-off no optional assets, GET-only fixture. New source files below1000lines; existing native legacy owner remains large with unchanged methods. Grouping/content/board preview/share/inline custom lists and full rows/T009-T012 remain OPEN.
 
 Creation grouping/preview scoped proof: source menu/content lines use our canonical public manifests, all28+base complete; six count/source groupings preserve own config and exact intercepted submit body. Actual App Corporations grouping, console0/0; focused5tests/4files, types/lint/style/App build. Pure preview contract separately verified with custom geometry/error/redraw/random-example label; no fake producer and no foreign boardSeed or backend import. Own preview/trait projections remain deferred and OPEN for integration, as do share/inline lists/full creation. No lifecycle transition or full row accepted.
+
+Custom-list presentation scoped proof: source Show/Edit + real card previews + inline grouped filters wired to permanent native editors. All selections/replacements/availability/defaults stay native; exact native CEO default helper extracted. Six filter hosts keep identity/search through Show/Edit/classic. Actual App desktop/phone and classic return, console0/0; full1204client/259files green, types/lint/style/App build. Native Create methods/watchers/style unchanged. Full creation/WP03/21rows remain OPEN.

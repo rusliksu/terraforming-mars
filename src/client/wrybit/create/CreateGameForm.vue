@@ -231,7 +231,10 @@
           </section>
         </Teleport>
         </template>
-        <PresentationHost :hosts="binding.hosts.filters"/>
+        <CustomCardListCard v-for="list in visibleCustomLists" :key="list.kind" :binding="list"/>
+        <section v-if="showColoniesList" class="create-game--block"><h2 v-i18n>Custom Colonies list</h2><PresentationHost :hosts="binding.hosts.colonies"/></section>
+        <PresentationHost :hosts="binding.hosts.banned"/>
+        <PresentationHost :hosts="binding.hosts.included"/>
       </main>
       <aside class="create-game-side">
         <section class="create-game-players">
@@ -267,6 +270,7 @@ import type {ExpansionGroup} from './expansionGrouping';
 import {contentLine} from './expansionContentLine';
 import ExpansionGroupMenu from './ExpansionGroupMenu.vue';
 import CreateGameBoardPreview from './CreateGameBoardPreview.vue';
+import CustomCardListCard from './CustomCardListCard.vue';
 import {BoardName} from '@/common/boards/BoardName';
 import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
 import {RandomMAOptionType} from '@/common/ma/RandomMAOptionType';
@@ -284,6 +288,15 @@ import InfoLink from './InfoLink.vue';
 import ChoiceChip from './ChoiceChip.vue';
 
 const props = defineProps<{binding: CreatePresentationBinding}>();
+const visibleCustomLists = computed(() => props.binding.customLists.filter((list) => {
+  if (list.kind === 'corporations') {
+    return props.binding.model.showCorporationList;
+  }
+  if (list.kind === 'preludes') {
+    return props.binding.model.showPreludesList;
+  }
+  return props.binding.model.showCeosList;
+}));
 const importArrowPath = 'M5.44 2.7L11.75 13.63M12.33 10.89L11.75 13.63L9.09 12.77';
 const exportArrowPath = 'M12.25 13.63L18.56 2.7M15.9 3.56L18.56 2.7L19.15 5.44';
 const {field} = useCreateFields(() => props.binding);

@@ -38,6 +38,7 @@ import {toName} from '../../common/utils/utils';
 import {MAX_AWARDS, MAX_MILESTONES} from '../../common/constants';
 import {getOceanPlacementContext} from './OceanPlacementContext';
 import {AstraMechanica} from '../cards/promo/AstraMechanica';
+import {promptIdForModel} from './promptId';
 
 export class Server {
   private static readonly FANMADE_CATALOG_REVISION = 'fanmade:rebalanced-v1';
@@ -271,8 +272,14 @@ export class Server {
     if (waitingFor.annotation !== undefined) {
       model.annotation = waitingFor.annotation;
     }
+    model.promptId = promptIdForModel(model);
     return model;
     // showReset: player.game.inputsThisRound > 0 && player.game.resettable === true && player.game.phase === Phase.ACTION,
+  }
+
+  /** Identity of the prompt currently offered to this player. */
+  public static getWaitingForPromptId(player: IPlayer): string | undefined {
+    return Server.getWaitingFor(player, player.getWaitingFor())?.promptId;
   }
 
   /** When the model is for this player, show the VP. Players like seeing their own VP even if the feature is off. */

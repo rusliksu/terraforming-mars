@@ -222,6 +222,16 @@ describe('ServerModel', () => {
     expect(response.options[1].annotation).eq(undefined);
   });
 
+  it('gives a prompt a stable identity that changes when the prompt changes', () => {
+    [game, player] = testGame(1);
+    const prompt = new SelectOption('First option');
+
+    const firstId = Server.getWaitingFor(player, prompt)?.promptId;
+    expect(firstId).not.to.be.undefined;
+    expect(Server.getWaitingFor(player, prompt)?.promptId).eq(firstId);
+    expect(Server.getWaitingFor(player, new SelectOption('Second option'))?.promptId).not.eq(firstId);
+  });
+
   it('exposes bot control for original and surrendered bot seats', () => {
     [game, player, player2] = testGame(2);
     game.setBotPlayerIds([player.id]);

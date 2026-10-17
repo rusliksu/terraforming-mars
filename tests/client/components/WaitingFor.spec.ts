@@ -101,6 +101,37 @@ describe('WaitingFor', () => {
     expect(wrapper.text()).to.not.include('Not your turn');
   });
 
+  it('sends the current prompt identity with the answer', () => {
+    const wrapper = mountWaitingFor({
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {
+          'PlayerInputFactory': {template: '<div class="stub-pif"></div>'},
+        },
+      },
+      props: {
+        playerView: playerView as PlayerViewModel,
+        waitingfor: {
+          type: 'option',
+          title: 'test',
+          buttonLabel: 'save',
+          promptId: 'prompt-42',
+        },
+      },
+    });
+    const requests: Array<{url: string, body: string}> = [];
+    wrapper.vm.fetchPlayerInput = ((url: string, options: {body?: string}) => {
+      requests.push({url, body: String(options.body ?? '')});
+      return Promise.resolve() as Promise<unknown>;
+    }) as typeof wrapper.vm.fetchPlayerInput;
+
+    (wrapper.vm as any).onsave({type: 'option'});
+
+    expect(requests).has.length(1);
+    expect(JSON.parse(requests[0].body)).deep.include({promptId: 'prompt-42'});
+  });
+
   it('shows "not your turn" when waitingfor is undefined', () => {
     const wrapper = mountWaitingFor({
       ...globalConfig,

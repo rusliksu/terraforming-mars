@@ -52,12 +52,13 @@ describe('source creation view with our permanent form owner', () => {
       await wrapper.findAll('button').find((button) => button.text() === 'Expansion options')!.trigger('click');
       expect(sourceEditor.isVisible()).is.true;
       await sourceEditor.setValue('synthetic invalid Venus board draft');
-      const config = JSON.stringify(owner.serializeSettings());
+      expect(owner.newGameConfig.expansions.venusPhase2).is.true;
+      const config = JSON.stringify(owner.newGameConfig);
       view.value = undefined;
       await flushPromises();
       expect(wrapper.get('#custom-venus-board-code').element).eq(editor);
       expect((editor as HTMLTextAreaElement).value).eq('synthetic invalid Venus board draft');
-      expect(JSON.stringify(owner.serializeSettings())).eq(config);
+      expect(JSON.stringify(owner.newGameConfig)).eq(config);
       expect([owner.expansions.venus, owner.expansions.turmoil, owner.expansions.moon, owner.expansions.ares]).deep.eq([false, false, false, false]);
     } finally {
       wrapper.unmount();

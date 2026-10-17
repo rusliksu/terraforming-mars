@@ -83,8 +83,8 @@
   },
   "schema_version": 1,
   "map_kind": "scoped-dependency-union",
-  "source_commit": "1746d001a31b235dca715d312540f2337201d9f4",
-  "generated_at": "2026-10-17T19:22:51.691Z",
+  "source_commit": "1b77b3592be80f8b9ad899071233e24592de41f9",
+  "generated_at": "2026-10-17T19:30:58.807Z",
   "source_tree_was_clean": false,
   "scope": [
     "assets/wrybit/board/ATTRIBUTION.md",
@@ -1800,7 +1800,7 @@
     "tests/client/wrybit/create/BoardPreview.spec.ts": "3deed60ef524e3609e0085a536b573292f722d6970b7de3bd72dbdb60cd45d85",
     "tests/client/wrybit/create/BoardPreviewRequest.spec.ts": "fafad1a820c698699e848ac40eb67607331b97eba37b070c7ec97ba767550b02",
     "tests/client/wrybit/create/ControlledWidgets.spec.ts": "953baa6125f80dbd9c92f57f21c65bb872d9a6e7482678afa7898a3e3e739534",
-    "tests/client/wrybit/create/CreatePresentation.spec.ts": "cbecbc441797f15ab6bd805c29716a595fcf772bf2ee81e275e78df050ea04be",
+    "tests/client/wrybit/create/CreatePresentation.spec.ts": "5ec6bfcd01eebf3f0517382292c68629998ef3d80324ba66b5dee826cb445426",
     "tests/client/wrybit/create/ExpansionFeatures.spec.ts": "56cac569daf13d99354982ac1a45a5c72d6fb22418edd8d2f8ada0a507e3dbcf",
     "tests/client/wrybit/create/ExpansionGrouping.spec.ts": "2432e719d77b9cb10126cdf9b6f17f63f5495dd0193ba36d8dfe04fb3711e74c",
     "tests/client/wrybit/create/ModuleFilterPresentation.spec.ts": "e66994c0c06569d7123309e856a7814520cac72d9948c934b5f05f9dbda7a837",
@@ -1900,7 +1900,7 @@
     "tools/fanmade-port/check-catalog-source.js": "7cb76a3358482c383a6c2fbc79cac51cff4b0f859e6a348431548da161e0e9f3",
     "tools/fanmade-port/fanmade-catalog-source-manifest.json": "8e329d036953b41d90811bdb7a76163be06e98890d64fcac7fcb9827b1d52620"
   },
-  "scope_fingerprint": "94a7a167dc1d108d69bd34cffc5be25644a2d051350ecc72c38cc6b914f28ea0",
+  "scope_fingerprint": "609e51552ec67c176b1ac264eec87e5942b256aa84bee44136d56ec008618e38",
   "changed_modules": [
     "src/common/Timer.ts",
     "src/server/Game.ts",

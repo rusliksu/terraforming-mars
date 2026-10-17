@@ -82,6 +82,7 @@ owned_files:
 - src/client/components/SelectClaimedUndergroundToken.vue
 - src/client/components/delta/DeltaProjectInput.vue
 - src/client/components/PlayerInputFactory.vue
+- src/client/components/inputChoice.ts
 - src/client/components/common/ConfirmDialog.vue
 - src/client/wrybit/visuals/TabPanelFooterSlot.vue
 - src/client/wrybit/visuals/ShiftAresGlobalParameters.vue
@@ -91,6 +92,7 @@ owned_files:
 - src/client/wrybit/shell/WrybitShell.vue
 - tests/client/wrybit/shell/WrybitShell.spec.ts
 - src/styles/wrybit/choice_block.less
+- src/styles/wrybit/ceo_action_section.less
 - src/styles/wrybit/amount_slider.less
 - src/styles/wrybit/selection_highlight.less
 - src/styles/wrybit/resource_options.less
@@ -199,3 +201,5 @@ Native board preview scoped proof: real read-only route, own GameSetup factory a
 Expansion feature grouping scoped proof: all9source groupings use native surfaces/GlobalParameter/TileType + own card modules. Exact all28+base coverage in each grouping. All66numeric tile types audited, no unmapped live type; explicit Moon Mine vs Mine collision regression. Layout adds our HighOrbit/teams/VenusPhase2 panels; own special tile types included and fallback labelled Cards and variants. No foreign expansionFacts counts. Ninefocused/3files, types/lint/App build; actual App Board/NewTiles/GlobalParameters + final unobscured custom preview, console0/0. Prior full1208/260 remains baseline; full creation/share/input/review still OPEN.
 
 Public settings link scoped proof: source Copy header/feedback uses own versioned public preset codec and native importer. Exact42native scalar fields/order retained; current seed/first seat/all own expansions/lists/custom maps round-trip, private player/profile/contact/clone fields excluded and bot/async off. Malformed links validated before live model; query precedence, clipboard denial and fresh default-off restore tested. Full1216client/263files, types/scoped lint/App build green; whitelist mutation killed/exact restoration green. Actual App1440/390 and fresh classic browser Hellas/HighOrbit/empty names/no optional assets, console0/0. Source serializer/AI levels not imported. All T009-T012/full21rows remain OPEN.
+
+Or choice/grouping scoped proof: source plain/inline/player tiles and combined Actions/CEO use native offered choices and permanent native SelectPlayer/SelectCard drafts. Typed UI choice bridge validates offered color/name and single-card shape, never creates responses; native Or original indices/save path retained and post-tick mode/option checked. Used/unavailable sections follow own catalogue/tableau/CEO flags. Full1218client/264files, types/lint/style/App green; offered-name mutant rejected/exact restore green. Real App normal CEO/hand/classic and player/classic selections, console0/0. Source section style adapted for shared-grid specificity, final left alignment measured97px for both cards/headings. Original synthetic fixture restored; no moves/DB. MA/party variants/forecasts/card-intro/draft/viewport/undo still OPEN, all T009-T012/full21rows unaccepted.

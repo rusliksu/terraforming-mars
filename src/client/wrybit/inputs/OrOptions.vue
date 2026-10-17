@@ -2,22 +2,22 @@
   <div :class="['wf-options', {'wf-options--tabs': binding.asTabs}]" data-source-or>
     <label v-if="binding.showtitle && !binding.asTabs"><div>{{ $t(binding.playerinput.title) }}</div></label>
     <label v-if="binding.playerinput.warning !== undefined" class="card-warning"><div>({{ $t(binding.playerinput.warning) }})</div></label>
-    <div v-if="binding.asTabs" class="or-tabs" role="tablist">
+    <div v-if="binding.asTabs && !tileMenu" class="or-tabs" role="tablist">
       <HandCardsTab :count="handCount" :active="handTabActive" @select="handTabActive = true"/>
       <button v-for="idx in tabOrder" :key="idx" type="button" role="tab"
         :ref="(el) => registerLabel(idx, el)"
-        :data-option-index="idx" :title="$t(fullTabTitle(binding.displayedOptions[idx].title))"
-        :aria-selected="!handTabActive && binding.selectedIdx === idx"
-        :class="['or-tab', toneClass('or-tab--tone-', binding.displayedOptions[idx]), {'or-tab--active': !handTabActive && binding.selectedIdx === idx, 'or-tab--empty': availableCount(binding.displayedOptions[idx]) === 0, 'or-tab--highlight': tabHighlighted(binding.displayedOptions[idx].title), 'or-tab--end': isEndTab(binding.displayedOptions[idx].title)}]"
+        :data-option-index="idx" :title="$t(fullTabTitle(tabTitle(idx)))"
+        :aria-selected="tabActive(idx)"
+        :class="['or-tab', toneClass('or-tab--tone-', binding.displayedOptions[idx]), {'or-tab--active': tabActive(idx), 'or-tab--empty': tabCount(idx) === 0, 'or-tab--highlight': tabHighlighted(tabTitle(idx)), 'or-tab--end': isEndTab(tabTitle(idx))}]"
         @click="selectTab(binding.displayedOptions[idx])">
         <OrOptionsTabIcon v-for="icon in iconsFor(idx)" :key="icon" :icon="icon"/>
-        <span class="or-tab-title">{{ $t(shortTabLabel(binding.displayedOptions[idx].title)) }}</span>
-        <span v-if="availableCount(binding.displayedOptions[idx]) !== undefined" class="or-tab-count">{{ availableCount(binding.displayedOptions[idx]) }}</span>
+        <span class="or-tab-title">{{ $t(shortTabLabel(tabTitle(idx))) }}</span>
+        <span v-if="tabCount(idx) !== undefined" class="or-tab-count">{{ tabCount(idx) }}</span>
       </button>
     </div>
     <div :class="[{'or-tab-panel': binding.asTabs, 'or-tab-panel--view': binding.asTabs && handTabActive, 'or-tab-panel--end': !handTabActive && binding.selectedOption !== undefined && isEndTab(binding.selectedOption.title)}, !handTabActive && binding.selectedOption ? toneClass('or-tab-panel--tone-', binding.selectedOption) : undefined]" :role="binding.asTabs ? 'tabpanel' : undefined">
-      <HandCardsPanel v-if="binding.asTabs && handTabActive" :playerView="binding.playerView"/>
-      <template v-if="!binding.asTabs">
+      <HandCardsPanel v-if="binding.asTabs && !tileMenu && handTabActive" :playerView="binding.playerView"/>
+      <template v-if="!binding.asTabs && !tileMenu">
         <div v-for="(option, idx) in binding.displayedOptions" :key="idx">
           <label class="form-radio" :ref="(el) => registerLabel(idx, el)">
             <input type="radio" :name="binding.radioElementName" :value="idx" :checked="binding.selectedIdx === idx" @change="binding.select(option)">
@@ -26,15 +26,27 @@
           <PresentationHost v-if="binding.selectedIdx === idx" :hosts="binding.childHost" style="margin-left: 30px"/>
         </div>
       </template>
-      <PresentationHost v-if="binding.asTabs" v-show="!handTabActive" :hosts="binding.childHost"/>
+      <div v-if="tileMenu" class="or-tab-intro or-tab-question"><div class="or-tab-intro-title">{{ $t(binding.playerinput.title) }}</div></div>
+      <div v-if="tileMenu" class="choice-options choice-block" :class="{'choice-options--players': hasPlayerChoice}" :style="choiceBlockStyle(tileCount)" role="radiogroup">
+        <template v-for="(option, index) in binding.displayedOptions" :key="index">
+          <template v-if="option.type === 'player'">
+            <PlayerOptionTile v-for="color in option.players" :key="color" :color="color" :player="binding.playerView.players.find((player) => player.color === color)"
+              :caption="option.title" :selected="binding.selectedIdx === index && binding.selectedChoice?.type === 'player' && binding.selectedChoice.color === color"
+              :groupName="binding.radioElementName" @select="selectPlayer(option, $event)"/>
+          </template>
+          <ChoiceOptionTile v-else :title="option.title" :selected="binding.selectedIdx === index" :groupName="binding.radioElementName" @select="binding.select(option)"/>
+        </template>
+      </div>
+      <ActionCardSections v-if="inActionsGroup" v-show="!handTabActive" :binding="binding"/>
+      <PresentationHost v-if="binding.asTabs || tileMenu" v-show="!handTabActive && !inActionsGroup && (!tileMenu || inlineChoice)" :hosts="binding.childHost"/>
       <p v-if="binding.asTabs && !handTabActive && binding.selectedOption && endTabHint(binding.selectedOption.title) !== undefined" class="or-tab-end-hint">{{ $t(endTabHint(binding.selectedOption.title) ?? '') }}</p>
       <div v-if="binding.asTabs" v-show="!handTabActive" class="or-tab-footer">
         <PresentationHost :hosts="binding.footerHost"/>
         <ActionStepChips v-if="turnStep !== undefined" :step="turnStep"/>
-        <div v-if="showSave" :class="['wf-action', 'or-tab-save', binding.selectedOption ? toneClass('or-tab-save--', binding.selectedOption) : undefined]"><AppButton :title="$t(saveLabel)" type="submit" @click="binding.save()"/></div>
+        <div v-if="showSave" :class="['wf-action', 'or-tab-save', binding.selectedOption ? toneClass('or-tab-save--', binding.selectedOption) : undefined]"><AppButton :title="$t(saveLabel)" type="submit" :disabled="saveDisabled" @click="binding.save()"/></div>
       </div>
       <TabPanelFooterSlot v-else-if="showSave">
-        <div class="wf-action or-options-save"><AppButton :title="$t(binding.selectedOption?.buttonLabel ?? '')" type="submit" @click="binding.save()"/></div>
+        <div class="wf-action or-options-save"><AppButton :title="$t(binding.selectedOption?.buttonLabel ?? '')" type="submit" :disabled="saveDisabled" @click="binding.save()"/></div>
       </TabPanelFooterSlot>
     </div>
   </div>
@@ -42,6 +54,7 @@
 
 <script setup lang="ts">
 import {computed, ref} from 'vue';
+import type {ColorWithNeutral} from '@/common/Color';
 import type {ComponentPublicInstance} from 'vue';
 import type {OrOptionsBinding} from './presentation';
 import type {PlayerInputModel} from '@/common/models/PlayerInputModel';
@@ -56,17 +69,49 @@ import ActionStepChips from './ActionStepChips.vue';
 import {actionStep} from './actionStep';
 import {endTabHint, fullTabTitle, isEndTab, optionTone, shortTabLabel, tabButtonLabel, tabDisplayOrder, tabHighlighted, tabIcon} from './orOptionsShortLabels';
 import type {TabIcon} from './orOptionsShortLabels';
+import {choiceBlockStyle} from './choiceBlock';
+import {INLINE_INPUT_TYPES, isChoiceMenu} from './choiceMenu';
+import {ACTION_CARDS_TITLE, CEO_ACTION_TITLE, actionOption, ownCeoCards} from './actionCards';
+import ChoiceOptionTile from './ChoiceOptionTile.vue';
+import PlayerOptionTile from './PlayerOptionTile.vue';
+import ActionCardSections from './ActionCardSections.vue';
 
 const props = defineProps<{binding: OrOptionsBinding}>();
 const handTabActive = ref(false);
+const tileMenu = computed(() => isChoiceMenu(props.binding.playerinput));
+const tileCount = computed(() => props.binding.displayedOptions.reduce((count, option) => count + (option.type === 'player' ? option.players.length : 1), 0));
+const hasPlayerChoice = computed(() => props.binding.displayedOptions.some((option) => option.type === 'player'));
+const inlineChoice = computed(() => props.binding.selectedOption !== undefined && (INLINE_INPUT_TYPES as ReadonlyArray<string>).includes(props.binding.selectedOption.type));
+const actionsIndex = computed(() => actionOption(props.binding.displayedOptions, ACTION_CARDS_TITLE));
+const ceoIndex = computed(() => actionOption(props.binding.displayedOptions, CEO_ACTION_TITLE));
+const groupIndex = computed(() => actionsIndex.value !== -1 ? actionsIndex.value : ceoIndex.value);
+const actionsGrouped = computed(() => props.binding.asTabs && groupIndex.value !== -1 && ownCeoCards(props.binding.playerView.thisPlayer).length > 0);
+const inActionsGroup = computed(() => actionsGrouped.value && props.binding.selectedIdx !== -1 && [actionsIndex.value, ceoIndex.value].includes(props.binding.selectedIdx));
 const handCount = computed(() => allCardsInHand(props.binding.playerView).length);
 const showSave = computed(() => props.binding.showsave && props.binding.selectedOption !== undefined && !props.binding.showChildSaveButton(props.binding.selectedOption));
 // Source visual ordering only; the canonical controller retains original response indices.
-const tabOrder = computed(() => tabDisplayOrder(props.binding.displayedOptions.map((option) => option.title)));
+const tabOrder = computed(() => tabDisplayOrder(props.binding.displayedOptions.map((option) => option.title)).filter((index) => !actionsGrouped.value || actionsIndex.value === -1 || index !== ceoIndex.value));
 const turnStep = computed(() => actionStep(props.binding.playerinput));
 const saveLabel = computed(() => props.binding.selectedOption ? tabButtonLabel(props.binding.selectedOption.title, props.binding.selectedOption.buttonLabel) : '');
+const saveDisabled = computed(() => (props.binding.selectedOption?.type === 'player' && props.binding.selectedChoice?.type !== 'player') ||
+  (props.binding.selectedOption?.type === 'card' && props.binding.selectedOption.min === 1 && props.binding.selectedOption.max === 1 && props.binding.selectedChoice?.type !== 'card'));
+function tabTitle(index: number) {
+  return actionsGrouped.value && index === groupIndex.value ? ACTION_CARDS_TITLE : props.binding.displayedOptions[index].title;
+}
+function tabActive(index: number) {
+  return !handTabActive.value && (props.binding.selectedIdx === index || (actionsGrouped.value && index === groupIndex.value && inActionsGroup.value));
+}
+function tabCount(index: number) {
+  return actionsGrouped.value && index === groupIndex.value ? [actionsIndex.value, ceoIndex.value].filter((value) => value !== -1)
+    .reduce((total, value) => total + (availableCount(props.binding.displayedOptions[value]) ?? 0), 0) : availableCount(props.binding.displayedOptions[index]);
+}
+function selectPlayer(option: PlayerInputModel, color: ColorWithNeutral) {
+  if (color !== 'NEUTRAL') {
+    void props.binding.selectChoice(option, {type: 'player', color});
+  }
+}
 function iconsFor(index: number): Array<TabIcon> {
-  const icon = tabIcon(props.binding.displayedOptions[index].title);
+  const icon = tabIcon(tabTitle(index));
   return icon === undefined ? [] : [icon];
 }
 function toneClass(prefix: string, option: PlayerInputModel): string | undefined {
@@ -84,7 +129,9 @@ function availableCount(input: PlayerInputModel): number | undefined {
 }
 function selectTab(option: PlayerInputModel): void {
   handTabActive.value = false;
-  props.binding.select(option);
+  if (!(actionsGrouped.value && option === props.binding.displayedOptions[groupIndex.value] && inActionsGroup.value)) {
+    props.binding.select(option);
+  }
 }
 function registerLabel(index: number, element: Element | ComponentPublicInstance | null): void {
   props.binding.registerLabel(index, element instanceof HTMLElement ? element : null);

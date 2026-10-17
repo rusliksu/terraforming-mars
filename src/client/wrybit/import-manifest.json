@@ -361,9 +361,34 @@
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP03",
-      "target": "src/client/wrybit/inputs/CeoActionSection.vue",
+      "target": "src/client/wrybit/inputs/ActionCardSections.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-or-choice-groups",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/components/inputChoice.ts",
+            "src/client/components/OrOptions.vue",
+            "src/client/components/PlayerInputFactory.vue",
+            "tests/client/wrybit/inputs/OrChoicePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-style-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-ceo-selected.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-ceo-classic.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-selected.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-final-layout.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-geometry.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-final-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-console.txt"
+          ],
+          "note": "Simple/inline choices and player tiles use native offered options; the native Factory edits its real SelectPlayer/SelectCard owner and reads its draft through a typed UI-only choice bridge. Native Or selects the same offered option, checks current owner/mode after nextTick, preserves original response indices and normal save pipeline. No source response generation or title-to-resource rules imported. Actions+CEO share one source tab with merged available count and one native active child; hand-tab/classic retain its card. Public own tableau/native card catalogue/action flags classify used and unavailable cards, own CeoCard/ModelUtils isDisabled semantics verified. Source section styling isolated under optional root; added one local class to match shared grid specificity, browser confirms cards and headings left97px. Full1218client/264files and Vue types/scoped lint/style/App0warnings green; offered-card-name mutant rejected/exact restoration green. Real App1440 normal CEO selection, hand-tab return, classic CEO checked; player tile returns checked in native form; consoles0/0, onlyGET synthetic proof, original fixture exactly restored. Historical phone screenshot demonstrates unported viewport, not mobile acceptance. Source resource forecasts, card introductions, MA/party variants, draft/trailing sections and full viewport/undo flows remain open; no full WP03 or21row acceptance."
+        }
+      ],
+      "scope": "CEO/action offered-card sections over native selection owners plus own public inactive-card projection."
     },
     {
       "source": "src/client/components/ChoiceOptionTile.vue",
@@ -375,7 +400,32 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/ChoiceOptionTile.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-or-choice-groups",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/components/inputChoice.ts",
+            "src/client/components/OrOptions.vue",
+            "src/client/components/PlayerInputFactory.vue",
+            "tests/client/wrybit/inputs/OrChoicePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-style-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-ceo-selected.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-ceo-classic.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-selected.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-final-layout.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-geometry.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-final-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-console.txt"
+          ],
+          "note": "Simple/inline choices and player tiles use native offered options; the native Factory edits its real SelectPlayer/SelectCard owner and reads its draft through a typed UI-only choice bridge. Native Or selects the same offered option, checks current owner/mode after nextTick, preserves original response indices and normal save pipeline. No source response generation or title-to-resource rules imported. Actions+CEO share one source tab with merged available count and one native active child; hand-tab/classic retain its card. Public own tableau/native card catalogue/action flags classify used and unavailable cards, own CeoCard/ModelUtils isDisabled semantics verified. Source section styling isolated under optional root; added one local class to match shared grid specificity, browser confirms cards and headings left97px. Full1218client/264files and Vue types/scoped lint/style/App0warnings green; offered-card-name mutant rejected/exact restoration green. Real App1440 normal CEO selection, hand-tab return, classic CEO checked; player tile returns checked in native form; consoles0/0, onlyGET synthetic proof, original fixture exactly restored. Historical phone screenshot demonstrates unported viewport, not mobile acceptance. Source resource forecasts, card introductions, MA/party variants, draft/trailing sections and full viewport/undo flows remain open; no full WP03 or21row acceptance."
+        }
+      ],
+      "scope": "Source keyboard radio/tile/text structure. Resource forecasts remain pending native facts; no source rule inference imported."
     },
     {
       "source": "src/client/components/DialogFrame.vue",
@@ -876,6 +926,29 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-confirm-requests.txt"
           ],
           "note": "Our original20-controller registry is unchanged. Optional per-call responder collects exactly one current response; And awaits sequential actual child completion, retaining synchronous classic responses. Our ledger/defaults/validation order/show_alerts retained. Source modal shows copied current payment, cancels on draft/resources/unmount, ignores duplicate/late accept and cancelled aggregate. Eight dedicated completion checks and108 focused checks passed; full client1182/246 passed before the final2 cancellation cases were added. Vue types/scoped ESLint and actual App-only Webpack passed. Real App synthetic browser: +1 overpayment, ordinary dismiss retains titanium2, console0/0, only GET/no move requests. The global classic button was intercepted by source header; layer fix awaits next browser build. Full WP03/remaining inputs/creation/placement/all21 full UI rows remain open."
+        },
+        {
+          "kind": "native-or-choice-groups",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/components/inputChoice.ts",
+            "src/client/components/OrOptions.vue",
+            "src/client/components/PlayerInputFactory.vue",
+            "tests/client/wrybit/inputs/OrChoicePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-style-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-ceo-selected.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-ceo-classic.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-selected.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-final-layout.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-geometry.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-final-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-console.txt"
+          ],
+          "note": "Simple/inline choices and player tiles use native offered options; the native Factory edits its real SelectPlayer/SelectCard owner and reads its draft through a typed UI-only choice bridge. Native Or selects the same offered option, checks current owner/mode after nextTick, preserves original response indices and normal save pipeline. No source response generation or title-to-resource rules imported. Actions+CEO share one source tab with merged available count and one native active child; hand-tab/classic retain its card. Public own tableau/native card catalogue/action flags classify used and unavailable cards, own CeoCard/ModelUtils isDisabled semantics verified. Source section styling isolated under optional root; added one local class to match shared grid specificity, browser confirms cards and headings left97px. Full1218client/264files and Vue types/scoped lint/style/App0warnings green; offered-card-name mutant rejected/exact restoration green. Real App1440 normal CEO selection, hand-tab return, classic CEO checked; player tile returns checked in native form; consoles0/0, onlyGET synthetic proof, original fixture exactly restored. Historical phone screenshot demonstrates unported viewport, not mobile acceptance. Source resource forecasts, card introductions, MA/party variants, draft/trailing sections and full viewport/undo flows remain open; no full WP03 or21row acceptance."
         }
       ]
     },
@@ -9084,6 +9157,142 @@
       "package": "WP03",
       "status": "planned",
       "scope": "Source card-search spacing; isolated classic min-height/background resets."
+    },
+    {
+      "source": "src/client/utils/ceoActions.ts",
+      "sourceSha256": "1aa7822e9c6a550d73e66a95d9388c78dfaa92da459de1360852b3baa58fb7a0",
+      "target": "src/client/wrybit/inputs/actionCards.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "package": "WP03",
+      "scope": "View-only adaptation to own native input models, catalogue and persistent owners; no source gameplay or response path.",
+      "evidence": [
+        {
+          "kind": "native-or-choice-groups",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/components/inputChoice.ts",
+            "src/client/components/OrOptions.vue",
+            "src/client/components/PlayerInputFactory.vue",
+            "tests/client/wrybit/inputs/OrChoicePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-style-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-ceo-selected.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-ceo-classic.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-selected.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-final-layout.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-geometry.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-final-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-console.txt"
+          ],
+          "note": "Simple/inline choices and player tiles use native offered options; the native Factory edits its real SelectPlayer/SelectCard owner and reads its draft through a typed UI-only choice bridge. Native Or selects the same offered option, checks current owner/mode after nextTick, preserves original response indices and normal save pipeline. No source response generation or title-to-resource rules imported. Actions+CEO share one source tab with merged available count and one native active child; hand-tab/classic retain its card. Public own tableau/native card catalogue/action flags classify used and unavailable cards, own CeoCard/ModelUtils isDisabled semantics verified. Source section styling isolated under optional root; added one local class to match shared grid specificity, browser confirms cards and headings left97px. Full1218client/264files and Vue types/scoped lint/style/App0warnings green; offered-card-name mutant rejected/exact restoration green. Real App1440 normal CEO selection, hand-tab return, classic CEO checked; player tile returns checked in native form; consoles0/0, onlyGET synthetic proof, original fixture exactly restored. Historical phone screenshot demonstrates unported viewport, not mobile acceptance. Source resource forecasts, card introductions, MA/party variants, draft/trailing sections and full viewport/undo flows remain open; no full WP03 or21row acceptance."
+        }
+      ]
+    },
+    {
+      "source": "src/client/utils/inactiveActionCards.ts",
+      "sourceSha256": "24ebaca6dc55eaa37cef998292a00c4b58e219ffbb025abe36d21cf6278f65f8",
+      "target": "src/client/wrybit/inputs/actionCards.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "package": "WP03",
+      "scope": "View-only adaptation to own native input models, catalogue and persistent owners; no source gameplay or response path.",
+      "evidence": [
+        {
+          "kind": "native-or-choice-groups",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/components/inputChoice.ts",
+            "src/client/components/OrOptions.vue",
+            "src/client/components/PlayerInputFactory.vue",
+            "tests/client/wrybit/inputs/OrChoicePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-style-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-ceo-selected.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-ceo-classic.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-selected.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-final-layout.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-geometry.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-final-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-console.txt"
+          ],
+          "note": "Simple/inline choices and player tiles use native offered options; the native Factory edits its real SelectPlayer/SelectCard owner and reads its draft through a typed UI-only choice bridge. Native Or selects the same offered option, checks current owner/mode after nextTick, preserves original response indices and normal save pipeline. No source response generation or title-to-resource rules imported. Actions+CEO share one source tab with merged available count and one native active child; hand-tab/classic retain its card. Public own tableau/native card catalogue/action flags classify used and unavailable cards, own CeoCard/ModelUtils isDisabled semantics verified. Source section styling isolated under optional root; added one local class to match shared grid specificity, browser confirms cards and headings left97px. Full1218client/264files and Vue types/scoped lint/style/App0warnings green; offered-card-name mutant rejected/exact restoration green. Real App1440 normal CEO selection, hand-tab return, classic CEO checked; player tile returns checked in native form; consoles0/0, onlyGET synthetic proof, original fixture exactly restored. Historical phone screenshot demonstrates unported viewport, not mobile acceptance. Source resource forecasts, card introductions, MA/party variants, draft/trailing sections and full viewport/undo flows remain open; no full WP03 or21row acceptance."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/choiceMenu.ts",
+      "sourceSha256": "64055c7d970b4cc08088497182c8a65b64bb310fe1b57b91584766b0ba3473c3",
+      "target": "src/client/wrybit/inputs/choiceMenu.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "package": "WP03",
+      "scope": "View-only adaptation to own native input models, catalogue and persistent owners; no source gameplay or response path.",
+      "evidence": [
+        {
+          "kind": "native-or-choice-groups",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/components/inputChoice.ts",
+            "src/client/components/OrOptions.vue",
+            "src/client/components/PlayerInputFactory.vue",
+            "tests/client/wrybit/inputs/OrChoicePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-style-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-ceo-selected.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-ceo-classic.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-selected.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-final-layout.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-geometry.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-final-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-console.txt"
+          ],
+          "note": "Simple/inline choices and player tiles use native offered options; the native Factory edits its real SelectPlayer/SelectCard owner and reads its draft through a typed UI-only choice bridge. Native Or selects the same offered option, checks current owner/mode after nextTick, preserves original response indices and normal save pipeline. No source response generation or title-to-resource rules imported. Actions+CEO share one source tab with merged available count and one native active child; hand-tab/classic retain its card. Public own tableau/native card catalogue/action flags classify used and unavailable cards, own CeoCard/ModelUtils isDisabled semantics verified. Source section styling isolated under optional root; added one local class to match shared grid specificity, browser confirms cards and headings left97px. Full1218client/264files and Vue types/scoped lint/style/App0warnings green; offered-card-name mutant rejected/exact restoration green. Real App1440 normal CEO selection, hand-tab return, classic CEO checked; player tile returns checked in native form; consoles0/0, onlyGET synthetic proof, original fixture exactly restored. Historical phone screenshot demonstrates unported viewport, not mobile acceptance. Source resource forecasts, card introductions, MA/party variants, draft/trailing sections and full viewport/undo flows remain open; no full WP03 or21row acceptance."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/ceo_action_section.less",
+      "sourceSha256": "34a22deaa2d5dd948d8da27d97374d02676c28013a43fe23fe965e2dcee7cac6",
+      "target": "src/styles/wrybit/ceo_action_section.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "package": "WP03",
+      "scope": "View-only adaptation to own native input models, catalogue and persistent owners; no source gameplay or response path.",
+      "evidence": [
+        {
+          "kind": "native-or-choice-groups",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/components/inputChoice.ts",
+            "src/client/components/OrOptions.vue",
+            "src/client/components/PlayerInputFactory.vue",
+            "tests/client/wrybit/inputs/OrChoicePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-style-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-ceo-selected.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-ceo-classic.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-selected.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-final-layout.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-geometry.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-final-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-console.txt"
+          ],
+          "note": "Simple/inline choices and player tiles use native offered options; the native Factory edits its real SelectPlayer/SelectCard owner and reads its draft through a typed UI-only choice bridge. Native Or selects the same offered option, checks current owner/mode after nextTick, preserves original response indices and normal save pipeline. No source response generation or title-to-resource rules imported. Actions+CEO share one source tab with merged available count and one native active child; hand-tab/classic retain its card. Public own tableau/native card catalogue/action flags classify used and unavailable cards, own CeoCard/ModelUtils isDisabled semantics verified. Source section styling isolated under optional root; added one local class to match shared grid specificity, browser confirms cards and headings left97px. Full1218client/264files and Vue types/scoped lint/style/App0warnings green; offered-card-name mutant rejected/exact restoration green. Real App1440 normal CEO selection, hand-tab return, classic CEO checked; player tile returns checked in native form; consoles0/0, onlyGET synthetic proof, original fixture exactly restored. Historical phone screenshot demonstrates unported viewport, not mobile acceptance. Source resource forecasts, card introductions, MA/party variants, draft/trailing sections and full viewport/undo flows remain open; no full WP03 or21row acceptance."
+        }
+      ]
     }
   ],
   "assets": [

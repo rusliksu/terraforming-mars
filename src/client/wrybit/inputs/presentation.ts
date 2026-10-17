@@ -20,6 +20,7 @@ import type {PartyModel, TurmoilModel} from '@/common/models/TurmoilModel';
 import type {PartyName} from '@/common/turmoil/PartyName';
 import type {ColonyName} from '@/common/colonies/ColonyName';
 import type {ColonyMetadata} from '@/common/colonies/ColonyMetadata';
+import type {InputChoice} from '@/client/components/inputChoice';
 
 export type CardSelectionBinding = {
   playerView: PlayerViewModel;
@@ -63,10 +64,12 @@ export type OrOptionsBinding = {
   displayedOptions: ReadonlyArray<PlayerInputModel>;
   selectedOption: PlayerInputModel | undefined;
   selectedIdx: number;
+  selectedChoice: InputChoice | undefined;
   radioElementName: string;
   childHost: InputHosts;
   footerHost: InputHosts;
   select(option: PlayerInputModel): void;
+  selectChoice(option: PlayerInputModel, choice: InputChoice): Promise<void>;
   showChildSaveButton(option: PlayerInputModel): boolean;
   registerLabel(index: number, element: HTMLElement | null): void;
   save(): void;

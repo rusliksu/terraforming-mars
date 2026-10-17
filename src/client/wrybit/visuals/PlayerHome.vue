@@ -8,7 +8,7 @@
     <HomeColumns :boardCollapsed="isSetupPhase && setupBoardCollapsed">
       <template #board>
         <div class="player_home_block player-home-columns__mars">
-          <GameBoardView ref="gameBoardView" :game="game" :tileView="tileView" :players="playerView.players" @toggleTileView="cycleTileView()"/>
+          <GameBoardView ref="gameBoardView" :game="game" :tileView="tileView" :players="playerView.players" :viewer="playerView.thisPlayer" @toggleTileView="cycleTileView()"/>
         </div>
         <RowResizeHandle v-if="!isSetupPhase" kind="mars"/>
         <a class="hotkey-target"></a>

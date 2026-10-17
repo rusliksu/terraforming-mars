@@ -15,7 +15,8 @@
 
 <script lang="ts">
 
-import {defineComponent} from 'vue';
+import {computed, defineComponent, provide} from 'vue';
+import {COMPOSITE_PRESENTATION, createCompositePresentation} from '@/client/wrybit/inputs/compositePresentation';
 import {createInputHosts} from '@/client/wrybit/shell/inputHosts';
 import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
 import PresentationHost from '@/client/wrybit/inputs/PresentationHost.vue';
@@ -31,6 +32,7 @@ export default defineComponent({
   name: 'AndOptions',
   inheritAttrs: false,
   setup(props) {
+    provide(COMPOSITE_PRESENTATION, createCompositePresentation(computed(() => props.playerinput)));
     return {andPresentation: useInputPresentation('and'), childHosts: props.playerinput.options.map(() => createInputHosts()), saveSession: useSaveSession()};
   },
   props: {

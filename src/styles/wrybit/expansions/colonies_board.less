@@ -1,0 +1,786 @@
+.wrybit-colonies-board-styles() {
+  @import (reference) "../selection_highlight.less";
+
+  // Colonies board tab (ColoniesBoard.vue): tiles close to the board game. The tiles share the height of the box;
+  // if it is not enough, the box scrolls (board_tabs.less).
+  @colony-gold: #f2c14e;
+  @colony-teal: #2fb0a8;
+  @colony-muted: #a2a8ba;
+  @colony-text: #eceef3;
+  @colony-art: 80px;
+  @colony-step: 22px;
+
+  .board-tabs-view--colonies {
+    container-type: inline-size;
+  }
+
+  .colonies-board {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    box-sizing: border-box;
+  }
+
+  // Round planet frame; the photo is moved so the disc fills it (colonyView.ts)
+  .colony-planet {
+    position: relative;
+    display: inline-block;
+    flex: none;
+    overflow: hidden;
+    border-radius: 50%;
+    aspect-ratio: 1;
+
+    img {
+      position: absolute;
+      max-width: none;
+    }
+  }
+
+  // Tile: whole planet on the left, its base tone fading out to the right
+  .colonies-board__tile {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    padding: 5px 14px 5px (@colony-art + 12px);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--planet-tone) 30%, #0b0e15) 0, color-mix(in srgb, var(--planet-tone) 12%, #0b0e15) 45%, rgba(11, 14, 21, 0.85) 100%);
+  }
+
+  .colonies-board__art {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: @colony-art;
+    // Not clipped: the planet glow would otherwise end in a hard vertical edge at the strip border
+    overflow: visible;
+    pointer-events: none;
+
+    .colony-planet {
+      position: absolute;
+      top: 50%;
+      right: 2px;
+      // Sized by the strip width, not the tile height: tall tiles (phone, tablet) still show one whole planet like desktop
+      width: calc(100% - 4px);
+      height: auto;
+      transform: translateY(-50%);
+      box-shadow: 0 0 24px color-mix(in srgb, var(--planet-tone) 55%, transparent), inset -10px -6px 22px rgba(0, 0, 0, 0.55);
+    }
+
+  }
+
+  .colonies-board__body {
+    min-width: 0;
+    display: grid;
+    gap: 3px;
+  }
+
+  .colonies-board__head {
+    display: grid;
+    gap: 1px;
+    min-width: 0;
+  }
+
+  .colonies-board__name {
+    font: 15px/1 Prototype, sans-serif;
+    letter-spacing: 0.03em;
+    color: #fff;
+  }
+
+  .colonies-board__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 10px;
+    font-size: 11px;
+    line-height: 1.25;
+    color: @colony-muted;
+
+    b {
+      color: @colony-text;
+      font-weight: 600;
+    }
+  }
+
+  // Track: steps on an orbit, the first three are the colony slots (dashed)
+  .colonies-board__track {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    place-items: center;
+    max-width: 620px;
+    min-height: @colony-step + 8px;
+    margin-top: 1px;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 7%;
+      right: 7%;
+      top: 50%;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.14);
+      transform: translateY(-50%);
+    }
+  }
+
+  .colonies-board__cell {
+    position: relative;
+    display: grid;
+    place-items: center;
+  }
+
+  @keyframes wrybit-colonies-board-pulse {
+    50% {
+      opacity: 0.45;
+    }
+  }
+
+  .colonies-board__step {
+    position: relative;
+    z-index: 1;
+    box-sizing: border-box;
+    width: @colony-step;
+    height: @colony-step;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: #161a24;
+    color: @colony-muted;
+    font: 11px Prototype, sans-serif;
+
+    b {
+      font-weight: normal;
+    }
+
+    &--slot {
+      border: 1px dashed rgba(255, 255, 255, 0.45);
+    }
+
+    &--past {
+      opacity: 0.4;
+    }
+
+    // Marker like on all tracks: teal with glow, value and resource inside
+    &--at {
+      width: @colony-step + 8px;
+      height: @colony-step + 8px;
+      grid-template-rows: auto auto;
+      align-content: center;
+      gap: 0;
+      line-height: 1;
+      border: 1px solid #bff3ee;
+      background: @colony-teal;
+      color: #06201e;
+      box-shadow: 0 0 10px fade(@colony-teal, 80%);
+
+      b {
+        font-size: 12px;
+      }
+    }
+
+    // Trade preview: where the marker drops back
+    &--reset {
+      border: 1.5px dashed @bg_action;
+      color: #fff;
+      box-shadow: 0 0 8px fade(@bg_action, 70%);
+      opacity: 1;
+    }
+
+    // Colony on the step: a cube instead of the number
+    &--colony {
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(0, 0, 0, 0.55);
+    }
+
+    // Build preview: own cube waiting on the next free slot
+    &--ghost {
+      border: 1.5px solid @bg_action;
+      background: fade(@bg_action, 30%);
+      animation: wrybit-colonies-board-pulse 1.4s ease-in-out infinite;
+    }
+
+    // Trade preview: these owners get the colony bonus
+    &--gets {
+      border: 1.5px solid @colony-gold;
+      box-shadow: 0 0 8px fade(@colony-gold, 80%);
+    }
+  }
+
+  .colonies-board__step-icon {
+    width: 10px;
+    height: 10px;
+    object-fit: contain;
+  }
+
+  .colonies-board__value {
+    display: grid;
+    justify-items: end;
+    gap: 2px;
+    min-width: 60px;
+    text-align: right;
+
+    small {
+      font-size: 11px;
+      color: @colony-muted;
+    }
+  }
+
+  .colonies-board__big {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: 26px/1 Prototype, sans-serif;
+    color: #fff;
+
+    img {
+      width: 26px;
+      height: 26px;
+      object-fit: contain;
+    }
+  }
+
+  // Production box around the icon (e.g. Mercury)
+  .colonies-board__production {
+    display: inline-flex;
+    padding: 2px;
+    border-radius: 4px;
+    background: #8a5a2b;
+
+    img {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  // Docked fleet: shuttle with the player's name at the tile
+  .colonies-board__docked {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 9px 0 3px;
+    border: 1px solid var(--player);
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.45);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .trade-ship {
+    display: inline-block;
+    flex: none;
+    object-fit: contain;
+  }
+
+  // States
+  .colonies-board__tile--docked .colonies-board__big {
+    opacity: 0.5;
+  }
+
+  .colonies-board__tile--off {
+    > .colonies-board__art,
+    > .colonies-board__body,
+    .colonies-board__big {
+      opacity: 0.45;
+    }
+
+    .colonies-board__art {
+      filter: grayscale(1);
+    }
+  }
+
+  .colonies-board__unlock {
+    padding: 2px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: @colony-text !important;
+    white-space: nowrap;
+  }
+
+  // Selection like everywhere: 20 % purple, small glow, flag flush with the border
+  .colonies-board__tile--pick {
+    .selection-corner-frame(1px);
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: fade(@bg_action, 20%);
+      pointer-events: none;
+    }
+  }
+
+  // The tile clips its content (overflow hidden), so the flag sits inside the own border
+  .colonies-board__flag {
+    .selection-corner-flag(9px);
+    right: 0;
+    bottom: 0;
+  }
+
+  // Hangar: all fleets and the trade fee
+  // Stays visible at the bottom of the box when the tiles need to scroll
+  .colonies-board__hangar {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 2px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    background: rgba(14, 17, 24, 0.94);
+    color: @colony-muted;
+    font-size: 12px;
+  }
+
+  .colonies-board__hangar-label {
+    flex: none;
+    display: grid;
+    gap: 2px;
+
+    > b {
+      font: 600 10px/12px system-ui, sans-serif;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: @colony-text;
+    }
+  }
+
+  .colonies-board__fee {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    white-space: nowrap;
+    font: 11px Prototype, sans-serif;
+    color: @colony-text;
+
+    img {
+      width: 13px;
+      height: 13px;
+    }
+
+    i {
+      margin: 0 2px;
+      font-style: normal;
+      color: @colony-muted;
+    }
+  }
+
+  .colonies-board__berths {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 8px;
+    min-width: 0;
+  }
+
+  .colonies-board__berth {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11.5px;
+    color: @colony-text;
+    white-space: nowrap;
+
+    small {
+      margin-left: 2px;
+      font-size: 11px;
+      color: @colony-muted;
+    }
+
+    &--away .trade-ship {
+      opacity: 0.35;
+    }
+
+    &--me {
+      font-weight: 700;
+    }
+  }
+
+  // Narrow (phone, narrow column): smaller planet, bonuses below each other
+  @container (max-width: 440px) {
+    .colonies-board {
+      gap: 5px;
+    }
+
+    .colonies-board__tile {
+      gap: 8px;
+      padding: 6px 8px 6px 68px;
+    }
+
+    .colonies-board__art {
+      width: 60px;
+    }
+
+    .colonies-board__meta {
+      display: grid;
+      gap: 0;
+      font-size: 10.5px;
+    }
+
+    .colonies-board__value {
+      min-width: 44px;
+    }
+
+    .colonies-board__big {
+      gap: 3px;
+      font-size: 22px;
+
+      img {
+        width: 22px;
+        height: 22px;
+      }
+    }
+  }
+
+  // Desktop (mockup with-extensions): the planet is a column of its own and shows the whole disc, sized by the
+  // tile height; name, track and value grow with the tile (container units), so the tiles fill the box.
+  html:not(.tm-mobile) & {
+    .colonies-board {
+      height: 100%;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+
+    .colonies-board__tile {
+      --colony-step-size: clamp(22px, min(30cqh, 5cqw), 52px);
+      container: colony-tile / size;
+      flex: 1 0 auto;
+      min-height: 112px;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      padding-left: 10px;
+      column-gap: clamp(10px, 2cqw, 24px);
+    }
+
+    .colonies-board__art {
+      position: relative;
+      left: auto;
+      top: auto;
+      bottom: auto;
+      align-self: center;
+      width: min(84cqh, 20cqw);
+      height: 84cqh;
+
+      .colony-planet {
+        top: 50%;
+        right: 0;
+        height: 100%;
+        box-shadow: inset -10px -6px 22px rgba(0, 0, 0, 0.55);
+      }
+
+    }
+
+    .colonies-board__body {
+      gap: clamp(3px, 3cqh, 12px);
+    }
+
+    .colonies-board__name {
+      font-size: clamp(15px, min(14cqh, 2.6cqw), 26px);
+    }
+
+    .colonies-board__meta {
+      font-size: clamp(11px, min(9cqh, 1.6cqw), 15px);
+    }
+
+    .colonies-board__track {
+      max-width: none;
+      min-height: calc(var(--colony-step-size) * 1.45);
+    }
+
+    .colonies-board__step {
+      width: var(--colony-step-size);
+      height: var(--colony-step-size);
+      font-size: calc(var(--colony-step-size) * 0.5);
+
+      &--at {
+        width: calc(var(--colony-step-size) * 1.4);
+        height: calc(var(--colony-step-size) * 1.4);
+
+        b {
+          font-size: calc(var(--colony-step-size) * 0.55);
+        }
+      }
+    }
+
+    .colonies-board__step-icon {
+      width: calc(var(--colony-step-size) * 0.45);
+      height: calc(var(--colony-step-size) * 0.45);
+    }
+
+    .colonies-board__big {
+      font-size: clamp(26px, 26cqh, 44px);
+
+      img {
+        width: clamp(26px, 26cqh, 44px);
+        height: clamp(26px, 26cqh, 44px);
+      }
+    }
+
+    .colonies-board__value small {
+      font-size: clamp(11px, 8cqh, 14px);
+    }
+
+    .colonies-board__hangar {
+      flex-shrink: 0;
+    }
+  }
+
+  // Short, wide tile: the planet column gets cut off softly on the left instead of squeezing the track
+  @container colony-tile (max-aspect-ratio: 42/10) {
+    html:not(.tm-mobile) & .colonies-board__art {
+      mask-image: linear-gradient(90deg, transparent 0, #000 40%);
+    }
+  }
+
+  .colonies-board__fee > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+
+    + span::before {
+      content: "·";
+      margin: 0 3px;
+    }
+  }
+
+  .colonies-board__fee--off {
+    opacity: 0.4;
+  }
+  // ---------- Trade tab (TradeColony.vue): pay above, get below (mockup with-extensions) ----------
+  .trade-colony {
+    container-type: inline-size;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 0;
+    box-sizing: border-box;
+  }
+
+  .trade-colony__column {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .trade-colony__fees {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .trade-colony__fee,
+  .trade-colony__offer {
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: rgba(10, 12, 18, 0.6);
+    color: @colony-text;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .trade-colony__fee {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    text-align: left;
+
+    img {
+      width: 34px;
+      height: 34px;
+      object-fit: contain;
+    }
+
+    // Not affordable now: visible so all fees are known, but clearly unavailable
+    &--off {
+      cursor: default;
+      opacity: 0.4;
+    }
+  }
+
+  .trade-colony__fee-text {
+    display: grid;
+    line-height: 1.2;
+
+    b {
+      font-size: 16px;
+    }
+
+    small {
+      font-size: 13px;
+      color: @colony-muted;
+    }
+  }
+
+  .trade-colony__offers {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .trade-colony__offer {
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    gap: 6px;
+    padding: 14px 8px 12px;
+    border-radius: 10px;
+    text-align: center;
+
+    small {
+      min-height: 14px;
+      font-size: 13px;
+      line-height: 1.2;
+      color: @colony-muted;
+    }
+
+    // Not tradeable (inactive or a fleet is already there): visible but clearly inactive
+    &--off {
+      cursor: default;
+
+      .colony-planet,
+      .trade-colony__offer-head > b,
+      .trade-colony__gain,
+      > small {
+        opacity: 0.35;
+      }
+    }
+  }
+
+  .trade-colony__offer-head {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    font: 16px Prototype, sans-serif;
+  }
+
+  .trade-colony__offer-planet {
+    position: relative;
+    display: inline-flex;
+
+    .colony-planet {
+      width: clamp(40px, 7cqi, 72px);
+    }
+  }
+
+  .trade-colony__offer-ship {
+    position: absolute;
+    left: -6px;
+    top: -6px;
+  }
+
+  .trade-colony__gain {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: clamp(26px, 4.5cqi, 40px)/1 Prototype, sans-serif;
+    color: #fff;
+
+    img {
+      width: clamp(26px, 4.5cqi, 40px);
+      height: clamp(26px, 4.5cqi, 40px);
+      object-fit: contain;
+    }
+  }
+
+  // Receipt: paying red, getting green, the consequences below
+  .trade-colony__receipt {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    padding: 7px 12px;
+    border-left: 3px solid @bg_action;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    text-align: left;
+
+    small {
+      font-size: 14px;
+      color: @colony-muted;
+    }
+
+    &--empty {
+      border-left-color: rgba(255, 255, 255, 0.2);
+      color: @colony-muted;
+      font-size: 15px;
+    }
+  }
+
+  .trade-colony__receipt-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font: 22px/1 Prototype, sans-serif;
+
+    i {
+      font-style: normal;
+      color: @colony-muted;
+    }
+
+    img {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+    }
+  }
+
+  .trade-colony__pay,
+  .trade-colony__get {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .trade-colony__pay {
+    color: #ff8a80;
+  }
+
+  .trade-colony__get {
+    color: #8be28f;
+  }
+
+  // Desktop: more room in the box is used – the deal sits vertically centred (box has a fixed height)
+  html:not(.tm-mobile) & .or-tab-panel .trade-colony {
+    margin: auto 0;
+  }
+
+  // Narrow (tablet portrait, phone): offers in rows of three, fees smaller
+  @container (max-width: 640px) {
+    .trade-colony__fees {
+      gap: 6px;
+    }
+
+    .trade-colony__fee {
+      padding: 6px 8px;
+
+      img {
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    .trade-colony__fee-text b {
+      font-size: 13px;
+    }
+
+    .trade-colony__offers {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+}

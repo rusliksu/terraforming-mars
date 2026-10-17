@@ -23,6 +23,13 @@ authoritative_surface: src/client/wrybit/inputs/
 create_intent: []
 execution_mode: code_change
 owned_files:
+- src/styles/wrybit/card_filter_bar.less
+- src/styles/wrybit/card_zoom_slider.less
+- src/client/wrybit/inputs/SetupBoardToggle.vue
+- src/client/wrybit/visuals/layout/setupBoardCollapsed.ts
+- src/client/wrybit/create/ValidationProblems.vue
+- src/styles/wrybit/setup_board_toggle.less
+- tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts
 - src/server/cards/base/standardActions/ConvertPlants.ts
 - src/styles/wrybit/placement_tile.less
 - src/client/wrybit/visuals/board/PlacementBanner.vue
@@ -265,3 +272,5 @@ Space-with-skip scoped proof: single source placement tab and exact native skip 
 Native undo footer scoped proof: source quiet buttons use our action/step/research eligibility and exact request paths; native hidden-information confirmation and classic undoChoice/radios retained. RED2/GREEN27focused/full1245client, types/lint/style/App green; desktop1440 visually verified/console0/0, no undo or move request. Phone capture shows remaining WP05 whole-page overflow, not accepted mobile proof. T009-T012/all21rows remain OPEN.
 
 Native tile/input intro scoped proof: source InputIntro/TabIntroBlock/header hierarchy, optional read-only tile identity from15 native shared placement producers and our canonical tile art. Existing producer methods/callbacks/process AST-equal to2673f6cf77 except new display argument; Game/Player/AI/response untouched. Unknown types use plain caption, custom ocean maximum/current plant facts come from own model, no invented effect forecast. Full1247client before finalConvertPlants/tone/stylefollowup, final6focused/32native/types/lint/style/App green, wrong-tile mutant rejected/exact restore. ActualApp1440 input and enlarged banner visually verified after sprite/debug-border fixes; console0/0/no moves/DB/fixture restored. General effect quotes, direct producers, intro docking/viewport/mobile and T009-T012/all21rows remain OPEN.
+
+Setup collapse/inline validation scoped proof: source controls retain actual board and native card selection; own validationDetails/Errors display directly below Create. 13focused/full1249client/types/lint/style/App green, board-remount mutant rejected/exact restore. ActualApp1920 sameBoard/sameInput/Antschecked/classic-return, negative EscapeVelocity inline and Create disabled, console0/0/no moves or DB. Legacy CSS hiding range controls and one stale zoom variable fixed under optional styles; real keyboard1to0.98 scales Ants198to194.15625px/selection retained. Initial setup RED fixture used wrong object-input selector, not counted as behaviour proof. Full viewport/mobile/21flows/T009-T012 remain OPEN.

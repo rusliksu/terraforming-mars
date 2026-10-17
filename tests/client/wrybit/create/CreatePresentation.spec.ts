@@ -29,6 +29,35 @@ const controls = {cube: markRaw(PlayerCube), seat: markRaw(SeatIcon), stepper: m
   toggle: markRaw(SwitchInput), moduleFilter: markRaw(SourceModuleFilter), cardsFilter: markRaw(SourceCardsFilter)};
 
 describe('source creation view with our permanent form owner', () => {
+  it('shows our blocking validation inline without losing invalid values on classic return', async () => {
+    localStorage.clear();
+    vi.stubGlobal('fetch', vi.fn((url: unknown) => Promise.resolve(publicResponse(url))));
+    const view = shallowRef<CreatePresentation>();
+    const wrapper = mount(NativeCreate, {attachTo: document.body, global: {...globalConfig.global,
+      stubs: {PreferencesIcon: true, PageToolbar: true},
+      provide: {[CREATE_PRESENTATION as symbol]: computed(() => view.value)}}});
+    try {
+      await flushPromises();
+      await wrapper.get('#escapevelocity-checkbox').setValue(true);
+      await wrapper.get('#escapeThreshold-checkbox').setValue(-1);
+      view.value = markRaw(SourceCreate);
+      await flushPromises();
+      expect(wrapper.get('.create-game-validation-box--error').text()).contains('Escape Velocity values cannot be negative.');
+      expect((wrapper.get('.create-game-create').element as HTMLButtonElement).disabled).is.true;
+      expect(wrapper.find('.create-game-validation-popup').exists()).is.false;
+      view.value = undefined;
+      await flushPromises();
+      expect((wrapper.get('#escapeThreshold-checkbox').element as HTMLInputElement).value).eq('-1');
+    } finally {
+      wrapper.unmount();
+      vi.unstubAllGlobals();
+      localStorage.clear();
+      sharedEloState.loaded = false;
+      sharedEloState.players = {};
+      sharedEloState.games = [];
+    }
+  });
+
   it('requests public geometry only while the source view is active and excludes player fields', async () => {
     localStorage.clear();
     vi.useFakeTimers();

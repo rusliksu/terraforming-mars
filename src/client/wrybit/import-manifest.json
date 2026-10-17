@@ -1563,6 +1563,37 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-root-tabs-requests.txt"
           ],
           "note": "Source single-input and plain-choice tabs adapt our permanent WaitingFor RPC/poll/undo owner through typed local body/footer hosts. All-cards uses v-show for the native body; source action Or and initialCards retain own tabs. Source initial-draft dealt sections move into All cards with fallback when tabs unavailable. Source pending-player status uses our canonical public flags. Or native response indices and NativeFactory child ownership retained. PresentationHost can bind an existing owner footer and teleport view-only commands without an extra element; native payment/button DOM remains directly in the source footer for original layout selectors. Initial external target, local return and ownership-safe unregister covered. Native card/option/exact response/payment ledger/UID survive hand and repeated classic/source changes. Native polling/undo tests preserved, remount mutant rejected/exact restored. Actual App1440 normal card click, hand tab, classic checked selection and opt-in return pass; no move/DB requests, console0/0, synthetic fixture restored. Full intro/forecasts/placement/viewport and all21full flow rows remain OPEN."
+        },
+        {
+          "kind": "native-setup-collapse-inline-validation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-focused.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-styles-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-ownership-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-ownership-restored.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-collapsed.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-collapse-proof.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-requests.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-inline.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-inline-proof.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-requests.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-keyboard.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-requests.txt"
+          ],
+          "note": "Source setup-board toggle now controls existing HomeColumns collapse prop; the board and permanent native selector stay mounted, namespaced UI preference only. Source ValidationProblems renders own canonical validationDetails/ValidationErrors under Create without replacing native validation or serializer. Existing native form/errors/invalid values survive classic return. 13focused/4files and full1249client/276files,types/lint/style/App0warnings. Validation RED missing inline box; first setup RED used wrong string value for native object-valued checkbox and was corrected, not behavioural proof. Bounded mode-key remount mutation then failed actual board-node identity and exact bytes restored green. Actual App1920 board displaynone/sameBoard/sameInput/Antschecked and classic checked confirmed; inline negative EscapeVelocity visible with Create disabled. Initial screenshot exposed legacy CSS hiding ranges and a stale source zoom CSS variable; fixed only optional range display and setup variable. Final real keyboard slider1to0.98 shrinks selected Ants198to194.15625px while still checked, screenshot viewed. Console0/0, no create/input/reset requests (readonly board-preview POST200 only); original synthetic fixture restored. Whole viewport/mobile/all21flows and WP03 acceptance remain open."
         }
       ]
     },
@@ -1958,6 +1989,37 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-initial-console.txt"
           ],
           "note": "Source startup columns and summary bind to our unchanged setup methods and permanent four native SelectCard owners through local portals. Our special Polyphemos price5, required one prelude, CEO and original response order verified using actual choices; all selector ids and our empty-purchase confirmation survive mode changes. Summary receives all monetary values from our owner, no foreign setupBalance. Full1194client/251files, Vue types/scoped ESLint/Stylelint and App-only Webpack zero warnings. Actual App1920x1080 ordinary selections show50,+3,-5,48; classic return45/48 retained, console0/0; no Start/move/DB action. Source keyboard slider follow-up also verified: pointer focus, arrows reach5, classic return5, console0/0. Full creation, colony/party, input grouping/forecast/zoom/undo and remaining WP04-07 still pending; no T009-T012 or full UI row is accepted here."
+        },
+        {
+          "kind": "native-setup-collapse-inline-validation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-focused.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-styles-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-ownership-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-ownership-restored.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-collapsed.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-collapse-proof.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-requests.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-inline.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-inline-proof.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-requests.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-keyboard.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-requests.txt"
+          ],
+          "note": "Source setup-board toggle now controls existing HomeColumns collapse prop; the board and permanent native selector stay mounted, namespaced UI preference only. Source ValidationProblems renders own canonical validationDetails/ValidationErrors under Create without replacing native validation or serializer. Existing native form/errors/invalid values survive classic return. 13focused/4files and full1249client/276files,types/lint/style/App0warnings. Validation RED missing inline box; first setup RED used wrong string value for native object-valued checkbox and was corrected, not behavioural proof. Bounded mode-key remount mutation then failed actual board-node identity and exact bytes restored green. Actual App1920 board displaynone/sameBoard/sameInput/Antschecked and classic checked confirmed; inline negative EscapeVelocity visible with Create disabled. Initial screenshot exposed legacy CSS hiding ranges and a stale source zoom CSS variable; fixed only optional range display and setup variable. Final real keyboard slider1to0.98 shrinks selected Ants198to194.15625px while still checked, screenshot viewed. Console0/0, no create/input/reset requests (readonly board-preview POST200 only); original synthetic fixture restored. Whole viewport/mobile/all21flows and WP03 acceptance remain open."
         }
       ]
     },
@@ -2320,7 +2382,39 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/SetupBoardToggle.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-setup-collapse-inline-validation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-focused.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-styles-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-ownership-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-ownership-restored.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-collapsed.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-collapse-proof.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-requests.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-inline.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-inline-proof.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-requests.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-keyboard.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-requests.txt"
+          ],
+          "note": "Source setup-board toggle now controls existing HomeColumns collapse prop; the board and permanent native selector stay mounted, namespaced UI preference only. Source ValidationProblems renders own canonical validationDetails/ValidationErrors under Create without replacing native validation or serializer. Existing native form/errors/invalid values survive classic return. 13focused/4files and full1249client/276files,types/lint/style/App0warnings. Validation RED missing inline box; first setup RED used wrong string value for native object-valued checkbox and was corrected, not behavioural proof. Bounded mode-key remount mutation then failed actual board-node identity and exact bytes restored green. Actual App1920 board displaynone/sameBoard/sameInput/Antschecked and classic checked confirmed; inline negative EscapeVelocity visible with Create disabled. Initial screenshot exposed legacy CSS hiding ranges and a stale source zoom CSS variable; fixed only optional range display and setup variable. Final real keyboard slider1to0.98 shrinks selected Ants198to194.15625px while still checked, screenshot viewed. Console0/0, no create/input/reset requests (readonly board-preview POST200 only); original synthetic fixture restored. Whole viewport/mobile/all21flows and WP03 acceptance remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/SetupSummary.vue",
@@ -5189,6 +5283,37 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-share-fresh-requests.txt"
           ],
           "note": "Source Copy link icon and 2-second feedback call our permanent native owner. Own versioned #tm-settings=1 UTF8/base64url protocol reuses the exact42native preset fields/order, own defaults/enums/card renames/custom-board codecs and native importer. Source settingsLink/boardSeed/AI level codebooks are excluded. Link is an explicit snapshot on Copy, not an automatic address-bar update on every edit. Includes current seed/first seat and all our expansions/lists/custom geometry; names/profileIDs/TelegramIDs/clone IDs excluded, bot/async modes stay off under native preset policy. Public colors are retained and native reserved-color name normalization still applies. Validate whitelist/types/size before applying; optional draft flags reset before native import, preserve seed after native postprocessing, explicit rematch/library/editor query takes precedence. Copy denial leaves usable URL plus native alert. All1216client tests/263files green, types/scoped lint/App Webpack0warnings; whitelist mutant rejected and exact bytes restored. Real App1440desktop/390phone Copy feedback, fresh separate classic browser restores Hellas+HighOrbit with empty name and no optional assets, both consoles0/0. Native readonly preview only; no create/move/DB/AI/rule changes. Full creation/start/input and all21full UI rows still await package/final acceptance."
+        },
+        {
+          "kind": "native-setup-collapse-inline-validation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-focused.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-styles-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-ownership-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-ownership-restored.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-collapsed.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-collapse-proof.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-requests.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-inline.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-inline-proof.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-requests.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-keyboard.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-requests.txt"
+          ],
+          "note": "Source setup-board toggle now controls existing HomeColumns collapse prop; the board and permanent native selector stay mounted, namespaced UI preference only. Source ValidationProblems renders own canonical validationDetails/ValidationErrors under Create without replacing native validation or serializer. Existing native form/errors/invalid values survive classic return. 13focused/4files and full1249client/276files,types/lint/style/App0warnings. Validation RED missing inline box; first setup RED used wrong string value for native object-valued checkbox and was corrected, not behavioural proof. Bounded mode-key remount mutation then failed actual board-node identity and exact bytes restored green. Actual App1920 board displaynone/sameBoard/sameInput/Antschecked and classic checked confirmed; inline negative EscapeVelocity visible with Create disabled. Initial screenshot exposed legacy CSS hiding ranges and a stale source zoom CSS variable; fixed only optional range display and setup variable. Final real keyboard slider1to0.98 shrinks selected Ants198to194.15625px while still checked, screenshot viewed. Console0/0, no create/input/reset requests (readonly board-preview POST200 only); original synthetic fixture restored. Whole viewport/mobile/all21flows and WP03 acceptance remain open."
         }
       ]
     },
@@ -5541,7 +5666,39 @@
       "package": "WP03",
       "target": "src/client/wrybit/create/ValidationProblems.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-setup-collapse-inline-validation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-focused.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-styles-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-ownership-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-ownership-restored.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-collapsed.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-collapse-proof.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-requests.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-inline.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-inline-proof.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-requests.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-keyboard.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-requests.txt"
+          ],
+          "note": "Source setup-board toggle now controls existing HomeColumns collapse prop; the board and permanent native selector stay mounted, namespaced UI preference only. Source ValidationProblems renders own canonical validationDetails/ValidationErrors under Create without replacing native validation or serializer. Existing native form/errors/invalid values survive classic return. 13focused/4files and full1249client/276files,types/lint/style/App0warnings. Validation RED missing inline box; first setup RED used wrong string value for native object-valued checkbox and was corrected, not behavioural proof. Bounded mode-key remount mutation then failed actual board-node identity and exact bytes restored green. Actual App1920 board displaynone/sameBoard/sameInput/Antschecked and classic checked confirmed; inline negative EscapeVelocity visible with Create disabled. Initial screenshot exposed legacy CSS hiding ranges and a stale source zoom CSS variable; fixed only optional range display and setup variable. Final real keyboard slider1to0.98 shrinks selected Ants198to194.15625px while still checked, screenshot viewed. Console0/0, no create/input/reset requests (readonly board-preview POST200 only); original synthetic fixture restored. Whole viewport/mobile/all21flows and WP03 acceptance remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/create/WikiOverlay.vue",
@@ -10721,6 +10878,90 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-undo-requests.txt"
           ],
           "note": "Source quiet footer-button styling delegates through an explicit typed UI binding to permanent native WaitingFor reset/stepBack/undoResearchPurchase. Our own eligibility and exact action/step/research labels remain; foreign actionStart/cancel semantics not imported. Classic radio DOM and undoChoice retained, hidden only while source view owns the footer. Native request/hidden-information confirmation logic unchanged. RED2missing-controls, GREEN27focused/4files and full1245client/275files; types/lint/style/App0warnings. ActualApp1440 desktop viewed, console0/0, no undo/save requests. Phone screenshot exposes existing full-page overflow reserved for WP05; it is not mobile acceptance proof. Synthetic fixture restored/hash verified. Complete input/21flow acceptance remains open."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/setupBoardCollapsed.ts",
+      "sourceSha256": "00f421e9902f708455d0a3f4a964022c283e9203de855f4665da7bfea9322497",
+      "target": "src/client/wrybit/visuals/layout/setupBoardCollapsed.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "package": "WP03",
+      "scope": "Source UI preference with private wrybit storage namespace; no classic preference changes.",
+      "evidence": [
+        {
+          "kind": "native-setup-collapse-inline-validation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-focused.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-styles-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-ownership-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-ownership-restored.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-collapsed.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-collapse-proof.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-requests.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-inline.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-inline-proof.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-requests.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-keyboard.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-requests.txt"
+          ],
+          "note": "Source setup-board toggle now controls existing HomeColumns collapse prop; the board and permanent native selector stay mounted, namespaced UI preference only. Source ValidationProblems renders own canonical validationDetails/ValidationErrors under Create without replacing native validation or serializer. Existing native form/errors/invalid values survive classic return. 13focused/4files and full1249client/276files,types/lint/style/App0warnings. Validation RED missing inline box; first setup RED used wrong string value for native object-valued checkbox and was corrected, not behavioural proof. Bounded mode-key remount mutation then failed actual board-node identity and exact bytes restored green. Actual App1920 board displaynone/sameBoard/sameInput/Antschecked and classic checked confirmed; inline negative EscapeVelocity visible with Create disabled. Initial screenshot exposed legacy CSS hiding ranges and a stale source zoom CSS variable; fixed only optional range display and setup variable. Final real keyboard slider1to0.98 shrinks selected Ants198to194.15625px while still checked, screenshot viewed. Console0/0, no create/input/reset requests (readonly board-preview POST200 only); original synthetic fixture restored. Whole viewport/mobile/all21flows and WP03 acceptance remain open."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/setup_board_toggle.less",
+      "sourceSha256": "3eb025ae0449be325987b5b535f327aaa75638501dc063aa93769252d263aaac",
+      "target": "src/styles/wrybit/setup_board_toggle.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "package": "WP03",
+      "scope": "Original setup collapse control style under optional wrybit-ui root.",
+      "evidence": [
+        {
+          "kind": "native-setup-collapse-inline-validation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-red.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-focused.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-lint.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-styles-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-validation-build-final.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-ownership-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-ownership-restored.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-collapsed.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-collapse-proof.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-requests.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-inline.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-inline-proof.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-validation-requests.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-final.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-keyboard.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-setup-zoom-requests.txt"
+          ],
+          "note": "Source setup-board toggle now controls existing HomeColumns collapse prop; the board and permanent native selector stay mounted, namespaced UI preference only. Source ValidationProblems renders own canonical validationDetails/ValidationErrors under Create without replacing native validation or serializer. Existing native form/errors/invalid values survive classic return. 13focused/4files and full1249client/276files,types/lint/style/App0warnings. Validation RED missing inline box; first setup RED used wrong string value for native object-valued checkbox and was corrected, not behavioural proof. Bounded mode-key remount mutation then failed actual board-node identity and exact bytes restored green. Actual App1920 board displaynone/sameBoard/sameInput/Antschecked and classic checked confirmed; inline negative EscapeVelocity visible with Create disabled. Initial screenshot exposed legacy CSS hiding ranges and a stale source zoom CSS variable; fixed only optional range display and setup variable. Final real keyboard slider1to0.98 shrinks selected Ants198to194.15625px while still checked, screenshot viewed. Console0/0, no create/input/reset requests (readonly board-preview POST200 only); original synthetic fixture restored. Whole viewport/mobile/all21flows and WP03 acceptance remain open."
         }
       ]
     }

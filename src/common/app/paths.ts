@@ -4,6 +4,7 @@ export const paths = {
   API_CLONEABLEGAME: 'api/cloneablegame',
   API_AI_FEEDBACK: 'api/ai-feedback',
   API_CREATEGAME: 'api/creategame',
+  API_BOARD_PREVIEW: 'api/board-preview',
   API_GAME: 'api/game',
   API_GAME_HISTORY: 'api/game/history',
   API_GAME_LOGS: 'api/game/logs',

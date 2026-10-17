@@ -11,12 +11,10 @@ import type SwitchInput from './SwitchInput.vue';
 import type ModuleItemFilter from './ModuleItemFilter.vue';
 import type CardsFilter from './CardsFilter.vue';
 import type {CardName} from '@/common/cards/CardName';
-import type {BoardName} from '@/common/boards/BoardName';
-import type {SpaceModel} from '@/common/models/SpaceModel';
-import type {GlobalParametersConfig} from '@/common/GlobalParameterConfig';
+import type {BoardPreviewModel} from '@/common/models/BoardPreviewModel';
 
 export type CreationBoardPreview = {
-  data?: {boardName: BoardName, spaces: ReadonlyArray<SpaceModel>, customBoardRows?: number, globalParameters?: GlobalParametersConfig, randomExample: boolean};
+  data?: Readonly<BoardPreviewModel>;
   loading: boolean;
   error?: string;
   showBoardName: boolean;

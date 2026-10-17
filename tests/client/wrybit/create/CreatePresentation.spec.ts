@@ -16,15 +16,92 @@ import SourceCardsFilter from '@/client/wrybit/create/CardsFilter.vue';
 import {defaultCreateGameModel} from '@/client/components/create/defaultCreateGameModel';
 import {sharedEloState} from '@/client/utils/elo';
 import {globalConfig} from '@tests/client/components/getLocalVue';
+import {paths} from '@/common/app/paths';
+import {BoardName} from '@/common/boards/BoardName';
+import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
 
 type FetchOptions = NonNullable<Parameters<typeof window.fetch>[1]>;
+function publicResponse(url: unknown) {
+  return {ok: true, json: async () => url === paths.API_BOARD_PREVIEW ?
+    {boardName: BoardName.THARSIS, spaces: [], randomExample: false} : {players: {}, games: []}};
+}
 const controls = {cube: markRaw(PlayerCube), seat: markRaw(SeatIcon), stepper: markRaw(NumberStepper),
   toggle: markRaw(SwitchInput), moduleFilter: markRaw(SourceModuleFilter), cardsFilter: markRaw(SourceCardsFilter)};
 
 describe('source creation view with our permanent form owner', () => {
+  it('requests public geometry only while the source view is active and excludes player fields', async () => {
+    localStorage.clear();
+    vi.useFakeTimers();
+    const previews: Record<string, unknown>[] = [];
+    vi.stubGlobal('fetch', vi.fn((url: unknown, init?: FetchOptions) => {
+      if (url === paths.API_BOARD_PREVIEW) {
+        previews.push(JSON.parse(String(init?.body)));
+      }
+      return Promise.resolve(publicResponse(url));
+    }));
+    const view = shallowRef<CreatePresentation>();
+    const wrapper = mount(NativeCreate, {attachTo: document.body, global: {...globalConfig.global,
+      stubs: {PreferencesIcon: true, PageToolbar: true},
+      provide: {[CREATE_PRESENTATION as symbol]: computed(() => view.value)}}});
+    try {
+      await flushPromises();
+      await vi.advanceTimersByTimeAsync(250);
+      expect(previews).has.length(0);
+      view.value = markRaw(SourceCreate);
+      await flushPromises();
+      await vi.advanceTimersByTimeAsync(250);
+      await flushPromises();
+      expect(previews).has.length(1);
+      expect(Object.keys(previews[0]).sort()).deep.eq(['board', 'expansions', 'includedCards', 'seed', 'shuffleMapOption']);
+      expect(wrapper.find('.create-game-board-preview').exists()).is.true;
+      await wrapper.get('.create-game-player-name').setValue('Synthetic preview owner');
+      await vi.advanceTimersByTimeAsync(250);
+      expect(previews).has.length(1);
+      const owner = wrapper.vm.$.proxy as InstanceType<typeof NativeCreate>;
+      const initialSeed = owner.seed;
+      owner.shuffleMapOption = true;
+      await flushPromises();
+      await vi.advanceTimersByTimeAsync(250);
+      expect(owner.seed).eq(initialSeed);
+      const random = vi.spyOn(Math, 'random').mockReturnValue(0.875);
+      owner.redrawBoardPreview();
+      await flushPromises();
+      await vi.advanceTimersByTimeAsync(250);
+      expect(owner.seed).eq(0.875);
+      owner.board = RandomBoardOption.OFFICIAL;
+      await flushPromises();
+      await vi.advanceTimersByTimeAsync(250);
+      owner.redrawBoardPreview();
+      await vi.advanceTimersByTimeAsync(250);
+      expect(owner.seed).eq(0.875);
+      random.mockRestore();
+      expect(previews).has.length(5);
+      owner.seededGame = true;
+      await flushPromises();
+      await vi.advanceTimersByTimeAsync(250);
+      expect(wrapper.find('.create-game-board-preview').exists()).is.false;
+      expect(previews).has.length(5);
+      view.value = undefined;
+      await flushPromises();
+      await vi.advanceTimersByTimeAsync(250);
+      owner.redrawBoardPreview();
+      expect(owner.seed).eq(0.875);
+      expect(previews).has.length(5);
+    } finally {
+      wrapper.unmount();
+      vi.unstubAllGlobals();
+      vi.restoreAllMocks();
+      vi.useRealTimers();
+      localStorage.clear();
+      sharedEloState.loaded = false;
+      sharedEloState.players = {};
+      sharedEloState.games = [];
+    }
+  });
+
   it('keeps our corporation editor and its selection through Show, Edit and classic mode', async () => {
     localStorage.clear();
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: true, json: async () => ({players: {}, games: []})}));
+    vi.stubGlobal('fetch', vi.fn((url: unknown) => Promise.resolve(publicResponse(url))));
     const view = shallowRef<CreatePresentation>();
     const wrapper = mount(NativeCreate, {attachTo: document.body, global: {...globalConfig.global,
       stubs: {PreferencesIcon: true, PageToolbar: true},
@@ -77,12 +154,12 @@ describe('source creation view with our permanent form owner', () => {
     localStorage.clear();
     const requests: FetchOptions[] = [];
     const fetch = vi.fn((_url: unknown, init?: FetchOptions) => {
-      if (init?.method === 'POST') {
+      if (_url === paths.API_CREATEGAME && init?.method === 'POST') {
         requests.push(init);
         // The HTTP boundary captures the request; this test does not create a game.
         return new Promise<Response>(() => {});
       }
-      return Promise.resolve({ok: true, json: async () => ({players: {}, games: []})});
+      return Promise.resolve(publicResponse(_url));
     });
     vi.stubGlobal('fetch', fetch);
     const view = shallowRef<CreatePresentation>();
@@ -129,7 +206,7 @@ describe('source creation view with our permanent form owner', () => {
 
   it('retains profile, file, custom map draft, filter and native AI fields through both layout changes', async () => {
     localStorage.clear();
-    const fetch = vi.fn().mockResolvedValue({ok: true, json: async () => ({players: {}, games: []})});
+    const fetch = vi.fn((url: unknown) => Promise.resolve(publicResponse(url)));
     vi.stubGlobal('fetch', fetch);
     const view = shallowRef<CreatePresentation>();
     const wrapper = mount(NativeCreate, {attachTo: document.body, global: {...globalConfig.global,
@@ -161,7 +238,8 @@ describe('source creation view with our permanent form owner', () => {
       const config = JSON.stringify(owner.newGameConfig);
       const errors = JSON.stringify(owner.validationErrors);
       expect(Object.keys(owner.creationBinding.model).sort()).deep.eq(Object.keys(defaultCreateGameModel()).sort());
-      const callsBeforeMode = fetch.mock.calls.length;
+      const nonPreviewCalls = () => fetch.mock.calls.filter(([url]) => url !== paths.API_BOARD_PREVIEW).length;
+      const callsBeforeMode = nonPreviewCalls();
       view.value = markRaw(SourceCreate);
       await flushPromises();
       expect(wrapper.find('.create-game-cards').exists()).is.true;
@@ -177,7 +255,7 @@ describe('source creation view with our permanent form owner', () => {
       expect(owner.players[0].isBot).is.true;
       expect(wrapper.findAllComponents(SeatIcon).some((seat) => seat.props('kind') === 'ai')).is.true;
       expect(owner.turnBasedGame).is.true;
-      expect(fetch.mock.calls.length).eq(callsBeforeMode);
+      expect(nonPreviewCalls()).eq(callsBeforeMode);
       const training = wrapper.findAll('.create-game-option').find((row) => row.text().includes('Training game (no ELO)'))!;
       await training.get('input').setValue(false);
       expect(owner.noEloGame).is.false;
@@ -188,7 +266,7 @@ describe('source creation view with our permanent form owner', () => {
       expect(owner.customBoardCodeInput).eq('unfinished map draft');
       expect(owner.players[0]).eq(player);
       expect(owner.noEloGame).is.false;
-      expect(fetch.mock.calls.length).eq(callsBeforeMode);
+      expect(nonPreviewCalls()).eq(callsBeforeMode);
     } finally {
       wrapper.unmount();
       vi.unstubAllGlobals();
@@ -201,7 +279,7 @@ describe('source creation view with our permanent form owner', () => {
 
   it('uses native search and selection for source card previews and keyboard edits', async () => {
     localStorage.clear();
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: true, json: async () => ({players: {}, games: []})}));
+    vi.stubGlobal('fetch', vi.fn((url: unknown) => Promise.resolve(publicResponse(url))));
     const view = shallowRef<CreatePresentation>();
     const wrapper = mount(NativeCreate, {attachTo: document.body, global: {...globalConfig.global,
       stubs: {PreferencesIcon: true, PageToolbar: true},

@@ -34,6 +34,22 @@ owned_files:
 - src/client/components/create/CeosFilter.vue
 - src/client/components/create/ceoSelection.ts
 - src/client/components/create/CardsFilter.vue
+- src/common/boards/boardOptions.ts
+- src/common/models/BoardPreviewModel.ts
+- src/common/app/paths.ts
+- src/server/models/BoardPreview.ts
+- src/server/models/ServerModel.ts
+- src/server/routes/ApiBoardPreview.ts
+- src/server/routes/ApiCreateGame.ts
+- src/server/server/requestProcessor.ts
+- tests/models/BoardPreview.spec.ts
+- tests/models/ServerModel.spec.ts
+- tests/client/wrybit/visuals/CatalogControls.spec.ts
+- tests/client/wrybit/visuals/PlayersOverview.spec.ts
+- tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts
+- tests/client/wrybit/visuals/SortableCards.spec.ts
+- tests/routes/ApiBoardPreview.spec.ts
+- src/client/components/create/useBoardPreview.ts
 - tests/client/components/create/**
 - src/client/wrybit/visuals/common/PlayerCube.vue
 - tests/client/wrybit/visuals/PlayerCube.spec.ts
@@ -86,6 +102,7 @@ owned_files:
 - src/styles/wrybit/colony_choice.less
 - src/styles/wrybit/create/**
 - src/styles/wrybit/create_game.less
+- src/styles/wrybit/board.less
 - src/styles/wrybit/visuals.less
 - src/client/wrybit/import-manifest.json
 - docs/codemap/codemap.json
@@ -174,3 +191,5 @@ Creation grouping/preview scoped proof: source menu/content lines use our canoni
 Custom-list presentation scoped proof: source Show/Edit + real card previews + inline grouped filters wired to permanent native editors. All selections/replacements/availability/defaults stay native; exact native CEO default helper extracted. Six filter hosts keep identity/search through Show/Edit/classic. Actual App desktop/phone and classic return, console0/0; full1204client/259files green, types/lint/style/App build. Native Create methods/watchers/style unchanged. Full creation/WP03/21rows remain OPEN.
 
 Card-search presentation scoped proof: source grid/search/remove/keyboard presentation bound to native catalogue/five-match search/batch parser/selection. Native input/ref permanent across modes. Real App1280x900 keyboard selection/classic return and final390x844 Enter selection with corrected isolated source spacing; console0/0. Full1205client/259files green, types/lint/style/App build. No creation/WP/full-row acceptance.
+
+Native board preview scoped proof: real read-only route, own GameSetup factory and Server public space projection; exact native boardOptions extraction. Native form sends only public layout fields while source mode active, hides clone preview, cancels stale requests. No Game/Player/AI/DB/save changes. Real App+native handler D proof with Database/gameLoader fail-closed, normal native initialization, all200 and finalconsole0/0 at three viewports. Existing planet texture URL corrected. Full1208client/260files and71targeted server green, current Vue/test TS/scoped lint/style/App build; stale guard mutation killed/exactly restored. Sequential handoff of4prior visual test files and ServerModel test repairs7existing TS errors using canonical types; assertions preserved. Full custom visual/traits/share/create/start/WP03/21rows remain OPEN.

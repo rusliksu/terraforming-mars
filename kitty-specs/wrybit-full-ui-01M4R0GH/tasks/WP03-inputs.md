@@ -117,6 +117,7 @@ owned_files:
 - src/styles/wrybit/ceo_action_section.less
 - src/styles/wrybit/milestone_award_options.less
 - src/styles/wrybit/draft_card_selection.less
+- src/styles/wrybit/placement_controls.less
 - src/styles/wrybit/amount_slider.less
 - src/styles/wrybit/selection_highlight.less
 - src/styles/wrybit/resource_options.less
@@ -237,3 +238,5 @@ Root input tabs scoped proof: source WaitingForTabs/WaitingForPlayersTab adapt n
 Amount conversion and card explanation scoped proof: source converter/sides/card thumbnail/intro use own typed display metadata from7native producers. Foreign title rule map excluded because native titles are ambiguous. Optional SelectAmount.preview is a read-only projection permitted by C-002, refreshed at native toModel without effects; first5constructor args, effect arrows and process unchanged by AST verification. Seebeck alternative energy and deferred EnergyMarket payment show costs without invented stock remainders. Native defaults/selection/response/AI retained. Full1237client/272files,36native tests/types/lint/App/mutation/browser console0/0 pass. General forecasts/intro/placement/undo/viewport/full21rows and T009-T012 remain OPEN.
 
 Single-board placement zoom scoped proof: source full-screen zoom moves the existing Mars/Moon/Venus view instead of cloning IDs; native offered cell/handler/controller survive. Explicit game-scoped surface, owner-safe cleanup, modal target registration before fit, placeholder size and close-before-native-confirmation. Native selection-time silent-confirmation flag preserves No/current-choice/opt-out semantics and existing save response; checkbox alone never submits. Full1239client/273files before SVG follow-up, final9focused/4files incl actualSVGroot and native298 id, types/lint/App green, mutant rejected/exact restore. Browser1440 sameDOM1board/native No/classic pending dialog/console0/0, no moves/DB. Full custom/Moon/Venus/mobile rendering, skip/intro/undo and T009-T012/all21rows remain OPEN.
+
+Space-with-skip scoped proof: single source placement tab and exact native skip footer, original indices/selection/save owner retained; mode/disposal guards and per-input zoom ownership prevent stale submit/modal. Full1243client/274files,12focused/4files, types/lint/style/App green, mode-guard mutant rejected/exact restore. Actual App1440 visually inspected/console0/0, no accepted moves or DB, fixture restored/hash verified. Full placement forecasts/undo/mobile/custom/Moon/Venus and T009-T012/all21rows remain OPEN.

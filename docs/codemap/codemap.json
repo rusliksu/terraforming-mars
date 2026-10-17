@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-17T12:15:40.206Z",
-  "generated_from_commit": "f9f649e707a8c312cf0153426976476fd1b81a99",
+  "generated_at": "2026-10-17T17:38:06.358Z",
+  "generated_from_commit": "d95f24db7b8d7c4800d7034ef24794c7c47994c3",
   "scope": [
     ".",
     ".github",
@@ -6232,7 +6232,10 @@
     "src/server/cards/promo/Supercapacitors.ts",
     "src/server/cards/underworld/VoltaicMetallurgy.ts",
     "src/client/wrybit/visuals/board/boardZoomSurface.ts",
-    "tests/client/wrybit/inputs/PlacementZoom.spec.ts"
+    "tests/client/wrybit/inputs/PlacementZoom.spec.ts",
+    "src/styles/wrybit/placement_controls.less",
+    "src/client/wrybit/inputs/spaceWithSkip.ts",
+    "tests/client/wrybit/inputs/SpaceSkip.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -6476,6 +6479,7 @@
       "src/client/wrybit/inputs/partyChoice.ts",
       "src/client/wrybit/inputs/presentation.ts",
       "src/client/wrybit/inputs/saveAttempt.ts",
+      "src/client/wrybit/inputs/spaceWithSkip.ts",
       "src/client/wrybit/inputs/unitValues.ts",
       "src/client/wrybit/inputs/waitingForTabs.ts",
       "src/client/wrybit/shell/AppBackground.vue",
@@ -6937,6 +6941,7 @@
       "src/styles/wrybit/party_choice.less",
       "src/styles/wrybit/payments.less",
       "src/styles/wrybit/placement_banner.less",
+      "src/styles/wrybit/placement_controls.less",
       "src/styles/wrybit/player_cube.less",
       "src/styles/wrybit/player_home_columns.less",
       "src/styles/wrybit/player_home_fixed.less",
@@ -7033,6 +7038,7 @@
       "tests/client/wrybit/inputs/ResourceInputPresentation.spec.ts",
       "tests/client/wrybit/inputs/SimpleInputPresentation.spec.ts",
       "tests/client/wrybit/inputs/SpacePresentation.spec.ts",
+      "tests/client/wrybit/inputs/SpaceSkip.spec.ts",
       "tests/client/wrybit/inputs/WaitingForPresentation.spec.ts",
       "tests/client/wrybit/inputs/saveAttempt.spec.ts",
       "tests/client/wrybit/shell/AppInputRefresh.spec.ts",

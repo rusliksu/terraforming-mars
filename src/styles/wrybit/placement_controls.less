@@ -1,0 +1,47 @@
+.wrybit-placement-control-styles() {
+  .select-space-zoom {
+    display: flex;
+    justify-content: center;
+    margin: 32px 0 16px;
+  }
+
+  .btn.select-space-zoom-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    height: auto;
+    margin: 0;
+    padding: 10px 24px;
+    line-height: 1.2;
+    box-shadow: @floating-button-shadow;
+  }
+
+  .select-space-zoom-next-step {
+    font-size: 14px;
+    font-weight: normal;
+    text-transform: none;
+    opacity: 0.85;
+  }
+
+  // Overlay positioning belongs to the source fixed-height viewport; fluid panels keep normal flow.
+  .player-home--fixed .or-tab-panel .select-space-zoom {
+    position: absolute;
+    inset: 0;
+    align-items: center;
+    margin: 0;
+    padding: 0 16px;
+    pointer-events: none;
+
+    .select-space-zoom-button {
+      pointer-events: auto;
+    }
+  }
+
+  @media only screen and (max-width: (@player-home-columns-min-width - 1px)) {
+    .player-home--fixed .or-tab-panel .select-space-zoom {
+      position: static;
+      margin-top: 16px;
+    }
+  }
+}

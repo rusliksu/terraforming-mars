@@ -73,6 +73,7 @@ export type OrOptionsBinding = {
   footerHost: InputHosts;
   select(option: PlayerInputModel): void;
   selectChoice(option: PlayerInputModel, choice: InputChoice): Promise<void>;
+  chooseAndSave(option: PlayerInputModel): Promise<void>;
   showChildSaveButton(option: PlayerInputModel): boolean;
   registerLabel(index: number, element: HTMLElement | null): void;
   save(): void;

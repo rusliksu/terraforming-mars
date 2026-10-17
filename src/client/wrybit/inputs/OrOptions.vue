@@ -2,7 +2,7 @@
   <div :class="['wf-options', {'wf-options--tabs': binding.asTabs}]" data-source-or>
     <label v-if="binding.showtitle && !binding.asTabs && !tileMenu"><div>{{ $t(binding.playerinput.title) }}</div></label>
     <label v-if="binding.playerinput.warning !== undefined" class="card-warning"><div>({{ $t(binding.playerinput.warning) }})</div></label>
-    <div v-if="binding.asTabs && !tileMenu" class="or-tabs" role="tablist">
+    <div v-if="binding.asTabs && !tileMenu && outerFooter === undefined && spaceChoice === undefined" class="or-tabs" role="tablist">
       <HandCardsTab :count="handCount" :active="handTabActive" @select="handTabActive = true"/>
       <button v-for="idx in tabOrder" :key="idx" type="button" role="tab"
         :ref="(el) => registerLabel(idx, el)"
@@ -28,6 +28,9 @@
       </template>
       <CardIntroBlock v-if="tileMenu && sourceCard !== undefined" :card="sourceCard" :title="binding.playerinput.title"/>
       <div v-else-if="tileMenu" class="or-tab-intro or-tab-question"><div class="or-tab-intro-title">{{ $t(binding.playerinput.title) }}</div></div>
+      <div v-else-if="spaceChoice !== undefined" class="or-tab-intro"><div class="or-tab-intro-title">{{ $t(binding.playerinput.title) }}</div></div>
+      <AppButton v-if="spaceChoice !== undefined && binding.selectedOption !== spaceChoice.space" class="space-choose-option"
+        :title="$t(fullTabTitle(spaceChoice.space.title))" @click="binding.select(spaceChoice.space)"/>
       <MilestoneAwardOptions v-if="maChoices !== undefined" :choices="maChoices" :selected="binding.selectedIdx" :groupName="binding.radioElementName" @select="selectIndex"/>
       <PartyOptions v-else-if="parties !== undefined && binding.playerView.game.turmoil !== undefined" :choices="parties" :selected="binding.selectedIdx"
         :groupName="binding.radioElementName" :turmoil="binding.playerView.game.turmoil" @select="selectIndex"/>
@@ -47,6 +50,10 @@
       <PresentationHost v-if="binding.asTabs" :hosts="binding.footerHost" :target="outerFooter"
         :class="{'or-tab-footer': outerFooter === undefined}" :style="{display: handTabActive ? 'none' : undefined}">
         <ActionStepChips v-if="turnStep !== undefined" :step="turnStep"/>
+        <template v-if="spaceChoice !== undefined && binding.showsave">
+          <AppButton v-for="(option, index) in spaceChoice.skips" :key="index" class="space-skip-option btn-tone-danger"
+            :title="$t(fullTabTitle(option.title))" @click="skip(option)"/>
+        </template>
         <div v-if="showSave" :class="['wf-action', 'or-tab-save', binding.selectedOption ? toneClass('or-tab-save--', binding.selectedOption) : undefined]"><AppButton :title="$t(saveLabel)" type="submit" :disabled="saveDisabled" @click="binding.save()"/></div>
       </PresentationHost>
       <TabPanelFooterSlot v-else-if="showSave">
@@ -57,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, inject, ref} from 'vue';
+import {computed, inject, onBeforeUnmount, ref} from 'vue';
 import {ROOT_INPUT_FOOTER} from './presentation';
 import type {ColorWithNeutral} from '@/common/Color';
 import type {ComponentPublicInstance} from 'vue';
@@ -86,12 +93,19 @@ import MilestoneAwardOptions from './MilestoneAwardOptions.vue';
 import PartyOptions from './PartyOptions.vue';
 import CardIntroBlock from './CardIntroBlock.vue';
 import {inputSourceCard} from './inputSourceCard';
+import {spaceWithSkip} from './spaceWithSkip';
+import {boardZoomSurface} from '@/client/wrybit/visuals/board/boardZoomSurface';
 
 const props = defineProps<{binding: OrOptionsBinding}>();
 const sourceCard = computed(() => inputSourceCard(props.binding.playerinput));
 const rootFooter = inject(ROOT_INPUT_FOOTER, undefined);
 const outerFooter = computed(() => props.binding.asTabs ? rootFooter?.value : undefined);
 const handTabActive = ref(false);
+const spaceChoice = computed(() => props.binding.asTabs ? spaceWithSkip({...props.binding.playerinput, options: [...props.binding.displayedOptions]}) : undefined);
+let alive = true;
+onBeforeUnmount(() => {
+  alive = false;
+});
 const maChoices = computed(() => milestoneAwardChoices({...props.binding.playerinput, options: [...props.binding.displayedOptions]}, props.binding.playerView.game));
 const parties = computed(() => maChoices.value === undefined ? partyChoices(props.binding.displayedOptions, props.binding.partyCards) : undefined);
 const tileMenu = computed(() => maChoices.value !== undefined || parties.value !== undefined || isChoiceMenu(props.binding.playerinput));
@@ -104,7 +118,7 @@ const groupIndex = computed(() => actionsIndex.value !== -1 ? actionsIndex.value
 const actionsGrouped = computed(() => props.binding.asTabs && groupIndex.value !== -1 && ownCeoCards(props.binding.playerView.thisPlayer).length > 0);
 const inActionsGroup = computed(() => actionsGrouped.value && props.binding.selectedIdx !== -1 && [actionsIndex.value, ceoIndex.value].includes(props.binding.selectedIdx));
 const handCount = computed(() => allCardsInHand(props.binding.playerView).length);
-const showSave = computed(() => props.binding.showsave && props.binding.selectedOption !== undefined && !props.binding.showChildSaveButton(props.binding.selectedOption));
+const showSave = computed(() => spaceChoice.value === undefined && props.binding.showsave && props.binding.selectedOption !== undefined && !props.binding.showChildSaveButton(props.binding.selectedOption));
 // Source visual ordering only; the canonical controller retains original response indices.
 const tabOrder = computed(() => tabDisplayOrder(props.binding.displayedOptions.map((option) => option.title)).filter((index) => !actionsGrouped.value || actionsIndex.value === -1 || index !== ceoIndex.value));
 const turnStep = computed(() => actionStep(props.binding.playerinput));
@@ -124,6 +138,14 @@ function tabCount(index: number) {
 function selectPlayer(option: PlayerInputModel, color: ColorWithNeutral) {
   if (color !== 'NEUTRAL') {
     void props.binding.selectChoice(option, {type: 'player', color});
+  }
+}
+async function skip(option: PlayerInputModel) {
+  const commit = props.binding.chooseAndSave;
+  props.binding.select(option);
+  await boardZoomSurface(props.binding.playerView.game.gameId)?.close();
+  if (alive) {
+    await commit(option);
   }
 }
 function selectIndex(index: number) {

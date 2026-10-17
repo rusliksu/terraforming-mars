@@ -101,7 +101,7 @@ export default defineComponent({
         radioElementName: this.radioElementName, childHost: this.childHost, footerHost: this.footerHost,
         select: (option) => {
           this.selectedOption = option;
-        }, selectChoice: this.selectChoice, showChildSaveButton: (option) => this.showChildSaveButton(option),
+        }, selectChoice: this.selectChoice, chooseAndSave: this.chooseAndSave, showChildSaveButton: (option) => this.showChildSaveButton(option),
         registerLabel: (index, element) => {
           if (element === null) {
             this.presentationLabels.delete(index);
@@ -132,6 +132,7 @@ export default defineComponent({
       selectedIdx = initialIdx + 1;
     }
     return {
+      active: true,
       displayedOptions,
       originalIndices,
       radioElementName: 'selectOption' + unique++,
@@ -167,6 +168,16 @@ export default defineComponent({
     },
   },
   methods: {
+    async chooseAndSave(option: PlayerInputModel) {
+      if (!this.active || !this.showsave || option.type !== 'option' || !this.displayedOptions.includes(option) || this.orPresentation === undefined) {
+        return;
+      }
+      this.selectedOption = option;
+      await this.$nextTick();
+      if (this.active && this.selectedOption === option && this.orPresentation !== undefined) {
+        await this.saveData();
+      }
+    },
     async selectChoice(option: PlayerInputModel, choice: InputChoice) {
       if (!this.displayedOptions.includes(option) || this.orPresentation === undefined) {
         return;
@@ -308,6 +319,9 @@ export default defineComponent({
   },
   unmounted() {
     this.clearQuickGreeneryHandlers();
+  },
+  beforeUnmount() {
+    this.active = false;
   },
 });
 

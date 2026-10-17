@@ -166,6 +166,7 @@ export type AresBinding = InputViewBinding<'aresGlobalParameters'> & {
   select(field: keyof AresGlobalParametersResponse, delta: AresDelta): void;
 };
 export type SpaceBinding = InputViewBinding<'space'> & {
+  automatic: boolean;
   anchor: HTMLElement | undefined;
   warning: string | undefined;
   accept(): void;

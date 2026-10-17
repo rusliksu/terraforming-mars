@@ -15,7 +15,7 @@
     </div>
     <div v-docked-tab ref="panel" :class="['or-tab-panel', 'board-tabs-panel', 'board-tabs-panel--' + active, 'or-tab-panel--tone-' + tone(active), {'board-tabs-panel--single': tabs.length < 2}]" role="tabpanel">
       <!-- Mars always keeps its place: it sets the box height (rightColumnFit.ts), the other boards lie on top of it -->
-      <div :class="['board-tabs-mars', {'board-tabs-mars--covered': active !== 'mars'}]">
+      <div :class="['board-tabs-mars', {'board-tabs-mars--covered': active !== 'mars'}]" :style="{minHeight: reservedMarsHeight === undefined ? undefined : reservedMarsHeight + 'px'}">
         <slot name="mars"></slot>
         <!-- Belongs to Mars and is covered with it (mobile: the global parameters as bars) -->
         <slot name="marsAside"></slot>
@@ -54,6 +54,7 @@ export default defineComponent({
   components: {BoardTabLines, TileViewToggle},
   directives: {dockedTab: vDockedTab},
   props: {
+    reservedMarsHeight: {type: Number, default: undefined},
     game: {
       type: Object as PropType<GameModel>,
       required: true,

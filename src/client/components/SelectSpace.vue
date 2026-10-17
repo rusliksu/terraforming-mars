@@ -47,6 +47,7 @@ type DataModel = {
   spaceId: SpaceId | undefined;
   warning: string | undefined;
   confirmationPending: boolean;
+  confirmationAutomatic: boolean;
 };
 
 export default defineComponent({
@@ -87,6 +88,7 @@ export default defineComponent({
       spaceId: undefined,
       warning: undefined,
       confirmationPending: false,
+      confirmationAutomatic: false,
     };
   },
   components: {
@@ -98,7 +100,7 @@ export default defineComponent({
       const anchor = this.selectedTile;
       const current = () => this.confirmationPending && anchor === this.selectedTile && !this.submitted;
       return {playerView: this.playerView, playerinput: this.playerinput, showsave: this.showsave, showtitle: this.showtitle,
-        anchor: this.confirmationPending && !this.submitted ? anchor : undefined, warning: this.warning,
+        anchor: this.confirmationPending && !this.submitted ? anchor : undefined, automatic: this.confirmationAutomatic, warning: this.warning,
         accept: () => {
           if (current()) {
             this.confirmPlacement();
@@ -176,6 +178,7 @@ export default defineComponent({
     },
     cancelPlacement() {
       this.confirmationPending = false;
+      this.confirmationAutomatic = false;
       if (this.selectedTile === undefined) {
         throw new Error('unexpected, no tile selected!');
       }
@@ -186,6 +189,7 @@ export default defineComponent({
     },
     confirmPlacement() {
       this.confirmationPending = false;
+      this.confirmationAutomatic = false;
       this.clearBoardHandlers();
 
       if (this.selectedTile === undefined) {
@@ -232,7 +236,8 @@ export default defineComponent({
       this.animateSpace(tile, true);
       tile.classList.remove('board-space--available');
       const hideTileConfirmation = getPreferences().hide_tile_confirmation;
-      if (hideTileConfirmation) {
+      this.confirmationAutomatic = hideTileConfirmation && this.spacePresentation !== undefined;
+      if (hideTileConfirmation && !this.confirmationAutomatic) {
         this.confirmPlacement();
       } else {
         this.confirmationPending = true;

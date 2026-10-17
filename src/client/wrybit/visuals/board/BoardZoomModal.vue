@@ -52,6 +52,8 @@ const emit = defineEmits<{
   (event: 'rendered'): void;
   // Return animation done, modal hidden
   (event: 'hidden'): void;
+  // The same board is teleported here; no duplicate board IDs or placement controller.
+  (event: 'target', target: HTMLElement | undefined): void;
 }>();
 
 // Stays true while closing until the return animation is done
@@ -266,6 +268,11 @@ async function show() {
   if (!alive || revision !== transitionRevision || !props.open) {
     return;
   }
+  emit('target', content.value);
+  await nextTick();
+  if (!alive || revision !== transitionRevision || !props.open) {
+    return;
+  }
   observeBanner();
   if (mobileLayout.value) {
     fitMobile();
@@ -306,6 +313,11 @@ async function hide() {
   stopPinch?.();
   stopPinch = undefined;
   bannerZone.value = 0;
+  emit('target', undefined);
+  await nextTick();
+  if (!alive || revision !== transitionRevision || props.open) {
+    return;
+  }
   visible.value = false;
   emit('hidden');
 }

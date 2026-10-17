@@ -102,6 +102,13 @@ owned_files:
 - src/client/wrybit/visuals/ShiftAresGlobalParameters.vue
 - src/client/wrybit/visuals/PlayerHome.vue
 - src/client/wrybit/visuals/PlayerSetupView.vue
+- src/client/wrybit/visuals/GameBoardView.vue
+- src/client/wrybit/visuals/boardTabs/BoardTabs.vue
+- src/client/wrybit/visuals/board/boardZoomSurface.ts
+- src/client/wrybit/visuals/board/BoardZoomModal.vue
+- src/client/wrybit/visuals/SpaceConfirmPopover.vue
+- tests/client/wrybit/visuals/GameBoardView.spec.ts
+- tests/client/wrybit/visuals/BoardZoom.spec.ts
 - src/client/components/App.vue
 - src/client/wrybit/shell/presentationViews.ts
 - src/client/wrybit/shell/WrybitShell.vue
@@ -228,3 +235,5 @@ Draft card presentation scoped proof: native draft/repick identity, stable displ
 Root input tabs scoped proof: source WaitingForTabs/WaitingForPlayersTab adapt native permanent RPC/poll/undo owner with local body/footer portals, retain selection/payment through hand/classic/source, native option response indices. PresentationHost supports existing owner footer without DOM wrappers and retains ownership-safe unregister. Native poll/undo and full client/type/lint/App checks, remount mutant and actual browser normal selection/hand/classic return recorded in manifest. Initial dealt cards are in All cards with fallback. Full intro/forecast/placement/viewport and T009-T012/all21full UI rows remain OPEN.
 
 Amount conversion and card explanation scoped proof: source converter/sides/card thumbnail/intro use own typed display metadata from7native producers. Foreign title rule map excluded because native titles are ambiguous. Optional SelectAmount.preview is a read-only projection permitted by C-002, refreshed at native toModel without effects; first5constructor args, effect arrows and process unchanged by AST verification. Seebeck alternative energy and deferred EnergyMarket payment show costs without invented stock remainders. Native defaults/selection/response/AI retained. Full1237client/272files,36native tests/types/lint/App/mutation/browser console0/0 pass. General forecasts/intro/placement/undo/viewport/full21rows and T009-T012 remain OPEN.
+
+Single-board placement zoom scoped proof: source full-screen zoom moves the existing Mars/Moon/Venus view instead of cloning IDs; native offered cell/handler/controller survive. Explicit game-scoped surface, owner-safe cleanup, modal target registration before fit, placeholder size and close-before-native-confirmation. Native selection-time silent-confirmation flag preserves No/current-choice/opt-out semantics and existing save response; checkbox alone never submits. Full1239client/273files before SVG follow-up, final9focused/4files incl actualSVGroot and native298 id, types/lint/App green, mutant rejected/exact restore. Browser1440 sameDOM1board/native No/classic pending dialog/console0/0, no moves/DB. Full custom/Moon/Venus/mobile rendering, skip/intro/undo and T009-T012/all21rows remain OPEN.

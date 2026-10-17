@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-17T18:13:35.281Z",
-  "generated_from_commit": "2673f6cf774907f5e21c356dbb950d5f329572d9",
+  "generated_at": "2026-10-17T18:34:33.556Z",
+  "generated_from_commit": "5853049ead01d3dde009f1ba3879b8047c47faaf",
   "scope": [
     ".",
     ".github",
@@ -4945,7 +4945,7 @@
       "evidence": [
         {
           "path": "src/client/wrybit/visuals/PlayerHome.vue",
-          "symbol": "<HomeColumns>",
+          "symbol": "<HomeColumns :boardCollapsed=",
           "status": "confirmed"
         }
       ]
@@ -6303,7 +6303,11 @@
     "src/server/venusPhase2/BasePlaceVenusPhase2Tile.ts",
     "src/server/venusPhase2/PlaceCloudCityTile.ts",
     "src/server/venusPhase2/PlaceGasMineTile.ts",
-    "src/server/venusPhase2/PlaceFloaterArrayTile.ts"
+    "src/server/venusPhase2/PlaceFloaterArrayTile.ts",
+    "src/client/wrybit/visuals/layout/setupBoardCollapsed.ts",
+    "src/styles/wrybit/setup_board_toggle.less",
+    "src/client/wrybit/inputs/SetupBoardToggle.vue",
+    "src/client/wrybit/create/ValidationProblems.vue"
   ],
   "verification_scope": {
     "paths": [
@@ -6477,6 +6481,7 @@
       "src/client/wrybit/create/OptionRow.vue",
       "src/client/wrybit/create/SegmentedControl.vue",
       "src/client/wrybit/create/SwitchInput.vue",
+      "src/client/wrybit/create/ValidationProblems.vue",
       "src/client/wrybit/create/WikiOverlay.vue",
       "src/client/wrybit/create/cardsFilter.ts",
       "src/client/wrybit/create/collapseAnimation.ts",
@@ -6527,6 +6532,7 @@
       "src/client/wrybit/inputs/SelectResource.vue",
       "src/client/wrybit/inputs/SelectResources.vue",
       "src/client/wrybit/inputs/SelectSpace.vue",
+      "src/client/wrybit/inputs/SetupBoardToggle.vue",
       "src/client/wrybit/inputs/SetupSummary.vue",
       "src/client/wrybit/inputs/ShiftAresGlobalParameters.vue",
       "src/client/wrybit/inputs/SourceCardThumbnail.vue",
@@ -6701,6 +6707,7 @@
       "src/client/wrybit/visuals/layout/playersCardFit.ts",
       "src/client/wrybit/visuals/layout/rightColumnFit.ts",
       "src/client/wrybit/visuals/layout/rowResize.ts",
+      "src/client/wrybit/visuals/layout/setupBoardCollapsed.ts",
       "src/client/wrybit/visuals/logpanel/CardPanel.vue",
       "src/client/wrybit/visuals/logpanel/LogCardsContent.vue",
       "src/client/wrybit/visuals/logpanel/LogCardsZoom.vue",
@@ -7043,6 +7050,7 @@
       "src/styles/wrybit/scaled_board.less",
       "src/styles/wrybit/selection_highlight.less",
       "src/styles/wrybit/server_update_overlay.less",
+      "src/styles/wrybit/setup_board_toggle.less",
       "src/styles/wrybit/setup_columns.less",
       "src/styles/wrybit/setup_start.less",
       "src/styles/wrybit/setup_summary.less",

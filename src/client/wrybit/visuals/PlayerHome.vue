@@ -5,7 +5,7 @@
       <DynamicTitle title="This game is over!" :color="thisPlayer.color"/>
       <a :href="'the-end?id=' + playerView.id" v-i18n>Go to game results</a>
     </div>
-    <HomeColumns>
+    <HomeColumns :boardCollapsed="isSetupPhase && setupBoardCollapsed">
       <template #board>
         <div class="player_home_block player-home-columns__mars">
           <GameBoardView ref="gameBoardView" :game="game" :tileView="tileView" :players="playerView.players" @toggleTileView="cycleTileView()"/>
@@ -18,7 +18,7 @@
       </template>
       <template #main>
         <a class="hotkey-target"></a>
-        <SetupTurnOrder v-if="isSetupPhase" :players="playerView.players"/>
+        <SetupTurnOrder v-if="isSetupPhase" :players="playerView.players"><SetupBoardToggle/></SetupTurnOrder>
         <PlayersOverview v-else class="player_home_block player_home_block--players nofloat" :playerView="playerView" id="shortkey-playersoverview"/>
         <RowResizeHandle v-if="!isSetupPhase" kind="players"/>
         <PlayerSetupView v-if="isSetupPhase" :playerView="playerView"/>
@@ -73,16 +73,18 @@ import {GAME_MENU_CONTEXT, GameMenuContext} from './gameMenu/gameMenuContext';
 import {useInputPresentation} from '@/client/wrybit/inputs/presentation';
 import {showsDraftedCardsBlock} from '@/client/wrybit/inputs/draftCards';
 import {hasWaitingForTabs} from '@/client/wrybit/inputs/waitingForTabs';
+import SetupBoardToggle from '@/client/wrybit/inputs/SetupBoardToggle.vue';
+import {setupBoardCollapsed} from './layout/setupBoardCollapsed';
 
 export default defineComponent({
   name: 'WrybitPlayerHome',
   setup() {
-    return {orPresentation: useInputPresentation('or'), waitingPresentation: useInputPresentation('waitingFor'), cardPresentation: useInputPresentation('card'), showsDraftedCardsBlock};
+    return {orPresentation: useInputPresentation('or'), waitingPresentation: useInputPresentation('waitingFor'), cardPresentation: useInputPresentation('card'), showsDraftedCardsBlock, setupBoardCollapsed};
   },
   mixins: [HomeMixin],
   props: {playerView: {type: Object as () => PlayerViewModel, required: true}},
   components: {InputHost, WaitingFor, TopBar, PurgeWarning, DynamicTitle, HomeColumns, RowResizeHandle, PlayerSetupView,
-    SetupTurnOrder, PlayersOverview, GameBoardView, LogPanel, Card, HandCardsTab, HandCardsPanel, KeyboardShortcuts},
+    SetupTurnOrder, PlayersOverview, GameBoardView, LogPanel, Card, HandCardsTab, HandCardsPanel, KeyboardShortcuts, SetupBoardToggle},
   directives: {dockedTab: vDockedTab},
   provide() {
     return {[GAME_MENU_CONTEXT as symbol]: computed((): GameMenuContext => ({

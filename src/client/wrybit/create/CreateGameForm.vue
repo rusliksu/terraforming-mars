@@ -256,8 +256,8 @@
         <section ref="createCard" class="create-game-card create-game-create-card" :class="{'create-game-create-card--stuck': createCardStuck}">
           <div class="create-game-create-row">
             <AppButton class="create-game-create" title="Create game" size="big" @click="binding.create()" :disabled="binding.hasBlockingValidationErrors"/>
-            <AppButton v-if="binding.hasValidationProblems" title="Show validation errors" @click="binding.showValidation()"/>
           </div>
+          <ValidationProblems v-if="binding.hasValidationProblems" :errors="binding.validationErrors"/>
         </section>
       </aside>
     </div>
@@ -292,6 +292,7 @@ import CollapsibleSection from './CollapsibleSection.vue';
 import OptionRow from './OptionRow.vue';
 import InfoLink from './InfoLink.vue';
 import ChoiceChip from './ChoiceChip.vue';
+import ValidationProblems from './ValidationProblems.vue';
 
 const props = defineProps<{binding: CreatePresentationBinding}>();
 const settingsLinkCopied = ref(false);

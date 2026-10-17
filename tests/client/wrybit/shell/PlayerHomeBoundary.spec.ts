@@ -14,6 +14,9 @@ import {fakeGameModel, fakePlayerViewModel, fakePublicPlayerModel} from '@tests/
 import {PaymentTester} from '@tests/client/components/PaymentTester';
 import {SelectProjectCardToPlayModel} from '@/common/models/PlayerInputModel';
 import {CardName} from '@/common/cards/CardName';
+import NativeCard from '@/client/components/SelectCard.vue';
+import {Phase} from '@/common/Phase';
+import type {SelectCardModel} from '@/common/models/PlayerInputModel';
 
 describe('App Wrybit player root', () => {
   let storage: FakeLocalStorage;
@@ -28,6 +31,57 @@ describe('App Wrybit player root', () => {
     vi.unstubAllGlobals();
     FakeLocalStorage.deregister(storage);
     PreferencesManager.resetForTest();
+  });
+
+  it('collapses the setup board without remounting it or changing the native pending choice', async () => {
+    const Classic = defineComponent({components: {InputHost}, props: ['playerView'], template: '<section data-classic-root><InputHost/></section>'});
+    const Boundary = defineComponent({props: ['enabled', 'screen'], emits: ['classic', 'active', 'views'], template: '<div/>'});
+    const input: SelectCardModel = {type: 'card', title: 'Select initial cards to buy', buttonLabel: 'Buy', min: 0, max: 2,
+      cards: [{name: CardName.ANTS}, {name: CardName.BIRDS}], showOnlyInLearnerMode: false, selectBlueCardAction: false,
+      showOwner: false, showSelectAll: false};
+    const view = fakePlayerViewModel({waitingFor: input, thisPlayer: fakePublicPlayerModel({tableau: []}),
+      game: fakeGameModel({phase: Phase.RESEARCH})});
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    const wrapper = mount(App, {global: {...globalConfig.global, components: {PlayerInputFactory}, stubs: {
+      StartScreen: true, PlayerHome: Classic, WrybitBoundary: Boundary, TopBar: true,
+      GameBoardView: {template: '<div data-setup-board-fixture/>'}, LogPanel: true, HandCardsPanel: true,
+      KeyboardShortcuts: true, PurgeWarning: true, GameMenu: true, CardListSection: true,
+    }}});
+    try {
+      wrapper.vm.applyPlayerView(view);
+      wrapper.vm.screen = 'player-home';
+      await flushPromises();
+      localStorage.setItem('setup-board-collapsed', 'original');
+      await wrapper.getComponent(NativeCard).findAll('input[type="checkbox"]')[0].setValue(true);
+      const owner = wrapper.getComponent(NativeCard).vm;
+      const uid = owner.$.uid;
+      wrapper.getComponent(Boundary).vm.$emit('views', {playerHome: markRaw(PlayerHome)});
+      wrapper.getComponent(Boundary).vm.$emit('active', true);
+      PreferencesManager.INSTANCE.set('experimental_layout', true);
+      await flushPromises();
+      const board = wrapper.get('[data-setup-board-fixture]').element;
+      await wrapper.get('.setup-board-toggle').trigger('click');
+      expect(wrapper.get('.player-home-columns').classes()).contains('player-home-columns--board-collapsed');
+      expect(wrapper.get('[data-setup-board-fixture]').element).eq(board);
+      expect(wrapper.getComponent(NativeCard).vm.$.uid).eq(uid);
+      expect(owner.getData()).deep.eq([CardName.ANTS]);
+      expect(localStorage.getItem('wrybit.setup-board-collapsed')).eq('1');
+      expect(localStorage.getItem('setup-board-collapsed')).eq('original');
+      await wrapper.get('.setup-board-toggle').trigger('click');
+      expect(wrapper.get('.player-home-columns').classes()).not.contains('player-home-columns--board-collapsed');
+      wrapper.getComponent(Boundary).vm.$emit('classic');
+      await flushPromises();
+      expect(wrapper.getComponent(NativeCard).vm.$.uid).eq(uid);
+      expect(owner.getData()).deep.eq([CardName.ANTS]);
+      expect(fetch.mock.calls).has.length(0);
+    } finally {
+      const toggle = wrapper.find('.setup-board-toggle');
+      if (toggle.exists() && toggle.attributes('aria-pressed') === 'true') {
+        await toggle.trigger('click');
+      }
+      wrapper.unmount();
+    }
   });
 
   it('moves our card and payment form into the real Wrybit root and back without a save or reset', async () => {

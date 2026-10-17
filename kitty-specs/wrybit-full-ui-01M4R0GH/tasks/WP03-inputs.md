@@ -88,6 +88,7 @@ owned_files:
 - src/client/wrybit/visuals/TabPanelFooterSlot.vue
 - src/client/wrybit/visuals/ShiftAresGlobalParameters.vue
 - src/client/wrybit/visuals/PlayerHome.vue
+- src/client/wrybit/visuals/PlayerSetupView.vue
 - src/client/components/App.vue
 - src/client/wrybit/shell/presentationViews.ts
 - src/client/wrybit/shell/WrybitShell.vue
@@ -95,6 +96,7 @@ owned_files:
 - src/styles/wrybit/choice_block.less
 - src/styles/wrybit/ceo_action_section.less
 - src/styles/wrybit/milestone_award_options.less
+- src/styles/wrybit/draft_card_selection.less
 - src/styles/wrybit/amount_slider.less
 - src/styles/wrybit/selection_highlight.less
 - src/styles/wrybit/resource_options.less
@@ -207,3 +209,5 @@ Public settings link scoped proof: source Copy header/feedback uses own versione
 Or choice/grouping scoped proof: source plain/inline/player tiles and combined Actions/CEO use native offered choices and permanent native SelectPlayer/SelectCard drafts. Typed UI choice bridge validates offered color/name and single-card shape, never creates responses; native Or original indices/save path retained and post-tick mode/option checked. Used/unavailable sections follow own catalogue/tableau/CEO flags. Full1218client/264files, types/lint/style/App green; offered-name mutant rejected/exact restore green. Real App normal CEO/hand/classic and player/classic selections, console0/0. Source section style adapted for shared-grid specificity, final left alignment measured97px for both cards/headings. Original synthetic fixture restored; no moves/DB. MA/party variants/forecasts/card-intro/draft/viewport/undo still OPEN, all T009-T012/full21rows unaccepted.
 
 Metadata choice tiles scoped proof: source milestone/award and party option cards reuse own models/native option/save. Exact native party agenda projection shared by SelectParty and Or, MoreParties/all12party values, own Player/Vitor/ChooseAlliedParty/move prompt shapes verified. Ambiguous/missing matches fall back to native text; no guessed stay party. Existing MA counter/party board focus restore on classic return. Full1222client/266files, Vue types/lint/style/App green, ambiguity mutant rejected/exact restoration green. Actual App Gardener/Miner/Populists selections return checked in classic; console0/0, no moves/DB. Full panels/viewport/forecast/draft/undo and T009-T012/full21rows still OPEN.
+
+Draft card presentation scoped proof: native draft/repick identity, stable display packet order, current-pick replacement clearing, native two-card replacement, read-only keeps/actions and zero-affordability controls covered. Native client min/max canSave corrected against existing server contract, red/green and mutation proof. Full1227client/267files, final9focused/4files, native SelectCard5server tests/types/lint/style/App green; browser normal selection/clear/affordability console0/0 and fixture restored. Root input layout/full21rows/T009-T012 remain OPEN.

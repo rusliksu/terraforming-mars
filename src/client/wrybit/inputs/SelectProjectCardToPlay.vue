@@ -1,5 +1,5 @@
 <template>
-  <div class="payments_cont choice-block" :class="choiceBlockClass(allCards.length, isHandSelection)" :style="choiceBlockStyle(allCards.length)">
+  <div class="payments_cont choice-block" :class="[choiceBlockClass(allCards.length, isHandSelection), {'choice-block--sections': unplayableCards.length > 0}]" :style="choiceBlockStyle(allCards.length)">
     <div v-if="binding.showtitle">{{ $t(binding.playerinput.title) }}</div>
     <CardFilterBar v-if="isHandSelection" :cards="allCards" :filter="handCardFilter" :context="filterContext">
       <template #sort="{compact}"><HandSortControl :playerView="binding.playerView" :compact="compact" :allowManual="true"/></template>

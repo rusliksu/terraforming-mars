@@ -1,7 +1,7 @@
 <template>
   <div class="player_home_block player_home_block--setup nofloat">
     <CardListSection v-for="section in dealtSections" :key="section.title" :title="section.title" :cards="section.cards"/>
-    <CardListSection title="Drafted Cards" :cards="playerView.draftedCards"/>
+    <CardListSection v-if="cardPresentation === undefined || showsDraftedCardsBlock(playerView)" title="Drafted Cards" :cards="playerView.draftedCards"/>
     <div v-if="playerView.pickedCorporationCard.length === 1" class="setup-picked">
       <div class="or-tabs" role="tablist"><HandCardsTab :count="pickedCards.length" :active="true" label="Your selection"/></div>
       <div v-docked-tab class="or-tab-panel or-tab-panel--view" role="tabpanel">
@@ -24,8 +24,11 @@ import Card from './card/Card.vue';
 import CardListSection from './CardListSection.vue';
 import HandCardsTab from './HandCardsTab.vue';
 import {vDockedTab} from './common/DockedTab';
+import {useInputPresentation} from '@/client/wrybit/inputs/presentation';
+import {showsDraftedCardsBlock} from '@/client/wrybit/inputs/draftCards';
 
 const props = defineProps<{playerView: PlayerViewModel}>();
+const cardPresentation = useInputPresentation('card');
 const pickedCards = computed(() => [
   ...props.playerView.pickedCorporationCard,
   ...(props.playerView.game.gameOptions.expansions.prelude ? props.playerView.preludeCardsInHand : []),

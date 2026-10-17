@@ -1,6 +1,6 @@
 <template>
   <div class="wf-component wf-options">
-    <div v-if="binding.showtitle" class="nofloat wf-component-title">{{ $t(binding.playerinput.title) }}</div>
+    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
     <div class="resource-options choice-block" :style="choiceBlockStyle(binding.playerinput.include.length)" role="radiogroup">
       <label v-for="unit in binding.playerinput.include" :key="unit" :class="['resource-option', {'resource-option--selected': binding.selected === unit}]">
         <input type="radio" :checked="binding.selected === unit" :value="unit" class="resource-option-input" @change="binding.select(unit)">
@@ -17,6 +17,7 @@
 </template>
 
 <script setup lang="ts">
+import InputIntro from './InputIntro.vue';
 import type {ResourceBinding} from './presentation';
 import {choiceBlockStyle} from './choiceBlock';
 import AppButton from '@/client/components/common/AppButton.vue';

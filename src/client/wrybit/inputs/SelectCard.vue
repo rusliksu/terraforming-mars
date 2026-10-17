@@ -1,6 +1,6 @@
 <template>
   <div class="wf-component wf-component--select-card choice-block" :class="[choiceBlockClass(allCards.length, isHandSelection || binding.playerinput.showOwner || sections.trailing.length > 0), {'choice-block--sections': sections.trailing.length > 0}]" :style="choiceBlockStyle(allCards.length)" data-source-card-choice>
-    <div v-if="binding.showtitle" class="nofloat wf-component-title">{{ $t(binding.playerinput.title) }}</div>
+    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
     <CardFilterBar v-if="isHandSelection || binding.playerinput.selectBlueCardAction" :cards="allCards" :filter="filter" :context="filterContext">
       <template #lead><AppButton v-if="binding.showSelectAll" size="small" @click="binding.toggleAll()" :title="$t(binding.allSelected ? 'Deselect All' : 'Select All')"/></template>
       <template #sort="{compact}">
@@ -49,6 +49,7 @@
 </template>
 
 <script setup lang="ts">
+import InputIntro from './InputIntro.vue';
 import {computed, shallowRef, watch} from 'vue';
 import type {CardSelectionBinding} from './presentation';
 import type {CardModel} from '@/common/models/CardModel';

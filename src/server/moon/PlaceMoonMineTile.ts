@@ -1,3 +1,4 @@
+import {TileType} from '../../common/TileType';
 import {Space} from '../boards/Space';
 import {IPlayer} from '../IPlayer';
 import {BasePlaceMoonTile} from './BasePlaceMoonTile';
@@ -5,6 +6,8 @@ import {MoonData} from './MoonData';
 import {MoonExpansion} from './MoonExpansion';
 
 export class PlaceMoonMineTile extends BasePlaceMoonTile {
+  protected override readonly tileType = TileType.MOON_MINE;
+
   constructor(
     player: IPlayer,
     spaces?: Array<Space>,

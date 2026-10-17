@@ -1,6 +1,6 @@
 <template>
   <div class="wf-component wf-options">
-    <div v-if="binding.showtitle" class="nofloat wf-component-title">{{ $t(binding.playerinput.title) }}</div>
+    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
     <div class="underground-tokens choice-block choice-block--natural">
       <label v-for="(token, idx) in binding.playerinput.tokens" :key="idx">
         <input type="checkbox" :name="String(idx)" v-model="selected" :value="idx">
@@ -17,6 +17,7 @@
 </template>
 
 <script setup lang="ts">
+import InputIntro from './InputIntro.vue';
 import {computed} from 'vue';
 import type {UndergroundChoiceBinding} from './presentation';
 import UndergroundToken from '@/client/components/underworld/UndergroundToken.vue';

@@ -13,6 +13,7 @@ import {Units} from '../Units';
 import {ClaimedToken} from '../underworld/UnderworldPlayerData';
 import {ColonyTrackChoiceModel} from './ColonyTradeContextModel';
 import {AmountPreviewModel} from './AmountPreviewModel';
+import {TileType} from '../TileType';
 
 export type BaseInputModel = {
   title: string | Message;
@@ -108,6 +109,8 @@ export type SelectPlayerModel = BaseInputModel & {
 export type SelectSpaceModel = BaseInputModel & {
   type: 'space';
   spaces: ReadonlyArray<SpaceId>;
+  /** Tile supplied by the native placement producer; absent for other space choices. */
+  tileType?: TileType;
 }
 
 export type SelectAmountModel = BaseInputModel & {

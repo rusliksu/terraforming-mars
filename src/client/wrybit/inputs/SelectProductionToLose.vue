@@ -1,6 +1,6 @@
 <template>
   <div class="wf-component wf-component--select-production-to-lose">
-    <div v-if="binding.showtitle" class="nofloat wf-component-title">{{ $t(binding.playerinput.title) }}</div>
+    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
     <h3 v-if="binding.playerinput.warning !== undefined" class="payments_title">{{ $t(binding.playerinput.warning) }}</h3>
     <div class="payments_type input-group" v-for="unit in binding.keys" :key="unit" :data-unit="unit">
       <div class="production-box"><div :class="['production', unit === 'megacredits' ? 'resource_icon--megacredits' : unit]" :style="unit === 'megacredits' ? 'background-size:contain;' : ''"></div></div>
@@ -20,6 +20,7 @@
 </template>
 
 <script setup lang="ts">
+import InputIntro from './InputIntro.vue';
 import type {UnitAmountsBinding} from './presentation';
 import {useUnitValues} from './unitValues';
 import TabPanelFooterSlot from '@/client/wrybit/visuals/TabPanelFooterSlot.vue';

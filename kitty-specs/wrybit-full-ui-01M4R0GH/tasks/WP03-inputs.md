@@ -23,6 +23,26 @@ authoritative_surface: src/client/wrybit/inputs/
 create_intent: []
 execution_mode: code_change
 owned_files:
+- src/server/cards/base/standardActions/ConvertPlants.ts
+- src/styles/wrybit/placement_tile.less
+- src/client/wrybit/visuals/board/PlacementBanner.vue
+- src/client/wrybit/visuals/board/placementDescription.ts
+- src/server/inputs/SelectSpace.ts
+- tests/models/PlacementPreview.spec.ts
+- src/server/deferredActions/PlaceCityTile.ts
+- src/server/deferredActions/PlaceGreeneryTile.ts
+- src/server/deferredActions/PlaceOceanTile.ts
+- src/server/deferredActions/PlaceTile.ts
+- src/server/deferredActions/PlaceHazardTile.ts
+- src/server/moon/BasePlaceMoonTile.ts
+- src/server/moon/PlaceMoonMineTile.ts
+- src/server/moon/PlaceMoonHabitatTile.ts
+- src/server/moon/PlaceMoonRoadTile.ts
+- src/server/venusPhase2/BasePlaceVenusPhase2Tile.ts
+- src/server/venusPhase2/PlaceCloudCityTile.ts
+- src/server/venusPhase2/PlaceGasMineTile.ts
+- src/server/venusPhase2/PlaceFloaterArrayTile.ts
+- src/server/moon/PlaceSpecialMoonTile.ts
 - src/styles/wrybit/tab_panel_footer.less
 - src/client/wrybit/inputs/**
 - src/client/wrybit/create/**
@@ -243,3 +263,5 @@ Single-board placement zoom scoped proof: source full-screen zoom moves the exis
 Space-with-skip scoped proof: single source placement tab and exact native skip footer, original indices/selection/save owner retained; mode/disposal guards and per-input zoom ownership prevent stale submit/modal. Full1243client/274files,12focused/4files, types/lint/style/App green, mode-guard mutant rejected/exact restore. Actual App1440 visually inspected/console0/0, no accepted moves or DB, fixture restored/hash verified. Full placement forecasts/undo/mobile/custom/Moon/Venus and T009-T012/all21rows remain OPEN.
 
 Native undo footer scoped proof: source quiet buttons use our action/step/research eligibility and exact request paths; native hidden-information confirmation and classic undoChoice/radios retained. RED2/GREEN27focused/full1245client, types/lint/style/App green; desktop1440 visually verified/console0/0, no undo or move request. Phone capture shows remaining WP05 whole-page overflow, not accepted mobile proof. T009-T012/all21rows remain OPEN.
+
+Native tile/input intro scoped proof: source InputIntro/TabIntroBlock/header hierarchy, optional read-only tile identity from15 native shared placement producers and our canonical tile art. Existing producer methods/callbacks/process AST-equal to2673f6cf77 except new display argument; Game/Player/AI/response untouched. Unknown types use plain caption, custom ocean maximum/current plant facts come from own model, no invented effect forecast. Full1247client before finalConvertPlants/tone/stylefollowup, final6focused/32native/types/lint/style/App green, wrong-tile mutant rejected/exact restore. ActualApp1440 input and enlarged banner visually verified after sprite/debug-border fixes; console0/0/no moves/DB/fixture restored. General effect quotes, direct producers, intro docking/viewport/mobile and T009-T012/all21rows remain OPEN.

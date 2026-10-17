@@ -2,9 +2,9 @@
   <div class="select_space_cont">
     <SpaceConfirmPopover :anchor="binding.automatic ? undefined : binding.anchor" :geometryRevision="zoomSurface?.revision.value" :busy="accepting"
       @accept="accept" @dismiss="binding.dismiss()" @hide="binding.hide($event)"/>
-    <div v-if="binding.showtitle" class="wf-select-space">
-      {{ $t(binding.playerinput.title) }}
-      <GoToMap :playerinput="binding.playerinput"/>
+    <div v-if="binding.showtitle" class="source-select-space-intro">
+      <InputIntro :input="binding.playerinput" :playerView="binding.playerView"/>
+      <GoToMap v-if="zoomBoard === undefined" :playerinput="binding.playerinput"/>
     </div>
     <div v-if="zoomBoard !== undefined" class="select-space-zoom">
       <button type="button" class="btn btn-submit btn-rounded select-space-zoom-button" @click="enlarge">
@@ -25,6 +25,7 @@ import SpaceConfirmPopover from '@/client/wrybit/visuals/SpaceConfirmPopover.vue
 import GoToMap from '@/client/components/waitingFor/GoToMap.vue';
 import {computed, onBeforeUnmount, ref, watch} from 'vue';
 import {boardZoomSurface, ZoomBoard} from '@/client/wrybit/visuals/board/boardZoomSurface';
+import InputIntro from './InputIntro.vue';
 
 const props = defineProps<{binding: SpaceBinding}>();
 const zoomSurface = computed(() => boardZoomSurface(props.binding.playerView.game.gameId));

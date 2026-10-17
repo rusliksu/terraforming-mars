@@ -1,3 +1,4 @@
+import {TileType} from '../../common/TileType';
 import {IPlayer} from '../IPlayer';
 import {SelectSpace} from '../inputs/SelectSpace';
 import {DeferredAction} from './DeferredAction';
@@ -22,7 +23,7 @@ export class PlaceGreeneryTile extends DeferredAction<Space | undefined> {
       return undefined;
     }
 
-    return new SelectSpace(this.getTitle(), filtered)
+    return new SelectSpace(this.getTitle(), filtered, TileType.GREENERY)
       .andThen((space) => {
         this.player.game.addGreenery(this.player, space);
         this.cb(space);

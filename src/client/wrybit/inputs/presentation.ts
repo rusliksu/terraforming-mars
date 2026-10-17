@@ -237,6 +237,7 @@ export type InputPresentationRegistry = {
 
 export const INPUT_PRESENTATIONS: InjectionKey<ComputedRef<InputPresentationRegistry | undefined>> = Symbol('input-presentations');
 export const INPUT_DEPTH: InjectionKey<number> = Symbol('input-depth');
+export const INPUT_PRESENTATION_INTRO: InjectionKey<ComputedRef<boolean>> = Symbol('input-presentation-intro');
 export const INPUT_FOOTER: InjectionKey<InputHosts['target']> = Symbol('input-footer');
 export const ROOT_INPUT_FOOTER: InjectionKey<InputHosts['target']> = Symbol('root-input-footer');
 

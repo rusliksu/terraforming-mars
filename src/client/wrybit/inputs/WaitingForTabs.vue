@@ -44,7 +44,10 @@ watch(() => props.binding.playerinput, () => {
 const cards = computed(() => allCardsInHand(props.binding.playerView));
 const dealt = computed(() => initialDraftDealtSections(props.binding.playerView));
 const handCount = computed(() => cards.value.length + dealt.value.reduce((sum, section) => sum + section.cards.length, 0));
-const tone = computed(() => optionTone(props.binding.playerinput));
+const tone = computed(() => {
+  const input = props.binding.playerinput;
+  return optionTone(input.type === 'or' ? spaceWithSkip(input)?.space ?? input : input);
+});
 const count = computed(() => {
   const input = props.binding.playerinput;
   if (input.type === 'card' || input.type === 'projectCard') {

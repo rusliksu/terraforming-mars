@@ -6,23 +6,26 @@ import NativeWaiting from '@/client/components/WaitingFor.vue';
 import NativeFactory from '@/client/components/PlayerInputFactory.vue';
 import NativeCard from '@/client/components/SelectCard.vue';
 import NativePayment from '@/client/components/PaymentForm.vue';
+import NativeAmount from '@/client/components/SelectAmount.vue';
 import SourceCard from '@/client/wrybit/inputs/SelectCard.vue';
 import SourceOr from '@/client/wrybit/inputs/OrOptions.vue';
 import SourceWaiting from '@/client/wrybit/inputs/WaitingForTabs.vue';
 import SourceProject from '@/client/wrybit/inputs/SelectProjectCardToPlay.vue';
 import SourcePayment from '@/client/wrybit/inputs/PaymentForm.vue';
+import SourceAmount from '@/client/wrybit/inputs/SelectAmount.vue';
 import {INPUT_PRESENTATIONS, InputPresentationRegistry} from '@/client/wrybit/inputs/presentation';
 import {fakeGameModel, fakePlayerViewModel, fakePublicPlayerModel} from '@tests/client/components/testHelpers';
 import {globalConfig} from '@tests/client/components/getLocalVue';
 import {CardName} from '@/common/cards/CardName';
 import {PlayerInputModel, SelectCardModel} from '@/common/models/PlayerInputModel';
 import {Phase} from '@/common/Phase';
+import {Resource} from '@/common/Resource';
 import SourceWaitingPlayers from '@/client/wrybit/inputs/WaitingForPlayersTab.vue';
 
 describe('source waiting-for tabs on the permanent native RPC owner', () => {
   function form(input: PlayerInputModel) {
     const views = {card: markRaw(SourceCard), or: markRaw(SourceOr), waitingFor: markRaw(SourceWaiting),
-      projectCard: markRaw(SourceProject), paymentForm: markRaw(SourcePayment)};
+      projectCard: markRaw(SourceProject), paymentForm: markRaw(SourcePayment), amount: markRaw(SourceAmount)};
     const registry = shallowRef<InputPresentationRegistry | undefined>(views);
     const actor = fakePublicPlayerModel({megacredits: 50, heat: 4});
     const view = fakePlayerViewModel({waitingFor: input, thisPlayer: actor, players: [actor], cardsInHand: [{name: CardName.BIRDS}]});
@@ -32,6 +35,28 @@ describe('source waiting-for tabs on the permanent native RPC owner', () => {
     const save = vi.spyOn(wrapper.vm, 'onsave').mockImplementation(() => {});
     return {wrapper, registry, save, views};
   }
+
+  it('keeps a root card caption below its toolbar after a fresh player DTO without remounting its native choice', async () => {
+    const input: PlayerInputModel = {type: 'or', title: 'Choose a bonus', buttonLabel: 'Confirm', options: [
+      {type: 'card', title: 'Select a card to keep', buttonLabel: 'Select', cards: [{name: CardName.ANTS}], min: 1, max: 1,
+        showOnlyInLearnerMode: false, selectBlueCardAction: false, showOwner: false, showSelectAll: false},
+      {type: 'option', title: 'Do nothing', buttonLabel: 'Confirm'},
+    ]};
+    const {wrapper} = form(input);
+    try {
+      await flushPromises();
+      await wrapper.get('label[data-card-name="Ants"] input').setValue(true);
+      const uid = wrapper.getComponent(NativeCard).vm.$.uid;
+      expect(wrapper.get('.or-tab-panel-intro-slot').text()).eq('Select a card to keep');
+      await wrapper.setProps({playerView: JSON.parse(JSON.stringify(wrapper.vm.playerView))});
+      await flushPromises();
+      expect(wrapper.get('.or-tab-panel-intro-slot').text()).eq('Select a card to keep');
+      expect(wrapper.getComponent(NativeCard).vm.$.uid).eq(uid);
+      expect(wrapper.getComponent(NativeCard).vm.getData()).deep.eq([CardName.ANTS]);
+    } finally {
+      wrapper.unmount();
+    }
+  });
 
   it('keeps the native card draft and footer through hand and classic views', async () => {
     const input: SelectCardModel = {type: 'card', title: 'Select a card to keep', buttonLabel: 'Select',
@@ -88,6 +113,11 @@ describe('source waiting-for tabs on the permanent native RPC owner', () => {
     const {wrapper, registry, save, views} = form(input);
     try {
       await flushPromises();
+      const list = wrapper.get('.payments_cont');
+      const toolbar = list.get('.card-filter-bar').element;
+      const intro = list.get('.or-tab-panel-intro-slot').element;
+      expect(Boolean(toolbar.compareDocumentPosition(intro) & Node.DOCUMENT_POSITION_FOLLOWING)).is.true;
+      expect(list.findAll('.or-tab-panel-intro-slot')).has.length(1);
       await wrapper.get('input[value="Birds"]').setValue(true);
       const payment = wrapper.getComponent(NativePayment).vm;
       payment.maxValue('heat');
@@ -105,6 +135,38 @@ describe('source waiting-for tabs on the permanent native RPC owner', () => {
       await footer.get('.payments_save button').trigger('click');
       await flushPromises();
       expect(save.mock.calls).deep.eq([[{type: 'projectCard', card: CardName.BIRDS, payment: payment.payment}]]);
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
+  it('shows one card explanation for a nested converter and retains its native selected amount', async () => {
+    const input: PlayerInputModel = {type: 'or', title: 'Select an option for Insulation', buttonLabel: 'Confirm', options: [
+      {type: 'amount', title: 'Select amount of heat production to decrease', buttonLabel: 'Decrease', min: 1, max: 4,
+        maxByDefault: false, preview: {sourceCard: CardName.INSULATION,
+          from: {kind: 'production', resource: Resource.HEAT, perStep: 1, before: 4},
+          to: {kind: 'production', resource: Resource.MEGACREDITS, perStep: 1, before: 0}}},
+      {type: 'option', title: 'Do nothing', buttonLabel: 'Confirm'},
+    ]};
+    const {wrapper, registry, views, save} = form(input);
+    try {
+      await flushPromises();
+      expect(wrapper.findAll('.card-intro-name')).has.length(1);
+      expect(wrapper.get('.card-intro-name').text()).eq('Insulation');
+      const owner = wrapper.getComponent(NativeAmount).vm;
+      const uid = owner.$.uid;
+      await wrapper.get('[role=slider]').trigger('keydown', {key: 'ArrowRight'});
+      registry.value = undefined;
+      await flushPromises();
+      expect(wrapper.getComponent(NativeAmount).vm.$.uid).eq(uid);
+      expect((wrapper.get('input[type=number]').element as HTMLInputElement).value).eq('2');
+      registry.value = views;
+      await flushPromises();
+      expect(wrapper.findAll('.card-intro-name')).has.length(1);
+      expect(wrapper.get('[role=slider]').attributes('aria-valuenow')).eq('2');
+      await wrapper.get('.or-tab-footer button.btn-submit').trigger('click');
+      await flushPromises();
+      expect(save.mock.calls).deep.eq([[{type: 'or', index: 0, response: {type: 'amount', amount: 2}}]]);
     } finally {
       wrapper.unmount();
     }

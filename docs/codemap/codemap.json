@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-17T18:34:33.556Z",
-  "generated_from_commit": "5853049ead01d3dde009f1ba3879b8047c47faaf",
+  "generated_at": "2026-10-17T18:56:49.767Z",
+  "generated_from_commit": "7959b9f4314a45d675a6ca85f66279a2e1b9bde7",
   "scope": [
     ".",
     ".github",
@@ -3604,6 +3604,30 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "id": "native-final-greenery-presentation",
+      "label": "Read-only финальное озеленение",
+      "type": "api",
+      "path": "src/server/models/finalGreeneryPresentation.ts",
+      "role": "Display metadata for the complete current native production-phase prompt; no Game/Player writes.",
+      "entrypoints": [
+        {
+          "path": "src/server/models/finalGreeneryPresentation.ts",
+          "symbol": "export function projectFinalGreenery",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/models/PlacementPreview.spec.ts",
+          "symbol": "actual native production-phase root"
+        }
+      ],
+      "constraints": [
+        "Other phases, stale inputs and unknown prompts fall back unchanged."
+      ],
+      "evidence": []
     }
   ],
   "edges": [
@@ -5257,6 +5281,19 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "player-input-identity",
+      "to": "native-final-greenery-presentation",
+      "type": "uses",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/models/ServerModel.ts",
+          "symbol": "projectFinalGreenery(player, waitingFor",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -6307,7 +6344,10 @@
     "src/client/wrybit/visuals/layout/setupBoardCollapsed.ts",
     "src/styles/wrybit/setup_board_toggle.less",
     "src/client/wrybit/inputs/SetupBoardToggle.vue",
-    "src/client/wrybit/create/ValidationProblems.vue"
+    "src/client/wrybit/create/ValidationProblems.vue",
+    "src/client/wrybit/inputs/cardInputIntro.ts",
+    "src/client/wrybit/inputs/TabPanelIntroSlot.vue",
+    "src/server/models/finalGreeneryPresentation.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -6537,6 +6577,7 @@
       "src/client/wrybit/inputs/ShiftAresGlobalParameters.vue",
       "src/client/wrybit/inputs/SourceCardThumbnail.vue",
       "src/client/wrybit/inputs/TabIntroBlock.vue",
+      "src/client/wrybit/inputs/TabPanelIntroSlot.vue",
       "src/client/wrybit/inputs/WaitingForPlayersTab.vue",
       "src/client/wrybit/inputs/WaitingForTabs.vue",
       "src/client/wrybit/inputs/actionCards.ts",
@@ -6544,6 +6585,7 @@
       "src/client/wrybit/inputs/amount/AmountConverter.vue",
       "src/client/wrybit/inputs/amount/AmountSideTile.vue",
       "src/client/wrybit/inputs/amount/AmountSlider.vue",
+      "src/client/wrybit/inputs/cardInputIntro.ts",
       "src/client/wrybit/inputs/cardSections.ts",
       "src/client/wrybit/inputs/choiceBlock.ts",
       "src/client/wrybit/inputs/choiceMenu.ts",
@@ -6946,6 +6988,7 @@
       "src/server/models/BoardPreview.ts",
       "src/server/models/OceanPlacementContext.ts",
       "src/server/models/ServerModel.ts",
+      "src/server/models/finalGreeneryPresentation.ts",
       "src/server/models/publicConditionalDiscounts.ts",
       "src/server/moon/BasePlaceMoonTile.ts",
       "src/server/moon/PlaceMoonHabitatTile.ts",

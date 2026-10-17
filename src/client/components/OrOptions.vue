@@ -25,6 +25,7 @@
   <InputPortal :target="childHost.target.value">
     <PlayerInputFactory v-if="selectedOption !== undefined" ref="inputfactory" :key="selectedIdx"
       :playerView="playerView" :playerinput="selectedOption" :onsave="playerFactorySaved(selectedIdx)"
+      :presentationIntro="asTabs"
       :showsave="showsave && showChildSaveButton(selectedOption)" :showtitle="false"/>
   </InputPortal>
 </template>

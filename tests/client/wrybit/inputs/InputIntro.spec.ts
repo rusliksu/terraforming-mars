@@ -7,6 +7,22 @@ import {TileType} from '@/common/TileType';
 import {DEFAULT_GLOBAL_PARAMETERS} from '@/common/GlobalParameterConfig';
 
 describe('source input intros from native display data', () => {
+  it('labels final greenery without claiming that a solo win terraformed every parameter', async () => {
+    const view = fakePlayerViewModel();
+    view.game.isTerraformed = false;
+    const wrapper = mount(InputIntro, {...globalConfig, props: {playerView: view,
+      input: {type: 'space', title: 'Select space for greenery tile', buttonLabel: 'Place', spaces: ['03'],
+        tileType: TileType.GREENERY, finalGreenery: true}}});
+    try {
+      expect(wrapper.get('.or-tab-intro-finale').text()).eq('Final greenery');
+      view.game.isTerraformed = true;
+      await wrapper.setProps({playerView: {...view, game: {...view.game}}});
+      expect(wrapper.get('.or-tab-intro-finale').text()).eq('Mars is terraformed');
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
   it('shows the actual tile despite an ambiguous caption and uses our custom ocean maximum', async () => {
     const view = fakePlayerViewModel();
     view.game.oceans = 4;

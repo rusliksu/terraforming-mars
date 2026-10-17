@@ -41,6 +41,7 @@ import {runId} from '../utils/server-ids';
 import {toName} from '../../common/utils/utils';
 import {MAX_AWARDS, MAX_MILESTONES} from '../../common/constants';
 import {getOceanPlacementContext} from './OceanPlacementContext';
+import {projectFinalGreenery} from './finalGreeneryPresentation';
 import {AstraMechanica} from '../cards/promo/AstraMechanica';
 
 export class Server {
@@ -286,7 +287,7 @@ export class Server {
       return undefined;
     }
     // TODO(kberg): in theory this should be in all the other toModel calls.
-    const model = waitingFor.toModel(player);
+    const model = projectFinalGreenery(player, waitingFor, waitingFor.toModel(player));
     model.warning = waitingFor.warning;
     if (waitingFor.annotation !== undefined) {
       model.annotation = waitingFor.annotation;

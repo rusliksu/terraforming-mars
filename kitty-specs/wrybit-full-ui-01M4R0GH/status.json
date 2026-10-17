@@ -126,7 +126,8 @@
       "last_transition_at": "2026-10-17T21:14:49.970733+00:00",
       "model": "__resolved_model_absent__",
       "notes": [
-        "Current primary ancestry restored; component checks green, full flows assigned to WP07"
+        "Current primary ancestry restored; component checks green, full flows assigned to WP07",
+        "Cycle1 P2 fixed; visible native overflow counts and refresh regression, App proof green"
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,

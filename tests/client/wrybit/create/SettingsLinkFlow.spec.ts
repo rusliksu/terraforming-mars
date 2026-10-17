@@ -14,8 +14,7 @@ import {globalConfig} from '@tests/client/components/getLocalVue';
 import {BoardName} from '@/common/boards/BoardName';
 import {paths} from '@/common/app/paths';
 
-const {showAlert} = vi.hoisted(() => ({showAlert: vi.fn()}));
-vi.mock('@/client/components/vueRoot', () => ({vueRoot: () => ({showAlert})}));
+const showAlert = vi.fn();
 
 describe('public setup links through the permanent creation owner', () => {
   const originalUrl = window.location.href;
@@ -38,9 +37,11 @@ describe('public setup links through the permanent creation owner', () => {
   function form(source = false) {
     const view = shallowRef<CreatePresentation | undefined>(source ? markRaw(SourceCreate) : undefined);
     const wrapper = mount(NativeCreate, {attachTo: document.body, global: {...globalConfig.global,
+      // The VTU app root exposes the native alert contract.
+      mixins: [{methods: {showAlert}}],
       stubs: {PreferencesIcon: true, PageToolbar: true},
       provide: {[CREATE_PRESENTATION as symbol]: computed(() => view.value)}}});
-    const owner = wrapper.vm.$.proxy as InstanceType<typeof NativeCreate>;
+    const owner = wrapper.vm;
     return {wrapper, owner, view, showAlert};
   }
 

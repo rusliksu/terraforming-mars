@@ -15,6 +15,12 @@
             <polygon class="create-game-head-icon-filled" mask="url(#create-game-export-cut)" points="12.5,5.2 19.43,9.2 19.43,17.2 12.5,21.2 5.57,17.2 5.57,9.2"/><path :d="exportArrowPath"/>
           </svg><span class="create-game-head-label" v-i18n>Export</span>
         </button>
+        <button type="button" class="create-game-icon-button" :aria-label="$t('Copy link with these settings')" :title="$t('Copy link with these settings')" @click="copySettingsLink()">
+          <svg class="create-game-head-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          </svg><span class="create-game-head-label">{{ $t(settingsLinkCopied ? 'Link copied' : 'Copy link') }}</span>
+        </button>
         <AppButton class="create-game-reset btn-tone-quiet" title="Reset" @click="binding.reset()"/>
       </div>
     </header>
@@ -288,6 +294,23 @@ import InfoLink from './InfoLink.vue';
 import ChoiceChip from './ChoiceChip.vue';
 
 const props = defineProps<{binding: CreatePresentationBinding}>();
+const settingsLinkCopied = ref(false);
+let copiedTimer: ReturnType<typeof setTimeout> | undefined;
+let copyEpoch = 0;
+async function copySettingsLink() {
+  const epoch = ++copyEpoch;
+  const copied = await props.binding.copySettingsLink();
+  if (epoch !== copyEpoch) {
+    return;
+  }
+  clearTimeout(copiedTimer);
+  settingsLinkCopied.value = copied;
+  if (copied) {
+    copiedTimer = setTimeout(() => {
+      settingsLinkCopied.value = false;
+    }, 2000);
+  }
+}
 const visibleCustomLists = computed(() => props.binding.customLists.filter((list) => {
   if (list.kind === 'corporations') {
     return props.binding.model.showCorporationList;
@@ -434,5 +457,7 @@ onMounted(() => {
 });
 onBeforeUnmount(() => {
   stopColumns?.(); stopSticky?.();
+  copyEpoch++;
+  clearTimeout(copiedTimer);
 });
 </script>

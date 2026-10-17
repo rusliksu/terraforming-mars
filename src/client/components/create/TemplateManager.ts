@@ -1,6 +1,57 @@
 import {JSONObject} from '@/common/Types';
 import {CreateGameModel} from './CreateGameModel';
 
+type ScalarFieldTypes = {
+  [K in keyof CreateGameModel]?: NonNullable<CreateGameModel[K]> extends boolean ? 'boolean' :
+    NonNullable<CreateGameModel[K]> extends number ? 'number' : NonNullable<CreateGameModel[K]> extends string ? 'string' : never
+};
+
+/** Native preset fields, shared by serialization and public-link validation. */
+export const TEMPLATE_SCALAR_FIELD_TYPES = {
+  draftVariant: 'boolean',
+  showOtherPlayersVP: 'boolean',
+  board: 'string',
+  solarPhaseOption: 'boolean',
+  customBoardCode: 'string',
+  customMoonBoardCode: 'string',
+  customVenusSurfaceBoardCode: 'string',
+  aresExtremeVariant: 'boolean',
+  politicalAgendasExtension: 'string',
+  undoOption: 'boolean',
+  undoStepOption: 'boolean',
+  showTimers: 'boolean',
+  fastModeOption: 'boolean',
+  removeNegativeGlobalEventsOption: 'boolean',
+  includeFanMA: 'boolean',
+  modularMA: 'boolean',
+  noEloGame: 'boolean',
+  privateHands: 'boolean',
+  turnBasedGame: 'boolean',
+  botGame: 'boolean',
+  startingCorporations: 'number',
+  soloTR: 'boolean',
+  initialDraft: 'boolean',
+  initialDraftOneWay: 'boolean',
+  preludeDraftVariant: 'boolean',
+  ceosDraftVariant: 'boolean',
+  randomMA: 'string',
+  shuffleMapOption: 'boolean',
+  randomFirstPlayer: 'boolean',
+  requiresVenusTrackCompletion: 'boolean',
+  requiresMoonTrackCompletion: 'boolean',
+  moonStandardProjectVariant: 'boolean',
+  moonStandardProjectVariant1: 'boolean',
+  altVenusBoard: 'boolean',
+  escapeVelocityMode: 'boolean',
+  escapeVelocityBonusSeconds: 'number',
+  escapeVelocityPenalty: 'number',
+  escapeVelocityPeriod: 'number',
+  escapeVelocityThreshold: 'number',
+  twoCorpsVariant: 'boolean',
+  startingCeos: 'number',
+  startingPreludes: 'number',
+} as const satisfies ScalarFieldTypes;
+
 const TEMPLATES_KEY = 'tm_game_templates';
 
 export interface GameTemplate {
@@ -128,19 +179,7 @@ export class TemplateManager {
     });
     state.expansions = {...model.expansions};
 
-    const simpleFields = [
-      'draftVariant', 'showOtherPlayersVP', 'board', 'solarPhaseOption',
-      'customBoardCode', 'customMoonBoardCode', 'customVenusSurfaceBoardCode',
-      'aresExtremeVariant', 'politicalAgendasExtension', 'undoOption', 'undoStepOption', 'showTimers',
-      'fastModeOption', 'removeNegativeGlobalEventsOption', 'includeFanMA', 'modularMA',
-      'noEloGame', 'privateHands', 'turnBasedGame', 'botGame', 'startingCorporations', 'soloTR', 'initialDraft', 'initialDraftOneWay', 'preludeDraftVariant',
-      'ceosDraftVariant', 'randomMA', 'shuffleMapOption', 'randomFirstPlayer',
-      'requiresVenusTrackCompletion', 'requiresMoonTrackCompletion',
-      'moonStandardProjectVariant', 'moonStandardProjectVariant1', 'altVenusBoard',
-      'escapeVelocityMode', 'escapeVelocityBonusSeconds', 'escapeVelocityPenalty',
-      'escapeVelocityPeriod', 'escapeVelocityThreshold',
-      'twoCorpsVariant', 'startingCeos', 'startingPreludes',
-    ] as const satisfies ReadonlyArray<keyof CreateGameModel>;
+    const simpleFields = Object.keys(TEMPLATE_SCALAR_FIELD_TYPES) as Array<keyof typeof TEMPLATE_SCALAR_FIELD_TYPES>;
 
     for (const f of simpleFields) {
       state[f] = model[f] as JSONObject[typeof f];

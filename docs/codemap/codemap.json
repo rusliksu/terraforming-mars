@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-17T09:49:20.349Z",
-  "generated_from_commit": "334fc6e98d8883c7ae1a21889df638ec3e980db7",
+  "generated_at": "2026-10-17T10:11:53.916Z",
+  "generated_from_commit": "256ba4fee4a5e07caf7b4238fb98866762d3308c",
   "scope": [
     ".",
     ".github",
@@ -3373,6 +3373,40 @@
         "Нет DB или сохранения."
       ],
       "evidence": []
+    },
+    {
+      "id": "native-public-settings-link",
+      "label": "Публичная ссылка на наш игровой пресет",
+      "type": "library",
+      "path": "src/client/components/create/settingsLink.ts",
+      "role": "Проверяет ограниченный публичный пресет до передачи нашему импортёру; не включает экспериментальный режим.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/create/settingsLink.ts",
+          "symbol": "export function encodeSettingsHash",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/client/components/create/settingsLink.ts",
+          "symbol": "export function decodeSettingsHash",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/components/create/SettingsLink.spec.ts",
+          "symbol": "without names, profiles, contacts or automation"
+        },
+        {
+          "path": "tests/client/wrybit/create/SettingsLinkFlow.spec.ts",
+          "symbol": "classic mode still selected"
+        }
+      ],
+      "constraints": [
+        "Снимок по явной кнопке Copy.",
+        "Боты и Telegram-режим выключены по нашим правилам пресетов."
+      ],
+      "evidence": []
     }
   ],
   "edges": [
@@ -4894,6 +4928,24 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "canonical-create-owner",
+      "to": "native-public-settings-link",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/create/CreateGameForm.vue",
+          "symbol": "const settings = decodeSettingsHash(window.location.hash)",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/client/components/create/CreateGameForm.vue",
+          "symbol": "url.hash = encodeSettingsHash(this)",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -5863,7 +5915,11 @@
     "tests/routes/ApiBoardPreview.spec.ts",
     "tests/models/BoardPreview.spec.ts",
     "src/client/wrybit/create/expansionFeatures.ts",
-    "tests/client/wrybit/create/ExpansionFeatures.spec.ts"
+    "tests/client/wrybit/create/ExpansionFeatures.spec.ts",
+    "tests/client/wrybit/create/SettingsLinkFlow.spec.ts",
+    "src/client/components/create/settingsLink.ts",
+    "src/client/components/create/TemplateManager.ts",
+    "tests/client/components/create/SettingsLink.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -5998,6 +6054,7 @@
       "src/client/components/create/TemplateManager.ts",
       "src/client/components/create/ceoSelection.ts",
       "src/client/components/create/createGamePresentation.ts",
+      "src/client/components/create/settingsLink.ts",
       "src/client/components/create/useBoardPreview.ts",
       "src/client/components/delta/DeltaProjectInput.vue",
       "src/client/components/help/HelpRulebooks.vue",
@@ -6590,6 +6647,7 @@
       "tests/client/components/create/ModuleItemFilter.spec.ts",
       "tests/client/components/create/PreludesFilter.spec.ts",
       "tests/client/components/create/Rebalanced.spec.ts",
+      "tests/client/components/create/SettingsLink.spec.ts",
       "tests/client/components/create/TemplateManager.spec.ts",
       "tests/client/components/create/ValidationErrorsPopup.spec.ts",
       "tests/client/components/create/creationTestConfig.ts",
@@ -6605,6 +6663,7 @@
       "tests/client/wrybit/create/ExpansionFeatures.spec.ts",
       "tests/client/wrybit/create/ExpansionGrouping.spec.ts",
       "tests/client/wrybit/create/ModuleFilterPresentation.spec.ts",
+      "tests/client/wrybit/create/SettingsLinkFlow.spec.ts",
       "tests/client/wrybit/create/wikiContent.spec.ts",
       "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts",
       "tests/client/wrybit/inputs/ColonyPresentation.spec.ts",

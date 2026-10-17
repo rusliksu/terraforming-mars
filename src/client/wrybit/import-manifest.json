@@ -4237,6 +4237,28 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-create-default-off-requests.txt"
           ],
           "note": "Source creation cards/columns/widgets/header icons/wiki boxes bind to all62 explicit own fields and all28 own expansion labels/icons; no foreign model/defaults/AI/serializer. Native methods and style body exactly equal9b36f522cc after LF normalization. Player/profile/custom-map/filter/file fragments remain permanent per-owner portals; source stateless cube/seat/toggle/stepper leaves edit our current player objects. Actual native filter search/identity, player/file/map refs, config/errors and bot/async flags survive both mode changes; source Create sends byte-identical native serialized body at an intercepted HTTP boundary. Mode-key mutation killed by filter identity assertion; exact bytes restored and same test green. Full1200client/256files, Vue types/scoped ESLint/Stylelint and actual App Webpack0warnings. App1920x1080/390x844; normal player2/training/Rebalanced/profile/map-draft edits survive classic return, console0/0 and GET-only fixture. Fresh default-off requests contain no Wrybit chunk/assets. Existing shallow creation tests now use real local transport; assertions unchanged, fan toggles use real inputs. Wiki HTML rejects active markup/disguised script URLs and async dialogs stop late updates. Full grouping/content details, exact board preview/share URL, inline custom-card lists and final UI acceptance remain pending. This is scoped proof, not full T009/WP03 acceptance."
+        },
+        {
+          "kind": "native-public-settings-link",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/components/create/settingsLink.ts",
+            "src/client/components/create/TemplateManager.ts",
+            "tests/client/components/create/SettingsLink.spec.ts",
+            "tests/client/wrybit/create/SettingsLinkFlow.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-settings-link-client-green.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-settings-link-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-settings-link-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-settings-link-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-share-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-share-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-share-fresh.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-share-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-share-fresh-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-share-default-off-requests.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-share-fresh-requests.txt"
+          ],
+          "note": "Source Copy link icon and 2-second feedback call our permanent native owner. Own versioned #tm-settings=1 UTF8/base64url protocol reuses the exact42native preset fields/order, own defaults/enums/card renames/custom-board codecs and native importer. Source settingsLink/boardSeed/AI level codebooks are excluded. Link is an explicit snapshot on Copy, not an automatic address-bar update on every edit. Includes current seed/first seat and all our expansions/lists/custom geometry; names/profileIDs/TelegramIDs/clone IDs excluded, bot/async modes stay off under native preset policy. Public colors are retained and native reserved-color name normalization still applies. Validate whitelist/types/size before applying; optional draft flags reset before native import, preserve seed after native postprocessing, explicit rematch/library/editor query takes precedence. Copy denial leaves usable URL plus native alert. All1216client tests/263files green, types/scoped lint/App Webpack0warnings; whitelist mutant rejected and exact bytes restored. Real App1440desktop/390phone Copy feedback, fresh separate classic browser restores Hellas+HighOrbit with empty name and no optional assets, both consoles0/0. Native readonly preview only; no create/move/DB/AI/rule changes. Full creation/start/input and all21full UI rows still await package/final acceptance."
         }
       ]
     },

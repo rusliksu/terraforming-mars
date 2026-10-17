@@ -911,6 +911,7 @@ import {JSONProcessor} from './JSONProcessor';
 import {defaultCreateGameModel} from './defaultCreateGameModel';
 import {CreateGameSettingsStorage} from './CreateGameSettingsStorage';
 import {TemplateManager, GameTemplate} from './TemplateManager';
+import {decodeSettingsHash, encodeSettingsHash} from './settingsLink';
 import {getColony} from '@/client/colonies/ClientColonyManifest';
 import {RULEBOOK_URLS, WIKI, WIKI_URLS} from '@/client/utils/WikiLinks';
 import {setDocumentTitle} from '@/client/utils/documentTitle';
@@ -1245,6 +1246,9 @@ export default defineComponent({
     if (cloneId) {
       void this.loadRematchSetup(cloneId as GameId);
     } else {
+      if (!['board', 'customBoard', 'customMoonBoard', 'customVenusSurfaceBoard'].some((key) => urlParams.has(key))) {
+        void this.restoreSettingsLink();
+      }
       this.adoptCustomBoardFromEditor();
       this.adoptCustomMoonBoardFromEditor();
       this.adoptCustomVenusSurfaceBoardFromEditor();
@@ -1292,7 +1296,7 @@ export default defineComponent({
         validationErrors: this.validationErrors, showValidation: () => {
           this.showValidationErrors = true;
         },
-        importSettings: () => this.typedRefs.file.click(), exportSettings: this.downloadSettings,
+        importSettings: () => this.typedRefs.file.click(), exportSettings: this.downloadSettings, copySettingsLink: this.copySettingsLink,
         reset: this.resetSettings, create: this.createGame, clearCustomLists: this.clearCustomLists};
     },
     wikiUrls(): typeof RULEBOOK_URLS & typeof WIKI_URLS {
@@ -1540,6 +1544,46 @@ export default defineComponent({
       } catch (e) {
         this.customVenusSurfaceBoardName = '';
         this.customVenusSurfaceBoardCodeError = e instanceof Error ? e.message : String(e);
+      }
+    },
+    async copySettingsLink(): Promise<boolean> {
+      try {
+        const url = new URL(window.location.href);
+        url.search = '';
+        url.hash = encodeSettingsHash(this);
+        window.history.replaceState(window.history.state, '', url);
+        try {
+          await navigator.clipboard.writeText(url.href);
+          return true;
+        } catch {
+          vueRoot(this).showAlert('Copy link', 'Copy the settings link from the address bar.');
+          return false;
+        }
+      } catch (e) {
+        vueRoot(this).showAlert('Copy link', e instanceof Error ? e.message : String(e));
+        return false;
+      }
+    },
+    async restoreSettingsLink() {
+      try {
+        const settings = decodeSettingsHash(window.location.hash);
+        if (settings === undefined) {
+          return;
+        }
+        // Let the saved preset finish before applying an explicit shared preset.
+        await nextTick();
+        this.seededGame = false;
+        this.clonedGameId = undefined;
+        this.preludeDraftVariant = undefined;
+        this.ceosDraftVariant = undefined;
+        const processor = this.applySettings(settings);
+        await nextTick();
+        this.seed = settings.seed as number;
+        if (processor.warnings.length > 0) {
+          this.showSettingsLoadResult('Settings link', processor);
+        }
+      } catch (e) {
+        vueRoot(this).showAlert('Settings link', e instanceof Error ? e.message : String(e));
       }
     },
     restoreLastSettings() {

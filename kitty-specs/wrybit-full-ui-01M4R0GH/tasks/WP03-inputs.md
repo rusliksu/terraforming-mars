@@ -72,6 +72,7 @@ owned_files:
 - src/client/components/SelectParty.vue
 - src/client/components/turmoil/Turmoil.vue
 - src/client/components/turmoil/partyAgenda.ts
+- src/client/components/turmoil/partyCardDetails.ts
 - tests/client/components/turmoil/Turmoil.spec.ts
 - src/client/components/SelectColony.vue
 - src/client/components/SelectProductionToLose.vue
@@ -93,6 +94,7 @@ owned_files:
 - tests/client/wrybit/shell/WrybitShell.spec.ts
 - src/styles/wrybit/choice_block.less
 - src/styles/wrybit/ceo_action_section.less
+- src/styles/wrybit/milestone_award_options.less
 - src/styles/wrybit/amount_slider.less
 - src/styles/wrybit/selection_highlight.less
 - src/styles/wrybit/resource_options.less
@@ -203,3 +205,5 @@ Expansion feature grouping scoped proof: all9source groupings use native surface
 Public settings link scoped proof: source Copy header/feedback uses own versioned public preset codec and native importer. Exact42native scalar fields/order retained; current seed/first seat/all own expansions/lists/custom maps round-trip, private player/profile/contact/clone fields excluded and bot/async off. Malformed links validated before live model; query precedence, clipboard denial and fresh default-off restore tested. Full1216client/263files, types/scoped lint/App build green; whitelist mutation killed/exact restoration green. Actual App1440/390 and fresh classic browser Hellas/HighOrbit/empty names/no optional assets, console0/0. Source serializer/AI levels not imported. All T009-T012/full21rows remain OPEN.
 
 Or choice/grouping scoped proof: source plain/inline/player tiles and combined Actions/CEO use native offered choices and permanent native SelectPlayer/SelectCard drafts. Typed UI choice bridge validates offered color/name and single-card shape, never creates responses; native Or original indices/save path retained and post-tick mode/option checked. Used/unavailable sections follow own catalogue/tableau/CEO flags. Full1218client/264files, types/lint/style/App green; offered-name mutant rejected/exact restore green. Real App normal CEO/hand/classic and player/classic selections, console0/0. Source section style adapted for shared-grid specificity, final left alignment measured97px for both cards/headings. Original synthetic fixture restored; no moves/DB. MA/party variants/forecasts/card-intro/draft/viewport/undo still OPEN, all T009-T012/full21rows unaccepted.
+
+Metadata choice tiles scoped proof: source milestone/award and party option cards reuse own models/native option/save. Exact native party agenda projection shared by SelectParty and Or, MoreParties/all12party values, own Player/Vitor/ChooseAlliedParty/move prompt shapes verified. Ambiguous/missing matches fall back to native text; no guessed stay party. Existing MA counter/party board focus restore on classic return. Full1222client/266files, Vue types/lint/style/App green, ambiguity mutant rejected/exact restoration green. Actual App Gardener/Miner/Populists selections return checked in classic; console0/0, no moves/DB. Full panels/viewport/forecast/draft/undo and T009-T012/full21rows still OPEN.

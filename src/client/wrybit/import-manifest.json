@@ -851,7 +851,32 @@
       "package": "WP03",
       "target": "src/client/wrybit/inputs/MilestoneAwardOptions.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-metadata-choice-tiles",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/components/turmoil/partyCardDetails.ts",
+            "tests/client/wrybit/inputs/MetadataChoices.spec.ts",
+            "tests/client/wrybit/inputs/MetadataChoiceMatchers.spec.ts",
+            "tests/client/wrybit/inputs/PartyPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-final-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-milestones.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-milestone-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-awards.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-award-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-parties.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-party-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-milestone-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-party-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-award-console.txt"
+          ],
+          "note": "Source MA tiles reuse our native-backed Milestone/Award views, including our image/name/number patches; Player/Vitor prompt shapes are matched only to current game public models. Unknown prompt/name falls back to ordinary choice text. Source MA focus counter releases on classic return. Source party option cards reuse a read-only agenda projection extracted exactly from native SelectParty and shared with native Or; own MoreParties registry, all12native PartyName values supported. ChooseAlliedParty explicit native descriptions retained. Do-not-move maps only to the unique missing party in current native party models; duplicate/ambiguous cases fall back to text instead of guessing. Native offered option, original indices, SelectOption and save pipeline unchanged. Party note uses source existing ruling badge, board focus restores prior view. Four new flow/matcher tests plus existing native party flow green; full1222client/266files, types/scoped lint/style/App0warnings green. Ambiguous-stay mutant rejected and original bytes restored. Actual App1440 normal Gardener/Miner/Populists selection survives classic, public source agenda cards and MA images checked; all consoles0/0 and no move/DB requests. Original synthetic response exactly restored. Full Turmoil panel/viewport/forecasts/draft/undo and all21full UI rows remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/Milestones.vue",
@@ -949,6 +974,30 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-console.txt"
           ],
           "note": "Simple/inline choices and player tiles use native offered options; the native Factory edits its real SelectPlayer/SelectCard owner and reads its draft through a typed UI-only choice bridge. Native Or selects the same offered option, checks current owner/mode after nextTick, preserves original response indices and normal save pipeline. No source response generation or title-to-resource rules imported. Actions+CEO share one source tab with merged available count and one native active child; hand-tab/classic retain its card. Public own tableau/native card catalogue/action flags classify used and unavailable cards, own CeoCard/ModelUtils isDisabled semantics verified. Source section styling isolated under optional root; added one local class to match shared grid specificity, browser confirms cards and headings left97px. Full1218client/264files and Vue types/scoped lint/style/App0warnings green; offered-card-name mutant rejected/exact restoration green. Real App1440 normal CEO selection, hand-tab return, classic CEO checked; player tile returns checked in native form; consoles0/0, onlyGET synthetic proof, original fixture exactly restored. Historical phone screenshot demonstrates unported viewport, not mobile acceptance. Source resource forecasts, card introductions, MA/party variants, draft/trailing sections and full viewport/undo flows remain open; no full WP03 or21row acceptance."
+        },
+        {
+          "kind": "native-metadata-choice-tiles",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/components/turmoil/partyCardDetails.ts",
+            "tests/client/wrybit/inputs/MetadataChoices.spec.ts",
+            "tests/client/wrybit/inputs/MetadataChoiceMatchers.spec.ts",
+            "tests/client/wrybit/inputs/PartyPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-final-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-milestones.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-milestone-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-awards.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-award-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-parties.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-party-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-milestone-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-party-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-award-console.txt"
+          ],
+          "note": "Source MA tiles reuse our native-backed Milestone/Award views, including our image/name/number patches; Player/Vitor prompt shapes are matched only to current game public models. Unknown prompt/name falls back to ordinary choice text. Source MA focus counter releases on classic return. Source party option cards reuse a read-only agenda projection extracted exactly from native SelectParty and shared with native Or; own MoreParties registry, all12native PartyName values supported. ChooseAlliedParty explicit native descriptions retained. Do-not-move maps only to the unique missing party in current native party models; duplicate/ambiguous cases fall back to text instead of guessing. Native offered option, original indices, SelectOption and save pipeline unchanged. Party note uses source existing ruling badge, board focus restores prior view. Four new flow/matcher tests plus existing native party flow green; full1222client/266files, types/scoped lint/style/App0warnings green. Ambiguous-stay mutant rejected and original bytes restored. Actual App1440 normal Gardener/Miner/Populists selection survives classic, public source agenda cards and MA images checked; all consoles0/0 and no move/DB requests. Original synthetic response exactly restored. Full Turmoil panel/viewport/forecasts/draft/undo and all21full UI rows remain open."
         }
       ]
     },
@@ -6363,6 +6412,30 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-party-colony-console.txt"
           ],
           "note": "Source choice cards use our current agendas with the More Parties variant and our canonical colony descriptions. Own controllers, offered party constraints, persona colours, live model refresh, mode retention and exact responses verified. Pure artwork/style helpers only; foreign forecasts/trade rules excluded. All1197client/254files, Vue types, scoped lint/style and App-only Webpack passed before the persona follow-up. Actual App AND fixture ordinary picks survive classic return; console0/0, no submit/move/DB. Browser found missing persona style activation; existing PlayerCube regression RED/GREEN then three affected tests and rebuilt App passed; native persona token class and margin reset fix the shared component. Creation widgets separately have one controlled-owner replacement/collapse test; full creation and remaining UI flows still open. This evidence is not full WP03 acceptance."
+        },
+        {
+          "kind": "native-metadata-choice-tiles",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/components/turmoil/partyCardDetails.ts",
+            "tests/client/wrybit/inputs/MetadataChoices.spec.ts",
+            "tests/client/wrybit/inputs/MetadataChoiceMatchers.spec.ts",
+            "tests/client/wrybit/inputs/PartyPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-final-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-milestones.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-milestone-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-awards.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-award-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-parties.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-party-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-milestone-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-party-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-award-console.txt"
+          ],
+          "note": "Source MA tiles reuse our native-backed Milestone/Award views, including our image/name/number patches; Player/Vitor prompt shapes are matched only to current game public models. Unknown prompt/name falls back to ordinary choice text. Source MA focus counter releases on classic return. Source party option cards reuse a read-only agenda projection extracted exactly from native SelectParty and shared with native Or; own MoreParties registry, all12native PartyName values supported. ChooseAlliedParty explicit native descriptions retained. Do-not-move maps only to the unique missing party in current native party models; duplicate/ambiguous cases fall back to text instead of guessing. Native offered option, original indices, SelectOption and save pipeline unchanged. Party note uses source existing ruling badge, board focus restores prior view. Four new flow/matcher tests plus existing native party flow green; full1222client/266files, types/scoped lint/style/App0warnings green. Ambiguous-stay mutant rejected and original bytes restored. Actual App1440 normal Gardener/Miner/Populists selection survives classic, public source agenda cards and MA images checked; all consoles0/0 and no move/DB requests. Original synthetic response exactly restored. Full Turmoil panel/viewport/forecasts/draft/undo and all21full UI rows remain open."
         }
       ]
     },
@@ -6374,9 +6447,34 @@
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP04",
-      "target": "src/client/wrybit/expansions/turmoil/PartyOptions.vue",
+      "target": "src/client/wrybit/inputs/PartyOptions.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-metadata-choice-tiles",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/components/turmoil/partyCardDetails.ts",
+            "tests/client/wrybit/inputs/MetadataChoices.spec.ts",
+            "tests/client/wrybit/inputs/MetadataChoiceMatchers.spec.ts",
+            "tests/client/wrybit/inputs/PartyPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-final-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-milestones.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-milestone-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-awards.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-award-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-parties.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-party-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-milestone-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-party-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-award-console.txt"
+          ],
+          "note": "Source MA tiles reuse our native-backed Milestone/Award views, including our image/name/number patches; Player/Vitor prompt shapes are matched only to current game public models. Unknown prompt/name falls back to ordinary choice text. Source MA focus counter releases on classic return. Source party option cards reuse a read-only agenda projection extracted exactly from native SelectParty and shared with native Or; own MoreParties registry, all12native PartyName values supported. ChooseAlliedParty explicit native descriptions retained. Do-not-move maps only to the unique missing party in current native party models; duplicate/ambiguous cases fall back to text instead of guessing. Native offered option, original indices, SelectOption and save pipeline unchanged. Party note uses source existing ruling badge, board focus restores prior view. Four new flow/matcher tests plus existing native party flow green; full1222client/266files, types/scoped lint/style/App0warnings green. Ambiguous-stay mutant rejected and original bytes restored. Actual App1440 normal Gardener/Miner/Populists selection survives classic, public source agenda cards and MA images checked; all consoles0/0 and no move/DB requests. Original synthetic response exactly restored. Full Turmoil panel/viewport/forecasts/draft/undo and all21full UI rows remain open."
+        }
+      ]
     },
     {
       "source": "src/client/components/turmoil/Turmoil.vue",
@@ -9291,6 +9389,111 @@
             "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-or-choice-player-console.txt"
           ],
           "note": "Simple/inline choices and player tiles use native offered options; the native Factory edits its real SelectPlayer/SelectCard owner and reads its draft through a typed UI-only choice bridge. Native Or selects the same offered option, checks current owner/mode after nextTick, preserves original response indices and normal save pipeline. No source response generation or title-to-resource rules imported. Actions+CEO share one source tab with merged available count and one native active child; hand-tab/classic retain its card. Public own tableau/native card catalogue/action flags classify used and unavailable cards, own CeoCard/ModelUtils isDisabled semantics verified. Source section styling isolated under optional root; added one local class to match shared grid specificity, browser confirms cards and headings left97px. Full1218client/264files and Vue types/scoped lint/style/App0warnings green; offered-card-name mutant rejected/exact restoration green. Real App1440 normal CEO selection, hand-tab return, classic CEO checked; player tile returns checked in native form; consoles0/0, onlyGET synthetic proof, original fixture exactly restored. Historical phone screenshot demonstrates unported viewport, not mobile acceptance. Source resource forecasts, card introductions, MA/party variants, draft/trailing sections and full viewport/undo flows remain open; no full WP03 or21row acceptance."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/milestoneAwardChoice.ts",
+      "sourceSha256": "1a6bfd74d57787a5b8bce78a5be9f21c7f3c588981c75ebb053e3dc114706286",
+      "target": "src/client/wrybit/inputs/milestoneAwardChoice.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "package": "WP03",
+      "scope": "Pure presentation and matching of verified native prompt shapes against native public models; no source domain data.",
+      "evidence": [
+        {
+          "kind": "native-metadata-choice-tiles",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/components/turmoil/partyCardDetails.ts",
+            "tests/client/wrybit/inputs/MetadataChoices.spec.ts",
+            "tests/client/wrybit/inputs/MetadataChoiceMatchers.spec.ts",
+            "tests/client/wrybit/inputs/PartyPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-final-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-milestones.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-milestone-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-awards.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-award-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-parties.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-party-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-milestone-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-party-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-award-console.txt"
+          ],
+          "note": "Source MA tiles reuse our native-backed Milestone/Award views, including our image/name/number patches; Player/Vitor prompt shapes are matched only to current game public models. Unknown prompt/name falls back to ordinary choice text. Source MA focus counter releases on classic return. Source party option cards reuse a read-only agenda projection extracted exactly from native SelectParty and shared with native Or; own MoreParties registry, all12native PartyName values supported. ChooseAlliedParty explicit native descriptions retained. Do-not-move maps only to the unique missing party in current native party models; duplicate/ambiguous cases fall back to text instead of guessing. Native offered option, original indices, SelectOption and save pipeline unchanged. Party note uses source existing ruling badge, board focus restores prior view. Four new flow/matcher tests plus existing native party flow green; full1222client/266files, types/scoped lint/style/App0warnings green. Ambiguous-stay mutant rejected and original bytes restored. Actual App1440 normal Gardener/Miner/Populists selection survives classic, public source agenda cards and MA images checked; all consoles0/0 and no move/DB requests. Original synthetic response exactly restored. Full Turmoil panel/viewport/forecasts/draft/undo and all21full UI rows remain open."
+        }
+      ]
+    },
+    {
+      "source": "src/client/components/turmoil/partyChoice.ts",
+      "sourceSha256": "32e4553ed47c1375997cf615ce55fe892a3a824d4fa412945c030b129cca90ca",
+      "target": "src/client/wrybit/inputs/partyChoice.ts",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "package": "WP03",
+      "scope": "Pure presentation and matching of verified native prompt shapes against native public models; no source domain data.",
+      "evidence": [
+        {
+          "kind": "native-metadata-choice-tiles",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/components/turmoil/partyCardDetails.ts",
+            "tests/client/wrybit/inputs/MetadataChoices.spec.ts",
+            "tests/client/wrybit/inputs/MetadataChoiceMatchers.spec.ts",
+            "tests/client/wrybit/inputs/PartyPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-final-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-milestones.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-milestone-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-awards.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-award-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-parties.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-party-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-milestone-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-party-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-award-console.txt"
+          ],
+          "note": "Source MA tiles reuse our native-backed Milestone/Award views, including our image/name/number patches; Player/Vitor prompt shapes are matched only to current game public models. Unknown prompt/name falls back to ordinary choice text. Source MA focus counter releases on classic return. Source party option cards reuse a read-only agenda projection extracted exactly from native SelectParty and shared with native Or; own MoreParties registry, all12native PartyName values supported. ChooseAlliedParty explicit native descriptions retained. Do-not-move maps only to the unique missing party in current native party models; duplicate/ambiguous cases fall back to text instead of guessing. Native offered option, original indices, SelectOption and save pipeline unchanged. Party note uses source existing ruling badge, board focus restores prior view. Four new flow/matcher tests plus existing native party flow green; full1222client/266files, types/scoped lint/style/App0warnings green. Ambiguous-stay mutant rejected and original bytes restored. Actual App1440 normal Gardener/Miner/Populists selection survives classic, public source agenda cards and MA images checked; all consoles0/0 and no move/DB requests. Original synthetic response exactly restored. Full Turmoil panel/viewport/forecasts/draft/undo and all21full UI rows remain open."
+        }
+      ]
+    },
+    {
+      "source": "src/styles/milestone_award_options.less",
+      "sourceSha256": "60587446b592d91679603c7d7beaf48232db806f110e6e790f093591c7126303",
+      "target": "src/styles/wrybit/milestone_award_options.less",
+      "license": "GPL-3.0",
+      "status": "planned",
+      "package": "WP03",
+      "scope": "Pure presentation and matching of verified native prompt shapes against native public models; no source domain data.",
+      "evidence": [
+        {
+          "kind": "native-metadata-choice-tiles",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "src/client/components/turmoil/partyCardDetails.ts",
+            "tests/client/wrybit/inputs/MetadataChoices.spec.ts",
+            "tests/client/wrybit/inputs/MetadataChoiceMatchers.spec.ts",
+            "tests/client/wrybit/inputs/PartyPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-types.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-final-build.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-choices-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-milestones.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-milestone-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-awards.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-award-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-parties.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-party-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-milestone-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-party-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-metadata-award-console.txt"
+          ],
+          "note": "Source MA tiles reuse our native-backed Milestone/Award views, including our image/name/number patches; Player/Vitor prompt shapes are matched only to current game public models. Unknown prompt/name falls back to ordinary choice text. Source MA focus counter releases on classic return. Source party option cards reuse a read-only agenda projection extracted exactly from native SelectParty and shared with native Or; own MoreParties registry, all12native PartyName values supported. ChooseAlliedParty explicit native descriptions retained. Do-not-move maps only to the unique missing party in current native party models; duplicate/ambiguous cases fall back to text instead of guessing. Native offered option, original indices, SelectOption and save pipeline unchanged. Party note uses source existing ruling badge, board focus restores prior view. Four new flow/matcher tests plus existing native party flow green; full1222client/266files, types/scoped lint/style/App0warnings green. Ambiguous-stay mutant rejected and original bytes restored. Actual App1440 normal Gardener/Miner/Populists selection survives classic, public source agenda cards and MA images checked; all consoles0/0 and no move/DB requests. Original synthetic response exactly restored. Full Turmoil panel/viewport/forecasts/draft/undo and all21full UI rows remain open."
         }
       ]
     }

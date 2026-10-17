@@ -12,6 +12,7 @@
     <span v-if="card.policyText !== undefined" class="select-party__rule select-party__rule--policy"><small>{{ $t('While ruling') }}</small>{{ $t(card.policyText) }}</span>
     <span v-if="card.bonusText !== undefined" class="select-party__rule select-party__rule--bonus"><small>{{ $t('When taking over') }}</small>{{ $t(card.bonusText) }}</span>
     <span class="select-party__marks">
+      <span v-if="note !== undefined" class="select-party__ruling">{{ $t(note) }}</span>
       <span v-if="card.party.name === turmoil.ruling" class="select-party__ruling">{{ $t('Ruling') }}</span>
       <span v-if="card.party.name === turmoil.dominant" class="select-party__ruling select-party__ruling--successor" :title="$t('Dominant party: most delegates – takes over as the ruling party at the end of the generation')">{{ $t('Successor') }}</span>
     </span>
@@ -24,6 +25,6 @@ import type {TurmoilModel} from '@/common/models/TurmoilModel';
 import {PARTY_COLOR, partyImage, seatedDelegates} from './partyAppearance';
 import DelegateFigure from './DelegateFigure.vue';
 
-defineProps<{card: PartyCardBinding, turmoil: TurmoilModel, groupName: string}>();
+defineProps<{card: PartyCardBinding, turmoil: TurmoilModel, groupName: string, note?: string}>();
 defineEmits<{select: []}>();
 </script>

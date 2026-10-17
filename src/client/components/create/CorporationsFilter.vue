@@ -1,5 +1,6 @@
 <template>
   <ModuleItemFilter
+    :embedded="embedded"
     title="Corporations"
     :groups="GROUPS"
     :itemsByGroup="ALL_CARDS_BY_MODULE"
@@ -50,6 +51,7 @@ export default defineComponent({
   components: {ModuleItemFilter},
   emits: ['corporation-list-changed', 'close'],
   props: {
+    embedded: {type: Boolean, default: false},
     expansions: {type: Object as () => Record<Expansion, boolean>, required: true},
     selected: {type: Array as () => Array<CardName>, required: true},
     selectable: {type: Array as () => Array<CardName>, required: false},

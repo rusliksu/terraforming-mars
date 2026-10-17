@@ -35,12 +35,13 @@ import PlayerCube from '@/client/wrybit/visuals/common/PlayerCube.vue';
 import SeatIcon from '@/client/wrybit/visuals/common/SeatIcon.vue';
 import NumberStepper from '@/client/wrybit/create/NumberStepper.vue';
 import SwitchInput from '@/client/wrybit/create/SwitchInput.vue';
+import ModuleItemFilter from '@/client/wrybit/create/ModuleItemFilter.vue';
 import type {WrybitViews} from './presentationViews';
 
 const props = defineProps<{screen: string}>();
 const emit = defineEmits<{classic: []; views: [views: WrybitViews]}>();
 onMounted(() => emit('views', {cards: markRaw(Catalog), playerHome: markRaw(PlayerHome), create: markRaw(CreateGameForm),
-  createControls: {cube: markRaw(PlayerCube), seat: markRaw(SeatIcon), stepper: markRaw(NumberStepper), toggle: markRaw(SwitchInput)}, inputs: {
+  createControls: {cube: markRaw(PlayerCube), seat: markRaw(SeatIcon), stepper: markRaw(NumberStepper), toggle: markRaw(SwitchInput), moduleFilter: markRaw(ModuleItemFilter)}, inputs: {
     paymentForm: markRaw(PaymentForm), projectCard: markRaw(SelectProjectCardToPlay),
     or: markRaw(OrOptions), and: markRaw(AndOptions),
     card: markRaw(SelectCard),

@@ -619,7 +619,7 @@
               (<span v-i18n>Looking for people to play with</span>? <a :href="constants.DISCORD_INVITE" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank"><u v-i18n>Join us on Discord</u></a>.)
             </div>
 
-            <PresentationHost :hosts="creationHosts.filters"/>
+            <PresentationHost v-for="kind in filterKinds" :key="kind" :hosts="creationHosts[kind]"/>
 
 
 </template>
@@ -790,7 +790,8 @@
                                     <div v-if="customVenusSurfaceBoardCodeError" style="color: #e74c3c; font-size: 11px;">{{ customVenusSurfaceBoardCodeError }}</div>
                                     <div v-else-if="customVenusSurfaceBoardName !== ''" style="color: #6c6; font-size: 11px;" v-i18n>Loaded custom Venus board: {{ customVenusSurfaceBoardName }}</div>
                                   </div></InputPortal>
-<InputPortal :target="creationHosts.filters.target.value"><CorporationsFilter
+<InputPortal :target="creationHosts.corporations.target.value"><CorporationsFilter
+                :embedded="creationPresentation !== undefined"
                 ref="corporationsFilter"
                 v-show="showCorporationList"
                 v-if="showCorporationList"
@@ -799,8 +800,9 @@
                 :selected="customCorporations"
                 :selectable="getSelectableCustomCorporations()"
                 @close="showCorporationList = false"
-            />
-<PreludesFilter
+            /></InputPortal>
+<InputPortal :target="creationHosts.preludes.target.value"><PreludesFilter
+                :embedded="creationPresentation !== undefined"
                 ref="preludesFilter"
                 v-show="showPreludesList"
                 v-if="showPreludesList"
@@ -809,8 +811,9 @@
                 :selected="customPreludes"
                 :selectable="getSelectableCustomPreludes()"
                 @close="showPreludesList = false"
-            />
-<ColoniesFilter
+            /></InputPortal>
+<InputPortal :target="creationHosts.colonies.target.value"><ColoniesFilter
+                :embedded="creationPresentation !== undefined"
                 ref="coloniesFilter"
                 v-show="showColoniesList"
                 v-if="showColoniesList"
@@ -818,8 +821,9 @@
                 :expansions="expansions"
                 :selected="customColonies"
                 @close="showColoniesList = false"
-            />
-<CeosFilter
+            /></InputPortal>
+<InputPortal :target="creationHosts.ceos.target.value"><CeosFilter
+                :embedded="creationPresentation !== undefined"
                 ref="ceosFilter"
                 v-show="showCeosList"
                 v-if="showCeosList"
@@ -827,16 +831,16 @@
                 :expansions="expansions"
                 :selected="customCeos"
                 @close="showCeosList = false"
-            />
-<div class="create-game--block" v-if="showBannedCards">
+            /></InputPortal>
+<InputPortal :target="creationHosts.banned.target.value"><div class="create-game--block" v-if="showBannedCards">
               <CardsFilter
                   ref="cardsFilter"
                   @cards-list-changed="updateBannedCards"
                   :title="'Cards to exclude from the game'"
                   :hint="'Start typing the card name to exclude'"
               />
-            </div>
-<div class="create-game--block" v-if="showIncludedCards">
+            </div></InputPortal>
+<InputPortal :target="creationHosts.included.target.value"><div class="create-game--block" v-if="showIncludedCards">
               <CardsFilter
                   ref="cardsFilter2"
                   @cards-list-changed="updateIncludedCards"
@@ -858,6 +862,8 @@ import {createInputHosts} from '@/client/wrybit/shell/inputHosts';
 import PresentationHost from '@/client/wrybit/inputs/PresentationHost.vue';
 import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
 import {CreateEditor, CreatePresentationBinding, useCreateControls, useCreatePresentation} from '@/client/wrybit/create/presentation';
+import {defaultCeoSelection} from './ceoSelection';
+import type {CustomListBinding} from '@/client/wrybit/create/presentation';
 import {projectCreateModel, setCreateField} from './createGamePresentation';
 import {Color, DEFAULT_PLAYER_COLORS, getLockedPlayerName, getPlayerIdentityByName, LOCKED_PLAYER_IDENTITIES} from '@/common/Color';
 import {
@@ -1011,8 +1017,8 @@ type ApplySettingsOptions = {
 export default defineComponent({
   name: 'CreateGameForm',
   setup() {
-    const creationHosts = {players: createInputHosts(), mars: createInputHosts(), moon: createInputHosts(), venus: createInputHosts(), filters: createInputHosts()} satisfies Record<CreateEditor, ReturnType<typeof createInputHosts>>;
-    return {creationHosts, creationPresentation: useCreatePresentation(), creationControls: useCreateControls()};
+    const creationHosts = {players: createInputHosts(), mars: createInputHosts(), moon: createInputHosts(), venus: createInputHosts(), corporations: createInputHosts(), preludes: createInputHosts(), ceos: createInputHosts(), colonies: createInputHosts(), banned: createInputHosts(), included: createInputHosts()} satisfies Record<CreateEditor, ReturnType<typeof createInputHosts>>;
+    return {creationHosts, filterKinds: ['corporations', 'preludes', 'colonies', 'ceos', 'banned', 'included'] as const, creationPresentation: useCreatePresentation(), creationControls: useCreateControls()};
   },
   data(): CreateGameModel & FormModel {
     return {
@@ -1241,8 +1247,22 @@ export default defineComponent({
     document.removeEventListener('click', this.closePlayerProfilePickerFromDocument);
   },
   computed: {
+    customListBindings(): Array<CustomListBinding> {
+      const corporationPool = this.getSelectableCustomCorporations();
+      const corporationExclusions = new Set(this.normalizeCustomCardSelection([...DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS], corporationPool));
+      const preludePool = this.getSelectableCustomPreludes();
+      const preludeExclusions = new Set(this.normalizeCustomCardSelection(this.getActiveDefaultCustomPreludeExclusions(), preludePool));
+      return [
+        {kind: 'corporations', title: 'Custom Corporation list', selected: this.customCorporations,
+          baseline: corporationPool.filter((name) => !corporationExclusions.has(name)), host: this.creationHosts.corporations},
+        {kind: 'preludes', title: 'Custom Preludes list', selected: this.customPreludes,
+          baseline: preludePool.filter((name) => !preludeExclusions.has(name)), host: this.creationHosts.preludes},
+        {kind: 'ceos', title: 'Custom CEOs list', selected: this.customCeos,
+          baseline: defaultCeoSelection(this.expansions), host: this.creationHosts.ceos},
+      ];
+    },
     creationBinding(): CreatePresentationBinding {
-      return {model: projectCreateModel(this), hosts: this.creationHosts,
+      return {model: projectCreateModel(this), hosts: this.creationHosts, customLists: this.customListBindings,
         setField: (key, value) => setCreateField(this, key, value),
         setExpansion: (key, enabled) => {
           this.expansions[key] = enabled;

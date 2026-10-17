@@ -3978,7 +3978,22 @@
       "package": "WP03",
       "target": "src/client/wrybit/create/CardPreviewGrid.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-custom-list-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/create/ModuleFilterPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-full-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-show-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-show-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-console.txt"
+          ],
+          "note": "Source Show/Edit, card grid and inline grouped-filter presentation use permanent native editors through six local hosts. Source customCardListDefaults excluded; baseline comes from own selectable/replacement/default exclusions and exact extracted native CEO defaults. No source selection rules, available-card sets, AI or serialization imported. Actual native editor identity, checkbox edits, search, selection and config survive Show/Edit/classic. Hand-counted fixture verifies disabled/replacement hints and bulk selection constraints. Real App1920x1080/390x844 excludes Helion, shows removed card and keeps13selected/search on classic return; console0/0. RED missing source custom-list view, then180focused/19files and full1204/259 GREEN, Vue types/scoped lint/style/App Webpack0warnings. This is scoped creation proof, full creation/WP03/21rows still OPEN."
+        }
+      ]
     },
     {
       "source": "src/client/components/create/CardsFilter.vue",
@@ -4000,9 +4015,25 @@
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP03",
-      "target": "src/client/wrybit/create/CeosFilter.vue",
+      "target": "src/client/components/create/CeosFilter.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-custom-list-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/create/ModuleFilterPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-full-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-show-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-show-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-console.txt"
+          ],
+          "note": "Source Show/Edit, card grid and inline grouped-filter presentation use permanent native editors through six local hosts. Source customCardListDefaults excluded; baseline comes from own selectable/replacement/default exclusions and exact extracted native CEO defaults. No source selection rules, available-card sets, AI or serialization imported. Actual native editor identity, checkbox edits, search, selection and config survive Show/Edit/classic. Hand-counted fixture verifies disabled/replacement hints and bulk selection constraints. Real App1920x1080/390x844 excludes Helion, shows removed card and keeps13selected/search on classic return; console0/0. RED missing source custom-list view, then180focused/19files and full1204/259 GREEN, Vue types/scoped lint/style/App Webpack0warnings. This is scoped creation proof, full creation/WP03/21rows still OPEN."
+        }
+      ],
+      "scope": "Native selection controller retained; embedded visual content is the adapted source ModuleItemFilter and custom lists are hosted without remounting."
     },
     {
       "source": "src/client/components/create/ChoiceChip.vue",
@@ -4074,9 +4105,25 @@
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP03",
-      "target": "src/client/wrybit/create/ColoniesFilter.vue",
+      "target": "src/client/components/create/ColoniesFilter.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-custom-list-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/create/ModuleFilterPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-full-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-show-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-show-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-console.txt"
+          ],
+          "note": "Source Show/Edit, card grid and inline grouped-filter presentation use permanent native editors through six local hosts. Source customCardListDefaults excluded; baseline comes from own selectable/replacement/default exclusions and exact extracted native CEO defaults. No source selection rules, available-card sets, AI or serialization imported. Actual native editor identity, checkbox edits, search, selection and config survive Show/Edit/classic. Hand-counted fixture verifies disabled/replacement hints and bulk selection constraints. Real App1920x1080/390x844 excludes Helion, shows removed card and keeps13selected/search on classic return; console0/0. RED missing source custom-list view, then180focused/19files and full1204/259 GREEN, Vue types/scoped lint/style/App Webpack0warnings. This is scoped creation proof, full creation/WP03/21rows still OPEN."
+        }
+      ],
+      "scope": "Native selection controller retained; embedded visual content is the adapted source ModuleItemFilter and custom lists are hosted without remounting."
     },
     {
       "source": "src/client/components/create/CorporationsFilter.vue",
@@ -4086,9 +4133,25 @@
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP03",
-      "target": "src/client/wrybit/create/CorporationsFilter.vue",
+      "target": "src/client/components/create/CorporationsFilter.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-custom-list-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/create/ModuleFilterPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-full-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-show-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-show-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-console.txt"
+          ],
+          "note": "Source Show/Edit, card grid and inline grouped-filter presentation use permanent native editors through six local hosts. Source customCardListDefaults excluded; baseline comes from own selectable/replacement/default exclusions and exact extracted native CEO defaults. No source selection rules, available-card sets, AI or serialization imported. Actual native editor identity, checkbox edits, search, selection and config survive Show/Edit/classic. Hand-counted fixture verifies disabled/replacement hints and bulk selection constraints. Real App1920x1080/390x844 excludes Helion, shows removed card and keeps13selected/search on classic return; console0/0. RED missing source custom-list view, then180focused/19files and full1204/259 GREEN, Vue types/scoped lint/style/App Webpack0warnings. This is scoped creation proof, full creation/WP03/21rows still OPEN."
+        }
+      ],
+      "scope": "Native selection controller retained; embedded visual content is the adapted source ModuleItemFilter and custom lists are hosted without remounting."
     },
     {
       "source": "src/client/components/create/CreateGameBoardPreview.vue",
@@ -4153,7 +4216,22 @@
       "package": "WP03",
       "target": "src/client/wrybit/create/CustomCardListCard.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-custom-list-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/create/ModuleFilterPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-full-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-show-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-show-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-console.txt"
+          ],
+          "note": "Source Show/Edit, card grid and inline grouped-filter presentation use permanent native editors through six local hosts. Source customCardListDefaults excluded; baseline comes from own selectable/replacement/default exclusions and exact extracted native CEO defaults. No source selection rules, available-card sets, AI or serialization imported. Actual native editor identity, checkbox edits, search, selection and config survive Show/Edit/classic. Hand-counted fixture verifies disabled/replacement hints and bulk selection constraints. Real App1920x1080/390x844 excludes Helion, shows removed card and keeps13selected/search on classic return; console0/0. RED missing source custom-list view, then180focused/19files and full1204/259 GREEN, Vue types/scoped lint/style/App Webpack0warnings. This is scoped creation proof, full creation/WP03/21rows still OPEN."
+        }
+      ]
     },
     {
       "source": "src/client/components/create/ExpansionGroupMenu.vue",
@@ -4254,7 +4332,22 @@
       "package": "WP03",
       "target": "src/client/wrybit/create/ModuleItemFilter.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-custom-list-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/create/ModuleFilterPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-full-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-show-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-show-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-console.txt"
+          ],
+          "note": "Source Show/Edit, card grid and inline grouped-filter presentation use permanent native editors through six local hosts. Source customCardListDefaults excluded; baseline comes from own selectable/replacement/default exclusions and exact extracted native CEO defaults. No source selection rules, available-card sets, AI or serialization imported. Actual native editor identity, checkbox edits, search, selection and config survive Show/Edit/classic. Hand-counted fixture verifies disabled/replacement hints and bulk selection constraints. Real App1920x1080/390x844 excludes Helion, shows removed card and keeps13selected/search on classic return; console0/0. RED missing source custom-list view, then180focused/19files and full1204/259 GREEN, Vue types/scoped lint/style/App Webpack0warnings. This is scoped creation proof, full creation/WP03/21rows still OPEN."
+        }
+      ]
     },
     {
       "source": "src/client/components/create/NumberStepper.vue",
@@ -4326,9 +4419,25 @@
       "decision": "adapt-view",
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP03",
-      "target": "src/client/wrybit/create/PreludesFilter.vue",
+      "target": "src/client/components/create/PreludesFilter.vue",
       "status": "planned",
-      "evidence": []
+      "evidence": [
+        {
+          "kind": "native-custom-list-presentation",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "tests/client/wrybit/create/ModuleFilterPresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-full-client.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-show-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-show-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-classic-return.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-custom-list-console.txt"
+          ],
+          "note": "Source Show/Edit, card grid and inline grouped-filter presentation use permanent native editors through six local hosts. Source customCardListDefaults excluded; baseline comes from own selectable/replacement/default exclusions and exact extracted native CEO defaults. No source selection rules, available-card sets, AI or serialization imported. Actual native editor identity, checkbox edits, search, selection and config survive Show/Edit/classic. Hand-counted fixture verifies disabled/replacement hints and bulk selection constraints. Real App1920x1080/390x844 excludes Helion, shows removed card and keeps13selected/search on classic return; console0/0. RED missing source custom-list view, then180focused/19files and full1204/259 GREEN, Vue types/scoped lint/style/App Webpack0warnings. This is scoped creation proof, full creation/WP03/21rows still OPEN."
+        }
+      ],
+      "scope": "Native selection controller retained; embedded visual content is the adapted source ModuleItemFilter and custom lists are hosted without remounting."
     },
     {
       "source": "src/client/components/create/SeatIcon.vue",

@@ -4181,13 +4181,29 @@
       "status": "planned",
       "evidence": [
         {
-          "kind": "own-preview-view-contract",
-          "status": "passed-in-isolation",
+          "kind": "native-preview-integration",
+          "status": "passed-scoped-checks",
           "paths": [
-            "tests/client/wrybit/create/BoardPreview.spec.ts",
-            "src/client/wrybit/create/presentation.ts"
+            "src/common/models/BoardPreviewModel.ts",
+            "src/server/models/BoardPreview.ts",
+            "src/server/routes/ApiBoardPreview.ts",
+            "src/client/components/create/useBoardPreview.ts",
+            "tests/routes/ApiBoardPreview.spec.ts",
+            "tests/models/BoardPreview.spec.ts",
+            "tests/client/wrybit/create/BoardPreviewRequest.spec.ts",
+            "tests/client/wrybit/create/CreatePresentation.spec.ts",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-preview-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-preview-hellas.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-preview-tablet.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-preview-phone.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-preview-custom.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-preview-console.txt",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-preview-stale-mutation.json",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-preview-full-client-green.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-preview-redraw-flow.log",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/wp03-preview-test-types-green.log"
           ],
-          "note": "Pure source preview view reads our supplied geometry/custom rows/parameters/loading/error and redraw callback. Random-example text explicitly avoids the foreign exact-draw promise. Our optional binding has no fake producer; full App preview stays hidden until own read-only projection is connected. Source boardSeed/ApiBoardPreview/Game code not imported. Own ApiCreateGame draws random boards with Math.random separately from seed, so exact-random semantics must not be invented. Backend/data wiring and final preview flow remain OPEN."
+          "note": "Pure source preview now consumes our actual read-only route through the native form owner. Own GameSetup factories and existing Server.getSpaces project fresh geometry; no Game/player/storage. Exact native boardOptions body extracted and ApiCreateGame delegates; Game/Player/AI and native game-option construction unchanged. Named/custom/seeded-shuffle/random-example checks, private request fields absent, clone/classic disable requests, debounced cancellation/version guard. User Draw again changes native seed only for a shuffled named board; random board remains an example and does not pin the future draw. Actual App+ApiBoardPreview proof on8100 uses normal globalInitialize and fails closed on all Database/game-loader access; startup without native init hit inherited module-order cycle, not used as proof. Desktop1920x1080/tablet768x1024/phone390x844, Tharsis/Hellas/random/redraw/custom outline, native HTTP200, finalconsole0/0. Planet asset path corrected to already-attributed isolated texture; initial screenshot/error superseded. API custom5rows/18cells/oxygen16 tested; phone custom viewport/element shots are clipped by sticky create bar, so no full custom visual acceptance claimed. Fresh default-off has no optional assets/chunk/preview requests. Full1208client/260files and71targeted server green; source/client types, scoped lint/style/App build green. Broader test compile found7fixture typing errors, now fixed with canonical interfaces without weakening assertions; test TS and Vue TS green,8affected client tests green. Removing stale-data guard fails test; exact bytes restored and green. Full creation/WP03/21rows remain OPEN."
         }
       ]
     },

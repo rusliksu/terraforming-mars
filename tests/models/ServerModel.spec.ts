@@ -23,11 +23,12 @@ import {Xavier} from '../../src/server/cards/ceos/Xavier';
 import {AdhaiHighOrbitConstructions} from '../../src/server/cards/pathfinders/AdhaiHighOrbitConstructions';
 import {Birds} from '../../src/server/cards/base/Birds';
 import {Asteroid} from '../../src/server/cards/base/Asteroid';
+import {ICard} from '../../src/server/cards/ICard';
 
 describe('ServerModel', () => {
   it('projects conditional discounts from canonical methods without changing payable prices or pending input', () => {
     const [, player] = testGame(2);
-    const technology = new CuttingEdgeTechnology();
+    const technology: ICard = new CuttingEdgeTechnology();
     const rebalanced = new CuttingEdgeTechnologyRebalanced();
     const xavier = new Xavier();
     const adhai = new AdhaiHighOrbitConstructions();

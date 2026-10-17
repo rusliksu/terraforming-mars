@@ -14,7 +14,7 @@ describe('Wrybit catalogue presentation controls', () => {
       const sliders = wrapper.findAll('input');
       await sliders[0].setValue('40');
       expect(wrapper.emitted('update:costMin')?.[0]).deep.eq([30]);
-      expect(wrapper.props('costMin')).eq(10);
+      expect((wrapper.props() as {costMin: number}).costMin).eq(10);
       await sliders[1].setValue('5');
       expect(wrapper.emitted('update:costMax')?.[0]).deep.eq([10]);
       await sliders[0].setValue('0');

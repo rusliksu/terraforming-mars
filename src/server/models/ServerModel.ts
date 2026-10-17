@@ -469,7 +469,7 @@ export class Server {
     return undefined;
   }
 
-  private static getSpaces(
+  public static getSpaces(
     board: Board,
     gagarin: ReadonlyArray<SpaceId> = [],
     cathedrals: ReadonlyArray<SpaceId> = [],

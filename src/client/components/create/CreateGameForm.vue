@@ -863,6 +863,8 @@ import PresentationHost from '@/client/wrybit/inputs/PresentationHost.vue';
 import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
 import {CreateEditor, CreatePresentationBinding, useCreateControls, useCreatePresentation} from '@/client/wrybit/create/presentation';
 import {defaultCeoSelection} from './ceoSelection';
+import {useBoardPreview} from './useBoardPreview';
+import type {BoardPreviewRequest} from '@/common/models/BoardPreviewModel';
 import type {CustomListBinding} from '@/client/wrybit/create/presentation';
 import {projectCreateModel, setCreateField} from './createGamePresentation';
 import {Color, DEFAULT_PLAYER_COLORS, getLockedPlayerName, getPlayerIdentityByName, LOCKED_PLAYER_IDENTITIES} from '@/common/Color';
@@ -1018,7 +1020,7 @@ export default defineComponent({
   name: 'CreateGameForm',
   setup() {
     const creationHosts = {players: createInputHosts(), mars: createInputHosts(), moon: createInputHosts(), venus: createInputHosts(), corporations: createInputHosts(), preludes: createInputHosts(), ceos: createInputHosts(), colonies: createInputHosts(), banned: createInputHosts(), included: createInputHosts()} satisfies Record<CreateEditor, ReturnType<typeof createInputHosts>>;
-    return {creationHosts, filterKinds: ['corporations', 'preludes', 'colonies', 'ceos', 'banned', 'included'] as const, creationPresentation: useCreatePresentation(), creationControls: useCreateControls()};
+    return {...useBoardPreview(), creationHosts, filterKinds: ['corporations', 'preludes', 'colonies', 'ceos', 'banned', 'included'] as const, creationPresentation: useCreatePresentation(), creationControls: useCreateControls()};
   },
   data(): CreateGameModel & FormModel {
     return {
@@ -1166,6 +1168,12 @@ export default defineComponent({
         this.initialDraftOneWay = false;
       }
     },
+    'boardPreviewRequest': {
+      immediate: true,
+      handler(value: BoardPreviewRequest | undefined) {
+        this.loadBoardPreview(value);
+      },
+    },
     showCorporationList(value: boolean) {
       if (value === true && !this.uploading) {
         this.customCorporations = this.getDefaultCustomCorporations();
@@ -1247,6 +1255,13 @@ export default defineComponent({
     document.removeEventListener('click', this.closePlayerProfilePickerFromDocument);
   },
   computed: {
+    boardPreviewRequest(): BoardPreviewRequest | undefined {
+      if (this.creationPresentation === undefined || this.seededGame) {
+        return undefined;
+      }
+      return {board: this.board, seed: this.seed, shuffleMapOption: this.shuffleMapOption,
+        expansions: {...this.expansions}, includedCards: [...this.includedCards], customBoardCode: this.customBoardCode || undefined};
+    },
     customListBindings(): Array<CustomListBinding> {
       const corporationPool = this.getSelectableCustomCorporations();
       const corporationExclusions = new Set(this.normalizeCustomCardSelection([...DEFAULT_CUSTOM_CORPORATION_EXCLUSIONS], corporationPool));
@@ -1263,6 +1278,10 @@ export default defineComponent({
     },
     creationBinding(): CreatePresentationBinding {
       return {model: projectCreateModel(this), hosts: this.creationHosts, customLists: this.customListBindings,
+        boardPreview: this.boardPreviewRequest === undefined ? undefined : {...this.boardPreviewState,
+          showBoardName: this.board === RandomBoardOption.ALL || this.board === RandomBoardOption.OFFICIAL,
+          canRedraw: this.board === RandomBoardOption.ALL || this.board === RandomBoardOption.OFFICIAL || (this.shuffleMapOption && this.board !== BoardName.CUSTOM),
+          redraw: this.redrawBoardPreview},
         setField: (key, value) => setCreateField(this, key, value),
         setExpansion: (key, enabled) => {
           this.expansions[key] = enabled;
@@ -1393,6 +1412,18 @@ export default defineComponent({
     },
   },
   methods: {
+    redrawBoardPreview() {
+      const request = this.boardPreviewRequest;
+      if (request === undefined) {
+        return;
+      }
+      const randomBoard = request.board === RandomBoardOption.ALL || request.board === RandomBoardOption.OFFICIAL;
+      if (request.shuffleMapOption && request.board !== BoardName.CUSTOM && !randomBoard) {
+        this.seed = Math.random();
+      } else {
+        this.loadBoardPreview(request);
+      }
+    },
     // Deep-link from the Map Library: "Play this map" on an official entry sets ?board=<name>
     // to preselect a real board via the normal radio mechanism -- never through the
     // customBoardCode path, so official gameplay is untouched.

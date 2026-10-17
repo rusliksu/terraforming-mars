@@ -7,6 +7,7 @@ import {fakePublicPlayerModel, fakeViewModel} from '@tests/client/components/tes
 import {globalConfig} from '@tests/client/components/getLocalVue';
 import {Phase} from '@/common/Phase';
 import {CardName} from '@/common/cards/CardName';
+import type {PlayersTableRowModel} from '@/client/wrybit/visuals/overview/playersTableLayout';
 
 describe('Wrybit players overview with our controllers', () => {
   it('keeps recorded views read-only, player order and own played-card visibility under our root', async () => {
@@ -28,7 +29,7 @@ describe('Wrybit players overview with our controllers', () => {
     try {
       await flushPromises();
       expect(fetch.mock.calls).has.length(0);
-      expect(wrapper.vm.tableRows.map((row) => row.player.color)).deep.eq(['blue', 'yellow', 'red']);
+      expect(wrapper.vm.tableRows.map((row: PlayersTableRowModel) => row.player.color)).deep.eq(['blue', 'yellow', 'red']);
       expect(wrapper.find('.player-elo-badge').exists()).is.false;
       const infos = wrapper.findAll('.player-info');
       await infos[2].get('.played-cards-button').trigger('click');

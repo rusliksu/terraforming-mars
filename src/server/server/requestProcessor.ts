@@ -9,6 +9,7 @@ import {InputError} from '../inputs/InputError';
 import {ApiSurrender} from '../routes/ApiSurrender';
 import {ApiCloneableGame} from '../routes/ApiCloneableGame';
 import {ApiCreateGame} from '../routes/ApiCreateGame';
+import {ApiBoardPreview} from '../routes/ApiBoardPreview';
 import {ApiCustomCardLibrary} from '../routes/ApiCustomCardLibrary';
 import {ApiCustomCardLibraryReview} from '../routes/ApiCustomCardLibraryReview';
 import {ApiGame} from '../routes/ApiGame';
@@ -106,6 +107,7 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.API_SURRENDER, ApiSurrender.INSTANCE],
     [paths.API_CLONEABLEGAME, ApiCloneableGame.INSTANCE],
     [paths.API_CREATEGAME, ApiCreateGame.INSTANCE],
+    [paths.API_BOARD_PREVIEW, ApiBoardPreview.INSTANCE],
     [paths.API_GAME, ApiGame.INSTANCE],
     [paths.API_GAME_HISTORY, ApiGameHistory.INSTANCE],
     [paths.API_GAME_LOGS, ApiGameLogs.INSTANCE],

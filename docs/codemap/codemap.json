@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-17T09:14:35.952Z",
-  "generated_from_commit": "f0e0ade2fef3f8bd0cc64395a0b379d9cd6e5db7",
+  "generated_at": "2026-10-17T09:35:01.150Z",
+  "generated_from_commit": "36ca3a70f4991ef1a2b62c95071c3e9c94123d3f",
   "scope": [
     ".",
     ".github",
@@ -3314,6 +3314,65 @@
         "Модель и payload принадлежат нашему controller."
       ],
       "evidence": []
+    },
+    {
+      "id": "board-preview-request-owner",
+      "label": "Владелец запроса предпросмотра",
+      "type": "library",
+      "path": "src/client/components/create/useBoardPreview.ts",
+      "role": "Опциональный read-only запрос с debounce, отменой и проверкой актуальности; поля игроков не передаются.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/create/useBoardPreview.ts",
+          "symbol": "loadBoardPreview(request: BoardPreviewRequest | undefined)",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/create/BoardPreviewRequest.spec.ts",
+          "symbol": "ignores late responses"
+        },
+        {
+          "path": "tests/client/wrybit/create/CreatePresentation.spec.ts",
+          "symbol": "excludes player fields"
+        }
+      ],
+      "constraints": [
+        "Не активен в classic или clone setup.",
+        "Не выбирает поле для будущей партии."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "public-board-preview",
+      "label": "Публичная геометрия наших полей",
+      "type": "service",
+      "path": "src/server/models/BoardPreview.ts",
+      "role": "Наши GameSetup factories и public space projection дают геометрию без Game, игроков или storage. Общий список random boards точно извлечён из native ApiCreateGame.",
+      "entrypoints": [
+        {
+          "path": "src/server/models/BoardPreview.ts",
+          "symbol": "createBoardPreview(request: BoardPreviewRequest",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/routes/ApiBoardPreview.spec.ts",
+          "symbol": "without creating or loading a game"
+        },
+        {
+          "path": "tests/models/BoardPreview.spec.ts",
+          "symbol": "uses our seeded shuffle"
+        }
+      ],
+      "constraints": [
+        "Нет foreign boardSeed.",
+        "Random preview обозначен как пример.",
+        "Нет DB или сохранения."
+      ],
+      "evidence": []
     }
   ],
   "edges": [
@@ -4804,6 +4863,37 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "canonical-create-owner",
+      "to": "board-preview-request-owner",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/create/CreateGameForm.vue",
+          "symbol": "...useBoardPreview()",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "board-preview-request-owner",
+      "to": "public-board-preview",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/create/useBoardPreview.ts",
+          "symbol": "fetch(paths.API_BOARD_PREVIEW",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/server/requestProcessor.ts",
+          "symbol": "[paths.API_BOARD_PREVIEW, ApiBoardPreview.INSTANCE]",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -5761,7 +5851,17 @@
     "src/styles/wrybit/create/cards_filter.less",
     "src/client/wrybit/create/cardsFilter.ts",
     "src/client/wrybit/create/CardsFilter.vue",
-    "src/client/components/create/CardsFilter.vue"
+    "src/client/components/create/CardsFilter.vue",
+    "tests/client/wrybit/create/BoardPreviewRequest.spec.ts",
+    "src/client/components/create/useBoardPreview.ts",
+    "src/common/models/BoardPreviewModel.ts",
+    "src/common/boards/boardOptions.ts",
+    "src/server/models/BoardPreview.ts",
+    "src/server/routes/ApiBoardPreview.ts",
+    "src/server/routes/ApiCreateGame.ts",
+    "src/server/GameSetup.ts",
+    "tests/routes/ApiBoardPreview.spec.ts",
+    "tests/models/BoardPreview.spec.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -5896,6 +5996,7 @@
       "src/client/components/create/TemplateManager.ts",
       "src/client/components/create/ceoSelection.ts",
       "src/client/components/create/createGamePresentation.ts",
+      "src/client/components/create/useBoardPreview.ts",
       "src/client/components/delta/DeltaProjectInput.vue",
       "src/client/components/help/HelpRulebooks.vue",
       "src/client/components/logpanel/CardPanel.vue",
@@ -6182,9 +6283,11 @@
       "src/common/GlobalParameterConfig.ts",
       "src/common/Timer.ts",
       "src/common/app/paths.ts",
+      "src/common/boards/boardOptions.ts",
       "src/common/cards/CardReplacementRules.ts",
       "src/common/cards/CardRequirementDescriptor.ts",
       "src/common/cards/RequirementType.ts",
+      "src/common/models/BoardPreviewModel.ts",
       "src/common/models/ClaimedMilestoneModel.ts",
       "src/common/models/ConditionalDiscountModel.ts",
       "src/common/models/OceanPlacementContextModel.ts",
@@ -6193,6 +6296,7 @@
       "src/locales/ru/replay.json",
       "src/server/Game.ts",
       "src/server/GameCards.ts",
+      "src/server/GameSetup.ts",
       "src/server/Player.ts",
       "src/server/awards/amazonisPlanitia/AmazonisEngineer.ts",
       "src/server/awards/terraCimmeria/Warmonger.ts",
@@ -6344,11 +6448,14 @@
       "src/server/cards/underworld/GuerillaEcologists.ts",
       "src/server/cards/venusNext/Celestic.ts",
       "src/server/cards/venusNext/floaterCards.ts",
+      "src/server/models/BoardPreview.ts",
       "src/server/models/OceanPlacementContext.ts",
       "src/server/models/ServerModel.ts",
       "src/server/models/publicConditionalDiscounts.ts",
       "src/server/player/Colonies.ts",
       "src/server/replay/ReplayFrame.ts",
+      "src/server/routes/ApiBoardPreview.ts",
+      "src/server/routes/ApiCreateGame.ts",
       "src/server/routes/ApiGameLogs.ts",
       "src/server/routes/ApiReplay.ts",
       "src/server/routes/ContentType.ts",
@@ -6489,6 +6596,7 @@
       "tests/client/components/replay/ReplayHome.spec.ts",
       "tests/client/components/replay/useReplay.spec.ts",
       "tests/client/wrybit/create/BoardPreview.spec.ts",
+      "tests/client/wrybit/create/BoardPreviewRequest.spec.ts",
       "tests/client/wrybit/create/ControlledWidgets.spec.ts",
       "tests/client/wrybit/create/CreatePresentation.spec.ts",
       "tests/client/wrybit/create/ExpansionGrouping.spec.ts",
@@ -6557,9 +6665,11 @@
       "tests/client/wrybit/visuals/visualStyles.spec.ts",
       "tests/database/ReplayArchive.spec.ts",
       "tests/fanmade-compat/RebalancedLifecycle.spec.ts",
+      "tests/models/BoardPreview.spec.ts",
       "tests/models/ServerModel.spec.ts",
       "tests/replay/ReplayFrame.spec.ts",
       "tests/replay/ReplayView.spec.ts",
+      "tests/routes/ApiBoardPreview.spec.ts",
       "tests/routes/ApiReplay.spec.ts",
       "tests/routes/PlayerInput.spec.ts",
       "tests/routes/ServeAsset.spec.ts",

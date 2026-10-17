@@ -5,6 +5,7 @@ import SortableCards from '@/client/wrybit/visuals/SortableCards.vue';
 import {CardName} from '@/common/cards/CardName';
 import {CardOrderStorage} from '@/client/utils/CardOrderStorage';
 import {globalConfig} from '@tests/client/components/getLocalVue';
+import type {CardModel} from '@/common/models/CardModel';
 
 describe('Wrybit pointer hand sorting', () => {
   const cards = [{name: CardName.BIRDS, calculatedCost: 15}, {name: CardName.HELION}, {name: CardName.ASTEROID, calculatedCost: 7}];
@@ -15,7 +16,7 @@ describe('Wrybit pointer hand sorting', () => {
     const wrapper = mount(SortableCards, options);
     try {
       await wrapper.setProps({sortOrder: {key: 'cost', reversed: false}});
-      expect(wrapper.vm.getSortedCards().map((card) => card.name)).deep.eq([CardName.HELION, CardName.ASTEROID, CardName.BIRDS]);
+      expect(wrapper.vm.getSortedCards().map((card: CardModel) => card.name)).deep.eq([CardName.HELION, CardName.ASTEROID, CardName.BIRDS]);
       await wrapper.setData({dragCard: CardName.BIRDS});
       wrapper.vm.moveDraggedCard(CardName.HELION);
       expect(wrapper.emitted('update:sortOrder')).has.length(1);
@@ -24,7 +25,7 @@ describe('Wrybit pointer hand sorting', () => {
       wrapper.unmount();
       const remounted = mount(SortableCards, options);
       try {
-        expect(remounted.vm.getSortedCards().map((card) => card.name)).deep.eq([CardName.BIRDS, CardName.HELION, CardName.ASTEROID]);
+        expect(remounted.vm.getSortedCards().map((card: CardModel) => card.name)).deep.eq([CardName.BIRDS, CardName.HELION, CardName.ASTEROID]);
       } finally {
         remounted.unmount();
       }

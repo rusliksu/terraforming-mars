@@ -47,6 +47,7 @@ import {InputResponse, OrOptionsResponse} from '@/common/inputs/InputResponse';
 import {Message} from '@/common/logs/Message';
 import {SpaceId} from '@/common/Types';
 import type {InputChoice, InputChoiceEditor} from './inputChoice';
+import {partyCardDetails} from './turmoil/partyCardDetails';
 
 let unique = 0;
 type QuickGreeneryHandler = {tile: HTMLElement, handler: (event: Event) => void};
@@ -91,10 +92,12 @@ export default defineComponent({
   },
   computed: {
     presentationBinding(): OrOptionsBinding {
+      const turmoil = this.playerView.game.turmoil;
       return {
         asTabs: this.asTabs, playerView: this.playerView, playerinput: this.playerinput, showsave: this.showsave, showtitle: this.showtitle,
         displayedOptions: this.displayedOptions, selectedOption: this.selectedOption, selectedIdx: this.selectedIdx,
         selectedChoice: this.inputfactory?.getChoice(),
+        partyCards: turmoil === undefined ? [] : turmoil.parties.map((party) => partyCardDetails(turmoil, party, this.playerView.game.gameOptions.expansions.moreParties)),
         radioElementName: this.radioElementName, childHost: this.childHost, footerHost: this.footerHost,
         select: (option) => {
           this.selectedOption = option;

@@ -82,8 +82,8 @@
     ]
   },
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-17T10:29:25.314Z",
-  "generated_from_commit": "81854e58cab844d815379098b760b221b9e72732",
+  "generated_at": "2026-10-17T10:44:04.528Z",
+  "generated_from_commit": "bfe865a3ae682b6632546ab39e993786d4bea2c4",
   "scope": [
     ".",
     ".github",
@@ -3437,6 +3437,35 @@
         "Native Or проверяет актуальный режим и option после nextTick."
       ],
       "evidence": []
+    },
+    {
+      "id": "native-party-card-details",
+      "label": "Общая проекция нашей повестки партии",
+      "type": "library",
+      "path": "src/client/components/turmoil/partyCardDetails.ts",
+      "role": "Native SelectParty и Or получают одинаковые публичные policy/bonus из нашего каталога и текущей модели.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/turmoil/partyCardDetails.ts",
+          "symbol": "export function partyCardDetails",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/inputs/MetadataChoices.spec.ts",
+          "symbol": "More Parties agendas"
+        },
+        {
+          "path": "tests/client/wrybit/inputs/PartyPresentation.spec.ts",
+          "symbol": "uses our More Parties variant"
+        }
+      ],
+      "constraints": [
+        "Только чтение публичных моделей.",
+        "Предложенные варианты и ответы остаются у native controllers."
+      ],
+      "evidence": []
     }
   ],
   "edges": [
@@ -4994,6 +5023,24 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "canonical-input-controllers",
+      "to": "native-party-card-details",
+      "type": "projects",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/SelectParty.vue",
+          "symbol": "...partyCardDetails(turmoil, party, moreParties)",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/client/components/OrOptions.vue",
+          "symbol": "partyCardDetails(turmoil, party, this.playerView.game.gameOptions.expansions.moreParties)",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -5974,7 +6021,15 @@
     "src/client/wrybit/inputs/choiceMenu.ts",
     "src/client/wrybit/inputs/ChoiceOptionTile.vue",
     "tests/client/wrybit/inputs/OrChoicePresentation.spec.ts",
-    "src/client/components/inputChoice.ts"
+    "src/client/components/inputChoice.ts",
+    "src/styles/wrybit/milestone_award_options.less",
+    "src/client/wrybit/inputs/milestoneAwardChoice.ts",
+    "src/client/wrybit/inputs/MilestoneAwardOptions.vue",
+    "src/client/wrybit/inputs/partyChoice.ts",
+    "src/client/wrybit/inputs/PartyOptions.vue",
+    "tests/client/wrybit/inputs/MetadataChoiceMatchers.spec.ts",
+    "tests/client/wrybit/inputs/MetadataChoices.spec.ts",
+    "src/client/components/turmoil/partyCardDetails.ts"
   ],
   "verification_scope": {
     "paths": [
@@ -6130,6 +6185,7 @@
       "src/client/components/replay/useReplay.ts",
       "src/client/components/turmoil/Turmoil.vue",
       "src/client/components/turmoil/partyAgenda.ts",
+      "src/client/components/turmoil/partyCardDetails.ts",
       "src/client/utils/WikiLinks.ts",
       "src/client/utils/playerSymbol.ts",
       "src/client/wrybit/create/CardPreviewGrid.vue",
@@ -6170,9 +6226,11 @@
       "src/client/wrybit/inputs/ChoiceOptionTile.vue",
       "src/client/wrybit/inputs/DelegateFigure.vue",
       "src/client/wrybit/inputs/DeltaProjectInput.vue",
+      "src/client/wrybit/inputs/MilestoneAwardOptions.vue",
       "src/client/wrybit/inputs/OrOptions.vue",
       "src/client/wrybit/inputs/OrOptionsTabIcon.vue",
       "src/client/wrybit/inputs/PartyCard.vue",
+      "src/client/wrybit/inputs/PartyOptions.vue",
       "src/client/wrybit/inputs/PaymentForm.vue",
       "src/client/wrybit/inputs/PlayerOptionTile.vue",
       "src/client/wrybit/inputs/PresentationHost.vue",
@@ -6200,8 +6258,10 @@
       "src/client/wrybit/inputs/choiceMenu.ts",
       "src/client/wrybit/inputs/colony/ColonyPlanet.vue",
       "src/client/wrybit/inputs/colony/planetAppearance.ts",
+      "src/client/wrybit/inputs/milestoneAwardChoice.ts",
       "src/client/wrybit/inputs/orOptionsShortLabels.ts",
       "src/client/wrybit/inputs/partyAppearance.ts",
+      "src/client/wrybit/inputs/partyChoice.ts",
       "src/client/wrybit/inputs/presentation.ts",
       "src/client/wrybit/inputs/saveAttempt.ts",
       "src/client/wrybit/inputs/unitValues.ts",
@@ -6642,6 +6702,7 @@
       "src/styles/wrybit/info_panel.less",
       "src/styles/wrybit/loading.less",
       "src/styles/wrybit/log.less",
+      "src/styles/wrybit/milestone_award_options.less",
       "src/styles/wrybit/milestone_award_table.less",
       "src/styles/wrybit/modal_surface.less",
       "src/styles/wrybit/or_options_tabs.less",
@@ -6730,6 +6791,8 @@
       "tests/client/wrybit/inputs/ColonyPresentation.spec.ts",
       "tests/client/wrybit/inputs/ExpansionInputPresentation.spec.ts",
       "tests/client/wrybit/inputs/InitialCardsPresentation.spec.ts",
+      "tests/client/wrybit/inputs/MetadataChoiceMatchers.spec.ts",
+      "tests/client/wrybit/inputs/MetadataChoices.spec.ts",
       "tests/client/wrybit/inputs/NestedPresentation.spec.ts",
       "tests/client/wrybit/inputs/NestedSaveCompletion.spec.ts",
       "tests/client/wrybit/inputs/OrChoicePresentation.spec.ts",

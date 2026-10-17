@@ -1,6 +1,6 @@
 <template>
   <div :class="['wf-options', {'wf-options--tabs': binding.asTabs}]" data-source-or>
-    <label v-if="binding.showtitle && !binding.asTabs"><div>{{ $t(binding.playerinput.title) }}</div></label>
+    <label v-if="binding.showtitle && !binding.asTabs && !tileMenu"><div>{{ $t(binding.playerinput.title) }}</div></label>
     <label v-if="binding.playerinput.warning !== undefined" class="card-warning"><div>({{ $t(binding.playerinput.warning) }})</div></label>
     <div v-if="binding.asTabs && !tileMenu" class="or-tabs" role="tablist">
       <HandCardsTab :count="handCount" :active="handTabActive" @select="handTabActive = true"/>
@@ -27,7 +27,10 @@
         </div>
       </template>
       <div v-if="tileMenu" class="or-tab-intro or-tab-question"><div class="or-tab-intro-title">{{ $t(binding.playerinput.title) }}</div></div>
-      <div v-if="tileMenu" class="choice-options choice-block" :class="{'choice-options--players': hasPlayerChoice}" :style="choiceBlockStyle(tileCount)" role="radiogroup">
+      <MilestoneAwardOptions v-if="maChoices !== undefined" :choices="maChoices" :selected="binding.selectedIdx" :groupName="binding.radioElementName" @select="selectIndex"/>
+      <PartyOptions v-else-if="parties !== undefined && binding.playerView.game.turmoil !== undefined" :choices="parties" :selected="binding.selectedIdx"
+        :groupName="binding.radioElementName" :turmoil="binding.playerView.game.turmoil" @select="selectIndex"/>
+      <div v-else-if="tileMenu" class="choice-options choice-block" :class="{'choice-options--players': hasPlayerChoice}" :style="choiceBlockStyle(tileCount)" role="radiogroup">
         <template v-for="(option, index) in binding.displayedOptions" :key="index">
           <template v-if="option.type === 'player'">
             <PlayerOptionTile v-for="color in option.players" :key="color" :color="color" :player="binding.playerView.players.find((player) => player.color === color)"
@@ -75,10 +78,16 @@ import {ACTION_CARDS_TITLE, CEO_ACTION_TITLE, actionOption, ownCeoCards} from '.
 import ChoiceOptionTile from './ChoiceOptionTile.vue';
 import PlayerOptionTile from './PlayerOptionTile.vue';
 import ActionCardSections from './ActionCardSections.vue';
+import {milestoneAwardChoices} from './milestoneAwardChoice';
+import {partyChoices} from './partyChoice';
+import MilestoneAwardOptions from './MilestoneAwardOptions.vue';
+import PartyOptions from './PartyOptions.vue';
 
 const props = defineProps<{binding: OrOptionsBinding}>();
 const handTabActive = ref(false);
-const tileMenu = computed(() => isChoiceMenu(props.binding.playerinput));
+const maChoices = computed(() => milestoneAwardChoices({...props.binding.playerinput, options: [...props.binding.displayedOptions]}, props.binding.playerView.game));
+const parties = computed(() => maChoices.value === undefined ? partyChoices(props.binding.displayedOptions, props.binding.partyCards) : undefined);
+const tileMenu = computed(() => maChoices.value !== undefined || parties.value !== undefined || isChoiceMenu(props.binding.playerinput));
 const tileCount = computed(() => props.binding.displayedOptions.reduce((count, option) => count + (option.type === 'player' ? option.players.length : 1), 0));
 const hasPlayerChoice = computed(() => props.binding.displayedOptions.some((option) => option.type === 'player'));
 const inlineChoice = computed(() => props.binding.selectedOption !== undefined && (INLINE_INPUT_TYPES as ReadonlyArray<string>).includes(props.binding.selectedOption.type));
@@ -108,6 +117,12 @@ function tabCount(index: number) {
 function selectPlayer(option: PlayerInputModel, color: ColorWithNeutral) {
   if (color !== 'NEUTRAL') {
     void props.binding.selectChoice(option, {type: 'player', color});
+  }
+}
+function selectIndex(index: number) {
+  const option = props.binding.displayedOptions[index];
+  if (option !== undefined) {
+    props.binding.select(option);
   }
 }
 function iconsFor(index: number): Array<TabIcon> {

@@ -18,8 +18,7 @@ import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
 
 import {defineComponent} from 'vue';
 import {PartyChoiceBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
-import {partyAgenda} from '@/client/components/turmoil/partyAgenda';
-import {getAgenda} from '@/client/turmoil/ClientAgendaManifest';
+import {partyCardDetails} from '@/client/components/turmoil/partyCardDetails';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {SelectPartyModel} from '@/common/models/PlayerInputModel';
 import Party from '@/client/components/Party.vue';
@@ -87,12 +86,8 @@ export default defineComponent({
       const moreParties = this.playerView.game.gameOptions.expansions.moreParties;
       return {playerView: this.playerView, playerinput: this.playerinput, showtitle: this.showtitle, showsave: this.showsave,
         turmoil, selected: this.selectedParty,
-        cards: (turmoil?.parties ?? []).map((party) => {
-          const agenda = turmoil?.politicalAgendas === undefined ? undefined : partyAgenda(turmoil, party.name);
-          return {party, policyText: agenda === undefined ? undefined : getAgenda(agenda.policyId, moreParties)?.description,
-            bonusText: agenda === undefined ? undefined : getAgenda(agenda.bonusId, moreParties)?.description,
-            selected: this.selectedParty === party.name, disabled: !this.partyAvailableToSelect(party.name)};
-        }),
+        cards: turmoil === undefined ? [] : turmoil.parties.map((party) => ({...partyCardDetails(turmoil, party, moreParties),
+          selected: this.selectedParty === party.name, disabled: !this.partyAvailableToSelect(party.name)})),
         select: (party) => {
           if (this.partyAvailableToSelect(party)) {
             this.selectedParty = party;

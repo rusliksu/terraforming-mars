@@ -21,6 +21,7 @@ import type {PartyName} from '@/common/turmoil/PartyName';
 import type {ColonyName} from '@/common/colonies/ColonyName';
 import type {ColonyMetadata} from '@/common/colonies/ColonyMetadata';
 import type {InputChoice} from '@/client/components/inputChoice';
+import type {PartyCardDetails} from '@/client/components/turmoil/partyCardDetails';
 
 export type CardSelectionBinding = {
   playerView: PlayerViewModel;
@@ -65,6 +66,7 @@ export type OrOptionsBinding = {
   selectedOption: PlayerInputModel | undefined;
   selectedIdx: number;
   selectedChoice: InputChoice | undefined;
+  partyCards: ReadonlyArray<PartyCardDetails>;
   radioElementName: string;
   childHost: InputHosts;
   footerHost: InputHosts;

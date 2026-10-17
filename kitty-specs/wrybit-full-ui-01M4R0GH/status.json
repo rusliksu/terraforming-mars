@@ -89,6 +89,9 @@
       "last_event_id": "01M55M8PCJ0BBD0J303ZD3VZ3X",
       "last_transition_at": "2026-10-17T19:08:53.010190+00:00",
       "model": "__resolved_model_absent__",
+      "notes": [
+        "Компоненты создания и всех типов ввода проверены на свежей базе; полные сценарии остаются у WP04-WP07. Полный штатный runner без обхода guard."
+      ],
       "provider": "__resolved_provider_absent__",
       "role": "implementer",
       "shell_pid": 46280,

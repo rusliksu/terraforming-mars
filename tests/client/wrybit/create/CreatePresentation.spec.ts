@@ -29,6 +29,46 @@ const controls = {cube: markRaw(PlayerCube), seat: markRaw(SeatIcon), stepper: m
   toggle: markRaw(SwitchInput), moduleFilter: markRaw(SourceModuleFilter), cardsFilter: markRaw(SourceCardsFilter)};
 
 describe('source creation view with our permanent form owner', () => {
+  it('shows the native Venus editor with only Venus Phase 2 enabled and retains its draft on classic return', async () => {
+    localStorage.clear();
+    vi.stubGlobal('fetch', vi.fn((url: unknown) => Promise.resolve(publicResponse(url))));
+    const view = shallowRef<CreatePresentation>();
+    const wrapper = mount(NativeCreate, {attachTo: document.body, global: {...globalConfig.global,
+      stubs: {PreferencesIcon: true, PageToolbar: true},
+      provide: {[CREATE_PRESENTATION as symbol]: computed(() => view.value)}}});
+    try {
+      await flushPromises();
+      const owner = wrapper.vm.$.proxy as InstanceType<typeof NativeCreate>;
+      expect([owner.expansions.venus, owner.expansions.turmoil, owner.expansions.moon, owner.expansions.ares]).deep.eq([false, false, false, false]);
+      const editor = wrapper.get('#custom-venus-board-code').element;
+      view.value = markRaw(SourceCreate);
+      await flushPromises();
+      const chip = wrapper.findAll('.create-game-expansion-grid .create-game-chip').find((item) => item.find('.expansion-icon-venusPhase2').exists())!;
+      await chip.trigger('click');
+      await flushPromises();
+      expect(owner.expansions.venusPhase2).is.true;
+      const sourceEditor = wrapper.get('.create-game-collapsible #custom-venus-board-code');
+      expect(sourceEditor.element).eq(editor);
+      await wrapper.findAll('button').find((button) => button.text() === 'Expansion options')!.trigger('click');
+      expect(sourceEditor.isVisible()).is.true;
+      await sourceEditor.setValue('synthetic invalid Venus board draft');
+      const config = JSON.stringify(owner.serializeSettings());
+      view.value = undefined;
+      await flushPromises();
+      expect(wrapper.get('#custom-venus-board-code').element).eq(editor);
+      expect((editor as HTMLTextAreaElement).value).eq('synthetic invalid Venus board draft');
+      expect(JSON.stringify(owner.serializeSettings())).eq(config);
+      expect([owner.expansions.venus, owner.expansions.turmoil, owner.expansions.moon, owner.expansions.ares]).deep.eq([false, false, false, false]);
+    } finally {
+      wrapper.unmount();
+      vi.unstubAllGlobals();
+      localStorage.clear();
+      sharedEloState.loaded = false;
+      sharedEloState.players = {};
+      sharedEloState.games = [];
+    }
+  });
+
   it('shows our blocking validation inline without losing invalid values on classic return', async () => {
     localStorage.clear();
     vi.stubGlobal('fetch', vi.fn((url: unknown) => Promise.resolve(publicResponse(url))));

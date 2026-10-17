@@ -92,7 +92,8 @@
       "notes": [
         "Компоненты создания и всех типов ввода проверены на свежей базе; полные сценарии остаются у WP04-WP07. Полный штатный runner без обхода guard.",
         "Независимый review отклонил два сценария создания/обновления выбранных карт; требуется исправление с регрессиями.",
-        "Исправлены review P2/P3; усилен реальный newGameConfig oracle, targeted/types/lint/build/browser green. Повтор полного штатного runner после конечного timeout, без skip/force."
+        "Исправлены review P2/P3; усилен реальный newGameConfig oracle, targeted/types/lint/build/browser green. Повтор полного штатного runner после конечного timeout, без skip/force.",
+        "Полный JUnit вручную выявил 2 failures SettingsLinkFlow alert mock при isolate:false; положительный gate transition не считается готовностью. Исправление тестовой границы и повторная проверка."
       ],
       "provider": "__resolved_provider_absent__",
       "review": null,

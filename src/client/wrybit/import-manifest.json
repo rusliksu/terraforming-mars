@@ -5492,6 +5492,23 @@
             "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-fixes-requests.txt"
           ],
           "note": "Исправлены два P2 и P3 из независимого review: disabled checkbox сравнивает canonical name в source и classic templates; отдельный venusPhase2 монтирует постоянный native editor; Teleport boolean задан явно. Два настоящих RED воспроизвели ошибки. GREEN12tests/4files, Vue types/scoped lint/App build прошли. Тесты сохраняют UID, дают снять/заменить max2 после свежего DTO, проверяют точные native response names и editor DOM/draft/config через classic return. Нативные методы/state/save не менялись. Actual App1440 standalone VenusPhase2: editor visible, остальные четыре expansion options выключены, sameEditor/draft при classic return, screenshot просмотрен, console0/0. Только read-only board-preview POST200; игровых действий/БД нет. До исправлений native full runner дал12901passed/3skips/0fail, production build3performancewarnings; после этих исправлений новый полный runner и повторное независимое review ещё обязательны."
+        },
+        {
+          "kind": "native-alert-root-stability",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-native-cycle2.xml",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-native-cycle2.xml.log",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-settings-alert-regression.log",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-alert-root-client.log",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-alert-root-focused-final.log",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-alert-root-client-final.log",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-alert-root-types-final.log",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-alert-root-lint-final.log",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-config-oracle.log",
+            "D:\\tm-db\\smartbot-lab\\wrybit-full-ui-01a126c8\\visual-proof\\wp03-review-config-types.log"
+          ],
+          "note": "Полный cycle2 JUnit содержал2 failures SettingsLinkFlow и не считается зелёным, несмотря на native source_mismatch warning и выполненный переход. Изолированный10/10 прогон проходил: выявлена зависимость module mock vueRoot от общего кеша isolate:false. Module mock удалён; per-mount mixin предоставляет только showAlert настоящему VTU app root, production vueRoot/NativeCreate не подменены. Первая попытка parent harness была RED2, потому что VTUROOT выше parent; окончательная граница проверена по исходнику VTU независимым reviewer. Все прежние assertions сохранены. Focused3, full1254client/276files, Vue types и ESLint прошли. Ранее вакуозное сравнение Promise также заменено canonical newGameConfig с явной проверкой venusPhase2=true, scoped7/types/lint прошли. Следующий полный native runner и финальный независимый verdict обязательны."
         }
       ]
     },

@@ -83,8 +83,8 @@
   },
   "schema_version": 1,
   "map_kind": "scoped-dependency-union",
-  "source_commit": "1b77b3592be80f8b9ad899071233e24592de41f9",
-  "generated_at": "2026-10-17T19:30:58.807Z",
+  "source_commit": "d82d65cec1255efd36c5038ebfa3c468078ab6b1",
+  "generated_at": "2026-10-17T19:41:56.834Z",
   "source_tree_was_clean": false,
   "scope": [
     "assets/wrybit/board/ATTRIBUTION.md",
@@ -1186,7 +1186,7 @@
     "src/client/wrybit/create/presentation.ts": "cdb67e8cd9455ffd43ce6bd8b8b5cec0072d5fb54dfa1487959bb41a18d042a2",
     "src/client/wrybit/create/stickyBottomObserver.ts": "9503c5082d794428f4462f70eacbd6e081cf2d048b61e59ea5c295db67ab5aa1",
     "src/client/wrybit/create/wikiContent.ts": "4be89348c117a549a32e4b4405815d202c2c24a5a788826a4e2fdb232aaa1ec3",
-    "src/client/wrybit/import-manifest.json": "650fec3f697e8853db9a425166d501571dafb1910792d3458913f6a8a1e9e681",
+    "src/client/wrybit/import-manifest.json": "b840afe66869cc9efa4e40e1ea042f7c44bee9a5e0663b09778385c7d9e22d81",
     "src/client/wrybit/inputs/ActionCardSections.vue": "9cfcb893a2191f0beb2aa2c076ae925132479cf840324c6e8298beeb7605e609",
     "src/client/wrybit/inputs/ActionStepChips.vue": "fb6994ea3cbdbd7e4dc454cab33f18edf8460819a51b7d824b91a4fb36d40bfb",
     "src/client/wrybit/inputs/AndOptions.vue": "ccc417dffddaa936b0cbfedc2fef2363dee33b1a3c1e3ceb413a02e3613d84ec",
@@ -1804,7 +1804,7 @@
     "tests/client/wrybit/create/ExpansionFeatures.spec.ts": "56cac569daf13d99354982ac1a45a5c72d6fb22418edd8d2f8ada0a507e3dbcf",
     "tests/client/wrybit/create/ExpansionGrouping.spec.ts": "2432e719d77b9cb10126cdf9b6f17f63f5495dd0193ba36d8dfe04fb3711e74c",
     "tests/client/wrybit/create/ModuleFilterPresentation.spec.ts": "e66994c0c06569d7123309e856a7814520cac72d9948c934b5f05f9dbda7a837",
-    "tests/client/wrybit/create/SettingsLinkFlow.spec.ts": "8343154cd9618a0bcc547f74a197c12fc2329cbdb10af069ee738b0468d05661",
+    "tests/client/wrybit/create/SettingsLinkFlow.spec.ts": "3584aad4b72caa5b0b71c2cb4abb4d169d9af6d0bff610d3b1d4d2a108d3be3b",
     "tests/client/wrybit/create/wikiContent.spec.ts": "f050401fe2c8ea48f1f71b88e97574e4212dc6489e5edc34dbe60974685cc10e",
     "tests/client/wrybit/inputs/AmountPreview.spec.ts": "67b25c31909935c663638b5491befb4e220c5701a37f39a5dc11686cf99cc0d8",
     "tests/client/wrybit/inputs/CardSelectionPresentation.spec.ts": "398a7ef1575c50693e049b0b27f175e7d37f78cd5406eabf1e23c7553813ff4d",
@@ -1900,7 +1900,7 @@
     "tools/fanmade-port/check-catalog-source.js": "7cb76a3358482c383a6c2fbc79cac51cff4b0f859e6a348431548da161e0e9f3",
     "tools/fanmade-port/fanmade-catalog-source-manifest.json": "8e329d036953b41d90811bdb7a76163be06e98890d64fcac7fcb9827b1d52620"
   },
-  "scope_fingerprint": "609e51552ec67c176b1ac264eec87e5942b256aa84bee44136d56ec008618e38",
+  "scope_fingerprint": "1d0256a9b0caec121e49beac78567b4f9408afef30d42029fb51cfc4f90a7d6d",
   "changed_modules": [
     "src/common/Timer.ts",
     "src/server/Game.ts",

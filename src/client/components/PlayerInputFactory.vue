@@ -10,8 +10,8 @@
 
 <script lang="ts">
 
-import {Component, defineComponent, inject, provide, shallowRef, watch} from 'vue';
-import {INPUT_DEPTH} from '@/client/wrybit/inputs/presentation';
+import {Component, computed, defineComponent, inject, provide, shallowRef, watch} from 'vue';
+import {INPUT_DEPTH, INPUT_PRESENTATION_INTRO} from '@/client/wrybit/inputs/presentation';
 import {afterSave, copyInputResponse, SAVE_SESSION, useSaveSession, withSaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
 import type {CollectedResponse, InputController, MaybePromise, SaveAttempt, SaveOutcome} from '@/client/wrybit/inputs/saveAttempt';
 import {getPreferences} from '@/client/utils/PreferencesManager';
@@ -98,6 +98,7 @@ export default defineComponent({
   name: 'PlayerInputFactory',
   setup(props) {
     provide(INPUT_DEPTH, inject(INPUT_DEPTH, 0) + 1);
+    provide(INPUT_PRESENTATION_INTRO, computed(() => props.presentationIntro));
     const session = useSaveSession();
     provide(SAVE_SESSION, session);
     const childInput = shallowRef<InputController>();
@@ -161,6 +162,10 @@ export default defineComponent({
     return {childInput, collectResponse, saveData};
   },
   props: {
+    presentationIntro: {
+      type: Boolean,
+      default: false,
+    },
     playerView: {
       type: Object as () => PlayerViewModel,
       required: true,

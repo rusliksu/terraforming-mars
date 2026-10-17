@@ -1,6 +1,5 @@
 <template>
   <div class="wf-component wf-component--select-card choice-block" :class="[choiceBlockClass(allCards.length, isHandSelection || binding.playerinput.showOwner || sections.trailing.length > 0), {'choice-block--sections': sections.trailing.length > 0}]" :style="choiceBlockStyle(allCards.length)" data-source-card-choice>
-    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
     <CardFilterBar v-if="isHandSelection || binding.playerinput.selectBlueCardAction" :cards="allCards" :filter="filter" :context="filterContext">
       <template #lead><AppButton v-if="binding.showSelectAll" size="small" @click="binding.toggleAll()" :title="$t(binding.allSelected ? 'Deselect All' : 'Select All')"/></template>
       <template #sort="{compact}">
@@ -9,6 +8,7 @@
       </template>
     </CardFilterBar>
     <CardZoomBar v-else><template v-if="binding.showSelectAll" #lead><AppButton size="small" @click="binding.toggleAll()" :title="$t(binding.allSelected ? 'Deselect All' : 'Select All')"/></template></CardZoomBar>
+    <TabPanelIntroSlot v-if="showIntro"><InputIntro :input="binding.playerinput" :playerView="binding.playerView" :draftRepick="repick" belowHeader/></TabPanelIntroSlot>
     <CardFilterEmptyHint v-if="nothingShown" @reset="resetCardFilter(filter)"/>
     <h3 v-if="sections.title !== undefined" class="hand-cards-panel__title choice-section-title">{{ $t(sections.title) }} <small>{{ cards.length }}</small></h3>
     <template v-for="group in groups" :key="group.owner?.color ?? 'none'">
@@ -32,6 +32,7 @@
     <div v-if="binding.warning !== undefined" class="card-warning">{{ $t(binding.warning) }}</div>
     <WarningsComponent :warnings="binding.warnings"/>
     <TabPanelFooterSlot>
+      <span v-if="repick" class="or-tab-footer-hint">{{ $t(fullTabTitle(binding.playerinput.title)) }}</span>
       <div v-if="binding.showsave" class="nofloat select-card-actions">
         <span v-if="hiddenSelectedCount > 0" class="card-filter-hidden-note">{{ $t('Selected cards hidden by filters') }}: {{ hiddenSelectedCount }}</span>
         <template v-if="cannotAfford">
@@ -50,6 +51,8 @@
 
 <script setup lang="ts">
 import InputIntro from './InputIntro.vue';
+import TabPanelIntroSlot from './TabPanelIntroSlot.vue';
+import {useCardInputIntro} from './cardInputIntro';
 import {computed, shallowRef, watch} from 'vue';
 import type {CardSelectionBinding} from './presentation';
 import type {CardModel} from '@/common/models/CardModel';
@@ -73,12 +76,15 @@ import {sortCards} from '@/client/utils/SortOrder';
 import CardListSection from '@/client/wrybit/visuals/CardListSection.vue';
 import {currentDraftPicks, isDraftInput, keepDraftCardOrder} from './draftCards';
 import {selectCardSections} from './cardSections';
-import {titleKey} from './orOptionsShortLabels';
+import {fullTabTitle, titleKey} from './orOptionsShortLabels';
 
 const props = defineProps<{binding: CardSelectionBinding}>();
 watch(() => props.binding.playerView.id, activateCardFilterOwner, {immediate: true});
 const selected = computed({get: () => props.binding.selected, set: (cards) => props.binding.select(cards)});
 const isDraft = computed(() => isDraftInput(props.binding.playerView, props.binding.playerinput));
+const repick = computed(() => isDraft.value && props.binding.playerinput.optional === true);
+const parentIntro = useCardInputIntro();
+const showIntro = computed(() => props.binding.showtitle || parentIntro.value);
 const draftOrder = shallowRef<ReadonlyArray<CardModel>>([]);
 watch([() => props.binding.playerView.id, () => props.binding.playerinput.cards,
   () => props.binding.playerinput.cards.map((card) => card.name).join('\0'), () => isDraft.value], () => {

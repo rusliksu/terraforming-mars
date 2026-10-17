@@ -26,10 +26,10 @@
           <PresentationHost v-if="binding.selectedIdx === idx" :hosts="binding.childHost" style="margin-left: 30px"/>
         </div>
       </template>
-      <CardIntroBlock v-if="tileMenu && sourceCard !== undefined" :card="sourceCard" :title="binding.playerinput.title"/>
-      <div v-else-if="tileMenu" class="or-tab-intro or-tab-question"><div class="or-tab-intro-title">{{ $t(binding.playerinput.title) }}</div></div>
+      <CardIntroBlock v-if="tileMenu && sourceCard !== undefined && !sameAmountIntro" :card="sourceCard" :title="binding.playerinput.title"/>
+      <div v-else-if="tileMenu && !sameAmountIntro" class="or-tab-intro or-tab-question"><div class="or-tab-intro-title">{{ $t(binding.playerinput.title) }}</div></div>
       <InputIntro v-else-if="spaceChoice !== undefined" :input="spaceChoice.space" :title="binding.playerinput.title" :playerView="binding.playerView"/>
-      <InputIntro v-else-if="binding.asTabs && binding.selectedOption !== undefined && !handTabActive && !inActionsGroup"
+      <InputIntro v-else-if="binding.asTabs && binding.selectedOption !== undefined && !handTabActive && !inActionsGroup && !childOwnsIntro"
         :input="binding.selectedOption" :playerView="binding.playerView"/>
       <AppButton v-if="spaceChoice !== undefined && binding.selectedOption !== spaceChoice.space" class="space-choose-option"
         :title="$t(fullTabTitle(spaceChoice.space.title))" @click="binding.select(spaceChoice.space)"/>
@@ -68,7 +68,7 @@
 
 <script setup lang="ts">
 import {computed, inject, onBeforeUnmount, ref} from 'vue';
-import {ROOT_INPUT_FOOTER} from './presentation';
+import {ROOT_INPUT_FOOTER, useInputPresentation} from './presentation';
 import type {ColorWithNeutral} from '@/common/Color';
 import type {ComponentPublicInstance} from 'vue';
 import type {OrOptionsBinding} from './presentation';
@@ -103,6 +103,16 @@ import InputIntro from './InputIntro.vue';
 
 const props = defineProps<{binding: OrOptionsBinding}>();
 const sourceCard = computed(() => inputSourceCard(props.binding.playerinput));
+const cardView = useInputPresentation('card');
+const projectView = useInputPresentation('projectCard');
+const amountView = useInputPresentation('amount');
+const childOwnsIntro = computed(() => {
+  const input = props.binding.selectedOption;
+  return input !== undefined && ((input.type === 'amount' && input.preview !== undefined && amountView.value !== undefined) ||
+    (props.binding.asTabs && ((input.type === 'card' && cardView.value !== undefined) || (input.type === 'projectCard' && projectView.value !== undefined))));
+});
+const sameAmountIntro = computed(() => props.binding.selectedOption?.type === 'amount' && amountView.value !== undefined &&
+  props.binding.selectedOption.preview?.sourceCard === sourceCard.value && sourceCard.value !== undefined);
 const rootFooter = inject(ROOT_INPUT_FOOTER, undefined);
 const outerFooter = computed(() => props.binding.asTabs ? rootFooter?.value : undefined);
 const handTabActive = ref(false);

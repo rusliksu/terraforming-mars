@@ -27,6 +27,7 @@ import {getConglomeratesModel} from '../models/ConglomeratesModel';
 import {ConglomeratesExpansion} from '../conglomerates/ConglomeratesExpansion';
 import {SpectatorModel} from '../../common/models/SpectatorModel';
 import {GameModel, OtherDeckSizesModel} from '../../common/models/GameModel';
+import {Turmoil} from '../turmoil/Turmoil';
 import {createPathfindersModel} from './PathfindersModel';
 import {MoonModel} from '../../common/models/MoonModel';
 import {VenusPhase2Model} from '../../common/models/VenusPhase2Model';
@@ -38,9 +39,9 @@ import {PlayerId, SpaceId} from '../../common/Types';
 import {cardsToModel, coloniesToModel} from './ModelUtils';
 import {runId} from '../utils/server-ids';
 import {toName} from '../../common/utils/utils';
-import {aiHandOf} from '../aiFeedback/aiHandView';
 import {MAX_AWARDS, MAX_MILESTONES} from '../../common/constants';
 import {getOceanPlacementContext} from './OceanPlacementContext';
+import {projectFinalGreenery} from './finalGreeneryPresentation';
 import {AstraMechanica} from '../cards/promo/AstraMechanica';
 import {promptIdForModel} from './promptId';
 
@@ -76,7 +77,6 @@ export class Server {
         color: player.color,
         id: player.id,
         isBotControlled: this.isBotControlled(game, player.id),
-        aiLevel: player.aiLevel,
         isSurrendered: game.surrenderedPlayerIds.has(player.id),
         name: player.name,
       })),
@@ -104,6 +104,8 @@ export class Server {
   }
 
   public static getGameModel(game: IGame): GameModel {
+    const turmoil = getTurmoilModel(game);
+
     return {
       automationCompatibility: getAutomationCompatibility(game.gameOptions),
       fanmadeCatalogRevision: Server.FANMADE_CATALOG_REVISION,
@@ -140,7 +142,7 @@ export class Server {
       step: game.lastSaveId,
       temperature: game.getTemperature(),
       tags: game.tags,
-      turmoil: getTurmoilModel(game),
+      turmoil: turmoil,
       undoCount: game.undoCount,
       venusScaleLevel: game.getVenusScaleLevel(),
       venusPhase2: this.getVenusPhase2Model(game),
@@ -151,7 +153,7 @@ export class Server {
     const game = player.game;
     const waitingFor = player.getWaitingFor();
 
-    const players: Array<PublicPlayerModel> = game.playersInGenerationOrder.map((p) => this.getPlayer(p, p.color === player.color, {}, player));
+    const players: Array<PublicPlayerModel> = game.playersInGenerationOrder.map((p) => this.getPlayer(p, p.color === player.color));
 
     const thisPlayerIndex = players.findIndex((p) => p.color === player.color);
     const thisPlayer: PublicPlayerModel = players[thisPlayerIndex];
@@ -177,8 +179,8 @@ export class Server {
       pickedCorporationCard: player.pickedCorporationCard ? cardsToModel(player, [player.pickedCorporationCard]) : [],
       preludeCardsInHand: cardsToModel(player, player.preludeCardsInHand),
       thisPlayer: thisPlayer,
-      waitingFor: player.aiLevel !== undefined ? undefined : this.getWaitingFor(player, waitingFor),
-      waitingForId: player.aiLevel !== undefined ? undefined : this.getWaitingForId(waitingFor),
+      waitingFor: this.getWaitingFor(player, waitingFor),
+      waitingForId: this.getWaitingForId(waitingFor),
       players: players,
       autopass: player.autopass,
     };
@@ -285,9 +287,8 @@ export class Server {
     if (waitingFor === undefined) {
       return undefined;
     }
-    // Only the top-level input's warning reaches the client. Warnings on inputs
-    // nested in OrOptions, AndOptions, or SelectInitialCards are not sent.
-    const model = waitingFor.toModel(player);
+    // TODO(kberg): in theory this should be in all the other toModel calls.
+    const model = projectFinalGreenery(player, waitingFor, waitingFor.toModel(player));
     model.warning = waitingFor.warning;
     if (waitingFor.annotation !== undefined) {
       model.annotation = waitingFor.annotation;
@@ -303,7 +304,7 @@ export class Server {
   }
 
   /** When the model is for this player, show the VP. Players like seeing their own VP even if the feature is off. */
-  public static getPlayer(player: IPlayer, modelIsForThisPlayer: boolean, options: {includePrivateCards?: boolean} = {}, reader?: IPlayer): PublicPlayerModel {
+  public static getPlayer(player: IPlayer, modelIsForThisPlayer: boolean, options: {includePrivateCards?: boolean} = {}): PublicPlayerModel {
     const game = player.game;
     const useHandicap = game.players.some((p) => p.handicap !== 0);
     const model: PublicPlayerModel = {
@@ -326,7 +327,7 @@ export class Server {
       heat: player.heat,
       heatProduction: player.production.heat,
       id: game.phase === Phase.END ? player.id : undefined,
-      influence: game.turmoil?.getInfluence(player) ?? 0,
+      influence: Turmoil.ifTurmoilElse(game, (turmoil) => turmoil.getInfluence(player), () => 0),
       isActive: player.id === game.activePlayer.id,
       isBotControlled: this.isBotControlled(game, player.id),
       isSurrendered: game.surrenderedPlayerIds.has(player.id),
@@ -334,7 +335,6 @@ export class Server {
       megacredits: player.megaCredits,
       megacreditProduction: player.production.megacredits,
       name: player.name,
-      aiLevel: player.aiLevel,
       needsToDraft: player.needsToDraft,
       needsToResearch: !game.hasResearched(player),
       noTagsCount: player.tags.numberOfCardsWithNoTags(),
@@ -407,8 +407,6 @@ export class Server {
     if (modelIsForThisPlayer) {
       model.oceanPlacementContext = getOceanPlacementContext(player);
     }
-
-    model.aiHand = aiHandOf(player, reader);
 
     return model;
   }
@@ -495,16 +493,12 @@ export class Server {
       }
 
       const model: SpaceModel = {
-        id: space.id,
         x: space.x,
         y: space.y,
+        id: space.id,
         spaceType: space.spaceType,
         bonus: space.bonus,
       };
-      const a9 = board.A9[space.id];
-      if (a9 !== undefined) {
-        model.a9 = a9;
-      }
       const tileType = space.tile?.tileType;
       if (tileType !== undefined) {
         model.tileType = tileType;
@@ -601,7 +595,6 @@ export class Server {
       showOtherPlayersVP: options.showOtherPlayersVP,
       privateHands: options.privateHands !== false,
       showTimers: options.showTimers,
-      aiAnalysis: options.aiAnalysis,
       shuffleMapOption: options.shuffleMapOption,
       solarPhaseOption: options.solarPhaseOption,
       soloTR: options.soloTR,

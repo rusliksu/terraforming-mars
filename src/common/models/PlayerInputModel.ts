@@ -111,6 +111,8 @@ export type SelectSpaceModel = BaseInputModel & {
   spaces: ReadonlyArray<SpaceId>;
   /** Tile supplied by the native placement producer; absent for other space choices. */
   tileType?: TileType;
+  /** Verified native final-greenery root; this placement does not raise oxygen. */
+  finalGreenery?: true;
 }
 
 export type SelectAmountModel = BaseInputModel & {

@@ -10,7 +10,6 @@ import type {PlayerInputModel} from '@/common/models/PlayerInputModel';
 import type {PlayerViewModel} from '@/common/models/PlayerModel';
 import type {Message} from '@/common/logs/Message';
 import {TileType} from '@/common/TileType';
-import {Phase} from '@/common/Phase';
 import {DEFAULT_GLOBAL_PARAMETERS} from '@/common/GlobalParameterConfig';
 import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
 import {inputSourceCard} from './inputSourceCard';
@@ -21,8 +20,8 @@ import TabIntroBlock from './TabIntroBlock.vue';
 const props = defineProps<{input: PlayerInputModel, playerView: PlayerViewModel, title?: string | Message, draftRepick?: boolean, belowHeader?: boolean}>();
 const caption = computed(() => fullTabTitle(props.title ?? props.input.title));
 const sourceCard = computed(() => inputSourceCard(props.input));
-const finale = computed(() => props.input.type === 'space' && props.input.tileType === TileType.GREENERY &&
-  props.playerView.game.isTerraformed && props.playerView.game.phase === Phase.SOLAR);
+const finale = computed(() => props.input.type === 'space' && props.input.finalGreenery === true ?
+  props.playerView.game.isTerraformed ? 'terraformed' : 'final-greenery' : undefined);
 const facts = computed((): Array<string | Message> => {
   if (props.input.type !== 'space') {
     return [];

@@ -1,10 +1,10 @@
 <template>
   <div class="payments_cont choice-block" :class="[choiceBlockClass(allCards.length, isHandSelection), {'choice-block--sections': unplayableCards.length > 0}]" :style="choiceBlockStyle(allCards.length)">
-    <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
     <CardFilterBar v-if="isHandSelection" :cards="allCards" :filter="handCardFilter" :context="filterContext">
       <template #sort="{compact}"><HandSortControl :playerView="binding.playerView" :compact="compact" :allowManual="true"/></template>
     </CardFilterBar>
     <CardZoomBar v-else/>
+    <TabPanelIntroSlot v-if="showIntro"><InputIntro :input="binding.playerinput" :playerView="binding.playerView" belowHeader/></TabPanelIntroSlot>
     <CardFilterEmptyHint v-if="nothingShown" @reset="resetCardFilter(handCardFilter)"/>
     <label v-for="card in offeredCards" class="payments_cards" :class="visibilityClass(card)" :key="card.name">
       <input v-if="!card.isDisabled" class="hidden" type="radio" :checked="binding.cardName === card.name" :value="card.name" @change="binding.select(card.name)">
@@ -40,6 +40,8 @@
 
 <script setup lang="ts">
 import InputIntro from './InputIntro.vue';
+import TabPanelIntroSlot from './TabPanelIntroSlot.vue';
+import {useCardInputIntro} from './cardInputIntro';
 import {computed, watch} from 'vue';
 import type {ProjectCardBinding} from './presentation';
 import PresentationHost from './PresentationHost.vue';
@@ -59,6 +61,8 @@ import type {CardModel} from '@/common/models/CardModel';
 import {choiceBlockClass, choiceBlockStyle} from './choiceBlock';
 
 const props = defineProps<{binding: ProjectCardBinding}>();
+const parentIntro = useCardInputIntro();
+const showIntro = computed(() => props.binding.showtitle || parentIntro.value);
 watch(() => props.binding.playerView.id, activateCardFilterOwner, {immediate: true});
 const hand = computed(() => allCardsInHand(props.binding.playerView));
 const offeredNames = computed(() => new Set(props.binding.cards.map((card) => card.name)));

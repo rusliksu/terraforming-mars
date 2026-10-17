@@ -13,8 +13,48 @@ import {PlaceGasMineTile} from '../../src/server/venusPhase2/PlaceGasMineTile';
 import {PlaceFloaterArrayTile} from '../../src/server/venusPhase2/PlaceFloaterArrayTile';
 import {TileType} from '../../src/common/TileType';
 import {testGame} from '../TestGame';
+import {Server} from '../../src/server/models/ServerModel';
+import {Phase} from '../../src/common/Phase';
 
 describe('native placement display metadata', () => {
+  it('projects final greenery only for the actual native production-phase root without mutating the input or board', () => {
+    const [game, player] = testGame(1);
+    player.popWaitingFor();
+    player.plants = 8;
+    game.phase = Phase.PRODUCTION;
+    player.takeActionForFinalGreenery();
+    const input = player.getWaitingFor();
+    if (input === undefined) {
+      throw new Error('Expected native final greenery input');
+    }
+    const raw = JSON.stringify(input.toModel(player));
+    const board = JSON.stringify(game.board.spaces.map((space) => space.tile));
+    const model = Server.getWaitingFor(player, input);
+    if (model?.type !== 'or') {
+      throw new Error('Expected native final greenery choice');
+    }
+    expect(model.options[0]).includes({type: 'space', tileType: TileType.GREENERY, finalGreenery: true});
+    expect(model.options[1]).includes({type: 'option', title: "Don't place a greenery"});
+    expect(JSON.stringify(input.toModel(player))).eq(raw);
+    expect(player.getWaitingFor()).eq(input);
+    expect(player.plants).eq(8);
+    expect(JSON.stringify(game.board.spaces.map((space) => space.tile))).eq(board);
+    game.phase = Phase.ACTION;
+    const otherPhase = Server.getWaitingFor(player, input);
+    if (otherPhase?.type !== 'or') {
+      throw new Error('Expected same native options');
+    }
+    expect(otherPhase.options[0]).not.have.property('finalGreenery');
+    expect(otherPhase.options[0]).not.have.property('tileType');
+    game.phase = Phase.PRODUCTION;
+    player.popWaitingFor();
+    const stale = Server.getWaitingFor(player, input);
+    if (stale?.type !== 'or') {
+      throw new Error('Expected detached native options');
+    }
+    expect(stale.options[0]).not.have.property('finalGreenery');
+  });
+
   it('projects the actual producer tile independently of its title without placing it', () => {
     const [game, player] = testGame(1);
     const before = JSON.stringify(game.board.spaces.map((space) => space.tile));

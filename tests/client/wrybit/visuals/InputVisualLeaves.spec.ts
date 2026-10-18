@@ -9,6 +9,7 @@ import ShiftAresGlobalParameters from '@/client/wrybit/visuals/ShiftAresGlobalPa
 import {CardName} from '@/common/cards/CardName';
 import {CardType} from '@/common/cards/CardType';
 import {ShiftAresGlobalParametersModel} from '@/common/models/PlayerInputModel';
+import {TileType} from '@/common/TileType';
 import {fakePlayerViewModel} from '@tests/client/components/testHelpers';
 import {globalConfig} from '@tests/client/components/getLocalVue';
 
@@ -74,6 +75,18 @@ describe('Pure Wrybit input visuals', () => {
       expect(wrapper.text()).contains('Only the server-provided spaces');
       expect(wrapper.text()).not.contains('adjacent ocean');
       expect(wrapper.text()).not.contains('TR');
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
+  it('shows the native tile art in the placement banner header', () => {
+    const wrapper = mount(PlacementBanner, {...globalConfig, props: {description: {
+      nativeTileType: TileType.CAPITAL, tile: 'special', title: 'Place capital tile', gains: [], rules: [],
+    }}});
+    try {
+      expect(wrapper.find('.placement-tile-preview .board-space-tile--capital').exists()).is.true;
+      expect(wrapper.find('.placement-banner-icon').exists()).is.false;
     } finally {
       wrapper.unmount();
     }

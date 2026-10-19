@@ -90,6 +90,6 @@ export class Atmoscoop extends Card implements IProjectCard {
   }
 
   private venusIsMaxed(game: IGame) {
-    return game.getVenusScaleLevel() === constants.MAX_VENUS_SCALE;
+    return game.getVenusScaleLevel() === game.parameters.venus.max;
   }
 }

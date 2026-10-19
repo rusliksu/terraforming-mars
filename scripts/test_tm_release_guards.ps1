@@ -290,7 +290,7 @@ $defaultPromoteDryRun = Invoke-TextProcess -FilePath $pwshPath -ArgumentList @(
     "-NoProfile", "-File", $promotePath, "-DryRun"
 ) -InputText $null
 Assert-True ($defaultPromoteDryRun.ExitCode -eq 0) "Default promotion dry-run failed. stderr=$($defaultPromoteDryRun.StdErr)"
-Assert-True ($defaultPromoteDryRun.StdOut.Contains('create_verified_sqlite_backup')) "Promotion dry-run has no verified SQLite backup step."
+Assert-True ($defaultPromoteDryRun.StdOut.Contains('validate_existing_saves')) "Promotion dry-run has no read-only save validation."
 Assert-True ($defaultPromoteDryRun.StdOut.Contains('validate_saved_games.js')) "Promotion dry-run has no production-save rehearsal validator."
 Assert-True (-not $defaultPromoteDryRun.StdOut.Contains('systemctl --user restart "$next_service"')) "Promotion still starts a second server against production state."
 
@@ -327,9 +327,9 @@ $deployPermissionIndex = $deployRemote.IndexOf('normalize_release_permissions "$
 $deployCurrentSwitchIndex = $deployRemote.IndexOf('ln -sfn "$new_release_dir" "$current_link"')
 $promoteDataLinkIndex = $promoteRemote.IndexOf('ln -sfn "$shared_root/elo/data.json" "$new_release_dir/elo/data.json"')
 $promotePermissionIndex = $promoteRemote.IndexOf('normalize_release_permissions "$new_release_dir"', $promoteDataLinkIndex)
-$promoteRehearsalIndex = $promoteRemote.IndexOf('create_verified_sqlite_copy "$game_db_path" "$rehearsal_db"')
+$promoteValidationIndex = $promoteRemote.IndexOf('if ! validate_existing_saves "$new_release_dir"; then')
 Assert-True ($deployPermissionIndex -gt $deployDataLinkIndex -and $deployPermissionIndex -lt $deployCurrentSwitchIndex) "Deploy does not normalize release permissions after assembly and before switching current."
-Assert-True ($promotePermissionIndex -gt $promoteDataLinkIndex -and $promotePermissionIndex -lt $promoteRehearsalIndex) "Promotion does not normalize release permissions before the rehearsal copy validation."
+Assert-True ($promotePermissionIndex -gt $promoteDataLinkIndex -and $promotePermissionIndex -lt $promoteValidationIndex) "Promotion does not normalize release permissions before read-only save validation."
 
 $permissionFixtureRoot = Join-Path $env:TEMP ("tm-release-permissions-{0}-{1}" -f $PID, [guid]::NewGuid().ToString("N"))
 New-Item -ItemType Directory -Path $permissionFixtureRoot -Force | Out-Null
@@ -827,85 +827,52 @@ assert_dependency_sha "$1" "$2"
     Assert-True ($uppercaseDependency.ExitCode -eq 47) "Non-canonical uppercase dependencySha was accepted."
     Assert-True ($mismatchedDependency.ExitCode -eq 47) "DependencySha not matching package-lock content was accepted."
 
-    # The exact embedded helper creates a consistent, integrity-checked SQLite copy.
-    $sqliteCopyHelper = Get-BashFunction -ScriptText $promoteRemote -Name "create_verified_sqlite_copy"
-    $sqliteSource = Join-Path $advancedTempRoot "source.db"
-    $sqliteCopy = Join-Path $advancedTempRoot "copy.db"
+    # Rollback preserves newer data even when an older backup is available.
+    $rollbackFixture = Join-Path $advancedTempRoot "code-only-rollback"
+    New-Item -ItemType Directory -Path $rollbackFixture -Force | Out-Null
+    $databaseFile = Join-Path $rollbackFixture "game.db"
     $createSqlite = Invoke-PythonSnippet -Code @'
 import sqlite3
 import sys
 with sqlite3.connect(sys.argv[1]) as database:
     database.execute("CREATE TABLE proof (value TEXT NOT NULL)")
-    database.execute("INSERT INTO proof(value) VALUES ('preserved')")
-'@ -Json '' -Arguments @($sqliteSource)
-    Assert-True ($createSqlite.ExitCode -eq 0) "Could not create the SQLite copy fixture."
-    $sqliteCopyHarness = @'
+    database.execute("INSERT INTO proof(value) VALUES ('newer-player-move')")
+'@ -Json '' -Arguments @($databaseFile)
+    Assert-True ($createSqlite.ExitCode -eq 0) "Could not create rollback preservation fixture."
+    $databaseHash = (Get-FileHash -LiteralPath $databaseFile -Algorithm SHA256).Hash
+    $rollbackHarness = @'
 set -euo pipefail
-python3() { __PYTHON__ "$@"; }
-__COPY_FUNCTION__
-create_verified_sqlite_copy "$1" "$2"
+root="$1"
+service=fixture-server
+elo_service=fixture-elo
+health_url=fixture-health
+elo_health_url=fixture-elo-health
+prod_current="$root/current"
+previous_current_link_existed=1
+previous_current_link_target="$root/old-release"
+promotion_write_gate="$root/write-gate"
+game_db_path="$root/game.db"
+shared_root="$root"
+run_token=fixture
+database_backup="$root/obsolete-backup.db"
+mkdir -p "$previous_current_link_target" "$root/new-release"
+ln() { printf '%s\n' "$*" > "$root/code-link"; }
+printf obsolete > "$database_backup"
+printf closed > "$promotion_write_gate"
+systemctl() { printf '%s\n' "$*" >> "$root/services"; }
+wait_for_http() { return 0; }
+wait_for_elo() { return 0; }
+__RESTORE_FUNCTION__
+restore_previous_release
+test "$(cat "$root/code-link")" = "-sfn $previous_current_link_target $prod_current"
+test ! -e "$promotion_write_gate"
+test "$(cat "$database_backup")" = obsolete
 '@
-    $sqliteCopyHarness = $sqliteCopyHarness.Replace('__PYTHON__', $pythonPathBash).Replace('__COPY_FUNCTION__', $sqliteCopyHelper)
-    $sqliteCopyResult = Invoke-Bash -ScriptText $sqliteCopyHarness -Arguments @(
-        (ConvertTo-TmGitBashPath $sqliteSource),
-        (ConvertTo-TmGitBashPath $sqliteCopy)
-    )
-    Assert-True ($sqliteCopyResult.ExitCode -eq 0) "Verified SQLite copy helper failed. stderr=$($sqliteCopyResult.StdErr)"
-    $inspectSqlite = Invoke-PythonSnippet -Code @'
-import sqlite3
-import sys
-with sqlite3.connect(f"file:{sys.argv[1]}?mode=ro", uri=True) as database:
-    integrity = database.execute("PRAGMA integrity_check").fetchone()[0]
-    value = database.execute("SELECT value FROM proof").fetchone()[0]
-print(f"{integrity}:{value}")
-'@ -Json '' -Arguments @($sqliteCopy)
-    Assert-True ($inspectSqlite.ExitCode -eq 0 -and $inspectSqlite.StdOut.Trim() -eq 'ok:preserved') "Verified SQLite copy is not restorable and intact."
-
-    # The bounded static copy is used only after the source is quiescent, and is
-    # rehearsed against the consistent online snapshot before service shutdown.
-    $staticCopyHelper = Get-BashFunction -ScriptText $promoteRemote -Name "create_static_database_copy"
-    $staticCopyPath = Join-Path $advancedTempRoot "static-copy.db"
-    $staticCopyHarness = @'
-set -euo pipefail
-python3() { __PYTHON__ "$@"; }
-__STATIC_COPY_FUNCTION__
-create_static_database_copy "$1" "$2"
-'@
-    $staticCopyHarness = $staticCopyHarness.Replace('__PYTHON__', $pythonPathBash).Replace('__STATIC_COPY_FUNCTION__', $staticCopyHelper)
-    $staticCopyResult = Invoke-Bash -ScriptText $staticCopyHarness -Arguments @(
-        (ConvertTo-TmGitBashPath $sqliteCopy),
-        (ConvertTo-TmGitBashPath $staticCopyPath)
-    )
-    Assert-True ($staticCopyResult.ExitCode -eq 0) "Bounded static SQLite copy failed. stderr=$($staticCopyResult.StdErr)"
-    Assert-True ((Get-FileHash -LiteralPath $sqliteCopy -Algorithm SHA256).Hash -eq (Get-FileHash -LiteralPath $staticCopyPath -Algorithm SHA256).Hash) "Bounded static SQLite copy differs from its quiescent source."
-
-    $sqliteBackupHelper = Get-BashFunction -ScriptText $promoteRemote -Name "create_verified_sqlite_backup"
-    $backupRoot = Join-Path $advancedTempRoot "backups"
-    $backupPath = Join-Path $backupRoot "rollback.db"
-    $restoreProbePath = Join-Path $advancedTempRoot "restore-probe.db"
-    $sqliteBackupHarness = @'
-set -euo pipefail
-python3() { __PYTHON__ "$@"; }
-game_db_path="$1"
-backup_root="$2"
-database_backup="$3"
-database_restore_probe="$4"
-__STATIC_COPY_FUNCTION__
-__BACKUP_FUNCTION__
-create_verified_sqlite_backup
-'@
-    $sqliteBackupHarness = $sqliteBackupHarness.Replace('__PYTHON__', $pythonPathBash).
-        Replace('__STATIC_COPY_FUNCTION__', $staticCopyHelper).
-        Replace('__BACKUP_FUNCTION__', $sqliteBackupHelper)
-    $sqliteBackupResult = Invoke-Bash -ScriptText $sqliteBackupHarness -Arguments @(
-        (ConvertTo-TmGitBashPath $sqliteSource),
-        (ConvertTo-TmGitBashPath $backupRoot),
-        (ConvertTo-TmGitBashPath $backupPath),
-        (ConvertTo-TmGitBashPath $restoreProbePath)
-    )
-    Assert-True ($sqliteBackupResult.ExitCode -eq 0) "Verified quiescent SQLite backup failed. stderr=$($sqliteBackupResult.StdErr)"
-    Assert-True ((Test-Path -LiteralPath $backupPath) -and -not (Test-Path -LiteralPath $restoreProbePath)) "Cutover backup unexpectedly performed a second full copy during downtime."
-    Assert-True ((Get-FileHash -LiteralPath $sqliteSource -Algorithm SHA256).Hash -eq (Get-FileHash -LiteralPath $backupPath -Algorithm SHA256).Hash) "Verified quiescent SQLite backup differs from its source."
+    $rollbackHarness = $rollbackHarness.Replace('__RESTORE_FUNCTION__', (Get-BashFunction -ScriptText $promoteRemote -Name 'restore_previous_release'))
+    $rollbackResult = Invoke-Bash -ScriptText $rollbackHarness -Arguments @((ConvertTo-TmGitBashPath $rollbackFixture))
+    Assert-True ($rollbackResult.ExitCode -eq 0) "Code-only rollback failed. stderr=$($rollbackResult.StdErr)"
+    Assert-True ((Get-FileHash -LiteralPath $databaseFile -Algorithm SHA256).Hash -eq $databaseHash) "Code rollback replaced current player data."
+    Assert-True (@(Get-ChildItem -LiteralPath $rollbackFixture -Recurse -File -Filter '*.db').Count -eq 2) "Code rollback created a database copy."
 
     # Fixed-path ELO mirrors publish atomically per file and repair a partial prior attempt.
     $publishHelper = Get-BashFunction -ScriptText $promoteRemote -Name "publish_elo_helpers"
@@ -993,35 +960,42 @@ publish_elo_helpers "$1" "cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     Assert-True ($casDrift.ExitCode -eq 46) "Release CAS drift did not use distinct exit code 46."
     Assert-True (-not (($casDrift.StdOut + $casDrift.StdErr).Contains($advancedTempRoot))) "Release CAS failure leaked runtime paths."
 
-    # Rollback restores production data before the previous release starts.
     $restoreHelper = Get-BashFunction -ScriptText $promoteRemote -Name "restore_previous_release"
-    $restoreDbIndex = $restoreHelper.IndexOf('restore_database_backup')
     $restoreLinkIndex = $restoreHelper.IndexOf('ln -sfn "$previous_current_link_target" "$prod_current"')
     $restoreStartIndex = $restoreHelper.IndexOf('systemctl --user start "$service"')
-    Assert-True ($restoreDbIndex -ge 0 -and $restoreLinkIndex -gt $restoreDbIndex) "Rollback does not restore the verified database before the previous release link."
-    Assert-True ($restoreStartIndex -gt $restoreLinkIndex) "Rollback starts the old server before restoring its code and database."
+    Assert-True ($restoreLinkIndex -ge 0 -and $restoreStartIndex -gt $restoreLinkIndex) "Rollback starts the old server before restoring its code."
 } finally {
     Remove-Item -LiteralPath $advancedTempRoot -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 # The DB gate is run twice, with the second check after the old writer stops and
-# before the verified backup and release switch.
+# before read-only validation and the release switch.
 $secondGateIndex = $promoteRemote.IndexOf('if assert_no_realtime_games_sqlite "before-public-switch"; then')
 $stopPrimaryIndex = $promoteRemote.IndexOf('if ! systemctl --user stop "$service"; then')
-$backupIndex = $promoteRemote.IndexOf('if ! create_verified_sqlite_backup; then')
+$finalValidationIndex = $promoteRemote.IndexOf('if ! validate_existing_saves "$new_release_dir"; then', $secondGateIndex)
 $switchLinkIndex = $promoteRemote.IndexOf('if ! ln -sfn "$new_release_dir" "$prod_current"; then')
 $startPrimaryIndex = $promoteRemote.IndexOf('if ! systemctl --user start "$service"; then', $switchLinkIndex)
 $noOpHelperRepairIndex = $promoteRemote.IndexOf('if ! publish_elo_helpers "$staging_current" "$expected_artifact_sha" "$expected_git_sha"; then')
 $successfulHelperPublishIndex = $promoteRemote.IndexOf('if ! publish_elo_helpers "$new_release_dir" "$served_artifact_sha" "$served_git_sha"; then')
 Assert-True ($preflightIndex -ge 0 -and $secondGateIndex -gt $preflightIndex) "Promotion does not run the SQLite gate twice."
 Assert-True ($stopPrimaryIndex -gt $preflightIndex -and $secondGateIndex -gt $stopPrimaryIndex) "Final SQLite gate does not run after the old writer stops."
-Assert-True ($backupIndex -gt $secondGateIndex -and $switchLinkIndex -gt $backupIndex) "Verified SQLite backup is not between the final gate and release switch."
+Assert-True ($finalValidationIndex -gt $secondGateIndex -and $switchLinkIndex -gt $finalValidationIndex) "Read-only validation is not between the final gate and release switch."
 Assert-True ($startPrimaryIndex -gt $switchLinkIndex) "New primary starts before the release switch."
 Assert-True ($successfulHelperPublishIndex -gt $startPrimaryIndex) "Prod ELO helper mirrors are mutated before the single-writer release transaction succeeds."
 Assert-True ($noOpHelperRepairIndex -ge 0 -and $noOpHelperRepairIndex -lt $promoteNoOpIndex) "Exact-prod no-op does not reconcile a prior partial ELO helper publication."
 Assert-True ($promoteRemote.Contains('os.replace(temporary, path)') -and $promoteRemote.Contains('.tm-elo-helpers-release.json')) "ELO helper publication lacks atomic same-directory replacement and completion state."
 Assert-True (-not $promoteRemote.Contains('set_proxy_port "$next_port"')) "Promotion still routes public traffic through a second live writer."
-Assert-True ($promoteRemote.Contains('restore_database_backup')) "Rollback does not restore the verified SQLite backup."
+# Release entrypoints must not regain database copying or automatic restore.
+foreach ($forbidden in @('create_verified_sqlite_copy', 'create_static_database_copy', 'create_verified_sqlite_backup', 'restore_database_backup', 'database_backup=', 'rehearsal_db=', '-wal', '-shm')) {
+    Assert-True (-not $promoteRemote.Contains($forbidden)) "Code-only promotion contains forbidden database operation: $forbidden"
+}
+$rehearsalRemote = Get-RemoteScriptBody -Path (Join-Path $PSScriptRoot 'rehearse_tm_prod.ps1')
+foreach ($forbidden in @('backup(', 'cp --', 'restore_probe=', 'sqlite3.connect')) {
+    Assert-True (-not $rehearsalRemote.Contains($forbidden)) "Read-only rehearsal contains database copying: $forbidden"
+}
+Assert-True (-not $deployRemote.Contains('rsync -a "$legacy_root/db/"')) "Deploy can copy a legacy database."
+Assert-True ($deployRemote.Contains('Code-only deploy requires an existing shared database')) "Deploy can initialize a missing database."
+Assert-True ($rehearsalRemote.Contains('validate_saved_games.js "$game_db"')) "Read-only rehearsal does not validate existing saves."
 Assert-True ($promoteRemote.Contains('trap handle_promote_exit EXIT') -and $promoteRemote.Contains('Unexpected failure during the single-writer window')) "Unexpected errors can strand production inside the single-writer window."
 
 # Abandoned realtime games may be declared in an operator-owned ledger. Release and

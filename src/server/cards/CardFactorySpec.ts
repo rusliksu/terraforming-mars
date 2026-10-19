@@ -47,6 +47,18 @@ export function isCompatibleWith(cf: CardFactorySpec<any>, gameOptions: GameOpti
       return gameOptions.starWarsExpansion;
     case 'underworld':
       return gameOptions.underworldExpansion;
+    case 'deltaProject':
+      return gameOptions.deltaProjectExpansion;
+    case 'moreParties':
+      return gameOptions.morePartiesExpansion;
+    case 'industries':
+      return gameOptions.industriesExpansion;
+    case 'highOrbit':
+      return gameOptions.highOrbitExpansion;
+    case 'betterMars':
+      return gameOptions.betterMarsExpansion;
+    case 'rebalanced':
+      return gameOptions.rebalancedExpansion;
     }
     throw new Error(`Unhandled expansion type ${expansion}`);
   });

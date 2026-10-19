@@ -5,12 +5,13 @@ import {CardName} from '@/common/cards/CardName';
 import SelectInitialCards from '@/client/components/SelectInitialCards.vue';
 import {SelectInitialCardsResponse, InputResponse} from '@/common/inputs/InputResponse';
 import ConfirmDialog from '@/client/components/common/ConfirmDialog.vue';
-import {Preferences} from '@/client/utils/PreferencesManager';
+import {Preferences, PreferencesManager} from '@/client/utils/PreferencesManager';
 import * as titles from '@/common/inputs/SelectInitialCards';
 import {SelectCardModel} from '@/common/models/PlayerInputModel';
 import {CardModel} from '@/common/models/CardModel';
 import {PlayerViewModel} from '@/common/models/PlayerModel';
 import {asComplete} from './utils/models';
+import russianUi from '@/locales/ru/ui.json';
 
 let savedData: InputResponse | undefined;
 
@@ -70,6 +71,7 @@ describe('SelectInitialCards', () => {
 
     const selectCards = component.findAllComponents({name: 'select-card'});
     expect(selectCards).has.length(3);
+    expect(selectCards[1].find('.wf-component-title').text()).eq('Select 1 Prelude card');
     selectCards[0].vm.$emit('cardschanged', [CardName.ECOLINE]);
     selectCards[1].vm.$emit('cardschanged', [CardName.ALLIED_BANK]);
     selectCards[2].vm.$emit('cardschanged', [CardName.ANTS]);
@@ -86,6 +88,26 @@ describe('SelectInitialCards', () => {
     ]});
   });
 
+  it('shows the one-prelude title and warning in Russian', async () => {
+    const originalLang = PreferencesManager.INSTANCE.values().lang;
+    const translations = (window as any)._translations;
+    PreferencesManager.INSTANCE.set('lang', 'ru');
+    (window as any)._translations = russianUi;
+    try {
+      const component = createComponent(
+        [CardName.ECOLINE], [CardName.ANTS], [CardName.ALLIED_BANK, CardName.SUPPLY_DROP], undefined, 1);
+      const selectCards = component.findAllComponents({name: 'select-card'});
+      expect(selectCards[1].find('.wf-component-title').text()).eq('Выберите 1 карту пролога');
+
+      selectCards[0].vm.$emit('cardschanged', [CardName.ECOLINE]);
+      await component.vm.$nextTick();
+      expect(component.find('.tm-warning').text()).eq('Выберите 1 карту пролога');
+    } finally {
+      PreferencesManager.INSTANCE.set('lang', originalLang);
+      (window as any)._translations = translations;
+    }
+  });
+
   it('saves data with prelude', async () => {
     const component = createComponent(
       [CardName.ECOLINE],
@@ -98,6 +120,7 @@ describe('SelectInitialCards', () => {
 
     const selectCards = component.findAllComponents({name: 'select-card'});
     expect(selectCards).has.length(3);
+    expect(selectCards[1].find('.wf-component-title').text()).eq('Select 2 Prelude cards');
 
     selectCards[0].vm.$emit('cardschanged', [CardName.ECOLINE]);
     await component.vm.$nextTick();

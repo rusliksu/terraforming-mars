@@ -1,3 +1,5 @@
+import {blankCustomBoard} from '../../src/common/boards/CustomBoardDefinition';
+import {encodeCustomBoard} from '../../src/common/boards/customBoardCodec';
 import {expect} from 'chai';
 import {BoardName} from '../../src/common/boards/BoardName';
 import {DEFAULT_EXPANSIONS} from '../../src/common/cards/GameModule';
@@ -35,6 +37,18 @@ describe('ApiQuickGame', () => {
   function setTemplates(templates: Array<TemplateEntry>) {
     (apiQuickGame as unknown as {templates: Array<TemplateEntry> | undefined}).templates = templates;
   }
+
+  it('retains a custom map from a quick-game template', async () => {
+    const board = blankCustomBoard(7, 'Quick custom');
+    setTemplates([{name: 'Custom', settings: {board: BoardName.CUSTOM,
+      customBoardCode: encodeCustomBoard(board), expansions: DEFAULT_EXPANSIONS}}]);
+    scaffolding.url = '/api/quickgame?template=Custom&players=2';
+    await scaffolding.get(apiQuickGame, res);
+    expect(res.statusCode).eq(statusCode.ok);
+    const game = await scaffolding.ctx.gameLoader.getGame(JSON.parse(res.content).id);
+    expect(game!.gameOptions.customBoard).deep.eq(board);
+    expect(game!.board.spaces.filter((space) => space.id.length === 3).length).eq(board.spaces.length);
+  });
 
   it('creates games with one-way 10-card initial draft enabled', async () => {
     setTemplates([{

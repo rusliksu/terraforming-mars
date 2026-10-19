@@ -18,7 +18,7 @@ export type Options = {
   /** When provided, then the cards with false in `enabled` are not selectable and grayed out */
   enabled: ReadonlyArray<boolean> | undefined,
   /** Default is true. If true, then shows resources on those cards. If false than shows discounted price. */
-  played: boolean | CardName.SELF_REPLICATING_ROBOTS
+  played: boolean | CardName.SELF_REPLICATING_ROBOTS | CardName.ORGANIC_WASTE_RECYCLING | CardName.SELF_REPLICATING_ROBOTS_SOLARIS
   /** Default is false. If true then show the name of the card owner below. */
   showOwner: boolean,
   /** Default is false. If true, show a "Select All" / "Deselect All" toggle button. */
@@ -59,8 +59,12 @@ export class SelectCard<T extends ICard> extends BasePlayerInput<ReadonlyArray<T
       buttonLabel: this.buttonLabel,
       type: 'card',
       cards: cardsToModel(player, this.cards, {
-        showCalculatedCost: this.config.played === false || this.config.played === CardName.SELF_REPLICATING_ROBOTS,
-        showResources: this.config.played === true || this.config.played === CardName.SELF_REPLICATING_ROBOTS,
+        showCalculatedCost: this.config.played === false ||
+          this.config.played === CardName.SELF_REPLICATING_ROBOTS || this.config.played === CardName.ORGANIC_WASTE_RECYCLING ||
+          this.config.played === CardName.SELF_REPLICATING_ROBOTS_SOLARIS,
+        showResources: this.config.played === true ||
+          this.config.played === CardName.SELF_REPLICATING_ROBOTS || this.config.played === CardName.ORGANIC_WASTE_RECYCLING ||
+          this.config.played === CardName.SELF_REPLICATING_ROBOTS_SOLARIS,
         enabled: this.config.enabled,
       }),
       max: this.config.max,

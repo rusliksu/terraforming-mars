@@ -1,4 +1,4 @@
-import {MAX_FLEET_SIZE} from '../../common/constants';
+import {MAX_FLEET_SIZE, PRODUCTION_MINIMUMS} from '../../common/constants';
 import {CardName} from '../../common/cards/CardName';
 import {ColoniesHandler} from '../colonies/ColoniesHandler';
 import {AndOptions} from '../inputs/AndOptions';
@@ -6,7 +6,6 @@ import {CanAffordOptions, IPlayer} from '../IPlayer';
 import {ENERGY_TRADE_COST, MC_TRADE_COST, TITANIUM_TRADE_COST} from '../../common/constants';
 import {IColony} from '../colonies/IColony';
 import {SelectPaymentDeferred} from '../deferredActions/SelectPaymentDeferred';
-import {Resource} from '../../common/Resource';
 import {TradeWithTitanFloatingLaunchPad} from '../cards/colonies/TitanFloatingLaunchPad';
 import {OrOptions} from '../inputs/OrOptions';
 import {SelectOption} from '../inputs/SelectOption';
@@ -18,7 +17,11 @@ import {TradeWithDarksideSmugglersUnion} from '../cards/moon/DarksideSmugglersUn
 import {Payment} from '../../common/inputs/Payment';
 import {toLogPayment} from '../logs/toLogPayment';
 import {TradeWithHectateSpeditions} from '../cards/underworld/HecateSpeditions';
+import {TradeWithSteel} from '../cards/delta/DeltaWorks';
 import {ColonyName} from '../../../src/common/colonies/ColonyName';
+import {Resource} from '../../common/Resource';
+import {ColonyTradeContextModel} from '@/common/models/ColonyTradeContextModel';
+import {ColonyBenefit} from '@/common/colonies/ColonyBenefit';
 
 export class Colonies {
   private player: IPlayer;
@@ -57,24 +60,99 @@ export class Colonies {
     return undefined;
   }
 
-  private tradeWithColony(openColonies: Array<IColony>): AndOptions | undefined {
+  private getTradeHandlers(): Array<{handler: IColonyTrader; cardName?: CardName}> {
     const player = this.player;
-    const handlers = [
-      new TradeWithDarksideSmugglersUnion(player),
-      new TradeWithTitanFloatingLaunchPad(player),
-      new TradeWithCollegiumCopernicus(player),
-      new TradeWithHectateSpeditions(player),
-      new TradeWithEnergy(player),
-      new TradeWithTitanium(player),
-      new TradeWithMegacredits(player),
+    return [
+      {handler: new TradeWithDarksideSmugglersUnion(player), cardName: CardName.DARKSIDE_SMUGGLERS_UNION},
+      {handler: new TradeWithTitanFloatingLaunchPad(player), cardName: CardName.TITAN_FLOATING_LAUNCHPAD},
+      {handler: new TradeWithCollegiumCopernicus(player), cardName: CardName.COLLEGIUM_COPERNICUS},
+      {handler: new TradeWithHectateSpeditions(player), cardName: CardName.HECATE_SPEDITIONS},
+      {handler: new TradeWithSteel(player), cardName: CardName.DELTA_WORKS},
+      {handler: new TradeWithEnergy(player)},
+      {handler: new TradeWithTitanium(player)},
+      {handler: new TradeWithMegacredits(player)},
     ];
+  }
+
+  /** Exposes current stock trade routes without spending resources or fleets. */
+  public getTradeContext(): ColonyTradeContextModel {
+    const player = this.player;
+    const game = player.game;
+    const handlers = this.getTradeHandlers();
+    let additionalPaymentMechanism = false;
+    const payments: Array<ColonyTradeContextModel['payments'][number]> = [];
+    for (const {handler, cardName} of handlers) {
+      if (handler instanceof TradeWithEnergy || handler instanceof TradeWithTitanium || handler instanceof TradeWithMegacredits) {
+        const resource = handler instanceof TradeWithEnergy ? Resource.ENERGY :
+          handler instanceof TradeWithTitanium ? Resource.TITANIUM : Resource.MEGACREDITS;
+        const available = handler.canUse();
+        const stockAvailable = player.stock[resource] >= handler.tradeCost;
+        payments.push({resource, amount: handler.tradeCost, available: available && stockAvailable});
+        if (available && !stockAvailable) {
+          additionalPaymentMechanism = true;
+        }
+      } else if (handler.canUse() || (cardName !== undefined && player.tableau.has(cardName))) {
+        additionalPaymentMechanism = true;
+      }
+    }
+    if (player.canUseHeatAsMegaCredits) {
+      additionalPaymentMechanism = true;
+    }
+
+    const stockColonies: Array<ColonyTradeContextModel['stockColonies'][number]> = [];
+    for (const colony of game.colonies) {
+      const trade = colony.metadata.trade;
+      const bonus = colony.metadata.colony;
+      if (colony.isActive && trade.type === ColonyBenefit.GAIN_RESOURCES &&
+          typeof trade.resource === 'string' && bonus.type === ColonyBenefit.GAIN_RESOURCES &&
+          bonus.resource !== undefined && colony.metadata.shouldIncreaseTrack === 'yes') {
+        stockColonies.push({
+          name: colony.name,
+          tradeResource: trade.resource,
+          tradeAmounts: trade.quantity.slice(),
+          ownBonus: {
+            resource: bonus.resource,
+            amount: bonus.quantity * colony.colonies.filter((owner) => owner === player.id).length,
+          },
+        });
+      }
+    }
+    const raider = game.syndicatePirateRaider;
+    const huanRaid = raider !== undefined && game.getPlayerById(raider).tableau.has(CardName.HUAN);
+    const nextGenerationTradeAccess = raider === undefined || (raider === player.id && huanRaid) ? 'normal' :
+      huanRaid ? 'blocked' : 'unknown';
+    const passedPlayers = game.getPassedPlayers();
+    return {
+      version: 1,
+      remainingActionsThisTurn: Math.max(0, player.availableActionsThisRound - player.actionsTakenThisRound),
+      allOpponentsPassed: game.isSoloMode() || passedPlayers.length === game.players.length - 1 && !passedPlayers.includes(player.color),
+      tradeAvailable: game.gameOptions.coloniesExtension && this.canTrade(),
+      tradeOffset: this.tradeOffset,
+      tradeBonusMC: this.getFixedTradeBonusMC(),
+      payments,
+      stockColonies,
+      ordinaryProduction: !player.tableau.has(CardName.SUPERCAPACITORS) &&
+        !player.tableau.some((card) => card.onProductionPhase !== undefined),
+      additionalPaymentMechanism,
+      nextGenerationTradeAccess,
+      gameCanContinue: !game.gameIsOver(),
+    };
+  }
+
+  /** Calculates the player's fixed cash reward after an ordinary trade. */
+  public getFixedTradeBonusMC(): number {
+    return this.player.tableau.has(CardName.VENUS_TRADE_HUB) ? 3 : 0;
+  }
+
+  private tradeWithColony(openColonies: Array<IColony>): AndOptions | undefined {
+    const handlers = this.getTradeHandlers();
 
     let selected: IColonyTrader | undefined = undefined;
 
     const howToPayForTrade = new OrOptions()
       .setTitle('Pay trade fee')
       .setButtonLabel('Pay');
-    handlers.forEach((handler) => {
+    handlers.forEach(({handler}) => {
       if (handler.canUse()) {
         howToPayForTrade.options.push(new SelectOption(
           handler.optionText()).andThen(() => {
@@ -102,8 +180,14 @@ export class Colonies {
       .setButtonLabel('Trade');
   }
 
-  public getPlayableColonies(allowDuplicate: boolean = false, canAffordOptions: number | CanAffordOptions = 0) {
+  public getPlayableColonies(
+    allowDuplicate: boolean = false,
+    canAffordOptions: number | CanAffordOptions = 0,
+    megacreditProductionCost: number = 0,
+  ) {
     const options: CanAffordOptions = typeof canAffordOptions === 'number' ? {cost: canAffordOptions} : canAffordOptions;
+    const personalProductionBonus = megacreditProductionCost === 0 ? 0 : this.player.tableau.asArray()
+      .reduce((total, card) => total + (card.getColonyPlacementMegaCreditProduction?.(this.player, this.player) ?? 0), 0);
 
     return this.player.game.colonies
       .filter((colony) => {
@@ -115,6 +199,14 @@ export class Colonies {
         }
         if (!allowDuplicate && colony.colonies.includes(this.player.id)) {
           return false;
+        }
+        if (megacreditProductionCost > 0) {
+          const build = colony.metadata.build;
+          const buildProduction = build.type === ColonyBenefit.GAIN_PRODUCTION && build.resource === Resource.MEGACREDITS ?
+            build.quantity[colony.colonies.length] : 0;
+          if (this.player.production.megacredits + personalProductionBonus + buildProduction - megacreditProductionCost < PRODUCTION_MINIMUMS.megacredits) {
+            return false;
+          }
         }
         if (colony.name === ColonyName.VENUS && !this.player.canAfford({...options, tr: {venus: 1}})) {
           return false;
@@ -180,29 +272,35 @@ export class Colonies {
 }
 
 export class TradeWithEnergy implements IColonyTrader {
-  private tradeCost: number;
+  public readonly tradeCost: number;
 
   constructor(private player: IPlayer) {
     this.tradeCost = ENERGY_TRADE_COST - player.colonies.tradeDiscount;
   }
 
   public canUse() {
-    return this.player.energy >= this.tradeCost;
+    return this.player.availableEnergy() >= this.tradeCost;
   }
   public optionText() {
     return message('Pay ${0} energy', (b) => b.number(this.tradeCost));
   }
 
   public trade(colony: IColony) {
-    this.player.stock.deduct(Resource.ENERGY, this.tradeCost);
-    this.player.game.log('${0} spent ${1} energy to trade with ${2}', (b) => b.player(this.player).number(this.tradeCost).colony(colony),
-      {payment: toLogPayment(Payment.EMPTY, this.tradeCost)});
-    colony.trade(this.player);
+    const energyBefore = this.player.energy;
+    const heatBefore = this.player.heat;
+    const floatersBefore = this.player.resourcesOnCard(CardName.STORMCRAFT_INCORPORATED);
+    this.player.defer(this.player.spendEnergy(this.tradeCost, () => {
+      this.player.game.log('${0} spent ${1} energy to trade with ${2}', (b) => b.player(this.player).number(this.tradeCost).colony(colony),
+        {payment: floatersBefore === this.player.resourcesOnCard(CardName.STORMCRAFT_INCORPORATED) ?
+          toLogPayment(Payment.of({heat: heatBefore - this.player.heat}), energyBefore - this.player.energy) : undefined});
+      colony.trade(this.player);
+      return undefined;
+    }));
   }
 }
 
 export class TradeWithTitanium implements IColonyTrader {
-  private tradeCost: number;
+  public readonly tradeCost: number;
 
   constructor(private player: IPlayer) {
     this.tradeCost = TITANIUM_TRADE_COST - player.colonies.tradeDiscount;
@@ -226,7 +324,7 @@ export class TradeWithTitanium implements IColonyTrader {
 
 
 export class TradeWithMegacredits implements IColonyTrader {
-  private tradeCost: number;
+  public readonly tradeCost: number;
 
   constructor(private player: IPlayer) {
     this.tradeCost = MC_TRADE_COST- player.colonies.tradeDiscount;

@@ -1,3 +1,5 @@
+import {AutomationCompatibility} from './AutomationCompatibility';
+import {CardName} from '../cards/CardName';
 
 import {Color} from '../Color';
 import {PlayerId, GameId, SpectatorId} from '../Types';
@@ -5,6 +7,9 @@ import {Phase} from '../Phase';
 import {GameOptionsModel} from './GameOptionsModel';
 
 export type SimpleGameModel = {
+  fanmadeCatalogRevision?: string;
+  automationCompatibility?: AutomationCompatibility;
+  astraMechanicaReplayTargetExclusions?: ReadonlyArray<CardName>;
     activePlayer: Color;
     botPlayers?: Array<PlayerId>;
     id: GameId;
@@ -15,6 +20,7 @@ export type SimpleGameModel = {
     gameOptions: GameOptionsModel;
     lastSoloGeneration: number;
     expectedPurgeTimeMs: number;
+    createdTimeMs: number;
 }
 
 type SimplePlayerModel = {

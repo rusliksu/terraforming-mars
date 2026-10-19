@@ -1,6 +1,6 @@
 <template>
   <div id="game-home" class="game-home-container">
-    <h1><span v-i18n>Terraforming Mars</span> [<span v-i18n>game id:</span> <span>{{getGameId()}}</span>]</h1>
+    <h1><HomeLink>Terraforming Mars</HomeLink> [<span v-i18n>game id:</span> <span>{{getGameId()}}</span>]</h1>
     <h4><span v-i18n>Instructions: Share this page with all players. Each player can open it on any device and then click their name.</span></h4>
     <ul>
       <li v-for="(player, index) in (game === undefined ? [] : game.players)" :key="player.color" class="game-home-player-row">
@@ -51,6 +51,7 @@ import {defineComponent} from 'vue';
 import {SimpleGameModel} from '@/common/models/SimpleGameModel';
 import AppButton from '@/client/components/common/AppButton.vue';
 import PurgeWarning from '@/client/components/common/PurgeWarning.vue';
+import HomeLink from '@/client/components/common/HomeLink.vue';
 import {playerColorClass} from '@/common/utils/utils';
 import GameSetupDetail from '@/client/components/GameSetupDetail.vue';
 import {ParticipantId} from '@/common/Types';
@@ -84,6 +85,7 @@ export default defineComponent({
     },
   },
   components: {
+    HomeLink,
     AppButton,
     GameSetupDetail,
     PurgeWarning,

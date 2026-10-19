@@ -9,6 +9,7 @@ import {oneWayDifference} from '../../common/utils/utils';
 import {message} from '../logs/MessageBuilder';
 import {Message} from '../../common/logs/Message';
 import {Aerotech} from '../cards/community/Aerotech';
+import {SpireTech} from '../cards/sillyfication/SpireTech';
 
 export const LogType = {
   DREW: 'drew',
@@ -129,4 +130,13 @@ export function keep(player: IPlayer, cards: ReadonlyArray<IProjectCard>, discar
     break;
   }
   Aerotech.onDrawCards(player, cards, discards);
+  SpireTech.onDrawCards(player, cards, discards);
+
+  if (cards.length > 0) {
+    for (const cardOwner of player.game.playersInGenerationOrder) {
+      for (const ownedCard of cardOwner.tableau) {
+        ownedCard.onCardsDrawn?.(cardOwner, player, cards.length);
+      }
+    }
+  }
 }

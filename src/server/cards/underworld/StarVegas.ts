@@ -10,6 +10,7 @@ import {Space} from '../../boards/Space';
 import {Resource} from '../../../common/Resource';
 import {all} from '../Options';
 import {Size} from '@/common/cards/render/Size';
+import {VenusPhase2Expansion} from '../../venusPhase2/VenusPhase2Expansion';
 
 const SPACE_CITIES = [
   SpaceName.GANYMEDE_COLONY,
@@ -94,7 +95,7 @@ export class StarVegas extends Card {
       if (space !== undefined) {
         const id = space.id as SpaceCity;
         game.log('${0} placed ${1} on ${2}', (b) => b.player(player).cardName(this.name).string(spaceCityNames[id] ?? 'unknown'));
-        player.production.add(Resource.MEGACREDITS, (game.board.getCities()).length, {log: true});
+        player.production.add(Resource.MEGACREDITS, game.board.getCities().length + VenusPhase2Expansion.getCitiesCount(game), {log: true});
         if (space.tile !== undefined) { // Should not happen
           space.tile.card = this.name;
         }

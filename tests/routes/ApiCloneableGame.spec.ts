@@ -1,3 +1,5 @@
+import {blankCustomBoard} from '../../src/common/boards/CustomBoardDefinition';
+import {decodeCustomBoard} from '../../src/common/boards/customBoardCodec';
 import {expect} from 'chai';
 import {ApiCloneableGame} from '../../src/server/routes/ApiCloneableGame';
 import {MockResponse} from './HttpMocks';
@@ -105,6 +107,21 @@ describe('ApiCloneableGame', () => {
     Database.getInstance().getGame = originalGetGame;
     Database.getInstance().getPlayerCount = originalGetPlayerCount;
     Database.getInstance().getGameVersion = originalGetGameVersion;
+  });
+
+  it('retains the custom map and teams for a rematch', async () => {
+    const board = blankCustomBoard(7, 'Rematch');
+    const serialized = makeSerializedGame({boardName: BoardName.CUSTOM, customBoard: board,
+      conglomeratesTeamAssignments: [1, 0], expansions: {conglomerates: true}});
+    Database.getInstance().getPlayerCount = async () => 2;
+    Database.getInstance().getGameVersion = async () => serialized;
+    scaffolding.url = '/api/cloneablegames?id=g456&setup=true';
+    await scaffolding.get(ApiCloneableGame.INSTANCE, res);
+    expect(res.statusCode).eq(statusCode.ok);
+    const setup = JSON.parse(res.content).setup;
+    expect(decodeCustomBoard(setup.customBoardCode)).deep.eq(board);
+    expect(setup.players.map((p: {team: number}) => p.team)).deep.eq([1, 0]);
+    expect(setup.expansions.highOrbit).eq(false);
   });
 
   it('no parameter', async () => {

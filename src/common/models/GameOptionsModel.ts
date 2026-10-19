@@ -1,4 +1,5 @@
 import {BoardName} from '../boards/BoardName';
+import {GlobalParametersConfig} from '../GlobalParameterConfig';
 import {RandomMAOptionType} from '../ma/RandomMAOptionType';
 import {AgendaStyle} from '../turmoil/Types';
 import {CardName} from '../cards/CardName';
@@ -11,6 +12,10 @@ export type GameOptionsModel = {
   aresExtremeVariant: boolean,
   altVenusBoard: boolean,
   boardName: BoardName,
+  /** Global-parameter track overrides (custom boards only); absent means the official tracks. */
+  globalParameters?: GlobalParametersConfig,
+  /** Row count of a custom board, so the client can render its voided (carved-out) cells. */
+  customBoardRows?: number,
   bannedCards: ReadonlyArray<CardName>;
   expansions: Record<Expansion, boolean>,
   draftVariant: boolean,

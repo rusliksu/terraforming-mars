@@ -6,13 +6,12 @@ param(
     [string]$ExpectedGitSha,
     [string]$ExpectedArtifactSha,
     [string]$ExpectedReleaseBaselineBase64,
+    [string]$ResumeRunToken,
     [string[]]$IgnoredRealtimeGameId,
     [ValidateRange(1, 365)]
     [int]$RealtimeGameStaleDays = 10,
-    [ValidateRange(120, 1800)]
-    [int]$SqliteCopyTimeoutSeconds = 600,
     [ValidateRange(30, 900)]
-    [int]$StaticCopyTimeoutSeconds = 120,
+    [int]$ValidationTimeoutSeconds = 120,
     [switch]$DryRun
 )
 
@@ -20,6 +19,16 @@ $ErrorActionPreference = "Stop"
 
 . (Join-Path $PSScriptRoot "lib\TmRemoteTools.ps1")
 . (Join-Path $PSScriptRoot "lib\TmReleaseGuards.ps1")
+. (Join-Path $PSScriptRoot "lib\TmDurableRemoteJob.ps1")
+
+if (-not [string]::IsNullOrEmpty($ResumeRunToken)) {
+    if ($ResumeRunToken -notmatch '^\d{14}-\d+-[0-9a-f]{32}$' -or $DryRun) {
+        throw "ResumeRunToken must be an existing promotion token; resume cannot be combined with DryRun."
+    }
+    # Observation only: never upload a payload, restart a service, or retry here.
+    Wait-TmDurableRemoteJob -HostAlias $HostAlias -JobDirectory "/home/openclaw/tm-runtime/prod/promotion-jobs/$ResumeRunToken"
+    exit 0
+}
 
 Assert-TmReleaseCasBaselineBase64 -Token $ExpectedReleaseBaselineBase64
 $ignoredRealtimeGameIds = @(Assert-TmIgnoredRealtimeGameIds -GameIds $IgnoredRealtimeGameId)
@@ -66,20 +75,6 @@ $expectedArtifactShaLower = if ([string]::IsNullOrWhiteSpace($ExpectedArtifactSh
 $ignoredRealtimeGameIdsCsv = $ignoredRealtimeGameIds -join ","
 $promoteRunToken = New-TmReleaseRunToken
 
-function Invoke-RemoteCommand {
-    param(
-        [string]$Command,
-        [string]$InputText = "",
-        [int]$TimeoutSeconds = 1800
-    )
-
-    if ([string]::IsNullOrEmpty($InputText)) {
-        return Invoke-TmSshCommand -HostAlias $HostAlias -RemoteCommand $Command
-    }
-
-    return Invoke-TmSshScript -HostAlias $HostAlias -ScriptText $InputText
-}
-
 $remoteScript = @'
 set -euo pipefail
 
@@ -105,19 +100,13 @@ required_artifact_sha="__EXPECTED_ARTIFACT_SHA__"
 expected_release_baseline_b64="__EXPECTED_RELEASE_BASELINE_B64__"
 ignored_realtime_game_ids_csv="__IGNORED_REALTIME_GAME_IDS_CSV__"
 realtime_game_stale_days="__REALTIME_GAME_STALE_DAYS__"
-sqlite_copy_timeout_seconds="__SQLITE_COPY_TIMEOUT_SECONDS__"
-static_copy_timeout_seconds="__STATIC_COPY_TIMEOUT_SECONDS__"
+validation_timeout_seconds="__VALIDATION_TIMEOUT_SECONDS__"
 run_token="__RUN_TOKEN__"
 work_root="/tmp/tm-promote-${run_token}"
 release_dir="$work_root/release"
-rehearsal_root="$work_root/rehearsal"
-rehearsal_db="$rehearsal_root/game.db"
 shared_root="$prod_root/shared"
 deps_root="$shared_root/deps"
 releases_root="$prod_root/releases"
-backup_root="$prod_root/backups"
-database_backup="$backup_root/${run_token}-game.db"
-database_restore_probe="$work_root/restore-probe.db"
 new_release_dir=""
 previous_current=""
 active_proxy_port="$prod_port"
@@ -622,107 +611,13 @@ NODE
   fi
 }
 
-create_verified_sqlite_copy() {
-  local source_path="$1"
-  local destination_path="$2"
-  local timeout_seconds="${sqlite_copy_timeout_seconds:-600}"
-  timeout --signal=TERM --kill-after=5 "${timeout_seconds}s" python3 - "$source_path" "$destination_path" <<'PY'
-import os
-import pathlib
-import sqlite3
-import sys
-
-source = pathlib.Path(sys.argv[1])
-destination = pathlib.Path(sys.argv[2])
-temporary = destination.with_name(f".{destination.name}.{os.getpid()}.tmp")
-
-if not source.is_file():
-    raise SystemExit(51)
-destination.parent.mkdir(parents=True, exist_ok=True)
-for path in (temporary, destination):
-    try:
-        path.unlink()
-    except FileNotFoundError:
-        pass
-
-try:
-    source_db = sqlite3.connect(f"file:{source}?mode=ro", uri=True)
-    destination_db = sqlite3.connect(temporary)
-    try:
-        source_db.backup(destination_db)
-        result = [row[0] for row in destination_db.execute("PRAGMA integrity_check")]
-        if result != ["ok"]:
-            raise RuntimeError("integrity check failed")
-    finally:
-        destination_db.close()
-        source_db.close()
-    os.replace(temporary, destination)
-except Exception:
-    try:
-        temporary.unlink()
-    except FileNotFoundError:
-        pass
-    raise SystemExit(51)
-PY
-}
-
-create_static_database_copy() {
-  local source_path="$1"
-  local destination_path="$2"
-  local source_size
-  local destination_size
-  local timeout_seconds="${static_copy_timeout_seconds:-120}"
-  rm -f "$destination_path"
-  mkdir -p "$(dirname "$destination_path")"
-  timeout --signal=TERM --kill-after=5 "${timeout_seconds}s" cp --sparse=auto -- "$source_path" "$destination_path"
-  python3 - "$destination_path" <<'PY'
-import os
-import sys
-
-with open(sys.argv[1], "r+b") as database_file:
-    os.fsync(database_file.fileno())
-PY
-  source_size="$(stat -c %s "$source_path")"
-  destination_size="$(stat -c %s "$destination_path")"
-  if [ -z "$source_size" ] || [ "$source_size" -le 0 ] || [ "$source_size" != "$destination_size" ]; then
-    return 51
-  fi
-  python3 - "$destination_path" <<'PY'
-import sqlite3
-import sys
-
-database = sqlite3.connect(f"file:{sys.argv[1]}?mode=ro", uri=True, timeout=5)
-try:
-    database.execute("SELECT name FROM sqlite_master LIMIT 1").fetchone()
-finally:
-    database.close()
-PY
-}
-
-create_verified_sqlite_backup() {
-  mkdir -p "$backup_root"
-  if ! create_static_database_copy "$game_db_path" "$database_backup"; then
-    return 51
-  fi
-  backup_sha="$(sha256sum "$database_backup" | awk '{print $1}')"
-  if [ -z "$backup_sha" ]; then
-    return 51
-  fi
-  echo "Verified SQLite backup: path=$database_backup sha256=$backup_sha"
-}
-
-restore_database_backup() {
-  local restore_tmp="$shared_root/db/.game.db.${run_token}.restore"
-  if [ ! -f "$database_backup" ]; then
-    return 52
-  fi
-  rm -f "$restore_tmp" "$game_db_path-wal" "$game_db_path-shm"
-  if ! create_static_database_copy "$database_backup" "$restore_tmp"; then
-    return 52
-  fi
-  if ! mv -f "$restore_tmp" "$game_db_path"; then
-    return 52
-  fi
+validate_existing_saves() {
+  local candidate="$1"
+  (
+    cd "$candidate"
+    timeout --signal=TERM --kill-after=5 "${validation_timeout_seconds}s" \
+      node build/src/server/tools/validate_saved_games.js "$game_db_path"
+  )
 }
 
 read_proxy_port() {
@@ -770,11 +665,6 @@ restore_previous_release() {
   local restore_failed=0
 
   systemctl --user stop "$service" || true
-  if ! restore_database_backup; then
-    echo "Database rollback failed; refusing to start either release." >&2
-    return 1
-  fi
-
   if [ "$previous_current_link_existed" = "1" ]; then
     if ! ln -sfn "$previous_current_link_target" "$prod_current"; then
       restore_failed=1
@@ -830,7 +720,7 @@ rollback_after_cutover() {
     cleanup_work_root
   else
     cutover_in_progress=0
-    echo "Automatic rollback was incomplete; the verified database backup was retained at $database_backup." >&2
+    echo "Code rollback was incomplete; the current database and diagnostic artifacts were retained." >&2
   fi
   exit 1
 }
@@ -841,12 +731,7 @@ handle_promote_exit() {
   rm -f "$deploy_lock_info"
   if [ "$status" -ne 0 ] && [ "$cutover_in_progress" = "1" ]; then
     echo "Unexpected failure during the single-writer window; attempting guarded recovery." >&2
-    if [ -f "$database_backup" ]; then
-      restore_previous_release || echo "Guarded recovery failed; backup retained at $database_backup." >&2
-    else
-      systemctl --user start "$service" || true
-      wait_for_http "$health_url" 20 2 || true
-    fi
+    restore_previous_release || echo "Guarded code recovery failed; the current database was preserved." >&2
   fi
   exit "$status"
 }
@@ -906,7 +791,7 @@ if ! disable_periodic_elo_sync; then
   exit 50
 fi
 
-mkdir -p "$prod_root" "$releases_root" "$backup_root" "$shared_root/db" "$shared_root/logs" "$shared_root/elo" "$deps_root"
+mkdir -p "$prod_root" "$releases_root" "$shared_root/logs" "$shared_root/elo" "$deps_root"
 if [ ! -f "$game_db_path" ]; then
   echo "Prod promote blocked: shared game.db is missing; migrate it separately with explicit approval before promotion." >&2
   exit 49
@@ -1080,27 +965,8 @@ if ! normalize_release_permissions "$new_release_dir"; then
   rollback_before_cutover "Release permission normalization failed."
 fi
 
-mkdir -p "$rehearsal_root"
-if ! create_verified_sqlite_copy "$game_db_path" "$rehearsal_db"; then
-  rollback_before_cutover "Could not create an integrity-checked production DB rehearsal copy."
-fi
-rehearsal_before_sha="$(sha256sum "$rehearsal_db" | awk '{print $1}')"
-if ! (
-  cd "$new_release_dir"
-  node build/src/server/tools/validate_saved_games.js "$rehearsal_db"
-); then
-  rollback_before_cutover "Candidate could not deserialize and serialize every latest production save."
-fi
-rehearsal_after_sha="$(sha256sum "$rehearsal_db" | awk '{print $1}')"
-if [ -z "$rehearsal_before_sha" ] || [ "$rehearsal_before_sha" != "$rehearsal_after_sha" ]; then
-  rollback_before_cutover "Candidate validation modified the rehearsal database."
-fi
-if ! create_static_database_copy "$rehearsal_db" "$database_restore_probe"; then
-  rollback_before_cutover "Could not rehearse the bounded static database restore path."
-fi
-restore_probe_sha="$(sha256sum "$database_restore_probe" | awk '{print $1}')"
-if [ -z "$restore_probe_sha" ] || [ "$rehearsal_before_sha" != "$restore_probe_sha" ]; then
-  rollback_before_cutover "Static database restore rehearsal differs from its verified source."
+if ! validate_existing_saves "$new_release_dir"; then
+  rollback_before_cutover "Candidate could not validate existing production saves read-only."
 fi
 
 primary_stopped=1
@@ -1116,8 +982,8 @@ else
   rollback_before_cutover "Final live-game gate blocked promotion with exit $gate_exit."
 fi
 
-if ! create_verified_sqlite_backup; then
-  rollback_before_cutover "Could not create and restore-probe a consistent production SQLite backup."
+if ! validate_existing_saves "$new_release_dir"; then
+  rollback_before_cutover "Candidate could not validate the final production saves read-only."
 fi
 
 if ! printf 'promotion=%s\n' "$run_token" > "$promotion_write_gate"; then
@@ -1197,7 +1063,6 @@ echo "artifact_sha=$served_artifact_sha"
 echo "git_sha=$served_git_sha"
 echo "dependency_sha=$expected_dependency_sha"
 echo "dependencies_dir=$deps_dir"
-echo "database_backup=$database_backup"
 
 cleanup_work_root
 '@
@@ -1215,8 +1080,7 @@ $remoteScript = $remoteScript.Replace("__EXPECTED_ARTIFACT_SHA__", $expectedArti
 $remoteScript = $remoteScript.Replace("__EXPECTED_RELEASE_BASELINE_B64__", $ExpectedReleaseBaselineBase64)
 $remoteScript = $remoteScript.Replace("__IGNORED_REALTIME_GAME_IDS_CSV__", $ignoredRealtimeGameIdsCsv)
 $remoteScript = $remoteScript.Replace("__REALTIME_GAME_STALE_DAYS__", $RealtimeGameStaleDays.ToString([Globalization.CultureInfo]::InvariantCulture))
-$remoteScript = $remoteScript.Replace("__SQLITE_COPY_TIMEOUT_SECONDS__", $SqliteCopyTimeoutSeconds.ToString([Globalization.CultureInfo]::InvariantCulture))
-$remoteScript = $remoteScript.Replace("__STATIC_COPY_TIMEOUT_SECONDS__", $StaticCopyTimeoutSeconds.ToString([Globalization.CultureInfo]::InvariantCulture))
+$remoteScript = $remoteScript.Replace("__VALIDATION_TIMEOUT_SECONDS__", $ValidationTimeoutSeconds.ToString([Globalization.CultureInfo]::InvariantCulture))
 $remoteScript = $remoteScript.Replace("__RUN_TOKEN__", $promoteRunToken)
 
 if ($DryRun) {
@@ -1227,4 +1091,13 @@ if ($DryRun) {
 }
 
 $remoteScriptLf = $remoteScript -replace "`r`n", "`n"
-Invoke-RemoteCommand -Command "bash -s" -InputText $remoteScriptLf
+$jobDirectory = "/home/openclaw/tm-runtime/prod/promotion-jobs/$promoteRunToken"
+Write-Host "Run token: $promoteRunToken"
+Write-Host "Reconnect (observation only): pwsh -File scripts/promote_tm_staging_to_prod.ps1 -HostAlias $HostAlias -ResumeRunToken $promoteRunToken"
+try {
+    Invoke-TmSshScript -HostAlias $HostAlias -ScriptText (Get-TmDurableJobStartScript -JobDirectory $jobDirectory -ScriptText $remoteScriptLf) | Write-Host
+    Wait-TmDurableRemoteJob -HostAlias $HostAlias -JobDirectory $jobDirectory
+} catch {
+    Write-Warning "Check run $promoteRunToken before any new promotion. Losing the observer does not cancel the remote job."
+    throw
+}

@@ -1,3 +1,5 @@
+import {AutomationCompatibility} from '../../common/models/AutomationCompatibility';
+import {automationUnavailableReason} from './AutomationCompatibility';
 import * as fs from 'fs';
 import * as path from 'path';
 import {spawn, ChildProcess} from 'child_process';
@@ -16,6 +18,7 @@ type ManagedBotTakeover = BotTakeoverEntry & {
 };
 
 type StartBotTakeoverOptions = {
+  compatibility: AutomationCompatibility;
   gameId: GameId;
   playerId: PlayerId;
   pollSeconds?: number;
@@ -57,6 +60,10 @@ export class BotTakeoverManager {
   }
 
   public start(options: StartBotTakeoverOptions): BotTakeoverEntry {
+    const reason = automationUnavailableReason(options.compatibility);
+    if (reason !== undefined) {
+      throw new Error(reason);
+    }
     const existing = this.active.get(options.playerId);
     if (existing !== undefined) {
       return this.stripChild(existing);

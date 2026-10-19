@@ -1,3 +1,4 @@
+import {CustomCardDefinition} from '../common/cards/CustomCardDefinition';
 import {ICard} from './cards/ICard';
 import {IProjectCard} from './cards/IProjectCard';
 import {CardManifest, ModuleManifest} from './cards/ModuleManifest';
@@ -7,6 +8,8 @@ import {IPreludeCard} from './cards/prelude/IPreludeCard';
 import {ICeoCard} from './cards/ceos/ICeoCard';
 import {ALL_MODULE_MANIFESTS} from './cards/AllManifests';
 import {resolveCardName} from '../common/cards/CardRenames';
+import {DataDrivenCard} from './cards/DataDrivenCard';
+import {getCustomCardDefinition} from './cards/CustomCardRegistry';
 
 function _createCard<T extends ICard>(cardName: CardName, cardManifestNames: Array<keyof ModuleManifest>): T | undefined {
   const standardizedCardName = resolveCardName(cardName);
@@ -18,6 +21,18 @@ function _createCard<T extends ICard>(cardName: CardName, cardManifestNames: Arr
       if (factory !== undefined) {
         return new factory.Factory();
       }
+    }
+  }
+
+  // Custom cards (Card Maker submissions) are always project-card-shaped -- not a compiled
+  // manifest entry, so they're never found by the scan above. This one fallback covers both
+  // initial deck-building (includedCards-style force-adds) AND reconstructing a player's hand
+  // when a saved game reloads (persisted as CardName strings) -- the load-bearing case, since
+  // that happens on every move.
+  if (cardManifestNames.includes('projectCards')) {
+    const def = getCustomCardDefinition(standardizedCardName);
+    if (def !== undefined) {
+      return <T> <unknown> new DataDrivenCard(def);
     }
   }
   return undefined;
@@ -84,3 +99,7 @@ export function preludesFromJSON(cards: ReadonlyArray<CardName>): Array<IPrelude
   return cfj(cards, newPrelude);
 }
 
+
+export function newCustomCard(definition: CustomCardDefinition): DataDrivenCard {
+  return new DataDrivenCard(definition);
+}

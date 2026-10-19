@@ -3,13 +3,15 @@ import {CardType} from '../../common/cards/CardType';
 import {IPlayer} from '../IPlayer';
 import {Payment} from '../../common/inputs/Payment';
 import {Units} from '../../common/Units';
-import {StandardProjectCanPayWith} from '../../common/cards/Types';
+import {AdditionalProjectCosts, StandardProjectCanPayWith} from '../../common/cards/Types';
 
 export interface IStandardProjectCard extends ICard {
   type: CardType.STANDARD_PROJECT;
   cost: number;
   /** Units that must be held back from payment because they are consumed during project execution (e.g. Moon tile titanium costs). */
   reserveUnits?: Units;
+  /** Extra cost context to surface to the client alongside this card's otherwise-static render (e.g. Conglomerates' escalating Coordination cost). */
+  additionalProjectCosts?: AdditionalProjectCosts;
   /** Whether the player meets all prerequisites to use this standard project. */
   canAct(player: IPlayer): boolean;
   /** Which non-megacredit resources (steel, titanium, seeds, etc.) are accepted as payment for this project. */

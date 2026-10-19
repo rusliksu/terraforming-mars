@@ -161,6 +161,36 @@ describe('SelectProjectCardToPlay', () => {
     expect(saveResponse.payment).deep.eq(Payment.of({floaters: 3, megacredits: 1}));
   });
 
+  it('using nereid microbes', async () => {
+    // Ganymede Colony (a Jovian-tag card) will cost 10. Player has 7M€ and 4 available nereid microbes (rate 2).
+    // Greedy: uses all 4 nereid microbes (=8 MC), MC fills remaining 2.
+    const wrapper = setupCardForPurchase(
+      CardName.GANYMEDE_COLONY, 10,
+      {megacredits: 7},
+      {nereidMicrobes: 4});
+
+    const tester = new PaymentTester(wrapper);
+    await tester.nextTick();
+    tester.expectPayment({nereidMicrobes: 4, megacredits: 2});
+
+    await tester.clickSave();
+    expect(saveResponse.payment).deep.eq(Payment.of({nereidMicrobes: 4, megacredits: 2}));
+  });
+
+  it('nereid microbes are not usable for a card without a Jovian tag', async () => {
+    const wrapper = setupCardForPurchase(
+      CardName.BIRDS, 10,
+      {megacredits: 10},
+      {nereidMicrobes: 4});
+
+    const tester = new PaymentTester(wrapper);
+    await tester.nextTick();
+    tester.expectIsNotAvailable('nereidMicrobes');
+
+    await tester.clickSave();
+    expect(saveResponse.payment).deep.eq(Payment.of({megacredits: 10}));
+  });
+
   it('Paying for Stratospheric Birds without floaters', async () => {
     const wrapper = setupCardForPurchase(
       CardName.STRATOSPHERIC_BIRDS, 12,
@@ -333,6 +363,49 @@ describe('SelectProjectCardToPlay', () => {
 
     await tester.clickSave();
     expect(saveResponse.payment).deep.eq(Payment.of({steel: 4, megacredits: 2}));
+  });
+
+  it('Blockhouse: steel is worth 2 M€ extra when paying for a City-tagged card', async () => {
+    const wrapper = setupCardForPurchase(
+      CardName.CORPORATE_STRONGHOLD, 16,
+      {steel: 4, megacredits: 0, steelValue: 2, tableau: [{name: CardName.BLOCKHOUSE} as CardModel]},
+      {paymentOptions: {steel: true}});
+
+    await wrapper.vm.$nextTick();
+    expect((wrapper.vm as any).getResourceRate('steel')).to.eq(4);
+  });
+
+  it('does not boost the steel rate for a City-tagged card without Blockhouse in play', async () => {
+    const wrapper = setupCardForPurchase(
+      CardName.CORPORATE_STRONGHOLD, 16,
+      {steel: 4, megacredits: 0, steelValue: 2, tableau: []},
+      {paymentOptions: {steel: true}});
+
+    await wrapper.vm.$nextTick();
+    expect((wrapper.vm as any).getResourceRate('steel')).to.eq(2);
+  });
+
+  it('does not boost the steel rate for a Building-only card, even with Blockhouse in play', async () => {
+    const wrapper = setupCardForPurchase(
+      CardName.REGO_PLASTICS, 10,
+      {steel: 4, megacredits: 0, steelValue: 2, tableau: [{name: CardName.BLOCKHOUSE} as CardModel]},
+      {paymentOptions: {steel: true}});
+
+    await wrapper.vm.$nextTick();
+    expect((wrapper.vm as any).getResourceRate('steel')).to.eq(2);
+  });
+
+  it('Blockhouse: steel is worth 2 M€ extra when paying for the City standard project', async () => {
+    // CityStandardProject carries no Tag.CITY of its own, so the rate boost is keyed off
+    // the card name instead -- this is the branch that covers that case.
+    const wrapper = setupCardForPurchase(
+      CardName.CITY_STANDARD_PROJECT, 25,
+      {steel: 7, megacredits: 0, steelValue: 2, tableau: [{name: CardName.BLOCKHOUSE} as CardModel]},
+      {},
+      {canPayWith: {steel: true}});
+
+    await wrapper.vm.$nextTick();
+    expect((wrapper.vm as any).getResourceRate('steel')).to.eq(4);
   });
 
   it('using titanium metal bonus', async () => {
@@ -708,6 +781,31 @@ describe('SelectProjectCardToPlay', () => {
     expect(saveResponse.payment).deep.eq(Payment.of({megacredits: 0}));
   });
 
+  it('a standard project accepts anyFloaters when its canPayWith allows it', async () => {
+    const wrapper = setupCardForPurchase(
+      CardName.CLOUD_CITY_STANDARD_PROJECT, 25,
+      {megacredits: 25},
+      {anyFloaters: 5},
+      {canPayWith: {anyFloaters: true}});
+
+    const tester = new PaymentTester(wrapper);
+    await tester.nextTick();
+
+    tester.expectIsAvailable('anyFloaters');
+  });
+
+  it('a regular (non-standard-project) card never accepts anyFloaters', async () => {
+    const wrapper = setupCardForPurchase(
+      CardName.DIRIGIBLES, 10,
+      {megacredits: 10},
+      {anyFloaters: 5});
+
+    const tester = new PaymentTester(wrapper);
+    await tester.nextTick();
+
+    tester.expectIsNotAvailable('anyFloaters');
+  });
+
   it('switching cards updates payment defaults to match new card cost', async () => {
     // Regression: the cardName watch (flush:'pre') must update available units before
     // PaymentForm remounts via :key, so the new instance computes correct greedy defaults.
@@ -721,7 +819,8 @@ describe('SelectProjectCardToPlay', () => {
       ],
       paymentOptions: {},
       floaters: 0, graphene: 0, kuiperAsteroids: 0, lunaArchivesScience: 0,
-      microbes: 0, seeds: 0, auroraiData: 0, spireScience: 0,
+      microbes: 0, seeds: 0, auroraiData: 0, spireScience: 0, nereidMicrobes: 0,
+      anyFloaters: 0,
     };
     const playerView: Partial<PlayerViewModel> = {
       id: 'playerid-foo',
@@ -797,6 +896,8 @@ describe('SelectProjectCardToPlay', () => {
       seeds: 0,
       auroraiData: 0,
       spireScience: 0,
+      nereidMicrobes: 0,
+      anyFloaters: 0,
       ...playerInputFields,
     };
     if (options !== undefined) {

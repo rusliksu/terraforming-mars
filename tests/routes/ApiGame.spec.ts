@@ -41,11 +41,16 @@ describe('ApiGame', () => {
     // This test is probably brittle.
     const json = JSON.parse(res.content);
     json.expectedPurgeTimeMs = -1;
+    json.createdTimeMs = -1;
     json.name = 'game-name';
     expect(json).deep.eq(
       {
+        'automationCompatibility': {version: 1, unsupportedFeatures: []},
+        'astraMechanicaReplayTargetExclusions': ['Patent Manipulation', 'Hostile Takeover'],
         'activePlayer': 'black',
+        'createdTimeMs': -1,
         'expectedPurgeTimeMs': -1,
+        'fanmadeCatalogRevision': 'fanmade:rebalanced-v1',
         'id': 'game-valid-id',
         'lastSoloGeneration': 14,
         'name': 'game-name',
@@ -68,20 +73,33 @@ describe('ApiGame', () => {
           'draftVariant': false,
           'expansions': {
             'ares': false,
+            'betterMars': false,
+            'customCards': false,
             'ceo': false,
             'colonies': false,
             'community': false,
+            'conglomerates': false,
             'corpera': true,
+            'corporateBetterments': false,
             'deltaProject': false,
+            'highOrbit': false,
+            'idesOfMars': false,
+            'industries': false,
             'moon': false,
+            'moreParties': false,
             'pathfinders': false,
             'prelude': false,
             'prelude2': false,
             'promo': false,
+            'rebalanced': false,
+            'robAntilles': false,
+            'sillyfication': false,
+            'solaris': false,
             'starwars': false,
             'turmoil': false,
             'underworld': false,
             'venus': false,
+            'venusPhase2': false,
           },
           'fastModeOption': false,
           'includedCards': [],

@@ -141,13 +141,12 @@
 
 .turmoil-board {
   margin: 10px 0 0 0;
-  background: url(./assets/turmoil_ui.png);
-  background-position: -25px -383px;
   min-height: 500px;
 }
 
 .turmoil-header {
   min-height: 180px;
+  background: url(./assets/turmoil_ui.png) -25px -383px no-repeat;
 }
 
 .grid-parties {
@@ -157,9 +156,31 @@
 }
 
 .board-party {
+  position: relative;
+  z-index: 0;
   width: 160px;
   height: 160px;
-  border-radius: 0 0 10px 10px;
+
+  > .party-name {
+    width: calc(100% - 8px);
+    margin-left: 4px;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    top: -40px;
+    left: 0;
+    width: 160px;
+    height: 260px;
+    box-sizing: border-box;
+    border: 2px solid #fff;
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 2px var(--party-panel-border);
+    background: linear-gradient(135deg, rgba(0, 0, 0, .1) 35%, transparent 35%, transparent 70%, rgba(255, 255, 255, .3) 70%), var(--party-panel-color);
+    pointer-events: none;
+  }
 }
 
 .grid-delegates {
@@ -187,26 +208,49 @@
   border: none;
   box-shadow: none;
   border-radius: 0px;
-  background: url(./assets/turmoil_ui.png);
-  &.party-background--mars_first {
-    background-position: -23px 316px;
-  }
-  &.party-background--scientists {
-    background-position: -193px 316px;
-  }
-  &.party-background--unity {
-    background-position: -363px 316px;
-  }
-  &.party-background--greens {
-    background-position: -533px 316px;
-  }
-  &.party-background--reds {
-    background-position: -703px 316px;
-  }
-  &.party-background--kelvinists {
-    background-position: -873px 316px;
+  background: none;
+
+  .board-party::before {
+    top: 45px;
+    left: 2px;
   }
 }
+
+// Party panels, labels and badges share one palette regardless of their board position.
+@party-palette:
+  greens #16b215 #fff,
+  scientists #fff @grey_900,
+  mars_first #c97e23 #fff,
+  unity #108ff0 #fff,
+  reds #e65b5a #fff,
+  kelvinists #5d4d4d #fff,
+  populists #d6249f #fff,
+  spome #a4d90c @grey_900,
+  empower #8e44ad #fff,
+  bureaucrats #c4c4c4 @grey_900,
+  centrists #f1c40f @grey_900,
+  transhumanists #17c9d1 @grey_900;
+
+each(@party-palette, {
+  @name: extract(@value, 1);
+  @color: extract(@value, 2);
+  @text: extract(@value, 3);
+
+  .board-party--@{name} {
+    --party-panel-color: mix(@color, #fff, 22%);
+    --party-panel-border: mix(@color, #555, 50%);
+  }
+
+  .party-name.party-name--@{name} {
+    background: @color;
+    color: @text;
+  }
+
+  .party-badge.party-badge--@{name} {
+    background: @color;
+    color: if(@text = #fff, inherit, @text);
+  }
+});
 
 .party-badge {
   clip-path: polygon(0 0, 80% 0%, 100% 20%, 100% 100%, 20% 100%, 0% 80%);
@@ -221,31 +265,6 @@
   background-size: 30px;
   filter: drop-shadow(0px 0px 1px black);
   vertical-align: middle;
-
-  &.party-badge--greens {
-    background: #16b215;
-  }
-
-  &.party-badge--scientists {
-    background: #fff;
-    color: @grey_900;
-  }
-
-  &.party-badge--mars_first {
-    background: #c97e23;
-  }
-
-  &.party-badge--unity {
-    background: #108ff0;
-  }
-
-  &.party-badge--reds {
-    background: #e65b5a;
-  }
-
-  &.party-badge--kelvinists {
-    background: #5d4d4d;
-  }
 }
 
 .party-name {
@@ -267,29 +286,10 @@
     text-align: center;
   }
 
-  &.party-name--greens {
-    background: #16b215;
-  }
-
-  &.party-name--scientists {
-    background: #fff;
-    color: @grey_900;
-  }
-
-  &.party-name--mars_first {
-    background: #c97e23;
-  }
-
-  &.party-name--unity {
-    background: #108ff0;
-  }
-
-  &.party-name--reds {
-    background: #e65b5a;
-  }
-
-  &.party-name--kelvinists {
-    background: #5d4d4d;
+  &.party-name--transhumanists {
+    // "Transhumanists" is longer than any official party name and overflows the
+    // fixed-width pill at the default font size.
+    font-size: 10px;
   }
 }
 
@@ -297,7 +297,7 @@
   display: grid;
   grid-template-columns: auto auto auto auto auto auto;
   gap:10px;
-  margin: 11px 0 0 2px;
+  margin: 11px 0 0 0;
 }
 
 .party-bonus {
@@ -306,15 +306,39 @@
 }
 
 .leader-spot {
-  width: 40px;
+  position: relative;
+  width: 50px;
   padding: 7px 55px 0 55px;
   height:72px;
   z-index: 2;
 
   .delegate-spot {
+    width: 50px;
     transform: scale(0.70);
     margin-top: 5px;
   }
+}
+
+.leader-spot::before,
+.send-delegate-leader-spot::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  width: 72px;
+  height: 84px;
+  background: url(./assets/turmoil_ui.png) -240px -573px no-repeat;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  pointer-events: none;
+}
+
+.leader-spot::before {
+  left: 44px;
+  top: 0;
+}
+
+.send-delegate-leader-spot::before {
+  left: 47px;
+  top: 0;
 }
 
 .send-delegate-leader-spot {
@@ -488,6 +512,23 @@
     .player-token-sprite(-699px, -105px, @player_serge_delegate_filter);
   }
 
+  &.credicor {
+    .player-token-sprite(-699px, -35px, @player_credicor_delegate_filter);
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 14px;
+      top: -10px;
+      width: 22px;
+      height: 18px;
+      background: url(./assets/credicor-crown.svg) center / contain no-repeat;
+      filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.85));
+      pointer-events: none;
+      z-index: 1;
+    }
+  }
+
   &.saturn {
     .player-token-sprite(-644px, -35px, @player_saturn_delegate_filter);
   }
@@ -551,6 +592,17 @@
   background-position: -486px 861px;
 }
 
+.leader-spot.player-token-new-leader {
+  background: none;
+
+  &::before {
+    left: 38px;
+    width: 84px;
+    background-position: -523px -24px;
+    clip-path: none;
+  }
+}
+
 .select-party-leader-spot {
   width: 125px;
   height: 85px;
@@ -597,6 +649,17 @@
   .policy-use-marker.board-cube--persona {
     position: relative;
   }
+
+  .policy-use-marker--count::after {
+    content: none;
+  }
+
+  .policy-use-count {
+    display: block;
+    position: relative;
+    z-index: 1;
+    text-align: center;
+  }
 }
 
 .dominant-party-name {
@@ -629,6 +692,42 @@
   transform: scale(0.8);
   height: 37px;
   vertical-align: top;
+}
+
+.agenda-icon {
+  display: inline-flex;
+  align-items: center;
+
+  .delegate {
+    flex-shrink: 0;
+    margin: 0 4px;
+  }
+
+  .policy-top-margin {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 0;
+  }
+
+  .tile {
+    flex-shrink: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  .tile-size--S {
+    width: 30px;
+    height: 32px;
+    background-size: 30px 32px;
+  }
+
+  .party-production-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    min-width: 44px;
+  }
 }
 
 .party-resource-tag {
@@ -791,6 +890,14 @@
   background-position: 0px;
 }
 
+// The "diverse tag" (any distinct tag) icon -- same rainbow gradient as AriAdore's card-level
+// .card-resource-diverse (cards_v2.less), which only works nested inside .card-container.
+// background-image (not the `background` shorthand) so it combines cleanly with whichever base
+// tag class (.resource-tag, .card-icon) provides the sizing here.
+.tag-diverse {
+  background-image: linear-gradient(to bottom right, green, yellow, red);
+}
+
 .red-arrow-infinity {
   background-image: url(./assets/misc/arrow_infinity.png);
   background-size: 30px;
@@ -829,6 +936,28 @@ input[type="radio"]:checked + .party-container::after {
 .unavailable-party {
   filter: brightness(0.4);
   cursor: default;
+}
+
+// Styles the hover tooltip shown by TurmoilAgenda.vue. That component moves this element out
+// to the very end of <body> (via Vue's <Teleport>) instead of leaving it next to the icon it
+// describes, and positions it in JavaScript using the icon's on-screen coordinates. That's
+// needed because the turmoil board's container clips or shrinks anything drawn inside it, so a
+// tooltip placed the normal way (as a child of the icon, sized by CSS alone) would get cut off
+// or squashed along with it.
+.agenda-tooltip-portal {
+  position: fixed;
+  transform: translateX(-50%);
+  background: rgba(48, 55, 66, .95);
+  color: #fff;
+  border-radius: .1rem;
+  padding: .3rem .5rem;
+  width: max-content;
+  max-width: 320px;
+  text-align: center;
+  line-height: 1.35;
+  font-size: .75rem;
+  pointer-events: none;
+  z-index: 9999;
 }
 
 .greenery-tile-turmoil {

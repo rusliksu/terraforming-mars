@@ -165,6 +165,14 @@ export default defineComponent({
         } else {
           return 'none';
         }
+      } else if (this.playerView.game.phase === Phase.SOLAR) {
+        // World Government Advisor and Terra briefly enter the Solar phase during the active player's turn.
+        // Otherwise this is World Government Terraforming, where activePlayer is stale and the running
+        // timer shows who is deciding.
+        const activePlayerIsDeciding = this.players.some((p) => p.isActive && p.timer.running);
+        if (!activePlayerIsDeciding) {
+          return player.timer.running ? 'active' : 'none';
+        }
       }
       if (this.playerView.game.passedPlayers.includes(player.color)) {
         return 'passed';

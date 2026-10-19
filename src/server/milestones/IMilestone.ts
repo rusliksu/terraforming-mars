@@ -1,5 +1,6 @@
 import {MilestoneName} from '../../common/ma/MilestoneName';
 import {IPlayer} from '../IPlayer';
+import {ConglomeratesExpansion} from '../conglomerates/ConglomeratesExpansion';
 
 export interface IMilestone {
   name: MilestoneName;
@@ -21,6 +22,6 @@ export abstract class BaseMilestone implements IMilestone {
 
   public abstract getScore(player: IPlayer): number;
   public canClaim(player: IPlayer): boolean {
-    return this.getScore(player) >= this.threshold;
+    return ConglomeratesExpansion.meetsTeamThreshold(player, this.threshold, (p) => this.getScore(p));
   }
 }

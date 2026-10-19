@@ -1,0 +1,33 @@
+import {IProjectCard} from '@/server/cards/IProjectCard';
+import {Card} from '@/server/cards/Card';
+import {CardType} from '@/common/cards/CardType';
+import {CardName} from '@/common/cards/CardName';
+import {CardRenderer} from '@/server/cards/render/CardRenderer';
+import {Size} from '@/common/cards/render/Size';
+
+export class AdvancedAlloysRebalanced extends Card implements IProjectCard {
+  constructor() {
+    super({
+      type: CardType.ACTIVE,
+      name: CardName.ADVANCED_ALLOYS_REBALANCED,
+      cost: 9,
+
+      behavior: {
+        steelValue: 1,
+        titanumValue: 1,
+      },
+
+      metadata: {
+        cardNumber: '071',
+        renderData: CardRenderer.builder((b) => {
+          b.effect('Each titanium you have is worth 1 M€ extra.', (be) => {
+            be.titanium(1).startEffect.plus(Size.SMALL).megacredits(1);
+          }).br;
+          b.effect('Each steel you have is worth 1 M€ extra.', (be) => {
+            be.steel(1).startEffect.plus(Size.SMALL).megacredits(1);
+          });
+        }),
+      },
+    });
+  }
+}

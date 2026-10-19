@@ -48,6 +48,21 @@ describe('ApiPlayer', () => {
     expect(response.id).eq(player.id);
   });
 
+  it('reports a model failure as a server error, not a missing player', async () => {
+    const player = TestPlayer.BLACK.newPlayer();
+    const game = Game.newInstance('game-id', [player], player, 'spectatorid');
+    player.getPlayableActionCards = () => {
+      throw new Error('model failure');
+    };
+    await scaffolding.ctx.gameLoader.add(game);
+    scaffolding.url = '/api/player?id=' + player.id;
+
+    await scaffolding.get(ApiPlayer.INSTANCE, res);
+
+    expect(res.statusCode).eq(statusCode.internalServerError);
+    expect(res.content).not.eq('Not found');
+  });
+
   it('audits successful player access', async () => {
     const auditEvents: Array<AccessAuditRecordInput> = [];
     const player = TestPlayer.BLACK.newPlayer();

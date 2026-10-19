@@ -29,6 +29,7 @@ describe('PlayerInfo', () => {
       game: {
         gameOptions: {
           showTimers: false,
+          expansions: {},
         },
       },
       players: [thisPlayer],

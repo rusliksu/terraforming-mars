@@ -24,6 +24,7 @@
             <div v-else class="tag-and-discount">
               <PlayerTagDiscount v-if="tagDetail.discount > 0" :color="player.color" :amount="tagDetail.discount" :data-test="'discount-' + tagDetail.name"/>
               <PointsPerTag :points="tagDetail"/>
+              <PlayerTagSubstitution v-if="tagDetail.substitution !== undefined" :tag="tagDetail.substitution" :data-test="'substitution-' + tagDetail.name"/>
               <TagCount :tag="tagDetail.name" :count="tagDetail.count" :size="'big'" :type="'secondary'"/>
             </div>
           </div>
@@ -41,6 +42,7 @@ import {Tag} from '@/common/cards/Tag';
 import {SpecialTags} from '@/client/cards/SpecialTags';
 import PlayerTagDiscount from '@/client/components/overview/PlayerTagDiscount.vue';
 import PointsPerTag from '@/client/components/overview/PointsPerTag.vue';
+import PlayerTagSubstitution from '@/client/components/overview/PlayerTagSubstitution.vue';
 import {PartyName} from '@/common/turmoil/PartyName';
 import {getCard} from '@/client/cards/ClientCardManifest';
 import {vueRoot} from '@/client/components/vueRoot';
@@ -54,6 +56,7 @@ type TagDetail = {
   halfPoints: number;
   count: number;
   asterisk: boolean;
+  substitution?: Tag;
 };
 
 type DataModel = {
@@ -76,6 +79,7 @@ const ORDER: Array<InterfaceTagsType> = [
   Tag.MOON,
   Tag.MARS,
   Tag.CRIME,
+  Tag.GALACTIC,
   'separator',
   Tag.EVENT,
   SpecialTags.NONE,
@@ -106,6 +110,7 @@ const isInGame = (tag: InterfaceTagsType, game: GameModel): boolean => {
   case Tag.MOON:
   case Tag.MARS:
   case Tag.CRIME:
+  case Tag.GALACTIC:
     return game.tags.includes(tag);
   }
   return true;
@@ -215,8 +220,18 @@ export default defineComponent({
 
     // Other modifiers
     if (this.playerView.game.turmoil?.ruling === PartyName.UNITY &&
-      this.playerView.game.turmoil.politicalAgendas?.unity.policyId === 'up04') {
+      this.playerView.game.turmoil.politicalAgendas?.unity?.policyId === 'up04') {
       details[Tag.SPACE].discount += 2;
+    }
+
+    // Tag substitutions
+    for (const card of this.player.tableau) {
+      if (card.name === CardName.EARTH_EMBASSY) {
+        details[Tag.EARTH].substitution = Tag.MOON;
+      }
+      if (card.name === CardName.HABITAT_MARTE) {
+        details[Tag.SCIENCE].substitution = Tag.MARS;
+      }
     }
 
     // Put them in order.
@@ -236,6 +251,7 @@ export default defineComponent({
     TagCount,
     PlayerTagDiscount,
     PointsPerTag,
+    PlayerTagSubstitution,
   },
   computed: {
     isThisPlayer(): boolean {
@@ -264,7 +280,7 @@ export default defineComponent({
           return false;
         }
 
-        if (entry.count === 0 && entry.discount === 0) {
+        if (entry.count === 0 && entry.discount === 0 && entry.substitution === undefined) {
           if (this.hideZeroTags || concise) {
             return false;
           }

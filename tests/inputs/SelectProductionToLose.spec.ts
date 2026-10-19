@@ -29,4 +29,11 @@ describe('SelectProductionToLose', () => {
     expect(() => selectProductionToLose.process({type: 'productionToLose', units: Units.of({titanium: 1})}, player))
       .to.throw(/You do not have those units/);
   });
+
+  it('includes required production pairs in the input model', () => {
+    const input = new SelectProductionToLose('', 2, player, undefined, 1);
+
+    expect(input.toModel()).to.include({type: 'productionToLose', pairs: 1});
+    expect(input.toModel().payProduction.cost).eq(2);
+  });
 });

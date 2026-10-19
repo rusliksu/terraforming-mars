@@ -12,6 +12,9 @@ import {testGame} from '../../TestGame';
 import {FloaterUrbanism} from '../../../src/server/cards/pathfinders/FloaterUrbanism';
 import {AppliedScience} from '../../../src/server/cards/prelude2/AppliedScience';
 import {cast} from '@/common/utils/utils';
+import {SpaceName} from '../../../src/common/boards/SpaceName';
+import {VenusPhase2Expansion} from '../../../src/server/venusPhase2/VenusPhase2Expansion';
+import {VENUS_MAXWELL_BASE} from '../../../src/server/venusPhase2/VenusSurfaceBoard';
 
 describe('MaxwellBase', () => {
   let card: MaxwellBase;
@@ -87,5 +90,18 @@ describe('MaxwellBase', () => {
     runAllActions(game);
 
     expect(appliedScience.resourceCount).eq(1);
+  });
+
+  it('places its city tile on the Venus surface board when Venus Phase 2 is on', () => {
+    const [venusPhase2Game, venusPhase2Player] = testGame(2, {venusNextExtension: true, venusPhase2Expansion: true});
+    const venusPhase2Card = new MaxwellBase();
+    venusPhase2Player.production.add(Resource.ENERGY, 1);
+    setVenusScaleLevel(venusPhase2Game, 12);
+    expect(venusPhase2Card.canPlay(venusPhase2Player)).is.true;
+
+    cast(venusPhase2Card.play(venusPhase2Player), undefined);
+    const venusSurface = VenusPhase2Expansion.venusPhase2Data(venusPhase2Game).venusSurface;
+    expect(venusSurface.getSpaceOrThrow(VENUS_MAXWELL_BASE).tile?.card).to.eq(venusPhase2Card.name);
+    expect(() => venusPhase2Game.board.getSpaceOrThrow(SpaceName.MAXWELL_BASE)).to.throw();
   });
 });

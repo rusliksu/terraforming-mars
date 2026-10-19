@@ -24,12 +24,21 @@ export default defineComponent({
       type: Number as () => number | undefined,
       default: undefined,
     },
+    // High Orbit (fan): Infrastructure-tagged "Silver" cards' top-left number is a Titanium
+    // cost, not M€ -- shows the titanium icon instead of the usual M€ coin.
+    titanium: {
+      type: Boolean,
+      default: false,
+    },
   },
   methods: {
     getClasses(): string {
       const classes = ['card-cost'];
       if (this.amount === undefined) {
         classes.push('visibility-hidden');
+      }
+      if (this.titanium) {
+        classes.push('card-cost-titanium');
       }
       return classes.join(' ');
     },

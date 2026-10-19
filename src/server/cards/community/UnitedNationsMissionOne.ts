@@ -27,6 +27,7 @@ export class UnitedNationsMissionOne extends CorporationCard implements ICorpora
           b.megacredits(39).nbsp.tr(1);
           b.corpBox('effect', (ce) => {
             ce.vSpace();
+            ce.br;
             ce.effect('When any player takes an action or plays a card that increases TR, including this, gain 1 M€ for each step.', (eb) => {
               eb.tr(1, {all}).startEffect.megacredits(1);
             });

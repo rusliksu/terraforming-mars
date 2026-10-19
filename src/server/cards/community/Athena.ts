@@ -23,6 +23,7 @@ export class Athena extends CorporationCard implements ICorporationCard {
           b.megacredits(62).hazardTile(1, {size: Size.LARGE}).hazardTile(1, {size: Size.LARGE});
           b.corpBox('effect', (ce) => {
             ce.vSpace(Size.SMALL);
+            ce.br;
             ce.effect('You do not lose production when placing adjacent to hazard tiles.', (eb) => {
               eb.startEffect.hazardTile(1, {size: Size.LARGE}).nbsp.asterix();
             });

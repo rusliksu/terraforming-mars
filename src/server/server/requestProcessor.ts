@@ -9,6 +9,8 @@ import {InputError} from '../inputs/InputError';
 import {ApiSurrender} from '../routes/ApiSurrender';
 import {ApiCloneableGame} from '../routes/ApiCloneableGame';
 import {ApiCreateGame} from '../routes/ApiCreateGame';
+import {ApiCustomCardLibrary} from '../routes/ApiCustomCardLibrary';
+import {ApiCustomCardLibraryReview} from '../routes/ApiCustomCardLibraryReview';
 import {ApiGame} from '../routes/ApiGame';
 import {ApiGameHistory} from '../routes/ApiGameHistory';
 import {ApiGameLogs} from '../routes/ApiGameLogs';
@@ -16,6 +18,8 @@ import {ApiGames} from '../routes/ApiGames';
 import {ApiHeapSnapshot} from '../routes/ApiHeapSnapshot';
 import {ApiIPs} from '../routes/ApiIPs';
 import {ApiLogout} from '../routes/ApiLogout';
+import {ApiMapLibrary} from '../routes/ApiMapLibrary';
+import {ApiMapLibraryReview} from '../routes/ApiMapLibraryReview';
 import {ApiMetrics} from '../routes/ApiMetrics';
 import {ApiPlayer} from '../routes/ApiPlayer';
 import {ApiProfile} from '../routes/ApiProfile';
@@ -115,7 +119,11 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.API_SPECTATOR, ApiSpectator.INSTANCE],
     [paths.API_WAITING_FOR, ApiWaitingFor.INSTANCE],
     [paths.AUTOPASS, Autopass.INSTANCE],
+    [paths.CARD_LIBRARY, ServeApp.INSTANCE],
     [paths.CARDS, ServeApp.INSTANCE],
+    [paths.CUSTOM_CARD_MAKER, ServeApp.INSTANCE],
+    [paths.API_CUSTOM_CARD_LIBRARY, ApiCustomCardLibrary.INSTANCE],
+    [paths.API_CUSTOM_CARD_LIBRARY_REVIEW, ApiCustomCardLibraryReview.INSTANCE],
     [paths.END_GAME_LOG, EndGameLog.INSTANCE],
     ['favicon.ico', ServeAsset.INSTANCE],
     [paths.GAME, GameHandler.INSTANCE],
@@ -124,6 +132,10 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.LOAD, Load.INSTANCE],
     [paths.LOAD_GAME, LoadGame.INSTANCE],
     [paths.LOGIN, Login.INSTANCE],
+    [paths.MAP_EDITOR, ServeApp.INSTANCE],
+    [paths.MAP_LIBRARY, ServeApp.INSTANCE],
+    [paths.API_MAP_LIBRARY, ApiMapLibrary.INSTANCE],
+    [paths.API_MAP_LIBRARY_REVIEW, ApiMapLibraryReview.INSTANCE],
     [paths.API_LOGOUT, ApiLogout.INSTANCE],
     ['main.js', ServeAsset.INSTANCE],
     ['main.js.map', ServeAsset.INSTANCE],

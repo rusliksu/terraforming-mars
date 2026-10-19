@@ -4,7 +4,6 @@ import {CardName} from '../../../common/cards/CardName';
 import {CardRenderer} from '../render/CardRenderer';
 import {Tag} from '../../../common/cards/Tag';
 import {MarsBoard} from '../../boards/MarsBoard';
-import {BoardType} from '../../boards/BoardType';
 import {Space} from '../../boards/Space';
 import {SelectSpace} from '../../inputs/SelectSpace';
 import {LogHelper} from '../../LogHelper';
@@ -103,8 +102,10 @@ export class SurveyMission extends PreludeCard {
         LogHelper.logBoardTileAction(player, space, 'claimed');
         if (space.tile === undefined) {
           player.game.grantSpaceBonuses(player, space);
+          for (const card of player.tableau) {
+            card.onPlacementBonusClaimed?.(player, space);
+          }
         }
-        player.tableau.get(CardName.MINING_GUILD)?.onTilePlaced?.(player, player, space, BoardType.MARS);
 
         if (iteration === 2) {
           return undefined;

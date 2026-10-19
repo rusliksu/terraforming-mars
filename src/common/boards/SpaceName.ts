@@ -18,4 +18,8 @@ export const SpaceName = {
   DYSON_SCREENS: '76',
   LUNAR_EMBASSY: '77',
   VENERA_BASE: '78',
+
+  // Rob Antilles
+  CLOUD_CITY_RA: '79',
+  TROPOSPHERIC_CITY: '80',
 } as const;

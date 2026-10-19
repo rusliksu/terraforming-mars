@@ -15,16 +15,15 @@
 <script lang="ts">
 
 import {defineComponent} from 'vue';
-import {MAX_OCEAN_TILES, MAX_OXYGEN_LEVEL, MAX_TEMPERATURE, MAX_VENUS_SCALE} from '@/common/constants';
 import {GlobalParameter} from '@/common/GlobalParameter';
 
 type BaseGlobalParameter = 'temperature' | 'oxygen' | 'oceans' | 'venus';
 
-const attributes: Record<BaseGlobalParameter, {max: number, title: string, iconClass: string}> = {
-  [GlobalParameter.TEMPERATURE]: {max: MAX_TEMPERATURE, title: 'Temperature', iconClass: 'temperature-tile'},
-  [GlobalParameter.OXYGEN]: {max: MAX_OXYGEN_LEVEL, title: 'Oxygen Level', iconClass: 'oxygen-tile'},
-  [GlobalParameter.OCEANS]: {max: MAX_OCEAN_TILES, title: 'Oceans', iconClass: 'ocean-tile'},
-  [GlobalParameter.VENUS]: {max: MAX_VENUS_SCALE, title: 'Venus Scale', iconClass: 'venus-tile'},
+const attributes: Record<BaseGlobalParameter, {title: string, iconClass: string}> = {
+  [GlobalParameter.TEMPERATURE]: {title: 'Temperature', iconClass: 'temperature-tile'},
+  [GlobalParameter.OXYGEN]: {title: 'Oxygen Level', iconClass: 'oxygen-tile'},
+  [GlobalParameter.OCEANS]: {title: 'Oceans', iconClass: 'ocean-tile'},
+  [GlobalParameter.VENUS]: {title: 'Venus Scale', iconClass: 'venus-tile'},
 };
 
 export default defineComponent({
@@ -38,10 +37,14 @@ export default defineComponent({
       type: Number,
       required: true,
     },
+    max: {
+      type: Number,
+      required: true,
+    },
   },
   computed: {
     isMax(): boolean {
-      return this.value === attributes[this.param].max;
+      return this.value === this.max;
     },
     title(): string {
       return attributes[this.param].title;
@@ -50,7 +53,7 @@ export default defineComponent({
       return attributes[this.param].iconClass;
     },
     suffix(): string {
-      return this.param === GlobalParameter.OXYGEN ? '%' : '';
+      return this.param === GlobalParameter.OXYGEN || this.param === GlobalParameter.VENUS ? '%' : '';
     },
   },
 });

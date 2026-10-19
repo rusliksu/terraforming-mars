@@ -1,4 +1,12 @@
 {
+    "Replaced by": "Заменена на",
+    "Adds a Venus surface board and standard projects. Extends the Venus track to 60%, in 2% steps.": "Добавляет поле Венеры и стандартные проекты. Продлевает шкалу Венеры до 60% с шагом 2%.",
+    "With the current settings, Venus must reach 60% to end the game.": "При текущих настройках для завершения игры Венеру нужно поднять до 60%.",
+    "In Solo TR, reach 63 TR to win; completing Venus is not required.": "В соло на рейтинг для победы нужно набрать 63 TR; закрывать Венеру необязательно.",
+    "In solo terraforming, Venus must reach 60% to win.": "В соло на терраформирование для победы Венеру нужно поднять до 60%.",
+    "With the current settings, Venus does not need to be completed to end the game.": "При текущих настройках для завершения игры Венеру закрывать необязательно.",
+    "Randomly selects 6 parties from an expanded pool of 12. Spome requires The Moon. Events can bring other parties into play.": "Случайно выбирает 6 партий из расширенного набора в 12. Spome доступна только с Луной. События могут вводить другие партии в игру.",
+    "The two starting events each place a neutral delegate. Party leaders choose bonuses and policies; the ruling policy remains locked until the next election.": "Каждое из двух стартовых событий ставит нейтрального делегата. Лидеры партий выбирают бонусы и политики; политика правящей партии закреплена до следующих выборов.",
     "Terraforming Mars": "Покорение Марса",
     "Create New Game": "Новая игра",
     "Create a new game with the same initial setup": "Создать новую игру с тем же стартовым сетапом",
@@ -25,7 +33,7 @@
     "Beginner?": "Новичок?",
     "Goes First?": "Ходит первым?",
     "Corporate Era": "Эпоха корпораций",
-    "We do not recommend playing a solo game without the Corporate Era. Press OK if you want to play without it.": "Мы не рекомендуем играть в соло без дополнения Эра корпораций. Нажмите OK, если хотите продолжить.",
+    "We do not recommend playing a solo game without the Corporate Era.": "Мы не рекомендуем играть в соло без дополнения Эра корпораций.",
     "Async Telegram game will send turn notifications to ${0} player(s). Confirm that each Telegram ID belongs to the matching player.": "Асинхронная игра с Telegram будет отправлять уведомления о ходе. Получателей: ${0}. Подтвердите, что каждый Telegram ID указан напротив правильного игрока.",
 
     "Color:": "Цвет:",
@@ -219,6 +227,7 @@
     "Pay trade fee": "Торговать",
     "Trade": "Торговать",
     "Pay ${0} titanium": "Заплатить ${0} титана",
+    "Select 1 Prelude card": "Выберите 1 карту пролога",
     "Select 2 Prelude cards": "Выберите 2 карты прологов",
     "Select 1 card to discard": "Выберите 1 карту, чтобы сбросить",
     "Self-replicating Robots cards": "Карты Роботов-саморепликантов",
@@ -267,6 +276,9 @@
 
     "Game log": "Лог игры",
     "Last 100": "Последние 100",
+    "Search displayed logs": "Поиск в показанных записях",
+    "Clear search": "Сбросить поиск",
+    "No matching logs in this view.": "В выбранных записях совпадений нет.",
     "Show details": "Показать подробности",
     "Hide details": "Скрыть подробности",
     "Action continues": "Действие продолжается",
@@ -380,9 +392,10 @@
     "Show information that can be helpful to players who are still learning the games": "Показать информацию, которая может\nоказаться полезной для новых игроков",
     "Test out any possible new experimental UI features for feedback.": "Протестируйте новые экспериментальные функции\nпользовательского интерфейса, и оставьте отзыв.",
 
-    "Starting Megacredits:": "Начальные мегакредиты:",
+    "Starting M€:": "Начальные мегакредиты:",
     "After Preludes:": "После прологов:",
     "You selected too many corporations": "Вы выбрали слишком много корпораций",
+    "Select 1 prelude": "Выберите 1 карту пролога",
     "Select 2 preludes": "Выберите 2 карты прологов",
     "You selected too many preludes": "Вы выбрали слишком много прологов",
     "Increase": "Повысить",
@@ -416,5 +429,10 @@
     "excavation-count": "Раскопки",
     "You will not take any more actions this generation.": "Вы больше не сможете совершить какие либо действия в этом поколении.",
     "Remove any number of microbes to gain 3 M€ per microbe removed": "Удалите любое количество микробов, чтобы получить по 3 M€ за каждого удалённого микроба",
-    "Reorder Cards": "Переупорядочить карты"
+    "Reorder Cards": "Переупорядочить карты",
+    "Experimental layout": "Экспериментальный дизайн",
+    "Use a two-column desktop layout and mobile navigation.": "Две колонки на компьютере и нижняя навигация на телефоне.",
+    "Classic layout": "Классический дизайн",
+    "Game sections": "Разделы игры",
+    "Cards": "Карты"
 }

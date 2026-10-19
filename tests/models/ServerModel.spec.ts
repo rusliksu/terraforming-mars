@@ -16,6 +16,13 @@ import {OrOptions} from '../../src/server/inputs/OrOptions';
 import {SelectOption} from '../../src/server/inputs/SelectOption';
 
 describe('ServerModel', () => {
+  it('advertises the current Astra replay exclusions in both public models', () => {
+    const [game, player] = testGame(2);
+    const exclusions = ['Patent Manipulation', 'Hostile Takeover'];
+    expect(Server.getSimpleGameModel(game).astraMechanicaReplayTargetExclusions).deep.eq(exclusions);
+    expect(Server.getPlayerModel(player).game.astraMechanicaReplayTargetExclusions).deep.eq(exclusions);
+  });
+
   let player: TestPlayer;
   let player2: TestPlayer;
   let game: IGame;
@@ -215,6 +222,16 @@ describe('ServerModel', () => {
     expect(response.options[1].annotation).eq(undefined);
   });
 
+  it('gives a prompt a stable identity that changes when the prompt changes', () => {
+    [game, player] = testGame(1);
+    const prompt = new SelectOption('First option');
+
+    const firstId = Server.getWaitingFor(player, prompt)?.promptId;
+    expect(firstId).not.to.be.undefined;
+    expect(Server.getWaitingFor(player, prompt)?.promptId).eq(firstId);
+    expect(Server.getWaitingFor(player, new SelectOption('Second option'))?.promptId).not.eq(firstId);
+  });
+
   it('exposes bot control for original and surrendered bot seats', () => {
     [game, player, player2] = testGame(2);
     game.setBotPlayerIds([player.id]);
@@ -256,5 +273,18 @@ describe('ServerModel', () => {
       drawPile: game.turmoil!.globalEventDealer.deck.length,
       discardPile: game.turmoil!.globalEventDealer.discards.length,
     });
+  });
+
+  it('highlights Venus Phase 2\'s Stratopolis/Maxwell Base reserved spots before their tile is placed', () => {
+    const [venusGame, venusPlayer] = testGame(2, {venusPhase2Expansion: true, venusNextExtension: true});
+    game = venusGame;
+    const response = Server.getPlayerModel(venusPlayer);
+    const venusPhase2 = response.game.venusPhase2;
+    expect(venusPhase2).is.not.undefined;
+
+    const stratopolis = venusPhase2!.spaces.find((s) => s.id === '298');
+    const maxwellBase = venusPhase2!.spaces.find((s) => s.id === '299');
+    expect(stratopolis?.highlight).eq('venusReserved');
+    expect(maxwellBase?.highlight).eq('venusReserved');
   });
 });

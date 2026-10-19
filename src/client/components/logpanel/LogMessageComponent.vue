@@ -3,7 +3,7 @@
     v-if="message !== undefined && message.data !== undefined && message.message !== undefined"
     @click.prevent="$emit('click')"
     :class="classes">
-    <span v-if="message.type === LogMessageType.DEFAULT" :title="when" v-html="icon"></span>
+    <span v-if="(message.type ?? LogMessageType.DEFAULT) === LogMessageType.DEFAULT" :title="when" v-html="icon"></span>
     <template v-for="(data, idx) of entries" :key="idx">
       <span class="log-plain-text" v-if="typeof(data) === 'string'">{{ data }}</span>
       <span v-else>
@@ -43,6 +43,7 @@ import {defineComponent} from 'vue';
 import {Color} from '@/common/Color';
 import {CardName} from '@/common/cards/CardName';
 import {CardType} from '@/common/cards/CardType';
+import {Tag} from '@/common/cards/Tag';
 import {LogMessage} from '@/common/logs/LogMessage';
 import {LogMessageType} from '@/common/logs/LogMessageType';
 import {LogMessageData, LogMessageDataAttrs} from '@/common/logs/LogMessageData';
@@ -111,7 +112,12 @@ export default defineComponent({
       }
 
       const suffixFreeCardName = card.name.split(':')[0];
-      const className = cardTypeToCss[card.type];
+      // High Orbit (fan): Infrastructure-tagged "Silver" cards get a distinct silver badge
+      // regardless of CardType, matching CardTitle.vue's override for the full card face.
+      // Planetary Outpost is visually a Silver card too despite carrying no Infrastructure tag
+      // -- see PlanetaryOutpost.ts.
+      const isSilver = card.tags.includes(Tag.INFRASTRUCTURE) || card.name === CardName.PLANETARY_OUTPOST;
+      const className = isSilver ? 'background-color-infrastructure' : cardTypeToCss[card.type];
 
       if (className === undefined) {
         return suffixFreeCardName;

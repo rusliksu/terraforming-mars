@@ -120,6 +120,7 @@ describe('GameLoader', () => {
 
     expect(result).deep.include({started: 1, alreadyActive: 0, failed: 0});
     expect(botManager.starts).deep.eq([{
+      compatibility: {version: 1, unsupportedFeatures: []},
       gameId: game.id,
       playerId: game.players[0].id,
       serverId: 'test-server-id',
@@ -136,6 +137,17 @@ describe('GameLoader', () => {
     const result = await instance.reconcileSurrenderedBots();
 
     expect(result).deep.include({started: 0, alreadyActive: 1, failed: 0});
+    expect(botManager.starts).is.empty;
+  });
+
+  it('reports unsupported saved games without launching a surrendered bot', async () => {
+    game.phase = Phase.ACTION;
+    game.gameOptions.expansions.sillyfication = true;
+    game.surrenderedPlayerIds.add(game.players[0].id);
+    await database.saveGame(game);
+    instance.resetForTesting();
+    const result = await instance.reconcileSurrenderedBots();
+    expect(result).deep.include({started: 0, failed: 1});
     expect(botManager.starts).is.empty;
   });
 

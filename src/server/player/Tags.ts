@@ -36,6 +36,8 @@ export type MultipleCountMode =
  * 2. Earth Embassy (Moon) counts Moon tags count as Earth tags.
  * 3. Habitat Marte (PF) Mars tags count as science tags.
  * 4. Chimera (PF) has two wild tags, but only count as one tag for milestones and (funding) awards.
+ * 5. Nereid Biosystems (fan) Jovian tags count as microbe tags.
+ * 6. Galileo Institute (fan, idesOfMars) Jovian tags count as science tags, but not vice versa.
  *
  */
 export class Tags {
@@ -47,12 +49,21 @@ export class Tags {
   public extraPlantTags: number;
   // Delta Project
   public extraJovianTags: number;
+  // More Parties: Scientists rework policy 1, Unity rework policy 3
+  public extraSpaceTags: number;
+  // More Parties: Transhumanists rework policy 1
+  public extraWildTags: number;
+  // More Parties: Empower policy 3
+  public extraEnergyTags: number;
 
   constructor(player: IPlayer) {
     this.player = player;
     this.extraScienceTags = 0;
     this.extraPlantTags = 0;
     this.extraJovianTags = 0;
+    this.extraSpaceTags = 0;
+    this.extraWildTags = 0;
+    this.extraEnergyTags = 0;
   }
 
   /**
@@ -92,6 +103,18 @@ export class Tags {
       tagCount += this.extraJovianTags;
     }
 
+    if (tag === Tag.SPACE) {
+      tagCount += this.extraSpaceTags;
+    }
+
+    if (tag === Tag.WILD) {
+      tagCount += this.extraWildTags;
+    }
+
+    if (tag === Tag.POWER) {
+      tagCount += this.extraEnergyTags;
+    }
+
     if (includeTagSubstitutions) {
       // Earth Embassy hook
       if (tag === Tag.EARTH && this.player.tableau.has(CardName.EARTH_EMBASSY)) {
@@ -99,7 +122,7 @@ export class Tags {
       }
 
       if (tag !== Tag.WILD) {
-        tagCount += this.rawCount(Tag.WILD, includeEvents);
+        tagCount += this.rawCount(Tag.WILD, includeEvents) + this.extraWildTags;
       }
     }
 
@@ -107,6 +130,14 @@ export class Tags {
     if (mode !== 'raw') {
       if (tag === Tag.SCIENCE && this.player.tableau.has(CardName.HABITAT_MARTE)) {
         tagCount += this.rawCount(Tag.MARS, includeEvents);
+      }
+      // Nereid Biosystems hook
+      if (tag === Tag.MICROBE && this.player.tableau.has(CardName.NEREID_BIOSYSTEMS)) {
+        tagCount += this.rawCount(Tag.JOVIAN, includeEvents);
+      }
+      // Galileo Institute hook
+      if (tag === Tag.SCIENCE && this.player.tableau.has(CardName.GALILEO_INSTITUTE)) {
+        tagCount += this.rawCount(Tag.JOVIAN, includeEvents);
       }
     }
 
@@ -125,8 +156,28 @@ export class Tags {
   }
 
   /**
-   * Returns true if `card` has `tag`. This includes Habitat Marte, but not wild tags and
-   * not Earth Embassy.
+   * Cyborgs / Strong Artificial Intelligence (Solaris, fan): both cards print the same passive
+   * effect -- "your Wild tags count as any tag of your choice" for the purpose of triggering
+   * other cards' tag-based effects (e.g. "when you play a card with a Space tag, gain 1 M€").
+   *
+   * Implementation note: engine-wide "choose which tag a Wild tag counts as, per use" isn't
+   * something the tag system supports today, and building that out is out of scope here. The
+   * faithful-but-scoped reading implemented below: while either card is in the player's tableau,
+   * their Wild tags automatically satisfy cardHasTag/cardTagCount for ANY single target tag --
+   * i.e. the "choice" is trivially made in the player's favor for whichever trigger is being
+   * checked, which is equivalent in effect to "choose the tag that matches" since only one tag
+   * is ever being tested at a time. This deliberately does NOT touch count()/multipleCount()/
+   * distinctCount() (used for card requirements, milestones, and awards) -- only the two
+   * methods that back "did the played card have tag X" trigger checks, so this doesn't
+   * silently inflate the player's general tag count elsewhere.
+   */
+  private wildTagsMatchAnyTagForTriggers(): boolean {
+    return this.player.tableau.has(CardName.CYBORGS) || this.player.tableau.has(CardName.STRONG_ARTIFICIAL_INTELLIGENCE);
+  }
+
+  /**
+   * Returns true if `card` has `tag`. This includes Habitat Marte and Nereid Biosystems,
+   * but not wild tags and not Earth Embassy.
    */
   public cardHasTag(card: ICard, target: Tag): boolean {
     for (const tag of card.tags) {
@@ -138,6 +189,21 @@ export class Tags {
         this.player.tableau.has(CardName.HABITAT_MARTE)) {
         return true;
       }
+      if (tag === Tag.JOVIAN &&
+        target === Tag.MICROBE &&
+        this.player.tableau.has(CardName.NEREID_BIOSYSTEMS)) {
+        return true;
+      }
+      if (tag === Tag.JOVIAN &&
+        target === Tag.SCIENCE &&
+        this.player.tableau.has(CardName.GALILEO_INSTITUTE)) {
+        return true;
+      }
+      if (tag === Tag.WILD &&
+        target !== Tag.WILD &&
+        this.wildTagsMatchAnyTagForTriggers()) {
+        return true;
+      }
     }
     if (target === Tag.EVENT && card.type === CardType.EVENT) {
       return true;
@@ -147,17 +213,28 @@ export class Tags {
   }
 
   /**
-   * Returns the number of tags on `card`. Takes Habitat Marte into account.
+   * Returns the number of tags on `card`. Takes Habitat Marte and Nereid Biosystems
+   * into account - including when `target` is an array that merely includes Science
+   * or Microbe alongside other tags, not just when it's the sole target.
    */
   public cardTagCount(card: ICard, target: OneOrArray<Tag>): number {
+    const targets = Array.isArray(target) ? target : [target];
     let count = 0;
     for (const tag of card.tags) {
-      if (tag === target) {
+      if (targets.includes(tag)) {
         count++;
-      } else if (Array.isArray(target) && target.includes(tag)) {
-        count++;
-      } else if (tag === Tag.MARS && target === Tag.SCIENCE &&
+      } else if (tag === Tag.MARS && targets.includes(Tag.SCIENCE) &&
         this.player.tableau.has(CardName.HABITAT_MARTE)) {
+        count++;
+      } else if (tag === Tag.JOVIAN && targets.includes(Tag.MICROBE) &&
+        this.player.tableau.has(CardName.NEREID_BIOSYSTEMS)) {
+        count++;
+      } else if (tag === Tag.JOVIAN && targets.includes(Tag.SCIENCE) &&
+        this.player.tableau.has(CardName.GALILEO_INSTITUTE)) {
+        count++;
+      } else if (tag === Tag.WILD && !targets.includes(Tag.WILD) &&
+        this.wildTagsMatchAnyTagForTriggers()) {
+        // Cyborgs / Strong Artificial Intelligence -- see wildTagsMatchAnyTagForTriggers().
         count++;
       }
     }
@@ -193,7 +270,7 @@ export class Tags {
     }
 
     if (mode !== 'award') {
-      tagCount += this.rawCount(Tag.WILD, includeEvents);
+      tagCount += this.rawCount(Tag.WILD, includeEvents) + this.extraWildTags;
       // Chimera has 2 wild tags but should only count as one for milestones.
       if (this.player.tableau.has(CardName.CHIMERA) && mode === 'milestone') {
         tagCount--;
@@ -213,6 +290,12 @@ export class Tags {
     }
     if (tags.includes(Tag.JOVIAN)) {
       tagCount += this.extraJovianTags;
+    }
+    if (tags.includes(Tag.SPACE)) {
+      tagCount += this.extraSpaceTags;
+    }
+    if (tags.includes(Tag.POWER)) {
+      tagCount += this.extraEnergyTags;
     }
 
     return tagCount;
@@ -277,6 +360,13 @@ export class Tags {
     if (this.extraJovianTags > 0) {
       uniqueTags.add(Tag.JOVIAN);
     }
+    if (this.extraSpaceTags > 0) {
+      uniqueTags.add(Tag.SPACE);
+    }
+    if (this.extraEnergyTags > 0) {
+      uniqueTags.add(Tag.POWER);
+    }
+    wildTagCount += this.extraWildTags;
 
     // Global events occur outside the action phase. Stop counting here, before wild tags apply.
     if (mode === 'globalEvent') {

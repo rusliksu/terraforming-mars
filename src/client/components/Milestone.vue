@@ -4,7 +4,17 @@
       <i :title="milestone.playerName" :class="playerCubeCss(milestone.color)"></i>
     </div>
     <div class="ma-name--milestones" :class="nameCss">
+      <div v-if="conglomeratesNumberPatch !== undefined" class="ma-number-patch">{{ conglomeratesNumberPatch }}</div>
       <span ref="name" v-i18n>{{name}}</span>
+      <div v-if="milestone.teamScores !== undefined" class="ma-team-scores">
+        <span
+          v-for="(team, idx) in milestone.teamScores"
+          :key="idx"
+          class="ma-team-score"
+          :class="team.teamColor !== undefined ? `ma-team-score--${team.teamColor}` : ''"
+          data-test="team-score"
+        >{{ team.score }}</span>
+      </div>
       <div v-if="showScores" class="ma-scores player_home_block--milestones-and-awards-scores">
         <template v-for="score in sortedScores" :key="score.color">
           <p
@@ -34,10 +44,11 @@
 import {defineComponent} from 'vue';
 import {ClaimedMilestoneModel, MilestoneScore} from '@/common/models/ClaimedMilestoneModel';
 import {getMilestone} from '@/client/MilestoneAwardManifest';
+import {CONGLOMERATES_MILESTONE_NUMBERS} from '@/common/ma/ConglomeratesMilestoneNumbers';
 import {playerSymbol} from '@/client/utils/playerSymbol';
 import {Color, isReservedPlayerColor} from '@/common/Color';
 import {fitTextWhenReady} from '@/client/utils/textFit';
-import {comparing, reversed} from '@/common/utils/Ordering';
+import {groupScoresByTeam} from '@/client/utils/groupScoresByTeam';
 
 type Refs = {
   name: HTMLElement | undefined;
@@ -107,10 +118,13 @@ export default defineComponent({
       return 'ma-name ma-name--' + this.milestone.name.replaceAll(' ', '-').replaceAll('.', '').toLowerCase();
     },
     sortedScores(): Array<MilestoneScore> {
-      return this.milestone.scores.toSorted(reversed(comparing((score) => score.score)));
+      return groupScoresByTeam(this.milestone.scores, this.milestone.teamScores);
     },
     description(): string {
       return getMilestone(this.milestone.name).description;
+    },
+    conglomeratesNumberPatch(): number | undefined {
+      return CONGLOMERATES_MILESTONE_NUMBERS[this.milestone.name];
     },
   },
 });

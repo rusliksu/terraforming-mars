@@ -27,6 +27,7 @@ export class LakefrontResorts extends CorporationCard implements ICorporationCar
           b.megacredits(54);
           b.corpBox('effect', (ce) => {
             ce.vSpace(Size.MEDIUM);
+            ce.br;
             ce.effect('When any ocean tile is placed, increase your M€ production 1 step. Your bonus for placing adjacent to oceans is 3M€ instead of 2 M€.', (eb) => {
               eb.oceans(1, {size: Size.SMALL, all}).colon().production((pb) => pb.megacredits(1));
               eb.emptyTile('normal', {size: Size.SMALL}).oceans(1, {size: Size.SMALL});

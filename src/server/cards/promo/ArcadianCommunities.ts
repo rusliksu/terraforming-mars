@@ -8,6 +8,9 @@ import {CardRenderer} from '../render/CardRenderer';
 import {Size} from '../../../common/cards/render/Size';
 import {digit, uppercase} from '../Options';
 import {ICorporationCard} from '../corporation/ICorporationCard';
+import {ConglomeratesExpansion} from '../../conglomerates/ConglomeratesExpansion';
+import {GainResourcesDeferred} from '@/server/deferredActions/GainResourcesDeferred';
+import {Resource} from '@/common/Resource';
 
 export class ArcadianCommunities extends CorporationCard implements ICorporationCard, IActionCard {
   constructor() {
@@ -28,7 +31,9 @@ export class ArcadianCommunities extends CorporationCard implements ICorporation
           b.megacredits(40).nbsp.steel(10, {digit}).nbsp.community().asterix();
           b.corpBox('action', (ce) => {
             ce.text('ACTION: PLACE A COMMUNITY (PLAYER MARKER) ON A NON-RESERVED AREA ADJACENT TO ONE OF YOUR TILES OR MARKED AREAS.', {size: Size.TINY, uppercase});
+            ce.br;
             ce.vSpace(Size.MEDIUM);
+            ce.br;
             ce.text('EFFECT: MARKED AREAS ARE RESERVED FOR YOU. WHEN YOU PLACE A TILE THERE, GAIN 3 M€.', {size: Size.TINY, uppercase});
           });
         }),
@@ -58,7 +63,7 @@ export class ArcadianCommunities extends CorporationCard implements ICorporation
         return false;
       }
       const adjacentSpaces = board.getAdjacentSpaces(space);
-      return adjacentSpaces.find((adj) => adj.player === player) !== undefined;
+      return adjacentSpaces.find((adj) => ConglomeratesExpansion.isTeammateOrSelf(player, adj.player)) !== undefined;
     });
       // Remove duplicates
     return spaces.filter((space, index) => spaces.indexOf(space) === index);
@@ -70,5 +75,9 @@ export class ArcadianCommunities extends CorporationCard implements ICorporation
 
   public action(player: IPlayer) {
     return this.askToClaimSpace(player, this.getAvailableSpacesForMarker(player));
+  }
+
+  public onReservedSpacePlaced(player: IPlayer) {
+    player.game.defer(new GainResourcesDeferred(player, Resource.MEGACREDITS, {count: 3}));
   }
 }

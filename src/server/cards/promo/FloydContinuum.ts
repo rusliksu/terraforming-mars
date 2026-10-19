@@ -47,7 +47,7 @@ export class FloydContinuum extends Card implements IProjectCard, IActionCard {
     if (!game.canAddOcean()) {
       count++;
     }
-    if (game.getVenusScaleLevel() === constants.MAX_VENUS_SCALE) {
+    if (game.getVenusScaleLevel() === game.parameters.venus.max) {
       count++;
     }
     player.stock.add(Resource.MEGACREDITS, 3 * count, {log: true});

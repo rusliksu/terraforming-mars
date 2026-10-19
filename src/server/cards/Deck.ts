@@ -1,5 +1,6 @@
+import {serializeDynamicCards, restoreDynamicCards} from './DynamicCardState';
 import {SerializedDeck} from './SerializedDeck';
-import {cardsFromJSON, ceosFromJSON, corporationCardsFromJSON, preludesFromJSON} from '../createCard';
+import {ceosFromJSON, corporationCardsFromJSON, preludesFromJSON} from '../createCard';
 import {CardName} from '../../common/cards/CardName';
 import {Random} from '../../common/utils/Random';
 import {ICorporationCard} from './corporation/ICorporationCard';
@@ -107,7 +108,10 @@ export class Deck<T extends Named<CardName>> {
         logger.log(`discarded every ${this.type} card without a match`);
         break;
       }
-      const projectCard = this.drawOrThrow(logger);
+      const projectCard = this.draw(logger);
+      if (projectCard === undefined) {
+        break;
+      }
       if (include(projectCard)) {
         result.push(projectCard);
       } else {
@@ -152,13 +156,43 @@ export class CorporationDeck extends Deck<ICorporationCard> {
 }
 
 export class ProjectDeck extends Deck<IProjectCard> {
+  public isCardAvailable?: (card: IProjectCard) => boolean;
+
   public constructor(deck: Array<IProjectCard>, discarded: Array<IProjectCard>, random: Random) {
     super('project', deck, discarded, random);
   }
 
-  public static deserialize(d: SerializedDeck, random: Random): Deck<IProjectCard> {
-    const deck = cardsFromJSON(d.drawPile);
-    const discarded = cardsFromJSON(d.discardPile);
+  public override draw(logger: Logger, source: 'top' | 'bottom' = 'top'): IProjectCard | undefined {
+    if (this.isCardAvailable === undefined) {
+      return super.draw(logger, source);
+    }
+    const skipped: Array<IProjectCard> = [];
+    let card = super.draw(logger, source);
+    while (card !== undefined && !this.isCardAvailable(card)) {
+      skipped.push(card);
+      card = super.draw(logger, source);
+    }
+    // Keep skipped cards out of reshuffles until this draw has finished.
+    this.discard(...skipped);
+    return card;
+  }
+
+  public override serialize(): SerializedDeck {
+    const saved = super.serialize();
+    const drawPileState = serializeDynamicCards(this.drawPile);
+    const discardPileState = serializeDynamicCards(this.discardPile);
+    if (drawPileState !== undefined) {
+      saved.drawPileState = drawPileState;
+    }
+    if (discardPileState !== undefined) {
+      saved.discardPileState = discardPileState;
+    }
+    return saved;
+  }
+
+  public static deserialize(d: SerializedDeck, random: Random): ProjectDeck {
+    const deck = restoreDynamicCards(d.drawPile, d.drawPileState);
+    const discarded = restoreDynamicCards(d.discardPile, d.discardPileState);
     return new ProjectDeck(deck, discarded, random);
   }
 }

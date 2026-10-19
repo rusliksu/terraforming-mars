@@ -28,7 +28,7 @@
               </div>
             </div>
             <div v-for="item in itemsByGroup[group.key]" :key="item" v-show="include(item)">
-              <label class="form-checkbox" :title="isSelectable(item) ? undefined : $t('Enable required expansions to select this card')">
+              <label class="form-checkbox" :title="isSelectable(item) ? undefined : replacements?.has(item) ? $t('Replaced by') + ' ' + $t(replacements.get(item) ?? '') : $t('Enable required expansions to select this card')">
                 <input type="checkbox" v-model="localSelected" :value="item" :disabled="!isSelectable(item)">
                 <i class="form-icon"></i>
                 <slot name="item" :itemName="item" :icon="icon"></slot>
@@ -53,6 +53,7 @@ const props = defineProps<{
   itemsByGroup: Record<string, Array<T>>;
   selected: Array<T>;
   selectable?: Array<T>;
+  replacements?: ReadonlyMap<T, T>;
 }>();
 
 const emit = defineEmits<{

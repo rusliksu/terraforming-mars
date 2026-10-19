@@ -29,6 +29,7 @@ export const DEFAULT_PAYMENT_VALUES = {
   steel: 2,
   titanium: 3,
   heat: 1,
+  energy: 2,
   plants: 3,
 
   microbes: MICROBES_VALUE,
@@ -39,11 +40,23 @@ export const DEFAULT_PAYMENT_VALUES = {
   auroraiData: DATA_VALUE,
   graphene: GRAPHENE_VALUE,
   kuiperAsteroids: 1,
+  nereidMicrobes: 2,
+  anyFloaters: FLOATERS_VALUE,
 } satisfies Record<SpendableResource, number>;
 
 export namespace Payment {
+  /** Supply newly added resources for clients and recordings from before the fan port. */
+  export function fromResponse(value: unknown): Payment | undefined {
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+      return undefined;
+    }
+    const normalized = {energy: 0, nereidMicrobes: 0, anyFloaters: 0, ...value};
+    return isPayment(normalized) ? normalized : undefined;
+  }
+
   export const EMPTY: Readonly<Payment> = {
     heat: 0,
+    energy: 0,
     megacredits: 0,
     steel: 0,
     titanium: 0,
@@ -56,6 +69,8 @@ export namespace Payment {
     auroraiData: 0,
     graphene: 0,
     kuiperAsteroids: 0,
+    nereidMicrobes: 0,
+    anyFloaters: 0,
   } as const;
 
   export function of(payment: Partial<Payment>) : Payment {
@@ -63,6 +78,7 @@ export namespace Payment {
       auroraiData: payment.auroraiData ?? 0,
       floaters: payment.floaters ?? 0,
       heat: payment.heat ?? 0,
+      energy: payment.energy ?? 0,
       lunaArchivesScience: payment.lunaArchivesScience ?? 0,
       spireScience: payment.spireScience ?? 0,
       megacredits: payment.megacredits ?? 0,
@@ -73,6 +89,8 @@ export namespace Payment {
       graphene: payment.graphene ?? 0,
       kuiperAsteroids: payment.kuiperAsteroids ?? 0,
       plants: payment.plants ?? 0,
+      nereidMicrobes: payment.nereidMicrobes ?? 0,
+      anyFloaters: payment.anyFloaters ?? 0,
     };
   }
 }

@@ -1,7 +1,7 @@
 import {awardManifest} from '../awards/Awards';
 import {BoardName} from '../../common/boards/BoardName';
 import {GameOptions} from '../game/GameOptions';
-import {milestoneManifest} from '../milestones/Milestones';
+import {CONGLOMERATES_MILESTONE_MAP, milestoneManifest} from '../milestones/Milestones';
 import {RandomMAOptionType} from '../../common/ma/RandomMAOptionType';
 import {inplaceShuffle} from '../utils/shuffle';
 import {UnseededRandom} from '../../common/utils/Random';
@@ -68,21 +68,28 @@ export function chooseMilestonesAndAwards(gameOptions: GameOptions): DrawnMilest
   switch (gameOptions.randomMA) {
   case RandomMAOptionType.NONE:
     const boardName = gameOptions.boardName;
-    switch (gameOptions.boardName) {
-    case BoardName.THARSIS:
-    case BoardName.HELLAS:
-    case BoardName.ELYSIUM:
-    case BoardName.UTOPIA_PLANITIA:
-    case BoardName.ARABIA_TERRA:
-    case BoardName.AMAZONIS:
-    case BoardName.TERRA_CIMMERIA:
-    case BoardName.TERRA_CIMMERIA_NOVA:
-    case BoardName.VASTITAS_BOREALIS:
-    case BoardName.VASTITAS_BOREALIS_NOVA:
-      push(milestoneManifest.boards[boardName], awardManifest.boards[gameOptions.boardName]);
-      break;
-    default:
-      return getRandomMilestonesAndAwards(gameOptions, requiredQty, LIMITED_SYNERGY);
+    const customBoard = gameOptions.customBoard;
+    if (boardName === BoardName.CUSTOM && customBoard !== undefined &&
+        customBoard.milestones.length === 5 && customBoard.awards.length === 5) {
+      // The editor bundled a fixed milestone/award set into the map.
+      push(customBoard.milestones, customBoard.awards);
+    } else {
+      switch (gameOptions.boardName) {
+      case BoardName.THARSIS:
+      case BoardName.HELLAS:
+      case BoardName.ELYSIUM:
+      case BoardName.UTOPIA_PLANITIA:
+      case BoardName.ARABIA_TERRA:
+      case BoardName.AMAZONIS:
+      case BoardName.TERRA_CIMMERIA:
+      case BoardName.TERRA_CIMMERIA_NOVA:
+      case BoardName.VASTITAS_BOREALIS:
+      case BoardName.VASTITAS_BOREALIS_NOVA:
+        push(milestoneManifest.boards[boardName], awardManifest.boards[gameOptions.boardName]);
+        break;
+      default:
+        return getRandomMilestonesAndAwards(gameOptions, requiredQty, LIMITED_SYNERGY);
+      }
     }
     if (gameOptions.venusNextExtension) {
       push(milestoneManifest.expansions['venus'], awardManifest.expansions['venus']);
@@ -110,6 +117,11 @@ export function chooseMilestonesAndAwards(gameOptions: GameOptions): DrawnMilest
     throw new Error('Unknown milestone/award type: ' + gameOptions.randomMA);
   }
 
+  if (gameOptions.conglomeratesExpansion) {
+    drawnMilestonesAndAwards.milestones = drawnMilestonesAndAwards.milestones.map(
+      (name) => CONGLOMERATES_MILESTONE_MAP[name] ?? name);
+  }
+
   return drawnMilestonesAndAwards;
 }
 
@@ -120,8 +132,16 @@ export function chooseMilestonesAndAwards(gameOptions: GameOptions): DrawnMilest
  *
  * exported for tests
  */
+const CONGLOMERATES_MILESTONE_VARIANT_NAMES = new Set<MilestoneName>(Object.values(CONGLOMERATES_MILESTONE_MAP));
+
 export function getCandidates(gameOptions: GameOptions): [Array<MilestoneName>, Array<AwardName>] {
   function include<T extends string>(name: T, manifest: MAManifest<T, any>): boolean {
+    // Conglomerates-scaled milestone variants are only ever reached by swapping in for a
+    // board's fixed slot (see chooseMilestonesAndAwards below) -- never independently drawn.
+    if (CONGLOMERATES_MILESTONE_VARIANT_NAMES.has(name as MilestoneName)) {
+      return false;
+    }
+
     // Never include deprecated MAs in random candidates.  They generally have "more official" versions that will be
     // considered for inclusion.
     if (manifest.all[name].deprecated) {

@@ -1143,6 +1143,7 @@ describe('Game', () => {
     game.syndicatePirateRaider = undefined;
     game.moonData = undefined;
     game.pathfindersData = undefined;
+    game.venusPhase2Data = undefined;
     const serialized = game.serialize();
     assertIsJSON(serialized);
     const serializedKeys = Object.keys(serialized);
@@ -1156,6 +1157,7 @@ describe('Game', () => {
       'inTurmoil',
       'playersInGenerationOrder',
       'monsInsuranceOwner',
+      'parameters',
       'resettable',
       'rng',
       'saveGame',
@@ -1163,6 +1165,7 @@ describe('Game', () => {
       'simulationMode',
       'underworldDraftEnabled',
       'doubleDownPrelude',
+      'skipGeneration1Actions',
     ];
     const serializedValuesNotInGame: Array<keyof SerializedGame> = [
       'seed',

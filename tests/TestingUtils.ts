@@ -25,6 +25,7 @@ import {Warning} from '../src/common/cards/Warning';
 import {testGame as testGameProxy} from './TestGame';
 import {LogMessage} from '../src/common/logs/LogMessage';
 import {cast} from '@/common/utils/utils';
+import {GlobalEventDealer} from '@/server/turmoil/globalEvents/GlobalEventDealer';
 
 /**
  * Creates a new game for testing. Has some hidden behavior for testing:
@@ -97,6 +98,37 @@ export function setRulingParty(game: IGame, partyName: PartyName, policyId?: Pol
   turmoil.rulingPolicy().onPolicyStart?.(game);
 
   game.phase = Phase.ACTION;
+}
+
+// More Parties randomly picks 6 of 12 parties per game (see Turmoil.shufflePartyNames). Tests
+// that need a specific non-official party to exist (e.g. to set it as ruling) should call this
+// in beforeEach and call the returned function in afterEach to restore real shuffling.
+export function forcePartiesInPlay(...names: ReadonlyArray<PartyName>): () => void {
+  const original = Turmoil.shufflePartyNames;
+  const originalDraw = GlobalEventDealer.prototype.draw;
+  const draws = new WeakMap<GlobalEventDealer, number>();
+  let initialParties: ReadonlyArray<PartyName> = [];
+  Turmoil.shufflePartyNames = (allNames) => {
+    const ordered = [...names, ...allNames.filter((name) => !names.includes(name))];
+    initialParties = ordered.slice(0, 6);
+    return ordered;
+  };
+  // Keeps forced parties from being replaced by starting events.
+  GlobalEventDealer.prototype.draw = function() {
+    const count = draws.get(this) ?? 0;
+    draws.set(this, count + 1);
+    if (count < 2) {
+      const index = this.deck.findIndex((event) => initialParties.includes(event.revealedDelegate));
+      if (index >= 0) {
+        return this.deck.splice(index, 1)[0];
+      }
+    }
+    return originalDraw.call(this);
+  };
+  return () => {
+    Turmoil.shufflePartyNames = original;
+    GlobalEventDealer.prototype.draw = originalDraw;
+  };
 }
 
 // Just shortcuts to some often called methods
@@ -196,6 +228,9 @@ class FakeCard implements IProjectCard {
     return 0;
   }
   public getGlobalParameterRequirementBonus(): number {
+    return 0;
+  }
+  public getTagCardRequirementBonus(): number {
     return 0;
   }
   public type = CardType.ACTIVE;

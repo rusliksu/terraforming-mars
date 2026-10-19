@@ -1,3 +1,6 @@
+import {DEFAULT_EXPANSIONS} from '../../common/cards/GameModule';
+import {encodeCustomBoard} from '../../common/boards/customBoardCodec';
+import {encodeSimpleBoard} from '../../common/boards/simpleBoardCodec';
 import * as responses from '../server/responses';
 import {Handler} from './Handler';
 import {Context} from './IHandler';
@@ -82,8 +85,9 @@ export class ApiCloneableGame extends Handler {
   private static toRematchSetup(serialized: SerializedGame): NewGameConfig & {seededGame: false} {
     const options = serialized.gameOptions;
     return {
-      players: serialized.players.map((player) => ({
+      players: serialized.players.map((player, index) => ({
         name: player.name,
+        team: options.conglomeratesTeamAssignments?.[index],
         color: player.color,
         beginner: player.beginner,
         handicap: player.handicap,
@@ -91,8 +95,11 @@ export class ApiCloneableGame extends Handler {
         first: false,
         isBot: false,
       })),
-      expansions: {...options.expansions},
+      expansions: {...DEFAULT_EXPANSIONS, ...options.expansions},
       board: options.boardSelection ?? options.boardName,
+      customBoardCode: options.customBoard === undefined ? undefined : encodeCustomBoard(options.customBoard),
+      customMoonBoardCode: options.customMoonBoard === undefined ? undefined : encodeSimpleBoard(options.customMoonBoard),
+      customVenusSurfaceBoardCode: options.customVenusSurfaceBoard === undefined ? undefined : encodeSimpleBoard(options.customVenusSurfaceBoard),
       seed: Math.random(),
       randomFirstPlayer: true,
       clonedGamedId: undefined,

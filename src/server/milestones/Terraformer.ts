@@ -1,6 +1,7 @@
 import {IMilestone} from './IMilestone';
 import {IPlayer} from '../IPlayer';
 import {Turmoil} from '../turmoil/Turmoil';
+import {ConglomeratesExpansion} from '../conglomerates/ConglomeratesExpansion';
 
 export class Terraformer implements IMilestone {
   public readonly name = 'Terraformer';
@@ -15,7 +16,6 @@ export class Terraformer implements IMilestone {
   }
   public canClaim(player: IPlayer): boolean {
     const target = Turmoil.ifTurmoilElse(player.game, () => this.terraformRatingTurmoil, () => this.terraformRating);
-    const score = this.getScore(player);
-    return score >= target;
+    return ConglomeratesExpansion.meetsTeamThreshold(player, target, (p) => this.getScore(p));
   }
 }

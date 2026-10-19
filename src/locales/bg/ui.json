@@ -14,7 +14,7 @@
   "Beginner?": "Новак?",
   "Goes First?": "Ходи първи?",
   "Corporate Era": "Ера на корпорациите",
-  "We do not recommend playing a solo game without the Corporate Era. Press OK if you want to play without it.": "Не препоръчваме да играете соло без Ерата на корпорациите. Натиснете ОК, ако искате да продължите.",
+  "We do not recommend playing a solo game without the Corporate Era.": "Не препоръчваме да играете соло без Ерата на корпорациите.",
   "Color:": "Цвят:",
   "Red": "Червен",
   "Green": "Зелен",
@@ -344,7 +344,7 @@
   "Show information that can be helpful to players who are still learning the games": "Покажи информация, полезна за играчите, които все още учат игрите",
   "Test out any possible new experimental UI features for feedback.": "Изпробвайте всякакви нови експериментални функции на потребителския интерфейс за обратна връзка.",
 
-  "Starting Megacredits:": "Начални мегакредити:",
+  "Starting M€:": "Начални мегакредити:",
   "After Preludes:": "След Прелюдии:",
   "You selected too many corporations": "Избрахте твърде много корпорации",
   "Select 2 preludes": "Изберете 2 прелюдии",

@@ -23,8 +23,23 @@ import {ICeoCard} from './cards/ceos/ICeoCard';
 import {PRELUDE2_CARD_MANIFEST} from './cards/prelude2/Prelude2CardManifest';
 import {STAR_WARS_CARD_MANIFEST} from './cards/starwars/StarwarsCardManifest';
 import {UNDERWORLD_CARD_MANIFEST} from './cards/underworld/UnderworldCardManifest';
-import {GameModule} from '../common/cards/GameModule';
+import {SILLYFICATION_CARD_MANIFEST} from './cards/sillyfication/SillyficationCardManifest';
+import {BETTER_MARS_CARD_MANIFEST} from './cards/betterMars/BetterMarsCardManifest';
+import {CONGLOMERATES_CARD_MANIFEST} from './cards/conglomerates/ConglomeratesCardManifest';
 import {DELTA_PROJECT_CARD_MANIFEST} from './cards/delta/DeltaProjectCardManifest';
+import {CORPORATE_BETTERMENTS_CARD_MANIFEST} from './cards/corporatebetterments/CorporateBettermentsCardManifest';
+import {IDES_OF_MARS_CARD_MANIFEST} from './cards/idesofmars/IdesOfMarsCardManifest';
+import {ROB_ANTILLES_CARD_MANIFEST} from './cards/robantilles/RobAntillesCardManifest';
+import {VENUS_PHASE_2_CARD_MANIFEST} from './cards/venusPhase2/VenusPhase2CardManifest';
+import {INDUSTRIES_CARD_MANIFEST} from './cards/industries/IndustriesCardManifest';
+import {HIGH_ORBIT_CARD_MANIFEST} from './cards/highOrbit/HighOrbitCardManifest';
+import {SOLARIS_CARD_MANIFEST} from './cards/solaris/SolarisCardManifest';
+import {DataDrivenCard} from './cards/DataDrivenCard';
+import {getAllCustomCardDefinitions} from './cards/CustomCardRegistry';
+import {GameModule} from '../common/cards/GameModule';
+import {ALL_MODULE_MANIFESTS} from './cards/AllManifests';
+import {filterReplacedCards, getCardReplacementNames} from '@/common/cards/CardReplacementRules';
+import {REBALANCED_CARD_MANIFEST} from './cards/rebalanced/RebalancedCardManifest';
 
 const CUSTOM_CARD_MODULE_EXCEPTIONS = new Set<CardName>([
   CardName.LAKEFRONT_RESORTS,
@@ -38,24 +53,6 @@ const CUSTOM_CARD_MANIFEST_NAMES: Array<keyof ModuleManifest> = [
   'ceoCards',
 ];
 
-const ALL_GAME_CARD_MANIFESTS: Array<ModuleManifest> = [
-  BASE_CARD_MANIFEST,
-  CORP_ERA_CARD_MANIFEST,
-  PROMO_CARD_MANIFEST,
-  VENUS_CARD_MANIFEST,
-  COLONIES_CARD_MANIFEST,
-  PRELUDE_CARD_MANIFEST,
-  PRELUDE2_CARD_MANIFEST,
-  TURMOIL_CARD_MANIFEST,
-  COMMUNITY_CARD_MANIFEST,
-  ARES_CARD_MANIFEST,
-  MOON_CARD_MANIFEST,
-  PATHFINDERS_CARD_MANIFEST,
-  CEO_CARD_MANIFEST,
-  STAR_WARS_CARD_MANIFEST,
-  UNDERWORLD_CARD_MANIFEST,
-  DELTA_PROJECT_CARD_MANIFEST,
-];
 
 /**
  * Returns the cards available to a game based on its `GameOptions`.
@@ -93,6 +90,21 @@ export class GameCards {
       [gameOptions.ceoExtension, CEO_CARD_MANIFEST],
       [gameOptions.starWarsExpansion, STAR_WARS_CARD_MANIFEST],
       [gameOptions.underworldExpansion, UNDERWORLD_CARD_MANIFEST],
+      [gameOptions.sillyficationExpansion, SILLYFICATION_CARD_MANIFEST],
+      [gameOptions.betterMarsExpansion && gameOptions.pathfindersExpansion, BETTER_MARS_CARD_MANIFEST],
+      [gameOptions.rebalancedExpansion, REBALANCED_CARD_MANIFEST],
+      [gameOptions.conglomeratesExpansion, CONGLOMERATES_CARD_MANIFEST],
+      [gameOptions.corporateBettermentsExpansion, CORPORATE_BETTERMENTS_CARD_MANIFEST],
+      [gameOptions.idesOfMarsExpansion, IDES_OF_MARS_CARD_MANIFEST],
+      [gameOptions.robAntillesExpansion, ROB_ANTILLES_CARD_MANIFEST],
+      // DeltaProject's own card (the prelude) is force-dealt directly in Game.ts, not drawn
+      // from this pool - but other cards depending on the expansion (e.g. Epsilon Dample,
+      // via its `compatibility: 'deltaProject'`) still need this manifest present here.
+      [gameOptions.deltaProjectExpansion, DELTA_PROJECT_CARD_MANIFEST],
+      [gameOptions.venusPhase2Expansion, VENUS_PHASE_2_CARD_MANIFEST],
+      [gameOptions.industriesExpansion, INDUSTRIES_CARD_MANIFEST],
+      [gameOptions.highOrbitExpansion, HIGH_ORBIT_CARD_MANIFEST],
+      [gameOptions.solarisExpansion, SOLARIS_CARD_MANIFEST],
     ];
 
     this.moduleManifests = manifests
@@ -101,19 +113,27 @@ export class GameCards {
   }
 
   private instantiate<T extends ICard>(manifest: CardManifest<T>): Array<T> {
-    return CardManifest.values(manifest)
-      .filter((factory) => factory.instantiate !== false)
-      .filter((factory) => isCompatibleWith(factory, this.gameOptions))
-      .map((factory) => new factory.Factory());
+    const result: Array<T> = [];
+    for (const factory of CardManifest.values(manifest)) {
+      if (factory.instantiate === false || !isCompatibleWith(factory, this.gameOptions)) {
+        continue;
+      }
+      result.push(new factory.Factory());
+    }
+    return result;
   }
 
   public getProjectCards() {
-    const cards = this.getCards<IProjectCard>('projectCards');
+    let cards = this.getCards<IProjectCard>('projectCards');
     this.addCustomCards(cards, this.gameOptions.includedCards);
-    if (this.gameOptions.includedCards.includes(CardName.MINERAL_DEPOSIT_REBALANCED)) {
-      return cards.filter((card) => card.name !== CardName.MINERAL_DEPOSIT && isIProjectCard(card));
+    this.addCustomCardLibrary(cards);
+    if (this.gameOptions.rebalancedExpansion) {
+      cards = filterReplacedCards(cards, this.moduleManifests);
     }
-    return cards.filter(isIProjectCard);
+    const highOrbitCardNames = new Set<CardName>(CardManifest.keys(HIGH_ORBIT_CARD_MANIFEST.projectCards));
+    const replacesMineralDeposit = this.gameOptions.includedCards.includes(CardName.MINERAL_DEPOSIT_REBALANCED);
+    return cards.filter(isIProjectCard).filter((card) =>
+      !highOrbitCardNames.has(card.name) && (!replacesMineralDeposit || card.name !== CardName.MINERAL_DEPOSIT));
   }
   public getStandardProjects() {
     return this.getCards<IStandardProjectCard>('standardProjects');
@@ -121,8 +141,10 @@ export class GameCards {
   public getCorporationCards(): Array<ICorporationCard> {
     if (this.gameOptions.customCorporationsList.length > 0) {
       const selected: Array<ICorporationCard> = [];
-      this.addCustomCards(selected, this.gameOptions.customCorporationsList, {respectModuleSelection: true});
-      return selected.filter((card) => card.name !== CardName.BEGINNER_CORPORATION);
+      const available = this.getCards<ICorporationCard>('corporationCards').map((card) => card.name);
+      this.addCustomCards(selected, this.normalizeCustomCardSelection(this.gameOptions.customCorporationsList, available), {respectModuleSelection: true});
+      return filterReplacedCards(selected, this.moduleManifests)
+        .filter((card) => card.name !== CardName.BEGINNER_CORPORATION);
     }
     const cards = this.getCards<ICorporationCard>('corporationCards')
       .filter((card) => card.name !== CardName.BEGINNER_CORPORATION);
@@ -132,7 +154,8 @@ export class GameCards {
     let preludes: Array<IPreludeCard>;
     if (this.gameOptions.customPreludes.length > 0) {
       preludes = [];
-      this.addCustomCards(preludes, this.gameOptions.customPreludes, {respectModuleSelection: true});
+      const available = this.getCards<IPreludeCard>('preludeCards').map((card) => card.name);
+      this.addCustomCards(preludes, this.normalizeCustomCardSelection(this.gameOptions.customPreludes, available), {respectModuleSelection: true});
     } else {
       preludes = this.getCards<IPreludeCard>('preludeCards');
       // https://github.com/terraforming-mars/terraforming-mars/issues/2833
@@ -140,6 +163,10 @@ export class GameCards {
       // by preparing a deck of preludes.
       if (preludes.length === 0) {
         preludes = this.instantiate(PRELUDE_CARD_MANIFEST.preludeCards);
+      } else if (this.gameOptions.rebalancedExpansion && !this.gameOptions.preludeExtension &&
+          preludes.every((card) => REBALANCED_CARD_MANIFEST.preludeCards[card.name] !== undefined)) {
+        // Valley Trust needs the complete fallback deck even when only replacement preludes were selected.
+        preludes.push(...this.filterBannedCards(this.instantiate(PRELUDE_CARD_MANIFEST.preludeCards)));
       }
     }
     if (this.gameOptions.twoCorpsVariant) {
@@ -147,14 +174,14 @@ export class GameCards {
       // remove it from the deck to avoid possible conflicts (e.g. Valley Trust / New Partner)
       preludes = preludes.filter((c) => c.name !== CardName.MERGER);
     }
-    return preludes;
+    return filterReplacedCards(preludes, this.moduleManifests);
   }
 
   public getCeoCards() {
     if (this.gameOptions.customCeos.length > 0) {
       const selected: Array<ICeoCard> = [];
       this.addCustomCards(selected, this.gameOptions.customCeos, {respectModuleSelection: true});
-      return selected;
+      return filterReplacedCards(selected, this.moduleManifests);
     }
     return this.getCards<ICeoCard>('ceoCards');
   }
@@ -181,6 +208,10 @@ export class GameCards {
       if (options.respectModuleSelection === true && !this.isCustomCardCompatible(canonicalName, entry)) {
         continue;
       }
+      // Preserve legacy force-adds when Rebalanced is off; replacement priority needs actual compatibility.
+      if ((entry.module === 'rebalanced' || this.gameOptions.rebalancedExpansion) && !this.isCustomCardCompatible(canonicalName, entry)) {
+        continue;
+      }
 
       const card = new entry.factory.Factory();
       cards.push(<T> card);
@@ -188,6 +219,9 @@ export class GameCards {
   }
 
   private isCustomCardCompatible(cardName: CardName, entry: {module: GameModule, factory: CardFactorySpec<ICard>}): boolean {
+    if (entry.factory.instantiate === false) {
+      return false;
+    }
     const ignoresModule = CUSTOM_CARD_MODULE_EXCEPTIONS.has(cardName);
     if (ignoresModule === false && this.isModuleEnabled(entry.module) === false) {
       return false;
@@ -196,8 +230,13 @@ export class GameCards {
     return isCompatibleWith(entry.factory, this.gameOptions);
   }
 
+  private normalizeCustomCardSelection(selected: ReadonlyArray<CardName>, available: ReadonlyArray<CardName>): Array<CardName> {
+    const replacements = getCardReplacementNames(available, ALL_MODULE_MANIFESTS);
+    return selected.map((name) => replacements.get(name) ?? name);
+  }
+
   private findCustomCardFactory(cardName: CardName): {module: GameModule, factory: CardFactorySpec<ICard>} | undefined {
-    for (const moduleManifest of ALL_GAME_CARD_MANIFESTS) {
+    for (const moduleManifest of ALL_MODULE_MANIFESTS) {
       for (const manifestName of CUSTOM_CARD_MANIFEST_NAMES) {
         const cardManifest = moduleManifest[manifestName] as CardManifest<ICard>;
         const factory = cardManifest[cardName];
@@ -243,7 +282,57 @@ export class GameCards {
       return this.gameOptions.underworldExpansion;
     case 'deltaProject':
       return this.gameOptions.deltaProjectExpansion;
+    case 'sillyfication':
+      return this.gameOptions.sillyficationExpansion;
+    case 'betterMars':
+      return this.gameOptions.betterMarsExpansion;
+    case 'rebalanced':
+      return this.gameOptions.rebalancedExpansion;
+    case 'customCards':
+      return this.gameOptions.customCardsExpansion;
+    case 'conglomerates':
+      return this.gameOptions.conglomeratesExpansion;
+    case 'corporateBetterments':
+      return this.gameOptions.corporateBettermentsExpansion;
+    case 'idesOfMars':
+      return this.gameOptions.idesOfMarsExpansion;
+    case 'robAntilles':
+      return this.gameOptions.robAntillesExpansion;
+    case 'moreParties':
+      return this.gameOptions.morePartiesExpansion;
+    case 'venusPhase2':
+      return this.gameOptions.venusPhase2Expansion;
+    case 'industries':
+      return this.gameOptions.industriesExpansion;
+    case 'highOrbit':
+      return this.gameOptions.highOrbitExpansion;
+    case 'solaris':
+      return this.gameOptions.solarisExpansion;
     }
+  }
+
+  /**
+   * Adds every approved Card Maker submission whose expansion-compatibility is fully satisfied
+   * by this game's enabled expansions -- gated by the "Custom Cards" toggle. Unlike
+   * `addCustomCards`, these aren't looked up by name from a `customList`: they're the entire
+   * approved registry, so it's an all-or-nothing toggle rather than a per-card opt-in.
+   */
+  private addCustomCardLibrary(cards: Array<IProjectCard>): void {
+    if (!this.gameOptions.customCardsExpansion) {
+      return;
+    }
+    const customCards: Array<IProjectCard> = [];
+    for (const def of getAllCustomCardDefinitions()) {
+      const name = def.cardName as unknown as CardName;
+      if (cards.findIndex((c) => c.name === name) > -1) {
+        continue;
+      }
+      if (!def.compatibility.every((expansion) => this.gameOptions.expansions[expansion])) {
+        continue;
+      }
+      customCards.push(new DataDrivenCard(def));
+    }
+    cards.push(...this.filterBannedCards(customCards));
   }
 
   /* Instantiates compatible cards from each enabled module, then applies game exclusions. */
@@ -256,7 +345,7 @@ export class GameCards {
     }
 
     cards = this.filterBannedCards(cards);
-    cards = this.filterReplacedCards(cards);
+    cards = filterReplacedCards(cards, this.moduleManifests);
     return cards;
   }
 
@@ -264,18 +353,6 @@ export class GameCards {
   private filterBannedCards<T extends ICard>(cards: Array<T>): Array<T> {
     return cards.filter((card) => {
       return this.gameOptions.bannedCards.includes(card.name) !== true;
-    });
-  }
-
-  /* Remove cards that are replaced by new versions in other manifests */
-  private filterReplacedCards<T extends ICard>(cards: Array<T>): Array<T> {
-    return cards.filter((card) => {
-      for (const manifest of this.moduleManifests) {
-        if (manifest.cardsToRemove.has(card.name)) {
-          return false;
-        }
-      }
-      return true;
     });
   }
 }

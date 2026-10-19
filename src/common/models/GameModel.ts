@@ -1,3 +1,4 @@
+import {AutomationCompatibility} from './AutomationCompatibility';
 import {GameOptionsModel} from './GameOptionsModel';
 import {ColonyModel} from './ColonyModel';
 import {Color} from '../Color';
@@ -13,6 +14,10 @@ import {GameId, SpectatorId} from '../Types';
 import {ColonyName} from '../colonies/ColonyName';
 import {GlobalParameter} from '../GlobalParameter';
 import {Tag} from '../cards/Tag';
+import {ConglomeratesModel} from './ConglomeratesModel';
+import {VenusPhase2Model} from './VenusPhase2Model';
+import {HighOrbitMarketRow} from '../highOrbit/HighOrbitMarket';
+import {CardName} from '../cards/CardName';
 
 export type DeckSizeModel = {
   drawPile: number;
@@ -29,9 +34,13 @@ export type OtherDeckSizesModel = {
 
 // Common data about a game not assocaited with a player (eg the temperature.)
 export type GameModel = {
+  fanmadeCatalogRevision?: string;
+  automationCompatibility?: AutomationCompatibility;
+  astraMechanicaReplayTargetExclusions?: ReadonlyArray<CardName>;
   aresData: AresData | undefined;
   awards: ReadonlyArray<FundedAwardModel>;
   colonies: ReadonlyArray<ColonyModel>;
+  conglomerates: ConglomeratesModel | undefined;
   discardedColonies: ReadonlyArray<ColonyName>;
   deckSize: number;
   discardPileSize: number;
@@ -43,6 +52,7 @@ export type GameModel = {
   gameOptions: GameOptionsModel;
   generation: number;
   globalsPerGeneration: ReadonlyArray<Partial<Record<GlobalParameter, number>>>,
+  highOrbitMarket: ReadonlyArray<HighOrbitMarketRow> | undefined;
   isSoloModeWin: boolean;
   lastSoloGeneration: number,
   milestones: ReadonlyArray<ClaimedMilestoneModel>;
@@ -62,4 +72,5 @@ export type GameModel = {
   turmoil: TurmoilModel | undefined;
   undoCount: number;
   venusScaleLevel: number;
+  venusPhase2: VenusPhase2Model | undefined;
 }

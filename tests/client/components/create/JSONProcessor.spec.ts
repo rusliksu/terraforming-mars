@@ -6,6 +6,7 @@ import {BoardName} from '@/common/boards/BoardName';
 import {JSONObject} from '@/common/Types';
 import {CreateGameModel} from '@/client/components/create/CreateGameModel';
 import {CardName} from '@/common/cards/CardName';
+import {DEFAULT_EXPANSIONS} from '@/common/cards/GameModule';
 import {ANTISTRESS_NAME, CATHARSIS_NAME, EMERALD_RAV_NAME, GAMBIT_GIRL_NAME, GENUINE_GOLD_NAME, GYDRO_NAME, PAVEL_TURQUOISE_NAME, TOMA_NAME} from '@/common/Color';
 
 type Case = {
@@ -41,6 +42,19 @@ const TEMPLATE_INPUT = {
     starwars: false,
     underworld: false,
     deltaProject: false,
+    sillyfication: false,
+    betterMars: false,
+    rebalanced: false,
+    customCards: false,
+    conglomerates: false,
+    corporateBetterments: false,
+    idesOfMars: false,
+    robAntilles: false,
+    moreParties: false,
+    venusPhase2: false,
+    industries: false,
+    highOrbit: false,
+    solaris: false,
   },
   draftVariant: true,
   showOtherPlayersVP: false,
@@ -88,17 +102,20 @@ const TEMPLATE_INPUT = {
 };
 
 const TEMPLATE_EXPECTED: CreateGameModel = {
+  customBoardCode: undefined,
+  customMoonBoardCode: undefined,
+  customVenusSurfaceBoardCode: undefined,
   firstIndex: 1,
   playersCount: 1,
   players: [
     {name: 'You', color: 'red', beginner: false, handicap: 0, preludeHandicap: 2, first: false, isBot: false},
-    {name: '', color: 'green', beginner: false, handicap: 0, preludeHandicap: 2, first: false, isBot: false, telegramID: ''},
-    {name: '', color: 'yellow', beginner: false, handicap: 0, preludeHandicap: 2, first: false, isBot: false, telegramID: ''},
-    {name: '', color: 'blue', beginner: false, handicap: 0, preludeHandicap: 2, first: false, isBot: false, telegramID: ''},
-    {name: '', color: 'black', beginner: false, handicap: 0, preludeHandicap: 2, first: false, isBot: false, telegramID: ''},
-    {name: '', color: 'purple', beginner: false, handicap: 0, preludeHandicap: 2, first: false, isBot: false, telegramID: ''},
-    {name: '', color: 'orange', beginner: false, handicap: 0, preludeHandicap: 2, first: false, isBot: false, telegramID: ''},
-    {name: '', color: 'pink', beginner: false, handicap: 0, preludeHandicap: 2, first: false, isBot: false, telegramID: ''},
+    {name: '', color: 'green', beginner: false, handicap: 0, preludeHandicap: 2, first: false, isBot: false, telegramID: '', team: 1},
+    {name: '', color: 'yellow', beginner: false, handicap: 0, preludeHandicap: 2, first: false, isBot: false, telegramID: '', team: 0},
+    {name: '', color: 'blue', beginner: false, handicap: 0, preludeHandicap: 2, first: false, isBot: false, telegramID: '', team: 1},
+    {name: '', color: 'black', beginner: false, handicap: 0, preludeHandicap: 2, first: false, isBot: false, telegramID: '', team: 0},
+    {name: '', color: 'purple', beginner: false, handicap: 0, preludeHandicap: 2, first: false, isBot: false, telegramID: '', team: 1},
+    {name: '', color: 'orange', beginner: false, handicap: 0, preludeHandicap: 2, first: false, isBot: false, telegramID: '', team: 0},
+    {name: '', color: 'pink', beginner: false, handicap: 0, preludeHandicap: 2, first: false, isBot: false, telegramID: '', team: 1},
   ],
   expansions: {
     corpera: true,
@@ -116,6 +133,19 @@ const TEMPLATE_EXPECTED: CreateGameModel = {
     starwars: false,
     underworld: false,
     deltaProject: false,
+    sillyfication: false,
+    betterMars: false,
+    rebalanced: false,
+    customCards: false,
+    conglomerates: false,
+    corporateBetterments: false,
+    idesOfMars: false,
+    robAntilles: false,
+    moreParties: false,
+    venusPhase2: false,
+    industries: false,
+    highOrbit: false,
+    solaris: false,
   },
   draftVariant: true,
   initialDraft: false,
@@ -270,6 +300,40 @@ const cases: Array<Case> = [
 
 
 describe('JSONProcessor', () => {
+  it('fills a partial expansion map and disables absent Rebalanced in a previously enabled form', () => {
+    const model = defaultCreateGameModel();
+    model.expansions.rebalanced = true;
+    model.expansions.colonies = true;
+    new JSONProcessor(model).applyJSON({
+      players: [{name: 'Template player', color: 'red', beginner: false, handicap: 0, first: false}],
+      solarPhaseOption: false,
+      expansions: {prelude: true},
+    });
+    expect(model.expansions).deep.eq({...DEFAULT_EXPANSIONS, prelude: true});
+    expect(model.expansions.rebalanced).is.false;
+  });
+
+  it('preserves explicit legacy flags with nested Rebalanced taking precedence', () => {
+    for (const [fields, expected] of [
+      [{rebalancedExpansion: true}, true],
+      [{rebalancedExpansion: false}, false],
+      [{rebalancedExpansion: true, expansions: {rebalanced: false}}, false],
+      [{rebalancedExpansion: false, expansions: {rebalanced: true}}, true],
+      [{}, false],
+    ] as const) {
+      const model = defaultCreateGameModel();
+      model.expansions.rebalanced = true;
+      new JSONProcessor(model).applyJSON({
+        players: [{name: 'Template player', color: 'red', beginner: false, handicap: 0, first: false}],
+        solarPhaseOption: false,
+        colonies: true,
+        ...fields,
+      });
+      expect(model.expansions.rebalanced).eq(expected);
+      expect(model.expansions.colonies).is.true;
+    }
+  });
+
   for (const testCase of cases) {
     it(testCase.description, () => {
       const model = defaultCreateGameModel();

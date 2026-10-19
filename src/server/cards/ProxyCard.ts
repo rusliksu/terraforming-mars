@@ -47,6 +47,9 @@ export class ProxyCard implements IProjectCard {
   public getGlobalParameterRequirementBonus(_player: IPlayer, _parameter: GlobalParameter): number {
     return 0;
   }
+  public getTagCardRequirementBonus(_player: IPlayer, _tag: Tag): number {
+    return 0;
+  }
   public get tilesBuilt() {
     return [];
   }

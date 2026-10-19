@@ -63,6 +63,7 @@ const DESCRIPTIONS: Record<SpendableResource, string> = {
   steel: 'Steel',
   titanium: 'Titanium',
   heat: 'Heat',
+  energy: 'Energy',
   seeds: 'Seeds',
   auroraiData: 'Data',
   kuiperAsteroids: 'Asteroids',
@@ -73,6 +74,8 @@ const DESCRIPTIONS: Record<SpendableResource, string> = {
   lunaArchivesScience: 'Science',
   microbes: 'Microbes',
   plants: 'Plants',
+  nereidMicrobes: 'Microbes',
+  anyFloaters: 'Floaters',
 };
 
 function mapRecord<T extends string, U, V>(record: Record<T, U>, f: (value: U) => V): Record<T, V> {

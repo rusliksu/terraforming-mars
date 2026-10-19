@@ -32,7 +32,7 @@ export const TEMPERATURE_BONUS_FOR_HEAT_2 = -20;
 // Colonies
 export const MAX_COLONY_TRACK_POSITION = 6;
 export const MAX_COLONIES_PER_TILE = 3;
-export const MAX_FLEET_SIZE = 4;
+export const MAX_FLEET_SIZE = 6;
 export const MC_TRADE_COST = 9;
 export const ENERGY_TRADE_COST = 3;
 export const TITANIUM_TRADE_COST = 3;
@@ -106,3 +106,12 @@ export const DISCORD_INVITE = 'https://discord.gg/afeyggbN6Y';
 export const DEFAULT_WAITING_FOR_TIMEOUT = 1000;
 export const DEFAULT_LOG_LENGTH = 50;
 export const DEFAULT_URL_ROOT = 'http://localhost:8080';
+
+export const PRODUCTION_MINIMUMS = {
+  megacredits: -5,
+  steel: 0,
+  titanium: 0,
+  plants: 0,
+  energy: 0,
+  heat: 0,
+};

@@ -4,6 +4,12 @@
   <label v-for="availableCard in cards" class="payments_cards" :key="availableCard.name">
     <input v-if="!availableCard.isDisabled" class="hidden" type="radio" v-model="cardName" :value="availableCard.name" >
     <Card class="cardbox" :card="availableCard" />
+    <div v-if="availableCard.additionalProjectCosts?.conglomeratesCost !== undefined" class="card-warning"
+      v-i18n="[availableCard.additionalProjectCosts.conglomeratesCost]"
+      data-test="conglomerates-cost"
+    >
+      This currently costs ${0} Coordination
+    </div>
   </label>
   <template v-if="card !== undefined && card.additionalProjectCosts">
     <div v-if="card.additionalProjectCosts.aeronGenomicsResources" class="card-warning"
@@ -82,9 +88,12 @@ export default defineComponent({
         'steel',
         'titanium',
         'heat',
+        'energy',
         'plants',
         'microbes',
+        'nereidMicrobes',
         'floaters',
+        'anyFloaters',
         'lunaArchivesScience',
         'seeds',
         'graphene',
@@ -171,6 +180,7 @@ export default defineComponent({
       this.available.steel = Math.max(thisPlayer.steel - this.reserveUnits.steel, 0);
       this.available.titanium = Math.max(thisPlayer.titanium - this.reserveUnits.titanium, 0);
       this.available.heat = Math.max(this.availableHeat() - this.reserveUnits.heat, 0);
+      this.available.energy = Math.max(thisPlayer.energy - this.reserveUnits.energy, 0);
       this.available.plants = Math.max(thisPlayer.plants - this.reserveUnits.plants, 0);
     },
     canUseTitaniumRegularly(): boolean {
@@ -194,6 +204,8 @@ export default defineComponent({
           return true;
         case 'heat':
           return this.playerinput.paymentOptions.heat === true;
+        case 'energy':
+          return this.playerinput.paymentOptions.energy === true;
         case 'steel':
           return canPayWith.steel === true;
         case 'titanium':
@@ -203,8 +215,11 @@ export default defineComponent({
           return canPayWith.seeds === true;
         case 'kuiperAsteroids':
           return canPayWith.kuiperAsteroids === true;
+        case 'anyFloaters':
+          return canPayWith.anyFloaters === true;
         case 'plants':
         case 'microbes':
+        case 'nereidMicrobes':
         case 'floaters':
         case 'lunaArchivesScience':
         case 'graphene':
@@ -218,9 +233,12 @@ export default defineComponent({
           return true;
         case 'heat':
           return this.playerinput.paymentOptions.heat === true;
+        case 'energy':
+          return this.playerinput.paymentOptions.energy === true;
         case 'steel':
           return this.tags.includes(Tag.BUILDING) ||
-          this.playerView.thisPlayer.lastCardPlayed === CardName.LAST_RESORT_INGENUITY;
+          this.playerView.thisPlayer.lastCardPlayed === CardName.LAST_RESORT_INGENUITY ||
+          (this.tags.includes(Tag.CITY) && this.playerView.thisPlayer.tableau.some((c) => c.name === CardName.BLOCKHOUSE));
         case 'titanium':
           return this.canUseTitaniumRegularly() ||
           this.playerinput.paymentOptions.lunaTradeFederationTitanium === true;
@@ -228,6 +246,8 @@ export default defineComponent({
           return this.tags.includes(Tag.BUILDING) && this.playerinput.paymentOptions.plants === true;
         case 'microbes':
           return this.tags.includes(Tag.PLANT);
+        case 'nereidMicrobes':
+          return this.tags.includes(Tag.JOVIAN);
         case 'floaters':
           return this.tags.includes(Tag.VENUS);
         case 'lunaArchivesScience':
@@ -240,6 +260,7 @@ export default defineComponent({
         case 'kuiperAsteroids':
         case 'auroraiData':
         case 'spireScience':
+        case 'anyFloaters':
           return false;
         default:
           throw new Error('Unknown unit ' + unit);

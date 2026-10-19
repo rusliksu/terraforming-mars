@@ -3,6 +3,7 @@ import {TileType} from '../../../common/TileType';
 import {CardName} from '../../../common/cards/CardName';
 import {MiningCard} from './MiningCard';
 import {CardRenderer} from '../render/CardRenderer';
+import {ConglomeratesExpansion} from '../../conglomerates/ConglomeratesExpansion';
 
 export class MiningArea extends MiningCard {
   protected readonly title = 'Select a space with a steel or titanium bonus adjacent to one of your tiles';
@@ -28,6 +29,6 @@ export class MiningArea extends MiningCard {
 
   protected override getAvailableSpaces(player: IPlayer, canAffordOptions: CanAffordOptions) {
     return super.getAvailableSpaces(player, canAffordOptions)
-      .filter((space) => player.game.board.getAdjacentSpaces(space).some((adjacentSpace) => adjacentSpace.tile !== undefined && adjacentSpace.tile.tileType !== TileType.OCEAN && adjacentSpace.player === player));
+      .filter((space) => player.game.board.getAdjacentSpaces(space).some((adjacentSpace) => adjacentSpace.tile !== undefined && adjacentSpace.tile.tileType !== TileType.OCEAN && ConglomeratesExpansion.isTeammateOrSelf(player, adjacentSpace.player)));
   }
 }

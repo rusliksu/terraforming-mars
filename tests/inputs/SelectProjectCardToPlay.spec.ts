@@ -57,6 +57,19 @@ describe('SelectProjectCardToPlay', () => {
     expect(player.playedCards.get(CardName.AQUIFER_PUMPING)).is.not.undefined;
   });
 
+  it('plays a card with a pre-port payment payload', () => {
+    player.megaCredits = 20;
+    const payment = JSON.parse(JSON.stringify(Payment.of({megacredits: 18})));
+    delete payment.energy;
+    delete payment.nereidMicrobes;
+    delete payment.anyFloaters;
+    new SelectProjectCardToPlay(player, [aquiferPumping]).andThen(cb).process({
+      type: 'projectCard', card: aquiferPumping.name, payment,
+    });
+    expect(player.megaCredits).eq(2);
+    expect(player.playedCards.get(aquiferPumping.name)).eq(aquiferPumping);
+  });
+
   it('records the actual mixed card payment on the public play message', () => {
     player.megaCredits = 20;
     player.steel = 2;

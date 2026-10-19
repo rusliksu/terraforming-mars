@@ -3,10 +3,13 @@ export enum RequirementType {
     TEMPERATURE = 'C',
     OCEANS = 'Ocean',
     TR = 'TR',
+    GENERATION = 'Generation',
     RESOURCE_TYPES = 'Resource type',
     GREENERIES = 'Greenery',
+    GREENERY_LAST_ACTION = 'Greenery last action',
     CITIES = 'City',
     TAG = 'tag',
+    UNIQUE_TAGS = 'Unique tags',
     PRODUCTION = 'production',
     REMOVED_PLANTS = 'Removed plants',
 
@@ -31,4 +34,7 @@ export enum RequirementType {
     // Underworld
     CORRUPTION = 'Corruption',
     UNDERGROUND_TOKENS = 'Underground tokens',
+
+    // High Orbit (fan)
+    RELATIVE_TAG = 'Relative tag',
 }

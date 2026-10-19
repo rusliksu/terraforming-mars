@@ -11,6 +11,7 @@ import {GlobalEventName} from '../turmoil/globalEvents/GlobalEventName';
 import {Warning} from '../cards/Warning';
 import {Units} from '../Units';
 import {ClaimedToken} from '../underworld/UnderworldPlayerData';
+import {ColonyTrackChoiceModel} from './ColonyTradeContextModel';
 
 export type BaseInputModel = {
   title: string | Message;
@@ -18,6 +19,12 @@ export type BaseInputModel = {
   buttonLabel: string;
   /** Stable, non-secret identifier for machine-controlled prompt handling. */
   annotation?: string;
+  /**
+   * Identity of the prompt this model was built from. Clients echo it back with the
+   * answer so a stale screen cannot be applied to a newer prompt that happens to
+   * accept the same response type (e.g. a draft pick becoming a card purchase).
+   */
+  promptId?: string;
   optional?: boolean;
 }
 
@@ -29,6 +36,7 @@ export type AndOptionsModel = BaseInputModel & {
 export type OrOptionsModel = BaseInputModel & {
   type: 'or';
   options: Array<PlayerInputModel>;
+  colonyTrackChoices?: ColonyTrackChoiceModel;
   // When set, initialIdx represents the option within `options` that should be
   // shows as the default selection.
   initialIdx?: number;
@@ -56,6 +64,8 @@ export type SelectProjectCardToPlayModel = BaseInputModel & {
   kuiperAsteroids: number;
   auroraiData: number;
   spireScience: number;
+  nereidMicrobes: number;
+  anyFloaters: number;
 }
 
 export type SelectCardModel = BaseInputModel & {
@@ -124,6 +134,8 @@ export type SelectPartyModel = BaseInputModel & {
 export type SelectProductionToLoseModel = BaseInputModel & {
   type: 'productionToLose';
   payProduction: PayProductionModel;
+  /** Required two-step losses from a single production type. */
+  pairs?: number;
 }
 
 export type ShiftAresGlobalParametersModel = BaseInputModel & {

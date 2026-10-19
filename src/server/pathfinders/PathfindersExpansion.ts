@@ -21,6 +21,8 @@ import {VictoryPointsBreakdownBuilder} from '../game/VictoryPointsBreakdownBuild
 import {GlobalEventName} from '../../common/turmoil/globalEvents/GlobalEventName';
 import {Priority} from '../deferredActions/Priority';
 import {message} from '../logs/MessageBuilder';
+import {PlanetPr} from '../cards/pathfinders/PlanetPr';
+import {PlanetPrII} from '../cards/pathfinders/PlanetPrII';
 
 export class PathfindersExpansion {
   private constructor() {
@@ -41,12 +43,35 @@ export class PathfindersExpansion {
     if (player.game.gameOptions.pathfindersExpansion === false) {
       return;
     }
+    // Planet PR (BetterMars) and Planet PR II (plain Pathfinders) share this streak:
+    // playing two cards with the same planetary tag back to back raises that track 1
+    // additional step on the second one. Playing a card with no planetary tag at all
+    // breaks the streak, even though it doesn't touch any track itself. A player could
+    // hold both (e.g. via Merger), in which case they share one streak tracker.
+    const planetPr = player.tableau.get(CardName.PLANET_PR) as PlanetPr | undefined;
+    const planetPrII = player.tableau.get(CardName.PLANET_PR_II) as PlanetPrII | undefined;
+    const streakCard = planetPr ?? planetPrII;
     const tags = card.tags;
+    let hadPlanetaryTag = false;
     tags.forEach((tag) => {
-      if (isPlanetaryTag(tag)) {
-        PathfindersExpansion.raiseTrack(tag, player);
+      if (!isPlanetaryTag(tag)) {
+        return;
+      }
+      hadPlanetaryTag = true;
+      const steps = streakCard !== undefined && streakCard.lastPlanetaryTag === tag ? 2 : 1;
+      PathfindersExpansion.raiseTrack(tag, player, steps);
+      // Planet PR II's whole bonus is a flat 2 M€ when the streak itself triggers,
+      // unlike Planet PR's per-track piggyback bonuses (see grantPlanetPrBonus).
+      if (steps === 2 && planetPrII !== undefined) {
+        player.stock.add(Resource.MEGACREDITS, 2, {log: true, from: {card: planetPrII}});
+      }
+      if (streakCard !== undefined) {
+        streakCard.lastPlanetaryTag = tag;
       }
     });
+    if (!hadPlanetaryTag && streakCard !== undefined) {
+      streakCard.lastPlanetaryTag = undefined;
+    }
   }
 
   public static willGainEnergyProductionOnNextMarsTag(player: IPlayer, count: 1 | 2 = 1): boolean {
@@ -124,6 +149,12 @@ export class PathfindersExpansion {
           rewards.risingPlayer.forEach((reward) => {
             PathfindersExpansion.grant(reward, from, tag);
           });
+          // Some spaces (e.g. Mars/Jovian space 2) only have an `everyone` reward and no
+          // `risingPlayer` one - that still counts as "triggering the track's bonus" for
+          // Planet PR, so check both instead of just risingPlayer.
+          if (rewards.risingPlayer.length > 0 || rewards.everyone.length > 0) {
+            PathfindersExpansion.grantPlanetPrBonus(from, tag);
+          }
         }
       }
       rewards.everyone.forEach((reward) => {
@@ -252,6 +283,28 @@ export class PathfindersExpansion {
       break;
     default:
       throw new Error('Unknown reward: ' + reward);
+    }
+  }
+
+  /** Planet PR: whenever you trigger a planetary track bonus, also gain a small track-specific reward. */
+  private static grantPlanetPrBonus(player: IPlayer, tag: PlanetaryTag): void {
+    if (!player.tableau.has(CardName.PLANET_PR)) {
+      return;
+    }
+    switch (tag) {
+    case Tag.VENUS:
+      player.game.defer(new AddResourcesToCard(player, CardResource.FLOATER));
+      break;
+    case Tag.EARTH:
+      player.stock.add(Resource.MEGACREDITS, 2, {log: true});
+      break;
+    case Tag.MARS:
+    case Tag.MOON:
+      player.stock.add(Resource.STEEL, 1, {log: true});
+      break;
+    case Tag.JOVIAN:
+      player.stock.add(Resource.TITANIUM, 1, {log: true});
+      break;
     }
   }
 

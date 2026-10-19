@@ -56,6 +56,7 @@ export default defineComponent({
         'steel',
         'titanium',
         'heat',
+        'energy',
         'seeds',
         'auroraiData',
         'kuiperAsteroids',

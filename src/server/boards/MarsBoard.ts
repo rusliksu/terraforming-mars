@@ -1,4 +1,4 @@
-import {OCEAN_UPGRADE_TILES, TileType} from '../../common/TileType';
+import {CITY_TILES, CITY_UPGRADE_TILES, GREENERY_TILES, GREENERY_UPGRADE_TILES, OCEAN_UPGRADE_TILES, TileType} from '../../common/TileType';
 import {SpaceType} from '../../common/boards/SpaceType';
 import {CanAffordOptions, IPlayer} from '../IPlayer';
 import {Board} from './Board';
@@ -11,14 +11,16 @@ import {oneWayDifference} from '../../common/utils/utils';
 import {Tile} from '../Tile';
 import {SpaceBonus} from '../../common/boards/SpaceBonus';
 import * as constants from '../../common/constants';
+import {ConglomeratesExpansion} from '../conglomerates/ConglomeratesExpansion';
 
 export class MarsBoard extends Board {
   private readonly edges: ReadonlyArray<Space>;
 
   public constructor(
     spaces: ReadonlyArray<Space>,
-    noctisCitySpaceId?: SpaceId | undefined) {
-    super(spaces, noctisCitySpaceId);
+    noctisCitySpaceId?: SpaceId | undefined,
+    extent?: {maxX: number, maxY: number}) {
+    super(spaces, noctisCitySpaceId, extent);
     this.edges = this.computeEdges();
   }
 
@@ -103,14 +105,20 @@ export class MarsBoard extends Board {
     if (player.tableau.has(CardName.KINGDOM_OF_TAURARO)) {
       const spacesNextToMySpaces = spacesOnLand.filter(
         (space) => this.getAdjacentSpaces(space).some(
-          (adj) => (adj.tile !== undefined && adj.player === player || adj.excavator?.id === player.id)));
+          (adj) => (adj.tile !== undefined && ConglomeratesExpansion.isTeammateOrSelf(player, adj.player) || adj.excavator?.id === player.id)));
 
       return (spacesNextToMySpaces.length > 0) ? spacesNextToMySpaces : spacesOnLand;
     }
     // A city cannot be adjacent to another city
-    return spacesOnLand.filter(
+    const normal = spacesOnLand.filter(
       (space) => this.getAdjacentSpaces(space).some((adjacentSpace) => Board.isCitySpace(adjacentSpace)) === false,
     );
+    // Rob Antilles: Sedimentary Rocks reserves a space for its owner with a Sediment tile, which
+    // that player may later cover with a City tile "ignoring the normal placement rules" -- so it
+    // shows up here even though it's already occupied and even if it's adjacent to another city.
+    const sedimentSpaces = this.spaces.filter((space) =>
+      space.tile?.tileType === TileType.SEDIMENT && space.player?.id === player.id && !normal.includes(space));
+    return sedimentSpaces.length > 0 ? [...normal, ...sedimentSpaces] : normal;
   }
 
   public hasAvailableCitySpaceWithBonus(player: IPlayer, bonus: SpaceBonus): boolean {
@@ -168,7 +176,7 @@ export class MarsBoard extends Board {
     // to a tile the player already owns.
     const spacesForGreenery = availableLandSpaces.filter((space) => {
       return this.getAdjacentSpaces(space).some((adj) => {
-        return MarsBoard.hasRealTile(adj) && adj.player === player;
+        return MarsBoard.hasRealTile(adj) && ConglomeratesExpansion.isTeammateOrSelf(player, adj.player);
       });
     });
 
@@ -198,23 +206,24 @@ export class MarsBoard extends Board {
    */
   public static canAffordPlacementBonuses(player: IPlayer, space: Space): boolean {
     const game = player.game;
+    const customCosts = game.gameOptions.customBoard?.placementBonusCosts;
     if (space.bonus.includes(SpaceBonus.OCEAN) && game.canAddOcean()) {
-      if (!player.canAfford({cost: constants.HELLAS_BONUS_OCEAN_COST, tr: {oceans: 1}})) {
+      if (!player.canAfford({cost: customCosts?.ocean ?? constants.HELLAS_BONUS_OCEAN_COST, tr: {oceans: 1}})) {
         return false;
       }
     }
-    if (space.bonus.includes(SpaceBonus.TEMPERATURE) && game.getTemperature() < constants.MAX_TEMPERATURE) {
-      if (!player.canAfford({cost: constants.VASTITAS_BOREALIS_BONUS_TEMPERATURE_COST, tr: {temperature: 1}})) {
+    if (space.bonus.includes(SpaceBonus.TEMPERATURE) && game.getTemperature() < game.parameters.temperature.max) {
+      if (!player.canAfford({cost: customCosts?.temperature ?? constants.VASTITAS_BOREALIS_BONUS_TEMPERATURE_COST, tr: {temperature: 1}})) {
         return false;
       }
     }
-    if (space.bonus.includes(SpaceBonus.TEMPERATURE_4MC) && game.getTemperature() < constants.MAX_TEMPERATURE) {
+    if (space.bonus.includes(SpaceBonus.TEMPERATURE_4MC) && game.getTemperature() < game.parameters.temperature.max) {
       if (!player.canAfford({cost: constants.VASTITAS_BOREALIS_NOVA_BONUS_TEMPERATURE_COST, tr: {temperature: 1}})) {
         return false;
       }
     }
     if (space.bonus.includes(SpaceBonus.COLONY)) {
-      if (!player.canAfford({cost: constants.TERRA_CIMMERIA_COLONY_COST})) {
+      if (!player.canAfford({cost: customCosts?.colony ?? constants.TERRA_CIMMERIA_COLONY_COST})) {
         return false;
       }
     }
@@ -222,21 +231,11 @@ export class MarsBoard extends Board {
   }
 
   private computeEdges(): ReadonlyArray<Space> {
-    return this.spaces.filter((space) => {
-      if (space.y === 0 || space.y === 8 || space.x === 8) {
-        return true;
-      }
-      // left side is tricky.
-      // top-left is easy with math. Look at the map.
-      if (space.y + space.x === 4) {
-        return true;
-      }
-      // bottom-left is also easy with math. Look at the map.
-      if (space.y - space.x === 4) {
-        return true;
-      }
-      return false;
-    });
+    // A Mars space is on the edge when it has fewer than the full six neighbours.
+    // On the standard diamond this is exactly {y===0, y===8, x===8, y+x===4, y-x===4};
+    // computing it from adjacency instead lets non-standard (custom) outlines work too.
+    return this.spaces.filter((space) =>
+      space.spaceType !== SpaceType.COLONY && this.getAdjacentSpaces(space).length < 6);
   }
 
   public getEdges(): ReadonlyArray<Space> {
@@ -261,7 +260,7 @@ export class MarsBoard extends Board {
    */
   public getNonReservedLandSpaces(): ReadonlyArray<Space> {
     return this.spaces.filter((space) => {
-      if (space.id === this.noctisCitySpaceId) {
+      if (this.isReservedSpace(space)) {
         return false;
       }
       return (space.spaceType === SpaceType.LAND || space.spaceType === SpaceType.COVE || space.spaceType === SpaceType.DEFLECTION_ZONE) &&
@@ -287,6 +286,23 @@ export class MarsBoard extends Board {
       return true;
     }
     if (space.tile.tileType === TileType.OCEAN && OCEAN_UPGRADE_TILES.has(newTile.tileType)) {
+      return true;
+    }
+    // Rob Antilles: Suburbs is placed on top of the player's own greenery, and Industrial
+    // Metropolis/Paradise City are placed on top of the player's own city, mirroring the
+    // ocean-upgrade pattern above for the other two base tile types.
+    if (GREENERY_TILES.has(space.tile.tileType) && GREENERY_UPGRADE_TILES.has(newTile.tileType)) {
+      return true;
+    }
+    if (CITY_TILES.has(space.tile.tileType) && CITY_UPGRADE_TILES.has(newTile.tileType)) {
+      return true;
+    }
+    // Rob Antilles: Sedimentary Rocks' Sediment special tile can later be covered by a normal
+    // City tile (from any source: another card, or the City standard project), ignoring the
+    // usual "space must be empty" rule. See MarsBoard.getAvailableSpacesForCity for the other
+    // half of this (surfacing the space as a legal city target and exempting it from the
+    // "no city adjacent to city" rule), and Game.addTile for the M€ reward on the cover.
+    if (space.tile.tileType === TileType.SEDIMENT && newTile.tileType === TileType.CITY) {
       return true;
     }
     return false;

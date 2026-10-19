@@ -13,7 +13,7 @@ export class Warmonger implements IAward {
 
   // Public for testing
   public static include(card: ICard) {
-    if (Warmonger.attackCards.includes(card.name)) {
+    if (card.isAttackCard === true || Warmonger.attackCards.includes(card.name)) {
       return true;
     }
     return Warmonger.autoInclude(card);

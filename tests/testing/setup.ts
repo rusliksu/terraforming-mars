@@ -31,6 +31,20 @@ const FAKE_DATABASE: IDatabase = {
   createSession: () => Promise.resolve(),
   deleteSession: () => Promise.resolve(),
   getSessions: () => Promise.resolve([]),
+
+  listMapLibraryEntries: () => Promise.resolve([]),
+  getMapLibraryEntry: () => Promise.resolve(undefined),
+  insertMapLibraryEntry: () => Promise.resolve(),
+  setMapLibraryEntryStatus: () => Promise.resolve(),
+  deleteMapLibraryEntry: () => Promise.resolve(),
+
+  listCustomCardLibraryEntries: () => Promise.resolve([]),
+  getCustomCardLibraryEntry: () => Promise.resolve(undefined),
+  insertCustomCardLibraryEntry: () => Promise.resolve(),
+  setCustomCardLibraryEntryStatus: () => Promise.resolve(),
+  updateCustomCardLibraryEntry: () => Promise.resolve(),
+  deleteCustomCardLibraryEntry: () => Promise.resolve(),
+
   deleteExpiredSessions: () => Promise.resolve(0),
 };
 

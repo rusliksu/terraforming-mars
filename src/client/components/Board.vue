@@ -20,25 +20,27 @@
           <BoardSpace v-if="hasSpace(SpaceName.VENERA_BASE)" :space="getSpace(SpaceName.VENERA_BASE)" text="Venera Base" :tileView="tileView"/>
         </div>
 
-        <div class="global-numbers">
+        <div class="global-numbers" :class="{'global-numbers--custom': isCustomBoard && !useStandardTrackLayout}">
             <div class="global-numbers-temperature">
                 <div :class="getScaleCSS(lvl)" v-for="(lvl, idx) in getValuesForParameter('temperature')" :key="idx">{{ lvl.strValue }}</div>
+                <div class="global-numbers-temperature-extra" v-if="extraStepsBeyondOfficial('temperature') > 0">+{{ extraStepsBeyondOfficial('temperature') }}</div>
             </div>
 
             <div class="global-numbers-oxygen">
                 <div :class="getScaleCSS(lvl)" v-for="(lvl, idx) in getValuesForParameter('oxygen')" :key="idx">{{ lvl.strValue }}</div>
+                <div class="global-numbers-oxygen-extra" v-if="extraStepsBeyondOfficial('oxygen') > 0">+{{ extraStepsBeyondOfficial('oxygen') }}</div>
             </div>
 
-            <div class="global-numbers-venus" v-if="expansions.venus">
+            <div class="global-numbers-venus" v-if="expansions.venus && !expansions.venusPhase2">
                 <div :class="getScaleCSS(lvl)" v-for="(lvl, idx) in getValuesForParameter('venus')" :key="idx">{{ lvl.strValue }}</div>
             </div>
 
             <div class="global-numbers-oceans">
-              <span v-if="oceans_count === constants.MAX_OCEAN_TILES">
+              <span v-if="oceans_count === oceanMax">
                 <img width="26" src="assets/misc/circle-checkmark.png" class="board-ocean-checkmark" :alt="$t('Completed!')">
               </span>
               <span v-else>
-                {{oceans_count}}/{{constants.MAX_OCEAN_TILES}}
+                {{oceans_count}}/{{oceanMax}}
               </span>
             </div>
 
@@ -61,7 +63,7 @@
                 </div>
             </div>
 
-            <div v-if="altVenusBoard" class="global-alt-venus">
+            <div v-if="altVenusBoard && !expansions.venusPhase2" class="global-alt-venus">
               <div class="std-wild-resource p18"></div>
               <div class="std-wild-resource p20"></div>
               <div class="std-wild-resource p22"></div>
@@ -73,17 +75,18 @@
             </div>
         </div>
 
-        <div class="board" id="main_board">
+        <div :class="['board', {'board--custom': isCustomBoard && !useStandardTrackLayout, 'board--custom-fit': useStandardTrackLayout}]" :style="boardStyle" id="main_board">
             <BoardSpace
               v-for="curSpace in getAllSpacesOnMars()"
               :key="curSpace.id"
               :space="curSpace"
               :aresExtension="expansions.ares"
               :tileView="tileView"
+              :pixel="isCustomBoard ? pixelFor(curSpace) : undefined"
               data-test="board-space"
             />
 
-            <svg id="board_legend" height="550" width="630" class="board-legend">
+            <svg v-if="!isCustomBoard" id="board_legend" height="550" width="630" class="board-legend">
               <g v-for="(key, idx) of LEGENDS[boardName]" :key="idx" :transform="`translate(${key.position[0]}, ${key.position[1]})`">
                 <text class="board-caption">
                   <tspan y="0">{{key.text[0]}}</tspan>
@@ -360,6 +363,8 @@ import {SpaceType} from '@/common/boards/SpaceType';
 import {SpaceId} from '@/common/Types';
 import {TileView} from '@/client/components/board/TileView';
 import {BoardName} from '@/common/boards/BoardName';
+import {customBoardPixelSize, customSpacePixel} from '@/common/boards/CustomBoardDefinition';
+import {DEFAULT_GLOBAL_PARAMETERS, GlobalParametersConfig, ParameterTrack} from '@/common/GlobalParameterConfig';
 import {LEGENDS} from '@/client/components/Legends';
 import {Expansion} from '@/common/cards/GameModule';
 import {SpaceName} from '@/common/boards/SpaceName';
@@ -386,6 +391,14 @@ export default defineComponent({
     boardName: {
       type: String as () => BoardName,
       required: true,
+    },
+    globalParameters: {
+      type: Object as () => GlobalParametersConfig | undefined,
+      default: undefined,
+    },
+    customBoardRows: {
+      type: Number,
+      default: undefined,
     },
     oceans_count: {
       type: Number,
@@ -447,36 +460,67 @@ export default defineComponent({
       let curValue: number;
       let strValue: string;
 
+      const parameters = this.globalParameters ?? DEFAULT_GLOBAL_PARAMETERS;
       switch (targetParameter) {
       case 'oxygen':
-        startValue = constants.MIN_OXYGEN_LEVEL;
-        endValue = constants.MAX_OXYGEN_LEVEL;
-        step = 1;
+        startValue = parameters.oxygen.min;
+        endValue = parameters.oxygen.max;
+        step = parameters.oxygen.step;
         curValue = this.oxygen_level;
+        // A custom board may stretch the max past the official 14% -- the painted curve has no
+        // position for anything beyond that, so cap what gets rendered here (see
+        // extraStepsBeyondOfficial() for the "+N" counter that represents the rest).
+        if (this.useStandardTrackLayout) {
+          endValue = Math.min(endValue, DEFAULT_GLOBAL_PARAMETERS.oxygen.max);
+        }
         break;
       case 'temperature':
-        startValue = constants.MIN_TEMPERATURE;
-        endValue = constants.MAX_TEMPERATURE;
-        step = 2;
+        startValue = parameters.temperature.min;
+        endValue = parameters.temperature.max;
+        step = parameters.temperature.step;
         curValue = this.temperature;
+        if (this.useStandardTrackLayout) {
+          endValue = Math.min(endValue, DEFAULT_GLOBAL_PARAMETERS.temperature.max);
+        }
         break;
       case 'venus':
-        startValue = constants.MIN_VENUS_SCALE;
-        endValue = constants.MAX_VENUS_SCALE;
-        step = 2;
+        startValue = parameters.venus.min;
+        // The printed Mars track ends at 30. Legacy Venus games use the full surface-board
+        // track for values beyond it; this marker stays at the printed maximum.
+        endValue = Math.min(parameters.venus.max, DEFAULT_GLOBAL_PARAMETERS.venus.max);
+        step = parameters.venus.step;
         curValue = this.venusScaleLevel;
         break;
       default:
         throw new Error('Wrong parameter to get values from: ' + targetParameter);
       }
 
+      // Once the real value has pushed past the (possibly capped) top of the curve, no rendered
+      // mark can equal it exactly -- peg the topmost mark active instead of leaving nothing lit.
+      const isPegged = curValue > endValue;
       for (let value = endValue; value >= startValue; value -= step) {
         strValue = (targetParameter === 'temperature' && value > 0) ? '+'+value : value.toString();
         values.push(
-          new GlobalParamLevel(value, value === curValue, strValue),
+          new GlobalParamLevel(value, value === curValue || (isPegged && value === endValue), strValue),
         );
       }
       return values;
+    },
+    // How many steps beyond the official max (8 for temperature, 14 for oxygen) the live value
+    // represents, for the "+N" counter next to a capped, pegged curve. 0 (nothing rendered, see
+    // template) unless the curve is actually in capped/pegged mode and the value has crossed it.
+    extraStepsBeyondOfficial(targetParameter: 'temperature' | 'oxygen'): number {
+      if (!this.useStandardTrackLayout) {
+        return 0;
+      }
+      const parameters = this.globalParameters ?? DEFAULT_GLOBAL_PARAMETERS;
+      const track = parameters[targetParameter];
+      const official = DEFAULT_GLOBAL_PARAMETERS[targetParameter];
+      const curValue = targetParameter === 'temperature' ? this.temperature : this.oxygen_level;
+      if (track.max <= official.max || curValue <= official.max) {
+        return 0;
+      }
+      return Math.round((curValue - official.max) / track.step);
     },
     getScaleCSS(paramLevel: GlobalParamLevel): string {
       let css = 'global-numbers-value val-' + paramLevel.value + ' ';
@@ -495,12 +539,100 @@ export default defineComponent({
       }
     },
     getGameBoardClassName(): string {
-      return this.expansions.venus ? 'board-cont board-with-venus' : 'board-cont board-without-venus';
+      const relocated = this.expansions.venusPhase2 ? ' board-cont--venus-relocated' : '';
+      if (this.isCustomBoard && !this.useStandardTrackLayout) {
+        return 'board-cont board-cont--custom' + relocated;
+      }
+      return (this.expansions.venus ? 'board-cont board-with-venus' : 'board-cont board-without-venus') + relocated;
+    },
+    pixelFor(space: SpaceModel): {left: number, top: number} {
+      return customSpacePixel(space.x, space.y, this.customExtent.maxY);
     },
   },
   computed: {
     BoardName(): typeof BoardName {
       return BoardName;
+    },
+    isCustomBoard(): boolean {
+      return this.boardName === BoardName.CUSTOM;
+    },
+    // A custom board that uses the official parameter tracks keeps the painted Mars image and
+    // its curved temperature/oxygen/Venus scales, and the hex grid is scaled to fit inside
+    // that curve. Only a board that actually stretches temperature/oxygen/Venus falls back to
+    // the plain flow-layout readout -- those are the only tracks with a painted curve at all, so
+    // a board that only customizes oceans.max or heatForTemperature (neither of which has any
+    // on-board art) has no reason to lose the curve for tracks it never touched.
+    //
+    // Temperature and oxygen get one further exception: a HIGHER max than official still keeps
+    // the curve (capped at the official mark, plus a "+N" counter -- see getValuesForParameter()/
+    // extraStepsBeyondOfficial()), since the painted diamond and hex-fit have nothing to do with
+    // parameter ranges. Venus, and any min/step deviation, still require an exact match.
+    useStandardTrackLayout(): boolean {
+      if (!this.isCustomBoard) {
+        return false;
+      }
+      if (this.globalParameters === undefined) {
+        return true;
+      }
+      const matchesDefault = (track: ParameterTrack, defaultTrack: ParameterTrack): boolean =>
+        track.min === defaultTrack.min && track.max === defaultTrack.max && track.step === defaultTrack.step;
+      const matchesOrExtendedMax = (track: ParameterTrack, defaultTrack: ParameterTrack): boolean =>
+        track.min === defaultTrack.min && track.step === defaultTrack.step && track.max >= defaultTrack.max;
+      return matchesOrExtendedMax(this.globalParameters.temperature, DEFAULT_GLOBAL_PARAMETERS.temperature) &&
+        matchesOrExtendedMax(this.globalParameters.oxygen, DEFAULT_GLOBAL_PARAMETERS.oxygen) &&
+        (this.expansions.venusPhase2 || matchesDefault(this.globalParameters.venus, DEFAULT_GLOBAL_PARAMETERS.venus));
+    },
+    oceanMax(): number {
+      return this.globalParameters?.oceans.max ?? constants.MAX_OCEAN_TILES;
+    },
+    customExtent(): {maxX: number, maxY: number} {
+      let maxX = 0;
+      let maxY = 0;
+      for (const space of this.spaces) {
+        if (space.spaceType === SpaceType.COLONY) {
+          continue;
+        }
+        maxX = Math.max(maxX, space.x);
+        maxY = Math.max(maxY, space.y);
+      }
+      return {maxX, maxY};
+    },
+    boardStyle(): Record<string, string> | undefined {
+      if (!this.isCustomBoard) {
+        return undefined;
+      }
+      if (this.useStandardTrackLayout) {
+        // Scale + shift the hex cloud so it fills the standard painted diamond, leaving the
+        // curved parameter scales (siblings, not children) exactly where the artwork puts them.
+        return {transform: this.fitTransform, transformOrigin: '0 0'};
+      }
+      const {width, height} = customBoardPixelSize(this.customExtent.maxX, this.customExtent.maxY);
+      return {width: `${width}px`, height: `${height}px`};
+    },
+    fitTransform(): string {
+      const maxY = this.customExtent.maxY;
+      let minL = Infinity;
+      let minT = Infinity;
+      let maxL = -Infinity;
+      let maxT = -Infinity;
+      for (const space of this.spaces) {
+        if (space.spaceType === SpaceType.COLONY) {
+          continue;
+        }
+        const p = customSpacePixel(space.x, space.y, maxY);
+        minL = Math.min(minL, p.left);
+        minT = Math.min(minT, p.top);
+        maxL = Math.max(maxL, p.left);
+        maxT = Math.max(maxT, p.top);
+      }
+      const custW = (maxL - minL) + 46;
+      const custH = (maxT - minT) + 51;
+      // The standard 9-row diamond, in #main_board local pixels (from customSpacePixel).
+      const std = {left: 6, top: 34, width: 438, height: 379};
+      const scale = Math.min(std.width / custW, std.height / custH);
+      const tx = (std.left - minL * scale) + (std.width - custW * scale) / 2;
+      const ty = (std.top - minT * scale) + (std.height - custH * scale) / 2;
+      return `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${scale.toFixed(4)})`;
     },
     LEGENDS(): typeof LEGENDS {
       return LEGENDS;

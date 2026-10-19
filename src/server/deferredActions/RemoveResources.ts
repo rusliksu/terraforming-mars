@@ -28,6 +28,12 @@ export class RemoveResources extends DeferredAction<number> {
         return undefined;
       }
     }
+    if (this.resource === Resource.MEGACREDITS) {
+      if (this.target.megacreditsAreProtected()) {
+        this.cb(0);
+        return undefined;
+      }
+    }
 
     let qtyLost = Math.min(this.target.stock.get(this.resource), this.count);
 

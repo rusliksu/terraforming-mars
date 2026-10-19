@@ -11,6 +11,18 @@ import {fakeGameOptionsModel, fakePlayerViewModel, fakePublicPlayerModel, fakeTi
 import {Phase} from '@/common/Phase';
 import {defineComponent, nextTick, onMounted, onUnmounted} from 'vue';
 
+const appConfig = {
+  ...globalConfig,
+  global: {
+    ...globalConfig.global,
+    // Explicit components avoid starting asynchronous imports.
+    stubs: {
+      StartScreen: {template: '<div data-test="start-screen"></div>'},
+      MapLibrary: {template: '<div data-test="map-library"></div>'},
+    },
+  },
+};
+
 describe('App', () => {
   const originalFetch = global.fetch;
 
@@ -24,6 +36,20 @@ describe('App', () => {
   it('mounts without errors', () => {
     const wrapper = shallowMount(App, globalConfig);
     expect(wrapper.exists()).to.be.true;
+  });
+
+  it('routes / to the start screen', async () => {
+    history.pushState({}, '', '/');
+    const wrapper = shallowMount(App, appConfig);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-test="start-screen"]').exists()).to.be.true;
+  });
+
+  it('routes /map-library to the map-library screen', async () => {
+    history.pushState({}, '', '/map-library');
+    const wrapper = shallowMount(App, appConfig);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-test="map-library"]').exists()).to.be.true;
   });
 
   it('restarts the visible timer when a refreshed player view starts the next turn', async () => {
@@ -77,6 +103,43 @@ describe('App', () => {
     expect(mounts).eq(2);
     expect(unmounts).eq(1);
     wrapper.unmount();
+  });
+
+  it('keeps the classic player page position when the view refreshes', async () => {
+    let scrollY = 0;
+    const originalScrollY = Object.getOwnPropertyDescriptor(window, 'scrollY');
+    Object.defineProperty(window, 'scrollY', {configurable: true, get: () => scrollY});
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation((_x, y) => {
+      scrollY = Number(y);
+    });
+    const PlayerHomeStub = defineComponent({
+      setup() {
+        onUnmounted(() => {
+          scrollY = 0;
+        });
+      },
+      template: '<div data-test="player-home-stub"></div>',
+    });
+    window.history.replaceState({}, '', '/player?id=p-blue-id');
+    global.fetch = (async () => ({ok: true, json: async () => fakePlayerViewModel()})) as unknown as typeof fetch;
+    const wrapper = shallowMount(App, {global: {...globalConfig.global, stubs: {PlayerHome: PlayerHomeStub}}});
+    try {
+      await flushPromises();
+      scrollY = 400;
+      wrapper.vm.updatePlayer();
+      await flushPromises();
+      await nextTick();
+      expect(scrollY).eq(400);
+      expect(scrollTo.mock.calls).deep.eq([[0, 400]]);
+    } finally {
+      wrapper.unmount();
+      scrollTo.mockRestore();
+      if (originalScrollY === undefined) {
+        delete (window as any).scrollY;
+      } else {
+        Object.defineProperty(window, 'scrollY', originalScrollY);
+      }
+    }
   });
 
   it('opens a direct replay link without loading a live player or spectator model', () => {

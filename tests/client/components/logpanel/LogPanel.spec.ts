@@ -9,6 +9,7 @@ import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
 import {LogMessageType} from '@/common/logs/LogMessageType';
 import LogMessageComponent from '@/client/components/logpanel/LogMessageComponent.vue';
 import LogGenerationList from '@/client/components/logpanel/LogGenerationList.vue';
+import {CardName} from '@/common/cards/CardName';
 
 type TestResizeObserverCallback = (entries: Array<unknown>, observer: unknown) => void;
 
@@ -217,6 +218,28 @@ describe('LogPanel', () => {
     expect(wrapper.find('.log-panel').element.nextElementSibling).eq(wrapper.find('.log-player-filters').element);
   });
 
+  it('searches fetched messages together with the player filter and clears the query locally', async () => {
+    const players = [fakePublicPlayerModel({color: 'blue', name: 'Blue'}), fakePublicPlayerModel({color: 'red', name: 'Red'})];
+    const wrapper = shallowMount(LogPanel, {...globalConfig, props: {viewModel: fakeViewModel({id: 'p-search', players})}});
+    await flushLogs(wrapper);
+    const played = new LogMessage(LogMessageType.DEFAULT, '${0} played ${1}', [
+      {type: LogMessageDataType.PLAYER, value: 'blue'},
+      {type: LogMessageDataType.CARD, value: CardName.ENERGY_SAVING},
+    ]);
+    const passed = new LogMessage(LogMessageType.DEFAULT, '${0} passed', [{type: LogMessageDataType.PLAYER, value: 'red'}]);
+    await wrapper.setData({messages: [played, passed]});
+    await wrapper.find('input[type="search"]').setValue('  ENERGY   saving  ');
+    expect(wrapper.findAllComponents(LogMessageComponent).map((row) => row.props('message'))).deep.eq([played]);
+    await wrapper.find('[data-test="log-player-filter-red"]').trigger('click');
+    expect(wrapper.findAllComponents(LogMessageComponent)).has.length(0);
+    expect(wrapper.find('[role="status"]').text()).eq('No matching logs in this view.');
+    await wrapper.find('.log-search button').trigger('click');
+    expect(wrapper.findAllComponents(LogMessageComponent).map((row) => row.props('message'))).deep.eq([passed]);
+    expect(wrapper.find('[role="status"]').exists()).eq(false);
+    expect(fetchCalls).has.length(1);
+    wrapper.unmount();
+  });
+
   it('keeps ordinary action messages as separate original rows', async () => {
     const wrapper = shallowMount(LogPanel, {
       ...globalConfig,
@@ -372,6 +395,7 @@ describe('LogPanel', () => {
     (first.vm as any).selectedGeneration = 1;
     (first.vm as any).selectedRecentLimit = undefined;
     (first.vm as any).selectedPlayerColor = 'red';
+    await first.find('input[type="search"]').setValue('Greens');
     (first.vm as any).stickToBottom = false;
     panel.setScrollTop(120);
     first.unmount();
@@ -388,6 +412,7 @@ describe('LogPanel', () => {
     expect((second.vm as any).selectedGeneration).eq(1);
     expect((second.vm as any).selectedRecentLimit).eq(undefined);
     expect((second.vm as any).selectedPlayerColor).eq('red');
+    expect((second.find('input[type="search"]').element as HTMLInputElement).value).eq('Greens');
     expect((second.vm as any).stickToBottom).eq(false);
     expect(panel.getScrollTop()).eq(120);
     expect(fetchCalls[fetchCalls.length - 1]).includes('generation=1');
@@ -408,6 +433,7 @@ describe('LogPanel', () => {
     (wrapper.vm as any).selectedGeneration = 1;
     (wrapper.vm as any).selectedRecentLimit = undefined;
     (wrapper.vm as any).selectedPlayerColor = 'red';
+    await wrapper.find('input[type="search"]').setValue('Greens');
     (wrapper.vm as any).stickToBottom = false;
     panel.setScrollTop(80);
 
@@ -420,6 +446,7 @@ describe('LogPanel', () => {
     expect((wrapper.vm as any).selectedGeneration).eq(-1);
     expect((wrapper.vm as any).selectedRecentLimit).eq(100);
     expect((wrapper.vm as any).selectedPlayerColor).eq(undefined);
+    expect((wrapper.find('input[type="search"]').element as HTMLInputElement).value).eq('');
     expect((wrapper.vm as any).stickToBottom).eq(true);
     expect(panel.getScrollTop()).eq(520);
     expect(fetchCalls[fetchCalls.length - 1]).includes('limit=100');

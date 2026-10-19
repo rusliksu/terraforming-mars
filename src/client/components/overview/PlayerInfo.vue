@@ -13,6 +13,7 @@
                 role="status">BOT</span>
               <PlayerEloBadge v-if="!readOnly" :playerName="player.name" :tooltipCss="tooltipCss" :compact="true" :eloDelta="eloDelta" />
             </div>
+            <span v-if="player.color === 'credicor'" class="player-persona-title">Магистр Кредикора</span>
             <span @click="togglePlayerDetails" v-for="(corporationName, index) in getCorporationName()" :key="index" v-i18n>
               <div class="player-info-corp" :title="$t(corporationName)">
                 {{ corporationName }}
@@ -24,7 +25,7 @@
             <PlayerStatus :timer="player.timer" :showTimer="playerView.game.gameOptions.showTimers" :liveTimer="!readOnly && playerView.game.phase !== Phase.END" :firstForGen="firstForGen" v-trim-whitespace :actionLabel="actionLabel"/>
           </div>
         </div>
-          <PlayerResources :player="player" v-trim-whitespace />
+          <PlayerResources :player="player" :conglomeratesExpansion="playerView.game.gameOptions.expansions.conglomerates" v-trim-whitespace />
           <div class="player-played-cards">
             <div class="player-played-cards-top">
               <div class="played-cards-elements">
@@ -46,7 +47,7 @@
           </div>
         </div>
         <PlayerTags :player="player" :playerView="playerView" :hideZeroTags="hideZeroTags" :isTopBar="isTopBar" />
-        <PlayerAlliedParty :player="player"/>
+        <PlayerAlliedParty :player="player" :morePartiesExpansion="playerView.game.gameOptions.expansions.moreParties"/>
       </div>
 </template>
 

@@ -106,7 +106,7 @@ function New-SmokeGamePayload {
         initialDraft = $false
         preludeDraftVariant = $false
         ceosDraftVariant = $false
-        startingCorporations = 0
+        startingCorporations = 2
         shuffleMapOption = $false
         randomMA = "No randomization"
         includeFanMA = $false
@@ -238,12 +238,21 @@ if ($CreateGame) {
     Assert-True ($game.id -eq $create.id) "api/game returned unexpected game id."
     Assert-True ($game.players[0].name -eq $gameName) "api/game returned unexpected player name."
 
+    $player = Invoke-RestMethod -Uri "$Server/api/player?id=$($create.players[0].id)" -Headers @{"Cache-Control"="no-cache"} -TimeoutSec 30
+    Assert-True ($player.id -eq $create.players[0].id) "api/player returned unexpected player id."
+    Assert-True (@($player.dealtCorporationCards).Count -eq 2) "Smoke player must be offered two corporations."
+    Assert-True ($player.waitingFor.type -eq "initialCards") "Smoke player is not waiting for initial card selection."
+    $corporationInput = $player.waitingFor.options[0]
+    Assert-True ($corporationInput.type -eq "card" -and @($corporationInput.cards).Count -eq 2 -and $corporationInput.min -eq 1 -and $corporationInput.max -eq 1) "Initial card selection must offer two corporations."
+
     $gameResult = [pscustomobject]@{
         id = $create.id
         playerId = $create.players[0].id
         spectatorId = $create.spectatorId
         playerName = $gameName
         phase = $create.phase
+        corporationCount = @($player.dealtCorporationCards).Count
+        initialInputType = $player.waitingFor.type
         playerUrl = "$Server/player?id=$($create.players[0].id)"
         spectatorUrl = "$Server/spectator?id=$($create.spectatorId)"
     }
@@ -302,6 +311,7 @@ if ($null -ne $result.game) {
     Write-Host "PlayerId    : $($result.game.playerId)"
     Write-Host "SpectatorId : $($result.game.spectatorId)"
     Write-Host "Phase       : $($result.game.phase)"
+    Write-Host "Initial     : $($result.game.initialInputType) corporations=$($result.game.corporationCount)"
     Write-Host "Player URL  : $($result.game.playerUrl)"
     Write-Host "Spectator   : $($result.game.spectatorUrl)"
 }

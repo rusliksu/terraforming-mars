@@ -1,3 +1,4 @@
+import {LogMessageDataType} from '../../common/logs/LogMessageDataType';
 import {Game} from '../Game';
 import {IGame} from '../IGame';
 import {GameId, isPlayerId} from '../../common/Types';
@@ -47,6 +48,17 @@ export class Cloner {
     }
     const keys = Object.entries(obj);
     keys.forEach(([key, val]) => {
+      // Card identities and authored text are not participant references.
+      if (['customDefinition', 'name', 'sourceCardName', 'capturedCard',
+        'cardsInHand', 'dealtProjectCards', 'dealtCorporationCards', 'dealtPreludeCards', 'dealtCeoCards',
+        'draftedCards', 'draftHand', 'removedFromPlayCards', 'preludeCardsInHand', 'ceoCardsInHand',
+        'drawPile', 'discardPile', 'includedCards', 'bannedCards', 'customPreludes', 'customCeos',
+        'customCorporationsList', 'lastCardPlayed', 'actionsThisGeneration', 'pendingInitialActions',
+        'pickedCorporationCard', 'standardProjectsThisGeneration', 'cardsPlayedThisGeneration', 'highOrbitDeck'].includes(key) ||
+        (key === 'card' && typeof val === 'string') ||
+        (key === 'value' && [LogMessageDataType.CARD, LogMessageDataType.CARDS].includes(obj.type))) {
+        return;
+      }
       if (isPlayerId(val)) {
         const idx = oldPlayerIds.indexOf(val);
         if (idx > -1) {

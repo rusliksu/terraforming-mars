@@ -20,6 +20,7 @@ export const BESPOKE_PRODUCTION_CARDS: ReadonlyArray<CardName> = [
   // Colonies
   CardName.COMMUNITY_SERVICES,
   CardName.LUNAR_EXPORTS,
+  CardName.LUNAR_EXPORTS_BETTER_MARS,
   CardName.MINORITY_REFUGE,
   CardName.PIONEER_SETTLEMENT,
   CardName.QUANTUM_COMMUNICATIONS,
@@ -68,6 +69,9 @@ export class AmazonisEngineer implements IAward {
    * this award.
    */
   public static autoInclude(card: ICard) {
+    if (card.changesOwnProduction === true) {
+      return true;
+    }
     if (card.productionBox !== undefined) {
       return true;
     }

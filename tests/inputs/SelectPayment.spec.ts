@@ -29,6 +29,19 @@ describe('SelectPayment', () => {
       .to.throw(/You do not have that many resources/);
   });
 
+  it('accepts pre-port payment JSON without new resources', () => {
+    player.megaCredits = 10;
+    const payment = JSON.parse(JSON.stringify(Payment.of({megacredits: 10})));
+    delete payment.energy;
+    delete payment.nereidMicrobes;
+    delete payment.anyFloaters;
+    new SelectPayment('', 10, {}).andThen(cb).process({type: 'payment', payment}, player);
+    expect(selected).deep.eq(Payment.of({megacredits: 10}));
+    expect(payment).not.to.have.property('anyFloaters');
+    payment.anyFloaters = 'invalid';
+    expect(() => new SelectPayment('', 10, {}).process({type: 'payment', payment}, player)).to.throw('valid type');
+  });
+
   it('Simple, can pay with steel', () => {
     player.megaCredits = 6;
     player.steel = 2;

@@ -32,10 +32,11 @@ export class PalladinShipping extends ActiveCorporationCard implements ICorporat
           b.megacredits(36).titanium(5, {digit}).br;
           b.corpBox('effect-action', (cea) => {
             cea.vSpace(Size.LARGE);
+            cea.br;
             cea.effect('When you play a space event, gain 1 titanium.', (eb) => {
               eb.tag(Tag.SPACE).tag(Tag.EVENT).startEffect.titanium(1);
             });
-            b.br;
+            cea.br;
             cea.action('Spend 2 titanium to raise the temperature 1 step.', (ab) => {
               ab.titanium(2).startAction.temperature(1);
             });

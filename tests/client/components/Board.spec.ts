@@ -7,6 +7,7 @@ import {SpaceModel} from '@/common/models/SpaceModel';
 import {SpaceType} from '@/common/boards/SpaceType';
 import {DEFAULT_EXPANSIONS} from '@/common/cards/GameModule';
 import {BoardName} from '@/common/boards/BoardName';
+import {blankCustomBoard} from '@/common/boards/CustomBoardDefinition';
 
 const spaces: SpaceModel[] = [
   {
@@ -191,6 +192,32 @@ describe('Board', () => {
     const spaceWrappers = wrapper.findAllComponents(BoardSpace)
       .filter((w) => w.attributes('data-test') === 'board-space');
     expect(spaceWrappers).to.have.length(2);
+  });
+
+  it('keeps a carved custom board centred on its declared row count', () => {
+    // Drop the bottom row: deriving the pivot from the remaining spaces would shift every
+    // row horizontally (customSpacePixel), shearing the hexagon into an arrow.
+    const carved = blankCustomBoard(9, 'Carved').spaces
+      .filter((space) => space.y < 8)
+      .map((space): SpaceModel => ({id: space.id, x: space.x, y: space.y, bonus: [], spaceType: space.spaceType,
+        color: undefined, highlight: undefined, tileType: undefined}));
+    const wrapper = shallowMount(Board, {...globalConfig,
+      props: {spaces: carved, expansions: DEFAULT_EXPANSIONS, tileView: 'show', venusScaleLevel: 0, boardName: BoardName.CUSTOM, customBoardRows: 9}});
+    const rows = new Map<number, {min: number, max: number}>();
+    for (const space of wrapper.findAllComponents(BoardSpace)) {
+      const model = space.props('space') as SpaceModel;
+      const pixel = space.props('pixel') as {left: number} | undefined;
+      if (pixel === undefined) {
+        continue;
+      }
+      const row = rows.get(model.y) ?? {min: Infinity, max: -Infinity};
+      row.min = Math.min(row.min, pixel.left);
+      row.max = Math.max(row.max, pixel.left);
+      rows.set(model.y, row);
+    }
+    expect(rows.size).eq(8);
+    const centres = [...rows.values()].map((row) => (row.min + row.max) / 2);
+    expect(new Set(centres).size).eq(1, 'all present rows share one vertical axis');
   });
 
   it('keeps the painted Mars + curved tracks when only oceans.max is customized', () => {

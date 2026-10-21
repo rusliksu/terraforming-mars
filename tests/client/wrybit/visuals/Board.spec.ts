@@ -46,6 +46,20 @@ describe('Wrybit board with our track and space data', () => {
     }
   });
 
+  it('renders board player markers as fixed isometric cubes, not randomly turned tops', () => {
+    const marked: SpaceModel = {...space('100'), color: 'blue'};
+    const wrapper = mount(Board, {...globalConfig, props: {
+      spaces: [marked], expansions: DEFAULT_EXPANSIONS, boardName: BoardName.THARSIS, tileView: 'show', venusScaleLevel: 0,
+    }});
+    try {
+      expect(wrapper.find('.player-cube--iso').exists()).is.true;
+      expect(wrapper.find('.player-cube--top').exists()).is.false;
+      expect(wrapper.get('.player-cube').attributes('style') ?? '').not.contains('--wrybit-cube-turn');
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
   it('refreshes outer-space occupancy and keeps unpainted custom rewards visible', async () => {
     const parameters: GlobalParametersConfig = {
       ...DEFAULT_GLOBAL_PARAMETERS,

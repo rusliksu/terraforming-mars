@@ -11,7 +11,7 @@
       <div class="board-space-coords">{{ getSpaceName(space.id) }}</div>
     </template>
     <template v-if="tileView === 'show'">
-      <BoardCube v-if="space.color !== undefined" class="board-cube" :color="space.color" :spinSeed="space.id"/>
+      <BoardCube v-if="space.color !== undefined" class="board-cube" :color="space.color" view="iso"/>
       <template v-if="space.gagarin !== undefined">
         <div v-if="space.gagarin === 0" class='gagarin'></div>
         <div v-else class='gagarin visited'></div>

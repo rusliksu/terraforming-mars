@@ -1,5 +1,46 @@
 <template>
-  <div id="player-home" :class="{'with-turmoil': game.turmoil, 'player-home--acting': isPlayerActing}">
+  <div v-if="isMobileLayout" id="player-home" class="mb-home" :class="{'mb-home--turn': activeScreen === 'turn'}">
+    <header class="mb-topbar">
+      <GameMenu/>
+      <MobileHeader :game="game"/>
+    </header>
+    <div class="mb-screens">
+      <MobileMarsScreen v-show="activeScreen === 'mars'" ref="gameBoardView" :game="game" :players="playerView.players"
+        :participant-id="playerView.id" :tile-view="tileView" :acting="isPlayerActing" :banner-title="bannerTitle"
+        :viewer-color="thisPlayer?.color" :viewer="thisPlayer"
+        @toggle-tile-view="cycleTileView()" @show-milestones="openMilestones"/>
+      <section v-show="activeScreen === 'hand'" class="mb-screen mb-screen--hand">
+        <a name="cards" class="player_home_anchor"></a>
+        <div v-if="playerView.draftedCards.length > 0" class="mb-drafted">
+          <DynamicTitle title="Drafted cards" :color="thisPlayer?.color"/>
+          <div v-for="card in playerView.draftedCards" :key="card.name" class="cardbox"><Card :card="card"/></div>
+        </div>
+        <HandCardsPanel :playerView="playerView"/>
+      </section>
+      <section v-show="activeScreen === 'turn'" class="mb-screen mb-screen--turn">
+        <SetupTurnOrder v-if="isSetupPhase" :players="playerView.players"/>
+        <InputHost v-if="game.phase !== 'end'">
+          <WaitingFor :playerView="playerView" :waitingfor="playerView.waitingFor"/>
+        </InputHost>
+      </section>
+      <section v-show="activeScreen === 'players'" class="mb-screen mb-screen--players">
+        <MobilePlayersPanel :view-model="playerView" :segment="playersSegment" :viewer-color="thisPlayer?.color"
+          @update:segment="playersSegment = $event"/>
+      </section>
+      <section v-show="activeScreen === 'log'" class="mb-screen mb-screen--log">
+        <LogPanel :view-model="playerView" :milestonesAwards="true" :acting="isPlayerActing" :zoom-carousel="true"
+          @space-clicked="onSpaceClicked"/>
+      </section>
+    </div>
+    <MobileNav :items="navItems" :active="activeScreen" :hand-count="cardsInHandCount" @navigate="selectScreen">
+      <template #turn>
+        <MobileTurnButton :acting="isPlayerActing" :action-number="undefined" :actions-per-turn="2"/>
+      </template>
+    </MobileNav>
+    <PurgeWarning :expectedPurgeTimeMs="game.expectedPurgeTimeMs"/>
+    <KeyboardShortcuts v-show="keyboardShortcutOpened" @close="keyboardShortcutOpened = false"/>
+  </div>
+  <div v-else id="player-home" :class="{'with-turmoil': game.turmoil, 'player-home--acting': isPlayerActing}">
     <TopBar :playerView="playerView"/>
     <div v-if="game.phase === 'end'" class="player_home_block">
       <DynamicTitle title="This game is over!" :color="thisPlayer.color"/>
@@ -75,6 +116,15 @@ import {showsDraftedCardsBlock} from '@/client/wrybit/inputs/draftCards';
 import {hasWaitingForTabs} from '@/client/wrybit/inputs/waitingForTabs';
 import SetupBoardToggle from '@/client/wrybit/inputs/SetupBoardToggle.vue';
 import {setupBoardCollapsed} from './layout/setupBoardCollapsed';
+import GameMenu from './gameMenu/GameMenu.vue';
+import MobileHeader from '@/client/wrybit/mobile/MobileHeader.vue';
+import MobileMarsScreen from '@/client/wrybit/mobile/MobileMarsScreen.vue';
+import MobileNav from '@/client/wrybit/mobile/MobileNav.vue';
+import MobilePlayersPanel from '@/client/wrybit/mobile/MobilePlayersPanel.vue';
+import MobileTurnButton from '@/client/wrybit/mobile/MobileTurnButton.vue';
+import {MOBILE_NAV, MobileNavItem, MobileScreen, PlayersSegment, SPECTATOR_NAV} from '@/client/wrybit/mobile/mobileScreens';
+import {mobileLayout} from './common/mobileLayout';
+import {translateMessage, translateText} from '@/client/directives/i18n';
 
 export default defineComponent({
   name: 'WrybitPlayerHome',
@@ -84,7 +134,8 @@ export default defineComponent({
   mixins: [HomeMixin],
   props: {playerView: {type: Object as () => PlayerViewModel, required: true}},
   components: {InputHost, WaitingFor, TopBar, PurgeWarning, DynamicTitle, HomeColumns, RowResizeHandle, PlayerSetupView,
-    SetupTurnOrder, PlayersOverview, GameBoardView, LogPanel, Card, HandCardsTab, HandCardsPanel, KeyboardShortcuts, SetupBoardToggle},
+    SetupTurnOrder, PlayersOverview, GameBoardView, LogPanel, Card, HandCardsTab, HandCardsPanel, KeyboardShortcuts, SetupBoardToggle,
+    GameMenu, MobileHeader, MobileMarsScreen, MobileNav, MobilePlayersPanel, MobileTurnButton},
   directives: {dockedTab: vDockedTab},
   provide() {
     return {[GAME_MENU_CONTEXT as symbol]: computed((): GameMenuContext => ({
@@ -94,7 +145,26 @@ export default defineComponent({
       otherDeckSizes: this.game.otherDeckSizes, spectatorId: this.game.spectatorId, expectedPurgeTimeMs: this.game.expectedPurgeTimeMs,
     }))};
   },
+  data() {
+    return {
+      activeScreen: 'mars' as MobileScreen,
+      playersSegment: 'players' as PlayersSegment,
+    };
+  },
   computed: {
+    isMobileLayout(): boolean {
+      return mobileLayout.value;
+    },
+    navItems(): ReadonlyArray<MobileNavItem> {
+      return this.playerView.thisPlayer === undefined ? SPECTATOR_NAV : MOBILE_NAV;
+    },
+    bannerTitle(): string {
+      const title = this.playerView.waitingFor?.title;
+      if (!this.isPlayerActing || title === undefined) {
+        return translateText('Waiting for other players');
+      }
+      return typeof title === 'string' ? translateText(title) : translateMessage(title);
+    },
     hasHandInInputTabs(): boolean {
       return (this.orPresentation !== undefined && this.playerView.waitingFor?.type === 'or') ||
         (this.waitingPresentation !== undefined && hasWaitingForTabs(this.playerView.waitingFor));
@@ -113,6 +183,15 @@ export default defineComponent({
     },
     cardsInHandCount(): number {
       return this.playerView.cardsInHand.length + this.playerView.preludeCardsInHand.length + this.playerView.ceoCardsInHand.length;
+    },
+  },
+  methods: {
+    selectScreen(screen: MobileScreen): void {
+      this.activeScreen = screen;
+    },
+    openMilestones(): void {
+      this.activeScreen = 'players';
+      this.playersSegment = 'ma';
     },
   },
 });

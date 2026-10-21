@@ -8,8 +8,8 @@
     <div class="board-space-text" v-if="text" v-i18n>{{ text }}</div>
     <Bonus v-if="(space.tileType === undefined || tileView === 'hide')" :bonus="space.bonus" />
     <div v-if="tileView === 'coords'" class="board-space-coords">{{ getSpaceName(space.id) }}</div>
-    <BoardCube v-if="space.color !== undefined && tileView === 'show'" class="board-cube" :color="space.color" :spinSeed="space.id"/>
-    <BoardCube v-if="space.coOwner !== undefined && tileView === 'show'" class="board-cube-coOwner" :color="space.coOwner" :size="11" :spinSeed="space.id + '-co'"/>
+    <BoardCube v-if="space.color !== undefined && tileView === 'show'" class="board-cube" :color="space.color" view="iso"/>
+    <BoardCube v-if="space.coOwner !== undefined && tileView === 'show'" class="board-cube-coOwner" :color="space.coOwner" :size="11" view="iso"/>
     <div class="board-log-highlight" :data_log_highlight_id="space.id"></div>
   </div>
 </template>

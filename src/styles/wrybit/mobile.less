@@ -196,13 +196,14 @@
     width: auto;
     height: auto;
     min-height: 58px;
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
     align-items: center;
-    gap: 5px;
+    gap: 4px;
     margin: 0;
-    padding: 5px 6px;
-    overflow: auto hidden;
+    padding: 5px;
+    overflow: hidden;
     border: 1px solid @mb-line;
     border-radius: 10px;
     background: @mb-surface;
@@ -213,11 +214,18 @@
   }
 
   .mb-toolbar .tm,
-  .mb-toolbar .global_params {
+  .mb-toolbar .global_params,
+  .mb-toolbar .deck-size {
     display: none;
   }
 
   .mb-toolbar .preferences_player {
+    display: none !important;
+  }
+
+  // Language and settings stay one tap away; info/help are already in the game menu (top-left).
+  .mb-toolbar .sidebar_item--info,
+  .mb-toolbar a:has(.sidebar_item--help) {
     display: none !important;
   }
 
@@ -227,52 +235,35 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
+    width: 100%;
+    max-width: 40px;
     height: 44px !important;
     margin: 0 !important;
     padding: 3px;
     border-radius: 8px;
     box-sizing: border-box;
+    justify-self: center;
   }
 
   .mb-toolbar .sidebar_icon {
-    width: 28px !important;
-    height: 28px !important;
+    width: 30px !important;
+    height: 30px !important;
     margin: 0 !important;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
   }
 
-  .mb-toolbar .sidebar_icon--cards {
-    position: relative;
-  }
 
-  // Draw/discard counts: their own two-line row below the cards fan, so the icon stays unobstructed.
-  .mb-toolbar .deck-size {
-    display: block;
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    width: auto;
-    margin: 0;
-    padding: 0;
-    transform: translateX(-50%);
-    background: transparent;
-    color: @mb-text;
-    font-family: Prototype, sans-serif;
-    font-size: 7px;
-    line-height: 7px;
-    text-align: center;
-    white-space: nowrap;
-  }
 
   .mb-toolbar a {
-    flex: none;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 100%;
+    max-width: 40px;
     height: 44px;
+    justify-self: center;
   }
 
   .mb-param {

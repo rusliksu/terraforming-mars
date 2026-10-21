@@ -55,6 +55,7 @@ export type ProjectCardBinding = {
   cardName: CardName | undefined;
   paymentHost: InputHosts;
   select(name: CardName): void;
+  clearSelection(): void;
 };
 
 export type OrOptionsBinding = {

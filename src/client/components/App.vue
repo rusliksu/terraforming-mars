@@ -97,6 +97,7 @@ import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
 import WaitingFor from '@/client/components/WaitingFor.vue';
 import {createInputHosts, INPUT_HOSTS} from '@/client/wrybit/shell/inputHosts';
 import {INPUT_PRESENTATIONS} from '@/client/wrybit/inputs/presentation';
+import {createInputBridge, INPUT_BRIDGE} from '@/client/wrybit/shell/inputBridge';
 
 import dialogPolyfill from 'dialog-polyfill';
 import {setDocumentTitle} from '../utils/documentTitle';
@@ -176,6 +177,7 @@ export default defineComponent({
   setup() {
     const inputHosts = createInputHosts();
     provide(INPUT_HOSTS, inputHosts);
+    provide(INPUT_BRIDGE, createInputBridge());
     const wrybitReady = ref(false);
     const wrybitViews = shallowRef<WrybitViews>({});
     provide(INPUT_PRESENTATIONS, computed(() => getPreferences().experimental_layout && wrybitReady.value ? wrybitViews.value.inputs : undefined));

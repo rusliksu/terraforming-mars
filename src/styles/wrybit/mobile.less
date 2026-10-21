@@ -195,37 +195,62 @@
     position: static;
     width: auto;
     height: auto;
-    min-height: 44px;
+    min-height: 50px;
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
     margin: 0;
-    padding: 4px 6px;
-    overflow-x: auto;
+    padding: 5px 6px;
+    overflow: auto hidden;
     border: 1px solid @mb-line;
     border-radius: 10px;
     background: @mb-surface;
     box-shadow: none;
     box-sizing: border-box;
+    // The native sidebar is zoomed on touch devices; the mobile toolbar manages its own sizes.
+    zoom: 1 !important;
   }
 
   .mb-toolbar .tm,
   .mb-toolbar .global_params,
-  .mb-toolbar .preferences_player {
+  .mb-toolbar .deck-size {
     display: none;
+  }
+
+  .mb-toolbar .preferences_player {
+    display: none !important;
   }
 
   .mb-toolbar .sidebar_item {
     position: static !important;
     flex: none;
-    width: 34px;
-    height: 34px;
-    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px !important;
+    margin: 0 !important;
+    padding: 4px;
+    border-radius: 8px;
+    box-sizing: border-box;
+  }
+
+  .mb-toolbar .sidebar_icon {
+    width: 30px !important;
+    height: 30px !important;
+    margin: 0 !important;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
   }
 
   .mb-toolbar a {
     flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
   }
 
   .mb-param {

@@ -195,7 +195,7 @@
     position: static;
     width: auto;
     height: auto;
-    min-height: 50px;
+    min-height: 58px;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -213,8 +213,7 @@
   }
 
   .mb-toolbar .tm,
-  .mb-toolbar .global_params,
-  .mb-toolbar .deck-size {
+  .mb-toolbar .global_params {
     display: none;
   }
 
@@ -229,20 +228,43 @@
     align-items: center;
     justify-content: center;
     width: 40px;
-    height: 40px !important;
+    height: 44px !important;
     margin: 0 !important;
-    padding: 4px;
+    padding: 3px;
     border-radius: 8px;
     box-sizing: border-box;
   }
 
   .mb-toolbar .sidebar_icon {
-    width: 30px !important;
-    height: 30px !important;
+    width: 28px !important;
+    height: 28px !important;
     margin: 0 !important;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
+  }
+
+  .mb-toolbar .sidebar_icon--cards {
+    position: relative;
+  }
+
+  // Draw/discard counts: their own two-line row below the cards fan, so the icon stays unobstructed.
+  .mb-toolbar .deck-size {
+    display: block;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: auto;
+    margin: 0;
+    padding: 0;
+    transform: translateX(-50%);
+    background: transparent;
+    color: @mb-text;
+    font-family: Prototype, sans-serif;
+    font-size: 7px;
+    line-height: 7px;
+    text-align: center;
+    white-space: nowrap;
   }
 
   .mb-toolbar a {
@@ -250,7 +272,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 40px;
+    height: 44px;
   }
 
   .mb-param {

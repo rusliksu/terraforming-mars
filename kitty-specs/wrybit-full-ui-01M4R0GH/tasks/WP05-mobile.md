@@ -27,6 +27,25 @@ owned_files:
 - src/client/wrybit/mobile/**
 - src/client/wrybit/spectator/**
 - tests/client/wrybit/mobile/**
+- src/client/wrybit/shell/WrybitShell.vue
+- src/client/wrybit/shell/presentationViews.ts
+- src/client/wrybit/shell/inputBridge.ts
+- src/client/components/App.vue
+- src/client/components/SelectProjectCardToPlay.vue
+- src/client/wrybit/inputs/OrOptions.vue
+- src/client/wrybit/inputs/SelectProjectCardToPlay.vue
+- src/client/wrybit/inputs/presentation.ts
+- src/client/wrybit/visuals/PlayerHome.vue
+- src/client/wrybit/visuals/GameBoardView.vue
+- src/client/wrybit/visuals/common/mobileLayout.ts
+- src/client/wrybit/visuals/mobile/MobileCardZoom.vue
+- src/styles/wrybit/mobile.less
+- src/styles/wrybit/mobile/**
+- src/styles/wrybit/visuals.less
+- src/client/wrybit/import-manifest.json
+- docs/codemap/codemap.json
+- docs/codemap/codemap.html
+- docs/codemap/codemap.lock
 priority: P1
 role: implementer
 tags: []
@@ -48,6 +67,8 @@ tracker_refs: []
 Пути перечислены в owned_files. При необходимом изменении вне них сначала проверить отсутствие пересечения и зафиксировать точный перенос ответственности. Не отменять чужие изменения. Изменение правил, Game/Player, AI/SmartBot, карточных эффектов и сохранения запрещено.
 
 ## Подзадачи
+
+Sequential handoff from approved WP01–WP04: only optional presentation routing in App/WrybitViews/Shell, root read-only input binding registration, viewport owner, PlayerHome mobile wrapper, GameBoardView marsAside slot, existing MobileCardZoom and scoped styles/manifest/codemap transfer to WP05. Native SelectProjectCardToPlay may expose a typed clear-selection presentation command so an unavailable carousel card cannot submit an off-screen selection; its ledger, availability, pricing, network and save commands remain native. No other writers. Source mobile globals/poll-reset logic and DOM controller discovery are replaced by per-owner view state and existing typed native bindings. Spectator retains its native poller and public ViewModel; no actor input/hand is mounted. This implements the approved mobile/privacy/preserved-input requirements without a new controller or gameplay change.
 
 - [ ] T017 Перенести полный мобильный ход, drawer и карусель.
 - [ ] T018 Перенести desktop/mobile зрителя.

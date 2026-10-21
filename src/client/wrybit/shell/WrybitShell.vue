@@ -39,6 +39,9 @@ import SwitchInput from '@/client/wrybit/create/SwitchInput.vue';
 import ModuleItemFilter from '@/client/wrybit/create/ModuleItemFilter.vue';
 import CardsFilter from '@/client/wrybit/create/CardsFilter.vue';
 import type {WrybitViews} from './presentationViews';
+import {useMobileViewport} from '@/client/wrybit/mobile/viewport';
+
+useMobileViewport();
 
 const props = defineProps<{screen: string}>();
 const emit = defineEmits<{classic: []; views: [views: WrybitViews]}>();

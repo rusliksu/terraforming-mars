@@ -70,6 +70,7 @@
 <script setup lang="ts">
 import {computed, inject, onBeforeUnmount, ref} from 'vue';
 import {registerCompositeView} from './compositePresentation';
+import {registerRootOr} from '@/client/wrybit/shell/inputBridge';
 import TradeFees from '@/client/wrybit/expansions/colonies/TradeFees.vue';
 import {isTradeChild} from '@/client/wrybit/expansions/colonies/tradeInput';
 import {ROOT_INPUT_FOOTER, useInputPresentation} from './presentation';
@@ -106,6 +107,7 @@ import CancelActionButton from './CancelActionButton.vue';
 import InputIntro from './InputIntro.vue';
 
 const props = defineProps<{binding: OrOptionsBinding}>();
+registerRootOr(computed(() => props.binding));
 const composite = registerCompositeView('or', computed(() => props.binding));
 const tradeFee = computed(() => isTradeChild(composite?.input.value, props.binding.playerinput, 'fee'));
 const sourceCard = computed(() => inputSourceCard(props.binding.playerinput));

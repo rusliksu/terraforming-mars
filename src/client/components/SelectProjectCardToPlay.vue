@@ -106,6 +106,10 @@ export default defineComponent({
         select: (name) => {
           this.cardName = name;
         },
+        clearSelection: () => {
+          this.cardName = undefined;
+          this.card = undefined;
+        },
       };
     },
     order(): ReadonlyArray<SpendableResource> {

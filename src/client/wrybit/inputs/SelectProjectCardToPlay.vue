@@ -1,5 +1,5 @@
 <template>
-  <div class="payments_cont choice-block" :class="[choiceBlockClass(allCards.length, isHandSelection), {'choice-block--sections': unplayableCards.length > 0}]" :style="choiceBlockStyle(allCards.length)">
+  <div class="payments_cont choice-block" :class="[choiceBlockClass(allCards.length, isHandSelection), {'choice-block--sections': unplayableCards.length > 0}]" :style="choiceBlockStyle(allCards.length)" @tm-carousel-unselect="binding.clearSelection()">
     <CardFilterBar v-if="isHandSelection" :cards="allCards" :filter="handCardFilter" :context="filterContext">
       <template #sort="{compact}"><HandSortControl :playerView="binding.playerView" :compact="compact" :allowManual="true"/></template>
     </CardFilterBar>
@@ -43,6 +43,7 @@ import InputIntro from './InputIntro.vue';
 import TabPanelIntroSlot from './TabPanelIntroSlot.vue';
 import {useCardInputIntro} from './cardInputIntro';
 import {computed, watch} from 'vue';
+import {registerProjectCard} from '@/client/wrybit/shell/inputBridge';
 import type {ProjectCardBinding} from './presentation';
 import PresentationHost from './PresentationHost.vue';
 import Card from '@/client/wrybit/visuals/card/Card.vue';
@@ -61,6 +62,7 @@ import type {CardModel} from '@/common/models/CardModel';
 import {choiceBlockClass, choiceBlockStyle} from './choiceBlock';
 
 const props = defineProps<{binding: ProjectCardBinding}>();
+registerProjectCard(computed(() => props.binding));
 const parentIntro = useCardInputIntro();
 const showIntro = computed(() => props.binding.showtitle || parentIntro.value);
 watch(() => props.binding.playerView.id, activateCardFilterOwner, {immediate: true});

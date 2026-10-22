@@ -195,7 +195,7 @@
     position: static;
     width: auto;
     height: auto;
-    min-height: 58px;
+    min-height: 66px;
     display: grid;
     grid-auto-flow: column;
     grid-auto-columns: minmax(0, 1fr);
@@ -214,8 +214,7 @@
   }
 
   .mb-toolbar .tm,
-  .mb-toolbar .global_params,
-  .mb-toolbar .deck-size {
+  .mb-toolbar .global_params {
     display: none;
   }
 
@@ -237,7 +236,7 @@
     justify-content: center;
     width: 100%;
     max-width: 40px;
-    height: 44px !important;
+    height: 52px !important;
     margin: 0 !important;
     padding: 3px;
     border-radius: 8px;
@@ -254,30 +253,35 @@
     background-position: center;
   }
 
-  // Cards remaining in the deck: a compact badge on the cards shortcut instead of the
-  // native two-line deck/discard block.
-  .mb-toolbar .sidebar_item[data-deck-size] {
-    position: relative !important;
+  // Cards in the deck and in the discard pile, as on the desktop sidebar: two compact lines
+  // below the fan, not an overlay that hides the icon.
+  .mb-toolbar .goto-cards {
+    align-items: flex-start;
+    padding-top: 2px;
   }
 
-  .mb-toolbar .sidebar_item[data-deck-size]::after {
-    content: attr(data-deck-size);
+  .mb-toolbar .sidebar_icon--cards {
+    position: relative;
+    flex: none;
+  }
+
+  .mb-toolbar .deck-size {
+    display: block;
     position: absolute;
-    top: -4px;
-    right: -4px;
-    min-width: 16px;
-    height: 16px;
-    padding: 0 4px;
-    border-radius: 9px;
-    background: @mb-accent;
-    color: #fff;
-    font-family: Prototype, sans-serif;
+    top: 100%;
+    left: 50%;
+    width: auto;
+    margin: 0;
+    padding: 0;
+    transform: translateX(-50%);
+    background: transparent;
+    color: @mb-text;
+    font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
     font-size: 9px;
-    line-height: 16px;
+    line-height: 10px;
     text-align: center;
-    box-sizing: border-box;
+    white-space: nowrap;
     pointer-events: none;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
   }
 
 
@@ -288,7 +292,7 @@
     justify-content: center;
     width: 100%;
     max-width: 40px;
-    height: 44px;
+    height: 52px;
     justify-self: center;
   }
 

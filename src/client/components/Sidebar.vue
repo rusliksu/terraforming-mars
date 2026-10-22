@@ -29,7 +29,7 @@
       </div>
   </a>
   <a href="#cards" :title="$t('Jump to cards')">
-      <div class="sidebar_item goto-cards sidebar_item_shortcut-long">
+      <div class="sidebar_item goto-cards sidebar_item_shortcut-long" :data-deck-size="deckSize">
           <i class="sidebar_icon sidebar_icon--cards">
             <div class="deck-size">🂠{{ deckSize }}<br>🗑{{ discardPileSize }}</div>
           </i>

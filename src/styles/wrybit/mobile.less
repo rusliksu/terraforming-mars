@@ -254,6 +254,32 @@
     background-position: center;
   }
 
+  // Cards remaining in the deck: a compact badge on the cards shortcut instead of the
+  // native two-line deck/discard block.
+  .mb-toolbar .sidebar_item[data-deck-size] {
+    position: relative !important;
+  }
+
+  .mb-toolbar .sidebar_item[data-deck-size]::after {
+    content: attr(data-deck-size);
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 9px;
+    background: @mb-accent;
+    color: #fff;
+    font-family: Prototype, sans-serif;
+    font-size: 9px;
+    line-height: 16px;
+    text-align: center;
+    box-sizing: border-box;
+    pointer-events: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+
 
 
   .mb-toolbar a {

@@ -34,16 +34,7 @@
       :players="players"
       :viewer="viewer"
       @toggleTileView="emit('toggleTileView')"
-    >
-      <!-- The bars belong to Mars: inside its tab, covered by the other boards -->
-      <template #marsAside>
-        <MobileParameterBars
-          :temperature="game.temperature"
-          :oxygen="game.oxygenLevel"
-          :oceans="game.oceans"
-          :venus="game.gameOptions.expansions.venus ? game.venusScaleLevel : undefined" :parameters="parameters"/>
-      </template>
-    </GameBoardView>
+    />
     <!-- Tapping Mars or the Moon also opens the large view (GameBoardView) -->
     <button v-if="boardTabState.active === 'mars' || boardTabState.active === 'moon'" type="button" class="mb-mars-zoom"
       @click="requestPlacementZoom(boardTabState.active)">
@@ -65,7 +56,6 @@
 <script setup lang="ts">
 import {computed, ref} from 'vue';
 import {MAX_AWARDS, MAX_MILESTONES} from '@/common/constants';
-import {resolveGlobalParameters} from '@/common/GlobalParameterConfig';
 import {Color} from '@/common/Color';
 import {GameModel} from '@/common/models/GameModel';
 import {PublicPlayerModel} from '@/common/models/PlayerModel';
@@ -76,7 +66,6 @@ import {boardZoomSurface} from '@/client/wrybit/visuals/board/boardZoomSurface';
 import {boardTabState} from '@/client/wrybit/visuals/boardTabs/boardTabState';
 import GameBoardView from '@/client/wrybit/visuals/GameBoardView.vue';
 import Sidebar from '@/client/components/Sidebar.vue';
-import MobileParameterBars from '@/client/wrybit/mobile/MobileParameterBars.vue';
 
 const props = defineProps<{
   game: GameModel;
@@ -95,8 +84,6 @@ const emit = defineEmits<{
   (e: 'showMilestones'): void;
 }>();
 
-const parameters = computed(() => resolveGlobalParameters(props.game.gameOptions.globalParameters, props.game.venusPhase2 !== undefined,
-  props.game.gameOptions.altVenusBoard ? 60 : 30));
 function requestPlacementZoom(board: 'mars' | 'moon') {
   boardZoomSurface(props.game.gameId)?.open(board);
 }

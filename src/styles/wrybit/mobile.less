@@ -144,10 +144,6 @@
     .board-tabs {
       flex: none;
     }
-
-    .mb-params {
-      flex: none;
-    }
   }
 
   .mb-screen--turn {
@@ -294,64 +290,6 @@
     max-width: 40px;
     height: 52px;
     justify-self: center;
-  }
-
-  .mb-param {
-    display: grid;
-    grid-template-columns: minmax(86px, auto) 1fr auto;
-    align-items: center;
-    gap: 8px;
-    font-size: 11px;
-  }
-
-  .mb-param-label {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    color: @mb-muted;
-    white-space: nowrap;
-
-    img {
-      width: 13px;
-      height: 13px;
-    }
-  }
-
-  .mb-param-track {
-    position: relative;
-    height: 9px;
-    border-radius: 5px;
-    background: #262b38;
-    overflow: visible;
-  }
-
-  .mb-param-fill {
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: var(--percent);
-    border-radius: inherit;
-    background: linear-gradient(90deg, #3785cf, #7fd6ff);
-  }
-
-  .mb-param-bonus {
-    position: absolute;
-    top: 50%;
-    left: var(--percent);
-    width: 7px;
-    height: 7px;
-    transform: translate(-50%, -50%) rotate(45deg);
-    background: #aab1c2;
-    border-radius: 1px;
-  }
-
-  .mb-param-bonus--reached {
-    background: #ffd66b;
-  }
-
-  .mb-param-value {
-    color: @mb-text;
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
   }
 
   .mb-quick {
@@ -703,9 +641,5 @@
       grid-column: 1 / -1;
     }
 
-    .mb-screen--mars > .mb-params {
-      grid-column: 2;
-      grid-row: 3 / span 2;
-    }
   }
 }

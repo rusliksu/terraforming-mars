@@ -1,5 +1,5 @@
 <template>
-      <div :class="getClasses()">
+      <div class="player-info" :class="colorClass">
         <div class="player-status-and-res">
         <div class="player-status">
           <div class="player-info-details">
@@ -14,7 +14,7 @@
               <PlayerEloBadge v-if="!readOnly" :playerName="player.name" :tooltipCss="tooltipCss" :compact="true" :eloDelta="eloDelta" />
             </div>
             <span v-if="player.color === 'credicor'" class="player-persona-title">Магистр Кредикора</span>
-            <span @click="togglePlayerDetails" v-for="(corporationName, index) in getCorporationName()" :key="index" v-i18n>
+            <span @click="togglePlayerDetails" v-for="(corporationName, index) in corporationNames" :key="index" v-i18n>
               <div class="player-info-corp" :title="$t(corporationName)">
                 {{ corporationName }}
               </div>
@@ -32,7 +32,7 @@
                 <div class="played-cards-icon hiding-card-button active"></div>
                 <div class="played-cards-icon hiding-card-button automated"></div>
                 <div class="played-cards-icon hiding-card-button event"></div>
-                <div class="played-cards-count">{{numberOfPlayedCards()}}</div>
+                <div class="played-cards-count">{{numberOfPlayedCards}}</div>
               </div>
             </div>
             <AppButton class="played-cards-button player-table-button" size="tiny" @click="togglePlayerDetails" :title="tableButtonLabel()" />
@@ -43,7 +43,7 @@
               <div class="blue-stripe"></div>
               <div class="red-arrow"></div>
             </div>
-            <span class="tag-count-display">{{ availableBlueActionCount() }}</span>
+            <span class="tag-count-display">{{ availableBlueActionCount }}</span>
           </div>
         </div>
         <PlayerTags :player="player" :playerView="playerView" :hideZeroTags="hideZeroTags" :isTopBar="isTopBar" />
@@ -129,6 +129,25 @@ export default defineComponent({
     Phase(): typeof Phase {
       return Phase;
     },
+    buttonLabel(): string {
+      return this.isPinned(this.playerIndex) ? 'hide' : 'show';
+    },
+    colorClass(): string {
+      return playerColorClass(this.player.color, 'bg_transparent');
+    },
+    numberOfPlayedCards(): number {
+      return this.player.tableau.length;
+    },
+    availableBlueActionCount(): number {
+      return this.player.availableBlueCardActionCount;
+    },
+    corporationNames(): string[] {
+      const cards = this.player.tableau;
+      const corporationCards = cards
+        .filter((card) => getCard(card.name)?.type === CardType.CORPORATION)
+        .map((card) => card.name);
+      return corporationCards.length === 0 ? [''] : corporationCards;
+    },
   },
   methods: {
     isPinned(playerIndex: number): boolean {
@@ -202,25 +221,12 @@ export default defineComponent({
     getClasses(): string {
       return `player-info ${playerColorClass(this.player.color, 'bg_transparent')}`;
     },
-    numberOfPlayedCards(): number {
-      return this.player.tableau.length;
-    },
-    availableBlueActionCount(): number {
-      return this.player.availableBlueCardActionCount;
-    },
     spectatorHandCardCount(): number {
       const cards = this.player.spectatorCards;
       if (cards === undefined) {
         return 0;
       }
       return cards.cardsInHand.length + cards.preludeCardsInHand.length + cards.ceoCardsInHand.length;
-    },
-    getCorporationName(): string[] {
-      const cards = this.player.tableau;
-      const corporationCards = cards
-        .filter((card) => getCard(card.name)?.type === CardType.CORPORATION)
-        .map((card) => card.name);
-      return corporationCards.length === 0 ? [''] : corporationCards;
     },
   },
 });

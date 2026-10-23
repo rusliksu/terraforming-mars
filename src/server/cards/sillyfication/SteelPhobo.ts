@@ -18,7 +18,7 @@ export class SteelPhobo extends Card implements IProjectCard {
       behavior: {
         // The DSL only supports a +1 step, so the second step is applied in bespokePlay.
         steelValue: 1,
-        titanumValue: -1,
+        titaniumValue: -1,
       },
 
       metadata: {

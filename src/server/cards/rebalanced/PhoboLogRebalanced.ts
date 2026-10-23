@@ -15,7 +15,7 @@ export class PhoboLogRebalanced extends CorporationCard implements ICorporationC
 
       behavior: {
         stock: {titanium: 8},
-        titanumValue: 1,
+        titaniumValue: 1,
       },
 
       firstAction: {

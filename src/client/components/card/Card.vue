@@ -4,7 +4,7 @@
           <div v-if="!isStandardProject" class="card-cost-and-tags">
               <div><CardCost :amount="cost" :newCost="reducedCost" :titanium="isInfrastructure" /></div>
               <div v-if="showPlayerCube" :class="playerCubeClass"></div>
-              <CardHelp v-if="hasHelpText" :name="card.name" :hovering="hovering" />
+              <CardHelp v-if="helpText !== undefined" :name="card.name" :helpText="helpText" :hovering="hovering" />
               <CardTags :tags="tags" />
           </div>
           <CardTitle :title="card.name" :type="cardType" :displayTitle="card.combinedDisplayName ?? cardMetadata.displayName" :tags="tags"/>
@@ -29,7 +29,6 @@
 import {defineComponent} from 'vue';
 
 import {CardModel} from '@/common/models/CardModel';
-import {CARD_HELP_TEXT} from '@/client/cards/CardHelpText';
 import CardTitle from './CardTitle.vue';
 import CardResourceCounter from './CardResourceCounter.vue';
 import CardCost from './CardCost.vue';
@@ -47,6 +46,7 @@ import {getPreferences} from '@/client/utils/PreferencesManager';
 import {CardResource} from '@/common/CardResource';
 import {getCard} from '@/client/cards/ClientCardManifest';
 import {buildClientCardFromCustom} from '@/client/cards/CustomCardAdapter';
+import {ClientCard} from '@/common/cards/ClientCard';
 import {Color} from '@/common/Color';
 import {CardRequirementDescriptor} from '@/common/cards/CardRequirementDescriptor';
 import {GameModule} from '@/common/cards/GameModule';
@@ -93,23 +93,24 @@ export default defineComponent({
     },
   },
   data() {
-    const cardName = this.card.name;
-    // A card not in the compiled static manifest is always a Custom Card Maker card -- its
-    // face-of-card data instead came over the wire in `card.customCard` (see CustomCardModel's
-    // doc comment). Fail loudly (matching getCardOrThrow's old behavior) if somehow neither
-    // resolves -- that's a server-side bug, not something to silently paper over here.
-    const staticCard = getCard(cardName);
-    const card = staticCard ?? (this.card.customCard && buildClientCardFromCustom(cardName, this.card.customCard));
-    if (card === undefined || card === null) {
-      throw new Error(`card not found ${cardName}`);
-    }
-
     return {
-      cardInstance: card,
       hovering: false,
     };
   },
   computed: {
+    cardInstance(): ClientCard {
+      const cardName = this.card.name;
+      // A card not in the compiled static manifest is always a Custom Card Maker card -- its
+      // face-of-card data instead came over the wire in `card.customCard` (see CustomCardModel's
+      // doc comment). Fail loudly (matching getCardOrThrow's old behavior) if somehow neither
+      // resolves -- that's a server-side bug, not something to silently paper over here.
+      const staticCard = getCard(cardName);
+      const card = staticCard ?? (this.card.customCard && buildClientCardFromCustom(cardName, this.card.customCard));
+      if (card === undefined || card === null) {
+        throw new Error(`card not found ${cardName}`);
+      }
+      return card;
+    },
     cardExpansion(): GameModule {
       return this.cardInstance.module;
     },
@@ -219,8 +220,8 @@ export default defineComponent({
       }
       return '';
     },
-    hasHelpText(): boolean {
-      return CARD_HELP_TEXT[this.card.name] !== undefined;
+    helpText(): string | undefined {
+      return this.cardInstance.metadata.helpText;
     },
     showPlayerCube(): boolean {
       return false;

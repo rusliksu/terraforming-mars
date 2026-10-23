@@ -19,7 +19,7 @@ describe('Gordon', () => {
     player.playedCards.push(card);
   });
 
-  it('Can place greenery tile on any available land space, not just adjacent to exising greenery', () => {
+  it('Can place greenery tile on any available land space, not just adjacent to existing greenery', () => {
     addGreenery(player, '35');
     expect(game.board.getAvailableSpacesForGreenery(player).length).greaterThan(6);
   });
@@ -38,7 +38,7 @@ describe('Gordon', () => {
     addGreenery(player, '35');
     game.deferredActions.runNext();
     expect(player.megaCredits).eq(2);
-    expect(game.gameLog.map(formatMessage)).contains('blue gained 2 M€ because of Gordon');
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 2:r:mc: because of Gordon');
     addCity(player, '37');
     game.deferredActions.runNext();
     expect(player.megaCredits).eq(4);

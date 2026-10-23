@@ -25,7 +25,7 @@ describe('CloudSocieties', () => {
 
 function expectLog(game: ReturnType<typeof testGame>[0], cardName: string, amount: string) {
   const log = game.gameLog.find((message) =>
-    message.message === '${0} added ${1} ${2} to ${3}' &&
+    (message.message === '${0} added ${1}${2} to ${3}' || message.message === '${0} added ${1}${2} to ${3} from ${4}') &&
     message.data[1]?.value === amount &&
     message.data[3]?.value === cardName);
   expect(log).is.not.undefined;

@@ -4,7 +4,7 @@ Tool directory is for specific scripts for project maintenance.
 
 Before use them build the project `npm run build`
 
-... then run any of compilled scripts from build directory `node <path-to-the-toolname>.js`
+... then run any of compiled scripts from build directory `node <path-to-the-toolname>.js`
 
 For example check_locales.ts tool can be run like this: `node build/src/server/tools/check_locales.js`
 
@@ -17,7 +17,7 @@ It is possible to run these tools "directly" by using ts-node package
 
 #### Check locales tool compares localizations and shows missing translations.
 
-How to run: `node build/src/server/tools/check_locales.js`
+How to run: `npm run make:json && npx tsx src/server/tools/check_locales.ts`
 
 Result will be something like this:
 ```
@@ -30,7 +30,7 @@ The languages in quotes are missing that translation. (In this case, Spanish, Du
 
 #### If you want to see warnings for given locale only use --locales switch
 
-`node build/src/server/tools/check_locales.js --locales cn,ru`
+`npx tsx src/server/tools/check_locales.ts --locales cn,ru`
 
 as result you will see the warnings for Chinese and Russian languages only.
 
@@ -47,7 +47,7 @@ or
 
 ```
 heroku pg:credentials:url --app <heroku-app-name>
-POSTGRES_HOST=<postges:...> node build/src/tools/export_game.js <game id | player id | spectator id>
+POSTGRES_HOST=<postgres:...> node build/src/tools/export_game.js <game id | player id | spectator id>
 ```
 
 ### Description

@@ -221,7 +221,7 @@ import {
 import {decodeCustomBoard, encodeCustomBoard, validateCustomBoard} from '@/common/boards/customBoardCodec';
 import {MAX_MAP_LIBRARY_DESCRIPTION_LENGTH, MAX_MAP_LIBRARY_SUBMITTED_BY_LENGTH} from '@/common/boards/MapLibraryEntry';
 import {paths} from '@/common/app/paths';
-import {HELLAS_BONUS_OCEAN_COST, VASTITAS_BOREALIS_BONUS_TEMPERATURE_COST, TERRA_CIMMERIA_COLONY_COST} from '@/common/constants';
+import {HELLAS_BONUS_OCEAN_COST, VASTITAS_BOREALIS_NOVA_BONUS_TEMPERATURE_COST, TERRA_CIMMERIA_COLONY_COST} from '@/common/constants';
 import {groupSpaceBonuses, GroupedSpaceBonus} from '@/client/utils/spaceBonusIcon';
 
 type Cell = {x: number, y: number, space: CustomSpaceDef | null};
@@ -298,7 +298,6 @@ const BONUS_TOOLS: Array<BonusTool> = ([
   {bonus: SpaceBonus.ENERGY_PRODUCTION, css: 'energy-production', label: 'Energy prod.', description: 'Increase your energy production 1 step when you place a tile on this space.'},
   {bonus: SpaceBonus.DELEGATE, css: 'delegate', label: 'Delegate', description: 'Add 1 delegate from the reserve when you place a tile on this space (Vastitas Borealis Nova).'},
   {bonus: SpaceBonus.OCEAN, css: 'bonusocean', label: 'Ocean', description: 'Place an ocean tile (paying its M€ cost) when you place a tile on this space — the Hellas south-pole bonus.'},
-  {bonus: SpaceBonus.TEMPERATURE, css: 'bonustemperature', label: 'Temperature', description: 'Raise the temperature 1 step (paying the configurable M€ cost below) when you place a tile on this space (Vastitas Borealis).'},
   {bonus: SpaceBonus.TEMPERATURE_4MC, css: 'bonustemperature4mc', label: 'Temperature (4 M€)', description: 'Raise the temperature 1 step for a fixed 4 M€ -- always 4, not the configurable cost below -- when you place a tile on this space (Vastitas Borealis Nova).'},
   {bonus: SpaceBonus.COLONY, css: 'colony', label: 'Colony', description: 'Build a colony (paying an M€ cost) when you place a tile on this space (Terra Cimmeria Nova).'},
 ] as Array<Omit<BonusTool, 'key'>>).map((t) => ({...t, key: 'bonus:' + t.bonus}));
@@ -334,7 +333,7 @@ export default defineComponent({
       customParams: false,
       params: toEditableParams(DEFAULT_GLOBAL_PARAMETERS),
       bonusCostOcean: HELLAS_BONUS_OCEAN_COST,
-      bonusCostTemperature: VASTITAS_BOREALIS_BONUS_TEMPERATURE_COST,
+      bonusCostTemperature: VASTITAS_BOREALIS_NOVA_BONUS_TEMPERATURE_COST,
       bonusCostColony: TERRA_CIMMERIA_COLONY_COST,
       loadInput: '',
       loadError: '',
@@ -426,7 +425,7 @@ export default defineComponent({
       // Only carry costs that differ from the official defaults, so an unmodified map's code
       // matches blankCustomBoard() exactly.
       if (this.bonusCostOcean !== HELLAS_BONUS_OCEAN_COST ||
-          this.bonusCostTemperature !== VASTITAS_BOREALIS_BONUS_TEMPERATURE_COST ||
+          this.bonusCostTemperature !== VASTITAS_BOREALIS_NOVA_BONUS_TEMPERATURE_COST ||
           this.bonusCostColony !== TERRA_CIMMERIA_COLONY_COST) {
         def.placementBonusCosts = {
           ocean: this.bonusCostOcean,
@@ -620,7 +619,7 @@ export default defineComponent({
       this.customParams = def.globalParameters !== undefined;
       this.params = toEditableParams(def.globalParameters ?? DEFAULT_GLOBAL_PARAMETERS);
       this.bonusCostOcean = def.placementBonusCosts?.ocean ?? HELLAS_BONUS_OCEAN_COST;
-      this.bonusCostTemperature = def.placementBonusCosts?.temperature ?? VASTITAS_BOREALIS_BONUS_TEMPERATURE_COST;
+      this.bonusCostTemperature = def.placementBonusCosts?.temperature ?? VASTITAS_BOREALIS_NOVA_BONUS_TEMPERATURE_COST;
       this.bonusCostColony = def.placementBonusCosts?.colony ?? TERRA_CIMMERIA_COLONY_COST;
     },
     play(): void {

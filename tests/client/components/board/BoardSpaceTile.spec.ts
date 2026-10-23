@@ -10,9 +10,9 @@ describe('BoardSpaceTile', () => {
       ...globalConfig,
       props: {
         space: {
-          id: '01',
           x: 0,
           y: 0,
+          id: '01',
           bonus: [],
           color: undefined,
           tileType: undefined,

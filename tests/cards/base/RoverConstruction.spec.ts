@@ -15,6 +15,6 @@ describe('RoverConstruction', () => {
     runAllActions(game);
     expect(game.board.getCities()).has.length(1);
     expect(player.megaCredits).to.eq(2);
-    expect(game.gameLog.map(formatMessage)).contains('blue gained 2 M€ because of Rover Construction');
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 2:r:mc: because of Rover Construction');
   });
 });

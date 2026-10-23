@@ -27,7 +27,8 @@
                           :playerinput="playerinputWithStepBack()"
                           :onsave="onsavePlayerInput"
                           :showsave="true"
-                          :showtitle="true" />
+                          :showtitle="true"
+                          :key="inputKey" />
   </div>
   <div v-if="showUndoFooter()" class="wf-options wf-undo-controls">
     <label v-if="showUndoAction()" class="form-radio">
@@ -93,11 +94,13 @@ function isDesktopBrowser(): boolean {
 }
 
 type DataModel = {
-  playersWaitingFor: Array<Color>
+  playersWaitingFor: Array<Color>,
   suspend: boolean,
   savedPlayerView: PlayerViewModel | undefined;
   undoChoice: '' | 'action' | 'step';
   undoRadioElementName: string;
+  /** Changes with every new player view, so the input starts fresh. */
+  inputKey: number,
 }
 
 const CANNOT_CONTACT_SERVER = 'Unable to reach the server. It may be restarting or down for maintenance.';
@@ -122,6 +125,7 @@ export default defineComponent({
       savedPlayerView: undefined,
       undoChoice: '',
       undoRadioElementName: 'undo-choice-' + undoChoiceSequence++,
+      inputKey: 0,
     };
   },
   components: {
@@ -131,8 +135,36 @@ export default defineComponent({
     waitingfor() {
       this.undoChoice = '';
     },
+    playerView() {
+      this.inputKey++;
+      this.stop();
+      this.start();
+    },
   },
   methods: {
+    start() {
+      document.title = gameDocumentTitle(this.playerView.game);
+      if (getPreferences().experimental_ui) {
+        setFaviconStatus(this.waitingfor !== undefined ? 'turn' : 'idle');
+      }
+      window.clearInterval(documentTitleTimer);
+      if (this.waitingfor === undefined || this.waitingfor.optional) {
+        this.waitForUpdate();
+      } else if (this.playerView.players.length > 1 && SIMULTANEOUS_PHASES.includes(this.playerView.game.phase)) {
+        this.watchOtherPlayers();
+      }
+      if (this.playerView.players.length > 1 && this.waitingfor !== undefined && !this.waitingfor.optional) {
+        documentTitleTimer = window.setInterval(() => this.animateTitle(), 1000);
+      }
+    },
+    stop() {
+      window.clearTimeout(ui_update_timeout_id);
+      ui_update_timeout_id = undefined;
+      window.clearTimeout(otherPlayersTimer);
+      otherPlayersTimer = undefined;
+      window.clearInterval(documentTitleTimer);
+      documentTitleTimer = undefined;
+    },
     getPlayerName(color: Color): string {
       const player = this.playerView.players.find((p) => p.color === color);
       return player ? player.name : color;
@@ -442,19 +474,7 @@ export default defineComponent({
     },
   },
   mounted() {
-    document.title = gameDocumentTitle(this.playerView.game);
-    if (getPreferences().experimental_ui) {
-      setFaviconStatus(this.waitingfor !== undefined ? 'turn' : 'idle');
-    }
-    window.clearInterval(documentTitleTimer);
-    if (this.waitingfor === undefined || this.waitingfor.optional) {
-      this.waitForUpdate();
-    } else if (this.playerView.players.length > 1 && SIMULTANEOUS_PHASES.includes(this.playerView.game.phase)) {
-      this.watchOtherPlayers();
-    }
-    if (this.playerView.players.length > 1 && this.waitingfor !== undefined && !this.waitingfor.optional) {
-      documentTitleTimer = window.setInterval(() => this.animateTitle(), 1000);
-    }
+    this.start();
   },
   unmounted() {
     window.clearTimeout(ui_update_timeout_id);
@@ -464,11 +484,11 @@ export default defineComponent({
     window.clearInterval(documentTitleTimer);
   },
   computed: {
-    Phase(): typeof Phase {
-      return Phase;
-    },
     preferences(): typeof getPreferences {
       return getPreferences;
+    },
+    Phase(): typeof Phase {
+      return Phase;
     },
     playerColorClass(): typeof playerColorClass {
       return playerColorClass;

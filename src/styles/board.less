@@ -8,6 +8,11 @@
   }
 }
 
+.board--large {
+  width: 620px;
+  height: 560px;
+}
+
 .board-cont {
   display: inline-block;
   vertical-align: top;
@@ -75,6 +80,16 @@
 .board--custom-fit {
   position: relative;
   overflow-anchor: none;
+}
+
+.board-cont--large {
+  width: 740px;
+  height: 680px;
+  background-image: url(./assets/board/mars-large.png);
+}
+
+.board-cont--large.board-without-venus {
+  background-image: url(./assets/board/mars-large-without-venus.png);
 }
 
 .board-legend {
@@ -191,6 +206,12 @@
   background-size: 16px;
 }
 
+// The player chooses any one standard resource; reuses the wild-resource icon.
+.board-space-bonus--standard-resource {
+  background: url(./assets/resources/wild.png) no-repeat;
+  background-size: 16px;
+}
+
 .board-space-bonus--bonusocean {
   background: url(./assets/tiles/ocean.png), url(./assets/misc/hellas-ocean-cost.png);
   background-repeat: no-repeat, no-repeat;
@@ -200,16 +221,7 @@
   height: 24px;
 }
 
-.board-space-bonus--bonustemperature {
-  background: url(./assets/board/bonus_temperature.png);
-  background-repeat: no-repeat;
-  background-size: 32px 21px;
-  width: 36px;
-  height: 21px;
-  background-position: center;
-  filter: saturate(1.5);
-}
-
+// TODO(kberg): Rename to bonustemperature after 2026-12-01
 .board-space-bonus--bonustemperature4mc {
   background: url(./assets/board/bonus_temperature-4mc.png);
   background-repeat: no-repeat;
@@ -268,9 +280,6 @@
   background-size: 16px;
 }
 
-// TODO(kberg): start these aren't really board space bonuses. They're just 16px images
-// And honestly, 16px is so standard, we don't really even need these, do we,
-// most of the time?
 .board-space-bonus--asteroid {
   background: url(./assets/resources/asteroid.png) no-repeat;
   background-size: 16px;
@@ -332,7 +341,7 @@
 }
 
 .board-space-tile--commercial_district {
-  .special-tile-board('./assets/tiles/special_tile_icons/commerical_district.png');
+  .special-tile-board('./assets/tiles/special_tile_icons/commercial_district.png');
 }
 
 .board-space-tile--ecological_zone {
@@ -1033,13 +1042,13 @@
     width: 88px;
   }
 
-  &.board-space-69, &.board-space-70, &.board-space-71, &.board-space-72, &.board-space-73, &.board-space-75, &.board-space-76, &.board-space-77, &.board-space-78 {
+  &.board-space-c69, &.board-space-c70, &.board-space-c71, &.board-space-c72, &.board-space-c73, &.board-space-c75, &.board-space-c76, &.board-space-c77, &.board-space-c78 {
     .board-space-text {
       margin-top: -15px;
     }
   }
 
-  &.board-space-74 {
+  &.board-space-c74 {
     .board-space-text {
       margin-top: -33px;
       font-size: 10px;
@@ -1231,15 +1240,15 @@
   titaniumandplant,
   energy1production, heat2production,
   microbe1, microbe2, tr, ocean,
-  data1pertemp, microbe1pertemp, plant2pertemp, steel2pertemp, titanium1pertemp,
+  plant2pertemp, steel2pertemp, titanium1pertemp,
   mcprod1pertemp, microbe2pertemp,oceanrequirementmod,
   oxygenrequirementmod, temprequirementmod,
   steel2plant, energy2, sciencetag, planttag, volcanicoceanspace, place6mc,
   anyresource1;
 each(@token_types, {
-.underground-token--@{value} {
-  background-image: url("assets/underworld/underground-resource--@{value}.png");
-}
+  .underground-token--@{value} {
+    background-image: url("assets/underworld/underground-resource--@{value}.png");
+  }
 })
 
 .underground-excavator {

@@ -24,8 +24,8 @@ export class Virus extends Card implements IProjectCard {
       metadata: {
         cardNumber: '050',
         renderData: CardRenderer.builder((b) => {
-          b.minus().resource(CardResource.ANIMAL, {amount: 2, all, digit}).nbsp;
-          b.or().nbsp.minus().plants(5, {all, digit});
+          b.resource(CardResource.ANIMAL, {amount: -2, all, digit}).nbsp;
+          b.or().nbsp.plants(-5, {all, digit});
         }),
         description: 'Remove up to 2 animals or 5 plants from any player.',
       },
@@ -38,7 +38,7 @@ export class Virus extends Card implements IProjectCard {
       return undefined;
     }
 
-    const orOptionsAnimals = new RemoveResourcesFromCard(player, CardResource.ANIMAL, 2, {mandatory: false, log: true}).execute() as OrOptions;
+    const orOptionsAnimals = new RemoveResourcesFromCard(player, CardResource.ANIMAL, 2, {mandatory: false}).execute() as OrOptions;
     const removeAnimals = orOptionsAnimals !== undefined ?
       orOptionsAnimals.options[0] :
       undefined;

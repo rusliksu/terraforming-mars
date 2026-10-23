@@ -150,9 +150,6 @@ export default defineComponent({
       default: 'show',
     },
   },
-  data() {
-    return {};
-  },
   components: {
     AdjacencyBonus,
   },

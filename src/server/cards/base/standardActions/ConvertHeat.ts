@@ -22,7 +22,7 @@ export class ConvertHeat extends StandardActionCard {
 
   public canAct(player: IPlayer): boolean {
     const heatForTemperature = this.getHeatCost(player);
-    if (player.game.getTemperature() === player.game.parameters.temperature.max) {
+    if (player.game.getTemperature() === player.game.max.temperature) {
       this.addWarning('maxtemp');
     }
 

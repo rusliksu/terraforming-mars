@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import prometheus from 'prom-client';
+import prometheus from '@prometheus-io/client';
 import {INVALID_RUN_ID} from '../../src/common/app/AppErrorId';
 import {statusCode} from '../../src/common/http/statusCode';
 import {GameLoader} from '../../src/server/database/GameLoader';

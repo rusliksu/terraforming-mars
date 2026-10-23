@@ -22,7 +22,7 @@ export class DebrisField extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'X30',
         renderData: CardRenderer.builder((b) => {
-          b.minus().plants(-3, {all}).br;
+          b.plants(-3, {all}).br;
           b.titanium(1).steel(1);
         }),
         description: 'Remove up to 3 plants from any player. Gain 1 titanium and 1 steel.',

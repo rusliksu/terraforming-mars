@@ -23,7 +23,6 @@ import {getConglomeratesModel} from '../models/ConglomeratesModel';
 import {ConglomeratesExpansion} from '../conglomerates/ConglomeratesExpansion';
 import {SpectatorModel} from '../../common/models/SpectatorModel';
 import {GameModel, OtherDeckSizesModel} from '../../common/models/GameModel';
-import {Turmoil} from '../turmoil/Turmoil';
 import {createPathfindersModel} from './PathfindersModel';
 import {MoonModel} from '../../common/models/MoonModel';
 import {VenusPhase2Model} from '../../common/models/VenusPhase2Model';
@@ -86,8 +85,6 @@ export class Server {
   }
 
   public static getGameModel(game: IGame): GameModel {
-    const turmoil = getTurmoilModel(game);
-
     return {
       automationCompatibility: getAutomationCompatibility(game.gameOptions),
       fanmadeCatalogRevision: Server.FANMADE_CATALOG_REVISION,
@@ -124,7 +121,7 @@ export class Server {
       step: game.lastSaveId,
       temperature: game.getTemperature(),
       tags: game.tags,
-      turmoil: turmoil,
+      turmoil: getTurmoilModel(game),
       undoCount: game.undoCount,
       venusScaleLevel: game.getVenusScaleLevel(),
       venusPhase2: this.getVenusPhase2Model(game),
@@ -266,7 +263,8 @@ export class Server {
     if (waitingFor === undefined) {
       return undefined;
     }
-    // TODO(kberg): in theory this should be in all the other toModel calls.
+    // Only the top-level input's warning reaches the client. Warnings on inputs
+    // nested in OrOptions, AndOptions, or SelectInitialCards are not sent.
     const model = waitingFor.toModel(player);
     model.warning = waitingFor.warning;
     if (waitingFor.annotation !== undefined) {
@@ -305,7 +303,7 @@ export class Server {
       heat: player.heat,
       heatProduction: player.production.heat,
       id: game.phase === Phase.END ? player.id : undefined,
-      influence: Turmoil.ifTurmoilElse(game, (turmoil) => turmoil.getInfluence(player), () => 0),
+      influence: game.turmoil?.getInfluence(player) ?? 0,
       isActive: player.id === game.activePlayer.id,
       isBotControlled: this.isBotControlled(game, player.id),
       isSurrendered: game.surrenderedPlayerIds.has(player.id),
@@ -471,12 +469,16 @@ export class Server {
       }
 
       const model: SpaceModel = {
+        id: space.id,
         x: space.x,
         y: space.y,
-        id: space.id,
         spaceType: space.spaceType,
         bonus: space.bonus,
       };
+      const a9 = board.A9[space.id];
+      if (a9 !== undefined) {
+        model.a9 = a9;
+      }
       const tileType = space.tile?.tileType;
       if (tileType !== undefined) {
         model.tileType = tileType;

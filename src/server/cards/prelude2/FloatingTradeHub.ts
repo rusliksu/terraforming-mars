@@ -48,9 +48,10 @@ export class FloatingTradeHub extends PreludeCard implements IActionCard {
       .setTitle('Convert floaters to standard resources')
       .andThen(() => {
         player.removeResourceFrom(this, selectAmount.selected, {log: false});
-        player.game.log('${0} converted ${1} floater(s) from ${2}', (b) =>
-          b.player(player).number(selectAmount.selected).card(this));
-        player.stock.add(selectResource.selected, selectAmount.selected, {log: true});
+        player.stock.add(selectResource.selected, selectAmount.selected);
+        player.game.log('${0} removed ${1}:cr:floater: from ${2} to gain ${3}${4}', (b) =>
+          b.player(player).number(selectAmount.selected).card(this).
+            number(selectAmount.selected).resource(selectResource.selected));
         return undefined;
       });
     if (this.resourceCount === 0) {

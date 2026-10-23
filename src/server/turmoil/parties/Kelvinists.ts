@@ -6,7 +6,6 @@ import {Bonus} from '../Bonus';
 import {IPolicy} from '../Policy';
 import {IPlayer} from '../../IPlayer';
 import {SelectPaymentDeferred} from '../../deferredActions/SelectPaymentDeferred';
-import {MAX_TEMPERATURE} from '../../../common/constants';
 import {CardName} from '../../../common/cards/CardName';
 import {TITLES} from '../../inputs/titles';
 import {SelectOption} from '../../inputs/SelectOption';
@@ -67,7 +66,7 @@ class KelvinistsPolicy01 implements IPolicy {
       .andThen(() => {
         player.production.add(Resource.ENERGY, 1);
         player.production.add(Resource.HEAT, 1);
-        game.log('${0} increased heat and energy production 1 step', (b) => b.player(player));
+        game.log('${0} gained +1:p:heat::p:energy:', (b) => b.player(player));
       });
 
     return undefined;
@@ -100,12 +99,12 @@ class KelvinistsPolicy03 implements IPolicy {
       return player.spendHeat(6, () => {
         const game = player.game;
         game.log('${0} used Turmoil ${1} action', (b) => b.player(player).partyName(PartyName.KELVINISTS));
-        game.log('${0} spent 6 heat to raise temperature 1 step', (b) => b.player(player));
+        game.log('${0} spent 6:r:heat: to raise temperature 1 step', (b) => b.player(player));
         game.increaseTemperature(player, 1);
         return undefined;
       });
     });
-    if (player.game.getTemperature() === MAX_TEMPERATURE) {
+    if (player.game.getTemperature() === player.game.max.temperature) {
       option.warnings = ['maxtemp'];
       option.eligibleForDefault = false;
     }

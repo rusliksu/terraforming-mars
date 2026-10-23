@@ -10,7 +10,7 @@ import {Message} from '../../common/logs/Message';
 type Options = {
   title?: string | Message,
   on?: PlacementType,
-  spaces?: Array<Space>,
+  spaces?: ReadonlyArray<Space>,
   /** For Icy Impactors */
   creditedPlayer?: IPlayer,
 };
@@ -35,10 +35,8 @@ export class PlaceOceanTile extends DeferredAction<Space | undefined> {
       if (blueMarsInEffect) {
         this.creditedPlayer.increaseTerraformRating(1, {log: true, from: {card: CardName.BLUE_MARS}});
       }
-      if (whales !== undefined || blueMarsInEffect) {
-        const input = this.cb(undefined);
-        this.player?.defer(input);
-      }
+      const input = this.cb(undefined);
+      this.player?.defer(input);
       return undefined;
     }
 

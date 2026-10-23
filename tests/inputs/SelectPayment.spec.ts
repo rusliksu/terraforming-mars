@@ -42,6 +42,15 @@ describe('SelectPayment', () => {
     expect(() => new SelectPayment('', 10, {}).process({type: 'payment', payment}, player)).to.throw('valid type');
   });
 
+  it('toModel includes player payment options', () => {
+    const selectPayment = new SelectPayment('', 10, {steel: true});
+    expect(selectPayment.toModel(player).paymentOptions).deep.eq({heat: false, energy: false, lunaTradeFederationTitanium: false, steel: true});
+
+    player.canUseHeatAsMegaCredits = true;
+    player.canUseTitaniumAsMegacredits = true;
+    expect(selectPayment.toModel(player).paymentOptions).deep.eq({heat: true, energy: false, lunaTradeFederationTitanium: true, steel: true});
+  });
+
   it('Simple, can pay with steel', () => {
     player.megaCredits = 6;
     player.steel = 2;
@@ -87,4 +96,16 @@ describe('SelectPayment', () => {
       }
     });
   }
+
+  it('Rejects fractions and extra fields', () => {
+    player.megaCredits = 0;
+    player.titanium = 4;
+    player.canUseTitaniumAsMegacredits = true;
+    const selectPayment = new SelectPayment('', 10, {titanium: true}).andThen(cb);
+    // 3.3334 titanium would pay exactly 10 instead of overpaying with 4
+    expect(() => selectPayment.process({type: 'payment', payment: Payment.of({titanium: 3.3334})}, player))
+      .to.throw(/payment is not a valid type/);
+    expect(() => selectPayment.process({type: 'payment', payment: {...Payment.of({titanium: 4}), junk: 1} as unknown as Payment}, player))
+      .to.throw(/payment is not a valid type/);
+  });
 });

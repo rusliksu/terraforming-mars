@@ -4,6 +4,8 @@ import {Request} from '../Request';
 import {Response} from '../Response';
 import {statusCode} from '../../common/http/statusCode';
 import {isProduction} from '../utils/server';
+import {AppError} from './AppError';
+import {AppErrorResponse} from '@/common/app/AppErrorId';
 
 export function badRequest(req: Request, res: Response, err?: string): void {
   console.warn('bad request', req.url);
@@ -13,6 +15,17 @@ export function badRequest(req: Request, res: Response, err?: string): void {
     res.write(': ');
     res.write(err);
   }
+  res.end();
+}
+
+export function badInputRequest(_req: Request, res: Response, e: unknown) {
+  res.writeHead(statusCode.badRequest, {
+    'Content-Type': 'application/json',
+  });
+  const id = e instanceof AppError ? e.id : undefined;
+  const message = e instanceof Error ? e.message : String(e);
+  const response: AppErrorResponse = {id, message};
+  res.write(JSON.stringify(response));
   res.end();
 }
 
@@ -96,7 +109,7 @@ export function unprocessableEntity(req: Request, res: Response, msg: string = '
 }
 
 export function downgradeRedirect(_req: Request, res: Response, ctx: Context): void {
-  const url = new URL(ctx.url); // defensive copty
+  const url = new URL(ctx.url); // defensive copy
   url.searchParams.set('serverId', ctx.ids.statsId);
   res.writeHead(statusCode.movedPermanently, {Location: url.pathname + url.search});
   res.end();

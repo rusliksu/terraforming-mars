@@ -148,10 +148,10 @@ h2 {
 
 // normal backgrounds
 each(@players, {
-@c: ~"player_@{value}";
-.player_bg_color_@{value} {
-  background-color: @@c;
-}
+  @c: ~"player_@{value}";
+  .player_bg_color_@{value} {
+    background-color: @@c;
+  }
 })
 
 .player_bg_color_gold {
@@ -247,10 +247,10 @@ each(@players, {
 
 // backgrounds with opacity
 each(@players, {
-@c: ~"player_@{value}";
-.player_translucent_bg_color_@{value} {
-  background: rgba(@@c, 0.7);
-}
+  @c: ~"player_@{value}";
+  .player_translucent_bg_color_@{value} {
+    background: rgba(@@c, 0.7);
+  }
 })
 
 .player_translucent_bg_color_gold {

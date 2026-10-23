@@ -27,7 +27,7 @@ describe('Game.grantSpaceBonus with a custom board', () => {
   });
 
   it('charges the custom temperature bonus cost', () => {
-    game.grantSpaceBonus(player, SpaceBonus.TEMPERATURE);
+    game.grantSpaceBonus(player, SpaceBonus.TEMPERATURE_4MC);
     const deferred = cast(game.deferredActions.pop(), SelectPaymentDeferred);
     expect(deferred.amount).to.eq(9);
   });
@@ -36,12 +36,6 @@ describe('Game.grantSpaceBonus with a custom board', () => {
     game.grantSpaceBonus(player, SpaceBonus.COLONY);
     const deferred = cast(game.deferredActions.pop(), SelectPaymentDeferred);
     expect(deferred.amount).to.eq(1);
-  });
-
-  it('TEMPERATURE_4MC keeps the official Vastitas Borealis Nova cost regardless of a custom board', () => {
-    game.grantSpaceBonus(player, SpaceBonus.TEMPERATURE_4MC);
-    const deferred = cast(game.deferredActions.pop(), SelectPaymentDeferred);
-    expect(deferred.amount).to.eq(constants.VASTITAS_BOREALIS_NOVA_BONUS_TEMPERATURE_COST);
   });
 
   it('grants M€ directly for the MEGACREDITS bonus (a Custom Map Editor placement bonus)', () => {

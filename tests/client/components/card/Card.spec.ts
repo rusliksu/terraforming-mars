@@ -105,4 +105,15 @@ describe('Card', () => {
       },
     })).to.throw('card not found');
   });
+
+  it('updates when the card changes', async () => {
+    const wrapper = shallowMount(Card, {
+      ...globalConfig,
+      props: {
+        card: {name: CardName.ECOLINE},
+      },
+    });
+    await wrapper.setProps({card: {name: CardName.ANTS}});
+    expect(wrapper.vm.cardInstance.name).to.eq(CardName.ANTS);
+  });
 });

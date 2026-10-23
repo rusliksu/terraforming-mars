@@ -2,6 +2,8 @@ import {expect} from 'chai';
 import {validationDetails, Helpers, validateNewGameConfig, ValidationErrors} from '../../../src/common/game/validateNewGameConfig';
 import {NewGameConfig, NewPlayerModel} from '../../../src/common/game/NewGameConfig';
 import {RandomBoardOption} from '../../../src/common/boards/RandomBoardOption';
+import {BoardName} from '../../../src/common/boards/BoardName';
+import {boardOptions} from '@/common/boards/randomBoardOptions';
 import {RandomMAOptionType} from '../../../src/common/ma/RandomMAOptionType';
 import {CardName} from '../../../src/common/cards/CardName';
 import {ColonyName} from '../../../src/common/colonies/ColonyName';
@@ -38,7 +40,7 @@ function newGameConfig(overrides: Partial<NewGameConfig> = {}): NewGameConfig {
       underworld: false,
       deltaProject: false,
     },
-    board: RandomBoardOption.OFFICIAL,
+    boards: boardOptions(RandomBoardOption.OFFICIAL),
     seed: 0,
     randomFirstPlayer: false,
     clonedGamedId: undefined,
@@ -96,6 +98,9 @@ const NO_ERRORS: ValidationErrors = {
   ceosMissingExpansions: [],
   soloWithoutCorporateEra: false,
   infiniteEnergyBug: false,
+  altVenusBoardOnAmazonis: false,
+  prelude2WithoutPrelude: false,
+  deltaProjectWithoutPrelude: false,
   notEnoughCorporations: 0,
 };
 
@@ -175,6 +180,30 @@ describe('validateNewGameConfig', () => {
     expect(validate({expansions, bannedCards: [CardName.HIGH_TEMP_SUPERCONDUCTORS]}).infiniteEnergyBug).is.false;
     expect(validate({expansions: {...expansions, prelude2: false}}).infiniteEnergyBug).is.false;
     expect(validate({expansions: {...expansions, pathfinders: false}}).infiniteEnergyBug).is.false;
+  });
+
+  it('alt venus board on amazonis', () => {
+    const expansions = {...newGameConfig().expansions, venus: true};
+    expect(validate({expansions, altVenusBoard: true, boards: [BoardName.AMAZONIS_PLANITIA]}).altVenusBoardOnAmazonis).is.true;
+    expect(validate({expansions, altVenusBoard: true, boards: boardOptions(RandomBoardOption.ALL)}).altVenusBoardOnAmazonis).is.true;
+    expect(validate({expansions, altVenusBoard: true, boards: boardOptions(RandomBoardOption.OFFICIAL)}).altVenusBoardOnAmazonis).is.true;
+    expect(validate({expansions, altVenusBoard: true, boards: [BoardName.THARSIS]}).altVenusBoardOnAmazonis).is.false;
+    expect(validate({expansions, altVenusBoard: false, boards: [BoardName.AMAZONIS_PLANITIA]}).altVenusBoardOnAmazonis).is.false;
+    expect(validate({altVenusBoard: true, boards: [BoardName.AMAZONIS_PLANITIA]}).altVenusBoardOnAmazonis).is.false;
+  });
+
+  it('prelude 2 without prelude', () => {
+    const expansions = newGameConfig().expansions;
+    expect(validate({expansions: {...expansions, prelude2: true}}).prelude2WithoutPrelude).is.true;
+    expect(validate({expansions: {...expansions, prelude2: true, prelude: true}}).prelude2WithoutPrelude).is.false;
+    expect(validate({expansions: {...expansions, prelude: true}}).prelude2WithoutPrelude).is.false;
+  });
+
+  it('delta project without prelude', () => {
+    const expansions = newGameConfig().expansions;
+    expect(validate({expansions: {...expansions, deltaProject: true}}).deltaProjectWithoutPrelude).is.true;
+    expect(validate({expansions: {...expansions, deltaProject: true, prelude: true}}).deltaProjectWithoutPrelude).is.false;
+    expect(validate({expansions: {...expansions, prelude: true}}).deltaProjectWithoutPrelude).is.false;
   });
 
   it('not enough corporations', () => {

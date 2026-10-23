@@ -26,6 +26,6 @@ describe('Tardigrades', () => {
     card.action(player);
     runAllActions(player.game);
     expect(card.resourceCount).to.eq(1);
-    expect(player.game.gameLog.map(formatMessage)).contains('blue added 1 Microbe to Tardigrades');
+    expect(player.game.gameLog.map(formatMessage)).contains('blue added 1:cr:microbe: to Tardigrades');
   });
 });

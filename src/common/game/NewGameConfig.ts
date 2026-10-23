@@ -52,8 +52,8 @@ export type EscapeVelocityOptions = {
 export type NewGameConfig = {
   players: Array<NewPlayerModel>;
   expansions: Record<Expansion, boolean>,
-  board: BoardNameType;
-  /** Opaque map-editor code, required when `board` is `BoardName.CUSTOM`. */
+  boards: Array<BoardName>;
+  /** Opaque map-editor code, required when `boards` includes `BoardName.CUSTOM`. */
   customBoardCode?: string;
   /** Opaque map-editor code overriding the Moon board's own hard-coded default layout. */
   customMoonBoardCode?: string;

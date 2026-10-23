@@ -10,8 +10,8 @@ import {
   hexRowLayout,
 } from './CustomBoardDefinition';
 import {DEFAULT_GLOBAL_PARAMETERS, GlobalParametersConfig, ParameterBonus, ParameterTrack} from '../GlobalParameterConfig';
-import {milestoneNames, MilestoneName} from '../ma/MilestoneName';
-import {awardNames, AwardName} from '../ma/AwardName';
+import {milestoneNames, MilestoneName, maybeRenamedMilestone} from '../ma/MilestoneName';
+import {awardNames, AwardName, maybeRenamedAward} from '../ma/AwardName';
 import {bytesToBase64url, base64urlToBytes} from '../utils/base64url';
 
 const PREFIX = 'TMB3';
@@ -284,8 +284,10 @@ export function decodeCustomBoard(code: string): CustomBoardDefinition {
     }
   }
 
-  const milestones = readNames(r, (n): n is MilestoneName => (milestoneNames as ReadonlyArray<string>).includes(n), 'milestone');
-  const awards = readNames(r, (n): n is AwardName => (awardNames as ReadonlyArray<string>).includes(n), 'award');
+  // Map codes written before an award/milestone rename still carry the old name.
+  // Renames are permanent, so decoding one lands it on the current name.
+  const milestones = readNames(r, isMilestoneNameOrRenamed, 'milestone').map(maybeRenamedMilestone);
+  const awards = readNames(r, isAwardNameOrRenamed, 'award').map(maybeRenamedAward);
 
   const def: CustomBoardDefinition = {version: 1, name, rows, spaces, milestones, awards};
 
@@ -308,6 +310,14 @@ export function decodeCustomBoard(code: string): CustomBoardDefinition {
   }
 
   return def;
+}
+
+function isMilestoneNameOrRenamed(name: string): name is MilestoneName {
+  return (milestoneNames as ReadonlyArray<string>).includes(name) || maybeRenamedMilestone(name) !== name;
+}
+
+function isAwardNameOrRenamed(name: string): name is AwardName {
+  return (awardNames as ReadonlyArray<string>).includes(name) || maybeRenamedAward(name) !== name;
 }
 
 function readNames<T extends string>(r: ByteReader, guard: (n: string) => n is T, label: string): Array<T> {

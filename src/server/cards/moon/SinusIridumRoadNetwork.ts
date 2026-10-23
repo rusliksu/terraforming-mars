@@ -5,10 +5,10 @@ import {CardRenderer} from '../render/CardRenderer';
 import {Card} from '../Card';
 import {AltSecondaryTag} from '../../../common/cards/render/AltSecondaryTag';
 
-export class SinusIrdiumRoadNetwork extends Card {
+export class SinusIridumRoadNetwork extends Card {
   constructor() {
     super({
-      name: CardName.SINUS_IRDIUM_ROAD_NETWORK,
+      name: CardName.SINUS_IRIDUM_ROAD_NETWORK,
       type: CardType.AUTOMATED,
       tags: [Tag.MOON],
       cost: 15,
@@ -28,9 +28,9 @@ export class SinusIrdiumRoadNetwork extends Card {
         cardNumber: 'M11',
         renderData: CardRenderer.builder((b) => {
           b.production((pb) => {
-            pb.minus().energy(1).nbsp.plus().megacredits(3);
+            pb.energy(-1).nbsp.plus().megacredits(3);
           }).br;
-          b.minus().steel(1).moonRoad({secondaryTag: AltSecondaryTag.MOON_LOGISTIC_RATE});
+          b.steel(-1).moonRoad({secondaryTag: AltSecondaryTag.MOON_LOGISTIC_RATE});
         }),
       },
     });

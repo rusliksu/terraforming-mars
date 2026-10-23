@@ -6,7 +6,6 @@ import {IPlayer} from '../../IPlayer';
 import {ICard} from '../ICard';
 import {UnderworldExpansion} from '../../underworld/UnderworldExpansion';
 import {SendDelegateToArea} from '../../deferredActions/SendDelegateToArea';
-import {Turmoil} from '../../turmoil/Turmoil';
 import {Size} from '../../../common/cards/render/Size';
 
 /** A crime-and-politics corp: profits from bad press and turns corruption into influence. */
@@ -61,10 +60,11 @@ export class TheSyndicate extends ActiveCorporationCard {
   }
 
   public override bespokeAction(player: IPlayer) {
-    Turmoil.ifTurmoil(player.game, (turmoil) => {
+    const turmoil = player.game.turmoil;
+    if (turmoil !== undefined) {
       turmoil.delegateReserve.add(player, 1);
       player.game.log('${0} added 1 delegate to their reserve', (b) => b.player(player));
-    });
+    }
     return undefined;
   }
 }

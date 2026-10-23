@@ -5,7 +5,6 @@ import {MoonExpansion} from '../moon/MoonExpansion';
 import {VenusPhase2Expansion} from '../venusPhase2/VenusPhase2Expansion';
 import {PathfindersExpansion} from '../pathfinders/PathfindersExpansion';
 import {DeltaProjectExpansion} from '../delta/DeltaProjectExpansion';
-import {Turmoil} from '../turmoil/Turmoil';
 import {VictoryPointsBreakdownBuilder} from './VictoryPointsBreakdownBuilder';
 import {FundedAward} from '../awards/FundedAward';
 import {AwardScorer} from '../awards/AwardScorer';
@@ -71,12 +70,9 @@ export function calculateVictoryPoints(player: IPlayer) {
 
   // Turmoil Victory Points
   const includeTurmoilVP = player.game.gameIsOver() || player.game.phase === Phase.END;
-
-  Turmoil.ifTurmoil(player.game, (turmoil) => {
-    if (includeTurmoilVP) {
-      builder.setVictoryPoints('victoryPoints', turmoil.getVictoryPoints(player), 'Turmoil Points');
-    }
-  });
+  if (player.game.turmoil && includeTurmoilVP) {
+    builder.setVictoryPoints('victoryPoints', player.game.turmoil.getVictoryPoints(player), 'Turmoil Points');
+  }
 
   const coloniesVP = player.colonies.getVictoryPoints();
   if (coloniesVP > 0) {

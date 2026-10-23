@@ -8,6 +8,7 @@ import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {GameId} from '../../src/common/Types';
 import {statusCode} from '../../src/common/http/statusCode';
 import {BoardName} from '../../src/common/boards/BoardName';
+import {boardOptions} from '../../src/common/boards/randomBoardOptions';
 import {RandomBoardOption} from '../../src/common/boards/RandomBoardOption';
 import {RandomMAOptionType} from '../../src/common/ma/RandomMAOptionType';
 import {SerializedGame} from '../../src/server/SerializedGame';
@@ -188,7 +189,7 @@ describe('ApiCloneableGame', () => {
     expect(res.statusCode).eq(statusCode.ok);
     const response = JSON.parse(res.content);
     expect(response.playerCount).eq(2);
-    expect(response.setup.board).eq(BoardName.HELLAS);
+    expect(response.setup.boards).deep.eq([BoardName.HELLAS]);
     expect(response.setup.expansions.venus).eq(true);
     expect(response.setup.seededGame).eq(false);
   });
@@ -281,7 +282,7 @@ describe('ApiCloneableGame', () => {
       {name: 'Alice', color: 'red', beginner: false, handicap: 0, preludeHandicap: 2, first: false, isBot: false},
       {name: 'Bob', color: 'blue', beginner: true, handicap: 3, preludeHandicap: 1, first: false, isBot: false},
     ]);
-    expect(response.setup.board).eq(BoardName.ELYSIUM);
+    expect(response.setup.boards).deep.eq([BoardName.ELYSIUM]);
     expect(response.setup.clonedGamedId).eq(undefined);
     expect(response.setup.seededGame).eq(false);
     expect(response.setup.noEloGame).eq(true);
@@ -365,6 +366,6 @@ describe('ApiCloneableGame', () => {
 
     expect(res.statusCode).eq(statusCode.ok);
     const response = JSON.parse(res.content);
-    expect(response.setup.board).eq(RandomBoardOption.ALL);
+    expect(response.setup.boards).deep.eq(boardOptions(RandomBoardOption.ALL));
   });
 });

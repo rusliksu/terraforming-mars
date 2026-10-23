@@ -8,7 +8,7 @@
             <TagCount tag="tr" :count="player.terraformRating" :size="'big'" :type="'main'"/>
             <TagCount v-if="player.handicap !== undefined" :tag="'handicap'" :count="player.handicap" :size="'big'" :type="'main'" :showWhenZero="true"/>
             <div class="tag-and-discount">
-              <PlayerTagDiscount v-if="all.discount" :amount="all.discount" :color="player.color"  :data-test="'discount-all'"/>
+              <HandDiscount v-if="allDiscount || conditionalDiscounts.length > 0" :amount="allDiscount" :conditional="conditionalDiscounts" :data-test="'discount-all'"/>
               <TagCount tag="cards" :count="cardsInHandCount" :size="'big'" :type="'main'"/>
             </div>
         </div>
@@ -20,7 +20,6 @@
               </div>
             </template>
             <div v-else-if="tagDetail.name === 'separator'" class="tag-separator"></div>
-            <template v-else-if="tagDetail.name === 'all'"></template>
             <div v-else class="tag-and-discount">
               <PlayerTagDiscount v-if="tagDetail.discount > 0" :color="player.color" :amount="tagDetail.discount" :data-test="'discount-' + tagDetail.name"/>
               <PointsPerTag :points="tagDetail"/>
@@ -43,12 +42,14 @@ import {SpecialTags} from '@/client/cards/SpecialTags';
 import PlayerTagDiscount from '@/client/components/overview/PlayerTagDiscount.vue';
 import PointsPerTag from '@/client/components/overview/PointsPerTag.vue';
 import PlayerTagSubstitution from '@/client/components/overview/PlayerTagSubstitution.vue';
+import HandDiscount from '@/client/components/overview/HandDiscount.vue';
+import {DiscountSource, getConditionalDiscounts} from '@/client/components/overview/discounts';
 import {PartyName} from '@/common/turmoil/PartyName';
 import {getCard} from '@/client/cards/ClientCardManifest';
 import {vueRoot} from '@/client/components/vueRoot';
 import {CardName} from '@/common/cards/CardName';
 
-type InterfaceTagsType = Tag | SpecialTags | 'separator' | 'all';
+type InterfaceTagsType = Tag | SpecialTags | 'separator';
 type TagDetail = {
   name: InterfaceTagsType;
   discount: number;
@@ -57,11 +58,6 @@ type TagDetail = {
   count: number;
   asterisk: boolean;
   substitution?: Tag;
-};
-
-type DataModel = {
-  all: TagDetail;
-  tagsInOrder: Array<TagDetail>;
 };
 
 const ORDER: Array<InterfaceTagsType> = [
@@ -133,7 +129,6 @@ const getTagCount = (tagName: InterfaceTagsType, player: PublicPlayerModel): num
   case SpecialTags.NEGATIVE_VP:
     return player.victoryPointsBreakdown.negativeVP;
   case 'separator':
-  case 'all':
     return -1;
   default:
     return player.tags[tagName];
@@ -164,96 +159,99 @@ export default defineComponent({
       default: true,
     },
   },
-  data(): DataModel {
-    type TagDetails = Record<InterfaceTagsType | 'all', TagDetail>;
-
-    // Start by giving every entry a default value
-    const interim = ORDER.map((key) => [
-      key,
-      {name: key, discount: 0, points: 0, count: getTagCount(key, this.player), halfPoints: 0, asterisk: false},
-    ]);
-    const details: TagDetails = Object.fromEntries(interim);
-
-    // Initialize all's card discount.
-    details['all'] = {
-      name: 'all',
-      discount: this.player?.cardDiscount ?? 0,
-      points: 0,
-      count: 0,
-      halfPoints: 0,
-      asterisk: false,
-    };
-
-    // For each card
-    for (const card of this.player.tableau) {
-      // Calculate discount
-      for (const discount of card.discount ?? []) {
-        const tag = discount.tag ?? 'all';
-        details[tag].discount += discount.amount;
-      }
-
-      // See https://github.com/terraforming-mars/terraforming-mars/issues/5236
-      if (card.name === CardName.CULTIVATION_OF_VENUS || card.name === CardName.VENERA_BASE) {
-        details[Tag.VENUS].halfPoints++;
-      } else {
-        const vps = getCard(card.name)?.victoryPoints;
-        if (vps !== undefined && typeof(vps) !== 'number' && vps !== 'special') {
-          // Special case Commercial District etc.
-          const asterisk = vps.nextToThis !== undefined;
-          if (vps.tag !== undefined) {
-            if (!asterisk) {
-              details[vps.tag].points += ((vps.each ?? 1) / (vps.per ?? 1));
-            } else {
-              details[vps.tag].asterisk = true;
-            }
-          }
-          if (vps.cities !== undefined) {
-            if (!asterisk) {
-              details['city-count'].points += ((vps.each ?? 1) / (vps.per ?? 1));
-            } else {
-              details['city-count'].asterisk = true;
-            }
-          }
-        }
-      }
-    }
-
-    // Other modifiers
-    if (this.playerView.game.turmoil?.ruling === PartyName.UNITY &&
-      this.playerView.game.turmoil.politicalAgendas?.unity?.policyId === 'up04') {
-      details[Tag.SPACE].discount += 2;
-    }
-
-    // Tag substitutions
-    for (const card of this.player.tableau) {
-      if (card.name === CardName.EARTH_EMBASSY) {
-        details[Tag.EARTH].substitution = Tag.MOON;
-      }
-      if (card.name === CardName.HABITAT_MARTE) {
-        details[Tag.SCIENCE].substitution = Tag.MARS;
-      }
-    }
-
-    // Put them in order.
-    const tagsInOrder = [];
-    for (const tag of ORDER) {
-      const entry = details[tag];
-      tagsInOrder.push(entry);
-    }
-
-    return {
-      all: details['all'],
-      tagsInOrder,
-    };
-  },
-
   components: {
     TagCount,
     PlayerTagDiscount,
     PointsPerTag,
     PlayerTagSubstitution,
+    HandDiscount,
   },
   computed: {
+    /** The discount that applies to every card, regardless of its tags. */
+    allDiscount(): number {
+      let discount = this.player.cardDiscount ?? 0;
+      for (const card of this.player.tableau) {
+        for (const d of card.discount ?? []) {
+          if (d.tag === undefined) {
+            discount += d.amount;
+          }
+        }
+      }
+      return discount;
+    },
+    tagsInOrder(): Array<TagDetail> {
+      type DetailsByTag = Record<InterfaceTagsType, TagDetail>;
+
+      // Start by giving every entry a default value
+      const interim = ORDER.map((key) => [
+        key,
+        {name: key, discount: 0, points: 0, count: getTagCount(key, this.player), halfPoints: 0, asterisk: false},
+      ]);
+      const details: DetailsByTag = Object.fromEntries(interim);
+
+      // For each card
+      for (const card of this.player.tableau) {
+        // Calculate discount
+        for (const discount of card.discount ?? []) {
+          if (discount.tag !== undefined) {
+            details[discount.tag].discount += discount.amount;
+          }
+        }
+
+        // See https://github.com/terraforming-mars/terraforming-mars/issues/5236
+        if (card.name === CardName.CULTIVATION_OF_VENUS || card.name === CardName.VENERA_BASE) {
+          details[Tag.VENUS].halfPoints++;
+        } else {
+          const vps = getCard(card.name)?.victoryPoints;
+          if (vps !== undefined && typeof(vps) !== 'number' && vps !== 'special') {
+            // Special case Commercial District etc.
+            const asterisk = vps.nextToThis !== undefined;
+            if (vps.tag !== undefined) {
+              if (!asterisk) {
+                details[vps.tag].points += ((vps.each ?? 1) / (vps.per ?? 1));
+              } else {
+                details[vps.tag].asterisk = true;
+              }
+            }
+            if (vps.cities !== undefined) {
+              if (!asterisk) {
+                details['city-count'].points += ((vps.each ?? 1) / (vps.per ?? 1));
+              } else {
+                details['city-count'].asterisk = true;
+              }
+            }
+          }
+        }
+      }
+
+      // Other modifiers
+      if (this.playerView.game.turmoil?.ruling === PartyName.UNITY &&
+        this.playerView.game.turmoil.politicalAgendas?.unity?.policyId === 'up04') {
+        details[Tag.SPACE].discount += 2;
+      }
+
+      // Tag substitutions
+      for (const card of this.player.tableau) {
+        if (card.name === CardName.EARTH_EMBASSY) {
+          details[Tag.EARTH].substitution = Tag.MOON;
+        }
+        if (card.name === CardName.HABITAT_MARTE) {
+          details[Tag.SCIENCE].substitution = Tag.MARS;
+        }
+      }
+
+      // Put them in order.
+      const tagsInOrder = [];
+      for (const tag of ORDER) {
+        const entry = details[tag];
+        tagsInOrder.push(entry);
+      }
+
+      return tagsInOrder;
+    },
+    conditionalDiscounts(): Array<DiscountSource> {
+      return getConditionalDiscounts(this.player);
+    },
     isThisPlayer(): boolean {
       return this.player.color === this.playerView.thisPlayer?.color;
     },

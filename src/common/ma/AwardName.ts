@@ -31,7 +31,7 @@ export const awardNames = [
   'Lunar Magnate',
 
   // Amazonis Planitia
-  // NB: the fifth award for Amazonis Plantia is Promoter, also part of Arabia Terra.
+  // NB: the fifth award for Amazonis Planitia is Promoter, also part of Arabia Terra.
   'Curator',
   'A. Engineer',
   'Tourist',
@@ -52,8 +52,8 @@ export const awardNames = [
   // NB: the fifth award for Terra Cimmeria is Incorporator, a modular award.
 
   // Vastitas Borealis
+  // NB: the second award for Vastitas Borealis is Suburbian, a modular award.
   'Forecaster',
-  'Edgedancer',
   'Visionary',
   'Naturalist',
   'Voyager',
@@ -79,11 +79,13 @@ export const awardNames = [
   'Electrician',
   'Founder',
   'Incorporator',
+  'Innovator',
   'Investor',
   'Metropolist',
   'Mogul',
+  'Physicist',
   'Politician',
-  'Suburbian', // Matches Edgedancer.
+  'Suburbian',
   // 'Zoologist', // Most animal and microbe resources. Currently Zoologist2
 ] as const;
 
@@ -93,8 +95,11 @@ export const AWARD_RENAMES = new Map<string, AwardName>([
   // When renaming an award add the old name here (like the example below), and add a TODO (like the example below)
   // And remember to add a test in spec.ts.
 
-  // TODO(yournamehere): remove after 2026-04-05
+  // TODO(yournamehere): remove after YYYY-MM-DD
   // ['EdgeLord', 'Excavator'],
+
+  // TODO(kberg): remove after 2026-12-01
+  ['Edgedancer', 'Suburbian'],
 ]);
 
 export function maybeRenamedAward(name: string): AwardName {

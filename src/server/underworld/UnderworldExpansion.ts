@@ -3,7 +3,7 @@ import {Board} from '../boards/Board';
 import {Space} from '../boards/Space';
 import {UnderworldData} from './UnderworldData';
 import {Random} from '../../common/utils/Random';
-import {TemporaryBonusToken, UndergroundResourceToken} from '../../common/underworld/UndergroundResourceToken';
+import {TemporaryBonusToken, UNDERGROUND_RESOURCE_TOKENS, UndergroundResourceToken} from '../../common/underworld/UndergroundResourceToken';
 import {inplaceShuffle} from '../utils/shuffle';
 import {Resource} from '../../common/Resource';
 import {AddResourcesToCard} from '../deferredActions/AddResourcesToCard';
@@ -27,11 +27,55 @@ import {GainResourcesDeferred} from '../deferredActions/GainResourcesDeferred';
 import {GainProduction} from '../deferredActions/GainProduction';
 import {Priority} from '../deferredActions/Priority';
 
+const TOKEN_COUNTS: Record<UndergroundResourceToken, [number, number]> = {
+  'nothing': [5, 7],
+
+  'corruption1': [13, 19],
+  'corruption2': [2, 3],
+
+  'card1': [4, 6],
+  'card2': [1, 1],
+
+  'mcprod1pertemp': [2, 3],
+
+  'steel2plant': [2, 4],
+  'steel1production': [4, 6],
+  'steel2pertemp': [3, 4],
+
+  'titaniumandplant': [3, 4],
+  'titanium2': [3, 5],
+  'titanium1production': [1, 2],
+  'titanium1pertemp': [3, 4],
+
+  'plant2': [4, 6],
+  'plant3': [1, 1],
+  'plant1production': [4, 6],
+  'plant2pertemp': [3, 4],
+
+  'energy2': [2, 3],
+  'energy1production': [5, 8],
+  'heat2production': [3, 4],
+
+  'microbe2': [4, 6],
+  'microbe2pertemp': [1, 2],
+
+  'tr': [2, 3],
+  'ocean': [2, 3],
+  'sciencetag': [2, 3],
+  'planttag': [2, 3],
+  'anyresource1': [2, 4],
+  'place6mc': [2, 3],
+
+  'oceanrequirementmod': [2, 3],
+  'oxygenrequirementmod': [2, 3],
+  'temprequirementmod': [2, 3],
+} as const;
+
 export class UnderworldExpansion {
   private constructor() {}
 
-  public static initialize(rnd: Random): UnderworldData {
-    const tokens = this.allTokens();
+  public static initialize(rnd: Random, extraTokens: boolean): UnderworldData {
+    const tokens = this.allTokens(extraTokens);
     inplaceShuffle(tokens, rnd);
     return {
       tokens: tokens,
@@ -45,56 +89,15 @@ export class UnderworldExpansion {
     return {tokens: []};
   }
 
-  private static allTokens(): Array<UndergroundResourceToken> {
+  private static allTokens(extraTokens: boolean): Array<UndergroundResourceToken> {
     const tokens: Array<UndergroundResourceToken> = [];
-    function add(count: number, token: UndergroundResourceToken) {
+    for (const token of UNDERGROUND_RESOURCE_TOKENS) {
+      const entry = TOKEN_COUNTS[token];
+      const count = extraTokens ? entry[1] : entry[0];
       for (let idx = 0; idx < count; idx++) {
-        tokens.push(token);
+        tokens.push(token as UndergroundResourceToken);
       }
     }
-
-    add(5, 'nothing');
-
-    add(13, 'corruption1');
-    add(2, 'corruption2');
-
-    add(4, 'card1');
-    add(1, 'card2');
-
-    add(2, 'mcprod1pertemp');
-
-    add(2, 'steel2plant');
-    add(4, 'steel1production');
-    add(3, 'steel2pertemp');
-
-    add(3, 'titaniumandplant');
-    add(3, 'titanium2');
-    add(1, 'titanium1production');
-    add(3, 'titanium1pertemp');
-
-    add(4, 'plant2');
-    add(1, 'plant3');
-    add(4, 'plant1production');
-    add(3, 'plant2pertemp');
-
-    add(2, 'energy2');
-    add(5, 'energy1production');
-    add(3, 'heat2production');
-
-    add(4, 'microbe2');
-    add(1, 'microbe2pertemp');
-
-    add(2, 'tr');
-    add(2, 'ocean');
-    add(2, 'sciencetag');
-    add(2, 'planttag');
-    add(2, 'anyresource1');
-    add(2, 'place6mc');
-
-    add(2, 'oceanrequirementmod');
-    add(2, 'oxygenrequirementmod');
-    add(2, 'temprequirementmod');
-
     return tokens;
   }
 
@@ -403,9 +406,7 @@ export class UnderworldExpansion {
         player.game.log('There is no room to place an ocean');
       }
       break;
-    case 'data1pertemp':
     case 'mcprod1pertemp':
-    case 'microbe1pertemp':
     case 'microbe2pertemp':
     case 'plant2pertemp':
     case 'steel2pertemp':
@@ -468,7 +469,7 @@ export class UnderworldExpansion {
           .andThen(() => {
             target.removeResourceFrom(privateMilitaryContractor, 1);
             target.game.log(
-              '${0} spent 1 fighter on ${1} to block an attack by ${2}',
+              '${0} spent 1:cr:fighter: on ${1} to block an attack by ${2}',
               (b) => b.player(target).cardName(CardName.PRIVATE_MILITARY_CONTRACTOR).player(perpetrator));
             return cb(false);
           }),
@@ -480,7 +481,7 @@ export class UnderworldExpansion {
           .andThen(() => {
             target.underworldData.corruption--;
             target.game.log(
-              '${0} spent 1 corruption to block an attack by ${1}',
+              '${0} spent 1:r:corruption: to block an attack by ${1}',
               (b) => b.player(target).player(perpetrator));
             return cb(false);
           }),
@@ -498,14 +499,14 @@ export class UnderworldExpansion {
   public static gainCorruption(player: IPlayer, count: number, options?: {log: boolean}) {
     player.underworldData.corruption += count;
     if (options?.log === true) {
-      player.game.log('${0} gained ${1} corruption', (b) => b.player(player).number(count));
+      player.game.log('${0} gained ${1}:r:corruption:', (b) => b.player(player).number(count));
     }
   }
 
   public static loseCorruption(player: IPlayer, count: number, options?: {log: boolean}) {
     player.underworldData.corruption -= count;
     if (options?.log === true) {
-      player.game.log('${0} spent ${1} corruption', (b) => b.player(player).number(count));
+      player.game.log('${0} spent ${1}:r:corruption:', (b) => b.player(player).number(count));
     }
   }
 
@@ -574,12 +575,6 @@ export class UnderworldExpansion {
   static onTemperatureChange(game: IGame, steps: number) {
     game.playersInGenerationOrder.forEach((player) => {
       switch (player.underworldData.activeBonus) {
-      case 'data1pertemp':
-        this.gainCardResource(player, CardResource.DATA, steps, 1);
-        break;
-      case 'microbe1pertemp':
-        this.gainCardResource(player, CardResource.MICROBE, steps, 1);
-        break;
       case 'microbe2pertemp':
         this.gainCardResource(player, CardResource.MICROBE, steps, 2);
         break;
@@ -640,7 +635,7 @@ export class UnderworldExpansion {
     const tokens = player.underworldData.tokens;
     const [token] = tokens.splice(idx, 1);
     if (token.active) {
-      // TODO(kberg): Log the discard.
+      player.game.log('${0} discarded ${1}, ending its bonus for this generation', (b) => b.player(player).undergroundToken(token.token));
       player.underworldData.activeBonus = undefined;
     }
     if (token.token === 'sciencetag') {

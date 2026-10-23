@@ -24,10 +24,10 @@
 // Conglomerates: outline a player's own resource bar in their team's shared Turmoil delegate
 // color, so which team someone belongs to is visible at a glance without opening the team panel.
 each(@players, {
-@c: ~"player_@{value}";
-.resource_items_cont--team_@{value} {
-  border-color: @@c;
-}
+  @c: ~"player_@{value}";
+  .resource_items_cont--team_@{value} {
+    border-color: @@c;
+  }
 })
 
 .resource_item {
@@ -112,9 +112,9 @@ each(@players, {
 
 @resource_types: titanium, steel, heat, data, science, seed, graphene, asteroid, hydroelectric-resource;
 each(@resource_types, {
-.resource_icon--@{value} {
-  background-image: url("assets/resources/@{value}.png");
-}
+  .resource_icon--@{value} {
+    background-image: url("assets/resources/@{value}.png");
+  }
 })
 .resource_icon--floaters {
   background-image: url(./assets/resources/floater.png);

@@ -13,6 +13,17 @@
   @mb-muted: #a4a9b6;
   @mb-accent: #6f6cff;
   @mb-radius: 12px;
+  @mb-gold: #f5c542;
+  @mb-green: #2e7d32;
+  @mb-heat: #b8461f;
+  @mb-sheet-max-width: 560px;
+  @mb-sheet-shadow: 0 -12px 36px rgba(0, 0, 0, 0.8);
+  @mb-carousel-card-half: 124px;
+  @mb-carousel-room-top: 34px;
+  @mb-carousel-room-bottom: 28px;
+  @mb-carousel-dots-height: 26px;
+  @mb-carousel-footer-reserve: 253px;
+  @mb-task-head-height: 61px;
 
   html.tm-mobile & {
     .main-container {
@@ -547,45 +558,324 @@
     margin: 8px 0;
   }
 
-  // Turn menu tiles (if a screen uses them)
+  // ---------- Turn menu as a bottom sheet (MobileTurnSheet) ----------
+  .mb-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    background: rgba(5, 6, 10, 0.35);
+  }
+
+  .mb-sheet-backdrop {
+    flex-grow: 1;
+    border: 0;
+    background: transparent;
+  }
+
+  .mb-sheet-drawer {
+    position: relative;
+    width: 100%;
+    max-width: @mb-sheet-max-width;
+    max-height: 82%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mb-sheet-panel {
+    min-height: 0;
+    box-sizing: border-box;
+    padding: 42px 14px calc(22px + @mb-safe-bottom);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    overflow-y: auto;
+    border-radius: 20px 20px 0 0;
+    background: #161a23;
+    box-shadow: @mb-sheet-shadow;
+  }
+
+  .mb-sheet-turn {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    z-index: 1;
+    transform: translate(-50%, -50%);
+    padding: 0;
+    border: 0;
+    background: transparent;
+
+    .mb-turn-button {
+      margin-top: 0;
+    }
+  }
+
+  .mb-sheet-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .mb-sheet-title {
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  .mb-sheet-hint {
+    margin: 0;
+    color: @mb-text;
+    font-size: 16px;
+    line-height: 1.4;
+  }
+
+  .mb-sheet-intro {
+    margin: 0;
+  }
+
+  .mb-sheet-confirm {
+    display: flex;
+    gap: 10px;
+  }
+
+  .mb-sheet-confirm-button {
+    flex-grow: 1;
+    height: 48px;
+    margin: 0;
+  }
+
+  .mb-taskbar-back {
+    width: 44px;
+    height: 48px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 1px solid @mb-line;
+    background: @mb-raised;
+    color: @mb-text;
+  }
+
+  .mb-sheet-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .mb-section-label {
+      margin: 0;
+    }
+  }
+
+  .mb-section-label {
+    color: @mb-muted;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .mb-waiting-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .mb-waiting-player {
+    padding: 8px 14px;
+    border-radius: 10px;
+    color: #fff;
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  .mb-sheet-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mb-sheet-grid .mb-tile {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .mb-sheet-grid .mb-tile-label {
+    font-size: 14px;
+  }
+
+  .mb-sheet-grid,
+  .mb-sheet-end {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
   .mb-tile {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 10px;
     width: 100%;
-    padding: 10px;
+    min-height: 52px;
+    padding: 10px 12px;
+    border-radius: 12px;
     border: 1px solid @mb-line;
-    border-radius: 10px;
-    background: @mb-surface;
+    background: @mb-raised;
     color: @mb-text;
     font: inherit;
     text-align: left;
   }
 
-  .mb-tile--empty {
-    opacity: 0.55;
+  .mb-tile-icon {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--mb-tile-tone);
+    background: color-mix(in srgb, var(--mb-tile-tone) 18%, transparent);
+
+    .mb-glyph {
+      width: 22px;
+      height: 22px;
+    }
   }
 
+  .mb-tile-icon--cards { --mb-tile-tone: #7aa7ff; }
+  .mb-tile-icon--megacredits { --mb-tile-tone: @mb-gold; }
+  .mb-tile-icon--plants { --mb-tile-tone: #5cb85c; }
+  .mb-tile-icon--heat { --mb-tile-tone: #ff7a3d; }
+  .mb-tile-icon--honors { --mb-tile-tone: #d9a2f0; }
+  .mb-tile-icon--colonies { --mb-tile-tone: #5fd0c9; }
+  .mb-tile-icon--neutral { --mb-tile-tone: @mb-muted; }
+
   .mb-tile-text {
+    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     gap: 2px;
     min-width: 0;
+    padding-right: 12px;
   }
 
   .mb-tile-label {
-    font-size: 12px;
+    overflow-wrap: break-word;
     font-weight: bold;
+    font-size: 15px;
   }
 
   .mb-tile-sub {
-    font-size: 10px;
+    font-size: 12px;
     color: @mb-muted;
   }
 
   .mb-tile-count {
-    margin-left: auto;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    box-sizing: border-box;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.14);
+    font-family: Prototype, sans-serif;
+    font-size: 12px;
+    line-height: 20px;
+    text-align: center;
+  }
+
+  .mb-tile--success {
+    background: @mb-green;
+    border-color: @mb-green;
+  }
+
+  .mb-tile--heat {
+    background: @mb-heat;
+    border-color: @mb-heat;
+  }
+
+  .mb-tile--highlight {
+    background: #6b5316;
+    border-color: #a07c1d;
+  }
+
+  .mb-tile--success,
+  .mb-tile--heat,
+  .mb-tile--highlight {
+    .mb-tile-sub {
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .mb-tile-icon {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.18);
+    }
+  }
+
+  .mb-tile--empty {
+    opacity: 0.45;
+  }
+
+  .mb-sheet-end .mb-tile {
+    justify-content: center;
+    min-height: 48px;
+    background: transparent;
+    text-align: center;
+  }
+
+  .mb-sheet-end .mb-tile--skip {
+    border-color: #24552a;
+    color: #8fd694;
+
+    &:disabled {
+      opacity: 0.35;
+    }
+  }
+
+  .mb-sheet-end .mb-tile--pass {
+    grid-column: 2;
+    border-color: #5a2a24;
+    color: #f0a39a;
+  }
+
+  // ---------- Card carousel (play card) ----------
+  .mb-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 2px 16px 12px;
+  }
+
+  .mb-dot {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: #3a4152;
+    transition: width 0.2s, background 0.2s;
+  }
+
+  .mb-dot--active {
+    width: 22px;
+    background: @mb-accent;
+  }
+
+  .mb-dot--unavailable {
+    opacity: 0.5;
+  }
+
+  .mb-dots-count {
+    margin-left: 8px;
+    font-size: 12px;
     color: @mb-muted;
+    font-variant-numeric: tabular-nums;
   }
 
   // Columns of the mobile choice/card grids (mobileFit writes --mb-grid-columns)
@@ -597,6 +887,40 @@
     gap: 14px;
     width: 100%;
     min-width: 0;
+  }
+
+  // Card carousel (play card): one card per swipe, the centered card is selected.
+  // Standard projects stay in the wrapping grid above.
+  .mb-screen--turn .payments_cont:has(> label.payments_cards):not(:has(.card-standard-project)) {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 14px !important;
+    align-items: center;
+    min-height: calc(100dvh - @mb-top-height - @mb-task-head-height - @mb-carousel-dots-height - max(var(--mb-footer-height, @mb-nav-height), @mb-carousel-footer-reserve) - 24px);
+    box-sizing: border-box;
+    margin: 0 -8px;
+    padding: @mb-carousel-room-top calc(50% - @mb-carousel-card-half) @mb-carousel-room-bottom;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    > label.payments_cards {
+      flex-shrink: 0;
+      scroll-snap-align: center;
+    }
+
+    > :not(label) {
+      flex-basis: 100%;
+      flex-shrink: 0;
+    }
+
+    > .choice-section-title {
+      display: none;
+    }
   }
 
   .mb-screen--turn .payments_cont > .payments_cards {

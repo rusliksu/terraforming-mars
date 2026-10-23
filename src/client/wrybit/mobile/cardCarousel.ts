@@ -56,7 +56,13 @@ function selectItem(item: HTMLElement | undefined): void {
 export function scrollCarouselTo(root: HTMLElement, index: number): void {
   const list = visibleList(root);
   const item = list === undefined ? undefined : items(list)[index];
-  item?.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'});
+  if (item === undefined) {
+    return;
+  }
+  // A dot is an explicit choice: select before the smooth scroll, otherwise a slow scroll can
+  // still end on the previous card when the debounce fires.
+  selectItem(item);
+  item.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'});
 }
 
 /* Keeps `onChange` up to date about the visible carousel under `root` (undefined: none visible). */

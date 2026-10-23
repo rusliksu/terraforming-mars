@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isMobileLayout" id="player-home" class="mb-home" :class="{'mb-home--turn': activeScreen === 'turn'}">
+  <div v-if="isMobileLayout" id="player-home" ref="mobileRoot" class="mb-home" :class="{'mb-home--turn': activeScreen === 'turn'}">
     <header class="mb-topbar">
       <GameMenu/>
       <MobileHeader :game="game"/>
@@ -17,8 +17,14 @@
         </div>
         <HandCardsPanel :playerView="playerView"/>
       </section>
-      <section v-show="activeScreen === 'turn'" class="mb-screen mb-screen--turn">
+      <section v-show="activeScreen === 'turn'" ref="turnSection" class="mb-screen mb-screen--turn">
         <SetupTurnOrder v-if="isSetupPhase" :players="playerView.players"/>
+        <div v-if="carousel !== undefined && carousel.count > 1" class="mb-dots">
+          <button v-for="index in carousel.count" :key="index" type="button"
+            :class="['mb-dot', {'mb-dot--active': index - 1 === carousel.index, 'mb-dot--unavailable': carousel.unavailable[index - 1]}]"
+            :aria-label="String(index)" @click="scrollCarousel(index - 1)"></button>
+          <span class="mb-dots-count">{{ carousel.index + 1 }} / {{ carousel.count }}</span>
+        </div>
         <InputHost v-if="game.phase !== 'end'">
           <WaitingFor :playerView="playerView" :waitingfor="playerView.waitingFor"/>
         </InputHost>
@@ -34,9 +40,12 @@
     </div>
     <MobileNav :items="navItems" :active="activeScreen" :hand-count="cardsInHandCount" @navigate="selectScreen">
       <template #turn>
-        <MobileTurnButton :acting="isPlayerActing" :action-number="undefined" :actions-per-turn="2"/>
+        <MobileTurnButton :acting="isPlayerActing" :action-number="actionNumber" :actions-per-turn="actionsPerTurn"/>
       </template>
     </MobileNav>
+    <MobileTurnSheet v-if="sheetOpen" :menu="menu" :waiting-players="waitingPlayers" :title="bannerTitle"
+      :action-number="actionNumber" :actions-per-turn="actionsPerTurn"
+      @close="sheetOpen = false" @select="startTask" @confirm="confirmTask"/>
     <PurgeWarning :expectedPurgeTimeMs="game.expectedPurgeTimeMs"/>
     <KeyboardShortcuts v-show="keyboardShortcutOpened" @close="keyboardShortcutOpened = false"/>
   </div>
@@ -92,7 +101,9 @@
 import {computed, defineComponent} from 'vue';
 import {HomeMixin} from '@/client/mixins/HomeMixin';
 import {GameModel} from '@/common/models/GameModel';
+import {OrOptionsModel} from '@/common/models/PlayerInputModel';
 import {PlayerViewModel, PublicPlayerModel} from '@/common/models/PlayerModel';
+import {Phase} from '@/common/Phase';
 import InputHost from '@/client/wrybit/shell/InputHost.vue';
 import WaitingFor from '@/client/components/WaitingFor.vue';
 import TopBar from '@/client/components/TopBar.vue';
@@ -122,6 +133,9 @@ import MobileMarsScreen from '@/client/wrybit/mobile/MobileMarsScreen.vue';
 import MobileNav from '@/client/wrybit/mobile/MobileNav.vue';
 import MobilePlayersPanel from '@/client/wrybit/mobile/MobilePlayersPanel.vue';
 import MobileTurnButton from '@/client/wrybit/mobile/MobileTurnButton.vue';
+import MobileTurnSheet from '@/client/wrybit/mobile/MobileTurnSheet.vue';
+import {buildTurnMenu, findTurnMenuTile, isActionMenuInput, selectTurnMenuTile, submitTurnMenuTile, TurnMenu} from '@/client/wrybit/mobile/turnMenu';
+import {CarouselState, observeCardCarousel, scrollCarouselTo} from '@/client/wrybit/mobile/cardCarousel';
 import {MOBILE_NAV, MobileNavItem, MobileScreen, PlayersSegment, SPECTATOR_NAV} from '@/client/wrybit/mobile/mobileScreens';
 import {mobileLayout} from './common/mobileLayout';
 import {translateMessage, translateText} from '@/client/directives/i18n';
@@ -135,7 +149,7 @@ export default defineComponent({
   props: {playerView: {type: Object as () => PlayerViewModel, required: true}},
   components: {InputHost, WaitingFor, TopBar, PurgeWarning, DynamicTitle, HomeColumns, RowResizeHandle, PlayerSetupView,
     SetupTurnOrder, PlayersOverview, GameBoardView, LogPanel, Card, HandCardsTab, HandCardsPanel, KeyboardShortcuts, SetupBoardToggle,
-    GameMenu, MobileHeader, MobileMarsScreen, MobileNav, MobilePlayersPanel, MobileTurnButton},
+    GameMenu, MobileHeader, MobileMarsScreen, MobileNav, MobilePlayersPanel, MobileTurnButton, MobileTurnSheet},
   directives: {dockedTab: vDockedTab},
   provide() {
     return {[GAME_MENU_CONTEXT as symbol]: computed((): GameMenuContext => ({
@@ -149,6 +163,9 @@ export default defineComponent({
     return {
       activeScreen: 'mars' as MobileScreen,
       playersSegment: 'players' as PlayersSegment,
+      sheetOpen: false,
+      carousel: undefined as CarouselState | undefined,
+      stopCarousel: undefined as (() => void) | undefined,
     };
   },
   computed: {
@@ -179,19 +196,101 @@ export default defineComponent({
       return this.thisPlayer.tableau.length === 0;
     },
     isPlayerActing(): boolean {
-      return this.playerView.players.length > 1 && this.playerView.waitingFor !== undefined && !this.playerView.waitingFor.optional;
+      // Solo games have one player but still wait for the own mandatory input.
+      return this.playerView.waitingFor !== undefined && !this.playerView.waitingFor.optional;
     },
     cardsInHandCount(): number {
       return this.playerView.cardsInHand.length + this.playerView.preludeCardsInHand.length + this.playerView.ceoCardsInHand.length;
     },
+    isActionMenu(): boolean {
+      return isActionMenuInput(this.playerView.waitingFor);
+    },
+    menu(): TurnMenu | undefined {
+      return this.isActionMenu ? buildTurnMenu(this.playerView.waitingFor as OrOptionsModel) : undefined;
+    },
+    waitingPlayers(): ReadonlyArray<PublicPlayerModel> {
+      return this.playerView.players.filter((player) => player.isActive);
+    },
+    actionsPerTurn(): number {
+      return 2;
+    },
+    actionNumber(): number | undefined {
+      if (!this.isPlayerActing || this.game.phase !== Phase.ACTION) {
+        return undefined;
+      }
+      return Math.min((this.thisPlayer?.actionsTakenThisRound ?? 0) + 1, this.actionsPerTurn);
+    },
+  },
+  watch: {
+    isMobileLayout(active: boolean): void {
+      if (active) {
+        this.startCarousel();
+      } else {
+        this.stopCarousel?.();
+        this.stopCarousel = undefined;
+        this.carousel = undefined;
+      }
+    },
+  },
+  mounted() {
+    this.$nextTick(() => this.startCarousel());
+  },
+  beforeUnmount() {
+    this.stopCarousel?.();
   },
   methods: {
     selectScreen(screen: MobileScreen): void {
+      // The footer "Turn" opens the action menu as a sheet; other mandatory inputs open their task directly.
+      if (screen === 'turn' && !this.isSetupPhase && (this.isActionMenu || !this.isPlayerActing)) {
+        this.sheetOpen = true;
+        return;
+      }
       this.activeScreen = screen;
     },
     openMilestones(): void {
       this.activeScreen = 'players';
       this.playersSegment = 'ma';
+    },
+    startTask(index: number): void {
+      this.sheetOpen = false;
+      this.activeScreen = 'turn';
+      this.$nextTick(() => {
+        const section = this.$refs.turnSection as HTMLElement | undefined;
+        if (section !== undefined) {
+          selectTurnMenuTile(section, index);
+        }
+      });
+    },
+    confirmTask(index: number): void {
+      const tile = findTurnMenuTile(this.menu, index);
+      if (tile?.confirmation?.action === 'place') {
+        this.startTask(index);
+        return;
+      }
+      this.sheetOpen = false;
+      this.$nextTick(() => {
+        const section = this.$refs.turnSection as HTMLElement | undefined;
+        if (section !== undefined) {
+          void submitTurnMenuTile(section, index);
+        }
+      });
+    },
+    scrollCarousel(index: number): void {
+      const section = this.$refs.turnSection as HTMLElement | undefined;
+      if (section !== undefined) {
+        scrollCarouselTo(section, index);
+      }
+    },
+    startCarousel(): void {
+      this.stopCarousel?.();
+      this.stopCarousel = undefined;
+      const root = this.$refs.mobileRoot as HTMLElement | undefined;
+      if (root === undefined) {
+        return;
+      }
+      this.stopCarousel = observeCardCarousel(root, (state) => {
+        this.carousel = state;
+      });
     },
   },
 });

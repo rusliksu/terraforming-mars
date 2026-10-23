@@ -160,8 +160,12 @@ export default defineComponent({
     }))};
   },
   data() {
+    // A mandatory step that is not the action menu is a task: open it directly (also after App remounts
+    // this component for a new server step; action menus keep the remembered screen and open as a sheet).
+    const waitingFor = this.playerView.waitingFor;
+    const mandatory = waitingFor !== undefined && !waitingFor.optional;
     return {
-      activeScreen: 'mars' as MobileScreen,
+      activeScreen: (mandatory && !isActionMenuInput(waitingFor) ? 'turn' : 'mars') as MobileScreen,
       playersSegment: 'players' as PlayersSegment,
       sheetOpen: false,
       carousel: undefined as CarouselState | undefined,
@@ -224,7 +228,8 @@ export default defineComponent({
   watch: {
     isMobileLayout(active: boolean): void {
       if (active) {
-        this.startCarousel();
+        // The watcher runs before the mobile branch is in the DOM; wait for its ref.
+        this.$nextTick(() => this.startCarousel());
       } else {
         this.stopCarousel?.();
         this.stopCarousel = undefined;
@@ -284,8 +289,8 @@ export default defineComponent({
     startCarousel(): void {
       this.stopCarousel?.();
       this.stopCarousel = undefined;
-      const root = this.$refs.mobileRoot as HTMLElement | undefined;
-      if (root === undefined) {
+      const root = this.$refs.mobileRoot;
+      if (!(root instanceof HTMLElement)) {
         return;
       }
       this.stopCarousel = observeCardCarousel(root, (state) => {

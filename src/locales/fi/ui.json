@@ -85,8 +85,6 @@
   "Random first player": "Satunnainen aloittaja",
   "Show real-time VP": "Näytä reaaliaikaiset VP:t",
   "Allow undo": "Salli peruminen",
-  "Undo is now in best effort support.": "Peruminen ei välttämättä toimi aina.",
-  "No effort will be spent to fix it.": "Sitä ei aiota parantaa.",
   "7 Heat Into Temperature": "7 lämpöä lämpötilaksi",
   "NEXT CARD:": "SEURAAVA KORTTI: ",
   "GENERATION 1 OF 12": "SUKUPOLVI ${0} / ${1}",

@@ -1613,4 +1613,38 @@ describe('CreateGameForm', () => {
       penaltyVPPerPeriod: 1,
     });
   });
+
+  it('serializes AI seats and forces a training game', async () => {
+    const {config} = await serializeTwoPlayerGameSettings((model) => {
+      model.players[1].aiLevel = 'hard';
+    });
+    // The form may shuffle the seat order, so look the AI seat up instead of assuming an index.
+    const aiSeat = config?.players.find((player) => player.aiLevel === 'hard');
+    expect(aiSeat).is.not.undefined;
+    expect(config?.noEloGame).is.true;
+  });
+
+  it('blocks a table made only of AI players', () => {
+    const errors = validateTwoPlayerGame((model) => {
+      model.players[0].aiLevel = 'normal';
+      model.players[1].aiLevel = 'normal';
+    });
+    expect(errors.allAiPlayers).is.true;
+  });
+
+  it('toggleAiPlayer fills a name, enables the seat and forces no ELO', () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const model = wrapper.vm as any;
+    model.playersCount = 2;
+    model.players[1].name = '';
+    model.toggleAiPlayer(model.players[1], 1, {target: {checked: true}});
+    expect(model.players[1].aiLevel).eq('normal');
+    expect(model.players[1].name).eq('AI 2');
+    expect(model.noEloGame).is.true;
+    expect(model.hasAiPlayers).is.true;
+    model.toggleAiPlayer(model.players[1], 1, {target: {checked: false}});
+    expect(model.players[1].aiLevel).is.undefined;
+  });
 });

@@ -97,6 +97,8 @@ const NO_ERRORS: ValidationErrors = {
   soloWithoutCorporateEra: false,
   infiniteEnergyBug: false,
   notEnoughCorporations: 0,
+  allAiPlayers: false,
+  aiUnsupportedExpansions: [],
 };
 
 function helpers(
@@ -250,6 +252,21 @@ describe('validateNewGameConfig', () => {
     expect(validate({customCeos: [CardName.KAREN], startingCeos: 0}).notEnoughCeos).eq(2 * CEO_CARDS_DEALT_PER_PLAYER);
     expect(validate({customCeos: [CardName.KAREN], startingCeos: 1}).notEnoughCeos).eq(2 * CEO_CARDS_DEALT_PER_PLAYER);
     expect(validate({customCeos: [CardName.KAREN], startingCeos: 4}).notEnoughCeos).eq(2 * 4);
+  });
+
+  it('AI seats need at least one human player', () => {
+    const ai = {...player(), aiLevel: 'normal' as const};
+    expect(validate({players: [player(true), ai]}).allAiPlayers).is.false;
+    expect(validate({players: [ai, {...ai, color: 'red'}]}).allAiPlayers).is.true;
+  });
+
+  it('AI seats reject unsupported expansions and modes', () => {
+    const ai = {...player(), aiLevel: 'hard' as const};
+    const expansions = newGameConfig().expansions;
+    expect(validate({players: [player(true), ai]}).aiUnsupportedExpansions).deep.eq([]);
+    expect(validate({players: [player(true), ai], expansions: {...expansions, colonies: true}}).aiUnsupportedExpansions).deep.eq(['Colonies']);
+    expect(validate({players: [player(true), ai], twoCorpsVariant: true}).aiUnsupportedExpansions).deep.eq(['Merger']);
+    expect(validate({players: [player(true), player()], expansions: {...expansions, colonies: true}}).aiUnsupportedExpansions).deep.eq([]);
   });
 
   it('messages', () => {

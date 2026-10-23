@@ -40,7 +40,8 @@ export function isTelegramIdValid(telegramID: string | undefined): boolean {
 }
 
 function isTelegramIdRequired(player: NewGameConfig['players'][number]): boolean {
-  return player.isBot !== true;
+  // AI seats and bot-takeover seats are driven by the server: no chat id to notify.
+  return player.isBot !== true && player.aiLevel === undefined;
 }
 
 function maskTelegramIdForLog(telegramID: string): string {
@@ -257,7 +258,8 @@ export class ApiCreateGame extends Handler {
         initialDraftVariant: gameReq.initialDraft,
         initialDraftOneWay: gameReq.initialDraftOneWay === true,
         modularMA: gameReq.modularMA,
-        noEloGame: gameReq.noEloGame === true,
+        // AI games are training games by default: results against the computer never count for ELO.
+        noEloGame: gameReq.noEloGame === true || gameReq.players.some((p) => isAiLevel(p.aiLevel)),
         turnBasedGame,
         moonExpansion: gameReq.expansions.moon,
         moonStandardProjectVariant: gameReq.moonStandardProjectVariant,

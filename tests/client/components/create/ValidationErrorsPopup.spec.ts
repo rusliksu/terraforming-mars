@@ -19,6 +19,8 @@ const NO_ERRORS: ValidationErrors = {
   soloWithoutCorporateEra: false,
   infiniteEnergyBug: false,
   notEnoughCorporations: 0,
+  allAiPlayers: false,
+  aiUnsupportedExpansions: [],
 };
 
 describe('ValidationErrorsPopup', () => {

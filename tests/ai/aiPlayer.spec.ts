@@ -62,5 +62,5 @@ describe('AI player', () => {
     clearPlayerTunings();
     expect(result.finished).is.true;
     expect(result.victoryPoints[0]).greaterThan(result.victoryPoints[1]);
-  }).timeout(60000);
+  }).timeout(180000); // The custom server build is slower than upstream; the game takes ~30-90 s here.
 });

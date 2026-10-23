@@ -438,9 +438,10 @@
                                 <span v-i18n>Private hands</span>
                             </label>
 
-                            <input type="checkbox" v-model="noEloGame" id="noEloGame-checkbox">
+                            <input type="checkbox" v-model="noEloGame" id="noEloGame-checkbox" :disabled="hasAiPlayers">
                             <label for="noEloGame-checkbox">
                                 <span v-i18n>Training game (no ELO)</span>
+                                <span v-if="hasAiPlayers" class="create-game-elo-ai-hint">- enforced with AI players</span>
                             </label>
 
                             <input type="checkbox" v-model="turnBasedGame" id="turnBasedGame-checkbox">
@@ -702,6 +703,17 @@
                                                   <label v-if="botGame" class="form-switch form-inline" style="margin-top: 8px;">
                                                       <input type="checkbox" v-model="newPlayer.isBot">
                                                       <i class="form-icon"></i> <span>Bot</span>
+                                                  </label>
+                                                  <label class="form-switch form-inline create-game-ai-option-label">
+                                                      <input type="checkbox" :checked="newPlayer.aiLevel !== undefined" @change="toggleAiPlayer(newPlayer, index, $event)">
+                                                      <i class="form-icon"></i> <span>AI</span>
+                                                  </label>
+                                                  <label v-if="newPlayer.aiLevel !== undefined" class="form-label create-game-ai-level">
+                                                      <select class="form-select form-inline" v-model="newPlayer.aiLevel">
+                                                          <option value="easy">AI easy</option>
+                                                          <option value="normal">AI normal</option>
+                                                          <option value="hard">AI hard</option>
+                                                      </select>
                                                   </label>
 
                                                   <label class="form-label">
@@ -1212,6 +1224,10 @@ export default defineComponent({
     document.removeEventListener('click', this.closePlayerProfilePickerFromDocument);
   },
   computed: {
+    /** Any AI seat forces a training game: results against the computer never count for ELO. */
+    hasAiPlayers(): boolean {
+      return this.players.slice(0, this.playersCount).some((player) => player.aiLevel !== undefined);
+    },
     wikiUrls(): typeof RULEBOOK_URLS & typeof WIKI_URLS {
       return {...RULEBOOK_URLS, ...WIKI_URLS};
     },
@@ -1240,7 +1256,7 @@ export default defineComponent({
         undoOption: this.undoOption,
         undoStepOption: this.undoStepOption,
         privateHands: this.privateHands,
-        noEloGame: this.noEloGame,
+        noEloGame: this.noEloGame || this.hasAiPlayers,
         turnBasedGame: this.turnBasedGame,
         botGame: this.botGame,
         showTimers: this.showTimers,
@@ -1329,6 +1345,21 @@ export default defineComponent({
     },
   },
   methods: {
+    toggleAiPlayer(player: NewPlayerModel, index: number, event: Event): void {
+      const enabled = (event.target as HTMLInputElement).checked;
+      if (!enabled) {
+        player.aiLevel = undefined;
+        return;
+      }
+      player.aiLevel = player.aiLevel ?? 'normal';
+      player.isBot = false;
+      player.telegramID = '';
+      if (player.name.trim() === '') {
+        player.name = `AI ${index + 1}`;
+      }
+      // AI games are always training games.
+      this.noEloGame = true;
+    },
     // Deep-link from the Map Library: "Play this map" on an official entry sets ?board=<name>
     // to preselect a real board via the normal radio mechanism -- never through the
     // customBoardCode path, so official gameplay is untouched.
@@ -2627,7 +2658,7 @@ export default defineComponent({
       const undoStepOption = this.undoStepOption;
       const showTimers = this.showTimers;
       const fastModeOption = this.fastModeOption;
-      const noEloGame = this.noEloGame;
+      const noEloGame = this.noEloGame || this.hasAiPlayers;
       const privateHands = this.privateHands;
       const removeNegativeGlobalEventsOption = this.removeNegativeGlobalEventsOption;
       const includeFanMA = this.includeFanMA;
@@ -2791,6 +2822,19 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.create-game-ai-option-label {
+  margin-top: 8px;
+}
+
+.create-game-ai-level {
+  margin-left: 8px;
+}
+
+.create-game-elo-ai-hint {
+  margin-left: 4px;
+  color: #9aa4b2;
+}
+
 .create-game-telegram-banner {
   margin: 8px 0 14px;
   font-size: 14px;

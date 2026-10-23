@@ -8,6 +8,7 @@ import {CardName} from '@/common/cards/CardName';
 import {cast} from '@/common/utils/utils';
 import {CARD_RENAMES} from '@/common/cards/CardRenames';
 import {sanitizeEscapeVelocityOptions} from '@/common/game/escapeVelocity';
+import {isAiLevel} from '@/common/ai/AiLevel';
 
 type JSONProcessorOptions = {
   preserveAsyncGame?: boolean;
@@ -46,6 +47,7 @@ export class JSONProcessor {
       return {
         ...safePlayer,
         isBot: false,
+        ...(isAiLevel(player.aiLevel) ? {aiLevel: player.aiLevel} : {}),
         preludeHandicap: normalizePreludeHandicap(player.preludeHandicap),
         name: normalizePlayerNameForColor(player.color, player.name),
       };

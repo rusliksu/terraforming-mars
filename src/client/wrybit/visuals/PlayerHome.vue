@@ -140,6 +140,10 @@ import {MOBILE_NAV, MobileNavItem, MobileScreen, PlayersSegment, SPECTATOR_NAV} 
 import {mobileLayout} from './common/mobileLayout';
 import {translateMessage, translateText} from '@/client/directives/i18n';
 
+// The first mount after a full page load keeps the remembered screen; later server steps open
+// a newly delivered action menu as a sheet (the same distinction as the source MobilePlayerHome).
+let pageJustLoaded = true;
+
 export default defineComponent({
   name: 'WrybitPlayerHome',
   setup() {
@@ -164,10 +168,13 @@ export default defineComponent({
     // this component for a new server step; action menus keep the remembered screen and open as a sheet).
     const waitingFor = this.playerView.waitingFor;
     const mandatory = waitingFor !== undefined && !waitingFor.optional;
+    const menu = isActionMenuInput(waitingFor);
+    const openSheet = menu && !pageJustLoaded && mobileLayout.value;
+    pageJustLoaded = false;
     return {
-      activeScreen: (mandatory && !isActionMenuInput(waitingFor) ? 'turn' : 'mars') as MobileScreen,
+      activeScreen: (mandatory && !menu ? 'turn' : 'mars') as MobileScreen,
       playersSegment: 'players' as PlayersSegment,
-      sheetOpen: false,
+      sheetOpen: openSheet,
       carousel: undefined as CarouselState | undefined,
       stopCarousel: undefined as (() => void) | undefined,
     };

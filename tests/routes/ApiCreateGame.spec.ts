@@ -1045,6 +1045,36 @@ describe('ApiCreateGame', () => {
     expect(res2.content).eq('Quota exceeded');
   });
 
+  // Pre-'boards' create-game payload: a single 'board' value and no 'boards' array.
+  function legacyGameConfig(board: unknown): NewGameConfig {
+    const config = {...newGameConfigForTest()} as unknown as Record<string, unknown>;
+    delete config.boards;
+    config.board = board;
+    return config as unknown as NewGameConfig;
+  }
+
+  it('normalizes a legacy single-board request into boards', async () => {
+    await postConfig(legacyGameConfig(BoardName.HELLAS));
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game!.gameOptions.boardName).eq(BoardName.HELLAS);
+    expect(game!.gameOptions.boardSelection).deep.eq([BoardName.HELLAS]);
+  });
+
+  it('expands a legacy random-official board request', async () => {
+    await postConfig(legacyGameConfig(RandomBoardOption.OFFICIAL));
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(boardOptions(RandomBoardOption.OFFICIAL)).include(game!.gameOptions.boardName);
+  });
+
+  it('rejects a legacy request naming an unknown board', async () => {
+    await postConfig(legacyGameConfig('not a board'));
+    expect(res.statusCode).eq(statusCode.badRequest);
+  });
+
   it('elapsed time restores a blocked quota', async () => {
     const apiCreateGame = new ApiCreateGame([{limit: 1, perMs: 120_000}]);
     const clock = scaffolding.ctx.clock as FakeClock;

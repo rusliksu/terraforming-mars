@@ -5,6 +5,8 @@ import {Handler} from './Handler';
 import {Context} from './IHandler';
 import {Database} from '../database/Database';
 import {BoardName} from '../../common/boards/BoardName';
+import {boardOptions} from '../../common/boards/randomBoardOptions';
+import {RandomBoardOption} from '../../common/boards/RandomBoardOption';
 import {decodeCustomBoard} from '../../common/boards/customBoardCodec';
 import {decodeSimpleBoard} from '../../common/boards/simpleBoardCodec';
 import {Cloner} from '../database/Cloner';
@@ -29,6 +31,32 @@ import {hasNegativeEscapeVelocityOption} from '../../common/game/escapeVelocity'
 
 export function normalizeTelegramId(telegramID: string | undefined): string {
   return (telegramID ?? '').trim();
+}
+
+/**
+ * Normalizes the legacy single-board 'board' field into 'boards'.
+ *
+ * API callers and cached clients that predate the multi-board 'boards' array still send a
+ * single 'board' value (a concrete BoardName or one of the random options). Without this the
+ * create-game handler would read 'boards.length' off undefined and fail with a 500.
+ */
+export function normalizeLegacyBoardSelection(gameReq: NewGameConfig): void {
+  if (Array.isArray(gameReq.boards) && gameReq.boards.length > 0) {
+    return;
+  }
+  const legacy = gameReq.board;
+  if (legacy === undefined || legacy === null) {
+    gameReq.boards = [BoardName.THARSIS];
+    return;
+  }
+  if (legacy === RandomBoardOption.OFFICIAL || legacy === RandomBoardOption.ALL) {
+    gameReq.boards = boardOptions(legacy);
+    return;
+  }
+  if (!Object.values(BoardName).includes(legacy)) {
+    throw RouteError.badRequest('Invalid board: ' + String(legacy));
+  }
+  gameReq.boards = [legacy];
 }
 
 export function isTelegramIdValid(telegramID: string | undefined): boolean {
@@ -105,6 +133,7 @@ export class ApiCreateGame extends Handler {
       const gameReq = JSON.parse(body) as NewGameConfig;
       gameReq.expansions = {...DEFAULT_EXPANSIONS, ...gameReq.expansions};
       gameReq.expansions.betterMars &&= gameReq.expansions.pathfinders;
+      normalizeLegacyBoardSelection(gameReq);
       this.validateCustomLists(gameReq);
       const turnBasedGame = gameReq.turnBasedGame === true;
       const botGame = gameReq.botGame === true;

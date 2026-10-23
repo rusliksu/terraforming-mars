@@ -374,12 +374,6 @@
                             <label for="undo-checkbox">
                                 <span v-i18n>Undo action</span>&nbsp;<a :href="wikiUrls.allowUndo" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>
                             </label>
-                            <div v-if="undoOption">
-                              <span v-i18n>Undo is now in best effort support.</span>
-                              <a href="https://github.com/terraforming-mars/terraforming-mars/discussions/7647" target="_blank">&#9432;</a>
-                              <br>
-                              <span v-i18n>No effort will be spent to fix it.</span>
-                            </div>
                             <input type="checkbox" v-model="undoStepOption" id="undo-step-checkbox">
                             <label for="undo-step-checkbox">
                                 <span v-i18n>Undo one step (experimental)</span>&nbsp;<a :href="wikiUrls.undoOneStep" class="tooltip" v-i18n data-tooltip="Link opens in a new tab/window" target="_blank">&#9432;</a>

@@ -70,7 +70,7 @@ tracker_refs: []
 
 Sequential handoff from approved WP01–WP04: only optional presentation routing in App/WrybitViews/Shell, root read-only input binding registration, viewport owner, PlayerHome mobile wrapper, GameBoardView marsAside slot, existing MobileCardZoom and scoped styles/manifest/codemap transfer to WP05. Native SelectProjectCardToPlay may expose a typed clear-selection presentation command so an unavailable carousel card cannot submit an off-screen selection; its ledger, availability, pricing, network and save commands remain native. No other writers. Source mobile globals/poll-reset logic and DOM controller discovery are replaced by per-owner view state and existing typed native bindings. Spectator retains its native poller and public ViewModel; no actor input/hand is mounted. This implements the approved mobile/privacy/preserved-input requirements without a new controller or gameplay change.
 
-- [ ] T017 Перенести полный мобильный ход, drawer и карусель.
+- [x] T017 Перенести полный мобильный ход, drawer и карусель.
 - [ ] T018 Перенести desktop/mobile зрителя.
 - [ ] T019 Проверить resize, прокрутку, ввод и обновление шага.
 - [ ] T020 Проверить приватность и отсутствие действий игрока у зрителя.

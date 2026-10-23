@@ -5,6 +5,7 @@ import {PlayerInputModel} from './PlayerInputModel';
 import {TimerModel} from './TimerModel';
 import {GameModel} from './GameModel';
 import {PlayerId, ParticipantId} from '../Types';
+import {AiLevel} from '../ai/AiLevel';
 import {CardName} from '../cards/CardName';
 import {Resource} from '../Resource';
 import {PartyName} from '../turmoil/PartyName';
@@ -71,6 +72,8 @@ export type PublicPlayerModel = {
   influence: number;
   isActive: boolean;
   isBotControlled: boolean;
+  /** Present for computer-controlled players. */
+  aiLevel?: AiLevel;
   isSurrendered: boolean;
   lastCardPlayed?: CardName;
   megacredits: number;

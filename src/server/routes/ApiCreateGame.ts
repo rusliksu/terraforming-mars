@@ -11,6 +11,8 @@ import {decodeSimpleBoard} from '../../common/boards/simpleBoardCodec';
 import {Cloner} from '../database/Cloner';
 import {Game} from '../Game';
 import {GameOptions} from '../game/GameOptions';
+import {aiUnsupportedReasons} from '../../common/ai/aiSupport';
+import {aiPlayerName, isAiLevel} from '../../common/ai/AiLevel';
 import {Player} from '../Player';
 import {Server} from '../models/ServerModel';
 import {NewGameConfig, normalizePreludeHandicap} from '../../common/game/NewGameConfig';
@@ -149,15 +151,25 @@ export class ApiCreateGame extends Handler {
       const gameId = safeCast(generateRandomId('g'), isGameId);
       const spectatorId = safeCast(generateRandomId('s'), isSpectatorId);
       const requestedPlayers = gameReq.players.map((player) => ({...player}));
+      const aiBlockers = aiUnsupportedReasons({
+        expansions: gameReq.expansions,
+        twoCorpsVariant: gameReq.twoCorpsVariant,
+      });
+      if (aiBlockers.length > 0 && requestedPlayers.some((p) => isAiLevel(p.aiLevel))) {
+        throw RouteError.badRequest(`AI players do not support: ${aiBlockers.join(', ')}.`);
+      }
       const players = requestedPlayers.map((p) => {
-        return new Player(
-          p.name,
+        const aiLevel = isAiLevel(p.aiLevel) ? p.aiLevel : undefined;
+        const player = new Player(
+          aiLevel === undefined ? p.name : aiPlayerName(p.name, aiLevel),
           p.color,
           p.beginner,
           Number(p.handicap), // For some reason handicap is coming up a string.
           safeCast(generateRandomId('p'), isPlayerId),
           normalizePreludeHandicap(p.preludeHandicap),
         );
+        player.aiLevel = aiLevel;
+        return player;
       });
       // Assign telegramID from game request
       players.forEach((p, i) => {
@@ -288,6 +300,7 @@ export class ApiCreateGame extends Handler {
         customCardsExpansion: gameReq.expansions.customCards,
         undoOption: gameReq.undoOption,
         undoStepOption: gameReq.undoStepOption === true,
+        aiAnalysis: gameReq.aiAnalysis === true && gameReq.players.some((p) => isAiLevel(p.aiLevel)),
         venusNextExtension: gameReq.expansions.venus,
       };
 

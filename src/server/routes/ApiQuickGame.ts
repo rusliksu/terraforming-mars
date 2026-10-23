@@ -270,6 +270,7 @@ export class ApiQuickGame extends Handler {
 
       const gameOptions: GameOptions = {
         customBoard, customMoonBoard, customVenusSurfaceBoard,
+        aiAnalysis: false,
         globalParameters: customBoard?.globalParameters,
         sillyficationExpansion: gameReq.expansions.sillyfication,
         betterMarsExpansion: gameReq.expansions.betterMars,

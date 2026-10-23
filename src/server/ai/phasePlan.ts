@@ -1,0 +1,92 @@
+import {IGame} from '../IGame';
+import {IPlayer} from '../IPlayer';
+import {tuningOf} from './aiTuning';
+import {remainingProductionPhases} from './gameProgress';
+
+/**
+ * Three-phase plan of strong human players (aiTuning.ts phasePlan):
+ *  1. first third: build income, claim at least one milestone, terraform little;
+ *  2. second third: terraform and block the opponent's spots on the map;
+ *  3. last third: play the strong VP cards and live on the income.
+ * The AI used to rush TR from generation 1 with M€ production 1–5 and lost by 60–70 VP to such players.
+ */
+export type GamePhase = 1 | 2 | 3;
+
+export type OpeningContext = {generation: number, remaining: number, ownGreeneries?: number, oxygen?: number};
+
+/** Share of the game played: elapsed generations over elapsed plus remaining ones. */
+export function phaseProgress(generation: number, remaining: number): number {
+  const elapsed = Math.max(0, generation - 1);
+  return elapsed / Math.max(1, elapsed + remaining + 1);
+}
+
+export function gamePhase(generation: number, remaining: number): GamePhase {
+  const progress = phaseProgress(generation, remaining);
+  return progress < 1 / 3 ? 1 : progress < 2 / 3 ? 2 : 3;
+}
+
+export function currentPhase(game: IGame, player?: IPlayer): GamePhase {
+  return gamePhase(game.generation, remainingProductionPhases(game, player));
+}
+
+/** Factor on production value: 1 + strength in phase 1, fading to 1 through phase 2. */
+export function incomeFactor(player: IPlayer, generation: number, remaining: number): number {
+  const strength = tuningOf(player).phasePlan * tuningOf(player).phaseIncome;
+  if (strength <= 0) {
+    return 1;
+  }
+  const progress = phaseProgress(generation, remaining);
+  if (progress < 1 / 3) {
+    return 1 + strength;
+  }
+  return progress < 2 / 3 ? 1 + strength * (2 / 3 - progress) * 3 : 1;
+}
+
+/**
+ * M€ the steps raised cost in phase 1 (terraform later, income first). Oxygen from the first FREE_GREENERIES own
+ * greeneries is exempt once the player already owns one (e.g. from a prelude): then Gardener is a realistic
+ * milestone for the first third; from scratch three greeneries that early are rarely a good goal.
+ */
+export function openingBrakeCost(player: IPlayer, frozen: OpeningContext, raised: number): number {
+  const strength = tuningOf(player).phasePlan * tuningOf(player).phaseBrake;
+  if (strength <= 0 || raised <= 0 || gamePhase(frozen.generation, frozen.remaining) !== 1) {
+    return 0;
+  }
+  const exempt = frozen.ownGreeneries === undefined || frozen.ownGreeneries < 1 || frozen.oxygen === undefined ? 0 : Math.min(
+    Math.max(0, player.game.getOxygenLevel() - frozen.oxygen),
+    Math.max(0, Math.min(FREE_GREENERIES, player.game.board.getGreeneries(player).length) - Math.min(FREE_GREENERIES, frozen.ownGreeneries)));
+  return OPENING_BRAKE_PER_STRENGTH * strength * Math.max(0, raised - exempt);
+}
+
+/** Extra share of milestone progress (milestoneRace.ts) in phases 1 and 2 while the player holds no milestone. */
+export function milestoneProgressBonus(player: IPlayer): number {
+  const strength = tuningOf(player).phasePlan * tuningOf(player).phaseMilestone;
+  if (strength <= 0 || currentPhase(player.game, player) === 3) {
+    return 0;
+  }
+  const claimed = player.game.claimedMilestones.some((milestone) => milestone.player.id === player.id);
+  return claimed ? 0 : MILESTONE_PROGRESS_PER_STRENGTH * strength;
+}
+
+/** Extra VP for holding at least one milestone, while decisions fall in phase 1 or 2. */
+export function firstMilestoneBonus(player: IPlayer, generation: number, remaining: number): number {
+  const strength = tuningOf(player).phasePlan * tuningOf(player).phaseMilestone;
+  if (strength <= 0 || gamePhase(generation, remaining) === 3) {
+    return 0;
+  }
+  const claimed = player.game.claimedMilestones.some((milestone) => milestone.player.id === player.id);
+  return claimed ? FIRST_MILESTONE_BONUS_PER_STRENGTH * strength : 0;
+}
+
+/** Share of a VP for each opponent city spot taken away, in phase 2 (block the map). */
+export function blockingShare(player: IPlayer): number {
+  const strength = tuningOf(player).phasePlan;
+  return strength > 0 && currentPhase(player.game, player) === 2 ? BLOCKING_SHARE_PER_STRENGTH * strength : 0;
+}
+
+const OPENING_BRAKE_PER_STRENGTH = 2;
+// Gardener: 3 greeneries.
+const FREE_GREENERIES = 3;
+const MILESTONE_PROGRESS_PER_STRENGTH = 0.3;
+const FIRST_MILESTONE_BONUS_PER_STRENGTH = 2;
+const BLOCKING_SHARE_PER_STRENGTH = 0.5;

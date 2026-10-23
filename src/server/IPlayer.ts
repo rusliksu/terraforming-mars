@@ -63,12 +63,16 @@ export type CanAffordOptions = Partial<PaymentOptions> & {
  */
 export type CardAction = 'add' | 'discard' | 'nothing' | 'double-down';
 
+import {AiLevel} from '../common/ai/AiLevel';
+
 export interface IPlayer {
   readonly id: PlayerId;
   name: string;
   color: Color;
   beginner: boolean;
   handicap: number;
+  /** Strength of a computer-controlled player; undefined for humans. */
+  aiLevel: AiLevel | undefined;
   preludeHandicap: number;
 
   readonly game: IGame;

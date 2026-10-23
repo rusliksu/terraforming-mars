@@ -161,6 +161,7 @@ export class Game implements IGame, Logger {
   public gameLog: Array<LogMessage> = createGameLog();
   public logActionContext?: {id: string, actor: IPlayer, generation: number, phase: Phase, ordinal: number, firstMessage: boolean, pendingGlobalEffects?: Array<LogGlobalEffect>};
   public undoCount: number = 0; // Each undo increases it
+  public aiDecisionCount: number = 0; // Analysis games: running number of AI decisions
   public actionReplayState: ActionReplayState | null | undefined = undefined;
   public inputsThisRound = 0;
   public resettable: boolean = false;

@@ -10,6 +10,7 @@ import {computed, markRaw, onMounted} from 'vue';
 import AppBackground from '@/client/wrybit/shell/AppBackground.vue';
 import Catalog from '@/client/wrybit/visuals/cardlist/CardList.vue';
 import PlayerHome from '@/client/wrybit/visuals/PlayerHome.vue';
+import SpectatorHome from '@/client/wrybit/spectator/SpectatorHome.vue';
 import PaymentForm from '@/client/wrybit/inputs/PaymentForm.vue';
 import SelectProjectCardToPlay from '@/client/wrybit/inputs/SelectProjectCardToPlay.vue';
 import OrOptions from '@/client/wrybit/inputs/OrOptions.vue';
@@ -45,7 +46,7 @@ useMobileViewport();
 
 const props = defineProps<{screen: string}>();
 const emit = defineEmits<{classic: []; views: [views: WrybitViews]}>();
-onMounted(() => emit('views', {cards: markRaw(Catalog), playerHome: markRaw(PlayerHome), create: markRaw(CreateGameForm),
+onMounted(() => emit('views', {cards: markRaw(Catalog), playerHome: markRaw(PlayerHome), spectatorHome: markRaw(SpectatorHome), create: markRaw(CreateGameForm),
   createControls: {cube: markRaw(PlayerCube), seat: markRaw(SeatIcon), stepper: markRaw(NumberStepper), toggle: markRaw(SwitchInput), moduleFilter: markRaw(ModuleItemFilter), cardsFilter: markRaw(CardsFilter)}, inputs: {
     paymentForm: markRaw(PaymentForm), projectCard: markRaw(SelectProjectCardToPlay),
     or: markRaw(OrOptions), and: markRaw(AndOptions),

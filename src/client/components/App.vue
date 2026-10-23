@@ -27,7 +27,7 @@
         :player-view="playerView"
         :key="playerkey"
       />
-      <SpectatorHome
+      <component :is="wrybitMode && wrybitReady && wrybitViews.spectatorHome ? wrybitViews.spectatorHome : 'SpectatorHome'"
         v-else-if="screen === 'spectator-home' && spectator !== undefined"
         :spectator="spectator"
         :key="'spectator-' + playerkey"

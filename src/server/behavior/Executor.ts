@@ -85,22 +85,22 @@ export class Executor implements BehaviorExecutor {
 
     if (behavior.global !== undefined) {
       const g = behavior.global;
-      if (g.temperature !== undefined && game.getTemperature() >= game.parameters.temperature.max) {
+      if (g.temperature !== undefined && game.getTemperature() >= game.max.temperature) {
         card.addWarning('maxtemp');
       }
-      if (g.oxygen !== undefined && game.getOxygenLevel() >= game.parameters.oxygen.max) {
+      if (g.oxygen !== undefined && game.getOxygenLevel() >= game.max.oxygen) {
         if (g.oxygen < 0) {
           card.addWarning('maxoxygen-reduce');
         } else {
           card.addWarning('maxoxygen');
         }
       }
-      if (g.venus !== undefined && game.getVenusScaleLevel() >= game.parameters.venus.max) {
+      if (g.venus !== undefined && game.getVenusScaleLevel() >= game.max.venus) {
         card.addWarning('maxvenus');
       }
     }
 
-    if (behavior.ocean !== undefined && game.board.getOceanSpaces().length >= game.parameters.oceans.max) {
+    if (behavior.ocean !== undefined && game.board.getOceanSpaces().length >= game.max.oceans) {
       card.addWarning('maxoceans');
     }
 
@@ -259,7 +259,7 @@ export class Executor implements BehaviorExecutor {
       const turmoil = Turmoil.getTurmoil(game);
       if (behavior.turmoil.sendDelegates) {
         const count = ctx.count(behavior.turmoil.sendDelegates.count);
-        if (turmoil.getAvailableDelegateCount(player) < count) {
+        if (turmoil.delegateReserve.get(player) < count) {
           return false;
         }
       }
@@ -435,7 +435,7 @@ export class Executor implements BehaviorExecutor {
       delete remainder['removeResourcesFromAnyCard'];
       const source = r.source ?? 'self';
       const count = ctx.count(r.count ?? 1);
-      player.game.defer(new RemoveResourcesFromCard(player, r.type, count, {source, blockable: source !== 'self', log: true, min: count}))
+      player.game.defer(new RemoveResourcesFromCard(player, r.type, count, {source, blockable: source !== 'self', min: count}))
         .andThen((response) => {
           if (response.proceed) {
             this.execute(remainder, player, inputCard, executionOptions);
@@ -488,10 +488,10 @@ export class Executor implements BehaviorExecutor {
       player.increaseSteelValue();
     }
     if (player.game?.inDoubleDown !== true) {
-      if (behavior.titanumValue === 1) {
+      if (behavior.titaniumValue === 1) {
         player.increaseTitaniumValue();
       }
-      if (behavior.titanumValue === -1) {
+      if (behavior.titaniumValue === -1) {
         player.decreaseTitaniumValue();
       }
     }
@@ -737,10 +737,10 @@ export class Executor implements BehaviorExecutor {
     if (behavior.steelValue === 1) {
       player.decreaseSteelValue();
     }
-    if (behavior.titanumValue === 1) {
+    if (behavior.titaniumValue === 1) {
       player.decreaseTitaniumValue();
     }
-    if (behavior.titanumValue === -1) {
+    if (behavior.titaniumValue === -1) {
       player.increaseTitaniumValue();
     }
 
@@ -774,17 +774,25 @@ export class Executor implements BehaviorExecutor {
       }
     }
 
-    // TODO(kberg): Use undefined instead of 0.
+    // Counts the steps from `rate` plus one for `tile`, or undefined when there are none.
+    const steps = (rate: number | undefined, tile: unknown): number | undefined => {
+      let total = rate ?? 0;
+      if (tile !== undefined) {
+        total++;
+      }
+      return total === 0 ? undefined : total;
+    };
+
     const trSource: TRSource = {
       tr: tr,
       temperature: behavior.global?.temperature,
-      oxygen: (behavior.global?.oxygen ?? 0) + (behavior.greenery !== undefined ? 1 : 0),
+      oxygen: steps(behavior.global?.oxygen, behavior.greenery),
       venus: behavior.global?.venus,
       oceans: behavior.ocean !== undefined ? (behavior.ocean.count ?? 1) : undefined,
 
-      moonHabitat: (behavior.moon?.habitatRate ?? 0) + (behavior.moon?.habitatTile !== undefined ? 1 : 0),
-      moonMining: (behavior.moon?.miningRate ?? 0) + (behavior.moon?.mineTile !== undefined ? 1 : 0),
-      moonLogistic: (behavior.moon?.logisticRate ?? 0) + (behavior.moon?.roadTile !== undefined ? 1 : 0),
+      moonHabitat: steps(behavior.moon?.habitatRate, behavior.moon?.habitatTile),
+      moonMining: steps(behavior.moon?.miningRate, behavior.moon?.mineTile),
+      moonLogistic: steps(behavior.moon?.logisticRate, behavior.moon?.roadTile),
     };
     return trSource;
   }

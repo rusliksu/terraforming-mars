@@ -225,6 +225,13 @@ export interface IPlayer {
   lastTurnNoticeKey: string;
   lastTurnReminderNoticeKey: string;
 
+  /**
+   * When this player was given their current input request. Used to throttle bots.
+   *
+   * Not serialized: reloading the game asks for input again, which resets it.
+   */
+  inputRequestedAt?: number;
+
   setup(game: IGame): void;
 
   getTitaniumValue(): number;

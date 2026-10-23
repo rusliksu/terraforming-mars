@@ -863,7 +863,7 @@ export default defineComponent({
       if (item !== undefined && item.is === 'item') {
         const i = item as ICardRenderItem;
         return {
-          kind: 'item', type: i.type, amount: i.amount, size: i.size ?? Size.MEDIUM,
+          kind: 'item', type: i.type, amount: i.amount ?? 1, size: i.size ?? Size.MEDIUM,
           tag: i.tag, resource: i.resource,
           showDigit: i.showDigit === true, amountInside: i.amountInside === true,
         };

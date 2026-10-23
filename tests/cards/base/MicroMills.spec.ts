@@ -12,6 +12,6 @@ describe('MicroMills', () => {
     cast(card.play(player), undefined);
 
     expect(player.production.heat).to.eq(1);
-    expect(game.gameLog.map(formatMessage)).contains('blue gained 1 heat production');
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 1:p:heat:');
   });
 });

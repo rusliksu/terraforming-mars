@@ -44,7 +44,7 @@ describe('Backstabbing', () => {
     expect(game.backstabbingPlayer).to.eq(player.id);
 
     game.phase = Phase.SOLAR;
-    turmoil.endGeneration(game);
+    turmoil.runTurmoilPhase(game);
     runAllActions(game);
 
     expect(turmoil.chairman).to.eq(player);
@@ -62,7 +62,7 @@ describe('Backstabbing', () => {
     card.play(player);
 
     game.phase = Phase.SOLAR;
-    turmoil.endGeneration(game);
+    turmoil.runTurmoilPhase(game);
     runAllActions(game);
 
     expect(turmoil.chairman).to.eq(player2);

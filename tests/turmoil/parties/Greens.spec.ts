@@ -101,6 +101,6 @@ describe('Greens', () => {
     const orOptions = cast(game.deferredActions.peek()!.execute(), OrOptions);
     orOptions.options[0].cb();
 
-    expect(game.gameLog.map(formatMessage)).contains('blue added 2 Microbe(s) to Tardigrades from Greens');
+    expect(game.gameLog.map(formatMessage)).contains('blue added 2:cr:microbe: to Tardigrades from Greens');
   });
 });

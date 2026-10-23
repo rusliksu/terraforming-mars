@@ -24,7 +24,7 @@ function createGameSettings(overrides: JSONObject = {}): JSONObject {
       {name: 'Bob', color: 'blue', beginner: false, handicap: 0, first: true},
     ],
     expansions: DEFAULT_EXPANSIONS,
-    board: BoardName.HELLAS,
+    boards: [BoardName.HELLAS],
     draftVariant: false,
     solarPhaseOption: true,
     ...overrides,
@@ -169,7 +169,7 @@ describe('CreateGameForm', () => {
     const code = encodeCustomBoard(blankCustomBoard(9, 'Pasted Map'));
 
     await field.setValue(code);
-    expect((wrapper.vm as any).board).to.eq(BoardName.CUSTOM);
+    expect((wrapper.vm as any).boards).deep.eq([BoardName.CUSTOM]);
     expect((wrapper.vm as any).customBoardCode).to.eq(code);
     expect((wrapper.vm as any).customBoardName).to.eq('Pasted Map');
 
@@ -177,6 +177,7 @@ describe('CreateGameForm', () => {
     expect((wrapper.vm as any).customBoardCode).to.be.undefined;
     expect((wrapper.vm as any).customBoardCodeError).to.not.eq('');
   });
+
 
   it('restores the last saved game settings on load', async () => {
     new CreateGameSettingsStorage(window.localStorage).saveSettings(createGameSettings({
@@ -191,7 +192,7 @@ describe('CreateGameForm', () => {
     expect((wrapper.vm as any).playersCount).eq(2);
     expect((wrapper.vm as any).players[0].name).eq('Alice');
     expect((wrapper.vm as any).players[1].name).eq('Bob');
-    expect((wrapper.vm as any).board).eq(BoardName.HELLAS);
+    expect((wrapper.vm as any).boards).deep.eq([BoardName.HELLAS]);
     expect((wrapper.vm as any).draftVariant).eq(false);
     expect((wrapper.vm as any).expansions.venus).eq(true);
     expect((wrapper.vm as any).solarPhaseOption).eq(true);
@@ -228,12 +229,12 @@ describe('CreateGameForm', () => {
     });
     await wrapper.vm.$nextTick();
 
-    expect((wrapper.vm as any).board).eq(BoardName.HELLAS);
+    expect((wrapper.vm as any).boards).deep.eq([BoardName.HELLAS]);
 
     (wrapper.vm as any).resetSettings();
     await wrapper.vm.$nextTick();
 
-    expect((wrapper.vm as any).board).eq(BoardName.THARSIS);
+    expect((wrapper.vm as any).boards).deep.eq([BoardName.THARSIS]);
     expect((wrapper.vm as any).draftVariant).eq(true);
     expect(settingsStorage.loadSettings()).eq(undefined);
     expect(wrapper.findAllComponents({name: 'AppButton'}).map((button) => button.props('title'))).includes('Reset');
@@ -242,7 +243,7 @@ describe('CreateGameForm', () => {
   it('clearCustomLists clears only the custom/banned/included card lists, not the rest of the form', async () => {
     const wrapper = shallowMount(CreateGameForm, {...globalConfig});
     const vm = wrapper.vm as any;
-    vm.board = BoardName.HELLAS;
+    vm.boards = [BoardName.HELLAS];
     vm.customCorporations = [CardName.THORGATE];
     vm.customPreludes = [CardName.MERGER];
     vm.customCeos = [CardName.HAL9000];
@@ -260,7 +261,7 @@ describe('CreateGameForm', () => {
     expect(vm.bannedCards).deep.eq([]);
     expect(vm.includedCards).deep.eq([]);
     // Untouched -- this is deliberately narrower than resetSettings().
-    expect(vm.board).eq(BoardName.HELLAS);
+    expect(vm.boards).deep.eq([BoardName.HELLAS]);
   });
 
   it('clears uploading when applying settings throws', () => {
@@ -420,12 +421,12 @@ describe('CreateGameForm', () => {
       vm.randomFirstPlayer = false;
       vm.players[0].name = 'Alice';
       vm.players[1].name = 'Bob';
-      vm.board = BoardName.ELYSIUM;
+      vm.boards = [BoardName.ELYSIUM];
 
       await vm.createGame();
 
       const savedSettings = new CreateGameSettingsStorage(window.localStorage).loadSettings();
-      expect(savedSettings?.board).eq(BoardName.ELYSIUM);
+      expect(savedSettings?.boards).deep.eq([BoardName.ELYSIUM]);
       expect((savedSettings?.players as Array<{name: string}>).map((player) => player.name)).deep.eq(['Alice', 'Bob']);
     } finally {
       global.alert = originalAlert;

@@ -38,7 +38,7 @@ describe('ImmigrantCity', () => {
     game.addCity(player, game.board.getAvailableSpacesOnLand(player)[0]);
     runNextAction(game);
     expect(player.production.megacredits).to.eq(-1);
-    expect(game.gameLog.map(formatMessage)).contains('blue gained 1 M€ production because of Immigrant City');
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 1:p:mc: because of Immigrant City');
   });
 
   it('Can play at -4 M€ production', () => {

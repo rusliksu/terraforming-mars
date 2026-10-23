@@ -175,8 +175,8 @@ describe('Executor', () => {
     }, player, fake);
 
     expect(game.gameLog.map(formatMessage)).deep.eq([
-      'blue gained 1 M€ production because of Fake Card',
-      'blue gained 2 M€ because of Fake Card',
+      'blue gained 1:p:mc: because of Fake Card',
+      'blue gained 2:r:mc: because of Fake Card',
     ]);
   });
 
@@ -203,17 +203,17 @@ describe('Executor', () => {
 
   it('titaniumValue', () => {
     expect(player.payingAmount(Payment.of({titanium: 4}), {titanium: true})).eq(12);
-    executor.execute({titanumValue: 1}, player, fake);
+    executor.execute({titaniumValue: 1}, player, fake);
     expect(player.payingAmount(Payment.of({titanium: 4}), {titanium: true})).eq(16);
-    executor.onDiscard({titanumValue: 1}, player, fake);
+    executor.onDiscard({titaniumValue: 1}, player, fake);
     expect(player.payingAmount(Payment.of({titanium: 4}), {titanium: true})).eq(12);
   });
 
   it('titaniumValue, negative', () => {
     expect(player.payingAmount(Payment.of({titanium: 4}), {titanium: true})).eq(12);
-    executor.execute({titanumValue: -1}, player, fake);
+    executor.execute({titaniumValue: -1}, player, fake);
     expect(player.payingAmount(Payment.of({titanium: 4}), {titanium: true})).eq(8);
-    executor.onDiscard({titanumValue: -1}, player, fake);
+    executor.onDiscard({titaniumValue: -1}, player, fake);
     expect(player.payingAmount(Payment.of({titanium: 4}), {titanium: true})).eq(12);
   });
 
@@ -387,7 +387,7 @@ describe('Executor', () => {
     executor.execute({addResources: 3}, player, tardigrades);
     runAllActions(game);
 
-    expect(formatMessage(game.gameLog[0])).eq('blue added 3 Microbe(s) to Tardigrades from Tardigrades');
+    expect(formatMessage(game.gameLog[0])).eq('blue added 3:cr:microbe: to Tardigrades from Tardigrades');
   });
 
   it('logs behavior resources-to-any-card source card', () => {
@@ -397,7 +397,7 @@ describe('Executor', () => {
     executor.execute({addResourcesToAnyCard: {count: 2, type: CardResource.MICROBE}}, player, fake);
     runAllActions(game);
 
-    expect(formatMessage(game.gameLog[0])).eq('blue added 2 Microbe(s) to Tardigrades from Fake Card');
+    expect(formatMessage(game.gameLog[0])).eq('blue added 2:cr:microbe: to Tardigrades from Fake Card');
   });
 
   it('add resources to specific card - countable', () => {
@@ -731,7 +731,7 @@ describe('Executor', () => {
     selectResource.cb('heat');
 
     expect(player.stock.asUnits()).deep.eq(Units.of({heat: 3}));
-    expect(formatMessage(game.gameLog[0])).eq('blue gained 3 heat because of Fake Card');
+    expect(formatMessage(game.gameLog[0])).eq('blue gained 3:r:heat: because of Fake Card');
   });
 
   it('standard resource, different', () => {
@@ -1336,7 +1336,7 @@ describe('Executor', () => {
     // 8 was asked for but only 2 was there, and the energy production line is absent
     // entirely because nothing changed.
     expect(game.gameLog.map(formatMessage)).deep.eq([
-      'blue lost 2 M€ because of Asteroid Mining',
+      'blue lost 2:r:mc: because of Asteroid Mining',
     ]);
   });
 
@@ -1347,8 +1347,8 @@ describe('Executor', () => {
     executor.execute({stock: {steel: 2}, production: {megacredits: 1}}, player, globalEvent);
 
     expect(game.gameLog.map(formatMessage)).deep.eq([
-      'blue gained 1 M€ production because of Asteroid Mining',
-      'blue gained 2 steel because of Asteroid Mining',
+      'blue gained 1:p:mc: because of Asteroid Mining',
+      'blue gained 2:r:steel: because of Asteroid Mining',
     ]);
   });
 
@@ -1357,8 +1357,8 @@ describe('Executor', () => {
     executor.execute({stock: {steel: 2}, production: {megacredits: 1}}, player, fake, {logSource: false});
 
     expect(game.gameLog.map(formatMessage)).deep.eq([
-      'blue gained 1 M€ production',
-      'blue gained 2 steel',
+      'blue gained 1:p:mc:',
+      'blue gained 2:r:steel:',
     ]);
   });
 

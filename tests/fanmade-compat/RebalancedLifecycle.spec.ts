@@ -27,7 +27,7 @@ function setup(): NewGameConfig {
     players: [{name: 'Lifecycle player', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false}],
     expansions: {...DEFAULT_EXPANSIONS, corpera: true, prelude: true, prelude2: true,
       turmoil: true, pathfinders: true, rebalanced: true, betterMars: true},
-    board: BoardName.THARSIS,
+    boards: [BoardName.THARSIS],
     seed: 0.123456789,
     randomFirstPlayer: false,
     clonedGamedId: undefined,

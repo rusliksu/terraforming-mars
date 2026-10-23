@@ -186,4 +186,25 @@ describe('SelectInitialCards', () => {
     expect(projectCardModel?.calculatedCost).eq(player.getCardCost(dealtProjectCard));
     expect(projectCardModel?.calculatedCost).eq(dealtProjectCard.cost - 2);
   });
+
+  it('A failed selection leaves the hands unchanged', () => {
+    const [/* game */, player] = testGame(1, {ceoExtension: true, preludeExtension: true});
+    player.dealtCorporationCards = corporationCardsFromJSON([CardName.INVENTRIX, CardName.HELION]);
+    player.dealtProjectCards = cardsFromJSON([CardName.ANTS, CardName.BACTOVIRAL_RESEARCH, CardName.COMET_AIMING, CardName.DIRIGIBLES]);
+    player.dealtPreludeCards = preludesFromJSON([CardName.LOAN, CardName.BIOLAB, CardName.DONATION, CardName.SUPPLIER]);
+    player.dealtCeoCards = ceosFromJSON([CardName.ASIMOV, CardName.MUSK]);
+    selectInitialCards = new SelectInitialCards(player, cb);
+
+    // Preludes and CEO are fine, the project card is not: nothing may stay in the hands
+    expect(() => selectInitialCards.process({type: 'initialCards', responses: [
+      {type: 'card', cards: [CardName.INVENTRIX]},
+      {type: 'card', cards: [CardName.LOAN, CardName.BIOLAB]},
+      {type: 'card', cards: [CardName.ASIMOV]},
+      {type: 'card', cards: [CardName.THARSIS_REPUBLIC]},
+    ]}, player)).to.throw(/not found/);
+
+    expect(player.preludeCardsInHand).is.empty;
+    expect(player.ceoCardsInHand.size).eq(0);
+    expect(player.cardsInHand).is.empty;
+  });
 });

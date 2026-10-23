@@ -11,7 +11,7 @@
           <tr>
             <td>
               <PaymentUnitComponent
-                v-model.number="payment[unit]"
+                v-model:count.number="payment[unit]"
                 :unit="unit"
                 :description="descriptions[unit]"
                 :rate="ledger[unit].rate"
@@ -27,10 +27,10 @@
           </tr>
         </template>
       </template>
-    <tr :class="totalSpentClass()">
+    <tr :class="totalSpentClass">
       <td class="payments_total_heading"></td>
-      <td class="payments_total_value" :title="$t(totalSpentTitle())" :aria-label="$t(totalSpentTitle())" v-trim-whitespace>
-        {{ totalSpent() }}
+      <td class="payments_total_value" :title="$t(totalSpentTitle)" :aria-label="$t(totalSpentTitle)" v-trim-whitespace>
+        {{ totalSpent }}
       </td>
     </tr>
     </tbody>
@@ -135,6 +135,31 @@ export default defineComponent({
     descriptions(): Record<SpendableResource, string> {
       return DESCRIPTIONS;
     },
+    megaCreditsMax(): number {
+      return Math.min(this.ledger['megacredits'].available, this.cost);
+    },
+    totalSpent(): number {
+      return sum(this.order.map((unit) => this.payment[unit] * this.ledger[unit].rate));
+    },
+    totalSpentClass(): string {
+      const total = this.totalSpent;
+      if (total < this.cost) {
+        return 'payments_total_under';
+      } else if (total > this.cost) {
+        return 'payments_total_over';
+      } else {
+        return 'payments_total_exact';
+      }
+    },
+    totalSpentTitle(): string {
+      const total = this.totalSpent;
+      if (total < this.cost) {
+        return 'Underpaying';
+      } else if (total > this.cost) {
+        return 'Overpaying';
+      }
+      return '';
+    },
   },
   watch: {
     payment: {
@@ -149,13 +174,10 @@ export default defineComponent({
     /**
      * Returns the most MC necessary, capped by the cost of the payment.
      */
-    getMegaCreditsMax(): number {
-      return Math.min(this.ledger['megacredits'].available, this.cost);
-    },
     addValue(unit: SpendableResource): void {
       // MC is special-cased because it's the currency being spent.
       if (unit === 'megacredits') {
-        if (this.payment[unit] < this.getMegaCreditsMax()) {
+        if (this.payment[unit] < this.megaCreditsMax) {
           this.payment[unit] += 1;
         }
       } else {
@@ -175,7 +197,7 @@ export default defineComponent({
     },
     setRemainingMCValue(): void {
       // Amount of money non-megacredit resources account for.
-      const nonMCspend = this.totalSpent() - this.payment.megacredits;
+      const nonMCspend = this.totalSpent - this.payment.megacredits;
 
       // Amount MC has to make up for
       const remainingMC = Math.max(0, this.cost - nonMCspend);
@@ -199,9 +221,6 @@ export default defineComponent({
         }
       }
     },
-    totalSpent(): number {
-      return sum(this.order.map((unit) => this.payment[unit] * this.ledger[unit].rate));
-    },
     handleSave(): void {
       this.warning = undefined;
       if (this.cost === 0) {
@@ -217,7 +236,7 @@ export default defineComponent({
           return;
         }
       }
-      const delta = this.totalSpent() - this.cost;
+      const delta = this.totalSpent - this.cost;
       if (delta < 0) {
         this.warning = 'Haven\'t spent enough';
         return;
@@ -240,25 +259,6 @@ export default defineComponent({
         }
       }
       this.$emit('save', this.payment);
-    },
-    totalSpentClass(): string {
-      const total = this.totalSpent();
-      if (total < this.cost) {
-        return 'payments_total_under';
-      } else if (total > this.cost) {
-        return 'payments_total_over';
-      } else {
-        return 'payments_total_exact';
-      }
-    },
-    totalSpentTitle(): string {
-      const total = this.totalSpent();
-      if (total < this.cost) {
-        return 'Underpaying';
-      } else if (total > this.cost) {
-        return 'Overpaying';
-      }
-      return '';
     },
   },
 });

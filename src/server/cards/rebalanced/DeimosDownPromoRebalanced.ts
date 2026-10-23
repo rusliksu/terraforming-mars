@@ -16,7 +16,7 @@ export class DeimosDownPromoRebalanced extends Card implements IProjectCard {
       cardNumber: 'X31',
       renderData: CardRenderer.builder((b) => {
         b.temperature(3).nbsp.tile(TileType.DEIMOS_DOWN, true).asterix().br;
-        b.steel(4, {digit}).nbsp.minus().plants(-8, {all});
+        b.steel(4, {digit}).nbsp.plants(-8, {all});
       }),
       description: 'Raise temperature 3 steps and gain 4 steel. Place this tile ADJACENT TO no city tile. Remove up to 8 plants from any player.',
     },

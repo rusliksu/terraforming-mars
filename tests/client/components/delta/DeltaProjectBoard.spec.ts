@@ -111,7 +111,7 @@ describe('DeltaProjectBoard', () => {
       props: {players: [blue, red]},
     });
     // 3 markers total (blue's 2 + red's 1), all occupying the start position.
-    expect(wrapper.vm.emptySlotsStart()).to.eq(0);
+    expect(wrapper.vm.emptySlotsStart).to.eq(0);
     expect(wrapper.vm.playersAtPosition(0)).to.have.length(3);
   });
 
@@ -140,7 +140,7 @@ describe('DeltaProjectBoard', () => {
       props: {players: [blue, red]},
     });
     // Both players occupy start, so no empty slots at start.
-    expect(wrapper.vm.emptySlotsStart()).to.eq(0);
+    expect(wrapper.vm.emptySlotsStart).to.eq(0);
   });
 
   it('emptySlots scales with player count for tag positions', () => {

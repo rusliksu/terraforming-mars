@@ -524,28 +524,26 @@ describe('LogPanel', () => {
     expect(fetchCalls[fetchCalls.length - 1]).includes('limit=100');
   });
 
-  it('does not jump generations across a remount after the player navigates away', async () => {
-    const baseViewModel = fakeViewModel({id: 'p-history-reader' as any});
+  // The custom app never patches an existing LogPanel in place: App.vue bumps the playerkey
+  // and Vue remounts the panel, which restores its saved view state (see the remount tests
+  // above). The upstream in-place refresh contract does not apply here.
+
+  it('stays on an earlier generation when the view model updates after the player navigates away', async () => {
+    const baseViewModel = fakeViewModel({id: 'p-in-place-history' as any});
     const viewModel = {...baseViewModel, game: {...baseViewModel.game, generation: 3}};
-    const first = shallowMount(LogPanel, {
+    const wrapper = shallowMount(LogPanel, {
       ...globalConfig,
       props: {viewModel},
     });
-    await flushLogs(first);
-
-    (first.vm as any).selectGeneration(1);
-    await flushLogs(first);
-    first.unmount();
+    await flushLogs(wrapper);
+    (wrapper.vm as any).selectGeneration(1);
+    await flushLogs(wrapper);
     fetchCalls.length = 0;
 
-    const nextViewModel = {...viewModel, game: {...viewModel.game, generation: 4}};
-    const second = shallowMount(LogPanel, {
-      ...globalConfig,
-      props: {viewModel: nextViewModel},
-    });
-    await flushLogs(second);
+    await wrapper.setProps({viewModel: {...viewModel, game: {...viewModel.game, generation: 4}}});
+    await flushLogs(wrapper);
 
-    expect((second.vm as any).selectedGeneration).eq(1);
-    expect(fetchCalls[fetchCalls.length - 1]).includes('generation=1');
+    expect((wrapper.vm as any).selectedGeneration).eq(1);
+    expect(fetchCalls).is.empty;
   });
 });

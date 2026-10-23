@@ -5,7 +5,6 @@ import {CardType} from '../../../common/cards/CardType';
 import {IPlayer} from '../../IPlayer';
 import {Resource} from '../../../common/Resource';
 import {CardName} from '../../../common/cards/CardName';
-import {Turmoil} from '../../turmoil/Turmoil';
 import {CardRenderer} from '../render/CardRenderer';
 
 /** Blue card: +2 delegates in your reserve on play, then 1 M€ each time you send a delegate. */
@@ -31,10 +30,11 @@ export class Nepotism extends Card implements IProjectCard {
   }
 
   public override bespokePlay(player: IPlayer) {
-    Turmoil.ifTurmoil(player.game, (turmoil) => {
+    const turmoil = player.game.turmoil;
+    if (turmoil !== undefined) {
       turmoil.delegateReserve.add(player, 2);
       player.game.log('${0} added 2 delegates to their reserve', (b) => b.player(player));
-    });
+    }
     return undefined;
   }
 

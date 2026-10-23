@@ -1,6 +1,6 @@
 <template>
   <div id="game-home" class="game-home-container">
-    <h1><HomeLink>Terraforming Mars</HomeLink> [<span v-i18n>game id:</span> <span>{{getGameId()}}</span>]</h1>
+    <h1><HomeLink>Terraforming Mars</HomeLink> [<span v-i18n>game id:</span> <span>{{gameId}}</span>]</h1>
     <h4><span v-i18n>Instructions: Share this page with all players. Each player can open it on any device and then click their name.</span></h4>
     <ul>
       <li v-for="(player, index) in (game === undefined ? [] : game.players)" :key="player.color" class="game-home-player-row">
@@ -98,10 +98,12 @@ export default defineComponent({
       previousViewport: '',
     };
   },
-  methods: {
-    getGameId(): string {
+  computed: {
+    gameId(): string {
       return this.game !== undefined ? this.game.id.toString() : 'n/a';
     },
+  },
+  methods: {
     getTurnOrder(index: number): string {
       if (index === 0) {
         return '1st';
@@ -128,7 +130,7 @@ export default defineComponent({
       return `player?id=${playerId}`;
     },
     getRecreateHref(): string {
-      return `new-game?cloneGameId=${this.getGameId()}`;
+      return `new-game?cloneGameId=${this.gameId}`;
     },
     copyUrl(playerId: ParticipantId | undefined): void {
       if (playerId === undefined) {

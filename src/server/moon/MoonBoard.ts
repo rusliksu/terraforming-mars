@@ -10,10 +10,49 @@ import {Random} from '../../common/utils/Random';
 import {preservingShuffle} from '../../server/boards/BoardBuilder';
 
 function colonySpace(id: SpaceId): Space {
-  return {id, spaceType: SpaceType.COLONY, x: -1, y: -1, bonus: []};
+  return {id, spaceType: SpaceType.COLONY, x: -1, y: -1, bonus: [], edge: false};
 }
 
+const MOON_A9 = {
+  'm02': 'S1',
+  'm03': 'S2',
+  'm04': 'S3',
+  'm05': 'S4',
+  'm06': 'T1',
+  'm07': 'T2',
+  'm08': 'T3',
+  'm09': 'T4',
+  'm10': 'T5',
+  'm11': 'V1',
+  'm12': 'V2',
+  'm13': 'V3',
+  'm14': 'V4',
+  'm15': 'V5',
+  'm16': 'V6',
+  'm17': 'W1',
+  'm18': 'W2',
+  'm19': 'W3',
+  'm20': 'W4',
+  'm21': 'W5',
+  'm22': 'X1',
+  'm23': 'X2',
+  'm24': 'X3',
+  'm25': 'X4',
+  'm26': 'X5',
+  'm27': 'X6',
+  'm28': 'Y1',
+  'm29': 'Y2',
+  'm30': 'Y3',
+  'm31': 'Y4',
+  'm32': 'Y5',
+  'm33': 'Z1',
+  'm34': 'Z2',
+  'm35': 'Z3',
+  'm36': 'Z4',
+} as const;
+
 export class MoonBoard extends Board {
+  public readonly A9 = MOON_A9;
   public getAvailableSpacesForMine(player: IPlayer): ReadonlyArray<Space> {
     const spaces = this.spaces.filter((space) => {
       const val = space.tile === undefined &&
@@ -50,7 +89,7 @@ export class MoonBoard extends Board {
 
       b.row(2).land().land(STEEL, DRAW_CARD).land().mine(TITANIUM);
       b.row(1).mine(TITANIUM, TITANIUM).mine(/* Mare Imbrium */).land(STEEL).land().land();
-      b.row(0).mine().land(STEEL).land(STEEL, TITANIUM).mine(/* Mare Serenatis*/).mine(TITANIUM).land(STEEL, STEEL);
+      b.row(0).mine().land(STEEL).land(STEEL, TITANIUM).mine(/* Mare Serenitatis*/).mine(TITANIUM).land(STEEL, STEEL);
       b.row(0).land(STEEL).land().land().mine(TITANIUM).mine(TITANIUM);
       b.row(0).land().mine(TITANIUM).mine(/* Mare Nubium */).land().mine(/* Mare Nectaris */).land(STEEL);
       b.row(1).land().land(STEEL).land(STEEL).land(DRAW_CARD, DRAW_CARD).land(STEEL);
@@ -81,7 +120,6 @@ class Builder {
   // silently stop matching any rule.
   voided: Array<boolean> = [];
   spaces: Array<Space> = [];
-  private idx: number = 0;
 
   public row(startX: number): Row {
     this.y++;
@@ -91,11 +129,6 @@ class Builder {
   public colony() {
     this.spaceTypes.push(SpaceType.COLONY);
     this.bonuses.push([]);
-  }
-  public nextId(): SpaceId {
-    this.idx++;
-    const strId = this.idx.toString().padStart(2, '0');
-    return safeCast('m' + strId, isSpaceId);
   }
   public build(): Array<Space> {
     this.spaces.push(colonySpace(NamedMoonSpaces.LUNA_TRADE_STATION));
@@ -122,6 +155,7 @@ class Builder {
           x: xCoordinate,
           y: row,
           bonus: this.bonuses[idx],
+          edge: false, // There are no edges on The Moon
         };
         this.spaces.push(space);
         idx++;
@@ -137,7 +171,6 @@ class Builder {
       const idx = Number(spaceId.substring(1, 3));
       preservedSpaces.push(idx - 2);
     }
-    preservedSpaces.sort((a, b) => a - b); // TODO(kberg): this can be removed.
     preservingShuffle(this.spaceTypes, preservedSpaces, rng);
     preservingShuffle(this.bonuses, preservedSpaces, rng);
     return;

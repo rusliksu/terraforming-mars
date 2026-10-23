@@ -106,11 +106,21 @@ export default defineComponent({
     ledger(): Ledger {
       return this.buildLedger(this.order, this.reserveUnits);
     },
+    tags(): ReadonlyArray<Tag> {
+      return this.card !== undefined ? getCardOrThrow(this.card.name).tags : [];
+    },
+    reserveUnits(): Units {
+      return this.card?.reserveUnits ?? Units.EMPTY;
+    },
     CardName(): typeof CardName {
       return CardName;
     },
     showPaymentSection(): boolean {
       return this.card !== undefined && this.card.isDisabled !== true;
+    },
+    canUseTitaniumRegularly(): boolean {
+      return this.tags.includes(Tag.SPACE) ||
+          this.playerView.thisPlayer.lastCardPlayed === CardName.LAST_RESORT_INGENUITY;
     },
   },
   watch: {
@@ -120,11 +130,8 @@ export default defineComponent({
       if (newVal === undefined) {
         return;
       }
-      // TODO(kberg): this stuff is set in data(). Perhaps share the code?
       this.card = this.getCard();
       this.cost = this.card.calculatedCost ?? 0;
-      this.tags = this.getCardTags();
-      this.reserveUnits = this.card.reserveUnits ?? Units.EMPTY;
       this.updateAvailableUnits();
     },
   },
@@ -141,10 +148,8 @@ export default defineComponent({
     return {
       cardName: card?.name,
       card: card,
-      reserveUnits: card?.reserveUnits ?? Units.EMPTY,
       cards: cards,
       cost: card?.calculatedCost ?? 0,
-      tags: card !== undefined ? getCardOrThrow(card.name).tags : [],
       available: Units.of({}),
     };
   },
@@ -167,14 +172,6 @@ export default defineComponent({
       }
       return card;
     },
-    getCardTags() {
-      // By the time getCardTags is called, this.cardName is defined. This is an
-      // unnecessary guard.
-      if (this.cardName === undefined) {
-        return [];
-      }
-      return getCardOrThrow(this.cardName).tags;
-    },
     updateAvailableUnits() {
       const thisPlayer = this.playerView.thisPlayer;
       this.available.steel = Math.max(thisPlayer.steel - this.reserveUnits.steel, 0);
@@ -182,10 +179,6 @@ export default defineComponent({
       this.available.heat = Math.max(this.availableHeat() - this.reserveUnits.heat, 0);
       this.available.energy = Math.max(thisPlayer.energy - this.reserveUnits.energy, 0);
       this.available.plants = Math.max(thisPlayer.plants - this.reserveUnits.plants, 0);
-    },
-    canUseTitaniumRegularly(): boolean {
-      return this.tags.includes(Tag.SPACE) ||
-          this.playerView.thisPlayer.lastCardPlayed === CardName.LAST_RESORT_INGENUITY;
     },
     canUse(unit: SpendableResource): boolean {
       if (this.card === undefined) {
@@ -240,7 +233,7 @@ export default defineComponent({
           this.playerView.thisPlayer.lastCardPlayed === CardName.LAST_RESORT_INGENUITY ||
           (this.tags.includes(Tag.CITY) && this.playerView.thisPlayer.tableau.some((c) => c.name === CardName.BLOCKHOUSE));
         case 'titanium':
-          return this.canUseTitaniumRegularly() ||
+          return this.canUseTitaniumRegularly ||
           this.playerinput.paymentOptions.lunaTradeFederationTitanium === true;
         case 'plants':
           return this.tags.includes(Tag.BUILDING) && this.playerinput.paymentOptions.plants === true;
@@ -270,7 +263,7 @@ export default defineComponent({
     /** @override */
     getTitaniumResourceRate(): number {
       const titaniumValue = this.playerView.thisPlayer.titaniumValue;
-      if (this.canUseTitaniumRegularly() || this.card?.standardProjectCanPayWith?.titanium === true) {
+      if (this.canUseTitaniumRegularly || this.card?.standardProjectCanPayWith?.titanium === true) {
         return titaniumValue;
       }
       return titaniumValue - 1;

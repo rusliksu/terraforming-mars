@@ -32,6 +32,11 @@ export class CustomBoard extends MarsBoard {
         maxY: Math.max(...marsSpaces.map((s) => s.y)),
       };
     super(spaces, undefined, extent);
+    // A custom outline has no printed edge; a space is on the edge when it is missing neighbours
+    // (the same perimeter rule MarsBoard.getEdges uses).
+    for (const space of this.spaces) {
+      space.edge = space.spaceType !== SpaceType.COLONY && this.getAdjacentSpaces(space).length < 6;
+    }
   }
 
   protected override isReservedSpace(space: Space): boolean {
@@ -62,7 +67,7 @@ function buildCustomSpaces(def: CustomBoardDefinition, gameOptions: GameOptions,
   ];
 
   for (const s of def.spaces) {
-    const space: Space = {id: s.id, spaceType: s.spaceType, x: s.x, y: s.y, bonus: [...s.bonus]};
+    const space: Space = {id: s.id, spaceType: s.spaceType, x: s.x, y: s.y, bonus: [...s.bonus], edge: false};
     if (s.volcanic) {
       space.volcanic = true;
     }

@@ -69,10 +69,7 @@ describe('FloatingTradeHub', () => {
 
     expect(player.stock.asUnits()).deep.eq(Units.of({plants: 4}));
     expect(card.resourceCount).to.eq(1);
-    expect(player.game.gameLog.map(formatMessage)).includes.members([
-      'blue converted 4 floater(s) from Floating Trade Hub',
-      'blue gained 4 plants',
-    ]);
+    expect(player.game.gameLog.map(formatMessage)).includes('blue removed 4:cr:floater: from Floating Trade Hub to gain 4:r:plants:');
   });
 
   it('act - add resources branch autoselects the only target card when converting floaters is available', () => {

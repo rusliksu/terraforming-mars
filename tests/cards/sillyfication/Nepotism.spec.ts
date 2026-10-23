@@ -25,9 +25,9 @@ describe('Nepotism', () => {
 
   it('adds 2 delegates to the reserve on play (7 -> 9)', () => {
     const turmoil = game.turmoil!;
-    expect(turmoil.getAvailableDelegateCount(player)).to.eq(7);
+    expect(turmoil.delegateReserve.get(player)).to.eq(7);
     card.play(player);
-    expect(turmoil.getAvailableDelegateCount(player)).to.eq(9);
+    expect(turmoil.delegateReserve.get(player)).to.eq(9);
   });
 
   it('gains 1 M€ whenever the owner sends a delegate', () => {

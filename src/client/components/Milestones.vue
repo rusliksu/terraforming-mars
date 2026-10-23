@@ -8,7 +8,7 @@
                     <span class="ma-player-cube"><i :class="playerCubeCss(milestone.color)"></i></span>
                 </span>
                 <span v-if="isLearnerModeOn()">
-                    <span v-for="(spotPrice, index) in getAvailableMilestoneSpots()" :key="index" class="milestone-award-inline unpaid">
+                    <span v-for="(spotPrice, index) in availableMilestoneSpots" :key="index" class="milestone-award-inline unpaid">
                         <div class="milestone-award-price-row">
                           <div class="milestone-award-price">{{spotPrice}}</div>
                           <template v-if="conglomeratesExpansion">
@@ -75,17 +75,19 @@ export default defineComponent({
   components: {
     Milestone,
   },
+  computed: {
+    availableMilestoneSpots(): Array<number> {
+      const count = this.milestones.filter((milestone) => milestone.playerName).length;
+      const cost = this.conglomeratesExpansion ? Math.ceil(MILESTONE_COST * 1.5) : MILESTONE_COST;
+      return Array(Math.max(0, MAX_MILESTONES - count)).fill(cost);
+    },
+  },
   methods: {
     toggleDescription() {
       this.showDescription = !this.showDescription;
     },
     toggleList() {
       this.showMilestoneDetails = !this.showMilestoneDetails;
-    },
-    getAvailableMilestoneSpots(): Array<number> {
-      const count = this.milestones.filter((milestone) => milestone.playerName).length;
-      const cost = this.conglomeratesExpansion ? Math.ceil(MILESTONE_COST * 1.5) : MILESTONE_COST;
-      return Array(Math.max(0, MAX_MILESTONES - count)).fill(cost);
     },
     isLearnerModeOn(): boolean {
       return this.preferences.learner_mode;

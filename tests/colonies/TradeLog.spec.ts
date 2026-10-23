@@ -28,7 +28,7 @@ describe('Colony trade replay expenses', () => {
     new TradeWithEnergy(player).trade(colony);
 
     expect(player.energy).eq(0);
-    expect(game.gameLog.find((message) => message.message.includes('energy to trade with'))?.payment)
+    expect(game.gameLog.find((message) => message.message.includes(':r:energy: to trade with'))?.payment)
       .deep.eq({megacredits: 0, steel: 0, titanium: 0, energy: ENERGY_TRADE_COST});
   });
 
@@ -37,7 +37,7 @@ describe('Colony trade replay expenses', () => {
     player.colonies.tradeDiscount = ENERGY_TRADE_COST;
     new TradeWithEnergy(player).trade(colony);
 
-    expect(game.gameLog.find((message) => message.message.includes('energy to trade with'))?.payment).is.undefined;
+    expect(game.gameLog.find((message) => message.message.includes(':r:energy: to trade with'))?.payment).is.undefined;
   });
 
   it('records titanium deducted for a trade', () => {
@@ -46,7 +46,7 @@ describe('Colony trade replay expenses', () => {
     new TradeWithTitanium(player).trade(colony);
 
     expect(player.titanium).eq(0);
-    expect(game.gameLog.find((message) => message.message.includes('titanium to trade with'))?.payment)
+    expect(game.gameLog.find((message) => message.message.includes(':r:titanium: to trade with'))?.payment)
       .deep.eq({megacredits: 0, steel: 0, titanium: TITANIUM_TRADE_COST});
   });
 
@@ -56,7 +56,7 @@ describe('Colony trade replay expenses', () => {
     new TradeWithMegacredits(player).trade(colony);
     runNextAction(game);
 
-    expect(game.gameLog.find((message) => message.message.includes('M€ to trade with'))?.payment)
+    expect(game.gameLog.find((message) => message.message.includes(':r:mc: to trade with'))?.payment)
       .deep.eq({megacredits: MC_TRADE_COST, steel: 0, titanium: 0});
   });
 
@@ -69,6 +69,6 @@ describe('Colony trade replay expenses', () => {
       type: 'payment', payment: Payment.of({heat: MC_TRADE_COST}),
     }, player);
 
-    expect(game.gameLog.find((message) => message.message.includes('M€ to trade with'))?.payment).is.undefined;
+    expect(game.gameLog.find((message) => message.message.includes(':r:mc: to trade with'))?.payment).is.undefined;
   });
 });

@@ -76,6 +76,8 @@ const supported = process.platform === 'win32' || (process.platform === 'linux' 
   });
 
   function put() {
+    // LoadGame requires an authorized request: Handler({validateServerId: true}) (upstream).
+    scaffolding.url = '/load?serverId=1';
     const response = scaffolding.put(LoadGame.INSTANCE, res);
     req.emitString(JSON.stringify({gameId, rollbackCount: 2}));
     req.emitter.emit('end');

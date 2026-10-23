@@ -3,7 +3,9 @@ import {BoardName} from '../common/boards/BoardName';
 import {ElysiumBoard} from './boards/ElysiumBoard';
 import {IGame} from './IGame';
 import {GameOptions} from './game/GameOptions';
-import {GameId, isPlayerId, safeCast} from '../common/Types';
+import {GameId, SpaceId, isPlayerId, safeCast} from '../common/Types';
+import {SpaceType} from '../common/boards/SpaceType';
+import {SerializedBoard} from './boards/SerializedBoard';
 import {HellasBoard} from './boards/HellasBoard';
 import {TharsisBoard} from './boards/TharsisBoard';
 import {IPlayer} from './IPlayer';
@@ -22,6 +24,7 @@ import {Board} from './boards/Board';
 import {Space} from './boards/Space';
 import {HollandiaBoard} from './boards/HollandiaBoard';
 import {CustomBoard} from './boards/CustomBoard';
+import {AmazonisPlanitiaBoard} from './boards/AmazonisPlanitiaBoard';
 
 type BoardFactory = (new (spaces: ReadonlyArray<Space>) => MarsBoard) & {newInstance: (gameOptions: GameOptions, rng: Random) => MarsBoard};
 
@@ -48,6 +51,7 @@ const boards: Record<BoardName, BoardFactory> = {
   [BoardName.VASTITAS_BOREALIS]: VastitasBorealisBoard,
   [BoardName.HOLLANDIA]: HollandiaBoard,
   [BoardName.CUSTOM]: CustomBoard,
+  [BoardName.AMAZONIS_PLANITIA]: AmazonisPlanitiaBoard,
 } satisfies Record<BoardName, BoardFactory>;
 
 export class GameSetup {
@@ -58,6 +62,8 @@ export class GameSetup {
 
   public static deserializeBoard(players: Array<IPlayer>, gameOptions: GameOptions, d: SerializedGame) {
     const playersForBoard = players.length !== 1 ? players : [players[0], GameSetup.neutralPlayerFor(d.id)];
+    migrateColonySpaceIds(d.board);
+    migrateEdges(d.board, gameOptions.boardName);
     const deserialized = Board.deserialize(d.board, playersForBoard).spaces;
     if (gameOptions.boardName === BoardName.CUSTOM) {
       // The custom board's row count anchors its adjacency geometry; recover it from the
@@ -104,5 +110,43 @@ export class GameSetup {
 
     placeCityAndForest(game, 'top');
     placeCityAndForest(game, 'bottom');
+  }
+}
+
+// TODO(kberg): Remove after 2028-01-01
+// Mars colony spaces used to have bare two-digit ids ('01', '02', '69'-'78'). They now lead with 'c'.
+function migrateColonySpaceIds(board: SerializedBoard): void {
+  for (const space of board.spaces) {
+    if (space.spaceType === SpaceType.COLONY && !space.id.startsWith('c')) {
+      space.id = `c${space.id}` as SpaceId;
+    }
+  }
+}
+
+// TODO(kberg): Remove after 2026-12-01
+// Spaces used to have no edge attribute. Every 61-space board shares the same edges.
+// Amazonis Planitia is excluded because it postdates the edge attribute.
+const LEGACY_EDGES: ReadonlyArray<string> = [
+  '03', '04', '05', '06', '07',
+  '08', '13',
+  '14', '20',
+  '21', '28',
+  '29', '37',
+  '38', '45',
+  '46', '52',
+  '53', '58',
+  '59', '60', '61', '62', '63',
+];
+function migrateEdges(board: SerializedBoard, boardName: BoardName): void {
+  if (boardName === BoardName.AMAZONIS_PLANITIA) {
+    return;
+  }
+  if (board.spaces.find((space) => space.id === '03')?.edge === true) {
+    return;
+  }
+  for (const space of board.spaces) {
+    if (LEGACY_EDGES.includes(space.id)) {
+      space.edge = true;
+    }
   }
 }

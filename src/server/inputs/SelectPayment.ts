@@ -25,7 +25,6 @@ export class SelectPayment extends BasePlayerInput<Payment> {
       type: 'payment',
       amount: this.amount,
       paymentOptions: {
-        // TODO(kberg): These are set both here and in Player. Consolidate, perhaps.
         heat: player.canUseHeatAsMegaCredits,
         energy: player.canUseEnergyAsMegaCredits,
         lunaTradeFederationTitanium: player.canUseTitaniumAsMegacredits,
@@ -51,8 +50,6 @@ export class SelectPayment extends BasePlayerInput<Payment> {
     if (payment === undefined) {
       throw new InputError('payment is not a valid type');
     }
-    // TODO(kberg): This is called here and in SelectPaymentDeferred.
-    // There's no reason for both.
     if (!player.canSpend(payment, this.reserveUnits)) {
       throw new InputError('You do not have that many resources');
     }

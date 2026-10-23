@@ -21,7 +21,6 @@ import {OneGiantStep} from '../moon/OneGiantStep';
 import {Lunarchitect} from '../moon/Lunarchitect';
 import {Economizer} from './arabiaTerra/Economizer';
 import {Pioneer} from './arabiaTerra/Pioneer';
-import {Pioneer4} from './arabiaTerra/Pioneer4';
 import {LandSpecialist} from './arabiaTerra/LandSpecialist';
 import {Martian} from './arabiaTerra/Martian';
 import {Capitalist} from './Capitalist';
@@ -29,7 +28,6 @@ import {VElectrician} from './VElectrician';
 import {Coastguard, Irrigator} from './Irrigator';
 import {Smith} from './Smith';
 import {Tradesman} from './Tradesman';
-import {Colonizer} from './amazonisPlanitia/Colonizer';
 import {Minimalist} from './amazonisPlanitia/Minimalist';
 import {Terran} from './amazonisPlanitia/Terran';
 import {Tropicalist} from './amazonisPlanitia/Tropicalist';
@@ -58,6 +56,7 @@ import {Purifier} from './Purifier';
 import {VSpacefarer} from './VSpacefarer';
 import {Agronomist} from './Agronomist';
 import {Merchant} from './modular/Merchant';
+import {Merchant3} from '@/server/milestones/Merchant3';
 import {MAManifest} from '../ma/MAManifest';
 import {MilestoneName} from '../../common/ma/MilestoneName';
 import {BoardName} from '../../common/boards/BoardName';
@@ -100,7 +99,7 @@ export const CONGLOMERATES_MILESTONE_MAP: Partial<Record<MilestoneName, Mileston
   'C. Forester': 'C. Forester5',
   'Capitalist': 'Capitalist96',
   'Coastguard': 'Coastguard5',
-  'Colonizer': 'Colonizer6',
+  'Pioneer': 'Colonizer6',
   'Diversifier': 'Diversifier10',
   'Ecologist': 'Ecologist6',
   'Economizer': 'Economizer8',
@@ -119,13 +118,12 @@ export const CONGLOMERATES_MILESTONE_MAP: Partial<Record<MilestoneName, Mileston
   'Legend': 'Legend8',
   'Martian': 'Martian6',
   'Mayor': 'Mayor5',
-  'Pioneer': 'Pioneer5',
   'Planner': 'Planner24',
   'Polar Explorer': 'Polar Explorer5',
   'Researcher': 'Researcher6',
   'Rim Settler': 'Rim Settler5',
   'Smith': 'Smith9',
-  'Spacefarer': 'Spacefarer9',
+  'T. Spacefarer': 'Spacefarer9',
   'Specialist': 'Specialist15',
   'T. Collector': 'T. Collector5',
   'Tactician': 'Tactician8',
@@ -165,7 +163,6 @@ export const milestoneManifest: MAManifest<MilestoneName, IMilestone> = {
     'C. Forester': {Factory: CForester},
     'Capitalist': {Factory: Capitalist},
     'Coastguard': {Factory: Coastguard, random: 'modular'},
-    'Colonizer': {Factory: Colonizer, compatibility: 'colonies'},
     'Diversifier': {Factory: Diversifier, random: 'modular'},
     'Ecologist': {Factory: Ecologist, random: 'both'},
     'Economizer': {Factory: Economizer},
@@ -183,21 +180,21 @@ export const milestoneManifest: MAManifest<MilestoneName, IMilestone> = {
     'Hydrologist': {Factory: Hydrologist, random: 'modular'},
     'Irrigator': {Factory: Irrigator, deprecated: true},
     'Land Specialist': {Factory: LandSpecialist},
-    'Landshaper': {Factory: Landshaper, random: 'modular'},
+    'Landshaper': {Factory: Landshaper, random: 'both'},
     'Legend': {Factory: Legend},
     'Legend4': {Factory: Legend4, random: 'modular'},
-    'Lobbyist': {Factory: Lobbyist, compatibility: 'turmoil', random: 'modular'},
+    'Lobbyist': {Factory: Lobbyist, compatibility: 'turmoil', random: 'both'},
     'Lunarchitect': {Factory: Lunarchitect, compatibility: 'moon'},
     'Martian': {Factory: Martian, compatibility: 'pathfinders'},
     'Mayor': {Factory: Mayor, random: 'both'},
     'Merchant': {Factory: Merchant, random: 'modular'},
+    'Merchant3': {Factory: Merchant3},
     'Metallurgist': {Factory: Metallurgist, random: 'modular'},
     'Minimalist': {Factory: Minimalist},
     'Networker': {Factory: Networker, compatibility: 'ares'},
     'One Giant Step': {Factory: OneGiantStep, compatibility: 'moon'},
     'Philantropist': {Factory: Philantropist, random: 'modular'},
-    'Pioneer': {Factory: Pioneer, compatibility: 'colonies'},
-    'Pioneer4': {Factory: Pioneer4, compatibility: 'colonies', random: 'modular'},
+    'Pioneer': {Factory: Pioneer, compatibility: 'colonies', random: 'both'},
     'Planetologist': {Factory: Planetologist, compatibility: 'venus', random: 'modular'},
     'Planner': {Factory: Planner, random: 'both'},
     'Polar Explorer': {Factory: PolarExplorer},
@@ -207,18 +204,18 @@ export const milestoneManifest: MAManifest<MilestoneName, IMilestone> = {
     'Rim Settler': {Factory: RimSettler, random: 'both'},
     'Risktaker': {Factory: Risktaker, compatibility: 'underworld'},
     'Smith': {Factory: Smith},
-    'Spacefarer': {Factory: Spacefarer},
+    'T. Spacefarer': {Factory: Spacefarer},
     'Spacefarer4': {Factory: Spacefarer4, random: 'modular'},
     'Specialist': {Factory: Specialist},
-    'Sponsor': {Factory: Sponsor, random: 'modular'},
+    'Sponsor': {Factory: Sponsor, random: 'both'},
     'T. Collector': {Factory: Collector},
     'Tactician': {Factory: Tactician},
     'Tactician4': {Factory: Tactician4, random: 'modular'},
     'Terra Pioneer': {Factory: TerraPioneer},
     'Terraformer': {Factory: Terraformer},
     'Terraformer29': {Factory: Terraformer29, random: 'modular'},
-    'Terran': {Factory: Terran},
-    'Terran5': {Factory: Terran5, random: 'modular'},
+    'Terran': {Factory: Terran, random: 'both'},
+    'Terran5': {Factory: Terran5, deprecated: true},
     'Thawer': {Factory: Thawer, random: 'modular'},
     'Trader': {Factory: Trader, random: 'modular'},
     'Tradesman': {Factory: Tradesman},
@@ -238,7 +235,7 @@ export const milestoneManifest: MAManifest<MilestoneName, IMilestone> = {
     'C. Forester5': {Factory: conglomeratesVariant('C. Forester5', 'Have 5 plant production between you and your teammate', () => new CForester()), compatibility: 'conglomerates'},
     'Capitalist96': {Factory: conglomeratesVariant('Capitalist96', 'Have 96 M€ between you and your teammate', () => new Capitalist()), compatibility: 'conglomerates'},
     'Coastguard5': {Factory: conglomeratesVariant('Coastguard5', 'Own 5 tiles adjacent to oceans between you and your teammate', () => new Coastguard()), compatibility: 'conglomerates'},
-    'Colonizer6': {Factory: conglomeratesVariant('Colonizer6', 'Have 6 colonies between you and your teammate', () => new Colonizer()), compatibility: 'conglomerates'},
+    'Colonizer6': {Factory: conglomeratesVariant('Colonizer6', 'Have 6 colonies between you and your teammate', () => new Pioneer()), compatibility: 'conglomerates'},
     'Diversifier10': {Factory: DiversifierConglomerates, compatibility: 'conglomerates'},
     'Ecologist6': {Factory: conglomeratesVariant('Ecologist6', 'Have 6 bio tags in play between you and your teammate (plant, microbe and animal tags count as bio tags)', () => new Ecologist()), compatibility: 'conglomerates'},
     'Economizer8': {Factory: conglomeratesVariant('Economizer8', 'Have 8 heat production between you and your teammate', () => new Economizer()), compatibility: 'conglomerates'},
@@ -298,15 +295,16 @@ export const milestoneManifest: MAManifest<MilestoneName, IMilestone> = {
     [BoardName.THARSIS]: ['Terraformer', 'Mayor', 'Gardener', 'Builder', 'Planner'],
     [BoardName.HELLAS]: ['Diversifier', 'Tactician', 'Polar Explorer', 'Energizer', 'Rim Settler'],
     [BoardName.ELYSIUM]: ['Generalist', 'Specialist', 'Ecologist', 'Tycoon', 'Legend'],
-    [BoardName.AMAZONIS]: ['Colonizer', 'Forester', 'Minimalist', 'Terran', 'Tropicalist'],
+    [BoardName.AMAZONIS]: ['Pioneer', 'Forester', 'Minimalist', 'Terran', 'Tropicalist'],
     [BoardName.ARABIA_TERRA]: ['Economizer', 'Pioneer', 'Land Specialist', 'Martian', 'Terran'],
-    [BoardName.TERRA_CIMMERIA]: ['T. Collector', 'Firestarter', 'Terra Pioneer', 'Spacefarer', 'Gambler'],
+    [BoardName.TERRA_CIMMERIA]: ['T. Collector', 'Firestarter', 'Terra Pioneer', 'T. Spacefarer', 'Gambler'],
     [BoardName.VASTITAS_BOREALIS]: ['V. Electrician', 'Smith', 'Tradesman', 'Irrigator', 'Capitalist'],
     [BoardName.UTOPIA_PLANITIA]: ['Land Specialist', 'Pioneer', 'Tradesman', 'Smith', 'Researcher'],
     [BoardName.VASTITAS_BOREALIS_NOVA]: ['Agronomist', 'V. Spacefarer', 'Geologist', 'Engineer', 'Farmer'],
     [BoardName.TERRA_CIMMERIA_NOVA]: ['Planetologist', 'Architect', 'Coastguard', 'C. Forester', 'Fundraiser'],
     [BoardName.HOLLANDIA]: [],
     [BoardName.CUSTOM]: [],
+    [BoardName.AMAZONIS_PLANITIA]: ['Terran', 'Landshaper', 'Merchant3', 'Sponsor', 'Lobbyist'],
   },
   expansions: {
     venus: ['Hoverlord'],

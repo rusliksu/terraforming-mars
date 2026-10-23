@@ -29,7 +29,7 @@ export class MonsInsurance extends CorporationCard implements ICorporationCard {
             cb.vSpace(Size.SMALL);
             cb.br;
             cb.effect('When a player causes another player to decrease production or lose resources, pay 3M€ to the victim, or as much as possible.', (eb) => {
-              eb.production((pb) => pb.wild(1, {all})).or().minus().wild(1, {all});
+              eb.production((pb) => pb.wild(1, {all})).or().wild(-1, {all});
               eb.startEffect.text('pay', {size: Size.SMALL, uppercase}).megacredits(3);
             });
           });
@@ -56,13 +56,13 @@ export class MonsInsurance extends CorporationCard implements ICorporationCard {
       player.stock.deduct(Resource.MEGACREDITS, retribution);
       if (retribution > 0) {
         if (claimant !== undefined) {
-          player.game.log('${0} received ${1} M€ from ${2} owner (${3})', (b) =>
+          player.game.log('${0} received ${1}:r:mc: from ${2} owner (${3})', (b) =>
             b.player(claimant)
               .number(retribution)
               .card(this)
               .player(player));
         } else {
-          player.game.log('Neutral player received ${0} M€ from ${1} owner (${2})', (b) =>
+          player.game.log('Neutral player received ${0}:r:mc: from ${1} owner (${2})', (b) =>
             b.number(retribution)
               .card(this)
               .player(player));

@@ -3,7 +3,6 @@ import {Card} from '../Card';
 import {CardType} from '../../../common/cards/CardType';
 import {IPlayer} from '../../IPlayer';
 import {CardName} from '../../../common/cards/CardName';
-import {Turmoil} from '../../turmoil/Turmoil';
 import {CardRenderer} from '../render/CardRenderer';
 import {all} from '../Options';
 
@@ -28,12 +27,13 @@ export class CorruptGovernors extends Card implements IProjectCard {
   }
 
   public override bespokePlay(player: IPlayer) {
-    Turmoil.ifTurmoil(player.game, (turmoil) => {
+    const turmoil = player.game.turmoil;
+    if (turmoil !== undefined) {
       for (const p of player.game.playersInGenerationOrder) {
         turmoil.addInfluenceBonus(p, 3);
       }
       turmoil.addInfluenceBonus(player, 3);
-    });
+    }
     return undefined;
   }
 }

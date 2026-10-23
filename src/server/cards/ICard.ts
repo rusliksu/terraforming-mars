@@ -154,6 +154,18 @@ export interface ICard {
    * @param forward true if advancing, false if retreating (Epsilon Dample only).
    */
   onDeltaTrackMoved?(cardOwner: IPlayer, mover: IPlayer, steps: number, forward: boolean): void;
+  /**
+   * Called when `activePlayer` places a tile on `space` which rewards a standard resource bonus.
+   *
+   * In this case the player has chosen `resource`. Cards that implement this react as if this space had that resource bonus.
+   */
+  onStandardResourcePlacementBonus?(cardOwner: IPlayer, activePlayer: IPlayer, space: Space, resource: Resource): void;
+  /**
+   * Estimates what `onTilePlaced` will give `player` when they place a tile of `tileType` on `space`.
+   *
+   * Used by cards that let a placement pay for their own cost. Manutech is applied by the caller.
+   */
+  gainsFromTilePlacement?(player: IPlayer, space: Space, tileType: TileType): {stock: Units, production: Units};
   onDiscard?(player: IPlayer): void;
   /**
    * Called when anybody gains TR

@@ -1,6 +1,5 @@
 import * as constants from '../../common/constants';
 import {BoardName} from '../../common/boards/BoardName';
-import {RandomBoardOption} from '../../common/boards/RandomBoardOption';
 import {CardName} from '../../common/cards/CardName';
 import {ColonyName} from '../../common/colonies/ColonyName';
 import {GameId} from '../../common/Types';
@@ -17,8 +16,8 @@ export type GameOptions = {
   fanmadeCardPool?: boolean;
   /** The resolved runtime board for this game. */
   boardName: BoardName;
-  /** The original create-game board selection, used by rematch setup. */
-  boardSelection?: BoardName | RandomBoardOption;
+  /** The original create-game board selection (the boards the request asked for), used by rematch setup. */
+  boardSelection?: Array<BoardName>;
   /** The board layout when `boardName` is `BoardName.CUSTOM`. Persisted for the life of the game. */
   customBoard?: CustomBoardDefinition;
   /** A user-authored Moon surface layout. Absent means MoonBoard's own hard-coded default. */

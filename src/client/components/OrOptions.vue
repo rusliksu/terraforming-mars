@@ -43,6 +43,10 @@ import {SpaceId} from '@/common/Types';
 let unique = 0;
 type QuickGreeneryHandler = {tile: HTMLElement, handler: (event: Event) => void};
 
+function isDisplayed(option: PlayerInputModel): boolean {
+  return !(option.type === 'card' && option.showOnlyInLearnerMode !== false && !getPreferences().learner_mode);
+}
+
 export default defineComponent({
   name: 'OrOptions',
   props: {
@@ -69,15 +73,7 @@ export default defineComponent({
     AppButton,
   },
   data() {
-    const displayedOptions: Array<PlayerInputModel> = [];
-    const originalIndices: Array<number> = [];
-    this.playerinput.options.forEach((option, i) => {
-      if (option.type === 'card' && option.showOnlyInLearnerMode !== false && !getPreferences().learner_mode) {
-        return;
-      }
-      displayedOptions.push(option);
-      originalIndices.push(i);
-    });
+    const displayedOptions = this.playerinput.options.filter(isDisplayed);
     const initialIdx = this.playerinput.initialIdx ?? 0;
     // Special case: If the first recommended displayed option is SelectProjectCardToPlay, and none of them are enabled, skip it.
     let selectedIdx = initialIdx;
@@ -87,17 +83,30 @@ export default defineComponent({
       selectedIdx = initialIdx + 1;
     }
     return {
-      displayedOptions,
-      originalIndices,
       radioElementName: 'selectOption' + unique++,
       selectedOption: displayedOptions[selectedIdx],
-      selectedIdx,
       quickGreeneryHandlers: [] as Array<QuickGreeneryHandler>,
     };
   },
+  computed: {
+    displayedOptions(): Array<PlayerInputModel> {
+      return this.playerinput.options.filter(isDisplayed);
+    },
+    originalIndices(): Array<number> {
+      return this.displayedOptions.map((option) => this.playerinput.options.indexOf(option));
+    },
+    selectedIdx(): number {
+      return this.displayedOptions.indexOf(this.selectedOption);
+    },
+  },
   watch: {
-    selectedOption(newOption: PlayerInputModel) {
-      this.selectedIdx = this.displayedOptions.indexOf(newOption);
+    displayedOptions(newOptions: Array<PlayerInputModel>) {
+      // Learner mode can hide the selected option.
+      if (!newOptions.includes(this.selectedOption)) {
+        this.selectedOption = newOptions[0];
+      }
+    },
+    selectedOption() {
       // Clicking the option can shift elements on the page.
       // This preserves the location of the option button the user just clicked by
       // tracking where it was on the screen, where it moved, and then repositioning it.

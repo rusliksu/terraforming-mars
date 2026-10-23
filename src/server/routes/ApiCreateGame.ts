@@ -5,7 +5,6 @@ import {Handler} from './Handler';
 import {Context} from './IHandler';
 import {Database} from '../database/Database';
 import {BoardName} from '../../common/boards/BoardName';
-import {RandomBoardOption} from '../../common/boards/RandomBoardOption';
 import {decodeCustomBoard} from '../../common/boards/customBoardCodec';
 import {decodeSimpleBoard} from '../../common/boards/simpleBoardCodec';
 import {Cloner} from '../database/Cloner';
@@ -67,23 +66,6 @@ export class ApiCreateGame extends Handler {
   ) {
     super();
     this.quotaHandlers = quotaConfigs.map((config) => new QuotaHandler(config));
-  }
-
-  public static boardOptions(board: RandomBoardOption | BoardName): Array<BoardName> {
-    // A custom board needs its own definition and can't be chosen by a random roll.
-    const allBoards = Object.values(BoardName).filter((name) => name !== BoardName.CUSTOM);
-
-    if (board === RandomBoardOption.ALL) {
-      return allBoards;
-    }
-    if (board === RandomBoardOption.OFFICIAL) {
-      return allBoards.filter((name) => {
-        return name === BoardName.THARSIS ||
-          name === BoardName.HELLAS ||
-          name === BoardName.ELYSIUM;
-      });
-    }
-    return [board];
   }
 
   /**
@@ -181,16 +163,14 @@ export class ApiCreateGame extends Handler {
         }
       }
 
-      const boardSelection = gameReq.board;
+      const boardName = gameReq.boards[Math.floor(Math.random() * gameReq.boards.length)];
+
       let customBoard: GameOptions['customBoard'] = undefined;
-      if (gameReq.board === BoardName.CUSTOM) {
+      if (boardName === BoardName.CUSTOM) {
         if (gameReq.customBoardCode === undefined) {
           throw new Error('A custom board was selected but no map code was provided.');
         }
         customBoard = decodeCustomBoard(gameReq.customBoardCode);
-      } else {
-        const boards = ApiCreateGame.boardOptions(gameReq.board);
-        gameReq.board = boards[Math.floor(Math.random() * boards.length)];
       }
 
       // Unlike Mars's customBoard, these aren't a board *selection* -- Moon/Venus Phase 2 are
@@ -222,8 +202,8 @@ export class ApiCreateGame extends Handler {
         aresHazards: true, // Not a runtime option.
         aresExtremeVariant: gameReq.aresExtremeVariant,
         bannedCards: gameReq.bannedCards,
-        boardName: gameReq.board,
-        boardSelection,
+        boardName: boardName,
+        boardSelection: gameReq.boards,
         ceoExtension: gameReq.expansions.ceo,
         clonedGamedId: gameReq.clonedGamedId ?? undefined,
         coloniesExtension: gameReq.expansions.colonies,

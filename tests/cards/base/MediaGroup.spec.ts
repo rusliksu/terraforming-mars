@@ -15,7 +15,7 @@ describe('MediaGroup', () => {
     runAllActions(game);
 
     expect(player.megaCredits).to.eq(3);
-    expect(game.gameLog.map(formatMessage)).contains('blue gained 3 M€ because of Media Group');
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 3:r:mc: because of Media Group');
 
     card.onCardPlayed(player, card);
     runAllActions(game);

@@ -1,13 +1,15 @@
 import {expect} from 'chai';
 import {awardManifest} from '../../src/server/awards/Awards';
 import {CONGLOMERATES_MILESTONE_MAP, milestoneManifest} from '../../src/server/milestones/Milestones';
-import {chooseMilestonesAndAwards, getCandidates, LIMITED_SYNERGY, maximumSynergy, verifySynergyRules} from '../../src/server/ma/MilestoneAwardSelector';
+import {BOARDS_WITHOUT_VOLCANIC_SPACES, chooseMilestonesAndAwards, getCandidates, LIMITED_SYNERGY, maximumSynergy, verifySynergyRules} from '../../src/server/ma/MilestoneAwardSelector';
 import {RandomMAOptionType} from '../../src/common/ma/RandomMAOptionType';
 import {intersection} from '../../src/common/utils/utils';
 import {DEFAULT_GAME_OPTIONS, GameOptions} from '../../src/server/game/GameOptions';
 import {BoardName} from '../../src/common/boards/BoardName';
 import {AwardName} from '../../src/common/ma/AwardName';
 import {MilestoneName} from '../../src/common/ma/MilestoneName';
+import {GameSetup} from '../../src/server/GameSetup';
+import {SeededRandom} from '../../src/common/utils/Random';
 
 describe('MilestoneAwardSelector', () => {
   const maximumSynergyRuns = [
@@ -18,7 +20,7 @@ describe('MilestoneAwardSelector', () => {
     // Both pairs Polar Explorer / Cultivator and Rim Settler / Space Baron
     // have synergy 3.
     {mas: [...milestoneManifest.boards[BoardName.HELLAS], ...awardManifest.boards[BoardName.HELLAS]], expected: 3},
-    // Hoverlord / Venuphine have synergy 5.
+    // Hoverlord / Venuphile have synergy 5.
     {mas: [...milestoneManifest.expansions['venus'], ...awardManifest.expansions['venus']], expected: 5},
   ] as const;
   // These aren't particularly excellent tests as much as they help demonstrate
@@ -117,7 +119,7 @@ describe('MilestoneAwardSelector', () => {
       milestoneManifest.expansions['underworld'],
     ].flat();
 
-    avoidedMilestones.push('Pioneer', 'Martian', 'Colonizer');
+    avoidedMilestones.push('Pioneer', 'Martian');
     avoidedAwards.push('T. Politician');
     const [milestones, awards] = getCandidates({...DEFAULT_GAME_OPTIONS,
       randomMA: RandomMAOptionType.LIMITED,
@@ -192,6 +194,44 @@ describe('MilestoneAwardSelector', () => {
 
     expect(intersection(milestones as Array<string>, deprecatedMilestones)).is.empty;
     expect(intersection(awards as Array<string>, deprecatedAwards)).is.empty;
+  });
+
+  it('BOARDS_WITHOUT_VOLCANIC_SPACES is accurate', () => {
+    const expected = Object.values(BoardName).filter((boardName) => {
+      if (boardName === BoardName.CUSTOM) {
+        // BoardName.CUSTOM is a custom-server addition; it needs a definition, which this test doesn't supply.
+        return false;
+      }
+      const board = GameSetup.newBoard({...DEFAULT_GAME_OPTIONS, boardName}, new SeededRandom(0));
+      return board.volcanicSpaceIds.length === 0;
+    });
+    expect(BOARDS_WITHOUT_VOLCANIC_SPACES).to.have.members(expected);
+  });
+
+  it('Modular MA excludes Geologist as a candidate on boards without volcanic spaces', () => {
+    const [milestones] = getCandidates({
+      ...DEFAULT_GAME_OPTIONS,
+      boardName: BoardName.HELLAS,
+      modularMA: true,
+      randomMA: RandomMAOptionType.UNLIMITED,
+    });
+    expect(milestones).does.not.contain('Geologist');
+  });
+
+  it('Modular MA includes Geologist as a candidate on boards with volcanic spaces', () => {
+    const [milestones] = getCandidates({
+      ...DEFAULT_GAME_OPTIONS,
+      boardName: BoardName.THARSIS,
+      modularMA: true,
+      randomMA: RandomMAOptionType.UNLIMITED,
+    });
+    expect(milestones).contains('Geologist');
+  });
+
+  it('Amazonis Planitia uses its own milestones and awards when not randomized', () => {
+    const mas = choose({boardName: BoardName.AMAZONIS_PLANITIA, randomMA: RandomMAOptionType.NONE});
+    expect(mas.milestones).deep.eq(milestoneManifest.boards[BoardName.AMAZONIS_PLANITIA]);
+    expect(mas.awards).deep.eq(awardManifest.boards[BoardName.AMAZONIS_PLANITIA]);
   });
 
   function choose(options: Partial<GameOptions>) {

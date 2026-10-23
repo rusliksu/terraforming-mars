@@ -60,12 +60,12 @@ describe('OceanPlacementContext', () => {
     player.oceanBonus = 3;
     player.megaCredits = 6;
     game.board = new MarsBoard([
-      {id: '10', x: 0, y: 1, spaceType: SpaceType.OCEAN, bonus: [SpaceBonus.STEEL]},
-      {id: '11', x: 1, y: 1, spaceType: SpaceType.OCEAN, bonus: [SpaceBonus.DRAW_CARD]},
-      {id: '12', x: 0, y: 0, spaceType: SpaceType.OCEAN, bonus: [], tile: {tileType: TileType.OCEAN}},
-      {id: '13', x: 0, y: 2, spaceType: SpaceType.LAND, bonus: [], adjacency: {cost: 4, bonus: []}},
-      {id: '14', x: 2, y: 1, spaceType: SpaceType.LAND, bonus: [], adjacency: {cost: 5, bonus: []}},
-      {id: '15', x: 2, y: 2, spaceType: SpaceType.LAND, bonus: []},
+      {id: '10', x: 0, y: 1, spaceType: SpaceType.OCEAN, bonus: [SpaceBonus.STEEL], edge: false},
+      {id: '11', x: 1, y: 1, spaceType: SpaceType.OCEAN, bonus: [SpaceBonus.DRAW_CARD], edge: false},
+      {id: '12', x: 0, y: 0, spaceType: SpaceType.OCEAN, bonus: [], tile: {tileType: TileType.OCEAN}, edge: false},
+      {id: '13', x: 0, y: 2, spaceType: SpaceType.LAND, bonus: [], adjacency: {cost: 4, bonus: []}, edge: false},
+      {id: '14', x: 2, y: 1, spaceType: SpaceType.LAND, bonus: [], adjacency: {cost: 5, bonus: []}, edge: false},
+      {id: '15', x: 2, y: 2, spaceType: SpaceType.LAND, bonus: [], edge: false},
     ]);
     const before = JSON.stringify(game.serialize());
     const context = Server.getPlayerModel(player).thisPlayer.oceanPlacementContext!;
@@ -110,7 +110,7 @@ describe('OceanPlacementContext', () => {
       if (!isSpaceId(id)) {
         throw new Error('Invalid fixture ID');
       }
-      return {id, x: index, y: 0, spaceType: SpaceType.OCEAN, bonus: []};
+      return {id, x: index, y: 0, spaceType: SpaceType.OCEAN, bonus: [], edge: false};
     });
     game.board = new MarsBoard(spaces);
     const context = Server.getPlayerModel(player).thisPlayer.oceanPlacementContext!;
@@ -125,12 +125,12 @@ describe('OceanPlacementContext', () => {
     game.phase = Phase.ACTION;
     player.oceanBonus = 3;
     game.board = new MarsBoard([
-      {id: '10', x: 0, y: 1, spaceType: SpaceType.OCEAN, bonus: [SpaceBonus.STEEL, SpaceBonus.DRAW_CARD]},
-      {id: '11', x: 0, y: 0, spaceType: SpaceType.OCEAN, bonus: [], tile: {tileType: TileType.OCEAN}},
-      {id: '12', x: 1, y: 1, spaceType: SpaceType.OCEAN, bonus: [], tile: {tileType: TileType.WETLANDS}},
-      {id: '13', x: 0, y: 2, spaceType: SpaceType.OCEAN, bonus: [], player: other},
-      {id: '14', x: 1, y: 0, spaceType: SpaceType.OCEAN, bonus: [], player},
-      {id: '15', x: 1, y: 2, spaceType: SpaceType.OCEAN, bonus: [], tile: {tileType: TileType.GREENERY}},
+      {id: '10', x: 0, y: 1, spaceType: SpaceType.OCEAN, bonus: [SpaceBonus.STEEL, SpaceBonus.DRAW_CARD], edge: false},
+      {id: '11', x: 0, y: 0, spaceType: SpaceType.OCEAN, bonus: [], tile: {tileType: TileType.OCEAN}, edge: false},
+      {id: '12', x: 1, y: 1, spaceType: SpaceType.OCEAN, bonus: [], tile: {tileType: TileType.WETLANDS}, edge: false},
+      {id: '13', x: 0, y: 2, spaceType: SpaceType.OCEAN, bonus: [], player: other, edge: false},
+      {id: '14', x: 1, y: 0, spaceType: SpaceType.OCEAN, bonus: [], player, edge: false},
+      {id: '15', x: 1, y: 2, spaceType: SpaceType.OCEAN, bonus: [], tile: {tileType: TileType.GREENERY}, edge: false},
     ]);
     const before = JSON.stringify(game.serialize());
     const model = Server.getPlayerModel(player);
@@ -168,10 +168,10 @@ describe('OceanPlacementContext', () => {
     const [game, player] = testGame(2, {aresExtension: true});
     game.phase = Phase.ACTION;
     game.board = new MarsBoard([
-      {id: '10', x: 0, y: 1, spaceType: SpaceType.OCEAN, bonus: []},
-      {id: '11', x: 1, y: 1, spaceType: SpaceType.LAND, bonus: [],
+      {id: '10', x: 0, y: 1, spaceType: SpaceType.OCEAN, bonus: [], edge: false},
+      {id: '11', x: 1, y: 1, spaceType: SpaceType.LAND, bonus: [], edge: false,
         tile: {tileType: TileType.DUST_STORM_SEVERE}, adjacency: {cost: 4, bonus: []}},
-      {id: '12', x: 0, y: 2, spaceType: SpaceType.LAND, bonus: []},
+      {id: '12', x: 0, y: 2, spaceType: SpaceType.LAND, bonus: [], edge: false},
     ]);
     const row = Server.getPlayerModel(player).thisPlayer.oceanPlacementContext!.spaces[0];
     expect(row.additionalCosts).deep.eq({megacredits: 4, production: {mild: 0, severe: 0}, tr: {}});

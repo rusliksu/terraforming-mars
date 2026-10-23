@@ -77,6 +77,17 @@ describe('Player', () => {
     expect(() => player.process({type: 'option'})).to.throw('Not waiting for anything');
   });
 
+  it('records when input was requested', () => {
+    const [/* game */, player] = testGame(1);
+    const clock = new FakeClock();
+    player.clock = clock;
+    player.clearWaitingFor();
+
+    clock.millis = 5000;
+    player.setWaitingFor(new SelectOption('Input'));
+    expect(player.inputRequestedAt).eq(5000);
+  });
+
   it('does not stop the timer when processing optional input', () => {
     const [player, clock] = playerWithRunningTimer();
     const elapsed = player.timer.getElapsed();
@@ -310,7 +321,7 @@ describe('Player', () => {
       cardsInHand: [CardName.EARTH_ELEVATOR, CardName.DUST_SEALS],
       preludeCardsInHand: [CardName.METAL_RICH_ASTEROID, CardName.PSYCHROPHILES],
       ceoCardsInHand: [],
-      playedCards: [], // TODO(kberg): these are SerializedCard.
+      playedCards: [],
       draftedCards: [CardName.FISH, CardName.EXTREME_COLD_FUNGUS],
       needsToDraft: false,
       cardCost: 3,
@@ -491,7 +502,8 @@ describe('Player', () => {
     expect(card.resourceCount).eq(5);
     expect(log).has.length(1);
     expect(log[0].data[1].value).eq('1');
-    expect(log[0].data[3].value).eq('Pets');
+    expect(log[0].data[2].value).eq('Animal');
+    expect(log[0].data[4].value).eq('Pets');
 
     log.length = 0;
     player.removeResourceFrom(card, 1);

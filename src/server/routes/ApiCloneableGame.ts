@@ -11,6 +11,10 @@ import {Response} from '../Response';
 import {SerializedGame} from '../SerializedGame';
 import {DEFAULT_PRELUDE_HANDICAP, NewGameConfig} from '../../common/game/NewGameConfig';
 import {RouteError} from './RouteError';
+import {GameOptions} from '../game/GameOptions';
+import {BoardName} from '../../common/boards/BoardName';
+import {RandomBoardOption} from '../../common/boards/RandomBoardOption';
+import {boardOptions} from '../../common/boards/randomBoardOptions';
 
 export class ApiCloneableGame extends Handler {
   public static readonly INSTANCE = new ApiCloneableGame();
@@ -82,6 +86,21 @@ export class ApiCloneableGame extends Handler {
     }
   }
 
+  private static boardsFromOptions(options: GameOptions): Array<BoardName> {
+    const selection: unknown = options.boardSelection;
+    if (selection === undefined || selection === null) {
+      return [options.boardName];
+    }
+    if (Array.isArray(selection)) {
+      return selection as Array<BoardName>;
+    }
+    // Legacy games recorded the random-board option itself rather than the list of boards.
+    if (selection === RandomBoardOption.OFFICIAL || selection === RandomBoardOption.ALL) {
+      return boardOptions(selection);
+    }
+    return [selection as BoardName];
+  }
+
   private static toRematchSetup(serialized: SerializedGame): NewGameConfig & {seededGame: false} {
     const options = serialized.gameOptions;
     return {
@@ -96,7 +115,7 @@ export class ApiCloneableGame extends Handler {
         isBot: false,
       })),
       expansions: {...DEFAULT_EXPANSIONS, ...options.expansions},
-      board: options.boardSelection ?? options.boardName,
+      boards: ApiCloneableGame.boardsFromOptions(options),
       customBoardCode: options.customBoard === undefined ? undefined : encodeCustomBoard(options.customBoard),
       customMoonBoardCode: options.customMoonBoard === undefined ? undefined : encodeSimpleBoard(options.customMoonBoard),
       customVenusSurfaceBoardCode: options.customVenusSurfaceBoard === undefined ? undefined : encodeSimpleBoard(options.customVenusSurfaceBoard),

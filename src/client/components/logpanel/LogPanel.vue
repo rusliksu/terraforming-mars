@@ -25,7 +25,7 @@
       <div id="logpanel-scrollable" class="panel-body" @scroll="handleScroll">
         <p v-if="searchQuery.trim() && filteredMessages.length === 0" role="status" v-i18n>No matching logs in this view.</p>
         <ul v-if="messages">
-          <LogMessageComponent v-for="(message, index) in filteredMessages" :key="message.timestamp + '-' + index" :message="message" :viewModel="viewModel" @click="messageClicked(message)" @spaceClicked="$emit('spaceClicked', $event)"/>
+          <LogMessageComponent v-for="(message, index) in filteredMessages" :key="message.timestamp + '-' + index" :message="message" :viewModel="viewModel" @click="messageClicked(message)" @aiRate="rateAi(message, $event)" @spaceClicked="$emit('spaceClicked', $event)"/>
         </ul>
       </div>
       <button

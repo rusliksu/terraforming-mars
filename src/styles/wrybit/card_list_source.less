@@ -1,0 +1,1012 @@
+// Card list: fixed header (title, search with name/full text, language, settings), on the left a sticky filter column
+// of frosted-glass tiles, on the right the results in sections with sticky headers. Narrow: filters as a bottom sheet.
+// Colors, surfaces, tiles and segments come from "Create game" (create_game_form.less) and the game
+// (frosted_surface.less, selection_highlight.less, cards.less) – no base values of its own here.
+
+// Proximity: within a tile 6px, between tiles 16px, between the columns 24px (as in create_game_form.less)
+@card-list-header-height: 64px;
+// Narrow, two rows: title and buttons on top, the search across the full width below
+@card-list-header-height-narrow: 104px;
+// Below this width cards are scaled down so two fit side by side
+@card-list-phone: 600px;
+@card-list-phone-card-zoom: 0.68;
+@card-list-filters-width: 320px;
+@card-list-icon-size: 26px;
+// Below this width filters as a bottom sheet
+@card-list-narrow: 900px;
+
+// The page has no sidebar: the space reserved for it on the left (common.less) is dropped
+.main-container:has(#card-list) {
+  margin-left: 0;
+}
+
+.card-list {
+  --card-list-header: @card-list-header-height;
+
+  color: #eee;
+  font-size: 14px;
+  line-height: 1.35;
+
+  h1,
+  h2,
+  h3 {
+    margin: 0;
+    padding: 0;
+    font-weight: 500;
+  }
+}
+
+// Colors of the non-card entries (cards use .background-color-* from cards.less)
+.card-list-color-milestone,
+.card-list-color-award {
+  background: @highlight-gold;
+}
+
+.card-list-color-agenda {
+  background: @button-quiet-hover;
+}
+
+// ---------- Header ----------
+.card-list-header {
+  .frosted-surface();
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: var(--card-list-header);
+  padding: 0 @create-game-page-padding;
+  border-bottom: 1px solid @create-game-line;
+  background: @create-game-surface;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+
+  h1 {
+    font-size: 22px;
+    white-space: nowrap;
+  }
+}
+
+// Page title (PageTitle.vue): logo and text on one center axis, line height 1 so the font adds no space
+.page-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  line-height: 1;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+.page-title-home {
+  display: block;
+  flex: none;
+}
+
+.page-title-icon {
+  display: block;
+  width: 28px;
+  height: 28px;
+}
+
+// Language/settings in the header bar as far apart as in .card-list-header-actions
+.card-list-header .page-toolbar {
+  gap: 8px;
+}
+
+// Header without search ("Create game", "Game created"): height and content like the card list, but as a card
+// in the page grid – with a margin to the outside, not sticky. Same spacing to the content below
+// as between the cards (content has @page-content-edge on top, hence a negative remainder).
+.card-list-header--plain {
+  --card-list-header: @card-list-header-height;
+  position: relative;
+  margin: @page-content-edge @page-content-edge (@create-game-gap-card - @page-content-edge);
+  border: 1px solid @create-game-line;
+  border-radius: @create-game-radius;
+  box-shadow: none;
+
+  @media only screen and (max-width: @page-content-narrow) {
+    margin: @page-content-edge-narrow @page-content-edge-narrow (@create-game-gap-card - @page-content-edge-narrow);
+  }
+}
+
+.card-list-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+
+  .toolbar-glass-icon-buttons();
+}
+
+// ---------- Search: field with name/full-text toggle inside ----------
+.card-list-search {
+  position: relative;
+  // Fills the space between title and buttons
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.card-list-search-input {
+  box-sizing: border-box;
+  width: 100%;
+  height: @toolbar-button-size;
+  margin: 0;
+  // Space on the left for the magnifier icon, on the right for the clear button and toggle
+  padding: 0 236px 0 38px;
+  border: 1px solid @create-game-line;
+  border-radius: @create-game-radius-small;
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  font-size: 15px;
+
+  &::placeholder {
+    color: @create-game-dim;
+  }
+
+  &:focus {
+    border-color: @bg_action;
+    outline: none;
+    box-shadow: 0 0 0 3px fade(@bg_action, 35%);
+  }
+
+  // Own clear button instead of the browser's cross
+  &::-webkit-search-cancel-button {
+    display: none;
+  }
+}
+
+// Magnifier as an outlined circle with a handle, without extra graphics
+.card-list-search-icon {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  width: 11px;
+  height: 11px;
+  margin-top: -8px;
+  border: 2px solid @create-game-dim;
+  border-radius: 50%;
+  pointer-events: none;
+
+  &::after {
+    content: "";
+    position: absolute;
+    right: -5px;
+    bottom: -5px;
+    width: 6px;
+    height: 2px;
+    background: @create-game-dim;
+    transform: rotate(45deg);
+  }
+}
+
+.card-list-search-clear {
+  position: absolute;
+  right: 198px;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: @create-game-dim;
+  cursor: pointer;
+
+  &:hover {
+    color: #fff;
+    background: @create-game-chip-hover;
+  }
+}
+
+.card-list-search-scope.create-game-segmented {
+  position: absolute;
+  right: 4px;
+  width: 190px;
+  padding: 2px;
+
+  button {
+    padding: 4px 6px;
+    font-size: 13px;
+  }
+}
+
+// ---------- Base grid: filter column on the left, results on the right ----------
+.card-list-layout {
+  display: grid;
+  grid-template-columns: @card-list-filters-width minmax(0, 1fr);
+  gap: @create-game-gap-column;
+  align-items: start;
+  padding: @create-game-page-padding;
+}
+
+.card-list-filters {
+  position: sticky;
+  top: calc(var(--card-list-header) + @create-game-gap-card);
+  display: flex;
+  flex-direction: column;
+  gap: @create-game-gap-card;
+  max-height: calc(100vh - var(--card-list-header) - 2 * @create-game-gap-card);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  // Do not clip the tiles' shadows and focus rings
+  padding: 2px 4px 2px 2px;
+}
+
+// Frosted-glass tile like the cards in "Create game"
+.card-list-group {
+  .create-game-card();
+  margin-bottom: 0;
+}
+
+.card-list-group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+
+  h2 {
+    font-size: 16px;
+  }
+}
+
+.card-list-link {
+  padding: 2px 4px;
+  border: 0;
+  background: none;
+  color: @create-game-dim;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover {
+    color: #fff;
+  }
+}
+
+// ---------- Tiles of the filter groups ----------
+.card-list-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: @create-game-gap-inner;
+}
+
+// Same tile as in "Create game", selection in 20 % purple with a checkmark flag
+.card-list-chip {
+  .create-game-chip();
+  color: #eee;
+  font: inherit;
+  text-align: left;
+
+  // No matches with the other filters: stays selectable but recedes
+  &--empty {
+    opacity: 0.4;
+  }
+}
+
+.card-list-chip-label {
+  white-space: nowrap;
+}
+
+// Space for the checkmark flag
+.card-list-count {
+  .create-game-count();
+  margin-left: auto;
+  margin-right: 6px;
+}
+
+// Icons only (tags, resources): equal-width tiles in a grid, count below
+.card-list-chips--icons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+
+  .card-list-chip {
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 2px 4px;
+  }
+
+  .card-list-count {
+    margin: 0;
+    padding: 0 5px;
+  }
+}
+
+.card-list-icon {
+  display: inline-block;
+  flex-shrink: 0;
+  width: @card-list-icon-size;
+  height: @card-list-icon-size;
+  margin: 0;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+// Base game has no icon: letter instead of image
+.card-list-icon.expansion-icon-base::before {
+  content: "B";
+  display: grid;
+  place-items: center;
+  height: 100%;
+  border-radius: 50%;
+  background: @create-game-chip-hover;
+  font-weight: bold;
+}
+
+.card-list-chips--chips .card-list-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.card-list-dot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+// ---------- Price range: two stacked sliders on one track ----------
+@card-list-range-thumb: 20px;
+
+.card-list-cost-range {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-list-cost-range-track {
+  position: relative;
+  flex: 1;
+  height: @card-list-range-thumb;
+
+  // Gray base track
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 4px;
+    margin-top: -2px;
+    border-radius: 2px;
+    background: @create-game-chip-hover;
+  }
+
+  input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    background: none;
+    appearance: none;
+    // Only the thumbs catch clicks so both sliders remain usable
+    pointer-events: none;
+
+    &::-webkit-slider-thumb {
+      appearance: none;
+      width: @card-list-range-thumb;
+      height: @card-list-range-thumb;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      background: @bg_action;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    &::-moz-range-thumb {
+      width: @card-list-range-thumb;
+      height: @card-list-range-thumb;
+      box-sizing: border-box;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      background: @bg_action;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    &:focus-visible::-webkit-slider-thumb {
+      outline: 2px solid @highlight-gold;
+      outline-offset: 2px;
+    }
+  }
+}
+
+// Selected range in the active color
+.card-list-cost-range-fill {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 2px;
+  background: @bg_action;
+}
+
+.card-list-cost-range-values {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: @create-game-dim;
+}
+
+// Price as a yellow M€ coin as on the cards
+.card-list-cost-range-coin {
+  display: grid;
+  place-items: center;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  background: url(./assets/resources/megacredit.png) center / contain no-repeat;
+  color: #000;
+  font-weight: bold;
+}
+
+// ---------- Summary at the top of the filter column ----------
+.card-list-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card-list-summary-total {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+
+  strong {
+    font-size: 30px;
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  span {
+    color: @create-game-dim;
+  }
+
+  .card-list-link {
+    margin-left: auto;
+  }
+}
+
+.card-list-active {
+  display: flex;
+  flex-wrap: wrap;
+  gap: @create-game-gap-inner;
+}
+
+.card-list-active-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 4px 0 8px;
+  border: 1px solid lighten(@selection-color, 12%);
+  border-radius: @create-game-radius-small;
+  background: fade(@selection-color, @selection-tint-opacity);
+  font-size: 13px;
+
+  .card-list-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  button {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: @create-game-chip-hover;
+    color: #fff;
+    font-size: 11px;
+    line-height: 1;
+    cursor: pointer;
+  }
+}
+
+// ---------- More filters ----------
+.card-list-more {
+  summary {
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  &[open] summary {
+    margin-bottom: 12px;
+  }
+
+  // Resource group sits here without its own tile
+  .card-list-group {
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  .card-list-group-head h2,
+  h3 {
+    font-size: 13px;
+    color: @create-game-dim;
+  }
+}
+
+.card-list-more-body {
+  display: flex;
+  flex-direction: column;
+  gap: @create-game-gap-card;
+}
+
+.card-list-more-row h3 {
+  margin-bottom: @create-game-gap-inner;
+}
+
+// ---------- Results ----------
+.card-list-results {
+  min-width: 0;
+  // Same inner padding as the filter column (2px): the first section's top edge lines up with the first box there
+  padding-top: 2px;
+  // Nothing may widen the page sideways (otherwise the bottom sheet gets wider than the screen)
+  overflow-x: clip;
+}
+
+// The first section starts level with the filter column. .card-list-section is also the class of the sections below
+// a tab's selection (hand_cards_panel.less, with a large top margin) – reset that here.
+.card-list-results > .card-list-section {
+  margin-top: 0;
+}
+
+.card-list-results > .card-list-section + .card-list-section {
+  margin-top: 32px;
+}
+
+// Section header: frosted-glass bar, stays put below the page header
+.card-list-section-head {
+  .frosted-surface();
+  position: sticky;
+  // Level with the filter column next to it (its top edge incl. its 2px inner padding), not flush below the header
+  top: calc(var(--card-list-header) + @create-game-gap-card + 2px);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  margin-bottom: @create-game-gap-card;
+  padding-right: 6px;
+  overflow: hidden;
+  border: 1px solid @create-game-line;
+  border-radius: @create-game-radius;
+  background: @create-game-surface-strong;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+
+  h2 {
+    margin-right: auto;
+    font-size: 20px;
+  }
+}
+
+// Color stripe on the left: one equally tall piece per contained card type
+.card-list-section-stripe {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  width: 8px;
+
+  span {
+    flex: 1;
+  }
+}
+
+.card-list-section-legend {
+  display: flex;
+  gap: 14px;
+  color: @create-game-dim;
+  font-size: 13px;
+
+  > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+}
+
+.card-list-section-count {
+  display: grid;
+  place-items: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  border-radius: @create-game-radius-small;
+  background: @create-game-chip-hover;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.card-list-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+
+  // Spacing comes from the gap instead of the card's margin (30px on the right), otherwise two won't fit side by side when narrow.
+  // Space remains on top for the cost coin and tags that stick out above the card.
+  .card-container {
+    margin: 15px 0 0;
+  }
+}
+
+// Card not built yet (CardListCardGrid.vue, LazyMount.vue): an empty card shape in its place, size set inline
+.card-list-placeholder {
+  margin-top: 15px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+// Card built but its pictures still loading (cardReveal.ts): hidden, its place kept
+.wrybit-card-reveal-pending {
+  visibility: hidden;
+}
+
+// Then the cards on screen fade in one after the other; delay and duration are set inline
+.wrybit-card-reveal-in {
+  animation: wrybit-card-reveal var(--reveal-duration) ease-out var(--reveal-delay) both;
+}
+
+@keyframes wrybit-card-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+}
+
+.card-list-empty {
+  padding: 48px 0;
+  text-align: center;
+  color: @create-game-dim;
+}
+
+// Search matches (searchHighlight.ts)
+::highlight(card-list-search) {
+  background-color: fade(@highlight-gold, 75%);
+  color: #000;
+}
+
+// ---------- Back to top: bottom right in the thumb zone, only after scrolling far ----------
+// ---------- Section rail (CardListSectionRail.vue, sectionRail.ts) ----------
+// Desktop: one tick per section, vertically centred at the right edge. Length and label come from the fisheye
+// (--rail-length, --rail-influence 0…1): around the pointer, or slightly around the section being read.
+.card-list-rail {
+  position: fixed;
+  top: 50%;
+  right: 2px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  // Room to the left: the fisheye already reacts when the pointer comes close
+  padding: 8px 0 8px 48px;
+  transform: translateY(-50%);
+}
+
+.card-list-rail-tick {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 6px;
+  border: 0;
+  background: none;
+  color: #fff;
+  cursor: pointer;
+}
+
+.card-list-rail-line {
+  width: var(--rail-length);
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
+  transition: width 0.12s ease-out, background-color 0.2s;
+}
+
+// The label grows in with the fisheye; on its own dark plate, it lies over the cards
+.card-list-rail-label {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: fade(#16171d, 88%);
+  font-size: calc(12px + 3px * var(--rail-influence));
+  white-space: nowrap;
+  opacity: clamp(0, calc(var(--rail-influence) * 1.8 - 0.2), 1);
+  pointer-events: none;
+  transition: opacity 0.12s;
+}
+
+.card-list-rail-tick--active {
+  .card-list-rail-line {
+    background: @highlight-gold;
+  }
+
+  .card-list-rail-label {
+    color: @highlight-gold;
+    font-weight: bold;
+  }
+}
+
+.card-list-rail-tick:focus-visible {
+  outline: none;
+
+  .card-list-rail-line {
+    outline: 2px solid @highlight-gold;
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-list-rail-line,
+  .card-list-rail-label {
+    transition: none;
+  }
+}
+
+.card-list-scroll-top {
+  position: fixed;
+  right: 20px;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  z-index: 30;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: @create-game-radius;
+  background: @bg_action;
+  color: #fff;
+  font-size: 24px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+
+  &--visible {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+// ---------- Narrow only: filter button in the header, filters as a bottom sheet ----------
+.card-list-filter-toggle,
+.card-list-sheet-head,
+.card-list-sheet-foot,
+.card-list-scrim {
+  display: none;
+}
+
+@media only screen and (max-width: @card-list-narrow) {
+  .card-list {
+    --card-list-header: @card-list-header-height-narrow;
+  }
+
+  // Phone and tablet: no room at the edge, the cards fill the width
+  .card-list-rail {
+    display: none;
+  }
+
+  .card-list-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      "menu title actions"
+      "search search search";
+    align-content: center;
+    gap: 8px;
+    padding: 0 12px;
+
+    h1 {
+      grid-area: title;
+      font-size: 18px;
+    }
+  }
+
+  // Narrow: only logo + page name, the app name would crowd the actions
+  .page-title-app {
+    display: none;
+  }
+
+  .card-list-header-actions {
+    grid-area: actions;
+  }
+
+  .card-list-header .page-toolbar {
+    grid-area: menu;
+  }
+
+  // Without search it stays one row, only the font gets smaller as above
+  .card-list-header.card-list-header--plain {
+    display: flex;
+    gap: 16px;
+  }
+
+  .card-list-search {
+    grid-area: search;
+    max-width: none;
+  }
+
+  .card-list-search-input {
+    padding-right: 186px;
+  }
+
+  .card-list-search-clear {
+    right: 150px;
+  }
+
+  .card-list-search-scope.create-game-segmented {
+    width: 144px;
+
+    button {
+      padding: 4px 2px;
+      font-size: 12px;
+    }
+  }
+
+  // Filter button with match count, badge = number of active filters
+  .card-list-filter-toggle {
+    .toolbar-glass-button();
+    position: relative;
+    display: flex;
+    gap: 6px;
+    width: auto;
+    padding: 0 12px 0 10px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: bold;
+  }
+
+  .card-list-filter-toggle-icon {
+    width: 16px;
+    height: 12px;
+    background:
+      linear-gradient(#fff, #fff) top / 100% 2px no-repeat,
+      linear-gradient(#fff, #fff) center / 66% 2px no-repeat,
+      linear-gradient(#fff, #fff) bottom / 33% 2px no-repeat;
+  }
+
+  .card-list-filter-toggle-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    box-sizing: border-box;
+    border-radius: 9px;
+    background: @bg_action;
+    font-size: 11px;
+    line-height: 18px;
+    text-align: center;
+  }
+
+  .card-list-layout {
+    display: block;
+    padding: 12px;
+  }
+
+  .card-list-filters {
+    .frosted-surface();
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 40;
+    max-height: 85vh;
+    padding: 0 12px calc(12px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid @create-game-line;
+    border-radius: 16px 16px 0 0;
+    background: @create-game-surface-strong;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.5);
+    transform: translateY(105%);
+    transition: transform 0.25s ease;
+
+    &--open {
+      transform: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
+  }
+
+  .card-list-sheet-head {
+    display: block;
+    position: relative;
+    padding: 18px 2px 0;
+
+    // Handle as a hint that the sheet comes from below
+    &::before {
+      content: "";
+      position: absolute;
+      top: 7px;
+      left: 50%;
+      width: 40px;
+      height: 4px;
+      margin-left: -20px;
+      border-radius: 2px;
+      background: @create-game-line;
+    }
+
+    h2 {
+      font-size: 20px;
+    }
+  }
+
+  .card-list-sheet-foot {
+    display: flex;
+    position: sticky;
+    bottom: 0;
+
+    .btn {
+      flex: 1;
+      height: 44px;
+      margin: 0;
+    }
+  }
+
+  .card-list-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    background: rgba(0, 0, 0, 0.5);
+
+    &--open {
+      display: block;
+    }
+  }
+
+  .card-list-section-legend {
+    display: none;
+  }
+
+  .card-list-section-head h2 {
+    font-size: 18px;
+  }
+
+  // No filter column next to it (bottom sheet): a gap below the header like the one to the cards below
+  .card-list-section-head {
+    top: calc(var(--card-list-header) + 10px);
+    margin-bottom: 10px;
+  }
+
+  .card-list-scroll-top {
+    right: 14px;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+// Phone: cards scaled down, two side by side
+@media only screen and (max-width: @card-list-phone) {
+  .card-list-cards {
+    justify-content: center;
+
+    .cardbox {
+      zoom: @card-list-phone-card-zoom;
+    }
+  }
+
+  // Colonies, milestones, awards, agendas have fixed widths (colony a good 440px) and would widen the page
+  .card-list-section-body .player_home_colony {
+    zoom: @card-list-phone-card-zoom;
+  }
+}

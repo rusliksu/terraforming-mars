@@ -502,147 +502,60 @@ each(@players, {
   filter: drop-shadow(0 0 1px black);
 }
 
-// Current GameEnd markup has one content stream; keep the Wrybit page readable with a vertical
-// result stack and the native board/log sections. This override is presentation-only.
-.wrybit-game-end {
-  width: 100%;
-  max-width: 1400px;
-  box-sizing: border-box;
-  overflow-x: hidden;
-  margin: 0 auto;
-  padding: 20px 24px 48px;
 
-  .game-end-hero {
-    margin-bottom: 12px;
+// Narrow result page: source tables/navigation/logs are desktop-width; keep their
+// overflow inside the page instead of widening the document. This lives with the
+// Wrybit page styles because the proof app does not load the legacy common.less.
+@media (max-width: 900px) {
+  #game-end .game-end-hero,
+  #game-end .game-end-hero-lead {
+    min-width: 0;
+    max-width: 100%;
   }
 
-  .game-end-hero-lead {
-    display: flex;
-    align-items: center;
-    gap: 16px;
+  #game-end .game-end-hero-lead {
     flex-wrap: wrap;
   }
 
-  .game-end-title {
-    margin: 0;
-    font-size: 28px;
-    font-weight: 600;
-
-    a {
-      text-decoration: none;
-    }
-  }
-
-  .game_end {
-    display: flex;
-    width: 100%;
-    max-width: 100%;
+  #game-end .game-end-winer-announcement {
     min-width: 0;
-    overflow-x: auto;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .game_end_navigation {
-    display: flex;
-    justify-content: flex-end;
-    width: 100%;
-    margin: 0;
-
-    > div {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: 8px;
-    }
-  }
-
-  .game-end-navigation-link {
     max-width: 100%;
-    white-space: normal;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 40px;
-    padding: 8px 12px;
-    margin: 0;
-    border-radius: 8px;
-    text-decoration: none;
+    font-size: 24px;
+    overflow-wrap: anywhere;
   }
 
-  .game-end-winer-announcement {
-    margin: 4px 0 0;
-    font-size: 32px;
-    line-height: 1.25;
-  }
-
-  .game_end_victory_points {
-    width: 100%;
+  #game-end .game_end {
     max-width: 100%;
-    min-width: 0;
+    overflow-x: hidden;
   }
 
-  .game_end_victory_points,
-  .game_end_block--board,
-  .game_end_block--log {
-    min-width: 0;
-    padding: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 10px;
-    background: rgba(22, 24, 32, 0.82);
+  #game-end .game_end_table {
+    display: block;
+    max-width: 100%;
     overflow-x: auto;
   }
 
-  .game_end_table {
-    width: 100%;
-  }
-
-  .victory-point-chart-container {
-    width: 100%;
-    min-width: 0;
-    height: 300px;
-    margin: 0;
-  }
-
-  .game-end-flexrow {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-
-  .game-end-flexrow > .game-end-column {
-    flex: 1 1 320px;
-    min-width: 0;
-  }
-
-  .game_end_block--board {
+  #game-end .game_end_navigation {
+    max-width: 100%;
     overflow-x: auto;
   }
 
-  .game_end_block--log {
-    min-height: 220px;
+  #game-end .game-end-columns,
+  #game-end .game-end-columns__side,
+  #game-end .game-end-box {
+    min-width: 0;
+    max-width: 100%;
   }
 
-  @media (max-width: 767px) {
-    padding: 12px;
-
-    .game-end-title {
-      font-size: 22px;
-    }
-
-    .game-end-winer-announcement {
-      font-size: 26px;
-    }
-
-    .game_end_navigation,
-    .game_end_navigation > div {
-      justify-content: flex-start;
-    }
+  #game-end .log-container,
+  #game-end .log-generations {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: hidden;
   }
-}
-#game-end.wrybit-game-end {
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  overflow-x: hidden !important;
+
+  #game-end .log-gen-numbers {
+    max-width: 100%;
+    overflow-x: auto;
+  }
 }

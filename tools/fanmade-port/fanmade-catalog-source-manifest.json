@@ -1151,7 +1151,7 @@
     "src/server/cards/betterMars/ProtectedValleyBetterMars.ts": "354ff736b4c109e038d562e88fccb1dfad2ba6c3a219214ff40c3886eff052b6",
     "src/server/cards/betterMars/SelfSufficientSettlementBetterMars.ts": "54c1a14d0c14dae60252c7544ac7767f1f580dba15c8a7c2ad77d9ed51dfe161",
     "src/server/cards/betterMars/TropicalResortBetterMars.ts": "d096e1c96742c0f23cc4dc698b49f08ed60567ac999f4405e28dc4cb2895431b",
-    "src/server/cards/cardSerialization.ts": "a8a85c41957864e7e87bb0167988ab238a8d59629676fb2187a9becf729856b8",
+    "src/server/cards/cardSerialization.ts": "f3e6eae9da1b8ac6053a69c5e23132bc06d5f98287eae594c47a865ad2d4c6a7",
     "src/server/cards/ceos/Apollo.ts": "236ed7b7259e9564c1299d73ef0156742786cbb5b6b1166905a95989c985679e",
     "src/server/cards/ceos/Asimov.ts": "3b56317f94968d042213dba41946ae93d6ddc2ae5060b865e557fa5086a9ea5e",
     "src/server/cards/ceos/Bjorn.ts": "9548e23d0ff64203cda5d8c75c3df577955998bad86a5e55798d75af2f264274",

@@ -701,6 +701,7 @@ export class Game implements IGame, Logger {
       underworldData: this.underworldData,
       conglomerates: this.conglomerates,
       undoCount: this.undoCount,
+      aiDecisionCount: this.aiDecisionCount,
       venusPhase2Data: VenusPhase2Data.serialize(this.venusPhase2Data),
       venusScaleLevel: this.venusScaleLevel,
       verminInEffect: this.verminInEffect,
@@ -2342,6 +2343,7 @@ export class Game implements IGame, Logger {
     game.phase = d.phase;
     game.oxygenLevel = d.oxygenLevel;
     game.undoCount = d.undoCount ?? 0;
+    game.aiDecisionCount = d.aiDecisionCount ?? 0;
     game.temperature = d.temperature;
     game.venusScaleLevel = d.venusScaleLevel;
     game.activePlayer = game.getPlayerById(d.activePlayer);

@@ -32,7 +32,8 @@
         :spectator="spectator"
         :key="'spectator-' + playerkey"
       />
-      <GameEnd
+      <component
+        :is="wrybitMode && wrybitReady && wrybitViews.gameEnd ? wrybitViews.gameEnd : 'GameEnd'"
         v-else-if="screen === 'the-end' && participant !== undefined"
         :participant="participant"
       />

@@ -1,0 +1,12 @@
+// Global page shell adjustments for the optional game-end page. These selectors live outside
+// .wrybit-ui on purpose: html/body/#app are above the optional Wrybit root.
+html:has(#game-end.wrybit-game-end),
+body:has(#game-end.wrybit-game-end) {
+  height: auto !important;
+  min-height: 100%;
+  overflow: hidden auto !important;
+}
+
+#app:has(#game-end.wrybit-game-end) {
+  height: auto !important;
+}

@@ -39,6 +39,7 @@ import GamesOverview from '@/client/wrybit/pages/GamesOverview.vue';
 import AdminHome from '@/client/wrybit/pages/admin/AdminHome.vue';
 import LoginHome from '@/client/wrybit/pages/auth/LoginHome.vue';
 import Help from '@/client/wrybit/pages/help/Help.vue';
+import GameEnd from '@/client/wrybit/pages/GameEnd.vue';
 import PlayerCube from '@/client/wrybit/visuals/common/PlayerCube.vue';
 import SeatIcon from '@/client/wrybit/visuals/common/SeatIcon.vue';
 import NumberStepper from '@/client/wrybit/create/NumberStepper.vue';
@@ -52,7 +53,7 @@ useMobileViewport();
 
 const props = defineProps<{screen: string}>();
 const emit = defineEmits<{classic: []; views: [views: WrybitViews]}>();
-onMounted(() => emit('views', {cards: markRaw(Catalog), startScreen: markRaw(StartScreen), playerHome: markRaw(PlayerHome), spectatorHome: markRaw(SpectatorHome), loadGame: markRaw(LoadGameForm), gamesOverview: markRaw(GamesOverview), adminHome: markRaw(AdminHome), loginHome: markRaw(LoginHome), help: markRaw(Help), create: markRaw(CreateGameForm),
+onMounted(() => emit('views', {cards: markRaw(Catalog), startScreen: markRaw(StartScreen), playerHome: markRaw(PlayerHome), spectatorHome: markRaw(SpectatorHome), loadGame: markRaw(LoadGameForm), gamesOverview: markRaw(GamesOverview), adminHome: markRaw(AdminHome), loginHome: markRaw(LoginHome), help: markRaw(Help), gameEnd: markRaw(GameEnd), create: markRaw(CreateGameForm),
   createControls: {cube: markRaw(PlayerCube), seat: markRaw(SeatIcon), stepper: markRaw(NumberStepper), toggle: markRaw(SwitchInput), moduleFilter: markRaw(ModuleItemFilter), cardsFilter: markRaw(CardsFilter)}, inputs: {
     paymentForm: markRaw(PaymentForm), projectCard: markRaw(SelectProjectCardToPlay),
     or: markRaw(OrOptions), and: markRaw(AndOptions),

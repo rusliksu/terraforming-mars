@@ -21,35 +21,35 @@
 .topmost-start-screen:has(.start-screen--intro) {
   // Galaxy opens as a circle from the center
   &::before {
-    animation: start-intro-iris @intro-iris-duration ease-in-out @intro-iris-delay backwards;
+    animation: wrybit-start-intro-iris @intro-iris-duration ease-in-out @intro-iris-delay backwards;
   }
 
   .notice {
-    animation: start-intro-from-below @intro-chrome-duration @intro-ease @intro-chrome-delay backwards;
+    animation: wrybit-start-intro-from-below @intro-chrome-duration @intro-ease @intro-chrome-delay backwards;
   }
 }
 
 .start-screen--intro {
   .start-screen-toolbar {
-    animation: start-intro-from-top-left @intro-chrome-duration @intro-ease @intro-chrome-delay backwards;
+    animation: wrybit-start-intro-from-top-left @intro-chrome-duration @intro-ease @intro-chrome-delay backwards;
   }
 
   .start-screen-title {
-    animation: start-intro-logo @intro-logo-duration ease-in-out @intro-logo-delay backwards;
+    animation: wrybit-start-intro-logo @intro-logo-duration ease-in-out @intro-logo-delay backwards;
   }
 
   // Planet behind the title comes along when the logo reaches its place
   .start-screen-header::before {
-    animation: start-intro-fade 0.3s ease-out (@intro-buttons-delay - 0.1s) backwards;
+    animation: wrybit-start-intro-fade 0.3s ease-out (@intro-buttons-delay - 0.1s) backwards;
   }
 
   .start-screen-link {
-    animation: start-intro-blur-in @intro-buttons-duration ease-out backwards;
+    animation: wrybit-start-intro-blur-in @intro-buttons-duration ease-out backwards;
     animation-delay: calc(@intro-buttons-delay + var(--sprite-row) * @intro-buttons-stagger);
   }
 }
 
-@keyframes start-intro-iris {
+@keyframes wrybit-start-intro-iris {
   from {
     clip-path: circle(0% at 50% 50%);
   }
@@ -60,7 +60,7 @@
 }
 
 // --intro-logo-x/-y: offset from the screen center, set by StartScreen.vue
-@keyframes start-intro-logo {
+@keyframes wrybit-start-intro-logo {
   0% {
     opacity: 0;
     filter: blur(8px);
@@ -81,27 +81,27 @@
   }
 }
 
-@keyframes start-intro-from-below {
+@keyframes wrybit-start-intro-from-below {
   from {
     opacity: 0;
     transform: translateY(100%);
   }
 }
 
-@keyframes start-intro-from-top-left {
+@keyframes wrybit-start-intro-from-top-left {
   from {
     opacity: 0;
     transform: translate(-60px, -60px);
   }
 }
 
-@keyframes start-intro-fade {
+@keyframes wrybit-start-intro-fade {
   from {
     opacity: 0;
   }
 }
 
-@keyframes start-intro-blur-in {
+@keyframes wrybit-start-intro-blur-in {
   from {
     opacity: 0;
     filter: blur(12px);

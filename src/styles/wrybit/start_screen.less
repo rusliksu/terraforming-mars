@@ -59,7 +59,7 @@
 // the glow pulses at the same rate and in the same color as an in-game selection (selection_highlight.less)
 @start-screen-link-outline: fade(@bg_action, 30%);
 @start-screen-link-outline-hover: #908fdbab;
-@start-screen-link-glow: @bg_action;
+@wrybit-start-screen-link-glow: @bg_action;
 // Glass of the menu buttons next to the planet: how strongly the galaxy behind is blurred and darkened
 @start-screen-glass-blur: 4px;
 @start-screen-glass-tint: 0.1;
@@ -135,22 +135,22 @@
   &.start-screen-link--active,
   &:focus-visible {
     outline-color: @start-screen-link-outline-hover;
-    box-shadow: 0 0 6px 2px fade(@start-screen-link-glow, 55%);
-    animation: start-screen-link-glow @wrybit-selection-pulse-period ease-in-out infinite;
+    box-shadow: 0 0 6px 2px fade(@wrybit-start-screen-link-glow, 55%);
+    animation: wrybit-start-screen-link-glow @wrybit-selection-pulse-period ease-in-out infinite;
     // above the neighboring buttons so the glow isn't covered by the next button
     z-index: 1;
   }
 }
 
 // Same curve as selection-pulse, only the glow (the outline is the border)
-@keyframes start-screen-link-glow {
+@keyframes wrybit-start-screen-link-glow {
   0%,
   100% {
-    box-shadow: 0 0 6px 2px fade(@start-screen-link-glow, 55%);
+    box-shadow: 0 0 6px 2px fade(@wrybit-start-screen-link-glow, 55%);
   }
 
   50% {
-    box-shadow: 0 0 14px 6px fade(@start-screen-link-glow, 85%);
+    box-shadow: 0 0 14px 6px fade(@wrybit-start-screen-link-glow, 85%);
   }
 }
 
@@ -426,10 +426,10 @@
   border-radius: 50%;
   background: #3ddc6a;
   box-shadow: 0 0 6px #3ddc6a;
-  animation: online-players-pulse 2s ease-in-out infinite;
+  animation: wrybit-online-players-pulse 2s ease-in-out infinite;
 }
 
-@keyframes online-players-pulse {
+@keyframes wrybit-online-players-pulse {
   0%,
   100% {
     opacity: 1;

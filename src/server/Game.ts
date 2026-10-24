@@ -1683,6 +1683,10 @@ export class Game implements IGame, Logger {
     this.oxygenLevel = newOxygenLevel;
     this.recordReplayGlobalEffect(player, GlobalParameter.OXYGEN, steps);
 
+    if (steps > 0 && this.phase !== Phase.SOLAR) {
+      LogHelper.logOxygenIncrease(player, steps);
+    }
+
     AresHandler.ifAres(this, (aresData) => {
       AresHandler.onOxygenChange(this, aresData);
     });
@@ -1750,6 +1754,11 @@ export class Game implements IGame, Logger {
     this.venusScaleLevel = newValue;
     this.recordReplayGlobalEffect(player, GlobalParameter.VENUS, steps);
 
+    // Every Venus raise shows the amount in the game log; callers no longer have to.
+    if (steps > 0 && this.phase !== Phase.SOLAR) {
+      LogHelper.logVenusIncrease(player, steps);
+    }
+
     return steps;
   }
 
@@ -1788,6 +1797,10 @@ export class Game implements IGame, Logger {
 
     this.temperature = newTemperature;
     this.recordReplayGlobalEffect(player, GlobalParameter.TEMPERATURE, steps);
+
+    if (steps > 0 && this.phase !== Phase.SOLAR) {
+      LogHelper.logTemperatureIncrease(player, steps);
+    }
 
     AresHandler.ifAres(this, (aresData) => {
       AresHandler.onTemperatureChange(this, aresData);

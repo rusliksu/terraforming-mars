@@ -1373,8 +1373,13 @@ export default defineComponent({
   },
   methods: {
     toggleAiPlayer(player: NewPlayerModel, index: number, event: Event): void {
+      const autoName = `AI ${index + 1}`;
       const enabled = (event.target as HTMLInputElement).checked;
       if (!enabled) {
+        // Drop the name this switch filled in; keep a name the user typed over it.
+        if (player.name === autoName) {
+          player.name = '';
+        }
         player.aiLevel = undefined;
         return;
       }
@@ -1382,7 +1387,7 @@ export default defineComponent({
       player.isBot = false;
       player.telegramID = '';
       if (player.name.trim() === '') {
-        player.name = `AI ${index + 1}`;
+        player.name = autoName;
       }
       // AI games are always training games.
       this.noEloGame = true;

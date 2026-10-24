@@ -26,13 +26,14 @@ describe('AI opening plan', () => {
     const plan = openingPlan(player, (space) => spaceValue(space, 'city', player));
     expect(plan).is.not.undefined;
     expect(plan!.greeneries.length).greaterThan(0);
+    expect(plan!.cities.length).greaterThan(0);
 
     const greenery = best(player, 'greenery');
     expect(plan!.greeneries).includes(greenery.id);
     game.addGreenery(player, greenery);
 
-    // The city goes into the cluster, next to the greenery.
-    const city = best(player, 'city');
+    // The plan's own city sits in the cluster, next to its greenery.
+    const city = game.board.getSpaceOrThrow(plan!.cities[0]);
     expect(game.board.getAdjacentSpaces(city).map((space) => space.id)).includes(greenery.id);
     game.addCity(player, city);
     // Next: a second city two rows away, sharing a free spot with the first.

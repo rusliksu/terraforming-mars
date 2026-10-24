@@ -68,6 +68,7 @@
     </div>
     <LogMessageInspector ref="messageInspector" :viewModel="viewModel"/>
     <AiDecisionDialog/>
+    <AiAnalysisWelcome :player-view="viewModel"/>
   </div>
 </template>
 
@@ -89,6 +90,7 @@ import {SoundManager} from '@/client/utils/SoundManager';
 import {getPreferences} from '@/client/utils/PreferencesManager';
 import {logSearchText} from '@/client/components/logpanel/logSearchText';
 import AiDecisionDialog from '@/client/components/logpanel/aiAnalysis/AiDecisionDialog.vue';
+import AiAnalysisWelcome from '@/client/components/logpanel/aiAnalysis/AiAnalysisWelcome.vue';
 import {decisionSummaries, loadAiFeedback, openAiDecision, targetOf} from '@/client/components/logpanel/aiAnalysis/aiFeedbackState';
 import {AiDecisionSummary} from '@/common/ai/AiDecisionSummary';
 
@@ -152,6 +154,7 @@ export default defineComponent({
     LogMessageInspector,
     LogGenerationList,
     AiDecisionDialog,
+    AiAnalysisWelcome,
   },
   emits: ['spaceClicked'],
   methods: {

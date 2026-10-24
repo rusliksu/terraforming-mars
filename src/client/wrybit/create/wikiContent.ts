@@ -1,11 +1,8 @@
 import MarkdownIt from 'markdown-it';
 import {WIKI} from '@/client/utils/WikiLinks';
 
-// Wiki pages of the original project as content of the "Create game" info boxes. GitHub forbids showing its pages in an
-// iframe (X-Frame-Options: deny), so the page is fetched as markdown (raw.githubusercontent.com allows that from any
-// origin) and rendered here: a short excerpt in the info box, the whole page in the overlay.
-
-const RAW_WIKI = 'https://raw.githubusercontent.com/wiki/terraforming-mars/terraforming-mars';
+// Info-box content for the "Create game" options. This fork does not fetch the upstream wiki:
+// links open in a new tab through the normal anchor. Keeping the helpers local avoids a foreign API call.
 const EXCERPT_MAX_LENGTH = 320;
 
 export type WikiTarget = {page: string, anchor: string | undefined};
@@ -24,23 +21,9 @@ export function headingSlug(text: string): string {
   return text.trim().toLowerCase().replace(/[^\p{L}\p{N}\s_-]/gu, '').replace(/\s/g, '-');
 }
 
-// Every page only once per visit
-const pages = new Map<string, Promise<string>>();
-
-export function fetchWikiPage(page: string): Promise<string> {
-  let request = pages.get(page);
-  if (request === undefined) {
-    request = fetch(`${RAW_WIKI}/${encodeURIComponent(page)}.md`).then((response) => {
-      if (!response.ok) {
-        throw new Error('HTTP ' + response.status);
-      }
-      return response.text();
-    });
-    // A failed request may be tried again next time
-    request.catch(() => pages.delete(page));
-    pages.set(page, request);
-  }
-  return request;
+export function fetchWikiPage(_page: string): Promise<string> {
+  // No network request: the source info links open the wiki in a new tab.
+  return Promise.resolve('# Wiki\n\nOpen the linked wiki page in a new tab.');
 }
 
 // Level of a markdown heading line (number of #), 0 for other lines

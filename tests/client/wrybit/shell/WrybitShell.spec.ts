@@ -11,6 +11,7 @@ import AdminHome from '@/client/wrybit/pages/admin/AdminHome.vue';
 import LoginHome from '@/client/wrybit/pages/auth/LoginHome.vue';
 import Help from '@/client/wrybit/pages/help/Help.vue';
 import GameEnd from '@/client/wrybit/pages/GameEnd.vue';
+import StatsPage from '@/client/wrybit/pages/stats/StatsPage.vue';
 import {globalConfig} from '@tests/client/components/getLocalVue';
 
 describe('Wrybit shell', () => {
@@ -20,7 +21,7 @@ describe('Wrybit shell', () => {
       expect(wrapper.emitted('views')?.[0][0]).deep.include({
         cards: Catalog, playerHome: PlayerHome, spectatorHome: SpectatorHome,
         startScreen: StartScreen, loadGame: LoadGameForm, gamesOverview: GamesOverview,
-        adminHome: AdminHome, loginHome: LoginHome, help: Help, gameEnd: GameEnd,
+        adminHome: AdminHome, loginHome: LoginHome, help: Help, gameEnd: GameEnd, stats: StatsPage,
       });
       const sources = wrapper.findAll('picture source');
       expect(sources.map((source) => source.attributes('type'))).deep.eq([

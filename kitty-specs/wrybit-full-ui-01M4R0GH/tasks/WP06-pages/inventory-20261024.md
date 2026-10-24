@@ -54,3 +54,5 @@ Baseline: WP05 approved, HEAD `39ac7e271d`.
 
 - T022: Wrybit GameEnd registered; multiplayer, solo win/loss, VP/contributions, charts, board and log verified at desktop/mobile; evidence in `evidence-T022-20261024.md`.
 
+- T023: public `/api/wrybit/stats` projection over ELO history; Wrybit StatsPage tabs Overview/Games/Players/Corporations/Boards/Records, filters, empty/error states; evidence `evidence-T023-20261024.md`.
+

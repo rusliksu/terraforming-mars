@@ -47,6 +47,7 @@
       <component :is="wrybitMode && wrybitReady && wrybitViews.adminHome ? wrybitViews.adminHome : 'AdminHome'" v-else-if="screen === 'admin'"/>
       <component :is="wrybitMode && wrybitReady && wrybitViews.loginHome ? wrybitViews.loginHome : 'LoginHome'" v-else-if="screen === 'login-home'"/>
       <component :is="wrybitMode && wrybitReady && wrybitViews.help ? wrybitViews.help : 'Help'" v-else-if="screen === 'help'"/>
+      <component :is="wrybitViews.stats ?? 'StartScreen'" v-else-if="screen === 'stats'"/>
     </div>
     <InputPortal v-if="screen === 'player-home' && playerView !== undefined && playerView.game.phase !== 'end'"
       :target="inputHosts.target.value">
@@ -118,6 +119,7 @@ type Screen = 'admin' |
             'replay' |
             'spectator-home' |
             'start-screen' |
+            'stats' |
             'the-end';
 export type MainAppData = {
     screen: Screen;
@@ -421,6 +423,12 @@ export default defineComponent({
       app.screen = 'map-library';
     } else if (currentPathname === paths.HELP) {
       app.screen = 'help';
+    } else if (currentPathname === paths.STATS) {
+      if (getPreferences().experimental_layout) {
+        app.screen = 'stats';
+      } else {
+        window.location.replace('/elo/');
+      }
     } else if (currentPathname === paths.SPECTATOR) {
       app.updateSpectator();
     } else if (currentPathname === paths.REPLAY) {

@@ -67,6 +67,8 @@
       </template>
     </div>
     <LogMessageInspector ref="messageInspector" :viewModel="viewModel"/>
+    <AiDecisionDialog/>
+    <AiAnalysisWelcome :player-view="viewModel"/>
   </div>
 </template>
 
@@ -87,6 +89,10 @@ import LogGenerationList from '@/client/components/logpanel/LogGenerationList.vu
 import {SoundManager} from '@/client/utils/SoundManager';
 import {getPreferences} from '@/client/utils/PreferencesManager';
 import {logSearchText} from '@/client/components/logpanel/logSearchText';
+import AiDecisionDialog from '@/client/components/logpanel/aiAnalysis/AiDecisionDialog.vue';
+import AiAnalysisWelcome from '@/client/components/logpanel/aiAnalysis/AiAnalysisWelcome.vue';
+import {decisionSummaries, loadAiFeedback, openAiDecision, targetOf} from '@/client/components/logpanel/aiAnalysis/aiFeedbackState';
+import {AiDecisionSummary} from '@/common/ai/AiDecisionSummary';
 
 let logAbortController: AbortController | undefined;
 
@@ -147,11 +153,27 @@ export default defineComponent({
     LogMessageComponent,
     LogMessageInspector,
     LogGenerationList,
+    AiDecisionDialog,
+    AiAnalysisWelcome,
   },
   emits: ['spaceClicked'],
   methods: {
     messageClicked(message: LogMessage) {
+      if (this.viewModel.game?.gameOptions?.aiAnalysis === true) {
+        const target = targetOf(message);
+        if (target !== undefined) {
+          openAiDecision(target, this.decisionSummaryFor(target.decisionId), this.viewModel);
+          return;
+        }
+      }
       this.typedRefs.messageInspector.show(message);
+    },
+    decisionSummaryFor(decisionId: string | undefined): AiDecisionSummary | undefined {
+      if (decisionId === undefined) {
+        return undefined;
+      }
+      const summary = decisionSummaries(this.messages).get(decisionId);
+      return summary;
     },
     refreshCurrentView(): void {
       if (this.selectedRecentLimit !== undefined) {
@@ -397,6 +419,9 @@ export default defineComponent({
     },
   },
   mounted() {
+    if (this.viewModel.game?.gameOptions?.aiAnalysis === true && this.id !== undefined) {
+      void loadAiFeedback(this.id);
+    }
     const restoredState = this.id === undefined ? undefined : logPanelViewStates.get(this.id);
     if (restoredState === undefined) {
       this.selectedRecentLimit = 100;

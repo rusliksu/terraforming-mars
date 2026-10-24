@@ -444,6 +444,11 @@
                                 <span v-if="hasAiPlayers" class="create-game-elo-ai-hint">- enforced with AI players</span>
                             </label>
 
+                            <input type="checkbox" v-model="aiAnalysis" id="aiAnalysis-checkbox">
+                            <label for="aiAnalysis-checkbox">
+                                <span v-i18n>Analysis game (rate AI decisions)</span>
+                            </label>
+
                             <input type="checkbox" v-model="turnBasedGame" id="turnBasedGame-checkbox">
                             <label for="turnBasedGame-checkbox">
                                 <span v-i18n>Async game (Telegram)</span>
@@ -1003,6 +1008,7 @@ export default defineComponent({
   data(): CreateGameModel & FormModel {
     return {
       ...defaultCreateGameModel(),
+      aiAnalysis: false,
       showValidationErrors: false,
       preludeToggled: false,
       uploading: false,
@@ -1258,6 +1264,7 @@ export default defineComponent({
         undoStepOption: this.undoStepOption,
         privateHands: this.privateHands,
         noEloGame: this.noEloGame || this.hasAiPlayers,
+        aiAnalysis: this.aiAnalysis,
         turnBasedGame: this.turnBasedGame,
         botGame: this.botGame,
         showTimers: this.showTimers,
@@ -2762,6 +2769,7 @@ export default defineComponent({
         fastModeOption,
         privateHands,
         noEloGame,
+        aiAnalysis: this.aiAnalysis,
         turnBasedGame,
         botGame,
         removeNegativeGlobalEventsOption,

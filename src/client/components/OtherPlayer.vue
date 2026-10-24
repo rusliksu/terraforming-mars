@@ -5,6 +5,7 @@
       <AppButton size="big" type="close" @click="hideMe" :disableOnServerBusy="false" align="right" />
     </div>
     <div class="other_player_cont menu">
+        <AiHandSection v-if="player.aiHand !== undefined" :hand="player.aiHand"/>
         <div v-if="player.tableau.length > 0" class="player_home_block">
             <div>
                 <div v-for="card in getCardsByType(player.tableau, [CardType.CORPORATION])" :key="card.name" class="cardbox">
@@ -46,6 +47,7 @@ import {CardType} from '@/common/cards/CardType';
 import {getCardsByType, isCardActivated} from '@/client/utils/CardUtils';
 import {sortActiveCards} from '@/client/utils/ActiveCardsSortingOrder';
 import {playerTableauVisibilityKey} from './overview/playerVisibilityKeys';
+import AiHandSection from '@/client/components/logpanel/aiAnalysis/AiHandSection.vue';
 
 export default defineComponent({
   name: 'OtherPlayer',
@@ -63,6 +65,7 @@ export default defineComponent({
     AppButton,
     StackedCards,
     Card,
+    AiHandSection,
   },
   methods: {
     hideMe() {

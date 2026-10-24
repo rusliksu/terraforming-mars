@@ -7,6 +7,12 @@ import type {CreateControls, CreatePresentation} from '@/client/wrybit/create/pr
 /** Optional presentation components; routing and actions stay in App. */
 export type WrybitViews = {
   cards?: Component;
+  startScreen?: Component;
+  loadGame?: Component;
+  gamesOverview?: Component;
+  adminHome?: Component;
+  loginHome?: Component;
+  help?: Component;
   playerHome?: Component<{playerView: PlayerViewModel}>;
   spectatorHome?: Component<{spectator: SpectatorModel}>;
   inputs?: InputPresentationRegistry;

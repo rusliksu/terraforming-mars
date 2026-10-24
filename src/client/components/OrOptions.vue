@@ -8,7 +8,7 @@
          class="wf-option"
          :data-input-annotation="option.annotation">
       <label class="form-radio" ref="optionLabels">
-        <input v-model="selectedOption" type="radio" :name="radioElementName" :value="option" >
+        <input v-model="selectedOption" type="radio" :name="radioElementName" :value="option" @change="selectOption(idx)" >
         <i class="form-icon" ></i>
         <span>{{ $t(option.title) }}</span>
       </label>
@@ -92,6 +92,14 @@ export default defineComponent({
     PresentationHost,
   },
   computed: {
+    displayedOptions(): Array<PlayerInputModel> {
+      return this.playerinput.options.filter((option) => {
+        return !(option.type === 'card' && option.showOnlyInLearnerMode !== false && !getPreferences().learner_mode);
+      });
+    },
+    originalIndices(): Array<number> {
+      return this.displayedOptions.map((option) => this.playerinput.options.indexOf(option));
+    },
     presentationBinding(): OrOptionsBinding {
       const turmoil = this.playerView.game.turmoil;
       return {
@@ -134,8 +142,6 @@ export default defineComponent({
     }
     return {
       active: true,
-      displayedOptions,
-      originalIndices,
       radioElementName: 'selectOption' + unique++,
       selectedOption: displayedOptions[selectedIdx],
       selectedIdx,
@@ -144,11 +150,23 @@ export default defineComponent({
     };
   },
   watch: {
+    displayedOptions(newOptions: Array<PlayerInputModel>) {
+      // Keep the native option index across a refresh; fall back only when it disappeared.
+      if (this.selectedIdx >= newOptions.length) {
+        this.selectedIdx = 0;
+        this.selectedOption = newOptions[0];
+      } else {
+        this.selectedOption = newOptions[this.selectedIdx];
+      }
+    },
     inputHost() {
       this.$nextTick(() => this.setupQuickGreeneryPlacement());
     },
     selectedOption(newOption: PlayerInputModel) {
-      this.selectedIdx = this.displayedOptions.indexOf(newOption);
+      const index = this.displayedOptions.indexOf(newOption);
+      if (index >= 0) {
+        this.selectedIdx = index;
+      }
       // Clicking the option can shift elements on the page.
       // This preserves the location of the option button the user just clicked by
       // tracking where it was on the screen, where it moved, and then repositioning it.
@@ -169,13 +187,17 @@ export default defineComponent({
     },
   },
   methods: {
+    selectOption(index: number) {
+      this.selectedIdx = index;
+    },
     async chooseAndSave(option: PlayerInputModel) {
       if (!this.active || !this.showsave || option.type !== 'option' || !this.displayedOptions.includes(option) || this.orPresentation === undefined) {
         return;
       }
+      this.selectedIdx = this.displayedOptions.indexOf(option);
       this.selectedOption = option;
       await this.$nextTick();
-      if (this.active && this.selectedOption === option && this.orPresentation !== undefined) {
+      if (this.active && this.orPresentation !== undefined) {
         await this.saveData();
       }
     },
@@ -298,8 +320,16 @@ export default defineComponent({
       return withSaveAttempt(this.saveSession, attempt, (current) => {
         const reference = this.$refs.inputfactory as InputCollector | Array<InputCollector> | undefined;
         const child = Array.isArray(reference) ? reference[0] : reference;
-        const index = this.originalIndices[this.selectedIdx];
-        if (child === undefined || index === undefined) {
+        const selectedIndex = this.selectedOption === undefined ? -1 : this.displayedOptions.indexOf(this.selectedOption);
+        const index = this.originalIndices[selectedIndex >= 0 ? selectedIndex : this.selectedIdx];
+        if (index === undefined) {
+          return 'invalid';
+        }
+        if (this.selectedOption?.type === 'option') {
+          reply({type: 'or', index, response: {type: 'option'}});
+          return 'saved';
+        }
+        if (child === undefined) {
           return 'invalid';
         }
         return afterSave(child.collectResponse(current), (collected) => {

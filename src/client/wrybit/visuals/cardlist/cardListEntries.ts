@@ -48,10 +48,10 @@ export function buildEntries(): Array<CardListEntry> {
     entries.push({name, searchKind: 'colony', type: 'colonyTiles', module: getColonyOrThrow(name).module ?? 'base'});
   }
   for (const name of milestoneNames) {
-    entries.push({name, searchKind: 'ma', type: 'milestones', module: getMilestone(name).requirements ?? 'base'});
+    entries.push({name, searchKind: 'ma', type: 'milestones', module: getMilestone(name)?.requirements ?? 'base'});
   }
   for (const name of awardNames) {
-    entries.push({name, searchKind: 'ma', type: 'awards', module: getAward(name).requirements ?? 'base'});
+    entries.push({name, searchKind: 'ma', type: 'awards', module: getAward(name)?.requirements ?? 'base'});
   }
   for (const id of [...POLICY_IDS, ...BONUS_IDS]) {
     entries.push({name: id, searchKind: 'agenda', type: 'agendas', module: agendaModule(id)});

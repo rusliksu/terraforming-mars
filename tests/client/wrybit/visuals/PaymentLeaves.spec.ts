@@ -9,7 +9,7 @@ import {globalConfig} from '@tests/client/components/getLocalVue';
 
 describe('Wrybit payment visual leaves', () => {
   it('uses our resource icons and emits commands without inventing a target or changing payment state', async () => {
-    const props = {unit: 'nereidMicrobes' as const, description: 'Nereid microbes', modelValue: 3};
+    const props = {unit: 'nereidMicrobes' as const, description: 'Nereid microbes', count: 3};
     const native = mount(CanonicalPaymentUnit, {...globalConfig, props});
     const wrapper = mount(PaymentUnit, {...globalConfig, props});
     try {
@@ -24,7 +24,7 @@ describe('Wrybit payment visual leaves', () => {
       expect(wrapper.emitted('max')).deep.eq([[]]);
       expect(wrapper.get<HTMLInputElement>('input').element.value).eq('3');
       await wrapper.get('input').setValue('4');
-      expect(wrapper.emitted('update:modelValue')).deep.eq([['4']]);
+      expect(wrapper.emitted('update:count')).deep.eq([['4']]);
       await wrapper.setProps({targetReached: true});
       expect(wrapper.find('[data-test="target"]').exists()).is.false;
       expect(wrapper.get('[data-test="target-reached"]').text()).contains('Max');

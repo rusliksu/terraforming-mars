@@ -8,7 +8,7 @@
                     <span class="ma-player-cube"><BoardCube v-if="milestone.color !== undefined" class="board-cube" :color="milestone.color" view="slight"/></span>
                 </span>
                 <span v-if="isLearnerModeOn()">
-                    <span v-for="(spotPrice, index) in getAvailableMilestoneSpots()" :key="index" class="milestone-award-inline unpaid">
+                    <span v-for="(spotPrice, index) in availableMilestoneSpots" :key="index" class="milestone-award-inline unpaid">
                         <div class="milestone-award-price-row">
                           <div class="milestone-award-price">{{spotPrice}}</div>
                           <template v-if="conglomeratesExpansion">

@@ -27,7 +27,6 @@ import {getConglomeratesModel} from '../models/ConglomeratesModel';
 import {ConglomeratesExpansion} from '../conglomerates/ConglomeratesExpansion';
 import {SpectatorModel} from '../../common/models/SpectatorModel';
 import {GameModel, OtherDeckSizesModel} from '../../common/models/GameModel';
-import {Turmoil} from '../turmoil/Turmoil';
 import {createPathfindersModel} from './PathfindersModel';
 import {MoonModel} from '../../common/models/MoonModel';
 import {VenusPhase2Model} from '../../common/models/VenusPhase2Model';
@@ -327,7 +326,7 @@ export class Server {
       heat: player.heat,
       heatProduction: player.production.heat,
       id: game.phase === Phase.END ? player.id : undefined,
-      influence: Turmoil.ifTurmoilElse(game, (turmoil) => turmoil.getInfluence(player), () => 0),
+      influence: game.turmoil === undefined ? 0 : game.turmoil.getInfluence(player),
       isActive: player.id === game.activePlayer.id,
       isBotControlled: this.isBotControlled(game, player.id),
       isSurrendered: game.surrenderedPlayerIds.has(player.id),

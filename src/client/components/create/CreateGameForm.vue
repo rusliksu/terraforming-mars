@@ -283,7 +283,7 @@
                               </label>
                             </div>
 
-                            <div v-for="boardName in boards" :key="boardName">
+                            <div v-for="boardName in boardChoices" :key="boardName">
                               <div v-if="boardName==='utopia planitia'" class="create-game-subsection-label" v-i18n>Fan-made</div>
                               <input type="radio" :value="boardName" name="board" v-model="board" :id="boardName+'-checkbox'">
                               <label :for="boardName+'-checkbox'" class="expansion-button">
@@ -1259,6 +1259,10 @@ export default defineComponent({
     document.removeEventListener('click', this.closePlayerProfilePickerFromDocument);
   },
   computed: {
+    /** Any AI seat forces a training game: results against the computer never count for ELO. */
+    hasAiPlayers(): boolean {
+      return this.players.slice(0, this.playersCount).some((player) => player.aiLevel !== undefined);
+    },
     boardPreviewRequest(): BoardPreviewRequest | undefined {
       if (this.creationPresentation === undefined || this.seededGame) {
         return undefined;
@@ -1319,7 +1323,7 @@ export default defineComponent({
         customPreludes: this.customPreludes,
         bannedCards: this.bannedCards,
         includedCards: this.includedCards,
-        board: this.board,
+        boards: [this.board as BoardName],
         seed: this.seed,
         solarPhaseOption: this.solarPhaseOption,
         aresExtremeVariant: this.aresExtremeVariant,
@@ -1327,7 +1331,7 @@ export default defineComponent({
         undoOption: this.undoOption,
         undoStepOption: this.undoStepOption,
         privateHands: this.privateHands,
-        noEloGame: this.noEloGame,
+        noEloGame: this.noEloGame || this.hasAiPlayers,
         turnBasedGame: this.turnBasedGame,
         botGame: this.botGame,
         showTimers: this.showTimers,
@@ -1397,7 +1401,15 @@ export default defineComponent({
     DEFAULT_PLAYER_COLORS(): typeof DEFAULT_PLAYER_COLORS {
       return DEFAULT_PLAYER_COLORS;
     },
-    boards() {
+    board: {
+      get(): BoardName | RandomBoardOption {
+        return this.boards[0] ?? BoardName.THARSIS;
+      },
+      set(value: BoardName | RandomBoardOption) {
+        this.boards = [value as BoardName];
+      },
+    },
+    boardChoices() {
       return [
         BoardName.THARSIS,
         BoardName.HELLAS,
@@ -1416,6 +1428,24 @@ export default defineComponent({
     },
   },
   methods: {
+    toggleAiPlayer(player: NewPlayerModel, index: number, event: Event): void {
+      const autoName = `AI ${index + 1}`;
+      const enabled = (event.target as HTMLInputElement).checked;
+      if (!enabled) {
+        if (player.name === autoName) {
+          player.name = '';
+        }
+        player.aiLevel = undefined;
+        return;
+      }
+      player.aiLevel = player.aiLevel ?? 'normal';
+      player.isBot = false;
+      player.telegramID = '';
+      if (player.name.trim() === '') {
+        player.name = autoName;
+      }
+      this.noEloGame = true;
+    },
     redrawBoardPreview() {
       const request = this.boardPreviewRequest;
       if (request === undefined) {
@@ -2607,6 +2637,7 @@ export default defineComponent({
         [BoardName.VASTITAS_BOREALIS_NOVA]: 'vastitas-borealis-nova',
         [BoardName.VASTITAS_BOREALIS]: 'vastitas-borealis',
         [BoardName.AMAZONIS]: 'amazonis-planatia',
+        [BoardName.AMAZONIS_PLANITIA]: 'amazonis-planitia',
         [BoardName.TERRA_CIMMERIA]: 'terra-cimmeria',
         [BoardName.TERRA_CIMMERIA_NOVA]: 'terra-cimmeria-nova',
         [BoardName.HOLLANDIA]: 'hollandia',
@@ -2821,7 +2852,7 @@ export default defineComponent({
         customPreludes,
         bannedCards,
         includedCards,
-        board,
+        boards: [board as BoardName],
         customBoardCode: this.board === BoardName.CUSTOM ? this.customBoardCode : undefined,
         customMoonBoardCode: this.customMoonBoardCodeError === '' && this.customMoonBoardCodeInput.trim() !== '' ?
           this.customMoonBoardCodeInput.trim() : undefined,
@@ -2836,7 +2867,7 @@ export default defineComponent({
         showTimers,
         fastModeOption,
         privateHands,
-        noEloGame,
+        noEloGame: noEloGame || this.hasAiPlayers,
         turnBasedGame,
         botGame,
         removeNegativeGlobalEventsOption,

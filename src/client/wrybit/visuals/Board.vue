@@ -1,5 +1,5 @@
 <template>
-    <div :class="getGameBoardClassName()">
+    <div :class="gameBoardClassName">
         <div class="hide-tile-button-container">
           <div class="hide-tile-button" @click="$emit('toggleTileView')" data-test="hide-tiles-button" v-i18n>
             {{ tileView }} tiles
@@ -71,7 +71,7 @@
 
         <div :class="['board', {'board--custom': isCustomBoard && !useStandardTrackLayout, 'board--custom-fit': useStandardTrackLayout}]" :style="boardStyle" id="main_board">
             <BoardSpace
-              v-for="curSpace in getAllSpacesOnMars()"
+              v-for="curSpace in allSpacesOnMars"
               :key="curSpace.id"
               :space="curSpace"
               :aresExtension="expansions.ares"
@@ -355,7 +355,6 @@ import MarsScaleBonuses from '@/client/wrybit/visuals/board/MarsScaleBonuses.vue
 import {OuterGroup, outerGroups} from '@/client/wrybit/visuals/board/outerSpaces';
 import {ScaleBonusPin, scaleBonusPins} from '@/client/wrybit/visuals/board/marsScaleBonuses';
 import {DEFAULT_GLOBAL_PARAMETERS} from '@/common/GlobalParameterConfig';
-import {SpaceModel} from '@/common/models/SpaceModel';
 
 export default defineComponent({
   name: 'Board',
@@ -364,11 +363,6 @@ export default defineComponent({
     outerSpacesInCorners: {type: Boolean, default: false},
   },
   components: {BoardSpace, MarsScaleBonuses},
-  watch: {
-    spaces(spaces: ReadonlyArray<SpaceModel>) {
-      this.spaceMap = new Map(spaces.map((space) => [space.id, space]));
-    },
-  },
   computed: {
     outerSpaceGroups(): Array<OuterGroup> {
       return outerGroups((id) => this.hasSpace(id));

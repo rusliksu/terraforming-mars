@@ -11,7 +11,7 @@
         <div v-if="showProductionProtectedIcon" class="shield_production_protection"></div>
         <div v-if="showResourceProtectionIcon" class="shield_resource_protection"></div>
       </div>
-      <div v-if="showResourceValue()" class="resource_icon--megacredit-value" data-test="resource-value">{{ value }}</div>
+      <div v-if="showResourceValue" class="resource_icon--megacredit-value" data-test="resource-value">{{ value }}</div>
     </div>
   </div>
 </template>

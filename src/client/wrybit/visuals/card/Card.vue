@@ -33,6 +33,7 @@ import CardHelp from './CardHelp.vue';
 import CardContent from './CardContent.vue';
 import CardExtraContent from './CardExtraContent.vue';
 import {hasFoundLife} from '@/client/cards/CardModelMetadata';
+import {CARD_HELP_TEXT} from '@/client/cards/CardHelpText';
 import PlayerCube from '@/client/wrybit/visuals/common/PlayerCube.vue';
 
 // Our card component remains the owner of card identity, metadata and server-provided prices.
@@ -44,6 +45,9 @@ export default defineComponent({
     return {cubeSpin: Math.round(Math.random() * 360)};
   },
   computed: {
+    hasHelpText(): boolean {
+      return this.helpText !== undefined || CARD_HELP_TEXT[this.card.name] !== undefined;
+    },
     lifeFound(): boolean {
       return hasFoundLife(this.card);
     },

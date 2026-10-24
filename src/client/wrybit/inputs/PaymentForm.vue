@@ -17,7 +17,7 @@
         <template v-if="hasCurrencyChoice">
           <div class="payments_unit" :style="{gridRow: index + 2}">
             <PaymentUnitComponent
-              v-model.number="valueFor(unit).value"
+              v-model:count.number="valueFor(unit).value"
               :unit="unit"
               :description="binding.descriptions[unit]"
               :target="binding.target(unit)"

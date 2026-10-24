@@ -260,8 +260,6 @@ export default defineComponent({
   },
   beforeUnmount() {
     this.clearBoardHandlers();
-  },
-  beforeUnmount() {
     this.disableAnimation();
     for (const tile of this.getSelectableSpaces()) {
       tile.onclick = null;

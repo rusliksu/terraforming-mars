@@ -1,7 +1,7 @@
 <template>
-  <div :class="'filterDiv party-container party-background--' + partyNameToCss(party.name) + getUnavailablePartyClass()">
+  <div :class="'filterDiv party-container party-background--' + partyNameToCss(party.name) + unavailablePartyClass">
     <div :class="'board-party board-party--' + partyNameToCss(party.name)">
-      <div :class="getDominantClass()">
+      <div :class="dominantClass">
         <div class="send-delegate-leader-spot">
           <div v-if="party.partyLeader" :class="['player-token', party.partyLeader]"></div>
         </div>

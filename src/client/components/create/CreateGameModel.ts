@@ -6,6 +6,7 @@ import {AgendaStyle} from '@/common/turmoil/Types';
 import {NewPlayerModel} from '@/common/game/NewGameConfig';
 import {Expansion} from '@/common/cards/GameModule';
 import {BoardName} from '@/common/boards/BoardName';
+import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
 
 export type CreateGameModel = {
   /* A checkbox when selected selects all official expansions */
@@ -14,6 +15,8 @@ export type CreateGameModel = {
   aresExtremeVariant: boolean;
   bannedCards: Array<CardName>;
   boards: Array<BoardName>;
+  /** Read-only compatibility alias for single-board Wrybit controls. */
+  board?: BoardName | RandomBoardOption;
   botGame: boolean;
   ceosDraftVariant: boolean | undefined;
   clonedGameId: GameId | undefined;

@@ -9,7 +9,7 @@
           </label>
         </div>
         <div v-if="showsave === true" class="nofloat">
-            <AppButton @click="saveData()" :title="playerinput.buttonLabel" />
+            <AppButton @click="saveData()" :title="playerinput.buttonLabel" :disabled="selectedParty === undefined" />
         </div>
     </div>
 </template>

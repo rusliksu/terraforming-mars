@@ -266,6 +266,7 @@
 
 <script setup lang="ts">
 import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue';
+import type {WritableComputedRef} from 'vue';
 import type {CreatePresentationBinding} from './presentation';
 import {useCreateFields} from './controlledFields';
 import {currentColumnCount, placementOf, watchColumnCount} from './createGameColumns';
@@ -323,7 +324,8 @@ const visibleCustomLists = computed(() => props.binding.customLists.filter((list
 }));
 const importArrowPath = 'M5.44 2.7L11.75 13.63M12.33 10.89L11.75 13.63L9.09 12.77';
 const exportArrowPath = 'M12.25 13.63L18.56 2.7M15.9 3.56L18.56 2.7L19.15 5.44';
-const {field} = useCreateFields(() => props.binding);
+// The native model is dynamically projected; component controls validate their own values.
+const field = useCreateFields(() => props.binding).field as (key: string) => any;
 const expansions = computed(() => props.binding.model.expansions);
 const wikiUrls = computed(() => props.binding.wikiUrls);
 const allOfficialExpansions = field('allOfficialExpansions');
@@ -404,18 +406,18 @@ function fanNote(group: ExpansionGroup) {
   return group.key === 'fan' ? choicesOf(group).filter((choice) => expansions.value[choice.expansion]).map((choice) => choice.label).join(', ') : undefined;
 }
 const hasExpansionOptions = computed(() => (['venus', 'venusPhase2', 'turmoil', 'moon', 'ares'] as const).some((key) => expansions.value[key]));
-const board = field('board');
+const board = field('board') as WritableComputedRef<BoardName | RandomBoardOption | undefined>;
 const namedBoard = ref<BoardNameType>(BoardName.THARSIS);
 const randomBoard = computed({get: () => board.value === RandomBoardOption.OFFICIAL || board.value === RandomBoardOption.ALL,
   set: (random) => {
     if (random && !randomBoard.value) {
-      namedBoard.value = board.value; board.value = RandomBoardOption.OFFICIAL;
+      namedBoard.value = board.value as BoardNameType; board.value = RandomBoardOption.OFFICIAL;
     }
     if (!random && randomBoard.value) {
       board.value = namedBoard.value;
     }
   }});
-const randomBoardScope = computed({get: () => board.value, set: (scope: string | number) => {
+const randomBoardScope = computed({get: () => board.value ?? RandomBoardOption.OFFICIAL, set: (scope: string | number) => {
   if (scope === RandomBoardOption.OFFICIAL || scope === RandomBoardOption.ALL) {
     board.value = scope;
   }

@@ -49,4 +49,3 @@ function nativeActionLabel(player: PublicPlayerModel): ActionLabel {
   return overviewMethods.getActionLabel.call({playerView: props.viewModel, players: props.viewModel.players}, player);
 }
 </script>
-

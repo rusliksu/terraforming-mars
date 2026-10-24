@@ -536,7 +536,7 @@ export default defineComponent({
       if (!this.include(name, 'ma')) {
         return false;
       }
-      return this.expansions[getMilestone(name).requirements ?? 'base'] === true;
+      return this.expansions[getMilestone(name)?.requirements ?? 'base'] === true;
     },
     isNewPartyAgenda(id: PolicyId | BonusId): boolean {
       return agendaModule(id) === 'moreParties';
@@ -552,7 +552,7 @@ export default defineComponent({
       if (!this.include(name, 'ma')) {
         return false;
       }
-      return this.expansions[getAward(name).requirements ?? 'base'] === true;
+      return this.expansions[getAward(name)?.requirements ?? 'base'] === true;
     },
     getLanguageCssClass() {
       const language = getPreferences().lang;

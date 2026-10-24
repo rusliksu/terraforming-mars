@@ -25,7 +25,7 @@ const CARD_NAMES: ReadonlySet<string> = new Set(Object.values(CardName));
 const COLONY_NAMES: ReadonlySet<string> = new Set(Object.values(ColonyName));
 const AGENDAS = {Standard: true, Random: true, Chairman: true, PartyLeaders: true} satisfies Record<AgendaStyle, boolean>;
 const PLAYER_FIELDS: ReadonlySet<string> = new Set(['name', 'color', 'beginner', 'handicap', 'preludeHandicap', 'first', 'team', 'isBot']);
-const ALLOWED_FIELDS: ReadonlySet<string> = new Set(['players', 'expansions', ...Object.keys(FIELD_TYPES), ...CARD_FIELDS, ...COLONY_FIELDS]);
+const ALLOWED_FIELDS: ReadonlySet<string> = new Set(['players', 'expansions', 'boards', ...Object.keys(FIELD_TYPES), ...CARD_FIELDS, ...COLONY_FIELDS]);
 
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -55,6 +55,17 @@ function validateSettings(value: unknown): JSONObject {
       invalid();
     }
     result[key] = field as JSONValue;
+  }
+  const boards = value.boards;
+  if (boards !== undefined) {
+    if (!Array.isArray(boards) || boards.length === 0 ||
+        !boards.every((board) => typeof board === 'string' && [...Object.values(BoardName), ...Object.values(RandomBoardOption)].includes(board as BoardName))) {
+      invalid();
+    }
+    result.boards = boards as JSONValue;
+    if (value.board === undefined) {
+      result.board = boards[0] as JSONValue;
+    }
   }
   if (result.botGame !== false || result.turnBasedGame !== false) {
     invalid();

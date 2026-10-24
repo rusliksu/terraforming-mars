@@ -1,5 +1,6 @@
 import {JSONObject} from '@/common/Types';
 import {CreateGameModel} from './CreateGameModel';
+import {BoardName} from '@/common/boards/BoardName';
 
 type ScalarFieldTypes = {
   [K in keyof CreateGameModel]?: NonNullable<CreateGameModel[K]> extends boolean ? 'boolean' :
@@ -195,6 +196,13 @@ export class TemplateManager {
 
     for (const f of simpleFields) {
       state[f] = model[f] as JSONObject[typeof f];
+    }
+    // Single-board alias for settings links that still expose the native radio value.
+    if (model.board !== undefined) {
+      state.board = model.board;
+      state.boards = [model.board as BoardName];
+    } else {
+      state.board = model.boards[0] ?? BoardName.THARSIS;
     }
     state.turnBasedGame = false;
     state.botGame = false;

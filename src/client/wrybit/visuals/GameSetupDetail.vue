@@ -50,6 +50,7 @@ const BOARD_TONE: Record<BoardName, string> = {
   [BoardName.VASTITAS_BOREALIS_NOVA]: 'board-vastitas-borealis',
   [BoardName.TERRA_CIMMERIA_NOVA]: 'board-terra-cimmeria',
   [BoardName.AMAZONIS]: 'board-amazonis',
+  [BoardName.AMAZONIS_PLANITIA]: 'board-amazonis',
   [BoardName.ARABIA_TERRA]: 'board-arabia-terra',
   [BoardName.VASTITAS_BOREALIS]: 'board-vastitas-borealis',
   [BoardName.TERRA_CIMMERIA]: 'board-terra-cimmeria',

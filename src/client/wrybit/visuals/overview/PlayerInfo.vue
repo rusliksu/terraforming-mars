@@ -10,7 +10,7 @@
               <span @click.stop><PlayerEloBadge v-if="!readOnly" :playerName="player.name" :tooltipCss="tooltipCss" :compact="true" :eloDelta="eloDelta"/></span>
             </div>
             <span v-if="player.color === 'credicor'" class="player-persona-title">Магистр Кредикора</span>
-            <span v-for="(corporationName, index) in getCorporationName()" :key="index" v-i18n>
+            <span v-for="(corporationName, index) in corporationNames" :key="index" v-i18n>
               <div class="player-info-corp" :title="$t(corporationName)">
                 {{ corporationName }}
               </div>
@@ -25,8 +25,8 @@
           <div class="player-played-cards">
             <!-- No click handler of its own: the click bubbles up to the bar; button stays for keyboard use -->
             <button type="button" class="btn btn-tiny btn-rounded played-cards-button">
-              <span>{{ $t(buttonLabel()) }}</span>
-              <span class="played-cards-count">{{ numberOfPlayedCards() }}</span>
+              <span>{{ $t(wrybitButtonLabel()) }}</span>
+              <span class="played-cards-count">{{ numberOfPlayedCards }}</span>
             </button>
           </div>
           <div class="tag-display player-board-blue-action-counter" :class="tooltipCss" :data-tooltip="$t('The number of available actions on active cards')">
@@ -34,7 +34,7 @@
               <div class="blue-stripe"></div>
               <div class="red-arrow"></div>
             </div>
-            <span class="tag-count-display">{{ availableBlueActionCount() }}</span>
+            <span class="tag-count-display">{{ availableBlueActionCount }}</span>
           </div>
         </div>
         <PlayerTags :player="player" :playerView="playerView" :hideZeroTags="hideZeroTags" :isTopBar="isTopBar" />
@@ -56,7 +56,7 @@ export default defineComponent({
   extends: CanonicalPlayerInfo,
   components: {PlayerResources, PlayerTags, PlayerStatus},
   methods: {
-    buttonLabel(): string {
+    wrybitButtonLabel(): string {
       return this.isPinned(this.playerIndex) ? 'hide' : 'show';
     },
     togglePlayerDetails() {

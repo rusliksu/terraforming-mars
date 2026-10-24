@@ -7,7 +7,7 @@
       <i class="resource_icon payments_type_icon" :class="iconClass" :title="$t('Pay with ' + description)"></i>
       <input
         class="form-input form-inline payments_input"
-        :value="modelValue"
+        :value="count"
         @input="onInput"
       >
     </span>

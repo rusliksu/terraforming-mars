@@ -68,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, inject, onBeforeUnmount, ref} from 'vue';
+import {computed, inject, ref} from 'vue';
 import {registerCompositeView} from './compositePresentation';
 import {registerRootOr} from '@/client/wrybit/shell/inputBridge';
 import TradeFees from '@/client/wrybit/expansions/colonies/TradeFees.vue';
@@ -125,10 +125,6 @@ const rootFooter = inject(ROOT_INPUT_FOOTER, undefined);
 const outerFooter = computed(() => props.binding.asTabs ? rootFooter?.value : undefined);
 const handTabActive = ref(false);
 const spaceChoice = computed(() => props.binding.asTabs ? spaceWithSkip({...props.binding.playerinput, options: [...props.binding.displayedOptions]}) : undefined);
-let alive = true;
-onBeforeUnmount(() => {
-  alive = false;
-});
 const maChoices = computed(() => milestoneAwardChoices({...props.binding.playerinput, options: [...props.binding.displayedOptions]}, props.binding.playerView.game));
 const parties = computed(() => maChoices.value === undefined ? partyChoices(props.binding.displayedOptions, props.binding.partyCards) : undefined);
 const tileMenu = computed(() => maChoices.value !== undefined || parties.value !== undefined || isChoiceMenu(props.binding.playerinput));
@@ -167,9 +163,7 @@ async function skip(option: PlayerInputModel) {
   const commit = props.binding.chooseAndSave;
   props.binding.select(option);
   await boardZoomSurface(props.binding.playerView.game.gameId)?.close();
-  if (alive) {
-    await commit(option);
-  }
+  await commit(option);
 }
 function selectIndex(index: number) {
   const option = props.binding.displayedOptions[index];

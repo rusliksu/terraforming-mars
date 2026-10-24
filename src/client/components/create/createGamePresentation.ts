@@ -1,4 +1,5 @@
 import type {CreateGameModel} from './CreateGameModel';
+import {BoardName} from '@/common/boards/BoardName';
 import type {CreateModelView, ScalarCreateField} from '@/client/wrybit/create/controlledFields';
 
 /** Explicit data projection; component instances and methods never enter the view model. */
@@ -8,7 +9,8 @@ export function projectCreateModel(owner: CreateGameModel): CreateModelView {
     altVenusBoard: owner.altVenusBoard,
     aresExtremeVariant: owner.aresExtremeVariant,
     bannedCards: owner.bannedCards,
-    board: owner.board,
+    board: owner.board ?? owner.boards[0] ?? BoardName.THARSIS,
+    boards: owner.boards,
     botGame: owner.botGame,
     ceosDraftVariant: owner.ceosDraftVariant,
     clonedGameId: owner.clonedGameId,
@@ -70,5 +72,11 @@ export function projectCreateModel(owner: CreateGameModel): CreateModelView {
 }
 
 export function setCreateField<K extends ScalarCreateField>(owner: CreateGameModel, key: K, value: CreateGameModel[K]): void {
-  owner[key] = value;
+  if (key === 'board') {
+    const board = value as BoardName;
+    owner.board = board;
+    owner.boards = [board];
+    return;
+  }
+  (owner as unknown as Record<string, unknown>)[key as string] = value;
 }

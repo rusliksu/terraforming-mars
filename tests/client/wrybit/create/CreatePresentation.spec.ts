@@ -307,7 +307,7 @@ describe('source creation view with our permanent form owner', () => {
       const filterId = filter.vm.$.uid;
       const config = JSON.stringify(owner.newGameConfig);
       const errors = JSON.stringify(owner.validationErrors);
-      expect(Object.keys(owner.creationBinding.model).sort()).deep.eq(Object.keys(defaultCreateGameModel()).sort());
+      expect(Object.keys(owner.creationBinding.model).sort()).deep.eq([...Object.keys(defaultCreateGameModel()), 'board'].sort());
       const nonPreviewCalls = () => fetch.mock.calls.filter(([url]) => url !== paths.API_BOARD_PREVIEW).length;
       const callsBeforeMode = nonPreviewCalls();
       view.value = markRaw(SourceCreate);

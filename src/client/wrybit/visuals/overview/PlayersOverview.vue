@@ -1,15 +1,15 @@
 <template>
-        <div class="players-overview" v-if="hasPlayers()"><OverviewSettings/>
+        <div class="players-overview" v-if="hasPlayers"><OverviewSettings/>
             <!-- Played cards of all players, including your own (via "show" in the player bar) -->
             <div class="other_player">
-                <div v-for="(otherPlayer, index) in getPlayersInOrder()" :key="otherPlayer.color">
+                <div v-for="(otherPlayer, index) in playersInOrder" :key="otherPlayer.color">
                     <OtherPlayer :player="otherPlayer" :playerIndex="index"/>
                 </div>
                 <div v-if="thisPlayer !== undefined">
                     <OtherPlayer :player="thisPlayer" :playerIndex="ownPlayerIndex(playerView)"/>
                 </div>
             </div>
-            <PlayerInfo v-for="(p, index) in getPlayersInOrder()"
+            <PlayerInfo v-for="(p, index) in playersInOrder"
               :player="p"
               :key="p.color"
               :readOnly="readOnly" :playerView="playerView"
@@ -48,7 +48,7 @@ export default defineComponent({
   components: {PlayerInfo, OtherPlayer, PlayersTable},
   computed: {
     tableRows(): Array<PlayersTableRowModel> {
-      const players = this.getPlayersInOrder();
+      const players = [...this.playersInOrder];
       if (this.thisPlayer !== undefined) {
         players.push(this.thisPlayer);
       }

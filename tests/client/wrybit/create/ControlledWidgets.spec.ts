@@ -14,7 +14,7 @@ function controller(count: number): ControlledCreateFields {
   const model = reactive({...defaultCreateGameModel(), playersCount: count});
   return {model,
     setField<K extends ScalarCreateField>(key: K, value: CreateGameModel[K]) {
-      model[key] = value;
+      (model as unknown as Record<string, unknown>)[key as string] = value;
     },
     setExpansion(key: Expansion, enabled: boolean) {
       model.expansions[key] = enabled;

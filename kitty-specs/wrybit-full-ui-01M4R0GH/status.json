@@ -1,7 +1,7 @@
 {
-  "event_count": 49,
-  "last_event_id": "01M5N6B7P6A7MZMTTQDD9E8HPP",
-  "materialized_at": "2026-10-23T20:13:27.110047+00:00",
+  "event_count": 53,
+  "last_event_id": "01M5PD3ZC691ZATAQ8JA6FWVN4",
+  "materialized_at": "2026-10-24T07:31:03.686550+00:00",
   "mission_number": "",
   "mission_slug": "wrybit-full-ui-01M4R0GH",
   "mission_type": "software-dev",
@@ -149,19 +149,19 @@
       }
     },
     "WP05": {
-      "actor": "lead-review",
+      "actor": "reviewer-wp05",
       "agent": "codex",
       "agent_profile": "implementer-ivan",
       "agent_profile_version": "1.0",
       "force_count": 0,
       "lane": "approved",
-      "last_event_id": "01M5N6B7P6A7MZMTTQDD9E8HPP",
-      "last_transition_at": "2026-10-23T20:13:27.110047+00:00",
+      "last_event_id": "01M5PD3ZC691ZATAQ8JA6FWVN4",
+      "last_transition_at": "2026-10-24T07:31:03.686550+00:00",
       "model": "__resolved_model_absent__",
       "provider": "__resolved_provider_absent__",
       "review_result": {
-        "reference": "review-cycle://wrybit-full-ui-01M4R0GH/WP05-mobile/closeout-20261023.md",
-        "reviewer": "lead-review",
+        "reference": "review-cycle://wrybit-full-ui-01M4R0GH/WP05-mobile/review-independent-20261023.md",
+        "reviewer": "reviewer-wp05",
         "verdict": "approved"
       },
       "role": "implementer",

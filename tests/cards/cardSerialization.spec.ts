@@ -1,7 +1,8 @@
 import {expect} from 'chai';
 import {LobbyHalls} from '../../src/server/cards/pathfinders/LobbyHalls';
 import {Tag} from '../../src/common/cards/Tag';
-import {deserializeProjectCard, serializeProjectCard} from '../../src/server/cards/cardSerialization';
+import {deserializeCorporationCard, deserializeProjectCard, serializeCorporationCard, serializeProjectCard} from '../../src/server/cards/cardSerialization';
+import {InSpire} from '../../src/server/cards/pathfinders/InSpire';
 import {fakeCard} from '../TestingUtils';
 import {Asimov} from '../../src/server/cards/ceos/Asimov';
 import {SerializedCard} from '../../src/server/SerializedCard';
@@ -50,6 +51,17 @@ describe('CardSerialization', () => {
 
     serialized.isDisabled = true;
     expect(cast(deserializeProjectCard(serialized), Asimov).isDisabled).is.true;
+  });
+
+  it('corporation cards carry their custom data', () => {
+    const card = new InSpire();
+    card.data = {titanium: 2, steel: 1};
+
+    const serialized = serializeCorporationCard(card);
+    expect(serialized.data).deep.eq({titanium: 2, steel: 1});
+
+    const deserialized = cast(deserializeCorporationCard(serialized), InSpire);
+    expect(deserialized.data).deep.eq({titanium: 2, steel: 1});
   });
 
   it('custom .serialized works', () => {

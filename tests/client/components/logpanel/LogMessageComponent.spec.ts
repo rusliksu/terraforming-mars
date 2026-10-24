@@ -1,4 +1,4 @@
-import {shallowMount} from '@vue/test-utils';
+import {mount, shallowMount} from '@vue/test-utils';
 import {expect} from 'chai';
 import {globalConfig} from '../getLocalVue';
 import LogMessageComponent from '@/client/components/logpanel/LogMessageComponent.vue';
@@ -56,9 +56,12 @@ describe('LogMessageComponent', () => {
   });
 
   it('shows what a played card cost', () => {
-    const message = new LogMessage(LogMessageType.DEFAULT, '0 played 1', []);
+    const message = new LogMessage(LogMessageType.DEFAULT, '${0} played ${1}', [
+      {type: LogMessageDataType.PLAYER, value: 'blue'},
+      {type: LogMessageDataType.CARD, value: CardName.ANTS},
+    ]);
     message.payment = {megacredits: 7, steel: 1, titanium: 0};
-    const wrapper = shallowMount(LogMessageComponent, {
+    const wrapper = mount(LogMessageComponent, {
       ...globalConfig,
       props: {
         message,
@@ -66,17 +69,20 @@ describe('LogMessageComponent', () => {
       },
     });
 
-    const items = wrapper.findAll('.log-payment-item');
-    expect(items).has.length(2);
-    expect(items[0].text()).contains('7');
-    expect(items[0].find('.resource_icon').classes()).contains('resource_icon--megacredits');
-    expect(items[1].find('.resource_icon').classes()).contains('resource_icon--steel');
+    const badges = wrapper.findAll('.action-log-payment');
+    expect(badges).has.length(2);
+    expect(badges[0].text()).contains('7');
+    expect(badges[0].find('.resource_icon').classes()).contains('resource_icon--megacredits');
+    expect(badges[1].find('.resource_icon').classes()).contains('resource_icon--steel');
   });
 
   it('shows energy paid by a colony trade', () => {
-    const message = new LogMessage(LogMessageType.DEFAULT, '0 spent 1 to trade', []);
+    const message = new LogMessage(LogMessageType.DEFAULT, '${0} used ${1} action', [
+      {type: LogMessageDataType.PLAYER, value: 'blue'},
+      {type: LogMessageDataType.CARD, value: CardName.ANTS},
+    ]);
     message.payment = {megacredits: 0, steel: 0, titanium: 0, energy: 3};
-    const wrapper = shallowMount(LogMessageComponent, {
+    const wrapper = mount(LogMessageComponent, {
       ...globalConfig,
       props: {
         message,
@@ -84,14 +90,14 @@ describe('LogMessageComponent', () => {
       },
     });
 
-    const items = wrapper.findAll('.log-payment-item');
-    expect(items).has.length(1);
-    expect(items[0].find('.resource_icon').classes()).contains('resource_icon--energy');
+    const badges = wrapper.findAll('.action-log-payment');
+    expect(badges).has.length(1);
+    expect(badges[0].find('.resource_icon').classes()).contains('resource_icon--energy');
   });
 
   it('shows no cost when the message has no payment', () => {
-    const message = new LogMessage(LogMessageType.DEFAULT, 'Generation 0', []);
-    const wrapper = shallowMount(LogMessageComponent, {
+    const message = new LogMessage(LogMessageType.DEFAULT, 'A plain message', []);
+    const wrapper = mount(LogMessageComponent, {
       ...globalConfig,
       props: {
         message,
@@ -99,9 +105,8 @@ describe('LogMessageComponent', () => {
       },
     });
 
-    expect(wrapper.findAll('.log-payment-item')).has.length(0);
+    expect(wrapper.findAll('.action-log-payment')).has.length(0);
   });
-
   it('marks irreversible undo messages', () => {
     const message = new LogMessage(LogMessageType.IRREVERSIBLE_UNDO, 'Test message', []);
     const wrapper = shallowMount(LogMessageComponent, {

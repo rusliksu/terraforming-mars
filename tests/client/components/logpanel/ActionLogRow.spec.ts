@@ -1,6 +1,7 @@
 import {shallowMount} from '@vue/test-utils';
 import {expect} from 'chai';
 import ActionLogRow from '@/client/components/logpanel/ActionLogRow.vue';
+import LogPaymentBadges from '@/client/components/logpanel/LogPaymentBadges.vue';
 import LogMessageComponent from '@/client/components/logpanel/LogMessageComponent.vue';
 import {LogMessage} from '@/common/logs/LogMessage';
 import {LogMessageType} from '@/common/logs/LogMessageType';
@@ -21,7 +22,8 @@ describe('ActionLogRow', () => {
     ];
     const entry = {kind: 'action' as const, id: 'global-action', messages: [action], complete: true};
     const wrapper = shallowMount(ActionLogRow, {
-      ...globalConfig,
+      global: {...globalConfig.global, stubs: {LogPaymentBadges}},
+
       props: {entry, viewModel: fakeViewModel({players: [
         fakePublicPlayerModel({color: 'red', name: 'Red'}),
         fakePublicPlayerModel({color: 'blue', name: 'Дамир'}),
@@ -51,7 +53,8 @@ describe('ActionLogRow', () => {
       {kind: 'global', parameter: GlobalParameter.VENUS, amount: 4, player: 'blue'},
     ];
     const wrapper = shallowMount(ActionLogRow, {
-      ...globalConfig,
+      global: {...globalConfig.global, stubs: {LogPaymentBadges}},
+
       props: {
         entry: {kind: 'action', id: 'global-counts', messages: [action], complete: true},
         viewModel: fakeViewModel(),
@@ -69,7 +72,8 @@ describe('ActionLogRow', () => {
     gained.effect = {kind: 'resource', resource: 'steel', production: false, amount: 2, player: 'blue'};
     const entry = {kind: 'action' as const, id: 'action-1', messages: [action, gained], complete: true};
     const wrapper = shallowMount(ActionLogRow, {
-      ...globalConfig,
+      global: {...globalConfig.global, stubs: {LogPaymentBadges}},
+
       props: {entry, viewModel: fakeViewModel({players: [fakePublicPlayerModel({color: 'blue', name: 'Blue'})]})},
     });
 
@@ -89,7 +93,8 @@ describe('ActionLogRow', () => {
     gained.effect = {kind: 'resource', resource: 'steel', production: false, amount: 2, player: 'blue'};
     const entry = {kind: 'action' as const, id: 'action-payment', messages: [action, gained], complete: true};
     const wrapper = shallowMount(ActionLogRow, {
-      ...globalConfig,
+      global: {...globalConfig.global, stubs: {LogPaymentBadges}},
+
       props: {entry, viewModel: fakeViewModel({players: [fakePublicPlayerModel({color: 'blue', name: 'Blue'})]})},
     });
 
@@ -108,7 +113,8 @@ describe('ActionLogRow', () => {
     gained.effect = {kind: 'resource', resource: 'megacredits', production: false, amount: 17, player: 'blue'};
     const entry = {kind: 'action' as const, id: 'action-trade', messages: [action, trade, gained], complete: true};
     const wrapper = shallowMount(ActionLogRow, {
-      ...globalConfig,
+      global: {...globalConfig.global, stubs: {LogPaymentBadges}},
+
       props: {entry, viewModel: fakeViewModel({players: [fakePublicPlayerModel({color: 'blue', name: 'Blue'})]})},
     });
 
@@ -129,7 +135,8 @@ describe('ActionLogRow', () => {
     ]);
     const entry = {kind: 'action' as const, id: 'action-2', messages: [action, production, oceanBonus], complete: true};
     const wrapper = shallowMount(ActionLogRow, {
-      ...globalConfig,
+      global: {...globalConfig.global, stubs: {LogPaymentBadges}},
+
       props: {entry, viewModel: fakeViewModel({players: [fakePublicPlayerModel({color: 'blue', name: 'Blue'})]})},
     });
 
@@ -148,7 +155,8 @@ describe('ActionLogRow', () => {
     changed.effect = {kind: 'tr', amount: -1, player: 'blue'};
     const entry = {kind: 'action' as const, id: 'action-3', messages: [action, changed], complete: true};
     const wrapper = shallowMount(ActionLogRow, {
-      ...globalConfig,
+      global: {...globalConfig.global, stubs: {LogPaymentBadges}},
+
       props: {entry, viewModel: fakeViewModel({players: [
         fakePublicPlayerModel({color: 'red', name: 'Red'}),
         fakePublicPlayerModel({color: 'blue', name: 'Дамир'}),
@@ -172,7 +180,8 @@ describe('ActionLogRow', () => {
     ]);
     const entry = {kind: 'action' as const, id: 'action-4', messages: [action, placement], complete: true};
     const wrapper = shallowMount(ActionLogRow, {
-      ...globalConfig,
+      global: {...globalConfig.global, stubs: {LogPaymentBadges}},
+
       props: {entry, viewModel: fakeViewModel({players: [fakePublicPlayerModel({color: 'blue', name: 'Blue'})]})},
     });
 

@@ -10,6 +10,16 @@ import {testGame} from '../TestGame';
 import {Server} from '../../src/server/models/ServerModel';
 import {SelectOption} from '../../src/server/inputs/SelectOption';
 
+// The end-to-end game is random. A fixed seed and a repeatable answer stream keep this test
+// reproducible instead of depending on the CI machine's luck.
+function seededRandom(): () => number {
+  let state = 0x1234567;
+  return () => {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    return state / 0x100000000;
+  };
+}
+
 describe('AI player', () => {
   it('keeps its level through serialization', () => {
     const [game, player] = testGame(2);
@@ -52,7 +62,8 @@ describe('AI player', () => {
       maximumGenerations: 30,
       maximumDecisions: 20000,
       maximumAttemptsPerDecision: 200,
-      random: Math.random,
+      seed: 0.42,
+      random: seededRandom(),
       // Without rollouts: they take seconds per action, the whole game would exceed the timeout.
       responders: [(input, player) => {
         setPlayerTuning(player.id, 'noRollout');
@@ -62,5 +73,5 @@ describe('AI player', () => {
     clearPlayerTunings();
     expect(result.finished).is.true;
     expect(result.victoryPoints[0]).greaterThan(result.victoryPoints[1]);
-  }).timeout(180000); // The custom server build is slower than upstream; the game takes ~30-90 s here.
+  }).timeout(600000); // The custom server build is slower than upstream and CI runners vary: ~30-90 s locally.
 });

@@ -13,6 +13,7 @@ export type WrybitViews = {
   adminHome?: Component;
   loginHome?: Component;
   help?: Component;
+  gameEnd?: Component;
   playerHome?: Component<{playerView: PlayerViewModel}>;
   spectatorHome?: Component<{spectator: SpectatorModel}>;
   inputs?: InputPresentationRegistry;

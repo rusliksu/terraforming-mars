@@ -52,3 +52,5 @@ Baseline: WP05 approved, HEAD `39ac7e271d`.
 - LoadGameForm, GamesOverview, AdminHome and LoginHome adapted to Wrybit pages; native fetch/access behavior preserved and empty/error states checked.
 - Verified: route matrix desktop/mobile, StartScreen (8 links/canvas), HelpOverlay (7 tabs), settings (5 groups/15 switches), shell fallback; vitest 285 files/1276 tests; ESLint/Stylelint/vue-tsc/build green. Evidence: `evidence-T021-20261024.md`.
 
+- T022: Wrybit GameEnd registered; multiplayer, solo win/loss, VP/contributions, charts, board and log verified at desktop/mobile; evidence in `evidence-T022-20261024.md`.
+

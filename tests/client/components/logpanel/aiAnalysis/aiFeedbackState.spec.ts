@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import {LogMessage} from '@/common/logs/LogMessage';
 import {LogMessageType} from '@/common/logs/LogMessageType';
 import {AiDecisionSummary} from '@/common/ai/AiDecisionSummary';
-import {aiFeedbackState, closeAiDecision, decisionSummaries, openAiDecision, targetOf} from '@/client/components/logpanel/aiAnalysis/aiFeedbackState';
+import {aiFeedbackState, closeAiDecision, decisionSummaries, openAiDecision, openAiDecisionIndex, stepAiDecision, targetOf} from '@/client/components/logpanel/aiAnalysis/aiFeedbackState';
 
 function message(text: string): LogMessage {
   return new LogMessage(LogMessageType.DEFAULT, text, []);
@@ -44,6 +44,30 @@ describe('aiFeedbackState', () => {
     const summaries = decisionSummaries([first, second]);
     expect([...summaries.keys()]).deep.eq([summary.id]);
     expect(summaries.get(summary.id)).eq(summary);
+  });
+
+  it('steps between AI rows and stops at the ends', () => {
+    const first = message('first');
+    first.id = '1.a';
+    first.aiInsight = 'red';
+    first.aiDecisionId = summary.id;
+    first.aiDecision = summary;
+    const second = message('second');
+    second.id = '2.b';
+    second.aiInsight = 'green';
+    const targets = [targetOf(first)!, targetOf(second)!];
+    const summaries = decisionSummaries([first]);
+
+    openAiDecision(targets[0], summary, {id: 'p-red'} as any, undefined, targets, summaries);
+    expect(openAiDecisionIndex()).eq(0);
+    stepAiDecision(1);
+    expect(aiFeedbackState.dialog?.target.messageId).eq('2.b');
+    expect(aiFeedbackState.dialog?.decision).is.undefined;
+    stepAiDecision(1);
+    expect(aiFeedbackState.dialog?.target.messageId).eq('2.b');
+    stepAiDecision(-1);
+    expect(aiFeedbackState.dialog?.target.messageId).eq('1.a');
+    expect(aiFeedbackState.dialog?.decision).eq(summary);
   });
 
   it('opens and closes the dialog', () => {

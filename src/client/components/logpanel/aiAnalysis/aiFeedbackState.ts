@@ -21,6 +21,9 @@ export type AiLogTarget = {
 type OpenDialog = {
   target: AiLogTarget,
   decision: AiDecisionSummary | undefined,
+  // All AI rows of the log in order and the decisions by id: the dialog steps to the previous/next one
+  targets: ReadonlyArray<AiLogTarget>,
+  summaries: ReadonlyMap<string, AiDecisionSummary>,
   viewModel: ViewModel,
   rating: AiFeedbackRating | undefined,
 };
@@ -70,9 +73,28 @@ export function ratingsOf(messageId: string): Array<AiFeedbackEntry> {
   return aiFeedbackState.ratings.filter((entry) => entry.messageId === messageId);
 }
 
-export function openAiDecision(target: AiLogTarget, decision: AiDecisionSummary | undefined, viewModel: ViewModel, rating?: AiFeedbackRating): void {
+export function openAiDecision(target: AiLogTarget, decision: AiDecisionSummary | undefined, viewModel: ViewModel, rating?: AiFeedbackRating,
+  targets: ReadonlyArray<AiLogTarget> = [], summaries: ReadonlyMap<string, AiDecisionSummary> = new Map()): void {
   aiFeedbackState.error = undefined;
-  aiFeedbackState.dialog = markRaw({target, decision, viewModel, rating});
+  aiFeedbackState.dialog = markRaw({target, decision, targets, summaries, viewModel, rating});
+}
+
+/** Position of the open row among all AI rows, or -1. */
+export function openAiDecisionIndex(): number {
+  const dialog = aiFeedbackState.dialog;
+  return dialog === undefined ? -1 : dialog.targets.findIndex((target) => target.messageId === dialog.target.messageId);
+}
+
+/** Opens the previous (-1) or next (+1) AI row; at the ends nothing happens. */
+export function stepAiDecision(step: -1 | 1): void {
+  const dialog = aiFeedbackState.dialog;
+  if (dialog === undefined) {
+    return;
+  }
+  const next = dialog.targets[openAiDecisionIndex() + step];
+  if (next !== undefined) {
+    openAiDecision(next, next.decisionId === undefined ? undefined : dialog.summaries.get(next.decisionId), dialog.viewModel, undefined, dialog.targets, dialog.summaries);
+  }
 }
 
 export function closeAiDecision(): void {

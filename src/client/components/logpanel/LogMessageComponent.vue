@@ -39,6 +39,11 @@
       </span>
     </template>
     <LogPaymentBadges :payment="message.payment"/>
+    <span v-if="message.aiInsight !== undefined" class="ai-log-rate-bar" data-test="ai-log-rate-bar" @click.stop>
+      <button v-for="choice in AI_RATING_CHOICES" :key="choice.rating" type="button"
+        class="ai-log-rate-bar__button" :title="choice.label" :data-test="'ai-rate-' + choice.rating"
+        @click.stop="$emit('aiRate', choice.rating)">{{ AI_FEEDBACK_EMOJI[choice.rating] }}</button>
+    </span>
    </li>
 </template>
 
@@ -66,6 +71,8 @@ import {range} from '@/common/utils/utils';
 import {renderMarkdown} from '@/client/markdown/markdown';
 import {CardResource} from '@/common/CardResource';
 import LogPaymentBadges from './LogPaymentBadges.vue';
+import {AI_FEEDBACK_EMOJI} from '@/common/ai/AiFeedback';
+import {AI_RATING_CHOICES} from '@/client/components/logpanel/aiAnalysis/aiRatingChoices';
 
 const cardTypeToCss: Record<CardType, string | undefined> = {
   event: 'background-color-events',
@@ -82,6 +89,7 @@ const cardTypeToCss: Record<CardType, string | undefined> = {
 export default defineComponent({
   name: 'LogMessageComponent',
   components: {LogPaymentBadges},
+  emits: ['click', 'spaceClicked', 'aiRate'],
   props: {
     message: {
       type: Object as () => LogMessage,
@@ -164,6 +172,8 @@ export default defineComponent({
     },
   },
   computed: {
+    AI_RATING_CHOICES: () => AI_RATING_CHOICES,
+    AI_FEEDBACK_EMOJI: () => AI_FEEDBACK_EMOJI,
     entries() {
       if (this.message === undefined) {
         return [];
@@ -205,3 +215,26 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="less" scoped>
+.ai-log-rate-bar {
+  display: none;
+  margin-left: 6px;
+  vertical-align: middle;
+
+  &__button {
+    padding: 0 1px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1;
+  }
+}
+
+li:hover > .ai-log-rate-bar,
+li:focus-within > .ai-log-rate-bar {
+  display: inline-flex;
+  gap: 2px;
+}
+</style>

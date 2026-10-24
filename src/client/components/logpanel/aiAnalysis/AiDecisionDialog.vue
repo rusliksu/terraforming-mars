@@ -2,12 +2,24 @@
   <div v-if="dialog" class="ai-decision-dialog" data-test="ai-decision-dialog" @click.self="close">
     <div class="ai-decision-dialog__box" role="dialog" aria-modal="true" aria-labelledby="ai-decision-title">
       <h2 id="ai-decision-title" v-i18n>Rate the AI decision</h2>
+      <div v-if="dialog.targets.length > 1" class="ai-decision-dialog__nav">
+        <button type="button" class="btn" :disabled="position <= 0" data-test="ai-prev" @click="step(-1)" v-i18n>Previous</button>
+        <span class="ai-decision-dialog__counter">{{ position + 1 }} / {{ dialog.targets.length }}</span>
+        <button type="button" class="btn" :disabled="position >= dialog.targets.length - 1" data-test="ai-next" @click="step(1)" v-i18n>Next</button>
+      </div>
       <div class="ai-decision-dialog__line" data-test="ai-decision-line">
         <span class="ai-decision-dialog__color" :class="'player_bg_color_' + dialog.target.color">{{ colorName }}</span>
         <span>{{ lineText }}</span>
       </div>
+      <div v-if="cardOptions.length > 0" class="ai-decision-dialog__cards" data-test="ai-decision-cards">
+        <div v-for="option in cardOptions" :key="option.index"
+          :class="['ai-decision-dialog__card', {'ai-decision-dialog__card--chosen': option.chosen === true}]">
+          <Card :card="cardModel(option.card)"/>
+          <span class="ai-decision-dialog__value">{{ option.chosen === true ? '✓ ' : '' }}{{ formatValue(option.value) }}</span>
+        </div>
+      </div>
       <ol v-if="dialog.decision" class="ai-decision-dialog__options" data-test="ai-decision-options">
-        <li v-for="option in dialog.decision.options" :key="option.index"
+        <li v-for="option in listOptions" :key="option.index"
           :class="['ai-decision-dialog__option', {'ai-decision-dialog__option--chosen': option.chosen === true}]">
           <span class="ai-decision-dialog__mark">{{ option.chosen === true ? '✓' : '' }}</span>
           <span class="ai-decision-dialog__label">{{ optionLabel(option) }}</span>
@@ -52,10 +64,13 @@
 <script setup lang="ts">
 import {computed, ref} from 'vue';
 import {AI_FEEDBACK_EMOJI, canNameBetterOption, AiFeedbackRating, MAX_AI_FEEDBACK_TEXT} from '@/common/ai/AiFeedback';
+import {CardName} from '@/common/cards/CardName';
 import {Log} from '@/common/logs/Log';
 import {translateText} from '@/client/directives/i18n';
-import {aiFeedbackState, closeAiDecision, saveAiFeedback, ratingsOf} from './aiFeedbackState';
-import {formatValue, optionLabel} from './aiDecisionOptions';
+import Card from '@/client/components/card/Card.vue';
+import {logCardModel} from '@/client/components/logpanel/logCardModel';
+import {aiFeedbackState, closeAiDecision, openAiDecisionIndex, ratingsOf, saveAiFeedback, stepAiDecision} from './aiFeedbackState';
+import {formatValue, optionCard, optionLabel} from './aiDecisionOptions';
 import {AI_RATING_CHOICES} from './aiRatingChoices';
 
 const dialog = computed(() => aiFeedbackState.dialog);
@@ -70,6 +85,20 @@ const lineText = computed(() => {
   return message === undefined ? '' : Log.applyData(message, (datum) => datum.value?.toString() ?? '');
 });
 const existingRatings = computed(() => dialog.value === undefined ? [] : ratingsOf(dialog.value.target.messageId));
+const position = computed(() => openAiDecisionIndex());
+const cardOptions = computed(() => (dialog.value?.decision?.options ?? []).filter((option) => optionCard(option) !== undefined));
+const listOptions = computed(() => (dialog.value?.decision?.options ?? []).filter((option) => optionCard(option) === undefined));
+
+function cardModel(name: string | undefined) {
+  return logCardModel(name as CardName, dialog.value?.viewModel.players ?? []);
+}
+
+function step(delta: -1 | 1): void {
+  stepAiDecision(delta);
+  rating.value = undefined;
+  betterOptionIndex.value = undefined;
+  text.value = '';
+}
 
 async function save(): Promise<void> {
   const current = dialog.value;
@@ -195,6 +224,38 @@ function close(): void {
     display: flex;
     gap: 8px;
     margin-top: 12px;
+  }
+}
+</style>
+
+<style lang="less" scoped>
+.ai-decision-dialog__nav {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 4px 0 10px;
+}
+
+.ai-decision-dialog__counter {
+  font-size: 12px;
+  color: #bbb;
+}
+
+.ai-decision-dialog__cards {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+}
+
+.ai-decision-dialog__card {
+  flex: 0 0 150px;
+  text-align: center;
+
+  &--chosen {
+    outline: 2px solid #7cc6ff;
+    border-radius: 4px;
   }
 }
 </style>

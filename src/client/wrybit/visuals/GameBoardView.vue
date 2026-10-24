@@ -11,7 +11,7 @@
         :tileView="tileView" @toggleTileView="$emit('toggleTileView')" id="shortkey-board"/>
       </Teleport>
     </template>
-    <template #marsAside><slot name="marsAside"/></template>
+    <template #marsAside><slot name="marsAside"></slot></template>
     <template #moon><Teleport :to="boardZoomTarget ?? 'body'" :disabled="boardZoomTarget === undefined || zoomBoard !== 'moon'">
       <MoonBoard v-if="game.moon" ref="columnMoon" class="board-cont--zoomable" @click="onBoardClick($event, 'moon')" :model="game.moon" :tileView="tileView" id="shortkey-moonBoard"/>
     </Teleport></template>

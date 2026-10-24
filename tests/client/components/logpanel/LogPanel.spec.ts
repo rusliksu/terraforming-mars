@@ -8,6 +8,7 @@ import {LogMessage} from '@/common/logs/LogMessage';
 import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
 import {LogMessageType} from '@/common/logs/LogMessageType';
 import LogMessageComponent from '@/client/components/logpanel/LogMessageComponent.vue';
+import {aiFeedbackState, closeAiDecision} from '@/client/components/logpanel/aiAnalysis/aiFeedbackState';
 import LogGenerationList from '@/client/components/logpanel/LogGenerationList.vue';
 import {CardName} from '@/common/cards/CardName';
 
@@ -79,6 +80,29 @@ describe('LogPanel', () => {
     (global as any).fetch = originalFetch;
     (global as any).ResizeObserver = originalResizeObserver;
     document.getElementById = originalGetElementById;
+  });
+
+  it('opens the rating dialog when the hover bar emits a rating', async () => {
+    const viewModel = fakeViewModel();
+    (viewModel.game.gameOptions as any).aiAnalysis = true;
+    const message = new LogMessage(LogMessageType.DEFAULT, 'ai line', []);
+    message.id = '1.a';
+    message.aiInsight = 'red';
+    (global as any).fetch = (url: string) => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve(url.includes('api/game/logs') ? [message] : []),
+    });
+    const wrapper = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {viewModel, color: 'blue'},
+    });
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    await wrapper.vm.$nextTick();
+    wrapper.findComponent(LogMessageComponent).vm.$emit('aiRate', 'up');
+    await wrapper.vm.$nextTick();
+    expect(aiFeedbackState.dialog?.target.messageId).eq('1.a');
+    expect(aiFeedbackState.dialog?.rating).eq('up');
+    closeAiDecision();
   });
 
   it('mounts without errors', () => {

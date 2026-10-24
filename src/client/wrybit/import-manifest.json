@@ -276,11 +276,22 @@
       "sourceSha256": "94eae4812ccef7d63eac1a6121088438cf0c61d55844d7746610769f57fd4c4f",
       "sourceLines": 96,
       "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "reason": "Перенести представление с нашими моделями, доступами и обработчиками. Source child is not mounted by the current App shell; native equivalent or no route is used.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/BugReportDialog.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "not-required",
+      "evidence": [
+        {
+          "kind": "scope-decision",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T024-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/handoff-20261024.md"
+          ],
+          "note": "No target file: source child has no mounted route in T021/T024; deliberate native-reuse/defer decision, not a hidden port."
+        }
+      ]
     },
     {
       "source": "src/client/components/CancelActionButton.vue",
@@ -621,8 +632,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/GameEnd.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T022-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-gameend-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-gameend-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/GameHome.vue",
@@ -630,11 +652,22 @@
       "sourceSha256": "6a795880b236e7b0376635e4b6e72ab1e6616e27b9d04c185b2e3186bd0628ca",
       "sourceLines": 178,
       "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "reason": "Перенести представление с нашими моделями, доступами и обработчиками. Source child is not mounted by the current App shell; native equivalent or no route is used.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/GameHome.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "not-required",
+      "evidence": [
+        {
+          "kind": "scope-decision",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T024-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/handoff-20261024.md"
+          ],
+          "note": "No target file: source child has no mounted route in T021/T024; deliberate native-reuse/defer decision, not a hidden port."
+        }
+      ]
     },
     {
       "source": "src/client/components/GameOptionsPopup.vue",
@@ -681,8 +714,18 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/GamesOverview.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/handoff-20261024.md"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/GlobalParameterValue.vue",
@@ -981,8 +1024,18 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/LoadGameForm.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/handoff-20261024.md"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/Milestone.vue",
@@ -1079,11 +1132,22 @@
       "sourceSha256": "6bd1000bb210a2b588897d3371a42a582e9aa5db157889d1c835976644897d64",
       "sourceLines": 21,
       "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "reason": "Перенести представление с нашими моделями, доступами и обработчиками. Source child is not mounted by the current App shell; native equivalent or no route is used.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/OnlinePlayers.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "not-required",
+      "evidence": [
+        {
+          "kind": "scope-decision",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T024-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/handoff-20261024.md"
+          ],
+          "note": "No target file: source child has no mounted route in T021/T024; deliberate native-reuse/defer decision, not a hidden port."
+        }
+      ]
     },
     {
       "source": "src/client/components/OrOptions.vue",
@@ -2839,8 +2903,18 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/StartScreen.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/handoff-20261024.md"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/StartScreenFooter.vue",
@@ -2848,11 +2922,22 @@
       "sourceSha256": "99e95e14932b67d0a8ab476ad569a94dd4a81229c444700508cab49a6544fae8",
       "sourceLines": 28,
       "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "reason": "Перенести представление с нашими моделями, доступами и обработчиками. Source child is not mounted by the current App shell; native equivalent or no route is used.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/StartScreenFooter.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "not-required",
+      "evidence": [
+        {
+          "kind": "scope-decision",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T024-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/handoff-20261024.md"
+          ],
+          "note": "No target file: source child has no mounted route in T021/T024; deliberate native-reuse/defer decision, not a hidden port."
+        }
+      ]
     },
     {
       "source": "src/client/components/TabIntroBlock.vue",
@@ -2996,11 +3081,22 @@
       "sourceSha256": "c796bff1726e456b0c1972ebc4e27d267a17370d69cdd39c7460e809f5bb8998",
       "sourceLines": 30,
       "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "reason": "Перенести представление с нашими моделями, доступами и обработчиками. Source child is not mounted by the current App shell; native equivalent or no route is used.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/TerraformedBanner.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "not-required",
+      "evidence": [
+        {
+          "kind": "scope-decision",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T024-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/handoff-20261024.md"
+          ],
+          "note": "No target file: source child has no mounted route in T021/T024; deliberate native-reuse/defer decision, not a hidden port."
+        }
+      ]
     },
     {
       "source": "src/client/components/TopBar.vue",
@@ -3210,11 +3306,20 @@
       "sourceSha256": "9b40d0821832c08f772a283d773ea67c867badca79d20fc5d3fcd7710cb0a9d8",
       "sourceLines": 26,
       "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "reason": "Перенести представление с нашими моделями, доступами и обработчиками. The admin shell keeps the native read-only endpoint list; source ServerSettingsPanel is not mounted because the fork has no server-settings API.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/admin/AdminHome.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "adapted-native",
+      "evidence": [
+        {
+          "kind": "native-admin-surface",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md"
+          ],
+          "note": "Wrybit AdminNav + native admin links; access rules unchanged. Source ServerSettingsPanel remains deliberately unmounted."
+        }
+      ]
     },
     {
       "source": "src/client/components/admin/AdminNav.vue",
@@ -3225,8 +3330,18 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/admin/AdminNav.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/handoff-20261024.md"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/admin/DeleteGameButton.vue",
@@ -3234,11 +3349,22 @@
       "sourceSha256": "57934a2b7a9c420da8fdaf6152c2a2db7c53210b9b89279900948860b810f10a",
       "sourceLines": 47,
       "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "reason": "Перенести представление с нашими моделями, доступами и обработчиками. Source child is not mounted by the current App shell; native equivalent or no route is used.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/admin/DeleteGameButton.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "not-required",
+      "evidence": [
+        {
+          "kind": "scope-decision",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T024-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/handoff-20261024.md"
+          ],
+          "note": "No target file: source child has no mounted route in T021/T024; deliberate native-reuse/defer decision, not a hidden port."
+        }
+      ]
     },
     {
       "source": "src/client/components/admin/GameOverview.vue",
@@ -3246,11 +3372,22 @@
       "sourceSha256": "f40c75b50919f2bcd52198c1aa95886cf8deb1f60d514a7d284474fe3538e985",
       "sourceLines": 89,
       "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "reason": "Перенести представление с нашими моделями, доступами и обработчиками. Source child is not mounted by the current App shell; native equivalent or no route is used.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/admin/GameOverview.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "not-required",
+      "evidence": [
+        {
+          "kind": "scope-decision",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T024-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/handoff-20261024.md"
+          ],
+          "note": "No target file: source child has no mounted route in T021/T024; deliberate native-reuse/defer decision, not a hidden port."
+        }
+      ]
     },
     {
       "source": "src/client/components/admin/ImportGameForm.vue",
@@ -3258,11 +3395,22 @@
       "sourceSha256": "a00caf7feebdab292cb3d74728173e41fbf6d9013ad113139a2992773a97f460",
       "sourceLines": 57,
       "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "reason": "Перенести представление с нашими моделями, доступами и обработчиками. Source child is not mounted by the current App shell; native equivalent or no route is used.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/admin/ImportGameForm.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "not-required",
+      "evidence": [
+        {
+          "kind": "scope-decision",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T024-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/handoff-20261024.md"
+          ],
+          "note": "No target file: source child has no mounted route in T021/T024; deliberate native-reuse/defer decision, not a hidden port."
+        }
+      ]
     },
     {
       "source": "src/client/components/admin/ServerIdPrompt.vue",
@@ -3270,11 +3418,22 @@
       "sourceSha256": "4597ceed9d22c60de9ab7983dd7298120a32d91a450d9ed341c053926a05a350",
       "sourceLines": 32,
       "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "reason": "Перенести представление с нашими моделями, доступами и обработчиками. Source child is not mounted by the current App shell; native equivalent or no route is used.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/admin/ServerIdPrompt.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "not-required",
+      "evidence": [
+        {
+          "kind": "scope-decision",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T024-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/handoff-20261024.md"
+          ],
+          "note": "No target file: source child has no mounted route in T021/T024; deliberate native-reuse/defer decision, not a hidden port."
+        }
+      ]
     },
     {
       "source": "src/client/components/admin/ServerSettingsPanel.vue",
@@ -3282,11 +3441,22 @@
       "sourceSha256": "ae83c169b491d1107f707bdf55818ea943fee9825bbb0bf80b2b91dd19dfa654",
       "sourceLines": 211,
       "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "reason": "Перенести представление с нашими моделями, доступами и обработчиками. Source child is not mounted by the current App shell; native equivalent or no route is used.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/admin/ServerSettingsPanel.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "not-required",
+      "evidence": [
+        {
+          "kind": "scope-decision",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T024-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/handoff-20261024.md"
+          ],
+          "note": "No target file: source child has no mounted route in T021/T024; deliberate native-reuse/defer decision, not a hidden port."
+        }
+      ]
     },
     {
       "source": "src/client/components/amount/AmountConverter.vue",
@@ -3408,8 +3578,18 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/auth/LoginHome.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/handoff-20261024.md"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/board/BoardSpaceCube.vue",
@@ -6184,8 +6364,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/gameend/GameEndChartTabs.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T022-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-gameend-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-gameend-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/gameend/GameOverNotice.vue",
@@ -6196,8 +6387,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/gameend/GameOverNotice.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T022-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-gameend-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-gameend-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/gameend/VictoryPointChart.vue",
@@ -6208,8 +6410,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/gameend/VictoryPointChart.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T022-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-gameend-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-gameend-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/help/Help.vue",
@@ -6220,8 +6433,17 @@
       "reason": "Исходный компонент совпадает с нашей базой; оформление проверяется в режиме Wrybit.",
       "package": "WP06",
       "target": "src/client/components/help/Help.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "reuse-native",
+      "evidence": [
+        {
+          "kind": "native-reuse",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md"
+          ],
+          "note": "Native canonical component is reused by the Wrybit shell; no duplicate Wrybit copy."
+        }
+      ]
     },
     {
       "source": "src/client/components/help/HelpHotkeys.vue",
@@ -6232,8 +6454,17 @@
       "reason": "Исходный компонент совпадает с нашей базой; оформление проверяется в режиме Wrybit.",
       "package": "WP06",
       "target": "src/client/components/help/HelpHotkeys.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "reuse-native",
+      "evidence": [
+        {
+          "kind": "native-reuse",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md"
+          ],
+          "note": "Native canonical component is reused by the Wrybit shell; no duplicate Wrybit copy."
+        }
+      ]
     },
     {
       "source": "src/client/components/help/HelpIconology.vue",
@@ -6241,11 +6472,22 @@
       "sourceSha256": "312a9418fe3bc1c841361492781cf48f1d60040b1686c46ba61557bc79b68acb",
       "sourceLines": 225,
       "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "reason": "Перенести представление с нашими моделями, доступами и обработчиками. Source child is not mounted by the current App shell; native equivalent or no route is used.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/help/HelpIconology.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "not-required",
+      "evidence": [
+        {
+          "kind": "scope-decision",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T024-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/handoff-20261024.md"
+          ],
+          "note": "No target file: source child has no mounted route in T021/T024; deliberate native-reuse/defer decision, not a hidden port."
+        }
+      ]
     },
     {
       "source": "src/client/components/help/HelpPhases.vue",
@@ -6253,11 +6495,22 @@
       "sourceSha256": "80b6da896372ea2deac31309c28b79c37a5f47b263ee5a0af695e0b704da460c",
       "sourceLines": 160,
       "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "reason": "Перенести представление с нашими моделями, доступами и обработчиками. Source child is not mounted by the current App shell; native equivalent or no route is used.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/help/HelpPhases.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "not-required",
+      "evidence": [
+        {
+          "kind": "scope-decision",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T024-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/handoff-20261024.md"
+          ],
+          "note": "No target file: source child has no mounted route in T021/T024; deliberate native-reuse/defer decision, not a hidden port."
+        }
+      ]
     },
     {
       "source": "src/client/components/help/HelpRulebooks.vue",
@@ -6265,11 +6518,22 @@
       "sourceSha256": "03274df1371b07d21749e14e25713eb4cd0938309be8f0b01af920dd76d4b968",
       "sourceLines": 65,
       "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "reason": "Перенести представление с нашими моделями, доступами и обработчиками. Source child is not mounted by the current App shell; native equivalent or no route is used.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/help/HelpRulebooks.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "not-required",
+      "evidence": [
+        {
+          "kind": "scope-decision",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T024-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/handoff-20261024.md"
+          ],
+          "note": "No target file: source child has no mounted route in T021/T024; deliberate native-reuse/defer decision, not a hidden port."
+        }
+      ]
     },
     {
       "source": "src/client/components/help/HelpSoloRules.vue",
@@ -6280,8 +6544,17 @@
       "reason": "Исходный компонент совпадает с нашей базой; оформление проверяется в режиме Wrybit.",
       "package": "WP06",
       "target": "src/client/components/help/HelpSoloRules.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "reuse-native",
+      "evidence": [
+        {
+          "kind": "native-reuse",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md"
+          ],
+          "note": "Native canonical component is reused by the Wrybit shell; no duplicate Wrybit copy."
+        }
+      ]
     },
     {
       "source": "src/client/components/help/HelpStandardProjects.vue",
@@ -6289,11 +6562,22 @@
       "sourceSha256": "98bba94ed71f39fd0442f4593796e9acbd7cbe210f19cde78e4a6f91d6ab3c68",
       "sourceLines": 62,
       "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "reason": "Перенести представление с нашими моделями, доступами и обработчиками. Source child is not mounted by the current App shell; native equivalent or no route is used.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/help/HelpStandardProjects.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "not-required",
+      "evidence": [
+        {
+          "kind": "scope-decision",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T024-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/handoff-20261024.md"
+          ],
+          "note": "No target file: source child has no mounted route in T021/T024; deliberate native-reuse/defer decision, not a hidden port."
+        }
+      ]
     },
     {
       "source": "src/client/components/help/HelpTurmoilParties.vue",
@@ -6301,11 +6585,22 @@
       "sourceSha256": "a5cff356f6e72885520581d6a270aa4e924e2695f6c1541bcc7145e1a852bd82",
       "sourceLines": 69,
       "decision": "adapt-view",
-      "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
+      "reason": "Перенести представление с нашими моделями, доступами и обработчиками. Source child is not mounted by the current App shell; native equivalent or no route is used.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/help/HelpTurmoilParties.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "not-required",
+      "evidence": [
+        {
+          "kind": "scope-decision",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T024-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/handoff-20261024.md"
+          ],
+          "note": "No target file: source child has no mounted route in T021/T024; deliberate native-reuse/defer decision, not a hidden port."
+        }
+      ]
     },
     {
       "source": "src/client/components/helpOverlay/HelpKeyboardShortcuts.vue",
@@ -6316,8 +6611,18 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/helpOverlay/HelpKeyboardShortcuts.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T024-20261024.md"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/helpOverlay/HelpOutlineNav.vue",
@@ -6328,8 +6633,18 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/helpOverlay/HelpOutlineNav.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T024-20261024.md"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/helpOverlay/HelpOverlay.vue",
@@ -6340,8 +6655,18 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/helpOverlay/HelpOverlay.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T021-20261024.md",
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T024-20261024.md"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/logpanel/CardPanel.vue",
@@ -7470,8 +7795,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsBarChart.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsBoardHeatmap.vue",
@@ -7482,8 +7818,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsBoardHeatmap.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsBoardPreview.vue",
@@ -7494,8 +7841,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsBoardPreview.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsCardZoom.vue",
@@ -7506,8 +7864,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsCardZoom.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsCombinationsView.vue",
@@ -7518,8 +7887,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsCombinationsView.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsEntityAsset.vue",
@@ -7530,8 +7910,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsEntityAsset.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsEntityDetail.vue",
@@ -7542,8 +7933,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsEntityDetail.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsEntityList.vue",
@@ -7554,8 +7956,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsEntityList.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsEntityName.vue",
@@ -7566,8 +7979,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsEntityName.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsGameList.vue",
@@ -7578,8 +8002,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsGameList.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsGamesView.vue",
@@ -7590,8 +8025,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsGamesView.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsKpis.vue",
@@ -7602,8 +8048,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsKpis.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsLineChart.vue",
@@ -7614,8 +8071,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsLineChart.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsOverview.vue",
@@ -7626,8 +8094,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsOverview.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsPage.vue",
@@ -7638,8 +8117,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsPage.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsPlayersView.vue",
@@ -7650,8 +8140,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsPlayersView.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsPointSources.vue",
@@ -7662,8 +8163,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsPointSources.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsRecordsView.vue",
@@ -7674,8 +8186,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsRecordsView.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsShowcase.vue",
@@ -7686,8 +8209,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsShowcase.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsSkeleton.vue",
@@ -7698,8 +8232,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsSkeleton.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsTable.vue",
@@ -7710,8 +8255,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsTable.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsTopView.vue",
@@ -7722,8 +8278,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsTopView.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/stats/StatsWinRate.vue",
@@ -7734,8 +8301,19 @@
       "reason": "Перенести представление с нашими моделями, доступами и обработчиками.",
       "package": "WP06",
       "target": "src/client/wrybit/pages/stats/StatsWinRate.vue",
-      "status": "planned",
-      "evidence": []
+      "status": "passed-scoped-checks",
+      "evidence": [
+        {
+          "kind": "wp06-source-port",
+          "status": "passed-scoped-checks",
+          "paths": [
+            "kitty-specs/wrybit-full-ui-01M4R0GH/tasks/WP06-pages/evidence-T023-20261024.md",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-desktop.png",
+            "D:/tm-db/smartbot-lab/wrybit-full-ui-01a126c8/visual-proof/review-fix-stats-mobile.png"
+          ],
+          "note": "Source component ported into the optional Wrybit page tree; behavior and browser route checked in WP06 evidence."
+        }
+      ]
     },
     {
       "source": "src/client/components/trackBonus/BoardTrackRow.vue",

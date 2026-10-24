@@ -57,4 +57,3 @@ Baseline: WP05 approved, HEAD `39ac7e271d`.
 - T023: public `/api/wrybit/stats` projection over ELO history; Wrybit StatsPage tabs Overview/Games/Players/Corporations/Boards/Records, filters, empty/error states; evidence `evidence-T023-20261024.md`.
 
 - T024: native card-maker/card-library/map-editor/map-library/replay verified at desktop/mobile with Wrybit on and shell switch; no foreign API/AI audit added; external wiki fetch removed. Evidence `evidence-T024-20261024.md`.
-

@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ref} from 'vue';
+import {computed, ref, watch} from 'vue';
 import {AI_FEEDBACK_EMOJI, canNameBetterOption, AiFeedbackRating, MAX_AI_FEEDBACK_TEXT} from '@/common/ai/AiFeedback';
 import {CardName} from '@/common/cards/CardName';
 import {Log} from '@/common/logs/Log';
@@ -85,6 +85,12 @@ const lineText = computed(() => {
   return message === undefined ? '' : Log.applyData(message, (datum) => datum.value?.toString() ?? '');
 });
 const existingRatings = computed(() => dialog.value === undefined ? [] : ratingsOf(dialog.value.target.messageId));
+// The dialog component stays mounted between openings: take the preselected rating of the new row
+watch(dialog, (next) => {
+  rating.value = next?.rating;
+  betterOptionIndex.value = undefined;
+  text.value = '';
+});
 const position = computed(() => openAiDecisionIndex());
 const cardOptions = computed(() => (dialog.value?.decision?.options ?? []).filter((option) => optionCard(option) !== undefined));
 const listOptions = computed(() => (dialog.value?.decision?.options ?? []).filter((option) => optionCard(option) === undefined));

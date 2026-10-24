@@ -20,12 +20,12 @@ const summary: AiDecisionSummary = {
   ],
 };
 
-function open(): void {
+function open(rating: 'up' | 'down' | 'flag' = 'up'): void {
   const line = new LogMessage(LogMessageType.DEFAULT, 'AI played ${0}', [{type: undefined, value: 'Algae'} as any]);
   line.id = '4.c';
   line.aiInsight = 'red';
   line.aiDecisionId = summary.id;
-  openAiDecision({message: line, messageId: '4.c', decisionId: summary.id, color: 'red'}, summary, {id: 'p-red'} as any, 'up');
+  openAiDecision({message: line, messageId: '4.c', decisionId: summary.id, color: 'red'}, summary, {id: 'p-red'} as any, rating);
 }
 
 describe('AiDecisionDialog', () => {
@@ -55,6 +55,20 @@ describe('AiDecisionDialog', () => {
     expect(posted.url).include('api/ai-feedback?id=p-red');
     expect(posted.body.messageId).eq('4.c');
     expect(posted.body.rating).eq('down');
+  });
+
+  it('takes the preselected rating of each newly opened row', async () => {
+    const wrapper = mount(AiDecisionDialog, {...globalConfig});
+    await wrapper.vm.$nextTick();
+    open('up');
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-test=ai-rating-up]').classes()).include('ai-decision-dialog__rating--picked');
+    closeAiDecision();
+    await wrapper.vm.$nextTick();
+    open('down');
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-test=ai-rating-up]').classes()).not.include('ai-decision-dialog__rating--picked');
+    expect(wrapper.find('[data-test=ai-rating-down]').classes()).include('ai-decision-dialog__rating--picked');
   });
 
   it('shows cards of card options and steps to the next row', async () => {

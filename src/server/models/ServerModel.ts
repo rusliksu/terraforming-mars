@@ -43,6 +43,7 @@ import {getOceanPlacementContext} from './OceanPlacementContext';
 import {projectFinalGreenery} from './finalGreeneryPresentation';
 import {AstraMechanica} from '../cards/promo/AstraMechanica';
 import {promptIdForModel} from './promptId';
+import {aiHandOf} from '../aiFeedback/aiHandView';
 
 export class Server {
   private static readonly FANMADE_CATALOG_REVISION = 'fanmade:rebalanced-v1';
@@ -152,7 +153,7 @@ export class Server {
     const game = player.game;
     const waitingFor = player.getWaitingFor();
 
-    const players: Array<PublicPlayerModel> = game.playersInGenerationOrder.map((p) => this.getPlayer(p, p.color === player.color));
+    const players: Array<PublicPlayerModel> = game.playersInGenerationOrder.map((p) => this.getPlayer(p, p.color === player.color, {}, player));
 
     const thisPlayerIndex = players.findIndex((p) => p.color === player.color);
     const thisPlayer: PublicPlayerModel = players[thisPlayerIndex];
@@ -178,8 +179,8 @@ export class Server {
       pickedCorporationCard: player.pickedCorporationCard ? cardsToModel(player, [player.pickedCorporationCard]) : [],
       preludeCardsInHand: cardsToModel(player, player.preludeCardsInHand),
       thisPlayer: thisPlayer,
-      waitingFor: this.getWaitingFor(player, waitingFor),
-      waitingForId: this.getWaitingForId(waitingFor),
+      waitingFor: player.aiLevel !== undefined ? undefined : this.getWaitingFor(player, waitingFor),
+      waitingForId: player.aiLevel !== undefined ? undefined : this.getWaitingForId(waitingFor),
       players: players,
       autopass: player.autopass,
     };
@@ -303,7 +304,7 @@ export class Server {
   }
 
   /** When the model is for this player, show the VP. Players like seeing their own VP even if the feature is off. */
-  public static getPlayer(player: IPlayer, modelIsForThisPlayer: boolean, options: {includePrivateCards?: boolean} = {}): PublicPlayerModel {
+  public static getPlayer(player: IPlayer, modelIsForThisPlayer: boolean, options: {includePrivateCards?: boolean} = {}, reader?: IPlayer): PublicPlayerModel {
     const game = player.game;
     const useHandicap = game.players.some((p) => p.handicap !== 0);
     const model: PublicPlayerModel = {
@@ -406,6 +407,8 @@ export class Server {
     if (modelIsForThisPlayer) {
       model.oceanPlacementContext = getOceanPlacementContext(player);
     }
+
+    model.aiHand = aiHandOf(player, reader);
 
     return model;
   }
@@ -593,6 +596,7 @@ export class Server {
       removeNegativeGlobalEvents: options.removeNegativeGlobalEventsOption,
       showOtherPlayersVP: options.showOtherPlayersVP,
       privateHands: options.privateHands !== false,
+      aiAnalysis: options.aiAnalysis,
       showTimers: options.showTimers,
       shuffleMapOption: options.shuffleMapOption,
       solarPhaseOption: options.solarPhaseOption,

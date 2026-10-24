@@ -16,7 +16,8 @@ describe('Wrybit players overview with our controllers', () => {
     const third = fakePublicPlayerModel({color: 'yellow'});
     const view = fakeViewModel({thisPlayer: first, players: [first, second, third]});
     view.game.phase = Phase.END;
-    const fetch = vi.spyOn(global, 'fetch');
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
     const visibility = reactive<Record<string, boolean>>({});
     const wrapper = mount(PlayersOverview, {...globalConfig, attachTo: document.body, props: {playerView: view, readOnly: true},
       global: {...globalConfig.global, mocks: {
@@ -28,7 +29,7 @@ describe('Wrybit players overview with our controllers', () => {
       }}});
     try {
       await flushPromises();
-      expect(fetch.mock.calls).has.length(0);
+      expect(fetchMock.mock.calls).has.length(0);
       expect(wrapper.vm.tableRows.map((row: PlayersTableRowModel) => row.player.color)).deep.eq(['blue', 'yellow', 'red']);
       expect(wrapper.find('.player-elo-badge').exists()).is.false;
       const infos = wrapper.findAll('.player-info');
@@ -39,7 +40,7 @@ describe('Wrybit players overview with our controllers', () => {
       expect(visibility).deep.eq({pinned_player_0: true, pinned_player_1: false, pinned_player_2: false});
     } finally {
       wrapper.unmount();
-      fetch.mockRestore();
+      vi.unstubAllGlobals();
     }
   });
 });

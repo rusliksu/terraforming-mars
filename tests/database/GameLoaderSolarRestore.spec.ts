@@ -43,4 +43,21 @@ describe('GameLoader solar restore', () => {
     expect(waitingFor).is.an.instanceof(OrOptions);
     expect((waitingFor as OrOptions).options.length).greaterThan(0);
   });
+
+  it('restores the intergeneration phase without incrementing the generation twice', async () => {
+    const [game] = testGame(2);
+    // startGeneration() increments the counter before it moves on to drafting or research, so a
+    // game persisted in this phase already carries the new generation number.
+    const generation = 7;
+    game.generation = generation;
+    game.phase = Phase.INTERGENERATION;
+
+    await instance.saveGame(game);
+    await instance.add(game);
+    const loaded = await instance.getGame(game.id, /* forceLoad */ true);
+
+    expect(loaded).is.not.undefined;
+    expect(loaded!.generation).eq(generation);
+    expect([Phase.RESEARCH, Phase.DRAFTING]).includes(loaded!.phase);
+  });
 });

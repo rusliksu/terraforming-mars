@@ -14,7 +14,7 @@ export type SiteLink = {
 
 export const SITE_LINKS: ReadonlyArray<SiteLink> = [
   {label: 'New game', icon: 'newGame', planet: 'venus', href: 'new-game', external: false, inMenu: true},
-  {label: 'Game History & Elo', icon: 'statistics', planet: 'earth', href: '/elo/', external: false, inMenu: true},
+  {label: 'Statistics', icon: 'statistics', planet: 'earth', href: 'stats', external: false, inMenu: true},
   {label: 'Cards list', icon: 'cardsList', planet: 'mars', href: 'cards', external: true, inMenu: true},
   {label: 'Tier List', icon: 'updates', planet: 'jupiter', href: '/tierlist/', external: true, inMenu: true},
   {label: 'Map library', icon: 'boardGame', planet: 'saturn', href: 'map-library', external: false, inMenu: true},

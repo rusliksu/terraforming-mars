@@ -23,6 +23,7 @@ export const paths = {
   API_SPECTATOR: 'api/spectator',
   API_STATS: 'api/stats',
   API_WAITING_FOR: 'api/waitingfor',
+  API_WRYBIT_STATS: 'api/wrybit/stats',
   AUTH_DISCORD_CALLBACK: 'auth/discord/callback',
   AUTOPASS: 'autopass',
   CARD_LIBRARY: 'card-library',
@@ -43,5 +44,6 @@ export const paths = {
   RESET: 'reset',
   REPLAY: 'replay',
   SPECTATOR: 'spectator',
+  STATS: 'stats',
   THE_END: 'the-end',
 } as const;

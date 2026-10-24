@@ -14,6 +14,7 @@ export type WrybitViews = {
   loginHome?: Component;
   help?: Component;
   gameEnd?: Component;
+  stats?: Component;
   playerHome?: Component<{playerView: PlayerViewModel}>;
   spectatorHome?: Component<{spectator: SpectatorModel}>;
   inputs?: InputPresentationRegistry;

@@ -55,6 +55,53 @@ describe('LogMessageComponent', () => {
     expect(wrapper.find('li').classes()).contains('log-message--canceled');
   });
 
+  it('shows what a played card cost', () => {
+    const message = new LogMessage(LogMessageType.DEFAULT, '0 played 1', []);
+    message.payment = {megacredits: 7, steel: 1, titanium: 0};
+    const wrapper = shallowMount(LogMessageComponent, {
+      ...globalConfig,
+      props: {
+        message,
+        viewModel: fakeViewModel(),
+      },
+    });
+
+    const items = wrapper.findAll('.log-payment-item');
+    expect(items).has.length(2);
+    expect(items[0].text()).contains('7');
+    expect(items[0].find('.resource_icon').classes()).contains('resource_icon--megacredits');
+    expect(items[1].find('.resource_icon').classes()).contains('resource_icon--steel');
+  });
+
+  it('shows energy paid by a colony trade', () => {
+    const message = new LogMessage(LogMessageType.DEFAULT, '0 spent 1 to trade', []);
+    message.payment = {megacredits: 0, steel: 0, titanium: 0, energy: 3};
+    const wrapper = shallowMount(LogMessageComponent, {
+      ...globalConfig,
+      props: {
+        message,
+        viewModel: fakeViewModel(),
+      },
+    });
+
+    const items = wrapper.findAll('.log-payment-item');
+    expect(items).has.length(1);
+    expect(items[0].find('.resource_icon').classes()).contains('resource_icon--energy');
+  });
+
+  it('shows no cost when the message has no payment', () => {
+    const message = new LogMessage(LogMessageType.DEFAULT, 'Generation 0', []);
+    const wrapper = shallowMount(LogMessageComponent, {
+      ...globalConfig,
+      props: {
+        message,
+        viewModel: fakeViewModel(),
+      },
+    });
+
+    expect(wrapper.findAll('.log-payment-item')).has.length(0);
+  });
+
   it('marks irreversible undo messages', () => {
     const message = new LogMessage(LogMessageType.IRREVERSIBLE_UNDO, 'Test message', []);
     const wrapper = shallowMount(LogMessageComponent, {

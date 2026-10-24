@@ -75,3 +75,17 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+@media (max-width: 700px) {
+  /* The optional-layout switch floats above the top-right corner of the page.
+     Keep the login title out of that area and let it wrap instead of sliding
+     underneath the button. */
+  #login-home .admin-nav h1 {
+    box-sizing: border-box;
+    max-width: calc(100% - 120px);
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+</style>

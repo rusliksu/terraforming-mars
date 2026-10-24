@@ -17,7 +17,7 @@ describe('LakefrontResorts', () => {
     runAllActions(game);
 
     expect(player.production.megacredits).to.eq(2);
-    expect(game.gameLog.map(formatMessage)).contains('blue gained 1 M€ production because of Lakefront Resorts');
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 1:p:mc: because of Lakefront Resorts');
     // The 2 oceans are adjacent
     expect(player.megaCredits).to.eq(3);
   });

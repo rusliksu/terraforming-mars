@@ -5,6 +5,7 @@ import {Handler} from './Handler';
 import {Context} from './IHandler';
 import {Database} from '../database/Database';
 import {BoardName} from '../../common/boards/BoardName';
+import {boardOptions} from '../../common/boards/randomBoardOptions';
 import {RandomBoardOption} from '../../common/boards/RandomBoardOption';
 import {decodeCustomBoard} from '../../common/boards/customBoardCodec';
 import {decodeSimpleBoard} from '../../common/boards/simpleBoardCodec';
@@ -32,6 +33,32 @@ import {hasNegativeEscapeVelocityOption} from '../../common/game/escapeVelocity'
 
 export function normalizeTelegramId(telegramID: string | undefined): string {
   return (telegramID ?? '').trim();
+}
+
+/**
+ * Normalizes the legacy single-board 'board' field into 'boards'.
+ *
+ * API callers and cached clients that predate the multi-board 'boards' array still send a
+ * single 'board' value (a concrete BoardName or one of the random options). Without this the
+ * create-game handler would read 'boards.length' off undefined and fail with a 500.
+ */
+export function normalizeLegacyBoardSelection(gameReq: NewGameConfig): void {
+  if (Array.isArray(gameReq.boards) && gameReq.boards.length > 0) {
+    return;
+  }
+  const legacy = gameReq.board;
+  if (legacy === undefined || legacy === null) {
+    gameReq.boards = [BoardName.THARSIS];
+    return;
+  }
+  if (legacy === RandomBoardOption.OFFICIAL || legacy === RandomBoardOption.ALL) {
+    gameReq.boards = boardOptions(legacy);
+    return;
+  }
+  if (!Object.values(BoardName).includes(legacy)) {
+    throw RouteError.badRequest('Invalid board: ' + String(legacy));
+  }
+  gameReq.boards = [legacy];
 }
 
 export function isTelegramIdValid(telegramID: string | undefined): boolean {
@@ -72,23 +99,6 @@ export class ApiCreateGame extends Handler {
     this.quotaHandlers = quotaConfigs.map((config) => new QuotaHandler(config));
   }
 
-  public static boardOptions(board: RandomBoardOption | BoardName): Array<BoardName> {
-    // A custom board needs its own definition and can't be chosen by a random roll.
-    const allBoards = Object.values(BoardName).filter((name) => name !== BoardName.CUSTOM);
-
-    if (board === RandomBoardOption.ALL) {
-      return allBoards;
-    }
-    if (board === RandomBoardOption.OFFICIAL) {
-      return allBoards.filter((name) => {
-        return name === BoardName.THARSIS ||
-          name === BoardName.HELLAS ||
-          name === BoardName.ELYSIUM;
-      });
-    }
-    return [board];
-  }
-
   /**
    * Validates that each custom list can deal every player their starting cards.
    *
@@ -126,6 +136,7 @@ export class ApiCreateGame extends Handler {
       const gameReq = JSON.parse(body) as NewGameConfig;
       gameReq.expansions = {...DEFAULT_EXPANSIONS, ...gameReq.expansions};
       gameReq.expansions.betterMars &&= gameReq.expansions.pathfinders;
+      normalizeLegacyBoardSelection(gameReq);
       this.validateCustomLists(gameReq);
       const turnBasedGame = gameReq.turnBasedGame === true;
       const botGame = gameReq.botGame === true;
@@ -194,16 +205,14 @@ export class ApiCreateGame extends Handler {
         }
       }
 
-      const boardSelection = gameReq.board;
+      const boardName = gameReq.boards[Math.floor(Math.random() * gameReq.boards.length)];
+
       let customBoard: GameOptions['customBoard'] = undefined;
-      if (gameReq.board === BoardName.CUSTOM) {
+      if (boardName === BoardName.CUSTOM) {
         if (gameReq.customBoardCode === undefined) {
           throw new Error('A custom board was selected but no map code was provided.');
         }
         customBoard = decodeCustomBoard(gameReq.customBoardCode);
-      } else {
-        const boards = ApiCreateGame.boardOptions(gameReq.board);
-        gameReq.board = boards[Math.floor(Math.random() * boards.length)];
       }
 
       // Unlike Mars's customBoard, these aren't a board *selection* -- Moon/Venus Phase 2 are
@@ -235,8 +244,8 @@ export class ApiCreateGame extends Handler {
         aresHazards: true, // Not a runtime option.
         aresExtremeVariant: gameReq.aresExtremeVariant,
         bannedCards: gameReq.bannedCards,
-        boardName: gameReq.board,
-        boardSelection,
+        boardName: boardName,
+        boardSelection: gameReq.boards,
         ceoExtension: gameReq.expansions.ceo,
         clonedGamedId: gameReq.clonedGamedId ?? undefined,
         coloniesExtension: gameReq.expansions.colonies,

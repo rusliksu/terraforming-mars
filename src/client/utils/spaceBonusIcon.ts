@@ -18,11 +18,12 @@ const SPACE_BONUS_CSS: Partial<Record<SpaceBonus, string>> = {
   [SpaceBonus.ENERGY_PRODUCTION]: 'energy-production',
   [SpaceBonus.DELEGATE]: 'delegate',
   [SpaceBonus.OCEAN]: 'bonusocean',
-  [SpaceBonus.TEMPERATURE]: 'bonustemperature',
+  [SpaceBonus._TEMPERATURE_3MC]: 'bonustemperature',
   [SpaceBonus.TEMPERATURE_4MC]: 'bonustemperature4mc',
   [SpaceBonus.COLONY]: 'colony',
   [SpaceBonus.ASTEROID]: 'asteroid',
   [SpaceBonus.FLOATER]: 'floater',
+  [SpaceBonus.STANDARD_RESOURCE]: 'standard-resource',
 };
 
 /** CSS suffix for `.board-space-bonus--<suffix>` (board.less), or '' if unrecognized. */

@@ -25,7 +25,7 @@ export class SupernovaExplosion extends Card implements IProjectCard {
         renderData: CardRenderer.builder((b) => {
           b.temperature(1).br;
           b.energy(5, {digit: true}).heat(5, {digit: true}).br;
-          b.minus().plants(-4, {all});
+          b.plants(-4, {all});
         }),
         description: 'Raise temperature 1 step and gain 5 energy and 5 heat. Remove up to 4 plants from any player.',
       },

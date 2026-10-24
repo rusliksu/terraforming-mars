@@ -163,13 +163,13 @@ function formatMessageData(datum: LogMessageData): string {
   if (datum.type === LogMessageDataType.CARDS) {
     return new Intl.ListFormat('en', {type: 'conjunction', style: 'long'}).format(datum.value);
   }
-  return datum.value.toString();
+  return Log.shortcode(datum) ?? datum.value.toString();
 }
 
 /**
  * Run a few tests to see that a canPlay or canAct behaves correctly in the face of reds costs.
  *
- * @param cb the code to invoke that indicates wheter the action can be taken.
+ * @param cb the code to invoke that indicates whether the action can be taken.
  * @param player player taking the action
  * @param initialMegacredits starting money
  * @param passingDelta additional money required to take this action when Reds are in power.. Typically a multiple of 3

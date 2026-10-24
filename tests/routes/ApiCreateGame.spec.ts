@@ -1,11 +1,12 @@
 import {expect} from 'chai';
 import {BoardName} from '../../src/common/boards/BoardName';
+import {boardOptions} from '../../src/common/boards/randomBoardOptions';
+import {RandomBoardOption} from '../../src/common/boards/RandomBoardOption';
 import {ApiCreateGame, isTelegramIdValid, normalizeTelegramId} from '../../src/server/routes/ApiCreateGame';
 import {MockRequest, MockResponse} from './HttpMocks';
 import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {statusCode} from '../../src/common/http/statusCode';
 import {NewGameConfig} from '../../src/common/game/NewGameConfig';
-import {RandomBoardOption} from '../../src/common/boards/RandomBoardOption';
 import {RandomMAOptionType} from '../../src/common/ma/RandomMAOptionType';
 import {SimpleGameModel} from '../../src/common/models/SimpleGameModel';
 import {IGame} from '../../src/server/IGame';
@@ -53,7 +54,7 @@ function newGameConfigForTest(): NewGameConfig {
       underworld: false,
       deltaProject: false,
     },
-    board: RandomBoardOption.OFFICIAL,
+    boards: [BoardName.THARSIS],
     seed: 0,
     randomFirstPlayer: false,
     clonedGamedId: undefined,
@@ -119,7 +120,7 @@ function newGameConfig(players: NewGameConfig['players']): NewGameConfig {
       underworld: false,
       deltaProject: false,
     },
-    board: RandomBoardOption.OFFICIAL,
+    boards: boardOptions(RandomBoardOption.OFFICIAL),
     seed: 0,
     randomFirstPlayer: false,
     clonedGamedId: undefined,
@@ -174,13 +175,13 @@ class DelayedAddGameLoader extends FakeGameLoader {
   }
 }
 function customBoardGameConfig(customBoardCode: string): NewGameConfig {
-  return {...newGameConfigForTest(), board: BoardName.CUSTOM, customBoardCode};
+  return {...newGameConfigForTest(), boards: [BoardName.CUSTOM], customBoardCode};
 }
 
 function simpleBoardGameConfig(overrides: {moon?: boolean, venusPhase2?: boolean, customMoonBoardCode?: string, customVenusSurfaceBoardCode?: string}): NewGameConfig {
   return {
     ...customBoardGameConfig(''),
-    board: BoardName.THARSIS,
+    boards: [BoardName.THARSIS],
     customBoardCode: undefined,
     expansions: {
       ...DEFAULT_EXPANSIONS,
@@ -207,25 +208,6 @@ describe('ApiCreateGame', () => {
     res = new MockResponse();
     scaffolding = new RouteTestScaffolding(req);
     apiCreateGame = new ApiCreateGame([{limit: 99999, perMs: 1}]);
-  });
-
-  it('Official random boards do not include fan maps', () => {
-    expect(ApiCreateGame.boardOptions(RandomBoardOption.OFFICIAL)).deep.eq([BoardName.THARSIS, BoardName.HELLAS, BoardName.ELYSIUM]);
-  });
-  it('Fully random boards do include fan maps', () => {
-    expect(ApiCreateGame.boardOptions(RandomBoardOption.ALL)).deep.eq([
-      BoardName.THARSIS,
-      BoardName.HELLAS,
-      BoardName.ELYSIUM,
-      BoardName.UTOPIA_PLANITIA,
-      BoardName.VASTITAS_BOREALIS_NOVA,
-      BoardName.TERRA_CIMMERIA_NOVA,
-      BoardName.ARABIA_TERRA,
-      BoardName.VASTITAS_BOREALIS,
-      BoardName.AMAZONIS,
-      BoardName.TERRA_CIMMERIA,
-      BoardName.HOLLANDIA,
-    ]);
   });
 
   it('no get', async () => {
@@ -271,8 +253,8 @@ describe('ApiCreateGame', () => {
     expect(model.players[0]).not.have.property('botTakeoverToken');
     expect(game!.rng.seed).eq(config.seed);
     expect(game!.gameOptions.undoStepOption).is.true;
-    expect(game!.gameOptions.boardSelection).eq(RandomBoardOption.OFFICIAL);
-    expect(ApiCreateGame.boardOptions(RandomBoardOption.OFFICIAL)).contains(game!.gameOptions.boardName);
+    expect(game!.gameOptions.boardSelection).deep.eq(boardOptions(RandomBoardOption.OFFICIAL));
+    expect(boardOptions(RandomBoardOption.OFFICIAL)).contains(game!.gameOptions.boardName);
   });
 
   it('does not create bot takeover capabilities', async () => {
@@ -1061,6 +1043,36 @@ describe('ApiCreateGame', () => {
     await postGame(apiCreateGame, req2, res2);
     expect(res2.statusCode).eq(statusCode.tooManyRequests);
     expect(res2.content).eq('Quota exceeded');
+  });
+
+  // Pre-'boards' create-game payload: a single 'board' value and no 'boards' array.
+  function legacyGameConfig(board: unknown): NewGameConfig {
+    const config = {...newGameConfigForTest()} as unknown as Record<string, unknown>;
+    delete config.boards;
+    config.board = board;
+    return config as unknown as NewGameConfig;
+  }
+
+  it('normalizes a legacy single-board request into boards', async () => {
+    await postConfig(legacyGameConfig(BoardName.HELLAS));
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game!.gameOptions.boardName).eq(BoardName.HELLAS);
+    expect(game!.gameOptions.boardSelection).deep.eq([BoardName.HELLAS]);
+  });
+
+  it('expands a legacy random-official board request', async () => {
+    await postConfig(legacyGameConfig(RandomBoardOption.OFFICIAL));
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(boardOptions(RandomBoardOption.OFFICIAL)).include(game!.gameOptions.boardName);
+  });
+
+  it('rejects a legacy request naming an unknown board', async () => {
+    await postConfig(legacyGameConfig('not a board'));
+    expect(res.statusCode).eq(statusCode.badRequest);
   });
 
   it('elapsed time restores a blocked quota', async () => {

@@ -21,10 +21,13 @@ export const VENUS_STRATOPOLIS: SpaceId = safeCast('298', isSpaceId);
 export const VENUS_MAXWELL_BASE: SpaceId = safeCast('299', isSpaceId);
 
 function colonySpace(id: SpaceId): Space {
-  return {id, spaceType: SpaceType.COLONY, x: -1, y: -1, bonus: []};
+  return {id, spaceType: SpaceType.COLONY, x: -1, y: -1, bonus: [], edge: false};
 }
 
 export class VenusSurfaceBoard extends Board {
+  // This board has no printed coordinate labels.
+  public readonly A9: Readonly<Partial<Record<SpaceId, string>>> = {};
+
   // Any open, non-reserved surface space -- Cloud City and Floater Array can go here.
   public getAvailableSpacesForLand(player: IPlayer): ReadonlyArray<Space> {
     return this.spaces.filter((space) =>
@@ -141,6 +144,7 @@ class Builder {
           x: row.xOffset + i,
           y: row.y,
           bonus: this.bonuses[idx] ?? [],
+          edge: false,
         };
         this.spaces.push(space);
         if (reservedName === 'stratopolis') {

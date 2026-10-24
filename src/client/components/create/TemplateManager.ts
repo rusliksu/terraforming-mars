@@ -129,7 +129,7 @@ export class TemplateManager {
     state.expansions = {...model.expansions};
 
     const simpleFields = [
-      'draftVariant', 'showOtherPlayersVP', 'board', 'solarPhaseOption',
+      'draftVariant', 'showOtherPlayersVP', 'boards', 'solarPhaseOption',
       'customBoardCode', 'customMoonBoardCode', 'customVenusSurfaceBoardCode',
       'aresExtremeVariant', 'politicalAgendasExtension', 'undoOption', 'undoStepOption', 'showTimers',
       'fastModeOption', 'removeNegativeGlobalEventsOption', 'includeFanMA', 'modularMA',

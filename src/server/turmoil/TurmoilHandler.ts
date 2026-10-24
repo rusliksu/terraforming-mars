@@ -1,5 +1,6 @@
 import * as constants from '../../common/constants';
 import {ICard} from '../cards/ICard';
+import {IProjectCard} from '../cards/IProjectCard';
 import {GlobalParameter} from '../../common/GlobalParameter';
 import {SelectOption} from '../inputs/SelectOption';
 import {IPlayer} from '../IPlayer';
@@ -15,23 +16,17 @@ import {PartyHooks} from './parties/PartyHooks';
 import {PartyName} from '../../common/turmoil/PartyName';
 import {REDS_POLICY_2} from './parties/Reds';
 import {REDS_MORE_PARTIES_POLICY_3} from './parties/RedsMoreParties';
-import {MoonExpansion} from '../moon/MoonExpansion';
+import {UNITY_POLICY_4} from './parties/Unity';
 import {TRSource} from '../../common/cards/TRSource';
 import {IPolicy, policyDescription} from './Policy';
 import {message} from '../logs/MessageBuilder';
+import {venusLevelAfterSteps, venusStepsBetween} from '../venusNext/venusScale';
 import {agendaInfoById} from '@/common/turmoil/Types';
-import {ParameterBonus, ParameterTrack} from '../../common/GlobalParameterConfig';
 import {MARS_GLOBAL_PARAMETERS} from './parties/ScientistsMoreParties';
 import {DiscardCards} from '../deferredActions/DiscardCards';
 import {POPULISTS_POLICY_1, POPULISTS_POLICY_3} from './parties/Populists';
 import {CENTRISTS_POLICY_3} from './parties/Centrists';
 import {BUREAUCRATS_POLICY_2, BUREAUCRATS_POLICY_4} from './parties/Bureaucrats';
-
-/** The value at which a track first grants a bonus of the given kind, or Infinity if never. */
-function bonusThreshold(track: ParameterTrack, kind: ParameterBonus['kind']): number {
-  const bonus = track.bonuses.find((b) => b.kind === kind);
-  return bonus === undefined ? Infinity : bonus.value;
-}
 
 export class TurmoilHandler {
   private constructor() {}
@@ -108,6 +103,14 @@ export class TurmoilHandler {
     if (PartyHooks.shouldApplyPolicy(player, PartyName.TRANSHUMANISTS, 'trap02')) {
       player.stock.add(Resource.MEGACREDITS, 2, {log: true, from: {partyName: PartyName.TRANSHUMANISTS}});
     }
+  }
+
+  public static getCardDiscount(player: IPlayer, card: IProjectCard): number {
+    // PoliticalAgendas Unity P4 hook
+    if (PartyHooks.shouldApplyPolicy(player, PartyName.UNITY, 'up04')) {
+      return UNITY_POLICY_4.getCardDiscount(player, card);
+    }
+    return 0;
   }
 
   // More Parties Bureaucrats P3 hook -- called from Party.sendDelegate whenever a real player
@@ -231,49 +234,54 @@ export class TurmoilHandler {
     tr = {...tr};
 
     let total = 0;
-
-    const parameters = player.game.parameters;
+    const game = player.game;
+    const globalParameterTracks = game.globalParameterTracks;
 
     if (tr.oxygen !== undefined) {
-      const availableSteps = parameters.oxygen.max - player.game.getOxygenLevel();
+      const oxygenLevel = game.getOxygenLevel();
+      const availableSteps = game.max.oxygen - oxygenLevel;
       const steps = Math.min(availableSteps, tr.oxygen);
       total = total + steps;
-      const chainToTemperature = bonusThreshold(parameters.oxygen, 'temperature');
-      if (player.game.getOxygenLevel() < chainToTemperature &&
-          player.game.getOxygenLevel() + steps >= chainToTemperature) {
-        tr.temperature = (tr.temperature ?? 0) + 1;
+      for (const {value, bonus} of globalParameterTracks.oxygen) {
+        if (bonus === 'temperature' && oxygenLevel < value && oxygenLevel + steps >= value) {
+          tr.temperature = (tr.temperature ?? 0) + 1;
+        }
       }
     }
 
     if (tr.temperature !== undefined) {
-      const availableSteps = Math.floor((parameters.temperature.max - player.game.getTemperature()) / 2);
+      const temperature = game.getTemperature();
+      const availableSteps = Math.floor((game.max.temperature - temperature) / 2);
       const steps = Math.min(availableSteps, tr.temperature);
       total = total + steps;
-      const chainToOcean = bonusThreshold(parameters.temperature, 'ocean');
-      if (player.game.getTemperature() < chainToOcean &&
-        player.game.getTemperature() + (steps * 2) >= chainToOcean) {
-        tr.oceans = (tr.oceans ?? 0) + 1;
+      for (const {value, bonus} of globalParameterTracks.temperature) {
+        if (bonus === 'ocean' && temperature < value && temperature + (steps * 2) >= value) {
+          tr.oceans = (tr.oceans ?? 0) + 1;
+        }
       }
     }
 
     if (tr.oceans !== undefined) {
-      const availableSteps = parameters.oceans.max - player.game.board.getOceanSpaces().length;
+      const availableSteps = game.max.oceans - game.board.getOceanSpaces().length;
       const steps = Math.min(availableSteps, tr.oceans);
       total = total + steps;
     }
 
     if (tr.venus !== undefined) {
-      const availableSteps = Math.floor((parameters.venus.max - player.game.getVenusScaleLevel()) / parameters.venus.step);
+      const venusLevel = game.getVenusScaleLevel();
+      const availableSteps = venusStepsBetween(venusLevel, game.max.venus);
       const steps = Math.min(availableSteps, tr.venus);
       total = total + steps;
-      const chainToTr = bonusThreshold(parameters.venus, 'tr');
-      if (player.game.getVenusScaleLevel() < chainToTr &&
-        player.game.getVenusScaleLevel() + (steps * parameters.venus.step) >= chainToTr) {
-        tr.tr = (tr.tr ?? 0) + 1;
+      const newVenusLevel = venusLevelAfterSteps(venusLevel, steps);
+      for (const {value, bonus} of globalParameterTracks.venus) {
+        if (bonus === 'tr' && venusLevel < value && newVenusLevel >= value) {
+          tr.tr = (tr.tr ?? 0) + 1;
+        }
       }
     }
 
-    MoonExpansion.ifMoon(player.game, (moonData) => {
+    const moonData = player.game.moonData;
+    if (moonData) {
       if (tr.moonHabitat !== undefined) {
         const availableSteps = constants.MAXIMUM_HABITAT_RATE - moonData.habitatRate;
         total = total + Math.min(availableSteps, tr.moonHabitat);
@@ -288,7 +296,7 @@ export class TurmoilHandler {
         const availableSteps = constants.MAXIMUM_LOGISTIC_RATE - moonData.logisticRate;
         total = total + Math.min(availableSteps, tr.moonLogistic);
       }
-    });
+    }
 
     total += tr.tr ?? 0;
 

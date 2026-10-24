@@ -1,13 +1,13 @@
 <template>
-        <div class="players-overview" v-if="hasPlayers()">
+        <div class="players-overview" v-if="hasPlayers">
             <OverviewSettings />
             <div class="other_player" v-if="thisPlayer === undefined || players.length > 1">
-                <div v-for="(otherPlayer, index) in getPlayersInOrder()" :key="otherPlayer.color">
+                <div v-for="(otherPlayer, index) in playersInOrder" :key="otherPlayer.color">
                     <OtherPlayer v-if="thisPlayer === undefined || otherPlayer.color !== thisPlayer.color" :player="otherPlayer" :playerIndex="index"/>
                     <SpectatorHand v-if="thisPlayer === undefined && spectatorHandCardCount() > 0" :player="otherPlayer" :playerIndex="index"/>
                 </div>
             </div>
-            <PlayerInfo v-for="(p, index) in getPlayersInOrder()"
+            <PlayerInfo v-for="(p, index) in playersInOrder"
               :player="p"
               :key="p.color"
               :playerView="playerView"
@@ -75,6 +75,30 @@ export default defineComponent({
     thisPlayer(): PublicPlayerModel | undefined {
       return this.playerView.thisPlayer;
     },
+    hasPlayers(): boolean {
+      return this.players.length > 0;
+    },
+    playersInOrder(): Array<PublicPlayerModel> {
+      const players = this.players;
+      if (this.thisPlayer === undefined) {
+        return players;
+      }
+
+      let result = [];
+      let currentPlayerOffset = 0;
+      const currentPlayerIndex = playerIndex(
+        this.thisPlayer.color,
+        this.players,
+      );
+
+      // shift the array by putting the player on focus at the tail
+      currentPlayerOffset = currentPlayerIndex + 1;
+      result = players
+        .slice(currentPlayerOffset)
+        .concat(players.slice(0, currentPlayerOffset));
+      // return all but the focused user
+      return result.slice(0, -1);
+    },
   },
   components: {
     PlayerInfo,
@@ -101,9 +125,6 @@ export default defineComponent({
     },
   },
   methods: {
-    hasPlayers(): boolean {
-      return this.players.length > 0;
-    },
     getIsFirstForGen(player: PublicPlayerModel): boolean {
       return playerIndex(player.color, this.players) === 0;
     },
@@ -130,27 +151,6 @@ export default defineComponent({
     getEloDelta(player: PublicPlayerModel): number | undefined {
       const result = this.eloResults.find((entry) => entry.color === player.color || entry.name === player.name);
       return result?.delta;
-    },
-    getPlayersInOrder(): Array<PublicPlayerModel> {
-      const players = this.players;
-      if (this.thisPlayer === undefined) {
-        return players;
-      }
-
-      let result = [];
-      let currentPlayerOffset = 0;
-      const currentPlayerIndex = playerIndex(
-        this.thisPlayer.color,
-        this.players,
-      );
-
-      // shift the array by putting the player on focus at the tail
-      currentPlayerOffset = currentPlayerIndex + 1;
-      result = players
-        .slice(currentPlayerOffset)
-        .concat(players.slice(0, currentPlayerOffset));
-      // return all but the focused user
-      return result.slice(0, -1);
     },
     getActionLabel(player: PublicPlayerModel): ActionLabel {
       if (this.playerView.game.phase === Phase.DRAFTING) {

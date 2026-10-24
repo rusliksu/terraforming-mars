@@ -303,7 +303,7 @@
                               </label>
                             </div>
 
-                            <div v-for="boardName in boards" :key="boardName">
+                            <div v-for="boardName in boardChoices" :key="boardName">
                               <div v-if="boardName==='utopia planitia'" class="create-game-subsection-label" v-i18n>Fan-made</div>
                               <input type="radio" :value="boardName" name="board" v-model="board" :id="boardName+'-checkbox'">
                               <label :for="boardName+'-checkbox'" class="expansion-button">
@@ -863,6 +863,7 @@ import {BoardName} from '@/common/boards/BoardName';
 import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
 import {decodeCustomBoard} from '@/common/boards/customBoardCodec';
 import {decodeSimpleBoard} from '@/common/boards/simpleBoardCodec';
+import {boardOptions} from '@/common/boards/randomBoardOptions';
 import {CardName} from '@/common/cards/CardName';
 import {CardType} from '@/common/cards/CardType';
 import {Expansion, GameModule} from '@/common/cards/GameModule';
@@ -1248,7 +1249,7 @@ export default defineComponent({
         customPreludes: this.customPreludes,
         bannedCards: this.bannedCards,
         includedCards: this.includedCards,
-        board: this.board,
+        boards: this.boards,
         seed: this.seed,
         solarPhaseOption: this.solarPhaseOption,
         aresExtremeVariant: this.aresExtremeVariant,
@@ -1326,7 +1327,33 @@ export default defineComponent({
     DEFAULT_PLAYER_COLORS(): typeof DEFAULT_PLAYER_COLORS {
       return DEFAULT_PLAYER_COLORS;
     },
-    boards() {
+    board: {
+      get(): BoardName | RandomBoardOption {
+        const selected = this.boards;
+        if (selected.length === 1) {
+          return selected[0];
+        }
+        const official = boardOptions(RandomBoardOption.OFFICIAL);
+        if (selected.length === official.length && official.every((board) => selected.includes(board))) {
+          return RandomBoardOption.OFFICIAL;
+        }
+        const all = boardOptions(RandomBoardOption.ALL);
+        if (selected.length === all.length && all.every((board) => selected.includes(board))) {
+          return RandomBoardOption.ALL;
+        }
+        return selected[0];
+      },
+      set(value: BoardName | RandomBoardOption) {
+        if (value === RandomBoardOption.OFFICIAL) {
+          this.boards = boardOptions(RandomBoardOption.OFFICIAL);
+        } else if (value === RandomBoardOption.ALL) {
+          this.boards = boardOptions(RandomBoardOption.ALL);
+        } else {
+          this.boards = [value as BoardName];
+        }
+      },
+    },
+    boardChoices() {
       return [
         BoardName.THARSIS,
         BoardName.HELLAS,
@@ -2499,6 +2526,7 @@ export default defineComponent({
         [BoardName.VASTITAS_BOREALIS_NOVA]: 'vastitas-borealis-nova',
         [BoardName.VASTITAS_BOREALIS]: 'vastitas-borealis',
         [BoardName.AMAZONIS]: 'amazonis-planatia',
+        [BoardName.AMAZONIS_PLANITIA]: 'amazonis-planitia',
         [BoardName.TERRA_CIMMERIA]: 'terra-cimmeria',
         [BoardName.TERRA_CIMMERIA_NOVA]: 'terra-cimmeria-nova',
         [BoardName.HOLLANDIA]: 'hollandia',
@@ -2651,7 +2679,7 @@ export default defineComponent({
       const customPreludes = this.customPreludes;
       const bannedCards = this.bannedCards;
       const includedCards = this.includedCards;
-      const board = this.board;
+      const boards = this.boards;
       const seed = this.seed;
       const politicalAgendasExtension = this.politicalAgendasExtension;
       const undoOption = this.undoOption;
@@ -2713,7 +2741,7 @@ export default defineComponent({
         customPreludes,
         bannedCards,
         includedCards,
-        board,
+        boards,
         customBoardCode: this.board === BoardName.CUSTOM ? this.customBoardCode : undefined,
         customMoonBoardCode: this.customMoonBoardCodeError === '' && this.customMoonBoardCodeInput.trim() !== '' ?
           this.customMoonBoardCodeInput.trim() : undefined,

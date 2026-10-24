@@ -21,6 +21,24 @@
   }
 }
 
+// On phones and tablets a background-attachment: fixed background repaints the whole page
+// on every scroll frame, which crawls once the page holds a few dozen cards.
+// A fixed element behind the page doesn't. Width can't tell phones apart here
+// because the game page sets a 1260px viewport.
+@media (hover: none) and (pointer: coarse) {
+  #player-home, #spectator-home {
+    background: none;
+
+    &::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(transparent, #000), url(./assets/stars.jpg);
+    }
+  }
+}
+
 .terraformed-banner {
   box-sizing: border-box;
   display: inline-flex;
@@ -811,20 +829,20 @@
 
       lunar-magnate, lunarchitect, full-moon, one-giant-step,
 
-      economizer, pioneer, land-specialist, martian,
+      economizer, land-specialist, martian,
       cosmic-settler, botanist, promoter, zoologist, a-manufacturer,
 
       v-electrician, v-spacefarer, smith, tradesman, irrigator, capitalist,
-      forecaster, edgedancer, visionary, naturalist, voyager,
+      forecaster, visionary, naturalist, voyager,
 
       rugged, purifier,
 
       agronomist, engineer, farmer,
 
-      colonizer, minimalist, terran, tropicalist,
+      minimalist, terran, tropicalist,
       curator, tourist, a-engineer, a-zoologist,
 
-      t-collector, firestarter, terra-pioneer, spacefarer, gambler,
+      t-collector, firestarter, terra-pioneer, t-spacefarer, gambler,
       biologist, t-politician, urbanist, warmonger,
       incorporator, manufacturer, politician,
 
@@ -838,8 +856,11 @@
 
       architect, c-forester, coastguard,
 
-      builder7, legend4, pioneer4, metallurgist, spacefarer4, tactician4,
+      builder7, legend4, pioneer, metallurgist, spacefarer4, tactician4,
       terraformer29, terran5, trader, tycoon10, suburbian, briber, merchant,
+
+      // Amazonis Planitia milestone/award additions.
+      merchant3, innovator, physicist,
     ;
     // Images are expected to be 140px x 83px
     // background-size: 200px;

@@ -22,7 +22,7 @@ describe('CustomBoard', () => {
     const board = build(blankCustomBoard(9, 'Test'));
     // 61 mars + Ganymede + Phobos
     expect(board.spaces).to.have.length(63);
-    expect(board.getSpaceOrThrow('01').spaceType).eq(SpaceType.COLONY);
+    expect(board.getSpaceOrThrow('c01').spaceType).eq(SpaceType.COLONY);
     expect(board.getSpaceOrThrow('100').spaceType).eq(SpaceType.LAND);
   });
 

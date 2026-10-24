@@ -172,7 +172,6 @@ describe('Awards', () => {
       ...globalConfig,
       props: {
         awards: [],
-        preferences: learnerModeOn,
       },
     });
 
@@ -186,7 +185,6 @@ describe('Awards', () => {
         awards: [
           createAward({id: 1, funded: false}),
         ],
-        preferences: learnerModeOn,
       },
     });
 
@@ -204,7 +202,6 @@ describe('Awards', () => {
           createAward({id: 1, funded: true}),
           createAward({id: 2, funded: false}),
         ],
-        preferences: learnerModeOn,
       },
     });
 
@@ -223,7 +220,6 @@ describe('Awards', () => {
           createAward({id: 2, funded: true}),
           createAward({id: 3, funded: false}),
         ],
-        preferences: learnerModeOn,
       },
     });
 
@@ -243,7 +239,6 @@ describe('Awards', () => {
           createAward({id: 3, funded: true}),
           createAward({id: 4, funded: false}),
         ],
-        preferences: learnerModeOn,
       },
     });
 

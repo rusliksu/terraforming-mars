@@ -16,7 +16,6 @@ import {Reward} from '../../common/pathfinders/Reward';
 import {SelectResource} from '../inputs/SelectResource';
 import {SendDelegateToArea} from '../deferredActions/SendDelegateToArea';
 import {Tag} from '../../common/cards/Tag';
-import {Turmoil} from '../turmoil/Turmoil';
 import {VictoryPointsBreakdownBuilder} from '../game/VictoryPointsBreakdownBuilder';
 import {GlobalEventName} from '../../common/turmoil/globalEvents/GlobalEventName';
 import {Priority} from '../deferredActions/Priority';
@@ -210,13 +209,13 @@ export class PathfindersExpansion {
       game.defer(new PlaceCityTile(player));
       break;
     case 'delegate':
-      Turmoil.ifTurmoilElse(game,
-        (turmoil) => {
-          if (turmoil.hasDelegatesInReserve(player)) {
-            game.defer(new SendDelegateToArea(player));
-          }
-        },
-        () => player.stock.add(Resource.MEGACREDITS, 3, {log: true}));
+      if (game.turmoil) {
+        if (game.turmoil.delegateReserve.has(player)) {
+          game.defer(new SendDelegateToArea(player));
+        }
+      } else {
+        player.stock.add(Resource.MEGACREDITS, 3, {log: true});
+      }
       break;
     case 'energy':
       player.stock.add(Resource.ENERGY, 1, {log: true});
@@ -278,7 +277,7 @@ export class PathfindersExpansion {
       if (game.gameOptions.venusNextExtension) {
         game.increaseVenusScaleLevel(player, 1);
       } else {
-        player.game.log('TODO: come up with some reward in place of Increase Venus Scale.');
+        console.warn('Unexpected state: gaining venus reward without a Venus Next in play.');
       }
       break;
     default:

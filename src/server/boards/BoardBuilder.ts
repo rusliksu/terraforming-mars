@@ -11,7 +11,7 @@ import {CardName} from '../../common/cards/CardName';
 import {numeric} from '../../common/utils/Ordering';
 
 export function colonySpace(id: SpaceId): Space {
-  return {id, spaceType: SpaceType.COLONY, x: -1, y: -1, bonus: []};
+  return {id, spaceType: SpaceType.COLONY, x: -1, y: -1, bonus: [], edge: false};
 }
 
 /**
@@ -41,90 +41,71 @@ export function addExpansionColonySpaces(spaces: Array<Space>, gameOptions: Game
   }
 }
 
+// The standard hexagonal map: nine rows, of tile counts [5,6,7,8,9,8,7,6,5] (61 spaces).
+export const STANDARD_TILES_PER_ROW: ReadonlyArray<number> = [5, 6, 7, 8, 9, 8, 7, 6, 5];
+
 export class BoardBuilder {
-  // This builder assumes the map has nine rows, of tile counts [5,6,7,8,9,8,7,6,5].
+  // This builder lays out a symmetric hexagonal map. The shape is described by `tilesPerRow`,
+  // which must have an odd length and widen monotonically to a single widest middle row before
+  // narrowing again (e.g. the standard [5,6,7,8,9,8,7,6,5], or one ring larger
+  // [6,7,8,9,10,11,10,9,8,7,6]).
   //
   // "Son I am able, " she said "though you scare me."
   // "Watch, " said I
   // "Beloved, " I said "watch me scare you though." said she,
   // "Able am I, Son."
 
-  private spaceTypes: Array<SpaceType> = [];
-  private bonuses: Array<Array<SpaceBonus>> = [];
-  private spaces: Array<Space> = [];
-  private unshufflableSpaces: Array<number> = [];
-  private volcanicSpaces: Array<number> = [];
+  public spaceTypes: Array<SpaceType> = [];
+  public bonuses: Array<Array<SpaceBonus>> = [];
+  public unshufflableSpaces: Array<number> = [];
+  public volcanicSpaces: Array<number> = [];
+  private edges: Array<boolean> = [];
+
   private gameOptions: GameOptions;
   private rng: Random;
+  private readonly tilesPerRow: ReadonlyArray<number>;
+  private rowNumber: number = 0;
 
-  constructor(gameOptions: GameOptions, rng: Random) {
+  constructor(gameOptions: GameOptions, rng: Random, tilesPerRow: ReadonlyArray<number> = STANDARD_TILES_PER_ROW) {
     this.gameOptions = gameOptions;
     this.rng = rng;
+    this.tilesPerRow = tilesPerRow;
   }
 
-  ocean(...bonus: Array<SpaceBonus>): this {
-    this.spaceTypes.push(SpaceType.OCEAN);
-    this.bonuses.push(bonus);
+  row(b: (builder: RowBuilder) => void): this {
+    const rowBuilder = new RowBuilder(this);
+    b(rowBuilder);
+    const count = this.tilesPerRow[this.rowNumber];
+    this.addEdges(count, this.rowNumber === 0 || this.rowNumber === this.tilesPerRow.length - 1);
+    this.rowNumber++;
     return this;
   }
 
-  cove(...bonus: Array<SpaceBonus>): this {
-    this.spaceTypes.push(SpaceType.COVE);
-    this.bonuses.push(bonus);
-    return this;
+  private addEdges(size: number, all: boolean) {
+    this.edges.push(true);
+    for (let i = 0; i < size - 2; i++) {
+      this.edges.push(all);
+    }
+    this.edges.push(true);
   }
-
-  land(...bonus: Array<SpaceBonus>): this {
-    this.spaceTypes.push(SpaceType.LAND);
-    this.bonuses.push(bonus);
-    return this;
-  }
-
-  volcanic(...bonus: Array<SpaceBonus>): this {
-    this.spaceTypes.push(SpaceType.LAND);
-    this.lastSpaceIsVolcanic();
-    this.bonuses.push(bonus);
-    return this;
-  }
-
-  lastSpaceIsVolcanic(): this {
-    this.volcanicSpaces.push(this.spaceTypes.length - 1);
-    return this;
-  }
-
-  restricted(): this {
-    this.spaceTypes.push(SpaceType.RESTRICTED);
-    this.bonuses.push([]);
-    return this;
-  }
-
-  deflectionZone(...bonus: Array<SpaceBonus>): this {
-    this.spaceTypes.push(SpaceType.DEFLECTION_ZONE);
-    this.bonuses.push(bonus);
-    return this.doNotShuffleLastSpace();
-  }
-
-  doNotShuffleLastSpace(): this {
-    this.unshufflableSpaces.push(this.spaceTypes.length - 1);
-    return this;
-  }
-
 
   build(): Array<Space> {
     if (this.gameOptions.shuffleMapOption) {
       this.shuffle(this.rng);
     }
+    const spaces: Array<Space> = [];
 
-    this.spaces.push(colonySpace(SpaceName.GANYMEDE_COLONY));
-    this.spaces.push(colonySpace(SpaceName.PHOBOS_SPACE_HAVEN));
+    spaces.push(colonySpace(SpaceName.GANYMEDE_COLONY));
+    spaces.push(colonySpace(SpaceName.PHOBOS_SPACE_HAVEN));
 
-    const tilesPerRow = [5, 6, 7, 8, 9, 8, 7, 6, 5];
-    const idOffset = this.spaces.length + 1;
+    const tilesPerRow = this.tilesPerRow;
+    const maxTiles = Math.max(...tilesPerRow);
+    const idOffset = spaces.length + 1;
     let idx = 0;
 
-    for (let row = 0; row < 9; row++) {
+    for (let row = 0; row < tilesPerRow.length; row++) {
       const tilesInThisRow = tilesPerRow[row];
-      const xOffset = 9 - tilesInThisRow;
+      const xOffset = maxTiles - tilesInThisRow;
       for (let i = 0; i < tilesInThisRow; i++) {
         const spaceId = idx + idOffset;
         const xCoordinate = xOffset + i;
@@ -134,41 +115,26 @@ export class BoardBuilder {
           x: xCoordinate,
           y: row,
           bonus: this.bonuses[idx],
+          edge: this.edges[idx],
         };
         if (this.volcanicSpaces.includes(idx)) {
           space.volcanic = true;
         }
-        this.spaces.push(space);
+        spaces.push(space);
         idx++;
       }
     }
 
     // Include space colonies if the expansion is included, or if the card is included.
-    addExpansionColonySpaces(this.spaces, this.gameOptions);
+    addExpansionColonySpaces(spaces, this.gameOptions);
 
-    return this.spaces;
+    return spaces;
   }
-
-  /*
-  public shuffleArray(rng: Random, array: Array<unknown>): void {
-    // Reversing the indexes so the elements are pulled from the right.
-    // Reversing the result so elements are listed left to right.
-    const spliced = this.unshufflableSpaces.reverse().map((idx) => array.splice(idx, 1)[0]).reverse();
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = rng.nextInt(i + 1);
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    for (let idx = 0; idx < this.unshufflableSpaces.length; idx++) {
-      array.splice(this.unshufflableSpaces[idx], 0, spliced[idx]);
-    }
-  }
-*/
 
   // Shuffle the ocean spaces and bonus spaces. But protect the land spaces supplied by
   // |lands| so that those IDs most definitely have land spaces.
   public shuffle(rng: Random) {
     const preservedSpaces = [...this.unshufflableSpaces, ...this.volcanicSpaces];
-    preservedSpaces.sort((a, b) => a - b); // TODO(kberg): this can be removed.
     preservingShuffle(this.spaceTypes, preservedSpaces, rng);
     preservingShuffle(this.bonuses, preservedSpaces, rng);
     return;
@@ -183,6 +149,60 @@ export class BoardBuilder {
   }
 }
 
+class RowBuilder {
+  builder: BoardBuilder;
+  constructor(builder: BoardBuilder) {
+    this.builder = builder;
+  }
+
+  ocean(...bonus: Array<SpaceBonus>): this {
+    this.builder.spaceTypes.push(SpaceType.OCEAN);
+    this.builder.bonuses.push(bonus);
+    return this;
+  }
+
+  cove(...bonus: Array<SpaceBonus>): this {
+    this.builder.spaceTypes.push(SpaceType.COVE);
+    this.builder.bonuses.push(bonus);
+    return this;
+  }
+
+  land(...bonus: Array<SpaceBonus>): this {
+    this.builder.spaceTypes.push(SpaceType.LAND);
+    this.builder.bonuses.push(bonus);
+    return this;
+  }
+
+  volcanic(...bonus: Array<SpaceBonus>): this {
+    this.builder.spaceTypes.push(SpaceType.LAND);
+    this.lastSpaceIsVolcanic();
+    this.builder.bonuses.push(bonus);
+    return this;
+  }
+
+  lastSpaceIsVolcanic(): this {
+    this.builder.volcanicSpaces.push(this.builder.spaceTypes.length - 1);
+    return this;
+  }
+
+  restricted(): this {
+    this.builder.spaceTypes.push(SpaceType.RESTRICTED);
+    this.builder.bonuses.push([]);
+    return this;
+  }
+
+  deflectionZone(...bonus: Array<SpaceBonus>): this {
+    this.builder.spaceTypes.push(SpaceType.DEFLECTION_ZONE);
+    this.builder.bonuses.push(bonus);
+    return this.doNotShuffleLastSpace();
+  }
+
+  doNotShuffleLastSpace(): this {
+    this.builder.unshufflableSpaces.push(this.builder.spaceTypes.length - 1);
+    return this;
+  }
+}
+
 export function preservingShuffle(array: Array<unknown>, preservedIndexes: ReadonlyArray<number>, rng: Random): void {
   // Reversing the indexes so the elements are pulled from the right.
   // Reversing the result so elements are listed left to right.
@@ -194,4 +214,3 @@ export function preservingShuffle(array: Array<unknown>, preservedIndexes: Reado
     array.splice(forward[idx], 0, spliced[idx]);
   }
 }
-

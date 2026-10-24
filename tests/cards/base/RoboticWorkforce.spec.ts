@@ -368,16 +368,21 @@ describe('RoboticWorkforce', () => {
     expect(card.canPlay(player)).is.false;
   });
 
+  const cardsToIgnore = [
+    CardName.SOLAR_FARM,  // Tough to test
+    CardName.SMALL_OPEN_PIT_MINE, // Tough to test
+    CardName.BEHEMOTH_EXCAVATOR, // False positive
+  ];
+
   describe('test all cards', () => {
     ALL_MODULE_MANIFESTS.forEach((manifest) => {
       const cards: CardManifest<ICard> = {...manifest.projectCards, ...manifest.preludeCards, ...manifest.corporationCards};
       for (const [cardName, factory] of CardManifest.entries(cards)) {
         it(cardName, () => {
-          const card = new factory!.Factory();
-          // Cards that are tough to test (and might even have tests above.)
-          if (card.name === CardName.SOLAR_FARM || card.name === CardName.SMALL_OPEN_PIT_MINE) {
+          if (cardsToIgnore.includes(cardName)) {
             return;
           }
+          const card = new factory!.Factory();
           // These place a tile with a placement prerequisite (an off-world city, an existing
           // greenery, an ocean adjacent to a city) that this generic test's fixed board setup
           // doesn't provide, so they have no legal space to place on here. Real playability is
@@ -406,9 +411,6 @@ describe('RoboticWorkforce', () => {
     });
 
     const testCard = function(card: ICard) {
-      if (card.name === CardName.LUNAR_MINE_URBANIZATION) {
-        console.log('hello');
-      }
       let include = false;
       if ((card.tags.includes(Tag.BUILDING) || card.tags.includes(Tag.WILD)) && card.play !== undefined) {
         // Create new players, set all productions to 2

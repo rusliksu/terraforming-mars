@@ -1,5 +1,5 @@
 import {getAutomationCompatibility, automationUnavailableReason} from '../bot/AutomationCompatibility';
-import prometheus from 'prom-client';
+import prometheus from '@prometheus-io/client';
 import {Database} from './Database';
 import {Game} from '../Game';
 import {IGame} from '../IGame';

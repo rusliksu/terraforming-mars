@@ -15,7 +15,7 @@ import {ICorporationCard} from './cards/corporation/ICorporationCard';
 import {IGame} from './IGame';
 import {Game} from './Game';
 import {Payment, PaymentOptions, DEFAULT_PAYMENT_VALUES, paymentTotal} from '../common/inputs/Payment';
-import {SpendableResource, SPENDABLE_RESOURCES, SpendableCardResource, CARD_FOR_SPENDABLE_RESOURCE} from '../common/inputs/Spendable';
+import {SpendableResource, SPENDABLE_RESOURCES, SPENDABLE_CARD_RESOURCES, SpendableCardResource, CARD_FOR_SPENDABLE_RESOURCE} from '../common/inputs/Spendable';
 import {toLogPayment} from './logs/toLogPayment';
 import {IAward} from './awards/IAward';
 import {ICard, isIActionCard, IActionCard} from './cards/ICard';
@@ -40,7 +40,7 @@ import {SelfReplicatingRobots} from './cards/promo/SelfReplicatingRobots';
 import {SerializedPlayer} from './SerializedPlayer';
 import {StormCraftIncorporated} from './cards/colonies/StormCraftIncorporated';
 import {Tag} from '../common/cards/Tag';
-import {Timer} from '../common/Timer';
+import {Clock, Timer} from '../common/Timer';
 import {TurmoilHandler} from './turmoil/TurmoilHandler';
 import {AllOptions, DrawCards, DrawOptions} from './deferredActions/DrawCards';
 import {Units} from '../common/Units';
@@ -53,7 +53,6 @@ import {SistemasSeebeck} from './cards/pathfinders/SistemasSeebeck';
 import {GlobalParameter} from '../common/GlobalParameter';
 import {LogHelper} from './LogHelper';
 import {UndoActionOption} from './inputs/UndoActionOption';
-import {Turmoil} from './turmoil/Turmoil';
 import {PathfindersExpansion} from './pathfinders/PathfindersExpansion';
 import {ColoniesHandler} from './colonies/ColoniesHandler';
 import {InputResponse} from '../common/inputs/InputResponse';
@@ -95,6 +94,7 @@ import type {ResearchPurchaseUndoState} from './game/ResearchPurchaseUndo';
 import {SURRENDER_ACTION_ANNOTATION, SURRENDER_CONFIRMATION_ANNOTATION} from './surrender/SurrenderInput';
 import {SelectAmount} from './inputs/SelectAmount';
 import {RemoveResourcesFromCard} from './deferredActions/RemoveResourcesFromCard';
+import {Turmoil} from './turmoil/Turmoil';
 
 const THROW_STATE_ERRORS = Boolean(process.env.THROW_STATE_ERRORS);
 const TURN_NOTICE_DELAY_MS = 5000;
@@ -254,6 +254,8 @@ export class Player implements IPlayer {
   private _pendingTurnNoticeReminderTimer?: ReturnType<typeof setTimeout>;
   private _pendingTurnNoticeReminderKey?: string;
   private _turnNoticeSentThisRound: boolean = false;
+  public inputRequestedAt?: number;
+  public clock: Clock = new Clock();
 
   public get megaCredits(): number {
     return this.stock.megacredits;
@@ -314,8 +316,7 @@ export class Player implements IPlayer {
         policyId: p.policies[0].id,
       },
     };
-    const alliedPolicy = this.game.turmoil?.getPartyByName(p.name).policies.find((t) => t.id === p.policies[0].id);
-
+    const alliedPolicy = Turmoil.getTurmoil(this.game).getPartyByName(p.name).policies.find((t) => t.id === p.policies[0].id);
     alliedPolicy?.onPolicyStartForPlayer?.(this);
   }
 
@@ -332,7 +333,7 @@ export class Player implements IPlayer {
     this.preludeHandicap = normalizePreludeHandicap(this.preludeHandicap);
     // This seems pretty bad. The game will be set before the Player is actually
     // used, and if that doesn't happen, well, it's a worthy error.
-    // The alterantive, to make game type Game | undefined, will cause compilation
+    // The alternative, to make game type Game | undefined, will cause compilation
     // issues throughout the app.
     // Ideally the right thing is to invert how players and games get created.
     // But one thing at a time.
@@ -411,7 +412,7 @@ export class Player implements IPlayer {
     }
     if (this.preservationProgram === true && inActionPhase && isFirstTrThisGeneration) {
       steps--;
-      this.game.log('${0} for ${1} is blocking 1 TR', (b) => b.cardName(CardName.PRESERVATION_PROGRAM).player(this));
+      this.game.log('${0} for ${1} is blocking 1:i:tr:', (b) => b.cardName(CardName.PRESERVATION_PROGRAM).player(this));
       this.preservationProgram = false;
       if (steps === 0) {
         return;
@@ -424,10 +425,10 @@ export class Player implements IPlayer {
       if (opts.log === true) {
         if (opts.from !== undefined) {
           const from = opts.from;
-          this.game.log('${0} gained ${1} TR from ${2}', (b) => b.player(this).number(steps).from(from),
+          this.game.log('${0} gained ${1}:i:tr: from ${2}', (b) => b.player(this).number(steps).from(from),
             {effect: {kind: 'tr', amount: steps, player: this.color}});
         } else {
-          this.game.log('${0} gained ${1} TR', (b) => b.player(this).number(steps),
+          this.game.log('${0} gained ${1}:i:tr:', (b) => b.player(this).number(steps),
             {effect: {kind: 'tr', amount: steps, player: this.color}});
         }
       }
@@ -466,7 +467,7 @@ export class Player implements IPlayer {
   public decreaseTerraformRating(steps: number = 1, opts: {log?: boolean} = {}) {
     this.terraformRating -= steps;
     if (opts.log === true) {
-      this.game.log('${0} lost ${1} TR', (b) => b.player(this).number(steps),
+      this.game.log('${0} lost ${1}:i:tr:', (b) => b.player(this).number(steps),
         {effect: {kind: 'tr', amount: -steps, player: this.color}});
     }
   }
@@ -520,7 +521,6 @@ export class Player implements IPlayer {
       }
     }
 
-    // The pathfindersExpansion test is just an optimization for non-Pathfinders games.
     if (attacker !== this && this.playedCards.has(CardName.PRIVATE_SECURITY)) {
       return false;
     }
@@ -620,7 +620,7 @@ export class Player implements IPlayer {
   }
 
   public onGlobalParameterIncrease(parameter: GlobalParameter, steps: number): void {
-    // Tracks this player's contributition to global parmeters for end-of-game reporting.
+    // Tracks this player's contribution to global parameters for end-of-game reporting.
     this.globalParameterSteps[parameter] += steps;
   }
 
@@ -638,9 +638,10 @@ export class Player implements IPlayer {
       }
 
       if (options?.log ?? true) {
-        this.game.log('${0} removed ${1} resource(s) from ${2}\'s ${3}', (b) =>
+        this.game.log('${0} removed ${1}${2} from ${3}\'s ${4}', (b) =>
           b.player(options?.removingPlayer ?? this)
             .number(amountRemoved)
+            .cardResource(card.resourceType)
             .player(this)
             .card(card));
       }
@@ -788,7 +789,7 @@ export class Player implements IPlayer {
   }
 
   /**
-   * ../..return {number} the number of avaialble megacredits. Which is just a shorthand for megacredits,
+   * ../..return {number} the number of available megacredits. Which is just a shorthand for megacredits,
    * plus any units of heat available thanks to Helion (and Stormcraft, by proxy).
    */
   public spendableMegacredits(): number {
@@ -984,12 +985,7 @@ export class Player implements IPlayer {
     // applies to other cards, since this card isn't in the tableau yet).
     cost -= card.getOwnCostReduction?.(this) ?? 0;
 
-    // TODO(kberg): put this in a callback.
-    // Vanilla only -- More Parties reuses 'up04' for an unrelated action.
-    if (!this.game.gameOptions.morePartiesExpansion &&
-        card.tags.includes(Tag.SPACE) && PartyHooks.shouldApplyPolicy(this, PartyName.UNITY, 'up04')) {
-      cost -= 2;
-    }
+    cost -= TurmoilHandler.getCardDiscount(this, card);
 
     // Tax effects from a played card (e.g. Blockhouse), unlike getCardDiscount which
     // only ever benefits the acting player's own plays. Applies to every player's tableau,
@@ -1065,6 +1061,18 @@ export class Player implements IPlayer {
     if (totalToPay < cardCost) {
       throw new Error('Did not spend enough to pay for card');
     }
+
+    const deductCardResources = (amt: number | undefined, cardName: CardName) => {
+      if (amt !== undefined && amt > 0) {
+        const card = this.playedCards.get(cardName);
+        if (card) {
+          this.removeResourceFrom(card, amt, {log: true});
+        }
+      }
+    };
+    deductCardResources(selectedCard.additionalProjectCosts?.aeronGenomicsResources, CardName.AERON_GENOMICS);
+    deductCardResources(selectedCard.additionalProjectCosts?.thinkTankResources, CardName.THINK_TANK);
+
     return this.playCard(selectedCard, payment, cardAction);
   }
 
@@ -1124,27 +1132,19 @@ export class Player implements IPlayer {
       }
     }
 
-    const removeResourcesOnCard = (name: CardName, count: number) => {
+    for (const resource of SPENDABLE_CARD_RESOURCES) {
+      const count = payment[resource];
       if (count === 0) {
-        return;
+        continue;
       }
+      const name = CARD_FOR_SPENDABLE_RESOURCE[resource];
       const card = this.playedCards.get(name);
       if (card === undefined) {
         throw new Error('Card ' + name + ' not found');
       }
       // TODO(kberg): I suggest not logging this. Or do something fuller.
       this.removeResourceFrom(card, count, {log: true});
-    };
-
-    removeResourcesOnCard(CardName.PSYCHROPHILES, payment.microbes);
-    removeResourcesOnCard(CardName.DIRIGIBLES, payment.floaters);
-    removeResourcesOnCard(CardName.LUNA_ARCHIVES, payment.lunaArchivesScience);
-    removeResourcesOnCard(CardName.SPIRE, payment.spireScience);
-    removeResourcesOnCard(CardName.CARBON_NANOSYSTEMS, payment.graphene);
-    removeResourcesOnCard(CardName.SOYLENT_SEEDLING_SYSTEMS, payment.seeds);
-    removeResourcesOnCard(CardName.AURORAI, payment.auroraiData);
-    removeResourcesOnCard(CardName.KUIPER_COOPERATIVE, payment.kuiperAsteroids);
-    removeResourcesOnCard(CardName.NEREID_BIOSYSTEMS, payment.nereidMicrobes);
+    }
 
     if (payment.megacredits > 0 || payment.steel > 0 || payment.titanium > 0) {
       PathfindersExpansion.addToSolBank(this);
@@ -1184,7 +1184,7 @@ export class Player implements IPlayer {
     // This issue is evident when playing New Partner, and drawing Double Down.
     // The issue is fixed in Double Down for the time being. But the right fix is to move this block
     // down. As I say, that's going to break a lot of things, many of which are not evident
-    // in tests (because they use card.play instad of player.playCard).
+    // in tests (because they use card.play instead of player.playCard).
     const action = selectedCard.play(this);
     this.defer(action, Priority.DEFAULT);
 
@@ -1258,18 +1258,7 @@ export class Player implements IPlayer {
   }
 
   public playActionCard(): PlayerInput {
-    return new SelectCard<ICard & IActionCard>(
-      'Perform an action from a played card',
-      'Take action',
-      this.getPlayableActionCards(),
-      {selectBlueCardAction: true})
-      .andThen(([card]) => {
-        this.game.log('${0} used ${1} action', (b) => b.player(this).card(card));
-        const action = card.action(this);
-        this.defer(action);
-        this.actionsThisGeneration.add(card.name);
-        return undefined;
-      });
+    return this.selectCardAction('Perform an action from a played card', this.getPlayableActionCards());
   }
 
   private getPlayCeoOPGAction(): PlayerInput | undefined {
@@ -1277,8 +1266,12 @@ export class Player implements IPlayer {
     if (cards.length === 0) {
       return undefined;
     }
-    return new SelectCard<ICeoCard & IActionCard>(
-      'Use CEO once per game action',
+    return this.selectCardAction('Use CEO once per game action', cards);
+  }
+
+  private selectCardAction(title: string, cards: Array<ICard & IActionCard>): PlayerInput {
+    return new SelectCard<ICard & IActionCard>(
+      title,
       'Take action',
       cards,
       {selectBlueCardAction: true})
@@ -1536,50 +1529,47 @@ export class Player implements IPlayer {
   }
 
   public takeActionForFinalGreenery(): void {
-    const resolveFinalGreeneryDeferredActions = () => {
-      this.game.deferredActions.runAll(() => this.takeActionForFinalGreenery());
-    };
-
     // Resolve any deferredAction before placing the next greenery
     // Otherwise if two tiles are placed next to Philares, only the last benefit is triggered
     // if Philares does not accept the first bonus before the second tile is down
-    if (this.game.deferredActions.length > 0) {
-      resolveFinalGreeneryDeferredActions();
-      return;
-    }
+    this.game.drainQueue(() => {
+      const resolveFinalGreeneryDeferredActions = () => {
+        this.game.deferredActions.runAll(() => this.takeActionForFinalGreenery());
+      };
 
-    if (this.game.canPlaceGreenery(this)) {
-      const action = new OrOptions()
-        .setTitle('Place any final greenery from plants')
-        .setButtonLabel('Confirm');
-      action.options.push(
-        new SelectSpace(
-          'Select space for greenery tile',
-          this.game.board.getAvailableSpacesForGreenery(this))
-          .andThen((space) => {
-            // Do not raise oxygen or award TR for final greenery placements
-            this.game.addGreenery(this, space, false);
-            this.stock.deduct(Resource.PLANTS, this.plantsNeededForGreenery);
+      if (this.game.canPlaceGreenery(this)) {
+        const action = new OrOptions()
+          .setTitle('Place any final greenery from plants')
+          .setButtonLabel('Confirm');
+        action.options.push(
+          new SelectSpace(
+            'Select space for greenery tile',
+            this.game.board.getAvailableSpacesForGreenery(this))
+            .andThen((space) => {
+              // Do not raise oxygen or award TR for final greenery placements
+              this.game.addGreenery(this, space, false);
+              this.stock.deduct(Resource.PLANTS, this.plantsNeededForGreenery);
 
-            // Resolve Philares deferred actions and maybe place another greenery
-            resolveFinalGreeneryDeferredActions();
+              // Resolve Philares deferred actions and maybe place another greenery
+              resolveFinalGreeneryDeferredActions();
+              return undefined;
+            }));
+        action.options.push(
+          new SelectOption('Don\'t place a greenery').andThen(() => {
+            this.game.playerIsDoneWithGame(this);
             return undefined;
-          }));
-      action.options.push(
-        new SelectOption('Don\'t place a greenery').andThen(() => {
-          this.game.playerIsDoneWithGame(this);
-          return undefined;
-        }),
-      );
-      this.setWaitingForSafely(action);
-      return;
-    }
+          }),
+        );
+        this.setWaitingForSafely(action);
+        return;
+      }
 
-    if (this.game.deferredActions.length > 0) {
-      resolveFinalGreeneryDeferredActions();
-    } else {
-      this.game.playerIsDoneWithGame(this);
-    }
+      if (this.game.deferredActions.length > 0) {
+        resolveFinalGreeneryDeferredActions();
+      } else {
+        this.game.playerIsDoneWithGame(this);
+      }
+    });
   }
 
   public getPlayableCards(): Array<IProjectCard> {
@@ -1615,7 +1605,7 @@ export class Player implements IPlayer {
     }
 
     const pharmacyUnion = this.tableau.get(CardName.PHARMACY_UNION);
-    if ((pharmacyUnion?.resourceCount ?? 0 > 0) && this.tags.cardHasTag(card, Tag.SCIENCE)) {
+    if ((pharmacyUnion?.resourceCount ?? 0) > 0 && this.tags.cardHasTag(card, Tag.SCIENCE)) {
       trSource.tr = (trSource.tr ?? 0) + 1;
     }
 
@@ -1662,7 +1652,8 @@ export class Player implements IPlayer {
     const reserved = reserveUnits.heat + (shared ? reserveUnits.energy : 0);
     const reservedFloaters = Math.ceil(Math.max(0, reserved - stock) / 2);
     const floaterOverpayment = Math.max(0, reservedFloaters * 2 - reserved);
-    return {
+    const payment: Payment = {
+      ...Payment.EMPTY,
       megacredits: this.megaCredits - reserveUnits.megacredits,
       steel: this.steel - reserveUnits.steel,
       titanium: this.titanium - reserveUnits.titanium,
@@ -1683,6 +1674,10 @@ export class Player implements IPlayer {
       // card(s) they actually come from, interactively if more than one qualifies).
       anyFloaters: this.getResourceCount(CardResource.FLOATER) - reservedFloaters,
     };
+    for (const resource of SPENDABLE_CARD_RESOURCES) {
+      payment[resource] = this.getSpendable(resource);
+    }
+    return payment;
   }
 
   public canSpend(payment: Payment, reserveUnits?: Units): boolean {
@@ -1705,7 +1700,7 @@ export class Player implements IPlayer {
   }
 
   /**
-   * Returns the value of the suppled payment given the payment options.
+   * Returns the value of the supplied payment given the payment options.
    *
    * For example, if the payment is 3M€ and 2 steel, given that steel by default is
    * worth 2M€, this will return 7.
@@ -1767,7 +1762,6 @@ export class Player implements IPlayer {
     options.heat = this.canUseHeatAsMegaCredits;
     options.energy = this.canUseEnergyAsMegaCredits;
     options.lunaTradeFederationTitanium = this.canUseTitaniumAsMegacredits;
-
     const reserveUnits = options.reserveUnits ?? Units.EMPTY;
     if (reserveUnits.heat > 0 || reserveUnits.energy > 0) {
       // Special-case heat and energy (Stormcraft floaters, Sistemas Seebeck)
@@ -1948,11 +1942,7 @@ export class Player implements IPlayer {
   /**
    * Set up a player taking their next action.
    *
-   * This method indicates the avalilable actions by setting the `waitingFor` attribute of this player.
-   *
-   * saveBeforeTakingAction when true, the game state is saved. Default is `true`. This
-   * should only be false in testing and when this method is called during game deserialization. In other
-   * words, don't set this value unless you know what you're doing.
+   * This method indicates the available actions by setting the `waitingFor` attribute of this player.
    */
   public takeAction(saveBeforeTakingAction: boolean = true): void {
     const game = this.game;
@@ -1986,7 +1976,7 @@ export class Player implements IPlayer {
 
         const selectPrelude = PreludesExpansion.selectPreludeToPlay(this, this.preludeCardsInHand);
 
-        this.setWaitingFor(selectPrelude, this.runWhenEmpty(() => {
+        this.setWaitingFor(selectPrelude, () => game.drainQueue(() => {
           this.incrementActionsTaken();
           if (this.preludeCardsInHand.length === 0 && !this.headStartIsInEffect()) {
             game.playerIsFinishedTakingActions();
@@ -2042,7 +2032,7 @@ export class Player implements IPlayer {
           message('Take first action of ${0} corporation', (b) => b.card(corp)),
           corp.initialActionText)
           .andThen(() => {
-            game.log('${0} took the first action of ${1} corporation', (b) => b.player(this).card(corp)),
+            game.log('${0} took the first action of ${1} corporation', (b) => b.player(this).card(corp));
             this.defer(corp.initialAction?.(this));
             inplaceRemove(this.pendingInitialActions, corp);
             return undefined;
@@ -2054,7 +2044,7 @@ export class Player implements IPlayer {
         orOptions.options.push(this.passOption());
       }
 
-      this.setWaitingFor(orOptions, this.runWhenEmpty(() => {
+      this.setWaitingFor(orOptions, () => game.drainQueue(() => {
         if (this.pendingInitialActions.length === 0) {
           this.incrementActionsTaken();
         }
@@ -2064,7 +2054,7 @@ export class Player implements IPlayer {
       return;
     }
 
-    this.setWaitingFor(this.getActions(), this.runWhenEmpty(() => {
+    this.setWaitingFor(this.getActions(), () => game.drainQueue(() => {
       // Sistemas Seebeck (fan): a free conversion sets this instead of consuming an action.
       if (this.skipNextActionIncrement) {
         this.skipNextActionIncrement = false;
@@ -2168,12 +2158,10 @@ export class Player implements IPlayer {
     }
 
     // Add delegates
-    Turmoil.ifTurmoil(this.game, (turmoil) => {
-      const input = turmoil.getSendDelegateInput(this);
-      if (input !== undefined) {
-        action.options.push(input);
-      }
-    });
+    const input = this.game.turmoil?.getSendDelegateInput(this);
+    if (input !== undefined) {
+      action.options.push(input);
+    }
 
     // End turn
     // Administrative Delay (idesOfMars, fan): lets this player end a turn with 0 actions
@@ -2416,6 +2404,7 @@ export class Player implements IPlayer {
     }
     this.waitingFor = input;
     this.waitingForCb = cb;
+    this.inputRequestedAt = this.clock.now();
     this.game.inputsThisRound++;
     if (this.aiLevel !== undefined) {
       notifyAiPlayerWaiting(this);
@@ -2733,16 +2722,5 @@ export class Player implements IPlayer {
     const cb = typeof(input) === 'function' ? input : () => input;
     const action = new SimpleDeferredAction(this, cb, priority);
     this.game.defer(action);
-  }
-
-  public runWhenEmpty(cb: () => void): () => void {
-    const f = () => {
-      if (this.game.deferredActions.length === 0) {
-        cb();
-        return;
-      }
-      this.game.deferredActions.runAll(() => f());
-    };
-    return f;
   }
 }

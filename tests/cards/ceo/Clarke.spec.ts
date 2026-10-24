@@ -34,10 +34,10 @@ describe('Clarke', () => {
     expect(player.plants).eq(5);
     expect(player.heat).eq(5);
     expect(game.gameLog.map(formatMessage)).includes.members([
-      'blue gained 1 plant production',
-      'blue gained 1 heat production',
-      'blue gained 5 plants',
-      'blue gained 5 heat',
+      'blue gained 1:p:plants:',
+      'blue gained 1:p:heat:',
+      'blue gained 5:r:plants:',
+      'blue gained 5:r:heat:',
     ]);
   });
 });

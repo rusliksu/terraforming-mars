@@ -1,4 +1,3 @@
-
 import '@/server/init';
 require('console-stamp')(
   console,
@@ -12,8 +11,9 @@ import https from 'https';
 import http from 'http';
 import fs from 'fs';
 import * as v8 from 'node:v8';
+import {performance} from 'node:perf_hooks';
 import raw_settings from '../genfiles/settings.json';
-import prometheus from 'prom-client';
+import prometheus from '@prometheus-io/client';
 import * as responses from './server/responses';
 import ansi from 'ansi-escape-sequences';
 
@@ -37,6 +37,9 @@ function requestHandler(req: http.IncomingMessage, res: http.ServerResponse): vo
   });
 }
 
+// The event loop utilization snapshot from the previous scrape.
+let lastEventLoopUtilization = performance.eventLoopUtilization();
+
 const metrics = {
   startServer: new prometheus.Gauge({
     name: 'server_start_server',
@@ -49,7 +52,7 @@ const metrics = {
     registers: [prometheus.register],
   }),
   // The V8 old-space ceiling. Compare against heap usage to see OOM headroom.
-  // Not included in prom-client's default metrics.
+  // Not included in @prometheus-io/client's default metrics.
   heapSizeLimit: new prometheus.Gauge({
     name: 'nodejs_heap_size_limit_bytes',
     help: 'V8 heap size limit in bytes',
@@ -65,6 +68,19 @@ const metrics = {
     registers: [prometheus.register],
     collect() {
       this.set(v8.getHeapStatistics().number_of_detached_contexts);
+    },
+  }),
+  // Fraction of time the event loop was busy (0 to 1) since the previous scrape.
+  // Idle time is 1 minus this value.
+  // Not included in @prometheus-io/client's default metrics.
+  eventLoopUtilization: new prometheus.Gauge({
+    name: 'nodejs_eventloop_utilization',
+    help: 'Fraction of time the event loop was busy since the last scrape',
+    registers: [prometheus.register],
+    collect() {
+      const current = performance.eventLoopUtilization();
+      this.set(performance.eventLoopUtilization(current, lastEventLoopUtilization).utilization);
+      lastEventLoopUtilization = current;
     },
   }),
 };

@@ -71,7 +71,7 @@
           <div v-if="spectatorUrl" class="game-end-spectator" style="text-align:center;margin:8px 0;font-size:12px;color:#888">
             <span>Spectator: </span><a :href="spectatorUrl" style="color:#ff7f50">{{ spectatorUrl }}</a>
           </div>
-          <div v-if="!isSoloGame || game.isSoloModeWin" class="game-end-winer-announcement">
+          <div v-if="!isSoloGame || game.isSoloModeWin" class="game-end-winner-announcement">
               <span v-for="p in winners" :key="p.color" class="game-end-name-and-elo">
                 <span :class="'log-player ' + getEndGamePlayerRowColorClass(p.color)">{{ p.name }}</span>
                 <PlayerEloBadge :playerName="p.name" :eloDelta="getEloDeltaForPlayer(p)" tooltipCss="tooltip tooltip-top" />
@@ -121,7 +121,7 @@
                           <th><div class="table-forest-tile"></div></th>
                           <th><div class="table-city-tile"></div></th>
                           <th v-if="game.moon !== undefined"><div class="table-moon-road-tile"></div></th>
-                          <th v-if="game.moon !== undefined"><div class="table-moon-colony-tile"></div></th>
+                          <th v-if="game.moon !== undefined"><div class="table-moon-habitat-tile"></div></th>
                           <th v-if="game.moon !== undefined"><div class="table-moon-mine-tile"></div></th>
                           <th v-if="game.pathfinders !== undefined"><div class="table-planetary-track"></div></th>
                           <th><div class="vp">VP</div></th>
@@ -185,7 +185,7 @@
                 />
               <div class="game-end-flexrow">
                   <div v-for="p in playersInPlace" :key="p.color" class="game-end-column">
-                      <div class="game-end-winer-scorebreak-player-title">
+                      <div class="game-end-winner-scorebreak-player-title">
                           <div :class="'game-end-player ' + getEndGamePlayerRowColorClass(p.color)">
                             <span class="game-end-name-and-elo">
                               <a :href="'player?id='+p.id+'&noredirect'">{{p.name}}</a>
@@ -234,9 +234,9 @@
                           <th><div class="tile oxygen-tile"></div></th>
                           <th><div class="tile ocean-tile"></div></th>
                           <th v-if="game.gameOptions.expansions.venus"><div class="tile venus-tile"></div></th>
-                          <th v-if="game.gameOptions.expansions.moon"><div class="table-moon-colony-tile"></div></th>
-                          <th v-if="game.gameOptions.expansions.moon"><div class="table-moon-road-tile"></div></th>
+                          <th v-if="game.gameOptions.expansions.moon"><div class="table-moon-habitat-tile"></div></th>
                           <th v-if="game.gameOptions.expansions.moon"><div class="table-moon-mine-tile"></div></th>
+                          <th v-if="game.gameOptions.expansions.moon"><div class="table-moon-road-tile"></div></th>
                           <th><div class="game-end-total-column">Total</div></th>
                       </tr>
                   </thead>
@@ -248,8 +248,8 @@
                           <td>{{ data.oceans }}</td>
                           <td v-if="game.gameOptions.expansions.venus">{{ data.venus }}</td>
                           <td v-if="game.gameOptions.expansions.moon">{{ data.moonHabitat }}</td>
-                          <td v-if="game.gameOptions.expansions.moon">{{ data.moonLogistic }}</td>
                           <td v-if="game.gameOptions.expansions.moon">{{ data.moonMining }}</td>
+                          <td v-if="game.gameOptions.expansions.moon">{{ data.moonLogistic }}</td>
                           <td class="game-end-total">{{ data.total }}</td>
                       </tr>
                   </tbody>
@@ -562,7 +562,7 @@ export default defineComponent({
     translateAwardDetails(data: MADetail): string {
       if ( ! data.messageArgs || data.messageArgs.length < 3) {
         console.error( // data.message: ${0} place for ${1} award (funded by ${2})
-          `Award detail has not enought data.
+          `Award detail has not enough data.
           It must contain at least 3 arguments:
           1) a Player's place in the race for the award
           2) translatable Award name

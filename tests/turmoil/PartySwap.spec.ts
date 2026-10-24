@@ -58,7 +58,7 @@ describe('More Parties: party swap', () => {
     turmoil.sendDelegateToParty('NEUTRAL', PartyName.SCIENTISTS, game);
 
     turmoil.comingGlobalEvent = fakeEvent(PartyName.TRANSHUMANISTS);
-    turmoil.endGeneration(game);
+    turmoil.runTurmoilPhase(game);
 
     const names = turmoil.parties.map((p) => p.name);
     expect(names).to.include(PartyName.TRANSHUMANISTS);
@@ -74,7 +74,7 @@ describe('More Parties: party swap', () => {
     // Mars is ruling (excluded). Scientists, Unity, Greens, Reds, Kelvinists are all tied at 0 --
     // Scientists (index 1) is the leftmost eligible candidate.
     turmoil.comingGlobalEvent = fakeEvent(PartyName.EMPOWER);
-    turmoil.endGeneration(game);
+    turmoil.runTurmoilPhase(game);
 
     const names = turmoil.parties.map((p) => p.name);
     expect(names).to.not.include(PartyName.SCIENTISTS);
@@ -84,7 +84,7 @@ describe('More Parties: party swap', () => {
 
   it('never replaces the ruling or dominant party even at a 0-delegate tie', () => {
     turmoil.comingGlobalEvent = fakeEvent(PartyName.BUREAUCRATS);
-    turmoil.endGeneration(game);
+    turmoil.runTurmoilPhase(game);
 
     const names = turmoil.parties.map((p) => p.name);
     expect(names).to.include(PartyName.MARS);
@@ -115,7 +115,7 @@ describe('More Parties: party swap', () => {
     const reserveBefore = turmoil.delegateReserve.count(player);
 
     turmoil.comingGlobalEvent = fakeEvent(PartyName.CENTRISTS);
-    turmoil.endGeneration(game);
+    turmoil.runTurmoilPhase(game);
 
     expect(turmoil.parties.map((p) => p.name)).to.not.include(PartyName.UNITY);
     expect(turmoil.delegateReserve.count(player)).to.eq(reserveBefore + 1);
@@ -124,7 +124,7 @@ describe('More Parties: party swap', () => {
 
   it('gives the swapped-in party a valid political agenda (no throw when it becomes ruling/dominant)', () => {
     turmoil.comingGlobalEvent = fakeEvent(PartyName.SPOME);
-    turmoil.endGeneration(game);
+    turmoil.runTurmoilPhase(game);
 
     expect(() => PoliticalAgendas.getAgenda(turmoil, PartyName.SPOME)).to.not.throw();
   });
@@ -137,7 +137,7 @@ describe('More Parties: party swap', () => {
       noMoonTurmoil.globalEventDealer.deck.length = 0;
       noMoonTurmoil.comingGlobalEvent = fakeEvent(PartyName.SPOME);
 
-      noMoonTurmoil.endGeneration(noMoonGame);
+      noMoonTurmoil.runTurmoilPhase(noMoonGame);
 
       expect(noMoonTurmoil.parties.map((p) => p.name)).to.have.members(SIX_OFFICIAL);
     } finally {
@@ -151,7 +151,7 @@ describe('More Parties: party swap', () => {
     const before = turmoil.parties.map((p) => p.name);
 
     turmoil.comingGlobalEvent = fakeEvent(PartyName.SPOME);
-    turmoil.endGeneration(game);
+    turmoil.runTurmoilPhase(game);
 
     expect(turmoil.parties.map((p) => p.name)).to.deep.eq(before);
   });

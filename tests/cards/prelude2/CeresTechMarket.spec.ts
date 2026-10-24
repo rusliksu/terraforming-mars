@@ -90,7 +90,7 @@ describe('CeresTechMarket', () => {
 
     const publicMessages = game.gameLog.filter((entry) => entry.playerId === undefined);
     expect(publicMessages).has.length(1);
-    expect(publicMessages[0].message).eq('${0} gained ${1} M€ by discarding ${2} cards');
+    expect(publicMessages[0].message).eq('${0} gained ${1}:r:mc: by discarding ${2} cards');
 
     const privateMessages = game.gameLog.filter((entry) => entry.playerId === player.id);
     expect(privateMessages).has.length(1);

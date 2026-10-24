@@ -40,7 +40,7 @@ const NO_TAGS = {
  * play?"
  *
  * It can also extend to filters such as "What are the events in play?",
- * which is constantly checked. Imagine also if the same coud apply
+ * which is constantly checked. Imagine also if the same could apply
  * to "How mant tags are in play?"
  *
  * Cards are retained in insertion order.
@@ -190,6 +190,7 @@ export class PlayedCards {
     this.array = [];
     this._eventCount = 0;
     this._tags = {...NO_TAGS};
+    this._eventTags = {...NO_TAGS};
 
     this.push(...cards);
   }

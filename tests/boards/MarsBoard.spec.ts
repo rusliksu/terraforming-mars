@@ -4,6 +4,7 @@ import {TileType} from '../../src/common/TileType';
 import {SpaceType} from '../../src/common/boards/SpaceType';
 import {TestPlayer} from '../TestPlayer';
 import {MarsBoard} from '../../src/server/boards/MarsBoard';
+import {BoardBuilder} from '../../src/server/boards/BoardBuilder';
 import {SeededRandom} from '../../src/common/utils/Random';
 import {DEFAULT_GAME_OPTIONS, GameOptions} from '../../src/server/game/GameOptions';
 import {ArcadianCommunities} from '../../src/server/cards/promo/ArcadianCommunities';
@@ -97,7 +98,7 @@ describe('MarsBoard', () => {
   });
 
   it('edges', () => {
-    expect(board.getEdges().map(toID)).to.have.members(
+    expect(board.spaces.filter((s) => s.edge).map(toID)).to.have.members(
       [
         '03', '04', '05', '06', '07',
         '08', '13',
@@ -108,6 +109,26 @@ describe('MarsBoard', () => {
         '46', '52',
         '53', '58',
         '59', '60', '61', '62', '63',
+      ]);
+  });
+
+  it('edges on a board of another size', () => {
+    // Rows of 3, 4, 5, 4, 3 tiles: ids '03'..'21', row by row.
+    const builder = new BoardBuilder(DEFAULT_GAME_OPTIONS, new SeededRandom(0), [3, 4, 5, 4, 3]);
+    builder.row((r) => r.land().land().land());
+    builder.row((r) => r.land().land().land().land());
+    builder.row((r) => r.land().land().land().land().land());
+    builder.row((r) => r.land().land().land().land());
+    builder.row((r) => r.land().land().land());
+    const smallBoard = new MarsBoard(builder.build());
+
+    expect(smallBoard.spaces.filter((s) => s.edge).map(toID)).to.have.members(
+      [
+        '03', '04', '05',
+        '06', '09',
+        '10', '14',
+        '15', '18',
+        '19', '20', '21',
       ]);
   });
 
@@ -196,16 +217,8 @@ describe('MarsBoard', () => {
       expect(MarsBoard.canAffordPlacementBonuses(player, space)).is.true;
     });
 
-    it('TEMPERATURE bonus requires Vastitas Borealis temperature cost', () => {
-      space.bonus = [SpaceBonus.TEMPERATURE];
-      player.megaCredits = constants.VASTITAS_BOREALIS_BONUS_TEMPERATURE_COST - 1;
-      expect(MarsBoard.canAffordPlacementBonuses(player, space)).is.false;
-      player.megaCredits = constants.VASTITAS_BOREALIS_BONUS_TEMPERATURE_COST;
-      expect(MarsBoard.canAffordPlacementBonuses(player, space)).is.true;
-    });
-
-    it('TEMPERATURE bonus is free when temperature is maxed out', () => {
-      space.bonus = [SpaceBonus.TEMPERATURE];
+    it('TEMPERATURE_4MC bonus is free when temperature is maxed out', () => {
+      space.bonus = [SpaceBonus.TEMPERATURE_4MC];
       setTemperature(game, constants.MAX_TEMPERATURE);
       player.megaCredits = 0;
       expect(MarsBoard.canAffordPlacementBonuses(player, space)).is.true;
@@ -242,7 +255,7 @@ describe('MarsBoard', () => {
       customPlayer.megaCredits = 2;
       expect(MarsBoard.canAffordPlacementBonuses(customPlayer, customSpace)).is.true;
 
-      customSpace.bonus = [SpaceBonus.TEMPERATURE];
+      customSpace.bonus = [SpaceBonus.TEMPERATURE_4MC];
       customPlayer.megaCredits = 8;
       expect(MarsBoard.canAffordPlacementBonuses(customPlayer, customSpace)).is.false;
       customPlayer.megaCredits = 9;
@@ -267,17 +280,17 @@ describe('MarsBoard', () => {
       });
       setTemperature(customGame, 10);
       const customSpace = customGame.board.getSpaceOrThrow('15');
-      customSpace.bonus = [SpaceBonus.TEMPERATURE];
-      customPlayer.megaCredits = constants.VASTITAS_BOREALIS_BONUS_TEMPERATURE_COST - 1;
+      customSpace.bonus = [SpaceBonus.TEMPERATURE_4MC];
+      customPlayer.megaCredits = constants.VASTITAS_BOREALIS_NOVA_BONUS_TEMPERATURE_COST - 1;
       expect(MarsBoard.canAffordPlacementBonuses(customPlayer, customSpace)).is.false;
     });
 
     it('Sums multiple unaffordable bonuses', () => {
-      space.bonus = [SpaceBonus.OCEAN, SpaceBonus.TEMPERATURE];
+      space.bonus = [SpaceBonus.OCEAN, SpaceBonus.TEMPERATURE_4MC];
       // Each bonus is checked independently, so M€ shortage on either fails.
       player.megaCredits = constants.HELLAS_BONUS_OCEAN_COST - 1;
       expect(MarsBoard.canAffordPlacementBonuses(player, space)).is.false;
-      player.megaCredits = constants.VASTITAS_BOREALIS_BONUS_TEMPERATURE_COST - 1;
+      player.megaCredits = constants.VASTITAS_BOREALIS_NOVA_BONUS_TEMPERATURE_COST - 1;
       expect(MarsBoard.canAffordPlacementBonuses(player, space)).is.false;
     });
 
@@ -298,11 +311,26 @@ describe('MarsBoard', () => {
       [game, player] = testGame(1, {turmoilExtension: true});
       setRulingParty(game, PartyName.REDS);
       space = game.board.getSpaceOrThrow('15');
-      space.bonus = [SpaceBonus.TEMPERATURE];
+      space.bonus = [SpaceBonus.TEMPERATURE_4MC];
       setTemperature(game, constants.MAX_TEMPERATURE);
 
       player.megaCredits = 0;
       expect(MarsBoard.canAffordPlacementBonuses(player, space)).is.true;
     });
+  });
+
+  it('global parameter maximums default to the standard values', () => {
+    expect(board.max.temperature).eq(constants.MAX_TEMPERATURE);
+    expect(board.max.oxygen).eq(constants.MAX_OXYGEN_LEVEL);
+    expect(board.max.oceans).eq(constants.MAX_OCEAN_TILES);
+    expect(board.max.venus).eq(constants.MAX_VENUS_SCALE);
+  });
+
+  it('global parameter maximums can be overridden', () => {
+    const customBoard = new MarsBoard(board.spaces, undefined, {temperature: 14, oxygen: 18, oceans: 11, venus: 36});
+    expect(customBoard.max.temperature).eq(14);
+    expect(customBoard.max.oxygen).eq(18);
+    expect(customBoard.max.oceans).eq(11);
+    expect(customBoard.max.venus).eq(36);
   });
 });

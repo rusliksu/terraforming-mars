@@ -10,6 +10,10 @@ import {digit} from '../Options';
 import {LogHelper} from '../../LogHelper';
 import {ICorporationCard} from '../corporation/ICorporationCard';
 
+const HELP_TEXT = `
+This card has an extra action for turning 3 resource cubes into a TR. The reason for this seemingly obvious action is to account for the outside case that a player can't afford to raise their TR when playing Turmoil because the Reds are in power.
+` as const;
+
 export class TheArchaicFoundationInstitute extends CorporationCard implements ICorporationCard {
   constructor() {
     super({
@@ -33,6 +37,7 @@ export class TheArchaicFoundationInstitute extends CorporationCard implements IC
             ab.resource(CardResource.RESOURCE_CUBE, {amount: 3, digit}).startAction.tr(1, {size: Size.TINY});
           });
         }),
+        helpText: HELP_TEXT,
       },
     });
   }
@@ -51,7 +56,7 @@ export class TheArchaicFoundationInstitute extends CorporationCard implements IC
 
   // The only reason Archaic Foundation Institute has an action is if Reds is
   // in effect when the player gains the Moon tag. Ideally, this is always
-  // automatically resolved, even at strange times, even produciton.
+  // automatically resolved, even at strange times, even production.
   //
   public action(player: IPlayer) {
     // How should this interact in a Merger with UNMO?
@@ -59,7 +64,7 @@ export class TheArchaicFoundationInstitute extends CorporationCard implements IC
     while (!player.canAfford({cost: 0, tr: {tr: tr}})) {
       tr--;
     }
-    player.removeResourceFrom(this, tr * 3);
+    player.removeResourceFrom(this, tr * 3, {log: false});
     player.increaseTerraformRating(tr);
     LogHelper.logRemoveResource(player, this, tr * 3, `Gain ${tr} TR`);
   }

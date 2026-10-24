@@ -11,10 +11,10 @@ describe('BoardSpace', () => {
       ...globalConfig,
       props: {
         space: {
-          id: 'm01',
-          bonus: [],
           x: 0,
           y: 0,
+          id: 'm01',
+          bonus: [],
           spaceType: SpaceType.LAND,
         },
         tileView: 'show',
@@ -29,10 +29,10 @@ describe('BoardSpace', () => {
       ...globalConfig,
       props: {
         space: {
-          id: 'm01',
-          bonus: [],
           x: 0,
           y: 0,
+          id: 'm01',
+          bonus: [],
           spaceType: SpaceType.LAND,
         },
         tileView: 'hide',
@@ -58,10 +58,10 @@ describe('BoardSpace', () => {
       ...globalConfig,
       props: {
         space: {
-          id: 'm01',
-          bonus: [SpaceBonus.STEEL],
           x: 0,
           y: 0,
+          id: 'm01',
+          bonus: [SpaceBonus.STEEL],
           spaceType: SpaceType.LAND,
           cube: 'martian-nature-wonders',
         },

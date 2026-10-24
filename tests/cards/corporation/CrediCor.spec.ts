@@ -32,7 +32,7 @@ describe('CrediCor', () => {
     player.playedCards.push(card);
     card.onStandardProject(player, new CityStandardProject());
 
-    expect(player.game.gameLog.map(formatMessage)).contains('blue gained 4 M€ because of CrediCor');
+    expect(player.game.gameLog.map(formatMessage)).contains('blue gained 4:r:mc: because of CrediCor');
   });
 
   it('Runs onCardPlayed', () => {

@@ -47,7 +47,7 @@ describe('ApiQuickGame', () => {
     expect(res.statusCode).eq(statusCode.ok);
     const game = await scaffolding.ctx.gameLoader.getGame(JSON.parse(res.content).id);
     expect(game!.gameOptions.customBoard).deep.eq(board);
-    expect(game!.board.spaces.filter((space) => space.id.length === 3).length).eq(board.spaces.length);
+    expect(game!.board.spaces.filter((space) => /^\d{3}$/.test(space.id)).length).eq(board.spaces.length);
   });
 
   it('creates games with one-way 10-card initial draft enabled', async () => {

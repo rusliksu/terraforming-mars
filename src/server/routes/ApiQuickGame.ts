@@ -6,7 +6,6 @@ import * as path from 'path';
 import * as responses from '../server/responses';
 import {Handler} from './Handler';
 import {Context} from './IHandler';
-import {ApiCreateGame} from './ApiCreateGame';
 import {Game} from '../Game';
 import {Player} from '../Player';
 import {GameOptions} from '../game/GameOptions';
@@ -18,6 +17,7 @@ import {generateRandomId} from '../utils/server-ids';
 import {Request} from '../Request';
 import {Response} from '../Response';
 import {RandomBoardOption} from '../../common/boards/RandomBoardOption';
+import {boardOptions} from '../../common/boards/randomBoardOptions';
 import {BoardName} from '../../common/boards/BoardName';
 import {RandomMAOptionType} from '../../common/ma/RandomMAOptionType';
 import {Expansion, DEFAULT_EXPANSIONS} from '../../common/cards/GameModule';
@@ -109,15 +109,15 @@ export class ApiQuickGame extends Handler {
       players.forEach((player, index) => player.team = settings.players?.[index]?.team ?? Math.floor(index / 2));
     }
 
-    let board: BoardName | RandomBoardOption = RandomBoardOption.ALL;
+    let boards: Array<BoardName> = boardOptions(RandomBoardOption.ALL);
     if (settings.board) {
       const b = settings.board as string;
       if (b === 'random all') {
-        board = RandomBoardOption.ALL;
+        boards = boardOptions(RandomBoardOption.ALL);
       } else if (b === 'random official') {
-        board = RandomBoardOption.OFFICIAL;
+        boards = boardOptions(RandomBoardOption.OFFICIAL);
       } else {
-        board = b as BoardName;
+        boards = [b as BoardName];
       }
     }
 
@@ -153,7 +153,7 @@ export class ApiQuickGame extends Handler {
     return {
       players,
       expansions,
-      board,
+      boards,
       customBoardCode: settings.customBoardCode,
       customMoonBoardCode: settings.customMoonBoardCode,
       customVenusSurfaceBoardCode: settings.customVenusSurfaceBoardCode,
@@ -245,17 +245,14 @@ export class ApiQuickGame extends Handler {
         Math.floor(Math.random() * players.length) :
         0;
 
-      const boardSelection = gameReq.board;
+      const boardSelection = gameReq.boards;
       let customBoard: GameOptions['customBoard'];
-      let resolvedBoard = BoardName.CUSTOM;
-      if (boardSelection === BoardName.CUSTOM) {
+      const resolvedBoard = boardSelection[Math.floor(Math.random() * boardSelection.length)];
+      if (resolvedBoard === BoardName.CUSTOM) {
         if (gameReq.customBoardCode === undefined) {
           throw new Error('A custom board requires a map code.');
         }
         customBoard = decodeCustomBoard(gameReq.customBoardCode);
-      } else {
-        const boards = ApiCreateGame.boardOptions(boardSelection);
-        resolvedBoard = boards[Math.floor(Math.random() * boards.length)];
       }
       const customMoonBoard = gameReq.expansions.moon && gameReq.customMoonBoardCode !== undefined ?
         decodeSimpleBoard(gameReq.customMoonBoardCode) : undefined;
@@ -292,7 +289,7 @@ export class ApiQuickGame extends Handler {
         aresExtremeVariant: gameReq.aresExtremeVariant,
         bannedCards: gameReq.bannedCards,
         boardName: resolvedBoard,
-        boardSelection,
+        boardSelection: gameReq.boards,
         ceoExtension: gameReq.expansions.ceo,
         clonedGamedId: gameReq.clonedGamedId,
         coloniesExtension: gameReq.expansions.colonies,

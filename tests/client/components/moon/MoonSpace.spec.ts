@@ -10,10 +10,10 @@ describe('MoonSpace', () => {
       ...globalConfig,
       props: {
         space: {
-          id: 'm01',
-          bonus: [],
           x: 0,
           y: 0,
+          id: 'm01',
+          bonus: [],
           spaceType: SpaceType.LAND,
         },
       },
@@ -27,10 +27,10 @@ describe('MoonSpace', () => {
       ...globalConfig,
       props: {
         space: {
-          id: 'm01',
-          bonus: [],
           x: 0,
           y: 0,
+          id: 'm01',
+          bonus: [],
           spaceType: SpaceType.LAND,
         },
         tileView: 'hide',

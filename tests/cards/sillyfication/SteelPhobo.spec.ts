@@ -30,7 +30,7 @@ describe('SteelPhobo', () => {
   it('reverses on discard', () => {
     card.play(player);
     card.onDiscard(player);
-    // behavior reversal handles steelValue:1 / titanumValue:-1; onDiscard handles the extra steel step.
+    // behavior reversal handles steelValue:1 / titaniumValue:-1; onDiscard handles the extra steel step.
     expect(player.getSteelValue()).to.eq(3);
   });
 });

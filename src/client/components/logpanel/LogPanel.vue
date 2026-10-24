@@ -153,6 +153,13 @@ export default defineComponent({
     messageClicked(message: LogMessage) {
       this.typedRefs.messageInspector.show(message);
     },
+    refreshCurrentView(): void {
+      if (this.selectedRecentLimit !== undefined) {
+        this.getRecentLogs();
+      } else if (this.selectedGeneration === this.generation) {
+        this.getLogsForGeneration(this.generation);
+      }
+    },
     selectGeneration(gen: number): void {
       if (gen !== this.selectedGeneration || this.selectedRecentLimit !== undefined) {
         this.selectedGeneration = gen;
@@ -386,11 +393,7 @@ export default defineComponent({
   },
   watch: {
     gameAge() {
-      if (this.selectedRecentLimit !== undefined) {
-        this.getRecentLogs();
-      } else if (this.selectedGeneration === this.generation) {
-        this.getLogsForGeneration(this.generation);
-      }
+      this.refreshCurrentView();
     },
   },
   mounted() {

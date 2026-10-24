@@ -2744,7 +2744,7 @@
     "src/server/routes/Game.ts": "49a3b345a3b58a9c01aecf63ed0f1671e36a0a950f420dad13098bf2fdee2359",
     "src/server/routes/GameLogs.ts": "f7c9a7c9eb9c3194d771c5652c72b5319431f4ddc9427a71f06853d4a165fa30",
     "src/server/routes/GamesOverview.ts": "f830eb878af8bba2c08568f6e2927cd145a96683920a3a0879372b33b955c997",
-    "src/server/routes/Handler.ts": "bbbaf7388f8f2e5c1586e18041fdee6f1a72aa0d62e689d2a3b7eb37f73168c1",
+    "src/server/routes/Handler.ts": "53863a93058553dae82c0ca475f515dea5446a9c4079556b7fa71ca214957e16",
     "src/server/routes/IHandler.ts": "7fdb74211b1ef94cbe7033f0796e0fe61930daebc5eb24c8a897be9cb253a3a2",
     "src/server/routes/Load.ts": "3f0d1943bb66a906d71fda5112cfd246772b22c5fbde6cb2959ef07b0e910af9",
     "src/server/routes/LoadGame.ts": "10a5e3b99ccdb32fe385409d6ab15981bfa504897f14fc4b052e3d667a398849",

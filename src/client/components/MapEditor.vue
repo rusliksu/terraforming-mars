@@ -975,6 +975,15 @@ function buildGrid(rows: number, previous: Map<string, CustomSpaceDef | null> | 
 @media (max-width: 700px) {
   .map-editor {
     padding: 12px;
+
+    // Match CardMaker: keep the title clear of the floating optional-layout switch.
+    h1 {
+      max-width: calc(100% - 100px);
+      font-size: 30px;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
     .map-editor-controls,
     .map-editor-canvas { width: 100%; min-width: 0; }
     .map-editor-board-nav { flex-wrap: wrap; }

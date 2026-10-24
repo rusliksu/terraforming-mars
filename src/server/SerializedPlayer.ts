@@ -1,4 +1,5 @@
 import {PlayerId} from '../common/Types';
+import {AiLevel} from '../common/ai/AiLevel';
 import {CardName} from '../common/cards/CardName';
 import {Color} from '../common/Color';
 import {DynamicCardState, SerializedCard} from './SerializedCard';
@@ -54,6 +55,7 @@ export interface SerializedPlayer extends DeprecatedFields{
   fleetSize: number;
   globalParameterSteps: Record<GlobalParameter, number>;
   handicap: number;
+  aiLevel?: AiLevel;
   preludeHandicap?: number;
   hasIncreasedTerraformRatingThisGeneration: boolean;
   hasTurmoilScienceTagBonus: boolean;

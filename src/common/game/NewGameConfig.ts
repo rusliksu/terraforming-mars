@@ -7,6 +7,7 @@ import {RandomMAOptionType} from '../ma/RandomMAOptionType';
 import {AgendaStyle} from '../turmoil/Types';
 import {GameId} from '../Types';
 import {Expansion} from '../cards/GameModule';
+import {AiLevel} from '../ai/AiLevel';
 
 export type BoardNameType = BoardName | RandomBoardOption;
 
@@ -29,6 +30,8 @@ export interface NewPlayerModel {
   preludeHandicap?: number;
   first: boolean;
   isBot: boolean;
+  /** Present for computer-controlled players. */
+  aiLevel?: AiLevel;
   profileId?: string;
   telegramID?: string;
   /** Conglomerates only: which team this player is on. Players sharing a value are teammates. */
@@ -74,6 +77,8 @@ export type NewGameConfig = {
   undoOption: boolean;
   undoStepOption?: boolean;
   showTimers: boolean;
+  /** Analysis game (only with AI players): the log shows the AI's cards and decisions for everyone. */
+  aiAnalysis?: boolean;
   fastModeOption: boolean;
   showOtherPlayersVP: boolean;
   privateHands: boolean;

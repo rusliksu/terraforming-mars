@@ -18,6 +18,10 @@ export class ApiWaitingFor extends Handler {
   }
 
   private playerHasRequiredInput(player: IPlayer): boolean {
+    // AI players answer their own inputs; their page behaves like the spectator page.
+    if (player.aiLevel !== undefined) {
+      return player.game.phase === Phase.END;
+    }
     const input = player.getWaitingFor();
     if (input !== undefined) {
       return !input.optional;
@@ -28,6 +32,9 @@ export class ApiWaitingFor extends Handler {
   private playersWithRequiredInputs(game: IGame) {
     return game.playersInGenerationOrder
       .filter((player) => {
+        if (player.aiLevel !== undefined) {
+          return false;
+        }
         const waitingFor = player.getWaitingFor();
         return waitingFor !== undefined && !waitingFor.optional;
       })

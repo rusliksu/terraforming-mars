@@ -10,6 +10,8 @@ import {GameId} from '../Types';
 
 export type GameOptionsModel = {
   aresExtremeVariant: boolean,
+  /** Analysis game: the log shows every AI decision for rating. */
+  aiAnalysis?: boolean,
   altVenusBoard: boolean,
   boardName: BoardName,
   /** Global-parameter track overrides (custom boards only); absent means the official tracks. */

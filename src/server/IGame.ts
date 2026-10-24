@@ -76,6 +76,7 @@ export interface IGame extends Logger {
   shadowInputSeq: number; // Monotonic accepted input counter for shadow correlation
   gameLog: Array<LogMessage>;
   undoCount: number; // Each undo increases it
+  aiDecisionCount: number; // Analysis games: running number of AI decisions
   /** Runtime-only journal for experimental one-step undo. Not serialized. */
   actionReplayState: ActionReplayState | null | undefined;
   inputsThisRound: number;

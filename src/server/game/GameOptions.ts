@@ -31,6 +31,8 @@ export type GameOptions = {
   // Configuration
   undoOption: boolean;
   undoStepOption: boolean;
+  /** Analysis game (only with AI players): the log shows every AI decision for rating. */
+  aiAnalysis: boolean;
   showTimers: boolean;
   fastModeOption: boolean;
   showOtherPlayersVP: boolean;
@@ -218,6 +220,7 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
   conglomeratesTeamAssignments: undefined,
   undoOption: false,
   undoStepOption: false,
+  aiAnalysis: false,
   venusNextExtension: false,
   twoCorpsVariant: false,
 };

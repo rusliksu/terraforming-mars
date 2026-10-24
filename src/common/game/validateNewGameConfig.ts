@@ -7,6 +7,7 @@ import {NewGameConfig} from './NewGameConfig';
 import {Expansion} from '../cards/GameModule';
 import {Message} from '../logs/Message';
 import {LogMessageDataType} from '../logs/LogMessageDataType';
+import {aiUnsupportedReasons} from '../ai/aiSupport';
 import {BoardName} from '../boards/BoardName';
 
 const REVISED_COUNT_ALGORITHM = false;
@@ -28,6 +29,8 @@ export type ValidationErrors = {
   prelude2WithoutPrelude: boolean;
   deltaProjectWithoutPrelude: boolean;
   notEnoughCorporations: number;
+  allAiPlayers: boolean;
+  aiUnsupportedExpansions: Array<string>;
 };
 
 function mustSelectAtLeast(message: string, required: number): Message {
@@ -98,6 +101,17 @@ export const validationDetails: Record<keyof ValidationErrors, {blocking: boolea
     blocking: true,
     message: (errors) => mustSelectAtLeast('Must select at least ${0} corporations', errors.notEnoughCorporations),
   },
+  allAiPlayers: {
+    blocking: true,
+    message: 'At least one human player is required: AI seats cannot fill the whole table.',
+  },
+  aiUnsupportedExpansions: {
+    blocking: true,
+    message: (errors) => ({
+      message: 'AI players do not support: ${0}.',
+      data: [{type: LogMessageDataType.RAW_STRING, value: errors.aiUnsupportedExpansions.join(', ')}],
+    }),
+  },
 };
 
 export type Helpers = {
@@ -123,7 +137,18 @@ export function validateNewGameConfig(config: NewGameConfig, helpers: Helpers): 
     prelude2WithoutPrelude: false,
     deltaProjectWithoutPrelude: false,
     notEnoughCorporations: 0,
+    allAiPlayers: false,
+    aiUnsupportedExpansions: [],
   };
+
+  const aiSeats = config.players.filter((player) => player.aiLevel !== undefined).length;
+  errors.allAiPlayers = playerCount > 0 && aiSeats === playerCount;
+  if (aiSeats > 0) {
+    errors.aiUnsupportedExpansions = aiUnsupportedReasons({
+      expansions: config.expansions,
+      twoCorpsVariant: config.twoCorpsVariant,
+    });
+  }
 
   if (config.escapeVelocity && hasNegativeEscapeVelocityOption(config.escapeVelocity)) {
     errors.negativeEscapeVelocity = true;

@@ -112,6 +112,11 @@ export class PlayerInput extends Handler {
       responses.badRequest(req, res, 'surrendered player is controlled by a bot');
       return;
     }
+    if (player.aiLevel !== undefined) {
+      recordPlayerInputAudit(req, ctx, player, 'player_input_rejected', {reason: 'ai_player'});
+      responses.badRequest(req, res, 'This player is controlled by the AI.');
+      return;
+    }
     return this.processInput(req, res, ctx, player);
   }
 

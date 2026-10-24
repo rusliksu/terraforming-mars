@@ -188,6 +188,7 @@ export class Game implements IGame, Logger {
   public gameLog: Array<LogMessage> = createGameLog();
   public logActionContext?: {id: string, actor: IPlayer, generation: number, phase: Phase, ordinal: number, firstMessage: boolean, pendingGlobalEffects?: Array<LogGlobalEffect>};
   public undoCount: number = 0; // Each undo increases it
+  public aiDecisionCount: number = 0; // Analysis games: running number of AI decisions
   public actionReplayState: ActionReplayState | null | undefined = undefined;
   public inputsThisRound = 0;
   public resettable: boolean = false;
@@ -700,6 +701,7 @@ export class Game implements IGame, Logger {
       underworldData: this.underworldData,
       conglomerates: this.conglomerates,
       undoCount: this.undoCount,
+      aiDecisionCount: this.aiDecisionCount,
       venusPhase2Data: VenusPhase2Data.serialize(this.venusPhase2Data),
       venusScaleLevel: this.venusScaleLevel,
       verminInEffect: this.verminInEffect,
@@ -2341,6 +2343,7 @@ export class Game implements IGame, Logger {
     game.phase = d.phase;
     game.oxygenLevel = d.oxygenLevel;
     game.undoCount = d.undoCount ?? 0;
+    game.aiDecisionCount = d.aiDecisionCount ?? 0;
     game.temperature = d.temperature;
     game.venusScaleLevel = d.venusScaleLevel;
     game.activePlayer = game.getPlayerById(d.activePlayer);

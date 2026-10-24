@@ -1,0 +1,317 @@
+import {IPlayer} from '../IPlayer';
+import {ICard} from '../cards/ICard';
+import {InputResponse} from '../../common/inputs/InputResponse';
+import {SelectCard} from '../inputs/SelectCard';
+import {SelectInitialCards} from '../inputs/SelectInitialCards';
+import {ICorporationCard} from '../cards/corporation/ICorporationCard';
+import {CardName} from '../../common/cards/CardName';
+import {CardTiming, estimateCardTimings, handCardValues} from './cardValue';
+import {isTracingDecision, traceOptions, TracedOption} from './decisionTrace';
+import {quickResponse} from './quickResponse';
+import {discardOrder} from './discardPriority';
+import {corporationSelfPlayBonus} from './corporationSelfPlay';
+import {corporationPrior} from './cardPriors';
+import {lastGenerationLikelihood, remainingProductionPhases, terraformingProgress} from './gameProgress';
+import {handTargetFactor} from './handPlan';
+import {globalWait, requirementOutlook} from './requirementOutlook';
+import {rememberPassedCards} from './draftMemory';
+import {Resource} from '../../common/Resource';
+import {isIProjectCard} from '../cards/IProjectCard';
+import {Tag} from '../../common/cards/Tag';
+import {tuningOf} from './aiTuning';
+import {enablerBonus} from './enablerValue';
+import {draftReceiver, receiverValues} from './draftDenial';
+import {cardsForMilestone} from './milestoneBuying';
+import {openingSynergy} from './openingSynergy';
+import {withOpeningFit} from './cardFit';
+import {withPolicyPreference} from './bgaPolicy';
+
+// Opening choice (corporation + preludes + cards) and card buying / drafting.
+
+// Money kept after buying, so the bought cards can actually be played.
+const OPENING_RESERVE = 10;
+// A card must be clearly worth more than its price (aiTuning.ts buyMargin): estimates are rough,
+// and a card that is never played is 3 M€ lost (the AI used to buy many cards and sell them again).
+
+type ValueFunction = (name: CardName) => number;
+
+/**
+ * Best value of each card, whenever it is played (same as estimateCardValues), plus its timing.
+ * When buying, a card only worth playing later is bought early at a discount (the money is
+ * missing now, and similar cards come again), and cards that enable strong hand cards get a share
+ * of their value (aiTuning.ts lateBuyFactor, enablerWeight).
+ */
+function valuesOf(player: IPlayer, cards: ReadonlyArray<ICard>, buying = false): {valueOf: ValueFunction, timingOf: (name: CardName) => CardTiming | undefined} {
+  const timings = estimateCardTimings(player, cards);
+  const tuning = tuningOf(player);
+  const remaining = remainingProductionPhases(player.game, player);
+  const handValues = tuning.enablerWeight > 0 ? handCardValues(player) : new Map<CardName, number>();
+  const extras = new Map<CardName, number>(cards.map((card) => [card.name,
+    tuning.enablerWeight > 0 ? tuning.enablerWeight * enablerBonus(card, player, handValues) : 0]));
+  return {
+    valueOf: (name) => {
+      const timing = timings.get(name);
+      if (timing === undefined) {
+        return 0;
+      }
+      const later = buying && remaining >= 5 && timing.now < 0 ? timing.later * tuning.lateBuyFactor : timing.later;
+      const value = Math.max(timing.now, later) + (extras.get(name) ?? 0);
+      const card = buying && tuning.playWindow > 0 ? cards.find((candidate) => candidate.name === name) : undefined;
+      return card !== undefined && value > 0 ? value * playWindowFactor(card, player) : value;
+    },
+    timingOf: (name) => timings.get(name),
+  };
+}
+
+/**
+ * Strategy guides: a bought card needs a play window of 1–3 generations. Cards that wait longer
+ * for oxygen, temperature or oceans are frozen capital (a human game: in generation 5, 8 of 11
+ * hand cards waited for global parameters).
+ */
+function playWindowFactor(card: ICard, player: IPlayer): number {
+  if (!isIProjectCard(card)) {
+    return 1;
+  }
+  const wait = globalWait(card, player);
+  return wait <= 1 ? 1 : wait <= 3 ? 0.75 : 0.35;
+}
+
+/** Hand cards the player can still pay in the next three generations, minus what the hand already costs. */
+function payableRoom(player: IPlayer): number {
+  const income = player.production.get(Resource.MEGACREDITS) + player.terraformRating;
+  const money = player.megaCredits + 3 * income;
+  const handCost = player.cardsInHand.reduce((sum, card) => sum + player.getCardCost(card), 0);
+  // About 18 M€ per further card: an average card plus its price.
+  return Math.floor((money - handCost) / 18);
+}
+
+const round = (value: number) => Math.round(value * 10) / 10;
+
+/** Trace entry of a card with its now/later values. */
+// Groups of the start selection, by the label prefix the decision log has always used
+const INITIAL_GROUPS: Record<string, TracedOption['group']> = {'Konzern: ': 'corporation', 'Präludium: ': 'prelude', 'Karte: ': 'project'};
+
+function cardOption(prefix: string, card: ICard, valueOf: ValueFunction, timingOf: (name: CardName) => CardTiming | undefined, chosen: boolean, note?: string): TracedOption {
+  const timing = timingOf(card.name);
+  return {
+    label: `${prefix}${card.name}`,
+    card: card.name,
+    group: INITIAL_GROUPS[prefix],
+    value: round(valueOf(card.name)),
+    now: timing === undefined ? undefined : round(timing.now),
+    later: timing === undefined || !Number.isFinite(timing.later) ? undefined : round(timing.later),
+    chosen,
+    note,
+  };
+}
+
+/** Best cards to buy: worth more than the price, within budget and hand-size targets. */
+function cardsToBuy(cards: ReadonlyArray<ICard>, valueOf: ValueFunction, budget: number, maximum: number, buyPrice: number, buyMargin: number): Array<ICard> {
+  const worthIt = [...cards]
+    .filter((card) => valueOf(card.name) > buyPrice + buyMargin)
+    .sort((a, b) => valueOf(b.name) - valueOf(a.name));
+  const affordable = Math.max(0, Math.floor(budget / buyPrice));
+  return worthIt.slice(0, Math.min(maximum, affordable));
+}
+
+/**
+ * Last generation: a card only pays if it is played in this generation, so its requirements must
+ * be met now and price plus play cost must fit the money. In 15 test games every fourth card
+ * bought in the last generation stayed in hand (e.g. Capital, Magnetic Field Dome, Zeppelins).
+ */
+function lastGenerationCardsToBuy(cards: ReadonlyArray<ICard>, valueOf: ValueFunction, player: IPlayer, maximum: number): Array<ICard> {
+  let money = player.spendableMegacredits();
+  let steel = player.steel;
+  let titanium = player.titanium;
+  const bought: Array<ICard> = [];
+  for (const card of cards) {
+    // canPlay also covers what the requirement list misses, e.g. energy production a city has
+    // to give up (Noctis City, Capital, Rad-Chem Factory stayed in hand in the test games).
+    if (bought.length >= maximum || !isIProjectCard(card) || requirementOutlook(card, player) < 1 || !player.canPlay(card)) {
+      continue;
+    }
+    if (valueOf(card.name) <= player.cardCost + tuningOf(player).buyMargin) {
+      continue;
+    }
+    // Steel and titanium pay their share first, the rest is money.
+    let cost = player.getCardCost(card);
+    const steelUsed = card.tags.includes(Tag.BUILDING) ? Math.min(steel, Math.floor(cost / player.getSteelValue())) : 0;
+    cost -= steelUsed * player.getSteelValue();
+    const titaniumUsed = card.tags.includes(Tag.SPACE) ? Math.min(titanium, Math.floor(cost / player.getTitaniumValue())) : 0;
+    cost -= titaniumUsed * player.getTitaniumValue();
+    if (cost + player.cardCost > money) {
+      continue;
+    }
+    money -= cost + player.cardCost;
+    steel -= steelUsed;
+    titanium -= titaniumUsed;
+    bought.push(card);
+  }
+  return bought;
+}
+
+/** Synergy bonus: cards sharing tags with the corporation profit from its effects. */
+function tagSynergy(corporation: ICorporationCard, cards: ReadonlyArray<ICard>): number {
+  const corporationTags = new Set(corporation.tags);
+  return cards.reduce((sum, card) => sum + card.tags.filter((tag) => corporationTags.has(tag)).length * 1.5, 0);
+}
+
+function pairs<T>(items: ReadonlyArray<T>): Array<[T, T]> {
+  const result: Array<[T, T]> = [];
+  for (let first = 0; first < items.length; first++) {
+    for (let second = first + 1; second < items.length; second++) {
+      result.push([items[first], items[second]]);
+    }
+  }
+  return result;
+}
+
+export function chooseInitialCards(input: SelectInitialCards, player: IPlayer): InputResponse {
+  const corporations = player.dealtCorporationCards;
+  const preludes = player.dealtPreludeCards;
+  const projects = player.dealtProjectCards;
+  const {valueOf, timingOf} = valuesOf(player, [...corporations, ...preludes, ...projects], true);
+  const combinations: Array<{label: string, score: number}> = [];
+
+  const preludeChoices: Array<ReadonlyArray<ICard>> = preludes.length >= 2 ? pairs(preludes) : [[]];
+  let best: {corporation: ICorporationCard, preludes: ReadonlyArray<ICard>, cards: Array<ICard>, score: number} | undefined;
+  for (const corporation of corporations) {
+    const buyPrice = corporation.cardCost ?? player.cardCost;
+    for (const preludePair of preludeChoices) {
+      const budget = corporation.startingMegaCredits - OPENING_RESERVE;
+      // flowFit: the opening sets the direction, cards pulling the same way count more (cardFit.ts).
+      const flowWeight = tuningOf(player).flowFit;
+      const value = flowWeight > 0 ?
+        withOpeningFit(valueOf, flowWeight, corporation.name, preludePair.map((card) => card.name), projects.map((card) => card.name)) :
+        valueOf;
+      const cards = cardsToBuy(projects, value, budget, 10, buyPrice, tuningOf(player).buyMargin);
+      const score = value(corporation.name) + corporationSelfPlayBonus(corporation.name) +
+        tuningOf(player).corporationPriorWeight * corporationPrior(corporation.name) +
+        preludePair.reduce((sum, prelude) => sum + value(prelude.name), 0) +
+        cards.reduce((sum, card) => sum + value(card.name) - buyPrice, 0) +
+        tagSynergy(corporation, [...cards, ...preludePair]) +
+        openingSynergy(player, corporation.name, preludePair.map((card) => card.name));
+      if (best === undefined || score > best.score) {
+        best = {corporation, preludes: preludePair, cards, score};
+      }
+      combinations.push({label: `${corporation.name} + ${preludePair.map((card) => card.name).join(' + ')} + ${cards.length} Karten`, score});
+    }
+  }
+  if (best === undefined) {
+    return quickResponse(input, player);
+  }
+  const chosen = best;
+  if (isTracingDecision()) {
+    const ranked = combinations.sort((a, b) => b.score - a.score);
+    traceOptions('initial', [
+      ...corporations.map((card) => cardOption('Konzern: ', card, valueOf, timingOf, card === chosen.corporation,
+        `Korrektur aus Testläufen ${round(corporationSelfPlayBonus(card.name))}`)),
+      ...preludes.map((card) => cardOption('Präludium: ', card, valueOf, timingOf, chosen.preludes.includes(card))),
+      ...projects.map((card) => cardOption('Karte: ', card, valueOf, timingOf, chosen.cards.includes(card))),
+      ...ranked.slice(0, 5).map((combination, index) => ({label: `Kombination: ${combination.label}`, value: round(combination.score), chosen: index === 0})),
+    ], {combinations: ranked.length});
+  }
+  const responses = input.options.map((option): InputResponse => {
+    if (option === input.inputs.corp) {
+      return {type: 'card', cards: [chosen.corporation.name]};
+    }
+    if (option === input.inputs.prelude) {
+      return {type: 'card', cards: chosen.preludes.map((card) => card.name)};
+    }
+    if (option === input.inputs.project) {
+      return {type: 'card', cards: chosen.cards.map((card) => card.name)};
+    }
+    return quickResponse(option, player);
+  });
+  return {type: 'initialCards', responses};
+}
+
+/** Draft pick or research purchase, depending on the input's limits. */
+/**
+ * Drawn cards of which some are kept for free (Business Contacts: keep 2 of 4, Invention Contest: 1 of 3):
+ * the best by the full card valuation (timing, cost, synergies), not by statistics alone.
+ */
+export function chooseFreeCardsToKeep(input: SelectCard<ICard>, player: IPlayer): InputResponse {
+  const candidates = input.cards.filter((_card, index) => input.config.enabled?.[index] !== false);
+  const {valueOf, timingOf} = valuesOf(player, candidates);
+  const sorted = [...candidates].sort((a, b) => valueOf(b.name) - valueOf(a.name));
+  const chosen = sorted.slice(0, Math.min(Math.max(input.config.min, 0), sorted.length));
+  if (isTracingDecision()) {
+    traceOptions('keep', sorted.map((card) => cardOption('', card, valueOf, timingOf, chosen.includes(card))));
+  }
+  return {type: 'card', cards: chosen.map((card) => card.name)};
+}
+
+/**
+ * Cards to discard from hand (Mars University, Sponsored Academies …): the least valuable by the full card
+ * valuation – the quick rule kept VP cards first and so discarded them (Birds in the last third of a game).
+ * The analysis log shows it as a keep choice: chosen = kept.
+ */
+export function chooseCardsToDiscard(input: SelectCard<ICard>, player: IPlayer): InputResponse {
+  const candidates = input.cards.filter((_card, index) => input.config.enabled?.[index] !== false);
+  const {valueOf, timingOf} = valuesOf(player, candidates);
+  // Jens' order (discardPriority.ts): dead cards, weak negative-VP cards, low impact, … VP cards last
+  const sorted = discardOrder(candidates, player, (card) => valueOf(card.name));
+  const discarded = sorted.slice(0, Math.min(Math.max(input.config.min, 0), sorted.length));
+  if (isTracingDecision()) {
+    traceOptions('keep', [...sorted].reverse().map((card) => cardOption('', card, valueOf, timingOf, !discarded.includes(card))));
+  }
+  return {type: 'card', cards: discarded.map((card) => card.name)};
+}
+
+export function chooseCardsToKeep(input: SelectCard<ICard>, player: IPlayer): InputResponse {
+  const candidates = input.cards.filter((_card, index) => input.config.enabled?.[index] !== false);
+  const values = valuesOf(player, candidates, input.config.min !== input.config.max);
+  const timingOf = values.timingOf;
+  // Learned preference of strong human players (bgaPolicy.ts), off in the baseline
+  const valueOf = withPolicyPreference(player, candidates, values.valueOf, input.config.min === input.config.max ? 'draft' : 'buy');
+  const sorted = [...candidates].sort((a, b) => valueOf(b.name) - valueOf(a.name));
+  if (input.config.min === input.config.max) {
+    // Draft: the count is fixed. Own value plus part of what the card would be worth to the
+    // player who gets the rest (aiTuning.ts draftDenial).
+    // lateDenial: block strong cards harder as the game nears its end (strategy guides).
+    const denial = tuningOf(player).draftDenial * Math.max(0, 1 + tuningOf(player).lateDenial * (terraformingProgress(player.game) - 0.5));
+    const opponentValues = denial > 0 ? receiverValues(input, player, candidates) : new Map<CardName, number>();
+    const draftScore = (card: ICard) => valueOf(card.name) + denial * Math.max(0, opponentValues.get(card.name) ?? 0);
+    const picked = [...candidates].sort((a, b) => draftScore(b) - draftScore(a)).slice(0, input.config.min);
+    // Card memory: the rest goes to the next player (draftMemory.ts).
+    const receiver = draftReceiver(input, player);
+    if (receiver !== undefined) {
+      rememberPassedCards(player.game.id, player.id, receiver.id, candidates.filter((card) => !picked.includes(card)).map((card) => card.name));
+    }
+    if (isTracingDecision()) {
+      traceOptions('draft', sorted.map((card) => cardOption('', card, valueOf, timingOf, picked.includes(card),
+        opponentValues.has(card.name) ? `für Nächsten ${round(opponentValues.get(card.name) ?? 0)}` : undefined)));
+    }
+    return {type: 'card', cards: picked.map((card) => card.name)};
+  }
+  // Research: early a hand of up to 6, late only what can still be played.
+  const remaining = remainingProductionPhases(player.game, player);
+  // A rich player can afford a bigger hand (every 12 M€ above a reserve buys room for one more).
+  const tuning = tuningOf(player);
+  // planHand: bigger with the stronger engine, smaller when behind on income (handPlan.ts).
+  const handTarget = Math.round((remaining >= 4 ? tuning.handTargetEarly : tuning.handTargetLate) * handTargetFactor(player, tuning.planHand)) +
+    Math.floor(Math.max(0, player.megaCredits - 30) / 12);
+  // Dead cards (requirements out of reach) do not fill the hand: they blocked buying for
+  // eight generations in a test game.
+  const usefulHandCards = [...handCardValues(player).values()].filter((value) => value > 1).length;
+  const room = Math.max(0, Math.min(handTarget - usefulHandCards, tuning.playWindow > 0 ? payableRoom(player) : Number.POSITIVE_INFINITY));
+  const budget = player.megaCredits - (remaining >= 4 ? tuning.researchReserveEarly : 10);
+  // Also when the game will probably end in this generation: buying for "later" is mostly lost then.
+  const bought = remaining === 0 || lastGenerationLikelihood(player.game) >= 0.5 ?
+    lastGenerationCardsToBuy(sorted, valueOf, player, input.config.max) :
+    cardsToBuy(sorted, valueOf, budget, Math.min(input.config.max, room), player.cardCost, tuning.buyMargin);
+  const count = Math.max(input.config.min, bought.length);
+  const kept = count > bought.length ? sorted.slice(0, count) : bought;
+  // One or two cards more when they make a milestone claimable (milestoneBuying.ts).
+  const forMilestone = tuning.buyForMilestone > 0 ?
+    cardsForMilestone(player, kept, sorted.filter((card) => !kept.includes(card)), player.cardCost).slice(0, Math.max(0, input.config.max - kept.length)) : [];
+  const chosen = [...kept, ...forMilestone];
+  if (isTracingDecision()) {
+    traceOptions('research', sorted.map((card) => cardOption('', card, valueOf, timingOf, chosen.includes(card))), {
+      price: player.cardCost, budget, handTarget, usefulHandCards, room, remainingGenerations: remaining,
+      lastGenerationLikelihood: lastGenerationLikelihood(player.game),
+    });
+  }
+  return {type: 'card', cards: chosen.map((card) => card.name)};
+}

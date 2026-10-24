@@ -4,6 +4,8 @@ import {isLastActivePlayerFinish} from '../common/game/CompletionOutcome';
 import {sendTurnNotice, deleteTurnNotice, deleteTurnNoticeMessage, getStoredTurnNoticeUpdatedAt} from './TelegramBot';
 import * as constants from '../common/constants';
 import {PlayerId} from '../common/Types';
+import {AiLevel, isAiLevel} from '../common/ai/AiLevel';
+import {notifyAiPlayerWaiting} from './ai/aiHook';
 import {MILESTONE_COST, PRODUCTION_MINIMUMS, REDS_RULING_POLICY_COST} from '../common/constants';
 import {cardsFromJSON, ceosFromJSON, corporationCardsFromJSON, newCorporationCard, newProjectCard, preludesFromJSON} from './createCard';
 import {CardName} from '../common/cards/CardName';
@@ -125,6 +127,8 @@ function unrefTimer(timer: ReturnType<typeof setTimeout>): void {
 
 export class Player implements IPlayer {
   public readonly id: PlayerId;
+  /** Strength of a computer-controlled player; undefined for humans. */
+  public aiLevel: AiLevel | undefined = undefined;
   protected waitingFor?: PlayerInput;
   protected waitingForCb?: () => void;
   public game: IGame;
@@ -2163,7 +2167,9 @@ export class Player implements IPlayer {
     // Administrative Delay (idesOfMars, fan): lets this player end a turn with 0 actions
     // taken, without it counting as passing, for the rest of the generation it was played.
     const administrativeDelayInEffect = this.administrativeDelayActiveGeneration === this.game.generation;
-    if (this.game.players.length > 1 &&
+    // AI players pass instead: ending turns without passing would keep a generation running forever.
+    if (this.aiLevel === undefined &&
+      this.game.players.length > 1 &&
       (this.actionsTakenThisRound > 0 || administrativeDelayInEffect) &&
       !this.game.gameOptions.fastModeOption &&
       this.allOtherPlayersHavePassed() === false) {
@@ -2198,7 +2204,9 @@ export class Player implements IPlayer {
       action.options.push(sellPatents.action(this));
     }
 
-    if (this.game.players.length > 1 &&
+    // Surrender belongs to human seats: an AI player is already the bot.
+    if (this.aiLevel === undefined &&
+      this.game.players.length > 1 &&
       !this.game.botPlayerIds.has(this.id) &&
       !this.game.surrenderedPlayerIds.has(this.id) &&
       (getAutomationCompatibility(this.game.gameOptions).unsupportedFeatures.length === 0 ||
@@ -2207,7 +2215,8 @@ export class Player implements IPlayer {
     }
 
     // Propose undo action only if you have done one action this turn
-    if (this.actionsTakenThisRound > 0 && this.game.gameOptions.undoOption) {
+    // Undo is a human-only control.
+    if (this.aiLevel === undefined && this.actionsTakenThisRound > 0 && this.game.gameOptions.undoOption) {
       action.options.push(new UndoActionOption());
     }
 
@@ -2397,6 +2406,9 @@ export class Player implements IPlayer {
     this.waitingForCb = cb;
     this.inputRequestedAt = this.clock.now();
     this.game.inputsThisRound++;
+    if (this.aiLevel !== undefined) {
+      notifyAiPlayerWaiting(this);
+    }
     if (this._pendingTurnNoticeTimer) {
       clearTimeout(this._pendingTurnNoticeTimer);
       this._pendingTurnNoticeTimer = undefined;
@@ -2555,6 +2567,7 @@ export class Player implements IPlayer {
       withinDeflectionZone: this.withinDeflectionZone,
 
       name: this.name,
+      aiLevel: this.aiLevel,
       color: this.color,
       beginner: this.beginner,
       handicap: this.handicap,
@@ -2590,6 +2603,7 @@ export class Player implements IPlayer {
 
   public static deserialize(d: SerializedPlayer, options: {restoreTimerClock?: boolean, helperOwner?: IPlayer} = {}): Player {
     const player = new Player(d.name, d.color, d.beginner, Number(d.handicap), d.id, normalizePreludeHandicap(d.preludeHandicap), options.helperOwner);
+    player.aiLevel = isAiLevel(d.aiLevel) ? d.aiLevel : undefined;
 
     player.actionsTakenThisGame = d.actionsTakenThisGame;
     player.actionsTakenAtGenerationStart = d.actionsTakenAtGenerationStart ?? 0;

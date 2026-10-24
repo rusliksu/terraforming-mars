@@ -1,5 +1,6 @@
 import {AutomationCompatibility} from './AutomationCompatibility';
 import {CardName} from '../cards/CardName';
+import {AiLevel} from '../ai/AiLevel';
 
 import {Color} from '../Color';
 import {PlayerId, GameId, SpectatorId} from '../Types';
@@ -27,6 +28,7 @@ type SimplePlayerModel = {
     color: Color;
     id: PlayerId;
     isBotControlled: boolean;
+    aiLevel?: AiLevel;
     isSurrendered: boolean;
     name: string;
 }

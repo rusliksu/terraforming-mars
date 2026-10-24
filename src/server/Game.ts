@@ -1179,6 +1179,37 @@ export class Game implements IGame, Logger {
     }
   }
 
+  /**
+   * Resumes a game loaded from the database in the solar phase.
+   *
+   * Solar is persisted only while the first player is choosing the World Government Terraforming
+   * action: every other step of the phase runs synchronously. Re-creating that input (or finishing
+   * the generation when the option is off) is enough to continue the game.
+   */
+  public restoreSolarPhase(): void {
+    if (this.gameOptions.solarPhaseOption && !this.marsIsTerraformed()) {
+      this.worldGovernmentTerraforming();
+    } else {
+      this.finishSolarPhase();
+    }
+  }
+
+  /**
+   * Resumes a game loaded from the database in the intergeneration phase.
+   *
+   * startGeneration() sets this phase and then immediately moves on to drafting or research in the
+   * same call, so a persisted game never means "the generation has not started yet": only the
+   * opening prompt of the new generation is missing. Re-create it without advancing the generation
+   * a second time.
+   */
+  public restoreIntergenerationPhase(): void {
+    if (this.gameOptions.draftVariant) {
+      this.gotoDraftPhase();
+    } else {
+      this.gotoResearchPhase();
+    }
+  }
+
   private gotoWorldGovernmentTerraforming() {
     this.worldGovernmentTerraforming();
   }
@@ -2413,6 +2444,10 @@ export class Game implements IGame, Logger {
       }
     } else if (game.phase === Phase.END) {
       // There's nowhere that we need to go for end game.
+    } else if (game.phase === Phase.SOLAR) {
+      game.restoreSolarPhase();
+    } else if (game.phase === Phase.INTERGENERATION) {
+      game.restoreIntergenerationPhase();
     } else {
       // We should be in ACTION phase, let's prompt the active player for actions
       game.activePlayer.takeAction();

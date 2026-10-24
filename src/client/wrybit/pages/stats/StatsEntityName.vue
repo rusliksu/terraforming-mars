@@ -1,0 +1,62 @@
+<template>
+  <a v-if="kind === 'player'" :href="href" data-stats-link class="stats-player" :class="`player_translucent_bg_color_${color}`">{{ name }}</a>
+  <span v-else class="stats-entity-group">
+    <a :href="href" data-stats-link class="stats-entity">
+      <span v-i18n>{{ label }}</span>
+    </a>
+    <!-- Cards can be viewed large; the icon is a small card -->
+    <button v-if="isCard" type="button" class="stats-card-button" :title="$t('Show card')" :aria-label="$t('Show card')" @click="showCard"></button>
+  </span>
+</template>
+
+<script lang="ts">
+import {defineComponent, PropType} from 'vue';
+import {Color} from '@/common/Color';
+import {StatsKind} from './statsKinds';
+import {statsHref} from './statsNavigation';
+import {boardLabel} from './statsLabels';
+import {CardName} from '@/common/cards/CardName';
+import {CARD_ZOOM_KEY, OpenCardZoom} from './statsCardZoom';
+
+// Kinds whose entries are cards
+const CARD_KINDS: ReadonlyArray<StatsKind> = ['corporation', 'prelude', 'card'];
+
+// Name of an entry as a link to the detail page; players in their player color, milestones/awards with icon
+export default defineComponent({
+  name: 'StatsEntityName',
+  inject: {
+    playerColors: {default: () => new Map<string, Color>()},
+    openCardZoom: {from: CARD_ZOOM_KEY, default: () => () => {}},
+  },
+  props: {
+    kind: {type: String as PropType<StatsKind>, required: true},
+    name: {type: String, required: true},
+    // Cards in display order that the large view pages through (if omitted, only this card)
+    siblings: {type: Array as PropType<ReadonlyArray<string>>, required: false},
+  },
+  computed: {
+    href(): string {
+      return statsHref({type: 'detail', kind: this.kind, name: this.name});
+    },
+    label(): string {
+      return this.kind === 'board' ? boardLabel(this.name) : this.name;
+    },
+    color(): Color {
+      return (this.playerColors as Map<string, Color>).get(this.name) ?? 'neutral';
+    },
+    isCard(): boolean {
+      return CARD_KINDS.includes(this.kind);
+    },
+  },
+  methods: {
+    showCard(event: MouseEvent): void {
+      const names = (this.siblings ?? [this.name]) as ReadonlyArray<CardName>;
+      (this.openCardZoom as OpenCardZoom)({
+        names,
+        index: Math.max(0, names.indexOf(this.name as CardName)),
+        origin: (event.currentTarget as HTMLElement).getBoundingClientRect(),
+      });
+    },
+  },
+});
+</script>

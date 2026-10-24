@@ -34,7 +34,11 @@ describe('Wrybit StatsPage', () => {
       expect(wrapper.text()).contains('Alice');
       expect(wrapper.text()).contains('Helion');
       expect(wrapper.text()).contains('90');
-      expect(wrapper.text()).contains('1 / 1');
+      expect(wrapper.text()).contains('Overview');
+      expect(wrapper.text()).contains('Games');
+      expect(wrapper.text()).contains('Players');
+      expect(wrapper.text()).contains('Corporations');
+      expect(wrapper.text()).contains('Records');
     } finally {
       wrapper.unmount();
     }
@@ -51,7 +55,7 @@ describe('Wrybit StatsPage', () => {
     }
   });
 
-  it('renders a retryable error without hiding it behind a browser alert', async () => {
+  it('renders the source error state without hiding it behind a browser alert', async () => {
     let calls = 0;
     global.fetch = (async () => {
       calls++;
@@ -61,9 +65,7 @@ describe('Wrybit StatsPage', () => {
     try {
       await flushPromises();
       expect(wrapper.text()).contains('Could not load the statistics.');
-      await wrapper.get('button.btn-primary').trigger('click');
-      await flushPromises();
-      expect(calls).eq(2);
+      expect(calls).eq(1);
     } finally {
       wrapper.unmount();
     }

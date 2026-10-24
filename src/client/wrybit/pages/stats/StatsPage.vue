@@ -1,297 +1,303 @@
 <template>
-  <div id="stats" class="wrybit-stats">
-    <header class="wrybit-stats-head">
+  <div id="stats" class="card-list stats" @keydown.esc="filtersOpen = false" @click="followStatsLink">
+    <header class="card-list-header">
+      <!-- Menu at the top left, as in the game and on the other pages -->
       <PageToolbar/>
-      <div>
-        <h1 v-i18n>Statistics</h1>
-        <p class="wrybit-stats-subtitle" v-i18n>Public results from finished games.</p>
+      <PageTitle title="Statistics" :titleHref="overviewHref"/>
+      <span class="stats-header-info">{{ headerInfo }}</span>
+      <div class="card-list-header-actions">
+        <button type="button" class="card-list-filter-toggle" :title="$t('Filters')" @click="filtersOpen = true">
+          <span class="card-list-filter-toggle-icon" aria-hidden="true"></span>
+          <span>{{ filteredGames.length }}</span>
+          <span v-if="activeFilters > 0" class="card-list-filter-toggle-badge">{{ activeFilters }}</span>
+        </button>
       </div>
-      <button type="button" class="btn btn-tone-quiet" :disabled="status === 'loading'" @click="load" v-i18n>Refresh</button>
     </header>
 
-    <nav class="wrybit-stats-tabs" aria-label="Statistics sections">
-      <button
-        v-for="tab in TABS"
-        :key="tab"
-        type="button"
-        class="wrybit-stats-tab"
-        :class="{'wrybit-stats-tab--active': activeTab === tab}"
-        :aria-current="activeTab === tab ? 'page' : undefined"
-        @click="selectTab(tab)"
-        v-i18n>{{ tabLabel(tab) }}</button>
-    </nav>
+    <div class="card-list-scrim" :class="{'card-list-scrim--open': filtersOpen}" @click="filtersOpen = false"></div>
 
-    <section class="wrybit-stats-filters">
-      <label>
-        <span v-i18n>Search player or corporation</span>
-        <input v-model="query" type="search" :placeholder="$t('Search')">
-      </label>
-      <label>
-        <span v-i18n>Map</span>
-        <select v-model="mapFilter">
-          <option value="" v-i18n>All maps</option>
-          <option v-for="map in maps" :key="map" :value="map">{{ map }}</option>
-        </select>
-      </label>
-      <p class="wrybit-stats-count">
-        <strong>{{ filteredGames.length }}</strong> / {{ games.length }}
-        <span v-i18n>games</span>
-      </p>
-    </section>
+    <div class="card-list-layout">
+      <aside class="card-list-filters" :class="{'card-list-filters--open': filtersOpen}">
+        <div class="card-list-sheet-head"><h2 v-i18n>Filters</h2></div>
+        <section class="card-list-group card-list-summary">
+          <div class="card-list-summary-total">
+            <strong>{{ filteredGames.length }}</strong>
+            <span>{{ ofTotalText }}</span>
+            <button v-if="activeFilters > 0" type="button" class="card-list-link" @click="resetAll()" v-i18n>Clear all</button>
+          </div>
+        </section>
+        <template v-for="group in groups" :key="group.key">
+          <CardListFilterGroup
+            v-if="group.options.length > 1"
+            :title="group.title"
+            :options="group.options"
+            :selection="filters.selections[group.key]"
+            :counts="countsOf(group)"
+            @toggle="toggle(group, $event)"
+            @reset="reset(group)"/>
+        </template>
+        <section v-if="generationRange !== undefined" class="card-list-group">
+          <header class="card-list-group-head">
+            <h2 v-i18n>Generations</h2>
+            <button v-if="filters.maxGeneration !== undefined" type="button" class="card-list-link" @click="filters.maxGeneration = undefined" v-i18n>Reset</button>
+          </header>
+          <label class="stats-range">
+            <span v-i18n>up to</span>
+            <input type="range" :min="generationRange.min" :max="generationRange.max" :value="filters.maxGeneration ?? generationRange.max" @input="changeMaxGeneration">
+            <strong>{{ filters.maxGeneration ?? generationRange.max }}</strong>
+          </label>
+        </section>
+        <div class="card-list-sheet-foot">
+          <button type="button" class="btn btn-primary" @click="filtersOpen = false">{{ showResultsText }}</button>
+        </div>
+      </aside>
 
-    <p v-if="status === 'loading'" class="wrybit-stats-note" v-i18n>Loading statistics…</p>
-    <div v-else-if="status === 'error'" class="wrybit-stats-note">
-      <p v-i18n>Could not load the statistics.</p>
-      <button type="button" class="btn btn-primary" @click="load" v-i18n>Try again</button>
+      <main class="stats-main">
+        <nav ref="tabs" class="create-game-segmented stats-tabs">
+          <a
+            v-for="entry in tabs"
+            :key="entry.tab"
+            :href="tabHref(entry.tab)"
+            data-stats-link
+            :class="{'create-game-segmented--selected': entry.tab === activeTab}"
+            v-i18n>{{ entry.label }}</a>
+        </nav>
+
+        <StatsSkeleton v-if="status === 'loading'" :overview="view.type === 'tab' && view.tab === 'overview'"/>
+        <p v-else-if="status === 'error'" class="stats-card stats-note"><span v-i18n>Could not load the statistics.</span> {{ failureText }}</p>
+        <p v-else-if="games.length === 0" class="stats-card stats-note" v-i18n>No finished games yet.</p>
+        <template v-else>
+          <StatsTopView v-if="view.type === 'top'" :key="`top:${view.kind}`" :kind="view.kind" :results="results"/>
+          <StatsEntityDetail v-else-if="view.type === 'detail'" :key="`${view.kind}:${view.name}`" :kind="view.kind" :name="view.name" :results="results"/>
+          <StatsOverview v-else-if="view.tab === 'overview'" :games="filteredGames" :results="results" :chartWidth="chartWidth"/>
+          <StatsGamesView v-else-if="view.tab === 'games'" :games="filteredGames"/>
+          <StatsPlayersView v-else-if="view.tab === 'players'" :results="results" :names="names"/>
+          <StatsRecordsView v-else-if="view.tab === 'records'" :results="results"/>
+          <StatsCombinationsView v-else-if="view.tab === 'combinations'" :results="results"/>
+          <StatsEntityList v-else :key="view.tab" :kind="view.tab" :results="results"/>
+        </template>
+      </main>
     </div>
-    <p v-else-if="games.length === 0" class="wrybit-stats-note" v-i18n>No finished games yet.</p>
-    <template v-else>
-      <section v-if="activeTab === 'overview'" class="wrybit-stats-grid">
-        <article class="wrybit-stats-card wrybit-stats-card--wide">
-          <h2 v-i18n>Overview</h2>
-          <div class="wrybit-stats-kpis">
-            <div><strong>{{ filteredGames.length }}</strong><span v-i18n>Games</span></div>
-            <div><strong>{{ playerRows.length }}</strong><span v-i18n>Players</span></div>
-            <div><strong>{{ averageGenerations }}</strong><span v-i18n>Avg. generations</span></div>
-            <div><strong>{{ averageDuration }}</strong><span v-i18n>Avg. minutes</span></div>
-          </div>
-        </article>
-        <article class="wrybit-stats-card">
-          <h2 v-i18n>Top players</h2>
-          <p v-if="playerRows.length === 0" class="wrybit-stats-muted" v-i18n>No players match the filter.</p>
-          <table v-else class="wrybit-stats-table">
-            <thead><tr><th v-i18n>Player</th><th v-i18n>Wins</th><th v-i18n>Games</th></tr></thead>
-            <tbody><tr v-for="row in playerRows.slice(0, 8)" :key="row.name"><td>{{ row.name }}</td><td>{{ row.wins }}</td><td>{{ row.games }}</td></tr></tbody>
-          </table>
-        </article>
-        <article class="wrybit-stats-card">
-          <h2 v-i18n>Top corporations</h2>
-          <p v-if="corporationRows.length === 0" class="wrybit-stats-muted" v-i18n>No corporations match the filter.</p>
-          <table v-else class="wrybit-stats-table">
-            <thead><tr><th v-i18n>Corporation</th><th v-i18n>Wins</th><th v-i18n>Games</th></tr></thead>
-            <tbody><tr v-for="row in corporationRows.slice(0, 8)" :key="row.name"><td>{{ row.name }}</td><td>{{ row.wins }}</td><td>{{ row.games }}</td></tr></tbody>
-          </table>
-        </article>
-        <article class="wrybit-stats-card wrybit-stats-card--wide">
-          <h2 v-i18n>Recent games</h2>
-          <div class="wrybit-stats-scroll">
-            <table class="wrybit-stats-table">
-              <thead><tr><th v-i18n>Date</th><th v-i18n>Map</th><th v-i18n>Players</th><th v-i18n>Winner</th><th v-i18n>VP</th></tr></thead>
-              <tbody>
-                <tr v-for="game in recentGames" :key="game.id">
-                  <td>{{ formatDate(game.date) }}</td><td>{{ game.map ?? '—' }}</td><td>{{ game.playerCount }}</td>
-                  <td>{{ winner(game).displayName }}</td><td>{{ winner(game).victoryPoints }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </article>
-      </section>
-
-      <section v-else-if="activeTab === 'games'" class="wrybit-stats-card">
-        <h2 v-i18n>Games</h2>
-        <div class="wrybit-stats-scroll">
-          <table class="wrybit-stats-table">
-            <thead><tr><th v-i18n>Date</th><th v-i18n>Map</th><th v-i18n>Players</th><th v-i18n>Generations</th><th v-i18n>Winner</th><th v-i18n>VP</th></tr></thead>
-            <tbody>
-              <tr v-for="game in filteredGames" :key="game.id">
-                <td>{{ formatDate(game.date) }}</td><td>{{ game.map ?? '—' }}</td><td>{{ game.playerCount }}</td><td>{{ game.generations }}</td>
-                <td>{{ winner(game).displayName }}</td><td>{{ winner(game).victoryPoints }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section v-else-if="activeTab === 'players'" class="wrybit-stats-card">
-        <h2 v-i18n>Players</h2>
-        <div class="wrybit-stats-scroll">
-          <table class="wrybit-stats-table">
-            <thead><tr><th v-i18n>Player</th><th v-i18n>Games</th><th v-i18n>Wins</th><th v-i18n>Win rate</th><th v-i18n>Avg. place</th><th v-i18n>Avg. VP</th></tr></thead>
-            <tbody>
-              <tr v-for="row in playerRows" :key="row.name"><td>{{ row.name }}</td><td>{{ row.games }}</td><td>{{ row.wins }}</td><td>{{ percent(row.wins, row.games) }}</td><td>{{ row.averagePlace }}</td><td>{{ row.averageVictoryPoints }}</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section v-else-if="activeTab === 'corporations'" class="wrybit-stats-card">
-        <h2 v-i18n>Corporations</h2>
-        <div class="wrybit-stats-scroll">
-          <table class="wrybit-stats-table">
-            <thead><tr><th v-i18n>Corporation</th><th v-i18n>Games</th><th v-i18n>Wins</th><th v-i18n>Win rate</th><th v-i18n>Avg. place</th><th v-i18n>Avg. VP</th></tr></thead>
-            <tbody><tr v-for="row in corporationRows" :key="row.name"><td>{{ row.name }}</td><td>{{ row.games }}</td><td>{{ row.wins }}</td><td>{{ row.winRate }}</td><td>{{ row.averagePlace }}</td><td>{{ row.averageVictoryPoints }}</td></tr></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section v-else-if="activeTab === 'boards'" class="wrybit-stats-card">
-        <h2 v-i18n>Boards</h2>
-        <div class="wrybit-stats-scroll">
-          <table class="wrybit-stats-table">
-            <thead><tr><th v-i18n>Board</th><th v-i18n>Games</th><th v-i18n>Avg. generations</th><th v-i18n>Avg. players</th></tr></thead>
-            <tbody><tr v-for="row in boardRows" :key="row.name"><td>{{ row.name }}</td><td>{{ row.games }}</td><td>{{ row.averageGenerations }}</td><td>{{ row.averagePlayers }}</td></tr></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section v-else class="wrybit-stats-grid">
-        <article class="wrybit-stats-card"><h2 v-i18n>Highest VP</h2><p v-if="highestVp === undefined" class="wrybit-stats-muted" v-i18n>No result.</p><p v-else class="wrybit-stats-record"><strong>{{ highestVp.victoryPoints }} VP</strong> — {{ highestVp.displayName }}</p></article>
-        <article class="wrybit-stats-card"><h2 v-i18n>Fastest game</h2><p v-if="fastestGame === undefined" class="wrybit-stats-muted" v-i18n>No duration data.</p><p v-else class="wrybit-stats-record"><strong>{{ fastestGame.durationMinutes }} min</strong> — {{ fastestGame.map ?? '—' }}</p></article>
-        <article class="wrybit-stats-card"><h2 v-i18n>Largest Elo gain</h2><p v-if="largestEloGain === undefined" class="wrybit-stats-muted" v-i18n>No Elo data.</p><p v-else class="wrybit-stats-record"><strong>+{{ largestEloGain.eloDelta }}</strong> — {{ largestEloGain.displayName }}</p></article>
-      </section>
-    </template>
+    <StatsCardZoom v-if="cardZoom !== undefined" :names="cardZoom.names" :index="cardZoom.index" :origin="cardZoom.origin" @close="cardZoom = undefined"/>
   </div>
 </template>
 
-<script setup lang="ts">
-import {computed, onMounted, ref} from 'vue';
+<script lang="ts">
+import {computed, defineComponent} from 'vue';
+import {describeFailure, failureOf} from './requestFailure';
+import {toStatsGames} from './statsApi';
 import {paths} from '@/common/app/paths';
-import {WrybitUiStatsGame, WrybitUiStatsResult, WrybitUiStatsSnapshot} from '@/common/models/WrybitUiStats';
+import {Color} from '@/common/Color';
+import {StatsGame} from './StatsGame';
+import {translateText, translateTextWithParams} from '@/client/directives/i18n';
+import {SHOWCASE_TITLES} from './statsShowcase';
+import CardListFilterGroup from '@/client/wrybit/visuals/cardlist/CardListFilterGroup.vue';
+import {optionKeys} from '@/client/wrybit/visuals/cardlist/cardListOptions';
+import {resetOptions, toggleOption} from '@/client/wrybit/visuals/cardlist/filterSelection';
+import {setDocumentTitle} from '@/client/utils/documentTitle';
+import PageTitle from '@/client/wrybit/visuals/common/PageTitle.vue';
 import PageToolbar from '@/client/wrybit/visuals/PageToolbar.vue';
+import StatsOverview from './StatsOverview.vue';
+import StatsSkeleton from './StatsSkeleton.vue';
+import StatsGamesView from './StatsGamesView.vue';
+import StatsPlayersView from './StatsPlayersView.vue';
+import StatsRecordsView from './StatsRecordsView.vue';
+import StatsEntityList from './StatsEntityList.vue';
+import StatsTopView from './StatsTopView.vue';
+import StatsCombinationsView from './StatsCombinationsView.vue';
+import StatsEntityDetail from './StatsEntityDetail.vue';
+import {activeFilterCount, emptyFilters, filterGames, filterGroups, optionCounts, StatsFilterGroup, StatsFilters} from './statsFilter';
+import {parseStatsView, STATS_TABS, statsHref, StatsTab, StatsView, tabOfView} from './statsNavigation';
+import {allPlayerResults, playerColors, playerNames, StatsPlayerResult} from './statsResults';
+import {boardLabel, formatDate} from './statsLabels';
+import StatsCardZoom from './StatsCardZoom.vue';
+import {CARD_ZOOM_KEY, StatsCardZoomRequest} from './statsCardZoom';
 
-type Tab = 'overview' | 'games' | 'players' | 'corporations' | 'boards' | 'records';
-type Status = 'loading' | 'error' | 'done';
-type PlayerRow = {name: string, games: number, wins: number, places: Array<number>, victoryPoints: Array<number>};
-type CorporationRow = {name: string, games: number, wins: number, places: Array<number>, victoryPoints: Array<number>, winRate?: string, averagePlace?: string, averageVictoryPoints?: string};
-type BoardRow = {name: string, games: number, averageGenerations: string, averagePlayers: string};
+// Below this width narrower charts (same breakpoint as the card list's filter sheet)
+const NARROW_WIDTH = 900;
 
-const TABS: ReadonlyArray<Tab> = ['overview', 'games', 'players', 'corporations', 'boards', 'records'];
-const TAB_LABELS: Record<Tab, string> = {overview: 'Overview', games: 'Games', players: 'Players', corporations: 'Corporations', boards: 'Boards', records: 'Records'};
-const activeTab = ref<Tab>('overview');
-const status = ref<Status>('loading');
-const games = ref<ReadonlyArray<WrybitUiStatsGame>>([]);
-const query = ref('');
-const mapFilter = ref('');
+type DataModel = {
+  games: Array<StatsGame>;
+  status: 'loading' | 'error' | 'done';
+  failureText: string;
+  filters: StatsFilters;
+  view: StatsView;
+  filtersOpen: boolean;
+  chartWidth: number;
+  cardZoom: StatsCardZoomRequest | undefined;
+};
 
-const maps = computed(() => [...new Set(games.value.map((game) => game.map).filter((map): map is string => map !== undefined))].sort());
-const filteredGames = computed(() => {
-  const needle = query.value.trim().toLocaleLowerCase();
-  return games.value.filter((game) => {
-    if (mapFilter.value !== '' && game.map !== mapFilter.value) {
-      return false;
-    }
-    if (needle === '') {
-      return true;
-    }
-    return game.results.some((result) => result.displayName.toLocaleLowerCase().includes(needle) ||
-      (result.corporation ?? '').toLocaleLowerCase().includes(needle));
-  });
-});
-const playerRows = computed<ReadonlyArray<PlayerRow & {winRate: string, averagePlace: string, averageVictoryPoints: string}>>(() => {
-  const byPlayer = new Map<string, PlayerRow>();
-  for (const game of filteredGames.value) {
-    for (const result of game.results) {
-      const row = byPlayer.get(result.displayName) ?? {name: result.displayName, games: 0, wins: 0, places: [], victoryPoints: []};
-      row.games++;
-      row.wins += result.place === 1 ? 1 : 0;
-      row.places.push(result.place);
-      row.victoryPoints.push(result.victoryPoints);
-      byPlayer.set(row.name, row);
-    }
-  }
-  return [...byPlayer.values()].map((row) => ({
-    ...row,
-    winRate: percent(row.wins, row.games),
-    averagePlace: average(row.places),
-    averageVictoryPoints: average(row.victoryPoints),
-  })).sort((a, b) => b.wins - a.wins || b.games - a.games || a.name.localeCompare(b.name));
-});
-const corporationRows = computed<ReadonlyArray<CorporationRow>>(() => {
-  const byCorporation = new Map<string, CorporationRow>();
-  for (const game of filteredGames.value) {
-    for (const result of game.results) {
-      if (result.corporation === undefined) {
-        continue;
+// Public statistics page (/stats). Standalone: only reads /api/stats/games and computes everything in the browser.
+// Structure, filters and tiles as in the card list, so it feels like part of the app.
+export default defineComponent({
+  name: 'StatsPage',
+  components: {CardListFilterGroup, PageTitle, PageToolbar, StatsOverview, StatsSkeleton, StatsGamesView, StatsPlayersView, StatsRecordsView, StatsCombinationsView, StatsTopView, StatsEntityList, StatsEntityDetail, StatsCardZoom},
+  provide() {
+    // Player color the same everywhere: the color someone played most often
+    return {
+      playerColors: computed(() => this.colors),
+      // Large card view: all building blocks open it through this single place
+      [CARD_ZOOM_KEY]: (request: StatsCardZoomRequest) => this.cardZoom = request,
+    };
+  },
+  data(): DataModel {
+    return {
+      games: [],
+      status: 'loading',
+      failureText: '',
+      filters: emptyFilters([]),
+      view: parseStatsView(window.location.search),
+      filtersOpen: false,
+      chartWidth: this.currentChartWidth(),
+      cardZoom: undefined,
+    };
+  },
+  mounted() {
+    window.addEventListener('popstate', this.readLocation);
+    window.addEventListener('resize', this.updateChartWidth);
+    this.loadGames();
+    this.revealActiveTab();
+  },
+  watch: {
+    activeTab(): void {
+      this.revealActiveTab();
+    },
+    // Browser tab names the view, e.g. "Statistics · Overview | TM" or "Statistics · Tharsis | TM"
+    pageTitle: {
+      immediate: true,
+      handler(title: string): void {
+        setDocumentTitle('Statistics · ' + translateText(title));
+      },
+    },
+  },
+  beforeUnmount() {
+    window.removeEventListener('popstate', this.readLocation);
+    window.removeEventListener('resize', this.updateChartWidth);
+  },
+  computed: {
+    groups(): Array<StatsFilterGroup> {
+      return filterGroups(this.games);
+    },
+    filteredGames(): Array<StatsGame> {
+      return filterGames(this.games, this.filters);
+    },
+    results(): Array<StatsPlayerResult> {
+      return allPlayerResults(this.filteredGames);
+    },
+    names(): Array<string> {
+      return playerNames(this.filteredGames);
+    },
+    colors(): Map<string, Color> {
+      return playerColors(this.games);
+    },
+    activeFilters(): number {
+      return activeFilterCount(this.filters);
+    },
+    activeTab(): StatsTab {
+      return tabOfView(this.view);
+    },
+    pageTitle(): string {
+      const view = this.view;
+      if (view.type === 'detail') {
+        // Same display name as on the page (boards are named in lowercase internally, e.g. "tharsis")
+        return translateText(view.kind === 'board' ? boardLabel(view.name) : view.name);
       }
-      const row = byCorporation.get(result.corporation) ?? {name: result.corporation, games: 0, wins: 0, places: [], victoryPoints: []};
-      row.games++;
-      row.wins += result.place === 1 ? 1 : 0;
-      row.places.push(result.place);
-      row.victoryPoints.push(result.victoryPoints);
-      byCorporation.set(row.name, row);
-    }
-  }
-  return [...byCorporation.values()]
-    .map((row) => ({...row, averagePlace: average(row.places), averageVictoryPoints: average(row.victoryPoints)}))
-    .sort((a, b) => b.wins - a.wins || b.games - a.games || a.name.localeCompare(b.name));
-});
-const boardRows = computed<ReadonlyArray<BoardRow>>(() => {
-  const byBoard = new Map<string, {games: number, generations: Array<number>, players: Array<number>}>();
-  for (const game of filteredGames.value) {
-    const name = game.map ?? 'Unknown';
-    const row = byBoard.get(name) ?? {games: 0, generations: [], players: []};
-    row.games++;
-    row.generations.push(game.generations);
-    row.players.push(game.playerCount);
-    byBoard.set(name, row);
-  }
-  return [...byBoard.entries()].map(([name, row]) => ({
-    name,
-    games: row.games,
-    averageGenerations: average(row.generations),
-    averagePlayers: average(row.players),
-  })).sort((a, b) => b.games - a.games || a.name.localeCompare(b.name));
-});
-const averageGenerations = computed(() => average(filteredGames.value.map((game) => game.generations)));
-const averageDuration = computed(() => average(filteredGames.value.flatMap((game) => game.durationMinutes === undefined ? [] : [game.durationMinutes])));
-const recentGames = computed(() => [...filteredGames.value].sort((a, b) => (b.date ?? '').localeCompare(a.date ?? '')).slice(0, 10));
-const allResults = computed(() => filteredGames.value.flatMap((game) => game.results));
-const highestVp = computed(() => allResults.value.reduce<WrybitUiStatsResult | undefined>((best, result) => best === undefined || result.victoryPoints > best.victoryPoints ? result : best, undefined));
-const largestEloGain = computed(() => allResults.value.reduce<WrybitUiStatsResult | undefined>((best, result) => (result.eloDelta ?? 0) > (best?.eloDelta ?? 0) ? result : best, undefined));
-const fastestGame = computed(() => filteredGames.value.reduce<WrybitUiStatsGame | undefined>((best, game) => game.durationMinutes !== undefined && (best?.durationMinutes === undefined || game.durationMinutes < best.durationMinutes) ? game : best, undefined));
-
-function average(values: ReadonlyArray<number>): string {
-  if (values.length === 0) {
-    return '—';
-  }
-  return (values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(1);
-}
-function percent(part: number, total: number): string {
-  return total === 0 ? '—' : `${Math.round((part * 100) / total)}%`;
-}
-function winner(game: WrybitUiStatsGame): WrybitUiStatsResult {
-  return game.results[0];
-}
-function formatDate(date: string | undefined): string {
-  return date === undefined ? '—' : date.slice(0, 10);
-}
-function tabLabel(tab: Tab): string {
-  return TAB_LABELS[tab];
-}
-function selectTab(tab: Tab) {
-  activeTab.value = tab;
-  const url = new URL(window.location.href);
-  url.searchParams.set('tab', tab);
-  window.history.replaceState(null, '', url);
-}
-function readTab() {
-  const tab = new URLSearchParams(window.location.search).get('tab');
-  if (tab === 'overview' || tab === 'games' || tab === 'players' || tab === 'records') {
-    activeTab.value = tab;
-  }
-}
-async function load() {
-  status.value = 'loading';
-  try {
-    const response = await fetch(paths.API_WRYBIT_STATS, {headers: {Accept: 'application/json'}});
-    if (!response.ok) {
-      status.value = 'error';
-      return;
-    }
-    const snapshot = await response.json() as WrybitUiStatsSnapshot;
-    if (snapshot.projectionVersion !== 1 || !Array.isArray(snapshot.games)) {
-      status.value = 'error';
-      return;
-    }
-    games.value = snapshot.games;
-    status.value = 'done';
-  } catch {
-    status.value = 'error';
-  }
-}
-onMounted(() => {
-  readTab();
-  void load();
+      if (view.type === 'top') {
+        return translateText(SHOWCASE_TITLES[view.kind]);
+      }
+      return translateText(STATS_TABS.find((entry) => entry.tab === view.tab)?.label ?? 'Overview');
+    },
+    tabs(): typeof STATS_TABS {
+      return STATS_TABS;
+    },
+    overviewHref(): string {
+      return this.tabHref('overview');
+    },
+    headerInfo(): string {
+      const last = this.games[this.games.length - 1];
+      return last === undefined ? '' : translateTextWithParams('${0} games · last on ${1}', [String(this.games.length), formatDate(last.summary.createdTimeMs)]);
+    },
+    ofTotalText(): string {
+      return translateTextWithParams('of ${0} games', [String(this.games.length)]);
+    },
+    showResultsText(): string {
+      return translateTextWithParams('Show ${0} games', [String(this.filteredGames.length)]);
+    },
+    generationRange(): {min: number, max: number} | undefined {
+      const generations = this.games.map((game) => game.summary.generation).filter((generation) => generation > 0);
+      if (generations.length === 0 || Math.min(...generations) === Math.max(...generations)) {
+        return undefined;
+      }
+      return {min: Math.min(...generations), max: Math.max(...generations)};
+    },
+  },
+  methods: {
+    async loadGames(): Promise<void> {
+      try {
+        const response = await fetch(paths.API_WRYBIT_STATS, {headers: {Accept: 'application/json'}});
+        if (!response.ok) {
+          throw new Error('Statistics request failed: ' + response.status + ' ' + response.statusText);
+        }
+        const snapshot = await response.json();
+        this.games = toStatsGames(snapshot);
+        this.filters = emptyFilters(this.groups);
+        this.status = 'done';
+      } catch (error) {
+        console.error(error);
+        this.failureText = describeFailure(failureOf(error));
+        this.status = 'error';
+      }
+    },
+    countsOf(group: StatsFilterGroup): Map<string, number> {
+      return optionCounts(this.games, this.filters, group);
+    },
+    toggle(group: StatsFilterGroup, key: string): void {
+      toggleOption(this.filters.selections[group.key], optionKeys(group.options), key);
+    },
+    reset(group: StatsFilterGroup): void {
+      resetOptions(this.filters.selections[group.key], optionKeys(group.options));
+    },
+    resetAll(): void {
+      this.groups.forEach((group) => this.reset(group));
+      this.filters.maxGeneration = undefined;
+    },
+    changeMaxGeneration(event: Event): void {
+      const value = Number((event.target as HTMLInputElement).value);
+      this.filters.maxGeneration = value >= (this.generationRange?.max ?? value) ? undefined : value;
+    },
+    tabHref(tab: StatsTab): string {
+      return statsHref({type: 'tab', tab});
+    },
+    // Links within the statistics only switch the view without reloading the page; filters are kept
+    followStatsLink(event: MouseEvent): void {
+      const link = (event.target as HTMLElement).closest('a[data-stats-link], a[data-page-title-link]') as HTMLAnchorElement | null;
+      if (link === null || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+      }
+      event.preventDefault();
+      window.history.pushState({}, '', link.href);
+      this.readLocation();
+      window.scrollTo({top: 0});
+    },
+    // When narrow, not all tabs fit side by side: the active one should always be visible
+    revealActiveTab(): void {
+      this.$nextTick(() => {
+        const tabs = this.$refs.tabs as HTMLElement | undefined;
+        const active = tabs?.querySelector('.create-game-segmented--selected') as HTMLElement | null | undefined;
+        if (tabs !== undefined && active !== null && active !== undefined) {
+          tabs.scrollLeft = active.offsetLeft - (tabs.clientWidth - active.offsetWidth) / 2;
+        }
+      });
+    },
+    readLocation(): void {
+      this.view = parseStatsView(window.location.search);
+    },
+    currentChartWidth(): number {
+      return window.innerWidth < NARROW_WIDTH ? 360 : 640;
+    },
+    updateChartWidth(): void {
+      this.chartWidth = this.currentChartWidth();
+    },
+  },
 });
 </script>

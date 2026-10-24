@@ -130,7 +130,7 @@ withDefaults(defineProps<{
 });
 
 // Help only on demand (own chunk, like in the sidebar)
-const HelpOverlay = defineAsyncComponent(() => import(/* webpackChunkName: "help" */ '@/client/components/help/Help.vue'));
+const HelpOverlay = defineAsyncComponent(() => import(/* webpackChunkName: "help" */ '@/client/wrybit/pages/helpOverlay/HelpOverlay.vue'));
 
 type MenuDialog = 'language' | 'info' | 'help' | 'settings';
 

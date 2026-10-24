@@ -1,11 +1,8 @@
 <template>
-  <DialogFrame :title="$t('Player Settings')" :width="520" @close="$emit('okButtonClicked')">
-    <PreferencesDialog :preferencesManager="preferencesManager" @okButtonClicked="$emit('okButtonClicked')"/>
-  </DialogFrame>
+  <SettingsPreferencesDialog :preferencesManager="preferencesManager" @okButtonClicked="$emit('okButtonClicked')"/>
 </template>
 <script setup lang="ts">
-import DialogFrame from '@/client/wrybit/visuals/DialogFrame.vue';
-import PreferencesDialog from '@/client/components/PreferencesDialog.vue';
+import SettingsPreferencesDialog from '@/client/wrybit/pages/settings/PreferencesDialog.vue';
 import {PreferencesManager} from '@/client/utils/PreferencesManager';
 defineProps<{preferencesManager: PreferencesManager}>();
 defineEmits<{'okButtonClicked': []}>();

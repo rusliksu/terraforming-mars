@@ -42,3 +42,13 @@ Baseline: WP05 approved, HEAD `39ac7e271d`.
 - StartScreen helpers may touch viewport/meta and asset loading; isolate under Wrybit chunk.
 - Help/settings must preserve current preferences and translation behavior.
 - No game rules, AI, pricing, availability, saves or network handlers change in T021.
+
+## Progress 2026-10-24
+
+- Page registry added to `WrybitViews`/WrybitShell with App fallbacks for start-screen, load, games-overview, admin, login-home and help.
+- `StartScreen` ported with startScreen helpers, planet stripes, toolbar and scroll/menu links; Wrybit start styles and assets added.
+- Help route and `HelpOverlay` ported; HelpKeyboardShortcuts extensions section is intentionally empty in this fork.
+- Wrybit PreferencesDialog/LanguageSelectionDialog ported and used by GameMenu; `experimental_layout` remains available in Advanced.
+- LoadGameForm, GamesOverview, AdminHome, LoginHome currently reuse existing native page behavior behind Wrybit page wrappers; visual adaptation remains.
+- Verified: Wrybit StartScreen desktop (8 links/canvas, no overflow), Help route (7 tabs), help overlay, settings dialog (14 switches/5 groups), console 0; vitest 284 files/1274 tests; ESLint/Stylelint/vue-tsc/build green.
+

@@ -12,7 +12,6 @@
 import {defineComponent} from 'vue';
 import InfoBox from './InfoBox.vue';
 import {openInfoHref} from './infoBoxState';
-import {parseWikiUrl, WikiTarget} from './wikiContent';
 
 // Row the info box opens below (between this row and the next)
 const ROW_SELECTOR = '.create-game-option, .create-game-card-head, .create-game-subhead, .create-game-player-extra';
@@ -34,8 +33,9 @@ export default defineComponent({
     };
   },
   computed: {
-    wikiTarget(): WikiTarget | undefined {
-      return parseWikiUrl(this.href);
+    wikiTarget(): undefined {
+      // Wiki links now open in a new tab instead of fetching foreign wiki content.
+      return undefined;
     },
     isOpen(): boolean {
       return openInfoHref.value === this.href;

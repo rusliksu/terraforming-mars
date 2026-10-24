@@ -1212,6 +1212,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 @media (max-width: 700px) {
   .card-maker {
     padding: 12px;
+
+    // Keep the page title clear of the floating optional-layout switch.
+    h1 {
+      max-width: calc(100% - 100px);
+      font-size: 30px;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
     .card-maker-controls,
     .card-maker-preview { width: 100%; min-width: 0; }
     .card-maker-preview { overflow-x: hidden; position: static; }

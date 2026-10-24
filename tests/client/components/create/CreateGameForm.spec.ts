@@ -1645,7 +1645,23 @@ describe('CreateGameForm', () => {
     expect(model.players[1].name).eq('AI 2');
     expect(model.noEloGame).is.true;
     expect(model.hasAiPlayers).is.true;
+    // Turning the switch off drops the generated name so the form falls back to the colour default.
     model.toggleAiPlayer(model.players[1], 1, {target: {checked: false}});
+    expect(model.players[1].aiLevel).is.undefined;
+    expect(model.players[1].name).eq('');
+  });
+
+  it('keeps a hand-written player name when the AI switch is turned off', () => {
+    const wrapper = shallowMount(CreateGameForm, {
+      ...globalConfig,
+    });
+    const model = wrapper.vm as any;
+    model.playersCount = 2;
+    model.players[1].name = 'Robo';
+    model.toggleAiPlayer(model.players[1], 1, {target: {checked: true}});
+    expect(model.players[1].name).eq('Robo');
+    model.toggleAiPlayer(model.players[1], 1, {target: {checked: false}});
+    expect(model.players[1].name).eq('Robo');
     expect(model.players[1].aiLevel).is.undefined;
   });
 });

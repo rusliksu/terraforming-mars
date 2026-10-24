@@ -91,8 +91,8 @@ import {getPreferences} from '@/client/utils/PreferencesManager';
 import {logSearchText} from '@/client/components/logpanel/logSearchText';
 import AiDecisionDialog from '@/client/components/logpanel/aiAnalysis/AiDecisionDialog.vue';
 import AiAnalysisWelcome from '@/client/components/logpanel/aiAnalysis/AiAnalysisWelcome.vue';
-import {decisionSummaries, loadAiFeedback, openAiDecision, targetOf} from '@/client/components/logpanel/aiAnalysis/aiFeedbackState';
-import {AiDecisionSummary} from '@/common/ai/AiDecisionSummary';
+import {decisionSummaries, loadAiFeedback, openAiDecision, targetOf, AiLogTarget} from '@/client/components/logpanel/aiAnalysis/aiFeedbackState';
+import {AiFeedbackRating} from '@/common/ai/AiFeedback';
 
 let logAbortController: AbortController | undefined;
 
@@ -158,22 +158,32 @@ export default defineComponent({
   },
   emits: ['spaceClicked'],
   methods: {
+    aiTargets(): ReadonlyArray<AiLogTarget> {
+      return this.messages.map(targetOf).filter((target): target is AiLogTarget => target !== undefined);
+    },
     messageClicked(message: LogMessage) {
       if (this.viewModel.game?.gameOptions?.aiAnalysis === true) {
         const target = targetOf(message);
         if (target !== undefined) {
-          openAiDecision(target, this.decisionSummaryFor(target.decisionId), this.viewModel);
+          this.openRating(target);
           return;
         }
       }
       this.typedRefs.messageInspector.show(message);
     },
-    decisionSummaryFor(decisionId: string | undefined): AiDecisionSummary | undefined {
-      if (decisionId === undefined) {
-        return undefined;
+    rateAi(message: LogMessage, rating: AiFeedbackRating) {
+      if (this.viewModel.game?.gameOptions?.aiAnalysis !== true) {
+        return;
       }
-      const summary = decisionSummaries(this.messages).get(decisionId);
-      return summary;
+      const target = targetOf(message);
+      if (target !== undefined) {
+        this.openRating(target, rating);
+      }
+    },
+    openRating(target: AiLogTarget, rating?: AiFeedbackRating) {
+      const summaries = decisionSummaries(this.messages);
+      const decision = target.decisionId === undefined ? undefined : summaries.get(target.decisionId);
+      openAiDecision(target, decision, this.viewModel, rating, this.aiTargets(), summaries);
     },
     refreshCurrentView(): void {
       if (this.selectedRecentLimit !== undefined) {

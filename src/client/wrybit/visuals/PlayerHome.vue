@@ -138,6 +138,7 @@ import {buildTurnMenu, findTurnMenuTile, isActionMenuInput, selectTurnMenuTile, 
 import {CarouselState, observeCardCarousel, scrollCarouselTo} from '@/client/wrybit/mobile/cardCarousel';
 import {MOBILE_NAV, MobileNavItem, MobileScreen, PlayersSegment, SPECTATOR_NAV} from '@/client/wrybit/mobile/mobileScreens';
 import {mobileLayout} from './common/mobileLayout';
+import {ownCeoCards} from '@/client/wrybit/inputs/actionCards';
 import {translateMessage, translateText} from '@/client/directives/i18n';
 
 // The first mount after a full page load keeps the remembered screen; later server steps open
@@ -217,7 +218,10 @@ export default defineComponent({
       return isActionMenuInput(this.playerView.waitingFor);
     },
     menu(): TurnMenu | undefined {
-      return this.isActionMenu ? buildTurnMenu(this.playerView.waitingFor as OrOptionsModel) : undefined;
+      return this.isActionMenu ? buildTurnMenu(
+        this.playerView.waitingFor as OrOptionsModel,
+        ownCeoCards(this.thisPlayer).length > 0,
+      ) : undefined;
     },
     waitingPlayers(): ReadonlyArray<PublicPlayerModel> {
       return this.playerView.players.filter((player) => player.isActive);

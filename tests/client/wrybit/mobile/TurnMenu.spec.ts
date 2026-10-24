@@ -1,9 +1,22 @@
 import {describe, expect, it} from 'vitest';
 import {OrOptionsModel, PlayerInputModel} from '@/common/models/PlayerInputModel';
 import {buildTurnMenu, findTurnMenuTile, isActionMenuInput, PLAY_CARD_KEY} from '@/client/wrybit/mobile/turnMenu';
+import {ACTION_CARDS_TITLE, CEO_ACTION_TITLE} from '@/client/wrybit/inputs/actionCards';
 
 function option(title: string, extra: Record<string, unknown> = {}): PlayerInputModel {
   return {type: 'option', title, buttonLabel: title, ...extra} as unknown as PlayerInputModel;
+}
+
+function actionCard(title: string): PlayerInputModel {
+  return {
+    type: 'card',
+    title,
+    buttonLabel: 'Select',
+    cards: [{name: 'Ants', isDisabled: false}],
+    min: 1,
+    max: 1,
+    showOnlyInLearnerMode: false,
+  } as unknown as PlayerInputModel;
 }
 
 function projectCard(): PlayerInputModel {
@@ -47,6 +60,17 @@ describe('mobile turn menu', () => {
     expect(project?.confirmation).toBeUndefined();
     expect(milestone?.confirmation?.action).toBe('submit');
     expect(milestone?.confirmation?.button).toBe('Claim a milestone');
+  });
+
+  it('hides the separate CEO tile when OrOptions merges it into Actions', () => {
+    const input = actionMenu([actionCard(ACTION_CARDS_TITLE), actionCard(CEO_ACTION_TITLE), option('End Turn')]);
+    const separate = buildTurnMenu(input, false);
+    const grouped = buildTurnMenu(input, true);
+    const keys = (menu: ReturnType<typeof buildTurnMenu>) => [...menu.available, ...menu.actions].map((tile) => tile.key);
+
+    expect(keys(separate)).toContain(CEO_ACTION_TITLE);
+    expect(keys(grouped)).toContain(ACTION_CARDS_TITLE);
+    expect(keys(grouped)).not.toContain(CEO_ACTION_TITLE);
   });
 
   it('recognizes only the real action menu, not another or-choice or a space input', () => {

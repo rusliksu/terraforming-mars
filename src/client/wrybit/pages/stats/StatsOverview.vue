@@ -7,8 +7,8 @@
 
     <!-- Top 5 side by side; the cards inside scroll horizontally, on mobile the boxes stack vertically -->
     <!-- Title leads to the top 20 page -->
-    <div v-if="showcases.some((showcase) => showcase.entries.length > 0)" class="stats-columns">
-      <section v-for="showcase in showcases" :key="showcase.kind" class="stats-card">
+    <div v-if="visibleShowcases.length > 0" class="stats-columns">
+      <section v-for="showcase in visibleShowcases" :key="showcase.kind" class="stats-card">
         <h2><a :href="topHref(showcase.kind)" data-stats-link class="stats-heading-link"><span v-i18n>{{ showcase.title }}</span> <span class="stats-dim">→ <span v-i18n>Top</span> 20</span></a></h2>
         <StatsShowcase :kind="showcase.kind" :entries="showcase.entries"/>
       </section>
@@ -173,6 +173,10 @@ export default defineComponent({
     },
     showcases(): Array<{kind: StatsTopKind, title: string, entries: Array<EntityStats>}> {
       return (['card', 'corporation'] as const).map((kind) => ({kind, title: SHOWCASE_TITLES[kind], entries: mostPlayed(this.results, kind, SHOWCASE_SIZE)}));
+    },
+    visibleShowcases(): Array<{kind: StatsTopKind, title: string, entries: Array<EntityStats>}> {
+      // A projection without card details must not leave a half-page empty card.
+      return this.showcases.filter((showcase) => showcase.entries.length > 0);
     },
     groupLineups(): Array<LineupWinCounts> {
       return winCountsByLineup(this.games.map((game) => game.summary)).filter((lineup) => !isSoloLineup(lineup));

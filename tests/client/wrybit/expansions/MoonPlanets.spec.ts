@@ -41,7 +41,7 @@ describe('source Moon and planetary panels use our current models', () => {
       expect(wrapper.find('[data-test="planet-track-venus"]').exists()).is.false;
       expect(wrapper.find('[data-test="planet-track-moon"]').exists()).is.false;
       expect(wrapper.get('[data-test="planet-track-earth"]').text()).contains('most tags');
-      const earth = () => wrapper.getComponent(PlanetsBoard).vm.tracks.find((track) => track.key === 'earth')!;
+      const earth = () => wrapper.getComponent(PlanetsBoard).vm.tracks.find((track: {key: string}) => track.key === 'earth')!;
       expect(earth().cells).has.length(PLANETARY_TRACKS.earth.spaces.length);
       expect(earth().bonuses[12][0].bonus).deep.eq({icons: ['resources/megacredit.png'], count: 3});
       expect(earth().bonuses[22][0].bonus).deep.eq({icons: ['hex_green.png']});

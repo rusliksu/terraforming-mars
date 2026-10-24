@@ -97,7 +97,7 @@ describe('public setup links through the permanent creation owner', () => {
       expect(restored.owner.seed).eq(0.25);
       expect(restored.owner.firstIndex).eq(2);
       expect(restored.owner.playersCount).eq(2);
-      expect(restored.owner.players.slice(0, 2).every((player) => player.name === '' && !player.profileId && !player.telegramID && !player.isBot)).is.true;
+      expect(restored.owner.players.slice(0, 2).every((player: {name: string, profileId?: string, telegramID?: string, isBot: boolean}) => player.name === '' && !player.profileId && !player.telegramID && !player.isBot)).is.true;
       expect(restored.owner.botGame).is.false;
       expect(restored.owner.turnBasedGame).is.false;
       expect(restored.showAlert.mock.calls).has.length(0);

@@ -39,6 +39,12 @@ type AlliedPartyModel = {
 // 'half': Half resources are protected when targeted. Applies to Botanical Experience.
 export type Protection = 'off' | 'on' | 'half';
 
+/** Hand of an AI player in an analysis game; `hidden` while the reader still buys his own cards. */
+export type AiHandModel = {
+  cards: ReadonlyArray<CardModel>;
+  hidden: boolean;
+};
+
 export type SpectatorCardsModel = {
   cardsInHand: ReadonlyArray<CardModel>;
   ceoCardsInHand: ReadonlyArray<CardModel>;
@@ -106,6 +112,8 @@ export type PublicPlayerModel = {
   victoryPointsBreakdown: VictoryPointsBreakdown;
   victoryPointsByGeneration: ReadonlyArray<number>;
   globalParameterSteps: Partial<Record<GlobalParameter, number>>;
+  // Only AI players in an analysis game (aiHandView.ts)
+  aiHand?: AiHandModel;
 }
 
 /** A player's view of the game, including their secret information. */

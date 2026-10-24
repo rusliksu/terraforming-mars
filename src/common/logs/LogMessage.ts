@@ -36,6 +36,9 @@ export class LogMessage implements Message {
   // Analysis games only: the AI decision that caused this line
   public aiDecisionId?: string;
   public aiDecision?: AiDecisionSummary;
+  // Set on the copy sent to other players: a private line of this AI player, shown in an analysis
+  // game. Replaces playerId there, so the AI's player id never leaves the server.
+  public aiInsight?: Color;
   public type?: LogMessageType;
   constructor(
     type: LogMessageType,

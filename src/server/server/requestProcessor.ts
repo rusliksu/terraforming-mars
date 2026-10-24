@@ -7,6 +7,7 @@ import {SessionId} from '../auth/Session';
 import {GameLoader} from '../database/GameLoader';
 import {InputError} from '../inputs/InputError';
 import {ApiSurrender} from '../routes/ApiSurrender';
+import {ApiAiFeedback} from '../routes/ApiAiFeedback';
 import {ApiCloneableGame} from '../routes/ApiCloneableGame';
 import {ApiCreateGame} from '../routes/ApiCreateGame';
 import {ApiCustomCardLibrary} from '../routes/ApiCustomCardLibrary';
@@ -104,6 +105,7 @@ const handlers: Map<string, IHandler> = new Map(
     ['', ServeApp.INSTANCE],
     [paths.ADMIN, ServeApp.INSTANCE],
     [paths.API_SURRENDER, ApiSurrender.INSTANCE],
+    [paths.API_AI_FEEDBACK, ApiAiFeedback.INSTANCE],
     [paths.API_CLONEABLEGAME, ApiCloneableGame.INSTANCE],
     [paths.API_CREATEGAME, ApiCreateGame.INSTANCE],
     [paths.API_GAME, ApiGame.INSTANCE],

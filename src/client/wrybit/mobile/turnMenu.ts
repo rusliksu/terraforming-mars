@@ -3,6 +3,7 @@ import {Message} from '@/common/logs/Message';
 import {OrOptionsModel, PlayerInputModel} from '@/common/models/PlayerInputModel';
 import {nextTick} from 'vue';
 import {getPreferences} from '@/client/utils/PreferencesManager';
+import {ACTION_CARDS_TITLE, CEO_ACTION_TITLE, actionOption} from '@/client/wrybit/inputs/actionCards';
 import {GlyphName} from '@/client/wrybit/visuals/common/mobileGlyphs';
 import {isChoiceMenu} from '@/client/wrybit/inputs/choiceMenu';
 import {optionSourceCard} from '@/client/wrybit/inputs/inputSourceCard';
@@ -127,11 +128,16 @@ function quickConfirmation(option: PlayerInputModel): TurnConfirmation | undefin
 }
 
 /* Builds the sheet from the action menu `input`. */
-export function buildTurnMenu(input: OrOptionsModel): TurnMenu {
+export function buildTurnMenu(input: OrOptionsModel, hasCeoCards = false): TurnMenu {
   // Same entries as the desktop tabs: learner-only card options are hidden outside learner mode.
   const learnerMode = getPreferences().learner_mode;
   const options = input.options.filter((option) => !(option.type === 'card' && option.showOnlyInLearnerMode !== false && !learnerMode));
-  const order = tabDisplayOrder(options.map((option) => option.title));
+  // OrOptions merges the CEO option into the "Actions" tab when the player owns a CEO; a separate
+  // CEO tile would select a tab that is not rendered and would be a dead end.
+  const actionsIndex = actionOption(options, ACTION_CARDS_TITLE);
+  const ceoIndex = actionOption(options, CEO_ACTION_TITLE);
+  const groupedCeo = hasCeoCards && actionsIndex !== -1 && ceoIndex !== -1;
+  const order = tabDisplayOrder(options.map((option) => option.title)).filter((index) => !groupedCeo || index !== ceoIndex);
   const tiles = order.map((index) => ({option: options[index], tile: toTile(options[index], index)}));
   const regular = tiles.filter(({option}) => !isEndTab(option.title));
   const end = tiles.filter(({option}) => isEndTab(option.title));

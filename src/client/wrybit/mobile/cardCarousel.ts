@@ -7,15 +7,18 @@
 export type CarouselState = {count: number, index: number, unavailable: ReadonlyArray<boolean>};
 
 // Standard projects are laid out as a grid, not in the carousel (mobile.less, mobileFit.ts)
-const LIST_SELECTOR = '.mb-screen--turn .payments_cont:not(:has(.card-standard-project))';
-const ITEM_SELECTOR = ':scope > label.payments_cards';
+const LIST_SELECTOR = '.mb-screen--turn .payments_cont';
+const ITEM_SELECTOR = 'label.payments_cards';
 
 function visibleList(root: HTMLElement): HTMLElement | undefined {
-  return Array.from(root.querySelectorAll<HTMLElement>(LIST_SELECTOR)).find((list) => list.offsetWidth > 0);
+  // Standard projects are a grid, not a carousel; avoid :has() for older browser/test environments.
+  return Array.from(root.querySelectorAll<HTMLElement>(LIST_SELECTOR))
+    .find((list) => list.offsetWidth > 0 && list.querySelector('.card-standard-project') === null);
 }
 
 function items(list: HTMLElement): Array<HTMLElement> {
-  return Array.from(list.querySelectorAll<HTMLElement>(ITEM_SELECTOR));
+  return Array.from(list.children).filter((child): child is HTMLElement =>
+    child instanceof HTMLElement && child.matches(ITEM_SELECTOR));
 }
 
 // Card whose center is closest to the center of the list
@@ -77,6 +80,13 @@ export function observeCardCarousel(root: HTMLElement, onChange: (state: Carouse
     const all = items(list);
     onChange({count: all.length, index: centeredIndex(list), unavailable: all.map((item) => selectionInput(item) === null)});
   };
+  // Initial native selection can belong to a card that is no longer the centered one (or off-screen
+  // before the carousel's padding is applied). Align the choice with the centered card once the list appears.
+  const syncInitialSelection = () => {
+    if (list !== undefined) {
+      selectItem(items(list)[centeredIndex(list)]);
+    }
+  };
   // After swiping (scrolling comes to rest) select the centered card
   const onScroll = () => {
     report();
@@ -87,20 +97,27 @@ export function observeCardCarousel(root: HTMLElement, onChange: (state: Carouse
       }
     }, 150);
   };
+  let initialSyncTimer = 0;
   const rescan = () => {
     const found = visibleList(root);
-    if (found !== list) {
+    const changed = found !== list;
+    if (changed) {
       list?.removeEventListener('scroll', onScroll);
       list = found;
       list?.addEventListener('scroll', onScroll, {passive: true});
     }
     report();
+    if (changed) {
+      window.clearTimeout(initialSyncTimer);
+      initialSyncTimer = window.setTimeout(syncInitialSelection, 0);
+    }
   };
   const mutations = new MutationObserver(rescan);
   mutations.observe(root, {childList: true, subtree: true, attributes: true, attributeFilter: ['style']});
   rescan();
   return () => {
     window.clearTimeout(timer);
+    window.clearTimeout(initialSyncTimer);
     mutations.disconnect();
     list?.removeEventListener('scroll', onScroll);
   };

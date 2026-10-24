@@ -5,11 +5,17 @@ import {Response} from '../Response';
 import {DiscordId} from '../server/auth/discord';
 import {RouteError} from './RouteError';
 import {assertNever} from '../../common/utils/utils';
+import {capture, ErrorDiagnosticContext} from '../server/SentryReporter';
+
+/** Best-effort reporter for route errors that become a 500. */
+export type ErrorCapture = (error: unknown, context: ErrorDiagnosticContext) => void;
 
 export type Options = {
   validateServerId: boolean;
   validateStatsId: boolean;
   auth: boolean;
+  /** Defaults to the Sentry reporter; tests inject a recorder. */
+  captureError?: ErrorCapture;
 }
 
 const DISCORD_ADMIN_USER_IDS: Array<string> = [];
@@ -45,6 +51,9 @@ export abstract class Handler implements IHandler {
       validateStatsId: options?.validateStatsId === true,
       auth: options?.auth === true,
     };
+    if (options?.captureError !== undefined) {
+      this.options.captureError = options.captureError;
+    }
   }
 
   // TODO(kberg): provide a good not authorized path. This collapses two failures into
@@ -94,6 +103,7 @@ export abstract class Handler implements IHandler {
         responses.notAuthorized(req, res);
         break;
       case 'internalServerError':
+        this.reportServerError(e, req);
         responses.internalServerError(req, res, e.detail);
         break;
       case 'notFound':
@@ -104,7 +114,31 @@ export abstract class Handler implements IHandler {
       }
       return;
     }
+    this.reportServerError(e, req);
     responses.internalServerError(req, res, e);
+  }
+
+  /**
+   * Reports an error this handler is about to answer with a 500.
+   *
+   * Route failures never reach requestProcessor's catch, so without this a failing route stays
+   * invisible to error reporting. Reporting is best-effort: it must never change the response.
+   */
+  private reportServerError(error: unknown, req: Request): void {
+    const context: ErrorDiagnosticContext = {boundary: 'request'};
+    const method = req.method?.trim().toUpperCase();
+    if (method !== undefined && method !== '') {
+      context.method = method;
+    }
+    const route = requestRouteOf(req.url);
+    if (route !== undefined) {
+      context.route = route;
+    }
+    try {
+      (this.options.captureError ?? capture)(error, context);
+    } catch (_reportingError) {
+      // Reporting is best-effort and must never replace the request error.
+    }
   }
 
   public async processRequest(req: Request, res: Response, ctx: Context): Promise<void> {
@@ -148,5 +182,17 @@ export abstract class Handler implements IHandler {
   }
   public post(_req: Request, _res: Response, _ctx: Context): Promise<void> {
     throw RouteError.notFound();
+  }
+}
+
+/** The path a request was routed to, without its query string. */
+function requestRouteOf(url: string | undefined): string | undefined {
+  if (url === undefined || url === '') {
+    return undefined;
+  }
+  try {
+    return new URL(url, 'http://localhost').pathname;
+  } catch (_error) {
+    return undefined;
   }
 }

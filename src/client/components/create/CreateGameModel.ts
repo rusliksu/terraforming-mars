@@ -41,6 +41,7 @@ export type CreateGameModel = {
   moonStandardProjectVariant: boolean;
   moonStandardProjectVariant1: boolean;
   noEloGame: boolean;
+  aiAnalysis?: boolean;
   privateHands: boolean;
   players: Array<NewPlayerModel>;
   playersCount: number;

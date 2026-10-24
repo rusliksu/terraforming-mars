@@ -1192,6 +1192,47 @@ describe('Game', () => {
     expect(oceanSpace.tile!.tileType).to.eq(TileType.NEW_HOLLAND);
   });
 
+  it('restores the solar phase by recreating the World Government Terraforming input', () => {
+    const [game] = testGame(2, {solarPhaseOption: true});
+    // Generation 1 without corporations loads through the initial-research path, so use a game
+    // that has already started.
+    game.generation = 5;
+    game.phase = Phase.SOLAR;
+
+    const restored = Game.deserialize(game.serialize());
+
+    expect(restored.phase).eq(Phase.SOLAR);
+    const input = restored.first.getWaitingFor();
+    expect(input).is.an.instanceof(OrOptions);
+    expect((input as OrOptions).options.length).greaterThan(0);
+  });
+
+  it('restores the solar phase by finishing the generation when World Government Terraforming is off', () => {
+    const [game] = testGame(2);
+    const generation = 5;
+    game.generation = generation;
+    game.phase = Phase.SOLAR;
+
+    const restored = Game.deserialize(game.serialize());
+
+    expect(restored.generation).eq(generation + 1);
+    expect([Phase.RESEARCH, Phase.DRAFTING]).includes(restored.phase);
+  });
+
+  it('restores the intergeneration phase without advancing the generation twice', () => {
+    const [game] = testGame(2);
+    // startGeneration() increments the counter before the save point, so a persisted game in this
+    // phase already shows the new generation number.
+    const generation = game.generation + 1;
+    game.generation = generation;
+    game.phase = Phase.INTERGENERATION;
+
+    const restored = Game.deserialize(game.serialize());
+
+    expect(restored.generation).eq(generation);
+    expect([Phase.RESEARCH, Phase.DRAFTING]).includes(restored.phase);
+  });
+
   /**
    * ensure as we modify properties we consider
    * serialization. if this fails update SerializedGame

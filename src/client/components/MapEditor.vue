@@ -980,9 +980,33 @@ function buildGrid(rows: number, previous: Map<string, CustomSpaceDef | null> | 
     .map-editor-canvas { width: 100%; min-width: 0; }
     .map-editor-board-nav { flex-wrap: wrap; }
     .map-editor-field input { min-width: 0; max-width: 100%; }
-    .map-editor-grid-wrap { justify-content: flex-start; }
-    .map-editor-preview { max-width: 100%; overflow-x: auto; }
+    .map-editor-grid-wrap {
+      justify-content: center;
+      overflow: hidden;
+    }
+    // 678px native grid and ~670px board; scale down by viewport tier so
+    // neither the editor grid nor the preview creates a horizontal scroller.
+    .map-editor-grid { zoom: 0.7; }
+    .map-editor-preview { max-width: 100%; overflow-x: hidden; }
+    .map-editor-preview-zoom {
+      zoom: 0.9;
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
     textarea { box-sizing: border-box; max-width: 100%; }
+  }
+}
+@media (max-width: 480px) {
+  .map-editor {
+    .map-editor-grid { zoom: 0.48; }
+    .map-editor-preview-zoom { zoom: 0.5; }
+  }
+}
+@media (max-width: 340px) {
+  .map-editor {
+    .map-editor-grid { zoom: 0.42; }
+    .map-editor-preview-zoom { zoom: 0.44; }
   }
 }
 </style>

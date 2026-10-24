@@ -535,9 +535,22 @@ each(@players, {
     overflow-x: auto;
   }
 
+  // Actions become a full-width column on phones: wrapping/centering a
+  // horizontal button strip clipped both ends at 360px.
   #game-end .game_end_navigation {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
     max-width: 100%;
-    overflow-x: auto;
+    margin: 0;
+    overflow-x: visible;
+  }
+
+  #game-end .game_end_navigation .game-end-nav-button {
+    width: 100%;
+    justify-content: center;
   }
 
   #game-end .game-end-columns,

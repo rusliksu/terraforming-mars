@@ -203,15 +203,17 @@
 }
 
 .stats-lineups {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr));
   gap: 16px 32px;
+  align-items: start;
 }
 
 .stats-lineup-body {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: 8px 12px;
 }
 
@@ -219,6 +221,13 @@
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+}
+
+// Four-player lineups must keep their averages beside the wins in the
+// two-column overview; slightly narrower win tiles avoid a lone wrapped row.
+.stats-lineups .stats-win {
+  min-width: 76px;
+  padding: 6px 8px;
 }
 
 .stats-win {
@@ -894,10 +903,11 @@ each(@stats-source-colors, {
   figcaption {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     gap: 2px;
     // Long names wrap instead of widening the column
     max-width: 160px;
+    min-height: 54px;
     font-size: 13px;
     text-align: center;
   }
@@ -909,8 +919,10 @@ each(@stats-source-colors, {
 }
 
 .stats-showcase-numbers {
+  margin-top: 2px;
   color: @create-game-dim;
   font-size: 12px;
+  text-align: center;
 }
 
 
@@ -1089,4 +1101,26 @@ each(range(10), {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+// Corporation names can wrap to two lines; reserve the name row so every
+// frequency/win-rate line and card-zoom control starts on the same baseline.
+.stats-showcase .stats-entity-group {
+  display: inline-flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
+  min-height: 2.7em;
+  width: 100%;
+}
+
+.stats-showcase .stats-entity {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+// The SVG legend sits at the end of the chart; give it breathing room above
+// the card border instead of letting the last legend row touch the edge.
+.stats-chart {
+  padding-bottom: 10px;
 }

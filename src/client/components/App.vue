@@ -13,11 +13,11 @@
     </section>
     <WrybitBoundary :enabled="wrybitMode" :screen="screen" @classic="useClassicInterface" @active="wrybitReady = $event" @views="wrybitViews = $event" />
     <div class="main-container">
-      <StartScreen v-if="screen === 'start-screen'"/>
+      <component :is="wrybitMode && wrybitReady && wrybitViews.startScreen ? wrybitViews.startScreen : 'StartScreen'" v-if="screen === 'start-screen'"/>
       <CreateGameForm
         v-else-if="screen === 'create-game-form'"
       />
-      <LoadGameForm v-else-if="screen === 'load'"/>
+      <component :is="wrybitMode && wrybitReady && wrybitViews.loadGame ? wrybitViews.loadGame : 'LoadGameForm'" v-else-if="screen === 'load'"/>
       <GameHome
         v-else-if="screen === 'game-home' && game !== undefined"
         :game="game"
@@ -37,17 +37,15 @@
         :participant="participant"
       />
       <ReplayHome v-else-if="screen === 'replay'"/>
-      <GamesOverview
-        v-else-if="screen === 'games-overview'"
-      />
+      <component :is="wrybitMode && wrybitReady && wrybitViews.gamesOverview ? wrybitViews.gamesOverview : 'GamesOverview'" v-else-if="screen === 'games-overview'"/>
       <component v-else-if="screen === 'cards'" :is="wrybitMode && wrybitReady && wrybitViews.cards ? wrybitViews.cards : 'CardList'"/>
       <CardMaker v-else-if="screen === 'card-maker'"/>
       <CardLibrary v-else-if="screen === 'card-library'"/>
       <MapEditor v-else-if="screen === 'map-editor'"/>
       <MapLibrary v-else-if="screen === 'map-library'"/>
-      <AdminHome v-else-if="screen === 'admin'"/>
-      <LoginHome v-else-if="screen === 'login-home'"/>
-      <Help v-else-if="screen === 'help'"/>
+      <component :is="wrybitMode && wrybitReady && wrybitViews.adminHome ? wrybitViews.adminHome : 'AdminHome'" v-else-if="screen === 'admin'"/>
+      <component :is="wrybitMode && wrybitReady && wrybitViews.loginHome ? wrybitViews.loginHome : 'LoginHome'" v-else-if="screen === 'login-home'"/>
+      <component :is="wrybitMode && wrybitReady && wrybitViews.help ? wrybitViews.help : 'Help'" v-else-if="screen === 'help'"/>
     </div>
     <InputPortal v-if="screen === 'player-home' && playerView !== undefined && playerView.game.phase !== 'end'"
       :target="inputHosts.target.value">

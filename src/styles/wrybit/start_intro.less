@@ -1,0 +1,109 @@
+// Start page intro (StartScreen.vue, startScreen/startIntro.ts): active while .start-screen--intro is set.
+// Sequence: black → galaxy via iris wipe → logo zooms in at the center (from half iris), meanwhile the
+// footer comes up from below and tool buttons from the top right → logo shrinks and moves into place →
+// menu items fade in one by one from top to bottom (blur fade).
+// Total duration about 1.5 s (Jens' request: snappy).
+// fill-mode backwards: before the start the initial state applies, after the end the normal layout again.
+
+@intro-iris-delay: 0.05s;
+@intro-iris-duration: 0.6s;
+// Logo starts at about half iris
+@intro-logo-delay: 0.3s;
+@intro-logo-duration: 0.8s;
+@intro-chrome-delay: 0.35s;
+@intro-chrome-duration: 0.5s;
+// Menu items only once the logo has arrived at the top
+@intro-buttons-delay: (@intro-logo-delay + @intro-logo-duration);
+@intro-buttons-stagger: 0.02s;
+@intro-buttons-duration: 0.25s;
+@intro-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+.topmost-start-screen:has(.start-screen--intro) {
+  // Galaxy opens as a circle from the center
+  &::before {
+    animation: start-intro-iris @intro-iris-duration ease-in-out @intro-iris-delay backwards;
+  }
+
+  .notice {
+    animation: start-intro-from-below @intro-chrome-duration @intro-ease @intro-chrome-delay backwards;
+  }
+}
+
+.start-screen--intro {
+  .start-screen-toolbar {
+    animation: start-intro-from-top-left @intro-chrome-duration @intro-ease @intro-chrome-delay backwards;
+  }
+
+  .start-screen-title {
+    animation: start-intro-logo @intro-logo-duration ease-in-out @intro-logo-delay backwards;
+  }
+
+  // Planet behind the title comes along when the logo reaches its place
+  .start-screen-header::before {
+    animation: start-intro-fade 0.3s ease-out (@intro-buttons-delay - 0.1s) backwards;
+  }
+
+  .start-screen-link {
+    animation: start-intro-blur-in @intro-buttons-duration ease-out backwards;
+    animation-delay: calc(@intro-buttons-delay + var(--sprite-row) * @intro-buttons-stagger);
+  }
+}
+
+@keyframes start-intro-iris {
+  from {
+    clip-path: circle(0% at 50% 50%);
+  }
+
+  to {
+    clip-path: circle(75% at 50% 50%);
+  }
+}
+
+// --intro-logo-x/-y: offset from the screen center, set by StartScreen.vue
+@keyframes start-intro-logo {
+  0% {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translate(var(--intro-logo-x, 0), var(--intro-logo-y, 0)) scale(0.4);
+  }
+
+  35%,
+  60% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate(var(--intro-logo-x, 0), var(--intro-logo-y, 0)) scale(1.5);
+  }
+
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes start-intro-from-below {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
+@keyframes start-intro-from-top-left {
+  from {
+    opacity: 0;
+    transform: translate(-60px, -60px);
+  }
+}
+
+@keyframes start-intro-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes start-intro-blur-in {
+  from {
+    opacity: 0;
+    filter: blur(12px);
+  }
+}

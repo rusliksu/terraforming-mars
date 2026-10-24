@@ -4,13 +4,23 @@ import WrybitShell from '@/client/wrybit/shell/WrybitShell.vue';
 import Catalog from '@/client/wrybit/visuals/cardlist/CardList.vue';
 import PlayerHome from '@/client/wrybit/visuals/PlayerHome.vue';
 import SpectatorHome from '@/client/wrybit/spectator/SpectatorHome.vue';
+import StartScreen from '@/client/wrybit/pages/StartScreen.vue';
+import LoadGameForm from '@/client/wrybit/pages/LoadGameForm.vue';
+import GamesOverview from '@/client/wrybit/pages/GamesOverview.vue';
+import AdminHome from '@/client/wrybit/pages/admin/AdminHome.vue';
+import LoginHome from '@/client/wrybit/pages/auth/LoginHome.vue';
+import Help from '@/client/wrybit/pages/help/Help.vue';
 import {globalConfig} from '@tests/client/components/getLocalVue';
 
 describe('Wrybit shell', () => {
   it('renders responsive isolated backgrounds with attribution and a classic return', async () => {
     const wrapper = mount(WrybitShell, {...globalConfig, props: {screen: 'start-screen'}});
     try {
-      expect(wrapper.emitted('views')?.[0][0]).deep.include({cards: Catalog, playerHome: PlayerHome, spectatorHome: SpectatorHome});
+      expect(wrapper.emitted('views')?.[0][0]).deep.include({
+        cards: Catalog, playerHome: PlayerHome, spectatorHome: SpectatorHome,
+        startScreen: StartScreen, loadGame: LoadGameForm, gamesOverview: GamesOverview,
+        adminHome: AdminHome, loginHome: LoginHome, help: Help,
+      });
       const sources = wrapper.findAll('picture source');
       expect(sources.map((source) => source.attributes('type'))).deep.eq([
         'image/avif', 'image/webp', 'image/jpeg', 'image/avif', 'image/webp', 'image/jpeg',

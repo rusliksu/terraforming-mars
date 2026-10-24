@@ -1,7 +1,7 @@
 {
-  "event_count": 53,
-  "last_event_id": "01M5PD3ZC691ZATAQ8JA6FWVN4",
-  "materialized_at": "2026-10-24T07:31:03.686550+00:00",
+  "event_count": 55,
+  "last_event_id": "01M5PDF9ECM7K34HMZ8BXPTC1C",
+  "materialized_at": "2026-10-24T07:37:14.444765+00:00",
   "mission_number": "",
   "mission_slug": "wrybit-full-ui-01M4R0GH",
   "mission_type": "software-dev",
@@ -12,9 +12,9 @@
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 0,
+    "in_progress": 1,
     "in_review": 0,
-    "planned": 2
+    "planned": 1
   },
   "work_packages": {
     "WP01": {
@@ -169,11 +169,12 @@
       "shell_pid_created_at": "1792272540.3041172"
     },
     "WP06": {
-      "actor": "finalize-tasks",
+      "actor": "implementer-ivan",
+      "agent": "implementer-ivan",
       "force_count": 0,
-      "lane": "planned",
-      "last_event_id": "01M4R21KGA1KBXWAVSW9YN7SKP",
-      "last_transition_at": "2026-10-12T12:40:18.698539+00:00"
+      "lane": "in_progress",
+      "last_event_id": "01M5PDF9ECM7K34HMZ8BXPTC1C",
+      "last_transition_at": "2026-10-24T07:37:14.444765+00:00"
     },
     "WP07": {
       "actor": "finalize-tasks",

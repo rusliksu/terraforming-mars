@@ -2,6 +2,7 @@ export const paths = {
   ADMIN: 'admin',
   API_SURRENDER: 'api/surrender',
   API_CLONEABLEGAME: 'api/cloneablegame',
+  API_AI_FEEDBACK: 'api/ai-feedback',
   API_CREATEGAME: 'api/creategame',
   API_GAME: 'api/game',
   API_GAME_HISTORY: 'api/game/history',

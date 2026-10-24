@@ -16,6 +16,7 @@ import {IMilestone} from './milestones/IMilestone';
 import {Space} from './boards/Space';
 import {Tile} from './Tile';
 import {LogMessageBuilder} from './logs/LogMessageBuilder';
+import {annotateLogMessage} from './logs/aiDecisionContext';
 import {LogHelper} from './LogHelper';
 import {LogEffect, LogGlobalEffect, LogMessage, LogPayment} from '../common/logs/LogMessage';
 import {milestoneManifest} from './milestones/Milestones';
@@ -2247,6 +2248,7 @@ export class Game implements IGame, Logger {
         context.pendingGlobalEffects = undefined;
       }
     }
+    annotateLogMessage(this, logMessage);
     this.gameLog.push(logMessage);
     this.gameAge++;
   }

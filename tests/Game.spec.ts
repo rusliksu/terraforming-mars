@@ -7,7 +7,7 @@ import {Thermalist} from '../src/server/awards/Thermalist';
 import {Birds} from '../src/server/cards/base/Birds';
 import {WaterImportFromEuropa} from '../src/server/cards/base/WaterImportFromEuropa';
 import {Phase} from '../src/common/Phase';
-import {addCity, addGreenery, addOcean, fakeCard, forceGenerationEnd, maxOutOceans, runAllActions, setOxygenLevel, setTemperature, setVenusScaleLevel, testGame} from './TestingUtils';
+import {addCity, addGreenery, addOcean, fakeCard, forceGenerationEnd, formatMessage, maxOutOceans, runAllActions, setOxygenLevel, setTemperature, setVenusScaleLevel, testGame} from './TestingUtils';
 import {cast, toName} from '../src/common/utils/utils';
 import {TestPlayer} from './TestPlayer';
 import {SaturnSystems} from '../src/server/cards/corporation/SaturnSystems';
@@ -299,6 +299,20 @@ describe('Game', () => {
 
     expect(game.getOxygenLevel()).to.eq(constants.MAX_OXYGEN_LEVEL);
     expect(player.terraformRating).to.eq(initialTR + 1);
+  });
+
+  it('Logs every parameter increase with the number of steps', () => {
+    const [game, player] = testGame(2);
+    const messages = (): Array<string> => game.gameLog.map(formatMessage);
+
+    game.increaseTemperature(player, 2);
+    expect(messages()).to.include('blue raised the temperature 2 step(s)');
+
+    game.increaseOxygenLevel(player, 1);
+    expect(messages()).to.include('blue raised the oxygen level 1 step(s)');
+
+    game.increaseVenusScaleLevel(player, 3);
+    expect(messages()).to.include('blue raised the Venus scale 3 step(s)');
   });
 
   it('Venus moves 1% per step above 30% on Amazonis Planitia', () => {

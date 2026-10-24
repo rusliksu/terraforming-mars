@@ -9,7 +9,7 @@ import {LogMessageType} from '@/common/logs/LogMessageType';
 import {toReplayFrame} from '@/server/replay/ReplayFrame';
 import {GameLogs} from '@/server/routes/GameLogs';
 import {SelectOption} from '@/server/inputs/SelectOption';
-import {setOxygenLevel, setTemperature, setVenusScaleLevel} from '@tests/TestingUtils';
+import {formatMessage, setOxygenLevel, setTemperature, setVenusScaleLevel} from '@tests/TestingUtils';
 import {CrediCor} from '@/server/cards/corporation/CrediCor';
 import {Helion} from '@/server/cards/corporation/Helion';
 import {Birds} from '@/server/cards/base/Birds';
@@ -40,14 +40,22 @@ describe('Replay frame projection', () => {
       {kind: 'global', parameter: GlobalParameter.TEMPERATURE, amount: 1, player: blue.color},
       {kind: 'global', parameter: GlobalParameter.VENUS, amount: 1, player: blue.color},
     ];
-    expect(game.gameLog.length).eq(logCount + 1);
-    const action = game.gameLog.at(-1);
-    expect(action?.actionStart).eq(true);
-    expect(action?.replayGlobalEffects).deep.eq(effects);
+    expect(game.gameLog.length).eq(logCount + 4);
+    const actionMessages = game.gameLog.slice(logCount);
+    expect(actionMessages[0].actionStart).eq(true);
+    expect(actionMessages.map(formatMessage)).deep.eq([
+      'blue used a card',
+      'blue raised the oxygen level 1 step(s)',
+      'blue raised the temperature 1 step(s)',
+      'blue raised the Venus scale 1 step(s)',
+    ]);
+    // Each increase records its own effect on the log line it writes; the replay reads them per action.
+    expect(actionMessages.flatMap((message) => message.replayGlobalEffects ?? [])).deep.eq(effects);
     const regular = new GameLogs().getLogsForGameView(game.spectatorId, game, null);
-    expect(regular.at(-1)).not.to.have.property('replayGlobalEffects');
+    expect(regular.slice(-4).some((message) => 'replayGlobalEffects' in message)).eq(false);
     const replay = toReplayFrame(game.serialize());
-    expect(replay.logs.at(-1)?.replayGlobalEffects).deep.eq(effects);
+    const replayAction = replay.logs.slice(-4);
+    expect(replayAction.flatMap((message) => message.replayGlobalEffects ?? [])).deep.eq(effects);
   });
 
   it('attaches clamped changes when the action log is written after the effects', () => {
@@ -66,7 +74,7 @@ describe('Replay frame projection', () => {
     game.increaseVenusScaleLevel(blue, 2);
     game.log('${0} completed an action', (b) => b.player(blue));
 
-    expect(game.gameLog.at(-1)?.replayGlobalEffects).deep.eq([
+    expect(game.gameLog.flatMap((message) => message.replayGlobalEffects ?? [])).deep.eq([
       {kind: 'global', parameter: GlobalParameter.OXYGEN, amount: 1, player: blue.color},
       {kind: 'global', parameter: GlobalParameter.TEMPERATURE, amount: 1, player: blue.color},
       {kind: 'global', parameter: GlobalParameter.VENUS, amount: 1, player: blue.color},

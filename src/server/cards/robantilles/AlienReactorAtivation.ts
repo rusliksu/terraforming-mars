@@ -8,7 +8,6 @@ import {OrOptions} from '../../inputs/OrOptions';
 import {SelectOption} from '../../inputs/SelectOption';
 import {CardRenderer} from '../render/CardRenderer';
 import {Size} from '../../../common/cards/render/Size';
-import {LogHelper} from '../../LogHelper';
 import * as constants from '../../../common/constants';
 
 export class AlienReactorAtivation extends Card implements IProjectCard {
@@ -72,7 +71,6 @@ export class AlienReactorAtivation extends Card implements IProjectCard {
 
   private raiseTemperature(player: IPlayer) {
     player.game.increaseTemperature(player, 1);
-    LogHelper.logTemperatureIncrease(player, 1);
     player.increaseTerraformRating(1, {log: true});
   }
 

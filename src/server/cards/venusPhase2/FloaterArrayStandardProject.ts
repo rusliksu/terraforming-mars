@@ -7,7 +7,6 @@ import {PlaceFloaterArrayTile} from '../../venusPhase2/PlaceFloaterArrayTile';
 import {StandardProjectCanPayWith} from '../../../common/cards/Types';
 import {TileType} from '../../../common/TileType';
 import {Size} from '../../../common/cards/render/Size';
-import {LogHelper} from '../../LogHelper';
 
 export class FloaterArrayStandardProject extends StandardProjectCard {
   constructor(properties = {
@@ -45,6 +44,5 @@ export class FloaterArrayStandardProject extends StandardProjectCard {
   actionEssence(player: IPlayer): void {
     player.game.defer(new PlaceFloaterArrayTile(player));
     player.game.increaseVenusScaleLevel(player, 1);
-    LogHelper.logVenusIncrease(player, 1);
   }
 }

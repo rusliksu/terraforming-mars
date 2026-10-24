@@ -6,11 +6,7 @@
           @click="$emit('messageClicked', entry.messages[0])" @spaceClicked="$emit('spaceClicked', $event)"/>
       </ul>
       <div class="action-log-effects">
-        <span v-for="payment in payments" :key="payment.key" class="action-log-payment"
-          :aria-label="`Paid ${payment.amount} ${payment.resource}`" :title="`Paid ${payment.amount} ${payment.resource}`">
-          <span class="action-log-effect-amount">−{{ payment.amount }}</span>
-          <i class="resource_icon" :class="'resource_icon--' + payment.resource" aria-hidden="true"></i>
-        </span>
+        <LogPaymentBadges v-for="(message, index) in entry.messages" :key="index" :payment="message.payment"/>
         <span v-for="(summary, index) in effects" :key="index" class="action-log-effect"
           :aria-label="effectLabel(summary)" :title="effectLabel(summary)">
           <span class="action-log-effect-visual" :class="{'production-box action-log-production-box': summary.effect.kind === 'resource' && summary.effect.production}">
@@ -59,6 +55,7 @@ import {playerColorClass} from '@/common/utils/utils';
 import {getSpaceName} from '@/common/boards/spaces';
 import {ViewModel} from '@/common/models/PlayerModel';
 import LogMessageComponent from './LogMessageComponent.vue';
+import LogPaymentBadges from './LogPaymentBadges.vue';
 
 const props = defineProps<{
   entry: Extract<ActionLogEntry, {kind: 'action'}>;
@@ -72,15 +69,6 @@ defineEmits<{
 
 const expanded = ref(false);
 type EffectSummary = {effect: LogEffect | LogGlobalEffect, oceanCount?: number};
-const payments = computed(() => props.entry.messages.flatMap((message, messageIndex) => {
-  const payment = message.payment;
-  if (payment === undefined) {
-    return [];
-  }
-  return ([Resource.MEGACREDITS, Resource.STEEL, Resource.TITANIUM, Resource.ENERGY] as const)
-    .map((resource) => ({key: `${messageIndex}-${resource}`, resource, amount: payment[resource] ?? 0}))
-    .filter(({amount}) => Number.isSafeInteger(amount) && amount > 0);
-}));
 const effects = computed(() => props.entry.messages.flatMap((message): Array<EffectSummary> => {
   const result: Array<EffectSummary> = (message.replayGlobalEffects ?? []).map((effect) => ({effect}));
   if (message.effect !== undefined) {
@@ -155,12 +143,11 @@ function oceanBonusEffect(message: LogMessage): EffectSummary | undefined {
 .action-log-title, .action-log-detail-list { padding: 0; margin: 0; list-style: none; }
 .action-log-title { flex: 1 1 290px; min-width: 0; font-weight: bold; }
 .action-log-effects { flex: 2 1 280px; min-width: 0; }
-.action-log-effect, .action-log-payment { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
-.action-log-payment { color: #e9c8b4; }
+.action-log-effect { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
 .action-log-effect-visual { display: inline-flex; align-items: center; gap: 4px; }
 .action-log-effect-amount { font-weight: bold; }
 .action-log-global-icon { display: block; width: auto; height: 24px; max-width: 32px; object-fit: contain; }
-.action-log-effect .resource_icon, .action-log-payment .resource_icon { display: inline-block; width: 21px; height: 21px; background-size: contain; }
+.action-log-effect .resource_icon { display: inline-block; width: 21px; height: 21px; background-size: contain; }
 .action-log-effect .action-log-production-box { min-width: 52px; width: auto; height: 29px; padding: 2px 5px; margin: 0; line-height: normal; box-sizing: border-box; color: #fff; }
 .action-log-source { font-size: 0.8em; color: #b8d9f2; }
 .action-log-location { border: 1px solid #999; border-radius: 4px; background: #42424a; color: inherit; cursor: pointer; white-space: nowrap; }

@@ -38,13 +38,7 @@
         <span v-else v-i18n>{{ data.value }}</span>
       </span>
     </template>
-    <span v-if="payments.length > 0" class="log-payment">
-      <span v-for="payment in payments" :key="payment.resource" class="log-payment-item"
-        :aria-label="paymentLabel(payment)" :title="paymentLabel(payment)">
-        <span class="log-payment-amount">&#8722;{{ payment.amount }}</span>
-        <i class="resource_icon" :class="'resource_icon--' + payment.resource" aria-hidden="true"></i>
-      </span>
-    </span>
+    <LogPaymentBadges :payment="message.payment"/>
    </li>
 </template>
 
@@ -71,7 +65,7 @@ import {gameLocaleToIntlLocale} from '@/client/utils/LocaleUtils';
 import {range} from '@/common/utils/utils';
 import {renderMarkdown} from '@/client/markdown/markdown';
 import {CardResource} from '@/common/CardResource';
-import {Resource} from '@/common/Resource';
+import LogPaymentBadges from './LogPaymentBadges.vue';
 
 const cardTypeToCss: Record<CardType, string | undefined> = {
   event: 'background-color-events',
@@ -87,6 +81,7 @@ const cardTypeToCss: Record<CardType, string | undefined> = {
 
 export default defineComponent({
   name: 'LogMessageComponent',
+  components: {LogPaymentBadges},
   props: {
     message: {
       type: Object as () => LogMessage,
@@ -163,10 +158,6 @@ export default defineComponent({
       }
       return '<span class="log-card '+ className + '">' + this.$t(suffixFreeCardName) + tagHTML + costHTML +'</span>';
     },
-    /** Spoken/tooltip label for one paid resource, matching the replay action summary. */
-    paymentLabel(payment: {resource: Resource, amount: number}): string {
-      return 'Paid ' + payment.amount + ' ' + payment.resource;
-    },
     getPlayerName(color: Color) {
       const player = this.viewModel.players.find((player) => player.color === color);
       return player?.name ?? color;
@@ -185,19 +176,6 @@ export default defineComponent({
     },
     when() {
       return new Date(this.message.timestamp).toLocaleString();
-    },
-    /**
-     * What this action cost, in the same order and shape the replay action summary uses.
-     * The server records the payment on the log message; older saves simply have none.
-     */
-    payments(): Array<{resource: Resource, amount: number}> {
-      const payment = this.message.payment;
-      if (payment === undefined) {
-        return [];
-      }
-      return ([Resource.MEGACREDITS, Resource.STEEL, Resource.TITANIUM, Resource.ENERGY] as const)
-        .map((resource) => ({resource, amount: payment[resource] ?? 0}))
-        .filter(({amount}) => Number.isSafeInteger(amount) && amount > 0);
     },
     icon() {
       return this.message.playerId === undefined ? '&#x1f551;' : '&#x1f4ac;';

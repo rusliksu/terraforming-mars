@@ -1,3 +1,4 @@
+import {randomUUID} from 'node:crypto';
 import {getAutomationCompatibility} from '../bot/AutomationCompatibility';
 import {resolveGlobalParameters} from '@/common/GlobalParameterConfig';
 import {CardModel} from '../../common/models/CardModel';
@@ -17,6 +18,9 @@ import {TileType} from '../../common/TileType';
 import {Phase} from '../../common/Phase';
 import {Resource} from '../../common/Resource';
 import {ClaimedMilestoneModel, MilestoneScore} from '../../common/models/ClaimedMilestoneModel';
+import {CONGLOMERATES_MILESTONE_NUMBERS} from '../../common/ma/ConglomeratesMilestoneNumbers';
+import {publicConditionalDiscounts} from './publicConditionalDiscounts';
+import {BaseMilestone} from '../milestones/IMilestone';
 import {FundedAwardModel, AwardScore} from '../../common/models/FundedAwardModel';
 import {getTurmoilModel} from '../models/TurmoilModel';
 import {getConglomeratesModel} from '../models/ConglomeratesModel';
@@ -34,14 +38,28 @@ import {PlayerId, SpaceId} from '../../common/Types';
 import {cardsToModel, coloniesToModel} from './ModelUtils';
 import {runId} from '../utils/server-ids';
 import {toName} from '../../common/utils/utils';
-import {aiHandOf} from '../aiFeedback/aiHandView';
 import {MAX_AWARDS, MAX_MILESTONES} from '../../common/constants';
 import {getOceanPlacementContext} from './OceanPlacementContext';
+import {projectFinalGreenery} from './finalGreeneryPresentation';
 import {AstraMechanica} from '../cards/promo/AstraMechanica';
 import {promptIdForModel} from './promptId';
+import {aiHandOf} from '../aiFeedback/aiHandView';
 
 export class Server {
   private static readonly FANMADE_CATALOG_REVISION = 'fanmade:rebalanced-v1';
+  private static readonly inputIds = new WeakMap<PlayerInput, string>();
+
+  private static getWaitingForId(input: PlayerInput | undefined): string | undefined {
+    if (input === undefined) {
+      return undefined;
+    }
+    let id = this.inputIds.get(input);
+    if (id === undefined) {
+      id = randomUUID();
+      this.inputIds.set(input, id);
+    }
+    return id;
+  }
 
   public static getSimpleGameModel(game: IGame, options?: {
     botPlayers?: Array<PlayerId>;
@@ -59,7 +77,6 @@ export class Server {
         color: player.color,
         id: player.id,
         isBotControlled: this.isBotControlled(game, player.id),
-        aiLevel: player.aiLevel,
         isSurrendered: game.surrenderedPlayerIds.has(player.id),
         name: player.name,
       })),
@@ -87,6 +104,8 @@ export class Server {
   }
 
   public static getGameModel(game: IGame): GameModel {
+    const turmoil = getTurmoilModel(game);
+
     return {
       automationCompatibility: getAutomationCompatibility(game.gameOptions),
       fanmadeCatalogRevision: Server.FANMADE_CATALOG_REVISION,
@@ -123,7 +142,7 @@ export class Server {
       step: game.lastSaveId,
       temperature: game.getTemperature(),
       tags: game.tags,
-      turmoil: getTurmoilModel(game),
+      turmoil: turmoil,
       undoCount: game.undoCount,
       venusScaleLevel: game.getVenusScaleLevel(),
       venusPhase2: this.getVenusPhase2Model(game),
@@ -132,6 +151,7 @@ export class Server {
 
   public static getPlayerModel(player: IPlayer): PlayerViewModel {
     const game = player.game;
+    const waitingFor = player.getWaitingFor();
 
     const players: Array<PublicPlayerModel> = game.playersInGenerationOrder.map((p) => this.getPlayer(p, p.color === player.color, {}, player));
 
@@ -159,7 +179,8 @@ export class Server {
       pickedCorporationCard: player.pickedCorporationCard ? cardsToModel(player, [player.pickedCorporationCard]) : [],
       preludeCardsInHand: cardsToModel(player, player.preludeCardsInHand),
       thisPlayer: thisPlayer,
-      waitingFor: player.aiLevel !== undefined ? undefined : this.getWaitingFor(player, player.getWaitingFor()),
+      waitingFor: player.aiLevel !== undefined ? undefined : this.getWaitingFor(player, waitingFor),
+      waitingForId: player.aiLevel !== undefined ? undefined : this.getWaitingForId(waitingFor),
       players: players,
       autopass: player.autopass,
     };
@@ -219,6 +240,7 @@ export class Server {
         playerName: claimed?.player.name,
         color: claimed?.player.color,
         name: milestone.name,
+        threshold: CONGLOMERATES_MILESTONE_NUMBERS[milestone.name] ?? (milestone instanceof BaseMilestone ? milestone.threshold : undefined),
         scores,
         teamScores,
       });
@@ -265,9 +287,8 @@ export class Server {
     if (waitingFor === undefined) {
       return undefined;
     }
-    // Only the top-level input's warning reaches the client. Warnings on inputs
-    // nested in OrOptions, AndOptions, or SelectInitialCards are not sent.
-    const model = waitingFor.toModel(player);
+    // TODO(kberg): in theory this should be in all the other toModel calls.
+    const model = projectFinalGreenery(player, waitingFor, waitingFor.toModel(player));
     model.warning = waitingFor.warning;
     if (waitingFor.annotation !== undefined) {
       model.annotation = waitingFor.annotation;
@@ -294,6 +315,7 @@ export class Server {
       availableBlueCardActionCount: player.getPlayableActionCards().length,
       cardCost: player.cardCost,
       cardDiscount: player.colonies.cardDiscount,
+      conditionalDiscounts: publicConditionalDiscounts(player),
       cardsInHandNbr: player.cardsInHand.length,
       citiesCount: game.board.getCities(player).length + VenusPhase2Expansion.getCitiesCount(game, player),
       coloniesCount: player.getColoniesCount(),
@@ -305,7 +327,7 @@ export class Server {
       heat: player.heat,
       heatProduction: player.production.heat,
       id: game.phase === Phase.END ? player.id : undefined,
-      influence: game.turmoil?.getInfluence(player) ?? 0,
+      influence: game.turmoil === undefined ? 0 : game.turmoil.getInfluence(player),
       isActive: player.id === game.activePlayer.id,
       isBotControlled: this.isBotControlled(game, player.id),
       isSurrendered: game.surrenderedPlayerIds.has(player.id),
@@ -313,7 +335,6 @@ export class Server {
       megacredits: player.megaCredits,
       megacreditProduction: player.production.megacredits,
       name: player.name,
-      aiLevel: player.aiLevel,
       needsToDraft: player.needsToDraft,
       needsToResearch: !game.hasResearched(player),
       noTagsCount: player.tags.numberOfCardsWithNoTags(),
@@ -458,7 +479,7 @@ export class Server {
     return undefined;
   }
 
-  private static getSpaces(
+  public static getSpaces(
     board: Board,
     gagarin: ReadonlyArray<SpaceId> = [],
     cathedrals: ReadonlyArray<SpaceId> = [],
@@ -474,16 +495,12 @@ export class Server {
       }
 
       const model: SpaceModel = {
-        id: space.id,
         x: space.x,
         y: space.y,
+        id: space.id,
         spaceType: space.spaceType,
         bonus: space.bonus,
       };
-      const a9 = board.A9[space.id];
-      if (a9 !== undefined) {
-        model.a9 = a9;
-      }
       const tileType = space.tile?.tileType;
       if (tileType !== undefined) {
         model.tileType = tileType;
@@ -579,8 +596,8 @@ export class Server {
       removeNegativeGlobalEvents: options.removeNegativeGlobalEventsOption,
       showOtherPlayersVP: options.showOtherPlayersVP,
       privateHands: options.privateHands !== false,
-      showTimers: options.showTimers,
       aiAnalysis: options.aiAnalysis,
+      showTimers: options.showTimers,
       shuffleMapOption: options.shuffleMapOption,
       solarPhaseOption: options.solarPhaseOption,
       soloTR: options.soloTR,

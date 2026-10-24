@@ -1,5 +1,5 @@
 <template>
-  <div :class="'topmost-'+screen">
+  <div :class="['topmost-'+screen, {'wrybit-ui': wrybitMode && wrybitReady}]">
     <section>
       <dialog id="alert-dialog" class="alert-dialog">
         <form method="dialog">
@@ -11,43 +11,48 @@
         </form>
       </dialog>
     </section>
+    <WrybitBoundary :enabled="wrybitMode" :screen="screen" @classic="useClassicInterface" @active="wrybitReady = $event" @views="wrybitViews = $event" />
     <div class="main-container">
-      <StartScreen v-if="screen === 'start-screen'"/>
+      <component :is="wrybitMode && wrybitReady && wrybitViews.startScreen ? wrybitViews.startScreen : 'StartScreen'" v-if="screen === 'start-screen'"/>
       <CreateGameForm
         v-else-if="screen === 'create-game-form'"
       />
-      <LoadGameForm v-else-if="screen === 'load'"/>
+      <component :is="wrybitMode && wrybitReady && wrybitViews.loadGame ? wrybitViews.loadGame : 'LoadGameForm'" v-else-if="screen === 'load'"/>
       <GameHome
         v-else-if="screen === 'game-home' && game !== undefined"
         :game="game"
       />
-      <PlayerHome
+      <component :is="wrybitMode && wrybitReady && wrybitViews.playerHome ? wrybitViews.playerHome : 'PlayerHome'"
         v-else-if="screen === 'player-home' && playerView !== undefined"
         :player-view="playerView"
         :key="playerkey"
       />
-      <SpectatorHome
+      <component :is="wrybitMode && wrybitReady && wrybitViews.spectatorHome ? wrybitViews.spectatorHome : 'SpectatorHome'"
         v-else-if="screen === 'spectator-home' && spectator !== undefined"
         :spectator="spectator"
         :key="'spectator-' + playerkey"
       />
-      <GameEnd
+      <component
+        :is="wrybitMode && wrybitReady && wrybitViews.gameEnd ? wrybitViews.gameEnd : 'GameEnd'"
         v-else-if="screen === 'the-end' && participant !== undefined"
         :participant="participant"
       />
       <ReplayHome v-else-if="screen === 'replay'"/>
-      <GamesOverview
-        v-else-if="screen === 'games-overview'"
-      />
-      <CardList v-else-if="screen === 'cards'"/>
+      <component :is="wrybitMode && wrybitReady && wrybitViews.gamesOverview ? wrybitViews.gamesOverview : 'GamesOverview'" v-else-if="screen === 'games-overview'"/>
+      <component v-else-if="screen === 'cards'" :is="wrybitMode && wrybitReady && wrybitViews.cards ? wrybitViews.cards : 'CardList'"/>
       <CardMaker v-else-if="screen === 'card-maker'"/>
       <CardLibrary v-else-if="screen === 'card-library'"/>
       <MapEditor v-else-if="screen === 'map-editor'"/>
       <MapLibrary v-else-if="screen === 'map-library'"/>
-      <AdminHome v-else-if="screen === 'admin'"/>
-      <LoginHome v-else-if="screen === 'login-home'"/>
-      <Help v-else-if="screen === 'help'"/>
+      <component :is="wrybitMode && wrybitReady && wrybitViews.adminHome ? wrybitViews.adminHome : 'AdminHome'" v-else-if="screen === 'admin'"/>
+      <component :is="wrybitMode && wrybitReady && wrybitViews.loginHome ? wrybitViews.loginHome : 'LoginHome'" v-else-if="screen === 'login-home'"/>
+      <component :is="wrybitMode && wrybitReady && wrybitViews.help ? wrybitViews.help : 'Help'" v-else-if="screen === 'help'"/>
+      <component :is="wrybitViews.stats ?? 'StartScreen'" v-else-if="screen === 'stats'"/>
     </div>
+    <InputPortal v-if="screen === 'player-home' && playerView !== undefined && playerView.game.phase !== 'end'"
+      :target="inputHosts.target.value">
+      <WaitingFor :key="inputRevision" :player-view="playerView" :waitingfor="playerView.waitingFor" />
+    </InputPortal>
     <div class="notice" v-i18n>
       Not affiliated with FryxGames, Asmodee Digital or Steam in any way.
     </div>
@@ -55,7 +60,8 @@
 </template>
 
 <script lang="ts">
-import {defineAsyncComponent, defineComponent} from 'vue';
+import {computed, defineAsyncComponent, defineComponent, provide, ref, shallowRef} from 'vue';
+import {CREATE_CONTROLS, CREATE_PRESENTATION} from '@/client/wrybit/create/presentation';
 import * as constants from '@/common/constants';
 
 const AdminHome = defineAsyncComponent(() => import(/* webpackChunkName: "admin" */ '@/client/components/admin/AdminHome.vue'));
@@ -83,7 +89,15 @@ import {SpectatorModel} from '@/common/models/SpectatorModel';
 import {isPlayerId, isSpectatorId} from '@/common/Types';
 import {hasShowModal, showModal, windowHasHTMLDialogElement} from './HTMLDialogElementCompatibility';
 import {getLoadErrorMessage} from '@/client/utils/loadErrorMessage';
-import {getPreferences} from '@/client/utils/PreferencesManager';
+import {getPreferences, PreferencesManager} from '@/client/utils/PreferencesManager';
+import WrybitBoundary from '@/client/wrybit/shell/WrybitBoundary.vue';
+import type {WrybitViews} from '@/client/wrybit/shell/presentationViews';
+import {inputContext} from '@/client/wrybit/shell/inputContext';
+import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
+import WaitingFor from '@/client/components/WaitingFor.vue';
+import {createInputHosts, INPUT_HOSTS} from '@/client/wrybit/shell/inputHosts';
+import {INPUT_PRESENTATIONS} from '@/client/wrybit/inputs/presentation';
+import {createInputBridge, INPUT_BRIDGE} from '@/client/wrybit/shell/inputBridge';
 
 import dialogPolyfill from 'dialog-polyfill';
 import {setDocumentTitle} from '../utils/documentTitle';
@@ -105,6 +119,7 @@ type Screen = 'admin' |
             'replay' |
             'spectator-home' |
             'start-screen' |
+            'stats' |
             'the-end';
 export type MainAppData = {
     screen: Screen;
@@ -119,6 +134,8 @@ export type MainAppData = {
     // playerKey might seem to serve no function, but it is an arbitrary value used
     // to force a rerender / refresh.
     playerkey: number;
+    inputRevision: number;
+    refreshRevision: number;
     isServerSideRequestInProgress: boolean;
     componentsVisibility: {[x: string]: boolean};
     game: SimpleGameModel | undefined;
@@ -157,10 +174,23 @@ class AppFetchError extends Error {
 
 export default defineComponent({
   name: 'App',
+  setup() {
+    const inputHosts = createInputHosts();
+    provide(INPUT_HOSTS, inputHosts);
+    provide(INPUT_BRIDGE, createInputBridge());
+    const wrybitReady = ref(false);
+    const wrybitViews = shallowRef<WrybitViews>({});
+    provide(INPUT_PRESENTATIONS, computed(() => getPreferences().experimental_layout && wrybitReady.value ? wrybitViews.value.inputs : undefined));
+    provide(CREATE_PRESENTATION, computed(() => getPreferences().experimental_layout && wrybitReady.value ? wrybitViews.value.create : undefined));
+    provide(CREATE_CONTROLS, computed(() => getPreferences().experimental_layout && wrybitReady.value ? wrybitViews.value.createControls : undefined));
+    return {inputHosts, wrybitReady, wrybitViews};
+  },
   data(): MainAppData {
     return {
       screen: 'empty',
       playerkey: 0,
+      inputRevision: 0,
+      refreshRevision: 0,
       isServerSideRequestInProgress: false,
       componentsVisibility: {
         'milestones': true,
@@ -180,6 +210,9 @@ export default defineComponent({
     };
   },
   components: {
+    WrybitBoundary,
+    InputPortal,
+    WaitingFor,
     StartScreen,
     MapEditor,
     MapLibrary,
@@ -199,6 +232,9 @@ export default defineComponent({
     LoginHome,
   },
   computed: {
+    wrybitMode(): boolean {
+      return getPreferences().experimental_layout;
+    },
     participant(): ViewModel | undefined {
       return this.playerView ?? this.spectator;
     },
@@ -216,6 +252,23 @@ export default defineComponent({
     },
   },
   methods: {
+    applyPlayerView(next: PlayerViewModel | undefined, acceptedInput = false): void {
+      if (acceptedInput) {
+        this.refreshRevision++;
+      }
+      const previousContext = inputContext(this.playerView);
+      if (!this.wrybitMode || acceptedInput || previousContext === undefined || previousContext !== inputContext(next)) {
+        this.inputRevision++;
+      }
+      this.playerView = next;
+      this.playerkey++;
+      if (next !== undefined) {
+        setTranslationContext(next);
+      }
+    },
+    useClassicInterface(): void {
+      PreferencesManager.INSTANCE.set('experimental_layout', false);
+    },
     showAlert(title: string, message: string, cb: () => void = () => {}): void {
       const dialogElement: HTMLElement | null = document.getElementById('alert-dialog');
       const buttonElement: HTMLElement | null = document.getElementById('alert-dialog-button');
@@ -247,6 +300,7 @@ export default defineComponent({
     update(path: typeof paths.PLAYER | typeof paths.SPECTATOR): void {
       const currentPathname = getLastPathSegment();
       const app = this as unknown as MainAppData;
+      const revision = ++app.refreshRevision;
 
       const url = 'api/' + path + window.location.search.replace('&noredirect', '');
 
@@ -258,13 +312,15 @@ export default defineComponent({
           return resp.json();
         })
         .then((model: ViewModel) => {
+          if (revision !== app.refreshRevision || (path === paths.PLAYER && app.isServerSideRequestInProgress)) {
+            return;
+          }
           if (path === paths.PLAYER) {
-            app.playerView = model as PlayerViewModel;
-            setTranslationContext(app.playerView);
+            this.applyPlayerView(model as PlayerViewModel);
           } else if (path === paths.SPECTATOR) {
             app.spectator = model as SpectatorModel;
+            app.playerkey++;
           }
-          app.playerkey++;
           if (
             model.game.phase === 'end' &&
               window.location.search.includes('&noredirect') === false
@@ -293,6 +349,9 @@ export default defineComponent({
           }
         })
         .catch((err) => {
+          if (revision !== app.refreshRevision || (path === paths.PLAYER && app.isServerSideRequestInProgress)) {
+            return;
+          }
           alert(getLoadErrorMessage(path, err instanceof AppFetchError ? err.status : 0));
           console.error(err);
         });
@@ -363,6 +422,12 @@ export default defineComponent({
       app.screen = 'map-library';
     } else if (currentPathname === paths.HELP) {
       app.screen = 'help';
+    } else if (currentPathname === paths.STATS) {
+      if (getPreferences().experimental_layout) {
+        app.screen = 'stats';
+      } else {
+        window.location.replace('/elo/');
+      }
     } else if (currentPathname === paths.SPECTATOR) {
       app.updateSpectator();
     } else if (currentPathname === paths.REPLAY) {

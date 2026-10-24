@@ -1,0 +1,128 @@
+// Mars tone on its own: also the frame of the Mars card in the player view (home_cards.less)
+@or-tab-tone-mars: #b86a34;
+
+// Tone of tabs: per input type (inputTone.ts, WaitingForTabs.vue) and for
+// pass/end in the action menu (tabButtonTone in orOptionsShortLabels.ts, OrOptions.vue):
+// colored stripe on top, badge and box border. Name = class suffix, value = color.
+@or-tab-tones:
+  prelude #e76aae, // pink like prelude cards
+  attack #d9443a, // attack on other players
+  cards #e8892a, // select a card
+  mars @or-tab-tone-mars, // space on Mars
+  ocean #2f86d6, // space for an ocean (blue like the ocean tiles)
+  city #c3c8d2, // space for a city (light gray like the city tiles)
+  greenery #3f9d45, // space for a greenery (green like the greenery tiles)
+  special #a27757, // space for a special tile of a card (brown like the special tile hexagon)
+  resources #e2b52c, // resources / amount (M€ yellow)
+  player #9b6bd8, // select a player
+  colonies #2fb0a8, // colonies / Turmoil
+  moon #7a7e8c, // board tab: the Moon (grey like the moon surface)
+  paths #e2b52c, // board tab: planetary tracks (Pathfinders)
+  delta #f4f5f8, // board tab: Delta Project (almost white)
+  success #2e9e4f, // action menu: pass (like the green button)
+  heat #e0701f, // action menu: raise temperature (heat)
+  danger #c0392b, // action menu: end round (like the red button)
+  gold #c99a1a, // action menu: milestone, award, standard projects, sell patents (dark yellow)
+  milestones @section-caption-gold; // log box: milestones & awards (gold like their section captions)
+
+// Dark base tone the color is mixed with for the box and the active tab
+@or-tab-tone-base: #16171d;
+
+// Surface of active tab and box: dark, but recognizably tinted in the color; translucent (frosted_surface.less).
+// Call the mixin, then @or-tab-tone-panel is in scope (also used by home_cards.less)
+.or-tab-tone-panel(@color) {
+  @or-tab-tone-panel: fade(mix(@color, @or-tab-tone-base, 22%), @frosted-surface-opacity);
+}
+
+each(@or-tab-tones, {
+  @tone: extract(@value, 1);
+  @color: extract(@value, 2);
+  .or-tab-tone-panel(@color);
+  @panel: @or-tab-tone-panel;
+
+  // Inactive: subtle color veil so the input type is recognizable even when not selected
+  .or-tab--tone-@{tone} {
+    background: fade(@color, 14%);
+    border-color: fade(@color, 35%);
+  }
+
+  .or-tab--tone-@{tone}:hover {
+    background: fade(@color, 24%);
+  }
+
+  .or-tab--tone-@{tone}.or-tab--active,
+  .or-tab--tone-@{tone}.or-tab--active:hover {
+    background: @panel;
+    border-color: @color;
+    box-shadow: inset 0 @or-tab-accent-width 0 @color;
+  }
+
+  .or-tab--tone-@{tone}.or-tab--active .or-tab-count {
+    background: @color;
+  }
+
+  .or-tab-panel--tone-@{tone} {
+    --wrybit-or-tab-panel-border: @color;
+    background: @panel;
+  }
+
+  // Banner above the enlarged Mars/Moon (placement_banner.less): same tone as the tab of the space selection
+  .placement-banner--tone-@{tone} {
+    --wrybit-placement-banner-tone: @color;
+    background: @panel;
+  }
+
+  // Button centered in the box (place tile, raise temperature, pass/end) in the tab color;
+  // dark text on light tones (city, resources), otherwise white. !important as in button_tones.less
+  .or-tab-panel--tone-@{tone} .select-space-zoom-button,
+  .or-tab-panel--tone-@{tone}.or-tab-panel--centered-button .or-tab-footer .btn,
+  .or-tab-panel--tone-@{tone}.or-tab-panel--end .btn {
+    .button-tone(@color, lighten(@color, 8%));
+    color: contrast(@color, @or-tab-tone-base, #fff) !important;
+  }
+});
+
+// In the red box (end round) the red warning would be barely readable – white there
+.or-tab-panel--tone-danger .card-warning {
+  color: #fff;
+}
+
+// Icon tabs pass/end (or-tab--icon): stronger than the other tabs so they are found immediately.
+// Icon in a bright color with glow, surface and border clearly tinted. Name = tone, value = glow color.
+@or-tab-icon-tones:
+  success #3dff6e, // vivid green
+  danger #ff4a1c; // fiery red
+
+each(@or-tab-icon-tones, {
+  @tone: extract(@value, 1);
+  @glow: extract(@value, 2);
+
+  .or-tab--icon.or-tab--tone-@{tone}:not(.or-tab--active) {
+    color: @glow;
+    background: fade(@glow, 16%);
+    border-color: fade(@glow, 65%);
+
+    .or-tab-icon {
+      filter: drop-shadow(0 0 4px fade(@glow, 70%));
+    }
+  }
+
+  .or-tab--icon.or-tab--tone-@{tone}:not(.or-tab--active):hover {
+    background: fade(@glow, 28%);
+    border-color: @glow;
+  }
+
+  // Active: icon stays bright on the tinted surface of the active tab
+  .or-tab--icon.or-tab--tone-@{tone}.or-tab--active {
+    color: @glow;
+
+    .or-tab-icon {
+      filter: drop-shadow(0 0 4px fade(@glow, 70%));
+    }
+  }
+});
+
+// Delta: the almost white tone mixed stronger – otherwise the inactive tab blurs into the grey of the Moon
+.or-tab--tone-delta:not(.or-tab--active) {
+  background: fade(#f4f5f8, 30%);
+}

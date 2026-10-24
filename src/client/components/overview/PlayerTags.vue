@@ -8,7 +8,7 @@
             <TagCount tag="tr" :count="player.terraformRating" :size="'big'" :type="'main'"/>
             <TagCount v-if="player.handicap !== undefined" :tag="'handicap'" :count="player.handicap" :size="'big'" :type="'main'" :showWhenZero="true"/>
             <div class="tag-and-discount">
-              <HandDiscount v-if="allDiscount || conditionalDiscounts.length > 0" :amount="allDiscount" :conditional="conditionalDiscounts" :data-test="'discount-all'"/>
+              <PlayerTagDiscount v-if="all.discount" :amount="all.discount" :color="player.color"  :data-test="'discount-all'"/>
               <TagCount tag="cards" :count="cardsInHandCount" :size="'big'" :type="'main'"/>
             </div>
         </div>
@@ -20,6 +20,7 @@
               </div>
             </template>
             <div v-else-if="tagDetail.name === 'separator'" class="tag-separator"></div>
+            <template v-else-if="tagDetail.name === 'all'"></template>
             <div v-else class="tag-and-discount">
               <PlayerTagDiscount v-if="tagDetail.discount > 0" :color="player.color" :amount="tagDetail.discount" :data-test="'discount-' + tagDetail.name"/>
               <PointsPerTag :points="tagDetail"/>
@@ -36,104 +37,12 @@
 import {defineComponent} from 'vue';
 import TagCount from '@/client/components/TagCount.vue';
 import {ViewModel, PublicPlayerModel} from '@/common/models/PlayerModel';
-import {GameModel} from '@/common/models/GameModel';
-import {Tag} from '@/common/cards/Tag';
 import {SpecialTags} from '@/client/cards/SpecialTags';
 import PlayerTagDiscount from '@/client/components/overview/PlayerTagDiscount.vue';
 import PointsPerTag from '@/client/components/overview/PointsPerTag.vue';
 import PlayerTagSubstitution from '@/client/components/overview/PlayerTagSubstitution.vue';
-import HandDiscount from '@/client/components/overview/HandDiscount.vue';
-import {DiscountSource, getConditionalDiscounts} from '@/client/components/overview/discounts';
-import {PartyName} from '@/common/turmoil/PartyName';
-import {getCard} from '@/client/cards/ClientCardManifest';
 import {vueRoot} from '@/client/components/vueRoot';
-import {CardName} from '@/common/cards/CardName';
-
-type InterfaceTagsType = Tag | SpecialTags | 'separator';
-type TagDetail = {
-  name: InterfaceTagsType;
-  discount: number;
-  points: number;
-  halfPoints: number;
-  count: number;
-  asterisk: boolean;
-  substitution?: Tag;
-};
-
-const ORDER: Array<InterfaceTagsType> = [
-  Tag.BUILDING,
-  Tag.SPACE,
-  Tag.SCIENCE,
-  Tag.POWER,
-  Tag.EARTH,
-  Tag.JOVIAN,
-  Tag.VENUS,
-  Tag.PLANT,
-  Tag.MICROBE,
-  Tag.ANIMAL,
-  Tag.CITY,
-  Tag.MOON,
-  Tag.MARS,
-  Tag.CRIME,
-  Tag.GALACTIC,
-  'separator',
-  Tag.EVENT,
-  SpecialTags.NONE,
-  Tag.WILD,
-  SpecialTags.INFLUENCE,
-  SpecialTags.CITY_COUNT,
-  SpecialTags.COLONY_COUNT,
-  SpecialTags.UNDERGROUND_TOKEN_COUNT,
-  SpecialTags.CORRUPTION,
-  SpecialTags.NEGATIVE_VP,
-];
-
-const isInGame = (tag: InterfaceTagsType, game: GameModel): boolean => {
-  const gameOptions = game.gameOptions;
-  if (game.turmoil === undefined && tag === SpecialTags.INFLUENCE) {
-    return false;
-  }
-  switch (tag) {
-  case SpecialTags.COLONY_COUNT:
-    return gameOptions.expansions.colonies !== false;
-  case SpecialTags.INFLUENCE:
-    return game.turmoil !== undefined;
-  case SpecialTags.UNDERGROUND_TOKEN_COUNT:
-  case SpecialTags.CORRUPTION:
-  case SpecialTags.NEGATIVE_VP:
-    return gameOptions.expansions.underworld !== false;
-  case Tag.VENUS:
-  case Tag.MOON:
-  case Tag.MARS:
-  case Tag.CRIME:
-  case Tag.GALACTIC:
-    return game.tags.includes(tag);
-  }
-  return true;
-};
-
-const getTagCount = (tagName: InterfaceTagsType, player: PublicPlayerModel): number => {
-  switch (tagName) {
-  case SpecialTags.COLONY_COUNT:
-    return player.coloniesCount || 0;
-  case SpecialTags.INFLUENCE:
-    return player.influence || 0;
-  case SpecialTags.CITY_COUNT:
-    return player.citiesCount || 0;
-  case SpecialTags.NONE:
-    return player.noTagsCount || 0;
-  case SpecialTags.UNDERGROUND_TOKEN_COUNT:
-    return player.underworldData.tokens.length;
-  case SpecialTags.CORRUPTION:
-    return player.underworldData.corruption;
-  case SpecialTags.NEGATIVE_VP:
-    return player.victoryPointsBreakdown.negativeVP;
-  case 'separator':
-    return -1;
-  default:
-    return player.tags[tagName];
-  }
-};
+import {buildTagDetails, TagDetails, TagDetail, isTagInGame, isVictoryPointCountHidden} from './playerTagDetails';
 
 export default defineComponent({
   name: 'PlayerTags',
@@ -159,98 +68,22 @@ export default defineComponent({
       default: true,
     },
   },
+
   components: {
     TagCount,
     PlayerTagDiscount,
     PointsPerTag,
     PlayerTagSubstitution,
-    HandDiscount,
   },
   computed: {
-    /** The discount that applies to every card, regardless of its tags. */
-    allDiscount(): number {
-      let discount = this.player.cardDiscount ?? 0;
-      for (const card of this.player.tableau) {
-        for (const d of card.discount ?? []) {
-          if (d.tag === undefined) {
-            discount += d.amount;
-          }
-        }
-      }
-      return discount;
+    tagDetails(): TagDetails {
+      return buildTagDetails(this.player, this.playerView);
+    },
+    all(): TagDetail {
+      return this.tagDetails.all;
     },
     tagsInOrder(): Array<TagDetail> {
-      type DetailsByTag = Record<InterfaceTagsType, TagDetail>;
-
-      // Start by giving every entry a default value
-      const interim = ORDER.map((key) => [
-        key,
-        {name: key, discount: 0, points: 0, count: getTagCount(key, this.player), halfPoints: 0, asterisk: false},
-      ]);
-      const details: DetailsByTag = Object.fromEntries(interim);
-
-      // For each card
-      for (const card of this.player.tableau) {
-        // Calculate discount
-        for (const discount of card.discount ?? []) {
-          if (discount.tag !== undefined) {
-            details[discount.tag].discount += discount.amount;
-          }
-        }
-
-        // See https://github.com/terraforming-mars/terraforming-mars/issues/5236
-        if (card.name === CardName.CULTIVATION_OF_VENUS || card.name === CardName.VENERA_BASE) {
-          details[Tag.VENUS].halfPoints++;
-        } else {
-          const vps = getCard(card.name)?.victoryPoints;
-          if (vps !== undefined && typeof(vps) !== 'number' && vps !== 'special') {
-            // Special case Commercial District etc.
-            const asterisk = vps.nextToThis !== undefined;
-            if (vps.tag !== undefined) {
-              if (!asterisk) {
-                details[vps.tag].points += ((vps.each ?? 1) / (vps.per ?? 1));
-              } else {
-                details[vps.tag].asterisk = true;
-              }
-            }
-            if (vps.cities !== undefined) {
-              if (!asterisk) {
-                details['city-count'].points += ((vps.each ?? 1) / (vps.per ?? 1));
-              } else {
-                details['city-count'].asterisk = true;
-              }
-            }
-          }
-        }
-      }
-
-      // Other modifiers
-      if (this.playerView.game.turmoil?.ruling === PartyName.UNITY &&
-        this.playerView.game.turmoil.politicalAgendas?.unity?.policyId === 'up04') {
-        details[Tag.SPACE].discount += 2;
-      }
-
-      // Tag substitutions
-      for (const card of this.player.tableau) {
-        if (card.name === CardName.EARTH_EMBASSY) {
-          details[Tag.EARTH].substitution = Tag.MOON;
-        }
-        if (card.name === CardName.HABITAT_MARTE) {
-          details[Tag.SCIENCE].substitution = Tag.MARS;
-        }
-      }
-
-      // Put them in order.
-      const tagsInOrder = [];
-      for (const tag of ORDER) {
-        const entry = details[tag];
-        tagsInOrder.push(entry);
-      }
-
-      return tagsInOrder;
-    },
-    conditionalDiscounts(): Array<DiscountSource> {
-      return getConditionalDiscounts(this.player);
+      return this.tagDetails.tagsInOrder;
     },
     isThisPlayer(): boolean {
       return this.player.color === this.playerView.thisPlayer?.color;
@@ -259,7 +92,7 @@ export default defineComponent({
       return this.player.cardsInHandNbr ?? 0;
     },
     hideVpCount(): boolean {
-      return !this.playerView.game.gameOptions.showOtherPlayersVP && !this.isThisPlayer;
+      return isVictoryPointCountHidden(this.player, this.playerView);
     },
     isEscapeVelocityOn(): boolean {
       return this.playerView.game.gameOptions.escapeVelocity !== undefined;
@@ -274,7 +107,7 @@ export default defineComponent({
       // In tests this one call to vueRoot uses `?.` because for some reason it this doesn't pass tests.
       const concise = vueRoot(this).componentsVisibility?.['tags_concise'] ?? this.conciseTagsViewDefaultValue;
       return this.tagsInOrder.filter((entry) => {
-        if (!isInGame(entry.name, this.playerView.game)) {
+        if (!isTagInGame(entry.name, this.playerView.game)) {
           return false;
         }
 

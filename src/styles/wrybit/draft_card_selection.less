@@ -1,0 +1,55 @@
+.wrybit-draft-card-styles() {
+  @selection-tab-offset: 30px;
+  @selection-tab-height: 21px;
+  @current-pick-content-filter: grayscale(1) brightness(0.75);
+
+  .cardbox--current-pick,
+  .cardbox--current-pick-replaced {
+    .card-unavailable,
+    .card-unavailable:hover {
+      filter: none;
+      opacity: 1;
+      cursor: pointer;
+    }
+
+    .card-unavailable * {
+      cursor: pointer;
+    }
+
+    .card-unavailable > :not(.current-pick-tab) {
+      filter: @current-pick-content-filter;
+    }
+  }
+
+  .cardbox--current-pick > .filterDiv {
+    .selection-highlight();
+  }
+
+  .cardbox--current-pick-replaced > .filterDiv {
+    opacity: 0.55;
+  }
+
+  .current-pick-tab {
+    position: absolute;
+    top: -@selection-tab-offset;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 6;
+    height: @selection-tab-height;
+    padding: 0 10px;
+    border-radius: 4px 4px 0 0;
+    background: @selection-color;
+    color: #fff;
+    font: bold 13px/@selection-tab-height Ubuntu, sans-serif;
+    white-space: nowrap;
+
+    .cardbox--current-pick-replaced & {
+      background: #555;
+    }
+  }
+
+  .cardbox--unaffordable > .wrybit-card {
+    filter: grayscale(1);
+    opacity: 0.5;
+  }
+}

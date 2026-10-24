@@ -1,5 +1,6 @@
 <template>
-  <div class='wf-options'>
+  <component v-if="orPresentation !== undefined" :is="orPresentation" :binding="presentationBinding" v-bind="$attrs"/>
+  <div v-else class='wf-options' v-bind="$attrs">
     <label v-if="showtitle"><div>{{ $t(playerinput.title) }}</div></label>
     <label v-if="playerinput.warning !== undefined" class="card-warning"><div>({{ $t(playerinput.warning) }})</div></label>
     <div v-for="(option, idx) in displayedOptions"
@@ -7,30 +8,37 @@
          class="wf-option"
          :data-input-annotation="option.annotation">
       <label class="form-radio" ref="optionLabels">
-        <input v-model="selectedOption" type="radio" :name="radioElementName" :value="option" >
+        <input v-model="selectedOption" type="radio" :name="radioElementName" :value="option" @change="selectOption(idx)" >
         <i class="form-icon" ></i>
         <span>{{ $t(option.title) }}</span>
       </label>
       <div v-if="selectedIdx === idx" style="margin-left: 30px">
-        <PlayerInputFactory ref="inputfactory"
-                              :playerView="playerView"
-                              :playerinput="option"
-                              :onsave="playerFactorySaved(idx)"
-                              :showsave="showsave && showChildSaveButton(option)"
-                              :showtitle="false" />
+        <PresentationHost :hosts="childHost"/>
       </div>
     </div>
     <div v-if="showsave && selectedOption && !showChildSaveButton(selectedOption)">
       <div style="margin: 5px 30px 10px" class="wf-action">
-        <AppButton :title="$t(selectedOption.buttonLabel)" type="submit" size="normal" @click="saveData" />
+        <AppButton :title="$t(selectedOption.buttonLabel)" type="submit" size="normal" @click="saveData()" />
       </div>
     </div>
   </div>
+  <InputPortal :target="childHost.target.value">
+    <PlayerInputFactory v-if="selectedOption !== undefined" ref="inputfactory" :key="selectedIdx"
+      :playerView="playerView" :playerinput="selectedOption" :onsave="playerFactorySaved(selectedIdx)"
+      :presentationIntro="asTabs"
+      :showsave="showsave && showChildSaveButton(selectedOption)" :showtitle="false"/>
+  </InputPortal>
 </template>
 
 <script lang="ts">
 
-import {defineComponent} from 'vue';
+import {defineComponent, inject, provide, shallowRef} from 'vue';
+import {createInputHosts, INPUT_HOSTS} from '@/client/wrybit/shell/inputHosts';
+import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
+import PresentationHost from '@/client/wrybit/inputs/PresentationHost.vue';
+import {INPUT_DEPTH, INPUT_FOOTER, OrOptionsBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
+import {afterSave, useSaveSession, withSaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+import type {InputCollector, MaybePromise, SaveAttempt, SaveOutcome} from '@/client/wrybit/inputs/saveAttempt';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {isHTMLElement} from '@/client/utils/vueUtils';
 import {PlayerViewModel} from '@/common/models/PlayerModel';
@@ -39,16 +47,25 @@ import {getPreferences} from '@/client/utils/PreferencesManager';
 import {InputResponse, OrOptionsResponse} from '@/common/inputs/InputResponse';
 import {Message} from '@/common/logs/Message';
 import {SpaceId} from '@/common/Types';
+import type {InputChoice, InputChoiceEditor} from './inputChoice';
+import {partyCardDetails} from './turmoil/partyCardDetails';
 
 let unique = 0;
 type QuickGreeneryHandler = {tile: HTMLElement, handler: (event: Event) => void};
 
-function isDisplayed(option: PlayerInputModel): boolean {
-  return !(option.type === 'card' && option.showOnlyInLearnerMode !== false && !getPreferences().learner_mode);
-}
-
 export default defineComponent({
   name: 'OrOptions',
+  inheritAttrs: false,
+  setup() {
+    const asTabs = inject(INPUT_DEPTH, 1) === 1;
+    const footerHost = createInputHosts();
+    if (asTabs) {
+      provide(INPUT_FOOTER, footerHost.target);
+    }
+    return {inputHost: inject(INPUT_HOSTS, undefined)?.target, asTabs, footerHost,
+      childHost: createInputHosts(), orPresentation: useInputPresentation('or'), saveSession: useSaveSession(),
+      inputfactory: shallowRef<InputChoiceEditor>()};
+  },
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
@@ -71,9 +88,50 @@ export default defineComponent({
   },
   components: {
     AppButton,
+    InputPortal,
+    PresentationHost,
+  },
+  computed: {
+    displayedOptions(): Array<PlayerInputModel> {
+      return this.playerinput.options.filter((option) => {
+        return !(option.type === 'card' && option.showOnlyInLearnerMode !== false && !getPreferences().learner_mode);
+      });
+    },
+    originalIndices(): Array<number> {
+      return this.displayedOptions.map((option) => this.playerinput.options.indexOf(option));
+    },
+    presentationBinding(): OrOptionsBinding {
+      const turmoil = this.playerView.game.turmoil;
+      return {
+        asTabs: this.asTabs, playerView: this.playerView, playerinput: this.playerinput, showsave: this.showsave, showtitle: this.showtitle,
+        displayedOptions: this.displayedOptions, selectedOption: this.selectedOption, selectedIdx: this.selectedIdx,
+        selectedChoice: this.inputfactory?.getChoice(),
+        partyCards: turmoil === undefined ? [] : turmoil.parties.map((party) => partyCardDetails(turmoil, party, this.playerView.game.gameOptions.expansions.moreParties)),
+        radioElementName: this.radioElementName, childHost: this.childHost, footerHost: this.footerHost,
+        select: (option) => {
+          this.selectedOption = option;
+        }, selectChoice: this.selectChoice, chooseAndSave: this.chooseAndSave, showChildSaveButton: (option) => this.showChildSaveButton(option),
+        registerLabel: (index, element) => {
+          if (element === null) {
+            this.presentationLabels.delete(index);
+          } else {
+            this.presentationLabels.set(index, element);
+          }
+        },
+        save: () => this.saveData(),
+      };
+    },
   },
   data() {
-    const displayedOptions = this.playerinput.options.filter(isDisplayed);
+    const displayedOptions: Array<PlayerInputModel> = [];
+    const originalIndices: Array<number> = [];
+    this.playerinput.options.forEach((option, i) => {
+      if (option.type === 'card' && option.showOnlyInLearnerMode !== false && !getPreferences().learner_mode) {
+        return;
+      }
+      displayedOptions.push(option);
+      originalIndices.push(i);
+    });
     const initialIdx = this.playerinput.initialIdx ?? 0;
     // Special case: If the first recommended displayed option is SelectProjectCardToPlay, and none of them are enabled, skip it.
     let selectedIdx = initialIdx;
@@ -83,30 +141,32 @@ export default defineComponent({
       selectedIdx = initialIdx + 1;
     }
     return {
+      active: true,
       radioElementName: 'selectOption' + unique++,
       selectedOption: displayedOptions[selectedIdx],
+      selectedIdx,
       quickGreeneryHandlers: [] as Array<QuickGreeneryHandler>,
+      presentationLabels: new Map<number, HTMLElement>(),
     };
-  },
-  computed: {
-    displayedOptions(): Array<PlayerInputModel> {
-      return this.playerinput.options.filter(isDisplayed);
-    },
-    originalIndices(): Array<number> {
-      return this.displayedOptions.map((option) => this.playerinput.options.indexOf(option));
-    },
-    selectedIdx(): number {
-      return this.displayedOptions.indexOf(this.selectedOption);
-    },
   },
   watch: {
     displayedOptions(newOptions: Array<PlayerInputModel>) {
-      // Learner mode can hide the selected option.
-      if (!newOptions.includes(this.selectedOption)) {
+      // Keep the native option index across a refresh; fall back only when it disappeared.
+      if (this.selectedIdx >= newOptions.length) {
+        this.selectedIdx = 0;
         this.selectedOption = newOptions[0];
+      } else {
+        this.selectedOption = newOptions[this.selectedIdx];
       }
     },
-    selectedOption() {
+    inputHost() {
+      this.$nextTick(() => this.setupQuickGreeneryPlacement());
+    },
+    selectedOption(newOption: PlayerInputModel) {
+      const index = this.displayedOptions.indexOf(newOption);
+      if (index >= 0) {
+        this.selectedIdx = index;
+      }
       // Clicking the option can shift elements on the page.
       // This preserves the location of the option button the user just clicked by
       // tracking where it was on the screen, where it moved, and then repositioning it.
@@ -127,6 +187,30 @@ export default defineComponent({
     },
   },
   methods: {
+    selectOption(index: number) {
+      this.selectedIdx = index;
+    },
+    async chooseAndSave(option: PlayerInputModel) {
+      if (!this.active || !this.showsave || option.type !== 'option' || !this.displayedOptions.includes(option) || this.orPresentation === undefined) {
+        return;
+      }
+      this.selectedIdx = this.displayedOptions.indexOf(option);
+      this.selectedOption = option;
+      await this.$nextTick();
+      if (this.active && this.orPresentation !== undefined) {
+        await this.saveData();
+      }
+    },
+    async selectChoice(option: PlayerInputModel, choice: InputChoice) {
+      if (!this.displayedOptions.includes(option) || this.orPresentation === undefined) {
+        return;
+      }
+      this.selectedOption = option;
+      await this.$nextTick();
+      if (this.selectedOption === option && this.orPresentation !== undefined) {
+        this.inputfactory?.selectChoice(choice);
+      }
+    },
     clearQuickGreeneryHandlers() {
       for (const entry of this.quickGreeneryHandlers) {
         entry.tile.removeEventListener('click', entry.handler);
@@ -205,6 +289,9 @@ export default defineComponent({
     },
     getSelectedOptionLabelElement(): HTMLElement | undefined {
       const idx = this.selectedIdx;
+      if (this.orPresentation !== undefined) {
+        return this.presentationLabels.get(idx);
+      }
       const optionLabels = this.$refs.optionLabels as HTMLElement | HTMLElement[] | undefined;
       if (idx === -1 || !optionLabels) {
         return undefined;
@@ -228,12 +315,34 @@ export default defineComponent({
     showChildSaveButton(option: PlayerInputModel): boolean {
       return option.type === 'card' && !(option.max === 1 && option.min === 1);
     },
-    saveData() {
-      let ref = this.$refs['inputfactory'] as {saveData: () => void} | Array<{saveData: () => void}>;
-      if (Array.isArray(ref)) {
-        ref = ref[0];
-      }
-      ref.saveData();
+    saveData(attempt?: SaveAttempt, respond?: (response: OrOptionsResponse) => void): MaybePromise<SaveOutcome> {
+      const reply = respond ?? this.onsave;
+      return withSaveAttempt(this.saveSession, attempt, (current) => {
+        const reference = this.$refs.inputfactory as InputCollector | Array<InputCollector> | undefined;
+        const child = Array.isArray(reference) ? reference[0] : reference;
+        const selectedIndex = this.selectedOption === undefined ? -1 : this.displayedOptions.indexOf(this.selectedOption);
+        const index = this.originalIndices[selectedIndex >= 0 ? selectedIndex : this.selectedIdx];
+        if (index === undefined) {
+          return 'invalid';
+        }
+        if (this.selectedOption?.type === 'option') {
+          reply({type: 'or', index, response: {type: 'option'}});
+          return 'saved';
+        }
+        if (child === undefined) {
+          return 'invalid';
+        }
+        return afterSave(child.collectResponse(current), (collected) => {
+          if (collected.outcome !== 'saved') {
+            return collected.outcome;
+          }
+          if (!current.isCurrent()) {
+            return 'cancelled';
+          }
+          reply({type: 'or', index, response: collected.response});
+          return 'saved';
+        });
+      });
     },
   },
   mounted() {
@@ -241,6 +350,9 @@ export default defineComponent({
   },
   unmounted() {
     this.clearQuickGreeneryHandlers();
+  },
+  beforeUnmount() {
+    this.active = false;
   },
 });
 

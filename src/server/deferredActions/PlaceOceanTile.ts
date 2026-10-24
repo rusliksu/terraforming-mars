@@ -1,3 +1,4 @@
+import {TileType} from '../../common/TileType';
 import {IPlayer} from '../IPlayer';
 import {SelectSpace} from '../inputs/SelectSpace';
 import {DeferredAction} from './DeferredAction';
@@ -53,7 +54,7 @@ export class PlaceOceanTile extends DeferredAction<Space | undefined> {
       title = this.options?.title ?? this.getTitle(on);
     }
 
-    return new SelectSpace(title, availableSpaces)
+    return new SelectSpace(title, availableSpaces, TileType.OCEAN)
       .andThen((space) => {
         this.creditedPlayer.game.addOcean(this.creditedPlayer, space);
         this.creditedPlayer.defer(this.cb(space));

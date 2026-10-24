@@ -1,6 +1,6 @@
 import {shallowMount} from '@vue/test-utils';
 import {expect} from 'chai';
-import {globalConfig} from '../getLocalVue';
+import {creationTransport, globalConfig} from './creationTestConfig';
 import CreateGameForm from '@/client/components/create/CreateGameForm.vue';
 import {TemplateManager} from '@/client/components/create/TemplateManager';
 import {defaultCreateGameModel} from '@/client/components/create/defaultCreateGameModel';
@@ -23,7 +23,7 @@ describe('Fanmade setup in the custom form', () => {
     const wrapper = shallowMount(CreateGameForm, {
       ...globalConfig,
       attachTo: document.body,
-      global: {...globalConfig.global, stubs: {ExpansionHelp: false, PopupPanel: false, Teleport: false}},
+      global: {...globalConfig.global, stubs: {...creationTransport, ExpansionHelp: false, PopupPanel: false, Teleport: false}},
     });
     const vm = wrapper.vm as any;
     vm.playersCount = 3;
@@ -68,32 +68,26 @@ describe('Fanmade setup in the custom form', () => {
   it('removes disabled fan corporations from the custom list', async () => {
     const wrapper = shallowMount(CreateGameForm, globalConfig);
     const vm = wrapper.vm as any;
-    vm.expansions.sillyfication = true;
-    vm.showCorporationList = true;
-    await wrapper.vm.$nextTick();
+    await wrapper.get('#sillyfication-checkbox').setValue(true);
+    await wrapper.get('#customCorps-checkbox').setValue(true);
     expect(vm.customCorporations).includes(CardName.WELLNESS_DELUXE);
-    vm.expansions.sillyfication = false;
-    await wrapper.vm.$nextTick();
+    await wrapper.get('#sillyfication-checkbox').setValue(false);
     expect(vm.customCorporations).not.includes(CardName.WELLNESS_DELUXE);
   });
 
   it('replaces the original prelude in setup when BetterMars is available', async () => {
     const wrapper = shallowMount(CreateGameForm, globalConfig);
-    const vm = wrapper.vm as any;
-    vm.expansions.prelude = true;
-    vm.expansions.pathfinders = true;
-    vm.showPreludesList = true;
-    await wrapper.vm.$nextTick();
-    vm.expansions.betterMars = true;
-    await wrapper.vm.$nextTick();
+    await wrapper.get('#prelude-checkbox').setValue(true);
+    await wrapper.get('#pathfinders-checkbox').setValue(true);
+    await wrapper.get('#customPreludes-checkbox').setValue(true);
+    await wrapper.get('#betterMars-checkbox').setValue(true);
     const filter = wrapper.findComponent(PreludesFilter);
     expect(filter.props('selectable')).includes(CardName.EARLY_SETTLEMENT_BETTER_MARS);
     expect(filter.props('selectable')).not.includes(CardName.EARLY_SETTLEMENT);
     expect(filter.props('selected')).includes(CardName.EARLY_SETTLEMENT_BETTER_MARS);
     expect(filter.props('selected')).not.includes(CardName.EARLY_SETTLEMENT);
 
-    vm.expansions.pathfinders = false;
-    await wrapper.vm.$nextTick();
+    await wrapper.get('#pathfinders-checkbox').setValue(false);
     expect(filter.props('selectable')).includes(CardName.EARLY_SETTLEMENT);
     expect(filter.props('selectable')).not.includes(CardName.EARLY_SETTLEMENT_BETTER_MARS);
     expect(filter.props('selected')).includes(CardName.EARLY_SETTLEMENT);

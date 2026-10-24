@@ -54,7 +54,9 @@
       <div class="player_home_block player_home_block--actions nofloat" data-layout-panel="actions">
         <a name="actions" class="player_home_anchor"></a>
         <DynamicTitle title="Actions" :color="thisPlayer.color"/>
-        <WaitingFor v-if="game.phase !== 'end'" :playerView="playerView" :waitingfor="playerView.waitingFor"/>
+        <InputHost v-if="game.phase !== 'end'">
+          <WaitingFor :playerView="playerView" :waitingfor="playerView.waitingFor"/>
+        </InputHost>
       </div>
 
       <div class="player_home_block player_home_block--hand" data-layout-panel="cards" v-if="playerView.draftedCards.length > 0">
@@ -166,6 +168,7 @@ import {defineComponent} from 'vue';
 import Card from '@/client/components/card/Card.vue';
 import PlayersOverview from '@/client/components/overview/PlayersOverview.vue';
 import WaitingFor from '@/client/components/WaitingFor.vue';
+import InputHost from '@/client/wrybit/shell/InputHost.vue';
 import Sidebar from '@/client/components/Sidebar.vue';
 import Colony from '@/client/components/colonies/Colony.vue';
 import LogPanel from '@/client/components/logpanel/LogPanel.vue';
@@ -187,8 +190,7 @@ import {CardType} from '@/common/cards/CardType';
 import {getCardsByType, isCardActivated} from '@/client/utils/CardUtils';
 import {sortActiveCards} from '@/client/utils/ActiveCardsSortingOrder';
 import {CardModel} from '@/common/models/CardModel';
-import {buildClientCardFromCustom} from '@/client/cards/CustomCardAdapter';
-import {getCardOrThrow} from '../cards/ClientCardManifest';
+import {isActiveCard} from '@/client/cards/CardModelMetadata';
 import {Phase} from '@/common/Phase';
 import {HomeMixin} from '@/client/mixins/HomeMixin';
 import ExperimentalPlayerNavigation, {PlayerLayoutPanel} from '@/client/components/ExperimentalPlayerNavigation.vue';
@@ -220,17 +222,6 @@ const typeToDataModel: Record<ToggleableCardType, {key: 'showHand' | 'showActive
 function hasSpaceInput(input: PlayerInputModel | undefined): boolean {
   return input !== undefined && (input.type === 'space' ||
     ((input.type === 'and' || input.type === 'or') && input.options.some(hasSpaceInput)));
-}
-
-/**
- * A tableau card counts as active when it keeps doing something: it is a blue card, it has an
- * action, or it has an ongoing effect (a trigger). Effect-only cards used to fall through to the
- * automated stack, which is why e.g. Albedo Plants was missing from the active filter.
- */
-function isActiveCard(cardModel: CardModel): boolean {
-  const card = cardModel.customCard === undefined ? getCardOrThrow(cardModel.name) :
-    buildClientCardFromCustom(cardModel.name, cardModel.customCard);
-  return card.type === CardType.ACTIVE || card.hasAction || card.hasEffect;
 }
 
 export default defineComponent({
@@ -317,6 +308,7 @@ export default defineComponent({
     Card,
     PlayersOverview,
     WaitingFor,
+    InputHost,
     Sidebar,
     Colony,
     LogPanel,

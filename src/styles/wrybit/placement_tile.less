@@ -1,0 +1,26 @@
+.placement-tile-preview {
+  --tile-preview-scale: 1.39;
+
+  position: relative;
+  display: block;
+  flex: none;
+  width: 64px;
+  height: 71px;
+
+  > .board-space {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 46px;
+    height: 51px;
+    transform: translate(-50%, -50%) scale(var(--tile-preview-scale));
+    clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  }
+}
+
+.placement-banner > .placement-tile-preview {
+  --tile-preview-scale: 0.95;
+
+  width: 44px;
+  height: 48px;
+}

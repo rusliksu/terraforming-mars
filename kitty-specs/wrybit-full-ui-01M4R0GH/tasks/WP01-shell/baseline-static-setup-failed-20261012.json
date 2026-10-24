@@ -1,0 +1,49 @@
+{
+  "wp_id": "WP01",
+  "captured_at": "2026-10-12T19:47:41Z",
+  "base_branch": "codex/wrybit-full-ui",
+  "base_commit": "9323dd6c618db7bdcbb7e747993056980536a89a",
+  "test_runner": "custom",
+  "total": 7,
+  "passed": 0,
+  "failed": 7,
+  "skipped": 0,
+  "failures": [
+    {
+      "test": "SQLiteArchiveHistory.clones and restores archived history through GameLoader without allowing a replaced resident game to save",
+      "error": "Unknown error",
+      "file": "D:\\tm-db\\smartbot-lab\\spec-kitty\\wrybit-owned-repair-tmp\\tmpgo9tklse\\baseline-worktree\\tests\\database\\SQLiteArchiveHistory.spec.ts:?"
+    },
+    {
+      "test": "ReplayArchive.returns identical public frames from SQLite and archive without modifying either source",
+      "error": "Unknown error",
+      "file": "D:\\tm-db\\smartbot-lab\\spec-kitty\\wrybit-owned-repair-tmp\\tmpgo9tklse\\baseline-worktree\\tests\\database\\ReplayArchive.spec.ts:?"
+    },
+    {
+      "test": "ReplayArchive.prefers a live historical row and returns a sanitized failure for corrupt archived data",
+      "error": "Unknown error",
+      "file": "D:\\tm-db\\smartbot-lab\\spec-kitty\\wrybit-owned-repair-tmp\\tmpgo9tklse\\baseline-worktree\\tests\\database\\ReplayArchive.spec.ts:?"
+    },
+    {
+      "test": "ArchivePlatform.exports and retries inside an explicit workspace with exact private readback",
+      "error": "Unknown error",
+      "file": "D:\\tm-db\\smartbot-lab\\spec-kitty\\wrybit-owned-repair-tmp\\tmpgo9tklse\\baseline-worktree\\tests\\server\\archive\\ArchivePlatform.spec.ts:?"
+    },
+    {
+      "test": "ArchiveCli.exports one file history through the process boundary with private aggregate output and safe retry",
+      "error": "Unknown error",
+      "file": "D:\\tm-db\\smartbot-lab\\spec-kitty\\wrybit-owned-repair-tmp\\tmpgo9tklse\\baseline-worktree\\tests\\server\\archive\\ArchiveCli.spec.ts:?"
+    },
+    {
+      "test": "ArchiveCli.refuses unsafe roots and unfinished input with code-only errors",
+      "error": "Unknown error",
+      "file": "D:\\tm-db\\smartbot-lab\\spec-kitty\\wrybit-owned-repair-tmp\\tmpgo9tklse\\baseline-worktree\\tests\\server\\archive\\ArchiveCli.spec.ts:?"
+    },
+    {
+      "test": "Uncaught error outside test suite",
+      "error": "Unknown error",
+      "file": "D:\\tm-db\\smartbot-lab\\spec-kitty\\wrybit-owned-repair-tmp\\tmpgo9tklse\\baseline-worktree\\tests\\routes\\ServeAsset.spec.ts:?"
+    }
+  ],
+  "source_identity": "DeclaredCommandScopeSource/junit_xml"
+}

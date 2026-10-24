@@ -56,6 +56,7 @@
 import {defineComponent} from 'vue';
 import Award from '@/client/components/Award.vue';
 import {AWARD_COSTS} from '@/common/constants';
+import {availableAwardPrices} from '@/client/components/milestoneAwardPrices';
 import {FundedAwardModel} from '@/common/models/FundedAwardModel';
 import {Preferences, PreferencesManager} from '@/client/utils/PreferencesManager';
 import {Color, isReservedPlayerColor} from '@/common/Color';
@@ -116,8 +117,7 @@ export default defineComponent({
       return this.awards.filter(isFunded);
     },
     availableAwardSpots(): number[] {
-      const costs = this.conglomeratesExpansion ? AWARD_COSTS.map((cost) => cost + 4) : AWARD_COSTS;
-      return costs.slice(this.fundedAwards.length);
+      return availableAwardPrices(this.fundedAwards.length, this.conglomeratesExpansion);
     },
     isLearnerModeOn(): boolean {
       return this.preferences.learner_mode;

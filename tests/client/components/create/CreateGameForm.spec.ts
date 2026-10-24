@@ -1,5 +1,5 @@
 import {mount, shallowMount} from '@vue/test-utils';
-import {globalConfig} from '../getLocalVue';
+import {creationTransport, globalConfig} from './creationTestConfig';
 import {expect} from 'chai';
 import CreateGameForm from '@/client/components/create/CreateGameForm.vue';
 import {CreateGameSettingsStorage} from '@/client/components/create/CreateGameSettingsStorage';
@@ -483,6 +483,7 @@ describe('CreateGameForm', () => {
       global: {
         ...globalConfig.global,
         stubs: {
+          ...creationTransport,
           ColoniesFilter: false,
         },
       },

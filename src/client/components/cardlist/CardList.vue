@@ -226,8 +226,8 @@ import {ClaimedMilestoneModel} from '@/common/models/ClaimedMilestoneModel';
 import {FundedAwardModel} from '@/common/models/FundedAwardModel';
 import {TypeOption, CardListModel, hashToModel, modelToHash, ResourceOption, TagOption} from '@/client/components/cardlist/CardListModel';
 import {getAward, getMilestone} from '@/client/MilestoneAwardManifest';
-import {BonusId, BONUS_IDS, PolicyId, POLICY_IDS, agendaIdDescription, agendaInfoById} from '@/common/turmoil/Types';
-import {PartyName} from '@/common/turmoil/PartyName';
+import {BonusId, BONUS_IDS, PolicyId, POLICY_IDS, agendaIdDescription} from '@/common/turmoil/Types';
+import {agendaModule, expansionIconClass} from '@/client/components/cardlist/catalogMetadata';
 import Card from '@/client/components/card/Card.vue';
 import Colony from '@/client/components/colonies/Colony.vue';
 import GlobalEvent from '@/client/components/turmoil/GlobalEvent.vue';
@@ -246,18 +246,6 @@ type Refs = {
   filter: HTMLInputElement;
 };
 
-// The 6 new More Parties parties -- their bonus/policy ids should only be visible when that
-// expansion is enabled, unlike the 6 official parties (whose *rework* content is still governed
-// by the same ids, so it's shown whenever Turmoil is on regardless of More Parties).
-const NEW_PARTIES: ReadonlySet<PartyName> = new Set([
-  PartyName.POPULISTS,
-  PartyName.SPOME,
-  PartyName.EMPOWER,
-  PartyName.BUREAUCRATS,
-  PartyName.CENTRISTS,
-  PartyName.TRANSHUMANISTS,
-]);
-
 export default defineComponent({
   name: 'CardList',
   components: {
@@ -275,6 +263,7 @@ export default defineComponent({
       ...hashToModel(window.location.hash),
       // Whether the page has been scrolled down at all; gates the "scroll to top" widget.
       scrolled: false,
+      hashTimer: undefined as ReturnType<typeof setTimeout> | undefined,
     };
   },
   mounted() {
@@ -285,6 +274,7 @@ export default defineComponent({
     window.addEventListener('scroll', this.handleScroll, {passive: true});
   },
   beforeUnmount() {
+    clearTimeout(this.hashTimer);
     window.removeEventListener('scroll', this.handleScroll);
   },
   computed: {
@@ -389,7 +379,7 @@ export default defineComponent({
   },
   methods: {
     delayedSetLocationHash(delayms: number = 200) {
-      setTimeout(() => {
+      this.hashTimer = setTimeout(() => {
         const changed = this.setLocationHash();
         this.delayedSetLocationHash(changed ? 10 : 100);
       }, delayms);
@@ -471,13 +461,7 @@ export default defineComponent({
       }
     },
     expansionIconClass(expansion: GameModule): string {
-      switch (expansion) {
-      case 'base': return 'expansion-icon-base';
-      case 'corpera': return 'expansion-icon-CE';
-      case 'colonies': return 'expansion-icon-colony';
-      case 'moon': return 'expansion-icon-themoon';
-      default: return `expansion-icon-${expansion}`;
-      }
+      return expansionIconClass(expansion);
     },
     moduleName(expansion: GameModule): string {
       return MODULE_NAMES[expansion];
@@ -552,10 +536,10 @@ export default defineComponent({
       if (!this.include(name, 'ma')) {
         return false;
       }
-      return this.expansions[getMilestone(name).requirements ?? 'base'] === true;
+      return this.expansions[getMilestone(name)?.requirements ?? 'base'] === true;
     },
     isNewPartyAgenda(id: PolicyId | BonusId): boolean {
-      return NEW_PARTIES.has(agendaInfoById(id).name as PartyName);
+      return agendaModule(id) === 'moreParties';
     },
     showAgenda(id: PolicyId | BonusId): boolean {
       if (!this.include(id, 'agenda')) {
@@ -568,7 +552,7 @@ export default defineComponent({
       if (!this.include(name, 'ma')) {
         return false;
       }
-      return this.expansions[getAward(name).requirements ?? 'base'] === true;
+      return this.expansions[getAward(name)?.requirements ?? 'base'] === true;
     },
     getLanguageCssClass() {
       const language = getPreferences().lang;

@@ -1,0 +1,194 @@
+.wrybit-stats {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 24px 48px;
+  overflow-x: hidden;
+  color: #f1f4fb;
+
+  .wrybit-stats-head {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+    }
+
+    .btn {
+      margin-left: auto;
+    }
+  }
+
+  .wrybit-stats-subtitle {
+    margin: 4px 0 0;
+    color: #aab4c5;
+  }
+
+  .wrybit-stats-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .wrybit-stats-tab {
+    border: 0;
+    border-radius: 8px 8px 0 0;
+    padding: 10px 16px;
+    background: transparent;
+    color: #c6cedd;
+    cursor: pointer;
+
+    &--active,
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+  }
+
+  .wrybit-stats-filters {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 190px;
+      color: #b9c2d1;
+      font-size: 13px;
+    }
+
+    input,
+    select {
+      min-height: 36px;
+      padding: 6px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.25);
+      color: #fff;
+    }
+  }
+
+  .wrybit-stats-count {
+    margin: 0 0 8px auto;
+    color: #aab4c5;
+  }
+
+  .wrybit-stats-note,
+  .wrybit-stats-card {
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    background: rgba(22, 24, 32, 0.86);
+  }
+
+  .wrybit-stats-note {
+    max-width: 620px;
+  }
+
+  .wrybit-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .wrybit-stats-card {
+    min-width: 0;
+    overflow-x: auto;
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 20px;
+    }
+
+    &--wide {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .wrybit-stats-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+
+    div {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    strong {
+      font-size: 26px;
+    }
+
+    span {
+      color: #aab4c5;
+      font-size: 13px;
+    }
+  }
+
+  .wrybit-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+      padding: 8px 10px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      white-space: nowrap;
+    }
+
+    th {
+      color: #aab4c5;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+  }
+
+  .wrybit-stats-scroll {
+    overflow-x: auto;
+  }
+
+  .wrybit-stats-muted {
+    color: #9aa5b7;
+  }
+
+  .wrybit-stats-record {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  @media (max-width: 767px) {
+    padding: 12px;
+
+    .wrybit-stats-head h1 {
+      font-size: 24px;
+    }
+
+    .wrybit-stats-grid,
+    .wrybit-stats-kpis {
+      grid-template-columns: 1fr;
+    }
+
+    .wrybit-stats-card--wide {
+      grid-column: auto;
+    }
+
+    .wrybit-stats-count {
+      margin-left: 0;
+    }
+  }
+}

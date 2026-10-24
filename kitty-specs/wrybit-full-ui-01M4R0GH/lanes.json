@@ -1,0 +1,155 @@
+{
+  "version": 1,
+  "mission_slug": "wrybit-full-ui-01M4R0GH",
+  "mission_id": "01M4R0GHH1EAEWZRBK041RJZAD",
+  "mission_branch": "kitty/mission-wrybit-full-ui-01M4R0GH",
+  "target_branch": "codex/wrybit-full-ui",
+  "lanes": [
+    {
+      "lane_id": "lane-a",
+      "wp_ids": [
+        "WP01"
+      ],
+      "write_scope": [
+        "src/client/components/App.vue",
+        "src/client/components/PreferencesDialog.vue",
+        "src/client/utils/PreferencesManager.ts",
+        "src/client/wrybit/import-manifest.json",
+        "src/client/wrybit/shell/**",
+        "tests/client/wrybit/shell/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "workspace"
+      ],
+      "depends_on_lanes": [],
+      "parallel_group": 0
+    },
+    {
+      "lane_id": "lane-b",
+      "wp_ids": [
+        "WP02"
+      ],
+      "write_scope": [
+        "assets/wrybit/**",
+        "src/client/wrybit/visuals/**",
+        "src/styles/wrybit/**",
+        "tests/client/wrybit/visuals/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-a"
+      ],
+      "parallel_group": 1
+    },
+    {
+      "lane_id": "lane-c",
+      "wp_ids": [
+        "WP03"
+      ],
+      "write_scope": [
+        "src/client/wrybit/create/**",
+        "src/client/wrybit/inputs/**",
+        "tests/client/wrybit/inputs/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-b"
+      ],
+      "parallel_group": 2
+    },
+    {
+      "lane_id": "lane-d",
+      "wp_ids": [
+        "WP04"
+      ],
+      "write_scope": [
+        "src/client/wrybit/expansions/**",
+        "tests/client/wrybit/expansions/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-c"
+      ],
+      "parallel_group": 3
+    },
+    {
+      "lane_id": "lane-e",
+      "wp_ids": [
+        "WP05"
+      ],
+      "write_scope": [
+        "src/client/wrybit/mobile/**",
+        "src/client/wrybit/spectator/**",
+        "tests/client/wrybit/mobile/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-d"
+      ],
+      "parallel_group": 4
+    },
+    {
+      "lane_id": "lane-f",
+      "wp_ids": [
+        "WP06"
+      ],
+      "write_scope": [
+        "src/client/wrybit/data/**",
+        "src/client/wrybit/pages/**",
+        "src/common/app/paths.ts",
+        "src/common/models/WrybitUi*.ts",
+        "src/server/routes/ApiWrybit*.ts",
+        "src/server/server/requestProcessor.ts",
+        "tests/client/wrybit/pages/**",
+        "tests/routes/ApiWrybit*.spec.ts"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-e"
+      ],
+      "parallel_group": 5
+    },
+    {
+      "lane_id": "lane-g",
+      "wp_ids": [
+        "WP07"
+      ],
+      "write_scope": [
+        "docs/codemap/**",
+        "docs/experimental-layout.md",
+        "docs/screenshots/wrybit/**",
+        "src/locales/**",
+        "tests/client/wrybit/verification/**",
+        "tools/wrybit-ui/**"
+      ],
+      "predicted_surfaces": [
+        "api",
+        "workspace"
+      ],
+      "depends_on_lanes": [
+        "lane-f"
+      ],
+      "parallel_group": 6
+    }
+  ],
+  "computed_at": "2026-10-12T12:55:58.742737+00:00",
+  "computed_from": "dependency_graph+ownership",
+  "planning_artifact_wps": [],
+  "planning_commit_sha": "e0a090cf109ac9c6fe60686c1ceafa2168c40d55"
+}

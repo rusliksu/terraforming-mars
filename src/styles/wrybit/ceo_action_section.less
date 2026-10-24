@@ -1,0 +1,17 @@
+.wrybit-ceo-action-section-styles() {
+  // Source Actions sections stack from the top, with cards at the left edge.
+  html:not(.tm-mobile) & .or-tab-panel .actions-tab-sections.actions-tab-sections {
+    flex: none;
+
+    :has(.choice-block) {
+      flex: none;
+    }
+
+    // Match the shared card-grid specificity inside our optional root.
+    .choice-block.ceo-action-section {
+      flex: none;
+      margin: 0;
+      justify-content: start;
+    }
+  }
+}

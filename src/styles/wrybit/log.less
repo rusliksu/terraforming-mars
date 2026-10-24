@@ -1,0 +1,337 @@
+// Font size of log entries; card, space and tile names in them (bold, uppercase) 1px smaller
+@log-font-size: 15px;
+@log-pill-font-size: @log-font-size - 1px;
+
+.log-generations {
+  display: flex;
+  margin-bottom: 0;
+  flex-wrap: nowrap;
+  align-items: flex-end; // Tabs sit at the bottom, on the box
+  .log-gen-title {
+    // Centered on the axis of the tab numbers (the bar itself sits at the bottom, on the box)
+    align-self: center;
+    flex: none;
+    margin: 0 8px 0 0;
+    text-transform: uppercase;
+    font-family: Prototype, sans-serif;
+    font-size: 16px;
+    color: #a4a6ae;
+  }
+  // Tab bar sits directly on the box (see or_options_tabs.less), here without the badge spacing on top
+  // With many generations, scroll horizontally instead of squeezing the numbers (LogGenerationList.vue keeps the selected tab in view)
+  .log-gen-tabs {
+    margin-top: 0;
+    min-width: 0;
+    overflow: auto hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    .or-tab {
+      flex-shrink: 0;
+    }
+  }
+
+  // All tabs of the bar (milestones & awards and the generation numbers) as tall as the action tabs.
+  // Fixed outer height for active and inactive: inactive tabs are 2px shorter and keep the 2px gap to the
+  // box, the active one fills it – so the bar never changes height and nothing jumps when switching
+  .or-tab {
+    box-sizing: border-box;
+    height: @or-tab-height - @or-tab-inactive-gap;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .or-tab.or-tab--active {
+    height: @or-tab-height;
+  }
+  // Desktop: milestones & awards as the first tab, set apart from "GEN:" like a separate group;
+  // never truncated, the generation tabs give way (they scroll)
+  .log-milestones-tabs {
+    flex: none;
+    margin: 0 14px 0 0;
+
+    .or-tab {
+      flex: none;
+      color: @section-caption-gold;
+    }
+  }
+
+  // Solo limit ("of 12") as a red mark, smaller than the tab numbers, so it doesn't look like another tab
+  .label-additional {
+    align-self: center;
+    background: @player_red;
+    color: #fff;
+    font-size: 13px;
+    padding: 2px 6px;
+    margin-left: 8px;
+  }
+  // Red text would be invisible on a red surface; the blinking in the last generation stays
+  .last-generation {
+    color: inherit;
+  }
+}
+
+// Box below the generation tabs; border and surface come from .or-tab-panel--view
+.log-panel.or-tab-panel {
+  height: 240px;
+  max-height: 240px;
+  font-size: @log-font-size;
+  padding: 5px;
+  max-width: 860px;
+  position: relative;
+
+  > .panel-body {
+    padding-right: 64px;
+    scrollbar-gutter: stable;
+    // Soft fade at the top and bottom edge; heights come from LogPanel (0 at the start/end of the log)
+    --wrybit-log-fade-top: 0px;
+    --wrybit-log-fade-bottom: 0px;
+    mask-image: linear-gradient(to bottom, transparent 0, #000 var(--wrybit-log-fade-top), #000 calc(100% - var(--wrybit-log-fade-bottom)), transparent 100%);
+  }
+
+  li {
+    margin-top: 0;
+    list-style-type: none;
+  }
+
+  ul {
+    margin: 0 !important;
+  }
+}
+
+// One continuous stream: each generation starts with a header (Mars with the number, title, divider below);
+// from generation 2 on extra space above it, clearly larger than the spacing between lines, so the generations read as groups
+.log-generation + .log-generation {
+  margin-top: 26px;
+}
+
+.log-generation-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 24px;
+  font-weight: normal;
+  line-height: 1.2;
+  color: #e8e8e8;
+}
+
+// Mars planet (same image as the stats logo), with the generation number on top
+.log-generation-marker {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: url("./assets/wrybit/common/mars.png") center / cover no-repeat;
+  box-shadow: inset -3px -4px 6px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.6);
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 3px #000, 0 0 2px #000;
+}
+
+.log-latest-button {
+  position: absolute;
+  right: 28px;
+  bottom: 8px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid rgba(170, 170, 170, 0.55);
+  border-radius: 4px;
+  background: rgba(51, 51, 51, 0.9);
+  color: #ddd;
+  cursor: pointer;
+
+  &:hover {
+    background: #ccc;
+    color: black;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ccc;
+    outline-offset: 2px;
+  }
+}
+
+.log-latest-button-icon {
+  width: 16px;
+  height: 16px;
+
+  path {
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+.card-panel{
+  display: inline-block;
+  .btn {
+    margin-top: 10px;
+  }
+}
+
+// Size of the cards in the hover preview; also determines the log height in the two-column layout (player_home_columns.less)
+@log-card-preview-zoom: 0.8;
+
+// Project card incl. border (unzoomed)
+@log-card-preview-height: 308px;
+@log-card-preview-gap: 8px;
+
+// Hover preview hanging at the top right of the mouse pointer, with a drop shadow. Several cards (up to 3; more
+// open a modal on click – logMessageContent.ts) stack on top of each other. LogMessageInspector places it
+// (left/top) and keeps it inside the window.
+// fixed instead of absolute, because the log can sit in a column with overflow (player_home_columns.less)
+.card-panel--floating {
+  // Zoom as a variable (level "log-full" sets 1)
+  --wrybit-log-card-preview-zoom: @log-card-preview-zoom;
+  position: fixed; // left and top are set by LogMessageInspector
+  z-index: 100;
+  // Shadow follows the card shape (rounded corners)
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.7));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: @log-card-preview-gap;
+  // Mouse stays on the log lines; otherwise the preview would catch the hover and flicker
+  pointer-events: none;
+
+  // The cards' margin is meant for card rows; the gap between them comes from the panel
+  .card-container {
+    margin: 0;
+    zoom: var(--wrybit-log-card-preview-zoom);
+  }
+}
+
+// Highlight the hovered line – shows which line the card preview belongs to
+@media (hover: hover) {
+  .log-panel li:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+  }
+}
+
+// Lines in their player's color (LogMessageComponent: log-line--<color>):
+// text lightened with white so dark colors (black, blue) stay readable on the log too; hover lightly tinted
+each(@players, {
+  @c: ~"player_@{value}";
+
+  .log-panel li.log-line--@{value} {
+    color: mix(@@c, #fff, 45%);
+
+    // Name pills stay white on their player color
+    .log-player {
+      color: #fff;
+    }
+  }
+
+  @media (hover: hover) {
+    .log-panel li.log-line--@{value}:hover {
+      background: fade(@@c, 28%);
+    }
+  }
+});
+
+// Lines with many cards (needsModalPreview): on click, a scrollable modal over the right column,
+// placed exactly like the played cards (player_home_columns.less, --wrybit-board-column-left)
+.card-panel--modal {
+  .column-overlay-position();
+  .column-overlay-surface();
+  display: block; // cards as a row (cardbox), the ✕ floats top right
+  padding: 16px;
+  overflow-y: auto;
+
+  // Small ✕ top right, stays visible while scrolling through many cards
+  > .btn {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    float: right;
+    width: auto;
+    margin: 0 0 8px 8px;
+  }
+}
+
+.log-line--expandable {
+  cursor: pointer;
+}
+
+.log-player {
+  text-shadow:1px 1px 1px @grey_900, -1px -1px 1px #666;
+  padding: 2px 10px;
+  border-radius: 2px;
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.log-card {
+  color: #000;
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: 2px;
+  font-family: Ubuntu, sans-serif;
+  font-weight: bold;
+  font-size: @log-pill-font-size;
+  text-transform: uppercase;
+}
+
+.log-tag {
+  display: inline-block;
+  background-position: 0; // Override any tag-specific background position, which science currently has
+  background-size: 18px;
+  width: 18px;
+  height: 18px;
+  margin: 0 -6px -4px 0px;
+}
+
+.log-excavation-token {
+  color: #fff;
+  background: linear-gradient(-60deg, #805700 10%, #816a4c, #805700 90%);    // TODO(kberg): Add a pointer when this is clickable?
+  // cursor: pointer;
+  padding: 2px 5px;
+  border-radius: 2px;
+  font-family: Ubuntu, sans-serif;
+  font-weight: bold;
+  font-size: @log-pill-font-size;
+  text-transform: uppercase;
+}
+
+.log-space-id {
+  color: black;
+  background: linear-gradient(-60deg, #a0a0a7 10%, #c0c0c0, #a0a0a7 90%);
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: 2px;
+  font-family: Ubuntu, sans-serif;
+  font-weight: bold;
+  font-size: @log-pill-font-size;
+  text-transform: uppercase;
+}
+
+.log-resource-megacredits {
+  font-family: Prototype, sans-serif;
+  color: black;
+  background-image: url(./assets/resources/megacredit.png);
+  font-weight: normal;
+  text-align: center;
+  display: inline-block;
+  background-size: 18px;
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
+  margin-right: -5px; // Offsets the margin-right for .li .span, above.
+}

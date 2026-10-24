@@ -5,7 +5,7 @@ import {
   encodeCustomBoard,
   validateCustomBoard,
 } from '../../../src/common/boards/customBoardCodec';
-import {blankCustomBoard, CustomBoardDefinition} from '../../../src/common/boards/CustomBoardDefinition';
+import {blankCustomBoard, CustomBoardDefinition, customSpacePixel} from '../../../src/common/boards/CustomBoardDefinition';
 import {SpaceBonus} from '../../../src/common/boards/SpaceBonus';
 import {SpaceType} from '../../../src/common/boards/SpaceType';
 import {DEFAULT_GLOBAL_PARAMETERS} from '../../../src/common/GlobalParameterConfig';
@@ -16,6 +16,24 @@ describe('customBoardCodec', () => {
     const decoded = decodeCustomBoard(encodeCustomBoard(def));
     expect(decoded).to.deep.eq(def);
     expect(decoded.spaces).to.have.length(61);
+  });
+
+  it('lays a blank board out as a regular hexagon, not a sheared arrow', () => {
+    // A sheared grid (every row starting at x = 0) drifts row centres by half a hex per row:
+    // 29, 78, 127, 176, 225, 176, ... Locally that reads as an arrow. A real hexagon keeps
+    // every row centred on the same column.
+    const def = blankCustomBoard(9, 'Centred');
+    const maxY = 8;
+    const rowCentres = new Map<number, Array<number>>();
+    for (const space of def.spaces) {
+      const {left} = customSpacePixel(space.x, space.y, maxY);
+      const list = rowCentres.get(space.y) ?? [];
+      list.push(left);
+      rowCentres.set(space.y, list);
+    }
+    const centres = [...rowCentres.values()].map((lefts) => (Math.min(...lefts) + Math.max(...lefts)) / 2);
+    expect(centres).to.have.length(9);
+    expect(new Set(centres).size).eq(1, 'all rows share one vertical axis');
   });
 
   it('round-trips varied terrain, bonuses, volcanic and reserved', () => {

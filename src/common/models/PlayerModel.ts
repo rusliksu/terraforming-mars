@@ -1,4 +1,5 @@
 import {CardModel} from './CardModel';
+import {ConditionalDiscountModel} from './ConditionalDiscountModel';
 import {Color} from '../Color';
 import {VictoryPointsBreakdown} from '../game/VictoryPointsBreakdown';
 import {PlayerInputModel} from './PlayerInputModel';
@@ -60,6 +61,7 @@ export type PublicPlayerModel = {
   availableBlueCardActionCount: number;
   cardCost: number;
   cardDiscount: number;
+  conditionalDiscounts?: ReadonlyArray<ConditionalDiscountModel>;
   cardsInHandNbr: number;
   citiesCount: number;
   coloniesCount: number;
@@ -118,6 +120,8 @@ export type PublicPlayerModel = {
 
 /** A player's view of the game, including their secret information. */
 export interface PlayerViewModel extends ViewModel {
+  /** The identity of this player's pending input within the current server run. */
+  waitingForId?: string;
   autopass: boolean;
   cardsInHand: ReadonlyArray<CardModel>;
   dealtCorporationCards: ReadonlyArray<CardModel>;

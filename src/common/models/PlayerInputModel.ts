@@ -12,6 +12,8 @@ import {Warning} from '../cards/Warning';
 import {Units} from '../Units';
 import {ClaimedToken} from '../underworld/UnderworldPlayerData';
 import {ColonyTrackChoiceModel} from './ColonyTradeContextModel';
+import {AmountPreviewModel} from './AmountPreviewModel';
+import {TileType} from '../TileType';
 
 export type BaseInputModel = {
   title: string | Message;
@@ -107,6 +109,10 @@ export type SelectPlayerModel = BaseInputModel & {
 export type SelectSpaceModel = BaseInputModel & {
   type: 'space';
   spaces: ReadonlyArray<SpaceId>;
+  /** Tile supplied by the native placement producer; absent for other space choices. */
+  tileType?: TileType;
+  /** Verified native final-greenery root; this placement does not raise oxygen. */
+  finalGreenery?: true;
 }
 
 export type SelectAmountModel = BaseInputModel & {
@@ -114,6 +120,7 @@ export type SelectAmountModel = BaseInputModel & {
   min: number;
   max: number;
   maxByDefault: boolean;
+  preview?: AmountPreviewModel;
 }
 
 export type DeltaProjectInputModel = BaseInputModel & {

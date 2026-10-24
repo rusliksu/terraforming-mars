@@ -1,0 +1,30 @@
+@import (reference) "../selection_highlight.less";
+
+// Shared parts of the step-by-step choice tabs (Trade: "You pay" ↓ "You get", Delegate: "From where?" ↓ "To which party?").
+// Both read top to bottom with the same section label, small arrow and selection flag, so they look like one family.
+
+.deal-step__label {
+  font: 600 11px/13px system-ui, sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #a2a8ba;
+}
+
+// Small arrow between the two steps; disappears where the box is narrow and every pixel of height counts
+.deal-step__arrow {
+  place-self: center;
+  font: 16px/1 system-ui, sans-serif;
+  color: #a2a8ba;
+}
+
+@container (max-width: 640px) {
+  .deal-step__arrow {
+    display: none;
+  }
+}
+
+// Selected tile: corner-flag selection (selection_highlight.less) with the 20 % purple tint
+.deal-step__tile--on {
+  .selection-corner(1px; 8px);
+  background: color-mix(in srgb, @selection-color 20%, rgba(10, 12, 18, 0.6));
+}

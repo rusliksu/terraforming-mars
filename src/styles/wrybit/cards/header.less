@@ -1,0 +1,70 @@
+.card-container {
+  // Player cube on a used action card (Card.vue): top left next to the cost, low enough to stay inside the
+  // card at any angle; above the content, never catches clicks
+  .card-player-cube {
+    position: absolute;
+    left: 34%;
+    top: 13%;
+    z-index: 4;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .project-icon-expansion-container {
+    flex-direction: row;
+    display: flex;
+    bottom: 5px;
+    left: 5px;
+    position: absolute;
+  }
+  .resource-card-icon-expansion-container {
+    flex-direction: row;
+    display: flex;
+    bottom: 5px;
+    left: 87px;
+    position: absolute;
+  }
+  .project-icon:after,
+  .preludeCard-icon:after {
+    position: relative;
+    margin: 3px;
+    display: block;
+  }
+  .card-superscript {
+    vertical-align: super;
+  }
+  .card-content-wrapper {
+    position: relative;
+
+  }
+  .card-requirements {
+    width: 70%;
+    height: 24px;
+    line-height: 24px;
+    font-size: 15px;
+    box-shadow: @outline-shadow;
+    background: linear-gradient(
+      90deg,
+      rgba(243, 161, 14, 1) 0%,
+      rgba(253, 234, 37, 1) 45%,
+      rgba(253, 234, 37, 1) 55%,
+      rgba(243, 161, 14, 1) 100%
+    );
+    font-family: Ubuntu, sans-serif;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    flex-flow: row;
+    align-items: center;
+  }
+  // "max" before the requirement value (CardRequirementComponent.vue); gap instead of a space that translation trims
+  .card-requirement-max-label {
+    margin-right: 0.3em;
+  }
+  .card-requirements-max {
+    background-image: url(../assets/requisites/max_big.png);
+    background-size: 174px 34px;
+    background-position: -12px -4px;
+    filter: grayscale(0.2);
+  }
+}

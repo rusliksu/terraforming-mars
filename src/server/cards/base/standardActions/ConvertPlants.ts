@@ -7,6 +7,7 @@ import {Units} from '../../../../common/Units';
 import {message} from '../../../logs/MessageBuilder';
 import {InsectPollinators} from '../../idesofmars/InsectPollinators';
 import {Space} from '../../../boards/Space';
+import {TileType} from '../../../../common/TileType';
 
 
 export class ConvertPlants extends StandardActionCard {
@@ -62,7 +63,7 @@ export class ConvertPlants extends StandardActionCard {
   public action(player: IPlayer) {
     return new SelectSpace(
       message('Convert plants into a greenery'),
-      player.game.board.getAvailableSpacesForGreenery(player))
+      player.game.board.getAvailableSpacesForGreenery(player), TileType.GREENERY)
       .andThen((space) => {
         this.actionUsed(player);
         player.game.addGreenery(player, space);

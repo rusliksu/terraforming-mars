@@ -10,6 +10,7 @@ import {ApiSurrender} from '../routes/ApiSurrender';
 import {ApiAiFeedback} from '../routes/ApiAiFeedback';
 import {ApiCloneableGame} from '../routes/ApiCloneableGame';
 import {ApiCreateGame} from '../routes/ApiCreateGame';
+import {ApiBoardPreview} from '../routes/ApiBoardPreview';
 import {ApiCustomCardLibrary} from '../routes/ApiCustomCardLibrary';
 import {ApiCustomCardLibraryReview} from '../routes/ApiCustomCardLibraryReview';
 import {ApiGame} from '../routes/ApiGame';
@@ -28,6 +29,7 @@ import {ApiReplay} from '../routes/ApiReplay';
 import {ApiSpectator} from '../routes/ApiSpectator';
 import {ApiStats} from '../routes/ApiStats';
 import {ApiWaitingFor} from '../routes/ApiWaitingFor';
+import {ApiWrybitStats} from '../routes/ApiWrybitStats';
 import {Autopass} from '../routes/Autopass';
 import {DiscordAuth} from '../routes/DiscordAuth';
 import {GameHandler} from '../routes/Game';
@@ -108,6 +110,7 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.API_AI_FEEDBACK, ApiAiFeedback.INSTANCE],
     [paths.API_CLONEABLEGAME, ApiCloneableGame.INSTANCE],
     [paths.API_CREATEGAME, ApiCreateGame.INSTANCE],
+    [paths.API_BOARD_PREVIEW, ApiBoardPreview.INSTANCE],
     [paths.API_GAME, ApiGame.INSTANCE],
     [paths.API_GAME_HISTORY, ApiGameHistory.INSTANCE],
     [paths.API_GAME_LOGS, ApiGameLogs.INSTANCE],
@@ -120,6 +123,7 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.API_STATS, ApiStats.INSTANCE],
     [paths.API_SPECTATOR, ApiSpectator.INSTANCE],
     [paths.API_WAITING_FOR, ApiWaitingFor.INSTANCE],
+    [paths.API_WRYBIT_STATS, ApiWrybitStats.INSTANCE],
     [paths.AUTOPASS, Autopass.INSTANCE],
     [paths.CARD_LIBRARY, ServeApp.INSTANCE],
     [paths.CARDS, ServeApp.INSTANCE],
@@ -153,6 +157,7 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.RESET, Reset.INSTANCE],
     [paths.REPLAY, ServeApp.INSTANCE],
     [paths.SPECTATOR, ServeApp.INSTANCE],
+    [paths.STATS, ServeApp.INSTANCE],
     ['styles.css', ServeAsset.INSTANCE],
     [paths.THE_END, ServeApp.INSTANCE],
   ],

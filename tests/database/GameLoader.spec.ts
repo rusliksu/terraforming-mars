@@ -110,6 +110,24 @@ describe('GameLoader', () => {
     expect(game1!.id).to.eq(game.id);
   });
 
+  it('forgets a deleted game and its participants', async () => {
+    await instance.add(game);
+    expect(await instance.isCached('gameid')).is.true;
+    expect((await instance.getIds()).map((entry) => entry.gameId)).include('gameid');
+
+    await instance.deleteGame('gameid');
+
+    expect(await instance.isCached('gameid')).is.false;
+    expect(await instance.getGame('gameid')).is.undefined;
+    expect(await instance.getGame(game.players[0].id)).is.undefined;
+    expect((await instance.getIds()).map((entry) => entry.gameId)).not.include('gameid');
+  });
+
+  it('rejects saves of a deleted game', async () => {
+    await instance.deleteGame('gameid');
+    expect(() => instance.saveGame(game)).to.throw('This game no longer exists');
+  });
+
   it('reconciles a persisted surrendered seat after restart', async () => {
     game.phase = Phase.ACTION;
     game.surrenderedPlayerIds.add(game.players[0].id);

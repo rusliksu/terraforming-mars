@@ -381,6 +381,18 @@ export class GameLoader implements IGameLoader {
     this.cache.sweep();
   }
 
+  /**
+   * Forgets a game that was deleted from the database: rejects later saves (saveGame
+   * checks purgedGames) and drops the in-memory copy with its participant ids right away.
+   * The caller deletes the game's rows from the database; this only invalidates the cache.
+   */
+  public deleteGame(gameId: GameId): void {
+    if (!this.purgedGames.includes(gameId)) {
+      this.purgedGames.push(gameId);
+    }
+    this.cache.remove(gameId);
+  }
+
   public async completeGame(game: IGame) {
     this.assertNotReplaced(game);
     const database = Database.getInstance();

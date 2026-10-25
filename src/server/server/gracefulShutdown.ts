@@ -1,11 +1,10 @@
-import type {Server} from 'node:http';
-
 /**
  * Stops accepting connections, lets in-flight requests finish, flushes pending game saves
  * and resolves. If connections do not close within `timeoutMs`, they are destroyed so a
  * deploy cannot hang forever on a keep-alive or stuck client.
  */
-export type DrainServer = Pick<Server, 'close'> & {
+export type DrainServer = {
+  close(callback?: (err?: Error) => void): unknown;
   closeIdleConnections?: () => void;
   closeAllConnections?: () => void;
 };

@@ -6,7 +6,6 @@
           @click="$emit('messageClicked', entry.messages[0])" @spaceClicked="$emit('spaceClicked', $event)"/>
       </ul>
       <div class="action-log-effects">
-        <LogPaymentBadges v-for="(message, index) in entry.messages" :key="index" :payment="message.payment"/>
         <span v-for="(summary, index) in effects" :key="index" class="action-log-effect"
           :aria-label="effectLabel(summary)" :title="effectLabel(summary)">
           <span class="action-log-effect-visual" :class="{'production-box action-log-production-box': summary.effect.kind === 'resource' && summary.effect.production}">
@@ -55,7 +54,6 @@ import {playerColorClass} from '@/common/utils/utils';
 import {getSpaceName} from '@/common/boards/spaces';
 import {ViewModel} from '@/common/models/PlayerModel';
 import LogMessageComponent from './LogMessageComponent.vue';
-import LogPaymentBadges from './LogPaymentBadges.vue';
 
 const props = defineProps<{
   entry: Extract<ActionLogEntry, {kind: 'action'}>;

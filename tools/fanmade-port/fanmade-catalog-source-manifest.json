@@ -515,13 +515,7 @@
     "src/common/ai/AiLevel.ts": "7a00f216b07de151ddbbdbebd6514c7409409fc68aace6c0059ac848457fb536",
     "src/common/ai/aiSupport.ts": "28511bdcac88009175cbabdfb02fb4c191c798c3d32064b8145563efd621049a",
     "src/common/app/AppErrorId.ts": "059c7b6c339a8d593d789597bf98357e876e0396335d3f0ea5cc39c759328b2e",
-<<<<<<< HEAD
-    "src/common/app/paths.ts": "abd209f93cef459da5c2e1c6df0b50755036f361b919707c613b8f70ac63aea6",
-||||||| da9c67595
-    "src/common/app/paths.ts": "d4f3541e1f08d07efee7b59538bf0eb079aa8c46a699096c090139711f6f85b5",
-=======
-    "src/common/app/paths.ts": "40340682136f2e35344d262c0bb012162057eef04b5b119fe84a0c0826a8bfa7",
->>>>>>> origin/main
+    "src/common/app/paths.ts": "eed7a73cc02a3cbe3f750ae040691cf7309332c1fd4e3c1ddb4c9994ef8880f4",
     "src/common/ares/AresData.ts": "96884cedf8cfdec34274940d84ccd584a2e1121949c76c9e358f7464ab2b7f9b",
     "src/common/automa/AutomaTypes.ts": "d41ee07c53664b86e275f006916096da0b301252a584c6f304a4e9181c2b5353",
     "src/common/automa/MarsBotMADescriptions.ts": "192ce648ecc41c0fa412cb6d0299b10213f80c28f30acf5f2f507d9a2b043c7d",
@@ -2891,13 +2885,7 @@
     "src/server/server/clientIp.ts": "ae7d88ce66c481f2cf562bb88a846d72b5379b502b82e47bef8b3d89496f4d9b",
     "src/server/server/gracefulShutdown.ts": "ed73a87ea22dd82788811a00ccc8731597484a4fc19f43e73ff9b2e8b06ffca7",
     "src/server/server/heroku.ts": "c3d65cba4ac78186f02f58bf6695c423944b6002c892444a0d0e451d2de8cbe6",
-<<<<<<< HEAD
-    "src/server/server/requestProcessor.ts": "0dc6b926a70012872b0397e79a6ba90ff2db2e50c405f808fc96e07025334584",
-||||||| da9c67595
-    "src/server/server/requestProcessor.ts": "a43e047b200173c37f8368fef738090cb31a526a0f6bed6416ebe573d70da8f7",
-=======
-    "src/server/server/requestProcessor.ts": "44d095f92b65f24db3947b13709238b267497a3708479453643e85af53eb71ff",
->>>>>>> origin/main
+    "src/server/server/requestProcessor.ts": "b63d87b8f68036aac305f6c7f6f2e9961283f55385e300cdeec25a9827bff1c7",
     "src/server/server/responses.ts": "ffb88ae84b4f67dc63f9037b1a48e7fb20a77e19880374401e2d790454c7a367",
     "src/server/server/routeErrorReporting.ts": "366a06604ee418d140a970b3ef9e6e37d1b59d40507066dd16dd8cd68b4e4965",
     "src/server/surrender/SurrenderInput.ts": "6a45db06598370444cd33f92b4c130c6bc7273a44006813b38d6e331dca7f7cf",

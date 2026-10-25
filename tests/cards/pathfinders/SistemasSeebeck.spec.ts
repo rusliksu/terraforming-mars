@@ -360,7 +360,6 @@ describe('SistemasSeebeck', () => {
     expect(stormcraft.resourceCount).eq(0);
     expect(player.energy).eq(0);
     expect(colony.visitor).eq(player.id);
-    expect(game.gameLog.find((entry) => entry.message.includes('energy to trade'))?.payment).is.undefined;
   });
 
   it('can spend energy alongside Stormcraft floaters as heat', () => {

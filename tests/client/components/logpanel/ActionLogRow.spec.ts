@@ -1,7 +1,6 @@
 import {shallowMount} from '@vue/test-utils';
 import {expect} from 'chai';
 import ActionLogRow from '@/client/components/logpanel/ActionLogRow.vue';
-import LogPaymentBadges from '@/client/components/logpanel/LogPaymentBadges.vue';
 import LogMessageComponent from '@/client/components/logpanel/LogMessageComponent.vue';
 import {LogMessage} from '@/common/logs/LogMessage';
 import {LogMessageType} from '@/common/logs/LogMessageType';
@@ -22,7 +21,7 @@ describe('ActionLogRow', () => {
     ];
     const entry = {kind: 'action' as const, id: 'global-action', messages: [action], complete: true};
     const wrapper = shallowMount(ActionLogRow, {
-      global: {...globalConfig.global, stubs: {LogPaymentBadges}},
+      ...globalConfig,
 
       props: {entry, viewModel: fakeViewModel({players: [
         fakePublicPlayerModel({color: 'red', name: 'Red'}),
@@ -53,7 +52,7 @@ describe('ActionLogRow', () => {
       {kind: 'global', parameter: GlobalParameter.VENUS, amount: 4, player: 'blue'},
     ];
     const wrapper = shallowMount(ActionLogRow, {
-      global: {...globalConfig.global, stubs: {LogPaymentBadges}},
+      ...globalConfig,
 
       props: {
         entry: {kind: 'action', id: 'global-counts', messages: [action], complete: true},
@@ -72,56 +71,17 @@ describe('ActionLogRow', () => {
     gained.effect = {kind: 'resource', resource: 'steel', production: false, amount: 2, player: 'blue'};
     const entry = {kind: 'action' as const, id: 'action-1', messages: [action, gained], complete: true};
     const wrapper = shallowMount(ActionLogRow, {
-      global: {...globalConfig.global, stubs: {LogPaymentBadges}},
+      ...globalConfig,
 
       props: {entry, viewModel: fakeViewModel({players: [fakePublicPlayerModel({color: 'blue', name: 'Blue'})]})},
     });
 
     expect(wrapper.text()).to.contain('+2');
-    expect(wrapper.find('.action-log-payment').exists()).is.false;
     expect(wrapper.find('.resource_icon--steel').exists()).to.be.true;
     expect(wrapper.findAllComponents(LogMessageComponent)).to.have.length(1);
     await wrapper.get('button').trigger('click');
     expect(wrapper.get('button').attributes('aria-expanded')).eq('true');
     expect(wrapper.findAllComponents(LogMessageComponent)).to.have.length(2);
-  });
-
-  it('shows recorded card costs before gains, including each paid resource', () => {
-    const action = new LogMessage(LogMessageType.DEFAULT, 'Blue played a card', []);
-    action.payment = {megacredits: 14, steel: 2, titanium: 1};
-    const gained = new LogMessage(LogMessageType.DEFAULT, 'Blue gained 2 steel', []);
-    gained.effect = {kind: 'resource', resource: 'steel', production: false, amount: 2, player: 'blue'};
-    const entry = {kind: 'action' as const, id: 'action-payment', messages: [action, gained], complete: true};
-    const wrapper = shallowMount(ActionLogRow, {
-      global: {...globalConfig.global, stubs: {LogPaymentBadges}},
-
-      props: {entry, viewModel: fakeViewModel({players: [fakePublicPlayerModel({color: 'blue', name: 'Blue'})]})},
-    });
-
-    expect(wrapper.findAll('.action-log-payment').map((chip) => chip.attributes('aria-label')))
-      .deep.eq(['Paid 14 megacredits', 'Paid 2 steel', 'Paid 1 titanium']);
-    expect(wrapper.findAll('.action-log-payment').map((chip) => chip.text())).deep.eq(['−14', '−2', '−1']);
-    expect(wrapper.get('.action-log-effects').element.firstElementChild?.classList.contains('action-log-payment')).is.true;
-    expect(wrapper.get('.action-log-effect').text()).to.contain('+2');
-  });
-
-  it('shows the exact energy spent on a later trade message before its gain', () => {
-    const action = new LogMessage(LogMessageType.DEFAULT, 'Blue played Trade Advance', []);
-    const trade = new LogMessage(LogMessageType.DEFAULT, 'Blue traded with Luna', []);
-    trade.payment = {megacredits: 0, steel: 0, titanium: 0, energy: 3};
-    const gained = new LogMessage(LogMessageType.DEFAULT, 'Blue gained 17 M€', []);
-    gained.effect = {kind: 'resource', resource: 'megacredits', production: false, amount: 17, player: 'blue'};
-    const entry = {kind: 'action' as const, id: 'action-trade', messages: [action, trade, gained], complete: true};
-    const wrapper = shallowMount(ActionLogRow, {
-      global: {...globalConfig.global, stubs: {LogPaymentBadges}},
-
-      props: {entry, viewModel: fakeViewModel({players: [fakePublicPlayerModel({color: 'blue', name: 'Blue'})]})},
-    });
-
-    expect(wrapper.get('.action-log-payment').attributes('aria-label')).eq('Paid 3 energy');
-    expect(wrapper.find('.action-log-payment .resource_icon--energy').exists()).is.true;
-    expect(wrapper.get('.action-log-effects').element.firstElementChild?.classList.contains('action-log-payment')).is.true;
-    expect(wrapper.get('.action-log-effect').text()).to.contain('+17');
   });
 
   it('shows a logged ocean bonus as coins and frames production', () => {
@@ -135,7 +95,7 @@ describe('ActionLogRow', () => {
     ]);
     const entry = {kind: 'action' as const, id: 'action-2', messages: [action, production, oceanBonus], complete: true};
     const wrapper = shallowMount(ActionLogRow, {
-      global: {...globalConfig.global, stubs: {LogPaymentBadges}},
+      ...globalConfig,
 
       props: {entry, viewModel: fakeViewModel({players: [fakePublicPlayerModel({color: 'blue', name: 'Blue'})]})},
     });
@@ -155,7 +115,7 @@ describe('ActionLogRow', () => {
     changed.effect = {kind: 'tr', amount: -1, player: 'blue'};
     const entry = {kind: 'action' as const, id: 'action-3', messages: [action, changed], complete: true};
     const wrapper = shallowMount(ActionLogRow, {
-      global: {...globalConfig.global, stubs: {LogPaymentBadges}},
+      ...globalConfig,
 
       props: {entry, viewModel: fakeViewModel({players: [
         fakePublicPlayerModel({color: 'red', name: 'Red'}),
@@ -180,7 +140,7 @@ describe('ActionLogRow', () => {
     ]);
     const entry = {kind: 'action' as const, id: 'action-4', messages: [action, placement], complete: true};
     const wrapper = shallowMount(ActionLogRow, {
-      global: {...globalConfig.global, stubs: {LogPaymentBadges}},
+      ...globalConfig,
 
       props: {entry, viewModel: fakeViewModel({players: [fakePublicPlayerModel({color: 'blue', name: 'Blue'})]})},
     });

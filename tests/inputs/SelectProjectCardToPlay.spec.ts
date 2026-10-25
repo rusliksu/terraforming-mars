@@ -80,11 +80,11 @@ describe('SelectProjectCardToPlay', () => {
 
     expect(player.megaCredits).eq(6);
     expect(player.steel).eq(0);
-    expect(player.game.gameLog.find((message) => message.message === '${0} played ${1}')?.payment)
-      .deep.eq({megacredits: 14, steel: 2, titanium: 0});
+    const message = player.game.gameLog.find((message) => message.message === '${0} played ${1} [ ${2} ]');
+    expect(message?.data[2].value).eq('-2:r:steel: -14:r:mc:');
   });
 
-  it('hides the whole expense when heat also paid for the card', () => {
+  it('records heat paid for the card', () => {
     player.megaCredits = 20;
     player.heat = 4;
     player.canUseHeatAsMegaCredits = true;
@@ -93,6 +93,7 @@ describe('SelectProjectCardToPlay', () => {
       payment: Payment.of({megacredits: 14, heat: 4}),
     });
 
-    expect(player.game.gameLog.find((message) => message.message === '${0} played ${1}')?.payment).is.undefined;
+    const message = player.game.gameLog.find((message) => message.message === '${0} played ${1} [ ${2} ]');
+    expect(message?.data[2].value).eq('-14:r:mc: -4:r:heat:');
   });
 });

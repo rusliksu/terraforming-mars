@@ -38,7 +38,6 @@
         <span v-else v-i18n>{{ data.value }}</span>
       </span>
     </template>
-    <LogPaymentBadges :payment="message.payment"/>
     <span v-if="message.aiInsight !== undefined" class="ai-log-rate-bar" data-test="ai-log-rate-bar" @click.stop>
       <button v-for="choice in AI_RATING_CHOICES" :key="choice.rating" type="button"
         class="ai-log-rate-bar__button" :title="choice.label" :data-test="'ai-rate-' + choice.rating"
@@ -70,7 +69,6 @@ import {gameLocaleToIntlLocale} from '@/client/utils/LocaleUtils';
 import {range} from '@/common/utils/utils';
 import {renderMarkdown} from '@/client/markdown/markdown';
 import {CardResource} from '@/common/CardResource';
-import LogPaymentBadges from './LogPaymentBadges.vue';
 import {AI_FEEDBACK_EMOJI} from '@/common/ai/AiFeedback';
 import {AI_RATING_CHOICES} from '@/client/components/logpanel/aiAnalysis/aiRatingChoices';
 
@@ -88,7 +86,6 @@ const cardTypeToCss: Record<CardType, string | undefined> = {
 
 export default defineComponent({
   name: 'LogMessageComponent',
-  components: {LogPaymentBadges},
   emits: ['click', 'spaceClicked', 'aiRate'],
   props: {
     message: {

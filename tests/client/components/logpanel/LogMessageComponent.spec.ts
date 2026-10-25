@@ -55,12 +55,12 @@ describe('LogMessageComponent', () => {
     expect(wrapper.find('li').classes()).contains('log-message--canceled');
   });
 
-  it('shows what a played card cost', () => {
-    const message = new LogMessage(LogMessageType.DEFAULT, '${0} played ${1}', [
+  it('shows paid resources inside the played card message', () => {
+    const message = new LogMessage(LogMessageType.DEFAULT, '${0} played ${1} [ ${2} ]', [
       {type: LogMessageDataType.PLAYER, value: 'blue'},
       {type: LogMessageDataType.CARD, value: CardName.ANTS},
+      {type: LogMessageDataType.STRING, value: '-2:r:steel: -14:r:mc:'},
     ]);
-    message.payment = {megacredits: 7, steel: 1, titanium: 0};
     const wrapper = mount(LogMessageComponent, {
       ...globalConfig,
       props: {
@@ -69,43 +69,9 @@ describe('LogMessageComponent', () => {
       },
     });
 
-    const badges = wrapper.findAll('.action-log-payment');
-    expect(badges).has.length(2);
-    expect(badges[0].text()).contains('7');
-    expect(badges[0].find('.resource_icon').classes()).contains('resource_icon--megacredits');
-    expect(badges[1].find('.resource_icon').classes()).contains('resource_icon--steel');
-  });
-
-  it('shows energy paid by a colony trade', () => {
-    const message = new LogMessage(LogMessageType.DEFAULT, '${0} used ${1} action', [
-      {type: LogMessageDataType.PLAYER, value: 'blue'},
-      {type: LogMessageDataType.CARD, value: CardName.ANTS},
-    ]);
-    message.payment = {megacredits: 0, steel: 0, titanium: 0, energy: 3};
-    const wrapper = mount(LogMessageComponent, {
-      ...globalConfig,
-      props: {
-        message,
-        viewModel: fakeViewModel(),
-      },
-    });
-
-    const badges = wrapper.findAll('.action-log-payment');
-    expect(badges).has.length(1);
-    expect(badges[0].find('.resource_icon').classes()).contains('resource_icon--energy');
-  });
-
-  it('shows no cost when the message has no payment', () => {
-    const message = new LogMessage(LogMessageType.DEFAULT, 'A plain message', []);
-    const wrapper = mount(LogMessageComponent, {
-      ...globalConfig,
-      props: {
-        message,
-        viewModel: fakeViewModel(),
-      },
-    });
-
-    expect(wrapper.findAll('.action-log-payment')).has.length(0);
+    expect(wrapper.find('.markdown-resource.resource_icon--steel').exists()).is.true;
+    expect(wrapper.find('.markdown-resource.resource_icon--megacredits').exists()).is.true;
+    expect(wrapper.text()).contains('[ -2 -14 ]');
   });
   it('marks irreversible undo messages', () => {
     const message = new LogMessage(LogMessageType.IRREVERSIBLE_UNDO, 'Test message', []);

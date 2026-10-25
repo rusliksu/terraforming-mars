@@ -56,7 +56,7 @@ export interface IGameLoader {
    * the cache drops it and its participant ids, and later saves are rejected.
    * The caller is responsible for deleting the game's rows from the database.
    */
-  deleteGame(gameId: GameId): void;
+  deleteGame(gameId: GameId): Promise<void>;
 
   /**
    * Saves a game (but takes into account that the game might have already been purged.)

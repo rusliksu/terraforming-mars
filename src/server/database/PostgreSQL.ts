@@ -393,6 +393,21 @@ export class PostgreSQL implements IDatabase {
     }
   }
 
+  async deleteGame(gameId: GameId): Promise<void> {
+    await this.client.query('BEGIN');
+    try {
+      await this.client.query('DELETE FROM games WHERE game_id = $1', [gameId]);
+      await this.client.query('DELETE FROM game WHERE game_id = $1', [gameId]);
+      await this.client.query('DELETE FROM participants WHERE game_id = $1', [gameId]);
+      await this.client.query('DELETE FROM game_results WHERE game_id = $1', [gameId]);
+      await this.client.query('DELETE FROM completed_game WHERE game_id = $1', [gameId]);
+      await this.client.query('COMMIT');
+    } catch (err) {
+      await this.client.query('ROLLBACK');
+      throw err;
+    }
+  }
+
   // Not part of IDatabase (only the batch compressCompletedGames is), invisible to MetricsDelegate.
   // Instrumented directly here instead, so per-game maintenance latency isn't lost inside the batch.
   compressCompletedGame(gameId: GameId): Promise<void> {

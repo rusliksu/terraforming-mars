@@ -386,9 +386,18 @@ export class GameLoader implements IGameLoader {
    * checks purgedGames) and drops the in-memory copy with its participant ids right away.
    * The caller deletes the game's rows from the database; this only invalidates the cache.
    */
-  public deleteGame(gameId: GameId): void {
-    if (!this.purgedGames.includes(gameId)) {
+  public async deleteGame(gameId: GameId): Promise<void> {
+    const wasPurged = this.purgedGames.includes(gameId);
+    if (!wasPurged) {
       this.purgedGames.push(gameId);
+    }
+    try {
+      await Database.getInstance().deleteGame(gameId);
+    } catch (err) {
+      if (!wasPurged) {
+        this.purgedGames = this.purgedGames.filter((id) => id !== gameId);
+      }
+      throw err;
     }
     this.cache.remove(gameId);
   }

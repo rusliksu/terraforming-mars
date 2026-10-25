@@ -86,6 +86,21 @@ describeDatabaseSuite({
       expect(await db.getSaveIds(game.id)).has.members([0, 1]);
     });
 
+    it('deleteGame removes the saves, participants and results', async () => {
+      const db = dbFactory();
+      const player = TestPlayer.BLACK.newPlayer();
+      const game = Game.newInstance('g123456789013', [player], player, 'spectatorid');
+      await db.lastSaveGamePromise;
+      await db.saveGame(game);
+      db.saveGameResults(game.id, 1, 1, game.gameOptions, []);
+
+      await db.deleteGame(game.id);
+
+      expect(await db.getSaveIds(game.id)).is.empty;
+      expect((await db.getParticipants()).find((entry) => entry.gameId === game.id)).is.undefined;
+      expect(await db.getGameIds()).not.include(game.id);
+    });
+
     it('purgeUnfinishedGames removes stale games with padded running status', async () => {
       const db = dbFactory();
       const player = TestPlayer.BLACK.newPlayer();

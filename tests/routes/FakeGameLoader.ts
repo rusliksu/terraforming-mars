@@ -46,6 +46,12 @@ export class FakeGameLoader implements IGameLoader {
   }
   public mark() {
   }
+  public async deleteGame(gameId: GameId): Promise<void> {
+    this.games.delete(gameId);
+  }
+  public flush(): Promise<void> {
+    return Promise.resolve();
+  }
   public completeGame(_game: Game): Promise<void> {
     return Promise.resolve(undefined);
   }

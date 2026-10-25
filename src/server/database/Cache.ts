@@ -142,6 +142,31 @@ export class Cache extends EventEmitter {
     return false;
   }
 
+  /**
+   * Forgets a game entirely: the game copy, its participant ids and its eviction/idle
+   * bookkeeping. Used when the game is deleted from the database so the cache does not
+   * keep serving it until the next restart. Returns true when the cache knew the game.
+   */
+  public remove(gameId: GameId): boolean {
+    const game = this.games.get(gameId);
+    const known = this.games.has(gameId);
+    if (game !== undefined) {
+      game.players.forEach((p) => p.tearDown());
+    }
+    this.games.delete(gameId);
+    for (const [participantId, id] of this.participantIds) {
+      if (id === gameId) {
+        this.participantIds.delete(participantId);
+      }
+    }
+    this.evictionSchedule.delete(gameId);
+    this.lastAccess.delete(gameId);
+    if (game !== undefined) {
+      this.emit('evicted', 1);
+    }
+    return known;
+  }
+
   private evict(gameId: GameId) {
     const game = this.games.get(gameId);
     if (game === undefined) {

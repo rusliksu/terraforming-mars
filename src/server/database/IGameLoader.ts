@@ -52,6 +52,16 @@ export interface IGameLoader {
   mark(gameId: GameId): void;
 
   /**
+   * Invalidates the in-memory copy of a game that was deleted from the database:
+   * the cache drops it and its participant ids, and later saves are rejected.
+   * The caller is responsible for deleting the game's rows from the database.
+   */
+  deleteGame(gameId: GameId): Promise<void>;
+
+  /** Waits for the pending save of every resident game; used by the shutdown drain. */
+  flush(): Promise<void>;
+
+  /**
    * Saves a game (but takes into account that the game might have already been purged.)
    *
    * Do not call IDatabase.saveGame directly in a running system.

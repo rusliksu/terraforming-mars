@@ -96,6 +96,12 @@ export interface IDatabase {
     deleteGameNbrSaves(gameId: GameId, rollbackCount: number): Promise<void>;
 
     /**
+     * Deletes every stored row/file of a game: saves, participants, results,
+     * the completion marker and the history binding. Used by admin game deletion.
+     */
+    deleteGame(gameId: GameId): Promise<void>;
+
+    /**
      * A maintenance task on a single game to mark it as complete.
      *
      * It will:

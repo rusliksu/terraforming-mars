@@ -67,6 +67,20 @@ export class LocalFilesystem implements IDatabase {
     return path.resolve(this.customCardLibraryFolder, `${id}.json`);
   }
 
+  public deleteGame(gameId: GameId): Promise<void> {
+    for (const file of [this.filename(gameId), this.completedFilename(gameId)]) {
+      if (existsSync(file)) {
+        unlinkSync(file);
+      }
+    }
+    for (const entry of readdirSync(this.historyFolder)) {
+      if (entry.startsWith(`${gameId}-`) && entry.endsWith('.json')) {
+        unlinkSync(path.resolve(this.historyFolder, entry));
+      }
+    }
+    return Promise.resolve();
+  }
+
   saveGame(game: IGame): Promise<void> {
     console.log(`saving ${game.id} at position ${game.lastSaveId}`);
     assertSaveIdWithinLimit(game.lastSaveId, this.maxSavesPerGame);

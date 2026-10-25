@@ -55,6 +55,8 @@ function noopGameLoader(): IGameLoader {
     saveGame: () => Promise.resolve(),
     completeGame: () => Promise.resolve(),
     maintenance: () => Promise.resolve(),
+    deleteGame: () => Promise.resolve(),
+    flush: () => Promise.resolve(),
   };
 }
 import {Spacefarer} from '../src/server/milestones/terraCimmeria/Spacefarer';

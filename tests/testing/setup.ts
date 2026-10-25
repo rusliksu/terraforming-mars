@@ -14,6 +14,7 @@ process.env.ELO_DATA_DIR = process.env.ELO_DATA_DIR ?? path.join(os.tmpdir(), `t
 const FAKE_DATABASE: IDatabase = {
   markFinished: () => Promise.resolve(),
   deleteGameNbrSaves: () => Promise.resolve(),
+  deleteGame: () => Promise.resolve(),
   getPlayerCount: () => Promise.resolve(0),
   getGame: () => Promise.resolve({} as SerializedGame),
   getGameId: () => Promise.resolve('g'),

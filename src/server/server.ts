@@ -22,6 +22,7 @@ import {runId, serverId} from '@/server/utils/server-ids';
 import {processRequest} from '@/server/server/requestProcessor';
 import {timeAsync} from '@/server/utils/timer';
 import {GameLoader} from '@/server/database/GameLoader';
+import {drain} from '@/server/server/gracefulShutdown';
 import {globalInitialize} from '@/server/globalInitialize';
 import {seedOfficialMapLibrary} from '@/server/database/seedOfficialMapLibrary';
 import {refreshCustomCardRegistry} from '@/server/cards/CustomCardRegistry';
@@ -30,6 +31,27 @@ import {capture} from '@/server/server/SentryReporter';
 import {registerUncaughtExceptionHandler} from '@/server/server/SentryProcessBoundary';
 
 registerUncaughtExceptionHandler(capture);
+
+function installShutdownHandlers(server: http.Server | https.Server): void {
+  let shuttingDown = false;
+  const shutdown = async (signal: string): Promise<void> => {
+    if (shuttingDown) {
+      return;
+    }
+    shuttingDown = true;
+    console.log(`Received ${signal}, draining connections`);
+    try {
+      await drain(server, GameLoader.getInstance());
+      console.log('shutdown complete');
+      process.exit(0);
+    } catch (err) {
+      console.error('Shutdown failed', err);
+      process.exit(1);
+    }
+  };
+  process.on('SIGTERM', () => void shutdown('SIGTERM'));
+  process.on('SIGINT', () => void shutdown('SIGINT'));
+}
 
 function requestHandler(req: http.IncomingMessage, res: http.ServerResponse): void {
   processRequest(req, res, capture).catch((error) => {
@@ -154,6 +176,7 @@ async function start() {
   }
 
   server.listen({port: port, host: host});
+  installShutdownHandlers(server);
 
   if (!process.env.SERVER_ID) {
     console.log(`The secret serverId for this server is ${ansi.style.bold}${serverId}${ansi.style.reset}.`);

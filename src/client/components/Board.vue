@@ -585,6 +585,12 @@ export default defineComponent({
       return this.globalParameters?.oceans.max ?? this.globalParameterMaximums.oceans;
     },
     customExtent(): {maxX: number, maxY: number} {
+      // The definition's row count is authoritative. Deriving the pivot from the spaces that
+      // are left after carving the top/bottom row would shift customSpacePixel's per-row
+      // offset and shear the whole grid into an arrow.
+      if (this.customBoardRows !== undefined) {
+        return {maxX: this.customBoardRows - 1, maxY: this.customBoardRows - 1};
+      }
       let maxX = 0;
       let maxY = 0;
       for (const space of this.spaces) {

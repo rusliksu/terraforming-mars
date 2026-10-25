@@ -10,10 +10,15 @@
 
 <script lang="ts">
 
-import {Component, defineComponent} from 'vue';
+import {Component, computed, defineComponent, inject, provide, shallowRef, watch} from 'vue';
+import {INPUT_DEPTH, INPUT_PRESENTATION_INTRO} from '@/client/wrybit/inputs/presentation';
+import {afterSave, copyInputResponse, SAVE_SESSION, useSaveSession, withSaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+import type {CollectedResponse, InputController, MaybePromise, SaveAttempt, SaveOutcome} from '@/client/wrybit/inputs/saveAttempt';
+import {getPreferences} from '@/client/utils/PreferencesManager';
 import {PlayerViewModel} from '@/common/models/PlayerModel';
 import {PlayerInputModel} from '@/common/models/PlayerInputModel';
 import {InputResponse} from '@/common/inputs/InputResponse';
+import type {InputChoice} from './inputChoice';
 import AndOptions from '@/client/components/AndOptions.vue';
 import OrOptions from '@/client/components/OrOptions.vue';
 import SelectAmount from '@/client/components/SelectAmount.vue';
@@ -75,9 +80,92 @@ const inputComponents = {
   'deltaProject': DeltaProjectInput,
 } satisfies InputComponentRegistry;
 
+type DraftFields = {
+  [K in PlayerInputModel['type']]: ReadonlyArray<Extract<keyof InstanceType<(typeof inputComponents)[K]>['$data'], string>>;
+};
+
+// Only response-bearing draft fields: warnings, DOM handles and timers never invalidate a confirmation.
+const draftFields = {
+  and: [], or: ['selectedOption', 'selectedIdx'], amount: ['amount'], card: ['cards'], colony: ['selectedColony'],
+  delegate: ['selectedPlayer'], globalEvent: ['selected'], initialCards: ['selectedCards', 'selectedCeos', 'selectedCorporations', 'selectedPreludes'],
+  option: [], party: ['selectedParty'], payment: ['payment'], player: ['selectedPlayer'], projectCard: ['cardName', 'payment'],
+  space: ['selectedSpaceId', 'spaceId'], productionToLose: ['units'],
+  aresGlobalParameters: ['lowOceanDelta', 'highOceanDelta', 'temperatureDelta', 'oxygenDelta'],
+  resource: ['unit'], resources: ['units'], claimedUndergroundToken: ['selected'], deltaProject: ['amount'],
+} satisfies DraftFields;
+
 export default defineComponent({
   name: 'PlayerInputFactory',
+  setup(props) {
+    provide(INPUT_DEPTH, inject(INPUT_DEPTH, 0) + 1);
+    provide(INPUT_PRESENTATION_INTRO, computed(() => props.presentationIntro));
+    const session = useSaveSession();
+    provide(SAVE_SESSION, session);
+    const childInput = shallowRef<InputController>();
+    watch(() => childInput.value === undefined ? undefined : JSON.stringify(draftFields[props.playerinput.type].map((field) => childInput.value?.$data[field])),
+      (next, previous) => {
+        if (previous !== undefined && next !== previous) {
+          session.cancel();
+        }
+      }, {flush: 'sync'});
+    watch(() => getPreferences().experimental_layout, () => session.cancel(), {flush: 'sync'});
+
+    function collectResponse(attempt: SaveAttempt): MaybePromise<CollectedResponse> {
+      if (!attempt.isCurrent()) {
+        return {outcome: 'cancelled'};
+      }
+      const child = childInput.value;
+      if (child === undefined) {
+        return {outcome: 'invalid'};
+      }
+      let open = true;
+      let count = 0;
+      let response: InputResponse | undefined;
+      const respond = (value: InputResponse) => {
+        if (open && attempt.isCurrent()) {
+          count++;
+          response = copyInputResponse(value);
+        }
+      };
+      const complete = (outcome: SaveOutcome | void): CollectedResponse => {
+        open = false;
+        if (!attempt.isCurrent()) {
+          return {outcome: 'cancelled'};
+        }
+        if (outcome === 'invalid' || outcome === 'cancelled') {
+          return {outcome};
+        }
+        return count === 1 && response !== undefined ? {outcome: 'saved', response} : {outcome: 'invalid'};
+      };
+      try {
+        const result = child.saveData(attempt, respond);
+        if (result instanceof Promise) {
+          return result.then(complete, (error) => {
+            open = false; throw error;
+          });
+        }
+        return complete(result);
+      } catch (error) {
+        open = false;
+        throw error;
+      }
+    }
+
+    function saveData(attempt?: SaveAttempt): MaybePromise<SaveOutcome> {
+      return withSaveAttempt(session, attempt, (current) => afterSave(collectResponse(current), (collected) => {
+        if (collected.outcome === 'saved') {
+          props.onsave(collected.response);
+        }
+        return collected.outcome;
+      }));
+    }
+    return {childInput, collectResponse, saveData};
+  },
   props: {
+    presentationIntro: {
+      type: Boolean,
+      default: false,
+    },
     playerView: {
       type: Object as () => PlayerViewModel,
       required: true,
@@ -100,8 +188,37 @@ export default defineComponent({
     },
   },
   methods: {
-    saveData() {
-      this.typedRefs.childInput.saveData();
+    selectChoice(choice: InputChoice): boolean {
+      const input = this.playerinput;
+      if (this.childInput === undefined) {
+        return false;
+      }
+      if (input.type === 'player' && choice.type === 'player' && input.players.includes(choice.color)) {
+        const child = this.childInput as InstanceType<typeof SelectPlayer>;
+        child.presentationBinding.select(choice.color);
+        return true;
+      }
+      if (input.type === 'card' && choice.type === 'card' && input.min === 1 && input.max === 1) {
+        const card = input.cards.find((candidate) => candidate.name === choice.name && candidate.isDisabled !== true);
+        if (card !== undefined) {
+          const child = this.childInput as InstanceType<typeof SelectCard>;
+          child.presentationBinding.select(card);
+          return true;
+        }
+      }
+      return false;
+    },
+    getChoice(): InputChoice | undefined {
+      if (this.playerinput.type === 'player') {
+        const child = this.childInput as InstanceType<typeof SelectPlayer> | undefined;
+        return child?.selectedPlayer === undefined || child.selectedPlayer === 'NEUTRAL' ? undefined : {type: 'player', color: child.selectedPlayer};
+      }
+      if (this.playerinput.type === 'card') {
+        const child = this.childInput as InstanceType<typeof SelectCard> | undefined;
+        const name = child?.getData()[0];
+        return name === undefined ? undefined : {type: 'card', name};
+      }
+      return undefined;
     },
     canSave(): boolean {
       const canSave = this.typedRefs.childInput.canSave;
@@ -109,8 +226,8 @@ export default defineComponent({
     },
   },
   computed: {
-    typedRefs(): {childInput: {saveData: () => void, canSave?: () => boolean}} {
-      return this.$refs as unknown as {childInput: {saveData: () => void, canSave?: () => boolean}};
+    typedRefs(): {childInput: InputController} {
+      return this.$refs as unknown as {childInput: InputController};
     },
     resolvedComponent(): Component {
       const input = this.playerinput;

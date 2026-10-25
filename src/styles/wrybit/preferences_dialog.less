@@ -1,0 +1,186 @@
+// Settings (PreferencesDialog.vue, groups from preferencesGroups.ts): groups as cards in a grid,
+// one row per setting with text left and switch right. "Advanced" is collapsed and toned down.
+@import (reference) "./dialog_frame.less";
+@import (reference) "./variables.less";
+
+@preferences-switch-width: 36px;
+@preferences-switch-height: 20px;
+@preferences-switch-inset: 3px; // gap between knob and track edge
+@preferences-switch-knob: 14px; // = height - 2 × inset
+
+.preferences-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: @dialog-gap-tile;
+}
+
+.preferences-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 4px 0;
+  border: 1px solid @dialog-surface-border;
+  border-radius: @dialog-tile-radius;
+  background: @dialog-surface;
+}
+
+// Group header: icon + title, divider across the full card width; separates the groups for quick scanning
+.preferences-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -4px 0 4px; // cancels the card's top padding so the header sits symmetric above the divider
+  padding: 10px 12px;
+  border-bottom: 1px solid @dialog-surface-border;
+  color: @dialog-accent-text;
+  list-style: none;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+}
+
+.dialog-frame .preferences-group-title {
+  margin: 0;
+  padding: 0;
+  color: #fff;
+  font-family: "Ubuntu", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+// Row: whole area clickable, hover highlights it slightly
+.preferences-switch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 4px;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+.preferences-switch-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.preferences-switch-label {
+  color: #e4e5ea;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.preferences-switch-hint {
+  color: @dialog-muted;
+  font-size: 12px;
+  line-height: 1.35;
+  white-space: pre-line;
+}
+
+// Switch: checkbox hidden (still operable and testable), next to it the drawn track with knob
+.preferences-switch-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.preferences-switch-track {
+  position: relative;
+  flex: none;
+  width: @preferences-switch-width;
+  height: @preferences-switch-height;
+  border-radius: @preferences-switch-height;
+  background: rgba(255, 255, 255, 0.18);
+  transition: background 0.15s;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: @preferences-switch-inset;
+    left: @preferences-switch-inset;
+    width: @preferences-switch-knob;
+    height: @preferences-switch-knob;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    transition: transform 0.15s;
+  }
+}
+
+.preferences-switch-input:checked + .preferences-switch-track {
+  background: @bg_action;
+
+  &::after {
+    transform: translateX(@preferences-switch-width - @preferences-switch-height);
+  }
+}
+
+.preferences-switch-input:focus-visible + .preferences-switch-track {
+  outline: 2px solid @dialog-accent-text;
+  outline-offset: 2px;
+}
+
+// Rarely needed: full width, dashed and muted, closed by default
+.preferences-group--optional {
+  grid-column: 1 / -1;
+  border-style: dashed;
+  background: transparent;
+
+  // Closed: no divider (nothing below it), the header is the whole card
+  .preferences-group-head {
+    margin-bottom: -4px;
+    border-bottom-color: transparent;
+    color: @dialog-muted;
+    cursor: pointer;
+  }
+
+  .preferences-group-title {
+    color: @dialog-muted;
+  }
+
+  &[open] .preferences-group-head {
+    margin-bottom: 4px;
+    border-bottom-color: @dialog-surface-border;
+  }
+}
+
+.preferences-group-chevron {
+  margin-left: auto;
+  font-size: 18px;
+  line-height: 1;
+  // Closed: points down (will open below), open: points up (will close)
+  transform: rotate(90deg);
+  transition: transform 0.15s;
+
+  details[open] & {
+    transform: rotate(-90deg);
+  }
+}
+
+// Report a bug as secondary action on the left, OK on the right
+.btn.preferences-bug-button {
+  margin-right: auto;
+}
+
+// Phone: one column, no hint texts (the list would get too long)
+@media only screen and (max-width: 520px) {
+  .preferences-groups {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .preferences-switch-hint {
+    display: none;
+  }
+}

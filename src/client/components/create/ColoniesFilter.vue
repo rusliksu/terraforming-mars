@@ -1,5 +1,6 @@
 <template>
   <ModuleItemFilter
+    :embedded="embedded"
     title="Colonies"
     :groups="GROUPS"
     :itemsByGroup="ITEMS_BY_GROUP"
@@ -44,6 +45,7 @@ export default defineComponent({
   components: {ModuleItemFilter},
   emits: ['colonies-list-changed', 'close'],
   props: {
+    embedded: {type: Boolean, default: false},
     expansions: {type: Object as () => Record<Expansion, boolean>, required: true},
     selected: {type: Array as () => Array<ColonyName>, required: true},
   },

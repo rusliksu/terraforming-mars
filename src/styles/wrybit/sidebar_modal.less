@@ -1,0 +1,77 @@
+// Modal shell of the sidebar dialogs (SidebarModal.vue): language, info, help, settings
+// All dialogs share colors and surface (modal_surface.less)
+@import (reference) "./modal_surface.less";
+
+@sidebar-modal-background: @modal-background;
+@sidebar-modal-border: @modal-border;
+
+.sidebar-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: @modal-z-index;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: @modal-screen-gap;
+  .modal-backdrop();
+}
+
+.sidebar-modal {
+  position: relative;
+  max-width: min(720px, 100%);
+  .modal-surface();
+}
+
+.sidebar-modal--wide {
+  max-width: min(1100px, 100%);
+}
+
+// Own row at the top right (covers no content), stays visible while scrolling
+.sidebar-modal-close {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: block;
+  width: 32px;
+  height: 32px;
+  margin: -12px -16px 14px auto;
+  border: 1px solid @sidebar-modal-border;
+  border-radius: 8px;
+  background: @sidebar-modal-background;
+  color: #d6d7dc;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    background: #34363e;
+    color: #fff;
+  }
+}
+
+// Content with its own header and own scrolling (help overlay): fixed height, so nothing jumps when switching tabs
+.sidebar-modal--bare {
+  display: flex;
+  width: min(1180px, 100%);
+  max-width: min(1180px, 100%);
+  flex-direction: column;
+  height: min(@modal-max-height, 900px);
+  padding: 0;
+  overflow: hidden;
+}
+
+// Phone only: full screen, without margin or gap (tablets keep the box)
+@media only screen and (max-width: 760px) {
+  .sidebar-modal-backdrop:has(.sidebar-modal--bare) {
+    padding: 0;
+  }
+
+  .sidebar-modal--bare {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: none;
+    border: 0;
+    border-radius: 0;
+  }
+}

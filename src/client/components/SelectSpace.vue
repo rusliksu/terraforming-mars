@@ -1,12 +1,6 @@
 <template>
-  <div class="select_space_cont">
-    <ConfirmDialog
-        message="Place your tile here?"
-        :enableDontShowAgainCheckbox="true"
-        ref="confirmation"
-        @accept="confirmPlacement"
-        @dismiss="cancelPlacement"
-        @hide="hideDialog" />
+  <component v-if="spacePresentation !== undefined" :is="spacePresentation" :binding="presentationBinding" v-bind="$attrs"/>
+  <div v-else class="select_space_cont" v-bind="$attrs">
     <div v-if="showtitle" class="wf-select-space">
       {{ $t(playerinput.title) }}
       <GoToMap :playerinput="playerinput"/>
@@ -16,10 +10,21 @@
       <GoToMap :playerinput="playerinput"/>
     </div>
   </div>
+    <ConfirmDialog
+        message="Place your tile here?"
+        :enableDontShowAgainCheckbox="true"
+        ref="confirmation"
+        @accept="confirmPlacement"
+        @dismiss="cancelPlacement"
+        @hide="hideDialog" />
 </template>
 
 <script lang="ts">
-import {defineComponent} from 'vue';
+import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+
+import {defineComponent, inject} from 'vue';
+import {SpaceBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
+import {INPUT_HOSTS} from '@/client/wrybit/shell/inputHosts';
 import {SelectSpaceModel} from '@/common/models/PlayerInputModel';
 import {PlayerViewModel} from '@/common/models/PlayerModel';
 import {getPreferences, PreferencesManager} from '@/client/utils/PreferencesManager';
@@ -36,12 +41,21 @@ type Refs = {
 type DataModel = {
   spaces: Set<SpaceId>;
   selectedTile: HTMLElement | undefined,
+  selectedSpaceId: SpaceId | undefined;
+  boundTiles: Array<{tile: HTMLElement, handler: () => void}>;
+  submitted: boolean;
   spaceId: SpaceId | undefined;
   warning: string | undefined;
+  confirmationPending: boolean;
+  confirmationAutomatic: boolean;
 };
 
 export default defineComponent({
   name: 'SelectSpace',
+  inheritAttrs: false,
+  setup() {
+    return {inputHost: inject(INPUT_HOSTS, undefined)?.target, spacePresentation: useInputPresentation('space')};
+  },
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
@@ -68,8 +82,13 @@ export default defineComponent({
     return {
       spaces: new Set(this.playerinput.spaces),
       selectedTile: undefined,
+      selectedSpaceId: undefined,
+      boundTiles: [],
+      submitted: false,
       spaceId: undefined,
       warning: undefined,
+      confirmationPending: false,
+      confirmationAutomatic: false,
     };
   },
   components: {
@@ -77,11 +96,71 @@ export default defineComponent({
     GoToMap,
   },
   computed: {
+    presentationBinding(): SpaceBinding {
+      const anchor = this.selectedTile;
+      const current = () => this.confirmationPending && anchor === this.selectedTile && !this.submitted;
+      return {playerView: this.playerView, playerinput: this.playerinput, showsave: this.showsave, showtitle: this.showtitle,
+        anchor: this.confirmationPending && !this.submitted ? anchor : undefined, automatic: this.confirmationAutomatic, warning: this.warning,
+        accept: () => {
+          if (current()) {
+            this.confirmPlacement();
+          }
+        }, dismiss: () => {
+          if (current()) {
+            this.cancelPlacement();
+          }
+        },
+        hide: (hide) => this.hideDialog(hide), save: () => this.saveData()};
+    },
     typedRefs(): Refs {
       return this.$refs as unknown as Refs;
     },
   },
+  watch: {
+    spacePresentation(presentation) {
+      if (presentation !== undefined) {
+        this.typedRefs.confirmation.close();
+      } else if (this.confirmationPending) {
+        this.typedRefs.confirmation.show();
+      }
+      this.$nextTick(() => this.bindBoard());
+    },
+    inputHost() {
+      this.$nextTick(() => this.bindBoard());
+    },
+  },
   methods: {
+    clearBoardHandlers() {
+      for (const {tile, handler} of this.boundTiles) {
+        if (tile.onclick === handler) {
+          tile.onclick = null;
+        }
+        tile.classList.remove('board-space--available', 'board-space--selected');
+      }
+      this.boundTiles = [];
+    },
+    bindBoard() {
+      this.clearBoardHandlers();
+      const tiles = this.getSelectableSpaces();
+      this.selectedTile = tiles.find((tile) => tile.getAttribute('data_space_id') === this.selectedSpaceId);
+      if (this.submitted) {
+        this.selectedTile?.classList.add('board-space--selected');
+        return;
+      }
+      this.disableAnimation();
+      if (this.selectedTile === undefined) {
+        this.animateSpaces(tiles);
+      }
+      for (const tile of tiles) {
+        const spaceId = tile.getAttribute('data_space_id') as SpaceId | null;
+        if (spaceId === null || !this.spaces.has(spaceId)) {
+          continue;
+        }
+        const handler = () => this.onTileSelected(tile);
+        tile.onclick = handler;
+        this.boundTiles.push({tile, handler});
+      }
+    },
     animateSpace(tile: Element, activate: boolean) {
       if (activate) {
         tile.classList.add('board-space--available');
@@ -98,17 +177,20 @@ export default defineComponent({
       });
     },
     cancelPlacement() {
+      this.confirmationPending = false;
+      this.confirmationAutomatic = false;
       if (this.selectedTile === undefined) {
         throw new Error('unexpected, no tile selected!');
       }
       this.animateSpace(this.selectedTile, false);
+      this.selectedTile = undefined;
+      this.selectedSpaceId = undefined;
       this.animateSpaces(this.getSelectableSpaces());
     },
     confirmPlacement() {
-      const tiles = this.getSelectableSpaces();
-      tiles.forEach((tile) => {
-        tile.onclick = null;
-      });
+      this.confirmationPending = false;
+      this.confirmationAutomatic = false;
+      this.clearBoardHandlers();
 
       if (this.selectedTile === undefined) {
         throw new Error('unexpected, no tile selected!');
@@ -118,6 +200,7 @@ export default defineComponent({
         throw new Error('unexpected, space has no id');
       }
       this.spaceId = spaceId;
+      this.submitted = true;
       this.selectedTile.classList.add('board-space--selected');
       this.saveData();
     },
@@ -148,40 +231,35 @@ export default defineComponent({
     },
     onTileSelected(tile: HTMLElement) {
       this.selectedTile = tile;
+      this.selectedSpaceId = tile.getAttribute('data_space_id') as SpaceId;
       this.disableAnimation();
       this.animateSpace(tile, true);
       tile.classList.remove('board-space--available');
       const hideTileConfirmation = getPreferences().hide_tile_confirmation;
-      if (hideTileConfirmation) {
+      this.confirmationAutomatic = hideTileConfirmation && this.spacePresentation !== undefined;
+      if (hideTileConfirmation && !this.confirmationAutomatic) {
         this.confirmPlacement();
       } else {
-        this.typedRefs.confirmation.show();
+        this.confirmationPending = true;
+        if (this.spacePresentation === undefined) {
+          this.typedRefs.confirmation.show();
+        }
       }
     },
-    saveData() {
+    saveData(_attempt?: SaveAttempt, respond?: (response: SelectSpaceResponse) => void) {
+      const reply = respond ?? this.onsave;
       if (this.spaceId === undefined) {
         this.warning = 'Must select a space';
         return;
       }
-      this.onsave({type: 'space', spaceId: this.spaceId});
+      reply({type: 'space', spaceId: this.spaceId});
     },
   },
   mounted() {
-    this.disableAnimation();
-    const tiles = this.getSelectableSpaces();
-    this.animateSpaces(tiles);
-    for (let i = 0, length = tiles.length; i < length; i++) {
-      const tile = tiles[i];
-      const spaceId = tile.getAttribute('data_space_id') as SpaceId;
-
-      if (spaceId === null || this.spaces.has(spaceId) === false) {
-        continue;
-      }
-
-      tile.onclick = () => this.onTileSelected(tile);
-    }
+    this.bindBoard();
   },
   beforeUnmount() {
+    this.clearBoardHandlers();
     this.disableAnimation();
     for (const tile of this.getSelectableSpaces()) {
       tile.onclick = null;

@@ -1212,11 +1212,33 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 @media (max-width: 700px) {
   .card-maker {
     padding: 12px;
+
+    // Keep the page title clear of the floating optional-layout switch.
+    h1 {
+      max-width: calc(100% - 100px);
+      font-size: 30px;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
     .card-maker-controls,
     .card-maker-preview { width: 100%; min-width: 0; }
-    .card-maker-preview { overflow-x: auto; position: static; }
+    .card-maker-preview { overflow-x: hidden; position: static; }
     .card-maker-actions { flex-wrap: wrap; }
     input, select, textarea { min-width: 0; max-width: 100%; box-sizing: border-box; }
+
+    // Fit the enlarged preview into the phone column instead of making a
+    // horizontal scroller. 1.18 keeps the 278px native card inside the
+    // 336px content box at 360px; the narrower fallback covers 320px phones.
+    .card-maker-preview-zoom {
+      zoom: 1.18;
+      width: fit-content;
+      max-width: 100%;
+    }
+  }
+}
+@media (max-width: 380px) {
+  .card-maker .card-maker-preview-zoom {
+    zoom: 1;
   }
 }
 </style>

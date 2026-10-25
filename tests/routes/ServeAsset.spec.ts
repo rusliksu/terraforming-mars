@@ -87,6 +87,24 @@ describe('ServeAsset', () => {
     expect(res.content).eq('Not found');
   });
 
+  it('serves responsive image formats only inside assets', async () => {
+    instance = new ServeAsset(undefined, false, fileApi);
+    for (const [extension, contentType] of [['avif', 'image/avif'], ['webp', 'image/webp']]) {
+      scaffolding.url = `/assets/wrybit/shell/milky-way-portrait-540.${extension}`;
+      const imageResponse = new MockResponse();
+      await scaffolding.get(instance, imageResponse);
+      expect(imageResponse.statusCode).eq(statusCode.ok);
+      expect(imageResponse.headers.get('Content-Type')).eq(contentType);
+      expect(imageResponse.content).contains(`milky-way-portrait-540.${extension}`);
+
+      scaffolding.url = `/private/picture.${extension}`;
+      const outsideResponse = new MockResponse();
+      await scaffolding.get(instance, outsideResponse);
+      expect(outsideResponse.statusCode).eq(statusCode.notFound);
+    }
+    expect(fileApi.counts.readFile).eq(2);
+  });
+
   it('missing asset returns 404 instead of 500', async () => {
     instance = new ServeAsset(undefined, false, new MissingFileApiMock());
     scaffolding.url = '/assets/default_templates.json';

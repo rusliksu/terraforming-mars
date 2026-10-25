@@ -4,8 +4,8 @@
   "ocean_placement_pair_update": {"date":"2026-10-14","base":"923ba2f3a0e811975c0e1049d1be30e000a16782","contract":"oceanPlacementContext/version1/pairs","flows":["Own PlayerModel -> optional ordered pairs of distinct structural candidates","Board adjacency and player coefficient -> quoted second adjacency after the first ocean","Stable board/cost facts -> shared cash-budget consumer; no virtual moves or persisted state"],"scope":"Two intrinsic standard placements; at most 64 candidates; pending Ares board transitions and unsupported political costs are not certified","fingerprint_algorithm":"sha256_normalized_lf","historical_fingerprints_refreshed":false,"source_files":[{"path":"src/common/models/OceanPlacementContextModel.ts","sha256":"b8cdd6bb2abda7956cb7b2aafed1727f9458ec55e83602c16cccb0cff77a6035"},{"path":"src/server/models/OceanPlacementContext.ts","sha256":"4ab4ccec44ffc93e1fc8121a95435ababed5a49ffccde1d2d38738d9b44eeed0"}]},
   "ocean_placement_context_update": {"date":"2026-10-14","base":"fbe68f10c0ceb9f2d72c19665cb9c1b00c7d6926","contract":"oceanPlacementContext/version1","flows":["Own PlayerModel -> phase-scoped oceanPlacementContext/version1","MarsBoard and Board -> structural candidates, actual adjacency and additional costs","Shared political cost-policy query -> explicit unsupported-payment status","Read-only numeric facts -> external advisor JSON transport; no persistence or moves"],"scope":"Single standard ocean; intrinsic resource/draw/adjacency facts and funded MC costs; unsupported bonuses, fees, limits and later triggers remain unproven","fingerprint_algorithm":"sha256_normalized_lf","historical_fingerprints_refreshed":false,"source_files":[{"path":"src/common/models/OceanPlacementContextModel.ts","sha256":"c791998326bb11da0c5d3d8741b681dafeccda141f855188f46d5171c8460299"},{"path":"src/server/models/OceanPlacementContext.ts","sha256":"955ad709e772021d864054b2d7c47f2de5b5051481e50116872bd729953d9946"},{"path":"src/server/models/ServerModel.ts","sha256":"c4f061bea6d576bb1a91ec142b7d4505cd0e854d9637eac371f7a1311ad7c8f8"},{"path":"src/server/boards/Board.ts","sha256":"7ad424247f6623793c22a2ef755bf1d94e85aead5e22df16903e1a30db812fb6"},{"path":"src/server/turmoil/TurmoilHandler.ts","sha256":"4bf865bd6c7dd74d3bb8c5aaf1e3bf84141ef3b05c17bbde9f1bac8411477268"}]},
   "repo_name": "terraforming-mars",
-  "generated_at": "2026-10-10T17:46:37.500Z",
-  "generated_from_commit": "d42049d985dacabf6261e97fb3969a0e42ccb805",
+  "generated_at": "2026-10-15T17:54:46.751Z",
+  "generated_from_commit": "9e042bb05038de91168ae5168a1a1cb1c824e3c3",
   "scope": [
     ".",
     ".github",
@@ -2010,6 +2010,1034 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "id": "wrybit-card-style",
+      "label": "Изолированные карточные стили Wrybit",
+      "type": "ui",
+      "path": "src/styles/wrybit/cards.less",
+      "role": "Стили разбиты по визуальной ответственности с сохранением значащих CSS rules, declarations и precedence.",
+      "entrypoints": [
+        {
+          "path": "src/styles/wrybit/cards.less",
+          "symbol": "@import \"./cards/header.less\"",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/visualStyles.spec.ts",
+          "symbol": "compiled visual styles"
+        }
+      ],
+      "constraints": [
+        "Файлы короче 1000 строк.",
+        "Parity к frozen cards_v2.less проверена отдельно.",
+        "Full App integration pending."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "canonical-board-view",
+      "label": "Наши параметры и геометрия поля",
+      "type": "ui",
+      "path": "src/client/components/Board.vue",
+      "role": "Канонические шкалы, максимумы, позиции custom spaces и разделение Venus Phase 2.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/Board.vue",
+          "symbol": "getValuesForParameter",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/components/Board.spec.ts",
+          "symbol": "moves the Venus track"
+        }
+      ],
+      "constraints": [],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-board-view",
+      "label": "Поле Wrybit с нашими моделями",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/Board.vue",
+      "role": "Наследует канонические параметры и геометрию; добавляет представление кубов, внешних клеток и бонусов.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/Board.vue",
+          "symbol": "extends: CanonicalBoard",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/Board.spec.ts",
+          "symbol": "uses configured rewards"
+        }
+      ],
+      "constraints": [
+        "Пока проверено в изоляции; production caller ещё не интегрирован."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-scale-bonus-view",
+      "label": "Проекция бонусов наших шкал",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/board/marsScaleBonuses.ts",
+      "role": "Отображает supplied GlobalParametersConfig.bonuses; не определяет пороги и награды.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/board/marsScaleBonuses.ts",
+          "symbol": "export function scaleBonusPins",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/Board.spec.ts",
+          "symbol": "unpainted custom rewards visible"
+        }
+      ],
+      "constraints": [
+        "Координаты Wrybit описывают геометрию, а не правила."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "canonical-resources-view",
+      "label": "Наши ресурсы игроков",
+      "type": "ui",
+      "path": "src/client/components/overview/PlayerResources.vue",
+      "role": "Канонические ресурсы, материал, Helion, защиты, Coordination и командные цвета.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/overview/PlayerResources.vue",
+          "symbol": "conglomeratesExpansion",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/components/overview/PlayerResources.spec.ts",
+          "symbol": "Coordination"
+        }
+      ],
+      "constraints": [],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-resources-view",
+      "label": "Ресурсы в Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/overview/PlayerResources.vue",
+      "role": "Наследует наш ресурсный контракт и сохраняет дополнения сервера; отдельный компонент ячейки Wrybit.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/overview/PlayerResources.vue",
+          "symbol": "extends: CanonicalPlayerResources",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/PlayerResources.spec.ts",
+          "symbol": "preserves our Coordination"
+        }
+      ],
+      "constraints": [
+        "Пока проверено в изоляции."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-track-view",
+      "label": "Представление треков Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/trackBonus/BoardTrackRow.vue",
+      "role": "Клетки, состояния и бонусы из входных props; игровые пороги и награды здесь не определяются.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/trackBonus/BoardTrackRow.vue",
+          "symbol": "cellClasses(cell",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/BoardTrackRow.spec.ts",
+          "symbol": "supplied track states"
+        }
+      ],
+      "constraints": [
+        "Готовность полного поля и его data adapter пока не подтверждена."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/trackBonus/TrackLane.vue",
+          "symbol": "bonuses[index - 1]",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "canonical-card-view",
+      "label": "Наши данные и свойства карты",
+      "type": "ui",
+      "path": "src/client/components/card/Card.vue",
+      "role": "Каноническая карточная модель, wire fallback custom card, стоимость, теги, ресурсы и названия.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/card/Card.vue",
+          "symbol": "cardInstance: card",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/components/card/Card.spec.ts",
+          "symbol": "Custom Card Maker"
+        }
+      ],
+      "constraints": [
+        "Wrybit не заменяет карточные данные или цены."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/components/card/Card.vue",
+          "symbol": "this.card.calculatedCost",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "wrybit-card-view",
+      "label": "Карточное представление Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/card/Card.vue",
+      "role": "Адаптированное представление наследует наш канонический компонент; интеграция каталога ещё выполняется.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/card/Card.vue",
+          "symbol": "extends: CanonicalCard",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/Card.spec.ts",
+          "symbol": "server cost and copy title"
+        },
+        {
+          "path": "tests/client/wrybit/visuals/PlayerCube.spec.ts",
+          "symbol": "reserved artwork"
+        }
+      ],
+      "constraints": [
+        "Правила, AI и сетевые контроллеры не импортированы.",
+        "Полный UI ещё не готов."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/card/Card.vue",
+          "symbol": "card.combinedDisplayName ?? cardMetadata.displayName",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "wrybit-mode-boundary",
+      "label": "Опциональный режим Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/shell/WrybitBoundary.vue",
+      "role": "Загрузка отдельного клиентского chunk после включения; сохранение текущего представления при возврате или ошибке.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/shell/WrybitBoundary.vue",
+          "symbol": "watch(() => props.enabled",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/shell/AppMode.spec.ts",
+          "symbol": "opts in at the App boundary"
+        },
+        {
+          "path": "tests/client/wrybit/shell/WrybitBoundary.spec.ts",
+          "symbol": "loads only after opt in"
+        },
+        {
+          "path": "tests/client/wrybit/shell/WrybitShell.spec.ts",
+          "symbol": "renders responsive isolated backgrounds"
+        },
+        {
+          "path": "tests/client/wrybit/shell/AppInputRefresh.spec.ts",
+          "symbol": "retains the real card/payment form"
+        }
+      ],
+      "constraints": [
+        "По умолчанию выключен.",
+        "Не владеет запросами, правилами или AI."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/wrybit/shell/WrybitBoundary.vue",
+          "symbol": "webpackChunkName: \"wrybit-ui\"",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "wrybit-ui-view",
+      "label": "Начальная оболочка Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/shell/WrybitShell.vue",
+      "role": "Ленивая оболочка с адаптированным фоном Wrybit и возвратом в обычный интерфейс.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/shell/WrybitShell.vue",
+          "symbol": "const emit = defineEmits",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/shell/AppMode.spec.ts",
+          "symbol": "opts in at the App boundary"
+        },
+        {
+          "path": "tests/client/wrybit/shell/WrybitBoundary.spec.ts",
+          "symbol": "loads only after opt in"
+        },
+        {
+          "path": "tests/client/wrybit/shell/WrybitShell.spec.ts",
+          "symbol": "renders responsive isolated backgrounds"
+        },
+        {
+          "path": "tests/client/wrybit/shell/AppInputRefresh.spec.ts",
+          "symbol": "retains the real card/payment form"
+        }
+      ],
+      "constraints": [
+        "Полный перенос экранов ещё не завершён."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/wrybit/shell/WrybitShell.vue",
+          "symbol": "wrybit-mode-switch",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "wrybit-background",
+      "label": "Изолированный фон Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/shell/AppBackground.vue",
+      "role": "Responsive picture с вариантами ESO / S. Brunier из отдельного assets-каталога.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/shell/AppBackground.vue",
+          "symbol": "backgroundSources()",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/shell/WrybitShell.spec.ts",
+          "symbol": "renders responsive isolated backgrounds"
+        }
+      ],
+      "constraints": [
+        "Стили ограничены .wrybit-ui.",
+        "Атрибуция CC BY 4.0 видна вместе с изображением."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/wrybit/shell/appBackgroundVariants.ts",
+          "symbol": "assets/wrybit/shell/milky-way",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "wrybit-input-context",
+      "label": "Контекст текущего ввода",
+      "type": "library",
+      "path": "src/client/wrybit/shell/inputContext.ts",
+      "role": "Сохранение формы при чтении того же запроса; новый запрос, ограничения или собственное состояние инвалидируют форму.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/shell/inputContext.ts",
+          "symbol": "function inputContext",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/shell/AppInputRefresh.spec.ts",
+          "symbol": "retains the real card/payment form"
+        },
+        {
+          "path": "tests/client/wrybit/shell/inputContext.spec.ts",
+          "symbol": "invalidates changed requests"
+        }
+      ],
+      "constraints": [
+        "Часы не инвалидируют форму.",
+        "Обычный режим сохраняет прежнее перемонтирование."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/wrybit/shell/inputContext.ts",
+          "symbol": "view.waitingForId",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "player-input-identity",
+      "label": "Проекция идентификатора запроса",
+      "type": "library",
+      "path": "src/server/models/ServerModel.ts",
+      "role": "Read-only идентичность текущего PlayerInput в приватной модели игрока.",
+      "entrypoints": [
+        {
+          "path": "src/server/models/ServerModel.ts",
+          "symbol": "getWaitingForId",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/models/ServerModel.spec.ts",
+          "symbol": "identifies the pending input across reads"
+        }
+      ],
+      "constraints": [
+        "Не сериализуется в сохранения.",
+        "Зритель не получает waitingForId.",
+        "Правила и AI не изменяются."
+      ],
+      "evidence": [
+        {
+          "path": "src/common/models/PlayerModel.ts",
+          "symbol": "waitingForId?: string",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "persistent-player-input",
+      "label": "Наш постоянный контроллер ввода",
+      "type": "ui",
+      "path": "src/client/components/WaitingFor.vue",
+      "role": "App владеет единственным WaitingFor и обновляет его ревизию отдельно от представления.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/App.vue",
+          "symbol": "applyPlayerView(next:",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/shell/AppInputRefresh.spec.ts",
+          "symbol": "ignores a late response"
+        },
+        {
+          "path": "tests/client/wrybit/shell/InputPortal.spec.ts",
+          "symbol": "moves one live form"
+        }
+      ],
+      "constraints": [
+        "POST использует наш протокол.",
+        "Смена представления не отправляет ход.",
+        "Поздние ответы старого ввода игнорируются."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/components/App.vue",
+          "symbol": ":key=\"inputRevision\"",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/client/wrybit/shell/InputPortal.vue",
+          "symbol": ":disabled=\"target === undefined\"",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "player-input-hosts",
+      "label": "Контейнеры формы",
+      "type": "library",
+      "path": "src/client/wrybit/shell/inputHosts.ts",
+      "role": "Перемещение постоянной формы в контейнер текущего экрана; скрытый fallback сохраняет экземпляр между экранами.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/shell/inputHosts.ts",
+          "symbol": "createInputHosts",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/shell/InputPortal.spec.ts",
+          "symbol": "hosts.unregister(oldHost)"
+        }
+      ],
+      "constraints": [
+        "Позднее удаление старого host не удаляет новый."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/wrybit/shell/InputHost.vue",
+          "symbol": "hosts?.register(host.value)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "board-input-bindings",
+      "label": "Привязки ввода к полю",
+      "type": "ui",
+      "path": "src/client/components/SelectSpace.vue",
+      "role": "Новый контейнер экрана перепривязывает выбор клетки и quick greenery к новому DOM.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/SelectSpace.vue",
+          "symbol": "bindBoard()",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/shell/BoardInputPortal.spec.ts",
+          "symbol": "keeps a pending confirmation"
+        },
+        {
+          "path": "tests/client/wrybit/shell/BoardInputPortal.spec.ts",
+          "symbol": "original option index"
+        }
+      ],
+      "constraints": [
+        "Выбранная клетка сохраняется по SpaceId.",
+        "Отсоединённое поле не отправляет ход."
+      ],
+      "evidence": [
+        {
+          "path": "src/client/components/OrOptions.vue",
+          "symbol": "inputHost()",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "id": "wrybit-catalog-view",
+      "label": "Каталог Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/cardlist/CardList.vue",
+      "role": "Каталог, controls и отложенное отображение с нашими картами и модулями.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/cardlist/CardList.vue",
+          "symbol": "entries: markRaw(buildEntries())",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+          "symbol": "URL writes, card loading and timers"
+        }
+      ],
+      "constraints": [
+        "Production caller и standalone menu проверены; полный игровой flow и содержимое диалогов ещё не перенесены."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "canonical-catalog-metadata",
+      "label": "Наши публичные данные каталога",
+      "type": "ui",
+      "path": "src/client/components/cardlist/catalogMetadata.ts",
+      "role": "Общая классификация наших agendas и имена иконок без игровых эффектов.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/cardlist/catalogMetadata.ts",
+          "symbol": "export function agendaModule",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+          "symbol": "More Parties agendas"
+        }
+      ],
+      "constraints": [],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-catalog-data",
+      "label": "Адаптер публичного каталога Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/cardlist/cardListEntries.ts",
+      "role": "Метаданные из canonical manifests; filters и counts описывают отображение, не игровые цены.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/cardlist/cardListEntries.ts",
+          "symbol": "export function buildEntries()",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+          "symbol": "our card metadata"
+        }
+      ],
+      "constraints": [],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-menu-view",
+      "label": "Общий menu Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/gameMenu/GameMenu.vue",
+      "role": "Source menu с нашими preferences, languages, routes и read-only game context.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/gameMenu/GameMenu.vue",
+          "symbol": "function openDialog",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/GameMenu.spec.ts",
+          "symbol": "opens our settings"
+        }
+      ],
+      "constraints": [
+        "Game provider, source HelpOverlay и полное оформление содержимого диалогов ещё не готовы."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-modal-view",
+      "label": "Изолированная modal оболочка",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/SidebarModal.vue",
+      "role": "Teleport вне containing block кнопки, native preferences в source frame, overlay coordination.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/SidebarModal.vue",
+          "symbol": "wrybit-overlay-root",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/GameMenu.spec.ts",
+          "symbol": "isolated portal"
+        }
+      ],
+      "constraints": [],
+      "evidence": []
+    },
+    {
+      "id": "canonical-preferences-owner",
+      "label": "Наш менеджер настроек",
+      "type": "ui",
+      "path": "src/client/utils/PreferencesManager.ts",
+      "role": "Единый владелец values и persisted settings; experimental_layout default false.",
+      "entrypoints": [
+        {
+          "path": "src/client/utils/PreferencesManager.ts",
+          "symbol": "experimental_layout: false",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/GameMenu.spec.ts",
+          "symbol": "experimental_layout"
+        }
+      ],
+      "constraints": [],
+      "evidence": []
+    },
+    {
+      "id": "canonical-global-config",
+      "label": "Наши параметры шкал",
+      "type": "model",
+      "path": "src/common/GlobalParameterConfig.ts",
+      "role": "Общий producer min/max/step/bonuses с precedence Venus Phase 2.",
+      "entrypoints": [
+        {
+          "path": "src/common/GlobalParameterConfig.ts",
+          "symbol": "export function resolveGlobalParameters",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+          "symbol": "Phase 2 Venus override"
+        }
+      ],
+      "constraints": [],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-ma-table",
+      "label": "Таблица достижений и наград Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/milestoneAwardTable/MilestoneAwardTable.vue",
+      "role": "Публичные threshold/claimable/teamScores, наши общие display prices и источник icons с fallback label.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/milestoneAwardTable/MilestoneAwardTable.vue",
+          "symbol": "teamScoreOf(",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+          "symbol": "server claimability and team ranks"
+        }
+      ],
+      "constraints": [
+        "Полный игровой caller и change-flash пока не интегрированы."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "public-ma-threshold",
+      "label": "Существующие публичные пороги достижений",
+      "type": "model",
+      "path": "src/common/models/ClaimedMilestoneModel.ts",
+      "role": "Optional display projection из нашего BaseMilestone и карты Conglomerates без изменения canClaim/getScore.",
+      "entrypoints": [
+        {
+          "path": "src/common/models/ClaimedMilestoneModel.ts",
+          "symbol": "threshold?: number",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/models/ServerModel.spec.ts",
+          "symbol": "projects existing milestone display thresholds"
+        }
+      ],
+      "constraints": [
+        "Составные условия не получают выдуманный числовой порог."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-board-tabs",
+      "label": "Вкладки поля Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/boardTabs/BoardTabs.vue",
+      "role": "Сохраняет mounted boards, per-instance fit cleanup; мини-треки используют нашу конфигурацию и публичные модели.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/boardTabs/BoardTabs.vue",
+          "symbol": "const stopFit = new WeakMap",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+          "symbol": "uses custom track minima"
+        }
+      ],
+      "constraints": [
+        "Полные expansion views и игровой caller остаются открытыми."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-hand-sort",
+      "label": "Жесты сортировки руки Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/SortableCards.vue",
+      "role": "Source pointer gestures поверх canonical sorting/storage; очищает hold/ghost/listeners при refresh и unmount.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/SortableCards.vue",
+          "symbol": "extends: CanonicalSortableCards",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/SortableCards.spec.ts",
+          "symbol": "cancels a pending touch drag"
+        }
+      ],
+      "constraints": [
+        "Общие фильтры и selection/mobile carousel будут интегрированы в следующих пакетах."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "canonical-tag-display",
+      "label": "Наш общий producer тегов",
+      "type": "model",
+      "path": "src/client/components/overview/playerTagDetails.ts",
+      "role": "Выделенный прежний display calculation; native и Wrybit читают обновляемые публичные props.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/overview/playerTagDetails.ts",
+          "symbol": "export function buildTagDetails",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+          "symbol": "without remounting"
+        }
+      ],
+      "constraints": [],
+      "evidence": []
+    },
+    {
+      "id": "public-conditional-discounts",
+      "label": "Публичная проекция условных скидок",
+      "type": "model",
+      "path": "src/server/models/publicConditionalDiscounts.ts",
+      "role": "Читает existing getCardDiscount проверенных sources на фиксированных настоящих Birds/Asteroid; не зависит от приватной руки.",
+      "entrypoints": [
+        {
+          "path": "src/server/models/publicConditionalDiscounts.ts",
+          "symbol": "source.getCardDiscount?.(player, target)",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/models/ServerModel.spec.ts",
+          "symbol": "without changing payable prices or pending input"
+        }
+      ],
+      "constraints": [
+        "Только CET/Rebalanced, Xavier, Adhai; не универсальный расчёт скидок.",
+        "Правила, цены оплаты и сохранения неизменны."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-players-table",
+      "label": "Игроки и ресурсы в таблице Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/overview/PlayersTable.vue",
+      "role": "Shared canonical tag data, публичные badges, Coordination, скрытые VP, recorded clocks и наша visibility state.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/overview/PlayersTable.vue",
+          "symbol": "tagDetailsByColor()",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+          "symbol": "hidden VP"
+        },
+        {
+          "path": "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+          "symbol": "recorded views read-only"
+        }
+      ],
+      "constraints": [
+        "Полный App/home caller, viewport, filters и change-flash ещё открыты."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "canonical-card-metadata",
+      "label": "Наш общий producer данных карты",
+      "type": "model",
+      "path": "src/client/cards/CardModelMetadata.ts",
+      "role": "Прежние static/custom resolution, clone tags и active predicate нашего renderer/home.",
+      "entrypoints": [
+        {
+          "path": "src/client/cards/CardModelMetadata.ts",
+          "symbol": "export function resolveCardModel",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/CardFilter.spec.ts",
+          "symbol": "custom wire metadata"
+        },
+        {
+          "path": "tests/client/components/PlayerHome.spec.ts",
+          "symbol": "dynamic custom cards"
+        }
+      ],
+      "constraints": [
+        "Не определяет canPlay, цены оплаты, эффекты или AI."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-card-filters",
+      "label": "Фильтры и рука Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/HandCardsPanel.vue",
+      "role": "Source presentation читает наши модели/availability, canonical storage/sorting; transient состояние по viewer ID.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/HandCardsPanel.vue",
+          "symbol": "playableProjectCards",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+          "symbol": "restores manual order"
+        },
+        {
+          "path": "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+          "symbol": "optional overlay root"
+        }
+      ],
+      "constraints": [
+        "Full input/carousel/home integration и viewport owner ещё открыты."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-log-view",
+      "label": "Журнал Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/logpanel/LogPanel.vue",
+      "role": "Непрерывные поколения, наш поиск и фильтры, карточные превью; обновление и отмена запросов принадлежат экземпляру.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/logpanel/LogPanel.vue",
+          "symbol": "async loadStream",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/LogPanel.spec.ts",
+          "symbol": "ignores late responses"
+        }
+      ],
+      "constraints": [
+        "App root consumer подключён; full input/mobile proof ещё открыт.",
+        "Нет кеша неизменяемых прошлых поколений."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "canonical-log-preview",
+      "label": "Публичная модель карточного превью",
+      "type": "library",
+      "path": "src/client/components/logpanel/logCardModel.ts",
+      "role": "Общая read-only проекция нашей tableau и Self-Replicating Robots для обоих представлений.",
+      "entrypoints": [
+        {
+          "path": "src/client/components/logpanel/logCardModel.ts",
+          "symbol": "export function logCardModel",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/LogPreviews.spec.ts",
+          "symbol": "both presentations retain tableau resources"
+        }
+      ],
+      "constraints": [
+        "Не обращается к приватной руке или новым правилам."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "game-log-access",
+      "label": "Наш доступ к журналу",
+      "type": "api",
+      "path": "src/server/routes/ApiGameLogs.ts",
+      "role": "Canonical participant access; GameLogs фильтрует hiddenFor и private playerId перед ответом.",
+      "entrypoints": [
+        {
+          "path": "src/server/routes/ApiGameLogs.ts",
+          "symbol": "getLogsForGameView",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [],
+      "constraints": [
+        "Сервер не изменён этим переносом."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-player-root",
+      "label": "Игровой экран Wrybit",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/PlayerHome.vue",
+      "role": "Source columns/table/board/log/hand over our models and HomeMixin; InputHost receives the permanent App form.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/PlayerHome.vue",
+          "symbol": "mixins: [HomeMixin]",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+          "symbol": "moves our card and payment form"
+        }
+      ],
+      "constraints": [
+        "Native actions and payment controller retained.",
+        "Full input tabs/fixed-height/mobile screens pending."
+      ],
+      "evidence": []
+    },
+    {
+      "id": "wrybit-layout-owner",
+      "label": "Размеры и lifetime колонок",
+      "type": "ui",
+      "path": "src/client/wrybit/visuals/HomeColumns.vue",
+      "role": "Per-instance drag and observer cleanup; private storage and document overlay position ownership.",
+      "entrypoints": [
+        {
+          "path": "src/client/wrybit/visuals/HomeColumns.vue",
+          "symbol": "this.layout.stopDrag?.()",
+          "status": "confirmed"
+        }
+      ],
+      "tests": [
+        {
+          "path": "tests/client/wrybit/visuals/HomeColumns.spec.ts",
+          "symbol": "ignores queued observer callbacks after unmount"
+        }
+      ],
+      "constraints": [
+        "No foreign model/controller or native preference mutation."
+      ],
+      "evidence": []
     }
   ],
   "edges": [
@@ -2919,6 +3947,442 @@
           "status": "confirmed"
         }
       ]
+    },
+    {
+      "from": "wrybit-card-filters",
+      "to": "canonical-card-metadata",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/cardfilter/cardFilter.ts",
+          "symbol": "resolveCardModel, displayCardTags",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "canonical-card-view",
+      "to": "canonical-card-metadata",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/card/Card.vue",
+          "symbol": "resolveCardModel(this.card)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-card-view",
+      "to": "wrybit-card-style",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/card/Card.vue",
+          "symbol": "styles/wrybit/visuals.less",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/styles/wrybit/visuals.less",
+          "symbol": "@import \"./cards.less\"",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-board-view",
+      "to": "canonical-board-view",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/Board.vue",
+          "symbol": "extends: CanonicalBoard",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-board-view",
+      "to": "wrybit-scale-bonus-view",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/Board.vue",
+          "symbol": "return scaleBonusPins(",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-resources-view",
+      "to": "canonical-resources-view",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/overview/PlayerResources.vue",
+          "symbol": "extends: CanonicalPlayerResources",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-card-view",
+      "to": "canonical-card-view",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/card/Card.vue",
+          "symbol": "extends: CanonicalCard",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "client-ui",
+      "to": "wrybit-mode-boundary",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/App.vue",
+          "symbol": "WrybitBoundary :enabled=\"wrybitMode\"",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-mode-boundary",
+      "to": "wrybit-ui-view",
+      "type": "loads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/shell/WrybitBoundary.vue",
+          "symbol": "@/client/wrybit/shell/WrybitShell.vue",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-ui-view",
+      "to": "wrybit-background",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/shell/WrybitShell.vue",
+          "symbol": "AppBackground v-if=\"hasBackground\"",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "client-ui",
+      "to": "wrybit-input-context",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/App.vue",
+          "symbol": "inputContext(this.playerView)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "api-handlers",
+      "to": "player-input-identity",
+      "type": "projects",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/server/models/ServerModel.ts",
+          "symbol": "waitingForId: this.getWaitingForId(waitingFor)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-input-context",
+      "to": "player-input-identity",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/shell/inputContext.ts",
+          "symbol": "view.waitingForId",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "client-ui",
+      "to": "persistent-player-input",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/App.vue",
+          "symbol": "<WaitingFor :key=\"inputRevision\"",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "persistent-player-input",
+      "to": "player-input-hosts",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/App.vue",
+          "symbol": ":target=\"inputHosts.target.value\"",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "player-input-hosts",
+      "to": "board-input-bindings",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/SelectSpace.vue",
+          "symbol": "inputHost()",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "client-ui",
+      "to": "wrybit-catalog-view",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/components/App.vue",
+          "symbol": "wrybitViews.cards",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/client/wrybit/shell/WrybitShell.vue",
+          "symbol": "cards: markRaw(Catalog)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-catalog-view",
+      "to": "wrybit-catalog-data",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/cardlist/CardList.vue",
+          "symbol": "entries: markRaw(buildEntries())",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-catalog-data",
+      "to": "canonical-catalog-metadata",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/cardlist/cardListEntries.ts",
+          "symbol": "module: agendaModule(id)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-catalog-view",
+      "to": "wrybit-menu-view",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/cardlist/CardList.vue",
+          "symbol": "<PageToolbar/>",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/client/wrybit/visuals/PageToolbar.vue",
+          "symbol": "<GameMenu",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-menu-view",
+      "to": "wrybit-modal-view",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/gameMenu/GameMenu.vue",
+          "symbol": "<SidebarModal",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-menu-view",
+      "to": "canonical-preferences-owner",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/gameMenu/GameMenu.vue",
+          "symbol": ":preferencesManager=\"PreferencesManager.INSTANCE\"",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-ma-table",
+      "to": "public-ma-threshold",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/milestoneAwardTable/MilestoneAwardTable.vue",
+          "symbol": ":requirement=\"milestone.threshold\"",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-board-tabs",
+      "to": "canonical-global-config",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/boardTabs/boardTabs.ts",
+          "symbol": "resolveGlobalParameters(game.gameOptions.globalParameters",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-players-table",
+      "to": "canonical-tag-display",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/overview/playerTagDetails.ts",
+          "symbol": "canonicalTagDetails(player, view)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-players-table",
+      "to": "public-conditional-discounts",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/overview/discounts.ts",
+          "symbol": "player.conditionalDiscounts ?? []",
+          "status": "confirmed"
+        },
+        {
+          "path": "src/server/models/ServerModel.ts",
+          "symbol": "conditionalDiscounts: publicConditionalDiscounts(player)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-log-view",
+      "to": "game-log-access",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/logpanel/logStream.ts",
+          "symbol": "paths.API_GAME_LOGS",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-log-view",
+      "to": "canonical-log-preview",
+      "type": "reads",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/logpanel/LogCardsContent.vue",
+          "symbol": "logCardModel(name, players)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-ui-view",
+      "to": "wrybit-player-root",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/shell/WrybitShell.vue",
+          "symbol": "playerHome: markRaw(PlayerHome)",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-player-root",
+      "to": "player-input-hosts",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/PlayerHome.vue",
+          "symbol": "<InputHost",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-player-root",
+      "to": "wrybit-layout-owner",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/PlayerHome.vue",
+          "symbol": "<HomeColumns>",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "from": "wrybit-player-root",
+      "to": "wrybit-log-view",
+      "type": "calls",
+      "unknown": false,
+      "evidence": [
+        {
+          "path": "src/client/wrybit/visuals/PlayerHome.vue",
+          "symbol": "<LogPanel",
+          "status": "confirmed"
+        }
+      ]
     }
   ],
   "flows": [
@@ -3139,6 +4603,17 @@
         "bot-takeover"
       ],
       "outcome": "Unsupported reason отклоняет запрос до файловых и процессных побочных действий."
+    },
+    {
+      "id": "flow-wrybit-mode",
+      "name": "Включение опциональной оболочки",
+      "trigger": "Настройка experimental_layout",
+      "steps": [
+        "client-ui",
+        "wrybit-mode-boundary",
+        "wrybit-ui-view"
+      ],
+      "outcome": "Отдельный chunk загружается после включения; возврат сохраняется при ошибке. Полные экраны пока не перенесены."
     }
   ],
   "unknowns": [
@@ -3298,29 +4773,683 @@
     "tests/fanmade-compat/RebalancedLifecycle.spec.ts",
     "src/server/bot/AutomationCompatibility.ts",
     "tests/server/bot/AutomationCompatibility.spec.ts",
-    "tools/fanmade-port/fanmade-catalog-source-manifest.json"
+    "tools/fanmade-port/fanmade-catalog-source-manifest.json",
+    "src/client/wrybit/shell/WrybitBoundary.vue",
+    "src/client/wrybit/shell/WrybitShell.vue",
+    "src/client/wrybit/import-manifest.json",
+    "tests/client/wrybit/shell/AppMode.spec.ts",
+    "tests/client/wrybit/shell/WrybitBoundary.spec.ts",
+    "src/client/wrybit/shell/AppBackground.vue",
+    "src/client/wrybit/shell/appBackground.ts",
+    "src/client/wrybit/shell/appBackgroundVariants.ts",
+    "src/client/wrybit/shell/background.less",
+    "src/server/routes/ServeAsset.ts",
+    "src/server/routes/ContentType.ts",
+    "tests/routes/ServeAsset.spec.ts",
+    "assets/wrybit/shell/ATTRIBUTION.md",
+    "tests/client/wrybit/shell/WrybitShell.spec.ts",
+    "src/client/wrybit/shell/inputContext.ts",
+    "src/server/models/ServerModel.ts",
+    "src/common/models/PlayerModel.ts",
+    "src/client/components/WaitingFor.vue",
+    "tests/models/ServerModel.spec.ts",
+    "tests/client/wrybit/shell/inputContext.spec.ts",
+    "tests/client/wrybit/shell/AppInputRefresh.spec.ts",
+    "src/client/wrybit/shell/InputPortal.vue",
+    "src/client/wrybit/shell/inputHosts.ts",
+    "src/client/wrybit/shell/InputHost.vue",
+    "src/client/components/PlayerHome.vue",
+    "src/client/components/PlayerSetupView.vue",
+    "src/client/components/SelectSpace.vue",
+    "src/client/components/OrOptions.vue",
+    "tests/client/components/PlayerHome.spec.ts",
+    "tests/client/wrybit/shell/InputPortal.spec.ts",
+    "tests/client/wrybit/shell/BoardInputPortal.spec.ts",
+    "tests/client/wrybit/shell/DraftInputPortal.spec.ts",
+    "src/client/components/card/Card.vue",
+    "tests/client/components/card/Card.spec.ts",
+    "src/client/wrybit/visuals/card/Card.vue",
+    "src/client/wrybit/visuals/card/CardTitle.vue",
+    "src/client/wrybit/visuals/card/CardCost.vue",
+    "src/client/wrybit/visuals/common/PlayerCube.vue",
+    "tests/client/wrybit/visuals/Card.spec.ts",
+    "tests/client/wrybit/visuals/PlayerCube.spec.ts",
+    "src/styles/wrybit/visuals.less",
+    "src/styles/wrybit/variables.less",
+    "src/styles/wrybit/player_cube.less",
+    "src/client/wrybit/visuals/trackBonus/BoardTrackRow.vue",
+    "src/client/wrybit/visuals/trackBonus/TrackLane.vue",
+    "src/client/wrybit/visuals/trackBonus/TrackBonusChip.vue",
+    "src/client/wrybit/visuals/trackBonus/trackBonus.ts",
+    "src/client/wrybit/visuals/trackBonus/trackCell.ts",
+    "src/styles/wrybit/track_bonus.less",
+    "tests/client/wrybit/visuals/BoardTrackRow.spec.ts",
+    "src/client/components/Board.vue",
+    "src/client/components/BoardSpace.vue",
+    "tests/client/components/Board.spec.ts",
+    "src/client/wrybit/visuals/Board.vue",
+    "src/client/wrybit/visuals/BoardSpace.vue",
+    "src/client/wrybit/visuals/common/BoardCube.vue",
+    "src/client/wrybit/visuals/board/outerSpaces.ts",
+    "src/client/wrybit/visuals/board/marsScaleCells.ts",
+    "src/client/wrybit/visuals/board/marsScaleBonuses.ts",
+    "src/client/wrybit/visuals/board/MarsScaleBonuses.vue",
+    "src/client/components/overview/PlayerResources.vue",
+    "src/client/components/overview/PlayerResource.vue",
+    "src/client/wrybit/visuals/overview/PlayerResources.vue",
+    "src/client/wrybit/visuals/overview/PlayerResource.vue",
+    "tests/client/wrybit/visuals/Board.spec.ts",
+    "tests/client/wrybit/visuals/PlayerResources.spec.ts",
+    "tests/client/components/overview/PlayerResources.spec.ts",
+    "src/client/utils/playerSymbol.ts",
+    "src/common/GlobalParameterConfig.ts",
+    "src/styles/wrybit/board.less",
+    "src/styles/wrybit/globs.less",
+    "assets/wrybit/board/mars-clean.png",
+    "assets/wrybit/board/mars-without-venus-clean.png",
+    "tests/client/wrybit/visuals/visualStyles.spec.ts",
+    "assets/wrybit/board/ATTRIBUTION.md",
+    "tests/client/wrybit/visuals/MarsScaleBonuses.spec.ts",
+    "src/styles/wrybit/outer_spaces.less",
+    "src/styles/wrybit/cards.less",
+    "src/styles/wrybit/cards/expansion.less",
+    "src/styles/wrybit/cards/header.less",
+    "src/styles/wrybit/cards/corporation-logos-core.less",
+    "src/styles/wrybit/cards/corporation-logos-additional.less",
+    "src/styles/wrybit/cards/content-and-requirements.less",
+    "src/styles/wrybit/cards/resources-and-symbols.less",
+    "src/styles/wrybit/cards/render-and-tiles.less",
+    "src/styles/wrybit/cards/title-and-tags.less",
+    "src/styles/wrybit/cards/counters.less",
+    "src/client/components/cardlist/CardList.vue",
+    "src/client/components/cardlist/catalogMetadata.ts",
+    "src/client/components/card/CardRowComponent.vue",
+    "tests/client/components/card/CardRowComponent.spec.ts",
+    "assets/wrybit/common/ATTRIBUTION.md",
+    "assets/wrybit/common/mars.png",
+    "src/client/wrybit/visuals/HandCardsTab.vue",
+    "src/client/wrybit/visuals/cardlist/CardList.vue",
+    "src/client/wrybit/visuals/cardlist/CardListCardGrid.vue",
+    "src/client/wrybit/visuals/cardlist/CardListCostRange.vue",
+    "src/client/wrybit/visuals/cardlist/cardListEntries.ts",
+    "src/client/wrybit/visuals/cardlist/CardListFilterGroup.vue",
+    "src/client/wrybit/visuals/cardlist/CardListModel.ts",
+    "src/client/wrybit/visuals/cardlist/cardListOptions.ts",
+    "src/client/wrybit/visuals/cardlist/CardListSection.vue",
+    "src/client/wrybit/visuals/cardlist/CardListSectionRail.vue",
+    "src/client/wrybit/visuals/cardlist/cardReveal.ts",
+    "src/client/wrybit/visuals/cardlist/catalogTypes.ts",
+    "src/client/wrybit/visuals/cardlist/filterSelection.ts",
+    "src/client/wrybit/visuals/cardlist/searchHighlight.ts",
+    "src/client/wrybit/visuals/cardlist/sectionRail.ts",
+    "src/client/wrybit/visuals/common/CatalogSegments.vue",
+    "src/client/wrybit/visuals/common/LazyMount.vue",
+    "src/client/wrybit/visuals/common/LoadingBar.vue",
+    "src/client/wrybit/visuals/common/LoadingPlate.vue",
+    "src/client/wrybit/visuals/common/MarsHomeLink.vue",
+    "src/client/wrybit/visuals/common/motion.ts",
+    "src/client/wrybit/visuals/common/nearViewport.ts",
+    "src/client/wrybit/visuals/common/PageTitle.vue",
+    "src/styles/wrybit/button_tones.less",
+    "src/styles/wrybit/catalog-controls.less",
+    "src/styles/wrybit/catalog-presentation.less",
+    "src/styles/wrybit/catalog.less",
+    "src/styles/wrybit/loading.less",
+    "src/styles/wrybit/catalog/filters.less",
+    "src/styles/wrybit/catalog/header.less",
+    "src/styles/wrybit/catalog/responsive.less",
+    "src/styles/wrybit/catalog/results.less",
+    "tests/client/wrybit/visuals/CardReveal.spec.ts",
+    "tests/client/wrybit/visuals/CatalogControls.spec.ts",
+    "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+    "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+    "tests/client/wrybit/visuals/CatalogModel.spec.ts",
+    "src/client/wrybit/shell/presentationViews.ts",
+    "src/client/wrybit/visuals/DialogFrame.vue",
+    "src/client/wrybit/visuals/PageToolbar.vue",
+    "src/client/wrybit/visuals/SidebarModal.vue",
+    "src/client/wrybit/visuals/common/dialogZoomAnimation.ts",
+    "src/client/wrybit/visuals/common/FanProjectNotice.vue",
+    "src/client/wrybit/visuals/common/LanguageFlag.vue",
+    "src/client/wrybit/visuals/common/MobileGlyph.vue",
+    "src/client/wrybit/visuals/common/mobileGlyphs.ts",
+    "src/client/wrybit/visuals/common/overlayCoordinator.ts",
+    "src/client/wrybit/visuals/gameMenu/GameMenu.vue",
+    "src/client/wrybit/visuals/gameMenu/gameMenuContext.ts",
+    "src/client/wrybit/visuals/gameMenu/LanguageSelectionDialog.vue",
+    "src/client/wrybit/visuals/gameMenu/PreferencesDialog.vue",
+    "src/client/wrybit/visuals/gameMenu/siteLinks.ts",
+    "src/styles/wrybit/dialog_frame.less",
+    "src/styles/wrybit/fan_project_notice.less",
+    "src/styles/wrybit/game_menu.less",
+    "src/styles/wrybit/modal_surface.less",
+    "src/styles/wrybit/sidebar_modal.less",
+    "tests/client/wrybit/visuals/GameMenu.spec.ts",
+    "assets/wrybit/flags/ATTRIBUTION.md",
+    "assets/wrybit/flags/bg.svg",
+    "assets/wrybit/flags/br.svg",
+    "assets/wrybit/flags/cn.svg",
+    "assets/wrybit/flags/de.svg",
+    "assets/wrybit/flags/en.svg",
+    "assets/wrybit/flags/es.svg",
+    "assets/wrybit/flags/fi.svg",
+    "assets/wrybit/flags/fr.svg",
+    "assets/wrybit/flags/hu.svg",
+    "assets/wrybit/flags/it.svg",
+    "assets/wrybit/flags/jp.svg",
+    "assets/wrybit/flags/ko.svg",
+    "assets/wrybit/flags/nb.svg",
+    "assets/wrybit/flags/nl.svg",
+    "assets/wrybit/flags/pl.svg",
+    "assets/wrybit/flags/ru.svg",
+    "assets/wrybit/flags/ua.svg",
+    "src/common/models/ClaimedMilestoneModel.ts",
+    "src/client/components/milestoneAwardPrices.ts",
+    "src/client/components/Milestones.vue",
+    "src/client/components/Awards.vue",
+    "src/client/wrybit/visuals/Award.vue",
+    "src/client/wrybit/visuals/Awards.vue",
+    "src/client/wrybit/visuals/Milestone.vue",
+    "src/client/wrybit/visuals/Milestones.vue",
+    "src/client/wrybit/visuals/SortableCards.vue",
+    "src/client/wrybit/visuals/boardTabs/boardTabFit.ts",
+    "src/client/wrybit/visuals/boardTabs/BoardTabLines.vue",
+    "src/client/wrybit/visuals/boardTabs/boardTabs.ts",
+    "src/client/wrybit/visuals/boardTabs/BoardTabs.vue",
+    "src/client/wrybit/visuals/boardTabs/boardTabState.ts",
+    "src/client/wrybit/visuals/boardTabs/TileViewToggle.vue",
+    "src/client/wrybit/visuals/common/DockedTab.ts",
+    "src/client/wrybit/visuals/common/GlassTooltip.ts",
+    "src/client/wrybit/visuals/common/horizontalScroll.ts",
+    "src/client/wrybit/visuals/common/playersInTurnOrder.ts",
+    "src/client/wrybit/visuals/milestoneAwardTable/headerFit.ts",
+    "src/client/wrybit/visuals/milestoneAwardTable/MilestoneAwardIcon.vue",
+    "src/client/wrybit/visuals/milestoneAwardTable/milestoneAwardIcons.ts",
+    "src/client/wrybit/visuals/milestoneAwardTable/MilestoneAwardTable.vue",
+    "src/client/wrybit/visuals/milestoneAwardTable/scoreRanks.ts",
+    "src/client/wrybit/visuals/milestoneAwardTable/tableOrientation.ts",
+    "src/styles/wrybit/board_tabs.less",
+    "src/styles/wrybit/frosted_surface.less",
+    "src/styles/wrybit/glass_tooltip.less",
+    "src/styles/wrybit/milestone_award_table.less",
+    "src/styles/wrybit/or_options_tabs.less",
+    "src/styles/wrybit/or_tab_tones.less",
+    "src/styles/wrybit/sortable_cards.less",
+    "src/styles/wrybit/source_mixins.less",
+    "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+    "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+    "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+    "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+    "tests/client/wrybit/visuals/SortableCards.spec.ts",
+    "src/client/components/overview/PlayerTags.vue",
+    "src/client/components/overview/playerTagDetails.ts",
+    "tests/client/components/overview/PlayerTags.spec.ts",
+    "src/common/models/ConditionalDiscountModel.ts",
+    "src/server/models/publicConditionalDiscounts.ts",
+    "src/client/wrybit/visuals/GameBoardView.vue",
+    "src/client/wrybit/visuals/OtherPlayer.vue",
+    "src/client/wrybit/visuals/PlayedCardsGroups.vue",
+    "src/client/wrybit/visuals/StackedCards.vue",
+    "src/client/wrybit/visuals/common/cardVisibility.ts",
+    "src/client/wrybit/visuals/common/mobileLayout.ts",
+    "src/client/wrybit/visuals/common/playerCardsToggle.ts",
+    "src/client/wrybit/visuals/common/playersCardFit.ts",
+    "src/client/wrybit/visuals/overview/DiscountList.vue",
+    "src/client/wrybit/visuals/overview/discounts.ts",
+    "src/client/wrybit/visuals/overview/escapeVelocityClock.ts",
+    "src/client/wrybit/visuals/overview/EscapeVelocityClock.vue",
+    "src/client/wrybit/visuals/overview/goodsBoxWidths.ts",
+    "src/client/wrybit/visuals/overview/HandDiscount.vue",
+    "src/client/wrybit/visuals/overview/playerCorporations.ts",
+    "src/client/wrybit/visuals/overview/playerGoods.ts",
+    "src/client/wrybit/visuals/overview/PlayerIdentity.vue",
+    "src/client/wrybit/visuals/overview/PlayerInfo.vue",
+    "src/client/wrybit/visuals/overview/PlayersOverview.vue",
+    "src/client/wrybit/visuals/overview/PlayersTable.vue",
+    "src/client/wrybit/visuals/overview/PlayersTableGoods.vue",
+    "src/client/wrybit/visuals/overview/PlayersTableHeader.vue",
+    "src/client/wrybit/visuals/overview/playersTableLayout.ts",
+    "src/client/wrybit/visuals/overview/PlayersTableRow.vue",
+    "src/client/wrybit/visuals/overview/playerTagDetails.ts",
+    "src/client/wrybit/visuals/overview/PlayerTags.vue",
+    "src/client/wrybit/visuals/overview/protectedTags.ts",
+    "src/styles/wrybit/discount_badges.less",
+    "src/styles/wrybit/players_table.less",
+    "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+    "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+    "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+    "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+    "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+    "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+    "src/client/cards/CardModelMetadata.ts",
+    "src/client/wrybit/visuals/HandCardsPanel.vue",
+    "src/client/wrybit/visuals/HandSortControl.vue",
+    "src/client/wrybit/visuals/cardfilter/cardFilter.ts",
+    "src/client/wrybit/visuals/cardfilter/CardFilterBar.vue",
+    "src/client/wrybit/visuals/cardfilter/CardFilterEmptyHint.vue",
+    "src/client/wrybit/visuals/cardfilter/cardFilterLabels.ts",
+    "src/client/wrybit/visuals/cardfilter/CardFilterOptions.vue",
+    "src/client/wrybit/visuals/cardfilter/cardFilterState.ts",
+    "src/client/wrybit/visuals/cardfilter/CardSortIcon.vue",
+    "src/client/wrybit/visuals/cardfilter/CardSortMenu.vue",
+    "src/client/wrybit/visuals/cardfilter/cardZoom.ts",
+    "src/client/wrybit/visuals/cardfilter/CardZoomSlider.vue",
+    "src/client/wrybit/visuals/cardfilter/handCards.ts",
+    "src/client/wrybit/visuals/cardfilter/handSort.ts",
+    "src/styles/wrybit/card_filter_bar.less",
+    "src/styles/wrybit/card_zoom_slider.less",
+    "src/styles/wrybit/hand_cards_panel.less",
+    "tests/client/wrybit/visuals/CardFilter.spec.ts",
+    "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+    "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+    "src/client/components/card/CardExtraContent.vue",
+    "src/client/wrybit/visuals/AdjacencyBonus.vue",
+    "src/client/wrybit/visuals/CardListSection.vue",
+    "src/client/wrybit/visuals/board/BoardSpaceTile.vue",
+    "src/client/wrybit/visuals/card/CardContent.vue",
+    "src/client/wrybit/visuals/card/CardExtraContent.vue",
+    "src/client/wrybit/visuals/card/CardHelp.vue",
+    "src/client/wrybit/visuals/card/CardRequirementComponent.vue",
+    "src/client/wrybit/visuals/card/CardRequirementsComponent.vue",
+    "src/client/wrybit/visuals/cardfilter/CardZoomBar.vue",
+    "src/client/wrybit/visuals/common/PopupPanel.vue",
+    "src/client/wrybit/visuals/overview/PlayerStatus.vue",
+    "src/client/wrybit/visuals/overview/PlayerTimer.vue",
+    "src/styles/wrybit/adjacency_bonus.less",
+    "src/styles/wrybit/card_renderer_adapters.less",
+    "src/styles/wrybit/popup.less",
+    "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+    "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+    "assets/wrybit/board/mars-planet.png",
+    "src/client/wrybit/visuals/board/boardPinchZoom.ts",
+    "src/client/wrybit/visuals/board/boardPlacementActive.ts",
+    "src/client/wrybit/visuals/board/boardZoomAnimation.ts",
+    "src/client/wrybit/visuals/board/BoardZoomModal.vue",
+    "src/client/wrybit/visuals/board/mobileBoardZoom.ts",
+    "src/client/wrybit/visuals/board/MobileZoomControls.vue",
+    "src/client/wrybit/visuals/board/ScaledBoard.vue",
+    "src/styles/wrybit/board_zoom_mobile.less",
+    "src/styles/wrybit/board_zoom_modal.less",
+    "src/styles/wrybit/scaled_board.less",
+    "tests/client/wrybit/visuals/BoardPinchZoom.spec.ts",
+    "tests/client/wrybit/visuals/BoardZoom.spec.ts",
+    "src/client/wrybit/visuals/GameSetupDetail.vue",
+    "src/client/wrybit/visuals/InfoPanel.vue",
+    "src/client/wrybit/visuals/KeyboardShortcuts.vue",
+    "src/client/wrybit/visuals/Party.vue",
+    "src/client/wrybit/visuals/board/OuterSpaceCorners.vue",
+    "src/client/wrybit/visuals/common/GameSetupChips.vue",
+    "src/client/wrybit/visuals/common/gameSetupChipTypes.ts",
+    "src/client/wrybit/visuals/common/SeatIcon.vue",
+    "src/styles/wrybit/info_panel.less",
+    "src/styles/wrybit/setup_tiles.less",
+    "tests/client/wrybit/visuals/InfoPanel.spec.ts",
+    "tests/client/wrybit/visuals/SharedWidgets.spec.ts",
+    "src/client/components/logpanel/CardPanel.vue",
+    "src/client/components/logpanel/logCardModel.ts",
+    "src/client/components/logpanel/LogMessageComponent.vue",
+    "src/client/components/logpanel/logSearchText.ts",
+    "src/server/routes/GameLogs.ts",
+    "src/server/routes/ApiGameLogs.ts",
+    "src/client/wrybit/visuals/logpanel/CardPanel.vue",
+    "src/client/wrybit/visuals/logpanel/drawnCards.ts",
+    "src/client/wrybit/visuals/logpanel/LogCardsContent.vue",
+    "src/client/wrybit/visuals/logpanel/LogCardsZoom.vue",
+    "src/client/wrybit/visuals/logpanel/LogGenerationList.vue",
+    "src/client/wrybit/visuals/logpanel/LogMessageComponent.vue",
+    "src/client/wrybit/visuals/logpanel/logMessageContent.ts",
+    "src/client/wrybit/visuals/logpanel/LogMessageInspector.vue",
+    "src/client/wrybit/visuals/logpanel/LogPanel.vue",
+    "src/client/wrybit/visuals/logpanel/logScroll.ts",
+    "src/client/wrybit/visuals/logpanel/logStream.ts",
+    "src/client/wrybit/visuals/logpanel/milestonesAwardsFocus.ts",
+    "src/client/wrybit/visuals/milestoneAwardTable/milestonesAwardsLabel.ts",
+    "src/client/wrybit/visuals/mobile/MobileCardZoom.vue",
+    "src/styles/wrybit/card_zoom.less",
+    "src/styles/wrybit/column_overlay.less",
+    "src/styles/wrybit/log.less",
+    "tests/client/wrybit/visuals/LogPanel.spec.ts",
+    "tests/client/wrybit/visuals/LogPreviews.spec.ts",
+    "tests/client/wrybit/visuals/MobileCardZoom.spec.ts",
+    "src/client/wrybit/visuals/CardIntroBlock.vue",
+    "src/client/wrybit/visuals/cardIntroText.ts",
+    "src/client/wrybit/visuals/ShiftAresGlobalParameters.vue",
+    "src/client/wrybit/visuals/SourceCardThumbnail.vue",
+    "src/client/wrybit/visuals/SpaceConfirmPopover.vue",
+    "src/client/wrybit/visuals/spaceConfirmPosition.ts",
+    "src/client/wrybit/visuals/tabPanelFooter.ts",
+    "src/client/wrybit/visuals/TabPanelFooterSlot.vue",
+    "src/client/wrybit/visuals/board/PlacementBanner.vue",
+    "src/client/wrybit/visuals/board/placementDescription.ts",
+    "src/client/wrybit/visuals/common/ServerUpdateOverlay.vue",
+    "src/styles/wrybit/placement_banner.less",
+    "src/styles/wrybit/server_update_overlay.less",
+    "src/styles/wrybit/space_confirm.less",
+    "src/styles/wrybit/tab_panel_footer.less",
+    "tests/client/wrybit/visuals/InputVisualLeaves.spec.ts",
+    "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+    "src/client/wrybit/visuals/HomeColumns.vue",
+    "src/client/wrybit/visuals/PlayerHome.vue",
+    "src/client/wrybit/visuals/PlayerSetupView.vue",
+    "src/client/wrybit/visuals/RowResizeHandle.vue",
+    "src/client/wrybit/visuals/SetupTurnOrder.vue",
+    "src/client/wrybit/visuals/layout/boardColumnPosition.ts",
+    "src/client/wrybit/visuals/layout/columnResize.ts",
+    "src/client/wrybit/visuals/layout/handleProximity.ts",
+    "src/client/wrybit/visuals/layout/layoutStorage.ts",
+    "src/client/wrybit/visuals/layout/playersCardFit.ts",
+    "src/client/wrybit/visuals/layout/ProximityHandle.ts",
+    "src/client/wrybit/visuals/layout/rightColumnFit.ts",
+    "src/client/wrybit/visuals/layout/rowResize.ts",
+    "src/styles/wrybit/home_cards.less",
+    "src/styles/wrybit/player_home_columns.less",
+    "src/styles/wrybit/player_home_fixed.less",
+    "src/styles/wrybit/resize_handle.less",
+    "src/styles/wrybit/setup_turn_order.less",
+    "tests/client/wrybit/visuals/HomeColumns.spec.ts",
+    "src/client/components/paymentIcon.ts",
+    "src/client/components/PaymentUnit.vue",
+    "src/client/wrybit/visuals/OverpaymentDialog.vue",
+    "src/client/wrybit/visuals/PaymentUnit.vue",
+    "src/styles/wrybit/overpayment_dialog.less",
+    "src/styles/wrybit/payments.less",
+    "tests/client/wrybit/visuals/PaymentLeaves.spec.ts"
   ],
   "verification_scope": {
     "paths": [
+      "assets/wrybit/board/ATTRIBUTION.md",
+      "assets/wrybit/board/mars-clean.png",
+      "assets/wrybit/board/mars-planet.png",
+      "assets/wrybit/board/mars-without-venus-clean.png",
+      "assets/wrybit/common/ATTRIBUTION.md",
+      "assets/wrybit/common/mars.png",
+      "assets/wrybit/flags/ATTRIBUTION.md",
+      "assets/wrybit/flags/bg.svg",
+      "assets/wrybit/flags/br.svg",
+      "assets/wrybit/flags/cn.svg",
+      "assets/wrybit/flags/de.svg",
+      "assets/wrybit/flags/en.svg",
+      "assets/wrybit/flags/es.svg",
+      "assets/wrybit/flags/fi.svg",
+      "assets/wrybit/flags/fr.svg",
+      "assets/wrybit/flags/hu.svg",
+      "assets/wrybit/flags/it.svg",
+      "assets/wrybit/flags/jp.svg",
+      "assets/wrybit/flags/ko.svg",
+      "assets/wrybit/flags/nb.svg",
+      "assets/wrybit/flags/nl.svg",
+      "assets/wrybit/flags/pl.svg",
+      "assets/wrybit/flags/ru.svg",
+      "assets/wrybit/flags/ua.svg",
+      "assets/wrybit/shell/ATTRIBUTION.md",
       "docs/game-history-archive.md",
       "docs/game-replay.md",
       "docs/sqlite-history-retention.md",
+      "docs/variants/rebalanced.md",
+      "package-lock.json",
+      "package.json",
+      "scripts/README-staging.md",
+      "scripts/capture_tm_release_state.ps1",
+      "scripts/deploy_tm_server.ps1",
+      "scripts/deploy_tm_staging.ps1",
+      "scripts/lib/TmSentryRelease.ps1",
+      "scripts/lib/tm_sentry_release_remote.py",
       "scripts/replay/browser-performance.js",
       "scripts/replay/browser-smoke.js",
       "scripts/replay/create-fixture.ts",
+      "scripts/report_tm_sentry_release.ps1",
+      "scripts/rollout_tm_server.ps1",
+      "scripts/smoke_tm_staging.ps1",
+      "scripts/test_tm_release_guards.ps1",
+      "scripts/test_tm_sentry_release.ps1",
+      "scripts/tests/test_tm_sentry_release_remote.py",
+      "src/client/cards/CardModelMetadata.ts",
+      "src/client/cards/ClientCardManifest.ts",
       "src/client/components/App.vue",
+      "src/client/components/Awards.vue",
+      "src/client/components/Board.vue",
+      "src/client/components/BoardSpace.vue",
       "src/client/components/GameEnd.vue",
+      "src/client/components/GameSetupDetail.vue",
+      "src/client/components/Milestones.vue",
+      "src/client/components/OrOptions.vue",
+      "src/client/components/PaymentUnit.vue",
+      "src/client/components/PlayerHome.vue",
+      "src/client/components/PlayerSetupView.vue",
+      "src/client/components/SelectSpace.vue",
       "src/client/components/SpectatorHome.vue",
+      "src/client/components/WaitingFor.vue",
+      "src/client/components/card/Card.vue",
+      "src/client/components/card/CardExtraContent.vue",
       "src/client/components/card/CardRequirementComponent.vue",
+      "src/client/components/card/CardRowComponent.vue",
+      "src/client/components/cardlist/CardList.vue",
+      "src/client/components/cardlist/catalogMetadata.ts",
+      "src/client/components/create/CreateGameForm.vue",
+      "src/client/components/create/JSONProcessor.ts",
+      "src/client/components/create/TemplateManager.ts",
+      "src/client/components/help/HelpRulebooks.vue",
+      "src/client/components/logpanel/CardPanel.vue",
+      "src/client/components/logpanel/LogMessageComponent.vue",
+      "src/client/components/logpanel/logCardModel.ts",
+      "src/client/components/logpanel/logSearchText.ts",
+      "src/client/components/milestoneAwardPrices.ts",
       "src/client/components/overview/PlayerInfo.vue",
+      "src/client/components/overview/PlayerResource.vue",
+      "src/client/components/overview/PlayerResources.vue",
+      "src/client/components/overview/PlayerTags.vue",
       "src/client/components/overview/PlayersOverview.vue",
+      "src/client/components/overview/playerTagDetails.ts",
+      "src/client/components/paymentIcon.ts",
       "src/client/components/replay/ReplayHome.vue",
       "src/client/components/replay/useReplay.ts",
+      "src/client/utils/WikiLinks.ts",
+      "src/client/utils/playerSymbol.ts",
+      "src/client/wrybit/import-manifest.json",
+      "src/client/wrybit/shell/AppBackground.vue",
+      "src/client/wrybit/shell/InputHost.vue",
+      "src/client/wrybit/shell/InputPortal.vue",
+      "src/client/wrybit/shell/WrybitBoundary.vue",
+      "src/client/wrybit/shell/WrybitShell.vue",
+      "src/client/wrybit/shell/appBackground.ts",
+      "src/client/wrybit/shell/appBackgroundVariants.ts",
+      "src/client/wrybit/shell/background.less",
+      "src/client/wrybit/shell/inputContext.ts",
+      "src/client/wrybit/shell/inputHosts.ts",
+      "src/client/wrybit/shell/presentationViews.ts",
+      "src/client/wrybit/visuals/AdjacencyBonus.vue",
+      "src/client/wrybit/visuals/Award.vue",
+      "src/client/wrybit/visuals/Awards.vue",
+      "src/client/wrybit/visuals/Board.vue",
+      "src/client/wrybit/visuals/BoardSpace.vue",
+      "src/client/wrybit/visuals/CardIntroBlock.vue",
+      "src/client/wrybit/visuals/CardListSection.vue",
+      "src/client/wrybit/visuals/DialogFrame.vue",
+      "src/client/wrybit/visuals/GameBoardView.vue",
+      "src/client/wrybit/visuals/GameSetupDetail.vue",
+      "src/client/wrybit/visuals/HandCardsPanel.vue",
+      "src/client/wrybit/visuals/HandCardsTab.vue",
+      "src/client/wrybit/visuals/HandSortControl.vue",
+      "src/client/wrybit/visuals/HomeColumns.vue",
+      "src/client/wrybit/visuals/InfoPanel.vue",
+      "src/client/wrybit/visuals/KeyboardShortcuts.vue",
+      "src/client/wrybit/visuals/Milestone.vue",
+      "src/client/wrybit/visuals/Milestones.vue",
+      "src/client/wrybit/visuals/OtherPlayer.vue",
+      "src/client/wrybit/visuals/OverpaymentDialog.vue",
+      "src/client/wrybit/visuals/PageToolbar.vue",
+      "src/client/wrybit/visuals/Party.vue",
+      "src/client/wrybit/visuals/PaymentUnit.vue",
+      "src/client/wrybit/visuals/PlayedCardsGroups.vue",
+      "src/client/wrybit/visuals/PlayerHome.vue",
+      "src/client/wrybit/visuals/PlayerSetupView.vue",
+      "src/client/wrybit/visuals/RowResizeHandle.vue",
+      "src/client/wrybit/visuals/SetupTurnOrder.vue",
+      "src/client/wrybit/visuals/ShiftAresGlobalParameters.vue",
+      "src/client/wrybit/visuals/SidebarModal.vue",
+      "src/client/wrybit/visuals/SortableCards.vue",
+      "src/client/wrybit/visuals/SourceCardThumbnail.vue",
+      "src/client/wrybit/visuals/SpaceConfirmPopover.vue",
+      "src/client/wrybit/visuals/StackedCards.vue",
+      "src/client/wrybit/visuals/TabPanelFooterSlot.vue",
+      "src/client/wrybit/visuals/board/BoardSpaceTile.vue",
+      "src/client/wrybit/visuals/board/BoardZoomModal.vue",
+      "src/client/wrybit/visuals/board/MarsScaleBonuses.vue",
+      "src/client/wrybit/visuals/board/MobileZoomControls.vue",
+      "src/client/wrybit/visuals/board/OuterSpaceCorners.vue",
+      "src/client/wrybit/visuals/board/PlacementBanner.vue",
+      "src/client/wrybit/visuals/board/ScaledBoard.vue",
+      "src/client/wrybit/visuals/board/boardPinchZoom.ts",
+      "src/client/wrybit/visuals/board/boardPlacementActive.ts",
+      "src/client/wrybit/visuals/board/boardZoomAnimation.ts",
+      "src/client/wrybit/visuals/board/marsScaleBonuses.ts",
+      "src/client/wrybit/visuals/board/marsScaleCells.ts",
+      "src/client/wrybit/visuals/board/mobileBoardZoom.ts",
+      "src/client/wrybit/visuals/board/outerSpaces.ts",
+      "src/client/wrybit/visuals/board/placementDescription.ts",
+      "src/client/wrybit/visuals/boardTabs/BoardTabLines.vue",
+      "src/client/wrybit/visuals/boardTabs/BoardTabs.vue",
+      "src/client/wrybit/visuals/boardTabs/TileViewToggle.vue",
+      "src/client/wrybit/visuals/boardTabs/boardTabFit.ts",
+      "src/client/wrybit/visuals/boardTabs/boardTabState.ts",
+      "src/client/wrybit/visuals/boardTabs/boardTabs.ts",
+      "src/client/wrybit/visuals/card/Card.vue",
+      "src/client/wrybit/visuals/card/CardContent.vue",
+      "src/client/wrybit/visuals/card/CardCost.vue",
+      "src/client/wrybit/visuals/card/CardExtraContent.vue",
+      "src/client/wrybit/visuals/card/CardHelp.vue",
+      "src/client/wrybit/visuals/card/CardRequirementComponent.vue",
+      "src/client/wrybit/visuals/card/CardRequirementsComponent.vue",
+      "src/client/wrybit/visuals/card/CardTitle.vue",
+      "src/client/wrybit/visuals/cardIntroText.ts",
+      "src/client/wrybit/visuals/cardfilter/CardFilterBar.vue",
+      "src/client/wrybit/visuals/cardfilter/CardFilterEmptyHint.vue",
+      "src/client/wrybit/visuals/cardfilter/CardFilterOptions.vue",
+      "src/client/wrybit/visuals/cardfilter/CardSortIcon.vue",
+      "src/client/wrybit/visuals/cardfilter/CardSortMenu.vue",
+      "src/client/wrybit/visuals/cardfilter/CardZoomBar.vue",
+      "src/client/wrybit/visuals/cardfilter/CardZoomSlider.vue",
+      "src/client/wrybit/visuals/cardfilter/cardFilter.ts",
+      "src/client/wrybit/visuals/cardfilter/cardFilterLabels.ts",
+      "src/client/wrybit/visuals/cardfilter/cardFilterState.ts",
+      "src/client/wrybit/visuals/cardfilter/cardZoom.ts",
+      "src/client/wrybit/visuals/cardfilter/handCards.ts",
+      "src/client/wrybit/visuals/cardfilter/handSort.ts",
+      "src/client/wrybit/visuals/cardlist/CardList.vue",
+      "src/client/wrybit/visuals/cardlist/CardListCardGrid.vue",
+      "src/client/wrybit/visuals/cardlist/CardListCostRange.vue",
+      "src/client/wrybit/visuals/cardlist/CardListFilterGroup.vue",
+      "src/client/wrybit/visuals/cardlist/CardListModel.ts",
+      "src/client/wrybit/visuals/cardlist/CardListSection.vue",
+      "src/client/wrybit/visuals/cardlist/CardListSectionRail.vue",
+      "src/client/wrybit/visuals/cardlist/cardListEntries.ts",
+      "src/client/wrybit/visuals/cardlist/cardListOptions.ts",
+      "src/client/wrybit/visuals/cardlist/cardReveal.ts",
+      "src/client/wrybit/visuals/cardlist/catalogTypes.ts",
+      "src/client/wrybit/visuals/cardlist/filterSelection.ts",
+      "src/client/wrybit/visuals/cardlist/searchHighlight.ts",
+      "src/client/wrybit/visuals/cardlist/sectionRail.ts",
+      "src/client/wrybit/visuals/common/BoardCube.vue",
+      "src/client/wrybit/visuals/common/CatalogSegments.vue",
+      "src/client/wrybit/visuals/common/DockedTab.ts",
+      "src/client/wrybit/visuals/common/FanProjectNotice.vue",
+      "src/client/wrybit/visuals/common/GameSetupChips.vue",
+      "src/client/wrybit/visuals/common/GlassTooltip.ts",
+      "src/client/wrybit/visuals/common/LanguageFlag.vue",
+      "src/client/wrybit/visuals/common/LazyMount.vue",
+      "src/client/wrybit/visuals/common/LoadingBar.vue",
+      "src/client/wrybit/visuals/common/LoadingPlate.vue",
+      "src/client/wrybit/visuals/common/MarsHomeLink.vue",
+      "src/client/wrybit/visuals/common/MobileGlyph.vue",
+      "src/client/wrybit/visuals/common/PageTitle.vue",
+      "src/client/wrybit/visuals/common/PlayerCube.vue",
+      "src/client/wrybit/visuals/common/PopupPanel.vue",
+      "src/client/wrybit/visuals/common/SeatIcon.vue",
+      "src/client/wrybit/visuals/common/ServerUpdateOverlay.vue",
+      "src/client/wrybit/visuals/common/cardVisibility.ts",
+      "src/client/wrybit/visuals/common/dialogZoomAnimation.ts",
+      "src/client/wrybit/visuals/common/gameSetupChipTypes.ts",
+      "src/client/wrybit/visuals/common/horizontalScroll.ts",
+      "src/client/wrybit/visuals/common/mobileGlyphs.ts",
+      "src/client/wrybit/visuals/common/mobileLayout.ts",
+      "src/client/wrybit/visuals/common/motion.ts",
+      "src/client/wrybit/visuals/common/nearViewport.ts",
+      "src/client/wrybit/visuals/common/overlayCoordinator.ts",
+      "src/client/wrybit/visuals/common/playerCardsToggle.ts",
+      "src/client/wrybit/visuals/common/playersCardFit.ts",
+      "src/client/wrybit/visuals/common/playersInTurnOrder.ts",
+      "src/client/wrybit/visuals/gameMenu/GameMenu.vue",
+      "src/client/wrybit/visuals/gameMenu/LanguageSelectionDialog.vue",
+      "src/client/wrybit/visuals/gameMenu/PreferencesDialog.vue",
+      "src/client/wrybit/visuals/gameMenu/gameMenuContext.ts",
+      "src/client/wrybit/visuals/gameMenu/siteLinks.ts",
+      "src/client/wrybit/visuals/layout/ProximityHandle.ts",
+      "src/client/wrybit/visuals/layout/boardColumnPosition.ts",
+      "src/client/wrybit/visuals/layout/columnResize.ts",
+      "src/client/wrybit/visuals/layout/handleProximity.ts",
+      "src/client/wrybit/visuals/layout/layoutStorage.ts",
+      "src/client/wrybit/visuals/layout/playersCardFit.ts",
+      "src/client/wrybit/visuals/layout/rightColumnFit.ts",
+      "src/client/wrybit/visuals/layout/rowResize.ts",
+      "src/client/wrybit/visuals/logpanel/CardPanel.vue",
+      "src/client/wrybit/visuals/logpanel/LogCardsContent.vue",
+      "src/client/wrybit/visuals/logpanel/LogCardsZoom.vue",
+      "src/client/wrybit/visuals/logpanel/LogGenerationList.vue",
+      "src/client/wrybit/visuals/logpanel/LogMessageComponent.vue",
+      "src/client/wrybit/visuals/logpanel/LogMessageInspector.vue",
+      "src/client/wrybit/visuals/logpanel/LogPanel.vue",
+      "src/client/wrybit/visuals/logpanel/drawnCards.ts",
+      "src/client/wrybit/visuals/logpanel/logMessageContent.ts",
+      "src/client/wrybit/visuals/logpanel/logScroll.ts",
+      "src/client/wrybit/visuals/logpanel/logStream.ts",
+      "src/client/wrybit/visuals/logpanel/milestonesAwardsFocus.ts",
+      "src/client/wrybit/visuals/milestoneAwardTable/MilestoneAwardIcon.vue",
+      "src/client/wrybit/visuals/milestoneAwardTable/MilestoneAwardTable.vue",
+      "src/client/wrybit/visuals/milestoneAwardTable/headerFit.ts",
+      "src/client/wrybit/visuals/milestoneAwardTable/milestoneAwardIcons.ts",
+      "src/client/wrybit/visuals/milestoneAwardTable/milestonesAwardsLabel.ts",
+      "src/client/wrybit/visuals/milestoneAwardTable/scoreRanks.ts",
+      "src/client/wrybit/visuals/milestoneAwardTable/tableOrientation.ts",
+      "src/client/wrybit/visuals/mobile/MobileCardZoom.vue",
+      "src/client/wrybit/visuals/overview/DiscountList.vue",
+      "src/client/wrybit/visuals/overview/EscapeVelocityClock.vue",
+      "src/client/wrybit/visuals/overview/HandDiscount.vue",
+      "src/client/wrybit/visuals/overview/PlayerIdentity.vue",
+      "src/client/wrybit/visuals/overview/PlayerInfo.vue",
+      "src/client/wrybit/visuals/overview/PlayerResource.vue",
+      "src/client/wrybit/visuals/overview/PlayerResources.vue",
+      "src/client/wrybit/visuals/overview/PlayerStatus.vue",
+      "src/client/wrybit/visuals/overview/PlayerTags.vue",
+      "src/client/wrybit/visuals/overview/PlayerTimer.vue",
+      "src/client/wrybit/visuals/overview/PlayersOverview.vue",
+      "src/client/wrybit/visuals/overview/PlayersTable.vue",
+      "src/client/wrybit/visuals/overview/PlayersTableGoods.vue",
+      "src/client/wrybit/visuals/overview/PlayersTableHeader.vue",
+      "src/client/wrybit/visuals/overview/PlayersTableRow.vue",
+      "src/client/wrybit/visuals/overview/discounts.ts",
+      "src/client/wrybit/visuals/overview/escapeVelocityClock.ts",
+      "src/client/wrybit/visuals/overview/goodsBoxWidths.ts",
+      "src/client/wrybit/visuals/overview/playerCorporations.ts",
+      "src/client/wrybit/visuals/overview/playerGoods.ts",
+      "src/client/wrybit/visuals/overview/playerTagDetails.ts",
+      "src/client/wrybit/visuals/overview/playersTableLayout.ts",
+      "src/client/wrybit/visuals/overview/protectedTags.ts",
+      "src/client/wrybit/visuals/spaceConfirmPosition.ts",
+      "src/client/wrybit/visuals/tabPanelFooter.ts",
+      "src/client/wrybit/visuals/trackBonus/BoardTrackRow.vue",
+      "src/client/wrybit/visuals/trackBonus/TrackBonusChip.vue",
+      "src/client/wrybit/visuals/trackBonus/TrackLane.vue",
+      "src/client/wrybit/visuals/trackBonus/trackBonus.ts",
+      "src/client/wrybit/visuals/trackBonus/trackCell.ts",
+      "src/common/GlobalParameterConfig.ts",
       "src/common/Timer.ts",
       "src/common/app/paths.ts",
       "src/common/cards/CardReplacementRules.ts",
       "src/common/cards/CardRequirementDescriptor.ts",
       "src/common/cards/RequirementType.ts",
+      "src/common/models/ClaimedMilestoneModel.ts",
+      "src/common/models/ConditionalDiscountModel.ts",
+      "src/common/models/PlayerModel.ts",
       "src/common/models/ReplayModel.ts",
       "src/locales/ru/replay.json",
       "src/server/Game.ts",
@@ -3329,6 +5458,8 @@
       "src/server/awards/amazonisPlanitia/AmazonisEngineer.ts",
       "src/server/awards/terraCimmeria/Warmonger.ts",
       "src/server/behavior/Executor.ts",
+      "src/server/bot/AutomationCompatibility.ts",
+      "src/server/bot/BotTakeoverManager.ts",
       "src/server/cards/AllManifests.ts",
       "src/server/cards/Card.ts",
       "src/server/cards/CardFactorySpec.ts",
@@ -3473,12 +5604,90 @@
       "src/server/cards/underworld/GuerillaEcologists.ts",
       "src/server/cards/venusNext/Celestic.ts",
       "src/server/cards/venusNext/floaterCards.ts",
+      "src/server/models/ServerModel.ts",
+      "src/server/models/publicConditionalDiscounts.ts",
       "src/server/player/Colonies.ts",
       "src/server/replay/ReplayFrame.ts",
+      "src/server/routes/ApiGameLogs.ts",
       "src/server/routes/ApiReplay.ts",
+      "src/server/routes/ContentType.ts",
+      "src/server/routes/GameLogs.ts",
+      "src/server/routes/PlayerInput.ts",
+      "src/server/routes/ServeAsset.ts",
+      "src/server/server.ts",
+      "src/server/server/SentryProcessBoundary.ts",
+      "src/server/server/SentryReporter.ts",
       "src/server/server/requestProcessor.ts",
+      "src/server/tools/export_card_rendering.ts",
       "src/server/turmoil/parties/Kelvinists.ts",
       "src/server/turmoil/parties/Reds.ts",
+      "src/styles/cards.less",
+      "src/styles/wrybit/adjacency_bonus.less",
+      "src/styles/wrybit/board.less",
+      "src/styles/wrybit/board_tabs.less",
+      "src/styles/wrybit/board_zoom_mobile.less",
+      "src/styles/wrybit/board_zoom_modal.less",
+      "src/styles/wrybit/button_tones.less",
+      "src/styles/wrybit/card_filter_bar.less",
+      "src/styles/wrybit/card_renderer_adapters.less",
+      "src/styles/wrybit/card_zoom.less",
+      "src/styles/wrybit/card_zoom_slider.less",
+      "src/styles/wrybit/cards.less",
+      "src/styles/wrybit/cards/content-and-requirements.less",
+      "src/styles/wrybit/cards/corporation-logos-additional.less",
+      "src/styles/wrybit/cards/corporation-logos-core.less",
+      "src/styles/wrybit/cards/counters.less",
+      "src/styles/wrybit/cards/expansion.less",
+      "src/styles/wrybit/cards/header.less",
+      "src/styles/wrybit/cards/render-and-tiles.less",
+      "src/styles/wrybit/cards/resources-and-symbols.less",
+      "src/styles/wrybit/cards/title-and-tags.less",
+      "src/styles/wrybit/catalog-controls.less",
+      "src/styles/wrybit/catalog-presentation.less",
+      "src/styles/wrybit/catalog.less",
+      "src/styles/wrybit/catalog/filters.less",
+      "src/styles/wrybit/catalog/header.less",
+      "src/styles/wrybit/catalog/responsive.less",
+      "src/styles/wrybit/catalog/results.less",
+      "src/styles/wrybit/column_overlay.less",
+      "src/styles/wrybit/dialog_frame.less",
+      "src/styles/wrybit/discount_badges.less",
+      "src/styles/wrybit/fan_project_notice.less",
+      "src/styles/wrybit/frosted_surface.less",
+      "src/styles/wrybit/game_menu.less",
+      "src/styles/wrybit/glass_tooltip.less",
+      "src/styles/wrybit/globs.less",
+      "src/styles/wrybit/hand_cards_panel.less",
+      "src/styles/wrybit/home_cards.less",
+      "src/styles/wrybit/info_panel.less",
+      "src/styles/wrybit/loading.less",
+      "src/styles/wrybit/log.less",
+      "src/styles/wrybit/milestone_award_table.less",
+      "src/styles/wrybit/modal_surface.less",
+      "src/styles/wrybit/or_options_tabs.less",
+      "src/styles/wrybit/or_tab_tones.less",
+      "src/styles/wrybit/outer_spaces.less",
+      "src/styles/wrybit/overpayment_dialog.less",
+      "src/styles/wrybit/payments.less",
+      "src/styles/wrybit/placement_banner.less",
+      "src/styles/wrybit/player_cube.less",
+      "src/styles/wrybit/player_home_columns.less",
+      "src/styles/wrybit/player_home_fixed.less",
+      "src/styles/wrybit/players_table.less",
+      "src/styles/wrybit/popup.less",
+      "src/styles/wrybit/resize_handle.less",
+      "src/styles/wrybit/scaled_board.less",
+      "src/styles/wrybit/server_update_overlay.less",
+      "src/styles/wrybit/setup_tiles.less",
+      "src/styles/wrybit/setup_turn_order.less",
+      "src/styles/wrybit/sidebar_modal.less",
+      "src/styles/wrybit/sortable_cards.less",
+      "src/styles/wrybit/source_mixins.less",
+      "src/styles/wrybit/space_confirm.less",
+      "src/styles/wrybit/tab_panel_footer.less",
+      "src/styles/wrybit/track_bonus.less",
+      "src/styles/wrybit/variables.less",
+      "src/styles/wrybit/visuals.less",
       "tests/awards/amazonisPlanitia/AmazonisEngineer.spec.ts",
       "tests/awards/terraCimmeria/Warmonger.spec.ts",
       "tests/behavior/Executor.spec.ts",
@@ -3489,36 +5698,84 @@
       "tests/cards/rebalanced/Replacements.spec.ts",
       "tests/cards/requirements/CardRequirements.spec.ts",
       "tests/client/components/App.spec.ts",
+      "tests/client/components/Board.spec.ts",
       "tests/client/components/GameEnd.spec.ts",
+      "tests/client/components/PlayerHome.spec.ts",
       "tests/client/components/SpectatorHome.spec.ts",
+      "tests/client/components/card/Card.spec.ts",
       "tests/client/components/card/CardRequirementComponent.spec.ts",
+      "tests/client/components/card/CardRowComponent.spec.ts",
+      "tests/client/components/create/JSONProcessor.spec.ts",
+      "tests/client/components/create/Rebalanced.spec.ts",
+      "tests/client/components/overview/PlayerResources.spec.ts",
+      "tests/client/components/overview/PlayerTags.spec.ts",
       "tests/client/components/overview/PlayersOverview.spec.ts",
       "tests/client/components/replay/ReplayHome.spec.ts",
       "tests/client/components/replay/useReplay.spec.ts",
+      "tests/client/wrybit/shell/AppInputRefresh.spec.ts",
+      "tests/client/wrybit/shell/AppMode.spec.ts",
+      "tests/client/wrybit/shell/BoardInputPortal.spec.ts",
+      "tests/client/wrybit/shell/DraftInputPortal.spec.ts",
+      "tests/client/wrybit/shell/InputPortal.spec.ts",
+      "tests/client/wrybit/shell/PlayerHomeBoundary.spec.ts",
+      "tests/client/wrybit/shell/WrybitBoundary.spec.ts",
+      "tests/client/wrybit/shell/WrybitShell.spec.ts",
+      "tests/client/wrybit/shell/inputContext.spec.ts",
+      "tests/client/wrybit/visuals/Board.spec.ts",
+      "tests/client/wrybit/visuals/BoardPinchZoom.spec.ts",
+      "tests/client/wrybit/visuals/BoardTabs.spec.ts",
+      "tests/client/wrybit/visuals/BoardTrackRow.spec.ts",
+      "tests/client/wrybit/visuals/BoardZoom.spec.ts",
+      "tests/client/wrybit/visuals/Card.spec.ts",
+      "tests/client/wrybit/visuals/CardDetailAdapters.spec.ts",
+      "tests/client/wrybit/visuals/CardFilter.spec.ts",
+      "tests/client/wrybit/visuals/CardFilterControls.spec.ts",
+      "tests/client/wrybit/visuals/CardHelpTimer.spec.ts",
+      "tests/client/wrybit/visuals/CardReveal.spec.ts",
+      "tests/client/wrybit/visuals/CatalogControls.spec.ts",
+      "tests/client/wrybit/visuals/CatalogEntries.spec.ts",
+      "tests/client/wrybit/visuals/CatalogLifecycle.spec.ts",
+      "tests/client/wrybit/visuals/CatalogModel.spec.ts",
+      "tests/client/wrybit/visuals/ConditionalDiscounts.spec.ts",
+      "tests/client/wrybit/visuals/GameBoardView.spec.ts",
+      "tests/client/wrybit/visuals/GameMenu.spec.ts",
+      "tests/client/wrybit/visuals/GlassTooltip.spec.ts",
+      "tests/client/wrybit/visuals/HandCardsPanel.spec.ts",
+      "tests/client/wrybit/visuals/HomeColumns.spec.ts",
+      "tests/client/wrybit/visuals/InfoPanel.spec.ts",
+      "tests/client/wrybit/visuals/InputVisualLeaves.spec.ts",
+      "tests/client/wrybit/visuals/LogPanel.spec.ts",
+      "tests/client/wrybit/visuals/LogPreviews.spec.ts",
+      "tests/client/wrybit/visuals/MarsScaleBonuses.spec.ts",
+      "tests/client/wrybit/visuals/MilestoneAwardTable.spec.ts",
+      "tests/client/wrybit/visuals/MilestoneAwards.spec.ts",
+      "tests/client/wrybit/visuals/MobileCardZoom.spec.ts",
+      "tests/client/wrybit/visuals/PaymentLeaves.spec.ts",
+      "tests/client/wrybit/visuals/PlayerCube.spec.ts",
+      "tests/client/wrybit/visuals/PlayerInfo.spec.ts",
+      "tests/client/wrybit/visuals/PlayerResources.spec.ts",
+      "tests/client/wrybit/visuals/PlayerTagsRefresh.spec.ts",
+      "tests/client/wrybit/visuals/PlayersOverview.spec.ts",
+      "tests/client/wrybit/visuals/PlayersTable.spec.ts",
+      "tests/client/wrybit/visuals/SharedWidgets.spec.ts",
+      "tests/client/wrybit/visuals/SortableCards.spec.ts",
+      "tests/client/wrybit/visuals/visualStyles.spec.ts",
       "tests/database/ReplayArchive.spec.ts",
+      "tests/fanmade-compat/RebalancedLifecycle.spec.ts",
+      "tests/models/ServerModel.spec.ts",
       "tests/replay/ReplayFrame.spec.ts",
       "tests/replay/ReplayView.spec.ts",
       "tests/routes/ApiReplay.spec.ts",
-      "tests/turmoil/parties/Kelvinists.spec.ts",
-      "docs/variants/rebalanced.md",
-      "src/client/components/create/CreateGameForm.vue",
-      "src/client/components/create/JSONProcessor.ts",
-      "src/client/components/GameSetupDetail.vue",
-      "src/client/components/help/HelpRulebooks.vue",
-      "src/styles/cards.less",
-      "tests/client/components/create/Rebalanced.spec.ts",
-      "tests/client/components/create/JSONProcessor.spec.ts",
-      "tests/fanmade-compat/RebalancedLifecycle.spec.ts",
-      "src/server/bot/AutomationCompatibility.ts",
+      "tests/routes/PlayerInput.spec.ts",
+      "tests/routes/ServeAsset.spec.ts",
       "tests/server/bot/AutomationCompatibility.spec.ts",
-      "tools/fanmade-port/fanmade-catalog-source-manifest.json",
-      "src/client/components/create/TemplateManager.ts",
-      "src/client/cards/ClientCardManifest.ts",
-      "src/client/utils/WikiLinks.ts",
-      "src/server/bot/BotTakeoverManager.ts",
-      "src/server/tools/export_card_rendering.ts",
-      "tools/fanmade-port/check-catalog-source.js"
+      "tests/server/requestProcessor.spec.ts",
+      "tests/server/server/SentryProcessBoundary.spec.ts",
+      "tests/server/server/SentryReporter.spec.ts",
+      "tests/turmoil/parties/Kelvinists.spec.ts",
+      "tools/fanmade-port/check-catalog-source.js",
+      "tools/fanmade-port/fanmade-catalog-source-manifest.json"
     ],
-    "note": "Объединены ранее проверенные области реплея, корпораций, callback contracts и требования по поколению; текущая dependency union проверена по completeness и fingerprints. Игровые проверки принадлежат утверждённым пакетам. WP08: подтверждены registry, dependency graph, combined variants и consumer capabilities. WP09: локальные UI/lifecycle/automation и renderer checks подтверждены; общий quality pipeline и PR/CI/staging остаются обязательствами родителя."
+    "note": "Объединены ранее проверенные области реплея, корпораций, callback contracts и требования по поколению; текущая dependency union проверена по completeness и fingerprints. Игровые проверки принадлежат утверждённым пакетам. WP08: подтверждены registry, dependency graph, combined variants и consumer capabilities. WP09: локальные UI/lifecycle/automation и renderer checks подтверждены; общий quality pipeline и PR/CI/staging остаются обязательствами родителя. Добавлена только начальная граница App → опциональная оболочка. Сеть, правила и AI сохраняют прежних владельцев; полный UI и staging ещё не готовы."
   }
 }

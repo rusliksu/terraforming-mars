@@ -5,6 +5,7 @@ export const paths = {
   API_AI_FEEDBACK: 'api/ai-feedback',
   API_DELETE_GAME: 'api/deletegame',
   API_CREATEGAME: 'api/creategame',
+  API_BOARD_PREVIEW: 'api/board-preview',
   API_GAME: 'api/game',
   API_GAME_HISTORY: 'api/game/history',
   API_GAME_LOGS: 'api/game/logs',
@@ -23,6 +24,7 @@ export const paths = {
   API_SPECTATOR: 'api/spectator',
   API_STATS: 'api/stats',
   API_WAITING_FOR: 'api/waitingfor',
+  API_WRYBIT_STATS: 'api/wrybit/stats',
   AUTH_DISCORD_CALLBACK: 'auth/discord/callback',
   AUTOPASS: 'autopass',
   CARD_LIBRARY: 'card-library',
@@ -43,5 +45,6 @@ export const paths = {
   RESET: 'reset',
   REPLAY: 'replay',
   SPECTATOR: 'spectator',
+  STATS: 'stats',
   THE_END: 'the-end',
 } as const;

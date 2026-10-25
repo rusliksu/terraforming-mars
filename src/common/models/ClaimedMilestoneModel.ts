@@ -13,6 +13,8 @@ export type ClaimedMilestoneModel = {
   playerName: string | undefined;
   color: Color | undefined;
   scores: Array<MilestoneScore>;
+  /** Public display threshold for simple numeric requirements. */
+  threshold?: number;
   /** Only present in Conglomerates games -- each team's combined score for this milestone. */
   teamScores?: Array<ConglomeratesTeamScore>;
 }

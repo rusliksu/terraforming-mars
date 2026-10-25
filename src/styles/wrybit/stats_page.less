@@ -1,0 +1,1126 @@
+// Source statistics styles. The source mixin is included locally because the
+// pinned mixins.less is not part of the current fork.
+.horizontal-edge-fade() {
+  --edge-fade-left: 0px;
+  --edge-fade-right: 0px;
+  mask-image: linear-gradient(to right, transparent 0, #000 var(--edge-fade-left), #000 calc(100% - var(--edge-fade-right)), transparent 100%);
+}
+
+// Statistics page (/stats). Scaffold (header, filter column, bottom sheet, filter tiles) comes from card_list.less,
+// surfaces and spacing from create_game_form.less – only statistics-specific styles here.
+
+@stats-narrow: 900px; // like @card-list-narrow
+@stats-winner: #f4c20d; // like the winner numbers of the admin overview
+@stats-bar-width: 90px;
+
+.main-container:has(#stats) {
+  margin-left: 0;
+}
+
+// Without a search field the header needs only one row, even when narrow
+.stats {
+  --card-list-header: 64px;
+}
+
+.stats-header-info {
+  flex: 1;
+  color: @create-game-dim;
+  font-size: 13px;
+}
+
+.stats-main {
+  display: flex;
+  flex-direction: column;
+  gap: @create-game-gap-card;
+  min-width: 0;
+}
+
+.stats-stack {
+  display: flex;
+  flex-direction: column;
+  gap: @create-game-gap-card;
+}
+
+.stats-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: @create-game-gap-card;
+  // Equal-height neighbors: no gaps under the shorter card
+  align-items: stretch;
+
+  // A leftover card takes the full width instead of leaving an empty half
+  > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
+.stats-card {
+  .create-game-card();
+  margin: 0;
+
+  h2 {
+    margin-bottom: 10px;
+    font-size: 16px;
+  }
+
+  h3 {
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+}
+
+.stats-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+.stats-dim {
+  color: @create-game-dim;
+  font-weight: normal;
+}
+
+.stats-note {
+  margin: 8px 0 0;
+  color: @create-game-dim;
+  font-size: 12px;
+}
+
+.stats-link {
+  color: @create-game-dim;
+
+  &:hover {
+    color: #fff;
+  }
+}
+
+.stats-best {
+  color: @stats-winner;
+  font-weight: bold;
+}
+
+// ---------- Tabs: segmented control like in "create game", horizontally scrollable when space is short ----------
+.stats-tabs.create-game-segmented {
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  a {
+    flex: 1 0 auto;
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: @create-game-dim;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+}
+
+.stats-search {
+  flex: 0 1 260px;
+  min-width: 0;
+  height: @create-game-control-height;
+  padding: 0 10px;
+  border: 1px solid @create-game-line;
+  border-radius: @create-game-radius-small;
+  background: rgba(0, 0, 0, 0.3);
+  color: #eee;
+  font: inherit;
+
+  &:focus {
+    outline: 2px solid @bg_action;
+    outline-offset: -1px;
+  }
+}
+
+.stats-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  input {
+    flex: 1;
+    accent-color: @bg_action;
+  }
+}
+
+// ---------- Key figures ----------
+.stats-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: @create-game-gap-inner;
+}
+
+.stats-kpi {
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: @create-game-radius-small;
+  background: @create-game-chip-background;
+}
+
+.stats-kpi-label {
+  color: @create-game-dim;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.stats-kpi-value {
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ---------- Wins per lineup: like in the admin overview ----------
+// More space between lineups than between the tiles of one lineup (law of proximity)
+// Wins per line-up (group games) 2/3, solo games 1/3; alone, either box takes the full width
+.stats-lineup-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: @create-game-gap-card;
+  align-items: stretch;
+
+  &--both {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+}
+
+.stats-lineups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr));
+  gap: 16px 32px;
+  align-items: start;
+}
+
+.stats-lineup-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.stats-wins {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+// Four-player lineups must keep their averages beside the wins in the
+// two-column overview; slightly narrower win tiles avoid a lone wrapped row.
+.stats-lineups .stats-win {
+  min-width: 76px;
+  padding: 6px 8px;
+}
+
+.stats-win {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 84px;
+  padding: 6px 10px;
+  border-radius: @create-game-radius-small;
+  color: #fff;
+  text-decoration: none;
+}
+
+// White instead of gold: gold stays reserved for best values
+.stats-win-number {
+  color: #fff;
+  font-size: 26px;
+  font-weight: bold;
+  line-height: 1.1;
+}
+
+.stats-win-name {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+// Label/value pairs as a small table: values on one axis
+.stats-averages {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 2px 8px;
+  margin: 0;
+  color: @create-game-dim;
+  font-size: 12px;
+  line-height: 1.35;
+
+  dt {
+    white-space: nowrap;
+  }
+
+  dd {
+    margin: 0;
+    color: #eee;
+    font-weight: bold;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// ---------- Tables ----------
+.stats-table-scroll {
+  overflow-x: auto;
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+
+  th,
+  td {
+    padding: 7px 10px;
+    border-bottom: 1px solid @create-game-line;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .stats-table-text {
+    text-align: left;
+  }
+
+  th {
+    color: @create-game-dim;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+
+  th.stats-table-sorted {
+    color: #fff;
+
+    &::after {
+      content: " ▼";
+      font-size: 9px;
+    }
+  }
+
+  th.stats-table-ascending::after {
+    content: " ▲";
+  }
+
+  // Columns without an order (e.g. the result link) don't react to the mouse
+  th.stats-table-unsortable {
+    cursor: default;
+
+    &:hover {
+      color: @create-game-dim;
+    }
+  }
+
+  tbody tr:hover td {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  // Row that opens a link as a whole (game list → result page)
+  tbody tr.stats-table-row--link {
+    cursor: pointer;
+
+    &:hover td {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    &:focus-visible {
+      outline: 2px solid @highlight-gold;
+      outline-offset: -2px;
+    }
+  }
+
+  tr:last-child td {
+    border-bottom: 0;
+  }
+}
+
+.stats-entity {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-weight: 500;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.stats-entity-icon {
+  flex-shrink: 0;
+  // Real zoom instead of transform: the layout width shrinks too, so every icon starts flush left
+  --ma-table-icon-zoom: 0.7;
+}
+
+.stats-player {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+// Win rate: bar with a mark at the chance value
+.stats-win-rate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.stats-win-rate-value {
+  min-width: 40px;
+}
+
+.stats-win-rate-track {
+  position: relative;
+  width: @stats-bar-width;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.stats-win-rate-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 4px;
+  background: @bg_action;
+}
+
+.stats-win-rate-expected {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+// ---------- Game list ----------
+.stats-game-players {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.stats-game-player {
+  padding: 1px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.stats-game-winner {
+  border-color: @stats-winner;
+}
+
+// Result link of a game as a button (StatsGameList.vue)
+.stats-result-button {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  text-decoration: none;
+}
+
+// Setup chips (GameSetupChips.vue): on narrow screens the table scrolls sideways anyway; without a minimum width
+// the column would shrink to one chip per line and every row would grow very tall
+.stats-games .create-game-summary {
+  min-width: 300px;
+}
+
+// ---------- Player cards ----------
+.stats-players {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: @create-game-gap-card;
+}
+
+.stats-player-card {
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  color: #eee;
+  text-decoration: none;
+
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  dl {
+    display: grid;
+    margin: 0;
+    padding: 10px 14px;
+  }
+
+  dt {
+    color: @create-game-dim;
+  }
+
+  dd {
+    margin: 0;
+    font-weight: bold;
+  }
+}
+
+.stats-player-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 10px 14px;
+  color: #fff;
+
+  strong {
+    font-size: 18px;
+  }
+}
+
+// Label and value close together, columns clearly further apart (law of proximity)
+.stats-player-card-values {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px 28px;
+
+  div {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 13px;
+  }
+}
+
+// Corporation names are long: small label above the name
+.stats-player-card-corporations {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 28px;
+  border-top: 1px solid @create-game-line;
+
+  dt {
+    font-size: 11px;
+  }
+
+  dd {
+    font-size: 13px;
+  }
+}
+
+// ---------- Detail page ----------
+.stats-detail-head .stats-detail-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin: 8px 0 12px;
+  font-size: 22px;
+
+  .stats-entity,
+  .stats-player {
+    font-size: 22px;
+  }
+
+  .stats-dim {
+    font-size: 14px;
+  }
+}
+
+// ---------- Records ----------
+.stats-records {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: @create-game-gap-card;
+  // Like .stats-columns: equal-height neighbors, a leftover card spans the full width
+  align-items: stretch;
+
+  > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
+.stats-record-rank {
+  width: 1%;
+  color: @create-game-dim;
+}
+
+// ---------- Charts ----------
+.stats-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.stats-chart-grid {
+  stroke: rgba(255, 255, 255, 0.1);
+}
+
+.stats-chart-label {
+  fill: @create-game-dim;
+  font-size: 10px;
+}
+
+.stats-chart-value {
+  fill: #eee;
+  font-size: 11px;
+}
+
+.stats-chart-bar {
+  fill: @bg_action;
+}
+
+.stats-chart-line {
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.stats-chart-bar-highlight {
+  fill: @stats-winner;
+  background: @stats-winner;
+}
+
+.stats-legend i.stats-chart-bar-highlight {
+  width: 10px;
+  height: 10px;
+}
+
+.stats-chart-win {
+  fill: @stats-winner;
+  stroke: #111;
+}
+
+each(@players, {
+  @color: ~"player_@{value}";
+  .stats-chart-stroke-@{value} {
+    stroke: @@color;
+  }
+  .stats-chart-fill-@{value} {
+    fill: @@color;
+    background: @@color;
+  }
+});
+
+.stats-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 6px;
+  color: @create-game-dim;
+  font-size: 12px;
+
+  > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  i {
+    display: inline-block;
+    width: 14px;
+    height: 3px;
+    border-radius: 2px;
+  }
+
+  .stats-legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: @stats-winner;
+  }
+}
+
+// ---------- Narrow: everything single-column, first table column stays put when scrolling sideways ----------
+@media only screen and (max-width: @stats-narrow) {
+  .card-list-header .stats-header-info {
+    display: none;
+  }
+
+  .stats .card-list-header {
+    grid-template-areas: "menu title actions";
+  }
+
+  .stats-columns,
+  .stats-records,
+  .stats-lineup-split--both {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .stats-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stats-kpi-value {
+    font-size: 20px;
+  }
+
+  // Dark frosted glass so the columns scrolling past do not collide with the name
+  .stats-table td:first-child,
+  .stats-table th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: @create-game-surface-strong;
+    backdrop-filter: blur(6px);
+  }
+
+  // The sticky column takes at most 40 % of the viewport, otherwise the scrolling columns can no longer be read;
+  // longer names are cut off with "…" (padding 2 × 10px is subtracted)
+  .stats-table td:first-child > * {
+    max-width: calc(40vw - 20px);
+    vertical-align: middle;
+  }
+
+  .stats-table td:first-child {
+    .stats-entity {
+      min-width: 0;
+
+      > span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    .stats-player {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+// Corporation takes the remaining width and is cut off with "…", so the row never leaves the card
+.stats-record-corporations {
+  width: 100%;
+  max-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Several corporations (Merger) side by side
+.stats-record-corporation + .stats-record-corporation::before {
+  content: " / ";
+}
+
+// Title, minimum count and search on one axis; they only wrap when narrow
+.stats-list-tools {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+
+  .stats-search {
+    flex: 0 0 220px;
+  }
+
+  .create-game-segmented button {
+    padding: 4px 10px;
+  }
+}
+
+// On detail pages: other players without the entry recede
+.stats-game-other {
+  opacity: 0.45;
+}
+
+// Reference for the tab position while scrolling along (offsetLeft)
+.stats-tabs {
+  position: relative;
+}
+
+@media only screen and (max-width: @stats-narrow) {
+  .stats-list-tools {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+
+    .stats-search {
+      flex: 1 1 100%;
+    }
+  }
+}
+
+// ---------- Victory point sources: stacked bar ----------
+@stats-source-colors: {
+  terraformRating: @button-heat;
+  milestones: @bg_action;
+  awards: @highlight-gold;
+  greenery: @button-success;
+  city: #9aa0a6;
+  cards: #b9813b;
+  other: rgba(255, 255, 255, 0.35);
+}
+
+each(@stats-source-colors, {
+  .stats-source-@{key} {
+    background: @value;
+  }
+});
+
+.stats-sources-bar {
+  display: flex;
+  width: 160px;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.1);
+
+  span {
+    height: 100%;
+  }
+}
+
+.stats-legend i[class*="stats-source-"] {
+  height: 8px;
+}
+
+// ---------- Cards: small card icon next to the name opens the large view ----------
+.stats-entity-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stats-card-button {
+  flex-shrink: 0;
+  width: 14px;
+  height: 19px;
+  padding: 0;
+  border: 1.5px solid @create-game-dim;
+  border-radius: 3px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.25) 0 30%, transparent 30%);
+  cursor: zoom-in;
+
+  &:hover {
+    border-color: #fff;
+  }
+}
+
+// Detail page with game material: key figures on the left, card/tile on the right (narrow: above)
+.stats-detail-head--asset {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: @create-game-gap-column;
+  align-items: center;
+
+  // Card small enough that the header is not taller than the key figures; large on click
+  .stats-asset--card .card-container {
+    zoom: 0.6;
+  }
+}
+
+// Cards and tiles from the game without their outer margins
+.stats-asset {
+  padding: 0;
+  border: 0;
+  background: none;
+
+  .card-container {
+    margin: 0 !important;
+  }
+}
+
+.stats-asset--card {
+  cursor: zoom-in;
+}
+
+@media only screen and (max-width: @stats-narrow) {
+  .stats-detail-head--asset {
+    grid-template-columns: minmax(0, 1fr);
+
+    .stats-detail-asset {
+      order: -1;
+      justify-self: center;
+    }
+  }
+}
+
+// Empty game board (also as heatmap)
+.stats-board-preview {
+  display: flex;
+  justify-content: center;
+}
+
+// In the detail page heading the card is already shown large next to it
+.stats-detail-head--asset .stats-detail-title .stats-card-button {
+  display: none;
+}
+
+// On desktop many cards fit in the carousel: highlight the shown one, the others recede
+.stats-card-zoom {
+  .mb-card-zoom-slide--before,
+  .mb-card-zoom-slide--after {
+    opacity: 0.45;
+    transition: opacity 0.2s ease;
+  }
+}
+
+// ---------- Overview: game material side by side ----------
+// Space between cards larger than between card and label (law of proximity)
+// Horizontal scroller: the box stays as tall as one card, however narrow it is
+.stats-showcase {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  // The row reaches to the card's edge (card padding 14px): cards scroll out at the border, not 14px before it.
+  // At rest the first card still lines up with the heading thanks to the same padding inside.
+  margin: 0 -14px;
+  // A scroller also clips at the top: room for the cost badge and corporation banner that extend past the card edge
+  padding: 14px 14px 6px;
+  scroll-padding-inline: 14px;
+  .horizontal-edge-fade();
+  scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;
+
+  figure {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    scroll-snap-align: start;
+  }
+
+  figcaption {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    // Long names wrap instead of widening the column
+    max-width: 160px;
+    min-height: 54px;
+    font-size: 13px;
+    text-align: center;
+  }
+
+  // Cards slightly smaller so several are visible at once
+  .stats-asset--card .card-container {
+    zoom: 0.62;
+  }
+}
+
+.stats-showcase-numbers {
+  margin-top: 2px;
+  color: @create-game-dim;
+  font-size: 12px;
+  text-align: center;
+}
+
+
+// ---------- Heatmap on the game board ----------
+.stats-heatmap-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stats-heatmap-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.stats-combination-types {
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+// Heatmap color scale in 10 steps of 10 %: dark blue → blue → turquoise → green → yellow → orange → light red → dark red.
+// Light steps get dark text, dark steps light text – both easy to read.
+@stats-heat-steps: #0b1d5c, #13348f, #1d55c7, #2f7ff0, #18bcc4, #2bbf4a, #f2d41c, #fb9420, #f2483f, #9e1018;
+@stats-heat-hex: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+
+.stats-heat-color(@step) {
+  @color: extract(@stats-heat-steps, @step);
+  background: fade(@color, 88%);
+  color: if((@step >= 5) and (@step <= 8), #111, #fff);
+}
+
+// Number = share of games; the spaces next to the board (Phobos, Ganymede) as hexagons too
+.stats-heatmap .stats-heat-space::after {
+  content: attr(data-heat);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  clip-path: @stats-heat-hex;
+  font-size: 12px;
+  font-weight: bold;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.stats-heat-legend {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  font-size: 10px;
+}
+
+// Compact scale: ten narrow steps of 10 %
+.stats-heat-legend-step {
+  width: 26px;
+  padding: 1px 0;
+  border-radius: 2px;
+  font-size: 10px;
+  text-align: center;
+  font-weight: bold;
+}
+
+each(range(10), {
+  .stats-heatmap .stats-heat-space[data-heat-step="@{value}"]::after,
+  .stats-heat-legend-step[data-heat-step="@{value}"] {
+    .stats-heat-color(@value);
+  }
+});
+
+// ---------- Top lists ----------
+// Heading as a link to the top-20 page, but looks like a heading
+.stats-heading-link {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.stats-top-title {
+  margin: 8px 0 12px;
+}
+
+// On the top-20 page wrap instead of scrolling
+.stats-showcase.stats-showcase--grid {
+  flex-wrap: wrap;
+  overflow-x: visible;
+  // Wrapping grid: nothing scrolls, so neither edge-to-edge nor fade
+  margin: 0;
+  padding-inline: 0;
+  mask-image: none;
+  row-gap: 24px;
+}
+
+// ---------- Loading skeleton (StatsSkeleton.vue): the boxes empty, sized like their content ----------
+// Heights measured from the loaded overview, so the page does not jump when the content replaces them
+@stats-skeleton-fill: rgba(255, 255, 255, 0.05);
+
+.stats-skeleton-kpi {
+  height: 61px;
+  box-sizing: border-box;
+}
+
+// Like .stats-showcase: same paddings, cards at the showcase size (zoom 0.62) plus their caption
+.stats-skeleton-cards {
+  display: flex;
+  gap: 16px;
+  overflow: hidden;
+  padding: 14px 0 6px;
+}
+
+.stats-skeleton-card {
+  flex: 0 0 154px;
+  height: 272px;
+  border-radius: 12px;
+  background: @stats-skeleton-fill;
+}
+
+.stats-skeleton-block {
+  border-radius: @create-game-radius-small;
+  background: @stats-skeleton-fill;
+
+  &--chart {
+    height: 273px;
+  }
+
+  &--short {
+    height: 80px;
+  }
+
+  &--tall {
+    height: 320px;
+  }
+}
+
+@media only screen and (max-width: @stats-narrow) {
+  .stats-skeleton-kpi {
+    height: 57px;
+  }
+
+  .stats-skeleton-card {
+    height: 253px;
+  }
+
+  .stats-skeleton-block--chart {
+    height: 217px;
+  }
+}
+
+// Narrow statistics: the source filter chips and the 11-tab navigation can be wider than
+// the viewport. Keep their own scroll containers from widening the page.
+.stats {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.stats .stats-tabs {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.stats .card-list-filters {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.stats .card-list-chip {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.stats .card-list-chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Corporation names can wrap to two lines; reserve the name row so every
+// frequency/win-rate line and card-zoom control starts on the same baseline.
+.stats-showcase .stats-entity-group {
+  display: inline-flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
+  min-height: 2.7em;
+  width: 100%;
+}
+
+.stats-showcase .stats-entity {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+// The SVG legend sits at the end of the chart; give it breathing room above
+// the card border instead of letting the last legend row touch the edge.
+.stats-chart {
+  padding-bottom: 10px;
+}

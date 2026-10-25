@@ -56,14 +56,22 @@ export class SearchIndex {
     }
 
     for (const milestoneName of milestoneNames) {
+      const milestone = getMilestone(milestoneName);
+      if (milestone === undefined) {
+        continue;
+      }
       this.add(milestoneName);
-      this.add(getMilestone(milestoneName).description);
+      this.add(milestone.description);
       this.store('ma', milestoneName);
     }
 
     for (const awardName of awardNames) {
+      const award = getAward(awardName);
+      if (award === undefined) {
+        continue;
+      }
       this.add(awardName);
-      this.add(getAward(awardName).description);
+      this.add(award.description);
       this.store('ma', awardName);
     }
 

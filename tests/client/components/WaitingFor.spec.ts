@@ -20,7 +20,7 @@ describe('WaitingFor', () => {
   const wrappers: Array<{unmount: () => void}> = [];
 
   function mountWaitingFor(options: any) {
-    const wrapper = shallowMount(WaitingFor, options);
+    const wrapper = shallowMount(WaitingFor, {...options, global: {...options.global, renderStubDefaultSlot: true}});
     wrappers.push(wrapper);
     return wrapper;
   }
@@ -760,7 +760,7 @@ describe('WaitingFor', () => {
     });
   }
 
-  it('remounts the input when the player view changes', async () => {
+  it('keeps the input mounted when the player view changes', async () => {
     const playerView = draftingView();
     playerView.game.phase = Phase.ACTION;
     const wrapper = mountWithInput(playerView);
@@ -768,7 +768,7 @@ describe('WaitingFor', () => {
 
     await wrapper.setProps({playerView: {...playerView}});
 
-    expect(wrapper.findComponent(PlayerInputFactoryStub).vm).to.not.eq(input);
+    expect(wrapper.findComponent(PlayerInputFactoryStub).vm).to.eq(input);
   });
 
   it('starts polling when a new player view has nothing to do', async () => {

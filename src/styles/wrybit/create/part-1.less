@@ -1,0 +1,554 @@
+// "Create game" form: on top a header card across the full width (as on "Game created"),
+// below it on the left the settings as compact frosted-glass cards in two columns, on the right a separate sticky column with the players and
+// the Create button. Narrow (phone, tablet portrait): one column, players first, button fixed at the bottom.
+
+// Proximity: within a card 6–8px, between cards 16px, between the columns 24px
+@create-game-gap-inner: 6px;
+// Between the groups inside a card (subheads, board preview)
+@create-game-gap-group: 20px;
+@create-game-gap-card: 16px;
+@create-game-gap-column: 24px;
+@create-game-page-padding: @page-content-edge; // spacing of the sticky column at top/bottom
+@create-game-players-width: 380px;
+// Symbols of seats the other kind of player takes (and the "no AI" sign)
+@create-game-seat-faint: rgba(255, 255, 255, 0.14);
+@create-game-radius: 10px;
+@create-game-radius-small: 8px;
+@create-game-line: rgba(255, 255, 255, 0.14);
+@create-game-dim: rgba(238, 238, 238, 0.62);
+@create-game-surface: @or-tabs-view-panel-background; // same surface as the tab boxes in the game
+@create-game-surface-strong: fade(#22252f, 85%);
+@create-game-chip-background: rgba(255, 255, 255, 0.05);
+@create-game-chip-hover: rgba(255, 255, 255, 0.1);
+@create-game-control-height: 36px;
+// Below this width one column: players on top, Create card sticks to the bottom edge
+@create-game-narrow: 820px;
+// Below this width the settings cards in a single column
+
+// The page has no sidebar: the space reserved for it on the left (common.less) is dropped
+.main-container:has(#create-game) {
+  margin-left: 0;
+}
+
+.create-game {
+  // Hidden tooltips of the info links stick out on the right; clip instead of hidden, so sticky keeps working
+  overflow-x: clip;
+  color: #eee;
+  font-size: 16px;
+  line-height: 1.35;
+
+  h1,
+  h2 {
+    margin: 0;
+    padding: 0;
+    font-weight: 500;
+  }
+}
+
+.create-game-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) @create-game-players-width;
+  gap: @create-game-gap-card @create-game-gap-column;
+  .page-content();
+}
+
+// Colors of the game board hexagons: global, the setup chips of the statistics use them too
+.create-game-tharsis {
+  color: @board-tharsis;
+}
+
+.create-game-hellas {
+  color: @board-hellas;
+}
+
+.create-game-elysium {
+  color: @board-elysium;
+}
+
+.create-game-amazonis {
+  color: @board-amazonis;
+}
+
+.create-game-arabia-terra {
+  color: @board-arabia_terra;
+}
+
+.create-game-terra-cimmeria {
+  color: @board-terra_cimmeria;
+}
+
+.create-game-vastitas-borealis {
+  color: @board-vastitas_borealis;
+}
+
+.create-game-hollandia {
+  color: @board-hollandia;
+}
+
+.create-game-utopia-planitia,
+.create-game-vastitas-borealis-nova {
+  color: #eee;
+}
+
+.create-game-random {
+  color: rgb(130, 130, 130);
+}
+
+// Header card: base style from the card list (.card-list-header, card_list.less)
+.create-game-head-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px; // like language/settings next to it
+
+  // same height as the frosted-glass buttons next to it
+  .create-game-reset {
+    height: @toolbar-button-size;
+    margin: 0;
+  }
+}
+
+// Import/Export/Link with labels as long as the header has room; otherwise only the icon (container query below)
+.create-game-icon-button {
+  .toolbar-glass-button();
+  gap: 6px;
+  width: auto;
+  min-width: @toolbar-button-size;
+  padding: 0 12px;
+  color: #eee;
+  font-size: 17px;
+}
+
+// Line icons of the header buttons (import, export, copy link); the icon library's CSS icons are hardly recognizable
+.create-game-head-icon {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+// Export shows the hex as a filled tile, import as an outline
+.create-game-head-icon-filled {
+  fill: currentColor;
+  stroke: none;
+}
+
+.create-game-head {
+  container: create-game-head / inline-size;
+}
+
+// Inner widths of the header (container queries measure without padding) from which the labels fit:
+// single line between title and language/settings, on the phone in its own second row.
+// Measured with German (longer language, with "Link kopieren"): 794px and 464px, plus some slack.
+@create-game-head-labels-min-one-row: 810px;
+@create-game-head-labels-min-two-rows: 480px;
+
+// Inner width of the header up to which it is two rows on the phone (media query below):
+// page margin, padding (12px, card_list.less narrow) and border subtracted
+@create-game-head-two-rows-width: @card-list-phone - 2 * @page-content-edge-narrow - 2 * 12px - 2px;
+
+.create-game-icon-only() {
+  .create-game-head-label {
+    display: none;
+  }
+
+  .create-game-icon-button {
+    padding: 0;
+  }
+}
+
+@container create-game-head (min-width: (@create-game-head-two-rows-width + 1)) and (max-width: @create-game-head-labels-min-one-row) {
+  .create-game-icon-only();
+}
+
+@container create-game-head (max-width: @create-game-head-labels-min-two-rows) {
+  .create-game-icon-only();
+}
+
+.create-game-settings {
+  grid-column: 1;
+  min-width: 0;
+  // Column instead of margins: the last card of a masonry column loses its margin-bottom,
+  // the gap keeps the cards below it (filters, custom lists) at the spacing of all other cards
+  display: flex;
+  flex-direction: column;
+  gap: @create-game-gap-card;
+}
+
+// Fixed columns: every card always in the same place, nothing jumps when a card changes height.
+// Columns per window width: class set by CreateGameForm.vue from createGameColumns.ts
+.create-game-cards {
+  display: grid;
+  gap: @create-game-gap-card;
+  align-items: start;
+
+  &--1 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  &--2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  &--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.create-game-cards-column {
+  display: flex;
+  flex-direction: column;
+  gap: @create-game-gap-card;
+  min-width: 0;
+
+  // Not needed at this width (stays in the DOM, see CreateGameForm.vue)
+  &--unused {
+    display: none;
+  }
+
+  > .create-game-card {
+    margin-bottom: 0;
+  }
+}
+
+.create-game-card,
+.create-game--block {
+  .frosted-surface();
+  position: relative;
+  padding: 12px 14px 14px;
+  border: 1px solid @create-game-line;
+  border-radius: @create-game-radius;
+  background: @create-game-surface;
+}
+
+.create-game-card {
+  break-inside: avoid;
+  margin-bottom: @create-game-gap-card;
+}
+
+
+// Card title with a dividing line across the whole card (reaches into the card padding on both sides)
+.create-game-card-title-line() {
+  margin: 0 -14px 12px;
+  padding: 0 14px 10px;
+  border-bottom: 1px solid @create-game-line;
+}
+
+.create-game-card-head {
+  .create-game-card-title-line();
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  h2 {
+    font-size: 18px;
+  }
+}
+
+// Divider between two groups inside a card, full card width like the title line
+.create-game-divider {
+  margin: 8px -14px;
+  border-top: 1px solid @create-game-line;
+}
+
+.create-game-subhead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  // More room above than below: the subhead belongs to the group under it
+  margin: @create-game-gap-group 0 8px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: @create-game-dim;
+}
+
+// Collapsible areas (CollapsibleSection.vue): the head is the switch, the arrow points where the area moves
+.create-game-collapsible-head {
+  // The actions (e.g. "Select all") stay right; the note sits right behind the title
+  .create-game-small-button {
+    margin-left: auto;
+  }
+}
+
+.create-game-collapsible-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: left;
+
+  button& {
+    cursor: pointer;
+  }
+}
+
+.create-game-collapsible-arrow {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  opacity: 0.7;
+  transition: transform 0.2s;
+
+  .create-game-collapsible--open > .create-game-collapsible-head & {
+    transform: rotate(180deg);
+  }
+}
+
+// Closed card: only the head, without the dividing line and its spacing
+.create-game-collapsible--card:not(.create-game-collapsible--open) > .create-game-card-head {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom-color: transparent;
+}
+
+// Closed with changed settings: set off as a small gold pill, so it catches the eye
+.create-game-changed {
+  overflow: hidden;
+  min-width: 0;
+  padding: 1px 8px;
+  border: 1px solid fade(@highlight-gold, 45%);
+  border-radius: 999px;
+  background: fade(@highlight-gold, 12%);
+  color: @highlight-gold;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Subheads inside a collapsible area: the first one right under the card head without extra room on top
+.create-game-card-head + .create-game-collapsible--subhead > .create-game-subhead {
+  margin-top: 0;
+}
+
+.create-game-card-head + .create-game-subhead {
+  margin-top: 0;
+}
+
+// Small real button, e.g. in a subhead ("Select all"): right aligned, normal type instead of the subhead's capitals
+.create-game-small-button {
+  margin-left: auto;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+  background: @create-game-chip-background;
+  color: #eee;
+  font-size: 13px;
+  letter-spacing: normal;
+  text-transform: none;
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background: @create-game-chip-hover;
+  }
+
+  &:focus-visible {
+    outline: 2px solid @highlight-gold;
+    outline-offset: 2px;
+  }
+}
+
+.create-game-info {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 16px;
+  line-height: 1;
+  opacity: 0.55;
+  cursor: pointer;
+
+  // Opens an info box: no focus ring, the open state shows in color
+  &:focus,
+  &:focus-visible {
+    outline: none;
+  }
+
+  &:hover,
+  &--open {
+    opacity: 1;
+  }
+
+  &--open {
+    color: lighten(@bg_action, 22%);
+  }
+}
+
+// ---------- info box (InfoBox.vue): short wiki text at the end of the card, nose points at the ⓘ ----------
+@create-game-info-nose: 14px; // edge of the rotated square
+@create-game-info-border: fade(@bg_action, 60%);
+
+// Between the row with the ⓘ and the next row
+.create-game-info-slot {
+  margin: 4px 0 10px;
+}
+
+// Inside a tile grid: a row of its own across all columns (the grid gap provides the spacing)
+.create-game-info-slot--grid {
+  grid-column: 1 / -1;
+  margin: 0 0 4px;
+}
+
+.create-game-info-box {
+  position: relative;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid @create-game-info-border;
+  border-radius: @create-game-radius-small;
+  // Solid, so the nose does not darken the box where they overlap
+  background: mix(@bg_action, #1e2028, 18%);
+  font-size: 14px;
+  line-height: 1.4;
+
+  // Nose: square turned by 45°, half of it above the box, its center exactly under the ⓘ (--nose-x from InfoBox.vue)
+  &::before {
+    content: "";
+    position: absolute;
+    top: -(@create-game-info-nose / 2) - 1px;
+    left: calc(var(--nose-x) - @create-game-info-nose / 2);
+    width: @create-game-info-nose;
+    height: @create-game-info-nose;
+    border-top: 1px solid @create-game-info-border;
+    border-left: 1px solid @create-game-info-border;
+    border-top-left-radius: 2px;
+    background: inherit;
+    transform: rotate(45deg);
+  }
+}
+
+// Flex parent makes the text's height definite, so the spacer float below can take "100 % minus the button"
+.create-game-info-box {
+  display: flex;
+}
+
+@create-game-info-button-height: 26px;
+
+.create-game-info-box-text {
+  flex: 1;
+  min-width: 0;
+
+  // Invisible float on the right that pushes the button down to the last line
+  &::before {
+    content: "";
+    float: right;
+    width: 0;
+    height: calc(100% - @create-game-info-button-height);
+  }
+}
+
+// Button floats bottom right, the text wraps around it
+.create-game-info-box-anchor {
+  float: right;
+  clear: right;
+  margin: 0 0 0 12px;
+  line-height: 0;
+}
+
+.create-game-info-box-loading {
+  opacity: 0.6;
+}
+
+// The small button's auto margin pushes it right in subheads; here the float places it
+.create-game-info-box-more {
+  margin-left: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.create-game-info-box-icon {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+
+// ---------- wiki overlay (WikiOverlay.vue): rendered wiki page ----------
+.wiki-overlay-content {
+  font-size: 15px;
+  line-height: 1.5;
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    margin: 1.2em 0 0.4em;
+    font-weight: 600;
+    scroll-margin-top: 8px;
+  }
+
+  h1 {
+    font-size: 24px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  h3 {
+    font-size: 17px;
+  }
+
+  h4,
+  h5 {
+    font-size: 15px;
+  }
+
+  > :first-child {
+    margin-top: 0;
+  }
+
+  p,
+  ul,
+  ol {
+    margin: 0 0 0.8em;
+  }
+
+  a {
+    color: lighten(@bg_action, 22%);
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  table {
+    border-collapse: collapse;
+    margin-bottom: 0.8em;
+  }
+
+  th,
+  td {
+    padding: 4px 8px;
+    border: 1px solid @create-game-line;
+  }
+}

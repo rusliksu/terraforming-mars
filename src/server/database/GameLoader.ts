@@ -381,6 +381,18 @@ export class GameLoader implements IGameLoader {
     this.cache.sweep();
   }
 
+  /** Waits for the pending save of every resident game; used by the shutdown drain. */
+  public async flush(): Promise<void> {
+    const data = await this.cache.getGames();
+    const pending: Array<Promise<void>> = [];
+    for (const game of data.games.values()) {
+      if (game !== undefined) {
+        pending.push(game.saveGamePromise);
+      }
+    }
+    await Promise.allSettled(pending);
+  }
+
   /**
    * Forgets a game that was deleted from the database: rejects later saves (saveGame
    * checks purgedGames) and drops the in-memory copy with its participant ids right away.

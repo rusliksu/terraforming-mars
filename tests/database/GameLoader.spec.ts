@@ -123,6 +123,24 @@ describe('GameLoader', () => {
     expect((await instance.getIds()).map((entry) => entry.gameId)).not.include('gameid');
   });
 
+  it('flushes pending saves', async () => {
+    await instance.add(game);
+    let resolveSave: () => void = () => {};
+    game.saveGamePromise = new Promise<void>((resolve) => {
+      resolveSave = resolve;
+    });
+    let flushed = false;
+    const promise = instance.flush().then(() => {
+      flushed = true;
+    });
+    await sleep(10);
+    expect(flushed).is.false;
+
+    resolveSave();
+    await promise;
+    expect(flushed).is.true;
+  });
+
   it('rejects saves of a deleted game', async () => {
     await instance.deleteGame('gameid');
     expect(() => instance.saveGame(game)).to.throw('This game no longer exists');

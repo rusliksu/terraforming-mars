@@ -58,6 +58,9 @@ export interface IGameLoader {
    */
   deleteGame(gameId: GameId): Promise<void>;
 
+  /** Waits for the pending save of every resident game; used by the shutdown drain. */
+  flush(): Promise<void>;
+
   /**
    * Saves a game (but takes into account that the game might have already been purged.)
    *

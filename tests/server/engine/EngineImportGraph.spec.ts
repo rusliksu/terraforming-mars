@@ -85,8 +85,7 @@ function collectStaticImportGraph(entry: string): ImportGraph {
 }
 
 describe('engine worker import graph', () => {
-  it('does not reach persistence, Telegram, routes, server bootstrap, or Node I/O modules', function() {
-    this.timeout(30000);
+  it('does not reach persistence, Telegram, routes, server bootstrap, or Node I/O modules', () => {
     const graph = collectStaticImportGraph(ENTRY);
     expect([...graph.unresolvedLocalSpecifiers]).deep.eq([]);
     expect([...graph.externalPackages].sort()).not.to.include.members(FORBIDDEN_PACKAGES);
@@ -102,5 +101,5 @@ describe('engine worker import graph', () => {
     expect([...graph.files].some((file) => file.endsWith('EngineFacade.ts'))).eq(true);
     expect([...graph.files].some((file) => file.endsWith('DeterministicReplay.ts'))).eq(true);
     expect([...graph.files].some((file) => file.endsWith('Game.ts'))).eq(true);
-  });
+  }).timeout(30000);
 });

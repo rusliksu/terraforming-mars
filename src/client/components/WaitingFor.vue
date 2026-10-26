@@ -78,6 +78,7 @@ import {INVALID_RUN_ID, UNDO_REVEALED_HIDDEN_INFORMATION, AppErrorResponse} from
 import {Color} from '@/common/Color';
 import {gameDocumentTitle} from '../utils/documentTitle';
 import {setFaviconStatus, setFaviconTurnFrame} from '@/client/utils/favicon';
+import {trySubmitGameShellInput} from '@/client/shell';
 import AppButton from '@/client/components/common/AppButton.vue';
 
 let undoChoiceSequence = 0;
@@ -203,6 +204,11 @@ export default defineComponent({
       }
     },
     onsave(out: InputResponse) {
+      // Default-off bridge: without a server-issued v2 bootstrap this returns
+      // false and the legacy POST below stays byte-for-byte unchanged.
+      if (trySubmitGameShellInput(this.playerView as PlayerViewModel, out)) {
+        return;
+      }
       this.fetchPlayerInput(
         paths.PLAYER_INPUT + '?id=' + this.playerView.id,
         {

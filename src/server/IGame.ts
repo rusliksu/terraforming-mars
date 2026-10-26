@@ -40,6 +40,7 @@ import {OrOptions} from './inputs/OrOptions';
 import {IStandardProjectCard} from './cards/IStandardProjectCard';
 import {VictoryPointsBreakdown} from '../common/game/VictoryPointsBreakdown';
 import {EarlyGameStats} from './game/EarlyGameStats';
+import type {EngineRuntime} from './engine/EngineRuntime';
 import type {ActionReplayState} from './game/ActionReplay';
 import {GlobalParameterTracks} from '@/server/boards/GlobalParameterTracks';
 
@@ -66,6 +67,8 @@ export interface IGame extends Logger {
   saveGamePromise: Promise<void>;
   /** True only for isolated planner forks. Simulation games must never persist or emit external effects. */
   simulationMode: boolean;
+  /** Host dependencies. Undefined keeps legacy server/test behavior. */
+  readonly engine?: EngineRuntime;
   readonly rng: SeededRandom;
   readonly spectatorId: SpectatorId;
   deferredActions: DeferredActionsQueue;

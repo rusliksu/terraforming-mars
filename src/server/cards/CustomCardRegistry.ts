@@ -1,6 +1,5 @@
 import type {DataDrivenCard} from './DataDrivenCard';
 import type {ICard} from './ICard';
-import {Database} from '../database/Database';
 import {CardName} from '../../common/cards/CardName';
 import {CustomCardDefinition} from '../../common/cards/CustomCardDefinition';
 
@@ -33,6 +32,14 @@ export function getAllCustomCardDefinitions(): ReadonlyArray<CustomCardDefinitio
 }
 
 export async function refreshCustomCardRegistry(): Promise<void> {
+  // Keep the worker-safe card registry graph free of the persistence layer.
+  const {Database} = require('../database/Database') as {
+    Database: {
+      getInstance(): {
+        listCustomCardLibraryEntries(): Promise<Array<{status: string; definition: CustomCardDefinition}>>;
+      };
+    };
+  };
   const entries = await Database.getInstance().listCustomCardLibraryEntries();
   registry.clear();
   for (const entry of entries) {

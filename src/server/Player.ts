@@ -1,7 +1,6 @@
 import {serializeDynamicCards, restoreDynamicCards} from './cards/DynamicCardState';
 import {getAutomationCompatibility} from './bot/AutomationCompatibility';
 import {isLastActivePlayerFinish} from '../common/game/CompletionOutcome';
-import {sendTurnNotice, deleteTurnNotice, deleteTurnNoticeMessage, getStoredTurnNoticeUpdatedAt} from './TelegramBot';
 import * as constants from '../common/constants';
 import {PlayerId} from '../common/Types';
 import {AiLevel, isAiLevel} from '../common/ai/AiLevel';
@@ -82,7 +81,7 @@ import {TRSource} from '../common/cards/TRSource';
 import {IParty} from './turmoil/parties/IParty';
 import {newStandardDraft} from './Draft';
 import {Message} from '../common/logs/Message';
-import {DiscordId} from './server/auth/discord';
+import type {DiscordId} from './server/auth/discord';
 import {AlliedParty} from '../common/turmoil/Types';
 import {PlayedCards} from './cards/PlayedCards';
 import {From} from './logs/From';
@@ -95,7 +94,22 @@ import {SelectAmount} from './inputs/SelectAmount';
 import {RemoveResourcesFromCard} from './deferredActions/RemoveResourcesFromCard';
 import {Turmoil} from './turmoil/Turmoil';
 
-const THROW_STATE_ERRORS = Boolean(process.env.THROW_STATE_ERRORS);
+type TelegramModule = typeof import('./TelegramBot');
+
+/**
+ * Loads the Telegram adapter lazily. The engine/worker path supplies an
+ * EngineNotifierPort and never reaches this lazy require, keeping the static
+ * import graph free of fs/https/child_process dependencies.
+ */
+function telegramModule(): TelegramModule {
+  return require('./TelegramBot') as TelegramModule;
+}
+
+function throwStateErrors(): boolean {
+  // The worker/engine path must not assume a Node global. Legacy servers still
+  // opt into strict state errors through the environment.
+  return typeof process !== 'undefined' && Boolean(process.env.THROW_STATE_ERRORS);
+}
 const TURN_NOTICE_DELAY_MS = 5000;
 const DEFAULT_TURN_NOTICE_REMINDER_MS = 12 * 60 * 60 * 1000;
 const DEFAULT_GLOBAL_PARAMETER_STEPS = {
@@ -2266,7 +2280,12 @@ export class Player implements IPlayer {
       this.defer(waitingFor.process(input, this));
       waitingForCb();
       if (this.waitingFor === undefined) {
-        void deleteTurnNotice(this);
+        const notifier = this.game.engine?.notifier;
+        if (notifier !== undefined) {
+          notifier.inputProcessed?.(this);
+        } else if (this.telegramID !== '') {
+          void telegramModule().deleteTurnNotice(this);
+        }
         this._turnNoticeSentThisRound = false;
       }
     } catch (err) {
@@ -2348,7 +2367,8 @@ export class Player implements IPlayer {
       this.clearPendingTurnNoticeReminderTimer();
     }
 
-    const storedNoticeUpdatedAt = getStoredTurnNoticeUpdatedAt(this, turnNoticeKey);
+    const telegram = telegramModule();
+    const storedNoticeUpdatedAt = telegram.getStoredTurnNoticeUpdatedAt(this, turnNoticeKey);
     const elapsedMs = storedNoticeUpdatedAt === undefined ? 0 : Math.max(0, Date.now() - storedNoticeUpdatedAt);
     const reminderDelayMs = Math.max(0, reminderMs - elapsedMs);
 
@@ -2379,12 +2399,13 @@ export class Player implements IPlayer {
     }
 
     const previousMessageId = this.lastNoticeMessageId;
-    const sent = await sendTurnNotice(this, turnNoticeKey, {reminder: true});
+    const telegram = telegramModule();
+    const sent = await telegram.sendTurnNotice(this, turnNoticeKey, {reminder: true});
     if (sent) {
       this._turnNoticeSentThisRound = true;
       this.lastTurnReminderNoticeKey = turnNoticeKey;
       if (previousMessageId >= 0 && previousMessageId !== this.lastNoticeMessageId) {
-        await deleteTurnNoticeMessage(this, previousMessageId);
+        await telegram.deleteTurnNoticeMessage(this, previousMessageId);
       }
       this.scheduleTurnNoticeReminder(turnNoticeKey);
     }
@@ -2399,7 +2420,7 @@ export class Player implements IPlayer {
     }
     if (this.waitingFor !== undefined) {
       const message = `Overwriting waitingFor ${this.waitingFor.type} with ${input?.type}`;
-      if (THROW_STATE_ERRORS) {
+      if (throwStateErrors()) {
         throw new Error(message);
       } else {
         console.warn(message);
@@ -2415,13 +2436,18 @@ export class Player implements IPlayer {
     if (this.aiLevel !== undefined) {
       notifyAiPlayerWaiting(this);
     }
+    const notifier = this.game.engine?.notifier;
+    if (notifier !== undefined) {
+      notifier.waitingFor?.(this, input);
+      return;
+    }
     if (this._pendingTurnNoticeTimer) {
       clearTimeout(this._pendingTurnNoticeTimer);
       this._pendingTurnNoticeTimer = undefined;
     }
     if (!this.isTelegramTurnNoticeActionable()) {
       if (this.hasActiveTurnNotice(turnNoticeKey)) {
-        void deleteTurnNotice(this);
+        void telegramModule().deleteTurnNotice(this);
       }
       this._turnNoticeSentThisRound = false;
       return;
@@ -2429,7 +2455,8 @@ export class Player implements IPlayer {
     if (this.canSendTelegramTurnNotice() && this._turnNoticeSentThisRound === false) {
       this._pendingTurnNoticeTimer = setTimeout(async () => {
         this._pendingTurnNoticeTimer = undefined;
-        const sent = await sendTurnNotice(this, turnNoticeKey);
+        const telegram = telegramModule();
+        const sent = await telegram.sendTurnNotice(this, turnNoticeKey);
         if (sent || this.hasActiveTurnNotice(turnNoticeKey)) {
           this._turnNoticeSentThisRound = true;
           this.scheduleTurnNoticeReminder(turnNoticeKey);

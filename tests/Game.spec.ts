@@ -1268,6 +1268,7 @@ describe('Game', () => {
 
     const unserializedFieldsInGame: Array<keyof Game | 'saveGame'> = [
       'actionReplayState',
+      'engine',
       'createdTime',
       'discardedColonies',
       'inDoubleDown',

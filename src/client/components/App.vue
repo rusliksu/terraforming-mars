@@ -87,6 +87,7 @@ const MapLibrary = defineAsyncComponent(() => import(/* webpackChunkName: "map-l
 import {$t, setTranslationContext} from '@/client/directives/i18n';
 import {paths} from '@/common/app/paths';
 import {PlayerViewModel, ViewModel} from '@/common/models/PlayerModel';
+import {applyFetchedPlayerView, isGameShellEnabled, restoreGameShellAppState, subscribeGameShellAppState} from '@/client/shell';
 import {SimpleGameModel} from '@/common/models/SimpleGameModel';
 import {SpectatorModel} from '@/common/models/SpectatorModel';
 import {isPlayerId, isSpectatorId} from '@/common/Types';
@@ -147,6 +148,7 @@ export type MainAppData = {
     componentsVisibility: {[x: string]: boolean};
     game: SimpleGameModel | undefined;
     login: string | undefined;
+    shellUnsubscribe?: () => void;
 }
 
 // NOTE: this simplistic truncation to the last segment might cause issues if
@@ -193,9 +195,10 @@ export default defineComponent({
     return {inputHosts, wrybitReady, wrybitViews};
   },
   data(): MainAppData {
+    const restoredGameShell = restoreGameShellAppState(getLastPathSegment() === paths.PLAYER);
     return {
-      screen: 'empty',
-      playerkey: 0,
+      screen: restoredGameShell.playerHome ? 'player-home' : 'empty',
+      playerkey: restoredGameShell.playerkey,
       inputRevision: 0,
       refreshRevision: 0,
       isServerSideRequestInProgress: false,
@@ -211,7 +214,8 @@ export default defineComponent({
         'turmoil_parties': false,
       } as {[x: string]: boolean},
       game: undefined as SimpleGameModel | undefined,
-      playerView: undefined,
+      playerView: restoredGameShell.playerView,
+      shellUnsubscribe: undefined,
       spectator: undefined,
       login: undefined,
     };
@@ -326,7 +330,15 @@ export default defineComponent({
             return;
           }
           if (path === paths.PLAYER) {
-            this.applyPlayerView(model as PlayerViewModel);
+            const playerView = model as PlayerViewModel;
+            if (isGameShellEnabled()) {
+              app.playerView = playerView;
+              setTranslationContext(playerView);
+              applyFetchedPlayerView(app, playerView);
+              app.inputRevision++;
+            } else {
+              this.applyPlayerView(playerView);
+            }
           } else if (path === paths.SPECTATOR) {
             app.spectator = model as SpectatorModel;
             app.playerkey++;
@@ -379,6 +391,13 @@ export default defineComponent({
     startHotkeyAvailability();
     startKeyLabelDetection();
     installHotkeys();
+    const app = this as unknown as MainAppData;
+    app.shellUnsubscribe = subscribeGameShellAppState(app, setTranslationContext);
+  },
+  beforeUnmount() {
+    const app = this as unknown as MainAppData;
+    app.shellUnsubscribe?.();
+    app.shellUnsubscribe = undefined;
   },
   mounted() {
     setDocumentTitle();

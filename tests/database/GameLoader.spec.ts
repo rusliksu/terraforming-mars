@@ -5,7 +5,7 @@ import {Player} from '../../src/server/Player';
 import {SerializedGame} from '../../src/server/SerializedGame';
 import {TestPlayer} from '../TestPlayer';
 import {GameIdLedger} from '../../src/server/database/IDatabase';
-import {GameId, PlayerId, SpectatorId} from '../../src/common/Types';
+import {GameId, ParticipantId, PlayerId, SpectatorId} from '../../src/common/Types';
 import {restoreTestDatabase, restoreTestGameLoader, setTestDatabase, setTestGameLoader} from '../testing/setup';
 import {sleep} from '../TestingUtils';
 import {InMemoryDatabase} from '../testing/InMemoryDatabase';
@@ -44,6 +44,8 @@ class TestDatabase extends InMemoryDatabase {
   public failure: 'getGameIds' | 'getParticipants' | undefined = undefined;
   public getGameSleep = 0;
   public extraParticipants: Array<GameIdLedger> = [];
+  public readonly omittedParticipantGames = new Set<GameId>();
+  public readonly storedParticipants: Array<GameIdLedger> = [];
 
   override async getGame(gameId: GameId): Promise<SerializedGame> {
     const game = await super.getGame(gameId);
@@ -61,7 +63,15 @@ class TestDatabase extends InMemoryDatabase {
     if (this.failure === 'getParticipants') {
       return Promise.reject(new Error('error'));
     }
-    return super.getParticipants().then((participants) => participants.concat(this.extraParticipants));
+    return super.getParticipants().then((participants) => participants
+      .filter((entry) => !this.omittedParticipantGames.has(entry.gameId))
+      .concat(this.extraParticipants));
+  }
+
+  override storeParticipants(entry: GameIdLedger): Promise<void> {
+    this.storedParticipants.push(entry);
+    this.omittedParticipantGames.delete(entry.gameId);
+    return Promise.resolve();
   }
 }
 
@@ -304,6 +314,21 @@ describe('GameLoader', () => {
     expect(game1!.id).to.eq('gameid');
     const game2 = await GameLoader.getInstance().getGame(game.playersInGenerationOrder[0].id);
     expect(game2!.id).to.eq('gameid');
+  });
+
+  it('backfills missing participants during preload and exposes the game', async () => {
+    await database.saveGame(game);
+    database.omittedParticipantGames.add(game.id);
+    instance.resetForTesting();
+
+    const participantIds: Array<ParticipantId> = game.players.map((player) => player.id);
+    if (game.spectatorId) {
+      participantIds.push(game.spectatorId);
+    }
+    const expected = {gameId: game.id, participantIds};
+    const list = await instance.getIds();
+    expect(list).deep.eq([expected]);
+    expect(database.storedParticipants).deep.include(expected);
   });
 
   it('ignores orphan participant entries during preload', async () => {

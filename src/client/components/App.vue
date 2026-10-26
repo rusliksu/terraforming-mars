@@ -164,6 +164,7 @@ export default defineComponent({
       } as {[x: string]: boolean},
       game: undefined as SimpleGameModel | undefined,
       playerView: restoredGameShell.playerView,
+      shellUnsubscribe: undefined,
       spectator: undefined,
       login: undefined,
     };

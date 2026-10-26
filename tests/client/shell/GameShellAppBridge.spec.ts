@@ -1,4 +1,6 @@
+import {mount} from '@vue/test-utils';
 import {expect} from 'chai';
+import {defineComponent, h, nextTick, onBeforeUnmount, onMounted, reactive} from 'vue';
 import {
   applyFetchedPlayerView,
   gameShell,
@@ -10,6 +12,21 @@ import type {GameShellAppState} from '@/client/shell';
 import type {PlayerViewModel} from '@/common/models/PlayerModel';
 import {CardName} from '@/common/cards/CardName';
 import {fakePlayerViewModel} from '../components/testHelpers';
+
+function mountShellHost() {
+  const Host = defineComponent({
+    setup() {
+      const state = reactive(restoreGameShellAppState(true));
+      let unsubscribe: (() => void) | undefined;
+      onMounted(() => {
+        unsubscribe = subscribeGameShellAppState(state, () => {});
+      });
+      onBeforeUnmount(() => unsubscribe?.());
+      return () => h('div', {class: 'shell-host'}, `${state.playerView?.runId ?? 'none'}:${state.playerkey}`);
+    },
+  });
+  return mount(Host);
+}
 
 describe('GameShell App bridge', () => {
   beforeEach(() => {
@@ -68,6 +85,25 @@ describe('GameShell App bridge', () => {
     expect(remounted.playerkey).eq(2);
     expect(remountedUpdates).deep.eq([nextView]);
     unsubscribeRemounted?.();
+  });
+
+  it('keeps the confirmed view when a Vue host remounts', async () => {
+    setGameShellEnabledForTest(true);
+    const view = fakePlayerViewModel({runId: 'view-1'});
+    gameShell.setConfirmedView(view, 3);
+
+    const first = mountShellHost();
+    expect(first.text()).eq('view-1:3');
+    first.unmount();
+
+    const second = mountShellHost();
+    expect(second.text()).eq('view-1:3');
+
+    const nextView = fakePlayerViewModel({runId: 'view-2'});
+    gameShell.setConfirmedView(nextView);
+    await nextTick();
+    expect(second.text()).eq('view-2:4');
+    second.unmount();
   });
 
   it('does not persist the authorized view or private cards', () => {

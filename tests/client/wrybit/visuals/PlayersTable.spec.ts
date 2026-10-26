@@ -14,7 +14,8 @@ describe('Wrybit player table with our public data', () => {
     const player = fakePublicPlayerModel({name: 'Synthetic public player', color: 'turquoise', isBotControlled: true,
       conglomeratesData: {coordination: 5}, tags: {[Tag.GALACTIC]: 2}, victoryPointsBreakdown: {total: 42},
       protectedResources: {steel: 'half'}, steel: 12, steelProduction: 4,
-      conditionalDiscounts: [{source: CardName.CUTTING_EDGE_TECHNOLOGY_REBALANCED, amount: 2, condition: 'requirements'}]});
+      conditionalDiscounts: [{source: CardName.CUTTING_EDGE_TECHNOLOGY_REBALANCED, amount: 2, condition: 'requirements'}],
+      tableau: [{name: CardName.HELION, discount: [{tag: Tag.POWER, amount: 3}]}]});
     const playerView = fakeViewModel({thisPlayer: undefined, players: [player], game: {tags: [Tag.GALACTIC],
       gameOptions: {showOtherPlayersVP: false, expansions: {conglomerates: true}}}});
     const row = {player, playerIndex: 0, actionLabel: 'active' as const, firstForGen: true};
@@ -27,6 +28,7 @@ describe('Wrybit player table with our public data', () => {
       expect(wrapper.get('[data-test="tag-galactic"]').text()).contains('2');
       // An unplayed tag stays visible with an empty counter, matching the classic player bar.
       expect(wrapper.get('[data-test="tag-animal"]').text()).contains('·');
+      expect(wrapper.get('[data-test="tag-power"] .players-table-discount').text()).eq('-3');
       expect(wrapper.get('[data-test="discount-all"]').text()).eq('*');
       expect(wrapper.get('[data-test="vp"]').text()).eq('?');
       expect(wrapper.get('.players-table-name-marker').text()).eq('BOT');

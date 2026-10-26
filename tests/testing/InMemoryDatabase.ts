@@ -127,7 +127,7 @@ export class InMemoryDatabase implements IDatabase {
       type: 'InMemoryDatabase',
     });
   }
-  storeParticipants() {
+  storeParticipants(_entry?: GameIdLedger) {
     return Promise.resolve();
   }
   async getParticipants(): Promise<Array<GameIdLedger>> {

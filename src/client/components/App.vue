@@ -69,7 +69,7 @@ const StartScreen = defineAsyncComponent(() => import(/* webpackChunkName: "star
 import {$t, setTranslationContext} from '@/client/directives/i18n';
 import {paths} from '@/common/app/paths';
 import {PlayerViewModel, ViewModel} from '@/common/models/PlayerModel';
-import {gameShell, isBrowserEngineV2Enabled} from '@/client/shell/GameShellService';
+import {applyFetchedPlayerView, restoreGameShellAppState, subscribeGameShellAppState} from '@/client/shell';
 import {SimpleGameModel} from '@/common/models/SimpleGameModel';
 import {SpectatorModel} from '@/common/models/SpectatorModel';
 import {isPlayerId, isSpectatorId} from '@/common/Types';
@@ -110,6 +110,7 @@ export type MainAppData = {
     componentsVisibility: {[x: string]: boolean};
     game: SimpleGameModel | undefined;
     login: string | undefined;
+    shellUnsubscribe?: () => void;
 }
 
 // NOTE: this simplistic truncation to the last segment might cause issues if
@@ -145,9 +146,10 @@ class AppFetchError extends Error {
 export default defineComponent({
   name: 'App',
   data(): MainAppData {
+    const restoredGameShell = restoreGameShellAppState(getLastPathSegment() === paths.PLAYER);
     return {
-      screen: 'empty',
-      playerkey: 0,
+      screen: restoredGameShell.playerHome ? 'player-home' : 'empty',
+      playerkey: restoredGameShell.playerkey,
       isServerSideRequestInProgress: false,
       componentsVisibility: {
         'milestones': true,
@@ -161,7 +163,7 @@ export default defineComponent({
         'turmoil_parties': false,
       } as {[x: string]: boolean},
       game: undefined as SimpleGameModel | undefined,
-      playerView: undefined,
+      playerView: restoredGameShell.playerView,
       spectator: undefined,
       login: undefined,
     };
@@ -224,15 +226,14 @@ export default defineComponent({
         })
         .then((model: ViewModel) => {
           if (path === paths.PLAYER) {
-            app.playerView = model as PlayerViewModel;
-            setTranslationContext(app.playerView);
-            if (isBrowserEngineV2Enabled()) {
-              gameShell.setConfirmedView(app.playerView);
-            }
+            const playerView = model as PlayerViewModel;
+            app.playerView = playerView;
+            setTranslationContext(playerView);
+            applyFetchedPlayerView(app, playerView);
           } else if (path === paths.SPECTATOR) {
             app.spectator = model as SpectatorModel;
+            app.playerkey++;
           }
-          app.playerkey++;
           if (
             model.game.phase === 'end' &&
               window.location.search.includes('&noredirect') === false
@@ -271,6 +272,15 @@ export default defineComponent({
     updateSpectator() {
       this.update(paths.SPECTATOR);
     },
+  },
+  created() {
+    const app = this as unknown as MainAppData;
+    app.shellUnsubscribe = subscribeGameShellAppState(app, setTranslationContext);
+  },
+  beforeUnmount() {
+    const app = this as unknown as MainAppData;
+    app.shellUnsubscribe?.();
+    app.shellUnsubscribe = undefined;
   },
   mounted() {
     setDocumentTitle();

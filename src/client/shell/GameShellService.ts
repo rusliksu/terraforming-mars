@@ -1,48 +1,98 @@
 import type {PlayerViewModel} from '@/common/models/PlayerModel';
 
-export const BROWSER_ENGINE_V2_FLAG = 'tm.browserEngineV2';
+import type {
+  GameShellListener,
+  GameShellSnapshot,
+  GameShellStatus,
+  PendingIntent,
+} from './GameShellTypes';
+import type {GameShellWorkerMessage, GameShellWorkerPort} from './GameShellWorkerPort';
 
-export interface FlagStorage {
-  getItem(key: string): string | null;
-}
-
-export function isBrowserEngineV2Enabled(storage?: FlagStorage): boolean {
-  const resolved = storage ??
-    (typeof localStorage === 'undefined' ? undefined : localStorage);
-  return resolved?.getItem(BROWSER_ENGINE_V2_FLAG) === '1';
-}
-
-export interface PendingIntent {
-  actionId: string;
-  baseRevision: number;
-}
-
-export interface GameShellSnapshot {
-  confirmedView: PlayerViewModel | undefined;
-  viewRevision: number;
-  pendingIntents: ReadonlyArray<PendingIntent>;
-}
-
-type Listener = (snapshot: GameShellSnapshot) => void;
+export {BROWSER_ENGINE_V2_FLAG, isBrowserEngineV2Enabled} from './GameShellFeatureFlag';
+export type {FlagStorage} from './GameShellFeatureFlag';
+export type {GameShellSnapshot, PendingIntent} from './GameShellTypes';
 
 /**
- * Root-level confirmed state. Components may remount, but this service is
- * created once for the lifetime of the browser app. It deliberately does not
- * persist the authorized player view: that can contain private cards.
+ * Root-level owner of the confirmed game view.
+ *
+ * The first increment is deliberately small:
+ * - it stores only a server-authorized PlayerViewModel;
+ * - intents are queued and forwarded, never folded into the confirmed view
+ *   (no prediction/optimistic state);
+ * - the singleton survives PlayerHome/WaitingFor remounts;
+ * - everything stays in memory: no localStorage, IndexedDB, BroadcastChannel
+ *   or cookies are used for the view or cards.
  */
 export class GameShellService {
-  private confirmedView: PlayerViewModel | undefined;
+  private status: GameShellStatus = 'stopped';
+  private confirmedView: PlayerViewModel | undefined = undefined;
   private viewRevision = 0;
   private readonly pending = new Map<string, PendingIntent>();
-  private readonly listeners = new Set<Listener>();
+  private readonly listeners = new Set<GameShellListener>();
+  private workerPort: GameShellWorkerPort | undefined = undefined;
+  private unsubscribeWorker: (() => void) | undefined = undefined;
 
-  public setConfirmedView(view: PlayerViewModel, revision = 0): void {
-    if (!Number.isSafeInteger(revision) || revision < 0 || revision < this.viewRevision) {
+  public getStatus(): GameShellStatus {
+    return this.status;
+  }
+
+  public isRunning(): boolean {
+    return this.status === 'running';
+  }
+
+  /**
+   * Starts the lifecycle. Idempotent while running. An optional Worker port
+   * is attached/replaced for the future Worker adapter.
+   */
+  public start(workerPort?: GameShellWorkerPort): void {
+    const wasRunning = this.status === 'running';
+    this.status = 'running';
+    let changed = !wasRunning;
+    if (workerPort !== undefined && workerPort !== this.workerPort) {
+      this.detachWorker();
+      this.workerPort = workerPort;
+      this.unsubscribeWorker = workerPort.subscribe((message) => this.handleWorkerMessage(message));
+      workerPort.start();
+      changed = true;
+    }
+    if (changed) {
+      this.emit();
+    }
+  }
+
+  /**
+   * Stops the lifecycle, detaches the Worker port and drops pending intents.
+   * The last confirmed view is retained (memory-only) so a remount can still
+   * render the authorized snapshot without prediction.
+   */
+  public stop(): void {
+    if (this.status === 'stopped' && this.workerPort === undefined) {
+      return;
+    }
+    this.detachWorker();
+    this.pending.clear();
+    this.status = 'stopped';
+    this.emit();
+  }
+
+  /**
+   * Applies a server-confirmed, authorized view. This is the only writer of
+   * confirmedView and viewRevision. When revision is omitted the local
+   * revision advances by one.
+   */
+  public setConfirmedView(view: PlayerViewModel, revision?: number): void {
+    const nextRevision = revision === undefined ? this.viewRevision + 1 : revision;
+    if (!Number.isSafeInteger(nextRevision) || nextRevision < 0 || nextRevision < this.viewRevision) {
       throw new Error('viewRevision must be a monotonic non-negative integer');
     }
     this.confirmedView = view;
-    this.viewRevision = revision;
+    this.viewRevision = nextRevision;
     this.emit();
+  }
+
+  /** Explicit alias for callers that prefer the confirmed-view vocabulary. */
+  public confirmView(view: PlayerViewModel, revision?: number): void {
+    this.setConfirmedView(view, revision);
   }
 
   public getConfirmedView(): PlayerViewModel | undefined {
@@ -58,6 +108,7 @@ export class GameShellService {
       return;
     }
     this.pending.set(intent.actionId, {...intent});
+    this.workerPort?.send({...intent});
     this.emit();
   }
 
@@ -87,17 +138,48 @@ export class GameShellService {
     this.emit();
   }
 
-  public subscribe(listener: Listener): () => void {
+  public subscribe(listener: GameShellListener): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
   }
 
   public snapshot(): GameShellSnapshot {
     return {
+      status: this.status,
       confirmedView: this.confirmedView,
       viewRevision: this.viewRevision,
       pendingIntents: this.getPendingIntents(),
     };
+  }
+
+  public getSnapshot(): GameShellSnapshot {
+    return this.snapshot();
+  }
+
+  private handleWorkerMessage(message: GameShellWorkerMessage): void {
+    switch (message.type) {
+    case 'confirmed-view':
+      if (message.viewRevision !== undefined && message.viewRevision < this.viewRevision) {
+        return;
+      }
+      if (message.actionId !== undefined) {
+        this.pending.delete(message.actionId);
+      }
+      this.setConfirmedView(message.playerView, message.viewRevision);
+      break;
+    case 'intent-rejected':
+      this.removePendingIntent(message.actionId);
+      break;
+    }
+  }
+
+  private detachWorker(): void {
+    this.unsubscribeWorker?.();
+    this.unsubscribeWorker = undefined;
+    if (this.workerPort !== undefined) {
+      this.workerPort.stop();
+      this.workerPort = undefined;
+    }
   }
 
   private emit(): void {

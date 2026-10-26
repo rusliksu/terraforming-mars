@@ -126,6 +126,10 @@ export class MetricsDelegate implements IDatabase {
     return withDatabaseMetrics('deleteGame', () => this.delegate.deleteGame(gameId));
   }
 
+  deleteOrphanParticipants(): Promise<number> {
+    return withDatabaseMetrics('deleteOrphanParticipants', () => this.delegate.deleteOrphanParticipants());
+  }
+
   markFinished(gameId: GameId): Promise<void> {
     return withDatabaseMetrics('markFinished', () => this.delegate.markFinished(gameId));
   }

@@ -101,6 +101,22 @@ describeDatabaseSuite({
       expect(await db.getGameIds()).not.include(game.id);
     });
 
+    it('deleteOrphanParticipants removes only participants without a game', async () => {
+      const db = dbFactory();
+      const player = TestPlayer.BLACK.newPlayer();
+      const game = Game.newInstance('g123456789015', [player], player, 'spectatorid');
+      await db.lastSaveGamePromise;
+      await db.saveGame(game);
+      db.database.prepare('INSERT INTO participants (game_id, participant) VALUES (?, ?)').run('g999999999999', 'p999999999999');
+      db.database.prepare('INSERT INTO participants (game_id, participant) VALUES (?, ?)').run('g999999999999', 's999999999999');
+
+      expect(await db.deleteOrphanParticipants()).eq(2);
+
+      const participants = await db.getParticipants();
+      expect(participants.find((entry) => entry.gameId === 'g999999999999')).is.undefined;
+      expect(participants.find((entry) => entry.gameId === game.id)).not.is.undefined;
+    });
+
     it('purgeUnfinishedGames removes stale games with padded running status', async () => {
       const db = dbFactory();
       const player = TestPlayer.BLACK.newPlayer();

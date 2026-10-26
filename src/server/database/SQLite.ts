@@ -288,6 +288,14 @@ export class SQLite implements IDatabase {
     return Promise.resolve();
   }
 
+  deleteOrphanParticipants(): Promise<number> {
+    const deleteRows = this.db.transaction(() => {
+      return this.db.prepare(`DELETE FROM participants
+        WHERE NOT EXISTS (SELECT 1 FROM games WHERE games.game_id = participants.game_id)`).run().changes;
+    });
+    return Promise.resolve(deleteRows());
+  }
+
   public stats(): Promise<{[key: string]: string | number}> {
     const size = this.filename === IN_MEMORY_SQLITE_PATH ? -1 : fs.statSync(String(this.filename)).size;
 

@@ -408,6 +408,12 @@ export class PostgreSQL implements IDatabase {
     }
   }
 
+  async deleteOrphanParticipants(): Promise<number> {
+    const result = await this.client.query(
+      'DELETE FROM participants p WHERE NOT EXISTS (SELECT 1 FROM games g WHERE g.game_id = p.game_id)');
+    return result.rowCount ?? 0;
+  }
+
   // Not part of IDatabase (only the batch compressCompletedGames is), invisible to MetricsDelegate.
   // Instrumented directly here instead, so per-game maintenance latency isn't lost inside the batch.
   compressCompletedGame(gameId: GameId): Promise<void> {

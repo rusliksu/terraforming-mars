@@ -71,8 +71,12 @@ describe('PlayerInput', () => {
   const originalShadowLog = process.env.SHADOW_LOG;
   const originalShadowLogDir = process.env.SHADOW_LOG_DIR;
   const originalShadowLogFilePrefix = process.env.SHADOW_LOG_FILE_PREFIX;
+  const originalAllowUnauthenticated = process.env.ALLOW_LEGACY_UNAUTHENTICATED_PLAYER_INPUT;
 
   beforeEach(() => {
+    // These legacy route tests use unowned test seats. Production defaults to
+    // closed; the explicit compatibility flag is covered separately.
+    process.env.ALLOW_LEGACY_UNAUTHENTICATED_PLAYER_INPUT = '1';
     req = new MockRequest();
     res = new MockResponse();
     scaffolding = new RouteTestScaffolding(req);
@@ -84,6 +88,7 @@ describe('PlayerInput', () => {
     restoreEnv('SHADOW_LOG', originalShadowLog);
     restoreEnv('SHADOW_LOG_DIR', originalShadowLogDir);
     restoreEnv('SHADOW_LOG_FILE_PREFIX', originalShadowLogFilePrefix);
+    restoreEnv('ALLOW_LEGACY_UNAUTHENTICATED_PLAYER_INPUT', originalAllowUnauthenticated);
     if (shadowLogDir !== undefined) {
       fs.rmSync(shadowLogDir, {recursive: true, force: true});
       shadowLogDir = undefined;

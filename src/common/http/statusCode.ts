@@ -10,6 +10,8 @@ export const statusCode = {
   notModified: 304,
   /** 400: bad request */
   badRequest: 400,
+  /** 401: unauthorized */
+  unauthorized: 401,
   /** 403: forbidden */
   forbidden: 403,
   /** 404: not found */

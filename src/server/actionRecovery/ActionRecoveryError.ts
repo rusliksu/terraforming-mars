@@ -24,7 +24,7 @@ export class ActionRecoveryError extends Error {
   public constructor(
     public readonly code: ActionRecoveryErrorCode,
     message: string,
-    public readonly cause?: unknown,
+    public override readonly cause?: unknown,
   ) {
     super(message);
     this.name = 'ActionRecoveryError';

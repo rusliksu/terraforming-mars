@@ -300,7 +300,10 @@ export class Game implements IGame, Logger {
     preludeDeck: PreludeDeck,
     ceoDeck: CeoDeck,
     tags: ReadonlyArray<Tag>,
-    private readonly saveGame: SaveGame = (game) => GameLoader.getInstance().saveGame(game),
+    private readonly saveGame: SaveGame = (game) => {
+      const {GameLoader} = require('./database/GameLoader') as typeof import('./database/GameLoader');
+      return GameLoader.getInstance().saveGame(game);
+    },
     engine?: EngineRuntime) {
     this.id = id;
     this.engine = engine;

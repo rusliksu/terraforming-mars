@@ -25,6 +25,8 @@ describe('Wrybit player table with our public data', () => {
       expect(wrapper.get('.players-table-goods--coordination [data-test="stock"]').text()).eq('5');
       expect(wrapper.get('.players-table-goods--steel [data-test="protection"]').classes()).contains('shield_icon_half');
       expect(wrapper.get('[data-test="tag-galactic"]').text()).contains('2');
+      // An unplayed tag stays visible with an empty counter, matching the classic player bar.
+      expect(wrapper.get('[data-test="tag-animal"]').text()).contains('·');
       expect(wrapper.get('[data-test="discount-all"]').text()).eq('*');
       expect(wrapper.get('[data-test="vp"]').text()).eq('?');
       expect(wrapper.get('.players-table-name-marker').text()).eq('BOT');

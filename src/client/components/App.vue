@@ -12,6 +12,9 @@
       </dialog>
     </section>
     <WrybitBoundary :enabled="wrybitMode" :screen="screen" @classic="useClassicInterface" @active="wrybitReady = $event" @views="wrybitViews = $event" />
+    <aside v-if="!wrybitMode && screen !== 'cards'" class="classic-mode-switch">
+      <button type="button" class="btn" data-test="wrybit-layout" @click="useWrybitInterface" v-i18n>Wrybit layout</button>
+    </aside>
     <div class="main-container">
       <component :is="wrybitMode && wrybitReady && wrybitViews.startScreen ? wrybitViews.startScreen : 'StartScreen'" v-if="screen === 'start-screen'"/>
       <CreateGameForm
@@ -269,6 +272,9 @@ export default defineComponent({
     useClassicInterface(): void {
       PreferencesManager.INSTANCE.set('experimental_layout', false);
     },
+    useWrybitInterface(): void {
+      PreferencesManager.INSTANCE.set('experimental_layout', true);
+    },
     showAlert(title: string, message: string, cb: () => void = () => {}): void {
       const dialogElement: HTMLElement | null = document.getElementById('alert-dialog');
       const buttonElement: HTMLElement | null = document.getElementById('alert-dialog-button');
@@ -452,6 +458,27 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.classic-mode-switch {
+  position: fixed;
+  top: 8px;
+  right: 8px;
+  z-index: 201;
+}
+
+@media (max-width: 700px) {
+  .classic-mode-switch {
+    top: 6px;
+    right: 6px;
+
+    .btn {
+      min-width: 0;
+      height: 34px;
+      padding: 0 8px;
+      font-size: 10px;
+    }
+  }
+}
+
 .topmost-replay > .main-container { margin: 0; }
 .topmost-replay > .notice { position: static; margin: 24px; }
 </style>

@@ -102,10 +102,10 @@ export function columnTemplate(visibility: SectionVisibility, tagColumns: TagCol
   const divider = px(DIVIDER_WIDTH);
   const tracks = [px(nameWidth)];
   if (visibility.goods) {
-    tracks.push(divider, goodsMinWidths(goodsBoxWidths, goodsCount).map((width) => `minmax(${px(width)}, 1fr)`).join(' '));
+    tracks.push(divider, goodsMinWidths(goodsBoxWidths, goodsCount).map((width) => `minmax(${px(width)}, ${px(width + 18)})`).join(' '));
   }
   if (visibility.tags && tagColumns.length > 0) {
-    tracks.push(divider, tagColumns.map((group) => `repeat(${group.length}, minmax(${px(TAG_MIN_WIDTH)}, 1fr))`).join(` ${px(TAG_GROUP_GAP)} `));
+    tracks.push(divider, tagColumns.map((group) => `repeat(${group.length}, minmax(${px(TAG_MIN_WIDTH)}, ${px(TAG_MIN_WIDTH + 6)}))`).join(` ${px(TAG_GROUP_GAP)} `));
   }
   if (visibility.score) {
     tracks.push(divider, `repeat(${SCORE_COUNT}, ${px(SCORE_WIDTH)})`);

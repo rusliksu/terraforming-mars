@@ -29,6 +29,10 @@
 // Outside the two-column layout the classic bar remains
 .players-table {
   display: none;
+  // Size to the content and cap it on ultrawide screens: resources and tags keep compact,
+  // comparable columns instead of stretching across the whole left half of the screen.
+  width: max-content;
+  max-width: min(1500px, 100%);
 }
 
 .players-table-rows {

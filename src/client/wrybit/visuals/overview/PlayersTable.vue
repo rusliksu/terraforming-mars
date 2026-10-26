@@ -114,7 +114,8 @@ export default defineComponent({
     tagDetailsByColor(): Record<string, TagDetails> {
       return Object.fromEntries(this.rows.map((row) => [row.player.color, buildTagDetails(row.player, this.playerView)]));
     },
-    // Only tags at least one player has (or a discount or substitution on) – otherwise hidden for everyone
+    // Every tag available in this game, including tags nobody has played yet. The classic player
+    // bar works the same way: zero counters stay visible so players can plan around them.
     tagColumns(): TagColumnGroups {
       const groups: TagColumnGroups = [[]];
       for (const tag of TAG_ORDER) {
@@ -125,13 +126,7 @@ export default defineComponent({
         if (tag === 'all' || !isTagInGame(tag, this.playerView.game)) {
           continue;
         }
-        const anyoneHasIt = Object.values(this.tagDetailsByColor).some((details) => {
-          const detail = details.tagsInOrder.find((entry) => entry.name === tag);
-          return detail !== undefined && (detail.count > 0 || detail.discount > 0 || detail.substitution !== undefined);
-        });
-        if (anyoneHasIt) {
-          groups[groups.length - 1].push(tag);
-        }
+        groups[groups.length - 1].push(tag);
       }
       return groups.filter((group) => group.length > 0);
     },

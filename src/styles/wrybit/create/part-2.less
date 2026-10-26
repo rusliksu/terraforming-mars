@@ -468,7 +468,8 @@
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: @create-game-radius-small;
-  background: rgba(0, 0, 0, 0.22);
+  // The whole player card carries the chosen colour, not only its header and outline.
+  background: color-mix(in srgb, var(--create-game-player-color) 24%, #11131a);
 }
 
 // Player color as a variable: header, outline and glow all derive from it

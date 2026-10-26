@@ -8,6 +8,7 @@ import {all, uppercase} from '../Options';
 import {ICorporationCard} from '../corporation/ICorporationCard';
 
 export class MonsInsurance extends CorporationCard implements ICorporationCard {
+  protected insurancePayout = 3;
   constructor() {
     super({
       name: CardName.MONS_INSURANCE,
@@ -26,8 +27,9 @@ export class MonsInsurance extends CorporationCard implements ICorporationCard {
           });
           b.corpBox('effect', (cb) => {
             cb.vSpace(Size.SMALL);
+            cb.br;
             cb.effect('When a player causes another player to decrease production or lose resources, pay 3M€ to the victim, or as much as possible.', (eb) => {
-              eb.production((pb) => pb.wild(1, {all})).or().minus().wild(1, {all});
+              eb.production((pb) => pb.wild(1, {all})).or().wild(-1, {all});
               eb.startEffect.text('pay', {size: Size.SMALL, uppercase}).megacredits(3);
             });
           });
@@ -47,25 +49,29 @@ export class MonsInsurance extends CorporationCard implements ICorporationCard {
   // When `claimant` is undefined, it's the neutral player.
   public payDebt(player: IPlayer, claimant : IPlayer | undefined) {
     if (player !== claimant) {
-      const retribution = Math.min(player.megaCredits, 3);
+      const retribution = Math.min(player.megaCredits, this.insurancePayout);
       if (claimant) {
         claimant.megaCredits += retribution;
       }
       player.stock.deduct(Resource.MEGACREDITS, retribution);
       if (retribution > 0) {
         if (claimant !== undefined) {
-          player.game.log('${0} received ${1} M€ from ${2} owner (${3})', (b) =>
+          player.game.log('${0} received ${1}:r:mc: from ${2} owner (${3})', (b) =>
             b.player(claimant)
               .number(retribution)
-              .cardName(CardName.MONS_INSURANCE)
+              .card(this)
               .player(player));
         } else {
-          player.game.log('Neutral player received ${0} M€ from ${1} owner (${2})', (b) =>
+          player.game.log('Neutral player received ${0}:r:mc: from ${1} owner (${2})', (b) =>
             b.number(retribution)
-              .cardName(CardName.MONS_INSURANCE)
+              .card(this)
               .player(player));
         }
       }
     }
+  }
+
+  public onInsuranceClaim(owner: IPlayer, claimant: IPlayer | undefined) {
+    this.payDebt(owner, claimant);
   }
 }

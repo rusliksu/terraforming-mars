@@ -24,7 +24,7 @@ export class CityStandardProject extends StandardProjectCard {
   }
 
   public override canPayWith(player: IPlayer) {
-    if (player.tableau.get(CardName.PREFABRICATION_OF_HUMAN_HABITATS)) {
+    if (player.tableau.get(CardName.PREFABRICATION_OF_HUMAN_HABITATS) || player.tableau.get(CardName.BLOCKHOUSE)) {
       return {steel: true};
     } else {
       return {};
@@ -36,7 +36,23 @@ export class CityStandardProject extends StandardProjectCard {
     if (player.game.board.getAvailableSpacesForCity(player, this.canPlayOptions(player)).length === 0) {
       return false;
     }
-    return super.canAct(player);
+    if (!player.tableau.has(CardName.BLOCKHOUSE)) {
+      return super.canAct(player);
+    }
+    // Blockhouse: steel is worth 2 M€ extra when paying for this standard project, but
+    // the generic canAfford()/payingAmount() machinery has no notion of a payment-specific
+    // value bonus. Temporarily reflect the bonus in the player's steel value (using the
+    // same public mutators Advanced Alloys etc. use) so that machinery sees it, matching
+    // the +2-per-steel bonus SelectStandardProjectToPlay.validate() already applies once a
+    // payment is actually submitted.
+    player.increaseSteelValue();
+    player.increaseSteelValue();
+    try {
+      return super.canAct(player);
+    } finally {
+      player.decreaseSteelValue();
+      player.decreaseSteelValue();
+    }
   }
 
   actionEssence(player: IPlayer): void {

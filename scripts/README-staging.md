@@ -76,6 +76,43 @@ still require `-RestartWatchersDuringServiceSync`.
 - Trust `release.json`, not folder mtimes or guesses. Staging and prod should always be able to prove they serve the same artifact hash.
 - VPS runtime should be immutable-by-default: release code lives under `/home/openclaw/tm-runtime/<env>/releases/*`, services run from `/home/openclaw/tm-runtime/<env>/current`, and mutable data lives under `/home/openclaw/tm-runtime/<env>/shared`.
 
+## Abandoned Realtime Games
+
+The prod promote gate blocks every non-turn-based game unless its exact ID was
+confirmed abandoned in the operator ledger. `-RealtimeGameStaleDays` (default
+10) only separates old evidence in the audit output; age never authorizes a
+promotion.
+
+- Ledger: `C:\Users\Ruslan\tm\.tmp\tm-release\prod-ignored-games.txt`
+  (opt in with `-IgnoredRealtimeGameIdFile`; never committed, never inferred,
+  and never loaded automatically by a release).
+- Format: one `<game-id>` per line, optional trailing `# note`.
+
+```powershell
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\tm_ignored_realtime_games.ps1 -List
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\tm_ignored_realtime_games.ps1 -Add g1c62f3657ee8 -Note "idle since 2026-09-09"
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\tm_ignored_realtime_games.ps1 -Remove g1c62f3657ee8
+```
+
+Only a human declares a game abandoned: nothing infers it. `release_tm_prod.ps1`
+and `rollout_tm_server.ps1` merge a ledger only when its path is supplied explicitly
+with the per-run `-IgnoredRealtimeGameId` ids, and the merged count and ids are
+echoed before the locked remote gate runs. The gate fails closed for unknown ids,
+missing or future save timestamps, fresh realtime games, and stale realtime games
+that are not explicitly listed.
+
+The current idle time of every running game is visible read-only from the
+release checkout; the query mirrors the gate's own latest-save lookup:
+
+```bash
+sqlite3 -readonly "file:/home/openclaw/tm-runtime/prod/shared/db/game.db?mode=ro" -json \
+  "SELECT latest.game_id, CAST(strftime('%s','now') AS INTEGER) - latest.created_time AS idle_seconds \
+   FROM games AS latest \
+   INNER JOIN (SELECT game_id AS gid, MAX(save_id) AS max_save_id FROM games GROUP BY game_id) AS m \
+     ON latest.game_id = m.gid AND latest.save_id = m.max_save_id \
+   WHERE trim(latest.status) = 'running' ORDER BY idle_seconds ASC;"
+```
+
 ## Branch Naming
 
 - `main`: your fork's integration branch on `origin`. Only release commits that are intended to live there.
@@ -150,8 +187,9 @@ Recommended multi-session flow:
 3. In one release task, refresh/build the clean checkout and verify the exact
    `origin/main` commit.
 4. Deploy once to staging and run the combined smoke/screenshots.
-5. Promote with `release_tm_prod.ps1`, which pins staging's `gitSha` and
-   `artifactSha256`, refuses drift, and fails closed when realtime games exist.
+5. Read the exact staging `gitSha` and `artifactSha256`, then promote with
+   `release_tm_prod.ps1`, which requires both literal pins, refuses drift, and
+   fails closed when an unconfirmed realtime game exists.
 
 Refresh the clean release checkout before a real rollout:
 
@@ -206,8 +244,10 @@ release-checkout commit:
 
 ```powershell
 $intendedGitSha = git -C C:\Users\Ruslan\tm\terraforming-mars-release-main rev-parse HEAD
+$intendedArtifactSha = (Invoke-RestMethod https://staging.tm.knightbyte.win/assets/release.json).artifactSha256
 pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\release_tm_prod.ps1 `
-  -ExpectedGitSha $intendedGitSha
+  -ExpectedGitSha $intendedGitSha `
+  -ExpectedArtifactSha $intendedArtifactSha
 ```
 
 The production gate reads every latest running save directly from the live
@@ -218,6 +258,41 @@ separately confirmed a listed game is abandoned, pass its safe id explicitly as
 automatically. Promotion requires the existing
 `/home/openclaw/tm-runtime/prod/shared/db/game.db`; it never bootstraps or
 migrates a production database.
+
+### Interrupted promotion observer
+
+The promotion payload runs on the VPS in a detached Linux session. Closing
+Codex, cancelling the local observer, or losing SSH does **not** cancel that
+operation. Its deploy lock, pinned artifact, game gates, and code rollback
+checks remain in force. Do not start a new release to find its status.
+
+Before launch, the script prints a run token and a reconnect command. Reconnect
+to that exact operation without uploading or re-running any payload:
+
+```powershell
+pwsh -File scripts/promote_tm_staging_to_prod.ps1 -HostAlias hostkey-codex `
+  -ResumeRunToken <printed-run-token>
+```
+
+The observer reports the original exit code and log from
+`/home/openclaw/tm-runtime/prod/promotion-jobs/<run-token>`. A missing result or
+dead worker is an unknown outcome, never success or permission to retry. A
+timeout stops observation only. Job files are private (directory 700, files
+600), retained for diagnosis, and are not automatically deleted.
+
+This protects against losing the controlling connection, not a VPS reboot,
+OOM kill, or `SIGKILL` of the detached worker. If the observer was interrupted,
+finish the normal read-only runtime snapshot and public verification after
+checking its result; `-ResumeRunToken` itself does not repeat the outer release
+wrapper's post-deploy verification.
+
+Local lifecycle regressions use real Linux process groups and a file-backed
+service fixture, never a production DB or service:
+`pwsh -File scripts/test_tm_durable_promotion.ps1`. On Windows, the test runs
+in the `spec-kitty-baseline` WSL distro (override with `-WslDistribution`);
+on Linux it runs directly. Windows fixture inputs are retained under
+`D:\tm-db\smartbot-lab\durable-promotion` and Linux processes use a temporary
+fixture directory.
 
 Rollback an environment to the previous immutable release:
 
@@ -302,8 +377,10 @@ Run the full automated release gate:
 
 ```powershell
 $intendedGitSha = git -C C:\Users\Ruslan\tm\terraforming-mars-release-main rev-parse HEAD
+$intendedArtifactSha = (Invoke-RestMethod https://staging.tm.knightbyte.win/assets/release.json).artifactSha256
 pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\release_tm_prod.ps1 `
-  -ExpectedGitSha $intendedGitSha
+  -ExpectedGitSha $intendedGitSha `
+  -ExpectedArtifactSha $intendedArtifactSha
 ```
 
 Run smoke manually:
@@ -340,6 +417,21 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\verify_tm_s
 - Prod and staging are split by host on `443` via SNI.
 - The `STAGING` badge is host-gated and appears only on `staging.tm.knightbyte.win`.
 - `release_tm_prod.ps1` replaces the old manual "check staging, then promote, then open prod" step with scripted gates.
+- Release scripts own code, not database contents. They never copy, create,
+  replace, restore, or migrate the shared database. An existing database is
+  required; initialization and recovery are separate operator actions.
+- Promotion validates the existing saves read-only with a bounded timeout.
+  It then stops primary, repeats the live-game gate and read-only validation,
+  switches the release, and starts primary. Failed startup restores only the
+  previous code; current player data is preserved. No DB-sized free space is
+  required by deployment.
+- `rehearse_tm_prod.ps1` is retained as the read-only validation entrypoint.
+  `-ValidationTimeoutSeconds` replaces the former copy and maintenance budgets.
+  There is no flag to enable database copying in the release path.
+- Server startup still performs its normal database writes. Code-only rollback
+  cannot undo those writes, so releases must preserve schema/save compatibility.
+  A data migration or restore requires a separate reviewed operation. Keep
+  independently managed backups; deployment does not manage their retention.
 - `release.json` is generated during deploy and is used to prove that staging and prod serve the same artifact hash after promote.
 - Rollout syncs `build/`, `assets/`, and the source-managed subset of `elo/` (`index.html`, `elo-api.js`, aliases, and maintenance scripts). It deliberately preserves live Elo data files on the VPS.
 - Rollout also carries `package.json` and `package-lock.json`; runtime dependencies are resolved into a managed cache under `/home/openclaw/tm-runtime/<env>/shared/deps/<package-lock-sha256>` instead of linking back to legacy checkout `node_modules`.

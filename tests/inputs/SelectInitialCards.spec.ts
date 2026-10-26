@@ -5,8 +5,9 @@ import {TestPlayer} from '../TestPlayer';
 import {CardName} from '../../src/common/cards/CardName';
 import {ICorporationCard} from '../../src/server/cards/corporation/ICorporationCard';
 import {cardsFromJSON, ceosFromJSON, corporationCardsFromJSON, preludesFromJSON} from '../../src/server/createCard';
-import {toName} from '../../src/common/utils/utils';
+import {cast, toName} from '../../src/common/utils/utils';
 import {EarthCatapult} from '../../src/server/cards/base/EarthCatapult';
+import {SelectCard} from '@/server/inputs/SelectCard';
 
 describe('SelectInitialCards', () => {
   let player: TestPlayer;
@@ -68,11 +69,11 @@ describe('SelectInitialCards', () => {
     expect(player.game.projectDeck.discardPile.map(toName)).to.have.members([CardName.BACTOVIRAL_RESEARCH, CardName.COMET_AIMING, CardName.DIRIGIBLES]);
     expect(player.game.corporationDeck.discardPile.map(toName)).to.have.members([CardName.HELION]);
 
-    const corporationLog = player.game.gameLog.find((entry) => entry.message === 'You selected ${0} from ${1}');
+    const corporationLog = player.game.gameLog.find((entry) => entry.message === 'You selected ${0} skipping ${1}');
     expect(corporationLog?.playerId).eq(player.id);
     expect(corporationLog?.data.map((datum) => datum.value)).deep.eq([
-      CardName.INVENTRIX,
-      [CardName.INVENTRIX, CardName.HELION],
+      [CardName.INVENTRIX],
+      [CardName.HELION],
     ]);
   });
 
@@ -103,6 +104,31 @@ describe('SelectInitialCards', () => {
     expect(player.game.corporationDeck.discardPile.map(toName)).to.have.members([CardName.HELION]);
     expect(player.game.ceoDeck.discardPile.map(toName)).to.have.members([CardName.MUSK]);
     expect(player.game.preludeDeck.discardPile.map(toName)).to.have.members([CardName.DONATION, CardName.SUPPLIER]);
+  });
+
+  it('offers only the replacement when creating a game from a legacy custom Prelude list', () => {
+    const [/* game */, initialPlayer] = testGame(1, {
+      skipInitialCardSelection: false,
+      skipInitialShuffling: true,
+      preludeExtension: true,
+      pathfindersExpansion: true,
+      betterMarsExpansion: true,
+      customPreludes: [
+        CardName.BIOFUELS,
+        CardName.ALLIED_BANK,
+        CardName.AQUIFER_TURBINES,
+        CardName.EARLY_SETTLEMENT,
+        CardName.EARLY_SETTLEMENT_BETTER_MARS,
+      ],
+    });
+    const input = cast(initialPlayer.getWaitingFor(), SelectInitialCards);
+    const preludes = cast(input.options[1], SelectCard);
+    expect(preludes.cards.map(toName)).to.have.members([
+      CardName.BIOFUELS,
+      CardName.ALLIED_BANK,
+      CardName.AQUIFER_TURBINES,
+      CardName.EARLY_SETTLEMENT_BETTER_MARS,
+    ]);
   });
 
   it('selects one prelude when prelude handicap is 1', () => {
@@ -159,5 +185,26 @@ describe('SelectInitialCards', () => {
 
     expect(projectCardModel?.calculatedCost).eq(player.getCardCost(dealtProjectCard));
     expect(projectCardModel?.calculatedCost).eq(dealtProjectCard.cost - 2);
+  });
+
+  it('A failed selection leaves the hands unchanged', () => {
+    const [/* game */, player] = testGame(1, {ceoExtension: true, preludeExtension: true});
+    player.dealtCorporationCards = corporationCardsFromJSON([CardName.INVENTRIX, CardName.HELION]);
+    player.dealtProjectCards = cardsFromJSON([CardName.ANTS, CardName.BACTOVIRAL_RESEARCH, CardName.COMET_AIMING, CardName.DIRIGIBLES]);
+    player.dealtPreludeCards = preludesFromJSON([CardName.LOAN, CardName.BIOLAB, CardName.DONATION, CardName.SUPPLIER]);
+    player.dealtCeoCards = ceosFromJSON([CardName.ASIMOV, CardName.MUSK]);
+    selectInitialCards = new SelectInitialCards(player, cb);
+
+    // Preludes and CEO are fine, the project card is not: nothing may stay in the hands
+    expect(() => selectInitialCards.process({type: 'initialCards', responses: [
+      {type: 'card', cards: [CardName.INVENTRIX]},
+      {type: 'card', cards: [CardName.LOAN, CardName.BIOLAB]},
+      {type: 'card', cards: [CardName.ASIMOV]},
+      {type: 'card', cards: [CardName.THARSIS_REPUBLIC]},
+    ]}, player)).to.throw(/not found/);
+
+    expect(player.preludeCardsInHand).is.empty;
+    expect(player.ceoCardsInHand.size).eq(0);
+    expect(player.cardsInHand).is.empty;
   });
 });

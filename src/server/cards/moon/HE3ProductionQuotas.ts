@@ -30,7 +30,7 @@ export class HE3ProductionQuotas extends Card implements IProjectCard {
         'Pay 1 steel per mine tile on The Moon to gain 4 heat per mine tile on The Moon. Raise the mining rate 1 step.',
         cardNumber: 'M57',
         renderData: CardRenderer.builder((b) => {
-          b.minus().steel(1).slash().moonMine({size: Size.SMALL, all})
+          b.steel(-1).slash().moonMine({size: Size.SMALL, all})
             .colon().heat(4, {digit}).slash().moonMine({size: Size.SMALL, all}).br;
           b.moonMiningRate();
         }),
@@ -52,7 +52,7 @@ export class HE3ProductionQuotas extends Card implements IProjectCard {
     const heatGained = moonTiles.length * 4;
     player.stock.deduct(Resource.STEEL, steelSpent);
     player.heat += heatGained;
-    player.game.log('Player spent ${0} steel and gained ${1} heat', (b) => b.number(steelSpent).number(heatGained));
+    player.game.log('${0} spent ${1}:r:steel: and gained ${2}:r:heat:', (b) => b.player(player).number(steelSpent).number(heatGained));
     return undefined;
   }
 }

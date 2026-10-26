@@ -1,5 +1,5 @@
 import {BasePlayerInput} from '../PlayerInput';
-import {isPayment, Payment} from '../../common/inputs/Payment';
+import {Payment} from '../../common/inputs/Payment';
 import {IProjectCard} from '../cards/IProjectCard';
 import {isIStandardProjectCard, IStandardProjectCard} from '../cards/IStandardProjectCard';
 import {Units} from '../../common/Units';
@@ -11,6 +11,7 @@ import {cardsToModel} from '../models/ModelUtils';
 import {SelectProjectCardToPlayModel} from '../../common/models/PlayerInputModel';
 import {InputError} from './InputError';
 import {Message} from '../../common/logs/Message';
+import {CardResource} from '../../common/CardResource';
 
 export type PlayCardMetadata = {
   reserveUnits: Readonly<Units>;
@@ -62,8 +63,10 @@ export abstract class SelectCardToPlay<T extends IProjectCard | IStandardProject
       cards: cardsToModel(player, this.cards, {showCalculatedCost: true, extras: this.extras, enabled: this.config?.enabled}),
       microbes: player.getSpendable('microbes'),
       floaters: player.getSpendable('floaters'),
+      anyFloaters: player.getResourceCount(CardResource.FLOATER),
       paymentOptions: {
         heat: player.canUseHeatAsMegaCredits,
+        energy: player.canUseEnergyAsMegaCredits,
         lunaTradeFederationTitanium: player.canUseTitaniumAsMegacredits,
         plants: player.canUsePlantsAsMegacredits,
       },
@@ -73,6 +76,7 @@ export abstract class SelectCardToPlay<T extends IProjectCard | IStandardProject
       kuiperAsteroids: player.getSpendable('kuiperAsteroids'),
       auroraiData: player.getSpendable('auroraiData'),
       spireScience: player.getSpendable('spireScience'),
+      nereidMicrobes: player.getSpendable('nereidMicrobes'),
     };
   }
 
@@ -80,10 +84,12 @@ export abstract class SelectCardToPlay<T extends IProjectCard | IStandardProject
     if (!isSelectProjectCardToPlayResponse(input)) {
       throw new InputError('Not a valid SelectProjectCardToPlayResponse');
     }
-    if (!isPayment(input.payment)) {
+    const payment = Payment.fromResponse(input.payment);
+    if (payment === undefined) {
       throw new InputError('payment is not a valid type');
     }
 
+    input = {...input, payment};
     const cardIndex = this.cards.findIndex((card) => card.name === input.card);
     if (cardIndex === -1) {
       throw new InputError('Unknown card name ' + input.card);

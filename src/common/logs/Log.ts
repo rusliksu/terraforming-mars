@@ -1,7 +1,30 @@
 import {LogMessageData} from './LogMessageData';
+import {LogMessageDataType} from './LogMessageDataType';
 import {Message} from './Message';
+import {Resource} from '../Resource';
+
+function resourceName(resource: Resource): string {
+  return resource === Resource.MEGACREDITS ? 'mc' : resource;
+}
 
 export class Log {
+  /**
+   * The markdown shortcode for resource data, e.g. `:p:mc:`, for plain-text logs.
+   * Returns undefined for other data.
+   */
+  public static shortcode(datum: LogMessageData): string | undefined {
+    switch (datum.type) {
+    case LogMessageDataType.RESOURCE:
+      return `:r:${resourceName(datum.value)}:`;
+    case LogMessageDataType.PRODUCTION:
+      return `:p:${resourceName(datum.value)}:`;
+    case LogMessageDataType.CARD_RESOURCE:
+      return `:cr:${datum.value.toLowerCase().replaceAll(' ', '-')}:`;
+    default:
+      return undefined;
+    }
+  }
+
   public static applyData(message: Message, cb: (datum: LogMessageData, idx: number) => string): string {
     return message.message.replace(/\$\{(\d{1,2})\}/gi, (_match, idx) => {
       return cb(message.data[idx], idx);

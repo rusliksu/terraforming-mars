@@ -8,6 +8,7 @@ import {SelectCardModel} from '../../common/models/PlayerInputModel';
 import {IPlayer} from '../IPlayer';
 import {cardsToModel} from '../models/ModelUtils';
 import {InputError} from './InputError';
+import {SelectOption} from './SelectOption';
 
 export type Options = {
   max: number,
@@ -17,7 +18,7 @@ export type Options = {
   /** When provided, then the cards with false in `enabled` are not selectable and grayed out */
   enabled: ReadonlyArray<boolean> | undefined,
   /** Default is true. If true, then shows resources on those cards. If false than shows discounted price. */
-  played: boolean | CardName.SELF_REPLICATING_ROBOTS
+  played: boolean | CardName.SELF_REPLICATING_ROBOTS | CardName.ORGANIC_WASTE_RECYCLING | CardName.SELF_REPLICATING_ROBOTS_SOLARIS
   /** Default is false. If true then show the name of the card owner below. */
   showOwner: boolean,
   /** Default is false. If true, show a "Select All" / "Deselect All" toggle button. */
@@ -45,14 +46,25 @@ export class SelectCard<T extends ICard> extends BasePlayerInput<ReadonlyArray<T
     this.buttonLabel = buttonLabel;
   }
 
+  public maybeConvertToSelectOption(title: string | Message): SelectCard<T> | SelectOption {
+    if (this.cards.length !== 1) {
+      return this;
+    }
+    return new SelectOption(title, this.buttonLabel).andThen(() => this.cb(this.cards));
+  }
+
   public toModel(player: IPlayer): SelectCardModel {
     return {
       title: this.title,
       buttonLabel: this.buttonLabel,
       type: 'card',
       cards: cardsToModel(player, this.cards, {
-        showCalculatedCost: this.config.played === false || this.config.played === CardName.SELF_REPLICATING_ROBOTS,
-        showResources: this.config.played === true || this.config.played === CardName.SELF_REPLICATING_ROBOTS,
+        showCalculatedCost: this.config.played === false ||
+          this.config.played === CardName.SELF_REPLICATING_ROBOTS || this.config.played === CardName.ORGANIC_WASTE_RECYCLING ||
+          this.config.played === CardName.SELF_REPLICATING_ROBOTS_SOLARIS,
+        showResources: this.config.played === true ||
+          this.config.played === CardName.SELF_REPLICATING_ROBOTS || this.config.played === CardName.ORGANIC_WASTE_RECYCLING ||
+          this.config.played === CardName.SELF_REPLICATING_ROBOTS_SOLARIS,
         enabled: this.config.enabled,
       }),
       max: this.config.max,
@@ -74,6 +86,10 @@ export class SelectCard<T extends ICard> extends BasePlayerInput<ReadonlyArray<T
     }
     if (input.cards.length > this.config.max) {
       throw new InputError('Too many cards selected');
+    }
+    // The same card twice would count twice (e.g. selling patents) while it is removed only once
+    if (new Set(input.cards).size !== input.cards.length) {
+      throw new InputError('Each card can only be selected once');
     }
     const cards = [];
     for (const cardName of input.cards) {

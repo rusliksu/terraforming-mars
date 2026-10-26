@@ -1,0 +1,143 @@
+{
+  "sourceSha": "c22534187c67f884a9d8af24109b51a98b6af100",
+  "node": "v22.23.3",
+  "startedAt": "2026-10-03T11:35:45.938Z",
+  "timeoutMs": 600000,
+  "recordedAt": "2026-10-03T11:38:21.981Z",
+  "status": "passed",
+  "passed": true,
+  "results": [
+    {
+      "name": "make:static",
+      "command": "D:\\npm-cache\\_npx\\52027bd8fc0022aa\\node_modules\\node\\bin\\node.exe",
+      "args": [
+        "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+        "run",
+        "make:static"
+      ],
+      "log": "D:\\tm-db\\smartbot-lab\\fanmade-port-01M3J328-final\\combined\\run-wIyWoz\\make-static.log",
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 5569,
+      "passed": true
+    },
+    {
+      "name": "lint",
+      "command": "D:\\npm-cache\\_npx\\52027bd8fc0022aa\\node_modules\\node\\bin\\node.exe",
+      "args": [
+        "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+        "run",
+        "lint"
+      ],
+      "log": "D:\\tm-db\\smartbot-lab\\fanmade-port-01M3J328-final\\combined\\run-wIyWoz\\lint.log",
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 33084,
+      "passed": true
+    },
+    {
+      "name": "build",
+      "command": "D:\\npm-cache\\_npx\\52027bd8fc0022aa\\node_modules\\node\\bin\\node.exe",
+      "args": [
+        "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+        "run",
+        "build"
+      ],
+      "log": "D:\\tm-db\\smartbot-lab\\fanmade-port-01M3J328-final\\combined\\run-wIyWoz\\build.log",
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 45728,
+      "passed": true
+    },
+    {
+      "name": "build:test",
+      "command": "D:\\npm-cache\\_npx\\52027bd8fc0022aa\\node_modules\\node\\bin\\node.exe",
+      "args": [
+        "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+        "run",
+        "build:test"
+      ],
+      "log": "D:\\tm-db\\smartbot-lab\\fanmade-port-01M3J328-final\\combined\\run-wIyWoz\\build-test.log",
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 461,
+      "passed": true
+    },
+    {
+      "name": "test:server",
+      "command": "D:\\npm-cache\\_npx\\52027bd8fc0022aa\\node_modules\\node\\bin\\node.exe",
+      "args": [
+        "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+        "run",
+        "test:server",
+        "--",
+        "--jobs",
+        "4"
+      ],
+      "log": "D:\\tm-db\\smartbot-lab\\fanmade-port-01M3J328-final\\combined\\run-wIyWoz\\test-server.log",
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 43462,
+      "passed": true
+    },
+    {
+      "name": "test:client",
+      "command": "D:\\npm-cache\\_npx\\52027bd8fc0022aa\\node_modules\\node\\bin\\node.exe",
+      "args": [
+        "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+        "run",
+        "test:client"
+      ],
+      "log": "D:\\tm-db\\smartbot-lab\\fanmade-port-01M3J328-final\\combined\\run-wIyWoz\\test-client.log",
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 17621,
+      "passed": true
+    },
+    {
+      "name": "module-matrix",
+      "command": "D:\\npm-cache\\_npx\\52027bd8fc0022aa\\node_modules\\node\\bin\\node.exe",
+      "args": [
+        "node_modules/mocha/bin/mocha.js",
+        "--parallel",
+        "--jobs",
+        "4",
+        "--import=tsx",
+        "--require",
+        "tests/testing/setup.ts",
+        "tests/fanmade-compat/*.spec.ts",
+        "tests/cards/sillyfication/AriAdore.spec.ts",
+        "tests/cards/sillyfication/CostIndex.spec.ts",
+        "tests/cards/betterMars/Replacements.spec.ts",
+        "tests/cards/DataDrivenCard.spec.ts",
+        "tests/cards/conglomerates/teamActions/DonationAction.spec.ts",
+        "tests/conglomerates/ConglomeratesExpansion.spec.ts",
+        "tests/conglomerates/ConglomeratesTeamScore.spec.ts",
+        "tests/cards/corporatebetterments/WildBoars.spec.ts",
+        "tests/cards/idesofmars/Amphibians.spec.ts",
+        "tests/cards/idesofmars/Backstabbing.spec.ts",
+        "tests/cards/robantilles/AlgorithmicTrading.spec.ts",
+        "tests/cards/robantilles/GreatFaceOfCydonia.spec.ts",
+        "tests/cards/robantilles/DogsInSpace.spec.ts",
+        "tests/cards/robantilles/GigaInterferometer.spec.ts",
+        "tests/MorePartiesCardDraws.spec.ts",
+        "tests/turmoil/parties/ScientistsMoreParties.spec.ts",
+        "tests/turmoil/PartySwap.spec.ts",
+        "tests/cards/venusPhase2/CloudCityStandardProject.spec.ts",
+        "tests/venusPhase2/VenusPhase2Expansion.spec.ts",
+        "tests/cards/industries/SteelIndustryStandardProject.spec.ts",
+        "tests/cards/highOrbit/HighOrbitAcquisition.spec.ts",
+        "tests/HighOrbitMarket.spec.ts",
+        "tests/cards/highOrbit/Observatory.spec.ts",
+        "tests/cards/solaris/GalaxyDefenders.spec.ts",
+        "tests/cards/solaris/AntiFraudInvestigation.spec.ts"
+      ],
+      "log": "D:\\tm-db\\smartbot-lab\\fanmade-port-01M3J328-final\\combined\\run-wIyWoz\\module-matrix.log",
+      "exitCode": 0,
+      "signal": null,
+      "durationMs": 10113,
+      "passed": true
+    }
+  ],
+  "notRun": []
+}

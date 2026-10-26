@@ -8,6 +8,8 @@ import {OrOptions} from '../../../src/server/inputs/OrOptions';
 import {testGame} from '../../TestGame';
 import {PartyName} from '../../../src/common/turmoil/PartyName';
 import {cast} from '@/common/utils/utils';
+import {SelectPayment} from '@/server/inputs/SelectPayment';
+import {Payment} from '@/common/inputs/Payment';
 
 describe('Reds', () => {
   let player: TestPlayer;
@@ -54,6 +56,29 @@ describe('Reds', () => {
     expect(secondPlayer.terraformRating).to.eq(initialPlayerTR - 1);
   });
 
+  it('Ruling bonus 1: Solo', () => {
+    const [game, player] = testGame(1, {turmoilExtension: true});
+
+    player.setTerraformRating(20);
+    REDS_BONUS_1.grant(game);
+    expect(player.terraformRating).to.eq(21);
+
+    REDS_BONUS_1.grant(game);
+    expect(player.terraformRating).to.eq(21);
+  });
+
+  it('Ruling bonus 2: Solo', () => {
+    const [game, player] = testGame(1, {turmoilExtension: true});
+
+    player.setTerraformRating(20);
+    REDS_BONUS_2.grant(game);
+    expect(player.terraformRating).to.eq(20);
+
+    player.setTerraformRating(21);
+    REDS_BONUS_2.grant(game);
+    expect(player.terraformRating).to.eq(20);
+  });
+
   it('Ruling policy 1: When you take an action that raises TR, you MUST pay 3 M€ per step raised', () => {
     setRulingParty(game, PartyName.REDS, 'rp01');
 
@@ -71,6 +96,73 @@ describe('Reds', () => {
     addGreenery(player, '10');
     runAllActions(game);
     expect(player.megaCredits).to.eq(0);
+  });
+
+  for (const [credits, expectedIncrease] of [[3, 1], [6, 2]]) {
+    it(`limits queued TR increases to the available ${credits} M€`, () => {
+      setRulingParty(game, PartyName.REDS, 'rp01');
+      player.megaCredits = credits;
+      const initialTR = player.terraformRating;
+
+      player.increaseTerraformRating();
+      player.increaseTerraformRating();
+      runAllActions(game);
+
+      expect(player.megaCredits).eq(0);
+      expect(player.terraformRating).eq(initialTR + expectedIncrease);
+    });
+  }
+
+  it('rechecks queued TR payments after spending heat', () => {
+    setRulingParty(game, PartyName.REDS, 'rp01');
+    player.canUseHeatAsMegaCredits = true;
+    player.heat = 3;
+    const initialTR = player.terraformRating;
+
+    player.increaseTerraformRating();
+    player.increaseTerraformRating();
+    runAllActions(game);
+    cast(player.popWaitingFor(), SelectPayment).cb(Payment.of({heat: 3}));
+    runAllActions(game);
+
+    expect(player.heat).eq(0);
+    expect(player.terraformRating).eq(initialTR + 1);
+    expect(player.getWaitingFor()).is.undefined;
+  });
+
+  it('Ruling policy 2: states who placed the tile and what was actually paid', () => {
+    setRulingParty(game, PartyName.REDS, 'rp02');
+
+    player.megaCredits = 3;
+    addGreenery(player, '10');
+    runAllActions(game);
+
+    expect(player.megaCredits).to.eq(0);
+    expect(game.gameLog.map(formatMessage)).includes('blue paid 3 M€ for Turmoil Reds policy');
+  });
+
+  it('Ruling policy 2: reports a partial payment when the player cannot pay in full', () => {
+    setRulingParty(game, PartyName.REDS, 'rp02');
+
+    player.megaCredits = 2;
+    addGreenery(player, '10');
+    runAllActions(game);
+
+    expect(player.megaCredits).to.eq(0);
+    expect(game.gameLog.map(formatMessage)).includes('blue paid 2 M€ for Turmoil Reds policy');
+  });
+
+  it('Ruling policy 3: states who used the party action and what was actually paid', () => {
+    setRulingParty(game, PartyName.REDS, 'rp03');
+
+    const redsPolicy = REDS_POLICY_3;
+    player.megaCredits = 7;
+    game.increaseOxygenLevel(player, 1);
+    redsPolicy.action(player);
+    runAllActions(game);
+
+    expect(player.megaCredits).to.eq(3);
+    expect(game.gameLog.map(formatMessage)).includes('blue paid 4 M€ for Turmoil Reds policy');
   });
 
   it('Ruling policy 3: Pay 4 M€ to reduce a non-maxed global parameter 1 step', () => {

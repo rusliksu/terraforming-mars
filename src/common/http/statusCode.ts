@@ -16,12 +16,16 @@ export const statusCode = {
   forbidden: 403,
   /** 404: not found */
   notFound: 404,
+  /** 413: content too large */
+  contentTooLarge: 413,
   /** 422: unprocessable entity */
   unprocessableEntity: 422,
   /** 429: too many requests */
   tooManyRequests: 429,
   /** 500: internal server error */
   internalServerError: 500,
+  /** 503: service unavailable */
+  serviceUnavailable: 503,
   /** 200: ok */
   ok: 200,
 } as const;

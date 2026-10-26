@@ -1,3 +1,6 @@
+import {randomUUID} from 'node:crypto';
+import {getAutomationCompatibility} from '../bot/AutomationCompatibility';
+import {resolveGlobalParameters} from '@/common/GlobalParameterConfig';
 import {CardModel} from '../../common/models/CardModel';
 import {Color} from '../../common/Color';
 import {IGame} from '../IGame';
@@ -15,13 +18,20 @@ import {TileType} from '../../common/TileType';
 import {Phase} from '../../common/Phase';
 import {Resource} from '../../common/Resource';
 import {ClaimedMilestoneModel, MilestoneScore} from '../../common/models/ClaimedMilestoneModel';
+import {CONGLOMERATES_MILESTONE_NUMBERS} from '../../common/ma/ConglomeratesMilestoneNumbers';
+import {publicConditionalDiscounts} from './publicConditionalDiscounts';
+import {BaseMilestone} from '../milestones/IMilestone';
 import {FundedAwardModel, AwardScore} from '../../common/models/FundedAwardModel';
 import {getTurmoilModel} from '../models/TurmoilModel';
+import {getConglomeratesModel} from '../models/ConglomeratesModel';
+import {ConglomeratesExpansion} from '../conglomerates/ConglomeratesExpansion';
 import {SpectatorModel} from '../../common/models/SpectatorModel';
-import {GameModel} from '../../common/models/GameModel';
-import {Turmoil} from '../turmoil/Turmoil';
+import {GameModel, OtherDeckSizesModel} from '../../common/models/GameModel';
 import {createPathfindersModel} from './PathfindersModel';
 import {MoonModel} from '../../common/models/MoonModel';
+import {VenusPhase2Model} from '../../common/models/VenusPhase2Model';
+import {VENUS_STRATOPOLIS, VENUS_MAXWELL_BASE} from '../venusPhase2/VenusSurfaceBoard';
+import {VenusPhase2Expansion} from '../venusPhase2/VenusPhase2Expansion';
 import {CardName} from '../../common/cards/CardName';
 import {AwardScorer} from '../awards/AwardScorer';
 import {PlayerId, SpaceId} from '../../common/Types';
@@ -29,12 +39,35 @@ import {cardsToModel, coloniesToModel} from './ModelUtils';
 import {runId} from '../utils/server-ids';
 import {toName} from '../../common/utils/utils';
 import {MAX_AWARDS, MAX_MILESTONES} from '../../common/constants';
+import {getOceanPlacementContext} from './OceanPlacementContext';
+import {projectFinalGreenery} from './finalGreeneryPresentation';
+import {AstraMechanica} from '../cards/promo/AstraMechanica';
+import {promptIdForModel} from './promptId';
+import {aiHandOf} from '../aiFeedback/aiHandView';
 
 export class Server {
+  private static readonly FANMADE_CATALOG_REVISION = 'fanmade:rebalanced-v1';
+  private static readonly inputIds = new WeakMap<PlayerInput, string>();
+
+  private static getWaitingForId(input: PlayerInput | undefined): string | undefined {
+    if (input === undefined) {
+      return undefined;
+    }
+    let id = this.inputIds.get(input);
+    if (id === undefined) {
+      id = randomUUID();
+      this.inputIds.set(input, id);
+    }
+    return id;
+  }
+
   public static getSimpleGameModel(game: IGame, options?: {
     botPlayers?: Array<PlayerId>;
   }): SimpleGameModel {
     return {
+      automationCompatibility: getAutomationCompatibility(game.gameOptions),
+      fanmadeCatalogRevision: Server.FANMADE_CATALOG_REVISION,
+      astraMechanicaReplayTargetExclusions: AstraMechanica.UNUSABLE_CARDS,
       activePlayer: game.activePlayer.color,
       botPlayers: options?.botPlayers,
       id: game.id,
@@ -51,6 +84,22 @@ export class Server {
       gameOptions: this.getGameOptionsAsModel(game.gameOptions),
       lastSoloGeneration: game.lastSoloGeneration(),
       expectedPurgeTimeMs: game.expectedPurgeTimeMs(),
+      createdTimeMs: game.createdTime.getTime(),
+    };
+  }
+
+  private static getOtherDeckSizes(game: IGame): OtherDeckSizesModel {
+    const options = game.gameOptions;
+    const sizes = (deck: {drawPile: ReadonlyArray<unknown>, discardPile: ReadonlyArray<unknown>}) => ({
+      drawPile: deck.drawPile.length,
+      discardPile: deck.discardPile.length,
+    });
+    const dealer = game.turmoil?.globalEventDealer;
+    return {
+      corporations: sizes(game.corporationDeck),
+      preludes: options.preludeExtension ? sizes(game.preludeDeck) : undefined,
+      ceos: options.ceoExtension ? sizes(game.ceoDeck) : undefined,
+      globalEvents: dealer === undefined ? undefined : {drawPile: dealer.deck.length, discardPile: dealer.discards.length},
     };
   }
 
@@ -58,11 +107,16 @@ export class Server {
     const turmoil = getTurmoilModel(game);
 
     return {
+      automationCompatibility: getAutomationCompatibility(game.gameOptions),
+      fanmadeCatalogRevision: Server.FANMADE_CATALOG_REVISION,
+      astraMechanicaReplayTargetExclusions: AstraMechanica.UNUSABLE_CARDS,
       aresData: game.aresData,
       awards: this.getAwards(game),
       colonies: coloniesToModel(game, game.colonies, false, true),
+      conglomerates: getConglomeratesModel(game),
       deckSize: game.projectDeck.drawPile.length,
       discardPileSize: game.projectDeck.discardPile.length,
+      otherDeckSizes: this.getOtherDeckSizes(game),
       discardedColonies: game.discardedColonies.map(toName),
       expectedPurgeTimeMs: game.expectedPurgeTimeMs(),
       gameAge: game.gameAge,
@@ -71,6 +125,7 @@ export class Server {
       gameOptions: this.getGameOptionsAsModel(game.gameOptions),
       generation: game.getGeneration(),
       globalsPerGeneration: game.gameIsOver() ? game.globalsPerGeneration : [],
+      highOrbitMarket: game.gameOptions.highOrbitExpansion ? game.highOrbitMarket : undefined,
       isSoloModeWin: game.isSoloModeWin(),
       isTerraformed: game.marsIsTerraformed(),
       lastSoloGeneration: game.lastSoloGeneration(),
@@ -90,13 +145,15 @@ export class Server {
       turmoil: turmoil,
       undoCount: game.undoCount,
       venusScaleLevel: game.getVenusScaleLevel(),
+      venusPhase2: this.getVenusPhase2Model(game),
     };
   }
 
   public static getPlayerModel(player: IPlayer): PlayerViewModel {
     const game = player.game;
+    const waitingFor = player.getWaitingFor();
 
-    const players: Array<PublicPlayerModel> = game.playersInGenerationOrder.map((p) => this.getPlayer(p, p.color === player.color));
+    const players: Array<PublicPlayerModel> = game.playersInGenerationOrder.map((p) => this.getPlayer(p, p.color === player.color, {}, player));
 
     const thisPlayerIndex = players.findIndex((p) => p.color === player.color);
     const thisPlayer: PublicPlayerModel = players[thisPlayerIndex];
@@ -117,11 +174,13 @@ export class Server {
       draftedCards: cardsToModel(player, player.draftedCards, {showCalculatedCost: true}),
       game: this.getGameModel(player.game),
       id: player.id,
+      color: player.color,
       runId: runId,
       pickedCorporationCard: player.pickedCorporationCard ? cardsToModel(player, [player.pickedCorporationCard]) : [],
       preludeCardsInHand: cardsToModel(player, player.preludeCardsInHand),
       thisPlayer: thisPlayer,
-      waitingFor: this.getWaitingFor(player, player.getWaitingFor()),
+      waitingFor: player.aiLevel !== undefined ? undefined : this.getWaitingFor(player, waitingFor),
+      waitingForId: player.aiLevel !== undefined ? undefined : this.getWaitingForId(waitingFor),
       players: players,
       autopass: player.autopass,
     };
@@ -161,19 +220,29 @@ export class Server {
         (m) => m.milestone.name === milestone.name,
       );
       let scores: Array<MilestoneScore> = [];
+      let teamScores: ReturnType<typeof ConglomeratesExpansion.getTeamScores> | undefined = undefined;
       if (claimed === undefined && claimedMilestones.length < MAX_MILESTONES) {
         scores = game.players.map((player) => ({
           color: player.color,
           score: milestone.getScore(player),
           claimable: milestone.canClaim(player),
         }));
+        if (game.gameOptions.conglomeratesExpansion) {
+          teamScores = ConglomeratesExpansion.getTeamScores(
+            game,
+            (player) => milestone.getScore(player),
+            milestone.name === 'Generalist2',
+          );
+        }
       }
 
       milestoneModels.push({
         playerName: claimed?.player.name,
         color: claimed?.player.color,
         name: milestone.name,
+        threshold: CONGLOMERATES_MILESTONE_NUMBERS[milestone.name] ?? (milestone instanceof BaseMilestone ? milestone.threshold : undefined),
         scores,
+        teamScores,
       });
     }
 
@@ -188,11 +257,15 @@ export class Server {
       const funded = fundedAwards.find((a) => a.award.name === award.name);
       const scorer = new AwardScorer(game, award);
       let scores: Array<AwardScore> = [];
+      let teamScores: ReturnType<typeof ConglomeratesExpansion.getTeamScores> | undefined = undefined;
       if (fundedAwards.length < MAX_AWARDS || funded !== undefined) {
         scores = game.players.map((player) => ({
           color: player.color,
           score: scorer.get(player),
         }));
+        if (game.gameOptions.conglomeratesExpansion) {
+          teamScores = ConglomeratesExpansion.getTeamScores(game, (player) => scorer.get(player));
+        }
       }
 
       awardModels.push({
@@ -200,6 +273,7 @@ export class Server {
         color: funded?.player.color,
         name: award.name,
         scores: scores,
+        teamScores,
       });
     }
 
@@ -214,17 +288,23 @@ export class Server {
       return undefined;
     }
     // TODO(kberg): in theory this should be in all the other toModel calls.
-    const model = waitingFor.toModel(player);
+    const model = projectFinalGreenery(player, waitingFor, waitingFor.toModel(player));
     model.warning = waitingFor.warning;
     if (waitingFor.annotation !== undefined) {
       model.annotation = waitingFor.annotation;
     }
+    model.promptId = promptIdForModel(model);
     return model;
     // showReset: player.game.inputsThisRound > 0 && player.game.resettable === true && player.game.phase === Phase.ACTION,
   }
 
+  /** Identity of the prompt currently offered to this player. */
+  public static getWaitingForPromptId(player: IPlayer): string | undefined {
+    return Server.getWaitingFor(player, player.getWaitingFor())?.promptId;
+  }
+
   /** When the model is for this player, show the VP. Players like seeing their own VP even if the feature is off. */
-  public static getPlayer(player: IPlayer, modelIsForThisPlayer: boolean, options: {includePrivateCards?: boolean} = {}): PublicPlayerModel {
+  public static getPlayer(player: IPlayer, modelIsForThisPlayer: boolean, options: {includePrivateCards?: boolean} = {}, reader?: IPlayer): PublicPlayerModel {
     const game = player.game;
     const useHandicap = game.players.some((p) => p.handicap !== 0);
     const model: PublicPlayerModel = {
@@ -235,8 +315,9 @@ export class Server {
       availableBlueCardActionCount: player.getPlayableActionCards().length,
       cardCost: player.cardCost,
       cardDiscount: player.colonies.cardDiscount,
+      conditionalDiscounts: publicConditionalDiscounts(player),
       cardsInHandNbr: player.cardsInHand.length,
-      citiesCount: game.board.getCities(player).length,
+      citiesCount: game.board.getCities(player).length + VenusPhase2Expansion.getCitiesCount(game, player),
       coloniesCount: player.getColoniesCount(),
       color: player.color,
       energy: player.energy,
@@ -246,7 +327,7 @@ export class Server {
       heat: player.heat,
       heatProduction: player.production.heat,
       id: game.phase === Phase.END ? player.id : undefined,
-      influence: Turmoil.ifTurmoilElse(game, (turmoil) => turmoil.getInfluence(player), () => 0),
+      influence: game.turmoil === undefined ? 0 : game.turmoil.getInfluence(player),
       isActive: player.id === game.activePlayer.id,
       isBotControlled: this.isBotControlled(game, player.id),
       isSurrendered: game.surrenderedPlayerIds.has(player.id),
@@ -274,6 +355,8 @@ export class Server {
       titaniumValue: player.getTitaniumValue(),
       tradesThisGeneration: player.colonies.usedTradeFleets,
       underworldData: player.underworldData,
+      conglomeratesData: player.conglomeratesData,
+      conglomeratesTeamColor: ConglomeratesExpansion.teamDisplayColor(player),
       victoryPointsBreakdown: {
         terraformRating: 0,
         milestones: 0,
@@ -284,6 +367,8 @@ export class Server {
         moonHabitats: 0,
         moonMines: 0,
         moonRoads: 0,
+        venusCloudCities: 0,
+        venusGasMines: 0,
         planetaryTracks: 0,
         victoryPoints: 0,
         total: 0,
@@ -313,6 +398,17 @@ export class Server {
     }
 
     model.deltaProject = player.deltaProjectData;
+    model.epsilonDample = player.epsilonDampleData;
+
+    if (modelIsForThisPlayer && game.gameOptions.coloniesExtension) {
+      model.colonyTradeContext = player.colonies.getTradeContext();
+    }
+
+    if (modelIsForThisPlayer) {
+      model.oceanPlacementContext = getOceanPlacementContext(player);
+    }
+
+    model.aiHand = aiHandOf(player, reader);
 
     return model;
   }
@@ -334,6 +430,10 @@ export class Server {
     if (player.alloysAreProtected()) {
       protection.steel = 'on';
       protection.titanium = 'on';
+    }
+
+    if (player.megacreditsAreProtected()) {
+      protection.megacredits = 'on';
     }
 
     if (player.plantsAreProtected()) {
@@ -379,7 +479,7 @@ export class Server {
     return undefined;
   }
 
-  private static getSpaces(
+  public static getSpaces(
     board: Board,
     gagarin: ReadonlyArray<SpaceId> = [],
     cathedrals: ReadonlyArray<SpaceId> = [],
@@ -404,6 +504,9 @@ export class Server {
       const tileType = space.tile?.tileType;
       if (tileType !== undefined) {
         model.tileType = tileType;
+      }
+      if (space.cube !== undefined) {
+        model.cube = space.cube;
       }
       const color = this.getColor(space);
       if (color !== undefined) {
@@ -444,6 +547,9 @@ export class Server {
       altVenusBoard: options.altVenusBoard,
       aresExtremeVariant: options.aresExtremeVariant,
       boardName: options.boardName,
+      globalParameters: options.venusPhase2Expansion ?
+        resolveGlobalParameters(options.globalParameters, true, options.venusPhase2Max) : options.globalParameters,
+      customBoardRows: options.customBoard?.rows,
       bannedCards: options.bannedCards,
       draftVariant: options.draftVariant,
       escapeVelocity: options.escapeVelocity ?? undefined,
@@ -463,6 +569,19 @@ export class Server {
         starwars: options.starWarsExpansion,
         underworld: options.underworldExpansion,
         deltaProject: options.deltaProjectExpansion,
+        sillyfication: options.sillyficationExpansion,
+        betterMars: options.betterMarsExpansion,
+        rebalanced: options.rebalancedExpansion,
+        customCards: options.customCardsExpansion,
+        conglomerates: options.conglomeratesExpansion,
+        corporateBetterments: options.corporateBettermentsExpansion,
+        idesOfMars: options.idesOfMarsExpansion,
+        robAntilles: options.robAntillesExpansion,
+        moreParties: options.morePartiesExpansion,
+        venusPhase2: options.venusPhase2Expansion,
+        industries: options.industriesExpansion,
+        highOrbit: options.highOrbitExpansion,
+        solaris: options.solarisExpansion,
       },
       fastModeOption: options.fastModeOption,
       includedCards: options.includedCards,
@@ -477,6 +596,7 @@ export class Server {
       removeNegativeGlobalEvents: options.removeNegativeGlobalEventsOption,
       showOtherPlayersVP: options.showOtherPlayersVP,
       privateHands: options.privateHands !== false,
+      aiAnalysis: options.aiAnalysis,
       showTimers: options.showTimers,
       shuffleMapOption: options.shuffleMapOption,
       solarPhaseOption: options.solarPhaseOption,
@@ -487,6 +607,21 @@ export class Server {
       twoCorpsVariant: options.twoCorpsVariant,
       undoOption: options.undoOption || options.undoStepOption === true,
       undoStepOption: options.undoStepOption === true,
+
+      // These are only supplied for the JSON, and
+      // some of them can be a bit large.
+      aresHazards: options.aresHazards,
+      clonedGamedId: options.clonedGamedId,
+      customCeos: options.customCeos,
+      customColoniesList: options.customColoniesList,
+      customCorporationsList: options.customCorporationsList,
+      customPreludes: options.customPreludes,
+      modularMA: options.modularMA,
+      moonStandardProjectVariant: options.moonStandardProjectVariant,
+      moonStandardProjectVariant1: options.moonStandardProjectVariant1,
+      startingCeos: options.startingCeos,
+      startingCorporations: options.startingCorporations,
+      startingPreludes: options.startingPreludes,
     };
   }
 
@@ -499,6 +634,23 @@ export class Server {
         habitatRate: moonData.habitatRate,
         spaces: this.getSpaces(moonData.moon),
       };
+    }
+    return undefined;
+  }
+
+  private static getVenusPhase2Model(game: IGame): VenusPhase2Model | undefined {
+    const venusPhase2Data = game.venusPhase2Data;
+    if (venusPhase2Data) {
+      const spaces = this.getSpaces(venusPhase2Data.venusSurface);
+      // Stratopolis/Maxwell Base's reserved spot has no tile yet -- generic space-type styling
+      // renders it identically to any other plain land hex, so without a highlight it's easy to
+      // miss entirely (unlike Noctis City's own reserved spot on the Mars board, which gets one).
+      for (const space of spaces) {
+        if (space.id === VENUS_STRATOPOLIS || space.id === VENUS_MAXWELL_BASE) {
+          space.highlight = 'venusReserved';
+        }
+      }
+      return {spaces};
     }
     return undefined;
   }

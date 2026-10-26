@@ -6,6 +6,7 @@ import {CardRenderer} from '../render/CardRenderer';
 import {IPlayer} from '../../IPlayer';
 import {SelectAmount} from '../../inputs/SelectAmount';
 import {Card} from '../Card';
+import {Resource} from '../../../common/Resource';
 
 export class Supercapacitors extends Card implements IProjectCard {
   constructor() {
@@ -37,11 +38,15 @@ export class Supercapacitors extends Card implements IProjectCard {
       return;
     }
     player.defer(
-      new SelectAmount('Select amount of energy to convert to heat', 'OK', 0, player.energy, true)
+      new SelectAmount('Select amount of energy to convert to heat', 'OK', 0, player.energy, true, {
+        sourceCard: CardName.SUPERCAPACITORS,
+        from: {kind: 'stock', resource: Resource.ENERGY, perStep: 1},
+        to: {kind: 'stock', resource: Resource.HEAT, perStep: 1},
+      })
         .andThen((amount) => {
           player.energy -= amount;
           player.heat += amount;
-          player.game.log('${0} converted ${1} units of energy to heat', (b) => b.player(player).number(amount));
+          player.game.log('${0} converted ${1}:r:energy: to :r:heat:', (b) => b.player(player).number(amount));
           player.finishProductionPhase();
           return undefined;
         },

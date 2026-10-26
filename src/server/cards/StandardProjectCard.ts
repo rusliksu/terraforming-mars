@@ -10,6 +10,7 @@ import {IStandardProjectCard} from './IStandardProjectCard';
 import {sum} from '../../common/utils/utils';
 import {Payment} from '../../common/inputs/Payment';
 import {StandardProjectCanPayWith} from '../../common/cards/Types';
+import {TurmoilHandler} from '../turmoil/TurmoilHandler';
 
 type StaticStandardProjectCardProperties = {
   name: CardName,
@@ -41,8 +42,18 @@ export abstract class StandardProjectCard extends Card implements IStandardProje
       sum(player.tableau.asArray()
         .map((card) => card.getStandardProjectDiscount?.(player, this) ?? 0));
     const discount = discountFromCards + this.discount(player);
-    const adjusted = Math.max(0, this.cost - discount);
-    return adjusted;
+    let adjusted = Math.max(0, this.cost - discount);
+
+    // Tax effects from a played card (e.g. Blockhouse), unlike getStandardProjectDiscount
+    // which only ever benefits the acting player's own use. Applies to every player's
+    // tableau, including the acting player's own.
+    for (const owner of player.game.players) {
+      for (const playedCard of owner.tableau) {
+        adjusted += playedCard.getStandardProjectCostIncrease?.(owner, player, this) ?? 0;
+      }
+    }
+
+    return Math.max(0, adjusted);
   }
 
   protected abstract actionEssence(player: IPlayer): void
@@ -51,6 +62,7 @@ export abstract class StandardProjectCard extends Card implements IStandardProje
     for (const playedCard of player.tableau) {
       playedCard.onStandardProject?.(player, this);
     }
+    TurmoilHandler.applyOnStandardProjectEffect(player);
   }
 
   protected canPlayOptions(player: IPlayer) {

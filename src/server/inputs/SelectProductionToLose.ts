@@ -1,5 +1,5 @@
 import {Message} from '../../common/logs/Message';
-import {BasePlayerInput} from '../PlayerInput';
+import {BasePlayerInput, isNonNegativeInteger} from '../PlayerInput';
 import {IPlayer} from '../IPlayer';
 import {Units} from '../../common/Units';
 import {InputResponse, isSelectProductionToLoseResponse} from '../../common/inputs/InputResponse';
@@ -13,6 +13,8 @@ export class SelectProductionToLose extends BasePlayerInput<Units> {
     public unitsToLose: number,
     public player: IPlayer,
     buttonLabel: string = 'Save',
+    /** The number of 2-step losses that must each come from a single production (e.g. Ares severe hazards.) */
+    public pairs: number = 0,
   ) {
     super('productionToLose', title);
     this.buttonLabel = buttonLabel;
@@ -23,14 +25,13 @@ export class SelectProductionToLose extends BasePlayerInput<Units> {
       title: this.title,
       buttonLabel: this.buttonLabel,
       type: 'productionToLose',
+      pairs: this.pairs,
       payProduction: {
         cost: this.unitsToLose,
         units: this.player.production.asUnits(),
       },
     };
   }
-  // TODO(kberg): Could merge this with SelectResources, though it
-  // would take some work.
   public process(input: InputResponse, player: IPlayer) {
     if (!isSelectProductionToLoseResponse(input)) {
       throw new InputError('Not a valid SelectProductionToLoseResponse');
@@ -38,15 +39,19 @@ export class SelectProductionToLose extends BasePlayerInput<Units> {
     if (!Units.isUnits(input.units)) {
       throw new InputError('not a units object');
     }
-    const array = Object.values(input.units);
-    if (array.some((count) => count < 0)) {
-      throw new InputError('All units must be positive');
+    const array = Units.values(input.units);
+    if (!array.every(isNonNegativeInteger)) {
+      throw new InputError('All units must be zero or positive integers');
     }
     if (!player.production.canAdjust(Units.negative(input.units))) {
       throw new InputError('You do not have those units');
     }
     if (sum(array) !== this.unitsToLose) {
       throw new InputError(`Select ${this.unitsToLose} steps of production.`);
+    }
+    const pairs = sum(array.map((count) => Math.floor(count / 2)));
+    if (pairs < this.pairs) {
+      throw new InputError(`${this.pairs} of these losses must be 2 steps from a single production.`);
     }
     this.cb(input.units);
     return undefined;

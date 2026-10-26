@@ -5,6 +5,7 @@ import {CardType} from '../../../common/cards/CardType';
 import {IPlayer} from '../../IPlayer';
 import {CardName} from '../../../common/cards/CardName';
 import {CardRenderer} from '../render/CardRenderer';
+import {getPlantsOnCardPlayed} from '../ICard';
 
 export class Moss extends Card implements IProjectCard {
   constructor() {
@@ -22,7 +23,7 @@ export class Moss extends Card implements IProjectCard {
       metadata: {
         cardNumber: '122',
         renderData: CardRenderer.builder((b) => {
-          b.production((pb) => pb.plants(1)).nbsp.minus().plants(1);
+          b.production((pb) => pb.plants(1)).nbsp.plants(-1);
         }),
         description: 'Requires 3 ocean tiles and that you lose 1 plant. Increase your plant production 1 step.',
       },
@@ -30,8 +31,7 @@ export class Moss extends Card implements IProjectCard {
   }
 
   public override bespokeCanPlay(player: IPlayer): boolean {
-    const hasViralEnhancers = player.tableau.get(CardName.VIRAL_ENHANCERS);
-    const hasEnoughPlants = player.plants >= 1 || hasViralEnhancers !== undefined || player.tableau.has(CardName.MANUTECH);
+    const hasEnoughPlants = player.plants + getPlantsOnCardPlayed(player, this) >= 1 || player.tableau.has(CardName.MANUTECH);
 
     return hasEnoughPlants;
   }

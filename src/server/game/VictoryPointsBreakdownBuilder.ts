@@ -1,7 +1,7 @@
 import {Tag} from '../../common/cards/Tag';
 import {VictoryPointsBreakdown} from '../../common/game/VictoryPointsBreakdown';
 
-export type VictoryPoints = 'terraformRating' | 'milestones' | 'awards' | 'greenery' | 'city' | 'escapeVelocity' | 'moon habitat' | 'moon mine' | 'moon road' | 'planetary tracks' | 'victoryPoints';
+export type VictoryPoints = 'terraformRating' | 'milestones' | 'awards' | 'greenery' | 'city' | 'escapeVelocity' | 'moon habitat' | 'moon mine' | 'moon road' | 'venus cloud city' | 'venus gas mine' | 'planetary tracks' | 'victoryPoints';
 
 type Mutable<T> = {
   [K in keyof T]: T[K] extends ReadonlyArray<infer T> ? T[] : T[K];
@@ -18,6 +18,8 @@ export class VictoryPointsBreakdownBuilder {
     moonHabitats: 0,
     moonMines: 0,
     moonRoads: 0,
+    venusCloudCities: 0,
+    venusGasMines: 0,
     planetaryTracks: 0,
     victoryPoints: 0,
     total: 0,
@@ -44,6 +46,8 @@ export class VictoryPointsBreakdownBuilder {
     this.points.total += this.points.moonHabitats;
     this.points.total += this.points.moonMines;
     this.points.total += this.points.moonRoads;
+    this.points.total += this.points.venusCloudCities;
+    this.points.total += this.points.venusGasMines;
     this.points.total += this.points.planetaryTracks;
     this.points.total += this.points.victoryPoints;
   }
@@ -91,6 +95,12 @@ export class VictoryPointsBreakdownBuilder {
       break;
     case 'moon road':
       this.points.moonRoads += points;
+      break;
+    case 'venus cloud city':
+      this.points.venusCloudCities += points;
+      break;
+    case 'venus gas mine':
+      this.points.venusGasMines += points;
       break;
     case 'planetary tracks':
       this.points.planetaryTracks += points;

@@ -38,6 +38,13 @@ export class ViralEnhancers extends Card implements IProjectCard {
     player.stock.add(Resource.PLANTS, count, {log: true, from: {card: this}});
   }
 
+  public getPlantsOnCardPlayed(player: IPlayer, card: ICard): number {
+    if (card.resourceType === CardResource.ANIMAL || card.resourceType === CardResource.MICROBE) {
+      return 0;
+    }
+    return player.tags.cardTagCount(card, [Tag.ANIMAL, Tag.PLANT, Tag.MICROBE]);
+  }
+
   public onCardPlayed(player: IPlayer, card: ICard) {
     const resourceCount = player.tags.cardTagCount(card, [Tag.ANIMAL, Tag.PLANT, Tag.MICROBE]);
     if (resourceCount === 0) {
@@ -45,7 +52,7 @@ export class ViralEnhancers extends Card implements IProjectCard {
     }
 
     if (card.resourceType !== CardResource.ANIMAL && card.resourceType !== CardResource.MICROBE) {
-      this.addPlant(player, resourceCount);
+      this.addPlant(player, this.getPlantsOnCardPlayed(player, card));
       return undefined;
     }
 

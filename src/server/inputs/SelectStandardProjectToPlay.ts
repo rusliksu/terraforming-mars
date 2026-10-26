@@ -40,6 +40,7 @@ export class SelectStandardProjectToPlay extends SelectCardToPlay<IStandardProje
     const canPayWith = card.canPayWith(this.player);
     const paymentOptions: Partial<PaymentOptions> = {
       heat: this.player.canUseHeatAsMegaCredits,
+      energy: this.player.canUseEnergyAsMegaCredits,
       steel: canPayWith.steel,
       titanium: canPayWith.titanium,
       lunaTradeFederationTitanium: this.player.canUseTitaniumAsMegacredits,
@@ -47,6 +48,7 @@ export class SelectStandardProjectToPlay extends SelectCardToPlay<IStandardProje
       auroraiData: this.player.tableau.has(CardName.AURORAI),
       spireScience: this.player.tableau.has(CardName.SPIRE),
       kuiperAsteroids: canPayWith.kuiperAsteroids ? this.player.tableau.has(CardName.KUIPER_COOPERATIVE) : false,
+      anyFloaters: canPayWith.anyFloaters,
     };
 
     const reserveUnits = details.reserveUnits;
@@ -54,7 +56,13 @@ export class SelectStandardProjectToPlay extends SelectCardToPlay<IStandardProje
     if (!this.player.canSpend(input.payment, reserveUnits)) {
       throw new InputError('You do not have that many resources');
     }
-    const amountPaid = this.player.payingAmount(input.payment, paymentOptions);
+    let amountPaid = this.player.payingAmount(input.payment, paymentOptions);
+
+    // Blockhouse: steel is worth 2 M€ extra when paying for the City standard project.
+    if (input.payment.steel > 0 && card.name === CardName.CITY_STANDARD_PROJECT && this.player.tableau.has(CardName.BLOCKHOUSE)) {
+      amountPaid += input.payment.steel * 2;
+    }
+
     const requiredCost = details.overriddenCost ?? card.getAdjustedCost(this.player);
     if (amountPaid < requiredCost) {
       throw new InputError('Did not spend enough to pay for standard project');

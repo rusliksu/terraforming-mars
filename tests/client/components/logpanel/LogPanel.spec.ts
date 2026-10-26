@@ -7,6 +7,10 @@ import {Phase} from '@/common/Phase';
 import {LogMessage} from '@/common/logs/LogMessage';
 import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
 import {LogMessageType} from '@/common/logs/LogMessageType';
+import LogMessageComponent from '@/client/components/logpanel/LogMessageComponent.vue';
+import {aiFeedbackState, closeAiDecision} from '@/client/components/logpanel/aiAnalysis/aiFeedbackState';
+import LogGenerationList from '@/client/components/logpanel/LogGenerationList.vue';
+import {CardName} from '@/common/cards/CardName';
 
 type TestResizeObserverCallback = (entries: Array<unknown>, observer: unknown) => void;
 
@@ -41,6 +45,13 @@ describe('LogPanel', () => {
     };
   }
 
+  async function flushLogs(wrapper: ReturnType<typeof shallowMount>) {
+    await Promise.resolve();
+    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await wrapper.vm.$nextTick();
+  }
+
   beforeEach(() => {
     originalFetch = (global as any).fetch;
     originalResizeObserver = (global as any).ResizeObserver;
@@ -71,12 +82,34 @@ describe('LogPanel', () => {
     document.getElementById = originalGetElementById;
   });
 
+  it('opens the rating dialog when the hover bar emits a rating', async () => {
+    const viewModel = fakeViewModel();
+    (viewModel.game.gameOptions as any).aiAnalysis = true;
+    const message = new LogMessage(LogMessageType.DEFAULT, 'ai line', []);
+    message.id = '1.a';
+    message.aiInsight = 'red';
+    (global as any).fetch = (url: string) => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve(url.includes('api/game/logs') ? [message] : []),
+    });
+    const wrapper = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {viewModel, color: 'blue'},
+    });
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    await wrapper.vm.$nextTick();
+    wrapper.findComponent(LogMessageComponent).vm.$emit('aiRate', 'up');
+    await wrapper.vm.$nextTick();
+    expect(aiFeedbackState.dialog?.target.messageId).eq('1.a');
+    expect(aiFeedbackState.dialog?.rating).eq('up');
+    closeAiDecision();
+  });
+
   it('mounts without errors', () => {
     const wrapper = shallowMount(LogPanel, {
       ...globalConfig,
       props: {
         viewModel: fakeViewModel(),
-        color: 'blue',
       },
     });
     expect(wrapper.exists()).to.be.true;
@@ -88,7 +121,6 @@ describe('LogPanel', () => {
       ...globalConfig,
       props: {
         viewModel,
-        color: 'blue',
         step: 0,
       },
     });
@@ -119,15 +151,12 @@ describe('LogPanel', () => {
       ...globalConfig,
       props: {
         viewModel,
-        color: 'blue',
       },
     });
 
     await Promise.resolve();
-    const recentTabs = wrapper.findAll('.log-recent-indicator');
-    expect(recentTabs).has.length(1);
-    expect(recentTabs[0].text()).eq('Last 100');
-    expect(recentTabs[0].classes()).contains('log-recent-indicator--selected');
+    expect(wrapper.findComponent(LogGenerationList).exists()).is.true;
+    expect((wrapper.vm as any).selectedRecentLimit).eq(100);
 
     (wrapper.vm as any).selectRecentLogs();
     await Promise.resolve();
@@ -141,6 +170,7 @@ describe('LogPanel', () => {
     const viewModel = fakeViewModel({
       id: 'p-blue-id' as any,
       game: {
+        generation: 1,
         phase: Phase.END,
         spectatorId: 's-spectatorid' as any,
       },
@@ -149,7 +179,6 @@ describe('LogPanel', () => {
       ...globalConfig,
       props: {
         viewModel,
-        color: 'blue',
       },
     });
 
@@ -160,6 +189,21 @@ describe('LogPanel', () => {
     expect(fetchCalls[0]).does.not.include('id=s-spectatorid');
   });
 
+  it('emits spaceClicked when a log message emits spaceClicked', async () => {
+    const wrapper = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {
+        viewModel: fakeViewModel(),
+      },
+    });
+    (wrapper.vm as any).messages = [new LogMessage(LogMessageType.DEFAULT, 'Space', [])];
+    await wrapper.vm.$nextTick();
+
+    wrapper.findComponent(LogMessageComponent).vm.$emit('spaceClicked', '01');
+
+    expect(wrapper.emitted('spaceClicked')).deep.eq([['01']]);
+  });
+
   it('filters visible logs by selected player without requesting another view', async () => {
     const blue = fakePublicPlayerModel({color: 'blue', id: 'p-blue-id' as any, name: 'Blue'});
     const red = fakePublicPlayerModel({color: 'red', id: 'p-red-id' as any, name: 'Red'});
@@ -167,7 +211,6 @@ describe('LogPanel', () => {
       ...globalConfig,
       props: {
         viewModel: fakeViewModel({players: [blue, red]}),
-        color: 'blue',
       },
     });
     const generation = new LogMessage(LogMessageType.NEW_GENERATION, 'Generation ${0}', []);
@@ -190,7 +233,6 @@ describe('LogPanel', () => {
       ...globalConfig,
       props: {
         viewModel: fakeViewModel({players: [blue, red]}),
-        color: 'blue',
       },
     });
 
@@ -200,13 +242,55 @@ describe('LogPanel', () => {
     expect(wrapper.find('.log-panel').element.nextElementSibling).eq(wrapper.find('.log-player-filters').element);
   });
 
+  it('searches fetched messages together with the player filter and clears the query locally', async () => {
+    const players = [fakePublicPlayerModel({color: 'blue', name: 'Blue'}), fakePublicPlayerModel({color: 'red', name: 'Red'})];
+    const wrapper = shallowMount(LogPanel, {...globalConfig, props: {viewModel: fakeViewModel({id: 'p-search', players})}});
+    await flushLogs(wrapper);
+    const played = new LogMessage(LogMessageType.DEFAULT, '${0} played ${1}', [
+      {type: LogMessageDataType.PLAYER, value: 'blue'},
+      {type: LogMessageDataType.CARD, value: CardName.ENERGY_SAVING},
+    ]);
+    const passed = new LogMessage(LogMessageType.DEFAULT, '${0} passed', [{type: LogMessageDataType.PLAYER, value: 'red'}]);
+    await wrapper.setData({messages: [played, passed]});
+    await wrapper.find('input[type="search"]').setValue('  ENERGY   saving  ');
+    expect(wrapper.findAllComponents(LogMessageComponent).map((row) => row.props('message'))).deep.eq([played]);
+    await wrapper.find('[data-test="log-player-filter-red"]').trigger('click');
+    expect(wrapper.findAllComponents(LogMessageComponent)).has.length(0);
+    expect(wrapper.find('[role="status"]').text()).eq('No matching logs in this view.');
+    await wrapper.find('.log-search button').trigger('click');
+    expect(wrapper.findAllComponents(LogMessageComponent).map((row) => row.props('message'))).deep.eq([passed]);
+    expect(wrapper.find('[role="status"]').exists()).eq(false);
+    expect(fetchCalls).has.length(1);
+    wrapper.unmount();
+  });
+
+  it('keeps ordinary action messages as separate original rows', async () => {
+    const wrapper = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {viewModel: fakeViewModel()},
+    });
+    const played = new LogMessage(LogMessageType.DEFAULT, 'Blue played a card', []);
+    played.actionId = 'one-action';
+    played.actionStart = true;
+    const gained = new LogMessage(LogMessageType.DEFAULT, 'Blue gained 2 steel', []);
+    gained.actionId = 'one-action';
+    gained.actionEnd = true;
+    await Promise.resolve();
+    await Promise.resolve();
+    (wrapper.vm as any).messages = [played, gained];
+    (wrapper.vm as any).selectedPlayerColor = undefined;
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.findAllComponents(LogMessageComponent)).to.have.length(2);
+    expect(wrapper.find('.action-log-row').exists()).to.be.false;
+  });
+
   it('includes the current player\'s private draft logs in their filter without requesting another view', async () => {
     const blue = fakePublicPlayerModel({color: 'blue', id: 'p-blue-id' as any, name: 'Blue'});
     const wrapper = shallowMount(LogPanel, {
       ...globalConfig,
       props: {
         viewModel: fakeViewModel({players: [blue, fakePublicPlayerModel({color: 'red', name: 'Red'})]}),
-        color: 'blue',
       },
     });
     const generation = new LogMessage(LogMessageType.NEW_GENERATION, 'Generation ${0}', []);
@@ -246,7 +330,6 @@ describe('LogPanel', () => {
       ...globalConfig,
       props: {
         viewModel: fakeViewModel(),
-        color: 'blue',
       },
     });
 
@@ -289,7 +372,6 @@ describe('LogPanel', () => {
       ...globalConfig,
       props: {
         viewModel,
-        color: 'blue',
       },
     });
 
@@ -330,20 +412,21 @@ describe('LogPanel', () => {
     const viewModel = {...baseViewModel, game: {...baseViewModel.game, generation: 3}};
     const first = shallowMount(LogPanel, {
       ...globalConfig,
-      props: {viewModel, color: 'blue'},
+      props: {viewModel},
     });
 
     await Promise.resolve();
     (first.vm as any).selectedGeneration = 1;
     (first.vm as any).selectedRecentLimit = undefined;
     (first.vm as any).selectedPlayerColor = 'red';
+    await first.find('input[type="search"]').setValue('Greens');
     (first.vm as any).stickToBottom = false;
     panel.setScrollTop(120);
     first.unmount();
 
     const second = shallowMount(LogPanel, {
       ...globalConfig,
-      props: {viewModel, color: 'blue'},
+      props: {viewModel},
     });
     await Promise.resolve();
     await Promise.resolve();
@@ -353,6 +436,7 @@ describe('LogPanel', () => {
     expect((second.vm as any).selectedGeneration).eq(1);
     expect((second.vm as any).selectedRecentLimit).eq(undefined);
     expect((second.vm as any).selectedPlayerColor).eq('red');
+    expect((second.find('input[type="search"]').element as HTMLInputElement).value).eq('Greens');
     expect((second.vm as any).stickToBottom).eq(false);
     expect(panel.getScrollTop()).eq(120);
     expect(fetchCalls[fetchCalls.length - 1]).includes('generation=1');
@@ -367,13 +451,13 @@ describe('LogPanel', () => {
       ...globalConfig,
       props: {
         viewModel: fakeViewModel({id: 'p-latest-id' as any, players: [blue, red]}),
-        color: 'blue',
       },
     });
     await Promise.resolve();
     (wrapper.vm as any).selectedGeneration = 1;
     (wrapper.vm as any).selectedRecentLimit = undefined;
     (wrapper.vm as any).selectedPlayerColor = 'red';
+    await wrapper.find('input[type="search"]').setValue('Greens');
     (wrapper.vm as any).stickToBottom = false;
     panel.setScrollTop(80);
 
@@ -386,8 +470,104 @@ describe('LogPanel', () => {
     expect((wrapper.vm as any).selectedGeneration).eq(-1);
     expect((wrapper.vm as any).selectedRecentLimit).eq(100);
     expect((wrapper.vm as any).selectedPlayerColor).eq(undefined);
+    expect((wrapper.find('input[type="search"]').element as HTMLInputElement).value).eq('');
     expect((wrapper.vm as any).stickToBottom).eq(true);
     expect(panel.getScrollTop()).eq(520);
     expect(fetchCalls[fetchCalls.length - 1]).includes('limit=100');
+  });
+
+  it('shows the scroll button only when away from the bottom', async () => {
+    const panel = installScrollablePanel();
+    const wrapper = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {
+        viewModel: fakeViewModel({id: 'p-scroll-button-id' as any}),
+      },
+    });
+    await Promise.resolve();
+    await wrapper.vm.$nextTick();
+
+    panel.setScrollTop(0);
+    (wrapper.vm as any).handleScroll();
+    await wrapper.vm.$nextTick();
+    expect((wrapper.vm as any).showScrollToBottomButton).is.true;
+
+    panel.setScrollTop(320);
+    (wrapper.vm as any).handleScroll();
+    await wrapper.vm.$nextTick();
+    expect((wrapper.vm as any).showScrollToBottomButton).is.false;
+  });
+
+  it('returns to the latest recent logs and the end of the log', async () => {
+    const panel = installScrollablePanel();
+    const baseViewModel = fakeViewModel({id: 'p-latest-reader' as any});
+    const viewModel = {...baseViewModel, game: {...baseViewModel.game, generation: 3}};
+    const wrapper = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {viewModel},
+    });
+    await flushLogs(wrapper);
+
+    (wrapper.vm as any).selectedGeneration = 1;
+    panel.setScrollTop(80);
+    await wrapper.find('[data-test="log-latest"]').trigger('click');
+    await flushLogs(wrapper);
+
+    expect((wrapper.vm as any).selectedGeneration).eq(-1);
+    expect((wrapper.vm as any).selectedRecentLimit).eq(100);
+    expect(fetchCalls[fetchCalls.length - 1]).includes('limit=100');
+    expect(panel.getScrollTop()).eq(520);
+  });
+
+  // The real app never patches an existing LogPanel's props in place: App.vue forces a
+  // full unmount/remount (via a `:key` bump) on every game-state refresh. These tests
+  // simulate that by unmounting and mounting a fresh instance, exactly like the app does.
+  it('follows the latest recent logs across a remount when previously following', async () => {
+    const baseViewModel = fakeViewModel({id: 'p-live-follower' as any});
+    const viewModel = {...baseViewModel, game: {...baseViewModel.game, generation: 2}};
+    const first = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {viewModel},
+    });
+    await flushLogs(first);
+    // Module-level view state can be left behind by earlier tests, so explicitly
+    // establish "following" mode rather than relying on the freshly-mounted default.
+    (first.vm as any).showLatestLogs();
+    await flushLogs(first);
+    first.unmount();
+
+    const nextViewModel = {...viewModel, game: {...viewModel.game, generation: 3}};
+    const second = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {viewModel: nextViewModel},
+    });
+    await flushLogs(second);
+
+    expect((second.vm as any).selectedGeneration).eq(-1);
+    expect((second.vm as any).selectedRecentLimit).eq(100);
+    expect(fetchCalls[fetchCalls.length - 1]).includes('limit=100');
+  });
+
+  // The custom app never patches an existing LogPanel in place: App.vue bumps the playerkey
+  // and Vue remounts the panel, which restores its saved view state (see the remount tests
+  // above). The upstream in-place refresh contract does not apply here.
+
+  it('stays on an earlier generation when the view model updates after the player navigates away', async () => {
+    const baseViewModel = fakeViewModel({id: 'p-in-place-history' as any});
+    const viewModel = {...baseViewModel, game: {...baseViewModel.game, generation: 3}};
+    const wrapper = shallowMount(LogPanel, {
+      ...globalConfig,
+      props: {viewModel},
+    });
+    await flushLogs(wrapper);
+    (wrapper.vm as any).selectGeneration(1);
+    await flushLogs(wrapper);
+    fetchCalls.length = 0;
+
+    await wrapper.setProps({viewModel: {...viewModel, game: {...viewModel.game, generation: 4}}});
+    await flushLogs(wrapper);
+
+    expect((wrapper.vm as any).selectedGeneration).eq(1);
+    expect(fetchCalls).is.empty;
   });
 });

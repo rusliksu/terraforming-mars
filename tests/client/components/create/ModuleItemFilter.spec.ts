@@ -21,7 +21,7 @@ const ITEMS_BY_GROUP: Record<string, Array<string>> = {
   beta: ['item-b1'],
 };
 
-function mountFilter(overrides: {selected?: Array<string>} = {}) {
+function mountFilter(overrides: {selected?: Array<string>, selectable?: Array<string>, replacements?: ReadonlyMap<string, string>} = {}) {
   return shallowMount(ModuleItemFilter, {
     ...globalConfig,
     global: {
@@ -33,6 +33,8 @@ function mountFilter(overrides: {selected?: Array<string>} = {}) {
       groups: GROUPS,
       itemsByGroup: ITEMS_BY_GROUP,
       selected: overrides.selected ?? [],
+      selectable: overrides.selectable,
+      replacements: overrides.replacements,
     },
     slots: {
       item: ({itemName}: {itemName: string}) => h('span', {class: 'item-label'}, itemName),
@@ -98,7 +100,26 @@ describe('ModuleItemFilter', () => {
     expect(selected.filter((x) => x === 'item-a1')).to.have.length(1);
   });
 
+  it('disables unavailable items and keeps them out of bulk selection', () => {
+    const wrapper = mountFilter({selectable: ['item-a1', 'item-b1']});
+    const item = wrapper.findAll('label.form-checkbox').find((label) => label.text().includes('item-a2'));
+    expect(item?.find('input').attributes('disabled')).to.not.eq(undefined);
+
+    (wrapper.vm as any).selectAll('All');
+    expect((wrapper.vm as any).localSelected).to.have.members(['item-a1', 'item-b1']);
+
+    (wrapper.vm as any).invertSelection('All');
+    expect((wrapper.vm as any).localSelected).to.be.empty;
+  });
+
   // --- selectNone ---
+
+  it('explains an unavailable item that has a selected-module replacement', () => {
+    const wrapper = mountFilter({selectable: ['item-a1'], replacements: new Map([['item-a2', 'item-a1']])});
+    const labels = wrapper.findAll('label.form-checkbox');
+    expect(labels.find((label) => label.text().includes('item-a2'))?.attributes('title')).eq('Replaced by item-a1');
+    expect(labels.find((label) => label.text().includes('item-b1'))?.attributes('title')).eq('Enable required expansions to select this card');
+  });
 
   it('selectNone("All") removes every item', () => {
     const wrapper = mountFilter({selected: ['item-a1', 'item-a2', 'item-b1']});

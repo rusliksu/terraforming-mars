@@ -18,18 +18,19 @@ export class Revolution extends GlobalEvent implements IGlobalEvent {
       currentDelegate: PartyName.MARS,
       renderData: CardRenderer.builder((b) => {
         b.tag(Tag.EARTH, {size: Size.SMALL}).plus().influence().colon().br;
-        b.text('1st:', {size: Size.SMALL}).minus().tr(2, {size: Size.TINY}).nbsp;
-        b.text('2nd:', {size: Size.SMALL}).minus().tr(1, {size: Size.TINY});
+        b.text('1st:', {size: Size.SMALL}).tr(-2, {size: Size.TINY}).nbsp;
+        b.text('2nd:', {size: Size.SMALL}).tr(-1, {size: Size.TINY});
       }),
     });
   }
-  public resolve(game: IGame, turmoil: Turmoil) {
+  public override bespokeResolve(game: IGame) {
+    const turmoil = Turmoil.getTurmoil(game);
     if (game.isSoloMode()) {
       if (this.getScore(game.playersInGenerationOrder[0], turmoil) >= 4 ) {
         game.playersInGenerationOrder[0].decreaseTerraformRating(2, {log: true});
       }
     } else {
-      const players = [...game.playersInGenerationOrder].sort(
+      const players = game.playersInGenerationOrder.toSorted(
         (p1, p2) => this.getScore(p2, turmoil) - this.getScore(p1, turmoil),
       );
 

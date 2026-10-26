@@ -4,9 +4,11 @@ import {globalConfig} from './getLocalVue';
 import GameHome from '@/client/components/GameHome.vue';
 import {fakeGameOptionsModel} from './testHelpers';
 import {Phase} from '@/common/Phase';
+import {SimpleGameModel} from '@/common/models/SimpleGameModel';
+import {asComplete} from './utils/models';
 
 describe('GameHome', () => {
-  const baseGame = {
+  const baseGame = asComplete<SimpleGameModel>({
     activePlayer: 'blue',
     id: 'game-id-123',
     phase: Phase.ACTION,
@@ -15,7 +17,7 @@ describe('GameHome', () => {
     gameOptions: fakeGameOptionsModel(),
     lastSoloGeneration: 14,
     expectedPurgeTimeMs: 0,
-  };
+  });
 
   afterEach(() => {
     window.history.replaceState({}, '', '/game?id=game-id-123');
@@ -85,6 +87,27 @@ describe('GameHome', () => {
     expect(wrapper.vm.getHref('p-blue')).to.eq('player?id=p-blue');
     expect(wrapper.vm.getHref('s-spectator')).to.eq('spectator?id=s-spectator');
     expect(wrapper.vm.getHref('p-blue')).not.contain('serverId');
+  });
+
+  it('links every player by name without adding hint plaques to the lobby', () => {
+    const wrapper = shallowMount(GameHome, {
+      ...globalConfig,
+      props: {game: baseGame},
+    });
+
+    const enterLink = wrapper.find('[data-test="enter-game-link"]');
+    expect(enterLink.exists()).is.true;
+    expect(enterLink.attributes('href')).eq('player?id=p-blue');
+    expect(enterLink.attributes('title')).eq('Enter the game as this player');
+    expect(enterLink.text()).eq('Blue');
+
+    // The lobby explains itself through the instructions line and link titles only.
+    expect(wrapper.find('[data-test="lobby-enter-hint"]').exists()).is.false;
+    expect(wrapper.find('.enter-game-hint').exists()).is.false;
+    expect(wrapper.find('.game-home-hint').exists()).is.false;
+    const recreate = wrapper.find('.game-home-recreate');
+    expect(recreate.text()).to.contain('Recreate game (same setup)');
+    expect(recreate.text()).not.to.contain('Opens a new lobby');
   });
 
   it('keeps player links bare when the lobby has no capability fragment', () => {

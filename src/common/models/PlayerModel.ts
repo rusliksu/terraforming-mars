@@ -1,25 +1,31 @@
 import {CardModel} from './CardModel';
+import {ConditionalDiscountModel} from './ConditionalDiscountModel';
 import {Color} from '../Color';
 import {VictoryPointsBreakdown} from '../game/VictoryPointsBreakdown';
 import {PlayerInputModel} from './PlayerInputModel';
 import {TimerModel} from './TimerModel';
 import {GameModel} from './GameModel';
 import {PlayerId, ParticipantId} from '../Types';
+import {AiLevel} from '../ai/AiLevel';
 import {CardName} from '../cards/CardName';
 import {Resource} from '../Resource';
 import {PartyName} from '../turmoil/PartyName';
 import {Agenda} from '../turmoil/Types';
 import {Tag} from '../cards/Tag';
 import {UnderworldPlayerData} from '../underworld/UnderworldPlayerData';
+import {ConglomeratesPlayerData} from '../conglomerates/ConglomeratesPlayerData';
 import {GlobalParameter} from '../GlobalParameter';
 import {DeltaProjectPlayerModel} from './DeltaProjectPlayerModel';
+import {ColonyTradeContextModel} from './ColonyTradeContextModel';
+import {OceanPlacementContextModel} from './OceanPlacementContextModel';
 
 export interface ViewModel {
   canStepBack?: boolean;
   canUndoResearchPurchase?: boolean;
   game: GameModel;
   players: Array<PublicPlayerModel>;
-  id?: ParticipantId;
+  id: ParticipantId;
+  color: Color;
   thisPlayer: PublicPlayerModel | undefined;
   runId: string;
 }
@@ -33,6 +39,12 @@ type AlliedPartyModel = {
 // 'on': Resources (or production) are protected.
 // 'half': Half resources are protected when targeted. Applies to Botanical Experience.
 export type Protection = 'off' | 'on' | 'half';
+
+/** Hand of an AI player in an analysis game; `hidden` while the reader still buys his own cards. */
+export type AiHandModel = {
+  cards: ReadonlyArray<CardModel>;
+  hidden: boolean;
+};
 
 export type SpectatorCardsModel = {
   cardsInHand: ReadonlyArray<CardModel>;
@@ -49,11 +61,15 @@ export type PublicPlayerModel = {
   availableBlueCardActionCount: number;
   cardCost: number;
   cardDiscount: number;
+  conditionalDiscounts?: ReadonlyArray<ConditionalDiscountModel>;
   cardsInHandNbr: number;
   citiesCount: number;
   coloniesCount: number;
+  colonyTradeContext?: ColonyTradeContextModel;
+  oceanPlacementContext?: OceanPlacementContextModel;
   color: Color;
   deltaProject?: DeltaProjectPlayerModel;
+  epsilonDample?: DeltaProjectPlayerModel;
   energy: number;
   energyProduction: number;
   fleetSize: number;
@@ -64,6 +80,8 @@ export type PublicPlayerModel = {
   influence: number;
   isActive: boolean;
   isBotControlled: boolean;
+  /** Present for computer-controlled players. */
+  aiLevel?: AiLevel;
   isSurrendered: boolean;
   lastCardPlayed?: CardName;
   megacredits: number;
@@ -90,13 +108,20 @@ export type PublicPlayerModel = {
   titaniumValue: number;
   tradesThisGeneration: number;
   underworldData: UnderworldPlayerData,
+  conglomeratesData: ConglomeratesPlayerData,
+  /** This player's shared Conglomerates team color (see ConglomeratesExpansion.teamDisplayColor), undefined if teamless or the expansion is off. */
+  conglomeratesTeamColor?: Color,
   victoryPointsBreakdown: VictoryPointsBreakdown;
   victoryPointsByGeneration: ReadonlyArray<number>;
   globalParameterSteps: Partial<Record<GlobalParameter, number>>;
+  // Only AI players in an analysis game (aiHandView.ts)
+  aiHand?: AiHandModel;
 }
 
 /** A player's view of the game, including their secret information. */
 export interface PlayerViewModel extends ViewModel {
+  /** The identity of this player's pending input within the current server run. */
+  waitingForId?: string;
   autopass: boolean;
   cardsInHand: ReadonlyArray<CardModel>;
   dealtCorporationCards: ReadonlyArray<CardModel>;

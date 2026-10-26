@@ -22,7 +22,7 @@ describe('Greens', () => {
     [game, player] = testGame(2, {turmoilExtension: true});
   });
 
-  it('Ruling bonus 1: Gain 1 M€ for each Plant, Microbe and Animal tag you have', () => {
+  it('Ruling bonus 1: Gain 1 M€ for each plant, microbe and animal tag you have', () => {
     player.playedCards.push(new Tardigrades(), new Lichen(), new Fish());
 
     const bonus = GREENS_BONUS_1;
@@ -101,6 +101,6 @@ describe('Greens', () => {
     const orOptions = cast(game.deferredActions.peek()!.execute(), OrOptions);
     orOptions.options[0].cb();
 
-    expect(game.gameLog.map(formatMessage)).contains('blue added 2 Microbe(s) to Tardigrades from Greens');
+    expect(game.gameLog.map(formatMessage)).contains('blue added 2:cr:microbe: to Tardigrades from Greens');
   });
 });

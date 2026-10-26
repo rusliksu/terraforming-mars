@@ -3,7 +3,6 @@ import {Server} from '../models/ServerModel';
 import {Handler} from './Handler';
 import {Context} from './IHandler';
 import {IPlayer} from '../IPlayer';
-import {isPlayerId} from '../../common/Types';
 import {Request} from '../Request';
 import {Response} from '../Response';
 import {appendCanceledLogMessages} from '../logs/appendCanceledLogMessages';
@@ -13,6 +12,7 @@ import {HIDDEN_INFORMATION_UNDO_CONFIRMATION_REQUIRED} from '../../common/undo';
 import {AppErrorResponse, UNDO_REVEALED_HIDDEN_INFORMATION} from '../../common/app/AppErrorId';
 import {statusCode} from '../../common/http/statusCode';
 import {logIrreversibleUndo} from '../logs/logIrreversibleUndo';
+import {RouteError} from './RouteError';
 
 /**
  * Reloads the game from the last action.
@@ -31,22 +31,12 @@ export class Reset extends Handler {
   }
 
   public override async get(req: Request, res: Response, ctx: Context): Promise<void> {
-    const playerId = ctx.url.searchParams.get('id');
-    if (playerId === null) {
-      responses.badRequest(req, res, 'missing id parameter');
-      return;
-    }
-
-    if (!isPlayerId(playerId)) {
-      responses.badRequest(req, res, 'invalid player id');
-      return;
-    }
+    const playerId = ctx.urlParams.playerId('id');
 
     // This is the exact same code as in `ApiPlayer`. I bet it's not the only place.
     const game = await ctx.gameLoader.getGame(playerId);
     if (game === undefined) {
-      responses.notFound(req, res);
-      return;
+      throw RouteError.notFound();
     }
     if (game.surrenderedPlayerIds.has(playerId) && !this.hasServerIdAccess(ctx)) {
       responses.badRequest(req, res, 'surrendered player is controlled by a bot');
@@ -78,8 +68,7 @@ export class Reset extends Handler {
       console.warn(`unable to find player ${playerId}`, err);
     }
     if (player === undefined) {
-      responses.notFound(req, res);
-      return;
+      throw RouteError.notFound();
     }
     if (researchMode) {
       try {
@@ -92,8 +81,7 @@ export class Reset extends Handler {
       return;
     }
     if (player.game.activePlayer.id !== player.id) {
-      responses.badRequest(req, res, 'Not the active player');
-      return;
+      throw RouteError.badRequest('Not the active player');
     }
 
     if (stepMode) {

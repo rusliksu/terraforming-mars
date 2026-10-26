@@ -64,6 +64,10 @@ export default defineComponent({
       this.shown = true;
       showModal(this.typedRefs.dialog);
     },
+    close() {
+      this.shown = false;
+      this.typedRefs.dialog.close?.();
+    },
   },
   mounted() {
     if (!windowHasHTMLDialogElement()) {

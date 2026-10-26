@@ -28,8 +28,8 @@ describe('ApiGame', () => {
     scaffolding.ctx.gameLoader.add(Game.newInstance('game-valid-id', [player], player, 'spectatorid'));
     scaffolding.url = '/api/game?id=invalidId';
     await scaffolding.get(ApiGame.INSTANCE, res);
-    expect(res.statusCode).eq(statusCode.notFound);
-    expect(res.content).eq('Not found: game not found');
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).eq('Bad request: invalid game id');
   });
 
   it('valid id', async () => {
@@ -41,11 +41,16 @@ describe('ApiGame', () => {
     // This test is probably brittle.
     const json = JSON.parse(res.content);
     json.expectedPurgeTimeMs = -1;
+    json.createdTimeMs = -1;
     json.name = 'game-name';
     expect(json).deep.eq(
       {
+        'automationCompatibility': {version: 1, unsupportedFeatures: []},
+        'astraMechanicaReplayTargetExclusions': ['Patent Manipulation', 'Hostile Takeover'],
         'activePlayer': 'black',
+        'createdTimeMs': -1,
         'expectedPurgeTimeMs': -1,
+        'fanmadeCatalogRevision': 'fanmade:rebalanced-v1',
         'id': 'game-valid-id',
         'lastSoloGeneration': 14,
         'name': 'game-name',
@@ -61,6 +66,7 @@ describe('ApiGame', () => {
         ],
         'spectatorId': 'spectatorid',
         'gameOptions': {
+          'aiAnalysis': false,
           'altVenusBoard': false,
           'aresExtremeVariant': false,
           'bannedCards': [],
@@ -68,20 +74,33 @@ describe('ApiGame', () => {
           'draftVariant': false,
           'expansions': {
             'ares': false,
+            'betterMars': false,
+            'customCards': false,
             'ceo': false,
             'colonies': false,
             'community': false,
+            'conglomerates': false,
             'corpera': true,
+            'corporateBetterments': false,
             'deltaProject': false,
+            'highOrbit': false,
+            'idesOfMars': false,
+            'industries': false,
             'moon': false,
+            'moreParties': false,
             'pathfinders': false,
             'prelude': false,
             'prelude2': false,
             'promo': false,
+            'rebalanced': false,
+            'robAntilles': false,
+            'sillyfication': false,
+            'solaris': false,
             'starwars': false,
             'turmoil': false,
             'underworld': false,
             'venus': false,
+            'venusPhase2': false,
           },
           'fastModeOption': false,
           'includedCards': [],
@@ -106,6 +125,18 @@ describe('ApiGame', () => {
           'twoCorpsVariant': false,
           'undoOption': false,
           'undoStepOption': false,
+
+          'aresHazards': true,
+          'customCeos': [],
+          'customColoniesList': [],
+          'customCorporationsList': [],
+          'customPreludes': [],
+          'modularMA': false,
+          'moonStandardProjectVariant': false,
+          'moonStandardProjectVariant1': false,
+          'startingCeos': 3,
+          'startingCorporations': 2,
+          'startingPreludes': 4,
         },
       },
     );

@@ -48,7 +48,7 @@ export class ElectroCatapult extends ActionCard implements IProjectCard {
           b.action('Spend 1 plant or 1 steel to gain 7 M€.', (eb) => {
             eb.plants(1).slash().steel(1).startAction.megacredits(7);
           }).br;
-          b.production((pb) => pb.minus().energy(1)).plainText('Oxygen must be 8% or less. Decrease your energy production 1 step.', true);
+          b.production((pb) => pb.energy(-1)).plainText('Oxygen must be 8% or less. Decrease your energy production 1 step.', true);
         }),
       },
     });
@@ -80,7 +80,7 @@ export class ElectroCatapult extends ActionCard implements IProjectCard {
     return undefined;
   }
 
-  private spendAndGain(player: IPlayer, resource: Resource.PLANTS | Resource.STEEL) {
+  private spendAndGain(player: IPlayer, resource: typeof Resource.PLANTS | typeof Resource.STEEL) {
     if (resource === Resource.PLANTS) {
       player.stock.deduct(Resource.PLANTS, 1);
     } else {

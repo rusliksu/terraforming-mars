@@ -5,6 +5,7 @@
       <div class="player_home_block">
         <DynamicTitle title="This game is over!" :color="spectator.color"/>
         <a :href="'the-end?id='+ spectator.id" v-i18n>Go to game results</a>
+        <a class="btn" :href="'replay?id=' + encodeURIComponent(spectator.id)" v-i18n>Game replay</a>
       </div>
     </div>
 
@@ -23,15 +24,17 @@
       :playerNumber = "spectator.players.length"
       :lastSoloGeneration = "game.lastSoloGeneration"
       :deckSize = "game.deckSize"
-      :discardPileSize = "game.discardPileSize"/>
+      :discardPileSize = "game.discardPileSize"
+      :otherDeckSizes = "game.otherDeckSizes"/>
 
     <div class="player_home_block nofloat">
-        <LogPanel v-if="spectator.id !== undefined" :viewModel="spectator" :color="spectator.color" :step="game.step"/>
+<LogPanel :viewModel="spectator" :step="game.step" @spaceClicked="onSpaceClicked"/>
     </div>
 
     <PlayersOverview class="player_home_block player_home_block--players nofloat" :playerView="spectator" v-trim-whitespace id="shortkey-playersoverview"/>
 
     <GameBoardView
+      ref="gameBoardView"
       :game="game"
       :tileView="tileView"
       :players="spectator.players"
@@ -53,7 +56,7 @@
       </div>
     </div>
     <WaitingFor v-show="false" v-if="game.phase !== 'end'" :playerView="spectator" :waitingfor="undefined"/>
-    <div v-if="game.spectatorId">
+    <div>
       <a :href="'/spectator?id=' +game.spectatorId" target="_blank" rel="noopener noreferrer" v-i18n>Spectator link</a>
     </div>
     <PurgeWarning :expectedPurgeTimeMs="game.expectedPurgeTimeMs"/>
@@ -65,7 +68,6 @@
 import {defineComponent} from 'vue';
 
 import {GameModel} from '@/common/models/GameModel';
-import {vueRoot} from '@/client/components/vueRoot';
 import {SpectatorModel} from '@/common/models/SpectatorModel';
 import Colony from '@/client/components/colonies/Colony.vue';
 import DynamicTitle from '@/client/components/common/DynamicTitle.vue';
@@ -105,10 +107,6 @@ export default defineComponent({
     WaitingFor,
   },
   methods: {
-    forceRerender() {
-      // TODO(kberg): this is very inefficient. It pulls down the entire state, ignoring the value of 'waitingFor' which only fetches a short state.
-      vueRoot(this).updateSpectator();
-    },
     range(n: number): Array<number> {
       return range(n);
     },

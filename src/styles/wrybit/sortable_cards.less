@@ -1,0 +1,74 @@
+// Sort hand cards via drag & drop (SortableCards.vue)
+.sortable-cards {
+  >.sortable-slot {
+    display: inline-block;
+    vertical-align: top;
+    position: relative;
+    cursor: grab;
+    // No text selection while dragging.
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+}
+
+// .filterDiv sets cursor: pointer – here the hand should signal that cards can be moved.
+.sortable-slot .filterDiv {
+  cursor: grab;
+}
+
+.sortable-slot.card-filter-hidden {
+  display: none;
+}
+
+.sortable-slot.card-filter-dimmed {
+  opacity: 0.45;
+}
+
+// While dragging, the grabbing hand everywhere, even outside the cards.
+.sortable-cards-root.sortable-dragging,
+.sortable-cards-root.sortable-dragging * {
+  cursor: grabbing !important;
+}
+
+// Other cards glide to their new place instead of jumping.
+.sortable-move {
+  transition: transform 0.18s ease;
+}
+
+// Free slot where the card lands when released.
+// The border sits on the card surface itself (.filterDiv) so it lines up exactly with the neighboring cards –
+// the slot has a different size because of the card margins.
+.sortable-placeholder .filterDiv {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: transparent;
+  box-shadow: none;
+  outline: 2px dashed rgba(255, 255, 255, 0.35);
+  outline-offset: -2px;
+
+  &::before,
+  &::after,
+  * {
+    visibility: hidden;
+  }
+}
+
+// Floating card under the pointer: slightly rotated, "lifted" high.
+.sortable-ghost {
+  // fixed, so the card is not clipped at the edge of the hand cards panel (overflow).
+  position: fixed;
+  margin: 0;
+  z-index: 1000;
+  pointer-events: none;
+  cursor: grabbing;
+  transform: rotate(4deg) scale(1.04);
+  transform-origin: 50% 30%;
+
+  .filterDiv {
+    transform: none;
+    border-radius: 12px;
+    box-shadow:
+      0 30px 60px rgba(0, 0, 0, 0.65),
+      0 12px 24px rgba(0, 0, 0, 0.45);
+  }
+}

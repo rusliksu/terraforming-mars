@@ -2,12 +2,13 @@ import {expect} from 'chai';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import {PlayerInput} from '../../src/server/routes/PlayerInput';
+import {PlayerInput, playerInputMetrics} from '../../src/server/routes/PlayerInput';
 import {MockRequest, MockResponse} from './HttpMocks';
 import {Game} from '../../src/server/Game';
 import {TestPlayer} from '../TestPlayer';
 import {OrOptions} from '../../src/server/inputs/OrOptions';
 import {UndoActionOption} from '../../src/server/inputs/UndoActionOption';
+import {SelectOption} from '../../src/server/inputs/SelectOption';
 import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {cast} from '@/common/utils/utils';
 import {OrOptionsResponse} from '../../src/common/inputs/InputResponse';
@@ -30,6 +31,10 @@ import {InputError} from '../../src/server/inputs/InputError';
 import {AppError} from '../../src/server/server/AppError';
 import {INVALID_RUN_ID} from '../../src/common/app/AppErrorId';
 import {runId} from '../../src/server/utils/server-ids';
+import {statusCode} from '@/common/http/statusCode';
+import {SelectCard} from '@/server/inputs/SelectCard';
+import {Sponsors} from '@/server/cards/base/Sponsors';
+import {PowerPlant} from '@/server/cards/base/PowerPlant';
 
 type CapturedError = {
   error: unknown;
@@ -62,6 +67,8 @@ function newBotManager(options: {startError?: Error} = {}) {
   };
   return {manager, starts};
 }
+import {FakeClock} from '../common/FakeClock';
+import {RESPONDING_TOO_QUICKLY} from '@/common/app/AppErrorId';
 
 describe('PlayerInput', () => {
   let scaffolding: RouteTestScaffolding;
@@ -98,6 +105,7 @@ describe('PlayerInput', () => {
   it('fails when id not provided', async () => {
     scaffolding.url = '/player/input';
     await scaffolding.post(PlayerInput.INSTANCE, res);
+    expect(res.statusCode).eq(statusCode.badRequest);
     expect(res.content).eq('Bad request: missing id parameter');
   });
 
@@ -152,7 +160,7 @@ describe('PlayerInput', () => {
     const post = scaffolding.post(PlayerInput.INSTANCE, res);
     const emit = Promise.resolve().then(() => {
       const orOptionsResponse: OrOptionsResponse = {type: 'or', index: options.options.length - 1, response: {type: 'option'}};
-      req.emitter.emit('data', JSON.stringify(orOptionsResponse));
+      req.emitString(JSON.stringify(orOptionsResponse));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -187,7 +195,7 @@ describe('PlayerInput', () => {
     const post = scaffolding.post(PlayerInput.INSTANCE, res);
     const emit = Promise.resolve().then(() => {
       const orOptionsResponse: OrOptionsResponse = {type: 'or', index: 0, response: {type: 'option'}};
-      req.emitter.emit('data', JSON.stringify(orOptionsResponse));
+      req.emitString(JSON.stringify(orOptionsResponse));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -222,7 +230,7 @@ describe('PlayerInput', () => {
     const post = scaffolding.post(handler, res);
     const emit = Promise.resolve().then(() => {
       const orOptionsResponse: OrOptionsResponse = {type: 'or', index: 0, response: {type: 'option'}};
-      req.emitter.emit('data', JSON.stringify(orOptionsResponse));
+      req.emitString(JSON.stringify(orOptionsResponse));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -241,7 +249,7 @@ describe('PlayerInput', () => {
     const confirmedPost = confirmedScaffolding.post(handler, confirmedRes);
     const confirmedEmit = Promise.resolve().then(() => {
       const orOptionsResponse: OrOptionsResponse = {type: 'or', index: 0, response: {type: 'option'}};
-      confirmedReq.emitter.emit('data', JSON.stringify(orOptionsResponse));
+      confirmedReq.emitString(JSON.stringify(orOptionsResponse));
       confirmedReq.emitter.emit('end');
     });
     await Promise.all([confirmedEmit, confirmedPost]);
@@ -267,7 +275,7 @@ describe('PlayerInput', () => {
 
     const post = scaffolding.post(PlayerInput.INSTANCE, res);
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify({type: 'card', cards: [CardName.PROJECT_EDEN]}));
+      req.emitString(JSON.stringify({type: 'card', cards: [CardName.PROJECT_EDEN]}));
       req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -297,7 +305,7 @@ describe('PlayerInput', () => {
       localScaffolding.url = '/player/input?id=' + player.id;
       const post = localScaffolding.post(PlayerInput.INSTANCE, localRes);
       const emit = Promise.resolve().then(() => {
-        localReq.emitter.emit('data', JSON.stringify(input));
+        localReq.emitString(JSON.stringify(input));
         localReq.emitter.emit('end');
       });
       await Promise.all([emit, post]);
@@ -342,7 +350,7 @@ describe('PlayerInput', () => {
     const post = scaffolding.post(PlayerInput.INSTANCE, res);
     const emit = Promise.resolve().then(() => {
       const orOptionsResponse: OrOptionsResponse = {type: 'or', index: options.options.length - 1, response: {type: 'option'}};
-      scaffolding.req.emitter.emit('data', JSON.stringify(orOptionsResponse));
+      scaffolding.req.emitString(JSON.stringify(orOptionsResponse));
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -374,7 +382,7 @@ describe('PlayerInput', () => {
 
     const post = scaffolding.post(handler, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', JSON.stringify(payload));
+      scaffolding.req.emitString(JSON.stringify(payload));
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -413,7 +421,7 @@ describe('PlayerInput', () => {
 
     const post = scaffolding.post(handler, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', JSON.stringify(payload));
+      scaffolding.req.emitString(JSON.stringify(payload));
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -441,7 +449,7 @@ describe('PlayerInput', () => {
 
     const post = scaffolding.post(handler, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', JSON.stringify(payload));
+      scaffolding.req.emitString(JSON.stringify(payload));
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -472,7 +480,7 @@ describe('PlayerInput', () => {
 
     const malformedPost = scaffolding.post(handler, res);
     const malformedEmit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', '}{');
+      scaffolding.req.emitString('}{');
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([malformedEmit, malformedPost]);
@@ -487,7 +495,7 @@ describe('PlayerInput', () => {
     await invalidRunScaffolding.ctx.gameLoader.add(game);
     const invalidRunPost = invalidRunScaffolding.post(handler, invalidRunRes);
     const invalidRunEmit = Promise.resolve().then(() => {
-      invalidRunReq.emitter.emit('data', JSON.stringify({type: 'option', runId: `${runId}-stale`}));
+      invalidRunReq.emitString(JSON.stringify({type: 'option', runId: `${runId}-stale`}));
       invalidRunReq.emitter.emit('end');
     });
     await Promise.all([invalidRunEmit, invalidRunPost]);
@@ -514,7 +522,7 @@ describe('PlayerInput', () => {
       };
       const expectedPost = expectedScaffolding.post(handler, expectedRes);
       const expectedEmit = Promise.resolve().then(() => {
-        expectedReq.emitter.emit('data', JSON.stringify({type: 'option'}));
+        expectedReq.emitString(JSON.stringify({type: 'option'}));
         expectedReq.emitter.emit('end');
       });
       await Promise.all([expectedEmit, expectedPost]);
@@ -528,6 +536,29 @@ describe('PlayerInput', () => {
     expect(captures).deep.eq([]);
   });
 
+  it('sends 400 when input processing throws a plain Error', async () => {
+    const player = TestPlayer.BLUE.newPlayer({beginner: true});
+    scaffolding.url = '/player/input?id=' + player.id;
+    const game = Game.newInstance('gameid-foo', [player], player, 'spectatorid');
+    await scaffolding.ctx.gameLoader.add(game);
+
+    const options = cast(player.getWaitingFor(), OrOptions);
+    options.options.push(new SelectOption('Throw').andThen(() => {
+      throw new Error('You cannot overspend heat');
+    }));
+
+    const post = scaffolding.post(PlayerInput.INSTANCE, res);
+    const emit = Promise.resolve().then(() => {
+      const orOptionsResponse: OrOptionsResponse = {type: 'or', index: options.options.length - 1, response: {type: 'option'}};
+      req.emitString(JSON.stringify(orOptionsResponse));
+      req.emitter.emit('end');
+    });
+    await Promise.all(([emit, post]));
+
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(JSON.parse(res.content)).deep.eq({message: 'You cannot overspend heat'});
+  });
+
   it('sends 400 on server error', async () => {
     const player = TestPlayer.BLUE.newPlayer();
     scaffolding.url = `/player/input?id=${player.id}`;
@@ -536,11 +567,12 @@ describe('PlayerInput', () => {
 
     const post = scaffolding.post(PlayerInput.INSTANCE, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', '}{');
+      scaffolding.req.emitString('}{');
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
 
+    expect(res.statusCode).eq(statusCode.badRequest);
     expect(res.content).matches(/Unexpected token/);
   });
 
@@ -561,7 +593,7 @@ describe('PlayerInput', () => {
 
     const post = scaffolding.post(PlayerInput.INSTANCE, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', JSON.stringify({type: 'option'}));
+      scaffolding.req.emitString(JSON.stringify({type: 'option'}));
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -584,7 +616,7 @@ describe('PlayerInput', () => {
 
     const post = scaffolding.post(PlayerInput.INSTANCE, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', '{"type":"option","debug":"secret-card-name"}');
+      scaffolding.req.emitString('{"type":"option","debug":"secret-card-name"}');
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -627,7 +659,7 @@ describe('PlayerInput', () => {
 
     const post = scaffolding.post(PlayerInput.INSTANCE, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', '{"type":"option"}');
+      scaffolding.req.emitString('{"type":"option"}');
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -661,7 +693,7 @@ describe('PlayerInput', () => {
     const handler = new PlayerInput(manager);
     const post = scaffolding.post(handler, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', '{"type":"or","index":0,"response":{"type":"option"}}');
+      scaffolding.req.emitString('{"type":"or","index":0,"response":{"type":"option"}}');
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -670,7 +702,7 @@ describe('PlayerInput', () => {
     expect(game.surrenderedPlayerIds.has(player.id)).eq(true);
     expect(game.botPlayerIds.has(player.id)).eq(false);
     expect(game.hasPassedThisActionPhase(player)).eq(false);
-    expect(starts).deep.eq([{gameId: game.id, playerId: player.id, serverId: scaffolding.ctx.ids.serverId}]);
+    expect(starts).deep.eq([{compatibility: {version: 1, unsupportedFeatures: []}, gameId: game.id, playerId: player.id, serverId: scaffolding.ctx.ids.serverId}]);
     expect(JSON.parse(res.content).waitingFor.title).eq('Take your next action');
     expect(auditEvents.map((event) => event.event)).deep.eq([
       'player_input_attempt',
@@ -709,7 +741,7 @@ describe('PlayerInput', () => {
     scaffolding.url = `/player/input?id=${player.id}&serverId=${scaffolding.ctx.ids.serverId}`;
     const post = scaffolding.post(PlayerInput.INSTANCE, botResponse);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', '{"type":"option"}');
+      scaffolding.req.emitString('{"type":"option"}');
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -736,7 +768,7 @@ describe('PlayerInput', () => {
     const handler = new PlayerInput(manager);
     const post = scaffolding.post(handler, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', '{"type":"or","index":0,"response":{"type":"option"}}');
+      scaffolding.req.emitString('{"type":"or","index":0,"response":{"type":"option"}}');
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -761,7 +793,7 @@ describe('PlayerInput', () => {
 
     const post = scaffolding.post(PlayerInput.INSTANCE, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', '{"type":"option","debug":"secret-card-name"');
+      scaffolding.req.emitString('{"type":"option","debug":"secret-card-name"');
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -809,7 +841,7 @@ describe('PlayerInput', () => {
     const rawBody = JSON.stringify(payload);
     const post = scaffolding.post(PlayerInput.INSTANCE, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', rawBody);
+      scaffolding.req.emitString(rawBody);
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all([emit, post]);
@@ -835,6 +867,130 @@ describe('PlayerInput', () => {
 
     const model = JSON.parse(res.content);
     expect(model.game.inputSeq).eq(1);
+  });
+
+  it('journals the offered draft before processing changes the pack', async () => {
+    shadowLogDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tm-shadow-draft-'));
+    process.env.SHADOW_LOG = '1';
+    process.env.SHADOW_LOG_DIR = shadowLogDir;
+    const [game, player] = testGame(3);
+    scaffolding.url = `/player/input?id=${player.id}`;
+    await scaffolding.ctx.gameLoader.add(game);
+    game.phase = Phase.DRAFTING;
+    const pack = [new Sponsors(), new PowerPlant()];
+    player.setWaitingFor(new SelectCard('Select a card to keep', 'Select', pack), () => undefined);
+    player.process = () => {
+      pack.splice(0, pack.length);
+      player.popWaitingFor();
+      game.phase = Phase.ACTION;
+    };
+    const post = scaffolding.post(PlayerInput.INSTANCE, res);
+    const emit = Promise.resolve().then(() => {
+      scaffolding.req.emitString(JSON.stringify({type: 'card', cards: [CardName.SPONSORS]}));
+      scaffolding.req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+    const entry = JSON.parse(fs.readFileSync(path.join(shadowLogDir, `input-${game.id}.jsonl`), 'utf8'));
+    expect(entry.schemaVersion).eq('server-decision/v2');
+    expect(entry.decisionState.game.phase).eq('drafting');
+    expect(entry.decisionState.game.inputSeq).eq(0);
+    expect(entry.decisionState.waitingFor.cards.map((c: {name: string}) => c.name)).deep.eq(['Sponsors', 'Power Plant']);
+    expect(entry.playerAction.cards).deep.eq(['Sponsors']);
+    expect(entry.phaseAfter).eq('action');
+    expect(entry.decisionState.players).has.length(3);
+    expect(entry.decisionState.runId).eq(undefined);
+  });
+
+  describe('response interval', () => {
+    let clock: FakeClock;
+    let player: TestPlayer;
+
+    beforeEach(async () => {
+      clock = scaffolding.ctx.clock as FakeClock;
+      player = TestPlayer.BLUE.newPlayer({beginner: true});
+      player.clock = clock;
+      const game = Game.newInstance('gameid', [player], player, 'spectatorid');
+      await scaffolding.ctx.gameLoader.add(game);
+      playerInputMetrics.responseInterval.reset();
+    });
+
+    /**
+     * POSTs `body` to `handler` as input from `playerId`, and waits for the response.
+     *
+     * Replaces `req` and `res` with fresh mocks, so after this returns, `res` holds this request's response.
+     */
+    async function send(handler: PlayerInput, playerId: string, body: string): Promise<void> {
+      req = new MockRequest();
+      res = new MockResponse();
+      scaffolding.req = req;
+      scaffolding.url = `/player/input?id=${playerId}`;
+      const post = scaffolding.post(handler, res);
+      const emit = Promise.resolve().then(() => {
+        req.emitString(body);
+        req.emitter.emit('end');
+      });
+      await Promise.all([emit, post]);
+    }
+
+    it('rejects input sent before the interval elapses', async () => {
+      const handler = new PlayerInput(1000);
+      player.inputRequestedAt = 5000;
+      clock.millis = 5999;
+
+      await send(handler, player.id, '}{');
+      expect(res.statusCode).eq(statusCode.badRequest);
+      expect(JSON.parse(res.content).id).eq(RESPONDING_TOO_QUICKLY);
+    });
+
+    it('a rejected input does not restart the interval', async () => {
+      const handler = new PlayerInput(1000);
+      player.inputRequestedAt = 5000;
+      clock.millis = 5999;
+
+      await send(handler, player.id, '}{');
+      expect(JSON.parse(res.content).id).eq(RESPONDING_TOO_QUICKLY);
+
+      clock.millis = 6000;
+      await send(handler, player.id, '}{');
+      expect(res.statusCode).eq(statusCode.badRequest);
+      expect(JSON.parse(res.content).id).is.undefined;
+    });
+
+    it('processing an input restarts the interval', async () => {
+      const handler = new PlayerInput(1000);
+      player.inputRequestedAt = 5000;
+      clock.millis = 6000;
+
+      const response: OrOptionsResponse = {type: 'or', index: 1, response: {type: 'projectCard', card: CardName.POWER_PLANT_STANDARD_PROJECT, payment: Payment.of({megacredits: 11})}};
+      await send(handler, player.id, JSON.stringify(response));
+      expect(res.statusCode).eq(statusCode.ok);
+
+      clock.millis = 6999;
+
+      await send(handler, player.id, '}{');
+      expect(res.statusCode).eq(statusCode.badRequest);
+      expect(JSON.parse(res.content).id).eq(RESPONDING_TOO_QUICKLY);
+    });
+
+    it('does not limit input when the response interval is zero', async () => {
+      const handler = new PlayerInput(0);
+
+      await send(handler, player.id, '}{');
+      expect(res.statusCode).eq(statusCode.badRequest);
+      expect(JSON.parse(res.content).id).is.undefined;
+    });
+
+    it('records the time taken to respond to an input request', async () => {
+      const handler = new PlayerInput(0);
+      player.inputRequestedAt = 5000;
+      clock.millis = 5300;
+
+      await send(handler, player.id, '}{');
+
+      const values = (await playerInputMetrics.responseInterval.get()).values;
+      expect(values.find((v) => v.metricName === 'player_input_response_interval_count')?.value).eq(1);
+      expect(values.find((v) => v.metricName === 'player_input_response_interval_sum')?.value).eq(300);
+    });
   });
 });
 

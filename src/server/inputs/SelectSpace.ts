@@ -5,11 +5,13 @@ import {SelectSpaceModel} from '../../common/models/PlayerInputModel';
 import {BasePlayerInput} from '../PlayerInput';
 import {InputError} from './InputError';
 import {toID} from '../../common/utils/utils';
+import {TileType} from '../../common/TileType';
 
 export class SelectSpace extends BasePlayerInput<Space> {
   constructor(
     title: string | Message,
-    public spaces: ReadonlyArray<Space>) {
+    public spaces: ReadonlyArray<Space>,
+    private readonly tileType?: TileType) {
     super('space', title);
     if (spaces.length === 0) {
       throw new InputError('No available spaces');
@@ -22,6 +24,7 @@ export class SelectSpace extends BasePlayerInput<Space> {
       buttonLabel: this.buttonLabel,
       type: 'space',
       spaces: this.spaces.map(toID),
+      ...(this.tileType === undefined ? {} : {tileType: this.tileType}),
     };
   }
 

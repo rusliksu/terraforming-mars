@@ -16,7 +16,6 @@
 "Excavate 3 underground resources.": "Kaiva 3 maanalaista resurssia.",
 
 "Biobatteries": "Bioakut",
-"NOTE: For the moment, all wild tags are going to energy.": "HUOMAUTUS: Tällä hetkellä kaikki jokeriympyrät lasketaan energiaksi.",
 "Increase your energy production 1 step. Gain 1 energy for every microbe tag you have (including this.) For every power tag you have (including this) put 1 microbe on another card.": "Lisää energiatuotantoasi 1 askel. Saat 1 energian jokaista mikrobiympyrääsi kohti (tämä mukaan lukien.) Jokaista energiaympyrääsi kohti (tämä mukaan lukien) aseta 1 mikrobi toiselle kortille.",
 
 "Canyon Survey": "Kanjonikartoitus",
@@ -135,7 +134,7 @@
 "Excavate 2 underground resources.": "Kaiva 2 maanalaista resurssia.",
 
 "Induced Tremor": "Aiheutettu järistys",
-"Discard 1 underground resource from the board. Then excavate an underground resource.": "Hylkää 1 maanalainen resurssi laudalta. Sitten kaiva maanalainen resurssi.",
+"You may discard 1 underground resource of your choice from the board. Then excavate an underground resource.": "Voit hylätä 1 valitsemasi maanalaisen resurssin laudalta. Sitten kaiva maanalainen resurssi.",
 
 "Infrastructure Overload": "Infrastruktuurin ylikuormitus",
 "Gain 1 corruption. Reduce any energy production 2 steps.": "Saat 1 korruption. Vähennä jonkun energiatuotantoa 2 askelta.",

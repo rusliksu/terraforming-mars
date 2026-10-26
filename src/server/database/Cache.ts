@@ -6,6 +6,7 @@ import {Database} from './Database';
 import {CacheConfig} from './CacheConfig';
 import {Clock} from '../../common/Timer';
 import {partition} from '@/common/utils/utils';
+import {backfillMissingGameParticipants} from './ParticipantBackfill';
 
 export class Cache extends EventEmitter {
   private loaded = false;
@@ -34,6 +35,13 @@ export class Cache extends EventEmitter {
     try {
       console.log('Preloading IDs.');
       const validGameIds = new Set(await this.db.getGameIds());
+      const backfill = await backfillMissingGameParticipants(this.db, validGameIds);
+      if (backfill.games > 0) {
+        console.log(`Backfilled game participants: games=${backfill.games} participants=${backfill.participants}`);
+      }
+      if (backfill.failed > 0) {
+        console.warn(`Could not backfill participants for games=${backfill.failed}`);
+      }
       const entries = await this.db.getParticipants();
       let orphanCount = 0;
       for (const entry of entries) {
@@ -142,13 +150,38 @@ export class Cache extends EventEmitter {
     return false;
   }
 
+  /**
+   * Forgets a game entirely: the game copy, its participant ids and its eviction/idle
+   * bookkeeping. Used when the game is deleted from the database so the cache does not
+   * keep serving it until the next restart. Returns true when the cache knew the game.
+   */
+  public remove(gameId: GameId): boolean {
+    const game = this.games.get(gameId);
+    const known = this.games.has(gameId);
+    if (game !== undefined) {
+      game.players.forEach((p) => p.tearDown());
+    }
+    this.games.delete(gameId);
+    for (const [participantId, id] of this.participantIds) {
+      if (id === gameId) {
+        this.participantIds.delete(participantId);
+      }
+    }
+    this.evictionSchedule.delete(gameId);
+    this.lastAccess.delete(gameId);
+    if (game !== undefined) {
+      this.emit('evicted', 1);
+    }
+    return known;
+  }
+
   private evict(gameId: GameId) {
     const game = this.games.get(gameId);
     if (game === undefined) {
       return;
     }
     game.players.forEach((p) => p.tearDown());
-    this.games.set(gameId, undefined); // Setting to undefied is the same as "not yet loaded."
+    this.games.set(gameId, undefined); // Setting to undefined is the same as "not yet loaded."
     this.lastAccess.delete(gameId);
   }
 

@@ -13,6 +13,10 @@ import {digit} from '../Options';
 import {AresHandler} from '../../ares/AresHandler';
 import {ICorporationCard} from './ICorporationCard';
 
+const HELP_TEXT = `
+Mining Guild's effect does not trigger when tiles are placed on The Moon. This is an intentional decision to prevent it from being overpowered.
+` as const;
+
 export class MiningGuild extends CorporationCard implements ICorporationCard {
   constructor() {
     super({
@@ -38,8 +42,13 @@ export class MiningGuild extends CorporationCard implements ICorporationCard {
             });
           });
         }),
+        helpText: HELP_TEXT,
       },
     });
+  }
+
+  public onPlacementBonusClaimed(player: IPlayer, space: Space): void {
+    this.onTilePlaced(player, player, space, BoardType.MARS);
   }
 
   public onTilePlaced(cardOwner: IPlayer, activePlayer: IPlayer, space: Space, boardType: BoardType) {
@@ -47,22 +56,39 @@ export class MiningGuild extends CorporationCard implements ICorporationCard {
     if (boardType !== BoardType.MARS) {
       return;
     }
+    if (this.applies(cardOwner, activePlayer, space) && this.givesSteelOrTitanium(cardOwner, space)) {
+      cardOwner.game.defer(new GainProduction(cardOwner, Resource.STEEL, {from: {card: this}}));
+    }
+  }
+
+  private applies(cardOwner: IPlayer, activePlayer: IPlayer, space: Space): boolean {
     if (cardOwner.id !== activePlayer.id || cardOwner.game.phase === Phase.SOLAR) {
-      return;
+      return false;
     }
     // Don't grant a bonus for Mars Nomads (no tile actually placed)
     if (cardOwner.game.nomadSpace === space.id && space.tile === undefined) {
-      return;
+      return false;
     }
     // Don't grant a bonus if the card is overplaced (like Ares Ocean City)
     if (space.tile?.covers !== undefined) {
-      return;
+      return false;
     }
+    return true;
+  }
+
+  private givesSteelOrTitanium(cardOwner: IPlayer, space: Space): boolean {
     const board = cardOwner.game.board;
-    const grant = space.bonus.some((bonus) => bonus === SpaceBonus.STEEL || bonus === SpaceBonus.TITANIUM) ||
+    return space.bonus.some((bonus) => bonus === SpaceBonus.STEEL || bonus === SpaceBonus.TITANIUM) ||
       AresHandler.anyAdjacentSpaceGivesBonus(board, space, SpaceBonus.STEEL) ||
       AresHandler.anyAdjacentSpaceGivesBonus(board, space, SpaceBonus.TITANIUM);
-    if (grant) {
+  }
+
+  public onStandardResourcePlacementBonus(cardOwner: IPlayer, activePlayer: IPlayer, space: Space, resource: Resource) {
+    if (resource !== Resource.STEEL && resource !== Resource.TITANIUM) {
+      return;
+    }
+    // A space that already gives steel or titanium triggered this once, in onTilePlaced.
+    if (this.applies(cardOwner, activePlayer, space) && !this.givesSteelOrTitanium(cardOwner, space)) {
       cardOwner.game.defer(new GainProduction(cardOwner, Resource.STEEL, {from: {card: this}}));
     }
   }

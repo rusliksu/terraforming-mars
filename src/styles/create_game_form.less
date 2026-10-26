@@ -113,6 +113,30 @@
   padding: 20px 10px;
 }
 
+.create-game-expansions {
+  width: 360px;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.create-game-suboptions {
+  display: flex;
+  flex-direction: column;
+  margin: 0px 4px 8px 18px;
+  padding-left: 8px;
+  border-left: 2px solid #888;
+}
+
+.create-game-page-column .create-game-suboptions label {
+  min-width: 0;
+  min-height: 52px;
+  height: auto;
+  padding: 8px 12px;
+  font-size: 20px;
+  line-height: 1.3;
+  align-items: center;
+}
+
 .create-game-page-column-row {
   display: flex;
   flex-flow: row nowrap;
@@ -127,6 +151,11 @@
   opacity: 0;
   position: fixed;
   width: 0;
+}
+
+.create-game-page-column input:focus-visible + label {
+  outline: 3px solid #ffcc64;
+  outline-offset: 2px;
 }
 .create-game-page-column input[type="radio"] {
   opacity: 0;
@@ -183,29 +212,45 @@
   margin-right: 10px;
 }
 
-.create-game-page-column .create-game-tharsis {
-  color: @board-tharsis;
-}
-.create-game-page-column .create-game-hellas {
-  color: @board-hellas;
-}
-.create-game-page-column .create-game-elysium {
-  color: @board-elysium;
-}
-.create-game-page-column .create-game-amazonis {
-  color: @board-amazonis;
-}
-.create-game-page-column .create-game-arabia-terra {
-  color: @board-arabia_terra;
-}
-.create-game-page-column .create-game-terra-cimmeria{
-  color: @board-terra_cimmeria;
-}
-.create-game-page-column .create-game-vastitas-borealis{
-  color: @board-vastitas_borealis;
-}
-.create-game-page-column .create-game-hollandia {
-  color: @board-hollandia;
+// stylelint-disable-next-line no-duplicate-selectors
+.create-game-page-column {
+  .create-game-tharsis {
+    color: @board-tharsis;
+  }
+  .create-game-hellas {
+    color: @board-hellas;
+  }
+  .create-game-elysium {
+    color: @board-elysium;
+  }
+  .create-game-utopia-planitia {
+    color: @board-utopia_planitia;
+  }
+  .create-game-amazonis-planitia {
+    color: @board-amazonis_planitia;
+    font-size: 40px;
+  }
+  .create-game-terra-cimmeria-nova {
+    color: @board-terra_cimmeria_nova;
+  }
+  .create-game-vastitas-borealis-nova {
+    color: @board-vastitas_borealis_nova;
+  }
+  .create-game-amazonis {
+    color: @board-amazonis;
+  }
+  .create-game-arabia-terra {
+    color: @board-arabia_terra;
+  }
+  .create-game-terra-cimmeria {
+    color: @board-terra_cimmeria;
+  }
+  .create-game-vastitas-borealis {
+    color: @board-vastitas_borealis;
+  }
+  .create-game-hollandia {
+    color: @board-hollandia;
+  }
 }
 
 .create-game-page-column .create-game-random {
@@ -288,6 +333,10 @@
 }
 
 .create-game-playerblock-serge {
+  background: rgba(38, 42, 50, 0.78);
+}
+
+.create-game-playerblock-credicor {
   background: rgba(38, 42, 50, 0.78);
 }
 
@@ -436,6 +485,10 @@
 
 .player_translucent_bg_color_serge {
   .create-game-player-field-theme(#fff2f5, @player_serge_dark);
+}
+
+.player_translucent_bg_color_credicor {
+  .create-game-player-field-theme(#ffb2aa, #5a1209);
 }
 
 .player_translucent_bg_color_saturn {
@@ -852,13 +905,210 @@
   margin-top: 15px;
 }
 
+@media only screen and (min-width: 1024px) {
+  .create-game {
+    // Fit the page to the screen: the form panel takes the leftover height and its options
+    // scroll on their own, so the heading, the action bar under the options, and the links
+    // below the panel are always visible. Narrower screens stack the options, which leaves
+    // too little room for this, so the whole page scrolls instead.
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    height: 100dvh;
+
+    > * {
+      flex: none;
+    }
+
+    > .create-game-form {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+
+      > .create-game-options {
+        flex: 1 1 auto;
+        min-height: 0;
+        // Hidden tooltips can stick out past the right edge; don't scroll sideways for them.
+        overflow: hidden auto;
+      }
+
+      > .create-game-action-row {
+        flex: none;
+      }
+    }
+  }
+}
+
 .create-game {
+  > h1 {
+    margin: 0px;
+  }
+
+  // The left padding clears the fixed preferences gear in the bottom-left corner.
   .discord-invite {
-    padding: 0px 15px;
+    padding: 0px 15px 0px 60px;
     font-size: 20px;
   }
 
   .changelog {
-    padding: 0px 15px;
+    padding: 0px 15px 0px 60px;
+  }
+
+  .create-game-players-cont {
+    // Keep the gap under the Players heading the same as under the other column headings.
+    > .create-game-page-column {
+      padding-bottom: 0;
+    }
+
+    > .container {
+      margin-top: 0;
+    }
+  }
+
+  // When the whole page scrolls, keep the action buttons pinned to the bottom of the screen.
+  // The row is transparent and lets clicks through, so only the bar itself covers the form.
+  .create-game-action-row {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .create-game-action {
+    width: fit-content;
+    padding: 10px;
+    background: #000000;
+    pointer-events: auto;
+  }
+
+  .create-game-action-gap {
+    margin-left: 12px;
+  }
+}
+
+@media only screen and (max-width: 1023px) {
+  .topmost-create-game-form {
+    min-height: 100dvh;
+    overflow-x: clip;
+
+    .main-container {
+      margin: 0;
+    }
+
+    .notice {
+      position: static;
+      padding: 16px;
+      text-align: center;
+    }
+  }
+
+  .create-game {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px;
+  }
+
+  .create-game--block {
+    margin: 16px 0 0;
+    padding: 0px 10px;
+  }
+
+  .create-game-page-container {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .create-game-page-column {
+    min-width: 0;
+    padding: 16px;
+
+    label {
+      min-height: 52px;
+      height: auto;
+      padding: 6px 12px;
+      font-size: 18px;
+      line-height: 1.25;
+      align-items: center;
+    }
+
+    .create-game-suboptions label {
+      font-size: 18px;
+    }
+  }
+
+  .create-game-players-cont {
+    grid-column: 1 / -1;
+  }
+
+  .create-game-action {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+
+    .btn {
+      min-height: 44px;
+    }
+  }
+
+  .create-game-player {
+    width: 100%;
+    padding: 16px;
+  }
+}
+
+.create-game-custom-preludes-warning {
+  color: red;
+  cursor: pointer;
+}
+
+.create-game-validation-warning {
+  cursor: pointer;
+}
+
+// The text-style warning sign renders smaller than the emoji one.
+.create-game-validation-blocker {
+  font-size: 1.5em;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+// The error/warning icon replaces the bullet.
+.create-game-validation-problems {
+  list-style: none;
+  padding-left: 0;
+
+  > li {
+    margin-bottom: 0.5em;
+  }
+
+  ul {
+    list-style: disc;
+  }
+}
+
+.create-game-validation-icon {
+  margin-right: 0.4em;
+}
+
+// Size the popup to its content rather than PopupPanel's fixed 90vw x 90vh.
+.popup-outer.create-game-validation-popup .popup-inner {
+  width: min(90vw, 800px);
+  height: auto;
+  max-height: 90vh;
+}
+
+@media only screen and (max-width: 767px) {
+
+  .create-game {
+    h1 {
+      font-size: 28px;
+      line-height: 1.15;
+    }
+  }
+
+  .create-game-page-container,
+  .create-game-page-column {
+    display: block;
   }
 }

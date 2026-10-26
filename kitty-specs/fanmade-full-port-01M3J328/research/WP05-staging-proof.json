@@ -1,0 +1,88 @@
+{
+  "implementationHead": "c22534187c67f884a9d8af24109b51a98b6af100",
+  "deliveryHead": "a2bed8a53577cd3256f3120318d816acbf831c3e",
+  "pullRequest": "https://github.com/rusliksu/terraforming-mars/pull/181",
+  "mergedGitSha": "07c7c4f1798367855a1a09be1506e92a0e13d5c7",
+  "ci": {
+    "linux": "passed",
+    "windows": "passed",
+    "docker": "passed",
+    "successfulChecks": 6
+  },
+  "staging": {
+    "gitSha": "07c7c4f1798367855a1a09be1506e92a0e13d5c7",
+    "artifactSha256": "fbb67d7e78587c80e337285a8a096c9c5ea3cc0eb3590bb2b1b43ce0eadd1af7",
+    "sourceRoot": "C:/Users/Ruslan/tm/terraforming-mars-release-main",
+    "sourceTreeClean": true,
+    "headEqualsOriginMainAtDeploy": true,
+    "service": "active/running",
+    "deployLockBusyAfter": false,
+    "legacyApiCapability": {
+      "version": 1,
+      "unsupportedFeatures": []
+    },
+    "sentryRelease": "created",
+    "sentryDeploy": "created"
+  },
+  "production": {
+    "gitSha": "4ea59edde3ea2a2821ac95da6d10a857eff8f1be",
+    "unchanged": [
+      "currentTarget",
+      "manifest",
+      "mainPid",
+      "activeEnterTimestamp",
+      "activeEnterTimestampMonotonic"
+    ],
+    "mutations": false
+  },
+  "browser": {
+    "viewportWidths": [
+      1280,
+      390
+    ],
+    "setupModulesSelected": 12,
+    "newModuleDefaultsOff": 12,
+    "players": 4,
+    "ownInputType": "initialCards",
+    "capabilityVersion": 1,
+    "unsupportedFeatures": [
+      "betterMars",
+      "conglomerates",
+      "corporateBetterments",
+      "customCards",
+      "highOrbit",
+      "idesOfMars",
+      "industries",
+      "moreParties",
+      "robAntilles",
+      "sillyfication",
+      "solaris",
+      "venusPhase2"
+    ],
+    "noticeBounds390": {
+      "x": 70,
+      "width": 320,
+      "height": 69
+    },
+    "chairmanReference": {
+      "parties": 6,
+      "options": 6,
+      "availableBonusesHeading": true,
+      "availablePoliciesHeading": true
+    },
+    "mapEditorLoaded": true,
+    "cardMakerLoaded": true,
+    "errors": [],
+    "requestFailuresDuringFlow": [],
+    "routeMocks": false,
+    "installedExtension": false,
+    "closed": true
+  },
+  "boundedStagingTestGamesCreated": 2,
+  "artifacts": "D:/tm-db/smartbot-lab/fanmade-port-01M3J328-final",
+  "stagingHandoff": {
+    "historicalProofOnly": true,
+    "replacementTarget": "a158897a6ea4a00cc762e496453415c7f94a536d",
+    "acceptanceCompleted": true
+  }
+}

@@ -16,7 +16,7 @@ export interface IGameLoader {
    * one of its player ids, or its spectator id.
    * @param {boolean} forceLoad (default is false.) When true always load from the database,
    * which refreshes the cache. This should never be true during an active game except when
-   * doing an adminstrative rollback. Don't even make this true for normal game undos.
+   * doing an administrative rollback. Don't even make this true for normal game undos.
    * That's what `restoreGameAt` is for.
    */
   getGame(id: GameId | PlayerId | SpectatorId, forceLoad?: boolean): Promise<IGame | undefined>;
@@ -50,6 +50,16 @@ export interface IGameLoader {
    * @param {GameId} gameId the game to be removed from the cache. Only call this for completed games.
    */
   mark(gameId: GameId): void;
+
+  /**
+   * Invalidates the in-memory copy of a game that was deleted from the database:
+   * the cache drops it and its participant ids, and later saves are rejected.
+   * The caller is responsible for deleting the game's rows from the database.
+   */
+  deleteGame(gameId: GameId): Promise<void>;
+
+  /** Waits for the pending save of every resident game; used by the shutdown drain. */
+  flush(): Promise<void>;
 
   /**
    * Saves a game (but takes into account that the game might have already been purged.)

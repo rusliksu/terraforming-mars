@@ -1,9 +1,13 @@
-import {shallowMount} from '@vue/test-utils';
+import {mount, shallowMount} from '@vue/test-utils';
+import {nextTick} from 'vue';
 import {expect} from 'chai';
 import {globalConfig} from '../getLocalVue';
 import Turmoil from '@/client/components/turmoil/Turmoil.vue';
 import {PartyName} from '@/common/turmoil/PartyName';
 import {fakePoliticalAgendasModel} from '../testHelpers';
+import GlobalEvent from '@/client/components/turmoil/GlobalEvent.vue';
+import {GlobalEventName} from '@/common/turmoil/globalEvents/GlobalEventName';
+import TurmoilAgendaReference from '@/client/components/turmoil/TurmoilAgendaReference.vue';
 
 describe('Turmoil', () => {
   it('mounts without errors', () => {
@@ -78,6 +82,44 @@ describe('Turmoil', () => {
     expect(pearlMarker.classes()).to.include('board-cube--persona');
   });
 
+  it('renders repeatable policy counts separately from persona decoration', () => {
+    const wrapper = shallowMount(Turmoil, {
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        mixins: [{methods: {
+          getVisibilityState: () => true,
+          setVisibilityState: () => {},
+        }}],
+      },
+      props: {
+        agendaStyle: 'Random',
+        morePartiesExpansion: true,
+        turmoil: {
+          dominant: PartyName.UNITY,
+          ruling: PartyName.UNITY,
+          chairman: undefined,
+          parties: [],
+          lobby: [],
+          reserve: [],
+          distant: undefined,
+          coming: undefined,
+          current: undefined,
+          politicalAgendas: fakePoliticalAgendasModel(),
+          policyActionUsers: [
+            {color: 'red', turmoilPolicyActionUsed: false, politicalAgendasActionUsedCount: 1},
+            {color: 'pearl', turmoilPolicyActionUsed: false, politicalAgendasActionUsedCount: 2},
+            {color: 'credicor', turmoilPolicyActionUsed: false, politicalAgendasActionUsedCount: 3},
+          ],
+        },
+      },
+    });
+
+    expect(wrapper.findAll('.policy-use-count').map((count) => count.text())).deep.eq(['1', '2', '3']);
+    expect(wrapper.find('.policy-use-marker--count.board-cube--credicor .policy-use-count').text()).eq('3');
+    expect(wrapper.findAll('.policy-use-marker--count.overlay')).to.have.length(0);
+  });
+
   it('renders delegate counts above player token sprites', () => {
     const wrapper = shallowMount(Turmoil, {
       ...globalConfig,
@@ -119,5 +161,98 @@ describe('Turmoil', () => {
 
     expect(partyDelegateCounts.map((count) => count.text())).deep.eq(['2', '1']);
     expect(reserveDelegateCounts.map((count) => count.text())).deep.eq(['3']);
+  });
+
+  it('shows the next generation events in the same board slots', async () => {
+    const agendaMixin = {
+      methods: {
+        getVisibilityState: () => true,
+        setVisibilityState: () => {},
+      },
+    };
+    const board = (distant: GlobalEventName, coming: GlobalEventName, current: GlobalEventName) => ({
+      dominant: PartyName.REDS,
+      ruling: PartyName.REDS,
+      chairman: undefined,
+      parties: [],
+      lobby: [],
+      reserve: [],
+      distant,
+      coming,
+      current,
+      politicalAgendas: fakePoliticalAgendasModel(),
+      policyActionUsers: [],
+    });
+    const wrapper = shallowMount(Turmoil, {
+      ...globalConfig,
+      global: {...globalConfig.global, mixins: [agendaMixin]},
+      props: {turmoil: board(
+        GlobalEventName.GLOBAL_DUST_STORM,
+        GlobalEventName.SPONSORED_PROJECTS,
+        GlobalEventName.STRONG_SOCIETY)},
+    });
+
+    // The next generation advances every slot in place: distant -> coming -> current.
+    await wrapper.setProps({turmoil: board(
+      GlobalEventName.SOLARNET_SHUTDOWN,
+      GlobalEventName.GLOBAL_DUST_STORM,
+      GlobalEventName.SPONSORED_PROJECTS)});
+
+    // GlobalEvent.spec.ts proves the card body follows its prop; here the panel has to
+    // pass the new events into the same three slots.
+    const rendered = wrapper.findAllComponents(GlobalEvent)
+      .map((event) => [event.props('type'), event.props('globalEventName')]);
+    expect(rendered).to.deep.equal([
+      ['distant', GlobalEventName.SOLARNET_SHUTDOWN],
+      ['coming', GlobalEventName.GLOBAL_DUST_STORM],
+      ['current', GlobalEventName.SPONSORED_PROJECTS],
+    ]);
+  });
+
+  it('opens the agenda reference through Policies and closes it with Escape or Close', async () => {
+    const wrapper = mount(Turmoil, {
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {teleport: true},
+        mixins: [{methods: {getVisibilityState: () => false, setVisibilityState: () => {}}}],
+      },
+      props: {
+        turmoil: {
+          dominant: PartyName.SCIENTISTS, ruling: PartyName.SCIENTISTS, chairman: undefined,
+          parties: [{name: PartyName.SCIENTISTS, partyLeader: undefined, delegates: []}],
+          lobby: [], reserve: [], distant: undefined, coming: undefined, current: undefined,
+          politicalAgendas: fakePoliticalAgendasModel(), policyActionUsers: [],
+        },
+      },
+    });
+    expect(wrapper.findComponent(TurmoilAgendaReference).exists()).is.false;
+    expect(wrapper.find('.policies-global').exists()).is.true;
+    await wrapper.setProps({agendaStyle: 'Chairman'});
+    expect(wrapper.findComponent(TurmoilAgendaReference).exists()).is.false;
+    expect(wrapper.find('.policies-global').exists()).is.false;
+    await wrapper.find('.policies-clickable').trigger('click');
+    expect(wrapper.find('[role="dialog"]').exists()).is.true;
+    expect(wrapper.findComponent(TurmoilAgendaReference).props('parties')).to.deep.eq([
+      {name: PartyName.SCIENTISTS, agenda: {bonusId: 'sb01', policyId: 'sp01'}},
+    ]);
+    expect(wrapper.findComponent(TurmoilAgendaReference).findAll('[data-agenda-id]')).to.have.length(6);
+    window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape'}));
+    await nextTick();
+    expect(wrapper.find('[role="dialog"]').exists()).is.false;
+
+    await wrapper.setProps({agendaStyle: 'Random'});
+    await wrapper.find('.policies-clickable').trigger('click');
+    expect(wrapper.find('.policies-global').exists()).is.false;
+    expect(wrapper.findComponent(TurmoilAgendaReference).findAll('[data-agenda-id]').map((option) => option.attributes('data-agenda-id')))
+      .to.deep.eq(['sp01']);
+    await wrapper.find('.close-button').trigger('click');
+    expect(wrapper.findComponent(TurmoilAgendaReference).exists()).is.false;
+
+    await wrapper.setProps({agendaStyle: 'PartyLeaders', morePartiesExpansion: true});
+    await wrapper.find('.policies-clickable').trigger('click');
+    expect(wrapper.findComponent(TurmoilAgendaReference).props('morePartiesExpansion')).is.true;
+    expect(wrapper.findComponent(TurmoilAgendaReference).findAll('button')).to.have.length(12);
+    expect(wrapper.findComponent(TurmoilAgendaReference).findAll('[data-agenda-id]')).to.have.length(6);
   });
 });

@@ -54,6 +54,15 @@ export class ModuleManifest {
   module: GameModule;
   projectCards : CardManifest<IProjectCard>;
   cardsToRemove: ReadonlySet<CardName>;
+  /**
+   * Like `cardsToRemove`, but for a base card whose replacement is itself only
+   * available in certain configurations (e.g. a BetterMars tag-swap that also needs the
+   * Moon expansion, on top of BetterMars itself). The base card (map key) is only
+   * actually removed once its replacement (map value) makes it through the replacement's
+   * own compatibility check for this game - so a replacement that didn't pass
+   * compatibility leaves the original base card in the pool instead of leaving neither.
+   */
+  conditionalCardsToRemove: ReadonlyMap<CardName, CardName>;
   corporationCards : CardManifest<ICorporationCard>;
   preludeCards : CardManifest<IPreludeCard>;
   ceoCards: CardManifest<ICeoCard>;
@@ -64,6 +73,7 @@ export class ModuleManifest {
     module: GameModule,
     projectCards?: CardManifest<IProjectCard>,
     cardsToRemove?: Array<CardName>,
+    conditionalCardsToRemove?: ReadonlyMap<CardName, CardName>,
     corporationCards?: CardManifest<ICorporationCard>,
     ceoCards?: CardManifest<ICeoCard>,
     preludeCards?: CardManifest<IPreludeCard>,
@@ -74,6 +84,7 @@ export class ModuleManifest {
     this.module = arg.module;
     this.projectCards = arg.projectCards || {};
     this.cardsToRemove = new Set(arg.cardsToRemove || []);
+    this.conditionalCardsToRemove = arg.conditionalCardsToRemove ?? new Map();
     this.corporationCards = arg.corporationCards || {};
     this.preludeCards = arg.preludeCards || {};
     this.ceoCards = arg.ceoCards || {};

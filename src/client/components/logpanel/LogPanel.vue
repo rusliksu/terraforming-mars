@@ -1,27 +1,35 @@
 <template>
   <div class="log-container">
-    <div class="log-generations">
-      <h2 :class="getTitleClasses()">
+    <LogGenerationList
+      :max="generation"
+      :selected="selectedGeneration"
+      :lastSoloGeneration="lastSoloGeneration"
+      @selected="selectGeneration">
+      <template #title>
+        <h2 :class="getTitleClasses()">
           <span v-i18n>Game log</span>
-      </h2>
-      <div class="log-gen-title"  v-i18n>Gen: </div>
-      <div class="log-gen-numbers">
-        <div v-for="n in getGenerationsRange()" :key="n" :class="getClassesGenIndicator(n)" @click.prevent="selectGeneration(n)">
-          {{ n }}
+        </h2>
+      </template>
+      <template #after-generations>
+        <div :class="getClassesRecentLogs()" @click.prevent="selectRecentLogs()" v-i18n>
+          Last 100
         </div>
-      </div>
-      <div :class="getClassesRecentLogs()" @click.prevent="selectRecentLogs()" v-i18n>
-        Last 100
-      </div>
-      <span class="label-additional" v-if="players.length === 1"><span :class="lastGenerationClass" v-i18n>of {{lastSoloGeneration}}</span></span>
+      </template>
+    </LogGenerationList>
+    <div class="log-search">
+      <label for="log-search" v-i18n>Search displayed logs</label>
+      <input id="log-search" class="form-input" type="search" v-model="searchQuery" @keydown.esc.prevent="searchQuery = ''">
+      <button v-if="searchQuery" type="button" class="btn" @click="searchQuery = ''" v-i18n>Clear search</button>
     </div>
     <div class="panel log-panel">
-      <div id="logpanel-scrollable" class="panel-body">
+      <div id="logpanel-scrollable" class="panel-body" @scroll="handleScroll">
+        <p v-if="searchQuery.trim() && filteredMessages.length === 0" role="status" v-i18n>No matching logs in this view.</p>
         <ul v-if="messages">
-          <LogMessageComponent v-for="(message, index) in filteredMessages" :key="message.timestamp + '-' + index" :message="message" :viewModel="viewModel" @click="messageClicked(message)" @spaceClicked="spaceClicked"/>
+          <LogMessageComponent v-for="(message, index) in filteredMessages" :key="message.timestamp + '-' + index" :message="message" :viewModel="viewModel" @click="messageClicked(message)" @aiRate="rateAi(message, $event)" @spaceClicked="$emit('spaceClicked', $event)"/>
         </ul>
       </div>
       <button
+        v-show="showScrollToBottomButton"
         type="button"
         class="log-latest-button"
         aria-label="Latest logs"
@@ -58,7 +66,9 @@
         >{{ player.name }}</button>
       </template>
     </div>
-    <CardPanel v-if="selectedMessage !== undefined" :message="selectedMessage" :players="players" @hide="selectedMessage = undefined"/>
+    <LogMessageInspector ref="messageInspector" :viewModel="viewModel"/>
+    <AiDecisionDialog/>
+    <AiAnalysisWelcome :player-view="viewModel"/>
   </div>
 </template>
 
@@ -72,14 +82,22 @@ import {LogMessageType} from '@/common/logs/LogMessageType';
 import {PublicPlayerModel, ViewModel} from '@/common/models/PlayerModel';
 import {playerColorClass} from '@/common/utils/utils';
 import {Color} from '@/common/Color';
-import {ParticipantId, SpaceId} from '@/common/Types';
+import {ParticipantId} from '@/common/Types';
 import LogMessageComponent from '@/client/components/logpanel/LogMessageComponent.vue';
-import CardPanel from '@/client/components/logpanel/CardPanel.vue';
-import {isMarsSpace} from '@/common/boards/spaces';
+import LogMessageInspector from '@/client/components/logpanel/LogMessageInspector.vue';
+import LogGenerationList from '@/client/components/logpanel/LogGenerationList.vue';
+import {SoundManager} from '@/client/utils/SoundManager';
+import {getPreferences} from '@/client/utils/PreferencesManager';
+import {logSearchText} from '@/client/components/logpanel/logSearchText';
+import AiDecisionDialog from '@/client/components/logpanel/aiAnalysis/AiDecisionDialog.vue';
+import AiAnalysisWelcome from '@/client/components/logpanel/aiAnalysis/AiAnalysisWelcome.vue';
+import {decisionSummaries, loadAiFeedback, openAiDecision, targetOf, AiLogTarget} from '@/client/components/logpanel/aiAnalysis/aiFeedbackState';
+import {AiFeedbackRating} from '@/common/ai/AiFeedback';
 
 let logAbortController: AbortController | undefined;
 
 type LogPanelViewState = {
+  searchQuery: string,
   selectedGeneration: number,
   selectedRecentLimit: number | undefined,
   selectedPlayerColor: Color | undefined,
@@ -90,14 +108,19 @@ type LogPanelViewState = {
 const logPanelViewStates = new Map<ParticipantId, LogPanelViewState>();
 
 type LogPanelModel = {
+  searchQuery: string,
   messages: Array<LogMessage>,
   selectedGeneration: number,
   selectedRecentLimit: number | undefined,
-  selectedMessage: LogMessage | undefined,
   selectedPlayerColor: Color | undefined,
   stickToBottom: boolean,
+  showScrollToBottomButton: boolean,
   isRestoringScrollPosition: boolean,
   resizeObserver: ResizeObserver | undefined,
+};
+
+type Refs = {
+  messageInspector: InstanceType<typeof LogMessageInspector>;
 };
 
 export default defineComponent({
@@ -105,10 +128,6 @@ export default defineComponent({
   props: {
     viewModel: {
       type: Object as () => ViewModel,
-      required: true,
-    },
-    color: {
-      type: String as () => Color,
       required: true,
     },
     step: {
@@ -119,45 +138,58 @@ export default defineComponent({
   },
   data(): LogPanelModel {
     return {
+      searchQuery: '',
       messages: [],
       selectedGeneration: -1,
       selectedRecentLimit: undefined,
-      selectedMessage: undefined,
       selectedPlayerColor: undefined,
       stickToBottom: true,
+      showScrollToBottomButton: false,
       isRestoringScrollPosition: false,
       resizeObserver: undefined,
     };
   },
   components: {
     LogMessageComponent,
-    CardPanel,
+    LogMessageInspector,
+    LogGenerationList,
+    AiDecisionDialog,
+    AiAnalysisWelcome,
   },
+  emits: ['spaceClicked'],
   methods: {
-    messageClicked(message: LogMessage) {
-      this.selectedMessage = message;
+    aiTargets(): ReadonlyArray<AiLogTarget> {
+      return this.messages.map(targetOf).filter((target): target is AiLogTarget => target !== undefined);
     },
-    spaceClicked(spaceId: SpaceId) {
-      const id = isMarsSpace(spaceId) ? 'shortkey-board' : 'shortkey-moonBoard';
-      const el = document.getElementById(id);
-      el?.scrollIntoView({block: 'center', inline: 'center', behavior: 'auto'});
-
-      const regions = ['main_board', 'moon_board', 'moon_board_outer_spaces'];
-      for (const region of regions) {
-        const board = document.getElementById(region);
-        if (board !== null) {
-          const array = board.getElementsByClassName('board-log-highlight');
-          for (let i = 0, length = array.length; i < length; i++) {
-            const element = array[i] as HTMLElement;
-            if (element.getAttribute('data_log_highlight_id') === spaceId) {
-              element.classList.add('highlight');
-              setTimeout(() => {
-                element.classList.remove('highlight');
-              }, 3000);
-              return;
-            }
-          }
+    messageClicked(message: LogMessage) {
+      if (this.viewModel.game?.gameOptions?.aiAnalysis === true) {
+        const target = targetOf(message);
+        if (target !== undefined) {
+          this.openRating(target);
+          return;
         }
+      }
+      this.typedRefs.messageInspector.show(message);
+    },
+    rateAi(message: LogMessage, rating: AiFeedbackRating) {
+      if (this.viewModel.game?.gameOptions?.aiAnalysis !== true) {
+        return;
+      }
+      const target = targetOf(message);
+      if (target !== undefined) {
+        this.openRating(target, rating);
+      }
+    },
+    openRating(target: AiLogTarget, rating?: AiFeedbackRating) {
+      const summaries = decisionSummaries(this.messages);
+      const decision = target.decisionId === undefined ? undefined : summaries.get(target.decisionId);
+      openAiDecision(target, decision, this.viewModel, rating, this.aiTargets(), summaries);
+    },
+    refreshCurrentView(): void {
+      if (this.selectedRecentLimit !== undefined) {
+        this.getRecentLogs();
+      } else if (this.selectedGeneration === this.generation) {
+        this.getLogsForGeneration(this.generation);
       }
     },
     selectGeneration(gen: number): void {
@@ -179,6 +211,7 @@ export default defineComponent({
       }
     },
     showLatestLogs(): void {
+      this.searchQuery = '';
       this.selectedGeneration = -1;
       this.selectedRecentLimit = 100;
       this.selectedPlayerColor = undefined;
@@ -227,6 +260,9 @@ export default defineComponent({
           }
           messages.splice(0, messages.length);
           messages.push(...data);
+          if (getPreferences().enable_sounds && window.location.search.includes('experimental=1')) {
+            SoundManager.newLog();
+          }
           if (liveLogs || restoredState !== undefined) {
             this.$nextTick(() => {
               if (liveLogs) {
@@ -256,6 +292,7 @@ export default defineComponent({
       if (!this.isRestoringScrollPosition) {
         this.stickToBottom = this.isNearBottom();
       }
+      this.showScrollToBottomButton = !this.isNearBottom();
     },
     getScrollablePanel(): HTMLElement | null {
       return document.getElementById('logpanel-scrollable');
@@ -294,6 +331,7 @@ export default defineComponent({
       const scrollablePanel = this.getScrollablePanel();
       if (scrollablePanel !== null) {
         scrollablePanel.scrollTop = scrollablePanel.scrollHeight;
+        this.showScrollToBottomButton = false;
       }
     },
     restoreScrollTop(scrollTop: number) {
@@ -338,7 +376,7 @@ export default defineComponent({
     },
     getTitleClasses(): string {
       const classes = ['log-title'];
-      classes.push(playerColorClass(this.color, 'shadow'));
+      classes.push(playerColorClass(this.viewModel.color, 'shadow'));
       return classes.join(' ');
     },
     lastGenerationClass(): string {
@@ -346,14 +384,17 @@ export default defineComponent({
     },
   },
   computed: {
+    typedRefs(): Refs {
+      return this.$refs as unknown as Refs;
+    },
     generation(): number {
       return this.viewModel.game.generation;
     },
     gameAge(): number {
       return this.viewModel.game.gameAge;
     },
-    lastSoloGeneration(): number {
-      return this.viewModel.game.lastSoloGeneration;
+    lastSoloGeneration(): number | undefined {
+      return this.players.length === 1 ? this.viewModel.game.lastSoloGeneration : undefined;
     },
     players(): Array<PublicPlayerModel> {
       return this.viewModel.players;
@@ -362,11 +403,16 @@ export default defineComponent({
       return this.viewModel.id;
     },
     filteredMessages(): Array<LogMessage> {
-      if (this.selectedPlayerColor === undefined) {
-        return this.messages;
-      }
+      const query = this.searchQuery.trim().toLowerCase().replace(/\s+/g, ' ');
       const player = this.players.find((player) => player.color === this.selectedPlayerColor);
       return this.messages.filter((message) => {
+        if (query && !logSearchText(message, this.players, (text) => this.$t(text)).includes(query) &&
+          !logSearchText(message, this.players, (text) => text).includes(query)) {
+          return false;
+        }
+        if (this.selectedPlayerColor === undefined) {
+          return true;
+        }
         if (message.type === LogMessageType.NEW_GENERATION) {
           return true;
         }
@@ -379,25 +425,23 @@ export default defineComponent({
   },
   watch: {
     gameAge() {
-      if (this.selectedRecentLimit !== undefined) {
-        this.getRecentLogs();
-      } else if (this.selectedGeneration === this.generation) {
-        this.getLogsForGeneration(this.generation);
-      }
+      this.refreshCurrentView();
     },
   },
   mounted() {
+    if (this.viewModel.game?.gameOptions?.aiAnalysis === true && this.id !== undefined) {
+      void loadAiFeedback(this.id);
+    }
     const restoredState = this.id === undefined ? undefined : logPanelViewStates.get(this.id);
     if (restoredState === undefined) {
       this.selectedRecentLimit = 100;
     } else {
+      this.searchQuery = restoredState.searchQuery;
       this.selectedGeneration = restoredState.selectedGeneration;
       this.selectedRecentLimit = restoredState.selectedRecentLimit;
       this.selectedPlayerColor = restoredState.selectedPlayerColor;
       this.stickToBottom = restoredState.stickToBottom;
     }
-    const scrollablePanel = this.getScrollablePanel();
-    scrollablePanel?.addEventListener('scroll', this.handleScroll);
     if (this.selectedRecentLimit !== undefined) {
       this.getRecentLogs(restoredState === undefined, restoredState);
     } else {
@@ -408,6 +452,7 @@ export default defineComponent({
     const scrollablePanel = this.getScrollablePanel();
     if (this.id !== undefined) {
       logPanelViewStates.set(this.id, {
+        searchQuery: this.searchQuery,
         selectedGeneration: this.selectedGeneration,
         selectedRecentLimit: this.selectedRecentLimit,
         selectedPlayerColor: this.selectedPlayerColor,
@@ -415,7 +460,6 @@ export default defineComponent({
         stickToBottom: this.stickToBottom,
       });
     }
-    scrollablePanel?.removeEventListener('scroll', this.handleScroll);
     this.teardownAutoScrollObserver();
   },
 });

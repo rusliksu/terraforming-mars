@@ -44,8 +44,8 @@ describe('Naomi', () => {
       expect(players[1].stock.asUnits()).deep.eq(Units.of({energy: run.expected[1][0], megacredits: run.expected[1][1]}));
       if (run.player === 0) {
         expect(game.gameLog.map(formatMessage)).includes.members([
-          'blue gained 2 energy because of Naomi',
-          'blue gained 3 M€ because of Naomi',
+          'blue gained 2:r:energy: because of Naomi',
+          'blue gained 3:r:mc: because of Naomi',
         ]);
       }
     });

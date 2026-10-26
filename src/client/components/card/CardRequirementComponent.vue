@@ -2,10 +2,15 @@
   <div class="card-requirement">
       <div class="card-item-container" :class="nextTo">
         <template v-if="requirement.max">max&nbsp;</template>
+        <template v-if="type === RequirementType.GENERATION">Gen&nbsp;</template>
         <span v-if="!isRepeated">{{amount}}</span>{{suffix}}
         <template v-if="type === RequirementType.REMOVED_PLANTS">
           <div class="card-special card-minus"></div>
           <div class="card-resource card-resource-plant red-outline"></div>
+        </template>
+        <template v-if="type === RequirementType.GREENERY_LAST_ACTION">
+          <div class="card-tile greenery-tile tile-size--req"></div>
+          <div class="card-special card-asterix">*</div>
         </template>
         <template v-if="type === RequirementType.PRODUCTION">
           <div class="card-production-box card-production-box--req">
@@ -20,7 +25,10 @@
         </template>
         <CardParty v-else-if="type === RequirementType.PARTY" :party="party" size="req" />
         <template v-else>
-            <div v-for="num in repeats" :key="num" :class="componentClasses"></div>
+            <template v-for="(num, index) in repeats" :key="num">
+              <div v-if="index > 0 && requirement.adjacent" class="card-special card-slash">/</div>
+              <div :class="componentClasses"></div>
+            </template>
         </template>
       </div>
   </div>
@@ -34,6 +42,7 @@ import {RequirementType} from '@/common/cards/RequirementType';
 import {range} from '@/common/utils/utils';
 import CardParty from '@/client/components/card/CardParty.vue';
 import {PartyName} from '@/common/turmoil/PartyName';
+import {Resource} from '@/common/Resource';
 
 export default defineComponent({
   name: 'CardRequirementComponent',
@@ -66,6 +75,7 @@ export default defineComponent({
       case RequirementType.HABITAT_RATE:
       case RequirementType.MINING_RATE:
       case RequirementType.LOGISTIC_RATE:
+      case RequirementType.GENERATION:
         return this.count;
       }
       if (this.requirement.max) {
@@ -120,7 +130,7 @@ export default defineComponent({
       case RequirementType.COLONIES:
         return ['card-resource-colony', 'card-resource-colony--req'];
       case RequirementType.FLOATERS:
-        return ['card-resource-tag--S', 'tag-floater'];
+        return ['card-resource-tag--S', 'card-icon-resource--floater'];
       case RequirementType.CHAIRMAN:
         return ['card-chairman--req'];
       case RequirementType.PARTY_LEADERS:
@@ -145,6 +155,7 @@ export default defineComponent({
         return ['card-resource', 'card-resource-corruption'];
       case RequirementType.PRODUCTION:
       case RequirementType.REMOVED_PLANTS:
+      case RequirementType.GREENERY_LAST_ACTION:
         break;
       }
       return [];
@@ -159,7 +170,9 @@ export default defineComponent({
     },
     productionClass(): string {
       if (this.type === RequirementType.PRODUCTION) {
-        const resource = this.requirement.production;
+        // The plants resource icon class is singular ("card-resource-plant"), unlike every
+        // other resource which matches the Resource enum value directly.
+        const resource = this.requirement.production === Resource.PLANTS ? 'plant' : this.requirement.production;
         return `card-resource card-resource-${resource}`;
       } else {
         // Doesn't matter what this value is, as it is ignored.
@@ -177,6 +190,8 @@ export default defineComponent({
       case RequirementType.PARTY:
       case RequirementType.REMOVED_PLANTS:
       case RequirementType.UNDERGROUND_TOKENS:
+      case RequirementType.GREENERY_LAST_ACTION:
+      case RequirementType.GENERATION:
         return false;
       }
       return this.count > 0 && this.count < 4;

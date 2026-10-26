@@ -1,5 +1,6 @@
 <template>
   <ModuleItemFilter
+    :embedded="embedded"
     title="Colonies"
     :groups="GROUPS"
     :itemsByGroup="ITEMS_BY_GROUP"
@@ -23,9 +24,9 @@ import {OFFICIAL_COLONY_NAMES, COMMUNITY_COLONY_NAMES, PATHFINDERS_COLONY_NAMES}
 import {Expansion} from '@/common/cards/GameModule';
 import {getColony} from '@/client/colonies/ClientColonyManifest';
 
-const OFFICIAL_COLONIES = [...OFFICIAL_COLONY_NAMES].sort();
-const COMMUNITY_COLONIES = [...COMMUNITY_COLONY_NAMES].sort();
-const PATHFINDERS_COLONIES = [...PATHFINDERS_COLONY_NAMES].sort();
+const OFFICIAL_COLONIES = OFFICIAL_COLONY_NAMES.toSorted();
+const COMMUNITY_COLONIES = COMMUNITY_COLONY_NAMES.toSorted();
+const PATHFINDERS_COLONIES = PATHFINDERS_COLONY_NAMES.toSorted();
 
 const GROUPS = [
   {key: 'colonies', label: 'Official'},
@@ -44,6 +45,7 @@ export default defineComponent({
   components: {ModuleItemFilter},
   emits: ['colonies-list-changed', 'close'],
   props: {
+    embedded: {type: Boolean, default: false},
     expansions: {type: Object as () => Record<Expansion, boolean>, required: true},
     selected: {type: Array as () => Array<ColonyName>, required: true},
   },

@@ -1,4 +1,4 @@
-import {shallowMount, VueWrapper, DOMWrapper} from '@vue/test-utils';
+import {mount, shallowMount, VueWrapper, DOMWrapper} from '@vue/test-utils';
 import {globalConfig} from '../getLocalVue';
 import {expect} from 'chai';
 import {CardName} from '@/common/cards/CardName';
@@ -7,6 +7,7 @@ import {PlayerViewModel, PublicPlayerModel} from '@/common/models/PlayerModel';
 import {RecursivePartial} from '@/common/utils/utils';
 import {Tag} from '@/common/cards/Tag';
 import {SpecialTags} from '@/client/cards/SpecialTags';
+import {asComplete} from '../utils/models';
 
 describe('PlayerTags', () => {
   let wrapper: VueWrapper<any>;
@@ -42,6 +43,9 @@ describe('PlayerTags', () => {
           // 1 VP per adjacent city tile (uses nextToThis)
           name: CardName.COMMERCIAL_DISTRICT,
         },
+        {
+          name: CardName.EARTH_EMBASSY,
+        },
       ],
       tags: {
         [Tag.BUILDING]: 0,
@@ -60,6 +64,9 @@ describe('PlayerTags', () => {
       },
       underworldData: {
         tokens: [],
+      },
+      conglomeratesData: {
+        coordination: 0,
       },
       victoryPointsBreakdown: {
         total: 1,
@@ -114,14 +121,12 @@ describe('PlayerTags', () => {
         },
       },
       props: {
-        player: player,
-        playerView: playerView,
+        player: asComplete<PublicPlayerModel>(player),
+        playerView: asComplete<PlayerViewModel>(playerView),
         hideZeroTags: false,
         conciseTagsViewDefaultValue: false,
       },
     });
-    // For tests.
-    wrapper.vm.$data.conciseView = false;
   });
 
   function elem(tag: Tag | 'all'): DOMWrapper<Element> {
@@ -152,5 +157,55 @@ describe('PlayerTags', () => {
     const cityCount = wrapper.vm.tagsInOrder.find((t: any) => t.name === SpecialTags.CITY_COUNT);
     expect(cityCount.points).to.eq(0);
     expect(cityCount.asterisk).to.eq(true);
+  });
+
+  it('tag substitution - earth embassy', () => {
+    const substitution = wrapper.find('[data-test="substitution-earth"]');
+    expect(substitution.exists()).to.eq(true);
+    const earth = wrapper.vm.tagsInOrder.find((t: any) => t.name === Tag.EARTH);
+    expect(earth.substitution).to.eq(Tag.MOON);
+  });
+
+  it('tag substitution - none for science', () => {
+    expect(wrapper.find('[data-test="substitution-science"]').exists()).to.eq(false);
+  });
+
+  it('renders Artificial Moon Galactic count and points', () => {
+    const player = asComplete<PublicPlayerModel>({
+      ...wrapper.props('player'),
+      tableau: [{name: CardName.ARTIFICIAL_MOON}],
+      tags: {...wrapper.props('player').tags, [Tag.GALACTIC]: 1},
+    });
+    const playerView = wrapper.props('playerView');
+    wrapper = mount(PlayerTags, {
+      ...globalConfig,
+      props: {
+        player,
+        playerView: {
+          ...playerView,
+          thisPlayer: player,
+          game: {...playerView.game, tags: [...playerView.game.tags, Tag.GALACTIC]},
+        },
+      },
+    });
+
+    const galactic = wrapper.findAll('.tag-and-discount').find((tag) => tag.find('.tag-galactic').exists());
+    expect(galactic?.find('.tag-count-display').text()).to.eq('1');
+    expect(galactic?.find('.points-per-tag').text()).to.eq('3');
+  });
+
+  it('hides Galactic when the game does not include the tag', () => {
+    expect(wrapper.find('tag-count-stub[tag="galactic"]').exists()).to.eq(false);
+  });
+
+  it('updates when the player changes', async () => {
+    const player: PublicPlayerModel = wrapper.props('player');
+    await wrapper.setProps({
+      player: {
+        ...player,
+        tableau: [...player.tableau, {name: CardName.ANTS, discount: [{tag: Tag.MICROBE, amount: 5}]}],
+      },
+    });
+    expect(amount(elem(Tag.MICROBE))).to.eq('8');
   });
 });

@@ -1,9 +1,10 @@
 <template>
+  <component v-if="productionPresentation !== undefined" :is="productionPresentation" :binding="presentationBinding" />
   <!-- TODO(chosta): consolidate repetition into a reusable component. -->
-  <div class="wf-component wf-component--select-production-to-lose">
+  <div v-else class="wf-component wf-component--select-production-to-lose">
     <div v-if="showtitle === true" class="nofloat wf-component-title">{{ $t(playerinput.title) }}</div>
 
-    <h3 class="payments_title" v-i18n>Which resource production would you prefer to decrease?</h3>
+    <h3 v-if="playerinput.warning !== undefined" class="payments_title">{{ $t(playerinput.warning) }}</h3>
 
     <div class="payments_type input-group" v-if="canDeductMegaCredits()">
       <div class="production-box"><div class="production resource_icon--megacredits" style="background-size:contain;"></div></div>
@@ -47,12 +48,15 @@
     </div>
 
     <div v-if="showsave === true" class="nofloat">
-        <button class="btn btn-primary btn-submit" @click="saveData">{{ $t(playerinput.buttonLabel) }}</button>
+        <button class="btn btn-primary btn-submit" @click="saveData()">{{ $t(playerinput.buttonLabel) }}</button>
     </div>
   </div>
 </template>
 <script lang="ts">
+import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+
 import {defineComponent} from 'vue';
+import {UnitAmountsBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
 
 import {SelectProductionToLoseModel} from '@/common/models/PlayerInputModel';
 import {PlayerViewModel} from '@/common/models/PlayerModel';
@@ -60,6 +64,7 @@ import {PayProductionModel} from '@/common/models/PayProductionUnitsModel';
 import {Units} from '@/common/Units';
 import {SelectProductionToLoseResponse} from '@/common/inputs/InputResponse';
 import {sum} from '@/common/utils/utils';
+import {PRODUCTION_MINIMUMS} from '@/common/constants';
 
 type DataModel = {
   units: Units,
@@ -68,6 +73,9 @@ type DataModel = {
 
 export default defineComponent({
   name: 'SelectProductionToLose',
+  setup() {
+    return {productionPresentation: useInputPresentation('productionToLose')};
+  },
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
@@ -94,9 +102,21 @@ export default defineComponent({
       warning: undefined,
     };
   },
+  computed: {
+    presentationBinding(): UnitAmountsBinding<'productionToLose'> {
+      const offered: Record<keyof Units, boolean> = {megacredits: this.canDeductMegaCredits(), steel: this.canDeductSteel(),
+        titanium: this.canDeductTitanium(), plants: this.canDeductPlants(), energy: this.canDeductEnergy(), heat: this.canDeductHeat()};
+      return {playerView: this.playerView, playerinput: this.playerinput, showsave: this.showsave, showtitle: this.showtitle,
+        units: this.units, keys: Units.keys.filter((unit) => offered[unit]), warning: this.warning,
+        select: (unit, value) => {
+          this.units[unit] = value;
+        },
+        plus: (unit) => this.delta(unit, 1), minus: (unit) => this.delta(unit, -1), save: () => this.saveData()};
+    },
+  },
   methods: {
     canDeductMegaCredits() {
-      return this.playerinput.payProduction.units.megacredits > -5;
+      return this.playerinput.payProduction.units.megacredits > PRODUCTION_MINIMUMS.megacredits;
     },
     canDeductSteel() {
       return this.playerinput.payProduction.units.steel > 0;
@@ -120,7 +140,7 @@ export default defineComponent({
       const expendableProductionQuantity = function(type: keyof Units, model: PayProductionModel): number {
         switch (type) {
         case 'megacredits':
-          return model.units.megacredits + 5;
+          return model.units.megacredits - PRODUCTION_MINIMUMS.megacredits;
         case 'steel':
           return model.units.steel;
         case 'titanium':
@@ -141,7 +161,8 @@ export default defineComponent({
       newValue = Math.min(Math.max(newValue, 0), expendableQuantity);
       this.units[type] = newValue;
     },
-    saveData() {
+    saveData(_attempt?: SaveAttempt, respond?: (response: SelectProductionToLoseResponse) => void) {
+      const reply = respond ?? this.onsave;
       const total = sum(Units.values(this.units));
 
       if (total !== this.playerinput.payProduction.cost) {
@@ -149,7 +170,7 @@ export default defineComponent({
         return;
       }
 
-      this.onsave({type: 'productionToLose', units: this.units});
+      reply({type: 'productionToLose', units: this.units});
     },
   },
 });

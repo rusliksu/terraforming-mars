@@ -1,7 +1,7 @@
 <template>
   <div>
-    <div :class="getClasses()">{{ amount === null ? 0 : amount }}</div>
-    <template v-if="displayTwoCosts()">
+    <div class="card-cost" :class="{'visibility-hidden': amount === undefined, 'card-cost-titanium': titanium}">{{ amount }}</div>
+    <template v-if="displayTwoCosts">
       <div class="card-cost-transition"></div>
       <div class="card-old-cost">{{ newCost }}</div>
     </template>
@@ -24,15 +24,14 @@ export default defineComponent({
       type: Number as () => number | undefined,
       default: undefined,
     },
-  },
-  methods: {
-    getClasses(): string {
-      const classes = ['card-cost'];
-      if (this.amount === undefined) {
-        classes.push('visibility-hidden');
-      }
-      return classes.join(' ');
+    // High Orbit (fan): Infrastructure-tagged "Silver" cards' top-left number is a Titanium
+    // cost, not M€ -- shows the titanium icon instead of the usual M€ coin.
+    titanium: {
+      type: Boolean,
+      default: false,
     },
+  },
+  computed: {
     displayTwoCosts(): boolean {
       const hideDiscount = getPreferences().hide_discount_on_cards;
       return this.newCost !== undefined && this.newCost !== this.amount && !hideDiscount;

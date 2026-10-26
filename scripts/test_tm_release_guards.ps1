@@ -157,6 +157,7 @@ $stagingPath = Join-Path $PSScriptRoot "deploy_tm_staging.ps1"
 $releasePath = Join-Path $PSScriptRoot "release_tm_prod.ps1"
 $promotePath = Join-Path $PSScriptRoot "promote_tm_staging_to_prod.ps1"
 $rolloutPath = Join-Path $PSScriptRoot "rollout_tm_server.ps1"
+$runtimeSyncPath = Join-Path $PSScriptRoot "sync_tm_runtime_services.ps1"
 $sentryReleasePath = Join-Path $PSScriptRoot "lib\TmSentryRelease.ps1"
 
 $deployRemote = Get-RemoteScriptBody -Path $deployPath
@@ -165,6 +166,7 @@ $deploySource = Get-Content -LiteralPath $deployPath -Raw
 $releaseSource = Get-Content -LiteralPath $releasePath -Raw
 $promoteSource = Get-Content -LiteralPath $promotePath -Raw
 $rolloutSource = Get-Content -LiteralPath $rolloutPath -Raw
+$runtimeSyncSource = Get-Content -LiteralPath $runtimeSyncPath -Raw
 $stagingSource = Get-Content -LiteralPath $stagingPath -Raw
 $sentryReleaseSource = Get-Content -LiteralPath $sentryReleasePath -Raw
 
@@ -232,10 +234,19 @@ Assert-TmExpectedGitSha -Expected $shaA -Actual $shaA.ToUpperInvariant() -Contex
 Assert-Throws {
     Assert-TmExpectedGitSha -Expected $shaA -Actual $shaB -Context "test source"
 } "Deploy guard accepted a different source SHA."
-Assert-ReleasePins -ExpectedGitSha $shaA -StagingGitSha $shaA -ArtifactSha $artifactSha
+Assert-ReleasePins -ExpectedGitSha $shaA -ExpectedArtifactSha $artifactSha -StagingGitSha $shaA -ArtifactSha $artifactSha
 Assert-Throws {
-    Assert-ReleasePins -ExpectedGitSha $shaA -StagingGitSha $shaB -ArtifactSha $artifactSha
+    Assert-ReleasePins -ExpectedGitSha $shaA -ExpectedArtifactSha $artifactSha -StagingGitSha $shaB -ArtifactSha $artifactSha
 } "Prod release guard accepted staging drift from the intended SHA."
+Assert-Throws {
+    Assert-ReleasePins -ExpectedGitSha $shaA -ExpectedArtifactSha ("e" * 64) -StagingGitSha $shaA -ArtifactSha $artifactSha
+} "Prod release guard accepted staging drift from the intended artifact."
+Assert-True ($releaseSource.Contains('[string]$ExpectedArtifactSha')) "Prod release wrapper has no mandatory exact artifact pin."
+Assert-True ($rolloutSource.Contains('[string]$ExpectedArtifactSha')) "Rollout wrapper has no exact artifact pin input."
+Assert-True ($promoteSource.Contains('ExpectedArtifactSha is required for production promotion.')) "Lower-level promotion can run without an exact artifact pin."
+Assert-True (-not $runtimeSyncSource.Contains("Render-Template -TemplatePath (Join-Path `$templateDir 'tm-server-next.service.template')")) "Runtime sync still installs the obsolete second-writer service."
+Assert-True ($runtimeSyncSource.Contains('systemctl --user disable --now $LegacyProdNextService')) "Runtime sync does not retire the obsolete second-writer service."
+Assert-True ($runtimeSyncSource.Contains("`$prodEnv['SERVER_ID'] = 'prod-redacted'") -and $runtimeSyncSource.Contains("`$stagingEnv['SERVER_ID'] = 'staging-redacted'")) "Runtime sync dry-run can expose live server IDs."
 
 # Pre-lock upload/work names must remain unique even in the same second.
 $runTokenA = New-TmReleaseRunToken
@@ -264,24 +275,24 @@ $releaseIgnoreIndex = $releaseSource.IndexOf('$promoteArgs += @("-IgnoredRealtim
 Assert-True ($rolloutIgnoreIndex -ge 0 -and $releaseIgnoreIndex -ge 0) "Ignored realtime game ids are not forwarded rollout -> release -> promote."
 Assert-True ($promoteSource.Contains('$remoteScript = $remoteScript.Replace("__IGNORED_REALTIME_GAME_IDS_CSV__", $ignoredRealtimeGameIdsCsv)')) "Promote does not pass ignored ids into the locked remote gate."
 
-# The next-service health window is a validated operator input and is rendered into the real dry-run script.
+# The promotion dry-run renders the single-writer transaction.
 $pwshPath = (Get-Command pwsh -ErrorAction Stop | Select-Object -First 1).Source
+$releasePinnedDryRun = Invoke-TextProcess -FilePath $pwshPath -ArgumentList @(
+    "-NoProfile", "-File", $releasePath, "-DryRun",
+    "-ExpectedGitSha", $shaA, "-ExpectedArtifactSha", $artifactSha
+) -InputText $null
+Assert-True ($releasePinnedDryRun.ExitCode -eq 0) "Pinned release dry-run failed. stderr=$($releasePinnedDryRun.StdErr)"
+Assert-True ($releasePinnedDryRun.StdOut.Contains("Expect : artifact=$artifactSha git=$shaA")) "Release dry-run does not preserve both exact pins through the nested promotion wrapper."
+Assert-True ($releasePinnedDryRun.StdOut.Contains("Ignored realtime games: ledger=0 cli=0 total=0")) "Release dry-run loads ignored games without an explicit per-run input."
+Assert-True ($releasePinnedDryRun.StdOut.Contains("Ignored realtime ledger: not supplied")) "Release dry-run does not report that the operator ledger is disabled by default."
+
 $defaultPromoteDryRun = Invoke-TextProcess -FilePath $pwshPath -ArgumentList @(
     "-NoProfile", "-File", $promotePath, "-DryRun"
 ) -InputText $null
 Assert-True ($defaultPromoteDryRun.ExitCode -eq 0) "Default promotion dry-run failed. stderr=$($defaultPromoteDryRun.StdErr)"
-Assert-True ($defaultPromoteDryRun.StdOut.Contains('next_health_timeout_seconds="180"')) "Default promotion health window is not 180 seconds."
-
-$overridePromoteDryRun = Invoke-TextProcess -FilePath $pwshPath -ArgumentList @(
-    "-NoProfile", "-File", $promotePath, "-DryRun", "-NextServiceHealthTimeoutSeconds", "240"
-) -InputText $null
-Assert-True ($overridePromoteDryRun.ExitCode -eq 0) "Promotion health-window override dry-run failed. stderr=$($overridePromoteDryRun.StdErr)"
-Assert-True ($overridePromoteDryRun.StdOut.Contains('next_health_timeout_seconds="240"')) "Promotion health-window override was not rendered."
-
-$invalidPromoteDryRun = Invoke-TextProcess -FilePath $pwshPath -ArgumentList @(
-    "-NoProfile", "-File", $promotePath, "-DryRun", "-NextServiceHealthTimeoutSeconds", "0"
-) -InputText $null
-Assert-True ($invalidPromoteDryRun.ExitCode -ne 0) "Promotion accepted a zero-second next-service health window."
+Assert-True ($defaultPromoteDryRun.StdOut.Contains('validate_existing_saves')) "Promotion dry-run has no read-only save validation."
+Assert-True ($defaultPromoteDryRun.StdOut.Contains('validate_saved_games.js')) "Promotion dry-run has no production-save rehearsal validator."
+Assert-True (-not $defaultPromoteDryRun.StdOut.Contains('systemctl --user restart "$next_service"')) "Promotion still starts a second server against production state."
 
 Assert-True ($defaultPromoteDryRun.StdOut.Contains('realtime_game_stale_days="10"')) "Default realtime stale policy is not ten days."
 $overrideStaleDaysPromoteDryRun = Invoke-TextProcess -FilePath $pwshPath -ArgumentList @(
@@ -316,9 +327,9 @@ $deployPermissionIndex = $deployRemote.IndexOf('normalize_release_permissions "$
 $deployCurrentSwitchIndex = $deployRemote.IndexOf('ln -sfn "$new_release_dir" "$current_link"')
 $promoteDataLinkIndex = $promoteRemote.IndexOf('ln -sfn "$shared_root/elo/data.json" "$new_release_dir/elo/data.json"')
 $promotePermissionIndex = $promoteRemote.IndexOf('normalize_release_permissions "$new_release_dir"', $promoteDataLinkIndex)
-$promoteNextSwitchIndex = $promoteRemote.IndexOf('ln -sfn "$new_release_dir" "$prod_next_current"')
+$promoteValidationIndex = $promoteRemote.IndexOf('if ! validate_existing_saves "$new_release_dir"; then')
 Assert-True ($deployPermissionIndex -gt $deployDataLinkIndex -and $deployPermissionIndex -lt $deployCurrentSwitchIndex) "Deploy does not normalize release permissions after assembly and before switching current."
-Assert-True ($promotePermissionIndex -gt $promoteDataLinkIndex -and $promotePermissionIndex -lt $promoteNextSwitchIndex) "Promotion does not normalize release permissions after assembly and before starting the next backend."
+Assert-True ($promotePermissionIndex -gt $promoteDataLinkIndex -and $promotePermissionIndex -lt $promoteValidationIndex) "Promotion does not normalize release permissions before read-only save validation."
 
 $permissionFixtureRoot = Join-Path $env:TEMP ("tm-release-permissions-{0}-{1}" -f $PID, [guid]::NewGuid().ToString("N"))
 New-Item -ItemType Directory -Path $permissionFixtureRoot -Force | Out-Null
@@ -666,7 +677,7 @@ assert_no_realtime_games_sqlite "fixture"
         TM_RELEASE_LIVE_GATE_FIXTURE_JSON = (ConvertTo-GateFixtureJson -Rows $staleRows)
         TM_RELEASE_LIVE_GATE_NOW_SECONDS = $gateNowSeconds
     }
-    Assert-True ($staleGate.ExitCode -eq 0) "A realtime save older than the stale threshold blocked promotion. stdout=$($staleGate.StdOut) stderr=$($staleGate.StdErr)"
+    Assert-True ($staleGate.ExitCode -eq 42) "An unconfirmed stale realtime save bypassed promotion. stdout=$($staleGate.StdOut) stderr=$($staleGate.StdErr)"
     Assert-True ($staleGate.StdOut.Contains('realtime=0') -and $staleGate.StdOut.Contains('stale=1') -and $staleGate.StdOut.Contains('unknown=0')) "Stale realtime classification was not reported separately. stdout=$($staleGate.StdOut)"
 
     $mixedFreshStaleUnknownRows = @(
@@ -816,6 +827,53 @@ assert_dependency_sha "$1" "$2"
     Assert-True ($uppercaseDependency.ExitCode -eq 47) "Non-canonical uppercase dependencySha was accepted."
     Assert-True ($mismatchedDependency.ExitCode -eq 47) "DependencySha not matching package-lock content was accepted."
 
+    # Rollback preserves newer data even when an older backup is available.
+    $rollbackFixture = Join-Path $advancedTempRoot "code-only-rollback"
+    New-Item -ItemType Directory -Path $rollbackFixture -Force | Out-Null
+    $databaseFile = Join-Path $rollbackFixture "game.db"
+    $createSqlite = Invoke-PythonSnippet -Code @'
+import sqlite3
+import sys
+with sqlite3.connect(sys.argv[1]) as database:
+    database.execute("CREATE TABLE proof (value TEXT NOT NULL)")
+    database.execute("INSERT INTO proof(value) VALUES ('newer-player-move')")
+'@ -Json '' -Arguments @($databaseFile)
+    Assert-True ($createSqlite.ExitCode -eq 0) "Could not create rollback preservation fixture."
+    $databaseHash = (Get-FileHash -LiteralPath $databaseFile -Algorithm SHA256).Hash
+    $rollbackHarness = @'
+set -euo pipefail
+root="$1"
+service=fixture-server
+elo_service=fixture-elo
+health_url=fixture-health
+elo_health_url=fixture-elo-health
+prod_current="$root/current"
+previous_current_link_existed=1
+previous_current_link_target="$root/old-release"
+promotion_write_gate="$root/write-gate"
+game_db_path="$root/game.db"
+shared_root="$root"
+run_token=fixture
+database_backup="$root/obsolete-backup.db"
+mkdir -p "$previous_current_link_target" "$root/new-release"
+ln() { printf '%s\n' "$*" > "$root/code-link"; }
+printf obsolete > "$database_backup"
+printf closed > "$promotion_write_gate"
+systemctl() { printf '%s\n' "$*" >> "$root/services"; }
+wait_for_http() { return 0; }
+wait_for_elo() { return 0; }
+__RESTORE_FUNCTION__
+restore_previous_release
+test "$(cat "$root/code-link")" = "-sfn $previous_current_link_target $prod_current"
+test ! -e "$promotion_write_gate"
+test "$(cat "$database_backup")" = obsolete
+'@
+    $rollbackHarness = $rollbackHarness.Replace('__RESTORE_FUNCTION__', (Get-BashFunction -ScriptText $promoteRemote -Name 'restore_previous_release'))
+    $rollbackResult = Invoke-Bash -ScriptText $rollbackHarness -Arguments @((ConvertTo-TmGitBashPath $rollbackFixture))
+    Assert-True ($rollbackResult.ExitCode -eq 0) "Code-only rollback failed. stderr=$($rollbackResult.StdErr)"
+    Assert-True ((Get-FileHash -LiteralPath $databaseFile -Algorithm SHA256).Hash -eq $databaseHash) "Code rollback replaced current player data."
+    Assert-True (@(Get-ChildItem -LiteralPath $rollbackFixture -Recurse -File -Filter '*.db').Count -eq 2) "Code rollback created a database copy."
+
     # Fixed-path ELO mirrors publish atomically per file and repair a partial prior attempt.
     $publishHelper = Get-BashFunction -ScriptText $promoteRemote -Name "publish_elo_helpers"
     $helperSourceRelease = Join-Path $advancedTempRoot "helper-source"
@@ -902,80 +960,122 @@ publish_elo_helpers "$1" "cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     Assert-True ($casDrift.ExitCode -eq 46) "Release CAS drift did not use distinct exit code 46."
     Assert-True (-not (($casDrift.StdOut + $casDrift.StdErr).Contains($advancedTempRoot))) "Release CAS failure leaked runtime paths."
 
-    # A failed nginx validation during rollback must still restore in deterministic order.
-    $restoreHelper = Get-BashFunction -ScriptText $promoteRemote -Name "restore_public_state"
-    $rollbackLogPath = Join-Path $advancedTempRoot "rollback.log"
-    $rollbackBackupPath = Join-Path $advancedTempRoot "nginx-before.conf"
-    [IO.File]::WriteAllText($rollbackBackupPath, 'set $tm_prod_backend http://127.0.0.1:8081;')
-    $rollbackLogBash = ConvertTo-TmBashSingleQuotedValue (ConvertTo-TmGitBashPath $rollbackLogPath)
-    $rollbackBackupBash = ConvertTo-TmBashSingleQuotedValue (ConvertTo-TmGitBashPath $rollbackBackupPath)
-    $rollbackHarness = @'
-set -euo pipefail
-log_path=__LOG_PATH__
-nginx_snippet_backup=__BACKUP_PATH__
-upstream_snippet=/etc/nginx/snippets/tm-prod-active-upstream.conf
-previous_current_link_existed=1
-previous_current_link_target=../releases/old
-prod_current=/runtime/prod/current
-service=tm-server
-elo_service=tm-elo
-health_url=http://127.0.0.1:8081
-elo_health_url=http://127.0.0.1:8082/api/elo-submit
-active_proxy_port=8085
-: > "$log_path"
-ln() { printf 'ln:%s\n' "$*" >> "$log_path"; return 0; }
-systemctl() { printf 'systemctl:%s\n' "$*" >> "$log_path"; return 0; }
-wait_for_http() { printf 'wait-http:%s\n' "$*" >> "$log_path"; return 0; }
-wait_for_elo() { printf 'wait-elo:%s\n' "$*" >> "$log_path"; return 0; }
-read_proxy_port() { printf '8081\n'; }
-sudo() {
-  printf 'sudo:%s\n' "$*" >> "$log_path"
-  if [ "$1" = "nginx" ] && [ "${2:-}" = "-t" ]; then
-    return 1
-  fi
-  return 0
-}
-__RESTORE_FUNCTION__
-set +e
-restore_public_state
-restore_exit=$?
-set -e
-cat "$log_path"
-exit "$restore_exit"
-'@
-    $rollbackHarness = $rollbackHarness.Replace('__LOG_PATH__', $rollbackLogBash).Replace('__BACKUP_PATH__', $rollbackBackupBash).Replace('__RESTORE_FUNCTION__', $restoreHelper)
-    $rollbackResult = Invoke-Bash -ScriptText $rollbackHarness
-    Assert-True ($rollbackResult.ExitCode -eq 1) "Mocked nginx rollback failure did not remain fail-closed."
-    $rollbackLog = $rollbackResult.StdOut
-    $linkRestoreIndex = $rollbackLog.IndexOf('ln:-sfn ../releases/old /runtime/prod/current')
-    $primaryRestoreIndex = $rollbackLog.IndexOf('systemctl:--user restart tm-server')
-    $snippetRestoreIndex = $rollbackLog.IndexOf('sudo:cp -a --remove-destination --')
-    $nginxTestIndex = $rollbackLog.IndexOf('sudo:nginx -t')
-    $eloRestoreIndex = $rollbackLog.IndexOf('systemctl:--user restart tm-elo')
-    Assert-True ($linkRestoreIndex -ge 0 -and $primaryRestoreIndex -gt $linkRestoreIndex) "Rollback did not restore the exact previous current link before restarting primary."
-    Assert-True ($snippetRestoreIndex -gt $primaryRestoreIndex -and $nginxTestIndex -gt $snippetRestoreIndex) "Rollback did not restore the exact nginx snippet before validation."
-    Assert-True ($eloRestoreIndex -gt $nginxTestIndex) "Rollback stopped before attempting to restore the ELO service after nginx failure."
+    $restoreHelper = Get-BashFunction -ScriptText $promoteRemote -Name "restore_previous_release"
+    $restoreLinkIndex = $restoreHelper.IndexOf('ln -sfn "$previous_current_link_target" "$prod_current"')
+    $restoreStartIndex = $restoreHelper.IndexOf('systemctl --user start "$service"')
+    Assert-True ($restoreLinkIndex -ge 0 -and $restoreStartIndex -gt $restoreLinkIndex) "Rollback starts the old server before restoring its code."
 } finally {
     Remove-Item -LiteralPath $advancedTempRoot -Recurse -Force -ErrorAction SilentlyContinue
 }
 
-# The DB gate is run twice, with the second check immediately before guarded public mutation.
+# The DB gate is run twice, with the second check after the old writer stops and
+# before read-only validation and the release switch.
 $secondGateIndex = $promoteRemote.IndexOf('if assert_no_realtime_games_sqlite "before-public-switch"; then')
-$backupIndex = $promoteRemote.IndexOf('if ! backup_public_state; then')
+$stopPrimaryIndex = $promoteRemote.IndexOf('if ! systemctl --user stop "$service"; then')
+$finalValidationIndex = $promoteRemote.IndexOf('if ! validate_existing_saves "$new_release_dir"; then', $secondGateIndex)
 $switchLinkIndex = $promoteRemote.IndexOf('if ! ln -sfn "$new_release_dir" "$prod_current"; then')
-$switchNextIndex = $promoteRemote.IndexOf('if ! set_proxy_port "$next_port"; then')
-$switchPrimaryIndex = $promoteRemote.IndexOf('if ! set_proxy_port "$prod_port"; then')
+$startPrimaryIndex = $promoteRemote.IndexOf('if ! systemctl --user start "$service"; then', $switchLinkIndex)
 $noOpHelperRepairIndex = $promoteRemote.IndexOf('if ! publish_elo_helpers "$staging_current" "$expected_artifact_sha" "$expected_git_sha"; then')
 $successfulHelperPublishIndex = $promoteRemote.IndexOf('if ! publish_elo_helpers "$new_release_dir" "$served_artifact_sha" "$served_git_sha"; then')
 Assert-True ($preflightIndex -ge 0 -and $secondGateIndex -gt $preflightIndex) "Promotion does not run the SQLite gate twice."
-Assert-True ($backupIndex -lt $secondGateIndex -and $switchLinkIndex -gt $secondGateIndex) "Second SQLite gate is not immediately before the public switch."
-Assert-True ($switchNextIndex -gt $switchLinkIndex -and $switchPrimaryIndex -gt $switchNextIndex) "Public link/next/final proxy switches are not all explicitly guarded."
-Assert-True ($successfulHelperPublishIndex -gt $switchPrimaryIndex) "Prod ELO helper mirrors are mutated before the public release transaction succeeds."
+Assert-True ($stopPrimaryIndex -gt $preflightIndex -and $secondGateIndex -gt $stopPrimaryIndex) "Final SQLite gate does not run after the old writer stops."
+Assert-True ($finalValidationIndex -gt $secondGateIndex -and $switchLinkIndex -gt $finalValidationIndex) "Read-only validation is not between the final gate and release switch."
+Assert-True ($startPrimaryIndex -gt $switchLinkIndex) "New primary starts before the release switch."
+Assert-True ($successfulHelperPublishIndex -gt $startPrimaryIndex) "Prod ELO helper mirrors are mutated before the single-writer release transaction succeeds."
 Assert-True ($noOpHelperRepairIndex -ge 0 -and $noOpHelperRepairIndex -lt $promoteNoOpIndex) "Exact-prod no-op does not reconcile a prior partial ELO helper publication."
 Assert-True ($promoteRemote.Contains('os.replace(temporary, path)') -and $promoteRemote.Contains('.tm-elo-helpers-release.json')) "ELO helper publication lacks atomic same-directory replacement and completion state."
-Assert-True ($promoteRemote.Contains('sudo cp -a -- "$upstream_snippet" "$nginx_snippet_backup"')) "Promotion does not back up the exact nginx snippet."
-Assert-True ($promoteRemote.Contains('sudo cp -a --remove-destination -- "$nginx_snippet_backup" "$upstream_snippet"')) "Rollback does not restore the exact nginx snippet."
-Assert-True ($promoteRemote.Contains('rollback_after_public_switch "Could not switch public traffic to the next backend."')) "Next-backend nginx failure does not enter transactional rollback."
-Assert-True ($promoteRemote.Contains('rollback_after_public_switch "Could not switch public traffic back to the primary backend."')) "Final nginx failure does not enter transactional rollback."
+Assert-True (-not $promoteRemote.Contains('set_proxy_port "$next_port"')) "Promotion still routes public traffic through a second live writer."
+# Release entrypoints must not regain database copying or automatic restore.
+foreach ($forbidden in @('create_verified_sqlite_copy', 'create_static_database_copy', 'create_verified_sqlite_backup', 'restore_database_backup', 'database_backup=', 'rehearsal_db=', '-wal', '-shm')) {
+    Assert-True (-not $promoteRemote.Contains($forbidden)) "Code-only promotion contains forbidden database operation: $forbidden"
+}
+$rehearsalRemote = Get-RemoteScriptBody -Path (Join-Path $PSScriptRoot 'rehearse_tm_prod.ps1')
+foreach ($forbidden in @('backup(', 'cp --', 'restore_probe=', 'sqlite3.connect')) {
+    Assert-True (-not $rehearsalRemote.Contains($forbidden)) "Read-only rehearsal contains database copying: $forbidden"
+}
+Assert-True (-not $deployRemote.Contains('rsync -a "$legacy_root/db/"')) "Deploy can copy a legacy database."
+Assert-True ($deployRemote.Contains('Code-only deploy requires an existing shared database')) "Deploy can initialize a missing database."
+Assert-True ($rehearsalRemote.Contains('validate_saved_games.js "$game_db"')) "Read-only rehearsal does not validate existing saves."
+Assert-True ($promoteRemote.Contains('trap handle_promote_exit EXIT') -and $promoteRemote.Contains('Unexpected failure during the single-writer window')) "Unexpected errors can strand production inside the single-writer window."
+
+# Abandoned realtime games may be declared in an operator-owned ledger. Release and
+# rollout use it only when its path is supplied explicitly; nothing infers an abandoned
+# game, and every merged id is echoed before the locked remote gate runs.
+$ledgerTempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("tm-ignored-ledger-" + [guid]::NewGuid().ToString("N"))
+New-Item -ItemType Directory -Path $ledgerTempRoot -Force | Out-Null
+try {
+    $ledgerPath = Join-Path $ledgerTempRoot "prod-ignored-games.txt"
+
+    Assert-True ((@(Read-TmIgnoredRealtimeGameIdLedger -Path $ledgerPath)).Count -eq 0) "A missing ignored-games ledger is not empty."
+    Assert-True ($null -eq (Get-TmIgnoredRealtimeGameIdLedgerPath -Path $null -ExplicitOnly)) "An omitted release ledger path still resolves to the default ledger."
+    Assert-True ((Get-TmIgnoredRealtimeGameIdLedgerPath -Path $ledgerPath -ExplicitOnly) -eq [System.IO.Path]::GetFullPath($ledgerPath)) "An explicit release ledger path was not preserved."
+
+    Set-Content -LiteralPath $ledgerPath -Encoding utf8 -Value @(
+        "# comment only",
+        "",
+        "g_abandoned",
+        "g_second   # abandoned 2026-09-08",
+        "g_abandoned"
+    )
+    $ledgerEntries = @(Read-TmIgnoredRealtimeGameIdLedgerEntries -Path $ledgerPath)
+    Assert-True ((($ledgerEntries | ForEach-Object { $_.GameId }) -join ",") -eq "g_abandoned,g_second") "Ignored-games ledger parsing did not keep order and deduplicate."
+    Assert-True ($ledgerEntries[1].Note -eq "abandoned 2026-09-08") "Ignored-games ledger lost the inline note."
+    Assert-True (((@(Read-TmIgnoredRealtimeGameIdLedger -Path $ledgerPath)) -join ",") -eq "g_abandoned,g_second") "Ignored-games ledger ids drifted from its entries."
+
+    Set-Content -LiteralPath $ledgerPath -Encoding utf8 -Value @("g1; rm -rf /")
+    Assert-Throws {
+        Read-TmIgnoredRealtimeGameIdLedger -Path $ledgerPath | Out-Null
+    } "An unsafe ignored-games ledger line was accepted."
+
+    $mergedIds = @(Merge-TmIgnoredRealtimeGameIds -Primary @("g_abandoned") -Additional @("g_second", "g_abandoned"))
+    Assert-True (($mergedIds -join ",") -eq "g_abandoned,g_second") "Ledger and per-run ids were not merged in order without duplicates."
+
+    $writtenEntries = @(Set-TmIgnoredRealtimeGameIdLedger -Path $ledgerPath -Entries @(
+        [pscustomobject]@{GameId = "g_second"; Note = "keep"},
+        "g_abandoned"
+    ))
+    Assert-True ((($writtenEntries | ForEach-Object { $_.GameId }) -join ",") -eq "g_abandoned,g_second") "Ledger write did not return a canonical order."
+    $ledgerLines = @(Get-Content -LiteralPath $ledgerPath)
+    Assert-True ($ledgerLines -contains "g_abandoned") "Ledger write dropped an id."
+    Assert-True ($ledgerLines -contains "g_second  # keep") "Ledger write dropped a preserved note."
+    Assert-True (@(Get-ChildItem -LiteralPath $ledgerTempRoot -Filter "*.tmp-*").Count -eq 0) "Ledger write left a temporary file behind."
+
+    $helperPath = Join-Path $PSScriptRoot "tm_ignored_realtime_games.ps1"
+    Assert-True (Test-Path -LiteralPath $helperPath) "Missing ignored-games ledger helper script."
+    $pwshForLedger = (Get-Command pwsh -ErrorAction Stop | Select-Object -First 1).Source
+
+    $listResult = Invoke-TextProcess -FilePath $pwshForLedger -ArgumentList @("-NoProfile", "-File", $helperPath, "-Path", $ledgerPath, "-List") -InputText $null
+    Assert-True ($listResult.ExitCode -eq 0) "Ledger helper -List failed. stderr=$($listResult.StdErr)"
+    Assert-True ($listResult.StdOut.Contains("g_abandoned") -and $listResult.StdOut.Contains("g_second")) "Ledger helper -List did not print the ledger."
+
+    $defaultListResult = Invoke-TextProcess -FilePath $pwshForLedger -ArgumentList @("-NoProfile", "-File", $helperPath, "-DryRun") -InputText $null
+    Assert-True ($defaultListResult.ExitCode -eq 0 -and $defaultListResult.StdOut.Contains("prod-ignored-games.txt")) "Ledger helper does not resolve the default ledger path."
+
+    $addResult = Invoke-TextProcess -FilePath $pwshForLedger -ArgumentList @("-NoProfile", "-File", $helperPath, "-Path", $ledgerPath, "-Add", "g_third", "-Note", "abandoned") -InputText $null
+    Assert-True ($addResult.ExitCode -eq 0) "Ledger helper -Add failed. stderr=$($addResult.StdErr)"
+    Assert-True ((@(Get-Content -LiteralPath $ledgerPath) -contains "g_third  # abandoned")) "Ledger helper -Add did not write the id with its note."
+
+    $removeResult = Invoke-TextProcess -FilePath $pwshForLedger -ArgumentList @("-NoProfile", "-File", $helperPath, "-Path", $ledgerPath, "-Remove", "g_third") -InputText $null
+    Assert-True ($removeResult.ExitCode -eq 0 -and $removeResult.StdOut.Contains("Removed: g_third")) "Ledger helper -Remove did not report the removal."
+    Assert-True (-not (@(Get-Content -LiteralPath $ledgerPath) -contains "g_third  # abandoned")) "Ledger helper -Remove kept the id."
+
+    $dryRunAdd = Invoke-TextProcess -FilePath $pwshForLedger -ArgumentList @("-NoProfile", "-File", $helperPath, "-Path", $ledgerPath, "-Add", "g_fourth", "-DryRun") -InputText $null
+    Assert-True ($dryRunAdd.ExitCode -eq 0 -and $dryRunAdd.StdOut.Contains("Dry run")) "Ledger helper dry run did not report itself."
+    Assert-True (-not (@(Get-Content -LiteralPath $ledgerPath) -contains "g_fourth")) "Ledger helper dry run wrote the ledger."
+
+    $unsafeAdd = Invoke-TextProcess -FilePath $pwshForLedger -ArgumentList @("-NoProfile", "-File", $helperPath, "-Path", $ledgerPath, "-Add", "g1;rm") -InputText $null
+    Assert-True ($unsafeAdd.ExitCode -ne 0) "Ledger helper accepted an unsafe game id."
+} finally {
+    Remove-Item -LiteralPath $ledgerTempRoot -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+Assert-True ($releaseSource.Contains('Get-TmIgnoredRealtimeGameIdLedgerPath -Path $IgnoredRealtimeGameIdFile -ExplicitOnly')) "Prod release does not require an explicit ignored-games ledger path."
+Assert-True ($releaseSource.Contains('$ledgerIgnoredRealtimeGameIds = @()')) "Prod release does not keep ledger ids empty when no path is supplied."
+Assert-True ($releaseSource.Contains('@(Read-TmIgnoredRealtimeGameIdLedger -Path $ignoredRealtimeGameIdLedgerPath)')) "Prod release does not read an explicitly supplied ignored-games ledger."
+Assert-True ($releaseSource.Contains('$ignoredRealtimeGameIds = @(Merge-TmIgnoredRealtimeGameIds -Primary $ledgerIgnoredRealtimeGameIds -Additional $cliIgnoredRealtimeGameIds)')) "Prod release does not merge the ignored-games ledger with the per-run ids."
+Assert-True ($releaseSource.Contains('Write-Host ("Ignored realtime games: ledger={0} cli={1} total={2}"')) "Prod release does not echo the merged ignored-game counts."
+Assert-True ($releaseSource.Contains('Write-Host ("Ignored realtime ids   : {0}" -f ($ignoredRealtimeGameIds -join ","))')) "Prod release does not echo the merged ignored-game ids."
+Assert-True ($releaseSource.Contains('[string]$IgnoredRealtimeGameIdFile')) "Prod release has no ignored-games ledger override parameter."
+Assert-True ($rolloutSource.Contains('$releaseArgs += @("-IgnoredRealtimeGameIdFile", $IgnoredRealtimeGameIdFile)')) "Rollout does not forward an explicit ignored-games ledger."
 
 Write-Host "tm release guards regressions: OK"

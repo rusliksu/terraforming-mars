@@ -6,8 +6,21 @@ import {CardName} from '../src/common/cards/CardName';
 import {CardManifest} from '../src/server/cards/ModuleManifest';
 import {DEFAULT_GAME_OPTIONS, GameOptions} from '../src/server/game/GameOptions';
 import {toName} from '../src/common/utils/utils';
+import {refreshCustomCardRegistry} from '../src/server/cards/CustomCardRegistry';
+import {blankCustomCard, CustomCardDefinition} from '../src/common/cards/CustomCardDefinition';
+import {InMemoryDatabase} from './testing/InMemoryDatabase';
+import {restoreTestDatabase, setTestDatabase} from './testing/setup';
 
 describe('GameCards', () => {
+  it('requires both Colonies and Turmoil for Galaxy Express', () => {
+    const options = {...DEFAULT_GAME_OPTIONS, idesOfMarsExpansion: true, coloniesExtension: true};
+    expect(new GameCards(options).getProjectCards().map(toName)).not.to.contain(CardName.GALAXY_EXPRESS);
+    options.turmoilExtension = true;
+    expect(new GameCards(options).getProjectCards().map(toName)).to.contain(CardName.GALAXY_EXPRESS);
+    options.coloniesExtension = false;
+    expect(new GameCards(options).getProjectCards().map(toName)).not.to.contain(CardName.GALAXY_EXPRESS);
+  });
+
   it('correctly removes projectCardsToRemove', () => {
     // include corporate era
     const gameOptions: GameOptions = {
@@ -95,6 +108,22 @@ describe('GameCards', () => {
     };
     const names = new GameCards(gameOptions).getProjectCards().map(toName);
     expect(names).to.contain(CardName.VENUSIAN_INSECTS);
+  });
+
+  it('replaces Mineral Deposit only when its test variant is included', () => {
+    const normal = new GameCards(DEFAULT_GAME_OPTIONS).getProjectCards();
+    expect(normal.find((card) => card.name === CardName.MINERAL_DEPOSIT)?.cost).to.eq(5);
+    expect(normal.some((card) => card.name === CardName.MINERAL_DEPOSIT_REBALANCED)).to.be.false;
+
+    const variant = new GameCards({
+      ...DEFAULT_GAME_OPTIONS,
+      includedCards: [CardName.MINERAL_DEPOSIT_REBALANCED],
+    }).getProjectCards();
+    expect(variant.some((card) => card.name === CardName.MINERAL_DEPOSIT)).to.be.false;
+    expect(variant.find((card) => card.name === CardName.MINERAL_DEPOSIT_REBALANCED)?.cost).to.eq(6);
+
+    const anotherNormal = new GameCards(DEFAULT_GAME_OPTIONS).getProjectCards();
+    expect(anotherNormal.find((card) => card.name === CardName.MINERAL_DEPOSIT)?.cost).to.eq(5);
   });
 
   it('does not add custom corporations from disabled modules except allowed Turmoil corps', () => {
@@ -217,5 +246,126 @@ describe('GameCards', () => {
     const ecolines = corps.filter((c) => c.name === CardName.ECOLINE);
     expect(thorgates).to.have.length(1);
     expect(ecolines).to.have.length(1);
+  });
+
+  describe('custom card library injection', () => {
+    afterEach(async () => {
+      restoreTestDatabase();
+      await refreshCustomCardRegistry();
+    });
+
+    async function registerCustomCard(def: CustomCardDefinition): Promise<void> {
+      const db = new InMemoryDatabase();
+      setTestDatabase(db);
+      await db.insertCustomCardLibraryEntry({
+        id: 'c1', definition: def, shareCode: 'x', submittedBy: '', status: 'approved', createdAt: 1,
+      });
+      await refreshCustomCardRegistry();
+    }
+
+    it('does not include custom cards when the toggle is off', async () => {
+      await registerCustomCard(blankCustomCard('Off Card'));
+      const gameOptions: GameOptions = {...DEFAULT_GAME_OPTIONS, corporateEra: true, customCardsExpansion: false};
+      const names = new GameCards(gameOptions).getProjectCards().map(toName);
+      expect(names).to.not.contain('Off Card');
+    });
+
+    it('includes approved custom cards when the toggle is on', async () => {
+      await registerCustomCard(blankCustomCard('On Card'));
+      const gameOptions: GameOptions = {...DEFAULT_GAME_OPTIONS, corporateEra: true, customCardsExpansion: true};
+      const names = new GameCards(gameOptions).getProjectCards().map(toName);
+      expect(names).to.contain('On Card');
+    });
+
+    it('excludes a custom card whose expansion-compatibility is not enabled for this game', async () => {
+      const def = blankCustomCard('Venus Card');
+      def.compatibility = ['venus'];
+      await registerCustomCard(def);
+      const gameOptions: GameOptions = {...DEFAULT_GAME_OPTIONS, corporateEra: true, customCardsExpansion: true};
+      const names = new GameCards(gameOptions).getProjectCards().map(toName);
+      expect(names).to.not.contain('Venus Card');
+    });
+
+    it('includes a custom card once its required expansion is enabled', async () => {
+      const def = blankCustomCard('Venus Card 2');
+      def.compatibility = ['venus'];
+      await registerCustomCard(def);
+      const gameOptions: GameOptions = {
+        ...DEFAULT_GAME_OPTIONS,
+        corporateEra: true,
+        customCardsExpansion: true,
+        expansions: {...DEFAULT_GAME_OPTIONS.expansions, venus: true},
+      };
+      const names = new GameCards(gameOptions).getProjectCards().map(toName);
+      expect(names).to.contain('Venus Card 2');
+    });
+
+    it('bannedCards suppresses an individual custom card', async () => {
+      await registerCustomCard(blankCustomCard('Banned Card'));
+      const gameOptions: GameOptions = {
+        ...DEFAULT_GAME_OPTIONS,
+        corporateEra: true,
+        customCardsExpansion: true,
+        bannedCards: ['Banned Card' as CardName],
+      };
+      const names = new GameCards(gameOptions).getProjectCards().map(toName);
+      expect(names).to.not.contain('Banned Card');
+    });
+  });
+
+  it('customCorporationsList restricts the corporation deck to only those corps', () => {
+    const gameOptions: GameOptions = {
+      ...DEFAULT_GAME_OPTIONS,
+      corporateEra: true,
+      customCorporationsList: [CardName.INVENTRIX, CardName.HELION, CardName.THARSIS_REPUBLIC],
+    };
+    const names = new GameCards(gameOptions).getCorporationCards().map(toName);
+    expect(names).to.have.members([CardName.INVENTRIX, CardName.HELION, CardName.THARSIS_REPUBLIC]);
+    expect(names).to.have.length(3);
+  });
+
+  it('customCorporationsList accepts an old card name on its own', () => {
+    const gameOptions: GameOptions = {
+      ...DEFAULT_GAME_OPTIONS,
+      corporateEra: true,
+      customCorporationsList: ['Thorgate' as CardName, CardName.HELION],
+    };
+    const names = new GameCards(gameOptions).getCorporationCards().map(toName);
+    expect(names).to.have.members([CardName.THORGATE, CardName.HELION]);
+    expect(names).to.have.length(2);
+  });
+
+  it('customCorporationsList excludes corps from disabled expansions', () => {
+    const gameOptions: GameOptions = {
+      ...DEFAULT_GAME_OPTIONS,
+      corporateEra: true,
+      moonExpansion: false,
+      customCorporationsList: [CardName.INVENTRIX, CardName.LUNA_TRADE_FEDERATION],
+    };
+    const names = new GameCards(gameOptions).getCorporationCards().map(toName);
+    expect(names).to.have.members([CardName.INVENTRIX]);
+    expect(names).to.have.length(1);
+  });
+
+  it('customPreludes restricts the prelude deck to only those preludes', () => {
+    const gameOptions: GameOptions = {
+      ...DEFAULT_GAME_OPTIONS,
+      preludeExtension: true,
+      customPreludes: [CardName.ALLIED_BANK, CardName.AQUIFER_TURBINES],
+    };
+    const names = new GameCards(gameOptions).getPreludeCards().map(toName);
+    expect(names).to.have.members([CardName.ALLIED_BANK, CardName.AQUIFER_TURBINES]);
+    expect(names).to.have.length(2);
+  });
+
+  it('customCeos restricts the CEO deck to only those CEOs', () => {
+    const gameOptions: GameOptions = {
+      ...DEFAULT_GAME_OPTIONS,
+      ceoExtension: true,
+      customCeos: [CardName.FLOYD, CardName.HAL9000],
+    };
+    const names = new GameCards(gameOptions).getCeoCards().map(toName);
+    expect(names).to.have.members([CardName.FLOYD, CardName.HAL9000]);
+    expect(names).to.have.length(2);
   });
 });

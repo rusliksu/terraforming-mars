@@ -6,6 +6,7 @@ import {SerializedGame} from '../../src/server/SerializedGame';
 import {IGameLoader} from '../../src/server/database/IGameLoader';
 import {GameLoader} from '../../src/server/database/GameLoader';
 import {globalInitialize} from '../../src/server/globalInitialize';
+import {clearPlayerTunings} from '../../src/server/ai/aiTuning';
 
 process.env.TM_DISABLE_TELEGRAM = process.env.TM_DISABLE_TELEGRAM ?? '1';
 process.env.ELO_DATA_DIR = process.env.ELO_DATA_DIR ?? path.join(os.tmpdir(), `terraforming-mars-tests-${process.pid}`);
@@ -13,6 +14,8 @@ process.env.ELO_DATA_DIR = process.env.ELO_DATA_DIR ?? path.join(os.tmpdir(), `t
 const FAKE_DATABASE: IDatabase = {
   markFinished: () => Promise.resolve(),
   deleteGameNbrSaves: () => Promise.resolve(),
+  deleteGame: () => Promise.resolve(),
+  deleteOrphanParticipants: () => Promise.resolve(0),
   getPlayerCount: () => Promise.resolve(0),
   getGame: () => Promise.resolve({} as SerializedGame),
   getGameId: () => Promise.resolve('g'),
@@ -31,6 +34,21 @@ const FAKE_DATABASE: IDatabase = {
   createSession: () => Promise.resolve(),
   deleteSession: () => Promise.resolve(),
   getSessions: () => Promise.resolve([]),
+
+  listMapLibraryEntries: () => Promise.resolve([]),
+  getMapLibraryEntry: () => Promise.resolve(undefined),
+  insertMapLibraryEntry: () => Promise.resolve(),
+  setMapLibraryEntryStatus: () => Promise.resolve(),
+  deleteMapLibraryEntry: () => Promise.resolve(),
+
+  listCustomCardLibraryEntries: () => Promise.resolve([]),
+  getCustomCardLibraryEntry: () => Promise.resolve(undefined),
+  insertCustomCardLibraryEntry: () => Promise.resolve(),
+  setCustomCardLibraryEntryStatus: () => Promise.resolve(),
+  updateCustomCardLibraryEntry: () => Promise.resolve(),
+  deleteCustomCardLibraryEntry: () => Promise.resolve(),
+
+  deleteExpiredSessions: () => Promise.resolve(0),
 };
 
 let databaseUnderTest: IDatabase = FAKE_DATABASE;
@@ -52,3 +70,13 @@ export function setTestGameLoader(gameLoader: IGameLoader) {
 }
 GameLoader.getInstance = () => gameLoaderUnderTest;
 globalInitialize();
+
+// Mocha reuses worker processes across spec files. Player ids are stable between testGame()
+// calls and AI tunings are keyed by player id, so a tuning left behind by one file would change
+// the valuation of the next file in a schedule-dependent way (a real CI flake). Clear after each
+// test, whichever file set it. Root hook plugin: Mocha picks mochaHooks up from a --require file.
+export const mochaHooks = {
+  afterEach() {
+    clearPlayerTunings();
+  },
+};

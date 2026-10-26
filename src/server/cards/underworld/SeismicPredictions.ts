@@ -20,11 +20,12 @@ export class SeismicPredictions extends GlobalEvent implements IGlobalEvent {
       revealedDelegate: PartyName.SCIENTISTS,
       currentDelegate: PartyName.MARS,
       renderData: CardRenderer.builder((b) => {
-        b.text('ALL').undergroundResources(1, {cancelled}).nbsp.megacredits(-2).slash().tag(Tag.BUILDING).minus().undergroundResources().influence({size: Size.SMALL});
+        b.text('ALL').undergroundResources(1, {cancelled}).nbsp.megacredits(-2).slash().tag(Tag.BUILDING).undergroundResources(-1).influence({size: Size.SMALL});
       }),
     });
   }
-  public resolve(game: IGame, turmoil: Turmoil) {
+  public override bespokeResolve(game: IGame) {
+    const turmoil = Turmoil.getTurmoil(game);
     UnderworldExpansion.removeAllUnclaimedTokens(game);
 
     for (const player of game.playersInGenerationOrder) {

@@ -1,4 +1,4 @@
-import prometheus from 'prom-client';
+import prometheus from '@prometheus-io/client';
 import {Clock} from '../../common/Timer';
 import {paths} from '../../common/app/paths';
 import {Request} from '../Request';
@@ -7,8 +7,13 @@ import {SessionId} from '../auth/Session';
 import {GameLoader} from '../database/GameLoader';
 import {InputError} from '../inputs/InputError';
 import {ApiSurrender} from '../routes/ApiSurrender';
+import {ApiAiFeedback} from '../routes/ApiAiFeedback';
 import {ApiCloneableGame} from '../routes/ApiCloneableGame';
 import {ApiCreateGame} from '../routes/ApiCreateGame';
+import {ApiDeleteGame} from '../routes/ApiDeleteGame';
+import {ApiBoardPreview} from '../routes/ApiBoardPreview';
+import {ApiCustomCardLibrary} from '../routes/ApiCustomCardLibrary';
+import {ApiCustomCardLibraryReview} from '../routes/ApiCustomCardLibraryReview';
 import {ApiGame} from '../routes/ApiGame';
 import {ApiGameHistory} from '../routes/ApiGameHistory';
 import {ApiGameLogs} from '../routes/ApiGameLogs';
@@ -16,12 +21,16 @@ import {ApiGames} from '../routes/ApiGames';
 import {ApiHeapSnapshot} from '../routes/ApiHeapSnapshot';
 import {ApiIPs} from '../routes/ApiIPs';
 import {ApiLogout} from '../routes/ApiLogout';
+import {ApiMapLibrary} from '../routes/ApiMapLibrary';
+import {ApiMapLibraryReview} from '../routes/ApiMapLibraryReview';
 import {ApiMetrics} from '../routes/ApiMetrics';
 import {ApiPlayer} from '../routes/ApiPlayer';
 import {ApiProfile} from '../routes/ApiProfile';
+import {ApiReplay} from '../routes/ApiReplay';
 import {ApiSpectator} from '../routes/ApiSpectator';
 import {ApiStats} from '../routes/ApiStats';
 import {ApiWaitingFor} from '../routes/ApiWaitingFor';
+import {ApiWrybitStats} from '../routes/ApiWrybitStats';
 import {Autopass} from '../routes/Autopass';
 import {DiscordAuth} from '../routes/DiscordAuth';
 import {GameHandler} from '../routes/Game';
@@ -43,9 +52,12 @@ import * as authcookies from './auth/authcookies';
 import {DiscordUser} from './auth/discord';
 import {getOrSetAccessAuditClientId} from './accessAuditClientId';
 import {getClientIp} from './clientIp';
+import {EndGameLog} from '../routes/EndGameLog';
+import {UrlParams} from '../routes/UrlParams';
 import * as responses from './responses';
 import {AppError} from './AppError';
 import {capture, ErrorDiagnosticContext} from './SentryReporter';
+import {isPromotionWriteBlocked} from './PromotionWriteGate';
 
 const metrics = {
   request_count: new prometheus.Counter({
@@ -96,8 +108,11 @@ const handlers: Map<string, IHandler> = new Map(
     ['', ServeApp.INSTANCE],
     [paths.ADMIN, ServeApp.INSTANCE],
     [paths.API_SURRENDER, ApiSurrender.INSTANCE],
+    [paths.API_AI_FEEDBACK, ApiAiFeedback.INSTANCE],
     [paths.API_CLONEABLEGAME, ApiCloneableGame.INSTANCE],
     [paths.API_CREATEGAME, ApiCreateGame.INSTANCE],
+    [paths.API_DELETE_GAME, ApiDeleteGame.INSTANCE],
+    [paths.API_BOARD_PREVIEW, ApiBoardPreview.INSTANCE],
     [paths.API_GAME, ApiGame.INSTANCE],
     [paths.API_GAME_HISTORY, ApiGameHistory.INSTANCE],
     [paths.API_GAME_LOGS, ApiGameLogs.INSTANCE],
@@ -106,11 +121,18 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.API_IPS, ApiIPs.INSTANCE],
     [paths.API_METRICS, ApiMetrics.INSTANCE],
     [paths.API_PLAYER, ApiPlayer.INSTANCE],
+    [paths.API_REPLAY, ApiReplay.INSTANCE],
     [paths.API_STATS, ApiStats.INSTANCE],
     [paths.API_SPECTATOR, ApiSpectator.INSTANCE],
     [paths.API_WAITING_FOR, ApiWaitingFor.INSTANCE],
+    [paths.API_WRYBIT_STATS, ApiWrybitStats.INSTANCE],
     [paths.AUTOPASS, Autopass.INSTANCE],
+    [paths.CARD_LIBRARY, ServeApp.INSTANCE],
     [paths.CARDS, ServeApp.INSTANCE],
+    [paths.CUSTOM_CARD_MAKER, ServeApp.INSTANCE],
+    [paths.API_CUSTOM_CARD_LIBRARY, ApiCustomCardLibrary.INSTANCE],
+    [paths.API_CUSTOM_CARD_LIBRARY_REVIEW, ApiCustomCardLibraryReview.INSTANCE],
+    [paths.END_GAME_LOG, EndGameLog.INSTANCE],
     ['favicon.ico', ServeAsset.INSTANCE],
     [paths.GAME, GameHandler.INSTANCE],
     [paths.GAMES_OVERVIEW, GamesOverview.INSTANCE],
@@ -118,6 +140,10 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.LOAD, Load.INSTANCE],
     [paths.LOAD_GAME, LoadGame.INSTANCE],
     [paths.LOGIN, Login.INSTANCE],
+    [paths.MAP_EDITOR, ServeApp.INSTANCE],
+    [paths.MAP_LIBRARY, ServeApp.INSTANCE],
+    [paths.API_MAP_LIBRARY, ApiMapLibrary.INSTANCE],
+    [paths.API_MAP_LIBRARY_REVIEW, ApiMapLibraryReview.INSTANCE],
     [paths.API_LOGOUT, ApiLogout.INSTANCE],
     ['main.js', ServeAsset.INSTANCE],
     ['main.js.map', ServeAsset.INSTANCE],
@@ -131,7 +157,9 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.PLAYER_INPUT, PlayerInput.INSTANCE],
     [paths.API_PROFILE, ApiProfile.INSTANCE],
     [paths.RESET, Reset.INSTANCE],
+    [paths.REPLAY, ServeApp.INSTANCE],
     [paths.SPECTATOR, ServeApp.INSTANCE],
+    [paths.STATS, ServeApp.INSTANCE],
     ['styles.css', ServeAsset.INSTANCE],
     [paths.THE_END, ServeApp.INSTANCE],
   ],
@@ -194,6 +222,10 @@ export async function processRequest(
     }
 
     const url = new URL(req.url, `http://${req.headers.host}`);
+    if (isPromotionWriteBlocked(req.method)) {
+      responses.serviceUnavailable(res);
+      return;
+    }
     const accessAuditClientId = process.env.TM_ACCESS_AUDIT === '1' ? getOrSetAccessAuditClientId(req, res) : undefined;
 
     const pathname = url.pathname.substring(1); // Remove leading '/'
@@ -219,6 +251,7 @@ export async function processRequest(
         },
         sessionid: sessionid,
         user: user,
+        urlParams: new UrlParams(url.searchParams),
       };
 
       await handler.processRequest(req, res, ctx);

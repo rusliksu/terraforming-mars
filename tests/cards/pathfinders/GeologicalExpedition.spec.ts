@@ -17,6 +17,7 @@ import {SelectSpace} from '../../../src/server/inputs/SelectSpace';
 import {SpaceName} from '../../../src/common/boards/SpaceName';
 import {TileType} from '../../../src/common/TileType';
 import {cast} from '../../../src/common/utils/utils';
+import {SelectResource} from '@/server/inputs/SelectResource';
 
 describe('GeologicalExpedition', () => {
   let card: GeologicalExpedition;
@@ -42,7 +43,7 @@ describe('GeologicalExpedition', () => {
     expect(player.stock.asUnits()).deep.eq(Units.of({steel: 1}));
     expect(microbeCard.resourceCount).eq(0);
     expect(scienceCard.resourceCount).eq(0);
-    expect(game.gameLog.map(formatMessage)).contains('blue gained 1 steel because of Geological Expedition');
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 1:r:steel: because of Geological Expedition');
     cast(player.getWaitingFor(), undefined);
   });
 
@@ -64,7 +65,7 @@ describe('GeologicalExpedition', () => {
     expect(player.stock.asUnits()).deep.eq(Units.of({titanium: 2}));
     expect(microbeCard.resourceCount).eq(0);
     expect(scienceCard.resourceCount).eq(0);
-    expect(game.gameLog.map(formatMessage)).contains('blue gained 1 titanium because of Geological Expedition');
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 1:r:titanium: because of Geological Expedition');
     cast(player.getWaitingFor(), undefined);
   });
 
@@ -125,6 +126,23 @@ describe('GeologicalExpedition', () => {
     expect(player.steel).eq(0);
   });
 
+  it('grants a bonus when replacing an Ares hazard', () => {
+    [game, player] = testGame(1, {aresExtension: true, aresHazards: false});
+    game.board = EmptyBoard.newInstance();
+    player.megaCredits = 8;
+    player.playedCards.push(card);
+
+    const hazardSpace = game.board.getAvailableSpacesForCity(player)[0];
+    hazardSpace.bonus = [SpaceBonus.PLANT];
+    hazardSpace.tile = {tileType: TileType.DUST_STORM_MILD, protectedHazard: false};
+
+    game.addCity(player, hazardSpace);
+
+    expect(hazardSpace.tile?.tileType).eq(TileType.CITY);
+    expect(hazardSpace.tile?.covers).is.undefined;
+    expect(player.plants).eq(1);
+  });
+
   it('does not grant covered ocean bonuses for New Holland', () => {
     const newHolland = new NewHolland();
     [game, player] = testGame(1);
@@ -180,5 +198,19 @@ describe('GeologicalExpedition', () => {
     expect(player.stock.asUnits()).deep.eq(Units.of({plants: 2, heat: 2}));
     expect(microbeCard.resourceCount).eq(2);
     expect(scienceCard.resourceCount).eq(0);
+  });
+
+  it('standard resource, choose it again', () => {
+    space.bonus = [SpaceBonus.STANDARD_RESOURCE];
+    game.addCity(player, space);
+    runAllActions(game);
+
+    // The space's bonus, then the additional one from this card.
+    cast(player.popWaitingFor(), SelectResource).process({type: 'resource', resource: 'titanium'});
+    runAllActions(game);
+    cast(player.popWaitingFor(), SelectResource).process({type: 'resource', resource: 'plants'});
+
+    expect(player.stock.asUnits()).deep.eq(Units.of({titanium: 1, plants: 1}));
+    cast(player.getWaitingFor(), undefined);
   });
 });

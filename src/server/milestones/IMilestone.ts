@@ -1,11 +1,15 @@
 import {MilestoneName} from '../../common/ma/MilestoneName';
 import {IPlayer} from '../IPlayer';
+import {IGame} from '../IGame';
+import {ConglomeratesExpansion} from '../conglomerates/ConglomeratesExpansion';
 
 export interface IMilestone {
   name: MilestoneName;
   description: string;
   canClaim(player: IPlayer): boolean;
   getScore(player: IPlayer): number;
+  /** Threshold that applies in this game, when it is dynamic. */
+  thresholdFor?(game: IGame): number | undefined;
 }
 
 export abstract class BaseMilestone implements IMilestone {
@@ -19,8 +23,12 @@ export abstract class BaseMilestone implements IMilestone {
     this.threshold = threshold;
   }
 
+  public thresholdFor(_game: IGame): number {
+    return this.threshold;
+  }
+
   public abstract getScore(player: IPlayer): number;
   public canClaim(player: IPlayer): boolean {
-    return this.getScore(player) >= this.threshold;
+    return ConglomeratesExpansion.meetsTeamThreshold(player, this.threshold, (p) => this.getScore(p));
   }
 }

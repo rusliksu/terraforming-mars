@@ -1,24 +1,158 @@
-import {shallowMount} from '@vue/test-utils';
+import {flushPromises, shallowMount} from '@vue/test-utils';
 import {expect} from 'chai';
+import {vi} from 'vitest';
 import {paths} from '@/common/app/paths';
 import {statusCode} from '@/common/http/statusCode';
 import App from '@/client/components/App.vue';
+import PlayerTimer from '@/client/components/overview/PlayerTimer.vue';
 import {getLoadErrorMessage} from '@/client/utils/loadErrorMessage';
 import {globalConfig} from './getLocalVue';
-import {fakeGameOptionsModel} from './testHelpers';
+import {fakeGameOptionsModel, fakePlayerViewModel, fakePublicPlayerModel, fakeTimerModel} from './testHelpers';
 import {Phase} from '@/common/Phase';
+import {defineComponent, nextTick, onMounted, onUnmounted} from 'vue';
+
+const appConfig = {
+  ...globalConfig,
+  global: {
+    ...globalConfig.global,
+    // Explicit components avoid starting asynchronous imports.
+    stubs: {
+      StartScreen: {template: '<div data-test="start-screen"></div>'},
+      MapLibrary: {template: '<div data-test="map-library"></div>'},
+    },
+  },
+};
 
 describe('App', () => {
   const originalFetch = global.fetch;
 
-  afterEach(() => {
+  afterEach(async () => {
+    await vi.dynamicImportSettled();
     global.fetch = originalFetch;
+    vi.useRealTimers();
     window.history.replaceState({}, '', '/');
   });
 
   it('mounts without errors', () => {
     const wrapper = shallowMount(App, globalConfig);
     expect(wrapper.exists()).to.be.true;
+  });
+
+  it('routes / to the start screen', async () => {
+    history.pushState({}, '', '/');
+    const wrapper = shallowMount(App, appConfig);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-test="start-screen"]').exists()).to.be.true;
+  });
+
+  it('routes /map-library to the map-library screen', async () => {
+    history.pushState({}, '', '/map-library');
+    const wrapper = shallowMount(App, appConfig);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-test="map-library"]').exists()).to.be.true;
+  });
+
+  it('restarts the visible timer when a refreshed player view starts the next turn', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-09-12T12:00:00Z'));
+    let mounts = 0;
+    let unmounts = 0;
+    const PlayerHomeStub = defineComponent({
+      components: {PlayerTimer},
+      props: {
+        playerView: {type: Object, required: true},
+      },
+      setup() {
+        onMounted(() => mounts++);
+        onUnmounted(() => unmounts++);
+      },
+      template: '<div data-test="player-home-stub">{{playerView.runId}}<PlayerTimer :timer="playerView.thisPlayer.timer" :live="true" /></div>',
+    });
+    const wrapper = shallowMount(App, {
+      global: {
+        ...globalConfig.global,
+        stubs: {PlayerHome: PlayerHomeStub, PlayerTimer: false},
+      },
+    });
+    const timer = {...fakeTimerModel(), afterFirstAction: true, running: false, sumElapsed: 10000};
+    wrapper.vm.playerView = fakePlayerViewModel({
+      runId: 'first-run', thisPlayer: fakePublicPlayerModel({timer}),
+    });
+    wrapper.vm.screen = 'player-home';
+    await nextTick();
+
+    expect(mounts).eq(1);
+    expect(unmounts).eq(0);
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(wrapper.find('.player-timer-seconds').text()).eq('10');
+
+    window.history.replaceState({}, '', '/player?id=p-blue-id&noredirect');
+    global.fetch = (() => Promise.resolve({
+      ok: true,
+      json: async () => fakePlayerViewModel({
+        runId: 'second-run',
+        thisPlayer: fakePublicPlayerModel({timer: {...timer, running: true, startedAt: Date.now()}}),
+      }),
+    })) as unknown as typeof fetch;
+    wrapper.vm.updatePlayer();
+    await flushPromises();
+    await nextTick();
+
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(wrapper.find('.player-timer-seconds').text()).eq('12');
+    expect(mounts).eq(2);
+    expect(unmounts).eq(1);
+    wrapper.unmount();
+  });
+
+  it('keeps the classic player page position when the view refreshes', async () => {
+    let scrollY = 0;
+    const originalScrollY = Object.getOwnPropertyDescriptor(window, 'scrollY');
+    Object.defineProperty(window, 'scrollY', {configurable: true, get: () => scrollY});
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation((_x, y) => {
+      scrollY = Number(y);
+    });
+    const PlayerHomeStub = defineComponent({
+      setup() {
+        onUnmounted(() => {
+          scrollY = 0;
+        });
+      },
+      template: '<div data-test="player-home-stub"></div>',
+    });
+    window.history.replaceState({}, '', '/player?id=p-blue-id');
+    global.fetch = (async () => ({ok: true, json: async () => fakePlayerViewModel()})) as unknown as typeof fetch;
+    const wrapper = shallowMount(App, {global: {...globalConfig.global, stubs: {PlayerHome: PlayerHomeStub}}});
+    try {
+      await flushPromises();
+      scrollY = 400;
+      wrapper.vm.updatePlayer();
+      await flushPromises();
+      await nextTick();
+      expect(scrollY).eq(400);
+      expect(scrollTo.mock.calls).deep.eq([[0, 400]]);
+    } finally {
+      wrapper.unmount();
+      scrollTo.mockRestore();
+      if (originalScrollY === undefined) {
+        delete (window as any).scrollY;
+      } else {
+        Object.defineProperty(window, 'scrollY', originalScrollY);
+      }
+    }
+  });
+
+  it('opens a direct replay link without loading a live player or spectator model', () => {
+    window.history.replaceState({}, '', '/replay?id=sreplay');
+    const requests: Array<string> = [];
+    global.fetch = (async (url) => {
+      requests.push(String(url));
+      throw new Error('Live model requested');
+    }) as typeof fetch;
+    const wrapper = shallowMount(App, {global: {...globalConfig.global, stubs: {ReplayHome: true}}});
+    expect(wrapper.vm.screen).eq('replay');
+    expect(requests).deep.eq([]);
+    wrapper.unmount();
   });
 
   it('shows a specific message for stale game links', () => {

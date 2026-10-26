@@ -23,7 +23,7 @@
                 class="delta-project-board__cube"
               ></i>
               <div
-                v-for="n in emptySlotsStart()"
+                v-for="n in emptySlotsStart"
                 :key="'empty-start-' + n"
                 class="delta-project-board__slot"
               ></div>
@@ -101,7 +101,7 @@ const STEPS: ReadonlyArray<DeltaBoardStep> = [
     tag: Tag.EARTH,
     dynamicSlots: true,
     rewardIcons: [
-      {cssClass: 'resource money', production: true, text: '2'},
+      {cssClass: 'resource megacredits', production: true, text: '2'},
     ],
   },
   {
@@ -172,6 +172,12 @@ export default defineComponent({
       steps: STEPS,
     };
   },
+  computed: {
+    emptySlotsStart(): number {
+      const occupied = this.playersAtPosition(0).length;
+      return Math.max(0, this.totalMarkers() - occupied);
+    },
+  },
   methods: {
     cubeCss(color: Color): string {
       const css = 'board-cube board-cube--' + color;
@@ -183,17 +189,26 @@ export default defineComponent({
         if (player.deltaProject?.position === position) {
           result.push(player.color);
         }
+        // Epsilon Dample's second marker - a player can occupy a position twice over.
+        if (player.epsilonDample?.position === position) {
+          result.push(player.color);
+        }
       }
       return result;
     },
+    // Total markers in play: one per player, plus one more for each player who also
+    // has Epsilon Dample's second marker.
+    totalMarkers(): number {
+      let total = 0;
+      for (const player of this.players) {
+        total += player.epsilonDample !== undefined ? 2 : 1;
+      }
+      return total;
+    },
     emptySlots(position: number, step: DeltaBoardStep): number {
       const occupied = this.playersAtPosition(position).length;
-      const minSlots = step.dynamicSlots ? this.players.length : 1;
+      const minSlots = step.dynamicSlots ? this.totalMarkers() : 1;
       return Math.max(0, minSlots - occupied);
-    },
-    emptySlotsStart(): number {
-      const occupied = this.playersAtPosition(0).length;
-      return Math.max(0, this.players.length - occupied);
     },
   },
 });

@@ -33,6 +33,7 @@ const COLOR_CODES: Record<Color, string> = {
   ['turquoise']: 'rgb(224, 54, 105)',
   ['vanger']: 'rgb(0, 255, 0)',
   ['serge']: 'rgb(76, 12, 31)',
+  ['credicor']: 'rgb(153, 17, 0)',
   ['saturn']: 'rgb(214, 179, 106)',
   ['saturnrings']: 'rgb(200, 181, 138)',
   ['titan']: 'rgb(185, 143, 74)',

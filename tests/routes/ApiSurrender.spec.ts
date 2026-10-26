@@ -46,6 +46,25 @@ describe('ApiSurrender', () => {
     scaffolding.req.method = 'POST';
   });
 
+  it('rejects unsupported takeover before changing or saving the game', async () => {
+    const players = [TestPlayer.BLACK.newPlayer(), TestPlayer.RED.newPlayer(), TestPlayer.YELLOW.newPlayer()];
+    const game = Game.newInstance('g123456789abc', players, players[0], 'spectatorid', {sillyficationExpansion: true});
+    game.phase = Phase.ACTION;
+    await scaffolding.ctx.gameLoader.add(game);
+    let saved = false;
+    scaffolding.ctx.gameLoader.saveGame = async () => {
+      saved = true;
+    };
+    const {manager, starts} = newBotManager();
+    scaffolding.url = `/api/surrender?playerId=${players[0].id}`;
+    await new ApiSurrender(manager).processRequest(scaffolding.req, res, scaffolding.ctx);
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('not supported');
+    expect(game.surrenderedPlayerIds.size).eq(0);
+    expect(saved).eq(false);
+    expect(starts).deep.eq([]);
+  });
+
   it('records surrender and starts a bot without passing', async () => {
     const alice = TestPlayer.BLACK.newPlayer();
     const bob = TestPlayer.RED.newPlayer();
@@ -67,7 +86,7 @@ describe('ApiSurrender', () => {
     expect(res.statusCode).eq(statusCode.ok);
     expect(game.surrenderedPlayerIds.has(alice.id)).eq(true);
     expect(game.hasPassedThisActionPhase(alice)).eq(false);
-    expect(starts).deep.eq([{gameId: game.id, playerId: alice.id, serverId: scaffolding.ctx.ids.serverId}]);
+    expect(starts).deep.eq([{compatibility: {version: 1, unsupportedFeatures: []}, gameId: game.id, playerId: alice.id, serverId: scaffolding.ctx.ids.serverId}]);
     expect(JSON.parse(res.content).surrenderedPlayers).deep.eq([alice.id]);
     expect(auditEvents[0].event).eq('surrender_accepted');
     expect(auditEvents[0].path).eq('api/surrender');

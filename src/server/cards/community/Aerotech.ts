@@ -24,9 +24,11 @@ export class Aerotech extends CorporationCard implements ICorporationCard {
           b.megacredits(48);
           b.corpBox('effect', (ce) => {
             ce.vSpace();
+            ce.br;
             ce.effect('During each round\'s research phase, gain 1 titanium for each card you do not buy.', (eb) => {
               eb.cards(1).startEffect.titanium(1).asterix();
             });
+            ce.br;
             ce.vSpace(Size.SMALL);
           });
         }),

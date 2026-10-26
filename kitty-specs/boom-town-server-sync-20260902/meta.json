@@ -1,0 +1,17 @@
+{
+  "created_at": "2026-09-02T12:26:00+03:00",
+  "friendly_name": "Boom Town Server Sync",
+  "mission_id": "boom-town-server-sync-20260902",
+  "mission_slug": "boom-town-server-sync-20260902",
+  "mission_type": "software-dev",
+  "beads_id": "tm-ai-ya5",
+  "purpose_context": "Bring the Autumn 2026 promo Boom Town and the current official main into the custom server while preserving custom behavior and correcting its Double Down interaction.",
+  "purpose_tldr": "Integrate Boom Town and current official upstream safely.",
+  "slug": "boom-town-server-sync-20260902",
+  "target_branch": "main",
+  "topology": "single_branch",
+  "task_branch": "codex/boom-town-server",
+  "upstream_sha": "81ca5a991546d7895ca76758127f34a673d9d165",
+  "base_sha": "524f8cfe5c3acc709308b9a70ec21b064bb9ea81",
+  "governance_note": "Manual isolated mission fallback: Spec Kitty 3.2.6rc4 resolved the shared primary checkout and refused mission creation from this registered linked worktree. The dirty/detached primary checkout was not modified."
+}

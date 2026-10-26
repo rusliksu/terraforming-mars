@@ -31,7 +31,11 @@ export class Insulation extends Card implements IProjectCard {
   }
 
   public override bespokePlay(player: IPlayer) {
-    return new SelectAmount('Select amount of heat production to decrease', 'Decrease', 1, player.production.heat)
+    return new SelectAmount('Select amount of heat production to decrease', 'Decrease', 1, player.production.heat, undefined, {
+      sourceCard: this.name,
+      from: {kind: 'production', resource: Resource.HEAT, perStep: 1},
+      to: {kind: 'production', resource: Resource.MEGACREDITS, perStep: 1},
+    })
       .andThen((amount) => {
         player.production.add(Resource.HEAT, -amount, {log: true});
         player.production.add(Resource.MEGACREDITS, amount, {log: true});

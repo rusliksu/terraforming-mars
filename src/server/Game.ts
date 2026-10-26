@@ -1,6 +1,8 @@
 import * as constants from '../common/constants';
+import {venusLevelAfterSteps, venusStepsBetween} from './venusNext/venusScale';
 import {BeginnerCorporation} from './cards/corporation/BeginnerCorporation';
 import {Board} from './boards/Board';
+import {getGlobalParameterTracks, GlobalParameterThreshold, GlobalParameterTrackBonus, GlobalParameterTracks, grantGlobalParameterTrackBonuses} from '@/server/boards/GlobalParameterTracks';
 import {CardName} from '../common/cards/CardName';
 import {ClaimedMilestone, serializeClaimedMilestones, deserializeClaimedMilestones} from './milestones/ClaimedMilestone';
 import {ColonyDealer} from './colonies/ColonyDealer';
@@ -14,8 +16,9 @@ import {IMilestone} from './milestones/IMilestone';
 import {Space} from './boards/Space';
 import {Tile} from './Tile';
 import {LogMessageBuilder} from './logs/LogMessageBuilder';
+import {annotateLogMessage} from './logs/aiDecisionContext';
 import {LogHelper} from './LogHelper';
-import {LogMessage} from '../common/logs/LogMessage';
+import {LogEffect, LogGlobalEffect, LogMessage} from '../common/logs/LogMessage';
 import {milestoneManifest} from './milestones/Milestones';
 import {awardManifest} from './awards/Awards';
 import {PartyHooks} from './turmoil/parties/PartyHooks';
@@ -34,22 +37,25 @@ import {SelectInitialCards} from './inputs/SelectInitialCards';
 import {PlaceOceanTile} from './deferredActions/PlaceOceanTile';
 import {RemoveColonyFromGame} from './deferredActions/RemoveColonyFromGame';
 import {GainResourcesDeferred} from './deferredActions/GainResourcesDeferred';
-import {SerializedGame} from './SerializedGame';
+import {AdditionalResearch, SerializedGame} from './SerializedGame';
 import {SpaceBonus} from '../common/boards/SpaceBonus';
-import {TileType} from '../common/TileType';
+import {TileType, GREENERY_TILES} from '../common/TileType';
 import {Turmoil} from './turmoil/Turmoil';
 import {RandomMAOptionType} from '../common/ma/RandomMAOptionType';
 import {AresHandler} from './ares/AresHandler';
 import {AresData} from '../common/ares/AresData';
-import {GameSetup} from './GameSetup';
+import {GameSetup, normalizeBoardName} from './GameSetup';
 import {GameCards} from './GameCards';
 import {GlobalParameter} from '../common/GlobalParameter';
 import {AresSetup} from './ares/AresSetup';
 import {MoonData} from './moon/MoonData';
 import {MoonExpansion} from './moon/MoonExpansion';
+import {VenusPhase2Data} from './venusPhase2/VenusPhase2Data';
+import {VenusPhase2Expansion} from './venusPhase2/VenusPhase2Expansion';
 import {TurmoilHandler} from './turmoil/TurmoilHandler';
 import {SeededRandom, UnseededRandom} from '../common/utils/Random';
-import {chooseMilestonesAndAwards} from './ma/MilestoneAwardSelector';
+import {inplaceShuffle} from './utils/shuffle';
+import {chooseMilestonesAndAwards, getCandidates} from './ma/MilestoneAwardSelector';
 import {BoardType} from './boards/BoardType';
 import {MultiSet} from 'mnemonist';
 import {GrantVenusAltTrackBonusDeferred} from './venusNext/GrantVenusAltTrackBonusDeferred';
@@ -60,19 +66,27 @@ import {AddResourcesToCard} from './deferredActions/AddResourcesToCard';
 import {ColonyDeserializer} from './colonies/ColonyDeserializer';
 import {GameLoader} from './database/GameLoader';
 import {DEFAULT_GAME_OPTIONS, GameOptions} from './game/GameOptions';
+import {normalizeEscapeVelocityOptions} from '../common/game/EscapeVelocityOptions';
+import {GlobalParametersConfig, ParameterBonus, resolveGlobalParameters} from '../common/GlobalParameterConfig';
 import {CorporationDeck, PreludeDeck, ProjectDeck, CeoDeck} from './cards/Deck';
 import {Logger} from './logs/Logger';
 import {addDays, stringToNumber} from './database/utils';
 import {Tag} from '../common/cards/Tag';
 import {IGame, Score} from './IGame';
+import {GlobalParameterMaximums} from '../common/boards/GlobalParameterMaximums';
 import {MarsBoard} from './boards/MarsBoard';
 import {UnderworldData} from './underworld/UnderworldData';
 import {UnderworldExpansion} from './underworld/UnderworldExpansion';
+import {ConglomeratesData} from './conglomerates/ConglomeratesData';
+import {ConglomeratesExpansion} from './conglomerates/ConglomeratesExpansion';
+import {HIGH_ORBIT_SUPPLY} from './cards/highOrbit/HighOrbitCardManifest';
+import {HighOrbitMarketRow} from '../common/highOrbit/HighOrbitMarket';
 import {SendDelegateToArea} from './deferredActions/SendDelegateToArea';
 import {BuildColony} from './deferredActions/BuildColony';
 import {newInitialDraft, newPreludeDraft, newCEOsDraft, newStandardDraft} from './Draft';
 import {partition, sum, toID, toName} from '../common/utils/utils';
 import {OrOptions} from './inputs/OrOptions';
+import {SelectResource} from './inputs/SelectResource';
 import {SelectOption} from './inputs/SelectOption';
 import {SelectSpace} from './inputs/SelectSpace';
 import {maybeRenamedMilestone} from '../common/ma/MilestoneName';
@@ -87,9 +101,35 @@ import {generateGameName} from './GameName';
 import {captureEarlyGameStats} from './game/EarlyGameStats';
 import type {ActionReplayState} from './game/ActionReplay';
 import {compareCompletionRank, getSharedRemainingPlaceRange, hasSameCompletionRank, isLastActivePlayerFinish} from '../common/game/CompletionOutcome';
+import {comparing} from '@/common/utils/Ordering';
+import {ColoniesHandler} from './colonies/ColoniesHandler';
 
 // Can be overridden by tests
 let createGameLog: () => Array<LogMessage> = () => [];
+
+type SaveGame = (game: IGame) => Promise<void>;
+
+const TRACK_BONUS_KIND: Record<ParameterBonus['kind'], GlobalParameterTrackBonus> = {
+  ocean: 'ocean',
+  temperature: 'temperature',
+  heatProduction: 'heatproduction',
+  card: 'drawcard',
+  tr: 'tr',
+};
+
+/**
+ * A game with its own track configuration (custom boards) carries its own bonus thresholds, so
+ * translate them into the threshold model the track-bonus granter reads.
+ */
+function tracksForConfig(config: GlobalParametersConfig): GlobalParameterTracks {
+  const convert = (bonuses: ReadonlyArray<ParameterBonus>): Array<GlobalParameterThreshold> =>
+    bonuses.map((bonus) => ({value: bonus.value, bonus: TRACK_BONUS_KIND[bonus.kind]}));
+  return {
+    temperature: convert(config.temperature.bonuses),
+    oxygen: convert(config.oxygen.bonuses),
+    venus: convert(config.venus.bonuses),
+  };
+}
 
 export function setGameLog(f: () => Array<LogMessage>) {
   createGameLog = f;
@@ -97,7 +137,15 @@ export function setGameLog(f: () => Array<LogMessage>) {
 
 function deserializeGameOptions(d: SerializedGame): GameOptions {
   const serializedOptions = (d.gameOptions ?? {}) as Partial<GameOptions>;
-  const gameOptions = {...DEFAULT_GAME_OPTIONS, ...serializedOptions};
+  const gameOptions = {
+    ...DEFAULT_GAME_OPTIONS, ...serializedOptions,
+    expansions: {...DEFAULT_GAME_OPTIONS.expansions, ...serializedOptions.expansions},
+  };
+  gameOptions.boardName = normalizeBoardName(gameOptions.boardName);
+  if (gameOptions.venusPhase2Expansion) {
+    gameOptions.venusPhase2Max = serializedOptions.venusPhase2Max ?? 60;
+  }
+  gameOptions.escapeVelocity = normalizeEscapeVelocityOptions(gameOptions.escapeVelocity);
   if (gameOptions.undoStepOption) {
     gameOptions.undoOption = true;
   }
@@ -107,6 +155,15 @@ function deserializeGameOptions(d: SerializedGame): GameOptions {
   }
   return gameOptions;
 }
+
+// Conglomerates: negative sort keys for the 3 Team Actions, used by getStandardProjects()
+// below to keep them grouped together (in this fixed order) instead of scattered among
+// other standard projects that happen to share the same real M€ cost.
+const TEAM_ACTION_SORT_KEY: Partial<Record<CardName, number>> = {
+  [CardName.GIVE_PATENT]: -3,
+  [CardName.FACILITY_SHARING]: -2,
+  [CardName.TEAM_DONATION]: -1,
+};
 
 export class Game implements IGame, Logger {
   public readonly id: GameId;
@@ -130,13 +187,24 @@ export class Game implements IGame, Logger {
   public gameAge: number = 0; // Each log event increases it
   public shadowInputSeq: number = 0;
   public gameLog: Array<LogMessage> = createGameLog();
+  public logActionContext?: {id: string, actor: IPlayer, generation: number, phase: Phase, ordinal: number, firstMessage: boolean, pendingGlobalEffects?: Array<LogGlobalEffect>};
   public undoCount: number = 0; // Each undo increases it
+  public aiDecisionCount: number = 0; // Analysis games: running number of AI decisions
   public actionReplayState: ActionReplayState | null | undefined = undefined;
   public inputsThisRound = 0;
   public resettable: boolean = false;
+  /** Set by a prelude (e.g. Slow Start) to route generation 1 straight to production, skipping every player's actions. Consumed immediately, never persisted. */
+  public skipGeneration1Actions: boolean = false;
   public globalsPerGeneration: Array<Partial<Record<GlobalParameter, number>>> = [];
 
   public generation: number = 1;
+  // High Orbit (fan): see IGame.cardsPlayedThisGeneration.
+  public cardsPlayedThisGeneration: Set<CardName> = new Set();
+  // High Orbit (fan): see IGame.highOrbitMarket / IGame.highOrbitDeck.
+  public highOrbitMarket: Array<HighOrbitMarketRow> = [];
+  public highOrbitDeck: Array<CardName> = [];
+  // Solaris (fan): see IGame.resourceRemovalBlockedThisGeneration.
+  public resourceRemovalBlockedThisGeneration: boolean = false;
   public phase: Phase = Phase.RESEARCH;
   public projectDeck: ProjectDeck;
   public preludeDeck: PreludeDeck;
@@ -145,9 +213,11 @@ export class Game implements IGame, Logger {
   public board: MarsBoard;
 
   // Global parameters
+  public readonly parameters: GlobalParametersConfig;
   private oxygenLevel: number = constants.MIN_OXYGEN_LEVEL;
   private temperature: number = constants.MIN_TEMPERATURE;
   private venusScaleLevel: number = constants.MIN_VENUS_SCALE;
+  public readonly max: GlobalParameterMaximums;
 
   // Player data
   public activePlayer: IPlayer;
@@ -155,6 +225,7 @@ export class Game implements IGame, Logger {
   private donePlayers = new Set<PlayerId>();
   private passedPlayers = new Set<PlayerId>();
   private researchedPlayers = new Set<PlayerId>();
+  public additionalResearch: AdditionalResearch | undefined;
   /** The first player of this generation. */
   public first: IPlayer;
 
@@ -174,8 +245,10 @@ export class Game implements IGame, Logger {
   public turmoil: Turmoil | undefined;
   public aresData: AresData | undefined;
   public moonData: MoonData | undefined;
+  public venusPhase2Data: VenusPhase2Data | undefined;
   public pathfindersData: PathfindersData | undefined;
   public underworldData: UnderworldData = UnderworldExpansion.initializeGameWithoutUnderworld();
+  public conglomerates: ConglomeratesData = ConglomeratesExpansion.initializeEmpty();
   public inTurmoil: boolean = false;
 
   // Card-specific data
@@ -195,6 +268,8 @@ export class Game implements IGame, Logger {
   public tradeEmbargo: boolean = false;
   // Behold The Emperor
   public beholdTheEmperor: boolean = false;
+  // Backstabbing (idesOfMars, fan)
+  public backstabbingPlayer: PlayerId | undefined = undefined;
   // Double Down
   public inDoubleDown: boolean = false;
   public doubleDownPrelude: CardName | undefined = undefined;
@@ -207,6 +282,7 @@ export class Game implements IGame, Logger {
   public readonly tags: ReadonlyArray<Tag>;
 
   public underworldDraftEnabled = true;
+  public readonly globalParameterTracks: GlobalParameterTracks;
 
   private constructor(
     id: GameId,
@@ -222,10 +298,15 @@ export class Game implements IGame, Logger {
     corporationDeck: CorporationDeck,
     preludeDeck: PreludeDeck,
     ceoDeck: CeoDeck,
-    tags: ReadonlyArray<Tag>) {
+    tags: ReadonlyArray<Tag>,
+    private readonly saveGame: SaveGame = (game) => GameLoader.getInstance().saveGame(game)) {
     this.id = id;
     this.name = name;
     this.gameOptions = {...gameOptions};
+    this.parameters = resolveGlobalParameters(this.gameOptions.globalParameters, this.gameOptions.venusPhase2Expansion, this.gameOptions.venusPhase2Max);
+    this.oxygenLevel = this.parameters.oxygen.min;
+    this.temperature = this.parameters.temperature.min;
+    this.venusScaleLevel = this.parameters.venus.min;
     this.players = players;
     const playerIds = players.map(toID);
     if (playerIds.includes(first.id) === false) {
@@ -248,19 +329,39 @@ export class Game implements IGame, Logger {
     this.spectatorId = spectatorId;
     this.rng = rng;
     this.projectDeck = projectDeck;
+    if (gameOptions.morePartiesExpansion) {
+      this.projectDeck.isCardAvailable = (card) => {
+        const parties = this.turmoil?.parties;
+        return parties === undefined || card.requirements.every((requirement) =>
+          requirement.party === undefined || parties.some((party) => party.name === requirement.party));
+      };
+    }
     this.corporationDeck = corporationDeck;
     this.preludeDeck = preludeDeck;
     this.ceoDeck = ceoDeck;
     this.board = board;
+    // The board carries its own maximums (Amazonis Planitia's tracks are longer); a game with
+    // custom global-parameter overrides (custom boards) or an extended Venus Phase 2 track takes
+    // its configured maximum instead.
+    const configured = this.gameOptions.globalParameters;
+    this.max = {
+      oceans: configured?.oceans.max ?? board.max.oceans,
+      temperature: configured?.temperature.max ?? board.max.temperature,
+      oxygen: configured?.oxygen.max ?? board.max.oxygen,
+      venus: this.gameOptions.venusPhase2Expansion ? this.parameters.venus.max : (configured?.venus.max ?? board.max.venus),
+    };
 
     this.players.forEach((player) => {
       player.setup(this);
-      if (player.tableau.has(CardName.MONS_INSURANCE)) {
+      if (player.tableau.some((card) => card.onInsuranceClaim !== undefined)) {
         this.monsInsuranceOwner = player;
       }
     });
 
     this.tags = tags;
+    this.globalParameterTracks = configured === undefined ?
+      getGlobalParameterTracks(gameOptions.boardName) :
+      tracksForConfig(this.parameters);
   }
 
   private setFirstPlayer(first: IPlayer) {
@@ -278,7 +379,8 @@ export class Game implements IGame, Logger {
     firstPlayer: IPlayer,
     spectatorId: SpectatorId,
     partialOptions: Partial<GameOptions> = {},
-    seed = 0): Game {
+    seed = 0,
+    saveGame?: SaveGame): Game {
     if (partialOptions.expansions === undefined) {
       partialOptions.expansions = {
         corpera: partialOptions.corporateEra ?? false,
@@ -296,9 +398,22 @@ export class Game implements IGame, Logger {
         starwars: partialOptions.starWarsExpansion ?? false,
         underworld: partialOptions.underworldExpansion ?? false,
         deltaProject: partialOptions.deltaProjectExpansion ?? false,
+        sillyfication: partialOptions.sillyficationExpansion ?? false,
+        betterMars: partialOptions.betterMarsExpansion ?? false,
+        rebalanced: partialOptions.rebalancedExpansion ?? false,
+        customCards: partialOptions.customCardsExpansion ?? false,
+        conglomerates: partialOptions.conglomeratesExpansion ?? false,
+        corporateBetterments: partialOptions.corporateBettermentsExpansion ?? false,
+        idesOfMars: partialOptions.idesOfMarsExpansion ?? false,
+        robAntilles: partialOptions.robAntillesExpansion ?? false,
+        moreParties: partialOptions.morePartiesExpansion ?? false,
+        venusPhase2: partialOptions.venusPhase2Expansion ?? false,
+        industries: partialOptions.industriesExpansion ?? false,
+        highOrbit: partialOptions.highOrbitExpansion ?? false,
+        solaris: partialOptions.solarisExpansion ?? false,
       };
     }
-    const gameOptions = {...DEFAULT_GAME_OPTIONS, ...partialOptions};
+    const gameOptions = {...DEFAULT_GAME_OPTIONS, ...partialOptions, fanmadeCardPool: true};
     if (gameOptions.undoStepOption) {
       gameOptions.undoOption = true;
     }
@@ -324,13 +439,13 @@ export class Game implements IGame, Logger {
     projectDeck.shuffle();
 
     const corporationDeck = new CorporationDeck(gameCards.getCorporationCards(), [], rng);
-    corporationDeck.shuffle(gameOptions.customCorporationsList);
+    corporationDeck.shuffle();
 
     const preludeDeck = new PreludeDeck(gameCards.getPreludeCards(), [], rng);
-    preludeDeck.shuffle(gameOptions.customPreludes);
+    preludeDeck.shuffle();
 
     const ceoDeck = new CeoDeck(gameCards.getCeoCards(), [], rng);
-    ceoDeck.shuffle(gameOptions.customCeos);
+    ceoDeck.shuffle();
 
     const activePlayer = firstPlayer.id;
 
@@ -355,7 +470,7 @@ export class Game implements IGame, Logger {
     }
 
     const name = generateGameName(UnseededRandom.INSTANCE);
-    const game = new Game(id, name, players, firstPlayer, activePlayer, spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, Array.from(tags));
+    const game = new Game(id, name, players, firstPlayer, activePlayer, spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, Array.from(tags), saveGame);
     // This evaluation of created time doesn't match what's stored in the database, but that's fine.
     game.createdTime = new Date();
     // Initialize Ares data
@@ -382,7 +497,27 @@ export class Game implements IGame, Logger {
 
     // Must configure this before solo placement.
     if (gameOptions.underworldExpansion) {
-      game.underworldData = UnderworldExpansion.initialize(rng);
+      game.underworldData = UnderworldExpansion.initialize(rng, gameOptions.boardName === BoardName.AMAZONIS_PLANITIA);
+    }
+
+    if (gameOptions.conglomeratesExpansion) {
+      game.conglomerates = ConglomeratesExpansion.initialize(players, gameOptions.conglomeratesTeamAssignments);
+      players.forEach((player) => ConglomeratesExpansion.gainCoordination(player, 2));
+    }
+
+    // High Orbit (fan): deal the shared Infrastructure card market -- 3 rows of 5, randomly
+    // dealt from every physical copy of every design. These cards never enter the project deck
+    // (see GameCards.getProjectCards).
+    if (gameOptions.highOrbitExpansion) {
+      const allCopies: Array<CardName> = [];
+      for (const [cardName, count] of Object.entries(HIGH_ORBIT_SUPPLY) as Array<[CardName, number]>) {
+        for (let i = 0; i < count; i++) {
+          allCopies.push(cardName);
+        }
+      }
+      inplaceShuffle(allCopies, rng);
+      game.highOrbitMarket = [0, 1, 2].map(() => ({locked: false, slots: allCopies.splice(0, 5)}));
+      game.highOrbitDeck = allCopies;
     }
 
     // and 2 neutral cities and forests on board
@@ -398,6 +533,10 @@ export class Game implements IGame, Logger {
 
     if (gameOptions.moonExpansion) {
       game.moonData = MoonExpansion.initialize(gameOptions, rng);
+    }
+
+    if (gameOptions.venusPhase2Expansion) {
+      game.venusPhase2Data = VenusPhase2Expansion.initialize(gameOptions, rng);
     }
 
     if (gameOptions.pathfindersExpansion) {
@@ -435,7 +574,7 @@ export class Game implements IGame, Logger {
       }
 
       if (!player.beginner ||
-        // Bypass beginner choice if any extension is choosen
+        // Bypass beginner choice if any extension is chosen
         gameOptions.ceoExtension ||
         gameOptions.preludeExtension ||
         gameOptions.prelude2Expansion ||
@@ -502,7 +641,7 @@ export class Game implements IGame, Logger {
     if (this.simulationMode) {
       return;
     }
-    this.saveGamePromise = GameLoader.getInstance().saveGame(this);
+    this.saveGamePromise = this.saveGame(this);
   }
 
   public serialize(): SerializedGame {
@@ -510,10 +649,15 @@ export class Game implements IGame, Logger {
       activePlayer: this.activePlayer.id,
       awards: this.awards.map(toName),
       beholdTheEmperor: this.beholdTheEmperor,
+      backstabbingPlayer: this.backstabbingPlayer,
       board: this.board.serialize(),
       botPlayerIds: Array.from(this.botPlayerIds),
       surrenderedPlayerIds: Array.from(this.surrenderedPlayerIds),
       claimedMilestones: serializeClaimedMilestones(this.claimedMilestones),
+      cardsPlayedThisGeneration: Array.from(this.cardsPlayedThisGeneration),
+      highOrbitMarket: this.highOrbitMarket,
+      highOrbitDeck: this.highOrbitDeck,
+      resourceRemovalBlockedThisGeneration: this.resourceRemovalBlockedThisGeneration,
       ceoDeck: this.ceoDeck.serialize(),
       colonies: this.colonies.map((colony) => colony.serialize()),
       corporationDeck: this.corporationDeck.serialize(),
@@ -556,10 +700,16 @@ export class Game implements IGame, Logger {
       temperature: this.temperature,
       tradeEmbargo: this.tradeEmbargo,
       underworldData: this.underworldData,
+      conglomerates: this.conglomerates,
       undoCount: this.undoCount,
+      aiDecisionCount: this.aiDecisionCount,
+      venusPhase2Data: VenusPhase2Data.serialize(this.venusPhase2Data),
       venusScaleLevel: this.venusScaleLevel,
       verminInEffect: this.verminInEffect,
     };
+    if (this.additionalResearch !== undefined) {
+      result.additionalResearch = this.additionalResearch;
+    }
     if (this.aresData !== undefined) {
       result.aresData = this.aresData;
     }
@@ -593,6 +743,17 @@ export class Game implements IGame, Logger {
     return action;
   }
 
+  /**
+   * Run every deferred action, including any added while running them, and then call `cb`.
+   */
+  public drainQueue(cb: () => void): void {
+    if (this.deferredActions.length === 0) {
+      cb();
+      return;
+    }
+    this.deferredActions.runAll(() => this.drainQueue(cb));
+  }
+
   public milestoneClaimed(milestone: IMilestone): boolean {
     return this.claimedMilestones.some(
       (claimedMilestone) => claimedMilestone.milestone.name === milestone.name,
@@ -600,22 +761,20 @@ export class Game implements IGame, Logger {
   }
 
   public marsIsTerraformed(): boolean {
-    const oxygenMaxed = this.oxygenLevel >= constants.MAX_OXYGEN_LEVEL;
-    const temperatureMaxed = this.temperature >= constants.MAX_TEMPERATURE;
+    const oxygenMaxed = this.oxygenLevel >= this.max.oxygen;
+    const temperatureMaxed = this.temperature >= this.max.temperature;
     const oceansMaxed = !this.canAddOcean();
     let globalParametersMaxed = oxygenMaxed && temperatureMaxed && oceansMaxed;
-    const venusMaxed = this.getVenusScaleLevel() === constants.MAX_VENUS_SCALE;
 
-    MoonExpansion.ifMoon(this, (moonData) => {
-      if (this.gameOptions.requiresMoonTrackCompletion) {
-        const moonMaxed =
-          moonData.habitatRate === constants.MAXIMUM_HABITAT_RATE &&
-          moonData.miningRate === constants.MAXIMUM_MINING_RATE &&
-          moonData.logisticRate === constants.MAXIMUM_LOGISTIC_RATE;
-        globalParametersMaxed = globalParametersMaxed && moonMaxed;
-      }
-    });
+    if (this.moonData && this.gameOptions.requiresMoonTrackCompletion) {
+      const moonMaxed =
+        this.moonData.habitatRate === constants.MAXIMUM_HABITAT_RATE &&
+        this.moonData.miningRate === constants.MAXIMUM_MINING_RATE &&
+        this.moonData.logisticRate === constants.MAXIMUM_LOGISTIC_RATE;
+      globalParametersMaxed = globalParametersMaxed && moonMaxed;
+    }
 
+    const venusMaxed = this.getVenusScaleLevel() === this.max.venus;
     // Solo games with Venus needs Venus maxed to end the game.
     if (this.players.length === 1 && this.gameOptions.venusNextExtension) {
       return globalParametersMaxed && venusMaxed;
@@ -636,12 +795,13 @@ export class Game implements IGame, Logger {
 
     // Only add 2 more generations when using the track completion option
     // and not the solo TR option.
-    //
-    // isSoloModeWin backs this up.
     if (options.moonExpansion) {
       if (!options.soloTR && options.requiresMoonTrackCompletion) {
         lastGeneration += 2;
       }
+    }
+    if (!options.soloTR && options.boardName === BoardName.AMAZONIS_PLANITIA) {
+      lastGeneration += 1;
     }
     return lastGeneration;
   }
@@ -652,7 +812,7 @@ export class Game implements IGame, Logger {
       return this.players[0].terraformRating >= 63;
     }
 
-    // Complete terraforing victory condition.
+    // Complete terraforming victory condition.
     if (!this.marsIsTerraformed()) {
       return false;
     }
@@ -672,7 +832,8 @@ export class Game implements IGame, Logger {
   }
 
   public getAwardFundingCost(): number {
-    return 8 + (6 * this.fundedAwards.length);
+    const base = this.gameOptions.conglomeratesExpansion ? 12 : 8;
+    return base + (6 * this.fundedAwards.length);
   }
 
   public fundAward(player: IPlayer, award: IAward): void {
@@ -715,15 +876,42 @@ export class Game implements IGame, Logger {
     return this.claimedMilestones.length >= constants.MAX_MILESTONES;
   }
 
+  // Turmoil More Parties Transhumanists P4: a random milestone/award compatible with this
+  // game's board/expansions but not already in play, for the "swap in an unused one" action.
+  // Lives here (rather than being imported directly by Transhumanists.ts) because
+  // MilestoneAwardSelector/Milestones/Awards transitively import every card class, and Game.ts
+  // is the only place in the turmoil-party dependency graph that can safely hold that import
+  // without creating a circular-import crash (turmoil parties load before cards are fully
+  // defined; Game.ts loads after).
+  public getUnusedMilestoneCandidate(): IMilestone | undefined {
+    const [candidateNames] = getCandidates(this.gameOptions);
+    const inPlay = new Set(this.milestones.map((m) => m.name));
+    const available = candidateNames.filter((name) => !inPlay.has(name));
+    if (available.length === 0) {
+      return undefined;
+    }
+    return milestoneManifest.createOrThrow(available[this.rng.nextInt(available.length)]);
+  }
+
+  public getUnusedAwardCandidate(): IAward | undefined {
+    const [, candidateNames] = getCandidates(this.gameOptions);
+    const inPlay = new Set(this.awards.map((a) => a.name));
+    const available = candidateNames.filter((name) => !inPlay.has(name));
+    if (available.length === 0) {
+      return undefined;
+    }
+    return awardManifest.createOrThrow(available[this.rng.nextInt(available.length)]);
+  }
+
   private playerHasPickedCorporationCard(player: IPlayer, corporationCard: ICorporationCard): void {
-    // TODO(kberg): I think we can get rid of this weird validation at a later time.
     player.pickedCorporationCard = corporationCard;
-    if (this.players.every((p) => p.pickedCorporationCard !== undefined)) {
-      for (const somePlayer of this.playersInGenerationOrder) {
-        if (somePlayer.pickedCorporationCard === undefined) {
-          throw new Error(`pickedCorporationCard is not defined for ${somePlayer.id}`);
+    const players = this.playersInGenerationOrder;
+    if (players.every((p) => p.pickedCorporationCard !== undefined)) {
+      for (const p of players) {
+        // This if clause is necessary because `every` above doesn't help.
+        if (p.pickedCorporationCard) {
+          p.playCorporationCard(p.pickedCorporationCard);
         }
-        somePlayer.playCorporationCard(somePlayer.pickedCorporationCard);
       }
     }
   }
@@ -790,11 +978,33 @@ export class Game implements IGame, Logger {
   public gotoResearchPhase(): void {
     this.phase = Phase.RESEARCH;
     this.researchedPlayers.clear();
-    this.save();
+    if (this.additionalResearch === undefined) {
+      this.save();
+    }
     this.players.forEach((player) => {
       player.runResearchPhase();
     });
     this.advanceAfterResearchIfReady();
+    if (this.additionalResearch !== undefined) {
+      this.save();
+    }
+  }
+
+  public requestAdditionalResearch(): void {
+    this.additionalResearch = {phase: this.phase, draftRound: this.draftRound, pending: true, exchangedPlayers: []};
+  }
+
+  /** Starts the extra phase after the triggering action and its effects finish. */
+  public startAdditionalResearch(): void {
+    if (this.additionalResearch?.pending !== true) {
+      return;
+    }
+    this.additionalResearch.pending = false;
+    if (this.gameOptions.draftVariant && !this.isSoloMode()) {
+      this.gotoDraftPhase();
+    } else {
+      this.gotoResearchPhase();
+    }
   }
 
   private gotoDraftPhase(): void {
@@ -837,80 +1047,66 @@ export class Game implements IGame, Logger {
   }
 
   private postProductionPhase(): void {
-    if (this.deferredActions.length > 0) {
-      this.deferredActions.runAll(() => this.postProductionPhase());
-      return;
-    }
-    if (this.gameIsOver()) {
-      this.log('Final greenery placement', (b) => b.forNewGeneration());
-      this.takeNextFinalGreeneryAction();
-      return;
-    } else {
-      this.players.forEach((player) => {
-        player.colonies.returnTradeFleets();
-      });
-    }
-
-    // solar Phase Option
-    this.phase = Phase.SOLAR;
-
-    // Maybe spawn a new hazard on Mars every 3 generations
-    if (this.gameOptions.aresExtension && this.gameOptions.aresExtremeVariant && this.generation % 3 === 0) {
-      const direction = Math.floor(this.rng.nextInt(2)) === 0 ? 'top' : 'bottom';
-      const tileType = this.board.getOceanSpaces().length >= 3 ? TileType.EROSION_MILD : TileType.DUST_STORM_MILD;
-
-      try {
-        const space = AresHazards.randomlyPlaceHazard(this, tileType, direction);
-        this.log('${0} placed at ${1}', (b) => b.tileType(tileType).space(space));
-      } catch (e) {
-        // #7734, the map is probably full.
-        this.log('The map is full. No random hazard can be placed this generation.');
+    this.drainQueue(() => {
+      if (this.gameIsOver()) {
+        this.log('Final greenery placement', (b) => b.forNotice());
+        this.takeNextFinalGreeneryAction();
+        return;
+      } else {
+        this.players.forEach((player) => {
+          player.colonies.returnTradeFleets();
+        });
       }
-    }
 
-    if (this.gameOptions.solarPhaseOption && ! this.marsIsTerraformed()) {
-      this.gotoWorldGovernmentTerraforming();
-      return;
-    }
-    this.gotoEndGeneration();
-  }
+      // solar Phase Option
+      this.phase = Phase.SOLAR;
 
-  private endGenerationForColonies() {
-    if (this.gameOptions.coloniesExtension) {
-      this.colonies.forEach((colony) => {
-        colony.endGeneration(this);
-      });
-      // Syndicate Pirate Raids hook. Also see Colony.ts and Player.ts
-      this.syndicatePirateRaider = undefined;
-      // Trade embargo hook.
-      this.tradeEmbargo = false;
-    }
-  }
+      // Maybe spawn a new hazard on Mars every 3 generations
+      if (this.gameOptions.aresExtension && this.gameOptions.aresExtremeVariant && this.generation % 3 === 0) {
+        const direction = Math.floor(this.rng.nextInt(2)) === 0 ? 'top' : 'bottom';
+        const tileType = this.board.getOceanSpaces().length >= 3 ? TileType.EROSION_MILD : TileType.DUST_STORM_MILD;
 
-  private gotoEndGeneration() {
-    if (this.deferredActions.length > 0) {
-      this.deferredActions.runAll(() => this.gotoEndGeneration());
-      return;
-    }
+        try {
+          const space = AresHazards.randomlyPlaceHazard(this, tileType, direction);
+          this.log('${0} placed at ${1}', (b) => b.tileType(tileType).space(space));
+        } catch (e) {
+          // #7734, the map is probably full.
+          this.log('The map is full. No random hazard can be placed this generation.');
+        }
+      }
 
-    this.endGenerationForColonies();
-    UnderworldExpansion.endGeneration(this);
-
-    Turmoil.ifTurmoil(this, (turmoil) => {
-      // this.phase = Phase.TURMOIL;
-      this.inTurmoil = true;
-      turmoil.endGeneration(this);
-      // Behold The Emperor hook
-      this.beholdTheEmperor = false;
+      if (this.gameOptions.solarPhaseOption && ! this.marsIsTerraformed()) {
+        this.gotoWorldGovernmentTerraforming();
+        return;
+      }
+      this.finishSolarPhase();
     });
+  }
 
-    // turmoil.endGeneration might have added actions.
-    if (this.deferredActions.length > 0) {
-      this.deferredActions.runAll(() => this.startGeneration());
-    } else {
-      this.inTurmoil = false;
+  private finishSolarPhase() {
+    this.drainQueue(() => {
+      ColoniesHandler.endGeneration(this);
+      UnderworldExpansion.endGeneration(this);
+      this.gotoTurmoilPhase();
+    });
+  }
+
+  private gotoTurmoilPhase() {
+    const turmoil = this.turmoil;
+    if (turmoil === undefined) {
       this.startGeneration();
+      return;
     }
+
+    // this.phase = Phase.TURMOIL;
+    this.inTurmoil = true;
+    turmoil.runTurmoilPhase(this, () => {
+      // The new government might have added actions.
+      this.drainQueue(() => {
+        this.inTurmoil = false;
+        this.startGeneration();
+      });
+    });
   }
 
   private updatePlayerVPForTheGeneration(): void {
@@ -931,11 +1127,11 @@ export class Game implements IGame, Logger {
     if (this.gameOptions.venusNextExtension) {
       entry[GlobalParameter.VENUS] = this.venusScaleLevel;
     }
-    MoonExpansion.ifMoon(this, (moonData) => {
-      entry[GlobalParameter.MOON_HABITAT_RATE] = moonData.habitatRate;
-      entry[GlobalParameter.MOON_MINING_RATE] = moonData.miningRate;
-      entry[GlobalParameter.MOON_LOGISTIC_RATE] = moonData.logisticRate;
-    });
+    if (this.moonData) {
+      entry[GlobalParameter.MOON_HABITAT_RATE] = this.moonData.habitatRate;
+      entry[GlobalParameter.MOON_MINING_RATE] = this.moonData.miningRate;
+      entry[GlobalParameter.MOON_LOGISTIC_RATE] = this.moonData.logisticRate;
+    }
   }
 
   private startGeneration() {
@@ -944,6 +1140,20 @@ export class Game implements IGame, Logger {
     this.updateGlobalsForTheGeneration();
 
     this.generation++;
+    this.cardsPlayedThisGeneration.clear();
+    this.resourceRemovalBlockedThisGeneration = false;
+    // High Orbit (fan): unlock every market row and refill any empty slots from the deck. A
+    // JSON round-trip (game.save()/reload) turns an `undefined` array element into `null` --
+    // see the Black Market/MutationMarkets crashes this exact gotcha caused before -- so both
+    // are treated as "empty slot" (can't use `== null` here: eqeqeq forbids it).
+    for (const row of this.highOrbitMarket) {
+      row.locked = false;
+      for (let i = 0; i < row.slots.length; i++) {
+        if ((row.slots[i] === undefined || row.slots[i] === null) && this.highOrbitDeck.length > 0) {
+          row.slots[i] = this.highOrbitDeck.pop();
+        }
+      }
+    }
     this.log('Generation ${0}', (b) => b.forNewGeneration().number(this.generation));
     this.setNextFirstPlayer();
 
@@ -952,8 +1162,48 @@ export class Game implements IGame, Logger {
       if (player.tableau.has(CardName.PRESERVATION_PROGRAM)) {
         player.preservationProgram = true;
       }
+      player.trThisGeneration = 0;
+      player.actionsTakenAtGenerationStart = player.actionsTakenThisGame;
+      // Little Dutch Boy's blockade only lasts for the generation it was placed in.
+      if (player.deltaProjectData) {
+        player.deltaProjectData.blocked = false;
+      }
+      if (player.epsilonDampleData) {
+        player.epsilonDampleData.blocked = false;
+      }
     });
 
+    if (this.gameOptions.draftVariant) {
+      this.gotoDraftPhase();
+    } else {
+      this.gotoResearchPhase();
+    }
+  }
+
+  /**
+   * Resumes a game loaded from the database in the solar phase.
+   *
+   * Solar is persisted only while the first player is choosing the World Government Terraforming
+   * action: every other step of the phase runs synchronously. Re-creating that input (or finishing
+   * the generation when the option is off) is enough to continue the game.
+   */
+  public restoreSolarPhase(): void {
+    if (this.gameOptions.solarPhaseOption && !this.marsIsTerraformed()) {
+      this.worldGovernmentTerraforming();
+    } else {
+      this.finishSolarPhase();
+    }
+  }
+
+  /**
+   * Resumes a game loaded from the database in the intergeneration phase.
+   *
+   * startGeneration() sets this phase and then immediately moves on to drafting or research in the
+   * same call, so a persisted game never means "the generation has not started yet": only the
+   * opening prompt of the new generation is missing. Re-create it without advancing the generation
+   * a second time.
+   */
+  public restoreIntergenerationPhase(): void {
     if (this.gameOptions.draftVariant) {
       this.gotoDraftPhase();
     } else {
@@ -969,7 +1219,7 @@ export class Game implements IGame, Logger {
     const orOptions = new OrOptions()
       .setTitle('Select action for World Government Terraforming')
       .setButtonLabel('Confirm');
-    if (this.getTemperature() < constants.MAX_TEMPERATURE) {
+    if (this.getTemperature() < this.max.temperature) {
       orOptions.options.push(
         new SelectOption('Increase temperature', 'Increase')
           .annotate(GlobalParameter.TEMPERATURE)
@@ -980,7 +1230,7 @@ export class Game implements IGame, Logger {
           }),
       );
     }
-    if (this.getOxygenLevel() < constants.MAX_OXYGEN_LEVEL) {
+    if (this.getOxygenLevel() < this.max.oxygen) {
       orOptions.options.push(
         new SelectOption('Increase oxygen', 'Increase')
           .annotate(GlobalParameter.OXYGEN)
@@ -1002,7 +1252,7 @@ export class Game implements IGame, Logger {
           }),
       );
     }
-    if (this.getVenusScaleLevel() < constants.MAX_VENUS_SCALE && this.gameOptions.venusNextExtension) {
+    if (this.getVenusScaleLevel() < this.max.venus && this.gameOptions.venusNextExtension) {
       orOptions.options.push(
         new SelectOption('Increase Venus scale', 'Increase').andThen(() => {
           this.increaseVenusScaleLevel(player, 1);
@@ -1028,7 +1278,8 @@ export class Game implements IGame, Logger {
       }
     }
 
-    MoonExpansion.ifMoon(this, (moonData) => {
+    const moonData = this.moonData;
+    if (moonData) {
       if (moonData.habitatRate < constants.MAXIMUM_HABITAT_RATE) {
         orOptions.options.push(
           new SelectOption('Increase the Moon habitat rate', 'Increase').andThen(() => {
@@ -1055,7 +1306,7 @@ export class Game implements IGame, Logger {
           }),
         );
       }
-    });
+    }
 
     return orOptions;
   }
@@ -1064,7 +1315,7 @@ export class Game implements IGame, Logger {
     const player = this.first;
     const input = this.worldGovernmentTerraformingInput(player);
     player.setWaitingFor(input, () => {
-      this.gotoEndGeneration();
+      this.finishSolarPhase();
     });
   }
 
@@ -1107,7 +1358,14 @@ export class Game implements IGame, Logger {
   public playerIsFinishedWithResearchPhase(player: IPlayer): void {
     this.deferredActions.runAllFor(player, () => {
       this.researchedPlayers.add(player.id);
+      if (this.additionalResearch !== undefined) {
+        player.draftedCards = [];
+        player.nextResearchKeepMax = undefined;
+      }
       this.advanceAfterResearchIfReady();
+      if (this.additionalResearch !== undefined) {
+        this.save();
+      }
     });
   }
 
@@ -1116,10 +1374,21 @@ export class Game implements IGame, Logger {
       return;
     }
     this.researchedPlayers.clear();
+    if (this.additionalResearch !== undefined) {
+      this.phase = this.additionalResearch.phase;
+      this.draftRound = this.additionalResearch.draftRound;
+      this.additionalResearch = undefined;
+      this.activePlayer.takeAction();
+      return;
+    }
     this.phase = Phase.ACTION;
     this.passedPlayers.clear();
     this.potentiallyChangeFirstPlayer();
-
+    if (this.skipGeneration1Actions) {
+      this.skipGeneration1Actions = false;
+      this.gotoProductionPhase();
+      return;
+    }
     this.startActionsForPlayer(this.first);
   }
 
@@ -1145,27 +1414,24 @@ export class Game implements IGame, Logger {
   }
 
   public playerIsFinishedTakingActions(): void {
-    if (this.deferredActions.length > 0) {
-      this.deferredActions.runAll(() => this.playerIsFinishedTakingActions());
-      return;
-    }
+    this.drainQueue(() => {
+      this.inputsThisRound = 0;
 
-    this.inputsThisRound = 0;
+      // This next section can be done more simply.
+      if (this.allPlayersHavePassed()) {
+        this.gotoProductionPhase();
+        return;
+      }
 
-    // This next section can be done more simply.
-    if (this.allPlayersHavePassed()) {
-      this.gotoProductionPhase();
-      return;
-    }
-
-    const nextPlayer = this.getPlayerAfter(this.activePlayer);
-    if (!this.hasPassedThisActionPhase(nextPlayer)) {
-      this.startActionsForPlayer(nextPlayer);
-    } else {
-      // Recursively find the next player
-      this.activePlayer = nextPlayer;
-      this.playerIsFinishedTakingActions();
-    }
+      const nextPlayer = this.getPlayerAfter(this.activePlayer);
+      if (!this.hasPassedThisActionPhase(nextPlayer)) {
+        this.startActionsForPlayer(nextPlayer);
+      } else {
+        // Recursively find the next player
+        this.activePlayer = nextPlayer;
+        this.playerIsFinishedTakingActions();
+      }
+    });
   }
 
   private async gotoEndGame(): Promise<void> {
@@ -1255,7 +1521,7 @@ export class Game implements IGame, Logger {
       // You many not place greeneries in solo mode unless you have already won the game
       // (e.g. completed global parameters, reached TR63.)
       if (this.isSoloMode() && !this.isSoloModeWin()) {
-        this.log('Final greenery phase is skipped since you did not complete the win condition.', (b) => b.forNewGeneration());
+        this.log('Final greenery phase is skipped since you did not complete the win condition.', (b) => b.forNotice());
         continue;
       }
 
@@ -1270,6 +1536,33 @@ export class Game implements IGame, Logger {
         this.donePlayers.add(player.id);
       }
     }
+    this.resolveEndOfGameCardEffects();
+  }
+
+  /**
+   * Hook for cards with a forced one-shot effect that must resolve after the final greenery
+   * phase concludes for every player, but before end-of-game scoring runs -- e.g. idesOfMars'
+   * Hidden City ("place a City on Mars" as the very last tile placement of the game). See
+   * ICard.onFinalGreeneryPlacementComplete for the contract cards implement against this.
+   *
+   * This mirrors the drain-then-check idiom used just above in takeNextFinalGreeneryAction and
+   * in postProductionPhase: cards are expected to queue their work via `player.defer(...)`
+   * rather than act synchronously, so this may need to run more than once as those deferred
+   * actions (which can require real player input, e.g. choosing a space) drain one at a time.
+   */
+  private resolveEndOfGameCardEffects(): void {
+    if (this.deferredActions.length > 0) {
+      this.deferredActions.runAll(() => this.resolveEndOfGameCardEffects());
+      return;
+    }
+
+    this.triggerForAllCards((p, c) => c.onFinalGreeneryPlacementComplete?.(p));
+
+    if (this.deferredActions.length > 0) {
+      this.deferredActions.runAll(() => this.resolveEndOfGameCardEffects());
+      return;
+    }
+
     this.updatePlayerVPForTheGeneration();
     this.updateGlobalsForTheGeneration();
     this.gotoEndGame();
@@ -1280,34 +1573,120 @@ export class Game implements IGame, Logger {
     player.actionsTakenThisGame++;
     player.actionsTakenThisRound = 0;
 
+    // Turmoil More Parties Bureaucrats P2: this is the one place in the codebase that fires
+    // exactly once per player turn (not once per action, and not re-entered by the various
+    // deferred-action/prelude/CEO loops inside Player.takeAction) -- see TurmoilHandler.
+    TurmoilHandler.applyOnTurnStartEffect(player);
+
     player.takeAction();
   }
 
+  /**
+   * Whether this game's Venus track is configured by the game itself (Venus Phase 2's extended
+   * track, or a custom board's own track) rather than a map's printed track.
+   */
+  private usesConfiguredVenusTrack(): boolean {
+    return this.gameOptions.venusPhase2Expansion || this.gameOptions.globalParameters !== undefined;
+  }
+
+  /**
+   * Venus steps between two levels: a printed track uses 2% up to 30 and 1% above it (Amazonis
+   * Planitia runs to 33), while a configured track keeps its own step (Venus Phase 2's 30-60 track).
+   */
+  private venusTrackStepsBetween(from: number, to: number): number {
+    return this.usesConfiguredVenusTrack() ? (to - from) / this.parameters.venus.step : venusStepsBetween(from, to);
+  }
+
+  /** The Venus level after moving `steps` steps, on this game's track. */
+  private venusLevelAfterTrackSteps(level: number, steps: number): number {
+    return this.usesConfiguredVenusTrack() ?
+      Math.max(this.parameters.venus.min, level + steps * this.parameters.venus.step) :
+      venusLevelAfterSteps(level, steps);
+  }
+
+  /**
+   * Grants the track bonuses crossed when a parameter rises from `from` to `to`: a game with
+   * its own configured tracks (custom boards) uses those bonuses, otherwise the map's printed
+   * tracks apply.
+   */
+  private grantParameterTrackBonuses(player: IPlayer, type: keyof GlobalParameterTracks, from: number, to: number): void {
+    if (this.gameOptions.globalParameters === undefined) {
+      grantGlobalParameterTrackBonuses(player, type, from, to);
+      return;
+    }
+    this.applyParameterBonuses(player, this.parameters[type].bonuses, from, to);
+  }
+
+  /**
+   * Fire each global-parameter bonus whose threshold is newly crossed when a track rises
+   * from `from` to `to`. `ocean` and `temperature` bonuses (board effects / parameter chains)
+   * always fire; `heatProduction` / `card` / `tr` bonuses are player rewards and are
+   * suppressed during the solar (World Government) phase, matching the original hardcoded rules.
+   */
+  private applyParameterBonuses(player: IPlayer, bonuses: ReadonlyArray<ParameterBonus>, from: number, to: number): void {
+    for (const bonus of bonuses) {
+      if (from >= bonus.value || to < bonus.value) {
+        continue;
+      }
+      switch (bonus.kind) {
+      case 'ocean':
+        this.defer(new PlaceOceanTile(player, {title: 'Select space for ocean from temperature increase'}));
+        break;
+      case 'temperature':
+        this.increaseTemperature(player, 1);
+        break;
+      case 'heatProduction':
+        if (this.phase !== Phase.SOLAR) {
+          player.production.add(Resource.HEAT, bonus.amount, {log: true});
+        }
+        break;
+      case 'card':
+        if (this.phase !== Phase.SOLAR) {
+          player.drawCard(bonus.amount);
+        }
+        break;
+      case 'tr':
+        if (this.phase !== Phase.SOLAR) {
+          player.increaseTerraformRating(bonus.amount);
+        }
+        break;
+      }
+    }
+  }
+
   public increaseOxygenLevel(player: IPlayer, increments: -2 | -1 | 1 | 2): void {
-    if (this.oxygenLevel >= constants.MAX_OXYGEN_LEVEL) {
+    const oxygen = this.parameters.oxygen;
+    if (this.oxygenLevel >= this.max.oxygen) {
       return undefined;
     }
 
     // PoliticalAgendas Reds P3 && Magnetic Field Stimulation Delays hook
     if (increments < 0) {
-      this.oxygenLevel = Math.max(constants.MIN_OXYGEN_LEVEL, this.oxygenLevel + increments);
+      const before = this.oxygenLevel;
+      this.oxygenLevel = Math.max(oxygen.min, this.oxygenLevel + increments);
+      this.recordReplayGlobalEffect(player, GlobalParameter.OXYGEN, this.oxygenLevel - before);
       return undefined;
     }
 
     // Literal typing makes |increments| a const
-    const steps = Math.min(increments, constants.MAX_OXYGEN_LEVEL - this.oxygenLevel);
+    const steps = Math.min(increments, this.max.oxygen - this.oxygenLevel);
+    this.triggerForAllCards((owner, card) => card.onGlobalParameterIncreaseByAnyPlayer?.(owner, player, GlobalParameter.OXYGEN, steps));
+    const newOxygenLevel = this.oxygenLevel + steps;
 
     if (this.phase !== Phase.SOLAR) {
       TurmoilHandler.onGlobalParameterIncrease(player, GlobalParameter.OXYGEN, steps);
       player.onGlobalParameterIncrease(GlobalParameter.OXYGEN, steps);
       player.increaseTerraformRating(steps);
     }
-    if (this.oxygenLevel < constants.OXYGEN_LEVEL_FOR_TEMPERATURE_BONUS &&
-      this.oxygenLevel + steps >= constants.OXYGEN_LEVEL_FOR_TEMPERATURE_BONUS) {
-      this.increaseTemperature(player, 1);
-    }
 
-    this.oxygenLevel += steps;
+    this.grantParameterTrackBonuses(player, 'oxygen', this.oxygenLevel, newOxygenLevel);
+
+    this.oxygenLevel = newOxygenLevel;
+    this.recordReplayGlobalEffect(player, GlobalParameter.OXYGEN, steps);
+
+    if (steps > 0 && this.phase !== Phase.SOLAR) {
+      LogHelper.logOxygenIncrease(player, steps);
+    }
 
     AresHandler.ifAres(this, (aresData) => {
       AresHandler.onOxygenChange(this, aresData);
@@ -1319,36 +1698,39 @@ export class Game implements IGame, Logger {
   }
 
   public increaseVenusScaleLevel(player: IPlayer, increments: -1 | 1 | 2 | 3): number {
-    if (this.venusScaleLevel >= constants.MAX_VENUS_SCALE) {
+    if (this.venusScaleLevel >= this.max.venus) {
       return 0;
     }
 
     // PoliticalAgendas Reds P3 hook
     if (increments === -1) {
-      this.venusScaleLevel = Math.max(constants.MIN_VENUS_SCALE, this.venusScaleLevel + increments * 2);
+      const before = this.venusScaleLevel;
+      this.venusScaleLevel = this.venusLevelAfterTrackSteps(this.venusScaleLevel, increments);
+      this.recordReplayGlobalEffect(player, GlobalParameter.VENUS, -this.venusTrackStepsBetween(this.venusScaleLevel, before));
       return -1;
     }
 
     // Literal typing makes |increments| a const
-    const steps = Math.min(increments, (constants.MAX_VENUS_SCALE - this.venusScaleLevel) / 2);
+    const steps = Math.min(increments, this.venusTrackStepsBetween(this.venusScaleLevel, this.max.venus));
+    this.triggerForAllCards((owner, card) => card.onGlobalParameterIncreaseByAnyPlayer?.(owner, player, GlobalParameter.VENUS, steps));
+    const newValue = this.venusLevelAfterTrackSteps(this.venusScaleLevel, steps);
+
+    this.grantParameterTrackBonuses(player, 'venus', this.venusScaleLevel, newValue);
 
     if (this.phase !== Phase.SOLAR) {
-      if (this.venusScaleLevel < constants.VENUS_LEVEL_FOR_CARD_BONUS &&
-        this.venusScaleLevel + steps * 2 >= constants.VENUS_LEVEL_FOR_CARD_BONUS) {
-        player.drawCard();
-      }
-      if (this.venusScaleLevel < constants.VENUS_LEVEL_FOR_TR_BONUS &&
-        this.venusScaleLevel + steps * 2 >= constants.VENUS_LEVEL_FOR_TR_BONUS) {
-        player.increaseTerraformRating();
-      }
       if (this.gameOptions.altVenusBoard) {
-        const newValue = this.venusScaleLevel + steps * 2;
         const minimalBaseline = Math.max(this.venusScaleLevel, constants.ALT_VENUS_MINIMUM_BONUS);
-        const maximumBaseline = Math.min(newValue, constants.MAX_VENUS_SCALE);
-        const standardResourcesGranted = Math.max((maximumBaseline - minimalBaseline) / 2, 0);
+        // Alt-Venus-board's own art/resource ramp is pinned to the official 0-30 track -- capped
+        // at MAX_VENUS_SCALE (not the game's own maximum) so Venus Phase 2's extended 30-60 track
+        // doesn't triple the resources granted or push the "reached max" wild-resource bonus out to 60.
+        const altVenusCap = Math.min(this.max.venus, constants.MAX_VENUS_SCALE);
+        const maximumBaseline = Math.min(newValue, altVenusCap);
+        const standardResourcesGranted = Math.max(venusStepsBetween(minimalBaseline, maximumBaseline), 0);
 
-        const grantWildResource = this.venusScaleLevel + (steps * 2) >= constants.MAX_VENUS_SCALE;
-        // The second half of this expression removes any increases earler than 16-to-18.
+        // Only fire once, on the raise that actually reaches the cap -- without the "was below
+        // it before" half, every further raise past 30 (now possible with Venus Phase 2's
+        // extended track) would re-grant the wild resource, since newValue stays >= the cap.
+        const grantWildResource = this.venusScaleLevel < altVenusCap && newValue >= altVenusCap;
         if (grantWildResource || standardResourcesGranted > 0) {
           this.defer(new GrantVenusAltTrackBonusDeferred(player, standardResourcesGranted, grantWildResource));
         }
@@ -1370,7 +1752,13 @@ export class Game implements IGame, Logger {
       aphrodite.stock.add(Resource.MEGACREDITS, 2 * steps, {log: true, from: {card: CardName.APHRODITE}});
     }
 
-    this.venusScaleLevel += steps * 2;
+    this.venusScaleLevel = newValue;
+    this.recordReplayGlobalEffect(player, GlobalParameter.VENUS, steps);
+
+    // Every Venus raise shows the amount in the game log; callers no longer have to.
+    if (steps > 0 && this.phase !== Phase.SOLAR) {
+      LogHelper.logVenusIncrease(player, steps);
+    }
 
     return steps;
   }
@@ -1380,29 +1768,24 @@ export class Game implements IGame, Logger {
   }
 
   public increaseTemperature(player: IPlayer, increments: -2 | -1 | 1 | 2 | 3): undefined {
-    if (this.temperature >= constants.MAX_TEMPERATURE) {
+    const temperatureTrack = this.parameters.temperature;
+    if (this.temperature >= this.max.temperature) {
       return undefined;
     }
 
     if (increments === -2 || increments === -1) {
-      this.temperature = Math.max(constants.MIN_TEMPERATURE, this.temperature + increments * 2);
+      const before = this.temperature;
+      this.temperature = Math.max(temperatureTrack.min, this.temperature + increments * 2);
+      this.recordReplayGlobalEffect(player, GlobalParameter.TEMPERATURE, (this.temperature - before) / 2);
       return undefined;
     }
 
     // Literal typing makes |increments| a const
-    const steps = Math.min(increments, (constants.MAX_TEMPERATURE - this.temperature) / 2);
+    const steps = Math.min(increments, (this.max.temperature - this.temperature) / 2);
+    this.triggerForAllCards((owner, card) => card.onGlobalParameterIncreaseByAnyPlayer?.(owner, player, GlobalParameter.TEMPERATURE, steps));
+    const newTemperature = this.temperature + steps * 2;
 
     if (this.phase !== Phase.SOLAR) {
-      // BONUS FOR HEAT PRODUCTION AT -20 and -24
-      if (this.temperature < constants.TEMPERATURE_BONUS_FOR_HEAT_1 &&
-        this.temperature + steps * 2 >= constants.TEMPERATURE_BONUS_FOR_HEAT_1) {
-        player.production.add(Resource.HEAT, 1, {log: true});
-      }
-      if (this.temperature < constants.TEMPERATURE_BONUS_FOR_HEAT_2 &&
-        this.temperature + steps * 2 >= constants.TEMPERATURE_BONUS_FOR_HEAT_2) {
-        player.production.add(Resource.HEAT, 1, {log: true});
-      }
-
       for (const card of player.playedCards) {
         card.onGlobalParameterIncrease?.(player, GlobalParameter.TEMPERATURE, steps);
       }
@@ -1411,12 +1794,14 @@ export class Game implements IGame, Logger {
       player.increaseTerraformRating(steps);
     }
 
-    // BONUS FOR OCEAN TILE AT 0
-    if (this.temperature < constants.TEMPERATURE_FOR_OCEAN_BONUS && this.temperature + steps * 2 >= constants.TEMPERATURE_FOR_OCEAN_BONUS) {
-      this.defer(new PlaceOceanTile(player, {title: 'Select space for ocean from temperature increase'}));
-    }
+    this.grantParameterTrackBonuses(player, 'temperature', this.temperature, newTemperature);
 
-    this.temperature += steps * 2;
+    this.temperature = newTemperature;
+    this.recordReplayGlobalEffect(player, GlobalParameter.TEMPERATURE, steps);
+
+    if (steps > 0 && this.phase !== Phase.SOLAR) {
+      LogHelper.logTemperatureIncrease(player, steps);
+    }
 
     AresHandler.ifAres(this, (aresData) => {
       AresHandler.onTemperatureChange(this, aresData);
@@ -1473,14 +1858,15 @@ export class Game implements IGame, Logger {
     // Part 3. Setup for bonuses
     const initialTileType = space.tile?.tileType;
     const coveringExistingTile = space.tile !== undefined;
-    const arcadianCommunityBonus = space.player === player && player.tableau.has(CardName.ARCADIAN_COMMUNITIES);
+    const reservedForPlayer = space.player === player;
 
     // Part 4. Place the tile
     this.simpleAddTile(player, space, tile);
 
     // Part 5. Collect the bonuses
     if (this.phase !== Phase.SOLAR) {
-      this.grantPlacementBonuses(player, space, coveringExistingTile, arcadianCommunityBonus);
+      this.grantPlacementBonuses(player, space, coveringExistingTile);
+      this.grantTilePlacementBonuses(player, space, reservedForPlayer);
 
       AresHandler.ifAres(this, (aresData) => {
         AresHandler.maybeIncrementMilestones(aresData, player, space, hazardSeverity(initialTileType));
@@ -1497,6 +1883,20 @@ export class Game implements IGame, Logger {
 
     // Clear out underworld components.
     UnderworldExpansion.onTilePlaced(this, space);
+
+    // Rob Antilles (Sedimentary Rocks): get 3 M€ when a City tile is placed over a Sediment
+    // tile. This is generic (not gated to Sedimentary Rocks' own action) because the covering
+    // City tile can come from any card or the City standard project -- see
+    // MarsBoard.getAvailableSpacesForCity and MarsBoard.canCover for the placement side of this.
+    if (initialTileType === TileType.SEDIMENT && space.tile?.tileType === TileType.CITY) {
+      player.stock.add(Resource.MEGACREDITS, 3, {log: true});
+      this.log('${0} gained 3 M€ for placing a City tile over a Sediment tile', (b) => b.player(player));
+    }
+
+    // Energy Harvest tracks whether a player's most recent action placed a greenery.
+    if (space.tile !== undefined && space.player === player && GREENERY_TILES.has(space.tile.tileType)) {
+      player.lastGreeneryActionNumber = player.actionsTakenThisGame + 1;
+    }
 
     this.triggerForAllCards((p, c) => c.onTilePlaced?.(p, player, space, BoardType.MARS));
 
@@ -1515,42 +1915,50 @@ export class Game implements IGame, Logger {
     }
   }
 
-  public grantPlacementBonuses(player: IPlayer, space: Space, coveringExistingTile: boolean = false, arcadianCommunityBonus: boolean = false) {
+  public grantPlacementBonuses(player: IPlayer, space: Space, coveringExistingTile: boolean = false) {
     if (!coveringExistingTile) {
-      this.grantSpaceBonuses(player, space);
+      this.grantSpaceBonuses(player, space, /* tilePlaced= */ true);
     }
 
     const adjacentOceanCount = this.board.getAdjacentSpaces(space).filter(Board.isOceanSpace).length;
     const oceanAdjacencyBonus = adjacentOceanCount * player.oceanBonus;
     if (oceanAdjacencyBonus > 0) {
       player.stock.add(Resource.MEGACREDITS, oceanAdjacencyBonus);
-      this.log('${0} gained ${1} M€ from ${2} ocean(s)', (b) => b.player(player).number(oceanAdjacencyBonus).number(adjacentOceanCount));
+      this.log('${0} gained ${1}:r:mc: from ${2} ocean(s)', (b) => b.player(player).number(oceanAdjacencyBonus).number(adjacentOceanCount));
     }
+  }
 
+  /**
+   * Bonuses that only apply when a tile is actually placed.
+   *
+   * Mars Nomads moves a token rather than placing a tile, so it collects the placement
+   * bonuses above without these.
+   */
+  private grantTilePlacementBonuses(player: IPlayer, space: Space, reservedForPlayer: boolean) {
     // TODO(kberg): these might not apply for some bonuses, e.g. Frontier Town.
     // https://boardgamegeek.com/thread/3344366/article/44658730#44658730
-    if (space.tile !== undefined) {
-      AresHandler.ifAres(this, () => {
-        AresHandler.earnAdjacencyBonuses(player, space);
-      });
+    AresHandler.ifAres(this, () => {
+      AresHandler.earnAdjacencyBonuses(player, space);
+    });
 
-      TurmoilHandler.resolveTilePlacementBonuses(player, space.spaceType);
+    TurmoilHandler.resolveTilePlacementBonuses(player, space.spaceType);
 
-      if (arcadianCommunityBonus) {
-        this.defer(new GainResourcesDeferred(player, Resource.MEGACREDITS, {count: 3}));
+    if (reservedForPlayer) {
+      // Cards that pay out when a tile is placed on a space reserved for this player
+      // (e.g. Arcadian Communities and its Rebalanced variant).
+      for (const card of player.tableau) {
+        card.onReservedSpacePlaced?.(player, space);
       }
+    }
 
-      if (space.undergroundResources === 'place6mc') {
-        this.defer(new GainResourcesDeferred(player, Resource.MEGACREDITS, {count: 6}));
-      }
+    if (space.undergroundResources === 'place6mc') {
+      this.defer(new GainResourcesDeferred(player, Resource.MEGACREDITS, {count: 6}));
     }
   }
 
   public simpleAddTile(player: IPlayer, space: Space, tile: Tile) {
     space.tile = tile;
-    if (tile.tileType === TileType.OCEAN ||
-      tile.tileType === TileType.MARTIAN_NATURE_WONDERS ||
-      tile.tileType === TileType.REY_SKYWALKER) {
+    if (tile.tileType === TileType.OCEAN) {
       space.player = undefined;
     } else {
       space.player = player;
@@ -1558,14 +1966,14 @@ export class Game implements IGame, Logger {
     LogHelper.logTilePlacement(player, space, tile.tileType);
   }
 
-  public grantSpaceBonuses(player: IPlayer, space: Space) {
+  public grantSpaceBonuses(player: IPlayer, space: Space, tilePlaced: boolean = false) {
     const bonuses = MultiSet.from(space.bonus);
     bonuses.forEachMultiplicity((count: number, bonus: SpaceBonus) => {
-      this.grantSpaceBonus(player, bonus, count);
+      this.grantSpaceBonus(player, bonus, count, tilePlaced ? space : undefined);
     });
   }
 
-  public grantSpaceBonus(player: IPlayer, spaceBonus: SpaceBonus, count: number = 1) {
+  public grantSpaceBonus(player: IPlayer, spaceBonus: SpaceBonus, count: number = 1, space?: Space) {
     switch (spaceBonus) {
     case SpaceBonus.DRAW_CARD:
       player.drawCard(count);
@@ -1582,10 +1990,14 @@ export class Game implements IGame, Logger {
     case SpaceBonus.HEAT:
       player.stock.add(Resource.HEAT, count, {log: true});
       break;
+    case SpaceBonus.MEGACREDITS:
+      player.stock.add(Resource.MEGACREDITS, count, {log: true});
+      break;
     case SpaceBonus.OCEAN:
       // Hellas special requirements ocean tile
       if (this.canAddOcean()) {
-        this.defer(new SelectPaymentDeferred(player, constants.HELLAS_BONUS_OCEAN_COST, {title: 'Select how to pay for placement bonus ocean'}))
+        const oceanCost = this.gameOptions.customBoard?.placementBonusCosts?.ocean ?? constants.HELLAS_BONUS_OCEAN_COST;
+        this.defer(new SelectPaymentDeferred(player, oceanCost, {title: 'Select how to pay for placement bonus ocean'}))
           .andThen(() => {
             this.defer(new PlaceOceanTile(player, {title: 'Select space for ocean from placement bonus'}));
             return undefined;
@@ -1607,13 +2019,11 @@ export class Game implements IGame, Logger {
     case SpaceBonus.SCIENCE:
       this.defer(new AddResourcesToCard(player, CardResource.SCIENCE, {count: count}));
       break;
-    case SpaceBonus.TEMPERATURE:
     case SpaceBonus.TEMPERATURE_4MC:
-      if (this.getTemperature() < constants.MAX_TEMPERATURE) {
-        const cost = spaceBonus === SpaceBonus.TEMPERATURE ? constants.VASTITAS_BOREALIS_BONUS_TEMPERATURE_COST : constants.VASTITAS_BOREALIS_NOVA_BONUS_TEMPERATURE_COST;
+      if (this.getTemperature() < this.max.temperature) {
         this.defer(new SelectPaymentDeferred(
           player,
-          cost,
+          this.gameOptions.customBoard?.placementBonusCosts?.temperature ?? constants.VASTITAS_BOREALIS_NOVA_BONUS_TEMPERATURE_COST,
           {title: 'Select how to pay for placement bonus temperature'}))
           .andThen(() => this.increaseTemperature(player, 1));
       }
@@ -1625,14 +2035,30 @@ export class Game implements IGame, Logger {
       this.defer(new AddResourcesToCard(player, CardResource.ASTEROID, {count: count}));
       break;
     case SpaceBonus.DELEGATE:
-      Turmoil.ifTurmoil(this, () => this.defer(new SendDelegateToArea(player)));
+      if (this.turmoil) {
+        this.defer(new SendDelegateToArea(player, undefined, {count}));
+      }
       break;
     case SpaceBonus.COLONY:
       this.defer(new SelectPaymentDeferred(
         player,
-        constants.TERRA_CIMMERIA_COLONY_COST,
+        this.gameOptions.customBoard?.placementBonusCosts?.colony ?? constants.TERRA_CIMMERIA_COLONY_COST,
         {title: 'Select how to pay for building a colony'}))
         .andThen(() => this.defer(new BuildColony(player)));
+      break;
+    case SpaceBonus.FLOATER:
+      this.defer(new AddResourcesToCard(player, CardResource.FLOATER, {count: count}));
+      break;
+    case SpaceBonus.STANDARD_RESOURCE:
+      // A space has this bonus at most once. If one ever has more, use SelectResources (see Philares).
+      player.defer(new SelectResource('Select a standard resource to gain')
+        .andThen((resource) => {
+          player.stock.add(resource, 1, {log: true});
+          if (space !== undefined) {
+            this.triggerForAllCards((p, c) => c.onStandardResourcePlacementBonus?.(p, player, space, resource));
+          }
+          return undefined;
+        }));
       break;
     default:
       throw new Error('Unhandled space bonus ' + spaceBonus + '. Report this exact error, please.');
@@ -1661,15 +2087,17 @@ export class Game implements IGame, Logger {
       tileType: TileType.CITY,
       card: cardName,
     });
+    // Turmoil Spome ruling policy
+    TurmoilHandler.applyOnCityTilePlacedEffect(player);
   }
 
   public canAddOcean(): boolean {
-    return this.board.getOceanSpaces().length < constants.MAX_OCEAN_TILES;
+    return this.board.getOceanSpaces().length < this.max.oceans;
   }
 
   public canRemoveOcean(): boolean {
     const count = this.board.getOceanSpaces().length;
-    return count > 0 && count < constants.MAX_OCEAN_TILES;
+    return count > 0 && count < this.max.oceans;
   }
 
   public addOcean(player: IPlayer, space: Space): void {
@@ -1678,6 +2106,7 @@ export class Game implements IGame, Logger {
     }
 
     this.addTile(player, space, {tileType: TileType.OCEAN});
+    this.triggerForAllCards((owner, card) => card.onGlobalParameterIncreaseByAnyPlayer?.(owner, player, GlobalParameter.OCEANS, 1));
 
     if (this.phase !== Phase.SOLAR) {
       TurmoilHandler.onGlobalParameterIncrease(player, GlobalParameter.OCEANS);
@@ -1755,14 +2184,44 @@ export class Game implements IGame, Logger {
           return gameOptions.underworldExpansion === true;
         case CardName.COLLUSION_STANDARD_PROJECT:
           return gameOptions.underworldExpansion === true && gameOptions.turmoilExtension === true;
+        case CardName.GIVE_PATENT:
+        case CardName.FACILITY_SHARING:
+        case CardName.TEAM_DONATION:
+          return gameOptions.conglomeratesExpansion === true;
         default:
           return true;
         }
       })
-      .sort((a, b) => a.cost - b.cost);
+      // Sorted by cost, except the 3 Conglomerates Team Actions: they're 0/0/4 M€, which
+      // would otherwise scatter them among unrelated same-cost standard projects (e.g.
+      // Collusion Standard Project also costs 0) instead of keeping them together as the
+      // single related group they are. Negative sort keys guarantee they sort before every
+      // real (non-negative) cost, in a fixed relative order, with no risk of a tie against
+      // an actual project's cost.
+      .toSorted(comparing((card) => TEAM_ACTION_SORT_KEY[card.name] ?? card.cost));
   }
 
-  public log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer, reservedForParticipant?: ParticipantId, hiddenFor?: Array<ParticipantId>}) {
+  private recordReplayGlobalEffect(player: IPlayer, parameter: LogGlobalEffect['parameter'], amount: number): void {
+    const context = this.logActionContext;
+    if (amount === 0 || context === undefined || context.actor.actionsTakenThisGame !== context.ordinal ||
+        this.generation !== context.generation || this.phase !== context.phase) {
+      return;
+    }
+    const effect: LogGlobalEffect = {kind: 'global', parameter, amount, player: player.color};
+    for (let index = this.gameLog.length - 1; index >= 0; index--) {
+      const message = this.gameLog[index];
+      if (message.actionId !== context.id) {
+        break;
+      }
+      if (message.playerId === undefined && message.hiddenFor === undefined && message.canceled !== true) {
+        (message.replayGlobalEffects ??= []).push(effect);
+        return;
+      }
+    }
+    (context.pendingGlobalEffects ??= []).push(effect);
+  }
+
+  public log(message: string, f?: (builder: LogMessageBuilder) => void, options?: {reservedFor?: IPlayer, reservedForParticipant?: ParticipantId, hiddenFor?: Array<ParticipantId>, effect?: LogEffect}) {
     const builder = new LogMessageBuilder(message);
     f?.(builder);
     const logMessage = builder.build();
@@ -1770,6 +2229,23 @@ export class Game implements IGame, Logger {
     if (options?.hiddenFor !== undefined) {
       logMessage.hiddenFor = options.hiddenFor;
     }
+    if (options?.effect !== undefined) {
+      logMessage.effect = options.effect;
+    }
+    const context = this.logActionContext;
+    if (context !== undefined && context.actor.actionsTakenThisGame === context.ordinal &&
+        this.generation === context.generation && this.phase === context.phase) {
+      logMessage.actionId = context.id;
+      if (context.firstMessage) {
+        logMessage.actionStart = true;
+        context.firstMessage = false;
+      }
+      if (logMessage.playerId === undefined && logMessage.hiddenFor === undefined && context.pendingGlobalEffects !== undefined) {
+        logMessage.replayGlobalEffects = context.pendingGlobalEffects;
+        context.pendingGlobalEffects = undefined;
+      }
+    }
+    annotateLogMessage(this, logMessage);
     this.gameLog.push(logMessage);
     this.gameAge++;
   }
@@ -1806,10 +2282,13 @@ export class Game implements IGame, Logger {
     return addDays(this.createdTime, days).getTime();
   }
 
-  public static deserialize(d: SerializedGame, options: {simulation?: boolean} = {}): Game {
+  public static deserialize(d: SerializedGame, options: {simulation?: boolean; viewOnly?: boolean; saveGame?: SaveGame} = {}): Game {
+    if (options.viewOnly) {
+      d = structuredClone(d);
+    }
     const gameOptions = deserializeGameOptions(d);
 
-    const players = d.players.map((element) => Player.deserialize(element));
+    const players = d.players.map((element) => Player.deserialize(element, {restoreTimerClock: !options.viewOnly}));
     const first = players.find((player) => player.id === d.first);
     if (first === undefined) {
       throw new Error(`Player ${d.first} not found when rebuilding First Player`);
@@ -1825,8 +2304,8 @@ export class Game implements IGame, Logger {
 
     const ceoDeck = CeoDeck.deserialize(d.ceoDeck, rng);
 
-    const game = new Game(d.id, d.name, players, first, d.activePlayer, d.spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, d.tags);
-    game.simulationMode = options.simulation === true;
+    const game = new Game(d.id, d.name, players, first, d.activePlayer, d.spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, d.tags, options.saveGame);
+    game.simulationMode = options.simulation === true || options.viewOnly === true;
     game.resettable = true;
     game.spectatorId = d.spectatorId;
     game.createdTime = new Date(d.createdTimeMs);
@@ -1868,12 +2347,16 @@ export class Game implements IGame, Logger {
 
     // Reload turmoil elements if needed
     if (d.turmoil && gameOptions.turmoilExtension) {
-      game.turmoil = Turmoil.deserialize(d.turmoil, players);
+      game.turmoil = Turmoil.deserialize(d.turmoil, players, gameOptions);
     }
 
     // Reload moon elements if needed
     if (d.moonData !== undefined && gameOptions.moonExpansion === true) {
       game.moonData = MoonData.deserialize(d.moonData, players);
+    }
+
+    if (d.venusPhase2Data !== undefined && gameOptions.venusPhase2Expansion === true) {
+      game.venusPhase2Data = VenusPhase2Data.deserialize(d.venusPhase2Data, players);
     }
 
     if (d.pathfindersData !== undefined && gameOptions.pathfindersExpansion === true) {
@@ -1883,8 +2366,15 @@ export class Game implements IGame, Logger {
     if (d.underworldData !== undefined) {
       game.underworldData = d.underworldData;
     }
+    if (d.conglomerates !== undefined) {
+      game.conglomerates = d.conglomerates;
+    }
     game.passedPlayers = new Set<PlayerId>(d.passedPlayers);
     game.donePlayers = new Set<PlayerId>(d.donePlayers);
+    game.cardsPlayedThisGeneration = new Set<CardName>(d.cardsPlayedThisGeneration ?? []);
+    game.highOrbitMarket = d.highOrbitMarket ?? [];
+    game.highOrbitDeck = d.highOrbitDeck ?? [];
+    game.resourceRemovalBlockedThisGeneration = d.resourceRemovalBlockedThisGeneration ?? false;
     game.researchedPlayers = new Set<PlayerId>(d.researchedPlayers);
 
     game.lastSaveId = d.lastSaveId;
@@ -1896,6 +2386,7 @@ export class Game implements IGame, Logger {
     game.phase = d.phase;
     game.oxygenLevel = d.oxygenLevel;
     game.undoCount = d.undoCount ?? 0;
+    game.aiDecisionCount = d.aiDecisionCount ?? 0;
     game.temperature = d.temperature;
     game.venusScaleLevel = d.venusScaleLevel;
     game.activePlayer = game.getPlayerById(d.activePlayer);
@@ -1904,10 +2395,13 @@ export class Game implements IGame, Logger {
     game.someoneHasRemovedOtherPlayersPlants = d.someoneHasRemovedOtherPlayersPlants;
     game.syndicatePirateRaider = d.syndicatePirateRaider;
     game.gagarinBase = d.gagarinBase;
-    game.stJosephCathedrals = d.stJosephCathedrals;
+    // TODO(kberg): Remove after 2028-01-01
+    // Cathedrals can sit on space colony cities, whose ids used to lack the leading 'c'.
+    game.stJosephCathedrals = d.stJosephCathedrals.map((id) => board.spaces.some((space) => space.id === id) ? id : `c${id}` as SpaceId);
     game.nomadSpace = d.nomadSpace;
     game.tradeEmbargo = d.tradeEmbargo ?? false;
     game.beholdTheEmperor = d.beholdTheEmperor ?? false;
+    game.backstabbingPlayer = d.backstabbingPlayer;
     game.botPlayerIds.clear();
     for (const playerId of d.botPlayerIds ?? []) {
       game.botPlayerIds.add(playerId);
@@ -1917,24 +2411,29 @@ export class Game implements IGame, Logger {
       game.surrenderedPlayerIds.add(playerId);
     }
     game.globalsPerGeneration = d.globalsPerGeneration;
-
-    // TODO(kberg): Remove this migration code by 2026-08-01
-    for (const generation of game.globalsPerGeneration) {
-      const asany = generation as any;
-      if (asany['moon-logistics']) {
-        generation['moon-logistic'] = asany['moon-logistics'];
-        delete asany['moon-logistics'];
-      }
-    }
     game.verminInEffect = d.verminInEffect;
     game.exploitationOfVenusInEffect = d.exploitationOfVenusInEffect;
+    game.additionalResearch = d.additionalResearch;
+    if (options.viewOnly) {
+      return game;
+    }
     // Still in Draft or Research of generation 1
-    if (game.generation === 1 && players.some((p) => p.playedCards.filter(isICorporationCard).length === 0)) {
+    if (game.additionalResearch !== undefined) {
+      if (game.additionalResearch.pending) {
+        game.activePlayer.takeAction(false);
+      } else if (game.phase === Phase.DRAFTING) {
+        newStandardDraft(game).restoreDraft();
+      } else {
+        for (const player of players) {
+          if (!game.hasResearched(player)) {
+            player.runResearchPhase(true);
+          }
+        }
+      }
+    } else if (game.generation === 1 && players.some((p) => p.playedCards.filter(isICorporationCard).length === 0)) {
       if (game.phase === Phase.INITIALDRAFTING) {
         switch (game.initialDraftIteration) {
         case 1:
-          newInitialDraft(game).restoreDraft();
-          break;
         case 2:
           newInitialDraft(game).restoreDraft();
           break;
@@ -1957,9 +2456,13 @@ export class Game implements IGame, Logger {
       }
     } else if (game.phase === Phase.END) {
       // There's nowhere that we need to go for end game.
+    } else if (game.phase === Phase.SOLAR) {
+      game.restoreSolarPhase();
+    } else if (game.phase === Phase.INTERGENERATION) {
+      game.restoreIntergenerationPhase();
     } else {
       // We should be in ACTION phase, let's prompt the active player for actions
-      game.activePlayer.takeAction(/* saveBeforeTakingAction */ false);
+      game.activePlayer.takeAction();
     }
 
     if (game.phase === Phase.END && !game.simulationMode) {

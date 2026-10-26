@@ -7,6 +7,7 @@ import {CitiesRequirement} from './CitiesRequirement';
 import {ColoniesRequirement} from './ColoniesRequirement';
 import {FloatersRequirement} from './FloatersRequirement';
 import {GreeneriesRequirement} from './GreeneriesRequirement';
+import {GreeneryLastActionRequirement} from './GreeneryLastActionRequirement';
 import {HabitatRateRequirement} from './HabitatRateRequirement';
 import {HabitatTilesRequirement} from './HabitatTilesRequirement';
 import {LogisticRateRequirement} from './LogisticRateRequirement';
@@ -22,12 +23,14 @@ import {ResourceTypeRequirement} from './ResourceTypeRequirement';
 import {RoadTilesRequirement} from './RoadTilesRequirement';
 import {TRRequirement} from './TRRequirement';
 import {TagCardRequirement} from './TagCardRequirement';
+import {UniqueTagsRequirement} from './UniqueTagsRequirement';
 import {TemperatureRequirement} from './TemperatureRequirement';
 import {VenusRequirement} from './VenusRequirement';
 import {CardRequirementDescriptor} from '../../../common/cards/CardRequirementDescriptor';
 import {CorruptionRequirement} from './CorruptionRequirement';
 import {IProjectCard} from '../IProjectCard';
 import {UndergroundTokenRequirement} from './UndergroundTokenRequirement';
+import {GenerationRequirement} from '@/server/cards/requirements/GenerationRequirement';
 
 export class CardRequirements {
   constructor(public requirements: Array<CardRequirement>) {}
@@ -67,6 +70,8 @@ export class CardRequirements {
   private static compileOne(descriptor: CardRequirementDescriptor): CardRequirement {
     if (descriptor.tag !== undefined) {
       return new TagCardRequirement(descriptor.tag, descriptor);
+    } else if (descriptor.uniqueTags !== undefined) {
+      return new UniqueTagsRequirement({...descriptor, count: descriptor.uniqueTags});
     } else if (descriptor.oceans !== undefined) {
       return new OceanRequirement({...descriptor, count: descriptor.oceans});
     } else if (descriptor.oxygen !== undefined) {
@@ -77,12 +82,16 @@ export class CardRequirements {
       return new VenusRequirement({...descriptor, count: descriptor.venus});
     } else if (descriptor.tr !== undefined) {
       return new TRRequirement({...descriptor, count: descriptor.tr});
+    } else if (descriptor.generation !== undefined) {
+      return new GenerationRequirement({...descriptor, count: descriptor.generation});
     } else if (descriptor.chairman !== undefined) {
       return new ChairmanRequirement();
     } else if (descriptor.resourceTypes !== undefined) {
       return new ResourceTypeRequirement({...descriptor, count: descriptor.resourceTypes});
     } else if (descriptor.greeneries !== undefined) {
       return new GreeneriesRequirement({...descriptor, count: descriptor.greeneries});
+    } else if (descriptor.greeneryLastAction !== undefined) {
+      return new GreeneryLastActionRequirement();
     } else if (descriptor.cities !== undefined) {
       return new CitiesRequirement({...descriptor, count: descriptor.cities});
     } else if (descriptor.colonies !== undefined) {

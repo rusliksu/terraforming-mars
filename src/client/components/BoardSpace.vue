@@ -1,5 +1,5 @@
 <template>
-  <div v-if="space !== undefined" :class="mainClass" :data_space_id="space.id">
+  <div v-if="space !== undefined" :class="mainClass" :style="positionStyle" :data_space_id="space.id">
     <BoardSpaceTile
       :space="space"
       :aresExtension="aresExtension"
@@ -8,7 +8,7 @@
     <div class="board-space-text" v-if="text" v-i18n>{{ text }}</div>
     <Bonus :bonus="space.bonus" v-if="showBonus"/>
     <template v-if="tileView === 'coords'">
-      <div class="board-space-coords">{{ getSpaceName(space.id) }}</div>
+      <div class="board-space-coords">{{ space.a9 ?? 'n/a' }}</div>
     </template>
     <template v-if="tileView === 'show'">
       <div :class="playerColorCss" v-if="space.color !== undefined"></div>
@@ -22,6 +22,7 @@
       <template v-if="space.nomads === true">
         <div class='board-cube--nomad'></div>
       </template>
+      <BoardSpaceCube v-if="space.cube !== undefined" :cube="space.cube"/>
       <UndergroundToken v-if="claimedToken !== undefined" :token="claimedToken" location="board"/>
       <div v-if="space.excavator !== undefined" class="underground-excavator" :class="'underground-excavator--' + space.excavator"></div>
       <div v-if="space.spaceType === SpaceType.DEFLECTION_ZONE" class="board-space-type-deflection-zone"></div>
@@ -35,12 +36,12 @@
 import {defineComponent} from 'vue';
 import Bonus from '@/client/components/Bonus.vue';
 import BoardSpaceTile from '@/client/components/board/BoardSpaceTile.vue';
+import BoardSpaceCube from '@/client/components/board/BoardSpaceCube.vue';
 import UndergroundToken from '@/client/components/underworld/UndergroundToken.vue';
 import {TileView} from '@/client/components/board/TileView';
 import {SpaceModel} from '@/common/models/SpaceModel';
 import {getPreferences} from '../utils/PreferencesManager';
 import {ClaimedToken} from '@/common/underworld/UnderworldPlayerData';
-import {getSpaceName} from '@/common/boards/spaces';
 import {SpaceType} from '@/common/boards/SpaceType';
 import {isReservedPlayerColor} from '@/common/Color';
 export default defineComponent({
@@ -61,23 +62,39 @@ export default defineComponent({
       type: String as () => TileView,
       required: true,
     },
-  },
-  data() {
-    return {};
+    // Explicit pixel offset for boards without a hand-placed `.board-space-NN` CSS rule
+    // (i.e. custom boards). Absent for the official boards.
+    pixel: {
+      type: Object as () => {left: number, top: number} | undefined,
+      default: undefined,
+    },
   },
   components: {
     Bonus,
     BoardSpaceTile,
+    BoardSpaceCube,
     UndergroundToken,
   },
   computed: {
     mainClass(): string {
       let css = 'board-space board-space-' + this.space?.id.toString();
       css += ' board-space-selectable';
+      if (this.space.spaceType === SpaceType.RESTRICTED) {
+        css += ' board-space-type-restricted';
+      }
       return css;
     },
+    positionStyle(): Record<string, string> | undefined {
+      if (this.pixel === undefined) {
+        return undefined;
+      }
+      return {margin: `${this.pixel.top}px 0 0 ${this.pixel.left}px`};
+    },
     showBonus(): boolean {
-      return this.space.tileType === undefined || this.tileView === 'hide';
+      if (this.tileView === 'hide') {
+        return true;
+      }
+      return this.space.tileType === undefined && this.space.cube === undefined;
     },
     playerColorCss(): string {
       if (this.space.color === undefined) {
@@ -96,9 +113,6 @@ export default defineComponent({
       return {token: this.space.undergroundResource, shelter: false, active: false};
     },
 
-    getSpaceName(): typeof getSpaceName {
-      return getSpaceName;
-    },
     SpaceType(): typeof SpaceType {
       return SpaceType;
     },

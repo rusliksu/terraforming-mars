@@ -1,11 +1,12 @@
 import {expect} from 'chai';
 import {BoardName} from '../../src/common/boards/BoardName';
+import {boardOptions} from '../../src/common/boards/randomBoardOptions';
+import {RandomBoardOption} from '../../src/common/boards/RandomBoardOption';
 import {ApiCreateGame, isTelegramIdValid, normalizeTelegramId} from '../../src/server/routes/ApiCreateGame';
 import {MockRequest, MockResponse} from './HttpMocks';
 import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {statusCode} from '../../src/common/http/statusCode';
 import {NewGameConfig} from '../../src/common/game/NewGameConfig';
-import {RandomBoardOption} from '../../src/common/boards/RandomBoardOption';
 import {RandomMAOptionType} from '../../src/common/ma/RandomMAOptionType';
 import {SimpleGameModel} from '../../src/common/models/SimpleGameModel';
 import {IGame} from '../../src/server/IGame';
@@ -15,11 +16,28 @@ import {
 } from '../../src/common/Color';
 import * as constants from '../../src/common/constants';
 import {FakeClock} from '../common/FakeClock';
+import {blankCustomBoard} from '../../src/common/boards/CustomBoardDefinition';
+import {encodeCustomBoard} from '../../src/common/boards/customBoardCodec';
+import {SpaceType} from '../../src/common/boards/SpaceType';
+import {blankSimpleBoard} from '../../src/common/boards/SimpleCustomBoardDefinition';
+import {encodeSimpleBoard} from '../../src/common/boards/simpleBoardCodec';
 
-function newGameConfig(players: NewGameConfig['players']): NewGameConfig {
+import {DEFAULT_EXPANSIONS} from '../../src/common/cards/GameModule';
+import {CardName} from '../../src/common/cards/CardName';
+
+// A complete create-game request for a one-player game.
+function newGameConfigForTest(): NewGameConfig {
   return {
-    players,
+    players: [{
+      name: 'Robot',
+      color: 'blue',
+      beginner: false,
+      handicap: 0,
+      first: true,
+      isBot: false,
+    }],
     expansions: {
+      ...DEFAULT_EXPANSIONS,
       corpera: true,
       promo: false,
       venus: false,
@@ -36,7 +54,73 @@ function newGameConfig(players: NewGameConfig['players']): NewGameConfig {
       underworld: false,
       deltaProject: false,
     },
-    board: RandomBoardOption.OFFICIAL,
+    boards: [BoardName.THARSIS],
+    seed: 0,
+    randomFirstPlayer: false,
+    clonedGamedId: undefined,
+    undoOption: false,
+    showTimers: false,
+    fastModeOption: false,
+    showOtherPlayersVP: false,
+    privateHands: true,
+    noEloGame: false,
+    turnBasedGame: false,
+    botGame: false,
+    aresExtremeVariant: false,
+    politicalAgendasExtension: 'Standard',
+    solarPhaseOption: false,
+    removeNegativeGlobalEventsOption: false,
+    modularMA: false,
+    draftVariant: false,
+    initialDraft: false,
+    initialDraftOneWay: false,
+    preludeDraftVariant: false,
+    ceosDraftVariant: false,
+    startingCorporations: 0,
+    shuffleMapOption: false,
+    randomMA: RandomMAOptionType.NONE,
+    includeFanMA: false,
+    soloTR: false,
+    customCorporationsList: [],
+    bannedCards: [],
+    includedCards: [],
+    customColoniesList: [],
+    customPreludes: [],
+    requiresMoonTrackCompletion: false,
+    requiresVenusTrackCompletion: false,
+    moonStandardProjectVariant: false,
+    moonStandardProjectVariant1: false,
+    altVenusBoard: false,
+    escapeVelocity: undefined,
+    twoCorpsVariant: false,
+    customCeos: [],
+    startingCeos: 0,
+    startingPreludes: 0,
+  };
+}
+
+function newGameConfig(players: NewGameConfig['players']): NewGameConfig {
+  return {
+    players,
+    expansions: {
+      ...DEFAULT_EXPANSIONS,
+      corpera: true,
+      promo: false,
+      venus: false,
+      colonies: false,
+      prelude: false,
+      prelude2: false,
+      turmoil: false,
+      community: false,
+      ares: false,
+      moon: false,
+      pathfinders: false,
+      ceo: false,
+      starwars: false,
+      underworld: false,
+      deltaProject: false,
+    },
+    boards: boardOptions(RandomBoardOption.OFFICIAL),
     seed: 0,
     randomFirstPlayer: false,
     clonedGamedId: undefined,
@@ -90,6 +174,28 @@ class DelayedAddGameLoader extends FakeGameLoader {
     this.addFinished = true;
   }
 }
+function customBoardGameConfig(customBoardCode: string): NewGameConfig {
+  return {...newGameConfigForTest(), boards: [BoardName.CUSTOM], customBoardCode};
+}
+
+function simpleBoardGameConfig(overrides: {moon?: boolean, venusPhase2?: boolean, customMoonBoardCode?: string, customVenusSurfaceBoardCode?: string}): NewGameConfig {
+  return {
+    ...customBoardGameConfig(''),
+    boards: [BoardName.THARSIS],
+    customBoardCode: undefined,
+    expansions: {
+      ...DEFAULT_EXPANSIONS,
+      corpera: true, promo: false, venus: false, colonies: false, prelude: false, prelude2: false,
+      turmoil: false, community: false, ares: false, moon: overrides.moon ?? false, pathfinders: false, ceo: false,
+      starwars: false, underworld: false, deltaProject: false, sillyfication: false, betterMars: false,
+      customCards: false, conglomerates: false,
+      corporateBetterments: false, idesOfMars: false, robAntilles: false, moreParties: false,
+      venusPhase2: overrides.venusPhase2 ?? false, industries: false, highOrbit: false, solaris: false,
+    },
+    customMoonBoardCode: overrides.customMoonBoardCode,
+    customVenusSurfaceBoardCode: overrides.customVenusSurfaceBoardCode,
+  };
+}
 
 describe('ApiCreateGame', () => {
   let scaffolding: RouteTestScaffolding;
@@ -102,25 +208,6 @@ describe('ApiCreateGame', () => {
     res = new MockResponse();
     scaffolding = new RouteTestScaffolding(req);
     apiCreateGame = new ApiCreateGame([{limit: 99999, perMs: 1}]);
-  });
-
-  it('Official random boards do not include fan maps', () => {
-    expect(ApiCreateGame.boardOptions(RandomBoardOption.OFFICIAL)).deep.eq([BoardName.THARSIS, BoardName.HELLAS, BoardName.ELYSIUM]);
-  });
-  it('Fully random boards do include fan maps', () => {
-    expect(ApiCreateGame.boardOptions(RandomBoardOption.ALL)).deep.eq([
-      BoardName.THARSIS,
-      BoardName.HELLAS,
-      BoardName.ELYSIUM,
-      BoardName.UTOPIA_PLANITIA,
-      BoardName.VASTITAS_BOREALIS_NOVA,
-      BoardName.TERRA_CIMMERIA_NOVA,
-      BoardName.ARABIA_TERRA,
-      BoardName.VASTITAS_BOREALIS,
-      BoardName.AMAZONIS,
-      BoardName.TERRA_CIMMERIA,
-      BoardName.HOLLANDIA,
-    ]);
   });
 
   it('no get', async () => {
@@ -150,7 +237,7 @@ describe('ApiCreateGame', () => {
     config.seed = 0.123456789;
     config.undoStepOption = true;
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -166,8 +253,8 @@ describe('ApiCreateGame', () => {
     expect(model.players[0]).not.have.property('botTakeoverToken');
     expect(game!.rng.seed).eq(config.seed);
     expect(game!.gameOptions.undoStepOption).is.true;
-    expect(game!.gameOptions.boardSelection).eq(RandomBoardOption.OFFICIAL);
-    expect(ApiCreateGame.boardOptions(RandomBoardOption.OFFICIAL)).contains(game!.gameOptions.boardName);
+    expect(game!.gameOptions.boardSelection).deep.eq(boardOptions(RandomBoardOption.OFFICIAL));
+    expect(boardOptions(RandomBoardOption.OFFICIAL)).contains(game!.gameOptions.boardName);
   });
 
   it('does not create bot takeover capabilities', async () => {
@@ -177,7 +264,7 @@ describe('ApiCreateGame', () => {
     ]);
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
 
@@ -205,7 +292,7 @@ describe('ApiCreateGame', () => {
     config.startingPreludes = constants.PRELUDE_CARDS_DEALT_PER_PLAYER;
 
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
 
@@ -230,7 +317,7 @@ describe('ApiCreateGame', () => {
     }]);
     config.noEloGame = true;
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
 
@@ -255,7 +342,7 @@ describe('ApiCreateGame', () => {
     }]);
     config.privateHands = false;
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
 
@@ -288,7 +375,7 @@ describe('ApiCreateGame', () => {
     config.initialDraft = true;
     config.initialDraftOneWay = true;
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
 
@@ -321,7 +408,7 @@ describe('ApiCreateGame', () => {
     config.initialDraft = false;
     config.initialDraftOneWay = true;
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
 
@@ -339,7 +426,7 @@ describe('ApiCreateGame', () => {
     scaffolding.ctx.gameLoader = gameLoader;
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(newGameConfig([{
+      req.emitString(JSON.stringify(newGameConfig([{
         name: 'Robot',
         color: 'blue',
         beginner: false,
@@ -371,7 +458,7 @@ describe('ApiCreateGame', () => {
     (config as unknown as {clonedGamedId: null}).clonedGamedId = null;
 
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -396,7 +483,7 @@ describe('ApiCreateGame', () => {
     (config as unknown as {escapeVelocity: null}).escapeVelocity = null;
 
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -408,7 +495,7 @@ describe('ApiCreateGame', () => {
     expect(game!.gameOptions.escapeVelocity).eq(undefined);
   });
 
-  it('normalizes malformed escape velocity options to defaults', async () => {
+  it('normalizes out-of-range escape velocity options to defaults', async () => {
     const post = scaffolding.post(apiCreateGame, res);
     const config = newGameConfig([{
       name: 'Robot',
@@ -419,14 +506,14 @@ describe('ApiCreateGame', () => {
       isBot: false,
     }]);
     config.escapeVelocity = {
-      thresholdMinutes: -9999,
-      bonusSectionsPerAction: -9999,
-      penaltyPeriodMinutes: -12,
+      thresholdMinutes: 9999,
+      bonusSectionsPerAction: 9999,
+      penaltyPeriodMinutes: 12,
       penaltyVPPerPeriod: 999999,
     };
 
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -446,7 +533,7 @@ describe('ApiCreateGame', () => {
   it('forces GenuineGold name for gold players', async () => {
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(newGameConfig([{
+      req.emitString(JSON.stringify(newGameConfig([{
         name: 'Ilya',
         color: 'gold',
         beginner: false,
@@ -468,7 +555,7 @@ describe('ApiCreateGame', () => {
   it('keeps typed player names from changing the selected colors', async () => {
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(newGameConfig([
+      req.emitString(JSON.stringify(newGameConfig([
         {name: 'GydRo', color: 'blue', beginner: false, handicap: 0, first: true, isBot: false},
         {name: 'Олеся', color: 'green', beginner: false, handicap: 0, first: false, isBot: false},
         {name: 'Паша', color: 'red', beginner: false, handicap: 0, first: false, isBot: false},
@@ -503,7 +590,7 @@ describe('ApiCreateGame', () => {
         telegramID: '@bad-id',
       }]);
       config.turnBasedGame = true;
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -524,7 +611,7 @@ describe('ApiCreateGame', () => {
         telegramID: '   ',
       }]);
       config.turnBasedGame = true;
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -535,7 +622,7 @@ describe('ApiCreateGame', () => {
   it('ignores telegram ids when async mode is disabled', async () => {
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(newGameConfig([{
+      req.emitString(JSON.stringify(newGameConfig([{
         name: 'Robot',
         color: 'blue',
         beginner: false,
@@ -558,7 +645,7 @@ describe('ApiCreateGame', () => {
   it('trims blank telegram ids before game creation', async () => {
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(newGameConfig([{
+      req.emitString(JSON.stringify(newGameConfig([{
         name: 'Robot',
         color: 'blue',
         beginner: false,
@@ -575,6 +662,31 @@ describe('ApiCreateGame', () => {
     const game = await scaffolding.ctx.gameLoader.getGame(model.id);
     expect(game).is.not.undefined;
     expect(game!.players[0].telegramID).eq('');
+  });
+
+  it('rejects unsupported bot games before saving or spawning', async () => {
+    let saved = false;
+    let started = false;
+    scaffolding.ctx.gameLoader.saveGame = async () => {
+      saved = true;
+    };
+    apiCreateGame = new ApiCreateGame([{limit: 99999, perMs: 1}], {
+      start: () => {
+        started = true; throw new Error('must not spawn');
+      }, stop: () => undefined,
+    });
+    const config = newGameConfigForTest();
+    config.botGame = true;
+    config.players[0].isBot = true;
+    config.expansions.sillyfication = true;
+    const post = scaffolding.post(apiCreateGame, res);
+    req.emitString(JSON.stringify(config));
+    req.emitter.emit('end');
+    await post;
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('not supported');
+    expect(saved).eq(false);
+    expect(started).eq(false);
   });
 
   it('starts bot takeover for bot players during game creation', async () => {
@@ -598,7 +710,7 @@ describe('ApiCreateGame', () => {
         isBot: true,
       }]);
       config.botGame = true;
-      req.emitter.emit('data', JSON.stringify(config));
+      req.emitString(JSON.stringify(config));
       req.emitter.emit('end');
     });
 
@@ -630,7 +742,7 @@ describe('ApiCreateGame', () => {
 
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
-      req.emitter.emit('data', JSON.stringify(newGameConfig([{
+      req.emitString(JSON.stringify(newGameConfig([{
         name: 'Robot',
         color: 'blue',
         beginner: false,
@@ -651,10 +763,106 @@ describe('ApiCreateGame', () => {
     expect(Array.from(game!.botPlayerIds)).deep.eq([]);
   });
 
+  it('creates a game from a custom board code', async () => {
+    const def = blankCustomBoard(9, 'Route Test');
+    def.spaces[0].spaceType = SpaceType.OCEAN;
+    const post = scaffolding.post(apiCreateGame, res);
+    const emit = Promise.resolve().then(() => {
+      req.emitString(JSON.stringify(customBoardGameConfig(encodeCustomBoard(def))));
+      req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game!.gameOptions.boardName).eq(BoardName.CUSTOM);
+    expect(game!.gameOptions.customBoard?.name).eq('Route Test');
+    expect(game!.board.getSpaceOrThrow('100').spaceType).eq(SpaceType.OCEAN);
+  });
+
+  it('rejects a custom board with a broken code', async () => {
+    const post = scaffolding.post(apiCreateGame, res);
+    const emit = Promise.resolve().then(() => {
+      req.emitString(JSON.stringify(customBoardGameConfig('TMB2-not-valid')));
+      req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+    expect(res.statusCode).not.eq(statusCode.ok);
+  });
+
+  it('creates a game from a custom Moon board code', async () => {
+    const def = blankSimpleBoard('moon', 'Custom Moon');
+    def.spaces[0].spaceType = SpaceType.LUNAR_MINE;
+    const post = scaffolding.post(apiCreateGame, res);
+    const emit = Promise.resolve().then(() => {
+      req.emitString(JSON.stringify(simpleBoardGameConfig({moon: true, customMoonBoardCode: encodeSimpleBoard(def)})));
+      req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game!.gameOptions.customMoonBoard?.name).eq('Custom Moon');
+    const gridSpaces = game!.moonData!.moon.spaces.filter((s) => s.spaceType !== SpaceType.COLONY);
+    expect(gridSpaces[0].spaceType).to.eq(SpaceType.LUNAR_MINE);
+  });
+
+  it('creates a game from a custom Venus Phase 2 board code', async () => {
+    const def = blankSimpleBoard('venusPhase2', 'Custom Venus');
+    def.spaces[0].spaceType = SpaceType.GASLIGHT;
+    const post = scaffolding.post(apiCreateGame, res);
+    const emit = Promise.resolve().then(() => {
+      req.emitString(JSON.stringify(simpleBoardGameConfig({venusPhase2: true, customVenusSurfaceBoardCode: encodeSimpleBoard(def)})));
+      req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game!.gameOptions.customVenusSurfaceBoard?.name).eq('Custom Venus');
+    const gridSpaces = game!.venusPhase2Data!.venusSurface.spaces.filter((s) => s.spaceType !== SpaceType.COLONY);
+    expect(gridSpaces[0].spaceType).to.eq(SpaceType.GASLIGHT);
+  });
+
+  it('rejects a custom Moon board with a broken code', async () => {
+    const post = scaffolding.post(apiCreateGame, res);
+    const emit = Promise.resolve().then(() => {
+      req.emitString(JSON.stringify(simpleBoardGameConfig({moon: true, customMoonBoardCode: 'TMBS1-not-valid'})));
+      req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+    expect(res.statusCode).not.eq(statusCode.ok);
+  });
+
+  it('rejects a custom board code meant for the other simple board type', async () => {
+    const wrongType = blankSimpleBoard('venusPhase2', 'Wrong Type');
+    const post = scaffolding.post(apiCreateGame, res);
+    const emit = Promise.resolve().then(() => {
+      req.emitString(JSON.stringify(simpleBoardGameConfig({moon: true, customMoonBoardCode: encodeSimpleBoard(wrongType)})));
+      req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+    expect(res.statusCode).not.eq(statusCode.ok);
+  });
+
+  it('ignores a custom Moon board code when the Moon expansion is not enabled', async () => {
+    const def = blankSimpleBoard('moon', 'Should Be Ignored');
+    const post = scaffolding.post(apiCreateGame, res);
+    const emit = Promise.resolve().then(() => {
+      req.emitString(JSON.stringify(simpleBoardGameConfig({moon: false, customMoonBoardCode: encodeSimpleBoard(def)})));
+      req.emitter.emit('end');
+    });
+    await Promise.all([emit, post]);
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game!.gameOptions.customMoonBoard).is.undefined;
+  });
+
   it('red rover solo game', async () => {
     const post = scaffolding.post(apiCreateGame, res);
     const emit = Promise.resolve().then(() => {
-      scaffolding.req.emitter.emit('data', JSON.stringify({players: [{name: 'a player', color: 'red'}]}));
+      scaffolding.req.emitString(JSON.stringify({players: [{name: 'a player', color: 'red'}]}));
       scaffolding.req.emitter.emit('end');
     });
     await Promise.all(([emit, post]));
@@ -662,12 +870,113 @@ describe('ApiCreateGame', () => {
     expect(res.statusCode).eq(statusCode.internalServerError);
   });
 
+  async function postConfig(config: object) {
+    const post = scaffolding.post(apiCreateGame, res);
+    const emit = Promise.resolve().then(() => {
+      scaffolding.req.emitString(JSON.stringify(config));
+      scaffolding.req.emitter.emit('end');
+    });
+    await Promise.all(([emit, post]));
+  }
+
+  const twoPlayers = [{name: 'a', color: 'red'}, {name: 'b', color: 'blue'}];
+
+  it('rejects a custom corporation list smaller than players × starting corporations', async () => {
+    await postConfig({
+      players: twoPlayers,
+      startingCorporations: 2,
+      customCorporationsList: [CardName.CREDICOR, CardName.ECOLINE, CardName.HELION],
+      customPreludes: [],
+    });
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('at least 4 corporations');
+  });
+
+  it('accepts a custom corporation list of exactly players × starting corporations', async () => {
+    await postConfig({
+      players: twoPlayers,
+      startingCorporations: 2,
+      customCorporationsList: [CardName.CREDICOR, CardName.ECOLINE, CardName.HELION, CardName.INVENTRIX],
+      customPreludes: [],
+    });
+    expect(res.statusCode).not.eq(statusCode.badRequest);
+  });
+
+  it('rejects a custom prelude list smaller than players × starting preludes', async () => {
+    await postConfig({
+      players: twoPlayers,
+      startingPreludes: 4,
+      customCorporationsList: [],
+      customPreludes: [CardName.ALLIED_BANK, CardName.AQUIFER_TURBINES, CardName.BIOFUELS, CardName.BIOLAB, CardName.BIOSPHERE_SUPPORT, CardName.BUSINESS_EMPIRE, CardName.DOME_FARMING],
+    });
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('at least 8 preludes');
+  });
+
+  it('rejects a custom CEO list smaller than players × CEOs dealt', async () => {
+    await postConfig({
+      players: twoPlayers,
+      startingCeos: 1,
+      customCorporationsList: [],
+      customPreludes: [],
+      customCeos: [CardName.FLOYD, CardName.HAL9000, CardName.KAREN, CardName.GORDON, CardName.ULRICH],
+    });
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('at least 6 CEOs');
+  });
+
+  async function createdEscapeVelocity(escapeVelocity: object) {
+    await postConfig({...newGameConfigForTest(), escapeVelocity});
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    return game?.gameOptions.escapeVelocity;
+  }
+
+  it('keeps valid escape velocity options', async () => {
+    const options = {
+      thresholdMinutes: 35,
+      bonusSectionsPerAction: 2,
+      penaltyPeriodMinutes: 3,
+      penaltyVPPerPeriod: 1,
+    };
+    expect(await createdEscapeVelocity(options)).deep.eq(options);
+  });
+
+  it('replaces invalid escape velocity options with defaults', async () => {
+    expect(await createdEscapeVelocity({
+      thresholdMinutes: '35',
+      bonusSectionsPerAction: 'x',
+      penaltyPeriodMinutes: '',
+      penaltyVPPerPeriod: 1,
+    })).deep.eq({
+      thresholdMinutes: 35,
+      bonusSectionsPerAction: 2,
+      penaltyPeriodMinutes: 2,
+      penaltyVPPerPeriod: 1,
+    });
+  });
+
+  it('rejects negative escape velocity options', async () => {
+    await postConfig({
+      ...newGameConfigForTest(),
+      escapeVelocity: {
+        thresholdMinutes: -5,
+        bonusSectionsPerAction: 2,
+        penaltyPeriodMinutes: 2,
+        penaltyVPPerPeriod: 1,
+      },
+    });
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).contains('Escape Velocity values cannot be negative');
+  });
+
   // Issues one create-game POST against `handler`, using fresh request/response objects,
   // reusing `scaffolding.ctx` (and therefore its ip and clock) across calls.
   function postGame(handler: ApiCreateGame, request: MockRequest, response: MockResponse) {
     const post = handler.post(request, response, scaffolding.ctx);
     const emit = Promise.resolve().then(() => {
-      request.emitter.emit('data', JSON.stringify({players: [{name: 'a player', color: 'red'}]}));
+      request.emitString(JSON.stringify({players: [{name: 'a player', color: 'red'}]}));
       request.emitter.emit('end');
     });
     return Promise.all([emit, post]);
@@ -734,6 +1043,36 @@ describe('ApiCreateGame', () => {
     await postGame(apiCreateGame, req2, res2);
     expect(res2.statusCode).eq(statusCode.tooManyRequests);
     expect(res2.content).eq('Quota exceeded');
+  });
+
+  // Pre-'boards' create-game payload: a single 'board' value and no 'boards' array.
+  function legacyGameConfig(board: unknown): NewGameConfig {
+    const config = {...newGameConfigForTest()} as unknown as Record<string, unknown>;
+    delete config.boards;
+    config.board = board;
+    return config as unknown as NewGameConfig;
+  }
+
+  it('normalizes a legacy single-board request into boards', async () => {
+    await postConfig(legacyGameConfig(BoardName.HELLAS));
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(game!.gameOptions.boardName).eq(BoardName.HELLAS);
+    expect(game!.gameOptions.boardSelection).deep.eq([BoardName.HELLAS]);
+  });
+
+  it('expands a legacy random-official board request', async () => {
+    await postConfig(legacyGameConfig(RandomBoardOption.OFFICIAL));
+    expect(res.statusCode).eq(statusCode.ok);
+    const model = JSON.parse(res.content) as SimpleGameModel;
+    const game = await scaffolding.ctx.gameLoader.getGame(model.id);
+    expect(boardOptions(RandomBoardOption.OFFICIAL)).include(game!.gameOptions.boardName);
+  });
+
+  it('rejects a legacy request naming an unknown board', async () => {
+    await postConfig(legacyGameConfig('not a board'));
+    expect(res.statusCode).eq(statusCode.badRequest);
   });
 
   it('elapsed time restores a blocked quota', async () => {

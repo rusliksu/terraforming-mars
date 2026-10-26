@@ -73,6 +73,18 @@ export function fakeGameOptionsModel(overrides?: RecursivePartial<GameOptionsMod
     requiresVenusTrackCompletion: false,
     twoCorpsVariant: false,
     undoOption: false,
+
+    aresHazards: false,
+    customCeos: [],
+    customColoniesList: [],
+    customCorporationsList: [],
+    customPreludes: [],
+    modularMA: false,
+    moonStandardProjectVariant: false,
+    moonStandardProjectVariant1: false,
+    startingCeos: 3,
+    startingCorporations: 2,
+    startingPreludes: 4,
     ...overrides,
   } as GameOptionsModel;
 }
@@ -85,6 +97,12 @@ export function fakeGameModel(overrides?: RecursivePartial<GameModel>): GameMode
     discardedColonies: [],
     deckSize: 0,
     discardPileSize: 0,
+    otherDeckSizes: {
+      corporations: {drawPile: 0, discardPile: 0},
+      preludes: undefined,
+      ceos: undefined,
+      globalEvents: undefined,
+    },
     expectedPurgeTimeMs: 0,
     gameAge: 0,
     gameOptions: fakeGameOptionsModel(),
@@ -157,6 +175,7 @@ export function fakePublicPlayerModel(overrides?: RecursivePartial<PublicPlayerM
     titaniumValue: 3,
     tradesThisGeneration: 0,
     underworldData: {corruption: 0, excavations: [], tokens: []},
+    conglomeratesData: {coordination: 0},
     victoryPointsBreakdown: {
       terraformRating: 20,
       milestones: 0,
@@ -191,6 +210,7 @@ export function fakePlayerViewModel(overrides?: RecursivePartial<PlayerViewModel
     dealtCeoCards: [],
     draftedCards: [],
     id: 'p-blue-id' as any,
+    color: thisPlayer.color,
     ceoCardsInHand: [],
     pickedCorporationCard: [],
     preludeCardsInHand: [],
@@ -217,6 +237,7 @@ export function fakeViewModel(overrides?: RecursivePartial<ViewModel>): ViewMode
     game: fakeGameModel(),
     players: [thisPlayer],
     id: 'p-blue-id',
+    color: thisPlayer.color,
     thisPlayer,
     runId: 'run-id',
     ...overrides,
@@ -248,6 +269,30 @@ export function fakePoliticalAgendasModel(): PoliticalAgendasModel {
     kelvinists: {
       bonusId: 'kb01',
       policyId: 'kp01',
+    },
+    populists: {
+      bonusId: 'popb01',
+      policyId: 'popp01',
+    },
+    spome: {
+      bonusId: 'spob01',
+      policyId: 'spop01',
+    },
+    empower: {
+      bonusId: 'empb01',
+      policyId: 'empp01',
+    },
+    bureaucrats: {
+      bonusId: 'burb01',
+      policyId: 'burp01',
+    },
+    centrists: {
+      bonusId: 'cenb01',
+      policyId: 'cenp01',
+    },
+    transhumanists: {
+      bonusId: 'trab01',
+      policyId: 'trap01',
     },
   };
 }

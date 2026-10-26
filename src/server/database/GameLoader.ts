@@ -1,4 +1,5 @@
-import prometheus from 'prom-client';
+import {getAutomationCompatibility, automationUnavailableReason} from '../bot/AutomationCompatibility';
+import prometheus from '@prometheus-io/client';
 import {Database} from './Database';
 import {Game} from '../Game';
 import {IGame} from '../IGame';
@@ -64,6 +65,11 @@ const metrics = {
     labelNames: ['players'] as const,
     registers: [prometheus.register],
   }),
+  expiredSessionsDeleted: new prometheus.Counter({
+    name: 'expired_sessions_deleted',
+    help: 'Number of expired sessions deleted from storage',
+    registers: [prometheus.register],
+  }),
   gamesInMemory: new prometheus.Gauge({
     name: 'games_in_memory',
     help: 'Number of games currently loaded in memory',
@@ -99,6 +105,7 @@ export class GameLoader implements IGameLoader {
   private readonly botTakeoverManager: SurrenderBotManager;
   private readonly botServerId: string;
   private purgedGames: Array<GameId>;
+  private readonly replacedGames = new WeakSet<IGame>();
 
   private constructor(
     config: CacheConfig,
@@ -181,6 +188,10 @@ export class GameLoader implements IGameLoader {
   public async add(game: IGame): Promise<void> {
     const d = await this.cache.getGames();
     const isNew = !d.games.has(game.id);
+    const previous = d.games.get(game.id);
+    if (previous !== undefined && previous !== game) {
+      this.replacedGames.add(previous);
+    }
     d.games.set(game.id, game);
     this.cache.touch(game.id);
     if (game.spectatorId !== undefined) {
@@ -237,7 +248,7 @@ export class GameLoader implements IGameLoader {
           console.error(`GameLoader:loadGame: game ${gameId} not found`);
           return undefined;
         }
-        const game = Game.deserialize(serializedGame);
+        const game = Game.deserialize(serializedGame, {saveGame: this.saveGame.bind(this)});
         await this.add(game);
         this.reconcileGame(game);
         console.log(`GameLoader loaded game ${gameId} into memory from database`);
@@ -293,7 +304,14 @@ export class GameLoader implements IGameLoader {
       }
       try {
         game.getPlayerById(playerId);
-        this.botTakeoverManager.start({gameId: game.id, playerId, serverId: this.botServerId});
+        const compatibility = getAutomationCompatibility(game.gameOptions);
+        const reason = automationUnavailableReason(compatibility);
+        if (reason !== undefined) {
+          result.failed++;
+          console.warn('Surrender bot unavailable', {gameId: game.id, reason});
+          continue;
+        }
+        this.botTakeoverManager.start({compatibility, gameId: game.id, playerId, serverId: this.botServerId});
         result.started++;
       } catch (_error) {
         result.failed++;
@@ -316,7 +334,7 @@ export class GameLoader implements IGameLoader {
 
   public async getGameAt(gameId: GameId, saveId: number): Promise<IGame> {
     const serializedGame = await Database.getInstance().getGameVersion(gameId, saveId);
-    return Game.deserialize(serializedGame);
+    return Game.deserialize(serializedGame, {simulation: true, saveGame: this.saveGame.bind(this)});
   }
 
   public async getGameAtOrBefore(gameId: GameId, saveId: number): Promise<IGame> {
@@ -337,7 +355,7 @@ export class GameLoader implements IGameLoader {
       await database.deleteGameNbrSaves(gameId, deletes);
     }
     const serializedGame = await database.getGameVersion(gameId, restoreSaveId);
-    const game = Game.deserialize(serializedGame);
+    const game = Game.deserialize(serializedGame, {saveGame: this.saveGame.bind(this)});
     appendCanceledLogMessages(current, game);
     await this.add(game);
     game.undoCount++;
@@ -363,7 +381,41 @@ export class GameLoader implements IGameLoader {
     this.cache.sweep();
   }
 
+  /** Waits for the pending save of every resident game; used by the shutdown drain. */
+  public async flush(): Promise<void> {
+    const data = await this.cache.getGames();
+    const pending: Array<Promise<void>> = [];
+    for (const game of data.games.values()) {
+      if (game !== undefined) {
+        pending.push(game.saveGamePromise);
+      }
+    }
+    await Promise.allSettled(pending);
+  }
+
+  /**
+   * Forgets a game that was deleted from the database: rejects later saves (saveGame
+   * checks purgedGames) and drops the in-memory copy with its participant ids right away.
+   * The caller deletes the game's rows from the database; this only invalidates the cache.
+   */
+  public async deleteGame(gameId: GameId): Promise<void> {
+    const wasPurged = this.purgedGames.includes(gameId);
+    if (!wasPurged) {
+      this.purgedGames.push(gameId);
+    }
+    try {
+      await Database.getInstance().deleteGame(gameId);
+    } catch (err) {
+      if (!wasPurged) {
+        this.purgedGames = this.purgedGames.filter((id) => id !== gameId);
+      }
+      throw err;
+    }
+    this.cache.remove(gameId);
+  }
+
   public async completeGame(game: IGame) {
+    this.assertNotReplaced(game);
     const database = Database.getInstance();
     await database.saveGame(game);
     try {
@@ -378,18 +430,31 @@ export class GameLoader implements IGameLoader {
   }
 
   public saveGame(game: IGame): Promise<void> {
+    this.assertNotReplaced(game);
     if (this.purgedGames.includes(game.id)) {
       throw new Error('This game no longer exists');
     }
     return Database.getInstance().saveGame(game);
   }
 
+  private assertNotReplaced(game: IGame): void {
+    if (this.replacedGames.has(game)) {
+      throw new Error('Game state changed; reload before saving.');
+    }
+  }
+
   public async maintenance() {
     const database = Database.getInstance();
+    const orphanParticipants = await database.deleteOrphanParticipants();
+    if (orphanParticipants > 0) {
+      console.log(`Removed ${orphanParticipants} orphan participant rows`);
+    }
     const purgedGames = await database.purgeUnfinishedGames();
     this.purgedGames.push(...purgedGames);
     metrics.gamesPurged.inc(purgedGames.length);
     await database.compressCompletedGames();
+    const prunedSessions = await database.deleteExpiredSessions();
+    metrics.expiredSessionsDeleted.inc(prunedSessions);
   }
 }
 

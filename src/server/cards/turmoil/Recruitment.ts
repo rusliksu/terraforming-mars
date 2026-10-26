@@ -18,7 +18,7 @@ export class Recruitment extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'T11',
         renderData: CardRenderer.builder((b) => {
-          b.minus().delegates(1, {all}).asterix().nbsp.plus().delegates(1);
+          b.delegates(-1, {all}).asterix().nbsp.plus().delegates(1);
         }),
         description: 'Exchange one NEUTRAL NON-LEADER delegate with one of your own from the reserve.',
       },
@@ -27,7 +27,7 @@ export class Recruitment extends Card implements IProjectCard {
 
   public override bespokeCanPlay(player: IPlayer): boolean {
     const turmoil = Turmoil.getTurmoil(player.game);
-    if (turmoil.hasDelegatesInReserve(player) === false) {
+    if (turmoil.delegateReserve.has(player) === false) {
       return false;
     }
 

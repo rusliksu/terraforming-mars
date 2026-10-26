@@ -1,0 +1,121 @@
+.wrybit-board-zoom-mobile-styles() {
+  @mb-surface: rgba(18, 21, 30, 0.94);
+  @mb-surface-raised: #1e2330;
+  @mb-line: #2d3343;
+  @mb-text: #ece9e2;
+  @mb-muted: #a4a9b6;
+  @mb-zoom-bar-height: 72px;
+  .mb-bar-surface() {
+    background: @mb-surface;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+  html.tm-mobile & {
+    // Big Mars (BoardZoomModal) as in the mockup: planet without ring, zoomable via pinch/double tap/bar, pannable by swiping
+    .board-zoom-backdrop {
+      display: block;
+      overflow: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      // Own zoom gestures instead of zooming the whole page (boardPinchZoom.ts)
+      touch-action: pan-x pan-y;
+      padding-bottom: @mb-zoom-bar-height;
+      box-sizing: border-box;
+      cursor: default;
+      background: radial-gradient(circle at 50% 45%, #1a1d26, #0d0f14 70%);
+    }
+
+    // Stage as wide as the zoomed content, at least as wide as the window: everything stays reachable, the planet centered
+    .board-zoom-stage {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: max-content;
+      min-width: 100%;
+      min-height: 100%;
+      // Below ✕, with a banner below the banner (BoardZoomModal sets the variable)
+      padding: var(--board-zoom-stage-top, 56px) 0 16px;
+      box-sizing: border-box;
+    }
+
+    .board-zoom-content {
+      // Crop like on the start screen (sizes from MARS_CROP, BoardZoomModal): cut off the rest of the board.
+      // Without the desktop padding (board_zoom_modal.less), otherwise the crop sits offset sideways
+      overflow: hidden;
+      padding: 0;
+
+      // Without ring the scales go; with ring they stay like in the tab (same section, marsFrame)
+      .board-without-venus:not(.board-cont--custom) .global-numbers,
+      .hide-tile-button-container {
+        display: none;
+      }
+
+      .board-without-venus:not(.board-cont--custom) {
+        background-image: url(./assets/wrybit/board/mars-planet.png);
+      }
+    }
+
+    // Banner on the same top edge as ✕; on narrow screens left of it over the remaining width
+    .board-zoom-banner {
+      top: calc(12px + env(safe-area-inset-top));
+
+      @media (max-width: 699px) { // same limit in placement_banner.less
+        left: 12px;
+        right: 64px; // ✕ (44 px) + gap
+        transform: none;
+
+        .placement-banner {
+          max-width: none;
+        }
+      }
+    }
+
+    .board-zoom-close {
+      top: calc(12px + env(safe-area-inset-top));
+      right: 12px;
+      width: 44px;
+      height: 44px;
+    }
+
+
+    .mb-zoom-controls {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1101; // above the big Mars (board-zoom-backdrop: 1100)
+      height: @mb-zoom-bar-height;
+      padding: 0 12px env(safe-area-inset-bottom);
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-top: 1px solid @mb-line;
+      .mb-bar-surface();
+    }
+
+    .mb-zoom-button {
+      min-width: 44px;
+      height: 40px;
+      padding: 0 12px;
+      border-radius: 10px;
+      border: 1px solid @mb-line;
+      background: @mb-surface-raised;
+      color: @mb-text;
+      font: inherit;
+      font-size: 20px;
+    }
+
+    .mb-zoom-button--fit {
+      margin-left: auto;
+      font-size: 13px;
+    }
+
+    .mb-zoom-level {
+      min-width: 52px;
+      text-align: center;
+      font-family: Prototype, sans-serif;
+      color: @mb-muted;
+    }
+  }
+}

@@ -10,6 +10,10 @@ export const CARD_RENAMES = new Map<string, CardName>([
   ['Astrodrill', CardName.ASTRODRILL],
   ['EcoLine', CardName.ECOLINE],
   ['Colony', CardName.BUILD_COLONY_STANDARD_PROJECT],
+  // Renamed to avoid a name conflict with Henkei Genetics.
+  ['Nereid Genetics', CardName.NEREID_BIOSYSTEMS],
+  // TODO(kberg): remove after 2027-01-15
+  ['Sinus Irdium Road Network', CardName.SINUS_IRIDUM_ROAD_NETWORK],
 ]);
 
 export function resolveCardName(cardName: CardName): CardName {

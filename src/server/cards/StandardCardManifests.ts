@@ -136,7 +136,7 @@ import {MedicalLab} from './base/MedicalLab';
 import {MethaneFromTitan} from './base/MethaneFromTitan';
 import {MicroMills} from './base/MicroMills';
 import {Mine} from './base/Mine';
-import {MineralDeposit} from './base/MineralDeposit';
+import {MineralDeposit, MineralDepositRebalanced} from './base/MineralDeposit';
 import {MiningArea} from './base/MiningArea';
 import {MiningExpedition} from './base/MiningExpedition';
 import {MiningRights} from './base/MiningRights';
@@ -446,6 +446,7 @@ export const CORP_ERA_CARD_MANIFEST = new ModuleManifest({
     [CardName.MEDICAL_LAB]: {Factory: MedicalLab},
     [CardName.MINE]: {Factory: Mine},
     [CardName.MINERAL_DEPOSIT]: {Factory: MineralDeposit},
+    [CardName.MINERAL_DEPOSIT_REBALANCED]: {Factory: MineralDepositRebalanced, instantiate: false},
     [CardName.MINING_AREA]: {Factory: MiningArea},
     [CardName.MIRANDA_RESORT]: {Factory: MirandaResort},
     [CardName.OLYMPUS_CONFERENCE]: {Factory: OlympusConference},

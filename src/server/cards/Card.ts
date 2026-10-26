@@ -1,7 +1,7 @@
 import {CardMetadata} from '../../common/cards/CardMetadata';
 import {CardName} from '../../common/cards/CardName';
 import {CardType} from '../../common/cards/CardType';
-import {CardDiscount, GlobalParameterRequirementBonus} from '../../common/cards/Types';
+import {CardDiscount, GlobalParameterRequirementBonus, TagCardRequirementBonus} from '../../common/cards/Types';
 import {AdjacencyBonus} from '../ares/AdjacencyBonus';
 import {CardResource} from '../../common/CardResource';
 import {Tag} from '../../common/cards/Tag';
@@ -54,6 +54,7 @@ type SharedProperties = {
   initialActionText?: string;
   firstAction?: Behavior & {text: string};
   globalParameterRequirementBonus?: GlobalParameterRequirementBonus;
+  tagCardRequirementBonus?: TagCardRequirementBonus;
   metadata: CardMetadata;
   requirements?: CardRequirementsDescriptor;
   name: CardName;
@@ -140,7 +141,7 @@ export abstract class Card implements ICard {
       Card.validateTilesBuilt(external);
       step = 5;
     } catch (e) {
-      throw new Error(`Cannot validate ${name} (${step}): ${e}`);
+      throw new Error(`Cannot validate ${name} (${step})`, {cause: e});
     }
 
     const translatedRequirements = asArray(external.requirements ?? []).map((req) => populateCount(req));
@@ -172,12 +173,14 @@ export abstract class Card implements ICard {
     return internal;
   }
 
-  constructor(external: StaticCardProperties) {
+  constructor(external: StaticCardProperties, cacheProperties = true) {
     const name = external.name;
-    let internal = cardProperties.get(name);
+    let internal = cacheProperties ? cardProperties.get(name) : undefined;
     if (internal === undefined) {
       internal = this.internalize(external);
-      cardProperties.set(name, internal);
+      if (cacheProperties) {
+        cardProperties.set(name, internal);
+      }
     }
     this.properties = internal;
   }
@@ -188,13 +191,16 @@ export abstract class Card implements ICard {
   public get behavior() {
     return this.properties.behavior;
   }
+  public get actionBehavior() {
+    return this.properties.action;
+  }
   public get cardCost() {
     return this.properties.cardCost;
   }
-  public get type() {
+  public get type(): CardType {
     return this.properties.type;
   }
-  public get cost() {
+  public get cost(): number {
     return this.properties.cost === undefined ? 0 : this.properties.cost;
   }
   public get initialActionText() {
@@ -221,7 +227,7 @@ export abstract class Card implements ICard {
   public get startingMegaCredits() {
     return this.properties.startingMegaCredits === undefined ? 0 : this.properties.startingMegaCredits;
   }
-  public get tags() {
+  public get tags(): Array<Tag> {
     return this.properties.tags === undefined ? [] : this.properties.tags;
   }
   public get cardDiscount() {
@@ -264,12 +270,15 @@ export abstract class Card implements ICard {
 
   public play(player: IPlayer): PlayerInput | undefined {
     player.stock.deductUnits(MoonExpansion.adjustedReserveCosts(player, this));
+    this.bespokePlayBefore(player);
     if (this.behavior !== undefined) {
       const executor = getBehaviorExecutor();
       executor.execute(this.behavior, player, this, {logSource: false});
     }
     return this.bespokePlay(player);
   }
+
+  public bespokePlayBefore(_player: IPlayer): void {}
 
   public bespokePlay(_player: IPlayer): PlayerInput | undefined {
     return undefined;
@@ -437,6 +446,10 @@ export abstract class Card implements ICard {
     return sum;
   }
 
+  public getOwnCostReduction(_player: IPlayer): number {
+    return 0;
+  }
+
   public getGlobalParameterRequirementBonus(player: IPlayer, parameter: GlobalParameter): number {
     if (this.properties.globalParameterRequirementBonus !== undefined) {
       const globalParameterRequirementBonus = this.properties.globalParameterRequirementBonus;
@@ -451,6 +464,22 @@ export abstract class Card implements ICard {
         }
       }
       return globalParameterRequirementBonus.steps;
+    }
+    return 0;
+  }
+
+  public getTagCardRequirementBonus(player: IPlayer, tag: Tag): number {
+    if (this.properties.tagCardRequirementBonus !== undefined) {
+      const tagCardRequirementBonus = this.properties.tagCardRequirementBonus;
+      if (tagCardRequirementBonus.nextCardOnly === true) {
+        if (player.lastCardPlayed !== this.name) {
+          return 0;
+        }
+      }
+      if (tagCardRequirementBonus.tag !== tag) {
+        return 0;
+      }
+      return tagCardRequirementBonus.steps;
     }
     return 0;
   }
@@ -475,6 +504,7 @@ function populateCount(requirement: CardRequirementDescriptor): CardRequirementD
     requirement.temperature ??
     requirement.venus ??
     requirement.tr ??
+    requirement.generation ??
     requirement.resourceTypes ??
     requirement.greeneries ??
     requirement.cities ??
@@ -514,6 +544,9 @@ export function validateBehavior(behavior: Behavior | undefined, name: CardName)
     // Don't spend heat with other types yet. It's probably not compatible. Check carefully.
     if (spend.heat) {
       validate(Object.keys(spend).length === 1, 'spend.heat cannot be used with another spend');
+    }
+    if (spend.canUseSteel || spend.canUseTitanium) {
+      validate(spend.megacredits !== undefined, 'spend.canUseSteel and spend.canUseTitanium only works with spend.megacredits');
     }
   }
 }

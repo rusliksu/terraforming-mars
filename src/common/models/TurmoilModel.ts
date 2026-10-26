@@ -33,11 +33,20 @@ export type DelegatesModel = {
   number: number;
 }
 
+// Only the parties actually in play this game have an entry -- More Parties games randomly
+// select 6 of the 12 available parties (see Turmoil.createParties), so any of these fields may
+// be absent, not just the 6 new ones.
 export type PoliticalAgendasModel = {
-  marsFirst: Agenda;
-  scientists: Agenda;
-  unity: Agenda;
-  greens: Agenda;
-  reds: Agenda;
-  kelvinists: Agenda;
+  marsFirst?: Agenda;
+  scientists?: Agenda;
+  unity?: Agenda;
+  greens?: Agenda;
+  reds?: Agenda;
+  kelvinists?: Agenda;
+  populists?: Agenda;
+  spome?: Agenda;
+  empower?: Agenda;
+  bureaucrats?: Agenda;
+  centrists?: Agenda;
+  transhumanists?: Agenda;
 }

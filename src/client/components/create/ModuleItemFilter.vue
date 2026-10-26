@@ -1,6 +1,9 @@
 <!-- Generic popup filter for grouped item selection. -->
 <template>
-  <PopupPanel @close="$emit('close')">
+  <component v-if="embedded && controls?.moduleFilter" :is="controls.moduleFilter" :binding="presentationBinding">
+    <template #item="{itemName, icon: itemIcon}"><slot name="item" :itemName="itemName" :icon="itemIcon"></slot></template>
+  </component>
+  <PopupPanel v-else @close="$emit('close')">
     <template #header>
       <div class="corporations-filter-toolbox-cont">
         <h2 v-i18n>{{ title }}</h2>
@@ -28,8 +31,8 @@
               </div>
             </div>
             <div v-for="item in itemsByGroup[group.key]" :key="item" v-show="include(item)">
-              <label class="form-checkbox">
-                <input type="checkbox" v-model="localSelected" :value="item">
+              <label class="form-checkbox" :title="isSelectable(item) ? undefined : replacements?.has(item) ? $t('Replaced by') + ' ' + $t(replacements.get(item) ?? '') : $t('Enable required expansions to select this card')">
+                <input type="checkbox" v-model="localSelected" :value="item" :disabled="!isSelectable(item)">
                 <i class="form-icon"></i>
                 <slot name="item" :itemName="item" :icon="icon"></slot>
               </label>
@@ -42,16 +45,22 @@
 </template>
 
 <script setup lang="ts" generic="T extends string">
-import {type Ref, ref, watch} from 'vue';
+import {computed, type Ref, ref, watch} from 'vue';
+import {translateText as translate} from '@/client/directives/i18n';
+import {useCreateControls} from '@/client/wrybit/create/presentation';
+import type {ModuleFilterBinding} from '@/client/wrybit/create/moduleFilter';
 import PopupPanel from '../common/PopupPanel.vue';
 
 type Group = {key: string; label: string};
 
 const props = defineProps<{
+  embedded?: boolean;
   title: string;
   groups: Array<Group>;
   itemsByGroup: Record<string, Array<T>>;
   selected: Array<T>;
+  selectable?: Array<T>;
+  replacements?: ReadonlyMap<T, T>;
 }>();
 
 const emit = defineEmits<{
@@ -59,6 +68,34 @@ const emit = defineEmits<{
   'close': [];
 }>();
 
+const controls = useCreateControls();
+const presentationBinding = computed((): ModuleFilterBinding => ({
+  groups: props.groups, itemsByGroup: props.itemsByGroup, selected: localSelected.value, filterText: filterText.value,
+  setFilter(value) {
+    filterText.value = value;
+  },
+  toggle(name) {
+    const item = allItems().find((candidate) => candidate === name);
+    if (item === undefined || !isSelectable(item)) {
+      return;
+    }
+    localSelected.value.includes(item) ? removeFromSelection(item) : localSelected.value.push(item);
+  },
+  selectAll, selectNone, invertSelection, showGroup, include, icon,
+  isSelectable(name) {
+    const item = allItems().find((candidate) => candidate === name);
+    return item !== undefined && isSelectable(item);
+  },
+  itemTitle(name) {
+    const item = allItems().find((candidate) => candidate === name);
+    if (item === undefined || isSelectable(item)) {
+      return undefined;
+    }
+    const replacement = props.replacements?.get(item);
+    return replacement === undefined ? translate('Enable required expansions to select this card') :
+      translate('Replaced by') + ' ' + translate(replacement);
+  },
+}));
 const filterText = ref('');
 const localSelected = ref([...props.selected]) as Ref<Array<T>>;
 
@@ -73,9 +110,13 @@ function getItemsByGroup(key: string): Array<T> {
   return (props.itemsByGroup[key] ?? []).slice();
 }
 
+function isSelectable(item: T): boolean {
+  return props.selectable === undefined || props.selectable.includes(item);
+}
+
 function selectAll(key: string) {
   for (const item of getItemsByGroup(key)) {
-    if (!localSelected.value.includes(item)) {
+    if (isSelectable(item) && !localSelected.value.includes(item)) {
       localSelected.value.push(item);
     }
   }
@@ -96,6 +137,9 @@ function selectNone(key: string) {
 
 function invertSelection(key: string) {
   for (const item of getItemsByGroup(key)) {
+    if (!isSelectable(item)) {
+      continue;
+    }
     if (localSelected.value.includes(item)) {
       removeFromSelection(item);
     } else {

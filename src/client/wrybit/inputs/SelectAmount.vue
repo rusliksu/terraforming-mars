@@ -11,7 +11,7 @@
     </div>
     <TabPanelFooterSlot>
       <div v-if="binding.showsave" class="amount-select__actions">
-        <AppButton type="submit" @click="binding.save()" :title="$t(binding.playerinput.buttonLabel) + ' ' + binding.amount"/>
+        <AppButton type="submit" hotkey="confirm" @click="binding.save()" :title="$t(binding.playerinput.buttonLabel) + ' ' + binding.amount"/>
       </div>
     </TabPanelFooterSlot>
   </div>

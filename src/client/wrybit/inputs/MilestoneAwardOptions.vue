@@ -1,5 +1,5 @@
 <template>
-  <div :class="['ma-options', 'choice-block', choices.kind]" :style="choiceBlockStyle(choices.choices.length)" role="radiogroup">
+<div data-hotkey-group :class="['ma-options', 'choice-block', choices.kind]" :style="choiceBlockStyle(choices.choices.length)" role="radiogroup">
     <CardZoomBar/>
     <label v-for="choice in choices.choices" :key="choice.index" :class="['ma-option', {'ma-option--selected': selected === choice.index}]">
       <input type="radio" class="ma-option-input" :name="groupName" :data-option-index="choice.index" :checked="selected === choice.index" @change="$emit('select', choice.index)">

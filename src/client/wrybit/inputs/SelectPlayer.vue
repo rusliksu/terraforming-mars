@@ -1,5 +1,5 @@
 <template>
-  <div>
+<div data-hotkey-group>
     <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
     <div class="player-options choice-block" :style="choiceBlockStyle((binding.playerinput.players || []).length)" role="radiogroup">
       <PlayerOptionTile v-for="color in binding.playerinput.players" :key="color" :color="color"
@@ -7,7 +7,7 @@
         :groupName="groupName" @select="binding.select($event)"/>
     </div>
     <TabPanelFooterSlot>
-      <AppButton v-if="binding.showsave" size="big" @click="binding.save()" :title="$t(binding.playerinput.buttonLabel)"/>
+      <AppButton v-if="binding.showsave" size="big" hotkey="confirm" @click="binding.save()" :title="$t(binding.playerinput.buttonLabel)"/>
     </TabPanelFooterSlot>
   </div>
 </template>

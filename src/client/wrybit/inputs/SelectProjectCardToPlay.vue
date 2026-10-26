@@ -1,5 +1,5 @@
 <template>
-  <div class="payments_cont choice-block" :class="[choiceBlockClass(allCards.length, isHandSelection), {'choice-block--sections': unplayableCards.length > 0}]" :style="choiceBlockStyle(allCards.length)" @tm-carousel-unselect="binding.clearSelection()">
+<div data-hotkey-group class="payments_cont choice-block" :class="[choiceBlockClass(allCards.length, isHandSelection), {'choice-block--sections': unplayableCards.length > 0}]" :style="choiceBlockStyle(allCards.length)" @tm-carousel-unselect="binding.clearSelection()">
     <CardFilterBar v-if="isHandSelection" :cards="allCards" :filter="handCardFilter" :context="filterContext">
       <template #sort="{compact}"><HandSortControl :playerView="binding.playerView" :compact="compact" :allowManual="true"/></template>
     </CardFilterBar>

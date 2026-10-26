@@ -1,19 +1,20 @@
 <template>
   <TradeFees v-if="tradeFee" :binding="binding"/>
-  <div v-else :class="['wf-options', {'wf-options--tabs': binding.asTabs}]" data-source-or>
+  <div v-else data-hotkey-group :class="['wf-options', {'wf-options--tabs': binding.asTabs}]" data-source-or>
     <label v-if="binding.showtitle && !binding.asTabs && !tileMenu"><div>{{ $t(binding.playerinput.title) }}</div></label>
     <label v-if="binding.playerinput.warning !== undefined" class="card-warning"><div>({{ $t(binding.playerinput.warning) }})</div></label>
     <div v-if="binding.asTabs && !tileMenu && outerFooter === undefined && spaceChoice === undefined" class="or-tabs" role="tablist">
-      <HandCardsTab :count="handCount" :active="handTabActive" @select="handTabActive = true"/>
+      <HandCardsTab :count="handCount" :active="handTabActive" data-hotkey="tab-hand" @select="handTabActive = true"/>
       <button v-for="idx in tabOrder" :key="idx" type="button" role="tab"
         :ref="(el) => registerLabel(idx, el)"
-        :data-option-index="idx" :title="$t(fullTabTitle(tabTitle(idx)))"
+        :data-option-index="idx" :data-hotkey="tabHotkey(fullTabTitle(tabTitle(idx)), binding.displayedOptions[idx])" :title="$t(fullTabTitle(tabTitle(idx)))"
         :aria-selected="tabActive(idx)"
         :class="['or-tab', toneClass('or-tab--tone-', binding.displayedOptions[idx]), {'or-tab--active': tabActive(idx), 'or-tab--empty': tabCount(idx) === 0, 'or-tab--highlight': tabHighlighted(tabTitle(idx)), 'or-tab--end': isEndTab(tabTitle(idx))}]"
         @click="selectTab(binding.displayedOptions[idx])">
         <OrOptionsTabIcon v-for="icon in iconsFor(idx)" :key="icon" :icon="icon"/>
         <span class="or-tab-title">{{ $t(shortTabLabel(tabTitle(idx))) }}</span>
-        <span v-if="tabCount(idx) !== undefined" class="or-tab-count">{{ tabCount(idx) }}</span>
+        <span v-if="tabCount(idx) !== undefined" class="or-tab-count">{{ tabCount(idx) }} options</span>
+        <HotkeyKeys v-if="tabHotkey(fullTabTitle(tabTitle(idx)), binding.displayedOptions[idx]) !== undefined" :action="tabHotkey(fullTabTitle(tabTitle(idx)), binding.displayedOptions[idx])"/>
       </button>
     </div>
     <div :class="[{'or-tab-panel': binding.asTabs && outerFooter === undefined, 'or-tab-panel--view': binding.asTabs && handTabActive, 'or-tab-panel--end': !handTabActive && binding.selectedOption !== undefined && isEndTab(binding.selectedOption.title)}, !handTabActive && binding.selectedOption ? toneClass('or-tab-panel--tone-', binding.selectedOption) : undefined]" :role="binding.asTabs && outerFooter === undefined ? 'tabpanel' : undefined">
@@ -58,10 +59,10 @@
           <AppButton v-for="(option, index) in spaceChoice.skips" :key="index" class="space-skip-option btn-tone-danger"
             :title="$t(fullTabTitle(option.title))" @click="skip(option)"/>
         </template>
-        <div v-if="showSave" :class="['wf-action', 'or-tab-save', binding.selectedOption ? toneClass('or-tab-save--', binding.selectedOption) : undefined]"><AppButton :title="$t(saveLabel)" type="submit" :disabled="saveDisabled" @click="binding.save()"/></div>
+        <div v-if="showSave" :class="['wf-action', 'or-tab-save', binding.selectedOption ? toneClass('or-tab-save--', binding.selectedOption) : undefined]"><AppButton :title="$t(saveLabel)" type="submit" :disabled="saveDisabled" hotkey="confirm" @click="binding.save()"/></div>
       </PresentationHost>
       <TabPanelFooterSlot v-else-if="showSave">
-        <div class="wf-action or-options-save"><AppButton :title="$t(binding.selectedOption?.buttonLabel ?? '')" type="submit" :disabled="saveDisabled" @click="binding.save()"/></div>
+        <div class="wf-action or-options-save"><AppButton :title="$t(binding.selectedOption?.buttonLabel ?? '')" type="submit" :disabled="saveDisabled" hotkey="confirm" @click="binding.save()"/></div>
       </TabPanelFooterSlot>
     </div>
   </div>
@@ -83,11 +84,13 @@ import HandCardsTab from '@/client/wrybit/visuals/HandCardsTab.vue';
 import HandCardsPanel from '@/client/wrybit/visuals/HandCardsPanel.vue';
 import TabPanelFooterSlot from '@/client/wrybit/visuals/TabPanelFooterSlot.vue';
 import AppButton from '@/client/components/common/AppButton.vue';
+import HotkeyKeys from '@/client/components/hotkeys/HotkeyKeys.vue';
 import {allCardsInHand} from '@/client/wrybit/visuals/cardfilter/handCards';
 import OrOptionsTabIcon from './OrOptionsTabIcon.vue';
 import ActionStepChips from './ActionStepChips.vue';
 import {actionStep} from './actionStep';
 import {endTabHint, fullTabTitle, isEndTab, optionTone, shortTabLabel, tabButtonLabel, tabDisplayOrder, tabHighlighted, tabIcon} from './orOptionsShortLabels';
+import {tabHotkey} from '@/client/hotkeys/tabHotkeys';
 import type {TabIcon} from './orOptionsShortLabels';
 import {choiceBlockStyle} from './choiceBlock';
 import {INLINE_INPUT_TYPES, isChoiceMenu} from './choiceMenu';

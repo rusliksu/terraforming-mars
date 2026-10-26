@@ -62,6 +62,11 @@ describe('Wrybit App mode', () => {
       expect(wrapper.get<HTMLInputElement>('[data-test="card"]').element.value).eq('fixture-card-b');
       expect(wrapper.get<HTMLInputElement>('[data-test="payment"]').element.value).eq('19');
       expect(wrapper.get('[data-test="card"]').element).eq(cardInput.element);
+
+      await wrapper.get('[data-test="wrybit-layout"]').trigger('click');
+      expect(PreferencesManager.INSTANCE.values().experimental_layout).is.true;
+      expect(storage.getItem('experimental_layout')).eq('1');
+      expect(wrapper.get('[data-test="boundary"]').attributes('data-enabled')).eq('true');
     } finally {
       wrapper.unmount();
     }

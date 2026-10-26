@@ -60,7 +60,7 @@ describe('source undo controls on our native request owner', () => {
     const {wrapper, request} = form(Phase.RESEARCH);
     try {
       await flushPromises();
-      expect(wrapper.get('[data-undo-mode="research"]').text()).eq('Undo card purchase (experimental)');
+      expect(wrapper.get('[data-undo-mode="research"]').text()).contains('Undo card purchase (experimental)');
       expect(wrapper.find('[data-undo-mode="action"]').exists()).is.false;
       await wrapper.get('[data-undo-mode="research"]').trigger('click');
       expect(request.mock.calls).deep.eq([['reset?id=p-undo-proof&mode=research', {method: 'GET'}]]);

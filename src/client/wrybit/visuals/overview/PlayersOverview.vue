@@ -24,8 +24,12 @@
               :firstForGen="getIsFirstForGen(thisPlayer)"
               :actionLabel="getActionLabel(thisPlayer)" :eloDelta="getEloDelta(thisPlayer)"
               :playerIndex="ownPlayerIndex(playerView)"/>
-            <!-- The same players as a table; visible only in the two-column layout (players_table.less) -->
-            <PlayersTable :readOnly="readOnly" :playerView="playerView" :rows="tableRows"/>
+            <!-- The same players as a table; visible only in the two-column layout (players_table.less).
+                 In the wide player view it is teleported above the columns so it can use the full page width. -->
+            <Teleport v-if="tableTarget !== undefined" defer :to="tableTarget">
+              <PlayersTable :readOnly="readOnly" :playerView="playerView" :rows="tableRows"/>
+            </Teleport>
+            <PlayersTable v-else :readOnly="readOnly" :playerView="playerView" :rows="tableRows"/>
         </div>
 </template>
 
@@ -46,6 +50,10 @@ export default defineComponent({
   name: 'PlayersOverview',
   extends: CanonicalPlayersOverview,
   components: {PlayerInfo, OtherPlayer, PlayersTable},
+  props: {
+    // When set, the wide player table is teleported to this selector (the player-home header).
+    tableTarget: {type: String, default: undefined},
+  },
   computed: {
     tableRows(): Array<PlayersTableRowModel> {
       const players = [...this.playersInOrder];

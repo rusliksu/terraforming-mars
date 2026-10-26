@@ -142,7 +142,7 @@ describe('source draft and trailing sections with our native selection', () => {
       expect(wrapper.get('.select-card-unaffordable').text()).contains('a card costs 3 M€');
       const buy = wrapper.findAll('button').find((button) => button.text() === 'Buy')!;
       expect((buy.element as HTMLButtonElement).disabled).is.true;
-      await wrapper.findAll('button').find((button) => button.text() === 'Discard')!.trigger('click');
+      await wrapper.findAll('button').find((button) => button.text().startsWith('Discard'))!.trigger('click');
       expect(save.mock.calls).deep.eq([[{type: 'card', cards: []}]]);
     } finally {
       wrapper.unmount();

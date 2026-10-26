@@ -1,5 +1,5 @@
 <template>
-  <div class="select-initial-cards">
+<div data-hotkey-group class="select-initial-cards">
     <div class="setup-columns">
       <section v-for="section in binding.sections" :key="section.key" :class="['setup-column', 'setup-column--' + section.key]">
         <header class="setup-column-head">
@@ -26,7 +26,7 @@
       <SetupSummary :starting="binding.starting" :preludes="binding.preludes" :purchase="binding.purchase"
         :remaining="binding.remaining" :purchasedCount="binding.purchasedCount" :cardCost="binding.cardCost"
         :status="binding.warning ?? 'Ready to start'" :statusReady="binding.valid && binding.warning === undefined">
-        <AppButton :disabled="!binding.valid" v-if="binding.showsave" @click="binding.save()" type="submit"
+        <AppButton :disabled="!binding.valid" v-if="binding.showsave" hotkey="confirm" @click="binding.save()" type="submit"
           :title="binding.playerinput.buttonLabel" class="select-initial-cards-start"/>
       </SetupSummary>
     </div>

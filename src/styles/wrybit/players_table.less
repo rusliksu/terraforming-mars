@@ -29,6 +29,24 @@
 // Outside the two-column layout the classic bar remains
 .players-table {
   display: none;
+  // Size to the content and cap it on ultrawide screens: resources and tags keep compact,
+  // comparable columns instead of stretching across the whole left half of the screen.
+  width: max-content;
+  max-width: min(1500px, 100%);
+}
+
+.player-home-table-slot {
+  box-sizing: border-box;
+  // Clear the fixed mode switch in the top-right corner, then let the table use the full width.
+  padding: 48px 0 0;
+  overflow-x: hidden;
+}
+
+@media (min-width: 1400px) {
+  // Teleported out of the left column: the table owns the full page width above both columns.
+  .player-home-table-slot .players-table {
+    display: block;
+  }
 }
 
 .players-table-rows {

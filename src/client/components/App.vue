@@ -12,6 +12,9 @@
       </dialog>
     </section>
     <WrybitBoundary :enabled="wrybitMode" :screen="screen" @classic="useClassicInterface" @active="wrybitReady = $event" @views="wrybitViews = $event" />
+    <aside v-if="!wrybitMode && screen !== 'cards'" class="classic-mode-switch">
+      <button type="button" class="btn" data-test="wrybit-layout" @click="useWrybitInterface" v-i18n>Wrybit layout</button>
+    </aside>
     <div class="main-container">
       <component :is="wrybitMode && wrybitReady && wrybitViews.startScreen ? wrybitViews.startScreen : 'StartScreen'" v-if="screen === 'start-screen'"/>
       <CreateGameForm
@@ -90,6 +93,10 @@ import {isPlayerId, isSpectatorId} from '@/common/Types';
 import {hasShowModal, showModal, windowHasHTMLDialogElement} from './HTMLDialogElementCompatibility';
 import {getLoadErrorMessage} from '@/client/utils/loadErrorMessage';
 import {getPreferences, PreferencesManager} from '@/client/utils/PreferencesManager';
+import {loadHotkeys} from '@/client/hotkeys/hotkeyStore';
+import {startHotkeyAvailability} from '@/client/hotkeys/hotkeyAvailability';
+import {startKeyLabelDetection} from '@/client/hotkeys/hotkeyKeyLabels';
+import {installHotkeys} from '@/client/hotkeys/hotkeyDispatcher';
 import WrybitBoundary from '@/client/wrybit/shell/WrybitBoundary.vue';
 import type {WrybitViews} from '@/client/wrybit/shell/presentationViews';
 import {inputContext} from '@/client/wrybit/shell/inputContext';
@@ -269,6 +276,9 @@ export default defineComponent({
     useClassicInterface(): void {
       PreferencesManager.INSTANCE.set('experimental_layout', false);
     },
+    useWrybitInterface(): void {
+      PreferencesManager.INSTANCE.set('experimental_layout', true);
+    },
     showAlert(title: string, message: string, cb: () => void = () => {}): void {
       const dialogElement: HTMLElement | null = document.getElementById('alert-dialog');
       const buttonElement: HTMLElement | null = document.getElementById('alert-dialog-button');
@@ -363,6 +373,13 @@ export default defineComponent({
       this.update(paths.SPECTATOR);
     },
   },
+  created() {
+    // Keyboard shortcuts: own bindings, availability and one global listener (hotkeyDispatcher.ts).
+    loadHotkeys();
+    startHotkeyAvailability();
+    startKeyLabelDetection();
+    installHotkeys();
+  },
   mounted() {
     setDocumentTitle();
     if (!windowHasHTMLDialogElement()) {
@@ -452,6 +469,27 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.classic-mode-switch {
+  position: fixed;
+  top: 8px;
+  right: 8px;
+  z-index: 201;
+}
+
+@media (max-width: 700px) {
+  .classic-mode-switch {
+    top: 6px;
+    right: 6px;
+
+    .btn {
+      min-width: 0;
+      height: 34px;
+      padding: 0 8px;
+      font-size: 10px;
+    }
+  }
+}
+
 .topmost-replay > .main-container { margin: 0; }
 .topmost-replay > .notice { position: static; margin: 24px; }
 </style>

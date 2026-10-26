@@ -6,11 +6,12 @@
       <button v-for="tab in tabs" :key="tab" type="button" role="tab"
         :class="['or-tab', 'board-tab', 'board-tab--' + tab, 'or-tab--tone-' + tone(tab), {'or-tab--active': tab === active}]"
         :aria-selected="tab === active"
-        :data-test="'board-tab-' + tab"
+        :data-test="'board-tab-' + tab" :data-hotkey="'board-' + tab"
         @click="select(tab)">
         <span class="board-tab-name">{{ $t(label(tab)) }}</span>
         <!-- The active tab drops its short info: the board itself shows it, the others get the room -->
         <BoardTabLines v-if="tab !== active" :tracks="tracks(tab)"/>
+        <HotkeyKeys :action="'board-' + tab"/>
       </button>
     </div>
     <div v-docked-tab ref="panel" :class="['or-tab-panel', 'board-tabs-panel', 'board-tabs-panel--' + active, 'or-tab-panel--tone-' + tone(active), {'board-tabs-panel--single': tabs.length < 2}]" role="tabpanel">
@@ -37,6 +38,7 @@ import {vDockedTab} from '@/client/wrybit/visuals/common/DockedTab';
 import {TileView} from '@/client/components/board/TileView';
 import BoardTabLines from './BoardTabLines.vue';
 import TileViewToggle from './TileViewToggle.vue';
+import HotkeyKeys from '@/client/components/hotkeys/HotkeyKeys.vue';
 import {BOARD_TAB_LABEL, BOARD_TAB_TONE, BoardTabId, BoardTabTrack, boardTabTracks, boardTabs} from './boardTabs';
 import {boardTabState, selectBoardTab} from './boardTabState';
 import {observeBoardTabFit} from './boardTabFit';
@@ -51,7 +53,7 @@ const stopFit = new WeakMap<object, () => void>();
 
 export default defineComponent({
   name: 'BoardTabs',
-  components: {BoardTabLines, TileViewToggle},
+  components: {BoardTabLines, TileViewToggle, HotkeyKeys},
   directives: {dockedTab: vDockedTab},
   props: {
     reservedMarsHeight: {type: Number, default: undefined},

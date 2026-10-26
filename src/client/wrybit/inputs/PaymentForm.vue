@@ -73,7 +73,7 @@
   </div>
 
   <div v-if="binding.showsave" class="payments_save">
-    <AppButton size="big" @click="binding.save()" :title="$t(binding.buttonLabel)" data-test="save"/>
+    <AppButton size="big" hotkey="confirm" @click="binding.save()" :title="$t(binding.buttonLabel)" data-test="save"/>
   </div>
   <SidebarModal :open="binding.confirmation !== undefined" :framed="true" @close="binding.dismissOverpayment()">
     <OverpaymentDialog v-if="binding.confirmation !== undefined" v-bind="binding.confirmation" :descriptions="binding.descriptions"

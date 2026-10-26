@@ -1,6 +1,6 @@
 <template>
   <AppButton v-for="action in undo?.actions ?? []" :key="action.mode" class="cancel-action-button" :data-undo-mode="action.mode"
-    :title="action.title" @click="undo?.run(action.mode)"/>
+    hotkey="undo" :title="action.title" @click="undo?.run(action.mode)"/>
 </template>
 
 <script setup lang="ts">

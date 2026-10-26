@@ -1,6 +1,6 @@
 <template>
   <TradeOffers v-if="trading" :binding="binding"/>
-  <div v-else class="wf-component wf-component--select-card choice-block" :style="choiceBlockStyle(binding.colonies.length)">
+<div data-hotkey-group v-else class="wf-component wf-component--select-card choice-block" :style="choiceBlockStyle(binding.colonies.length)">
     <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
     <label v-for="colony in binding.colonies" :key="colony.model.name"
       :class="['choice-option', 'colony-choice', {'choice-option--selected': binding.selected === colony.model.name}]"
@@ -20,7 +20,7 @@
     </label>
     <TabPanelFooterSlot>
       <div v-if="binding.showsave" class="nofloat">
-        <AppButton @click="binding.save()" :title="binding.playerinput.buttonLabel" type="submit" size="normal" :disabled="!binding.canSave"/>
+        <AppButton hotkey="confirm" @click="binding.save()" :title="binding.playerinput.buttonLabel" type="submit" size="normal" :disabled="!binding.canSave"/>
       </div>
     </TabPanelFooterSlot>
   </div>

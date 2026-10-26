@@ -1,5 +1,5 @@
 <template>
-  <div class="wf-component wf-options">
+  <div data-hotkey-group class="wf-component wf-options">
     <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
     <div class="underground-tokens choice-block choice-block--natural">
       <label v-for="(token, idx) in binding.playerinput.tokens" :key="idx">
@@ -10,7 +10,7 @@
     </div>
     <TabPanelFooterSlot>
       <div v-if="binding.showsave" class="nofloat">
-        <AppButton @click="binding.save()" :title="binding.playerinput.buttonLabel"/>
+        <AppButton hotkey="confirm" @click="binding.save()" :title="binding.playerinput.buttonLabel"/>
       </div>
     </TabPanelFooterSlot>
   </div>

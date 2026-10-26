@@ -26,6 +26,8 @@ export class ApiDeleteGame extends Handler {
       throw RouteError.notFound('Game not found');
     }
     await ctx.gameLoader.deleteGame(id);
+    // Admin deletions are rare and destructive: keep an audit line in the server log.
+    console.log(`Game ${id} deleted from the database by an admin request`);
     responses.writeJson(res, ctx, {deleted: id});
   }
 }

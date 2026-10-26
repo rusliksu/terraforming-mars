@@ -62,6 +62,7 @@ describe('backfillMissingGameParticipants', () => {
       participantIds: [participantId('p-existing')],
     };
     db.entries.push(existing);
+    db.games.set(existing.gameId, serializedGame(['p-existing']));
     db.games.set('g-missing' as GameId, serializedGame(['p-blue', 'p-red'], 's-spectator'));
 
     const gameIds = new Set<GameId>([
@@ -92,6 +93,36 @@ describe('backfillMissingGameParticipants', () => {
     ]);
   });
 
+  it('fills only the missing participants of a partially mapped game', async () => {
+    const db = new FakeParticipantDatabase();
+    db.entries.push({
+      gameId: 'g-partial' as GameId,
+      participantIds: [participantId('p-blue')],
+    });
+    db.games.set('g-partial' as GameId, serializedGame(['p-blue', 'p-red'], 's-spectator'));
+    const gameIds = new Set<GameId>(['g-partial' as GameId]);
+
+    const result = await backfillMissingGameParticipants(db, gameIds);
+
+    expect(result).deep.eq({games: 1, participants: 2, failed: 0});
+    expect(db.entries).deep.eq([
+      {
+        gameId: 'g-partial',
+        participantIds: ['p-blue', 'p-red', 's-spectator'],
+      },
+    ]);
+    expect(db.writes).deep.eq([
+      {
+        gameId: 'g-partial',
+        participantIds: ['p-red', 's-spectator'],
+      },
+    ]);
+
+    const second = await backfillMissingGameParticipants(db, gameIds);
+    expect(second).deep.eq({games: 0, participants: 0, failed: 0});
+    expect(db.writes).has.length(1);
+  });
+
   it('continues after an unreadable game and never removes existing mappings', async () => {
     const db = new FakeParticipantDatabase();
     const existing: GameIdLedger = {
@@ -99,6 +130,7 @@ describe('backfillMissingGameParticipants', () => {
       participantIds: [participantId('p-existing')],
     };
     db.entries.push(existing);
+    db.games.set(existing.gameId, serializedGame(['p-existing']));
     db.games.set('g-good' as GameId, serializedGame(['p-good']));
     db.unreadable.add('g-bad' as GameId);
 

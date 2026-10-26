@@ -22,19 +22,21 @@ export type ParticipantBackfillResult = {
  * the admin list.
  *
  * This function only adds rows. It never changes or deletes games, saves, results,
- * or existing participant mappings.
+ * or existing participant mappings. Games with a partially missing mapping are
+ * repaired by adding only the participant ids that are absent.
  */
 export async function backfillMissingGameParticipants(
   db: ParticipantDatabase,
   validGameIds: ReadonlySet<GameId>,
 ): Promise<ParticipantBackfillResult> {
-  const knownGameIds = new Set((await db.getParticipants()).map((entry) => entry.gameId));
+  const knownParticipants = new Map<GameId, Set<ParticipantId>>();
+  for (const entry of await db.getParticipants()) {
+    knownParticipants.set(entry.gameId, new Set(entry.participantIds));
+  }
   const result: ParticipantBackfillResult = {games: 0, participants: 0, failed: 0};
 
-  for (const gameId of validGameIds) {
-    if (knownGameIds.has(gameId)) {
-      continue;
-    }
+  async function backfillGame(gameId: GameId): Promise<void> {
+    const existing = knownParticipants.get(gameId) ?? new Set<ParticipantId>();
 
     let game: SerializedGame;
     try {
@@ -42,26 +44,54 @@ export async function backfillMissingGameParticipants(
     } catch (error) {
       result.failed++;
       console.warn('Could not read game state while backfilling participants', error);
-      continue;
+      return;
     }
 
-    const participantIds = participantIdsFor(game);
-    if (participantIds.length === 0) {
-      result.failed++;
-      console.warn('Could not derive participants while backfilling game participants');
-      continue;
+    const expected = participantIdsFor(game);
+    if (expected.length === 0) {
+      if (existing.size === 0) {
+        result.failed++;
+        console.warn('Could not derive participants while backfilling game participants');
+      }
+      return;
+    }
+    const missing = expected.filter((participantId) => !existing.has(participantId));
+    if (missing.length === 0) {
+      return;
     }
 
     try {
-      await db.storeParticipants({gameId, participantIds});
-      knownGameIds.add(gameId);
+      await db.storeParticipants({gameId, participantIds: missing});
+      for (const participantId of missing) {
+        existing.add(participantId);
+      }
+      knownParticipants.set(gameId, existing);
       result.games++;
-      result.participants += participantIds.length;
+      result.participants += missing.length;
     } catch (error) {
       result.failed++;
       console.warn('Could not store backfilled game participants', error);
     }
   }
+
+  // Reading every resident game at startup is I/O heavy, so keep the number of
+  // concurrent single-game reads bounded instead of deserializing everything at once.
+  const queue = [...validGameIds];
+  let next = 0;
+  const workerCount = Math.min(8, queue.length);
+  const workers: Array<Promise<void>> = [];
+  for (let i = 0; i < workerCount; i++) {
+    workers.push((async () => {
+      while (true) {
+        const index = next++;
+        if (index >= queue.length) {
+          return;
+        }
+        await backfillGame(queue[index]);
+      }
+    })());
+  }
+  await Promise.all(workers);
 
   return result;
 }

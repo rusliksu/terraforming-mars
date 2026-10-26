@@ -12,6 +12,7 @@ type PostOptions = {
   owned?: boolean;
   allowUnauthenticated?: string | undefined;
   serverId?: string;
+  requiresDiscordLogin?: boolean;
 };
 
 type Result = {
@@ -33,6 +34,7 @@ async function post(options: PostOptions = {}): Promise<Result> {
   }
   try {
     const [game, blue] = testGame(2);
+    game.gameOptions.requiresDiscordLogin = options.requiresDiscordLogin === true;
     if (options.owned !== false) {
       blue.user = 'discord-owner';
     }
@@ -91,15 +93,28 @@ describe('legacy PlayerInput ownership', () => {
     expect(result.waiting).eq(true);
   });
 
-  it('closes unowned seats by default', async () => {
-    const result = await post({owned: false, user: user('discord-anyone')});
+  it('allows unowned seats in a guest game', async () => {
+    const result = await post({owned: false});
+    expect(result.statusCode).eq(200);
+    expect(result.content).contains('"cardsInHand"');
+  });
+
+  it('rejects unowned seats when the game requires Discord login', async () => {
+    const result = await post({owned: false, requiresDiscordLogin: true});
+    expect(result.statusCode).eq(401);
+    expect(result.content).not.contains('cardsInHand');
+    expect(result.waiting).eq(true);
+  });
+
+  it('rejects a foreign session for an unowned seat in a protected game', async () => {
+    const result = await post({owned: false, requiresDiscordLogin: true, user: user('discord-intruder')});
     expect(result.statusCode).eq(403);
     expect(result.content).not.contains('cardsInHand');
     expect(result.waiting).eq(true);
   });
 
-  it('allows explicit local compatibility for an unowned seat', async () => {
-    const result = await post({owned: false, allowUnauthenticated: '1'});
+  it('allows explicit local compatibility for an unowned seat in a protected game', async () => {
+    const result = await post({owned: false, requiresDiscordLogin: true, allowUnauthenticated: '1'});
     expect(result.statusCode).eq(200);
     expect(result.content).contains('"cardsInHand"');
   });

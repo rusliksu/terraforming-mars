@@ -37,6 +37,8 @@ export type GameOptions = {
   fastModeOption: boolean;
   showOtherPlayersVP: boolean;
   privateHands: boolean;
+  /** When true, guest seats cannot submit input; every human seat must be bound to a Discord account. */
+  requiresDiscordLogin?: boolean;
   noEloGame: boolean;
   turnBasedGame: boolean;
 
@@ -181,6 +183,7 @@ export const DEFAULT_GAME_OPTIONS: GameOptions = {
   moonStandardProjectVariant1: false,
   pathfindersExpansion: false,
   privateHands: true,
+  requiresDiscordLogin: false,
   politicalAgendasExtension: 'Standard',
   preludeDraftVariant: false,
   ceosDraftVariant: false,

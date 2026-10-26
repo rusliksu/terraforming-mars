@@ -16,7 +16,7 @@ import {aiUnsupportedReasons} from '../../common/ai/aiSupport';
 import {aiPlayerName, isAiLevel} from '../../common/ai/AiLevel';
 import {Player} from '../Player';
 import {Server} from '../models/ServerModel';
-import {NewGameConfig, normalizePreludeHandicap} from '../../common/game/NewGameConfig';
+import {NewGameConfig, NewPlayerModel, normalizePreludeHandicap} from '../../common/game/NewGameConfig';
 import {normalizeEscapeVelocityOptions} from '../../common/game/EscapeVelocityOptions';
 import {safeCast, isGameId, isSpectatorId, isPlayerId} from '../../common/Types';
 import {generateRandomId} from '../utils/server-ids';
@@ -122,6 +122,34 @@ export class ApiCreateGame extends Handler {
     validate(gameReq.customCeos, Math.max(gameReq.startingCeos ?? 0, CEO_CARDS_DEALT_PER_PLAYER), 'CEOs');
   }
 
+  /**
+   * Human seats are owned by Discord accounts. AI and bot seats never receive a user.
+   * IDs are Discord snowflakes: positive decimal integers.
+   */
+  public validateDiscordIds(players: ReadonlyArray<NewPlayerModel>, requireAll: boolean): void {
+    const seen = new Set<string>();
+    for (let i = 0; i < players.length; i++) {
+      const player = players[i];
+      if (player.isBot === true || isAiLevel(player.aiLevel)) {
+        continue;
+      }
+      const discordId = player.discordId?.trim();
+      if (discordId === undefined || discordId === '') {
+        if (requireAll) {
+          throw RouteError.badRequest(`missing Discord ID for player ${i + 1}`);
+        }
+        continue;
+      }
+      if (!/^[1-9][0-9]*$/.test(discordId)) {
+        throw RouteError.badRequest(`invalid Discord ID for player ${i + 1}`);
+      }
+      if (seen.has(discordId)) {
+        throw RouteError.badRequest(`duplicate Discord ID for player ${i + 1}`);
+      }
+      seen.add(discordId);
+    }
+  }
+
   // TODO(kberg): much of this code can be moved outside of handler, and that
   // would be better.
   public override async post(req: Request, res: Response, ctx: Context): Promise<void> {
@@ -138,6 +166,12 @@ export class ApiCreateGame extends Handler {
       gameReq.expansions.betterMars &&= gameReq.expansions.pathfinders;
       normalizeLegacyBoardSelection(gameReq);
       this.validateCustomLists(gameReq);
+      const requiresDiscordLogin = gameReq.requiresDiscordLogin === true;
+      if (requiresDiscordLogin && ctx.user === undefined && !this.hasServerIdAccess(ctx)) {
+        responses.unauthorized(req, res);
+        return;
+      }
+      this.validateDiscordIds(gameReq.players, requiresDiscordLogin);
       const turnBasedGame = gameReq.turnBasedGame === true;
       const botGame = gameReq.botGame === true;
       if (turnBasedGame) {
@@ -162,7 +196,7 @@ export class ApiCreateGame extends Handler {
       }
       const gameId = safeCast(generateRandomId('g'), isGameId);
       const spectatorId = safeCast(generateRandomId('s'), isSpectatorId);
-      const requestedPlayers = gameReq.players.map((player) => ({...player}));
+      const requestedPlayers = gameReq.players.map((player) => ({...player, discordId: player.discordId?.trim()}));
       const aiBlockers = aiUnsupportedReasons({
         expansions: gameReq.expansions,
         twoCorpsVariant: gameReq.twoCorpsVariant,
@@ -181,6 +215,9 @@ export class ApiCreateGame extends Handler {
           normalizePreludeHandicap(p.preludeHandicap),
         );
         player.aiLevel = aiLevel;
+        if (aiLevel === undefined && p.isBot !== true && p.discordId !== undefined) {
+          player.user = p.discordId;
+        }
         return player;
       });
       // Assign telegramID from game request
@@ -284,6 +321,7 @@ export class ApiCreateGame extends Handler {
         pathfindersExpansion: gameReq.expansions.pathfinders,
         politicalAgendasExtension: gameReq.politicalAgendasExtension,
         privateHands: gameReq.privateHands !== false,
+        requiresDiscordLogin,
         prelude2Expansion: gameReq.expansions.prelude2,
         preludeDraftVariant: gameReq.preludeDraftVariant,
         preludeExtension: gameReq.expansions.prelude,

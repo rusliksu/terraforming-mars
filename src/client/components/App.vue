@@ -86,6 +86,7 @@ const CardLibrary = defineAsyncComponent(() => import(/* webpackChunkName: "card
 const MapLibrary = defineAsyncComponent(() => import(/* webpackChunkName: "map-library" */ '@/client/components/maplibrary/MapLibrary.vue'));
 import {$t, setTranslationContext} from '@/client/directives/i18n';
 import {paths} from '@/common/app/paths';
+import {statusCode} from '@/common/http/statusCode';
 import {PlayerViewModel, ViewModel} from '@/common/models/PlayerModel';
 import {applyFetchedPlayerView, isGameShellEnabled, restoreGameShellAppState, subscribeGameShellAppState} from '@/client/shell';
 import {SimpleGameModel} from '@/common/models/SimpleGameModel';
@@ -93,6 +94,7 @@ import {SpectatorModel} from '@/common/models/SpectatorModel';
 import {isPlayerId, isSpectatorId} from '@/common/Types';
 import {hasShowModal, showModal, windowHasHTMLDialogElement} from './HTMLDialogElementCompatibility';
 import {getLoadErrorMessage} from '@/client/utils/loadErrorMessage';
+import {redirectToLogin} from '@/client/utils/loginRedirect';
 import {getPreferences, PreferencesManager} from '@/client/utils/PreferencesManager';
 import {loadHotkeys} from '@/client/hotkeys/hotkeyStore';
 import {startHotkeyAvailability} from '@/client/hotkeys/hotkeyAvailability';
@@ -374,7 +376,12 @@ export default defineComponent({
           if (revision !== app.refreshRevision || (path === paths.PLAYER && app.isServerSideRequestInProgress)) {
             return;
           }
-          alert(getLoadErrorMessage(path, err instanceof AppFetchError ? err.status : 0));
+          const status = err instanceof AppFetchError ? err.status : 0;
+          if (path === paths.PLAYER && (status === statusCode.unauthorized || status === statusCode.forbidden)) {
+            redirectToLogin();
+            return;
+          }
+          alert(getLoadErrorMessage(path, status));
           console.error(err);
         });
     },

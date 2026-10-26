@@ -29,6 +29,7 @@ export function defaultCreateGameModel(): CreateGameModel {
     modularMA: false,
     noEloGame: false,
     privateHands: true,
+    requiresDiscordLogin: false,
     turnBasedGame: false,
     botGame: false,
     randomFirstPlayer: true,

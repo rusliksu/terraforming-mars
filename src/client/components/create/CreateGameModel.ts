@@ -46,6 +46,7 @@ export type CreateGameModel = {
   noEloGame: boolean;
   aiAnalysis?: boolean;
   privateHands: boolean;
+  requiresDiscordLogin: boolean;
   players: Array<NewPlayerModel>;
   playersCount: number;
   politicalAgendasExtension: AgendaStyle;

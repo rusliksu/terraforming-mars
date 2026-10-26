@@ -142,7 +142,8 @@ export class PlayerInput extends Handler {
       return true;
     }
     if (player.user === undefined) {
-      return process.env.ALLOW_LEGACY_UNAUTHENTICATED_PLAYER_INPUT === '1';
+      return player.game.gameOptions.requiresDiscordLogin !== true ||
+        process.env.ALLOW_LEGACY_UNAUTHENTICATED_PLAYER_INPUT === '1';
     }
     return this.isUser(player.user, ctx);
   }

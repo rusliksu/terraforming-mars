@@ -79,6 +79,7 @@ import {Color} from '@/common/Color';
 import {gameDocumentTitle} from '../utils/documentTitle';
 import {setFaviconStatus, setFaviconTurnFrame} from '@/client/utils/favicon';
 import {trySubmitGameShellInput} from '@/client/shell';
+import {redirectToLogin} from '@/client/utils/loginRedirect';
 import AppButton from '@/client/components/common/AppButton.vue';
 
 let undoChoiceSequence = 0;
@@ -285,6 +286,13 @@ export default defineComponent({
           }
 
           const showAlert = vueRoot(this).showAlert;
+          if (response.status === statusCode.unauthorized || response.status === statusCode.forbidden) {
+            const message = response.status === statusCode.unauthorized ?
+              'Sign in with Discord to play this game.' :
+              'This seat belongs to another Discord account. Sign in with the right account.';
+            showAlert('Sign in required', message, () => redirectToLogin());
+            return;
+          }
           if (response.status === statusCode.badRequest) {
             const resp = await this.readAppError(response);
             if (resp.id === UNDO_REVEALED_HIDDEN_INFORMATION &&

@@ -5,7 +5,7 @@
       <button type="button" role="tab" data-input-tab data-hotkey="tab-actions" :title="$t(fullTabTitle(binding.playerinput.title))" :aria-selected="!handTabActive"
         :class="['or-tab', {'or-tab--active': !handTabActive}, tone === undefined ? undefined : 'or-tab--tone-' + tone]" @click="handTabActive = false">
         <span class="or-tab-title">{{ $t(inputTabLabel(binding.playerinput)) }}</span>
-        <span v-if="count !== undefined" class="or-tab-count">{{ count }}</span>
+        <span v-if="count !== undefined" class="or-tab-count">{{ count }} options</span>
         <HotkeyKeys action="tab-actions"/>
       </button>
       <WaitingForPlayersTab v-if="binding.playerinput.optional" :playerView="binding.playerView"/>

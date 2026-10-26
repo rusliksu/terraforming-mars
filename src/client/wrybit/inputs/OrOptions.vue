@@ -13,7 +13,7 @@
         @click="selectTab(binding.displayedOptions[idx])">
         <OrOptionsTabIcon v-for="icon in iconsFor(idx)" :key="icon" :icon="icon"/>
         <span class="or-tab-title">{{ $t(shortTabLabel(tabTitle(idx))) }}</span>
-        <span v-if="tabCount(idx) !== undefined" class="or-tab-count">{{ tabCount(idx) }}</span>
+        <span v-if="tabCount(idx) !== undefined" class="or-tab-count">{{ tabCount(idx) }} options</span>
         <HotkeyKeys v-if="tabHotkey(fullTabTitle(tabTitle(idx)), binding.displayedOptions[idx]) !== undefined" :action="tabHotkey(fullTabTitle(tabTitle(idx)), binding.displayedOptions[idx])"/>
       </button>
     </div>

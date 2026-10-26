@@ -93,6 +93,10 @@ import {isPlayerId, isSpectatorId} from '@/common/Types';
 import {hasShowModal, showModal, windowHasHTMLDialogElement} from './HTMLDialogElementCompatibility';
 import {getLoadErrorMessage} from '@/client/utils/loadErrorMessage';
 import {getPreferences, PreferencesManager} from '@/client/utils/PreferencesManager';
+import {loadHotkeys} from '@/client/hotkeys/hotkeyStore';
+import {startHotkeyAvailability} from '@/client/hotkeys/hotkeyAvailability';
+import {startKeyLabelDetection} from '@/client/hotkeys/hotkeyKeyLabels';
+import {installHotkeys} from '@/client/hotkeys/hotkeyDispatcher';
 import WrybitBoundary from '@/client/wrybit/shell/WrybitBoundary.vue';
 import type {WrybitViews} from '@/client/wrybit/shell/presentationViews';
 import {inputContext} from '@/client/wrybit/shell/inputContext';
@@ -368,6 +372,13 @@ export default defineComponent({
     updateSpectator() {
       this.update(paths.SPECTATOR);
     },
+  },
+  created() {
+    // Keyboard shortcuts: own bindings, availability and one global listener (hotkeyDispatcher.ts).
+    loadHotkeys();
+    startHotkeyAvailability();
+    startKeyLabelDetection();
+    installHotkeys();
   },
   mounted() {
     setDocumentTitle();

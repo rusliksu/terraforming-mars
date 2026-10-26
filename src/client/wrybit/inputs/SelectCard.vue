@@ -38,11 +38,11 @@
         <template v-if="cannotAfford">
           <span class="select-card-unaffordable" v-i18n="[String(binding.playerView.thisPlayer.cardCost), String(binding.playerView.thisPlayer.megacredits)]">Not enough money: a card costs ${0} M€, you only have ${1} M€</span>
           <AppButton :disabled="true" type="submit" :title="$t('Buy')" class="btn-tone-success"/>
-          <AppButton type="submit" @click="binding.save()" :title="$t('Discard')" class="btn-tone-danger"/>
+          <AppButton type="submit" hotkey="cancel" @click="binding.save()" :title="$t('Discard')" class="btn-tone-danger"/>
         </template>
         <template v-else>
-          <AppButton :disabled="!binding.canSave || (binding.optionalMany && binding.count === 0)" type="submit" @click="binding.save()" :title="binding.count === 0 ? binding.playerinput.buttonLabel : binding.buttonLabel" :class="{'btn-tone-success': binding.optionalMany}"/>
-          <AppButton v-if="binding.optionalMany" :disabled="binding.count > 0" type="submit" @click="binding.save()" :title="$t('Skip this action')" class="btn-tone-danger"/>
+          <AppButton :disabled="!binding.canSave || (binding.optionalMany && binding.count === 0)" type="submit" hotkey="confirm" @click="binding.save()" :title="binding.count === 0 ? binding.playerinput.buttonLabel : binding.buttonLabel" :class="{'btn-tone-success': binding.optionalMany}"/>
+          <AppButton v-if="binding.optionalMany" :disabled="binding.count > 0" type="submit" hotkey="cancel" @click="binding.save()" :title="$t('Skip this action')" class="btn-tone-danger"/>
         </template>
       </div>
     </TabPanelFooterSlot>

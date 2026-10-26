@@ -2,7 +2,7 @@
   <div v-if="hasWaitingForTabs(binding.playerinput)" class="wf-options wf-options--tabs" data-source-waiting>
     <div class="or-tabs" role="tablist">
       <HandCardsTab :count="handCount" :active="handTabActive" @select="handTabActive = true"/>
-      <button type="button" role="tab" data-input-tab :title="$t(fullTabTitle(binding.playerinput.title))" :aria-selected="!handTabActive"
+      <button type="button" role="tab" data-input-tab data-hotkey="tab-actions" :title="$t(fullTabTitle(binding.playerinput.title))" :aria-selected="!handTabActive"
         :class="['or-tab', {'or-tab--active': !handTabActive}, tone === undefined ? undefined : 'or-tab--tone-' + tone]" @click="handTabActive = false">
         <span class="or-tab-title">{{ $t(inputTabLabel(binding.playerinput)) }}</span>
         <span v-if="count !== undefined" class="or-tab-count">{{ count }}</span>

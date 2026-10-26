@@ -6,7 +6,7 @@
       <button v-for="tab in tabs" :key="tab" type="button" role="tab"
         :class="['or-tab', 'board-tab', 'board-tab--' + tab, 'or-tab--tone-' + tone(tab), {'or-tab--active': tab === active}]"
         :aria-selected="tab === active"
-        :data-test="'board-tab-' + tab"
+        :data-test="'board-tab-' + tab" :data-hotkey="'board-' + tab"
         @click="select(tab)">
         <span class="board-tab-name">{{ $t(label(tab)) }}</span>
         <!-- The active tab drops its short info: the board itself shows it, the others get the room -->

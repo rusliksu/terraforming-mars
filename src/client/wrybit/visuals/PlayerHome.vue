@@ -47,7 +47,7 @@
       :action-number="actionNumber" :actions-per-turn="actionsPerTurn"
       @close="sheetOpen = false" @select="startTask" @confirm="confirmTask"/>
     <PurgeWarning :expectedPurgeTimeMs="game.expectedPurgeTimeMs"/>
-    <KeyboardShortcuts v-show="keyboardShortcutOpened" @close="keyboardShortcutOpened = false"/>
+    <HotkeyHelpDialog :open="keyboardShortcutOpened" :expansions="hotkeyExpansions" @close="keyboardShortcutOpened = false"/>
   </div>
   <div v-else id="player-home" :class="{'with-turmoil': game.turmoil, 'player-home--acting': isPlayerActing}">
     <TopBar :playerView="playerView"/>
@@ -94,7 +94,7 @@
       </template>
     </HomeColumns>
     <PurgeWarning :expectedPurgeTimeMs="game.expectedPurgeTimeMs"/>
-    <KeyboardShortcuts v-show="keyboardShortcutOpened" @close="keyboardShortcutOpened = false"/>
+    <HotkeyHelpDialog :open="keyboardShortcutOpened" :expansions="hotkeyExpansions" @close="keyboardShortcutOpened = false"/>
   </div>
 </template>
 
@@ -120,7 +120,8 @@ import LogPanel from './logpanel/LogPanel.vue';
 import Card from './card/Card.vue';
 import HandCardsTab from './HandCardsTab.vue';
 import HandCardsPanel from './HandCardsPanel.vue';
-import KeyboardShortcuts from './KeyboardShortcuts.vue';
+import HotkeyHelpDialog from '@/client/components/hotkeys/HotkeyHelpDialog.vue';
+import {gameExpansions} from '@/client/hotkeys/hotkeyActions';
 import {vDockedTab} from './common/DockedTab';
 import {GAME_MENU_CONTEXT, GameMenuContext} from './gameMenu/gameMenuContext';
 import {useInputPresentation} from '@/client/wrybit/inputs/presentation';
@@ -154,7 +155,7 @@ export default defineComponent({
   mixins: [HomeMixin],
   props: {playerView: {type: Object as () => PlayerViewModel, required: true}},
   components: {InputHost, WaitingFor, TopBar, PurgeWarning, DynamicTitle, HomeColumns, RowResizeHandle, PlayerSetupView,
-    SetupTurnOrder, PlayersOverview, GameBoardView, LogPanel, Card, HandCardsTab, HandCardsPanel, KeyboardShortcuts, SetupBoardToggle,
+    SetupTurnOrder, PlayersOverview, GameBoardView, LogPanel, Card, HandCardsTab, HandCardsPanel, HotkeyHelpDialog, SetupBoardToggle,
     GameMenu, MobileHeader, MobileMarsScreen, MobileNav, MobilePlayersPanel, MobileTurnButton, MobileTurnSheet},
   directives: {dockedTab: vDockedTab},
   provide() {
@@ -184,6 +185,9 @@ export default defineComponent({
   computed: {
     isMobileLayout(): boolean {
       return mobileLayout.value;
+    },
+    hotkeyExpansions(): Array<string> {
+      return gameExpansions(this.game.gameOptions.expansions);
     },
     navItems(): ReadonlyArray<MobileNavItem> {
       return this.playerView.thisPlayer === undefined ? SPECTATOR_NAV : MOBILE_NAV;

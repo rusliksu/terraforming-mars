@@ -6,6 +6,7 @@ import {Database} from './Database';
 import {CacheConfig} from './CacheConfig';
 import {Clock} from '../../common/Timer';
 import {partition} from '@/common/utils/utils';
+import {backfillMissingGameParticipants} from './ParticipantBackfill';
 
 export class Cache extends EventEmitter {
   private loaded = false;
@@ -34,6 +35,13 @@ export class Cache extends EventEmitter {
     try {
       console.log('Preloading IDs.');
       const validGameIds = new Set(await this.db.getGameIds());
+      const backfill = await backfillMissingGameParticipants(this.db, validGameIds);
+      if (backfill.games > 0) {
+        console.log(`Backfilled game participants: games=${backfill.games} participants=${backfill.participants}`);
+      }
+      if (backfill.failed > 0) {
+        console.warn(`Could not backfill participants for games=${backfill.failed}`);
+      }
       const entries = await this.db.getParticipants();
       let orphanCount = 0;
       for (const entry of entries) {

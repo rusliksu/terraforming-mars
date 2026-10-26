@@ -1,4 +1,4 @@
-import {Resource, StandardResource} from '../../common/Resource';
+import {Resource} from '../../common/Resource';
 import {Units} from '../../common/Units';
 import {IPlayer} from '../IPlayer';
 import {From} from '../logs/From';
@@ -62,7 +62,7 @@ export abstract class BaseStock {
   }
 
   public deduct(
-    resource: Resource | StandardResource,
+    resource: Resource,
     amount: number,
     options? : {
       log?: boolean,
@@ -73,7 +73,7 @@ export abstract class BaseStock {
   }
 
   public abstract add(
-    resource: Resource | StandardResource,
+    resource: Resource,
     amount : number,
     options? : {log?: boolean, from? : From, stealing?: boolean},
   ): void;
@@ -114,7 +114,7 @@ export abstract class BaseStock {
   }
 
   protected logUnitDelta(
-    resource: Resource | StandardResource,
+    resource: Resource,
     amount: number,
     production: boolean,
     from: From | undefined,
@@ -128,52 +128,37 @@ export abstract class BaseStock {
     // 1. Peter gained 5 MC
     // 2. Peter gained 5 MC from Robotic Workforce
     // 3. Peter gained 5 MC production
-    // 4. Peter gained 5 MC production beacuse of Robotic Workforce
+    // 4. Peter gained 5 MC production because of Robotic Workforce
 
     // 5. Peter lost 5 MC
     // 6. Peter lost 5 MC from Robotic Workforce
     // 7. Peter lost 5 MC production
-    // 8. Peter lost 5 MC production beacuse of Robotic Workforce
+    // 8. Peter lost 5 MC production because of Robotic Workforce
 
     // 9. Peter lost 1 MC production, stolen by Alan
 
-    const singular: Record<Resource, string> = {
-      [Resource.MEGACREDITS]: 'M€',
-      [Resource.STEEL]: 'steel',
-      [Resource.TITANIUM]: 'titanium',
-      [Resource.PLANTS]: 'plant',
-      [Resource.ENERGY]: 'energy',
-      [Resource.HEAT]: 'heat',
-    };
-
-    let resourceString = singular[resource];
-    if (resource === Resource.PLANTS && production === false && Math.abs(amount) > 1) {
-      resourceString = 'plants';
-    }
     const modifier = amount > 0 ? 'gained' : 'lost';
-    let message = production ?
-      '${0} ' + modifier + ' ${1} ${2} production' :
-      '${0} ' + modifier + ' ${1} ${2}';
-      //  You   lost           1   plant production
+    let message = '${0} ' + modifier + ' ${1}${2}';
 
     if (from !== undefined) {
       if (stealing === true) {
-        message = production ?
-          '${3} stole ${1} ${2} production from ${0}' :
-          '${3} stole ${1} ${2} from ${0}';
+        message = '${3} stole ${1} ${2} from ${0}';
       } else {
         message = message + ' because of ${3}';
       }
     }
 
     this.player.game.log(message, (b) => {
-      b.player(this.player)
-        .number(Math.abs(amount))
-        .string(resourceString);
+      b.player(this.player).number(Math.abs(amount));
+      if (production) {
+        b.production(resource);
+      } else {
+        b.resource(resource);
+      }
 
       if (from !== undefined) {
         b.from(from);
       }
-    });
+    }, {effect: {kind: 'resource', resource, production, amount, player: this.player.color}});
   }
 }

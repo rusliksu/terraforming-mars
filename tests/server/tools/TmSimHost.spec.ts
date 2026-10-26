@@ -3,10 +3,12 @@ import {expect} from 'chai';
 import {Phase} from '../../../src/common/Phase';
 import {CardName} from '../../../src/common/cards/CardName';
 import {InputResponse} from '../../../src/common/inputs/InputResponse';
+import {Payment} from '../../../src/common/inputs/Payment';
 import {Birds} from '../../../src/server/cards/base/Birds';
 import {DustSeals} from '../../../src/server/cards/base/DustSeals';
 import {CrediCor} from '../../../src/server/cards/corporation/CrediCor';
 import {AlliedBanks} from '../../../src/server/cards/prelude/AlliedBanks';
+import {SponsoredAcademies} from '../../../src/server/cards/venusNext/SponsoredAcademies';
 import {Game} from '../../../src/server/Game';
 import {Server} from '../../../src/server/models/ServerModel';
 import {SelectOption} from '../../../src/server/inputs/SelectOption';
@@ -64,6 +66,185 @@ describe('TmSimHost', () => {
     const sanitized = sanitizeSnapshotForSimulation(game.serialize());
     expect(sanitized.players[0].telegramID).eq(undefined);
     expect(sanitized.players[0].lastNoticeMessageId).eq(-1);
+  });
+
+  it('resumes an unstable prompt only for its recorded actor', () => {
+    const [rawGame, blue, red] = testGame(2, {
+      fastModeOption: true,
+      skipInitialCardSelection: true,
+    });
+    const game = rawGame as Game;
+    game.generation = 2;
+    game.phase = Phase.ACTION;
+    game.activePlayer = blue;
+    blue.megaCredits = 23;
+    blue.takeAction(false);
+
+    const rootObserver = Server.getPlayerModel(blue);
+    const standardProjectsIndex = findOptionIndex(rootObserver.waitingFor, /standard projects/i);
+    expect(standardProjectsIndex).gte(0, JSON.stringify(rootObserver.waitingFor));
+    const host = new TmSimHost(() => 1000, 60_000);
+    const fork = host.handle({
+      kind: 'fork_batch_v1',
+      requestId: 'fork-greenery',
+      stateVersion: 'state-greenery',
+      promptFingerprint: promptFingerprintFromWaitingFor(rootObserver.waitingFor),
+      knowledgeMode: 'oracle_teacher',
+      observerId: blue.id,
+      actorId: blue.id,
+      snapshot: game.serialize(),
+      includeSimulationActor: true,
+      branches: [{
+        candidateId: 'greenery',
+        input: {
+          type: 'or',
+          index: standardProjectsIndex,
+          response: {
+            type: 'projectCard',
+            card: CardName.GREENERY_STANDARD_PROJECT,
+            payment: Payment.of({megacredits: 23}),
+          },
+        } as InputResponse,
+      }],
+    }).branches[0];
+
+    expect(fork.status).eq('ok', fork.error);
+    expect(fork.stableMainActionBoundary).eq(false);
+    expect(fork.warnings).deep.eq(['successor_not_stable_main_action_boundary']);
+    expect(fork.branchHandle).not.eq(null);
+    expect(fork.activePlayerId).eq(blue.id);
+    const waitingFor = (fork.simulationActor as ReturnType<typeof Server.getPlayerModel>).waitingFor;
+    expect(waitingFor?.type).eq('space');
+    if (waitingFor?.type !== 'space') {
+      throw new Error(`Expected a space prompt, got ${waitingFor?.type}`);
+    }
+    expect(waitingFor.spaces).not.empty;
+
+    const actorMismatch = host.handle({
+      kind: 'continue_batch_v1',
+      requestId: 'continue-wrong-actor',
+      stateVersion: fork.successorStateVersion!,
+      knowledgeMode: 'oracle_teacher',
+      observerId: blue.id,
+      actorId: red.id,
+      branches: [{
+        candidateId: 'wrong-actor',
+        branchHandle: fork.branchHandle!,
+        promptFingerprint: fork.promptFingerprint!,
+        input: {type: 'space', spaceId: waitingFor.spaces[0]},
+      }],
+    }).branches[0];
+    expect(actorMismatch.status).eq('unsupported');
+    expect(actorMismatch.warnings).deep.eq(['branch_handle_actor_mismatch']);
+
+    const placed = host.handle({
+      kind: 'continue_batch_v1',
+      requestId: 'continue-greenery-space',
+      stateVersion: fork.successorStateVersion!,
+      knowledgeMode: 'oracle_teacher',
+      observerId: blue.id,
+      actorId: blue.id,
+      branches: [{
+        candidateId: 'greenery-space',
+        branchHandle: fork.branchHandle!,
+        promptFingerprint: fork.promptFingerprint!,
+        input: {type: 'space', spaceId: waitingFor.spaces[0]},
+      }],
+    }).branches[0];
+    expect(placed.status).eq('ok', placed.error);
+    expect(placed.stableMainActionBoundary).eq(true, JSON.stringify(placed.warnings));
+  });
+
+  it('does not store an unstable branch with deferred actions', () => {
+    const [rawGame, blue] = testGame(2, {
+      fastModeOption: true,
+      skipInitialCardSelection: true,
+    });
+    const game = rawGame as Game;
+    game.generation = 2;
+    game.phase = Phase.ACTION;
+    game.activePlayer = blue;
+    blue.megaCredits = 9;
+    blue.cardsInHand.push(new SponsoredAcademies(), new Birds(), new DustSeals());
+    blue.takeAction(false);
+
+    const rootObserver = Server.getPlayerModel(blue);
+    const playCardIndex = findOptionIndex(rootObserver.waitingFor, /play project card/i);
+    expect(playCardIndex).gte(0, JSON.stringify(rootObserver.waitingFor));
+    const result = new TmSimHost(() => 1000, 60_000).handle({
+      kind: 'fork_batch_v1',
+      requestId: 'fork-deferred-card',
+      stateVersion: 'state-deferred-card',
+      promptFingerprint: promptFingerprintFromWaitingFor(rootObserver.waitingFor),
+      knowledgeMode: 'oracle_teacher',
+      observerId: blue.id,
+      actorId: blue.id,
+      snapshot: game.serialize(),
+      includeSimulationActor: true,
+      branches: [{
+        candidateId: 'sponsored-academies',
+        input: {
+          type: 'or',
+          index: playCardIndex,
+          response: {
+            type: 'projectCard',
+            card: CardName.SPONSORED_ACADEMIES,
+            payment: Payment.of({megacredits: 9}),
+          },
+        } as InputResponse,
+      }],
+    }).branches[0];
+
+    expect(result.status).eq('ok', result.error);
+    expect(result.stableMainActionBoundary).eq(false);
+    expect(result.warnings).deep.eq([
+      'successor_not_stable_main_action_boundary',
+      'successor_has_deferred_actions',
+    ]);
+    expect(result.branchHandle).eq(null);
+  });
+
+  it('marks the action-to-generation transition as terminal without a handle', () => {
+    const [rawGame, blue, red] = testGame(2, {
+      draftVariant: true,
+      fastModeOption: true,
+      skipInitialCardSelection: true,
+    });
+    const game = rawGame as Game;
+    game.generation = 2;
+    game.phase = Phase.ACTION;
+    game.activePlayer = blue;
+    game.playerHasPassed(red);
+    blue.takeAction(false);
+
+    const rootObserver = Server.getPlayerModel(blue);
+    const passIndex = findOptionIndex(rootObserver.waitingFor, /pass/i);
+    expect(passIndex).gte(0, JSON.stringify(rootObserver.waitingFor));
+
+    const result = new TmSimHost(() => 1000, 60_000).handle({
+      kind: 'fork_batch_v1',
+      requestId: 'fork-terminal-generation',
+      stateVersion: 'state-terminal-generation',
+      promptFingerprint: promptFingerprintFromWaitingFor(rootObserver.waitingFor),
+      knowledgeMode: 'oracle_teacher',
+      observerId: blue.id,
+      actorId: blue.id,
+      snapshot: game.serialize(),
+      includeSimulationActor: true,
+      branches: [{
+        candidateId: 'pass-to-next-generation',
+        input: {type: 'or', index: passIndex, response: {type: 'option'}} as InputResponse,
+      }],
+    }).branches[0];
+
+    expect(result.status).eq('ok', result.error);
+    expect(result.generationBefore).eq(2);
+    expect(result.generationAfter).eq(3);
+    expect(result.terminalGenerationBoundary).eq(true, JSON.stringify(result.warnings));
+    expect(result.stableMainActionBoundary).eq(false);
+    expect(result.branchHandle).eq(null);
+    expect((result.observer as ReturnType<typeof Server.getPlayerModel>).game.phase).eq(Phase.DRAFTING);
+    expect(result.warnings).contains('terminal_generation_boundary');
   });
 
   it('forks a root action, regenerates the second prompt, and continues from a branch handle', () => {

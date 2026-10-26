@@ -12,11 +12,18 @@ export class OrOptions extends OptionsInput<undefined> {
 
   public toModel(player: IPlayer): OrOptionsModel {
     const initialIdx = this.options.findIndex((option) => option.eligibleForDefault !== false);
+    const options = this.options.map((option) => {
+      const model = option.toModel(player);
+      if (option.annotation !== undefined) {
+        model.annotation = option.annotation;
+      }
+      return model;
+    });
     const model: OrOptionsModel = {
       title: this.title,
       buttonLabel: this.buttonLabel,
       type: 'or',
-      options: this.options.map((option) => option.toModel(player)),
+      options,
     };
     if (initialIdx > -1) {
       model.initialIdx = initialIdx;

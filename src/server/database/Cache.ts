@@ -5,6 +5,8 @@ import {EventEmitter} from 'events';
 import {Database} from './Database';
 import {CacheConfig} from './CacheConfig';
 import {Clock} from '../../common/Timer';
+import {partition} from '@/common/utils/utils';
+import {backfillMissingGameParticipants} from './ParticipantBackfill';
 
 export class Cache extends EventEmitter {
   private loaded = false;
@@ -33,6 +35,13 @@ export class Cache extends EventEmitter {
     try {
       console.log('Preloading IDs.');
       const validGameIds = new Set(await this.db.getGameIds());
+      const backfill = await backfillMissingGameParticipants(this.db, validGameIds);
+      if (backfill.games > 0) {
+        console.log(`Backfilled game participants: games=${backfill.games} participants=${backfill.participants}`);
+      }
+      if (backfill.failed > 0) {
+        console.warn(`Could not backfill participants for games=${backfill.failed}`);
+      }
       const entries = await this.db.getParticipants();
       let orphanCount = 0;
       for (const entry of entries) {
@@ -92,44 +101,78 @@ export class Cache extends EventEmitter {
    */
   public sweep(): void {
     console.log('Starting sweep');
-    const toEvict = this.gamesToEvict();
-    for (const gameId of toEvict) {
-      console.log('evicting', gameId);
-      this.evict(gameId);
-      this.evictionSchedule.delete(gameId);
+    let evicted = 0;
+    let trimmed = 0;
+    for (const [gameId, game] of this.games) {
+      if (game === undefined) {
+        continue;
+      }
+      if (this.shouldEvict(gameId, game)) {
+        console.log('evicting', gameId);
+        this.evict(gameId);
+        this.evictionSchedule.delete(gameId);
+        evicted++;
+      } else if (this.shouldTrim(gameId, game)) {
+        console.log('trimming', gameId);
+        game.gameLog = [];
+        trimmed++;
+      }
     }
-    if (toEvict.size > 0) {
-      this.emit('evicted', toEvict.size);
+
+    if (evicted > 0) {
+      this.emit('evicted', evicted);
     }
+    if (trimmed > 0) {
+      this.emit('trimmed', trimmed);
+    }
+
     console.log('Finished sweep');
   }
 
   /** The ids of games due for eviction: those scheduled by mark() and those idle past the threshold. */
-  private gamesToEvict(): Set<GameId> {
+  private shouldEvict(gameId: GameId, game: IGame): boolean {
     const now = this.clock.now();
-    const toEvict = new Set<GameId>();
-    for (const [gameId, evictionTimeMillis] of this.evictionSchedule.entries()) {
-      if (evictionTimeMillis <= now) {
-        toEvict.add(gameId);
-      }
+    const evictionTimeMillis = this.evictionSchedule.get(gameId);
+    if (evictionTimeMillis !== undefined && evictionTimeMillis <= now) {
+      return true;
     }
     // Abandoned games: resident but idle past the threshold.
     if (this.config.idleMillis > 0) {
-      for (const [gameId, game] of this.games) {
-        if (game === undefined) {
-          continue;
-        }
-        // Only solo games are idle-evicted with few saves are evicted.
-        if (game.players.length > 1 || game.lastSaveId > Cache.MAX_SAVES_FOR_IDLE_EVICTION) {
-          continue;
-        }
-        const last = this.lastAccess.get(gameId);
-        if (last !== undefined && now - last > this.config.idleMillis) {
-          toEvict.add(gameId);
-        }
+      // Only solo games are idle-evicted with few saves are evicted.
+      if (game.players.length > 1 || game.lastSaveId > Cache.MAX_SAVES_FOR_IDLE_EVICTION) {
+        return false;
+      }
+      const last = this.lastAccess.get(gameId);
+      if (last !== undefined && now - last > this.config.idleMillis) {
+        return true;
       }
     }
-    return toEvict;
+    return false;
+  }
+
+  /**
+   * Forgets a game entirely: the game copy, its participant ids and its eviction/idle
+   * bookkeeping. Used when the game is deleted from the database so the cache does not
+   * keep serving it until the next restart. Returns true when the cache knew the game.
+   */
+  public remove(gameId: GameId): boolean {
+    const game = this.games.get(gameId);
+    const known = this.games.has(gameId);
+    if (game !== undefined) {
+      game.players.forEach((p) => p.tearDown());
+    }
+    this.games.delete(gameId);
+    for (const [participantId, id] of this.participantIds) {
+      if (id === gameId) {
+        this.participantIds.delete(participantId);
+      }
+    }
+    this.evictionSchedule.delete(gameId);
+    this.lastAccess.delete(gameId);
+    if (game !== undefined) {
+      this.emit('evicted', 1);
+    }
+    return known;
   }
 
   private evict(gameId: GameId) {
@@ -138,12 +181,32 @@ export class Cache extends EventEmitter {
       return;
     }
     game.players.forEach((p) => p.tearDown());
-    this.games.set(gameId, undefined); // Setting to undefied is the same as "not yet loaded."
+    this.games.set(gameId, undefined); // Setting to undefined is the same as "not yet loaded."
     this.lastAccess.delete(gameId);
   }
 
-  public countLoadedGames(): number {
-    return [...this.games.values()].filter((game) => game !== undefined).length;
+  private shouldTrim(gameId: GameId, game: IGame): boolean {
+    if (this.config.idleMillis > 0) {
+      const now = this.clock.now();
+      if (game.gameLog.length === 0) {
+        return false;
+      }
+      const last = this.lastAccess.get(gameId);
+      if (last !== undefined && now - last > this.config.idleMillis) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Counts of resident games split by whether their log has been trimmed from memory.
+   * A resident game with an empty log has had its log trimmed (see `trimIdleLogs`).
+   */
+  public countLoadedGames(): {trimmed: number, untrimmed: number} {
+    const games = Array.from(this.games.values()).filter((game) => game !== undefined);
+    const [trimmed, untrimmed] = partition(games, (game) => game.gameLog.length === 0);
+    return {trimmed: trimmed.length, untrimmed: untrimmed.length};
   }
 
   /** Idle time, in milliseconds, of every game currently resident in memory. */

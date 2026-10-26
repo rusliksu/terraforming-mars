@@ -1,0 +1,114 @@
+// Player selection as tiles (SelectPlayer.vue), built like the resource tiles (resource_options.less);
+// selection border like on cards (selection_highlight.less)
+
+// Wide enough for icon, stock with the value afterwards ("17 →13") and production
+@player-option-width: 210px;
+
+.player-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 8px 0 16px;
+}
+
+.player-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: @player-option-width;
+  padding: 14px 12px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.12s, filter 0.12s;
+
+  // Only with a real mouse: on touch :hover sticks after tapping, the selected tile would appear offset
+  @media (hover: hover) {
+    &:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.12);
+    }
+  }
+
+  &:focus-within {
+    outline: 2px solid @selection-color;
+    outline-offset: 3px;
+  }
+}
+
+.player-option--selected {
+  .selection-highlight();
+}
+
+// Radio only for keyboard and screen readers
+.player-option-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.player-option-name {
+  font-size: 20px;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+// Resource: icon on the left, stock and production on the right
+.player-option-resource {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.player-option-icon {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  background-size: contain;
+}
+
+.player-option-values {
+  display: flex;
+  gap: 14px;
+}
+
+.player-option-value {
+  font-family: Prototype, sans-serif;
+  font-size: 22px;
+  line-height: 1;
+  text-align: center;
+}
+
+.player-option-label {
+  margin-bottom: 4px;
+  font-family: Ubuntu, sans-serif;
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+// Decision with player choice (OrOptions.vue): the other options (e.g. "Do not remove M€")
+// as wide as the player tiles, so all tiles form an even row
+.choice-options--players .choice-option {
+  width: @player-option-width;
+}
+
+// Value after the attack behind the current value, smaller, so the current value stays the main value
+.player-option-after {
+  margin-left: 3px;
+  font-size: 16px;
+  color: #ffb4a6;
+}
+
+// Options against the same player (OrOptions.vue): as a group with smaller spacing than between players
+.player-option-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}

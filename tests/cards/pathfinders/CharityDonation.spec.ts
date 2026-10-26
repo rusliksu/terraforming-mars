@@ -10,6 +10,7 @@ import {runAllActions} from '../../TestingUtils';
 import {testGame} from '../../TestGame';
 import {SelectCard} from '../../../src/server/inputs/SelectCard';
 import {cast} from '../../../src/common/utils/utils';
+import {IProjectCard} from '../../../src/server/cards/IProjectCard';
 
 describe('CharityDonation', () => {
   let card: CharityDonation;
@@ -36,6 +37,11 @@ describe('CharityDonation', () => {
     });
   }
 
+  function select(player: TestPlayer, card: IProjectCard): void {
+    player.process({type: 'card', cards: [card.name]});
+    runAllActions(game);
+  }
+
   it('play', () => {
     const acquiredCompany = new AcquiredCompany();
     const beamFromAThoriumAsteroid = new BeamFromAThoriumAsteroid();
@@ -57,9 +63,7 @@ describe('CharityDonation', () => {
 
     expect(selectCard2.cards).deep.eq([acquiredCompany, beamFromAThoriumAsteroid, ceosFavoriteProject, decomposers]);
 
-    player2.process({type: 'card', cards: [beamFromAThoriumAsteroid.name]});
-
-    runAllActions(game);
+    select(player2, beamFromAThoriumAsteroid);
 
     cast(player1.getWaitingFor(), undefined);
     cast(player2.getWaitingFor(), undefined);
@@ -67,9 +71,7 @@ describe('CharityDonation', () => {
 
     expect(selectCard3.cards).deep.eq([acquiredCompany, ceosFavoriteProject, decomposers]);
 
-    player3.process({type: 'card', cards: [decomposers.name]});
-
-    runAllActions(game);
+    select(player3, decomposers);
 
     cast(player2.getWaitingFor(), undefined);
     cast(player3.getWaitingFor(), undefined);
@@ -77,9 +79,7 @@ describe('CharityDonation', () => {
 
     expect(selectCard1.cards).deep.eq([acquiredCompany, ceosFavoriteProject]);
 
-    player1.process({type: 'card', cards: [acquiredCompany.name]});
-
-    runAllActions(game);
+    select(player1, acquiredCompany);
 
     cast(player1.getWaitingFor(), undefined);
     cast(player2.getWaitingFor(), undefined);

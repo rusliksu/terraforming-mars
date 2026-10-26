@@ -7,6 +7,7 @@ import {Priority} from './Priority';
 import {CardName} from '../../common/cards/CardName';
 import {Message} from '../../common/logs/Message';
 import {message} from '../logs/MessageBuilder';
+import {LogHelper} from '../LogHelper';
 
 export class StealResources extends DeferredAction {
   constructor(
@@ -45,6 +46,11 @@ export class StealResources extends DeferredAction {
           return false;
         }
       }
+      if (resource === Resource.MEGACREDITS) {
+        if (p.megacreditsAreProtected()) {
+          return false;
+        }
+      }
       return true;
     });
   }
@@ -52,6 +58,7 @@ export class StealResources extends DeferredAction {
   public execute() {
     if (this.player.game.isSoloMode()) {
       this.player.stock.add(this.resource, this.count);
+      LogHelper.logStealFromNeutralPlayer(this.player, this.resource, this.count);
       this.player.resolveInsuranceInSoloGame();
       return undefined;
     }

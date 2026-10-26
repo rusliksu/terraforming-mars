@@ -5,7 +5,7 @@ import {ActiveCorporationCard} from '../corporation/CorporationCard';
 import {CardName} from '../../../common/cards/CardName';
 import {CardRenderer} from '../render/CardRenderer';
 import {AltSecondaryTag} from '../../../common/cards/render/AltSecondaryTag';
-import {floaterCards} from './floaterCards';
+import {hasFloaterIcon} from './floaterCards';
 
 export class Celestic extends ActiveCorporationCard {
   constructor() {
@@ -34,6 +34,7 @@ export class Celestic extends ActiveCorporationCard {
             ce.action('Add a floater to ANY card. 1 VP per 3 floaters on this card.', (eb) => {
               eb.empty().startAction.resource(CardResource.FLOATER).asterix();
             });
+            ce.br;
             ce.vSpace(); // to offset the description to the top a bit so it can be readable
           });
         }),
@@ -44,7 +45,7 @@ export class Celestic extends ActiveCorporationCard {
 
   public override initialAction(player: IPlayer) {
     player.drawCard(2, {
-      include: (card) => floaterCards.has(card.name) || card.resourceType === CardResource.FLOATER,
+      include: hasFloaterIcon,
     });
     return undefined;
   }

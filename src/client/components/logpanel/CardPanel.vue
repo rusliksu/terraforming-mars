@@ -2,7 +2,7 @@
   <div class="card-panel" v-if="message !== undefined && show">
     <AppButton size="big" type="close" :disableOnServerBusy="false" @click="hideMe" align="right"/>
     <div id="log_panel_card" class="cardbox" v-for="name in cards" :key="name">
-      <Card :card="{name, isSelfReplicatingRobotsCard: isSelfReplicatingRobotsCard(name), resources: getResourcesOnCard(name)}"/>
+      <Card :card="logCardModel(name, players)"/>
     </div>
     <div id="log_panel_card" class="cardbox" v-for="name in globalEvents" :key="name">
       <GlobalEvent :globalEventName="name" type="prior" :showIcons="false"/>
@@ -27,6 +27,7 @@ import GlobalEvent from '@/client/components/turmoil/GlobalEvent.vue';
 import AppButton from '@/client/components/common/AppButton.vue';
 import Colony from '@/client/components/colonies/Colony.vue';
 import {GlobalEventName} from '@/common/turmoil/globalEvents/GlobalEventName';
+import {logCardModel} from './logCardModel';
 
 export default defineComponent({
   name: 'LogPanel',
@@ -63,33 +64,12 @@ export default defineComponent({
     },
   },
   methods: {
+    logCardModel,
     hideMe() {
       this.$emit('hide');
     },
     getColony(name: ColonyName): ColonyModel {
       return simpleColonyModel(name);
-    },
-    isSelfReplicatingRobotsCard(cardName: CardName) {
-      for (const player of this.players) {
-        if (player.selfReplicatingRobotsCards.some((card) => card.name === cardName)) {
-          return true;
-        }
-      }
-      return false;
-    },
-    getResourcesOnCard(cardName: CardName) {
-      for (const player of this.players) {
-        const playedCard = player.tableau.find((card) => card.name === cardName);
-        if (playedCard !== undefined) {
-          return playedCard.resources;
-        }
-        const srrCard = player.selfReplicatingRobotsCards.find((card) => card.name === cardName);
-        if (srrCard !== undefined) {
-          return srrCard.resources;
-        }
-      }
-
-      return undefined;
     },
   },
 });

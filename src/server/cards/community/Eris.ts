@@ -59,7 +59,7 @@ export class Eris extends CorporationCard implements ICorporationCard {
           b.megacredits(46).nbsp.cards(1, {secondaryTag: AltSecondaryTag.ARES});
           b.corpBox('action', (ce) => {
             ce.action('Place a new hazard tile adjacent to NO OTHER TILE, OR remove a hazard tile to gain 1 TR.', (eb) => {
-              eb.empty().startAction.plus().hazardTile().slash().minus().hazardTile().colon().tr(1, {size: Size.SMALL});
+              eb.empty().startAction.plus().hazardTile().slash().hazardTile(-1).colon().tr(1, {size: Size.SMALL});
             });
           });
         }),
@@ -135,12 +135,8 @@ export class Eris extends CorporationCard implements ICorporationCard {
   }
 
   private getAvailableSpaces(player: IPlayer) {
-    const board = player.game.board;
-    return board.getAvailableSpacesOnLand(player)
-      .filter(((space) => space.tile === undefined))
-      .filter((space) => {
-        const adjacentSpaces = board.getAdjacentSpaces(space);
-        return adjacentSpaces.filter((space) => space.tile !== undefined).length === 0;
-      });
+    // Isolated spaces include unprotected hazard spaces, which cannot hold a second hazard.
+    return player.game.board.getAvailableIsolatedSpaces(player)
+      .filter((space) => space.tile === undefined);
   }
 }

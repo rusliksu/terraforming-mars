@@ -4,6 +4,9 @@ import {Request} from '../Request';
 import {Response} from '../Response';
 import {statusCode} from '../../common/http/statusCode';
 import {isProduction} from '../utils/server';
+import {AppError} from './AppError';
+import {AppErrorResponse} from '@/common/app/AppErrorId';
+import {reportRouteError} from './routeErrorReporting';
 
 export function badRequest(req: Request, res: Response, err?: string): void {
   console.warn('bad request', req.url);
@@ -13,6 +16,17 @@ export function badRequest(req: Request, res: Response, err?: string): void {
     res.write(': ');
     res.write(err);
   }
+  res.end();
+}
+
+export function badInputRequest(_req: Request, res: Response, e: unknown) {
+  res.writeHead(statusCode.badRequest, {
+    'Content-Type': 'application/json',
+  });
+  const id = e instanceof AppError ? e.id : undefined;
+  const message = e instanceof Error ? e.message : String(e);
+  const response: AppErrorResponse = {id, message};
+  res.write(JSON.stringify(response));
   res.end();
 }
 
@@ -62,6 +76,7 @@ export function internalServerError(
   req: Request,
   res: Response,
   err: unknown): void {
+  reportRouteError(err, req);
   console.warn('internal server error: ', req.url, err);
   res.writeHead(statusCode.internalServerError);
   res.write(internalServerErrorMessage(err));
@@ -84,7 +99,7 @@ function internalServerErrorMessage(err: unknown): string {
 export function notAuthorized(req: Request, res: Response): void {
   console.warn('Not authorized', req.method, req.url);
   res.writeHead(statusCode.forbidden);
-  res.write('Not authorized');
+  res.write('forbidden');
   res.end();
 }
 
@@ -96,7 +111,7 @@ export function unprocessableEntity(req: Request, res: Response, msg: string = '
 }
 
 export function downgradeRedirect(_req: Request, res: Response, ctx: Context): void {
-  const url = new URL(ctx.url); // defensive copty
+  const url = new URL(ctx.url); // defensive copy
   url.searchParams.set('serverId', ctx.ids.statsId);
   res.writeHead(statusCode.movedPermanently, {Location: url.pathname + url.search});
   res.end();
@@ -108,12 +123,26 @@ export function writeJson(res: Response, ctx: Context, json: any, space?: string
     json._user = {userid: ctx.user.global_name};
   }
   const s = JSON.stringify(json, undefined, space);
+  res.setHeader('Content-Length', Buffer.byteLength(s));
   res.end(s);
+}
+
+export function contentTooLarge(req: Request, res: Response) {
+  console.warn('Content too large for', req.method, req.url);
+  res.writeHead(statusCode.contentTooLarge);
+  res.write('Content too large');
+  res.end();
 }
 
 export function quotaExceeded(req: Request, res: Response) {
   console.warn('Quota exceeded for', req.method, req.url);
   res.writeHead(statusCode.tooManyRequests);
   res.write('Quota exceeded');
+  res.end();
+}
+
+export function serviceUnavailable(res: Response): void {
+  res.writeHead(statusCode.serviceUnavailable);
+  res.write('Maintenance in progress');
   res.end();
 }

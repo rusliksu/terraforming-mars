@@ -1,9 +1,12 @@
 <template>
   <ModuleItemFilter
+    :embedded="embedded"
     title="Preludes"
     :groups="GROUPS"
     :itemsByGroup="ALL_CARDS_BY_MODULE"
     :selected="initialSelected"
+    :selectable="selectable"
+    :replacements="replacements"
     @update:selected="$emit('prelude-list-changed', $event)"
     @close="$emit('close')"
   >
@@ -19,13 +22,15 @@ import {defineComponent} from 'vue';
 import ModuleItemFilter from './ModuleItemFilter.vue';
 import {CardName} from '@/common/cards/CardName';
 import {Expansion, GameModule, GAME_MODULES, MODULE_NAMES} from '@/common/cards/GameModule';
-import {byModule, byType, getCard, getCards} from '@/client/cards/ClientCardManifest';
+import {byModule, byType, getCard, getCards, getCardReplacementRules} from '@/client/cards/ClientCardManifest';
+import {getCardReplacementNames} from '@/common/cards/CardReplacementRules';
 import {CardType} from '@/common/cards/CardType';
 import {toName} from '@/common/utils/utils';
 
 function preludeCardNames(module: GameModule): Array<CardName> {
   return getCards(byModule(module))
     .filter(byType(CardType.PRELUDE))
+    .filter((card) => card.instantiate !== false)
     .map(toName);
 }
 
@@ -33,7 +38,7 @@ const interim = GAME_MODULES.map((module) => [module, [] as Array<CardName>]);
 const ALL_CARDS_BY_MODULE: Record<GameModule, Array<CardName>> = Object.fromEntries(interim);
 getCards(byType(CardType.PRELUDE)).forEach((card) => {
   // Dealt automatically when Delta Project expansion is on; not part of the custom prelude pool.
-  if (card.name === CardName.DELTA_PROJECT) {
+  if (card.name === CardName.DELTA_PROJECT || card.instantiate === false) {
     return;
   }
   ALL_CARDS_BY_MODULE[card.module].push(card.name);
@@ -47,8 +52,10 @@ export default defineComponent({
   components: {ModuleItemFilter},
   emits: ['prelude-list-changed', 'close'],
   props: {
+    embedded: {type: Boolean, default: false},
     expansions: {type: Object as () => Record<Expansion, boolean>, required: true},
     selected: {type: Array as () => Array<CardName>, required: true},
+    selectable: {type: Array as () => Array<CardName>, required: false},
   },
   data() {
     const initialSelected: Array<CardName> = this.selected.length > 0 ? [...this.selected] : [
@@ -64,6 +71,9 @@ export default defineComponent({
     return {initialSelected};
   },
   computed: {
+    replacements(): ReadonlyMap<CardName, CardName> {
+      return getCardReplacementNames(this.selectable ?? [], getCardReplacementRules(() => true));
+    },
     GROUPS(): typeof GROUPS {
       return GROUPS;
     },

@@ -1,3 +1,4 @@
+import {LogMessageDataType} from '../../common/logs/LogMessageDataType';
 import {Game} from '../Game';
 import {IGame} from '../IGame';
 import {GameId, isPlayerId} from '../../common/Types';
@@ -13,7 +14,8 @@ export class Cloner {
     newGameId: GameId,
     players: Array<IPlayer>,
     firstPlayerIndex: number,
-    serialized: SerializedGame): IGame {
+    serialized: SerializedGame,
+    saveGame?: (game: IGame) => Promise<void>): IGame {
     const serializedGameId: GameId = serialized.id;
     const serializedPlayerIds: Array<PlayerId> = serialized.players.map(toID);
     const playerIds: Array<PlayerId> = players.map(toID);
@@ -36,7 +38,7 @@ export class Cloner {
     serialized.first = serialized.players[firstPlayerIndex].id;
     serialized.clonedGamedId = '#' + serializedGameId;
     serialized.createdTimeMs = new Date().getTime();
-    const game = Game.deserialize(serialized);
+    const game = Game.deserialize(serialized, {saveGame});
     return game;
   }
 
@@ -46,15 +48,24 @@ export class Cloner {
     }
     const keys = Object.entries(obj);
     keys.forEach(([key, val]) => {
-      if (obj.hasOwnProperty(key)) {
-        if (isPlayerId(val)) {
-          const idx = oldPlayerIds.indexOf(val);
-          if (idx > -1) {
-            obj[key] = newPlayerIds[idx];
-          }
-        } else if (typeof val === 'object') {
-          Cloner.replacePlayerIds(val, oldPlayerIds, newPlayerIds);
+      // Card identities and authored text are not participant references.
+      if (['customDefinition', 'name', 'sourceCardName', 'capturedCard',
+        'cardsInHand', 'dealtProjectCards', 'dealtCorporationCards', 'dealtPreludeCards', 'dealtCeoCards',
+        'draftedCards', 'draftHand', 'removedFromPlayCards', 'preludeCardsInHand', 'ceoCardsInHand',
+        'drawPile', 'discardPile', 'includedCards', 'bannedCards', 'customPreludes', 'customCeos',
+        'customCorporationsList', 'lastCardPlayed', 'actionsThisGeneration', 'pendingInitialActions',
+        'pickedCorporationCard', 'standardProjectsThisGeneration', 'cardsPlayedThisGeneration', 'highOrbitDeck'].includes(key) ||
+        (key === 'card' && typeof val === 'string') ||
+        (key === 'value' && [LogMessageDataType.CARD, LogMessageDataType.CARDS].includes(obj.type))) {
+        return;
+      }
+      if (isPlayerId(val)) {
+        const idx = oldPlayerIds.indexOf(val);
+        if (idx > -1) {
+          obj[key] = newPlayerIds[idx];
         }
+      } else if (typeof val === 'object') {
+        Cloner.replacePlayerIds(val, oldPlayerIds, newPlayerIds);
       }
     });
   }

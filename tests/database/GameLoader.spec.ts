@@ -5,16 +5,47 @@ import {Player} from '../../src/server/Player';
 import {SerializedGame} from '../../src/server/SerializedGame';
 import {TestPlayer} from '../TestPlayer';
 import {GameIdLedger} from '../../src/server/database/IDatabase';
-import {GameId, PlayerId, SpectatorId} from '../../src/common/Types';
+import {GameId, ParticipantId, PlayerId, SpectatorId} from '../../src/common/Types';
 import {restoreTestDatabase, restoreTestGameLoader, setTestDatabase, setTestGameLoader} from '../testing/setup';
 import {sleep} from '../TestingUtils';
 import {InMemoryDatabase} from '../testing/InMemoryDatabase';
 import {FakeClock} from '../common/FakeClock';
+import {BotTakeoverManager} from '../../src/server/bot/BotTakeoverManager';
+import {Phase} from '../../src/common/Phase';
+
+function newBotManager(options: {startError?: Error}) {
+  const active = new Set<PlayerId>();
+  const starts: Array<Parameters<BotTakeoverManager['start']>[0]> = [];
+  const manager: Pick<BotTakeoverManager, 'isActive' | 'start' | 'stop'> = {
+    isActive: (playerId) => active.has(playerId),
+    start: (startOptions) => {
+      if (options.startError !== undefined) {
+        throw options.startError;
+      }
+      active.add(startOptions.playerId);
+      starts.push(startOptions);
+      return {
+        gameId: startOptions.gameId,
+        playerId: startOptions.playerId,
+        pid: 123,
+        startedAtMs: 1,
+        logFile: 'bot.log',
+      };
+    },
+    stop: (playerId) => {
+      active.delete(playerId);
+      return undefined;
+    },
+  };
+  return {active, manager, starts};
+}
 
 class TestDatabase extends InMemoryDatabase {
   public failure: 'getGameIds' | 'getParticipants' | undefined = undefined;
   public getGameSleep = 0;
   public extraParticipants: Array<GameIdLedger> = [];
+  public readonly omittedParticipantGames = new Set<GameId>();
+  public readonly storedParticipants: Array<GameIdLedger> = [];
 
   override async getGame(gameId: GameId): Promise<SerializedGame> {
     const game = await super.getGame(gameId);
@@ -32,7 +63,15 @@ class TestDatabase extends InMemoryDatabase {
     if (this.failure === 'getParticipants') {
       return Promise.reject(new Error('error'));
     }
-    return super.getParticipants().then((participants) => participants.concat(this.extraParticipants));
+    return super.getParticipants().then((participants) => participants
+      .filter((entry) => !this.omittedParticipantGames.has(entry.gameId))
+      .concat(this.extraParticipants));
+  }
+
+  override storeParticipants(entry: GameIdLedger): Promise<void> {
+    this.storedParticipants.push(entry);
+    this.omittedParticipantGames.delete(entry.gameId);
+    return Promise.resolve();
   }
 }
 
@@ -41,10 +80,19 @@ describe('GameLoader', () => {
   let database: TestDatabase;
   let game: Game;
   let clock: FakeClock;
+  let botOptions: {startError?: Error};
+  let botManager: ReturnType<typeof newBotManager>;
 
   beforeEach(() => {
     clock = new FakeClock();
-    instance = GameLoader.newTestInstance({sleepMillis: 0, evictMillis: 100, idleMillis: 1000, sweep: 'manual'}, clock);
+    botOptions = {};
+    botManager = newBotManager(botOptions);
+    instance = GameLoader.newTestInstance(
+      {sleepMillis: 0, evictMillis: 100, idleMillis: 1000, sweep: 'manual'},
+      clock,
+      botManager.manager,
+      'test-server-id',
+    );
     setTestGameLoader(instance);
     database = new TestDatabase();
     setTestDatabase(database);
@@ -70,6 +118,121 @@ describe('GameLoader', () => {
   it('gets game when it exists in database', async () => {
     const game1 = await instance.getGame('gameid');
     expect(game1!.id).to.eq(game.id);
+  });
+
+  it('forgets a deleted game and its participants', async () => {
+    await instance.add(game);
+    expect(await instance.isCached('gameid')).is.true;
+    expect((await instance.getIds()).map((entry) => entry.gameId)).include('gameid');
+
+    await instance.deleteGame('gameid');
+
+    expect(await instance.isCached('gameid')).is.false;
+    expect(await instance.getGame('gameid')).is.undefined;
+    expect(await instance.getGame(game.players[0].id)).is.undefined;
+    expect((await instance.getIds()).map((entry) => entry.gameId)).not.include('gameid');
+  });
+
+  it('flushes pending saves', async () => {
+    await instance.add(game);
+    let resolveSave: () => void = () => {};
+    game.saveGamePromise = new Promise<void>((resolve) => {
+      resolveSave = resolve;
+    });
+    let flushed = false;
+    const promise = instance.flush().then(() => {
+      flushed = true;
+    });
+    await sleep(10);
+    expect(flushed).is.false;
+
+    resolveSave();
+    await promise;
+    expect(flushed).is.true;
+  });
+
+  it('rejects saves of a deleted game', async () => {
+    await instance.deleteGame('gameid');
+    expect(() => instance.saveGame(game)).to.throw('This game no longer exists');
+  });
+
+  it('reconciles a persisted surrendered seat after restart', async () => {
+    game.phase = Phase.ACTION;
+    game.surrenderedPlayerIds.add(game.players[0].id);
+    await database.saveGame(game);
+    instance.resetForTesting();
+
+    const result = await instance.reconcileSurrenderedBots();
+
+    expect(result).deep.include({started: 1, alreadyActive: 0, failed: 0});
+    expect(botManager.starts).deep.eq([{
+      compatibility: {version: 1, unsupportedFeatures: []},
+      gameId: game.id,
+      playerId: game.players[0].id,
+      serverId: 'test-server-id',
+    }]);
+  });
+
+  it('does not duplicate an active surrendered bot', async () => {
+    game.phase = Phase.ACTION;
+    game.surrenderedPlayerIds.add(game.players[0].id);
+    await database.saveGame(game);
+    botManager.active.add(game.players[0].id);
+    instance.resetForTesting();
+
+    const result = await instance.reconcileSurrenderedBots();
+
+    expect(result).deep.include({started: 0, alreadyActive: 1, failed: 0});
+    expect(botManager.starts).is.empty;
+  });
+
+  it('reports unsupported saved games without launching a surrendered bot', async () => {
+    game.phase = Phase.ACTION;
+    game.gameOptions.expansions.sillyfication = true;
+    game.surrenderedPlayerIds.add(game.players[0].id);
+    await database.saveGame(game);
+    instance.resetForTesting();
+    const result = await instance.reconcileSurrenderedBots();
+    expect(result).deep.include({started: 0, failed: 1});
+    expect(botManager.starts).is.empty;
+  });
+
+  it('does not reconcile a finished game', async () => {
+    game.phase = Phase.END;
+    game.surrenderedPlayerIds.add(game.players[0].id);
+    await database.saveGame(game);
+    instance.resetForTesting();
+
+    const result = await instance.reconcileSurrenderedBots();
+
+    expect(result.started).eq(0);
+    expect(botManager.starts).is.empty;
+  });
+
+  it('does not reconcile an original bot seat', async () => {
+    game.phase = Phase.ACTION;
+    game.botPlayerIds.add(game.players[0].id);
+    game.surrenderedPlayerIds.add(game.players[0].id);
+    await database.saveGame(game);
+    instance.resetForTesting();
+
+    const result = await instance.reconcileSurrenderedBots();
+
+    expect(result.started).eq(0);
+    expect(botManager.starts).is.empty;
+  });
+
+  it('reports a sanitized reconciliation failure', async () => {
+    game.phase = Phase.ACTION;
+    game.surrenderedPlayerIds.add(game.players[0].id);
+    await database.saveGame(game);
+    botOptions.startError = new Error('private spawn detail');
+    instance.resetForTesting();
+
+    const result = await instance.reconcileSurrenderedBots();
+
+    expect(result.failed).eq(1);
+    expect(result.started).eq(0);
   });
 
   it('gets no game when fails to deserialize from database', async () => {
@@ -151,6 +314,21 @@ describe('GameLoader', () => {
     expect(game1!.id).to.eq('gameid');
     const game2 = await GameLoader.getInstance().getGame(game.playersInGenerationOrder[0].id);
     expect(game2!.id).to.eq('gameid');
+  });
+
+  it('backfills missing participants during preload and exposes the game', async () => {
+    await database.saveGame(game);
+    database.omittedParticipantGames.add(game.id);
+    instance.resetForTesting();
+
+    const participantIds: Array<ParticipantId> = game.players.map((player) => player.id);
+    if (game.spectatorId) {
+      participantIds.push(game.spectatorId);
+    }
+    const expected = {gameId: game.id, participantIds};
+    const list = await instance.getIds();
+    expect(list).deep.eq([expected]);
+    expect(database.storedParticipants).deep.include(expected);
   });
 
   it('ignores orphan participant entries during preload', async () => {
@@ -367,6 +545,81 @@ describe('GameLoader', () => {
     clock.millis = 100000; // far past the idle threshold
     instance.sweep();
     expect(await instance.isCached('gameid')).is.true;
+  });
+
+  it('trims the log of a multiplayer game idle past the threshold', async () => {
+    clock.millis = 1000;
+    const loaded = await instance.getGame('gameid'); // gameid is a 2-player game
+    expect(loaded!.gameLog.length).is.greaterThan(0);
+
+    // Idle for exactly idleMillis (1000) is not past the threshold.
+    clock.millis = 2000;
+    instance.sweep();
+    expect(loaded!.gameLog.length).is.greaterThan(0);
+
+    // One millisecond more and the log is trimmed, but the game stays resident.
+    clock.millis = 2001;
+    instance.sweep();
+    expect(await instance.isCached('gameid')).is.true;
+    expect(loaded!.gameLog.length).eq(0);
+  });
+
+  it('restores a trimmed log from the database on next access', async () => {
+    clock.millis = 1000;
+    const loaded = await instance.getGame('gameid');
+    const originalLog = [...loaded!.gameLog];
+    expect(originalLog.length).is.greaterThan(0);
+
+    clock.millis = 2001;
+    instance.sweep();
+    expect(loaded!.gameLog.length).eq(0);
+
+    // Accessing the resident game reloads its log from the database.
+    const reloaded = await instance.getGame('gameid');
+    expect(reloaded).to.eq(loaded); // same resident object
+    expect(reloaded!.gameLog).deep.eq(originalLog);
+  });
+
+  it('does not trim logs when idle eviction is disabled', async () => {
+    const noIdle = GameLoader.newTestInstance({sleepMillis: 0, evictMillis: 100, idleMillis: 0, sweep: 'manual'}, clock);
+    noIdle.resetForTesting();
+
+    clock.millis = 1000;
+    const loaded = await noIdle.getGame('gameid');
+    expect(loaded!.gameLog.length).is.greaterThan(0);
+
+    clock.millis = 100000; // far past any threshold
+    noIdle.sweep();
+    expect(loaded!.gameLog.length).is.greaterThan(0);
+  });
+
+  it('does not trim the log of a game evicted in the same sweep', async () => {
+    addSoloGame('gsolo');
+    instance.resetForTesting();
+
+    clock.millis = 1000;
+    const loaded = await instance.getGame('gsolo');
+    expect(loaded!.gameLog.length).is.greaterThan(0);
+
+    // Past the idle threshold: a solo game is fully evicted, not log-trimmed.
+    clock.millis = 2001;
+    instance.sweep();
+    expect(await instance.isCached('gsolo')).is.false;
+    // The evicted object keeps its own log; it will reload wholesale from the DB.
+    expect(loaded!.gameLog.length).is.greaterThan(0);
+  });
+
+  it('accessing a game resets its idle time so the log is not trimmed', async () => {
+    clock.millis = 1000;
+    const loaded = await instance.getGame('gameid');
+
+    // Nearly idle, then accessed again, which resets the idle clock.
+    clock.millis = 1900;
+    await instance.getGame('gameid');
+
+    clock.millis = 2800; // 900ms since the last access, still under the threshold
+    instance.sweep();
+    expect(loaded!.gameLog.length).is.greaterThan(0);
   });
 
   it('restoreGameAt', async () => {

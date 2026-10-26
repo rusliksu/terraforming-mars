@@ -25,5 +25,12 @@ export type ClientCard = Readonly<{
   startingMegaCredits?: number; // Corporation and Prelude
   cardCost?: number; // Corporation
   compatibility: Array<Expansion>;
+  instantiate?: boolean;
   hasAction: boolean; // For Prelude 2 preludes with actions. Can be used for more, of course.
+  /**
+   * True when the card keeps reacting to the game after it is played (tag, tile, global parameter
+   * or production triggers). The player home groups those cards with the active cards, so an
+   * effect-only card such as Albedo Plants does not hide in the automated stack.
+   */
+  hasEffect: boolean;
 }>

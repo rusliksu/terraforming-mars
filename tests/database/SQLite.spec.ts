@@ -62,17 +62,6 @@ describeDatabaseSuite({
     size_bytes: -1,
   },
   otherTests: (dbFactory) => {
-    it('treats null legacy save timestamps as unavailable', async () => {
-      const db = dbFactory();
-      const player = TestPlayer.BLACK.newPlayer();
-      const game = Game.newInstance('game-null-save-time', [player], player, 'spectatorid');
-
-      await db.lastSaveGamePromise;
-      db.database.prepare('UPDATE games SET created_time = NULL WHERE game_id = ?').run(game.id);
-
-      expect(await db.getLastSaveTimeMs(game.id)).is.undefined;
-    });
-
     it('restoreGameAt loads the latest remaining save when the target save id is missing', async () => {
       const db = dbFactory();
       const loader = GameLoader.newTestInstance({sleepMillis: 0, evictMillis: 100, idleMillis: 0, sweep: 'manual'}, new FakeClock());
@@ -95,6 +84,59 @@ describeDatabaseSuite({
       expect(preview.generation).eq(2);
       expect(restored.generation).eq(2);
       expect(await db.getSaveIds(game.id)).has.members([0, 1]);
+    });
+
+    it('deleteGame removes the saves, participants and results', async () => {
+      const db = dbFactory();
+      const player = TestPlayer.BLACK.newPlayer();
+      const game = Game.newInstance('g123456789013', [player], player, 'spectatorid');
+      await db.lastSaveGamePromise;
+      await db.saveGame(game);
+      db.saveGameResults(game.id, 1, 1, game.gameOptions, []);
+
+      await db.deleteGame(game.id);
+
+      expect(await db.getSaveIds(game.id)).is.empty;
+      expect((await db.getParticipants()).find((entry) => entry.gameId === game.id)).is.undefined;
+      expect(await db.getGameIds()).not.include(game.id);
+    });
+
+    it('deleteOrphanParticipants removes only participants without a game', async () => {
+      const db = dbFactory();
+      const player = TestPlayer.BLACK.newPlayer();
+      const game = Game.newInstance('g123456789015', [player], player, 'spectatorid');
+      await db.lastSaveGamePromise;
+      await db.saveGame(game);
+      db.database.prepare('INSERT INTO participants (game_id, participant) VALUES (?, ?)').run('g999999999999', 'p999999999999');
+      db.database.prepare('INSERT INTO participants (game_id, participant) VALUES (?, ?)').run('g999999999999', 's999999999999');
+
+      expect(await db.deleteOrphanParticipants()).eq(2);
+
+      const participants = await db.getParticipants();
+      expect(participants.find((entry) => entry.gameId === 'g999999999999')).is.undefined;
+      expect(participants.find((entry) => entry.gameId === game.id)).not.is.undefined;
+    });
+
+    it('purgeUnfinishedGames removes stale games with padded running status', async () => {
+      const db = dbFactory();
+      const player = TestPlayer.BLACK.newPlayer();
+      const game = Game.newInstance('game-padded-running-status', [player], player, 'spectatorid');
+
+      await db.lastSaveGamePromise;
+      await db.saveGame(game);
+
+      const latestSaveId = Math.max(...await db.getSaveIds(game.id));
+      const nowSeconds = Math.floor(Date.now() / 1000);
+      const staleSeconds = nowSeconds - (2 * 86400);
+      for (const saveId of await db.getSaveIds(game.id)) {
+        await db.setSaveCreatedTime(game.id, saveId, staleSeconds);
+      }
+      db.database.prepare('UPDATE games SET status = ? WHERE game_id = ? AND save_id = ?').run(' running ', game.id, latestSaveId);
+
+      await db.purgeUnfinishedGames('1');
+
+      expect(await db.getSaveIds(game.id)).is.empty;
+      expect((await db.getParticipants()).find((entry) => entry.gameId === game.id)).is.undefined;
     });
   },
 });

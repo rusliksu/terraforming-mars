@@ -1,0 +1,206 @@
+.wrybit-setup-columns-styles() {
+  // Initial selection as side-by-side columns (SelectInitialCards.vue): corporation, preludes, (CEO,) buy cards.
+  // Corporation and prelude columns are exactly one card wide, so their benefits can be compared one below
+  // the other; the cards column takes the rest and wraps to several cards per row. Each column scrolls on its own.
+
+  @setup-columns-gap: 20px; // much more between the columns than between the cards (law of proximity)
+  @setup-column-padding-block: 12px;
+  @setup-column-padding-inline: 14px;
+  @setup-column-padding: @setup-column-padding-block @setup-column-padding-inline;
+  @setup-column-title-size: 20px;
+  @setup-column-accent-height: 3px;
+  // Colors like the card headers of the respective card type – so the column is recognizable by its edge too
+  @setup-column-accent-corporation: #e0a63c;
+  @setup-column-accent-prelude: #e57fae;
+  @setup-column-accent-ceo: #b889d6;
+  @setup-column-accent-projects: #3ea55a;
+
+  .setup-columns {
+    container-type: inline-size; // card size follows the width of the selection (see below)
+    display: flex;
+    gap: @setup-columns-gap;
+    align-items: stretch;
+    margin-top: 4px;
+    // With four columns (e.g. CEOs) and the board expanded they don't fit even with the smallest cards –
+    // then the columns scroll horizontally instead of being cut off, so every column stays reachable
+    overflow: auto hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+  }
+
+  .setup-column {
+    .frosted-surface();
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+    width: min-content; // one card wide (cards can't wrap, texts can)
+    min-height: 0;
+    border: 1px solid @or-tabs-border;
+    border-radius: @or-tabs-radius;
+    background: @or-tabs-panel-background;
+  }
+
+  // Outer width of a card: 240px plus the 4px bevel on each side (cards.less)
+  @setup-card-outer-width: 248px;
+  @setup-project-columns-min: 2;
+
+  // The cards column fills the rest; with the board collapsed almost all cards fit without scrolling.
+  // It stays at least two cards wide, so buying is a comparison and not a long list – if the row then
+  // gets too wide, the columns scroll horizontally (see .setup-columns)
+  .setup-column--projects {
+    flex: 1 1 0;
+    width: auto;
+    min-width: calc(
+      @setup-project-columns-min * @setup-card-outer-width * var(--setup-project-cards-zoom) * var(--setup-user-zoom, 1) +
+      (@setup-project-columns-min - 1) * @setup-card-gap +
+      2 * @setup-column-padding-inline + 2px // column border
+  );
+    --setup-column-accent: @setup-column-accent-projects;
+    --setup-project-cards-zoom: @setup-project-cards-zoom;
+  }
+
+  .setup-column-head {
+    flex: none;
+    padding: @setup-column-padding;
+    border-bottom: @setup-column-accent-height solid var(--setup-column-accent);
+  }
+
+  .setup-column--corporation { --setup-column-accent: @setup-column-accent-corporation; }
+  .setup-column--prelude { --setup-column-accent: @setup-column-accent-prelude; }
+  .setup-column--ceo { --setup-column-accent: @setup-column-accent-ceo; }
+
+  .setup-column-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .setup-column-title {
+    margin: 0;
+    color: #fff;
+    font-size: @setup-column-title-size;
+    font-weight: normal;
+    white-space: nowrap; // short title stays on one line, even if the column is only one small card wide
+  }
+
+  // Counter chosen/required like the tab badge (or_options_tabs.less), here inline and somewhat larger
+  .setup-column-count {
+    margin-left: auto;
+    min-width: 22px;
+    padding: 0 7px;
+    border-radius: 11px;
+    background: #4a4f6a;
+    color: #fff;
+    font-size: 13px;
+    font-weight: bold;
+    line-height: 22px;
+    text-align: center;
+  }
+
+  .setup-column-count--done {
+    background: @button-success;
+  }
+
+  .setup-column-subtitle {
+    margin-top: 2px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 13px;
+  }
+
+  .setup-column-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: @setup-column-padding;
+  }
+
+  // Cards packed tightly: little space at the sides, on top exactly room for the ✓ flag of chosen cards (cards.less).
+  // The columns themselves are separated by their own surfaces, so the card gap may roughly equal the column gap.
+  @setup-card-gap: 14px;
+  @setup-card-selected-flag-space: 28px;
+
+  .setup-column-body .wf-component--select-card {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: @setup-card-gap;
+
+    // Selection notes (e.g. warnings) across the full width instead of between the cards
+    > :not(.cardbox) {
+      flex-basis: 100%;
+    }
+  }
+
+  // More specific than the base rule input[type=checkbox]+.filterDiv.card-container (cards.less)
+  .setup-column-body .cardbox > .filterDiv.card-container {
+    margin: @setup-card-selected-flag-space 0 0 0;
+  }
+
+  // Buyable cards smaller: so with the board collapsed all ten fit without scrolling; corporation and preludes
+  // stay large (that's what you decide first)
+  @setup-project-cards-zoom: 0.8;
+
+  .setup-column-body .cardbox {
+    zoom: calc(var(--setup-cards-zoom, 1) * var(--setup-user-zoom, 1));
+  }
+
+  .setup-column--projects .setup-column-body .cardbox {
+    zoom: calc(var(--setup-project-cards-zoom) * var(--setup-user-zoom, 1));
+  }
+
+  // The zoom slider above each column (CardZoomBar.vue, cardZoom.ts) scales all cards on top of the steps here;
+  // only on the desktop, the mobile view fits its cards to the screen itself
+  html:not(.tm-mobile) & .setup-columns {
+    --setup-user-zoom: var(--wrybit-card-zoom, 1);
+  }
+
+  // If the width isn't enough for three cards side by side (board expanded at laptop widths), all cards get
+  // smaller instead of cut off. Thresholds: 2 large + 1 small card or 3 small cards, each with the column's
+  // padding, plus 2 column gaps
+  @setup-cards-full-min-width: 830px;
+  @setup-cards-reduced-min-width: 730px;
+  @setup-cards-reduced-zoom: 0.8;
+  @setup-cards-small-zoom: 0.68;
+
+  // Steps as variables on the columns (inside the container, .setup-columns): the rules above multiply them with the zoom slider
+  @container (max-width: (@setup-cards-full-min-width - 1px)) {
+    .setup-columns > .setup-column {
+      --setup-cards-zoom: @setup-cards-reduced-zoom;
+    }
+
+    .setup-columns .setup-column--projects {
+      --setup-project-cards-zoom: @setup-cards-reduced-zoom;
+    }
+  }
+
+  @container (max-width: (@setup-cards-reduced-min-width - 1px)) {
+    .setup-columns > .setup-column {
+      --setup-cards-zoom: @setup-cards-small-zoom;
+    }
+
+    .setup-columns .setup-column--projects {
+      --setup-project-cards-zoom: @setup-cards-small-zoom;
+    }
+  }
+
+  // Below the two-column layout (narrow windows) columns stack vertically, the page scrolls
+  @media only screen and (max-width: (@player-home-columns-min-width - 1px)) {
+    .setup-columns {
+      flex-direction: column;
+    }
+
+    .setup-column {
+      width: auto;
+    }
+  }
+
+  // Fixed app layout (player_home_fixed.less): columns fill the height below the turn order
+  @media only screen and (min-width: @player-home-columns-min-width) {
+    .player-home--fixed .select-initial-cards .setup-columns {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+  }
+
+}

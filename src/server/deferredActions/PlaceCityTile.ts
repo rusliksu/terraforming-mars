@@ -1,3 +1,4 @@
+import {TileType} from '../../common/TileType';
 import {IPlayer} from '../IPlayer';
 import {SelectSpace} from '../inputs/SelectSpace';
 import {Space} from '../boards/Space';
@@ -26,7 +27,7 @@ export class PlaceCityTile extends DeferredAction<Space | undefined> {
       this.cb(undefined);
       return undefined;
     }
-    return new SelectSpace(title, spaces)
+    return new SelectSpace(title, spaces, TileType.CITY)
       .andThen((space) => {
         this.player.game.addCity(this.player, space);
         this.cb(space);

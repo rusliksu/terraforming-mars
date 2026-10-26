@@ -1,10 +1,7 @@
 <template>
-  <div class="select-initial-cards">
-    <ConfirmDialog
-      message="Continue without buying any project cards?"
-      ref="confirmation"
-      @accept="confirmSelection" />
-    <SelectCard :playerView="playerView" :playerinput="corpCardOption" :showtitle="true" :onsave="noop" @cardschanged="corporationChanged" />
+  <component v-if="initialPresentation !== undefined" :is="initialPresentation" :binding="presentationBinding" v-bind="$attrs"/>
+  <div v-else class="select-initial-cards" v-bind="$attrs">
+    <PresentationHost :hosts="initialHosts.corporation"/>
     <div v-if="playerCanChooseAridor" class="player_home_colony_cont">
       <div v-i18n>These are the colony tiles Aridor may choose from:</div>
       <div class="discarded-colonies-for-aridor">
@@ -13,24 +10,43 @@
         </div>
       </div>
     </div>
-    <SelectCard v-if="hasPrelude" :playerView="playerView" :playerinput="preludeCardOption" :onsave="noop" :showtitle="true" @cardschanged="preludesChanged" />
-    <SelectCard v-if="hasCeo" :playerView="playerView" :playerinput="ceoCardOption" :onsave="noop" :showtitle="true" @cardschanged="ceosChanged" />
-    <SelectCard :playerView="playerView" :playerinput="projectCardOption" :onsave="noop" :showtitle="true" @cardschanged="cardsChanged" />
+    <PresentationHost v-if="hasPrelude" :hosts="initialHosts.prelude"/>
+    <PresentationHost v-if="hasCeo" :hosts="initialHosts.ceo"/>
+    <PresentationHost :hosts="initialHosts.projects"/>
     <template v-if="selectedCorporations.length === 1">
-      <div><span v-i18n>Starting Megacredits:</span> <div class="megacredits">{{getStartingMegacredits()}}</div></div>
-      <div v-if="hasPrelude"><span v-i18n>After Preludes:</span> <div class="megacredits">{{getStartingMegacredits() + getAfterPreludes()}}</div></div>
+      <div><span v-i18n>Starting M€:</span> <div class="starting-megacredits">{{getStartingMegacredits()}}</div></div>
+      <div v-if="hasPrelude"><span v-i18n>After Preludes:</span> <div class="starting-megacredits">{{getStartingMegacredits() + getAfterPreludes()}}</div></div>
     </template>
     <div v-if="warning !== undefined" class="tm-warning">
       <label class="label label-error">{{ $t(warning) }}</label>
     </div>
-    <!-- :key=warning is a way of validing that the state of the button should change. If the warning changes, or disappears, that's a signal that the button might change. -->
+    <!-- :key=warning is a way of validating that the state of the button should change. If the warning changes, or disappears, that's a signal that the button might change. -->
     <AppButton :disabled="!valid" v-if="showsave" @click="saveIfConfirmed" type="submit" :title="playerinput.buttonLabel"/>
   </div>
+  <ConfirmDialog message="Continue without buying any project cards?" ref="confirmation" @accept="confirmSelection"/>
+  <InputPortal :target="initialHosts.corporation.target.value">
+    <SelectCard :playerView="playerView" :playerinput="corpCardOption" :showtitle="initialPresentation === undefined" :onsave="noop" @cardschanged="corporationChanged"/>
+  </InputPortal>
+  <InputPortal v-if="hasPrelude" :target="initialHosts.prelude.target.value">
+    <SelectCard :playerView="playerView" :playerinput="preludeCardOption" :showtitle="initialPresentation === undefined" :onsave="noop" @cardschanged="preludesChanged"/>
+  </InputPortal>
+  <InputPortal v-if="hasCeo" :target="initialHosts.ceo.target.value">
+    <SelectCard :playerView="playerView" :playerinput="ceoCardOption" :showtitle="initialPresentation === undefined" :onsave="noop" @cardschanged="ceosChanged"/>
+  </InputPortal>
+  <InputPortal :target="initialHosts.projects.target.value">
+    <SelectCard :playerView="playerView" :playerinput="projectCardOption" :showtitle="initialPresentation === undefined" :onsave="noop" @cardschanged="cardsChanged"/>
+  </InputPortal>
 </template>
 
 <script lang="ts">
+import type {SaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+
 
 import {defineComponent} from 'vue';
+import {createInputHosts} from '@/client/wrybit/shell/inputHosts';
+import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
+import PresentationHost from '@/client/wrybit/inputs/PresentationHost.vue';
+import {InitialCardsBinding, InitialSectionKey, useInputPresentation} from '@/client/wrybit/inputs/presentation';
 
 import AppButton from '@/client/components/common/AppButton.vue';
 import {getCard, getCardOrThrow} from '@/client/cards/ClientCardManifest';
@@ -73,6 +89,12 @@ type Refs = {
 
 export default defineComponent({
   name: 'SelectInitialCards',
+  inheritAttrs: false,
+  setup() {
+    return {initialPresentation: useInputPresentation('initialCards'), initialHosts: {
+      corporation: createInputHosts(), prelude: createInputHosts(), ceo: createInputHosts(), projects: createInputHosts(),
+    }};
+  },
   props: {
     playerView: {
       type: Object as () => PlayerViewModel,
@@ -100,6 +122,8 @@ export default defineComponent({
     },
   },
   components: {
+    InputPortal,
+    PresentationHost,
     AppButton,
     SelectCard,
     ConfirmDialog,
@@ -272,7 +296,7 @@ export default defineComponent({
       }
       const corpName = this.selectedCorporations[0];
       const corporation = getCardOrThrow(corpName);
-      // The ?? 0 is only because IClientCard applies to _all_ cards.
+      // The ?? 0 is only because ClientCard applies to _all_ cards.
 
       let starting = corporation.startingMegaCredits ?? 0;
       const cardCost = corporation.cardCost === undefined ? constants.CARD_COST : corporation.cardCost;
@@ -297,7 +321,8 @@ export default defineComponent({
         this.saveData();
       }
     },
-    saveData() {
+    saveData(_attempt?: SaveAttempt, respond?: (response: SelectInitialCardsResponse) => void) {
+      const reply = respond ?? this.onsave;
       const result: SelectInitialCardsResponse = {
         type: 'initialCards',
         responses: [],
@@ -325,7 +350,7 @@ export default defineComponent({
         type: 'card',
         cards: this.selectedCards,
       });
-      this.onsave(result);
+      reply(result);
     },
 
     cardsChanged(cards: Array<CardName>) {
@@ -396,6 +421,29 @@ export default defineComponent({
     },
   },
   computed: {
+    presentationBinding(): InitialCardsBinding {
+      const section = (key: InitialSectionKey, input: SelectCardModel, count: number, done: boolean) =>
+        ({key, title: input.title, badge: input.min > 0 ? count + '/' + input.min : String(count), done, host: this.initialHosts[key]});
+      const sections = [section('corporation', this.corpCardOption, this.selectedCorporations.length, this.selectedCorporations.length === 1)];
+      if (this.hasPrelude) {
+        sections.push(section('prelude', this.preludeCardOption, this.selectedPreludes.length,
+          this.selectedPreludes.length >= this.preludeCardOption.min && this.selectedPreludes.length <= this.preludeCardOption.max));
+      }
+      if (this.hasCeo) {
+        sections.push(section('ceo', this.ceoCardOption, this.selectedCeos.length, this.selectedCeos.length === 1));
+      }
+      sections.push(section('projects', this.projectCardOption, this.selectedCards.length, false));
+      const corporation = this.selectedCorporations.length === 1 ? getCardOrThrow(this.selectedCorporations[0]) : undefined;
+      const cardCost = corporation === undefined ? undefined : corporation.cardCost ?? constants.CARD_COST;
+      const purchase = cardCost === undefined ? undefined : this.selectedCards.length * cardCost;
+      const afterPurchase = corporation === undefined ? undefined : this.getStartingMegacredits();
+      const preludes = this.hasPrelude ? this.getAfterPreludes() : undefined;
+      return {playerView: this.playerView, playerinput: this.playerinput, showtitle: this.showtitle, showsave: this.showsave,
+        sections, aridorColonies: this.playerCanChooseAridor ? this.playerView.game.discardedColonies.map(this.getColony) : undefined,
+        starting: afterPurchase === undefined ? undefined : afterPurchase + (purchase ?? 0), preludes, purchase,
+        remaining: afterPurchase === undefined ? undefined : afterPurchase + (preludes ?? 0), cardCost, purchasedCount: this.selectedCards.length,
+        valid: this.valid, warning: this.warning, save: () => this.saveIfConfirmed()};
+    },
     typedRefs(): Refs {
       return this.$refs as Refs;
     },
@@ -418,13 +466,11 @@ export default defineComponent({
     },
     preludeCardOption() {
       const option = getOption(this.playerinput.options, titles.SELECT_PRELUDE_TITLE);
-      if (getPreferences().experimental_ui) {
-        return {
-          ...option,
-          max: option.cards.length,
-        };
-      }
-      return option;
+      return {
+        ...option,
+        title: option.min === 1 ? 'Select 1 Prelude card' : option.title,
+        max: getPreferences().experimental_ui ? option.cards.length : option.max,
+      };
     },
     ceoCardOption() {
       const option = getOption(this.playerinput.options, titles.SELECT_CEO_TITLE);

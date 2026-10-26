@@ -29,6 +29,6 @@ describe('SpaceMirrors', () => {
     game.deferredActions.runNext();
     expect(player.megaCredits).to.eq(0);
     expect(player.production.energy).to.eq(1);
-    expect(game.gameLog.map(formatMessage)).contains('blue gained 1 energy production');
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 1:p:energy:');
   });
 });

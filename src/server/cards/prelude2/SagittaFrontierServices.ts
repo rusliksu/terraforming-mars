@@ -10,6 +10,11 @@ import {GainResourcesDeferred} from '../../deferredActions/GainResourcesDeferred
 import {Resource} from '../../../common/Resource';
 import {Tag} from '../../../common/cards/Tag';
 
+const HELP_TEXT = `
+*  Event tags count as tags for Sagitta Frontier Services [ref](https://boardgamegeek.com/thread/3154781/article/42964845#42964845)
+*  Wild tags do not count for Sagitta Frontier Services. [ref](https://boardgamegeek.com/thread/2031069/article/43202892#43202892)
+` as const;
+
 export class SagittaFrontierServices extends CorporationCard implements ICorporationCard {
   constructor() {
     super({
@@ -29,6 +34,7 @@ export class SagittaFrontierServices extends CorporationCard implements ICorpora
           b.effect('When you play a card with EXACTLY 1 TAG, you gain 1 M€.', (eb) => eb.emptyTag().asterix().startEffect.megacredits(1)).br;
         }),
         description: 'You start with 31 M€. Increase energy production 1 step and M€ production 2 steps. Draw a card that has no tag.',
+        helpText: HELP_TEXT,
       },
     });
   }
@@ -43,13 +49,13 @@ export class SagittaFrontierServices extends CorporationCard implements ICorpora
     if (count === 0) {
       player.game.defer(new GainResourcesDeferred(player, Resource.MEGACREDITS, {count: 4}))
         .andThen(() => {
-          player.game.log('${0} gained 4 M€ for playing ${1}, which has no tags.', (b) => b.player(player).card(card));
+          player.game.log('${0} gained 4:r:mc: for playing ${1}, which has no tags.', (b) => b.player(player).card(card));
         });
     }
     if (count === 1) {
       player.game.defer(new GainResourcesDeferred(player, Resource.MEGACREDITS, {count: 1}))
         .andThen(() => {
-          player.game.log('${0} gained 1 M€ for playing ${1}, which has exactly 1 tag.', (b) => b.player(player).card(card));
+          player.game.log('${0} gained 1:r:mc: for playing ${1}, which has exactly 1 tag.', (b) => b.player(player).card(card));
         });
     }
   }

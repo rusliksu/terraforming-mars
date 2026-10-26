@@ -4,11 +4,13 @@ import {Game} from '../../src/server/Game';
 import {TestPlayer} from '../TestPlayer';
 import {MockResponse} from './HttpMocks';
 import {RouteTestScaffolding} from './RouteTestScaffolding';
-import {Phase} from '../../src/common/Phase';
 import {use} from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import {LogMessageDataType} from '../../src/common/logs/LogMessageDataType';
 import {CardName} from '../../src/common/cards/CardName';
+import {Phase} from '../../src/common/Phase';
+import {testGame} from '@tests/TestGame';
+import {statusCode} from '@/common/http/statusCode';
 use(chaiAsPromised);
 
 describe('ApiGameLogs', () => {
@@ -23,25 +25,27 @@ describe('ApiGameLogs', () => {
   it('fails when id not provided', async () => {
     scaffolding.url = '/api/game/logs';
     await scaffolding.get(ApiGameLogs.INSTANCE, res);
+    expect(res.statusCode).eq(statusCode.badRequest);
     expect(res.content).eq('Bad request: missing id parameter');
   });
 
   it('fails with invalid id', async () => {
     scaffolding.url = '/api/game/logs?id=game-id';
     await scaffolding.get(ApiGameLogs.INSTANCE, res);
-    expect(res.content).eq('Bad request: invalid player id');
+    expect(res.statusCode).eq(statusCode.badRequest);
+    expect(res.content).eq('Bad request: invalid participant id');
   });
 
   it('fails when game not found', async () => {
     scaffolding.url = '/api/game/logs?id=player-invalid-id';
     await scaffolding.get(ApiGameLogs.INSTANCE, res);
+    expect(res.statusCode).eq(statusCode.notFound);
     expect(res.content).eq('Not found: game not found');
   });
 
   it('pulls logs when no generation provided', async () => {
-    const player = TestPlayer.BLACK.newPlayer();
+    const [game, player] = testGame(1);
     scaffolding.url = '/api/game/logs?id=' + player.id;
-    const game = Game.newInstance('game-id', [player], player, 'spectatorid');
     await scaffolding.ctx.gameLoader.add(game);
     game.log('Generation ${0}', (b) => b.forNewGeneration().number(50));
     await scaffolding.get(ApiGameLogs.INSTANCE, res);
@@ -51,10 +55,29 @@ describe('ApiGameLogs', () => {
     expect(messages[messages.length - 1].data[0].value).eq('50');
   });
 
+  it('filters private action effects before returning logs to another player', async () => {
+    const [game, blue, red] = testGame(2);
+    game.gameLog.length = 0;
+    game.log('Public action');
+    game.gameLog[0].actionId = 'action-1';
+    game.gameLog[0].actionStart = true;
+    game.log('Private result', () => {}, {reservedFor: red});
+    game.gameLog[1].actionId = 'action-1';
+    game.gameLog[1].actionEnd = true;
+    game.gameLog[1].effect = {kind: 'resource', resource: 'megacredits', production: false, amount: 999, player: red.color};
+    await scaffolding.ctx.gameLoader.add(game);
+
+    scaffolding.url = '/api/game/logs?id=' + blue.id;
+    await scaffolding.get(ApiGameLogs.INSTANCE, res);
+    const messages = JSON.parse(res.content);
+    expect(messages.map((message: {message: string}) => message.message)).deep.eq(['Public action']);
+    expect(messages[0].actionId).eq('action-1');
+    expect(messages[0]).not.to.have.property('effect');
+  });
+
   it('pulls logs for most recent generation', async () => {
-    const player = TestPlayer.BLACK.newPlayer();
+    const [game, player] = testGame(1);
     scaffolding.url = '/api/game/logs?id=' + player.id + '&generation=50';
-    const game = Game.newInstance('game-id', [player], player, 'spectatorid');
     await scaffolding.ctx.gameLoader.add(game);
     game.log('Generation ${0}', (b) => b.forNewGeneration().number(50));
     await scaffolding.get(ApiGameLogs.INSTANCE, res);
@@ -65,8 +88,7 @@ describe('ApiGameLogs', () => {
   });
 
   it('pulls full current generation when explicitly requested', async () => {
-    const player = TestPlayer.BLACK.newPlayer();
-    const game = Game.newInstance('game-id', [player], player, 'spectatorid');
+    const [game, player] = testGame(1);
     await scaffolding.ctx.gameLoader.add(game);
 
     game.gameLog.length = 0;
@@ -104,9 +126,8 @@ describe('ApiGameLogs', () => {
   });
 
   it('pulls logs for first generation', async () => {
-    const player = TestPlayer.BLACK.newPlayer();
+    const [game, player] = testGame(1);
     scaffolding.url = '/api/game/logs?id=' + player.id;
-    const game = Game.newInstance('game-id', [player], player, 'spectatorid');
     await scaffolding.ctx.gameLoader.add(game);
     await scaffolding.get(ApiGameLogs.INSTANCE, res);
     const messages = JSON.parse(res.content);
@@ -116,9 +137,8 @@ describe('ApiGameLogs', () => {
   });
 
   it('pulls logs for missing generation', async () => {
-    const player = TestPlayer.BLACK.newPlayer();
+    const [game, player] = testGame(1);
     scaffolding.url = '/api/game/logs?id=' + player.id + '&generation=2';
-    const game = Game.newInstance('game-id', [player], player, 'spectatorid');
     await scaffolding.ctx.gameLoader.add(game);
     await scaffolding.get(ApiGameLogs.INSTANCE, res);
     const messages = JSON.parse(res.content);
@@ -262,6 +282,63 @@ describe('ApiGameLogs', () => {
     expect(res.content).eq('Bad request: cannot fetch game-end log');
   });
 
+  it('separates legacy corporation choices without changing stored logs or their visibility', async () => {
+    const [game, player, other] = testGame(2);
+    game.gameLog.length = 0;
+    game.log('You selected ${0} from ${1}', (b) => b
+      .cardName(CardName.HELION)
+      .cards([CardName.INVENTRIX, CardName.HELION, CardName.THARSIS_REPUBLIC]), {reservedFor: player});
+    const stored = JSON.stringify(game.gameLog);
+    await scaffolding.ctx.gameLoader.add(game);
+
+    scaffolding.url = '/api/game/logs?id=' + player.id;
+    await scaffolding.get(ApiGameLogs.INSTANCE, res);
+    const [message] = JSON.parse(res.content);
+    expect(message.message).eq('You selected ${0} skipping ${1}');
+    expect(message.playerId).eq(player.id);
+    expect(message.data.map((datum: {value: unknown}) => datum.value)).deep.eq([
+      CardName.HELION, [CardName.INVENTRIX, CardName.THARSIS_REPUBLIC],
+    ]);
+
+    for (const id of [other.id, game.spectatorId]) {
+      res = new MockResponse();
+      scaffolding.url = '/api/game/logs?id=' + id;
+      await scaffolding.get(ApiGameLogs.INSTANCE, res);
+      expect(JSON.parse(res.content)).is.empty;
+    }
+
+    game.phase = Phase.END;
+    res = new MockResponse();
+    scaffolding.url = '/api/game/logs?id=' + game.spectatorId + '&generation=1';
+    await scaffolding.get(ApiGameLogs.INSTANCE, res);
+    const [finished] = JSON.parse(res.content);
+    expect(finished.message).eq('${0} selected ${1} skipping ${2}');
+    expect(finished.data).deep.eq([
+      {type: LogMessageDataType.PLAYER, value: player.color},
+      {type: LogMessageDataType.CARD, value: CardName.HELION},
+      {type: LogMessageDataType.CARDS, value: [CardName.INVENTRIX, CardName.THARSIS_REPUBLIC]},
+    ]);
+
+    res = new MockResponse();
+    scaffolding.url = '/api/game/logs?id=' + player.id + '&full';
+    await scaffolding.get(ApiGameLogs.INSTANCE, res);
+    expect(res.content).eq(`${player.name} selected Helion skipping Inventrix,Tharsis Republic`);
+    expect(JSON.stringify(game.gameLog)).eq(stored);
+  });
+
+  it('omits an empty skipped list from a legacy single-corporation choice', async () => {
+    const [game, player] = testGame(1);
+    game.gameLog.length = 0;
+    game.log('You selected ${0} from ${1}', (b) => b.cardName(CardName.HELION).cards([CardName.HELION]), {reservedFor: player});
+    await scaffolding.ctx.gameLoader.add(game);
+
+    scaffolding.url = '/api/game/logs?id=' + player.id;
+    await scaffolding.get(ApiGameLogs.INSTANCE, res);
+    const [message] = JSON.parse(res.content);
+    expect(message.message).eq('You selected ${0}');
+    expect(message.data).deep.eq([{type: LogMessageDataType.CARD, value: CardName.HELION}]);
+  });
+
   it('Pulls full logs at game end', async () => {
     const player = TestPlayer.BLACK.newPlayer();
     const player2 = TestPlayer.BLUE.newPlayer();
@@ -271,5 +348,21 @@ describe('ApiGameLogs', () => {
     await scaffolding.ctx.gameLoader.add(game);
     await scaffolding.get(ApiGameLogs.INSTANCE, res);
     expect(res.content).to.match(/^First player this generation is player-black/);
+  });
+
+  it('omits canceled entries from the downloadable game-end log', async () => {
+    const player = TestPlayer.BLACK.newPlayer();
+    const game = Game.newInstance('game-id', [player], player, 'spectatorid');
+    game.phase = Phase.END;
+    game.gameLog.length = 0;
+    game.log('Kept entry');
+    game.log('Canceled entry');
+    game.gameLog[1].canceled = true;
+    await scaffolding.ctx.gameLoader.add(game);
+
+    scaffolding.url = '/api/game/logs?id=' + player.id + '&full';
+    await scaffolding.get(ApiGameLogs.INSTANCE, res);
+
+    expect(res.content).eq('Kept entry');
   });
 });

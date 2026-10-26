@@ -1,24 +1,30 @@
-import prometheus from 'prom-client';
+import prometheus from '@prometheus-io/client';
 import pg from 'pg';
 import {IDatabase} from './IDatabase';
 import {IGame, Score} from '../IGame';
 import {GameOptions} from '../game/GameOptions';
 import {GameId, ParticipantId, isGameId, safeCast} from '../../common/Types';
 import {SerializedGame} from '../SerializedGame';
-import {daysAgoToSeconds, stringToNumber} from './utils';
+import {daysAgoToSeconds, stringToBoolean, stringToNumber} from './utils';
 import {GameIdLedger} from './IDatabase';
 import {Session, SessionId} from '../auth/Session';
 import {toID} from '../../common/utils/utils';
-import {chooseLastMeaningfulSaveTimeMs} from './SaveActivity';
 import {databaseMetrics, withDatabaseMetrics} from './MetricsDelegate';
 import {ThrottledCache} from './ThrottledCache';
 import {Clock} from '@/common/Timer';
+import {parseInterned} from './parseInterned';
+import {LogMessage} from '@/common/logs/LogMessage';
+import {compressToBrotli, decompressFromBrotli} from './compression';
+import {assertSaveIdWithinLimit} from './HistoryLimits';
+import {MapLibraryEntry, MapLibraryEntryId, MapLibraryStatus} from '../../common/boards/MapLibraryEntry';
+import {CustomCardLibraryEntry, CustomCardEntryId, CustomCardStatus} from '../../common/cards/CustomCardLibraryEntry';
 
 type StoredSerializedGame = Omit<SerializedGame, 'gameOptions' | 'gameLog'> & {logLength: number};
 
-export const POSTGRESQL_TABLES = ['game', 'games', 'game_results', 'participants', 'completed_game', 'session'] as const;
+export const POSTGRESQL_TABLES = ['game', 'games', 'game_results', 'participants', 'completed_game', 'session', 'map_library', 'custom_card_library'] as const;
 
 const POSTGRES_TRIM_COUNT = stringToNumber(process.env.POSTGRES_TRIM_COUNT, 10);
+const DB_COMPRESS_ON_WRITE = stringToBoolean(process.env.DB_COMPRESS_ON_WRITE, false);
 
 // How often the (expensive) table/database size stats are actually recomputed. Scrapes that land
 // between refreshes just get the cached values.
@@ -30,7 +36,7 @@ const metrics = {
   tableSizeBytes: new prometheus.Gauge({
     name: 'postgresql_table_size_bytes',
     help: 'Total size (table + indexes) of a PostgreSQL table, in bytes',
-    labelNames: ['table'],
+    labelNames: ['table'] as const,
     registers: [prometheus.register],
     collect() {
       activeDatabase?.metricsScrapeCache.get();
@@ -47,7 +53,7 @@ const metrics = {
   tableRows: new prometheus.Gauge({
     name: 'postgresql_table_rows',
     help: 'Row count of a PostgreSQL table (select count(*))',
-    labelNames: ['table'],
+    labelNames: ['table'] as const,
     registers: [prometheus.register],
     collect() {
       activeDatabase?.metricsScrapeCache.get();
@@ -57,6 +63,7 @@ const metrics = {
 
 export class PostgreSQL implements IDatabase {
   protected trimCount = POSTGRES_TRIM_COUNT;
+  protected compressOnWrite = DB_COMPRESS_ON_WRITE;
 
   protected statistics = {
     saveCount: 0,
@@ -102,6 +109,7 @@ export class PostgreSQL implements IDatabase {
       players integer,
       save_id integer,
       game text,
+      game_compressed bytea,
       status text default 'running',
       created_time timestamp default now(),
       PRIMARY KEY (game_id, save_id));
@@ -141,13 +149,40 @@ export class PostgreSQL implements IDatabase {
       expiration_time timestamp not null,
       PRIMARY KEY (session_id));
 
+    /* The public Map Library: official boards plus community-submitted custom maps. */
+    CREATE TABLE IF NOT EXISTS map_library(
+      id varchar not null,
+      code text not null,
+      description varchar not null,
+      submitted_by varchar not null,
+      origin varchar not null,
+      status varchar not null,
+      created_time timestamp default now() not null,
+      PRIMARY KEY (id));
+
+    /* The public custom card review queue shown on /cards. */
+    CREATE TABLE IF NOT EXISTS custom_card_library(
+      id varchar not null,
+      definition text not null,
+      share_code text not null,
+      submitted_by varchar not null,
+      status varchar not null,
+      created_time timestamp default now() not null,
+      PRIMARY KEY (id));
+
     CREATE INDEX IF NOT EXISTS games_i1 on games(save_id);
     CREATE INDEX IF NOT EXISTS games_i2 on games(created_time);
     CREATE INDEX IF NOT EXISTS participants_idx_ids on participants USING GIN (participants);
     CREATE INDEX IF NOT EXISTS completed_game_idx_completed_time on completed_game(completed_time);
     CREATE INDEX IF NOT EXISTS session_idx_expiration_time on session(expiration_time);
+    CREATE INDEX IF NOT EXISTS map_library_idx_created_time on map_library(created_time);
+    CREATE INDEX IF NOT EXISTS custom_card_library_idx_created_time on custom_card_library(created_time);
     `;
     await this.client.query(sql);
+
+    // games.game_compressed is already in the CREATE TABLE above for fresh databases;
+    // this covers databases where the table already existed without it.
+    await this.client.query('ALTER TABLE games ADD COLUMN IF NOT EXISTS game_compressed bytea;');
   }
 
   public async getPlayerCount(gameId: GameId): Promise<number> {
@@ -174,62 +209,29 @@ export class PostgreSQL implements IDatabase {
     return res.rows.map((row) => row.game_id);
   }
 
-  public async getLastSaveTimeMs(gameId: GameId): Promise<number | undefined> {
-    return (await this.getLastSaveTimesMs([gameId])).get(gameId);
-  }
-
-  public async getLastSaveTimesMs(gameIds: Array<GameId>): Promise<Map<GameId, number | undefined>> {
-    const uniqueGameIds = Array.from(new Set(gameIds));
-    const result = new Map<GameId, number | undefined>();
-    for (const gameId of uniqueGameIds) {
-      result.set(gameId, undefined);
+  // game_compressed is the new format (Brotli-compressed JSON); game is the old
+  // plain-text format, kept for rows not yet migrated. New writes only populate
+  // game_compressed, so at most one of the two is ever set for a given row.
+  private resolveGameText(row: {game: string | null; game_compressed: Buffer | null}): string {
+    if (row.game_compressed !== null) {
+      return decompressFromBrotli(row.game_compressed);
     }
-    if (uniqueGameIds.length === 0) {
-      return result;
+    if (row.game !== null) {
+      return row.game;
     }
-
-    const res = await this.client.query(
-      `SELECT game_id, EXTRACT(EPOCH FROM created_time) * 1000 AS created_time_ms
-        FROM (
-          SELECT game_id, created_time,
-            ROW_NUMBER() OVER (PARTITION BY game_id ORDER BY created_time DESC) AS row_number
-          FROM (
-            SELECT game_id, created_time
-            FROM games
-            WHERE game_id = ANY($1::varchar[])
-            GROUP BY game_id, created_time
-          ) AS grouped_saves
-        ) AS ranked_saves
-        WHERE row_number <= 2
-        ORDER BY game_id, created_time DESC`,
-      [uniqueGameIds]);
-
-    const saveTimes = new Map<GameId, Array<number>>();
-    for (const row of res.rows) {
-      const gameId = row.game_id as GameId;
-      const times = saveTimes.get(gameId) ?? [];
-      times.push(Number(row.created_time_ms));
-      saveTimes.set(gameId, times);
-    }
-    for (const [gameId, times] of saveTimes.entries()) {
-      result.set(gameId, chooseLastMeaningfulSaveTimeMs(times));
-    }
-    return result;
+    throw new Error('games row has neither game nor game_compressed set');
   }
 
   private compose(game: string, log: string, options: string): SerializedGame {
-    const stored: StoredSerializedGame = JSON.parse(game);
+    const stored: StoredSerializedGame = parseInterned(game);
     const {logLength, ...remainder} = stored;
-    // console.log(log, options, stored.logLength);
-    // TODO(kberg): Remove the outer join, and the else of this conditional by 2025-01-01
-    if (stored.logLength !== undefined) {
-      const gameLog = JSON.parse(log);
-      gameLog.length = logLength;
-      const gameOptions = JSON.parse(options);
-      return {...remainder, gameOptions, gameLog};
-    } else {
-      return remainder as SerializedGame;
-    }
+
+    const gameLog: Array<LogMessage> = parseInterned(log);
+    // If this is part of an undo operation, delete the end
+    // of the array so the log matches the length.
+    gameLog.length = logLength;
+    const gameOptions: GameOptions = parseInterned(options);
+    return {...remainder, gameOptions, gameLog};
   }
 
   public async getGameId(participantId: ParticipantId): Promise<GameId> {
@@ -259,10 +261,11 @@ export class PostgreSQL implements IDatabase {
     const res = await this.client.query(
       `SELECT
         games.game as game,
+        games.game_compressed as game_compressed,
         game.log as log,
         game.options as options
       FROM games
-      LEFT JOIN game on game.game_id = games.game_id
+      INNER JOIN game on game.game_id = games.game_id
       WHERE games.game_id = $1
       ORDER BY save_id DESC
       LIMIT 1`,
@@ -272,17 +275,18 @@ export class PostgreSQL implements IDatabase {
       throw new Error(`Game ${gameId} not found`);
     }
     const row = res.rows[0];
-    return this.compose(row.game, row.log, row.options);
+    return this.compose(this.resolveGameText(row), row.log, row.options);
   }
 
   async getGameVersion(gameId: GameId, saveId: number): Promise<SerializedGame> {
     const res = await this.client.query(
       `SELECT
         games.game as game,
+        games.game_compressed as game_compressed,
         game.log as log,
         game.options as options
       FROM games
-      LEFT JOIN game on game.game_id = games.game_id
+      INNER JOIN game on game.game_id = games.game_id
       WHERE games.game_id = $1
       AND games.save_id = $2`,
       [gameId, saveId],
@@ -292,7 +296,7 @@ export class PostgreSQL implements IDatabase {
       throw new Error(`Game ${gameId} not found at save_id ${saveId}`);
     }
     const row = res.rows[0];
-    return this.compose(row.game, row.log, row.options);
+    return this.compose(this.resolveGameText(row), row.log, row.options);
   }
 
   // Not part of IDatabase: void/callback-based, so MetricsDelegate can't observe its completion or
@@ -329,8 +333,9 @@ export class PostgreSQL implements IDatabase {
 
   async markFinished(gameId: GameId): Promise<void> {
     const promise1 = this.client.query('UPDATE games SET status = \'finished\' WHERE game_id = $1', [gameId]);
-    const promise2 = this.client.query('INSERT INTO completed_game(game_id) VALUES ($1)', [gameId]);
-    await Promise.all([promise1, promise2]);
+    const promise2 = this.client.query('UPDATE game SET status = \'finished\' WHERE game_id = $1', [gameId]);
+    const promise3 = this.client.query('INSERT INTO completed_game(game_id) VALUES ($1)', [gameId]);
+    await Promise.all([promise1, promise2, promise3]);
   }
 
   // Purge unfinished games older than MAX_GAME_DAYS days. If this environment variable is absent, it uses the default of 10 days.
@@ -346,7 +351,7 @@ export class PostgreSQL implements IDatabase {
       ) latest_save ON latest.game_id = latest_save.game_id AND latest.save_id = latest_save.max_save_id
       LEFT JOIN game ON game.game_id = latest.game_id
       WHERE latest_save.latest_created_time < to_timestamp($1)
-        AND latest.status = 'running'
+        AND game.status = 'running'
         AND COALESCE(game.options::jsonb ->> 'turnBasedGame', 'false') <> 'true'`,
       [dateToSeconds]);
     let gameIds = selectResult.rows.map((row) => row.game_id);
@@ -388,6 +393,27 @@ export class PostgreSQL implements IDatabase {
     }
   }
 
+  async deleteGame(gameId: GameId): Promise<void> {
+    await this.client.query('BEGIN');
+    try {
+      await this.client.query('DELETE FROM games WHERE game_id = $1', [gameId]);
+      await this.client.query('DELETE FROM game WHERE game_id = $1', [gameId]);
+      await this.client.query('DELETE FROM participants WHERE game_id = $1', [gameId]);
+      await this.client.query('DELETE FROM game_results WHERE game_id = $1', [gameId]);
+      await this.client.query('DELETE FROM completed_game WHERE game_id = $1', [gameId]);
+      await this.client.query('COMMIT');
+    } catch (err) {
+      await this.client.query('ROLLBACK');
+      throw err;
+    }
+  }
+
+  async deleteOrphanParticipants(): Promise<number> {
+    const result = await this.client.query(
+      'DELETE FROM participants p WHERE NOT EXISTS (SELECT 1 FROM games g WHERE g.game_id = p.game_id)');
+    return result.rowCount ?? 0;
+  }
+
   // Not part of IDatabase (only the batch compressCompletedGames is), invisible to MetricsDelegate.
   // Instrumented directly here instead, so per-game maintenance latency isn't lost inside the batch.
   compressCompletedGame(gameId: GameId): Promise<void> {
@@ -399,6 +425,9 @@ export class PostgreSQL implements IDatabase {
   }
 
   async saveGame(game: IGame): Promise<void> {
+    // Keep this check outside the transaction/catch: a budget breach must
+    // reject the caller instead of being converted into a successful no-op.
+    assertSaveIdWithinLimit(game.lastSaveId);
     const serialized = game.serialize();
     const options = JSON.stringify(serialized.gameOptions);
     const log = JSON.stringify(serialized.gameLog);
@@ -407,6 +436,7 @@ export class PostgreSQL implements IDatabase {
     (storedSerialized as any).gameLog = [];
     (storedSerialized as any).gameOptions = {};
     const gameJSON = JSON.stringify(storedSerialized);
+    const gameCompressed = this.compressOnWrite ? compressToBrotli(gameJSON) : null;
 
     this.statistics.saveCount++;
     try {
@@ -415,12 +445,15 @@ export class PostgreSQL implements IDatabase {
       // Holding onto a value avoids certain race conditions where saveGame is called twice in a row.
       const thisSaveId = game.lastSaveId;
       // xmax = 0 is described at https://stackoverflow.com/questions/39058213/postgresql-upsert-differentiate-inserted-and-updated-rows-using-system-columns-x
+      //
+      // When compressOnWrite is true, the game state is written to game_compressed; when it's
+      // false, it's written to game. The other column is set to null so a row never carries both.
       const res = await this.client.query(
-        `INSERT INTO games (game_id, save_id, game, players)
-        VALUES ($1, $2, $3, $4)
-        ON CONFLICT (game_id, save_id) DO UPDATE SET game = $3
+        `INSERT INTO games (game_id, save_id, game, game_compressed, players)
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (game_id, save_id) DO UPDATE SET game = $3, game_compressed = $4
         RETURNING (xmax = 0) AS inserted`,
-        [game.id, game.lastSaveId, gameJSON, game.players.length]);
+        [game.id, game.lastSaveId, this.compressOnWrite ? null : gameJSON, this.compressOnWrite ? gameCompressed : null, game.players.length]);
 
       await this.client.query(
         `INSERT INTO game (game_id, log, options)
@@ -470,17 +503,15 @@ export class PostgreSQL implements IDatabase {
 
   // Not part of IDatabase, invisible to MetricsDelegate, and invoked fire-and-forget (not awaited) by
   // saveGame above. Instrumented directly here instead.
-  private trim(game: IGame) {
-    return withDatabaseMetrics('trim', async () => {
-      if (this.trimCount <= 0) {
-        return;
-      }
-      if (game.lastSaveId % this.trimCount === 0) {
-        const maxSaveId = game.lastSaveId - this.trimCount;
-        await this.client.query(
-          'DELETE FROM games WHERE game_id = $1 AND save_id > 0 AND save_id < $2', [game.id, maxSaveId]);
-      }
-    });
+  private async trim(game: IGame) {
+    if (this.trimCount <= 0) {
+      return;
+    }
+    if (game.lastSaveId % this.trimCount === 0) {
+      const maxSaveId = game.lastSaveId - this.trimCount;
+      await this.client.query(
+        'DELETE FROM games WHERE game_id = $1 AND save_id > 0 AND save_id < $2', [game.id, maxSaveId]);
+    }
   }
 
   async deleteGameNbrSaves(gameId: GameId, rollbackCount: number): Promise<void> {
@@ -529,7 +560,7 @@ export class PostgreSQL implements IDatabase {
     return map;
   }
 
-  // The actual (expensive) size-stat queries: table/index sizes, database size, and row counts.
+  // The size-stat queries: table/index sizes, database size, and row counts.
   // Throttled by collectSizeStatsIfStale() above; not intended to be called directly elsewhere.
   private collectSizeStats(): Promise<void> {
     if (this._client === undefined) {
@@ -537,29 +568,22 @@ export class PostgreSQL implements IDatabase {
     }
 
     return withDatabaseMetrics('collectSizeStats', async () => {
-      const columns = POSTGRESQL_TABLES.map((table) => `pg_total_relation_size('${table}') as ${table}_size`);
-      const sql = `SELECT ${columns.join(', ')}, pg_database_size(current_database()) as db_size`;
-      const result = await this.client.query(sql);
-      const row = result.rows[0];
-      POSTGRESQL_TABLES.forEach((table) => {
-        metrics.tableSizeBytes.set({table}, Number(row[`${table}_size`]));
-      });
-      metrics.databaseSizeBytes.set(Number(row.db_size));
-
-      // Using count(*) is inefficient, but the estimates from here
-      // https://stackoverflow.com/questions/7943233/fast-way-to-discover-the-row-count-of-a-table-in-postgresql
-      // seem wildly inaccurate.
-      //
-      // heroku pg:bloat --app terraforming-mars
-      // shows some bloat
-      // and the postgres command
-      // VACUUM (VERBOSE) shows a fairly reasonable vacumm (no rows locked, for instance),
-      // so it's not clear why those wrong. But these select count(*) commands seem pretty quick
-      // in testing. :fingers-crossed:
-      for (const table of POSTGRESQL_TABLES) {
-        const result = await this.client.query(`select count(*) as rowcount from ${table}`);
-        metrics.tableRows.set({table}, Number(result.rows[0].rowcount));
+      // Row counts use reltuples (a ~1%-accurate estimate) to avoid full count(*) scans.
+      // https://wiki.postgresql.org/wiki/Count_estimate
+      const rowCountResult = await this.client.query(
+        `SELECT s.relname, c.reltuples::bigint AS rowcount, pg_total_relation_size(c.oid) AS size
+         FROM pg_stat_user_tables s
+         JOIN pg_class c ON c.oid = s.relid
+         WHERE s.relname = ANY($1)`,
+        [POSTGRESQL_TABLES]);
+      for (const row of rowCountResult.rows) {
+        const table = row.relname;
+        metrics.tableSizeBytes.set({table}, Number(row.size));
+        metrics.tableRows.set({table}, Number(row.rowcount));
       }
+
+      const dbSizeResult = await this.client.query('SELECT pg_database_size(current_database()) as db_size');
+      metrics.databaseSizeBytes.set(Number(dbSizeResult.rows[0].db_size));
     });
   }
 
@@ -571,7 +595,11 @@ export class PostgreSQL implements IDatabase {
     await this.client.query('DELETE FROM session where session_id = $1', [sessionId]);
   }
 
-  // TODO(kberg): this doesn't prune expired sessions.
+  public async deleteExpiredSessions(): Promise<number> {
+    const res = await this.client.query('DELETE FROM session WHERE expiration_time <= to_timestamp($1)', [Date.now() / 1000]);
+    return res.rowCount ?? 0;
+  }
+
   async getSessions(): Promise<Array<Session>> {
     const res = await this.client.query('SELECT session_id, data, expiration_time FROM session WHERE expiration_time > to_timestamp($1)', [Date.now() / 1000]);
     return res.rows.map((row) => {
@@ -581,5 +609,82 @@ export class PostgreSQL implements IDatabase {
         expirationTimeMillis: row.expiration_time.getTime(),
       };
     });
+  }
+
+  public async listMapLibraryEntries(): Promise<Array<MapLibraryEntry>> {
+    const res = await this.client.query('SELECT * FROM map_library ORDER BY created_time DESC');
+    return res.rows.map((row) => this.rowToMapLibraryEntry(row));
+  }
+
+  public async getMapLibraryEntry(id: MapLibraryEntryId): Promise<MapLibraryEntry | undefined> {
+    const res = await this.client.query('SELECT * FROM map_library WHERE id = $1', [id]);
+    return res.rows.length === 0 ? undefined : this.rowToMapLibraryEntry(res.rows[0]);
+  }
+
+  public async insertMapLibraryEntry(entry: MapLibraryEntry): Promise<void> {
+    await this.client.query(
+      'INSERT INTO map_library (id, code, description, submitted_by, origin, status, created_time) VALUES($1, $2, $3, $4, $5, $6, $7)',
+      [entry.id, entry.code, entry.description, entry.submittedBy, entry.origin, entry.status, new Date(entry.createdAt)]);
+  }
+
+  public async setMapLibraryEntryStatus(id: MapLibraryEntryId, status: MapLibraryStatus): Promise<void> {
+    await this.client.query('UPDATE map_library SET status = $1 WHERE id = $2', [status, id]);
+  }
+
+  public async deleteMapLibraryEntry(id: MapLibraryEntryId): Promise<void> {
+    await this.client.query('DELETE FROM map_library WHERE id = $1', [id]);
+  }
+
+  private rowToMapLibraryEntry(row: any): MapLibraryEntry {
+    return {
+      id: row.id,
+      code: row.code,
+      description: row.description,
+      submittedBy: row.submitted_by,
+      origin: row.origin,
+      status: row.status,
+      createdAt: row.created_time.getTime(),
+    };
+  }
+
+  public async listCustomCardLibraryEntries(): Promise<Array<CustomCardLibraryEntry>> {
+    const res = await this.client.query('SELECT * FROM custom_card_library ORDER BY created_time DESC');
+    return res.rows.map((row) => this.rowToCustomCardLibraryEntry(row));
+  }
+
+  public async getCustomCardLibraryEntry(id: CustomCardEntryId): Promise<CustomCardLibraryEntry | undefined> {
+    const res = await this.client.query('SELECT * FROM custom_card_library WHERE id = $1', [id]);
+    return res.rows.length === 0 ? undefined : this.rowToCustomCardLibraryEntry(res.rows[0]);
+  }
+
+  public async insertCustomCardLibraryEntry(entry: CustomCardLibraryEntry): Promise<void> {
+    await this.client.query(
+      'INSERT INTO custom_card_library (id, definition, share_code, submitted_by, status, created_time) VALUES($1, $2, $3, $4, $5, $6)',
+      [entry.id, JSON.stringify(entry.definition), entry.shareCode, entry.submittedBy, entry.status, new Date(entry.createdAt)]);
+  }
+
+  public async setCustomCardLibraryEntryStatus(id: CustomCardEntryId, status: CustomCardStatus): Promise<void> {
+    await this.client.query('UPDATE custom_card_library SET status = $1 WHERE id = $2', [status, id]);
+  }
+
+  public async updateCustomCardLibraryEntry(id: CustomCardEntryId, entry: CustomCardLibraryEntry): Promise<void> {
+    await this.client.query(
+      'UPDATE custom_card_library SET definition = $1, share_code = $2, submitted_by = $3, status = $4 WHERE id = $5',
+      [JSON.stringify(entry.definition), entry.shareCode, entry.submittedBy, entry.status, id]);
+  }
+
+  public async deleteCustomCardLibraryEntry(id: CustomCardEntryId): Promise<void> {
+    await this.client.query('DELETE FROM custom_card_library WHERE id = $1', [id]);
+  }
+
+  private rowToCustomCardLibraryEntry(row: any): CustomCardLibraryEntry {
+    return {
+      id: row.id,
+      definition: JSON.parse(row.definition),
+      shareCode: row.share_code,
+      submittedBy: row.submitted_by,
+      status: row.status,
+      createdAt: row.created_time.getTime(),
+    };
   }
 }

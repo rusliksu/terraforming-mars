@@ -1,10 +1,13 @@
-import {shallowMount} from '@vue/test-utils';
+import {mount, shallowMount} from '@vue/test-utils';
 import {expect} from 'chai';
 import {globalConfig} from '../getLocalVue';
 import Card from '@/client/components/card/Card.vue';
 import {CardName} from '@/common/cards/CardName';
 import {FakeLocalStorage} from '../FakeLocalStorage';
 import {PreferencesManager} from '@/client/utils/PreferencesManager';
+import {CardType} from '@/common/cards/CardType';
+import {CustomCardModel} from '@/common/models/CardModel';
+import {ICardRenderRoot} from '@/common/cards/render/Types';
 
 describe('Card', () => {
   let localStorage: FakeLocalStorage;
@@ -30,6 +33,35 @@ describe('Card', () => {
     expect(wrapper.exists()).to.be.true;
   });
 
+  it('shows Management Crisis as a loss of one TR', () => {
+    const wrapper = mount(Card, {...globalConfig, props: {card: {name: CardName.MANAGEMENT_CRISIS}}});
+    const icons = wrapper.get('.card-content');
+    expect(icons.findAll('.card-minus')).to.have.length(1);
+    expect(icons.get('.card-res-amount').text()).to.equal('1');
+    expect(icons.findAll('.card-tr')).to.have.length(1);
+    expect(icons.get('.card-minus').element.compareDocumentPosition(icons.get('.card-tr').element) & Node.DOCUMENT_POSITION_FOLLOWING)
+      .to.not.equal(0);
+    wrapper.unmount();
+  });
+
+  it('keeps the Cheung Shing logo with its rebalanced effect and identity', () => {
+    const wrapper = mount(Card, {...globalConfig, props: {card: {name: CardName.CHEUNG_SHING_MARS_REBALANCED}}});
+    expect(wrapper.get('.card-cheung-shing-logo').text()).to.equal('㨐');
+    expect(wrapper.getComponent({name: 'CardTitle'}).props('title')).to.equal(CardName.CHEUNG_SHING_MARS_REBALANCED);
+    expect(wrapper.get('.card-content').text()).to.contain('When you play a building tag, including this, you gain 3 M€.');
+    wrapper.unmount();
+  });
+
+  it('shows the printed fan card title without changing its identity or tags', async () => {
+    const wrapper = mount(Card, {...globalConfig, props: {card: {name: CardName.MARKET_MANIPULATION_CB}}});
+    expect(wrapper.get('.card-title .card-title').text()).to.equal('Market Manipulation');
+    expect(wrapper.getComponent({name: 'CardTitle'}).props('title')).to.equal(CardName.MARKET_MANIPULATION_CB);
+    expect(wrapper.findAll('.card-tags .tag-earth')).to.have.length(1);
+    await wrapper.setProps({card: {name: CardName.MARKET_MANIPULATION_CB, combinedDisplayName: 'Market Manipulation Copy'}});
+    expect(wrapper.get('.card-title .card-title').text()).to.equal('Market Manipulation Copy');
+    wrapper.unmount();
+  });
+
   it('dims used action cards instead of showing a player cube in experimental UI', () => {
     PreferencesManager.INSTANCE.set('experimental_ui', true);
 
@@ -43,5 +75,45 @@ describe('Card', () => {
 
     expect(wrapper.classes()).to.include('card-unavailable');
     expect(wrapper.find('.board-cube').exists()).to.eq(false);
+  });
+
+  it('renders a Custom Card Maker card via the customCard wire fallback', () => {
+    const customCard: CustomCardModel = {
+      type: CardType.AUTOMATED,
+      cost: 12,
+      tags: [],
+      requirements: [],
+      metadata: {description: 'Does a custom thing.', renderData: {is: 'root', rows: []} as ICardRenderRoot},
+      module: 'customCards',
+      compatibility: [],
+    };
+    const wrapper = mount(Card, {
+      ...globalConfig,
+      props: {
+        card: {name: 'My Custom Card' as CardName, customCard},
+      },
+    });
+    expect(wrapper.exists()).to.be.true;
+    expect(wrapper.text()).to.contain('My Custom Card');
+  });
+
+  it('throws if a card is neither in the static manifest nor carries customCard fallback data', () => {
+    expect(() => mount(Card, {
+      ...globalConfig,
+      props: {
+        card: {name: 'Not A Real Card' as CardName},
+      },
+    })).to.throw('card not found');
+  });
+
+  it('updates when the card changes', async () => {
+    const wrapper = shallowMount(Card, {
+      ...globalConfig,
+      props: {
+        card: {name: CardName.ECOLINE},
+      },
+    });
+    await wrapper.setProps({card: {name: CardName.ANTS}});
+    expect(wrapper.vm.cardInstance.name).to.eq(CardName.ANTS);
   });
 });

@@ -89,4 +89,22 @@ describe('PlayedCards', () => {
       [Tag.CRIME]: 1,
     });
   });
+
+  it('removes the stored card and its current tags when given another instance', () => {
+    const playedCards = new PlayedCards();
+    const microMills = new MicroMills();
+    const kickstarter = new Kickstarter();
+    playedCards.push(microMills, kickstarter);
+    playedCards.retagCard(kickstarter, () => {
+      kickstarter.cloneTag = Tag.CRIME;
+    });
+
+    expect(playedCards.remove(new Kickstarter())).is.true;
+
+    expect(playedCards.has(kickstarter.name)).is.false;
+    expect(playedCards.asArray()).deep.eq([microMills]);
+    expect(partialize(playedCards.tags)).deep.eq({});
+    expect(playedCards.serialize().map((card) => card.name)).deep.eq([microMills.name]);
+    expect(playedCards.remove(kickstarter)).is.false;
+  });
 });

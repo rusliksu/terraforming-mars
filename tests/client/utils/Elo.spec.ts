@@ -65,8 +65,8 @@ describe('elo utils', () => {
 
     const matchedGame = {
       results: [
-        {displayName: 'vvbMinsk', oldElo: 1500, newElo: 1510, delta: 10, vp: 120},
-        {displayName: 'player one', oldElo: 1500, newElo: 1490, delta: -10, vp: 100},
+        {displayName: 'vvbMinsk', oldElo: 1500, newElo: 1510, delta: 10, place: 1, vp: 120},
+        {displayName: 'player one', oldElo: 1500, newElo: 1490, delta: -10, place: 1.5, placeFrom: 1, placeTo: 2, vp: 100},
       ],
     };
 
@@ -78,8 +78,8 @@ describe('elo utils', () => {
     const rows = buildEloResultsForPlayers(playersInPlace, eloPlayers, matchedGame);
 
     expect(rows).deep.eq([
-      {name: 'vvbMinsk', color: 'red', oldElo: 1500, newElo: 1510, delta: 10, avgPlaceScore: 0.75},
-      {name: 'Player One', color: 'blue', oldElo: 1500, newElo: 1490, delta: -10, avgPlaceScore: 0.25},
+      {name: 'vvbMinsk', color: 'red', oldElo: 1500, newElo: 1510, delta: 10, placeLabel: '1', avgPlaceScore: 0.75},
+      {name: 'Player One', color: 'blue', oldElo: 1500, newElo: 1490, delta: -10, placeLabel: '1–2', avgPlaceScore: 0.25},
     ]);
   });
   it('prefers user-based elo identity over shared display names', () => {

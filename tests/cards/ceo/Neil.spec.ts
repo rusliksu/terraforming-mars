@@ -35,7 +35,7 @@ describe('Neil', () => {
 
     player2.playCard(new ThoriumRush());
     expect(player.megaCredits).eq(2);
-    expect(game.gameLog.map(formatMessage)).contains('blue gained 1 M€ because of Neil');
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 1:r:mc: because of Neil');
   });
 
   it('Takes action: Gains M€ production equal to lowest Moon rate', () => {
@@ -46,7 +46,7 @@ describe('Neil', () => {
     game.gameLog.length = 0;
     card.action(player);
     expect(player.production.megacredits).eq(2);
-    expect(game.gameLog.map(formatMessage)).contains('blue gained 2 M€ production');
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 2:p:mc:');
   });
 
   it('Takes action: Gains M€ production equal to lowest Moon rate, two rates the same', () => {

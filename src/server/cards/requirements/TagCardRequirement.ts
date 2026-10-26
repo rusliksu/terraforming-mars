@@ -32,6 +32,9 @@ export class TagCardRequirement extends InequalityRequirement {
       tagCount += 1;
     }
 
+    const bonus = player.getTagCardRequirementBonus(this.tag);
+    tagCount += this.max === true ? -bonus : bonus;
+
     return tagCount;
   }
 }

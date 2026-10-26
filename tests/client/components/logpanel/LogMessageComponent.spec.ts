@@ -1,4 +1,4 @@
-import {shallowMount} from '@vue/test-utils';
+import {mount, shallowMount} from '@vue/test-utils';
 import {expect} from 'chai';
 import {globalConfig} from '../getLocalVue';
 import LogMessageComponent from '@/client/components/logpanel/LogMessageComponent.vue';
@@ -8,6 +8,8 @@ import {LogMessageType} from '@/common/logs/LogMessageType';
 import {LogMessageDataType} from '@/common/logs/LogMessageDataType';
 import {CardName} from '@/common/cards/CardName';
 import {PreferencesManager} from '@/client/utils/PreferencesManager';
+import {Resource} from '@/common/Resource';
+import {CardResource} from '@/common/CardResource';
 
 describe('LogMessageComponent', () => {
   it('mounts without errors', () => {
@@ -53,6 +55,47 @@ describe('LogMessageComponent', () => {
     expect(wrapper.find('li').classes()).contains('log-message--canceled');
   });
 
+  it('shows paid resources inside the played card message', () => {
+    const message = new LogMessage(LogMessageType.DEFAULT, '${0} played ${1} [ ${2} ]', [
+      {type: LogMessageDataType.PLAYER, value: 'blue'},
+      {type: LogMessageDataType.CARD, value: CardName.ANTS},
+      {type: LogMessageDataType.STRING, value: '-2:r:steel: -14:r:mc:'},
+    ]);
+    const wrapper = mount(LogMessageComponent, {
+      ...globalConfig,
+      props: {
+        message,
+        viewModel: fakeViewModel(),
+      },
+    });
+
+    expect(wrapper.find('.markdown-resource.resource_icon--steel').exists()).is.true;
+    expect(wrapper.find('.markdown-resource.resource_icon--megacredits').exists()).is.true;
+    expect(wrapper.text()).contains('[ -2 -14 ]');
+  });
+  it('marks irreversible undo messages', () => {
+    const message = new LogMessage(LogMessageType.IRREVERSIBLE_UNDO, 'Test message', []);
+    const wrapper = shallowMount(LogMessageComponent, {
+      ...globalConfig,
+      props: {
+        message,
+        viewModel: fakeViewModel(),
+      },
+    });
+
+    expect(wrapper.find('li').classes()).contains('log-message--irreversible-undo');
+  });
+
+  it('marks bot takeover log messages', () => {
+    const message = new LogMessage(LogMessageType.BOT_TAKEOVER, 'A player left the game; a bot is now playing', []);
+    const wrapper = shallowMount(LogMessageComponent, {
+      ...globalConfig,
+      props: {message, viewModel: fakeViewModel()},
+    });
+
+    expect(wrapper.find('li').classes()).contains('log-message--bot-takeover');
+  });
+
   it('renders CARDS type as multiple card spans with locale-correct separator in English', () => {
     const message = new LogMessage(
       LogMessageType.DEFAULT,
@@ -70,7 +113,7 @@ describe('LogMessageComponent', () => {
       ', ' +
       '<span class="log-card background-color-active">Birds</span>' +
       ', and ' +
-      '<span class="log-card background-color-global-event">Celestic</span>',
+      '<span class="log-card background-color-corporation">Celestic</span>',
     );
   });
 
@@ -90,7 +133,7 @@ describe('LogMessageComponent', () => {
     expect(cardsContainer.innerHTML).to.equal(
       '<span class="log-card background-color-active">Ants</span>' +
       ', ' +
-      '<span class="log-card background-color-global-event">Ecoline</span>' +
+      '<span class="log-card background-color-corporation">Ecoline</span>' +
       ', and ' +
       '<span class="log-card background-color-active">Birds</span>',
     );
@@ -114,7 +157,7 @@ describe('LogMessageComponent', () => {
         ', ' +
         '<span class="log-card background-color-active">Birds</span>' +
         ' et ' +
-        '<span class="log-card background-color-global-event">Celestic</span>',
+      '<span class="log-card background-color-corporation">Celestic</span>',
       );
     } finally {
       PreferencesManager.resetForTest();
@@ -139,10 +182,43 @@ describe('LogMessageComponent', () => {
         '、' +
         '<span class="log-card background-color-active">Birds</span>' +
         '、' +
-        '<span class="log-card background-color-global-event">Celestic</span>',
+      '<span class="log-card background-color-corporation">Celestic</span>',
       );
     } finally {
       PreferencesManager.resetForTest();
     }
+  });
+
+  it('renders icons in plain text and STRING data', () => {
+    const message = new LogMessage(LogMessageType.DEFAULT, 'spent :r:energy: for ${0}', [
+      {type: LogMessageDataType.STRING, value: ':p:mc:'},
+    ]);
+    const wrapper = shallowMount(LogMessageComponent, {
+      ...globalConfig,
+      props: {message, viewModel: fakeViewModel()},
+    });
+
+    const html = wrapper.html();
+    expect(html).includes('<span class="markdown-resource resource_icon--energy"></span>');
+    expect(html).includes(
+      '<span class="markdown-production"><span class="markdown-resource resource_icon--megacredits"></span></span>');
+  });
+
+  it('renders RESOURCE, PRODUCTION, and CARD_RESOURCE data as icons', () => {
+    const message = new LogMessage(LogMessageType.DEFAULT, '${0} ${1} ${2}', [
+      {type: LogMessageDataType.RESOURCE, value: Resource.STEEL},
+      {type: LogMessageDataType.PRODUCTION, value: Resource.HEAT},
+      {type: LogMessageDataType.CARD_RESOURCE, value: CardResource.SYNDICATE_FLEET},
+    ]);
+    const wrapper = shallowMount(LogMessageComponent, {
+      ...globalConfig,
+      props: {message, viewModel: fakeViewModel()},
+    });
+
+    const html = wrapper.html();
+    expect(html).includes('<span class="markdown-resource resource_icon--steel"></span>');
+    expect(html).includes(
+      '<span class="markdown-production"><span class="markdown-resource resource_icon--heat"></span></span>');
+    expect(html).includes('<span class="markdown-resource card-resource-syndicate-fleet"></span>');
   });
 });

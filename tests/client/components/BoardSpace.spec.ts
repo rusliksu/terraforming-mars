@@ -2,13 +2,21 @@ import {mount} from '@vue/test-utils';
 import {globalConfig} from './getLocalVue';
 import {expect} from 'chai';
 import BoardSpace from '@/client/components/BoardSpace.vue';
+import {SpaceType} from '@/common/boards/SpaceType';
+import {SpaceBonus} from '@/common/boards/SpaceBonus';
 
 describe('BoardSpace', () => {
   it('has visible tile', async () => {
     const wrapper = mount(BoardSpace, {
       ...globalConfig,
       props: {
-        space: {id: 'm1', bonus: []},
+        space: {
+          x: 0,
+          y: 0,
+          id: 'm01',
+          bonus: [],
+          spaceType: SpaceType.LAND,
+        },
         tileView: 'show',
       },
     });
@@ -20,23 +28,48 @@ describe('BoardSpace', () => {
     const wrapper = mount(BoardSpace, {
       ...globalConfig,
       props: {
-        space: {id: 'm1', bonus: []},
+        space: {
+          x: 0,
+          y: 0,
+          id: 'm01',
+          bonus: [],
+          spaceType: SpaceType.LAND,
+        },
         tileView: 'hide',
       },
     });
 
     expect(wrapper.find('[data-test="tile"]').classes()).to.contain('board-hidden-tile');
   });
-
   it('adds a persona cube class for reserved player colors on the board', async () => {
     const wrapper = mount(BoardSpace, {
       ...globalConfig,
       props: {
-        space: {id: 'm1', bonus: [], color: 'gold'},
+        space: {id: 'm01', bonus: [], color: 'gold', x: 0, y: 0, spaceType: SpaceType.LAND},
         tileView: 'show',
       },
     });
 
     expect(wrapper.find('.board-cube').classes()).to.include('board-cube--persona');
+  });
+
+  it('renders a neutral player cube instead of a space bonus', async () => {
+    const wrapper = mount(BoardSpace, {
+      ...globalConfig,
+      props: {
+        space: {
+          x: 0,
+          y: 0,
+          id: 'm01',
+          bonus: [SpaceBonus.STEEL],
+          spaceType: SpaceType.LAND,
+          cube: 'martian-nature-wonders',
+        },
+        tileView: 'show',
+      },
+    });
+
+    expect(wrapper.find('[data-test="cube"]').exists()).is.true;
+    expect(wrapper.find('.board-space-bonuses').exists()).is.false;
   });
 });

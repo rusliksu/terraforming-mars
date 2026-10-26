@@ -1,0 +1,221 @@
+// ---------- Narrow only: filter button in the header, filters as a bottom sheet ----------
+.card-list-filter-toggle,
+.card-list-sheet-head,
+.card-list-sheet-foot,
+.card-list-scrim {
+  display: none;
+}
+
+@media only screen and (max-width: @card-list-narrow) {
+  .card-list {
+    --wrybit-card-list-header: @card-list-header-height-narrow;
+  }
+
+  // Phone and tablet: no room at the edge, the cards fill the width
+  .card-list-rail {
+    display: none;
+  }
+
+  .card-list-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      "menu title actions"
+      "search search search";
+    align-content: center;
+    gap: 8px;
+    padding: 0 12px;
+
+    h1 {
+      grid-area: title;
+      font-size: 18px;
+    }
+  }
+
+  // Narrow: only logo + page name, the app name would crowd the actions
+  .page-title-app {
+    display: none;
+  }
+
+  .card-list-header-actions {
+    grid-area: actions;
+  }
+
+  .card-list-header .page-toolbar {
+    grid-area: menu;
+  }
+
+  // Without search it stays one row, only the font gets smaller as above
+  .card-list-header.card-list-header--plain {
+    display: flex;
+    gap: 16px;
+  }
+
+  .card-list-search {
+    grid-area: search;
+    max-width: none;
+  }
+
+  .card-list-search-input {
+    padding-right: 186px;
+  }
+
+  .card-list-search-clear {
+    right: 150px;
+  }
+
+  .card-list-search-scope.create-game-segmented {
+    width: 144px;
+
+    button {
+      padding: 4px 2px;
+      font-size: 12px;
+    }
+  }
+
+  // Filter button with match count, badge = number of active filters
+  .card-list-filter-toggle {
+    .toolbar-glass-button();
+    position: relative;
+    display: flex;
+    gap: 6px;
+    width: auto;
+    padding: 0 12px 0 10px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: bold;
+  }
+
+  .card-list-filter-toggle-icon {
+    width: 16px;
+    height: 12px;
+    background:
+      linear-gradient(#fff, #fff) top / 100% 2px no-repeat,
+      linear-gradient(#fff, #fff) center / 66% 2px no-repeat,
+      linear-gradient(#fff, #fff) bottom / 33% 2px no-repeat;
+  }
+
+  .card-list-filter-toggle-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    box-sizing: border-box;
+    border-radius: 9px;
+    background: @bg_action;
+    font-size: 11px;
+    line-height: 18px;
+    text-align: center;
+  }
+
+  .card-list-layout {
+    display: block;
+    padding: 12px;
+  }
+
+  .card-list-filters {
+    .frosted-surface();
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 40;
+    max-height: 85vh;
+    padding: 0 12px calc(12px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid @create-game-line;
+    border-radius: 16px 16px 0 0;
+    background: @create-game-surface-strong;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.5);
+    transform: translateY(105%);
+    transition: transform 0.25s ease;
+
+    &--open {
+      transform: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
+  }
+
+  .card-list-sheet-head {
+    display: block;
+    position: relative;
+    padding: 18px 2px 0;
+
+    // Handle as a hint that the sheet comes from below
+    &::before {
+      content: "";
+      position: absolute;
+      top: 7px;
+      left: 50%;
+      width: 40px;
+      height: 4px;
+      margin-left: -20px;
+      border-radius: 2px;
+      background: @create-game-line;
+    }
+
+    h2 {
+      font-size: 20px;
+    }
+  }
+
+  .card-list-sheet-foot {
+    display: flex;
+    position: sticky;
+    bottom: 0;
+
+    .btn {
+      flex: 1;
+      height: 44px;
+      margin: 0;
+    }
+  }
+
+  .card-list-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    background: rgba(0, 0, 0, 0.5);
+
+    &--open {
+      display: block;
+    }
+  }
+
+  .card-list-section-legend {
+    display: none;
+  }
+
+  .card-list-section-head h2 {
+    font-size: 18px;
+  }
+
+  // No filter column next to it (bottom sheet): a gap below the header like the one to the cards below
+  .card-list-section-head {
+    top: calc(var(--wrybit-card-list-header) + 10px);
+    margin-bottom: 10px;
+  }
+
+  .card-list-scroll-top {
+    right: 14px;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+// Phone: cards scaled down, two side by side
+@media only screen and (max-width: @card-list-phone) {
+  .card-list-cards {
+    justify-content: center;
+
+    .cardbox {
+      zoom: @card-list-phone-card-zoom;
+    }
+  }
+
+  // Colonies, milestones, awards, agendas have fixed widths (colony a good 440px) and would widen the page
+  .card-list-section-body .player_home_colony {
+    zoom: @card-list-phone-card-zoom;
+  }
+}

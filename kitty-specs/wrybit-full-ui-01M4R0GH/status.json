@@ -1,0 +1,187 @@
+{
+  "event_count": 55,
+  "last_event_id": "01M5PDF9ECM7K34HMZ8BXPTC1C",
+  "materialized_at": "2026-10-24T07:37:14.444765+00:00",
+  "mission_number": "",
+  "mission_slug": "wrybit-full-ui-01M4R0GH",
+  "mission_type": "software-dev",
+  "summary": {
+    "approved": 5,
+    "blocked": 0,
+    "canceled": 0,
+    "claimed": 0,
+    "done": 0,
+    "for_review": 0,
+    "in_progress": 1,
+    "in_review": 0,
+    "planned": 1
+  },
+  "work_packages": {
+    "WP01": {
+      "actor": "codex",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 1,
+      "lane": "approved",
+      "last_event_id": "01M4V2CSEWM93P5CNC57RZDYWP",
+      "last_transition_at": "2026-10-13T16:44:08.540280+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Независимая сессия reviewer-renata /root/wrybit_wp_review одобрила code7deb7daa69; 12709passed,3skipped,0failures. Только оболочка T001–T004; полный UI ещё не принят."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "C:\\Users\\Ruslan\\.codex-worktrees\\terraforming-mars-release-main-wrybit-full-ui\\kitty-specs\\wrybit-full-ui-01M4R0GH\\tasks\\WP01-shell\\review-cycle-2.md",
+        "reference": "review-cycle://wrybit-full-ui-01M4R0GH/WP01-shell/review-cycle-2.md",
+        "reviewer": "reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 15048,
+      "shell_pid_created_at": "1791909475.1186209",
+      "subtasks": {
+        "T001": "done",
+        "T002": "done",
+        "T003": "done",
+        "T004": "done"
+      }
+    },
+    "WP02": {
+      "actor": "codex",
+      "agent": "codex",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
+      "force_count": 0,
+      "lane": "approved",
+      "last_event_id": "01M50CT3N0SZBPA1FZCMXTDW6S",
+      "last_transition_at": "2026-10-15T18:22:22.880128+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Scoped acceptance under approved2026-10-15 gates; all subtask events committed, current logo contract fixed, full downstream UI rows open.",
+        "Independent Reviewer Renata /root/wrybit_wp_review approved WP02 T005-T008 under user-approved stage-coverage. All 8 prompt checks pass or documented N/A for WP03 dependencies. Fresh JUnit 12808 passed, 3 skipped, zero failures/errors; production build passed. All 21 full UI scenarios remain open for later WPs/WP07."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "feedback_path": "C:\\Users\\Ruslan\\.codex-worktrees\\terraforming-mars-release-main-wrybit-full-ui\\kitty-specs\\wrybit-full-ui-01M4R0GH\\tasks\\WP02-visuals\\review-cycle-1.md",
+        "reference": "review-cycle://wrybit-full-ui-01M4R0GH/WP02-visuals/review-cycle-1.md",
+        "reviewer": "reviewer-renata",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 51832,
+      "shell_pid_created_at": "1792088158.5409975",
+      "subtasks": {
+        "T005": "done",
+        "T006": "done",
+        "T007": "done",
+        "T008": "done"
+      }
+    },
+    "WP03": {
+      "actor": "user",
+      "agent": "codex",
+      "agent_profile": "__resolved_profile_absent__",
+      "agent_profile_version": "__resolved_profile_version_absent__",
+      "force_count": 2,
+      "lane": "approved",
+      "last_event_id": "01M55Q1H92A1D7ZMKT9DBNB5RS",
+      "last_transition_at": "2026-10-17T19:57:24.130029+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Компоненты создания и всех типов ввода проверены на свежей базе; полные сценарии остаются у WP04-WP07. Полный штатный runner без обхода guard.",
+        "Независимый review отклонил два сценария создания/обновления выбранных карт; требуется исправление с регрессиями.",
+        "Исправлены review P2/P3; усилен реальный newGameConfig oracle, targeted/types/lint/build/browser green. Повтор полного штатного runner после конечного timeout, без skip/force.",
+        "Полный JUnit вручную выявил 2 failures SettingsLinkFlow alert mock при isolate:false; положительный gate transition не считается готовностью. Исправление тестовой границы и повторная проверка.",
+        "Исправления review и полный client1254 зелёные; повтор полного runner с clean npm ci, без сетевого npm audit, без ослабления тестов/build.",
+        "Независимый Reviewer Renata: PASS всех8 пунктов для T009–T012 на e4f2d1ae8c; parent проверил AST7/15 и frozen diff0. Native cycle4 JUnit12903passed/3skipped/0fail/0error, SHA256886c5574bded1e30a48385dd7fdb432b30e004430d4532019cb69971a775a924. Все21 полные UI-строки открыты для WP04–WP07."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "C:\\Users\\Ruslan\\.codex-worktrees\\terraforming-mars-release-main-wrybit-full-ui\\kitty-specs\\wrybit-full-ui-01M4R0GH\\tasks\\WP03-inputs\\review-cycle-2.md",
+        "reference": "review-cycle://wrybit-full-ui-01M4R0GH/WP03-inputs/review-cycle-2.md",
+        "reviewer": "user",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 9824,
+      "shell_pid_created_at": "1792266860.2137177",
+      "subtasks": {
+        "T009": "done",
+        "T010": "done",
+        "T011": "done",
+        "T012": "done"
+      }
+    },
+    "WP04": {
+      "actor": "codex",
+      "agent": "codex",
+      "agent_profile": "reviewer-renata",
+      "agent_profile_version": "1.0",
+      "force_count": 1,
+      "lane": "approved",
+      "last_event_id": "01M55W5V83P2MT7J856YZYZFEC",
+      "last_transition_at": "2026-10-17T21:27:08.291359+00:00",
+      "model": "__resolved_model_absent__",
+      "notes": [
+        "Current primary ancestry restored; component checks green, full flows assigned to WP07",
+        "Cycle1 P2 fixed; visible native overflow counts and refresh regression, App proof green",
+        "Independent cycle2 PASS all8 rubric items for T013-T016 at1288d7ca342b72507231c7d26ed7ff06d805e6f3. Parent960hashes and gameplay/AI boundaries verified. Corrected declared runner wp04-native-cycle2-retry.xml:12920total/12917passed/3skipped/0fail/0error SHA25669fbb2a9c0b6a2e18bfd3578a3d89eaf915c1bc079bab6cb7a743d4ac3a68f03. Original npm-ci EPERM remains failed; clean retry after stopping owned preview. All21full UI flows/staging OPEN for WP05-WP07."
+      ],
+      "provider": "__resolved_provider_absent__",
+      "review": null,
+      "review_result": {
+        "feedback_path": "C:\\Users\\Ruslan\\.codex-worktrees\\terraforming-mars-release-main-wrybit-full-ui\\kitty-specs\\wrybit-full-ui-01M4R0GH\\tasks\\WP04-expansions\\review-cycle-2.md",
+        "reference": "review-cycle://wrybit-full-ui-01M4R0GH/WP04-expansions/review-cycle-2.md",
+        "reviewer": "Reviewer Renata independent child wrybit_wp_review",
+        "verdict": "approved"
+      },
+      "role": "reviewer",
+      "shell_pid": 51040,
+      "shell_pid_created_at": "1792271954.6359937",
+      "subtasks": {
+        "T013": "done",
+        "T014": "done",
+        "T015": "done",
+        "T016": "done"
+      }
+    },
+    "WP05": {
+      "actor": "reviewer-wp05",
+      "agent": "codex",
+      "agent_profile": "implementer-ivan",
+      "agent_profile_version": "1.0",
+      "force_count": 0,
+      "lane": "approved",
+      "last_event_id": "01M5PD3ZC691ZATAQ8JA6FWVN4",
+      "last_transition_at": "2026-10-24T07:31:03.686550+00:00",
+      "model": "__resolved_model_absent__",
+      "provider": "__resolved_provider_absent__",
+      "review_result": {
+        "reference": "review-cycle://wrybit-full-ui-01M4R0GH/WP05-mobile/review-independent-20261023.md",
+        "reviewer": "reviewer-wp05",
+        "verdict": "approved"
+      },
+      "role": "implementer",
+      "shell_pid": 3656,
+      "shell_pid_created_at": "1792272540.3041172"
+    },
+    "WP06": {
+      "actor": "implementer-ivan",
+      "agent": "implementer-ivan",
+      "force_count": 0,
+      "lane": "in_progress",
+      "last_event_id": "01M5PDF9ECM7K34HMZ8BXPTC1C",
+      "last_transition_at": "2026-10-24T07:37:14.444765+00:00"
+    },
+    "WP07": {
+      "actor": "finalize-tasks",
+      "force_count": 0,
+      "lane": "planned",
+      "last_event_id": "01M4R21PC22Q4J98DJDJPHJ6S4",
+      "last_transition_at": "2026-10-12T12:40:21.634304+00:00"
+    }
+  }
+}

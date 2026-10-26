@@ -38,8 +38,8 @@ export class Petra extends CeoCard {
     if (turmoil === undefined || this.isDisabled === true) {
       return false;
     }
-    const numNeutralDelegates = DELEGATES_FOR_NEUTRAL_PLAYER - turmoil.getAvailableDelegateCount('NEUTRAL');
-    const playerTotalDelegateCount = turmoil.getAvailableDelegateCount(player);
+    const numNeutralDelegates = DELEGATES_FOR_NEUTRAL_PLAYER - turmoil.delegateReserve.get('NEUTRAL');
+    const playerTotalDelegateCount = turmoil.delegateReserve.get(player);
     return playerTotalDelegateCount >= numNeutralDelegates;
   }
 
@@ -74,7 +74,7 @@ export class Petra extends CeoCard {
       turmoil.delegateReserve.remove(player);
       count += 1;
     }
-    // If we dont do this player will not get the bonus for POLITICIAN Awards
+    // If we don't do this player will not get the bonus for POLITICIAN Awards
     player.totalDelegatesPlaced += count;
     player.stock.add(Resource.MEGACREDITS, count * 3, {log: true});
 

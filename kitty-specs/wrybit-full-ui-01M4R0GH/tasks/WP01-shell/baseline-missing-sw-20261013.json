@@ -1,0 +1,19 @@
+{
+  "wp_id": "WP01",
+  "captured_at": "2026-10-12T21:27:28Z",
+  "base_branch": "codex/wrybit-full-ui",
+  "base_commit": "282db0f692409f9987184e22ee17c2976fb4770e",
+  "test_runner": "custom",
+  "total": 1,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "failures": [
+    {
+      "test": "requestProcessor.routes sw.js to the asset handler",
+      "error": "Unknown error",
+      "file": "D:\\tm-db\\smartbot-lab\\spec-kitty\\wrybit-owned-repair-tmp\\tmpho1ifj0o\\baseline-worktree\\tests\\server\\requestProcessor.spec.ts:?"
+    }
+  ],
+  "source_identity": "DeclaredCommandScopeSource/junit_xml"
+}

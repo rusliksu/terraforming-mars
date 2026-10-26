@@ -12,8 +12,10 @@ import {liteBoolean} from '../../../common/LiteBoolean';
 
 export type ItemOptions = Partial<{
   size: Size;
-  amount: number;
+  amount?: number;
   all: boolean;
+  /** Conglomerates: outline this item green to show it belongs to, or goes to, a teammate. */
+  teammate: boolean;
   digit: boolean;
   played: boolean;
   secondaryTag: Tag | AltSecondaryTag;
@@ -32,6 +34,7 @@ export type ItemOptions = Partial<{
 export class CardRenderItem implements ICardRenderItem {
   public readonly is = 'item';
   public anyPlayer?: boolean;
+  public teammate?: boolean;
   public showDigit?: true;
   public amountInside?: true;
   public text?: string;
@@ -49,7 +52,7 @@ export class CardRenderItem implements ICardRenderItem {
   public resource?: CardResource | undefined;
   public tag?: Tag | undefined;
 
-  constructor(public type: CardRenderItemType, public amount: number = -1, options?: ItemOptions) {
+  constructor(public type: CardRenderItemType, public amount?: number, options?: ItemOptions) {
     switch (options?.digit) {
     case true:
       this.showDigit = true;
@@ -57,7 +60,7 @@ export class CardRenderItem implements ICardRenderItem {
     case false:
       break; // it's undefined
     default:
-      this.showDigit = liteBoolean(Math.abs(this.amount) > 5);
+      this.showDigit = liteBoolean(Math.abs(this.amount ?? 0) > 5);
     }
 
     if (options === undefined) {
@@ -68,6 +71,7 @@ export class CardRenderItem implements ICardRenderItem {
       this.amount = options.amount;
     }
     this.anyPlayer = options.all;
+    this.teammate = options.teammate;
     this.secondaryTag = options.secondaryTag;
 
     if (options.clone === true) {

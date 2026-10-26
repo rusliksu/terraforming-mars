@@ -1,12 +1,12 @@
 <template>
   <div class="player-timer">
-    <template v-if="hasHours()">
-        <div class="player-timer-hours">{{ getHours() }}</div>
+    <template v-if="hasHours">
+        <div class="player-timer-hours">{{ hours }}</div>
         <div class="timer-delimiter">:</div>
     </template>
-    <div class="player-timer-minutes">{{ getMinutes() }}</div>
+    <div class="player-timer-minutes">{{ minutes }}</div>
     <div class="timer-delimiter">:</div>
-    <div class="player-timer-seconds">{{ getSeconds() }}</div>
+    <div class="player-timer-seconds">{{ seconds }}</div>
   </div>
 </template>
 
@@ -29,49 +29,54 @@ export default defineComponent({
   data() {
     return {
       timerText: '',
+      intervalId: undefined as number | undefined,
     };
   },
   mounted() {
     this.updateTimer();
+    this.intervalId = window.setInterval(() => {
+      if (this.live) {
+        this.updateTimer();
+      }
+    }, 1000);
+  },
+  beforeUnmount() {
+    window.clearInterval(this.intervalId);
   },
   watch: {
-    timerText: {
-      handler() {
-        if (this.live) {
-          setTimeout(() => {
-            this.updateTimer();
-          }, 1000);
-        }
-      },
+    timer() {
+      this.updateTimer();
     },
   },
-  methods: {
-    updateTimer() {
-      this.timerText = Timer.toString(this.timer);
-    },
-    hasHours() {
+  computed: {
+    hasHours(): number {
       if (this.timerText.split(':').length > 2) {
         return 1;
       }
       return 0;
     },
-    getHours(): string {
-      if (this.hasHours()) {
+    hours(): string {
+      if (this.hasHours) {
         return this.timerText.split(':')[0];
       }
       return '';
     },
-    getMinutes(): string {
-      if (this.hasHours()) {
+    minutes(): string {
+      if (this.hasHours) {
         return this.timerText.split(':')[1];
       }
       return this.timerText.split(':')[0];
     },
-    getSeconds(): string {
-      if (this.hasHours()) {
+    seconds(): string {
+      if (this.hasHours) {
         return this.timerText.split(':')[2];
       }
       return this.timerText.split(':')[1];
+    },
+  },
+  methods: {
+    updateTimer() {
+      this.timerText = Timer.toString(this.timer);
     },
   },
 });

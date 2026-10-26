@@ -8,8 +8,14 @@
                     <span class="ma-player-cube"><i :class="playerCubeCss(milestone.color)"></i></span>
                 </span>
                 <span v-if="isLearnerModeOn()">
-                    <span v-for="(spotPrice, index) in getAvailableMilestoneSpots()" :key="index" class="milestone-award-inline unpaid">
-                        <div class="milestone-award-price">{{spotPrice}}</div>
+                    <span v-for="(spotPrice, index) in availableMilestoneSpots" :key="index" class="milestone-award-inline unpaid">
+                        <div class="milestone-award-price-row">
+                          <div class="milestone-award-price">{{spotPrice}}</div>
+                          <template v-if="conglomeratesExpansion">
+                            <div class="milestone-award-arrow" :title="$t('You also gain 1 Coordination')"></div>
+                            <div class="milestone-award-coordination" :title="$t('You also gain 1 Coordination')"></div>
+                          </template>
+                        </div>
                     </span>
                 </span>
             </div>
@@ -31,7 +37,8 @@
 <script lang="ts">
 
 import {defineComponent} from 'vue';
-import {MAX_MILESTONES, MILESTONE_COST} from '@/common/constants';
+import {MAX_MILESTONES} from '@/common/constants';
+import {availableMilestonePrices} from '@/client/components/milestoneAwardPrices';
 import Milestone from '@/client/components/Milestone.vue';
 import {ClaimedMilestoneModel} from '@/common/models/ClaimedMilestoneModel';
 import {Preferences, PreferencesManager} from '@/client/utils/PreferencesManager';
@@ -52,6 +59,11 @@ export default defineComponent({
       type: Object as () => Readonly<Preferences>,
       default: () => PreferencesManager.INSTANCE.values(),
     },
+    // Conglomerates scales the claim cost 1.5x (rounded up) -- see Player.milestoneCost().
+    conglomeratesExpansion: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     const claimedMilestoneCount = this.milestones.filter((milestone) => milestone.playerName).length;
@@ -64,16 +76,18 @@ export default defineComponent({
   components: {
     Milestone,
   },
+  computed: {
+    availableMilestoneSpots(): Array<number> {
+      const count = this.milestones.filter((milestone) => milestone.playerName).length;
+      return availableMilestonePrices(count, this.conglomeratesExpansion);
+    },
+  },
   methods: {
     toggleDescription() {
       this.showDescription = !this.showDescription;
     },
     toggleList() {
       this.showMilestoneDetails = !this.showMilestoneDetails;
-    },
-    getAvailableMilestoneSpots(): Array<number> {
-      const count = this.milestones.filter((milestone) => milestone.playerName).length;
-      return Array(MAX_MILESTONES - count).fill(MILESTONE_COST);
     },
     isLearnerModeOn(): boolean {
       return this.preferences.learner_mode;

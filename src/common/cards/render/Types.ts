@@ -21,6 +21,8 @@ export interface ICardRenderSymbol extends CardComponent {
   size: Size;
   isIcon?: true;
   isSuperscript?: true;
+  /** Conglomerates: an arrow representing a teammate's action being triggered -- rendered green. */
+  teammate?: true;
   readonly is: 'symbol';
 }
 
@@ -89,9 +91,11 @@ export interface ICardRenderItem extends CardComponent {
   /** The thing being drawn */
   type: CardRenderItemType;
   /** The number of times it is drawn (or MC count) */
-  amount: number;
+  amount?: number;
   /** activated for any player */
   anyPlayer?: boolean;
+  /** Conglomerates: this item belongs to, or goes to, the acting player's teammate -- rendered with a green outline. */
+  teammate?: boolean;
   /** render a digit instead of chain of items */
   showDigit?: true;
   /** show the amount for the item in its container */

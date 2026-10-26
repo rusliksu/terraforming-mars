@@ -1,3 +1,4 @@
+import {TileType} from '../../common/TileType';
 import {Space} from '../boards/Space';
 import {DeferredAction} from '../deferredActions/DeferredAction';
 import {Priority} from '../deferredActions/Priority';
@@ -16,6 +17,8 @@ export abstract class BasePlaceMoonTile extends DeferredAction<Space> {
     super(player, Priority.DEFAULT);
   }
 
+  protected readonly tileType?: TileType;
+
   protected abstract getSpaces(moonData: MoonData): ReadonlyArray<Space>;
   protected abstract placeTile(space: Space): PlayerInput | undefined;
 
@@ -25,7 +28,7 @@ export abstract class BasePlaceMoonTile extends DeferredAction<Space> {
     if (spaces.length === 0) {
       return undefined;
     }
-    return new SelectSpace(this.title, spaces)
+    return new SelectSpace(this.title, spaces, this.tileType)
       .andThen((space) => {
         this.placeTile(space);
         this.cb(space);

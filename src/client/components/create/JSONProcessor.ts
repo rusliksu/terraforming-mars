@@ -1,5 +1,5 @@
 import * as json_constants from '@/client/components/create/json';
-import {Expansion} from '@/common/cards/GameModule';
+import {DEFAULT_EXPANSIONS, Expansion} from '@/common/cards/GameModule';
 import {JSONObject, JSONValue} from '../../../common/Types';
 import {CreateGameModel} from './CreateGameModel';
 import {normalizePlayerNameForColor, PLAYER_COLORS} from '@/common/Color';
@@ -7,6 +7,11 @@ import {NewPlayerModel, normalizePreludeHandicap} from '@/common/game/NewGameCon
 import {CardName} from '@/common/cards/CardName';
 import {cast} from '@/common/utils/utils';
 import {CARD_RENAMES} from '@/common/cards/CardRenames';
+import {sanitizeEscapeVelocityOptions} from '@/common/game/escapeVelocity';
+import {isAiLevel} from '@/common/ai/AiLevel';
+import {BoardName} from '@/common/boards/BoardName';
+import {RandomBoardOption} from '@/common/boards/RandomBoardOption';
+import {boardOptions} from '@/common/boards/randomBoardOptions';
 
 type JSONProcessorOptions = {
   preserveAsyncGame?: boolean;
@@ -45,6 +50,7 @@ export class JSONProcessor {
       return {
         ...safePlayer,
         isBot: false,
+        ...(isAiLevel(player.aiLevel) ? {aiLevel: player.aiLevel} : {}),
         preludeHandicap: normalizePreludeHandicap(player.preludeHandicap),
         name: normalizePlayerNameForColor(player.color, player.name),
       };
@@ -68,11 +74,12 @@ export class JSONProcessor {
     initializeArrayFieldWithBackup(json_constants.OLD_BANNED_CARDS, json_constants.BANNED_CARDS);
     const ev = json.escapeVelocity as JSONObject;
     if (ev !== undefined && typeof ev === 'object') {
+      const options = sanitizeEscapeVelocityOptions(ev);
       json.escapeVelocityMode = true;
-      json.escapeVelocityBonusSeconds = ev['bonusSectionsPerAction'];
-      json.escapeVelocityPenalty = ev['penaltyVPPerPeriod'];
-      json.escapeVelocityPeriod = ev['penaltyPeriodMinutes'];
-      json.escapeVelocityThreshold = Number.parseInt(ev['thresholdMinutes'] as string ?? '');
+      json.escapeVelocityBonusSeconds = options.bonusSectionsPerAction;
+      json.escapeVelocityPenalty = options.penaltyVPPerPeriod;
+      json.escapeVelocityPeriod = options.penaltyPeriodMinutes;
+      json.escapeVelocityThreshold = options.thresholdMinutes;
     }
 
     function set<T>(field: string): Array<T> {
@@ -82,6 +89,9 @@ export class JSONProcessor {
     this.bannedCards = set(json_constants.BANNED_CARDS);
     this.includedCards = set(json_constants.INCLUDED_CARDS);
 
+    this.model.customBoardCode = undefined;
+    this.model.customMoonBoardCode = undefined;
+    this.model.customVenusSurfaceBoardCode = undefined;
     this.model.playersCount = normalizedPlayers.length;
     this.model.showBannedCards = this.bannedCards.length > 0;
     this.model.showIncludedCards = this.includedCards.length > 0;
@@ -104,7 +114,24 @@ export class JSONProcessor {
       starwars: json_constants.STARWARSEXPANSION,
       underworld: json_constants.UNDERWORLDEXPANSION,
       deltaProject: json_constants.DELTA_PROJECT_EXPANSION,
+      sillyfication: json_constants.SILLYFICATION_EXPANSION,
+      betterMars: json_constants.BETTER_MARS_EXPANSION,
+      rebalanced: json_constants.REBALANCED_EXPANSION,
+      customCards: json_constants.CUSTOM_CARDS_EXPANSION,
+      conglomerates: json_constants.CONGLOMERATES_EXPANSION,
+      corporateBetterments: json_constants.CORPORATE_BETTERMENTS_EXPANSION,
+      idesOfMars: json_constants.IDES_OF_MARS_EXPANSION,
+      robAntilles: json_constants.ROB_ANTILLES_EXPANSION,
+      moreParties: json_constants.MORE_PARTIES_EXPANSION,
+      venusPhase2: json_constants.VENUS_PHASE_2_EXPANSION,
+      industries: json_constants.INDUSTRIES_EXPANSION,
+      highOrbit: json_constants.HIGH_ORBIT_EXPANSION,
+      solaris: json_constants.SOLARIS_EXPANSION,
     } as const;
+    const expansions = json.expansions as Partial<Record<Expansion, boolean>> | undefined;
+    if (expansions !== undefined) {
+      this.model.expansions = {...DEFAULT_EXPANSIONS};
+    }
     for (const expansion of Object.keys(oldExpansionFields)) {
       const x = oldExpansionFields[expansion as Expansion];
       const val = json[x];
@@ -112,10 +139,25 @@ export class JSONProcessor {
         this.model.expansions[expansion as Expansion] = val;
       }
     }
+    if (expansions !== undefined) {
+      this.model.expansions = {...this.model.expansions, ...expansions};
+    }
+    this.model.expansions.betterMars &&= this.model.expansions.pathfinders;
+    const legacyRebalanced = json[json_constants.REBALANCED_EXPANSION];
+    this.model.expansions.rebalanced = expansions?.rebalanced ??
+      (typeof legacyRebalanced === 'boolean' ? legacyRebalanced : false);
 
     // Capture the solar phase option since several of the other results will change
     // it via the watch mechanism.
     this.solarPhaseOption = safeBoolean(json.solarPhaseOption);
+
+    // Older settings have a single `board`, which may be a random option.
+    if (json.board !== undefined && json.boards === undefined) {
+      const board = json.board as BoardName | RandomBoardOption;
+      json.boards = board === RandomBoardOption.OFFICIAL || board === RandomBoardOption.ALL ?
+        boardOptions(board) :
+        [board];
+    }
 
     const ignoredFields = [
       // Instead of ignoring these fields, let them pass through to the model.
@@ -128,7 +170,9 @@ export class JSONProcessor {
       json_constants.OLD_CUSTOM_COLONIES,
       json_constants.OLD_CUSTOM_CORPORATIONS,
       ...Object.values(oldExpansionFields),
+      'board',
       'escapeVelocity',
+      'expansions',
       'turnBasedGame',
       'botGame',
       'players',

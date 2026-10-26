@@ -11,14 +11,112 @@ import {GlobalParameter} from '../../src/common/GlobalParameter';
 import {Phase} from '../../src/common/Phase';
 import {MicroMills} from '../../src/server/cards/base/MicroMills';
 import {EarthCatapult} from '../../src/server/cards/base/EarthCatapult';
+import {Rogers} from '../../src/server/cards/ceos/Rogers';
+import {OrOptions} from '../../src/server/inputs/OrOptions';
+import {SelectOption} from '../../src/server/inputs/SelectOption';
+import {Builder} from '../../src/server/milestones/Builder';
+import {GeneralistConglomerates} from '../../src/server/milestones/conglomerates/GeneralistConglomerates';
+import {conglomeratesVariant} from '../../src/server/milestones/conglomerates/ConglomeratesMilestoneVariant';
+import {CuttingEdgeTechnology} from '../../src/server/cards/promo/CuttingEdgeTechnology';
+import {CuttingEdgeTechnologyRebalanced} from '../../src/server/cards/rebalanced/CuttingEdgeTechnologyRebalanced';
+import {Xavier} from '../../src/server/cards/ceos/Xavier';
+import {AdhaiHighOrbitConstructions} from '../../src/server/cards/pathfinders/AdhaiHighOrbitConstructions';
+import {Birds} from '../../src/server/cards/base/Birds';
+import {Asteroid} from '../../src/server/cards/base/Asteroid';
+import {ICard} from '../../src/server/cards/ICard';
 
 describe('ServerModel', () => {
+  it('projects conditional discounts from canonical methods without changing payable prices or pending input', () => {
+    const [, player] = testGame(2);
+    const technology: ICard = new CuttingEdgeTechnology();
+    const rebalanced = new CuttingEdgeTechnologyRebalanced();
+    const xavier = new Xavier();
+    const adhai = new AdhaiHighOrbitConstructions();
+    player.playedCards.push(technology, rebalanced, xavier, adhai);
+    const birds = new Birds();
+    const asteroid = new Asteroid();
+    const prompt = new SelectOption('Confirm selection');
+    player.setWaitingFor(prompt);
+    const fixedSources = [{source: technology.name, amount: 2, condition: 'requirements'},
+      {source: rebalanced.name, amount: 2, condition: 'requirements'}];
+    for (const resources of [0, 1, 2, 5]) {
+      adhai.resourceCount = resources;
+      const prices = [player.getCardCost(birds), player.getCardCost(asteroid)];
+      const expected = resources < 2 ? fixedSources :
+        [...fixedSources, {source: adhai.name, amount: resources === 2 ? 1 : 2, condition: 'spaceWithoutPlanetaryTags'}];
+      expect(Server.getPlayer(player, true).conditionalDiscounts).deep.eq(expected);
+      expect([player.getCardCost(birds), player.getCardCost(asteroid)]).deep.eq(prices);
+      expect(player.getWaitingFor()).eq(prompt);
+      expect(adhai.resourceCount).eq(resources);
+      expect(xavier.isDisabled).is.false;
+    }
+    xavier.isDisabled = true;
+    expect(Server.getPlayer(player, true).conditionalDiscounts).deep.eq([
+      ...fixedSources, {source: xavier.name, amount: 1, condition: 'requirements'},
+      {source: adhai.name, amount: 2, condition: 'spaceWithoutPlanetaryTags'},
+    ]);
+    technology.getCardDiscount = () => 7;
+    expect(Server.getPlayer(player, true).conditionalDiscounts?.find((discount) => discount.source === technology.name)?.amount).eq(7);
+  });
+
+  it('keeps conditional badges independent of private hands and identical for player and spectator projections', () => {
+    const [game, player] = testGame(2);
+    player.playedCards.push(new CuttingEdgeTechnology());
+    const expected = Server.getPlayer(player, true).conditionalDiscounts;
+    player.cardsInHand.push(new Asteroid());
+    expect(Server.getPlayer(player, false).conditionalDiscounts).deep.eq(expected);
+    player.cardsInHand.push(new Birds());
+    expect(Server.getPlayer(player, true).conditionalDiscounts).deep.eq(expected);
+    expect(Server.getSpectatorModel(game).players.find((publicPlayer) => publicPlayer.color === player.color)?.conditionalDiscounts).deep.eq(expected);
+  });
+
+  it('projects existing milestone display thresholds without changing scores or claimability', () => {
+    const [game] = testGame(2);
+    const Builder12 = conglomeratesVariant('Builder12', 'Have 12 building tags in play', () => new Builder());
+    game.milestones = [new Builder(), new Builder12(), new GeneralistConglomerates()];
+    const expected = game.milestones.map((milestone) => game.players.map((player) => ({
+      color: player.color, score: milestone.getScore(player), claimable: milestone.canClaim(player),
+    })));
+    const names = game.milestones.map((milestone) => milestone.name);
+    const models = Server.getMilestones(game);
+    expect(models[0]).to.have.property('threshold', 8);
+    expect(models[1]).to.have.property('threshold', 12);
+    expect(models[2]).to.have.property('threshold', undefined);
+    expect(models.map((model) => model.scores)).deep.eq(expected);
+    expect(game.milestones.map((milestone) => milestone.name)).deep.eq(names);
+  });
+
+  it('identifies the pending input across reads and replaces its identity for an identical new prompt', () => {
+    const [game, player, other] = testGame(2);
+    player.setWaitingFor(new SelectOption('Confirm selection'));
+    const first = Server.getPlayerModel(player);
+    expect(first.waitingForId).to.be.a('string');
+    other.megaCredits++;
+    expect(Server.getPlayerModel(player).waitingForId).eq(first.waitingForId);
+    expect(player.getWaitingFor()).to.not.eq(undefined);
+
+    player.popWaitingFor();
+    expect(Server.getPlayerModel(player).waitingForId).eq(undefined);
+    player.setWaitingFor(new SelectOption('Confirm selection'));
+    const next = Server.getPlayerModel(player);
+    expect(next.waitingFor).deep.eq(first.waitingFor);
+    expect(next.waitingForId).not.eq(first.waitingForId);
+    expect(Server.getSpectatorModel(game)).not.to.have.property('waitingForId');
+  });
+
+  it('advertises the current Astra replay exclusions in both public models', () => {
+    const [game, player] = testGame(2);
+    const exclusions = ['Patent Manipulation', 'Hostile Takeover'];
+    expect(Server.getSimpleGameModel(game).astraMechanicaReplayTargetExclusions).deep.eq(exclusions);
+    expect(Server.getPlayerModel(player).game.astraMechanicaReplayTargetExclusions).deep.eq(exclusions);
+  });
+
   let player: TestPlayer;
   let player2: TestPlayer;
   let game: IGame;
 
-  function createTestGame(showOtherPlayersVP: boolean) {
-    [game, player, player2] = testGame(2, {showOtherPlayersVP});
+  function createTestGame(showOtherPlayersVP: boolean, undoStepOption = false) {
+    [game, player, player2] = testGame(2, {showOtherPlayersVP, undoStepOption});
     // Claim milestone
     const milestone = new Mayor();
 
@@ -166,5 +264,115 @@ describe('ServerModel', () => {
     const response = Server.getPlayerModel(player);
 
     expect(response.game.inputSeq).eq(12);
+  });
+
+  it('exposes current-generation CEO effect state', () => {
+    createTestGame(false);
+    const rogers = new Rogers();
+    player.playedCards.push(rogers);
+
+    rogers.opgActionIsActive = true;
+    let response = Server.getPlayerModel(player);
+    expect(response.thisPlayer.tableau.find((card) => card.name === rogers.name)?.opgActionIsActive).eq(true);
+
+    rogers.opgActionIsActive = false;
+    response = Server.getPlayerModel(player);
+    expect(response.thisPlayer.tableau.find((card) => card.name === rogers.name)?.opgActionIsActive).eq(false);
+  });
+
+  it('exposes stable PlayerInput annotations to machine-controlled clients', () => {
+    [game, player] = testGame(1);
+    const waitingFor = new OrOptions(
+      new SelectOption('Surrender this game and start a bot'),
+      new SelectOption('Continue playing'),
+    ).annotate('surrender-confirmation');
+
+    const response = Server.getWaitingFor(player, waitingFor);
+
+    expect(response).not.to.be.undefined;
+    expect(response!.annotation).eq('surrender-confirmation');
+  });
+
+  it('exposes annotations on nested machine-controlled options', () => {
+    [game, player] = testGame(1);
+    const waitingFor = new OrOptions(
+      new SelectOption('Surrender').annotate('surrender-action'),
+      new SelectOption('Continue'),
+    );
+
+    const response = Server.getWaitingFor(player, waitingFor);
+
+    expect(response).not.to.be.undefined;
+    if (response?.type !== 'or') {
+      throw new Error('Expected an OrOptions response');
+    }
+    expect(response.options[0].annotation).eq('surrender-action');
+    expect(response.options[1].annotation).eq(undefined);
+  });
+
+  it('gives a prompt a stable identity that changes when the prompt changes', () => {
+    [game, player] = testGame(1);
+    const prompt = new SelectOption('First option');
+
+    const firstId = Server.getWaitingFor(player, prompt)?.promptId;
+    expect(firstId).not.to.be.undefined;
+    expect(Server.getWaitingFor(player, prompt)?.promptId).eq(firstId);
+    expect(Server.getWaitingFor(player, new SelectOption('Second option'))?.promptId).not.eq(firstId);
+  });
+
+  it('exposes bot control for original and surrendered bot seats', () => {
+    [game, player, player2] = testGame(2);
+    game.setBotPlayerIds([player.id]);
+    game.surrenderedPlayerIds.add(player2.id);
+
+    const response = Server.getPlayerModel(player);
+
+    expect(response.players.find((p) => p.color === player.color)?.isBotControlled).is.true;
+    expect(response.players.find((p) => p.color === player2.color)?.isBotControlled).is.true;
+  });
+
+  it('exposes step-back capability only to the journal actor', () => {
+    createTestGame(false, true);
+    game.actionReplayState = {
+      rootSnapshot: game.serialize(),
+      entries: [{
+        actorId: player.id,
+        promptFingerprint: 'prompt:root',
+        input: {type: 'option'},
+      }],
+      currentActorId: player.id,
+      currentPromptFingerprint: 'prompt:current',
+      resetBeforeNextInput: false,
+    };
+
+    expect(Server.getPlayerModel(player).canStepBack).is.true;
+    expect(Server.getPlayerModel(player2).canStepBack).is.false;
+  });
+  it('reports the sizes of the decks in the game', () => {
+    [game] = testGame(2, {preludeExtension: true, turmoilExtension: true});
+    game.preludeDeck.discardPile.push(...game.preludeDeck.drawPile.splice(0, 1));
+
+    const model = Server.getGameModel(game).otherDeckSizes;
+
+    expect(model.corporations).deep.eq({drawPile: game.corporationDeck.drawPile.length, discardPile: 0});
+    expect(model.preludes).deep.eq({drawPile: game.preludeDeck.drawPile.length, discardPile: 1});
+    expect(model.ceos).is.undefined;
+    expect(model.globalEvents).deep.eq({
+      drawPile: game.turmoil!.globalEventDealer.deck.length,
+      discardPile: game.turmoil!.globalEventDealer.discards.length,
+    });
+  });
+
+  it('highlights Venus Phase 2\'s Stratopolis/Maxwell Base reserved spots before their tile is placed', () => {
+    const [venusGame, venusPlayer] = testGame(2, {venusPhase2Expansion: true, venusNextExtension: true});
+    game = venusGame;
+    const response = Server.getPlayerModel(venusPlayer);
+    const venusPhase2 = response.game.venusPhase2;
+    expect(venusPhase2).is.not.undefined;
+
+    const stratopolis = venusPhase2!.spaces.find((s) => s.id === '298');
+    const maxwellBase = venusPhase2!.spaces.find((s) => s.id === '299');
+    expect(stratopolis?.highlight).eq('venusReserved');
+    expect(maxwellBase?.highlight).eq('venusReserved');
   });
 });

@@ -5,7 +5,6 @@ import {PreludeCard} from '../prelude/PreludeCard';
 import {IPlayer} from '../../IPlayer';
 import {PlayerInput} from '../../PlayerInput';
 import {DeltaProjectExpansion} from '../../delta/DeltaProjectExpansion';
-import {DeltaProjectInput} from '../../delta/DeltaProjectInput';
 
 export class DeltaProject extends PreludeCard implements IActionCard {
   constructor() {
@@ -27,14 +26,7 @@ export class DeltaProject extends PreludeCard implements IActionCard {
     return DeltaProjectExpansion.maxSteps(player) > 0;
   }
 
-  public action(player: IPlayer): PlayerInput {
-    const validSteps = DeltaProjectExpansion.getValidAdvanceSteps(player);
-
-    return new DeltaProjectInput(
-      validSteps,
-    ).andThen((amount) => {
-      DeltaProjectExpansion.advance(player, amount);
-      return undefined;
-    });
+  public action(player: IPlayer): PlayerInput | undefined {
+    return DeltaProjectExpansion.buildAdvanceInput(player);
   }
 }

@@ -1,20 +1,29 @@
 param(
     [ValidateSet("staging", "prod", "preview")]
     [string]$Environment = "staging",
-    [string]$HostAlias = "vps",
+    [string]$HostAlias = "hostkey-codex",
     [string]$FallbackSshHost = "72.56.84.119",
     [string]$FallbackSshUser = "openclaw",
     [string]$FallbackSshKeyPath = "$HOME\\.ssh\\id_ed25519",
     [string]$SourceRoot,
+    [string]$ExpectedGitSha,
+    [string]$ExpectedReleaseBaselineBase64,
     [switch]$AllowDirtySource,
     [switch]$AllowPrimaryWorkingTree,
     [switch]$AllowDirectProdDeploy,
+    [switch]$ForceRedeploy,
     [switch]$DryRun
 )
 
 $ErrorActionPreference = "Stop"
 
 . (Join-Path $PSScriptRoot "lib\TmRemoteTools.ps1")
+. (Join-Path $PSScriptRoot "lib\TmReleaseGuards.ps1")
+
+Assert-TmReleaseCasBaselineBase64 -Token $ExpectedReleaseBaselineBase64
+if (-not $DryRun -and $Environment -in @("staging", "prod") -and [string]::IsNullOrWhiteSpace($ExpectedReleaseBaselineBase64)) {
+    throw "ExpectedReleaseBaselineBase64 is required for staging/prod deploy CAS protection."
+}
 
 function Copy-RemoteFile {
     param(
@@ -162,6 +171,27 @@ function Get-NormalizedFileSha256 {
     }
 }
 
+function Assert-TmExpectedGitSha {
+    param(
+        [string]$Expected,
+        [string]$Actual,
+        [string]$Context
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Expected)) {
+        return
+    }
+    if ($Expected -notmatch '^[0-9a-fA-F]{40}$') {
+        throw "ExpectedGitSha must be a full 40-character git SHA."
+    }
+    if ($Actual -notmatch '^[0-9a-fA-F]{40}$') {
+        throw "$Context did not resolve to a full 40-character git SHA."
+    }
+    if (-not $Actual.Equals($Expected, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "$Context drifted from the intended release SHA. expected=$Expected actual=$Actual"
+    }
+}
+
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $tmWorkspaceRoot = Split-Path -Parent $repoRoot
 $safeDefaultSourceRoot = Join-Path $tmWorkspaceRoot "terraforming-mars-release-main"
@@ -184,7 +214,14 @@ if ($Environment -eq "prod" -and -not $AllowDirectProdDeploy) {
     throw "Direct prod deploy is blocked. Deploy to staging first and then run scripts/release_tm_prod.ps1 or scripts/promote_tm_staging_to_prod.ps1. Pass -AllowDirectProdDeploy only for an explicit emergency override."
 }
 
+if ($Environment -eq "staging" -and ($AllowDirtySource -or $AllowPrimaryWorkingTree)) {
+    throw "Staging deploy accepts only a clean checkout whose HEAD equals origin/main; staging bypass flags are not supported."
+}
+
 if ($normalizedSourceRoot -eq $normalizedRepoRoot -and $normalizedRepoRoot -notin $normalizedSafeSourceRoots -and -not $AllowPrimaryWorkingTree) {
+    if ($Environment -eq "staging") {
+        throw "Staging SourceRoot cannot point at the primary working tree: $resolvedSourceRoot. Use a clean checkout at origin/main."
+    }
     throw "SourceRoot points at the primary working tree: $resolvedSourceRoot. Use the clean release checkout or pass -AllowPrimaryWorkingTree if you intentionally want to release this exact tree."
 }
 
@@ -199,11 +236,25 @@ if ((Get-NormalizedPath -PathValue $gitTopLevel) -ne $normalizedSourceRoot) {
 $gitStatus = Get-GitStatusPorcelain -RepoRoot $resolvedSourceRoot
 if (-not $AllowDirtySource -and -not [string]::IsNullOrWhiteSpace($gitStatus)) {
     $statusPreview = (($gitStatus -split "`r?`n") | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -First 20) -join [Environment]::NewLine
+    if ($Environment -eq "staging") {
+        throw "Staging SourceRoot has uncommitted changes and is blocked; bypass flags are unsupported.`nSourceRoot: $resolvedSourceRoot`n`n$statusPreview"
+    }
     throw "SourceRoot has uncommitted changes and is blocked for release.`nSourceRoot: $resolvedSourceRoot`nUse a clean release checkout or pass -AllowDirtySource if you really intend to release a dirty tree.`n`n$statusPreview"
 }
 
 $gitSha = Get-GitCommandValue -RepoRoot $resolvedSourceRoot -GitArgs @("rev-parse", "HEAD")
 $gitBranch = Get-GitCommandValue -RepoRoot $resolvedSourceRoot -GitArgs @("rev-parse", "--abbrev-ref", "HEAD")
+if ($Environment -eq "staging") {
+    $originMainSha = Get-GitCommandValue -RepoRoot $resolvedSourceRoot -GitArgs @("rev-parse", "origin/main")
+    Assert-TmStagingSource `
+        -SourceRoot $resolvedSourceRoot `
+        -HeadSha $gitSha `
+        -OriginMainSha $originMainSha `
+        -GitStatus $gitStatus `
+        -AllowDirtySource:$AllowDirtySource `
+        -AllowPrimaryWorkingTree:$AllowPrimaryWorkingTree
+}
+Assert-TmExpectedGitSha -Expected $ExpectedGitSha -Actual $gitSha -Context "SourceRoot HEAD"
 $expectedBuildHead = if ([string]::IsNullOrWhiteSpace($gitSha)) { "" } else { $gitSha }
 
 $buildDir = Join-Path $resolvedSourceRoot "build"
@@ -293,12 +344,12 @@ $eloHealthUrl = if ($Environment -eq "prod") {
     ""
 }
 
-$timestamp = Get-Date -Format "yyyyMMddHHmmss"
-$releaseWorkRoot = Join-Path $env:TEMP "tm-$Environment-release-work-$timestamp"
+$runToken = New-TmReleaseRunToken
+$releaseWorkRoot = Join-Path $env:TEMP "tm-$Environment-release-work-$runToken"
 $releasePayloadRoot = Join-Path $releaseWorkRoot "payload"
-$payloadArchiveName = "tm-$Environment-payload-$timestamp.tar.gz"
+$payloadArchiveName = "tm-$Environment-payload-$runToken.tar.gz"
 $payloadArchivePath = Join-Path $releaseWorkRoot $payloadArchiveName
-$archiveName = "tm-$Environment-release-$timestamp.tar.gz"
+$archiveName = "tm-$Environment-release-$runToken.tar.gz"
 $archivePath = Join-Path $releaseWorkRoot $archiveName
 $remoteArchive = "/home/openclaw/$archiveName"
 $archiveBase = [System.IO.Path]::GetFileNameWithoutExtension([System.IO.Path]::GetFileNameWithoutExtension($archiveName))
@@ -375,10 +426,17 @@ current_link="__CURRENT_LINK__"
 legacy_root="__LEGACY_ROOT__"
 service="__SERVICE__"
 elo_service="__ELO_SERVICE__"
+legacy_elo_timer="tm-sync-elo.timer"
+legacy_elo_sync_service="tm-sync-elo.service"
 health_url="__HEALTH__"
 elo_health_url="__ELO_HEALTH__"
 expected_artifact_sha="__ARTIFACT_SHA__"
 expected_git_sha="__GIT_SHA__"
+environment="__ENV__"
+force_redeploy="__FORCE_REDEPLOY__"
+candidate_source_tree_clean="__SOURCE_TREE_CLEAN__"
+expected_release_baseline_b64="__EXPECTED_RELEASE_BASELINE_B64__"
+run_token="__RUN_TOKEN__"
 release_url="${health_url%/}/release.json"
 release_url_fallback="${health_url%/}/assets/release.json"
 release_root="/tmp/__ARCHIVE_BASE__"
@@ -393,6 +451,165 @@ elo_files="index.html audit_player_names.py elo-api.js elo_aliases.py excluded_g
 deploy_lock_file="/home/openclaw/tm-runtime/.deploy.lock"
 deploy_lock_info="/home/openclaw/tm-runtime/.deploy.lock.info"
 
+disable_periodic_elo_sync() {
+  local timer_load_state
+  local sync_load_state
+  local timer_active_state
+  local timer_unit_state
+  local sync_active_state
+
+  timer_load_state="$(systemctl --user show "$legacy_elo_timer" --property=LoadState --value 2>/dev/null || true)"
+  sync_load_state="$(systemctl --user show "$legacy_elo_sync_service" --property=LoadState --value 2>/dev/null || true)"
+
+  if [ -n "$timer_load_state" ] && [ "$timer_load_state" != "not-found" ]; then
+    systemctl --user disable --now "$legacy_elo_timer" || return 1
+  fi
+  if [ -n "$sync_load_state" ] && [ "$sync_load_state" != "not-found" ]; then
+    systemctl --user stop "$legacy_elo_sync_service" || return 1
+  fi
+
+  if [ -n "$timer_load_state" ] && [ "$timer_load_state" != "not-found" ]; then
+    timer_active_state="$(systemctl --user show "$legacy_elo_timer" --property=ActiveState --value 2>/dev/null || true)"
+    timer_unit_state="$(systemctl --user is-enabled "$legacy_elo_timer" 2>/dev/null || true)"
+    if [ "$timer_active_state" != "inactive" ] || { [ "$timer_unit_state" != "disabled" ] && [ "$timer_unit_state" != "masked" ]; }; then
+      echo "Legacy periodic ELO timer is not disabled and inactive: active=${timer_active_state:-unknown} enabled=${timer_unit_state:-unknown}." >&2
+      return 1
+    fi
+  fi
+  if [ -n "$sync_load_state" ] && [ "$sync_load_state" != "not-found" ]; then
+    sync_active_state="$(systemctl --user show "$legacy_elo_sync_service" --property=ActiveState --value 2>/dev/null || true)"
+    if [ "$sync_active_state" != "inactive" ]; then
+      echo "Legacy ELO reconciliation service is still active: ${sync_active_state:-unknown}." >&2
+      return 1
+    fi
+  fi
+
+  echo "Legacy periodic ELO polling disabled; game-completion ELO updates remain in tm-server."
+}
+
+normalize_release_permissions() {
+  local candidate="$1"
+  local resolved_releases
+  local resolved_candidate
+  local public_file
+
+  resolved_releases="$(readlink -f -- "$releases_root")" || return 49
+  resolved_candidate="$(readlink -f -- "$candidate")" || return 49
+  if [ "$(dirname -- "$resolved_candidate")" != "$resolved_releases" ]; then
+    echo "Release permission normalization rejected a candidate outside the releases root." >&2
+    return 49
+  fi
+  for public_file in build assets elo; do
+    if [ ! -d "$resolved_candidate/$public_file" ]; then
+      echo "Release permission normalization found an incomplete candidate." >&2
+      return 49
+    fi
+  done
+
+  chmod 755 "$runtime_root" "$releases_root" "$shared_root" "$shared_root/elo" "$resolved_candidate" || return 49
+  find "$resolved_candidate/build" "$resolved_candidate/assets" "$resolved_candidate/elo" -xdev -type d -exec chmod 755 {} + || return 49
+  find "$resolved_candidate/build" "$resolved_candidate/assets" "$resolved_candidate/elo" -xdev -type f -exec chmod 644 {} + || return 49
+  for public_file in package.json package-lock.json; do
+    if [ -f "$resolved_candidate/$public_file" ]; then
+      chmod 644 "$resolved_candidate/$public_file" || return 49
+    fi
+  done
+  for public_file in elo-data.json data.json solo-records.json stats.json; do
+    if [ -f "$shared_root/elo/$public_file" ]; then
+      chmod 664 "$shared_root/elo/$public_file" || return 49
+    fi
+  done
+
+  if find "$resolved_candidate/build" "$resolved_candidate/assets" "$resolved_candidate/elo" -xdev -type d ! -perm 0755 -print -quit | grep -q .; then
+    return 49
+  fi
+  if find "$resolved_candidate/build" "$resolved_candidate/assets" "$resolved_candidate/elo" -xdev -type f ! -perm 0644 -print -quit | grep -q .; then
+    return 49
+  fi
+  for public_file in "$resolved_candidate/assets/release.json" "$resolved_candidate/elo/data.json" "$resolved_candidate/elo/elo-data.json"; do
+    if [ ! -f "$public_file" ] || [ $((8#$(stat -Lc '%a' -- "$public_file") & 6)) -ne 4 ]; then
+      echo "Release permission normalization left a public endpoint unreadable or writable by others." >&2
+      return 49
+    fi
+  done
+}
+
+assert_release_cas() {
+  local baseline_b64="$1"
+  local runtime_base="$2"
+  [ -n "$baseline_b64" ] || return 0
+  TM_RELEASE_CAS_BASELINE_B64="$baseline_b64" python3 - "$runtime_base" <<'PY'
+import base64
+import json
+import os
+import pathlib
+import sys
+
+
+def fail():
+    print("Release CAS baseline drifted or could not be read.", file=sys.stderr)
+    raise SystemExit(46)
+
+
+try:
+    expected = json.loads(base64.b64decode(os.environ["TM_RELEASE_CAS_BASELINE_B64"], validate=True))
+    if expected.get("schema") != "TmReleaseCasBaselineV1":
+        fail()
+    runtime_base = pathlib.Path(sys.argv[1])
+
+    def read_state(environment):
+        current = runtime_base / environment / "current"
+        target = str(current.resolve(strict=False)) if current.exists() or current.is_symlink() else ""
+        manifest_path = current / "assets" / "release.json"
+        git_sha = ""
+        artifact_sha = ""
+        if manifest_path.is_file():
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+            if not isinstance(manifest, dict):
+                fail()
+            git_sha = manifest.get("gitSha", "")
+            artifact_sha = manifest.get("artifactSha256", "")
+            if not isinstance(git_sha, str) or not isinstance(artifact_sha, str):
+                fail()
+        return {
+            "currentTarget": target,
+            "gitSha": git_sha.lower(),
+            "artifactSha256": artifact_sha.lower(),
+        }
+
+    for environment in ("prod", "staging"):
+        expected_state = expected.get("environments", {}).get(environment)
+        if not isinstance(expected_state, dict) or read_state(environment) != expected_state:
+            fail()
+except SystemExit:
+    raise
+except Exception:
+    fail()
+PY
+}
+
+is_matching_clean_release() {
+  local release_json="$1"
+  local expected_environment="$2"
+  local expected_sha="$3"
+  printf '%s' "$release_json" | python3 -c '
+import json
+import sys
+
+expected_environment = sys.argv[1]
+expected_sha = sys.argv[2]
+data = json.load(sys.stdin)
+matches = (
+    isinstance(data, dict)
+    and data.get("environment") == expected_environment
+    and data.get("gitSha") == expected_sha
+    and type(data.get("sourceTreeClean")) is bool
+    and data.get("sourceTreeClean") is True
+)
+raise SystemExit(0 if matches else 1)
+' "$expected_environment" "$expected_sha"
+}
+
 mkdir -p "$(dirname "$deploy_lock_file")"
 exec 9>"$deploy_lock_file"
 if ! flock -n 9; then
@@ -400,6 +617,7 @@ if ! flock -n 9; then
   if [ -f "$deploy_lock_info" ]; then
     cat "$deploy_lock_info" >&2 || true
   fi
+  rm -f "$archive"
   exit 75
 fi
 {
@@ -412,6 +630,15 @@ fi
   echo "pid=$$"
 } > "$deploy_lock_info"
 trap 'rm -f "$deploy_lock_info"' EXIT
+
+set +e
+assert_release_cas "$expected_release_baseline_b64" "/home/openclaw/tm-runtime"
+cas_exit=$?
+set -e
+if [ "$cas_exit" -ne 0 ]; then
+  rm -f "$archive"
+  exit 46
+fi
 
 rollback() {
   if [ -n "$previous_current" ]; then
@@ -440,11 +667,31 @@ if [ -n "$elo_service" ]; then
   fi
 fi
 
-mkdir -p "$runtime_root" "$releases_root" "$shared_root/db" "$shared_root/logs" "$shared_root/elo" "$deps_root"
-
-if [ -d "$legacy_root/db" ] && [ ! -e "$shared_root/db/game.db" ]; then
-  rsync -a "$legacy_root/db/" "$shared_root/db/"
+if [ "$environment" = "prod" ] && ! disable_periodic_elo_sync; then
+  echo "Prod deploy blocked: legacy periodic ELO polling could not be disabled." >&2
+  exit 50
 fi
+
+if [ "$environment" = "staging" ] && [ "$force_redeploy" != "1" ] && [ "$candidate_source_tree_clean" = "true" ]; then
+  served_noop_release_json=""
+  if served_noop_release_json="$(curl -fsS "$release_url" 2>/dev/null || curl -fsS "$release_url_fallback" 2>/dev/null)"; then
+    if is_matching_clean_release "$served_noop_release_json" "$environment" "$expected_git_sha"; then
+      echo "Deploy no-op"
+      echo "environment=$environment"
+      echo "reason=staging already serves the exact clean source SHA"
+      echo "git_sha=$expected_git_sha"
+      rm -rf "$release_root"
+      rm -f "$archive"
+      exit 0
+    fi
+  fi
+fi
+
+if [ ! -f "$shared_root/db/game.db" ]; then
+  echo "Code-only deploy requires an existing shared database; initialize it separately." >&2
+  exit 49
+fi
+mkdir -p "$runtime_root" "$releases_root" "$shared_root/logs" "$shared_root/elo" "$deps_root"
 if [ -d "$legacy_root/logs" ] && [ -z "$(ls -A "$shared_root/logs" 2>/dev/null || true)" ]; then
   rsync -a "$legacy_root/logs/" "$shared_root/logs/"
 fi
@@ -494,7 +741,7 @@ if [ ! -d "$deps_dir/node_modules" ]; then
 fi
 
 ts="$(date +%Y%m%d%H%M%S)"
-release_name="${ts}-${expected_git_sha}"
+release_name="${ts}-${expected_git_sha}-${run_token}"
 new_release_dir="$releases_root/$release_name"
 
 rm -rf "$new_release_dir"
@@ -525,6 +772,12 @@ if [ "__ENV__" = "prod" ]; then
   cp "$new_release_dir/elo/player_name_overrides.json" "$scripts_dir/player_name_overrides.json"
   cp "$new_release_dir/elo/excluded_games.json" "$scripts_dir/excluded_games.json"
   chmod 755 "$scripts_dir/tm-sync-elo.py" "$scripts_dir/elo_aliases.py"
+fi
+
+if ! normalize_release_permissions "$new_release_dir"; then
+  echo "Release permission normalization failed." >&2
+  rm -rf "$new_release_dir"
+  exit 49
 fi
 
 ln -sfn "$new_release_dir" "$current_link"
@@ -573,6 +826,12 @@ if [ -n "$elo_health_url" ]; then
     rollback
     exit 1
   fi
+fi
+
+if [ "$environment" = "prod" ] && ! disable_periodic_elo_sync; then
+  echo "Prod deploy completed service health checks, but the periodic ELO polling invariant failed." >&2
+  rollback
+  exit 50
 fi
 
 served_release_json=""
@@ -646,6 +905,10 @@ $remoteScript = $remoteScript.Replace("__ELO_HEALTH__", $eloHealthUrl)
 $remoteScript = $remoteScript.Replace("__ARTIFACT_SHA__", $artifactSha256)
 $remoteScript = $remoteScript.Replace("__DEPENDENCY_SHA__", $dependencySha256)
 $remoteScript = $remoteScript.Replace("__GIT_SHA__", $gitSha)
+$remoteScript = $remoteScript.Replace("__FORCE_REDEPLOY__", $(if ($ForceRedeploy) { "1" } else { "0" }))
+$remoteScript = $remoteScript.Replace("__SOURCE_TREE_CLEAN__", $(if ([string]::IsNullOrWhiteSpace($gitStatus)) { "true" } else { "false" }))
+$remoteScript = $remoteScript.Replace("__EXPECTED_RELEASE_BASELINE_B64__", $ExpectedReleaseBaselineBase64)
+$remoteScript = $remoteScript.Replace("__RUN_TOKEN__", $runToken)
 $remoteScript = $remoteScript.Replace("__ARCHIVE_BASE__", $archiveBase)
 $remoteScript = $remoteScript.Replace("__ENV__", $Environment)
 

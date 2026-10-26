@@ -1,0 +1,5 @@
+id,source,pin,status
+R01,https://rebalakefak.herokuapp.com/main.js,28846e8,Проверен публичный активный манифест и код
+R02,https://github.com/pe5ha/pe5ha-mars,ac3b05abd3bb26a9fa98dca8c2700e2475fa92a9,Проверен читаемый набор 109 карт
+R03,https://github.com/alrusdi/rebalanced-mars,e2dbd6fec4ecb41e122c271491bee27fb09a7fdf,Проверен старый набор 47 карт
+R04,https://github.com/wjcxymy/my-terraforming-mars,d3fa96ba80e4df0789ab08bb7336a2d1b3205d5d,Проверена поддержка Prelude 2 и 18 корпораций

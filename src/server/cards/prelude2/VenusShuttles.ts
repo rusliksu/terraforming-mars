@@ -7,7 +7,6 @@ import {CardType} from '../../../common/cards/CardType';
 import {IActionCard} from '../ICard';
 import {SelectPaymentDeferred} from '../../deferredActions/SelectPaymentDeferred';
 import {CardResource} from '../../../common/CardResource';
-import * as constants from '../../../common/constants';
 
 export class VenusShuttles extends Card implements IActionCard {
   constructor() {
@@ -43,8 +42,8 @@ export class VenusShuttles extends Card implements IActionCard {
   }
 
   public canAct(player: IPlayer) {
-    if (player.game.getVenusScaleLevel() >= constants.MAX_VENUS_SCALE) {
-      this.warnings.add('maxvenus');
+    if (player.game.getVenusScaleLevel() >= player.game.max.venus) {
+      this.addWarning('maxvenus');
     }
     return player.canAfford({cost: this.actionCost(player), tr: {venus: 1}});
   }

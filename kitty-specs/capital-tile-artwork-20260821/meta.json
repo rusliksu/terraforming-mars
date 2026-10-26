@@ -1,0 +1,18 @@
+{
+  "mission_id": "manual-capital-tile-artwork-20260821",
+  "mission_number": null,
+  "slug": "capital-tile-artwork-20260821",
+  "mission_slug": "capital-tile-artwork-20260821",
+  "friendly_name": "Restore distinct Capital tile artwork",
+  "purpose_tldr": "Render the Capital with its distinct white tile artwork instead of the ordinary city tile.",
+  "purpose_context": "Upstream commit fe789c1521 aliased the Capital board style to the normal city style and explicitly noted that Capital might be a problem. The current upstream and custom main still contain that alias.",
+  "mission_type": "software-dev",
+  "target_branch": "main",
+  "planning_branch": "codex/capital-tile-artwork",
+  "base_sha": "21b77f000ab0cae55bb276ae804f51df885239d9",
+  "vcs": "git",
+  "created_at": "2026-08-21T21:08:50+03:00",
+  "governance_mode": "manual-isolated-fallback",
+  "governance_note": "Spec Kitty resolves the primary checkout instead of this external task worktree. The primary checkout is dirty and remains untouched; the approved baseline is recorded manually in the isolated worktree.",
+  "bead": "tm-ai-wzb"
+}

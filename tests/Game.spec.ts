@@ -7,7 +7,7 @@ import {Thermalist} from '../src/server/awards/Thermalist';
 import {Birds} from '../src/server/cards/base/Birds';
 import {WaterImportFromEuropa} from '../src/server/cards/base/WaterImportFromEuropa';
 import {Phase} from '../src/common/Phase';
-import {addCity, addGreenery, addOcean, forceGenerationEnd, maxOutOceans, runAllActions, setOxygenLevel, setTemperature, setVenusScaleLevel} from './TestingUtils';
+import {addCity, addGreenery, addOcean, fakeCard, forceGenerationEnd, formatMessage, maxOutOceans, runAllActions, setOxygenLevel, setTemperature, setVenusScaleLevel, testGame} from './TestingUtils';
 import {cast, toName} from '../src/common/utils/utils';
 import {TestPlayer} from './TestPlayer';
 import {SaturnSystems} from '../src/server/cards/corporation/SaturnSystems';
@@ -23,6 +23,7 @@ import {Player} from '../src/server/Player';
 import {RandomMAOptionType} from '../src/common/ma/RandomMAOptionType';
 import {SpaceBonus} from '../src/common/boards/SpaceBonus';
 import {TileType} from '../src/common/TileType';
+import {SelectResource} from '../src/server/inputs/SelectResource';
 import {IColony} from '../src/server/colonies/IColony';
 import {IAward} from '../src/server/awards/IAward';
 import {SerializedGame} from '../src/server/SerializedGame';
@@ -30,11 +31,12 @@ import {SelectInitialCards} from '../src/server/inputs/SelectInitialCards';
 import {SelectSpace} from '../src/server/inputs/SelectSpace';
 import {GlobalParameter} from '../src/common/GlobalParameter';
 import {assertPlaceOcean} from './assertions';
+import {assertBuildColony} from './colonies/coloniesAssertions';
 import {TiredEarth} from '../src/server/cards/pathfinders/TiredEarth';
 import {Tag} from '../src/common/cards/Tag';
 import {restoreTestDatabase, restoreTestGameLoader, setTestDatabase, setTestGameLoader} from './testing/setup';
 import {InMemoryDatabase} from './testing/InMemoryDatabase';
-import {Score} from '../src/server/IGame';
+import {IGame, Score} from '../src/server/IGame';
 import {IGameLoader} from '../src/server/database/IGameLoader';
 import {ColonyName} from '../src/common/colonies/ColonyName';
 import {Ceres} from '../src/server/colonies/Ceres';
@@ -45,8 +47,6 @@ function noopGameLoader(): IGameLoader {
   return {
     add: () => Promise.resolve(),
     getIds: () => Promise.resolve([]),
-    getLastSaveTimeMs: () => Promise.resolve(undefined),
-    getLastSaveTimesMs: () => Promise.resolve(new Map()),
     getGame: () => Promise.resolve(undefined),
     getGameAt: () => Promise.reject(new Error('not implemented')),
     getGameAtOrBefore: () => Promise.reject(new Error('not implemented')),
@@ -55,10 +55,65 @@ function noopGameLoader(): IGameLoader {
     saveGame: () => Promise.resolve(),
     completeGame: () => Promise.resolve(),
     maintenance: () => Promise.resolve(),
+    deleteGame: () => Promise.resolve(),
+    flush: () => Promise.resolve(),
   };
 }
+import {Spacefarer} from '../src/server/milestones/terraCimmeria/Spacefarer';
+import {Suburbian} from '../src/server/awards/modular/Suburbian';
+import {SpaceName} from '../src/common/boards/SpaceName';
+import {SpaceType} from '../src/common/boards/SpaceType';
 
 describe('Game', () => {
+  it('delegates a normal save once and stores the returned Promise', () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const saveGamePromise = Promise.resolve();
+    const savedGames: Array<IGame> = [];
+    const game = Game.newInstance(
+      'game-save-port',
+      [player],
+      player,
+      'spectatorid',
+      {},
+      0,
+      (savedGame) => {
+        savedGames.push(savedGame);
+        return saveGamePromise;
+      },
+    );
+
+    savedGames.length = 0;
+    game.save();
+
+    expect(savedGames).deep.eq([game]);
+    expect(game.saveGamePromise).eq(saveGamePromise);
+  });
+
+  it('does not persist or replace the Promise in simulation mode', () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const savedGames: Array<IGame> = [];
+    const game = Game.newInstance(
+      'game-save-port-simulation',
+      [player],
+      player,
+      'spectatorid',
+      {},
+      0,
+      (savedGame) => {
+        savedGames.push(savedGame);
+        return Promise.resolve();
+      },
+    );
+
+    savedGames.length = 0;
+    const previousSaveGamePromise = game.saveGamePromise;
+    game.simulationMode = true;
+    game.save();
+
+    expect(savedGames).is.empty;
+    expect(game.saveGamePromise).eq(previousSaveGamePromise);
+  });
+
   it('should initialize with right defaults', () => {
     const player = TestPlayer.BLUE.newPlayer();
     const player2 = TestPlayer.RED.newPlayer();
@@ -248,6 +303,45 @@ describe('Game', () => {
     expect(player.terraformRating).to.eq(initialTR + 1);
   });
 
+  it('Logs every parameter increase with the number of steps', () => {
+    const [game, player] = testGame(2);
+    const messages = (): Array<string> => game.gameLog.map(formatMessage);
+
+    game.increaseTemperature(player, 2);
+    expect(messages()).to.include('blue raised the temperature 2 step(s)');
+
+    game.increaseOxygenLevel(player, 1);
+    expect(messages()).to.include('blue raised the oxygen level 1 step(s)');
+
+    game.increaseVenusScaleLevel(player, 3);
+    expect(messages()).to.include('blue raised the Venus scale 3 step(s)');
+  });
+
+  it('Venus moves 1% per step above 30% on Amazonis Planitia', () => {
+    const [game, player] = testGame(2, {venusNextExtension: true, boardName: BoardName.AMAZONIS_PLANITIA});
+    setVenusScaleLevel(game, 28);
+
+    expect(game.increaseVenusScaleLevel(player, 2)).eq(2);
+    expect(game.getVenusScaleLevel()).eq(31);
+
+    expect(game.increaseVenusScaleLevel(player, 3)).eq(2);
+    expect(game.getVenusScaleLevel()).eq(33);
+
+    expect(game.increaseVenusScaleLevel(player, 1)).eq(0);
+    expect(game.getVenusScaleLevel()).eq(33);
+  });
+
+  it('Venus decreases 1% per step above 30% on Amazonis Planitia', () => {
+    const [game, player] = testGame(2, {venusNextExtension: true, boardName: BoardName.AMAZONIS_PLANITIA});
+    setVenusScaleLevel(game, 31);
+
+    game.increaseVenusScaleLevel(player, -1);
+    expect(game.getVenusScaleLevel()).eq(30);
+
+    game.increaseVenusScaleLevel(player, -1);
+    expect(game.getVenusScaleLevel()).eq(28);
+  });
+
   it('Draft round for 2 players', () => {
     const player = TestPlayer.BLUE.newPlayer();
     const player2 = TestPlayer.RED.newPlayer();
@@ -353,6 +447,21 @@ describe('Game', () => {
     expect(game.phase).to.eq(Phase.END);
 
     expect(game.isSoloModeWin()).is.not.true;
+  });
+
+  it('Amazonis Planitia solo games take one more generation', () => {
+    const [game] = testGame(1, {boardName: BoardName.AMAZONIS_PLANITIA});
+    expect(game.lastSoloGeneration()).eq(15);
+  });
+
+  it('Amazonis Planitia solo games with prelude take one more generation', () => {
+    const [game] = testGame(1, {boardName: BoardName.AMAZONIS_PLANITIA, preludeExtension: true});
+    expect(game.lastSoloGeneration()).eq(13);
+  });
+
+  it('Amazonis Planitia solo games in TR63 mode do not take one more generation', () => {
+    const [game] = testGame(1, {boardName: BoardName.AMAZONIS_PLANITIA, soloTR: true});
+    expect(game.lastSoloGeneration()).eq(14);
   });
 
   it('Should not finish solo game before last generation if Mars is already terraformed', () => {
@@ -540,6 +649,56 @@ describe('Game', () => {
     }))).deep.eq([
       {playerName: 'Bob', user: 'bob-user', playerScore: 80, place: 1, megacredits: 30},
       {playerName: 'Alice', user: 'alice-user', playerScore: 80, place: 2, megacredits: 12},
+    ]);
+  });
+
+  it('finishes after the last active surrender and preserves raw scores', async () => {
+    const alice = TestPlayer.BLUE.newPlayer({name: 'Alice'});
+    const bob = TestPlayer.RED.newPlayer({name: 'Bob'});
+    const carol = TestPlayer.YELLOW.newPlayer({name: 'Carol'});
+    const game = Game.newInstance('g-last-active-surrender', [alice, bob, carol], alice, 'spectatorid');
+    game.phase = Phase.ACTION;
+    alice.setTerraformRating(40);
+    bob.setTerraformRating(80);
+    carol.setTerraformRating(70);
+    game.surrenderedPlayerIds.add(bob.id);
+    game.surrenderedPlayerIds.add(carol.id);
+    const rawScores = new Map(game.players.map((player) => [player.id, player.getVictoryPoints().total]));
+
+    let savedScores: Array<Score> = [];
+    let completedGames = 0;
+    const database = new InMemoryDatabase();
+    database.saveGameResults = (_gameId, _players, _generations, _gameOptions, scores) => {
+      savedScores = scores;
+    };
+    const gameLoader = noopGameLoader();
+    gameLoader.completeGame = () => {
+      completedGames++;
+      return Promise.resolve();
+    };
+    setTestDatabase(database);
+    setTestGameLoader(gameLoader);
+
+    try {
+      expect(await game.finishAfterSurrender()).is.true;
+      expect(await game.finishAfterSurrender()).is.false;
+    } finally {
+      restoreTestGameLoader();
+      restoreTestDatabase();
+    }
+
+    expect(game.phase).eq(Phase.END);
+    expect(completedGames).eq(1);
+    expect(savedScores.map((score) => ({
+      playerName: score.playerName,
+      place: score.place,
+      placeFrom: score.placeFrom,
+      placeTo: score.placeTo,
+      playerScore: score.playerScore,
+    }))).deep.eq([
+      {playerName: 'Alice', place: 1, placeFrom: undefined, placeTo: undefined, playerScore: rawScores.get(alice.id)},
+      {playerName: 'Bob', place: 2.5, placeFrom: 2, placeTo: 3, playerScore: rawScores.get(bob.id)},
+      {playerName: 'Carol', place: 2.5, placeFrom: 2, placeTo: 3, playerScore: rawScores.get(carol.id)},
     ]);
   });
 
@@ -1021,6 +1180,21 @@ describe('Game', () => {
     expect(player.titanium).eq(1);
   });
 
+  it('grants the standard resource space bonus', () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const game = Game.newInstance('gameid', [player], player, 'spectatorid');
+    const space = game.board.getAvailableSpacesOnLand(player)[0];
+    space.bonus = [SpaceBonus.STANDARD_RESOURCE];
+
+    game.addTile(player, space, {tileType: TileType.GREENERY});
+    runAllActions(game);
+
+    const selectResource = cast(player.popWaitingFor(), SelectResource);
+    expect(selectResource.include).to.have.members(['megacredits', 'steel', 'titanium', 'plants', 'energy', 'heat']);
+    selectResource.process({type: 'resource', resource: 'titanium'});
+    expect(player.titanium).eq(1);
+  });
+
   it('Ocean upgrade tiles can be placed on ocean spaces without Ares or Pathfinders', () => {
     const player = TestPlayer.BLUE.newPlayer();
     const game = Game.newInstance('game-ocean-upgrade', [player], player, 'spectatorid');
@@ -1032,6 +1206,47 @@ describe('Game', () => {
       game.addTile(player, oceanSpace, {tileType: TileType.NEW_HOLLAND});
     }).to.not.throw();
     expect(oceanSpace.tile!.tileType).to.eq(TileType.NEW_HOLLAND);
+  });
+
+  it('restores the solar phase by recreating the World Government Terraforming input', () => {
+    const [game] = testGame(2, {solarPhaseOption: true});
+    // Generation 1 without corporations loads through the initial-research path, so use a game
+    // that has already started.
+    game.generation = 5;
+    game.phase = Phase.SOLAR;
+
+    const restored = Game.deserialize(game.serialize());
+
+    expect(restored.phase).eq(Phase.SOLAR);
+    const input = restored.first.getWaitingFor();
+    expect(input).is.an.instanceof(OrOptions);
+    expect((input as OrOptions).options.length).greaterThan(0);
+  });
+
+  it('restores the solar phase by finishing the generation when World Government Terraforming is off', () => {
+    const [game] = testGame(2);
+    const generation = 5;
+    game.generation = generation;
+    game.phase = Phase.SOLAR;
+
+    const restored = Game.deserialize(game.serialize());
+
+    expect(restored.generation).eq(generation + 1);
+    expect([Phase.RESEARCH, Phase.DRAFTING]).includes(restored.phase);
+  });
+
+  it('restores the intergeneration phase without advancing the generation twice', () => {
+    const [game] = testGame(2);
+    // startGeneration() increments the counter before the save point, so a persisted game in this
+    // phase already shows the new generation number.
+    const generation = game.generation + 1;
+    game.generation = generation;
+    game.phase = Phase.INTERGENERATION;
+
+    const restored = Game.deserialize(game.serialize());
+
+    expect(restored.generation).eq(generation);
+    expect([Phase.RESEARCH, Phase.DRAFTING]).includes(restored.phase);
   });
 
   /**
@@ -1046,11 +1261,13 @@ describe('Game', () => {
     game.syndicatePirateRaider = undefined;
     game.moonData = undefined;
     game.pathfindersData = undefined;
+    game.venusPhase2Data = undefined;
     const serialized = game.serialize();
     assertIsJSON(serialized);
     const serializedKeys = Object.keys(serialized);
 
-    const unserializedFieldsInGame: Array<keyof Game> = [
+    const unserializedFieldsInGame: Array<keyof Game | 'saveGame'> = [
+      'actionReplayState',
       'createdTime',
       'discardedColonies',
       'inDoubleDown',
@@ -1058,13 +1275,17 @@ describe('Game', () => {
       'inTurmoil',
       'playersInGenerationOrder',
       'monsInsuranceOwner',
+      'parameters',
       'resettable',
       'rng',
+      'saveGame',
       'saveGamePromise',
       'simulationMode',
       'underworldDraftEnabled',
       'doubleDownPrelude',
-      'engine',
+      'skipGeneration1Actions',
+      'max',
+      'globalParameterTracks',
     ];
     const serializedValuesNotInGame: Array<keyof SerializedGame> = [
       'seed',
@@ -1084,6 +1305,75 @@ describe('Game', () => {
 
     expect(serializedKeys.concat(...unserializedFieldsInGame).sort())
       .deep.eq(gameKeys.concat(...serializedValuesNotInGame).sort());
+  });
+
+  it('persists bot and surrender state across game restore', () => {
+    const bot = TestPlayer.BLUE.newPlayer();
+    const human = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('gameid', [bot, human], bot, 'spectatorid');
+    game.setBotPlayerIds([bot.id]);
+    game.surrenderedPlayerIds.add(human.id);
+
+    const restored = Game.deserialize(game.serialize(), {simulation: true});
+
+    expect(Array.from(restored.botPlayerIds)).deep.eq([bot.id]);
+    expect(Array.from(restored.surrenderedPlayerIds)).deep.eq([human.id]);
+  });
+
+  it('does not end multiplayer based on surrendered seats', () => {
+    const alice = TestPlayer.BLUE.newPlayer();
+    const bob = TestPlayer.RED.newPlayer();
+    const carol = TestPlayer.YELLOW.newPlayer();
+    const game = Game.newInstance('game-surrender', [alice, bob, carol], alice, 'spectatorid');
+
+    game.surrenderedPlayerIds.add(alice.id);
+    expect(game.gameIsOver()).eq(false);
+
+    game.surrenderedPlayerIds.add(bob.id);
+    expect(game.gameIsOver()).eq(false);
+  });
+
+  it('keeps surrendered seats in research and final greenery', () => {
+    const alice = TestPlayer.BLUE.newPlayer();
+    const bob = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('game-surrender-flow', [alice, bob], alice, 'spectatorid');
+    alice.clearWaitingFor();
+    bob.clearWaitingFor();
+    game.surrenderedPlayerIds.add(alice.id);
+
+    game.generation = 2;
+    game.gotoResearchPhase();
+    expect(game.hasResearched(alice)).eq(false);
+    expect(alice.getWaitingFor()).is.not.undefined;
+
+    alice.clearWaitingFor();
+    bob.clearWaitingFor();
+    alice.plants = alice.plantsNeededForGreenery;
+    game.takeNextFinalGreeneryAction();
+    expect(alice.getWaitingFor()).is.not.undefined;
+  });
+
+  it('enables action undo when loading a game with experimental step undo', () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const game = Game.newInstance('gameid', [player], player, 'spectatorid');
+    const serialized = game.serialize();
+    serialized.gameOptions.undoOption = false;
+    serialized.gameOptions.undoStepOption = true;
+
+    const restored = Game.deserialize(serialized, {simulation: true});
+    const restoredPlayer = restored.getPlayerById(player.id);
+    restored.phase = Phase.ACTION;
+    restored.activePlayer = restoredPlayer;
+    restoredPlayer.actionsTakenThisRound = 1;
+    restoredPlayer.takeAction(false);
+
+    expect(restored.gameOptions.undoOption).is.true;
+    const waitingFor = restoredPlayer.getWaitingFor()?.toModel(restoredPlayer);
+    expect(waitingFor?.type).eq('or');
+    if (waitingFor?.type !== 'or') {
+      throw new Error('Expected main action prompt');
+    }
+    expect(waitingFor.options.map((option) => option.title)).to.include('Undo last action');
   });
 
   it('deserializing a game without moon data still loads', () => {
@@ -1116,19 +1406,52 @@ describe('Game', () => {
     expect(deserialized.pathfindersData).is.undefined;
   });
 
-  it('deserializing a game migrates moon-logistics to moon-logistic', () => {
+  it('deserializing a game replaces invalid escape velocity options with defaults', () => {
     const player = TestPlayer.BLUE.newPlayer();
-    const game = Game.newInstance('gameid', [player], player, 'spectatorid', {moonExpansion: true});
+    const game = Game.newInstance('gameid', [player], player, 'spectatorid', {
+      escapeVelocity: {
+        thresholdMinutes: 35,
+        bonusSectionsPerAction: 2,
+        // Before the server validated escape velocity options, a cleared form field was stored as "".
+        penaltyPeriodMinutes: '' as unknown as number,
+        penaltyVPPerPeriod: 1,
+      },
+    });
+    const deserialized = Game.deserialize(game.serialize());
+    expect(deserialized.gameOptions.escapeVelocity).deep.eq({
+      thresholdMinutes: 35,
+      bonusSectionsPerAction: 2,
+      penaltyPeriodMinutes: 2,
+      penaltyVPPerPeriod: 1,
+    });
+  });
+
+  it('deserializing a game with legacy colony space ids', () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const game = Game.newInstance('gameid', [player], player, 'spectatorid', {pathfindersExpansion: true});
     const serialized = game.serialize();
-    serialized.globalsPerGeneration = [
-      {'moon-logistics': 3, 'moon-habitat': 1} as any,
-      {'moon-mining': 2},
-    ];
+
+    const legacy = (id: SpaceId) => id.startsWith('c') ? id.substring(1) as SpaceId : id;
+    serialized.board.spaces = serialized.board.spaces.map((space) => ({...space, id: legacy(space.id)}));
+    expect(serialized.board.spaces.map((space) => space.id)).includes('01');
+    expect(serialized.board.spaces.map((space) => space.id)).includes('75');
+
     const deserialized = Game.deserialize(serialized);
-    expect(deserialized.globalsPerGeneration).deep.eq([
-      {'moon-logistic': 3, 'moon-habitat': 1},
-      {'moon-mining': 2},
-    ]);
+
+    expect(deserialized.board.spaces.map((space) => space.id)).deep.eq(game.board.spaces.map((space) => space.id));
+    expect(deserialized.board.getSpaceOrThrow(SpaceName.GANYMEDE_COLONY).spaceType).eq(SpaceType.COLONY);
+    expect(deserialized.board.getSpaceOrThrow(SpaceName.CERES_SPACEPORT).spaceType).eq(SpaceType.COLONY);
+  });
+
+  it('deserializing a game with St. Joseph cathedrals on legacy colony space ids', () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const game = Game.newInstance('gameid', [player], player, 'spectatorid', {pathfindersExpansion: true});
+    const serialized = game.serialize();
+    serialized.stJosephCathedrals = ['75', '31'];
+
+    const deserialized = Game.deserialize(serialized);
+
+    expect(deserialized.stJosephCathedrals).deep.eq([SpaceName.CERES_SPACEPORT, '31']);
   });
 
   it('deserializing a game with awards', () => {
@@ -1231,44 +1554,59 @@ describe('Game', () => {
     }]);
   });
 
-  // it('deserializing a game with renamed milestones', () => {
-  //   const player = TestPlayer.BLUE.newPlayer();
-  //   const player2 = TestPlayer.RED.newPlayer();
-  //   const game = Game.newInstance('gameid', [player, player2], player, 'spectatorid');
-  //   const electrician = new Electrician();
-  //   const collector = new Collector();
+  it('deserializing a game with renamed milestones', () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const player2 = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('gameid', [player, player2], player, 'spectatorid');
+    const spacefarer = new Spacefarer();
 
-  //   game.milestones.unshift(electrician, collector);
+    game.milestones.unshift(spacefarer);
 
-  //   game.claimedMilestones.push({
-  //     milestone: electrician,
-  //     player: player,
-  //   });
-  //   game.claimedMilestones.push({
-  //     milestone: collector,
-  //     player: player,
-  //   });
+    game.claimedMilestones.push({
+      milestone: spacefarer,
+      player: player,
+    });
 
-  //   const serialized = game.serialize();
-  //   expect(serialized.milestones[0]).eq('V. Electrician');
-  //   expect(serialized.claimedMilestones[0].name).eq('V. Electrician');
-  //   expect(serialized.milestones[1]).eq('T. Collector');
-  //   expect(serialized.claimedMilestones[1].name).eq('T. Collector');
+    const serialized = game.serialize();
+    expect(serialized.milestones[0]).eq('T. Spacefarer');
+    expect(serialized.claimedMilestones[0].name).eq('T. Spacefarer');
 
-  //   serialized.milestones[0] = 'Electrician' as any;
-  //   serialized.claimedMilestones[0].name = 'Electrician' as any;
-  //   serialized.milestones[1] = 'Collector' as any;
-  //   serialized.claimedMilestones[1].name = 'Collector' as any;
+    serialized.milestones[0] = 'Spacefarer' as any;
+    serialized.claimedMilestones[0].name = 'Spacefarer' as any;
 
-  //   const deserialized = Game.deserialize(serialized);
-  //   expect(deserialized.milestones[0]).deep.eq(electrician);
-  //   expect(deserialized.milestones[1]).deep.eq(collector);
-  //   expect(deserialized.claimedMilestones).has.length(2);
-  //   expect(deserialized.claimedMilestones[0].milestone.name).eq('V. Electrician');
-  //   expect(deserialized.claimedMilestones[0].player.id).eq('p-blue-id');
-  //   expect(deserialized.claimedMilestones[1].milestone.name).eq('T. Collector');
-  //   expect(deserialized.claimedMilestones[1].player.id).eq('p-blue-id');
-  // });
+    const deserialized = Game.deserialize(serialized);
+    expect(deserialized.milestones[0]).deep.eq(spacefarer);
+    expect(deserialized.claimedMilestones).has.length(1);
+    expect(deserialized.claimedMilestones[0].milestone.name).eq('T. Spacefarer');
+    expect(deserialized.claimedMilestones[0].player.id).eq('p-blue-id');
+  });
+
+  it('deserializing a game with renamed awards', () => {
+    const player = TestPlayer.BLUE.newPlayer();
+    const player2 = TestPlayer.RED.newPlayer();
+    const game = Game.newInstance('gameid', [player, player2], player, 'spectatorid');
+    const suburbian = new Suburbian();
+
+    game.awards.unshift(suburbian);
+
+    game.fundedAwards.push({
+      award: suburbian,
+      player: player,
+    });
+
+    const serialized = game.serialize();
+    expect(serialized.awards[0]).eq('Suburbian');
+    expect(serialized.fundedAwards[0].name).eq('Suburbian');
+
+    serialized.awards[0] = 'Edgedancer' as any;
+    serialized.fundedAwards[0].name = 'Edgedancer' as any;
+
+    const deserialized = Game.deserialize(serialized);
+    expect(deserialized.awards[0]).deep.eq(suburbian);
+    expect(deserialized.fundedAwards).has.length(1);
+    expect(deserialized.fundedAwards[0].award.name).eq('Suburbian');
+    expect(deserialized.fundedAwards[0].player.id).eq('p-blue-id');
+  });
 
   // https://github.com/terraforming-mars/terraforming-mars/issues/5572
   it('dealing with milestones accidentally claimed twice', () => {
@@ -1353,6 +1691,28 @@ describe('Game', () => {
       GlobalParameter.OXYGEN,
       GlobalParameter.TEMPERATURE,
       GlobalParameter.OCEANS]);
+  });
+
+  it('keeps a surrendered first player responsible for WGT', () => {
+    const first = TestPlayer.BLUE.newPlayer();
+    const second = TestPlayer.RED.newPlayer();
+    const third = TestPlayer.BLACK.newPlayer();
+    const game = Game.newInstance(
+      'gameid',
+      [first, second, third],
+      first,
+      'spectatorid',
+      {solarPhaseOption: true},
+    );
+    game.surrenderedPlayerIds.add(first.id);
+
+    game.worldGovernmentTerraforming();
+
+    expect(waitingForGlobalParameters(first)).to.have.members([
+      GlobalParameter.OXYGEN,
+      GlobalParameter.TEMPERATURE,
+      GlobalParameter.OCEANS,
+    ]);
   });
 
   it('wgt includes all parameters at the game start, with Venus', () => {
@@ -1483,6 +1843,130 @@ describe('Game', () => {
     expect(game2.gameOptions.pathfindersExpansion).is.true;
     expect(game2.gameOptions.expansions.pathfinders).is.true;
   });
+
+  it('queues the 0C ocean after card effects and the TR increase', () => {
+    const [game, player] = testGame(1);
+    game.phase = Phase.ACTION;
+    setTemperature(game, -2);
+    const tr = player.terraformRating;
+    let queuedWhenCardFires = -1;
+    player.playedCards.push(fakeCard({
+      onGlobalParameterIncrease: () => {
+        queuedWhenCardFires = game.deferredActions.length;
+      },
+    }));
+
+    game.increaseTemperature(player, 1);
+
+    expect(queuedWhenCardFires).eq(0);
+    expect(player.terraformRating).eq(tr + 1);
+    expect(game.deferredActions.length).eq(1);
+  });
+
+  it('Amazonis Planitia grants plant production at -12C', () => {
+    const [game, player] = testGame(1, {boardName: BoardName.AMAZONIS_PLANITIA});
+    game.phase = Phase.ACTION;
+    setTemperature(game, -14);
+
+    const before = player.production.plants;
+    game.increaseTemperature(player, 1);
+    expect(game.getTemperature()).eq(-12);
+    expect(player.production.plants).eq(before + 1);
+  });
+
+  it('standard maps grant no production at -12C', () => {
+    const [game, player] = testGame(1);
+    game.phase = Phase.ACTION;
+    setTemperature(game, -14);
+
+    const before = player.production.plants;
+    game.increaseTemperature(player, 1);
+    expect(player.production.plants).eq(before);
+  });
+
+  it('Amazonis Planitia draws a card at 7% oxygen', () => {
+    const [game, player] = testGame(1, {boardName: BoardName.AMAZONIS_PLANITIA});
+    game.phase = Phase.ACTION;
+    setOxygenLevel(game, 6);
+
+    const before = player.cardsInHand.length;
+    game.increaseOxygenLevel(player, 1);
+    expect(game.getOxygenLevel()).eq(7);
+    expect(player.cardsInHand.length).eq(before + 1);
+  });
+
+  it('Amazonis Planitia raises temperature at 11% oxygen, not 8%', () => {
+    const [game, player] = testGame(1, {boardName: BoardName.AMAZONIS_PLANITIA});
+    game.phase = Phase.ACTION;
+    setTemperature(game, -10);
+
+    // Crossing 8% does not raise temperature on this map.
+    setOxygenLevel(game, 7);
+    game.increaseOxygenLevel(player, 1);
+    expect(game.getOxygenLevel()).eq(8);
+    expect(game.getTemperature()).eq(-10);
+
+    // Crossing 11% raises temperature one step.
+    setOxygenLevel(game, 10);
+    game.increaseOxygenLevel(player, 1);
+    expect(game.getOxygenLevel()).eq(11);
+    expect(game.getTemperature()).eq(-8);
+
+    // Going on to 12% does not raise it again.
+    game.increaseOxygenLevel(player, 1);
+    expect(game.getOxygenLevel()).eq(12);
+    expect(game.getTemperature()).eq(-8);
+  });
+
+  it('standard maps still raise temperature at 8% oxygen', () => {
+    const [game, player] = testGame(1);
+    game.phase = Phase.ACTION;
+    setTemperature(game, -10);
+    setOxygenLevel(game, 7);
+
+    game.increaseOxygenLevel(player, 1);
+    expect(game.getOxygenLevel()).eq(8);
+    expect(game.getTemperature()).eq(-8);
+  });
+
+  it('player-benefit bonuses are skipped in the solar phase, but cascades still apply', () => {
+    const [game, player] = testGame(1, {boardName: BoardName.AMAZONIS_PLANITIA});
+    game.phase = Phase.SOLAR;
+
+    // The 7% oxygen card draw is a player benefit and is skipped during World Government terraforming.
+    setOxygenLevel(game, 6);
+    const cardsBefore = player.cardsInHand.length;
+    game.increaseOxygenLevel(player, 1);
+    expect(player.cardsInHand.length).eq(cardsBefore);
+
+    // The 11% oxygen -> temperature cascade is a global effect and applies regardless.
+    setTemperature(game, -10);
+    setOxygenLevel(game, 10);
+    game.increaseOxygenLevel(player, 1);
+    expect(game.getTemperature()).eq(-8);
+  });
+
+  for (const run of [
+    {colonies: true, phase: Phase.ACTION, expected: true},
+    {colonies: false, phase: Phase.ACTION, expected: false},
+    {colonies: true, phase: Phase.SOLAR, expected: false},
+  ] as const) {
+    it('Amazonis Planitia at 16% Venus ' + JSON.stringify(run), () => {
+      // 2 players to remove an early-game solo action in the deferred actions queue.
+      const [game, player] = testGame(2, {boardName: BoardName.AMAZONIS_PLANITIA, venusNextExtension: true, coloniesExtension: run.colonies});
+      game.phase = run.phase;
+      setVenusScaleLevel(game, 14);
+
+      game.increaseVenusScaleLevel(player, 1);
+      runAllActions(game);
+
+      if (run.expected) {
+        assertBuildColony(player, player.popWaitingFor());
+      } else {
+        cast(player.popWaitingFor(), undefined);
+      }
+    });
+  }
 });
 
 function assertIsJSON(serialized: any) {

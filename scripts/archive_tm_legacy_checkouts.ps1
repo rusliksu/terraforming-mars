@@ -1,5 +1,5 @@
 param(
-    [string]$VpsHost = "vps",
+    [string]$VpsHost = "hostkey-codex",
     [string]$ArchiveRoot = "/home/openclaw/tm-legacy-checkouts",
     [switch]$DryRun
 )

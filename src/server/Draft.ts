@@ -106,7 +106,7 @@ export abstract class Draft {
     return this.passDirection() === 'after' ? this.game.getPlayerBefore(player) : this.game.getPlayerAfter(player);
   }
 
-  /** The player this player is givign their cards to when everybody passes their draft hands */
+  /** The player this player is giving their cards to when everybody passes their draft hands */
   private givingTo(player: IPlayer): IPlayer {
     return this.passDirection() === 'after' ? this.game.getPlayerAfter(player) : this.game.getPlayerBefore(player);
   }
@@ -153,6 +153,7 @@ export abstract class Draft {
 
           const movedCards = player.draftedCards.splice(startIndex, cardsToKeep);
           player.draftHand.push(...movedCards);
+          this.cancelPreviousDraftSelectionLog(player);
         }
         for (const card of selected) {
           player.draftedCards.push(card);
@@ -171,6 +172,16 @@ export abstract class Draft {
       return;
     }
     this.game.log('You drafted ${0}', (b) => b.cards(draftedCards), {reservedFor: player});
+  }
+
+  private cancelPreviousDraftSelectionLog(player: IPlayer): void {
+    for (let index = this.game.gameLog.length - 1; index >= 0; index--) {
+      const message = this.game.gameLog[index];
+      if (message.playerId === player.id && message.canceled !== true && message.message.startsWith('You drafted ')) {
+        message.canceled = true;
+        return;
+      }
+    }
   }
 
   /** Called when a player has chosen a card to draft. */
@@ -229,6 +240,10 @@ class StandardDraft extends Draft {
     if (player.tableau.has(CardName.MARS_MATHS)) {
       return 5;
     }
+    // Great Face of Cydonia (Rob Antilles): draw 1 extra card during the research phase.
+    if (player.tableau.has(CardName.GREAT_FACE_OF_CYDONIA)) {
+      return 5;
+    }
 
     return 4;
   }
@@ -239,6 +254,10 @@ class StandardDraft extends Draft {
         return 2;
       }
       if (player.tableau.has(CardName.MARS_MATHS)) {
+        return 2;
+      }
+      // Great Face of Cydonia (Rob Antilles): may keep 2 cards in the first draft round.
+      if (player.tableau.has(CardName.GREAT_FACE_OF_CYDONIA)) {
         return 2;
       }
     }

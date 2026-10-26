@@ -4,6 +4,7 @@
 @import (inline) "../../node_modules/dialog-polyfill/dialog-polyfill.css";
 @import "./variables.less";
 @import "./mixins.less";
+@import "./hotkeys.less";
 
 html,
 body,
@@ -11,6 +12,8 @@ body,
   height: 100%;
   margin: 0px;
 }
+
+@import "./wrybit/game_end_global.less";
 .btn {
   color: @text_action !important;
   background: @bg_action !important;
@@ -148,10 +151,10 @@ h2 {
 
 // normal backgrounds
 each(@players, {
-@c: ~"player_@{value}";
-.player_bg_color_@{value} {
-  background-color: @@c;
-}
+  @c: ~"player_@{value}";
+  .player_bg_color_@{value} {
+    background-color: @@c;
+  }
 })
 
 .player_bg_color_gold {
@@ -204,6 +207,13 @@ each(@players, {
   color: #fff2f5;
 }
 
+.player_bg_color_credicor {
+  background-color: @player_credicor;
+  background-image: url(./assets/credicor-pattern.svg);
+  background-size: 96px 96px;
+  color: #f1edf7;
+}
+
 .player_bg_color_saturn {
   background-color: @player_saturn;
   color: #201607;
@@ -240,10 +250,10 @@ each(@players, {
 
 // backgrounds with opacity
 each(@players, {
-@c: ~"player_@{value}";
-.player_translucent_bg_color_@{value} {
-  background: rgba(@@c, 0.7);
-}
+  @c: ~"player_@{value}";
+  .player_translucent_bg_color_@{value} {
+    background: rgba(@@c, 0.7);
+  }
 })
 
 .player_translucent_bg_color_gold {
@@ -287,6 +297,10 @@ each(@players, {
 
 .player_translucent_bg_color_serge {
   .player_serge_bg_translucent();
+}
+
+.player_translucent_bg_color_credicor {
+  .player_credicor_bg_translucent();
 }
 
 .player_translucent_bg_color_saturn {
@@ -454,6 +468,46 @@ each(@players, {
   color: #fff2f5;
 }
 
+.player_bg_color_credicor.log-player,
+.player_translucent_bg_color_credicor .player-info-name,
+.player_translucent_bg_color_credicor .player_name,
+.player_translucent_bg_color_credicor .game-end-name-and-elo,
+.player_translucent_bg_color_credicor .game-end-name-and-elo a,
+.player_translucent_bg_color_credicor .player-name {
+  color: #f1edf7;
+}
+
+.player_translucent_bg_color_credicor .player-info-details .player-info-name {
+  font-size: 18px;
+}
+
+.player_translucent_bg_color_credicor .player-persona-title::before,
+.player_translucent_bg_color_credicor .player_name::before,
+.player_translucent_bg_color_credicor .game-end-name-and-elo a::before,
+.player_translucent_bg_color_credicor .player-name::before {
+  content: "";
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  margin-right: 0.3em;
+  vertical-align: -0.1em;
+  background: url(./assets/credicor-crown.svg) center / contain no-repeat;
+}
+
+.player-persona-title {
+  display: block;
+  color: #d7dce9;
+  font-size: 10px;
+  line-height: 12px;
+  letter-spacing: 0.04em;
+}
+
+.player_translucent_bg_color_credicor .player-persona-title + span .player-info-corp {
+  font-size: 14px;
+  line-height: 14px;
+  height: 14px;
+}
+
 .player_bg_color_saturn.log-player,
 .player_translucent_bg_color_saturn .player-info-name,
 .player_translucent_bg_color_saturn .player_name,
@@ -510,6 +564,31 @@ each(@players, {
 
 .alert-dialog {
   position: fixed;
+
+  a:link,
+  a:visited {
+    color: #0645ad;
+  }
+}
+
+.bot-controlled-marker {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  min-height: 18px;
+  padding: 1px 5px;
+  border: 1px solid #ff4b5c;
+  border-radius: 4px;
+  background: rgba(116, 8, 24, 0.9);
+  color: #fff;
+  font-family: Ubuntu, Sans-Serif;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 0.4px;
+  line-height: 1;
+  text-shadow: 0 1px 1px #000;
+  vertical-align: middle;
 }
 
 .general-warning {
@@ -544,8 +623,14 @@ each(@players, {
 @import "./ares.less";
 @import "./games-overview.less";
 @import "./help.less";
+@import "./markdown.less";
 @import "./card_list.less";
 @import "./moon.less";
+@import "./venusphase2.less";
 @import "./pathfinders.less";
 @import "./language_icon.less";
 @import "./underworld.less";
+@import "./debug.less";
+@import "./conglomerates.less";
+@import "./highorbit.less";
+@import "./experimental_layout.less";

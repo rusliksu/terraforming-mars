@@ -1,0 +1,1674 @@
+{
+  "source": "https://rebalakefak.herokuapp.com/main.js",
+  "version": "28846e8",
+  "bundleSha256": "4949d60dcddaeceb505a27d7fe46a39b1ce10b8427ebefde0a5ce3f0ee0c87c0",
+  "cards": [
+    {
+      "symbol": "ADAPTED_LICHEN_REBALANCED",
+      "name": "Adapted Lichen(⚖)",
+      "type": "automated",
+      "tags": [
+        "plant"
+      ],
+      "cost": 8,
+      "compatibility": null,
+      "texts": [
+        "Increase your Plant production 1 step.",
+        "048"
+      ]
+    },
+    {
+      "symbol": "ADVANCED_ALLOYS_REBALANCED",
+      "name": "Advanced Alloys(⚖)",
+      "type": "active",
+      "tags": [],
+      "cost": 9,
+      "compatibility": null,
+      "texts": [
+        "071",
+        "Each titanium you have is worth 1 M€ extra.",
+        "Each steel you have is worth 1 M€ extra."
+      ]
+    },
+    {
+      "symbol": "AEROBRAKED_AMMONIA_ASTEROID_REBALANCED",
+      "name": "Aerobraked Ammonia Asteroid(⚖)",
+      "type": "event",
+      "tags": [
+        "space"
+      ],
+      "cost": 26,
+      "compatibility": null,
+      "texts": [
+        "Increase your heat production 4 steps and your plant production 1 step. Add 3 Microbes to ANOTHER card.",
+        "170"
+      ]
+    },
+    {
+      "symbol": "ASTEROID_HOLLOWING_REBALANCED",
+      "name": "Asteroid Hollowing(⚖)",
+      "type": "active",
+      "tags": [
+        "space"
+      ],
+      "cost": 16,
+      "compatibility": null,
+      "texts": [
+        "X15",
+        "Spend 1 titanium to add 1 asteroid resource here and increase M€ production 1 step.",
+        "1VP for each asteroid on this card."
+      ]
+    },
+    {
+      "symbol": "ASTEROID_MINING_CONSORTIUM_REBALANCED",
+      "name": "Asteroid Mining Consortium(⚖)",
+      "type": "automated",
+      "tags": [
+        "jovian"
+      ],
+      "cost": 13,
+      "victoryPoints": 1,
+      "compatibility": null,
+      "texts": [
+        "Decrease any titanium production 1 step and increase your own 1 step.",
+        "002"
+      ]
+    },
+    {
+      "symbol": "BACTOVIRAL_RESEARCH_REBALANCED",
+      "name": "Bactoviral Research(⚖)",
+      "type": "automated",
+      "tags": [
+        "microbe",
+        "science"
+      ],
+      "cost": 10,
+      "compatibility": null,
+      "texts": [
+        "X37",
+        "Draw a card. Choose any one microbe card and add a microbe to it for each microbe tag you have, including this."
+      ]
+    },
+    {
+      "symbol": "BLACK_POLAR_DUST_REBALANCED",
+      "name": "Black Polar Dust(⚖)",
+      "type": "automated",
+      "tags": [],
+      "cost": 14,
+      "compatibility": null,
+      "texts": [
+        "022",
+        "Place an ocean tile. Decrease your M€ production 2 steps and increase your heat production 3 steps."
+      ]
+    },
+    {
+      "symbol": "BUILDING_INDUSTRIES_REBALANCED",
+      "name": "Building Industries(⚖)",
+      "type": "automated",
+      "tags": [
+        "building"
+      ],
+      "cost": 5,
+      "compatibility": null,
+      "texts": [
+        "065",
+        "Decrease your Energy production 1 step and increase your steel production 2 steps."
+      ]
+    },
+    {
+      "symbol": "CARTEL_REBALANCED",
+      "name": "Cartel(⚖)",
+      "type": "automated",
+      "tags": [
+        "earth"
+      ],
+      "cost": 10,
+      "compatibility": null,
+      "texts": [
+        "137",
+        "Increase your M€ production 1 step for each Earth tag you have, including this."
+      ]
+    },
+    {
+      "symbol": "CLOUD_SEEDING_REBALANCED",
+      "name": "Cloud Seeding(⚖)",
+      "type": "automated",
+      "tags": [
+        "plant"
+      ],
+      "cost": 11,
+      "compatibility": null,
+      "texts": [
+        "004",
+        "Requires 3 ocean tiles. Decrease your M€ production 1 step and any heat production 1 step. Increase your Plant production 2 steps."
+      ]
+    },
+    {
+      "symbol": "COMMUNITY_SERVICES_REBALANCED",
+      "name": "Community Services(⚖)",
+      "type": "automated",
+      "tags": [],
+      "cost": 11,
+      "victoryPoints": 1,
+      "compatibility": "o.GameModule.Colonies",
+      "texts": [
+        "C04",
+        "Increase your M€ production 1 step per CARD WITH NO TAGS, including this."
+      ]
+    },
+    {
+      "symbol": "CORPORATE_STRONGHOLD_REBALANCED",
+      "name": "Corporate Stronghold(⚖)",
+      "type": "automated",
+      "tags": [
+        "city",
+        "building"
+      ],
+      "cost": 11,
+      "victoryPoints": -1,
+      "compatibility": null,
+      "texts": [
+        "182",
+        "Decrease your Energy production 1 step and increase your M€ production 3 steps. Place a City tile."
+      ]
+    },
+    {
+      "symbol": "CUTTING_EDGE_TECHNOLOGY_REBALANCED",
+      "name": "Cutting Edge Technology(⚖)",
+      "type": "active",
+      "tags": [
+        "science"
+      ],
+      "cost": 14,
+      "victoryPoints": 1,
+      "compatibility": null,
+      "texts": [
+        "X18",
+        "When playing a card with a requirement, you pay 2 M€ less for it."
+      ]
+    },
+    {
+      "symbol": "DEIMOS_DOWN_PROMO_REBALANCED",
+      "name": "Deimos Down(⚖)",
+      "type": "event",
+      "tags": [
+        "space"
+      ],
+      "cost": 35,
+      "compatibility": null,
+      "texts": [
+        "X31",
+        "Raise temperature 3 steps and gain 4 steel. Place this tile ADJACENT TO no other city tile. Remove up to 8 Plants from any player."
+      ]
+    },
+    {
+      "symbol": "DESIGNED_MICRO_ORGANISMS_REBALANCED",
+      "name": "Designed Micro-organisms(⚖)",
+      "type": "automated",
+      "tags": [
+        "science",
+        "microbe"
+      ],
+      "cost": 15,
+      "compatibility": null,
+      "texts": [
+        "155",
+        "It must be -14 C or colder. Increase your Plant production 2 steps."
+      ]
+    },
+    {
+      "symbol": "EARTH_CATAPULT_REBALANCED",
+      "name": "Earth Catapult(⚖)",
+      "type": "active",
+      "tags": [
+        "earth"
+      ],
+      "cost": 28,
+      "victoryPoints": 1,
+      "compatibility": null,
+      "texts": [
+        "070",
+        "When you play a card, you pay 2 M€ less for it."
+      ]
+    },
+    {
+      "symbol": "EARTH_OFFICE_REBALANCED",
+      "name": "Earth Office(⚖)",
+      "type": "active",
+      "tags": [
+        "earth"
+      ],
+      "cost": 4,
+      "compatibility": null,
+      "texts": [
+        "105",
+        "When you play an Earth card, you pay 3 M€ less for it."
+      ]
+    },
+    {
+      "symbol": "ENERGY_MARKET_REBALANCED",
+      "name": "Energy Market(⚖)",
+      "type": "active",
+      "tags": [
+        "power"
+      ],
+      "cost": 5,
+      "compatibility": null,
+      "texts": [
+        "X03",
+        "Spend 2X M€ to gain X energy.",
+        "x",
+        "Decrease energy production 1 step to gain 8 M€."
+      ]
+    },
+    {
+      "symbol": "ENERGY_SAVING_REBALANCED",
+      "name": "Energy Saving(⚖)",
+      "type": "automated",
+      "tags": [
+        "power",
+        "building"
+      ],
+      "cost": 15,
+      "compatibility": null,
+      "texts": [
+        "189",
+        "Increase your Energy production 1 step for each City tile in play."
+      ]
+    },
+    {
+      "symbol": "ENERGY_TAPPING_REBALANCED",
+      "name": "Energy Tapping(⚖)",
+      "type": "automated",
+      "tags": [
+        "power"
+      ],
+      "cost": 3,
+      "victoryPoints": -1,
+      "compatibility": null,
+      "texts": [
+        "201",
+        "Decrease any Energy production 1 step and increase your own 1 step."
+      ]
+    },
+    {
+      "symbol": "EXTRACTOR_BALLOONS_REBALANCED",
+      "name": "Extractor Balloons(⚖)",
+      "type": "active",
+      "tags": [
+        "venus"
+      ],
+      "cost": 18,
+      "compatibility": "o.GameModule.Venus",
+      "texts": [
+        "223",
+        "Add 3 Floaters to this card",
+        "Add 1 Floater to this card.",
+        "Remove 2 Floaters here to raise Venus 1 step."
+      ]
+    },
+    {
+      "symbol": "FLOATER_LEASING_REBALANCED",
+      "name": "Floater Leasing(⚖)",
+      "type": "automated",
+      "tags": [],
+      "cost": 3,
+      "compatibility": "o.GameModule.Venus",
+      "texts": [
+        "C10",
+        "Increase your M€ production 1 step PER 2 floaters you have (max 10 production)."
+      ]
+    },
+    {
+      "symbol": "FORCED_PRECIPITATION_REBALANCED",
+      "name": "Forced Precipitation(⚖)",
+      "type": "active",
+      "tags": [
+        "venus"
+      ],
+      "cost": 4,
+      "compatibility": "o.GameModule.Venus",
+      "texts": [
+        "226",
+        "Spend 2 M€ to add 1 Floater to THIS card.",
+        "Spend 2 Floaters here to increase Venus 1 step."
+      ]
+    },
+    {
+      "symbol": "FUEL_FACTORY_REBALANCED",
+      "name": "Fuel Factory(⚖)",
+      "type": "automated",
+      "tags": [
+        "building"
+      ],
+      "cost": 5,
+      "compatibility": null,
+      "texts": [
+        "180",
+        "Decrease your Energy production 1 step and increase your titanium and your M€ production 1 step each."
+      ]
+    },
+    {
+      "symbol": "GHG_IMPORT_FROM_VENUS_REBALANCED",
+      "name": "GHG Import From Venus(⚖)",
+      "type": "event",
+      "tags": [
+        "space",
+        "venus"
+      ],
+      "cost": 20,
+      "compatibility": "o.GameModule.Venus",
+      "texts": [
+        "Raise Venus 1 step. Increase your heat production 3 steps.",
+        "228"
+      ]
+    },
+    {
+      "symbol": "GMO_CONTRACT_REBALANCED",
+      "name": "GMO Contract(⚖)",
+      "type": "active",
+      "tags": [
+        "microbe",
+        "science"
+      ],
+      "cost": 8,
+      "compatibility": "o.GameModule.Turmoil",
+      "texts": [
+        "Requires that Greens are ruling or that you have 2 delegates there.",
+        "T06",
+        "Each time you play a plant, animal or microbe tag, including this, gain 2 M€."
+      ]
+    },
+    {
+      "symbol": "HACKERS_REBALANCED",
+      "name": "Hackers(⚖)",
+      "type": "automated",
+      "tags": [],
+      "cost": 3,
+      "victoryPoints": -1,
+      "compatibility": null,
+      "texts": [
+        "125",
+        "Decrease your energy production 1 step and EACH OPPONENTS M€ production 1 step. Increase your M€ production 3 steps."
+      ]
+    },
+    {
+      "symbol": "HEAT_TRAPPERS_REBALANCED",
+      "name": "Heat Trappers(⚖)",
+      "type": "automated",
+      "tags": [
+        "power",
+        "building"
+      ],
+      "cost": 6,
+      "victoryPoints": -1,
+      "compatibility": null,
+      "texts": [
+        "178",
+        "Requires -22 C or warmer. Decrease any heat production 2 steps and increase your Energy production 1 step."
+      ]
+    },
+    {
+      "symbol": "INDUSTRIAL_CENTER_REBALANCED",
+      "name": "Industrial Center(⚖)",
+      "type": "active",
+      "tags": [
+        "building"
+      ],
+      "cost": 4,
+      "compatibility": null,
+      "texts": [
+        "123",
+        "Spend 6 M€ to increase your steel production 1 step.",
+        "Place this tile adjacent to a city tile."
+      ]
+    },
+    {
+      "symbol": "INSECTS_REBALANCED",
+      "name": "Insects(⚖)",
+      "type": "automated",
+      "tags": [
+        "microbe"
+      ],
+      "cost": 11,
+      "compatibility": null,
+      "texts": [
+        "148",
+        "Requires 6% oxygen. Increase your Plant production 1 step for each plant tag you have."
+      ]
+    },
+    {
+      "symbol": "JET_STREAM_MICROSCRAPPERS_REBALANCED",
+      "name": "Jet Stream Microscrappers(⚖)",
+      "type": "active",
+      "tags": [
+        "venus"
+      ],
+      "cost": 7,
+      "compatibility": "o.GameModule.Venus",
+      "texts": [
+        "234",
+        "Spend 1 titanium to add 2 Floaters here",
+        "Spend 2 Floaters here to raise Venus 1 step"
+      ]
+    },
+    {
+      "symbol": "MARS_UNIVERSITY_REBALANCED",
+      "name": "Mars University(⚖)",
+      "type": "active",
+      "tags": [
+        "science",
+        "building"
+      ],
+      "cost": 12,
+      "compatibility": null,
+      "texts": [
+        "073",
+        "When you play a Science tag, including this, you may discard a card from hand to draw a card."
+      ]
+    },
+    {
+      "symbol": "MARTIAN_RAILS_REBALANCED",
+      "name": "Martian Rails(⚖)",
+      "type": "active",
+      "tags": [
+        "building"
+      ],
+      "cost": 12,
+      "compatibility": null,
+      "texts": [
+        "007",
+        "Spend 1 Energy to gain 1 M€ for each City tile ON MARS."
+      ]
+    },
+    {
+      "symbol": "MASS_CONVERTER_REBALANCED",
+      "name": "Mass Converter(⚖)",
+      "type": "active",
+      "tags": [
+        "science",
+        "power"
+      ],
+      "cost": 8,
+      "compatibility": null,
+      "texts": [
+        "094",
+        "When you play a Space card, you pay 2 M€ less for it.",
+        "Requires 5 science tags. Increase your energy production 6 steps."
+      ]
+    },
+    {
+      "symbol": "MEAT_INDUSTRY_REBALANCED",
+      "name": "Meat Industry(⚖)",
+      "type": "active",
+      "tags": [
+        "building"
+      ],
+      "cost": 10,
+      "compatibility": null,
+      "texts": [
+        "X25",
+        "When you gain an animal to ANY CARD, gain 2 M€."
+      ]
+    },
+    {
+      "symbol": "MICRO_MILLS_REBALANCED",
+      "name": "Micro-Mills(⚖)",
+      "type": "automated",
+      "tags": [],
+      "cost": 2,
+      "compatibility": null,
+      "texts": [
+        "164",
+        "Increase your heat production 1 step."
+      ]
+    },
+    {
+      "symbol": "ORBITAL_CLEANUP_REBALANCED",
+      "name": "Orbital Cleanup(⚖)",
+      "type": "active",
+      "tags": [
+        "earth",
+        "space"
+      ],
+      "cost": 14,
+      "victoryPoints": 2,
+      "compatibility": null,
+      "texts": [
+        "X08",
+        "Gain 1 M€ per every two Science tag you have."
+      ]
+    },
+    {
+      "symbol": "OUTDOOR_SPORTS_REBALANCED",
+      "name": "Outdoor Sports(⚖)",
+      "type": "automated",
+      "tags": [],
+      "cost": 8,
+      "victoryPoints": 1,
+      "compatibility": null,
+      "texts": [
+        "X38",
+        "Requires any city adjacent to an ocean. Increase your M€ production 3 steps."
+      ]
+    },
+    {
+      "symbol": "RELEASE_OF_INERT_GASES_REBALANCED",
+      "name": "Release of Inert Gases(⚖)",
+      "type": "event",
+      "tags": [],
+      "cost": 13,
+      "compatibility": null,
+      "texts": [
+        "036",
+        "Raise your terraforming rating 2 steps."
+      ]
+    },
+    {
+      "symbol": "RESEARCH_OUTPOST_REBALANCED",
+      "name": "Research Outpost(⚖)",
+      "type": "active",
+      "tags": [
+        "science",
+        "city",
+        "building"
+      ],
+      "cost": 18,
+      "victoryPoints": -1,
+      "compatibility": null,
+      "texts": [
+        "020",
+        "When you play a card, you pay 1 M€ less for it.",
+        "Place a city tile NEXT TO NO OTHER TILE."
+      ]
+    },
+    {
+      "symbol": "RESTRICTED_AREA_REBALANCED",
+      "name": "Restricted Area(⚖)",
+      "type": "active",
+      "tags": [
+        "science"
+      ],
+      "cost": 13,
+      "compatibility": null,
+      "texts": [
+        "199",
+        "Spend 2 M€ to draw a card.",
+        "Place this tile."
+      ]
+    },
+    {
+      "symbol": "ROTATOR_IMPACTS_REBALANCED",
+      "name": "Rotator Impacts(⚖)",
+      "type": "active",
+      "tags": [
+        "space"
+      ],
+      "cost": 6,
+      "compatibility": "o.GameModule.Venus",
+      "texts": [
+        "243",
+        "Spend 6 M€ to add an asteroid resource to ANY card [TITANIUM MAY BE USED].",
+        "Spend 1 resource from this card to increase Venus 1 step.",
+        "Venus must be 14% or lower"
+      ]
+    },
+    {
+      "symbol": "SABOTAGE_REBALANCED",
+      "name": "Sabotage(⚖)",
+      "type": "event",
+      "tags": [],
+      "cost": 1,
+      "compatibility": null,
+      "texts": [
+        "121",
+        "Remove up to 3 titanium from any player, or 4 steel, or 7 M€."
+      ]
+    },
+    {
+      "symbol": "SKY_DOCKS_REBALANCED",
+      "name": "Sky Docks(⚖)",
+      "type": "active",
+      "tags": [
+        "space",
+        "earth"
+      ],
+      "cost": 18,
+      "victoryPoints": 1,
+      "compatibility": "o.GameModule.Colonies",
+      "texts": [
+        "C36",
+        "When you play a card, you pay 1 M€ less for it.",
+        "Requires 2 Earth tags. Gain 1 Trade Fleet."
+      ]
+    },
+    {
+      "symbol": "SNOW_ALGAE_REBALANCED",
+      "name": "Snow Algae(⚖)",
+      "type": "automated",
+      "tags": [
+        "plant"
+      ],
+      "cost": 11,
+      "compatibility": null,
+      "texts": [
+        "211",
+        "Requires 2 oceans. Increase your Plant production and your heat production 1 step each."
+      ]
+    },
+    {
+      "symbol": "SOIL_FACTORY_REBALANCED",
+      "name": "Soil Factory(⚖)",
+      "type": "automated",
+      "tags": [
+        "building"
+      ],
+      "cost": 10,
+      "victoryPoints": 1,
+      "compatibility": null,
+      "texts": [
+        "179",
+        "Decrease your Energy production 1 step and increase your Plant production 2 step."
+      ]
+    },
+    {
+      "symbol": "SOLAR_POWER_REBALANCED",
+      "name": "Solar Power(⚖)",
+      "type": "automated",
+      "tags": [
+        "power",
+        "building"
+      ],
+      "cost": 10,
+      "victoryPoints": 1,
+      "compatibility": null,
+      "texts": [
+        "113",
+        "Increase your energy production 1 step."
+      ]
+    },
+    {
+      "symbol": "SPINOFF_DEPARTMENT_REBALANCED",
+      "name": "Spin-off Department(⚖)",
+      "type": "active",
+      "tags": [
+        "building"
+      ],
+      "cost": 13,
+      "compatibility": null,
+      "texts": [
+        "C41",
+        "WHEN PLAYING A CARD WITH A BASIC COST OF 20M€ OR MORE, draw a card.",
+        "Increase your M€ production 2 steps."
+      ]
+    },
+    {
+      "symbol": "STRATOPOLIS_REBALANCED",
+      "name": "Stratopolis(⚖)",
+      "type": "active",
+      "tags": [
+        "city",
+        "venus"
+      ],
+      "cost": 20,
+      "compatibility": "o.GameModule.Venus",
+      "texts": [
+        "248",
+        "Add 2 floaters to ANY VENUS CARD.",
+        "1 VP for every 2nd Floater on this card.",
+        "Requires 2 science tag. Increase your M€ production 2 steps. Place a City tile ON THE RESERVED AREA",
+        "left"
+      ]
+    },
+    {
+      "symbol": "STRIP_MINE_REBALANCED",
+      "name": "Strip Mine(⚖)",
+      "type": "automated",
+      "tags": [
+        "building"
+      ],
+      "cost": 23,
+      "compatibility": null,
+      "texts": [
+        "138",
+        "Decrease your Energy production 2 steps. Increase your steel production 2 steps and your titanium production 1 step. Raise oxygen 2 steps."
+      ]
+    },
+    {
+      "symbol": "TITAN_AIRSCRAPPING_REBALANCED",
+      "name": "Titan Air-scrapping(⚖)",
+      "type": "active",
+      "tags": [
+        "jovian"
+      ],
+      "cost": 21,
+      "victoryPoints": 2,
+      "compatibility": "o.GameModule.Colonies",
+      "texts": [
+        "C43",
+        "Spend 1 titanium to add 4 floaters here.",
+        "Spend 2 floaters here to increase your TR 1 step."
+      ]
+    },
+    {
+      "symbol": "TOLL_STATION_REBALANCED",
+      "name": "Toll Station(⚖)",
+      "type": "automated",
+      "tags": [
+        "space"
+      ],
+      "cost": 12,
+      "compatibility": null,
+      "texts": [
+        "099",
+        "Increase your M€ production 1 step for each space tag of the OPPONENT who has the most space tags."
+      ]
+    },
+    {
+      "symbol": "TOPSOIL_CONTRACT_REBALANCED",
+      "name": "Topsoil Contract(⚖)",
+      "type": "active",
+      "tags": [
+        "microbe",
+        "earth"
+      ],
+      "cost": 10,
+      "compatibility": null,
+      "texts": [
+        "X30",
+        "When you gain a microbe to ANY CARD, also gain 1 M€.",
+        "Gain 3 plants."
+      ]
+    },
+    {
+      "symbol": "TROPICAL_RESORT_REBALANCED",
+      "name": "Tropical Resort(⚖)",
+      "type": "automated",
+      "tags": [
+        "building"
+      ],
+      "cost": 11,
+      "victoryPoints": 2,
+      "compatibility": null,
+      "texts": [
+        "098",
+        "Reduce your heat production 2 steps and increase your M€ production 3 steps."
+      ]
+    },
+    {
+      "symbol": "UNDERGROUND_CITY_REBALANCED",
+      "name": "Underground City(⚖)",
+      "type": "automated",
+      "tags": [
+        "city",
+        "building"
+      ],
+      "cost": 18,
+      "compatibility": null,
+      "texts": [
+        "032",
+        "Place a City tile. Decrease your Energy production 1 step and increase your steel production 2 steps."
+      ]
+    },
+    {
+      "symbol": "UNDERGROUND_DETONATIONS_REBALANCED",
+      "name": "Underground Detonations(⚖)",
+      "type": "active",
+      "tags": [
+        "building"
+      ],
+      "cost": 2,
+      "compatibility": null,
+      "texts": [
+        "202",
+        "Spend 8M€ to increase your heat production 2 steps. STEEL MAY BE USED as if you were playing a Building card."
+      ]
+    },
+    {
+      "symbol": "VIRAL_ENHANCERS_REBALANCED",
+      "name": "Viral Enhancers(⚖)",
+      "type": "active",
+      "tags": [
+        "science",
+        "microbe"
+      ],
+      "cost": 10,
+      "compatibility": null,
+      "texts": [
+        "074",
+        "When you play a Plant, Microbe, or an Animal tag, including this, gain 1 plant or add 1 resource to THAT CARD."
+      ]
+    },
+    {
+      "symbol": "WARP_DRIVE_REBALANCED",
+      "name": "Warp Drive(⚖)",
+      "type": "active",
+      "tags": [
+        "science"
+      ],
+      "cost": 16,
+      "victoryPoints": 2,
+      "compatibility": null,
+      "texts": [
+        "C49",
+        "When you play a Space card, you pay 4 M€ less for it.",
+        "Requires 5 Science tags."
+      ]
+    },
+    {
+      "symbol": "ZEPPELINS_REBALANCED",
+      "name": "Zeppelins(⚖)",
+      "type": "automated",
+      "tags": [],
+      "cost": 11,
+      "victoryPoints": 1,
+      "compatibility": null,
+      "texts": [
+        "129",
+        "Requires 5% oxygen. Increase your M€ production 1 step for each City tile ON MARS."
+      ]
+    },
+    {
+      "symbol": "APHRODITE_REBALANCED",
+      "name": "Aphrodite(⚖)",
+      "type": "corporation",
+      "tags": [
+        "plant",
+        "venus"
+      ],
+      "startingMegaCredits": 50,
+      "compatibility": "o.GameModule.Venus",
+      "texts": [
+        "R01",
+        "You start with 2 plant production, and 50 M€.",
+        "effect",
+        "Whenever Venus is terraformed 1 step, you gain 3 M€ and the player (not WGT) who raised it gain 2 M€"
+      ]
+    },
+    {
+      "symbol": "ARCADIAN_COMMUNITIES_REBALANCED",
+      "name": "Arcadian Communities(⚖)",
+      "type": "corporation",
+      "tags": [
+        "building"
+      ],
+      "startingMegaCredits": 42,
+      "compatibility": null,
+      "texts": [
+        "R44",
+        "You start with 42 M€, 10 steel and 1 steel production. AS YOUR FIRST ACTION, PLACE A COMMUNITY [PLAYER MARKER] ON A NON-RESERVED AREA.",
+        "action",
+        "ACTION: PLACE A COMMUNITY (PLAYER MARKER) ON A NON-RESERVED AREA ADJACENT TO ONE OF YOUR TILES OR MARKED AREAS",
+        "EFFECT: MARKED AREAS ARE RESERVED FOR YOU. WHEN YOU PLACE A TILE THERE, GAIN 3 M€"
+      ]
+    },
+    {
+      "symbol": "ARIDOR_REBALANCED",
+      "name": "Aridor(⚖)",
+      "type": "corporation",
+      "tags": [],
+      "startingMegaCredits": 45,
+      "compatibility": "o.GameModule.Colonies",
+      "texts": [
+        "R20",
+        "You start with 45 M€. As your first action, put an additional Colony Tile of your choice into play",
+        "effect",
+        "When you get a new type of tag in play [event cards do not count], increase your M€ production 1 step."
+      ]
+    },
+    {
+      "symbol": "ARKLIGHT_REBALANCED",
+      "name": "Arklight(⚖)",
+      "type": "corporation",
+      "tags": [
+        "animal"
+      ],
+      "startingMegaCredits": 50,
+      "compatibility": null,
+      "texts": [
+        "R04",
+        "You start with 50 M€. 1 VP per 2 animals on this card.",
+        "effect",
+        "When you play an animal or plant tag, including this, gain 1 M€ production and add 1 animal to this card."
+      ]
+    },
+    {
+      "symbol": "ASTRODRILL_REBALANCED",
+      "name": "Astrodrill(⚖)",
+      "type": "corporation",
+      "tags": [
+        "space"
+      ],
+      "startingMegaCredits": 40,
+      "compatibility": null,
+      "texts": [
+        "R21",
+        "You start with 40 M€ and 4 asteroid resources.",
+        "action",
+        "Add an asteroid resource to ANY card OR gain any standard resource, OR remove an asteroid resource from this card to gain 3 titanium."
+      ]
+    },
+    {
+      "symbol": "CELESTIC_REBALANCED",
+      "name": "Celestic(⚖)",
+      "type": "corporation",
+      "tags": [
+        "venus"
+      ],
+      "startingMegaCredits": 42,
+      "compatibility": "o.GameModule.Venus",
+      "texts": [
+        "R05",
+        "You start with 42 M€. As your first action, reveal cards from the deck until you have revealed 2 cards with a floater icon on it. Take them into hand and discard the rest.",
+        "action",
+        "Add a floater each to 1 or 2 different cards. 1 VP per 3 floaters on this card."
+      ]
+    },
+    {
+      "symbol": "CHEUNG_SHING_MARS_REBALANCED",
+      "name": "Cheung Shing MARS(⚖)",
+      "type": "corporation",
+      "tags": [
+        "building"
+      ],
+      "startingMegaCredits": 44,
+      "compatibility": null,
+      "texts": [
+        "R16",
+        "You start with 3 M€ production and 44 M€.",
+        "effect",
+        "When you play a building tag, including this, you gain 3 M€."
+      ]
+    },
+    {
+      "symbol": "ECOLINE_REBALANCED",
+      "name": "EcoLine(⚖)",
+      "type": "corporation",
+      "tags": [
+        "plant"
+      ],
+      "startingMegaCredits": 37,
+      "compatibility": null,
+      "texts": [
+        "R17",
+        "You start with 3 plant production, and 37 M€.",
+        "effect",
+        "Each time you play a plant, animal or microbe tag, including this, gain 2MC or 1 plant."
+      ]
+    },
+    {
+      "symbol": "FACTORUM_REBALANCED",
+      "name": "Factorum(⚖)",
+      "type": "corporation",
+      "tags": [
+        "power",
+        "building"
+      ],
+      "startingMegaCredits": 40,
+      "compatibility": null,
+      "texts": [
+        "R22",
+        "You start with 40 M€. Increase your steel production 2 steps.",
+        "action",
+        "Increase your energy production 1 step IF YOU HAVE NO ENERGY RESOURCES, or spend 1 energy to draw a building card."
+      ]
+    },
+    {
+      "symbol": "HELION_REBALANCED",
+      "name": "Helion(⚖)",
+      "type": "corporation",
+      "tags": [
+        "space"
+      ],
+      "startingMegaCredits": 40,
+      "compatibility": null,
+      "texts": [
+        "R18",
+        "You start with 4 heat production and 40 M€.",
+        "effect",
+        "You may use heat as MC. You may not use M€ as heat.",
+        "x",
+        "You may always spend 7 heat, instead of 8, to raise a temperature."
+      ]
+    },
+    {
+      "symbol": "INTERPLANETARY_CINEMATICS_REBALANCED",
+      "name": "Interplanetary Cinematics(⚖)",
+      "type": "corporation",
+      "tags": [
+        "building"
+      ],
+      "startingMegaCredits": 40,
+      "compatibility": null,
+      "texts": [
+        "R19",
+        "You start with 40 M€ and 12 steel.",
+        "effect",
+        "Each time you play an event, you gain 3 M€."
+      ]
+    },
+    {
+      "symbol": "INVENTRIX_REBALANCED",
+      "name": "Inventrix(⚖)",
+      "type": "corporation",
+      "tags": [
+        "science"
+      ],
+      "startingMegaCredits": 45,
+      "compatibility": null,
+      "texts": [
+        "R43",
+        "As first action, draw 3 cards.",
+        "effect",
+        "Your temperature, oxygen, ocean, and Venus requirements are +/-3 steps.",
+        "Global requirements",
+        "+/- 3",
+        "Cards with a req. cost 1 M€ less."
+      ]
+    },
+    {
+      "symbol": "LAKEFRONT_RESORTS_REBALANCED",
+      "name": "Lakefront Resorts(⚖)",
+      "type": "corporation",
+      "tags": [
+        "building"
+      ],
+      "startingMegaCredits": 46,
+      "compatibility": null,
+      "texts": [
+        "R38",
+        "You start with 46 M€.",
+        "effect",
+        "When any ocean tile is placed, increase your M€ production 1 step. Your bonus for placing adjacent to oceans is 3M€ instead of 2 M€.",
+        "normal"
+      ]
+    },
+    {
+      "symbol": "MINING_GUILD_REBALANCED",
+      "name": "Mining Guild(⚖)",
+      "type": "corporation",
+      "tags": [
+        "building",
+        "building"
+      ],
+      "startingMegaCredits": 36,
+      "compatibility": null,
+      "texts": [
+        "R24",
+        "You start with 36 M€, 2 steel and 1 steel production.",
+        "effect",
+        "Each time you get any steel as a placement bonus on the map, increase your steel production 1 step. Same for titanium."
+      ]
+    },
+    {
+      "symbol": "MONS_INSURANCE_REBALANCED",
+      "name": "Mons Insurance(⚖)",
+      "type": "corporation",
+      "tags": [],
+      "startingMegaCredits": 48,
+      "compatibility": null,
+      "texts": [
+        "R46",
+        "You start with 48 M€. Increase your M€ production 2 step per opponent. ALL OPPONENTS DECREASE THEIR M€ production 2 STEPS. THIS DOES NOT TRIGGER THE EFFECT BELOW.",
+        "effect",
+        "When a player causes another player to decrease production or lose resources, pay 2M€ to the victim, or as much as possible.",
+        "pay"
+      ]
+    },
+    {
+      "symbol": "MORNING_STAR_INC_REBALANCED",
+      "name": "Morning Star Inc.(⚖)",
+      "type": "corporation",
+      "tags": [
+        "venus"
+      ],
+      "startingMegaCredits": 50,
+      "compatibility": "o.GameModule.Venus",
+      "texts": [
+        "R06",
+        "You start with 50 M€. As your first action, reveal cards from the deck until you have revealed 3 Venus-tag cards. Take those into hand and discard the rest.",
+        "effect",
+        "Your Venus requirements are +/- 3 steps, your choice in each case.",
+        "Venus requirements",
+        "+/- 3",
+        "When you play a Venus tag, you pay 2 M€ less for it."
+      ]
+    },
+    {
+      "symbol": "PHOBOLOG_REBALANCED",
+      "name": "PhoboLog(⚖)",
+      "type": "corporation",
+      "tags": [
+        "space"
+      ],
+      "startingMegaCredits": 30,
+      "compatibility": null,
+      "texts": [
+        "R09",
+        "You start with 8 titanium and 30 M€. As your first action, reveal cards from the deck until you have revealed 2 cards with a space tag. Take them into hand and discard the rest.",
+        "effect",
+        "Your titanium resources are each worth 1 M€ extra."
+      ]
+    },
+    {
+      "symbol": "POINT_LUNA_REBALANCED",
+      "name": "Point Luna(⚖)",
+      "type": "corporation",
+      "tags": [
+        "space",
+        "earth"
+      ],
+      "startingMegaCredits": 48,
+      "compatibility": null,
+      "texts": [
+        "R10",
+        "You start with 1 titanium production and 48 M€.",
+        "effect",
+        "When you play an Earth tag, including this, draw a card then discard a card."
+      ]
+    },
+    {
+      "symbol": "POLYPHEMOS_REBALANCED",
+      "name": "Polyphemos(⚖)",
+      "type": "corporation",
+      "tags": [],
+      "startingMegaCredits": 55,
+      "compatibility": null,
+      "texts": [
+        "R11",
+        "You start with 55 M€. Increase your M€ production 5 steps. Gain 5 titanium.",
+        "effect",
+        "When you buy a card to hand, pay 5M€ instead of 3, including the starting hand.",
+        "When playing a card with a basic cost of 20MC or more, draw a card."
+      ]
+    },
+    {
+      "symbol": "POSEIDON_REBALANCED",
+      "name": "Poseidon(⚖)",
+      "type": "corporation",
+      "tags": [],
+      "startingMegaCredits": 40,
+      "compatibility": "o.GameModule.Colonies",
+      "texts": [
+        "R02",
+        "You start with 40 M€ As your first action, place a colony.",
+        "effect",
+        "When you place a colony, including this, raise your M€ production 2 step."
+      ]
+    },
+    {
+      "symbol": "PRISTAR_REBALANCED",
+      "name": "Pristar(⚖)",
+      "type": "corporation",
+      "tags": [],
+      "startingMegaCredits": 53,
+      "compatibility": null,
+      "texts": [
+        "R07",
+        "You start with 53 M€. Decrease your TR 2 steps. 1 VP per preservation resource here.",
+        "effect",
+        "During production phase, if you did not get TR so far this generation, add one preservation resource here, gain 6 M€, and get one influence."
+      ]
+    },
+    {
+      "symbol": "RECYCLON_REBALANCED",
+      "name": "Recyclon(⚖)",
+      "type": "corporation",
+      "tags": [
+        "microbe",
+        "building"
+      ],
+      "startingMegaCredits": 40,
+      "compatibility": null,
+      "texts": [
+        "R26",
+        "You start with 40 M€ and 2 steel production.",
+        "effect",
+        "When you play a building tag, including this, gain 1 microbe to this card, or remove 2 microbes here and raise your plant production 1 step."
+      ]
+    },
+    {
+      "symbol": "ROBINSON_INDUSTRIES_REBALANCED",
+      "name": "Robinson Industries(⚖)",
+      "type": "corporation",
+      "tags": [
+        "wild"
+      ],
+      "startingMegaCredits": 40,
+      "compatibility": null,
+      "texts": [
+        "R27",
+        "You start with 40 M€ and 2 M€ production. When you perform an action, the wild tag counts as any tag of your choice.",
+        "action",
+        "Spend 4 M€ to increase (one of) your LOWEST production 1 step."
+      ]
+    },
+    {
+      "symbol": "SPLICE_REBALANCED",
+      "name": "Splice(⚖)",
+      "type": "corporation",
+      "tags": [
+        "microbe"
+      ],
+      "startingMegaCredits": 52,
+      "compatibility": null,
+      "texts": [
+        "R28",
+        "You start with 44 M€. As your first action, reveal cards until you have revealed 1 card with a microbe tag. Take it into hand and discard the rest.",
+        "effect",
+        "when a microbe tag is played, incl. this, THAT PLAYER gains 2 M€, or adds a microbe to THAT card, and you gain 2 M€."
+      ]
+    },
+    {
+      "symbol": "STORMCRAFT_INCORPORATED_REBALANCED",
+      "name": "Stormcraft Incorporated(⚖)",
+      "type": "corporation",
+      "tags": [
+        "jovian"
+      ],
+      "startingMegaCredits": 50,
+      "compatibility": null,
+      "texts": [
+        "R29",
+        "You start with 50 M€. As your first action, reveal cards from the deck until you have revealed 1 card with a floater icon on it. Take that card into hand and discard the rest.",
+        "effect",
+        "When you gain a floater to ANY CARD, also gain 1MC or 1 Energy."
+      ]
+    },
+    {
+      "symbol": "TERRALABS_RESEARCH_REBALANCED",
+      "name": "Terralabs Research(⚖)",
+      "type": "corporation",
+      "tags": [
+        "science",
+        "earth"
+      ],
+      "startingMegaCredits": 30,
+      "compatibility": null,
+      "texts": [
+        "R14",
+        "You start with 30 M€. Lower your TR 1 step.",
+        "effect",
+        "Buying cards to hand costs 1 M€."
+      ]
+    },
+    {
+      "symbol": "THARSIS_REPUBLIC_REBALANCED",
+      "name": "Tharsis Republic(⚖)",
+      "type": "corporation",
+      "tags": [
+        "building",
+        "city"
+      ],
+      "startingMegaCredits": 40,
+      "compatibility": null,
+      "texts": [
+        "R31",
+        "You start with 40 M€. As your first action in the game, place a city tile.",
+        "effect",
+        "When any city tile is placed, increase your M€ production 1 step. When you place a city tile, gain 3 M€."
+      ]
+    },
+    {
+      "symbol": "THORGATE_REBALANCED",
+      "name": "Thorgate(⚖)",
+      "type": "corporation",
+      "tags": [
+        "science",
+        "power"
+      ],
+      "startingMegaCredits": 40,
+      "compatibility": null,
+      "texts": [
+        "R13",
+        "You start with 1 energy production and 40 M€.",
+        "action",
+        "Decr. energy prod. gain 6 M€.",
+        "When playing a power card OR SP POWER OR TURMOIL KELVINISTS ACTION, you pay 3 M€ less for it."
+      ]
+    },
+    {
+      "symbol": "UNITED_NATIONS_MARS_INITIATIVE_REBALANCED",
+      "name": "United Nations Mars Initiative(⚖)",
+      "type": "corporation",
+      "tags": [
+        "earth"
+      ],
+      "startingMegaCredits": 50,
+      "compatibility": null,
+      "texts": [
+        "R32",
+        "You start with 50 M€.",
+        "action",
+        "If your Terraform Rating was raised this generation, you may pay 1 M€ to raise it 1 step more."
+      ]
+    },
+    {
+      "symbol": "UTOPIA_INVEST_REBALANCED",
+      "name": "Utopia Invest(⚖)",
+      "type": "corporation",
+      "tags": [
+        "building"
+      ],
+      "startingMegaCredits": 48,
+      "compatibility": null,
+      "texts": [
+        "R33",
+        "You start with 48 M€. Increase your steel and titanium production 1 step each.",
+        "action",
+        "Decrease any production to gain 4 resources of that kind."
+      ]
+    },
+    {
+      "symbol": "VIRON_REBALANCED",
+      "name": "Viron(⚖)",
+      "type": "corporation",
+      "tags": [
+        "microbe"
+      ],
+      "startingMegaCredits": 54,
+      "compatibility": null,
+      "texts": [
+        "R12",
+        "You start with 54 M€.",
+        "action",
+        "Use a blue card action that has already been used this generation."
+      ]
+    },
+    {
+      "symbol": "VITOR_REBALANCED",
+      "name": "Vitor(⚖)",
+      "type": "corporation",
+      "tags": [
+        "earth"
+      ],
+      "startingMegaCredits": 52,
+      "compatibility": null,
+      "texts": [
+        "R35",
+        "You start with 52 M€. As your first action, fund an award for free.",
+        "effect",
+        "When you play a card with a NON-NEGATIVE VP icon, including this, gain 2 M€."
+      ]
+    },
+    {
+      "symbol": "BIOFUELS_REBALANCED",
+      "name": "Biofuels(⚖)",
+      "type": "prelude",
+      "tags": [
+        "microbe",
+        "power"
+      ],
+      "compatibility": null,
+      "texts": [
+        "P03",
+        "Increase your energy by two steps and plant production 1 step. Gain 2 plants."
+      ]
+    },
+    {
+      "symbol": "BIOSPHERE_SUPPORT_REBALANCED",
+      "name": "Biosphere Support(⚖)",
+      "type": "prelude",
+      "tags": [
+        "plant"
+      ],
+      "compatibility": null,
+      "texts": [
+        "P05",
+        "Increase your plant production 2 steps and M€ production 1 step."
+      ]
+    },
+    {
+      "symbol": "DOME_FARMING_REBALANCED",
+      "name": "Dome Farming(⚖)",
+      "type": "prelude",
+      "tags": [
+        "plant",
+        "building"
+      ],
+      "compatibility": null,
+      "texts": [
+        "P07",
+        "Increase your M€ production 3 steps and plant production 1 step."
+      ]
+    },
+    {
+      "symbol": "DONATION_REBALANCED",
+      "name": "Donation(⚖)",
+      "type": "prelude",
+      "tags": [],
+      "compatibility": null,
+      "texts": [
+        "P08",
+        "Gain 23 M€."
+      ]
+    },
+    {
+      "symbol": "EARLY_SETTLEMENT_REBALANCED",
+      "name": "Early Settlement(⚖)",
+      "type": "prelude",
+      "tags": [
+        "building",
+        "city"
+      ],
+      "compatibility": null,
+      "texts": [
+        "P09",
+        "Increase your plant production 1 step. Gain 3 plants. Place a city tile."
+      ]
+    },
+    {
+      "symbol": "ECCENTRIC_SPONSOR_REBALANCED",
+      "name": "Eccentric Sponsor(⚖)",
+      "type": "prelude",
+      "tags": [],
+      "compatibility": null,
+      "texts": [
+        "P11",
+        "Play a card from hand, reducing its cost by 27 M€"
+      ]
+    },
+    {
+      "symbol": "GALILEAN_MINING_REBALANCED",
+      "name": "Galilean Mining(⚖)",
+      "type": "prelude",
+      "tags": [
+        "jovian"
+      ],
+      "compatibility": null,
+      "texts": [
+        "P13",
+        "Increase your titanium production 2 steps."
+      ]
+    },
+    {
+      "symbol": "HUGE_ASTEROID_REBALANCED",
+      "name": "Huge Asteroid(⚖)",
+      "type": "prelude",
+      "tags": [],
+      "compatibility": null,
+      "texts": [
+        "P15",
+        "Increase Temperature 3 steps. Pay 2 MC."
+      ]
+    },
+    {
+      "symbol": "IO_RESEARCH_OUTPOST_REBALANCED",
+      "name": "Io Research Outpost(⚖)",
+      "type": "prelude",
+      "tags": [
+        "jovian",
+        "science"
+      ],
+      "compatibility": null,
+      "texts": [
+        "P16",
+        "Increase your titanium production 1 step. Draw 2 cards."
+      ]
+    },
+    {
+      "symbol": "LOAN_REBALANCED",
+      "name": "Loan(⚖)",
+      "type": "prelude",
+      "tags": [],
+      "compatibility": null,
+      "texts": [
+        "P17",
+        "Gain 32 M€. Decrease your M€ production 2 steps."
+      ]
+    },
+    {
+      "symbol": "MARTIAN_INDUSTRIES_REBALANCED",
+      "name": "Martian Industries(⚖)",
+      "type": "prelude",
+      "tags": [
+        "building",
+        "power"
+      ],
+      "compatibility": null,
+      "texts": [
+        "P18",
+        "Increase your energy and steel production 1 step. Gain 6 M€."
+      ]
+    },
+    {
+      "symbol": "METALS_COMPANY_REBALANCED",
+      "name": "Metals Company(⚖)",
+      "type": "prelude",
+      "tags": [],
+      "compatibility": null,
+      "texts": [
+        "P20",
+        "Increase your MC, steel and titanium production 1 step. Gain 2 MC."
+      ]
+    },
+    {
+      "symbol": "MOHOLE_EXCAVATION_REBALANCED",
+      "name": "Mohole Excavation(⚖)",
+      "type": "prelude",
+      "tags": [
+        "building"
+      ],
+      "compatibility": null,
+      "texts": [
+        "P23",
+        "Increase your steel production 1 step and heat production 2 steps. Gain 5 steel."
+      ]
+    },
+    {
+      "symbol": "MOHOLE_REBALANCED",
+      "name": "Mohole(⚖)",
+      "type": "prelude",
+      "tags": [
+        "building"
+      ],
+      "compatibility": null,
+      "texts": [
+        "P22",
+        "Increase your heat production 2 steps and energy production 1 step. Gain 3 energy and 5 heat."
+      ]
+    },
+    {
+      "symbol": "NITROGEN_SHIPMENT_REBALANCED",
+      "name": "Nitrogen Shipment(⚖)",
+      "type": "prelude",
+      "tags": [
+        "earth"
+      ],
+      "compatibility": null,
+      "texts": [
+        "P24",
+        "Increase your TR 2 step. Gain 5 plant."
+      ]
+    },
+    {
+      "symbol": "ORBITAL_CONSTRUCTION_YARD_REBALANCED",
+      "name": "Orbital Construction Yard(⚖)",
+      "type": "prelude",
+      "tags": [
+        "space"
+      ],
+      "compatibility": null,
+      "texts": [
+        "P25",
+        "Increase your titanium production 1 step. Gain 5 titanium."
+      ]
+    },
+    {
+      "symbol": "POLAR_INDUSTRIES_REBALANCED",
+      "name": "Polar Industries(⚖)",
+      "type": "prelude",
+      "tags": [
+        "building"
+      ],
+      "compatibility": null,
+      "texts": [
+        "P26",
+        "Increase your heat production 2 steps. Gain 5 mc. Place an Ocean tile."
+      ]
+    },
+    {
+      "symbol": "SELF_SUFFICIENT_SETTLEMENT_REBALANCED",
+      "name": "Self-Sufficient Settlement(⚖)",
+      "type": "prelude",
+      "tags": [
+        "building",
+        "city"
+      ],
+      "compatibility": null,
+      "texts": [
+        "P29",
+        "Increase your money production 2 steps. Gain 3 MC. Place a City tile."
+      ]
+    },
+    {
+      "symbol": "SMELTING_PLANT_REBALANCED",
+      "name": "Smelting Plant(⚖)",
+      "type": "prelude",
+      "tags": [
+        "building"
+      ],
+      "compatibility": null,
+      "texts": [
+        "P30",
+        "Raise oxygen 2 steps. Gain 4 steel. Draw 1 building card."
+      ]
+    },
+    {
+      "symbol": "SOCIETY_SUPPORT_REBALANCED",
+      "name": "Society Support(⚖)",
+      "type": "prelude",
+      "tags": [
+        "wild"
+      ],
+      "compatibility": null,
+      "texts": [
+        "P31",
+        "Increase your plant, energy and heat production 1 step. Pay 3 M€."
+      ]
+    },
+    {
+      "symbol": "SUPPLY_DROP_REBALANCED",
+      "name": "Supply Drop(⚖)",
+      "type": "prelude",
+      "tags": [],
+      "compatibility": null,
+      "texts": [
+        "P33",
+        "Gain 3 titanium, 7 steel and 3 plants."
+      ]
+    },
+    {
+      "symbol": "BUILD_COLONY_STANDARD_PROJECT_REBALANCED",
+      "name": "Colony(⚖)",
+      "type": "standard_project",
+      "tags": [],
+      "cost": 17,
+      "compatibility": "o.GameModule.Colonies",
+      "texts": [
+        "SP5",
+        "Spend 17 M€ to place a colony."
+      ]
+    }
+  ]
+}

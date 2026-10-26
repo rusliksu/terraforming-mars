@@ -1,0 +1,180 @@
+import {DeimosDoubleDownCopy} from '@/server/cards/sillyfication/DeimosDoubleDownCopy';
+import {Server} from '@/server/models/ServerModel';
+import {expect} from 'chai';
+import {Phase} from '@/common/Phase';
+import {GlobalParameter} from '@/common/GlobalParameter';
+import {CardName} from '@/common/cards/CardName';
+import {LogMessage} from '@/common/logs/LogMessage';
+import {LogMessageType} from '@/common/logs/LogMessageType';
+import {toReplayFrame} from '@/server/replay/ReplayFrame';
+import {GameLogs} from '@/server/routes/GameLogs';
+import {SelectOption} from '@/server/inputs/SelectOption';
+import {formatMessage, setOxygenLevel, setTemperature, setVenusScaleLevel} from '@tests/TestingUtils';
+import {CrediCor} from '@/server/cards/corporation/CrediCor';
+import {Helion} from '@/server/cards/corporation/Helion';
+import {Birds} from '@/server/cards/base/Birds';
+import {Asteroid} from '@/server/cards/base/Asteroid';
+import {testGame} from '@tests/TestGame';
+
+import {BoardName} from '@/common/boards/BoardName';
+import {blankCustomBoard} from '@/common/boards/CustomBoardDefinition';
+import {DEFAULT_GLOBAL_PARAMETERS} from '@/common/GlobalParameterConfig';
+
+describe('Replay frame projection', () => {
+  it('records actual global parameter steps on a public action for replay only', () => {
+    const [game, blue] = testGame(2);
+    game.phase = Phase.ACTION;
+    blue.clearWaitingFor();
+    blue.setWaitingFor(new SelectOption('Raise tracks').andThen(() => {
+      game.log('${0} used a card', (b) => b.player(blue));
+      game.increaseOxygenLevel(blue, 1);
+      game.increaseTemperature(blue, 1);
+      game.increaseVenusScaleLevel(blue, 1);
+      return undefined;
+    }));
+    const logCount = game.gameLog.length;
+    blue.process({type: 'option'});
+
+    const effects = [
+      {kind: 'global', parameter: GlobalParameter.OXYGEN, amount: 1, player: blue.color},
+      {kind: 'global', parameter: GlobalParameter.TEMPERATURE, amount: 1, player: blue.color},
+      {kind: 'global', parameter: GlobalParameter.VENUS, amount: 1, player: blue.color},
+    ];
+    expect(game.gameLog.length).eq(logCount + 4);
+    const actionMessages = game.gameLog.slice(logCount);
+    expect(actionMessages[0].actionStart).eq(true);
+    expect(actionMessages.map(formatMessage)).deep.eq([
+      'blue used a card',
+      'blue raised the oxygen level 1 step(s)',
+      'blue raised the temperature 1 step(s)',
+      'blue raised the Venus scale 1 step(s)',
+    ]);
+    // Each increase records its own effect on the log line it writes; the replay reads them per action.
+    expect(actionMessages.flatMap((message) => message.replayGlobalEffects ?? [])).deep.eq(effects);
+    const regular = new GameLogs().getLogsForGameView(game.spectatorId, game, null);
+    expect(regular.slice(-4).some((message) => 'replayGlobalEffects' in message)).eq(false);
+    const replay = toReplayFrame(game.serialize());
+    const replayAction = replay.logs.slice(-4);
+    expect(replayAction.flatMap((message) => message.replayGlobalEffects ?? [])).deep.eq(effects);
+  });
+
+  it('attaches clamped changes when the action log is written after the effects', () => {
+    const [game, blue] = testGame(2);
+    game.phase = Phase.ACTION;
+    setOxygenLevel(game, 13);
+    setTemperature(game, 6);
+    setVenusScaleLevel(game, 28);
+    game.logActionContext = {
+      id: 'delayed-log', actor: blue, generation: game.generation, phase: game.phase,
+      ordinal: blue.actionsTakenThisGame, firstMessage: true,
+    };
+
+    game.increaseOxygenLevel(blue, 2);
+    game.increaseTemperature(blue, 2);
+    game.increaseVenusScaleLevel(blue, 2);
+    game.log('${0} completed an action', (b) => b.player(blue));
+
+    expect(game.gameLog.flatMap((message) => message.replayGlobalEffects ?? [])).deep.eq([
+      {kind: 'global', parameter: GlobalParameter.OXYGEN, amount: 1, player: blue.color},
+      {kind: 'global', parameter: GlobalParameter.TEMPERATURE, amount: 1, player: blue.color},
+      {kind: 'global', parameter: GlobalParameter.VENUS, amount: 1, player: blue.color},
+    ]);
+  });
+
+  it('keeps recorded public values without access IDs, private cards or private logs', () => {
+    const [game, blue, red] = testGame(2, {aresExtension: true});
+    blue.playedCards.push(new CrediCor());
+    red.playedCards.push(new Helion());
+    blue.megaCredits = 37;
+    blue.production.override({megacredits: 4});
+    blue.cardsInHand = [new Birds()];
+    blue.draftedCards = [new Asteroid()];
+    blue.telegramID = 'private-telegram-sentinel';
+    game.phase = Phase.END;
+    const publicLog = new LogMessage(LogMessageType.DEFAULT, 'Recorded public message', []);
+    publicLog.hiddenFor = [blue.id];
+    publicLog.actionId = 'visible-action';
+    publicLog.effect = {kind: 'resource', resource: 'megacredits', production: false, amount: 6, player: blue.color};
+    const hiddenLog = new LogMessage(LogMessageType.DEFAULT, 'hidden-log-sentinel', []);
+    hiddenLog.hiddenFor = [game.spectatorId];
+    hiddenLog.actionId = 'hidden-action';
+    hiddenLog.effect = {kind: 'resource', resource: 'megacredits', production: false, amount: 999, player: red.color};
+    game.gameLog = [publicLog, new LogMessage(LogMessageType.DEFAULT, 'private-log-sentinel', [], red.id), hiddenLog];
+    const saved = game.serialize();
+    saved.lastSaveId = 9;
+    saved.gameOptions.clonedGamedId = 'gprivate-clone-sentinel';
+    saved.gameOptions.customCorporationsList = [CardName.BIRDS];
+    saved.gameOptions.modularMA = true;
+    saved.gameOptions.startingCorporations = 7;
+    if (saved.aresData === undefined) {
+      throw new Error('Ares fixture missing');
+    }
+    saved.aresData.milestoneResults = [{id: blue.id, networkerCount: 2, purifierCount: 3}];
+    Object.assign(saved.players[0].underworldData, {privateField: 'private-expansion-sentinel'});
+    const before = structuredClone(saved);
+
+    const frame = toReplayFrame(saved);
+    expect(frame.saveId).eq(9);
+    expect(frame.view.game.phase).eq(Phase.END);
+    expect(frame.view.players[0].megacredits).eq(37);
+    expect(frame.view.players[0].megacreditProduction).eq(4);
+    expect(frame.view.players[0].tableau.map((card) => card.name)).deep.eq([CardName.CREDICOR]);
+    expect(frame.logs.map((message) => message.message)).deep.eq(['Recorded public message']);
+    expect(frame.logs[0].actionId).eq('visible-action');
+    expect(frame.logs[0].effect).deep.eq(publicLog.effect);
+    expect(frame.view.game.gameOptions.customCorporationsList).deep.eq([]);
+    expect(frame.view.game.gameOptions.modularMA).eq(false);
+    expect(frame.view.game.gameOptions.startingCorporations).eq(0);
+    expect(JSON.stringify(frame)).not.to.contain('gprivate-clone-sentinel');
+    for (const secret of [blue.id, red.id, CardName.BIRDS, CardName.ASTEROID,
+      'private-telegram-sentinel', 'private-log-sentinel', 'hidden-log-sentinel', 'private-expansion-sentinel']) {
+      expect(JSON.stringify(frame), secret).not.to.contain(secret);
+    }
+    expect(JSON.stringify(frame)).not.to.contain('hidden-action');
+    expect(saved).deep.eq(before);
+  });
+
+  it('preserves public fan board and track state without access IDs or private fields', () => {
+    const parameters = structuredClone(DEFAULT_GLOBAL_PARAMETERS);
+    parameters.temperature.max = 12;
+    const [game, blue] = testGame(4, {
+      boardName: BoardName.CUSTOM, customBoard: blankCustomBoard(7, 'Replay'),
+      globalParameters: structuredClone(parameters), conglomeratesExpansion: true,
+    });
+    blue.epsilonDampleData = {position: 2, jovianBonus: false, blocked: true};
+    blue.deltaProjectData = {position: 3, jovianBonus: true, blocked: true};
+    blue.cardsInHand = [new Birds()];
+    const saved = game.serialize();
+    Object.assign(saved.gameOptions.globalParameters!.temperature, {privateField: 'hidden-track-sentinel'});
+    const frame = toReplayFrame(saved);
+    expect(frame.view.game.gameOptions.customBoardRows).eq(7);
+    expect(frame.view.game.gameOptions.globalParameters).deep.eq(parameters);
+    expect(frame.view.players[0].epsilonDample).deep.eq(blue.epsilonDampleData);
+    expect(frame.view.players[0].deltaProject).deep.eq(blue.deltaProjectData);
+    expect(frame.view.game.conglomerates?.teams).has.length(2);
+    for (const privateValue of [...game.players.map((p) => p.id), CardName.BIRDS, 'hidden-track-sentinel']) {
+      expect(JSON.stringify(frame)).not.to.contain(privateValue);
+    }
+  });
+
+  it('preserves the public face of a dynamic copied card', () => {
+    const [game, player] = testGame(2);
+    player.playedCards.push(new DeimosDoubleDownCopy(CardName.COMET));
+    const live = Server.getSpectatorModel(game).players[0].tableau[0];
+    expect(live.customCard).not.eq(undefined);
+    const replay = toReplayFrame(game.serialize()).view.players[0].tableau[0];
+    expect(replay.customCard).deep.eq(live.customCard);
+    expect(replay.combinedDisplayName).eq(live.combinedDisplayName);
+  });
+
+  it('freezes recorded timers instead of advancing them while the replay is viewed', () => {
+    const [game] = testGame(2);
+    const saved = game.serialize();
+    saved.players[0].timer = {sumElapsed: 1200, startedAt: 10, running: true, afterFirstAction: true, lastStoppedAt: 10};
+    const frame = toReplayFrame(saved);
+    expect(frame.view.players[0].timer).deep.eq({
+      sumElapsed: 1200, startedAt: 10, running: false, afterFirstAction: true, lastStoppedAt: 10,
+    });
+    expect(saved.players[0].timer.running).eq(true);
+  });
+});

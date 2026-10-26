@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-08-06
+goal: Не допускать feature, local-only или dirty checkout в staging; preview
+  остаётся гибким, prod — promote-only.

@@ -23,7 +23,7 @@ export class MercenarySquad extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'U083',
         renderData: CardRenderer.builder((b) => {
-          b.minus().wild(2, {all});
+          b.wild(-2, {all});
         }),
         description: 'Requires 1 corruption. Remove up to 2 resources from ANY card',
       },
@@ -37,7 +37,7 @@ export class MercenarySquad extends Card implements IProjectCard {
     }
     if (player.game.players.length > 1) {
       if (!cards.some((card) => player.game.getCardPlayerOrThrow(card.name) !== player)) {
-        this.warnings.add('selfTarget');
+        this.addWarning('selfTarget');
       }
     }
     return true;

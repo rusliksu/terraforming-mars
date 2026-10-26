@@ -1,0 +1,17 @@
+// Full width of the container, so the measurement knows how much room there is; the board centered in it
+.scaled-board {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+// The scales extend past the board left and right: include the room so the scaling covers them
+.scaled-board-content {
+  padding: 0 24px;
+}
+
+// Planet alone: the section of the planet, nothing sticks out
+.scaled-board--planet .scaled-board-content {
+  overflow: hidden;
+  padding: 0;
+}

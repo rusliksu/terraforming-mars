@@ -176,6 +176,10 @@ describe('drafting', () => {
     // Reselect: player chooses CAPITAL instead
     selectCard(player, CardName.CAPITAL);
 
+    const draftLogs = game.gameLog.filter((message) => message.playerId === player.id && message.message.startsWith('You drafted '));
+    expect(draftLogs).has.length(2);
+    expect(draftLogs.map((message) => message.canceled === true)).deep.eq([true, false]);
+
     // Verify other player's draft selection is STILL unchanged after player reselects.
     expect(draftSelection(otherPlayer)).deep.eq([
       CardName.EARTH_OFFICE,

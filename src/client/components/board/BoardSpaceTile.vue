@@ -45,7 +45,7 @@ const tileTypeToCssClass: Record<TileType, string> = {
   [TileType.MINING_TITANIUM_BONUS]: 'mining-titanium',
   [TileType.WETLANDS]: 'wetlands',
   [TileType.RED_CITY]: 'red-city',
-  [TileType.MARTIAN_NATURE_WONDERS]: 'martian-nature-wonders',
+  [TileType._DEPRECATED_MARTIAN_NATURE_WONDERS]: '',
   [TileType.MOON_ROAD]: 'road',
   [TileType.MOON_HABITAT]: 'habitat',
   [TileType.MOON_MINE]: 'mine',
@@ -55,10 +55,35 @@ const tileTypeToCssClass: Record<TileType, string> = {
   [TileType.LUNAR_MINE_URBANIZATION]: 'lunar-mine-urbanization',
   [TileType.CRASHLANDING]: 'crashlanding',
   [TileType.MARS_NOMADS]: '', // This never actually renders.
-  [TileType.REY_SKYWALKER]: 'martian-nature-wonders', // Use Martian Nature Wonders cube CSS.
+  [TileType._DEPRECATED_REY_SKYWALKER]: '',
   [TileType.MAN_MADE_VOLCANO]: 'man-made-volcano',
   [TileType.NEW_HOLLAND]: 'new-holland',
   [TileType.NEURAL_INSTANCE]: 'neural-instance',
+  [TileType.GARBAGE_DUMP]: 'garbage_dump',
+  [TileType.PUMPING_HUB]: 'pumping_hub',
+  [TileType.INVAK_CITY]: 'city', // No dedicated art; renders as a plain city tile.
+  [TileType.SUBURBS]: 'greenery', // No dedicated art; sits over the player's own greenery tile.
+  // Harbor Borealis's source art has a visible Getty Images watermark, so it isn't wired up
+  // yet -- still using the ocean/city hybrid icon as a placeholder pending a clean asset.
+  [TileType.HARBOR_BOREALIS]: 'ocean-city',
+  [TileType.INDUSTRIAL_METROPOLIS]: 'industrial_metropolis',
+  [TileType.PARADISE_CITY]: 'paradise_city',
+  [TileType.ANIMAL_DOME]: 'animal_dome',
+  [TileType.SEDIMENT]: 'sediment',
+  [TileType.BIOLOGICAL_DOME]: 'biological_dome',
+  // Real art exists (see assets/venusPhase2/ once wired up) but the CSS/asset plumbing for the
+  // Venus surface board is a later pass -- these class names are placeholders pending that.
+  [TileType.VENUS_CLOUD_CITY]: 'venus-cloud-city',
+  [TileType.VENUS_GAS_MINE]: 'venus-gas-mine',
+  [TileType.VENUS_FLOATER_ARRAY]: 'venus-floater-array',
+  [TileType.INDUSTRY_HEAT]: 'industry_heat',
+  [TileType.INDUSTRY_MONEY]: 'industry_money',
+  [TileType.INDUSTRY_ENERGY]: 'industry_energy',
+  [TileType.INDUSTRY_STEEL]: 'industry_steel',
+  [TileType.INDUSTRY_PLANT]: 'industry_plant',
+  [TileType.INDUSTRY_TITANIUM]: 'industry_titanium',
+  [TileType.INDUSTRY_WILD]: 'industry_wild',
+  [TileType.MENAGERIE]: 'greenery', // No dedicated art; sits over the player's own greenery tile.
 };
 
 const tileTypeToCssClassAresOverride = new Map<TileType, string>([
@@ -97,11 +122,17 @@ const descriptions: Record<TileType, string> = {
 
   [TileType.WETLANDS]: 'Wetlands: counts as an ocean and a greenery. Does not count toward 9 oceans.',
   [TileType.RED_CITY]: 'Red City: 1 VP per empty adjacent area. No greeneries may be placed next to it.',
-  [TileType.MARTIAN_NATURE_WONDERS]: 'Martian Nature Wonders: nothing may be placed here',
-  [TileType.REY_SKYWALKER]: 'Rey... Skywalker?: nothing may be placed here',
-
   [TileType.NEW_HOLLAND]: 'New Holland: counts as an ocean and a city',
   [TileType.NEURAL_INSTANCE]: 'Neural Instance: MarsBot gains VP for adjacent non-human spaces',
+  [TileType.INVAK_CITY]: 'Invak City: counts as a city and a greenery',
+  [TileType.ANIMAL_DOME]: 'Animal Dome: placed next to no other tile. Adjacency bonus: 1 animal',
+  [TileType.INDUSTRY_HEAT]: 'Heat Industry: raises heat production, distributes heat nearby',
+  [TileType.INDUSTRY_MONEY]: 'Money Industry: raises M€ production, distributes M€ nearby',
+  [TileType.INDUSTRY_ENERGY]: 'Energy Industry: raises energy production, distributes energy nearby',
+  [TileType.INDUSTRY_STEEL]: 'Steel Industry: raises steel production, distributes steel nearby',
+  [TileType.INDUSTRY_PLANT]: 'Plant Industry: raises plant production, distributes plants nearby',
+  [TileType.INDUSTRY_TITANIUM]: 'Titanium Industry: raises titanium production, distributes titanium nearby',
+  [TileType.INDUSTRY_WILD]: 'Wild Industry: raises a chosen production, distributes that resource nearby',
 };
 
 export default defineComponent({
@@ -118,9 +149,6 @@ export default defineComponent({
       type: String as () => TileView,
       default: 'show',
     },
-  },
-  data() {
-    return {};
   },
   components: {
     AdjacencyBonus,
@@ -170,6 +198,9 @@ export default defineComponent({
           }
           break;
         case SpaceType.RESTRICTED:
+          break;
+        case SpaceType.GASLIGHT:
+          css += ' board-space-type-gaslight';
           break;
         default:
           css += ' board-space-type-land';

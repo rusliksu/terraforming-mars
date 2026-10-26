@@ -26,9 +26,14 @@ import {SelectPaymentResponse} from '@/common/inputs/InputResponse';
 import PaymentForm from '@/client/components/PaymentForm.vue';
 import {Ledger} from '@/client/components/PaymentLedger';
 import {Units} from '@/common/Units';
+import {useSaveSession, withSaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+import type {MaybePromise, SaveAttempt, SaveOutcome} from '@/client/wrybit/inputs/saveAttempt';
 
 export default defineComponent({
   name: 'SelectPayment',
+  setup() {
+    return {saveSession: useSaveSession()};
+  },
   mixins: [PaymentWidgetMixin],
   props: {
     playerView: {
@@ -56,6 +61,7 @@ export default defineComponent({
         'steel',
         'titanium',
         'heat',
+        'energy',
         'seeds',
         'auroraiData',
         'kuiperAsteroids',
@@ -83,16 +89,19 @@ export default defineComponent({
       }
       return this.playerinput.paymentOptions[unit] === true;
     },
-    saveData() {
-      const paymentForm = this.$refs.paymentForm as {handleSave: () => void} | undefined;
-      if (paymentForm !== undefined) {
-        paymentForm.handleSave();
-      } else {
-        this.doSave();
-      }
+    saveData(attempt?: SaveAttempt, respond?: (response: SelectPaymentResponse) => void): MaybePromise<SaveOutcome> {
+      return withSaveAttempt(this.saveSession, attempt, (current) => {
+        const paymentForm = this.$refs.paymentForm as InstanceType<typeof PaymentForm> | undefined;
+        if (paymentForm !== undefined) {
+          return paymentForm.handleSave(current, (payment) => this.doSave(payment, respond));
+        }
+        this.doSave(this.payment, respond);
+        return 'saved';
+      });
     },
-    doSave() {
-      this.onsave({type: 'payment', payment: this.payment});
+    doSave(payment?: Payment, respond?: (response: SelectPaymentResponse) => void) {
+      const reply = respond ?? this.onsave;
+      reply({type: 'payment', payment: payment ?? this.payment});
     },
   },
 });

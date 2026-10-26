@@ -9,7 +9,7 @@ export enum CardResource {
   FLOATER = 'Floater',
   ASTEROID = 'Asteroid',
 
-  // Colonines
+  // Colonies
   CAMP = 'Camp',
 
   // Turmoil
@@ -46,4 +46,12 @@ export enum CardResource {
   JOURNALISM = 'Journalism',
   ACTIVIST = 'Activist',
   SUPPLY_CHAIN = 'Supply Chain',
+
+  // Ides of Mars / Rob Antilles (fan expansions)
+  LOOT = 'Loot',
+  BUDGET = 'Budget',
+  RELIC = 'Relic',
+
+  // High Orbit (fan expansion)
+  ORE = 'Ore',
 }

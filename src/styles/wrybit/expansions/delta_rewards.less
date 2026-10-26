@@ -1,0 +1,35 @@
+.delta-rewards {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  margin-top: 6px;
+  font-size: 10px;
+}
+.delta-reward {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  min-width: 0;
+  &--done { opacity: 0.5; }
+  .resource_icon, .resource, .resource-tag {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-size: 16px;
+    background-repeat: no-repeat;
+    margin: 0;
+  }
+  .delta-project-board__prod-box {
+    display: inline-flex;
+    padding: 2px;
+    background: url(../assets/misc/production.png) center / cover;
+  }
+  .delta-project-board__card-icon {
+    background: url(../assets/resources/card.png) center / contain no-repeat;
+    width: 12px;
+    height: 17px;
+  }
+  .delta-project-board__card-icon--discarded { opacity: 0.5; }
+  .red-arrow { width: 16px; height: 13px; background-size: contain; }
+}

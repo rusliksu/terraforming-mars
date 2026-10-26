@@ -1,13 +1,15 @@
 import {expect} from 'chai';
 import {awardManifest} from '../../src/server/awards/Awards';
-import {milestoneManifest} from '../../src/server/milestones/Milestones';
-import {chooseMilestonesAndAwards, getCandidates, LIMITED_SYNERGY, maximumSynergy, verifySynergyRules} from '../../src/server/ma/MilestoneAwardSelector';
+import {CONGLOMERATES_MILESTONE_MAP, milestoneManifest} from '../../src/server/milestones/Milestones';
+import {BOARDS_WITHOUT_VOLCANIC_SPACES, chooseMilestonesAndAwards, getCandidates, LIMITED_SYNERGY, maximumSynergy, verifySynergyRules} from '../../src/server/ma/MilestoneAwardSelector';
 import {RandomMAOptionType} from '../../src/common/ma/RandomMAOptionType';
 import {intersection} from '../../src/common/utils/utils';
 import {DEFAULT_GAME_OPTIONS, GameOptions} from '../../src/server/game/GameOptions';
 import {BoardName} from '../../src/common/boards/BoardName';
 import {AwardName} from '../../src/common/ma/AwardName';
 import {MilestoneName} from '../../src/common/ma/MilestoneName';
+import {GameSetup} from '../../src/server/GameSetup';
+import {SeededRandom} from '../../src/common/utils/Random';
 
 describe('MilestoneAwardSelector', () => {
   const maximumSynergyRuns = [
@@ -18,7 +20,7 @@ describe('MilestoneAwardSelector', () => {
     // Both pairs Polar Explorer / Cultivator and Rim Settler / Space Baron
     // have synergy 3.
     {mas: [...milestoneManifest.boards[BoardName.HELLAS], ...awardManifest.boards[BoardName.HELLAS]], expected: 3},
-    // Hoverlord / Venuphine have synergy 5.
+    // Hoverlord / Venuphile have synergy 5.
     {mas: [...milestoneManifest.expansions['venus'], ...awardManifest.expansions['venus']], expected: 5},
   ] as const;
   // These aren't particularly excellent tests as much as they help demonstrate
@@ -117,7 +119,7 @@ describe('MilestoneAwardSelector', () => {
       milestoneManifest.expansions['underworld'],
     ].flat();
 
-    avoidedMilestones.push('Pioneer', 'Martian', 'Colonizer');
+    avoidedMilestones.push('Pioneer', 'Martian');
     avoidedAwards.push('T. Politician');
     const [milestones, awards] = getCandidates({...DEFAULT_GAME_OPTIONS,
       randomMA: RandomMAOptionType.LIMITED,
@@ -194,7 +196,94 @@ describe('MilestoneAwardSelector', () => {
     expect(intersection(awards as Array<string>, deprecatedAwards)).is.empty;
   });
 
+  it('BOARDS_WITHOUT_VOLCANIC_SPACES is accurate', () => {
+    const expected = Object.values(BoardName).filter((boardName) => {
+      if (boardName === BoardName.CUSTOM) {
+        // BoardName.CUSTOM is a custom-server addition; it needs a definition, which this test doesn't supply.
+        return false;
+      }
+      const board = GameSetup.newBoard({...DEFAULT_GAME_OPTIONS, boardName}, new SeededRandom(0));
+      return board.volcanicSpaceIds.length === 0;
+    });
+    expect(BOARDS_WITHOUT_VOLCANIC_SPACES).to.have.members(expected);
+  });
+
+  it('Modular MA excludes Geologist as a candidate on boards without volcanic spaces', () => {
+    const [milestones] = getCandidates({
+      ...DEFAULT_GAME_OPTIONS,
+      boardName: BoardName.HELLAS,
+      modularMA: true,
+      randomMA: RandomMAOptionType.UNLIMITED,
+    });
+    expect(milestones).does.not.contain('Geologist');
+  });
+
+  it('Modular MA includes Geologist as a candidate on boards with volcanic spaces', () => {
+    const [milestones] = getCandidates({
+      ...DEFAULT_GAME_OPTIONS,
+      boardName: BoardName.THARSIS,
+      modularMA: true,
+      randomMA: RandomMAOptionType.UNLIMITED,
+    });
+    expect(milestones).contains('Geologist');
+  });
+
+  it('Amazonis Planitia uses its own milestones and awards when not randomized', () => {
+    const mas = choose({boardName: BoardName.AMAZONIS_PLANITIA, randomMA: RandomMAOptionType.NONE});
+    expect(mas.milestones).deep.eq(milestoneManifest.boards[BoardName.AMAZONIS_PLANITIA]);
+    expect(mas.awards).deep.eq(awardManifest.boards[BoardName.AMAZONIS_PLANITIA]);
+  });
+
   function choose(options: Partial<GameOptions>) {
     return chooseMilestonesAndAwards({...DEFAULT_GAME_OPTIONS, ...options});
   }
+
+  describe('Conglomerates milestone scaling', () => {
+    it('swaps Tharsis board milestones for their scaled Conglomerates siblings', () => {
+      const mas = choose({
+        boardName: BoardName.THARSIS,
+        randomMA: RandomMAOptionType.NONE,
+        conglomeratesExpansion: true,
+      });
+      expect(mas.milestones).to.deep.eq(['Terraformer53', 'Mayor5', 'Gardener5', 'Builder12', 'Planner24']);
+    });
+
+    it('does not swap milestone names when Conglomerates is off', () => {
+      const mas = choose({
+        boardName: BoardName.THARSIS,
+        randomMA: RandomMAOptionType.NONE,
+        conglomeratesExpansion: false,
+      });
+      expect(mas.milestones).to.deep.eq(['Terraformer', 'Mayor', 'Gardener', 'Builder', 'Planner']);
+    });
+
+    it('leaves Minimalist (a maximum, not minimum, threshold) unswapped on Amazonis', () => {
+      const mas = choose({
+        boardName: BoardName.AMAZONIS,
+        randomMA: RandomMAOptionType.NONE,
+        conglomeratesExpansion: true,
+      });
+      expect(mas.milestones).to.contain('Minimalist');
+    });
+
+    it('swaps Generalist (Elysium) for its redefined team variant, not a 1.5x scale', () => {
+      const mas = choose({
+        boardName: BoardName.ELYSIUM,
+        randomMA: RandomMAOptionType.NONE,
+        conglomeratesExpansion: true,
+      });
+      expect(mas.milestones).to.contain('Generalist2');
+    });
+
+    it('never offers a Conglomerates milestone variant as a random candidate', () => {
+      const [milestones] = getCandidates({
+        ...DEFAULT_GAME_OPTIONS,
+        randomMA: RandomMAOptionType.UNLIMITED,
+        conglomeratesExpansion: true,
+        includeFanMA: true,
+      });
+      const variantNames = Object.values(CONGLOMERATES_MILESTONE_MAP);
+      expect(intersection(milestones as Array<string>, variantNames as Array<string>)).is.empty;
+    });
+  });
 });

@@ -5,6 +5,10 @@ import {CardResource} from '../../../common/CardResource';
 import {CardName} from '../../../common/cards/CardName';
 import {CardRenderer} from '../render/CardRenderer';
 import {ActionCard} from '../ActionCard';
+import {CanAffordOptions, IPlayer} from '../../IPlayer';
+import {PlayerInput} from '../../PlayerInput';
+import {VenusPhase2Expansion} from '../../venusPhase2/VenusPhase2Expansion';
+import {VENUS_STRATOPOLIS} from '../../venusPhase2/VenusSurfaceBoard';
 
 export class Stratopolis extends ActionCard {
   constructor() {
@@ -20,7 +24,10 @@ export class Stratopolis extends ActionCard {
 
       behavior: {
         production: {megacredits: 2},
-        city: {space: SpaceName.STRATOPOLIS},
+        // The city placement is handled bespoke (see bespokeCanPlay/bespokePlay below), not
+        // declaratively here -- with Venus Phase 2 enabled, this reserved spot lives on the
+        // Venus surface board, not Mars, and the declarative `city` behavior can only ever
+        // resolve a fixed space against the Mars board.
       },
 
       action: {
@@ -47,5 +54,26 @@ export class Stratopolis extends ActionCard {
         },
       },
     });
+  }
+
+  public override bespokeCanPlay(player: IPlayer, _canAffordOptions: CanAffordOptions): boolean {
+    if (player.game.gameOptions.venusPhase2Expansion) {
+      const venusSurface = VenusPhase2Expansion.venusPhase2Data(player.game).venusSurface;
+      return venusSurface.getSpaceOrThrow(VENUS_STRATOPOLIS).tile === undefined;
+    }
+    return player.game.board.getSpaceOrThrow(SpaceName.STRATOPOLIS).tile === undefined;
+  }
+
+  public override bespokePlay(player: IPlayer): PlayerInput | undefined {
+    if (player.game.gameOptions.venusPhase2Expansion) {
+      VenusPhase2Expansion.addReservedCityTile(player, VENUS_STRATOPOLIS, this.name);
+      return undefined;
+    }
+    const space = player.game.board.getSpaceOrThrow(SpaceName.STRATOPOLIS);
+    player.game.addCity(player, space);
+    if (space.tile !== undefined) { // Should never be undefined
+      space.tile.card = this.name;
+    }
+    return undefined;
   }
 }

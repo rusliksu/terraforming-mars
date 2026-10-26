@@ -3,14 +3,16 @@ import {GameOptions} from '../game/GameOptions';
 import {GameId, ParticipantId} from '../../common/Types';
 import {SerializedGame} from '../SerializedGame';
 import {Session, SessionId} from '../auth/Session';
+import {MapLibraryEntry, MapLibraryEntryId, MapLibraryStatus} from '../../common/boards/MapLibraryEntry';
+import {CustomCardLibraryEntry, CustomCardEntryId, CustomCardStatus} from '../../common/cards/CustomCardLibraryEntry';
 
 export type GameIdLedger = {gameId: GameId, participantIds: Array<ParticipantId>}
 
 /**
  * A game store. Load, save, you know the drill.
  *
- * Each game has a unique ID represented belowe as `gameId`. As games proceed,
- * the game is saved at later states. Inidividual saves of a game's state have a
+ * Each game has a unique ID represented below as `gameId`. As games proceed,
+ * the game is saved at later states. Individual saves of a game's state have a
  * unique and growing `saveId`. A game's initial _save point_ is always 0.
  *
  * Game state is stored as a single JSON string, which is why the `game` parameter is
@@ -36,12 +38,12 @@ export interface IDatabase {
      *
      * This is not yet written efficiently in Postgres, so use sparingly.
      *
-     * @param id the `PlayerId` or `SpectatorId` assocaited with a game
+     * @param id the `PlayerId` or `SpectatorId` associated with a game
      */
     getGameId(id: ParticipantId): Promise<GameId>;
 
     /**
-     * Get all the save ids assocaited with a game.
+     * Get all the save ids associated with a game.
      */
     getSaveIds(gameId: GameId): Promise<Array<number>>;
 
@@ -53,22 +55,11 @@ export interface IDatabase {
     /**
      * Return a list of all game IDs.
      *
-     * When the server starts games will be loaded from first to last. The postgres implmentation
+     * When the server starts games will be loaded from first to last. The postgres implementation
      * speeds up loading by sorting game ids so games most recently updated are loaded first, thereby
      * being available sooner than other games.
      */
     getGameIds(): Promise<Array<GameId>>;
-
-    /**
-     * Return the wall-clock time of the latest meaningful save for a game.
-     * Isolated maintenance-style saves after a long inactivity gap do not count as player activity.
-     */
-    getLastSaveTimeMs(gameId: GameId): Promise<number | undefined>;
-
-    /**
-     * Return the latest meaningful save times for many games.
-     */
-    getLastSaveTimesMs(gameIds: Array<GameId>): Promise<Map<GameId, number | undefined>>;
 
     /**
      * Get the player count for a game.
@@ -89,7 +80,7 @@ export interface IDatabase {
      * Stores the results of a game in perpetuity in a separate table from normal
      * games. Called at a game's conclusion along with {@link markFinished}.
      *
-     * This is not impliemented in {@link SQLite}.
+     * This is not implemented in {@link SQLite}.
      *
      * @param generations the generation number at the end of the game
      * @param gameOptions the options used for this game.
@@ -103,6 +94,19 @@ export interface IDatabase {
      * Used as part of undo, reset, and via API to roll back a broken game.
      */
     deleteGameNbrSaves(gameId: GameId, rollbackCount: number): Promise<void>;
+
+    /**
+     * Deletes every stored row/file of a game: saves, participants, results,
+     * the completion marker and the history binding. Used by admin game deletion.
+     */
+    deleteGame(gameId: GameId): Promise<void>;
+
+    /**
+     * Deletes participant rows whose game no longer exists in {@link games}.
+     * Returns the number of removed rows. Backends that do not store participants
+     * separately (LocalFilesystem) return 0.
+     */
+    deleteOrphanParticipants(): Promise<number>;
 
     /**
      * A maintenance task on a single game to mark it as complete.
@@ -146,4 +150,29 @@ export interface IDatabase {
     createSession(session: Session): Promise<void>;
     deleteSession(sessionId: SessionId): Promise<void>;
     getSessions(): Promise<Array<Session>>;
+
+    /**
+     * The public Map Library: official boards plus community-submitted custom maps.
+     */
+    listMapLibraryEntries(): Promise<Array<MapLibraryEntry>>;
+    getMapLibraryEntry(id: MapLibraryEntryId): Promise<MapLibraryEntry | undefined>;
+    insertMapLibraryEntry(entry: MapLibraryEntry): Promise<void>;
+    setMapLibraryEntryStatus(id: MapLibraryEntryId, status: MapLibraryStatus): Promise<void>;
+    deleteMapLibraryEntry(id: MapLibraryEntryId): Promise<void>;
+
+    /**
+     * The custom card review queue shown on /cards: community-submitted playable cards.
+     */
+    listCustomCardLibraryEntries(): Promise<Array<CustomCardLibraryEntry>>;
+    getCustomCardLibraryEntry(id: CustomCardEntryId): Promise<CustomCardLibraryEntry | undefined>;
+    insertCustomCardLibraryEntry(entry: CustomCardLibraryEntry): Promise<void>;
+    setCustomCardLibraryEntryStatus(id: CustomCardEntryId, status: CustomCardStatus): Promise<void>;
+    /** Replaces the whole entry -- used by the admin set-behavior action, which mutates `definition` in place. */
+    updateCustomCardLibraryEntry(id: CustomCardEntryId, entry: CustomCardLibraryEntry): Promise<void>;
+    deleteCustomCardLibraryEntry(id: CustomCardEntryId): Promise<void>;
+
+    /**
+     * Remove every expired session, returning how many were removed.
+     */
+    deleteExpiredSessions(): Promise<number>;
 }

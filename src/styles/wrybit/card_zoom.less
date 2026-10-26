@@ -1,0 +1,167 @@
+.mb-frosted-button() {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.16);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+@mb-card-zoom-duration: 260ms;
+@mb-card-zoom-slide-width: min(86%, 310px);
+// Large view of a card as a carousel (MobileCardZoom.vue). Own file and global instead of only under
+// html.tm-mobile: the statistics use the large view too, there also on desktop.
+
+.mb-card-zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 16px;
+  background: rgba(5, 6, 10, 0);
+  -webkit-backdrop-filter: blur(0);
+  backdrop-filter: blur(0);
+  transition: background @mb-card-zoom-duration ease, backdrop-filter @mb-card-zoom-duration ease;
+}
+
+.mb-card-zoom--open {
+  background: rgba(5, 6, 10, 0.6);
+  -webkit-backdrop-filter: blur(7px) saturate(0.8);
+  backdrop-filter: blur(7px) saturate(0.8);
+}
+
+.mb-card-zoom-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: transparent;
+}
+
+// Carousel across the full width (dialog margin cancelled), snaps to one card at a time.
+// It carries the grow/shrink animation (MobileCardZoom, Web Animations)
+.mb-card-zoom-track {
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  margin: 0 -16px;
+  overflow: auto hidden;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  // Spacers at start and end, so the first and last card also snap to the center
+  &::before,
+  &::after {
+    content: "";
+    flex: 0 0 calc((100% - @mb-card-zoom-slide-width) / 2);
+  }
+}
+// Narrower than the screen, so the previous and next cards peek in, cut off, on the left and right.
+// Room on top for cost and tags sticking out of the card, at the bottom for the shadow –
+// otherwise the carousel clips everything outside
+.mb-card-zoom-slide {
+  flex: 0 0 @mb-card-zoom-slide-width;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px 0;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+
+// Card a fifth larger with a shadow below; the margin around the scaled card keeps the space free
+.mb-card-zoom-card {
+  position: relative;
+  margin: 30px 0;
+
+  .card-container {
+    margin: 0 !important;
+    transform: scale(1.2);
+    border-radius: 12px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65), 0 4px 10px rgba(0, 0, 0, 0.5);
+  }
+}
+
+// Neighbor cards wait outside the carousel until the shown card has grown (waiting position like
+// NEIGHBOR_OFFSET in MobileCardZoom.vue); previous left, next right; the carousel clips them there
+.mb-card-zoom--neighbors-hidden {
+  .mb-card-zoom-slide--before .mb-card-zoom-card {
+    transform: translateX(-120%);
+  }
+  .mb-card-zoom-slide--after .mb-card-zoom-card {
+    transform: translateX(120%);
+  }
+}
+
+// Arrows outside, Play/Close in the middle; fixed width so the arrows stay in the same place with and without "Play card"
+.mb-card-zoom-actions {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  width: min(100%, 360px);
+  opacity: 0;
+  transition: opacity @mb-card-zoom-duration ease;
+
+  .btn {
+    height: 44px;
+    min-width: 0; // drop the desktop buttons' min width, otherwise arrows and both buttons don't fit in one phone row
+    margin: 0 !important;
+    padding: 0 12px;
+    font-size: 16px;
+  }
+}
+
+.mb-card-zoom--open .mb-card-zoom-actions {
+  opacity: 1;
+}
+
+// Close clearly visible: white surface, black text
+.mb-card-zoom-main {
+  display: flex;
+  gap: 6px;
+}
+// Next/Previous: same surface as Close, just square
+.mb-card-zoom-step {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  padding: 0 0 4px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 30px;
+  line-height: 1;
+  .mb-frosted-button();
+}
+.mb-card-zoom-step--hidden {
+  visibility: hidden;
+}
+// Very narrow phones: arrows no longer fit next to Play/Close and move to a second row below
+@media (max-width: 359px) {
+  .mb-card-zoom-actions {
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+  .mb-card-zoom-main {
+    order: -1;
+    flex-basis: 100%;
+    justify-content: center;
+  }
+}
+// Fixed font size like the buttons next to it: the log's modal hangs off body and inherits a different one there
+.mb-card-zoom-close {
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: bold;
+  .mb-frosted-button();
+}

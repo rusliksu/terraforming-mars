@@ -1,6 +1,6 @@
 import {Message} from '../../common/logs/Message';
 import {BasePlayerInput} from '../PlayerInput';
-import {isPayment, Payment, PaymentOptions} from '../../common/inputs/Payment';
+import {Payment, PaymentOptions} from '../../common/inputs/Payment';
 import {InputResponse, isSelectPaymentResponse} from '../../common/inputs/InputResponse';
 import {IPlayer} from '../IPlayer';
 import {SelectPaymentModel} from '../../common/models/PlayerInputModel';
@@ -25,8 +25,8 @@ export class SelectPayment extends BasePlayerInput<Payment> {
       type: 'payment',
       amount: this.amount,
       paymentOptions: {
-        // TODO(kberg): These are set both here and in Player. Consolidate, perhaps.
         heat: player.canUseHeatAsMegaCredits,
+        energy: player.canUseEnergyAsMegaCredits,
         lunaTradeFederationTitanium: player.canUseTitaniumAsMegacredits,
         ...this.paymentOptions,
       },
@@ -46,12 +46,10 @@ export class SelectPayment extends BasePlayerInput<Payment> {
     if (!isSelectPaymentResponse(input)) {
       throw new InputError('Not a valid SelectPaymentResponse');
     }
-    const payment = input.payment;
-    if (!isPayment(payment)) {
+    const payment = Payment.fromResponse(input.payment);
+    if (payment === undefined) {
       throw new InputError('payment is not a valid type');
     }
-    // TODO(kberg): This is called here and in SelectPaymentDeferred.
-    // There's no reason for both.
     if (!player.canSpend(payment, this.reserveUnits)) {
       throw new InputError('You do not have that many resources');
     }
@@ -59,6 +57,6 @@ export class SelectPayment extends BasePlayerInput<Payment> {
     if (amountPaid < this.amount) {
       throw new InputError('Did not spend enough');
     }
-    return this.cb(input.payment);
+    return this.cb(payment);
   }
 }

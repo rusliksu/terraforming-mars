@@ -9,6 +9,7 @@ import {oneWayDifference} from '../../common/utils/utils';
 import {message} from '../logs/MessageBuilder';
 import {Message} from '../../common/logs/Message';
 import {Aerotech} from '../cards/community/Aerotech';
+import {SpireTech} from '../cards/sillyfication/SpireTech';
 
 export const LogType = {
   DREW: 'drew',
@@ -24,6 +25,9 @@ export type ChooseOptions = {
   paying?: boolean,
   /** When true (and paying), log the bought cards publicly by name instead of just the count. */
   logBoughtCards?: boolean,
+  /** Called immediately before and after a successful keep/discard resolution. */
+  onCardsSelected?: () => void,
+  onCardsKept?: (logStartIndex: number, logEndIndex: number) => void,
 }
 
 export class ChooseCards extends DeferredAction {
@@ -64,6 +68,7 @@ export class ChooseCards extends DeferredAction {
           throw new Error('Selected too many cards');
         }
         const unselected = oneWayDifference(cards, selected);
+        options.onCardsSelected?.();
         if (options.logDrawnCard === true) {
           LogHelper.logRevealedCards(player, cards);
         }
@@ -75,13 +80,25 @@ export class ChooseCards extends DeferredAction {
               player,
               cost,
               {title: message('Select how to spend ${0} M€ for ${1} cards', (b) => b.number(cost).number(selected.length))})
-              .andThen(() => keep(player, selected, unselected, boughtLogType)));
+              .andThen(() => keepAndRecord(player, selected, unselected, boughtLogType, options)));
         } else {
-          keep(player, selected, unselected, options.paying ? boughtLogType : LogType.DREW);
+          keepAndRecord(player, selected, unselected, options.paying ? boughtLogType : LogType.DREW, options);
         }
         return undefined;
       });
   }
+}
+
+function keepAndRecord(
+  player: IPlayer,
+  cards: ReadonlyArray<IProjectCard>,
+  discards: ReadonlyArray<IProjectCard>,
+  logType: LogType,
+  options: ChooseOptions,
+): void {
+  const logStartIndex = player.game.gameLog.length;
+  keep(player, cards, discards, logType);
+  options.onCardsKept?.(logStartIndex, player.game.gameLog.length);
 }
 
 /**
@@ -113,4 +130,13 @@ export function keep(player: IPlayer, cards: ReadonlyArray<IProjectCard>, discar
     break;
   }
   Aerotech.onDrawCards(player, cards, discards);
+  SpireTech.onDrawCards(player, cards, discards);
+
+  if (cards.length > 0) {
+    for (const cardOwner of player.game.playersInGenerationOrder) {
+      for (const ownedCard of cardOwner.tableau) {
+        ownedCard.onCardsDrawn?.(cardOwner, player, cards.length);
+      }
+    }
+  }
 }

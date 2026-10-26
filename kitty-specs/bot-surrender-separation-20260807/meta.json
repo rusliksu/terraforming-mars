@@ -1,0 +1,16 @@
+{
+  "created_at": "2026-08-07T19:25:25Z",
+  "flattened": false,
+  "friendly_name": "Разделение временного бота и сдачи",
+  "mission_id": "bot-surrender-separation-20260807",
+  "mission_number": null,
+  "mission_slug": "bot-surrender-separation-20260807",
+  "mission_type": "software-dev",
+  "purpose_context": "В кастомном Terraforming Mars сервере текущее bot takeover состояние одновременно означает временную передачу управления и подтвержденный leave для completion reliability.",
+  "purpose_tldr": "Разделить обратимое управление ботом и необратимую сдачу игрока.",
+  "slug": "bot-surrender-separation-20260807",
+  "target_branch": "codex/bot-surrender-separation",
+  "tracker": "tm-ai-63l",
+  "topology": "single_branch",
+  "tooling_note": "Created in task-owned worktree because Spec Kitty CLI resolved the primary checkout branch instead of this worktree."
+}

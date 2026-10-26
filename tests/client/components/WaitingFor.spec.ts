@@ -1,6 +1,8 @@
-import {shallowMount} from '@vue/test-utils';
+import {mount, shallowMount} from '@vue/test-utils';
+import {defineComponent} from 'vue';
 import {globalConfig} from './getLocalVue';
 import {expect} from 'chai';
+import {afterEach, vi} from 'vitest';
 import WaitingFor from '@/client/components/WaitingFor.vue';
 import {RecursivePartial} from '@/common/utils/utils';
 import {PlayerViewModel, PublicPlayerModel} from '@/common/models/PlayerModel';
@@ -9,7 +11,6 @@ import raw_settings from '@/genfiles/settings.json';
 import {PreferencesManager} from '@/client/utils/PreferencesManager';
 
 describe('WaitingFor', () => {
-  type TestRequestOptions = {body?: unknown};
   type TestNotificationOptions = {
     body?: string;
     icon?: string;
@@ -19,7 +20,7 @@ describe('WaitingFor', () => {
   const wrappers: Array<{unmount: () => void}> = [];
 
   function mountWaitingFor(options: any) {
-    const wrapper = shallowMount(WaitingFor, options);
+    const wrapper = shallowMount(WaitingFor, {...options, global: {...options.global, renderStubDefaultSlot: true}});
     wrappers.push(wrapper);
     return wrapper;
   }
@@ -101,6 +102,37 @@ describe('WaitingFor', () => {
     expect(wrapper.text()).to.not.include('Not your turn');
   });
 
+  it('sends the current prompt identity with the answer', () => {
+    const wrapper = mountWaitingFor({
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {
+          'PlayerInputFactory': {template: '<div class="stub-pif"></div>'},
+        },
+      },
+      props: {
+        playerView: playerView as PlayerViewModel,
+        waitingfor: {
+          type: 'option',
+          title: 'test',
+          buttonLabel: 'save',
+          promptId: 'prompt-42',
+        },
+      },
+    });
+    const requests: Array<{url: string, body: string}> = [];
+    wrapper.vm.fetchPlayerInput = ((url: string, options: {body?: string}) => {
+      requests.push({url, body: String(options.body ?? '')});
+      return Promise.resolve() as Promise<unknown>;
+    }) as typeof wrapper.vm.fetchPlayerInput;
+
+    (wrapper.vm as any).onsave({type: 'option'});
+
+    expect(requests).has.length(1);
+    expect(JSON.parse(requests[0].body)).deep.include({promptId: 'prompt-42'});
+  });
+
   it('shows "not your turn" when waitingfor is undefined', () => {
     const wrapper = mountWaitingFor({
       ...globalConfig,
@@ -119,7 +151,7 @@ describe('WaitingFor', () => {
     expect(wrapper.text()).to.include('Not your turn');
   });
 
-  it('shows a clearer pause-updates label in experimental UI', async () => {
+  it('shows a clearer pause-updates label in experimental UI', () => {
     PreferencesManager.INSTANCE.set('experimental_ui', true);
 
     const wrapper = mountWaitingFor({
@@ -144,133 +176,50 @@ describe('WaitingFor', () => {
 
     expect(wrapper.text()).to.include('Pause updates');
     expect(wrapper.text()).to.not.include('Suspend');
-
-    await wrapper.setProps({
-      playerView: {
-        ...playerView,
-        thisPlayer: {...thisPlayer, isActive: true},
-      } as PlayerViewModel,
-    });
-    expect(wrapper.text()).to.not.include('Pause updates');
   });
 
-  it('shows cancel action for nested active action prompts when undo is enabled', () => {
+  it('adds one-step undo to the main action radio options and routes it to the step reset', () => {
     const wrapper = mountWaitingFor({
       ...globalConfig,
       global: {
         ...globalConfig.global,
         stubs: {
           'PlayerInputFactory': {template: '<div class="stub-pif"></div>'},
-          'AppButton': {props: ['title'], template: '<button>{{ title }}</button>'},
         },
       },
       props: {
         playerView: {
           ...playerView,
+          canStepBack: true,
           thisPlayer: {...thisPlayer, isActive: true},
-          game: {
-            ...playerView.game,
-            gameOptions: {undoOption: true},
-          },
-        } as PlayerViewModel,
-        waitingfor: {
-          type: 'card',
-          title: 'Choose a card',
-          buttonLabel: 'Choose',
-          cards: [],
-          min: 1,
-          max: 1,
-        },
-      },
-    });
-
-    expect(wrapper.text()).to.include('Cancel action');
-  });
-
-  it('does not show cancel action on the main action prompt', () => {
-    const wrapper = mountWaitingFor({
-      ...globalConfig,
-      global: {
-        ...globalConfig.global,
-        stubs: {
-          'PlayerInputFactory': {template: '<div class="stub-pif"></div>'},
-          'AppButton': {props: ['title'], template: '<button>{{ title }}</button>'},
-        },
-      },
-      props: {
-        playerView: {
-          ...playerView,
-          thisPlayer: {...thisPlayer, isActive: true},
-          game: {
-            ...playerView.game,
-            gameOptions: {undoOption: true},
-          },
-        } as PlayerViewModel,
-        waitingfor: {
-          type: 'or',
-          title: 'Take your next action',
-          buttonLabel: 'Take action',
-          options: [],
-        },
-      },
-    });
-
-    expect(wrapper.text()).to.not.include('Cancel action');
-  });
-
-  it('shows an undo action control on the main action prompt when undo is available', async () => {
-    const wrapper = mountWaitingFor({
-      ...globalConfig,
-      global: {
-        ...globalConfig.global,
-        stubs: {
-          'PlayerInputFactory': {template: '<div class="stub-pif"></div>'},
-          'AppButton': {props: ['title'], emits: ['click'], template: '<button @click="$emit(\'click\')">{{ title }}</button>'},
-        },
-      },
-      props: {
-        playerView: {
-          ...playerView,
-          runId: 'run-id',
-          thisPlayer: {...thisPlayer, isActive: true},
-          game: {
-            ...playerView.game,
-            gameOptions: {undoOption: true},
-          },
+          game: {...playerView.game, gameOptions: {undoOption: true, undoStepOption: true}},
         } as PlayerViewModel,
         waitingfor: {
           type: 'or',
           title: 'Take your next action',
           buttonLabel: 'Take action',
           options: [
-            {type: 'option', title: 'Pass for now', buttonLabel: 'Pass'},
+            {type: 'option', title: 'Play project card', buttonLabel: 'Play'},
             {type: 'option', title: 'Undo last action', buttonLabel: 'Undo'},
           ],
         },
       },
     });
+    const requests: Array<string> = [];
+    wrapper.vm.fetchPlayerInput = ((url: string) => requests.push(url)) as typeof wrapper.vm.fetchPlayerInput;
 
-    const requests: Array<{url: string, options: TestRequestOptions}> = [];
-    wrapper.vm.fetchPlayerInput = ((url: string, options: TestRequestOptions) => {
-      requests.push({url, options});
-    }) as typeof wrapper.vm.fetchPlayerInput;
+    const options = (wrapper.vm as any).playerinputWithStepBack().options;
+    expect(options.map((option: any) => option.title)).deep.eq([
+      'Play project card',
+      'Undo last action',
+      'Undo one step (experimental)',
+    ]);
 
-    expect(wrapper.text()).to.include('Undo last action');
-    expect(wrapper.text()).to.not.include('Cancel action');
-
-    await wrapper.find('button').trigger('click');
-
-    expect(requests).has.length(1);
-    expect(requests[0].url).eq('player/input?id=p-player-id');
-    expect(JSON.parse(requests[0].options.body as string)).deep.eq({
-      runId: 'run-id',
-      type: 'or',
-      index: 1,
-      response: {type: 'option'},
-    });
+    (wrapper.vm as any).onsavePlayerInput({type: 'or', index: 2, response: {type: 'option'}});
+    expect(requests).deep.eq(['reset?id=p-player-id&mode=step']);
   });
 
-  it('shows cancel action for nested active action option prompts when undo is enabled', () => {
+  it('shows both undo choices below a nested prompt and routes each choice to its reset', () => {
     const wrapper = mountWaitingFor({
       ...globalConfig,
       global: {
@@ -283,22 +232,253 @@ describe('WaitingFor', () => {
       props: {
         playerView: {
           ...playerView,
+          canStepBack: true,
           thisPlayer: {...thisPlayer, isActive: true},
-          game: {
-            ...playerView.game,
-            gameOptions: {undoOption: true},
-          },
+          game: {...playerView.game, gameOptions: {undoOption: true, undoStepOption: true}},
         } as PlayerViewModel,
         waitingfor: {
-          type: 'or',
-          title: 'Select one option',
+          type: 'card',
+          title: 'Select 3 cards to discard',
+          buttonLabel: 'Discard',
+          cards: [],
+          min: 3,
+          max: 3,
+        },
+      },
+    });
+    const requests: Array<string> = [];
+    wrapper.vm.fetchPlayerInput = ((url: string) => requests.push(url)) as typeof wrapper.vm.fetchPlayerInput;
+
+    expect(wrapper.find('.wf-undo-controls').exists()).to.be.true;
+    expect(wrapper.text()).to.include('Undo action');
+    expect(wrapper.text()).to.include('Undo one step (experimental)');
+
+    (wrapper.vm as any).undoChoice = 'action';
+    (wrapper.vm as any).undoSelected();
+    (wrapper.vm as any).undoChoice = 'step';
+    (wrapper.vm as any).undoSelected();
+    expect(requests).deep.eq([
+      'reset?id=p-player-id',
+      'reset?id=p-player-id&mode=step',
+    ]);
+  });
+
+  it('shows action undo for a nested prompt when only step undo is enabled', () => {
+    const wrapper = mountWaitingFor({
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {
+          'PlayerInputFactory': {template: '<div class="stub-pif"></div>'},
+          'AppButton': {props: ['title'], template: '<button>{{ title }}</button>'},
+        },
+      },
+      props: {
+        playerView: {
+          ...playerView,
+          canStepBack: false,
+          thisPlayer: {...thisPlayer, isActive: true},
+          game: {...playerView.game, gameOptions: {undoOption: false, undoStepOption: true}},
+        } as PlayerViewModel,
+        waitingfor: {
+          type: 'projectCard',
+          title: 'Select your second standard project',
           buttonLabel: 'Confirm',
-          options: [],
+          cards: [],
         },
       },
     });
 
-    expect(wrapper.text()).to.include('Cancel action');
+    expect(wrapper.find('.wf-undo-controls').exists()).to.be.true;
+    expect(wrapper.text()).to.include('Undo action');
+    expect(wrapper.text()).to.not.include('Undo one step (experimental)');
+  });
+
+  it('shows action undo while the active player waits for another player', () => {
+    const wrapper = mountWaitingFor({
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {
+          'PlayerInputFactory': true,
+          'AppButton': {props: ['title'], template: '<button>{{ title }}</button>'},
+        },
+      },
+      props: {
+        playerView: {
+          ...playerView,
+          thisPlayer: {...thisPlayer, isActive: true},
+          game: {...playerView.game, phase: Phase.ACTION, gameOptions: {undoOption: true, undoStepOption: true}},
+        } as PlayerViewModel,
+        waitingfor: undefined,
+      },
+    });
+
+    expect(wrapper.find('.wf-undo-controls').exists()).to.be.true;
+    expect(wrapper.text()).to.include('Undo action');
+    expect(wrapper.text()).to.not.include('Undo one step (experimental)');
+  });
+
+  it('keeps undo choices inside the main action list', () => {
+    const wrapper = mountWaitingFor({
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {
+          'PlayerInputFactory': {template: '<div class="stub-pif"></div>'},
+        },
+      },
+      props: {
+        playerView: {
+          ...playerView,
+          canStepBack: true,
+          thisPlayer: {...thisPlayer, isActive: true},
+          game: {...playerView.game, gameOptions: {undoOption: true, undoStepOption: true}},
+        } as PlayerViewModel,
+        waitingfor: {
+          type: 'or',
+          title: 'Take your next action',
+          buttonLabel: 'Take action',
+          options: [{type: 'option', title: 'Play project card', buttonLabel: 'Play'}],
+        },
+      },
+    });
+
+    expect(wrapper.find('.wf-undo-controls').exists()).to.be.false;
+  });
+
+  it('shows research-purchase undo while waiting for other players', () => {
+    const wrapper = mountWaitingFor({
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {
+          'PlayerInputFactory': {template: '<div class="stub-pif"></div>'},
+          'AppButton': {props: ['title'], template: '<button>{{ title }}</button>'},
+        },
+      },
+      props: {
+        playerView: {
+          ...playerView,
+          canUndoResearchPurchase: true,
+          game: {...playerView.game, phase: Phase.RESEARCH},
+        } as PlayerViewModel,
+        waitingfor: undefined,
+      },
+    });
+    const requests: Array<string> = [];
+    wrapper.vm.fetchPlayerInput = ((url: string) => requests.push(url)) as typeof wrapper.vm.fetchPlayerInput;
+
+    expect(wrapper.text()).to.include('Undo card purchase (experimental)');
+    (wrapper.vm as any).undoResearchPurchase();
+    expect(requests).deep.eq(['reset?id=p-player-id&mode=research']);
+  });
+
+  it('retries step undo after confirming the hidden-information warning', async () => {
+    const originalFetch = global.fetch;
+    const originalConfirm = window.confirm;
+    const requests: Array<string> = [];
+    (window as any).confirm = () => true;
+    (global as any).fetch = (url: string) => {
+      requests.push(url);
+      if (requests.length === 1) {
+        return Promise.resolve({
+          ok: false,
+          status: 400,
+          clone: () => ({
+            json: () => Promise.resolve({
+              id: '#undo-revealed-hidden-information',
+              message: 'Hidden information warning',
+            }),
+          }),
+        });
+      }
+      return new Promise(() => {});
+    };
+
+    try {
+      const wrapper = mountWaitingFor({
+        ...globalConfig,
+        global: {
+          ...globalConfig.global,
+          stubs: {
+            'PlayerInputFactory': true,
+            'AppButton': true,
+          },
+        },
+        props: {
+          playerView: playerView as PlayerViewModel,
+          waitingfor: {
+            type: 'option',
+            title: 'test',
+            buttonLabel: 'save',
+          },
+        },
+      });
+
+      wrapper.vm.stepBack();
+      await new Promise((resolve) => window.setTimeout(resolve, 10));
+
+      expect(requests).deep.eq([
+        'reset?id=p-player-id&mode=step',
+        'reset?id=p-player-id&mode=step&confirmHiddenInformation=true',
+      ]);
+    } finally {
+      (global as any).fetch = originalFetch;
+      (window as any).confirm = originalConfirm;
+    }
+  });
+
+  it('refreshes the player view after a rejected stale input', async () => {
+    const originalFetch = global.fetch;
+    let refreshes = 0;
+    let alertCallback: () => void = () => {};
+    (global as any).fetch = () => Promise.resolve({
+      ok: false,
+      status: 400,
+      clone: () => ({
+        json: () => Promise.resolve({
+          id: '#unexpected-input',
+          message: 'This input is no longer valid',
+        }),
+      }),
+    });
+
+    try {
+      const wrapper = mountWaitingFor({
+        ...globalConfig,
+        global: {
+          ...globalConfig.global,
+          stubs: {
+            'PlayerInputFactory': true,
+          },
+        },
+        props: {
+          playerView: playerView as PlayerViewModel,
+          waitingfor: {
+            type: 'option',
+            title: 'test',
+            buttonLabel: 'save',
+          },
+        },
+      });
+      const root = wrapper.vm.$root as any;
+      root.updatePlayer = () => refreshes++;
+      root.showAlert = (title: string, message: string, cb: () => void) => {
+        expect(title).eq('Error with input');
+        expect(message).eq('This input is no longer valid');
+        alertCallback = cb;
+      };
+
+      wrapper.vm.fetchPlayerInput('player/input?id=p-player-id', {method: 'POST'});
+      await new Promise((resolve) => window.setTimeout(resolve, 0));
+
+      expect(refreshes).eq(0);
+      alertCallback();
+      expect(refreshes).eq(1);
+    } finally {
+      (global as any).fetch = originalFetch;
+    }
   });
 
   it('shows a notification after permission is granted', async () => {
@@ -452,5 +632,156 @@ describe('WaitingFor', () => {
       window.clearTimeout = originalClearTimeout;
       console.warn = originalWarn;
     }
+  });
+
+  const draftingView = (): PlayerViewModel => ({
+    id: 'p-player-id',
+    thisPlayer: {color: 'red'},
+    players: [{color: 'red', needsToDraft: true}, {color: 'blue', needsToDraft: true}],
+    game: {phase: Phase.DRAFTING, gameAge: 1, undoCount: 0},
+  }) as unknown as PlayerViewModel;
+
+  function mountDrafting(playerView: PlayerViewModel) {
+    return mount(WaitingFor, {
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {'PlayerInputFactory': {template: '<div class="stub-pif"></div>'}},
+      },
+      props: {
+        playerView,
+        waitingfor: {type: 'card', title: 'Select a card', buttonLabel: 'Select'} as any,
+      },
+    });
+  }
+
+  function stubServer(players: Array<unknown>) {
+    const fetchStub = vi.fn(async () => ({ok: true, json: async () => ({players})}) as Response);
+    vi.stubGlobal('fetch', fetchStub);
+    return fetchStub;
+  }
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('updates other players while drafting', async () => {
+    vi.useFakeTimers();
+    const updatedPlayers = [{color: 'red', needsToDraft: true}, {color: 'blue', needsToDraft: false}];
+    stubServer(updatedPlayers);
+    const playerView = draftingView();
+    const wrapper = mountDrafting(playerView);
+
+    await vi.advanceTimersByTimeAsync(3500);
+
+    expect(playerView.players).deep.eq(updatedPlayers);
+    expect(wrapper.find('.stub-pif').exists()).to.be.true;
+  });
+
+  it('waits for a slow poll before polling again', async () => {
+    vi.useFakeTimers();
+    let respond = () => {};
+    const fetchStub = vi.fn(() => new Promise<Response>((resolve) => {
+      respond = () => resolve({ok: true, json: async () => ({players: []})} as unknown as Response);
+    }));
+    vi.stubGlobal('fetch', fetchStub);
+    mountDrafting(draftingView());
+
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(fetchStub.mock.calls).has.length(1);
+
+    respond();
+    await vi.advanceTimersByTimeAsync(3500);
+    expect(fetchStub.mock.calls).has.length(2);
+  });
+
+  it('stops polling after a client error', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const fetchStub = vi.fn(async () => ({ok: false, status: 404, statusText: 'Not Found'}) as Response);
+    vi.stubGlobal('fetch', fetchStub);
+    mountDrafting(draftingView());
+
+    await vi.advanceTimersByTimeAsync(10000);
+
+    expect(fetchStub.mock.calls).has.length(1);
+  });
+
+  it('keeps polling after a server error', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const fetchStub = vi.fn(async () => ({ok: false, status: 503, statusText: 'Service Unavailable'}) as Response);
+    vi.stubGlobal('fetch', fetchStub);
+    mountDrafting(draftingView());
+
+    await vi.advanceTimersByTimeAsync(10000);
+
+    expect(fetchStub.mock.calls).has.length(3);
+  });
+
+  it('does not watch other players during the action phase', async () => {
+    vi.useFakeTimers();
+    const fetchStub = stubServer([]);
+    const playerView = draftingView();
+    playerView.game.phase = Phase.ACTION;
+    mountDrafting(playerView);
+
+    await vi.advanceTimersByTimeAsync(3500);
+
+    expect(fetchStub.mock.calls).is.empty;
+  });
+
+  const PlayerInputFactoryStub = defineComponent({name: 'PlayerInputFactory', template: '<div class="stub-pif"></div>'});
+
+  function stubXhr() {
+    const urls: Array<string> = [];
+    vi.stubGlobal('XMLHttpRequest', class {
+      open(_method: string, url: string) {
+        urls.push(url);
+      }
+      send() {}
+    });
+    return urls;
+  }
+
+  function mountWithInput(playerView: PlayerViewModel) {
+    return mount(WaitingFor, {
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        stubs: {'PlayerInputFactory': PlayerInputFactoryStub},
+      },
+      props: {
+        playerView,
+        waitingfor: {type: 'option', title: 'test', buttonLabel: 'save'} as any,
+      },
+    });
+  }
+
+  it('keeps the input mounted when the player view changes', async () => {
+    const playerView = draftingView();
+    playerView.game.phase = Phase.ACTION;
+    const wrapper = mountWithInput(playerView);
+    const input = wrapper.findComponent(PlayerInputFactoryStub).vm;
+
+    await wrapper.setProps({playerView: {...playerView}});
+
+    expect(wrapper.findComponent(PlayerInputFactoryStub).vm).to.eq(input);
+  });
+
+  it('starts polling when a new player view has nothing to do', async () => {
+    vi.useFakeTimers();
+    const urls = stubXhr();
+    const playerView = draftingView();
+    playerView.game.phase = Phase.ACTION;
+    const wrapper = mountWithInput(playerView);
+
+    await wrapper.setProps({playerView: {...playerView}, waitingfor: undefined});
+    await vi.advanceTimersByTimeAsync(5000);
+
+    expect(urls).has.length(1);
+    expect(urls[0]).includes('api/waitingfor');
   });
 });

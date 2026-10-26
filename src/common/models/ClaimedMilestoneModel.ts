@@ -1,10 +1,11 @@
 import {Color} from '../Color';
 import {MilestoneName} from '../ma/MilestoneName';
+import {ConglomeratesTeamScore} from './ConglomeratesModel';
 
 export type MilestoneScore = {
   color: Color;
   score: number;
-  claimable?: boolean;
+  claimable: boolean;
 }
 
 export type ClaimedMilestoneModel = {
@@ -12,4 +13,8 @@ export type ClaimedMilestoneModel = {
   playerName: string | undefined;
   color: Color | undefined;
   scores: Array<MilestoneScore>;
+  /** Public display threshold for simple numeric requirements. */
+  threshold?: number;
+  /** Only present in Conglomerates games -- each team's combined score for this milestone. */
+  teamScores?: Array<ConglomeratesTeamScore>;
 }

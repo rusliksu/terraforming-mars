@@ -1,9 +1,16 @@
 <template>
-<div class="payments_cont">
+<component v-if="projectPresentation !== undefined" :is="projectPresentation" :binding="presentationBinding" v-bind="$attrs"/>
+<div v-else class="payments_cont" v-bind="$attrs">
   <div v-if="showtitle === true">{{ $t(playerinput.title) }}</div>
   <label v-for="availableCard in cards" class="payments_cards" :key="availableCard.name">
     <input v-if="!availableCard.isDisabled" class="hidden" type="radio" v-model="cardName" :value="availableCard.name" >
     <Card class="cardbox" :card="availableCard" />
+    <div v-if="availableCard.additionalProjectCosts?.conglomeratesCost !== undefined" class="card-warning"
+      v-i18n="[availableCard.additionalProjectCosts.conglomeratesCost]"
+      data-test="conglomerates-cost"
+    >
+      This currently costs ${0} Coordination
+    </div>
   </label>
   <template v-if="card !== undefined && card.additionalProjectCosts">
     <div v-if="card.additionalProjectCosts.aeronGenomicsResources" class="card-warning"
@@ -21,6 +28,9 @@
   </template>
   <WarningsComponent v-if="card !== undefined" :warnings="card.warnings"/>
 
+  <PresentationHost :hosts="paymentHost"/>
+</div>
+<InputPortal :target="paymentHost.target.value">
   <PaymentForm
     v-if="showPaymentSection"
     ref="paymentForm"
@@ -30,9 +40,10 @@
     :ledger="ledger"
     :showsave="showsave"
     :buttonLabel="playerinput.buttonLabel"
+    :itemName="cardName"
     @change="(p) => payment = p"
     @save="doSave"/>
-</div>
+</InputPortal>
 </template>
 
 <script lang="ts">
@@ -52,9 +63,20 @@ import {SelectProjectCardToPlayResponse} from '@/common/inputs/InputResponse';
 import WarningsComponent from '@/client/components/WarningsComponent.vue';
 import PaymentForm from '@/client/components/PaymentForm.vue';
 import {Ledger} from '@/client/components/PaymentLedger';
+import {createInputHosts} from '@/client/wrybit/shell/inputHosts';
+import InputPortal from '@/client/wrybit/shell/InputPortal.vue';
+import PresentationHost from '@/client/wrybit/inputs/PresentationHost.vue';
+import {ProjectCardBinding, useInputPresentation} from '@/client/wrybit/inputs/presentation';
+import {Payment} from '@/common/inputs/Payment';
+import {useSaveSession, withSaveAttempt} from '@/client/wrybit/inputs/saveAttempt';
+import type {MaybePromise, SaveAttempt, SaveOutcome} from '@/client/wrybit/inputs/saveAttempt';
 
 export default defineComponent({
   name: 'SelectProjectCardToPlay',
+  inheritAttrs: false,
+  setup() {
+    return {projectPresentation: useInputPresentation('projectCard'), paymentHost: createInputHosts(), saveSession: useSaveSession()};
+  },
   mixins: [PaymentWidgetMixin],
   props: {
     playerView: {
@@ -77,14 +99,30 @@ export default defineComponent({
     },
   },
   computed: {
+    presentationBinding(): ProjectCardBinding {
+      return {
+        playerView: this.playerView, playerinput: this.playerinput, showtitle: this.showtitle,
+        cards: this.cards, card: this.card, cardName: this.cardName, paymentHost: this.paymentHost,
+        select: (name) => {
+          this.cardName = name;
+        },
+        clearSelection: () => {
+          this.cardName = undefined;
+          this.card = undefined;
+        },
+      };
+    },
     order(): ReadonlyArray<SpendableResource> {
       return ([
         'steel',
         'titanium',
         'heat',
+        'energy',
         'plants',
         'microbes',
+        'nereidMicrobes',
         'floaters',
+        'anyFloaters',
         'lunaArchivesScience',
         'seeds',
         'graphene',
@@ -97,11 +135,21 @@ export default defineComponent({
     ledger(): Ledger {
       return this.buildLedger(this.order, this.reserveUnits);
     },
+    tags(): ReadonlyArray<Tag> {
+      return this.card !== undefined ? getCardOrThrow(this.card.name).tags : [];
+    },
+    reserveUnits(): Units {
+      return this.card?.reserveUnits ?? Units.EMPTY;
+    },
     CardName(): typeof CardName {
       return CardName;
     },
     showPaymentSection(): boolean {
       return this.card !== undefined && this.card.isDisabled !== true;
+    },
+    canUseTitaniumRegularly(): boolean {
+      return this.tags.includes(Tag.SPACE) ||
+          this.playerView.thisPlayer.lastCardPlayed === CardName.LAST_RESORT_INGENUITY;
     },
   },
   watch: {
@@ -111,11 +159,8 @@ export default defineComponent({
       if (newVal === undefined) {
         return;
       }
-      // TODO(kberg): this stuff is set in data(). Perhaps share the code?
       this.card = this.getCard();
       this.cost = this.card.calculatedCost ?? 0;
-      this.tags = this.getCardTags();
-      this.reserveUnits = this.card.reserveUnits ?? Units.EMPTY;
       this.updateAvailableUnits();
     },
   },
@@ -132,14 +177,14 @@ export default defineComponent({
     return {
       cardName: card?.name,
       card: card,
-      reserveUnits: card?.reserveUnits ?? Units.EMPTY,
       cards: cards,
       cost: card?.calculatedCost ?? 0,
-      tags: card !== undefined ? getCardOrThrow(card.name).tags : [],
       available: Units.of({}),
     };
   },
   components: {
+    PresentationHost,
+    InputPortal,
     Card,
     PaymentForm,
     WarningsComponent,
@@ -158,24 +203,13 @@ export default defineComponent({
       }
       return card;
     },
-    getCardTags() {
-      // By the time getCardTags is called, this.cardName is defined. This is an
-      // unnecessary guard.
-      if (this.cardName === undefined) {
-        return [];
-      }
-      return getCardOrThrow(this.cardName).tags;
-    },
     updateAvailableUnits() {
       const thisPlayer = this.playerView.thisPlayer;
       this.available.steel = Math.max(thisPlayer.steel - this.reserveUnits.steel, 0);
       this.available.titanium = Math.max(thisPlayer.titanium - this.reserveUnits.titanium, 0);
       this.available.heat = Math.max(this.availableHeat() - this.reserveUnits.heat, 0);
+      this.available.energy = Math.max(thisPlayer.energy - this.reserveUnits.energy, 0);
       this.available.plants = Math.max(thisPlayer.plants - this.reserveUnits.plants, 0);
-    },
-    canUseTitaniumRegularly(): boolean {
-      return this.tags.includes(Tag.SPACE) ||
-          this.playerView.thisPlayer.lastCardPlayed === CardName.LAST_RESORT_INGENUITY;
     },
     canUse(unit: SpendableResource): boolean {
       if (this.card === undefined) {
@@ -194,6 +228,8 @@ export default defineComponent({
           return true;
         case 'heat':
           return this.playerinput.paymentOptions.heat === true;
+        case 'energy':
+          return this.playerinput.paymentOptions.energy === true;
         case 'steel':
           return canPayWith.steel === true;
         case 'titanium':
@@ -203,8 +239,11 @@ export default defineComponent({
           return canPayWith.seeds === true;
         case 'kuiperAsteroids':
           return canPayWith.kuiperAsteroids === true;
+        case 'anyFloaters':
+          return canPayWith.anyFloaters === true;
         case 'plants':
         case 'microbes':
+        case 'nereidMicrobes':
         case 'floaters':
         case 'lunaArchivesScience':
         case 'graphene':
@@ -218,16 +257,21 @@ export default defineComponent({
           return true;
         case 'heat':
           return this.playerinput.paymentOptions.heat === true;
+        case 'energy':
+          return this.playerinput.paymentOptions.energy === true;
         case 'steel':
           return this.tags.includes(Tag.BUILDING) ||
-          this.playerView.thisPlayer.lastCardPlayed === CardName.LAST_RESORT_INGENUITY;
+          this.playerView.thisPlayer.lastCardPlayed === CardName.LAST_RESORT_INGENUITY ||
+          (this.tags.includes(Tag.CITY) && this.playerView.thisPlayer.tableau.some((c) => c.name === CardName.BLOCKHOUSE));
         case 'titanium':
-          return this.canUseTitaniumRegularly() ||
+          return this.canUseTitaniumRegularly ||
           this.playerinput.paymentOptions.lunaTradeFederationTitanium === true;
         case 'plants':
           return this.tags.includes(Tag.BUILDING) && this.playerinput.paymentOptions.plants === true;
         case 'microbes':
           return this.tags.includes(Tag.PLANT);
+        case 'nereidMicrobes':
+          return this.tags.includes(Tag.JOVIAN);
         case 'floaters':
           return this.tags.includes(Tag.VENUS);
         case 'lunaArchivesScience':
@@ -240,6 +284,7 @@ export default defineComponent({
         case 'kuiperAsteroids':
         case 'auroraiData':
         case 'spireScience':
+        case 'anyFloaters':
           return false;
         default:
           throw new Error('Unknown unit ' + unit);
@@ -249,27 +294,36 @@ export default defineComponent({
     /** @override */
     getTitaniumResourceRate(): number {
       const titaniumValue = this.playerView.thisPlayer.titaniumValue;
-      if (this.canUseTitaniumRegularly() || this.card?.standardProjectCanPayWith?.titanium === true) {
+      if (this.canUseTitaniumRegularly || this.card?.standardProjectCanPayWith?.titanium === true) {
         return titaniumValue;
       }
       return titaniumValue - 1;
     },
-    saveData() {
-      if (this.card === undefined) {
-        return;
-      }
-      const paymentForm = this.$refs.paymentForm as {handleSave: () => void} | undefined;
-      if (paymentForm !== undefined) {
-        paymentForm.handleSave();
-      } else {
-        this.doSave();
-      }
+    saveData(attempt?: SaveAttempt, respond?: (response: SelectProjectCardToPlayResponse) => void): MaybePromise<SaveOutcome> {
+      const reply = respond ?? this.onsave;
+      return withSaveAttempt(this.saveSession, attempt, (current) => {
+        const card = this.card;
+        if (card === undefined) {
+          return 'invalid';
+        }
+        const publish = (payment: Payment) => {
+          if (current.isCurrent() && this.card?.name === card.name) {
+            reply({type: 'projectCard', card: card.name, payment});
+          }
+        };
+        const paymentForm = this.$refs.paymentForm as InstanceType<typeof PaymentForm> | undefined;
+        if (paymentForm !== undefined) {
+          return paymentForm.handleSave(current, publish);
+        }
+        publish(this.payment);
+        return 'saved';
+      });
     },
-    doSave() {
+    doSave(payment?: Payment) {
       if (this.card === undefined) {
         return;
       }
-      this.onsave({type: 'projectCard', card: this.card.name, payment: this.payment});
+      this.onsave({type: 'projectCard', card: this.card.name, payment: payment ?? this.payment});
     },
   },
 });

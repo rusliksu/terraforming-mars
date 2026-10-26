@@ -8,7 +8,6 @@ import {CardResource} from '../../../common/CardResource';
 import {AddResourcesToCard} from '../../deferredActions/AddResourcesToCard';
 import {Phase} from '../../../common/Phase';
 import {IProjectCard} from '../IProjectCard';
-import {BoardType} from '../../boards/BoardType';
 import {SpaceType} from '../../../common/boards/SpaceType';
 import {PartyHooks} from '../../turmoil/parties/PartyHooks';
 import {PartyName} from '../../../common/turmoil/PartyName';
@@ -23,75 +22,116 @@ export abstract class SurveyCard extends Card implements IProjectCard {
     super(properties);
   }
 
+  /** The standard resources this card rewards. */
+  protected abstract readonly STANDARD_RESOURCES: ReadonlyArray<readonly [SpaceBonus, Resource]>;
+  /** The card resources this card rewards. */
+  protected abstract readonly CARD_RESOURCES: ReadonlyArray<readonly [SpaceBonus, CardResource]>;
+
+  private validPlaceAndPhase(cardOwner: IPlayer, activePlayer: IPlayer, space: Space) {
+    if (cardOwner.game.phase === Phase.SOLAR) {
+      return false;
+    }
+    if (cardOwner.id !== activePlayer.id) {
+      return false;
+    }
+    // Space colonies are not on Mars.
+    if (space.spaceType === SpaceType.COLONY) {
+      return false;
+    }
+    // Does not work on The Moon.
+    if (space.id.startsWith('m')) {
+      return false;
+    }
+    return true;
+  }
+
+  public onTilePlaced(cardOwner: IPlayer, activePlayer: IPlayer, space: Space) {
+    if (!this.validPlaceAndPhase(cardOwner, activePlayer, space)) {
+      return;
+    }
+
+    for (const [bonus, resource] of this.STANDARD_RESOURCES) {
+      if (this.spaceRewardsStandardResource(cardOwner, space, resource, bonus)) {
+        cardOwner.stock.add(resource, 1);
+        this.logResource(cardOwner, resource);
+      }
+    }
+    for (const [bonus, resource] of this.CARD_RESOURCES) {
+      this.maybeRewardCardResource(cardOwner, space, resource, bonus);
+    }
+  }
+
+  public onStandardResourcePlacementBonus(cardOwner: IPlayer, activePlayer: IPlayer, space: Space, chosen: Resource) {
+    if (!this.validPlaceAndPhase(cardOwner, activePlayer, space)) {
+      return;
+    }
+
+    for (const [bonus, resource] of this.STANDARD_RESOURCES) {
+      // The card grants one additional per resource, so skip it when placing the tile already did.
+      if (chosen === resource && !this.spaceRewardsStandardResource(cardOwner, space, resource, bonus)) {
+        cardOwner.stock.add(resource, 1);
+        this.logResource(cardOwner, resource);
+      }
+    }
+  }
+
+  private logResource(cardOwner: IPlayer, resource: Resource): void {
+    cardOwner.game.log(
+      '${0} gained a bonus ${1} because of ${2}',
+      (b) => b.player(cardOwner).resource(resource).cardName(this.name));
+  }
+
+  private logCardResource(cardOwner: IPlayer, resource: CardResource): void {
+    cardOwner.game.log(
+      '${0} gained a bonus ${1} because of ${2}',
+      (b) => b.player(cardOwner).cardResource(resource).cardName(this.name));
+  }
+
   /**
-   * Returns true if this space yields an adjacency bonus.
+   * Returns true if when placing a tile on this space rewards `resource` either by the noted spaceBonus, or
+   * through other effects (eg Arctic Algae, Turmoil policies)
    */
-  private anyAdjacentSpaceGivesBonus(board: Board, space: Space, bonus: SpaceBonus): boolean {
-    return board.getAdjacentSpaces(space).some((adj) => adj.adjacency?.bonus.includes(bonus));
+  private spaceRewardsStandardResource(cardOwner: IPlayer, space: Space, resource: Resource, bonus: SpaceBonus): boolean {
+    const board = cardOwner.game.board;
+    if (this.placedTileGivesBonus(space, bonus)) {
+      return true;
+    }
+    if (AresHandler.anyAdjacentSpaceGivesBonus(board, space, bonus)) {
+      return true;
+    }
+    switch (resource) {
+    case Resource.STEEL:
+      return PartyHooks.shouldApplyPolicy(cardOwner, PartyName.MARS, 'mp01');
+    case Resource.PLANTS:
+      if (Board.isUncoveredOceanSpace(space) && cardOwner.tableau.has(CardName.ARCTIC_ALGAE)) {
+        return true;
+      }
+      return PartyHooks.shouldApplyPolicy(cardOwner, PartyName.GREENS, 'gp02');
+    case Resource.HEAT:
+      return PartyHooks.shouldApplyPolicy(cardOwner, PartyName.KELVINISTS, 'kp04');
+    }
+    return false;
+  }
+
+  /**
+   * Optionally grants a unit of `resource` (which matches `bonus`) based on `cardOwner` having placed a tile on `space`.
+   */
+  private maybeRewardCardResource(cardOwner: IPlayer, space: Space, resource: CardResource, bonus: SpaceBonus) {
+    const board = cardOwner.game.board;
+    if (cardOwner.playedCards.some((card) => card.resourceType === resource) &&
+        (this.placedTileGivesBonus(space, bonus) || AresHandler.anyAdjacentSpaceGivesBonus(board, space, bonus))) {
+      cardOwner.game.defer(new AddResourcesToCard(
+        cardOwner,
+        resource,
+        {log: true}))
+        .andThen(() => this.logCardResource(cardOwner, resource));
+    }
   }
 
   /**
    * Returns true if the tile just placed gives a bonus of a given type.
    */
-  private grantsBonusNow(space: Space, bonus: SpaceBonus) {
+  private placedTileGivesBonus(space: Space, bonus: SpaceBonus): boolean {
     return space.tile?.covers === undefined && space.bonus.includes(bonus);
-  }
-
-  public onTilePlaced(cardOwner: IPlayer, activePlayer: IPlayer, space: Space, boardType: BoardType) {
-    // Adjacency bonuses are only available on Mars.
-    if (boardType !== BoardType.MARS) {
-      return;
-    }
-    if (cardOwner.game.phase === Phase.SOLAR || cardOwner.id !== activePlayer.id) {
-      return;
-    }
-
-    this.checkForBonuses(cardOwner, space);
-  }
-
-  protected abstract checkForBonuses(cardOwner: IPlayer, space: Space): void;
-
-  private log(cardOwner: IPlayer, resource: Resource | CardResource): void {
-    cardOwner.game.log(
-      '${0} gained a bonus ${1} because of ${2}',
-      (b) => b.player(cardOwner).string(resource).cardName(this.name));
-  }
-
-  /**
-   * Optionally grants a unit of `resource` (which matches `bonus`) based on `cardOwner` having placed a tile on `space`.
-   */
-  protected maybeRewardStandardResource(cardOwner: IPlayer, space: Space, resource: Resource, bonus: SpaceBonus): void {
-    const board = cardOwner.game.board;
-    let grant = this.grantsBonusNow(space, bonus) || this.anyAdjacentSpaceGivesBonus(board, space, bonus);
-    if (!grant) {
-      switch (resource) {
-      case Resource.STEEL:
-        grant = space.spaceType !== SpaceType.COLONY &&
-            PartyHooks.shouldApplyPolicy(cardOwner, PartyName.MARS, 'mp01');
-        break;
-      case Resource.PLANTS:
-        grant = Board.isUncoveredOceanSpace(space) &&
-          cardOwner.tableau.has(CardName.ARCTIC_ALGAE);
-      }
-    }
-    if (grant) {
-      cardOwner.stock.add(resource, 1);
-      this.log(cardOwner, resource);
-    }
-  }
-
-  /**
-   * Optionally grants a unit of `resource` (which matches `bonus`) based on `cardOwner` having placed a tile on `space`.
-   */
-  protected maybeRewardCardResource(cardOwner: IPlayer, space: Space, resource: CardResource, bonus: SpaceBonus) {
-    const board = cardOwner.game.board;
-    if (cardOwner.playedCards.some((card) => card.resourceType === resource) &&
-        (this.grantsBonusNow(space, bonus) || AresHandler.anyAdjacentSpaceGivesBonus(board, space, bonus))) {
-      cardOwner.game.defer(new AddResourcesToCard(
-        cardOwner,
-        resource,
-        {log: true}))
-        .andThen(() => this.log(cardOwner, resource));
-    }
   }
 }

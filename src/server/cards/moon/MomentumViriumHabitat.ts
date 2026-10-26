@@ -9,7 +9,7 @@ import {AltSecondaryTag} from '../../../common/cards/render/AltSecondaryTag';
 export class MomentumViriumHabitat extends Card {
   constructor() {
     super({
-      name: CardName.MOMENTUM_VIRUM_HABITAT,
+      name: CardName.MOMENTUM_VIRIUM_HABITAT,
       type: CardType.AUTOMATED,
       tags: [Tag.CITY, Tag.SPACE],
       cost: 23,
@@ -27,7 +27,7 @@ export class MomentumViriumHabitat extends Card {
         'Place a habitat tile ON THE RESERVED AREA and raise the habitat rate 1 step.',
         cardNumber: 'M12',
         renderData: CardRenderer.builder((b) => {
-          b.minus().titanium(1).nbsp.moonHabitat({secondaryTag: AltSecondaryTag.MOON_HABITAT_RATE}).asterix().br;
+          b.titanium(-1).nbsp.moonHabitat({secondaryTag: AltSecondaryTag.MOON_HABITAT_RATE}).asterix().br;
           b.production((pb) => {
             pb.heat(2).megacredits(3);
           }).br;

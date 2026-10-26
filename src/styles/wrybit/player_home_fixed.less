@@ -1,0 +1,180 @@
+// Fixed app layout of the player and spectator view (class player-home--fixed, set in PlayerHome.vue
+// or SpectatorHome.vue):
+// The page no longer scrolls. Both columns are window-high and end on the same line:
+// on the right the log grows to the bottom, on the left the tab box fills the space below the player bars and scrolls inside.
+// Only in the two-column layout and only when nothing else sits below the columns (colonies, underworld …).
+
+@player-home-fixed-top: 20px; // top padding of #player-home (player_home.less)
+@player-home-fixed-bottom: 10px;
+@player-home-fixed-height: calc(100vh - @player-home-fixed-top - @player-home-fixed-bottom);
+// Minimum height of the tab box: stays usable with many players (up to 5 bars);
+// if the height is not enough, the left column scrolls as a whole (page stays fixed)
+@player-home-fixed-panel-min-height: 320px;
+
+@media only screen and (min-width: @player-home-columns-min-width) {
+  #player-home.player-home--fixed,
+  #spectator-home.player-home--fixed {
+    height: 100vh;
+    min-height: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .player-home--fixed .player-home-columns {
+    height: @player-home-fixed-height;
+    align-items: stretch;
+  }
+
+  // Drag handle only as tall as the columns; its window height (player_home_columns.less) would otherwise
+  // stretch the row and make the left column extend below the log
+  .player-home--fixed .player-home-columns__resizer {
+    height: auto;
+  }
+
+  // Right: fixed height (rightColumnFit.ts measures against it), log grows to the bottom
+  .player-home--fixed .player-home-columns__board {
+    height: @player-home-fixed-height;
+    max-height: @player-home-fixed-height;
+    display: flex;
+    flex-direction: column;
+  }
+
+  // Flex basis 0 instead of auto: the log only fills the space Mars leaves. With "auto" a long log stream
+  // claimed its full content height and squeezed the Mars card, while the short milestones table didn't –
+  // so Mars and the tab bar jumped when switching between the generation tabs and milestones & awards.
+  .player-home--fixed .player-home-columns__log {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+
+    > .log-container {
+      flex: 1 1 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    // Minimum height as before (card of the hover preview), beyond that the log fills the rest
+    .log-panel.or-tab-panel {
+      flex: 1 1 0;
+      height: auto;
+      max-height: none;
+      min-height: @player-home-log-height;
+    }
+  }
+
+  .player-home--fixed .player-home-columns__board--log-full .player-home-columns__log .log-panel.or-tab-panel {
+    min-height: @player-home-card-height;
+  }
+
+  // Mars card height set via the drag handle (rightColumnFit.ts): the box reaches down to the handle,
+  // Mars sits centred in it; the log below may get smaller than its usual minimum (handle up to 75 % of the window)
+  .player-home--fixed .player-home-columns__mars {
+    display: flex;
+    flex-direction: column;
+
+    > .board-tabs {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    .board-tabs-panel {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+  }
+
+  .player-home--fixed .player-home-columns__board[data-mars-height] .player-home-columns__log .log-panel.or-tab-panel {
+    min-height: 120px;
+  }
+
+  // Left: player bars fixed, below them the current tab box fills the rest
+  .player-home--fixed .player-home-columns__main {
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden auto; // fallback scrolling with many players (see minimum height of the tab box)
+
+    > * {
+      flex: none;
+    }
+
+    // Actions or hand cards (when it is not your turn) fill the rest
+    > .player_home_block--actions,
+    > .player_home_block--hand {
+      flex: 1 1 0;
+      min-height: @player-home-fixed-panel-min-height;
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 0;
+    }
+
+    // Drafted cards (draft phase) limited so the tab box below keeps its space
+    > .player_home_block--hand:not(#shortkey-hand) {
+      flex: 0 1 auto;
+      min-height: 0;
+      max-height: 35%;
+      overflow-y: auto;
+    }
+  }
+
+  // Spectator: the log on the left below the player table fills the rest like the tab box for players
+  .player-home--fixed .player-home-columns__main > .player_home_block--spectator-log {
+    flex: 1 1 0;
+    min-height: @player-home-fixed-panel-min-height;
+    margin-bottom: 0;
+  }
+
+  // Start phase: starting card selection fills the rest like the action menu
+  .player-home--fixed .player-home-columns__main > .player_home_block--setup {
+    flex: 1 1 0;
+    min-height: @player-home-fixed-panel-min-height;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+
+    // Wrapper (v-show) → WaitingFor root → wf-root → start selection
+    // (tab bar and tab box of the own start selection are on the same level: the bar stays one row,
+    // the box stays a normal block so the cards flow side by side like the hand cards)
+    > div,
+    > div > div:not(.or-tabs, .or-tab-panel),
+    .wf-root,
+    .wf-root > .select-initial-cards {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .select-initial-cards-footer {
+      flex: none;
+    }
+  }
+
+  // Chain down to the tab box: WaitingFor wrapper → wf-root → input (OrOptions / WaitingForTabs)
+  .player-home--fixed .player_home_block--actions {
+    > div,
+    .wf-root,
+    .wf-root > .wf-options {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
+  // The box below the tabs scrolls inside; heading and tab bar stay put
+  .player-home--fixed .player-home-columns__main .or-tab-panel {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .player-home--fixed .player-home-columns__main .or-tabs {
+    flex: none;
+  }
+}

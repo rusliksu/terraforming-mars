@@ -44,7 +44,7 @@ export function computeDefaultPayment(
   // Post-pass: if resources overspent (can happen when two high-rate resources
   // combine), reduce units in reverse order until overspend is gone.
   if (amountCovered > cost) {
-    for (const unit of [...order].reverse()) {
+    for (const unit of order.toReversed()) {
       if (unit === 'megacredits') {
         continue;
       }
@@ -96,9 +96,9 @@ function unitContribution(
   );
 
   // Greedy: add more units as long as we don't push the total past the cost.
-  // Heat is non-greedy: only use the minimum needed.
+  // Heat and energy are non-greedy: only use the minimum needed.
   // The condition includes mcAlreadyCovered so two resources together cannot overspend.
-  if (unit !== 'heat') {
+  if (unit !== 'heat' && unit !== 'energy') {
     let mcValue = count * rate;
     while (count < available && mcAlreadyCovered + mcValue + rate <= cost) {
       count++;

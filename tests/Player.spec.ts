@@ -12,7 +12,7 @@ import {SerializedTimer} from '../src/common/SerializedTimer';
 import {Player} from '../src/server/Player';
 import {Color} from '../src/common/Color';
 import {CardName} from '../src/common/cards/CardName';
-import {doWait, getSendADelegateOption, runAllActions, setRulingParty} from './TestingUtils';
+import {doWait, formatMessage, getSendADelegateOption, runAllActions, setRulingParty} from './TestingUtils';
 import {SelfReplicatingRobots} from '../src/server/cards/promo/SelfReplicatingRobots';
 import {IProjectCard} from '../src/server/cards/IProjectCard';
 import {Pets} from '../src/server/cards/base/Pets';
@@ -75,6 +75,17 @@ describe('Player', () => {
     player.clearWaitingFor();
 
     expect(() => player.process({type: 'option'})).to.throw('Not waiting for anything');
+  });
+
+  it('records when input was requested', () => {
+    const [/* game */, player] = testGame(1);
+    const clock = new FakeClock();
+    player.clock = clock;
+    player.clearWaitingFor();
+
+    clock.millis = 5000;
+    player.setWaitingFor(new SelectOption('Input'));
+    expect(player.inputRequestedAt).eq(5000);
   });
 
   it('does not stop the timer when processing optional input', () => {
@@ -310,7 +321,7 @@ describe('Player', () => {
       cardsInHand: [CardName.EARTH_ELEVATOR, CardName.DUST_SEALS],
       preludeCardsInHand: [CardName.METAL_RICH_ASTEROID, CardName.PSYCHROPHILES],
       ceoCardsInHand: [],
-      playedCards: [], // TODO(kberg): these are SerializedCard.
+      playedCards: [],
       draftedCards: [CardName.FISH, CardName.EXTREME_COLD_FUNGUS],
       needsToDraft: false,
       cardCost: 3,
@@ -343,6 +354,7 @@ describe('Player', () => {
         lastStoppedAt: 0,
       } as SerializedTimer,
       totalDelegatesPlaced: 0,
+      trThisGeneration: 1,
       victoryPointsByGeneration: [],
       underworldData: {corruption: 0, activeBonus: undefined, tokens: []},
       alliedParty: {agenda: {bonusId: 'gb01', policyId: 'gp01'}, partyName: PartyName.GREENS},
@@ -490,7 +502,8 @@ describe('Player', () => {
     expect(card.resourceCount).eq(5);
     expect(log).has.length(1);
     expect(log[0].data[1].value).eq('1');
-    expect(log[0].data[3].value).eq('Pets');
+    expect(log[0].data[2].value).eq('Animal');
+    expect(log[0].data[4].value).eq('Pets');
 
     log.length = 0;
     player.removeResourceFrom(card, 1);
@@ -731,7 +744,7 @@ describe('Player', () => {
   describe('Convert Heat / Kelvinists kp03 swap', () => {
     function findOption(player: TestPlayer, title: string): SelectOption | undefined {
       const actions = cast(player.getActions(), OrOptions);
-      const option = actions.options.find((o) => o.title === title);
+      const option = actions.options.find((o) => formatMessage(o.title) === title);
       return option === undefined ? undefined : cast(option, SelectOption);
     }
 
@@ -751,6 +764,68 @@ describe('Player', () => {
 
       expect(findOption(player, 'Convert 8 heat into temperature')).is.not.undefined;
       expect(findOption(player, 'Convert 6 heat into temperature (Turmoil Kelvinists)')).is.undefined;
+    });
+  });
+
+  describe('surrender action', () => {
+    function findSurrenderAction(player: TestPlayer): SelectOption | undefined {
+      const action = player.getActions().options.find((option) => option.title === 'Surrender this game and start a bot');
+      return action === undefined ? undefined : cast(action, SelectOption);
+    }
+
+    function startSurrender(player: TestPlayer): OrOptions {
+      player.clearWaitingFor();
+      player.takeAction(false);
+      const actions = cast(player.getWaitingFor(), OrOptions);
+      const surrenderIndex = actions.options.findIndex((option) => option.title === 'Surrender this game and start a bot');
+      expect(surrenderIndex).greaterThan(-1);
+      player.process({type: 'or', index: surrenderIndex, response: {type: 'option'}});
+      return cast(player.getWaitingFor(), OrOptions);
+    }
+
+    it('is offered from generation 1 to an active human multiplayer player', () => {
+      const [game, player, otherPlayer] = testGame(2);
+      game.generation = 1;
+      expect(findSurrenderAction(player)).is.not.undefined;
+
+      game.setBotPlayerIds([player.id]);
+      expect(findSurrenderAction(player)).is.undefined;
+
+      game.setBotPlayerIds([]);
+      game.surrenderedPlayerIds.add(otherPlayer.id);
+      expect(findSurrenderAction(player)).is.not.undefined;
+    });
+
+    it('returns to the action list without consuming an action when cancelled', () => {
+      const [game, player] = testGame(2);
+      game.generation = 1;
+
+      const confirmation = startSurrender(player);
+      expect(confirmation.title).eq('Surrender this game? A bot will continue playing for you.');
+      expect(confirmation.options.map((option) => option.title)).deep.eq([
+        'Surrender this game and start a bot',
+        'Continue playing',
+      ]);
+      expect(confirmation.options[0].buttonLabel).eq('Surrender and start bot');
+
+      player.process({type: 'or', index: 1, response: {type: 'option'}});
+
+      expect(game.surrenderedPlayerIds.has(player.id)).is.false;
+      expect(player.actionsTakenThisRound).eq(0);
+      expect(player.actionsTakenThisGame).eq(0);
+      expect(cast(player.getWaitingFor(), OrOptions).title).eq('Take your first action');
+    });
+
+    it('leaves the surrender commit to the route transition', () => {
+      const [game, player] = testGame(2);
+      game.generation = 1;
+
+      startSurrender(player);
+      player.process({type: 'or', index: 0, response: {type: 'option'}});
+
+      expect(game.surrenderedPlayerIds.has(player.id)).is.false;
+      expect(game.hasPassedThisActionPhase(player)).is.false;
+      expect(cast(player.getWaitingFor(), OrOptions).title).eq('Take your next action');
     });
   });
 

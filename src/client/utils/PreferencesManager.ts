@@ -1,3 +1,6 @@
+import {reactive} from 'vue';
+import {safeLocalStorage} from '@/client/utils/SafeLocalStorage';
+
 export type Preferences = {
   learner_mode: boolean,
   enable_sounds: boolean,
@@ -19,6 +22,7 @@ export type Preferences = {
   symbol_overlay: boolean,
   animated_title: boolean,
   experimental_ui: boolean,
+  experimental_layout: boolean,
   lang: string,
 }
 
@@ -48,6 +52,7 @@ const defaults: Preferences = {
   animated_title: true,
 
   experimental_ui: false,
+  experimental_layout: false,
   debug_view: false,
 };
 
@@ -55,18 +60,15 @@ export class PreferencesManager {
   public static INSTANCE = new PreferencesManager();
   private readonly _values: Preferences;
 
-  private localStorageSupported(): boolean {
-    return typeof localStorage !== 'undefined';
-  }
-
   public static resetForTest() {
     this.INSTANCE = new PreferencesManager();
   }
 
   private constructor() {
-    this._values = {...defaults};
+    // Reactive so components update when preferences change, without a page refresh.
+    this._values = reactive({...defaults});
     for (const key of Object.keys(defaults) as Array<Preference>) {
-      const value = this.localStorageSupported() ? localStorage.getItem(key) : undefined;
+      const value = safeLocalStorage.getItem(key);
       if (value) {
         this._set(key, value);
       }
@@ -93,12 +95,10 @@ export class PreferencesManager {
       return;
     }
     this._set(name, val);
-    if (this.localStorageSupported()) {
-      if (name === 'lang') {
-        localStorage.setItem(name, this._values.lang);
-      } else {
-        localStorage.setItem(name, val ? '1' : '0');
-      }
+    if (name === 'lang') {
+      safeLocalStorage.setItem(name, this._values.lang);
+    } else {
+      safeLocalStorage.setItem(name, val ? '1' : '0');
     }
   }
 }

@@ -6,11 +6,11 @@ import {Bonus} from '../Bonus';
 import {IPolicy} from '../Policy';
 import {IPlayer} from '../../IPlayer';
 import {SelectPaymentDeferred} from '../../deferredActions/SelectPaymentDeferred';
-import {MAX_TEMPERATURE} from '../../../common/constants';
 import {CardName} from '../../../common/cards/CardName';
 import {TITLES} from '../../inputs/titles';
 import {SelectOption} from '../../inputs/SelectOption';
 import {Units} from '../../../common/Units';
+import {message} from '../../logs/MessageBuilder';
 
 export class Kelvinists extends Party implements IParty {
   readonly name = PartyName.KELVINISTS;
@@ -48,11 +48,12 @@ class KelvinistsPolicy01 implements IPolicy {
   readonly id = 'kp01' as const;
   description(player: IPlayer | undefined): string {
     const cost = player === undefined ? 10 : this.cost(player);
-    return `Pay ${cost} M€ to increase your energy and heat production 1 step (Turmoil Kelvinists)`;
+    return `Pay ${cost} M€ to increase your energy and heat production 1 step`;
   }
 
   cost(player: IPlayer): number {
-    return player.tableau.has(CardName.HIGH_TEMP_SUPERCONDUCTORS) ? 7: 10;
+    const discount = player.tableau.asArray().reduce((total, card) => total + (card.getPartyActionDiscount?.(player, PartyName.KELVINISTS) ?? 0), 0);
+    return Math.max(0, (player.tableau.has(CardName.HIGH_TEMP_SUPERCONDUCTORS) ? 7 : 10) - discount);
   }
   canAct(player: IPlayer) {
     return player.canAfford(this.cost(player));
@@ -65,7 +66,7 @@ class KelvinistsPolicy01 implements IPolicy {
       .andThen(() => {
         player.production.add(Resource.ENERGY, 1);
         player.production.add(Resource.HEAT, 1);
-        game.log('${0} increased heat and energy production 1 step', (b) => b.player(player));
+        game.log('${0} gained +1:p:heat::p:energy:', (b) => b.player(player));
       });
 
     return undefined;
@@ -82,7 +83,7 @@ class KelvinistsPolicy02 implements IPolicy {
 // rendering it twice, TurmoilHandler.partyAction() skips kp03.
 class KelvinistsPolicy03 implements IPolicy {
   readonly id = 'kp03' as const;
-  readonly description = 'Convert 6 heat into temperature (Turmoil Kelvinists)';
+  readonly description = 'Convert 6 heat into temperature';
 
   canAct(player: IPlayer): boolean {
     return player.availableHeat() >= 6 && player.canAfford({
@@ -93,16 +94,17 @@ class KelvinistsPolicy03 implements IPolicy {
   }
 
   action(player: IPlayer): SelectOption {
-    const option = new SelectOption('Convert 6 heat into temperature (Turmoil Kelvinists)', 'Convert heat').andThen(() => {
+    const m = message('${0} (Turmoil ${1})', (b) => b.string(this.description).partyName(PartyName.KELVINISTS));
+    const option = new SelectOption(m, 'Convert heat').andThen(() => {
       return player.spendHeat(6, () => {
         const game = player.game;
         game.log('${0} used Turmoil ${1} action', (b) => b.player(player).partyName(PartyName.KELVINISTS));
-        game.log('${0} spent 6 heat to raise temperature 1 step', (b) => b.player(player));
+        game.log('${0} spent 6:r:heat: to raise temperature 1 step', (b) => b.player(player));
         game.increaseTemperature(player, 1);
         return undefined;
       });
     });
-    if (player.game.getTemperature() === MAX_TEMPERATURE) {
+    if (player.game.getTemperature() === player.game.max.temperature) {
       option.warnings = ['maxtemp'];
       option.eligibleForDefault = false;
     }

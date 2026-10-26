@@ -25,7 +25,7 @@ export class AsteroidMiningConsortium extends Card implements IProjectCard {
         cardNumber: '002',
         renderData: CardRenderer.builder((b) => {
           b.production((pb) => {
-            pb.minus().titanium(-1, {all}).br;
+            pb.titanium(-1, {all}).br;
             pb.plus().titanium(1);
           });
         }),
@@ -37,7 +37,7 @@ export class AsteroidMiningConsortium extends Card implements IProjectCard {
     if (player.game.players.length > 1) {
       const eligiblePlayers = player.game.players.filter((p) => p.production.titanium > 0);
       if (eligiblePlayers.length === 1 && eligiblePlayers[0] === player) {
-        this.warnings.add('selfTarget');
+        this.addWarning('selfTarget');
       }
     }
     return true;

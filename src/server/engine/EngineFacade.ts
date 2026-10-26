@@ -82,6 +82,7 @@ export class EngineFacade {
       this.dependencies.ids.nextSpectatorId(),
       validated.gameOptions,
       validated.seed,
+      undefined,
       this.dependencies,
     );
     return new EngineHandle(game, this.dependencies);

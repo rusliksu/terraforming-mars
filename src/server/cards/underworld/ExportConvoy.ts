@@ -25,9 +25,9 @@ export class ExportConvoy extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'U097',
         renderData: CardRenderer.builder((b) => {
-          b.minus().plants(4, {digit}).or()
-            .minus().resource(CardResource.MICROBE, {amount: 3, digit}).asterix().br
-            .or().minus().resource(CardResource.ANIMAL, {amount: 2, digit}).asterix().br;
+          b.plants(-4, {digit}).or()
+            .resource(CardResource.MICROBE, {amount: -3, digit}).asterix().br
+            .or().resource(CardResource.ANIMAL, {amount: -2, digit}).asterix().br;
           b.megacredits(20).corruption(1);
         }),
         description: 'Pay 4 plants, or 3 microbes, or 2 animals from any of your cards. ' +
@@ -69,7 +69,7 @@ export class ExportConvoy extends Card implements IProjectCard {
     if (microbeCards.length > 0) {
       orOptions.options.push(new SelectOption('Spend 3 microbes').andThen(() => {
         player.game.defer(
-          new RemoveResourcesFromCard(player, CardResource.MICROBE, 3, {source: 'self', log: true, blockable: false})
+          new RemoveResourcesFromCard(player, CardResource.MICROBE, 3, {source: 'self', blockable: false})
             .andThen((response) => {
               if (response.proceed) {
                 player.stock.add(Resource.MEGACREDITS, 20);
@@ -85,7 +85,7 @@ export class ExportConvoy extends Card implements IProjectCard {
     if (animalCards.length > 0) {
       orOptions.options.push(new SelectOption('Spend 2 animals').andThen(() => {
         player.game.defer(
-          new RemoveResourcesFromCard(player, CardResource.ANIMAL, 2, {source: 'self', log: true, blockable: false})
+          new RemoveResourcesFromCard(player, CardResource.ANIMAL, 2, {source: 'self', blockable: false})
             .andThen((response) => {
               if (response.proceed) {
                 player.stock.add(Resource.MEGACREDITS, 20);

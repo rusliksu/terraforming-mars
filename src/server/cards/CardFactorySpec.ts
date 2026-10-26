@@ -14,7 +14,7 @@ export type CardFactorySpec<T> = {
   compatibility?: OneOrArray<Expansion>;
   // False when the card should not be instantiated. It's reserved for fake and proxy cards.
   instantiate?: boolean;
-  // Used for Turmoil's global events. When true, classifeid as a "negative" global event.
+  // Used for Turmoil's global events. When true, classified as a "negative" global event.
   negative?: boolean;
 }
 
@@ -47,6 +47,18 @@ export function isCompatibleWith(cf: CardFactorySpec<any>, gameOptions: GameOpti
       return gameOptions.starWarsExpansion;
     case 'underworld':
       return gameOptions.underworldExpansion;
+    case 'deltaProject':
+      return gameOptions.deltaProjectExpansion;
+    case 'moreParties':
+      return gameOptions.morePartiesExpansion;
+    case 'industries':
+      return gameOptions.industriesExpansion;
+    case 'highOrbit':
+      return gameOptions.highOrbitExpansion;
+    case 'betterMars':
+      return gameOptions.betterMarsExpansion;
+    case 'rebalanced':
+      return gameOptions.rebalancedExpansion;
     }
     throw new Error(`Unhandled expansion type ${expansion}`);
   });

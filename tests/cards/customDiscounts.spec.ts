@@ -1,0 +1,72 @@
+import {expect} from 'chai';
+import {ALL_MODULE_MANIFESTS} from '../../src/server/cards/AllManifests';
+import {CardManifest} from '../../src/server/cards/ModuleManifest';
+import {Card} from '../../src/server/cards/Card';
+import {ICard} from '../../src/server/cards/ICard';
+import {CardName} from '../../src/common/cards/CardName';
+
+// Cards with a custom getCardDiscount that the player overview shows.
+const DISPLAYED: ReadonlyArray<CardName> = [
+  // Shown on the cards-in-hand discount badge. See src/client/components/overview/discounts.ts
+  CardName.CUTTING_EDGE_TECHNOLOGY,
+  CardName.XAVIER,
+  CardName.ADHAI_HIGH_ORBIT_CONSTRUCTIONS,
+  // Shown on their tags. See src/server/models/ModelUtils.ts
+  CardName.MARS_DIRECT,
+  CardName.CRESCENT_RESEARCH_ASSOCIATION,
+];
+
+// Cards with a custom getCardDiscount that the player overview intentionally does not show.
+const NOT_DISPLAYED: ReadonlyArray<CardName> = [
+  // Only discounts the card played right after it.
+  CardName.INDENTURED_WORKERS,
+  CardName.CONSCRIPTION,
+  CardName.ECCENTRIC_SPONSOR,
+  // Only applies the generation its action is used.
+  CardName.FLOYD,
+  CardName.ROGERS,
+  // The discount belongs to the cards it holds.
+  CardName.SELF_REPLICATING_ROBOTS,
+  // Conditional or one-shot discounts the overview does not itemize (including the
+  // rebalanced variants and the Solaris variant of Self-replicating Robots).
+  CardName.CUTTING_EDGE_TECHNOLOGY_REBALANCED,
+  CardName.DEIMOS_DOUBLE_DOWN_COPY,
+  CardName.ECCENTRIC_SPONSOR_REBALANCED,
+  CardName.ECOPLANTS,
+  CardName.HEAVY_MACHINERY,
+  CardName.INVENTRIX_REBALANCED,
+  CardName.LAUNCH_WINDOW,
+  CardName.MARTIAN_INFRASTRUCTURES,
+  CardName.ORGANIC_WASTE_RECYCLING,
+  CardName.PROJECT_IMITATORS,
+  CardName.ROUNDING_ERROR,
+  CardName.SELF_REPLICATING_ROBOTS_SOLARIS,
+  CardName.TAG_TAXER,
+  CardName.VENUPHILE,
+  CardName.WATER_RETAINERS,
+];
+
+describe('customDiscounts', () => {
+  it('every card with a custom discount is either displayed or deliberately not displayed', () => {
+    const found: Array<CardName> = [];
+    for (const manifest of ALL_MODULE_MANIFESTS) {
+      const manifests: Array<CardManifest<ICard>> = [
+        manifest.projectCards,
+        manifest.corporationCards,
+        manifest.preludeCards,
+        manifest.ceoCards,
+        manifest.standardProjects,
+        manifest.standardActions,
+      ];
+      for (const cardManifest of manifests) {
+        for (const factory of CardManifest.values(cardManifest)) {
+          const card = new factory.Factory();
+          if (card.getCardDiscount !== undefined && card.getCardDiscount !== Card.prototype.getCardDiscount) {
+            found.push(card.name);
+          }
+        }
+      }
+    }
+    expect(found).to.have.members([...DISPLAYED, ...NOT_DISPLAYED]);
+  });
+});

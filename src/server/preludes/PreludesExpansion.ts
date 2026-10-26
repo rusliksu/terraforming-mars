@@ -6,7 +6,7 @@ import {SelectCard} from '../inputs/SelectCard';
 
 export class PreludesExpansion {
   public static fizzle(player: IPlayer, card: IPreludeCard): void {
-    player.game.log('${0} fizzled. ${1} gains 15 M€.', (b) => b.card(card).player(player));
+    player.game.log('${0} fizzled. ${1} gains 15:r:mc:', (b) => b.card(card).player(player));
     player.stock.add(Resource.MEGACREDITS, 15);
     player.defer(() => {
       // This is deferred because it is possible for the parent card to
@@ -30,12 +30,12 @@ export class PreludesExpansion {
     // This preps the warning attribute in preludes.
     // All preludes can be presented. Unplayable ones just fizzle.
     for (const card of cards) {
-      card.warnings.clear();
+      card.clearWarnings();
       if (!card.canPlay(player)) {
-        card.warnings.add('preludeFizzle');
+        card.addWarning('preludeFizzle');
       }
       if (card.behavior?.addResources && player.game.inDoubleDown) {
-        card.warnings.add('ineffectiveDoubleDown');
+        card.addWarning('ineffectiveDoubleDown');
       }
     }
 

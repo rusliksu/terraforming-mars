@@ -14,8 +14,12 @@ export class AsteroidResources extends Card implements IProjectCard {
       name: CardName.ASTEROID_RESOURCES,
       cost: 17,
       tags: [Tag.JOVIAN, Tag.SPACE],
-      reserveUnits: {energy: 3},
       victoryPoints: 1,
+      // No reserveUnits here -- each OR-branch's own `spend: {energy: 3}` already both
+      // gates canPlay (via canExecute) and deducts the energy on play. A `reserveUnits:
+      // {energy: 3}` here would be pure duplication: MoonExpansion.adjustedReserveCosts
+      // now correctly passes energy through (previously silently dropped it, an
+      // unrelated fix), so re-adding it would double-spend the 3 energy instead.
 
       behavior: {
         or: {
@@ -39,8 +43,8 @@ export class AsteroidResources extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'Pf40',
         renderData: CardRenderer.builder((b) => {
-          b.minus().energy(3, {digit}).production((pb) => pb.steel(1).titanium(1)).or(Size.SMALL).br;
-          b.minus().energy(3, {digit}).oceans(1, {size: Size.SMALL}).steel(2, {digit}).titanium(1);
+          b.energy(-3, {digit}).production((pb) => pb.steel(1).titanium(1)).or(Size.SMALL).br;
+          b.energy(-3, {digit}).oceans(1, {size: Size.SMALL}).steel(2, {digit}).titanium(1);
         }),
         description: 'Spend 3 energy. Either increase your steel and titanium production one step, OR ' +
           'place an ocean, and gain 2 steel and one titanium.',

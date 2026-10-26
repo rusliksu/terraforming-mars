@@ -1,5 +1,14 @@
 param(
-    [string]$HostAlias = "vps",
+    [string]$HostAlias = "hostkey-codex",
+    [string]$ExpectedGitSha,
+    [string]$ExpectedArtifactSha,
+    [string]$SnapshotRoot,
+    [string[]]$IgnoredRealtimeGameId,
+    [string]$IgnoredRealtimeGameIdFile,
+    [ValidateRange(1, 365)]
+    [int]$RealtimeGameStaleDays = 10,
+    [ValidateRange(30, 900)]
+    [int]$ValidationTimeoutSeconds = 120,
     [switch]$SkipStagingVerify,
     [switch]$SkipProdVerify,
     [switch]$DryRun
@@ -7,8 +16,32 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+. (Join-Path $PSScriptRoot "lib\TmReleaseGuards.ps1")
+
+$cliIgnoredRealtimeGameIds = @(Assert-TmIgnoredRealtimeGameIds -GameIds $IgnoredRealtimeGameId)
+$ignoredRealtimeGameIdLedgerPath = Get-TmIgnoredRealtimeGameIdLedgerPath -Path $IgnoredRealtimeGameIdFile -ExplicitOnly
+$ledgerIgnoredRealtimeGameIds = @()
+if ($null -ne $ignoredRealtimeGameIdLedgerPath) {
+    $ledgerIgnoredRealtimeGameIds = @(Read-TmIgnoredRealtimeGameIdLedger -Path $ignoredRealtimeGameIdLedgerPath)
+}
+$ignoredRealtimeGameIds = @(Merge-TmIgnoredRealtimeGameIds -Primary $ledgerIgnoredRealtimeGameIds -Additional $cliIgnoredRealtimeGameIds)
+$ignoredRealtimeGameIdLedgerLabel = "not supplied"
+if ($null -ne $ignoredRealtimeGameIdLedgerPath) {
+    $ignoredRealtimeGameIdLedgerLabel = $ignoredRealtimeGameIdLedgerPath
+}
+
+# Every ignored game is echoed before the locked remote gate runs, so the exception
+# stays auditable even when the ids come from the operator ledger.
+Write-Host ("Ignored realtime games: ledger={0} cli={1} total={2}" -f $ledgerIgnoredRealtimeGameIds.Count, $cliIgnoredRealtimeGameIds.Count, $ignoredRealtimeGameIds.Count)
+Write-Host ("Ignored realtime ledger: {0}" -f $ignoredRealtimeGameIdLedgerLabel)
+if ($ignoredRealtimeGameIds.Count -gt 0) {
+    Write-Host ("Ignored realtime ids   : {0}" -f ($ignoredRealtimeGameIds -join ","))
+}
+
 $verifyScript = Join-Path $PSScriptRoot "verify_tm_server.ps1"
 $promoteScript = Join-Path $PSScriptRoot "promote_tm_staging_to_prod.ps1"
+$rehearseScript = Join-Path $PSScriptRoot "rehearse_tm_prod.ps1"
+$snapshotScript = Join-Path $PSScriptRoot "capture_tm_release_state.ps1"
 
 if (-not (Test-Path $verifyScript)) {
     throw "Missing verify script: $verifyScript"
@@ -18,20 +51,76 @@ if (-not (Test-Path $promoteScript)) {
     throw "Missing promote script: $promoteScript"
 }
 
-$expectedArtifactSha = $null
-$expectedGitSha = $null
+if (-not (Test-Path $rehearseScript)) {
+    throw "Missing read-only production validation script: $rehearseScript"
+}
+
+if (-not (Test-Path $snapshotScript)) {
+    throw "Missing release snapshot script: $snapshotScript"
+}
+
+function Assert-ReleasePins {
+    param(
+        [string]$ExpectedGitSha,
+        [string]$ExpectedArtifactSha,
+        [string]$StagingGitSha,
+        [string]$ArtifactSha
+    )
+
+    if ($ExpectedGitSha -notmatch '^[0-9a-fA-F]{40}$') {
+        throw "ExpectedGitSha is required and must be a full 40-character git SHA."
+    }
+    if ($StagingGitSha -notmatch '^[0-9a-fA-F]{40}$') {
+        throw "Staging release manifest must contain a full 40-character gitSha."
+    }
+    if (-not $StagingGitSha.Equals($ExpectedGitSha, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Tested staging release drifted from the intended SHA. expected=$ExpectedGitSha actual=$StagingGitSha"
+    }
+    if ($ArtifactSha -notmatch '^[0-9a-fA-F]{64}$') {
+        throw "Staging release manifest must contain a 64-character artifactSha256."
+    }
+    if ($ExpectedArtifactSha -notmatch '^[0-9a-fA-F]{64}$') {
+        throw "ExpectedArtifactSha is required and must be a 64-character SHA-256."
+    }
+    if (-not $ArtifactSha.Equals($ExpectedArtifactSha, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Tested staging artifact drifted from the intended artifact. expected=$ExpectedArtifactSha actual=$ArtifactSha"
+    }
+}
+
+if (-not $DryRun -and $ExpectedGitSha -notmatch '^[0-9a-fA-F]{40}$') {
+    throw "ExpectedGitSha is required for prod release and must be a full 40-character git SHA."
+}
+if (-not $DryRun -and $ExpectedArtifactSha -notmatch '^[0-9a-fA-F]{64}$') {
+    throw "ExpectedArtifactSha is required for prod release and must be a 64-character SHA-256."
+}
+
+$stagingArtifactSha = $null
+$stagingGitSha = $null
 
 if ($DryRun) {
     Write-Host "Dry run: release flow would do the following:"
     if (-not $SkipStagingVerify) {
         Write-Host "1. Verify staging with a real create-game smoke and release manifest."
     }
-    Write-Host "2. Promote the tested staging build to prod."
+    Write-Host "2. Validate existing production saves read-only; create no database copies."
+    Write-Host "3. Promote the tested staging build to prod with HTTP mutations blocked until commit."
     if (-not $SkipProdVerify) {
-        Write-Host "3. Verify prod homepage, /elo/, and release manifest without creating a test game."
+        Write-Host "4. Verify prod homepage, /elo/, and release manifest without creating a test game."
     }
     Write-Host ""
-    & pwsh -File $promoteScript -HostAlias $HostAlias -DryRun
+    $promoteDryRunArgs = @("-File", $promoteScript, "-HostAlias", $HostAlias, "-DryRun")
+    if (-not [string]::IsNullOrWhiteSpace($ExpectedGitSha)) {
+        $promoteDryRunArgs += @("-ExpectedGitSha", $ExpectedGitSha)
+    }
+    if (-not [string]::IsNullOrWhiteSpace($ExpectedArtifactSha)) {
+        $promoteDryRunArgs += @("-ExpectedArtifactSha", $ExpectedArtifactSha)
+    }
+    if ($ignoredRealtimeGameIds.Count -gt 0) {
+        $promoteDryRunArgs += @("-IgnoredRealtimeGameId", ($ignoredRealtimeGameIds -join ","))
+    }
+    $promoteDryRunArgs += @("-RealtimeGameStaleDays", $RealtimeGameStaleDays)
+    $promoteDryRunArgs += @("-ValidationTimeoutSeconds", $ValidationTimeoutSeconds)
+    & pwsh @promoteDryRunArgs
     if ($LASTEXITCODE -ne 0) {
         throw "Promote dry run failed."
     }
@@ -44,54 +133,101 @@ if (-not $SkipStagingVerify) {
         throw "Staging verification failed. Promote aborted."
     }
     $stagingVerify = $stagingVerifyJson | ConvertFrom-Json
-    $expectedArtifactSha = [string]$stagingVerify.release.artifactSha256
-    $expectedGitSha = [string]$stagingVerify.release.gitSha
+    $stagingArtifactSha = [string]$stagingVerify.release.artifactSha256
+    $stagingGitSha = [string]$stagingVerify.release.gitSha
 }
 
-if ($SkipStagingVerify -and -not $SkipProdVerify) {
+if ($SkipStagingVerify) {
     $stagingManifestJson = & pwsh -File $verifyScript -Environment staging -RequireReleaseManifest -OutputJson
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to read staging release manifest. Promote aborted."
     }
     $stagingManifest = $stagingManifestJson | ConvertFrom-Json
-    $expectedArtifactSha = [string]$stagingManifest.release.artifactSha256
-    $expectedGitSha = [string]$stagingManifest.release.gitSha
+    $stagingArtifactSha = [string]$stagingManifest.release.artifactSha256
+    $stagingGitSha = [string]$stagingManifest.release.gitSha
 }
+
+Assert-ReleasePins -ExpectedGitSha $ExpectedGitSha -ExpectedArtifactSha $ExpectedArtifactSha -StagingGitSha $stagingGitSha -ArtifactSha $stagingArtifactSha
+
+& pwsh -File $rehearseScript -HostAlias $HostAlias -ExpectedGitSha $ExpectedGitSha -ExpectedArtifactSha $ExpectedArtifactSha -ValidationTimeoutSeconds $ValidationTimeoutSeconds
+if ($LASTEXITCODE -ne 0) {
+    throw "Read-only production save validation failed. Promote aborted before any service mutation."
+}
+
+if ([string]::IsNullOrWhiteSpace($SnapshotRoot)) {
+    $repoRoot = Split-Path -Parent $PSScriptRoot
+    $workspaceRoot = Split-Path -Parent $repoRoot
+    $SnapshotRoot = Join-Path $workspaceRoot ".tmp\deploy-snapshots"
+}
+$snapshotRunRoot = Join-Path $SnapshotRoot ("prod-{0}" -f (New-TmReleaseRunToken))
+$preSnapshotPath = Join-Path $snapshotRunRoot "pre.json"
+$postSnapshotPath = Join-Path $snapshotRunRoot "post.json"
+
+$preSnapshotJson = & pwsh -File $snapshotScript -HostAlias $HostAlias -OutputPath $preSnapshotPath -OutputJson
+if ($LASTEXITCODE -ne 0) {
+    throw "Failed to capture pre-promote release state."
+}
+$preSnapshot = $preSnapshotJson | ConvertFrom-Json
+if ($preSnapshot.deployLock.busy -eq $true) {
+    throw "Another TM deploy or promote is already running. Pre-promote snapshot: $preSnapshotPath"
+}
+$snapshotStagingGitSha = [string]$preSnapshot.environments.staging.manifest.gitSha
+$snapshotStagingArtifactSha = [string]$preSnapshot.environments.staging.manifest.artifactSha256
+if (-not $snapshotStagingGitSha.Equals($ExpectedGitSha, [System.StringComparison]::OrdinalIgnoreCase) -or $snapshotStagingArtifactSha -ne $stagingArtifactSha) {
+    throw "Staging changed between verification and pre-promote snapshot. Promote aborted."
+}
+$releaseBaselineBase64 = ConvertTo-TmReleaseCasBaselineBase64 -Snapshot $preSnapshot
+Write-Host "Pre-snapshot : $preSnapshotPath"
 
 $promoteArgs = @(
     "-File", $promoteScript,
     "-HostAlias", $HostAlias
 )
-if (-not [string]::IsNullOrWhiteSpace($expectedArtifactSha)) {
-    $promoteArgs += @("-ExpectedArtifactSha", $expectedArtifactSha)
+if (-not [string]::IsNullOrWhiteSpace($stagingArtifactSha)) {
+    $promoteArgs += @("-ExpectedArtifactSha", $stagingArtifactSha)
 }
-if (-not [string]::IsNullOrWhiteSpace($expectedGitSha)) {
-    $promoteArgs += @("-ExpectedGitSha", $expectedGitSha)
+$promoteArgs += @("-ExpectedGitSha", $ExpectedGitSha)
+$promoteArgs += @("-ExpectedReleaseBaselineBase64", $releaseBaselineBase64)
+if ($ignoredRealtimeGameIds.Count -gt 0) {
+    $promoteArgs += @("-IgnoredRealtimeGameId", ($ignoredRealtimeGameIds -join ","))
 }
+$promoteArgs += @("-RealtimeGameStaleDays", $RealtimeGameStaleDays)
+$promoteArgs += @("-ValidationTimeoutSeconds", $ValidationTimeoutSeconds)
 
-& pwsh @promoteArgs
-if ($LASTEXITCODE -ne 0) {
-    throw "Promote from staging to prod failed."
-}
-
-if (-not $SkipProdVerify) {
-    $prodVerifyJson = & pwsh -File $verifyScript -Environment prod -RequireReleaseManifest -OutputJson
+try {
+    & pwsh @promoteArgs
     if ($LASTEXITCODE -ne 0) {
-        throw "Prod verification failed after promote."
-    }
-    $prodVerify = $prodVerifyJson | ConvertFrom-Json
-    $prodArtifactSha = [string]$prodVerify.release.artifactSha256
-    $prodGitSha = [string]$prodVerify.release.gitSha
-
-    if (-not [string]::IsNullOrWhiteSpace($expectedArtifactSha)) {
-        if ($prodArtifactSha -ne $expectedArtifactSha) {
-            throw "Prod artifact hash mismatch after promote. staging=$expectedArtifactSha prod=$prodArtifactSha"
-        }
-        if ($prodGitSha -ne $expectedGitSha) {
-            throw "Prod git sha mismatch after promote. staging=$expectedGitSha prod=$prodGitSha"
-        }
+        throw "Promote from staging to prod failed."
     }
 
-    Write-Host "Release gate OK"
-    Write-Host "Artifact    : sha256=$prodArtifactSha git=$prodGitSha"
+    if (-not $SkipProdVerify) {
+        $prodVerifyJson = & pwsh -File $verifyScript -Environment prod -RequireReleaseManifest -OutputJson
+        if ($LASTEXITCODE -ne 0) {
+            throw "Prod verification failed after promote."
+        }
+        $prodVerify = $prodVerifyJson | ConvertFrom-Json
+        $prodArtifactSha = [string]$prodVerify.release.artifactSha256
+        $prodGitSha = [string]$prodVerify.release.gitSha
+
+        if ($prodArtifactSha -ne $stagingArtifactSha) {
+            throw "Prod artifact hash mismatch after promote. staging=$stagingArtifactSha prod=$prodArtifactSha"
+        }
+        if (-not $prodGitSha.Equals($ExpectedGitSha, [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw "Prod git sha mismatch after promote. intended=$ExpectedGitSha prod=$prodGitSha"
+        }
+
+        Write-Host "Release gate OK"
+        Write-Host "Artifact    : sha256=$prodArtifactSha git=$prodGitSha"
+    }
+} finally {
+    try {
+        & pwsh -File $snapshotScript -HostAlias $HostAlias -OutputPath $postSnapshotPath -OutputJson | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            throw "Release snapshot command exited with code $LASTEXITCODE."
+        }
+        Write-Host "Post-snapshot: $postSnapshotPath"
+    } catch {
+        Write-Host "Warning: failed to capture post-promote release state." -ForegroundColor Yellow
+        Write-Host $_.Exception.Message -ForegroundColor Yellow
+    }
 }

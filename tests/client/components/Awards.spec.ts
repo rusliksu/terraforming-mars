@@ -1,6 +1,6 @@
 
 import {shallowMount, mount} from '@vue/test-utils';
-import {globalConfig} from './getLocalVue';
+import {globalConfig} from '@tests/client/components/getLocalVue';
 import {expect} from 'chai';
 import Awards from '@/client/components/Awards.vue';
 import Award from '@/client/components/Award.vue';
@@ -243,7 +243,6 @@ describe('Awards', () => {
           createAward({id: 3, funded: true}),
           createAward({id: 4, funded: false}),
         ],
-        preferences: learnerModeOn,
       },
     });
 
@@ -280,6 +279,47 @@ describe('Awards', () => {
     wrapper.findAllComponents(Award).forEach((awardWrapper) => {
       expect(awardWrapper.props('showScores')).to.be.true;
     });
+  });
+
+  it('shows Conglomerates-scaled spot prices (12/18/24) when the expansion is on', () => {
+    const wrapper = shallowMount(Awards, {
+      ...globalConfig,
+      props: {
+        awards: [],
+        preferences: learnerModeOn,
+        conglomeratesExpansion: true,
+      },
+    });
+
+    const prices = wrapper.findAll('[data-test=spot-price]')
+      .map((priceWrapper) => parseInt(priceWrapper.text()));
+
+    expect(prices).to.be.deep.eq([12, 18, 24]);
+  });
+
+  it('shows a Coordination icon next to the price when Conglomerates is on', () => {
+    const wrapper = shallowMount(Awards, {
+      ...globalConfig,
+      props: {
+        awards: [],
+        preferences: learnerModeOn,
+        conglomeratesExpansion: true,
+      },
+    });
+
+    expect(wrapper.findAll('.milestone-award-coordination')).to.have.lengthOf(3);
+  });
+
+  it('does not show a Coordination icon when Conglomerates is off', () => {
+    const wrapper = shallowMount(Awards, {
+      ...globalConfig,
+      props: {
+        awards: [],
+        preferences: learnerModeOn,
+      },
+    });
+
+    expect(wrapper.find('.milestone-award-coordination').exists()).to.be.false;
   });
 
   it('toggles award descriptions on click', async () => {

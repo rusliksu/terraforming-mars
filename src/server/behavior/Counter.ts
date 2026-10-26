@@ -8,6 +8,9 @@ import {MoonExpansion} from '../moon/MoonExpansion';
 import {CardResource} from '../../common/CardResource';
 import {Space} from '../boards/Space';
 import {once} from './Lazy';
+import {Turmoil} from '../turmoil/Turmoil';
+import {CardName} from '../../common/cards/CardName';
+import {VenusPhase2Expansion} from '../venusPhase2/VenusPhase2Expansion';
 
 /**
  * Counts things in game state.
@@ -18,7 +21,8 @@ export interface ICounter {
    *
    * context: describes what to do in different counting contexts. Most of the time 'default' is correct, but
    * when counting victory points, use 'vp'. 'vp' applies to counting victory points. As of now, this only applies
-   * to how it counts wild tags and other substitutions that only apply during an action.
+   * to how it counts wild tags and other substitutions that only apply during an action. 'globalEvent' behaves
+   * like 'vps' for tags, and is inferred from the card, so callers don't pass it.
    */
   count(countable: Countable, context?: 'default' | 'vps'): number;
   countUnits(countableUnits: Partial<CountableUnits>): Units;
@@ -29,7 +33,7 @@ export interface ICounter {
  *
  * The constructor accepts the game state, which is essentially the player, and the card being played or acted upon.
  */
-export class Counter {
+export class Counter implements ICounter {
   /**
    * True if the `this.card` is still in the player's hand.
    *
@@ -40,7 +44,7 @@ export class Counter {
    * The other part of why includeCard is interesting is sometimes this counting is related to a card
    * being replayed via Robotic Workforce. In that case, the card is already played.
    *
-   * Counter is not meant to be kept between game states, so dispose of this after making calcuations.
+   * Counter is not meant to be kept between game states, so dispose of this after making calculations.
    */
   private cardIsUnplayed: boolean;
 
@@ -71,16 +75,22 @@ export class Counter {
     return [];
   }
 
-  public count(countable: Countable, context: 'default' | 'vps' = 'default'): number {
+  public count(countable: Countable, context: 'default' | 'vps' | 'globalEvent' = 'default'): number {
     if (typeof(countable) === 'number') {
       return countable;
     }
 
-    let sum = countable.start ?? 0;
+    let sum = 0;
 
     const player = this.player;
     const card = this.card;
     const game = player.game;
+
+    // Global events don't apply wild tags and other substitutions that only apply
+    // during an action, so they count like victory points do.
+    if (card.name === CardName.GLOBAL_EVENT_PROXY) {
+      context = 'globalEvent';
+    }
 
     // This is an advanced special case for counting spaces on the boards.
     // Some cards with special tiles reward VP for spaces adjacent to the
@@ -111,6 +121,13 @@ export class Counter {
       case 'everywhere':
       default:
         sum += maybeAdjacentSpaces(game.board.getCities(p)).length;
+        // Venus's Cloud City (and Stratopolis/Maxwell Base) tiles live on a genuinely separate
+        // board, so they can never be "adjacent to this card's tile" -- only add them for a
+        // plain, unqualified city count (e.g. Aerosport Tournament's "1 M€ per city tile in
+        // play", no `where` and no `nextToThis`).
+        if (countable.nextToThis === undefined) {
+          sum += VenusPhase2Expansion.getCitiesCount(game, p);
+        }
       }
     }
 
@@ -142,7 +159,7 @@ export class Counter {
         }
       } else { // Single tag
         if (countable.others !== true) { // Just count player's own tags.
-          sum += player.tags.count(tag, context === 'vps' ? 'raw' : context);
+          sum += player.tags.count(tag, context === 'default' ? 'default' : 'raw');
 
           if (this.cardIsUnplayed) { // And include the card itself if it isn't already on the tableau.
             sum += card.tags.filter((t) => t === tag).length;
@@ -173,17 +190,17 @@ export class Counter {
 
     if (countable.moon !== undefined) {
       const moon = countable.moon;
-      MoonExpansion.ifMoon(game, (moonData) => {
-        if (moon.habitatRate) {
-          sum += moonData.habitatRate;
-        }
-        if (moon.miningRate) {
-          sum += moonData.miningRate;
-        }
-        if (moon.logisticRate) {
-          sum += moonData.logisticRate;
-        }
-      });
+      const moonData = MoonExpansion.getMoonData(game);
+      if (moon.habitatRate) {
+        sum += moonData.habitatRate;
+      }
+      if (moon.miningRate) {
+        sum += moonData.miningRate;
+      }
+      if (moon.logisticRate) {
+        sum += moonData.logisticRate;
+      }
+
       if (moon.habitat) {
         sum += maybeAdjacentSpaces(MoonExpansion.spaces(game, TileType.MOON_HABITAT, {surfaceOnly: true})).length;
       }
@@ -219,6 +236,29 @@ export class Counter {
         } else {
           sum += player.underworldData.tokens.length;
         }
+      }
+    }
+
+    if (countable.eventsPlayed !== undefined) {
+      if (countable.all === true) {
+        sum += utils.sum(game.players.map((p) => p.getPlayedEventsCount()));
+      } else {
+        sum += player.getPlayedEventsCount();
+      }
+    }
+
+    if (countable.turmoil !== undefined) {
+      const turmoil = countable.turmoil;
+      if (turmoil.partyLeaders !== undefined) {
+        sum += Turmoil.getTurmoil(game).parties.filter((party) => party.partyLeader === player).length;
+      }
+      // Deliberately before influence: global events cap the count, then add influence.
+      if (turmoil.max !== undefined) {
+        sum = Math.min(sum, turmoil.max);
+      }
+      if (turmoil.influence !== undefined) {
+        const influence = Turmoil.getTurmoil(game).getInfluence(player);
+        sum += turmoil.influence.subtract === true ? -influence : influence;
       }
     }
 

@@ -4,6 +4,7 @@ import {testGame} from '../../TestGame';
 import {addCity, addGreenery} from '../../TestingUtils';
 import {IPlayer} from '../../../src/server/IPlayer';
 import {CardName} from '../../../src/common/cards/CardName';
+import {VenusPhase2Expansion} from '../../../src/server/venusPhase2/VenusPhase2Expansion';
 
 describe('Vermin', () => {
   it('Effect', () => {
@@ -31,7 +32,7 @@ describe('Vermin', () => {
 
   it('VP', () => {
     const card = new Vermin();
-    const [/* game */, player, player2] = testGame(2);
+    const [game, player, player2] = testGame(2);
     player.playedCards.push(card);
 
     addCity(player);
@@ -60,6 +61,7 @@ describe('Vermin', () => {
 
     player.addResourceTo(card);
     expect(card.resourceCount).eq(10);
+    expect(game.gameLog[game.gameLog.length - 1]?.message).eq('${0}\'s ${1} now has 10 animals. All players lose 1 VP per city.');
 
     expect(getVp(player)).eq(-3);
     expect(getVp(player2)).eq(-4);
@@ -69,5 +71,28 @@ describe('Vermin', () => {
 
     expect(getVp(player)).eq(0);
     expect(getVp(player2)).eq(0);
+
+    player.addResourceTo(card);
+    expect(card.resourceCount).eq(10);
+    expect(game.gameLog.filter((log) => log.message === '${0}\'s ${1} now has 10 animals. All players lose 1 VP per city.')).lengthOf(2);
+  });
+
+  it('penalty also counts a Cloud City tile on Venus Phase 2\'s separate surface board', () => {
+    const card = new Vermin();
+    const [game, player] = testGame(2, {venusPhase2Expansion: true});
+    player.playedCards.push(card);
+
+    const venusSurface = VenusPhase2Expansion.venusPhase2Data(game).venusSurface;
+    const [space] = venusSurface.getAvailableSpacesForLand(player);
+    VenusPhase2Expansion.addCloudCityTile(player, space.id);
+    expect(card.resourceCount).eq(1); // onTilePlaced fires for Venus placements too.
+
+    player.addResourceTo(card, 9); // 10 total: verminInEffect kicks in at 10.
+
+    const getVp = (p: IPlayer) => {
+      const entries = p.getVictoryPoints().detailsCards.filter((entry) => entry.cardName === CardName.VERMIN);
+      return entries.length === 1 ? entries[0].victoryPoint : 0;
+    };
+    expect(getVp(player)).eq(-1);
   });
 });

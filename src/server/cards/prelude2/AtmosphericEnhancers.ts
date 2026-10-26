@@ -3,10 +3,9 @@ import {PreludeCard} from '../prelude/PreludeCard';
 import {CardName} from '../../../common/cards/CardName';
 import {CardRenderer} from '../render/CardRenderer';
 import {Tag} from '../../../common/cards/Tag';
-import {CardResource} from '../../../common/CardResource';
 import {TRSource} from '../../../common/cards/TRSource';
 import {digit} from '../Options';
-import {floaterCards} from '../venusNext/floaterCards';
+import {hasFloaterIcon} from '../venusNext/floaterCards';
 import {AltSecondaryTag} from '../../../common/cards/render/AltSecondaryTag';
 import {Size} from '@/common/cards/render/Size';
 
@@ -50,7 +49,7 @@ export class AtmosphericEnhancers extends PreludeCard {
 
   public override bespokePlay(player: IPlayer) {
     player.drawCard(2, {
-      include: (card) => floaterCards.has(card.name) || card.resourceType === CardResource.FLOATER,
+      include: hasFloaterIcon,
     });
     return undefined;
   }

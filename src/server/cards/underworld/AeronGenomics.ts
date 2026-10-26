@@ -12,6 +12,7 @@ import {AndOptions} from '../../inputs/AndOptions';
 import {ICard} from '../ICard';
 import {UnderworldExpansion} from '../../underworld/UnderworldExpansion';
 import {SelectClaimedUndergroundToken} from '../../inputs/SelectClaimedUndergroundToken';
+import {numeric, reversed} from '../../../common/utils/Ordering';
 
 export class AeronGenomics extends CorporationCard implements ICorporationCard {
   constructor() {
@@ -47,7 +48,7 @@ export class AeronGenomics extends CorporationCard implements ICorporationCard {
 
   public canAct(player: IPlayer): boolean {
     if (player.underworldData.tokens.every((t) => t.shelter || t.active)) {
-      this.warnings.add('underworldtokendiscard');
+      this.addWarning('underworldtokendiscard');
     }
     return player.underworldData.tokens.length > 0;
   }
@@ -58,7 +59,7 @@ export class AeronGenomics extends CorporationCard implements ICorporationCard {
     let indexes: Array<number> = [];
 
     andOptions.options.push(
-      new SelectCard('Select card to gain animals', '', player.getResourceCards(CardResource.ANIMAL))
+      new SelectCard('Select card to add animals', '', player.getResourceCards(CardResource.ANIMAL))
         .andThen(([card]) => {
           selected = card;
           return undefined;
@@ -70,8 +71,8 @@ export class AeronGenomics extends CorporationCard implements ICorporationCard {
       }));
     andOptions.cb = (() => {
       // Remove from the highest index down so earlier removals don't shift the
-      // indexes still to be removed. Sort numerically, not stringwise.
-      const sorted = indexes.slice().sort((a, b) => b - a);
+      // indexes still to be removed.
+      const sorted = indexes.toSorted(reversed(numeric));
       for (const idx of sorted) {
         UnderworldExpansion.removeClaimedToken(player, idx);
       }

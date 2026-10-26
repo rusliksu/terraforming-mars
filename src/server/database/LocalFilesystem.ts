@@ -3,9 +3,12 @@ import {IGame, Score} from '../IGame';
 import {GameOptions} from '../game/GameOptions';
 import {GameId, isGameId, ParticipantId} from '../../common/Types';
 import {SerializedGame} from '../SerializedGame';
-import {Dirent, existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync} from 'fs';
+import {Dirent, existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync} from 'fs';
 import {Session, SessionId} from '../auth/Session';
 import {toID} from '../../common/utils/utils';
+import {assertSaveIdWithinLimit, resolveMaxSavesPerGame} from './HistoryLimits';
+import {MapLibraryEntry, MapLibraryEntryId, MapLibraryStatus} from '../../common/boards/MapLibraryEntry';
+import {CustomCardLibraryEntry, CustomCardEntryId, CustomCardStatus} from '../../common/cards/CustomCardLibraryEntry';
 
 const path = require('path');
 const defaultDbFolder = path.resolve(process.cwd(), './db/files');
@@ -15,18 +18,22 @@ export class LocalFilesystem implements IDatabase {
   private readonly historyFolder: string;
   private readonly completedFolder: string;
   private readonly sessionsFolder: string;
+  private readonly mapLibraryFolder: string;
+  private readonly customCardLibraryFolder: string;
   public static quiet: boolean = false;
 
-  constructor(dbFolder: string = defaultDbFolder) {
+  constructor(dbFolder: string = defaultDbFolder, private readonly maxSavesPerGame: number = resolveMaxSavesPerGame()) {
     this.dbFolder = dbFolder;
     this.historyFolder = path.resolve(dbFolder, 'history');
     this.completedFolder = path.resolve(dbFolder, 'completed');
     this.sessionsFolder = path.resolve(dbFolder, 'sessions');
+    this.mapLibraryFolder = path.resolve(dbFolder, 'maplibrary');
+    this.customCardLibraryFolder = path.resolve(dbFolder, 'customcardlibrary');
   }
 
   public initialize(): Promise<void> {
     console.log(`Starting local database at ${this.dbFolder}`);
-    const dirs = [this.dbFolder, this.historyFolder, this.completedFolder, this.sessionsFolder];
+    const dirs = [this.dbFolder, this.historyFolder, this.completedFolder, this.sessionsFolder, this.mapLibraryFolder, this.customCardLibraryFolder];
     for (const folder of dirs) {
       if (!existsSync(folder)) {
         mkdirSync(folder);
@@ -52,14 +59,43 @@ export class LocalFilesystem implements IDatabase {
     return path.resolve(this.sessionsFolder, `${sessionId}.json`);
   }
 
+  private mapLibraryFilename(id: MapLibraryEntryId) {
+    return path.resolve(this.mapLibraryFolder, `${id}.json`);
+  }
+
+  private customCardLibraryFilename(id: CustomCardEntryId) {
+    return path.resolve(this.customCardLibraryFolder, `${id}.json`);
+  }
+
+  public deleteGame(gameId: GameId): Promise<void> {
+    for (const file of [this.filename(gameId), this.completedFilename(gameId)]) {
+      if (existsSync(file)) {
+        unlinkSync(file);
+      }
+    }
+    for (const entry of readdirSync(this.historyFolder)) {
+      if (entry.startsWith(`${gameId}-`) && entry.endsWith('.json')) {
+        unlinkSync(path.resolve(this.historyFolder, entry));
+      }
+    }
+    return Promise.resolve();
+  }
+
+  deleteOrphanParticipants(): Promise<number> {
+    // Participants are derived from the game files, so orphan rows cannot exist here.
+    return Promise.resolve(0);
+  }
+
   saveGame(game: IGame): Promise<void> {
     console.log(`saving ${game.id} at position ${game.lastSaveId}`);
+    assertSaveIdWithinLimit(game.lastSaveId, this.maxSavesPerGame);
     this.saveSerializedGame(game.serialize());
     game.lastSaveId++;
     return Promise.resolve();
   }
 
   saveSerializedGame(serializedGame: SerializedGame): void {
+    assertSaveIdWithinLimit(serializedGame.lastSaveId, this.maxSavesPerGame);
     const text = JSON.stringify(serializedGame, null, 2);
     writeFileSync(this.filename(serializedGame.id), text);
     writeFileSync(this.historyFilename(serializedGame.id, serializedGame.lastSaveId), text);
@@ -137,26 +173,6 @@ export class LocalFilesystem implements IDatabase {
       }
     });
     return Promise.resolve(gameIds);
-  }
-
-  getLastSaveTimeMs(gameId: GameId): Promise<number | undefined> {
-    return Promise.resolve(this.getLastSaveTimeMsSync(gameId));
-  }
-
-  getLastSaveTimesMs(gameIds: Array<GameId>): Promise<Map<GameId, number | undefined>> {
-    const result = new Map<GameId, number | undefined>();
-    for (const gameId of new Set(gameIds)) {
-      result.set(gameId, this.getLastSaveTimeMsSync(gameId));
-    }
-    return Promise.resolve(result);
-  }
-
-  private getLastSaveTimeMsSync(gameId: GameId): number | undefined {
-    const filename = this.filename(gameId);
-    if (!existsSync(filename)) {
-      return undefined;
-    }
-    return statSync(filename).mtimeMs;
   }
 
   saveGameResults(gameId: GameId, players: number, generations: number, gameOptions: GameOptions, scores: Array<Score>): void {
@@ -252,6 +268,29 @@ export class LocalFilesystem implements IDatabase {
     unlinkSync(this.sessionFilename(sessionId));
     return Promise.resolve();
   }
+  async deleteExpiredSessions(): Promise<number> {
+    let deleted = 0;
+    const now = Date.now();
+    for (const dirent of readdirSync(this.sessionsFolder, {withFileTypes: true})) {
+      if (!dirent.isFile() || !dirent.name.endsWith('.json')) {
+        continue;
+      }
+      const filename = path.resolve(this.sessionsFolder, dirent.name);
+      try {
+        const session: Session = JSON.parse(readFileSync(filename).toString());
+        if (session.expirationTimeMillis <= now) {
+          await this.deleteSession(session.id);
+          deleted++;
+        }
+      } catch (e) {
+        // A corrupt session file can never be pruned, so it has to be skipped rather than
+        // allowed to abort the sweep over every other file.
+        console.error(`While pruning ${dirent.name} `, e);
+      }
+    }
+    return deleted;
+  }
+
   getSessions(): Promise<Array<Session>> {
     const sessions: Array<Session> = [];
     const now = Date.now();
@@ -274,5 +313,106 @@ export class LocalFilesystem implements IDatabase {
 
   private deleteVersion(gameId: GameId, version: number) {
     unlinkSync(this.historyFilename(gameId, version));
+  }
+
+  listMapLibraryEntries(): Promise<Array<MapLibraryEntry>> {
+    const entries: Array<MapLibraryEntry> = [];
+    const dirents = readdirSync(this.mapLibraryFolder, {withFileTypes: true});
+    for (const dirent of dirents) {
+      if (dirent.isFile() && dirent.name.endsWith('.json')) {
+        try {
+          const text = readFileSync(this.mapLibraryFolder + '/' + dirent.name);
+          entries.push(JSON.parse(text.toString()));
+        } catch (e) {
+          console.error(`While reading ${dirent.name} `, e);
+        }
+      }
+    }
+    entries.sort((a, b) => b.createdAt - a.createdAt);
+    return Promise.resolve(entries);
+  }
+
+  getMapLibraryEntry(id: MapLibraryEntryId): Promise<MapLibraryEntry | undefined> {
+    const file = this.mapLibraryFilename(id);
+    if (!existsSync(file)) {
+      return Promise.resolve(undefined);
+    }
+    const text = readFileSync(file);
+    return Promise.resolve(JSON.parse(text.toString()));
+  }
+
+  insertMapLibraryEntry(entry: MapLibraryEntry): Promise<void> {
+    writeFileSync(this.mapLibraryFilename(entry.id), JSON.stringify(entry, null, 2));
+    return Promise.resolve();
+  }
+
+  async setMapLibraryEntryStatus(id: MapLibraryEntryId, status: MapLibraryStatus): Promise<void> {
+    const entry = await this.getMapLibraryEntry(id);
+    if (entry === undefined) {
+      throw new Error(`map library entry ${id} not found`);
+    }
+    entry.status = status;
+    writeFileSync(this.mapLibraryFilename(id), JSON.stringify(entry, null, 2));
+  }
+
+  deleteMapLibraryEntry(id: MapLibraryEntryId): Promise<void> {
+    const file = this.mapLibraryFilename(id);
+    if (existsSync(file)) {
+      unlinkSync(file);
+    }
+    return Promise.resolve();
+  }
+
+  listCustomCardLibraryEntries(): Promise<Array<CustomCardLibraryEntry>> {
+    const entries: Array<CustomCardLibraryEntry> = [];
+    const dirents = readdirSync(this.customCardLibraryFolder, {withFileTypes: true});
+    for (const dirent of dirents) {
+      if (dirent.isFile() && dirent.name.endsWith('.json')) {
+        try {
+          const text = readFileSync(this.customCardLibraryFolder + '/' + dirent.name);
+          entries.push(JSON.parse(text.toString()));
+        } catch (e) {
+          console.error(`While reading ${dirent.name} `, e);
+        }
+      }
+    }
+    entries.sort((a, b) => b.createdAt - a.createdAt);
+    return Promise.resolve(entries);
+  }
+
+  getCustomCardLibraryEntry(id: CustomCardEntryId): Promise<CustomCardLibraryEntry | undefined> {
+    const file = this.customCardLibraryFilename(id);
+    if (!existsSync(file)) {
+      return Promise.resolve(undefined);
+    }
+    const text = readFileSync(file);
+    return Promise.resolve(JSON.parse(text.toString()));
+  }
+
+  insertCustomCardLibraryEntry(entry: CustomCardLibraryEntry): Promise<void> {
+    writeFileSync(this.customCardLibraryFilename(entry.id), JSON.stringify(entry, null, 2));
+    return Promise.resolve();
+  }
+
+  async setCustomCardLibraryEntryStatus(id: CustomCardEntryId, status: CustomCardStatus): Promise<void> {
+    const entry = await this.getCustomCardLibraryEntry(id);
+    if (entry === undefined) {
+      throw new Error(`custom card library entry ${id} not found`);
+    }
+    entry.status = status;
+    writeFileSync(this.customCardLibraryFilename(id), JSON.stringify(entry, null, 2));
+  }
+
+  updateCustomCardLibraryEntry(id: CustomCardEntryId, entry: CustomCardLibraryEntry): Promise<void> {
+    writeFileSync(this.customCardLibraryFilename(id), JSON.stringify(entry, null, 2));
+    return Promise.resolve();
+  }
+
+  deleteCustomCardLibraryEntry(id: CustomCardEntryId): Promise<void> {
+    const file = this.customCardLibraryFilename(id);
+    if (existsSync(file)) {
+      unlinkSync(file);
+    }
+    return Promise.resolve();
   }
 }

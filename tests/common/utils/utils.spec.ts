@@ -124,6 +124,8 @@ describe('utils', () => {
       'WILD',
       'EVENT',
       'CLONE',
+      'INFRASTRUCTURE',
+      'GALACTIC',
     ]);
   });
 
@@ -146,6 +148,8 @@ describe('utils', () => {
       'wild',
       'event',
       'clone',
+      'infrastructure',
+      'galactic',
     ]);
   });
 

@@ -56,6 +56,7 @@ import {Color} from '@/common/Color';
 import {gameDocumentTitle} from '../utils/documentTitle';
 import AppButton from '@/client/components/common/AppButton.vue';
 import {setFaviconStatus, setFaviconTurnFrame} from '@/client/utils/favicon';
+import {trySubmitGameShellInput} from '@/client/shell';
 
 let ui_update_timeout_id: number | undefined;
 let documentTitleTimer: number | undefined;
@@ -126,6 +127,11 @@ export default defineComponent({
       }
     },
     onsave(out: InputResponse) {
+      // Default-off bridge: without a server-issued v2 bootstrap this returns
+      // false and the legacy POST below stays byte-for-byte unchanged.
+      if (trySubmitGameShellInput(this.playerView as PlayerViewModel, out)) {
+        return;
+      }
       this.fetchPlayerInput(
         paths.PLAYER_INPUT + '?id=' + this.playerView.id,
         {

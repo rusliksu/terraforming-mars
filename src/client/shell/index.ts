@@ -8,12 +8,38 @@ export {
   setGameShellEnabledForTest,
 } from './GameShellFeatureFlag';
 export type {FlagStorage} from './GameShellFeatureFlag';
+export {HttpGameShellTransport} from './GameShellHttpTransport';
+export {GameShellSubmitService} from './GameShellSubmitService';
+export type {GameShellSubmitServiceOptions} from './GameShellSubmitService';
+export type {
+  GameShellRetryPolicy,
+  GameShellSubmitFailureOutcome,
+  GameShellSubmitIntent,
+  GameShellSubmitOutcome,
+  GameShellSubmitRejectedOutcome,
+  GameShellSubmitSuccessOutcome,
+  GameShellTransport,
+  GameShellTransportResponse,
+} from './GameShellSubmitTypes';
 export type {
   GameShellListener,
   GameShellSnapshot,
   GameShellStatus,
   PendingIntent,
 } from './GameShellTypes';
+export {
+  GameShellWaitingForBridge,
+  gameShellWaitingForBridge,
+  newGameShellActionId,
+  setGameShellPromptBootstrapProvider,
+  setGameShellWaitingForBridgeForTest,
+  trySubmitGameShellInput,
+} from './GameShellWaitingForBridge';
+export type {
+  GameShellPromptBootstrap,
+  GameShellPromptBootstrapProvider,
+  GameShellWaitingForBridgeOptions,
+} from './GameShellWaitingForBridge';
 export type {
   ConfirmedViewMessage,
   GameShellWorkerMessage,

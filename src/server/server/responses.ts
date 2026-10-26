@@ -96,6 +96,13 @@ function internalServerErrorMessage(err: unknown): string {
   return 'Internal server error: unknown error';
 }
 
+export function unauthorized(req: Request, res: Response): void {
+  console.warn('Unauthorized', req.method, req.url);
+  res.writeHead(statusCode.unauthorized);
+  res.write('Unauthorized');
+  res.end();
+}
+
 export function notAuthorized(req: Request, res: Response): void {
   console.warn('Not authorized', req.method, req.url);
   res.writeHead(statusCode.forbidden);

@@ -401,5 +401,11 @@ function useReloadingGameLoader(
     maintenance(): Promise<void> {
       return Promise.resolve();
     },
+    deleteGame(): Promise<void> {
+      return Promise.resolve();
+    },
+    flush(): Promise<void> {
+      return Promise.resolve();
+    },
   };
 }

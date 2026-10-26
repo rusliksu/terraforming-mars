@@ -272,6 +272,30 @@ export class SQLite implements IDatabase {
     });
   }
 
+  deleteGame(gameId: GameId): Promise<void> {
+    const deleteRows = this.db.transaction(() => {
+      this.db.prepare('DELETE FROM games WHERE game_id = ?').run(gameId);
+      this.db.prepare('DELETE FROM participants WHERE game_id = ?').run(gameId);
+      this.db.prepare('DELETE FROM game_results WHERE game_id = ?').run(gameId);
+      this.db.prepare('DELETE FROM completed_game WHERE game_id = ?').run(gameId);
+      const hasArchiveTable = this.db.prepare(
+        "SELECT 1 FROM sqlite_schema WHERE type = 'table' AND name = 'history_archives'").get() !== undefined;
+      if (hasArchiveTable) {
+        this.db.prepare('DELETE FROM history_archives WHERE game_id = ?').run(gameId);
+      }
+    });
+    deleteRows();
+    return Promise.resolve();
+  }
+
+  deleteOrphanParticipants(): Promise<number> {
+    const deleteRows = this.db.transaction(() => {
+      return this.db.prepare(`DELETE FROM participants
+        WHERE NOT EXISTS (SELECT 1 FROM games WHERE games.game_id = participants.game_id)`).run().changes;
+    });
+    return Promise.resolve(deleteRows());
+  }
+
   public stats(): Promise<{[key: string]: string | number}> {
     const size = this.filename === IN_MEMORY_SQLITE_PATH ? -1 : fs.statSync(String(this.filename)).size;
 

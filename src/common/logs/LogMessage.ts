@@ -18,8 +18,6 @@ export type LogGlobalEffect = {
   player: Color;
 };
 
-export type LogPayment = {megacredits: number, steel: number, titanium: number, energy?: number};
-
 export class LogMessage implements Message {
   public playerId?: ParticipantId;
   public hiddenFor?: Array<ParticipantId>;
@@ -29,7 +27,6 @@ export class LogMessage implements Message {
   public actionEnd?: boolean;
   public effect?: LogEffect;
   public replayGlobalEffects?: Array<LogGlobalEffect>;
-  public payment?: LogPayment;
   public timestamp = Date.now();
   // Analysis games only (aiAnalysis): stable id of the line, so ratings can refer to it
   public id?: string;

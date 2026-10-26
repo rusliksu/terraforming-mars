@@ -131,6 +131,8 @@ export abstract class Handler implements IHandler {
         return await this.post(req, res, ctx);
       case 'PUT':
         return await this.put(req, res, ctx);
+      case 'DELETE':
+        return await this.delete(req, res, ctx);
       default:
         throw RouteError.badRequest('Bad method');
       }
@@ -147,6 +149,9 @@ export abstract class Handler implements IHandler {
     throw RouteError.notFound();
   }
   public post(_req: Request, _res: Response, _ctx: Context): Promise<void> {
+    throw RouteError.notFound();
+  }
+  public delete(_req: Request, _res: Response, _ctx: Context): Promise<void> {
     throw RouteError.notFound();
   }
 }

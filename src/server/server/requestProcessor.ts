@@ -10,6 +10,7 @@ import {ApiSurrender} from '../routes/ApiSurrender';
 import {ApiAiFeedback} from '../routes/ApiAiFeedback';
 import {ApiCloneableGame} from '../routes/ApiCloneableGame';
 import {ApiCreateGame} from '../routes/ApiCreateGame';
+import {ApiDeleteGame} from '../routes/ApiDeleteGame';
 import {ApiBoardPreview} from '../routes/ApiBoardPreview';
 import {ApiCustomCardLibrary} from '../routes/ApiCustomCardLibrary';
 import {ApiCustomCardLibraryReview} from '../routes/ApiCustomCardLibraryReview';
@@ -110,6 +111,7 @@ const handlers: Map<string, IHandler> = new Map(
     [paths.API_AI_FEEDBACK, ApiAiFeedback.INSTANCE],
     [paths.API_CLONEABLEGAME, ApiCloneableGame.INSTANCE],
     [paths.API_CREATEGAME, ApiCreateGame.INSTANCE],
+    [paths.API_DELETE_GAME, ApiDeleteGame.INSTANCE],
     [paths.API_BOARD_PREVIEW, ApiBoardPreview.INSTANCE],
     [paths.API_GAME, ApiGame.INSTANCE],
     [paths.API_GAME_HISTORY, ApiGameHistory.INSTANCE],

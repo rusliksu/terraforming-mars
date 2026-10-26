@@ -15,7 +15,6 @@ import {TradeWithCollegiumCopernicus} from '../cards/pathfinders/CollegiumCopern
 import {message} from '../logs/MessageBuilder';
 import {TradeWithDarksideSmugglersUnion} from '../cards/moon/DarksideSmugglersUnion';
 import {Payment} from '../../common/inputs/Payment';
-import {toLogPayment} from '../logs/toLogPayment';
 import {TradeWithHecateSpeditions} from '../cards/underworld/HecateSpeditions';
 import {TradeWithSteel} from '../cards/delta/DeltaWorks';
 import {ColonyName} from '../../../src/common/colonies/ColonyName';
@@ -286,13 +285,8 @@ export class TradeWithEnergy implements IColonyTrader {
   }
 
   public trade(colony: IColony) {
-    const energyBefore = this.player.energy;
-    const heatBefore = this.player.heat;
-    const floatersBefore = this.player.resourcesOnCard(CardName.STORMCRAFT_INCORPORATED);
     this.player.defer(this.player.spendEnergy(this.tradeCost, () => {
-      this.player.game.log('${0} spent ${1}:r:energy: to trade with ${2}', (b) => b.player(this.player).number(this.tradeCost).colony(colony),
-        {payment: floatersBefore === this.player.resourcesOnCard(CardName.STORMCRAFT_INCORPORATED) ?
-          toLogPayment(Payment.of({heat: heatBefore - this.player.heat}), energyBefore - this.player.energy) : undefined});
+      this.player.game.log('${0} spent ${1}:r:energy: to trade with ${2}', (b) => b.player(this.player).number(this.tradeCost).colony(colony));
       colony.trade(this.player);
       return undefined;
     }));
@@ -316,8 +310,7 @@ export class TradeWithTitanium implements IColonyTrader {
   public trade(colony: IColony) {
     const payment = Payment.of({titanium: this.tradeCost});
     this.player.pay(payment);
-    this.player.game.log('${0} spent ${1}:r:titanium: to trade with ${2}', (b) => b.player(this.player).number(this.tradeCost).colony(colony),
-      {payment: toLogPayment(payment)});
+    this.player.game.log('${0} spent ${1}:r:titanium: to trade with ${2}', (b) => b.player(this.player).number(this.tradeCost).colony(colony));
     colony.trade(this.player);
   }
 }
@@ -345,9 +338,8 @@ export class TradeWithMegacredits implements IColonyTrader {
   public trade(colony: IColony) {
     this.player.game.defer(new SelectPaymentDeferred(this.player, this.tradeCost,
       {title: message('Select how to pay ${0} for colony trade', (b) => b.number(this.tradeCost))}))
-      .andThen((payment) => {
-        this.player.game.log('${0} spent ${1}:r:mc: to trade with ${2}', (b) => b.player(this.player).number(this.tradeCost).colony(colony),
-          {payment: toLogPayment(payment)});
+      .andThen(() => {
+        this.player.game.log('${0} spent ${1}:r:mc: to trade with ${2}', (b) => b.player(this.player).number(this.tradeCost).colony(colony));
         colony.trade(this.player);
       });
   }

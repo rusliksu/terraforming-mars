@@ -51,6 +51,7 @@
   </div>
   <div v-else id="player-home" :class="{'with-turmoil': game.turmoil, 'player-home--acting': isPlayerActing}">
     <TopBar :playerView="playerView"/>
+    <div id="wrybit-players-table" class="player-home-table-slot"></div>
     <div v-if="game.phase === 'end'" class="player_home_block">
       <DynamicTitle title="This game is over!" :color="thisPlayer.color"/>
       <a :href="'the-end?id=' + playerView.id" v-i18n>Go to game results</a>
@@ -69,7 +70,7 @@
       <template #main>
         <a class="hotkey-target"></a>
         <SetupTurnOrder v-if="isSetupPhase" :players="playerView.players"><SetupBoardToggle/></SetupTurnOrder>
-        <PlayersOverview v-else class="player_home_block player_home_block--players nofloat" :playerView="playerView" id="shortkey-playersoverview"/>
+        <PlayersOverview v-else class="player_home_block player_home_block--players nofloat" :playerView="playerView" :table-target="'#wrybit-players-table'" id="shortkey-playersoverview"/>
         <RowResizeHandle v-if="!isSetupPhase" kind="players"/>
         <PlayerSetupView v-if="isSetupPhase" :playerView="playerView"/>
         <template v-else>

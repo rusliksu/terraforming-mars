@@ -145,6 +145,10 @@ describe('requestProcessor', () => {
     req.headers.host = 'tm.knightbyte.win';
     req.url = `/player/input?id=${player.id}`;
 
+    // This test uses an unowned fixture seat. The production default is closed;
+    // the explicit compatibility flag keeps the malformed-body assertion focused.
+    const originalAllowUnauthenticated = process.env.ALLOW_LEGACY_UNAUTHENTICATED_PLAYER_INPUT;
+    process.env.ALLOW_LEGACY_UNAUTHENTICATED_PLAYER_INPUT = '1';
     try {
       const processing = processRequest(req, res, (error, context) => {
         captured.push({error, context});
@@ -159,6 +163,11 @@ describe('requestProcessor', () => {
       expect(JSON.parse(res.content)).deep.eq({message: expectedMessage});
     } finally {
       (GameLoader as typeof GameLoader & {getInstance: typeof GameLoader.getInstance}).getInstance = originalGetInstance;
+      if (originalAllowUnauthenticated === undefined) {
+        delete process.env.ALLOW_LEGACY_UNAUTHENTICATED_PLAYER_INPUT;
+      } else {
+        process.env.ALLOW_LEGACY_UNAUTHENTICATED_PLAYER_INPUT = originalAllowUnauthenticated;
+      }
     }
   });
 

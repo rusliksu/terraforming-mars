@@ -53,7 +53,7 @@ const stopFit = new WeakMap<object, () => void>();
 
 export default defineComponent({
   name: 'BoardTabs',
-  components: {BoardTabLines, TileViewToggle},
+  components: {BoardTabLines, TileViewToggle, HotkeyKeys},
   directives: {dockedTab: vDockedTab},
   props: {
     reservedMarsHeight: {type: Number, default: undefined},

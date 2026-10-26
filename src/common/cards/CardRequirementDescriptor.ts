@@ -28,15 +28,23 @@ import {RequirementType} from './RequirementType';
 
 export type CardRequirementDescriptor = {
   tag?: Tag,
+  /** The number of distinct tag types the player has in play (wild/Odyssey/Chimera-aware; see `Tags.distinctCount`). */
+  uniqueTags?: number,
   oxygen?: number,
   temperature?: number,
   greeneries?: number,
+  /** Whether the required tiles must be adjacent to each other (rendering hint only - the
+   * actual adjacency check is bespoke per card). */
+  adjacent?: boolean,
+  /** Whether the player's last action this game was placing a greenery tile. */
+  greeneryLastAction?: boolean,
   cities?: number,
   oceans?: number,
   production?: Resource,
   plantsRemoved?: boolean,
   resourceTypes?: number,
   tr?: number,
+  generation?: number,
 
   // Venus
   venus?: number,
@@ -73,6 +81,8 @@ export type CardRequirementDescriptor = {
 export function requirementType(descriptor: CardRequirementDescriptor): RequirementType {
   if (descriptor.tag !== undefined) {
     return RequirementType.TAG;
+  } else if (descriptor.uniqueTags !== undefined) {
+    return RequirementType.UNIQUE_TAGS;
   } else if (descriptor.oceans !== undefined) {
     return RequirementType.OCEANS;
   } else if (descriptor.oxygen !== undefined) {
@@ -83,12 +93,16 @@ export function requirementType(descriptor: CardRequirementDescriptor): Requirem
     return RequirementType.VENUS;
   } else if (descriptor.tr !== undefined) {
     return RequirementType.TR;
+  } else if (descriptor.generation !== undefined) {
+    return RequirementType.GENERATION;
   } else if (descriptor.chairman !== undefined) {
     return RequirementType.CHAIRMAN;
   } else if (descriptor.resourceTypes !== undefined) {
     return RequirementType.RESOURCE_TYPES;
   } else if (descriptor.greeneries !== undefined) {
     return RequirementType.GREENERIES;
+  } else if (descriptor.greeneryLastAction !== undefined) {
+    return RequirementType.GREENERY_LAST_ACTION;
   } else if (descriptor.cities !== undefined) {
     return RequirementType.CITIES;
   } else if (descriptor.colonies !== undefined) {

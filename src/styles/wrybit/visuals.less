@@ -1,0 +1,171 @@
+.wrybit-ui {
+  @import (reference) "../mixins.less";
+  @import "./variables.less";
+  @import "./button_tones.less";
+  @import "./cards.less";
+  @import "./player_cube.less";
+  @import "./track_bonus.less";
+  @import "./outer_spaces.less";
+  @import "./board.less";
+  @import "./globs.less";
+  @import "./catalog.less";
+  @import "./game_menu.less";
+  @import "./sidebar_modal.less";
+  @import "./dialog_frame.less";
+  @import "./admin_settings.less";
+  @import "./games-overview.less";
+  @import "./load_game_form.less";
+  @import "./game_end_columns.less";
+  @import "./preferences_dialog.less";
+  @import "./help_overlay.less";
+  @import "./fan_project_notice.less";
+  @import (reference) "./source_mixins.less";
+  @import "./milestone_award_table.less";
+  @import "./glass_tooltip.less";
+  @import "./frosted_surface.less";
+  @import "./or_options_tabs.less";
+  @import "./or_tab_tones.less";
+  @import "./board_tabs.less";
+  @import "./sortable_cards.less";
+  @import "./discount_badges.less";
+  @import "./players_table.less";
+  @import "./card_filter_bar.less";
+  .wrybit-card-filter-styles();
+  @import "./card_zoom_slider.less";
+  .wrybit-card-zoom-styles();
+  @import "./hand_cards_panel.less";
+  .wrybit-hand-panel-styles();
+  @import "./popup.less";
+  @import "./adjacency_bonus.less";
+  @import "./card_renderer_adapters.less";
+  @import "./scaled_board.less";
+  @import "./board_zoom_modal.less";
+  .wrybit-board-zoom-styles();
+  @import "./board_zoom_mobile.less";
+  .wrybit-board-zoom-mobile-styles();
+  @import "./setup_tiles.less";
+  @import "./info_panel.less";
+  @import (reference) "./column_overlay.less";
+  @import "./log.less";
+  @import "./card_zoom.less";
+  @import "./space_confirm.less";
+  @import "./placement_controls.less";
+  .wrybit-placement-control-styles();
+  @import "./placement_banner.less";
+  @import "./placement_tile.less";
+  @import "./tab_panel_footer.less";
+  @import "./server_update_overlay.less";
+  @import "./resize_handle.less";
+  @import "./player_home_columns.less";
+  @import "./player_home_fixed.less";
+  @import "./home_cards.less";
+  @import "./setup_turn_order.less";
+  @import "./setup_board_toggle.less";
+  @import "./overpayment_dialog.less";
+  @import "./payments.less";
+  @import "./selection_highlight.less";
+  @import "./resource_options.less";
+  @import "./player_options.less";
+  @import "./amount_slider.less";
+  .wrybit-amount-slider-styles();
+  @import "./choice_block.less";
+  .wrybit-choice-block-styles();
+  @import "./ceo_action_section.less";
+  .wrybit-ceo-action-section-styles();
+  @import "./milestone_award_options.less";
+  .wrybit-ma-choice-styles();
+  @import "./draft_card_selection.less";
+  .wrybit-draft-card-styles();
+  @import "./setup_columns.less";
+  .wrybit-setup-columns-styles();
+  @import "./setup_summary.less";
+  @import "./setup_start.less";
+  @import "./start_screen.less";
+  @import "./start_intro.less";
+  @import "./start_preloader.less";
+  @import "./party_choice.less";
+  .wrybit-party-choice-styles();
+  @import "./colony_choice.less";
+  @import "./expansions/colonies_board.less";
+  @import "./expansions/turmoil_board.less";
+  @import "./expansions/moon_ring.less";
+  @import "./expansions/delta_rewards.less";
+  .wrybit-colonies-board-styles();
+  @import "./expansions/deal_steps.less";
+  @import "./create_game.less";
+  @import "./stats.less";
+  @import "./card_list_source.less";
+  @import "./stats_page.less";
+  .wrybit-create-styles();
+  @import "./mobile.less";
+  .wrybit-mobile-styles();
+
+  html.tm-mobile & .action-step-chips,
+  html.tm-mobile & .or-tab-footer > .or-tab-footer-hint {
+    display: none;
+  }
+
+  // The outer mobile context belongs to html; the imported rules stay under our root.
+  html.tm-mobile & .mb-screen--turn:has(> .mb-task-head) .or-tab-panel-title {
+    display: none;
+  }
+
+  // Outer mobile context; the table styles remain inside the optional root.
+  html.tm-mobile & .escape-velocity-clock {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 3px 4px;
+    font-size: 10.5px;
+    .escape-velocity-clock__bar { width: 100%; }
+    .escape-velocity-clock__text small { display: none; }
+    .escape-velocity-clock__penalty { font-size: 10px; }
+  }
+
+  .sidebar-modal .preferences_panel {
+    position: static;
+    inset: auto;
+    width: auto;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  .board-cont--custom {
+    background-image: none;
+  }
+
+  .board-cube-acrylic {
+    background-image: none;
+  }
+
+  .mars-scale-bonus-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    > span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+  }
+
+  .resource_items_cont:hover {
+    position: relative;
+    z-index: 10;
+  }
+
+  .wrybit-card.card-unavailable:has(.card-player-cube) {
+    filter: none;
+    opacity: 1;
+  }
+}
+
+.wrybit-ui.wrybit-overlay-root {
+  position: static;
+  min-height: 0;
+  isolation: auto;
+}

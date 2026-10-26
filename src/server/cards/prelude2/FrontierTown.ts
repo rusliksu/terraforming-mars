@@ -9,6 +9,7 @@ import {Tag} from '../../../common/cards/Tag';
 import {PartyName} from '../../../common/turmoil/PartyName';
 import {LoseProduction} from '../../deferredActions/LoseProduction';
 import {Resource} from '../../../common/Resource';
+import {Units} from '../../../common/Units';
 import {MarsBoard} from '../../boards/MarsBoard';
 
 export class FrontierTown extends Card implements IProjectCard {
@@ -24,13 +25,17 @@ export class FrontierTown extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'P74',
         renderData: CardRenderer.builder((b) => {
-          b.production((pb) => pb.minus().energy(1)).city().asterix();
+          b.production((pb) => pb.energy(-1)).city().asterix();
         }),
         description: 'Requires that Mars First is ruling or that you have 2 delegates there. ' +
         'Decrease your energy production one step. Place a city tile. ' +
         'GAIN THE PRINTED PLACEMENT BONUS 2 ADDITIONAL TIMES.',
       },
     });
+  }
+
+  public productionBox() {
+    return Units.of({energy: -1});
   }
 
   private availableSpaces(player: IPlayer, cost: number) {

@@ -8,12 +8,22 @@ export const SPENDABLE_STANDARD_RESOURCES = [
   'megacredits',
   // Helion corporation can spend heat as M€.
   'heat',
+  // Turmoil More Parties: Empower Policy 1 lets energy be spent as M€ (2 M€ per energy)
+  // while that policy is in effect.
+  'energy',
   // Used for cards with building tags
   'steel',
   // Used for cards with space tags, and as the Luna Trade Federation
   'titanium',
   // Martian Lumber Corp lets players pay for building tags with plants.
   'plants',
+  // Venus Phase 2's own standard projects (Cloud City/Gas Mine/Floater Array) let a player spend
+  // floaters pulled from ANY of their played cards, not one fixed card -- unlike every card
+  // resource below, which is hardcoded to exactly one CardName via CARD_FOR_SPENDABLE_RESOURCE.
+  // Lives here (not SPENDABLE_CARD_RESOURCES) for the same reason heat/energy do: its available
+  // amount and its deduction both need bespoke handling (Player.maxSpendable/pay) instead of the
+  // generic one-card lookup.
+  'anyFloaters',
 ] as const;
 
 /**
@@ -26,9 +36,8 @@ export const SPENDABLE_CARD_RESOURCES = [
   'floaters',
   // Luna Archives corporation can spend its science resources for cards with Moon tags.
   'lunaArchivesScience',
-  // Spire corporation can spend its science resources on standrad projects.
+  // Spire corporation can spend its science resources on standard projects.
   'spireScience',
-  // TODO(kberg): add test for Soylent Seedling Systems + Psychophiles.
   // Soylent Seedling Systems corporation can use its seeds to pay for cards with plant tags, or the standard greenery project.
   'seeds',
   // Aurorai corporation can use its data to pay for standard projects.
@@ -37,6 +46,8 @@ export const SPENDABLE_CARD_RESOURCES = [
   'graphene',
   // Asteroids is a Kuiper Cooperative resource that pays for aquifer and asteroid standard projects.
   'kuiperAsteroids',
+  // Nereid Biosystems corporation can spend its microbes for cards with a Jovian tag.
+  'nereidMicrobes',
 ] as const;
 
 export const SPENDABLE_RESOURCES = [...SPENDABLE_STANDARD_RESOURCES, ...SPENDABLE_CARD_RESOURCES] as const;
@@ -57,4 +68,5 @@ export const CARD_FOR_SPENDABLE_RESOURCE = {
   auroraiData: CardName.AURORAI,
   graphene: CardName.CARBON_NANOSYSTEMS,
   kuiperAsteroids: CardName.KUIPER_COOPERATIVE,
+  nereidMicrobes: CardName.NEREID_BIOSYSTEMS,
 } satisfies Record<SpendableCardResource, CardName>;

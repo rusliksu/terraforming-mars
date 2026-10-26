@@ -33,11 +33,14 @@ export class Splice extends CorporationCard implements ICorporationCard {
           b.megacredits(44).nbsp.cards(1, {secondaryTag: Tag.MICROBE});
           b.corpBox('effect', (ce) => {
             ce.vSpace(Size.LARGE);
+            ce.br;
             ce.effect(undefined, (eb) => {
               eb.tag(Tag.MICROBE, {all}).startEffect;
               eb.megacredits(2, {all}).or().resource(CardResource.MICROBE, {all}).asterix();
             });
+            ce.br;
             ce.vSpace();
+            ce.br;
             ce.effect('When a microbe tag is played, incl. this, THAT PLAYER gains 2 M€, or adds a microbe to THAT card, and you gain 2 M€.', (eb) => {
               eb.tag(Tag.MICROBE, {all}).startEffect;
               eb.megacredits(2);

@@ -23,7 +23,7 @@ export class AnOfferYouCantRefuse extends Card {
         description: 'Exchange a NON-NEUTRAL opponent delegate with one of your own from the reserve. This exchange may not change the party leader. You may then move your delegate to another party.',
         cardNumber: 'M62',
         renderData: CardRenderer.builder((b) => {
-          b.minus().delegates(1, {all}).asterix().nbsp.plus().delegates(1);
+          b.delegates(-1, {all}).asterix().nbsp.plus().delegates(1);
         }),
       },
     });
@@ -74,7 +74,7 @@ export class AnOfferYouCantRefuse extends Card {
   // You can play this if you have an available delegate, and if you can swap with a non-neutral delegate without changing the party leader
   public override bespokeCanPlay(player: IPlayer) {
     const turmoil = Turmoil.getTurmoil(player.game);
-    if (!turmoil.hasDelegatesInReserve(player)) {
+    if (!turmoil.delegateReserve.has(player)) {
       return false;
     }
 

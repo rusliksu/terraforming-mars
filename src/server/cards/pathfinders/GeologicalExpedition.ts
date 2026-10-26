@@ -16,6 +16,7 @@ import {Priority} from '../../deferredActions/Priority';
 import {SpaceType} from '../../../common/boards/SpaceType';
 import {Phase} from '../../../common/Phase';
 import {AddResourcesToCard} from '../../deferredActions/AddResourcesToCard';
+import {SelectResource} from '../../inputs/SelectResource';
 
 const VALID_BONUSES: Array<SpaceBonus> = [
   SpaceBonus.TITANIUM,
@@ -28,6 +29,7 @@ const VALID_BONUSES: Array<SpaceBonus> = [
   SpaceBonus.ENERGY,
   SpaceBonus.DATA,
   SpaceBonus.SCIENCE,
+  SpaceBonus.STANDARD_RESOURCE,
 ];
 
 export class GeologicalExpedition extends Card implements IProjectCard {
@@ -125,6 +127,14 @@ export class GeologicalExpedition extends Card implements IProjectCard {
       break;
     case SpaceBonus.SCIENCE:
       player.game.defer(new AddResourcesToCard(player, CardResource.SCIENCE, {from}));
+      break;
+    case SpaceBonus.STANDARD_RESOURCE:
+      // The space's own standard-resource bonus already asked once; this asks for the extra one.
+      player.defer(new SelectResource('Select a standard resource to gain')
+        .andThen((resource) => {
+          player.stock.add(resource, 1, {log: true, from});
+          return undefined;
+        }));
       break;
     }
   }

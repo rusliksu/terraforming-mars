@@ -12,6 +12,8 @@ export type VictoryPointsBreakdown = {
   moonHabitats: number;
   moonMines: number;
   moonRoads: number;
+  venusCloudCities: number;
+  venusGasMines: number;
   planetaryTracks: number;
   victoryPoints: number;
   total: number;

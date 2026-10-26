@@ -1,0 +1,1507 @@
+{
+  "referenceVersion": "28846e8",
+  "bundleSha256": "4949d60dcddaeceb505a27d7fe46a39b1ce10b8427ebefde0a5ce3f0ee0c87c0",
+  "sourceUrl": "https://rebalakefak.herokuapp.com/main.js",
+  "pe5haPin": "ac3b05abd3bb26a9fa98dca8c2700e2475fa92a9",
+  "inventory": [
+    {
+      "group": "projectCards",
+      "entries": [
+        {
+          "symbol": "ADAPTED_LICHEN_REBALANCED",
+          "name": "Adapted Lichen(⚖)",
+          "factory": "AdaptedLichenRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.AUTOMATED",
+            "name": "u.CardName.ADAPTED_LICHEN_REBALANCED",
+            "tags": "[a.Tags.PLANT]",
+            "cost": "8",
+            "metadata": "{description:\"Increase your Plant production 1 step.\",cardNumber:\"048\",renderData:d.CardRenderer.builder((function(e){return e.production((function(e){return e.plants(1)}))}))}"
+          }
+        },
+        {
+          "symbol": "ADVANCED_ALLOYS_REBALANCED",
+          "name": "Advanced Alloys(⚖)",
+          "factory": "AdvancedAlloysRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "i.CardType.ACTIVE",
+            "name": "s.CardName.ADVANCED_ALLOYS_REBALANCED",
+            "cost": "9",
+            "metadata": "{cardNumber:\"071\",renderData:c.CardRenderer.builder((function(e){e.effect(\"Each titanium you have is worth 1 M€ extra.\",(function(e){e.titanium(1).startEffect.plus(u.Size.SMALL).megacredits(1)})).br,e.effect(\"Each steel you have is worth 1 M€ extra.\",(function(e){e.steel(1).startEffect.plus(u.Size.SMALL).megacredits(1)}))}))}"
+          }
+        },
+        {
+          "symbol": "AEROBRAKED_AMMONIA_ASTEROID_REBALANCED",
+          "name": "Aerobraked Ammonia Asteroid(⚖)",
+          "factory": "AerobrakedAmmoniaAsteroidRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.EVENT",
+            "name": "l.CardName.AEROBRAKED_AMMONIA_ASTEROID_REBALANCED",
+            "tags": "[a.Tags.SPACE]",
+            "cost": "26",
+            "metadata": "{description:\"Increase your heat production 4 steps and your plant production 1 step. Add 3 Microbes to ANOTHER card.\",cardNumber:\"170\",renderData:p.CardRenderer.builder((function(e){e.production((function(e){e.heat(4).br,e.plants(1)})).br,e.microbes(3).asterix()}))}"
+          }
+        },
+        {
+          "symbol": "ASTEROID_HOLLOWING_REBALANCED",
+          "name": "Asteroid Hollowing(⚖)",
+          "factory": "AsteroidHollowingRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.ACTIVE",
+            "name": "i.CardName.ASTEROID_HOLLOWING_REBALANCED",
+            "tags": "[u.Tags.SPACE]",
+            "cost": "16",
+            "resourceType": "c.ResourceType.ASTEROID",
+            "metadata": "{cardNumber:\"X15\",renderData:l.CardRenderer.builder((function(e){e.action(\"Spend 1 titanium to add 1 asteroid resource here and increase M€ production 1 step.\",(function(e){e.titanium(1).startAction.asteroids(1).production((function(e){return e.megacredits(1)}))})).br,e.vpText(\"1VP for each asteroid on this card.\")})),victoryPoints:p.CardRenderDynamicVictoryPoints.asteroids(1,1)}"
+          }
+        },
+        {
+          "symbol": "ASTEROID_MINING_CONSORTIUM_REBALANCED",
+          "name": "Asteroid Mining Consortium(⚖)",
+          "factory": "AsteroidMiningConsortiumRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.AUTOMATED",
+            "name": "u.CardName.ASTEROID_MINING_CONSORTIUM_REBALANCED",
+            "tags": "[a.Tags.JOVIAN]",
+            "cost": "13",
+            "requirements": "l.CardRequirements.builder((function(e){return e.generation(4)}))",
+            "metadata": "{description:\"Decrease any titanium production 1 step and increase your own 1 step.\",cardNumber:\"002\",renderData:p.CardRenderer.builder((function(e){e.production((function(e){e.minus().titanium(-1).any.br,e.plus().titanium(1)}))})),victoryPoints:1}"
+          }
+        },
+        {
+          "symbol": "BACTOVIRAL_RESEARCH_REBALANCED",
+          "name": "Bactoviral Research(⚖)",
+          "factory": "BactoviralResearchRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.AUTOMATED",
+            "name": "c.CardName.BACTOVIRAL_RESEARCH_REBALANCED",
+            "tags": "[a.Tags.MICROBE,a.Tags.SCIENCE]",
+            "cost": "10",
+            "metadata": "{cardNumber:\"X37\",renderData:u.CardRenderer.builder((function(e){e.cards(1).br.br,e.microbes(1).asterix().slash().microbes(1).played})),description:\"Draw a card. Choose any one microbe card and add a microbe to it for each microbe tag you have, including this.\"}"
+          }
+        },
+        {
+          "symbol": "BLACK_POLAR_DUST_REBALANCED",
+          "name": "Black Polar Dust(⚖)",
+          "factory": "BlackPolarDustRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "i.CardType.AUTOMATED",
+            "name": "c.CardName.BLACK_POLAR_DUST_REBALANCED",
+            "cost": "14",
+            "metadata": "{cardNumber:\"022\",description:\"Place an ocean tile. Decrease your M€ production 2 steps and increase your heat production 3 steps.\",renderData:f.CardRenderer.builder((function(e){e.production((function(e){e.minus().megacredits(2).br,e.plus().heat(3)})).oceans(1)}))}"
+          }
+        },
+        {
+          "symbol": "BUILDING_INDUSTRIES_REBALANCED",
+          "name": "Building Industries(⚖)",
+          "factory": "BuildingIndustriesRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.AUTOMATED",
+            "name": "u.CardName.BUILDING_INDUSTRIES_REBALANCED",
+            "tags": "[a.Tags.BUILDING]",
+            "cost": "5",
+            "productionBox": "l.Units.of({energy:-1,steel:2})",
+            "metadata": "{cardNumber:\"065\",description:\"Decrease your Energy production 1 step and increase your steel production 2 steps.\",renderData:d.CardRenderer.builder((function(e){e.production((function(e){e.minus().energy(1).br,e.plus().steel(2)}))}))}"
+          }
+        },
+        {
+          "symbol": "CARTEL_REBALANCED",
+          "name": "Cartel(⚖)",
+          "factory": "CartelRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.AUTOMATED",
+            "name": "u.CardName.CARTEL_REBALANCED",
+            "tags": "[a.Tags.EARTH]",
+            "cost": "10",
+            "metadata": "{cardNumber:\"137\",description:\"Increase your M€ production 1 step for each Earth tag you have, including this.\",renderData:d.CardRenderer.builder((function(e){return e.production((function(e){e.megacredits(1).slash().earth().played}))}))}"
+          }
+        },
+        {
+          "symbol": "CLOUD_SEEDING_REBALANCED",
+          "name": "Cloud Seeding(⚖)",
+          "factory": "CloudSeedingRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "i.CardType.AUTOMATED",
+            "name": "c.CardName.CLOUD_SEEDING_REBALANCED",
+            "tags": "[p.Tags.PLANT]",
+            "cost": "11",
+            "requirements": "d.CardRequirements.builder((function(e){return e.oceans(3)}))",
+            "metadata": "{cardNumber:\"004\",description:\"Requires 3 ocean tiles. Decrease your M€ production 1 step and any heat production 1 step. Increase your Plant production 2 steps.\",renderData:l.CardRenderer.builder((function(e){return e.production((function(e){e.minus().megacredits(1).heat(1).any.br,e.plus().plants(2)}))}))}"
+          }
+        },
+        {
+          "symbol": "COMMUNITY_SERVICES_REBALANCED",
+          "name": "Community Services(⚖)",
+          "factory": "CommunityServicesRebalanced",
+          "compatibility": "o.GameModule.Colonies",
+          "fields": {
+            "cost": "11",
+            "name": "i.CardName.COMMUNITY_SERVICES_REBALANCED",
+            "cardType": "a.CardType.AUTOMATED",
+            "metadata": "{cardNumber:\"C04\",description:\"Increase your M€ production 1 step per CARD WITH NO TAGS, including this.\",renderData:u.CardRenderer.builder((function(e){e.production((function(e){e.megacredits(1)})).slash().noTags()})),victoryPoints:1}"
+          }
+        },
+        {
+          "symbol": "CORPORATE_STRONGHOLD_REBALANCED",
+          "name": "Corporate Stronghold(⚖)",
+          "factory": "CorporateStrongholdRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "i.CardType.AUTOMATED",
+            "name": "d.CardName.CORPORATE_STRONGHOLD_REBALANCED",
+            "tags": "[s.Tags.CITY,s.Tags.BUILDING]",
+            "cost": "11",
+            "productionBox": "p.Units.of({energy:-1,megacredits:3})",
+            "metadata": "{cardNumber:\"182\",description:\"Decrease your Energy production 1 step and increase your M€ production 3 steps. Place a City tile.\",renderData:l.CardRenderer.builder((function(e){e.production((function(e){e.minus().energy(1).br,e.plus().megacredits(3)})).nbsp.nbsp.city()})),victoryPoints:-1}"
+          }
+        },
+        {
+          "symbol": "CUTTING_EDGE_TECHNOLOGY_REBALANCED",
+          "name": "Cutting Edge Technology(⚖)",
+          "factory": "CuttingEdgeTechnologyRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.ACTIVE",
+            "name": "c.CardName.CUTTING_EDGE_TECHNOLOGY_REBALANCED",
+            "tags": "[a.Tags.SCIENCE]",
+            "cost": "14",
+            "metadata": "{cardNumber:\"X18\",renderData:u.CardRenderer.builder((function(e){e.effect(\"When playing a card with a requirement, you pay 2 M€ less for it.\",(function(e){e.cards(1).secondaryTag(d.AltSecondaryTag.REQ).startEffect.megacredits(-2)}))})),victoryPoints:1}"
+          }
+        },
+        {
+          "symbol": "DEIMOS_DOWN_PROMO_REBALANCED",
+          "name": "Deimos Down(⚖)",
+          "factory": "DeimosDownPromoRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.EVENT",
+            "name": "c.CardName.DEIMOS_DOWN_PROMO_REBALANCED",
+            "tags": "[a.Tags.SPACE]",
+            "cost": "35",
+            "metadata": "{cardNumber:\"X31\",description:\"Raise temperature 3 steps and gain 4 steel. Place this tile ADJACENT TO no other city tile. Remove up to 8 Plants from any player.\",renderData:m.CardRenderer.builder((function(e){e.temperature(3).br,e.tile(d.TileType.DEIMOS_DOWN,!0).asterix().br,e.steel(4).digit.nbsp.minus().plants(-8).any}))}"
+          }
+        },
+        {
+          "symbol": "DESIGNED_MICRO_ORGANISMS_REBALANCED",
+          "name": "Designed Micro-organisms(⚖)",
+          "factory": "DesignedMicroOrganismsRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.AUTOMATED",
+            "name": "u.CardName.DESIGNED_MICRO_ORGANISMS_REBALANCED",
+            "tags": "[a.Tags.SCIENCE,a.Tags.MICROBE]",
+            "cost": "15",
+            "requirements": "d.CardRequirements.builder((function(e){return e.temperature(-14).max()}))",
+            "metadata": "{cardNumber:\"155\",description:\"It must be -14 C or colder. Increase your Plant production 2 steps.\",renderData:l.CardRenderer.builder((function(e){e.production((function(e){return e.plants(2)}))}))}"
+          }
+        },
+        {
+          "symbol": "EARTH_CATAPULT_REBALANCED",
+          "name": "Earth Catapult(⚖)",
+          "factory": "EarthCatapultRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.ACTIVE",
+            "name": "c.CardName.EARTH_CATAPULT_REBALANCED",
+            "tags": "[a.Tags.EARTH]",
+            "cost": "28",
+            "cardDiscount": "{amount:2}",
+            "metadata": "{cardNumber:\"070\",renderData:u.CardRenderer.builder((function(e){e.effect(\"When you play a card, you pay 2 M€ less for it.\",(function(e){e.empty().startEffect.megacredits(-2)}))})),victoryPoints:1}"
+          }
+        },
+        {
+          "symbol": "EARTH_OFFICE_REBALANCED",
+          "name": "Earth Office(⚖)",
+          "factory": "EarthOfficeRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.ACTIVE",
+            "name": "c.CardName.EARTH_OFFICE_REBALANCED",
+            "tags": "[a.Tags.EARTH]",
+            "cost": "4",
+            "cardDiscount": "{tag:a.Tags.EARTH,amount:3}",
+            "metadata": "{cardNumber:\"105\",renderData:u.CardRenderer.builder((function(e){e.effect(\"When you play an Earth card, you pay 3 M€ less for it.\",(function(e){e.earth().played.startEffect.megacredits(-3)}))}))}"
+          }
+        },
+        {
+          "symbol": "ENERGY_MARKET_REBALANCED",
+          "name": "Energy Market(⚖)",
+          "factory": "EnergyMarketRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.ACTIVE",
+            "name": "i.CardName.ENERGY_MARKET_REBALANCED",
+            "tags": "[c.Tags.ENERGY]",
+            "cost": "5",
+            "metadata": "{cardNumber:\"X03\",renderData:y.CardRenderer.builder((function(e){e.action(\"Spend 2X M€ to gain X energy.\",(function(e){e.megacredits(2).multiplier.startAction.text(\"x\").energy(1)})).br,e.or().br,e.action(\"Decrease energy production 1 step to gain 8 M€.\",(function(e){e.production((function(e){return e.energy(1)})).startAction.megacredits(8)}))}))}"
+          }
+        },
+        {
+          "symbol": "ENERGY_SAVING_REBALANCED",
+          "name": "Energy Saving(⚖)",
+          "factory": "EnergySavingRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "i.CardType.AUTOMATED",
+            "name": "u.CardName.ENERGY_SAVING_REBALANCED",
+            "tags": "[s.Tags.ENERGY,s.Tags.BUILDING]",
+            "cost": "15",
+            "metadata": "{cardNumber:\"189\",description:\"Increase your Energy production 1 step for each City tile in play.\",renderData:l.CardRenderer.builder((function(e){e.production((function(e){return e.energy(1).slash().city(d.Size.SMALL).any}))}))}"
+          }
+        },
+        {
+          "symbol": "ENERGY_TAPPING_REBALANCED",
+          "name": "Energy Tapping(⚖)",
+          "factory": "EnergyTappingRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.AUTOMATED",
+            "name": "u.CardName.ENERGY_TAPPING_REBALANCED",
+            "tags": "[a.Tags.ENERGY]",
+            "cost": "3",
+            "requirements": "p.CardRequirements.builder((function(e){return e.generation(6)}))",
+            "metadata": "{cardNumber:\"201\",description:\"Decrease any Energy production 1 step and increase your own 1 step.\",renderData:l.CardRenderer.builder((function(e){e.production((function(e){e.minus().energy(1).any.br,e.plus().energy(1)}))})),victoryPoints:-1}"
+          }
+        },
+        {
+          "symbol": "EXTRACTOR_BALLOONS_REBALANCED",
+          "name": "Extractor Balloons(⚖)",
+          "factory": "ExtractorBalloonsRebalanced",
+          "compatibility": "o.GameModule.Venus",
+          "fields": {
+            "name": "d.CardName.EXTRACTOR_BALLOONS_REBALANCED",
+            "cardType": "i.CardType.ACTIVE",
+            "tags": "[a.Tags.VENUS]",
+            "cost": "18",
+            "resourceType": "s.ResourceType.FLOATER",
+            "metadata": "{cardNumber:\"223\",description:\"Add 3 Floaters to this card\",renderData:m.CardRenderer.builder((function(e){e.action(\"Add 1 Floater to this card.\",(function(e){e.empty().startAction.floaters(1)})).br,e.action(\"Remove 2 Floaters here to raise Venus 1 step.\",(function(e){e.or(h.Size.SMALL).floaters(2).startAction.venus(1)})).br.floaters(3)}))}"
+          }
+        },
+        {
+          "symbol": "FLOATER_LEASING_REBALANCED",
+          "name": "Floater Leasing(⚖)",
+          "factory": "FloaterLeasingRebalanced",
+          "compatibility": "o.GameModule.Venus",
+          "fields": {
+            "cost": "3",
+            "name": "i.CardName.FLOATER_LEASING_REBALANCED",
+            "cardType": "a.CardType.AUTOMATED",
+            "metadata": "{cardNumber:\"C10\",renderData:d.CardRenderer.builder((function(e){e.production((function(e){return e.megacredits(1)})).slash().floaters(2).digit})),description:\"Increase your M€ production 1 step PER 2 floaters you have (max 10 production).\"}"
+          }
+        },
+        {
+          "symbol": "FORCED_PRECIPITATION_REBALANCED",
+          "name": "Forced Precipitation(⚖)",
+          "factory": "ForcedPrecipitationRebalanced",
+          "compatibility": "o.GameModule.Venus",
+          "fields": {
+            "name": "l.CardName.FORCED_PRECIPITATION_REBALANCED",
+            "cardType": "s.CardType.ACTIVE",
+            "tags": "[i.Tags.VENUS]",
+            "cost": "4",
+            "resourceType": "c.ResourceType.FLOATER",
+            "metadata": "{cardNumber:\"226\",renderData:g.CardRenderer.builder((function(e){e.action(\"Spend 2 M€ to add 1 Floater to THIS card.\",(function(e){e.megacredits(2).startAction.floaters(1).asterix})).br,e.or().br,e.action(\"Spend 2 Floaters here to increase Venus 1 step.\",(function(e){e.floaters(2).startAction.venus(1)}))}))}"
+          }
+        },
+        {
+          "symbol": "FUEL_FACTORY_REBALANCED",
+          "name": "Fuel Factory(⚖)",
+          "factory": "FuelFactoryRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "i.CardType.AUTOMATED",
+            "name": "u.CardName.FUEL_FACTORY_REBALANCED",
+            "tags": "[s.Tags.BUILDING]",
+            "cost": "5",
+            "productionBox": "l.Units.of({energy:-1,megacredits:1,titanium:1})",
+            "metadata": "{cardNumber:\"180\",renderData:d.CardRenderer.builder((function(e){e.production((function(e){e.minus().energy(1).br,e.plus().titanium(1).megacredits(1)}))})),description:\"Decrease your Energy production 1 step and increase your titanium and your M€ production 1 step each.\"}"
+          }
+        },
+        {
+          "symbol": "GHG_IMPORT_FROM_VENUS_REBALANCED",
+          "name": "GHG Import From Venus(⚖)",
+          "factory": "GHGImportFromVenusRebalanced",
+          "compatibility": "o.GameModule.Venus",
+          "fields": {
+            "name": "c.CardName.GHG_IMPORT_FROM_VENUS_REBALANCED",
+            "cardType": "i.CardType.EVENT",
+            "tags": "[a.Tags.SPACE,a.Tags.VENUS]",
+            "cost": "20",
+            "metadata": "{description:\"Raise Venus 1 step. Increase your heat production 3 steps.\",cardNumber:\"228\",renderData:p.CardRenderer.builder((function(e){e.venus(1).production((function(e){e.heat(3)}))}))}"
+          }
+        },
+        {
+          "symbol": "GMO_CONTRACT_REBALANCED",
+          "name": "GMO Contract(⚖)",
+          "factory": "GMOContractRebalanced",
+          "compatibility": "o.GameModule.Turmoil",
+          "fields": {
+            "cardType": "s.CardType.ACTIVE",
+            "name": "d.CardName.GMO_CONTRACT_REBALANCED",
+            "tags": "[a.Tags.MICROBE,a.Tags.SCIENCE]",
+            "cost": "8",
+            "requirements": "f.CardRequirements.builder((function(e){return e.party(c.PartyName.GREENS)}))",
+            "metadata": "{description:\"Requires that Greens are ruling or that you have 2 delegates there.\",cardNumber:\"T06\",renderData:p.CardRenderer.builder((function(e){e.effect(\"Each time you play a plant, animal or microbe tag, including this, gain 2 M€.\",(function(e){e.animals(1).played.slash().plants(1).played.slash().microbes(1).played,e.startEffect.megacredits(2)}))}))}"
+          }
+        },
+        {
+          "symbol": "HACKERS_REBALANCED",
+          "name": "Hackers(⚖)",
+          "factory": "HackersRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "i.CardType.AUTOMATED",
+            "name": "c.CardName.HACKERS_REBALANCED",
+            "cost": "3",
+            "metadata": "{cardNumber:\"125\",renderData:u.CardRenderer.builder((function(e){e.production((function(e){e.minus().energy(1).megacredits(1).any.br,e.plus().megacredits(3)}))})),description:\"Decrease your energy production 1 step and EACH OPPONENTS M€ production 1 step. Increase your M€ production 3 steps.\",victoryPoints:-1}"
+          }
+        },
+        {
+          "symbol": "HEAT_TRAPPERS_REBALANCED",
+          "name": "Heat Trappers(⚖)",
+          "factory": "HeatTrappersRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.AUTOMATED",
+            "name": "u.CardName.HEAT_TRAPPERS_REBALANCED",
+            "tags": "[a.Tags.ENERGY,a.Tags.BUILDING]",
+            "cost": "6",
+            "requirements": "p.CardRequirements.builder((function(e){return e.temperature(-22)}))",
+            "metadata": "{cardNumber:\"178\",renderData:l.CardRenderer.builder((function(e){e.production((function(e){e.minus().heat(2).any.br,e.plus().energy(1)}))})),description:\"Requires -22 C or warmer. Decrease any heat production 2 steps and increase your Energy production 1 step.\",victoryPoints:-1}"
+          }
+        },
+        {
+          "symbol": "INDUSTRIAL_CENTER_REBALANCED",
+          "name": "Industrial Center(⚖)",
+          "factory": "IndustrialCenterRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cost": "4",
+            "extractedFromFactory": true
+          }
+        },
+        {
+          "symbol": "INSECTS_REBALANCED",
+          "name": "Insects(⚖)",
+          "factory": "InsectsRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.AUTOMATED",
+            "name": "u.CardName.INSECTS_REBALANCED",
+            "tags": "[a.Tags.MICROBE]",
+            "cost": "11",
+            "requirements": "d.CardRequirements.builder((function(e){return e.oxygen(6)}))",
+            "metadata": "{cardNumber:\"148\",renderData:l.CardRenderer.builder((function(e){e.production((function(e){return e.plants(1).slash().plants(1).played}))})),description:\"Requires 6% oxygen. Increase your Plant production 1 step for each plant tag you have.\"}"
+          }
+        },
+        {
+          "symbol": "JET_STREAM_MICROSCRAPPERS_REBALANCED",
+          "name": "Jet Stream Microscrappers(⚖)",
+          "factory": "JetStreamMicroscrappersRebalanced",
+          "compatibility": "o.GameModule.Venus",
+          "fields": {
+            "name": "p.CardName.JET_STREAM_MICROSCRAPPERS_REBALANCED",
+            "cardType": "s.CardType.ACTIVE",
+            "tags": "[i.Tags.VENUS]",
+            "cost": "7",
+            "resourceType": "c.ResourceType.FLOATER",
+            "metadata": "{cardNumber:\"234\",renderData:h.CardRenderer.builder((function(e){e.action(\"Spend 1 titanium to add 2 Floaters here\",(function(e){e.titanium(1).startAction.floaters(2)})).br,e.or().br,e.action(\"Spend 2 Floaters here to raise Venus 1 step\",(function(e){e.floaters(2).startAction.venus(1)}))}))}"
+          }
+        },
+        {
+          "symbol": "MARS_UNIVERSITY_REBALANCED",
+          "name": "Mars University(⚖)",
+          "factory": "MarsUniversityRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.ACTIVE",
+            "name": "l.CardName.MARS_UNIVERSITY_REBALANCED",
+            "tags": "[a.Tags.SCIENCE,a.Tags.BUILDING]",
+            "cost": "12",
+            "metadata": "{cardNumber:\"073\",renderData:f.CardRenderer.builder((function(e){e.effect(\"When you play a Science tag, including this, you may discard a card from hand to draw a card.\",(function(e){e.science().played.startEffect.minus().cards(1).nbsp.plus().cards(1)}))}))}"
+          }
+        },
+        {
+          "symbol": "MARTIAN_RAILS_REBALANCED",
+          "name": "Martian Rails(⚖)",
+          "factory": "MartianRailsRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.ACTIVE",
+            "name": "c.CardName.MARTIAN_RAILS_REBALANCED",
+            "tags": "[a.Tags.BUILDING]",
+            "cost": "12",
+            "metadata": "{cardNumber:\"007\",renderData:d.CardRenderer.builder((function(e){e.action(\"Spend 1 Energy to gain 1 M€ for each City tile ON MARS.\",(function(e){e.energy(1).startAction.megacredits(1).slash(),e.city(l.Size.SMALL).any.asterix()})).br}))}"
+          }
+        },
+        {
+          "symbol": "MASS_CONVERTER_REBALANCED",
+          "name": "Mass Converter(⚖)",
+          "factory": "MassConverterRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.ACTIVE",
+            "name": "u.CardName.MASS_CONVERTER_REBALANCED",
+            "tags": "[a.Tags.SCIENCE,a.Tags.ENERGY]",
+            "cost": "8",
+            "requirements": "d.CardRequirements.builder((function(e){return e.tag(a.Tags.SCIENCE,6)}))",
+            "cardDiscount": "{tag:a.Tags.SPACE,amount:2}",
+            "metadata": "{cardNumber:\"094\",renderData:l.CardRenderer.builder((function(e){e.effect(\"When you play a Space card, you pay 2 M€ less for it.\",(function(e){e.space().played.startEffect.megacredits(-2)})).br,e.production((function(e){return e.energy(6)}))})),description:\"Requires 5 science tags. Increase your energy production 6 steps.\"}"
+          }
+        },
+        {
+          "symbol": "MEAT_INDUSTRY_REBALANCED",
+          "name": "Meat Industry(⚖)",
+          "factory": "MeatIndustryRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "c.CardType.ACTIVE",
+            "name": "s.CardName.MEAT_INDUSTRY_REBALANCED",
+            "tags": "[a.Tags.BUILDING]",
+            "cost": "10",
+            "metadata": "{cardNumber:\"X25\",renderData:u.CardRenderer.builder((function(e){e.effect(\"When you gain an animal to ANY CARD, gain 2 M€.\",(function(e){e.animals(1).asterix().startEffect.megacredits(2)}))}))}"
+          }
+        },
+        {
+          "symbol": "MICRO_MILLS_REBALANCED",
+          "name": "Micro-Mills(⚖)",
+          "factory": "MicroMillsRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "i.CardType.AUTOMATED",
+            "name": "c.CardName.MICRO_MILLS_REBALANCED",
+            "cost": "2",
+            "metadata": "{cardNumber:\"164\",renderData:u.CardRenderer.builder((function(e){e.production((function(e){return e.heat(1)}))})),description:\"Increase your heat production 1 step.\"}"
+          }
+        },
+        {
+          "symbol": "ORBITAL_CLEANUP_REBALANCED",
+          "name": "Orbital Cleanup(⚖)",
+          "factory": "OrbitalCleanupRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.ACTIVE",
+            "name": "u.CardName.ORBITAL_CLEANUP_REBALANCED",
+            "tags": "[a.Tags.EARTH,a.Tags.SPACE]",
+            "cost": "14",
+            "metadata": "{cardNumber:\"X08\",renderData:d.CardRenderer.builder((function(e){e.action(\"Gain 1 M€ per every two Science tag you have.\",(function(e){e.empty().startAction.megacredits(1).slash().science(2).played}))})),victoryPoints:2}"
+          }
+        },
+        {
+          "symbol": "OUTDOOR_SPORTS_REBALANCED",
+          "name": "Outdoor Sports(⚖)",
+          "factory": "OutdoorSportsRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "i.CardType.AUTOMATED",
+            "name": "a.CardName.OUTDOOR_SPORTS_REBALANCED",
+            "cost": "8",
+            "requirements": "s.CardRequirements.builder((function(e){return e.cities(1).any().oceans(1)}))",
+            "metadata": "{cardNumber:\"X38\",renderData:c.CardRenderer.builder((function(e){e.production((function(e){e.megacredits(3)}))})),description:\"Requires any city adjacent to an ocean. Increase your M€ production 3 steps.\",victoryPoints:1}"
+          }
+        },
+        {
+          "symbol": "RELEASE_OF_INERT_GASES_REBALANCED",
+          "name": "Release of Inert Gases(⚖)",
+          "factory": "ReleaseOfInertGasesRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "i.CardType.EVENT",
+            "name": "s.CardName.RELEASE_OF_INERT_GASES_REBALANCED",
+            "cost": "13",
+            "metadata": "{cardNumber:\"036\",renderData:l.CardRenderer.builder((function(e){e.tr(2)})),description:\"Raise your terraforming rating 2 steps.\"}"
+          }
+        },
+        {
+          "symbol": "RESEARCH_OUTPOST_REBALANCED",
+          "name": "Research Outpost(⚖)",
+          "factory": "ResearchOutpostRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.ACTIVE",
+            "name": "u.CardName.RESEARCH_OUTPOST_REBALANCED",
+            "tags": "[a.Tags.SCIENCE,a.Tags.CITY,a.Tags.BUILDING]",
+            "cost": "18",
+            "cardDiscount": "{amount:1}",
+            "metadata": "{cardNumber:\"020\",renderData:d.CardRenderer.builder((function(e){e.effect(\"When you play a card, you pay 1 M€ less for it.\",(function(e){e.empty().startEffect.megacredits(-1)})).br,e.city()})),description:\"Place a city tile NEXT TO NO OTHER TILE.\",victoryPoints:-1}"
+          }
+        },
+        {
+          "symbol": "RESTRICTED_AREA_REBALANCED",
+          "name": "Restricted Area(⚖)",
+          "factory": "RestrictedAreaRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cost": "13",
+            "extractedFromFactory": true
+          }
+        },
+        {
+          "symbol": "ROTATOR_IMPACTS_REBALANCED",
+          "name": "Rotator Impacts(⚖)",
+          "factory": "RotatorImpactsRebalanced",
+          "compatibility": "o.GameModule.Venus",
+          "fields": {
+            "name": "p.CardName.ROTATOR_IMPACTS_REBALANCED",
+            "cardType": "s.CardType.ACTIVE",
+            "tags": "[i.Tags.SPACE]",
+            "cost": "6",
+            "resourceType": "c.ResourceType.ASTEROID",
+            "requirements": "h.CardRequirements.builder((function(e){return e.venus(14).max()}))",
+            "metadata": "{cardNumber:\"243\",renderData:g.CardRenderer.builder((function(e){e.action(\"Spend 6 M€ to add an asteroid resource to ANY card [TITANIUM MAY BE USED].\",(function(e){e.megacredits(6).titanium(1).brackets.startAction.asteroids(1).asterix()})).br,e.action(\"Spend 1 resource from this card to increase Venus 1 step.\",(function(e){e.or().asteroids(1).startAction.venus(1)}))})),description:\"Venus must be 14% or lower\"}"
+          }
+        },
+        {
+          "symbol": "SABOTAGE_REBALANCED",
+          "name": "Sabotage(⚖)",
+          "factory": "SabotageRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "i.CardType.EVENT",
+            "name": "u.CardName.SABOTAGE_REBALANCED",
+            "cost": "1",
+            "requirements": "f.CardRequirements.builder((function(e){return e.generation(5)}))",
+            "metadata": "{cardNumber:\"121\",renderData:l.CardRenderer.builder((function(e){e.minus().titanium(3).digit.any.nbsp.or(p.Size.SMALL).nbsp,e.minus().steel(4).digit.any.br.or(p.Size.SMALL).nbsp,e.minus().megacredits(7).any})),description:\"Remove up to 3 titanium from any player, or 4 steel, or 7 M€.\"}"
+          }
+        },
+        {
+          "symbol": "SKY_DOCKS_REBALANCED",
+          "name": "Sky Docks(⚖)",
+          "factory": "SkyDocksRebalanced",
+          "compatibility": "o.GameModule.Colonies",
+          "fields": {
+            "cost": "18",
+            "tags": "[a.Tags.SPACE,a.Tags.EARTH]",
+            "name": "s.CardName.SKY_DOCKS_REBALANCED",
+            "cardType": "i.CardType.ACTIVE",
+            "requirements": "d.CardRequirements.builder((function(e){return e.tag(a.Tags.EARTH,2)}))",
+            "cardDiscount": "{amount:1}",
+            "metadata": "{cardNumber:\"C36\",renderData:c.CardRenderer.builder((function(e){e.effect(\"When you play a card, you pay 1 M€ less for it.\",(function(e){e.empty().startEffect.megacredits(-1)})).br,e.tradeFleet()})),description:\"Requires 2 Earth tags. Gain 1 Trade Fleet.\",victoryPoints:1}"
+          }
+        },
+        {
+          "symbol": "SNOW_ALGAE_REBALANCED",
+          "name": "Snow Algae(⚖)",
+          "factory": "SnowAlgaeRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "i.CardType.AUTOMATED",
+            "name": "a.CardName.SNOW_ALGAE_REBALANCED",
+            "cost": "11",
+            "tags": "[s.Tags.PLANT]",
+            "requirements": "u.CardRequirements.builder((function(e){return e.oceans(2)}))",
+            "metadata": "{cardNumber:\"211\",renderData:d.CardRenderer.builder((function(e){e.production((function(e){e.plants(1).heat(1)}))})),description:\"Requires 2 oceans. Increase your Plant production and your heat production 1 step each.\"}"
+          }
+        },
+        {
+          "symbol": "SOIL_FACTORY_REBALANCED",
+          "name": "Soil Factory(⚖)",
+          "factory": "SoilFactoryRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.AUTOMATED",
+            "name": "u.CardName.SOIL_FACTORY_REBALANCED",
+            "tags": "[a.Tags.BUILDING]",
+            "cost": "10",
+            "productionBox": "l.Units.of({energy:-1,plants:2})",
+            "metadata": "{cardNumber:\"179\",renderData:d.CardRenderer.builder((function(e){e.production((function(e){e.minus().energy(1).br,e.plus().plants(2)}))})),description:\"Decrease your Energy production 1 step and increase your Plant production 2 step.\",victoryPoints:1}"
+          }
+        },
+        {
+          "symbol": "SOLAR_POWER_REBALANCED",
+          "name": "Solar Power(⚖)",
+          "factory": "SolarPowerRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.AUTOMATED",
+            "name": "u.CardName.SOLAR_POWER_REBALANCED",
+            "tags": "[a.Tags.ENERGY,a.Tags.BUILDING]",
+            "cost": "10",
+            "productionBox": "l.Units.of({energy:1})",
+            "metadata": "{cardNumber:\"113\",renderData:d.CardRenderer.builder((function(e){e.production((function(e){return e.energy(1)}))})),description:\"Increase your energy production 1 step.\",victoryPoints:1}"
+          }
+        },
+        {
+          "symbol": "SPINOFF_DEPARTMENT_REBALANCED",
+          "name": "Spin-off Department(⚖)",
+          "factory": "SpinoffDepartmentRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cost": "13",
+            "tags": "[a.Tags.BUILDING]",
+            "name": "c.CardName.SPINOFF_DEPARTMENT_REBALANCED",
+            "cardType": "s.CardType.ACTIVE",
+            "productionBox": "l.Units.of({megacredits:2})",
+            "metadata": "{cardNumber:\"C41\",renderData:d.CardRenderer.builder((function(e){e.effect(\"WHEN PLAYING A CARD WITH A BASIC COST OF 20M€ OR MORE, draw a card.\",(function(e){e.megacredits(20).asterix().startEffect.cards(1)})).br,e.production((function(e){return e.megacredits(2)}))})),description:\"Increase your M€ production 2 steps.\"}"
+          }
+        },
+        {
+          "symbol": "STRATOPOLIS_REBALANCED",
+          "name": "Stratopolis(⚖)",
+          "factory": "StratopolisRebalanced",
+          "compatibility": "o.GameModule.Venus",
+          "fields": {
+            "name": "y.CardName.STRATOPOLIS_REBALANCED",
+            "cardType": "s.CardType.ACTIVE",
+            "tags": "[a.Tags.CITY,a.Tags.VENUS]",
+            "cost": "20",
+            "resourceType": "l.ResourceType.FLOATER",
+            "requirements": "f.CardRequirements.builder((function(e){return e.tag(a.Tags.SCIENCE,2)}))",
+            "metadata": "{cardNumber:\"248\",renderData:m.CardRenderer.builder((function(e){e.action(\"Add 2 floaters to ANY VENUS CARD.\",(function(e){e.empty().startAction.floaters(2).secondaryTag(a.Tags.VENUS)})).br,e.production((function(e){return e.megacredits(2)})).city().asterix(),e.vpText(\"1 VP for every 2nd Floater on this card.\")})),description:{text:\"Requires 2 science tag. Increase your M€ production 2 steps. Place a City tile ON THE RESERVED AREA\",align:\"left\"},victoryPoints:h.CardRenderDynamicVictoryPoints.floaters(1,2)}"
+          }
+        },
+        {
+          "symbol": "STRIP_MINE_REBALANCED",
+          "name": "Strip Mine(⚖)",
+          "factory": "StripMineRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.AUTOMATED",
+            "name": "u.CardName.STRIP_MINE_REBALANCED",
+            "tags": "[a.Tags.BUILDING]",
+            "cost": "23",
+            "productionBox": "y.Units.of({energy:-2,steel:2,titanium:1})",
+            "metadata": "{cardNumber:\"138\",renderData:f.CardRenderer.builder((function(e){e.production((function(e){e.minus().energy(2).br,e.plus().steel(2).titanium(1)})).br,e.oxygen(2)})),description:\"Decrease your Energy production 2 steps. Increase your steel production 2 steps and your titanium production 1 step. Raise oxygen 2 steps.\"}"
+          }
+        },
+        {
+          "symbol": "TITAN_AIRSCRAPPING_REBALANCED",
+          "name": "Titan Air-scrapping(⚖)",
+          "factory": "TitanAirScrappingRebalanced",
+          "compatibility": "o.GameModule.Colonies",
+          "fields": {
+            "cost": "21",
+            "tags": "[i.Tags.JOVIAN]",
+            "name": "c.CardName.TITAN_AIRSCRAPPING_REBALANCED",
+            "cardType": "s.CardType.ACTIVE",
+            "resourceType": "u.ResourceType.FLOATER",
+            "metadata": "{cardNumber:\"C43\",renderData:m.CardRenderer.builder((function(e){e.action(\"Spend 1 titanium to add 4 floaters here.\",(function(e){e.titanium(1).startAction.floaters(4)})).br,e.or().br,e.action(\"Spend 2 floaters here to increase your TR 1 step.\",(function(e){e.floaters(2).startAction.tr(1)}))})),victoryPoints:2}"
+          }
+        },
+        {
+          "symbol": "TOLL_STATION_REBALANCED",
+          "name": "Toll Station(⚖)",
+          "factory": "TollStationRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.AUTOMATED",
+            "name": "u.CardName.TOLL_STATION_REBALANCED",
+            "tags": "[a.Tags.SPACE]",
+            "cost": "12",
+            "metadata": "{cardNumber:\"099\",renderData:d.CardRenderer.builder((function(e){e.production((function(e){e.megacredits(1).slash().space().played.any.asterix()}))})),description:\"Increase your M€ production 1 step for each space tag of the OPPONENT who has the most space tags.\"}"
+          }
+        },
+        {
+          "symbol": "TOPSOIL_CONTRACT_REBALANCED",
+          "name": "Topsoil Contract(⚖)",
+          "factory": "TopsoilContractRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "c.CardType.ACTIVE",
+            "name": "s.CardName.TOPSOIL_CONTRACT_REBALANCED",
+            "tags": "[a.Tags.MICROBE,a.Tags.EARTH]",
+            "cost": "10",
+            "metadata": "{cardNumber:\"X30\",renderData:u.CardRenderer.builder((function(e){e.effect(\"When you gain a microbe to ANY CARD, also gain 1 M€.\",(function(e){e.microbes(1).asterix().startEffect.megacredits(1)})).br,e.plants(3)})),description:\"Gain 3 plants.\"}"
+          }
+        },
+        {
+          "symbol": "TROPICAL_RESORT_REBALANCED",
+          "name": "Tropical Resort(⚖)",
+          "factory": "TropicalResortRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.AUTOMATED",
+            "name": "u.CardName.TROPICAL_RESORT_REBALANCED",
+            "tags": "[a.Tags.BUILDING]",
+            "cost": "11",
+            "productionBox": "l.Units.of({megacredits:3,heat:-2})",
+            "metadata": "{cardNumber:\"098\",renderData:d.CardRenderer.builder((function(e){e.production((function(e){e.minus().heat(2).br,e.plus().megacredits(3)}))})),description:\"Reduce your heat production 2 steps and increase your M€ production 3 steps.\",victoryPoints:2}"
+          }
+        },
+        {
+          "symbol": "UNDERGROUND_CITY_REBALANCED",
+          "name": "Underground City(⚖)",
+          "factory": "UndergroundCityRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.AUTOMATED",
+            "name": "d.CardName.UNDERGROUND_CITY_REBALANCED",
+            "tags": "[a.Tags.CITY,a.Tags.BUILDING]",
+            "cost": "18",
+            "productionBox": "p.Units.of({energy:-1,steel:2})",
+            "metadata": "{cardNumber:\"032\",renderData:l.CardRenderer.builder((function(e){e.production((function(e){e.minus().energy(1).br,e.plus().steel(2)})).nbsp.city()})),description:\"Place a City tile. Decrease your Energy production 1 step and increase your steel production 2 steps.\"}"
+          }
+        },
+        {
+          "symbol": "UNDERGROUND_DETONATIONS_REBALANCED",
+          "name": "Underground Detonations(⚖)",
+          "factory": "UndergroundDetonationsRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.ACTIVE",
+            "name": "u.CardName.UNDERGROUND_DETONATIONS_REBALANCED",
+            "tags": "[a.Tags.BUILDING]",
+            "cost": "2",
+            "metadata": "{cardNumber:\"202\",renderData:l.CardRenderer.builder((function(e){e.action(\"Spend 8M€ to increase your heat production 2 steps. STEEL MAY BE USED as if you were playing a Building card.\",(function(e){e.megacredits(8).steel(1).brackets.startAction.production((function(e){return e.heat(2)}))}))}))}"
+          }
+        },
+        {
+          "symbol": "VIRAL_ENHANCERS_REBALANCED",
+          "name": "Viral Enhancers(⚖)",
+          "factory": "ViralEnhancersRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.ACTIVE",
+            "name": "d.CardName.VIRAL_ENHANCERS_REBALANCED",
+            "tags": "[a.Tags.SCIENCE,a.Tags.MICROBE]",
+            "cost": "10",
+            "metadata": "{cardNumber:\"074\",renderData:f.CardRenderer.builder((function(e){e.plants(1).played.slash().microbes(1).played.slash().animals(1).played.br,e.effect(\"When you play a Plant, Microbe, or an Animal tag, including this, gain 1 plant or add 1 resource to THAT CARD.\",(function(e){e.empty().startEffect,e.plants(1).slash().microbes(1).asterix().slash().animals(1).asterix()}))}))}"
+          }
+        },
+        {
+          "symbol": "WARP_DRIVE_REBALANCED",
+          "name": "Warp Drive(⚖)",
+          "factory": "WarpDriveRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cost": "16",
+            "tags": "[a.Tags.SCIENCE]",
+            "name": "s.CardName.WARP_DRIVE_REBALANCED",
+            "cardType": "i.CardType.ACTIVE",
+            "requirements": "u.CardRequirements.builder((function(e){return e.tag(a.Tags.SCIENCE,5)}))",
+            "cardDiscount": "{tag:a.Tags.SPACE,amount:4}",
+            "metadata": "{cardNumber:\"C49\",renderData:c.CardRenderer.builder((function(e){e.effect(\"When you play a Space card, you pay 4 M€ less for it.\",(function(e){e.space().played.startEffect.megacredits(-4)}))})),description:\"Requires 5 Science tags.\",victoryPoints:2}"
+          }
+        },
+        {
+          "symbol": "ZEPPELINS_REBALANCED",
+          "name": "Zeppelins(⚖)",
+          "factory": "ZeppelinsRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "i.CardType.AUTOMATED",
+            "name": "c.CardName.ZEPPELINS_REBALANCED",
+            "cost": "11",
+            "requirements": "u.CardRequirements.builder((function(e){return e.oxygen(5)}))",
+            "metadata": "{cardNumber:\"129\",renderData:d.CardRenderer.builder((function(e){e.production((function(e){e.megacredits(1).slash(),e.city(l.Size.SMALL).any.asterix()}))})),description:\"Requires 5% oxygen. Increase your M€ production 1 step for each City tile ON MARS.\",victoryPoints:1}"
+          }
+        }
+      ]
+    },
+    {
+      "group": "corporationCards",
+      "entries": [
+        {
+          "symbol": "APHRODITE_REBALANCED",
+          "name": "Aphrodite(⚖)",
+          "factory": "AphroditeRebalanced",
+          "compatibility": "o.GameModule.Venus",
+          "fields": {
+            "name": "c.CardName.APHRODITE_REBALANCED",
+            "tags": "[a.Tags.PLANT,a.Tags.VENUS]",
+            "startingMegaCredits": "50",
+            "cardType": "u.CardType.CORPORATION",
+            "metadata": "{cardNumber:\"R01\",description:\"You start with 2 plant production, and 50 M€.\",renderData:d.CardRenderer.builder((function(e){e.br,e.production((function(e){return e.plants(2)})).nbsp.megacredits(50),e.corpBox(\"effect\",(function(e){e.effect(\"Whenever Venus is terraformed 1 step, you gain 3 M€ and the player (not WGT) who raised it gain 2 M€\",(function(e){e.venus(1).any.startEffect,e.megacredits(2).any.asterix().nbsp.megacredits(3)}))}))}))}"
+          }
+        },
+        {
+          "symbol": "ARCADIAN_COMMUNITIES_REBALANCED",
+          "name": "Arcadian Communities(⚖)",
+          "factory": "ArcadianCommunitiesRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "c.CardType.CORPORATION",
+            "name": "s.CardName.ARCADIAN_COMMUNITIES_REBALANCED",
+            "startingMegaCredits": "42",
+            "tags": "[p.Tags.BUILDING]",
+            "initialActionText": "\"Place a community (player marker) on a non-reserved area\"",
+            "metadata": "{cardNumber:\"R44\",description:\"You start with 42 M€, 10 steel and 1 steel production. AS YOUR FIRST ACTION, PLACE A COMMUNITY [PLAYER MARKER] ON A NON-RESERVED AREA.\",renderData:u.CardRenderer.builder((function(e){e.br,e.megacredits(42).steel(10).digit.production((function(e){return e.steel(1)})).nbsp.community().asterix(),e.corpBox(\"action\",(function(e){e.text(\"ACTION: PLACE A COMMUNITY (PLAYER MARKER) ON A NON-RESERVED AREA ADJACENT TO ONE OF YOUR TILES OR MARKED AREAS\",d.Size.TINY,!0),e.vSpace(d.Size.MEDIUM),e.text(\"EFFECT: MARKED AREAS ARE RESERVED FOR YOU. WHEN YOU PLACE A TILE THERE, GAIN 3 M€\",d.Size.TINY,!0)}))}))}"
+          }
+        },
+        {
+          "symbol": "ARIDOR_REBALANCED",
+          "name": "Aridor(⚖)",
+          "factory": "AridorRebalanced",
+          "compatibility": "o.GameModule.Colonies",
+          "fields": {
+            "name": "c.CardName.ARIDOR_REBALANCED",
+            "startingMegaCredits": "45",
+            "cardType": "s.CardType.CORPORATION",
+            "initialActionText": "\"Add a colony tile\"",
+            "metadata": "{cardNumber:\"R20\",description:\"You start with 45 M€. As your first action, put an additional Colony Tile of your choice into play\",renderData:l.CardRenderer.builder((function(e){e.br.br,e.megacredits(45).nbsp.placeColony(),e.corpBox(\"effect\",(function(e){e.effect(\"When you get a new type of tag in play [event cards do not count], increase your M€ production 1 step.\",(function(e){e.diverseTag().startEffect.production((function(e){return e.megacredits(1)}))}))}))}))}"
+          }
+        },
+        {
+          "symbol": "ARKLIGHT_REBALANCED",
+          "name": "Arklight(⚖)",
+          "factory": "ArklightRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "c.CardName.ARKLIGHT_REBALANCED",
+            "tags": "[a.Tags.ANIMAL]",
+            "startingMegaCredits": "50",
+            "resourceType": "i.ResourceType.ANIMAL",
+            "cardType": "s.CardType.CORPORATION",
+            "metadata": "{cardNumber:\"R04\",description:\"You start with 50 M€. 1 VP per 2 animals on this card.\",renderData:d.CardRenderer.builder((function(e){e.megacredits(50),e.corpBox(\"effect\",(function(e){e.effect(\"When you play an animal or plant tag, including this, gain 1 M€ production and add 1 animal to this card.\",(function(e){e.animals(1).played.slash().plants(1).played.startEffect.production((function(e){return e.megacredits(1)})).animals(1)}))}))})),victoryPoints:l.CardRenderDynamicVictoryPoints.animals(1,2)}"
+          }
+        },
+        {
+          "symbol": "ASTRODRILL_REBALANCED",
+          "name": "Astrodrill(⚖)",
+          "factory": "AstrodrillRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "m.CardType.CORPORATION",
+            "name": "c.CardName.ASTRODRILL_REBALANCED",
+            "tags": "[i.Tags.SPACE]",
+            "startingMegaCredits": "40",
+            "resourceType": "u.ResourceType.ASTEROID",
+            "metadata": "{cardNumber:\"R21\",description:\"You start with 40 M€ and 4 asteroid resources.\",renderData:h.CardRenderer.builder((function(e){e.br,e.megacredits(40).nbsp.asteroids(4).digit,e.corpBox(\"action\",(function(e){e.vSpace(g.Size.LARGE),e.action(void 0,(function(e){e.empty().startAction.asteroids(1).asterix().slash().wild(1).or()})),e.vSpace(),e.action(\"Add an asteroid resource to ANY card OR gain any standard resource, OR remove an asteroid resource from this card to gain 3 titanium.\",(function(e){e.asteroids(1).startAction.titanium(3).digit}))}))}))}"
+          }
+        },
+        {
+          "symbol": "CELESTIC_REBALANCED",
+          "name": "Celestic(⚖)",
+          "factory": "CelesticRebalanced",
+          "compatibility": "o.GameModule.Venus",
+          "fields": {
+            "name": "u.CardName.CELESTIC_REBALANCED",
+            "tags": "[a.Tags.VENUS]",
+            "startingMegaCredits": "42",
+            "resourceType": "i.ResourceType.FLOATER",
+            "cardType": "l.CardType.CORPORATION",
+            "initialActionText": "\"Draw 2 cards with a floater icon on it\"",
+            "metadata": "{cardNumber:\"R05\",description:\"You start with 42 M€. As your first action, reveal cards from the deck until you have revealed 2 cards with a floater icon on it. Take them into hand and discard the rest.\",renderData:p.CardRenderer.builder((function(e){e.megacredits(42).nbsp.cards(2).secondaryTag(y.AltSecondaryTag.FLOATER),e.corpBox(\"action\",(function(e){e.action(\"Add a floater each to 1 or 2 different cards. 1 VP per 3 floaters on this card.\",(function(e){e.empty().startAction.floaters(1).asterix().floaters(1).asterix()})),e.vSpace()}))})),victoryPoints:f.CardRenderDynamicVictoryPoints.floaters(1,3)}"
+          }
+        },
+        {
+          "symbol": "CHEUNG_SHING_MARS_REBALANCED",
+          "name": "Cheung Shing MARS(⚖)",
+          "factory": "CheungShingMARSRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "u.CardType.CORPORATION",
+            "name": "c.CardName.CHEUNG_SHING_MARS_REBALANCED",
+            "tags": "[a.Tags.BUILDING]",
+            "startingMegaCredits": "44",
+            "productionBox": "l.Units.of({megacredits:3})",
+            "metadata": "{cardNumber:\"R16\",description:\"You start with 3 M€ production and 44 M€.\",renderData:d.CardRenderer.builder((function(e){e.br.br,e.production((function(e){return e.megacredits(3)})).nbsp.megacredits(44),e.corpBox(\"effect\",(function(e){e.effect(\"When you play a building tag, including this, you gain 3 M€.\",(function(e){e.building().played.startEffect.megacredits(3)}))}))}))}"
+          }
+        },
+        {
+          "symbol": "ECOLINE_REBALANCED",
+          "name": "EcoLine(⚖)",
+          "factory": "EcoLineRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "u.CardType.CORPORATION",
+            "name": "c.CardName.ECOLINE_REBALANCED",
+            "tags": "[i.Tags.PLANT]",
+            "startingMegaCredits": "37",
+            "metadata": "{cardNumber:\"R17\",description:\"You start with 3 plant production, and 37 M€.\",renderData:d.CardRenderer.builder((function(e){e.br,e.production((function(e){return e.plants(3)})).nbsp.megacredits(37),e.corpBox(\"effect\",(function(e){e.effect(\"Each time you play a plant, animal or microbe tag, including this, gain 2MC or 1 plant.\",(function(e){e.animals(1).played.slash().plants(1).played.slash().microbes(1).played,e.startEffect.megacredits(2).or().plants(1)}))}))}))}"
+          }
+        },
+        {
+          "symbol": "FACTORUM_REBALANCED",
+          "name": "Factorum(⚖)",
+          "factory": "FactorumRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "u.CardType.CORPORATION",
+            "name": "c.CardName.FACTORUM_REBALANCED",
+            "tags": "[i.Tags.ENERGY,i.Tags.BUILDING]",
+            "startingMegaCredits": "40",
+            "productionBox": "p.Units.of({steel:2})",
+            "metadata": "{cardNumber:\"R22\",description:\"You start with 40 M€. Increase your steel production 2 steps.\",renderData:d.CardRenderer.builder((function(e){e.megacredits(40).nbsp.production((function(e){return e.steel(2)})),e.corpBox(\"action\",(function(e){e.vSpace(l.Size.LARGE),e.action(\"Increase your energy production 1 step IF YOU HAVE NO ENERGY RESOURCES, or spend 1 energy to draw a building card.\",(function(e){e.empty().arrow().production((function(e){return e.energy(1)})),e.or().energy(1).startAction.cards(1).secondaryTag(i.Tags.BUILDING)}))}))}))}"
+          }
+        },
+        {
+          "symbol": "HELION_REBALANCED",
+          "name": "Helion(⚖)",
+          "factory": "HelionRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "u.CardType.CORPORATION",
+            "name": "c.CardName.HELION_REBALANCED",
+            "tags": "[i.Tags.SPACE]",
+            "startingMegaCredits": "40",
+            "metadata": "{cardNumber:\"R18\",description:\"You start with 4 heat production and 40 M€.\",renderData:d.CardRenderer.builder((function(e){e.production((function(e){return e.heat(4).digit})).nbsp.megacredits(40),e.corpBox(\"effect\",(function(e){e.vSpace(l.Size.LARGE),e.effect(\"You may use heat as MC. You may not use M€ as heat.\",(function(e){e.startEffect.text(\"x\").heat(1).equals().megacredits(0).multiplier})),e.effect(\"You may always spend 7 heat, instead of 8, to raise a temperature.\",(function(e){e.heat(7).digit.startAction.temperature(1)}))}))}))}"
+          }
+        },
+        {
+          "symbol": "INTERPLANETARY_CINEMATICS_REBALANCED",
+          "name": "Interplanetary Cinematics(⚖)",
+          "factory": "InterplanetaryCinematicsRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "s.CardType.CORPORATION",
+            "name": "c.CardName.INTERPLANETARY_CINEMATICS_REBALANCED",
+            "tags": "[i.Tags.BUILDING]",
+            "startingMegaCredits": "40",
+            "metadata": "{cardNumber:\"R19\",description:\"You start with 40 M€ and 12 steel.\",renderData:u.CardRenderer.builder((function(e){e.br.br.br,e.megacredits(40).nbsp.steel(12).digit,e.corpBox(\"effect\",(function(e){e.effect(\"Each time you play an event, you gain 3 M€.\",(function(e){e.event().played.startEffect.megacredits(3)}))}))}))}"
+          }
+        },
+        {
+          "symbol": "INVENTRIX_REBALANCED",
+          "name": "Inventrix(⚖)",
+          "factory": "InventrixRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "c.CardType.CORPORATION",
+            "name": "s.CardName.INVENTRIX_REBALANCED",
+            "tags": "[i.Tags.SCIENCE]",
+            "initialActionText": "\"Draw 3 cards\"",
+            "startingMegaCredits": "45",
+            "metadata": "{cardNumber:\"R43\",description:\"As first action, draw 3 cards.\",renderData:u.CardRenderer.builder((function(e){e.megacredits(45).nbsp.cards(3),e.corpBox(\"effect\",(function(e){e.vSpace(l.Size.LARGE),e.effect(\"Your temperature, oxygen, ocean, and Venus requirements are +/-3 steps.\",(function(e){e.plate(\"Global requirements\").startEffect.text(\"+/- 3\")})),e.effect(\"Cards with a req. cost 1 M€ less.\",(function(e){e.cards(1).secondaryTag(d.AltSecondaryTag.REQ).startEffect.megacredits(-1)}))}))}))}"
+          }
+        },
+        {
+          "symbol": "LAKEFRONT_RESORTS_REBALANCED",
+          "name": "Lakefront Resorts(⚖)",
+          "factory": "LakefrontResortsRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "p.CardType.CORPORATION",
+            "name": "u.CardName.LAKEFRONT_RESORTS_REBALANCED",
+            "tags": "[a.Tags.BUILDING]",
+            "startingMegaCredits": "46",
+            "metadata": "{cardNumber:\"R38\",description:\"You start with 46 M€.\",renderData:f.CardRenderer.builder((function(e){e.br.br.br,e.megacredits(46),e.corpBox(\"effect\",(function(e){e.vSpace(y.Size.MEDIUM),e.effect(\"When any ocean tile is placed, increase your M€ production 1 step. Your bonus for placing adjacent to oceans is 3M€ instead of 2 M€.\",(function(e){e.oceans(1,y.Size.SMALL).any.colon().production((function(e){return e.megacredits(1)})),e.emptyTile(\"normal\",y.Size.SMALL).oceans(1,y.Size.SMALL),e.startEffect.megacredits(3)}))}))}))}"
+          }
+        },
+        {
+          "symbol": "MINING_GUILD_REBALANCED",
+          "name": "Mining Guild(⚖)",
+          "factory": "MiningGuildRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "l.CardType.CORPORATION",
+            "name": "d.CardName.MINING_GUILD_REBALANCED",
+            "tags": "[i.Tags.BUILDING,i.Tags.BUILDING]",
+            "startingMegaCredits": "36",
+            "productionBox": "y.Units.of({steel:1})",
+            "metadata": "{cardNumber:\"R24\",description:\"You start with 36 M€, 2 steel and 1 steel production.\",renderData:f.CardRenderer.builder((function(e){e.br.br,e.megacredits(36).nbsp.steel(2).digit.nbsp.production((function(e){return e.steel(1)})),e.corpBox(\"effect\",(function(e){e.effect(\"Each time you get any steel as a placement bonus on the map, increase your steel production 1 step. Same for titanium.\",(function(e){e.steel(1).asterix().colon(),e.production((function(e){return e.steel(1)})).or(h.Size.TINY),e.titanium(1).asterix(),e.startEffect.production((function(e){return e.titanium(1)}))}))}))}))}"
+          }
+        },
+        {
+          "symbol": "MONS_INSURANCE_REBALANCED",
+          "name": "Mons Insurance(⚖)",
+          "factory": "MonsInsuranceRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "c.CardType.CORPORATION",
+            "name": "s.CardName.MONS_INSURANCE_REBALANCED",
+            "startingMegaCredits": "48",
+            "metadata": "{cardNumber:\"R46\",description:\"You start with 48 M€. Increase your M€ production 2 step per opponent. ALL OPPONENTS DECREASE THEIR M€ production 2 STEPS. THIS DOES NOT TRIGGER THE EFFECT BELOW.\",renderData:u.CardRenderer.builder((function(e){e.megacredits(48).production((function(e){e.megacredits(2).asterix().nbsp.megacredits(-2).any.asterix()})),e.corpBox(\"effect\",(function(e){e.vSpace(d.Size.LARGE),e.effect(\"When a player causes another player to decrease production or lose resources, pay 2M€ to the victim, or as much as possible.\",(function(e){e.production((function(e){return e.wild(1).any})).or().minus().wild(1).any,e.startEffect.text(\"pay\",d.Size.SMALL,!0).megacredits(2)}))}))}))}"
+          }
+        },
+        {
+          "symbol": "MORNING_STAR_INC_REBALANCED",
+          "name": "Morning Star Inc.(⚖)",
+          "factory": "MorningStarIncRebalanced",
+          "compatibility": "o.GameModule.Venus",
+          "fields": {
+            "name": "s.CardName.MORNING_STAR_INC_REBALANCED",
+            "tags": "[a.Tags.VENUS]",
+            "startingMegaCredits": "50",
+            "cardType": "c.CardType.CORPORATION",
+            "initialActionText": "\"Draw 3 Venus-tag cards\"",
+            "cardDiscount": "{tag:a.Tags.VENUS,amount:2}",
+            "metadata": "{cardNumber:\"R06\",description:\"You start with 50 M€. As your first action, reveal cards from the deck until you have revealed 3 Venus-tag cards. Take those into hand and discard the rest.\",renderData:u.CardRenderer.builder((function(e){e.megacredits(50).nbsp.cards(3).secondaryTag(a.Tags.VENUS),e.corpBox(\"effect\",(function(e){e.vSpace(l.Size.LARGE),e.effect(\"Your Venus requirements are +/- 3 steps, your choice in each case.\",(function(e){e.plate(\"Venus requirements\").startEffect.text(\"+/- 3\")})),e.effect(\"When you play a Venus tag, you pay 2 M€ less for it.\",(function(e){e.venus(1).played.startEffect.megacredits(-2)}))}))}))}"
+          }
+        },
+        {
+          "symbol": "PHOBOLOG_REBALANCED",
+          "name": "PhoboLog(⚖)",
+          "factory": "PhoboLogRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "c.CardType.CORPORATION",
+            "name": "s.CardName.PHOBOLOG_REBALANCED",
+            "tags": "[i.Tags.SPACE]",
+            "startingMegaCredits": "30",
+            "initialActionText": "\"Draw 2 cards with a space tag\"",
+            "metadata": "{cardNumber:\"R09\",description:\"You start with 8 titanium and 30 M€. As your first action, reveal cards from the deck until you have revealed 2 cards with a space tag. Take them into hand and discard the rest.\",renderData:u.CardRenderer.builder((function(e){e.br,e.megacredits(30).nbsp.titanium(8).digit.cards(2).secondaryTag(i.Tags.SPACE),e.corpBox(\"effect\",(function(e){e.effect(\"Your titanium resources are each worth 1 M€ extra.\",(function(e){e.titanium(1).startEffect.plus(d.Size.SMALL).megacredits(1)}))}))}))}"
+          }
+        },
+        {
+          "symbol": "POINT_LUNA_REBALANCED",
+          "name": "Point Luna(⚖)",
+          "factory": "PointLunaRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "u.CardType.CORPORATION",
+            "name": "c.CardName.POINT_LUNA_REBALANCED",
+            "tags": "[a.Tags.SPACE,a.Tags.EARTH]",
+            "startingMegaCredits": "48",
+            "metadata": "{cardNumber:\"R10\",description:\"You start with 1 titanium production and 48 M€.\",renderData:d.CardRenderer.builder((function(e){e.br,e.production((function(e){return e.titanium(1)})).nbsp.megacredits(48),e.corpBox(\"effect\",(function(e){e.effect(\"When you play an Earth tag, including this, draw a card then discard a card.\",(function(e){e.earth().played.startEffect.plus().cards(1).minus().cards(1)}))}))}))}"
+          }
+        },
+        {
+          "symbol": "POLYPHEMOS_REBALANCED",
+          "name": "Polyphemos(⚖)",
+          "factory": "PolyphemosRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "s.CardName.POLYPHEMOS_REBALANCED",
+            "startingMegaCredits": "55",
+            "cardType": "c.CardType.CORPORATION",
+            "cardCost": "5",
+            "metadata": "{cardNumber:\"R11\",description:\"You start with 55 M€. Increase your M€ production 5 steps. Gain 5 titanium.\",renderData:u.CardRenderer.builder((function(e){e.megacredits(55).nbsp.production((function(e){return e.megacredits(5)})).nbsp.titanium(5).digit,e.corpBox(\"effect\",(function(e){e.effect(\"When you buy a card to hand, pay 5M€ instead of 3, including the starting hand.\",(function(e){e.cards(1).asterix().startEffect.megacredits(5)})),e.effect(\"When playing a card with a basic cost of 20MC or more, draw a card.\",(function(e){e.megacredits(20).asterix().startEffect.cards(1)}))}))}))}"
+          }
+        },
+        {
+          "symbol": "POSEIDON_REBALANCED",
+          "name": "Poseidon(⚖)",
+          "factory": "PoseidonRebalanced",
+          "compatibility": "o.GameModule.Colonies",
+          "fields": {
+            "name": "i.CardName.POSEIDON_REBALANCED",
+            "startingMegaCredits": "40",
+            "cardType": "s.CardType.CORPORATION",
+            "initialActionText": "\"Place a colony\"",
+            "metadata": "{cardNumber:\"R02\",description:\"You start with 40 M€ As your first action, place a colony.\",renderData:u.CardRenderer.builder((function(e){e.br.br,e.megacredits(40).nbsp.colonies(1),e.corpBox(\"effect\",(function(e){e.effect(\"When you place a colony, including this, raise your M€ production 2 step.\",(function(e){e.colonies(1).startEffect.production((function(e){return e.megacredits(2)}))}))}))}))}"
+          }
+        },
+        {
+          "symbol": "PRISTAR_REBALANCED",
+          "name": "Pristar(⚖)",
+          "factory": "PristarRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "i.CardName.PRISTAR_REBALANCED",
+            "startingMegaCredits": "53",
+            "resourceType": "a.ResourceType.PRESERVATION",
+            "cardType": "c.CardType.CORPORATION",
+            "metadata": "{cardNumber:\"R07\",description:\"You start with 53 M€. Decrease your TR 2 steps. 1 VP per preservation resource here.\",renderData:u.CardRenderer.builder((function(e){e.br.br.br,e.megacredits(53).nbsp.nbsp.minus().tr(2,d.Size.SMALL),e.corpBox(\"effect\",(function(e){e.effect(\"During production phase, if you did not get TR so far this generation, add one preservation resource here, gain 6 M€, and get one influence.\",(function(e){e.tr(1,d.Size.SMALL,!0).startEffect.preservation(1).megacredits(6).influence(1)}))}))})),victoryPoints:l.CardRenderDynamicVictoryPoints.preservation(1,1)}"
+          }
+        },
+        {
+          "symbol": "RECYCLON_REBALANCED",
+          "name": "Recyclon(⚖)",
+          "factory": "RecyclonRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "p.CardType.CORPORATION",
+            "name": "l.CardName.RECYCLON_REBALANCED",
+            "tags": "[a.Tags.MICROBE,a.Tags.BUILDING]",
+            "startingMegaCredits": "40",
+            "resourceType": "i.ResourceType.MICROBE",
+            "productionBox": "y.Units.of({steel:2})",
+            "metadata": "{cardNumber:\"R26\",description:\"You start with 40 M€ and 2 steel production.\",renderData:f.CardRenderer.builder((function(e){e.br.br,e.megacredits(40).nbsp.production((function(e){return e.steel(2)})),e.corpBox(\"effect\",(function(e){e.effect(\"When you play a building tag, including this, gain 1 microbe to this card, or remove 2 microbes here and raise your plant production 1 step.\",(function(e){e.building().played.colon().microbes(1).or(),e.microbes(2).digit.startEffect.production((function(e){return e.plants(1)}))}))}))}))}"
+          }
+        },
+        {
+          "symbol": "ROBINSON_INDUSTRIES_REBALANCED",
+          "name": "Robinson Industries(⚖)",
+          "factory": "RobinsonIndustriesRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "d.CardType.CORPORATION",
+            "tags": "[p.Tags.WILDCARD]",
+            "name": "u.CardName.ROBINSON_INDUSTRIES_REBALANCED",
+            "startingMegaCredits": "40",
+            "productionBox": "f.Units.of({megacredits:2})",
+            "metadata": "{cardNumber:\"R27\",description:\"You start with 40 M€ and 2 M€ production. When you perform an action, the wild tag counts as any tag of your choice.\",renderData:l.CardRenderer.builder((function(e){e.br.br.br,e.megacredits(40).production((function(e){return e.megacredits(2)})),e.corpBox(\"action\",(function(e){e.action(\"Spend 4 M€ to increase (one of) your LOWEST production 1 step.\",(function(e){e.megacredits(4).startAction.production((function(e){return e.wild(1).asterix()}))}))}))}))}"
+          }
+        },
+        {
+          "symbol": "SPLICE_REBALANCED",
+          "name": "Splice(⚖)",
+          "factory": "SpliceRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "l.CardType.CORPORATION",
+            "name": "d.CardName.SPLICE_REBALANCED",
+            "tags": "[a.Tags.MICROBE]",
+            "startingMegaCredits": "52",
+            "initialActionText": "\"Draw a card with a microbe tag\"",
+            "metadata": "{cardNumber:\"R28\",description:\"You start with 44 M€. As your first action, reveal cards until you have revealed 1 card with a microbe tag. Take it into hand and discard the rest.\",renderData:p.CardRenderer.builder((function(e){e.megacredits(48).nbsp.cards(1).secondaryTag(a.Tags.MICROBE),e.corpBox(\"effect\",(function(e){e.vSpace(f.Size.LARGE),e.effect(void 0,(function(e){e.microbes(1).played.any.startEffect,e.megacredits(2).any.or().microbes(1).any.asterix()})),e.vSpace(),e.effect(\"when a microbe tag is played, incl. this, THAT PLAYER gains 2 M€, or adds a microbe to THAT card, and you gain 2 M€.\",(function(e){e.microbes(1).played.any.startEffect,e.megacredits(2)}))}))}))}"
+          }
+        },
+        {
+          "symbol": "STORMCRAFT_INCORPORATED_REBALANCED",
+          "name": "Stormcraft Incorporated(⚖)",
+          "factory": "StormCraftIncorporatedRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "s.CardName.STORMCRAFT_INCORPORATED_REBALANCED",
+            "tags": "[a.Tags.JOVIAN]",
+            "startingMegaCredits": "50",
+            "cardType": "c.CardType.CORPORATION",
+            "initialActionText": "\"Draw 1 card with a floater icon on it\"",
+            "metadata": "{cardNumber:\"R29\",description:\"You start with 50 M€. As your first action, reveal cards from the deck until you have revealed 1 card with a floater icon on it. Take that card into hand and discard the rest.\",renderData:d.CardRenderer.builder((function(e){e.br.br.br,e.megacredits(50).nbsp.cards(1).secondaryTag(l.AltSecondaryTag.FLOATER),e.corpBox(\"effect\",(function(e){e.effect(\"When you gain a floater to ANY CARD, also gain 1MC or 1 Energy.\",(function(e){e.floaters(1).asterix().startEffect.megacredits(1).slash().energy(1)})),e.vSpace()}))}))}"
+          }
+        },
+        {
+          "symbol": "TERRALABS_RESEARCH_REBALANCED",
+          "name": "Terralabs Research(⚖)",
+          "factory": "TerralabsResearchRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "s.CardName.TERRALABS_RESEARCH_REBALANCED",
+            "tags": "[a.Tags.SCIENCE,a.Tags.EARTH]",
+            "startingMegaCredits": "30",
+            "cardType": "c.CardType.CORPORATION",
+            "cardCost": "1",
+            "metadata": "{cardNumber:\"R14\",description:\"You start with 30 M€. Lower your TR 1 step.\",renderData:u.CardRenderer.builder((function(e){e.br,e.megacredits(30).nbsp.minus().tr(1),e.corpBox(\"effect\",(function(e){e.effect(\"Buying cards to hand costs 1 M€.\",(function(e){e.cards(1).startEffect.megacredits(1)}))}))}))}"
+          }
+        },
+        {
+          "symbol": "THARSIS_REPUBLIC_REBALANCED",
+          "name": "Tharsis Republic(⚖)",
+          "factory": "TharsisRepublicRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "y.CardType.CORPORATION",
+            "name": "u.CardName.THARSIS_REPUBLIC_REBALANCED",
+            "tags": "[i.Tags.BUILDING,i.Tags.CITY]",
+            "initialActionText": "\"Place a city tile\"",
+            "startingMegaCredits": "40",
+            "metadata": "{cardNumber:\"R31\",description:\"You start with 40 M€. As your first action in the game, place a city tile.\",renderData:m.CardRenderer.builder((function(e){e.br.br,e.megacredits(40).nbsp.city(),e.corpBox(\"effect\",(function(e){e.effect(\"When any city tile is placed, increase your M€ production 1 step. When you place a city tile, gain 3 M€.\",(function(e){e.city(h.Size.SMALL).any.asterix().colon(),e.production((function(e){return e.megacredits(1)})).nbsp,e.city(h.Size.SMALL).startEffect.megacredits(3)}))}))}))}"
+          }
+        },
+        {
+          "symbol": "THORGATE_REBALANCED",
+          "name": "Thorgate(⚖)",
+          "factory": "ThorgateRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "u.CardType.CORPORATION",
+            "name": "c.CardName.THORGATE_REBALANCED",
+            "tags": "[i.Tags.SCIENCE,i.Tags.ENERGY]",
+            "startingMegaCredits": "40",
+            "cardDiscount": "{tag:i.Tags.ENERGY,amount:3}",
+            "metadata": "{cardNumber:\"R13\",description:\"You start with 1 energy production and 40 M€.\",renderData:d.CardRenderer.builder((function(e){e.production((function(e){return e.energy(1)})).nbsp.megacredits(40),e.corpBox(\"action\",(function(e){e.vSpace(l.Size.LARGE),e.action(\"Decr. energy prod. gain 6 M€.\",(function(e){e.production((function(e){return e.energy(1)})).startAction.megacredits(6)})),e.vSpace(l.Size.SMALL),e.effect(\"When playing a power card OR SP POWER OR TURMOIL KELVINISTS ACTION, you pay 3 M€ less for it.\",(function(e){e.energy(1).played.asterix().slash().production((function(e){e.energy(1).heat(1)})).asterix().startEffect.megacredits(-3)}))}))}))}"
+          }
+        },
+        {
+          "symbol": "UNITED_NATIONS_MARS_INITIATIVE_REBALANCED",
+          "name": "United Nations Mars Initiative(⚖)",
+          "factory": "UnitedNationsMarsInitiativeRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "l.CardType.CORPORATION",
+            "name": "s.CardName.UNITED_NATIONS_MARS_INITIATIVE_REBALANCED",
+            "tags": "[i.Tags.EARTH]",
+            "startingMegaCredits": "50",
+            "metadata": "{cardNumber:\"R32\",description:\"You start with 50 M€.\",renderData:p.CardRenderer.builder((function(e){e.br.br.br,e.empty().nbsp.nbsp.nbsp.nbsp.megacredits(50),e.corpBox(\"action\",(function(e){e.action(\"If your Terraform Rating was raised this generation, you may pay 1 M€ to raise it 1 step more.\",(function(e){e.megacredits(1).startAction.tr(1).asterix()}))}))}))}"
+          }
+        },
+        {
+          "symbol": "UTOPIA_INVEST_REBALANCED",
+          "name": "Utopia Invest(⚖)",
+          "factory": "UtopiaInvestRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "d.CardName.UTOPIA_INVEST_REBALANCED",
+            "tags": "[a.Tags.BUILDING]",
+            "startingMegaCredits": "48",
+            "cardType": "u.CardType.CORPORATION",
+            "productionBox": "f.Units.of({steel:1,titanium:1})",
+            "metadata": "{cardNumber:\"R33\",description:\"You start with 48 M€. Increase your steel and titanium production 1 step each.\",renderData:p.CardRenderer.builder((function(e){e.br,e.megacredits(48).nbsp.production((function(e){return e.steel(1).titanium(1)})),e.corpBox(\"action\",(function(e){e.action(\"Decrease any production to gain 4 resources of that kind.\",(function(e){e.production((function(e){return e.wild(1)})).startAction.wild(4).digit}))}))}))}"
+          }
+        },
+        {
+          "symbol": "VIRON_REBALANCED",
+          "name": "Viron(⚖)",
+          "factory": "VironRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "c.CardName.VIRON_REBALANCED",
+            "tags": "[a.Tags.MICROBE]",
+            "startingMegaCredits": "54",
+            "cardType": "u.CardType.CORPORATION",
+            "metadata": "{cardNumber:\"R12\",description:\"You start with 54 M€.\",renderData:d.CardRenderer.builder((function(e){e.br.br.br,e.megacredits(54),e.corpBox(\"action\",(function(e){e.action(\"Use a blue card action that has already been used this generation.\",(function(e){e.empty().startAction.empty()}))}))}))}"
+          }
+        },
+        {
+          "symbol": "VITOR_REBALANCED",
+          "name": "Vitor(⚖)",
+          "factory": "VitorRebalanced",
+          "compatibility": null,
+          "fields": {
+            "cardType": "d.CardType.CORPORATION",
+            "name": "u.CardName.VITOR_REBALANCED",
+            "tags": "[a.Tags.EARTH]",
+            "startingMegaCredits": "52",
+            "initialActionText": "\"Fund an award for free\"",
+            "metadata": "{cardNumber:\"R35\",description:\"You start with 52 M€. As your first action, fund an award for free.\",renderData:l.CardRenderer.builder((function(e){e.br.br,e.megacredits(52).nbsp.award(),e.corpBox(\"effect\",(function(e){e.effect(\"When you play a card with a NON-NEGATIVE VP icon, including this, gain 2 M€.\",(function(e){e.vpIcon().asterix().startEffect.megacredits(2)}))}))}))}"
+          }
+        }
+      ]
+    },
+    {
+      "group": "preludeCards",
+      "entries": [
+        {
+          "symbol": "BIOFUELS_REBALANCED",
+          "name": "Biofuels(⚖)",
+          "factory": "BiofuelsRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "c.CardName.BIOFUELS_REBALANCED",
+            "tags": "[a.Tags.MICROBE,a.Tags.ENERGY]",
+            "metadata": "{cardNumber:\"P03\",renderData:u.CardRenderer.builder((function(e){e.production((function(e){return e.energy(2).plants(1)})).br,e.plants(2)})),description:\"Increase your energy by two steps and plant production 1 step. Gain 2 plants.\"}"
+          }
+        },
+        {
+          "symbol": "BIOSPHERE_SUPPORT_REBALANCED",
+          "name": "Biosphere Support(⚖)",
+          "factory": "BiosphereSupportRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "c.CardName.BIOSPHERE_SUPPORT_REBALANCED",
+            "tags": "[a.Tags.PLANT]",
+            "metadata": "{cardNumber:\"P05\",renderData:u.CardRenderer.builder((function(e){e.production((function(e){e.plants(2).megacredits(1)}))})),description:\"Increase your plant production 2 steps and M€ production 1 step.\"}"
+          }
+        },
+        {
+          "symbol": "DOME_FARMING_REBALANCED",
+          "name": "Dome Farming(⚖)",
+          "factory": "DomeFarmingRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "c.CardName.DOME_FARMING_REBALANCED",
+            "tags": "[a.Tags.PLANT,a.Tags.BUILDING]",
+            "productionBox": "d.Units.of({megacredits:3,plants:1})",
+            "metadata": "{cardNumber:\"P07\",renderData:u.CardRenderer.builder((function(e){e.production((function(e){return e.megacredits(3).plants(1)}))})),description:\"Increase your M€ production 3 steps and plant production 1 step.\"}"
+          }
+        },
+        {
+          "symbol": "DONATION_REBALANCED",
+          "name": "Donation(⚖)",
+          "factory": "DonationRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "i.CardName.DONATION_REBALANCED",
+            "metadata": "{cardNumber:\"P08\",renderData:s.CardRenderer.builder((function(e){e.megacredits(23)})),description:\"Gain 23 M€.\"}"
+          }
+        },
+        {
+          "symbol": "EARLY_SETTLEMENT_REBALANCED",
+          "name": "Early Settlement(⚖)",
+          "factory": "EarlySettlementRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "c.CardName.EARLY_SETTLEMENT_REBALANCED",
+            "tags": "[a.Tags.BUILDING,a.Tags.CITY]",
+            "productionBox": "l.Units.of({plants:1})",
+            "metadata": "{cardNumber:\"P09\",renderData:d.CardRenderer.builder((function(e){e.production((function(e){return e.plants(1)})).plants(3).br.city()})),description:\"Increase your plant production 1 step. Gain 3 plants. Place a city tile.\"}"
+          }
+        },
+        {
+          "symbol": "ECCENTRIC_SPONSOR_REBALANCED",
+          "name": "Eccentric Sponsor(⚖)",
+          "factory": "EccentricSponsorRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "a.CardName.ECCENTRIC_SPONSOR_REBALANCED",
+            "metadata": "{cardNumber:\"P11\",renderData:c.CardRenderer.builder((function(e){e.text(\"Play a card from hand, reducing its cost by 27 M€\",u.Size.SMALL,!0)}))}"
+          }
+        },
+        {
+          "symbol": "GALILEAN_MINING_REBALANCED",
+          "name": "Galilean Mining(⚖)",
+          "factory": "GalileanMiningRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "c.CardName.GALILEAN_MINING_REBALANCED",
+            "tags": "[a.Tags.JOVIAN]",
+            "metadata": "{cardNumber:\"P13\",renderData:u.CardRenderer.builder((function(e){e.production((function(e){e.titanium(2)})).br})),description:\"Increase your titanium production 2 steps.\"}"
+          }
+        },
+        {
+          "symbol": "HUGE_ASTEROID_REBALANCED",
+          "name": "Huge Asteroid(⚖)",
+          "factory": "HugeAsteroidRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "i.CardName.HUGE_ASTEROID_REBALANCED",
+            "metadata": "{cardNumber:\"P15\",renderData:s.CardRenderer.builder((function(e){e.temperature(3).br,e.megacredits(-2)})),description:\"Increase Temperature 3 steps. Pay 2 MC.\"}"
+          }
+        },
+        {
+          "symbol": "IO_RESEARCH_OUTPOST_REBALANCED",
+          "name": "Io Research Outpost(⚖)",
+          "factory": "IoResearchOutpostRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "c.CardName.IO_RESEARCH_OUTPOST_REBALANCED",
+            "tags": "[a.Tags.JOVIAN,a.Tags.SCIENCE]",
+            "metadata": "{cardNumber:\"P16\",renderData:u.CardRenderer.builder((function(e){e.production((function(e){return e.titanium(1)})).br,e.cards(2)})),description:\"Increase your titanium production 1 step. Draw 2 cards.\"}"
+          }
+        },
+        {
+          "symbol": "LOAN_REBALANCED",
+          "name": "Loan(⚖)",
+          "factory": "LoanRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "s.CardName.LOAN_REBALANCED",
+            "metadata": "{cardNumber:\"P17\",renderData:c.CardRenderer.builder((function(e){e.production((function(e){return e.minus().megacredits(2)})).br,e.megacredits(32)})),description:\"Gain 32 M€. Decrease your M€ production 2 steps.\"}"
+          }
+        },
+        {
+          "symbol": "MARTIAN_INDUSTRIES_REBALANCED",
+          "name": "Martian Industries(⚖)",
+          "factory": "MartianIndustriesRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "c.CardName.MARTIAN_INDUSTRIES_REBALANCED",
+            "tags": "[a.Tags.BUILDING,a.Tags.ENERGY]",
+            "productionBox": "d.Units.of({energy:1,steel:1})",
+            "metadata": "{cardNumber:\"P18\",renderData:u.CardRenderer.builder((function(e){e.production((function(e){return e.energy(1).steel(1)})).br,e.megacredits(6)})),description:\"Increase your energy and steel production 1 step. Gain 6 M€.\"}"
+          }
+        },
+        {
+          "symbol": "METALS_COMPANY_REBALANCED",
+          "name": "Metals Company(⚖)",
+          "factory": "MetalsCompanyRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "s.CardName.METALS_COMPANY_REBALANCED",
+            "metadata": "{cardNumber:\"P20\",renderData:c.CardRenderer.builder((function(e){e.production((function(e){return e.megacredits(1).steel(1).titanium(1)})).br,e.megacredits(2)})),description:\"Increase your MC, steel and titanium production 1 step. Gain 2 MC.\"}"
+          }
+        },
+        {
+          "symbol": "MOHOLE_EXCAVATION_REBALANCED",
+          "name": "Mohole Excavation(⚖)",
+          "factory": "MoholeExcavationRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "c.CardName.MOHOLE_EXCAVATION_REBALANCED",
+            "tags": "[a.Tags.BUILDING]",
+            "productionBox": "d.Units.of({steel:1,heat:2})",
+            "metadata": "{cardNumber:\"P23\",renderData:u.CardRenderer.builder((function(e){e.production((function(e){e.steel(1).br,e.heat(2)})).steel(5).digit})),description:\"Increase your steel production 1 step and heat production 2 steps. Gain 5 steel.\"}"
+          }
+        },
+        {
+          "symbol": "MOHOLE_REBALANCED",
+          "name": "Mohole(⚖)",
+          "factory": "MoholeRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "c.CardName.MOHOLE_REBALANCED",
+            "tags": "[a.Tags.BUILDING]",
+            "productionBox": "d.Units.of({heat:2,energy:1})",
+            "metadata": "{cardNumber:\"P22\",renderData:u.CardRenderer.builder((function(e){e.production((function(e){return e.heat(2).energy(1)})).br,e.energy(3).br,e.heat(5)})),description:\"Increase your heat production 2 steps and energy production 1 step. Gain 3 energy and 5 heat.\"}"
+          }
+        },
+        {
+          "symbol": "NITROGEN_SHIPMENT_REBALANCED",
+          "name": "Nitrogen Shipment(⚖)",
+          "factory": "NitrogenDeliveryRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "i.CardName.NITROGEN_SHIPMENT_REBALANCED",
+            "tags": "[c.Tags.EARTH]",
+            "metadata": "{cardNumber:\"P24\",renderData:s.CardRenderer.builder((function(e){e.tr(2).plants(5).digit})),description:\"Increase your TR 2 step. Gain 5 plant.\"}"
+          }
+        },
+        {
+          "symbol": "ORBITAL_CONSTRUCTION_YARD_REBALANCED",
+          "name": "Orbital Construction Yard(⚖)",
+          "factory": "OrbitalConstructionYardRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "c.CardName.ORBITAL_CONSTRUCTION_YARD_REBALANCED",
+            "tags": "[a.Tags.SPACE]",
+            "metadata": "{cardNumber:\"P25\",renderData:u.CardRenderer.builder((function(e){e.production((function(e){return e.titanium(1)})).br,e.titanium(5)})),description:\"Increase your titanium production 1 step. Gain 5 titanium.\"}"
+          }
+        },
+        {
+          "symbol": "POLAR_INDUSTRIES_REBALANCED",
+          "name": "Polar Industries(⚖)",
+          "factory": "PolarIndustriesRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "c.CardName.POLAR_INDUSTRIES_REBALANCED",
+            "tags": "[a.Tags.BUILDING]",
+            "productionBox": "l.Units.of({heat:2})",
+            "metadata": "{cardNumber:\"P26\",renderData:d.CardRenderer.builder((function(e){e.production((function(e){return e.heat(2)})).nbsp.megacredits(5).br,e.oceans(1)})),description:\"Increase your heat production 2 steps. Gain 5 mc. Place an Ocean tile.\"}"
+          }
+        },
+        {
+          "symbol": "SELF_SUFFICIENT_SETTLEMENT_REBALANCED",
+          "name": "Self-Sufficient Settlement(⚖)",
+          "factory": "SelfSufficientSettlementRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "c.CardName.SELF_SUFFICIENT_SETTLEMENT_REBALANCED",
+            "tags": "[a.Tags.BUILDING,a.Tags.CITY]",
+            "productionBox": "l.Units.of({megacredits:2})",
+            "metadata": "{cardNumber:\"P29\",renderData:d.CardRenderer.builder((function(e){e.production((function(e){return e.megacredits(2)})).megacredits(3).br.city()})),description:\"Increase your money production 2 steps. Gain 3 MC. Place a City tile.\"}"
+          }
+        },
+        {
+          "symbol": "SMELTING_PLANT_REBALANCED",
+          "name": "Smelting Plant(⚖)",
+          "factory": "SmeltingPlantRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "s.CardName.SMELTING_PLANT_REBALANCED",
+            "tags": "[a.Tags.BUILDING]",
+            "metadata": "{cardNumber:\"P30\",renderData:c.CardRenderer.builder((function(e){e.oxygen(2).br,e.steel(4).br,e.effect(void 0,(function(e){e.empty().startAction.cards(1).secondaryTag(a.Tags.BUILDING)}))})),description:\"Raise oxygen 2 steps. Gain 4 steel. Draw 1 building card.\"}"
+          }
+        },
+        {
+          "symbol": "SOCIETY_SUPPORT_REBALANCED",
+          "name": "Society Support(⚖)",
+          "factory": "SocietySupportRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "s.CardName.SOCIETY_SUPPORT_REBALANCED",
+            "tags": "[u.Tags.WILDCARD]",
+            "productionBox": "d.Units.of({plants:1,heat:1,energy:1})",
+            "metadata": "{cardNumber:\"P31\",renderData:c.CardRenderer.builder((function(e){e.production((function(e){e.plants(1).energy(1).heat(1)})).br,e.megacredits(-3)})),description:\"Increase your plant, energy and heat production 1 step. Pay 3 M€.\"}"
+          }
+        },
+        {
+          "symbol": "SUPPLY_DROP_REBALANCED",
+          "name": "Supply Drop(⚖)",
+          "factory": "SupplyDropRebalanced",
+          "compatibility": null,
+          "fields": {
+            "name": "i.CardName.SUPPLY_DROP_REBALANCED",
+            "metadata": "{cardNumber:\"P33\",renderData:s.CardRenderer.builder((function(e){e.titanium(3).digit.steel(7).digit.plants(3).digit})),description:\"Gain 3 titanium, 7 steel and 3 plants.\"}"
+          }
+        }
+      ]
+    },
+    {
+      "group": "standardProjects",
+      "entries": [
+        {
+          "symbol": "BUILD_COLONY_STANDARD_PROJECT_REBALANCED",
+          "name": "Colony(⚖)",
+          "factory": "BuildColonyStandardProjectRebalanced",
+          "compatibility": "o.GameModule.Colonies",
+          "fields": {
+            "name": "a.CardName.BUILD_COLONY_STANDARD_PROJECT_REBALANCED",
+            "cost": "17",
+            "metadata": "{cardNumber:\"SP5\",renderData:i.CardRenderer.builder((function(e){return e.standardProject(\"Spend 17 M€ to place a colony.\",(function(e){e.megacredits(17).startAction.colonies()}))}))}"
+          }
+        }
+      ]
+    }
+  ],
+  "overlaps": [
+    "PRISTAR",
+    "EARLY_SETTLEMENT",
+    "SELF_SUFFICIENT_SETTLEMENT",
+    "MARTIAN_RAILS",
+    "MARS_UNIVERSITY",
+    "TROPICAL_RESORT",
+    "MEAT_INDUSTRY"
+  ]
+}

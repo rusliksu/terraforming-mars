@@ -8,6 +8,7 @@ import {digit} from '../Options';
 import {IPlayer} from '../../IPlayer';
 import {Space} from '../../boards/Space';
 import {SelectSpace} from '../../inputs/SelectSpace';
+import {getPlantsOnCardPlayed} from '../ICard';
 
 export class GuerillaEcologists extends Card implements IProjectCard {
   constructor() {
@@ -22,7 +23,7 @@ export class GuerillaEcologists extends Card implements IProjectCard {
       metadata: {
         cardNumber: 'U089',
         renderData: CardRenderer.builder((b) => {
-          b.minus().plants(4, {digit}).greenery().asterix();
+          b.plants(-4, {digit}).greenery().asterix();
         }),
         // description: 'Requires 1 corruption and that you lose 4 plants. Place a greenery tile IGNORING ADJACENCY RESTRICTIONS.',
         description: 'Requires 1 corruption. Spend 4 plants to place a greenery tile IGNORING ADJACENCY RESTRICTIONS.',
@@ -35,7 +36,7 @@ export class GuerillaEcologists extends Card implements IProjectCard {
   }
 
   public override bespokeCanPlay(player: IPlayer) {
-    if (player.plants >= 4 || (player.plants >= 3 && player.tableau.has(CardName.VIRAL_ENHANCERS))) {
+    if (player.plants + getPlantsOnCardPlayed(player, this) >= 4) {
       return this.availableSpaces(player).length > 0;
     }
     return false;

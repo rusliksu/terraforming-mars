@@ -1,3 +1,4 @@
+import {CustomCardDefinition} from '../common/cards/CustomCardDefinition';
 import {CardName} from '../common/cards/CardName';
 import {Resource} from '../common/Resource';
 import {Tag} from '../common/cards/Tag';
@@ -5,6 +6,9 @@ import {OneOrArray} from '../common/utils/types';
 import {JSONValue} from '../common/Types';
 
 export type SerializedCard = {
+  customDefinition?: CustomCardDefinition;
+  copiedSource?: SerializedCard;
+  capturedCard?: SerializedCard;
   allTags?: Array<Tag>; // For Aridor
   bonusResource?: OneOrArray<Resource>; // For Robotic Workforce / Mining Area / Mining Rights / Specialized Settlement
   cloneTag?: Tag; // For Pathfinders' clone tag
@@ -21,3 +25,5 @@ export type SerializedRobotCard = {
   card: SerializedCard;
   resourceCount: number;
 }
+
+export type DynamicCardState = {index: number; card: SerializedCard};

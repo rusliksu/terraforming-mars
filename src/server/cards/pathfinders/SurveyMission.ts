@@ -4,11 +4,11 @@ import {CardName} from '../../../common/cards/CardName';
 import {CardRenderer} from '../render/CardRenderer';
 import {Tag} from '../../../common/cards/Tag';
 import {MarsBoard} from '../../boards/MarsBoard';
-import {BoardType} from '../../boards/BoardType';
 import {Space} from '../../boards/Space';
 import {SelectSpace} from '../../inputs/SelectSpace';
 import {LogHelper} from '../../LogHelper';
 import {digit} from '../Options';
+import {comparing, reversed} from '../../../common/utils/Ordering';
 
 type Triplet = [Space, Space, Space];
 export class SurveyMission extends PreludeCard {
@@ -93,16 +93,19 @@ export class SurveyMission extends PreludeCard {
       'Select third space',
     ];
     const spaceSet: Set<Space> = new Set(triplets.flat());
-    const spaces = Array.from(spaceSet).filter((space) => space.player === undefined);
-    spaces.sort((s1, s2) => parseInt(s2.id) - parseInt(s1.id));
+    const spaces = Array.from(spaceSet)
+      .filter((space) => space.player === undefined)
+      .sort(reversed(comparing((space) => parseInt(space.id))));
     return new SelectSpace(messages[iteration], spaces)
       .andThen((space) => {
         space.player = player;
         LogHelper.logBoardTileAction(player, space, 'claimed');
         if (space.tile === undefined) {
           player.game.grantSpaceBonuses(player, space);
+          for (const card of player.tableau) {
+            card.onPlacementBonusClaimed?.(player, space);
+          }
         }
-        player.tableau.get(CardName.MINING_GUILD)?.onTilePlaced?.(player, player, space, BoardType.MARS);
 
         if (iteration === 2) {
           return undefined;

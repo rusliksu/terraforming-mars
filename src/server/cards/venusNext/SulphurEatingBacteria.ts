@@ -9,6 +9,7 @@ import {SelectAmount} from '../../inputs/SelectAmount';
 import {CardName} from '../../../common/cards/CardName';
 import {CardRenderer} from '../render/CardRenderer';
 import {Card} from '../Card';
+import {Resource} from '../../../common/Resource';
 
 export class SulphurEatingBacteria extends Card implements IActionCard {
   constructor() {
@@ -42,7 +43,11 @@ export class SulphurEatingBacteria extends Card implements IActionCard {
       player.addResourceTo(this, {log: true});
       return undefined;
     });
-    const spendResource = new SelectAmount('Remove any number of microbes to gain 3 M€ per microbe removed', 'Remove microbes', 1, this.resourceCount, true)
+    const spendResource = new SelectAmount('Remove any number of microbes to gain 3 M€ per microbe removed', 'Remove microbes', 1, this.resourceCount, true, {
+      sourceCard: this.name,
+      from: {kind: 'card', card: this.name, resource: CardResource.MICROBE, perStep: 1},
+      to: {kind: 'stock', resource: Resource.MEGACREDITS, perStep: 3},
+    })
       .andThen((amount) => this.spendResource(player, amount));
 
     opts.push(addResource);
@@ -63,7 +68,7 @@ export class SulphurEatingBacteria extends Card implements IActionCard {
     const megaCreditsGained = 3 * amount;
     player.megaCredits += megaCreditsGained;
 
-    player.game.log('${0} removed ${1} microbes from ${2} to gain ${3} M€', (b) =>
+    player.game.log('${0} removed ${1}:cr:microbe: from ${2} to gain ${3}:r:mc:', (b) =>
       b.player(player).number(amount).card(this).number(megaCreditsGained));
 
     return undefined;

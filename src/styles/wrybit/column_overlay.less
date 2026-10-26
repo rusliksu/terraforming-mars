@@ -1,0 +1,24 @@
+// Overlays above the right column (board, milestones, log): played cards of a player
+// (player_home_columns.less, .other_player) and log lines with many cards (log.less, .card-panel--modal).
+// Some spacing to the edge all around, background as dark frosted glass.
+
+@column-overlay-gap: 16px;
+// Above everything in the right column, also above the icon group at the top right (sidebar_toolbar.less)
+@column-overlay-z-index: 120;
+
+// Position: above the right column (left edge from boardColumnPosition.ts), with spacing to all edges
+.column-overlay-position() {
+  position: fixed;
+  inset: @column-overlay-gap @column-overlay-gap @column-overlay-gap calc(var(--wrybit-board-column-left, 0px) + @column-overlay-gap);
+  z-index: @column-overlay-z-index;
+}
+
+// Surface: semi-transparent frosted glass, clearly lighter than the black page background,
+// with a strong shadow so the overlay clearly sits above the page
+.column-overlay-surface() {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 12px;
+  background: rgba(70, 76, 98, 0.72);
+  backdrop-filter: blur(18px) saturate(1.3);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.85), 0 6px 18px rgba(0, 0, 0, 0.6);
+}

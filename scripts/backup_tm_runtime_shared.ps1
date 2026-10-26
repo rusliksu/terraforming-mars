@@ -1,5 +1,5 @@
 param(
-    [string]$HostAlias = "vps",
+    [string]$HostAlias = "hostkey-codex",
     [string]$FallbackSshHost = "72.56.84.119",
     [string]$FallbackSshUser = "openclaw",
     [string]$FallbackSshKeyPath = "$HOME\\.ssh\\id_ed25519",

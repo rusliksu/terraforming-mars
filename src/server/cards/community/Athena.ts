@@ -23,6 +23,7 @@ export class Athena extends CorporationCard implements ICorporationCard {
           b.megacredits(62).hazardTile(1, {size: Size.LARGE}).hazardTile(1, {size: Size.LARGE});
           b.corpBox('effect', (ce) => {
             ce.vSpace(Size.SMALL);
+            ce.br;
             ce.effect('You do not lose production when placing adjacent to hazard tiles.', (eb) => {
               eb.startEffect.hazardTile(1, {size: Size.LARGE}).nbsp.asterix();
             });
@@ -49,12 +50,8 @@ export class Athena extends CorporationCard implements ICorporationCard {
   }
 
   private getAvailableSpaces(player: IPlayer) {
-    const board = player.game.board;
-    return board.getAvailableSpacesOnLand(player)
-      .filter(((space) => space.tile === undefined))
-      .filter((space) => {
-        const adjacentSpaces = board.getAdjacentSpaces(space);
-        return adjacentSpaces.filter((space) => space.tile !== undefined).length === 0;
-      });
+    // Isolated spaces include unprotected hazard spaces, which cannot hold a second hazard.
+    return player.game.board.getAvailableIsolatedSpaces(player)
+      .filter((space) => space.tile === undefined);
   }
 }

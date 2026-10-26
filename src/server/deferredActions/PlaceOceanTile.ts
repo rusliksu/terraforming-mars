@@ -1,3 +1,4 @@
+import {TileType} from '../../common/TileType';
 import {IPlayer} from '../IPlayer';
 import {SelectSpace} from '../inputs/SelectSpace';
 import {DeferredAction} from './DeferredAction';
@@ -10,7 +11,7 @@ import {Message} from '../../common/logs/Message';
 type Options = {
   title?: string | Message,
   on?: PlacementType,
-  spaces?: Array<Space>,
+  spaces?: ReadonlyArray<Space>,
   /** For Icy Impactors */
   creditedPlayer?: IPlayer,
 };
@@ -29,9 +30,14 @@ export class PlaceOceanTile extends DeferredAction<Space | undefined> {
       const whales = this.creditedPlayer.tableau.get(CardName.WHALES);
       if (whales !== undefined) {
         this.player.addResourceTo(whales, {qty: 1, log: true});
-        const input = this.cb(undefined);
-        this.player?.defer(input);
       }
+      // Blue Mars (idesOfMars): once all oceans are placed, an ocean placement raises TR instead.
+      const blueMarsInEffect = this.creditedPlayer.tableau.has(CardName.BLUE_MARS);
+      if (blueMarsInEffect) {
+        this.creditedPlayer.increaseTerraformRating(1, {log: true, from: {card: CardName.BLUE_MARS}});
+      }
+      const input = this.cb(undefined);
+      this.player?.defer(input);
       return undefined;
     }
 
@@ -41,11 +47,14 @@ export class PlaceOceanTile extends DeferredAction<Space | undefined> {
       availableSpaces = this.options.spaces;
     } else {
       const on = this.options?.on || 'ocean';
-      availableSpaces = this.player.game.board.getAvailableSpacesForType(this.player, on);
+      // Oceans aren't subject to Ares hazard adjacency costs.
+      availableSpaces = on === 'land' ?
+        this.player.game.board.getAvailableSpacesOnLand(this.player, undefined, false) :
+        this.player.game.board.getAvailableSpacesForType(this.player, on);
       title = this.options?.title ?? this.getTitle(on);
     }
 
-    return new SelectSpace(title, availableSpaces)
+    return new SelectSpace(title, availableSpaces, TileType.OCEAN)
       .andThen((space) => {
         this.creditedPlayer.game.addOcean(this.creditedPlayer, space);
         this.creditedPlayer.defer(this.cb(space));

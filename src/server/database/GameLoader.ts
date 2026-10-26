@@ -1,4 +1,5 @@
-import prometheus from 'prom-client';
+import {getAutomationCompatibility, automationUnavailableReason} from '../bot/AutomationCompatibility';
+import prometheus from '@prometheus-io/client';
 import {Database} from './Database';
 import {Game} from '../Game';
 import {IGame} from '../IGame';
@@ -13,6 +14,17 @@ import {CacheConfig} from './CacheConfig';
 import {Clock} from '../../common/Timer';
 import {EloSyncService} from '../elo/EloSyncService';
 import {appendCanceledLogMessages} from '../logs/appendCanceledLogMessages';
+import {Phase} from '../../common/Phase';
+import {BotTakeoverManager} from '../bot/BotTakeoverManager';
+import type {SurrenderBotManager} from '../surrender/SurrenderService';
+import {serverId} from '../utils/server-ids';
+
+export type SurrenderBotReconciliationResult = {
+  scanned: number;
+  started: number;
+  alreadyActive: number;
+  failed: number;
+};
 
 const metrics = {
   initialize: new prometheus.Gauge({
@@ -25,35 +37,54 @@ const metrics = {
     help: 'Game evictions count',
     registers: [prometheus.register],
   }),
+  logsTrimmed: new prometheus.Counter({
+    name: 'game_log_trimmed',
+    help: 'Number of resident game logs dropped from memory while idle',
+    registers: [prometheus.register],
+  }),
+  logsRestored: new prometheus.Counter({
+    name: 'game_log_restored',
+    help: 'Number of resident game logs reloaded from the database on access',
+    registers: [prometheus.register],
+  }),
   gamesCreated: new prometheus.Counter({
     name: 'game_created',
     help: 'Number of games created',
-    labelNames: ['players'],
+    labelNames: ['players'] as const,
     registers: [prometheus.register],
   }),
   gamesFinished: new prometheus.Counter({
     name: 'game_finished',
     help: 'Number of games finished',
-    labelNames: ['players'],
+    labelNames: ['players'] as const,
     registers: [prometheus.register],
   }),
   gamesPurged: new prometheus.Counter({
     name: 'game_purged',
     help: 'Number of games deleted because they are too old',
+    labelNames: ['players'] as const,
+    registers: [prometheus.register],
+  }),
+  expiredSessionsDeleted: new prometheus.Counter({
+    name: 'expired_sessions_deleted',
+    help: 'Number of expired sessions deleted from storage',
     registers: [prometheus.register],
   }),
   gamesInMemory: new prometheus.Gauge({
     name: 'games_in_memory',
     help: 'Number of games currently loaded in memory',
+    labelNames: ['has_log'] as const,
     registers: [prometheus.register],
     collect() {
-      this.set(GameLoader.getLoadedGameCount());
+      const counts = GameLoader.getLoadedGameCount();
+      this.set({has_log: 'true'}, counts.untrimmed);
+      this.set({has_log: 'false'}, counts.trimmed);
     },
   }),
   idleTime: new prometheus.Gauge({
     name: 'games_idle_time_seconds',
     help: 'Point-in-time distribution of idle time (seconds since last access) across games resident in memory, as cumulative histogram-style buckets. This is a snapshot gauge, not a cumulative histogram.',
-    labelNames: ['le'],
+    labelNames: ['le'] as const,
     registers: [prometheus.register],
     collect() {
       GameLoader.collectIdleTimes(this);
@@ -71,13 +102,24 @@ export class GameLoader implements IGameLoader {
   private cache: Cache;
   private readonly config: CacheConfig;
   private readonly clock: Clock;
+  private readonly botTakeoverManager: SurrenderBotManager;
+  private readonly botServerId: string;
   private purgedGames: Array<GameId>;
+  private readonly replacedGames = new WeakSet<IGame>();
 
-  private constructor(config: CacheConfig, clock: Clock) {
+  private constructor(
+    config: CacheConfig,
+    clock: Clock,
+    botTakeoverManager: SurrenderBotManager = BotTakeoverManager.INSTANCE,
+    botServerId: string = serverId,
+  ) {
     this.config = config;
     this.clock = clock;
+    this.botTakeoverManager = botTakeoverManager;
+    this.botServerId = botServerId;
     this.cache = new Cache(config, clock);
     this.cache.on('evicted', (count: number) => metrics.evictions.inc(count));
+    this.cache.on('trimmed', (count: number) => metrics.logsTrimmed.inc(count));
     this.purgedGames = [];
     timeAsync(this.cache.load())
       .then((v) => {
@@ -93,12 +135,25 @@ export class GameLoader implements IGameLoader {
     return GameLoader.instance;
   }
 
-  public static newTestInstance(config: CacheConfig, clock: Clock): GameLoader {
-    return new GameLoader(config, clock);
+  public static reconcileSurrenderedBots(): Promise<SurrenderBotReconciliationResult> {
+    const instance = GameLoader.getInstance();
+    if (!(instance instanceof GameLoader)) {
+      return Promise.resolve(emptySurrenderBotReconciliationResult());
+    }
+    return instance.reconcileSurrenderedBots();
   }
 
-  public static getLoadedGameCount(): number {
-    return GameLoader.instance?.cache.countLoadedGames() ?? 0;
+  public static newTestInstance(
+    config: CacheConfig,
+    clock: Clock,
+    botTakeoverManager: SurrenderBotManager = BotTakeoverManager.INSTANCE,
+    botServerId: string = serverId,
+  ): GameLoader {
+    return new GameLoader(config, clock, botTakeoverManager, botServerId);
+  }
+
+  public static getLoadedGameCount(): {trimmed: number, untrimmed: number} {
+    return GameLoader.instance?.cache.countLoadedGames() ?? {trimmed: 0, untrimmed: 0};
   }
 
   public static getIdleTimes(): Array<number> {
@@ -133,6 +188,10 @@ export class GameLoader implements IGameLoader {
   public async add(game: IGame): Promise<void> {
     const d = await this.cache.getGames();
     const isNew = !d.games.has(game.id);
+    const previous = d.games.get(game.id);
+    if (previous !== undefined && previous !== game) {
+      this.replacedGames.add(previous);
+    }
     d.games.set(game.id, game);
     this.cache.touch(game.id);
     if (game.spectatorId !== undefined) {
@@ -154,14 +213,6 @@ export class GameLoader implements IGameLoader {
     return arry.map(([gameId, participantIds]) => ({gameId, participantIds}));
   }
 
-  public getLastSaveTimeMs(gameId: GameId): Promise<number | undefined> {
-    return Database.getInstance().getLastSaveTimeMs(gameId);
-  }
-
-  public getLastSaveTimesMs(gameIds: Array<GameId>): Promise<Map<GameId, number | undefined>> {
-    return Database.getInstance().getLastSaveTimesMs(gameIds);
-  }
-
   public async isCached(gameId: GameId): Promise<boolean> {
     const d = await this.cache.getGames();
     return d.games.get(gameId) !== undefined;
@@ -175,9 +226,17 @@ export class GameLoader implements IGameLoader {
     }
 
     // 1. Check the cache as long as forceLoad isn't true.
-    if (forceLoad === false && d.games.get(gameId) !== undefined) {
+    const cached = d.games.get(gameId);
+    if (forceLoad === false && cached !== undefined) {
       this.cache.touch(gameId);
-      return d.games.get(gameId);
+      // An idle sweep may have dropped the log to save memory (see Cache.trimIdleLogs).
+      // Reload it from the database before returning so callers never see or persist a
+      // truncated log.
+      if (cached.gameLog.length === 0) {
+        await this.restoreGameLog(cached);
+      }
+      this.reconcileGame(cached);
+      return cached;
     }
 
     // 2. The game isn't cached. If it's in the database, there will still be an entry
@@ -189,8 +248,9 @@ export class GameLoader implements IGameLoader {
           console.error(`GameLoader:loadGame: game ${gameId} not found`);
           return undefined;
         }
-        const game = Game.deserialize(serializedGame);
+        const game = Game.deserialize(serializedGame, {saveGame: this.saveGame.bind(this)});
         await this.add(game);
+        this.reconcileGame(game);
         console.log(`GameLoader loaded game ${gameId} into memory from database`);
         return game;
       } catch (e) {
@@ -203,9 +263,78 @@ export class GameLoader implements IGameLoader {
     return undefined;
   }
 
+  public async reconcileSurrenderedBots(): Promise<SurrenderBotReconciliationResult> {
+    const result = emptySurrenderBotReconciliationResult();
+    const ids = await this.getIds();
+    const database = Database.getInstance();
+
+    for (const {gameId} of ids) {
+      result.scanned++;
+      try {
+        const serialized = await database.getGame(gameId);
+        if (serialized.phase === Phase.END || (serialized.surrenderedPlayerIds?.length ?? 0) === 0) {
+          continue;
+        }
+        const game = Game.deserialize(serialized);
+        await this.add(game);
+        mergeSurrenderBotReconciliationResult(result, this.reconcileGame(game));
+      } catch (_error) {
+        result.failed++;
+        console.error('Unable to inspect game during surrender bot reconciliation', {gameId});
+      }
+    }
+
+    console.info('Surrender bot reconciliation completed', result);
+    return result;
+  }
+
+  private reconcileGame(game: IGame): SurrenderBotReconciliationResult {
+    const result = emptySurrenderBotReconciliationResult();
+    if (game.phase === Phase.END) {
+      return result;
+    }
+
+    for (const playerId of game.surrenderedPlayerIds) {
+      if (game.botPlayerIds.has(playerId)) {
+        continue;
+      }
+      if (this.botTakeoverManager.isActive(playerId)) {
+        result.alreadyActive++;
+        continue;
+      }
+      try {
+        game.getPlayerById(playerId);
+        const compatibility = getAutomationCompatibility(game.gameOptions);
+        const reason = automationUnavailableReason(compatibility);
+        if (reason !== undefined) {
+          result.failed++;
+          console.warn('Surrender bot unavailable', {gameId: game.id, reason});
+          continue;
+        }
+        this.botTakeoverManager.start({compatibility, gameId: game.id, playerId, serverId: this.botServerId});
+        result.started++;
+      } catch (_error) {
+        result.failed++;
+        console.error('Unable to reconcile surrendered bot', {gameId: game.id});
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Reloads the `gameLog` for a resident game whose log was dropped by an idle sweep.
+   * The database copy always retains the full log; we read that copy and move its log
+   * onto the live game object rather than deserializing the whole game.
+   */
+  private async restoreGameLog(game: IGame): Promise<void> {
+    const serializedGame = await Database.getInstance().getGame(game.id);
+    game.gameLog = serializedGame.gameLog;
+    metrics.logsRestored.inc();
+  }
+
   public async getGameAt(gameId: GameId, saveId: number): Promise<IGame> {
     const serializedGame = await Database.getInstance().getGameVersion(gameId, saveId);
-    return Game.deserialize(serializedGame);
+    return Game.deserialize(serializedGame, {simulation: true, saveGame: this.saveGame.bind(this)});
   }
 
   public async getGameAtOrBefore(gameId: GameId, saveId: number): Promise<IGame> {
@@ -226,7 +355,7 @@ export class GameLoader implements IGameLoader {
       await database.deleteGameNbrSaves(gameId, deletes);
     }
     const serializedGame = await database.getGameVersion(gameId, restoreSaveId);
-    const game = Game.deserialize(serializedGame);
+    const game = Game.deserialize(serializedGame, {saveGame: this.saveGame.bind(this)});
     appendCanceledLogMessages(current, game);
     await this.add(game);
     game.undoCount++;
@@ -252,7 +381,41 @@ export class GameLoader implements IGameLoader {
     this.cache.sweep();
   }
 
+  /** Waits for the pending save of every resident game; used by the shutdown drain. */
+  public async flush(): Promise<void> {
+    const data = await this.cache.getGames();
+    const pending: Array<Promise<void>> = [];
+    for (const game of data.games.values()) {
+      if (game !== undefined) {
+        pending.push(game.saveGamePromise);
+      }
+    }
+    await Promise.allSettled(pending);
+  }
+
+  /**
+   * Forgets a game that was deleted from the database: rejects later saves (saveGame
+   * checks purgedGames) and drops the in-memory copy with its participant ids right away.
+   * The caller deletes the game's rows from the database; this only invalidates the cache.
+   */
+  public async deleteGame(gameId: GameId): Promise<void> {
+    const wasPurged = this.purgedGames.includes(gameId);
+    if (!wasPurged) {
+      this.purgedGames.push(gameId);
+    }
+    try {
+      await Database.getInstance().deleteGame(gameId);
+    } catch (err) {
+      if (!wasPurged) {
+        this.purgedGames = this.purgedGames.filter((id) => id !== gameId);
+      }
+      throw err;
+    }
+    this.cache.remove(gameId);
+  }
+
   public async completeGame(game: IGame) {
+    this.assertNotReplaced(game);
     const database = Database.getInstance();
     await database.saveGame(game);
     try {
@@ -267,19 +430,45 @@ export class GameLoader implements IGameLoader {
   }
 
   public saveGame(game: IGame): Promise<void> {
+    this.assertNotReplaced(game);
     if (this.purgedGames.includes(game.id)) {
       throw new Error('This game no longer exists');
     }
     return Database.getInstance().saveGame(game);
   }
 
+  private assertNotReplaced(game: IGame): void {
+    if (this.replacedGames.has(game)) {
+      throw new Error('Game state changed; reload before saving.');
+    }
+  }
+
   public async maintenance() {
     const database = Database.getInstance();
+    const orphanParticipants = await database.deleteOrphanParticipants();
+    if (orphanParticipants > 0) {
+      console.log(`Removed ${orphanParticipants} orphan participant rows`);
+    }
     const purgedGames = await database.purgeUnfinishedGames();
     this.purgedGames.push(...purgedGames);
     metrics.gamesPurged.inc(purgedGames.length);
     await database.compressCompletedGames();
+    const prunedSessions = await database.deleteExpiredSessions();
+    metrics.expiredSessionsDeleted.inc(prunedSessions);
   }
+}
+
+function emptySurrenderBotReconciliationResult(): SurrenderBotReconciliationResult {
+  return {scanned: 0, started: 0, alreadyActive: 0, failed: 0};
+}
+
+function mergeSurrenderBotReconciliationResult(
+  target: SurrenderBotReconciliationResult,
+  source: SurrenderBotReconciliationResult,
+): void {
+  target.started += source.started;
+  target.alreadyActive += source.alreadyActive;
+  target.failed += source.failed;
 }
 
 function parseConfigString(stringValue: string): CacheConfig {

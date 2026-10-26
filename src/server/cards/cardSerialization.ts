@@ -1,4 +1,5 @@
-import {newCard, newCorporationCard, newProjectCard} from '../createCard';
+import {isDataDrivenCard} from './CustomCardRegistry';
+import {newCard, newCorporationCard, newProjectCard, newCustomCard} from '../createCard';
 import {SerializedCard} from '../SerializedCard';
 import {IProjectCard, isIProjectCard} from './IProjectCard';
 import {isICloneTagCard} from './pathfinders/ICloneTagCard';
@@ -20,6 +21,9 @@ export function serializeCard(card: ICard): SerializedCard {
 }
 
 export function deserializeCard(element: SerializedCard): IProjectCard | ICorporationCard {
+  if (element.customDefinition !== undefined) {
+    return deserializeProjectCard(element);
+  }
   const card = newCard(element.name);
   if (card.type === CardType.CORPORATION) {
     return deserializeCorporationCard(element);
@@ -50,12 +54,19 @@ export function serializeProjectCard(card: IProjectCard): SerializedCard {
   if (card.data !== undefined) {
     serialized.data = card.data;
   }
+  if (isDataDrivenCard(card)) {
+    serialized.customDefinition = structuredClone(card.definition);
+  }
   card.serialize?.(serialized);
   return serialized;
 }
 
 export function deserializeProjectCard(element: SerializedCard): IProjectCard {
-  const card = newProjectCard(element.name);
+  if (element.customDefinition !== undefined && element.customDefinition.cardName !== element.name) {
+    throw new Error('Custom card definition does not match its name');
+  }
+  const card: IProjectCard | undefined = element.customDefinition === undefined ? newProjectCard(element.name) :
+    newCustomCard(element.customDefinition);
   if (card === undefined) {
     throw new Error(`Card ${element.name} not found`);
   }
@@ -79,11 +90,14 @@ export function deserializeProjectCard(element: SerializedCard): IProjectCard {
 }
 
 export function serializeCorporationCard(card: ICorporationCard): SerializedCard {
-  const serialized = {
+  const serialized: SerializedCard = {
     name: card.name,
     resourceCount: card.resourceCount,
     isDisabled: false,
   };
+  if (card.data !== undefined) {
+    serialized.data = card.data;
+  }
   card.serialize?.(serialized);
   return serialized;
 }
@@ -95,6 +109,9 @@ export function deserializeCorporationCard(element: SerializedCard): ICorporatio
   }
   if (element.resourceCount !== undefined) {
     card.resourceCount = element.resourceCount;
+  }
+  if (card.hasOwnProperty('data') && element.data !== undefined) {
+    card.data = element.data;
   }
   card.deserialize?.(element);
   return card;

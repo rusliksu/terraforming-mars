@@ -10,6 +10,7 @@ import {SelectAmount} from '../../inputs/SelectAmount';
 import {AddResourcesToCard} from '../../deferredActions/AddResourcesToCard';
 import {CardRenderer} from '../render/CardRenderer';
 import {Card} from '../Card';
+import {Resource} from '../../../common/Resource';
 
 export class TitanShuttles extends Card implements IProjectCard {
   constructor() {
@@ -51,11 +52,15 @@ export class TitanShuttles extends Card implements IProjectCard {
       }),
       new SelectAmount(
         'Remove X floaters on this card to gain X titanium', 'Remove floaters',
-        1, this.resourceCount, true,
+        1, this.resourceCount, true, {
+          sourceCard: this.name,
+          from: {kind: 'card', card: this.name, resource: CardResource.FLOATER, perStep: 1},
+          to: {kind: 'stock', resource: Resource.TITANIUM, perStep: 1},
+        },
       ).andThen((amount) => {
         player.removeResourceFrom(this, amount);
         player.titanium += amount;
-        player.game.log('${0} removed ${1} floaters to gain ${2} titanium', (b) => b.player(player).number(amount).number(amount));
+        player.game.log('${0} removed ${1}:cr:floater: to gain ${2}:r:titanium:', (b) => b.player(player).number(amount).number(amount));
         return undefined;
       }),
     );

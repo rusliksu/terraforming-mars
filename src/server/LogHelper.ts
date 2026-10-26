@@ -8,30 +8,22 @@ import {IColony} from './colonies/IColony';
 import {Logger} from './logs/Logger';
 import {CardResource} from '../common/CardResource';
 import {From} from './logs/From';
-
-function resourceString(resource: CardResource | undefined, qty: number): string {
-  const result = resource ?? 'resource';
-  if (qty === 1) {
-    return result;
-  } else {
-    return result + '(s)';
-  }
-}
+import {SpaceType} from '@/common/boards/SpaceType';
 
 export class LogHelper {
   static logAddResource(player: IPlayer, card: ICard, qty: number = 1, from?: From): void {
     if (from === undefined) {
-      player.game.log('${0} added ${1} ${2} to ${3}', (b) =>
-        b.player(player).number(qty).string(resourceString(card.resourceType, qty)).card(card));
+      player.game.log('${0} added ${1}${2} to ${3}', (b) =>
+        b.player(player).number(qty).cardResource(card.resourceType).card(card));
     } else {
-      player.game.log('${0} added ${1} ${2} to ${3} from ${4}', (b) =>
-        b.player(player).number(qty).string(resourceString(card.resourceType, qty)).card(card).from(from));
+      player.game.log('${0} added ${1}${2} to ${3} from ${4}', (b) =>
+        b.player(player).number(qty).cardResource(card.resourceType).card(card).from(from));
     }
   }
 
   static logRemoveResource(player: IPlayer, card: ICard, qty: number = 1, effect: string): void {
-    player.game.log('${0} removed ${1} ${2} from ${3} to ${4}', (b) =>
-      b.player(player).number(qty).string(resourceString(card.resourceType, qty)).card(card).string(effect));
+    player.game.log('${0} removed ${1}${2} from ${3} to ${4}', (b) =>
+      b.player(player).number(qty).cardResource(card.resourceType).card(card).string(effect));
   }
 
   static logTilePlacement(player: IPlayer, space: Space, tileType: TileType) {
@@ -40,7 +32,7 @@ export class LogHelper {
 
   static logBoardTileAction(player: IPlayer, space: Space, description: string, action: string = 'placed') {
     // Skip off-grid tiles
-    if (space.x === -1 && space.y === -1) {
+    if (space.spaceType === SpaceType.COLONY) {
       return;
     }
     // Skip solo play random tiles
@@ -68,6 +60,10 @@ export class LogHelper {
 
   static logTemperatureIncrease(player: IPlayer, steps: number) {
     player.game.log('${0} raised the temperature ${1} step(s)', (b) => b.player(player).number(steps));
+  }
+
+  static logOxygenIncrease(player: IPlayer, steps: number) {
+    player.game.log('${0} raised the oxygen level ${1} step(s)', (b) => b.player(player).number(steps));
   }
 
   static logDiscardedCards(logger: Logger, cards: ReadonlyArray<ICard> | ReadonlyArray<CardName>) {
@@ -148,10 +144,10 @@ export class LogHelper {
   }
 
   static logStealFromNeutralPlayer(player: IPlayer, resource: Resource, amount: number) {
-    player.game.log('${0} stole ${1} ${2} from the neutral player', (b) => b.player(player).number(amount).string(resource));
+    player.game.log('${0} stole ${1}${2} from the neutral player', (b) => b.player(player).number(amount).resource(resource));
   }
 
   public static logMoveResource(player: IPlayer, resource: CardResource, from: ICard, to: ICard) {
-    player.game.log('${0} moved 1 ${1} from ${2} to ${3}.', (b) => b.player(player).string(resource).card(from).card(to));
+    player.game.log('${0} moved 1 ${1} from ${2} to ${3}.', (b) => b.player(player).cardResource(resource).card(from).card(to));
   }
 }

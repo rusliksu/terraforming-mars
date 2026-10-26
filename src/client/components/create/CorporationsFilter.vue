@@ -1,9 +1,12 @@
 <template>
   <ModuleItemFilter
+    :embedded="embedded"
     title="Corporations"
     :groups="GROUPS"
     :itemsByGroup="ALL_CARDS_BY_MODULE"
     :selected="initialSelected"
+    :selectable="selectable"
+    :replacements="replacements"
     @update:selected="$emit('corporation-list-changed', $event)"
     @close="$emit('close')"
   >
@@ -19,13 +22,15 @@ import {defineComponent} from 'vue';
 import ModuleItemFilter from './ModuleItemFilter.vue';
 import {CardName} from '@/common/cards/CardName';
 import {Expansion, GameModule, GAME_MODULES, MODULE_NAMES} from '@/common/cards/GameModule';
-import {byModule, byType, getCard, getCards} from '@/client/cards/ClientCardManifest';
+import {byModule, byType, getCard, getCards, getCardReplacementRules} from '@/client/cards/ClientCardManifest';
+import {getCardReplacementNames} from '@/common/cards/CardReplacementRules';
 import {CardType} from '@/common/cards/CardType';
 import {toName} from '@/common/utils/utils';
 
 function corpCardNames(module: GameModule): Array<CardName> {
   return getCards(byModule(module))
     .filter(byType(CardType.CORPORATION))
+    .filter((card) => card.instantiate !== false)
     .map(toName)
     .filter((name) => name !== CardName.BEGINNER_CORPORATION);
 }
@@ -33,7 +38,7 @@ function corpCardNames(module: GameModule): Array<CardName> {
 const interim = GAME_MODULES.map((module) => [module, [] as Array<CardName>]);
 const ALL_CARDS_BY_MODULE: Record<GameModule, Array<CardName>> = Object.fromEntries(interim);
 getCards(byType(CardType.CORPORATION)).forEach((card) => {
-  if (card.name !== CardName.BEGINNER_CORPORATION) {
+  if (card.name !== CardName.BEGINNER_CORPORATION && card.instantiate !== false) {
     ALL_CARDS_BY_MODULE[card.module].push(card.name);
   }
 });
@@ -46,8 +51,10 @@ export default defineComponent({
   components: {ModuleItemFilter},
   emits: ['corporation-list-changed', 'close'],
   props: {
+    embedded: {type: Boolean, default: false},
     expansions: {type: Object as () => Record<Expansion, boolean>, required: true},
     selected: {type: Array as () => Array<CardName>, required: true},
+    selectable: {type: Array as () => Array<CardName>, required: false},
   },
   data() {
     const initialSelected: Array<CardName> = this.selected.length > 0 ? [...this.selected] : [
@@ -67,6 +74,9 @@ export default defineComponent({
     return {initialSelected};
   },
   computed: {
+    replacements(): ReadonlyMap<CardName, CardName> {
+      return getCardReplacementNames(this.selectable ?? [], getCardReplacementRules(() => true));
+    },
     GROUPS(): typeof GROUPS {
       return GROUPS;
     },

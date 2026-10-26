@@ -3,13 +3,17 @@ require('console-stamp')(
   console,
   {format: ':date(yyyy-mm-dd HH:MM:ss Z)'},
 );
+import {markAsLiveServer} from '@/server/utils/server';
+// Must run first.
+markAsLiveServer();
 
 import https from 'https';
 import http from 'http';
 import fs from 'fs';
 import * as v8 from 'node:v8';
+import {performance} from 'node:perf_hooks';
 import raw_settings from '../genfiles/settings.json';
-import prometheus from 'prom-client';
+import prometheus from '@prometheus-io/client';
 import * as responses from './server/responses';
 import ansi from 'ansi-escape-sequences';
 
@@ -18,20 +22,45 @@ import {runId, serverId} from '@/server/utils/server-ids';
 import {processRequest} from '@/server/server/requestProcessor';
 import {timeAsync} from '@/server/utils/timer';
 import {GameLoader} from '@/server/database/GameLoader';
+import {drain} from '@/server/server/gracefulShutdown';
 import {globalInitialize} from '@/server/globalInitialize';
+import {seedOfficialMapLibrary} from '@/server/database/seedOfficialMapLibrary';
+import {refreshCustomCardRegistry} from '@/server/cards/CustomCardRegistry';
 import {SessionManager} from '@/server/server/auth/SessionManager';
+import {capture} from '@/server/server/SentryReporter';
+import {registerUncaughtExceptionHandler} from '@/server/server/SentryProcessBoundary';
 
-process.on('uncaughtException', (err: any) => {
-  console.error('UNCAUGHT EXCEPTION', err);
-});
+registerUncaughtExceptionHandler(capture);
+
+function installShutdownHandlers(server: http.Server | https.Server): void {
+  let shuttingDown = false;
+  const shutdown = async (signal: string): Promise<void> => {
+    if (shuttingDown) {
+      return;
+    }
+    shuttingDown = true;
+    console.log(`Received ${signal}, draining connections`);
+    try {
+      await drain(server, GameLoader.getInstance());
+      console.log('shutdown complete');
+      process.exit(0);
+    } catch (err) {
+      console.error('Shutdown failed', err);
+      process.exit(1);
+    }
+  };
+  process.on('SIGTERM', () => void shutdown('SIGTERM'));
+  process.on('SIGINT', () => void shutdown('SIGINT'));
+}
 
 function requestHandler(req: http.IncomingMessage, res: http.ServerResponse): void {
-  try {
-    processRequest(req, res);
-  } catch (error) {
+  processRequest(req, res, capture).catch((error) => {
     responses.internalServerError(req, res, error);
-  }
+  });
 }
+
+// The event loop utilization snapshot from the previous scrape.
+let lastEventLoopUtilization = performance.eventLoopUtilization();
 
 const metrics = {
   startServer: new prometheus.Gauge({
@@ -45,7 +74,7 @@ const metrics = {
     registers: [prometheus.register],
   }),
   // The V8 old-space ceiling. Compare against heap usage to see OOM headroom.
-  // Not included in prom-client's default metrics.
+  // Not included in @prometheus-io/client's default metrics.
   heapSizeLimit: new prometheus.Gauge({
     name: 'nodejs_heap_size_limit_bytes',
     help: 'V8 heap size limit in bytes',
@@ -61,6 +90,19 @@ const metrics = {
     registers: [prometheus.register],
     collect() {
       this.set(v8.getHeapStatistics().number_of_detached_contexts);
+    },
+  }),
+  // Fraction of time the event loop was busy (0 to 1) since the previous scrape.
+  // Idle time is 1 minus this value.
+  // Not included in @prometheus-io/client's default metrics.
+  eventLoopUtilization: new prometheus.Gauge({
+    name: 'nodejs_eventloop_utilization',
+    help: 'Fraction of time the event loop was busy since the last scrape',
+    registers: [prometheus.register],
+    collect() {
+      const current = performance.eventLoopUtilization();
+      this.set(performance.eventLoopUtilization(current, lastEventLoopUtilization).utilization);
+      lastEventLoopUtilization = current;
     },
   }),
 };
@@ -105,6 +147,9 @@ async function start() {
       metrics.startDatabase.set(v.duration);
     });
 
+  await seedOfficialMapLibrary();
+  await refreshCustomCardRegistry();
+
   // Initialize the session manager after initializing the database.
   await SessionManager.getInstance().initialize();
 
@@ -116,7 +161,9 @@ async function start() {
     // Do not fail. Just continue. Stats aren't vital.
     console.error(err);
   }
-  GameLoader.getInstance().maintenance();
+  const gameLoader = GameLoader.getInstance();
+  void gameLoader.maintenance();
+  await GameLoader.reconcileSurrenderedBots();
 
   console.log(`Starting ${raw_settings.head}, built at ${raw_settings.builtAt}`);
 
@@ -129,6 +176,7 @@ async function start() {
   }
 
   server.listen({port: port, host: host});
+  installShutdownHandlers(server);
 
   if (!process.env.SERVER_ID) {
     console.log(`The secret serverId for this server is ${ansi.style.bold}${serverId}${ansi.style.reset}.`);
@@ -138,9 +186,7 @@ async function start() {
   console.log('Server is ready.');
 }
 
-try {
-  start();
-} catch (err) {
+start().catch((err) => {
   console.error('Cannot start server:');
   console.error(err);
-}
+});

@@ -25,6 +25,7 @@ import {Warning} from '../src/common/cards/Warning';
 import {testGame as testGameProxy} from './TestGame';
 import {LogMessage} from '../src/common/logs/LogMessage';
 import {cast} from '@/common/utils/utils';
+import {GlobalEventDealer} from '@/server/turmoil/globalEvents/GlobalEventDealer';
 
 /**
  * Creates a new game for testing. Has some hidden behavior for testing:
@@ -99,6 +100,37 @@ export function setRulingParty(game: IGame, partyName: PartyName, policyId?: Pol
   game.phase = Phase.ACTION;
 }
 
+// More Parties randomly picks 6 of 12 parties per game (see Turmoil.shufflePartyNames). Tests
+// that need a specific non-official party to exist (e.g. to set it as ruling) should call this
+// in beforeEach and call the returned function in afterEach to restore real shuffling.
+export function forcePartiesInPlay(...names: ReadonlyArray<PartyName>): () => void {
+  const original = Turmoil.shufflePartyNames;
+  const originalDraw = GlobalEventDealer.prototype.draw;
+  const draws = new WeakMap<GlobalEventDealer, number>();
+  let initialParties: ReadonlyArray<PartyName> = [];
+  Turmoil.shufflePartyNames = (allNames) => {
+    const ordered = [...names, ...allNames.filter((name) => !names.includes(name))];
+    initialParties = ordered.slice(0, 6);
+    return ordered;
+  };
+  // Keeps forced parties from being replaced by starting events.
+  GlobalEventDealer.prototype.draw = function() {
+    const count = draws.get(this) ?? 0;
+    draws.set(this, count + 1);
+    if (count < 2) {
+      const index = this.deck.findIndex((event) => initialParties.includes(event.revealedDelegate));
+      if (index >= 0) {
+        return this.deck.splice(index, 1)[0];
+      }
+    }
+    return originalDraw.call(this);
+  };
+  return () => {
+    Turmoil.shufflePartyNames = original;
+    GlobalEventDealer.prototype.draw = originalDraw;
+  };
+}
+
 // Just shortcuts to some often called methods
 // related to the deferred actions queue
 export function runAllActions(game: IGame) {
@@ -131,13 +163,13 @@ function formatMessageData(datum: LogMessageData): string {
   if (datum.type === LogMessageDataType.CARDS) {
     return new Intl.ListFormat('en', {type: 'conjunction', style: 'long'}).format(datum.value);
   }
-  return datum.value.toString();
+  return Log.shortcode(datum) ?? datum.value.toString();
 }
 
 /**
  * Run a few tests to see that a canPlay or canAct behaves correctly in the face of reds costs.
  *
- * @param cb the code to invoke that indicates wheter the action can be taken.
+ * @param cb the code to invoke that indicates whether the action can be taken.
  * @param player player taking the action
  * @param initialMegacredits starting money
  * @param passingDelta additional money required to take this action when Reds are in power.. Typically a multiple of 3
@@ -198,10 +230,19 @@ class FakeCard implements IProjectCard {
   public getGlobalParameterRequirementBonus(): number {
     return 0;
   }
+  public getTagCardRequirementBonus(): number {
+    return 0;
+  }
   public type = CardType.ACTIVE;
   public metadata = {};
   public resourceCount = 0;
   public tilesBuilt = [];
+  public addWarning(warning: Warning): void {
+    this.warnings.add(warning);
+  }
+  public clearWarnings(): void {
+    this.warnings.clear();
+  }
 }
 
 export function fakeCard(attrs: Partial<IProjectCard> = {}): IProjectCard {

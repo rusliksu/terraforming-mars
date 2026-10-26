@@ -1,0 +1,558 @@
+// Same height as the ✕ next to it
+.wiki-overlay-github {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  margin: 0;
+  // Same corners as the ✕ (dialog_frame.less)
+  border-radius: 8px;
+}
+
+// Phone: only the icon, the title needs the room
+@media only screen and (max-width: @card-list-phone) {
+  .wiki-overlay-github span {
+    display: none;
+  }
+}
+
+.tooltip:hover {
+  text-decoration: none;
+}
+
+// ---------- selectable tiles ----------
+.create-game-chip-grid {
+  display: grid;
+  // At most two columns: with three, the longer names (expansions, fan boards) were mostly cut off
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: @create-game-gap-inner;
+
+  &--two {
+    margin-bottom: @create-game-gap-inner;
+  }
+}
+
+// Selected as everywhere in the game: 20 % purple (selection_highlight.less) and a checkmark flag flush with the border
+.create-game-chip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: @create-game-control-height;
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: @create-game-radius-small;
+  background: @create-game-chip-background;
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    background: @create-game-chip-hover;
+  }
+
+  &:focus-visible {
+    outline: 2px solid @highlight-gold;
+    outline-offset: 2px;
+  }
+
+  .create-game-expansion-icon {
+    .create-game-icon-size(20px);
+  }
+
+  // Base game: always on, so no hover and no pointer – it only states what every game contains
+  &--locked {
+    cursor: default;
+
+    &:hover {
+      background: fade(@selection-color, @selection-tint-opacity);
+    }
+  }
+
+  &--selected {
+    border-color: lighten(@selection-color, 12%);
+    background: fade(@selection-color, @selection-tint-opacity);
+    box-shadow: 0 0 5px fade(@selection-color, 55%);
+
+    &::after {
+      content: "✓";
+      position: absolute;
+      top: -1px;
+      right: -1px;
+      display: grid;
+      place-items: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 0 @create-game-radius-small 0 6px;
+      background: lighten(@selection-color, 12%);
+      color: #fff;
+      font-size: 11px;
+      font-weight: bold;
+    }
+  }
+}
+
+// Random board on: the board chips recede – a click on one switches back to a fixed board
+.create-game-chip-grid--muted .create-game-chip {
+  opacity: 0.5;
+}
+
+.create-game-chip-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Room for the checkmark flag
+.create-game-chip .create-game-info,
+.create-game-chip .create-game-count {
+  margin-right: 8px;
+}
+
+.create-game-count {
+  padding: 1px 7px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 12px;
+}
+
+.create-game-alpha {
+  opacity: 0.7;
+}
+
+// Colored hexagon of the game boards (color via create-game-<board>)
+.create-game-board-hexagon {
+  flex: none;
+  width: 14px;
+  height: 16px;
+  background: currentColor;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+}
+
+// ---------- settings rows ----------
+.create-game-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+
+  // Row with a switch: the whole row is the target (OptionRow.vue) and lights up on hover;
+  // reaches into the card padding so the text does not move
+  &:has(.create-game-switch) {
+    margin: 0 -8px;
+    padding: 0 8px;
+    border-radius: @create-game-radius-small;
+    cursor: pointer;
+    transition: background-color 0.15s;
+
+    &:hover {
+      background: @create-game-chip-hover;
+    }
+  }
+
+  &--sub {
+    padding-left: 16px;
+    color: @create-game-dim;
+  }
+}
+
+.create-game-option-name {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+
+  .create-game-expansion-icon {
+    .create-game-icon-size(18px);
+  }
+}
+
+.create-game-subhead + .create-game-segmented,
+.create-game-chip-grid + .create-game-option {
+  margin-top: @create-game-gap-inner;
+}
+
+.create-game-option-group + .create-game-option-group {
+  margin-top: 10px;
+}
+
+.create-game-option-group-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+  font-size: 13px;
+  color: @create-game-dim;
+
+  .create-game-expansion-icon {
+    .create-game-icon-size(16px);
+  }
+}
+
+.create-game-note {
+  margin: 2px 0 6px;
+  font-size: 13px;
+  color: @create-game-dim;
+}
+
+.create-game-text-input {
+  width: 100%;
+  height: 32px;
+  margin-top: 4px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  color: #eee;
+}
+
+// Switch: a real checkbox, just drawn differently
+.create-game-switch {
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: 34px;
+  height: 20px;
+  margin: 0;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.18);
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.15s;
+  }
+
+  &:checked {
+    background: @bg_action;
+
+    &::after {
+      transform: translateX(14px);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid @highlight-gold;
+    outline-offset: 2px;
+  }
+}
+
+// Number stepper and segmented control share one control height: same frame (padding, radius, background),
+// inner buttons as high as a segmented button (6px padding + 16px text)
+@create-game-control-padding: 3px;
+@create-game-control-button-height: 31px;
+
+.create-game-stepper {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  padding: @create-game-control-padding;
+  border-radius: @create-game-radius-small;
+  background: rgba(0, 0, 0, 0.3);
+
+  button {
+    width: @create-game-control-button-height;
+    height: @create-game-control-button-height;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: @create-game-dim;
+    font-size: 18px;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      color: #fff;
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+  }
+}
+
+.create-game-stepper-value {
+  min-width: 26px;
+  text-align: center;
+  font-weight: 700;
+  color: #eee;
+}
+
+.create-game-segmented {
+  display: flex;
+  gap: 2px;
+  padding: @create-game-control-padding;
+  border-radius: @create-game-radius-small;
+  background: rgba(0, 0, 0, 0.3);
+
+  button {
+    // Width by label; a long label wraps between words instead of sticking out of the card (phone, long languages)
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: @create-game-dim;
+    line-height: 1.2;
+    cursor: pointer;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+
+  .create-game-segmented--selected {
+    background: @bg_action;
+    color: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  }
+
+  &.create-game-segmented--sub {
+    margin: 2px 0 4px 16px;
+  }
+}
+
+// ---------- right column: player card and Create card, sticky together ----------
+.create-game-side {
+  grid-column: 2;
+  grid-row: 1;
+  position: sticky;
+  top: @create-game-page-padding;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: @create-game-gap-card;
+  max-height: calc(100dvh - 2 * @create-game-page-padding);
+}
+
+.create-game-players {
+  .frosted-surface();
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid @create-game-line;
+  border-radius: @create-game-radius;
+  background: @create-game-surface-strong;
+}
+
+// Replaces the AI count while a setting blocks the AI: heading, below it the blocking settings as chips
+.create-game-seat-warning {
+  margin: 0;
+  padding: 8px 10px 10px;
+
+  .create-game-validation-title {
+    margin-bottom: 8px;
+  }
+}
+
+// Humans and AI: label column plus six equal columns, so both rows line up
+.create-game-seat-rows {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.create-game-seat-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: @create-game-dim;
+  font-size: 14px;
+}
+
+// Seat rows: a seat the other kind of player takes shows its symbol, very faint and not selectable
+.create-game-segmented--seats button {
+  display: grid;
+  place-items: center;
+  // Narrow seat columns: without side padding "Solo" fits and stays centered instead of running out to the right
+  padding-right: 0;
+  padding-left: 0;
+
+  // "No AI" sign: as faint as the taken seats until it is chosen
+  .seat-icon {
+    color: @create-game-seat-faint;
+  }
+
+  &.create-game-segmented--selected .seat-icon {
+    color: #fff;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+.create-game-segmented.create-game-segmented--equal button {
+  flex: 1 1 0;
+}
+
+.create-game-ai-strength {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+// Shadow of a part that lies over scrolled content (stuck Create card, players head); @direction 1 = down, -1 = up
+.create-game-float-shadow(@direction) {
+  @shadow: 0 (@direction * 6px) 22px rgba(0, 0, 0, 0.6);
+}
+
+// Head and cards scroll together, so the cards can pass under the sticky head
+.create-game-players-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  border-radius: inherit;
+}
+
+.create-game-players-head {
+  // Stays on top while the cards scroll; frosted glass like the Create card, so they shine through blurred
+  .frosted-surface();
+  position: sticky;
+  top: 0;
+  z-index: 2; // above the cards, so the shadow falls onto them
+  padding: 12px 14px 10px;
+  border-radius: @create-game-radius @create-game-radius 0 0;
+  background: @create-game-surface-strong;
+  transition: box-shadow 0.2s;
+
+  // Cards scroll under the head: same shadow as the stuck Create card, only downwards (clip-path cuts the sides)
+  &--over-list {
+    box-shadow: .create-game-float-shadow(1)[@shadow];
+    clip-path: inset(0 0 -40px 0);
+  }
+
+  .create-game-players-first {
+    margin-top: @create-game-gap-inner;
+  }
+
+  // Same title and line as the other cards
+  h2 {
+    .create-game-card-title-line();
+    font-size: 18px;
+  }
+}
+
+.create-game-player-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 14px 14px;
+}
+
+// Neutral card: the chosen color shows in the header and in the standing cube
+.create-game-player {
+  // Never squeeze the cards when the column is short: the list scrolls instead
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 10px 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: @create-game-radius-small;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+// Player color as a variable: header, outline and glow all derive from it
+each(@players, {
+  @c: ~"player_@{value}";
+  .create-game-player--@{value} {
+    --create-game-player-color: @@c;
+  }
+});
+
+// Humans stand out: full color header plus a glow in their color
+.create-game-player:not(.create-game-player--ai) {
+  border-color: var(--create-game-player-color);
+  box-shadow:
+    0 0 0 1px var(--create-game-player-color),
+    0 0 0 4px color-mix(in srgb, var(--create-game-player-color) 22%, transparent),
+    0 6px 16px color-mix(in srgb, var(--create-game-player-color) 35%, transparent);
+}
+
+// AI players stay quieter: thin outline, header only tinted (still set apart from the card)
+.create-game-player--ai {
+  border-color: color-mix(in srgb, var(--create-game-player-color) 55%, transparent);
+
+  .create-game-player-top {
+    background: color-mix(in srgb, var(--create-game-player-color) 25%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--create-game-player-color) 55%, transparent);
+  }
+
+  .create-game-player-name {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  // Robot chip in full color for contrast to the tinted header
+  .create-game-player-position {
+    background: var(--create-game-player-color);
+  }
+}
+
+// The "black" player color is a light grey: a real black chip keeps the white robot readable
+.create-game-player--ai.create-game-player--black .create-game-player-position {
+  background: #111;
+}
+
+// Header in the player color, edge to edge
+.create-game-player-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 -10px;
+  padding: 8px 10px;
+  background: var(--create-game-player-color);
+}
+
+// Seat pill: meeple or robot plus seat number
+.create-game-player-position {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  height: 30px;
+  padding: 0 10px 0 8px;
+  border-radius: 15px;
+  background: rgba(0, 0, 0, 0.35);
+  font-size: 14px;
+  font-weight: bold;
+}
+
+// Input plus the fixed AI marker drawn right behind the typed text
+.create-game-player-name-field {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.create-game-player-name-marker {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 11px;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 17px;
+  white-space: pre;
+  pointer-events: none;
+}

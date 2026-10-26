@@ -1,0 +1,198 @@
+<template>
+  <div :class="['players-table', {'players-table--escape-velocity': escapeVelocity}]" :style="{'--wrybit-players-table-columns': template, '--wrybit-players-table-cell-count': cellCount}">
+    <!-- Player list as a table (only visible in the two-column layout, see players_table.less) -->
+    <PlayersTableHeader :conglomeratesExpansion="playerView.game.gameOptions.expansions.conglomerates" :visibility="effectiveVisibility" :sectionOrder="sectionOrder" :autoHidden="fitted.autoHidden" :tagColumns="tagColumns" @toggle="toggleSection"/>
+    <div class="players-table-rows">
+      <PlayersTableRow v-for="row in rows" :key="row.player.color"
+        :player="row.player" :readOnly="readOnly"
+        :playerView="playerView"
+        :firstForGen="row.firstForGen"
+        :actionLabel="row.actionLabel"
+        :playerIndex="row.playerIndex"
+        :visibility="effectiveVisibility"
+        :sectionOrder="sectionOrder"
+        :tagColumns="tagColumns"
+        :tagDetails="tagDetailsByColor[row.player.color]"
+        :productionLeaders="productionLeadersByColor[row.player.color] ?? []"
+        :goodsBoxWidths="goodsBoxWidths"/>
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+import {defineComponent} from 'vue';
+import {PLAYERS_TABLE_ZOOM_VARIABLE} from '@/client/wrybit/visuals/common/playersCardFit';
+import {ViewModel} from '@/common/models/PlayerModel';
+import {Color} from '@/common/Color';
+import {PlayerGood} from './playerGoods';
+import PlayersTableHeader from '@/client/wrybit/visuals/overview/PlayersTableHeader.vue';
+import PlayersTableRow from '@/client/wrybit/visuals/overview/PlayersTableRow.vue';
+import {TAG_ORDER, TagDetails, buildTagDetails, isTagInGame} from '@/client/wrybit/visuals/overview/playerTagDetails';
+import {playerGoods} from '@/client/wrybit/visuals/overview/playerGoods';
+import {measureGoodsBoxWidths} from '@/client/wrybit/visuals/overview/goodsBoxWidths';
+import {mobileLandscape, mobileLayout} from '@/client/wrybit/visuals/common/mobileLayout';
+import {
+  DESKTOP_SECTION_ORDER, GOODS_COUNT, MOBILE_SECTION_ORDER, SCORE_COUNT, PlayersTableRowModel, SectionVisibility, TableSection, TagColumnGroups,
+  FittedVisibility, columnTemplate, fitToWidth, nameColumnWidth, loadPreferredSection, loadSectionVisibility, savePreferredSection, saveSectionVisibility,
+} from '@/client/wrybit/visuals/overview/playersTableLayout';
+
+type DataModel = {
+  visibility: SectionVisibility;
+  // Most recently enabled section – stays visible longest when space is short
+  preferredSection: TableSection | undefined;
+  // Width of the table; 0 while it is invisible or not yet measured
+  availableWidth: number;
+  resizeObserver: ResizeObserver | undefined;
+  // Box width per resource column where the standard width is too narrow (goodsBoxWidths.ts); 0 = standard
+  goodsBoxWidths: Array<number>;
+};
+
+export default defineComponent({
+  name: 'PlayersTable',
+  components: {
+    PlayersTableHeader,
+    PlayersTableRow,
+  },
+  props: {
+    readOnly: {type: Boolean, default: false},
+    playerView: {
+      type: Object as () => ViewModel,
+      required: true,
+    },
+    // Order as in the classic bar: opponents in turn order, yourself last
+    rows: {
+      type: Array as () => Array<PlayersTableRowModel>,
+      required: true,
+    },
+  },
+  data(): DataModel {
+    return {
+      visibility: loadSectionVisibility(),
+      preferredSection: loadPreferredSection(),
+      availableWidth: 0,
+      resizeObserver: undefined,
+      goodsBoxWidths: new Array(GOODS_COUNT).fill(0),
+    };
+  },
+  // Watch the column width: in narrow windows sections drop out automatically instead of being clipped
+  mounted() {
+    if (typeof ResizeObserver === 'undefined') {
+      return;
+    }
+    this.resizeObserver = new ResizeObserver((entries) => {
+      // Scaled down via the drag handle (playersCardFit.ts) the table must keep its columns: measure in unscaled px,
+      // otherwise the zoom would make room for sections that don't fit at full size
+      const zoom = parseFloat(getComputedStyle(this.$el).getPropertyValue(PLAYERS_TABLE_ZOOM_VARIABLE)) || 1;
+      this.availableWidth = Math.floor(entries[0].contentRect.width * zoom);
+    });
+    this.resizeObserver.observe(this.$el);
+    this.updateGoodsBoxWidths();
+  },
+  // New values (e.g. a shield or +10 production) can widen a box: measure again after every render
+  updated() {
+    this.updateGoodsBoxWidths();
+  },
+  beforeUnmount() {
+    this.resizeObserver?.disconnect();
+  },
+  computed: {
+    goodsCount(): number {
+      return GOODS_COUNT + (this.playerView.game.gameOptions.expansions.conglomerates ? 1 : 0);
+    },
+    // Escape Velocity: rows get a third line (clock) and a wider name column (players_table.less)
+    escapeVelocity(): boolean {
+      return this.playerView.game.gameOptions.escapeVelocity !== undefined;
+    },
+    nameWidth(): number {
+      return nameColumnWidth(this.escapeVelocity);
+    },
+    // Mobile view except tablet landscape transposes the table (players as columns, mobile.less @mb-portrait)
+    transposed(): boolean {
+      return mobileLayout.value && !mobileLandscape.value;
+    },
+    // Computed once per player color; every row has an entry
+    tagDetailsByColor(): Record<string, TagDetails> {
+      return Object.fromEntries(this.rows.map((row) => [row.player.color, buildTagDetails(row.player, this.playerView)]));
+    },
+    // Every tag available in this game, including tags nobody has played yet. The classic player
+    // bar works the same way: zero counters stay visible so players can plan around them.
+    tagColumns(): TagColumnGroups {
+      const groups: TagColumnGroups = [[]];
+      for (const tag of TAG_ORDER) {
+        if (tag === 'separator') {
+          groups.push([]);
+          continue;
+        }
+        if (tag === 'all' || !isTagInGame(tag, this.playerView.game)) {
+          continue;
+        }
+        groups[groups.length - 1].push(tag);
+      }
+      return groups.filter((group) => group.length > 0);
+    },
+    // The tags section is dropped if there is not a single tag column; what's too wide drops out by priority
+    fitted(): FittedVisibility {
+      const wanted = {...this.visibility, tags: this.visibility.tags && this.tagColumns.length > 0};
+      // The transposed table (mobile.less) grows downward, so no section has to give way for lack of space
+      return fitToWidth(wanted, this.tagColumns, this.transposed ? 0 : this.availableWidth, this.preferredSection, this.nameWidth, this.goodsBoxWidths, this.goodsCount);
+    },
+    effectiveVisibility(): SectionVisibility {
+      return this.fitted.visibility;
+    },
+    // Cells per row without separators (name, goods, tags incl. group gaps, scoring, cards);
+    // the mobile view uses this to transpose the table (mobile.less: players as columns)
+    sectionOrder(): ReadonlyArray<TableSection> {
+      return this.transposed ? MOBILE_SECTION_ORDER : DESKTOP_SECTION_ORDER;
+    },
+    cellCount(): number {
+      const visibility = this.effectiveVisibility;
+      const tagCells = this.tagColumns.reduce((sum, group) => sum + group.length, 0) + Math.max(0, this.tagColumns.length - 1);
+      return 1 + (visibility.goods ? this.goodsCount : 0) + (visibility.tags ? tagCells : 0) + (visibility.score ? SCORE_COUNT : 0) + 1;
+    },
+    template(): string {
+      return columnTemplate(this.effectiveVisibility, this.tagColumns, this.nameWidth, this.goodsBoxWidths, this.goodsCount);
+    },
+    // Per resource the player with the sole highest production; nobody on a tie
+    productionLeadersByColor(): Partial<Record<Color, Array<PlayerGood['type']>>> {
+      const leaders: Partial<Record<Color, Array<PlayerGood['type']>>> = {};
+      const goodsByColor = this.rows.map((row) => ({color: row.player.color, goods: playerGoods(row.player, this.playerView.game.gameOptions.expansions.conglomerates)}));
+      if (goodsByColor.length < 2) {
+        return leaders;
+      }
+      goodsByColor[0].goods.forEach((good, index) => {
+        const productions = goodsByColor.map((entry) => entry.goods[index].production);
+        const highest = Math.max(...productions);
+        const holders = goodsByColor.filter((entry) => entry.goods[index].production === highest);
+        if (highest > 0 && holders.length === 1) {
+          (leaders[holders[0].color] ??= []).push(good.type);
+        }
+      });
+      return leaders;
+    },
+  },
+  methods: {
+    // Only assigned on a real change, otherwise every render would trigger the next one
+    updateGoodsBoxWidths() {
+      // Transposed (mobile) the players are the columns: the boxes are laid out differently there
+      const widths = this.transposed ? new Array(this.goodsCount).fill(0) : measureGoodsBoxWidths(this.$el, this.goodsCount);
+      if (widths.some((width, index) => width !== this.goodsBoxWidths[index])) {
+        this.goodsBoxWidths = widths;
+      }
+    },
+    // A section hidden only for lack of space gets preferred (another one makes room) instead of being turned off
+    toggleSection(section: TableSection) {
+      if (this.fitted.autoHidden.includes(section)) {
+        this.preferredSection = section;
+      } else {
+        const turnedOn = !this.visibility[section];
+        this.visibility = {...this.visibility, [section]: turnedOn};
+        saveSectionVisibility(this.visibility);
+        if (turnedOn) {
+          this.preferredSection = section;
+        }
+      }
+      savePreferredSection(this.preferredSection);
+    },
+  },
+});
+</script>

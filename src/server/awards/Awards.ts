@@ -24,7 +24,6 @@ import {Promoter} from './arabiaTerra/Promoter';
 import {Zoologist} from './arabiaTerra/Zoologist';
 import {AManufacturer} from './arabiaTerra/Manufacturer';
 import {Forecaster} from './Forecaster';
-import {Edgedancer} from './Edgedancer';
 import {Visionary} from './Visionary';
 import {Naturalist} from './Naturalist';
 import {Voyager} from './Voyager';
@@ -52,6 +51,8 @@ import {Collector} from './modular/Collector';
 import {Politician} from './modular/Politician';
 import {Manufacturer} from './modular/Manufacturer';
 import {Incorporator} from './modular/Incorporator';
+import {Innovator} from '@/server/awards/Innovator';
+import {Physicist} from '@/server/awards/Physicist';
 import {Rugged} from './Rugged';
 import {BoardName} from '../../common/boards/BoardName';
 import {AwardName} from '../../common/ma/AwardName';
@@ -71,14 +72,13 @@ export const awardManifest: MAManifest<AwardName, IAward> = {
     'Blacksmith': {Factory: Blacksmith},
     'Botanist': {Factory: Botanist, random: 'both'},
     'Celebrity': {Factory: Celebrity, random: 'both'},
-    'Collector': {Factory: Collector, random: 'modular'},
-    'Constructor': {Factory: Constructor, compatibility: 'colonies', random: 'modular'},
+    'Collector': {Factory: Collector, random: 'both'},
+    'Constructor': {Factory: Constructor, compatibility: 'colonies', random: 'both'},
     'Contractor': {Factory: Contractor, random: 'both'},
     'Cosmic Settler': {Factory: CosmicSettler},
     'Cultivator': {Factory: Cultivator, random: 'both'},
     'Curator': {Factory: Curator},
     'Desert Settler': {Factory: DesertSettler},
-    'Edgedancer': {Factory: Edgedancer},
     'Electrician': {Factory: Electrician, random: 'modular'},
     'Entrepreneur': {Factory: Entrepreneur, compatibility: 'ares'},
     'Estate Dealer': {Factory: EstateDealer, random: 'both'},
@@ -90,17 +90,19 @@ export const awardManifest: MAManifest<AwardName, IAward> = {
     'Highlander': {Factory: Highlander, random: 'modular'},
     'Incorporator': {Factory: Incorporator, random: 'both'},
     'Industrialist': {Factory: Industrialist, random: 'both'},
+    'Innovator': {Factory: Innovator},
     'Investor': {Factory: Investor, random: 'modular'},
     'Kingpin': {Factory: Kingpin, compatibility: 'underworld'},
     'Landlord': {Factory: Landlord, random: 'both'},
     'Landscaper': {Factory: Landscaper, random: 'modular'},
     'Lunar Magnate': {Factory: LunarMagnate, compatibility: 'moon'},
     'Magnate': {Factory: Magnate, random: 'both'},
-    'Manufacturer': {Factory: Manufacturer, random: 'modular'},
+    'Manufacturer': {Factory: Manufacturer, random: 'both'},
     'Metropolist': {Factory: Metropolist, random: 'modular'},
     'Miner': {Factory: Miner, random: 'both'},
     'Mogul': {Factory: Mogul, random: 'modular'},
     'Naturalist': {Factory: Naturalist},
+    'Physicist': {Factory: Physicist},
     'Politician': {Factory: Politician, compatibility: 'turmoil', random: 'modular'},
     'Promoter': {Factory: Promoter, random: 'both'},
     'Rugged': {Factory: Rugged, compatibility: 'ares'},
@@ -125,11 +127,13 @@ export const awardManifest: MAManifest<AwardName, IAward> = {
     [BoardName.AMAZONIS]: ['Curator', 'A. Engineer', 'Promoter', 'Tourist', 'A. Zoologist'],
     [BoardName.ARABIA_TERRA]: ['Cosmic Settler', 'Botanist', 'Promoter', 'Zoologist', 'A. Manufacturer'],
     [BoardName.TERRA_CIMMERIA]: ['Biologist', 'Incorporator', 'T. Politician', 'Urbanist', 'Warmonger'],
-    [BoardName.VASTITAS_BOREALIS]: ['Forecaster', 'Edgedancer', 'Visionary', 'Naturalist', 'Voyager'],
-    [BoardName.UTOPIA_PLANITIA]: ['Edgedancer', 'Investor', 'Botanist', 'Incorporator', 'Metropolist'],
+    [BoardName.VASTITAS_BOREALIS]: ['Forecaster', 'Suburbian', 'Visionary', 'Naturalist', 'Voyager'],
+    [BoardName.UTOPIA_PLANITIA]: ['Suburbian', 'Investor', 'Botanist', 'Incorporator', 'Metropolist'],
     [BoardName.VASTITAS_BOREALIS_NOVA]: ['Traveller', 'Landscaper', 'Highlander', 'Promoter', 'Blacksmith'],
     [BoardName.TERRA_CIMMERIA_NOVA]: ['Electrician', 'Founder', 'Mogul', 'A. Zoologist', 'Forecaster'],
     [BoardName.HOLLANDIA]: [],
+    [BoardName.CUSTOM]: [],
+    [BoardName.AMAZONIS_PLANITIA]: ['Collector', 'Innovator', 'Constructor', 'Manufacturer', 'Physicist'],
   },
   expansions: {
     venus: ['Venuphile'],

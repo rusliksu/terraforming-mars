@@ -57,6 +57,10 @@ export default defineComponent({
         } else {
           classes.push('card-red-arrow');
         }
+        // Conglomerates: this arrow triggers a teammate's action.
+        if (this.item.teammate === true) {
+          classes.push('card-arrow--teammate');
+        }
       } else {
         const config = configs[type];
         classes.push(config.class);

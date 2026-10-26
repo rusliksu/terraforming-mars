@@ -56,4 +56,44 @@ describe('SelectProjectCardToPlay', () => {
     expect(player.playedCards).has.length(1);
     expect(player.playedCards.get(CardName.AQUIFER_PUMPING)).is.not.undefined;
   });
+
+  it('plays a card with a pre-port payment payload', () => {
+    player.megaCredits = 20;
+    const payment = JSON.parse(JSON.stringify(Payment.of({megacredits: 18})));
+    delete payment.energy;
+    delete payment.nereidMicrobes;
+    delete payment.anyFloaters;
+    new SelectProjectCardToPlay(player, [aquiferPumping]).andThen(cb).process({
+      type: 'projectCard', card: aquiferPumping.name, payment,
+    });
+    expect(player.megaCredits).eq(2);
+    expect(player.playedCards.get(aquiferPumping.name)).eq(aquiferPumping);
+  });
+
+  it('records the actual mixed card payment on the public play message', () => {
+    player.megaCredits = 20;
+    player.steel = 2;
+    new SelectProjectCardToPlay(player, [aquiferPumping]).andThen(cb).process({
+      type: 'projectCard', card: CardName.AQUIFER_PUMPING,
+      payment: Payment.of({megacredits: 14, steel: 2}),
+    });
+
+    expect(player.megaCredits).eq(6);
+    expect(player.steel).eq(0);
+    const message = player.game.gameLog.find((message) => message.message === '${0} played ${1} [ ${2} ]');
+    expect(message?.data[2].value).eq('-2:r:steel: -14:r:mc:');
+  });
+
+  it('records heat paid for the card', () => {
+    player.megaCredits = 20;
+    player.heat = 4;
+    player.canUseHeatAsMegaCredits = true;
+    new SelectProjectCardToPlay(player, [aquiferPumping]).andThen(cb).process({
+      type: 'projectCard', card: CardName.AQUIFER_PUMPING,
+      payment: Payment.of({megacredits: 14, heat: 4}),
+    });
+
+    const message = player.game.gameLog.find((message) => message.message === '${0} played ${1} [ ${2} ]');
+    expect(message?.data[2].value).eq('-14:r:mc: -4:r:heat:');
+  });
 });

@@ -2,7 +2,9 @@ import {expect} from 'chai';
 import {IPlayer} from '../../src/server/IPlayer';
 import {PartyName} from '../../src/common/turmoil/PartyName';
 import {Game} from '../../src/server/Game';
-import {runAllActions} from '../TestingUtils';
+import {forcePartiesInPlay, runAllActions, setRulingParty} from '../TestingUtils';
+import {testGame} from '../TestGame';
+import {Tag} from '../../src/common/cards/Tag';
 import {TestPlayer} from '../TestPlayer';
 import {PoliticalAgendas} from '../../src/server/turmoil/PoliticalAgendas';
 import {OrOptions} from '../../src/server/inputs/OrOptions';
@@ -24,6 +26,57 @@ describe('PoliticalAgendas', () => {
   });
 
   const deserialized = [false, true];
+
+  for (const ruling of [true, false]) {
+    it(`neutral leadership preserves only a ruling party's policy (ruling=${ruling})`, () => {
+      const restore = forcePartiesInPlay(PartyName.UNITY, PartyName.MARS, PartyName.GREENS);
+      try {
+        const [game, player] = testGame(2, {
+          turmoilExtension: true,
+          morePartiesExpansion: true,
+          politicalAgendasExtension: 'PartyLeaders',
+        });
+        const turmoil = game.turmoil!;
+        const unity = turmoil.getPartyByName(PartyName.UNITY);
+        setRulingParty(game, PartyName.UNITY, 'up03');
+        if (!ruling) {
+          setRulingParty(game, PartyName.MARS, 'mp01');
+        }
+        const agenda = PoliticalAgendas.getAgenda(turmoil, PartyName.UNITY);
+        agenda.bonusId = 'ub02';
+        unity.delegates.clear();
+        unity.delegates.add(player);
+        unity.partyLeader = player;
+        PoliticalAgendas.randomElement = (list) => list[0];
+
+        turmoil.sendDelegateToParty('NEUTRAL', PartyName.UNITY, game);
+        turmoil.sendDelegateToParty('NEUTRAL', PartyName.UNITY, game);
+
+        expect(unity.partyLeader).to.eq('NEUTRAL');
+        expect(agenda.bonusId).to.eq('ub01');
+        expect(agenda.policyId).to.eq(ruling ? 'up03' : 'up01');
+        for (const p of game.players) {
+          expect(p.tags.count(Tag.SPACE, 'raw')).to.eq(ruling ? 2 : 0);
+          expect(p.getTitaniumValue()).to.eq(3);
+        }
+
+        turmoil.setRulingParty(game);
+        expect(PoliticalAgendas.currentAgenda(turmoil).policyId).to.eq('up01');
+        for (const p of game.players) {
+          expect(p.tags.count(Tag.SPACE, 'raw')).to.eq(0);
+          expect(p.getTitaniumValue()).to.eq(4);
+        }
+
+        setRulingParty(game, PartyName.MARS, 'mp01');
+        for (const p of game.players) {
+          expect(p.tags.count(Tag.SPACE, 'raw')).to.eq(0);
+          expect(p.getTitaniumValue()).to.eq(3);
+        }
+      } finally {
+        restore();
+      }
+    });
+  }
 
   deserialized.forEach((deserialize) => {
     const suffix = deserialize ? ', but deserialized' : '';
@@ -49,7 +102,8 @@ describe('PoliticalAgendas', () => {
 
     it('Chairman mode, human chairperson' + suffix, () => {
       // For the neutral chairman to always pick the second item in the list.
-      PoliticalAgendas.randomElement = (list: Array<any>) => list[1];
+      // Some placeholder parties only have one bonus/policy; fall back to index 0 for those.
+      PoliticalAgendas.randomElement = (list: Array<any>) => list[Math.min(1, list.length - 1)];
 
       let game = Game.newInstance('gameid', [player1, player2], player1, 'spectatorid', {turmoilExtension: true, politicalAgendasExtension: 'Chairman'});
       let newPlayer2: IPlayer = player2;
@@ -87,7 +141,8 @@ describe('PoliticalAgendas', () => {
 
     it('Chairman mode, neutral chairperson' + suffix, () => {
       // For the neutral chairperson to always pick the second item.
-      PoliticalAgendas.randomElement = (list: Array<any>) => list[1];
+      // Some placeholder parties only have one bonus/policy; fall back to index 0 for those.
+      PoliticalAgendas.randomElement = (list: Array<any>) => list[Math.min(1, list.length - 1)];
 
       let game = Game.newInstance('gameid', [player1, player2], player1, 'spectatorid', {turmoilExtension: true, politicalAgendasExtension: 'Chairman'});
       if (deserialize) {

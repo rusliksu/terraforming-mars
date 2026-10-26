@@ -23,7 +23,7 @@ export class PlaceSpecialMoonTile extends DeferredAction {
     if (spaces.length === 0) {
       return undefined;
     }
-    return new SelectSpace(this.title, spaces)
+    return new SelectSpace(this.title, spaces, this.tile.tileType)
       .andThen((space) => {
         MoonExpansion.addTile(this.player, space.id, this.tile);
         return undefined;

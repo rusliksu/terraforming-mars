@@ -4,7 +4,7 @@ import {globalConfig} from './getLocalVue';
 import Milestones from '@/client/components/Milestones.vue';
 import {ClaimedMilestoneModel} from '@/common/models/ClaimedMilestoneModel';
 import Milestone from '@/client/components/Milestone.vue';
-import {Preferences} from '@/client/utils/PreferencesManager';
+import {Preferences, PreferencesManager} from '@/client/utils/PreferencesManager';
 import {getMilestone} from '@/client/MilestoneAwardManifest';
 
 describe('Milestones', () => {
@@ -127,5 +127,58 @@ describe('Milestones', () => {
     expect(
       milestone.findAllComponents(Milestone).every((milestoneWrapper) => !milestoneWrapper.isVisible()),
     ).to.be.true;
+  });
+
+  it('shows the Conglomerates-scaled claim cost (12) when the expansion is on', () => {
+    const wrapper = mount(Milestones, {
+      ...globalConfig,
+      props: {
+        milestones: [],
+        preferences: {...PreferencesManager.INSTANCE.values(), learner_mode: true} as Readonly<Preferences>,
+        conglomeratesExpansion: true,
+      },
+    });
+
+    const prices = wrapper.findAll('.milestone-award-price').map((priceWrapper) => parseInt(priceWrapper.text()));
+    expect(prices).to.deep.eq([12, 12, 12]);
+  });
+
+  it('renders four claimed milestones without available spots in learner mode', () => {
+    const names = ['Terraformer', 'Mayor', 'Gardener', 'Builder'] as const;
+    const wrapper = mount(Milestones, {
+      ...globalConfig,
+      props: {
+        milestones: names.map((name) => ({...mockMilestone, name})),
+        preferences: {...PreferencesManager.INSTANCE.values(), learner_mode: true},
+      },
+    });
+
+    expect(wrapper.findAll('.milestone-award-inline.paid').map((claim) => claim.text())).to.deep.eq(names);
+    expect(wrapper.findAll('.milestone-award-inline.unpaid')).to.have.lengthOf(0);
+  });
+
+  it('shows a Coordination icon next to the price when Conglomerates is on', () => {
+    const wrapper = mount(Milestones, {
+      ...globalConfig,
+      props: {
+        milestones: [],
+        preferences: {...PreferencesManager.INSTANCE.values(), learner_mode: true} as Readonly<Preferences>,
+        conglomeratesExpansion: true,
+      },
+    });
+
+    expect(wrapper.findAll('.milestone-award-coordination')).to.have.lengthOf(3);
+  });
+
+  it('does not show a Coordination icon when Conglomerates is off', () => {
+    const wrapper = mount(Milestones, {
+      ...globalConfig,
+      props: {
+        milestones: [],
+        preferences: {...PreferencesManager.INSTANCE.values(), learner_mode: true} as Readonly<Preferences>,
+      },
+    });
+
+    expect(wrapper.find('.milestone-award-coordination').exists()).to.be.false;
   });
 });

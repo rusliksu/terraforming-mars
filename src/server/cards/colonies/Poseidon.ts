@@ -33,7 +33,11 @@ export class Poseidon extends CorporationCard implements ICorporationCard {
     });
   }
 
-  public onColonyAddedByAnyPlayer(cardOwner: IPlayer) {
-    cardOwner.production.add(Resource.MEGACREDITS, 1, {log: true, from: {card: this}});
+  public getColonyPlacementMegaCreditProduction(_cardOwner: IPlayer, _colonyOwner: IPlayer): number {
+    return 1;
+  }
+
+  public onColonyAddedByAnyPlayer(cardOwner: IPlayer, colonyOwner: IPlayer = cardOwner) {
+    cardOwner.production.add(Resource.MEGACREDITS, this.getColonyPlacementMegaCreditProduction(cardOwner, colonyOwner), {log: true, from: {card: this}});
   }
 }

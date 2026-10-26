@@ -1,7 +1,11 @@
 <template>
-  <div id="player-home" :class="(game.turmoil ? 'with-turmoil': '')">
+  <div id="player-home" :class="{'with-turmoil': game.turmoil, 'player-home--experimental': experimentalLayout, 'player-home--placing': hasSpaceInput(playerView.waitingFor)}"
+    :data-active-panel="layoutPanel" :style="{'--player-layout-board-scale': layoutBoardScale}">
+    <div v-if="experimentalLayout" class="player-layout-toolbar">
+      <div><strong>{{ thisPlayer.name }}</strong> · {{ thisPlayer.megacredits }} M€ <small v-i18n>Experimental layout</small></div>
+      <button type="button" class="btn" data-test="classic-layout" @click="useClassicLayout" v-i18n>Classic layout</button>
+    </div>
     <TopBar :playerView="playerView" />
-
     <div v-if="game.phase === 'end'">
       <div class="player_home_block">
         <DynamicTitle title="This game is over!" :color="thisPlayer.color"/>
@@ -24,11 +28,13 @@
       :playerNumber = "playerView.players.length"
       :lastSoloGeneration = "game.lastSoloGeneration"
       :deckSize = "game.deckSize"
-      :discardPileSize = "game.discardPileSize"/>
+      :discardPileSize = "game.discardPileSize"
+      :otherDeckSizes = "game.otherDeckSizes"/>
 
-    <div v-if="thisPlayer.tableau.length > 0">
-      <div class="player_home_block">
+    <div v-if="thisPlayer.tableau.length > 0" data-player-panels>
+      <div class="player_home_block player-layout-board" data-layout-panel="board">
         <GameBoardView
+          ref="gameBoardView"
           :game="game"
           :tileView="tileView"
           :players="playerView.players"
@@ -37,21 +43,23 @@
       </div>
 
     <a class="hotkey-target"></a>
-    <PlayersOverview class="player_home_block player_home_block--players nofloat" :playerView="playerView" v-trim-whitespace id="shortkey-playersoverview"/>
+    <PlayersOverview class="player_home_block player_home_block--players nofloat" data-layout-panel="players" :playerView="playerView" v-trim-whitespace id="shortkey-playersoverview"/>
 
       <a class="hotkey-target"></a>
-      <div class="player_home_block nofloat" v-if="!isInitialDraftingPhase">
-        <LogPanel :viewModel="playerView" :color="thisPlayer.color" :step="game.step"/>
+      <div class="player_home_block nofloat player-layout-log" data-layout-panel="log" v-if="!isInitialDraftingPhase">
+        <LogPanel :viewModel="playerView" :step="game.step" @spaceClicked="onSpaceClicked"/>
       </div>
 
       <a class="hotkey-target"></a>
-      <div class="player_home_block player_home_block--actions nofloat">
+      <div class="player_home_block player_home_block--actions nofloat" data-layout-panel="actions">
         <a name="actions" class="player_home_anchor"></a>
         <DynamicTitle title="Actions" :color="thisPlayer.color"/>
-        <WaitingFor v-if="game.phase !== 'end'" :playerView="playerView" :waitingfor="playerView.waitingFor"/>
+        <InputHost v-if="game.phase !== 'end'">
+          <WaitingFor :playerView="playerView" :waitingfor="playerView.waitingFor"/>
+        </InputHost>
       </div>
 
-      <div class="player_home_block player_home_block--hand" v-if="playerView.draftedCards.length > 0">
+      <div class="player_home_block player_home_block--hand" data-layout-panel="cards" v-if="playerView.draftedCards.length > 0">
         <DynamicTitle title="Drafted cards" :color="thisPlayer.color" />
         <div v-for="card in playerView.draftedCards" :key="card.name" class="cardbox">
           <Card :card="card"/>
@@ -59,7 +67,7 @@
       </div>
 
       <a name="cards" class="player_home_anchor"></a>
-      <div class="player_home_block player_home_block--hand" v-if="cardsInHandCount > 0" id="shortkey-hand">
+      <div class="player_home_block player_home_block--hand" data-layout-panel="cards" v-if="cardsInHandCount > 0" id="shortkey-hand">
         <div class="hiding-card-button-row">
           <DynamicTitle title="Cards In Hand" :color="thisPlayer.color"/>
           <div :class="getHideButtonClass('HAND')" @click.prevent="toggle('HAND')">
@@ -67,23 +75,24 @@
             <div class="played-cards-selection" v-i18n>{{ getToggleLabel('HAND')}}</div>
           </div>
           <div class="text-overview" v-i18n>[ toggle cards in hand ]</div>
+          <CardSortButtons v-model:sortOrder="handSortOrder"/>
         </div>
         <SortableCards v-show="isVisible('HAND')" :playerId="playerView.id"
                         :cards="playerView.preludeCardsInHand
                                 .concat(playerView.ceoCardsInHand)
-                                .concat(playerView.cardsInHand)"/>
+                                .concat(playerView.cardsInHand)" v-model:sortOrder="handSortOrder"/>
       </div>
 
-      <div class="player_home_block player_home_block--cards">
+      <div class="player_home_block player_home_block--cards" data-layout-panel="cards">
         <div class="hiding-card-button-row">
           <DynamicTitle title="Played Cards" :color="thisPlayer.color" />
           <div class="played-cards-filters">
             <div :class="getHideButtonClass('ACTIVE')" @click.prevent="toggle('ACTIVE')">
-              <div class="played-cards-count">{{getCardsByType(thisPlayer.tableau, [CardType.ACTIVE]).length.toString()}}</div>
+              <div class="played-cards-count">{{getCardsByType(thisPlayer.tableau, [CardType.ACTIVE, CardType.PRELUDE]).filter(isActive).length.toString()}}</div>
               <div class="played-cards-selection" v-i18n>{{ getToggleLabel('ACTIVE')}}</div>
             </div>
             <div :class="getHideButtonClass('AUTOMATED')" @click.prevent="toggle('AUTOMATED')">
-              <div class="played-cards-count">{{getCardsByType(thisPlayer.tableau, [CardType.AUTOMATED, CardType.PRELUDE]).length.toString()}}</div>
+              <div class="played-cards-count">{{getCardsByType(thisPlayer.tableau, [CardType.AUTOMATED, CardType.PRELUDE]).filter(isNotActive).length.toString()}}</div>
               <div class="played-cards-selection" v-i18n>{{ getToggleLabel('AUTOMATED')}}</div>
             </div>
             <div :class="getHideButtonClass('EVENT')" @click.prevent="toggle('EVENT')">
@@ -109,7 +118,7 @@
 
       </div>
 
-      <div v-if="thisPlayer.selfReplicatingRobotsCards.length > 0" class="player_home_block">
+      <div v-if="thisPlayer.selfReplicatingRobotsCards.length > 0" class="player_home_block" data-layout-panel="cards">
         <DynamicTitle title="Self-replicating Robots cards" :color="thisPlayer.color"/>
         <div>
           <div v-for="card in thisPlayer.selfReplicatingRobotsCards" :key="card.name" class="cardbox">
@@ -119,16 +128,16 @@
       </div>
     </div>
 
-    <div v-if="thisPlayer.underworldData.tokens.length > 0">
+    <div v-if="thisPlayer.underworldData.tokens.length > 0" data-layout-panel="cards">
       <DynamicTitle title="Claimed Underground Resource Tokens" :color="thisPlayer.color"/>
       <UndergroundTokens :underworldData="thisPlayer.underworldData"/>
     </div>
 
     <template v-if="thisPlayer.tableau.length === 0">
-      <PlayerSetupView :playerView="playerView" :tileView="tileView"/>
+      <PlayerSetupView :playerView="playerView" :tileView="tileView" @toggleTileView="cycleTileView()"/>
     </template>
 
-    <div v-if="game.colonies.length > 0" class="player_home_block" ref="colonies" id="shortkey-colonies">
+    <div v-if="game.colonies.length > 0" class="player_home_block" data-layout-panel="board" ref="colonies" id="shortkey-colonies">
       <a name="colonies" class="player_home_anchor hotkey-target"></a>
       <DynamicTitle title="Colonies" :color="thisPlayer.color"/>
       <div class="colonies-fleets-cont">
@@ -143,10 +152,12 @@
       </div>
     </div>
 
-    <div v-if="game.spectatorId">
+    <div>
       <a :href="'/spectator?id=' +game.spectatorId" target="_blank" rel="noopener noreferrer" v-i18n>Spectator link</a>
     </div>
     <PurgeWarning :expectedPurgeTimeMs="game.expectedPurgeTimeMs"/>
+    <ExperimentalPlayerNavigation v-if="experimentalLayout && thisPlayer.tableau.length > 0"
+      :activePanel="layoutPanel" :cardCount="cardsInHandCount" @navigate="navigateLayout"/>
     <KeyboardShortcuts v-show="keyboardShortcutOpened" @close="keyboardShortcutOpened = false"/>
   </div>
 </template>
@@ -157,6 +168,7 @@ import {defineComponent} from 'vue';
 import Card from '@/client/components/card/Card.vue';
 import PlayersOverview from '@/client/components/overview/PlayersOverview.vue';
 import WaitingFor from '@/client/components/WaitingFor.vue';
+import InputHost from '@/client/wrybit/shell/InputHost.vue';
 import Sidebar from '@/client/components/Sidebar.vue';
 import Colony from '@/client/components/colonies/Colony.vue';
 import LogPanel from '@/client/components/logpanel/LogPanel.vue';
@@ -164,6 +176,8 @@ import GameBoardView from '@/client/components/GameBoardView.vue';
 import PlayerSetupView from '@/client/components/PlayerSetupView.vue';
 import DynamicTitle from '@/client/components/common/DynamicTitle.vue';
 import SortableCards from '@/client/components/SortableCards.vue';
+import CardSortButtons from '@/client/components/CardSortButtons.vue';
+import {SortOrder} from '@/client/utils/SortOrder';
 import TopBar from '@/client/components/TopBar.vue';
 import StackedCards from '@/client/components/StackedCards.vue';
 import PurgeWarning from '@/client/components/common/PurgeWarning.vue';
@@ -176,25 +190,39 @@ import {CardType} from '@/common/cards/CardType';
 import {getCardsByType, isCardActivated} from '@/client/utils/CardUtils';
 import {sortActiveCards} from '@/client/utils/ActiveCardsSortingOrder';
 import {CardModel} from '@/common/models/CardModel';
-import {getCardOrThrow} from '../cards/ClientCardManifest';
+import {isActiveCard} from '@/client/cards/CardModelMetadata';
 import {Phase} from '@/common/Phase';
 import {HomeMixin} from '@/client/mixins/HomeMixin';
+import ExperimentalPlayerNavigation, {PlayerLayoutPanel} from '@/client/components/ExperimentalPlayerNavigation.vue';
+import {PlayerInputModel} from '@/common/models/PlayerInputModel';
+import {KeyboardNavigation} from '@/client/components/KeyboardNavigation';
+import {SpaceId} from '@/common/Types';
 
 type PlayerHomeModel = {
   showHand: boolean;
   showActiveCards: boolean;
   showAutomatedCards: boolean;
   showEventCards: boolean;
+  /** Current sort order of the hand, or undefined before the player picks one and after they reorder by hand. */
+  handSortOrder: SortOrder | undefined;
+  layoutPanel: PlayerLayoutPanel;
+  layoutWidth: number;
+  previousViewport: string | undefined;
 }
 
 type ToggleableCardType = 'HAND' | 'ACTIVE' | 'AUTOMATED' | 'EVENT';
 
-const typeToDataModel: Record<ToggleableCardType, {key: keyof PlayerHomeModel, preference: keyof Preferences}> = {
+const typeToDataModel: Record<ToggleableCardType, {key: 'showHand' | 'showActiveCards' | 'showAutomatedCards' | 'showEventCards', preference: keyof Preferences}> = {
   HAND: {key: 'showHand', preference: 'hide_hand'},
   ACTIVE: {key: 'showActiveCards', preference: 'hide_active_cards'},
   AUTOMATED: {key: 'showAutomatedCards', preference: 'hide_automated_cards'},
   EVENT: {key: 'showEventCards', preference: 'hide_event_cards'},
 } as const;
+
+function hasSpaceInput(input: PlayerInputModel | undefined): boolean {
+  return input !== undefined && (input.type === 'space' ||
+    ((input.type === 'and' || input.type === 'or') && input.options.some(hasSpaceInput)));
+}
 
 export default defineComponent({
   name: 'PlayerHome',
@@ -206,9 +234,22 @@ export default defineComponent({
       showActiveCards: !preferences.hide_active_cards,
       showAutomatedCards: !preferences.hide_automated_cards,
       showEventCards: !preferences.hide_event_cards,
+      handSortOrder: undefined,
+      layoutPanel: this.playerView.waitingFor === undefined || hasSpaceInput(this.playerView.waitingFor) ? 'board' : 'actions',
+      layoutWidth: window.innerWidth,
+      previousViewport: undefined,
     };
   },
   watch: {
+    experimentalLayout: {
+      handler: 'updateLayoutViewport',
+      immediate: true,
+    },
+    'playerView.waitingFor'(input: PlayerInputModel | undefined, previous: PlayerInputModel | undefined) {
+      if (this.experimentalLayout && input !== undefined && !input.optional && input.type !== previous?.type) {
+        this.navigateLayout(hasSpaceInput(input) ? 'board' : 'actions');
+      }
+    },
     showHand: function hide_hand() {
       PreferencesManager.INSTANCE.set('hide_hand', !this.showHand);
     },
@@ -229,6 +270,12 @@ export default defineComponent({
     },
   },
   computed: {
+    experimentalLayout(): boolean {
+      return getPreferences().experimental_layout;
+    },
+    layoutBoardScale(): number {
+      return Math.min(1, Math.max(0.3, (this.layoutWidth - 48) / 670));
+    },
     thisPlayer(): PublicPlayerModel {
       return this.playerView.thisPlayer;
     },
@@ -261,10 +308,12 @@ export default defineComponent({
     Card,
     PlayersOverview,
     WaitingFor,
+    InputHost,
     Sidebar,
     Colony,
     LogPanel,
     SortableCards,
+    CardSortButtons,
     TopBar,
     GameBoardView,
     PlayerSetupView,
@@ -272,8 +321,68 @@ export default defineComponent({
     PurgeWarning,
     UndergroundTokens,
     KeyboardShortcuts,
+    ExperimentalPlayerNavigation,
+  },
+  mounted() {
+    window.addEventListener('resize', this.updateLayoutWidth);
+    if (this.experimentalLayout && hasSpaceInput(this.playerView.waitingFor)) {
+      this.navigateLayout('board');
+    }
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.updateLayoutWidth);
+    this.updateLayoutViewport(false);
   },
   methods: {
+    hasSpaceInput,
+    navigateLayout(panel: PlayerLayoutPanel) {
+      this.layoutPanel = panel;
+      if (this.layoutWidth < 1400) {
+        this.$nextTick(() => this.$el.querySelector(`[data-layout-panel="${panel}"]`)?.scrollIntoView({block: 'start'}));
+      }
+    },
+    navigatePage(event: KeyboardEvent) {
+      const panels: Partial<Record<string, PlayerLayoutPanel>> = {
+        [KeyboardNavigation.GAMEBOARD]: 'board',
+        [KeyboardNavigation.PLAYERSOVERVIEW]: 'players',
+        [KeyboardNavigation.HAND]: 'cards',
+        [KeyboardNavigation.COLONIES]: 'board',
+      };
+      const panel = panels[event.code];
+      if (this.experimentalLayout && panel !== undefined && !event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey &&
+        event.target instanceof HTMLElement && event.target.tagName !== 'INPUT') {
+        this.layoutPanel = panel;
+        this.$nextTick(() => HomeMixin.methods?.navigatePage.call(this, event));
+      } else {
+        HomeMixin.methods?.navigatePage.call(this, event);
+      }
+    },
+    onSpaceClicked(spaceId: SpaceId) {
+      if (this.experimentalLayout) {
+        this.layoutPanel = 'board';
+      }
+      this.$nextTick(() => HomeMixin.methods?.onSpaceClicked.call(this, spaceId));
+    },
+    updateLayoutWidth() {
+      this.layoutWidth = window.innerWidth;
+    },
+    updateLayoutViewport(enabled: boolean) {
+      const viewport = document.querySelector('meta[name="viewport"]');
+      if (viewport === null) {
+        return;
+      }
+      if (enabled) {
+        this.previousViewport ??= viewport.getAttribute('content') ?? '';
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1, viewport-fit=cover');
+      } else if (this.previousViewport !== undefined) {
+        viewport.setAttribute('content', this.previousViewport);
+        this.previousViewport = undefined;
+      }
+      this.updateLayoutWidth();
+    },
+    useClassicLayout() {
+      PreferencesManager.INSTANCE.set('experimental_layout', false);
+    },
     isPlayerActing(playerView: PlayerViewModel) : boolean {
       return playerView.players.length > 1 && playerView.waitingFor !== undefined;
     },
@@ -308,11 +417,10 @@ export default defineComponent({
       }
     },
     isActive(cardModel: CardModel): boolean {
-      const card = getCardOrThrow(cardModel.name);
-      return card.type === CardType.ACTIVE || card.hasAction;
+      return isActiveCard(cardModel);
     },
     isNotActive(cardModel: CardModel): boolean {
-      return !getCardOrThrow(cardModel.name).hasAction;
+      return !isActiveCard(cardModel);
     },
   },
 });

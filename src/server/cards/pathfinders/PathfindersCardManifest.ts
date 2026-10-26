@@ -17,6 +17,9 @@ import {CassiniStation} from './CassiniStation';
 import {CeresSpaceport} from './CeresSpaceport';
 import {CharityDonation} from './CharityDonation';
 import {Chimera} from './Chimera';
+import {SistemasSeebeck} from './SistemasSeebeck';
+import {InSpire} from './InSpire';
+import {PlanetPrII} from './PlanetPrII';
 import {CO2Reducers} from './CO2Reducers';
 import {CollegiumCopernicus} from './CollegiumCopernicus';
 import {CommunicationBoom} from './CommunicationBoom';
@@ -58,6 +61,7 @@ import {LunarEmbassy} from './LunarEmbassy';
 import {LuxuryEstate} from './LuxuryEstate';
 import {MagneticFieldStimulationDelays} from './MagneticFieldStimulationDelays';
 import {MarsDirect} from './MarsDirect';
+import {MarsFrontierAlliance} from './MarsFrontierAlliance';
 import {MarsMaths} from './MarsMaths';
 import {MartianCulture} from './MartianCulture';
 import {MartianDustProcessingPlant} from './MartianDustProcessingPlant';
@@ -196,11 +200,12 @@ export const PATHFINDERS_CARD_MANIFEST = new ModuleManifest({
   },
   corporationCards: {
     [CardName.POLARIS]: {Factory: Polaris},
-    // [CardName.PLANET_PR]: {Factory: planetpr},
     [CardName.AMBIENT]: {Factory: Ambient, compatibility: 'venus'},
     [CardName.RINGCOM]: {Factory: Ringcom},
     [CardName.CHIMERA]: {Factory: Chimera},
-    // [CardName.SISTEMAS_SEEBECK]: {Factory: SistemasSeebeck},
+    [CardName.SISTEMAS_SEEBECK]: {Factory: SistemasSeebeck},
+    [CardName.IN_SPIRE]: {Factory: InSpire},
+    [CardName.PLANET_PR_II]: {Factory: PlanetPrII},
     // [CardName.SPIRE]: {Factory: Spire},
     [CardName.SOYLENT_SEEDLING_SYSTEMS]: {Factory: SoylentSeedlingSystems},
     [CardName.STEELARIS]: {Factory: Steelaris},
@@ -215,7 +220,7 @@ export const PATHFINDERS_CARD_MANIFEST = new ModuleManifest({
     [CardName.ODYSSEY]: {Factory: Odyssey},
     [CardName.GAGARIN_MOBILE_BASE]: {Factory: GagarinMobileBase},
     // Broken. #7519
-    // [CardName.MARS_FRONTIER_ALLIANCE]: {Factory: MarsFrontierAlliance, compatibility: 'turmoil'},
+    [CardName.MARS_FRONTIER_ALLIANCE]: {Factory: MarsFrontierAlliance, compatibility: 'turmoil'},
     [CardName.MIND_SET_MARS]: {Factory: MindSetMars, compatibility: 'turmoil'},
     [CardName.HABITAT_MARTE]: {Factory: HabitatMarte, compatibility: 'pathfinders'},
     [CardName.ADHAI_HIGH_ORBIT_CONSTRUCTIONS]: {Factory: AdhaiHighOrbitConstructions, compatibility: 'colonies'},

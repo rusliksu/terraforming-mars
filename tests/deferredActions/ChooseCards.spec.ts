@@ -48,6 +48,19 @@ describe('ChooseCards', () => {
     expect(model.cards[0].calculatedCost).not.to.eq(player.cardCost);
   });
 
+  it('keeps a free card selection without a confirmation step', () => {
+    const choice = cast(
+      new ChooseCards(player, [aquiferPumping, ioMiningIndustries], {keepMax: 1}).execute(),
+      SelectCard<IProjectCard>,
+    );
+
+    const nextInput = choice.cb([ioMiningIndustries]);
+
+    expect(nextInput).is.undefined;
+    expect(player.cardsInHand).deep.eq([ioMiningIndustries]);
+    expect(player.cardsInHand).not.include(aquiferPumping);
+  });
+
   it('logBoughtCards logs bought cards publicly by name', () => {
     const game = player.game;
     game.gameLog = [];

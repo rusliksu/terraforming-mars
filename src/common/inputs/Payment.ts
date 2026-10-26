@@ -1,5 +1,6 @@
 import {DATA_VALUE, FLOATERS_VALUE, MICROBES_VALUE, GRAPHENE_VALUE, SEED_VALUE} from '../constants';
 import {SpendableResource, SPENDABLE_RESOURCES} from './Spendable';
+import {comparing, reversed} from '@/common/utils/Ordering';
 
 /**
  * The units of resources to deduct from the player's play area. These resources are all worth
@@ -19,9 +20,12 @@ export function isPayment(obj: unknown): obj is Payment {
   if (!obj) {
     return false;
   }
-  const h = obj as Payment; // Still might not be Payment, but h is does not escape this method.
+  const h = obj as Payment; // Still might not be Payment, but h as is does not escape this method.
+  if (Object.keys(h).length !== SPENDABLE_RESOURCES.length) {
+    return false;
+  }
   return SPENDABLE_RESOURCES.every((key) =>
-    h.hasOwnProperty(key) && typeof h[key] === 'number' && !isNaN(h[key]));
+    h.hasOwnProperty(key) && Number.isInteger(h[key]) && h[key] >= 0);
 }
 
 export const DEFAULT_PAYMENT_VALUES = {
@@ -29,6 +33,7 @@ export const DEFAULT_PAYMENT_VALUES = {
   steel: 2,
   titanium: 3,
   heat: 1,
+  energy: 2,
   plants: 3,
 
   microbes: MICROBES_VALUE,
@@ -39,11 +44,23 @@ export const DEFAULT_PAYMENT_VALUES = {
   auroraiData: DATA_VALUE,
   graphene: GRAPHENE_VALUE,
   kuiperAsteroids: 1,
+  nereidMicrobes: 2,
+  anyFloaters: FLOATERS_VALUE,
 } satisfies Record<SpendableResource, number>;
 
 export namespace Payment {
+  /** Supply newly added resources for clients and recordings from before the fan port. */
+  export function fromResponse(value: unknown): Payment | undefined {
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+      return undefined;
+    }
+    const normalized = {energy: 0, nereidMicrobes: 0, anyFloaters: 0, ...value};
+    return isPayment(normalized) ? normalized : undefined;
+  }
+
   export const EMPTY: Readonly<Payment> = {
     heat: 0,
+    energy: 0,
     megacredits: 0,
     steel: 0,
     titanium: 0,
@@ -56,6 +73,8 @@ export namespace Payment {
     auroraiData: 0,
     graphene: 0,
     kuiperAsteroids: 0,
+    nereidMicrobes: 0,
+    anyFloaters: 0,
   } as const;
 
   export function of(payment: Partial<Payment>) : Payment {
@@ -63,6 +82,7 @@ export namespace Payment {
       auroraiData: payment.auroraiData ?? 0,
       floaters: payment.floaters ?? 0,
       heat: payment.heat ?? 0,
+      energy: payment.energy ?? 0,
       lunaArchivesScience: payment.lunaArchivesScience ?? 0,
       spireScience: payment.spireScience ?? 0,
       megacredits: payment.megacredits ?? 0,
@@ -73,8 +93,56 @@ export namespace Payment {
       graphene: payment.graphene ?? 0,
       kuiperAsteroids: payment.kuiperAsteroids ?? 0,
       plants: payment.plants ?? 0,
+      nereidMicrobes: payment.nereidMicrobes ?? 0,
+      anyFloaters: payment.anyFloaters ?? 0,
     };
   }
+
+  const ICONS = {
+    megacredits: ':r:mc:',
+    steel: ':r:steel:',
+    titanium: ':r:titanium:',
+    heat: ':r:heat:',
+    plants: ':r:plants:',
+    microbes: ':cr:microbe:',
+    floaters: ':cr:floater:',
+    lunaArchivesScience: ':cr:science:',
+    spireScience: ':cr:science:',
+    seeds: ':cr:seed:',
+    auroraiData: ':cr:data:',
+    graphene: ':cr:graphene:',
+    kuiperAsteroids: ':cr:asteroid:',
+    energy: ':r:energy:',
+    // Floaters pulled from any card the player holds them on (Venus Phase 2 standard projects).
+    anyFloaters: ':cr:floater:',
+    nereidMicrobes: ':cr:microbe:',
+  } satisfies Record<SpendableResource, string>;
+
+  const SORTED_FOR_LOG = SPENDABLE_RESOURCES.toSorted(reversed(comparing((key) => DEFAULT_PAYMENT_VALUES[key])));
+  /** Describes a payment as markdown icon shortcodes for the log, e.g. `-3:r:mc: -1:r:steel:`. */
+  export function toLogString(payment: Payment | undefined): string {
+    if (payment !== undefined) {
+      const filtered = SORTED_FOR_LOG.filter((key) => payment[key] > 0);
+      if (filtered.length > 0) {
+        const parts = filtered.map((key) => `-${payment[key]}${ICONS[key]}`);
+        return parts.join(' ');
+      }
+    }
+    return '0';
+  }
+}
+
+/**
+ * The megacredit value of the resources in this payment, using the standard exchange rates.
+ *
+ * This is what the player actually paid, which can be steel, titanium, heat or resources on
+ * cards instead of plain megacredits.
+ */
+export function paymentTotal(payment: Payment | undefined): number {
+  if (payment === undefined) {
+    return 0;
+  }
+  return SPENDABLE_RESOURCES.reduce((total, unit) => total + (payment[unit] ?? 0) * DEFAULT_PAYMENT_VALUES[unit], 0);
 }
 
 /**

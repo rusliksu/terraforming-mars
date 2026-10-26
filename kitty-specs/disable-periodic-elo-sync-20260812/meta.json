@@ -1,0 +1,14 @@
+{
+  "created_at": "2026-08-12T15:45:08Z",
+  "friendly_name": "Disable Periodic ELO Sync",
+  "mission_id": "disable-periodic-elo-sync-20260812",
+  "mission_slug": "disable-periodic-elo-sync-20260812",
+  "mission_type": "software-dev",
+  "pr_bound": true,
+  "purpose_tldr": "Keep legacy full-database ELO reconciliation out of active games and future production deploys.",
+  "slug": "disable-periodic-elo-sync-20260812",
+  "target_branch": "main",
+  "topology": "single_branch",
+  "manual_workflow_authorized": true,
+  "beads_id": "tm-ai-kpp"
+}

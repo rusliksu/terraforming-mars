@@ -25,7 +25,7 @@ describe('Poseidon', () => {
 
     expect(player.production.asUnits()).deep.eq(Units.of({megacredits: 2, steel: 1}));
     expect(player2.production.asUnits()).deep.eq(Units.of({steel: 1}));
-    expect(player.game.gameLog.map(formatMessage)).contains('blue gained 1 M€ production because of Poseidon');
+    expect(player.game.gameLog.map(formatMessage)).contains('blue gained 1:p:mc: because of Poseidon');
   });
 
   it('initial action', () => {

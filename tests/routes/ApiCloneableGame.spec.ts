@@ -1,3 +1,5 @@
+import {blankCustomBoard} from '../../src/common/boards/CustomBoardDefinition';
+import {decodeCustomBoard} from '../../src/common/boards/customBoardCodec';
 import {expect} from 'chai';
 import {ApiCloneableGame} from '../../src/server/routes/ApiCloneableGame';
 import {MockResponse} from './HttpMocks';
@@ -6,6 +8,7 @@ import {RouteTestScaffolding} from './RouteTestScaffolding';
 import {GameId} from '../../src/common/Types';
 import {statusCode} from '../../src/common/http/statusCode';
 import {BoardName} from '../../src/common/boards/BoardName';
+import {boardOptions} from '../../src/common/boards/randomBoardOptions';
 import {RandomBoardOption} from '../../src/common/boards/RandomBoardOption';
 import {RandomMAOptionType} from '../../src/common/ma/RandomMAOptionType';
 import {SerializedGame} from '../../src/server/SerializedGame';
@@ -107,6 +110,21 @@ describe('ApiCloneableGame', () => {
     Database.getInstance().getGameVersion = originalGetGameVersion;
   });
 
+  it('retains the custom map and teams for a rematch', async () => {
+    const board = blankCustomBoard(7, 'Rematch');
+    const serialized = makeSerializedGame({boardName: BoardName.CUSTOM, customBoard: board,
+      conglomeratesTeamAssignments: [1, 0], expansions: {conglomerates: true}});
+    Database.getInstance().getPlayerCount = async () => 2;
+    Database.getInstance().getGameVersion = async () => serialized;
+    scaffolding.url = '/api/cloneablegames?id=g456&setup=true';
+    await scaffolding.get(ApiCloneableGame.INSTANCE, res);
+    expect(res.statusCode).eq(statusCode.ok);
+    const setup = JSON.parse(res.content).setup;
+    expect(decodeCustomBoard(setup.customBoardCode)).deep.eq(board);
+    expect(setup.players.map((p: {team: number}) => p.team)).deep.eq([1, 0]);
+    expect(setup.expansions.highOrbit).eq(false);
+  });
+
   it('no parameter', async () => {
     scaffolding.url = '/api/cloneablegames';
     await scaffolding.get(ApiCloneableGame.INSTANCE, res);
@@ -171,7 +189,7 @@ describe('ApiCloneableGame', () => {
     expect(res.statusCode).eq(statusCode.ok);
     const response = JSON.parse(res.content);
     expect(response.playerCount).eq(2);
-    expect(response.setup.board).eq(BoardName.HELLAS);
+    expect(response.setup.boards).deep.eq([BoardName.HELLAS]);
     expect(response.setup.expansions.venus).eq(true);
     expect(response.setup.seededGame).eq(false);
   });
@@ -233,6 +251,7 @@ describe('ApiCloneableGame', () => {
         customCeos: [],
         politicalAgendasExtension: 'Standard',
         undoOption: true,
+        undoStepOption: true,
         showTimers: true,
         noEloGame: true,
         turnBasedGame: true,
@@ -263,12 +282,13 @@ describe('ApiCloneableGame', () => {
       {name: 'Alice', color: 'red', beginner: false, handicap: 0, preludeHandicap: 2, first: false, isBot: false},
       {name: 'Bob', color: 'blue', beginner: true, handicap: 3, preludeHandicap: 1, first: false, isBot: false},
     ]);
-    expect(response.setup.board).eq(BoardName.ELYSIUM);
+    expect(response.setup.boards).deep.eq([BoardName.ELYSIUM]);
     expect(response.setup.clonedGamedId).eq(undefined);
     expect(response.setup.seededGame).eq(false);
     expect(response.setup.noEloGame).eq(true);
     expect(response.setup.privateHands).eq(false);
     expect(response.setup.initialDraftOneWay).eq(true);
+    expect(response.setup.undoStepOption).eq(true);
     expect(response.setup.turnBasedGame).eq(true);
     expect(response.setup.botGame).eq(false);
     expect(response.setup.randomFirstPlayer).eq(true);
@@ -346,6 +366,6 @@ describe('ApiCloneableGame', () => {
 
     expect(res.statusCode).eq(statusCode.ok);
     const response = JSON.parse(res.content);
-    expect(response.setup.board).eq(RandomBoardOption.ALL);
+    expect(response.setup.boards).deep.eq(boardOptions(RandomBoardOption.ALL));
   });
 });

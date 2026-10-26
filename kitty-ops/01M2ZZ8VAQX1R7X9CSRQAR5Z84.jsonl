@@ -1,0 +1,6 @@
+{"event": "started", "invocation_id": "01M2ZZ8VAQX1R7X9CSRQAR5Z84", "profile_id": "implementer-ivan", "action": "generate", "request_text": "\u0438\u0441\u043f\u0440\u0430\u0432\u043b\u044f\u0439", "actor": "operator", "mode_of_work": "task_execution", "governance_context_hash": "a80c2c4403ba3550", "governance_context_available": true, "started_at": "2026-09-20T17:54:29.598315+00:00", "model_id": "claude-sonnet-5"}
+{"event": "completed", "invocation_id": "01M2ZZ8VAQX1R7X9CSRQAR5Z84", "completed_at": "2026-09-20T18:36:26.387207+00:00", "outcome": "done", "closed_by": "agent"}
+{"event": "artifact_link", "invocation_id": "01M2ZZ8VAQX1R7X9CSRQAR5Z84", "at": "2026-09-20T18:36:26.389192+00:00", "kind": "artifact", "ref": "scripts\\promote_tm_staging_to_prod.ps1"}
+{"event": "artifact_link", "invocation_id": "01M2ZZ8VAQX1R7X9CSRQAR5Z84", "at": "2026-09-20T18:36:26.397404+00:00", "kind": "artifact", "ref": "src\\server\\tools\\validate_saved_games.ts"}
+{"event": "artifact_link", "invocation_id": "01M2ZZ8VAQX1R7X9CSRQAR5Z84", "at": "2026-09-20T18:36:26.404434+00:00", "kind": "artifact", "ref": "docs\\plans\\2026-09-20-safe-prod-promotion.md"}
+{"event": "commit_link", "invocation_id": "01M2ZZ8VAQX1R7X9CSRQAR5Z84", "at": "2026-09-20T18:36:26.410976+00:00", "sha": "9fe52f4087e3463397eff925945af0cc7c943ea5"}

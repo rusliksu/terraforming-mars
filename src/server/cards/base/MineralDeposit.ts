@@ -24,3 +24,21 @@ export class MineralDeposit extends Card implements IProjectCard {
     });
   }
 }
+
+export class MineralDepositRebalanced extends Card implements IProjectCard {
+  constructor() {
+    super({
+      type: CardType.EVENT,
+      name: CardName.MINERAL_DEPOSIT_REBALANCED,
+      cost: 6,
+      behavior: {
+        stock: {steel: 5},
+      },
+      metadata: {
+        cardNumber: '062-RB',
+        renderData: CardRenderer.builder((b) => b.steel(5, {digit})),
+        description: 'Gain 5 steel. Test variant of Mineral Deposit.',
+      },
+    });
+  }
+}

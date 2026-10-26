@@ -15,7 +15,7 @@ import {SelectInitialCards} from '../../../src/server/inputs/SelectInitialCards'
 import {OrOptions} from '../../../src/server/inputs/OrOptions';
 import {TestPlayer} from '../../TestPlayer';
 import {Virus} from '../../../src/server/cards/base/Virus';
-import {runAllActions, runNextAction, setOxygenLevel, setRulingParty} from '../../TestingUtils';
+import {runAllActions, runNextAction, setOxygenLevel, setRulingParty, fakeCard} from '../../TestingUtils';
 import {testGame} from '../../TestGame';
 import {Leavitt} from '../../../src/server/cards/community/Leavitt';
 import {Splice} from '../../../src/server/cards/promo/Splice';
@@ -34,6 +34,7 @@ import {SelectColony} from '../../../src/server/inputs/SelectColony';
 import {deserializeCorporationCard, serializeCorporationCard} from '../../../src/server/cards/cardSerialization';
 import {AntiGravityTechnology} from '../../../src/server/cards/base/AntiGravityTechnology';
 import {cast} from '../../../src/common/utils/utils';
+import {NereidBiosystems} from '../../../src/server/cards/sillyfication/NereidBiosystems';
 
 describe('PharmacyUnion', () => {
   let pharmacyUnion: PharmacyUnion;
@@ -76,6 +77,21 @@ describe('PharmacyUnion', () => {
     expect(player2.megaCredits).to.eq(8); // should not change
     expect(pharmacyUnion.resourceCount).to.eq(4);
     expect(player.megaCredits).to.eq(0);
+  });
+
+  it('Nereid Biosystems: a Jovian-tagged card played by another player also adds a disease', () => {
+    player.playCorporationCard(pharmacyUnion);
+    runAllActions(game);
+    player.megaCredits = 8;
+    player2.playedCards.push(new NereidBiosystems());
+
+    player2.playCard(fakeCard({tags: [Tag.JOVIAN]}));
+    runAllActions(game);
+
+    // The disease (and its M€ cost) lands on Pharmacy Union's owner, not on whoever
+    // played the Jovian-tagged card.
+    expect(pharmacyUnion.resourceCount).to.eq(3);
+    expect(player.megaCredits).to.eq(4);
   });
 
   it('Removes diseases and gives TR only when corp owner plays science cards', () => {

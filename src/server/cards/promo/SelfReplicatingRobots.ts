@@ -1,3 +1,4 @@
+import {serializeDynamicCards} from '../DynamicCardState';
 import {IProjectCard} from '../IProjectCard';
 import {Card} from '../Card';
 import {CardName} from '../../../common/cards/CardName';
@@ -10,7 +11,7 @@ import {CardRenderer} from '../render/CardRenderer';
 import {Size} from '../../../common/cards/render/Size';
 import {uppercase} from '../Options';
 import {SerializedCard} from '../../SerializedCard';
-import {newProjectCard} from '../../createCard';
+import {deserializeProjectCard} from '../cardSerialization';
 
 export class SelfReplicatingRobots extends Card implements IProjectCard {
   constructor() {
@@ -86,7 +87,7 @@ export class SelfReplicatingRobots extends Card implements IProjectCard {
   serialize(serialized: SerializedCard): void {
     serialized.targetCards = this.targetCards.map((t) => {
       return {
-        card: {name: t.name},
+        card: serializeDynamicCards([t])?.[0].card ?? {name: t.name},
         resourceCount: t.resourceCount,
       };
     });
@@ -96,7 +97,7 @@ export class SelfReplicatingRobots extends Card implements IProjectCard {
     if (serialized.targetCards !== undefined) {
       this.targetCards = [];
       serialized.targetCards.forEach((targetCard) => {
-        const card = newProjectCard(targetCard.card.name);
+        const card = deserializeProjectCard(targetCard.card);
         if (card !== undefined) {
           card.resourceCount = targetCard.resourceCount;
           this.targetCards.push(card);

@@ -1,0 +1,49 @@
+{
+  "wp_id": "WP03",
+  "captured_at": "2026-10-10T13:12:26Z",
+  "base_branch": "codex/rebalanced-mars-reference",
+  "base_commit": "042284e4eb3aa24775d8caf1e0a7affb20d53a27",
+  "test_runner": "pytest",
+  "total": 7,
+  "passed": 0,
+  "failed": 7,
+  "skipped": 0,
+  "failures": [
+    {
+      "test": "scripts.tests.test_tm_durable_promotion.DurablePromotionTests.test_disconnect_before_stop",
+      "error": "OSError: [WinError 123] \u0421\u0438\u043d\u0442\u0430\u043a\u0441\u0438\u0447\u0435\u0441\u043a\u0430\u044f \u043e\u0448\u0438\u0431\u043a\u0430 \u0432 \u0438\u043c\u0435\u043d\u0438 \u0444\u0430\u0439\u043b\u0430, \u0438\u043c\u0435\u043d\u0438 \u043f\u0430\u043f\u043a\u0438 \u0438\u043b\u0438 \u043c\u0435\u0442\u043a\u0435 \u0442\u043e\u043c\u0430: 'C:\\\\Users\\\\Ruslan\\\\AppData\\\\Local\\\\Temp\\\\tmp4brruag3\\\\baseline-worktree\\\\--junitxml=C:\\\\Users\\\\Ruslan\\\\AppData",
+      "file": "unknown:?"
+    },
+    {
+      "test": "scripts.tests.test_tm_durable_promotion.DurablePromotionTests.test_disconnect_while_primary_stopped",
+      "error": "OSError: [WinError 123] \u0421\u0438\u043d\u0442\u0430\u043a\u0441\u0438\u0447\u0435\u0441\u043a\u0430\u044f \u043e\u0448\u0438\u0431\u043a\u0430 \u0432 \u0438\u043c\u0435\u043d\u0438 \u0444\u0430\u0439\u043b\u0430, \u0438\u043c\u0435\u043d\u0438 \u043f\u0430\u043f\u043a\u0438 \u0438\u043b\u0438 \u043c\u0435\u0442\u043a\u0435 \u0442\u043e\u043c\u0430: 'C:\\\\Users\\\\Ruslan\\\\AppData\\\\Local\\\\Temp\\\\tmp4brruag3\\\\baseline-worktree\\\\--junitxml=C:\\\\Users\\\\Ruslan\\\\AppData",
+      "file": "unknown:?"
+    },
+    {
+      "test": "scripts.tests.test_tm_durable_promotion.DurablePromotionTests.test_duplicate_start_does_not_replace_payload",
+      "error": "OSError: [WinError 123] \u0421\u0438\u043d\u0442\u0430\u043a\u0441\u0438\u0447\u0435\u0441\u043a\u0430\u044f \u043e\u0448\u0438\u0431\u043a\u0430 \u0432 \u0438\u043c\u0435\u043d\u0438 \u0444\u0430\u0439\u043b\u0430, \u0438\u043c\u0435\u043d\u0438 \u043f\u0430\u043f\u043a\u0438 \u0438\u043b\u0438 \u043c\u0435\u0442\u043a\u0435 \u0442\u043e\u043c\u0430: 'C:\\\\Users\\\\Ruslan\\\\AppData\\\\Local\\\\Temp\\\\tmp4brruag3\\\\baseline-worktree\\\\--junitxml=C:\\\\Users\\\\Ruslan\\\\AppData",
+      "file": "unknown:?"
+    },
+    {
+      "test": "scripts.tests.test_tm_durable_promotion.DurablePromotionTests.test_failed_payload_recovers_and_reports_failure",
+      "error": "OSError: [WinError 123] \u0421\u0438\u043d\u0442\u0430\u043a\u0441\u0438\u0447\u0435\u0441\u043a\u0430\u044f \u043e\u0448\u0438\u0431\u043a\u0430 \u0432 \u0438\u043c\u0435\u043d\u0438 \u0444\u0430\u0439\u043b\u0430, \u0438\u043c\u0435\u043d\u0438 \u043f\u0430\u043f\u043a\u0438 \u0438\u043b\u0438 \u043c\u0435\u0442\u043a\u0435 \u0442\u043e\u043c\u0430: 'C:\\\\Users\\\\Ruslan\\\\AppData\\\\Local\\\\Temp\\\\tmp4brruag3\\\\baseline-worktree\\\\--junitxml=C:\\\\Users\\\\Ruslan\\\\AppData",
+      "file": "unknown:?"
+    },
+    {
+      "test": "scripts.tests.test_tm_durable_promotion.DurablePromotionTests.test_other_job_still_obeys_shared_deploy_lock",
+      "error": "OSError: [WinError 123] \u0421\u0438\u043d\u0442\u0430\u043a\u0441\u0438\u0447\u0435\u0441\u043a\u0430\u044f \u043e\u0448\u0438\u0431\u043a\u0430 \u0432 \u0438\u043c\u0435\u043d\u0438 \u0444\u0430\u0439\u043b\u0430, \u0438\u043c\u0435\u043d\u0438 \u043f\u0430\u043f\u043a\u0438 \u0438\u043b\u0438 \u043c\u0435\u0442\u043a\u0435 \u0442\u043e\u043c\u0430: 'C:\\\\Users\\\\Ruslan\\\\AppData\\\\Local\\\\Temp\\\\tmp4brruag3\\\\baseline-worktree\\\\--junitxml=C:\\\\Users\\\\Ruslan\\\\AppData",
+      "file": "unknown:?"
+    },
+    {
+      "test": "scripts.tests.test_tm_durable_promotion.DurablePromotionTests.test_unknown_job_is_not_success",
+      "error": "OSError: [WinError 123] \u0421\u0438\u043d\u0442\u0430\u043a\u0441\u0438\u0447\u0435\u0441\u043a\u0430\u044f \u043e\u0448\u0438\u0431\u043a\u0430 \u0432 \u0438\u043c\u0435\u043d\u0438 \u0444\u0430\u0439\u043b\u0430, \u0438\u043c\u0435\u043d\u0438 \u043f\u0430\u043f\u043a\u0438 \u0438\u043b\u0438 \u043c\u0435\u0442\u043a\u0435 \u0442\u043e\u043c\u0430: 'C:\\\\Users\\\\Ruslan\\\\AppData\\\\Local\\\\Temp\\\\tmp4brruag3\\\\baseline-worktree\\\\--junitxml=C:\\\\Users\\\\Ruslan\\\\AppData",
+      "file": "unknown:?"
+    },
+    {
+      "test": "scripts.tests.test_tm_durable_promotion.DurablePromotionTests.test_unrelated_pid_is_not_a_running_job",
+      "error": "OSError: [WinError 123] \u0421\u0438\u043d\u0442\u0430\u043a\u0441\u0438\u0447\u0435\u0441\u043a\u0430\u044f \u043e\u0448\u0438\u0431\u043a\u0430 \u0432 \u0438\u043c\u0435\u043d\u0438 \u0444\u0430\u0439\u043b\u0430, \u0438\u043c\u0435\u043d\u0438 \u043f\u0430\u043f\u043a\u0438 \u0438\u043b\u0438 \u043c\u0435\u0442\u043a\u0435 \u0442\u043e\u043c\u0430: 'C:\\\\Users\\\\Ruslan\\\\AppData\\\\Local\\\\Temp\\\\tmp4brruag3\\\\baseline-worktree\\\\--junitxml=C:\\\\Users\\\\Ruslan\\\\AppData",
+      "file": "unknown:?"
+    }
+  ],
+  "source_identity": "GateCoverageScopeSource/junit_xml"
+}

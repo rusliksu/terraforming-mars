@@ -12,9 +12,9 @@ const model: MoonModel = {
   miningRate: 0,
   spaces: [
     {
+      x: 0,
+      y: 0,
       id: 'm01',
-      x: 1,
-      y: 1,
       bonus: [],
       spaceType: SpaceType.COLONY,
       color: undefined,
@@ -22,9 +22,9 @@ const model: MoonModel = {
       tileType: undefined,
     },
     {
+      x: 0,
+      y: 0,
       id: 'm37',
-      x: 2,
-      y: 1,
       bonus: [],
       spaceType: SpaceType.COLONY,
       color: undefined,
@@ -32,9 +32,9 @@ const model: MoonModel = {
       tileType: undefined,
     },
     {
+      x: 0,
+      y: 0,
       id: 'm02',
-      x: 3,
-      y: 1,
       bonus: [],
       spaceType: SpaceType.LUNAR_MINE,
       color: undefined,
@@ -42,9 +42,9 @@ const model: MoonModel = {
       tileType: undefined,
     },
     {
+      x: 0,
+      y: 0,
       id: 'm03',
-      x: 3,
-      y: 1,
       bonus: [],
       spaceType: SpaceType.LAND,
       color: undefined,

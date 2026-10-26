@@ -1,8 +1,8 @@
 import {LogMessage} from '../../common/logs/LogMessage';
 import {IGame} from '../IGame';
 
-export function appendCanceledLogMessages(current: IGame, restored: IGame): void {
-  const canceledMessages = current.gameLog.slice(restored.gameLog.length)
+export function appendCanceledLogMessages(current: IGame, restored: IGame, startIndex = restored.gameLog.length): void {
+  const canceledMessages = current.gameLog.slice(startIndex)
     .filter((message) => message?.canceled !== true)
     .map((message) => {
       const copy = JSON.parse(JSON.stringify(message)) as LogMessage;

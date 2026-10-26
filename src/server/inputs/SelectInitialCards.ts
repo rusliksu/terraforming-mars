@@ -10,6 +10,7 @@ import {OptionsInput} from './OptionsPlayerInput';
 import {InputResponse, isSelectInitialCardsResponse} from '../../common/inputs/InputResponse';
 import {PlayerInput} from '../PlayerInput';
 import {normalizePreludeHandicap} from '../../common/game/NewGameConfig';
+import {LogHelper} from '../LogHelper';
 
 type Inputs = {
   corp: PlayerInput | undefined,
@@ -105,7 +106,8 @@ export class SelectInitialCards extends OptionsInput<undefined> {
       throw new InputError('Too many cards selected');
     }
 
-    game.log('You selected ${0} from ${1}', (b) => b.card(corporation).cards(player.dealtCorporationCards), {reservedFor: player});
+    LogHelper.logPrivateCardSelection(player, 'selected', [corporation],
+      player.dealtCorporationCards.filter((card) => card.name !== corporation.name));
 
     for (const card of player.dealtProjectCards) {
       if (player.cardsInHand.includes(card) === false) {
@@ -148,9 +150,24 @@ export class SelectInitialCards extends OptionsInput<undefined> {
     if (input.responses.length !== this.options.length) {
       throw new InputError('Incorrect options provided');
     }
-    for (let i = 0; i < input.responses.length; i++) {
-      player.defer(this.options[i].process(input.responses[i], player));
+    // Each response is processed individually. This provides a rollback on failure,
+    // preventing a bad state with extra cards in hand, good for cheating.
+    const saved = {
+      cards: [...player.cardsInHand],
+      preludeCards: [...player.preludeCardsInHand],
+      ceoCards: new Set(player.ceoCardsInHand),
+    };
+
+    try {
+      for (let i = 0; i < input.responses.length; i++) {
+        player.defer(this.options[i].process(input.responses[i], player));
+      }
+      return this.cb(undefined);
+    } catch (error) {
+      player.cardsInHand = saved.cards;
+      player.preludeCardsInHand = saved.preludeCards;
+      player.ceoCardsInHand = saved.ceoCards;
+      throw error;
     }
-    return this.cb(undefined);
   }
 }

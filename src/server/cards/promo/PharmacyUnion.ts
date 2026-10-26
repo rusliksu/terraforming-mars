@@ -32,11 +32,10 @@ export class PharmacyUnion extends CorporationCard implements ICorporationCard {
           // blank space after MC is on purpose
           b.text('(You start with 54 M€. Draw a Science card.)', {size: Size.TINY, isBold: false});
           b.corpBox('effect', (ce) => {
-            ce.vSpace(Size.LARGE);
             ce.effect(undefined, (eb) => {
               eb.tag(Tag.MICROBE, {all}).startEffect.resource(CardResource.DISEASE).megacredits(-4);
             });
-            ce.vSpace();
+            ce.br;
             ce.effect('When ANY microbe tag is played, add a disease here and lose 4 M€ or as much as possible. When you play a science tag, remove a disease here and gain 1 TR OR if there are no diseases here, you MAY put this card face down in your EVENTS PILE to gain 3 TR.', (eb) => {
               eb.tag(Tag.SCIENCE).startEffect.minus().resource(CardResource.DISEASE);
               eb.tr(1, {size: Size.SMALL}).slash().tr(3, {size: Size.SMALL, digit});
@@ -58,10 +57,10 @@ export class PharmacyUnion extends CorporationCard implements ICorporationCard {
 
   private logAddingDisease(player: IPlayer, count: number, megaCreditsLost: number) {
     if (count === 1) {
-      player.game.log('${0} added a disease to ${1} and lost ${2} M€',
+      player.game.log('${0} added a:cr:disease: to ${1} and lost ${2}:r:mc:',
         (b) => b.player(player).card(this).number(megaCreditsLost));
     } else {
-      player.game.log('${0} added ${3} diseases to ${1} and lost ${2} M€',
+      player.game.log('${0} added ${3}:cr:disease: to ${1} and lost ${2}:r:mc:',
         (b) => b.player(player).card(this).number(megaCreditsLost).number(count));
     }
   }
@@ -81,7 +80,9 @@ export class PharmacyUnion extends CorporationCard implements ICorporationCard {
     const game = player.game;
 
     const hasScienceTag = player.tags.cardHasTag(card, Tag.SCIENCE);
-    const hasMicrobesTag = card.tags.includes(Tag.MICROBE);
+    // Whether the card that was played has (or counts as having, e.g. Nereid Biosystems)
+    // a microbe tag is a property of whoever played it, not of Pharmacy Union's owner.
+    const hasMicrobesTag = activePlayer.tags.cardHasTag(card, Tag.MICROBE);
 
     if (player === activePlayer && hasScienceTag) {
       // Edge case, let player pick order of resolution (see https://github.com/bafolts/terraforming-mars/issues/1286)
@@ -94,7 +95,7 @@ export class PharmacyUnion extends CorporationCard implements ICorporationCard {
                 this.disable(player);
                 const megaCreditsLost = Math.min(player.megaCredits, 4);
                 player.stock.deduct(Resource.MEGACREDITS, megaCreditsLost);
-                game.log('${0} turned ${1} face down to gain 3 TR and lost ${2} M€', (b) => b.player(player).card(this).number(megaCreditsLost));
+                game.log('${0} turned ${1} face down to gain 3:i:tr: and lost ${2}:r:mc:', (b) => b.player(player).card(this).number(megaCreditsLost));
                 return undefined;
               }),
               new SelectOption('Add a disease to it and lose up to 4 M€, then remove a disease to gain 1 TR').andThen(() => {
@@ -102,7 +103,7 @@ export class PharmacyUnion extends CorporationCard implements ICorporationCard {
                 player.increaseTerraformRating();
                 player.stock.deduct(Resource.MEGACREDITS, megaCreditsLost);
                 this.logAddingDisease(player, 1, megaCreditsLost);
-                game.log('${0} removed a disease from ${1} to gain 1 TR', (b) => b.player(player).card(this));
+                game.log('${0} removed a:cr:disease: from ${1} to gain 1:i:tr:', (b) => b.player(player).card(this));
                 return undefined;
               }),
             ).setTitle('Choose the order of tag resolution for Pharmacy Union');
@@ -117,7 +118,7 @@ export class PharmacyUnion extends CorporationCard implements ICorporationCard {
 
     if (hasMicrobesTag) {
       player.defer(() => {
-        const microbeTagCount = card.tags.filter((cardTag) => cardTag === Tag.MICROBE).length;
+        const microbeTagCount = activePlayer.tags.cardTagCount(card, Tag.MICROBE);
         this.addDisease(player, microbeTagCount);
         return undefined;
       }, Priority.PHARMACY_UNION);
@@ -140,25 +141,25 @@ export class PharmacyUnion extends CorporationCard implements ICorporationCard {
         if (this.resourceCount > 0) {
           if (player.canAfford({cost: 0, tr: {tr: 1}}) === false) {
             // TODO (Lynesth): Remove this when #1670 is fixed
-            game.log('${0} cannot remove a disease from ${1} to gain 1 TR because of unaffordable Reds policy cost', (b) => b.player(player).card(this));
+            game.log('${0} cannot remove a:cr:disease: from ${1} to gain 1:i:tr: because of unaffordable Reds policy cost', (b) => b.player(player).card(this));
           } else {
             player.removeResourceFrom(this, 1);
             player.increaseTerraformRating();
-            game.log('${0} removed a disease from ${1} to gain 1 TR', (b) => b.player(player).card(this));
+            game.log('${0} removed a:cr:disease: from ${1} to gain 1:i:tr:', (b) => b.player(player).card(this));
           }
           return undefined;
         }
 
         if (player.canAfford({cost: 0, tr: {tr: 3}}) === false) {
           // TODO (Lynesth): Remove this when #1670 is fixed
-          game.log('${0} cannot turn ${1} face down to gain 3 TR because of unaffordable Reds policy cost', (b) => b.player(player).card(this));
+          game.log('${0} cannot turn ${1} face down to gain 3:i:tr: because of unaffordable Reds policy cost', (b) => b.player(player).card(this));
           return;
         }
 
         return new OrOptions(
           new SelectOption('Turn this card face down and gain 3 TR', 'Gain TR').andThen(() => {
             this.disable(player);
-            game.log('${0} turned ${1} face down to gain 3 TR', (b) => b.player(player).card(this));
+            game.log('${0} turned ${1} face down to gain 3:i:tr:', (b) => b.player(player).card(this));
             return undefined;
           }),
           new SelectOption('Do nothing', 'Do nothing'),

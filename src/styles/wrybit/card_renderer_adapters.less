@@ -1,0 +1,88 @@
+// Search For Life after a find (our canonical public display flag): greyed and half transparent, but the microbe and the hint stay in
+// color. The action stays usable, so the cursor stays normal. A filter on the card would grey them too (a parent's
+// filter applies to all children), so it sits on the other children, and the card's own background and bevel get
+// the greyed colors directly.
+.card-life-found,
+.card-life-found:hover {
+  background: linear-gradient(to bottom right,
+  fade(#8c8c8c, 50%),
+  fade(#5e5e5e, 50%),
+  fade(#838383, 50%),
+  fade(#717171, 50%),
+  fade(#7a7a7a, 50%),
+  fade(#838383, 50%),
+  fade(#707070, 50%));
+  border-color: fade(#7a7a7a, 50%) fade(#4b4b4b, 50%) fade(#4b4b4b, 50%) fade(#7a7a7a, 50%);
+
+  > :not(.card-extra-content-container) {
+    filter: grayscale(1) brightness(0.55);
+    opacity: 0.5;
+  }
+}
+
+.found-life {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  // Sizes of microbe and hint follow the card width, whatever size the card is shown at
+  container-type: inline-size;
+  pointer-events: none;
+}
+
+// The picture carries a soft white glow; the drop shadows make it larger, as if the microbe shone
+.found-life__microbe {
+  position: absolute;
+  left: 50%;
+  // Centered between the card title and the hint
+  top: 44.5%;
+  width: 62%;
+  transform: translate(-50%, -50%);
+  filter:
+    drop-shadow(0 0 5px rgba(255, 255, 255, 0.75))
+    drop-shadow(0 0 14px rgba(255, 255, 255, 0.55))
+    drop-shadow(0 0 30px rgba(255, 255, 255, 0.4));
+}
+
+.found-life__hint {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 73.5%;
+  transform: translateY(-50%);
+  margin: 0;
+  text-align: center;
+  color: #ffffff;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 4.2cqw;
+  font-weight: 700;
+  line-height: 1.2;
+  // Black outline: readable on the microbe's glow as well as on the grey card
+  -webkit-text-stroke: 0.9cqw #000000;
+  paint-order: stroke fill;
+}
+
+.found-life__check {
+  margin-left: 0.35em;
+}
+
+// The consequence the player must not miss; orange reads better than red on the grey card
+.found-life__warning {
+  color: #ffa21f;
+}
+
+
+// Our canonical renderer names these secondary resources as tag-*; retain its data contract.
+.card-container .card-icon.tag-floater {
+  background-image: url("./assets/resources/floater.png");
+  border-radius: 0;
+}
+.card-container .card-icon.tag-wild-resource {
+  background-image: url("./assets/resources/wild.png");
+  border-radius: 0;
+}
+
+// Keep the source overlay in color when the canonical renderer also marks an action as used.
+.wrybit-card.card-life-found.card-unavailable {
+  filter: none;
+  opacity: 1;
+}

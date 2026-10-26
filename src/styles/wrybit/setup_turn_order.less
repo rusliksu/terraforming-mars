@@ -1,0 +1,64 @@
+// Turn order in the setup phase (SetupTurnOrder.vue): own box above the selection tabs,
+// names in player color with arrows between them, the starting player highlighted
+
+.setup-turn-order {
+  .frosted-surface();
+  position: relative;
+  margin-bottom: 24px; // Gap to the tabs larger than between the names (law of proximity)
+  padding: 16px 24px 20px;
+  border: 1px solid @or-tabs-border;
+  border-radius: @or-tabs-radius;
+  background: @or-tabs-panel-background;
+}
+
+.setup-turn-order-title {
+  margin: 0 0 12px;
+  color: #fff;
+  font-size: 24px;
+}
+
+.setup-turn-order-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.setup-turn-order-player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 18px;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 22px;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.6);
+}
+
+// Arrow before each further player
+.setup-turn-order-player + .setup-turn-order-player {
+  margin-left: 40px;
+  position: relative;
+
+  &::before {
+    content: "→";
+    position: absolute;
+    left: -30px;
+    color: #b8bccb;
+    font-size: 20px;
+    text-shadow: none;
+  }
+}
+
+// Starting player: white border with glow
+.setup-turn-order-player--first {
+  box-shadow: 0 0 0 3px #fff, 0 0 14px 2px rgba(255, 255, 255, 0.45);
+}
+
+.setup-turn-order-number {
+  font-family: Prototype, sans-serif;
+}

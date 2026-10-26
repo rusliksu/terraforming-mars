@@ -29,7 +29,7 @@ describe('SponsoredProjects', () => {
     turmoil.dominantParty.delegates.add(player2);
     turmoil.dominantParty.delegates.add(player2);
 
-    card.resolve(game, turmoil);
+    card.resolve(game);
     expect(ants.resourceCount).to.eq(2);
     expect(securityFleet.resourceCount).to.eq(2);
     expect(fish.resourceCount).to.eq(0);
@@ -41,7 +41,7 @@ describe('SponsoredProjects', () => {
 
 function expectLog(game: ReturnType<typeof testGame>[0], cardName: string) {
   const log = game.gameLog.find((message) =>
-    message.message === '${0} added ${1} ${2} to ${3}' &&
+    (message.message === '${0} added ${1}${2} to ${3}' || message.message === '${0} added ${1}${2} to ${3} from ${4}') &&
     message.data[1]?.value === '1' &&
     message.data[3]?.value === cardName);
   expect(log).is.not.undefined;

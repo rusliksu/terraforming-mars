@@ -2,7 +2,7 @@ import {allGlobalEventNames, getGlobalEventOrThrow} from '@/client/turmoil/Clien
 import {getCards} from '@/client/cards/ClientCardManifest';
 import {allColonyNames} from '@/client/colonies/ClientColonyManifest';
 import {CardComponent} from '@/common/cards/render/CardComponent';
-import {isIDescription} from '@/common/cards/render/ICardRenderDescription';
+import {isDescription} from '@/common/cards/render/CardRenderDescription';
 import {isICardRenderCorpBoxAction, isICardRenderCorpBoxEffect, isICardRenderCorpBoxEffectAction, isICardRenderEffect, isICardRenderItem, isICardRenderProductionBox, isICardRenderRoot} from '@/common/cards/render/Types';
 import {CardRenderItemType} from '@/common/cards/render/CardRenderItemType';
 import {translateText} from '@/client/directives/i18n';
@@ -33,7 +33,7 @@ export class SearchIndex {
       const metadata = card.metadata;
       const description = metadata.description;
       if (description !== undefined) {
-        const text = isIDescription(description) ? description.text : description;
+        const text = isDescription(description) ? description.text : description;
         this.add(text);
       }
       if (metadata.renderData) {
@@ -56,14 +56,22 @@ export class SearchIndex {
     }
 
     for (const milestoneName of milestoneNames) {
+      const milestone = getMilestone(milestoneName);
+      if (milestone === undefined) {
+        continue;
+      }
       this.add(milestoneName);
-      this.add(getMilestone(milestoneName).description);
+      this.add(milestone.description);
       this.store('ma', milestoneName);
     }
 
     for (const awardName of awardNames) {
+      const award = getAward(awardName);
+      if (award === undefined) {
+        continue;
+      }
       this.add(awardName);
-      this.add(getAward(awardName).description);
+      this.add(award.description);
       this.store('ma', awardName);
     }
 

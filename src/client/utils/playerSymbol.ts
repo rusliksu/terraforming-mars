@@ -20,6 +20,7 @@ export const SYMBOL_FOR_COLOR = {
   turquoise: '◇',
   vanger: '✳',
   serge: 'S',
+  credicor: '♛',
   saturn: '♄',
   saturnrings: '◎',
   titan: 'T',

@@ -21,20 +21,32 @@ TM Telegram secrets are not source-managed. Keep `TM_BOT_TOKEN` in
 `EnvironmentFile`. Staging also loads the shared env file, but its unit must
 set `TM_DISABLE_TELEGRAM=1` so test/E2E games never send real turn notices.
 
+Keep the Sentry CI credential separate from that runtime environment. The
+runtime file may contain `SENTRY_DSN` and `SENTRY_ENVIRONMENT`, but
+`SENTRY_AUTH_TOKEN` must exist exactly once in
+`~/.config/tm-sentry-release.env`. Both files must be regular files owned by
+the service user with mode `600`. The staging wrapper checks this boundary on
+the VPS before it changes the release symlink or restarts the app.
+
 ## Safe default source
 
-The recommended release source is the sibling clean checkout:
+The staging release source is the sibling clean checkout:
 
 - `C:\Users\Ruslan\tm\terraforming-mars-release-main`
 
-Do not deploy from the main working tree unless you explicitly intend to release that exact build.
+Before a staging deploy, that checkout MUST have an empty `git status --short` and
+`git rev-parse HEAD` equal to `git rev-parse origin/main`. Refresh the checkout
+and its `origin/main` reference before deploy; the deploy scripts do not fetch or
+merge automatically. A feature branch, local-only commit, dirty tree, or primary
+working tree is not a staging release source.
 
 ## Service Sync
 
 Sync versioned VPS service units before rollout:
 
 ```powershell
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\sync_tm_services.ps1
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\sync_tm_services.ps1 `
+  -VpsHost hostkey-codex
 ```
 
 This covers:
@@ -44,28 +56,71 @@ This covers:
 - Preview can be synced too when you explicitly pass `-EnablePreview`
 - TM watcher units from sibling `tm-tierlist`
 
-`rollout_tm_server.ps1` runs this sync as step 1 by default. It uses safe mode
-without restarting watcher services unless you explicitly pass
-`-RestartWatchersDuringServiceSync`.
+Ordinary application rollout does not synchronize service units. Pass
+`-SyncServices` to `rollout_tm_server.ps1` only when the versioned units or
+nginx configuration are intentionally part of the release. Watcher restarts
+still require `-RestartWatchersDuringServiceSync`.
 
 ## Hard Rules
 
 - `prod` is promote-only. Do not deploy directly to `prod`; use staging first and then promote the tested artifact.
+- Runtime scripts target `hostkey-codex` by default. Pass the old `vps` alias explicitly only for a verified fallback service that has not migrated.
 - Treat releases as a single release train. Collect finished commits into one clean release checkout, deploy that exact checkout to staging once, verify it, then promote the exact staging artifact to prod.
 - Do not run parallel TM staging deploys or prod promotes from multiple Codex sessions. The scripts take a VPS-wide `/home/openclaw/tm-runtime/.deploy.lock` and fail fast if another TM deploy/promote is already running.
 - If another Codex session has new commits, stop and merge/rebase them into the train before the staging deploy; do not keep replacing staging with partial slices.
-- Release source must be a clean git checkout. If `git status --short` is not empty, fix that before deploy.
+- Staging source MUST be a clean git checkout whose exact `HEAD` equals the local `origin/main` SHA. The staging guard rejects missing/mismatched `origin/main` and rejects `-AllowDirtySource` and `-AllowPrimaryWorkingTree`.
+- If `git status --short` is not empty, or `HEAD` is not exact `origin/main`, stop and refresh the release checkout; do not bypass the guard.
 - The main working tree `C:\Users\Ruslan\tm\terraforming-mars` is for day-to-day development, not the default release source.
 - Do not hot-patch `build/*.js` or `assets/*` on the VPS. Emergency fixes must be carried back into source and re-released through staging.
 - Do not hot-patch source-managed `elo/*` files on the VPS. Only `elo-data.json`, `data.json`, logs, and similar generated outputs should remain mutable there.
 - Trust `release.json`, not folder mtimes or guesses. Staging and prod should always be able to prove they serve the same artifact hash.
 - VPS runtime should be immutable-by-default: release code lives under `/home/openclaw/tm-runtime/<env>/releases/*`, services run from `/home/openclaw/tm-runtime/<env>/current`, and mutable data lives under `/home/openclaw/tm-runtime/<env>/shared`.
 
+## Abandoned Realtime Games
+
+The prod promote gate blocks every non-turn-based game unless its exact ID was
+confirmed abandoned in the operator ledger. `-RealtimeGameStaleDays` (default
+10) only separates old evidence in the audit output; age never authorizes a
+promotion.
+
+- Ledger: `C:\Users\Ruslan\tm\.tmp\tm-release\prod-ignored-games.txt`
+  (opt in with `-IgnoredRealtimeGameIdFile`; never committed, never inferred,
+  and never loaded automatically by a release).
+- Format: one `<game-id>` per line, optional trailing `# note`.
+
+```powershell
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\tm_ignored_realtime_games.ps1 -List
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\tm_ignored_realtime_games.ps1 -Add g1c62f3657ee8 -Note "idle since 2026-09-09"
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\tm_ignored_realtime_games.ps1 -Remove g1c62f3657ee8
+```
+
+Only a human declares a game abandoned: nothing infers it. `release_tm_prod.ps1`
+and `rollout_tm_server.ps1` merge a ledger only when its path is supplied explicitly
+with the per-run `-IgnoredRealtimeGameId` ids, and the merged count and ids are
+echoed before the locked remote gate runs. The gate fails closed for unknown ids,
+missing or future save timestamps, fresh realtime games, and stale realtime games
+that are not explicitly listed.
+
+The current idle time of every running game is visible read-only from the
+release checkout; the query mirrors the gate's own latest-save lookup:
+
+```bash
+sqlite3 -readonly "file:/home/openclaw/tm-runtime/prod/shared/db/game.db?mode=ro" -json \
+  "SELECT latest.game_id, CAST(strftime('%s','now') AS INTEGER) - latest.created_time AS idle_seconds \
+   FROM games AS latest \
+   INNER JOIN (SELECT game_id AS gid, MAX(save_id) AS max_save_id FROM games GROUP BY game_id) AS m \
+     ON latest.game_id = m.gid AND latest.save_id = m.max_save_id \
+   WHERE trim(latest.status) = 'running' ORDER BY idle_seconds ASC;"
+```
+
 ## Branch Naming
 
 - `main`: your fork's integration branch on `origin`. Only release commits that are intended to live there.
 - `work/<topic>`: normal feature or bugfix branches in the main working tree.
-- `sync/upstream-YYYYMMDD`: temporary branch in the clean release checkout for merging `upstream/main` into your fork.
+- `sync/upstream/main`: the single long-lived candidate branch in the clean
+  release checkout for merging `upstream/main` into your fork. If an older
+  `sync/upstream/*` candidate already exists locally or remotely, the sync tool
+  reuses that one additively; multiple candidates block the run.
 - `hotfix/<topic>`: urgent fix branch cut from the currently released `origin/main`, still released through staging first.
 
 Keep release mechanics simple: release a commit, not a snowflake environment.
@@ -73,31 +128,68 @@ Keep release mechanics simple: release a commit, not a snowflake environment.
 ## Upstream Sync Order
 
 1. Go to the clean checkout `C:\Users\Ruslan\tm\terraforming-mars-release-main`.
-2. Fetch both remotes: `git fetch origin upstream`.
-3. Refresh local `main` from your fork's `origin/main`.
-4. Create a temporary sync branch such as `sync/upstream-20260413`.
-5. Merge `upstream/main` into that branch and resolve conflicts there, never in the live VPS checkout.
-6. Run tests and build in the clean checkout.
-7. Deploy that exact checkout to staging.
-8. Verify staging, including `release.json`.
-9. Promote the tested staging artifact to prod.
-10. After prod is good, fast-forward or merge back into `origin/main`, then update other worktrees as needed.
+2. Run `scripts\sync_tm_upstream.ps1`. It locks the checkout, fetches explicit
+   `origin/main` and `upstream/main`, and is quiet when upstream is already
+   contained. On the first run it safely unshallows the dedicated checkout from
+   explicit `origin/main`; `-NoFetch` refuses shallow history.
+3. Resolve only understood conflicts in the candidate. Gameplay, persistence,
+   serialization, and database ambiguity are blocking; never choose an entire
+   file with `ours` or `theirs` as a blanket policy.
+4. Run the recorded validation gate and review the JSON/Markdown report under
+   `C:\Users\Ruslan\tm\.tmp\upstream-sync`.
+5. Push/open or update the single custom-repo PR only after the candidate is
+   clean and refs are revalidated. Do not mutate an official upstream PR.
+6. Review and merge the custom PR manually. `origin/main` is canonical only
+   after that merge.
+7. Deploy that exact canonical commit to staging and verify `release.json`.
+8. Promote only the pinned staging Git/artifact pair after a separate explicit
+   production decision. Realtime active games block promotion.
+
+Contribution intent lives in `scripts/upstream-sync/adoptions.json`. An
+`adopt_upstream` entry becomes actionable only after its official PR is merged
+and that merge is present in the fetched `upstream/main`; overlapping semantics
+still require review. Automatic resolution is limited to the ledger's exact
+scope, requires exhaustive commit-touch evidence, restores the recorded
+upstream tree byte-for-byte, and creates a separate audit commit.
+
+Manual candidate preparation without a remote mutation:
+
+```powershell
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\sync_tm_upstream.ps1
+```
+
+After resolving and staging an understood conflict, resume the immutable saved
+validation plan with `-Mode Continue`. `-PushCandidate` is a separate opt-in and
+pushes only the exact SHA that passed validation, using a normal non-force push.
+
+The weekly Codex task runs Mondays at 10:00 Moscow time and starts paused. It
+may prepare and validate a candidate, but it never merges or deploys. Activate
+it only after the bootstrap candidate has been merged and one manual sync cycle
+has completed successfully.
 
 ## Commands
 
-One-command rollout from the clean release checkout:
+One-command staging rollout from the clean release checkout:
 
 ```powershell
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\rollout_tm_server.ps1
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\rollout_tm_server.ps1
 ```
+
+This stops after staging by default. Production needs the explicit
+`-PromoteProd` switch and remains subject to the pinned-artifact and live-game
+gates. Service sync similarly needs `-SyncServices`.
 
 Recommended multi-session flow:
 
-1. Finish each Codex session as commits pushed to `origin/work/custom-server-main-20260512` or the agreed release branch.
-2. In one release session, refresh/build the clean checkout and verify the combined commit list.
-3. Deploy once to staging.
-4. Run staging smoke/screenshots for the combined train.
-5. Promote with `release_tm_prod.ps1`, which captures staging's `gitSha` and `artifactSha256` and refuses to promote if staging changes underneath it.
+1. Finish each development slice on its own reviewed branch.
+2. Merge approved slices into `origin/main`; do not keep a second permanent
+   custom integration branch.
+3. In one release task, refresh/build the clean checkout and verify the exact
+   `origin/main` commit.
+4. Deploy once to staging and run the combined smoke/screenshots.
+5. Read the exact staging `gitSha` and `artifactSha256`, then promote with
+   `release_tm_prod.ps1`, which requires both literal pins, refuses drift, and
+   fails closed when an unconfirmed realtime game exists.
 
 Refresh the clean release checkout before a real rollout:
 
@@ -108,8 +200,15 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\refresh_tm_
 Deploy to staging from the safe default source:
 
 ```powershell
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\deploy_tm_staging.ps1
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\deploy_tm_staging.ps1
 ```
+
+After deploy, the wrapper runs smoke, validates the clean staging
+`release.json` in the post-snapshot, and then creates or reuses the matching
+Sentry release/deploy for project `terraforming-mars-staging`. The runtime
+event release, Sentry release version, and manifest `gitSha` all use the same
+full 40-character SHA. The release API runs only on the VPS; the auth token is
+never passed back to the Windows caller.
 
 Deploy an isolated preview instance from any clean upstream/fork checkout:
 
@@ -118,39 +217,82 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\deploy_tm_p
   -SourceRoot C:\Users\Ruslan\tm\terraforming-mars-upstream-fix
 ```
 
-Emergency override if you intentionally need to release a dirty source checkout or the primary working tree:
-
-```powershell
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\deploy_tm_staging.ps1 `
-  -SourceRoot C:\Users\Ruslan\tm\terraforming-mars `
-  -AllowPrimaryWorkingTree `
-  -AllowDirtySource
-```
-
 Dry run:
 
 ```powershell
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\deploy_tm_staging.ps1 -DryRun
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\deploy_tm_staging.ps1 -DryRun
 ```
+
+Dry-run does not read the Sentry credential and does not call the Sentry API.
 
 Deploy to staging and skip smoke if you only need the rollout:
 
 ```powershell
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\deploy_tm_staging.ps1 -SkipSmoke
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\deploy_tm_staging.ps1 -SkipSmoke
 ```
 
-Deploy to staging from a different source root:
+`-SkipSmoke` keeps the emergency staging rollout path but deliberately skips
+the Sentry deploy record because the release was not smoke-verified.
+
+When `-SourceRoot` is supplied for staging, it is accepted only if that source
+is clean and its exact `HEAD` equals its local `origin/main`. Feature, local-only,
+dirty, and primary sources are rejected; use the preview command above for an
+isolated non-main checkout.
+
+Promote the already tested staging artifact to prod, pinned to the intended
+release-checkout commit:
 
 ```powershell
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\deploy_tm_staging.ps1 `
-  -SourceRoot C:\Users\Ruslan\tm\some-other-clean-checkout
+$intendedGitSha = git -C C:\Users\Ruslan\tm\terraforming-mars-release-main rev-parse HEAD
+$intendedArtifactSha = (Invoke-RestMethod https://staging.tm.knightbyte.win/assets/release.json).artifactSha256
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\release_tm_prod.ps1 `
+  -ExpectedGitSha $intendedGitSha `
+  -ExpectedArtifactSha $intendedArtifactSha
 ```
 
-Promote the already tested staging artifact to prod:
+The production gate reads every latest running save directly from the live
+SQLite database in read-only/query-only mode and repeats the check immediately
+before switching public traffic. Realtime games block promotion. If Ruslan has
+separately confirmed a listed game is abandoned, pass its safe id explicitly as
+`-IgnoredRealtimeGameId <game-id>`; this exception is never inferred or stored
+automatically. Promotion requires the existing
+`/home/openclaw/tm-runtime/prod/shared/db/game.db`; it never bootstraps or
+migrates a production database.
+
+### Interrupted promotion observer
+
+The promotion payload runs on the VPS in a detached Linux session. Closing
+Codex, cancelling the local observer, or losing SSH does **not** cancel that
+operation. Its deploy lock, pinned artifact, game gates, and code rollback
+checks remain in force. Do not start a new release to find its status.
+
+Before launch, the script prints a run token and a reconnect command. Reconnect
+to that exact operation without uploading or re-running any payload:
 
 ```powershell
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\promote_tm_staging_to_prod.ps1
+pwsh -File scripts/promote_tm_staging_to_prod.ps1 -HostAlias hostkey-codex `
+  -ResumeRunToken <printed-run-token>
 ```
+
+The observer reports the original exit code and log from
+`/home/openclaw/tm-runtime/prod/promotion-jobs/<run-token>`. A missing result or
+dead worker is an unknown outcome, never success or permission to retry. A
+timeout stops observation only. Job files are private (directory 700, files
+600), retained for diagnosis, and are not automatically deleted.
+
+This protects against losing the controlling connection, not a VPS reboot,
+OOM kill, or `SIGKILL` of the detached worker. If the observer was interrupted,
+finish the normal read-only runtime snapshot and public verification after
+checking its result; `-ResumeRunToken` itself does not repeat the outer release
+wrapper's post-deploy verification.
+
+Local lifecycle regressions use real Linux process groups and a file-backed
+service fixture, never a production DB or service:
+`pwsh -File scripts/test_tm_durable_promotion.ps1`. On Windows, the test runs
+in the `spec-kitty-baseline` WSL distro (override with `-WslDistribution`);
+on Linux it runs directly. Windows fixture inputs are retained under
+`D:\tm-db\smartbot-lab\durable-promotion` and Linux processes use a temporary
+fixture directory.
 
 Rollback an environment to the previous immutable release:
 
@@ -234,32 +376,36 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\restore_tm_
 Run the full automated release gate:
 
 ```powershell
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\release_tm_prod.ps1
+$intendedGitSha = git -C C:\Users\Ruslan\tm\terraforming-mars-release-main rev-parse HEAD
+$intendedArtifactSha = (Invoke-RestMethod https://staging.tm.knightbyte.win/assets/release.json).artifactSha256
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\release_tm_prod.ps1 `
+  -ExpectedGitSha $intendedGitSha `
+  -ExpectedArtifactSha $intendedArtifactSha
 ```
 
 Run smoke manually:
 
 ```powershell
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\smoke_tm_staging.ps1
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\smoke_tm_staging.ps1
 ```
 
 Include the cancel-action state-diff smoke in the staging smoke:
 
 ```powershell
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\smoke_tm_staging.ps1 -IncludeCancelAction
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\smoke_tm_staging.ps1 -IncludeCancelAction
 ```
 
 Run the cancel-action state-diff smoke manually:
 
 ```powershell
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\smoke_tm_cancel_action.ps1
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\smoke_tm_cancel_action.ps1
 ```
 
 Run generic verification manually:
 
 ```powershell
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\verify_tm_server.ps1 -Environment staging -RequireReleaseManifest -CreateGame
-pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\verify_tm_server.ps1 -Environment prod -RequireReleaseManifest
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\verify_tm_server.ps1 -Environment staging -RequireReleaseManifest -CreateGame
+pwsh -File C:\Users\Ruslan\tm\terraforming-mars-release-main\scripts\verify_tm_server.ps1 -Environment prod -RequireReleaseManifest
 ```
 
 `verify_tm_server.ps1 -CreateGame` is blocked against prod by default. Use
@@ -271,6 +417,21 @@ pwsh -File C:\Users\Ruslan\tm\terraforming-mars\scripts\verify_tm_server.ps1 -En
 - Prod and staging are split by host on `443` via SNI.
 - The `STAGING` badge is host-gated and appears only on `staging.tm.knightbyte.win`.
 - `release_tm_prod.ps1` replaces the old manual "check staging, then promote, then open prod" step with scripted gates.
+- Release scripts own code, not database contents. They never copy, create,
+  replace, restore, or migrate the shared database. An existing database is
+  required; initialization and recovery are separate operator actions.
+- Promotion validates the existing saves read-only with a bounded timeout.
+  It then stops primary, repeats the live-game gate and read-only validation,
+  switches the release, and starts primary. Failed startup restores only the
+  previous code; current player data is preserved. No DB-sized free space is
+  required by deployment.
+- `rehearse_tm_prod.ps1` is retained as the read-only validation entrypoint.
+  `-ValidationTimeoutSeconds` replaces the former copy and maintenance budgets.
+  There is no flag to enable database copying in the release path.
+- Server startup still performs its normal database writes. Code-only rollback
+  cannot undo those writes, so releases must preserve schema/save compatibility.
+  A data migration or restore requires a separate reviewed operation. Keep
+  independently managed backups; deployment does not manage their retention.
 - `release.json` is generated during deploy and is used to prove that staging and prod serve the same artifact hash after promote.
 - Rollout syncs `build/`, `assets/`, and the source-managed subset of `elo/` (`index.html`, `elo-api.js`, aliases, and maintenance scripts). It deliberately preserves live Elo data files on the VPS.
 - Rollout also carries `package.json` and `package-lock.json`; runtime dependencies are resolved into a managed cache under `/home/openclaw/tm-runtime/<env>/shared/deps/<package-lock-sha256>` instead of linking back to legacy checkout `node_modules`.

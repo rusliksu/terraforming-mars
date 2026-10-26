@@ -1,0 +1,236 @@
+// ---------- Results ----------
+.card-list-results {
+  min-width: 0;
+  // Same inner padding as the filter column (2px): the first section's top edge lines up with the first box there
+  padding-top: 2px;
+  // Nothing may widen the page sideways (otherwise the bottom sheet gets wider than the screen)
+  overflow-x: clip;
+}
+
+// The first section starts level with the filter column. .card-list-section is also the class of the sections below
+// a tab's selection (hand_cards_panel.less, with a large top margin) – reset that here.
+.card-list-results > .card-list-section {
+  margin-top: 0;
+}
+
+.card-list-results > .card-list-section + .card-list-section {
+  margin-top: 32px;
+}
+
+// Section header: frosted-glass bar, stays put below the page header
+.card-list-section-head {
+  .frosted-surface();
+  position: sticky;
+  // Level with the filter column next to it (its top edge incl. its 2px inner padding), not flush below the header
+  top: calc(var(--wrybit-card-list-header) + @create-game-gap-card + 2px);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  margin-bottom: @create-game-gap-card;
+  padding-right: 6px;
+  overflow: hidden;
+  border: 1px solid @create-game-line;
+  border-radius: @create-game-radius;
+  background: @create-game-surface-strong;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+
+  h2 {
+    margin-right: auto;
+    font-size: 20px;
+  }
+}
+
+// Color stripe on the left: one equally tall piece per contained card type
+.card-list-section-stripe {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  width: 8px;
+
+  span {
+    flex: 1;
+  }
+}
+
+.card-list-section-legend {
+  display: flex;
+  gap: 14px;
+  color: @create-game-dim;
+  font-size: 13px;
+
+  > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+}
+
+.card-list-section-count {
+  display: grid;
+  place-items: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  border-radius: @create-game-radius-small;
+  background: @create-game-chip-hover;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.card-list-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+
+  // Spacing comes from the gap instead of the card's margin (30px on the right), otherwise two won't fit side by side when narrow.
+  // Space remains on top for the cost coin and tags that stick out above the card.
+  .card-container {
+    margin: 15px 0 0;
+  }
+}
+
+// Card not built yet (CardListCardGrid.vue, LazyMount.vue): an empty card shape in its place, size set inline
+.card-list-placeholder {
+  margin-top: 15px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+// Card built but its pictures still loading (cardReveal.ts): hidden, its place kept
+.card-reveal-pending {
+  visibility: hidden;
+}
+
+// Then the cards on screen fade in one after the other; delay and duration are set inline
+.card-reveal-in {
+  animation: wrybit-card-reveal var(--wrybit-reveal-duration) ease-out var(--wrybit-reveal-delay) both;
+}
+
+@keyframes wrybit-card-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+}
+
+.card-list-empty {
+  padding: 48px 0;
+  text-align: center;
+  color: @create-game-dim;
+}
+
+// Search matches (searchHighlight.ts)
+::highlight(wrybit-card-list-search) {
+  background-color: fade(@highlight-gold, 75%);
+  color: #000;
+}
+
+// ---------- Back to top: bottom right in the thumb zone, only after scrolling far ----------
+// ---------- Section rail (CardListSectionRail.vue, sectionRail.ts) ----------
+// Desktop: one tick per section, vertically centred at the right edge. Length and label come from the fisheye
+// (--wrybit-rail-length, --wrybit-rail-influence 0…1): around the pointer, or slightly around the section being read.
+.card-list-rail {
+  position: fixed;
+  top: 50%;
+  right: 2px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  // Room to the left: the fisheye already reacts when the pointer comes close
+  padding: 8px 0 8px 48px;
+  transform: translateY(-50%);
+}
+
+.card-list-rail-tick {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 6px;
+  border: 0;
+  background: none;
+  color: #fff;
+  cursor: pointer;
+}
+
+.card-list-rail-line {
+  width: var(--wrybit-rail-length);
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
+  transition: width 0.12s ease-out, background-color 0.2s;
+}
+
+// The label grows in with the fisheye; on its own dark plate, it lies over the cards
+.card-list-rail-label {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: fade(#16171d, 88%);
+  font-size: calc(12px + 3px * var(--wrybit-rail-influence));
+  white-space: nowrap;
+  opacity: clamp(0, calc(var(--wrybit-rail-influence) * 1.8 - 0.2), 1);
+  pointer-events: none;
+  transition: opacity 0.12s;
+}
+
+.card-list-rail-tick--active {
+  .card-list-rail-line {
+    background: @highlight-gold;
+  }
+
+  .card-list-rail-label {
+    color: @highlight-gold;
+    font-weight: bold;
+  }
+}
+
+.card-list-rail-tick:focus-visible {
+  outline: none;
+
+  .card-list-rail-line {
+    outline: 2px solid @highlight-gold;
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-list-rail-line,
+  .card-list-rail-label {
+    transition: none;
+  }
+}
+
+.card-list-scroll-top {
+  position: fixed;
+  right: 20px;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  z-index: 30;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: @create-game-radius;
+  background: @bg_action;
+  color: #fff;
+  font-size: 24px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+
+  &--visible {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}

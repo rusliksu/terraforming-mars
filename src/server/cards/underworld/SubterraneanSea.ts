@@ -32,13 +32,15 @@ export class SubterraneanSea extends Card implements IProjectCard {
       player, {
         cost,
         tr: {oceans: 1},
-      })
+      },
+      // Oceans aren't subject to Ares hazard adjacency costs.
+      false)
       .filter((space) => space.excavator === player);
   }
 
   public override bespokeCanPlay(player: IPlayer) {
     if (!player.game.canAddOcean()) {
-      this.warnings.add('maxoceans');
+      this.addWarning('maxoceans');
     }
     return this.availableSpaces(player, player.getCardCost(this)).length > 0;
   }

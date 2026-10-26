@@ -1,0 +1,226 @@
+schema_version: 1
+mission_id: 01M4JTWCBV7BE608GF6RBAQ6TT
+mission_slug: rebalanced-mars-reference-01M4JTWC
+mission_number:
+friendly_name: Rebalanced по правилам rebalakefak
+mission_type: software-dev
+target_branch: codex/rebalanced-mars-reference
+created_at: '2026-10-10T18:32:58.770065+00:00'
+created_by:
+  kind: runtime
+  id: spec-kitty-generator
+  display: Spec Kitty Generator
+provenance:
+  kind: runtime_post_completion
+  invoked_at: '2026-10-10T18:32:58.770065+00:00'
+  policy_resolved_from:
+    enabled: <default>
+    timing: <default>
+    failure_policy: <default>
+    write_record: <default>
+    generate_proposals: <default>
+    apply_proposals: <default>
+    permissions.write_record: <default>
+    permissions.inspect_mission_artifacts: <default>
+    permissions.propose_glossary_changes: <default>
+    permissions.propose_drg_changes: <default>
+    permissions.propose_doctrine_changes: <default>
+    permissions.apply_low_risk_changes: <default>
+    permissions.apply_structural_changes: <default>
+    precedence: <default>
+    generator: <default>
+policy_source:
+  enabled: <default>
+  timing: <default>
+  failure_policy: <default>
+  write_record: <default>
+  generate_proposals: <default>
+  apply_proposals: <default>
+  permissions.write_record: <default>
+  permissions.inspect_mission_artifacts: <default>
+  permissions.propose_glossary_changes: <default>
+  permissions.propose_drg_changes: <default>
+  permissions.propose_doctrine_changes: <default>
+  permissions.apply_low_risk_changes: <default>
+  permissions.apply_structural_changes: <default>
+  precedence: <default>
+  generator: <default>
+findings_status: has_findings
+helped:
+- id: h-001
+  category: implementation
+  summary: WP02 завершён без возвратов после ревью
+  evidence_refs:
+  - e-014
+- id: h-002
+  category: implementation
+  summary: WP03 завершён без возвратов после ревью
+  evidence_refs:
+  - e-014
+- id: h-003
+  category: implementation
+  summary: WP06 завершён без возвратов после ревью
+  evidence_refs:
+  - e-014
+- id: h-004
+  category: implementation
+  summary: WP07 завершён без возвратов после ревью
+  evidence_refs:
+  - e-014
+- id: h-005
+  category: implementation
+  summary: WP08 завершён без возвратов после ревью
+  evidence_refs:
+  - e-014
+- id: h-006
+  category: implementation
+  summary: WP09 завершён без возвратов после ревью
+  evidence_refs:
+  - e-014
+not_helpful:
+- id: n-010
+  category: doc
+  summary: Генератор ошибочно считает само наличие analysis-report.md замечанием
+  evidence_refs:
+  - e-024
+  details: Фактический analysis-report.md имеет verdict ready, пустой findings и нулевые counts. Наличие отчёта не означает замечания.
+- id: n-007
+  category: implementation
+  summary: WP01 прошёл два цикла исправления
+  evidence_refs:
+  - e-021
+  details: Повторный цикл соответствует зафиксированному возврату после ревью. Исходный oracle уточнён и принят независимым повторным ревью.
+- id: n-008
+  category: implementation
+  summary: WP04 прошёл два цикла исправления
+  evidence_refs:
+  - e-022
+  details: Повторный цикл соответствует зафиксированному возврату после ревью. Скидка Thorgate исправлена до одного применения за карту и принята повторно.
+- id: n-009
+  category: implementation
+  summary: WP05 прошёл два цикла исправления
+  evidence_refs:
+  - e-023
+  details: Повторный цикл соответствует зафиксированному возврату после ревью. Numeric-only self-credit исправлен и принят повторно.
+- id: n-004
+  category: process
+  summary: В служебном событии возврата WP01 присутствует force true
+  evidence_refs:
+  - e-018
+  details: Событие описывает возврат changes_requested, а не принудительное принятие. Последнее независимое принятие имеет force false.
+- id: n-005
+  category: process
+  summary: В служебном событии возврата WP04 присутствует force true
+  evidence_refs:
+  - e-019
+  details: Событие описывает возврат changes_requested, а не принудительное принятие. Последнее независимое принятие имеет force false.
+- id: n-006
+  category: process
+  summary: В служебном событии возврата WP05 присутствует force true
+  evidence_refs:
+  - e-020
+  details: Событие описывает возврат changes_requested, а не принудительное принятие. Последнее независимое принятие имеет force false.
+- id: n-001
+  category: review_loop
+  summary: WP01 возвращён один раз до принятия
+  evidence_refs:
+  - e-015
+  details: Уточнение исходного oracle проверено независимым повторным ревью.
+- id: n-002
+  category: review_loop
+  summary: WP04 возвращён один раз до принятия
+  evidence_refs:
+  - e-016
+  details: Исправление Thorgate проверено реальной HE3 Fusion Plant и мутацией.
+- id: n-003
+  category: review_loop
+  summary: WP05 возвращён один раз до принятия
+  evidence_refs:
+  - e-017
+  details: Dynamic resource regression и numeric-only self-credit проверены повторным ревью.
+gaps: []
+proposals: []
+evidence_refs:
+- id: e-001
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/meta.json
+- id: e-002
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/spec.md
+- id: e-003
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/plan.md
+- id: e-004
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/tasks.md
+- id: e-005
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/tasks/WP01-configuration.md
+- id: e-006
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/tasks/WP02-preludes.md
+- id: e-007
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/tasks/WP03-corporations-1.md
+- id: e-008
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/tasks/WP04-corporations-2.md
+- id: e-009
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/tasks/WP05-projects-1.md
+- id: e-010
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/tasks/WP06-projects-2.md
+- id: e-011
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/tasks/WP07-projects-3.md
+- id: e-012
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/tasks/WP08-replacements.md
+- id: e-013
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/tasks/WP09-interface-and-release.md
+- id: e-014
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/status.events.jsonl
+- id: e-015
+  kind: event_range
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/status.events.jsonl
+  range: 01M4JY52DNA6VRG8B1VBS5EW7W
+- id: e-016
+  kind: event_range
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/status.events.jsonl
+  range: 01M4K6VQYD0798VW9S5ENEHWT8
+- id: e-017
+  kind: event_range
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/status.events.jsonl
+  range: 01M4K5MP3B6G3DMPAW3SEF0M37
+- id: e-018
+  kind: event_range
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/status.events.jsonl
+  range: 01M4JY52DNA6VRG8B1VBS5EW7W
+- id: e-019
+  kind: event_range
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/status.events.jsonl
+  range: 01M4K6VQYD0798VW9S5ENEHWT8
+- id: e-020
+  kind: event_range
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/status.events.jsonl
+  range: 01M4K5MP3B6G3DMPAW3SEF0M37
+- id: e-021
+  kind: event_range
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/status.events.jsonl
+  range: implementation_cycles
+- id: e-022
+  kind: event_range
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/status.events.jsonl
+  range: implementation_cycles
+- id: e-023
+  kind: event_range
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/status.events.jsonl
+  range: implementation_cycles
+- id: e-024
+  kind: file
+  path: kitty-specs/rebalanced-mars-reference-01M4JTWC/analysis-report.md
+generator_version: '1.0'
+provenance_history: []

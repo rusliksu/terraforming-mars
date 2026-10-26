@@ -46,7 +46,7 @@
 
           <span v-for="expansion in allModules" :key="expansion">
             <input type="checkbox" :name="expansion" :id="`${expansion}-checkbox`" v-model="expansions[expansion]">
-            <label :for="`${expansion}-checkbox`" class="expansion-button">
+            <label :for="`${expansion}-checkbox`" class="expansion-button tooltip" :data-tooltip="moduleName(expansion)">
               <div class='expansion-icon' :class="expansionIconClass(expansion)"></div>
             </label>
           </span>
@@ -177,8 +177,17 @@
       <section v-show="visibleAgendaIds.length > 0">
         <h2 v-i18n>Agendas</h2>
         <div class="player_home_colony_cont">
-          <div class="player_home_colony" v-for="id in visibleAgendaIds" :key="id" v-memo="[id]">
-            <TurmoilAgendaContainer :agendaId="id" />
+          <div class="player_home_colony" v-for="id in visibleAgendaIds" :key="id" v-memo="[id, expansions.moreParties]">
+            <TurmoilAgendaContainer :agendaId="id" :morePartiesExpansion="expansions.moreParties" />
+          </div>
+        </div>
+      </section>
+
+      <section v-show="visibleNewPartyAgendaIds.length > 0">
+        <h2 v-i18n>More Parties Agendas</h2>
+        <div class="player_home_colony_cont">
+          <div class="player_home_colony" v-for="id in visibleNewPartyAgendaIds" :key="id" v-memo="[id, expansions.moreParties]">
+            <TurmoilAgendaContainer :agendaId="id" :morePartiesExpansion="expansions.moreParties" />
           </div>
         </div>
       </section>
@@ -206,9 +215,9 @@ import {byType, getCard, getCardOrThrow, getCards} from '@/client/cards/ClientCa
 import {COMMUNITY_COLONY_NAMES, OFFICIAL_COLONY_NAMES, PATHFINDERS_COLONY_NAMES} from '@/common/colonies/AllColonies';
 import {ColonyModel} from '@/common/models/ColonyModel';
 import {ColonyName} from '@/common/colonies/ColonyName';
-import {GameModule, GAME_MODULES} from '@/common/cards/GameModule';
+import {GameModule, GAME_MODULES, MODULE_NAMES} from '@/common/cards/GameModule';
 import {Tag} from '@/common/cards/Tag';
-import {getColony} from '@/client/colonies/ClientColonyManifest';
+import {getColonyOrThrow} from '@/client/colonies/ClientColonyManifest';
 import {ClientCard} from '@/common/cards/ClientCard';
 import {translateText} from '@/client/directives/i18n';
 import {MilestoneName, milestoneNames} from '@/common/ma/MilestoneName';
@@ -218,6 +227,7 @@ import {FundedAwardModel} from '@/common/models/FundedAwardModel';
 import {TypeOption, CardListModel, hashToModel, modelToHash, ResourceOption, TagOption} from '@/client/components/cardlist/CardListModel';
 import {getAward, getMilestone} from '@/client/MilestoneAwardManifest';
 import {BonusId, BONUS_IDS, PolicyId, POLICY_IDS, agendaIdDescription} from '@/common/turmoil/Types';
+import {agendaModule, expansionIconClass} from '@/client/components/cardlist/catalogMetadata';
 import Card from '@/client/components/card/Card.vue';
 import Colony from '@/client/components/colonies/Colony.vue';
 import GlobalEvent from '@/client/components/turmoil/GlobalEvent.vue';
@@ -253,6 +263,7 @@ export default defineComponent({
       ...hashToModel(window.location.hash),
       // Whether the page has been scrolled down at all; gates the "scroll to top" widget.
       scrolled: false,
+      hashTimer: undefined as ReturnType<typeof setTimeout> | undefined,
     };
   },
   mounted() {
@@ -263,6 +274,7 @@ export default defineComponent({
     window.addEventListener('scroll', this.handleScroll, {passive: true});
   },
   beforeUnmount() {
+    clearTimeout(this.hashTimer);
     window.removeEventListener('scroll', this.handleScroll);
   },
   computed: {
@@ -289,22 +301,16 @@ export default defineComponent({
       ];
     },
     allTags(): Array<TagOption> {
-      const results: Array<TagOption> = [];
-      for (const tag in Tag) {
-        if (Object.prototype.hasOwnProperty.call(Tag, tag)) {
-          results.push((<any>Tag)[tag]);
-        }
-      }
-      return results.concat('none');
+      return [...getEnumStringValues(Tag), 'none'];
     },
     allResources(): Array<ResourceOption> {
       return [...getEnumStringValues(CardResource), 'none'];
     },
     allMilestoneNames(): ReadonlyArray<MilestoneName> {
-      return [...milestoneNames].sort();
+      return milestoneNames.toSorted();
     },
     allAwardNames(): ReadonlyArray<AwardName> {
-      return [...awardNames].sort();
+      return awardNames.toSorted();
     },
     allAgendaIds(): ReadonlyArray<PolicyId | BonusId> {
       const ids = (POLICY_IDS as ReadonlyArray<PolicyId | BonusId>).concat(BONUS_IDS);
@@ -359,7 +365,13 @@ export default defineComponent({
       if (!this.types.agendas) {
         return [];
       }
-      return this.allAgendaIds.filter((id) => this.include(id, 'agenda'));
+      return this.allAgendaIds.filter((id) => this.showAgenda(id) && !this.isNewPartyAgenda(id));
+    },
+    visibleNewPartyAgendaIds(): Array<PolicyId | BonusId> {
+      if (!this.types.agendas) {
+        return [];
+      }
+      return this.allAgendaIds.filter((id) => this.showAgenda(id) && this.isNewPartyAgenda(id));
     },
     agendaIdDescription(): typeof agendaIdDescription {
       return agendaIdDescription;
@@ -367,7 +379,7 @@ export default defineComponent({
   },
   methods: {
     delayedSetLocationHash(delayms: number = 200) {
-      setTimeout(() => {
+      this.hashTimer = setTimeout(() => {
         const changed = this.setLocationHash();
         this.delayedSetLocationHash(changed ? 10 : 100);
       }, delayms);
@@ -449,13 +461,10 @@ export default defineComponent({
       }
     },
     expansionIconClass(expansion: GameModule): string {
-      switch (expansion) {
-      case 'base': return 'expansion-icon-base';
-      case 'corpera': return 'expansion-icon-CE';
-      case 'colonies': return 'expansion-icon-colony';
-      case 'moon': return 'expansion-icon-themoon';
-      default: return `expansion-icon-${expansion}`;
-      }
+      return expansionIconClass(expansion);
+    },
+    moduleName(expansion: GameModule): string {
+      return MODULE_NAMES[expansion];
     },
     filterByTags(card: ClientCard): boolean {
       if (card.tags.length === 0) {
@@ -520,20 +529,30 @@ export default defineComponent({
       if (!this.include(name, 'colony')) {
         return false;
       }
-      const colony = getColony(name);
-      return colony !== undefined && this.expansions[colony.module ?? 'base'] === true;
+      const colony = getColonyOrThrow(name);
+      return this.expansions[colony.module ?? 'base'] === true;
     },
     showMilestone(name: MilestoneName): boolean {
       if (!this.include(name, 'ma')) {
         return false;
       }
-      return this.expansions[getMilestone(name).requirements ?? 'base'] === true;
+      return this.expansions[getMilestone(name)?.requirements ?? 'base'] === true;
+    },
+    isNewPartyAgenda(id: PolicyId | BonusId): boolean {
+      return agendaModule(id) === 'moreParties';
+    },
+    showAgenda(id: PolicyId | BonusId): boolean {
+      if (!this.include(id, 'agenda')) {
+        return false;
+      }
+      const requiredExpansion = this.isNewPartyAgenda(id) ? 'moreParties' : 'turmoil';
+      return this.expansions[requiredExpansion] === true;
     },
     showAward(name: AwardName): boolean {
       if (!this.include(name, 'ma')) {
         return false;
       }
-      return this.expansions[getAward(name).requirements ?? 'base'] === true;
+      return this.expansions[getAward(name)?.requirements ?? 'base'] === true;
     },
     getLanguageCssClass() {
       const language = getPreferences().lang;

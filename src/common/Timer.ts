@@ -61,15 +61,17 @@ export class Timer {
     };
   }
 
-  public static deserialize(d: SerializedTimer): Timer {
+  public static deserialize(d: SerializedTimer, restoreSharedClock = true): Timer {
     const timer = new Timer(REAL_CLOCK);
     timer.sumElapsed = d.sumElapsed;
     timer.startedAt = d.startedAt;
     timer.running = d.running;
     timer.afterFirstAction = d.afterFirstAction;
 
-    // Should this be `Math.max(Timer.lastStoppedAt, d.lastStoppedAt)`?
-    Timer.lastStoppedAt = d.lastStoppedAt;
+    // Never move the shared timer backwards.
+    if (restoreSharedClock) {
+      Timer.lastStoppedAt = Math.max(Timer.lastStoppedAt, d.lastStoppedAt);
+    }
     return timer;
   }
 
@@ -138,12 +140,12 @@ export class Timer {
     if (!d.afterFirstAction) {
       return '00:00';
     }
-    const elapsed = d.sumElapsed + (d.running ? clock.now() - d.startedAt : 0);
-    const elapsedDate = new Date(elapsed);
-    const hours = elapsedDate.getUTCHours() + (elapsedDate.getUTCDate() - 1) * 24;
+    const elapsedMs = d.sumElapsed + (d.running ? clock.now() - d.startedAt : 0);
+    const hours = Math.floor(elapsedMs / 3_600_000);
+    const asString = new Date(elapsedMs).toISOString();
     if (hours > 0) {
-      return String(hours) + elapsedDate.toISOString().substr(13, 6);
+      return String(hours) + asString.slice(13, 19);
     }
-    return elapsedDate.toISOString().substr(14, 5);
+    return asString.slice(14, 19);
   }
 }

@@ -1,0 +1,184 @@
+.card-container {
+  .card-content-corporation {
+    top: -30px;
+    height: 256px !important;
+  }
+  .card-content {
+    color: black;
+    position: relative;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    width: 220px;
+    height: 226px;
+    padding: 10px;
+    font-size: 16px;
+    line-height: 20px;
+    font-weight: bold;
+    text-align: center;
+    padding-bottom: 0px;
+
+    // Adding scrolling for cards with huge description
+    &:not(.global-event-card-content) {
+      overflow-x: hidden;
+    }
+
+    &::-webkit-scrollbar-track {
+      background-color: transparent;
+      border-radius: 0 0 32px 0;
+    }
+    &::-webkit-scrollbar {
+      width: 4px;
+      background-color: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: #898989;
+      border-radius: 0 0 32px 0;
+    }
+    .bottom-padding-short {
+      padding-bottom: 30px;
+    }
+    .bottom-padding-long {
+      padding-bottom: 50px;
+    }
+  }
+
+  &.card-auto-tall .card-content:not(.global-event-card-content) {
+    height: auto;
+    min-height: 218px;
+    overflow: visible;
+    padding-bottom: 8px;
+  }
+
+  .card-corporation-box {
+    position: relative;
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    min-height: 130px;
+    border-radius: 10px;
+    background: linear-gradient(to bottom right, #cccccc, #aaaaaa, #dddddd, #cccccc, #aaaaaa, #cacaca, #aaaaaa, #cccccc);
+    box-shadow: 0 0 0px 1px rgba(0, 0, 0.5);
+    width: 216px;
+    padding: 0 4px;
+    margin: 4px 0;
+    /* hide points on hover by poppig the overlay on top of them*/
+    &:hover {
+      box-shadow: 0px 0px 4px 1px #353594;
+      z-index: 4;
+    }
+    .card-corporation-label {
+      background: linear-gradient(#6eafde, #2c84c4, #2c84c4);
+      width: 100px;
+      height: 12px;
+      line-height: 12px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 10px;
+      padding-top: 2px;
+      border-radius: 0 0 20px 20px;
+      text-transform: uppercase;
+      position: absolute;
+      top: 0px;
+      left: 63px;
+    }
+  }
+  .card-effect-box {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    .card-item-container {
+      margin: 0;
+    }
+    .card-effect-box-row {
+      display: flex;
+      flex-flow: row;
+      align-items: center;
+      .card-effect-box-content {
+        display: flex;
+        flex-flow: row;
+        align-items: center;
+        margin: 0 4px;
+        .card-effect-box-item {
+          display: flex;
+        }
+      }
+    }
+  }
+
+  .card-item-container {
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    margin: 0 4px;
+  }
+
+  .nextto-leftside {
+    margin: 0 -2px 0 4px;
+  }
+  .nextto-rightside {
+    margin: 0 4px 0 -2px;
+  }
+
+  /*requirements*/
+  .card-global-requirement {
+    position: relative;
+    vertical-align: middle;
+    display: inline-block;
+    width: 40px;
+    height: 46px;
+    margin-right: 4px;
+    margin-left: 4px;
+    background-size: 40px 46px;
+    line-height: 16px;
+    text-align: center;
+    filter: drop-shadow(0px 0px 1px black);
+    background-image: url(../assets/tiles/empty.png);
+  }
+  .card-temperature-global-requirement {
+    background-image: url(../assets/global-parameters/temperature.png);
+    width: 14px;
+    background-size: 14px 46px;
+  }
+  .card-temperature--req {
+    background-image: url(../assets/global-parameters/temperature.png);
+    width: 10px;
+    height: 34px;
+    background-size: 10px 34px;
+  }
+  .card-ocean-global-requirement {
+    background-image: url(../assets/tiles/ocean.png);
+  }
+  .card-ocean--req {
+    background-image: url(../assets/tiles/ocean.png);
+    width: 30px;
+    height: 34px;
+    background-size: 30px 34px;
+  }
+  .card-oxygen-global-requirement {
+    background-image: url(../assets/global-parameters/oxygen.png);
+    width: 46px;
+    background-size: 46px;
+  }
+  .card-oxygen--req {
+    background-image: url(../assets/global-parameters/oxygen.png);
+    width: 34px;
+    background-size: 34px;
+    height: 34px;
+  }
+  .card-venus-global-requirement {
+    background-image: url(../assets/global-parameters/venus.png);
+    width: 60px;
+    height: 40px;
+    background-size: 60px 40px;
+    color: #0000;
+  }
+  .card-venus--req {
+    background-image: url(../assets/global-parameters/venus.png);
+    width: 50px;
+    height: 34px;
+    background-size: 50px 34px;
+    color: #0000;
+  }
+  /*resources*/
+}

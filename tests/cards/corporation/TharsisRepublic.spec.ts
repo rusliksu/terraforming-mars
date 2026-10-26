@@ -41,8 +41,8 @@ describe('TharsisRepublic', () => {
 
     expect(player.megaCredits).to.eq(3);
     expect(player.production.megacredits).to.eq(1);
-    expect(game.gameLog.map(formatMessage)).contains('blue gained 3 M€ because of Tharsis Republic');
-    expect(game.gameLog.map(formatMessage)).contains('blue gained 1 M€ production because of Tharsis Republic');
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 3:r:mc: because of Tharsis Republic');
+    expect(game.gameLog.map(formatMessage)).contains('blue gained 1:p:mc: because of Tharsis Republic');
   });
 
   it('Gives MC production only for other player\'s city on Mars', () => {

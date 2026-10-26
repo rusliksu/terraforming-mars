@@ -1,5 +1,5 @@
 param(
-    [string]$HostAlias = "vps",
+    [string]$HostAlias = "hostkey-codex",
     [string]$RemoteRoot = "",
     [string]$ServiceName = "tm-server",
     [string]$OutputPath,

@@ -5,6 +5,9 @@ import OrOptions from '@/client/components/OrOptions.vue';
 import {PreferencesManager} from '@/client/utils/PreferencesManager';
 import {InputResponse} from '@/common/inputs/InputResponse';
 import PlayerInputFactory from '@/client/components/PlayerInputFactory.vue';
+import {PlayerViewModel} from '@/common/models/PlayerModel';
+import {PlayerInputModel, SelectCardModel} from '@/common/models/PlayerInputModel';
+import {asComplete} from './utils/models';
 
 describe('OrOptions', () => {
   afterEach(() => {
@@ -27,15 +30,16 @@ describe('OrOptions', () => {
           id: 'foo',
         },
         players: [],
-        playerView: {},
+        playerView: asComplete<PlayerViewModel>({}),
         playerinput: {
           type: 'or',
           title: 'foo',
-          options: [{
+          buttonLabel: '',
+          options: [asComplete<SelectCardModel>({
             type: 'card',
             title: 'hide this',
             showOnlyInLearnerMode: true,
-          }, {
+          }), {
             type: 'option',
             title: 'select a',
             buttonLabel: '',
@@ -72,15 +76,16 @@ describe('OrOptions', () => {
           id: 'foo',
         },
         players: [],
-        playerView: {},
+        playerView: asComplete<PlayerViewModel>({}),
         playerinput: {
           type: 'or',
           title: 'foo',
-          options: [{
+          buttonLabel: '',
+          options: [asComplete<SelectCardModel>({
             type: 'card',
             title: 'hide this',
             showOnlyInLearnerMode: true,
-          }, {
+          }), {
             type: 'option',
             title: 'select a',
             buttonLabel: '',
@@ -107,6 +112,93 @@ describe('OrOptions', () => {
     expect(savedData).to.deep.eq({type: 'or', index: 2, response: {type: 'option'}});
   });
 
+  it('updates displayed options when learner mode changes', async () => {
+    PreferencesManager.INSTANCE.set('learner_mode', false);
+    const component = mount(OrOptions, {
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        components: {
+          'PlayerInputFactory': PlayerInputFactory,
+        },
+      },
+      props: {
+        playerView: asComplete<PlayerViewModel>({}),
+        playerinput: {
+          type: 'or',
+          title: 'foo',
+          buttonLabel: '',
+          options: [asComplete<SelectCardModel>({
+            type: 'card',
+            title: 'hide this',
+            showOnlyInLearnerMode: true,
+          }), {
+            type: 'option',
+            title: 'select a',
+            buttonLabel: '',
+          }],
+        },
+        onsave: () => {},
+        showsave: true,
+        showtitle: true,
+      },
+    });
+    expect(component.findAll('input').length).to.eq(1);
+
+    PreferencesManager.INSTANCE.set('learner_mode', true);
+    await component.vm.$nextTick();
+    expect(component.findAll('input').length).to.eq(2);
+  });
+
+  it('falls back to the first displayed option when the selected one is hidden', async () => {
+    let savedData: InputResponse | undefined;
+    PreferencesManager.INSTANCE.set('learner_mode', true);
+    const component = mount(OrOptions, {
+      ...globalConfig,
+      global: {
+        ...globalConfig.global,
+        components: {
+          'PlayerInputFactory': PlayerInputFactory,
+        },
+      },
+      props: {
+        playerView: asComplete<PlayerViewModel>({}),
+        playerinput: {
+          type: 'or',
+          title: 'foo',
+          buttonLabel: '',
+          options: [{
+            type: 'option',
+            title: 'select a',
+            buttonLabel: '',
+          }, asComplete<SelectCardModel>({
+            type: 'card',
+            title: 'hide this',
+            showOnlyInLearnerMode: true,
+            min: 1,
+            max: 1,
+          })],
+        },
+        onsave: function(data: InputResponse) {
+          savedData = data;
+        },
+        showsave: true,
+        showtitle: true,
+      },
+    });
+    await component.findAll('input')[1].setValue(true);
+
+    PreferencesManager.INSTANCE.set('learner_mode', false);
+    await component.vm.$nextTick();
+    const factories = component.findAllComponents({name: 'PlayerInputFactory'});
+    expect(factories.length).to.eq(1);
+    expect(factories[0].props('playerinput').title).to.eq('select a');
+
+    const buttons = component.findAllComponents({name: 'AppButton'});
+    await buttons[0].trigger('click');
+    expect(savedData).to.deep.eq({type: 'or', index: 0, response: {type: 'option'}});
+  });
+
   it('selecting different radio options shows correct sub-form', async () => {
     const component = mount(OrOptions, {
       ...globalConfig,
@@ -121,16 +213,19 @@ describe('OrOptions', () => {
           id: 'foo',
         },
         players: [],
-        playerView: {},
+        playerView: asComplete<PlayerViewModel>({}),
         playerinput: {
           type: 'or',
           title: 'foo',
+          buttonLabel: '',
           options: [{
             type: 'option',
             title: 'select a',
+            buttonLabel: '',
           }, {
             type: 'option',
             title: 'select b',
+            buttonLabel: '',
           }],
         },
         onsave: () => {},
@@ -167,10 +262,11 @@ describe('OrOptions', () => {
           id: 'foo',
         },
         players: [],
-        playerView: {},
+        playerView: asComplete<PlayerViewModel>({}),
         playerinput: {
           type: 'or',
           title: 'foo',
+          buttonLabel: '',
           options: [{
             type: 'option',
             title: 'select a',
@@ -215,10 +311,11 @@ describe('OrOptions', () => {
           id: 'foo',
         },
         players: [],
-        playerView: {},
+        playerView: asComplete<PlayerViewModel>({}),
         playerinput: {
           type: 'or',
           title: 'foo',
+          buttonLabel: '',
           options: [{
             type: 'option',
             title: 'select a',
@@ -249,14 +346,39 @@ describe('OrOptions', () => {
       ...globalConfig,
       global: {...globalConfig.global, components: {'PlayerInputFactory': PlayerInputFactory}},
       props: {
-        playerView: {},
-        playerinput: {type: 'or', title: '', options: [{type: 'option', title: 'a'}]},
+        playerView: asComplete<PlayerViewModel>({}),
+        playerinput: {type: 'or', title: '', buttonLabel: '', options: [{type: 'option', title: 'a', buttonLabel: ''}]},
         onsave: () => {},
       },
     }).vm;
-    expect(vm.showChildSaveButton({type: 'card', min: 0, max: 5})).to.be.true;
-    expect(vm.showChildSaveButton({type: 'card', min: 1, max: 1})).to.be.false;
-    expect(vm.showChildSaveButton({type: 'option'})).to.be.false;
+    expect(vm.showChildSaveButton(asComplete<PlayerInputModel>({type: 'card', min: 0, max: 5}))).to.be.true;
+    expect(vm.showChildSaveButton(asComplete<PlayerInputModel>({type: 'card', min: 1, max: 1}))).to.be.false;
+    expect(vm.showChildSaveButton(asComplete<PlayerInputModel>({type: 'option'}))).to.be.false;
+  });
+
+  it('visually separates the bot takeover action from ordinary actions', () => {
+    const component = mount(OrOptions, {
+      ...globalConfig,
+      global: {...globalConfig.global, components: {'PlayerInputFactory': PlayerInputFactory}},
+      props: {
+        playerView: asComplete<PlayerViewModel>({}),
+        playerinput: {
+          type: 'or',
+          title: 'Take your action',
+          buttonLabel: 'Take action',
+          options: [
+            {type: 'option', title: 'Pass', buttonLabel: 'Pass'},
+            {type: 'option', title: 'Surrender and start bot', buttonLabel: 'Surrender', annotation: 'surrender-action'},
+          ],
+        },
+        onsave: () => {},
+        showsave: true,
+      },
+    });
+
+    const takeoverOption = component.find('[data-input-annotation="surrender-action"]');
+    expect(takeoverOption.exists()).is.true;
+    expect(takeoverOption.classes()).contains('wf-option');
   });
 
   it('child save button label includes card count', () => {
@@ -264,10 +386,11 @@ describe('OrOptions', () => {
       ...globalConfig,
       global: {...globalConfig.global, components: {'PlayerInputFactory': PlayerInputFactory}},
       props: {
-        playerView: {},
+        playerView: asComplete<PlayerViewModel>({}),
         playerinput: {
           type: 'or',
           title: '',
+          buttonLabel: '',
           options: [{
             type: 'card',
             title: 'Sell Patents',
@@ -278,6 +401,7 @@ describe('OrOptions', () => {
             showOnlyInLearnerMode: false,
             selectBlueCardAction: false,
             showOwner: false,
+            showSelectAll: false,
           }],
         },
         onsave: () => {},
@@ -301,7 +425,7 @@ describe('OrOptions', () => {
       ...globalConfig,
       global: {...globalConfig.global, components: {'PlayerInputFactory': PlayerInputFactory}},
       props: {
-        playerView: {},
+        playerView: asComplete<PlayerViewModel>({}),
         playerinput: {
           type: 'or',
           title: 'Take your first action',
@@ -349,7 +473,7 @@ describe('OrOptions', () => {
       ...globalConfig,
       global: {...globalConfig.global, components: {'PlayerInputFactory': PlayerInputFactory}},
       props: {
-        playerView: {},
+        playerView: asComplete<PlayerViewModel>({}),
         playerinput: {
           type: 'or',
           title: 'Take your first action',
@@ -393,7 +517,7 @@ describe('OrOptions', () => {
       ...globalConfig,
       global: {...globalConfig.global, components: {'PlayerInputFactory': PlayerInputFactory}},
       props: {
-        playerView: {},
+        playerView: asComplete<PlayerViewModel>({}),
         playerinput: {
           type: 'or',
           title: 'Select milestone payment',

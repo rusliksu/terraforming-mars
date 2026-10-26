@@ -1,0 +1,19 @@
+{
+  "wp_id": "WP01",
+  "captured_at": "2026-10-12T18:48:46Z",
+  "base_branch": "codex/wrybit-full-ui",
+  "base_commit": "2c7ee97beaa0a62ba49dc7dd456ef2ccf17d8d93",
+  "test_runner": "custom",
+  "total": 1,
+  "passed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "failures": [
+    {
+      "test": "<declared-command>",
+      "error": "tests/client/components/WaitingFor.spec.ts(9,26): error TS2307: Cannot find module '@/genfiles/settings.json' or its corresponding type declarations.",
+      "file": "unknown"
+    }
+  ],
+  "source_identity": "DeclaredCommandScopeSource/text"
+}

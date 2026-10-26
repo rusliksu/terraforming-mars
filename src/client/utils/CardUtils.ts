@@ -6,10 +6,8 @@ import {getCard} from '@/client/cards/ClientCardManifest';
 export function getCardsByType(inCards: ReadonlyArray<CardModel>, cardTypes: ReadonlyArray<CardType>): ReadonlyArray<CardModel> {
   const outCards = inCards.filter((inCard) => {
     const outCard = getCard(inCard.name);
-    if (outCard === undefined) {
-      return false;
-    }
-    return cardTypes.includes(outCard.type);
+    const type = outCard?.type ?? inCard.customCard?.type;
+    return type !== undefined && cardTypes.includes(type);
   });
   return outCards.reverse();
 }

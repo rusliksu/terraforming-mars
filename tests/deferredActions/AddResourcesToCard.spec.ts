@@ -54,7 +54,7 @@ describe('AddResourcesToCard', () => {
     const selectCard = new AddResourcesToCard(player, CardResource.MICROBE, {count: 2, from: {card: source}}).execute();
 
     expect(selectCard).is.undefined;
-    expect(formatMessage(player.game.gameLog[0])).eq('blue added 2 Microbe(s) to GHG Producing Bacteria from Tardigrades');
+    expect(formatMessage(player.game.gameLog[0])).eq('blue added 2:cr:microbe: to GHG Producing Bacteria from Tardigrades');
   });
 
   it('many microbe cards', () => {

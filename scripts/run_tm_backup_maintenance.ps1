@@ -1,5 +1,5 @@
 param(
-    [string]$HostAlias = "vps",
+    [string]$HostAlias = "hostkey-codex",
     [string]$ArchiveRoot = "D:\tm-vps-archive",
     [int]$KeepNewestBackups = 14,
     [switch]$IncludeDeps,

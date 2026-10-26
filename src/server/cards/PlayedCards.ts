@@ -28,6 +28,8 @@ const NO_TAGS = {
   [Tag.WILD]: 0,
   [Tag.EVENT]: 0,
   [Tag.CLONE]: 0,
+  [Tag.INFRASTRUCTURE]: 0,
+  [Tag.GALACTIC]: 0,
 } as const;
 
 /**
@@ -38,7 +40,7 @@ const NO_TAGS = {
  * play?"
  *
  * It can also extend to filters such as "What are the events in play?",
- * which is constantly checked. Imagine also if the same coud apply
+ * which is constantly checked. Imagine also if the same could apply
  * to "How mant tags are in play?"
  *
  * Cards are retained in insertion order.
@@ -161,21 +163,23 @@ export class PlayedCards {
   }
 
   /**
-   * Remove card from play. Updates indexes. It is up to the caller
+   * Removes the card with this name from play and updates indexes. It is up to the caller
    * to put the card wherever it eventually belongs.
    */
   remove(card: ICard) {
-    const found = this.byName.delete(card.name);
-    if (found) {
-      inplaceRemove(this.array, card);
-      if (card.type === CardType.EVENT) {
-        this._eventCount--;
-        this.removeTags(card, this._eventTags);
-      } else {
-        this.removeTags(card, this._tags);
-      }
+    const storedCard = this.byName.get(card.name);
+    if (storedCard === undefined) {
+      return false;
     }
-    return found;
+    this.byName.delete(storedCard.name);
+    inplaceRemove(this.array, storedCard);
+    if (storedCard.type === CardType.EVENT) {
+      this._eventCount--;
+      this.removeTags(storedCard, this._eventTags);
+    } else {
+      this.removeTags(storedCard, this._tags);
+    }
+    return true;
   }
 
   /**
@@ -186,6 +190,7 @@ export class PlayedCards {
     this.array = [];
     this._eventCount = 0;
     this._tags = {...NO_TAGS};
+    this._eventTags = {...NO_TAGS};
 
     this.push(...cards);
   }

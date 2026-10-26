@@ -11,13 +11,14 @@ export interface IPolicy {
   description: string | ((player: IPlayer | undefined) => string);
   onTilePlaced?(player: IPlayer, space: Space): void;
   onCardPlayed?(player: IPlayer, card: IProjectCard): void;
+  onTurnStart?(player: IPlayer): void;
   action?(player: IPlayer): PlayerInput | undefined;
   canAct?(player: IPlayer): boolean;
   onPolicyStart?(game: IGame): void;
   onPolicyStartForPlayer?(player: IPlayer): void;
   onPolicyEnd?(game: IGame): void;
   onPolicyEndForPlayer?(player: IPlayer): void;
-  }
+}
 
 export abstract class Policy implements IPolicy {
   abstract readonly id: PolicyId;

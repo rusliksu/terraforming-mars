@@ -1,0 +1,33 @@
+{
+  "schema": "TmUpstreamAdoptionLedgerV1",
+  "schemaVersion": 1,
+  "purpose": "Immutable reviewed decisions for custom patches that overlap official upstream work. Remote PR state is intentionally not stored here.",
+  "decisions": [
+    {
+      "id": "official-pr-8311-single-card-resource-targets",
+      "officialPullRequest": {
+        "repository": "terraforming-mars/terraforming-mars",
+        "number": 8311,
+        "url": "https://github.com/terraforming-mars/terraforming-mars/pull/8311"
+      },
+      "policy": "adopt_upstream",
+      "customCommits": [
+        "2cd747c540c5bfc156f97a524f8e4daa13fe3877",
+        "6ffbed39f639e6be6291ba2443c7ce3f538d3851"
+      ],
+      "scope": [
+        "src/server/cards/prelude2/Ecotec.ts",
+        "tests/cards/prelude2/Ecotec.spec.ts"
+      ],
+      "resolution": {
+        "strategy": "restore_upstream_scope",
+        "auditVersion": 1
+      },
+      "regressionTests": [
+        "npx mocha --import=tsx --require tests/testing/setup.ts tests/cards/prelude2/Ecotec.spec.ts"
+      ],
+      "decision": "When PR 8311 is present in fetched upstream/main, prefer its shared SelectCard behavior and drop the overlapping custom Ecotec-only implementation instead of preserving both patches.",
+      "recordedAt": "2026-07-13"
+    }
+  ]
+}

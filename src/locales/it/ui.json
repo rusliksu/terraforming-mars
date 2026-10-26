@@ -51,7 +51,7 @@
     "Gardener": "Giardiniere",
     "Own 3 greenery tiles": "Richiede che tu possieda almeno 3 tessere Vegetazione",
     "Generalist": "Generalista",
-    "Requires that you have increased all 6 productions by at least 1 step": "Richiede che tu abbia incrementato tutte e 6 le Produzioni di almeno un livello (le Produzioni iniziali derivanti dalle carte Corporation contano come incrementi)",
+    "Have increased all 6 productions by 1 step": "Richiede che tu abbia incrementato tutte e 6 le Produzioni di almeno un livello (le Produzioni iniziali derivanti dalle carte Corporation contano come incrementi)",
     "Hoverlord": "",
     "Have 7 floater resources on your cards": "Richiede che tu possieda almeno 7 risorse Galleggianti sulle tue carte",
     "Legend": "Leggenda",
@@ -99,7 +99,7 @@
     "Industrialist": "Industriale",
     "Having most steel and energy resources": "Possiedi il maggior numero di risorse Acciaio ed Energia",
     "Desert Settler": "Colonizzatore del Deserto",
-    "Own the most tiles south of the equator (the four bottom rows)": "Possiedi il maggior numero di tessere a Sud dell'Equatore (le quattro file inferiori)",
+    "Own the most tiles south of the equator (the rows below the middle row)": "Possiedi il maggior numero di tessere a Sud dell'Equatore (le file sotto la fila centrale)",
     "Estate Dealer": "Mercante di Terreni",
     "Own the most tiles adjacent to ocean tiles": "Possiedi il maggior numero di tessere adiacenti a tessere Oceano",
     "Benefactor": "Benefattore",
@@ -210,18 +210,17 @@
      "Add floater": "Aggiungi Galleggiante",
      "Select card to take into hand": "Seleziona carta da prendere in mano",
      "Send a delegate in an area (5 M€)": "Manda un Delegato in un'area (5 M€)",
-     "Pay 10 M€ to draw 3 cards (Turmoil Scientists)": "Paga 10 M€ per pescare 3 carte (Scienziati Turmoil)",
+     "Pay 10 M€ to draw 3 cards": "Paga 10 M€ per pescare 3 carte",
      "Select card to keep or none to discard": "Seleziona carta da tenere o nessuna per scartare",
      "Select a space with a steel or titanium bonus": "Seleziona uno spazio con un bonus Acciaio o Titanio",
-     "Select card to add 1 floater": "Seleziona carta a cui aggiungere 1 Galleggiante",
      "Select one option": "Scegli un'opzione",
      "Add 1 floater to this card": "Aggiungi 1 Galleggiante a questa carta",
-     "Remove 2 floaters to raise Venus scale 1 step": "Rimuovi 2 Galleggianti per aumentare la scala di Venere di un livello",
+     "Remove 2 floaters here to raise Venus 1 step.": "Rimuovi 2 Galleggianti per aumentare la scala di Venere di un livello",
      "Show timers": "Mostra i timer",
      "You cannot pay for this card": "Non puoi pagare questa carta",
      "Select card(s) to buy":"Seleziona carta/e da comprare",
 
-    "Starting Megacredits:":"MegaCrediti Iniziali：",
+    "Starting M€:":"MegaCrediti Iniziali：",
     "After Preludes:":"Dopo i Prelude：",
 
 
@@ -315,7 +314,7 @@
 
     "Cards to include in the game": "Carte da includere dalla partita",
 
-    " Not affiliated with FryxGames, Asmodee Digital or Steam in any way. ": " Non affiliato a FryxGames, Asmodee Digital o Steam in alcun modo. ",
+    "Not affiliated with FryxGames, Asmodee Digital or Steam in any way.": " Non affiliato a FryxGames, Asmodee Digital o Steam in alcun modo. ",
     "Reorder Cards": "Riordina carte"
 
 }

@@ -16,7 +16,6 @@
 "Excavate 3 underground resources.": "Grabe 3 unterirdische Ressourcen aus.",
 
 "Biobatteries": "Biobatterien",
-"NOTE: For the moment, all wild tags are going to energy.": "HINWEIS: Im Moment werden alle Jokersymbole auf Energie zugerechnet.",
 "Increase your energy production 1 step. Gain 1 energy for every microbe tag you have (including this.) For every power tag you have (including this) put 1 microbe on another card.": "Erhöhe deine Energieproduktion um 1. Erhalte 1 Energie für jedes Mikrobensymbol, das du hast (einschließlich dieser). Für jedes Energiesymbol, das du hast (einschließlich dieser), lege 1 Mikrobe auf eine andere Karte.",
 
 "Canyon Survey": "Schlucht Vermessung",
@@ -137,7 +136,7 @@
 "Excavate 2 underground resources.": "Grabe 2 unterirdische Ressourcen aus.",
 
 "Induced Tremor": "Induziertes Zittern",
-"Discard 1 underground resource from the board. Then excavate an underground resource.": "Werfe 1 unterirdische Ressource vom Spielbrett ab. Grabe dann eine unterirdische Ressource aus.",
+"You may discard 1 underground resource of your choice from the board. Then excavate an underground resource.": "Du darfst 1 unterirdische Ressource deiner Wahl vom Spielbrett abwerfen. Grabe dann eine unterirdische Ressource aus.",
 
 "Infrastructure Overload": "Überlastung der Infrastruktur",
 "Gain 1 corruption. Reduce any energy production 2 steps.": "Erhalte 1 Korruption. Reduziere eine beliebige Energieproduktion um 2.",

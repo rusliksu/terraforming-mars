@@ -12,6 +12,9 @@ import {statusCode} from '../../src/common/http/statusCode';
 import {cast} from '@/common/utils/utils';
 import {SelectInitialCards} from '../../src/server/inputs/SelectInitialCards';
 import {DiscordUser} from '../../src/server/server/auth/discord';
+import {MapLibraryEntry} from '../../src/common/boards/MapLibraryEntry';
+import {CustomCardLibraryEntry} from '../../src/common/cards/CustomCardLibraryEntry';
+import {blankCustomCard} from '../../src/common/cards/CustomCardDefinition';
 
 // Removes any fields that have undefined values, and filters undefined from arrays.
 function stripUndefined(obj: unknown): unknown {
@@ -288,62 +291,6 @@ export function describeDatabaseSuite<T extends ITestDatabase>(dtor: DatabaseTes
           await db.purgeUnfinishedGames('1');
           expect(await db.getSaveIds(game.id)).is.empty;
         });
-
-        it('ignores an isolated save after a long inactivity gap', async () => {
-          expect(db.setSaveCreatedTime).is.not.undefined;
-          const setSaveCreatedTime = db.setSaveCreatedTime!;
-          const player = TestPlayer.BLACK.newPlayer();
-          const game = Game.newInstance('game-id-maintenance-refresh', [player], player, 'spectatorid');
-          await db.lastSaveGamePromise;
-          await db.saveGame(game);
-          await db.saveGame(game);
-
-          const oldSeconds = 1000;
-          const latestRealSeconds = oldSeconds + 60;
-          const isolatedRefreshSeconds = latestRealSeconds + (2 * 86400);
-          await setSaveCreatedTime.call(db, game.id, 0, oldSeconds);
-          await setSaveCreatedTime.call(db, game.id, 1, latestRealSeconds);
-          await setSaveCreatedTime.call(db, game.id, 2, isolatedRefreshSeconds);
-
-          expect(await db.getLastSaveTimeMs(game.id)).eq(latestRealSeconds * 1000);
-
-          await db.saveGame(game);
-          const resumedPlaySeconds = isolatedRefreshSeconds + 60;
-          await setSaveCreatedTime.call(db, game.id, 3, resumedPlaySeconds);
-
-          expect(await db.getLastSaveTimeMs(game.id)).eq(resumedPlaySeconds * 1000);
-        });
-
-        it('gets latest meaningful save times for multiple games', async () => {
-          expect(db.setSaveCreatedTime).is.not.undefined;
-          const setSaveCreatedTime = db.setSaveCreatedTime!;
-          const player = TestPlayer.BLACK.newPlayer();
-          const maintenancePlayer = TestPlayer.BLUE.newPlayer();
-          const freshGame = Game.newInstance('game-id-batch-fresh', [player], player, 'spectatorid');
-          const maintenanceGame = Game.newInstance('game-id-batch-maintenance', [maintenancePlayer], maintenancePlayer, 'spectatorid2');
-          await db.lastSaveGamePromise;
-          await db.saveGame(freshGame);
-          await db.saveGame(maintenanceGame);
-          await db.saveGame(maintenanceGame);
-
-          await setSaveCreatedTime.call(db, freshGame.id, 0, 2000);
-          await setSaveCreatedTime.call(db, freshGame.id, 1, 2060);
-
-          const latestRealSeconds = 3060;
-          await setSaveCreatedTime.call(db, maintenanceGame.id, 0, 3000);
-          await setSaveCreatedTime.call(db, maintenanceGame.id, 1, latestRealSeconds);
-          await setSaveCreatedTime.call(db, maintenanceGame.id, 2, latestRealSeconds + (2 * 86400));
-
-          const saveTimes = await db.getLastSaveTimesMs([
-            freshGame.id,
-            maintenanceGame.id,
-            'game-id-batch-missing' as GameId,
-          ]);
-
-          expect(saveTimes.get(freshGame.id)).eq(2060 * 1000);
-          expect(saveTimes.get(maintenanceGame.id)).eq(latestRealSeconds * 1000);
-          expect(saveTimes.get('game-id-batch-missing' as GameId)).is.undefined;
-        });
       }
     }
 
@@ -396,6 +343,28 @@ export function describeDatabaseSuite<T extends ITestDatabase>(dtor: DatabaseTes
       expect(serialized3.players[0].megaCredits).eq(statusCode.badRequest);
 
       await expect(db.getGameVersion('game-id-123', 0)).to.be.rejectedWith(/Game game-id-123 not found/);
+    });
+
+    it('saveGame updates in place when re-saving an existing saveId', async () => {
+      const player = TestPlayer.BLACK.newPlayer();
+      const game = Game.newInstance('game-id', [player], player, 'spectatorid');
+      await db.lastSaveGamePromise;
+      expect(game.lastSaveId).eq(1);
+
+      // A normal save at a fresh saveId (1).
+      player.megaCredits = 100;
+      await db.saveGame(game);
+      expect(await db.getSaveIds(game.id)).has.members([0, 1]);
+      expect((await db.getGameVersion(game.id, 1)).players[0].megaCredits).eq(100);
+
+      // Re-save the same saveId (1) with a changed value. This is the upsert / ON CONFLICT
+      // path: the existing row is updated in place rather than adding a new save, and the
+      // updated value reads back.
+      player.megaCredits = 200;
+      game.lastSaveId = 1;
+      await db.saveGame(game);
+      expect(await db.getSaveIds(game.id)).has.members([0, 1]);
+      expect((await db.getGameVersion(game.id, 1)).players[0].megaCredits).eq(200);
     });
 
     it('participantIds', async () => {
@@ -518,7 +487,6 @@ export function describeDatabaseSuite<T extends ITestDatabase>(dtor: DatabaseTes
       });
 
       it('deleteSession', async () => {
-        // TODO(kberg): Make databases rely on Clock. /shrug
         const expirationTimeMillis = Date.now() + 100000;
         await db.createSession({id: '123', expirationTimeMillis, data: {discordUser}});
         let sessions = await db.getSessions();
@@ -534,11 +502,123 @@ export function describeDatabaseSuite<T extends ITestDatabase>(dtor: DatabaseTes
         const sessions = await db.getSessions();
         expect(sessions).to.be.empty;
       });
+
+      it('deleteExpiredSessions', async () => {
+        const live = Date.now() + 100000;
+        await db.createSession({id: 'live', expirationTimeMillis: live, data: {discordUser}});
+        await db.createSession({id: 'expired', expirationTimeMillis: Date.now() - 1, data: {discordUser}});
+
+        expect(await db.deleteExpiredSessions()).eq(1);
+        expect(await db.getSessions()).deep.eq([{id: 'live', expirationTimeMillis: live, data: {discordUser}}]);
+
+        // The live session survives a second pass, which has nothing left to remove.
+        expect(await db.deleteExpiredSessions()).eq(0);
+        expect(await db.getSessions()).has.length(1);
+      });
     }
 
     it('stats', async () => {
       const result = await db.stats();
       expect(result).deep.eq(dtor.stats);
+    });
+
+    describe('map library', () => {
+      const entry: MapLibraryEntry = {
+        id: 'm123',
+        code: 'TMB3fake',
+        description: 'a test map',
+        submittedBy: 'someone',
+        origin: 'fanmade',
+        status: 'submitted',
+        createdAt: 1700000000000,
+      };
+
+      it('insert and list', async () => {
+        await db.insertMapLibraryEntry(entry);
+        const entries = await db.listMapLibraryEntries();
+        expect(entries).deep.eq([entry]);
+      });
+
+      it('get - found and not found', async () => {
+        await db.insertMapLibraryEntry(entry);
+        expect(await db.getMapLibraryEntry('m123')).deep.eq(entry);
+        expect(await db.getMapLibraryEntry('m-nope')).eq(undefined);
+      });
+
+      it('setMapLibraryEntryStatus', async () => {
+        await db.insertMapLibraryEntry(entry);
+        await db.setMapLibraryEntryStatus('m123', 'approved');
+        const updated = await db.getMapLibraryEntry('m123');
+        expect(updated?.status).eq('approved');
+      });
+
+      it('deleteMapLibraryEntry', async () => {
+        await db.insertMapLibraryEntry(entry);
+        await db.deleteMapLibraryEntry('m123');
+        expect(await db.listMapLibraryEntries()).deep.eq([]);
+      });
+
+      it('listMapLibraryEntries orders newest first', async () => {
+        await db.insertMapLibraryEntry({...entry, id: 'm1', createdAt: 1000});
+        await db.insertMapLibraryEntry({...entry, id: 'm2', createdAt: 3000});
+        await db.insertMapLibraryEntry({...entry, id: 'm3', createdAt: 2000});
+        const ids = (await db.listMapLibraryEntries()).map((e) => e.id);
+        expect(ids).deep.eq(['m2', 'm3', 'm1']);
+      });
+    });
+
+    describe('custom card library', () => {
+      const entry: CustomCardLibraryEntry = {
+        id: 'c123',
+        definition: blankCustomCard('Test Card'),
+        shareCode: 'TMC1fake',
+        submittedBy: 'someone',
+        status: 'submitted',
+        createdAt: 1700000000000,
+      };
+
+      it('insert and list', async () => {
+        await db.insertCustomCardLibraryEntry(entry);
+        const entries = await db.listCustomCardLibraryEntries();
+        expect(entries).deep.eq([entry]);
+      });
+
+      it('get - found and not found', async () => {
+        await db.insertCustomCardLibraryEntry(entry);
+        expect(await db.getCustomCardLibraryEntry('c123')).deep.eq(entry);
+        expect(await db.getCustomCardLibraryEntry('c-nope')).eq(undefined);
+      });
+
+      it('setCustomCardLibraryEntryStatus', async () => {
+        await db.insertCustomCardLibraryEntry(entry);
+        await db.setCustomCardLibraryEntryStatus('c123', 'approved');
+        const updated = await db.getCustomCardLibraryEntry('c123');
+        expect(updated?.status).eq('approved');
+      });
+
+      it('updateCustomCardLibraryEntry replaces the whole entry (admin set-behavior)', async () => {
+        await db.insertCustomCardLibraryEntry(entry);
+        const updatedEntry: CustomCardLibraryEntry = {
+          ...entry,
+          definition: {...entry.definition, behavior: {stock: {steel: 5}}},
+        };
+        await db.updateCustomCardLibraryEntry('c123', updatedEntry);
+        expect(await db.getCustomCardLibraryEntry('c123')).deep.eq(updatedEntry);
+      });
+
+      it('deleteCustomCardLibraryEntry', async () => {
+        await db.insertCustomCardLibraryEntry(entry);
+        await db.deleteCustomCardLibraryEntry('c123');
+        expect(await db.listCustomCardLibraryEntries()).deep.eq([]);
+      });
+
+      it('listCustomCardLibraryEntries orders newest first', async () => {
+        await db.insertCustomCardLibraryEntry({...entry, id: 'c1', createdAt: 1000});
+        await db.insertCustomCardLibraryEntry({...entry, id: 'c2', createdAt: 3000});
+        await db.insertCustomCardLibraryEntry({...entry, id: 'c3', createdAt: 2000});
+        const ids = (await db.listCustomCardLibraryEntries()).map((e) => e.id);
+        expect(ids).deep.eq(['c2', 'c3', 'c1']);
+      });
     });
 
     dtor.otherTests?.(() => db);

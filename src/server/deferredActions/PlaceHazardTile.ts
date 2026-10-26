@@ -28,7 +28,7 @@ export class PlaceHazardTile extends DeferredAction<Space> {
     const hazardType = this.hazardType;
     const title = this.options?.title || message('Select space for ${0}', (b) => b.tileType(hazardType));
 
-    return new SelectSpace(title, availableSpaces)
+    return new SelectSpace(title, availableSpaces, this.hazardType)
       .andThen((space) => {
         AresHazards.putHazardAt(this.player.game, space, hazardType);
         LogHelper.logTilePlacement(this.player, space, this.hazardType);

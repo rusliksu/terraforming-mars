@@ -1,6 +1,6 @@
 <template>
   <div id="load-game">
-      <h1><span v-i18n>{{ APP_NAME }}</span> — <span v-i18n>Load Game</span></h1>
+      <h1><HomeLink>{{ APP_NAME }}</HomeLink> — <span v-i18n>Load Game</span></h1>
 
       <div class="load-game-form load-game--block">
           <div class="container load-game-options">
@@ -20,6 +20,7 @@
 import {defineComponent} from 'vue';
 import * as constants from '@/common/constants';
 import AppButton from '@/client/components/common/AppButton.vue';
+import HomeLink from '@/client/components/common/HomeLink.vue';
 import {LoadGameFormModel} from '@/common/models/LoadGameFormModel';
 import {SimpleGameModel} from '@/common/models/SimpleGameModel';
 import {vueRoot} from '@/client/components/vueRoot';
@@ -34,6 +35,7 @@ type LoadGameFormDataModel = {
 export default defineComponent({
   name: 'LoadGameForm',
   components: {
+    HomeLink,
     AppButton,
   },
   data(): LoadGameFormDataModel {
@@ -55,7 +57,8 @@ export default defineComponent({
         rollbackCount,
       };
 
-      fetch(paths.LOAD_GAME, {
+      const serverId = new URLSearchParams(window.location.search).get('serverId') ?? '';
+      fetch(paths.LOAD_GAME + '?serverId=' + encodeURIComponent(serverId), {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(loadGameForm),

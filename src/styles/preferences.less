@@ -11,6 +11,18 @@
   height: 100%;
 }
 
+/* On touch screens the page is scaled down to fit the 1260px viewport, which makes the sidebar and corner icons too small to tap.
+   Portrait only: in landscape there is not enough height for a larger sidebar. */
+@media (hover: none) and (pointer: coarse) and (orientation: portrait) {
+  .sidebar_cont,
+  .card-list-container .free-floating-preferences-icon {
+    zoom: 2;
+  }
+  .main-container:has(.sidebar_cont) {
+    margin-left: 120px;
+  }
+}
+
 .sidebar {
   .tm {
     background: url(./assets/board/mars.png);
@@ -81,9 +93,10 @@
     margin-top: -5px;
   }
 
-  .checkmark{
+  .checkmark {
     display: inline-block;
-    filter: invert(92%) sepia(11%) saturate(1093%) hue-rotate(46deg) brightness(98%) contrast(85%);
+    filter: invert(92%) sepia(11%) saturate(1093%) hue-rotate(46deg)
+      brightness(98%) contrast(85%);
     width: 18px;
     height: 18px;
   }
@@ -122,7 +135,13 @@
 }
 
 .preferences_acting_player {
-  background: linear-gradient(180deg, @grey_850 0%, @grey_850 25%, #745B54 80%, #745B54 100%);
+  background: linear-gradient(
+    180deg,
+    @grey_850 0%,
+    @grey_850 25%,
+    #745b54 80%,
+    #745b54 100%
+  );
 }
 .preferences_nonacting_player {
   background: @grey_850;
@@ -158,7 +177,7 @@
   bottom: 111px;
   left: 0px;
   margin-left: 7px;
-  height: 46px
+  height: 46px;
 }
 
 .sidebar_item--help {
@@ -166,15 +185,15 @@
   bottom: 60px;
   left: 0px;
   margin-left: 7px;
-  height: 46px
+  height: 46px;
 }
 
 .sidebar_item--settings {
   position: fixed;
   bottom: 4px;
   height: 46px;
+  z-index: 110;
 }
-
 
 .preferences_player {
   writing-mode: vertical-rl;
@@ -274,7 +293,6 @@
   }
 }
 
-
 .sidebar_item--is-active::after {
   content: " ";
   width: 10px;
@@ -309,12 +327,12 @@
 
 /*Selection check box room for smaller cards */
 .preferences_small_cards input[type="checkbox"] + .filterDiv.card-container,
-.preferences_small_cards input[type="radio"] + .filterDiv.card-container{
+.preferences_small_cards input[type="radio"] + .filterDiv.card-container {
   margin-top: -8px;
 }
 
 .preferences_small_cards input[type="checkbox"] + .filterDiv.card-standard-project,
-.preferences_small_cards input[type="radio"] + .filterDiv.card-standard-project{
+.preferences_small_cards input[type="radio"] + .filterDiv.card-standard-project {
   margin-top: 0px;
 }
 
@@ -338,50 +356,54 @@
 }
 
 /* Card Magnification */
-.preferences_magnify_cards {
-  .filterDiv {
-    transition: transform 0.15s;
-  }
-  .filterDiv:hover {
-    transform: scale(1.2);
-    z-index: 100;
-  }
+/* Only on devices with a real pointer; on touch screens :hover sticks after a tap. */
+@media (hover: hover) and (pointer: fine) {
+  .preferences_magnify_cards {
+    .filterDiv {
+      transition: transform 0.15s;
+    }
+    .filterDiv:hover {
+      transform: scale(1.2);
+      z-index: 100;
+    }
 
-  .dragging .filterDiv:hover {
-    transform: none;
-  }
+    .dragging .filterDiv:hover {
+      transform: none;
+    }
 
-  .cards-stack:hover,
-  .cards-stack-first:hover {
-    z-index: 2;
-    transform: scale(1);
-  }
+    .sortable-cards > div:active .filterDiv {
+      transition: none;
+      transform: none;
+    }
 
-  .global-event:hover {
-    transform: scale(1.2);
-    z-index: 2;
+    .cards-stack:hover,
+    .cards-stack-first:hover {
+      z-index: 2;
+      transform: scale(1);
+    }
+
+    .global-event:hover {
+      transform: scale(1.2);
+      z-index: 2;
+    }
+  }
+  /* Magnify the wee little cards in a special way, if requested */
+  .preferences_small_cards.preferences_magnify_cards .filterDiv:hover {
+    transform: scale(0.95);
   }
 }
-/* Magnify the wee little cards in a special way, if requested */
-.preferences_small_cards.preferences_magnify_cards .filterDiv:hover {
-  transform: scale(0.95);
-}
 
-.info_panel-spacing{
-  padding-bottom: 40px;
-}
-
-.info-panel-title{
+.info-panel-title {
   font-size: 25px;
   font-style: normal;
   font-family: Arial, sans-serif;
   font-weight: bold;
   text-align: left;
-  padding-bottom: 15px;
+  padding-top: 15px;
 }
 
 .info_panel {
-  padding: 15px 15px 15px 20px;
+  padding: 15px 50px 15px 20px;
   display: inline-block;
   position: absolute;
   bottom: 0px;
@@ -390,6 +412,11 @@
   background: #000000;
   max-height: calc(85vh);
   overflow-y: auto;
+}
+
+// Outranks .game-setup-detail-container .game-config, which sets the margin.
+.info_panel .game-config.info-panel-deck-size {
+  margin-left: auto;
 }
 
 .info_panel_actions {
@@ -443,5 +470,38 @@
   }
   a {
     color: blue;
+  }
+}
+
+@media only screen and (max-width: 767px) {
+  .preferences_panel:not(.preferences_panel--language-switcher),
+  .preferences_panel.preferences_panel--language-switcher {
+    box-sizing: border-box;
+    position: fixed;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    z-index: 110;
+    width: auto;
+    max-height: calc(100dvh - 16px);
+    overflow-x: hidden;
+    white-space: normal;
+  }
+
+  .corner-language-icon.sidebar_item--language
+  .preferences_panel.preferences_panel--language-switcher {
+    left: 8px;
+    bottom: 8px;
+  }
+
+  .preferences_panel_item label {
+    white-space: normal;
+    line-height: 1.35;
+  }
+
+  .preferences_panel_actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }

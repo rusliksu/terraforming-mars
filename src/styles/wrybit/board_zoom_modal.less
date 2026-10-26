@@ -1,0 +1,95 @@
+.wrybit-board-zoom-styles() {
+  @player-home-board-overhang-left: 40px;
+  @player-home-board-overhang-right: 24px;
+  // Mars board full screen (BoardZoomModal.vue); colors like the sidebar dialogs (sidebar_modal.less)
+
+  .board-zoom-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1100; // like sidebar dialogs: above column modals and the "your turn" frame
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    // Very dark so the board clearly stands out from the game behind it
+    background: rgba(0, 0, 0, 0.93);
+    backdrop-filter: blur(6px);
+    cursor: zoom-out;
+  }
+
+  // Carrier of the flight animation (boardZoomAnimation.ts): scales from the top left corner
+  .board-zoom-stage {
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+
+  // The board in the column seemingly flies into the modal; while it's open, the gap stays empty
+  .board-zoom-origin--hidden {
+    visibility: hidden;
+  }
+
+  // Padding = overhang of the board elements left/right of .board-cont (player_home_columns.less),
+  // otherwise colony spaces and scales stick out of the measured box
+  .board-zoom-content {
+    padding: 0 @player-home-board-overhang-right 0 @player-home-board-overhang-left;
+
+    .board-cont {
+      margin: 0;
+    }
+  }
+
+  // Mars: exactly the section of the tab (marsFrame, BoardZoomModal.vue) – the board shifted by the frame offset, the
+  // outer space columns inside the section. No overhang padding: the frame already contains everything.
+  .board-zoom-content--framed {
+    padding: 0;
+
+    > .board-cont {
+      margin: calc(-1 * var(--board-frame-top)) 0 0 calc(-1 * var(--board-frame-left));
+    }
+
+    // The tile view switch lives in the board box (TileViewToggle.vue); the old hex button would cover the outer spaces
+    .hide-tile-button-container {
+      display: none;
+    }
+  }
+
+  // Banner on top (PlacementBanner.vue): centred above the board; BoardZoomModal fits the board below it
+  .board-zoom-banner {
+    position: fixed;
+    z-index: 1101; // above the backdrop like the close button
+    top: 16px; // BANNER_TOP in BoardZoomModal.vue
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none; // only information: clicks go to the board behind
+  }
+
+  .board-zoom-close {
+    position: fixed;
+    z-index: 1101; // above the modal's backdrop (now sits next to it instead of inside it)
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border: 1px solid @sidebar-modal-border;
+    border-radius: 8px;
+    background: @sidebar-modal-background;
+    color: #d6d7dc;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover {
+      background: #34363e;
+      color: #fff;
+    }
+  }
+
+  // Board in the game: magnifier cursor only without an ongoing space selection (selectors as in boardPlacementActive.ts)
+  body:not(:has(.select_space_cont)) & .board-cont--zoomable:not(:has(.board-space--available)) {
+    cursor: zoom-in;
+  }
+
+  // Enlarged Mars during a space selection: you place on the board, not shrink it
+  body:has(.select_space_cont) & .board-zoom-content {
+    cursor: default;
+  }
+}

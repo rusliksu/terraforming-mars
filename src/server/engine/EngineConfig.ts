@@ -1,4 +1,4 @@
-import {Color} from '../../common/Color';
+import {Color, PLAYER_COLORS} from '../../common/Color';
 import {EXPANSIONS, Expansion} from '../../common/cards/GameModule';
 import {DEFAULT_GAME_OPTIONS, GameOptions} from '../game/GameOptions';
 import {SerializedGame} from '../SerializedGame';
@@ -37,7 +37,10 @@ export interface ValidatedEngineConfig {
   gameOptions: Partial<GameOptions>;
 }
 
+const SUPPORTED_CONFIG_KEYS = new Set(['version', 'seed', 'players', 'gameOptions']);
+const SUPPORTED_PLAYER_KEYS = new Set(['name', 'color', 'beginner', 'handicap', 'preludeHandicap']);
 const SUPPORTED_OPTION_KEYS = new Set(['preludeExtension', 'corporateEra', 'expansions']);
+const KNOWN_PLAYER_COLORS = new Set<string>(PLAYER_COLORS);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -75,6 +78,11 @@ export function validateEngineConfig(config: unknown): ValidatedEngineConfig {
   if (!isRecord(config)) {
     throw new UnsupportedEngineConfigError('Engine config must be an object');
   }
+  for (const key of Object.keys(config)) {
+    if (!SUPPORTED_CONFIG_KEYS.has(key)) {
+      throw new UnsupportedEngineConfigError(`Unsupported engine config field '${key}'`);
+    }
+  }
   if (config.version !== 1) {
     throw new UnsupportedEngineConfigError(`Unsupported engine config version: ${String(config.version)}`);
   }
@@ -90,11 +98,19 @@ export function validateEngineConfig(config: unknown): ValidatedEngineConfig {
     if (!isRecord(rawPlayer)) {
       throw new UnsupportedEngineConfigError(`players[${index}] must be an object`);
     }
+    for (const key of Object.keys(rawPlayer)) {
+      if (!SUPPORTED_PLAYER_KEYS.has(key)) {
+        throw new UnsupportedEngineConfigError(`Unsupported players[${index}] field '${key}'`);
+      }
+    }
     if (typeof rawPlayer.name !== 'string' || rawPlayer.name.trim() === '') {
       throw new UnsupportedEngineConfigError(`players[${index}].name must be a non-empty string`);
     }
-    if (typeof rawPlayer.color !== 'string') {
-      throw new UnsupportedEngineConfigError(`players[${index}].color must be a string`);
+    if (typeof rawPlayer.color !== 'string' || !KNOWN_PLAYER_COLORS.has(rawPlayer.color)) {
+      throw new UnsupportedEngineConfigError(`players[${index}].color is not a supported player color`);
+    }
+    if (rawPlayer.beginner !== undefined && typeof rawPlayer.beginner !== 'boolean') {
+      throw new UnsupportedEngineConfigError(`players[${index}].beginner must be boolean`);
     }
     if (colors.has(rawPlayer.color)) {
       throw new UnsupportedEngineConfigError(`Duplicate player color: ${rawPlayer.color}`);
@@ -102,11 +118,11 @@ export function validateEngineConfig(config: unknown): ValidatedEngineConfig {
     colors.add(rawPlayer.color);
     const handicap = rawPlayer.handicap ?? 0;
     const preludeHandicap = rawPlayer.preludeHandicap ?? 2;
-    if (typeof handicap !== 'number' || !Number.isFinite(handicap)) {
-      throw new UnsupportedEngineConfigError(`players[${index}].handicap must be a number`);
+    if (typeof handicap !== 'number' || !Number.isInteger(handicap) || handicap < 0) {
+      throw new UnsupportedEngineConfigError(`players[${index}].handicap must be a non-negative integer`);
     }
-    if (typeof preludeHandicap !== 'number' || !Number.isFinite(preludeHandicap)) {
-      throw new UnsupportedEngineConfigError(`players[${index}].preludeHandicap must be a number`);
+    if (typeof preludeHandicap !== 'number' || !Number.isInteger(preludeHandicap) || preludeHandicap < 0) {
+      throw new UnsupportedEngineConfigError(`players[${index}].preludeHandicap must be a non-negative integer`);
     }
     players.push({
       name: rawPlayer.name,
@@ -188,6 +204,9 @@ export function assertSupportedSnapshot(snapshot: SerializedGame): void {
   }
   if (options.corporateEra !== false) {
     throw new UnsupportedEngineConfigError('Snapshot uses Corporate Era, which is outside this slice');
+  }
+  if (options.expansions === undefined || typeof options.expansions !== 'object') {
+    throw new UnsupportedEngineConfigError('Snapshot has no expansion map');
   }
   for (const flag of UNSUPPORTED_EXPANSION_FLAGS) {
     if (options[flag] === true) {

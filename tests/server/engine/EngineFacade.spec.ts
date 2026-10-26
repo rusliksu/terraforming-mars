@@ -222,6 +222,10 @@ describe('host-neutral engine facade', () => {
       {...config(), seed: -1},
       {...config(), players: []},
       {...config(), players: [{name: 'Alice', color: 'blue'}, {name: 'Bob', color: 'blue'}]},
+      {...config(), players: [{name: 'Alice', color: 'not-a-color'}]},
+      {...config(), players: [{name: 'Alice', color: 'blue', unknown: true}]},
+      {...config(), players: [{name: 'Alice', color: 'blue', handicap: 1.5}]},
+      {...config(), extra: true},
       {...config(), gameOptions: {expansions: {prelude: true, colonies: true}}},
     ];
     for (const badConfig of badConfigs) {
@@ -234,5 +238,9 @@ describe('host-neutral engine facade', () => {
     const snapshot = facade.create(config()).serialize();
     snapshot.gameOptions.expansions.colonies = true;
     expect(() => facade.load(snapshot)).to.throw(UnsupportedEngineConfigError);
+
+    const withoutExpansionMap = facade.create(config()).serialize();
+    delete (withoutExpansionMap.gameOptions as Partial<{expansions: unknown}>).expansions;
+    expect(() => facade.load(withoutExpansionMap)).to.throw(UnsupportedEngineConfigError);
   });
 });

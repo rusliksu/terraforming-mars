@@ -108,6 +108,24 @@ let createGameLog: () => Array<LogMessage> = () => [];
 
 type SaveGame = (game: IGame) => Promise<void>;
 
+type GameLoaderModule = {
+  GameLoader: {
+    getInstance(): {
+      saveGame(game: IGame): Promise<void>;
+      completeGame(game: IGame): Promise<void>;
+      mark(gameId: GameId): void;
+    };
+  };
+};
+
+type DatabaseModule = {
+  Database: {
+    getInstance(): {
+      saveGameResults(gameId: GameId, players: number, generations: number, gameOptions: GameOptions, scores: Array<Score>): void;
+    };
+  };
+};
+
 const TRACK_BONUS_KIND: Record<ParameterBonus['kind'], GlobalParameterTrackBonus> = {
   ocean: 'ocean',
   temperature: 'temperature',
@@ -301,7 +319,7 @@ export class Game implements IGame, Logger {
     ceoDeck: CeoDeck,
     tags: ReadonlyArray<Tag>,
     private readonly saveGame: SaveGame = (game) => {
-      const {GameLoader} = require('./database/GameLoader') as typeof import('./database/GameLoader');
+      const {GameLoader} = require('./database/GameLoader') as GameLoaderModule;
       return GameLoader.getInstance().saveGame(game);
     },
     engine?: EngineRuntime) {
@@ -1506,10 +1524,10 @@ export class Game implements IGame, Logger {
       this.phase = Phase.END;
       return;
     }
-    const {Database} = require('./database/Database') as typeof import('./database/Database');
+    const {Database} = require('./database/Database') as DatabaseModule;
     Database.getInstance().saveGameResults(this.id, this.players.length, this.generation, this.gameOptions, scores);
     this.phase = Phase.END;
-    const {GameLoader} = require('./database/GameLoader') as typeof import('./database/GameLoader');
+    const {GameLoader} = require('./database/GameLoader') as GameLoaderModule;
     const gameLoader = GameLoader.getInstance();
     await gameLoader.saveGame(this);
     await gameLoader.completeGame(this);
@@ -2490,7 +2508,7 @@ export class Game implements IGame, Logger {
       if (game.engine !== undefined) {
         game.engine.persistence.markCompleted?.(game.id);
       } else if (!game.simulationMode) {
-        const {GameLoader} = require('./database/GameLoader') as typeof import('./database/GameLoader');
+        const {GameLoader} = require('./database/GameLoader') as GameLoaderModule;
         GameLoader.getInstance().mark(game.id);
       }
     }

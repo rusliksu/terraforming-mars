@@ -101,6 +101,10 @@ export class InMemoryDatabase implements IDatabase {
     this.completedGames.delete(gameId);
     return Promise.resolve();
   }
+  deleteOrphanParticipants(): Promise<number> {
+    // Participants live inside the serialized games here, so there are no orphan rows.
+    return Promise.resolve(0);
+  }
   markFinished(gameId: GameId): Promise<void> {
     this.completedGames.set(gameId, new Date(this.clock.now()));
     return Promise.resolve();

@@ -81,6 +81,11 @@ export class LocalFilesystem implements IDatabase {
     return Promise.resolve();
   }
 
+  deleteOrphanParticipants(): Promise<number> {
+    // Participants are derived from the game files, so orphan rows cannot exist here.
+    return Promise.resolve(0);
+  }
+
   saveGame(game: IGame): Promise<void> {
     console.log(`saving ${game.id} at position ${game.lastSaveId}`);
     assertSaveIdWithinLimit(game.lastSaveId, this.maxSavesPerGame);

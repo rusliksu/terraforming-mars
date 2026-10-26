@@ -445,6 +445,10 @@ export class GameLoader implements IGameLoader {
 
   public async maintenance() {
     const database = Database.getInstance();
+    const orphanParticipants = await database.deleteOrphanParticipants();
+    if (orphanParticipants > 0) {
+      console.log(`Removed ${orphanParticipants} orphan participant rows`);
+    }
     const purgedGames = await database.purgeUnfinishedGames();
     this.purgedGames.push(...purgedGames);
     metrics.gamesPurged.inc(purgedGames.length);

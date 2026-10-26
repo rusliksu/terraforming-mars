@@ -102,6 +102,13 @@ export interface IDatabase {
     deleteGame(gameId: GameId): Promise<void>;
 
     /**
+     * Deletes participant rows whose game no longer exists in {@link games}.
+     * Returns the number of removed rows. Backends that do not store participants
+     * separately (LocalFilesystem) return 0.
+     */
+    deleteOrphanParticipants(): Promise<number>;
+
+    /**
      * A maintenance task on a single game to mark it as complete.
      *
      * It will:

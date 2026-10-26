@@ -84,8 +84,6 @@ export class PlayerInput extends Handler {
   public override async post(req: Request, res: Response, ctx: Context): Promise<void> {
     const playerId = ctx.urlParams.playerId('id');
 
-    ctx.ipTracker.addParticipant(playerId, ctx.ip);
-
     // This is the exact same code as in `ApiPlayer`. I bet it's not the only place.
     const game = await ctx.gameLoader.getGame(playerId);
     if (game === undefined) {
@@ -106,6 +104,19 @@ export class PlayerInput extends Handler {
       responses.notFound(req, res);
       return;
     }
+    if (!this.canSubmitForPlayer(player, ctx)) {
+      const missingSession = ctx.user?.id === undefined;
+      recordPlayerInputAudit(req, ctx, player, 'player_input_rejected', {
+        reason: missingSession ? 'missing_session' : 'foreign_session',
+      });
+      if (missingSession) {
+        responses.unauthorized(req, res);
+      } else {
+        responses.notAuthorized(req, res);
+      }
+      return;
+    }
+    ctx.ipTracker.addParticipant(playerId, ctx.ip);
     recordPlayerInputAudit(req, ctx, player, 'player_input_attempt');
     if (game.surrenderedPlayerIds.has(player.id) && !this.hasServerIdAccess(ctx)) {
       recordPlayerInputAudit(req, ctx, player, 'player_input_rejected', {reason: 'surrendered_bot_control'});
@@ -118,6 +129,22 @@ export class PlayerInput extends Handler {
       return;
     }
     return this.processInput(req, res, ctx, player);
+  }
+
+  /**
+   * Legacy input is accepted only for the authenticated owner of the seat.
+   * Server/admin access remains available for internal bots and operational
+   * tooling. Unowned seats are closed by default; local-only deployments that
+   * intentionally need anonymous seats must opt in explicitly.
+   */
+  private canSubmitForPlayer(player: IPlayer, ctx: Context): boolean {
+    if (this.hasServerIdAccess(ctx)) {
+      return true;
+    }
+    if (player.user === undefined) {
+      return process.env.ALLOW_LEGACY_UNAUTHENTICATED_PLAYER_INPUT === '1';
+    }
+    return this.isUser(player.user, ctx);
   }
 
   private isWaitingForUndo(player: IPlayer, entity: InputResponse): boolean {

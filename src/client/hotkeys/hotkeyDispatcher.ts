@@ -6,8 +6,8 @@ import {isTypingTarget} from '@/client/utils/typingTarget';
 import {hotkeysAvailable} from '@/client/hotkeys/hotkeyAvailability';
 import {hotkeyState, actionForKeys} from '@/client/hotkeys/hotkeyStore';
 import {keysOfEvent} from '@/client/hotkeys/hotkeyEvents';
-import {activeHotkeyGroup, hotkeyItems, isVisible, refreshItemNumbers} from '@/client/hotkeys/hotkeyItems';
-import {PICK_CODES} from '@/client/hotkeys/hotkeyActions';
+import {activeHotkeyGroup, confirmHotkeyNavigation, hotkeyItems, isVisible, moveHotkeyNavigation, refreshItemNumbers, resetHotkeyNavigation, resolvePickInput} from '@/client/hotkeys/hotkeyItems';
+import {PICK_CODES, PICK_DIGITS} from '@/client/hotkeys/hotkeyActions';
 import {ConfirmHotkey} from '@/client/hotkeys/confirmHotkeys';
 
 // Open dialogs and overlays handle their own keys (Esc closes them); shortcuts of the page behind must not fire
@@ -204,6 +204,31 @@ function pickItem(index: number): boolean {
   return true;
 }
 
+function pickDigit(key: string): string | undefined {
+  const index = PICK_CODES.indexOf(key);
+  return index >= 0 ? PICK_DIGITS[index] : undefined;
+}
+
+// Digits 1 … 9 and 0 select up to ten items immediately. With more items the same buffer is resolved against the
+// visible codes (01 … 99); a single digit waits when it can still be the prefix of a two-digit code.
+let pendingPick = '';
+
+function pickByDigit(digit: string): boolean {
+  const group = activeHotkeyGroup();
+  const count = hotkeyItems(group).length;
+  const result = resolvePickInput(pendingPick + digit, count);
+  if (result.pending === true) {
+    pendingPick += digit;
+    return true;
+  }
+  pendingPick = '';
+  if (result.index === undefined) {
+    return result.invalid === true;
+  }
+  resetHotkeyNavigation();
+  return pickItem(result.index);
+}
+
 function runAction(id: string): boolean {
   switch (id) {
   case 'previous-tab':
@@ -241,25 +266,45 @@ export function onHotkey(event: KeyboardEvent): void {
   const plain = keys.length === 1;
   let handled = false;
   const key = keys[keys.length - 1];
+  const digit = plain ? pickDigit(key) : undefined;
+
+  // A two-digit item code is only continued by another digit; anything else cancels the pending prefix.
+  if (pendingPick !== '' && digit === undefined) {
+    pendingPick = '';
+  }
+
   if (plain && (key === 'Enter' || key === 'Space')) {
-    if (handlesKeyItself(event.target)) {
-      return;
+    if (confirmHotkeyNavigation()) {
+      handled = true;
+    } else {
+      if (handlesKeyItself(event.target)) {
+        return;
+      }
+      handled = submit(overlay ?? document, key === 'Enter' ? 'confirm' : 'proceed');
     }
-    handled = submit(overlay ?? document, key === 'Enter' ? 'confirm' : 'proceed');
   } else if (overlay !== undefined) {
     // Esc and everything else belongs to the dialog
     return;
-  } else if (plain && (key === 'ArrowUp' || key === 'ArrowDown')) {
-    handled = scrollMainBox(key === 'ArrowDown' ? 1 : -1);
+  } else if (plain && (key === 'ArrowUp' || key === 'ArrowDown' || key === 'ArrowLeft' || key === 'ArrowRight')) {
+    const direction = key === 'ArrowDown' || key === 'ArrowRight' ? 1 : -1;
+    if (moveHotkeyNavigation(direction)) {
+      handled = true;
+    } else if (key === 'ArrowUp' || key === 'ArrowDown') {
+      handled = scrollMainBox(direction);
+    }
   } else if (plain && key === 'Escape') {
+    pendingPick = '';
+    resetHotkeyNavigation();
     const button = confirmTarget(document, 'cancel');
     button?.click();
     handled = button !== undefined;
-  } else if (plain && PICK_CODES.includes(key)) {
-    handled = pickItem(PICK_CODES.indexOf(key));
+  } else if (digit !== undefined) {
+    handled = pickByDigit(digit);
   } else {
+    pendingPick = '';
     const id = actionForKeys(keys);
     if (id !== undefined && !HANDLED_ELSEWHERE.includes(id)) {
+      resetHotkeyNavigation();
       handled = runAction(id);
     }
   }

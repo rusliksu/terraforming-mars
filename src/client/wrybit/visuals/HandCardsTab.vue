@@ -7,7 +7,7 @@
     :class="['or-tab', 'or-tab--view', 'or-tab--hand', {'or-tab--active': active, 'or-tab--empty': count === 0}]"
     @click="$emit('select')">
     <span class="or-tab-title">{{ $t(label) }}</span>
-    <span class="or-tab-count">{{ count }}</span>
+    <span class="or-tab-count">{{ count }} options</span>
     <HotkeyKeys action="tab-hand"/>
   </button>
 </template>

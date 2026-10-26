@@ -209,7 +209,7 @@
         </Teleport>
 <Teleport :to="columnTarget('cardPool')">
           <section class="create-game-card" :style="cardStyle('cardPool')">
-            <CollapsibleSection title="Card pool" storageKey="cardPool" >
+            <CollapsibleSection title="Card pool" storageKey="cardPool" defaultOpen>
               <div class="create-game-chip-grid create-game-chip-grid--two">
                 <ChoiceChip label="Custom Corporation list" :selected="showCorporationList" @select="showCorporationList = !showCorporationList">
                   <span v-if="customCorporations.length" class="create-game-count">{{ customCorporations.length }}</span>

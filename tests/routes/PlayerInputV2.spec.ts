@@ -217,18 +217,29 @@ describe('PlayerInputV2 route', () => {
     expect(ACTION_ENDPOINT_PATH).eq('/player/input/v2');
     expect(PlayerInputV2.INSTANCE).not.eq(PlayerInput.INSTANCE);
 
-    delete fixture.scaffolding.ctx.user;
-    fixture.scaffolding.url = '/player/input?id=' + fixture.player.id;
-    const post = fixture.scaffolding.post(PlayerInput.INSTANCE, fixture.res);
-    await Promise.resolve().then(() => {
-      fixture.req.emitter.emit('data', Buffer.from(JSON.stringify(OPTION_INPUT)));
-      fixture.req.emitter.emit('end');
-    });
-    await post;
+    const originalAllowUnauthenticated = process.env.ALLOW_LEGACY_UNAUTHENTICATED_PLAYER_INPUT;
+    process.env.ALLOW_LEGACY_UNAUTHENTICATED_PLAYER_INPUT = '1';
+    try {
+      delete fixture.scaffolding.ctx.user;
+      fixture.player.user = undefined;
+      fixture.scaffolding.url = '/player/input?id=' + fixture.player.id;
+      const post = fixture.scaffolding.post(PlayerInput.INSTANCE, fixture.res);
+      await Promise.resolve().then(() => {
+        fixture.req.emitter.emit('data', Buffer.from(JSON.stringify(OPTION_INPUT)));
+        fixture.req.emitter.emit('end');
+      });
+      await post;
 
-    expect(fixture.res.statusCode).eq(200);
-    const model = JSON.parse(fixture.res.content) as {id?: string, status?: string};
-    expect(model.id).eq(fixture.player.id);
-    expect(model.status).eq(undefined);
+      expect(fixture.res.statusCode).eq(200);
+      const model = JSON.parse(fixture.res.content) as {id?: string, status?: string};
+      expect(model.id).eq(fixture.player.id);
+      expect(model.status).eq(undefined);
+    } finally {
+      if (originalAllowUnauthenticated === undefined) {
+        delete process.env.ALLOW_LEGACY_UNAUTHENTICATED_PLAYER_INPUT;
+      } else {
+        process.env.ALLOW_LEGACY_UNAUTHENTICATED_PLAYER_INPUT = originalAllowUnauthenticated;
+      }
+    }
   });
 });

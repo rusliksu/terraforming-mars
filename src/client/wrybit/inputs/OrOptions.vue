@@ -1,6 +1,6 @@
 <template>
   <TradeFees v-if="tradeFee" :binding="binding"/>
-  <div v-else :class="['wf-options', {'wf-options--tabs': binding.asTabs}]" data-source-or>
+  <div v-else data-hotkey-group :class="['wf-options', {'wf-options--tabs': binding.asTabs}]" data-source-or>
     <label v-if="binding.showtitle && !binding.asTabs && !tileMenu"><div>{{ $t(binding.playerinput.title) }}</div></label>
     <label v-if="binding.playerinput.warning !== undefined" class="card-warning"><div>({{ $t(binding.playerinput.warning) }})</div></label>
     <div v-if="binding.asTabs && !tileMenu && outerFooter === undefined && spaceChoice === undefined" class="or-tabs" role="tablist">
@@ -14,6 +14,7 @@
         <OrOptionsTabIcon v-for="icon in iconsFor(idx)" :key="icon" :icon="icon"/>
         <span class="or-tab-title">{{ $t(shortTabLabel(tabTitle(idx))) }}</span>
         <span v-if="tabCount(idx) !== undefined" class="or-tab-count">{{ tabCount(idx) }}</span>
+        <HotkeyKeys v-if="tabHotkey(fullTabTitle(tabTitle(idx)), binding.displayedOptions[idx]) !== undefined" :action="tabHotkey(fullTabTitle(tabTitle(idx)), binding.displayedOptions[idx])"/>
       </button>
     </div>
     <div :class="[{'or-tab-panel': binding.asTabs && outerFooter === undefined, 'or-tab-panel--view': binding.asTabs && handTabActive, 'or-tab-panel--end': !handTabActive && binding.selectedOption !== undefined && isEndTab(binding.selectedOption.title)}, !handTabActive && binding.selectedOption ? toneClass('or-tab-panel--tone-', binding.selectedOption) : undefined]" :role="binding.asTabs && outerFooter === undefined ? 'tabpanel' : undefined">
@@ -83,6 +84,7 @@ import HandCardsTab from '@/client/wrybit/visuals/HandCardsTab.vue';
 import HandCardsPanel from '@/client/wrybit/visuals/HandCardsPanel.vue';
 import TabPanelFooterSlot from '@/client/wrybit/visuals/TabPanelFooterSlot.vue';
 import AppButton from '@/client/components/common/AppButton.vue';
+import HotkeyKeys from '@/client/components/hotkeys/HotkeyKeys.vue';
 import {allCardsInHand} from '@/client/wrybit/visuals/cardfilter/handCards';
 import OrOptionsTabIcon from './OrOptionsTabIcon.vue';
 import ActionStepChips from './ActionStepChips.vue';

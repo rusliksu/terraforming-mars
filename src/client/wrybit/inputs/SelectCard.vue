@@ -1,5 +1,5 @@
 <template>
-  <div class="wf-component wf-component--select-card choice-block" :class="[choiceBlockClass(allCards.length, isHandSelection || binding.playerinput.showOwner || sections.trailing.length > 0), {'choice-block--sections': sections.trailing.length > 0}]" :style="choiceBlockStyle(allCards.length)" data-source-card-choice>
+<div data-hotkey-group class="wf-component wf-component--select-card choice-block" :class="[choiceBlockClass(allCards.length, isHandSelection || binding.playerinput.showOwner || sections.trailing.length > 0), {'choice-block--sections': sections.trailing.length > 0}]" :style="choiceBlockStyle(allCards.length)" data-source-card-choice>
     <CardFilterBar v-if="isHandSelection || binding.playerinput.selectBlueCardAction" :cards="allCards" :filter="filter" :context="filterContext">
       <template #lead><AppButton v-if="binding.showSelectAll" size="small" @click="binding.toggleAll()" :title="$t(binding.allSelected ? 'Deselect All' : 'Select All')"/></template>
       <template #sort="{compact}">

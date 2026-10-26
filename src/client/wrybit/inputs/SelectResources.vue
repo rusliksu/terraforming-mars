@@ -5,7 +5,7 @@
       @plus="binding.plus(unit)" @minus="binding.minus(unit)"/>
     <TabPanelFooterSlot>
       <div v-if="binding.showsave" class="nofloat">
-        <AppButton @click="binding.save()" :title="binding.playerinput.buttonLabel"/>
+        <AppButton hotkey="confirm" @click="binding.save()" :title="binding.playerinput.buttonLabel"/>
       </div>
     </TabPanelFooterSlot>
   </div>

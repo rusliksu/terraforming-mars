@@ -1,5 +1,5 @@
 <template>
-  <div class="wf-component">
+<div data-hotkey-group class="wf-component">
     <div v-if="binding.hazardData.erosionOceanCount.available">
         <span v-i18n>Reveal erosions at:</span>&nbsp;
         <label class="form-radio form-inline ares-global-parameter-label" v-for="value in binding.range" :key='value'>
@@ -38,7 +38,7 @@
 
     <TabPanelFooterSlot>
     <div v-if="binding.showsave" class="nofloat">
-        <button class="btn btn-primary btn-submit" @click="binding.save()">{{binding.playerinput.buttonLabel}}</button>
+        <button class="btn btn-primary btn-submit" data-hotkey="confirm" @click="binding.save()">{{binding.playerinput.buttonLabel}} <HotkeyKeys action="confirm"/></button>
     </div>
     </TabPanelFooterSlot>
 </div>
@@ -49,6 +49,7 @@ import type {WritableComputedRef} from 'vue';
 import type {AresBinding, AresDelta} from './presentation';
 import type {AresGlobalParametersResponse} from '@/common/inputs/AresGlobalParametersResponse';
 import TabPanelFooterSlot from '@/client/wrybit/visuals/TabPanelFooterSlot.vue';
+import HotkeyKeys from '@/client/components/hotkeys/HotkeyKeys.vue';
 
 const props = defineProps<{binding: AresBinding}>();
 const values = new Map<keyof AresGlobalParametersResponse, WritableComputedRef<AresDelta>>();

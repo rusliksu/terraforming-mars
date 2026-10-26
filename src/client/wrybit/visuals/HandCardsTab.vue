@@ -8,6 +8,7 @@
     @click="$emit('select')">
     <span class="or-tab-title">{{ $t(label) }}</span>
     <span class="or-tab-count">{{ count }}</span>
+    <HotkeyKeys action="tab-hand"/>
   </button>
 </template>
 
@@ -19,6 +20,8 @@ withDefaults(defineProps<{
 }>(), {
   label: 'All cards',
 });
+
+import HotkeyKeys from '@/client/components/hotkeys/HotkeyKeys.vue';
 
 defineEmits<{
   (event: 'select'): void;

@@ -6,6 +6,7 @@
         :class="['or-tab', {'or-tab--active': !handTabActive}, tone === undefined ? undefined : 'or-tab--tone-' + tone]" @click="handTabActive = false">
         <span class="or-tab-title">{{ $t(inputTabLabel(binding.playerinput)) }}</span>
         <span v-if="count !== undefined" class="or-tab-count">{{ count }}</span>
+        <HotkeyKeys action="tab-actions"/>
       </button>
       <WaitingForPlayersTab v-if="binding.playerinput.optional" :playerView="binding.playerView"/>
     </div>
@@ -35,6 +36,7 @@ import {hasWaitingForTabs, initialDraftDealtSections} from './waitingForTabs';
 import WaitingForPlayersTab from './WaitingForPlayersTab.vue';
 import {spaceWithSkip} from './spaceWithSkip';
 import CancelActionButton from './CancelActionButton.vue';
+import HotkeyKeys from '@/client/components/hotkeys/HotkeyKeys.vue';
 
 const props = defineProps<{binding: InputPresentationBindings['waitingFor']}>();
 const handTabActive = ref(false);

@@ -13,7 +13,7 @@
     </div>
     <TabPanelFooterSlot>
       <div v-if="binding.showsave" class="nofloat">
-        <button class="btn btn-primary btn-submit" @click="binding.save()">{{ $t(binding.playerinput.buttonLabel) }}</button>
+        <button class="btn btn-primary btn-submit" data-hotkey="confirm" @click="binding.save()">{{ $t(binding.playerinput.buttonLabel) }} <HotkeyKeys action="confirm"/></button>
       </div>
     </TabPanelFooterSlot>
   </div>
@@ -21,6 +21,7 @@
 
 <script setup lang="ts">
 import InputIntro from './InputIntro.vue';
+import HotkeyKeys from '@/client/components/hotkeys/HotkeyKeys.vue';
 import type {UnitAmountsBinding} from './presentation';
 import {useUnitValues} from './unitValues';
 import TabPanelFooterSlot from '@/client/wrybit/visuals/TabPanelFooterSlot.vue';

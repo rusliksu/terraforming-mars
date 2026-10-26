@@ -9,7 +9,7 @@
       &nbsp;
       <AppButton size="big" type="max" @click="binding.max()" title="MAX"/>
       &nbsp;
-      <AppButton size="big" @click="binding.save()" :title="binding.playerinput.buttonLabel"/>
+      <AppButton size="big" hotkey="confirm" @click="binding.save()" :title="binding.playerinput.buttonLabel"/>
     </div>
   </div>
 </template>

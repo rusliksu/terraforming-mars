@@ -11,6 +11,7 @@
         <span class="board-tab-name">{{ $t(label(tab)) }}</span>
         <!-- The active tab drops its short info: the board itself shows it, the others get the room -->
         <BoardTabLines v-if="tab !== active" :tracks="tracks(tab)"/>
+        <HotkeyKeys :action="'board-' + tab"/>
       </button>
     </div>
     <div v-docked-tab ref="panel" :class="['or-tab-panel', 'board-tabs-panel', 'board-tabs-panel--' + active, 'or-tab-panel--tone-' + tone(active), {'board-tabs-panel--single': tabs.length < 2}]" role="tabpanel">
@@ -37,6 +38,7 @@ import {vDockedTab} from '@/client/wrybit/visuals/common/DockedTab';
 import {TileView} from '@/client/components/board/TileView';
 import BoardTabLines from './BoardTabLines.vue';
 import TileViewToggle from './TileViewToggle.vue';
+import HotkeyKeys from '@/client/components/hotkeys/HotkeyKeys.vue';
 import {BOARD_TAB_LABEL, BOARD_TAB_TONE, BoardTabId, BoardTabTrack, boardTabTracks, boardTabs} from './boardTabs';
 import {boardTabState, selectBoardTab} from './boardTabState';
 import {observeBoardTabFit} from './boardTabFit';

@@ -1,5 +1,5 @@
 <template>
-  <div class="actions-tab-sections">
+<div data-hotkey-group class="actions-tab-sections">
     <CardFilterBar :cards="cards" :filter="playedCardFilter" :context="filterContext">
       <template #sort="{compact}"><CardSortMenu v-model="playedCardsSortOrder" :compact="compact"/></template>
     </CardFilterBar>

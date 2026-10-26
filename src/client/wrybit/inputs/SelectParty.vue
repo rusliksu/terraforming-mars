@@ -1,5 +1,5 @@
 <template>
-  <div class="wf-component wf-component--select-party select-party">
+<div data-hotkey-group class="wf-component wf-component--select-party select-party">
     <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
     <div v-if="binding.turmoil !== undefined" class="select-party__layout">
       <div class="select-party__step">
@@ -12,7 +12,7 @@
     </div>
     <TabPanelFooterSlot>
       <div v-if="binding.showsave" class="nofloat">
-        <AppButton @click="binding.save()" :title="binding.playerinput.buttonLabel" type="submit" size="normal" :disabled="binding.selected === undefined"/>
+        <AppButton hotkey="confirm" @click="binding.save()" :title="binding.playerinput.buttonLabel" type="submit" size="normal" :disabled="binding.selected === undefined"/>
       </div>
     </TabPanelFooterSlot>
   </div>

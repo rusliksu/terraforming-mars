@@ -1,11 +1,11 @@
 <template>
   <TradeColony v-if="tradeInput(binding.playerinput) !== undefined" :binding="binding"/>
-  <div v-else class="wf-options">
+  <div v-else data-hotkey-group class="wf-options">
     <InputIntro v-if="binding.showtitle" :input="binding.playerinput" :playerView="binding.playerView"/>
     <PresentationHost v-for="(host, idx) in binding.childHosts" :key="idx" :hosts="host"/>
     <TabPanelFooterSlot>
       <div v-if="binding.showsave" class="wf-action">
-        <AppButton :title="binding.playerinput.buttonLabel" type="submit" size="normal" @click="binding.save()" :disabled="!binding.canSave"/>
+        <AppButton :title="binding.playerinput.buttonLabel" type="submit" size="normal" hotkey="confirm" @click="binding.save()" :disabled="!binding.canSave"/>
       </div>
     </TabPanelFooterSlot>
   </div>

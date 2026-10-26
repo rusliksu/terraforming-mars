@@ -7,7 +7,6 @@ import {ColonyDealer} from './colonies/ColonyDealer';
 import {IColony} from './colonies/IColony';
 import {Color} from '../common/Color';
 import {ICorporationCard, isICorporationCard} from './cards/corporation/ICorporationCard';
-import {Database} from './database/Database';
 import {FundedAward, serializeFundedAwards, deserializeFundedAwards} from './awards/FundedAward';
 import {IAward} from './awards/IAward';
 import {IMilestone} from './milestones/IMilestone';
@@ -58,11 +57,10 @@ import {PathfindersData} from './pathfinders/PathfindersData';
 import {DeltaProject} from './cards/delta/DeltaProject';
 import {AddResourcesToCard} from './deferredActions/AddResourcesToCard';
 import {ColonyDeserializer} from './colonies/ColonyDeserializer';
-import {GameLoader} from './database/GameLoader';
 import {DEFAULT_GAME_OPTIONS, GameOptions} from './game/GameOptions';
 import {CorporationDeck, PreludeDeck, ProjectDeck, CeoDeck} from './cards/Deck';
 import {Logger} from './logs/Logger';
-import {addDays, stringToNumber} from './database/utils';
+import {addDays, stringToNumber} from '../common/utils/dateMath';
 import {Tag} from '../common/cards/Tag';
 import {IGame, Score} from './IGame';
 import {MarsBoard} from './boards/MarsBoard';
@@ -85,6 +83,7 @@ import {SpaceType} from '../common/boards/SpaceType';
 import {ICard} from './cards/ICard';
 import {generateGameName} from './GameName';
 import {captureEarlyGameStats} from './game/EarlyGameStats';
+import type {EngineRuntime} from './engine/EngineRuntime';
 
 // Can be overridden by tests
 let createGameLog: () => Array<LogMessage> = () => [];
@@ -117,6 +116,8 @@ export class Game implements IGame, Logger {
   public simulationMode: boolean = false;
   private clonedGamedId: string | undefined;
   public rng: SeededRandom;
+  /** Optional host dependencies. Undefined keeps legacy server/test behavior. */
+  public readonly engine?: EngineRuntime;
   public spectatorId: SpectatorId;
   public deferredActions: DeferredActionsQueue = new DeferredActionsQueue();
   public createdTime: Date = new Date(0);
@@ -214,8 +215,10 @@ export class Game implements IGame, Logger {
     corporationDeck: CorporationDeck,
     preludeDeck: PreludeDeck,
     ceoDeck: CeoDeck,
-    tags: ReadonlyArray<Tag>) {
+    tags: ReadonlyArray<Tag>,
+    engine?: EngineRuntime) {
     this.id = id;
+    this.engine = engine;
     this.name = name;
     this.gameOptions = {...gameOptions};
     this.players = players;
@@ -270,7 +273,8 @@ export class Game implements IGame, Logger {
     firstPlayer: IPlayer,
     spectatorId: SpectatorId,
     partialOptions: Partial<GameOptions> = {},
-    seed = 0): Game {
+    seed = 0,
+    engine?: EngineRuntime): Game {
     if (partialOptions.expansions === undefined) {
       partialOptions.expansions = {
         corpera: partialOptions.corporateEra ?? false,
@@ -305,7 +309,7 @@ export class Game implements IGame, Logger {
       throw new Error('Delta Project cannot be banned. It is given to all players as part of the Delta Project.');
     }
 
-    const rng = new SeededRandom(seed);
+    const rng = engine?.random.create(seed) ?? new SeededRandom(seed);
     const board = GameSetup.newBoard(gameOptions, rng);
     const gameCards = new GameCards(gameOptions);
 
@@ -343,10 +347,11 @@ export class Game implements IGame, Logger {
       players[0].setTerraformRating(14);
     }
 
-    const name = generateGameName(UnseededRandom.INSTANCE);
-    const game = new Game(id, name, players, firstPlayer, activePlayer, spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, Array.from(tags));
-    // This evaluation of created time doesn't match what's stored in the database, but that's fine.
-    game.createdTime = new Date();
+    const name = engine === undefined ?
+      generateGameName(UnseededRandom.INSTANCE) :
+      generateGameName(engine.random.create(seed));
+    const game = new Game(id, name, players, firstPlayer, activePlayer, spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, Array.from(tags), engine);
+    game.createdTime = engine === undefined ? new Date() : new Date(engine.clock.now());
     // Initialize Ares data
     if (gameOptions.aresExtension) {
       game.aresData = AresSetup.initialData(gameOptions.aresHazards, players);
@@ -480,9 +485,16 @@ export class Game implements IGame, Logger {
   }
 
   public save(): void {
+    if (this.engine !== undefined) {
+      this.saveGamePromise = this.engine.persistence.save(this.serialize());
+      return;
+    }
     if (this.simulationMode) {
       return;
     }
+    // Compatibility path for the legacy server/tests only. The worker facade
+    // always supplies EngineRuntime and never reaches this lazy require.
+    const {GameLoader} = require('./database/GameLoader') as typeof import('./database/GameLoader');
     this.saveGamePromise = GameLoader.getInstance().saveGame(this);
   }
 
@@ -1171,12 +1183,21 @@ export class Game implements IGame, Logger {
       });
     });
 
+    if (this.engine !== undefined) {
+      this.phase = Phase.END;
+      this.engine.notifier.gameEnded?.(this.id);
+      await this.engine.persistence.save(this.serialize());
+      this.engine.persistence.markCompleted?.(this.id);
+      return;
+    }
     if (this.simulationMode) {
       this.phase = Phase.END;
       return;
     }
+    const {Database} = require('./database/Database') as typeof import('./database/Database');
     Database.getInstance().saveGameResults(this.id, this.players.length, this.generation, this.gameOptions, scores);
     this.phase = Phase.END;
+    const {GameLoader} = require('./database/GameLoader') as typeof import('./database/GameLoader');
     const gameLoader = GameLoader.getInstance();
     await gameLoader.saveGame(this);
     gameLoader.completeGame(this);
@@ -1761,7 +1782,7 @@ export class Game implements IGame, Logger {
     return addDays(this.createdTime, days).getTime();
   }
 
-  public static deserialize(d: SerializedGame, options: {simulation?: boolean} = {}): Game {
+  public static deserialize(d: SerializedGame, options: {simulation?: boolean; environment?: EngineRuntime} = {}): Game {
     const gameOptions = deserializeGameOptions(d);
 
     const players = d.players.map((element) => Player.deserialize(element));
@@ -1772,7 +1793,7 @@ export class Game implements IGame, Logger {
 
     const board = GameSetup.deserializeBoard(players, gameOptions, d);
 
-    const rng = new SeededRandom(d.seed, d.currentSeed);
+    const rng = options.environment?.random.create(d.seed, d.currentSeed) ?? new SeededRandom(d.seed, d.currentSeed);
 
     const projectDeck = ProjectDeck.deserialize(d.projectDeck, rng);
     const corporationDeck = CorporationDeck.deserialize(d.corporationDeck, rng);
@@ -1780,7 +1801,7 @@ export class Game implements IGame, Logger {
 
     const ceoDeck = CeoDeck.deserialize(d.ceoDeck, rng);
 
-    const game = new Game(d.id, d.name, players, first, d.activePlayer, d.spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, d.tags);
+    const game = new Game(d.id, d.name, players, first, d.activePlayer, d.spectatorId, gameOptions, rng, board, projectDeck, corporationDeck, preludeDeck, ceoDeck, d.tags, options.environment);
     game.simulationMode = options.simulation === true;
     game.resettable = true;
     game.spectatorId = d.spectatorId;
@@ -1909,8 +1930,13 @@ export class Game implements IGame, Logger {
       game.activePlayer.takeAction(/* saveBeforeTakingAction */ false);
     }
 
-    if (game.phase === Phase.END && !game.simulationMode) {
-      GameLoader.getInstance().mark(game.id);
+    if (game.phase === Phase.END) {
+      if (game.engine !== undefined) {
+        game.engine.persistence.markCompleted?.(game.id);
+      } else if (!game.simulationMode) {
+        const {GameLoader} = require('./database/GameLoader') as typeof import('./database/GameLoader');
+        GameLoader.getInstance().mark(game.id);
+      }
     }
     return game;
   }

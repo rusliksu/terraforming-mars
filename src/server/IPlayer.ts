@@ -31,7 +31,7 @@ import {DeltaProjectPlayerModel} from '../common/models/DeltaProjectPlayerModel'
 import {AlliedParty} from '../common/turmoil/Types';
 import {IParty} from './turmoil/parties/IParty';
 import {Message} from '../common/logs/Message';
-import {DiscordId} from './server/auth/discord';
+import type {DiscordId} from './server/auth/discord';
 import {PlayedCards} from './cards/PlayedCards';
 import {From} from './logs/From';
 import {Tag} from '../common/cards/Tag';

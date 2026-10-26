@@ -2604,7 +2604,7 @@
     "src/server/database/IGameLoader.ts": "be94893cf555b2cbff6b2428c48d5c3581c8c4eaf7bac3d7ee83872522388203",
     "src/server/database/LocalFilesystem.ts": "cc65ed41c0f0c851a8dbeef83478657919019f7fa07fd0abee1d36a496bdb95b",
     "src/server/database/MetricsDelegate.ts": "fa8922a2f579c1183b35a9c531d7e54ce5e993eeb841f525e7f5f3fbe6d05fc6",
-    "src/server/database/ParticipantBackfill.ts": "730871353d7ffba0f2e2a312f3a41fe8d0cb5f898b500b8871bfce80e3f98eea",
+    "src/server/database/ParticipantBackfill.ts": "d6eb0b357473ffac16fac104bc43430421a8d26e28a9c1a630682ca2b99e60d2",
     "src/server/database/PostgreSQL.ts": "873a33a5b9d268cb31116caae0237484606be5a159812c17cd224f1cd7c6d48d",
     "src/server/database/SQLite.ts": "b75c07d0032992ca3d24f5bd04c620c23a8f1d3f0dd6b18a745ef2c29fb50c70",
     "src/server/database/SaveCorpusValidator.ts": "343d0ad79b0a2e3649d7b90e6c6bcd99f661773207cf0fa0e94d1f319cd4814a",

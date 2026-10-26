@@ -36,6 +36,21 @@ async function submitInput(game: IGame, player: IPlayer, body: unknown): Promise
 // pick moves the game into the research phase (or races with it). Such a stale pick
 // must not be accepted as a research purchase.
 describe('PlayerInput stale prompt protection', () => {
+  const originalAllowUnauthenticated = process.env.ALLOW_LEGACY_UNAUTHENTICATED_PLAYER_INPUT;
+
+  before(() => {
+    // These fixtures use unowned seats; the production default is closed.
+    process.env.ALLOW_LEGACY_UNAUTHENTICATED_PLAYER_INPUT = '1';
+  });
+
+  after(() => {
+    if (originalAllowUnauthenticated === undefined) {
+      delete process.env.ALLOW_LEGACY_UNAUTHENTICATED_PLAYER_INPUT;
+    } else {
+      process.env.ALLOW_LEGACY_UNAUTHENTICATED_PLAYER_INPUT = originalAllowUnauthenticated;
+    }
+  });
+
   it('rejects a stale draft repick instead of buying a card', async () => {
     const [game, player1, player2, player3] = testGame(3, {draftVariant: true});
     game.generation = 1;

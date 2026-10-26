@@ -69,6 +69,7 @@ const StartScreen = defineAsyncComponent(() => import(/* webpackChunkName: "star
 import {$t, setTranslationContext} from '@/client/directives/i18n';
 import {paths} from '@/common/app/paths';
 import {PlayerViewModel, ViewModel} from '@/common/models/PlayerModel';
+import {gameShell, isBrowserEngineV2Enabled} from '@/client/shell/GameShellService';
 import {SimpleGameModel} from '@/common/models/SimpleGameModel';
 import {SpectatorModel} from '@/common/models/SpectatorModel';
 import {isPlayerId, isSpectatorId} from '@/common/Types';
@@ -225,6 +226,9 @@ export default defineComponent({
           if (path === paths.PLAYER) {
             app.playerView = model as PlayerViewModel;
             setTranslationContext(app.playerView);
+            if (isBrowserEngineV2Enabled()) {
+              gameShell.setConfirmedView(app.playerView);
+            }
           } else if (path === paths.SPECTATOR) {
             app.spectator = model as SpectatorModel;
           }

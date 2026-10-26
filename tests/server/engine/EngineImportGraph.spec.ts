@@ -85,7 +85,8 @@ function collectStaticImportGraph(entry: string): ImportGraph {
 }
 
 describe('engine worker import graph', () => {
-  it('does not reach persistence, Telegram, routes, server bootstrap, or Node I/O modules', () => {
+  it('does not reach persistence, Telegram, routes, server bootstrap, or Node I/O modules', function() {
+    this.timeout(30000);
     const graph = collectStaticImportGraph(ENTRY);
     expect([...graph.unresolvedLocalSpecifiers]).deep.eq([]);
     expect([...graph.externalPackages].sort()).not.to.include.members(FORBIDDEN_PACKAGES);

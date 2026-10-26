@@ -67,6 +67,45 @@ describe('HttpGameShellTransport', () => {
     expect(sent).deep.eq(request());
   });
 
+  it('fetches the server-issued v2 bootstrap with GET', async () => {
+    const calls: Array<FetchCall> = [];
+    const view = {id: PLAYER_ID, runId: 'view-1', game: {gameId: GAME_ID}} as unknown as PlayerViewModel;
+    const bootstrap = {
+      v: ACTION_SCHEMA_VERSION,
+      status: 'ready',
+      gameId: GAME_ID,
+      playerId: PLAYER_ID,
+      revision: 5,
+      baseRevision: 5,
+      promptToken: 'prompt-token-0123456789',
+      engineVersion: 'engine-1',
+      view,
+      viewRevision: 5,
+      viewHash: 'view-hash',
+    } as const;
+    const fetchImpl = (async (input: string | URL | Request, init?: RequestInit) => {
+      calls.push({input, init});
+      return fakeResponse(bootstrap);
+    }) as typeof fetch;
+
+    const transport = new HttpGameShellTransport(fetchImpl);
+    const response = await transport.fetchBootstrap(PLAYER_ID);
+
+    expect(response).deep.eq(bootstrap);
+    expect(calls).length(1);
+    expect(String(calls[0].input)).eq('player/input/v2/bootstrap?id=' + PLAYER_ID);
+    expect(calls[0].init?.method).eq('GET');
+    expect(calls[0].init?.credentials).eq('same-origin');
+  });
+
+  it('returns undefined when bootstrap is disabled (404) or forbidden (403)', async () => {
+    for (const status of [404, 403]) {
+      const fetchImpl = (async () => fakeResponse({}, status)) as typeof fetch;
+      const transport = new HttpGameShellTransport(fetchImpl);
+      expect(await transport.fetchBootstrap(PLAYER_ID)).eq(undefined);
+    }
+  });
+
   it('resyncs through the authorized GET player endpoint', async () => {
     const calls: Array<FetchCall> = [];
     const view = {id: PLAYER_ID, runId: 'resynced', game: {gameId: GAME_ID}} as unknown as PlayerViewModel;

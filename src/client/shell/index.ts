@@ -9,6 +9,8 @@ export {
 } from './GameShellFeatureFlag';
 export type {FlagStorage} from './GameShellFeatureFlag';
 export {HttpGameShellTransport} from './GameShellHttpTransport';
+export {GameShellBootstrapCache, installGameShellBootstrapProvider} from './GameShellBootstrapCache';
+export type {GameShellBootstrapTransport} from './GameShellBootstrapCache';
 export {GameShellSubmitService} from './GameShellSubmitService';
 export type {GameShellSubmitServiceOptions} from './GameShellSubmitService';
 export type {

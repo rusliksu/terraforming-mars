@@ -212,7 +212,10 @@ describe('ActionGateway', () => {
     expect(asError(result.body).code).eq('STALE_PROMPT');
     expect(asError(result.body).currentPromptToken).match(/^[0-9a-f]{64}$/);
     expect(context.engine.applyCalls).eq(0);
-    expect(await context.store.getStream(GAME_ID)).eq(undefined);
+    // Opening the genesis anchor is the only side effect: no action was
+    // recorded, and the head is still the empty journal.
+    expect(await context.store.listIntents(GAME_ID)).length(0);
+    expect((await context.store.getStream(GAME_ID))?.revision).eq(0);
   });
 
   it('rejects stale revisions with 409 STALE_REVISION and no mutation', async () => {
@@ -280,11 +283,12 @@ describe('ActionGateway', () => {
     expect(await context.store.getStream(GAME_ID)).eq(undefined);
   });
 
-  it('fails closed on a retry after the candidate cache was lost', async () => {
+  it('recovers genesis plus replay after a restart and answers a retry as duplicate', async () => {
     const actionId = crypto.randomUUID();
     const raw = envelope(context.blue, {actionId});
     const first = await handle(context, raw);
     expect(first.statusCode).eq(200);
+    const headHash = asSuccess(first.body).viewHash;
 
     const restartedEngine = new FakeActionEngine({
       snapshot: context.game.serialize(),
@@ -305,13 +309,17 @@ describe('ActionGateway', () => {
       rawBody: raw,
       games: sourceFor(context),
     });
-    expect(retry.statusCode).eq(409);
-    expect(asError(retry.body).code).eq('STALE_REVISION');
-    expect(restartedEngine.applyCalls).eq(0);
+    expect(retry.statusCode).eq(200);
+    expect(asSuccess(retry.body).status).eq('duplicate');
+    expect(asSuccess(retry.body).revision).eq(1);
+    expect(asSuccess(retry.body).viewHash).eq(headHash);
+    // The restarted gateway replayed the single accepted action; the retry
+    // itself produced no second effect.
+    expect(restartedEngine.applyCalls).eq(1);
     expect(await context.store.listIntents(GAME_ID)).length(1);
   });
 
-  it('fails closed when a legacy write drifted the live game from the v2 journal', async () => {
+  it('keeps the journal authoritative when a background save advances lastSaveId', async () => {
     const first = await handle(context, envelope(context.blue));
     expect(first.statusCode).eq(200);
     const nextToken = asSuccess(first.body).promptToken;
@@ -319,6 +327,8 @@ describe('ActionGateway', () => {
       throw new Error('Expected a next prompt token');
     }
 
+    // A legacy save bumps lastSaveId, which is part of the canonical state.
+    // The v2 head must not be rebuilt from the live game.
     context.game.lastSaveId += 1;
 
     const second = await handle(context, envelope(context.blue, {
@@ -326,10 +336,9 @@ describe('ActionGateway', () => {
       promptToken: nextToken,
       input: {type: 'or', index: 1, response: {type: 'option'}},
     }));
-    expect(second.statusCode).eq(409);
-    expect(asError(second.body).code).eq('STALE_REVISION');
-    expect(await context.store.getStream(GAME_ID)).deep.contains({revision: 1});
-    expect(await context.store.listIntents(GAME_ID)).length(1);
+    expect(second.statusCode).eq(200);
+    expect(asSuccess(second.body).revision).eq(2);
+    expect(await context.store.listIntents(GAME_ID)).length(2);
   });
 
   it('does not use runId or shadowInputSeq as revision', async () => {

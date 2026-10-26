@@ -16,9 +16,11 @@ import {
   AppendActionIntentRequest,
   AppendActionIntentResult,
   FenceActionStreamRequest,
+  GenesisSnapshotRecord,
   ListActionIntentsOptions,
   OpenActionStreamRequest,
   OpenActionStreamResult,
+  PutGenesisSnapshotRequest,
 } from './types';
 import {
   buildActionIntent,
@@ -30,6 +32,7 @@ import {
   validateFenceActionStreamRequest,
   validateListActionIntentsOptions,
   validateOpenActionStreamRequest,
+  validatePutGenesisSnapshotRequest,
   ValidatedAppendActionIntentRequest,
   ValidatedFenceActionStreamRequest,
   ValidatedOpenActionStreamRequest,
@@ -97,6 +100,14 @@ CREATE TABLE IF NOT EXISTS action_intent(
   UNIQUE (game_id, action_id),
   FOREIGN KEY (game_id) REFERENCES action_stream(game_id)
 );
+CREATE TABLE IF NOT EXISTS action_genesis(
+  game_id TEXT NOT NULL PRIMARY KEY,
+  genesis_id TEXT NOT NULL,
+  base_save_id INTEGER NOT NULL CHECK (base_save_id >= 0),
+  state_hash TEXT NOT NULL,
+  snapshot_json TEXT NOT NULL,
+  created_at_ms INTEGER NOT NULL
+);
 `;
 
 type StreamRow = {
@@ -111,6 +122,26 @@ type StreamRow = {
   created_at_ms: number;
   updated_at_ms: number;
 };
+
+type GenesisRow = {
+  game_id: string;
+  genesis_id: string;
+  base_save_id: number;
+  state_hash: string;
+  snapshot_json: string;
+  created_at_ms: number;
+};
+
+function rowToGenesis(row: GenesisRow): GenesisSnapshotRecord {
+  return {
+    gameId: row.game_id as GameId,
+    genesisId: row.genesis_id,
+    baseSaveId: row.base_save_id,
+    stateHash: row.state_hash,
+    snapshot: JSON.parse(row.snapshot_json),
+    createdAtMs: row.created_at_ms,
+  };
+}
 
 type IntentRow = {
   game_id: string;
@@ -410,6 +441,61 @@ export class SQLiteActionStore implements IActionStore {
       ).all(gameId, fromRevision, limit) as Array<IntentRow>;
       return rows.map(rowToIntent);
     });
+  }
+
+  public putGenesisSnapshot(request: PutGenesisSnapshotRequest): Promise<GenesisSnapshotRecord> {
+    return promiseFromSync(() => {
+      const validated = validatePutGenesisSnapshotRequest(request);
+      return this.runInTransaction(() => {
+        const streamRow = this.readStreamRow(validated.gameId);
+        if (streamRow !== undefined && streamRow.genesis_id !== validated.genesisId) {
+          throw new GenesisMismatchError(validated.gameId);
+        }
+        const existing = this.readGenesisRow(validated.gameId);
+        if (existing !== undefined) {
+          if (existing.genesis_id !== validated.genesisId ||
+              existing.state_hash !== validated.stateHash ||
+              existing.snapshot_json !== validated.snapshotJson) {
+            throw new GenesisMismatchError(validated.gameId);
+          }
+          return rowToGenesis(existing);
+        }
+        const createdAtMs = this.now();
+        this.db.prepare(
+          `INSERT INTO action_genesis(
+            game_id, genesis_id, base_save_id, state_hash, snapshot_json, created_at_ms
+          ) VALUES (?, ?, ?, ?, ?, ?)`,
+        ).run(
+          validated.gameId,
+          validated.genesisId,
+          validated.baseSaveId,
+          validated.stateHash,
+          validated.snapshotJson,
+          createdAtMs,
+        );
+        return {
+          gameId: validated.gameId,
+          genesisId: validated.genesisId,
+          baseSaveId: validated.baseSaveId,
+          stateHash: validated.stateHash,
+          snapshot: JSON.parse(validated.snapshotJson),
+          createdAtMs,
+        };
+      });
+    });
+  }
+
+  public getGenesisSnapshot(gameId: GameId): Promise<GenesisSnapshotRecord | undefined> {
+    return promiseFromSync(() => {
+      const row = this.readGenesisRow(gameId);
+      return row === undefined ? undefined : rowToGenesis(row);
+    });
+  }
+
+  private readGenesisRow(gameId: GameId): GenesisRow | undefined {
+    return this.db.prepare(
+      'SELECT * FROM action_genesis WHERE game_id = ?',
+    ).get(gameId) as GenesisRow | undefined;
   }
 
   private readStreamRow(gameId: GameId): StreamRow | undefined {

@@ -1,4 +1,4 @@
-import {ACTION_SCHEMA_VERSION, ActionErrorCode, ActionErrorResponseV1, ActionSuccessResponseV1, ActionRequestV1, ActionResponseV1, MAX_ACTION_REQUEST_BYTES} from '../../common/actionProtocol/ActionProtocol';
+import {ACTION_SCHEMA_VERSION, ActionBootstrapResponseV1, ActionErrorCode, ActionErrorResponseV1, ActionSuccessResponseV1, ActionRequestV1, ActionResponseV1, ActionUndoSuccessResponseV1, BootstrapResponseV1, MAX_ACTION_REQUEST_BYTES, UndoRequestV1, UndoResponseV1} from '../../common/actionProtocol/ActionProtocol';
 import {canonicalActionPayload} from '../../common/actionProtocol/canonicalActionPayload';
 import {parseActionRequestJson} from '../../common/actionProtocol/parseActionRequest';
 import {InputResponse} from '../../common/inputs/InputResponse';
@@ -20,6 +20,7 @@ import {
   canonicalJson,
   sha256Hex,
 } from '../actionStore';
+import {ACTION_INTENT_TYPE, ActionRecovery, ActionRecoveryError, RecoveredState, UNDO_INTENT_TYPE, parseV2IntentPayload} from '../actionRecovery';
 import {EnginePromptSnapshot} from '../engine/EngineCanonical';
 import {EngineInputError, UnsupportedEngineConfigError} from '../engine/EngineErrors';
 import {IGame} from '../IGame';
@@ -27,7 +28,7 @@ import {IPlayer} from '../IPlayer';
 import {InputError} from '../inputs/InputError';
 import {ActionEnginePort, ActionEngineState} from './ActionEnginePort';
 import {computePromptToken} from './PromptToken';
-import {GenesisBinding, bindGenesis, viewHashOf} from './StateBinding';
+import {GenesisBinding, stateHashOf, viewHashOf} from './StateBinding';
 
 const STATUS = {
   ok: 200,
@@ -41,8 +42,6 @@ const STATUS = {
   internalServerError: 500,
   serviceUnavailable: 503,
 } as const;
-
-const INTENT_TYPE = 'player.input.v2';
 
 export type ActionPrincipal = {
   readonly id: string;
@@ -78,6 +77,8 @@ export type ActionGatewayOptions = {
   /** Optional test-cohort allowlist. When set, other games fail closed with 404. */
   allowedGameIds?: ReadonlySet<GameId>;
   legality?: ActionLegalityHook;
+  /** Recovery seam; defaults to genesis + journal replay over the same store. */
+  recovery?: ActionRecovery;
 };
 
 export type ActionGatewayRequest = {
@@ -91,12 +92,42 @@ export type ActionGatewayResult = {
   body: ActionResponseV1;
 };
 
+export type ActionUndoGatewayRequest = {
+  principal?: ActionPrincipal;
+  rawBody: string;
+  games: ActionGameSource;
+};
+
+export type ActionUndoGatewayResult = {
+  statusCode: number;
+  body: UndoResponseV1;
+};
+
+/**
+ * Full authorized resync request. The actor is resolved from the live game's
+ * seat, so a caller can only bootstrap its own view.
+ */
+export type ActionBootstrapGatewayRequest = {
+  principal?: ActionPrincipal;
+  game: IGame;
+  actorId: PlayerId;
+};
+
+export type ActionBootstrapGatewayResult = {
+  statusCode: number;
+  body: BootstrapResponseV1;
+};
+
 type CachedGameState = {
   game: IGame;
   state: ActionEngineState;
   genesis: GenesisBinding;
-  /** Journal revision represented by `state`, or undefined when unknown. */
-  revision: number | undefined;
+  /** Effective journal revision represented by `state`. */
+  revision: number;
+};
+
+type AuthoritativeState = CachedGameState & {
+  stream: ActionStream;
 };
 
 function byteLength(value: string): number {
@@ -134,19 +165,61 @@ function promptMetadata(gameId: GameId, actorId: PlayerId, revision: number, pro
   };
 }
 
+function rejectedBody(
+  code: ActionErrorCode,
+  fields: Partial<ActionErrorResponseV1> = {},
+): ActionErrorResponseV1 {
+  return {
+    v: ACTION_SCHEMA_VERSION,
+    status: 'rejected',
+    code,
+    ...fields,
+  };
+}
+
 function rejected(
   statusCode: number,
   code: ActionErrorCode,
   fields: Partial<ActionErrorResponseV1> = {},
 ): ActionGatewayResult {
+  return {statusCode, body: rejectedBody(code, fields)};
+}
+
+/** Strict parser for the undo envelope; never trusts extra fields. */
+function parseUndoRequestJson(rawBody: string): UndoRequestV1 | undefined {
+  let value: unknown;
+  try {
+    value = JSON.parse(rawBody);
+  } catch (_err) {
+    return undefined;
+  }
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return undefined;
+  }
+  const record = value as Record<string, unknown>;
+  if (record.v !== ACTION_SCHEMA_VERSION) {
+    return undefined;
+  }
+  if (typeof record.gameId !== 'string' || record.gameId.length === 0 || record.gameId.length > 128) {
+    return undefined;
+  }
+  if (typeof record.actionId !== 'string' || record.actionId.length === 0 || record.actionId.length > 200) {
+    return undefined;
+  }
+  if (typeof record.baseRevision !== 'number' ||
+      !Number.isSafeInteger(record.baseRevision) ||
+      record.baseRevision < 0) {
+    return undefined;
+  }
+  if (typeof record.engineVersion !== 'string' || record.engineVersion.length === 0) {
+    return undefined;
+  }
   return {
-    statusCode,
-    body: {
-      v: ACTION_SCHEMA_VERSION,
-      status: 'rejected',
-      code,
-      ...fields,
-    },
+    v: ACTION_SCHEMA_VERSION,
+    gameId: record.gameId as GameId,
+    actionId: record.actionId,
+    baseRevision: record.baseRevision,
+    engineVersion: record.engineVersion,
   };
 }
 
@@ -165,6 +238,7 @@ export class ActionGateway {
   private readonly promptTokenSecret: string;
   private readonly allowedGameIds: ReadonlySet<GameId> | undefined;
   private readonly legality: ActionLegalityHook | undefined;
+  private readonly recovery: ActionRecovery;
   private readonly cached = new Map<GameId, CachedGameState>();
   private initialized = false;
 
@@ -181,6 +255,7 @@ export class ActionGateway {
     this.promptTokenSecret = options.promptTokenSecret;
     this.allowedGameIds = options.allowedGameIds;
     this.legality = options.legality;
+    this.recovery = options.recovery ?? new ActionRecovery({store: options.store, engine: options.engine});
   }
 
   public async initialize(): Promise<void> {
@@ -229,39 +304,31 @@ export class ActionGateway {
       return rejected(STATUS.conflict, 'ENGINE_VERSION_MISMATCH', {resync: 'full'});
     }
 
-    let cached = this.cached.get(game.id);
-    if (cached !== undefined && (cached.game !== game || cached.genesis.baseSaveId !== game.lastSaveId)) {
-      // A reloaded or legacy-mutated live game cannot be trusted to contain the
-      // cached candidate state. Rebuild the base state and fail closed on later
-      // revisions until A5b recovery exists.
-      this.cached.delete(game.id);
-      cached = undefined;
-    }
-    if (cached === undefined) {
-      const loaded = this.loadBaseState(game);
-      if ('statusCode' in loaded) {
-        return loaded;
-      }
-      cached = loaded;
-      this.cached.set(game.id, cached);
-    }
-
     try {
       await this.initialize();
     } catch (_err) {
       return rejected(STATUS.serviceUnavailable, 'PERSISTENCE_FAILURE', {retryable: true});
     }
 
-    let stream: ActionStream | undefined;
+    // Legality runs before the journal anchor is touched: a request that can
+    // never be accepted must not create recovery state.
+    if (this.legality !== undefined) {
+      const decision = this.legality({game, actor, request: envelope});
+      if (!decision.allowed) {
+        return rejected(decision.statusCode ?? STATUS.unprocessableEntity, decision.code);
+      }
+    }
+
+    // The journal is authoritative. The live game seeds the genesis anchor on
+    // the very first action and is never replayed, so a background save that
+    // bumps lastSaveId cannot invalidate the v2 head.
+    let authoritative: AuthoritativeState;
     try {
-      stream = await this.store.getStream(game.id);
-    } catch (_err) {
-      return rejected(STATUS.serviceUnavailable, 'PERSISTENCE_FAILURE', {retryable: true});
+      authoritative = await this.authoritativeState(game);
+    } catch (err) {
+      return this.recoveryRejection(err);
     }
-    const headRevision = stream?.revision ?? 0;
-    if (cached.revision === undefined && headRevision === 0) {
-      cached.revision = 0;
-    }
+    const headRevision = authoritative.revision;
 
     let existing: ActionIntent | undefined;
     try {
@@ -270,21 +337,12 @@ export class ActionGateway {
       return rejected(STATUS.serviceUnavailable, 'PERSISTENCE_FAILURE', {retryable: true});
     }
     if (existing !== undefined) {
-      return this.duplicateResult(actor, envelope, cached, existing, headRevision);
+      return this.duplicateResult(actor, envelope, authoritative.state, headRevision, existing);
     }
 
-    const coherent = cached.revision === headRevision;
-    const currentPromptToken = coherent ?
-      this.promptToken(cached.state, actor.id, headRevision + 1) :
-      undefined;
-    if (!coherent) {
-      return rejected(STATUS.conflict, 'STALE_REVISION', {
-        currentRevision: headRevision,
-        resync: 'full',
-        ...(currentPromptToken === undefined ? {} : {currentPromptToken}),
-      });
-    }
     if (envelope.baseRevision !== headRevision) {
+      // The current token lets the client recover without an extra round trip.
+      const currentPromptToken = this.promptToken(authoritative.state, actor.id, headRevision + 1);
       return rejected(STATUS.conflict, 'STALE_REVISION', {
         currentRevision: headRevision,
         resync: 'full',
@@ -292,7 +350,7 @@ export class ActionGateway {
       });
     }
 
-    const prompt = cached.state.prompt(actor.id);
+    const prompt = authoritative.state.prompt(actor.id);
     if (prompt === null) {
       return rejected(STATUS.conflict, 'STALE_PROMPT', {currentRevision: headRevision, resync: 'full'});
     }
@@ -310,18 +368,9 @@ export class ActionGateway {
       });
     }
 
-    if (this.legality !== undefined) {
-      const decision = this.legality({game, actor, request: envelope});
-      if (!decision.allowed) {
-        return rejected(decision.statusCode ?? STATUS.unprocessableEntity, decision.code, {
-          currentRevision: headRevision,
-        });
-      }
-    }
-
     let candidate: ActionEngineState;
     try {
-      candidate = this.engine.applyCandidate(cached.state, actor.id, envelope.input);
+      candidate = this.engine.applyCandidate(authoritative.state, actor.id, envelope.input);
     } catch (err) {
       if (err instanceof InputError || err instanceof EngineInputError) {
         return rejected(STATUS.unprocessableEntity, 'INVALID_ACTION');
@@ -331,44 +380,31 @@ export class ActionGateway {
     if (candidate.gameId !== game.id) {
       throw new Error('Candidate engine changed the game id');
     }
-    if (!this.liveStateMatches(game, cached)) {
-      return rejected(STATUS.conflict, 'STALE_REVISION', {currentRevision: headRevision, resync: 'full'});
-    }
+    const candidateHash = stateHashOf(candidate.serialize());
 
-    let appendStream = stream;
-    if (appendStream === undefined) {
-      try {
-        appendStream = (await this.store.openStream({
-          gameId: game.id,
-          genesisId: cached.genesis.genesisId,
-          baseSaveId: cached.genesis.baseSaveId,
-          stateHash: cached.genesis.stateHash,
-        })).stream;
-      } catch (err) {
-        return this.storeRejection(err, headRevision);
-      }
-      if (appendStream.revision !== headRevision) {
-        return rejected(STATUS.conflict, 'STALE_REVISION', {currentRevision: appendStream.revision, resync: 'full'});
-      }
-    }
-
+    // The append is the single commit point: the response is written only
+    // after the journal accepted the intent, and the recorded state hash lets
+    // recovery prove the effect later. A store failure therefore leaves no
+    // partial state behind.
     const requestFingerprint = fingerprintOf(envelope);
     let result: AppendActionIntentResult;
     try {
       result = await this.store.appendIntent({
         gameId: game.id,
         expectedRevision: headRevision,
-        genesisId: cached.genesis.genesisId,
-        epoch: appendStream.epoch,
+        genesisId: authoritative.genesis.genesisId,
+        epoch: authoritative.stream.epoch,
         actionId: envelope.actionId,
         actorId: actor.id,
-        intentType: INTENT_TYPE,
+        intentType: ACTION_INTENT_TYPE,
         payload: {
+          kind: 'action',
           requestFingerprint,
           baseRevision: envelope.baseRevision,
           engineVersion: envelope.engineVersion,
           promptTokenHash: sha256Hex(envelope.promptToken),
           input: jsonValue(envelope.input),
+          stateHashAfter: candidateHash,
         },
         prompt: promptMetadata(game.id, actor.id, headRevision + 1, prompt),
       });
@@ -377,7 +413,12 @@ export class ActionGateway {
     }
 
     if (result.status === 'appended') {
-      this.cached.set(game.id, {...cached, state: candidate, revision: result.stream.revision});
+      this.cached.set(game.id, {
+        game,
+        state: candidate,
+        genesis: authoritative.genesis,
+        revision: result.stream.revision,
+      });
       return this.successResult(
         'applied',
         envelope,
@@ -389,21 +430,27 @@ export class ActionGateway {
     }
 
     // A concurrent request with the same actionId won the append race. Its
-    // semantic payload is identical, so its candidate state is equivalent.
-    if (result.intent.revision === result.stream.revision) {
-      this.cached.set(game.id, {...cached, state: candidate, revision: result.stream.revision});
+    // payload is identical, so the head it produced is our candidate only when
+    // it is still the head; otherwise the client must resync.
+    if (result.intent.revision !== result.stream.revision) {
+      return rejected(STATUS.conflict, 'STALE_REVISION', {
+        currentRevision: result.stream.revision,
+        resync: 'full',
+      });
     }
-    const current = this.cached.get(game.id);
-    const responseState = current !== undefined && current.revision === result.stream.revision ?
-      current.state :
-      candidate;
+    this.cached.set(game.id, {
+      game,
+      state: candidate,
+      genesis: authoritative.genesis,
+      revision: result.stream.revision,
+    });
     return this.successResult(
       'duplicate',
       envelope,
       result.stream.revision,
       result.intent.revision,
-      responseState.view(actor.id),
-      this.promptToken(responseState, actor.id, result.stream.revision + 1),
+      candidate.view(actor.id),
+      this.promptToken(candidate, actor.id, result.stream.revision + 1),
     );
   }
 
@@ -412,56 +459,396 @@ export class ActionGateway {
     return matches.length === 1 ? matches[0] : undefined;
   }
 
-  private liveStateMatches(game: IGame, cached: CachedGameState): boolean {
-    return cached.game === game && cached.genesis.baseSaveId === game.lastSaveId;
+  /**
+   * Returns the authoritative state for a game.
+   *
+   * The first call for a game opens the journal anchor from the live snapshot;
+   * every later call recovers genesis plus replay. A cached state is reused only
+   * while it still represents the current journal head.
+   */
+  private async authoritativeState(game: IGame): Promise<AuthoritativeState> {
+    let stream = await this.store.getStream(game.id);
+    if (stream === undefined) {
+      await this.recovery.ensureStream(game);
+      stream = await this.store.getStream(game.id);
+      if (stream === undefined) {
+        throw new ActionRecoveryError('STREAM_MISSING', 'the action journal could not be opened');
+      }
+    }
+    const cached = this.cached.get(game.id);
+    if (cached !== undefined && cached.game === game && cached.revision === stream.revision) {
+      return {...cached, stream};
+    }
+    const recovered = await this.recovery.recover({gameId: game.id, liveGame: game});
+    const next: AuthoritativeState = {
+      game,
+      state: recovered.state,
+      genesis: {
+        genesisId: stream.genesisId,
+        baseSaveId: stream.baseSaveId,
+        stateHash: stream.stateHash,
+      },
+      revision: recovered.revision,
+      stream: recovered.stream,
+    };
+    this.cached.set(game.id, {
+      game: next.game,
+      state: next.state,
+      genesis: next.genesis,
+      revision: next.revision,
+    });
+    return next;
   }
 
-  private loadBaseState(game: IGame): CachedGameState | ActionGatewayResult {
-    const snapshot = game.serialize();
-    let state: ActionEngineState;
-    try {
-      state = this.engine.load(snapshot);
-    } catch (err) {
-      if (err instanceof UnsupportedEngineConfigError) {
-        return rejected(STATUS.unprocessableEntity, 'INVALID_ACTION');
-      }
-      throw err;
+  private recoveryRejection(err: unknown): ActionGatewayResult {
+    if (err instanceof ActionRecoveryError) {
+      console.warn('v2 recovery failed', err.code);
+      return rejected(STATUS.serviceUnavailable, 'RECOVERY_FAILED', {retryable: true, resync: 'full'});
     }
+    if (err instanceof UnsupportedEngineConfigError) {
+      return rejected(STATUS.unprocessableEntity, 'INVALID_ACTION');
+    }
+    if (err instanceof GenesisMismatchError ||
+        err instanceof InvalidActionGenesisError ||
+        err instanceof StreamNotFoundError) {
+      return rejected(STATUS.conflict, 'STALE_REVISION', {resync: 'full'});
+    }
+    console.warn('v2 authoritative state failed', err instanceof Error ? err.name : 'unknown');
+    return rejected(STATUS.serviceUnavailable, 'PERSISTENCE_FAILURE', {retryable: true});
+  }
+
+  private undoRejection(err: unknown): ActionUndoGatewayResult {
+    if (err instanceof ActionRecoveryError) {
+      console.warn('v2 undo recovery failed', err.code);
+      return {
+        statusCode: STATUS.serviceUnavailable,
+        body: rejectedBody('RECOVERY_FAILED', {retryable: true, resync: 'full'}),
+      };
+    }
+    if (err instanceof GenesisMismatchError || err instanceof StreamNotFoundError) {
+      return {statusCode: STATUS.conflict, body: rejectedBody('STALE_REVISION', {resync: 'full'})};
+    }
+    console.warn('v2 undo failed', err instanceof Error ? err.name : 'unknown');
     return {
-      game,
-      state,
-      genesis: bindGenesis(game.id, game.lastSaveId, snapshot),
-      revision: undefined,
+      statusCode: STATUS.serviceUnavailable,
+      body: rejectedBody('PERSISTENCE_FAILURE', {retryable: true}),
     };
   }
 
   private duplicateResult(
     actor: IPlayer,
     request: ActionRequestV1,
-    cached: CachedGameState,
-    existing: ActionIntent,
+    state: ActionEngineState,
     headRevision: number,
+    existing: ActionIntent,
   ): ActionGatewayResult {
     if (storedFingerprint(existing) !== fingerprintOf(request)) {
       return rejected(STATUS.conflict, 'IDEMPOTENCY_CONFLICT', {actionId: request.actionId});
     }
-    const coherent = cached.revision === headRevision;
-    if (!coherent) {
-      // Without the cached candidate state there is no honest current view or
-      // next prompt token. A5b recovery will replay the journal instead.
-      return rejected(STATUS.conflict, 'STALE_REVISION', {
-        currentRevision: headRevision,
-        resync: 'full',
-      });
-    }
+    // The recovered head is authoritative, so an exact retry can be answered
+    // with the current view and the next prompt token instead of a resync.
     return this.successResult(
       'duplicate',
       request,
       headRevision,
       existing.revision,
-      cached.state.view(actor.id),
-      this.promptToken(cached.state, actor.id, headRevision + 1),
+      state.view(actor.id),
+      this.promptToken(state, actor.id, headRevision + 1),
     );
+  }
+
+  /**
+   * Full authorized resync: current revision, server-issued prompt token, and
+   * the actor-scoped view recovered from genesis plus replay.
+   */
+  public async bootstrap(request: ActionBootstrapGatewayRequest): Promise<ActionBootstrapGatewayResult> {
+    const principal = request.principal;
+    if (principal === undefined || typeof principal.id !== 'string' || principal.id.length === 0) {
+      return {statusCode: STATUS.unauthorized, body: rejectedBody('UNAUTHORIZED')};
+    }
+    const game = request.game;
+    if (this.allowedGameIds !== undefined && !this.allowedGameIds.has(game.id)) {
+      return {statusCode: STATUS.notFound, body: rejectedBody('UNAUTHORIZED')};
+    }
+    const actor = this.authorizedActor(game, principal.id);
+    if (actor === undefined || actor.id !== request.actorId) {
+      return {statusCode: STATUS.forbidden, body: rejectedBody('UNAUTHORIZED')};
+    }
+    try {
+      await this.initialize();
+    } catch (_err) {
+      return {statusCode: STATUS.serviceUnavailable, body: rejectedBody('PERSISTENCE_FAILURE', {retryable: true})};
+    }
+    let authoritative: AuthoritativeState;
+    try {
+      authoritative = await this.authoritativeState(game);
+    } catch (err) {
+      const failure = this.recoveryRejection(err);
+      return {statusCode: failure.statusCode, body: failure.body as ActionErrorResponseV1};
+    }
+    const prompt = authoritative.state.prompt(actor.id);
+    const promptToken = this.promptToken(authoritative.state, actor.id, authoritative.revision + 1);
+    const view = authoritative.state.view(actor.id);
+    const body: ActionBootstrapResponseV1 = {
+      v: ACTION_SCHEMA_VERSION,
+      status: 'ready',
+      gameId: game.id,
+      playerId: actor.id,
+      revision: authoritative.revision,
+      baseRevision: authoritative.revision,
+      engineVersion: this.engineVersion,
+      view,
+      viewRevision: authoritative.revision,
+      viewHash: viewHashOf(view),
+      ...(promptToken === undefined ? {} : {promptToken}),
+      ...(prompt === null ? {} : {promptType: prompt.type, promptFingerprint: prompt.fingerprint}),
+    };
+    return {statusCode: STATUS.ok, body};
+  }
+
+  /**
+   * Appends an undo intent instead of restoring an old save.
+   *
+   * The journal keeps every accepted action; the undo only removes the effect
+   * of everything after the actor's own last effective action. The stream epoch
+   * advances so a writer that observed the pre-undo epoch is fenced out.
+   */
+  public async handleUndo(request: ActionUndoGatewayRequest): Promise<ActionUndoGatewayResult> {
+    const principal = request.principal;
+    if (principal === undefined || typeof principal.id !== 'string' || principal.id.length === 0) {
+      return {statusCode: STATUS.unauthorized, body: rejectedBody('UNAUTHORIZED')};
+    }
+    if (typeof request.rawBody !== 'string') {
+      return {statusCode: STATUS.badRequest, body: rejectedBody('INVALID_SCHEMA')};
+    }
+    if (byteLength(request.rawBody) > MAX_ACTION_REQUEST_BYTES) {
+      return {statusCode: STATUS.payloadTooLarge, body: rejectedBody('INVALID_SCHEMA')};
+    }
+    const envelope = parseUndoRequestJson(request.rawBody);
+    if (envelope === undefined) {
+      return {statusCode: STATUS.badRequest, body: rejectedBody('INVALID_SCHEMA')};
+    }
+
+    let game: IGame | undefined;
+    try {
+      game = await request.games.getGame(envelope.gameId);
+    } catch (_err) {
+      return {statusCode: STATUS.serviceUnavailable, body: rejectedBody('PERSISTENCE_FAILURE', {retryable: true})};
+    }
+    if (game === undefined || game.id !== envelope.gameId) {
+      return {statusCode: STATUS.notFound, body: rejectedBody('UNAUTHORIZED')};
+    }
+    if (this.allowedGameIds !== undefined && !this.allowedGameIds.has(game.id)) {
+      return {statusCode: STATUS.notFound, body: rejectedBody('UNAUTHORIZED')};
+    }
+    const actor = this.authorizedActor(game, principal.id);
+    if (actor === undefined) {
+      return {statusCode: STATUS.forbidden, body: rejectedBody('UNAUTHORIZED')};
+    }
+    if (envelope.engineVersion !== this.engineVersion) {
+      return {statusCode: STATUS.conflict, body: rejectedBody('ENGINE_VERSION_MISMATCH', {resync: 'full'})};
+    }
+    try {
+      await this.initialize();
+    } catch (_err) {
+      return {statusCode: STATUS.serviceUnavailable, body: rejectedBody('PERSISTENCE_FAILURE', {retryable: true})};
+    }
+
+    // Without an engine-side disclosure proof an undo could hide information a
+    // player has already seen, so it is refused entirely.
+    const undoGuard = this.engine.revealsHiddenInformation?.bind(this.engine);
+
+    if (undoGuard === undefined) {
+      return {statusCode: STATUS.unprocessableEntity, body: rejectedBody('UNDO_REJECTED')};
+    }
+
+    let head: RecoveredState;
+    try {
+      head = await this.recovery.recover({gameId: game.id, liveGame: game});
+    } catch (err) {
+      return this.undoRejection(err);
+    }
+    // Idempotency is checked before the CAS token: a retry of an undo that was
+    // committed but never acknowledged must not be rejected as stale.
+    let existing: ActionIntent | undefined;
+    try {
+      existing = await this.store.getIntent(game.id, envelope.actionId);
+    } catch (_err) {
+      return {statusCode: STATUS.serviceUnavailable, body: rejectedBody('PERSISTENCE_FAILURE', {retryable: true})};
+    }
+    if (existing !== undefined) {
+      let parsedKind: string | undefined;
+      let parsedTarget = 0;
+      try {
+        const parsed = parseV2IntentPayload(existing);
+        parsedKind = parsed.kind;
+        parsedTarget = parsed.kind === 'undo' ? parsed.targetRevision : 0;
+      } catch (_err) {
+        parsedKind = undefined;
+      }
+      if (parsedKind !== 'undo' || storedFingerprint(existing) !== this.undoFingerprint(envelope)) {
+        return {statusCode: STATUS.conflict, body: rejectedBody('IDEMPOTENCY_CONFLICT', {actionId: envelope.actionId})};
+      }
+      let current: RecoveredState;
+      try {
+        current = await this.recovery.recover({gameId: game.id, liveGame: game});
+      } catch (err) {
+        return this.undoRejection(err);
+      }
+      return this.undoSuccess(envelope, current.state, current.revision, existing.revision, parsedTarget, actor.id);
+    }
+
+    if (envelope.baseRevision !== head.revision) {
+      return {
+        statusCode: STATUS.conflict,
+        body: rejectedBody('STALE_REVISION', {currentRevision: head.revision, resync: 'full'}),
+      };
+    }
+
+    const ownActions = head.plan.actions.filter((entry) => entry.intent.actorId === actor.id);
+    const target = ownActions[ownActions.length - 1];
+    if (target === undefined) {
+      return {statusCode: STATUS.unprocessableEntity, body: rejectedBody('UNDO_REJECTED', {currentRevision: head.revision})};
+    }
+    // Undoing an action restores the state before it was applied, so the state
+    // that must be proven is the one after the previous effective action.
+    const targetPosition = head.plan.actions.findIndex(
+      (entry) => entry.intent.revision === target.intent.revision,
+    );
+    const restoredRevision = targetPosition <= 0 ? 0 : head.plan.actions[targetPosition - 1].intent.revision;
+
+    let restored: RecoveredState;
+    try {
+      restored = await this.recovery.recover({
+        gameId: game.id,
+        liveGame: game,
+        captureRevision: restoredRevision,
+      });
+    } catch (err) {
+      return this.undoRejection(err);
+    }
+    if (restored.capturedState === undefined || restored.capturedStateHash === undefined) {
+      return {statusCode: STATUS.unprocessableEntity, body: rejectedBody('UNDO_REJECTED', {currentRevision: head.revision})};
+    }
+    if (restored.revision !== head.revision) {
+      return {
+        statusCode: STATUS.conflict,
+        body: rejectedBody('STALE_REVISION', {currentRevision: restored.revision, resync: 'full'}),
+      };
+    }
+
+    let revealed: boolean;
+    try {
+      revealed = undoGuard(restored.state, restored.capturedState, actor.id);
+    } catch (_err) {
+      return {statusCode: STATUS.serviceUnavailable, body: rejectedBody('PERSISTENCE_FAILURE', {retryable: true})};
+    }
+    if (revealed) {
+      return {
+        statusCode: STATUS.unprocessableEntity,
+        body: rejectedBody('UNDO_HIDDEN_INFORMATION', {currentRevision: head.revision}),
+      };
+    }
+
+    let result: AppendActionIntentResult;
+    try {
+      result = await this.store.appendIntent({
+        gameId: game.id,
+        expectedRevision: head.revision,
+        genesisId: head.stream.genesisId,
+        epoch: head.stream.epoch,
+        actionId: envelope.actionId,
+        actorId: actor.id,
+        intentType: UNDO_INTENT_TYPE,
+        payload: {
+          kind: 'undo',
+          requestFingerprint: this.undoFingerprint(envelope),
+          baseRevision: envelope.baseRevision,
+          engineVersion: envelope.engineVersion,
+          targetRevision: target.intent.revision,
+          undoneActionId: target.intent.actionId,
+          stateHashBefore: head.stateHash,
+          stateHashAfter: restored.capturedStateHash,
+        },
+        prompt: undefined,
+      });
+    } catch (err) {
+      return this.undoRejection(err);
+    }
+
+    // The append is the commit point; the epoch bump only fences out writers
+    // that still hold the pre-undo epoch, so a fencing failure must not turn a
+    // durable undo into an error response.
+    try {
+      await this.store.fenceStream({gameId: game.id, expectedEpoch: head.stream.epoch});
+    } catch (err) {
+      console.warn('v2 undo epoch fence failed', err instanceof Error ? err.name : 'unknown');
+    }
+
+    if (result.status === 'duplicate') {
+      return this.undoSuccess(
+        envelope,
+        restored.capturedState,
+        result.stream.revision,
+        result.intent.revision,
+        target.intent.revision,
+        actor.id,
+      );
+    }
+    this.cached.set(game.id, {
+      game,
+      state: restored.capturedState,
+      genesis: {
+        genesisId: head.stream.genesisId,
+        baseSaveId: head.stream.baseSaveId,
+        stateHash: head.stream.stateHash,
+      },
+      revision: result.stream.revision,
+    });
+    return this.undoSuccess(
+      envelope,
+      restored.capturedState,
+      result.stream.revision,
+      result.intent.revision,
+      target.intent.revision,
+      actor.id,
+    );
+  }
+
+  private undoFingerprint(request: UndoRequestV1): string {
+    return sha256Hex(canonicalJson({
+      gameId: request.gameId,
+      actionId: request.actionId,
+      baseRevision: request.baseRevision,
+      engineVersion: request.engineVersion,
+      kind: 'undo',
+    }));
+  }
+
+  private undoSuccess(
+    request: UndoRequestV1,
+    state: ActionEngineState,
+    revision: number,
+    appliedRevision: number,
+    undoneRevision: number,
+    actorId: PlayerId,
+  ): ActionUndoGatewayResult {
+    const view = state.view(actorId);
+    const promptToken = this.promptToken(state, actorId, revision + 1);
+    const body: ActionUndoSuccessResponseV1 = {
+      v: ACTION_SCHEMA_VERSION,
+      actionId: request.actionId,
+      status: 'undone',
+      revision,
+      appliedRevision,
+      undoneRevision,
+      engineVersion: this.engineVersion,
+      viewRevision: revision,
+      view,
+      viewHash: viewHashOf(view),
+      ...(promptToken === undefined ? {} : {promptToken}),
+    };
+    return {statusCode: STATUS.ok, body};
   }
 
   private promptToken(

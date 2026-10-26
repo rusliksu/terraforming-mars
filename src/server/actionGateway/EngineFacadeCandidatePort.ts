@@ -3,6 +3,8 @@ import {PlayerViewModel} from '../../common/models/PlayerModel';
 import {GameId, PlayerId} from '../../common/Types';
 import {Server} from '../models/ServerModel';
 import {EngineFacade, EngineHandle} from '../engine/EngineFacade';
+import {hasRevealedHiddenInformation} from '../game/hasRevealedHiddenInformation';
+import {IGame} from '../IGame';
 import {EnginePromptSnapshot, promptSnapshot} from '../engine/EngineCanonical';
 import {createDeterministicEngineDependencies} from '../engine/EngineDependencies';
 import {SerializedGame} from '../SerializedGame';
@@ -77,5 +79,35 @@ export class EngineFacadeCandidatePort implements ActionEnginePort {
     const candidate = this.load(state.serialize());
     candidate.applyInput(actorId, input);
     return candidate;
+  }
+
+  /**
+   * Reuses the established v1 disclosure guard on two isolated states.
+   *
+   * Both sides are deserialized from the journal, so the check compares the
+   * recovered head with the recovered undo target and never touches the live
+   * game or a stored save.
+   */
+  public revealsHiddenInformation(
+    current: ActionEngineState,
+    restored: ActionEngineState,
+    actorId: PlayerId,
+  ): boolean {
+    const currentGame = this.toGame(current);
+    const restoredGame = this.toGame(restored);
+    return hasRevealedHiddenInformation(
+      currentGame,
+      restoredGame,
+      currentGame.getPlayerById(actorId),
+    );
+  }
+
+  private toGame(state: ActionEngineState): IGame {
+    const dependencies = createDeterministicEngineDependencies({
+      nowMs: this.now(),
+      idPrefix: this.idPrefix,
+    });
+    const facade = new EngineFacade(dependencies);
+    return facade.load(JSON.parse(JSON.stringify(state.serialize())) as SerializedGame).game;
   }
 }

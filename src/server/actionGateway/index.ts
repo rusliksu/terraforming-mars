@@ -1,5 +1,7 @@
 export {ActionGateway} from './ActionGateway';
 export type {
+  ActionBootstrapGatewayRequest,
+  ActionBootstrapGatewayResult,
   ActionGameSource,
   ActionGatewayOptions,
   ActionGatewayRequest,
@@ -8,6 +10,8 @@ export type {
   ActionLegalityDecision,
   ActionLegalityHook,
   ActionPrincipal,
+  ActionUndoGatewayRequest,
+  ActionUndoGatewayResult,
 } from './ActionGateway';
 export type {ActionEnginePort, ActionEngineState} from './ActionEnginePort';
 export {EngineFacadeCandidatePort} from './EngineFacadeCandidatePort';

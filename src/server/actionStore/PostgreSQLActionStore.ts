@@ -15,9 +15,11 @@ import {
   AppendActionIntentRequest,
   AppendActionIntentResult,
   FenceActionStreamRequest,
+  GenesisSnapshotRecord,
   ListActionIntentsOptions,
   OpenActionStreamRequest,
   OpenActionStreamResult,
+  PutGenesisSnapshotRequest,
 } from './types';
 import {
   buildActionIntent,
@@ -28,6 +30,7 @@ import {
   validateFenceActionStreamRequest,
   validateListActionIntentsOptions,
   validateOpenActionStreamRequest,
+  validatePutGenesisSnapshotRequest,
   ValidatedAppendActionIntentRequest,
   ValidatedFenceActionStreamRequest,
   ValidatedOpenActionStreamRequest,
@@ -64,7 +67,35 @@ CREATE TABLE IF NOT EXISTS action_intent(
   UNIQUE (game_id, action_id),
   FOREIGN KEY (game_id) REFERENCES action_stream(game_id)
 );
+CREATE TABLE IF NOT EXISTS action_genesis(
+  game_id TEXT NOT NULL PRIMARY KEY,
+  genesis_id TEXT NOT NULL,
+  base_save_id INTEGER NOT NULL CHECK (base_save_id >= 0),
+  state_hash TEXT NOT NULL,
+  snapshot_json TEXT NOT NULL,
+  created_at_ms BIGINT NOT NULL
+);
 `;
+
+type GenesisRow = {
+  game_id: string;
+  genesis_id: string;
+  base_save_id: number;
+  state_hash: string;
+  snapshot_json: string;
+  created_at_ms: TimestampValue;
+};
+
+function rowToGenesis(row: GenesisRow): GenesisSnapshotRecord {
+  return {
+    gameId: row.game_id as GameId,
+    genesisId: row.genesis_id,
+    baseSaveId: Number(row.base_save_id),
+    stateHash: row.state_hash,
+    snapshot: JSON.parse(row.snapshot_json),
+    createdAtMs: Number(row.created_at_ms),
+  };
+}
 
 type TimestampValue = string | number;
 
@@ -387,6 +418,59 @@ export class PostgreSQLActionStore implements IActionStore {
       [gameId, fromRevision, limit],
     );
     return result.rows.map(rowToIntent);
+  }
+
+  public putGenesisSnapshot(request: PutGenesisSnapshotRequest): Promise<GenesisSnapshotRecord> {
+    const validated = validatePutGenesisSnapshotRequest(request);
+    return this.withTransaction(async (client) => {
+      const streamRow = await this.lockStreamRow(client, validated.gameId);
+      if (streamRow !== undefined && streamRow.genesis_id !== validated.genesisId) {
+        throw new GenesisMismatchError(validated.gameId);
+      }
+      const existing = await client.query<GenesisRow>(
+        'SELECT * FROM action_genesis WHERE game_id = $1',
+        [validated.gameId],
+      );
+      if (existing.rowCount !== 0) {
+        const row = existing.rows[0];
+        if (row.genesis_id !== validated.genesisId ||
+            row.state_hash !== validated.stateHash ||
+            row.snapshot_json !== validated.snapshotJson) {
+          throw new GenesisMismatchError(validated.gameId);
+        }
+        return rowToGenesis(row);
+      }
+      const createdAtMs = this.now();
+      await client.query(
+        `INSERT INTO action_genesis(
+          game_id, genesis_id, base_save_id, state_hash, snapshot_json, created_at_ms
+        ) VALUES ($1, $2, $3, $4, $5, $6)`,
+        [
+          validated.gameId,
+          validated.genesisId,
+          validated.baseSaveId,
+          validated.stateHash,
+          validated.snapshotJson,
+          createdAtMs,
+        ],
+      );
+      return {
+        gameId: validated.gameId,
+        genesisId: validated.genesisId,
+        baseSaveId: validated.baseSaveId,
+        stateHash: validated.stateHash,
+        snapshot: JSON.parse(validated.snapshotJson),
+        createdAtMs,
+      };
+    });
+  }
+
+  public async getGenesisSnapshot(gameId: GameId): Promise<GenesisSnapshotRecord | undefined> {
+    const result = await this.pool.query<GenesisRow>(
+      'SELECT * FROM action_genesis WHERE game_id = $1',
+      [gameId],
+    );
+    return result.rowCount === 0 ? undefined : rowToGenesis(result.rows[0]);
   }
 
   private async lockStreamRow(client: PoolClient, gameId: GameId): Promise<StreamRow | undefined> {

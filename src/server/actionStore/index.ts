@@ -18,3 +18,8 @@ export {
 export {InMemoryActionStore, InMemoryActionStoreOptions} from './InMemoryActionStore';
 export {IN_MEMORY_ACTION_STORE_PATH, SQLiteActionStore, SQLiteActionStoreOptions} from './SQLiteActionStore';
 export {PostgreSQLActionStore, PostgreSQLActionStoreOptions} from './PostgreSQLActionStore';
+export {
+  MAX_GENESIS_SNAPSHOT_BYTES,
+  validatePutGenesisSnapshotRequest,
+} from './validation';
+export type {ValidatedPutGenesisSnapshotRequest} from './validation';

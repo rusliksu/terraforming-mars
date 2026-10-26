@@ -147,3 +147,29 @@ export type ListActionIntentsOptions = {
   /** Maximum number of intents to return. Defaults to 100, capped at 1000. */
   limit?: number;
 };
+
+/**
+ * Request to persist the serialized state a stream replays from.
+ *
+ * The live game cannot act as the anchor: every database save bumps
+ * `lastSaveId`, which is part of the canonical engine state, so the live
+ * snapshot stops matching the stream genesis after the first background save.
+ * Recovery therefore needs its own durable copy.
+ */
+export type PutGenesisSnapshotRequest = {
+  gameId: GameId;
+  genesisId: string;
+  baseSaveId: number;
+  /** Lowercase SHA-256 of the canonical engine state. Opaque to the store. */
+  stateHash: string;
+  /** Serialized engine state. Opaque to the store; replay interprets it. */
+  snapshot: JSONValue;
+};
+
+/**
+ * Persisted genesis record. Recovery replays revisions 1..head from this
+ * snapshot and verifies the result against the journal hashes.
+ */
+export type GenesisSnapshotRecord = PutGenesisSnapshotRequest & {
+  createdAtMs: number;
+};

@@ -5,9 +5,11 @@ import {
   AppendActionIntentRequest,
   AppendActionIntentResult,
   FenceActionStreamRequest,
+  GenesisSnapshotRecord,
   ListActionIntentsOptions,
   OpenActionStreamRequest,
   OpenActionStreamResult,
+  PutGenesisSnapshotRequest,
 } from './types';
 
 /**
@@ -63,4 +65,22 @@ export interface IActionStore {
    * Returns intents in revision order. An unknown game returns an empty list.
    */
   listIntents(gameId: GameId, options?: ListActionIntentsOptions): Promise<Array<ActionIntent>>;
+
+  /**
+   * Persists the serialized genesis state that the stream replays from.
+   *
+   * Idempotent for a byte-identical record, so recovery may re-store the same
+   * anchor. A different snapshot for an already persisted genesis, or a record
+   * that disagrees with an existing stream anchor, rejects with
+   * {@link GenesisMismatchError}.
+   */
+  putGenesisSnapshot(request: PutGenesisSnapshotRequest): Promise<GenesisSnapshotRecord>;
+
+  /**
+   * Returns the persisted genesis record, or `undefined` when none was stored.
+   *
+   * A stream without a genesis record cannot be replayed; recovery fails closed
+   * instead of guessing an anchor.
+   */
+  getGenesisSnapshot(gameId: GameId): Promise<GenesisSnapshotRecord | undefined>;
 }

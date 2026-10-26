@@ -41,4 +41,18 @@ export interface ActionEnginePort {
    * journal write.
    */
   applyCandidate(state: ActionEngineState, actorId: PlayerId, input: InputResponse): ActionEngineState;
+
+  /**
+   * Undo safety proof: whether reverting `current` to `restored` would hide
+   * information the actor already saw.
+   *
+   * Optional on purpose. An append-only undo is only allowed when the engine
+   * can produce this proof; without it the gateway fails closed instead of
+   * guessing, because a silent information leak cannot be undone.
+   */
+  revealsHiddenInformation?(
+    current: ActionEngineState,
+    restored: ActionEngineState,
+    actorId: PlayerId,
+  ): boolean;
 }

@@ -1,4 +1,4 @@
-import {GameId} from '../../common/Types';
+import {GameId, JSONValue} from '../../common/Types';
 import {canonicalJson, canonicalPromptJson, computeGenesisHash, hashActionPayload, isSha256Hex} from './canonical';
 import {
   InvalidActionGenesisError,
@@ -12,6 +12,7 @@ import {
   ListActionIntentsOptions,
   OpenActionStreamRequest,
   PromptMetadata,
+  PutGenesisSnapshotRequest,
 } from './types';
 
 export const MAX_GAME_ID_LENGTH = 128;
@@ -168,6 +169,41 @@ export function validatePromptMetadata(prompt: PromptMetadata | undefined | null
     result.promptIndex = readInteger(prompt.promptIndex, 'prompt.promptIndex', 0, MAX_REVISION, intentError);
   }
   return result;
+}
+
+/** Serialized games grow with the tableau; 8 MiB is far above any observed state. */
+export const MAX_GENESIS_SNAPSHOT_BYTES = 8 * 1024 * 1024;
+
+export type ValidatedPutGenesisSnapshotRequest = {
+  gameId: GameId;
+  genesisId: string;
+  baseSaveId: number;
+  stateHash: string;
+  snapshot: JSONValue;
+  /** Canonical JSON of the snapshot; used for idempotent comparison. */
+  snapshotJson: string;
+};
+
+export function validatePutGenesisSnapshotRequest(
+  request: PutGenesisSnapshotRequest,
+): ValidatedPutGenesisSnapshotRequest {
+  const gameId = readGameId(request.gameId, genesisError);
+  const genesisId = readString(request.genesisId, 'genesisId', MAX_GENESIS_ID_LENGTH, genesisError);
+  const baseSaveId = readInteger(request.baseSaveId, 'baseSaveId', 0, MAX_REVISION, genesisError);
+  const stateHash = readStateHash(request.stateHash, 'stateHash', genesisError);
+  if (typeof request.snapshot !== 'object' || request.snapshot === null || Array.isArray(request.snapshot)) {
+    throw genesisError('snapshot must be a serialized engine state object');
+  }
+  let snapshotJson: string;
+  try {
+    snapshotJson = canonicalJson(request.snapshot);
+  } catch (_err) {
+    throw genesisError('snapshot must be canonical JSON');
+  }
+  if (Buffer.byteLength(snapshotJson, 'utf8') > MAX_GENESIS_SNAPSHOT_BYTES) {
+    throw genesisError('snapshot must be at most ' + MAX_GENESIS_SNAPSHOT_BYTES + ' bytes');
+  }
+  return {gameId, genesisId, baseSaveId, stateHash, snapshot: request.snapshot, snapshotJson};
 }
 
 export type ValidatedListActionIntentsOptions = {

@@ -30,6 +30,8 @@ export const paths = {
   PLAYER: 'player',
   PLAYER_INPUT: 'player/input',
   PLAYER_INPUT_V2: 'player/input/v2',
+  PLAYER_BOOTSTRAP_V2: 'player/input/v2/bootstrap',
+  PLAYER_UNDO_V2: 'player/undo/v2',
   RESET: 'reset',
   SPECTATOR: 'spectator',
   THE_END: 'the-end',

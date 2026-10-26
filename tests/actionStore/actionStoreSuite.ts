@@ -376,5 +376,72 @@ export function describeActionStoreSuite(descriptor: ActionStoreTestDescriptor):
       await expectActionStoreError(store.listIntents(gameId, {limit: 1001}), 'INVALID_QUERY');
       await expectActionStoreError(store.listIntents(gameId, {fromRevision: 0}), 'INVALID_QUERY');
     });
+
+    it('persists the genesis snapshot idempotently', async () => {
+      const opened = await store.openStream(makeOpenRequest(gameId));
+      const request = {
+        gameId,
+        genesisId: opened.stream.genesisId,
+        baseSaveId: opened.stream.baseSaveId,
+        stateHash: CONTRACT_STATE_HASH,
+        snapshot: {id: gameId, counter: 0, players: []},
+      };
+
+      const stored = await store.putGenesisSnapshot(request);
+      expect(stored.genesisId).eq(opened.stream.genesisId);
+      expect(stored.stateHash).eq(CONTRACT_STATE_HASH);
+      expect(stored.snapshot).deep.eq({id: gameId, counter: 0, players: []});
+
+      const again = await store.putGenesisSnapshot(request);
+      expect(again.createdAtMs).eq(stored.createdAtMs);
+      expect(await store.getGenesisSnapshot(gameId)).deep.eq(stored);
+    });
+
+    it('rejects a genesis snapshot that disagrees with the stored anchor', async () => {
+      const opened = await store.openStream(makeOpenRequest(gameId));
+      await store.putGenesisSnapshot({
+        gameId,
+        genesisId: opened.stream.genesisId,
+        baseSaveId: opened.stream.baseSaveId,
+        stateHash: CONTRACT_STATE_HASH,
+        snapshot: {id: gameId, counter: 0, players: []},
+      });
+
+      await expectActionStoreError(store.putGenesisSnapshot({
+        gameId,
+        genesisId: opened.stream.genesisId,
+        baseSaveId: opened.stream.baseSaveId,
+        stateHash: CONTRACT_STATE_HASH,
+        snapshot: {id: gameId, counter: 1, players: []},
+      }), 'GENESIS_MISMATCH');
+      await expectActionStoreError(store.putGenesisSnapshot({
+        gameId,
+        genesisId: 'genesis-someone-else',
+        baseSaveId: 0,
+        stateHash: CONTRACT_STATE_HASH,
+        snapshot: {id: gameId, counter: 0, players: []},
+      }), 'GENESIS_MISMATCH');
+    });
+
+    it('validates genesis snapshots before touching the ledger', async () => {
+      const opened = await store.openStream(makeOpenRequest(gameId));
+
+      await expectActionStoreError(store.putGenesisSnapshot({
+        gameId,
+        genesisId: opened.stream.genesisId,
+        baseSaveId: opened.stream.baseSaveId,
+        stateHash: 'A'.repeat(64),
+        snapshot: {id: gameId, players: []},
+      }), 'INVALID_GENESIS');
+      await expectActionStoreError(store.putGenesisSnapshot({
+        gameId,
+        genesisId: opened.stream.genesisId,
+        baseSaveId: opened.stream.baseSaveId,
+        stateHash: CONTRACT_STATE_HASH,
+        snapshot: ['not-an-object'] as unknown as {id: string},
+      }), 'INVALID_GENESIS');
+
+      expect(await store.getGenesisSnapshot(gameId)).eq(undefined);
+    });
   });
 }

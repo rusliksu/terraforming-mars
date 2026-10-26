@@ -108,3 +108,33 @@ A1 acceptance:
 ## Вне scope A1
 
 Gateway, HMAC/prompt store, DB schema, replay, UI, Worker bundle, EPIC/expansion-specific prompts. Реализация этих частей — A2/A4/A5a/A5b/C1/Q1.
+
+## A5b: authoritative commit и recovery
+
+Gateway A4 был candidate-only: он применял input к изолированному состоянию и писал journal, но живая игра не менялась, и после restart процесс не мог восстановить head. A5b делает journal источником истины.
+
+### Commit
+
+- Единственная точка commit — `appendIntent` в append-only journal. Ответ клиенту пишется только после успешного append.
+- В payload каждой принятой action-записи лежит `stateHashAfter` — канонический hash состояния после применения input. Он и есть контракт воспроизводимости.
+- Мутация живой `IGame` не является частью commit: живая игра — только seed для genesis. Фоновое сохранение (рост `lastSaveId`, который входит в canonical state) не инвалидирует v2 head.
+- Ошибка store до записи → 503 `PERSISTENCE_FAILURE`, ни ACK, ни частичного состояния. Ошибка после записи → клиент повторяет тот же `actionId` и получает `duplicate` с тем же revision: эффект ровно один.
+
+### Genesis, replay и hash
+
+- При первом принятом запросе создаётся stream anchor: `genesisId`, `baseSaveId`, `stateHash` и **сохранённый snapshot** (`putGenesisSnapshot`). Snapshot хранится отдельно от изменяемой живой игры; иначе anchor нельзя воспроизвести после первого фонового save.
+- Recovery = сохранённый genesis snapshot + упорядоченный replay принятых intents до текущей revision. Перед каждым шагом сверяется prompt (`promptType`/`promptFingerprint`), после каждого шага — `stateHashAfter`. Расхождение на любом шаге закрывает recovery (`PROMPT_MISMATCH`, `STATE_HASH_MISMATCH`, `GENESIS_NOT_REPRODUCIBLE`) и не отдаёт клиенту частичное состояние.
+- Truncated journal (`listIntents` короче head), дыра в revision, повреждённый payload и drift genesis — fail closed.
+- Checkpoint **не используются**. Serialized state не содержит deferred actions, поэтому точный deferred/waiting continuation proof сейчас невозможен; recovery всегда replay-ит с genesis. Попытка передать checkpoint отклоняется с `CHECKPOINT_UNPROVEN`.
+
+### Full authorized resync
+
+`GET /player/input/v2/bootstrap?id=<playerId>` возвращает `revision`/`baseRevision`, `promptToken`, `promptType`, `engineVersion`, authorized `PlayerViewModel`, `viewHash`. Токен выдаётся только сервером; клиент (C2) его не синтезирует. Route гейтится тем же bootstrap-флагом, что и `POST /player/input/v2`.
+
+### Append-only undo
+
+- `POST /player/undo/v2` пишет **новый intent** `player.undo.v2` с новым revision; старые события не удаляются и не переписываются.
+- Target не приходит от клиента: сервер берёт последнее эффективное действие этого игрока. Replay применяет `target` и всё после него как несостоявшиеся.
+- Перед записью обязательна проверка `hasRevealedHiddenInformation` между head и состоянием до отменяемого действия. Если движок не умеет доказать отсутствие утечки, undo отклоняется (`UNDO_REJECTED`); утечка — `UNDO_HIDDEN_INFORMATION`. Destructive `restoreGameAt` для v2 не вызывается.
+- После append stream epoch увеличивается (fencing): писатель со старым epoch получает `STALE_EPOCH`.
+- Legacy `/player/input` и его save/restore путь не изменены.

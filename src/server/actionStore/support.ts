@@ -1,5 +1,6 @@
+import {JSONValue} from '../../common/Types';
 import {computeActionEventHash, canonicalJson, canonicalPromptJson} from './canonical';
-import {ActionIntent, ActionPayload, ActionStream} from './types';
+import {ActionIntent, ActionPayload, ActionStream, GenesisSnapshotRecord} from './types';
 import {ValidatedAppendActionIntentRequest} from './validation';
 
 /**
@@ -24,6 +25,14 @@ export function cloneActionIntent(intent: ActionIntent): ActionIntent {
 
 export function cloneActionStream(stream: ActionStream): ActionStream {
   return {...stream};
+}
+
+/** Deep-clones a genesis record so callers cannot mutate stored state. */
+export function cloneGenesisSnapshot(record: GenesisSnapshotRecord): GenesisSnapshotRecord {
+  return {
+    ...record,
+    snapshot: JSON.parse(canonicalJson(record.snapshot)) as JSONValue,
+  };
 }
 
 /**

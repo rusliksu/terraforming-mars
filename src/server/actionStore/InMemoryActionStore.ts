@@ -13,14 +13,17 @@ import {
   AppendActionIntentRequest,
   AppendActionIntentResult,
   FenceActionStreamRequest,
+  GenesisSnapshotRecord,
   ListActionIntentsOptions,
   OpenActionStreamRequest,
   OpenActionStreamResult,
+  PutGenesisSnapshotRequest,
 } from './types';
 import {
   buildActionIntent,
   cloneActionIntent,
   cloneActionStream,
+  cloneGenesisSnapshot,
   isSameIntentContent,
   promiseFromSync,
 } from './support';
@@ -29,7 +32,9 @@ import {
   validateFenceActionStreamRequest,
   validateListActionIntentsOptions,
   validateOpenActionStreamRequest,
+  validatePutGenesisSnapshotRequest,
 } from './validation';
+import {canonicalJson} from './canonical';
 
 export type InMemoryActionStoreOptions = {
   /** Clock seam for deterministic tests. */
@@ -54,6 +59,7 @@ type GameJournal = {
  */
 export class InMemoryActionStore implements IActionStore {
   private readonly journals = new Map<GameId, GameJournal>();
+  private readonly genesisRecords = new Map<GameId, GenesisSnapshotRecord>();
   private readonly now: () => number;
   private initialized = false;
 
@@ -68,6 +74,7 @@ export class InMemoryActionStore implements IActionStore {
 
   public close(): Promise<void> {
     this.journals.clear();
+    this.genesisRecords.clear();
     this.initialized = false;
     return Promise.resolve();
   }
@@ -228,6 +235,44 @@ export class InMemoryActionStore implements IActionStore {
         }
       }
       return result;
+    });
+  }
+
+  public putGenesisSnapshot(request: PutGenesisSnapshotRequest): Promise<GenesisSnapshotRecord> {
+    return promiseFromSync(() => {
+      this.requireInitialized();
+      const validated = validatePutGenesisSnapshotRequest(request);
+      const journal = this.journals.get(validated.gameId);
+      if (journal !== undefined && journal.stream.genesisId !== validated.genesisId) {
+        throw new GenesisMismatchError(validated.gameId);
+      }
+      const existing = this.genesisRecords.get(validated.gameId);
+      if (existing !== undefined) {
+        if (existing.genesisId !== validated.genesisId ||
+            existing.stateHash !== validated.stateHash ||
+            canonicalJson(existing.snapshot) !== validated.snapshotJson) {
+          throw new GenesisMismatchError(validated.gameId);
+        }
+        return cloneGenesisSnapshot(existing);
+      }
+      const record: GenesisSnapshotRecord = {
+        gameId: validated.gameId,
+        genesisId: validated.genesisId,
+        baseSaveId: validated.baseSaveId,
+        stateHash: validated.stateHash,
+        snapshot: JSON.parse(validated.snapshotJson),
+        createdAtMs: this.now(),
+      };
+      this.genesisRecords.set(validated.gameId, record);
+      return cloneGenesisSnapshot(record);
+    });
+  }
+
+  public getGenesisSnapshot(gameId: GameId): Promise<GenesisSnapshotRecord | undefined> {
+    return promiseFromSync(() => {
+      this.requireInitialized();
+      const record = this.genesisRecords.get(gameId);
+      return record === undefined ? undefined : cloneGenesisSnapshot(record);
     });
   }
 

@@ -6,7 +6,12 @@ import {getPreferences} from '@/client/utils/PreferencesManager';
 
 import i18nPlugin from '@/client/plugins/i18n.plugin';
 import {startOauth} from '@/client/oauth';
-import {gameShell, isGameShellEnabled} from '@/client/shell';
+import {
+  gameShell,
+  gameShellWaitingForBridge,
+  installGameShellBootstrapProvider,
+  isGameShellEnabled,
+} from '@/client/shell';
 const PlayerInputFactory = defineAsyncComponent(() => import(/* webpackChunkName: "player-input" */ '@/client/components/PlayerInputFactory.vue'));
 
 declare global {
@@ -18,6 +23,10 @@ declare global {
 async function bootstrap() {
   if (isGameShellEnabled()) {
     gameShell.start();
+    // The provider is synchronous for WaitingFor.onsave; seed its cache from
+    // the server-issued bootstrap before the first input is submitted.
+    const bootstrapCache = installGameShellBootstrapProvider(gameShellWaitingForBridge);
+    void bootstrapCache.primeFromLocation();
   }
 
   const lang = getPreferences().lang;

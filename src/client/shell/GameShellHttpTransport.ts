@@ -1,5 +1,5 @@
 import {ACTION_ENDPOINT_PATH} from '@/common/actionProtocol/ActionProtocol';
-import type {ActionRequestV1, ActionResponseV1} from '@/common/actionProtocol/ActionProtocol';
+import type {ActionRequestV1, ActionResponseV1, BootstrapResponseV1} from '@/common/actionProtocol/ActionProtocol';
 import {paths} from '@/common/app/paths';
 import type {PlayerViewModel} from '@/common/models/PlayerModel';
 import type {PlayerId} from '@/common/Types';
@@ -42,6 +42,28 @@ export class HttpGameShellTransport implements GameShellTransport {
       statusCode: response.status,
       body: await readJson(response),
     };
+  }
+
+  public async fetchBootstrap(playerId: PlayerId): Promise<BootstrapResponseV1 | undefined> {
+    const response = await this.fetchImpl(this.bootstrapUrl(playerId), {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers: {'Accept': 'application/json'},
+    });
+    if (!response.ok) {
+      return undefined;
+    }
+    return await readJson(response) as unknown as BootstrapResponseV1 | undefined;
+  }
+
+  private bootstrapUrl(playerId: PlayerId): string {
+    if (typeof window === 'undefined') {
+      return paths.PLAYER_BOOTSTRAP_V2 + '?id=' + encodeURIComponent(playerId);
+    }
+    const params = new URLSearchParams(window.location.search);
+    params.delete('noredirect');
+    params.set('id', playerId);
+    return paths.PLAYER_BOOTSTRAP_V2 + '?' + params.toString();
   }
 
   public async fetchPlayerView(playerId?: PlayerId): Promise<PlayerViewModel> {

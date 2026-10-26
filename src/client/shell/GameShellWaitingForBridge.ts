@@ -63,6 +63,7 @@ export class GameShellWaitingForBridge {
   private readonly policy: Partial<GameShellRetryPolicy> | undefined;
   private readonly onOutcome: ((outcome: GameShellSubmitOutcome) => void) | undefined;
   private readonly onError: ((error: unknown) => void) | undefined;
+  private outcomeListener: ((outcome: GameShellSubmitOutcome) => void) | undefined = undefined;
   private readonly actionIds = new Map<string, string>();
   private bootstrapProvider: GameShellPromptBootstrapProvider | undefined = undefined;
   private service: GameShellSubmitService | undefined = undefined;
@@ -82,6 +83,10 @@ export class GameShellWaitingForBridge {
     this.bootstrapProvider = provider;
     this.actionIds.clear();
     this.dropService();
+  }
+
+  public setOutcomeListener(listener: ((outcome: GameShellSubmitOutcome) => void) | undefined): void {
+    this.outcomeListener = listener;
   }
 
   public reset(): void {
@@ -123,6 +128,7 @@ export class GameShellWaitingForBridge {
       void promise.then(
         (outcome) => {
           this.onOutcome?.(outcome);
+          this.outcomeListener?.(outcome);
         },
         (error: unknown) => {
           this.onError?.(error);

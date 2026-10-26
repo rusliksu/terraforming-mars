@@ -1,5 +1,6 @@
 import type {PlayerViewModel} from '@/common/models/PlayerModel';
 
+import {refreshGameShellBootstrap} from './GameShellBootstrapCache';
 import {isGameShellEnabled} from './GameShellFeatureFlag';
 import {gameShell} from './GameShellService';
 
@@ -42,6 +43,8 @@ export function applyFetchedPlayerView(state: GameShellAppState, playerView: Pla
   if (isGameShellEnabled()) {
     gameShell.setConfirmedView(playerView);
     state.playerkey = gameShell.getViewRevision();
+    // The resync/bootstrap token rotates with the prompt; keep it fresh.
+    void refreshGameShellBootstrap(playerView);
   } else {
     state.playerkey++;
   }

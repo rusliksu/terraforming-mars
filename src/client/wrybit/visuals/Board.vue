@@ -69,7 +69,7 @@
             </div>
         </div>
 
-        <div :class="['board', {'board--custom': isCustomBoard && !useStandardTrackLayout, 'board--custom-fit': useStandardTrackLayout}]" :style="boardStyle" id="main_board">
+        <div :class="['board', {'board--custom': isCustomBoard && !useStandardTrackLayout, 'board--custom-fit': useStandardTrackLayout, 'board--large': isLargeBoard}]" :style="boardStyle" id="main_board">
             <BoardSpace
               v-for="curSpace in allSpacesOnMars"
               :key="curSpace.id"

@@ -34,7 +34,7 @@ async function post(options: PostOptions = {}): Promise<Result> {
   }
   try {
     const [game, blue] = testGame(2);
-    game.gameOptions.requiresDiscordLogin = options.requiresDiscordLogin === true;
+    Object.assign(game.gameOptions, {requiresDiscordLogin: options.requiresDiscordLogin === true});
     if (options.owned !== false) {
       blue.user = 'discord-owner';
     }

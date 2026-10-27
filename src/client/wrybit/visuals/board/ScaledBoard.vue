@@ -1,5 +1,5 @@
 <template>
-  <div ref="root" :class="['scaled-board', {'scaled-board--planet': cropToPlanet}]">
+  <div ref="root" :class="['scaled-board', {'scaled-board--planet': cropToPlanet, 'scaled-board--preview': planetOnly}]">
     <!-- The game board is a fixed ~700 px wide; in narrower containers it shrinks instead of being clipped.
          Comment inside the root on purpose: above it, dev builds get a fragment root (no class fallthrough, $el not an element) -->
     <div ref="scaled" class="scaled-board-content" :style="contentStyle">
@@ -47,7 +47,9 @@ export default defineComponent({
   },
   computed: {
     cropToPlanet(): boolean {
-      return this.planetOnly && this.boardName !== BoardName.CUSTOM;
+      // The large Amazonis Planitia board is its own hexagon, not the round Mars
+      // artwork: cropping it to PLANET_BOUNDS cut its right/bottom rows off.
+      return this.planetOnly && this.boardName !== BoardName.CUSTOM && this.boardName !== BoardName.AMAZONIS_PLANITIA;
     },
     contentStyle(): Record<string, string | number> {
       if (!this.cropToPlanet) {

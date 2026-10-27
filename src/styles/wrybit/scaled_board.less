@@ -15,3 +15,24 @@
   overflow: hidden;
   padding: 0;
 }
+
+// Large maps (Amazonis Planitia) keep their own hex outline. They must still
+// drop the scales, outer colony spaces and tile-toggle chrome: a preview is
+// only the playable board, not a full game board with its side panels.
+.scaled-board--preview {
+  .global-numbers,
+  .board-outer-spaces,
+  .hide-tile-button-container {
+    display: none;
+  }
+
+  .board-cont--large {
+    width: auto;
+    height: auto;
+    background: none;
+  }
+
+  .board-cont--large .board {
+    margin: 0;
+  }
+}

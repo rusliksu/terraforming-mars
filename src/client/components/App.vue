@@ -16,6 +16,10 @@
       <button type="button" class="btn" data-test="wrybit-layout" @click="useWrybitInterface" v-i18n>Wrybit layout</button>
     </aside>
     <div class="main-container">
+      <div v-if="wrybitMode && !wrybitReady" class="wrybit-boot" role="status" aria-live="polite">
+        <div class="wrybit-boot__spinner"></div>
+      </div>
+      <template v-else>
       <component :is="wrybitMode && wrybitReady && wrybitViews.startScreen ? wrybitViews.startScreen : 'StartScreen'" v-if="screen === 'start-screen'"/>
       <CreateGameForm
         v-else-if="screen === 'create-game-form'"
@@ -51,6 +55,7 @@
       <component :is="wrybitMode && wrybitReady && wrybitViews.loginHome ? wrybitViews.loginHome : 'LoginHome'" v-else-if="screen === 'login-home'"/>
       <component :is="wrybitMode && wrybitReady && wrybitViews.help ? wrybitViews.help : 'Help'" v-else-if="screen === 'help'"/>
       <component :is="wrybitViews.stats ?? 'StartScreen'" v-else-if="screen === 'stats'"/>
+      </template>
     </div>
     <InputPortal v-if="screen === 'player-home' && playerView !== undefined && playerView.game.phase !== 'end'"
       :target="inputHosts.target.value">
@@ -518,4 +523,31 @@ export default defineComponent({
 
 .topmost-replay > .main-container { margin: 0; }
 .topmost-replay > .notice { position: static; margin: 24px; }
+
+/* While the optional Wrybit chunk loads, keep the classic page out of the way.
+   Otherwise the classic layout flashes for a moment before the new one replaces it. */
+.wrybit-boot {
+  display: grid;
+  min-height: 70vh;
+  place-items: center;
+}
+
+.wrybit-boot__spinner {
+  width: 34px;
+  height: 34px;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  border-top-color: #b9adff;
+  border-radius: 50%;
+  animation: wrybit-boot-spin 0.8s linear infinite;
+}
+
+@keyframes wrybit-boot-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wrybit-boot__spinner {
+    animation: none;
+  }
+}
 </style>
